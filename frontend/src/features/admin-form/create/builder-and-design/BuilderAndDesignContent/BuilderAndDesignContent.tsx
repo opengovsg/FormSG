@@ -1,6 +1,6 @@
 import { useCallback, useEffect } from 'react'
 import { Droppable } from 'react-beautiful-dnd'
-import { Box, Flex, Image, Stack, Text } from '@chakra-ui/react'
+import { Box, Flex, FlexProps, Image, Stack, Text } from '@chakra-ui/react'
 import { format } from 'date-fns'
 
 import { BxsChevronUp } from '~assets/icons/BxsChevronUp'
@@ -29,11 +29,14 @@ import BuilderAndDesignPlaceholder from './BuilderAndDesignPlaceholder'
 import { BuilderFields } from './BuilderFields'
 import { useBuilderFields } from './useBuilderFields'
 
-interface FormBuilderProps {
+interface FormBuilderProps extends FlexProps {
   placeholderProps: DndPlaceholderProps
 }
 
-const FormBuilder = ({ placeholderProps }: FormBuilderProps): JSX.Element => {
+const FormBuilder = ({
+  placeholderProps,
+  ...props
+}: FormBuilderProps): JSX.Element => {
   const { builderFields } = useBuilderFields()
   const { handleBuilderClick } = useCreatePageSidebar()
   const setEditEndPage = useBuilderAndDesignStore(setToEditEndPageSelector)
@@ -47,6 +50,7 @@ const FormBuilder = ({ placeholderProps }: FormBuilderProps): JSX.Element => {
       p={{ base: '1.5rem', md: '2.5rem' }}
       justify="center"
       overflow="auto"
+      {...props}
     >
       <Flex
         h="fit-content"
@@ -101,7 +105,7 @@ const FormBuilder = ({ placeholderProps }: FormBuilderProps): JSX.Element => {
   )
 }
 
-const EndPageView = (): JSX.Element => {
+const EndPageView = ({ ...props }: FlexProps): JSX.Element => {
   const { data: form } = useAdminForm()
   const endPageData = useEndPageBuilderStore(endPageDataSelector)
 
@@ -114,6 +118,7 @@ const EndPageView = (): JSX.Element => {
       p={{ base: '1.5rem', md: 0 }}
       justify="center"
       overflow="auto"
+      {...props}
     >
       <Stack w="100%">
         <Flex justifyContent="center" pt="1rem" pb="0.5rem">
@@ -176,11 +181,17 @@ export const BuilderAndDesignContent = ({
   return (
     <>
       <Flex flex={1} bg="neutral.200" overflow="auto">
-        {stateData.state === BuildFieldState.EditingEndPage ? (
-          <EndPageView />
-        ) : (
-          <FormBuilder placeholderProps={placeholderProps} />
-        )}
+        <EndPageView
+          display={
+            stateData.state === BuildFieldState.EditingEndPage ? 'flex' : 'none'
+          }
+        />
+        <FormBuilder
+          placeholderProps={placeholderProps}
+          display={
+            stateData.state === BuildFieldState.EditingEndPage ? 'none' : 'flex'
+          }
+        />
       </Flex>
     </>
   )
