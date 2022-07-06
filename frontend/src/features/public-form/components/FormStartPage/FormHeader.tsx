@@ -183,12 +183,7 @@ export const FormHeader = (): JSX.Element | null => {
           </Skeleton>
           {estTimeString && (
             <Flex align="flex-start" justify="center" mt="0.875rem">
-              <Icon
-                as={BxsTimeFive}
-                fontSize="1.5rem"
-                mr="0.5rem"
-                d={{ base: 'initial', md: 'none' }}
-              />
+              <Icon as={BxsTimeFive} fontSize="1.5rem" mr="0.5rem" />
               <Text textStyle="body-2" mt="0.125rem">
                 {estTimeString}
               </Text>
