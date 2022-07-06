@@ -11,8 +11,10 @@ const BillingTableSkeletonRow = (): JSX.Element => (
 
 export const BillingTableSkeleton = (): JSX.Element => (
   <Container maxW="69.5rem">
-    {[...Array(11)].map(() => (
-      <BillingTableSkeletonRow />
-    ))}
+    {Array(11)
+      .fill(null)
+      .map(() => (
+        <BillingTableSkeletonRow />
+      ))}
   </Container>
 )

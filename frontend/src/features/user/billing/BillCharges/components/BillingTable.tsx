@@ -123,11 +123,7 @@ export const BillingTable = ({
                   {column.isSorted ? (
                     <Icon
                       fontSize="1rem"
-                      as={
-                        column.isSorted && column.isSortedDesc
-                          ? BxsChevronDown
-                          : BxsChevronUp
-                      }
+                      as={column.isSortedDesc ? BxsChevronDown : BxsChevronUp}
                     />
                   ) : null}
                 </Flex>
