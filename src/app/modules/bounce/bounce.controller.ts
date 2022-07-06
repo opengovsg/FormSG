@@ -78,34 +78,38 @@ export const handleSns: ControllerHandler<
     // Send notifications and deactivate form on best-effort basis, ignore errors
     const possibleSmsRecipients =
       await BounceService.getEditorsWithContactNumbers(form).unwrapOr([])
-    const emailRecipients = await BounceService.sendEmailBounceNotification(
-      bounceDoc,
-      form,
-    ).unwrapOr([])
-    const smsRecipients = await BounceService.sendSmsBounceNotification(
-      bounceDoc,
-      form,
-      possibleSmsRecipients,
-    ).unwrapOr([])
-    bounceDoc.setNotificationState(emailRecipients, smsRecipients)
 
-    const shouldDeactivate = bounceDoc.areAllPermanentBounces()
-    if (shouldDeactivate) {
-      await FormService.deactivateForm(bounceDoc.formId)
-      await BounceService.notifyAdminsOfDeactivation(
+    // Check if notifications have been sent to form admins and collaborators
+    if (!bounceDoc.hasNotified()) {
+      const emailRecipients = await BounceService.sendEmailBounceNotification(
+        bounceDoc,
+        form,
+      ).unwrapOr([])
+      const smsRecipients = await BounceService.sendSmsBounceNotification(
+        bounceDoc,
         form,
         possibleSmsRecipients,
-      )
-    }
+      ).unwrapOr([])
+      bounceDoc.setNotificationState(emailRecipients, smsRecipients)
 
-    // Important log message for user follow-ups
-    BounceService.logCriticalBounce({
-      bounceDoc,
-      notification,
-      autoEmailRecipients: emailRecipients,
-      autoSmsRecipients: smsRecipients,
-      hasDeactivated: shouldDeactivate,
-    })
+      const shouldDeactivate = bounceDoc.areAllPermanentBounces()
+      if (shouldDeactivate) {
+        await FormService.deactivateForm(bounceDoc.formId)
+        await BounceService.notifyAdminsOfDeactivation(
+          form,
+          possibleSmsRecipients,
+        )
+      }
+
+      // Important log message for user follow-ups
+      BounceService.logCriticalBounce({
+        bounceDoc,
+        notification,
+        autoEmailRecipients: emailRecipients,
+        autoSmsRecipients: smsRecipients,
+        hasDeactivated: shouldDeactivate,
+      })
+    }
   }
 
   return BounceService.saveBounceDoc(bounceDoc)
