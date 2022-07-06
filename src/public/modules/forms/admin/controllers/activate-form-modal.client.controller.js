@@ -1,5 +1,4 @@
 const dedent = require('dedent-js')
-const PublicFormAuthService = require('../../../../services/PublicFormAuthService')
 
 angular
   .module('forms')
@@ -83,7 +82,7 @@ function ActivateFormController(
     }
   }
 
-  const checkESrvcId = ({ target, authType, esrvcId }) => {
+  const checkESrvcId = ({ authType, esrvcId }) => {
     const updateDisplay = (error, success, waitDuration = 500) => {
       $timeout(() => {
         if (error) vm.esrvcIdError = error
@@ -96,26 +95,9 @@ function ActivateFormController(
       vm.esrvcIdStatus = 1
     })
 
-    if (authType === 'SP' || authType === 'MyInfo') {
-      return $q
-        .when(PublicFormAuthService.validateEsrvcId(target))
-        .then((response) => {
-          if (response.isValid) {
-            updateDisplay(null, { authType, esrvcId })
-          } else {
-            updateDisplay(
-              { authType, esrvcId, errorCode: response.errorCode },
-              null,
-            )
-          }
-          return response.isValid
-        })
-        .catch(() => {
-          updateDisplay({ authType, esrvcId }, null)
-          return false
-        })
-    } else if (authType === 'CP' && esrvcId !== '') {
+    if (['SP', 'CP', 'MyInfo'].includes(authType) && esrvcId !== '') {
       // CorpPass doesn't return any error page even with the wrong e-service id
+      // With transition to OIDC, SP does not return any error page even with the wrong e-service id
       updateDisplay(null, { authType, esrvcId }, 0)
       return Promise.resolve(true)
     } else if (authType === 'SGID') {
