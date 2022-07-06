@@ -1,6 +1,4 @@
-<div
-  class="toolset_dropdown_div"
->
+<div class="toolset_dropdown_div">
   <a
     target="_blank"
     translate="GOV_APPS.TEXT"
@@ -13,11 +11,11 @@
     ng-mouseenter="vm.isDropdownHover=true"
     ng-mouseleave="vm.isDropdownHover=false"
   ></a>
-  <div 
-  ng-show="vm.isDropdownOpen || vm.isDropdownHover"
-  ng-mouseenter="vm.isDropdownHover=true"
-  ng-mouseleave="vm.isDropdownHover=false"
-  class="toolset_dropdown"
+  <div
+    ng-show="vm.isDropdownOpen || vm.isDropdownHover"
+    ng-mouseenter="vm.isDropdownHover=true"
+    ng-mouseleave="vm.isDropdownHover=false"
+    class="toolset_dropdown"
   >
     <ul>
       <li ng-repeat="item in vm.labelAndLink">
