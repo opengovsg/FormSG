@@ -39,9 +39,9 @@ const DesktopPageButton = ({
   const styles = useMultiStyleConfig(PAGINATION_THEME_KEY, { isSelected })
 
   const handleClick = useCallback(() => {
-    if (page === SEPARATOR) return
+    if (page === SEPARATOR || page === selectedPage) return
     onClick(page)
-  }, [onClick, page])
+  }, [onClick, page, selectedPage])
 
   if (page === SEPARATOR) {
     return <Text sx={styles.separator}>{page}</Text>

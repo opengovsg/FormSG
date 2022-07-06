@@ -18,17 +18,23 @@ const PAGE_SIZE = 10
 interface UnlockedResponsesContextProps {
   currentPage?: number
   setCurrentPage: (page: number) => void
+  submissionId?: string
+  setSubmissionId: (submissionId: string | null) => void
   count?: number
   metadata: StorageModeSubmissionMetadata[]
+  filteredCount?: number
+  filteredMetadata: StorageModeSubmissionMetadata[]
   isLoading: boolean
-  isAnyLoading: boolean
+  isAnyFetching: boolean
   getNextSubmissionId: (currentSubmissionId: string) => SubmissionId | undefined
   getPreviousSubmissionId: (
     currentSubmissionId: string,
   ) => SubmissionId | undefined
   onNavNextSubmissionId: (currentSubmissionId: string) => void
   onNavPreviousSubmissionId: (currentSubmissionId: string) => void
+  onRowClick: () => void
   lastNavPage?: number
+  lastNavSubmissionId?: string
 }
 
 const UnlockedResponsesContext = createContext<
@@ -46,10 +52,14 @@ export const useUnlockedResponses = (): UnlockedResponsesContextProps => {
 }
 
 const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
-  const [currentPage, setCurrentPage] = usePageSearchParams()
+  const {
+    page: [currentPage, setCurrentPage],
+    submissionId: [submissionId, setSubmissionId],
+  } = usePageSearchParams()
   // Storing the params in the state for navigation when user returns from
   // individual response view.
   const [lastNavPage, setLastNavPage] = useState(currentPage)
+  const [lastNavSubmissionId, setLastNavSubmissionId] = useState(submissionId)
 
   useEffect(() => {
     if (currentPage && currentPage !== lastNavPage) {
@@ -57,30 +67,50 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
     }
   }, [currentPage, lastNavPage])
 
-  const { data: { count, metadata = [] } = {}, isLoading } =
-    useFormResponses(lastNavPage)
+  const onRowClick = useCallback(() => {
+    setLastNavSubmissionId(submissionId)
+    setLastNavPage(currentPage ?? 1)
+  }, [currentPage, submissionId])
+
+  const {
+    data: { count: filteredCount, metadata: filteredMetadata = [] } = {},
+    isFetching: isFilterFetching,
+  } = useFormResponses({
+    // Will not run if submissionId does not exist.
+    page: 0,
+    submissionId,
+  })
+
+  const { data: { count, metadata = [] } = {}, isLoading } = useFormResponses({
+    page: lastNavPage ?? 1,
+  })
   const {
     data: { metadata: prevMetadata = [] } = {},
-    isLoading: isPrevLoading,
-  } = useFormResponses(lastNavPage ?? 0)
+    isFetching: isPrevFetching,
+  } = useFormResponses({ page: currentPage ? 0 : lastNavPage ?? 0 })
   const {
     data: { metadata: nextMetadata = [] } = {},
-    isLoading: isNextLoading,
-  } = useFormResponses(lastNavPage ?? 2)
+    isFetching: isNextFetching,
+  } = useFormResponses({ page: currentPage ? 0 : lastNavPage ?? 2 })
 
   const totalPageCount = useMemo(
     () => (count ? Math.ceil(count / PAGE_SIZE) : 0),
     [count],
   )
 
-  const isAnyLoading = useMemo(
-    () => isLoading || isPrevLoading || isNextLoading,
-    [isLoading, isNextLoading, isPrevLoading],
+  const isAnyFetching = useMemo(
+    () => isLoading || isPrevFetching || isNextFetching || isFilterFetching,
+    [isFilterFetching, isLoading, isNextFetching, isPrevFetching],
   )
 
   const onNavNextSubmissionId = useCallback(
     (currentSubmissionId: string) => {
-      if (isAnyLoading || (lastNavPage ?? 1) >= totalPageCount) return
+      if (
+        isAnyFetching ||
+        (lastNavPage ?? 1) >= totalPageCount ||
+        !!lastNavSubmissionId
+      )
+        return
       // Get row index of current submission in the metadata.
       const currentResponseIndex = metadata.findIndex(
         (response) => response.refNo === currentSubmissionId,
@@ -93,12 +123,12 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
         setLastNavPage((lastNavPage ?? 1) + 1)
       }
     },
-    [isAnyLoading, lastNavPage, metadata, totalPageCount],
+    [isAnyFetching, lastNavPage, lastNavSubmissionId, metadata, totalPageCount],
   )
 
   const onNavPreviousSubmissionId = useCallback(
     (currentSubmissionId: string) => {
-      if (isAnyLoading) return
+      if (isAnyFetching || !!lastNavSubmissionId) return
 
       // Get row index of current submission in the metadata.
       const currentResponseIndex = metadata.findIndex(
@@ -110,12 +140,12 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
         setLastNavPage(lastNavPage - 1)
       }
     },
-    [isAnyLoading, lastNavPage, metadata],
+    [isAnyFetching, lastNavPage, lastNavSubmissionId, metadata],
   )
 
   const getNextSubmissionId = useCallback(
     (currentSubmissionId: string) => {
-      if (isAnyLoading) return
+      if (isAnyFetching || !!lastNavSubmissionId) return
       // Get row index of current submission in the metadata.
       const currentResponseIndex = metadata.findIndex(
         (response) => response.refNo === currentSubmissionId,
@@ -129,12 +159,12 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
       }
       return metadata[currentResponseIndex + 1]?.refNo
     },
-    [isAnyLoading, metadata, nextMetadata],
+    [isAnyFetching, metadata, nextMetadata, lastNavSubmissionId],
   )
 
   const getPreviousSubmissionId = useCallback(
     (currentSubmissionId: string) => {
-      if (isAnyLoading) return
+      if (isAnyFetching || !!lastNavSubmissionId) return
 
       // Get row index of current submission in the metadata.
       const currentResponseIndex = metadata.findIndex(
@@ -149,7 +179,7 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
       }
       return metadata[currentResponseIndex - 1]?.refNo
     },
-    [isAnyLoading, lastNavPage, metadata, prevMetadata],
+    [isAnyFetching, lastNavPage, metadata, prevMetadata, lastNavSubmissionId],
   )
 
   return {
@@ -158,12 +188,18 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
     count,
     metadata,
     isLoading,
-    isAnyLoading,
+    isAnyFetching,
     getNextSubmissionId,
     getPreviousSubmissionId,
     onNavNextSubmissionId,
     onNavPreviousSubmissionId,
     lastNavPage,
+    lastNavSubmissionId,
+    filteredCount,
+    filteredMetadata,
+    submissionId,
+    setSubmissionId,
+    onRowClick,
   }
 }
 

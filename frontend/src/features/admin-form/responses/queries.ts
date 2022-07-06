@@ -1,8 +1,12 @@
+import { useMemo } from 'react'
 import { useQuery, UseQueryResult } from 'react-query'
 import { useParams } from 'react-router-dom'
 
 import { FormFeedbackMetaDto } from '~shared/types'
-import { StorageModeSubmissionMetadataList } from '~shared/types/submission'
+import {
+  FormSubmissionMetadataQueryDto,
+  StorageModeSubmissionMetadataList,
+} from '~shared/types/submission'
 
 import { adminFormKeys } from '../common/queries'
 
@@ -17,8 +21,16 @@ export const adminFormResponsesKeys = {
   base: [...adminFormKeys.base, 'responses'] as const,
   id: (id: string) => [...adminFormResponsesKeys.base, id] as const,
   count: (id: string) => [...adminFormResponsesKeys.id(id), 'count'] as const,
-  metadata: (id: string, page = 1) =>
-    [...adminFormResponsesKeys.id(id), 'metadata', page] as const,
+  metadata: (id: string, params: FormSubmissionMetadataQueryDto) => {
+    const builtParams = params.submissionId
+      ? [params.submissionId]
+      : [params.page ?? 1]
+    return [
+      ...adminFormResponsesKeys.id(id),
+      'metadata',
+      ...builtParams,
+    ] as const
+  },
   individual: (id: string, submissionId: string) =>
     [...adminFormResponsesKeys.id(id), 'individual', submissionId] as const,
 }
@@ -45,22 +57,35 @@ export const useFormResponsesCount = (): UseQueryResult<number> => {
 /**
  * @precondition Must be wrapped in a Router as `useParam` is used.
  */
-export const useFormResponses = (
+export const useFormResponses = ({
   page = 1,
-): UseQueryResult<StorageModeSubmissionMetadataList> => {
+  submissionId,
+}: {
+  page?: number
+  submissionId?: string
+} = {}): UseQueryResult<StorageModeSubmissionMetadataList> => {
   const { formId } = useParams()
   if (!formId) throw new Error('No formId provided')
 
   const { secretKey } = useStorageResponsesContext()
 
+  const params = useMemo(() => {
+    if (submissionId) {
+      return { submissionId }
+    }
+    return { page }
+  }, [page, submissionId])
+
   return useQuery(
-    adminFormResponsesKeys.metadata(formId, page),
-    () => getFormSubmissionsMetadata(formId, page),
+    adminFormResponsesKeys.metadata(formId, params),
+    () => getFormSubmissionsMetadata(formId, params),
     {
       refetchOnMount: true,
       refetchOnWindowFocus: false,
-      keepPreviousData: true,
-      enabled: !!secretKey && page > 0,
+      // Data will never change.
+      staleTime: Infinity,
+      keepPreviousData: !submissionId,
+      enabled: !!secretKey && (page > 0 || !!submissionId),
     },
   )
 }

@@ -63,11 +63,12 @@ export const IndividualResponsePage = (): JSX.Element => {
   const { secretKey } = useStorageResponsesContext()
   const {
     lastNavPage,
+    lastNavSubmissionId,
     getNextSubmissionId,
     getPreviousSubmissionId,
     onNavNextSubmissionId,
     onNavPreviousSubmissionId,
-    isAnyLoading,
+    isAnyFetching,
   } = useUnlockedResponses()
   const { data, isLoading } = useIndividualSubmission()
 
@@ -117,11 +118,19 @@ export const IndividualResponsePage = (): JSX.Element => {
   ])
 
   const backLink = useMemo(() => {
-    if (lastNavPage) {
-      return `..?page=${lastNavPage}`
+    if (!lastNavPage && !lastNavSubmissionId) {
+      return `..`
     }
-    return `..`
-  }, [lastNavPage])
+
+    const searchParams = new URLSearchParams()
+    if (lastNavPage) {
+      searchParams.set('page', lastNavPage.toString())
+    }
+    if (lastNavSubmissionId) {
+      searchParams.set('submissionId', lastNavSubmissionId)
+    }
+    return `..?${searchParams}`
+  }, [lastNavPage, lastNavSubmissionId])
 
   if (!secretKey) {
     return <SecretKeyVerification />
@@ -152,13 +161,13 @@ export const IndividualResponsePage = (): JSX.Element => {
           </Skeleton>
           <ButtonGroup>
             <IconButton
-              isDisabled={!prevSubmissionId || isAnyLoading}
+              isDisabled={!prevSubmissionId || isAnyFetching}
               onClick={handleNavigatePrev}
               icon={<BiChevronLeft />}
               aria-label="Previous submission"
             />
             <IconButton
-              isDisabled={!nextSubmissionId || isAnyLoading}
+              isDisabled={!nextSubmissionId || isAnyFetching}
               onClick={handleNavigateNext}
               icon={<BiChevronRight />}
               aria-label="Next submission"

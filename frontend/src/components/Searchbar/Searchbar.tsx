@@ -1,13 +1,12 @@
 import { KeyboardEvent, useCallback, useRef } from 'react'
 import { BiSearch } from 'react-icons/bi'
 import {
-  Box,
   forwardRef,
-  Icon,
   Input,
   InputGroup,
   InputLeftElement,
   InputProps,
+  useControllableState,
   useMergeRefs,
   useMultiStyleConfig,
 } from '@chakra-ui/react'
@@ -16,7 +15,7 @@ import { SEARCHBAR_THEME_KEY } from '~/theme/components/Searchbar'
 
 import IconButton from '../IconButton'
 
-export interface SearchbarProps extends InputProps {
+export interface SearchbarProps extends Omit<InputProps, 'onChange'> {
   /**
    * Function to be invoked when user presses enter (to search).
    * @param searchValue value of the search input
@@ -35,13 +34,38 @@ export interface SearchbarProps extends InputProps {
    * If provided, the search icon will be clickable.
    */
   onSearchIconClick?: () => void
+
+  defaultValue?: string
+  onChange?: (newValue: string) => void
+  value?: string
+
+  rightElement?: React.ReactElement
 }
 
 export const Searchbar = forwardRef<SearchbarProps, 'input'>(
-  ({ onSearch, isExpanded, onSearchIconClick, ...props }, ref) => {
+  (
+    {
+      onSearch,
+      isExpanded,
+      onSearchIconClick,
+      rightElement,
+      onChange: onChangeProp,
+      value: valueProp,
+      defaultValue: defaultValueProp,
+      isDisabled,
+      ...props
+    },
+    ref,
+  ) => {
+    const [value, onChange] = useControllableState<string>({
+      defaultValue: defaultValueProp ?? '',
+      onChange: onChangeProp,
+      value: valueProp,
+    })
     const innerRef = useRef<HTMLInputElement>(null)
     const styles = useMultiStyleConfig(SEARCHBAR_THEME_KEY, {
       isExpanded,
+      isDisabled,
       ...props,
     })
 
@@ -49,20 +73,26 @@ export const Searchbar = forwardRef<SearchbarProps, 'input'>(
 
     const handleSearch = useCallback(
       (e: KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === 'Enter' && innerRef.current) {
-          onSearch(innerRef.current.value)
+        if (e.key === 'Enter') {
+          onSearch(value)
         }
       },
-      [onSearch],
+      [onSearch, value],
     )
 
     return (
       <InputGroup flex={isExpanded ? 1 : 0}>
         {isExpanded ? (
-          <InputLeftElement pointerEvents="none">
-            <Box __css={styles.icon}>
-              <Icon as={BiSearch} />
-            </Box>
+          <InputLeftElement>
+            <IconButton
+              isDisabled={isDisabled}
+              size="sm"
+              variant="clear"
+              colorScheme="secondary"
+              aria-label="Search"
+              icon={<BiSearch fontSize="1.25rem" />}
+              onClick={() => onSearch(value)}
+            />
           </InputLeftElement>
         ) : (
           <IconButton
@@ -79,8 +109,12 @@ export const Searchbar = forwardRef<SearchbarProps, 'input'>(
           ref={inputRef}
           sx={styles.field}
           onKeyDown={handleSearch}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          isDisabled={isDisabled}
           {...props}
         />
+        {isExpanded && rightElement}
       </InputGroup>
     )
   },

@@ -40,7 +40,13 @@ const RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
 ]
 
 export const ResponsesTable = () => {
-  const { currentPage: currentPage1Indexed, metadata } = useUnlockedResponses()
+  const {
+    currentPage: currentPage1Indexed,
+    metadata,
+    filteredMetadata,
+    submissionId,
+    onRowClick,
+  } = useUnlockedResponses()
 
   const navigate = useNavigate()
 
@@ -48,6 +54,14 @@ export const ResponsesTable = () => {
     () => (currentPage1Indexed ?? 1) - 1,
     [currentPage1Indexed],
   )
+
+  const metadataToUse = useMemo(() => {
+    if (submissionId) {
+      return filteredMetadata
+    } else {
+      return metadata
+    }
+  }, [filteredMetadata, metadata, submissionId])
 
   const {
     prepareRow,
@@ -59,7 +73,7 @@ export const ResponsesTable = () => {
   } = useTable<ResponseColumnData>(
     {
       columns: RESPONSE_TABLE_COLUMNS,
-      data: metadata,
+      data: metadataToUse,
       // Server side pagination.
       manualPagination: true,
       pageCount: currentPage,
@@ -79,13 +93,14 @@ export const ResponsesTable = () => {
 
   const handleRowClick = useCallback(
     (submissionId: string, respondentNumber) => {
+      onRowClick()
       return navigate(submissionId, {
         state: {
           respondentNumber,
         },
       })
     },
-    [navigate],
+    [navigate, onRowClick],
   )
 
   return (
