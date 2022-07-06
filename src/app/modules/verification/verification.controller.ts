@@ -11,6 +11,7 @@ import { ControllerHandler } from '../core/core.types'
 import * as FormService from '../form/form.service'
 import * as MyInfoUtil from '../myinfo/myinfo.util'
 import { SgidService } from '../sgid/sgid.service'
+import { SpOidcService } from '../spcp/sp.oidc.service'
 import { SpcpService } from '../spcp/spcp.service'
 
 import * as VerificationService from './verification.service'
@@ -236,12 +237,14 @@ export const _handleGenerateOtp: ControllerHandler<
               })
           }
           case FormAuthType.SP:
-            return SpcpService.extractJwt(req.cookies, authType)
-              .asyncAndThen((jwt) => SpcpService.extractSingpassJwtPayload(jwt))
+            return SpOidcService.extractJwt(req.cookies)
+              .asyncAndThen((jwt) =>
+                SpOidcService.extractSingpassJwtPayload(jwt),
+              )
               .map(() => form)
               .mapErr((error) => {
                 logger.error({
-                  message: 'Failed to verify Singpass JWT with auth client',
+                  message: 'Failed to verify Singpass JWT with sp oidc client',
                   meta: logMeta,
                   error,
                 })

@@ -6,7 +6,10 @@ import supertest, { Session } from 'supertest-session'
 import { mocked } from 'ts-jest/utils'
 
 import { DatabaseError } from 'src/app/modules/core/core.errors'
-import { getRedirectTarget } from 'src/app/modules/spcp/spcp.util'
+import {
+  getRedirectTarget,
+  getRedirectTargetSpOidc,
+} from 'src/app/modules/spcp/spcp.util'
 
 import { setupApp } from 'tests/integration/helpers/express-setup'
 import { buildCelebrateError } from 'tests/unit/backend/helpers/celebrate'
@@ -15,17 +18,20 @@ import { jsonParseStringify } from 'tests/unit/backend/helpers/serialize-data'
 
 import { FormAuthType, FormStatus } from '../../../../../../../shared/types'
 import * as FormService from '../../../../../modules/form/form.service'
+import { SpOidcClient } from '../../../../../modules/spcp/sp.oidc.client'
+import { SpOidcService } from '../../../../../modules/spcp/sp.oidc.service'
 import {
   CreateRedirectUrlError,
   FetchLoginPageError,
 } from '../../../../../modules/spcp/spcp.errors'
-import { SpcpService } from '../../../../../modules/spcp/spcp.service'
 import { PublicFormsRouter } from '../public-forms.routes'
 
 // NOTE: Mocking axios here because there is a network call to an external service
 // to validate the result of eserviceId.
 jest.mock('axios')
 const MockAxios = mocked(axios, true)
+
+jest.mock('../../../../../modules/spcp/sp.oidc.client')
 
 const app = setupApp('/forms', PublicFormsRouter)
 describe('public-form.auth.routes', () => {
@@ -51,6 +57,14 @@ describe('public-form.auth.routes', () => {
         },
       })
 
+      jest
+        .spyOn(SpOidcClient.prototype, 'createAuthorisationUrl')
+        .mockResolvedValue(
+          `${encodeURI(getRedirectTargetSpOidc(form._id, false))}&esrvc=${
+            form.esrvcId
+          }`,
+        )
+
       // Act
       const response = await request
         .get(`/forms/${form._id}/auth/redirect`)
@@ -60,7 +74,7 @@ describe('public-form.auth.routes', () => {
       expect(response.status).toEqual(StatusCodes.OK)
       expect(response.body).toMatchObject({
         redirectURL: expect.toIncludeMultiple([
-          encodeURI(getRedirectTarget(form._id, FormAuthType.SP, false)),
+          encodeURI(getRedirectTargetSpOidc(form._id, false)),
           form.esrvcId!,
         ]),
       })
@@ -244,8 +258,8 @@ describe('public-form.auth.routes', () => {
         message: 'Sorry, something went wrong. Please try again.',
       })
       jest
-        .spyOn(SpcpService, 'createRedirectUrl')
-        .mockReturnValueOnce(err(new CreateRedirectUrlError()))
+        .spyOn(SpOidcService, 'createRedirectUrl')
+        .mockResolvedValueOnce(err(new CreateRedirectUrlError()))
 
       // Act
       const response = await request

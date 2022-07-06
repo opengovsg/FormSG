@@ -27,7 +27,9 @@ import { TwilioCredentials } from './../../../../../../services/sms/sms.types'
 
 // Prevent rate limiting.
 jest.mock('src/app/utils/limit-rate')
-// jest.mock('../../../../../../../app/modules/form/admin-form/admin-form.service')
+
+// Avoid async refresh calls
+jest.mock('src/app/modules/spcp/sp.oidc.client.ts')
 
 const MockAdminFormService = mocked(AdminFormService)
 

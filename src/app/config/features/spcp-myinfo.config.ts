@@ -29,6 +29,12 @@ type ISpcpConfig = {
   cpFormSgCertPath: string
   spIdpCertPath: string
   cpIdpCertPath: string
+  spOidcNdiDiscoveryEndpoint: string
+  spOidcNdiJwksEndpoint: string
+  spOidcRpClientId: string
+  spOidcRpRedirectUrl: string
+  spOidcRpJwksPublicPath: string
+  spOidcRpJwksSecretPath: string
 }
 
 type IMyInfoConfig = {
@@ -214,6 +220,42 @@ const spcpMyInfoSchema: Schema<ISpcpMyInfo> = {
     format: String,
     default: null,
     env: 'MYINFO_CLIENT_SECRET',
+  },
+  spOidcNdiDiscoveryEndpoint: {
+    doc: "NDI's Singpass OIDC Discovery Endpoint",
+    format: String,
+    default: null,
+    env: 'SP_OIDC_NDI_DISCOVERY_ENDPOINT',
+  },
+  spOidcNdiJwksEndpoint: {
+    doc: "NDI's Singpass OIDC JWKS Endpoint",
+    format: String,
+    default: null,
+    env: 'SP_OIDC_NDI_JWKS_ENDPOINT',
+  },
+  spOidcRpClientId: {
+    doc: "The Relying Party's Client ID as registered with NDI",
+    format: String,
+    default: null,
+    env: 'SP_OIDC_RP_CLIENT_ID',
+  },
+  spOidcRpRedirectUrl: {
+    doc: "The Relying Party's Redirect URL",
+    format: String,
+    default: null,
+    env: 'SP_OIDC_RP_REDIRECT_URL',
+  },
+  spOidcRpJwksPublicPath: {
+    doc: "Path to the Relying Party's Public Json Web Key Set used for Singpass-related communication with NDI.  This will be hosted at /singpass/.well-known/jwks.json endpoint.",
+    format: String,
+    default: null,
+    env: 'SP_OIDC_RP_JWKS_PUBLIC_PATH',
+  },
+  spOidcRpJwksSecretPath: {
+    doc: "Path to the Relying Party's Secret Json Web Key Set used for Singpass-related communication with NDI",
+    format: String,
+    default: null,
+    env: 'SP_OIDC_RP_JWKS_SECRET_PATH',
   },
 }
 
