@@ -85,45 +85,52 @@ export const MiniHeader = ({ isOpen }: MiniHeaderProps): JSX.Element | null => {
   if (!showHeader) return null
 
   return (
-    <Flex>
-      <Slide
-        // Screen readers do not need to know of the existence of this component.
-        aria-hidden
-        ref={miniHeaderRef}
-        direction="top"
-        in={isOpen}
-        style={{ zIndex: 1000 }}
+    <Slide
+      // Screen readers do not need to know of the existence of this component.
+      aria-hidden
+      ref={miniHeaderRef}
+      direction="top"
+      in={isOpen}
+      style={{ zIndex: 1000 }}
+    >
+      <Box
+        bg={titleBg}
+        px={{ base: '1.5rem', md: '2rem' }}
+        py={{ base: '0.5rem', md: '1rem' }}
       >
-        <Box bg={titleBg} px="1.5rem" py="1rem">
-          <Skeleton isLoaded={!!title}>
-            <Flex align="center" flex={1} justify="space-between" flexDir="row">
-              <Text
-                as="h2"
-                textStyle="h2"
-                textAlign="start"
-                color={titleColour}
-              >
-                {title ?? 'Loading title'}
-              </Text>
-              {activeSectionId ? (
-                // Section sidebar icon should only show up if sections exist
-                <IconButton
-                  variant="solid"
-                  colorScheme="primary"
-                  aria-label="Mobile section sidebar"
-                  fontSize="1.5rem"
-                  icon={<BxMenuAltLeft />}
-                  d={{ base: 'flex', md: 'none' }}
-                  onClick={handleMobileSectionSidebarOpen}
-                />
-              ) : (
-                <></>
-              )}
-            </Flex>
-          </Skeleton>
-        </Box>
-      </Slide>
-    </Flex>
+        <Skeleton isLoaded={!!title}>
+          <Flex
+            align="center"
+            flex={1}
+            gap="0.5rem"
+            justify="space-between"
+            flexDir="row"
+          >
+            <Text
+              textStyle={{ base: 'h4', md: 'h2' }}
+              textAlign="start"
+              color={titleColour}
+            >
+              {title ?? 'Loading title'}
+            </Text>
+            {activeSectionId ? (
+              // Section sidebar icon should only show up if sections exist
+              <IconButton
+                variant="solid"
+                colorScheme="primary"
+                aria-label="Mobile section sidebar"
+                fontSize="1.5rem"
+                icon={<BxMenuAltLeft />}
+                d={{ base: 'flex', md: 'none' }}
+                onClick={handleMobileSectionSidebarOpen}
+              />
+            ) : (
+              <></>
+            )}
+          </Flex>
+        </Skeleton>
+      </Box>
+    </Slide>
   )
 }
 
