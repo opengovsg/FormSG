@@ -119,7 +119,6 @@ const loadExpressApp = async (connection: Connection) => {
   // Log intranet usage
   app.use(IntranetMiddleware.logIntranetUsage)
 
-  app.use('/', HomeRouter)
   app.use('/frontend', FrontendRouter)
   app.use('/auth', AuthRouter)
   app.use('/user', UserRouter)
