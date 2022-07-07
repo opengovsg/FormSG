@@ -61,7 +61,7 @@ export interface SearchbarProps extends Omit<InputProps, 'onChange'> {
    * Function to be invoked when the value in the searchbar input changes (but
    * the search button has not been clicked).
    */
-  onValueChange?: (newValue: string) => void
+  onChange?: (newValue: string) => void
 }
 
 export const Searchbar = forwardRef<SearchbarProps, 'input'>(
@@ -73,7 +73,7 @@ export const Searchbar = forwardRef<SearchbarProps, 'input'>(
       onExpandIconClick: onExpandIconClickProp,
       onCollapseIconClick: onCollapseIconClickProp,
       value: valueProp,
-      onValueChange: onValueChangeProp,
+      onChange: onChangeProp,
       isDisabled,
       ...props
     }: SearchbarProps,
@@ -105,8 +105,8 @@ export const Searchbar = forwardRef<SearchbarProps, 'input'>(
       setInnerIsExpanded(false)
     }
 
-    const onValueChange = (newValue: string) => {
-      if (onValueChangeProp) onValueChangeProp(newValue)
+    const onChange = (newValue: string) => {
+      if (onChangeProp) onChangeProp(newValue)
       setValue(newValue)
     }
 
@@ -151,7 +151,7 @@ export const Searchbar = forwardRef<SearchbarProps, 'input'>(
           sx={styles.field}
           onKeyDown={handleEnterKeySearch}
           value={value}
-          onChange={(e) => onValueChange(e.target.value)}
+          onChange={(e) => onChange(e.target.value)}
           isDisabled={isDisabled}
           {...props}
         />

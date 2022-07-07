@@ -12,7 +12,7 @@ export default {
 
 export const Default: Story<SearchbarProps> = (args) => <Searchbar {...args} />
 Default.args = {
-  onValueChange: (newValue) => console.log('typed: ', newValue),
+  onChange: (newValue) => console.log('typed: ', newValue),
   onSearch: (query) => console.log(query),
 }
 

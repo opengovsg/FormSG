@@ -26,7 +26,7 @@ export const SubmissionSearchbar = ({
       ref={inputRef}
       value={inputValue}
       isExpanded={!!submissionId}
-      onValueChange={(nextValue) => setInputValue(nextValue)}
+      onChange={(nextValue) => setInputValue(nextValue)}
       onCollapseIconClick={() => setSubmissionId(null)}
       onSearch={setSubmissionId}
       placeholder="Search by reference ID"
