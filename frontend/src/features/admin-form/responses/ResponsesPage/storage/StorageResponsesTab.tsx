@@ -5,9 +5,9 @@ import { useStorageResponsesContext } from './StorageResponsesContext'
 import { UnlockedResponses } from './UnlockedResponses'
 
 export const StorageResponsesTab = (): JSX.Element => {
-  const { responsesCount, secretKey } = useStorageResponsesContext()
+  const { totalResponsesCount, secretKey } = useStorageResponsesContext()
 
-  if (responsesCount === 0) {
+  if (totalResponsesCount === 0) {
     return <EmptyResponses />
   }
 

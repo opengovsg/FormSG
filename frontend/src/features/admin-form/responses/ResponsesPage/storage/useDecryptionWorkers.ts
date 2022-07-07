@@ -3,10 +3,9 @@ import { useMutation, UseMutationOptions } from 'react-query'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
 
-import { useFormResponsesCount } from '../../queries'
-
 import { downloadResponseAttachment } from './utils/downloadCsv'
 import { EncryptedResponseCsvGenerator } from './utils/EncryptedResponseCsvGenerator'
+import { useStorageResponsesContext } from './StorageResponsesContext'
 import {
   EncryptedResponsesStreamParams,
   getEncryptedResponsesStream,
@@ -23,6 +22,8 @@ const killWorkers = (workers: CleanableDecryptionWorkerApi[]): void => {
 export type DownloadEncryptedParams = EncryptedResponsesStreamParams & {
   // The key to decrypt the submission responses.
   secretKey: string
+  // Number of responses to expect to download.
+  responsesCount: number
 }
 interface UseDecryptionWorkersProps {
   onProgress: (progress: number) => void
@@ -42,8 +43,7 @@ const useDecryptionWorkers = ({
   const abortControllerRef = useRef(new AbortController())
 
   const { data: adminForm } = useAdminForm()
-
-  const { refetch } = useFormResponsesCount()
+  const { dateRange } = useStorageResponsesContext()
 
   useEffect(() => {
     return () => killWorkers(workers)
@@ -58,21 +58,18 @@ const useDecryptionWorkers = ({
 
   const downloadEncryptedResponses = useCallback(
     async ({
+      responsesCount,
       downloadAttachments,
       secretKey,
       endDate,
       startDate,
     }: DownloadEncryptedParams) => {
-      if (!adminForm) return
+      if (!adminForm || !responsesCount) return
 
       abortControllerRef.current.abort()
       const freshAbortController = new AbortController()
       abortControllerRef.current = freshAbortController
 
-      const { data: responsesCount } = await refetch({
-        throwOnError: true,
-      })
-      if (!responsesCount) return
       if (workers.length) killWorkers(workers)
 
       // Create a pool of decryption workers
@@ -250,7 +247,7 @@ const useDecryptionWorkers = ({
           checkComplete()
         })
     },
-    [adminForm, onProgress, refetch, workers],
+    [adminForm, onProgress, workers],
   )
 
   const handleExportCsvMutation = useMutation(

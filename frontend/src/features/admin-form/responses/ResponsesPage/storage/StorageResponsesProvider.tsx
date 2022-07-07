@@ -1,7 +1,7 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
 
-import { FormResponseMode } from '~shared/types'
+import { DateString, FormResponseMode } from '~shared/types'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
 
@@ -19,8 +19,17 @@ export const StorageResponsesProvider = ({
   if (!formId) throw new Error('No formId provided')
 
   const { data: form, isLoading: isAdminFormLoading } = useAdminForm()
-  const { data: responsesCount, isLoading: isFormResponsesLoading } =
+
+  const [dateRange, setDateRange] = useState<DateString[]>([])
+  const { data: totalResponsesCount, isLoading: isFormResponsesLoading } =
     useFormResponsesCount()
+  const {
+    data: dateRangeResponsesCount,
+    isLoading: isDateRangeResponsesCountLoading,
+  } = useFormResponsesCount({
+    startDate: dateRange[0],
+    endDate: dateRange[1],
+  })
   const [secretKey, setSecretKey] = useSecretKey(formId)
 
   const formPublicKey = useMemo(() => {
@@ -29,25 +38,31 @@ export const StorageResponsesProvider = ({
   }, [form])
 
   const downloadParams = useMemo(() => {
-    if (!secretKey) return null
+    if (!secretKey || !dateRangeResponsesCount) return null
 
     return {
       secretKey,
-      // TODO: Add selector for start and end dates.
-      endDate: undefined,
-      startDate: undefined,
+      responsesCount: dateRangeResponsesCount,
+      startDate: dateRange[0],
+      endDate: dateRange[1],
     }
-  }, [secretKey])
+  }, [dateRange, dateRangeResponsesCount, secretKey])
 
   return (
     <StorageResponsesContext.Provider
       value={{
-        isLoading: isAdminFormLoading || isFormResponsesLoading,
+        isLoading:
+          isAdminFormLoading ||
+          isFormResponsesLoading ||
+          isDateRangeResponsesCountLoading,
         formPublicKey,
-        responsesCount,
+        totalResponsesCount,
+        dateRangeResponsesCount,
         downloadParams,
         secretKey,
         setSecretKey,
+        dateRange,
+        setDateRange,
       }}
     >
       {children}

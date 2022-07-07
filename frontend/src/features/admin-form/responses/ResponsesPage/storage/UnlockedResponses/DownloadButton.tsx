@@ -30,14 +30,16 @@ export const DownloadButton = (): JSX.Element => {
   const [progressModalTimeout, setProgressModalTimeout] = useState<
     number | null
   >(null)
-  const { downloadParams, responsesCount } = useStorageResponsesContext()
+  const { downloadParams, dateRangeResponsesCount } =
+    useStorageResponsesContext()
+
   const [_downloadCount, setDownloadCount] = useState(0)
   const downloadCount = useThrottle(_downloadCount, 1000)
 
   const downloadPercentage = useMemo(() => {
-    if (!responsesCount) return 0
-    return Math.floor((downloadCount / responsesCount) * 100)
-  }, [downloadCount, responsesCount])
+    if (!dateRangeResponsesCount) return 0
+    return Math.floor((downloadCount / dateRangeResponsesCount) * 100)
+  }, [downloadCount, dateRangeResponsesCount])
 
   useTimeout(onProgressModalOpen, progressModalTimeout)
 
@@ -84,9 +86,9 @@ export const DownloadButton = (): JSX.Element => {
 
   return (
     <>
-      {responsesCount && (
+      {dateRangeResponsesCount !== undefined && (
         <DownloadWithAttachmentModal
-          responsesCount={responsesCount}
+          responsesCount={dateRangeResponsesCount}
           isOpen={isDownloadModalOpen}
           onClose={onDownloadModalClose}
           onDownload={handleExportCsvWithAttachments}
@@ -95,7 +97,7 @@ export const DownloadButton = (): JSX.Element => {
           isDownloading={handleExportCsvMutation.isLoading}
         />
       )}
-      {responsesCount && (
+      {dateRangeResponsesCount !== undefined && (
         <ProgressModal
           isOpen={isProgressModalOpen}
           onClose={handleAbortDecryption}
@@ -103,8 +105,9 @@ export const DownloadButton = (): JSX.Element => {
           isDownloading={handleExportCsvMutation.isLoading}
         >
           <Text mb="1rem">
-            <b>{responsesCount.toLocaleString()}</b> responses are being
-            processed. Navigating away from this page will stop the download.
+            <b>{dateRangeResponsesCount.toLocaleString()}</b> responses are
+            being processed. Navigating away from this page will stop the
+            download.
           </Text>
         </ProgressModal>
       )}
