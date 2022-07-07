@@ -1,10 +1,12 @@
 import { Meta, Story } from '@storybook/react'
 
-import { BasicField } from '~shared/types/field'
+import { BasicField } from '~shared/types'
 import {
+  FormAuthType,
   FormColorTheme,
   FormId,
   FormResponseMode,
+  FormStatus,
   PublicFormDto,
 } from '~shared/types/form/form'
 import { FormLogoState } from '~shared/types/form/form_logo'
@@ -186,18 +188,49 @@ ColorThemeRed.parameters = {
 interface MiniHeaderWithFormProps extends MiniHeaderProps {
   form: PublicFormDto
 }
-const testForm = {
+
+const formWithSections: PublicFormDto = {
   _id: 'testFormId' as FormId,
   admin: BASE_FORM.admin,
-  authType: BASE_FORM.authType,
+  authType: FormAuthType.NIL,
   endPage: BASE_FORM.endPage,
-  form_fields: MOCK_FORM_FIELDS,
   form_logics: BASE_FORM.form_logics,
   hasCaptcha: BASE_FORM.hasCaptcha,
-  startPage: BASE_FORM.startPage,
-  status: BASE_FORM.status,
+  startPage: {
+    colorTheme: FormColorTheme.Blue,
+    logo: { state: FormLogoState.Default },
+  },
+  status: FormStatus.Public,
   title: BASE_FORM.title,
-  responseMode: FormResponseMode.Email,
+  responseMode: FormResponseMode.Email as const,
+  form_fields: MOCK_FORM_FIELDS,
+}
+
+const formWithoutSections: PublicFormDto = {
+  _id: 'testFormId' as FormId,
+  admin: BASE_FORM.admin,
+  authType: FormAuthType.NIL,
+  endPage: BASE_FORM.endPage,
+  form_logics: BASE_FORM.form_logics,
+  hasCaptcha: BASE_FORM.hasCaptcha,
+  startPage: {
+    colorTheme: FormColorTheme.Blue,
+    logo: { state: FormLogoState.Default },
+  },
+  status: FormStatus.Public,
+  title: BASE_FORM.title,
+  responseMode: FormResponseMode.Email as const,
+  form_fields: [
+    {
+      title: 'Yes/No',
+      description: '',
+      required: true,
+      disabled: false,
+      fieldType: BasicField.YesNo,
+      _id: '5da04eb5e397fc0013f63c7e',
+      globalId: 'CnGRpTpnqSrISnk28yLDvKt8MI2HCFJuYbk72ie0l56',
+    },
+  ],
 }
 
 export const MiniHeader: Story<MiniHeaderWithFormProps> = (args) => (
@@ -207,7 +240,7 @@ export const MiniHeader: Story<MiniHeaderWithFormProps> = (args) => (
 )
 MiniHeader.args = {
   isOpen: true,
-  form: testForm,
+  form: formWithSections,
 }
 MiniHeader.parameters = {
   msw: [
@@ -222,16 +255,35 @@ MiniHeader.parameters = {
   ],
 }
 
-export const MiniHeaderMobile: Story<MiniHeaderWithFormProps> = (args) => (
+export const MiniHeaderMobileWithSections: Story<MiniHeaderWithFormProps> = (
+  args,
+) => (
   <FormSectionsProvider {...args}>
     <MiniHeaderComponent {...args} />
   </FormSectionsProvider>
 )
-MiniHeaderMobile.args = {
+MiniHeaderMobileWithSections.args = {
   ...MiniHeader.args,
 }
 
-MiniHeaderMobile.parameters = {
+MiniHeaderMobileWithSections.parameters = {
+  ...MiniHeader.parameters,
+  ...getMobileViewParameters(),
+}
+
+export const MiniHeaderMobileWithoutSections: Story<MiniHeaderWithFormProps> = (
+  args,
+) => (
+  <FormSectionsProvider {...args}>
+    <MiniHeaderComponent {...args} />
+  </FormSectionsProvider>
+)
+MiniHeaderMobileWithoutSections.args = {
+  isOpen: true,
+  form: formWithoutSections,
+}
+
+MiniHeaderMobileWithoutSections.parameters = {
   ...MiniHeader.parameters,
   ...getMobileViewParameters(),
 }
