@@ -106,14 +106,25 @@ export const MiniHeader = ({ isOpen }: MiniHeaderProps): JSX.Element | null => {
             justify="space-between"
             flexDir="row"
           >
-            <Text
-              textStyle={{ base: 'h4', md: 'h2' }}
-              textAlign="start"
-              color={titleColour}
-            >
-              {title ?? 'Loading title'}
-            </Text>
-            {activeSectionId ? (
+            <Flex alignItems="center" minH="4rem">
+              <Text
+                textStyle={{ base: 'h4', md: 'h2' }}
+                textAlign="start"
+                color={titleColour}
+              >
+                {title ?? 'Loading title'}
+              </Text>
+            </Flex>
+            <IconButton
+              variant="solid"
+              colorScheme="primary"
+              aria-label="Mobile section sidebar"
+              fontSize="1.5rem"
+              icon={<BxMenuAltLeft />}
+              d={activeSectionId ? { base: 'flex', md: 'none' } : 'none'}
+              onClick={handleMobileSectionSidebarOpen}
+            />
+            {/* {activeSectionId ? (
               // Section sidebar icon should only show up if sections exist
               <IconButton
                 variant="solid"
@@ -125,8 +136,8 @@ export const MiniHeader = ({ isOpen }: MiniHeaderProps): JSX.Element | null => {
                 onClick={handleMobileSectionSidebarOpen}
               />
             ) : (
-              <></>
-            )}
+              <Box h="1.5rem"></Box>
+            )} */}
           </Flex>
         </Skeleton>
       </Box>
