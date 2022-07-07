@@ -38,7 +38,7 @@ export const StorageResponsesProvider = ({
   }, [form])
 
   const downloadParams = useMemo(() => {
-    if (!secretKey || !dateRangeResponsesCount) return null
+    if (!secretKey || dateRangeResponsesCount === undefined) return null
 
     return {
       secretKey,
