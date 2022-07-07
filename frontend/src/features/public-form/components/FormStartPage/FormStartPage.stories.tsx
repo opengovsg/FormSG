@@ -1,10 +1,18 @@
 import { Meta, Story } from '@storybook/react'
 
-import { FormColorTheme } from '~shared/types/form/form'
+import { BasicField } from '~shared/types/field'
+import {
+  FormColorTheme,
+  FormId,
+  FormResponseMode,
+  PublicFormDto,
+} from '~shared/types/form/form'
 import { FormLogoState } from '~shared/types/form/form_logo'
 
+import { MOCK_FORM_FIELDS } from '~/mocks/msw/handlers/admin-form'
 import { envHandlers } from '~/mocks/msw/handlers/env'
 import {
+  BASE_FORM,
   getCustomLogoResponse,
   getPublicFormResponse,
 } from '~/mocks/msw/handlers/public-form'
@@ -175,14 +183,31 @@ ColorThemeRed.parameters = {
     }),
   ],
 }
+interface MiniHeaderWithFormProps extends MiniHeaderProps {
+  form: PublicFormDto
+}
+const testForm = {
+  _id: 'testFormId' as FormId,
+  admin: BASE_FORM.admin,
+  authType: BASE_FORM.authType,
+  endPage: BASE_FORM.endPage,
+  form_fields: MOCK_FORM_FIELDS,
+  form_logics: BASE_FORM.form_logics,
+  hasCaptcha: BASE_FORM.hasCaptcha,
+  startPage: BASE_FORM.startPage,
+  status: BASE_FORM.status,
+  title: BASE_FORM.title,
+  responseMode: FormResponseMode.Email,
+}
 
-export const MiniHeader: Story<MiniHeaderProps> = (args) => (
-  <FormSectionsProvider>
+export const MiniHeader: Story<MiniHeaderWithFormProps> = (args) => (
+  <FormSectionsProvider {...args}>
     <MiniHeaderComponent {...args} />
   </FormSectionsProvider>
 )
 MiniHeader.args = {
   isOpen: true,
+  form: testForm,
 }
 MiniHeader.parameters = {
   msw: [
@@ -197,15 +222,15 @@ MiniHeader.parameters = {
   ],
 }
 
-export const MiniHeaderMobile: Story<MiniHeaderProps> = (args) => (
-  <FormSectionsProvider>
+export const MiniHeaderMobile: Story<MiniHeaderWithFormProps> = (args) => (
+  <FormSectionsProvider {...args}>
     <MiniHeaderComponent {...args} />
   </FormSectionsProvider>
 )
-
 MiniHeaderMobile.args = {
   ...MiniHeader.args,
 }
+
 MiniHeaderMobile.parameters = {
   ...MiniHeader.parameters,
   ...getMobileViewParameters(),
