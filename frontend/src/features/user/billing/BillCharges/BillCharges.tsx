@@ -1,4 +1,5 @@
 import { Dispatch, SetStateAction, useEffect, useMemo, useState } from 'react'
+import { BiX } from 'react-icons/bi'
 import { useQuery } from 'react-query'
 import { Box, Container, Flex, Grid, Stack, Text } from '@chakra-ui/react'
 import simplur from 'simplur'
@@ -6,10 +7,11 @@ import simplur from 'simplur'
 import Pagination from '~/components/Pagination'
 
 import { SingleSelect } from '~components/Dropdown'
-import Searchbar from '~components/Searchbar'
+import Searchbar, { useSearchbar } from '~components/Searchbar'
 
 import { getBillingInfo } from '~features/user/billing/BillingService'
 
+import IconButton from '../../../../components/IconButton'
 import { EsrvcIdFormInputs } from '../BillingForm'
 import { DateRange, dateRangeToString, stringToDateRange } from '../DateRange'
 
@@ -51,7 +53,6 @@ export const BillCharges = ({
   onSubmitEsrvcId,
 }: BillChargesProps): JSX.Element => {
   const [currentPage, setCurrentPage] = useState<number>(1)
-  const [searchBarExpanded, setSearchBarExpanded] = useState<boolean>(false)
 
   // Query for billing info
   const {
@@ -92,6 +93,11 @@ export const BillCharges = ({
     () => isLoading || isRefetching,
     [isLoading, isRefetching],
   )
+
+  // Searchbar props
+
+  const { inputRef, isExpanded, handleExpansion, handleCollapse } =
+    useSearchbar()
 
   // Date range selection dropdown functions
 
@@ -136,7 +142,7 @@ export const BillCharges = ({
               base:
                 "'logincount " +
                 // Mobile: if searchbar is expanded, split it into its own line
-                (searchBarExpanded ? "logincount' 'search " : '') +
+                (isExpanded ? "logincount' 'search " : '') +
                 "search' 'dateselect export'",
               md: "'logincount space search dateselect export'",
             }}
@@ -163,10 +169,23 @@ export const BillCharges = ({
             <Box gridArea="search" alignSelf="center" alignItems="center">
               <Flex justifyContent="right">
                 <Searchbar
-                  onSearch={(esrvcId) => onSubmitEsrvcId({ esrvcId })}
-                  onExpand={() => setSearchBarExpanded(true)}
-                  onCollapse={() => setSearchBarExpanded(false)}
+                  ref={inputRef}
+                  onSearch={(esrvcId) =>
+                    esrvcId ? onSubmitEsrvcId({ esrvcId }) : null
+                  }
+                  onSearchIconClick={() => handleExpansion()}
                   placeholder="e-service ID"
+                  isExpanded={isExpanded}
+                  rightElement={
+                    <IconButton
+                      ml="1px"
+                      aria-label="Close search bar"
+                      icon={<BiX />}
+                      variant="clear"
+                      colorScheme="secondary"
+                      onClick={() => handleCollapse()}
+                    ></IconButton>
+                  }
                 ></Searchbar>
               </Flex>
             </Box>
