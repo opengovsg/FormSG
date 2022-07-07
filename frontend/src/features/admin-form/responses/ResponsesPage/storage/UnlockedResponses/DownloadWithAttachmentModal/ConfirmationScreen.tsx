@@ -87,6 +87,12 @@ export const ConfirmationScreen = ({
               </List>
             </Stack>
           </InlineMessage>
+          {responsesCount === 0 && (
+            <InlineMessage variant="warning">
+              The date range you selected does not contain any responses. Please
+              select a date range containing responses and try again.
+            </InlineMessage>
+          )}
         </Stack>
       </ModalBody>
       <ModalFooter>
@@ -99,6 +105,7 @@ export const ConfirmationScreen = ({
             isFullWidth={isMobile}
             onClick={onDownload}
             isLoading={isDownloading}
+            isDisabled={responsesCount === 0}
           >
             Start download
           </Button>
