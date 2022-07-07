@@ -57,9 +57,6 @@ export const PreviewFormProvider = ({
     desyncToastIdRef,
     vfnToastIdRef,
     expiryInMs,
-    isMobileSectionSidebarOpen,
-    handleMobileSectionSidebarOpen,
-    handleMobileSectionSidebarClose,
     ...commonFormValues
   } = useCommonFormProvider(formId)
 
@@ -212,9 +209,6 @@ export const PreviewFormProvider = ({
         isAuthRequired,
         expiryInMs,
         isLoading,
-        isMobileSectionSidebarOpen,
-        handleMobileSectionSidebarOpen,
-        handleMobileSectionSidebarClose,
         ...commonFormValues,
         ...cachedDto,
         ...rest,

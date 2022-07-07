@@ -53,10 +53,10 @@ export function useCommonFormProvider(formId: string) {
     useState<boolean>(false)
   const handleMobileSectionSidebarOpen = useCallback(() => {
     setIsMobileSectionSidebarOpen(true)
-  }, [setIsMobileSectionSidebarOpen])
+  }, [])
   const handleMobileSectionSidebarClose = useCallback(() => {
     setIsMobileSectionSidebarOpen(false)
-  }, [setIsMobileSectionSidebarOpen])
+  }, [])
 
   const [vfnTransaction, setVfnTransaction] =
     useState<FetchNewTransactionResponse>()
@@ -134,9 +134,6 @@ export const PublicFormProvider = ({
     desyncToastIdRef,
     vfnToastIdRef,
     expiryInMs,
-    isMobileSectionSidebarOpen,
-    handleMobileSectionSidebarOpen,
-    handleMobileSectionSidebarClose,
     ...commonFormValues
   } = useCommonFormProvider(formId)
 
@@ -304,9 +301,6 @@ export const PublicFormProvider = ({
         captchaContainerId: containerId,
         expiryInMs,
         isLoading: isLoading || (!!cachedDto?.form.hasCaptcha && !hasLoaded),
-        isMobileSectionSidebarOpen,
-        handleMobileSectionSidebarOpen,
-        handleMobileSectionSidebarClose,
         ...commonFormValues,
         ...cachedDto,
         ...rest,
