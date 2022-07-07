@@ -259,6 +259,99 @@ describe('handleSns', () => {
     expect(MOCK_RES.sendStatus).toHaveBeenCalledWith(200)
   })
 
+  it('should call services correctly when recipients have already been notified of a permanent critical bounce', async () => {
+    mockBounceDoc.hasNotified.mockReturnValue(true)
+
+    await handleSns(MOCK_REQ, MOCK_RES, jest.fn())
+
+    expect(MockBounceService.validateSnsRequest).toHaveBeenCalledWith(
+      MOCK_REQ.body,
+    )
+    expect(MockBounceService.logEmailNotification).toHaveBeenCalledWith(
+      MOCK_NOTIFICATION,
+    )
+    expect(MockBounceService.extractEmailType).toHaveBeenCalledWith(
+      MOCK_NOTIFICATION,
+    )
+    expect(MockBounceService.getUpdatedBounceDoc).toHaveBeenCalledWith(
+      MOCK_NOTIFICATION,
+    )
+    expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
+      mockBounceDoc.formId,
+    )
+    expect(mockBounceDoc.isCriticalBounce).toHaveBeenCalled()
+    expect(MockBounceService.getEditorsWithContactNumbers).toHaveBeenCalledWith(
+      mockForm,
+    )
+    expect(mockBounceDoc.hasNotified).toHaveBeenCalled()
+    // Notification functions are not called
+    expect(MockBounceService.sendEmailBounceNotification).not.toHaveBeenCalled()
+    expect(MockBounceService.sendSmsBounceNotification).not.toHaveBeenCalled()
+    expect(mockBounceDoc.setNotificationState).not.toHaveBeenCalled()
+    expect(mockBounceDoc.areAllPermanentBounces).toHaveBeenCalled()
+    expect(MockFormService.deactivateForm).toHaveBeenCalledWith(
+      mockBounceDoc.formId,
+    )
+    expect(MockBounceService.notifyAdminsOfDeactivation).toHaveBeenCalledWith(
+      mockForm,
+      MOCK_CONTACTS,
+    )
+    expect(MockBounceService.logCriticalBounce).toHaveBeenCalledWith({
+      bounceDoc: mockBounceDoc,
+      notification: MOCK_NOTIFICATION,
+      autoEmailRecipients: [],
+      autoSmsRecipients: [],
+      hasDeactivated: true,
+    })
+    expect(MockBounceService.saveBounceDoc).toHaveBeenCalledWith(mockBounceDoc)
+    expect(MOCK_RES.sendStatus).toHaveBeenCalledWith(200)
+  })
+
+  it('should call services correctly when recipients have already been notified of a transient critical bounce', async () => {
+    mockBounceDoc.areAllPermanentBounces.mockReturnValueOnce(false)
+    mockBounceDoc.hasNotified.mockReturnValue(true)
+
+    await handleSns(MOCK_REQ, MOCK_RES, jest.fn())
+
+    expect(MockBounceService.validateSnsRequest).toHaveBeenCalledWith(
+      MOCK_REQ.body,
+    )
+    expect(MockBounceService.logEmailNotification).toHaveBeenCalledWith(
+      MOCK_NOTIFICATION,
+    )
+    expect(MockBounceService.extractEmailType).toHaveBeenCalledWith(
+      MOCK_NOTIFICATION,
+    )
+    expect(MockBounceService.getUpdatedBounceDoc).toHaveBeenCalledWith(
+      MOCK_NOTIFICATION,
+    )
+    expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
+      mockBounceDoc.formId,
+    )
+    expect(mockBounceDoc.isCriticalBounce).toHaveBeenCalled()
+    expect(MockBounceService.getEditorsWithContactNumbers).toHaveBeenCalledWith(
+      mockForm,
+    )
+    expect(mockBounceDoc.hasNotified).toHaveBeenCalled()
+    // Notification functions are not called
+    expect(MockBounceService.sendEmailBounceNotification).not.toHaveBeenCalled()
+    expect(MockBounceService.sendSmsBounceNotification).not.toHaveBeenCalled()
+    expect(mockBounceDoc.setNotificationState).not.toHaveBeenCalled()
+    expect(mockBounceDoc.areAllPermanentBounces).toHaveBeenCalled()
+    // Deactivation functions are not called
+    expect(MockFormService.deactivateForm).not.toHaveBeenCalled()
+    expect(MockBounceService.notifyAdminsOfDeactivation).not.toHaveBeenCalled()
+    expect(MockBounceService.logCriticalBounce).toHaveBeenCalledWith({
+      bounceDoc: mockBounceDoc,
+      notification: MOCK_NOTIFICATION,
+      autoEmailRecipients: [],
+      autoSmsRecipients: [],
+      hasDeactivated: false,
+    })
+    expect(MockBounceService.saveBounceDoc).toHaveBeenCalledWith(mockBounceDoc)
+    expect(MOCK_RES.sendStatus).toHaveBeenCalledWith(200)
+  })
+
   it('should return 200 even when errors are thrown in getUpdatedBounceDoc', async () => {
     MockBounceService.getUpdatedBounceDoc.mockReturnValueOnce(
       errAsync(new DatabaseError()),
