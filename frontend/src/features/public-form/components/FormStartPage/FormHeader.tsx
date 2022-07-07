@@ -106,7 +106,7 @@ export const MiniHeader = ({ isOpen }: MiniHeaderProps): JSX.Element | null => {
             justify="space-between"
             flexDir="row"
           >
-            <Flex alignItems="center" minH="4rem">
+            <Flex alignItems="center" minH={{ base: '4rem', md: '0' }}>
               <Text
                 textStyle={{ base: 'h4', md: 'h2' }}
                 textAlign="start"
