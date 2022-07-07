@@ -1,16 +1,16 @@
 import { useEffect, useState } from 'react'
-import { BiX } from 'react-icons/bi'
-import { InputRightElement } from '@chakra-ui/react'
 
-import IconButton from '~components/IconButton'
 import Searchbar, { useSearchbar } from '~components/Searchbar'
 
-import { useUnlockedResponses } from './UnlockedResponsesProvider'
-
-export const SubmissionSearchbar = (): JSX.Element => {
-  const { submissionId, setSubmissionId, isAnyFetching } =
-    useUnlockedResponses()
-
+export const SubmissionSearchbar = ({
+  submissionId,
+  setSubmissionId,
+  isAnyFetching,
+}: {
+  submissionId?: string
+  setSubmissionId: (submissionId: string | null) => void
+  isAnyFetching: boolean
+}): JSX.Element => {
   const [inputValue, setInputValue] = useState(submissionId)
 
   useEffect(() => {
@@ -18,33 +18,18 @@ export const SubmissionSearchbar = (): JSX.Element => {
     setInputValue(submissionId ?? '')
   }, [submissionId])
 
-  const { isExpanded, inputRef, handleExpansion, handleCollapse } =
-    useSearchbar({
-      isInitiallyExpanded: !!submissionId,
-    })
+  const { inputRef } = useSearchbar()
 
   return (
     <Searchbar
       isDisabled={isAnyFetching}
       ref={inputRef}
       value={inputValue}
-      onChange={(nextValue) => setInputValue(nextValue)}
-      onSearchIconClick={handleExpansion}
-      isExpanded={isExpanded}
+      isExpanded={!!submissionId}
+      onValueChange={(nextValue) => setInputValue(nextValue)}
+      onCollapseIconClick={() => setSubmissionId(null)}
       onSearch={setSubmissionId}
       placeholder="Search by reference ID"
-      rightElement={
-        <InputRightElement>
-          <IconButton
-            variant="clear"
-            colorScheme="secondary"
-            size="sm"
-            onClick={handleCollapse}
-            icon={<BiX />}
-            aria-label="Hide search"
-          />
-        </InputRightElement>
-      }
     />
   )
 }
