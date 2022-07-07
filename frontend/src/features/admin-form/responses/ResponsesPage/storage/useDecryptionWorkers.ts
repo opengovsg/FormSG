@@ -5,7 +5,6 @@ import { useAdminForm } from '~features/admin-form/common/queries'
 
 import { downloadResponseAttachment } from './utils/downloadCsv'
 import { EncryptedResponseCsvGenerator } from './utils/EncryptedResponseCsvGenerator'
-import { useStorageResponsesContext } from './StorageResponsesContext'
 import {
   EncryptedResponsesStreamParams,
   getEncryptedResponsesStream,
@@ -43,7 +42,6 @@ const useDecryptionWorkers = ({
   const abortControllerRef = useRef(new AbortController())
 
   const { data: adminForm } = useAdminForm()
-  const { dateRange } = useStorageResponsesContext()
 
   useEffect(() => {
     return () => killWorkers(workers)
