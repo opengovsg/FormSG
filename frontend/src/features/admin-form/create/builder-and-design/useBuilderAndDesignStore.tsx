@@ -7,12 +7,14 @@ import { FieldCreateDto, FormFieldDto } from '~shared/types/field'
 export enum BuildFieldState {
   CreatingField,
   EditingField,
+  EditingEndPage,
   Inactive,
 }
 
 export type BuilderAndDesignStore = {
   updateCreateState: (field: FieldCreateDto, insertionIndex: number) => void
   updateEditState: (field: FormFieldDto) => void
+  setEditEndPage: () => void
   setToInactive: () => void
   stateData:
     | {
@@ -24,6 +26,7 @@ export type BuilderAndDesignStore = {
         state: BuildFieldState.EditingField
         field: FormFieldDto
       }
+    | { state: BuildFieldState.EditingEndPage }
     | { state: BuildFieldState.Inactive }
 }
 
@@ -61,6 +64,9 @@ export const useBuilderAndDesignStore = create<BuilderAndDesignStore>(
         stateData: { state: BuildFieldState.EditingField, field },
       })
     },
+    setEditEndPage: () => {
+      set({ stateData: { state: BuildFieldState.EditingEndPage } })
+    },
     setToInactive: () => {
       set({ stateData: { state: BuildFieldState.Inactive } })
     },
@@ -82,3 +88,7 @@ export const updateEditStateSelector = (
 export const setToInactiveSelector = (
   state: BuilderAndDesignStore,
 ): BuilderAndDesignStore['setToInactive'] => state.setToInactive
+
+export const setToEditEndPageSelector = (
+  state: BuilderAndDesignStore,
+): BuilderAndDesignStore['setEditEndPage'] => state.setEditEndPage
