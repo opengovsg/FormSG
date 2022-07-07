@@ -1,10 +1,12 @@
 import { useCallback } from 'react'
 import { Box, chakra, useStyleConfig } from '@chakra-ui/react'
 
-import { usePublicFormContext } from '~features/public-form/PublicFormContext'
+import {
+  SidebarSectionMeta,
+  usePublicFormContext,
+} from '~features/public-form/PublicFormContext'
 
 import { useFormSections } from './FormSectionsContext'
-import { SidebarSectionMeta } from './SectionSidebar'
 
 interface SidebarLinkProps {
   /**

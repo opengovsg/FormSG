@@ -20,6 +20,9 @@ import {
 import * as UserService from '../../../../../../modules/user/user.service'
 import { AdminFormsRouter } from '../admin-forms.routes'
 
+// Avoid async refresh calls
+jest.mock('src/app/modules/spcp/sp.oidc.client.ts')
+
 const UserModel = getUserModel(mongoose)
 
 const app = setupApp('/admin/forms', AdminFormsRouter, {

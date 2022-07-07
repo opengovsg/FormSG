@@ -5,6 +5,7 @@ import { Meta, Story } from '@storybook/react'
 import {
   createFormBuilderMocks,
   getAdminFormFeedback,
+  getEmptyAdminFormFeedback,
   getStorageSubmissionMetadataResponse,
 } from '~/mocks/msw/handlers/admin-form'
 
@@ -57,6 +58,11 @@ const Template: Story = () => {
   )
 }
 export const Default = Template.bind({})
+
+export const EmptyFeedback = Template.bind({})
+EmptyFeedback.parameters = {
+  msw: [getEmptyAdminFormFeedback(), ...DEFAULT_MSW_ROUTES],
+}
 
 export const Tablet = Template.bind({})
 Tablet.parameters = {

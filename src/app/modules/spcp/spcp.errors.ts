@@ -84,3 +84,39 @@ export class MissingJwtError extends ApplicationError {
     super(message)
   }
 }
+
+/**
+ * idToken has invalid shape
+ */
+export class InvalidIdTokenError extends ApplicationError {
+  constructor(message = 'idToken has invalid shape') {
+    super(message)
+  }
+}
+
+/**
+ * Invalid state
+ */
+export class InvalidStateError extends ApplicationError {
+  constructor(message = 'Unable to parse invalid state') {
+    super(message)
+  }
+}
+
+/**
+ * Failed to create JWT
+ */
+export class CreateJwtError extends ApplicationError {
+  constructor(message = 'Create JWT failed') {
+    super(message)
+  }
+}
+
+/**
+ * Failed to exchange auth code for nric
+ */
+export class ExchangeAuthTokenError extends ApplicationError {
+  constructor(message = 'Exchange auth code for nric failed') {
+    super(message)
+  }
+}

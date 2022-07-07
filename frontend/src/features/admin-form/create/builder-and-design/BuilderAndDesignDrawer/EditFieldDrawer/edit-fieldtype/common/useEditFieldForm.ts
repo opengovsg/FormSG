@@ -50,12 +50,13 @@ type UseEditFieldFormProps<
   }
 }
 
-type UseEditFieldFormReturn<U> = UseFormReturn<U> & {
+export type UseEditFieldFormReturn<U> = UseFormReturn<U> & {
   handleUpdateField: () => Promise<void>
   handleCancel: () => void
   buttonText: string
   isSaveEnabled: boolean
   isLoading: boolean
+  formMethods: UseFormReturn<U>
 }
 
 export const useEditFieldForm = <FormShape, FieldShape extends FormField>({
@@ -112,8 +113,9 @@ export const useEditFieldForm = <FormShape, FieldShape extends FormField>({
         // @ts-ignore
         transform.input(newField),
       )
+      setToInactive()
     },
-    [editForm, transform],
+    [editForm, transform, setToInactive],
   )
 
   const handleUpdateField = editForm.handleSubmit(async (inputs) => {
@@ -165,6 +167,7 @@ export const useEditFieldForm = <FormShape, FieldShape extends FormField>({
 
   return {
     ...editForm,
+    formMethods: editForm,
     buttonText,
     isSaveEnabled,
     handleUpdateField,

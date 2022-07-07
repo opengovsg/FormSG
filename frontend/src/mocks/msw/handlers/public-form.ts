@@ -62,7 +62,7 @@ export const PREVENT_SUBMISSION_LOGIC: PreventSubmitLogicDto = {
   ],
 }
 
-const BASE_FORM = {
+export const BASE_FORM = {
   admin: {
     agency: {
       shortName: 'govtech',
@@ -403,6 +403,23 @@ export const getPublicFormResponse = ({
         },
       ) as PublicFormViewDto
       return res(ctx.delay(delay), ctx.json(response))
+    },
+  )
+}
+
+export const getPublicFormErrorResponse = ({
+  delay = 0,
+  status = 404,
+  message = 'If you think this is a mistake, please contact the agency that gave you the form link.',
+}: {
+  delay?: number | 'infinite'
+  status?: number
+  message?: string
+} = {}) => {
+  return rest.get<PublicFormViewDto>(
+    '/api/v3/forms/:formId',
+    (req, res, ctx) => {
+      return res(ctx.delay(delay), ctx.status(status), ctx.json({ message }))
     },
   )
 }

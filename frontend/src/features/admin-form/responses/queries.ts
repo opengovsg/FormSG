@@ -1,12 +1,18 @@
+import { useMemo } from 'react'
 import { useQuery, UseQueryResult } from 'react-query'
 import { useParams } from 'react-router-dom'
 
 import { FormFeedbackMetaDto } from '~shared/types'
-import { StorageModeSubmissionMetadataList } from '~shared/types/submission'
+import {
+  FormSubmissionMetadataQueryDto,
+  StorageModeSubmissionMetadataList,
+  SubmissionCountQueryDto,
+} from '~shared/types/submission'
 
 import { adminFormKeys } from '../common/queries'
 
 import { getFormFeedback } from './FeedbackPage/FeedbackService'
+import { useStorageResponsesContext } from './ResponsesPage/storage/StorageResponsesContext'
 import {
   countFormSubmissions,
   getFormSubmissionsMetadata,
@@ -15,7 +21,20 @@ import {
 export const adminFormResponsesKeys = {
   base: [...adminFormKeys.base, 'responses'] as const,
   id: (id: string) => [...adminFormResponsesKeys.base, id] as const,
-  count: (id: string) => [...adminFormResponsesKeys.id(id), 'count'] as const,
+  count: (id: string, dates: [startDate: string, endDate: string] | []) =>
+    [...adminFormResponsesKeys.id(id), 'count', ...dates] as const,
+  metadata: (id: string, params: FormSubmissionMetadataQueryDto) => {
+    const builtParams = params.submissionId
+      ? [params.submissionId]
+      : [params.page ?? 1]
+    return [
+      ...adminFormResponsesKeys.id(id),
+      'metadata',
+      ...builtParams,
+    ] as const
+  },
+  individual: (id: string, submissionId: string) =>
+    [...adminFormResponsesKeys.id(id), 'individual', submissionId] as const,
 }
 
 export const adminFormFeedbackKeys = {
@@ -26,13 +45,21 @@ export const adminFormFeedbackKeys = {
 /**
  * @precondition Must be wrapped in a Router as `useParam` is used.
  */
-export const useFormResponsesCount = (): UseQueryResult<number> => {
+export const useFormResponsesCount = (
+  dates?: SubmissionCountQueryDto,
+): UseQueryResult<number> => {
   const { formId } = useParams()
   if (!formId) throw new Error('No formId provided')
 
+  let dateParams: [startDate: string, endDate: string] | [] = []
+
+  if (dates?.startDate && dates.endDate) {
+    dateParams = [dates.startDate, dates.endDate]
+  }
+
   return useQuery(
-    adminFormResponsesKeys.count(formId),
-    () => countFormSubmissions({ formId }),
+    adminFormResponsesKeys.count(formId, dateParams),
+    () => countFormSubmissions({ formId, dates }),
     { staleTime: 10 * 60 * 1000 },
   )
 }
@@ -40,17 +67,38 @@ export const useFormResponsesCount = (): UseQueryResult<number> => {
 /**
  * @precondition Must be wrapped in a Router as `useParam` is used.
  */
-export const useFormResponses =
-  (): UseQueryResult<StorageModeSubmissionMetadataList> => {
-    const { formId } = useParams()
-    if (!formId) throw new Error('No formId provided')
+export const useFormResponses = ({
+  page = 1,
+  submissionId,
+}: {
+  page?: number
+  submissionId?: string
+} = {}): UseQueryResult<StorageModeSubmissionMetadataList> => {
+  const { formId } = useParams()
+  if (!formId) throw new Error('No formId provided')
 
-    return useQuery(
-      adminFormResponsesKeys.id(formId),
-      () => getFormSubmissionsMetadata(formId),
-      { staleTime: 10 * 60 * 1000 },
-    )
-  }
+  const { secretKey } = useStorageResponsesContext()
+
+  const params = useMemo(() => {
+    if (submissionId) {
+      return { submissionId }
+    }
+    return { page }
+  }, [page, submissionId])
+
+  return useQuery(
+    adminFormResponsesKeys.metadata(formId, params),
+    () => getFormSubmissionsMetadata(formId, params),
+    {
+      refetchOnMount: true,
+      refetchOnWindowFocus: false,
+      // Data will never change.
+      staleTime: Infinity,
+      keepPreviousData: !submissionId,
+      enabled: !!secretKey && (page > 0 || !!submissionId),
+    },
+  )
+}
 
 /**
  * @precondition Must be wrapped in a Router as `useParam` is used.

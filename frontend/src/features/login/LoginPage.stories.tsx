@@ -19,6 +19,7 @@ export default {
   parameters: {
     layout: 'fullscreen',
     msw: authHandlers,
+    chromatic: { delay: 200 },
   },
 } as Meta
 

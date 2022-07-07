@@ -24,7 +24,7 @@ export const useSearchbar = ({
    * Defaults to `true`.
    */
   isFocusOnExpand?: boolean
-}): UseSearchbarReturn => {
+} = {}): UseSearchbarReturn => {
   const [isExpanded, setIsExpanded] = useState(isInitiallyExpanded)
   const inputRef = useRef<HTMLInputElement>(null)
 

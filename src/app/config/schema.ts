@@ -284,7 +284,7 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
       env: 'SUBMISSIONS_RATE_LIMIT',
     },
     sendAuthOtp: {
-      doc: 'Per-minute, per-IP request limit for OTPs to log in to the admin console',
+      doc: 'Per-minute, per-IP request limit for OTPs to log in to the admin console or mobile / email field verifications',
       format: 'int',
       default: 60,
       env: 'SEND_AUTH_OTP_RATE_LIMIT',
@@ -314,6 +314,12 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
       format: String,
       default: 'v2-admin-ui',
       env: 'REACT_MIGRATION_ADMIN_COOKIE_NAME',
+    },
+    qaCookieName: {
+      doc: 'Priority cookie to select react/angular during QA.',
+      format: String,
+      default: 'v2-qa-ui',
+      env: 'REACT_MIGRATION_QA_COOKIE_NAME',
     },
   },
 }

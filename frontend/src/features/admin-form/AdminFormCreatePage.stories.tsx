@@ -1,20 +1,27 @@
-import { MemoryRouter, Route } from 'react-router'
-import { Routes } from 'react-router-dom'
 import { Meta, Story } from '@storybook/react'
 
-import { AdminFormDto } from '~shared/types/form'
+import { UserId } from '~shared/types'
+import {
+  AdminFormDto,
+  FormAuthType,
+  FormResponseMode,
+} from '~shared/types/form'
 
 import {
   createFormBuilderMocks,
-  MOCK_FORM_FIELDS,
+  MOCK_FORM_FIELDS_WITH_MYINFO,
 } from '~/mocks/msw/handlers/admin-form'
 import { getFreeSmsQuota } from '~/mocks/msw/handlers/admin-form/twilio'
+import { getUser, MOCK_USER } from '~/mocks/msw/handlers/user'
 
-import { viewports } from '~utils/storybook'
+import {
+  AdminFormCreatePageDecorator,
+  LoggedInDecorator,
+  ViewedFeatureTourDecorator,
+  viewports,
+} from '~utils/storybook'
 
 import { CreatePage } from '~features/admin-form/create/CreatePage'
-
-import { AdminFormLayout } from './common/AdminFormLayout'
 
 const buildMswRoutes = (
   overrides?: Partial<AdminFormDto>,
@@ -22,6 +29,10 @@ const buildMswRoutes = (
 ) => {
   return [
     ...createFormBuilderMocks(overrides, delay),
+    getUser({
+      delay: 0,
+      mockUser: { ...MOCK_USER, _id: 'adminFormTestUserId' as UserId },
+    }),
     getFreeSmsQuota({ delay }),
   ]
 }
@@ -30,27 +41,18 @@ export default {
   title: 'Pages/AdminFormPage/Create',
   // component: To be implemented,
   decorators: [
-    (storyFn) => {
-      // MemoryRouter is used so react-router-dom#Link components can work
-      // (and also to force the initial tab the page renders to be the settings tab).
-      return (
-        <MemoryRouter initialEntries={['/12345']}>
-          <Routes>
-            <Route path={'/:formId'} element={<AdminFormLayout />}>
-              <Route index element={storyFn()} />
-            </Route>
-          </Routes>
-        </MemoryRouter>
-      )
-    },
+    ViewedFeatureTourDecorator,
+    AdminFormCreatePageDecorator,
+    LoggedInDecorator,
   ],
   parameters: {
     // Required so skeleton "animation" does not hide content.
     // Pass a very short delay to avoid bug where Chromatic takes a snapshot before
     // the story has loaded
-    chromatic: { pauseAnimationAtEnd: true, delay: 50 },
+    chromatic: { pauseAnimationAtEnd: true, delay: 200 },
     layout: 'fullscreen',
     msw: buildMswRoutes(),
+    userId: 'adminFormTestUserId',
   },
 } as Meta
 
@@ -58,7 +60,11 @@ const Template: Story = () => <CreatePage />
 export const DesktopEmpty = Template.bind({})
 export const DesktopAllFields = Template.bind({})
 DesktopAllFields.parameters = {
-  msw: buildMswRoutes({ form_fields: MOCK_FORM_FIELDS }),
+  msw: buildMswRoutes({
+    form_fields: MOCK_FORM_FIELDS_WITH_MYINFO,
+    authType: FormAuthType.MyInfo,
+    responseMode: FormResponseMode.Email,
+  }),
 }
 
 export const TabletEmpty = Template.bind({})
@@ -74,7 +80,7 @@ TabletAllFields.parameters = {
     defaultViewport: 'tablet',
   },
   chromatic: { viewports: [viewports.md] },
-  msw: buildMswRoutes({ form_fields: MOCK_FORM_FIELDS }),
+  msw: buildMswRoutes({ form_fields: MOCK_FORM_FIELDS_WITH_MYINFO }),
 }
 
 export const MobileEmpty = Template.bind({})
@@ -90,5 +96,5 @@ MobileAllFields.parameters = {
     defaultViewport: 'mobile1',
   },
   chromatic: { viewports: [viewports.xs] },
-  msw: buildMswRoutes({ form_fields: MOCK_FORM_FIELDS }),
+  msw: buildMswRoutes({ form_fields: MOCK_FORM_FIELDS_WITH_MYINFO }),
 }

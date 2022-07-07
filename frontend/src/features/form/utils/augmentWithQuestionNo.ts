@@ -1,34 +1,23 @@
-import { BasicField, FormFieldDto } from '~shared/types/field'
+import { FormFieldDto } from '~shared/types/field'
 
+import { NON_RESPONSE_FIELD_SET } from '../constants'
 import { FormFieldWithQuestionNo } from '../types'
 
 type AugmentedFieldAccumulator = {
   fields: FormFieldWithQuestionNo[]
-  nonResponseFieldsCount: number
+  questionNumber: number
 }
 
-const NON_RESPONSE_FIELD_SET = new Set([
-  BasicField.Section,
-  BasicField.Statement,
-  BasicField.Image,
-])
-
-export const augmentWithQuestionNo = (formFields: FormFieldDto[]) => {
+export const augmentWithQuestionNo = (
+  formFields: FormFieldDto[],
+): FormFieldWithQuestionNo[] => {
   const { fields } = formFields.reduce<AugmentedFieldAccumulator>(
-    (acc, field, index) => {
-      if (NON_RESPONSE_FIELD_SET.has(field.fieldType)) {
-        acc.nonResponseFieldsCount += 1
-        acc.fields.push(field)
-      } else {
-        acc.fields.push({
-          ...field,
-          questionNumber: index + 1 - acc.nonResponseFieldsCount,
-        })
-      }
+    (acc, field) => {
+      if (NON_RESPONSE_FIELD_SET.has(field.fieldType)) acc.fields.push(field)
+      else acc.fields.push({ ...field, questionNumber: acc.questionNumber++ })
       return acc
     },
-    { fields: [], nonResponseFieldsCount: 0 },
+    { fields: [], questionNumber: 1 },
   )
-
   return fields
 }

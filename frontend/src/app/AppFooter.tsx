@@ -1,12 +1,17 @@
 import { APP_FOOTER_LINKS } from '~constants/externalLinks'
-import Footer from '~components/Footer'
+import Footer, { FooterProps } from '~components/Footer'
 
-export const AppFooter = (): JSX.Element => {
+type AppFooterProps = Pick<
+  FooterProps,
+  'variant' | 'containerProps' | 'compactMonochromeLogos'
+>
+export const AppFooter = (props: AppFooterProps): JSX.Element => {
   return (
     <Footer
+      appLink={window.location.origin}
       appName="Form"
-      tagline="Build secure government forms in minutes"
       footerLinks={APP_FOOTER_LINKS}
+      {...props}
     />
   )
 }

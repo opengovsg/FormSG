@@ -10,7 +10,12 @@ import { useSearchParams } from 'react-router-dom'
 import { Box, Container, Grid, useDisclosure } from '@chakra-ui/react'
 import { chunk } from 'lodash'
 
+import { ROLLOUT_ANNOUNCEMENT_KEY_PREFIX } from '~constants/localStorage'
+import { useLocalStorage } from '~hooks/useLocalStorage'
 import Pagination from '~components/Pagination'
+
+import { RolloutAnnouncementModal } from '~features/rollout-announcement/RolloutAnnouncementModal'
+import { useUser } from '~features/user/queries'
 
 import CreateFormModal from './components/CreateFormModal'
 import { EmptyWorkspace } from './components/EmptyWorkspace'
@@ -103,6 +108,19 @@ export const WorkspacePage = (): JSX.Element => {
     topRef,
     createFormModalDisclosure,
   } = useWorkspaceForms()
+  const { user, isLoading: isUserLoading } = useUser()
+
+  const ROLLOUT_ANNOUNCEMENT_KEY = useMemo(
+    () => ROLLOUT_ANNOUNCEMENT_KEY_PREFIX + user?._id,
+    [user],
+  )
+  const [hasSeenAnnouncement, setHasSeenAnnouncement] =
+    useLocalStorage<boolean>(ROLLOUT_ANNOUNCEMENT_KEY)
+
+  const isAnnouncementModalOpen = useMemo(
+    () => !isUserLoading && !hasSeenAnnouncement,
+    [isUserLoading, hasSeenAnnouncement],
+  )
 
   return (
     <>
@@ -138,6 +156,10 @@ export const WorkspacePage = (): JSX.Element => {
           </Container>
           <Box gridArea="main">
             <Box ref={topRef} />
+            <RolloutAnnouncementModal
+              onClose={() => setHasSeenAnnouncement(true)}
+              isOpen={isAnnouncementModalOpen}
+            />
             <WorkspaceFormRows rows={paginatedData} isLoading={isLoading} />
           </Box>
           <Container

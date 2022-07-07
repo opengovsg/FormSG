@@ -15,8 +15,8 @@ import {
 
 import { useIsMobile } from '~hooks/useIsMobile'
 import {
+  createBaseValidationRules,
   createDropdownValidationRules,
-  createTextValidationRules,
 } from '~utils/fieldValidation'
 import { SingleSelect } from '~components/Dropdown'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
@@ -44,7 +44,7 @@ const ShortTextColumnCell = ({
   inputName,
   colorTheme,
 }: FieldColumnCellProps<ShortTextColumnBase>) => {
-  const rules = useMemo(() => createTextValidationRules(schema), [schema])
+  const rules = useMemo(() => createBaseValidationRules(schema), [schema])
 
   const { control } = useFormContext<TableFieldInputs>()
 
@@ -69,17 +69,20 @@ const DropdownColumnCell = ({
   inputName,
   colorTheme,
 }: FieldColumnCellProps<DropdownColumnBase>) => {
+  const { control } = useFormContext<TableFieldInputs>()
   const rules = useMemo(() => createDropdownValidationRules(schema), [schema])
 
   return (
     <Controller
+      control={control}
       name={inputName}
       rules={rules}
       defaultValue=""
       render={({ field }) => (
         <SingleSelect
           colorScheme={`theme-${colorTheme}`}
-          items={schema.fieldOptions}
+          // Possibility of fieldOptions being undefined during table field creation.
+          items={schema.fieldOptions ?? []}
           {...field}
         />
       )}

@@ -60,6 +60,16 @@ module.exports = {
             }
           }
 
+          webpackConfig.module.rules.unshift({
+            test: /\.worker\.ts$/,
+            use: {
+              loader: 'worker-loader',
+              options: {
+                filename: '[name].[contenthash:8].js',
+              },
+            },
+          })
+
           return webpackConfig
         },
       },

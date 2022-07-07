@@ -5,8 +5,10 @@ import { userEvent, waitFor, within } from '@storybook/testing-library'
 import { BasicField } from '~shared/types/field'
 import { FormAuthType, FormColorTheme } from '~shared/types/form'
 
+import { MOCK_PREFILLED_MYINFO_FIELDS } from '~/mocks/msw/handlers/admin-form'
 import { envHandlers } from '~/mocks/msw/handlers/env'
 import {
+  getPublicFormErrorResponse,
   getPublicFormResponse,
   postGenerateVfnOtpResponse,
   postVerifyVfnOtpResponse,
@@ -64,6 +66,21 @@ export default {
 
 const Template: Story = () => <PublicFormPage />
 export const Default = Template.bind({})
+
+export const WithCaptcha = Template.bind({})
+WithCaptcha.parameters = {
+  msw: [
+    ...envHandlers,
+    getPublicFormResponse({
+      delay: 0,
+      overrides: {
+        form: {
+          hasCaptcha: true,
+        },
+      },
+    }),
+  ],
+}
 
 export const Mobile = Template.bind({})
 Mobile.parameters = getMobileViewParameters()
@@ -316,4 +333,29 @@ WithPreventSubmissionLogic.play = async ({ canvasElement }) => {
       /this should show up in storybook mock when yes\/no is true/i,
     ),
   ).toBeInTheDocument()
+}
+
+export const FormNotFound = Template.bind({})
+FormNotFound.parameters = {
+  msw: [getPublicFormErrorResponse()],
+}
+
+export const FormNotFoundMobile = Template.bind({})
+FormNotFoundMobile.parameters = {
+  ...FormNotFound.parameters,
+  ...getMobileViewParameters(),
+}
+
+export const WithMyInfo = Template.bind({})
+WithMyInfo.parameters = {
+  msw: [
+    getPublicFormResponse({
+      overrides: {
+        form: {
+          form_fields: MOCK_PREFILLED_MYINFO_FIELDS,
+        },
+      },
+    }),
+    ...DEFAULT_MSW_HANDLERS,
+  ],
 }

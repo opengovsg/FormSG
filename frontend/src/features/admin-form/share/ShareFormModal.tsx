@@ -133,7 +133,12 @@ export const ShareFormModal = ({
               <Skeleton isLoaded={!!formId}>
                 <Stack direction="row" align="center">
                   <InputGroup>
-                    <Input isReadOnly value={shareLink} />
+                    <Input
+                      // The link will always change in Chromatic so this should be ignored.
+                      data-chromatic="ignore"
+                      isReadOnly
+                      value={shareLink}
+                    />
                     {formId ? (
                       <InputRightElement>
                         <CopyButton

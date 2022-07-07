@@ -91,6 +91,7 @@ describe('sgid.service', () => {
     it('should parse state', () => {
       const state = SgidService.parseState(MOCK_STATE)
       expect(state._unsafeUnwrap()).toStrictEqual({
+        decodedQuery: '',
         formId: MOCK_DESTINATION,
         rememberMe: MOCK_REMEMBER_ME,
       })

@@ -9,6 +9,7 @@ import { useIsMobile } from '~hooks/useIsMobile'
 
 import { useFormFeedback } from '../queries'
 
+import { EmptyFeedback } from './EmptyFeedback'
 import { FeedbackDownloadButton } from './FeedbackDownloadButton'
 import {
   FeedbackPageSkeleton,
@@ -35,6 +36,10 @@ export const FeedbackPage = (): JSX.Element => {
 
   if (isLoading) {
     return isMobile ? <FeedbackPageSkeletonMobile /> : <FeedbackPageSkeleton />
+  }
+
+  if (count === 0) {
+    return <EmptyFeedback />
   }
 
   return (

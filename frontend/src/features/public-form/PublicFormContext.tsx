@@ -2,7 +2,10 @@
 import { createContext, RefObject, useContext } from 'react'
 import { UseQueryResult } from 'react-query'
 
+import { FormFieldDto } from '~shared/types'
 import { PublicFormViewDto } from '~shared/types/form'
+
+export type SidebarSectionMeta = Pick<FormFieldDto, 'title' | '_id'>
 
 export type SubmissionData = {
   /** Submission id */
@@ -15,6 +18,10 @@ export interface PublicFormContextProps
     Omit<UseQueryResult<PublicFormViewDto>, 'data'> {
   miniHeaderRef: RefObject<HTMLDivElement>
   formId: string
+  /** Scroll data to allow form-fillers to scroll to a particular section. */
+  sectionScrollData: SidebarSectionMeta[]
+  /** Whether form authentication is required. */
+  isAuthRequired: boolean
   /**
    * @note async function due to possibility of calling API to generate transactionId.
    * Get current verification transaction ID for the form.
@@ -27,9 +34,12 @@ export interface PublicFormContextProps
   /** If form is submitted, submissionData will be defined. */
   submissionData?: SubmissionData
   /** Callback to be invoked when user submits public form. */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   handleSubmitForm: (formInputs: any) => void
-  /** id of container to render captcha in  */
-  captchaContainerId: string
+  /** id of container to render captcha in.
+   * Captcha will be instantiated if provided
+   */
+  captchaContainerId?: string
 }
 
 export const PublicFormContext = createContext<

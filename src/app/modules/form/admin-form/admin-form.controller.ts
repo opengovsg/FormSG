@@ -1,4 +1,5 @@
 import JoiDate from '@joi/date'
+import { ObjectId } from 'bson'
 import { celebrate, Joi as BaseJoi, Segments } from 'celebrate'
 import { AuthedSessionData } from 'express-session'
 import { StatusCodes } from 'http-status-codes'
@@ -188,6 +189,7 @@ const fileUploadValidator = celebrate({
     fileType: Joi.string()
       .valid(...VALID_UPLOAD_FILE_TYPES)
       .required(),
+    isNewClient: Joi.boolean().optional(),
   },
 })
 
@@ -383,11 +385,17 @@ export const createPresignedPostUrlForImages: ControllerHandler<
     fileId: string
     fileMd5Hash: string
     fileType: string
+    isNewClient?: boolean // TODO (#128): Flag for server to know whether to append random object ID in front. To remove 2 weeks after release.
   }
 > = async (req, res) => {
   const { formId } = req.params
-  const { fileId, fileMd5Hash, fileType } = req.body
+  const { fileId, fileMd5Hash, fileType, isNewClient } = req.body
   const sessionUserId = (req.session as AuthedSessionData).user._id
+
+  // Adding random objectId ensures fileId is unpredictable by client
+  const randomizedFileId = isNewClient
+    ? `${String(new ObjectId())}-${fileId}`
+    : fileId // TODO (#128): if !isNewClient, returns fileId for backward compatability. To remove fallback for !isNewClient 2 weeks after release.
 
   return (
     // Step 1: Retrieve currently logged in user.
@@ -403,7 +411,7 @@ export const createPresignedPostUrlForImages: ControllerHandler<
       // Step 3: Has write permissions, generate presigned POST URL.
       .andThen(() =>
         AdminFormService.createPresignedPostUrlForImages({
-          fileId,
+          fileId: randomizedFileId,
           fileMd5Hash,
           fileType,
         }),
@@ -448,11 +456,17 @@ export const createPresignedPostUrlForLogos: ControllerHandler<
     fileId: string
     fileMd5Hash: string
     fileType: string
+    isNewClient?: boolean // TODO (#128): Flag for server to know whether to append random object ID in front. To remove 2 weeks after release.
   }
 > = async (req, res) => {
   const { formId } = req.params
-  const { fileId, fileMd5Hash, fileType } = req.body
+  const { fileId, fileMd5Hash, fileType, isNewClient } = req.body
   const sessionUserId = (req.session as AuthedSessionData).user._id
+
+  // Adding random objectId ensures fileId is unpredictable by client
+  const randomizedFileId = isNewClient
+    ? `${String(new ObjectId())}-${fileId}`
+    : fileId // TODO (#128): if !isNewClient, returns fileId for backward compatability. To remove fallback for !isNewClient 2 weeks after release.
 
   return (
     // Step 1: Retrieve currently logged in user.
@@ -468,7 +482,7 @@ export const createPresignedPostUrlForLogos: ControllerHandler<
       // Step 3: Has write permissions, generate presigned POST URL.
       .andThen(() =>
         AdminFormService.createPresignedPostUrlForLogos({
-          fileId,
+          fileId: randomizedFileId,
           fileMd5Hash,
           fileType,
         }),
@@ -2153,6 +2167,7 @@ export const handleDeleteFormField: ControllerHandler<
  * @security session
  *
  * @returns 200 with updated end page
+ * @returns 400 when end page form field has invalid updates to be performed
  * @returns 403 when current user does not have permissions to update the end page
  * @returns 404 when form cannot be found
  * @returns 410 when updating the end page for an archived form
@@ -2207,7 +2222,10 @@ export const handleUpdateEndPage = [
     [Segments.BODY]: Joi.object({
       title: Joi.string(),
       paragraph: Joi.string().allow(''),
-      buttonLink: Joi.string().uri().allow(''),
+      buttonLink: Joi.string()
+        .uri({ scheme: ['http', 'https'] })
+        .allow('')
+        .message('Please enter a valid HTTP or HTTPS URI'),
       buttonText: Joi.string().allow(''),
       // TODO(#1895): Remove when deprecated `buttons` key is removed from all forms in the database
     }).unknown(true),

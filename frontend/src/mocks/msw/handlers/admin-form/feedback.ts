@@ -51,3 +51,19 @@ export const getAdminFormFeedback = ({
     },
   )
 }
+
+export const getEmptyAdminFormFeedback = () => {
+  return rest.get<FormFeedbackMetaDto>(
+    '/api/v3/admin/forms/:formId/feedback',
+    (req, res, ctx) => {
+      return res(
+        ctx.delay(0),
+        ctx.status(200),
+        ctx.json<FormFeedbackMetaDto>({
+          count: 0,
+          feedback: [],
+        }),
+      )
+    },
+  )
+}

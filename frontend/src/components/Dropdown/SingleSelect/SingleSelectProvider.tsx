@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { VirtuosoHandle } from 'react-virtuoso'
 import {
   FormControlOptions,
   useFormControlProps,
@@ -8,6 +9,7 @@ import { useCombobox, UseComboboxProps } from 'downshift'
 
 import { ThemeColorScheme } from '~theme/foundations/colours'
 
+import { VIRTUAL_LIST_MAX_HEIGHT } from '../constants'
 import { useItems } from '../hooks/useItems'
 import { SelectContext, SharedSelectContextReturnProps } from '../SelectContext'
 import { ComboboxItem } from '../types'
@@ -95,6 +97,8 @@ export const SingleSelectProvider = ({
     [getFilteredItems],
   )
 
+  const virtualListRef = useRef<VirtuosoHandle>(null)
+
   const {
     toggleMenu,
     closeMenu,
@@ -122,6 +126,19 @@ export const SingleSelectProvider = ({
     onSelectedItemChange: ({ selectedItem }) => {
       onChange(itemToValue(selectedItem))
     },
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    scrollIntoView: () => {},
+    onHighlightedIndexChange: ({ highlightedIndex }) => {
+      if (
+        highlightedIndex !== undefined &&
+        highlightedIndex >= 0 &&
+        virtualListRef.current
+      ) {
+        virtualListRef.current.scrollIntoView({
+          index: highlightedIndex,
+        })
+      }
+    },
     onStateChange: ({ inputValue, type }) => {
       switch (type) {
         case useCombobox.stateChangeTypes.FunctionSetInputValue:
@@ -148,6 +165,13 @@ export const SingleSelectProvider = ({
             // Clear inputValue on item selection
             inputValue: '',
           }
+        case useCombobox.stateChangeTypes.InputKeyDownEscape: {
+          if (isClearable) return changes
+          return {
+            ...changes,
+            selectedItem: _state.selectedItem,
+          }
+        }
         case useCombobox.stateChangeTypes.FunctionSelectItem:
         case useCombobox.stateChangeTypes.InputKeyDownEnter:
         case useCombobox.stateChangeTypes.InputBlur:
@@ -198,6 +222,13 @@ export const SingleSelectProvider = ({
     }
   }, [inputAriaProp, name, selectedItem])
 
+  const virtualListHeight = useMemo(() => {
+    const totalHeight = filteredItems.length * 48
+    // If the total height is less than the max height, just return the total height.
+    // Otherwise, return the max height.
+    return Math.min(totalHeight, VIRTUAL_LIST_MAX_HEIGHT)
+  }, [filteredItems.length])
+
   return (
     <SelectContext.Provider
       value={{
@@ -231,6 +262,8 @@ export const SingleSelectProvider = ({
         setIsFocused,
         resetInputValue,
         inputAria,
+        virtualListRef,
+        virtualListHeight,
       }}
     >
       {children}

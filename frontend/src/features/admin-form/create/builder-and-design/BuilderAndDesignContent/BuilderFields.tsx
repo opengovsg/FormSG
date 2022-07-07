@@ -2,7 +2,7 @@ import { memo, useMemo } from 'react'
 
 import { AdminFormDto } from '~shared/types/form'
 
-import { getBuilderQuestionNumbers } from '../utils/questionNumbers'
+import { augmentWithQuestionNo } from '~features/form/utils'
 
 import FieldRow from './FieldRow'
 
@@ -13,17 +13,16 @@ interface BuilderFieldsProps {
 
 export const BuilderFields = memo(
   ({ fields, isDraggingOver }: BuilderFieldsProps) => {
-    const questionNumbers = useMemo(
-      () => getBuilderQuestionNumbers(fields),
+    const fieldsWithQuestionNos = useMemo(
+      () => augmentWithQuestionNo(fields),
       [fields],
     )
 
     return (
       <>
-        {fields.map((f, i) => (
+        {fieldsWithQuestionNos.map((f, i) => (
           <FieldRow
             index={i}
-            questionNumber={questionNumbers[i]}
             key={f._id}
             field={f}
             isDraggingOver={isDraggingOver}

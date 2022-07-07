@@ -150,7 +150,6 @@ const FormLabelDescription = ({
     </Text>
   )
 }
-FormLabel.Description = FormLabelDescription
 
 FormLabel.Description = FormLabelDescription
 

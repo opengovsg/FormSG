@@ -29,6 +29,7 @@ import { SubmissionRouter } from '../../modules/submission/submission.routes'
 import UserRouter from '../../modules/user/user.routes'
 import { VfnRouter } from '../../modules/verification/verification.routes'
 import { ApiRouter } from '../../routes/api'
+import { SpOidcJwksRouter } from '../../routes/singpass'
 import * as IntranetMiddleware from '../../services/intranet/intranet.middleware'
 
 import errorHandlerMiddlewares from './error-handler'
@@ -132,6 +133,8 @@ const loadExpressApp = async (connection: Connection) => {
   // Registered routes with the Singpass/Corppass servers
   app.use('/singpass/login', SingpassLoginRouter)
   app.use('/corppass/login', CorppassLoginRouter)
+  // jwks endpoint for SP OIDC
+  app.use('/singpass/.well-known/jwks.json', SpOidcJwksRouter)
   // Registered routes with sgID
   app.use('/sgid', SgidRouter)
   // Use constant for registered routes with MyInfo servers

@@ -6,13 +6,11 @@ export const enSG: Translation = {
       login: {
         LoginPage: {
           slogan: 'Build secure government forms in minutes',
-          copyright:
-            '© {currentYear} Open Government Products, GovTech Singapore',
         },
         components: {
           LoginForm: {
             onlyAvailableForPublicOfficers:
-              'Only available for use by public officers with a gov.sg email',
+              'Log in with a .gov.sg or other whitelisted email address',
             email: 'Email',
             emailEmptyErrorMsg: 'Please enter an email address',
             login: 'Log in',

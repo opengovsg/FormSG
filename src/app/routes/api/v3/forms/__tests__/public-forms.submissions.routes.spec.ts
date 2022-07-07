@@ -14,6 +14,7 @@ import { setupApp } from 'tests/integration/helpers/express-setup'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import { FormAuthType, FormStatus } from '../../../../../../../shared/types'
+import { SpOidcClient } from '../../../../../modules/spcp/sp.oidc.client'
 import { PublicFormsRouter } from '../public-forms.routes'
 
 import {
@@ -35,6 +36,7 @@ import {
 const MyInfoHashModel = getMyInfoHashModel(mongoose)
 
 jest.mock('@opengovsg/spcp-auth-client')
+jest.mock('../../../../../modules/spcp/sp.oidc.client')
 const MockAuthClient = mocked(SPCPAuthClient, true)
 
 jest.mock('nodemailer', () => ({
@@ -69,7 +71,6 @@ const app = setupApp('/forms', PublicFormsRouter)
 describe('public-form.submissions.routes', () => {
   let request: Session
 
-  const mockSpClient = mocked(MockAuthClient.mock.instances[0], true)
   const mockCpClient = mocked(MockAuthClient.mock.instances[1], true)
 
   beforeAll(async () => await dbHandler.connect())
@@ -83,7 +84,6 @@ describe('public-form.submissions.routes', () => {
   afterAll(async () => await dbHandler.closeDatabase())
 
   describe('POST /forms/:formId/submissions/email', () => {
-    const mockSpClient = mocked(MockAuthClient.mock.instances[0], true)
     const mockCpClient = mocked(MockAuthClient.mock.instances[1], true)
 
     describe('Joi validation', () => {
@@ -474,11 +474,12 @@ describe('public-form.submissions.routes', () => {
       describe('SingPass', () => {
         it('should return 200 when submission is valid', async () => {
           // Arrange
-          mockSpClient.verifyJWT.mockImplementationOnce((_jwt, cb) =>
-            cb(null, {
+          jest
+            .spyOn(SpOidcClient.prototype, 'verifyJwt')
+            .mockResolvedValueOnce({
               userName: 'S1234567A',
-            }),
-          )
+            })
+
           const { form } = await dbHandler.insertEmailForm({
             formOptions: {
               esrvcId: 'mockEsrvcId',
@@ -561,9 +562,10 @@ describe('public-form.submissions.routes', () => {
         it('should return 401 when submission has invalid JWT', async () => {
           // Arrange
           // Mock auth client to return error when decoding JWT
-          mockSpClient.verifyJWT.mockImplementationOnce((_jwt, cb) =>
-            cb(new Error()),
-          )
+          jest
+            .spyOn(SpOidcClient.prototype, 'verifyJwt')
+            .mockRejectedValueOnce(new Error())
+
           const { form } = await dbHandler.insertEmailForm({
             formOptions: {
               esrvcId: 'mockEsrvcId',
@@ -592,11 +594,12 @@ describe('public-form.submissions.routes', () => {
         it('should return 401 when submission has JWT with the wrong shape', async () => {
           // Arrange
           // Mock auth client to return wrong decoded shape
-          mockSpClient.verifyJWT.mockImplementationOnce((_jwt, cb) =>
-            cb(null, {
+          jest
+            .spyOn(SpOidcClient.prototype, 'verifyJwt')
+            .mockResolvedValueOnce({
               wrongKey: 'S1234567A',
-            }),
-          )
+            })
+
           const { form } = await dbHandler.insertEmailForm({
             formOptions: {
               esrvcId: 'mockEsrvcId',
@@ -964,11 +967,11 @@ describe('public-form.submissions.routes', () => {
     describe('SPCP authentication', () => {
       describe('SingPass', () => {
         it('should return 200 when submission is valid', async () => {
-          mockSpClient.verifyJWT.mockImplementationOnce((_jwt, cb) =>
-            cb(null, {
+          jest
+            .spyOn(SpOidcClient.prototype, 'verifyJwt')
+            .mockResolvedValueOnce({
               userName: 'S1234567A',
-            }),
-          )
+            })
           const { form } = await dbHandler.insertEncryptForm({
             formOptions: {
               esrvcId: 'mockEsrvcId',
@@ -1042,9 +1045,10 @@ describe('public-form.submissions.routes', () => {
 
         it('should return 401 when submission has invalid JWT', async () => {
           // Mock auth client to return error when decoding JWT
-          mockSpClient.verifyJWT.mockImplementationOnce((_jwt, cb) =>
-            cb(new Error()),
-          )
+          jest
+            .spyOn(SpOidcClient.prototype, 'verifyJwt')
+            .mockRejectedValueOnce(new Error())
+
           const { form } = await dbHandler.insertEncryptForm({
             formOptions: {
               esrvcId: 'mockEsrvcId',
@@ -1070,11 +1074,12 @@ describe('public-form.submissions.routes', () => {
 
         it('should return 401 when submission has JWT with the wrong shape', async () => {
           // Mock auth client to return wrong decoded JWT shape
-          mockSpClient.verifyJWT.mockImplementationOnce((_jwt, cb) =>
-            cb(null, {
+          jest
+            .spyOn(SpOidcClient.prototype, 'verifyJwt')
+            .mockResolvedValueOnce({
               wrongKey: 'S1234567A',
-            }),
-          )
+            })
+
           const { form } = await dbHandler.insertEncryptForm({
             formOptions: {
               esrvcId: 'mockEsrvcId',

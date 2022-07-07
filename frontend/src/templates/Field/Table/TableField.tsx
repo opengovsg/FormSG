@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 import { useFieldArray, useFormContext, useFormState } from 'react-hook-form'
 import { BiTrash } from 'react-icons/bi'
 import { useTable } from 'react-table'
@@ -7,6 +7,7 @@ import { get, head, uniq } from 'lodash'
 
 import { FormColorTheme } from '~shared/types'
 
+import { useHasChanged } from '~hooks/useHasChanged'
 import { useIsMobile } from '~hooks/useIsMobile'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import IconButton from '~components/IconButton'
@@ -33,6 +34,7 @@ export const TableField = ({
   schema,
   colorTheme = FormColorTheme.Blue,
 }: TableFieldProps): JSX.Element => {
+  const hasMinRowsChanged = useHasChanged(schema.minimumRows)
   const isMobile = useIsMobile()
 
   const columnsData = useMemo(() => {
@@ -64,6 +66,23 @@ export const TableField = ({
     control: formMethods.control,
     name: schema._id,
   })
+
+  useEffect(() => {
+    // Update field array when min rows changes.
+    if (hasMinRowsChanged) {
+      const prevRowLength = fields.length
+      if (schema.minimumRows > prevRowLength) {
+        for (let i = prevRowLength; i < schema.minimumRows; i++) {
+          append(createTableRow(schema), { shouldFocus: false })
+        }
+      } else {
+        // Remove rows from field array
+        for (let i = prevRowLength; i > schema.minimumRows; i--) {
+          remove(i - 1)
+        }
+      }
+    }
+  }, [append, fields.length, hasMinRowsChanged, remove, schema])
 
   const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } =
     useTable({ columns: columnsData, data: fields })
@@ -157,7 +176,7 @@ export const TableField = ({
       {schema.addMoreRows && schema.maximumRows !== undefined ? (
         <AddRowFooter
           currentRows={fields.length}
-          maxRows={schema.maximumRows}
+          maxRows={schema.maximumRows === '' ? 0 : schema.maximumRows}
           handleAddRow={handleAddRow}
         />
       ) : null}

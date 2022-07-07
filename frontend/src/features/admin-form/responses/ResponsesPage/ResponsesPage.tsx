@@ -1,10 +1,9 @@
-import { Box } from '@chakra-ui/react'
-
 import { FormResponseMode } from '~shared/types/form'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
 
-import { StorageResponsesTab } from './StorageResponsesTab'
+import { EmailResponsesTab } from './email'
+import { StorageResponsesTab } from './storage'
 
 export const ResponsesPage = (): JSX.Element => {
   const { data: form, isLoading } = useAdminForm()
@@ -18,8 +17,8 @@ export const ResponsesPage = (): JSX.Element => {
   }
 
   if (form.responseMode === FormResponseMode.Encrypt) {
-    return <StorageResponsesTab form={form} />
+    return <StorageResponsesTab />
   }
 
-  return <Box>Responses tab for email mode form</Box>
+  return <EmailResponsesTab />
 }

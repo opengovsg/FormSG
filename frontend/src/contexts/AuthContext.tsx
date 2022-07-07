@@ -7,7 +7,10 @@ type AuthContextProps = {
   isAuthenticated?: boolean
 }
 
-const AuthContext = createContext<AuthContextProps | undefined>(undefined)
+// Exported for testing.
+export const AuthContext = createContext<AuthContextProps | undefined>(
+  undefined,
+)
 
 /**
  * Provider component that wraps your app and makes auth object available to any

@@ -1,14 +1,20 @@
-import { Navigate, NavigateProps, useLocation } from 'react-router-dom'
+import { Navigate, useLocation } from 'react-router-dom'
 
-import { useAuth } from '~contexts/AuthContext'
-import { LOGIN_ROUTE } from '~constants/routes'
+import { ROOT_ROUTE } from '~constants/routes'
+
+import { PublicElement } from './PublicElement'
 
 interface HashRouterElementProps {
   /**
-   * Route to redirect to when user is not authenticated. Defaults to
-   * `LOGIN_ROUTE` if not provided.
+   * If `strict` is true, only non-authed users can access the route.
+   * i.e. signin page, where authed users accessing that page should be
+   * redirected out.
+   * If `strict` is false, then both authed and non-authed users can access
+   * the route.
+   * Defaults to `false`.
    */
-  redirectTo?: NavigateProps['to']
+  strict?: boolean
+
   element: React.ReactElement
 }
 
@@ -25,25 +31,25 @@ const hashRouteMapper = [
   },
   {
     regex: /^#!\/(?<formid>[0-9a-fA-F]{24})\/admin$/,
-    getTarget: (m: FormRegExpMatchArray) => `/admin/form/${m.groups.formid}`,
+    getTarget: (m: FormRegExpMatchArray) =>
+      `${ROOT_ROUTE}/admin/form/${m.groups.formid}`,
   },
   {
     regex: /^#!\/(?<formid>[0-9a-fA-F]{24})\/preview$/,
     getTarget: (m: FormRegExpMatchArray) =>
-      `/admin/form/${m.groups.formid}/preview`,
+      `${ROOT_ROUTE}/admin/form/${m.groups.formid}/preview`,
   },
   {
     regex: /^#!\/examples$/,
-    getTarget: (m: FormRegExpMatchArray) => `/admin`,
+    getTarget: (m: FormRegExpMatchArray) => `${ROOT_ROUTE}/admin`,
   },
 ]
 
 export const HashRouterElement = ({
   element,
-  redirectTo = LOGIN_ROUTE,
+  strict = false,
 }: HashRouterElementProps): React.ReactElement => {
   const location = useLocation()
-  const { isAuthenticated } = useAuth()
 
   // Retire this custom routing after July 2024
   if (location.hash.startsWith('#!/')) {
@@ -51,15 +57,11 @@ export const HashRouterElement = ({
     for (const { regex, getTarget } of hashRouteMapper) {
       const match = location.hash.match(regex)
       if (match) {
-        redirectTo = getTarget(match as FormRegExpMatchArray)
+        const redirectTo = getTarget(match as FormRegExpMatchArray)
         return <Navigate replace to={redirectTo} state={{ from: location }} />
       }
     }
   }
 
-  return isAuthenticated ? (
-    element
-  ) : (
-    <Navigate replace to={redirectTo} state={{ from: location }} />
-  )
+  return <PublicElement element={element} strict={strict} />
 }

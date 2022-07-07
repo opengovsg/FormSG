@@ -7,11 +7,9 @@ import { BasicField } from '~shared/types/field'
 
 import Button from '~components/Button'
 
-import {
-  UenField as UenFieldComponent,
-  UenFieldProps,
-  UenFieldSchema,
-} from './UenField'
+import { UenFieldSchema } from '../types'
+
+import { UenField as UenFieldComponent, UenFieldProps } from './UenField'
 
 export default {
   title: 'Templates/Field/UenField',

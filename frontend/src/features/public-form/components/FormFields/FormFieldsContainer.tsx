@@ -13,13 +13,8 @@ import { FormSectionsProvider } from './FormSectionsContext'
 import { SectionSidebar } from './SectionSidebar'
 
 export const FormFieldsContainer = (): JSX.Element | null => {
-  const { form, spcpSession, isLoading, handleSubmitForm, submissionData } =
+  const { form, isAuthRequired, isLoading, handleSubmitForm, submissionData } =
     usePublicFormContext()
-
-  const isAuthRequired = useMemo(
-    () => form && form.authType !== FormAuthType.NIL && !spcpSession,
-    [form, spcpSession],
-  )
 
   const renderFields = useMemo(() => {
     // Render skeleton when no data
@@ -51,7 +46,7 @@ export const FormFieldsContainer = (): JSX.Element | null => {
 
   return (
     <FormSectionsProvider form={form}>
-      <Flex flex={1} justify="center">
+      <Flex justify="center">
         {isAuthRequired ? null : <SectionSidebar />}
         <Box w="100%" minW={0} h="fit-content" maxW="57rem">
           {renderFields}
