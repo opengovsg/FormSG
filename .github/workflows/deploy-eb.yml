@@ -43,6 +43,9 @@ jobs:
           REACT_APP_DD_RUM_CLIENT_TOKEN: ${{ secrets.DD_RUM_CLIENT_TOKEN }}
           REACT_APP_DD_RUM_ENV: ${{ secrets.DD_ENV }}
         run: |
+          echo REACT_APP_DD_RUM_APP_ID=$REACT_APP_DD_RUM_APP_ID > frontend/.env
+          echo REACT_APP_DD_RUM_CLIENT_TOKEN=$REACT_APP_DD_RUM_CLIENT_TOKEN >> frontend/.env
+          echo REACT_APP_DD_RUM_ENV=$REACT_APP_DD_RUM_ENV >> frontend/.env
           npm ci
           set -e
           npm_config_mode=yes npx lockfile-lint --type npm --path package.json --validate-https --allowed-hosts npm
