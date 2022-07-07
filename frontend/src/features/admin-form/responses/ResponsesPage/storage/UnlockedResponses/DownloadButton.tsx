@@ -1,10 +1,12 @@
 import { useCallback, useMemo, useState } from 'react'
 import { useThrottle } from 'react-use'
 import { Box, MenuButton, Text, useDisclosure } from '@chakra-ui/react'
+import simplur from 'simplur'
 
 import { BxsChevronDown } from '~assets/icons/BxsChevronDown'
 import { BxsChevronUp } from '~assets/icons/BxsChevronUp'
 import { useTimeout } from '~hooks/useTimeout'
+import { useToast } from '~hooks/useToast'
 import Badge from '~components/Badge'
 import Button from '~components/Button'
 import Menu from '~components/Menu'
@@ -27,6 +29,8 @@ export const DownloadButton = (): JSX.Element => {
     onOpen: onProgressModalOpen,
   } = useDisclosure()
 
+  const toast = useToast()
+
   const [progressModalTimeout, setProgressModalTimeout] = useState<
     number | null
   >(null)
@@ -46,8 +50,34 @@ export const DownloadButton = (): JSX.Element => {
   const { handleExportCsvMutation, abortDecryption } = useDecryptionWorkers({
     onProgress: setDownloadCount,
     mutateProps: {
-      onSuccess: () => {
+      onSuccess: ({ successCount, expectedCount, errorCount }) => {
         onDownloadModalClose()
+        if (downloadParams?.responsesCount === 0) {
+          toast({
+            description: 'No responses to download',
+          })
+          return
+        }
+        if (errorCount > 0) {
+          toast({
+            status: 'warning',
+            description: simplur`Partial success. ${successCount}/${expectedCount} ${[
+              successCount,
+            ]}response[|s] [was|were] decrypted. ${errorCount} failed.`,
+          })
+          return
+        }
+        toast({
+          description: simplur`Success. ${successCount}/${expectedCount} ${[
+            successCount,
+          ]}response[|s] [was|were] decrypted.`,
+        })
+      },
+      onError: () => {
+        toast({
+          status: 'danger',
+          description: 'Failed to start download. Please try again later.',
+        })
       },
       onSettled: () => {
         resetDownload()
