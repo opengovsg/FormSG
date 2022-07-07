@@ -6,6 +6,7 @@ import {
   ADMINFORM_RESULTS_SUBROUTE,
   ADMINFORM_ROUTE,
   ADMINFORM_SETTINGS_SUBROUTE,
+  BILLING_ROUTE,
   LANDING_ROUTE,
   LOGIN_ROUTE,
   PRIVACY_POLICY_ROUTE,
@@ -26,6 +27,7 @@ import {
   ResponsesPage,
 } from '~features/admin-form/responses'
 import { SettingsPage } from '~features/admin-form/settings/SettingsPage'
+import { BillingPage } from '~features/user/billing'
 
 import { HashRouterElement } from './HashRouterElement'
 import { PrivateElement } from './PrivateElement'
@@ -69,6 +71,10 @@ export const AppRouter = (): JSX.Element => {
         <Route
           path={TOU_ROUTE}
           element={<PublicElement element={<TermsOfUsePage />} />}
+        />
+        <Route
+          path={BILLING_ROUTE}
+          element={<PrivateElement element={<BillingPage />} />}
         />
         <Route
           path={PUBLICFORM_ROUTE}
