@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { useMutation, UseMutationOptions } from 'react-query'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
 
@@ -23,8 +24,20 @@ export type DownloadEncryptedParams = EncryptedResponsesStreamParams & {
   // The key to decrypt the submission responses.
   secretKey: string
 }
+interface UseDecryptionWorkersProps {
+  onProgress: (progress: number) => void
+  mutateProps: UseMutationOptions<
+    void,
+    unknown,
+    DownloadEncryptedParams,
+    unknown
+  >
+}
 
-const useDecryptionWorkers = () => {
+const useDecryptionWorkers = ({
+  onProgress,
+  mutateProps,
+}: UseDecryptionWorkersProps) => {
   const [workers, setWorkers] = useState<CleanableDecryptionWorkerApi[]>([])
   const abortControllerRef = useRef(new AbortController())
 
@@ -51,6 +64,10 @@ const useDecryptionWorkers = () => {
       startDate,
     }: DownloadEncryptedParams) => {
       if (!adminForm) return
+
+      abortControllerRef.current.abort()
+      const freshAbortController = new AbortController()
+      abortControllerRef.current = freshAbortController
 
       const { data: responsesCount } = await refetch({
         throwOnError: true,
@@ -85,11 +102,13 @@ const useDecryptionWorkers = () => {
       const stream = await getEncryptedResponsesStream(
         adminForm._id,
         { downloadAttachments, endDate, startDate },
-        abortControllerRef.current,
+        freshAbortController,
       )
       const reader = stream.getReader()
       let read: (result: ReadableStreamDefaultReadResult<string>) => void
       const downloadStartTime = performance.now()
+
+      let progress = 0
 
       return reader
         .read()
@@ -104,6 +123,8 @@ const useDecryptionWorkers = () => {
                 secretKey,
                 downloadAttachments,
               })
+              progress += 1
+              onProgress(progress)
 
               switch (decryptResult.status) {
                 case CsvRecordStatus.Error:
@@ -229,10 +250,21 @@ const useDecryptionWorkers = () => {
           checkComplete()
         })
     },
-    [adminForm, refetch, workers],
+    [adminForm, onProgress, refetch, workers],
   )
 
-  return { downloadEncryptedResponses }
+  const handleExportCsvMutation = useMutation(
+    (params: DownloadEncryptedParams) => downloadEncryptedResponses(params),
+    mutateProps,
+  )
+
+  const abortDecryption = useCallback(() => {
+    abortControllerRef.current.abort()
+    handleExportCsvMutation.reset()
+    killWorkers(workers)
+  }, [handleExportCsvMutation, workers])
+
+  return { handleExportCsvMutation, abortDecryption }
 }
 
 export default useDecryptionWorkers
