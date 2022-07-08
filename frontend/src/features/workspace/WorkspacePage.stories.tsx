@@ -13,6 +13,7 @@ import {
   getMobileViewParameters,
   mockDateDecorator,
   StoryRouter,
+  ViewedEmergencyContactDecorator,
   ViewedRolloutDecorator,
 } from '~utils/storybook'
 
@@ -56,6 +57,7 @@ export default {
   component: WorkspacePage,
   decorators: [
     ViewedRolloutDecorator,
+    ViewedEmergencyContactDecorator,
     StoryRouter({
       initialEntries: [ROOT_ROUTE],
       path: ROOT_ROUTE,
