@@ -21,7 +21,6 @@ function toolsetDropdownController($scope) {
     { label: 'Eligibility Checker', link: 'https://go.gov.sg/checkfirstgovsg' },
     { label: 'Voucher Distribution', link: 'https://go.gov.sg/redeemgovsg' },
     { label: 'Website Builder', link: 'https://go.gov.sg/isomergovsg' },
-    { label: 'Payments', link: 'https://go.gov.sg/pay' },
     { label: 'Citizen Identity', link: 'https://go.gov.sg/idgovsg' },
   ]
 
