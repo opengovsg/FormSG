@@ -61,7 +61,7 @@ export type AvatarMenuProps = {
   userName?: string
   hasNotification?: boolean
   isOpen?: boolean
-  children?: JSX.Element
+  children?: React.ReactNode
 }
 
 export const AvatarMenu = ({
