@@ -10,16 +10,13 @@ import {
   getEncryptedResponsesStream,
   makeWorkerApiAndCleanup,
 } from './StorageResponsesService'
-import { CleanableDecryptionWorkerApi, CsvRecordStatus } from './types'
+import {
+  CleanableDecryptionWorkerApi,
+  CsvRecordStatus,
+  DownloadResult,
+} from './types'
 
 const NUM_OF_METADATA_ROWS = 5
-
-type DecryptResult = {
-  expectedCount: number
-  successCount: number
-  errorCount: number
-  unverifiedCount?: number
-}
 
 const killWorkers = (workers: CleanableDecryptionWorkerApi[]): void => {
   return workers.forEach((worker) => worker.cleanup())
@@ -34,7 +31,7 @@ export type DownloadEncryptedParams = EncryptedResponsesStreamParams & {
 interface UseDecryptionWorkersProps {
   onProgress: (progress: number) => void
   mutateProps: UseMutationOptions<
-    DecryptResult,
+    DownloadResult,
     unknown,
     DownloadEncryptedParams,
     unknown
@@ -118,7 +115,7 @@ const useDecryptionWorkers = ({
 
       let progress = 0
 
-      return new Promise<DecryptResult>((resolve, reject) => {
+      return new Promise<DownloadResult>((resolve, reject) => {
         reader
           .read()
           .then(

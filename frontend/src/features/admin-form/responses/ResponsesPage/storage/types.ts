@@ -38,3 +38,11 @@ export type CleanableDecryptionWorkerApi = {
   workerApi: Remote<DecryptionWorkerApi>
   cleanup: () => void
 }
+
+/** Download result after downloading storage mode responses */
+export type DownloadResult = {
+  expectedCount: number
+  successCount: number
+  errorCount: number
+  unverifiedCount?: number
+}
