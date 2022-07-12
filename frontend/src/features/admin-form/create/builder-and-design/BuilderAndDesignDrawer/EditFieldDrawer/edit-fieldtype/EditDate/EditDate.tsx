@@ -1,6 +1,13 @@
 import { useMemo } from 'react'
 import { Controller, RegisterOptions } from 'react-hook-form'
-import { Box, FormControl, SimpleGrid } from '@chakra-ui/react'
+import {
+  Box,
+  FormControl,
+  HStack,
+  SimpleGrid,
+  Stack,
+  VStack,
+} from '@chakra-ui/react'
 import { isBefore, isDate, isEqual } from 'date-fns'
 import { extend, get, isEmpty, pick } from 'lodash'
 
@@ -15,6 +22,7 @@ import {
   transformShortIsoStringToDate,
 } from '~utils/date'
 import { createBaseValidationRules } from '~utils/fieldValidation'
+import Checkbox from '~components/Checkbox'
 import DateInput from '~components/DatePicker'
 import { SingleSelect } from '~components/Dropdown'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
@@ -27,6 +35,13 @@ import { DrawerContentContainer } from '../common/DrawerContentContainer'
 import { FormFieldDrawerActions } from '../common/FormFieldDrawerActions'
 import { EditFieldProps } from '../common/types'
 import { useEditFieldForm } from '../common/useEditFieldForm'
+
+const PARTICULAR_DAYS_OPTIONS = [
+  { leftOption: 'Monday', rightOption: 'Tuesday' },
+  { leftOption: 'Wednesday', rightOption: 'Thursday' },
+  { leftOption: 'Friday', rightOption: 'Saturday' },
+  { leftOption: 'Sunday', rightOption: 'Singapore Public Holidays' },
+]
 
 type EditDateProps = EditFieldProps<DateFieldBase>
 
@@ -41,6 +56,10 @@ type EditDateInputs = Pick<
     customMaxDate: string
     customMinDate: string
   }
+  restrictParticularDays: {
+    addParticularDayRestriction: boolean
+    invalidDaysOfTheWeek: number[]
+  }
 }
 
 const transformDateFieldToEditForm = (field: DateFieldBase): EditDateInputs => {
@@ -54,9 +73,17 @@ const transformDateFieldToEditForm = (field: DateFieldBase): EditDateInputs => {
       ? transformDateToShortIsoString(field.dateValidation.customMinDate) ?? ''
       : ('' as const),
   }
+
+  const nextParticularDayRestrictionOption = {
+    addParticularDayRestriction:
+      field.restrictParticularDays?.addParticularDayRestriction ?? false,
+    invalidDaysOfTheWeek:
+      field.restrictParticularDays?.invalidDaysOfTheWeek ?? [],
+  }
   return {
     ...pick(field, EDIT_DATE_FIELD_KEYS),
     dateValidation: nextValidationOptions,
+    restrictParticularDays: nextParticularDayRestrictionOption,
   }
 }
 
@@ -216,6 +243,33 @@ export const EditDate = ({ field }: EditDateProps): JSX.Element => {
           {get(errors, 'dateValidation.customMinDate.message')}
         </FormErrorMessage>
       </FormControl>
+      <Stack>
+        <FormControl isReadOnly={isLoading}>
+          <Toggle
+            {...register('restrictParticularDays.addParticularDayRestriction')}
+            label="Customize days of the week"
+          />
+        </FormControl>
+        {getValues('restrictParticularDays.addParticularDayRestriction') ? (
+          <FormControl isRequired isReadOnly={isLoading}>
+            <Stack direction="column">
+              {PARTICULAR_DAYS_OPTIONS.map((option, index) => {
+                return (
+                  <HStack spacing="0.75rem">
+                    <Box w="9.25rem">
+                      <Checkbox>{option.leftOption}</Checkbox>
+                    </Box>
+                    <Box>
+                      <Checkbox>{option.rightOption}</Checkbox>
+                    </Box>
+                  </HStack>
+                )
+              })}
+            </Stack>
+          </FormControl>
+        ) : null}
+      </Stack>
+
       <FormFieldDrawerActions
         isLoading={isLoading}
         isSaveEnabled={isSaveEnabled}
