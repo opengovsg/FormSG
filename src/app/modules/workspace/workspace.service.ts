@@ -40,3 +40,15 @@ export const deleteForms = (
 ): ResultAsync<any, DatabaseError> => {
   return okAsync({ workspaceId: workspaceId, formIds: formIds })
 }
+
+export const moveForms = (
+  sourceWorkspaceId: string,
+  destWorkspaceId: string,
+  formIds: string[],
+): ResultAsync<any, DatabaseError> => {
+  return okAsync({
+    sourceWorkspaceId: sourceWorkspaceId,
+    destWorkspaceId: destWorkspaceId,
+    formIds: formIds,
+  })
+}

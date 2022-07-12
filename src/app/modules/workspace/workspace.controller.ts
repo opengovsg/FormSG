@@ -140,7 +140,7 @@ export const getForms: ControllerHandler<
 }
 
 /**
- * Delete forms belonging to the workspace
+ * Handler for DELETE /workspaces/:workspaceId/forms endpoint
  * @security session
  *
  * @returns 200 with a list of remaining forms in the workspace
@@ -158,6 +158,31 @@ export const deleteForms: ControllerHandler<
   const { formIds } = req.body
 
   return WorkspaceService.deleteForms(workspaceId, formIds)
+    .map((forms) => res.status(StatusCodes.OK).json(forms))
+    .mapErr((err) =>
+      res.status(StatusCodes.BAD_REQUEST).json({ message: err.message }),
+    )
+}
+
+/**
+ * Handler for POST /workspaces/:workspaceId/forms/move endpoint
+ * @security session
+ *
+ * @returns 200 with a list of remaining forms in the source workspace
+ * @returns 404 when the workspace does not exist or belong to the user
+ * @returns 422 when user of given id cannnot be found in the database
+ * @returns 500 when database errors occur
+ */
+export const moveForms: ControllerHandler<
+  { sourceWorkspaceId: string },
+  unknown,
+  any | ErrorDto,
+  { formIds: any[]; destWorkspaceId: string }
+> = async (req, res) => {
+  const { sourceWorkspaceId } = req.params
+  const { formIds, destWorkspaceId } = req.body
+
+  return WorkspaceService.moveForms(sourceWorkspaceId, destWorkspaceId, formIds)
     .map((forms) => res.status(StatusCodes.OK).json(forms))
     .mapErr((err) =>
       res.status(StatusCodes.BAD_REQUEST).json({ message: err.message }),
