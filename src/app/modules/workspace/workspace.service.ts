@@ -9,3 +9,7 @@ export const getWorkspaces = (): ResultAsync<
 > => {
   return okAsync([])
 }
+
+export const createWorkspace = (): ResultAsync<any, DatabaseError> => {
+  return okAsync({})
+}

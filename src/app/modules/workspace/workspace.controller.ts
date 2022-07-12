@@ -1,8 +1,15 @@
+import { celebrate, Segments } from 'celebrate'
+import { StatusCodes } from 'http-status-codes'
 import { ErrorDto } from 'shared/types'
 
 import { ControllerHandler } from '../core/core.types'
 
 import * as WorkspaceService from './workspace.service'
+
+// Validators
+const createWorkspaceValidator = celebrate({
+  [Segments.BODY]: {},
+})
 
 /**
  * Handler for GET /workspaces endpoint.
@@ -17,6 +24,33 @@ export const getWorkspaces: ControllerHandler<
   any[] | ErrorDto
 > = async (req, res) => {
   return WorkspaceService.getWorkspaces()
-    .map((workspaces) => res.json(workspaces))
-    .mapErr((err) => res.status(400).json({ message: err.message }))
+    .map((workspaces) => res.status(StatusCodes.OK).json(workspaces))
+    .mapErr((err) =>
+      res.status(StatusCodes.BAD_REQUEST).json({ message: err.message }),
+    )
 }
+
+/**
+ * Handler for POST /workspaces endpoint
+ * @security session
+ *
+ * @returns 200 with newly created workspace
+ * @returns 409 when a database conflict error occurs
+ * @returns 422 when user of given id cannnot be found in the database
+ * @returns 500 when database error occurs
+ */
+const handleCreateWorkspace: ControllerHandler<
+  unknown,
+  any | ErrorDto
+> = async (req, res) => {
+  return WorkspaceService.createWorkspace()
+    .map((workspace) => res.status(StatusCodes.OK).json(workspace))
+    .mapErr((err) =>
+      res.status(StatusCodes.BAD_REQUEST).json({ message: err.message }),
+    )
+}
+
+export const createWorkspace = [
+  createWorkspaceValidator,
+  handleCreateWorkspace,
+] as ControllerHandler[]
