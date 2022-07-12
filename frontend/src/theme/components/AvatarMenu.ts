@@ -11,8 +11,8 @@ export const AvatarMenu: ComponentMultiStyleConfig = {
       fontWeight: '500',
     },
     usernameIcon: {
-      w: '1rem',
-      h: '1rem',
+      w: '1.25rem',
+      h: '1.25rem',
       mr: '1rem',
     },
   },
