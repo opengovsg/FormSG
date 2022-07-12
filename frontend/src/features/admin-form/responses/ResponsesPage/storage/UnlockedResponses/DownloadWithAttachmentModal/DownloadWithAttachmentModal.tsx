@@ -10,7 +10,8 @@ import {
 
 import { XMotionBox } from '~templates/MotionBox'
 
-import { ProgressModalContent } from '../ProgressModal'
+import { DownloadResult } from '../../types'
+import { CompleteScreen, ProgressModalContent } from '../ProgressModal'
 
 import { ConfirmationScreen } from './ConfirmationScreen'
 
@@ -22,6 +23,7 @@ export interface DownloadWithAttachmentModalProps
   responsesCount: number
   downloadPercentage: number
   initialState?: [DownloadWithAttachmentFlowStates, number]
+  downloadMetadata?: DownloadResult
 }
 
 /** Exported for testing. */
@@ -44,6 +46,7 @@ export const DownloadWithAttachmentModal = ({
   isDownloading,
   responsesCount,
   downloadPercentage,
+  downloadMetadata,
   initialState = INITIAL_STEP_STATE,
 }: DownloadWithAttachmentModalProps): JSX.Element => {
   const modalSize = useBreakpointValue({
@@ -60,16 +63,16 @@ export const DownloadWithAttachmentModal = ({
     }
   }, [isOpen])
 
+  useEffect(() => {
+    if (isOpen && downloadMetadata) {
+      setCurrentStep([DownloadWithAttachmentFlowStates.Complete, 1])
+    }
+  }, [downloadMetadata, isOpen])
+
   const handleDownload = useCallback(() => {
     setCurrentStep([DownloadWithAttachmentFlowStates.Progress, 1])
     return onDownload()
   }, [onDownload])
-
-  const handleCancel = useCallback(() => {
-    // TODO: Move to conclusion page.
-    setCurrentStep([DownloadWithAttachmentFlowStates.Confirmation, 1])
-    return onCancel()
-  }, [onCancel])
 
   return (
     <Modal
@@ -95,7 +98,7 @@ export const DownloadWithAttachmentModal = ({
             <ProgressModalContent
               downloadPercentage={downloadPercentage}
               isDownloading={isDownloading}
-              onClose={handleCancel}
+              onClose={onCancel}
             >
               <Text mb="1rem">
                 Up to <b>{responsesCount.toLocaleString()}</b> files are being
@@ -103,6 +106,12 @@ export const DownloadWithAttachmentModal = ({
                 this page will stop the download.
               </Text>
             </ProgressModalContent>
+          )}
+          {currentStep === DownloadWithAttachmentFlowStates.Complete && (
+            <CompleteScreen
+              downloadMetadata={downloadMetadata}
+              onClose={onClose}
+            />
           )}
         </XMotionBox>
       </ModalContent>

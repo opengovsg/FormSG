@@ -12,6 +12,7 @@ import Button from '~components/Button'
 import Menu from '~components/Menu'
 
 import { useStorageResponsesContext } from '../StorageResponsesContext'
+import { DownloadResult } from '../types'
 import useDecryptionWorkers from '../useDecryptionWorkers'
 
 import { DownloadWithAttachmentModal } from './DownloadWithAttachmentModal'
@@ -49,11 +50,16 @@ export const DownloadButton = (): JSX.Element => {
 
   useTimeout(onProgressModalOpen, progressModalTimeout)
 
+  const [downloadMetadata, setDownloadMetadata] = useState<DownloadResult>()
+
   const { handleExportCsvMutation, abortDecryption } = useDecryptionWorkers({
     onProgress: setDownloadCount,
     mutateProps: {
+      onMutate: () => {
+        // Reset metadata if it exists.
+        setDownloadMetadata(undefined)
+      },
       onSuccess: ({ successCount, expectedCount, errorCount }) => {
-        onDownloadModalClose()
         if (downloadParams?.responsesCount === 0) {
           toast({
             description: 'No responses to download',
@@ -81,15 +87,16 @@ export const DownloadButton = (): JSX.Element => {
           description: 'Failed to start download. Please try again later.',
         })
       },
-      onSettled: () => {
-        resetDownload()
+      onSettled: (decryptResult) => {
+        setProgressModalTimeout(null)
+        setDownloadMetadata(decryptResult)
       },
     },
   })
 
   const handleExportCsvNoAttachments = useCallback(() => {
     if (!downloadParams) return
-    setProgressModalTimeout(5000)
+    setProgressModalTimeout(2000)
     return handleExportCsvMutation.mutate({
       ...downloadParams,
       downloadAttachments: false,
@@ -111,10 +118,12 @@ export const DownloadButton = (): JSX.Element => {
     onProgressModalClose()
   }, [abortDecryption, onProgressModalClose])
 
-  const handleAbortDecryption = useCallback(() => {
+  const handleModalClose = useCallback(() => {
     resetDownload()
+    onDownloadModalClose()
     onProgressModalClose()
-  }, [onProgressModalClose, resetDownload])
+    setDownloadMetadata(undefined)
+  }, [onDownloadModalClose, onProgressModalClose, resetDownload])
 
   return (
     <>
@@ -122,19 +131,21 @@ export const DownloadButton = (): JSX.Element => {
         <DownloadWithAttachmentModal
           responsesCount={dateRangeResponsesCount}
           isOpen={isDownloadModalOpen}
-          onClose={onDownloadModalClose}
+          onClose={handleModalClose}
           onDownload={handleExportCsvWithAttachments}
           onCancel={resetDownload}
           downloadPercentage={downloadPercentage}
           isDownloading={handleExportCsvMutation.isLoading}
+          downloadMetadata={downloadMetadata}
         />
       )}
       {dateRangeResponsesCount !== undefined && (
         <ProgressModal
           isOpen={isProgressModalOpen}
-          onClose={handleAbortDecryption}
+          onClose={handleModalClose}
           downloadPercentage={downloadPercentage}
           isDownloading={handleExportCsvMutation.isLoading}
+          downloadMetadata={downloadMetadata}
         >
           <Text mb="1rem">
             <b>{dateRangeResponsesCount.toLocaleString()}</b> responses are
