@@ -29,7 +29,9 @@ export const DownloadButton = (): JSX.Element => {
     onOpen: onProgressModalOpen,
   } = useDisclosure()
 
-  const toast = useToast()
+  const toast = useToast({
+    isClosable: true,
+  })
 
   const [progressModalTimeout, setProgressModalTimeout] = useState<
     number | null
