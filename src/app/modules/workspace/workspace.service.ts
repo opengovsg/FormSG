@@ -21,3 +21,9 @@ export const updateWorkspaceTitle = (
 ): ResultAsync<any, DatabaseError> => {
   return okAsync({ title: title })
 }
+
+export const deleteWorkspace = (
+  workspaceId: string,
+): ResultAsync<any, DatabaseError> => {
+  return okAsync({ workspaceId: workspaceId })
+}

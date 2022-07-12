@@ -88,3 +88,30 @@ export const updateWorkspaceTitle = [
   updateWorkspaceTitleValidator,
   handleUpdateWorkspaceTitle,
 ] as ControllerHandler[]
+
+/**
+ * Handler for DELETE /workspaces/:workspaceId endpoint
+ * @security session
+ *
+ * @returns 200 with success message
+ * @returns 404 when workspace cannot be found
+ * @returns 422 when user of given id cannnot be found in the database
+ * @returns 500 when database error occurs
+ */
+export const deleteWorkspace: ControllerHandler<
+  { workspaceId: string },
+  unknown,
+  any | ErrorDto
+> = async (req, res) => {
+  const { workspaceId } = req.params
+
+  return WorkspaceService.deleteWorkspace(workspaceId)
+    .map(() =>
+      res
+        .status(StatusCodes.OK)
+        .json({ message: 'Successfully deleted workspace' }),
+    )
+    .mapErr((err) =>
+      res.status(StatusCodes.BAD_REQUEST).json({ message: err.message }),
+    )
+}

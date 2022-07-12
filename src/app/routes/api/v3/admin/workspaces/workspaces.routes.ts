@@ -29,6 +29,19 @@ WorkspacesRouter.route('/')
    */
   .post(WorkspaceController.createWorkspace)
 
+WorkspacesRouter.route('/:workspaceId([a-fA-F0-9]{24})')
+  /**
+   * Delete an existing workspace
+   * @security session
+   *
+   * @returns 200 with success message
+   * @returns 401 when user does not exist in session
+   * @returns 404 when workspace cannot be found
+   * @returns 422 when user of given id cannnot be found in the database
+   * @returns 500 when database error occurs
+   */
+  .delete(WorkspaceController.deleteWorkspace)
+
 WorkspacesRouter.route('/:workspaceId([a-fA-F0-9]{24})/title')
   /**
    * Update existing workspace title
