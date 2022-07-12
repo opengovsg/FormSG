@@ -104,7 +104,7 @@ export const DownloadButton = (): JSX.Element => {
 
   const handleExportCsvNoAttachments = useCallback(() => {
     if (!downloadParams) return
-    setProgressModalTimeout(2000)
+    setProgressModalTimeout(5000)
     return handleExportCsvMutation.mutate({
       ...downloadParams,
       downloadAttachments: false,
