@@ -14,6 +14,7 @@ import { CanceledResult, DownloadResult } from '../../types'
 import { isCanceledResult } from '../../utils/typeguards'
 import { CompleteScreen, ProgressModalContent } from '../ProgressModal'
 
+import { CanceledScreen } from './CanceledScreen'
 import { ConfirmationScreen } from './ConfirmationScreen'
 
 export interface DownloadWithAttachmentModalProps
@@ -110,7 +111,7 @@ export const DownloadWithAttachmentModal = ({
           )}
           {currentStep === DownloadWithAttachmentFlowStates.Complete ? (
             isCanceledResult(downloadMetadata) ? (
-              <div>Canceled!!!</div>
+              <CanceledScreen onClose={onClose} />
             ) : (
               <CompleteScreen
                 downloadMetadata={downloadMetadata}
