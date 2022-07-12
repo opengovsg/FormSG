@@ -115,3 +115,26 @@ export const deleteWorkspace: ControllerHandler<
       res.status(StatusCodes.BAD_REQUEST).json({ message: err.message }),
     )
 }
+
+/**
+ * Handler for GET /workspaces/:workspaceId/forms endpoint
+ * @security session
+ *
+ * @returns 200 with a list of forms in the workspace
+ * @returns 404 when the workspace does not exist or belong to the user
+ * @returns 422 when user of given id cannnot be found in the database
+ * @returns 500 when database errors occur
+ */
+export const getForms: ControllerHandler<
+  { workspaceId: string },
+  unknown,
+  any | ErrorDto
+> = async (req, res) => {
+  const { workspaceId } = req.params
+
+  return WorkspaceService.getForms(workspaceId)
+    .map(() => res.status(StatusCodes.OK).json({}))
+    .mapErr((err) =>
+      res.status(StatusCodes.BAD_REQUEST).json({ message: err.message }),
+    )
+}

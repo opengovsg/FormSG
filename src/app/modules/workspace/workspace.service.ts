@@ -27,3 +27,9 @@ export const deleteWorkspace = (
 ): ResultAsync<any, DatabaseError> => {
   return okAsync({ workspaceId: workspaceId })
 }
+
+export const getForms = (
+  workspaceId: string,
+): ResultAsync<any, DatabaseError> => {
+  return okAsync({ workspaceId: workspaceId })
+}

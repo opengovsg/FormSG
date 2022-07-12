@@ -2,7 +2,14 @@ import { Router } from 'express'
 
 import * as WorkspaceController from '../../../../../modules/workspace/workspace.controller'
 
+import { WorkspacesFormRouter } from './workspaces.form.routes'
+
 export const WorkspacesRouter = Router()
+
+WorkspacesRouter.use(
+  '/:workspaceId([a-fA-F0-9]{24})/forms',
+  WorkspacesFormRouter,
+)
 
 WorkspacesRouter.route('/')
   /**
