@@ -10,6 +10,14 @@ export const getWorkspaces = (): ResultAsync<
   return okAsync([])
 }
 
-export const createWorkspace = (): ResultAsync<any, DatabaseError> => {
-  return okAsync({})
+export const createWorkspace = (
+  workspace: any,
+): ResultAsync<any, DatabaseError> => {
+  return okAsync({ workspace: workspace })
+}
+
+export const updateWorkspaceTitle = (
+  title: string,
+): ResultAsync<any, DatabaseError> => {
+  return okAsync({ title: title })
 }

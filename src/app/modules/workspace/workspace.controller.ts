@@ -11,6 +11,10 @@ const createWorkspaceValidator = celebrate({
   [Segments.BODY]: {},
 })
 
+const updateWorkspaceTitleValidator = celebrate({
+  [Segments.BODY]: {},
+})
+
 /**
  * Handler for GET /workspaces endpoint.
  * @security session
@@ -41,9 +45,12 @@ export const getWorkspaces: ControllerHandler<
  */
 const handleCreateWorkspace: ControllerHandler<
   unknown,
-  any | ErrorDto
+  any | ErrorDto,
+  { workspace: any }
 > = async (req, res) => {
-  return WorkspaceService.createWorkspace()
+  const { workspace } = req.body
+
+  return WorkspaceService.createWorkspace(workspace)
     .map((workspace) => res.status(StatusCodes.OK).json(workspace))
     .mapErr((err) =>
       res.status(StatusCodes.BAD_REQUEST).json({ message: err.message }),
@@ -53,4 +60,31 @@ const handleCreateWorkspace: ControllerHandler<
 export const createWorkspace = [
   createWorkspaceValidator,
   handleCreateWorkspace,
+] as ControllerHandler[]
+
+/**
+ * Handler for PUT /workspaces/:workspaceId/title endpoint
+ * @security session
+ *
+ * @returns 200 with updated workspace
+ * @returns 404 when workspace cannot be found
+ * @returns 422 when user of given id cannnot be found in the database
+ * @returns 500 when database error occurs
+ */
+const handleUpdateWorkspaceTitle: ControllerHandler<
+  unknown,
+  any | ErrorDto,
+  { title: string }
+> = async (req, res) => {
+  const { title } = req.body
+  return WorkspaceService.updateWorkspaceTitle(title)
+    .map((workspace) => res.status(StatusCodes.OK).json(workspace))
+    .mapErr((err) =>
+      res.status(StatusCodes.BAD_REQUEST).json({ message: err.message }),
+    )
+}
+
+export const updateWorkspaceTitle = [
+  updateWorkspaceTitleValidator,
+  handleUpdateWorkspaceTitle,
 ] as ControllerHandler[]

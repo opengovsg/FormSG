@@ -28,3 +28,17 @@ WorkspacesRouter.route('/')
    * @returns 500 when database error occurs
    */
   .post(WorkspaceController.createWorkspace)
+
+WorkspacesRouter.route('/:workspaceId([a-fA-F0-9]{24})/title')
+  /**
+   * Update existing workspace title
+   * @security session
+   *
+   * @returns 200 with updated workspace
+   * @returns 400 when new title fails Joi validation
+   * @returns 401 when user does not exist in session
+   * @returns 404 when workspace cannot be found
+   * @returns 422 when user of given id cannnot be found in the database
+   * @returns 500 when database error occurs
+   */
+  .put(WorkspaceController.updateWorkspaceTitle)
