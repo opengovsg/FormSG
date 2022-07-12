@@ -1,6 +1,6 @@
 import React from 'react'
 import { BiCommentDetail } from 'react-icons/bi'
-import { useNavigate } from 'react-router-dom'
+import { Link as ReactLink } from 'react-router-dom'
 import {
   As,
   chakra,
@@ -22,6 +22,21 @@ import { EmergencyContactModal } from '~features/user/emergency-contact/Emergenc
 import { useUser } from '~features/user/queries'
 
 import Menu from '../../components/Menu'
+
+const BrandSmallLogo = chakra(BrandMarkSvg)
+
+const NAV_LINKS = [
+  {
+    label: 'Feature request',
+    href: '',
+    MobileIcon: BiCommentDetail,
+  },
+  {
+    label: 'Help',
+    href: 'https://guide.form.gov.sg',
+    MobileIcon: BxsHelpCircle,
+  },
+]
 
 type AdminNavBarLinkProps = {
   label: string
@@ -57,29 +72,18 @@ const AdminNavBarLink = ({ MobileIcon, href, label }: AdminNavBarLinkProps) => {
   )
 }
 
-const BrandSmallLogo = chakra(BrandMarkSvg)
+export interface AdminNavBarProps {
+  /* This prop is only for testing to show expanded menu state */
+  isMenuOpen?: boolean
+}
 
-const NAV_LINKS = [
-  {
-    label: 'Feature request',
-    href: '',
-    MobileIcon: BiCommentDetail,
-  },
-  {
-    label: 'Help',
-    href: 'https://guide.form.gov.sg',
-    MobileIcon: BxsHelpCircle,
-  },
-]
-
-export const AdminNavBar = (): JSX.Element => {
+export const AdminNavBar = ({ isMenuOpen }: AdminNavBarProps): JSX.Element => {
   const { user } = useUser()
-  const navigate = useNavigate()
 
   const {
     isOpen: isContactModalOpen,
-    onOpen: onContactModalOpen,
     onClose: onContactModalClose,
+    onOpen: onContactModalOpen,
   } = useDisclosure()
 
   return (
@@ -95,9 +99,16 @@ export const AdminNavBar = (): JSX.Element => {
           {NAV_LINKS?.map((link, index) => (
             <AdminNavBarLink key={index} {...link} />
           ))}
-          <AvatarMenu fullName={user?.email} userName={user?.email}>
-            // TODO: Replace with billing route when available
-            <Menu.Item onClick={() => navigate('/billing')}>Billing</Menu.Item>
+          <AvatarMenu
+            isOpen={isMenuOpen}
+            fullName={user?.email}
+            userName={user?.email}
+            menuListProps={{ maxWidth: '19rem' }}
+          >
+            {/* TODO: Replace with billing route when available */}
+            <Menu.Item as={ReactLink} to="/billing">
+              Billing
+            </Menu.Item>
             <Menu.Item onClick={onContactModalOpen}>
               Emergency contact
             </Menu.Item>
