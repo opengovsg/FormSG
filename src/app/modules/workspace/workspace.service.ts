@@ -33,3 +33,10 @@ export const getForms = (
 ): ResultAsync<any, DatabaseError> => {
   return okAsync({ workspaceId: workspaceId })
 }
+
+export const deleteForms = (
+  workspaceId: string,
+  formIds: string[],
+): ResultAsync<any, DatabaseError> => {
+  return okAsync({ workspaceId: workspaceId, formIds: formIds })
+}
