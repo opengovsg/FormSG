@@ -3,6 +3,8 @@ import {
   Icon,
   MenuDivider,
   MenuItemProps,
+  MenuListProps,
+  Text,
   useMultiStyleConfig,
 } from '@chakra-ui/react'
 
@@ -43,7 +45,12 @@ const AvatarMenuUsername = (props: MenuItemProps): JSX.Element => {
   return (
     <Box sx={styles.usernameItem} aria-hidden>
       {userIcon}
-      {props.children}
+      <Text
+        noOfLines={1}
+        title={typeof props.children === 'string' ? props.children : undefined}
+      >
+        {props.children}
+      </Text>
     </Box>
   )
 }
@@ -61,6 +68,7 @@ export type AvatarMenuProps = {
   userName?: string
   hasNotification?: boolean
   isOpen?: boolean
+  menuListProps?: MenuListProps
   children?: React.ReactNode
 }
 
@@ -69,6 +77,7 @@ export const AvatarMenu = ({
   userName,
   hasNotification,
   isOpen,
+  menuListProps,
   children,
 }: AvatarMenuProps): JSX.Element => {
   return (
@@ -84,14 +93,14 @@ export const AvatarMenu = ({
                 boxShadow: `0 0 0 4px var(--chakra-colors-primary-300)`,
               }}
               _groupHover={{
-                bg: `var(--chakra-colors-primary-600)`,
+                bg: 'primary.600',
               }}
               _groupActive={{
-                bg: `var(--chakra-colors-primary-500)`,
+                bg: 'primary.500',
               }}
             ></Avatar>
           </AvatarMenuButton>
-          <Menu.List marginTop="0.375rem">
+          <Menu.List marginTop="0.375rem" {...menuListProps}>
             <AvatarMenuUsername>{userName}</AvatarMenuUsername>
             <AvatarMenuDivider />
             {children}
