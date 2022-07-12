@@ -9,6 +9,7 @@ import {
   DatabaseError,
   MalformedParametersError,
 } from 'src/app/modules/core/core.errors'
+import { InvalidSubmissionIdError } from 'src/app/modules/feedback/feedback.errors'
 import * as SubmissionService from 'src/app/modules/submission/submission.service'
 import MailService from 'src/app/services/mail/mail.service'
 import { createQueryWithDateParam } from 'src/app/utils/date'
@@ -719,6 +720,70 @@ describe('submission.service', () => {
       expect(result._unsafeUnwrapErr()).toEqual(
         new SendEmailConfirmationError(),
       )
+    })
+  })
+
+  describe('doesSubmissionIdExist', () => {
+    const MOCK_SUBMISSION_ID = MOCK_SUBMISSION._id
+
+    beforeEach(async () => {
+      await dbHandler.clearCollection(Submission.collection.name)
+    })
+    afterEach(() => jest.clearAllMocks())
+
+    it('should return true if submissionId already exists', async () => {
+      await Submission.create({
+        _id: MOCK_SUBMISSION_ID,
+        submissionType: SubmissionType.Encrypt,
+        form: MOCK_FORM_ID,
+        encryptedContent: 'some random encrypted content',
+        version: 1,
+        responseHash: 'hash',
+        responseSalt: 'salt',
+      })
+
+      const actualResult = await SubmissionService.doesSubmissionIdExist(
+        MOCK_SUBMISSION_ID,
+      )
+
+      expect(actualResult.isOk()).toEqual(true)
+      expect(actualResult._unsafeUnwrap()).toEqual(true)
+    })
+
+    it('should return false if submissionId does not exist', async () => {
+      await Submission.create({
+        _id: MOCK_SUBMISSION_ID,
+        submissionType: SubmissionType.Encrypt,
+        form: MOCK_FORM_ID,
+        encryptedContent: 'some random encrypted content',
+        version: 1,
+        responseHash: 'hash',
+        responseSalt: 'salt',
+      })
+
+      const actualResult = await SubmissionService.doesSubmissionIdExist(
+        new ObjectId().toHexString(),
+      )
+
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(
+        InvalidSubmissionIdError,
+      )
+    })
+
+    it('should return DatabaseError when error occurs whilst querying database', async () => {
+      const existSpy = jest.spyOn(Submission, 'exists')
+      existSpy.mockImplementationOnce(() => Promise.reject(new Error('boom')))
+
+      const actualResult = await SubmissionService.doesSubmissionIdExist(
+        MOCK_SUBMISSION_ID,
+      )
+
+      expect(existSpy).toHaveBeenCalledWith({
+        _id: MOCK_SUBMISSION_ID,
+      })
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(DatabaseError)
     })
   })
 })
