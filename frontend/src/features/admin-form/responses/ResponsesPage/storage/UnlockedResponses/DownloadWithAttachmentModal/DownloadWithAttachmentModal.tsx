@@ -10,7 +10,8 @@ import {
 
 import { XMotionBox } from '~templates/MotionBox'
 
-import { DownloadResult } from '../../types'
+import { CanceledResult, DownloadResult } from '../../types'
+import { isCanceledResult } from '../../utils/typeguards'
 import { CompleteScreen, ProgressModalContent } from '../ProgressModal'
 
 import { ConfirmationScreen } from './ConfirmationScreen'
@@ -23,7 +24,7 @@ export interface DownloadWithAttachmentModalProps
   responsesCount: number
   downloadPercentage: number
   initialState?: [DownloadWithAttachmentFlowStates, number]
-  downloadMetadata?: DownloadResult
+  downloadMetadata?: DownloadResult | CanceledResult
 }
 
 /** Exported for testing. */
@@ -98,7 +99,7 @@ export const DownloadWithAttachmentModal = ({
             <ProgressModalContent
               downloadPercentage={downloadPercentage}
               isDownloading={isDownloading}
-              onClose={onCancel}
+              onCancel={onCancel}
             >
               <Text mb="1rem">
                 Up to <b>{responsesCount.toLocaleString()}</b> files are being
@@ -107,12 +108,16 @@ export const DownloadWithAttachmentModal = ({
               </Text>
             </ProgressModalContent>
           )}
-          {currentStep === DownloadWithAttachmentFlowStates.Complete && (
-            <CompleteScreen
-              downloadMetadata={downloadMetadata}
-              onClose={onClose}
-            />
-          )}
+          {currentStep === DownloadWithAttachmentFlowStates.Complete ? (
+            isCanceledResult(downloadMetadata) ? (
+              <div>Canceled!!!</div>
+            ) : (
+              <CompleteScreen
+                downloadMetadata={downloadMetadata}
+                onClose={onClose}
+              />
+            )
+          ) : null}
         </XMotionBox>
       </ModalContent>
     </Modal>

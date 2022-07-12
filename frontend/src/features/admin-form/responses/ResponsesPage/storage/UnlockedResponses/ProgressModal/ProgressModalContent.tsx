@@ -14,14 +14,14 @@ import { ProgressModalProps } from './ProgressModal'
 
 type ProgressModalContentProps = Pick<
   ProgressModalProps,
-  'children' | 'downloadPercentage' | 'onClose' | 'isDownloading'
+  'children' | 'downloadPercentage' | 'onCancel' | 'isDownloading'
 >
 
 export const ProgressModalContent = ({
   children,
   downloadPercentage,
   isDownloading,
-  onClose,
+  onCancel,
 }: ProgressModalContentProps): JSX.Element => {
   const isMobile = useIsMobile()
 
@@ -41,7 +41,7 @@ export const ProgressModalContent = ({
         <Progress size="xl" value={downloadPercentage} hasStripe isAnimated />
       </ModalBody>
       <ModalFooter>
-        <Button colorScheme="danger" onClick={onClose} isFullWidth={isMobile}>
+        <Button colorScheme="danger" onClick={onCancel} isFullWidth={isMobile}>
           Stop download
         </Button>
       </ModalFooter>

@@ -9,7 +9,8 @@ import {
 
 import { XMotionBox } from '~templates/MotionBox'
 
-import { DownloadResult } from '../../types'
+import { CanceledResult, DownloadResult } from '../../types'
+import { isCanceledResult } from '../../utils/typeguards'
 
 import { CompleteScreen } from './CompleteScreen'
 import { ProgressModalContent } from './ProgressModalContent'
@@ -19,7 +20,8 @@ export interface ProgressModalProps
   downloadPercentage: number
   isDownloading: boolean
   children: React.ReactNode
-  downloadMetadata?: DownloadResult
+  downloadMetadata?: DownloadResult | CanceledResult
+  onCancel: () => void
 }
 
 enum ProgressFlowStates {
@@ -36,6 +38,7 @@ export const ProgressModal = ({
   isOpen,
   isDownloading,
   onClose,
+  onCancel,
   downloadPercentage,
   downloadMetadata,
   children,
@@ -75,17 +78,18 @@ export const ProgressModal = ({
           {currentStep === ProgressFlowStates.Progress && (
             <ProgressModalContent
               isDownloading={isDownloading}
-              onClose={onClose}
+              onCancel={onCancel}
               children={children}
               downloadPercentage={downloadPercentage}
             />
           )}
-          {currentStep === ProgressFlowStates.Complete && (
-            <CompleteScreen
-              downloadMetadata={downloadMetadata}
-              onClose={onClose}
-            />
-          )}
+          {currentStep === ProgressFlowStates.Complete &&
+            !isCanceledResult(downloadMetadata) && (
+              <CompleteScreen
+                downloadMetadata={downloadMetadata}
+                onClose={onClose}
+              />
+            )}
         </XMotionBox>
       </ModalContent>
     </Modal>

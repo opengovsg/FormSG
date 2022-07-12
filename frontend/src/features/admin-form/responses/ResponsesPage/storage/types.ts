@@ -46,3 +46,7 @@ export type DownloadResult = {
   errorCount: number
   unverifiedCount?: number
 }
+
+export type CanceledResult = {
+  isCanceled: true
+}

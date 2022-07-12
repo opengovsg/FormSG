@@ -12,7 +12,7 @@ import Button from '~components/Button'
 import Menu from '~components/Menu'
 
 import { useStorageResponsesContext } from '../StorageResponsesContext'
-import { DownloadResult } from '../types'
+import { CanceledResult, DownloadResult } from '../types'
 import useDecryptionWorkers from '../useDecryptionWorkers'
 
 import { DownloadWithAttachmentModal } from './DownloadWithAttachmentModal'
@@ -23,12 +23,18 @@ export const DownloadButton = (): JSX.Element => {
     isOpen: isDownloadModalOpen,
     onClose: onDownloadModalClose,
     onOpen: onDownloadModalOpen,
-  } = useDisclosure()
+  } = useDisclosure({
+    // Reset metadata if it exists.
+    onOpen: () => setDownloadMetadata(undefined),
+  })
   const {
     isOpen: isProgressModalOpen,
     onClose: onProgressModalClose,
     onOpen: onProgressModalOpen,
-  } = useDisclosure()
+  } = useDisclosure({
+    // Reset metadata if it exists.
+    onOpen: () => setDownloadMetadata(undefined),
+  })
 
   const toast = useToast({
     isClosable: true,
@@ -50,7 +56,9 @@ export const DownloadButton = (): JSX.Element => {
 
   useTimeout(onProgressModalOpen, progressModalTimeout)
 
-  const [downloadMetadata, setDownloadMetadata] = useState<DownloadResult>()
+  const [downloadMetadata, setDownloadMetadata] = useState<
+    DownloadResult | CanceledResult
+  >()
 
   const { handleExportCsvMutation, abortDecryption } = useDecryptionWorkers({
     onProgress: setDownloadCount,
@@ -125,6 +133,20 @@ export const DownloadButton = (): JSX.Element => {
     setDownloadMetadata(undefined)
   }, [onDownloadModalClose, onProgressModalClose, resetDownload])
 
+  const handleNoAttachmentsDownloadCancel = useCallback(() => {
+    handleModalClose()
+    toast({
+      status: 'warning',
+      description: 'Responses download has been canceled.',
+    })
+    setDownloadMetadata({ isCanceled: true })
+  }, [handleModalClose, toast])
+
+  const handleAttachmentsDownloadCancel = useCallback(() => {
+    resetDownload()
+    setDownloadMetadata({ isCanceled: true })
+  }, [resetDownload])
+
   return (
     <>
       {dateRangeResponsesCount !== undefined && (
@@ -133,7 +155,7 @@ export const DownloadButton = (): JSX.Element => {
           isOpen={isDownloadModalOpen}
           onClose={handleModalClose}
           onDownload={handleExportCsvWithAttachments}
-          onCancel={resetDownload}
+          onCancel={handleAttachmentsDownloadCancel}
           downloadPercentage={downloadPercentage}
           isDownloading={handleExportCsvMutation.isLoading}
           downloadMetadata={downloadMetadata}
@@ -143,6 +165,7 @@ export const DownloadButton = (): JSX.Element => {
         <ProgressModal
           isOpen={isProgressModalOpen}
           onClose={handleModalClose}
+          onCancel={handleNoAttachmentsDownloadCancel}
           downloadPercentage={downloadPercentage}
           isDownloading={handleExportCsvMutation.isLoading}
           downloadMetadata={downloadMetadata}
