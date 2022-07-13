@@ -115,16 +115,7 @@ export const MiniHeader = ({ isOpen }: MiniHeaderProps): JSX.Element | null => {
                 {title ?? 'Loading title'}
               </Text>
             </Flex>
-            <IconButton
-              variant="solid"
-              colorScheme="primary"
-              aria-label="Mobile section sidebar"
-              fontSize="1.5rem"
-              icon={<BxMenuAltLeft />}
-              d={activeSectionId ? { base: 'flex', md: 'none' } : 'none'}
-              onClick={onOpen}
-            />
-            {/* {activeSectionId ? (
+            {activeSectionId ? (
               // Section sidebar icon should only show up if sections exist
               <IconButton
                 variant="solid"
@@ -133,11 +124,11 @@ export const MiniHeader = ({ isOpen }: MiniHeaderProps): JSX.Element | null => {
                 fontSize="1.5rem"
                 icon={<BxMenuAltLeft />}
                 d={{ base: 'flex', md: 'none' }}
-                onClick={handleMobileSectionSidebarOpen}
+                onClick={onOpen}
               />
             ) : (
-              <Box h="1.5rem"></Box>
-            )} */}
+              <></>
+            )}
           </Flex>
         </Skeleton>
       </Box>
