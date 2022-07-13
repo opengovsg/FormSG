@@ -30,7 +30,7 @@ interface EndPageSettingsInputProps {
 export const EndPageSettingsInput = ({
   endPage,
 }: EndPageSettingsInputProps): JSX.Element => {
-  const { mutateFormEndPage } = useMutateFormPage()
+  const { endPageMutation } = useMutateFormPage()
 
   const {
     register,
@@ -42,7 +42,7 @@ export const EndPageSettingsInput = ({
   })
 
   const handleUpdateEndPage = handleSubmit((endPage) =>
-    mutateFormEndPage.mutate(endPage),
+    endPageMutation.mutate(endPage),
   )
 
   return (

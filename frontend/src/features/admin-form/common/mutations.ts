@@ -7,6 +7,7 @@ import {
   EndPageUpdateDto,
   FormPermission,
   FormPermissionsDto,
+  StartPageUpdateDto,
 } from '~shared/types/form/form'
 
 import { ROOT_ROUTE } from '~constants/routes'
@@ -24,7 +25,7 @@ import {
 } from '../common/AdminViewFormService'
 
 import { permissionsToRole } from './components/CollaboratorModal/utils'
-import { updateFormEndPage } from './AdminFormPageService'
+import { updateFormEndPage, updateFormStartPage } from './AdminFormPageService'
 import {
   removeSelfFromFormCollaborators,
   transferFormOwner,
@@ -316,7 +317,25 @@ export const useMutateFormPage = () => {
   const queryClient = useQueryClient()
   const toast = useToast({ status: 'success', isClosable: true })
 
-  const updateFormData = useCallback(
+  const updateStartPageFormData = useCallback(
+    (newData: StartPageUpdateDto) => {
+      queryClient.setQueryData(adminFormKeys.startPage(formId), newData)
+      // Only update adminForm if it already has prior data.
+      queryClient.setQueryData<AdminFormDto | undefined>(
+        adminFormKeys.id(formId),
+        (oldData) =>
+          oldData
+            ? {
+                ...oldData,
+                startPage: newData,
+              }
+            : undefined,
+      )
+    },
+    [formId, queryClient],
+  )
+
+  const updateEndPageFormData = useCallback(
     (newData: EndPageUpdateDto) => {
       queryClient.setQueryData(adminFormKeys.endPage(formId), newData)
       // Only update adminForm if it already has prior data.
@@ -334,7 +353,24 @@ export const useMutateFormPage = () => {
     [formId, queryClient],
   )
 
-  const handleSuccess = useCallback(
+  const handleStartPageSuccess = useCallback(
+    ({
+      newData,
+      toastDescription,
+    }: {
+      newData: StartPageUpdateDto
+      toastDescription: string
+    }) => {
+      toast.closeAll()
+      updateStartPageFormData(newData)
+      toast({
+        description: toastDescription,
+      })
+    },
+    [toast, updateStartPageFormData],
+  )
+
+  const handleEndPageSuccess = useCallback(
     ({
       newData,
       toastDescription,
@@ -343,12 +379,12 @@ export const useMutateFormPage = () => {
       toastDescription: string
     }) => {
       toast.closeAll()
-      updateFormData(newData)
+      updateEndPageFormData(newData)
       toast({
         description: toastDescription,
       })
     },
-    [toast, updateFormData],
+    [toast, updateEndPageFormData],
   )
 
   const handleError = useCallback(
@@ -362,11 +398,24 @@ export const useMutateFormPage = () => {
     [toast],
   )
 
-  const mutateFormEndPage = useMutation(
+  const startPageMutation = useMutation(
+    (startPage: StartPageUpdateDto) => updateFormStartPage(formId, startPage),
+    {
+      onSuccess: (newData) => {
+        handleStartPageSuccess({
+          newData,
+          toastDescription: 'Successfully updated form design',
+        })
+      },
+      onError: handleError,
+    },
+  )
+
+  const endPageMutation = useMutation(
     (endPage: EndPageUpdateDto) => updateFormEndPage(formId, endPage),
     {
       onSuccess: (newData) => {
-        handleSuccess({
+        handleEndPageSuccess({
           newData,
           toastDescription: 'Successfully updated form thank you page',
         })
@@ -376,7 +425,8 @@ export const useMutateFormPage = () => {
   )
 
   return {
-    mutateFormEndPage,
+    startPageMutation,
+    endPageMutation,
   }
 }
 

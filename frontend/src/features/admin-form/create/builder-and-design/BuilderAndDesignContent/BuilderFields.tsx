@@ -1,8 +1,25 @@
 import { memo, useMemo } from 'react'
+import cuid from 'cuid'
 
+import {
+  BasicField,
+  FieldCreateDto,
+  FormFieldDto,
+  TableFieldDto,
+} from '~shared/types/field'
 import { AdminFormDto } from '~shared/types/form'
+import { insertAt, replaceAt } from '~shared/utils/immutable-array-fns'
 
 import { augmentWithQuestionNo } from '~features/form/utils'
+import { augmentWithMyInfo } from '~features/myinfo/utils/augmentWithMyInfo'
+
+import { PENDING_CREATE_FIELD_ID } from '../constants'
+import {
+  BuildFieldState,
+  stateDataSelector,
+  useBuilderAndDesignStore,
+} from '../useBuilderAndDesignStore'
+import { useCreateTabForm } from '../useCreateTabForm'
 
 import FieldRow from './FieldRow'
 
@@ -34,3 +51,55 @@ export const BuilderFields = memo(
   (prev, next) =>
     prev.fields === next.fields && prev.isDraggingOver === next.isDraggingOver,
 )
+
+const getFormFieldsWhileCreating = (
+  formFields: FormFieldDto[],
+  fieldToCreate: { field: FieldCreateDto; insertionIndex: number },
+): FormFieldDto[] => {
+  if (fieldToCreate.field.fieldType === BasicField.Table) {
+    const newField: TableFieldDto = {
+      ...fieldToCreate.field,
+      _id: PENDING_CREATE_FIELD_ID,
+      columns: fieldToCreate.field.columns.map((column) => ({
+        ...column,
+        _id: cuid(),
+      })),
+    }
+    return insertAt(formFields, fieldToCreate.insertionIndex, newField)
+  }
+  return insertAt(formFields, fieldToCreate.insertionIndex, {
+    ...fieldToCreate.field,
+    _id: PENDING_CREATE_FIELD_ID,
+  })
+}
+
+const getFormFieldsWhileEditing = (
+  formFields: FormFieldDto[],
+  editingField: FormFieldDto,
+): FormFieldDto[] => {
+  const editingFieldIndex = formFields.findIndex(
+    (ff) => ff._id === editingField._id,
+  )
+  if (editingFieldIndex < 0) return formFields
+  return replaceAt(formFields, editingFieldIndex, editingField)
+}
+
+export const useBuilderFields = () => {
+  const { data: formData } = useCreateTabForm()
+  const stateData = useBuilderAndDesignStore(stateDataSelector)
+  const builderFields = useMemo(() => {
+    const existingFields = formData?.form_fields?.map(augmentWithMyInfo)
+    if (!existingFields) return null
+    if (stateData.state === BuildFieldState.EditingField) {
+      return getFormFieldsWhileEditing(existingFields, stateData.field)
+    }
+    if (stateData.state === BuildFieldState.CreatingField) {
+      return getFormFieldsWhileCreating(existingFields, stateData)
+    }
+    return existingFields
+  }, [formData, stateData])
+
+  return {
+    builderFields,
+  }
+}

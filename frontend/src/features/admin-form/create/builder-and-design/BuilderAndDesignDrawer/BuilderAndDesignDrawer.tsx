@@ -15,6 +15,7 @@ import {
   useBuilderAndDesignStore,
 } from '../useBuilderAndDesignStore'
 
+import { DesignDrawer } from './DesignDrawer/DesignDrawer'
 import { EditEndPageDrawer } from './EditEndPageDrawer/EditEndPageDrawer'
 import { EditFieldDrawer } from './EditFieldDrawer'
 import { FieldListDrawer } from './FieldListDrawer'
@@ -47,21 +48,20 @@ export const BuilderAndDesignDrawer = (): JSX.Element | null => {
 
   const renderDrawerContent = useMemo(() => {
     switch (activeTab) {
-      case DrawerTabs.Builder: {
-        if (
-          createOrEditData.state === BuildFieldState.EditingField ||
-          createOrEditData.state === BuildFieldState.CreatingField
-        ) {
-          return <EditFieldDrawer />
-        } else if (createOrEditData.state === BuildFieldState.EditingEndPage) {
-          return <EditEndPageDrawer />
-        }
-        return <FieldListDrawer />
-      }
       case DrawerTabs.Design:
-        return <div>TODO: Design drawer contents</div>
-      default:
+        return <DesignDrawer />
+      case DrawerTabs.Logic:
         return null
+      case DrawerTabs.Builder:
+        switch (createOrEditData.state) {
+          case BuildFieldState.EditingField:
+          case BuildFieldState.CreatingField:
+            return <EditFieldDrawer />
+          case BuildFieldState.EditingEndPage:
+            return <EditEndPageDrawer />
+          case BuildFieldState.Inactive:
+            return <FieldListDrawer />
+        }
     }
   }, [createOrEditData, activeTab])
 
