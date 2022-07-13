@@ -126,13 +126,13 @@ export const WorkspacePage = (): JSX.Element => {
     [isUserLoading, hasSeenAnnouncement],
   )
 
-  const EMERGENCY_CONTACT_KEY = useMemo(
-    () => EMERGENCY_CONTACT_KEY_PREFIX + user?._id,
+  const emergencyContactKey = useMemo(
+    () => (user?._id ? EMERGENCY_CONTACT_KEY_PREFIX + user._id : null),
     [user],
   )
 
   const [hasSeenEmergencyContact, setHasSeenEmergencyContact] =
-    useLocalStorage<boolean>(EMERGENCY_CONTACT_KEY)
+    useLocalStorage<boolean>(emergencyContactKey)
 
   const isEmergencyContactModalOpen = useMemo(
     () =>
