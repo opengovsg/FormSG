@@ -24,7 +24,7 @@ const RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
     maxWidth: 100, // maxWidth is only used as a limit for resizing
   },
   {
-    Header: 'Reference',
+    Header: 'Reference ID',
     accessor: 'refNo',
     minWidth: 200,
     width: 300,

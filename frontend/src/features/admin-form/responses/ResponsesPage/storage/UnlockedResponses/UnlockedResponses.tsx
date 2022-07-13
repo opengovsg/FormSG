@@ -1,8 +1,7 @@
-import { useCallback, useMemo } from 'react'
+import { useMemo } from 'react'
 import { Box, Flex, Grid, Skeleton, Stack, Text } from '@chakra-ui/react'
 import simplur from 'simplur'
 
-import Button from '~components/Button'
 import { DateRangeInput } from '~components/DatePicker/DateRangeInput'
 import Pagination from '~components/Pagination'
 
@@ -21,30 +20,24 @@ export const UnlockedResponses = (): JSX.Element => {
     filteredCount,
     isLoading,
     submissionId,
-    isAnyFetching,
     setSubmissionId,
+    isAnyFetching,
   } = useUnlockedResponses()
 
-  const countToUse = useMemo(() => {
-    if (submissionId) {
-      return filteredCount
-    }
-    return count
-  }, [filteredCount, count, submissionId])
+  const countToUse = useMemo(
+    () => (submissionId ? filteredCount : count),
+    [submissionId, filteredCount, count],
+  )
 
   const { dateRange, setDateRange } = useStorageResponsesContext()
 
-  const prettifiedResponsesCount = useMemo(() => {
-    if (filteredCount !== undefined) {
-      return simplur` ${[filteredCount]}result[|s] found`
-    } else if (count !== undefined) {
-      return simplur` ${[count]}response[|s] to date`
-    }
-  }, [count, filteredCount])
-
-  const clearSubmissionId = useCallback(() => {
-    setSubmissionId(null)
-  }, [setSubmissionId])
+  const prettifiedResponsesCount = useMemo(
+    () =>
+      submissionId
+        ? simplur` ${[filteredCount ?? 0]}result[|s] found`
+        : simplur` ${[count ?? 0]}response[|s] to date`,
+    [submissionId, filteredCount, count],
+  )
 
   return (
     <Flex flexDir="column" h="100%">
@@ -66,21 +59,20 @@ export const UnlockedResponses = (): JSX.Element => {
           gridArea="submissions"
         >
           <Skeleton isLoaded={!isAnyFetching}>
-            <Text textStyle="h4">
+            <Text textStyle="h4" mb="0.5rem">
               <Text as="span" color="primary.500">
                 {countToUse?.toLocaleString()}
               </Text>
               {prettifiedResponsesCount}
             </Text>
           </Skeleton>
-          {submissionId && (
-            <Button onClick={clearSubmissionId} variant="link">
-              Reset
-            </Button>
-          )}
         </Stack>
         <Stack direction="row" gridArea="export" justifySelf="end">
-          <SubmissionSearchbar />
+          <SubmissionSearchbar
+            submissionId={submissionId}
+            setSubmissionId={setSubmissionId}
+            isAnyFetching={isAnyFetching}
+          />
           <DateRangeInput value={dateRange} onChange={setDateRange} />
           <DownloadButton />
         </Stack>
