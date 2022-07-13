@@ -33,3 +33,28 @@ export const Desktop = Template.bind({})
 
 export const Mobile = Template.bind({})
 Mobile.parameters = getMobileViewParameters()
+
+export const CompleteStateDesktop = Template.bind({})
+CompleteStateDesktop.args = {
+  downloadMetadata: {
+    errorCount: 0,
+    expectedCount: 9001,
+    successCount: 9001,
+  },
+}
+
+export const CompleteStateMobile = Template.bind({})
+CompleteStateMobile.args = CompleteStateDesktop.args
+CompleteStateMobile.parameters = getMobileViewParameters()
+
+export const PartialSuccessStateDesktop = Template.bind({})
+PartialSuccessStateDesktop.args = {
+  downloadMetadata: {
+    errorCount: 1,
+    expectedCount: 9001,
+    successCount: 9000,
+  },
+}
+export const PartialSuccessStateMobile = Template.bind({})
+PartialSuccessStateMobile.args = PartialSuccessStateDesktop.args
+PartialSuccessStateMobile.parameters = getMobileViewParameters()
