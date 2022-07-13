@@ -37,7 +37,9 @@ export default {
   decorators: [
     (storyFn) => (
       <PublicFormProvider formId="61540ece3d4a6e50ac0cc6ff">
-        {storyFn()}
+        <FormSectionsProvider form={formWithSections}>
+          {storyFn()}
+        </FormSectionsProvider>
       </PublicFormProvider>
     ),
   ],
