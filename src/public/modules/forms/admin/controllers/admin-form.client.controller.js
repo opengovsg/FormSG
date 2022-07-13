@@ -147,7 +147,7 @@ function AdminFormController(
       case StatusCodes.CONFLICT:
       case StatusCodes.BAD_REQUEST:
         errorMessage =
-          'This page seems outdated, and your changes could not be saved. Please refresh.'
+          'Your changes could not be saved. The page may be outdated, or your input is invalid. Please refresh and try again.'
         break
       case StatusCodes.FORBIDDEN:
       case StatusCodes.UNAUTHORIZED:
