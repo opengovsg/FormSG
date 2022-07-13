@@ -22,10 +22,7 @@ import IconButton from '~components/IconButton'
 import { usePublicAuthMutations } from '~features/public-form/mutations'
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
-import {
-  FormSectionsProvider,
-  useFormSections,
-} from '../FormFields/FormSectionsContext'
+import { useFormSections } from '../FormFields/FormSectionsContext'
 
 const useFormHeader = () => {
   const { form, spcpSession, formId, submissionData, miniHeaderRef } =
@@ -145,7 +142,6 @@ export const FormHeader = (): JSX.Element | null => {
     loggedInId,
     handleLogout,
     showHeader,
-    form,
   } = useFormHeader()
   const { isOpen, onOpen, onClose } = useDisclosure()
 
@@ -166,9 +162,7 @@ export const FormHeader = (): JSX.Element | null => {
 
   return (
     <>
-      <FormSectionsProvider form={form}>
-        <MiniHeader isOpen={isOpen} />
-      </FormSectionsProvider>
+      <MiniHeader isOpen={isOpen} />
       <Flex
         px={{ base: '1.5rem', md: '3rem' }}
         py={{ base: '2rem', md: '3rem' }}

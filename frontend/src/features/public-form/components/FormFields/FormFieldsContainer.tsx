@@ -9,7 +9,6 @@ import { FormAuth } from '../FormAuth'
 
 import { FormFields } from './FormFields'
 import { FormFieldsSkeleton } from './FormFieldsSkeleton'
-import { FormSectionsProvider } from './FormSectionsContext'
 import { SectionSidebar } from './SectionSidebar'
 
 export const FormFieldsContainer = (): JSX.Element | null => {
@@ -45,14 +44,12 @@ export const FormFieldsContainer = (): JSX.Element | null => {
   if (submissionData) return null
 
   return (
-    <FormSectionsProvider form={form}>
-      <Flex justify="center">
-        {isAuthRequired ? null : <SectionSidebar />}
-        <Box w="100%" minW={0} h="fit-content" maxW="57rem">
-          {renderFields}
-        </Box>
-        {isAuthRequired ? null : <Spacer />}
-      </Flex>
-    </FormSectionsProvider>
+    <Flex justify="center">
+      {isAuthRequired ? null : <SectionSidebar />}
+      <Box w="100%" minW={0} h="fit-content" maxW="57rem">
+        {renderFields}
+      </Box>
+      {isAuthRequired ? null : <Spacer />}
+    </Flex>
   )
 }

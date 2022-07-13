@@ -4,6 +4,7 @@ import FormEndPage from './components/FormEndPage'
 import FormFields from './components/FormFields'
 import { FormFooter } from './components/FormFooter'
 import FormStartPage from './components/FormStartPage'
+import { PublicFormWithHeaderWrapper } from './components/PublicFormWithHeaderWrapper'
 import { PublicFormWrapper } from './components/PublicFormWrapper'
 import { PublicFormProvider } from './PublicFormProvider'
 
@@ -13,12 +14,14 @@ export const PublicFormPage = (): JSX.Element => {
 
   return (
     <PublicFormProvider formId={formId}>
-      <FormStartPage />
-      <PublicFormWrapper>
-        <FormFields />
-        <FormEndPage />
-        <FormFooter />
-      </PublicFormWrapper>
+      <PublicFormWithHeaderWrapper>
+        <FormStartPage />
+        <PublicFormWrapper>
+          <FormFields />
+          <FormEndPage />
+          <FormFooter />
+        </PublicFormWrapper>
+      </PublicFormWithHeaderWrapper>
     </PublicFormProvider>
   )
 }
