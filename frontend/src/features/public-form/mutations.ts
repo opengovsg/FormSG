@@ -54,7 +54,12 @@ export const usePublicAuthMutations = (formId: string) => {
   }
 }
 
-export const usePublicFormMutations = (formId: string) => {
+export const usePublicFormMutations = (
+  formId: string,
+  submissionId: string,
+) => {
+  const toast = useToast({ status: 'success', isClosable: true })
+
   const submitEmailModeFormMutation = useMutation(
     (args: Omit<SubmitEmailFormArgs, 'formId'>) => {
       return submitEmailModeForm({ ...args, formId })
@@ -68,7 +73,16 @@ export const usePublicFormMutations = (formId: string) => {
   )
 
   const submitFormFeedbackMutation = useMutation(
-    (args: SubmitFormFeedbackBodyDto) => submitFormFeedback(formId, args),
+    (args: SubmitFormFeedbackBodyDto) =>
+      submitFormFeedback(formId, submissionId, args),
+    {
+      onError: (error: Error) => {
+        toast({
+          description: error.message,
+          status: 'danger',
+        })
+      },
+    },
   )
 
   return {

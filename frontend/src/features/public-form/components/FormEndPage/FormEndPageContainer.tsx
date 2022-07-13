@@ -15,7 +15,10 @@ export const FormEndPageContainer = ({
   isPreview?: boolean
 }): JSX.Element | null => {
   const { form, formId, submissionData } = usePublicFormContext()
-  const { submitFormFeedbackMutation } = usePublicFormMutations(formId)
+  const { submitFormFeedbackMutation } = usePublicFormMutations(
+    formId,
+    submissionData?.id ?? '',
+  )
   const toast = useToast()
   const [isFeedbackSubmitted, setIsFeedbackSubmitted] = useState(false)
 
