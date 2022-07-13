@@ -20,12 +20,8 @@ import { SidebarLink } from './SidebarLink'
 
 export const SectionSidebar = (): JSX.Element => {
   const { activeSectionId } = useFormSections()
-  const {
-    miniHeaderRef,
-    sectionScrollData,
-    isMobileSectionSidebarOpen,
-    handleMobileSectionSidebarClose,
-  } = usePublicFormContext()
+  const { miniHeaderRef, sectionScrollData, isOpen, onClose } =
+    usePublicFormContext()
   const isMobile = useIsMobile()
 
   // Used for offsetting the section sidebar when the mini header is open.
@@ -38,12 +34,8 @@ export const SectionSidebar = (): JSX.Element => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [miniHeaderRef?.current?.clientHeight])
 
-  return isMobile && isMobileSectionSidebarOpen && activeSectionId ? (
-    <Drawer
-      isOpen={isMobileSectionSidebarOpen}
-      onClose={handleMobileSectionSidebarClose}
-      placement="left"
-    >
+  return isMobile && isOpen && activeSectionId ? (
+    <Drawer isOpen={isOpen} onClose={onClose} placement="left">
       <DrawerOverlay />
       <DrawerContent maxW="16.5rem">
         <DrawerBody px={0} py="1.25rem">

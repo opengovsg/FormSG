@@ -76,7 +76,7 @@ export interface MiniHeaderProps {
 
 // Exported for testing.
 export const MiniHeader = ({ isOpen }: MiniHeaderProps): JSX.Element | null => {
-  const { handleMobileSectionSidebarOpen } = usePublicFormContext()
+  const { onOpen } = usePublicFormContext()
   const { activeSectionId } = useFormSections()
 
   const { title, titleBg, titleColour, showHeader, miniHeaderRef } =
@@ -122,7 +122,7 @@ export const MiniHeader = ({ isOpen }: MiniHeaderProps): JSX.Element | null => {
               fontSize="1.5rem"
               icon={<BxMenuAltLeft />}
               d={activeSectionId ? { base: 'flex', md: 'none' } : 'none'}
-              onClick={handleMobileSectionSidebarOpen}
+              onClick={onOpen}
             />
             {/* {activeSectionId ? (
               // Section sidebar icon should only show up if sections exist

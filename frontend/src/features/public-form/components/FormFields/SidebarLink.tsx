@@ -25,8 +25,7 @@ export const SidebarLink = ({
   sectionMeta,
 }: SidebarLinkProps): JSX.Element => {
   const { sectionRefs } = useFormSections()
-  const { miniHeaderRef, handleMobileSectionSidebarClose } =
-    usePublicFormContext()
+  const { miniHeaderRef, onClose } = usePublicFormContext()
 
   const handleClick = useCallback(() => {
     const sectionRef = sectionRefs[sectionMeta._id]
@@ -37,18 +36,13 @@ export const SidebarLink = ({
     // Add additional buffer of 16px for scroll padding.
     const offsetPosition = sectionPosition - headerOffset - 16
 
-    handleMobileSectionSidebarClose()
+    onClose()
 
     window.scrollBy({
       top: offsetPosition,
       behavior: 'smooth',
     })
-  }, [
-    miniHeaderRef,
-    sectionMeta._id,
-    sectionRefs,
-    handleMobileSectionSidebarClose,
-  ])
+  }, [miniHeaderRef, sectionMeta._id, sectionRefs, onClose])
 
   const styles = useStyleConfig('Link', {
     colorScheme: 'secondary',
