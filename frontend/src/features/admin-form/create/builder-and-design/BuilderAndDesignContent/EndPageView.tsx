@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useMemo } from 'react'
 import { Box, Flex, FlexProps, Image, Stack, Text } from '@chakra-ui/react'
 import { format } from 'date-fns'
 
@@ -10,21 +10,18 @@ import { ThankYouSvgr } from '~features/public-form/components/FormEndPage/compo
 
 import {
   endPageDataSelector,
-  setStateSelector,
   useEndPageBuilderStore,
 } from '../useEndPageBuilderStore'
 
 export const EndPageView = ({ ...props }: FlexProps): JSX.Element => {
   const { data: form } = useAdminForm()
-  const { endPageData, setState } = useEndPageBuilderStore((state) => ({
-    endPageData: endPageDataSelector(state),
-    setState: setStateSelector(state),
-  }))
+  const endPageFromStore = useEndPageBuilderStore(endPageDataSelector)
 
-  useEffect(() => {
-    if (form) setState(form.endPage)
-  }, [form, setState])
-
+  // Switch over to the store's start page once the drawer is loaded.
+  const endPage = useMemo(
+    () => (endPageFromStore ? endPageFromStore : form?.endPage),
+    [endPageFromStore, form?.endPage],
+  )
   return (
     <Flex
       m={{ base: 0, md: '2rem' }}
@@ -47,13 +44,13 @@ export const EndPageView = ({ ...props }: FlexProps): JSX.Element => {
         <Box px="4rem" pt="3rem">
           <Flex justifyContent="space-between" alignItems="center">
             <Text textStyle="h2" color="secondary.500">
-              {endPageData.title}
+              {endPage?.title}
             </Text>
             <BxsChevronUp color="secondary.500" />
           </Flex>
 
           <Text textStyle="subhead-1" color="secondary.500" mt="1rem">
-            {endPageData.paragraph}
+            {endPage?.paragraph}
           </Text>
 
           <Text textStyle="subhead-1" color="secondary.500" mt="2.25rem">
@@ -67,7 +64,7 @@ export const EndPageView = ({ ...props }: FlexProps): JSX.Element => {
 
           <Flex pt="1.75rem" gap="2rem">
             <Button>Save this response</Button>
-            <Button variant="clear">{endPageData.buttonText}</Button>
+            <Button variant="clear">{endPage?.buttonText}</Button>
           </Flex>
         </Box>
       </Stack>

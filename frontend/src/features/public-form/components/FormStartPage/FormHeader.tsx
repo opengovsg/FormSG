@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback } from 'react'
 import { BiLogOutCircle } from 'react-icons/bi'
 import { Waypoint } from 'react-waypoint'
 import {
@@ -10,9 +10,8 @@ import {
   Text,
   useDisclosure,
 } from '@chakra-ui/react'
-import simplur from 'simplur'
 
-import { FormAuthType, FormColorTheme } from '~shared/types/form/form'
+import { FormAuthType } from '~shared/types'
 
 import { BxsTimeFive } from '~assets/icons/BxsTimeFive'
 import Button from '~components/Button'
@@ -20,30 +19,16 @@ import Button from '~components/Button'
 import { usePublicAuthMutations } from '~features/public-form/mutations'
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
+import { useFormStartPageSettings } from './useFormStartPageSettings'
+
 const useFormHeader = () => {
   const { form, spcpSession, formId, submissionData, miniHeaderRef } =
     usePublicFormContext()
   const { handleLogoutMutation } = usePublicAuthMutations(formId)
 
-  const titleColour = useMemo(() => {
-    if (form?.startPage.colorTheme === FormColorTheme.Orange) {
-      return 'secondary.700'
-    }
-    return 'white'
-  }, [form?.startPage.colorTheme])
-
-  const titleBg = useMemo(
-    () =>
-      form?.startPage.colorTheme
-        ? `theme-${form.startPage.colorTheme}.500`
-        : `neutral.200`,
-    [form?.startPage.colorTheme],
+  const { titleColor, titleBg, estTimeString } = useFormStartPageSettings(
+    form?.startPage,
   )
-
-  const estTimeString = useMemo(() => {
-    if (!form?.startPage.estTimeTaken) return ''
-    return simplur`${form?.startPage.estTimeTaken} min[|s] estimated time to complete`
-  }, [form])
 
   const handleLogout = useCallback(() => {
     if (!form || form?.authType === FormAuthType.NIL) return
@@ -54,7 +39,7 @@ const useFormHeader = () => {
     title: form?.title,
     estTimeString,
     titleBg,
-    titleColour,
+    titleColor,
     loggedInId: spcpSession?.userName,
     showHeader: !submissionData,
     miniHeaderRef,
@@ -68,7 +53,7 @@ export interface MiniHeaderProps {
 
 // Exported for testing.
 export const MiniHeader = ({ isOpen }: MiniHeaderProps): JSX.Element | null => {
-  const { title, titleBg, titleColour, showHeader, miniHeaderRef } =
+  const { title, titleBg, titleColor, showHeader, miniHeaderRef } =
     useFormHeader()
 
   if (!showHeader) return null
@@ -84,7 +69,7 @@ export const MiniHeader = ({ isOpen }: MiniHeaderProps): JSX.Element | null => {
     >
       <Box bg={titleBg} px="2rem" py="1rem">
         <Skeleton isLoaded={!!title}>
-          <Text as="h2" textStyle="h2" textAlign="start" color={titleColour}>
+          <Text as="h2" textStyle="h2" textAlign="start" color={titleColor}>
             {title ?? 'Loading title'}
           </Text>
         </Skeleton>
@@ -98,7 +83,7 @@ export const FormHeader = (): JSX.Element | null => {
     title,
     estTimeString,
     titleBg,
-    titleColour,
+    titleColor,
     loggedInId,
     handleLogout,
     showHeader,
@@ -133,7 +118,7 @@ export const FormHeader = (): JSX.Element | null => {
           maxW="57rem"
           flexDir="column"
           align={{ base: 'start', md: 'center' }}
-          color={titleColour}
+          color={titleColor}
         >
           <Skeleton isLoaded={!!title}>
             <Text

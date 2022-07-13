@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 import { UnpackNestedValue, useForm, useWatch } from 'react-hook-form'
 import { useDebounce } from 'react-use'
 import { FormControl, Stack } from '@chakra-ui/react'
@@ -23,7 +23,8 @@ import {
   useBuilderAndDesignStore,
 } from '../../useBuilderAndDesignStore'
 import {
-  setStateSelector,
+  resetEndPageDataSelector,
+  setEndPageDataSelector,
   useEndPageBuilderStore,
 } from '../../useEndPageBuilderStore'
 import { DrawerContentContainer } from '../EditFieldDrawer/edit-fieldtype/common/DrawerContentContainer'
@@ -39,7 +40,17 @@ export const EndPageBuilderInput = ({
   const { endPageMutation } = useMutateFormPage()
 
   const closeBuilderDrawer = useBuilderAndDesignStore(setToInactiveSelector)
-  const setEndPageBuilderState = useEndPageBuilderStore(setStateSelector)
+  const { setEndPageBuilderState, resetEndPageBuilderState } =
+    useEndPageBuilderStore((state) => ({
+      setEndPageBuilderState: setEndPageDataSelector(state),
+      resetEndPageBuilderState: resetEndPageDataSelector(state),
+    }))
+
+  // Load the end page into the store
+  useEffect(() => {
+    setEndPageBuilderState(endPage)
+    return () => resetEndPageBuilderState()
+  }, [endPage, setEndPageBuilderState, resetEndPageBuilderState])
 
   const {
     register,
@@ -129,8 +140,8 @@ export const EndPageBuilderInput = ({
   )
 }
 
-export const EditEndPage = (): JSX.Element => {
+export const EditEndPage = (): JSX.Element | null => {
   const { data: form } = useAdminForm()
 
-  return form ? <EndPageBuilderInput endPage={form.endPage} /> : <></>
+  return form ? <EndPageBuilderInput endPage={form.endPage} /> : null
 }

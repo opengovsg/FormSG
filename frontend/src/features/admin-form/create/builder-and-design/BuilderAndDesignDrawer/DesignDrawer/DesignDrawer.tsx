@@ -1,4 +1,4 @@
-import { Fragment, useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 import {
   Controller,
   UnpackNestedValue,
@@ -27,13 +27,17 @@ import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import NumberInput from '~components/NumberInput'
 
 import { useMutateFormPage } from '~features/admin-form/common/mutations'
-import { useAdminForm } from '~features/admin-form/common/queries'
 
 import {
   setToInactiveSelector,
   useBuilderAndDesignStore,
 } from '../../useBuilderAndDesignStore'
-import { setStateSelector, useDesignStore } from '../../useDesignStore'
+import { useCreateTabForm } from '../../useCreateTabForm'
+import {
+  resetStartPageDataSelector,
+  setStartPageDataSelector,
+  useDesignStore,
+} from '../../useDesignStore'
 import { validateNumberInput } from '../../utils/validateNumberInput'
 import { CreatePageDrawerCloseButton } from '../CreatePageDrawerCloseButton'
 import { DrawerContentContainer } from '../EditFieldDrawer/edit-fieldtype/common/DrawerContentContainer'
@@ -49,7 +53,16 @@ const DesignDrawerInput = ({
   const { startPageMutation } = useMutateFormPage()
 
   const closeBuilderDrawer = useBuilderAndDesignStore(setToInactiveSelector)
-  const setDesignState = useDesignStore(setStateSelector)
+  const { setDesignState, resetDesignState } = useDesignStore((state) => ({
+    setDesignState: setStartPageDataSelector(state),
+    resetDesignState: resetStartPageDataSelector(state),
+  }))
+
+  // Load the start page into the store
+  useEffect(() => {
+    setDesignState(startPage)
+    return () => resetDesignState()
+  }, [startPage, setDesignState, resetDesignState])
 
   const {
     register,
@@ -61,8 +74,7 @@ const DesignDrawerInput = ({
     defaultValues: startPage,
   })
 
-  // Save design
-
+  // Save design functions
   const handleDesignChanges = useCallback(
     (startPageInputs) => {
       setDesignState({ ...(startPageInputs as FormStartPage) })
@@ -157,7 +169,7 @@ const DesignDrawerInput = ({
   )
 }
 
-export const DesignDrawer = (): JSX.Element => {
-  const { data: form } = useAdminForm()
-  return form ? <DesignDrawerInput startPage={form.startPage} /> : <></>
+export const DesignDrawer = (): JSX.Element | null => {
+  const { data: form } = useCreateTabForm()
+  return form ? <DesignDrawerInput startPage={form.startPage} /> : null
 }

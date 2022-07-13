@@ -5,8 +5,9 @@ import { devtools } from 'zustand/middleware'
 import { FormEndPage } from '~shared/types'
 
 export type EndPageBuilderStore = {
-  endPageData: FormEndPage
-  setState: (endPage: FormEndPage) => void
+  endPageData: FormEndPage | null
+  setEndPageData: (endPage: FormEndPage) => void
+  resetEndPageData: () => void
 }
 
 export const useEndPageBuilderStore = create<EndPageBuilderStore>(
@@ -17,12 +18,15 @@ export const useEndPageBuilderStore = create<EndPageBuilderStore>(
       buttonText: 'Submit another form',
       buttonLink: '',
     },
-    setState: (endPage) => {
+    setEndPageData: (endPage) => {
       const current = get()
       if (isEqual(current.endPageData, endPage)) return
       set({
         endPageData: endPage,
       })
+    },
+    resetEndPageData: () => {
+      set({ endPageData: null })
     },
   })),
 )
@@ -31,6 +35,10 @@ export const endPageDataSelector = (
   state: EndPageBuilderStore,
 ): EndPageBuilderStore['endPageData'] => state.endPageData
 
-export const setStateSelector = (
+export const setEndPageDataSelector = (
   state: EndPageBuilderStore,
-): EndPageBuilderStore['setState'] => state.setState
+): EndPageBuilderStore['setEndPageData'] => state.setEndPageData
+
+export const resetEndPageDataSelector = (
+  state: EndPageBuilderStore,
+): EndPageBuilderStore['resetEndPageData'] => state.resetEndPageData
