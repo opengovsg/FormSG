@@ -2,9 +2,9 @@ import { useParams } from 'react-router-dom'
 
 import FormEndPage from './components/FormEndPage'
 import FormFields from './components/FormFields'
+import { FormSectionsProvider } from './components/FormFields/FormSectionsContext'
 import { FormFooter } from './components/FormFooter'
 import FormStartPage from './components/FormStartPage'
-import { PublicFormWithHeaderWrapper } from './components/PublicFormWithHeaderWrapper'
 import { PublicFormWrapper } from './components/PublicFormWrapper'
 import { PublicFormProvider } from './PublicFormProvider'
 
@@ -14,14 +14,14 @@ export const PublicFormPage = (): JSX.Element => {
 
   return (
     <PublicFormProvider formId={formId}>
-      <PublicFormWithHeaderWrapper>
+      <FormSectionsProvider>
         <FormStartPage />
         <PublicFormWrapper>
           <FormFields />
           <FormEndPage />
           <FormFooter />
         </PublicFormWrapper>
-      </PublicFormWithHeaderWrapper>
+      </FormSectionsProvider>
     </PublicFormProvider>
   )
 }
