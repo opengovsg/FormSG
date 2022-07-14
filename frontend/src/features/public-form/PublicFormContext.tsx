@@ -41,13 +41,13 @@ export interface PublicFormContextProps
    */
   captchaContainerId?: string
   /** Whether mobile section sidebar is open */
-  isOpen: boolean
+  isMobileDrawerOpen: boolean
   /**
    * Callbacks to be invoked when mobile section sidebar
    * is opened and closed
    */
-  onOpen: () => void
-  onClose: () => void
+  onMobileDrawerOpen: () => void
+  onMobileDrawerClose: () => void
 }
 
 export const PublicFormContext = createContext<

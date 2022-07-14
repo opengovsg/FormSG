@@ -49,7 +49,11 @@ interface PublicFormProviderProps {
 
 export function useCommonFormProvider(formId: string) {
   // For mobile section sidebar
-  const { isOpen, onOpen, onClose } = useDisclosure()
+  const {
+    isOpen: isMobileDrawerOpen,
+    onOpen: onMobileDrawerOpen,
+    onClose: onMobileDrawerClose,
+  } = useDisclosure()
 
   const [vfnTransaction, setVfnTransaction] =
     useState<FetchNewTransactionResponse>()
@@ -92,9 +96,9 @@ export function useCommonFormProvider(formId: string) {
     expiryInMs,
     miniHeaderRef,
     getTransactionId,
-    isOpen,
-    onOpen,
-    onClose,
+    isMobileDrawerOpen,
+    onMobileDrawerOpen,
+    onMobileDrawerClose,
   }
 }
 
