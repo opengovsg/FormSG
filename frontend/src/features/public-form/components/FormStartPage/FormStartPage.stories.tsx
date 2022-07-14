@@ -1,20 +1,11 @@
 import { Meta, Story } from '@storybook/react'
 
 import { BasicField } from '~shared/types'
-import {
-  FormAuthType,
-  FormColorTheme,
-  FormId,
-  FormResponseMode,
-  FormStatus,
-  PublicFormDto,
-} from '~shared/types/form/form'
+import { FormColorTheme } from '~shared/types/form/form'
 import { FormLogoState } from '~shared/types/form/form_logo'
 
-import { MOCK_FORM_FIELDS } from '~/mocks/msw/handlers/admin-form'
 import { envHandlers } from '~/mocks/msw/handlers/env'
 import {
-  BASE_FORM,
   getCustomLogoResponse,
   getPublicFormResponse,
 } from '~/mocks/msw/handlers/public-form'
@@ -37,9 +28,7 @@ export default {
   decorators: [
     (storyFn) => (
       <PublicFormProvider formId="61540ece3d4a6e50ac0cc6ff">
-        <FormSectionsProvider form={formWithSections}>
-          {storyFn()}
-        </FormSectionsProvider>
+        <FormSectionsProvider>{storyFn()}</FormSectionsProvider>
       </PublicFormProvider>
     ),
   ],
@@ -187,62 +176,12 @@ ColorThemeRed.parameters = {
     }),
   ],
 }
-interface MiniHeaderWithFormProps extends MiniHeaderProps {
-  form: PublicFormDto
-}
 
-const formWithSections: PublicFormDto = {
-  _id: 'testFormId' as FormId,
-  admin: BASE_FORM.admin,
-  authType: FormAuthType.NIL,
-  endPage: BASE_FORM.endPage,
-  form_logics: BASE_FORM.form_logics,
-  hasCaptcha: BASE_FORM.hasCaptcha,
-  startPage: {
-    colorTheme: FormColorTheme.Blue,
-    logo: { state: FormLogoState.Default },
-  },
-  status: FormStatus.Public,
-  title: BASE_FORM.title,
-  responseMode: FormResponseMode.Email as const,
-  form_fields: MOCK_FORM_FIELDS,
-}
-
-const formWithoutSections: PublicFormDto = {
-  _id: 'testFormId' as FormId,
-  admin: BASE_FORM.admin,
-  authType: FormAuthType.NIL,
-  endPage: BASE_FORM.endPage,
-  form_logics: BASE_FORM.form_logics,
-  hasCaptcha: BASE_FORM.hasCaptcha,
-  startPage: {
-    colorTheme: FormColorTheme.Blue,
-    logo: { state: FormLogoState.Default },
-  },
-  status: FormStatus.Public,
-  title: BASE_FORM.title,
-  responseMode: FormResponseMode.Email as const,
-  form_fields: [
-    {
-      title: 'Yes/No',
-      description: '',
-      required: true,
-      disabled: false,
-      fieldType: BasicField.YesNo,
-      _id: '5da04eb5e397fc0013f63c7e',
-      globalId: 'CnGRpTpnqSrISnk28yLDvKt8MI2HCFJuYbk72ie0l56',
-    },
-  ],
-}
-
-export const MiniHeader: Story<MiniHeaderWithFormProps> = (args) => (
-  <FormSectionsProvider {...args}>
-    <MiniHeaderComponent {...args} />
-  </FormSectionsProvider>
+export const MiniHeader: Story<MiniHeaderProps> = (args) => (
+  <MiniHeaderComponent {...args} />
 )
 MiniHeader.args = {
   isOpen: true,
-  form: formWithSections,
 }
 MiniHeader.parameters = {
   msw: [
@@ -257,12 +196,8 @@ MiniHeader.parameters = {
   ],
 }
 
-export const MiniHeaderMobileWithSections: Story<MiniHeaderWithFormProps> = (
-  args,
-) => (
-  <FormSectionsProvider {...args}>
-    <MiniHeaderComponent {...args} />
-  </FormSectionsProvider>
+export const MiniHeaderMobileWithSections: Story<MiniHeaderProps> = (args) => (
+  <MiniHeaderComponent {...args} />
 )
 MiniHeaderMobileWithSections.args = {
   ...MiniHeader.args,
@@ -273,19 +208,33 @@ MiniHeaderMobileWithSections.parameters = {
   ...getMobileViewParameters(),
 }
 
-export const MiniHeaderMobileWithoutSections: Story<MiniHeaderWithFormProps> = (
+export const MiniHeaderMobileWithoutSections: Story<MiniHeaderProps> = (
   args,
-) => (
-  <FormSectionsProvider {...args}>
-    <MiniHeaderComponent {...args} />
-  </FormSectionsProvider>
-)
+) => <MiniHeaderComponent {...args} />
 MiniHeaderMobileWithoutSections.args = {
-  isOpen: true,
-  form: formWithoutSections,
+  ...MiniHeader.args,
 }
-
 MiniHeaderMobileWithoutSections.parameters = {
-  ...MiniHeader.parameters,
+  msw: [
+    getPublicFormResponse({
+      overrides: {
+        form: {
+          title: 'storybook test title without sections',
+          form_fields: [
+            {
+              title: 'Yes/No',
+              description: '',
+              required: true,
+              disabled: false,
+              fieldType: BasicField.YesNo,
+              _id: '5da04eb5e397fc0013f63c7e',
+              globalId: 'CnGRpTpnqSrISnk28yLDvKt8MI2HCFJuYbk72ie0l56',
+            },
+          ],
+        },
+      },
+      delay: 0,
+    }),
+  ],
   ...getMobileViewParameters(),
 }
