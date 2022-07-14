@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { RefObject, useCallback } from 'react'
 import { BiLogOutCircle } from 'react-icons/bi'
 import { Waypoint } from 'react-waypoint'
 import {
@@ -11,53 +11,25 @@ import {
   useDisclosure,
 } from '@chakra-ui/react'
 
-import { FormAuthType } from '~shared/types'
-
 import { BxsTimeFive } from '~assets/icons/BxsTimeFive'
 import Button from '~components/Button'
 
-import { usePublicAuthMutations } from '~features/public-form/mutations'
-import { usePublicFormContext } from '~features/public-form/PublicFormContext'
-
-import { useFormStartPageSettings } from './useFormStartPageSettings'
-
-const useFormHeader = () => {
-  const { form, spcpSession, formId, submissionData, miniHeaderRef } =
-    usePublicFormContext()
-  const { handleLogoutMutation } = usePublicAuthMutations(formId)
-
-  const { titleColor, titleBg, estTimeString } = useFormStartPageSettings(
-    form?.startPage,
-  )
-
-  const handleLogout = useCallback(() => {
-    if (!form || form?.authType === FormAuthType.NIL) return
-    return handleLogoutMutation.mutate(form.authType)
-  }, [form, handleLogoutMutation])
-
-  return {
-    title: form?.title,
-    estTimeString,
-    titleBg,
-    titleColor,
-    loggedInId: spcpSession?.userName,
-    showHeader: !submissionData,
-    miniHeaderRef,
-    handleLogout,
-  }
-}
-
-export interface MiniHeaderProps {
+export interface MiniHeaderProps
+  extends Pick<
+    FormHeaderInputProps,
+    'title' | 'titleBg' | 'titleColor' | 'miniHeaderRef'
+  > {
   isOpen: boolean
 }
 
 // Exported for testing.
-export const MiniHeader = ({ isOpen }: MiniHeaderProps): JSX.Element | null => {
-  const { title, titleBg, titleColor, showHeader, miniHeaderRef } =
-    useFormHeader()
-
-  if (!showHeader) return null
-
+export const MiniHeader = ({
+  title,
+  titleBg,
+  titleColor,
+  miniHeaderRef,
+  isOpen,
+}: MiniHeaderProps): JSX.Element | null => {
   return (
     <Slide
       // Screen readers do not need to know of the existence of this component.
@@ -78,16 +50,25 @@ export const MiniHeader = ({ isOpen }: MiniHeaderProps): JSX.Element | null => {
   )
 }
 
-export const FormHeader = (): JSX.Element | null => {
-  const {
-    title,
-    estTimeString,
-    titleBg,
-    titleColor,
-    loggedInId,
-    handleLogout,
-    showHeader,
-  } = useFormHeader()
+interface FormHeaderInputProps {
+  title?: string
+  estTimeString: string
+  titleBg: string
+  titleColor: string
+  loggedInId?: string
+  miniHeaderRef?: RefObject<HTMLDivElement>
+  handleLogout?: () => void
+}
+
+export const FormHeader = ({
+  title,
+  estTimeString,
+  titleBg,
+  titleColor,
+  loggedInId,
+  miniHeaderRef,
+  handleLogout,
+}: FormHeaderInputProps): JSX.Element | null => {
   const { isOpen, onOpen, onClose } = useDisclosure()
 
   const handlePositionChange = useCallback(
@@ -103,11 +84,15 @@ export const FormHeader = (): JSX.Element | null => {
     [onClose, onOpen],
   )
 
-  if (!showHeader) return null
-
   return (
     <>
-      <MiniHeader isOpen={isOpen} />
+      <MiniHeader
+        title={title}
+        titleBg={titleBg}
+        titleColor={titleColor}
+        miniHeaderRef={miniHeaderRef}
+        isOpen={isOpen}
+      />
       <Flex
         px={{ base: '1.5rem', md: '3rem' }}
         py={{ base: '2rem', md: '3rem' }}
@@ -144,6 +129,7 @@ export const FormHeader = (): JSX.Element | null => {
               aria-label="Log out"
               rightIcon={<BiLogOutCircle fontSize="1.5rem" />}
               onClick={handleLogout}
+              isDisabled={!handleLogout}
             >
               {loggedInId} - Log out
             </Button>

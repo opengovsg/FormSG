@@ -58,7 +58,7 @@ const DesignDrawerInput = ({
     resetDesignState: resetStartPageDataSelector(state),
   }))
 
-  // Load the start page into the store
+  // Load the start page into the store when use opens the drawer
   useEffect(() => {
     setDesignState(startPage)
     return () => resetDesignState()

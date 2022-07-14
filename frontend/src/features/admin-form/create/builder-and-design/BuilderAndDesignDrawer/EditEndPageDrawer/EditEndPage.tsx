@@ -46,7 +46,7 @@ export const EndPageBuilderInput = ({
       resetEndPageBuilderState: resetEndPageDataSelector(state),
     }))
 
-  // Load the end page into the store
+  // Load the end page into the store when user opens customization page
   useEffect(() => {
     setEndPageBuilderState(endPage)
     return () => resetEndPageBuilderState()

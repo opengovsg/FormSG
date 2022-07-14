@@ -17,7 +17,8 @@ export const EndPageView = ({ ...props }: FlexProps): JSX.Element => {
   const { data: form } = useAdminForm()
   const endPageFromStore = useEndPageBuilderStore(endPageDataSelector)
 
-  // Switch over to the store's start page once the drawer is loaded.
+  // Switch over to store's end page once the store is populated (done when
+  // user opens customization page)
   const endPage = useMemo(
     () => (endPageFromStore ? endPageFromStore : form?.endPage),
     [endPageFromStore, form?.endPage],
