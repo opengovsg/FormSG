@@ -1,8 +1,15 @@
 import { useCallback, useEffect, useMemo } from 'react'
-import { UnpackNestedValue, useForm, useWatch } from 'react-hook-form'
+import {
+  FieldValues,
+  RegisterOptions,
+  UnpackNestedValue,
+  useForm,
+  useWatch,
+} from 'react-hook-form'
 import { useDebounce } from 'react-use'
 import { FormControl, Stack } from '@chakra-ui/react'
 import { cloneDeep } from 'lodash'
+import validator from 'validator'
 
 import { FormEndPage } from '~shared/types'
 
@@ -16,7 +23,6 @@ import Textarea from '~components/Textarea'
 
 import { useMutateFormPage } from '~features/admin-form/common/mutations'
 import { useAdminForm } from '~features/admin-form/common/queries'
-import { buttonLinkRules } from '~features/admin-form/settings/components/EndPageSettingsSection/EndPageSettingsInput'
 
 import {
   setToInactiveSelector,
@@ -28,6 +34,16 @@ import {
   useEndPageBuilderStore,
 } from '../../useEndPageBuilderStore'
 import { DrawerContentContainer } from '../EditFieldDrawer/edit-fieldtype/common/DrawerContentContainer'
+
+const buttonLinkRules: RegisterOptions<FormEndPage, 'buttonLink'> = {
+  validate: (url: string) =>
+    !url ||
+    validator.isURL(url, {
+      protocols: ['https'],
+      require_protocol: true,
+    }) ||
+    'Please enter a valid URL (starting with https://)',
+} as FieldValues
 
 interface EndPageBuilderInputProps {
   endPage: FormEndPage

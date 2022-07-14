@@ -112,7 +112,6 @@ export interface ICompulsoryVarsSchema {
 }
 
 export interface ISgidVarsSchema {
-  endpoint: string
   clientId: string
   clientSecret: string
   privateKeyPath: string

@@ -177,7 +177,7 @@ export const PublicFormProvider = ({
   }, [cachedDto?.form.form_fields, toast, vfnToastIdRef])
 
   const { submitEmailModeFormMutation, submitStorageModeFormMutation } =
-    usePublicFormMutations(formId)
+    usePublicFormMutations(formId, submissionData?.id ?? '')
 
   const handleSubmitForm: SubmitHandler<FormFieldValues> = useCallback(
     async (formInputs) => {

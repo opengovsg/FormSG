@@ -1,5 +1,4 @@
 import { Dispatch, SetStateAction, useEffect, useMemo, useState } from 'react'
-import { BiX } from 'react-icons/bi'
 import { useQuery } from 'react-query'
 import { Box, Container, Flex, Grid, Stack, Text } from '@chakra-ui/react'
 import simplur from 'simplur'
@@ -11,7 +10,6 @@ import Searchbar, { useSearchbar } from '~components/Searchbar'
 
 import { getBillingInfo } from '~features/user/billing/BillingService'
 
-import IconButton from '../../../../components/IconButton'
 import { EsrvcIdFormInputs } from '../BillingForm'
 import { DateRange, dateRangeToString, stringToDateRange } from '../DateRange'
 
@@ -19,6 +17,8 @@ import { BillingDownloadButton } from './components/BillingDownloadButton'
 import { BillingNoChargesContent } from './components/BillingNoChargesContent'
 import { BillingTable } from './components/BillingTable'
 import { BillingTableSkeleton } from './components/BillingTableSkeleton'
+
+const BILLING_MIN_YEAR = 2019
 
 export type BillChargesProps = {
   esrvcId: string
@@ -36,8 +36,8 @@ const getSelectDateDropdownItems = ({ yr, mth }: DateRange): string[] => {
     selectDateDropdownItems.push({ yr, mth: loopMth })
   }
 
-  // Go backwards until 2019
-  for (let loopYr = yr - 1; loopYr >= 2019; loopYr--) {
+  // Go backwards until BILLING_MIN_YEAR
+  for (let loopYr = yr - 1; loopYr >= BILLING_MIN_YEAR; loopYr--) {
     for (let loopMth = 11; loopMth >= 0; loopMth--) {
       selectDateDropdownItems.push({ yr: loopYr, mth: loopMth })
     }
@@ -60,7 +60,7 @@ export const BillCharges = ({
     isLoading,
     isRefetching,
     refetch,
-  } = useQuery(esrvcId, () =>
+  } = useQuery([esrvcId, dateRange.yr, dateRange.mth], () =>
     getBillingInfo({
       esrvcId,
       yr: dateRange.yr.toString(),
@@ -170,22 +170,14 @@ export const BillCharges = ({
               <Flex justifyContent="right">
                 <Searchbar
                   ref={inputRef}
+                  isDisabled={isLoadingOrRefetching}
                   onSearch={(esrvcId) =>
                     esrvcId ? onSubmitEsrvcId({ esrvcId }) : null
                   }
-                  onSearchIconClick={() => handleExpansion()}
-                  placeholder="e-service ID"
                   isExpanded={isExpanded}
-                  rightElement={
-                    <IconButton
-                      ml="1px"
-                      aria-label="Close search bar"
-                      icon={<BiX />}
-                      variant="clear"
-                      colorScheme="secondary"
-                      onClick={() => handleCollapse()}
-                    ></IconButton>
-                  }
+                  onExpandIconClick={handleExpansion}
+                  onCollapseIconClick={handleCollapse}
+                  placeholder="Search an e-service ID"
                 ></Searchbar>
               </Flex>
             </Box>

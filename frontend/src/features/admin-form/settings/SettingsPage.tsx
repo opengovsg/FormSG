@@ -1,10 +1,4 @@
-import {
-  BiCheckDouble,
-  BiCodeBlock,
-  BiCog,
-  BiKey,
-  BiMessage,
-} from 'react-icons/bi'
+import { BiCodeBlock, BiCog, BiKey, BiMessage } from 'react-icons/bi'
 import {
   Box,
   Flex,
@@ -21,7 +15,6 @@ import { useDraggable } from '~hooks/useDraggable'
 
 import { SettingsTab } from './components/SettingsTab'
 import { SettingsAuthPage } from './SettingsAuthPage'
-import { SettingsEndPage } from './SettingsEndPage'
 import { SettingsGeneralPage } from './SettingsGeneralPage'
 import { SettingsTwilioPage } from './SettingsTwilioPage'
 import { SettingsWebhooksPage } from './SettingsWebhooksPage'
@@ -87,7 +80,6 @@ export const SettingsPage = (): JSX.Element => {
           >
             <SettingsTab label="General" icon={BiCog} />
             <SettingsTab label="Singpass" icon={BiKey} />
-            <SettingsTab label="Thank you page" icon={BiCheckDouble} />
             <SettingsTab label="Twilio credentials" icon={BiMessage} />
             <SettingsTab label="Webhooks" icon={BiCodeBlock} />
           </TabList>
@@ -98,9 +90,6 @@ export const SettingsPage = (): JSX.Element => {
           </TabPanel>
           <TabPanel>
             <SettingsAuthPage />
-          </TabPanel>
-          <TabPanel>
-            <SettingsEndPage />
           </TabPanel>
           <TabPanel>
             <SettingsTwilioPage />
