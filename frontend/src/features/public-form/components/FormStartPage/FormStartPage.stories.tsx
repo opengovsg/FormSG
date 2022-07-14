@@ -1,6 +1,5 @@
 import { Meta, Story } from '@storybook/react'
 
-import { BasicField } from '~shared/types'
 import { FormColorTheme } from '~shared/types/form/form'
 import { FormLogoState } from '~shared/types/form/form_logo'
 
@@ -8,6 +7,7 @@ import { envHandlers } from '~/mocks/msw/handlers/env'
 import {
   getCustomLogoResponse,
   getPublicFormResponse,
+  getPublicFormWithoutSectionsResponse,
 } from '~/mocks/msw/handlers/public-form'
 
 import { getMobileViewParameters } from '~utils/storybook'
@@ -216,21 +216,10 @@ MiniHeaderMobileWithoutSections.args = {
 }
 MiniHeaderMobileWithoutSections.parameters = {
   msw: [
-    getPublicFormResponse({
+    getPublicFormWithoutSectionsResponse({
       overrides: {
         form: {
-          title: 'storybook test title without sections',
-          form_fields: [
-            {
-              title: 'Yes/No',
-              description: '',
-              required: true,
-              disabled: false,
-              fieldType: BasicField.YesNo,
-              _id: '5da04eb5e397fc0013f63c7e',
-              globalId: 'CnGRpTpnqSrISnk28yLDvKt8MI2HCFJuYbk72ie0l56',
-            },
-          ],
+          title: 'storybook test title',
         },
       },
       delay: 0,
