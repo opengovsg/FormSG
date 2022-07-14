@@ -34,7 +34,9 @@ export const StartPageView = () => {
         estTimeString={estTimeString}
         titleBg={titleBg}
         titleColor={titleColor}
-        loggedInId={form?.authType !== FormAuthType.NIL ? '' : undefined}
+        loggedInId={
+          form?.authType !== FormAuthType.NIL ? 'S8899000D' : undefined
+        }
       />
     </>
   )
