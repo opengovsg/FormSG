@@ -1,10 +1,16 @@
 import { Router } from 'express'
 
+import {
+  logAdminAction,
+  withUserAuthentication,
+} from '../../../../../modules/auth/auth.middlewares'
 import * as WorkspaceController from '../../../../../modules/workspace/workspace.controller'
 
 import { WorkspacesFormRouter } from './workspaces.form.routes'
 
 export const WorkspacesRouter = Router()
+WorkspacesRouter.use(withUserAuthentication)
+WorkspacesRouter.use(logAdminAction)
 
 WorkspacesRouter.use(
   '/:workspaceId([a-fA-F0-9]{24})/forms',
