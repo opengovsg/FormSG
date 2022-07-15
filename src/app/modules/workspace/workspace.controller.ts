@@ -27,7 +27,7 @@ export const getWorkspaces: ControllerHandler<
   unknown,
   any[] | ErrorDto
 > = async (req, res) => {
-  return WorkspaceService.getWorkspaces()
+  return WorkspaceService.getWorkspaces('')
     .map((workspaces) => res.status(StatusCodes.OK).json(workspaces))
     .mapErr((err) =>
       res.status(StatusCodes.BAD_REQUEST).json({ message: err.message }),
@@ -50,7 +50,7 @@ const handleCreateWorkspace: ControllerHandler<
 > = async (req, res) => {
   const { workspace } = req.body
 
-  return WorkspaceService.createWorkspace(workspace)
+  return WorkspaceService.createWorkspace('', workspace)
     .map((workspace) => res.status(StatusCodes.OK).json(workspace))
     .mapErr((err) =>
       res.status(StatusCodes.BAD_REQUEST).json({ message: err.message }),
@@ -77,7 +77,7 @@ const handleUpdateWorkspaceTitle: ControllerHandler<
   { title: string }
 > = async (req, res) => {
   const { title } = req.body
-  return WorkspaceService.updateWorkspaceTitle(title)
+  return WorkspaceService.updateWorkspaceTitle('', title)
     .map((workspace) => res.status(StatusCodes.OK).json(workspace))
     .mapErr((err) =>
       res.status(StatusCodes.BAD_REQUEST).json({ message: err.message }),

@@ -3,23 +3,24 @@ import { okAsync, ResultAsync } from 'neverthrow'
 import { DatabaseError } from '../core/core.errors'
 import { MissingUserError } from '../user/user.errors'
 
-export const getWorkspaces = (): ResultAsync<
-  any[],
-  MissingUserError | DatabaseError
-> => {
-  return okAsync([])
+export const getWorkspaces = (
+  userId: string,
+): ResultAsync<any, MissingUserError | DatabaseError> => {
+  return okAsync([userId])
 }
 
 export const createWorkspace = (
+  userId: string,
   workspace: any,
 ): ResultAsync<any, DatabaseError> => {
-  return okAsync({ workspace: workspace })
+  return okAsync({ workspace: workspace, userId: userId })
 }
 
 export const updateWorkspaceTitle = (
+  workspaceId: string,
   title: string,
 ): ResultAsync<any, DatabaseError> => {
-  return okAsync({ title: title })
+  return okAsync({ title: title, workspaceId: workspaceId })
 }
 
 export const deleteWorkspace = (
