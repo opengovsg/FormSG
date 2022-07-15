@@ -8,6 +8,8 @@ import { BaseClient } from 'openid-client'
 
 import * as SpOidcClientClass from '../sp.oidc.client'
 import { SpOidcClient } from '../sp.oidc.client'
+import * as SpcpOidcBaseCilentCacheClass from '../spcp.oidc.client.cache'
+import { SpcpOidcBaseCilentCache } from '../spcp.oidc.client.cache'
 import {
   CreateAuthorisationUrlError,
   CreateJwtError,
@@ -18,16 +20,14 @@ import {
   JwkError,
   MissingIdTokenError,
   VerificationKeyError,
-} from '../sp.oidc.client.errors'
+} from '../spcp.oidc.client.errors'
 import {
   CryptoKeys,
   PublicJwks,
   Refresh,
   SecretJwks,
   SpOidcClientConstructorParams,
-} from '../sp.oidc.client.types'
-import * as SpcpOidcBaseCilentCacheClass from '../spcp.oidc.client.cache'
-import { SpcpOidcBaseCilentCache } from '../spcp.oidc.client.cache'
+} from '../spcp.oidc.client.types'
 
 jest.mock('openid-client')
 jest.mock('axios')

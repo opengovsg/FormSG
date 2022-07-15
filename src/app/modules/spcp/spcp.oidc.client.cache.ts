@@ -7,19 +7,19 @@ import { timeout, TimeoutError } from 'promise-timeout'
 
 import { createLoggerWithLabel } from '../../config/logger'
 
-import { JwkError } from './sp.oidc.client.errors'
+import { JwkError } from './spcp.oidc.client.errors'
 import {
   CryptoKeys,
   PublicJwks,
   Refresh,
   SecretJwks,
   SpcpOidcBaseCilentCacheConstructorParams,
-} from './sp.oidc.client.types'
+} from './spcp.oidc.client.types'
 import {
   isEC,
   retryPromiseForever,
   retryPromiseThreeAttempts,
-} from './sp.oidc.util'
+} from './spcp.oidc.util'
 
 const logger = createLoggerWithLabel(module)
 

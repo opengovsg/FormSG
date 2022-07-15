@@ -6,17 +6,17 @@ import { omit } from 'lodash'
 import NodeCache from 'node-cache'
 import { BaseClient, Issuer } from 'openid-client'
 
-import { JwkError } from '../sp.oidc.client.errors'
+import * as SpcpOidcBaseCilentCacheClass from '../spcp.oidc.client.cache'
+import { SpcpOidcBaseCilentCache } from '../spcp.oidc.client.cache'
+import { JwkError } from '../spcp.oidc.client.errors'
 import {
   CryptoKeys,
   PublicJwks,
   Refresh,
   SecretJwks,
   SpcpOidcBaseCilentCacheConstructorParams,
-} from '../sp.oidc.client.types'
-import * as SpOidcUtils from '../sp.oidc.util'
-import * as SpcpOidcBaseCilentCacheClass from '../spcp.oidc.client.cache'
-import { SpcpOidcBaseCilentCache } from '../spcp.oidc.client.cache'
+} from '../spcp.oidc.client.types'
+import * as SpOidcUtils from '../spcp.oidc.util'
 
 jest.mock('openid-client')
 jest.mock('axios')

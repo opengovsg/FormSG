@@ -11,6 +11,7 @@ import jwkToPem from 'jwk-to-pem'
 import { BaseClient } from 'openid-client'
 import { ulid } from 'ulid'
 
+import { SpcpOidcBaseCilentCache } from './spcp.oidc.client.cache'
 import {
   CreateAuthorisationUrlError,
   CreateJwtError,
@@ -21,20 +22,19 @@ import {
   JwkError,
   MissingIdTokenError,
   VerificationKeyError,
-} from './sp.oidc.client.errors'
+} from './spcp.oidc.client.errors'
 import {
   CryptoKeys,
   SigningKey,
   SpOidcClientConstructorParams,
-} from './sp.oidc.client.types'
+} from './spcp.oidc.client.types'
 import {
   extractNricFromParsedSub,
   isEC,
   isECPrivate,
   isSigningKey,
   parseSub,
-} from './sp.oidc.util'
-import { SpcpOidcBaseCilentCache } from './spcp.oidc.client.cache'
+} from './spcp.oidc.util'
 
 /**
  * Wrapper around the openid-client library to carry out authentication related tasks with Singpass NDI,

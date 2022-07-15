@@ -8,8 +8,8 @@ import {
 } from '../../../../shared/utils/nric-validation'
 import { createLoggerWithLabel } from '../../config/logger'
 
-import { InvalidIdTokenError } from './sp.oidc.client.errors'
-import { CryptoKey, ParsedSub, SigningKey } from './sp.oidc.client.types'
+import { InvalidIdTokenError } from './spcp.oidc.client.errors'
+import { CryptoKey, ParsedSub, SigningKey } from './spcp.oidc.client.types'
 
 const logger = createLoggerWithLabel(module)
 /**
