@@ -61,9 +61,13 @@ describe('Workspace Model', () => {
 
   describe('Schema', () => {
     it('should create and save successfully', async () => {
+      const { user: existentUser } = await dbHandler.insertFormCollectionReqs({
+        userId: new ObjectId(),
+        mailName: 'userThatExists',
+      })
       const expectedWorkspaceObject = {
         title: 'Workspace2',
-        admin: new ObjectId(),
+        admin: existentUser._id,
         formIds: [],
       }
       const validWorkspace = new Workspace(expectedWorkspaceObject)
