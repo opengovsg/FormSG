@@ -10,7 +10,8 @@ import {
 } from 'react'
 
 import { BasicField } from '~shared/types/field'
-import { PublicFormDto } from '~shared/types/form'
+
+import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
 interface FormSectionsContextProps {
   sectionRefs: Record<string, RefObject<HTMLDivElement>>
@@ -23,14 +24,13 @@ const FormSectionsContext = createContext<FormSectionsContextProps | undefined>(
 )
 
 interface FormSectionsProviderProps {
-  form?: PublicFormDto
   children: React.ReactNode
 }
 
 export const FormSectionsProvider = ({
-  form,
   children,
 }: FormSectionsProviderProps): JSX.Element => {
+  const { form } = usePublicFormContext()
   const [sectionRefs, setSectionRefs] = useState<
     Record<string, RefObject<HTMLDivElement>>
   >({})

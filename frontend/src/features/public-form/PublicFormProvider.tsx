@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { SubmitHandler } from 'react-hook-form'
-import { Text } from '@chakra-ui/react'
+import { Text, useDisclosure } from '@chakra-ui/react'
 import { differenceInMilliseconds, isPast } from 'date-fns'
 import { isEqual } from 'lodash'
 import get from 'lodash/get'
@@ -48,6 +48,13 @@ interface PublicFormProviderProps {
 }
 
 export function useCommonFormProvider(formId: string) {
+  // For mobile section sidebar
+  const {
+    isOpen: isMobileDrawerOpen,
+    onOpen: onMobileDrawerOpen,
+    onClose: onMobileDrawerClose,
+  } = useDisclosure()
+
   const [vfnTransaction, setVfnTransaction] =
     useState<FetchNewTransactionResponse>()
   const miniHeaderRef = useRef<HTMLDivElement>(null)
@@ -89,6 +96,9 @@ export function useCommonFormProvider(formId: string) {
     expiryInMs,
     miniHeaderRef,
     getTransactionId,
+    isMobileDrawerOpen,
+    onMobileDrawerOpen,
+    onMobileDrawerClose,
   }
 }
 

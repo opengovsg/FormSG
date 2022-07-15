@@ -4,6 +4,7 @@ import GovtMasthead from '~components/GovtMasthead'
 
 import FormEndPage from '~features/public-form/components/FormEndPage'
 import FormFields from '~features/public-form/components/FormFields'
+import { FormSectionsProvider } from '~features/public-form/components/FormFields/FormSectionsContext'
 import { FormFooter } from '~features/public-form/components/FormFooter'
 import FormStartPage from '~features/public-form/components/FormStartPage'
 import { PublicFormWrapper } from '~features/public-form/components/PublicFormWrapper'
@@ -20,12 +21,14 @@ export const PreviewFormPage = (): JSX.Element => {
     <PreviewFormProvider formId={formId}>
       <GovtMasthead />
       <PreviewFormHeader />
-      <FormStartPage />
-      <PublicFormWrapper>
-        <FormFields />
-        <FormEndPage isPreview />
-        <FormFooter />
-      </PublicFormWrapper>
+      <FormSectionsProvider>
+        <FormStartPage />
+        <PublicFormWrapper>
+          <FormFields />
+          <FormEndPage isPreview />
+          <FormFooter />
+        </PublicFormWrapper>
+      </FormSectionsProvider>
     </PreviewFormProvider>
   )
 }
