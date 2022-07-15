@@ -11,7 +11,6 @@ import jwkToPem from 'jwk-to-pem'
 import { BaseClient } from 'openid-client'
 import { ulid } from 'ulid'
 
-import { SpOidcClientCache } from './sp.oidc.client.cache'
 import {
   CreateAuthorisationUrlError,
   CreateJwtError,
@@ -35,6 +34,7 @@ import {
   isSigningKey,
   parseSub,
 } from './sp.oidc.util'
+import { SpcpOidcBaseCilentCache } from './spcp.oidc.client.cache'
 
 /**
  * Wrapper around the openid-client library to carry out authentication related tasks with Singpass NDI,
@@ -49,7 +49,7 @@ export class SpOidcClient {
    * @private
    * accessible only for testing
    */
-  _spOidcClientCache: SpOidcClientCache
+  _spcpOidcBaseCilentCache: SpcpOidcBaseCilentCache
 
   /**
    * Constructor for client
@@ -64,7 +64,7 @@ export class SpOidcClient {
     spOidcRpSecretJwks,
     spOidcRpPublicJwks,
   }: SpOidcClientConstructorParams) {
-    this._spOidcClientCache = new SpOidcClientCache({
+    this._spcpOidcBaseCilentCache = new SpcpOidcBaseCilentCache({
       spOidcNdiDiscoveryEndpoint,
       spOidcNdiJwksEndpoint,
       spOidcRpClientId,
@@ -125,20 +125,20 @@ export class SpOidcClient {
    * Method to retrieve NDI's public keys from cache
    * @async
    * @returns NDI's Public Key
-   * @throws error if this._spOidcClientCache.getNdiPublicKeys() rejects
+   * @throws error if this._spcpOidcBaseCilentCache.getNdiPublicKeys() rejects
    */
   async getNdiPublicKeysFromCache(): Promise<CryptoKeys> {
-    return this._spOidcClientCache.getNdiPublicKeys()
+    return this._spcpOidcBaseCilentCache.getNdiPublicKeys()
   }
 
   /**
    * Method to retrieve baseClient from cache
    * @async
    * @returns baseClient from discovery of NDI's discovery endpoint
-   * @throws error if this._spOidcClientCache.getBaseClient() rejects
+   * @throws error if this._spcpOidcBaseCilentCache.getBaseClient() rejects
    */
   async getBaseClientFromCache(): Promise<BaseClient> {
-    return this._spOidcClientCache.getBaseClient()
+    return this._spcpOidcBaseCilentCache.getBaseClient()
   }
 
   /**
@@ -318,7 +318,7 @@ export class SpOidcClient {
       // If any error in the exchange, trigger refresh of cache. Possible sources of failure are:
       // NDI changed /token endpoint url, hence need to rediscover well-known endpoint
       // NDI changed the signing keys without broadcasting both old and new keys for the 1h cache duration, hence need to refetch keys
-      void this._spOidcClientCache.refresh()
+      void this._spcpOidcBaseCilentCache.refresh()
       if (err instanceof Error) {
         throw err
       } else {

@@ -8,8 +8,6 @@ import { BaseClient } from 'openid-client'
 
 import * as SpOidcClientClass from '../sp.oidc.client'
 import { SpOidcClient } from '../sp.oidc.client'
-import * as SpOidcClientCacheClass from '../sp.oidc.client.cache'
-import { SpOidcClientCache } from '../sp.oidc.client.cache'
 import {
   CreateAuthorisationUrlError,
   CreateJwtError,
@@ -28,6 +26,8 @@ import {
   SecretJwks,
   SpOidcClientConstructorParams,
 } from '../sp.oidc.client.types'
+import * as SpcpOidcBaseCilentCacheClass from '../spcp.oidc.client.cache'
+import { SpcpOidcBaseCilentCache } from '../spcp.oidc.client.cache'
 
 jest.mock('openid-client')
 jest.mock('axios')
@@ -52,7 +52,7 @@ const SP_OIDC_NDI_JWKS_ENDPOINT = 'spOidcNdiJwksEndpoint'
 const SP_OIDC_RP_CLIENT_ID = 'spOidcRpClientId'
 const SP_OIDC_RP_REDIRECT_URL = 'spOidcRpRedirectUrl'
 
-describe('SpOidcClientCache', () => {
+describe('SpOidcClient', () => {
   afterEach(() => {
     jest.clearAllMocks()
     jest.restoreAllMocks()
@@ -83,15 +83,15 @@ describe('SpOidcClientCache', () => {
       expect(constructorSpy).toHaveBeenCalledWith(spOidcClientConfig)
     })
 
-    it('should correctly instantiate a SpOidcClientCache', async () => {
+    it('should correctly instantiate a SpcpOidcBaseCilentCache', async () => {
       // Arrange
       jest
-        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .spyOn(SpcpOidcBaseCilentCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
       const cacheConstructorSpy = jest
-        .spyOn(SpOidcClientCacheClass, 'SpOidcClientCache')
-        .mockReturnValueOnce('ok' as unknown as SpOidcClientCache)
+        .spyOn(SpcpOidcBaseCilentCacheClass, 'SpcpOidcBaseCilentCache')
+        .mockReturnValueOnce('ok' as unknown as SpcpOidcBaseCilentCache)
 
       const expectedCacheConstructorParams = {
         ...omit(spOidcClientConfig, 'spOidcRpPublicJwks'),
@@ -111,13 +111,15 @@ describe('SpOidcClientCache', () => {
       expect(cacheConstructorSpy).toHaveBeenCalledWith(
         expectedCacheConstructorParams,
       )
-      expect(spOidcClient._spOidcClientCache).toBeInstanceOf(SpOidcClientCache)
+      expect(spOidcClient._spcpOidcBaseCilentCache).toBeInstanceOf(
+        SpcpOidcBaseCilentCache,
+      )
     })
 
     it('should throw JwkError if `alg` attribute not present on rp secret jwk', () => {
       // Arrange
       jest
-        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .spyOn(SpcpOidcBaseCilentCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
       const spOidcClientConfigNoAlg = {
@@ -143,7 +145,7 @@ describe('SpOidcClientCache', () => {
     it('should throw JwkError if `kty` attribute not present on rp secret jwk', () => {
       // Arrange
       jest
-        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .spyOn(SpcpOidcBaseCilentCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
       const spOidcClientConfigNoAlg = {
@@ -169,7 +171,7 @@ describe('SpOidcClientCache', () => {
     it('should throw JwkError if `kty` attribute is present on rp secret jwk but not set to EC', () => {
       // Arrange
       jest
-        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .spyOn(SpcpOidcBaseCilentCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
       const spOidcClientConfigNoAlg = {
@@ -196,7 +198,7 @@ describe('SpOidcClientCache', () => {
     it('should throw JwkError if `crv` attribute not present on rp secret jwk', () => {
       // Arrange
       jest
-        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .spyOn(SpcpOidcBaseCilentCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
       const spOidcClientConfigNoAlg = {
@@ -222,7 +224,7 @@ describe('SpOidcClientCache', () => {
     it('should throw JwkError if `d` attribute not present on rp secret jwk', () => {
       // Arrange
       jest
-        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .spyOn(SpcpOidcBaseCilentCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
       const spOidcClientConfigNoAlg = {
@@ -248,7 +250,7 @@ describe('SpOidcClientCache', () => {
     it('should throw JwkError if `alg` attribute not present on rp public jwk', () => {
       // Arrange
       jest
-        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .spyOn(SpcpOidcBaseCilentCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
       const spOidcClientConfigNoAlg = {
@@ -274,7 +276,7 @@ describe('SpOidcClientCache', () => {
     it('should throw JwkError if `kty` attribute not present on rp public jwk', () => {
       // Arrange
       jest
-        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .spyOn(SpcpOidcBaseCilentCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
       const spOidcClientConfigNoAlg = {
@@ -300,7 +302,7 @@ describe('SpOidcClientCache', () => {
     it('should throw JwkError if `kty` attribute is present on rp public jwk but not set to EC', () => {
       // Arrange
       jest
-        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .spyOn(SpcpOidcBaseCilentCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
       const spOidcClientConfigNoAlg = {
@@ -326,7 +328,7 @@ describe('SpOidcClientCache', () => {
     it('should throw JwkError if `crv` attribute not present on rp public jwk', () => {
       // Arrange
       jest
-        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .spyOn(SpcpOidcBaseCilentCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
       const spOidcClientConfigNoAlg = {
@@ -352,7 +354,7 @@ describe('SpOidcClientCache', () => {
     it('should throw JwkError if `x` attribute not present on rp public jwk', () => {
       // Arrange
       jest
-        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .spyOn(SpcpOidcBaseCilentCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
       const spOidcClientConfigNoAlg = {
@@ -378,7 +380,7 @@ describe('SpOidcClientCache', () => {
     it('should throw JwkError if `y` attribute not present on rp public jwk', () => {
       // Arrange
       jest
-        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .spyOn(SpcpOidcBaseCilentCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
       const spOidcClientConfigNoAlg = {
@@ -403,14 +405,14 @@ describe('SpOidcClientCache', () => {
   })
 
   describe('getNdiPublicKeysFromCache', () => {
-    it('should correctly retrieve ndi public keys from cache and resolve if _spOidcClientCache.getNdiPublicKeys resolves', async () => {
+    it('should correctly retrieve ndi public keys from cache and resolve if _spcpOidcBaseCilentCache.getNdiPublicKeys resolves', async () => {
       // Arrange
       jest
-        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .spyOn(SpcpOidcBaseCilentCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
       const getNdiKeysSpy = jest
-        .spyOn(SpOidcClientCache.prototype, 'getNdiPublicKeys')
+        .spyOn(SpcpOidcBaseCilentCache.prototype, 'getNdiPublicKeys')
         .mockResolvedValueOnce('ok' as unknown as CryptoKeys)
 
       // Act
@@ -425,14 +427,14 @@ describe('SpOidcClientCache', () => {
       expect(getNdiKeysSpy).toHaveBeenCalledOnce()
     })
 
-    it('should reject if _spOidcClientCache.getNdiPublicKeys rejects', async () => {
+    it('should reject if _spcpOidcBaseCilentCache.getNdiPublicKeys rejects', async () => {
       // Arrange
       jest
-        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .spyOn(SpcpOidcBaseCilentCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
       const getNdiKeysSpy = jest
-        .spyOn(SpOidcClientCache.prototype, 'getNdiPublicKeys')
+        .spyOn(SpcpOidcBaseCilentCache.prototype, 'getNdiPublicKeys')
         .mockRejectedValueOnce(new Error('Failure'))
 
       // Act
@@ -447,14 +449,14 @@ describe('SpOidcClientCache', () => {
   })
 
   describe('getBaseClientFromCache', () => {
-    it('should correctly retrieve baseClient from cache and resolve if _spOidcClientCache.getBaseClient resolves', async () => {
+    it('should correctly retrieve baseClient from cache and resolve if _spcpOidcBaseCilentCache.getBaseClient resolves', async () => {
       // Arrange
       jest
-        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .spyOn(SpcpOidcBaseCilentCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
       const getBaseClientSpy = jest
-        .spyOn(SpOidcClientCache.prototype, 'getBaseClient')
+        .spyOn(SpcpOidcBaseCilentCache.prototype, 'getBaseClient')
         .mockResolvedValueOnce('ok' as unknown as BaseClient)
 
       // Act
@@ -469,14 +471,14 @@ describe('SpOidcClientCache', () => {
       expect(getBaseClientSpy).toHaveBeenCalledOnce()
     })
 
-    it('should reject if _spOidcClientCache.getBaseClient rejects', async () => {
+    it('should reject if _spcpOidcBaseCilentCache.getBaseClient rejects', async () => {
       // Arrange
       jest
-        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .spyOn(SpcpOidcBaseCilentCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
       const getBaseClientSpy = jest
-        .spyOn(SpOidcClientCache.prototype, 'getBaseClient')
+        .spyOn(SpcpOidcBaseCilentCache.prototype, 'getBaseClient')
         .mockRejectedValueOnce(new Error('Failure'))
 
       // Act
@@ -494,7 +496,7 @@ describe('SpOidcClientCache', () => {
     it('should throw CreateAuthorisationUrlError if state parameter is empty', async () => {
       // Arrange
       jest
-        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .spyOn(SpcpOidcBaseCilentCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
       const MOCK_EMPTY_STATE = ''
@@ -518,7 +520,7 @@ describe('SpOidcClientCache', () => {
     it('should throw CreateAuthorisationUrlError if esrvcId parameter is empty', async () => {
       // Arrange
       jest
-        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .spyOn(SpcpOidcBaseCilentCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
       const MOCK_STATE = 'state'
@@ -542,7 +544,7 @@ describe('SpOidcClientCache', () => {
     it('should reject if getBaseClientFromCache rejects', async () => {
       // Arrange
       jest
-        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .spyOn(SpcpOidcBaseCilentCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
       const MOCK_STATE = 'state'
@@ -568,7 +570,7 @@ describe('SpOidcClientCache', () => {
     it('should correctly return the authorisation url generated by the base client', async () => {
       // Arrange
       jest
-        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .spyOn(SpcpOidcBaseCilentCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
       const MOCK_STATE = 'state'
@@ -602,7 +604,7 @@ describe('SpOidcClientCache', () => {
     it('should return GetDecryptionKeyError if jwe is empty', () => {
       // Arrange
       jest
-        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .spyOn(SpcpOidcBaseCilentCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
       const MOCK_EMPTY_JWE = ''
@@ -623,7 +625,7 @@ describe('SpOidcClientCache', () => {
     it('should return GetDecryptionKeyError if `kid` does not exist on the jwe header', () => {
       // Arrange
       jest
-        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .spyOn(SpcpOidcBaseCilentCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
       const MOCK_JWE = 'jwe'
@@ -646,7 +648,7 @@ describe('SpOidcClientCache', () => {
     it('should return GetDecryptionKeyError if there is no matching `kid` in the keys', () => {
       // Arrange
       jest
-        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .spyOn(SpcpOidcBaseCilentCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
       const MOCK_JWE = 'jwe'
@@ -674,7 +676,7 @@ describe('SpOidcClientCache', () => {
     it('should return the first correct decryption key', () => {
       // Arrange
       jest
-        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .spyOn(SpcpOidcBaseCilentCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
       const MOCK_JWE = 'jwe'
@@ -705,7 +707,7 @@ describe('SpOidcClientCache', () => {
     it('should return GetVerificationKeyError if jws is empty', () => {
       // Arrange
       jest
-        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .spyOn(SpcpOidcBaseCilentCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
       const MOCK_EMPTY_JWS = ''
@@ -726,7 +728,7 @@ describe('SpOidcClientCache', () => {
     it('should return GetVerificationKeyError if `kid` does not exist on the jws header', () => {
       // Arrange
       jest
-        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .spyOn(SpcpOidcBaseCilentCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
       const MOCK_JWS = 'jws'
@@ -749,7 +751,7 @@ describe('SpOidcClientCache', () => {
     it('should return GetVerificationKeyError if there is no matching `kid` in the keys', () => {
       // Arrange
       jest
-        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .spyOn(SpcpOidcBaseCilentCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
       const MOCK_JWS = 'jws'
@@ -777,7 +779,7 @@ describe('SpOidcClientCache', () => {
     it('should return the first correct verification key', () => {
       // Arrange
       jest
-        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .spyOn(SpcpOidcBaseCilentCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
       const MOCK_JWS = 'jws'
@@ -861,7 +863,7 @@ describe('SpOidcClientCache', () => {
     it('should throw ExchangeAuthTokenError if authCode is empty and NOT call refresh', async () => {
       // Arrange
       const refreshSpy = jest
-        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .spyOn(SpcpOidcBaseCilentCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
       const MOCK_EMPTY_AUTHCODE = ''
@@ -884,7 +886,7 @@ describe('SpOidcClientCache', () => {
     it('should throw an error if failed to retrieve baseClient from cache and NOT call refresh', async () => {
       // Arrange
       const refreshSpy = jest
-        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .spyOn(SpcpOidcBaseCilentCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
       jest
@@ -908,7 +910,7 @@ describe('SpOidcClientCache', () => {
     it('should throw an error if exchange at token endpoint fails and call refresh', async () => {
       // Arrange
       const refreshSpy = jest
-        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .spyOn(SpcpOidcBaseCilentCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
@@ -939,7 +941,7 @@ describe('SpOidcClientCache', () => {
     it('should throw a MissingIdTokenError if tokenSet does not contain idToken and call refresh', async () => {
       // Arrange
       const refreshSpy = jest
-        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .spyOn(SpcpOidcBaseCilentCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
@@ -970,7 +972,7 @@ describe('SpOidcClientCache', () => {
     it('should throw a MissingIdTokenError if tokenSet contains empty idToken and call refresh', async () => {
       // Arrange
       const refreshSpy = jest
-        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .spyOn(SpcpOidcBaseCilentCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
@@ -1004,7 +1006,7 @@ describe('SpOidcClientCache', () => {
       const MOCK_JWE = await createMockJwe()
 
       jest
-        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .spyOn(SpcpOidcBaseCilentCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
       const mockGrant = jest.fn().mockResolvedValueOnce({ id_token: MOCK_JWE })
@@ -1040,7 +1042,7 @@ describe('SpOidcClientCache', () => {
       const MOCK_JWE = await createMockJwe()
 
       const refreshSpy = jest
-        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .spyOn(SpcpOidcBaseCilentCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
@@ -1078,7 +1080,7 @@ describe('SpOidcClientCache', () => {
       const MOCK_JWE = await createMockJwe()
 
       const refreshSpy = jest
-        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .spyOn(SpcpOidcBaseCilentCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
@@ -1120,7 +1122,7 @@ describe('SpOidcClientCache', () => {
       const MOCK_JWE = await createMockJwe()
 
       const refreshSpy = jest
-        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .spyOn(SpcpOidcBaseCilentCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
@@ -1158,7 +1160,7 @@ describe('SpOidcClientCache', () => {
       const MOCK_JWE = await createMockJwe()
 
       const refreshSpy = jest
-        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .spyOn(SpcpOidcBaseCilentCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
@@ -1200,7 +1202,7 @@ describe('SpOidcClientCache', () => {
       const MOCK_JWE = await createMockJwe()
 
       const refreshSpy = jest
-        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .spyOn(SpcpOidcBaseCilentCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
@@ -1242,7 +1244,7 @@ describe('SpOidcClientCache', () => {
       // Arrange
 
       jest
-        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .spyOn(SpcpOidcBaseCilentCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
       const MOCK_IDTOKEN_MISSING_SUB = {
@@ -1268,7 +1270,7 @@ describe('SpOidcClientCache', () => {
       // Arrange
 
       jest
-        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .spyOn(SpcpOidcBaseCilentCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
       const MOCK_IDTOKEN_MALFORMED_SUB = {
@@ -1294,7 +1296,7 @@ describe('SpOidcClientCache', () => {
       // Arrange
 
       jest
-        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .spyOn(SpcpOidcBaseCilentCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
       const MOCK_IDTOKEN_NONRIC = {
@@ -1318,7 +1320,7 @@ describe('SpOidcClientCache', () => {
       // Arrange
 
       jest
-        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .spyOn(SpcpOidcBaseCilentCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
       const FIRST_NRIC = 'S1234567D'
@@ -1343,7 +1345,7 @@ describe('SpOidcClientCache', () => {
       // Arrange
 
       jest
-        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .spyOn(SpcpOidcBaseCilentCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
       const FIRST_NRIC = 'S1234567D'
@@ -1375,7 +1377,7 @@ describe('SpOidcClientCache', () => {
     it('should throw CreateJwtError if no signing keys found', async () => {
       // Arrange
       jest
-        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .spyOn(SpcpOidcBaseCilentCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
       const spOidcClientConfigWithoutSigningKeys = {
@@ -1408,7 +1410,7 @@ describe('SpOidcClientCache', () => {
     it('should throw VerificationKeyError if no verification key found', async () => {
       // Arrange
       jest
-        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .spyOn(SpcpOidcBaseCilentCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
       jest
@@ -1451,7 +1453,7 @@ describe('SpOidcClientCache', () => {
       // Arrange
 
       jest
-        .spyOn(SpOidcClientCache.prototype, 'refresh')
+        .spyOn(SpcpOidcBaseCilentCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
       // Act

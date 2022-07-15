@@ -43,13 +43,13 @@ export type SpOidcClientConstructorParams = {
   spOidcRpPublicJwks: PublicJwks
 }
 
-export type SpOidcClientCacheConstructorParams = {
+export type SpcpOidcBaseCilentCacheConstructorParams = {
   options?: Options
-  spOidcNdiDiscoveryEndpoint: string
-  spOidcNdiJwksEndpoint: string
-  spOidcRpClientId: string
-  spOidcRpRedirectUrl: string
-  spOidcRpSecretJwks: SecretJwks
+  ndiDiscoveryEndpoint: string
+  ndiJwksEndpoint: string
+  rpClientId: string
+  rpRedirectUrl: string
+  rpSecretJwks: SecretJwks
 }
 
 export type ParsedSub = {
