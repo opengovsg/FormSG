@@ -35,16 +35,13 @@ const compileWorkspaceModel = (db: Mongoose): IWorkspaceModel => {
       formIds: {
         type: [Schema.Types.ObjectId],
         validate: {
-          async validator(
-            this: IWorkspaceSchema,
-            formIds: Schema.Types.ObjectId[],
-          ) {
-            if (formIds.length === 0) return true
+          async validator(this: IWorkspaceSchema) {
+            if (this.formIds.length === 0) return true
 
             const user = await User.findById(this.admin)
             if (!user) return false
 
-            for (const formId of formIds) {
+            for (const formId of this.formIds) {
               const form = await Form.findById(formId)
               if (!form) return false
 

@@ -136,12 +136,12 @@ describe('Workspace Model', () => {
     })
 
     it('should fail because userId does not exist', async () => {
-      const expectedWorkspaceObject = {
+      const workspaceObject = {
         title: 'Workspace2',
         admin: new ObjectId(),
         formIds: [MOCK_FORM_ID],
       }
-      const invalidWorkspace = new Workspace(expectedWorkspaceObject)
+      const invalidWorkspace = new Workspace(workspaceObject)
       await expect(invalidWorkspace.save()).rejects.toThrowError(
         mongoose.Error.ValidationError,
       )
@@ -153,24 +153,24 @@ describe('Workspace Model', () => {
         mailName: 'userThatExists',
       })
 
-      const expectedWorkspaceObject = {
+      const workspaceObject = {
         title: 'Workspace2',
         admin: existentUser,
         formIds: [MOCK_FORM_ID],
       }
-      const invalidWorkspace = new Workspace(expectedWorkspaceObject)
+      const invalidWorkspace = new Workspace(workspaceObject)
       await expect(invalidWorkspace.save()).rejects.toThrowError(
         mongoose.Error.ValidationError,
       )
     })
 
     it('should fail because formId does not exist', async () => {
-      const expectedWorkspaceObject = {
+      const workspaceObject = {
         title: 'Workspace2',
         admin: FORM_ADMIN_USER,
         formIds: [new ObjectId()],
       }
-      const invalidWorkspace = new Workspace(expectedWorkspaceObject)
+      const invalidWorkspace = new Workspace(workspaceObject)
       await expect(invalidWorkspace.save()).rejects.toThrowError(
         mongoose.Error.ValidationError,
       )
@@ -178,12 +178,12 @@ describe('Workspace Model', () => {
 
     it('should fail because formId is not unique', async () => {
       const duplicateFormId = new ObjectId()
-      const expectedWorkspaceObject = {
+      const workspaceObject = {
         title: 'Workspace2',
         admin: FORM_ADMIN_USER,
         formIds: [duplicateFormId, duplicateFormId],
       }
-      const invalidWorkspace = new Workspace(expectedWorkspaceObject)
+      const invalidWorkspace = new Workspace(workspaceObject)
       await expect(invalidWorkspace.save()).rejects.toThrowError(
         mongoose.Error.ValidationError,
       )
