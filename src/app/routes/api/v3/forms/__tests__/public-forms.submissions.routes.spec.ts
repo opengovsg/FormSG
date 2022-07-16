@@ -14,7 +14,7 @@ import { setupApp } from 'tests/integration/helpers/express-setup'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import { FormAuthType, FormStatus } from '../../../../../../../shared/types'
-import { SpOidcClient } from '../../../../../modules/spcp/sp.oidc.client'
+import { SpOidcClient } from '../../../../../modules/spcp/spcp.oidc.client'
 import { PublicFormsRouter } from '../public-forms.routes'
 
 import {
@@ -36,7 +36,7 @@ import {
 const MyInfoHashModel = getMyInfoHashModel(mongoose)
 
 jest.mock('@opengovsg/spcp-auth-client')
-jest.mock('../../../../../modules/spcp/sp.oidc.client')
+jest.mock('../../../../../modules/spcp/spcp.oidc.client')
 const MockAuthClient = mocked(SPCPAuthClient, true)
 
 jest.mock('nodemailer', () => ({

@@ -8,7 +8,6 @@ import { MOCK_COOKIE_AGE } from 'src/app/modules/myinfo/__tests__/myinfo.test.co
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
-import { SpOidcClient } from '../sp.oidc.client'
 import { SpOidcServiceClass } from '../sp.oidc.service'
 import {
   CreateJwtError,
@@ -19,6 +18,7 @@ import {
   MissingJwtError,
   VerifyJwtError,
 } from '../spcp.errors'
+import { SpOidcClient } from '../spcp.oidc.client'
 import { JwtName } from '../spcp.types'
 
 import {
@@ -35,7 +35,7 @@ import {
   MOCK_TARGET,
 } from './spcp.test.constants'
 
-jest.mock('../sp.oidc.client')
+jest.mock('../spcp.oidc.client')
 const MockSpOidcClient = mocked(SpOidcClient, true)
 
 jest.mock('axios')

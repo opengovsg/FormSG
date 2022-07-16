@@ -6,10 +6,10 @@ import { setupApp } from 'tests/integration/helpers/express-setup'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import { FormAuthType, FormStatus } from '../../../../../../shared/types'
-import { SpOidcClient } from '../../../spcp/sp.oidc.client'
+import { SpOidcClient } from '../../../spcp/spcp.oidc.client'
 import { EncryptSubmissionRouter } from '../encrypt-submission.routes'
 
-jest.mock('../../../spcp/sp.oidc.client')
+jest.mock('../../../spcp/spcp.oidc.client')
 
 jest.mock('@opengovsg/spcp-auth-client')
 const MockAuthClient = mocked(SPCPAuthClient, true)

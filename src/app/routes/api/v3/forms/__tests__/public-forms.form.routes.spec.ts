@@ -14,12 +14,12 @@ import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import { FormAuthType, FormStatus } from '../../../../../../../shared/types'
 import * as AuthService from '../../../../../modules/auth/auth.service'
-import { SpOidcClient } from '../../../../../modules/spcp/sp.oidc.client'
+import { SpOidcClient } from '../../../../../modules/spcp/spcp.oidc.client'
 import { PublicFormsRouter } from '../public-forms.routes'
 
 import { MOCK_UINFIN } from './public-forms.routes.spec.constants'
 
-jest.mock('../../../../../modules/spcp/sp.oidc.client')
+jest.mock('../../../../../modules/spcp/spcp.oidc.client')
 
 jest.mock('@opengovsg/spcp-auth-client')
 const MockAuthClient = mocked(SPCPAuthClient, true)

@@ -18,12 +18,12 @@ import { jsonParseStringify } from 'tests/unit/backend/helpers/serialize-data'
 
 import { FormAuthType, FormStatus } from '../../../../../../../shared/types'
 import * as FormService from '../../../../../modules/form/form.service'
-import { SpOidcClient } from '../../../../../modules/spcp/sp.oidc.client'
 import { SpOidcService } from '../../../../../modules/spcp/sp.oidc.service'
 import {
   CreateRedirectUrlError,
   FetchLoginPageError,
 } from '../../../../../modules/spcp/spcp.errors'
+import { SpOidcClient } from '../../../../../modules/spcp/spcp.oidc.client'
 import { PublicFormsRouter } from '../public-forms.routes'
 
 // NOTE: Mocking axios here because there is a network call to an external service
@@ -31,7 +31,7 @@ import { PublicFormsRouter } from '../public-forms.routes'
 jest.mock('axios')
 const MockAxios = mocked(axios, true)
 
-jest.mock('../../../../../modules/spcp/sp.oidc.client')
+jest.mock('../../../../../modules/spcp/spcp.oidc.client')
 
 const app = setupApp('/forms', PublicFormsRouter)
 describe('public-form.auth.routes', () => {

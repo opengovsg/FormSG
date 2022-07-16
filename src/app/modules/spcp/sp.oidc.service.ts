@@ -7,7 +7,6 @@ import {
 } from '../../config/features/spcp-myinfo.config'
 import { createLoggerWithLabel } from '../../config/logger'
 
-import { SpOidcClient } from './sp.oidc.client'
 import {
   CreateJwtError,
   CreateRedirectUrlError,
@@ -18,6 +17,7 @@ import {
   MissingJwtError,
   VerifyJwtError,
 } from './spcp.errors'
+import { SpOidcClient } from './spcp.oidc.client'
 import {
   JwtName,
   JwtPayload,

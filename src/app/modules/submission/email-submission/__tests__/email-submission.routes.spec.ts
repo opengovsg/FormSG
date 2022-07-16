@@ -18,7 +18,7 @@ import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import { FormAuthType, FormStatus } from '../../../../../../shared/types'
 import { MYINFO_COOKIE_NAME } from '../../../myinfo/myinfo.constants'
-import { SpOidcClient } from '../../../spcp/sp.oidc.client'
+import { SpOidcClient } from '../../../spcp/spcp.oidc.client'
 // Import last so mocks are imported correctly
 // eslint-disable-next-line import/first
 import { EmailSubmissionRouter } from '../email-submission.routes'
@@ -42,7 +42,7 @@ const MyInfoHashModel = getMyInfoHashModel(mongoose)
 jest.mock('@opengovsg/spcp-auth-client')
 const MockAuthClient = mocked(SPCPAuthClient, true)
 
-jest.mock('../../../spcp/sp.oidc.client')
+jest.mock('../../../spcp/spcp.oidc.client')
 
 jest.mock('nodemailer', () => ({
   createTransport: jest.fn().mockReturnValue({

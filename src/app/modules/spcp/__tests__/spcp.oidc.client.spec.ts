@@ -6,8 +6,8 @@ import jwkToPem from 'jwk-to-pem'
 import { omit } from 'lodash'
 import { BaseClient } from 'openid-client'
 
-import * as SpOidcClientClass from '../sp.oidc.client'
-import { SpOidcClient } from '../sp.oidc.client'
+import * as SpOidcClientClass from '../spcp.oidc.client'
+import { SpOidcClient } from '../spcp.oidc.client'
 import * as SpcpOidcBaseCilentCacheClass from '../spcp.oidc.client.cache'
 import { SpcpOidcBaseCilentCache } from '../spcp.oidc.client.cache'
 import {
