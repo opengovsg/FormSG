@@ -94,7 +94,11 @@ describe('SpOidcClient', () => {
         .mockReturnValueOnce('ok' as unknown as SpcpOidcBaseCilentCache)
 
       const expectedCacheConstructorParams = {
-        ...omit(spOidcClientConfig, 'spOidcRpPublicJwks'),
+        ndiDiscoveryEndpoint: SP_OIDC_NDI_DISCOVERY_ENDPOINT,
+        ndiJwksEndpoint: SP_OIDC_NDI_JWKS_ENDPOINT,
+        rpClientId: SP_OIDC_RP_CLIENT_ID,
+        rpRedirectUrl: SP_OIDC_RP_REDIRECT_URL,
+        rpSecretJwks: TEST_RP_SECRET_JWKS,
         options: {
           useClones: false,
           checkperiod: 60,

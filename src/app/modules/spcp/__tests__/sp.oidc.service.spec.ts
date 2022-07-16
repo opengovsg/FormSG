@@ -223,9 +223,6 @@ describe('sp.oidc.service', () => {
       // Arrange
       const spOidcServiceClass = new SpOidcServiceClass(MOCK_PARAMS)
 
-      const mockClient = mocked(MockSpOidcClient.mock.instances[0], true)
-      mockClient.verifyJwt.mockRejectedValueOnce(new Error())
-
       // Act
       const result = await spOidcServiceClass.extractJwtPayloadFromRequest({})
 

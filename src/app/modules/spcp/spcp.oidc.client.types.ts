@@ -34,6 +34,15 @@ export type SigningKey = Required<CryptoKey>
 
 export type CryptoKeys = CryptoKey[]
 
+export type SpcpOidcBaseClientConstructorParams = {
+  rpClientId: string
+  rpRedirectUrl: string
+  ndiDiscoveryEndpoint: string
+  ndiJwksEndpoint: string
+  rpSecretJwks: SecretJwks
+  rpPublicJwks: PublicJwks
+}
+
 export type SpOidcClientConstructorParams = {
   spOidcRpClientId: string
   spOidcRpRedirectUrl: string

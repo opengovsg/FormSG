@@ -26,6 +26,7 @@ import {
 import {
   CryptoKeys,
   SigningKey,
+  SpcpOidcBaseClientConstructorParams,
   SpOidcClientConstructorParams,
 } from './spcp.oidc.client.types'
 import {
@@ -37,13 +38,14 @@ import {
 } from './spcp.oidc.util'
 
 /**
- * Wrapper around the openid-client library to carry out authentication related tasks with Singpass NDI,
+ * Wrapper around the openid-client library to carry out authentication related tasks with Singpass and Corppass NDI,
  * and provides methods for decryption and verification of JWE/JWS returned by NDI after authorisation code exchange
+ * @parent for SpOidcClient and CpOidcClient classes
  */
-export class SpOidcClient {
-  #spOidcRpSecretKeys: CryptoKeys
-  #spOidcRpPublicKeys: CryptoKeys
-  #spOidcRpRedirectUrl: string
+export class SpcpOidcBaseClient {
+  #rpSecretKeys: CryptoKeys
+  #rpPublicKeys: CryptoKeys
+  #rpRedirectUrl: string
 
   /**
    * @private
@@ -57,28 +59,28 @@ export class SpOidcClient {
    * @throws JwkError if RP's secret or public keys are not of correct shape
    */
   constructor({
-    spOidcRpClientId,
-    spOidcRpRedirectUrl,
-    spOidcNdiDiscoveryEndpoint,
-    spOidcNdiJwksEndpoint,
-    spOidcRpSecretJwks,
-    spOidcRpPublicJwks,
-  }: SpOidcClientConstructorParams) {
+    rpClientId,
+    rpRedirectUrl,
+    ndiDiscoveryEndpoint,
+    ndiJwksEndpoint,
+    rpSecretJwks,
+    rpPublicJwks,
+  }: SpcpOidcBaseClientConstructorParams) {
     this._spcpOidcBaseCilentCache = new SpcpOidcBaseCilentCache({
-      spOidcNdiDiscoveryEndpoint,
-      spOidcNdiJwksEndpoint,
-      spOidcRpClientId,
-      spOidcRpRedirectUrl,
-      spOidcRpSecretJwks,
+      ndiDiscoveryEndpoint,
+      ndiJwksEndpoint,
+      rpClientId,
+      rpRedirectUrl,
+      rpSecretJwks,
       options: {
         useClones: false,
         checkperiod: 60, // Check cache expiry every 60 seconds
       },
     })
 
-    this.#spOidcRpRedirectUrl = spOidcRpRedirectUrl
+    this.#rpRedirectUrl = rpRedirectUrl
 
-    this.#spOidcRpSecretKeys = spOidcRpSecretJwks.keys.map((jwk) => {
+    this.#rpSecretKeys = rpSecretJwks.keys.map((jwk) => {
       if (!jwk.alg) {
         throw new JwkError('alg attribute not present on rp secret jwk')
       }
@@ -99,7 +101,7 @@ export class SpOidcClient {
       return cryptoKeys
     })
 
-    this.#spOidcRpPublicKeys = spOidcRpPublicJwks.keys.map((jwk) => {
+    this.#rpPublicKeys = rpPublicJwks.keys.map((jwk) => {
       if (!jwk.alg) {
         throw new JwkError('alg attribute not present on rp public jwk')
       }
@@ -265,7 +267,7 @@ export class SpOidcClient {
       // Exchange Auth Code for tokenSet
       const tokenSet = await baseClient.grant({
         grant_type: 'authorization_code',
-        redirect_uri: this.#spOidcRpRedirectUrl,
+        redirect_uri: this.#rpRedirectUrl,
         code: authCode,
         client_assertion_type:
           'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
@@ -281,7 +283,7 @@ export class SpOidcClient {
       // Get the correct decryption key
       const decryptKeyResult = this.getDecryptionKey(
         idToken,
-        this.#spOidcRpSecretKeys,
+        this.#rpSecretKeys,
       )
       if (decryptKeyResult instanceof GetDecryptionKeyError) {
         throw decryptKeyResult
@@ -367,7 +369,7 @@ export class SpOidcClient {
     payload: Record<string, unknown>,
     expiresIn: string | number,
   ): Promise<string> {
-    const possibleSigningKeys = this.#spOidcRpSecretKeys.filter(
+    const possibleSigningKeys = this.#rpSecretKeys.filter(
       (key): key is SigningKey => isSigningKey(key),
     )
 
@@ -394,7 +396,7 @@ export class SpOidcClient {
   async verifyJwt(jwt: string): Promise<JWTPayload> {
     const verificationKeyResult = this.getVerificationKey(
       jwt,
-      this.#spOidcRpPublicKeys,
+      this.#rpPublicKeys,
     )
     if (verificationKeyResult instanceof GetVerificationKeyError) {
       throw new VerificationKeyError(
@@ -405,5 +407,29 @@ export class SpOidcClient {
     const { payload } = await jwtVerify(jwt, verificationKeyResult)
 
     return payload
+  }
+}
+
+/**
+ * Singpass OIDC Client
+ * @extends SpcpOidcBaseClient
+ */
+export class SpOidcClient extends SpcpOidcBaseClient {
+  constructor({
+    spOidcRpClientId,
+    spOidcRpRedirectUrl,
+    spOidcNdiDiscoveryEndpoint,
+    spOidcNdiJwksEndpoint,
+    spOidcRpSecretJwks,
+    spOidcRpPublicJwks,
+  }: SpOidcClientConstructorParams) {
+    super({
+      rpClientId: spOidcRpClientId,
+      rpRedirectUrl: spOidcRpRedirectUrl,
+      ndiDiscoveryEndpoint: spOidcNdiDiscoveryEndpoint,
+      ndiJwksEndpoint: spOidcNdiJwksEndpoint,
+      rpSecretJwks: spOidcRpSecretJwks,
+      rpPublicJwks: spOidcRpPublicJwks,
+    })
   }
 }
