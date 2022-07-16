@@ -24,6 +24,8 @@ import {
   VerificationKeyError,
 } from './spcp.oidc.client.errors'
 import {
+  CPJWTVerifyResult,
+  CpOidcClientConstructorParams,
   CryptoKeys,
   SigningKey,
   SpcpOidcBaseClientConstructorParams,
@@ -431,5 +433,48 @@ export class SpOidcClient extends SpcpOidcBaseClient {
       rpSecretJwks: spOidcRpSecretJwks,
       rpPublicJwks: spOidcRpPublicJwks,
     })
+  }
+}
+
+/**
+ * Corppass OIDC Client
+ * @extends SpcpOidcBaseClient
+ */
+export class CpOidcClient extends SpcpOidcBaseClient {
+  constructor({
+    cpOidcRpClientId,
+    cpOidcRpRedirectUrl,
+    cpOidcNdiDiscoveryEndpoint,
+    cpOidcNdiJwksEndpoint,
+    cpOidcRpSecretJwks,
+    cpOidcRpPublicJwks,
+  }: CpOidcClientConstructorParams) {
+    super({
+      rpClientId: cpOidcRpClientId,
+      rpRedirectUrl: cpOidcRpRedirectUrl,
+      ndiDiscoveryEndpoint: cpOidcNdiDiscoveryEndpoint,
+      ndiJwksEndpoint: cpOidcNdiJwksEndpoint,
+      rpSecretJwks: cpOidcRpSecretJwks,
+      rpPublicJwks: cpOidcRpPublicJwks,
+    })
+  }
+
+  /**
+   * Method to extract Entity ID from decrypted and verified Corppass idToken
+   * From NDI CP Specs: EntityInfo object is a mandatory claim in all Corppass id tokens.
+   * CPEntID is a mandatory attribute in EntityInfo.
+   * Mandatory attributes in the object will always contain values (could be blank string).
+   * @param idToken decrypted and verified CP idToken
+   * @returns Entity ID (UEN or NON-UEN ID) of the entity to which the user belongs in Corppass.
+   * @returns InvalidIdTokenError if CPEntID attribute is empty
+   */
+  extractCPEntityIdFromIdToken(
+    idToken: CPJWTVerifyResult,
+  ): string | InvalidIdTokenError {
+    if (!idToken.payload.entityInfo.CPEntID) {
+      return new InvalidIdTokenError('CPEntID attribute is empty string.')
+    }
+
+    return idToken.payload.entityInfo.CPEntID
   }
 }
