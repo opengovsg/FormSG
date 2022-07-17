@@ -39,7 +39,7 @@ export type MailServiceParams = {
   transporter?: Mail
   senderMail?: string
   officialMail?: string
-  retryParams?: Partial<OperationOptions>
+  retryParams?: OperationOptions
 }
 
 export type AutoReplyMailData = {
