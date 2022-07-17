@@ -8,10 +8,8 @@ jest.mock('axios', () => MockAxios)
 FeedbackCsvGenerator.prototype.addLineFromFeedback = jest.fn()
 
 describe('FormFeedbackService', () => {
-  const mockFormId = 'mock-form-id'
-  const mockSubmissionId = 'mock-submission-id'
-
   afterEach(() => jest.clearAllMocks())
+  const mockFormId = 'mock-form-id'
   describe('postFeedback', () => {
     const mockFeedback = {
       formId: mockFormId,
@@ -26,13 +24,12 @@ describe('FormFeedbackService', () => {
       // Act
       const actual = await FormFeedbackService.postFeedback(
         mockFormId,
-        mockSubmissionId,
         mockFeedback,
       )
 
       // Assert
       expect(MockAxios.post).toHaveBeenCalledWith(
-        `${FormFeedbackService.PUBLIC_FORM_ENDPOINT}/${mockFormId}/submissions/${mockSubmissionId}/feedback`,
+        `${FormFeedbackService.PUBLIC_FORM_ENDPOINT}/${mockFormId}/feedback`,
         mockFeedback,
       )
       expect(actual).toEqual(mockFeedback)
@@ -46,14 +43,13 @@ describe('FormFeedbackService', () => {
       // Act
       const actualPromise = FormFeedbackService.postFeedback(
         mockFormId,
-        mockSubmissionId,
         mockFeedback,
       )
 
       // Assert
       await expect(actualPromise).rejects.toEqual(expected)
       expect(MockAxios.post).toHaveBeenCalledWith(
-        `${FormFeedbackService.PUBLIC_FORM_ENDPOINT}/${mockFormId}/submissions/${mockSubmissionId}/feedback`,
+        `${FormFeedbackService.PUBLIC_FORM_ENDPOINT}/${mockFormId}/feedback`,
         mockFeedback,
       )
     })

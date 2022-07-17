@@ -7,8 +7,6 @@ import getFormModel, {
   getEmailFormModel,
   getEncryptedFormModel,
 } from 'src/app/models/form.server.model'
-import getFormFeedbackModel from 'src/app/models/form_feedback.server.model'
-import getSubmissionModel from 'src/app/models/submission.server.model'
 import getUserModel from 'src/app/models/user.server.model'
 import {
   AgencyDocument,
@@ -18,10 +16,8 @@ import {
   IEncryptedForm,
   IEncryptedFormSchema,
   IForm,
-  IFormFeedbackSchema,
   IFormSchema,
   IPopulatedForm,
-  ISubmissionSchema,
   IUserSchema,
 } from 'src/types'
 
@@ -273,58 +269,6 @@ const getFullFormById = async (
 ): Promise<IPopulatedForm | null> =>
   await getFormModel(mongoose).getFullFormById(formId)
 
-const insertFormSubmission = async ({
-  formId,
-  submissionType = 'encryptSubmission',
-  version = '1',
-  encryptedContent = 'encryptedContent',
-}: {
-  formId?: ObjectID
-  submissionType?: string
-  version?: string
-  encryptedContent?: string
-} = {}): Promise<{
-  submission: ISubmissionSchema
-}> => {
-  const SubmissionModel = getSubmissionModel(mongoose)
-  const submission = await SubmissionModel.create({
-    form: formId,
-    submissionType,
-    encryptedContent,
-    version,
-  })
-
-  return {
-    submission: submission as ISubmissionSchema,
-  }
-}
-
-const insertFormFeedback = async ({
-  formId,
-  submissionId,
-  rating = '5',
-  comment = 'FormSG rocks!',
-}: {
-  formId?: ObjectID
-  submissionId?: ObjectID
-  rating?: string
-  comment?: string
-} = {}): Promise<{
-  formFeedback: IFormFeedbackSchema
-}> => {
-  const FormFeedbackModel = getFormFeedbackModel(mongoose)
-  const formFeedback = await FormFeedbackModel.create({
-    formId,
-    comment,
-    rating,
-    submissionId,
-  })
-
-  return {
-    formFeedback: formFeedback as IFormFeedbackSchema,
-  }
-}
-
 const dbHandler = {
   connect,
   closeDatabase,
@@ -337,8 +281,6 @@ const dbHandler = {
   insertEncryptForm,
   insertFormWithMsgSrvcName,
   getFullFormById,
-  insertFormSubmission,
-  insertFormFeedback,
 }
 
 export default dbHandler

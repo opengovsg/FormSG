@@ -3,7 +3,6 @@ import { Mongoose, QueryCursor, Schema } from 'mongoose'
 import { IFormFeedbackModel, IFormFeedbackSchema } from '../../types'
 
 import { FORM_SCHEMA_ID } from './form.server.model'
-import { SUBMISSION_SCHEMA_ID } from './submission.server.model'
 
 export const FORM_FEEDBACK_SCHEMA_ID = 'FormFeedback'
 export const FORM_FEEDBACK_COLLECTION_NAME = 'formfeedback'
@@ -14,12 +13,6 @@ const FormFeedbackSchema = new Schema<IFormFeedbackSchema, IFormFeedbackModel>(
       type: Schema.Types.ObjectId,
       ref: FORM_SCHEMA_ID,
       required: true,
-    },
-    submissionId: {
-      type: Schema.Types.ObjectId,
-      ref: SUBMISSION_SCHEMA_ID,
-      // TODO #3964: Update to true once we fully migrate to /submissions/{submissionId}/feedback endpoint
-      required: false,
     },
     rating: {
       type: Number,
@@ -40,10 +33,6 @@ const FormFeedbackSchema = new Schema<IFormFeedbackSchema, IFormFeedbackModel>(
     },
   },
 )
-
-FormFeedbackSchema.index({
-  submissionId: 1,
-})
 
 /**
  * Returns a cursor for all feedback for the form with formId.
