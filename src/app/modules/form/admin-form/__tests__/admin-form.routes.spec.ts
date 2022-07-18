@@ -4909,14 +4909,6 @@ describe('admin-form.routes', () => {
       fileId: 'some file id',
       fileMd5Hash: SparkMD5.hash('test file name'),
       fileType: VALID_UPLOAD_FILE_TYPES[0],
-      isNewClient: true, // TODO (#128): Flag for server to know whether to append random object ID in front. To remove 2 weeks after release.
-    }
-
-    const DEFAULT_POST_PARAMS_OLD_CLIENT = {
-      // TODO (#128): Clean up tests after isNewClient flag has been removed.
-      fileId: 'some other file id',
-      fileMd5Hash: SparkMD5.hash('test file name again'),
-      fileType: VALID_UPLOAD_FILE_TYPES[2],
     }
 
     it('should return 200 with presigned POST URL object and append an objectId to the key', async () => {
@@ -4954,36 +4946,6 @@ describe('admin-form.routes', () => {
       )
 
       expect(response.body.fields.key).toMatch(/^[a-fA-F0-9]{24}-/)
-    })
-
-    it('should return 200 with presigned POST URL object and NOT append an objectId to the key if !isNewClient', async () => {
-      // TODO (#128): Test to be removed after isNewClient flag has been removed.
-      // Arrange
-      const form = await EncryptFormModel.create({
-        title: 'form',
-        admin: defaultUser._id,
-        publicKey: 'does not matter',
-      })
-
-      // Act
-      const response = await request
-        .post(`/${form._id}/adminform/logos`)
-        .send(DEFAULT_POST_PARAMS_OLD_CLIENT)
-
-      // Assert
-      expect(response.status).toEqual(200)
-      // Should equal mocked result.
-      expect(response.body).toEqual({
-        url: expect.any(String),
-        fields: expect.objectContaining({
-          'Content-MD5': DEFAULT_POST_PARAMS_OLD_CLIENT.fileMd5Hash,
-          'Content-Type': DEFAULT_POST_PARAMS_OLD_CLIENT.fileType,
-          key: DEFAULT_POST_PARAMS_OLD_CLIENT.fileId,
-          // Should have correct permissions.
-          acl: 'public-read',
-          bucket: expect.any(String),
-        }),
-      })
     })
 
     it('should return 400 when body.fileId is missing', async () => {
@@ -5193,14 +5155,6 @@ describe('admin-form.routes', () => {
       fileId: 'some other file id',
       fileMd5Hash: SparkMD5.hash('test file name again'),
       fileType: VALID_UPLOAD_FILE_TYPES[2],
-      isNewClient: true, // TODO (#128): Flag for server to know whether to append random object ID in front. To remove 2 weeks after release.
-    }
-
-    const DEFAULT_POST_PARAMS_OLD_CLIENT = {
-      // TODO (#128): Clean up tests after isNewClient flag has been removed.
-      fileId: 'some other file id',
-      fileMd5Hash: SparkMD5.hash('test file name again'),
-      fileType: VALID_UPLOAD_FILE_TYPES[2],
     }
 
     it('should return 200 with presigned POST URL object and append an objectId to the key', async () => {
@@ -5238,36 +5192,6 @@ describe('admin-form.routes', () => {
       )
 
       expect(response.body.fields.key).toMatch(/^[a-fA-F0-9]{24}-/)
-    })
-
-    it('should return 200 with presigned POST URL object and NOT append an objectId to the key if !isNewClient', async () => {
-      // TODO (#128): Test to be removed after isNewClient flag has been removed.
-      // Arrange
-      const form = await EncryptFormModel.create({
-        title: 'form',
-        admin: defaultUser._id,
-        publicKey: 'does not matter',
-      })
-
-      // Act
-      const response = await request
-        .post(`/${form._id}/adminform/logos`)
-        .send(DEFAULT_POST_PARAMS_OLD_CLIENT)
-
-      // Assert
-      expect(response.status).toEqual(200)
-      // Should equal mocked result.
-      expect(response.body).toEqual({
-        url: expect.any(String),
-        fields: expect.objectContaining({
-          'Content-MD5': DEFAULT_POST_PARAMS_OLD_CLIENT.fileMd5Hash,
-          'Content-Type': DEFAULT_POST_PARAMS_OLD_CLIENT.fileType,
-          key: DEFAULT_POST_PARAMS_OLD_CLIENT.fileId,
-          // Should have correct permissions.
-          acl: 'public-read',
-          bucket: expect.any(String),
-        }),
-      })
     })
 
     it('should return 400 when body.fileId is missing', async () => {

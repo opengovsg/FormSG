@@ -189,7 +189,6 @@ const fileUploadValidator = celebrate({
     fileType: Joi.string()
       .valid(...VALID_UPLOAD_FILE_TYPES)
       .required(),
-    isNewClient: Joi.boolean().optional(),
   },
 })
 
@@ -385,17 +384,14 @@ export const createPresignedPostUrlForImages: ControllerHandler<
     fileId: string
     fileMd5Hash: string
     fileType: string
-    isNewClient?: boolean // TODO (#128): Flag for server to know whether to append random object ID in front. To remove 2 weeks after release.
   }
 > = async (req, res) => {
   const { formId } = req.params
-  const { fileId, fileMd5Hash, fileType, isNewClient } = req.body
+  const { fileId, fileMd5Hash, fileType } = req.body
   const sessionUserId = (req.session as AuthedSessionData).user._id
 
   // Adding random objectId ensures fileId is unpredictable by client
-  const randomizedFileId = isNewClient
-    ? `${String(new ObjectId())}-${fileId}`
-    : fileId // TODO (#128): if !isNewClient, returns fileId for backward compatability. To remove fallback for !isNewClient 2 weeks after release.
+  const randomizedFileId = `${String(new ObjectId())}-${fileId}`
 
   return (
     // Step 1: Retrieve currently logged in user.
@@ -456,17 +452,14 @@ export const createPresignedPostUrlForLogos: ControllerHandler<
     fileId: string
     fileMd5Hash: string
     fileType: string
-    isNewClient?: boolean // TODO (#128): Flag for server to know whether to append random object ID in front. To remove 2 weeks after release.
   }
 > = async (req, res) => {
   const { formId } = req.params
-  const { fileId, fileMd5Hash, fileType, isNewClient } = req.body
+  const { fileId, fileMd5Hash, fileType } = req.body
   const sessionUserId = (req.session as AuthedSessionData).user._id
 
   // Adding random objectId ensures fileId is unpredictable by client
-  const randomizedFileId = isNewClient
-    ? `${String(new ObjectId())}-${fileId}`
-    : fileId // TODO (#128): if !isNewClient, returns fileId for backward compatability. To remove fallback for !isNewClient 2 weeks after release.
+  const randomizedFileId = `${String(new ObjectId())}-${fileId}`
 
   return (
     // Step 1: Retrieve currently logged in user.
