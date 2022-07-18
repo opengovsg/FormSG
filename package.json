@@ -25,7 +25,7 @@
     "build-frontend": "webpack --config webpack.prod.js",
     "build-frontend-dev": "webpack --config webpack.dev.js",
     "build-frontend-dev:watch": "webpack --config webpack.dev.js --watch",
-    "start": "node -r dotenv/config -r dd-trace/init dist/backend/src/app/server.js",
+    "start": "node -r dotenv/config dist/backend/src/app/server.js",
     "dev": "docker-compose up --build",
     "docker-dev": "npm run build-frontend-dev:watch & ts-node-dev --respawn --transpile-only --inspect=0.0.0.0 --exit-child -r dotenv/config -- src/app/server.ts",
     "test": "npm run test-backend && npm run test-frontend",
