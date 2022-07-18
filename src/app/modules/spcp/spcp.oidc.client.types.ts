@@ -44,21 +44,21 @@ export type SpcpOidcBaseClientConstructorParams = {
 }
 
 export type SpOidcClientConstructorParams = {
-  spOidcRpClientId: string
-  spOidcRpRedirectUrl: string
-  spOidcNdiDiscoveryEndpoint: string
-  spOidcNdiJwksEndpoint: string
-  spOidcRpSecretJwks: SecretJwks
-  spOidcRpPublicJwks: PublicJwks
+  spOidcRpClientId: SpcpOidcBaseClientConstructorParams['rpClientId']
+  spOidcRpRedirectUrl: SpcpOidcBaseClientConstructorParams['rpRedirectUrl']
+  spOidcNdiDiscoveryEndpoint: SpcpOidcBaseClientConstructorParams['ndiDiscoveryEndpoint']
+  spOidcNdiJwksEndpoint: SpcpOidcBaseClientConstructorParams['ndiJwksEndpoint']
+  spOidcRpSecretJwks: SpcpOidcBaseClientConstructorParams['rpSecretJwks']
+  spOidcRpPublicJwks: SpcpOidcBaseClientConstructorParams['rpPublicJwks']
 }
 
 export type CpOidcClientConstructorParams = {
-  cpOidcRpClientId: string
-  cpOidcRpRedirectUrl: string
-  cpOidcNdiDiscoveryEndpoint: string
-  cpOidcNdiJwksEndpoint: string
-  cpOidcRpSecretJwks: SecretJwks
-  cpOidcRpPublicJwks: PublicJwks
+  cpOidcRpClientId: SpcpOidcBaseClientConstructorParams['rpClientId']
+  cpOidcRpRedirectUrl: SpcpOidcBaseClientConstructorParams['rpRedirectUrl']
+  cpOidcNdiDiscoveryEndpoint: SpcpOidcBaseClientConstructorParams['ndiDiscoveryEndpoint']
+  cpOidcNdiJwksEndpoint: SpcpOidcBaseClientConstructorParams['ndiJwksEndpoint']
+  cpOidcRpSecretJwks: SpcpOidcBaseClientConstructorParams['rpSecretJwks']
+  cpOidcRpPublicJwks: SpcpOidcBaseClientConstructorParams['rpPublicJwks']
 }
 
 export type SpcpOidcBaseCilentCacheConstructorParams = {

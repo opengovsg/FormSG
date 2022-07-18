@@ -146,7 +146,7 @@ export class SpcpOidcBaseClient {
   }
 
   /**
-   * Method to generate url to SP login page for authorisation
+   * Method to generate url to SP/CP login page for authorisation
    * @param state - contains formId, remember me, and stored queryId
    * @param esrvcId - eServiceId
    * @return authorisation url
@@ -330,6 +330,7 @@ export class SpcpOidcBaseClient {
       }
     }
   }
+
   /**
    * Method to extract NRIC from decrypted and verified idToken
    * @param idToken decrypted and verified idToken
@@ -361,7 +362,7 @@ export class SpcpOidcBaseClient {
   }
 
   /**
-   * Creates a JSON Web Token (JWT) for a web session authenticated by SingPass
+   * Creates a JSON Web Token (JWT) for a web session authenticated by SingPass/Corppass
    * @param  payload - Payload to sign
    * @param  expiresIn - The lifetime of the jwt token
    * @return the created JWT
@@ -390,7 +391,7 @@ export class SpcpOidcBaseClient {
   }
 
   /**
-   * Verifies a JWT for SingPass authenticated session
+   * Verifies a JWT for SingPass/Corppass authenticated session
    * @param  jwt - The JWT to verify
    * @return the decoded payload
    * @throws VerificationKeyError if no verification key found
