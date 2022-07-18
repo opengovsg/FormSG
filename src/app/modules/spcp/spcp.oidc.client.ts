@@ -24,7 +24,6 @@ import {
   VerificationKeyError,
 } from './spcp.oidc.client.errors'
 import {
-  CPJWTVerifyResult,
   CpOidcClientConstructorParams,
   CryptoKeys,
   SigningKey,
@@ -33,6 +32,7 @@ import {
 } from './spcp.oidc.client.types'
 import {
   extractNricFromParsedSub,
+  isCPJWTVerifyResult,
   isEC,
   isECPrivate,
   isSigningKey,
@@ -470,8 +470,12 @@ export class CpOidcClient extends SpcpOidcBaseClient {
    * @returns InvalidIdTokenError if CPEntID attribute is empty
    */
   extractCPEntityIdFromIdToken(
-    idToken: CPJWTVerifyResult,
+    idToken: JWTVerifyResult,
   ): string | InvalidIdTokenError {
+    if (!isCPJWTVerifyResult(idToken)) {
+      return new InvalidIdTokenError('idToken has incorrect shape.')
+    }
+
     if (!idToken.payload.entityInfo.CPEntID) {
       return new InvalidIdTokenError('CPEntID attribute is empty string.')
     }
