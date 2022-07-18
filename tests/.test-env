@@ -16,6 +16,7 @@ SP_OIDC_RP_CLIENT_ID=rpClientId
 SP_OIDC_RP_REDIRECT_URL=https://staging.form.gov.sg/api/v3/singpass/login
 SP_OIDC_RP_JWKS_PUBLIC_PATH=./tests/certs/test_rp_public_jwks.json
 SP_OIDC_RP_JWKS_SECRET_PATH=./tests/certs/test_rp_secret_jwks.json
+CP_OIDC_RP_JWKS_PUBLIC_PATH=./tests/certs/test_rp_public_jwks.json
 
 MYINFO_CLIENT_CONFIG=dev
 MYINFO_FORMSG_KEY_PATH=./node_modules/@opengovsg/mockpass/static/certs/key.pem

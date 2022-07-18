@@ -35,6 +35,7 @@ type ISpcpConfig = {
   spOidcRpRedirectUrl: string
   spOidcRpJwksPublicPath: string
   spOidcRpJwksSecretPath: string
+  cpOidcRpJwksPublicPath: string
 }
 
 type IMyInfoConfig = {
@@ -256,6 +257,12 @@ const spcpMyInfoSchema: Schema<ISpcpMyInfo> = {
     format: String,
     default: null,
     env: 'SP_OIDC_RP_JWKS_SECRET_PATH',
+  },
+  cpOidcRpJwksPublicPath: {
+    doc: "Path to the Relying Party's Public Json Web Key Set used for Corppass-related communication with NDI.  This will be hosted at api/v3/corppass/.well-known/jwks.json endpoint.",
+    format: String,
+    default: null,
+    env: 'CP_OIDC_RP_JWKS_PUBLIC_PATH',
   },
 }
 
