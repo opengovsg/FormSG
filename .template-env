@@ -101,7 +101,13 @@ FORMSG_SDK_MODE=
 # SP_OIDC_RP_REDIRECT_URL=
 # SP_OIDC_RP_JWKS_PUBLIC_PATH=
 # SP_OIDC_RP_JWKS_SECRET_PATH=
+# CP_OIDC_NDI_DISCOVERY_ENDPOINT=https://stg-id.corppass.gov.sg/.well-known/openid-configuration
+# CP_OIDC_NDI_JWKS_ENDPOINT=https://stg-id.corppass.gov.sg/.well-known/keys
+# CP_OIDC_RP_CLIENT_ID=
+# CP_OIDC_RP_REDIRECT_URL=
 # CP_OIDC_RP_JWKS_PUBLIC_PATH=
+# CP_OIDC_RP_JWKS_SECRET_PATH=
+
 
 
 # CP_FORMSG_KEY_PATH=./node_modules/@opengovsg/mockpass/static/certs/key.pem
