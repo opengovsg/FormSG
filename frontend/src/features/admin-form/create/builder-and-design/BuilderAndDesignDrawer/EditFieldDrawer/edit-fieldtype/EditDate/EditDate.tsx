@@ -6,7 +6,7 @@ import {
   HStack,
   SimpleGrid,
   Stack,
-  VStack,
+  Text,
 } from '@chakra-ui/react'
 import { isBefore, isDate, isEqual } from 'date-fns'
 import { extend, get, isEmpty, pick } from 'lodash'
@@ -249,6 +249,9 @@ export const EditDate = ({ field }: EditDateProps): JSX.Element => {
             {...register('restrictParticularDays.addParticularDayRestriction')}
             label="Customize days of the week"
           />
+          <Text textStyle="body-2" color="secondary.400">
+            Unchecking a day will disable all the same days in the calendar
+          </Text>
         </FormControl>
         {getValues('restrictParticularDays.addParticularDayRestriction') ? (
           <FormControl isRequired isReadOnly={isLoading}>
@@ -257,10 +260,10 @@ export const EditDate = ({ field }: EditDateProps): JSX.Element => {
                 return (
                   <HStack spacing="0.75rem">
                     <Box w="9.25rem">
-                      <Checkbox>{option.leftOption}</Checkbox>
+                      <Checkbox defaultChecked>{option.leftOption}</Checkbox>
                     </Box>
                     <Box>
-                      <Checkbox>{option.rightOption}</Checkbox>
+                      <Checkbox defaultChecked>{option.rightOption}</Checkbox>
                     </Box>
                   </HStack>
                 )
