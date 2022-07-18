@@ -23,6 +23,7 @@ import {
 } from './spcp.errors'
 import {
   CorppassJwtPayloadFromCookie,
+  ExtractedCorppassNDIPayload,
   RedirectTarget,
   RedirectTargetSpOidc,
   SingpassJwtPayloadFromCookie,
@@ -327,4 +328,19 @@ export const getRedirectTargetSpOidc = (
   return encodedQuery
     ? `/${formId}-${persistentLogin}-${encodedQuery}`
     : `/${formId}-${persistentLogin}`
+}
+
+// Typeguards
+
+export const isExtractedCorppassNDIPayload = (
+  payload: unknown,
+): payload is ExtractedCorppassNDIPayload => {
+  return (
+    typeof payload === 'object' &&
+    !!payload &&
+    hasProp(payload, 'userInfo') &&
+    hasProp(payload, 'userName') &&
+    typeof payload.userInfo === 'string' &&
+    typeof payload.userName === 'string'
+  )
 }
