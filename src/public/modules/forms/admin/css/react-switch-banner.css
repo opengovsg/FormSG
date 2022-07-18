@@ -1,0 +1,53 @@
+/*
+* Prefixed by https://autoprefixer.github.io
+* PostCSS: v7.0.29,
+* Autoprefixer: v9.7.6
+* Browsers: last 4 version
+*/
+
+/* BANNER COMPONENT */
+
+react-switch-banner-component {
+    -webkit-box-flex: 0;
+    -ms-flex: 0 1 auto;
+    flex: 0 1 auto;
+  }
+  
+  .react-switch-banner-container {
+    position: sticky;
+    top: 0;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    padding: 12px 20px;
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+    -webkit-box-pack: center;
+    -ms-flex-pack: center;
+    justify-content: center;
+    line-height: 20px;
+    font-weight: normal;
+    overflow: hidden;
+    font-size: 16px;
+    z-index: 999;
+    width: 100%;
+  }
+  
+
+  .react-switch-banner-container .is-text {
+    color: #23489B
+  }
+
+  .react-switch-banner-container .react-switch-banner-container--link {
+    color: #23489B;
+    cursor: pointer;
+    text-decoration: underline
+  }
+
+  .react-switch-banner-container .is-text .react-switch-banner-container--link:focus,
+  .react-switch-banner-container .is-text .react-switch-banner-container--link:active,
+  .react-switch-banner-container .is-text .react-switch-banner-container--link:hover {
+    color: #264da4;
+  }
+  
