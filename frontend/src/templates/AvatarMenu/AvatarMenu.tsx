@@ -84,7 +84,7 @@ export const AvatarMenu = ({
     <Menu {...(isOpen ? { isOpen } : {})} autoSelect={false}>
       {({ isOpen }) => (
         <>
-          <AvatarMenuButton role="group" isActive={isOpen}>
+          <AvatarMenuButton isActive={isOpen}>
             <Avatar
               name={fullName}
               hasNotification={hasNotification}
@@ -100,7 +100,7 @@ export const AvatarMenu = ({
               }}
             ></Avatar>
           </AvatarMenuButton>
-          <Menu.List marginTop="0.375rem" {...menuListProps}>
+          <Menu.List role="menu" marginTop="0.375rem" {...menuListProps}>
             <AvatarMenuUsername>{userName}</AvatarMenuUsername>
             <AvatarMenuDivider />
             {children}
