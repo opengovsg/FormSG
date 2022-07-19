@@ -18,7 +18,9 @@ function reactSwitchBannerController($scope, $q, $window) {
       $q
         .when(AdminService.adminChooseEnvironment(ui))
         // Refresh the page after changing the environment cookie
-        .then($window.location.reload(true))
+        .then(() => {
+          $window.location.reload(true)
+        })
         .catch((error) => {
           console.error('switch to react failed:', error)
         })
