@@ -18,12 +18,12 @@ import { jsonParseStringify } from 'tests/unit/backend/helpers/serialize-data'
 
 import { FormAuthType, FormStatus } from '../../../../../../../shared/types'
 import * as FormService from '../../../../../modules/form/form.service'
-import { SpOidcService } from '../../../../../modules/spcp/sp.oidc.service'
 import {
   CreateRedirectUrlError,
   FetchLoginPageError,
 } from '../../../../../modules/spcp/spcp.errors'
 import { SpOidcClient } from '../../../../../modules/spcp/spcp.oidc.client'
+import { SpcpOidcService } from '../../../../../modules/spcp/spcp.oidc.service'
 import { PublicFormsRouter } from '../public-forms.routes'
 
 // NOTE: Mocking axios here because there is a network call to an external service
@@ -258,7 +258,7 @@ describe('public-form.auth.routes', () => {
         message: 'Sorry, something went wrong. Please try again.',
       })
       jest
-        .spyOn(SpOidcService, 'createRedirectUrl')
+        .spyOn(SpcpOidcService, 'createRedirectUrl')
         .mockResolvedValueOnce(err(new CreateRedirectUrlError()))
 
       // Act

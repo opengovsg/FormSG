@@ -11,7 +11,7 @@ import * as BillingService from '../billing/billing.service'
 import { ControllerHandler } from '../core/core.types'
 import * as FormService from '../form/form.service'
 
-import { SpOidcService } from './sp.oidc.service'
+import { SpcpOidcService } from './spcp.oidc.service'
 import { SpcpService } from './spcp.service'
 import { JwtName } from './spcp.types'
 import { mapRouteError } from './spcp.util'
@@ -203,7 +203,7 @@ export const handleSpOidcLogin: ControllerHandler<
     code,
   }
 
-  const nricResult = await SpOidcService.exchangeAuthCodeAndRetrieveNric(code)
+  const nricResult = await SpcpOidcService.exchangeAuthCodeAndRetrieveNric(code)
 
   if (nricResult.isErr()) {
     logger.error({
@@ -214,7 +214,7 @@ export const handleSpOidcLogin: ControllerHandler<
     return res.sendStatus(StatusCodes.BAD_REQUEST)
   }
 
-  const parseResult = SpOidcService.parseState(state)
+  const parseResult = SpcpOidcService.parseState(state, FormAuthType.SP)
   if (parseResult.isErr()) {
     logger.error({
       message: 'Invalid SP login parameters',
@@ -249,7 +249,11 @@ export const handleSpOidcLogin: ControllerHandler<
 
   const nric = nricResult.value
   const jwtPayload = { userName: nric, rememberMe }
-  const jwtResult = await SpOidcService.createJWT(jwtPayload, cookieDuration)
+  const jwtResult = await SpcpOidcService.createJWT(
+    jwtPayload,
+    cookieDuration,
+    FormAuthType.SP,
+  )
 
   if (jwtResult.isErr()) {
     logger.error({
@@ -268,7 +272,7 @@ export const handleSpOidcLogin: ControllerHandler<
         httpOnly: true,
         sameSite: 'lax', // Setting to 'strict' prevents Singpass login on Safari, Firefox
         secure: !config.isDev,
-        ...SpOidcService.getCookieSettings(),
+        ...SpcpOidcService.getCookieSettings(),
       })
       return res.redirect(destination)
     })

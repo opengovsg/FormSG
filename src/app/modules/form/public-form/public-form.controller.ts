@@ -35,8 +35,8 @@ import {
 } from '../../myinfo/myinfo.util'
 import { SgidService } from '../../sgid/sgid.service'
 import { validateSgidForm } from '../../sgid/sgid.util'
-import { SpOidcService } from '../../spcp/sp.oidc.service'
 import { InvalidJwtError, VerifyJwtError } from '../../spcp/spcp.errors'
+import { SpcpOidcService } from '../../spcp/spcp.oidc.service'
 import { SpcpService } from '../../spcp/spcp.service'
 import {
   getRedirectTarget,
@@ -273,7 +273,10 @@ export const handleGetPublicForm: ControllerHandler<
     case FormAuthType.NIL:
       return res.json({ form: publicForm, isIntranetUser })
     case FormAuthType.SP:
-      return SpOidcService.extractJwtPayloadFromRequest(req.cookies)
+      return SpcpOidcService.extractJwtPayloadFromRequest(
+        req.cookies,
+        FormAuthType.SP,
+      )
         .map((spcpSession) => {
           return res.json({
             form: publicForm,
@@ -458,7 +461,11 @@ export const _handleFormAuthRedirect: ControllerHandler<
               isPersistentLogin,
               encodedQuery,
             )
-            return SpOidcService.createRedirectUrl(target, form.esrvcId)
+            return SpcpOidcService.createRedirectUrl(
+              target,
+              form.esrvcId,
+              FormAuthType.SP,
+            )
           })
         }
         case FormAuthType.CP: {
