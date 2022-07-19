@@ -1,80 +1,35 @@
-import { RefObject, useCallback } from 'react'
+import { RefObject } from 'react'
 import { BiLogOutCircle } from 'react-icons/bi'
-import { Waypoint } from 'react-waypoint'
-import {
-  Box,
-  Flex,
-  Icon,
-  Skeleton,
-  Slide,
-  Text,
-  useDisclosure,
-} from '@chakra-ui/react'
+import { Box, Flex, Icon, Skeleton, Slide, Text } from '@chakra-ui/react'
 
 import { BxMenuAltLeft } from '~assets/icons/BxMenuAltLeft'
 import { BxsTimeFive } from '~assets/icons/BxsTimeFive'
 import Button from '~components/Button'
 import IconButton from '~components/IconButton'
 
-import { usePublicAuthMutations } from '~features/public-form/mutations'
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
 import { useFormSections } from '../FormFields/FormSectionsContext'
 
-const useFormHeader = () => {
-  const { form, spcpSession, formId, submissionData, miniHeaderRef } =
-    usePublicFormContext()
-  const { handleLogoutMutation } = usePublicAuthMutations(formId)
-
-  const titleColour = useMemo(() => {
-    if (form?.startPage.colorTheme === FormColorTheme.Orange) {
-      return 'secondary.700'
-    }
-    return 'white'
-  }, [form?.startPage.colorTheme])
-
-  const titleBg = useMemo(
-    () =>
-      form?.startPage.colorTheme
-        ? `theme-${form.startPage.colorTheme}.500`
-        : `neutral.200`,
-    [form?.startPage.colorTheme],
-  )
-
-  const estTimeString = useMemo(() => {
-    if (!form?.startPage.estTimeTaken) return ''
-    return simplur`${form?.startPage.estTimeTaken} min[|s] estimated time to complete`
-  }, [form])
-
-  const handleLogout = useCallback(() => {
-    if (!form || form?.authType === FormAuthType.NIL) return
-    return handleLogoutMutation.mutate(form.authType)
-  }, [form, handleLogoutMutation])
-
-  return {
-    title: form?.title,
-    estTimeString,
-    titleBg,
-    titleColour,
-    loggedInId: spcpSession?.userName,
-    showHeader: !submissionData,
-    miniHeaderRef,
-    handleLogout,
-    form,
-  }
-}
-
 export interface MiniHeaderProps {
+  title?: string
+  titleBg: string
+  titleColor: string
+  showHeader?: boolean
+  miniHeaderRef?: RefObject<HTMLDivElement>
   isOpen: boolean
 }
 
-// Exported for testing.
-export const MiniHeader = ({ isOpen }: MiniHeaderProps): JSX.Element | null => {
+export const MiniHeader = ({
+  title,
+  titleBg,
+  titleColor,
+  showHeader,
+  miniHeaderRef,
+  isOpen,
+}: MiniHeaderProps): JSX.Element | null => {
   const { onMobileDrawerOpen } = usePublicFormContext()
   const { activeSectionId } = useFormSections()
-
-  const { title, titleBg, titleColour, showHeader, miniHeaderRef } =
-    useFormHeader()
 
   if (!showHeader) return null
 
@@ -104,7 +59,7 @@ export const MiniHeader = ({ isOpen }: MiniHeaderProps): JSX.Element | null => {
               <Text
                 textStyle={{ base: 'h4', md: 'h2' }}
                 textAlign="start"
-                color={titleColour}
+                color={titleColor}
               >
                 {title ?? 'Loading title'}
               </Text>
@@ -135,6 +90,7 @@ interface FormHeaderInputProps {
   estTimeString: string
   titleBg: string
   titleColor: string
+  showHeader: boolean
   loggedInId?: string
   miniHeaderRef?: RefObject<HTMLDivElement>
   handleLogout?: () => void
@@ -145,79 +101,56 @@ export const FormHeader = ({
   estTimeString,
   titleBg,
   titleColor,
+  showHeader,
   loggedInId,
   miniHeaderRef,
   handleLogout,
 }: FormHeaderInputProps): JSX.Element | null => {
-  const { isOpen, onOpen, onClose } = useDisclosure()
-
-  const handlePositionChange = useCallback(
-    (pos: Waypoint.CallbackArgs) => {
-      // Required so a page that loads in the middle of the page can still
-      // trigger the mini header.
-      if (pos.currentPosition === 'above') {
-        onOpen()
-      } else {
-        onClose()
-      }
-    },
-    [onClose, onOpen],
-  )
+  if (!showHeader) return null
 
   return (
-    <>
-      <MiniHeader
-        title={title}
-        titleBg={titleBg}
-        titleColor={titleColor}
-        miniHeaderRef={miniHeaderRef}
-        isOpen={isOpen}
-      />
+    <Flex
+      px={{ base: '1.5rem', md: '3rem' }}
+      py={{ base: '2rem', md: '3rem' }}
+      justify="center"
+      bg={titleBg}
+    >
       <Flex
-        px={{ base: '1.5rem', md: '3rem' }}
-        py={{ base: '2rem', md: '3rem' }}
-        justify="center"
-        bg={titleBg}
+        maxW="57rem"
+        flexDir="column"
+        align={{ base: 'start', md: 'center' }}
+        color={titleColor}
       >
-        <Flex
-          maxW="57rem"
-          flexDir="column"
-          align={{ base: 'start', md: 'center' }}
-          color={titleColor}
-        >
-          <Skeleton isLoaded={!!title}>
-            <Text
-              as="h1"
-              textStyle="h1"
-              textAlign={{ base: 'start', md: 'center' }}
-            >
-              {title ?? 'Loading title'}
+        <Skeleton isLoaded={!!title}>
+          <Text
+            as="h1"
+            textStyle="h1"
+            textAlign={{ base: 'start', md: 'center' }}
+          >
+            {title ?? 'Loading title'}
+          </Text>
+        </Skeleton>
+        {estTimeString && (
+          <Flex align="flex-start" justify="center" mt="0.875rem">
+            <Icon as={BxsTimeFive} fontSize="1.5rem" mr="0.5rem" />
+            <Text textStyle="body-2" mt="0.125rem">
+              {estTimeString}
             </Text>
-          </Skeleton>
-          {estTimeString && (
-            <Flex align="flex-start" justify="center" mt="0.875rem">
-              <Icon as={BxsTimeFive} fontSize="1.5rem" mr="0.5rem" />
-              <Text textStyle="body-2" mt="0.125rem">
-                {estTimeString}
-              </Text>
-            </Flex>
-          )}
-          {loggedInId ? (
-            <Button
-              mt="2.25rem"
-              variant="reverse"
-              aria-label="Log out"
-              rightIcon={<BiLogOutCircle fontSize="1.5rem" />}
-              onClick={handleLogout}
-              isDisabled={!handleLogout}
-            >
-              {loggedInId} - Log out
-            </Button>
-          ) : null}
-        </Flex>
+          </Flex>
+        )}
+        {loggedInId ? (
+          <Button
+            mt="2.25rem"
+            variant="reverse"
+            aria-label="Log out"
+            rightIcon={<BiLogOutCircle fontSize="1.5rem" />}
+            onClick={handleLogout}
+            isDisabled={!handleLogout}
+          >
+            {loggedInId} - Log out
+          </Button>
+        ) : null}
       </Flex>
-      {/* Sentinel to know when sticky navbar is starting */}
-      <Waypoint topOffset="64px" onPositionChange={handlePositionChange} />
-    </>
+    </Flex>
   )
 }
