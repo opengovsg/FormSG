@@ -1,5 +1,4 @@
 import MyInfoClient, { IMyInfoConfig } from '@opengovsg/myinfo-gov-client'
-import SPCPAuthClient from '@opengovsg/spcp-auth-client'
 import { omit } from 'lodash'
 import mongoose from 'mongoose'
 import session, { Session } from 'supertest-session'
@@ -18,7 +17,7 @@ import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import { FormAuthType, FormStatus } from '../../../../../../shared/types'
 import { MYINFO_COOKIE_NAME } from '../../../myinfo/myinfo.constants'
-import { SpOidcClient } from '../../../spcp/spcp.oidc.client'
+import { CpOidcClient, SpOidcClient } from '../../../spcp/spcp.oidc.client'
 // Import last so mocks are imported correctly
 // eslint-disable-next-line import/first
 import { EmailSubmissionRouter } from '../email-submission.routes'
@@ -39,8 +38,7 @@ import {
 
 const MyInfoHashModel = getMyInfoHashModel(mongoose)
 
-jest.mock('@opengovsg/spcp-auth-client')
-const MockAuthClient = mocked(SPCPAuthClient, true)
+const MockCpOidcClient = mocked(CpOidcClient, true)
 
 jest.mock('../../../spcp/spcp.oidc.client')
 
@@ -77,7 +75,7 @@ const EmailSubmissionsApp = setupApp(
 describe('email-submission.routes', () => {
   let request: Session
 
-  const mockCpClient = mocked(MockAuthClient.mock.instances[1], true)
+  const mockCpClient = mocked(MockCpOidcClient.mock.instances[0], true)
 
   beforeAll(async () => await dbHandler.connect())
   beforeEach(() => {
@@ -726,12 +724,10 @@ describe('email-submission.routes', () => {
 
     describe('CorpPass', () => {
       it('should return 200 when submission is valid', async () => {
-        mockCpClient.verifyJWT.mockImplementationOnce((_jwt, cb) =>
-          cb(null, {
-            userName: 'S1234567A',
-            userInfo: 'MyCorpPassUEN',
-          }),
-        )
+        mockCpClient.verifyJwt.mockResolvedValueOnce({
+          userName: 'S1234567A',
+          userInfo: 'MyCorpPassUEN',
+        })
         const { form } = await dbHandler.insertEmailForm({
           formOptions: {
             esrvcId: 'mockEsrvcId',
@@ -805,9 +801,8 @@ describe('email-submission.routes', () => {
 
       it('should return 401 when submission has invalid JWT', async () => {
         // Mock auth client to return error when decoding JWT
-        mockCpClient.verifyJWT.mockImplementationOnce((_jwt, cb) =>
-          cb(new Error()),
-        )
+        mockCpClient.verifyJwt.mockRejectedValueOnce(new Error())
+
         const { form } = await dbHandler.insertEmailForm({
           formOptions: {
             esrvcId: 'mockEsrvcId',
@@ -833,11 +828,9 @@ describe('email-submission.routes', () => {
 
       it('should return 401 when submission has JWT with the wrong shape', async () => {
         // Mock auth client to return wrong decoded JWT shape
-        mockCpClient.verifyJWT.mockImplementationOnce((_jwt, cb) =>
-          cb(null, {
-            wrongKey: 'S1234567A',
-          }),
-        )
+        mockCpClient.verifyJwt.mockResolvedValueOnce({
+          wrongKey: 'S1234567A',
+        })
         const { form } = await dbHandler.insertEmailForm({
           formOptions: {
             esrvcId: 'mockEsrvcId',

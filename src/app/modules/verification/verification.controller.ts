@@ -12,7 +12,6 @@ import * as FormService from '../form/form.service'
 import * as MyInfoUtil from '../myinfo/myinfo.util'
 import { SgidService } from '../sgid/sgid.service'
 import { SpcpOidcService } from '../spcp/spcp.oidc.service'
-import { SpcpService } from '../spcp/spcp.service'
 
 import * as VerificationService from './verification.service'
 import { Transaction } from './verification.types'
@@ -224,12 +223,14 @@ export const _handleGenerateOtp: ControllerHandler<
         const { authType } = form
         switch (authType) {
           case FormAuthType.CP: {
-            return SpcpService.extractJwt(req.cookies, authType)
-              .asyncAndThen((jwt) => SpcpService.extractCorppassJwtPayload(jwt))
+            return SpcpOidcService.extractJwt(req.cookies, authType)
+              .asyncAndThen((jwt) =>
+                SpcpOidcService.extractCorppassJwtPayload(jwt),
+              )
               .map(() => form)
               .mapErr((error) => {
                 logger.error({
-                  message: 'Failed to verify Corppass JWT with auth client',
+                  message: 'Failed to verify Corppass JWT with cp oidc client',
                   meta: logMeta,
                   error,
                 })

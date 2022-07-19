@@ -42,7 +42,6 @@ import {
 } from '../../spcp/__tests__/spcp.test.constants'
 import { InvalidJwtError, MissingJwtError } from '../../spcp/spcp.errors'
 import { SpcpOidcService } from '../../spcp/spcp.oidc.service'
-import { SpcpService } from '../../spcp/spcp.service'
 import * as VerificationController from '../verification.controller'
 import {
   FieldNotFoundInTransactionError,
@@ -73,8 +72,6 @@ jest.mock('src/app/utils/otp')
 const MockOtpUtils = mocked(OtpUtils, true)
 jest.mock('../../form/form.service')
 const MockFormService = mocked(FormService, true)
-jest.mock('../../spcp/spcp.service')
-const MockSpcpService = mocked(SpcpService, true)
 jest.mock('../../spcp/spcp.oidc.service')
 const MockSpcpOidcService = mocked(SpcpOidcService, true)
 jest.mock('../../myinfo/myinfo.util')
@@ -670,11 +667,13 @@ describe('Verification controller', () => {
       expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
         MOCK_FORM_ID,
       )
-      expect(MockSpcpService.extractJwt).not.toHaveBeenCalled()
+      expect(MockSpcpOidcService.extractJwt).not.toHaveBeenCalled()
       expect(
         MockSpcpOidcService.extractSingpassJwtPayload,
       ).not.toHaveBeenCalled()
-      expect(MockSpcpService.extractCorppassJwtPayload).not.toHaveBeenCalled()
+      expect(
+        MockSpcpOidcService.extractCorppassJwtPayload,
+      ).not.toHaveBeenCalled()
       expect(MockSgidService.extractSgidJwtPayload).not.toHaveBeenCalled()
       expect(MockMyInfoUtil.extractMyInfoCookie).not.toHaveBeenCalled()
       expect(MockMyInfoUtil.extractAccessTokenFromCookie).not.toHaveBeenCalled()
@@ -760,8 +759,8 @@ describe('Verification controller', () => {
       MockVerificationService.disableVerifiedFieldsIfRequired.mockReturnValueOnce(
         okAsync(true),
       )
-      MockSpcpService.extractJwt.mockReturnValueOnce(ok(MOCK_JWT))
-      MockSpcpService.extractCorppassJwtPayload.mockReturnValueOnce(
+      MockSpcpOidcService.extractJwt.mockReturnValueOnce(ok(MOCK_JWT))
+      MockSpcpOidcService.extractCorppassJwtPayload.mockReturnValueOnce(
         okAsync(MOCK_CP_SESSION),
       )
 
@@ -776,13 +775,13 @@ describe('Verification controller', () => {
       expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
         MOCK_FORM_ID,
       )
-      expect(MockSpcpService.extractJwt).toHaveBeenCalledWith(
+      expect(MockSpcpOidcService.extractJwt).toHaveBeenCalledWith(
         MOCK_REQ.cookies,
         MOCK_CP_FORM.authType,
       )
-      expect(MockSpcpService.extractCorppassJwtPayload).toHaveBeenCalledWith(
-        MOCK_JWT,
-      )
+      expect(
+        MockSpcpOidcService.extractCorppassJwtPayload,
+      ).toHaveBeenCalledWith(MOCK_JWT)
       expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
       expect(MockVerificationService.sendNewOtp).toHaveBeenCalledWith(
         EXPECTED_PARAMS_FOR_SENDING_OTP,
@@ -1162,7 +1161,9 @@ describe('Verification controller', () => {
       MockFormService.retrieveFullFormById.mockReturnValueOnce(
         okAsync(MOCK_CP_FORM),
       )
-      MockSpcpService.extractJwt.mockReturnValueOnce(err(new MissingJwtError()))
+      MockSpcpOidcService.extractJwt.mockReturnValueOnce(
+        err(new MissingJwtError()),
+      )
       const expectedResponse = {
         message: 'Sorry, something went wrong. Please refresh and try again.',
       }
@@ -1178,7 +1179,7 @@ describe('Verification controller', () => {
       expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
         MOCK_FORM_ID,
       )
-      expect(MockSpcpService.extractJwt).toHaveBeenCalledWith(
+      expect(MockSpcpOidcService.extractJwt).toHaveBeenCalledWith(
         MOCK_REQ.cookies,
         MOCK_CP_FORM.authType,
       )
@@ -1193,8 +1194,8 @@ describe('Verification controller', () => {
       MockFormService.retrieveFullFormById.mockReturnValueOnce(
         okAsync(MOCK_CP_FORM),
       )
-      MockSpcpService.extractJwt.mockReturnValueOnce(ok(MOCK_JWT))
-      MockSpcpService.extractCorppassJwtPayload.mockReturnValueOnce(
+      MockSpcpOidcService.extractJwt.mockReturnValueOnce(ok(MOCK_JWT))
+      MockSpcpOidcService.extractCorppassJwtPayload.mockReturnValueOnce(
         errAsync(new InvalidJwtError()),
       )
       const expectedResponse = {
@@ -1212,13 +1213,13 @@ describe('Verification controller', () => {
       expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
         MOCK_FORM_ID,
       )
-      expect(MockSpcpService.extractJwt).toHaveBeenCalledWith(
+      expect(MockSpcpOidcService.extractJwt).toHaveBeenCalledWith(
         MOCK_REQ.cookies,
         MOCK_CP_FORM.authType,
       )
-      expect(MockSpcpService.extractCorppassJwtPayload).toHaveBeenCalledWith(
-        MOCK_JWT,
-      )
+      expect(
+        MockSpcpOidcService.extractCorppassJwtPayload,
+      ).toHaveBeenCalledWith(MOCK_JWT)
       expect(MockOtpUtils.generateOtpWithHash).not.toHaveBeenCalled()
       expect(MockVerificationService.sendNewOtp).not.toHaveBeenCalled()
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)

@@ -27,7 +27,6 @@ import { ControllerHandler } from '../../core/core.types'
 import { PermissionLevel } from '../../form/admin-form/admin-form.types'
 import * as FormService from '../../form/form.service'
 import { SpcpOidcService } from '../../spcp/spcp.oidc.service'
-import { SpcpService } from '../../spcp/spcp.service'
 import { getPopulatedUserById } from '../../user/user.service'
 import * as VerifiedContentService from '../../verified-content/verified-content.service'
 import { WebhookFactory } from '../../webhook/webhook.factory'
@@ -221,10 +220,10 @@ const submitEncryptModeForm: ControllerHandler<
       break
     }
     case FormAuthType.CP: {
-      const jwtPayloadResult = await SpcpService.extractJwt(
+      const jwtPayloadResult = await SpcpOidcService.extractJwt(
         req.cookies,
         authType,
-      ).asyncAndThen((jwt) => SpcpService.extractCorppassJwtPayload(jwt))
+      ).asyncAndThen((jwt) => SpcpOidcService.extractCorppassJwtPayload(jwt))
       if (jwtPayloadResult.isErr()) {
         const { statusCode, errorMessage } = mapRouteError(
           jwtPayloadResult.error,
