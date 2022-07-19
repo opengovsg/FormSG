@@ -1,5 +1,17 @@
 import { useMemo } from 'react'
-import { Box, Flex, VStack } from '@chakra-ui/react'
+import {
+  Box,
+  Divider,
+  Drawer,
+  DrawerBody,
+  DrawerContent,
+  DrawerOverlay,
+  Flex,
+  Text,
+  VStack,
+} from '@chakra-ui/react'
+
+import { useIsMobile } from '~hooks/useIsMobile'
 
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
@@ -8,7 +20,13 @@ import { SidebarLink } from './SidebarLink'
 
 export const SectionSidebar = (): JSX.Element => {
   const { activeSectionId } = useFormSections()
-  const { miniHeaderRef, sectionScrollData } = usePublicFormContext()
+  const {
+    miniHeaderRef,
+    sectionScrollData,
+    isMobileDrawerOpen,
+    onMobileDrawerClose,
+  } = usePublicFormContext()
+  const isMobile = useIsMobile()
 
   // Used for offsetting the section sidebar when the mini header is open.
   const sectionTopOffset = useMemo(() => {
@@ -19,6 +37,37 @@ export const SectionSidebar = (): JSX.Element => {
     // will never change.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [miniHeaderRef?.current?.clientHeight])
+
+  if (isMobile && isMobileDrawerOpen && activeSectionId)
+    return (
+      <Drawer
+        isOpen={isMobileDrawerOpen}
+        onClose={onMobileDrawerClose}
+        placement="left"
+      >
+        <DrawerOverlay />
+        <DrawerContent maxW="16.5rem">
+          <DrawerBody px={0} py="1.25rem">
+            <Flex flexDir="column">
+              <Text px="1.5rem" textStyle="subhead-1">
+                Skip to section
+              </Text>
+              <Divider mt="0.75rem" mb="1.75rem" />
+              <VStack px="3rem" spacing="1.25rem" alignItems="flex-start">
+                {sectionScrollData?.map((d) => (
+                  <Flex key={d._id} align="left">
+                    <SidebarLink
+                      isActive={activeSectionId === d._id}
+                      sectionMeta={d}
+                    />
+                  </Flex>
+                ))}
+              </VStack>
+            </Flex>
+          </DrawerBody>
+        </DrawerContent>
+      </Drawer>
+    )
 
   return (
     <Box

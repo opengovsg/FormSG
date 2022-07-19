@@ -40,6 +40,14 @@ export interface PublicFormContextProps
    * Captcha will be instantiated if provided
    */
   captchaContainerId?: string
+  /** Whether mobile section sidebar is open */
+  isMobileDrawerOpen: boolean
+  /**
+   * Callbacks to be invoked when mobile section sidebar
+   * is opened and closed
+   */
+  onMobileDrawerOpen: () => void
+  onMobileDrawerClose: () => void
 }
 
 export const PublicFormContext = createContext<

@@ -11,25 +11,73 @@ import {
   useDisclosure,
 } from '@chakra-ui/react'
 
+import { BxMenuAltLeft } from '~assets/icons/BxMenuAltLeft'
 import { BxsTimeFive } from '~assets/icons/BxsTimeFive'
 import Button from '~components/Button'
+import IconButton from '~components/IconButton'
 
-export interface MiniHeaderProps
-  extends Pick<
-    FormHeaderInputProps,
-    'title' | 'titleBg' | 'titleColor' | 'miniHeaderRef'
-  > {
+import { usePublicAuthMutations } from '~features/public-form/mutations'
+import { usePublicFormContext } from '~features/public-form/PublicFormContext'
+
+import { useFormSections } from '../FormFields/FormSectionsContext'
+
+const useFormHeader = () => {
+  const { form, spcpSession, formId, submissionData, miniHeaderRef } =
+    usePublicFormContext()
+  const { handleLogoutMutation } = usePublicAuthMutations(formId)
+
+  const titleColour = useMemo(() => {
+    if (form?.startPage.colorTheme === FormColorTheme.Orange) {
+      return 'secondary.700'
+    }
+    return 'white'
+  }, [form?.startPage.colorTheme])
+
+  const titleBg = useMemo(
+    () =>
+      form?.startPage.colorTheme
+        ? `theme-${form.startPage.colorTheme}.500`
+        : `neutral.200`,
+    [form?.startPage.colorTheme],
+  )
+
+  const estTimeString = useMemo(() => {
+    if (!form?.startPage.estTimeTaken) return ''
+    return simplur`${form?.startPage.estTimeTaken} min[|s] estimated time to complete`
+  }, [form])
+
+  const handleLogout = useCallback(() => {
+    if (!form || form?.authType === FormAuthType.NIL) return
+    return handleLogoutMutation.mutate(form.authType)
+  }, [form, handleLogoutMutation])
+
+  return {
+    title: form?.title,
+    estTimeString,
+    titleBg,
+    titleColour,
+    loggedInId: spcpSession?.userName,
+    showHeader: !submissionData,
+    miniHeaderRef,
+    handleLogout,
+    form,
+  }
+}
+
+export interface MiniHeaderProps {
   isOpen: boolean
 }
 
 // Exported for testing.
-export const MiniHeader = ({
-  title,
-  titleBg,
-  titleColor,
-  miniHeaderRef,
-  isOpen,
-}: MiniHeaderProps): JSX.Element | null => {
+export const MiniHeader = ({ isOpen }: MiniHeaderProps): JSX.Element | null => {
+  const { onMobileDrawerOpen } = usePublicFormContext()
+  const { activeSectionId } = useFormSections()
+
+  const { title, titleBg, titleColour, showHeader, miniHeaderRef } =
+    useFormHeader()
+
+  if (!showHeader) return null
+
   return (
     <Slide
       // Screen readers do not need to know of the existence of this component.
@@ -37,13 +85,45 @@ export const MiniHeader = ({
       ref={miniHeaderRef}
       direction="top"
       in={isOpen}
-      style={{ zIndex: 10 }}
+      style={{ zIndex: 1000 }}
     >
-      <Box bg={titleBg} px="2rem" py="1rem">
+      <Box
+        bg={titleBg}
+        px={{ base: '1.5rem', md: '2rem' }}
+        py={{ base: '0.5rem', md: '1rem' }}
+      >
         <Skeleton isLoaded={!!title}>
-          <Text as="h2" textStyle="h2" textAlign="start" color={titleColor}>
-            {title ?? 'Loading title'}
-          </Text>
+          <Flex
+            align="center"
+            flex={1}
+            gap="0.5rem"
+            justify="space-between"
+            flexDir="row"
+          >
+            <Flex alignItems="center" minH={{ base: '4rem', md: '0' }}>
+              <Text
+                textStyle={{ base: 'h4', md: 'h2' }}
+                textAlign="start"
+                color={titleColour}
+              >
+                {title ?? 'Loading title'}
+              </Text>
+            </Flex>
+            {activeSectionId ? (
+              // Section sidebar icon should only show up if sections exist
+              <IconButton
+                variant="solid"
+                colorScheme="primary"
+                aria-label="Mobile section sidebar"
+                fontSize="1.5rem"
+                icon={<BxMenuAltLeft />}
+                d={{ base: 'flex', md: 'none' }}
+                onClick={onMobileDrawerOpen}
+              />
+            ) : (
+              <></>
+            )}
+          </Flex>
         </Skeleton>
       </Box>
     </Slide>

@@ -7,9 +7,14 @@ import { envHandlers } from '~/mocks/msw/handlers/env'
 import {
   getCustomLogoResponse,
   getPublicFormResponse,
+  getPublicFormWithoutSectionsResponse,
 } from '~/mocks/msw/handlers/public-form'
 
+import { getMobileViewParameters } from '~utils/storybook'
+
 import { PublicFormProvider } from '~features/public-form/PublicFormProvider'
+
+import { FormSectionsProvider } from '../FormFields/FormSectionsContext'
 
 import {
   MiniHeader as MiniHeaderComponent,
@@ -23,7 +28,7 @@ export default {
   decorators: [
     (storyFn) => (
       <PublicFormProvider formId="61540ece3d4a6e50ac0cc6ff">
-        {storyFn()}
+        <FormSectionsProvider>{storyFn()}</FormSectionsProvider>
       </PublicFormProvider>
     ),
   ],
@@ -189,4 +194,36 @@ MiniHeader.parameters = {
       delay: 0,
     }),
   ],
+}
+
+export const MiniHeaderMobileWithSections: Story<MiniHeaderProps> = (args) => (
+  <MiniHeaderComponent {...args} />
+)
+MiniHeaderMobileWithSections.args = {
+  ...MiniHeader.args,
+}
+
+MiniHeaderMobileWithSections.parameters = {
+  ...MiniHeader.parameters,
+  ...getMobileViewParameters(),
+}
+
+export const MiniHeaderMobileWithoutSections: Story<MiniHeaderProps> = (
+  args,
+) => <MiniHeaderComponent {...args} />
+MiniHeaderMobileWithoutSections.args = {
+  ...MiniHeader.args,
+}
+MiniHeaderMobileWithoutSections.parameters = {
+  msw: [
+    getPublicFormWithoutSectionsResponse({
+      overrides: {
+        form: {
+          title: 'storybook test title',
+        },
+      },
+      delay: 0,
+    }),
+  ],
+  ...getMobileViewParameters(),
 }

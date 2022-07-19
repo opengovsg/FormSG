@@ -20,7 +20,7 @@ import {
 } from '@chakra-ui/react'
 import { cloneDeep } from 'lodash'
 
-import { FormEndPage, FormStartPage } from '~shared/types'
+import { FormStartPage } from '~shared/types'
 
 import { useIsMobile } from '~hooks/useIsMobile'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
@@ -84,7 +84,7 @@ const DesignDrawerInput = ({
 
   const watchedInputs = useWatch({
     control: control,
-  }) as UnpackNestedValue<FormEndPage>
+  }) as UnpackNestedValue<FormStartPage>
 
   const clonedWatchedInputs = useMemo(
     () => cloneDeep(watchedInputs),
