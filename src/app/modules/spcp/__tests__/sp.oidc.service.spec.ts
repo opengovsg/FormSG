@@ -8,7 +8,8 @@ import { MOCK_COOKIE_AGE } from 'src/app/modules/myinfo/__tests__/myinfo.test.co
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
-import { SpOidcServiceClass } from '../sp.oidc.service'
+import { FormAuthType } from '../../../../../shared/types'
+import { SpcpOidcServiceClass } from '../sp.oidc.service'
 import {
   CreateJwtError,
   CreateRedirectUrlError,
@@ -40,7 +41,7 @@ const MockSpOidcClient = mocked(SpOidcClient, true)
 
 jest.mock('axios')
 
-describe('sp.oidc.service', () => {
+describe('spcp.oidc.service', () => {
   beforeAll(async () => await dbHandler.connect())
   beforeEach(async () => {
     await dbHandler.clearDatabase()
@@ -51,10 +52,10 @@ describe('sp.oidc.service', () => {
     it('should instantiate sp oidc client with the correct params', () => {
       // Arrange
       // Act
-      const spOidcServiceClass = new SpOidcServiceClass(MOCK_PARAMS)
+      const spcpOidcServiceClass = new SpcpOidcServiceClass(MOCK_PARAMS)
 
       // Assert
-      expect(spOidcServiceClass).toBeTruthy()
+      expect(spcpOidcServiceClass).toBeTruthy()
       expect(MockSpOidcClient).toHaveBeenCalledOnce()
       expect(MockSpOidcClient).toBeCalledWith({
         spOidcRpClientId: MOCK_PARAMS.spOidcRpClientId,
@@ -75,11 +76,11 @@ describe('sp.oidc.service', () => {
     })
   })
 
-  describe('createRedirectUrl', () => {
+  describe('createRedirectUrl for SP forms', () => {
     it('should call sp oidc client createRedirectUrl with the correct params and return the redirectUrl if it resolves', async () => {
       // Arrange
 
-      const spOidcServiceClass = new SpOidcServiceClass(MOCK_PARAMS)
+      const spOidcServiceClass = new SpcpOidcServiceClass(MOCK_PARAMS)
       const mockClient = mocked(MockSpOidcClient.mock.instances[0], true)
       mockClient.createAuthorisationUrl.mockResolvedValueOnce(MOCK_REDIRECT_URL)
 
@@ -88,6 +89,7 @@ describe('sp.oidc.service', () => {
       const redirectUrl = await spOidcServiceClass.createRedirectUrl(
         MOCK_TARGET,
         MOCK_ESRVCID,
+        FormAuthType.SP,
       )
 
       // Assert
@@ -103,7 +105,7 @@ describe('sp.oidc.service', () => {
     it('should return CreateRedirectUrlError if sp oidc client returns error', async () => {
       // Arrange
 
-      const spOidcServiceClass = new SpOidcServiceClass(MOCK_PARAMS)
+      const spOidcServiceClass = new SpcpOidcServiceClass(MOCK_PARAMS)
       const mockClient = mocked(MockSpOidcClient.mock.instances[0], true)
       mockClient.createAuthorisationUrl.mockRejectedValueOnce(new Error())
 
@@ -112,6 +114,7 @@ describe('sp.oidc.service', () => {
       const redirectUrl = await spOidcServiceClass.createRedirectUrl(
         MOCK_TARGET,
         MOCK_ESRVCID,
+        FormAuthType.SP,
       )
 
       // Assert
@@ -127,13 +130,16 @@ describe('sp.oidc.service', () => {
     })
   })
 
-  describe('extractJwt', () => {
+  describe('extractJwt for SP forms', () => {
     it('should return SingPass JWT correctly', () => {
       // Arrange
-      const spOidcServiceClass = new SpOidcServiceClass(MOCK_PARAMS)
+      const spOidcServiceClass = new SpcpOidcServiceClass(MOCK_PARAMS)
 
       // Act
-      const result = spOidcServiceClass.extractJwt(MOCK_COOKIES)
+      const result = spOidcServiceClass.extractJwt(
+        MOCK_COOKIES,
+        FormAuthType.SP,
+      )
 
       // Assert
 
@@ -142,10 +148,10 @@ describe('sp.oidc.service', () => {
 
     it('should return MissingJwtError if there is no JWT', () => {
       // Arrange
-      const spOidcServiceClass = new SpOidcServiceClass(MOCK_PARAMS)
+      const spOidcServiceClass = new SpcpOidcServiceClass(MOCK_PARAMS)
 
       // Act
-      const result = spOidcServiceClass.extractJwt({})
+      const result = spOidcServiceClass.extractJwt({}, FormAuthType.SP)
 
       // Assert
       expect(result._unsafeUnwrapErr()).toEqual(new MissingJwtError())
@@ -155,7 +161,7 @@ describe('sp.oidc.service', () => {
   describe('extractSingpassJwtPayload', () => {
     it('should return the correct payload for Singpass when JWT is valid', async () => {
       // Arrange
-      const spOidcServiceClass = new SpOidcServiceClass(MOCK_PARAMS)
+      const spOidcServiceClass = new SpcpOidcServiceClass(MOCK_PARAMS)
 
       const mockClient = mocked(MockSpOidcClient.mock.instances[0], true)
       mockClient.verifyJwt.mockResolvedValueOnce(MOCK_SP_JWT_PAYLOAD)
@@ -171,7 +177,7 @@ describe('sp.oidc.service', () => {
 
     it('should return VerifyJwtError when SingPass JWT could not be verified', async () => {
       // Arrange
-      const spOidcServiceClass = new SpOidcServiceClass(MOCK_PARAMS)
+      const spOidcServiceClass = new SpcpOidcServiceClass(MOCK_PARAMS)
 
       const mockClient = mocked(MockSpOidcClient.mock.instances[0], true)
       mockClient.verifyJwt.mockRejectedValueOnce(new Error())
@@ -187,7 +193,7 @@ describe('sp.oidc.service', () => {
 
     it('should return InvalidJwtError when SP JWT has invalid shape', async () => {
       // Arrange
-      const spOidcServiceClass = new SpOidcServiceClass(MOCK_PARAMS)
+      const spOidcServiceClass = new SpcpOidcServiceClass(MOCK_PARAMS)
 
       const mockClient = mocked(MockSpOidcClient.mock.instances[0], true)
       mockClient.verifyJwt.mockResolvedValueOnce({})
@@ -205,7 +211,7 @@ describe('sp.oidc.service', () => {
   describe('extractJwtPayloadFromRequest', () => {
     it('should return a SP JWT payload when there is a valid JWT in the request', async () => {
       // Arrange
-      const spOidcServiceClass = new SpOidcServiceClass(MOCK_PARAMS)
+      const spOidcServiceClass = new SpcpOidcServiceClass(MOCK_PARAMS)
 
       const mockClient = mocked(MockSpOidcClient.mock.instances[0], true)
       mockClient.verifyJwt.mockResolvedValueOnce(MOCK_SP_JWT_PAYLOAD)
@@ -213,6 +219,7 @@ describe('sp.oidc.service', () => {
       // Act
       const result = await spOidcServiceClass.extractJwtPayloadFromRequest(
         MOCK_COOKIES,
+        FormAuthType.SP,
       )
 
       // Assert
@@ -221,10 +228,13 @@ describe('sp.oidc.service', () => {
 
     it('should return MissingJwtError if there is no JWT when client authenticates using SP', async () => {
       // Arrange
-      const spOidcServiceClass = new SpOidcServiceClass(MOCK_PARAMS)
+      const spOidcServiceClass = new SpcpOidcServiceClass(MOCK_PARAMS)
 
       // Act
-      const result = await spOidcServiceClass.extractJwtPayloadFromRequest({})
+      const result = await spOidcServiceClass.extractJwtPayloadFromRequest(
+        {},
+        FormAuthType.SP,
+      )
 
       // Assert
       expect(result._unsafeUnwrapErr()).toBeInstanceOf(MissingJwtError)
@@ -232,7 +242,7 @@ describe('sp.oidc.service', () => {
 
     it('should return InvalidJwtError when the client authenticates using SP and the JWT has wrong shape', async () => {
       // Arrange
-      const spOidcServiceClass = new SpOidcServiceClass(MOCK_PARAMS)
+      const spOidcServiceClass = new SpcpOidcServiceClass(MOCK_PARAMS)
 
       const mockClient = mocked(MockSpOidcClient.mock.instances[0], true)
       mockClient.verifyJwt.mockResolvedValueOnce({})
@@ -240,21 +250,25 @@ describe('sp.oidc.service', () => {
       // Act
       const result = await spOidcServiceClass.extractJwtPayloadFromRequest(
         MOCK_COOKIES,
+        FormAuthType.SP,
       )
 
       // Assert
       expect(result._unsafeUnwrapErr()).toBeInstanceOf(InvalidJwtError)
     })
   })
-  describe('parseState', () => {
+  describe('parseState for SP forms', () => {
     it('should parse SP params correctly when rememberMe is true', () => {
       // Arrange
 
-      const spOidcServiceClass = new SpOidcServiceClass(MOCK_PARAMS)
+      const spOidcServiceClass = new SpcpOidcServiceClass(MOCK_PARAMS)
       const mockState = `/${MOCK_TARGET}-true`
 
       // Act
-      const parsedResult = spOidcServiceClass.parseState(mockState)
+      const parsedResult = spOidcServiceClass.parseState(
+        mockState,
+        FormAuthType.SP,
+      )
 
       // Assert
       expect(parsedResult._unsafeUnwrap()).toEqual({
@@ -267,11 +281,14 @@ describe('sp.oidc.service', () => {
     it('should parse SP params correctly when rememberMe is false', () => {
       // Arrange
 
-      const spOidcServiceClass = new SpOidcServiceClass(MOCK_PARAMS)
+      const spOidcServiceClass = new SpcpOidcServiceClass(MOCK_PARAMS)
       const mockState = `/${MOCK_TARGET}-false`
 
       // Act
-      const parsedResult = spOidcServiceClass.parseState(mockState)
+      const parsedResult = spOidcServiceClass.parseState(
+        mockState,
+        FormAuthType.SP,
+      )
 
       // Assert
       expect(parsedResult._unsafeUnwrap()).toEqual({
@@ -285,11 +302,14 @@ describe('sp.oidc.service', () => {
     it('should parse SP params correctly when rememberMe is malformed', () => {
       // Arrange
 
-      const spOidcServiceClass = new SpOidcServiceClass(MOCK_PARAMS)
+      const spOidcServiceClass = new SpcpOidcServiceClass(MOCK_PARAMS)
       const mockState = `/${MOCK_TARGET}-something`
 
       // Act
-      const parsedResult = spOidcServiceClass.parseState(mockState)
+      const parsedResult = spOidcServiceClass.parseState(
+        mockState,
+        FormAuthType.SP,
+      )
 
       // Assert
       expect(parsedResult._unsafeUnwrap()).toEqual({
@@ -303,11 +323,14 @@ describe('sp.oidc.service', () => {
     it('should parse SP params correctly when target has trailing slash', () => {
       // Arrange
 
-      const spOidcServiceClass = new SpOidcServiceClass(MOCK_PARAMS)
+      const spOidcServiceClass = new SpcpOidcServiceClass(MOCK_PARAMS)
       const mockState = `/${MOCK_TARGET}/-true`
 
       // Act
-      const parsedResult = spOidcServiceClass.parseState(mockState)
+      const parsedResult = spOidcServiceClass.parseState(
+        mockState,
+        FormAuthType.SP,
+      )
 
       // Assert
       expect(parsedResult._unsafeUnwrap()).toEqual({
@@ -321,11 +344,14 @@ describe('sp.oidc.service', () => {
     it('should parse SP params correctly when there is encodedQuery payload', () => {
       // Arrange
 
-      const spOidcServiceClass = new SpOidcServiceClass(MOCK_PARAMS)
+      const spOidcServiceClass = new SpcpOidcServiceClass(MOCK_PARAMS)
       const mockState = `/${MOCK_TARGET}-true-${MOCK_ENCODED_QUERY}`
 
       // Act
-      const parsedResult = spOidcServiceClass.parseState(mockState)
+      const parsedResult = spOidcServiceClass.parseState(
+        mockState,
+        FormAuthType.SP,
+      )
 
       // Assert
       expect(parsedResult._unsafeUnwrap()).toEqual({
@@ -340,11 +366,14 @@ describe('sp.oidc.service', () => {
     it('should return InvalidStateError when state is malformed with no hyphen', () => {
       // Arrange
 
-      const spOidcServiceClass = new SpOidcServiceClass(MOCK_PARAMS)
+      const spOidcServiceClass = new SpcpOidcServiceClass(MOCK_PARAMS)
       const mockState = `/${MOCK_TARGET}/true${MOCK_ENCODED_QUERY}`
 
       // Act
-      const parsedResult = spOidcServiceClass.parseState(mockState)
+      const parsedResult = spOidcServiceClass.parseState(
+        mockState,
+        FormAuthType.SP,
+      )
 
       // Assert
       expect(parsedResult._unsafeUnwrapErr()).toBeInstanceOf(InvalidStateError)
@@ -353,11 +382,14 @@ describe('sp.oidc.service', () => {
     it('should return InvalidStateError when state is malformed with more than 2 hyphen', () => {
       // Arrange
 
-      const spOidcServiceClass = new SpOidcServiceClass(MOCK_PARAMS)
+      const spOidcServiceClass = new SpcpOidcServiceClass(MOCK_PARAMS)
       const mockState = `/${MOCK_TARGET}/---true${MOCK_ENCODED_QUERY}`
 
       // Act
-      const parsedResult = spOidcServiceClass.parseState(mockState)
+      const parsedResult = spOidcServiceClass.parseState(
+        mockState,
+        FormAuthType.SP,
+      )
 
       // Assert
       expect(parsedResult._unsafeUnwrapErr()).toBeInstanceOf(InvalidStateError)
@@ -366,11 +398,14 @@ describe('sp.oidc.service', () => {
     it('should return InvalidStateError when SP formId is malformed', () => {
       // Arrange
 
-      const spOidcServiceClass = new SpOidcServiceClass(MOCK_PARAMS)
+      const spOidcServiceClass = new SpcpOidcServiceClass(MOCK_PARAMS)
       const mockState = `/*-true`
 
       // Act
-      const parsedResult = spOidcServiceClass.parseState(mockState)
+      const parsedResult = spOidcServiceClass.parseState(
+        mockState,
+        FormAuthType.SP,
+      )
 
       // Assert
       expect(parsedResult._unsafeUnwrapErr()).toBeInstanceOf(InvalidStateError)
@@ -381,7 +416,7 @@ describe('sp.oidc.service', () => {
     it('should call sp oidc client correctly and return the result', async () => {
       // Arrange
 
-      const spOidcServiceClass = new SpOidcServiceClass(MOCK_PARAMS)
+      const spOidcServiceClass = new SpcpOidcServiceClass(MOCK_PARAMS)
       const mockClient = mocked(MockSpOidcClient.mock.instances[0], true)
       const MOCK_NRIC = 'S1234567D'
 
@@ -406,7 +441,7 @@ describe('sp.oidc.service', () => {
     it('should should return ExchangeAuthTokenError if client errors', async () => {
       // Arrange
 
-      const spOidcServiceClass = new SpOidcServiceClass(MOCK_PARAMS)
+      const spOidcServiceClass = new SpcpOidcServiceClass(MOCK_PARAMS)
       const mockClient = mocked(MockSpOidcClient.mock.instances[0], true)
 
       mockClient.exchangeAuthCodeAndDecodeVerifyToken.mockRejectedValueOnce(
@@ -426,15 +461,16 @@ describe('sp.oidc.service', () => {
     })
   })
 
-  describe('createJWT', () => {
+  describe('createJWT for SP forms', () => {
     it('should call sp oidc client with the correct params', async () => {
-      const spOidcServiceClass = new SpOidcServiceClass(MOCK_PARAMS)
+      const spOidcServiceClass = new SpcpOidcServiceClass(MOCK_PARAMS)
       const mockClient = mocked(MockSpOidcClient.mock.instances[0], true)
 
       mockClient.createJWT.mockResolvedValueOnce(MOCK_JWT)
       const jwtResult = await spOidcServiceClass.createJWT(
         MOCK_JWT_PAYLOAD,
         MOCK_COOKIE_AGE,
+        FormAuthType.SP,
       )
       expect(mockClient.createJWT).toHaveBeenCalledWith(
         MOCK_JWT_PAYLOAD,
@@ -444,13 +480,14 @@ describe('sp.oidc.service', () => {
     })
 
     it('should return CreateJwtError if sp oidc client errors', async () => {
-      const spOidcServiceClass = new SpOidcServiceClass(MOCK_PARAMS)
+      const spOidcServiceClass = new SpcpOidcServiceClass(MOCK_PARAMS)
       const mockClient = mocked(MockSpOidcClient.mock.instances[0], true)
 
       mockClient.createJWT.mockRejectedValueOnce(new Error())
       const jwtResult = await spOidcServiceClass.createJWT(
         MOCK_JWT_PAYLOAD,
         MOCK_COOKIE_AGE,
+        FormAuthType.SP,
       )
       expect(jwtResult._unsafeUnwrapErr()).toBeInstanceOf(CreateJwtError)
     })
@@ -458,7 +495,7 @@ describe('sp.oidc.service', () => {
 
   describe('getCookieSettings', () => {
     it('should return the correct cookie settings if spcpCookieDomain is truthy', () => {
-      const spOidcServiceClass = new SpOidcServiceClass(MOCK_PARAMS)
+      const spOidcServiceClass = new SpcpOidcServiceClass(MOCK_PARAMS)
       expect(spOidcServiceClass.getCookieSettings()).toEqual({
         domain: MOCK_PARAMS.spcpCookieDomain,
         path: '/',
@@ -466,7 +503,7 @@ describe('sp.oidc.service', () => {
     })
 
     it('should return empty object if spcpCookieDomain is falsy', () => {
-      const spOidcServiceClass = new SpOidcServiceClass(
+      const spOidcServiceClass = new SpcpOidcServiceClass(
         omit(MOCK_PARAMS, 'spcpCookieDomain') as ISpcpMyInfo,
       )
       expect(spOidcServiceClass.getCookieSettings()).toEqual({})
