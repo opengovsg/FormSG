@@ -1,7 +1,7 @@
 import { Router } from 'express'
 
 import * as SpcpController from '../../../../modules/spcp/spcp.controller'
-import { spOidcLoginParamsMiddleware } from '../../../../modules/spcp/spcp.middlewares'
+import { spcpOidcLoginParamsMiddleware } from '../../../../modules/spcp/spcp.middlewares'
 
 // Handles SingPass OIDC requests
 export const SingpassOidcRouter = Router()
@@ -15,6 +15,6 @@ export const SingpassOidcRouter = Router()
  */
 SingpassOidcRouter.get(
   '/login',
-  spOidcLoginParamsMiddleware,
+  spcpOidcLoginParamsMiddleware,
   SpcpController.handleSpcpOidcLogin,
 )
