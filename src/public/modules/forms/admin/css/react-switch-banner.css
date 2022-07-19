@@ -14,26 +14,30 @@ react-switch-banner-component {
   }
   
   .react-switch-banner-container {
-    position: sticky;
-    top: 0;
     display: -webkit-box;
     display: -ms-flexbox;
     display: flex;
-    padding: 12px 20px;
+    margin-top: 20px;
+    padding: 14px 20px;
     -webkit-box-align: center;
     -ms-flex-align: center;
     align-items: center;
     -webkit-box-pack: center;
     -ms-flex-pack: center;
-    justify-content: center;
-    line-height: 20px;
+    justify-content: left;
+    line-height: 24px;
     font-weight: normal;
     overflow: hidden;
-    font-size: 16px;
+    font-size: 18px;
     z-index: 999;
     width: 100%;
+    background-color: #E9ECF5;
   }
   
+
+  .react-switch-banner-container .info-icon {
+      padding-right: 17px;
+  }
 
   .react-switch-banner-container .is-text {
     color: #23489B
@@ -48,6 +52,6 @@ react-switch-banner-component {
   .react-switch-banner-container .is-text .react-switch-banner-container--link:focus,
   .react-switch-banner-container .is-text .react-switch-banner-container--link:active,
   .react-switch-banner-container .is-text .react-switch-banner-container--link:hover {
-    color: #264da4;
+    color: #3B4E9A;
   }
   
