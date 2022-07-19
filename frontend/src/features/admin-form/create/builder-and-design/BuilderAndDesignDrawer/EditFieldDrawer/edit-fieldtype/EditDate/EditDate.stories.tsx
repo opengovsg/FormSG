@@ -18,6 +18,10 @@ const DEFAULT_DATE_FIELD: DateFieldBase = {
     customMaxDate: null,
     customMinDate: null,
   },
+  restrictParticularDays: {
+    addParticularDayRestriction: false,
+    invalidDaysOfTheWeek: [],
+  },
   required: true,
   disabled: false,
   fieldType: BasicField.Date,
@@ -73,6 +77,17 @@ WithCustomDateRange.args = {
       selectedDateValidation: DateSelectedValidation.Custom,
       customMinDate: new Date('2020-01-01T00:00:00Z'),
       customMaxDate: new Date('2020-01-12T00:00:00Z'),
+    },
+  },
+}
+
+export const WithParticularDaysRestricted = Template.bind({})
+WithParticularDaysRestricted.args = {
+  field: {
+    ...DEFAULT_DATE_FIELD,
+    restrictParticularDays: {
+      addParticularDayRestriction: true,
+      invalidDaysOfTheWeek: [1, 2, 5],
     },
   },
 }
