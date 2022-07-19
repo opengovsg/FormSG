@@ -176,3 +176,4 @@ export const MOCK_DECODED_QUERY =
   '?61a9bb48ffca22004a307915=blahblah123&61a9bb53ffca22004a307921=blahblah456'
 
 export const MOCK_SP_OIDC_AUTHORISATION_CODE = 'abcdefg'
+export const MOCK_CP_OIDC_AUTHORISATION_CODE = 'abcdefg'
