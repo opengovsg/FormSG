@@ -26,12 +26,8 @@ const SectionListItem: FC<ListItemProps> = ({
   </ListItem>
 )
 
-const SubSectionOrderedList: FC<ListProps> = ({
-  children,
-  styleType = 'lower-alpha',
-  ...props
-}) => (
-  <OrderedList spacing="1.5rem" styleType={styleType} {...props}>
+const SubSectionOrderedList: FC<ListProps> = ({ children, ...props }) => (
+  <OrderedList spacing="1.5rem" {...props}>
     {children}
   </OrderedList>
 )
@@ -67,18 +63,38 @@ export const TermsOfUsePage = (): JSX.Element => {
             <Text textStyle="h1" as="h1" mb="2.5rem">
               Terms of Use
             </Text>
-            <OrderedList spacing="1.5rem" marginInlineStart="1.5rem">
-              <SectionListItem>
+            <OrderedList
+              spacing="1.5rem"
+              marginInlineStart="1.5rem"
+              style={{ counterReset: 'section 1' }}
+            >
+              <SectionListItem
+                _before={{
+                  counterIncrement: 'section',
+                  content: `counters(section, ".")" "`,
+                }}
+              >
                 <SectionTitle>General</SectionTitle>
-                <SubSectionOrderedList>
-                  <SubSectionListItem>
+                <SubSectionOrderedList style={{ counterReset: 'section 0' }}>
+                  <SubSectionListItem
+                    _before={{
+                      counterIncrement: 'section',
+                      content: `counters(section, ".")" "`,
+                    }}
+                    listStyleType="none"
+                  >
                     These Terms of Use govern your access to and use of our
                     services, including the application (whether as software or
                     as a website or otherwise), its contents, push notifications
                     and all other accompanying materials as identified in the
                     Schedule below (collectively, the "<b>Service</b>").
                   </SubSectionListItem>
-                  <SubSectionListItem>
+                  <SubSectionListItem
+                    _before={{
+                      counterIncrement: 'section',
+                      content: `counters(section, ".")" "`,
+                    }}
+                  >
                     This Service is provided to you by the Government Technology
                     Agency ("<b>GovTech</b>"). GovTech’s office is located at 10
                     Pasir Panjang Road, #10-01, Mapletree Business City,
