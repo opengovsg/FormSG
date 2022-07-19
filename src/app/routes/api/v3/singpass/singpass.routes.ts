@@ -16,5 +16,5 @@ export const SingpassOidcRouter = Router()
 SingpassOidcRouter.get(
   '/login',
   spOidcLoginParamsMiddleware,
-  SpcpController.handleSpOidcLogin,
+  SpcpController.handleSpcpOidcLogin,
 )

@@ -188,36 +188,42 @@ export const handleLogin: (
 }
 
 /**
- * Handler for SP OIDC logins
+ * Handler for SP/CP OIDC logins
  */
-export const handleSpOidcLogin: ControllerHandler<
+export const handleSpcpOidcLogin: (
+  authType: FormAuthType.SP | FormAuthType.CP,
+) => ControllerHandler<
   unknown,
   unknown,
   unknown,
   { state: string; code: string }
-> = async (req, res) => {
+> = (authType) => async (req, res) => {
   const { state, code } = req.query
   const logMeta = {
-    action: 'handleSpOidcLogin',
+    action: 'handleSpcpOidcLogin',
     state,
     code,
+    authType,
   }
 
-  const nricResult = await SpcpOidcService.exchangeAuthCodeAndRetrieveNric(code)
+  const result =
+    authType === FormAuthType.SP
+      ? await SpcpOidcService.exchangeAuthCodeAndRetrieveNric(code)
+      : await SpcpOidcService.exchangeAuthCodeAndRetrieveNricEntID(code)
 
-  if (nricResult.isErr()) {
+  if (result.isErr()) {
     logger.error({
       message: 'Failed to exchange auth code and retrieve nric',
       meta: logMeta,
-      error: nricResult.error,
+      error: result.error,
     })
     return res.sendStatus(StatusCodes.BAD_REQUEST)
   }
 
-  const parseResult = SpcpOidcService.parseState(state, FormAuthType.SP)
+  const parseResult = SpcpOidcService.parseState(state, authType)
   if (parseResult.isErr()) {
     logger.error({
-      message: 'Invalid SP login parameters',
+      message: 'Invalid login parameters',
       meta: logMeta,
       error: parseResult.error,
     })
@@ -234,25 +240,26 @@ export const handleSpOidcLogin: ControllerHandler<
     return res.sendStatus(StatusCodes.NOT_FOUND)
   }
   const form = formResult.value
-  if (form.authType !== FormAuthType.SP) {
+  if (form.authType !== authType) {
     logger.error({
       message: "Log in attempt to wrong endpoint for form's authType",
       meta: {
         ...logMeta,
         formAuthType: form.authType,
-        endpointAuthType: FormAuthType.SP,
+        endpointAuthType: authType,
       },
     })
     res.cookie('isLoginError', true)
     return res.redirect(destination)
   }
 
-  const nric = nricResult.value
-  const jwtPayload = { userName: nric, rememberMe }
-  const jwtResult = await SpcpOidcService.createJWT(
-    jwtPayload,
-    cookieDuration,
-    FormAuthType.SP,
+  const attributes = result.value
+  const jwtResult = await SpcpOidcService.createJWTPayload(
+    attributes,
+    rememberMe,
+    authType,
+  ).asyncAndThen((jwtPayload) =>
+    SpcpOidcService.createJWT(jwtPayload, cookieDuration, authType),
   )
 
   if (jwtResult.isErr()) {
@@ -267,7 +274,7 @@ export const handleSpOidcLogin: ControllerHandler<
 
   return BillingService.recordLoginByForm(form)
     .map(() => {
-      res.cookie(JwtName[FormAuthType.SP], jwtResult.value, {
+      res.cookie(JwtName[authType], jwtResult.value, {
         maxAge: cookieDuration,
         httpOnly: true,
         sameSite: 'lax', // Setting to 'strict' prevents Singpass login on Safari, Firefox

@@ -583,7 +583,7 @@ describe('public-form.controller', () => {
         MockFormService.checkFormSubmissionLimitAndDeactivateForm.mockReturnValueOnce(
           okAsync(MOCK_CP_AUTH_FORM),
         )
-        MockSpcpService.extractJwtPayloadFromRequest.mockReturnValueOnce(
+        MockSpcpOidcService.extractJwtPayloadFromRequest.mockReturnValueOnce(
           okAsync(MOCK_SPCP_SESSION),
         )
         // Act
@@ -919,7 +919,7 @@ describe('public-form.controller', () => {
         MockFormService.checkFormSubmissionLimitAndDeactivateForm.mockReturnValueOnce(
           okAsync(MOCK_CP_FORM),
         )
-        MockSpcpService.extractJwtPayloadFromRequest.mockReturnValueOnce(
+        MockSpcpOidcService.extractJwtPayloadFromRequest.mockReturnValueOnce(
           errAsync(new MissingJwtError()),
         )
 
@@ -1128,7 +1128,7 @@ describe('public-form.controller', () => {
         const mockRes = expressHandler.mockResponse()
 
         MockFormService.checkIsIntranetFormAccess.mockReturnValueOnce(true)
-        MockSpcpService.extractJwtPayloadFromRequest.mockReturnValueOnce(
+        MockSpcpOidcService.extractJwtPayloadFromRequest.mockReturnValueOnce(
           okAsync(MOCK_SPCP_SESSION),
         )
         MockAuthService.getFormIfPublic.mockReturnValueOnce(
@@ -1316,8 +1316,8 @@ describe('public-form.controller', () => {
       MockFormService.retrieveFullFormById.mockReturnValueOnce(
         okAsync(MOCK_FORM),
       )
-      MockSpcpService.createRedirectUrl.mockReturnValueOnce(
-        ok(MOCK_REDIRECT_URL),
+      MockSpcpOidcService.createRedirectUrl.mockReturnValueOnce(
+        okAsync(MOCK_REDIRECT_URL),
       )
 
       // Act
@@ -1527,8 +1527,8 @@ describe('public-form.controller', () => {
       MockFormService.retrieveFullFormById.mockReturnValueOnce(
         okAsync(MOCK_FORM),
       )
-      MockSpcpService.createRedirectUrl.mockReturnValueOnce(
-        err(new CreateRedirectUrlError()),
+      MockSpcpOidcService.createRedirectUrl.mockReturnValueOnce(
+        errAsync(new CreateRedirectUrlError()),
       )
 
       // Act

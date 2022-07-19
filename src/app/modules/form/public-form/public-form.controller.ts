@@ -39,7 +39,6 @@ import { InvalidJwtError, VerifyJwtError } from '../../spcp/spcp.errors'
 import { SpcpOidcService } from '../../spcp/spcp.oidc.service'
 import { SpcpService } from '../../spcp/spcp.service'
 import {
-  getRedirectTarget,
   getRedirectTargetSpcpOidc,
   validateSpcpForm,
 } from '../../spcp/spcp.util'
@@ -299,7 +298,10 @@ export const handleGetPublicForm: ControllerHandler<
           return res.json({ form: publicForm, isIntranetUser })
         })
     case FormAuthType.CP:
-      return SpcpService.extractJwtPayloadFromRequest(authType, req.cookies)
+      return SpcpOidcService.extractJwtPayloadFromRequest(
+        req.cookies,
+        FormAuthType.CP,
+      )
         .map((spcpSession) => {
           return res.json({
             form: publicForm,
@@ -472,17 +474,17 @@ export const _handleFormAuthRedirect: ControllerHandler<
         case FormAuthType.CP: {
           // NOTE: Persistent login is only set (and relevant) when the authType is SP.
           // If authType is not SP, assume that it was set erroneously and default it to false
-          return validateSpcpForm(form).andThen((form) => {
-            const target = getRedirectTarget(
+          return validateSpcpForm(form).asyncAndThen((form) => {
+            const target = getRedirectTargetSpcpOidc(
               formId,
-              form.authType,
+              FormAuthType.CP,
               isPersistentLogin,
               encodedQuery,
             )
-            return SpcpService.createRedirectUrl(
-              form.authType,
+            return SpcpOidcService.createRedirectUrl(
               target,
               form.esrvcId,
+              FormAuthType.CP,
             )
           })
         }
