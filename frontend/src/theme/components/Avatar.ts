@@ -1,24 +1,44 @@
-import { ComponentMultiStyleConfig } from '@chakra-ui/react'
+import { avatarAnatomy as parts } from '@chakra-ui/anatomy'
+import { PartsStyleObject } from '@chakra-ui/theme-tools'
 
-export const Avatar: ComponentMultiStyleConfig = {
-  parts: ['container', 'badge', 'usernameItem', 'usernameIcon'],
-  baseStyle: {
-    container: {
-      backgroundColor: 'primary.500',
-      fontStyle: 'subhead-2',
-      width: '2.5rem',
-      height: '2.5rem',
-      color: 'white',
+import { textStyles } from '../textStyles'
+
+const baseStyle: PartsStyleObject<typeof parts> = {
+  container: {
+    bg: 'primary.500',
+    width: '2.5rem',
+    height: '2.5rem',
+    color: 'white',
+    textStyle: 'subhead-2',
+  },
+  badge: {
+    bg: 'danger.500',
+    border: '1px solid white',
+    transform: 'none',
+    botton: '1px',
+    right: '1px',
+  },
+}
+
+export const Avatar = {
+  parts: parts.keys,
+  sizes: {
+    md: {
+      container: {
+        width: '2.5rem',
+        height: '2.5rem',
+        fontSize: textStyles['subhead-2'].fontSize,
+      },
+      label: textStyles['subhead-2'],
+      badge: {
+        // 20% of container width + 1px border left right.
+        w: 'calc(20% + 2px)',
+        h: 'calc(20% + 2px)',
+      },
     },
-    badge: {
-      borderColor: 'white',
-      bg: 'danger.500',
-      width: '0.55rem',
-      height: '0.55rem',
-      borderWidth: '0.0625rem',
-      position: 'absolute',
-      top: '2.125rem',
-      left: '2.125rem',
-    },
+  },
+  baseStyle,
+  defaultProps: {
+    size: 'md',
   },
 }
