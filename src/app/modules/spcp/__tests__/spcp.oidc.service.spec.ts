@@ -15,12 +15,13 @@ import {
   ExchangeAuthTokenError,
   InvalidJwtError,
   InvalidStateError,
+  MissingAttributesError,
   MissingJwtError,
   VerifyJwtError,
 } from '../spcp.errors'
 import { CpOidcClient, SpOidcClient } from '../spcp.oidc.client'
 import { SpcpOidcServiceClass } from '../spcp.oidc.service'
-import { JwtName } from '../spcp.types'
+import { ExtractedCorppassNDIPayload, JwtName } from '../spcp.types'
 
 import {
   MOCK_COOKIES,
@@ -942,15 +943,20 @@ describe('spcp.oidc.service', () => {
 
   describe('createJWT for SP forms', () => {
     it('should call sp oidc client with the correct params', async () => {
+      // Arrange
       const spcpOidcServiceClass = new SpcpOidcServiceClass(MOCK_PARAMS)
       const mockClient = mocked(MockSpOidcClient.mock.instances[0], true)
 
       mockClient.createJWT.mockResolvedValueOnce(MOCK_JWT)
+
+      // Act
       const jwtResult = await spcpOidcServiceClass.createJWT(
         MOCK_JWT_PAYLOAD,
         MOCK_COOKIE_AGE,
         FormAuthType.SP,
       )
+
+      // Assert
       expect(mockClient.createJWT).toHaveBeenCalledWith(
         MOCK_JWT_PAYLOAD,
         `${MOCK_COOKIE_AGE / 1000}s`,
@@ -959,30 +965,40 @@ describe('spcp.oidc.service', () => {
     })
 
     it('should return CreateJwtError if sp oidc client errors', async () => {
+      // Arrange
       const spcpOidcServiceClass = new SpcpOidcServiceClass(MOCK_PARAMS)
       const mockClient = mocked(MockSpOidcClient.mock.instances[0], true)
 
       mockClient.createJWT.mockRejectedValueOnce(new Error())
+
+      // Act
       const jwtResult = await spcpOidcServiceClass.createJWT(
         MOCK_JWT_PAYLOAD,
         MOCK_COOKIE_AGE,
         FormAuthType.SP,
       )
+
+      // Assert
       expect(jwtResult._unsafeUnwrapErr()).toBeInstanceOf(CreateJwtError)
     })
   })
 
   describe('createJWT for CP forms', () => {
     it('should call cp oidc client with the correct params', async () => {
+      // Arrange
       const spcpOidcServiceClass = new SpcpOidcServiceClass(MOCK_PARAMS)
       const mockClient = mocked(MockCpOidcClient.mock.instances[0], true)
 
       mockClient.createJWT.mockResolvedValueOnce(MOCK_JWT)
+
+      // Act
       const jwtResult = await spcpOidcServiceClass.createJWT(
         MOCK_JWT_PAYLOAD,
         MOCK_COOKIE_AGE,
         FormAuthType.CP,
       )
+
+      // Assert
       expect(mockClient.createJWT).toHaveBeenCalledWith(
         MOCK_JWT_PAYLOAD,
         `${MOCK_COOKIE_AGE / 1000}s`,
@@ -991,22 +1007,218 @@ describe('spcp.oidc.service', () => {
     })
 
     it('should return CreateJwtError if cp oidc client errors', async () => {
+      // Arrange
       const spcpOidcServiceClass = new SpcpOidcServiceClass(MOCK_PARAMS)
       const mockClient = mocked(MockCpOidcClient.mock.instances[0], true)
 
       mockClient.createJWT.mockRejectedValueOnce(new Error())
+
+      // Act
       const jwtResult = await spcpOidcServiceClass.createJWT(
         MOCK_JWT_PAYLOAD,
         MOCK_COOKIE_AGE,
         FormAuthType.CP,
       )
+
+      // Assert
       expect(jwtResult._unsafeUnwrapErr()).toBeInstanceOf(CreateJwtError)
     })
   })
 
+  describe('createJWTPayload', () => {
+    it('should correctly return payload for SP forms', () => {
+      // Arrange
+      const spcpOidcServiceClass = new SpcpOidcServiceClass(MOCK_PARAMS)
+      const MOCK_NRIC = 'S1234567A'
+      const expectedPayload = {
+        userName: MOCK_NRIC,
+        rememberMe: true,
+      }
+
+      // Act
+      const jwtPayloadResult = spcpOidcServiceClass.createJWTPayload(
+        MOCK_NRIC,
+        true,
+        FormAuthType.SP,
+      )
+
+      // Assert
+      expect(jwtPayloadResult._unsafeUnwrap()).toMatchObject(expectedPayload)
+    })
+
+    it('should return MissingAttributesError if attribute is not string for SP forms', () => {
+      // Arrange
+      const spcpOidcServiceClass = new SpcpOidcServiceClass(MOCK_PARAMS)
+      const MOCK_NRIC = { nric: 'S1234567A' } as unknown as string
+
+      // Act
+      const jwtPayloadResult = spcpOidcServiceClass.createJWTPayload(
+        MOCK_NRIC,
+        true,
+        FormAuthType.SP,
+      )
+
+      // Assert
+      expect(jwtPayloadResult._unsafeUnwrapErr()).toBeInstanceOf(
+        MissingAttributesError,
+      )
+    })
+
+    it('should return MissingAttributesError if attribute is empty string string for SP forms', () => {
+      // Arrange
+      const spcpOidcServiceClass = new SpcpOidcServiceClass(MOCK_PARAMS)
+      const MOCK_NRIC = ''
+
+      // Act
+      const jwtPayloadResult = spcpOidcServiceClass.createJWTPayload(
+        MOCK_NRIC,
+        true,
+        FormAuthType.SP,
+      )
+
+      // Assert
+      expect(jwtPayloadResult._unsafeUnwrapErr()).toBeInstanceOf(
+        MissingAttributesError,
+      )
+    })
+
+    it('should correctly return payload for CP forms', () => {
+      // Arrange
+      const spcpOidcServiceClass = new SpcpOidcServiceClass(MOCK_PARAMS)
+      const MOCK_NRIC = 'S1234567A'
+      const MOCK_UEN = 'A123456789Z'
+      const MOCK_ATTRIBUTES = {
+        userInfo: MOCK_NRIC,
+        userName: MOCK_UEN,
+      }
+      const expectedPayload = {
+        ...MOCK_ATTRIBUTES,
+        rememberMe: true,
+      }
+
+      // Act
+      const jwtPayloadResult = spcpOidcServiceClass.createJWTPayload(
+        MOCK_ATTRIBUTES,
+        true,
+        FormAuthType.CP,
+      )
+
+      // Assert
+      expect(jwtPayloadResult._unsafeUnwrap()).toMatchObject(expectedPayload)
+    })
+
+    it('should return MissingAttributesError if attribute is not object for CP forms', () => {
+      // Arrange
+      const spcpOidcServiceClass = new SpcpOidcServiceClass(MOCK_PARAMS)
+      const nric = 'S1234567A'
+
+      // Act
+      const jwtPayloadResult = spcpOidcServiceClass.createJWTPayload(
+        nric,
+        true,
+        FormAuthType.CP,
+      )
+
+      // Assert
+      expect(jwtPayloadResult._unsafeUnwrapErr()).toBeInstanceOf(
+        MissingAttributesError,
+      )
+    })
+
+    it('should return MissingAttributesError if nric is empty string string for CP forms', () => {
+      // Arrange
+      const spcpOidcServiceClass = new SpcpOidcServiceClass(MOCK_PARAMS)
+      const MOCK_NRIC = ''
+      const MOCK_UEN = 'A123456789Z'
+      const MOCK_ATTRIBUTES = {
+        userInfo: MOCK_NRIC,
+        userName: MOCK_UEN,
+      }
+
+      // Act
+      const jwtPayloadResult = spcpOidcServiceClass.createJWTPayload(
+        MOCK_ATTRIBUTES,
+        true,
+        FormAuthType.CP,
+      )
+
+      // Assert
+      expect(jwtPayloadResult._unsafeUnwrapErr()).toBeInstanceOf(
+        MissingAttributesError,
+      )
+    })
+
+    it('should return MissingAttributesError if uen is empty string string for CP forms', () => {
+      // Arrange
+      const spcpOidcServiceClass = new SpcpOidcServiceClass(MOCK_PARAMS)
+      const MOCK_NRIC = 'S1234567A'
+      const MOCK_UEN = ''
+      const MOCK_ATTRIBUTES = {
+        userInfo: MOCK_NRIC,
+        userName: MOCK_UEN,
+      }
+
+      // Act
+      const jwtPayloadResult = spcpOidcServiceClass.createJWTPayload(
+        MOCK_ATTRIBUTES,
+        true,
+        FormAuthType.CP,
+      )
+
+      // Assert
+      expect(jwtPayloadResult._unsafeUnwrapErr()).toBeInstanceOf(
+        MissingAttributesError,
+      )
+    })
+
+    it('should return MissingAttributesError if userInfo property is missing from attributes for CP forms', () => {
+      // Arrange
+      const spcpOidcServiceClass = new SpcpOidcServiceClass(MOCK_PARAMS)
+      const MOCK_UEN = 'A123456789Z'
+      const MOCK_ATTRIBUTES = {
+        userName: MOCK_UEN,
+      } as unknown as ExtractedCorppassNDIPayload
+
+      // Act
+      const jwtPayloadResult = spcpOidcServiceClass.createJWTPayload(
+        MOCK_ATTRIBUTES,
+        true,
+        FormAuthType.CP,
+      )
+
+      // Assert
+      expect(jwtPayloadResult._unsafeUnwrapErr()).toBeInstanceOf(
+        MissingAttributesError,
+      )
+    })
+
+    it('should return MissingAttributesError if userName property is missing from attributes for CP forms', () => {
+      // Arrange
+      const spcpOidcServiceClass = new SpcpOidcServiceClass(MOCK_PARAMS)
+      const MOCK_NRIC = 'S1234567A'
+      const MOCK_ATTRIBUTES = {
+        userInfo: MOCK_NRIC,
+      } as unknown as ExtractedCorppassNDIPayload
+
+      // Act
+      const jwtPayloadResult = spcpOidcServiceClass.createJWTPayload(
+        MOCK_ATTRIBUTES,
+        true,
+        FormAuthType.CP,
+      )
+
+      // Assert
+      expect(jwtPayloadResult._unsafeUnwrapErr()).toBeInstanceOf(
+        MissingAttributesError,
+      )
+    })
+  })
   describe('getCookieSettings', () => {
     it('should return the correct cookie settings if spcpCookieDomain is truthy', () => {
+      // Act
       const spcpOidcServiceClass = new SpcpOidcServiceClass(MOCK_PARAMS)
+
+      // Assert
       expect(spcpOidcServiceClass.getCookieSettings()).toEqual({
         domain: MOCK_PARAMS.spcpCookieDomain,
         path: '/',
@@ -1014,9 +1226,12 @@ describe('spcp.oidc.service', () => {
     })
 
     it('should return empty object if spcpCookieDomain is falsy', () => {
+      // Act
       const spcpOidcServiceClass = new SpcpOidcServiceClass(
         omit(MOCK_PARAMS, 'spcpCookieDomain') as ISpcpMyInfo,
       )
+
+      // Assert
       expect(spcpOidcServiceClass.getCookieSettings()).toEqual({})
     })
   })

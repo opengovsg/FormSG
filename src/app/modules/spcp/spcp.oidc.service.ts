@@ -15,6 +15,7 @@ import {
   InvalidIdTokenError,
   InvalidJwtError,
   InvalidStateError,
+  MissingAttributesError,
   MissingJwtError,
   VerifyJwtError,
 } from './spcp.errors'
@@ -466,6 +467,36 @@ export class SpcpOidcServiceClass {
         return new CreateJwtError()
       },
     )
+  }
+
+  /**
+   * Creates a payload of SP/CP user data based on attributes
+   * @param attributes user data returned by SP/CP from client
+   * @param rememberMe Whether to enable longer duration for SingPass cookies
+   * @param authType FormAuthType.SP | FormAuthType.CP
+   * @return The payload
+   */
+  createJWTPayload(
+    attributes: string | ExtractedCorppassNDIPayload,
+    rememberMe: boolean,
+    authType: FormAuthType.SP | FormAuthType.CP,
+  ): Result<JwtPayload, MissingAttributesError> {
+    // Singpass
+    if (authType === FormAuthType.SP) {
+      const userName = attributes
+      return userName && typeof userName === 'string'
+        ? ok({ userName, rememberMe })
+        : err(new MissingAttributesError())
+    }
+    // CorpPass
+    if (isExtractedCorppassNDIPayload(attributes)) {
+      const { userName, userInfo } = attributes
+      return userName && userInfo
+        ? ok({ userName, userInfo, rememberMe })
+        : err(new MissingAttributesError())
+    }
+
+    return err(new MissingAttributesError())
   }
 
   /**
