@@ -1,37 +1,27 @@
+import { Avatar, AvatarBadge, AvatarProps } from '@chakra-ui/react'
 import { Meta, Story } from '@storybook/react'
-
-import { Avatar } from './Avatar'
 
 export default {
   title: 'Components/Avatar',
   component: Avatar,
-} as Meta
+  args: {
+    name: 'ABC',
+    size: 'md',
+  },
+} as Meta<AvatarProps>
 
-type AvatarTemplateProps = {
-  hasNotification?: boolean
-  name?: string
-  showBorder?: boolean
+const Template: Story<AvatarProps> = (args) => {
+  return <Avatar {...args} />
 }
 
-const AvatarTemplate: Story<AvatarTemplateProps> = ({
-  hasNotification,
-  name,
-  showBorder,
-}) => {
-  return (
-    <Avatar
-      hasNotification={hasNotification}
-      name={name}
-      showBorder={showBorder}
-    ></Avatar>
-  )
+export const Default = Template.bind({})
+
+export const WithNotification = Template.bind({})
+WithNotification.args = {
+  children: <AvatarBadge />,
 }
 
-export const Default = AvatarTemplate.bind({})
-Default.args = { hasNotification: false, name: 'ABC' }
-
-export const WithNotification = AvatarTemplate.bind({})
-WithNotification.args = { hasNotification: true, name: 'ABC' }
-
-export const WithBorder = AvatarTemplate.bind({})
-WithBorder.args = { showBorder: true, name: 'ABC' }
+export const WithBorder = Template.bind({})
+WithBorder.args = {
+  boxShadow: `0 0 0 4px var(--chakra-colors-primary-300)`,
+}
