@@ -1,35 +1,10 @@
 import { Meta, Story } from '@storybook/react'
 
-import { Avatar } from '../../components/Avatar/Avatar'
 import Menu from '../../components/Menu'
 
-import { AvatarMenuDivider, AvatarMenuProps } from './AvatarMenu'
-import AvatarMenu from '.'
+import { AvatarMenu, AvatarMenuDivider, AvatarMenuProps } from './AvatarMenu'
 
-export default {
-  title: 'Templates/AvatarMenu',
-  component: Avatar,
-} as Meta
-
-type AvatarTemplateProps = AvatarMenuProps
-
-const AvatarTemplate: Story<AvatarTemplateProps> = ({
-  fullName,
-  userName,
-  hasNotification,
-  isOpen,
-  children,
-}) => (
-  <AvatarMenu
-    fullName={fullName}
-    userName={userName}
-    hasNotification={hasNotification}
-    isOpen={isOpen}
-    children={children}
-  />
-)
-
-const menuItems = (
+const DEFAULT_MENU_ITEMS = (
   <>
     <Menu.Item>Billing</Menu.Item>
     <Menu.Item>Emergency contact</Menu.Item>
@@ -38,38 +13,36 @@ const menuItems = (
   </>
 )
 
+export default {
+  title: 'Templates/AvatarMenu',
+  component: AvatarMenu,
+  args: {
+    name: 'My name',
+    menuUsername: 'someuser@email.com',
+    hasNotification: false,
+    defaultIsOpen: false,
+    children: DEFAULT_MENU_ITEMS,
+  },
+} as Meta<AvatarMenuProps>
+
+const AvatarTemplate: Story<AvatarMenuProps> = (args) => (
+  <AvatarMenu {...args} />
+)
+
 export const Default = AvatarTemplate.bind({})
-Default.args = {
-  fullName: 'My name',
-  userName: 'someuser@email.com',
-  hasNotification: false,
-  isOpen: false,
-  children: menuItems,
-}
 
 export const OpenMenu = AvatarTemplate.bind({})
 OpenMenu.args = {
-  fullName: 'My name',
-  userName: 'someuser@email.com',
-  hasNotification: false,
-  isOpen: true,
-  children: menuItems,
+  defaultIsOpen: true,
 }
 
 export const WithNotification = AvatarTemplate.bind({})
 WithNotification.args = {
-  fullName: 'My name',
-  userName: 'someuser@email.com',
   hasNotification: true,
-  isOpen: false,
-  children: menuItems,
 }
 
 export const OpenMenuWithNotification = AvatarTemplate.bind({})
 OpenMenuWithNotification.args = {
-  fullName: 'My name',
-  userName: 'someuser@email.com',
   hasNotification: true,
-  isOpen: true,
-  children: menuItems,
+  defaultIsOpen: true,
 }
