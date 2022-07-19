@@ -1,18 +1,17 @@
 import axios from 'axios'
-
-import { UiCookieValues } from 'src/app/modules/react-migration/react-migration.controller'
+import { UiCookieValues } from 'shared/types'
 
 // endpoint exported for testing
-export const ADMIN_FORM_ENDPOINT = '/api/v3/admin/forms'
+export const ADMIN_ENDPOINT = '/api/v3/admin'
 
 /**
  * Switch environments by changing the adminCookieName cookie
  * @returns the chosen environment: 'react' or 'angular'.
  */
 export const adminChooseEnvironment = async (
-  env: UiCookieValues,
+  ui: UiCookieValues,
 ): Promise<UiCookieValues> => {
   return axios
-    .get<UiCookieValues>(`${ADMIN_FORM_ENDPOINT}/environment/${env}`)
+    .get<UiCookieValues>(`${ADMIN_ENDPOINT}/environment/${ui}`)
     .then(({ data }) => data)
 }
