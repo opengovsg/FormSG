@@ -66,6 +66,17 @@ DesktopAllFields.parameters = {
     responseMode: FormResponseMode.Email,
   }),
 }
+export const DesktopLoading = Template.bind({})
+DesktopLoading.parameters = {
+  msw: buildMswRoutes(
+    {
+      form_fields: MOCK_FORM_FIELDS_WITH_MYINFO,
+      authType: FormAuthType.MyInfo,
+      responseMode: FormResponseMode.Email,
+    },
+    'infinite',
+  ),
+}
 
 export const TabletEmpty = Template.bind({})
 TabletEmpty.parameters = {
@@ -82,6 +93,17 @@ TabletAllFields.parameters = {
   chromatic: { viewports: [viewports.md] },
   msw: buildMswRoutes({ form_fields: MOCK_FORM_FIELDS_WITH_MYINFO }),
 }
+export const TabletLoading = Template.bind({})
+TabletLoading.parameters = {
+  viewport: {
+    defaultViewport: 'tablet',
+  },
+  chromatic: { viewports: [viewports.md] },
+  msw: buildMswRoutes(
+    { form_fields: MOCK_FORM_FIELDS_WITH_MYINFO },
+    'infinite',
+  ),
+}
 
 export const MobileEmpty = Template.bind({})
 MobileEmpty.parameters = {
@@ -97,4 +119,15 @@ MobileAllFields.parameters = {
   },
   chromatic: { viewports: [viewports.xs] },
   msw: buildMswRoutes({ form_fields: MOCK_FORM_FIELDS_WITH_MYINFO }),
+}
+export const MobileLoading = Template.bind({})
+MobileLoading.parameters = {
+  viewport: {
+    defaultViewport: 'mobile1',
+  },
+  chromatic: { viewports: [viewports.xs] },
+  msw: buildMswRoutes(
+    { form_fields: MOCK_FORM_FIELDS_WITH_MYINFO },
+    'infinite',
+  ),
 }
