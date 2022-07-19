@@ -68,7 +68,7 @@ export interface AvatarMenuProps
 
 export const AvatarMenu = ({
   name,
-  colorScheme,
+  colorScheme = 'primary',
   menuUsername,
   hasNotification,
   defaultIsOpen,
