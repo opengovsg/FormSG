@@ -42,7 +42,7 @@ export const FormBuilder = ({
     >
       <Flex flexDir="column" w="100%" maxW="57rem" h="fit-content">
         <StartPageView />
-        <Flex bg="white" p={{ base: '1.5rem', md: '2.5rem' }} flexDir="column">
+        <Flex bg="white" p={{ base: 0, md: '2.5rem' }} flexDir="column">
           <Droppable droppableId={FIELD_LIST_DROP_ID}>
             {(provided, snapshot) =>
               builderFields?.length ? (
@@ -63,6 +63,7 @@ export const FormBuilder = ({
                 </Box>
               ) : (
                 <EmptyFormPlaceholder
+                  m={{ base: '1.5rem', md: 0 }}
                   ref={provided.innerRef}
                   {...provided.droppableProps}
                   isDraggingOver={snapshot.isDraggingOver}
