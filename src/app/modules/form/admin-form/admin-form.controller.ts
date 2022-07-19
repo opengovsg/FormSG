@@ -81,6 +81,7 @@ import {
 import * as UserService from '../../user/user.service'
 import { PrivateFormError } from '../form.errors'
 import * as FormService from '../form.service'
+import { UNICODE_ESCAPED_REGEX } from '../form.utils'
 
 import { TwilioCredentials } from './../../../services/sms/sms.types'
 import {
@@ -189,7 +190,7 @@ const fileUploadValidator = celebrate({
     fileType: Joi.string()
       .valid(...VALID_UPLOAD_FILE_TYPES)
       .required(),
-    isNewClient: Joi.boolean().optional(),
+    isNewClient: Joi.boolean().optional(), // TODO(#4228): isNewClient in param was allowed for backward compatibility after #4213 removed isNewClient flag from frontend. To remove 2 weeks after release.
   },
 })
 
@@ -385,17 +386,14 @@ export const createPresignedPostUrlForImages: ControllerHandler<
     fileId: string
     fileMd5Hash: string
     fileType: string
-    isNewClient?: boolean // TODO (#128): Flag for server to know whether to append random object ID in front. To remove 2 weeks after release.
   }
 > = async (req, res) => {
   const { formId } = req.params
-  const { fileId, fileMd5Hash, fileType, isNewClient } = req.body
+  const { fileId, fileMd5Hash, fileType } = req.body
   const sessionUserId = (req.session as AuthedSessionData).user._id
 
   // Adding random objectId ensures fileId is unpredictable by client
-  const randomizedFileId = isNewClient
-    ? `${String(new ObjectId())}-${fileId}`
-    : fileId // TODO (#128): if !isNewClient, returns fileId for backward compatability. To remove fallback for !isNewClient 2 weeks after release.
+  const randomizedFileId = `${String(new ObjectId())}-${fileId}`
 
   return (
     // Step 1: Retrieve currently logged in user.
@@ -456,17 +454,14 @@ export const createPresignedPostUrlForLogos: ControllerHandler<
     fileId: string
     fileMd5Hash: string
     fileType: string
-    isNewClient?: boolean // TODO (#128): Flag for server to know whether to append random object ID in front. To remove 2 weeks after release.
   }
 > = async (req, res) => {
   const { formId } = req.params
-  const { fileId, fileMd5Hash, fileType, isNewClient } = req.body
+  const { fileId, fileMd5Hash, fileType } = req.body
   const sessionUserId = (req.session as AuthedSessionData).user._id
 
   // Adding random objectId ensures fileId is unpredictable by client
-  const randomizedFileId = isNewClient
-    ? `${String(new ObjectId())}-${fileId}`
-    : fileId // TODO (#128): if !isNewClient, returns fileId for backward compatability. To remove fallback for !isNewClient 2 weeks after release.
+  const randomizedFileId = `${String(new ObjectId())}-${fileId}`
 
   return (
     // Step 1: Retrieve currently logged in user.
@@ -1699,7 +1694,25 @@ export const handleUpdateFormField = [
         disabled: Joi.boolean().required(),
         // Allow other field related key-values to be provided and let the model
         // layer handle the validation.
-      }).unknown(true),
+      })
+        .unknown(true)
+        .custom((value, helpers) => {
+          // If there are unicode-escaped characters are not valid utf-8 encoded,
+          // node 14 treats the sequence of characters as a string e.g. \udbbb is treated as a 6-character string instead of an escaped unicode sequence
+          // If this is saved into the db, an error is thrown when the driver attempts to read the db document as the driver interprets this as an escaped unicode character
+          // Since valid unicode-escaped characters will be processed correctly (e.g. \u00ae is processed as ®), they will not trigger an error
+          // Also note that if the user intends to input a 6-character string of the same form e.g. \udbbb, the backslash will be escaped (i.e. double backslash) and hence this will also not trigger an error
+
+          const valueStr = JSON.stringify(value)
+
+          if (UNICODE_ESCAPED_REGEX.test(valueStr)) {
+            return helpers.message({
+              custom:
+                'Please check that there are no improperly encoded characters in your input',
+            })
+          }
+          return value
+        }),
     },
     undefined,
     // Required so req.body can be validated against values in req.params.
@@ -1951,7 +1964,25 @@ export const handleCreateFormField = [
       disabled: Joi.boolean(),
       // Allow other field related key-values to be provided and let the model
       // layer handle the validation.
-    }).unknown(true),
+    })
+      .unknown(true)
+      .custom((value, helpers) => {
+        // If there are unicode-escaped characters are not valid utf-8 encoded,
+        // node 14 treats the sequence of characters as a string e.g. \udbbb is treated as a 6-character string instead of an escaped unicode sequence
+        // If this is saved into the db, an error is thrown when the driver attempts to read the db document as the driver interprets this as an escaped unicode sequence
+        // Since valid unicode-escaped characters will be processed correctly (e.g. \u00ae is processed as ®), they will not trigger an error
+        // Also note that if the user intends to input a 6-character string of the same form e.g. \udbbb, the backslash will be escaped (i.e. double backslash) and hence this will also not trigger an error
+
+        const valueStr = JSON.stringify(value)
+
+        if (UNICODE_ESCAPED_REGEX.test(valueStr)) {
+          return helpers.message({
+            custom:
+              'Please check that there are no improperly encoded characters in your input',
+          })
+        }
+        return value
+      }),
     [Segments.QUERY]: {
       // Optional index to insert the field at.
       to: Joi.number().min(0),

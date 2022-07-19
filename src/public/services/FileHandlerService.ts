@@ -67,7 +67,6 @@ const fetchPresignedData = async (
     fileId: string
     fileMd5Hash: string
     fileType: string
-    isNewClient: boolean // TODO (#128): Flag for server to know whether to append random object ID in front. To remove 2 weeks after release.
   },
   cancelToken?: CancelToken,
 ): Promise<PresignedData> => {
@@ -115,7 +114,6 @@ export const uploadFile = async ({
     fileId,
     fileMd5Hash,
     fileType: file.type,
-    isNewClient: true, // TODO (#128): Flag for server to know whether to append random object ID in front. To remove 2 weeks after release.
   }
 
   const postData = await fetchPresignedData(

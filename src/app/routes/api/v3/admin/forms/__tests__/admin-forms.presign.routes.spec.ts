@@ -62,7 +62,6 @@ describe('admin-form.presign.routes', () => {
       fileId: 'some file id',
       fileMd5Hash: SparkMD5.hash('test file name'),
       fileType: VALID_UPLOAD_FILE_TYPES[0],
-      isNewClient: true, // TODO (#128): Flag for server to know whether to append random object ID in front. To remove 2 weeks after release.
     }
 
     it('should return 200 with presigned POST URL object', async () => {
@@ -102,25 +101,24 @@ describe('admin-form.presign.routes', () => {
       expect(response.body.fields.key).toMatch(/^[a-fA-F0-9]{24}-/)
     })
 
-    it('should return 200 with presigned POST URL object for old client', async () => {
+    it('should allow client to include isNewClient param', async () => {
+      // TODO(#4228): isNewClient in param was allowed for backward compatibility after #4213 removed isNewClient flag from frontend. To remove 2 weeks after release.
       // Arrange
-
-      const DEFAULT_POST_PARAMS_OLD_CLIENT = {
-        fileId: 'some file id',
-        fileMd5Hash: SparkMD5.hash('test file name'),
-        fileType: VALID_UPLOAD_FILE_TYPES[0],
-      }
-
       const form = await EncryptFormModel.create({
         title: 'form',
         admin: defaultUser._id,
         publicKey: 'does not matter',
       })
 
+      const POST_PARAM_ISNEWCLIENT = {
+        ...DEFAULT_POST_PARAMS,
+        isNewClient: true,
+      }
+
       // Act
       const response = await request
         .post(`/admin/forms/${form._id}/images/presign`)
-        .send(DEFAULT_POST_PARAMS_OLD_CLIENT)
+        .send(POST_PARAM_ISNEWCLIENT)
 
       // Assert
       expect(response.status).toEqual(200)
@@ -128,14 +126,22 @@ describe('admin-form.presign.routes', () => {
       expect(response.body).toEqual({
         url: expect.any(String),
         fields: expect.objectContaining({
-          'Content-MD5': DEFAULT_POST_PARAMS_OLD_CLIENT.fileMd5Hash,
-          'Content-Type': DEFAULT_POST_PARAMS_OLD_CLIENT.fileType,
-          key: DEFAULT_POST_PARAMS_OLD_CLIENT.fileId,
+          'Content-MD5': POST_PARAM_ISNEWCLIENT.fileMd5Hash,
+          'Content-Type': POST_PARAM_ISNEWCLIENT.fileType,
+          key: expect.any(String),
           // Should have correct permissions.
           acl: 'public-read',
           bucket: expect.any(String),
         }),
       })
+      expect(response.body.fields.key).toEqual(
+        expect.stringContaining(POST_PARAM_ISNEWCLIENT.fileId),
+      )
+      expect(POST_PARAM_ISNEWCLIENT.fileId.length).toEqual(
+        response.body.fields.key.length - 25,
+      )
+
+      expect(response.body.fields.key).toMatch(/^[a-fA-F0-9]{24}-/)
     })
 
     it('should return 400 when body.fileId is missing', async () => {
@@ -345,7 +351,6 @@ describe('admin-form.presign.routes', () => {
       fileId: 'some other file id',
       fileMd5Hash: SparkMD5.hash('test file name again'),
       fileType: VALID_UPLOAD_FILE_TYPES[2],
-      isNewClient: true, // TODO (#128): Flag for server to know whether to append random object ID in front. To remove 2 weeks after release.
     }
 
     it('should return 200 with presigned POST URL object', async () => {
@@ -386,25 +391,24 @@ describe('admin-form.presign.routes', () => {
       expect(response.body.fields.key).toMatch(/^[a-fA-F0-9]{24}-/)
     })
 
-    it('should return 200 with presigned POST URL object for old client', async () => {
+    it('should allow client to include isNewClient param', async () => {
+      // TODO(#4228): isNewClient in param was allowed for backward compatibility after #4213 removed isNewClient flag from frontend. To remove 2 weeks after release.
       // Arrange
-
-      const DEFAULT_POST_PARAMS_OLD_CLIENT = {
-        fileId: 'some file id',
-        fileMd5Hash: SparkMD5.hash('test file name'),
-        fileType: VALID_UPLOAD_FILE_TYPES[0],
-      }
-
       const form = await EncryptFormModel.create({
         title: 'form',
         admin: defaultUser._id,
         publicKey: 'does not matter',
       })
 
+      const POST_PARAM_ISNEWCLIENT = {
+        ...DEFAULT_POST_PARAMS,
+        isNewClient: true,
+      }
+
       // Act
       const response = await request
         .post(`/admin/forms/${form._id}/logos/presign`)
-        .send(DEFAULT_POST_PARAMS_OLD_CLIENT)
+        .send(POST_PARAM_ISNEWCLIENT)
 
       // Assert
       expect(response.status).toEqual(200)
@@ -412,14 +416,23 @@ describe('admin-form.presign.routes', () => {
       expect(response.body).toEqual({
         url: expect.any(String),
         fields: expect.objectContaining({
-          'Content-MD5': DEFAULT_POST_PARAMS_OLD_CLIENT.fileMd5Hash,
-          'Content-Type': DEFAULT_POST_PARAMS_OLD_CLIENT.fileType,
-          key: DEFAULT_POST_PARAMS_OLD_CLIENT.fileId,
+          'Content-MD5': POST_PARAM_ISNEWCLIENT.fileMd5Hash,
+          'Content-Type': POST_PARAM_ISNEWCLIENT.fileType,
+          key: expect.any(String),
           // Should have correct permissions.
           acl: 'public-read',
           bucket: expect.any(String),
         }),
       })
+
+      expect(response.body.fields.key).toEqual(
+        expect.stringContaining(POST_PARAM_ISNEWCLIENT.fileId),
+      )
+      expect(POST_PARAM_ISNEWCLIENT.fileId.length).toEqual(
+        response.body.fields.key.length - 25,
+      )
+
+      expect(response.body.fields.key).toMatch(/^[a-fA-F0-9]{24}-/)
     })
 
     it('should return 400 when body.fileId is missing', async () => {

@@ -23,6 +23,13 @@
     "SINGPASS_ELIGIBILITY_FAQ": "https://www.ifaq.gov.sg/SINGPASS/apps/Fcd_faqmain.aspx#FAQ_2101385",
     "ESERVICE_ID_FAQ": "https://go.gov.sg/formsg-spcp",
     "TERMS_THIRD_PARTY_LIST": "https://s3-ap-southeast-1.amazonaws.com/misc.form.gov.sg/OSS-Legal.pdf",
-    "WEBHOOK_RETRIES": "https://go.gov.sg/form-webhook-retries"
+    "WEBHOOK_RETRIES": "https://go.gov.sg/form-webhook-retries",
+    "SHORT_LINKS": "https://go.gov.sg/",
+    "MASS_MESSAGING": "https://go.gov.sg/postmangovsg",
+    "ELIGIBILITY_CHECKER": "https://go.gov.sg/checkfirstgovsg",
+    "VOUCHER_DISTRIBUTION": "https://go.gov.sg/redeemgovsg",
+    "WEBSITE_BUILDER": "https://go.gov.sg/isomergovsg",
+    "PAYMENTS": "https://go.gov.sg/pay",
+    "CITIZEN_IDENTITY": "https://go.gov.sg/idgovsg"
   }
 }

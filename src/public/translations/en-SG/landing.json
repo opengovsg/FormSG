@@ -8,6 +8,9 @@
     "TEXT": "GitHub",
     "HREF": "@:LINKS.GITHUB"
   },
+  "MORE_TOOLS": {
+    "TEXT": "More Tools"
+  },
   "HERO": {
     "TAG_LINE": {
       "LINE_1": "Build government",
