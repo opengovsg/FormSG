@@ -123,12 +123,10 @@ export const TermsOfUsePage = (): JSX.Element => {
               </SectionListItem>
               <SectionListItem>
                 <SectionTitle>Nature of this Service</SectionTitle>
-                <SubSectionOrderedList style={{ counterReset: 'section' }}>
-                  <SubSectionListItem temp="2.">
-                    Please see the Schedule for more information and terms
-                    concerning this Service.
-                  </SubSectionListItem>
-                </SubSectionOrderedList>
+                <Text textStyle="body-1">
+                  Please see the Schedule for more information and terms
+                  concerning this Service.
+                </Text>
               </SectionListItem>
               <SectionListItem>
                 <SectionTitle>Licence Terms and Restrictions</SectionTitle>
@@ -156,11 +154,11 @@ export const TermsOfUsePage = (): JSX.Element => {
                     reserved to GovTech.
                   </SubSectionListItem>
                   <SubSectionListItem temp="3.">
-                    <Text mb="1.5rem">GovTech reserves the right to:</Text>
+                    GovTech reserves the right to:
                     <SubSubSectionOrderedList
                       style={{ counterReset: 'section 0' }}
                     >
-                      <SubSectionListItem temp="3.">
+                      <SubSectionListItem temp="3." mt="1.5rem">
                         Update or modify this Service from time to time;
                       </SubSectionListItem>
                       <SubSectionListItem temp="3.">
@@ -178,7 +176,7 @@ export const TermsOfUsePage = (): JSX.Element => {
                       </SubSectionListItem>
                     </SubSubSectionOrderedList>
                   </SubSectionListItem>
-                  <SubSectionListItem>
+                  <SubSectionListItem temp="3.">
                     You will not interfere or attempt to interfere with the
                     proper working of the Service or otherwise do anything that
                     imposes an unreasonable or disproportionately large load on
@@ -188,29 +186,29 @@ export const TermsOfUsePage = (): JSX.Element => {
               </SectionListItem>
               <SectionListItem listStyleType="'3A. '">
                 <SectionTitle>Account Access and Security</SectionTitle>
-                <SubSectionOrderedList>
-                  <SubSectionListItem>
+                <SubSectionOrderedList style={{ counterReset: 'section 0' }}>
+                  <SubSectionListItem temp="3A.">
                     You are solely responsible for maintaining the
                     confidentiality and security of any authentication
                     credentials associated with your use of the Service,
                     including the security of any of your devices which store
                     the authentication credentials.
                   </SubSectionListItem>
-                  <SubSectionListItem>
+                  <SubSectionListItem temp="3A.">
                     GovTech shall be entitled, but not obliged, to verify the
                     identity of the person using the Service. Without prejudice
                     to the foregoing, GovTech is not under any duty to verify
                     that any biometric identifier used with the Service, or on
                     your device, belongs to you.
                   </SubSectionListItem>
-                  <SubSectionListItem>
+                  <SubSectionListItem temp="3A.">
                     GovTech shall have the sole and absolute discretion to
                     invalidate any authentication credentials at any time, or
                     require you to have to re-authenticate or refresh your
                     authentication credentials at any time, without having to
                     give any reason for the same.
                   </SubSectionListItem>
-                  <SubSectionListItem>
+                  <SubSectionListItem temp="3A.">
                     GovTech shall be entitled, but not obliged, to act upon or
                     rely on any instructions, information, transmissions of
                     data, or communications received from the account or use of
@@ -219,7 +217,7 @@ export const TermsOfUsePage = (): JSX.Element => {
                     were issued by you, whether or not the same was authorized
                     by you.
                   </SubSectionListItem>
-                  <SubSectionListItem>
+                  <SubSectionListItem temp="3A.">
                     For the avoidance of doubt, you are solely responsible for
                     any loss of whatever nature arising from unauthorized or
                     unofficial modifications made to your device which permit or
@@ -232,8 +230,8 @@ export const TermsOfUsePage = (): JSX.Element => {
               </SectionListItem>
               <SectionListItem listStyleType="'4. '">
                 <SectionTitle>Third Party Materials</SectionTitle>
-                <SubSectionOrderedList>
-                  <SubSectionListItem>
+                <SubSectionOrderedList style={{ counterReset: 'section 0' }}>
+                  <SubSectionListItem temp="4.">
                     The Service may require, enable or facilitate access to or
                     use of software or services of a third party ("
                     <b>Third Party</b>
@@ -261,7 +259,7 @@ export const TermsOfUsePage = (): JSX.Element => {
                     Store, then the relevant terms are Google’s Distribution
                     Terms.
                   </SubSectionListItem>
-                  <SubSectionListItem>
+                  <SubSectionListItem temp="4.">
                     <b>
                       It is your responsibility to check and read the most
                       up-to-date versions of these Third Party Terms and you are
@@ -276,7 +274,7 @@ export const TermsOfUsePage = (): JSX.Element => {
                     Terms shall be deemed to include any privacy policies and
                     acceptable use policies as are applicable to you.
                   </SubSectionListItem>
-                  <SubSectionListItem>
+                  <SubSectionListItem temp="4.">
                     <Text mb="1.5rem">
                       If the Third Party Terms require you to enter into an
                       agreement directly with the Third Party, then you
@@ -284,22 +282,24 @@ export const TermsOfUsePage = (): JSX.Element => {
                       any event, to be legally bound by the Third Party Terms.
                       For the avoidance of doubt:
                     </Text>
-                    <SubSubSectionOrderedList>
-                      <SubSectionListItem>
+                    <SubSubSectionOrderedList
+                      style={{ counterReset: 'section 0' }}
+                    >
+                      <SubSectionListItem temp="4.">
                         some Third Party Terms (particularly open-source terms)
                         permit either a direct licence to you from the Third
                         Party or a sublicence from GovTech to you. In such
                         cases, your licence is a direct licence from the Third
                         Party to you; and
                       </SubSectionListItem>
-                      <SubSectionListItem>
+                      <SubSectionListItem temp="4.">
                         the terms of your agreement with the Third Party will
                         govern your use of the relevant third party software or
                         service, and not these Terms of Use.
                       </SubSectionListItem>
                     </SubSubSectionOrderedList>
                   </SubSectionListItem>
-                  <SubSectionListItem>
+                  <SubSectionListItem temp="4.">
                     If the Third Party Terms expressly or impliedly require
                     GovTech to incorporate certain terms in these Terms of Use
                     (inclusive of terms which impose any minimum or maximum
@@ -315,7 +315,7 @@ export const TermsOfUsePage = (): JSX.Element => {
                     Terms of Use shall be deemed to be so altered but only to
                     the extent necessary for compliance.
                   </SubSectionListItem>
-                  <SubSectionListItem>
+                  <SubSectionListItem temp="4.">
                     Some Third Party Terms grant the Third Party, or require
                     GovTech to grant the Third Party, direct rights of
                     enforcement of these Terms of Use as a third party
@@ -324,14 +324,14 @@ export const TermsOfUsePage = (): JSX.Element => {
                     Incorporated Terms, and you hereby agree to grant such Third
                     Party, such direct rights of enforcement against you.
                   </SubSectionListItem>
-                  <SubSectionListItem>
+                  <SubSectionListItem temp="4.">
                     For the avoidance of doubt, without prejudice to Clause 4.d,
                     to the extent of any inconsistency between these Terms of
                     Use and the Third Party Terms, the latter shall prevail
                     provided nothing in the Third Party Terms increases the
                     liability of GovTech beyond that stated in Clause 6.
                   </SubSectionListItem>
-                  <SubSectionListItem>
+                  <SubSectionListItem temp="4.">
                     Without prejudice and in addition to the foregoing, GovTech
                     shall not be responsible for your use of any software or
                     service of a Third Party.
@@ -342,35 +342,31 @@ export const TermsOfUsePage = (): JSX.Element => {
                 <SectionTitle>
                   Your Consent to Access Functions of Your Device
                 </SectionTitle>
-                <SubSectionOrderedList>
-                  <SubSectionListItem>
-                    Use of the Service may require you to allow access by the
-                    Service to certain functions of your device, such as push
-                    notifications, the obtaining and/or sharing of your
-                    location, or the collection of data from you in connection
-                    with the Service. Please also see clause 8 (Privacy Policy).
-                    Your use of the Service shall constitute your consent to the
-                    access by the Service of such functions of your device as
-                    may be reasonably required by the Service.
-                  </SubSectionListItem>
-                </SubSectionOrderedList>
+                <Text textStyle="body-1">
+                  Use of the Service may require you to allow access by the
+                  Service to certain functions of your device, such as push
+                  notifications, the obtaining and/or sharing of your location,
+                  or the collection of data from you in connection with the
+                  Service. Please also see clause 8 (Privacy Policy). Your use
+                  of the Service shall constitute your consent to the access by
+                  the Service of such functions of your device as may be
+                  reasonably required by the Service.
+                </Text>
               </SectionListItem>
               <SectionListItem listStyleType="'5A. '">
                 <SectionTitle>
                   Ownership of Feedback/Requests/Suggestions
                 </SectionTitle>
-                <SubSectionOrderedList>
-                  <SubSectionListItem>
-                    You agree that all title and interest in any feedback,
-                    requests or suggestions from you concerning the Services
-                    shall be owned by GovTech.
-                  </SubSectionListItem>
-                </SubSectionOrderedList>
+                <Text textStyle="body-1">
+                  You agree that all title and interest in any feedback,
+                  requests or suggestions from you concerning the Services shall
+                  be owned by GovTech.
+                </Text>
               </SectionListItem>
               <SectionListItem listStyleType="'5B. '">
                 <SectionTitle>Confidentiality</SectionTitle>
-                <SubSectionOrderedList>
-                  <SubSectionListItem>
+                <SubSectionOrderedList style={{ counterReset: 'section 0' }}>
+                  <SubSectionListItem temp="5B.">
                     If you receive information or data (in whatever form) from
                     GovTech or a Third Party which is designated confidential or
                     proprietary or is otherwise reasonably understood to be
@@ -389,18 +385,21 @@ export const TermsOfUsePage = (): JSX.Element => {
                     ensure that any recipients are bound by confidentiality
                     terms at least as restrictive as this Clause.
                   </SubSectionListItem>
-                  <SubSectionListItem>
+                  <SubSectionListItem temp="5B.">
                     You shall destroy any Confidential Information immediately
                     upon request by GovTech or the Third Party.
                   </SubSectionListItem>
-                  <SubSectionListItem>
-                    <Text mb="1.5rem">In the event:</Text>
-                    <SubSubSectionOrderedList>
-                      <SubSectionListItem>
+                  <SubSectionListItem temp="5B.">
+                    In the event:
+                    <SubSubSectionOrderedList
+                      style={{ counterReset: 'section 0' }}
+                      mt="1.5rem"
+                    >
+                      <SubSectionListItem temp="5B.">
                         you are, or likely to be, required by an order of court
                         to disclose Confidential Information; or
                       </SubSectionListItem>
-                      <SubSectionListItem>
+                      <SubSectionListItem temp="5B.">
                         you have reasonable grounds to suspect the unauthorised
                         use or disclosure or reproduction of Confidential
                         Information;
@@ -412,7 +411,7 @@ export const TermsOfUsePage = (): JSX.Element => {
                       prevent or limit such disclosure.
                     </Text>
                   </SubSectionListItem>
-                  <SubSectionListItem>
+                  <SubSectionListItem temp="5B.">
                     Nothing in this Clause 5B shall prejudice GovTech’s or the
                     Third Party’s other rights at law.
                   </SubSectionListItem>
@@ -420,9 +419,9 @@ export const TermsOfUsePage = (): JSX.Element => {
               </SectionListItem>
               <SectionListItem listStyleType="'6. '">
                 <SectionTitle>Disclaimers and Indemnity</SectionTitle>
-                <SubSectionOrderedList>
-                  <SubSectionListItem>
-                    <Text fontWeight="bold" mb="1.5rem">
+                <SubSectionOrderedList style={{ counterReset: 'section 0' }}>
+                  <SubSectionListItem temp="6.">
+                    <b>
                       The Service is provided on an "as is" and "as available"
                       basis without warranties of any kind. To the fullest
                       extent permitted by law, GovTech does not make any
@@ -432,9 +431,13 @@ export const TermsOfUsePage = (): JSX.Element => {
                       any third party, whether arising from usage or custom or
                       trade or by operation of law or otherwise, including but
                       not limited to any representations or warranties:
-                    </Text>
-                    <SubSubSectionOrderedList>
-                      <SubSectionListItem>
+                    </b>
+
+                    <SubSubSectionOrderedList
+                      mt="1.5rem"
+                      style={{ counterReset: 'section 0' }}
+                    >
+                      <SubSectionListItem temp="6.">
                         <b>
                           as to the accuracy, completeness, correctness,
                           currency, timeliness, reliability, availability,
@@ -443,7 +446,7 @@ export const TermsOfUsePage = (): JSX.Element => {
                           purpose of the Service; and/or
                         </b>
                       </SubSectionListItem>
-                      <SubSectionListItem>
+                      <SubSectionListItem temp="6.">
                         <b>
                           that the Service or any functions associated therewith
                           will be uninterrupted or error-free, or that defects
@@ -455,8 +458,8 @@ export const TermsOfUsePage = (): JSX.Element => {
                       </SubSectionListItem>
                     </SubSubSectionOrderedList>
                   </SubSectionListItem>
-                  <SubSectionListItem>
-                    <Text fontWeight="bold" mb="1.5rem">
+                  <SubSectionListItem temp="6.">
+                    <b>
                       GovTech shall also not be liable to you or any third party
                       for any damage or loss of any kind whatsoever and
                       howsoever caused, including but not limited to any direct
@@ -464,34 +467,37 @@ export const TermsOfUsePage = (): JSX.Element => {
                       income, revenue or profits, lost or damaged data, or
                       damage to your computer, software or any other property,
                       whether arising directly or indirectly from –
-                    </Text>
-                    <SubSubSectionOrderedList>
-                      <SubSectionListItem>
+                    </b>
+                    <SubSubSectionOrderedList
+                      mt="1.5rem"
+                      style={{ counterReset: 'section 0' }}
+                    >
+                      <SubSectionListItem temp="6.">
                         <b>
                           your access to or use of this Service, or any part
                           thereof;
                         </b>
                       </SubSectionListItem>
-                      <SubSectionListItem>
+                      <SubSectionListItem temp="6.">
                         <b>
                           any loss of access or use of this Service or any part
                           of this Service, howsoever caused;
                         </b>
                       </SubSectionListItem>
-                      <SubSectionListItem>
+                      <SubSectionListItem temp="6.">
                         <b>
                           any inaccuracy or incompleteness in, or errors or
                           omissions in the transmission of, the Service;
                         </b>
                       </SubSectionListItem>
-                      <SubSectionListItem>
+                      <SubSectionListItem temp="6.">
                         <b>
                           any delay or interruption in the transmission of the
                           Service, whether caused by delay or interruption in
                           transmission over the internet or otherwise; or
                         </b>
                       </SubSectionListItem>
-                      <SubSectionListItem>
+                      <SubSectionListItem temp="6.">
                         <b>
                           any decision made or action taken by you or any third
                           party in reliance upon the Service,
@@ -503,7 +509,7 @@ export const TermsOfUsePage = (): JSX.Element => {
                       possibility of such damage or loss.
                     </Text>
                   </SubSectionListItem>
-                  <SubSectionListItem>
+                  <SubSectionListItem temp="6.">
                     <b>
                       Without prejudice and in addition to the foregoing,
                       insofar as the Service facilitates or requires the
@@ -518,13 +524,13 @@ export const TermsOfUsePage = (): JSX.Element => {
                       suitability or accuracy).
                     </b>
                   </SubSectionListItem>
-                  <SubSectionListItem>
+                  <SubSectionListItem temp="6.">
                     You shall not rely on any part of the Service to claim or
                     assert any form of legitimate expectation against GovTech,
                     whether or not arising out of or in connection with
                     GovTech’s roles and functions as a public authority.
                   </SubSectionListItem>
-                  <SubSectionListItem>
+                  <SubSectionListItem temp="6.">
                     You agree to defend and indemnify and keep GovTech and its
                     officers, employees, agents and contractors harmless against
                     all liabilities, losses, damages, costs or expenses
@@ -542,13 +548,14 @@ export const TermsOfUsePage = (): JSX.Element => {
                     malicious code, illegal, infringing or undesirable content
                     or materials to GovTech or its agents or any Third Party.
                   </SubSectionListItem>
-                  <SubSectionListItem>
-                    <Text mb="1.5rem">
-                      Without prejudice and in addition to GovTech’s other
-                      rights herein:
-                    </Text>
-                    <SubSubSectionOrderedList>
-                      <SubSectionListItem>
+                  <SubSectionListItem temp="6.">
+                    Without prejudice and in addition to GovTech’s other rights
+                    herein:
+                    <SubSubSectionOrderedList
+                      mt="1.5rem"
+                      style={{ counterReset: 'section 0' }}
+                    >
+                      <SubSectionListItem temp="6.">
                         in no event shall GovTech’s total cumulative liability
                         arising out of or in connection with these Terms of Use
                         to you exceed the amount of fees or payment received by
@@ -556,7 +563,7 @@ export const TermsOfUsePage = (): JSX.Element => {
                         GovTech) from you for the Service in the 12 months
                         preceding the date of the first cause of action; and
                       </SubSectionListItem>
-                      <SubSectionListItem>
+                      <SubSectionListItem temp="6.">
                         no action may be brought by you against GovTech arising
                         out of or in connection with these Terms of Use more
                         than one (1) year after the cause of action arose.
@@ -567,8 +574,8 @@ export const TermsOfUsePage = (): JSX.Element => {
               </SectionListItem>
               <SectionListItem listStyleType="'7. '">
                 <SectionTitle>Hyperlinks</SectionTitle>
-                <SubSectionOrderedList>
-                  <SubSectionListItem>
+                <SubSectionOrderedList style={{ counterReset: 'section 0' }}>
+                  <SubSectionListItem temp="7.">
                     Insofar as the Service provides a hyperlink to material not
                     maintained or controlled by GovTech, GovTech shall not be
                     responsible for the content of the hyperlinked material and
@@ -580,7 +587,7 @@ export const TermsOfUsePage = (): JSX.Element => {
                     association or affiliation with GovTech of the contents of
                     or provider of the hyperlinked materials.
                   </SubSectionListItem>
-                  <SubSectionListItem>
+                  <SubSectionListItem temp="7.">
                     Caching and hyperlinking to, and the framing of, any part of
                     the Service is prohibited save where you have obtained
                     GovTech’s prior written consent. Such consent may be subject
@@ -592,10 +599,13 @@ export const TermsOfUsePage = (): JSX.Element => {
                     time, you must immediately discontinue linking to or framing
                     of any part of the Service.
                   </SubSectionListItem>
-                  <SubSectionListItem>
-                    <Text mb="1.5rem">GovTech reserves all rights:</Text>
-                    <SubSubSectionOrderedList>
-                      <SubSectionListItem>
+                  <SubSectionListItem temp="7.">
+                    GovTech reserves all rights:
+                    <SubSubSectionOrderedList
+                      style={{ counterReset: 'section 0' }}
+                      mt="1.5rem"
+                    >
+                      <SubSectionListItem temp="7.">
                         to disable any links to, or frames of, any materials
                         which are unauthorised (including without limitation
                         materials which imply endorsement by or association or
@@ -605,7 +615,7 @@ export const TermsOfUsePage = (): JSX.Element => {
                         violates any written law, any applicable intellectual
                         property, proprietary, privacy or publicity rights); and
                       </SubSectionListItem>
-                      <SubSectionListItem>
+                      <SubSectionListItem temp="7.">
                         to disclaim responsibility and/or liability for
                         materials that link to or frame any part of the Service.
                       </SubSectionListItem>
@@ -632,12 +642,12 @@ export const TermsOfUsePage = (): JSX.Element => {
               </SectionListItem>
               <SectionListItem listStyleType="'10. '">
                 <SectionTitle>Assignment</SectionTitle>
-                <SubSectionOrderedList>
-                  <SubSectionListItem>
+                <SubSectionOrderedList style={{ counterReset: 'section 0' }}>
+                  <SubSectionListItem temp="10.">
                     You may not assign or sub-contract this Terms of Use without
                     the prior written consent of GovTech.
                   </SubSectionListItem>
-                  <SubSectionListItem>
+                  <SubSectionListItem temp="7.">
                     GovTech may assign, novate, transfer, or sub-contract the
                     rights and liabilities in respect of the Service and this
                     Terms of Use, without notifying you and without further
@@ -666,12 +676,12 @@ export const TermsOfUsePage = (): JSX.Element => {
                 <SectionTitle>
                   Governing Law and Dispute Resolution
                 </SectionTitle>
-                <SubSectionOrderedList>
-                  <SubSectionListItem>
+                <SubSectionOrderedList style={{ counterReset: 'section 0' }}>
+                  <SubSectionListItem temp="11.">
                     These Terms of Use shall be governed by and construed in
                     accordance with laws of Singapore.
                   </SubSectionListItem>
-                  <SubSectionListItem>
+                  <SubSectionListItem temp="11.">
                     Subject to clause 11.c, any dispute arising out of or in
                     connection with these Terms of Use, including any question
                     regarding its existence, validity or termination, shall be
@@ -680,28 +690,28 @@ export const TermsOfUsePage = (): JSX.Element => {
                     exclusive jurisdiction of the Courts of the Republic of
                     Singapore.
                   </SubSectionListItem>
-                  <SubSectionListItem>
-                    <Text mb="1.5rem">
-                      GovTech may, at its sole discretion, refer any dispute
-                      referred to in clause 11.b above to arbitration
-                      administered by the Singapore International Arbitration
-                      Centre ("
-                      <b>SIAC</b>") in Singapore in accordance with the
-                      Arbitration Rules of the SIAC ("<b>SIAC Rules</b>") for
-                      the time being in force, which rules are deemed to be
-                      incorporated by reference in this clause. Further:
-                    </Text>
-                    <SubSubSectionOrderedList>
-                      <SubSectionListItem>
+                  <SubSectionListItem temp="11.">
+                    GovTech may, at its sole discretion, refer any dispute
+                    referred to in clause 11.b above to arbitration administered
+                    by the Singapore International Arbitration Centre ("
+                    <b>SIAC</b>") in Singapore in accordance with the
+                    Arbitration Rules of the SIAC ("<b>SIAC Rules</b>") for the
+                    time being in force, which rules are deemed to be
+                    incorporated by reference in this clause. Further:
+                    <SubSubSectionOrderedList
+                      style={{ counterReset: 'section 0' }}
+                      mt="1.5rem"
+                    >
+                      <SubSectionListItem temp="11.">
                         The seat of the arbitration shall be Singapore.
                       </SubSectionListItem>
-                      <SubSectionListItem>
+                      <SubSectionListItem temp="11.">
                         The tribunal shall consist of one (1) arbitrator.
                       </SubSectionListItem>
-                      <SubSectionListItem>
+                      <SubSectionListItem temp="11.">
                         The language of the arbitration shall be English.
                       </SubSectionListItem>
-                      <SubSectionListItem>
+                      <SubSectionListItem temp="11.">
                         All information, pleadings, documents, evidence and all
                         matters relating to the arbitration shall be
                         confidential.
