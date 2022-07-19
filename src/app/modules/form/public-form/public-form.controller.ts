@@ -40,7 +40,7 @@ import { SpcpOidcService } from '../../spcp/spcp.oidc.service'
 import { SpcpService } from '../../spcp/spcp.service'
 import {
   getRedirectTarget,
-  getRedirectTargetSpOidc,
+  getRedirectTargetSpcpOidc,
   validateSpcpForm,
 } from '../../spcp/spcp.util'
 import { AuthTypeMismatchError, PrivateFormError } from '../form.errors'
@@ -456,8 +456,9 @@ export const _handleFormAuthRedirect: ControllerHandler<
           )
         case FormAuthType.SP: {
           return validateSpcpForm(form).asyncAndThen((form) => {
-            const target = getRedirectTargetSpOidc(
+            const target = getRedirectTargetSpcpOidc(
               formId,
+              FormAuthType.SP,
               isPersistentLogin,
               encodedQuery,
             )

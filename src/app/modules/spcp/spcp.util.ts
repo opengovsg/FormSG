@@ -318,13 +318,15 @@ export const getRedirectTarget = (
  * @param encodedQuery
  * @returns
  */
-export const getRedirectTargetSpOidc = (
+export const getRedirectTargetSpcpOidc = (
   formId: string,
+  authType: FormAuthType.SP | FormAuthType.CP,
   isPersistentLogin?: boolean,
   encodedQuery?: string,
 ): RedirectTargetSpOidc => {
   // Need to cast to boolean because undefined is allowed as a valid value
-  const persistentLogin = !!isPersistentLogin
+  const persistentLogin =
+    authType === FormAuthType.SP ? !!isPersistentLogin : false
   return encodedQuery
     ? `/${formId}-${persistentLogin}-${encodedQuery}`
     : `/${formId}-${persistentLogin}`

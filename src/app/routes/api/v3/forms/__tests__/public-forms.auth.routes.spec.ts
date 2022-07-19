@@ -8,7 +8,7 @@ import { mocked } from 'ts-jest/utils'
 import { DatabaseError } from 'src/app/modules/core/core.errors'
 import {
   getRedirectTarget,
-  getRedirectTargetSpOidc,
+  getRedirectTargetSpcpOidc,
 } from 'src/app/modules/spcp/spcp.util'
 
 import { setupApp } from 'tests/integration/helpers/express-setup'
@@ -60,9 +60,9 @@ describe('public-form.auth.routes', () => {
       jest
         .spyOn(SpOidcClient.prototype, 'createAuthorisationUrl')
         .mockResolvedValue(
-          `${encodeURI(getRedirectTargetSpOidc(form._id, false))}&esrvc=${
-            form.esrvcId
-          }`,
+          `${encodeURI(
+            getRedirectTargetSpcpOidc(form._id, FormAuthType.SP, false),
+          )}&esrvc=${form.esrvcId}`,
         )
 
       // Act
@@ -74,7 +74,9 @@ describe('public-form.auth.routes', () => {
       expect(response.status).toEqual(StatusCodes.OK)
       expect(response.body).toMatchObject({
         redirectURL: expect.toIncludeMultiple([
-          encodeURI(getRedirectTargetSpOidc(form._id, false)),
+          encodeURI(
+            getRedirectTargetSpcpOidc(form._id, FormAuthType.SP, false),
+          ),
           form.esrvcId!,
         ]),
       })
