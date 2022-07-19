@@ -190,6 +190,7 @@ const fileUploadValidator = celebrate({
     fileType: Joi.string()
       .valid(...VALID_UPLOAD_FILE_TYPES)
       .required(),
+    isNewClient: Joi.boolean().optional(), // TODO(#4228): isNewClient in param was allowed for backward compatibility after #4213 removed isNewClient flag from frontend. To remove 2 weeks after release.
   },
 })
 

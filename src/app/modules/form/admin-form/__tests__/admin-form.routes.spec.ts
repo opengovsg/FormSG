@@ -4948,6 +4948,48 @@ describe('admin-form.routes', () => {
       expect(response.body.fields.key).toMatch(/^[a-fA-F0-9]{24}-/)
     })
 
+    it('should allow client to include isNewClient param', async () => {
+      // TODO(#4228): isNewClient in param was allowed for backward compatibility after #4213 removed isNewClient flag from frontend. To remove 2 weeks after release.
+      // Arrange
+      const form = await EncryptFormModel.create({
+        title: 'form',
+        admin: defaultUser._id,
+        publicKey: 'does not matter',
+      })
+
+      const POST_PARAM_ISNEWCLIENT = {
+        ...DEFAULT_POST_PARAMS,
+        isNewClient: true,
+      }
+      // Act
+      const response = await request
+        .post(`/${form._id}/adminform/images`)
+        .send(POST_PARAM_ISNEWCLIENT)
+
+      // Assert
+      expect(response.status).toEqual(200)
+      // Should equal mocked result.
+      expect(response.body).toEqual({
+        url: expect.any(String),
+        fields: expect.objectContaining({
+          'Content-MD5': POST_PARAM_ISNEWCLIENT.fileMd5Hash,
+          'Content-Type': POST_PARAM_ISNEWCLIENT.fileType,
+          key: expect.any(String),
+          // Should have correct permissions.
+          acl: 'public-read',
+          bucket: expect.any(String),
+        }),
+      })
+      expect(response.body.fields.key).toEqual(
+        expect.stringContaining(POST_PARAM_ISNEWCLIENT.fileId),
+      )
+      expect(POST_PARAM_ISNEWCLIENT.fileId.length).toEqual(
+        response.body.fields.key.length - 25,
+      )
+
+      expect(response.body.fields.key).toMatch(/^[a-fA-F0-9]{24}-/)
+    })
+
     it('should return 400 when body.fileId is missing', async () => {
       // Act
       const response = await request
@@ -5188,6 +5230,49 @@ describe('admin-form.routes', () => {
         expect.stringContaining(DEFAULT_POST_PARAMS.fileId),
       )
       expect(DEFAULT_POST_PARAMS.fileId.length).toEqual(
+        response.body.fields.key.length - 25,
+      )
+
+      expect(response.body.fields.key).toMatch(/^[a-fA-F0-9]{24}-/)
+    })
+
+    it('should allow client to include isNewClient param', async () => {
+      // TODO(#4228): isNewClient in param was allowed for backward compatibility after #4213 removed isNewClient flag from frontend. To remove 2 weeks after release.
+      // Arrange
+      const form = await EncryptFormModel.create({
+        title: 'form',
+        admin: defaultUser._id,
+        publicKey: 'does not matter',
+      })
+
+      const POST_PARAM_ISNEWCLIENT = {
+        ...DEFAULT_POST_PARAMS,
+        isNewClient: true,
+      }
+
+      // Act
+      const response = await request
+        .post(`/${form._id}/adminform/logos`)
+        .send(DEFAULT_POST_PARAMS)
+
+      // Assert
+      expect(response.status).toEqual(200)
+      // Should equal mocked result.
+      expect(response.body).toEqual({
+        url: expect.any(String),
+        fields: expect.objectContaining({
+          'Content-MD5': POST_PARAM_ISNEWCLIENT.fileMd5Hash,
+          'Content-Type': POST_PARAM_ISNEWCLIENT.fileType,
+          key: expect.any(String),
+          // Should have correct permissions.
+          acl: 'public-read',
+          bucket: expect.any(String),
+        }),
+      })
+      expect(response.body.fields.key).toEqual(
+        expect.stringContaining(POST_PARAM_ISNEWCLIENT.fileId),
+      )
+      expect(POST_PARAM_ISNEWCLIENT.fileId.length).toEqual(
         response.body.fields.key.length - 25,
       )
 
