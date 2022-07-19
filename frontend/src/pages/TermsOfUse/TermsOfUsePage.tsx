@@ -10,6 +10,7 @@ import {
   Stack,
   Text,
 } from '@chakra-ui/react'
+import { Props } from 'framer-motion/types/types'
 
 import { AppFooter } from '~/app/AppFooter'
 import { AppPublicHeader } from '~/app/AppPublicHeader'
@@ -17,7 +18,7 @@ import { AppPublicHeader } from '~/app/AppPublicHeader'
 import { OSS_README } from '~constants/externalLinks'
 import Link from '~components/Link'
 
-const SectionListItem: FC<ListItemProps> = ({
+const SectionListItem: FC<ListItemProps | any> = ({
   children,
   listStyleType = 'decimal',
 }) => (
@@ -26,15 +27,16 @@ const SectionListItem: FC<ListItemProps> = ({
   </ListItem>
 )
 
-const SubSectionOrderedList: FC<ListProps> = ({ children, ...props }) => (
+const SubSectionOrderedList: FC<ListProps | any> = ({ children, ...props }) => (
   <OrderedList spacing="1.5rem" {...props}>
     {children}
   </OrderedList>
 )
 
-const SubSubSectionOrderedList: FC<ListProps> = ({
+const SubSubSectionOrderedList: FC<ListProps | any> = ({
   children,
   styleType = 'lower-roman',
+  temp,
   ...props
 }) => (
   <SubSectionOrderedList
@@ -46,8 +48,20 @@ const SubSubSectionOrderedList: FC<ListProps> = ({
   </SubSectionOrderedList>
 )
 
-const SubSectionListItem: FC<ListItemProps> = ({ children, ...props }) => (
-  <ListItem textStyle="body-1" {...props}>
+const SubSectionListItem: FC<ListItemProps | any> = ({
+  children,
+  temp,
+  ...props
+}) => (
+  <ListItem
+    textStyle="body-1"
+    {...props}
+    _before={{
+      counterIncrement: 'section',
+      content: `"${temp}"counters(section, ".")" "`,
+    }}
+    listStyleType="none"
+  >
     {children}
   </ListItem>
 )
@@ -63,44 +77,24 @@ export const TermsOfUsePage = (): JSX.Element => {
             <Text textStyle="h1" as="h1" mb="2.5rem">
               Terms of Use
             </Text>
-            <OrderedList
-              spacing="1.5rem"
-              marginInlineStart="1.5rem"
-              style={{ counterReset: 'section 1' }}
-            >
-              <SectionListItem
-                _before={{
-                  counterIncrement: 'section',
-                  content: `counters(section, ".")" "`,
-                }}
-              >
+            <OrderedList spacing="1.5rem" marginInlineStart="1.5rem">
+              <SectionListItem>
                 <SectionTitle>General</SectionTitle>
                 <SubSectionOrderedList style={{ counterReset: 'section 0' }}>
-                  <SubSectionListItem
-                    _before={{
-                      counterIncrement: 'section',
-                      content: `counters(section, ".")" "`,
-                    }}
-                    listStyleType="none"
-                  >
+                  <SubSectionListItem temp="1.">
                     These Terms of Use govern your access to and use of our
                     services, including the application (whether as software or
                     as a website or otherwise), its contents, push notifications
                     and all other accompanying materials as identified in the
                     Schedule below (collectively, the "<b>Service</b>").
                   </SubSectionListItem>
-                  <SubSectionListItem
-                    _before={{
-                      counterIncrement: 'section',
-                      content: `counters(section, ".")" "`,
-                    }}
-                  >
+                  <SubSectionListItem temp="1.">
                     This Service is provided to you by the Government Technology
                     Agency ("<b>GovTech</b>"). GovTech’s office is located at 10
                     Pasir Panjang Road, #10-01, Mapletree Business City,
                     Singapore 117438.
                   </SubSectionListItem>
-                  <SubSectionListItem>
+                  <SubSectionListItem temp="1.">
                     By accessing or using any part of this Service, you
                     unconditionally agree and accept to be legally bound by
                     these Terms of Use and any amendments thereto from time to
@@ -113,13 +107,13 @@ export const TermsOfUsePage = (): JSX.Element => {
                       any amendments to it.
                     </b>
                   </SubSectionListItem>
-                  <SubSectionListItem>
+                  <SubSectionListItem temp="1.">
                     <b>
                       If you do not agree to these Terms of Use, please do not
                       use this Service or any part of this Service.
                     </b>
                   </SubSectionListItem>
-                  <SubSectionListItem>
+                  <SubSectionListItem temp="1.">
                     If you are accessing or using the Service for and on behalf
                     of another entity (such as your employer), you warrant and
                     represent that you have the necessary authority to bind such
@@ -129,8 +123,8 @@ export const TermsOfUsePage = (): JSX.Element => {
               </SectionListItem>
               <SectionListItem>
                 <SectionTitle>Nature of this Service</SectionTitle>
-                <SubSectionOrderedList>
-                  <SubSectionListItem>
+                <SubSectionOrderedList style={{ counterReset: 'section' }}>
+                  <SubSectionListItem temp="2.">
                     Please see the Schedule for more information and terms
                     concerning this Service.
                   </SubSectionListItem>
@@ -138,14 +132,14 @@ export const TermsOfUsePage = (): JSX.Element => {
               </SectionListItem>
               <SectionListItem>
                 <SectionTitle>Licence Terms and Restrictions</SectionTitle>
-                <SubSectionOrderedList>
-                  <SubSectionListItem>
+                <SubSectionOrderedList style={{ counterReset: 'section' }}>
+                  <SubSectionListItem temp="3.">
                     The Service, including the materials made available on or
                     through the Service, is owned by, licensed to, managed or
                     controlled by GovTech. Please see clause 4 (Third Party
                     Materials) for more information.
                   </SubSectionListItem>
-                  <SubSectionListItem>
+                  <SubSectionListItem temp="3.">
                     Subject to these Terms of Use, GovTech grants to you a
                     non-exclusive, revocable, and non-transferable right to
                     access and use the Service for personal or internal purposes
@@ -161,18 +155,20 @@ export const TermsOfUsePage = (): JSX.Element => {
                     Service not specifically granted herein are expressly
                     reserved to GovTech.
                   </SubSectionListItem>
-                  <SubSectionListItem>
+                  <SubSectionListItem temp="3.">
                     <Text mb="1.5rem">GovTech reserves the right to:</Text>
-                    <SubSubSectionOrderedList>
-                      <SubSectionListItem>
+                    <SubSubSectionOrderedList
+                      style={{ counterReset: 'section 0' }}
+                    >
+                      <SubSectionListItem temp="3.">
                         Update or modify this Service from time to time;
                       </SubSectionListItem>
-                      <SubSectionListItem>
+                      <SubSectionListItem temp="3.">
                         Deny or restrict access to or use of the Service by any
                         particular person without ascribing any reasons
                         whatsoever; and
                       </SubSectionListItem>
-                      <SubSectionListItem>
+                      <SubSectionListItem temp="3.">
                         Discontinue or terminate this Service at any time
                         without notice or liability to you whatsoever, whereupon
                         all rights granted to you hereunder shall also terminate
@@ -728,6 +724,7 @@ export const TermsOfUsePage = (): JSX.Element => {
             </OrderedList>
             <Text mt="2rem">These Terms of Use are dated 19 Oct 2021.</Text>
           </Box>
+          {/* SCHEDULE SCHEDULE SCHEDULE SCHEDULE SCHEDULE SCHEDULE*/}
           <Box as="section">
             <Text textStyle="h1" as="h1" mb="2.5rem">
               Schedule
