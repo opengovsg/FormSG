@@ -1,57 +1,46 @@
-/*
-* Prefixed by https://autoprefixer.github.io
-* PostCSS: v7.0.29,
-* Autoprefixer: v9.7.6
-* Browsers: last 4 version
-*/
+.react-switch-banner-container {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  margin-top: 20px;
+  padding: 14px 20px;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-box-pack: center;
+  -ms-flex-pack: center;
+  justify-content: left;
+  line-height: 24px;
+  font-weight: normal;
+  overflow: hidden;
+  font-size: 18px;
+  z-index: 999;
+  width: 100%;
+  background-color: #e9ecf5;
+}
 
-/* BANNER COMPONENT */
+.react-switch-banner-container .info-icon {
+  padding-right: 17px;
+}
 
-react-switch-banner-component {
-    -webkit-box-flex: 0;
-    -ms-flex: 0 1 auto;
-    flex: 0 1 auto;
-  }
-  
-  .react-switch-banner-container {
-    display: -webkit-box;
-    display: -ms-flexbox;
-    display: flex;
-    margin-top: 20px;
-    padding: 14px 20px;
-    -webkit-box-align: center;
-    -ms-flex-align: center;
-    align-items: center;
-    -webkit-box-pack: center;
-    -ms-flex-pack: center;
-    justify-content: left;
-    line-height: 24px;
-    font-weight: normal;
-    overflow: hidden;
-    font-size: 18px;
-    z-index: 999;
-    width: 100%;
-    background-color: #E9ECF5;
-  }
-  
+.react-switch-banner-container .is-text {
+  color: #23489b;
+}
 
-  .react-switch-banner-container .info-icon {
-      padding-right: 17px;
-  }
+.react-switch-banner-container .react-switch-banner-container--link {
+  color: #23489b;
+  cursor: pointer;
+  text-decoration: underline;
+}
 
-  .react-switch-banner-container .is-text {
-    color: #23489B
-  }
-
-  .react-switch-banner-container .react-switch-banner-container--link {
-    color: #23489B;
-    cursor: pointer;
-    text-decoration: underline
-  }
-
-  .react-switch-banner-container .is-text .react-switch-banner-container--link:focus,
-  .react-switch-banner-container .is-text .react-switch-banner-container--link:active,
-  .react-switch-banner-container .is-text .react-switch-banner-container--link:hover {
-    color: #3B4E9A;
-  }
-  
+.react-switch-banner-container
+  .is-text
+  .react-switch-banner-container--link:focus,
+.react-switch-banner-container
+  .is-text
+  .react-switch-banner-container--link:active,
+.react-switch-banner-container
+  .is-text
+  .react-switch-banner-container--link:hover {
+  color: #3b4e9a;
+}
