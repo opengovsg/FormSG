@@ -5253,7 +5253,7 @@ describe('admin-form.routes', () => {
       // Act
       const response = await request
         .post(`/${form._id}/adminform/logos`)
-        .send(DEFAULT_POST_PARAMS)
+        .send(POST_PARAM_ISNEWCLIENT)
 
       // Assert
       expect(response.status).toEqual(200)
