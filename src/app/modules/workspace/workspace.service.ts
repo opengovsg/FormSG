@@ -25,8 +25,12 @@ export const updateWorkspaceTitle = (
 
 export const deleteWorkspace = (
   workspaceId: string,
+  shouldDeleteForms: boolean,
 ): ResultAsync<any, DatabaseError> => {
-  return okAsync({ workspaceId: workspaceId })
+  return okAsync({
+    workspaceId: workspaceId,
+    shouldDeleteForms: shouldDeleteForms,
+  })
 }
 
 export const getForms = (

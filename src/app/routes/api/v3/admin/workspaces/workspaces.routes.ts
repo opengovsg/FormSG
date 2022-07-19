@@ -44,7 +44,8 @@ WorkspacesRouter.route('/')
 
 WorkspacesRouter.route('/:workspaceId([a-fA-F0-9]{24})')
   /**
-   * Delete an existing workspace
+   * Delete an existing workspace, forms in the deleted workspace will be deleted
+   * if it is specified in the request body.
    * @security session
    *
    * @returns 200 with success message

@@ -100,12 +100,13 @@ export const updateWorkspaceTitle = [
  */
 export const deleteWorkspace: ControllerHandler<
   { workspaceId: string },
-  unknown,
-  any | ErrorDto
+  any | ErrorDto,
+  { shouldDeleteForms: boolean }
 > = async (req, res) => {
   const { workspaceId } = req.params
+  const { shouldDeleteForms } = req.body
 
-  return WorkspaceService.deleteWorkspace(workspaceId)
+  return WorkspaceService.deleteWorkspace(workspaceId, shouldDeleteForms)
     .map(() =>
       res
         .status(StatusCodes.OK)
