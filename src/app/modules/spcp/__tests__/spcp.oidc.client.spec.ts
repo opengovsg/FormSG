@@ -34,11 +34,18 @@ import {
 jest.mock('openid-client')
 jest.mock('axios')
 
-const TEST_RP_PUBLIC_JWKS: PublicJwks = JSON.parse(
-  fs.readFileSync('tests/certs/test_rp_public_jwks.json').toString(),
+const TEST_SP_RP_PUBLIC_JWKS: PublicJwks = JSON.parse(
+  fs.readFileSync('tests/certs/test_sp_rp_public_jwks.json').toString(),
 )
-const TEST_RP_SECRET_JWKS: SecretJwks = JSON.parse(
-  fs.readFileSync('tests/certs/test_rp_secret_jwks.json').toString(),
+const TEST_SP_RP_SECRET_JWKS: SecretJwks = JSON.parse(
+  fs.readFileSync('tests/certs/test_sp_rp_secret_jwks.json').toString(),
+)
+
+const TEST_CP_RP_PUBLIC_JWKS: PublicJwks = JSON.parse(
+  fs.readFileSync('tests/certs/test_cp_rp_public_jwks.json').toString(),
+)
+const TEST_CP_RP_SECRET_JWKS: SecretJwks = JSON.parse(
+  fs.readFileSync('tests/certs/test_cp_rp_secret_jwks.json').toString(),
 )
 
 const TEST_NDI_SECRET_JWKS: PublicJwks = JSON.parse(
@@ -65,8 +72,8 @@ describe('SpOidcClient', () => {
     spOidcNdiJwksEndpoint: SP_OIDC_NDI_JWKS_ENDPOINT,
     spOidcRpClientId: SP_OIDC_RP_CLIENT_ID,
     spOidcRpRedirectUrl: SP_OIDC_RP_REDIRECT_URL,
-    spOidcRpSecretJwks: TEST_RP_SECRET_JWKS,
-    spOidcRpPublicJwks: TEST_RP_PUBLIC_JWKS,
+    spOidcRpSecretJwks: TEST_SP_RP_SECRET_JWKS,
+    spOidcRpPublicJwks: TEST_SP_RP_PUBLIC_JWKS,
   }
 
   describe('Constructor', () => {
@@ -100,7 +107,7 @@ describe('SpOidcClient', () => {
         ndiJwksEndpoint: SP_OIDC_NDI_JWKS_ENDPOINT,
         rpClientId: SP_OIDC_RP_CLIENT_ID,
         rpRedirectUrl: SP_OIDC_RP_REDIRECT_URL,
-        rpSecretJwks: TEST_RP_SECRET_JWKS,
+        rpSecretJwks: TEST_SP_RP_SECRET_JWKS,
         options: {
           useClones: false,
           checkperiod: 60,
@@ -841,12 +848,13 @@ describe('SpOidcClient', () => {
         .setProtectedHeader({
           alg: 'ECDH-ES+A256KW',
           enc: 'A256CBC-HS512',
-          kid: TEST_RP_PUBLIC_JWKS.keys.find((key) => key.use === 'enc')?.kid,
+          kid: TEST_SP_RP_PUBLIC_JWKS.keys.find((key) => key.use === 'enc')
+            ?.kid,
         })
         .encrypt(
           createPublicKey(
             jwkToPem(
-              TEST_RP_PUBLIC_JWKS.keys.find(
+              TEST_SP_RP_PUBLIC_JWKS.keys.find(
                 (key) => key.use === 'enc',
               ) as unknown as jwkToPem.EC,
             ),
@@ -1495,8 +1503,8 @@ describe('CpOidcClient', () => {
     cpOidcNdiJwksEndpoint: CP_OIDC_NDI_JWKS_ENDPOINT,
     cpOidcRpClientId: CP_OIDC_RP_CLIENT_ID,
     cpOidcRpRedirectUrl: CP_OIDC_RP_REDIRECT_URL,
-    cpOidcRpSecretJwks: TEST_RP_SECRET_JWKS,
-    cpOidcRpPublicJwks: TEST_RP_PUBLIC_JWKS,
+    cpOidcRpSecretJwks: TEST_CP_RP_SECRET_JWKS,
+    cpOidcRpPublicJwks: TEST_CP_RP_PUBLIC_JWKS,
   }
 
   describe('Constructor', () => {
@@ -1530,7 +1538,7 @@ describe('CpOidcClient', () => {
         ndiJwksEndpoint: CP_OIDC_NDI_JWKS_ENDPOINT,
         rpClientId: CP_OIDC_RP_CLIENT_ID,
         rpRedirectUrl: CP_OIDC_RP_REDIRECT_URL,
-        rpSecretJwks: TEST_RP_SECRET_JWKS,
+        rpSecretJwks: TEST_CP_RP_SECRET_JWKS,
         options: {
           useClones: false,
           checkperiod: 60,
@@ -2271,12 +2279,13 @@ describe('CpOidcClient', () => {
         .setProtectedHeader({
           alg: 'ECDH-ES+A256KW',
           enc: 'A256CBC-HS512',
-          kid: TEST_RP_PUBLIC_JWKS.keys.find((key) => key.use === 'enc')?.kid,
+          kid: TEST_CP_RP_PUBLIC_JWKS.keys.find((key) => key.use === 'enc')
+            ?.kid,
         })
         .encrypt(
           createPublicKey(
             jwkToPem(
-              TEST_RP_PUBLIC_JWKS.keys.find(
+              TEST_CP_RP_PUBLIC_JWKS.keys.find(
                 (key) => key.use === 'enc',
               ) as unknown as jwkToPem.EC,
             ),
