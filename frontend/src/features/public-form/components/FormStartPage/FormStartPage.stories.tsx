@@ -184,6 +184,7 @@ MiniHeader.args = {
   title: 'storybook test title',
   titleBg: 'theme-blue.500',
   titleColor: 'white',
+  activeSectionId: '1',
   isOpen: true,
 }
 MiniHeader.parameters = {
