@@ -1,5 +1,4 @@
 import { useEffect } from 'react'
-import { ControllerRenderProps } from 'react-hook-form'
 import { forwardRef } from '@chakra-ui/react'
 import imageCompression from 'browser-image-compression'
 
@@ -11,12 +10,15 @@ import {
 
 import Attachment from '~components/Field/Attachment'
 
-import { EditImageInputs } from './EditImage'
+export type UploadedImage = {
+  file?: File
+  srcUrl?: string
+}
 
-type UploadImageInputProps = Pick<
-  ControllerRenderProps<EditImageInputs, 'attachment'>,
-  'name' | 'onChange' | 'value'
-> & {
+export type UploadImageInputProps = {
+  name: string
+  onChange: (...event: any[]) => void
+  value?: UploadedImage
   onError?: (errMsg: string) => void
 }
 
