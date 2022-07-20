@@ -188,7 +188,9 @@ export const handleLogin: (
 }
 
 /**
- * Handler for SP/CP OIDC logins
+ * Higher-order function which returns an Express handler to handle Singpass
+ * and Corppass OIDC login requests.
+ * @param authType 'SP' or 'CP'
  */
 export const handleSpcpOidcLogin: (
   authType: FormAuthType.SP | FormAuthType.CP,

@@ -1,5 +1,6 @@
 import express, { Router } from 'express'
 
+import { FormAuthType } from '../../../../../../shared/types'
 import { spcpMyInfoConfig } from '../../../../config/features/spcp-myinfo.config'
 import * as SpcpController from '../../../../modules/spcp/spcp.controller'
 import { spcpOidcLoginParamsMiddleware } from '../../../../modules/spcp/spcp.middlewares'
@@ -28,5 +29,5 @@ CorppassOidcRouter.use(
 CorppassOidcRouter.get(
   '/login',
   spcpOidcLoginParamsMiddleware,
-  SpcpController.handleSpcpOidcLogin,
+  SpcpController.handleSpcpOidcLogin(FormAuthType.CP),
 )

@@ -1,5 +1,6 @@
 import { Router } from 'express'
 
+import { FormAuthType } from '../../../../../../shared/types'
 import * as SpcpController from '../../../../modules/spcp/spcp.controller'
 import { spcpOidcLoginParamsMiddleware } from '../../../../modules/spcp/spcp.middlewares'
 
@@ -16,5 +17,5 @@ export const SingpassOidcRouter = Router()
 SingpassOidcRouter.get(
   '/login',
   spcpOidcLoginParamsMiddleware,
-  SpcpController.handleSpcpOidcLogin,
+  SpcpController.handleSpcpOidcLogin(FormAuthType.SP),
 )
