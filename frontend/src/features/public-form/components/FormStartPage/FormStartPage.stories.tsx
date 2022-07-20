@@ -208,6 +208,7 @@ export const MiniHeaderMobileWithoutSections: Story<MiniHeaderProps> = (
 ) => <MiniHeaderComponent {...args} />
 MiniHeaderMobileWithoutSections.args = {
   ...MiniHeader.args,
+  activeSectionId: undefined,
 }
 MiniHeaderMobileWithoutSections.parameters = {
   msw: [
