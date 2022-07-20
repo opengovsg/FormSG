@@ -18,8 +18,8 @@ export const StartPageView = () => {
     form?.startPage.logo.state === FormLogoState.Custom,
   )
 
-  // Switch over to store's start page once the store is populated (done when
-  // user opens the drawer)
+  // When drawer is opened, store is populated. We always want the drawer settings
+  // to be previewed, so when the store is populated, prioritize that setting.
   const startPage = useMemo(
     () => (startPageFromStore ? startPageFromStore : form?.startPage),
     [startPageFromStore, form?.startPage],
