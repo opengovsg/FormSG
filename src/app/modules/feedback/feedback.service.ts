@@ -1,7 +1,7 @@
 import { isEmpty } from 'lodash'
 import moment from 'moment-timezone'
 import mongoose from 'mongoose'
-import { ResultAsync } from 'neverthrow'
+import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 
 import {
   FormFeedbackMetaDto,
@@ -12,6 +12,8 @@ import { createLoggerWithLabel } from '../../config/logger'
 import getFormFeedbackModel from '../../models/form_feedback.server.model'
 import { getMongoErrorMessage } from '../../utils/handle-mongo-error'
 import { DatabaseError } from '../core/core.errors'
+
+import { DuplicateFeedbackSubmissionError } from './feedback.errors'
 
 const FormFeedbackModel = getFormFeedbackModel(mongoose)
 const logger = createLoggerWithLabel(module)
@@ -111,3 +113,41 @@ export const getFormFeedbacks = (
     }
   })
 }
+
+/**
+ * Checks if a feedback for the form with formId and submission with submissionId
+ * already exists.
+ *
+ * @param formId the form id of the form that the feedback is for
+ * @param submissionId the submission id of the form submission that the feedback is for
+ *
+ * @returns ok(true) if there is no existing feedback for the form with formId and submission
+ * with submissionId
+ * @returns err(InvalidSubmissionIdError) if submissionId does not exist amongst all the form submissions
+ * @returns err(DatabaseError) if database query errors
+ */
+export const hasNoPreviousFeedback = (
+  submissionId: string,
+): ResultAsync<true, DuplicateFeedbackSubmissionError | DatabaseError> =>
+  ResultAsync.fromPromise(
+    FormFeedbackModel.exists({
+      submissionId: submissionId,
+    }),
+    (error) => {
+      logger.error({
+        message: 'Error finding feedback documents from database',
+        meta: {
+          action: 'hasNoPreviousFeedback',
+          submissionId,
+        },
+        error,
+      })
+
+      return new DatabaseError(getMongoErrorMessage(error))
+    },
+  ).andThen((hasPreviousFeedback) => {
+    if (hasPreviousFeedback) {
+      return errAsync(new DuplicateFeedbackSubmissionError())
+    }
+    return okAsync(true as const)
+  })

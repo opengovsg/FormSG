@@ -27,6 +27,23 @@ import { StorageModeSubmissionMetadataList } from '~shared/types/submission'
 import { UserDto } from '~shared/types/user'
 import { insertAt, reorder } from '~shared/utils/immutable-array-fns'
 
+import { getMyInfoFieldCreationMeta } from '~/features/admin-form/create/builder-and-design/utils/fieldCreation'
+
+import {
+  CREATE_MYINFO_CONTACT_FIELDS_ORDERED,
+  CREATE_MYINFO_MARRIAGE_FIELDS_ORDERED,
+  CREATE_MYINFO_PARTICULARS_FIELDS_ORDERED,
+  CREATE_MYINFO_PERSONAL_FIELDS_ORDERED,
+} from '~features/admin-form/create/builder-and-design/constants'
+import { augmentWithMyInfoDisplayValue } from '~features/myinfo/utils'
+
+export const MOCK_MYINFO_IMPLEMENTED_TYPES = [
+  ...CREATE_MYINFO_PERSONAL_FIELDS_ORDERED,
+  ...CREATE_MYINFO_CONTACT_FIELDS_ORDERED,
+  ...CREATE_MYINFO_PARTICULARS_FIELDS_ORDERED,
+  ...CREATE_MYINFO_MARRIAGE_FIELDS_ORDERED,
+]
+
 export const MOCK_FORM_FIELDS: FormFieldDto[] = [
   {
     title: 'Yes/No',
@@ -300,6 +317,235 @@ export const MOCK_FORM_FIELDS: FormFieldDto[] = [
   },
 ]
 
+const DEFAULT_STORAGE_METADATA = [
+  [
+    {
+      number: 39,
+      refNo: '62a8a7476f4f3e005bcd5ab7',
+      submissionTime: '14th Jun 2022, 11:20:39 pm',
+    },
+    {
+      number: 38,
+      refNo: '62a8a7466f4f3e005bcd5aaa',
+      submissionTime: '14th Jun 2022, 11:20:38 pm',
+    },
+    {
+      number: 37,
+      refNo: '62a8a7456f4f3e005bcd5a9d',
+      submissionTime: '14th Jun 2022, 11:20:37 pm',
+    },
+    {
+      number: 36,
+      refNo: '62a8a7456f4f3e005bcd5a90',
+      submissionTime: '14th Jun 2022, 11:20:37 pm',
+    },
+    {
+      number: 35,
+      refNo: '62a8a7446f4f3e005bcd5a83',
+      submissionTime: '14th Jun 2022, 11:20:36 pm',
+    },
+    {
+      number: 34,
+      refNo: '62a8a7436f4f3e005bcd5a76',
+      submissionTime: '14th Jun 2022, 11:20:35 pm',
+    },
+    {
+      number: 33,
+      refNo: '62a8a7436f4f3e005bcd5a69',
+      submissionTime: '14th Jun 2022, 11:20:35 pm',
+    },
+    {
+      number: 32,
+      refNo: '62a8a7426f4f3e005bcd5a5c',
+      submissionTime: '14th Jun 2022, 11:20:34 pm',
+    },
+    {
+      number: 31,
+      refNo: '62a8a7416f4f3e005bcd5a4f',
+      submissionTime: '14th Jun 2022, 11:20:33 pm',
+    },
+    {
+      number: 30,
+      refNo: '62a8a7416f4f3e005bcd5a42',
+      submissionTime: '14th Jun 2022, 11:20:33 pm',
+    },
+  ],
+  [
+    {
+      number: 29,
+      refNo: '62a8a7406f4f3e005bcd5a35',
+      submissionTime: '14th Jun 2022, 11:20:32 pm',
+    },
+    {
+      number: 28,
+      refNo: '62a8a73f6f4f3e005bcd5a28',
+      submissionTime: '14th Jun 2022, 11:20:31 pm',
+    },
+    {
+      number: 27,
+      refNo: '62a8a73e6f4f3e005bcd5a1b',
+      submissionTime: '14th Jun 2022, 11:20:30 pm',
+    },
+    {
+      number: 26,
+      refNo: '62a8a73e6f4f3e005bcd5a0e',
+      submissionTime: '14th Jun 2022, 11:20:30 pm',
+    },
+    {
+      number: 25,
+      refNo: '62a8a73d6f4f3e005bcd5a01',
+      submissionTime: '14th Jun 2022, 11:20:29 pm',
+    },
+    {
+      number: 24,
+      refNo: '62a8a73c6f4f3e005bcd59f4',
+      submissionTime: '14th Jun 2022, 11:20:28 pm',
+    },
+    {
+      number: 23,
+      refNo: '62a8a73c6f4f3e005bcd59e7',
+      submissionTime: '14th Jun 2022, 11:20:28 pm',
+    },
+    {
+      number: 22,
+      refNo: '62a8a73b6f4f3e005bcd59da',
+      submissionTime: '14th Jun 2022, 11:20:27 pm',
+    },
+    {
+      number: 21,
+      refNo: '62a8a73a6f4f3e005bcd59cd',
+      submissionTime: '14th Jun 2022, 11:20:26 pm',
+    },
+    {
+      number: 20,
+      refNo: '62a8a73a6f4f3e005bcd59c0',
+      submissionTime: '14th Jun 2022, 11:20:26 pm',
+    },
+  ],
+  [
+    {
+      number: 19,
+      refNo: '62a8a7396f4f3e005bcd59b3',
+      submissionTime: '14th Jun 2022, 11:20:25 pm',
+    },
+    {
+      number: 18,
+      refNo: '62a8a7386f4f3e005bcd59a6',
+      submissionTime: '14th Jun 2022, 11:20:24 pm',
+    },
+    {
+      number: 17,
+      refNo: '62a8a7386f4f3e005bcd5999',
+      submissionTime: '14th Jun 2022, 11:20:24 pm',
+    },
+    {
+      number: 16,
+      refNo: '62a8a7376f4f3e005bcd598c',
+      submissionTime: '14th Jun 2022, 11:20:23 pm',
+    },
+    {
+      number: 15,
+      refNo: '62a8a7366f4f3e005bcd597f',
+      submissionTime: '14th Jun 2022, 11:20:22 pm',
+    },
+    {
+      number: 14,
+      refNo: '62a8a7366f4f3e005bcd5972',
+      submissionTime: '14th Jun 2022, 11:20:22 pm',
+    },
+    {
+      number: 13,
+      refNo: '62a8a7356f4f3e005bcd5965',
+      submissionTime: '14th Jun 2022, 11:20:21 pm',
+    },
+    {
+      number: 12,
+      refNo: '62a8a7346f4f3e005bcd5958',
+      submissionTime: '14th Jun 2022, 11:20:20 pm',
+    },
+    {
+      number: 11,
+      refNo: '62a8a7346f4f3e005bcd594b',
+      submissionTime: '14th Jun 2022, 11:20:20 pm',
+    },
+    {
+      number: 10,
+      refNo: '62a8a7336f4f3e005bcd593e',
+      submissionTime: '14th Jun 2022, 11:20:19 pm',
+    },
+  ],
+  [
+    {
+      number: 9,
+      refNo: '62a8a7326f4f3e005bcd5931',
+      submissionTime: '14th Jun 2022, 11:20:18 pm',
+    },
+    {
+      number: 8,
+      refNo: '62a8a7316f4f3e005bcd5924',
+      submissionTime: '14th Jun 2022, 11:20:17 pm',
+    },
+    {
+      number: 7,
+      refNo: '62a8a72d6f4f3e005bcd5917',
+      submissionTime: '14th Jun 2022, 11:20:13 pm',
+    },
+    {
+      number: 6,
+      refNo: '62a8a7206f4f3e005bcd590a',
+      submissionTime: '14th Jun 2022, 11:20:00 pm',
+    },
+    {
+      number: 5,
+      refNo: '62a85b195bdb20010a8be1c9',
+      submissionTime: '14th Jun 2022, 5:55:37 pm',
+    },
+    {
+      number: 4,
+      refNo: '62a859275bdb20010a8be095',
+      submissionTime: '14th Jun 2022, 5:47:19 pm',
+    },
+    {
+      number: 3,
+      refNo: '62a850965c19bf00ee0cff84',
+      submissionTime: '14th Jun 2022, 5:10:46 pm',
+    },
+    {
+      number: 2,
+      refNo: '62a82d0351f581005a8b4a62',
+      submissionTime: '14th Jun 2022, 2:38:59 pm',
+    },
+    {
+      number: 1,
+      refNo: '62a77562c31573005bb95b93',
+      submissionTime: '14th Jun 2022, 1:35:30 am',
+    },
+  ],
+  [],
+]
+
+export const MOCK_MYINFO_FIELDS = MOCK_MYINFO_IMPLEMENTED_TYPES.map(
+  (myInfoAttr, idx) => ({
+    _id: idx.toString(),
+    globalId: idx.toString(),
+    ...getMyInfoFieldCreationMeta(myInfoAttr),
+  }),
+)
+
+// NOTE: This should be used in public forms, whereas the above should be used in
+// admin form preview.
+// This is done to ensure that
+// 1. Admin form preview previews the myInfo fields correctly (with mock values)
+// 2. Public form has correct display of the myInfo fields with prefilled value
+export const MOCK_PREFILLED_MYINFO_FIELDS = MOCK_MYINFO_FIELDS.map(
+  augmentWithMyInfoDisplayValue,
+)
+
+export const MOCK_FORM_FIELDS_WITH_MYINFO = [
+  ...MOCK_FORM_FIELDS,
+  ...MOCK_MYINFO_FIELDS,
+]
+
 export const createMockForm = (
   props: Partial<AdminFormDto> = {},
 ): AdminFormViewDto => {
@@ -490,14 +736,15 @@ export const getStorageSubmissionMetadataResponse = (
   return rest.get<StorageModeSubmissionMetadataList>(
     '/api/v3/admin/forms/:formId/submissions/metadata',
     (req, res, ctx) => {
+      const pageNum = parseInt(req.url.searchParams.get('page') ?? '1')
       return res(
         ctx.delay(delay),
         ctx.status(200),
         ctx.json<StorageModeSubmissionMetadataList>(
           merge(
             {
-              count: 0,
-              metadata: [],
+              count: 39,
+              metadata: DEFAULT_STORAGE_METADATA[pageNum - 1],
             },
             props,
           ),

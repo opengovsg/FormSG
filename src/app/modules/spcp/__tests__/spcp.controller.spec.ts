@@ -42,6 +42,8 @@ import {
   MOCK_TARGET,
 } from './spcp.test.constants'
 
+jest.mock('../sp.oidc.client')
+
 jest.mock('../spcp.service')
 const MockSpcpService = mocked(SpcpService, true)
 jest.mock('../../billing/billing.service')

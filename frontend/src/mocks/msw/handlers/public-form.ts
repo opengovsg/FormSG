@@ -62,7 +62,7 @@ export const PREVENT_SUBMISSION_LOGIC: PreventSubmitLogicDto = {
   ],
 }
 
-const BASE_FORM = {
+export const BASE_FORM = {
   admin: {
     agency: {
       shortName: 'govtech',
@@ -375,6 +375,43 @@ const BASE_FORM = {
   responseMode: 'email',
 }
 
+export const BASE_FORM_WITHOUT_SECTIONS = {
+  admin: {
+    agency: {
+      shortName: 'govtech',
+      fullName: 'Government Technology Agency',
+      emailDomain: ['tech.gov.sg', 'data.gov.sg', 'form.sg', 'open.gov.sg'],
+      logo: 'path/to/logo',
+    },
+  },
+  authType: 'NIL',
+  endPage: {
+    title: 'Thank you for filling out the form.',
+    buttonText: 'Submit another form',
+  },
+  form_fields: [
+    {
+      title: 'Yes/No',
+      description: '',
+      required: true,
+      disabled: false,
+      fieldType: 'yes_no',
+      _id: '5da04eb5e397fc0013f63c7e',
+      globalId: 'CnGRpTpnqSrISnk28yLDvKt8MI2HCFJuYbk72ie0l56',
+    },
+  ],
+  form_logics: [],
+  hasCaptcha: false,
+  startPage: {
+    colorTheme: 'blue',
+    logo: { state: 'NONE' },
+    estTimeTaken: 300,
+  },
+  status: 'PUBLIC',
+  title: 'Mock form title',
+  responseMode: 'email',
+}
+
 export const getPublicFormResponse = ({
   delay = 0,
   overrides,
@@ -393,6 +430,38 @@ export const getPublicFormResponse = ({
           form: {
             _id: formId as FormId,
             ...BASE_FORM,
+          },
+        },
+        overrides,
+        (objValue, srcValue) => {
+          if (Array.isArray(objValue)) {
+            return [...srcValue, ...objValue]
+          }
+        },
+      ) as PublicFormViewDto
+      return res(ctx.delay(delay), ctx.json(response))
+    },
+  )
+}
+
+export const getPublicFormWithoutSectionsResponse = ({
+  delay = 0,
+  overrides,
+}: {
+  delay?: number | 'infinite'
+  overrides?: PartialDeep<PublicFormViewDto>
+} = {}) => {
+  return rest.get<PublicFormViewDto>(
+    '/api/v3/forms/:formId',
+    (req, res, ctx) => {
+      const formId = req.params.formId ?? '61540ece3d4a6e50ac0cc6ff'
+
+      const response = mergeWith(
+        {},
+        {
+          form: {
+            _id: formId as FormId,
+            ...BASE_FORM_WITHOUT_SECTIONS,
           },
         },
         overrides,
@@ -487,6 +556,7 @@ export const postVerifyVfnOtpResponse = ({
 
 export const publicFormHandlers = [
   getPublicFormResponse(),
+  getPublicFormWithoutSectionsResponse(),
   getCustomLogoResponse(),
   postVfnTransactionResponse(),
   postGenerateVfnOtpResponse(),

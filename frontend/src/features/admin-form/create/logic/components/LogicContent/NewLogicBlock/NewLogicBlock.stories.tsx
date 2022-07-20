@@ -41,7 +41,7 @@ export default {
   ],
   parameters: {
     // Required so skeleton "animation" does not hide content.
-    chromatic: { pauseAnimationAtEnd: true },
+    chromatic: { pauseAnimationAtEnd: true, delay: 200 },
     msw: createFormBuilderMocks({ form_fields: MOCK_FORM_FIELDS }, 0),
   },
 } as Meta

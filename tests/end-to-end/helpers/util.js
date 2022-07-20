@@ -1120,7 +1120,7 @@ const getResponseTitle = (field, isInJson, formMode) => {
 /**
  * Tests for the SP/CP login page and logs in.
  * @param {Object} t Testcafe browser
- * @param {string} authType SP, CP or NIL
+ * @param {string} authType MyInfo, CP or NIL
  * @param {Object} authData Must contain a testSpNric or (testCpNric and testCpUen)
  */
 const expectSpcpLogin = async (t, authType, authData) => {
@@ -1135,17 +1135,6 @@ const expectSpcpLogin = async (t, authType, authData) => {
         .click(mockpass.nricDropdownBtn)
         .click(mockpass.getNricOption(testSpNric))
         .click(mockpass.consentBtn)
-        .expect(formPage.spcpLogoutBtn.textContent)
-        .contains(`${testSpNric} - Log out`)
-      break
-    case 'SP':
-      await t
-        .expect(formPage.spcpLoginBtn.textContent)
-        .contains(`Login with Singpass`)
-        .click(formPage.spcpLoginBtn)
-        .click(mockpass.loginBtn)
-        .click(mockpass.nricDropdownBtn)
-        .click(mockpass.getNricOption(testSpNric))
         .expect(formPage.spcpLogoutBtn.textContent)
         .contains(`${testSpNric} - Log out`)
       break
@@ -1167,10 +1156,10 @@ const expectSpcpLogin = async (t, authType, authData) => {
 
 /**
  * Creates a field to imitate the verified NRIC for SingPass or verified
- * UEN or UID for CorpPass. Used to validate submissions for SP/CP
+ * UEN or UID for CorpPass. Used to validate submissions for MyInfo and CP
  * authenticated forms.
- * @param {string} authType one of 'NIL', 'SP' or 'CP'
- * @param {Object} authData Contains testSpNric for authType === 'SP' and
+ * @param {string} authType one of 'NIL', 'MInfo' or 'CP'
+ * @param {Object} authData Contains testSpNric for authType === 'MyInfo' and
  * both testCpNric and testCpUen for authType === 'CP'
  * @returns {Array} Array of new artificial authenticated fields
  */
@@ -1179,7 +1168,6 @@ const getAuthFields = (authType, authData) => {
     case 'NIL':
       return []
     case 'MyInfo':
-    case 'SP':
       return [
         makeField({
           title: SPCPFieldTitle.SpNric,

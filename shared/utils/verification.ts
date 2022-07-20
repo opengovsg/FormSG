@@ -1,7 +1,7 @@
 import { BasicField } from '../types/field'
 
 export const VERIFIED_FIELDTYPES = [BasicField.Email, BasicField.Mobile]
-export const SALT_ROUNDS = 10
+export const SALT_ROUNDS = 1
 export const TRANSACTION_EXPIRE_AFTER_SECONDS = 14400 // 4 hours
 export const HASH_EXPIRE_AFTER_SECONDS = 60 * 30 // 30 minutes
 export const WAIT_FOR_OTP_SECONDS = 30

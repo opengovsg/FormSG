@@ -1,17 +1,12 @@
-import { BasicField, FormFieldDto } from '~shared/types/field'
+import { FormFieldDto } from '~shared/types/field'
 
+import { NON_RESPONSE_FIELD_SET } from '../constants'
 import { FormFieldWithQuestionNo } from '../types'
 
 type AugmentedFieldAccumulator = {
   fields: FormFieldWithQuestionNo[]
   questionNumber: number
 }
-
-const NON_RESPONSE_FIELD_SET = new Set([
-  BasicField.Section,
-  BasicField.Statement,
-  BasicField.Image,
-])
 
 export const augmentWithQuestionNo = (
   formFields: FormFieldDto[],

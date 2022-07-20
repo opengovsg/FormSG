@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useState } from 'react'
 import { BiRightArrowAlt } from 'react-icons/bi'
+import { useSwipeable } from 'react-swipeable'
 import {
   Flex,
   Modal,
@@ -47,10 +48,16 @@ export const RolloutAnnouncementModal = ({
     setCurrActiveIdx(Math.min(currActiveIdx + 1, NUM_NEW_FEATURES - 1))
   }, [currActiveIdx, isLastAnnouncement, onClose])
 
+  const swipeHandlers = useSwipeable({
+    onSwipedLeft: () =>
+      setCurrActiveIdx(Math.min(currActiveIdx + 1, NUM_NEW_FEATURES - 1)),
+    onSwipedRight: () => setCurrActiveIdx(Math.max(currActiveIdx - 1, 0)),
+  })
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} size={isMobile ? 'full' : 'md'}>
       <ModalOverlay />
-      <ModalContent>
+      <ModalContent {...swipeHandlers}>
         <ModalCloseButton />
         {isLastAnnouncement ? (
           <LastFeatureContent updates={OTHER_UPDATES} />

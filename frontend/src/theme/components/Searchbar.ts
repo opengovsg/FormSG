@@ -16,13 +16,6 @@ export const Searchbar: ComponentMultiStyleConfig<typeof parts> = {
       const { isExpanded } = props
 
       return {
-        icon: {
-          display: 'flex',
-          fontSize: '1rem',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: 'secondary.500',
-        },
         field: {
           ...field,
           display: isExpanded ? 'initial' : 'none',

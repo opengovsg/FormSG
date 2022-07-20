@@ -3,7 +3,7 @@ import { useDisclosure } from '@chakra-ui/react'
 
 import { FormId } from '~shared/types/form/form'
 
-import { ADMINFORM_ROUTE } from '~constants/routes'
+import { ADMINFORM_PREVIEW_ROUTE, ADMINFORM_ROUTE } from '~constants/routes'
 
 type UseRowActionDropdownReturn = {
   handleEditForm: () => void
@@ -25,7 +25,7 @@ export const useRowActionDropdown = (
     shareFormModalDisclosure,
     handleEditForm: () => navigate(`${ADMINFORM_ROUTE}/${formId}`),
     handlePreviewForm: () =>
-      console.log(`preview button clicked for ${formId}`),
+      navigate(`${ADMINFORM_ROUTE}/${formId}/${ADMINFORM_PREVIEW_ROUTE}`),
     handleDuplicateForm: () =>
       console.log(`duplicate form button clicked for ${formId}`),
     handleManageFormAccess: () =>

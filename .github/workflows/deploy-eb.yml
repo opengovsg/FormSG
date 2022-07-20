@@ -1,8 +1,8 @@
 name: Deploy to AWS Elastic Beanstalk
 on:
   push:
-    # There should be 6 environments in github actions secrets:
-    # release, release-al2, staging, staging-al2, staging-alt, uat.
+    # There should be 7 environments in github actions secrets:
+    # release, release-al2, staging, staging-al2, staging-alt, staging-alt2, uat.
     # This is different from the DEPLOY_ENV secret which corresponds to elastic beanstalk environment name.
     branches:
       - release
@@ -10,6 +10,7 @@ on:
       - staging
       - staging-al2
       - staging-alt
+      - staging-alt2
       - uat
 
 jobs:
@@ -40,8 +41,11 @@ jobs:
           NODE_OPTIONS: '--max-old-space-size=4096'
           REACT_APP_DD_RUM_APP_ID: ${{ secrets.DD_RUM_APP_ID }}
           REACT_APP_DD_RUM_CLIENT_TOKEN: ${{ secrets.DD_RUM_CLIENT_TOKEN }}
-          REACT_APP_DD_RUM_ENV: ${{ secrets.DEPLOY_ENV }}
+          REACT_APP_DD_RUM_ENV: ${{ secrets.DD_ENV }}
         run: |
+          echo REACT_APP_DD_RUM_APP_ID=$REACT_APP_DD_RUM_APP_ID > frontend/.env
+          echo REACT_APP_DD_RUM_CLIENT_TOKEN=$REACT_APP_DD_RUM_CLIENT_TOKEN >> frontend/.env
+          echo REACT_APP_DD_RUM_ENV=$REACT_APP_DD_RUM_ENV >> frontend/.env
           npm ci
           set -e
           npm_config_mode=yes npx lockfile-lint --type npm --path package.json --validate-https --allowed-hosts npm
@@ -63,13 +67,13 @@ jobs:
         env:
           ECR_REPOSITORY: ${{ secrets.ECR_REPO }}
           DD_API_KEY: ${{ secrets.DD_API_KEY }}
-          DD_ENV: ${{ secrets.DEPLOY_ENV }}
+          DD_ENV: ${{ secrets.DD_ENV }}
         run: |
           docker build -f Dockerfile.production -t $ECR_REPOSITORY:$IMAGE_TAG .
           docker tag $ECR_REPOSITORY:$IMAGE_TAG $ECR_REPOSITORY:$BRANCH
           docker push -a $ECR_REPOSITORY
           sed -i -e "s/@TAG/$IMAGE_TAG/g" Dockerrun.aws.json
-          sed -i -e "s/@DD_API_KEY/$DD_API_KEY/g" -e "s/@DD_ENV/$DEPLOY_ENV/g" .ebextensions/99datadog-amazon-linux-2.config
+          sed -i -e "s/@DD_API_KEY/$DD_API_KEY/g" -e "s/@DD_ENV/$DD_ENV/g" .ebextensions/99datadog-amazon-linux-2.config
           zip -r "$IMAGE_TAG.zip" .ebextensions Dockerrun.aws.json
 
       - name: Copy to S3

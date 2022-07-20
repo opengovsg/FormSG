@@ -1,12 +1,14 @@
 import { useCallback, useEffect, useState } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { Tabs, useBreakpointValue, useDisclosure } from '@chakra-ui/react'
 
 import { FormStatus } from '~shared/types'
 
 import {
   ADMINFORM_BUILD_SUBROUTE,
+  ADMINFORM_PREVIEW_ROUTE,
   ADMINFORM_RESULTS_SUBROUTE,
+  ADMINFORM_ROUTE,
   ADMINFORM_SETTINGS_SUBROUTE,
   ROOT_ROUTE,
 } from '~constants/routes'
@@ -27,6 +29,7 @@ const ADMINFORM_ROUTES = [
 const useAdminFormNavbar = () => {
   const { data: form } = useAdminForm()
   const { pathname } = useLocation()
+  const { formId } = useParams()
   const navigate = useNavigate()
 
   const calcCurrentIndex = useCallback(() => {
@@ -52,8 +55,8 @@ const useAdminFormNavbar = () => {
   )
 
   const handlePreviewForm = useCallback((): void => {
-    console.log('preview form button clicked')
-  }, [])
+    navigate(`${ADMINFORM_ROUTE}/${formId}/${ADMINFORM_PREVIEW_ROUTE}`)
+  }, [navigate, formId])
 
   const handleTabsChange = useCallback(
     (index: number) => navigate(ADMINFORM_ROUTES[index]),

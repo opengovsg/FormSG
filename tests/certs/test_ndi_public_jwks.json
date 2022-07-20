@@ -1,0 +1,12 @@
+{
+  "keys": [
+    {
+      "kty": "EC",
+      "use": "sig",
+      "crv": "P-521",
+      "kid": "sig-1655709297",
+      "x": "AWuSHLkeP89DOkPaTs6MUDTFX1oL_Nr2rsJxCUyWL9x4LDEwtGXxWmw5-KhJSKauwJL2fAiNribZa2E0EZ-A4DzL",
+      "y": "AHoghl5OGyp7Vejt2sqYW7z2G_gTGBDR9q-ylLjnERpKd7-kHybLEutkwp5tmkhhlOysCcXE7vpTcnwxeQPa3zN0"
+    }     
+  ]
+}

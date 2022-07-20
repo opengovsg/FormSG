@@ -4,6 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 
 import {
   AdminFormDto,
+  EndPageUpdateDto,
   FormPermission,
   FormPermissionsDto,
 } from '~shared/types/form/form'
@@ -12,7 +13,18 @@ import { ROOT_ROUTE } from '~constants/routes'
 import { useToast } from '~hooks/useToast'
 import { HttpError } from '~services/ApiService'
 
+import {
+  SubmitEmailFormArgs,
+  SubmitStorageFormArgs,
+} from '~features/public-form/PublicFormService'
+
+import {
+  submitEmailModeFormPreview,
+  submitStorageModeFormPreview,
+} from '../common/AdminViewFormService'
+
 import { permissionsToRole } from './components/CollaboratorModal/utils'
+import { updateFormEndPage } from './AdminFormPageService'
 import {
   removeSelfFromFormCollaborators,
   transferFormOwner,
@@ -294,5 +306,95 @@ export const useMutateCollaborators = () => {
     mutateRemoveCollaborator,
     mutateTransferFormOwnership,
     mutateRemoveSelf,
+  }
+}
+
+export const useMutateFormPage = () => {
+  const { formId } = useParams()
+  if (!formId) throw new Error('No formId provided')
+
+  const queryClient = useQueryClient()
+  const toast = useToast({ status: 'success', isClosable: true })
+
+  const updateFormData = useCallback(
+    (newData: EndPageUpdateDto) => {
+      queryClient.setQueryData(adminFormKeys.endPage(formId), newData)
+      // Only update adminForm if it already has prior data.
+      queryClient.setQueryData<AdminFormDto | undefined>(
+        adminFormKeys.id(formId),
+        (oldData) =>
+          oldData
+            ? {
+                ...oldData,
+                endPage: newData,
+              }
+            : undefined,
+      )
+    },
+    [formId, queryClient],
+  )
+
+  const handleSuccess = useCallback(
+    ({
+      newData,
+      toastDescription,
+    }: {
+      newData: EndPageUpdateDto
+      toastDescription: string
+    }) => {
+      toast.closeAll()
+      updateFormData(newData)
+      toast({
+        description: toastDescription,
+      })
+    },
+    [toast, updateFormData],
+  )
+
+  const handleError = useCallback(
+    (error: Error) => {
+      toast.closeAll()
+      toast({
+        description: error.message,
+        status: 'danger',
+      })
+    },
+    [toast],
+  )
+
+  const mutateFormEndPage = useMutation(
+    (endPage: EndPageUpdateDto) => updateFormEndPage(formId, endPage),
+    {
+      onSuccess: (newData) => {
+        handleSuccess({
+          newData,
+          toastDescription: 'Successfully updated form thank you page',
+        })
+      },
+      onError: handleError,
+    },
+  )
+
+  return {
+    mutateFormEndPage,
+  }
+}
+
+export const usePreviewFormMutations = (formId: string) => {
+  const submitEmailModeFormMutation = useMutation(
+    (args: Omit<SubmitEmailFormArgs, 'formId'>) => {
+      return submitEmailModeFormPreview({ ...args, formId })
+    },
+  )
+
+  const submitStorageModeFormMutation = useMutation(
+    (args: Omit<SubmitStorageFormArgs, 'formId'>) => {
+      return submitStorageModeFormPreview({ ...args, formId })
+    },
+  )
+
+  return {
+    submitEmailModeFormMutation,
+    submitStorageModeFormMutation,
   }
 }

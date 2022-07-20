@@ -3,7 +3,7 @@ import { ResultAsync } from 'neverthrow'
 
 import { hashData, HashingError } from './hash'
 
-const DEFAULT_SALT_ROUNDS = 10
+const DEFAULT_SALT_ROUNDS = 1
 
 /**
  * Randomly generates and returns a 6 digit OTP.

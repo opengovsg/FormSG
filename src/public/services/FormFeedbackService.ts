@@ -15,16 +15,18 @@ export const ADMIN_FORM_ENDPOINT = '/api/v3/admin/forms'
 /**
  * Post feedback for a given form.
  * @param formId the id of the form to post feedback for
+ * @param submissionId the id of the form submission to post feedback for
  * @param feedbackToPost object containing the feedback
  * @returns success message
  */
 export const postFeedback = async (
   formId: string,
+  submissionId: string,
   feedbackToPost: SubmitFormFeedbackBodyDto,
 ): Promise<SuccessMessageDto> => {
   return axios
     .post<SuccessMessageDto>(
-      `${PUBLIC_FORM_ENDPOINT}/${formId}/feedback`,
+      `${PUBLIC_FORM_ENDPOINT}/${formId}/submissions/${submissionId}/feedback`,
       feedbackToPost,
     )
     .then(({ data }) => data)

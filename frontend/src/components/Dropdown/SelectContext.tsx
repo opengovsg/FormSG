@@ -1,4 +1,5 @@
-import { createContext, MutableRefObject, useContext } from 'react'
+import { createContext, MutableRefObject, RefObject, useContext } from 'react'
+import { VirtuosoHandle } from 'react-virtuoso'
 import { CSSObject, FormControlOptions } from '@chakra-ui/react'
 import { UseComboboxPropGetters, UseComboboxState } from 'downshift'
 
@@ -46,6 +47,10 @@ interface SelectContextReturn<Item extends ComboboxItem = ComboboxItem>
   setIsFocused: (isFocused: boolean) => void
   inputRef?: MutableRefObject<HTMLInputElement | null>
   resetInputValue: () => void
+  /** Ref for list virtualization */
+  virtualListRef: RefObject<VirtuosoHandle>
+  /** Height to assign to virtual list */
+  virtualListHeight: number
 }
 
 export const SelectContext = createContext<SelectContextReturn | undefined>(

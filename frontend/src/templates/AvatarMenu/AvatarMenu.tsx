@@ -1,17 +1,20 @@
+import { useMemo } from 'react'
 import {
+  Avatar,
+  AvatarBadge,
+  AvatarProps,
   Box,
   Icon,
   MenuDivider,
   MenuItemProps,
   MenuListProps,
+  MenuProps,
   Text,
   useMultiStyleConfig,
 } from '@chakra-ui/react'
 
 import { BxsUser } from '~/assets/icons/BxsUser'
 import Menu, { MenuButtonProps } from '~/components/Menu'
-
-import { Avatar } from '../../components/Avatar/Avatar'
 
 /**
  * MenuButton styled for avatar
@@ -26,7 +29,7 @@ const AvatarMenuButton = (props: MenuButtonProps): JSX.Element => {
       px="0"
       iconSpacing="0.5rem"
       color="secondary.300"
-      chevronSize="24px"
+      chevronSize="1.5rem"
       _focus={{}}
       {...props}
     />
@@ -37,19 +40,18 @@ const AvatarMenuButton = (props: MenuButtonProps): JSX.Element => {
  * MenuItem styled for avatar username
  * @preconditions Must be a child of Menu component,
  */
-const AvatarMenuUsername = (props: MenuItemProps): JSX.Element => {
+const AvatarMenuUsername = ({ children }: MenuItemProps): JSX.Element => {
+  // Required here due to nested style provider from menu.
   const styles = useMultiStyleConfig('AvatarMenu', {})
-
-  const userIcon = <Icon as={BxsUser} sx={styles.usernameIcon} />
 
   return (
     <Box sx={styles.usernameItem} aria-hidden>
-      {userIcon}
+      <Icon as={BxsUser} sx={styles.usernameIcon} />
       <Text
         noOfLines={1}
-        title={typeof props.children === 'string' ? props.children : undefined}
+        title={typeof children === 'string' ? children : undefined}
       >
-        {props.children}
+        {children}
       </Text>
     </Box>
   )
@@ -63,45 +65,45 @@ export const AvatarMenuDivider = (): JSX.Element => {
   return <MenuDivider aria-hidden borderColor="neutral.300" />
 }
 
-export type AvatarMenuProps = {
-  fullName?: string
-  userName?: string
+export interface AvatarMenuProps
+  extends Pick<MenuProps, 'defaultIsOpen' | 'children'>,
+    Pick<AvatarProps, 'name' | 'colorScheme'> {
+  /** Name to display in the username section of the menu */
+  menuUsername?: string
   hasNotification?: boolean
-  isOpen?: boolean
   menuListProps?: MenuListProps
-  children?: React.ReactNode
 }
 
 export const AvatarMenu = ({
-  fullName,
-  userName,
+  name,
+  colorScheme = 'primary',
+  menuUsername,
   hasNotification,
-  isOpen,
+  defaultIsOpen,
   menuListProps,
   children,
 }: AvatarMenuProps): JSX.Element => {
+  const styles = useMultiStyleConfig('AvatarMenu', { colorScheme })
+  const focusBoxShadow = useMemo(
+    () => `0 0 0 4px var(--chakra-colors-${colorScheme}-300)`,
+    [colorScheme],
+  )
+
   return (
-    <Menu {...(isOpen ? { isOpen } : {})} autoSelect={false}>
+    <Menu autoSelect={false} defaultIsOpen={defaultIsOpen}>
       {({ isOpen }) => (
         <>
-          <AvatarMenuButton isActive={isOpen}>
+          <AvatarMenuButton role="group" isActive={isOpen} isOpen={isOpen}>
             <Avatar
-              name={fullName}
-              hasNotification={hasNotification}
-              showBorder={isOpen}
-              _groupFocus={{
-                boxShadow: `0 0 0 4px var(--chakra-colors-primary-300)`,
-              }}
-              _groupHover={{
-                bg: 'primary.600',
-              }}
-              _groupActive={{
-                bg: 'primary.500',
-              }}
-            ></Avatar>
+              name={name}
+              sx={styles.avatar}
+              boxShadow={isOpen ? focusBoxShadow : undefined}
+            >
+              {hasNotification && <AvatarBadge />}
+            </Avatar>
           </AvatarMenuButton>
-          <Menu.List role="menu" marginTop="0.375rem" {...menuListProps}>
-            <AvatarMenuUsername>{userName}</AvatarMenuUsername>
+          <Menu.List marginTop="0.375rem" {...menuListProps}>
+            <AvatarMenuUsername>{menuUsername}</AvatarMenuUsername>
             <AvatarMenuDivider />
             {children}
           </Menu.List>

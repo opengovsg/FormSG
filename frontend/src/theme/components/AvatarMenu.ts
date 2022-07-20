@@ -1,8 +1,27 @@
 import { ComponentMultiStyleConfig } from '@chakra-ui/react'
+import { anatomy, PartsStyleFunction } from '@chakra-ui/theme-tools'
 
-export const AvatarMenu: ComponentMultiStyleConfig = {
-  parts: ['usernameItem', 'usernameIcon'],
-  baseStyle: {
+const parts = anatomy('avatarMenu').parts(
+  'avatar',
+  'usernameItem',
+  'usernameIcon',
+)
+
+const baseStyle: PartsStyleFunction<typeof parts> = ({ colorScheme: c }) => {
+  const focusBoxShadow = `0 0 0 4px var(--chakra-colors-${c}-300)`
+
+  return {
+    avatar: {
+      bg: `${c}.500`,
+      _groupFocus: {
+        boxShadow: focusBoxShadow,
+      },
+      _groupHover: {
+        bg: `${c}.600`,
+      },
+      transitionProperty: 'common',
+      transitionDuration: 'normal',
+    },
     usernameItem: {
       display: 'flex',
       alignItems: 'center',
@@ -15,5 +34,13 @@ export const AvatarMenu: ComponentMultiStyleConfig = {
       h: '1.25rem',
       mr: '1rem',
     },
+  }
+}
+
+export const AvatarMenu: ComponentMultiStyleConfig = {
+  parts: parts.keys,
+  baseStyle,
+  defaultProps: {
+    colorScheme: 'primary',
   },
 }

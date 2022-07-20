@@ -8,6 +8,7 @@ import { ControllerHandler } from '../core/core.types'
 import * as FormService from '../form/form.service'
 
 import * as BounceService from './bounce.service'
+import { AdminNotificationRecipients } from './bounce.types'
 
 const logger = createLoggerWithLabel(module)
 
@@ -78,16 +79,29 @@ export const handleSns: ControllerHandler<
     // Send notifications and deactivate form on best-effort basis, ignore errors
     const possibleSmsRecipients =
       await BounceService.getEditorsWithContactNumbers(form).unwrapOr([])
-    const emailRecipients = await BounceService.sendEmailBounceNotification(
-      bounceDoc,
-      form,
-    ).unwrapOr([])
-    const smsRecipients = await BounceService.sendSmsBounceNotification(
-      bounceDoc,
-      form,
-      possibleSmsRecipients,
-    ).unwrapOr([])
-    bounceDoc.setNotificationState(emailRecipients, smsRecipients)
+
+    const notificationRecipients: AdminNotificationRecipients = {
+      emailRecipients: [],
+      smsRecipients: [],
+    }
+    // Check if notifications have been sent to form admins and collaborators
+    if (!bounceDoc.hasNotified()) {
+      notificationRecipients.emailRecipients =
+        await BounceService.sendEmailBounceNotification(
+          bounceDoc,
+          form,
+        ).unwrapOr([])
+      notificationRecipients.smsRecipients =
+        await BounceService.sendSmsBounceNotification(
+          bounceDoc,
+          form,
+          possibleSmsRecipients,
+        ).unwrapOr([])
+      bounceDoc.setNotificationState(
+        notificationRecipients.emailRecipients,
+        notificationRecipients.smsRecipients,
+      )
+    }
 
     const shouldDeactivate = bounceDoc.areAllPermanentBounces()
     if (shouldDeactivate) {
@@ -102,8 +116,8 @@ export const handleSns: ControllerHandler<
     BounceService.logCriticalBounce({
       bounceDoc,
       notification,
-      autoEmailRecipients: emailRecipients,
-      autoSmsRecipients: smsRecipients,
+      autoEmailRecipients: notificationRecipients.emailRecipients,
+      autoSmsRecipients: notificationRecipients.smsRecipients,
       hasDeactivated: shouldDeactivate,
     })
   }

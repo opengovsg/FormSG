@@ -1,3 +1,4 @@
+import { SubmissionResponseDto } from '~shared/types'
 import {
   AdminFormDto,
   AdminFormViewDto,
@@ -9,6 +10,15 @@ import {
 
 import { transformAllIsoStringsToDate } from '~utils/date'
 import { ApiService } from '~services/ApiService'
+
+import {
+  SubmitEmailFormArgs,
+  SubmitStorageFormArgs,
+} from '~features/public-form/PublicFormService'
+import {
+  createEmailSubmissionFormData,
+  createEncryptedSubmissionData,
+} from '~features/public-form/utils'
 
 // endpoint exported for testing
 export const ADMIN_FORM_ENDPOINT = 'admin/forms'
@@ -86,4 +96,41 @@ export const removeSelfFromFormCollaborators = async (
   return ApiService.delete(
     `${ADMIN_FORM_ENDPOINT}/${formId}/collaborators/self`,
   )
+}
+
+/**
+ * Submit an email mode form in preview mode
+ */
+export const submitEmailModeFormPreview = async ({
+  formFields,
+  formInputs,
+  formId,
+}: SubmitEmailFormArgs): Promise<SubmissionResponseDto> => {
+  const formData = createEmailSubmissionFormData(formFields, formInputs)
+
+  return ApiService.post<SubmissionResponseDto>(
+    `${ADMIN_FORM_ENDPOINT}/${formId}/preview/submissions/email`,
+    formData,
+  ).then(({ data }) => data)
+}
+
+/**
+ * Submit a storage mode form in preview mode
+ */
+export const submitStorageModeFormPreview = async ({
+  formFields,
+  formInputs,
+  formId,
+  publicKey,
+}: SubmitStorageFormArgs) => {
+  const submissionContent = await createEncryptedSubmissionData(
+    formFields,
+    formInputs,
+    publicKey,
+  )
+
+  return ApiService.post<SubmissionResponseDto>(
+    `${ADMIN_FORM_ENDPOINT}/${formId}/preview/submissions/encrypt`,
+    submissionContent,
+  ).then(({ data }) => data)
 }

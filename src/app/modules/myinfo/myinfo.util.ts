@@ -50,7 +50,7 @@ import {
 } from './myinfo.types'
 
 const logger = createLoggerWithLabel(module)
-const HASH_SALT_ROUNDS = 10
+const HASH_SALT_ROUNDS = 1
 
 /**
  * Hashes field values which are prefilled and MyInfo-verified.

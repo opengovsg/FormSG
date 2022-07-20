@@ -6,11 +6,9 @@ import {
   subDays,
 } from 'date-fns'
 import range from 'lodash/range'
-import { Opaque } from 'type-fest'
 import { v4 as uuidv4 } from 'uuid'
 
-// Format yyyy-MM-dd
-export type IsoDateString = Opaque<string, 'IsoDateString'>
+import { DateString } from '~shared/types'
 
 /**
  * Full names of calendar months
@@ -128,6 +126,6 @@ export const generateValidUuidClass = (): string => {
   return `a${uuidv4().replaceAll('-', '_')}`
 }
 
-export const convertToDateString = (date: Date): IsoDateString => {
-  return format(date, 'yyyy-MM-dd') as IsoDateString
+export const convertToDateString = (date: Date): DateString => {
+  return format(date, 'yyyy-MM-dd') as DateString
 }

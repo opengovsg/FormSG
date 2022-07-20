@@ -13,18 +13,19 @@ import {
   getMobileViewParameters,
   mockDateDecorator,
   StoryRouter,
+  ViewedEmergencyContactDecorator,
   ViewedRolloutDecorator,
 } from '~utils/storybook'
 
 import { WorkspacePage } from './WorkspacePage'
 
-const createForm = (num: number) => {
+const createForm = (num: number, overrideTitle?: string) => {
   return times(num, (x) => {
     return {
       _id: `618b2d5e648fb700700002b${x}`,
       status: x % 2 ? FormStatus.Public : FormStatus.Private,
       responseMode: x % 2 ? FormResponseMode.Email : FormResponseMode.Encrypt,
-      title: `Test workspace form email ${x}`,
+      title: overrideTitle ?? `Test workspace form email ${x}`,
       admin: {
         _id: '618b2cc0648fb70070000292',
         email: 'test@example.com',
@@ -43,13 +44,20 @@ const createForm = (num: number) => {
   }).reverse()
 }
 
-const THIRTY_FORMS = createForm(30)
+const THIRTY_FORMS = [
+  ...createForm(
+    1,
+    'This is a very very very very very very very very long title it should be properly truncated only in desktop view',
+  ),
+  ...createForm(29),
+]
 
 export default {
   title: 'Pages/WorkspacePage',
   component: WorkspacePage,
   decorators: [
     ViewedRolloutDecorator,
+    ViewedEmergencyContactDecorator,
     StoryRouter({
       initialEntries: [ROOT_ROUTE],
       path: ROOT_ROUTE,

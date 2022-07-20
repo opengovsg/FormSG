@@ -13,6 +13,7 @@ import Textarea from '~components/Textarea'
 export type FeedbackFormInput = {
   rating: number
   comment?: string
+  isPreview?: boolean
 }
 
 export interface FeedbackBlockProps {

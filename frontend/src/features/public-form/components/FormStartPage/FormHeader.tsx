@@ -14,11 +14,15 @@ import simplur from 'simplur'
 
 import { FormAuthType, FormColorTheme } from '~shared/types/form/form'
 
+import { BxMenuAltLeft } from '~assets/icons/BxMenuAltLeft'
 import { BxsTimeFive } from '~assets/icons/BxsTimeFive'
 import Button from '~components/Button'
+import IconButton from '~components/IconButton'
 
 import { usePublicAuthMutations } from '~features/public-form/mutations'
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
+
+import { useFormSections } from '../FormFields/FormSectionsContext'
 
 const useFormHeader = () => {
   const { form, spcpSession, formId, submissionData, miniHeaderRef } =
@@ -59,6 +63,7 @@ const useFormHeader = () => {
     showHeader: !submissionData,
     miniHeaderRef,
     handleLogout,
+    form,
   }
 }
 
@@ -68,6 +73,9 @@ export interface MiniHeaderProps {
 
 // Exported for testing.
 export const MiniHeader = ({ isOpen }: MiniHeaderProps): JSX.Element | null => {
+  const { onMobileDrawerOpen } = usePublicFormContext()
+  const { activeSectionId } = useFormSections()
+
   const { title, titleBg, titleColour, showHeader, miniHeaderRef } =
     useFormHeader()
 
@@ -80,13 +88,45 @@ export const MiniHeader = ({ isOpen }: MiniHeaderProps): JSX.Element | null => {
       ref={miniHeaderRef}
       direction="top"
       in={isOpen}
-      style={{ zIndex: 10 }}
+      style={{ zIndex: 1000 }}
     >
-      <Box bg={titleBg} px="2rem" py="1rem">
+      <Box
+        bg={titleBg}
+        px={{ base: '1.5rem', md: '2rem' }}
+        py={{ base: '0.5rem', md: '1rem' }}
+      >
         <Skeleton isLoaded={!!title}>
-          <Text as="h2" textStyle="h2" textAlign="start" color={titleColour}>
-            {title ?? 'Loading title'}
-          </Text>
+          <Flex
+            align="center"
+            flex={1}
+            gap="0.5rem"
+            justify="space-between"
+            flexDir="row"
+          >
+            <Flex alignItems="center" minH={{ base: '4rem', md: '0' }}>
+              <Text
+                textStyle={{ base: 'h4', md: 'h2' }}
+                textAlign="start"
+                color={titleColour}
+              >
+                {title ?? 'Loading title'}
+              </Text>
+            </Flex>
+            {activeSectionId ? (
+              // Section sidebar icon should only show up if sections exist
+              <IconButton
+                variant="solid"
+                colorScheme="primary"
+                aria-label="Mobile section sidebar"
+                fontSize="1.5rem"
+                icon={<BxMenuAltLeft />}
+                d={{ base: 'flex', md: 'none' }}
+                onClick={onMobileDrawerOpen}
+              />
+            ) : (
+              <></>
+            )}
+          </Flex>
         </Skeleton>
       </Box>
     </Slide>

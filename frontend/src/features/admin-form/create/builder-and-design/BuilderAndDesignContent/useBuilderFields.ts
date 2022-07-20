@@ -9,6 +9,8 @@ import {
 } from '~shared/types/field'
 import { insertAt, replaceAt } from '~shared/utils/immutable-array-fns'
 
+import { augmentWithMyInfo } from '~features/myinfo/utils/augmentWithMyInfo'
+
 import { PENDING_CREATE_FIELD_ID } from '../constants'
 import {
   BuildFieldState,
@@ -53,7 +55,7 @@ export const useBuilderFields = () => {
   const { data: formData } = useCreateTabForm()
   const stateData = useBuilderAndDesignStore(stateDataSelector)
   const builderFields = useMemo(() => {
-    const existingFields = formData?.form_fields
+    const existingFields = formData?.form_fields?.map(augmentWithMyInfo)
     if (!existingFields) return null
     if (stateData.state === BuildFieldState.EditingField) {
       return getFormFieldsWhileEditing(existingFields, stateData.field)
@@ -64,5 +66,7 @@ export const useBuilderFields = () => {
     return existingFields
   }, [formData, stateData])
 
-  return { builderFields }
+  return {
+    builderFields,
+  }
 }

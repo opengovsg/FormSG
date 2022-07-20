@@ -35,9 +35,14 @@ import {
 } from '../../myinfo/myinfo.util'
 import { SgidService } from '../../sgid/sgid.service'
 import { validateSgidForm } from '../../sgid/sgid.util'
+import { SpOidcService } from '../../spcp/sp.oidc.service'
 import { InvalidJwtError, VerifyJwtError } from '../../spcp/spcp.errors'
 import { SpcpService } from '../../spcp/spcp.service'
-import { getRedirectTarget, validateSpcpForm } from '../../spcp/spcp.util'
+import {
+  getRedirectTarget,
+  getRedirectTargetSpOidc,
+  validateSpcpForm,
+} from '../../spcp/spcp.util'
 import { AuthTypeMismatchError, PrivateFormError } from '../form.errors'
 import * as FormService from '../form.service'
 
@@ -59,15 +64,9 @@ const validateSubmitFormFeedbackParams = celebrate({
 })
 
 /**
- * NOTE: This is exported solely for unit testing
- * Handler for POST /:formId/feedback endpoint
- * @precondition formId should be present in req.params.
- * @precondition Joi validation should enforce shape of req.body before this handler is invoked.
+ * @deprecated use submitFormFeedbackV2 instead
  *
- * @returns 200 if feedback was successfully saved
- * @returns 404 if form with formId does not exist or is private
- * @returns 410 if form has been archived
- * @returns 500 if database error occurs
+ * TODO #3964: Cleanup we fully migrate feedback endpoint to /submissions/{submissionId}/feedback
  */
 export const submitFormFeedback: ControllerHandler<
   { formId: string },
@@ -274,6 +273,28 @@ export const handleGetPublicForm: ControllerHandler<
     case FormAuthType.NIL:
       return res.json({ form: publicForm, isIntranetUser })
     case FormAuthType.SP:
+      return SpOidcService.extractJwtPayloadFromRequest(req.cookies)
+        .map((spcpSession) => {
+          return res.json({
+            form: publicForm,
+            isIntranetUser,
+            spcpSession,
+          })
+        })
+        .mapErr((error) => {
+          // Report only relevant errors - verification failed for user here
+          if (
+            error instanceof VerifyJwtError ||
+            error instanceof InvalidJwtError
+          ) {
+            logger.error({
+              message: 'Error getting public form',
+              meta: logMeta,
+              error,
+            })
+          }
+          return res.json({ form: publicForm, isIntranetUser })
+        })
     case FormAuthType.CP:
       return SpcpService.extractJwtPayloadFromRequest(authType, req.cookies)
         .map((spcpSession) => {
@@ -395,7 +416,7 @@ export const handleGetPublicForm: ControllerHandler<
  * NOTE: This is exported only for testing
  * Generates redirect URL to Official SingPass/CorpPass log in page
  * @param isPersistentLogin whether the client wants to have their login information stored
- * @param encodedQuery base64 encoded querystring (usually contains prefilled form information)
+ * @param encodedQuery base64 encoded queryId for frontend to retrieve stored query params (usually contains prefilled form information)
  * @returns 200 with the redirect url when the user authenticates successfully
  * @returns 400 when there is an error on the authType of the form
  * @returns 400 when the eServiceId of the form does not exist
@@ -430,7 +451,16 @@ export const _handleFormAuthRedirect: ControllerHandler<
               encodedQuery,
             }),
           )
-        case FormAuthType.SP:
+        case FormAuthType.SP: {
+          return validateSpcpForm(form).asyncAndThen((form) => {
+            const target = getRedirectTargetSpOidc(
+              formId,
+              isPersistentLogin,
+              encodedQuery,
+            )
+            return SpOidcService.createRedirectUrl(target, form.esrvcId)
+          })
+        }
         case FormAuthType.CP: {
           // NOTE: Persistent login is only set (and relevant) when the authType is SP.
           // If authType is not SP, assume that it was set erroneously and default it to false
@@ -453,6 +483,7 @@ export const _handleFormAuthRedirect: ControllerHandler<
             return SgidService.createRedirectUrl(
               formId,
               Boolean(isPersistentLogin),
+              encodedQuery,
             )
           })
         default:
@@ -541,6 +572,7 @@ export const handlePublicAuthLogout = [
 
 /**
  * Handler for validating the eServiceId of a given form
+ * @deprecated with transition to SP OIDC because NDI no longer returns error page for invalid eservice ID
  *
  * @returns 200 with eserviceId validation result
  * @returns 400 when there is an error on the authType of the form

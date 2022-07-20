@@ -14,6 +14,9 @@ import { AdminFormsRouter } from '../admin-forms.routes'
 
 const UserModel = getUserModel(mongoose)
 
+// Avoid async refresh calls
+jest.mock('src/app/modules/spcp/sp.oidc.client.ts')
+
 const app = setupApp('/admin/forms', AdminFormsRouter, {
   setupWithAuth: true,
 })

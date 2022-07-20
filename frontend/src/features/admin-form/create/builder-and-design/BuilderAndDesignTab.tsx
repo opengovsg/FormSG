@@ -7,7 +7,10 @@ import {
 } from 'react-beautiful-dnd'
 import { useDisclosure } from '@chakra-ui/react'
 
-import { getFieldCreationMeta } from '~features/admin-form/create/builder-and-design/utils/fieldCreation'
+import {
+  getFieldCreationMeta,
+  getMyInfoFieldCreationMeta,
+} from '~features/admin-form/create/builder-and-design/utils/fieldCreation'
 
 import { useReorderFormField } from './mutations/useReorderFormField'
 import {
@@ -20,6 +23,14 @@ import { BuilderAndDesignDrawer } from './BuilderAndDesignDrawer'
 import {
   CREATE_FIELD_DROP_ID,
   CREATE_FIELD_FIELDS_ORDERED,
+  CREATE_MYINFO_CONTACT_DROP_ID,
+  CREATE_MYINFO_CONTACT_FIELDS_ORDERED,
+  CREATE_MYINFO_MARRIAGE_DROP_ID,
+  CREATE_MYINFO_MARRIAGE_FIELDS_ORDERED,
+  CREATE_MYINFO_PARTICULARS_DROP_ID,
+  CREATE_MYINFO_PARTICULARS_FIELDS_ORDERED,
+  CREATE_MYINFO_PERSONAL_DROP_ID,
+  CREATE_MYINFO_PERSONAL_FIELDS_ORDERED,
   CREATE_PAGE_DROP_ID,
   CREATE_PAGE_FIELDS_ORDERED,
   FIELD_LIST_DROP_ID,
@@ -75,12 +86,50 @@ export const BuilderAndDesignTab = (): JSX.Element => {
             destination.index,
           )
         }
+
         case CREATE_FIELD_DROP_ID: {
           return setToCreating(
             getFieldCreationMeta(CREATE_FIELD_FIELDS_ORDERED[source.index]),
             destination.index,
           )
         }
+
+        case CREATE_MYINFO_PERSONAL_DROP_ID: {
+          return setToCreating(
+            getMyInfoFieldCreationMeta(
+              CREATE_MYINFO_PERSONAL_FIELDS_ORDERED[source.index],
+            ),
+            destination.index,
+          )
+        }
+
+        case CREATE_MYINFO_CONTACT_DROP_ID: {
+          return setToCreating(
+            getMyInfoFieldCreationMeta(
+              CREATE_MYINFO_CONTACT_FIELDS_ORDERED[source.index],
+            ),
+            destination.index,
+          )
+        }
+
+        case CREATE_MYINFO_PARTICULARS_DROP_ID: {
+          return setToCreating(
+            getMyInfoFieldCreationMeta(
+              CREATE_MYINFO_PARTICULARS_FIELDS_ORDERED[source.index],
+            ),
+            destination.index,
+          )
+        }
+
+        case CREATE_MYINFO_MARRIAGE_DROP_ID: {
+          return setToCreating(
+            getMyInfoFieldCreationMeta(
+              CREATE_MYINFO_MARRIAGE_FIELDS_ORDERED[source.index],
+            ),
+            destination.index,
+          )
+        }
+
         case FIELD_LIST_DROP_ID: {
           if (destination.index === source.index) {
             return

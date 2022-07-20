@@ -24,7 +24,7 @@ type PublicHeaderLinkProps = {
 }
 
 export interface PublicHeaderProps {
-  /** Footer links to display, if provided. */
+  /** Header links to display, if provided. */
   publicHeaderLinks?: PublicHeaderLinkProps[]
   /** Call to action element to render, if any. */
   ctaElement?: React.ReactChild

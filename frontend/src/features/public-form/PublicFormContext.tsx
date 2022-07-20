@@ -36,8 +36,18 @@ export interface PublicFormContextProps
   /** Callback to be invoked when user submits public form. */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   handleSubmitForm: (formInputs: any) => void
-  /** id of container to render captcha in  */
-  captchaContainerId: string
+  /** id of container to render captcha in.
+   * Captcha will be instantiated if provided
+   */
+  captchaContainerId?: string
+  /** Whether mobile section sidebar is open */
+  isMobileDrawerOpen: boolean
+  /**
+   * Callbacks to be invoked when mobile section sidebar
+   * is opened and closed
+   */
+  onMobileDrawerOpen: () => void
+  onMobileDrawerClose: () => void
 }
 
 export const PublicFormContext = createContext<

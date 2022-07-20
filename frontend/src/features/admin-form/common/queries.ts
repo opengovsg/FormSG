@@ -2,9 +2,11 @@ import { useMemo } from 'react'
 import { useQuery, UseQueryOptions, UseQueryResult } from 'react-query'
 import { useParams } from 'react-router-dom'
 
-import { AdminFormDto } from '~shared/types/form/form'
+import { AdminFormDto, PreviewFormViewDto } from '~shared/types/form/form'
 
 import { ApiError } from '~typings/core'
+
+import { FORMID_REGEX } from '~constants/routes'
 
 import { useUser } from '~features/user/queries'
 
@@ -12,6 +14,7 @@ import {
   getAdminFormView,
   getFormCollaborators,
   getFreeSmsQuota,
+  previewForm,
 } from './AdminViewFormService'
 
 export const adminFormKeys = {
@@ -21,6 +24,9 @@ export const adminFormKeys = {
     [...adminFormKeys.id(id), 'freeSmsCount'] as const,
   collaborators: (id: string) =>
     [...adminFormKeys.id(id), 'collaborators'] as const,
+  previewForm: (id: string) =>
+    [...adminFormKeys.id(id), 'previewForm'] as const,
+  endPage: (id: string) => [...adminFormKeys.id(id), 'endPage'] as const,
 }
 
 /**
@@ -94,4 +100,18 @@ export const useAdminFormCollaborators = () => {
     isFormAdmin,
     showEditableModal,
   }
+}
+
+export const usePreviewForm = (
+  formId: string,
+  /** Extra override to determine whether query is enabled */
+  enabled = true,
+): UseQueryResult<PreviewFormViewDto, ApiError> => {
+  return useQuery(
+    adminFormKeys.previewForm(formId),
+    () => previewForm(formId),
+    {
+      enabled: FORMID_REGEX.test(formId) && enabled,
+    },
+  )
 }

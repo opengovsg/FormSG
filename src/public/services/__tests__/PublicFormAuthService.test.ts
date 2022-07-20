@@ -100,33 +100,6 @@ describe('PublicFormAuthService', () => {
     })
   })
 
-  describe('validateEsrvcId', () => {
-    it('should call validate endpoint successfully', async () => {
-      const mockData = { isValid: true }
-      MockAxios.get.mockResolvedValueOnce({ data: mockData })
-
-      const result = await PublicFormAuthService.validateEsrvcId(MOCK_FORM_ID)
-
-      expect(MockAxios.get).toHaveBeenCalledWith(
-        `${PublicFormAuthService.PUBLIC_FORMS_ENDPOINT}/${MOCK_FORM_ID}/auth/validate`,
-      )
-      expect(result).toEqual(mockData)
-    })
-
-    it('should reject with error when API call fails', async () => {
-      const error = new Error('rejected')
-      MockAxios.get.mockRejectedValueOnce(error)
-
-      const rejectFunction = () =>
-        PublicFormAuthService.validateEsrvcId(MOCK_FORM_ID)
-
-      await expect(rejectFunction).rejects.toThrowError(error)
-      expect(MockAxios.get).toHaveBeenCalledWith(
-        `${PublicFormAuthService.PUBLIC_FORMS_ENDPOINT}/${MOCK_FORM_ID}/auth/validate`,
-      )
-    })
-  })
-
   describe('logoutOfSpcpSession', () => {
     it('should call logout endpoint successfully', async () => {
       const authType = FormAuthType.SP

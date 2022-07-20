@@ -4,7 +4,6 @@ import {
   FormAuthType,
   PublicFormAuthLogoutDto,
   PublicFormAuthRedirectDto,
-  PublicFormAuthValidateEsrvcIdDto,
 } from '../../../shared/types'
 
 // Exported for testing
@@ -13,7 +12,7 @@ export const PUBLIC_FORMS_ENDPOINT = '/api/v3/forms'
 export const createRedirectURL = (
   formId: string,
   isPersistentLogin = false,
-  encodedQuery?,
+  encodedQuery?: string,
 ): Promise<PublicFormAuthRedirectDto> => {
   return axios
     .get<PublicFormAuthRedirectDto>(
@@ -21,16 +20,6 @@ export const createRedirectURL = (
       {
         params: { encodedQuery, isPersistentLogin },
       },
-    )
-    .then(({ data }) => data)
-}
-
-export const validateEsrvcId = (
-  formId: string,
-): Promise<PublicFormAuthValidateEsrvcIdDto> => {
-  return axios
-    .get<PublicFormAuthValidateEsrvcIdDto>(
-      `${PUBLIC_FORMS_ENDPOINT}/${formId}/auth/validate`,
     )
     .then(({ data }) => data)
 }

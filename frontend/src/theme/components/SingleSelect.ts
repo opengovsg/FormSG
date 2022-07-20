@@ -27,12 +27,6 @@ const itemBaseStyle: SystemStyleFunction = (props) => {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     _selected: menuItemStyle._focus,
-    _first: {
-      mt: '0.5rem',
-    },
-    _last: {
-      mb: '0.5rem',
-    },
   })
 }
 

@@ -2,7 +2,11 @@ import { differenceBy, intersectionBy, keyBy, uniqBy } from 'lodash'
 import { err, ok, Result } from 'neverthrow'
 
 import { FIELDS_TO_REJECT } from '../../../../shared/constants/field/basic'
-import { BasicField, FormResponseMode } from '../../../../shared/types'
+import {
+  BasicField,
+  FormField,
+  FormResponseMode,
+} from '../../../../shared/types'
 import { FieldResponse, FormFieldSchema, IFormDocument } from '../../../types'
 import { AutoReplyMailData } from '../../services/mail/mail.types'
 
@@ -10,32 +14,67 @@ import { IncomingSubmission } from './IncomingSubmission.class'
 import { ConflictError } from './submission.errors'
 import { FilteredResponse } from './submission.types'
 
-type ModeFilterParam = {
+type ResponseModeFilterParam = {
   fieldType: BasicField
 }
 
-export const getModeFilter = (
+// Exported for testing.
+export const getResponseModeFilter = (
   responseMode: FormResponseMode,
-): (<T extends ModeFilterParam>(responses: T[]) => T[]) => {
+): (<T extends ResponseModeFilterParam>(responses: T[]) => T[]) => {
   switch (responseMode) {
     case FormResponseMode.Email:
-      return emailModeFilter
+      return emailResponseModeFilter
     case FormResponseMode.Encrypt:
-      return encryptModeFilter
+      return encryptResponseModeFilter
   }
 }
 
-const emailModeFilter = <T extends ModeFilterParam>(responses: T[]) => {
+const emailResponseModeFilter = <T extends ResponseModeFilterParam>(
+  responses: T[],
+) => {
   return responses.filter(
     ({ fieldType }) => !FIELDS_TO_REJECT.includes(fieldType),
   )
 }
 
-const encryptModeFilter = <T extends ModeFilterParam>(responses: T[] = []) => {
+const encryptResponseModeFilter = <T extends ResponseModeFilterParam>(
+  responses: T[] = [],
+) => {
   // To filter for autoreply-able fields.
   return responses.filter(({ fieldType }) =>
     [BasicField.Mobile, BasicField.Email].includes(fieldType),
   )
+}
+
+const encryptFormFieldModeFilter = <T extends FormField>(
+  responses: T[] = [],
+) => {
+  // To filter for autoreply-able fields.
+  return responses.filter((response) => {
+    if ([BasicField.Mobile, BasicField.Email].includes(response.fieldType))
+      return false
+    switch (response.fieldType) {
+      case BasicField.Mobile:
+        return response.isVerifiable
+      case BasicField.Email:
+        return response.autoReplyOptions.hasAutoReply || response.isVerifiable
+      default:
+        return false
+    }
+  })
+}
+
+// Exported for testing.
+export const getFormFieldModeFilter = (
+  responseMode: FormResponseMode,
+): (<T extends FormField>(responses: T[]) => T[]) => {
+  switch (responseMode) {
+    case FormResponseMode.Email:
+      return emailResponseModeFilter
+    case FormResponseMode.Encrypt:
+      return encryptFormFieldModeFilter
+  }
 }
 
 /**
@@ -99,22 +138,24 @@ export const getFilteredResponses = (
   form: IFormDocument,
   responses: FieldResponse[],
 ): Result<FilteredResponse[], ConflictError> => {
-  const modeFilter = getModeFilter(form.responseMode)
+  const responseModeFilter = getResponseModeFilter(form.responseMode)
+  const formFieldModeFilter = getFormFieldModeFilter(form.responseMode)
 
   if (!form.form_fields) {
     return err(new ConflictError('Form fields are missing'))
   }
   // _id must be transformed to string as form response is jsonified.
-  const fieldIds = modeFilter(form.form_fields).map((field) => ({
+  const fieldIds = formFieldModeFilter(form.form_fields).map((field) => ({
     _id: String(field._id),
   }))
-  const uniqueResponses = uniqBy(modeFilter(responses), '_id')
+  const uniqueResponses = uniqBy(responseModeFilter(responses), '_id')
   const results = intersectionBy(uniqueResponses, fieldIds, '_id')
 
   if (results.length < fieldIds.length) {
     const onlyInForm = differenceBy(fieldIds, results, '_id').map(
       ({ _id }) => _id,
     )
+
     return err(
       new ConflictError('Some form fields are missing', {
         formId: form._id,

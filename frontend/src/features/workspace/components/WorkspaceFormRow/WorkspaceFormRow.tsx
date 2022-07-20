@@ -1,12 +1,5 @@
 import { useMemo } from 'react'
-import {
-  Box,
-  ButtonProps,
-  chakra,
-  Flex,
-  Text,
-  useBreakpointValue,
-} from '@chakra-ui/react'
+import { Box, ButtonProps, chakra, Flex, Text } from '@chakra-ui/react'
 import dayjs from 'dayjs'
 
 import { AdminDashboardFormMetaDto } from '~shared/types/form/form'
@@ -37,11 +30,6 @@ export const WorkspaceFormRow = ({
   }, [formMeta.lastModified])
 
   const { handleEditForm } = useRowActionDropdown(formMeta._id)
-
-  const isTruncated = useBreakpointValue({
-    base: false,
-    md: true,
-  })
 
   return (
     <Box pos="relative">
@@ -74,9 +62,14 @@ export const WorkspaceFormRow = ({
         }}
         {...buttonProps}
       >
-        <Flex flexDir="column" gridArea="title" textAlign="initial">
+        <Flex
+          flexDir="column"
+          gridArea="title"
+          textAlign="initial"
+          overflow="auto"
+        >
           <Text
-            isTruncated={isTruncated}
+            noOfLines={{ base: 0, md: 1 }}
             title={formMeta.title}
             textStyle="subhead-1"
             color="secondary.700"

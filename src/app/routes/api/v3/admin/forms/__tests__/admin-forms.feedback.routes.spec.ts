@@ -26,6 +26,9 @@ import { AdminFormsRouter } from '../admin-forms.routes'
 // Prevent rate limiting.
 jest.mock('src/app/utils/limit-rate')
 
+// Avoid async refresh calls
+jest.mock('src/app/modules/spcp/sp.oidc.client.ts')
+
 const UserModel = getUserModel(mongoose)
 const EncryptFormModel = getEncryptedFormModel(mongoose)
 const FormFeedbackModel = getFormFeedbackModel(mongoose)

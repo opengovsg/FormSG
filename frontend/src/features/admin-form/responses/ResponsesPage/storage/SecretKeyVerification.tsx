@@ -31,7 +31,7 @@ interface SecretKeyFormInputs {
 }
 
 const useSecretKeyVerification = () => {
-  const { setSecretKey, formPublicKey, isLoading, responsesCount } =
+  const { setSecretKey, formPublicKey, isLoading, totalResponsesCount } =
     useStorageResponsesContext()
 
   const {
@@ -103,7 +103,7 @@ const useSecretKeyVerification = () => {
 
   return {
     isLoading,
-    responsesCount,
+    totalResponsesCount,
     fileUploadRef,
     handleFileSelect,
     handleVerifyKeypair,
@@ -116,7 +116,7 @@ const useSecretKeyVerification = () => {
 export const SecretKeyVerification = (): JSX.Element => {
   const {
     isLoading,
-    responsesCount,
+    totalResponsesCount,
     fileUploadRef,
     handleVerifyKeypair,
     register,
@@ -134,9 +134,9 @@ export const SecretKeyVerification = (): JSX.Element => {
         <Skeleton isLoaded={!isLoading} w="fit-content">
           <Text as="h2" textStyle="h2" whiteSpace="pre-line">
             <Text color="primary.500" as="span">
-              {responsesCount?.toLocaleString() ?? '-'}
+              {totalResponsesCount?.toLocaleString() ?? '-'}
             </Text>
-            {simplur` ${[responsesCount ?? 0]}response[|s] to date`}
+            {simplur` ${[totalResponsesCount ?? 0]}response[|s] to date`}
           </Text>
         </Skeleton>
         <form onSubmit={handleVerifyKeypair} noValidate>

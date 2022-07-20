@@ -60,6 +60,7 @@ const INITIAL_COMBOBOX_ITEMS: ComboboxItem[] = [
     label: 'D5',
     disabled: true,
   },
+  ...[...Array(2000).keys()].map(String),
 ]
 
 export default {

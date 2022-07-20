@@ -9,25 +9,49 @@ import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 import { FeedbackFormInput } from './components/FeedbackBlock'
 import { FormEndPage } from './FormEndPage'
 
-export const FormEndPageContainer = (): JSX.Element | null => {
+export const FormEndPageContainer = ({
+  isPreview,
+}: {
+  isPreview?: boolean
+}): JSX.Element | null => {
   const { form, formId, submissionData } = usePublicFormContext()
-  const { submitFormFeedbackMutation } = usePublicFormMutations(formId)
+  const { submitFormFeedbackMutation } = usePublicFormMutations(
+    formId,
+    submissionData?.id ?? '',
+  )
   const toast = useToast()
   const [isFeedbackSubmitted, setIsFeedbackSubmitted] = useState(false)
 
+  /**
+   * Handles feedback submission
+   * @param isPreview whether form is in preview mode
+   */
   const handleSubmitFeedback = useCallback(
     (inputs: FeedbackFormInput) => {
+      // no mutation required in preview-form mode
+      if (isPreview) {
+        toast({
+          description:
+            'Thank you for submitting your feedback! Since you are in preview mode, the feedback is not stored.',
+          status: 'success',
+          isClosable: true,
+        })
+        setIsFeedbackSubmitted(true)
+        return
+      }
       // mutateAsync for react-hook-form to show correct loading state.
-      return submitFormFeedbackMutation.mutateAsync(inputs, {
-        onSuccess: () => {
-          toast({
-            description: 'Thank you for submitting your feedback!',
-            status: 'success',
-            isClosable: true,
-          })
-          setIsFeedbackSubmitted(true)
-        },
-      })
+      else {
+        return submitFormFeedbackMutation.mutateAsync(inputs, {
+          onSuccess: () => {
+            toast({
+              description: 'Thank you for submitting your feedback!',
+              status: 'success',
+              isClosable: true,
+            })
+            setIsFeedbackSubmitted(true)
+          },
+        })
+      }
     },
     [submitFormFeedbackMutation, toast],
   )

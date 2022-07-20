@@ -150,6 +150,7 @@ require('./modules/core/components/avatar-dropdown.client.component')
 require('./modules/core/components/banner.client.component.js')
 require('./modules/core/components/sg-govt-banner.client.component.js')
 require('./modules/core/components/footer.client.component.js')
+require('./modules/core/components/toolset-dropdown.client.component.js')
 
 /**
  * Forms module
@@ -192,6 +193,7 @@ require('./modules/forms/admin/components/edit-logic.client.component.js')
 require('./modules/forms/admin/components/export-button.client.component.js')
 require('./modules/forms/admin/components/form-title-input.client.component.js')
 require('./modules/forms/admin/components/form-emails-input.client.component.js')
+require('./modules/forms/admin/components/react-switch-banner.client.component.js')
 
 // response components
 require('./modules/forms/admin/components/response-components/response.client.component.js')
@@ -326,6 +328,10 @@ app.run([
       'modules/core/componentViews/footer.html',
       require('./modules/core/componentViews/footer.html'),
     )
+    $templateCache.put(
+      'modules/core/componentViews/toolset-dropdown.html',
+      require('./modules/core/componentViews/toolset-dropdown.html'),
+    )
 
     // Core views
     $templateCache.put(
@@ -360,6 +366,10 @@ app.run([
     $templateCache.put(
       'modules/forms/admin/componentViews/form-emails-input.client.view.html',
       require('./modules/forms/admin/componentViews/form-emails-input.client.view.html'),
+    )
+    $templateCache.put(
+      'modules/forms/admin/componentViews/react-switch-banner.client.view.html',
+      require('./modules/forms/admin/componentViews/react-switch-banner.client.view.html'),
     )
 
     // Response component views
@@ -727,3 +737,7 @@ angular
     },
   })
   .constant('responseModeEnum', { ENCRYPT: 'encrypt', EMAIL: 'email' })
+  .constant('prefill', {
+    QUERY_ID: 'queryId',
+    STORED_QUERY: 'storedQuery',
+  })

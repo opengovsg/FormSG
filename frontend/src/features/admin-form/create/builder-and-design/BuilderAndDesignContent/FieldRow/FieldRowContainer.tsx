@@ -43,6 +43,11 @@ import { createTableRow } from '~templates/Field/Table/utils/createRow'
 
 import { adminFormKeys } from '~features/admin-form/common/queries'
 import { useCreatePageSidebar } from '~features/admin-form/create/common/CreatePageSidebarContext'
+import {
+  augmentWithMyInfoDisplayValue,
+  extractPreviewValue,
+  hasExistingFieldValue,
+} from '~features/myinfo/utils'
 
 import { useBuilderAndDesignContext } from '../../BuilderAndDesignContext'
 import { PENDING_CREATE_FIELD_ID } from '../../constants'
@@ -94,9 +99,17 @@ export const FieldRowContainer = ({
         [field._id]: times(field.minimumRows || 0, () => createTableRow(field)),
       }
     }
+
+    const augmentedField = augmentWithMyInfoDisplayValue(field)
+
+    if (hasExistingFieldValue(augmentedField)) {
+      return {
+        [field._id]: extractPreviewValue(augmentedField),
+      }
+    }
   }, [field])
 
-  const formMethods = useForm({
+  const formMethods = useForm<FormFieldDto>({
     mode: 'onChange',
     defaultValues: defaultFieldValues,
   })

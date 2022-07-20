@@ -11,44 +11,28 @@
     <i class="bx bx-x"></i>
   </div>
   <div class="modal-body">
-    <!-- If form is spcp, check for e-service id-->
+    <!-- If form is spcp, prompt user to verify their e-service id-->
     <div ng-if="vm.checkStatus === vm.checkEnum.esrvcId" id="verify-esrvcid">
-      <div class="field-title">Validating your e-service ID</div>
+      <div class="field-title">Please verify your e-service ID</div>
       <div class="loader" ng-if="vm.esrvcIdStatus === 1">
         <i class="bx bx-loader bx-spin"></i>
       </div>
-      <div ng-if="vm.esrvcIdError">
-        <!-- Coding for the future - CorpPass for now always returns success because we have no way of validating it-->
-        <div ng-if="['SP', 'CP', 'MyInfo'].includes(vm.esrvcIdError.authType)">
-          <div class="field-title error-msg">
-            <i class="bx bx-md icon-spacing bx-exclamation"></i>
-            {{ 'Your e-service ID is probably invalid ' }}
-          </div>
-          <div class="field-description">
-            <span ng-if="vm.esrvcIdError.errorCode">
-              {{ (['SP', 'MyInfo'].includes(vm.esrvcIdError.authType) ?
-              'Singpass' : 'Corppass') + ' returns the error code ' }}
-              <b>{{vm.esrvcIdError.errorCode}}</b>
-              {{' for the e-service ID ' }} <b>{{vm.esrvcIdError.esrvcId}}</b>
-            </span>
-            <span ng-if="!vm.esrvcIdError.errorCode">
-              {{ 'Could not connect to ' + (vm.esrvcIdError.authType === 'CP' ?
-              'Corppass' : 'Singpass') + ' to check the e-service id '}}
-              <b>{{vm.esrvcIdError.esrvcId}}</b>
-            </span>
-          </div>
-        </div>
-      </div>
       <div ng-if="!vm.esrvcIdError && vm.esrvcIdSuccess">
-        <div ng-if="['SP', 'MyInfo'].includes(vm.esrvcIdSuccess.authType)">
-          <div class="field-title success-msg">
-            <i class="bx bx-md icon-spacing bx-check"></i>
-            Your e-service ID appears to be valid.
+        <div
+          ng-if="['SP', 'MyInfo', 'CP'].includes(vm.esrvcIdSuccess.authType)"
+        >
+          <div ng-if="vm.esrvcIdSuccess.authType === 'CP'" class="field-title">
+            This form uses Corppass.
           </div>
-        </div>
-        <!-- Since CorpPass eservice id cannot be validated, remind user to check-->
-        <div ng-if="vm.esrvcIdSuccess.authType === 'CP'">
-          <div class="field-title">This form uses Corppass.</div>
+          <div ng-if="vm.esrvcIdSuccess.authType === 'SP'" class="field-title">
+            This form uses Singpass.
+          </div>
+          <div
+            ng-if="vm.esrvcIdSuccess.authType === 'MyInfo'"
+            class="field-title"
+          >
+            This form uses MyInfo.
+          </div>
           <div class="field-description">
             Please make sure <b>{{vm.esrvcIdSuccess.esrvcId}}</b> is the correct
             e-service ID

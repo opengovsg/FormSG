@@ -6,7 +6,15 @@ import { RefObject, useCallback, useEffect, useRef, useState } from 'react'
 
 type UseSearchbarReturn = {
   inputRef: RefObject<HTMLInputElement>
+
+  /**
+   * Variable representing whether the searchbar is expanded. If you need to
+   * know whether the searchbar is expanded, use this in conjunction with
+   * `handleExpansion` and `handleCollapse`.
+   * @example `<Searchbar onExpandIconClick={handleExpansion} onCollapseIconClick={handleCollapse} ...`
+   */
   isExpanded: boolean
+
   handleExpansion: () => void
   handleCollapse: () => void
 }
@@ -19,12 +27,13 @@ export const useSearchbar = ({
    * If `true`, the searchbar will be expanded on initial render.
    */
   isInitiallyExpanded?: boolean
+
   /**
    * If `true`, the searchbar will be focused whenever the searchbar is expanded.
    * Defaults to `true`.
    */
   isFocusOnExpand?: boolean
-}): UseSearchbarReturn => {
+} = {}): UseSearchbarReturn => {
   const [isExpanded, setIsExpanded] = useState(isInitiallyExpanded)
   const inputRef = useRef<HTMLInputElement>(null)
 

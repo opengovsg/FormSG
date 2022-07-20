@@ -69,3 +69,14 @@ export type SpcpForm<T extends IFormSchema> = T & {
   authType: FormAuthType.SP | FormAuthType.CP
   esrvcId: string
 }
+
+// either <formId>,boolean or <formId>,boolean,encodedQuery
+export type RedirectTarget =
+  | `${string},${boolean}`
+  | `${string},${boolean},${string}`
+
+// either <formId>-boolean or <formId>-boolean-encodedQuery
+// NDI OIDC does not allow comma separated values in state
+export type RedirectTargetSpOidc =
+  | `${string}-${boolean}`
+  | `${string}-${boolean}-${string}`

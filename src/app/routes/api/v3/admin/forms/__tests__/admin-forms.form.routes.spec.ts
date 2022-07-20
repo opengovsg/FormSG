@@ -30,6 +30,7 @@ import { jsonParseStringify } from 'tests/unit/backend/helpers/serialize-data'
 import {
   BasicField,
   FormColorTheme,
+  FormEndPage,
   FormLogoState,
   FormResponseMode,
   FormStartPage,
@@ -45,6 +46,9 @@ jest.mock('nodemailer', () => ({
     sendMail: jest.fn().mockResolvedValue(true),
   }),
 }))
+
+// Avoid async refresh calls
+jest.mock('src/app/modules/spcp/sp.oidc.client.ts')
 
 const UserModel = getUserModel(mongoose)
 const FormModel = getFormModel(mongoose)
@@ -1606,6 +1610,140 @@ describe('admin-form.form.routes', () => {
     })
   })
 
+  describe('PUT /:formId/fields', () => {
+    it('should return 200 if form field contains valid utf8 encoded unicode character sequence', async () => {
+      // Arrange
+      const fieldToInsert = omit(
+        generateDefaultField(BasicField.Dropdown, {
+          fieldOptions: ['Option1'],
+        }),
+        ['_id', 'globalId', 'getQuestion'],
+      )
+
+      const formToUpdate = (await EmailFormModel.create({
+        title: 'Form to update',
+        emails: [defaultUser.email],
+        admin: defaultUser._id,
+        form_fields: [generateDefaultField(BasicField.Rating)],
+      })) as IPopulatedForm
+
+      // Act
+      await request
+        .post(`/admin/forms/${formToUpdate._id}/fields`)
+        // No positional argument
+        .send(fieldToInsert)
+
+      const formToCheck = await EmailFormModel.findById(formToUpdate._id).lean()
+
+      const insertedField = formToCheck!.form_fields![1]
+      const insertedFieldId = insertedField._id
+
+      const updatedField = { ...insertedField, fieldOptions: ['Option1\u00ae'] }
+
+      const fieldUpdateResponse = await request
+        .put(`/admin/forms/${formToUpdate._id}/fields/${insertedFieldId}`)
+        // No positional argument
+        .send(updatedField)
+
+      const formToCheckUpdated = await EmailFormModel.findById(
+        formToUpdate._id,
+      ).lean()
+
+      // Assert
+      expect(formToCheckUpdated!.form_fields![1]).toMatchObject(updatedField) //Updated field should be last in array
+      expect(fieldUpdateResponse.status).toEqual(200)
+      expect(fieldUpdateResponse.body).toMatchObject(omit(updatedField, '_id'))
+    })
+
+    it('should return 200 if form field contains string with escaped backslash which looks like utf8 encoded unicode character sequence', async () => {
+      // Arrange
+      const fieldToInsert = omit(
+        generateDefaultField(BasicField.Dropdown, {
+          fieldOptions: ['Option1'],
+        }),
+        ['_id', 'globalId', 'getQuestion'],
+      )
+
+      const formToUpdate = (await EmailFormModel.create({
+        title: 'Form to update',
+        emails: [defaultUser.email],
+        admin: defaultUser._id,
+        form_fields: [generateDefaultField(BasicField.Rating)],
+      })) as IPopulatedForm
+
+      // Act
+      await request
+        .post(`/admin/forms/${formToUpdate._id}/fields`)
+        // No positional argument
+        .send(fieldToInsert)
+
+      const formToCheck = await EmailFormModel.findById(formToUpdate._id).lean()
+
+      const insertedField = formToCheck!.form_fields![1]
+      const insertedFieldId = insertedField._id
+
+      const updatedField = {
+        ...insertedField,
+        fieldOptions: ['Option1\\udbbb'],
+      }
+
+      const fieldUpdateResponse = await request
+        .put(`/admin/forms/${formToUpdate._id}/fields/${insertedFieldId}`)
+        // No positional argument
+        .send(updatedField)
+
+      const formToCheckUpdated = await EmailFormModel.findById(
+        formToUpdate._id,
+      ).lean()
+
+      // Assert
+      expect(formToCheckUpdated!.form_fields![1]).toMatchObject(updatedField) //Updated field should be last in array
+      expect(fieldUpdateResponse.status).toEqual(200)
+      expect(fieldUpdateResponse.body).toMatchObject(omit(updatedField, '_id'))
+    })
+
+    it('should return 400 if form field contains invalid utf8 encoded unicode character sequence', async () => {
+      // Arrange
+      const fieldToInsert = omit(
+        generateDefaultField(BasicField.Dropdown, {
+          fieldOptions: ['Option1'],
+        }),
+        ['_id', 'globalId', 'getQuestion'],
+      )
+
+      const formToUpdate = (await EmailFormModel.create({
+        title: 'Form to update',
+        emails: [defaultUser.email],
+        admin: defaultUser._id,
+        form_fields: [generateDefaultField(BasicField.Rating)],
+      })) as IPopulatedForm
+
+      // Act
+      await request
+        .post(`/admin/forms/${formToUpdate._id}/fields`)
+        // No positional argument
+        .send(fieldToInsert)
+
+      const formToCheck = await EmailFormModel.findById(formToUpdate._id).lean()
+
+      const insertedField = formToCheck!.form_fields![1]
+      const insertedFieldId = insertedField._id
+
+      const updatedField = {
+        ...insertedField,
+        fieldOptions: ['Option1\u00ae\udbbb'],
+      }
+
+      const fieldUpdateResponse = await request
+        .put(`/admin/forms/${formToUpdate._id}/fields/${insertedFieldId}`)
+        // No positional argument
+        .send(updatedField)
+
+      // Assert
+      expect(fieldUpdateResponse.status).toEqual(400)
+    })
+  })
+
   describe('POST /:formId/fields', () => {
     it('should return 200 with created form field with positional argument', async () => {
       // Arrange
@@ -1708,6 +1846,95 @@ describe('admin-form.form.routes', () => {
       ])
       expect(response.status).toEqual(200)
       expect(response.body).toMatchObject(fieldToInsert)
+    })
+
+    it('should return 200 if form field contains valid utf8 encoded unicode character sequence', async () => {
+      // Arrange
+      const fieldToInsert = omit(
+        generateDefaultField(BasicField.Dropdown, {
+          fieldOptions: ['Option1\u00ae'],
+        }),
+        ['_id', 'globalId', 'getQuestion'],
+      )
+      const formToUpdate = (await EmailFormModel.create({
+        title: 'Form to update',
+        emails: [defaultUser.email],
+        admin: defaultUser._id,
+        form_fields: [generateDefaultField(BasicField.Rating)],
+      })) as IPopulatedForm
+
+      // Act
+      const response = await request
+        .post(`/admin/forms/${formToUpdate._id}/fields`)
+        // No positional argument
+        .send(fieldToInsert)
+
+      // Assert
+      const formToCheck = await EmailFormModel.findById(formToUpdate._id).lean()
+      expect(formToCheck?.form_fields).toMatchObject([
+        ...formToUpdate.toObject().form_fields,
+        // Inserted field should be last in field array.
+        fieldToInsert,
+      ])
+      expect(response.status).toEqual(200)
+      expect(response.body).toMatchObject(fieldToInsert)
+    })
+
+    it('should return 200 if form field contains string with escaped backslash which looks like utf8 encoded unicode character sequence', async () => {
+      // Arrange
+      const fieldToInsert = omit(
+        generateDefaultField(BasicField.Dropdown, {
+          fieldOptions: ['Option1\\udbbb'],
+        }),
+        ['_id', 'globalId', 'getQuestion'],
+      )
+      const formToUpdate = (await EmailFormModel.create({
+        title: 'Form to update',
+        emails: [defaultUser.email],
+        admin: defaultUser._id,
+        form_fields: [generateDefaultField(BasicField.Rating)],
+      })) as IPopulatedForm
+
+      // Act
+      const response = await request
+        .post(`/admin/forms/${formToUpdate._id}/fields`)
+        // No positional argument
+        .send(fieldToInsert)
+
+      // Assert
+      const formToCheck = await EmailFormModel.findById(formToUpdate._id).lean()
+      expect(formToCheck?.form_fields).toMatchObject([
+        ...formToUpdate.toObject().form_fields,
+        // Inserted field should be last in field array.
+        fieldToInsert,
+      ])
+      expect(response.status).toEqual(200)
+      expect(response.body).toMatchObject(fieldToInsert)
+    })
+
+    it('should return 400 if form field contains invalid utf8 encoded unicode character sequence', async () => {
+      // Arrange
+      const fieldToInsert = omit(
+        generateDefaultField(BasicField.Dropdown, {
+          fieldOptions: ['Option1\u00ae\udbbb'], // \udbbb is invalid encoding
+        }),
+        ['_id', 'globalId', 'getQuestion'],
+      )
+      const formToUpdate = (await EmailFormModel.create({
+        title: 'Form to update',
+        emails: [defaultUser.email],
+        admin: defaultUser._id,
+        form_fields: [generateDefaultField(BasicField.Rating)],
+      })) as IPopulatedForm
+
+      // Act
+      const response = await request
+        .post(`/admin/forms/${formToUpdate._id}/fields`)
+        // No positional argument
+        .send(fieldToInsert)
+
+      // Assert
+      expect(response.status).toEqual(400)
     })
 
     it('should return 400 with negative positional argument', async () => {
@@ -2124,6 +2351,89 @@ describe('admin-form.form.routes', () => {
       // Assert
       expect(resp.status).toBe(500)
       expect(resp.body).toEqual(expectedResponse)
+    })
+  })
+
+  describe('PUT /admin/forms/:formId/end-page', () => {
+    const MOCK_END_PAGE: Partial<FormEndPage> = {
+      title: 'end page title',
+      buttonText: 'end page button',
+    }
+
+    it('should return 200 when button link is updated with a valid HTTPS URI scheme', async () => {
+      //Arrange
+      const form = await EmailFormModel.create({
+        emails: [defaultUser.email],
+        title: 'email me',
+        admin: defaultUser._id,
+        endpage: MOCK_END_PAGE,
+      })
+
+      //Act
+      const validUriScheme = 'https://valid.scheme'
+      const response = await request
+        .put(`/admin/forms/${form._id}/end-page`)
+        .send({
+          buttonLink: validUriScheme,
+        })
+
+      //Assert
+      expect(response.status).toBe(200)
+      expect(response.body).toEqual(
+        expect.objectContaining({ buttonLink: validUriScheme }),
+      )
+    })
+
+    it('should return 200 when button link is updated with a valid HTTP URI scheme', async () => {
+      //Arrange
+      const form = await EmailFormModel.create({
+        emails: [defaultUser.email],
+        title: 'email me',
+        admin: defaultUser._id,
+        endpage: MOCK_END_PAGE,
+      })
+
+      //Act
+      const validUriScheme = 'http://valid.scheme'
+      const response = await request
+        .put(`/admin/forms/${form._id}/end-page`)
+        .send({
+          buttonLink: validUriScheme,
+        })
+
+      //Assert
+      expect(response.status).toBe(200)
+      expect(response.body).toEqual(
+        expect.objectContaining({ buttonLink: validUriScheme }),
+      )
+    })
+
+    it('should return 400 when button link is updated with an invalid URI scheme', async () => {
+      //Arrange
+      const form = await EmailFormModel.create({
+        emails: [defaultUser.email],
+        title: 'email me',
+        admin: defaultUser._id,
+        endpage: MOCK_END_PAGE,
+      })
+
+      //Act
+      const response = await request
+        .put(`/admin/forms/${form._id}/end-page`)
+        .send({
+          buttonLink: 'scheme://invalid.scheme',
+        })
+
+      //Assert
+      expect(response.status).toBe(400)
+      expect(response.body).toEqual(
+        buildCelebrateError({
+          body: {
+            key: 'buttonLink',
+            message: 'Please enter a valid HTTP or HTTPS URI',
+          },
+        }),
+      )
     })
   })
 })

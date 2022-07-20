@@ -1,7 +1,9 @@
 import { SgidClient } from '@opengovsg/sgid-client'
 import fs from 'fs'
+import Jwt from 'jsonwebtoken'
 import { err, ok, Result, ResultAsync } from 'neverthrow'
 
+import { ISgidVarsSchema } from '../../../types'
 import { sgid } from '../../config/features/sgid.config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { ApplicationError } from '../core/core.errors'
@@ -19,10 +21,14 @@ import { isSgidJwtPayload } from './sgid.util'
 
 const logger = createLoggerWithLabel(module)
 
+const JWT_ALGORITHM = 'RS256'
+export const SGID_SCOPES = 'openid myinfo.nric_number'
+
 export class SgidServiceClass {
   private client: SgidClient
 
-  private publicKeyPath: string | Buffer
+  private publicKey: string | Buffer
+  private privateKey: string
 
   private cookieDomain: string
   private cookieMaxAge: number
@@ -35,22 +41,13 @@ export class SgidServiceClass {
     privateKeyPath,
     publicKeyPath,
     ...sgidOptions
-  }: {
-    endpoint: string
-    clientId: string
-    clientSecret: string
-    privateKeyPath: string
-    publicKeyPath: string
-    redirectUri: string
-    cookieDomain: string
-    cookieMaxAge: number
-    cookieMaxAgePreserved: number
-  }) {
+  }: ISgidVarsSchema) {
+    this.privateKey = fs.readFileSync(privateKeyPath, { encoding: 'utf8' })
     this.client = new SgidClient({
       ...sgidOptions,
-      privateKey: fs.readFileSync(privateKeyPath),
+      privateKey: this.privateKey,
     })
-    this.publicKeyPath = fs.readFileSync(publicKeyPath)
+    this.publicKey = fs.readFileSync(publicKeyPath)
     this.cookieDomain = cookieDomain
     this.cookieMaxAge = cookieMaxAge
     this.cookieMaxAgePreserved = cookieMaxAgePreserved
@@ -60,18 +57,22 @@ export class SgidServiceClass {
    * Create a URL to sgID which is used to redirect the user for authentication
    * @param formId - the form id to redirect to after authentication
    * @param rememberMe - whether we create a JWT that remembers the user
+   * @param encodedQuery base64 encoded queryId for frontend to retrieve stored query params (usually contains prefilled form information)
    * for an extended period of time
    */
   createRedirectUrl(
     formId: string,
     rememberMe: boolean,
+    encodedQuery?: string,
   ): Result<string, SgidCreateRedirectUrlError> {
-    const state = `${formId},${rememberMe}`
+    const state = encodedQuery
+      ? `${formId},${rememberMe},${encodedQuery}`
+      : `${formId},${rememberMe}`
     const logMeta = {
       action: 'createRedirectUrl',
       state,
     }
-    const result = this.client.authorizationUrl(state)
+    const result = this.client.authorizationUrl(state, SGID_SCOPES, null)
     if (typeof result.url === 'string') {
       return ok(result.url)
     } else {
@@ -88,18 +89,41 @@ export class SgidServiceClass {
    * Parses the string serialization containing the form id and if the
    * user should be remembered, both needed when redirecting the user back to
    * the form post-authentication
-   * @param state - a comma-separated string of the form id and a boolean flag
-   * indicating if the user should be remembered
-   * @returns {Result<{ formId: string; rememberMe: boolean }, SgidInvalidStateError>}
-   *   the form id and whether the user should be remembered
+   * @param state - a comma-separated string of the form id, a boolean flag
+   * indicating if the user should be remembered, and an optional encodedQuery
+   * @returns {Result<{ formId: string; rememberMe: boolean; decodedQuery?: string }, SgidInvalidStateError>}
    */
   parseState(
     state: string,
-  ): Result<{ formId: string; rememberMe: boolean }, SgidInvalidStateError> {
-    const [formId, rememberMeStr] = state.split(',')
-    const rememberMe = rememberMeStr === 'true'
+  ): Result<
+    { formId: string; rememberMe: boolean; decodedQuery: string },
+    SgidInvalidStateError
+  > {
+    const payloads = state.split(',')
+    const formId = payloads[0]
+    const rememberMe = payloads[1] === 'true'
+
+    const encodedQuery = payloads.length === 3 ? payloads[2] : ''
+    let decodedQuery = ''
+
+    try {
+      decodedQuery = encodedQuery
+        ? `?${Buffer.from(encodedQuery, 'base64').toString('utf8')}`
+        : ''
+    } catch (e) {
+      logger.error({
+        message: 'Unable to decode encodedQuery',
+        meta: {
+          action: 'parseOOBParams',
+          encodedQuery,
+        },
+        error: e,
+      })
+      return err(new SgidInvalidStateError())
+    }
+
     return formId
-      ? ok({ formId, rememberMe })
+      ? ok({ formId, rememberMe, decodedQuery })
       : err(new SgidInvalidStateError())
   }
 
@@ -114,17 +138,20 @@ export class SgidServiceClass {
     { sub: string; accessToken: string },
     SgidFetchAccessTokenError
   > {
-    return ResultAsync.fromPromise(this.client.callback(code), (error) => {
-      logger.error({
-        message: 'Failed to retrieve access token from sgID',
-        meta: {
-          action: 'token',
-          code,
-        },
-        error,
-      })
-      return new SgidFetchAccessTokenError()
-    })
+    return ResultAsync.fromPromise(
+      this.client.callback(code, null),
+      (error) => {
+        logger.error({
+          message: 'Failed to retrieve access token from sgID',
+          meta: {
+            action: 'token',
+            code,
+          },
+          error,
+        })
+        return new SgidFetchAccessTokenError()
+      },
+    )
   }
 
   /**
@@ -171,8 +198,12 @@ export class SgidServiceClass {
     const userName = data['myinfo.nric_number']
     const payload = { userName, rememberMe }
     const maxAge = rememberMe ? this.cookieMaxAgePreserved : this.cookieMaxAge
+    const jwt = Jwt.sign(payload, this.privateKey, {
+      algorithm: JWT_ALGORITHM,
+      expiresIn: maxAge / 1000,
+    })
     return ok({
-      jwt: this.client.createJWT(payload, maxAge / 1000),
+      jwt,
       maxAge,
     })
   }
@@ -195,7 +226,9 @@ export class SgidServiceClass {
         return err(new SgidMissingJwtError())
       }
 
-      const payload = this.client.verifyJWT(jwtSgid, this.publicKeyPath)
+      const payload = Jwt.verify(jwtSgid, this.publicKey, {
+        algorithms: [JWT_ALGORITHM],
+      })
 
       if (isSgidJwtPayload(payload)) {
         return ok(payload)

@@ -9,12 +9,6 @@ const HOUR_IN_MILLIS = 1000 * 60 * 60
 const DAY_IN_MILLIS = 24 * HOUR_IN_MILLIS
 
 export const sgidVarsSchema: Schema<ISgidVarsSchema> = {
-  endpoint: {
-    doc: 'The sgID OIDC endpoint',
-    format: 'url',
-    default: null,
-    env: 'SGID_ENDPOINT',
-  },
   clientId: {
     doc: 'The client id registered with sgID',
     format: String,

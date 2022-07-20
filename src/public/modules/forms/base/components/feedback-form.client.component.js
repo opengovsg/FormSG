@@ -8,6 +8,7 @@ angular.module('forms').component('feedbackFormComponent', {
   bindings: {
     isPreview: '<',
     formId: '@',
+    submissionId: '@',
     colorTheme: '@',
   },
   controller: ['Toastr', '$q', feedbackController],
@@ -33,7 +34,9 @@ function feedbackController(Toastr, $q) {
         isPreview: vm.isPreview,
       }
 
-      $q.when(FormFeedbackService.postFeedback(vm.formId, feedback)).then(
+      $q.when(
+        FormFeedbackService.postFeedback(vm.formId, vm.submissionId, feedback),
+      ).then(
         function () {
           vm.isSubmitted = true
           vm.isLoading = false

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { VirtuosoHandle } from 'react-virtuoso'
 import {
   FormControlOptions,
   useFormControlProps,
@@ -11,6 +12,7 @@ import {
   UseMultipleSelectionProps,
 } from 'downshift'
 
+import { VIRTUAL_LIST_MAX_HEIGHT } from '../constants'
 import { useItems } from '../hooks/useItems'
 import { MultiSelectContext } from '../MultiSelectContext'
 import { SelectContext, SharedSelectContextReturnProps } from '../SelectContext'
@@ -20,7 +22,10 @@ import { itemToLabelString, itemToValue } from '../utils/itemUtils'
 
 export interface MultiSelectProviderProps<
   Item extends ComboboxItem = ComboboxItem,
-> extends Omit<SharedSelectContextReturnProps<Item>, 'isClearable'>,
+> extends Omit<
+      SharedSelectContextReturnProps<Item>,
+      'isClearable' | 'virtualListRef' | 'virtualListHeight'
+    >,
     FormControlOptions {
   /** Controlled selected values */
   values: string[]
@@ -76,6 +81,7 @@ export const MultiSelectProvider = ({
 
   // Inject for components to manipulate
   const inputRef = useRef<HTMLInputElement | null>(null)
+  const virtualListRef = useRef<VirtuosoHandle>(null)
 
   const { isInvalid, isDisabled, isReadOnly, isRequired } = useFormControlProps(
     {
@@ -172,6 +178,19 @@ export const MultiSelectProvider = ({
     defaultIsOpen,
     defaultInputValue: '',
     defaultHighlightedIndex: 0,
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    scrollIntoView: () => {},
+    onHighlightedIndexChange: ({ highlightedIndex }) => {
+      if (
+        highlightedIndex !== undefined &&
+        highlightedIndex >= 0 &&
+        virtualListRef.current
+      ) {
+        virtualListRef.current.scrollIntoView({
+          index: highlightedIndex,
+        })
+      }
+    },
     onStateChange: ({ inputValue, type }) => {
       switch (type) {
         case useCombobox.stateChangeTypes.FunctionSetInputValue:
@@ -252,6 +271,13 @@ export const MultiSelectProvider = ({
     isEmpty: selectedItems.length === 0,
   })
 
+  const virtualListHeight = useMemo(() => {
+    const totalHeight = filteredItems.length * 48
+    // If the total height is less than the max height, just return the total height.
+    // Otherwise, return the max height.
+    return Math.min(totalHeight, VIRTUAL_LIST_MAX_HEIGHT)
+  }, [filteredItems.length])
+
   return (
     <SelectContext.Provider
       value={{
@@ -286,6 +312,8 @@ export const MultiSelectProvider = ({
         isRequired,
         resetInputValue,
         inputAria,
+        virtualListRef,
+        virtualListHeight,
       }}
     >
       <MultiSelectContext.Provider

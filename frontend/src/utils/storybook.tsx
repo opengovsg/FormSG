@@ -9,6 +9,7 @@ import { theme } from '~/theme'
 
 import { AuthContext } from '~contexts/AuthContext'
 import {
+  EMERGENCY_CONTACT_KEY_PREFIX,
   FEATURE_TOUR_KEY_PREFIX,
   ROLLOUT_ANNOUNCEMENT_KEY_PREFIX,
 } from '~constants/localStorage'
@@ -69,6 +70,21 @@ export const ViewedRolloutDecorator: DecoratorFn = (
   useEffect(() => {
     return () => window.localStorage.removeItem(rolloutKey)
   }, [rolloutKey, userId])
+
+  return storyFn()
+}
+
+export const ViewedEmergencyContactDecorator: DecoratorFn = (
+  storyFn,
+  { parameters },
+) => {
+  const userId = parameters.userId
+  const emergencyContactKey = EMERGENCY_CONTACT_KEY_PREFIX + userId
+  window.localStorage.setItem(emergencyContactKey, JSON.stringify(true))
+
+  useEffect(() => {
+    return () => window.localStorage.removeItem(emergencyContactKey)
+  }, [emergencyContactKey, userId])
 
   return storyFn()
 }

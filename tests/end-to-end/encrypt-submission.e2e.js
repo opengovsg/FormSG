@@ -33,7 +33,6 @@ let Agency
 let Submission
 let govTech
 let db
-const testSpNric = 'S6005038D'
 const testCpNric = 'S8979373D'
 const testCpUen = '123456789A'
 let captchaEnabled
@@ -111,27 +110,6 @@ test.before(async (t) => {
     t.ctx.formData,
     chainDisabled.toastMessage,
   )
-})
-
-// Basic form with only one field and SP authentication
-test.before(async (t) => {
-  const formData = await getDefaultFormOptions({
-    authType: 'SP',
-    status: 'PRIVATE',
-    esrvcId: 'Test-eServiceId-Sp',
-  })
-  formData.formFields = [
-    {
-      title: 'short text',
-      fieldType: 'textfield',
-      val: 'Lorem Ipsum',
-    },
-  ].map(makeField)
-  t.ctx.formData = formData
-})('Create and submit basic form with SingPass authentication', async (t) => {
-  let authData = { testSpNric }
-  t.ctx.form = await createForm(t, t.ctx.formData, Form, captchaEnabled)
-  await verifySubmissionE2e(t, t.ctx.form, t.ctx.formData, authData)
 })
 
 // Basic form with only one field and CP authentication

@@ -5,6 +5,8 @@ import { get } from 'lodash'
 import AdminForbiddenErrorPage from '~pages/AdminForbiddenError'
 import NotFoundErrorPage from '~pages/NotFoundError'
 
+import { StorageResponsesProvider } from '../responses/ResponsesPage/storage/StorageResponsesProvider'
+
 import AdminFormNavbar from './components/AdminFormNavbar'
 import { useAdminForm } from './queries'
 
@@ -27,7 +29,9 @@ export const AdminFormLayout = (): JSX.Element => {
   return (
     <Flex flexDir="column" height="100vh" overflow="hidden" pos="relative">
       <AdminFormNavbar />
-      <Outlet />
+      <StorageResponsesProvider>
+        <Outlet />
+      </StorageResponsesProvider>
     </Flex>
   )
 }

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { BroadcastChannel } from 'broadcast-channel'
 
 import { useHasChanged } from '~hooks/useHasChanged'
@@ -16,23 +16,32 @@ type SecretKeyBroadcastMessage =
       secretKey: string
     }
 
-// BroadcastChannel will only broadcast the message to scripts from the same origin
-// (i.e. https://form.gov.sg in practice) so all data should be controlled by scripts
-// originating from FormSG. This does not store any data in browser-based storage
-// (e.g. cookies or localStorage) so secrets would not be retained past the user closing
-// all Form tabs containing the form.
-const secretKeyChannel = new BroadcastChannel<SecretKeyBroadcastMessage>(
-  SECRETKEY_BROADCAST_KEY,
-)
-
 export const useSecretKey = (formId: string) => {
   const [secretKey, setSecretKey] = useState<string>()
   const hasSecretKeyChanged = useHasChanged(secretKey)
 
+  // BroadcastChannel will only broadcast the message to scripts from the same origin
+  // (i.e. https://form.gov.sg in practice) so all data should be controlled by scripts
+  // originating from FormSG. This does not store any data in browser-based storage
+  // (e.g. cookies or localStorage) so secrets would not be retained past the user closing
+  // all Form tabs containing the form.
+  const channelRef = useRef<BroadcastChannel<SecretKeyBroadcastMessage>>()
+
+  useEffect(() => {
+    const secretKeyChannel = new BroadcastChannel<SecretKeyBroadcastMessage>(
+      SECRETKEY_BROADCAST_KEY,
+    )
+    channelRef.current = secretKeyChannel
+
+    return () => {
+      secretKeyChannel.close()
+    }
+  }, [])
+
   // Request secret key on mount.
   useEffect(() => {
-    if (secretKeyChannel.isClosed) return
-    secretKeyChannel.postMessage({
+    if (channelRef.current?.isClosed) return
+    channelRef.current?.postMessage({
       formId,
       action: 'requestKey',
     })
@@ -40,8 +49,8 @@ export const useSecretKey = (formId: string) => {
 
   // Broadcast when key changes.
   useEffect(() => {
-    if (hasSecretKeyChanged && secretKey && !secretKeyChannel.isClosed) {
-      secretKeyChannel.postMessage({
+    if (hasSecretKeyChanged && secretKey && !channelRef.current?.isClosed) {
+      channelRef.current?.postMessage({
         formId,
         action: 'broadcastKey',
         secretKey,
@@ -51,22 +60,24 @@ export const useSecretKey = (formId: string) => {
 
   // Message handling.
   useEffect(() => {
-    secretKeyChannel.onmessage = (e) => {
-      if (secretKeyChannel.isClosed) return
-      switch (e.action) {
-        case 'requestKey':
-          if (secretKey && e.formId === formId) {
-            secretKeyChannel.postMessage({
-              formId,
-              action: 'broadcastKey',
-              secretKey,
-            })
-          }
-          break
-        case 'broadcastKey':
-          if (!secretKey && formId === e.formId) {
-            setSecretKey(e.secretKey)
-          }
+    if (channelRef.current) {
+      channelRef.current.onmessage = (e) => {
+        if (channelRef.current?.isClosed) return
+        switch (e.action) {
+          case 'requestKey':
+            if (secretKey && e.formId === formId) {
+              channelRef.current?.postMessage({
+                formId,
+                action: 'broadcastKey',
+                secretKey,
+              })
+            }
+            break
+          case 'broadcastKey':
+            if (!secretKey && formId === e.formId) {
+              setSecretKey(e.secretKey)
+            }
+        }
       }
     }
   }, [secretKey, formId])

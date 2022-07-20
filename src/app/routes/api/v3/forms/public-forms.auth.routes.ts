@@ -36,6 +36,7 @@ PublicFormsAuthRouter.route('/auth/:authType/logout').get(
 /**
  * Validates a form's eServiceId through parsing the returned html of the spcp login page
  * @route /:formId/auth/validate
+ * @deprecated with transition to SP OIDC because NDI no longer returns error page for invalid eservice ID
  *
  * @returns 200 with eserviceId validation result
  * @returns 400 when there is an error on the authType of the form

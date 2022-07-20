@@ -40,6 +40,13 @@ export const MOCK_SERVICE_PARAMS: ISpcpMyInfo = {
   myInfoCertPath: 'myInfoCertPath',
   myInfoClientId: 'myInfoClientId',
   myInfoClientSecret: 'myInfoClientSecret',
+  spOidcNdiDiscoveryEndpoint: 'spOidcNdiDiscoveryEndpoint',
+  spOidcNdiJwksEndpoint: 'spOidcNdiJwksEndpoint',
+  spOidcRpClientId: 'spOidcRpClientId',
+  spOidcRpRedirectUrl: 'spOidcRpRedirectUrl',
+  spOidcRpJwksPublicPath: 'tests/certs/test_rp_public_jwks.json',
+  spOidcRpJwksSecretPath: 'tests/certs/test_rp_secret_jwks.json',
+  cpOidcRpJwksPublicPath: 'tests/certs/test_rp_public_jwks.json',
 }
 
 export const MOCK_ESRVCID = 'eServiceId'
@@ -162,3 +169,5 @@ export const MOCK_ENCODED_QUERY =
   'NjFhOWJiNDhmZmNhMjIwMDRhMzA3OTE1PWJsYWhibGFoMTIzJjYxYTliYjUzZmZjYTIyMDA0YTMwNzkyMT1ibGFoYmxhaDQ1Ng=='
 export const MOCK_DECODED_QUERY =
   '?61a9bb48ffca22004a307915=blahblah123&61a9bb53ffca22004a307921=blahblah456'
+
+export const MOCK_SP_OIDC_AUTHORISATION_CODE = 'abcdefg'

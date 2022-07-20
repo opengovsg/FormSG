@@ -28,6 +28,9 @@ const MockAxios = mocked(axios, true)
 jest.mock('@opengovsg/spcp-auth-client')
 const MockAuthClient = mocked(SPCPAuthClient, true)
 
+// Avoid async refresh calls
+jest.mock('src/app/modules/spcp/sp.oidc.client.ts')
+
 jest.mock('@opengovsg/myinfo-gov-client', () => ({
   MyInfoGovClient: jest.fn().mockReturnValue({
     createRedirectURL: jest.fn(),
