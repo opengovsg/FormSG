@@ -1,4 +1,4 @@
-import { celebrate, Segments } from 'celebrate'
+import { celebrate, Joi, Segments } from 'celebrate'
 import { AuthedSessionData } from 'express-session'
 import { StatusCodes } from 'http-status-codes'
 import { ErrorDto } from 'shared/types'
@@ -14,7 +14,9 @@ const logger = createLoggerWithLabel(module)
 
 // Validators
 const createWorkspaceValidator = celebrate({
-  [Segments.BODY]: {},
+  [Segments.BODY]: {
+    title: Joi.string().min(4).max(200).required(),
+  },
 })
 
 const updateWorkspaceTitleValidator = celebrate({
@@ -57,22 +59,33 @@ export const getWorkspaces: ControllerHandler<
  * @security session
  *
  * @returns 200 with newly created workspace
- * @returns 409 when a database conflict error occurs
- * @returns 422 when user of given id cannnot be found in the database
+ * @returns 400 when workspace title is invalid
  * @returns 500 when database error occurs
  */
-const handleCreateWorkspace: ControllerHandler<
+export const handleCreateWorkspace: ControllerHandler<
   unknown,
-  any | ErrorDto,
-  { workspace: any }
+  WorkspaceDto | ErrorDto,
+  { title: string }
 > = async (req, res) => {
-  const { workspace } = req.body
+  const { title } = req.body
+  const userId = (req.session as AuthedSessionData).user._id
 
-  return WorkspaceService.createWorkspace('', workspace)
+  return WorkspaceService.createWorkspace(userId, title)
     .map((workspace) => res.status(StatusCodes.OK).json(workspace))
-    .mapErr((err) =>
-      res.status(StatusCodes.BAD_REQUEST).json({ message: err.message }),
-    )
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error creating workspace',
+        meta: {
+          action: 'handleCreateWorkspace',
+          userId,
+          title,
+        },
+        error,
+      })
+
+      const { statusCode, errorMessage } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
 }
 
 export const createWorkspace = [
