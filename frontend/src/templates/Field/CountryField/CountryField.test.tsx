@@ -85,15 +85,14 @@ describe('optional field', () => {
     // Arrange
     render(<ValidationOptional />)
 
-    const dropdownOptions = Object.values(Country)
-    const expectedOption = dropdownOptions[1]
+    const expectedOption = 'SINGAPORE'
     const submitButton = screen.getByRole('button', { name: /submit/i })
     const input = screen.getByRole('textbox') as HTMLInputElement
     // Act
     userEvent.click(input)
     // Type the middle few characters of the option; dropdown should match properly,
     // then select the option.
-    userEvent.type(input, `${expectedOption.slice(2, 6)}{arrowdown}{enter}`)
+    userEvent.type(input, `ingapor{arrowdown}{enter}`)
     // Act required due to react-hook-form usage.
     await act(async () => userEvent.click(submitButton))
 
