@@ -32,8 +32,7 @@ export const CanceledScreen = ({
         </Wrap>
       </ModalHeader>
       <ModalBody whiteSpace="pre-line" color="secondary.500">
-        Some attachments have been downloaded. Download of responses has been
-        canceled.
+        Your responses and attachments have not been downloaded successfully.
       </ModalBody>
       <ModalFooter>
         <Button isFullWidth={isMobile} onClick={onClose}>
