@@ -109,5 +109,37 @@ describe('Workspace Model', () => {
         mongoose.Error.ValidationError,
       )
     })
+
+    describe('getWorkspaces', () => {
+      it('should return empty array when user has no workspaces', async () => {
+        const mockUserId = new ObjectId()
+        const actual = await Workspace.getWorkspaces(mockUserId)
+
+        expect(actual).toEqual([])
+      })
+
+      it('should return array of workspaces belonging to user', async () => {
+        const mockUserId = FORM_ADMIN_USER._id
+        const actual = await Workspace.getWorkspaces(mockUserId)
+
+        expect(actual.length).toEqual(1)
+      })
+    })
+
+    describe('createWorkspace', () => {
+      it('should return created workspace upon successful workspace creation', async () => {
+        const mockUserId = FORM_ADMIN_USER._id
+        const mockWorkspaceTitle = 'Workspace'
+
+        const actual = await Workspace.createWorkspace(
+          mockWorkspaceTitle,
+          mockUserId,
+        )
+
+        expect(actual.title).toEqual(mockWorkspaceTitle)
+        expect(actual.formIds.length).toEqual(0)
+        expect(actual.admin).toEqual(mockUserId)
+      })
+    })
   })
 })
