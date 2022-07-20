@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import { Type } from 'aws-sdk/clients/cloudformation'
 import { ObjectId } from 'bson-ext'
 import { cloneDeep, map, merge, omit, orderBy, pick, range } from 'lodash'
 import mongoose, { Types } from 'mongoose'
