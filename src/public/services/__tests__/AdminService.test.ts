@@ -2,7 +2,7 @@
 import MockAxios from 'jest-mock-axios'
 import { UiCookieValues } from 'shared/types'
 
-import { adminChooseEnvironment } from '../AdminService'
+import { ADMIN_ENDPOINT, adminChooseEnvironment } from '../AdminService'
 
 jest.mock('axios', () => MockAxios)
 
@@ -11,15 +11,18 @@ describe('AdminService', () => {
     const MOCK_UI = UiCookieValues.React
     const MOCK_RESPONSE = UiCookieValues.React
 
-    it('should return environment name if GET request succeeds', async () => {
+    it('should call the api correctly', async () => {
+      //Arrange
+      MockAxios.get.mockResolvedValueOnce({ data: MOCK_RESPONSE })
+
       // Act
-      const actual = adminChooseEnvironment(MOCK_UI)
+      const actual = await adminChooseEnvironment(MOCK_UI)
 
       // Assert
-      await expect(actual).resolves.toEqual(MOCK_RESPONSE)
       expect(MockAxios.get).toHaveBeenCalledWith(
-        `/api/v3/admin/environment/${MOCK_UI}`,
+        `${ADMIN_ENDPOINT}/environment/${MOCK_UI}`,
       )
+      expect(actual).toEqual(MOCK_RESPONSE)
     })
   })
 })
