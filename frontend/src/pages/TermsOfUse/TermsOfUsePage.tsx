@@ -22,7 +22,7 @@ interface listItemMarkerProps {
   isNumericMarker?: boolean
 }
 
-const SectionListItem: FC<ListItemProps & listItemMarkerProps> = ({
+const SectionListItem: FC<ListItemProps> = ({
   children,
   listStyleType = 'decimal',
 }) => (
@@ -31,18 +31,25 @@ const SectionListItem: FC<ListItemProps & listItemMarkerProps> = ({
   </ListItem>
 )
 
-const SubSectionOrderedList: FC<ListProps> = ({ children, ...props }) => (
+export const SubSectionOrderedList: FC<ListProps> = ({
+  children,
+  ...props
+}) => (
   <OrderedList spacing="1.5rem" {...props} style={{ counterReset: 'section' }}>
     {children}
   </OrderedList>
 )
 
-const SubSubSectionOrderedList: FC<ListProps> = ({ children, ...props }) => (
+export const SubSubSectionOrderedList: FC<ListProps> = ({
+  children,
+  ...props
+}) => (
   <SubSectionOrderedList marginInlineStart="1.5rem" {...props}>
     {children}
   </SubSectionOrderedList>
 )
-const SubSectionListItem: FC<ListItemProps & listItemMarkerProps> = ({
+
+export const SubSectionListItem: FC<ListItemProps & listItemMarkerProps> = ({
   children,
   prependSequenceMarker,
   isNumericMarker,
