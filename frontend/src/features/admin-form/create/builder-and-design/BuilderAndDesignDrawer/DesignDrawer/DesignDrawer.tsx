@@ -70,8 +70,6 @@ import { FormFieldDrawerActions } from '../EditFieldDrawer/edit-fieldtype/common
 import { UploadImageInput } from '../EditFieldDrawer/edit-fieldtype/EditImage/UploadImageInput'
 
 export const DesignDrawer = (): JSX.Element | null => {
-  const { data: form } = useCreateTabForm()
-
   const isMobile = useIsMobile()
   const toast = useToast({ status: 'danger' })
   const { data: form } = useCreateTabForm()
@@ -83,7 +81,7 @@ export const DesignDrawer = (): JSX.Element | null => {
   const { handleClose } = useCreatePageSidebar()
 
   const [existingCustomLogoFetched, setExistingCustomLogoFetched] =
-    useState<boolean>(startPage.logo.state !== FormLogoState.Custom)
+    useState<boolean>(form?.startPage.logo.state !== FormLogoState.Custom)
 
   const isLoading = useMemo(
     () => startPageMutation.isLoading || !existingCustomLogoFetched,
@@ -118,7 +116,7 @@ export const DesignDrawer = (): JSX.Element | null => {
     setError,
   } = useForm<FormStartPageInput>({
     mode: 'onBlur',
-    defaultValues: { ...startPage, customLogoFile: {} },
+    defaultValues: { ...form?.startPage, customLogoFile: {} },
   })
 
   // On mount, fetch custom logo file to display as part of attachment field.
@@ -137,10 +135,13 @@ export const DesignDrawer = (): JSX.Element | null => {
 
   // Load existing start page and custom logo into form when user opens drawer
   useEffect(() => {
-    setStartPageData({ ...startPage, customLogoFile: {} } as FormStartPageInput)
-    if (startPage.logo.state === FormLogoState.Custom) {
-      setCustomLogoFileOnMount(startPage.logo)
-      setCustomLogoMeta(startPage.logo)
+    setStartPageData({
+      ...form?.startPage,
+      customLogoFile: {},
+    } as FormStartPageInput)
+    if (form?.startPage.logo.state === FormLogoState.Custom) {
+      setCustomLogoFileOnMount(form?.startPage.logo)
+      setCustomLogoMeta(form?.startPage.logo)
     }
     return () => resetDesignStore()
   }, [])

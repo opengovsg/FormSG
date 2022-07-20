@@ -6,8 +6,8 @@ import { FormAuthType, FormLogoState, FormStartPage } from '~shared/types'
 import { useEnv } from '~features/env/queries'
 import { FormBannerLogo } from '~features/public-form/components/FormStartPage/FormBannerLogo'
 import { FormHeader } from '~features/public-form/components/FormStartPage/FormHeader'
-import { getFormBannerLogoProps } from '~features/public-form/components/FormStartPage/useFormBannerLogo'
-import { getFormHeaderDesignProps } from '~features/public-form/components/FormStartPage/useFormHeader'
+import { useFormBannerLogo } from '~features/public-form/components/FormStartPage/useFormBannerLogo'
+import { useFormHeader } from '~features/public-form/components/FormStartPage/useFormHeader'
 
 import { useCreateTabForm } from '../useCreateTabForm'
 import {
@@ -25,7 +25,6 @@ export const StartPageView = () => {
   }))
 
   // Color theme options and other design stuff, identical to public form
-  const { titleColor, titleBg, estTimeString } = useFormHeader(startPage)
   const [showLogo, setShowLogo] = useState<boolean>(false)
 
   // Transform the FormStartPageInput into a FormStartPage
@@ -63,20 +62,12 @@ export const StartPageView = () => {
     return form?.startPage
   }, [form?.startPage, startPageFromStore])
 
-  const { hasLogo, logoImgSrc, logoImgAlt } = useMemo(
-    () =>
-      getFormBannerLogoProps({
-        logoBucketUrl,
-        logo: startPage?.logo,
-        agency: form?.admin.agency,
-      }),
-    [logoBucketUrl, startPage?.logo, form?.admin.agency],
-  )
-
-  const { titleColor, titleBg, estTimeString } = useMemo(
-    () => getFormHeaderDesignProps(startPage),
-    [startPage],
-  )
+  const { hasLogo, logoImgSrc, logoImgAlt } = useFormBannerLogo({
+    logoBucketUrl,
+    logo: startPage?.logo,
+    agency: form?.admin.agency,
+  })
+  const { titleColor, titleBg, estTimeString } = useFormHeader(startPage)
 
   return (
     <>
