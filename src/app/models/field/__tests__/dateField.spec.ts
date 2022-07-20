@@ -1,6 +1,6 @@
 import merge from 'lodash/merge'
-import { Model, Schema } from 'mongoose'
-import { DateFieldBase, FormResponseMode } from 'shared/types'
+import mongoose, { Model, Schema } from 'mongoose'
+import { DateFieldBase, DaysOfTheWeek, FormResponseMode } from 'shared/types'
 
 import { IDateFieldSchema } from 'src/types'
 
@@ -32,7 +32,7 @@ describe('models.fields.dateField', () => {
   beforeEach(async () => await dbHandler.clearDatabase())
   afterAll(async () => await dbHandler.closeDatabase())
 
-  it('should set default empty array for invalid days of the week when date field does not specify', async () => {
+  it('should set default empty array for invalidDaysOfTheWeek when date field does not specify', async () => {
     // Arrange
     const mockDateField = {
       dateValidation: {
@@ -63,9 +63,13 @@ describe('models.fields.dateField', () => {
     expect(actual.field.toObject()).toEqual(expected)
   })
 
-  it('should set expected array for invalid days of the week when date field specifies', async () => {
+  it('should set expected array for invalidDaysOfTheWeek when date field specifies', async () => {
     // Arrange
-    const mockInvalidDaysOfTheWeek = [1, 2, 3]
+    const mockInvalidDaysOfTheWeek = [
+      DaysOfTheWeek.Monday,
+      DaysOfTheWeek.Tuesday,
+      DaysOfTheWeek.Wednesday,
+    ]
     const mockDateField = {
       dateValidation: {
         selectedDateValidation: null,
@@ -94,5 +98,25 @@ describe('models.fields.dateField', () => {
       _id: expect.anything(),
     })
     expect(actual.field.toObject()).toEqual(expected)
+  })
+
+  it('should set throw an error when invalid values are added to invalidDaysOfTheWeek attribute', async () => {
+    // Arrange
+    const mockInvalidDaysOfTheWeek = [10000]
+    const mockDateField = {
+      dateValidation: {
+        selectedDateValidation: null,
+        customMaxDate: null,
+        customMinDate: null,
+      },
+      invalidDaysOfTheWeek: mockInvalidDaysOfTheWeek,
+    }
+
+    await expect(
+      MockParent.create({
+        responseMode: FormResponseMode.Encrypt,
+        field: mockDateField,
+      }),
+    ).rejects.toThrowError(mongoose.Error.ValidationError)
   })
 })
