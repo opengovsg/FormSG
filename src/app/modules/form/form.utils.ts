@@ -149,3 +149,10 @@ export const extractFormLinkView = <T extends IFormDocument>(
     link: `${appUrl}/${_id}`,
   }
 }
+
+/**
+ * Regex to to detect invalid-encoded utf-8 characters in stringified form field input
+ * Matches any sequence which starts with a non-backslash, an odd number of backslashes, followed by unicode escape sequence
+ * See https://mathiasbynens.be/notes/javascript-escapes for regex on unicode escape sequences
+ */
+export const UNICODE_ESCAPED_REGEX = /[^\\](\\\\)*\\u[0-9a-fA-F]{4}/

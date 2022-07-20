@@ -150,6 +150,7 @@ require('./modules/core/components/avatar-dropdown.client.component')
 require('./modules/core/components/banner.client.component.js')
 require('./modules/core/components/sg-govt-banner.client.component.js')
 require('./modules/core/components/footer.client.component.js')
+require('./modules/core/components/toolset-dropdown.client.component.js')
 
 /**
  * Forms module
@@ -325,6 +326,10 @@ app.run([
     $templateCache.put(
       'modules/core/componentViews/footer.html',
       require('./modules/core/componentViews/footer.html'),
+    )
+    $templateCache.put(
+      'modules/core/componentViews/toolset-dropdown.html',
+      require('./modules/core/componentViews/toolset-dropdown.html'),
     )
 
     // Core views
