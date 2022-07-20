@@ -23,6 +23,9 @@ const signInPage = {
 // Form list dashboard and create form modal
 const formList = {
   createFormBtn: Selector('#list-form #create-new, #list-form #welcome-btn'),
+  reactSwitchBannerLink: Selector(
+    'react-switch-banner #react-switch-banner-link',
+  ),
   welcomeMessage: Selector('#list-form #welcome'),
   avatarDropdown: Selector('.navbar__avatar'),
   logOutBtn: Selector('.navbar__dropdown__logout'),

@@ -1229,6 +1229,16 @@ const verifySubmissionDisabled = async (
   await expectFormDisabled(browser, disabledMessage)
 }
 
+/** Clicks the switch to react button and verifies that the page reloads
+ * @param {Object} t Testcafe browser
+ * @param {string} email Email to log in
+ */
+async function clickSwitchToReact(t) {
+  await t
+    .click(formList.reactSwitchBannerLink)
+    .expect(formList.window.reload(true))
+}
+
 module.exports = {
   mailClient,
   enterEmail,
@@ -1266,4 +1276,5 @@ module.exports = {
   verifySubmissionDisabled,
   getDownloadsFolder,
   getFeatureState,
+  clickSwitchToReact,
 }
