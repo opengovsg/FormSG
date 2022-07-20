@@ -2,15 +2,9 @@ import { Mongoose, Schema } from 'mongoose'
 
 import { IWorkspaceModel, IWorkspaceSchema } from '../../types'
 
-import getFormModel from './form.server.model'
-import getUserModel from './user.server.model'
-
 export const WORKSPACE_SCHEMA_ID = 'Workspace'
 
 const compileWorkspaceModel = (db: Mongoose): IWorkspaceModel => {
-  const Form = getFormModel(db)
-  const User = getUserModel(db)
-
   const WorkspaceSchema = new Schema<IWorkspaceSchema, IWorkspaceModel>(
     {
       title: {
@@ -36,28 +30,10 @@ const compileWorkspaceModel = (db: Mongoose): IWorkspaceModel => {
         type: [Schema.Types.ObjectId],
         validate: {
           async validator(this: IWorkspaceSchema) {
-            const user = await User.findById(this.admin)
-            if (!user) return false
+            const areFormIdsUnique =
+              new Set(this.formIds).size === this.formIds.length
 
-            for (const formId of this.formIds) {
-              const form = await Form.findById(formId)
-              if (!form) return false
-
-              const isUserFormAdmin = form.admin.equals(this.admin)
-              const isUserFormCollaborator =
-                form?.permissionList?.find(
-                  (permission) => permission.email === user.email,
-                ) != undefined
-
-              const doesUserHaveFormAccess =
-                isUserFormAdmin || isUserFormCollaborator
-              const isFormIdUnique = this.formIds.includes(formId)
-              const isFormIdValid = doesUserHaveFormAccess && isFormIdUnique
-
-              if (!isFormIdValid) return false
-            }
-
-            return true
+            return areFormIdsUnique
           },
         },
         message: "Failed to update workspace document's formIds",
