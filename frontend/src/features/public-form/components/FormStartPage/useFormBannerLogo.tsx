@@ -1,35 +1,45 @@
 import { useMemo } from 'react'
 
-import { AdminFormDto, PublicFormDto } from '~shared/types'
-import { FormLogoState } from '~shared/types/form/form_logo'
+import { AgencyBase } from '~shared/types'
+import { FormLogo, FormLogoState } from '~shared/types/form/form_logo'
 
-import { useEnv } from '~features/env/queries'
+interface UseFormBannerLogoInputs {
+  logoBucketUrl?: string
+  logo?: FormLogo
+  agency?: AgencyBase
+}
 
-export const useFormBannerLogo = (form?: AdminFormDto | PublicFormDto) => {
-  const { data: { logoBucketUrl } = {} } = useEnv(
-    form?.startPage.logo.state === FormLogoState.Custom,
-  )
-
+export const useFormBannerLogo = ({
+  logoBucketUrl,
+  logo,
+  agency,
+}: UseFormBannerLogoInputs) => {
   const logoImgSrc = useMemo(() => {
-    if (!form) return undefined
-    const formLogo = form?.startPage.logo
-    switch (formLogo.state) {
+    if (!logo) return undefined
+    switch (logo.state) {
       case FormLogoState.None:
         return ''
       case FormLogoState.Default:
-        return form.admin.agency.logo
+        return agency?.logo
       case FormLogoState.Custom:
-        return logoBucketUrl ? `${logoBucketUrl}/${formLogo.fileId}` : undefined
+        return logoBucketUrl ? `${logoBucketUrl}/${logo.fileId}` : undefined
     }
-  }, [form, logoBucketUrl])
+  }, [agency?.logo, logo, logoBucketUrl])
 
-  const logoImgAlt = useMemo(
-    () => (form ? `Logo for ${form.admin.agency.fullName}` : undefined),
-    [form],
-  )
+  const logoImgAlt = useMemo(() => {
+    if (!logo) return undefined
+    switch (logo.state) {
+      case FormLogoState.None:
+        return undefined
+      case FormLogoState.Default:
+        return agency ? `Logo for ${agency.fullName}` : undefined
+      case FormLogoState.Custom:
+        return `Custom Logo`
+    }
+  }, [agency, logo])
 
   return {
-    hasLogo: form?.startPage.logo.state !== FormLogoState.None,
+    hasLogo: logo?.state !== FormLogoState.None,
     logoImgSrc,
     logoImgAlt,
   }
