@@ -12,18 +12,14 @@ describe('AdminService', () => {
     const MOCK_RESPONSE = UiCookieValues.React
 
     it('should return environment name if GET request succeeds', async () => {
-      // Arrange
-      const expectedResponse = UiCookieValues.React
-
       // Act
       const actual = adminChooseEnvironment(MOCK_UI)
-      MockAxios.mockResponse({ data: MOCK_RESPONSE })
 
       // Assert
       await expect(actual).resolves.toEqual(MOCK_RESPONSE)
       expect(MockAxios.get).toHaveBeenCalledWith(
         `/api/v3/admin/environment/${MOCK_UI}`,
-        expectedResponse,
+        MOCK_RESPONSE,
       )
     })
   })
