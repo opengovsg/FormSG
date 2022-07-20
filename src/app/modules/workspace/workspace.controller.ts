@@ -13,14 +13,10 @@ import { mapRouteError } from './workspace.utils'
 const logger = createLoggerWithLabel(module)
 
 // Validators
-const createWorkspaceValidator = celebrate({
+const workspaceTitleValidator = celebrate({
   [Segments.BODY]: {
     title: Joi.string().min(4).max(50).required(),
   },
-})
-
-const updateWorkspaceTitleValidator = celebrate({
-  [Segments.BODY]: {},
 })
 
 /**
@@ -90,7 +86,7 @@ export const handleCreateWorkspace: ControllerHandler<
 }
 
 export const createWorkspace = [
-  createWorkspaceValidator,
+  workspaceTitleValidator,
   handleCreateWorkspace,
 ] as ControllerHandler[]
 
@@ -100,24 +96,37 @@ export const createWorkspace = [
  *
  * @returns 200 with updated workspace
  * @returns 404 when workspace cannot be found
- * @returns 422 when user of given id cannnot be found in the database
  * @returns 500 when database error occurs
  */
-const handleUpdateWorkspaceTitle: ControllerHandler<
-  unknown,
-  any | ErrorDto,
+export const handleUpdateWorkspaceTitle: ControllerHandler<
+  { workspaceId: string },
+  WorkspaceDto | ErrorDto,
   { title: string }
 > = async (req, res) => {
+  const { workspaceId } = req.params
   const { title } = req.body
-  return WorkspaceService.updateWorkspaceTitle('', title)
+  const userId = (req.session as AuthedSessionData).user._id
+
+  return WorkspaceService.updateWorkspaceTitle(workspaceId, title, userId)
     .map((workspace) => res.status(StatusCodes.OK).json(workspace))
-    .mapErr((err) =>
-      res.status(StatusCodes.BAD_REQUEST).json({ message: err.message }),
-    )
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error updating workspace title',
+        meta: {
+          action: 'handleUpdateWorkspaceTitle',
+          title,
+          workspaceId,
+        },
+        error,
+      })
+
+      const { statusCode, errorMessage } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
 }
 
 export const updateWorkspaceTitle = [
-  updateWorkspaceTitleValidator,
+  workspaceTitleValidator,
   handleUpdateWorkspaceTitle,
 ] as ControllerHandler[]
 

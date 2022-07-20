@@ -10,6 +10,8 @@ import {
 } from '../core/core.errors'
 import { ErrorResponseData } from '../core/core.types'
 
+import { WorkspaceNotFoundError } from './workspace.errors'
+
 const logger = createLoggerWithLabel(module)
 
 export const mapRouteError = (
@@ -38,6 +40,11 @@ export const mapRouteError = (
       return {
         statusCode: StatusCodes.REQUEST_TOO_LONG,
         errorMessage: errorMessage,
+      }
+    case WorkspaceNotFoundError:
+      return {
+        statusCode: StatusCodes.NOT_FOUND,
+        errorMessage: coreErrorMessage ?? error.message,
       }
     default:
       logger.error({

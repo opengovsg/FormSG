@@ -1,11 +1,13 @@
 import mongoose from 'mongoose'
-import { okAsync, ResultAsync } from 'neverthrow'
+import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 import { WorkspaceDto } from 'shared/types/workspace'
 
 import { createLoggerWithLabel } from '../../config/logger'
 import { getWorkspaceModel } from '../../models/workspace.server.model'
 import { transformMongoError } from '../../utils/handle-mongo-error'
 import { DatabaseError, DatabaseValidationError } from '../core/core.errors'
+
+import { WorkspaceNotFoundError } from './workspace.errors'
 
 const logger = createLoggerWithLabel(module)
 const WorkspaceModel = getWorkspaceModel(mongoose)
@@ -53,8 +55,27 @@ export const createWorkspace = (
 export const updateWorkspaceTitle = (
   workspaceId: string,
   title: string,
-): ResultAsync<any, DatabaseError> => {
-  return okAsync({ title: title, workspaceId: workspaceId })
+  userId: string,
+): ResultAsync<WorkspaceDto, DatabaseError | WorkspaceNotFoundError> => {
+  return ResultAsync.fromPromise(
+    WorkspaceModel.updateWorkspaceTitle(title, workspaceId, userId),
+    (error) => {
+      logger.error({
+        message: 'Database error when updating workspace title',
+        meta: {
+          action: 'updateWorkspaceTitle',
+          workspaceId,
+          title,
+        },
+        error,
+      })
+      return transformMongoError(error)
+    },
+  ).andThen((updatedWorkspace) =>
+    updatedWorkspace
+      ? okAsync(updatedWorkspace)
+      : errAsync(new WorkspaceNotFoundError()),
+  )
 }
 
 export const deleteWorkspace = (
