@@ -1,13 +1,14 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import mongoose from 'mongoose'
 import { FormId, UserId } from 'shared/types'
-import { WorkspaceDto } from 'shared/types/workspace'
+import { WorkspaceDto, WorkspaceId } from 'shared/types/workspace'
 
 import { getWorkspaceModel } from 'src/app/models/workspace.server.model'
 import * as WorkspaceService from 'src/app/modules/workspace/workspace.service'
 import { formatErrorRecoveryMessage } from 'src/app/utils/handle-mongo-error'
 
 import { DatabaseError, DatabaseValidationError } from '../../core/core.errors'
+import { WorkspaceNotFoundError } from '../workspace.errors'
 
 const WorkspaceModel = getWorkspaceModel(mongoose)
 
@@ -109,6 +110,97 @@ describe('workspace.service', () => {
       )
 
       expect(createSpy).toHaveBeenCalledWith(mockTitle, mockUserId)
+      expect(actual.isErr()).toEqual(true)
+      expect(actual._unsafeUnwrapErr()).toEqual(
+        new DatabaseError(formatErrorRecoveryMessage(mockErrorMessage)),
+      )
+    })
+  })
+
+  describe('updateWorkspaceTitle', () => {
+    const mockWorkspace = {
+      _id: 'workspaceId' as WorkspaceId,
+      admin: 'user' as UserId,
+      title: 'workspace1',
+      formIds: [] as FormId[],
+      count: 0,
+    }
+
+    it('should successfully update workspace title', async () => {
+      const updateSpy = jest
+        .spyOn(WorkspaceModel, 'updateWorkspaceTitle')
+        .mockResolvedValueOnce(mockWorkspace)
+      const actual = await WorkspaceService.updateWorkspaceTitle(
+        mockWorkspace._id,
+        mockWorkspace.title,
+        mockWorkspace.admin,
+      )
+
+      expect(updateSpy).toHaveBeenCalledWith(
+        mockWorkspace.title,
+        mockWorkspace._id,
+        mockWorkspace.admin,
+      )
+      expect(actual.isOk()).toEqual(true)
+      expect(actual._unsafeUnwrap()).toEqual(mockWorkspace)
+    })
+
+    it('should return DatabaseValidationError on invalid title whilst creating form', async () => {
+      const updateSpy = jest
+        .spyOn(WorkspaceModel, 'updateWorkspaceTitle')
+        // @ts-ignore
+        .mockRejectedValueOnce(new mongoose.Error.ValidationError())
+
+      const actual = await WorkspaceService.updateWorkspaceTitle(
+        mockWorkspace._id,
+        mockWorkspace.title,
+        mockWorkspace.admin,
+      )
+
+      expect(updateSpy).toHaveBeenCalledWith(
+        mockWorkspace.title,
+        mockWorkspace._id,
+        mockWorkspace.admin,
+      )
+      expect(actual._unsafeUnwrapErr()).toBeInstanceOf(DatabaseValidationError)
+    })
+
+    it('should return WorkspaceNotFoundError on invalid workspaceId', async () => {
+      const updateSpy = jest
+        .spyOn(WorkspaceModel, 'updateWorkspaceTitle')
+        .mockResolvedValueOnce(null)
+
+      const actual = await WorkspaceService.updateWorkspaceTitle(
+        mockWorkspace._id,
+        mockWorkspace.title,
+        mockWorkspace.admin,
+      )
+
+      expect(updateSpy).toHaveBeenCalledWith(
+        mockWorkspace.title,
+        mockWorkspace._id,
+        mockWorkspace.admin,
+      )
+      expect(actual._unsafeUnwrapErr()).toBeInstanceOf(WorkspaceNotFoundError)
+    })
+
+    it('should return DatabaseError when error occurs whilst creating workspace', async () => {
+      const mockErrorMessage = 'some error'
+
+      const updateSpy = jest
+        .spyOn(WorkspaceModel, 'updateWorkspaceTitle')
+        .mockRejectedValueOnce(new Error(mockErrorMessage))
+      const actual = await WorkspaceService.updateWorkspaceTitle(
+        mockWorkspace._id,
+        mockWorkspace.title,
+        mockWorkspace.admin,
+      )
+
+      expect(updateSpy).toHaveBeenCalledWith(
+        mockWorkspace.title,
+        mockWorkspace._id,
+        mockWorkspace.admin,
+      )
       expect(actual.isErr()).toEqual(true)
       expect(actual._unsafeUnwrapErr()).toEqual(
         new DatabaseError(formatErrorRecoveryMessage(mockErrorMessage)),

@@ -15,6 +15,8 @@ import { buildCelebrateError } from 'tests/unit/backend/helpers/celebrate'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 import { jsonParseStringify } from 'tests/unit/backend/helpers/serialize-data'
 
+import { WorkspaceNotFoundError } from '../workspace.errors'
+
 const WorkspaceModel = getWorkspaceModel(mongoose)
 
 const app = setupApp('/workspaces', WorkspacesRouter, {
@@ -53,7 +55,7 @@ describe('workspaces.routes', () => {
     const GET_WORKSPACES_ENDPOINT = '/workspaces'
 
     it('should return 200 with an empty array when a user has no workspaces', async () => {
-      const response = await request.get('/workspaces')
+      const response = await request.get(GET_WORKSPACES_ENDPOINT)
 
       expect(response.status).toEqual(200)
       expect(response.body).toEqual([])
@@ -121,7 +123,7 @@ describe('workspaces.routes', () => {
         title: 'validWorkspace',
       }
       const response = await request
-        .post('/workspaces')
+        .post(CREATE_WORKSPACE_ENDPOINT)
         .send(createWorkspaceParam)
       const expected = {
         title: createWorkspaceParam.title,
@@ -171,8 +173,95 @@ describe('workspaces.routes', () => {
         .spyOn(WorkspaceModel, 'createWorkspace')
         .mockRejectedValueOnce(new Error(mockErrorMessage))
       const response = await request
-        .post('/workspaces')
+        .post(CREATE_WORKSPACE_ENDPOINT)
         .send(createWorkspaceParam)
+
+      expect(response.status).toEqual(500)
+      expect(response.body).toEqual({
+        message: formatErrorRecoveryMessage(mockErrorMessage),
+      })
+    })
+  })
+
+  describe('PUT /workspaces/:workspaceId/title', () => {
+    const UPDATE_WORKSPACE_ENDPOINT = `/workspaces/${MOCK_WORKSPACE_ID}/title`
+
+    it('should return 200 with updated workspace on successful title update', async () => {
+      await WorkspaceModel.create(MOCK_WORKSPACE_FIELDS)
+
+      const updateWorkspaceParam = {
+        title: 'newTitle',
+      }
+      const response = await request
+        .put(UPDATE_WORKSPACE_ENDPOINT)
+        .send(updateWorkspaceParam)
+      const expected = {
+        title: updateWorkspaceParam.title,
+        admin: MOCK_USER_ID.toHexString(),
+        formIds: [],
+      }
+
+      expect(response.status).toEqual(200)
+      expect(response.body).toMatchObject(expected)
+    })
+
+    it('should return 400 when workspace title is invalid', async () => {
+      const updateInvalidWorkspaceParam = {
+        title: 'a',
+      }
+
+      const response = await request
+        .put(UPDATE_WORKSPACE_ENDPOINT)
+        .send(updateInvalidWorkspaceParam)
+
+      expect(response.status).toEqual(400)
+      expect(response.body).toEqual(
+        buildCelebrateError({
+          body: {
+            key: 'title',
+            message: '"title" length must be at least 4 characters long',
+          },
+        }),
+      )
+    })
+
+    it('should return 401 when user is not logged in', async () => {
+      await logoutSession(request)
+      const response = await request.put(UPDATE_WORKSPACE_ENDPOINT)
+
+      expect(response.status).toEqual(401)
+      expect(response.body).toEqual({ message: 'User is unauthorized.' })
+    })
+
+    it('should return 404 when workspace is not found', async () => {
+      const updateWorkspaceParam = {
+        title: 'validWorkspace',
+      }
+      const invalidWorkspaceId = new ObjectId().toHexString()
+      const response = await request
+        .put(`/workspaces/${invalidWorkspaceId}/title`)
+        .send(updateWorkspaceParam)
+
+      expect(response.status).toEqual(404)
+      expect(response.body).toEqual({
+        message: new WorkspaceNotFoundError().message,
+      })
+    })
+
+    it('should return 500 when database errors occur', async () => {
+      await WorkspaceModel.create(MOCK_WORKSPACE_FIELDS)
+
+      const updateWorkspaceParam = {
+        title: 'validWorkspace',
+      }
+      const mockErrorMessage = 'something went wrong'
+
+      jest
+        .spyOn(WorkspaceModel, 'updateWorkspaceTitle')
+        .mockRejectedValueOnce(new Error(mockErrorMessage))
+      const response = await request
+        .put(UPDATE_WORKSPACE_ENDPOINT)
+        .send(updateWorkspaceParam)
 
       expect(response.status).toEqual(500)
       expect(response.body).toEqual({
