@@ -16,9 +16,10 @@ import { getUser, MOCK_USER } from '~/mocks/msw/handlers/user'
 
 import {
   AdminFormCreatePageDecorator,
+  getMobileViewParameters,
+  getTabletViewParameters,
   LoggedInDecorator,
   ViewedFeatureTourDecorator,
-  viewports,
 } from '~utils/storybook'
 
 import { CreatePage } from '~features/admin-form/create/CreatePage'
@@ -68,66 +69,31 @@ DesktopAllFields.parameters = {
 }
 export const DesktopLoading = Template.bind({})
 DesktopLoading.parameters = {
-  msw: buildMswRoutes(
-    {
-      form_fields: MOCK_FORM_FIELDS_WITH_MYINFO,
-      authType: FormAuthType.MyInfo,
-      responseMode: FormResponseMode.Email,
-    },
-    'infinite',
-  ),
+  msw: buildMswRoutes({}, 'infinite'),
 }
 
 export const TabletEmpty = Template.bind({})
-TabletEmpty.parameters = {
-  viewport: {
-    defaultViewport: 'tablet',
-  },
-  chromatic: { viewports: [viewports.md] },
-}
+TabletEmpty.parameters = getTabletViewParameters()
 export const TabletAllFields = Template.bind({})
 TabletAllFields.parameters = {
-  viewport: {
-    defaultViewport: 'tablet',
-  },
-  chromatic: { viewports: [viewports.md] },
+  ...getTabletViewParameters(),
   msw: buildMswRoutes({ form_fields: MOCK_FORM_FIELDS_WITH_MYINFO }),
 }
 export const TabletLoading = Template.bind({})
 TabletLoading.parameters = {
-  viewport: {
-    defaultViewport: 'tablet',
-  },
-  chromatic: { viewports: [viewports.md] },
-  msw: buildMswRoutes(
-    { form_fields: MOCK_FORM_FIELDS_WITH_MYINFO },
-    'infinite',
-  ),
+  ...getTabletViewParameters(),
+  msw: buildMswRoutes({}, 'infinite'),
 }
 
 export const MobileEmpty = Template.bind({})
-MobileEmpty.parameters = {
-  viewport: {
-    defaultViewport: 'mobile1',
-  },
-  chromatic: { viewports: [viewports.xs] },
-}
+MobileEmpty.parameters = getMobileViewParameters()
 export const MobileAllFields = Template.bind({})
 MobileAllFields.parameters = {
-  viewport: {
-    defaultViewport: 'mobile1',
-  },
-  chromatic: { viewports: [viewports.xs] },
+  ...getMobileViewParameters(),
   msw: buildMswRoutes({ form_fields: MOCK_FORM_FIELDS_WITH_MYINFO }),
 }
 export const MobileLoading = Template.bind({})
 MobileLoading.parameters = {
-  viewport: {
-    defaultViewport: 'mobile1',
-  },
-  chromatic: { viewports: [viewports.xs] },
-  msw: buildMswRoutes(
-    { form_fields: MOCK_FORM_FIELDS_WITH_MYINFO },
-    'infinite',
-  ),
+  ...getMobileViewParameters(),
+  msw: buildMswRoutes({}, 'infinite'),
 }
