@@ -27,7 +27,7 @@ const AvatarMenuButton = (props: MenuButtonProps): JSX.Element => {
       px="0"
       iconSpacing="0.5rem"
       color="secondary.300"
-      chevronSize="24px"
+      chevronSize="1.5rem"
       _focus={{}}
       {...props}
     />
@@ -84,7 +84,7 @@ export const AvatarMenu = ({
     <Menu autoSelect={false} defaultIsOpen={defaultIsOpen}>
       {({ isOpen }) => (
         <>
-          <AvatarMenuButton role="group" isActive={isOpen}>
+          <AvatarMenuButton role="group" isActive={isOpen} isOpen={isOpen}>
             <Avatar
               name={name}
               sx={styles.avatar}
