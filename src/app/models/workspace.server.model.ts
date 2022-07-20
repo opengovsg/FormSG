@@ -1,6 +1,7 @@
 import { Mongoose, Schema } from 'mongoose'
+import { WorkspaceDto } from 'shared/types/workspace'
 
-import { IWorkspaceModel, IWorkspaceSchema } from '../../types'
+import { IUserSchema, IWorkspaceModel, IWorkspaceSchema } from '../../types'
 
 export const WORKSPACE_SCHEMA_ID = 'Workspace'
 
@@ -35,6 +36,16 @@ const compileWorkspaceModel = (db: Mongoose): IWorkspaceModel => {
   WorkspaceSchema.index({
     admin: 1,
   })
+
+  WorkspaceSchema.virtual('count').get(function (this: IWorkspaceSchema) {
+    return this.formIds.length
+  })
+
+  WorkspaceSchema.statics.getWorkspaces = async function (
+    admin: IUserSchema['_id'],
+  ): Promise<WorkspaceDto[]> {
+    return this.find({ admin: admin }).sort('title').exec()
+  }
 
   return db.model<IWorkspaceSchema, IWorkspaceModel>(
     WORKSPACE_SCHEMA_ID,

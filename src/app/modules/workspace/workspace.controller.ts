@@ -1,10 +1,16 @@
 import { celebrate, Segments } from 'celebrate'
+import { AuthedSessionData } from 'express-session'
 import { StatusCodes } from 'http-status-codes'
 import { ErrorDto } from 'shared/types'
+import { WorkspaceDto } from 'shared/types/workspace'
 
+import { createLoggerWithLabel } from '../../config/logger'
 import { ControllerHandler } from '../core/core.types'
 
 import * as WorkspaceService from './workspace.service'
+import { mapRouteError } from './workspace.utils'
+
+const logger = createLoggerWithLabel(module)
 
 // Validators
 const createWorkspaceValidator = celebrate({
@@ -25,13 +31,25 @@ const updateWorkspaceTitleValidator = celebrate({
  */
 export const getWorkspaces: ControllerHandler<
   unknown,
-  any[] | ErrorDto
+  WorkspaceDto[] | ErrorDto
 > = async (req, res) => {
-  return WorkspaceService.getWorkspaces('')
+  const userId = (req.session as AuthedSessionData).user._id
+
+  return WorkspaceService.getWorkspaces(userId)
     .map((workspaces) => res.status(StatusCodes.OK).json(workspaces))
-    .mapErr((err) =>
-      res.status(StatusCodes.BAD_REQUEST).json({ message: err.message }),
-    )
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error getting workspaces',
+        meta: {
+          action: 'getWorkspaces',
+          userId,
+        },
+        error,
+      })
+
+      const { statusCode, errorMessage } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
 }
 
 /**
