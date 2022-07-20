@@ -160,7 +160,9 @@ export const BasicFieldOption = forwardRef<BasicFieldOptionProps, 'button'>(
     )
 
     const handleClick = useCallback(() => {
-      if (!isDisabled) updateCreateState(newFieldMeta, numFields)
+      if (!isDisabled) {
+        updateCreateState(newFieldMeta, numFields)
+      }
     }, [newFieldMeta, numFields, updateCreateState, isDisabled])
 
     return (
