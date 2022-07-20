@@ -19,7 +19,6 @@ describe('AdminService', () => {
       await expect(actual).resolves.toEqual(MOCK_RESPONSE)
       expect(MockAxios.get).toHaveBeenCalledWith(
         `/api/v3/admin/environment/${MOCK_UI}`,
-        MOCK_RESPONSE,
       )
     })
   })
