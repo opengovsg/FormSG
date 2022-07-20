@@ -5,6 +5,7 @@ import { AnalyticsRouter } from './analytics'
 import { AuthRouter } from './auth'
 import { BillingsRouter } from './billings'
 import { ClientRouter } from './client'
+import { CorppassOidcRouter } from './corppass'
 import { PublicFormsRouter } from './forms'
 import { NotificationsRouter } from './notifications'
 import { SingpassOidcRouter } from './singpass'
@@ -21,3 +22,4 @@ V3Router.use('/billings', BillingsRouter)
 V3Router.use('/analytics', AnalyticsRouter)
 V3Router.use('/forms', PublicFormsRouter)
 V3Router.use('/singpass', SingpassOidcRouter)
+V3Router.use('/corppass', CorppassOidcRouter)

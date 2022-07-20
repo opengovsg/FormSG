@@ -132,7 +132,6 @@ describe('FileHandlerService', () => {
         fileId: mockFileId,
         fileMd5Hash: expect.any(String),
         fileType: mockUpload.type,
-        isNewClient: true,
       }
 
       const expectedFinalValue: FileHandlerService.UploadedFileData = {
