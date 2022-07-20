@@ -24,7 +24,7 @@ const getBadgePlacement = (size: ThemingProps['size']): SystemStyleObject => {
     // Update width and height calculation in the future if needed.
     default:
       return {
-        botton: '1px',
+        bottom: '1px',
         right: '1px',
         borderWidth: '1px',
         // 20% of container width + 1px border left right.
