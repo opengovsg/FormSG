@@ -1,15 +1,18 @@
+import { useMemo } from 'react'
 import {
+  Avatar,
+  AvatarBadge,
+  AvatarProps,
   Box,
   Icon,
   MenuDivider,
   MenuItemProps,
+  MenuProps,
   useMultiStyleConfig,
 } from '@chakra-ui/react'
 
 import { BxsUser } from '~/assets/icons/BxsUser'
 import Menu, { MenuButtonProps } from '~/components/Menu'
-
-import { Avatar } from '../../components/Avatar/Avatar'
 
 /**
  * MenuButton styled for avatar
@@ -36,13 +39,12 @@ const AvatarMenuButton = (props: MenuButtonProps): JSX.Element => {
  * @preconditions Must be a child of Menu component,
  */
 const AvatarMenuUsername = (props: MenuItemProps): JSX.Element => {
+  // Required here due to nested style provider from menu.
   const styles = useMultiStyleConfig('AvatarMenu', {})
-
-  const userIcon = <Icon as={BxsUser} sx={styles.usernameIcon} />
 
   return (
     <Box sx={styles.usernameItem} aria-hidden>
-      {userIcon}
+      <Icon as={BxsUser} sx={styles.usernameIcon} />
       {props.children}
     </Box>
   )
@@ -56,43 +58,43 @@ export const AvatarMenuDivider = (): JSX.Element => {
   return <MenuDivider aria-hidden borderColor="neutral.300" />
 }
 
-export type AvatarMenuProps = {
-  fullName?: string
-  userName?: string
+export interface AvatarMenuProps
+  extends Pick<MenuProps, 'defaultIsOpen' | 'children'>,
+    Pick<AvatarProps, 'name' | 'colorScheme'> {
+  /** Name to display in the username section of the menu */
+  menuUsername?: string
   hasNotification?: boolean
-  isOpen?: boolean
-  children?: JSX.Element
 }
 
 export const AvatarMenu = ({
-  fullName,
-  userName,
+  name,
+  colorScheme = 'primary',
+  menuUsername,
   hasNotification,
-  isOpen,
+  defaultIsOpen,
   children,
 }: AvatarMenuProps): JSX.Element => {
+  const styles = useMultiStyleConfig('AvatarMenu', { colorScheme })
+  const focusBoxShadow = useMemo(
+    () => `0 0 0 4px var(--chakra-colors-${colorScheme}-300)`,
+    [colorScheme],
+  )
+
   return (
-    <Menu {...(isOpen ? { isOpen } : {})} autoSelect={false}>
+    <Menu autoSelect={false} defaultIsOpen={defaultIsOpen}>
       {({ isOpen }) => (
         <>
           <AvatarMenuButton role="group" isActive={isOpen}>
             <Avatar
-              name={fullName}
-              hasNotification={hasNotification}
-              showBorder={isOpen}
-              _groupFocus={{
-                boxShadow: `0 0 0 4px var(--chakra-colors-primary-300)`,
-              }}
-              _groupHover={{
-                bg: `var(--chakra-colors-primary-600)`,
-              }}
-              _groupActive={{
-                bg: `var(--chakra-colors-primary-500)`,
-              }}
-            ></Avatar>
+              name={name}
+              sx={styles.avatar}
+              boxShadow={isOpen ? focusBoxShadow : undefined}
+            >
+              {hasNotification && <AvatarBadge />}
+            </Avatar>
           </AvatarMenuButton>
           <Menu.List marginTop="0.375rem">
-            <AvatarMenuUsername>{userName}</AvatarMenuUsername>
+            <AvatarMenuUsername>{menuUsername}</AvatarMenuUsername>
             <AvatarMenuDivider />
             {children}
           </Menu.List>
