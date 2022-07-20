@@ -34,11 +34,19 @@ export const BuilderAndDesignContent = ({
 
   return (
     <Flex flex={1} bg="neutral.200" overflow="auto">
-      {stateData.state === BuildFieldState.EditingEndPage ? (
-        <EndPageView />
-      ) : (
-        <FormBuilder placeholderProps={placeholderProps} />
-      )}
+      <EndPageView
+        display={
+          // Don't conditionally render EndPageView and FormBuilder because it
+          // is expensive and takes time.
+          stateData.state === BuildFieldState.EditingEndPage ? 'flex' : 'none'
+        }
+      />
+      <FormBuilder
+        placeholderProps={placeholderProps}
+        display={
+          stateData.state === BuildFieldState.EditingEndPage ? 'none' : 'flex'
+        }
+      />
     </Flex>
   )
 }

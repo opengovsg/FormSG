@@ -42,13 +42,9 @@ import { validateNumberInput } from '../../utils/validateNumberInput'
 import { CreatePageDrawerCloseButton } from '../CreatePageDrawerCloseButton'
 import { DrawerContentContainer } from '../EditFieldDrawer/edit-fieldtype/common/DrawerContentContainer'
 
-interface DesignDrawerInputProps {
-  startPage: FormStartPage
-}
+export const DesignDrawer = (): JSX.Element | null => {
+  const { data: form } = useCreateTabForm()
 
-const DesignDrawerInput = ({
-  startPage,
-}: DesignDrawerInputProps): JSX.Element => {
   const isMobile = useIsMobile()
   const { startPageMutation } = useMutateFormPage()
 
@@ -60,9 +56,9 @@ const DesignDrawerInput = ({
 
   // Load the start page into the store when use opens the drawer
   useEffect(() => {
-    setDesignState(startPage)
+    if (form) setDesignState(form.startPage)
     return () => resetDesignState()
-  }, [startPage, setDesignState, resetDesignState])
+  }, [form, setDesignState, resetDesignState])
 
   const {
     register,
@@ -71,7 +67,7 @@ const DesignDrawerInput = ({
     handleSubmit,
   } = useForm<FormStartPage>({
     mode: 'onBlur',
-    defaultValues: startPage,
+    defaultValues: form?.startPage,
   })
 
   // Save design functions
@@ -98,6 +94,8 @@ const DesignDrawerInput = ({
   const handleUpdateDesign = handleSubmit((startPage) =>
     startPageMutation.mutate(startPage),
   )
+
+  if (!form) return null
 
   return (
     <Tabs pos="relative" h="100%" display="flex" flexDir="column">
@@ -128,9 +126,7 @@ const DesignDrawerInput = ({
                 flex={1}
                 inputMode="numeric"
                 showSteppers={false}
-                onChange={validateNumberInput((v) =>
-                  v === '' ? onChange(undefined) : onChange(v),
-                )}
+                onChange={validateNumberInput(onChange)}
                 {...rest}
               />
             )}
@@ -167,9 +163,4 @@ const DesignDrawerInput = ({
       </DrawerContentContainer>
     </Tabs>
   )
-}
-
-export const DesignDrawer = (): JSX.Element | null => {
-  const { data: form } = useCreateTabForm()
-  return form ? <DesignDrawerInput startPage={form.startPage} /> : null
 }

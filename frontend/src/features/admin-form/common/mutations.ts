@@ -313,79 +313,7 @@ export const useMutateCollaborators = () => {
 export const useMutateFormPage = () => {
   const { formId } = useParams()
   if (!formId) throw new Error('No formId provided')
-
-  const queryClient = useQueryClient()
   const toast = useToast({ status: 'success', isClosable: true })
-
-  const updateStartPageFormData = useCallback(
-    (newData: StartPageUpdateDto) => {
-      queryClient.setQueryData(adminFormKeys.startPage(formId), newData)
-      // Only update adminForm if it already has prior data.
-      queryClient.setQueryData<AdminFormDto | undefined>(
-        adminFormKeys.id(formId),
-        (oldData) =>
-          oldData
-            ? {
-                ...oldData,
-                startPage: newData,
-              }
-            : undefined,
-      )
-    },
-    [formId, queryClient],
-  )
-
-  const updateEndPageFormData = useCallback(
-    (newData: EndPageUpdateDto) => {
-      queryClient.setQueryData(adminFormKeys.endPage(formId), newData)
-      // Only update adminForm if it already has prior data.
-      queryClient.setQueryData<AdminFormDto | undefined>(
-        adminFormKeys.id(formId),
-        (oldData) =>
-          oldData
-            ? {
-                ...oldData,
-                endPage: newData,
-              }
-            : undefined,
-      )
-    },
-    [formId, queryClient],
-  )
-
-  const handleStartPageSuccess = useCallback(
-    ({
-      newData,
-      toastDescription,
-    }: {
-      newData: StartPageUpdateDto
-      toastDescription: string
-    }) => {
-      toast.closeAll()
-      updateStartPageFormData(newData)
-      toast({
-        description: toastDescription,
-      })
-    },
-    [toast, updateStartPageFormData],
-  )
-
-  const handleEndPageSuccess = useCallback(
-    ({
-      newData,
-      toastDescription,
-    }: {
-      newData: EndPageUpdateDto
-      toastDescription: string
-    }) => {
-      toast.closeAll()
-      updateEndPageFormData(newData)
-      toast({
-        description: toastDescription,
-      })
-    },
-    [toast, updateEndPageFormData],
-  )
 
   const handleError = useCallback(
     (error: Error) => {
@@ -402,9 +330,9 @@ export const useMutateFormPage = () => {
     (startPage: StartPageUpdateDto) => updateFormStartPage(formId, startPage),
     {
       onSuccess: (newData) => {
-        handleStartPageSuccess({
-          newData,
-          toastDescription: 'Successfully updated form design',
+        toast.closeAll()
+        toast({
+          description: 'Successfully updated form design',
         })
       },
       onError: handleError,
@@ -415,9 +343,9 @@ export const useMutateFormPage = () => {
     (endPage: EndPageUpdateDto) => updateFormEndPage(formId, endPage),
     {
       onSuccess: (newData) => {
-        handleEndPageSuccess({
-          newData,
-          toastDescription: 'Successfully updated form thank you page',
+        toast.closeAll()
+        toast({
+          description: 'Successfully updated form thank you page',
         })
       },
       onError: handleError,

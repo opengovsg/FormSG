@@ -46,12 +46,8 @@ export const BuilderAndDesignDrawer = (): JSX.Element | null => {
     }
   }, [isMobile])
 
-  const renderDrawerContent = useMemo(() => {
+  const renderDrawerContent: JSX.Element | null = useMemo(() => {
     switch (activeTab) {
-      case DrawerTabs.Design:
-        return <DesignDrawer />
-      case DrawerTabs.Logic:
-        return null
       case DrawerTabs.Builder:
         switch (createOrEditData.state) {
           case BuildFieldState.EditingField:
@@ -59,9 +55,15 @@ export const BuilderAndDesignDrawer = (): JSX.Element | null => {
             return <EditFieldDrawer />
           case BuildFieldState.EditingEndPage:
             return <EditEndPageDrawer />
-          case BuildFieldState.Inactive:
+          default:
+            // Inactive state
             return <FieldListDrawer />
         }
+      case DrawerTabs.Design:
+        return <DesignDrawer />
+      default:
+        // Logic drawer open
+        return null
     }
   }, [createOrEditData, activeTab])
 

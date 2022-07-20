@@ -26,8 +26,6 @@ export const adminFormKeys = {
     [...adminFormKeys.id(id), 'collaborators'] as const,
   previewForm: (id: string) =>
     [...adminFormKeys.id(id), 'previewForm'] as const,
-  startPage: (id: string) => [...adminFormKeys.id(id), 'startPage'] as const,
-  endPage: (id: string) => [...adminFormKeys.id(id), 'endPage'] as const,
 }
 
 /**
