@@ -84,7 +84,7 @@ export const AvatarMenu = ({
     <Menu autoSelect={false} defaultIsOpen={defaultIsOpen}>
       {({ isOpen }) => (
         <>
-          <AvatarMenuButton role="group" isActive={isOpen}>
+          <AvatarMenuButton role="group" isActive={isOpen} isOpen={isOpen}>
             <Avatar
               name={name}
               sx={styles.avatar}
