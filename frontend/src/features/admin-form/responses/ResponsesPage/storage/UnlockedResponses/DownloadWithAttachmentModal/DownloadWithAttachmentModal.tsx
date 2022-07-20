@@ -10,8 +10,11 @@ import {
 
 import { XMotionBox } from '~templates/MotionBox'
 
-import { ProgressModalContent } from '../ProgressModal'
+import { CanceledResult, DownloadResult } from '../../types'
+import { isCanceledResult } from '../../utils/typeguards'
+import { CompleteScreen, ProgressModalContent } from '../ProgressModal'
 
+import { CanceledScreen } from './CanceledScreen'
 import { ConfirmationScreen } from './ConfirmationScreen'
 
 export interface DownloadWithAttachmentModalProps
@@ -22,6 +25,7 @@ export interface DownloadWithAttachmentModalProps
   responsesCount: number
   downloadPercentage: number
   initialState?: [DownloadWithAttachmentFlowStates, number]
+  downloadMetadata?: DownloadResult | CanceledResult
 }
 
 /** Exported for testing. */
@@ -44,6 +48,7 @@ export const DownloadWithAttachmentModal = ({
   isDownloading,
   responsesCount,
   downloadPercentage,
+  downloadMetadata,
   initialState = INITIAL_STEP_STATE,
 }: DownloadWithAttachmentModalProps): JSX.Element => {
   const modalSize = useBreakpointValue({
@@ -60,16 +65,16 @@ export const DownloadWithAttachmentModal = ({
     }
   }, [isOpen])
 
+  useEffect(() => {
+    if (isOpen && downloadMetadata) {
+      setCurrentStep([DownloadWithAttachmentFlowStates.Complete, 1])
+    }
+  }, [downloadMetadata, isOpen])
+
   const handleDownload = useCallback(() => {
     setCurrentStep([DownloadWithAttachmentFlowStates.Progress, 1])
     return onDownload()
   }, [onDownload])
-
-  const handleCancel = useCallback(() => {
-    // TODO: Move to conclusion page.
-    setCurrentStep([DownloadWithAttachmentFlowStates.Confirmation, 1])
-    return onCancel()
-  }, [onCancel])
 
   return (
     <Modal
@@ -95,7 +100,7 @@ export const DownloadWithAttachmentModal = ({
             <ProgressModalContent
               downloadPercentage={downloadPercentage}
               isDownloading={isDownloading}
-              onClose={handleCancel}
+              onCancel={onCancel}
             >
               <Text mb="1rem">
                 Up to <b>{responsesCount.toLocaleString()}</b> files are being
@@ -104,6 +109,16 @@ export const DownloadWithAttachmentModal = ({
               </Text>
             </ProgressModalContent>
           )}
+          {currentStep === DownloadWithAttachmentFlowStates.Complete ? (
+            isCanceledResult(downloadMetadata) ? (
+              <CanceledScreen onClose={onClose} />
+            ) : (
+              <CompleteScreen
+                downloadMetadata={downloadMetadata}
+                onClose={onClose}
+              />
+            )
+          ) : null}
         </XMotionBox>
       </ModalContent>
     </Modal>
