@@ -16,4 +16,5 @@ export type DateValidationOptions = {
 export interface DateFieldBase extends MyInfoableFieldBase {
   fieldType: BasicField.Date
   dateValidation: DateValidationOptions
+  invalidDaysOfTheWeek?: number[]
 }

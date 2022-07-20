@@ -23,6 +23,10 @@ const createDateFieldSchema = () => {
         default: null,
       },
     },
+    invalidDaysOfTheWeek: {
+      type: [Number],
+      default: [],
+    },
   })
 }
 
