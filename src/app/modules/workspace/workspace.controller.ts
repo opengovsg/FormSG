@@ -26,7 +26,6 @@ const updateWorkspaceTitleValidator = celebrate({
  * @security session
  *
  * @returns 200 with list of user's workspaces if workspaces are retrieved successfully
- * @returns 422 when user of given id cannnot be found in the database
  * @returns 500 when database errors occur
  */
 export const getWorkspaces: ControllerHandler<
