@@ -93,7 +93,7 @@ describe('optional field', () => {
     userEvent.click(input)
     // Type the middle few characters of the option; dropdown should match properly,
     // then select the option.
-    userEvent.type(input, `${expectedOption.slice(5, 16)}{arrowdown}{enter}`)
+    userEvent.type(input, `${expectedOption.slice(2, 6)}{arrowdown}{enter}`)
     // Act required due to react-hook-form usage.
     await act(async () => userEvent.click(submitButton))
 
