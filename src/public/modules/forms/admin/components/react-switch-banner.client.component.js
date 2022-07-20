@@ -5,13 +5,13 @@ const { UiCookieValues } = require('../../../../../../shared/types')
 angular.module('core').component('reactSwitchBannerComponent', {
   templateUrl:
     'modules/forms/admin/componentViews/react-switch-banner.client.view.html',
-  controller: ['$scope', '$q', '$window', reactSwitchBannerController],
+  controller: ['$q', '$window', reactSwitchBannerController],
   controllerAs: 'vm',
 })
 
-function reactSwitchBannerController($scope, $q, $window) {
+function reactSwitchBannerController($q, $window) {
   const vm = this
-  $scope.ui = UiCookieValues.React
+  vm.ui = UiCookieValues.React
 
   vm.adminChooseEnvironment = (ui) => {
     return (
