@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
+import { Type } from 'aws-sdk/clients/cloudformation'
 import { ObjectId } from 'bson-ext'
 import { cloneDeep, map, merge, omit, orderBy, pick, range } from 'lodash'
 import mongoose, { Types } from 'mongoose'
@@ -155,6 +156,53 @@ describe('Form Model', () => {
         ])
         const expectedObject = merge({}, FORM_DEFAULTS, validFormParams)
         expect(actualSavedObject).toEqual(expectedObject)
+      })
+
+      it('should create new date form field with default empty array of invalid days of the week and save successfully', async () => {
+        const formParams = merge({}, MOCK_ENCRYPTED_FORM_PARAMS, {
+          admin: MOCK_ADMIN_OBJ_ID,
+          form_fields: [generateDefaultField(BasicField.Date)],
+        })
+
+        const form = await Form.create(formParams)
+        const saved = await form.save()
+
+        expect(saved._id).toBeDefined()
+        expect(saved.created).toBeInstanceOf(Date)
+        expect(saved.lastModified).toBeInstanceOf(Date)
+
+        const savedObjectFormFields = (
+          saved.form_fields as Types.DocumentArray<IFieldSchema>
+        ).toObject()
+
+        expect(savedObjectFormFields[0].invalidDaysOfTheWeek).toEqual([])
+      })
+
+      it('should create new date form field with expected array of invalid days of the week and save successfully', async () => {
+        const expectedInvalidDaysOfTheWeek = [1, 2, 3]
+        const formParams = merge({}, MOCK_ENCRYPTED_FORM_PARAMS, {
+          admin: MOCK_ADMIN_OBJ_ID,
+          form_fields: [
+            generateDefaultField(BasicField.Date, {
+              invalidDaysOfTheWeek: expectedInvalidDaysOfTheWeek,
+            }),
+          ],
+        })
+
+        const form = await Form.create(formParams)
+        const saved = await form.save()
+
+        expect(saved._id).toBeDefined()
+        expect(saved.created).toBeInstanceOf(Date)
+        expect(saved.lastModified).toBeInstanceOf(Date)
+
+        const savedObjectFormFields = (
+          saved.form_fields as Types.DocumentArray<IFieldSchema>
+        ).toObject()
+
+        expect(savedObjectFormFields[0].invalidDaysOfTheWeek).toEqual(
+          expectedInvalidDaysOfTheWeek,
+        )
       })
 
       it('should save successfully, but not save fields that is not defined in the schema', async () => {
