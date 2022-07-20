@@ -1,3 +1,5 @@
+import './loaders/datadog-tracer'
+
 import config from './config/config'
 import { createLoggerWithLabel } from './config/logger'
 import loadApp from './loaders'
