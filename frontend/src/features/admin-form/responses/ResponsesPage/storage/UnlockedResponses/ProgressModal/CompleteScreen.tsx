@@ -1,6 +1,8 @@
 import { useMemo } from 'react'
+import ReactMarkdown from 'react-markdown'
 import {
   Badge,
+  Icon,
   ModalBody,
   ModalFooter,
   ModalHeader,
@@ -10,7 +12,9 @@ import {
 } from '@chakra-ui/react'
 import simplur from 'simplur'
 
+import { BxsCheckCircle, BxsXCircle } from '~assets/icons'
 import { useIsMobile } from '~hooks/useIsMobile'
+import { useMdComponents } from '~hooks/useMdComponents'
 import Button from '~components/Button'
 import InlineMessage from '~components/InlineMessage'
 import { ModalCloseButton } from '~components/Modal'
@@ -27,6 +31,7 @@ export const CompleteScreen = ({
   downloadMetadata,
 }: CompleteScreenProps): JSX.Element => {
   const isMobile = useIsMobile()
+  const mdComponents = useMdComponents()
 
   const completionMessage = useMemo(() => {
     if (!downloadMetadata) return ''
@@ -37,19 +42,15 @@ export const CompleteScreen = ({
     // Success count is less than expected count.
     // This means some responses were not downloaded successfully.
     // Show the user the number of responses that were not downloaded.
-    return simplur`${successCount} of ${expectedCount} ${[
+    return simplur`**${successCount.toLocaleString()}** ${[
       successCount,
-    ]}response[|s] ha[s|ve] been downloaded successfully.`
+    ]}response[|s] and attachment[|s] ha[s|ve] been downloaded successfully, refer to the downloaded CSV file for more details`
   }, [downloadMetadata])
 
   const attachmentErrorMessage = useMemo(() => {
-    if (!downloadMetadata?.errorCount) return
+    if (!downloadMetadata?.errorCount) return ''
 
-    return (
-      <InlineMessage variant="warning">
-        {simplur`${downloadMetadata.errorCount} response[|s] could not be downloaded. Any attachments related to [that|these] response[|s] will also not be downloaded.\n\nRefer to the exported CSV file for details on responses and attachments that were downloaded successfully.`}
-      </InlineMessage>
-    )
+    return simplur`**${downloadMetadata.errorCount}** response[|s] and attachment[|s] could not be downloaded.`
   }, [downloadMetadata])
 
   return (
@@ -65,8 +66,32 @@ export const CompleteScreen = ({
       </ModalHeader>
       <ModalBody whiteSpace="pre-line" color="secondary.500">
         <Stack spacing="1rem">
-          {attachmentErrorMessage}
-          <Text>{completionMessage}</Text>
+          <Stack direction="row" spacing="0.5rem">
+            <Icon
+              color="success.500"
+              fontSize="1.25rem"
+              height="1.5rem"
+              as={BxsCheckCircle}
+              aria-hidden
+            />
+            <ReactMarkdown components={mdComponents}>
+              {completionMessage}
+            </ReactMarkdown>
+          </Stack>
+          {attachmentErrorMessage && (
+            <Stack direction="row" spacing="0.5rem">
+              <Icon
+                height="1.5rem"
+                color="danger.500"
+                fontSize="1.25rem"
+                as={BxsXCircle}
+                aria-hidden
+              />
+              <ReactMarkdown components={mdComponents}>
+                {attachmentErrorMessage}
+              </ReactMarkdown>
+            </Stack>
+          )}
         </Stack>
       </ModalBody>
       <ModalFooter>

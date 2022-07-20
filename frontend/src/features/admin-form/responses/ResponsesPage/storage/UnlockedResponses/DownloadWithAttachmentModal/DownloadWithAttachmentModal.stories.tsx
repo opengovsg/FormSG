@@ -84,5 +84,12 @@ PartialSuccessStateDesktop.args = {
 }
 
 export const PartialSuccessStateMobile = Template.bind({})
-PartialSuccessStateMobile.args = PartialSuccessStateDesktop.args
+PartialSuccessStateMobile.args = {
+  downloadMetadata: {
+    errorCount: 10,
+    successCount: 1,
+    expectedCount: 11,
+  },
+}
+
 PartialSuccessStateMobile.parameters = getMobileViewParameters()
