@@ -100,7 +100,7 @@ describe('models.fields.dateField', () => {
     expect(actual.field.toObject()).toEqual(expected)
   })
 
-  it('should set throw an error when invalid values are added to invalidDaysOfTheWeek attribute', async () => {
+  it('should throw an error when invalid values are added to invalidDaysOfTheWeek attribute', async () => {
     // Arrange
     const mockInvalidDaysOfTheWeek = [10000]
     const mockDateField = {

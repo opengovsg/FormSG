@@ -25,7 +25,7 @@ const createDateFieldSchema = () => {
     },
     invalidDaysOfTheWeek: {
       type: [Number],
-      enum: [...Object.values(DaysOfTheWeek), null],
+      enum: [...Object.values(DaysOfTheWeek)],
     },
   })
 }
