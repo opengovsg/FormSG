@@ -18,10 +18,7 @@ const DEFAULT_DATE_FIELD: DateFieldBase = {
     customMaxDate: null,
     customMinDate: null,
   },
-  restrictParticularDays: {
-    addParticularDayRestriction: false,
-    invalidDaysOfTheWeek: [],
-  },
+  invalidDaysOfTheWeek: [],
   required: true,
   disabled: false,
   fieldType: BasicField.Date,
@@ -85,9 +82,6 @@ export const WithParticularDaysRestricted = Template.bind({})
 WithParticularDaysRestricted.args = {
   field: {
     ...DEFAULT_DATE_FIELD,
-    restrictParticularDays: {
-      addParticularDayRestriction: true,
-      invalidDaysOfTheWeek: [1, 2, 5],
-    },
+    invalidDaysOfTheWeek: [1, 2, 5],
   },
 }

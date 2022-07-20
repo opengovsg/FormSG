@@ -24,11 +24,6 @@ export type DateValidationOptions = {
   selectedDateValidation: DateSelectedValidation | null
 }
 
-export type RestrictParticularDaysOption = {
-  addParticularDayRestriction: boolean
-  invalidDaysOfTheWeek: number[]
-}
-
 export interface DateFieldBase extends MyInfoableFieldBase {
   fieldType: BasicField.Date
   dateValidation: DateValidationOptions

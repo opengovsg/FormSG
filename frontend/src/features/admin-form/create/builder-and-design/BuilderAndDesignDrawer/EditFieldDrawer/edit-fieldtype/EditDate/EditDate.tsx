@@ -1,14 +1,21 @@
 import { useMemo } from 'react'
 import { Controller, RegisterOptions } from 'react-hook-form'
-import { Box, FormControl, SimpleGrid, Stack, Text } from '@chakra-ui/react'
+import {
+  Box,
+  FormControl,
+  SimpleGrid,
+  Stack,
+  Wrap,
+  WrapItem,
+} from '@chakra-ui/react'
 import { isBefore, isDate, isEqual } from 'date-fns'
-import { conformsTo, extend, get, isEmpty, pick } from 'lodash'
+import { extend, get, isEmpty, pick } from 'lodash'
 
 import {
   DateFieldBase,
   DateSelectedValidation,
   DateValidationOptions,
-  RestrictParticularDaysOption,
+  DaysOfTheWeek,
 } from '~shared/types/field'
 
 import {
@@ -30,28 +37,29 @@ import { FormFieldDrawerActions } from '../common/FormFieldDrawerActions'
 import { EditFieldProps } from '../common/types'
 import { useEditFieldForm } from '../common/useEditFieldForm'
 
-export interface DaysOptionType {
-  title: string
-  index: number
+export interface InvalidDaysCheckboxOptions {
+  label: string
+  value: number
 }
 
-const PARTICULAR_DAYS_OPTIONS_LEFT: DaysOptionType[] = [
-  { title: 'Monday', index: 0 },
-  { title: 'Wednesday', index: 2 },
-  { title: 'Friday', index: 4 },
-  { title: 'Sunday', index: 6 },
-]
-
-const PARTICULAR_DAYS_OPTIONS_RIGHT: DaysOptionType[] = [
-  { title: 'Tuesday', index: 1 },
-  { title: 'Thursday', index: 3 },
-  { title: 'Saturday', index: 5 },
-  { title: 'Singapore Public Holidays', index: 7 },
+const INVALID_DAYS_CHECKBOX_VALUES: InvalidDaysCheckboxOptions[] = [
+  { label: 'Monday', value: DaysOfTheWeek.Monday },
+  { label: 'Tuesday', value: DaysOfTheWeek.Tuesday },
+  { label: 'Wednesday', value: DaysOfTheWeek.Wednesday },
+  { label: 'Thursday', value: DaysOfTheWeek.Thursday },
+  { label: 'Friday', value: DaysOfTheWeek.Friday },
+  { label: 'Saturday', value: DaysOfTheWeek.Saturday },
+  { label: 'Sunday', value: DaysOfTheWeek.Sunday },
 ]
 
 type EditDateProps = EditFieldProps<DateFieldBase>
 
-const EDIT_DATE_FIELD_KEYS = ['title', 'description', 'required'] as const
+const EDIT_DATE_FIELD_KEYS = [
+  'title',
+  'description',
+  'required',
+  'invalidDaysOfTheWeek',
+] as const
 
 type EditDateInputs = Pick<
   DateFieldBase,
@@ -62,10 +70,7 @@ type EditDateInputs = Pick<
     customMaxDate: string
     customMinDate: string
   }
-  restrictParticularDays: {
-    addParticularDayRestriction: boolean
-    invalidDaysOfTheWeek: number[]
-  }
+  addParticularDayRestriction: boolean
 }
 
 const transformDateFieldToEditForm = (field: DateFieldBase): EditDateInputs => {
@@ -80,16 +85,14 @@ const transformDateFieldToEditForm = (field: DateFieldBase): EditDateInputs => {
       : ('' as const),
   }
 
-  const nextParticularDayRestrictionOption = {
-    addParticularDayRestriction:
-      field.restrictParticularDays?.addParticularDayRestriction ?? false,
-    invalidDaysOfTheWeek:
-      field.restrictParticularDays?.invalidDaysOfTheWeek ?? [],
-  }
+  const nextAddParticularDayRestriction = field.invalidDaysOfTheWeek
+    ? field.invalidDaysOfTheWeek.length > 0
+    : false
+
   return {
     ...pick(field, EDIT_DATE_FIELD_KEYS),
     dateValidation: nextValidationOptions,
-    restrictParticularDays: nextParticularDayRestrictionOption,
+    addParticularDayRestriction: nextAddParticularDayRestriction,
   }
 }
 
@@ -98,7 +101,7 @@ const transformDateEditFormToField = (
   originalField: DateFieldBase,
 ): DateFieldBase => {
   let nextValidationOptions: DateValidationOptions
-  let nextParticularDayRestrictionOption: RestrictParticularDaysOption
+  console.log(inputs)
 
   switch (inputs.dateValidation.selectedDateValidation) {
     case '':
@@ -129,23 +132,8 @@ const transformDateEditFormToField = (
     }
   }
 
-  if (inputs.restrictParticularDays.addParticularDayRestriction) {
-    nextParticularDayRestrictionOption = {
-      addParticularDayRestriction:
-        inputs.restrictParticularDays.addParticularDayRestriction,
-      invalidDaysOfTheWeek: inputs.restrictParticularDays.invalidDaysOfTheWeek,
-    }
-  } else {
-    nextParticularDayRestrictionOption = {
-      addParticularDayRestriction:
-        inputs.restrictParticularDays.addParticularDayRestriction,
-      invalidDaysOfTheWeek: [],
-    }
-  }
-
   return extend({}, originalField, inputs, {
     dateValidation: nextValidationOptions,
-    restrictParticularDays: nextParticularDayRestrictionOption,
   })
 }
 
@@ -269,83 +257,35 @@ export const EditDate = ({ field }: EditDateProps): JSX.Element => {
       <Stack>
         <FormControl isReadOnly={isLoading}>
           <Toggle
-            {...register('restrictParticularDays.addParticularDayRestriction')}
+            {...register('addParticularDayRestriction')}
             label="Customize days of the week"
+            description="Checking a day will disable all the same days in the calendar"
           />
-          <Text textStyle="body-2" color="secondary.400">
-            Checking a day will disable all the same days in the calendar
-          </Text>
         </FormControl>
-        {getValues('restrictParticularDays.addParticularDayRestriction') ? (
+        {getValues('addParticularDayRestriction') ? (
           <FormControl isRequired isReadOnly={isLoading}>
-            <Stack direction="row" spacing="0.75rem">
-              <Stack direction="column">
-                {PARTICULAR_DAYS_OPTIONS_LEFT.map((option) => {
-                  return (
-                    <Box width="9.25rem" key={option.index}>
-                      <Controller
-                        name="restrictParticularDays.invalidDaysOfTheWeek"
-                        control={control}
-                        key={option.index}
-                        render={({ field: { onChange, value, ref } }) => {
-                          return (
-                            <Checkbox
-                              onChange={() => {
-                                const idx = value.indexOf(option.index)
-                                value =
-                                  idx > -1
-                                    ? value.filter(
-                                        (dayId) => dayId !== option.index,
-                                      )
-                                    : [...value, option.index]
-                                onChange(value)
-                              }}
-                              ref={ref}
-                              isChecked={value.includes(option.index)}
-                            >
-                              {option.title}
-                            </Checkbox>
-                          )
-                        }}
-                      />
-                    </Box>
-                  )
-                })}
-              </Stack>
-              <Stack direction="column">
-                {PARTICULAR_DAYS_OPTIONS_RIGHT.map((option) => {
-                  return (
-                    <Box key={option.index}>
-                      <Controller
-                        name="restrictParticularDays.invalidDaysOfTheWeek"
-                        control={control}
-                        key={option.index}
-                        render={({ field: { onChange, value, ref } }) => {
-                          return (
-                            <Checkbox
-                              onChange={() => {
-                                const idx = value.indexOf(option.index)
-                                value =
-                                  idx > -1
-                                    ? value.filter(
-                                        (dayId) => dayId !== option.index,
-                                      )
-                                    : [...value, option.index]
-                                onChange(value)
-                              }}
-                              ref={ref}
-                              isChecked={value.includes(option.index)}
-                            >
-                              {option.title}
-                            </Checkbox>
-                          )
-                        }}
-                      />
-                    </Box>
-                  )
-                })}
-              </Stack>
-            </Stack>
+            <Wrap>
+              {INVALID_DAYS_CHECKBOX_VALUES.map((invalidDayOption) => {
+                let width = '9.25rem'
+
+                if (invalidDayOption.value % 2 === 0) {
+                  width = '20rem'
+                }
+
+                return (
+                  <WrapItem key={invalidDayOption.value} width={width}>
+                    <Checkbox
+                      value={invalidDayOption.value}
+                      {...register('invalidDaysOfTheWeek')}
+                      defaultChecked={false}
+                      name="invalidDaysOfTheWeek"
+                    >
+                      {invalidDayOption.label}
+                    </Checkbox>
+                  </WrapItem>
+                )
+              })}
+            </Wrap>
           </FormControl>
         ) : null}
       </Stack>
