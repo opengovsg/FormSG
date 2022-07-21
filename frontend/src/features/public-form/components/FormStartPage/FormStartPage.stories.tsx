@@ -181,19 +181,14 @@ export const MiniHeader: Story<MiniHeaderProps> = (args) => (
   <MiniHeaderComponent {...args} />
 )
 MiniHeader.args = {
+  title: 'storybook test title',
+  titleBg: 'theme-blue.500',
+  titleColor: 'white',
+  activeSectionId: '1',
   isOpen: true,
 }
 MiniHeader.parameters = {
-  msw: [
-    getPublicFormResponse({
-      overrides: {
-        form: {
-          title: 'storybook test title',
-        },
-      },
-      delay: 0,
-    }),
-  ],
+  msw: [getPublicFormResponse()],
 }
 
 export const MiniHeaderMobileWithSections: Story<MiniHeaderProps> = (args) => (
@@ -213,6 +208,7 @@ export const MiniHeaderMobileWithoutSections: Story<MiniHeaderProps> = (
 ) => <MiniHeaderComponent {...args} />
 MiniHeaderMobileWithoutSections.args = {
   ...MiniHeader.args,
+  activeSectionId: undefined,
 }
 MiniHeaderMobileWithoutSections.parameters = {
   msw: [

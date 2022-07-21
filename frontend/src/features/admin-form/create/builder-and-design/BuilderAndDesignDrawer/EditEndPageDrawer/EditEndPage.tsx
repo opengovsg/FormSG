@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 import {
   FieldValues,
   RegisterOptions,
@@ -28,12 +28,12 @@ import {
   setToInactiveSelector,
   useBuilderAndDesignStore,
 } from '../../useBuilderAndDesignStore'
-import { DrawerContentContainer } from '../EditFieldDrawer/edit-fieldtype/common/DrawerContentContainer'
-
 import {
-  setStateSelector,
+  resetEndPageDataSelector,
+  setEndPageDataSelector,
   useEndPageBuilderStore,
-} from './useEndPageBuilderStore'
+} from '../../useEndPageBuilderStore'
+import { DrawerContentContainer } from '../EditFieldDrawer/edit-fieldtype/common/DrawerContentContainer'
 
 const buttonLinkRules: RegisterOptions<FormEndPage, 'buttonLink'> = {
   validate: (url: string) =>
@@ -53,10 +53,20 @@ export const EndPageBuilderInput = ({
   endPage,
 }: EndPageBuilderInputProps): JSX.Element => {
   const isMobile = useIsMobile()
-  const { mutateFormEndPage } = useMutateFormPage()
+  const { endPageMutation } = useMutateFormPage()
 
   const closeBuilderDrawer = useBuilderAndDesignStore(setToInactiveSelector)
-  const setEndPageBuilderState = useEndPageBuilderStore(setStateSelector)
+  const { setEndPageBuilderState, resetEndPageBuilderState } =
+    useEndPageBuilderStore((state) => ({
+      setEndPageBuilderState: setEndPageDataSelector(state),
+      resetEndPageBuilderState: resetEndPageDataSelector(state),
+    }))
+
+  // Load the end page into the store when user opens customization page
+  useEffect(() => {
+    setEndPageBuilderState(endPage)
+    return () => resetEndPageBuilderState()
+  }, [endPage, setEndPageBuilderState, resetEndPageBuilderState])
 
   const {
     register,
@@ -89,7 +99,7 @@ export const EndPageBuilderInput = ({
   ])
 
   const handleUpdateEndPage = handleSubmit((endPage) =>
-    mutateFormEndPage.mutate(endPage),
+    endPageMutation.mutate(endPage),
   )
 
   return (
@@ -146,8 +156,8 @@ export const EndPageBuilderInput = ({
   )
 }
 
-export const EditEndPage = (): JSX.Element => {
+export const EditEndPage = (): JSX.Element | null => {
   const { data: form } = useAdminForm()
 
-  return <>{form ? <EndPageBuilderInput endPage={form.endPage} /> : null}</>
+  return form ? <EndPageBuilderInput endPage={form.endPage} /> : null
 }

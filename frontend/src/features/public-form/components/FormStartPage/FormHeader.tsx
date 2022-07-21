@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { RefObject, useCallback } from 'react'
 import { BiLogOutCircle } from 'react-icons/bi'
 import { Waypoint } from 'react-waypoint'
 import {
@@ -10,139 +10,106 @@ import {
   Text,
   useDisclosure,
 } from '@chakra-ui/react'
-import simplur from 'simplur'
-
-import { FormAuthType, FormColorTheme } from '~shared/types/form/form'
 
 import { BxMenuAltLeft } from '~assets/icons/BxMenuAltLeft'
 import { BxsTimeFive } from '~assets/icons/BxsTimeFive'
 import Button from '~components/Button'
 import IconButton from '~components/IconButton'
 
-import { usePublicAuthMutations } from '~features/public-form/mutations'
-import { usePublicFormContext } from '~features/public-form/PublicFormContext'
+export type MiniHeaderProps = Pick<
+  FormHeaderProps,
+  | 'title'
+  | 'titleBg'
+  | 'titleColor'
+  | 'activeSectionId'
+  | 'miniHeaderRef'
+  | 'onMobileDrawerOpen'
+> & { isOpen: boolean }
 
-import { useFormSections } from '../FormFields/FormSectionsContext'
-
-const useFormHeader = () => {
-  const { form, spcpSession, formId, submissionData, miniHeaderRef } =
-    usePublicFormContext()
-  const { handleLogoutMutation } = usePublicAuthMutations(formId)
-
-  const titleColour = useMemo(() => {
-    if (form?.startPage.colorTheme === FormColorTheme.Orange) {
-      return 'secondary.700'
-    }
-    return 'white'
-  }, [form?.startPage.colorTheme])
-
-  const titleBg = useMemo(
-    () =>
-      form?.startPage.colorTheme
-        ? `theme-${form.startPage.colorTheme}.500`
-        : `neutral.200`,
-    [form?.startPage.colorTheme],
-  )
-
-  const estTimeString = useMemo(() => {
-    if (!form?.startPage.estTimeTaken) return ''
-    return simplur`${form?.startPage.estTimeTaken} min[|s] estimated time to complete`
-  }, [form])
-
-  const handleLogout = useCallback(() => {
-    if (!form || form?.authType === FormAuthType.NIL) return
-    return handleLogoutMutation.mutate(form.authType)
-  }, [form, handleLogoutMutation])
-
-  return {
-    title: form?.title,
-    estTimeString,
-    titleBg,
-    titleColour,
-    loggedInId: spcpSession?.userName,
-    showHeader: !submissionData,
-    miniHeaderRef,
-    handleLogout,
-    form,
-  }
-}
-
-export interface MiniHeaderProps {
-  isOpen: boolean
-}
-
-// Exported for testing.
-export const MiniHeader = ({ isOpen }: MiniHeaderProps): JSX.Element | null => {
-  const { onMobileDrawerOpen } = usePublicFormContext()
-  const { activeSectionId } = useFormSections()
-
-  const { title, titleBg, titleColour, showHeader, miniHeaderRef } =
-    useFormHeader()
-
-  if (!showHeader) return null
-
-  return (
-    <Slide
-      // Screen readers do not need to know of the existence of this component.
-      aria-hidden
-      ref={miniHeaderRef}
-      direction="top"
-      in={isOpen}
-      style={{ zIndex: 1000 }}
+export const MiniHeader = ({
+  title,
+  titleBg,
+  titleColor,
+  activeSectionId,
+  miniHeaderRef,
+  onMobileDrawerOpen,
+  isOpen,
+}: MiniHeaderProps): JSX.Element => (
+  <Slide
+    // Screen readers do not need to know of the existence of this component.
+    aria-hidden
+    ref={miniHeaderRef}
+    direction="top"
+    in={isOpen}
+    style={{ zIndex: 1000 }}
+  >
+    <Box
+      bg={titleBg}
+      px={{ base: '1.5rem', md: '2rem' }}
+      py={{ base: '0.5rem', md: '1rem' }}
     >
-      <Box
-        bg={titleBg}
-        px={{ base: '1.5rem', md: '2rem' }}
-        py={{ base: '0.5rem', md: '1rem' }}
-      >
-        <Skeleton isLoaded={!!title}>
-          <Flex
-            align="center"
-            flex={1}
-            gap="0.5rem"
-            justify="space-between"
-            flexDir="row"
-          >
-            <Flex alignItems="center" minH={{ base: '4rem', md: '0' }}>
-              <Text
-                textStyle={{ base: 'h4', md: 'h2' }}
-                textAlign="start"
-                color={titleColour}
-              >
-                {title ?? 'Loading title'}
-              </Text>
-            </Flex>
-            {activeSectionId ? (
-              // Section sidebar icon should only show up if sections exist
-              <IconButton
-                variant="solid"
-                colorScheme="primary"
-                aria-label="Mobile section sidebar"
-                fontSize="1.5rem"
-                icon={<BxMenuAltLeft />}
-                d={{ base: 'flex', md: 'none' }}
-                onClick={onMobileDrawerOpen}
-              />
-            ) : (
-              <></>
-            )}
+      <Skeleton isLoaded={!!title}>
+        <Flex
+          align="center"
+          flex={1}
+          gap="0.5rem"
+          justify="space-between"
+          flexDir="row"
+        >
+          <Flex alignItems="center" minH={{ base: '4rem', md: '0' }}>
+            <Text
+              textStyle={{ base: 'h4', md: 'h2' }}
+              textAlign="start"
+              color={titleColor}
+            >
+              {title ?? 'Loading title'}
+            </Text>
           </Flex>
-        </Skeleton>
-      </Box>
-    </Slide>
-  )
+          {activeSectionId ? (
+            // Section sidebar icon should only show up if sections exist
+            <IconButton
+              variant="solid"
+              colorScheme="primary"
+              aria-label="Mobile section sidebar"
+              fontSize="1.5rem"
+              icon={<BxMenuAltLeft />}
+              d={{ base: 'flex', md: 'none' }}
+              onClick={onMobileDrawerOpen}
+            />
+          ) : null}
+        </Flex>
+      </Skeleton>
+    </Box>
+  </Slide>
+)
+
+interface FormHeaderProps {
+  title?: string
+  estTimeString: string
+  titleBg: string
+  titleColor: string
+  showHeader?: boolean
+  loggedInId?: string
+  showMiniHeader?: boolean
+  activeSectionId?: string
+  miniHeaderRef?: RefObject<HTMLDivElement>
+  onMobileDrawerOpen?: () => void
+  handleLogout?: () => void
 }
 
-export const FormHeader = (): JSX.Element | null => {
-  const {
-    title,
-    estTimeString,
-    titleBg,
-    titleColour,
-    loggedInId,
-    handleLogout,
-    showHeader,
-  } = useFormHeader()
+export const FormHeader = ({
+  title,
+  estTimeString,
+  titleBg,
+  titleColor,
+  showHeader,
+  loggedInId,
+  showMiniHeader,
+  activeSectionId,
+  miniHeaderRef,
+  onMobileDrawerOpen,
+  handleLogout,
+}: FormHeaderProps): JSX.Element | null => {
   const { isOpen, onOpen, onClose } = useDisclosure()
 
   const handlePositionChange = useCallback(
@@ -162,7 +129,17 @@ export const FormHeader = (): JSX.Element | null => {
 
   return (
     <>
-      <MiniHeader isOpen={isOpen} />
+      {showMiniHeader ? (
+        <MiniHeader
+          title={title}
+          titleBg={titleBg}
+          titleColor={titleColor}
+          activeSectionId={activeSectionId}
+          miniHeaderRef={miniHeaderRef}
+          onMobileDrawerOpen={onMobileDrawerOpen}
+          isOpen={isOpen}
+        />
+      ) : null}
       <Flex
         px={{ base: '1.5rem', md: '3rem' }}
         py={{ base: '2rem', md: '3rem' }}
@@ -173,7 +150,7 @@ export const FormHeader = (): JSX.Element | null => {
           maxW="57rem"
           flexDir="column"
           align={{ base: 'start', md: 'center' }}
-          color={titleColour}
+          color={titleColor}
         >
           <Skeleton isLoaded={!!title}>
             <Text
@@ -199,14 +176,19 @@ export const FormHeader = (): JSX.Element | null => {
               aria-label="Log out"
               rightIcon={<BiLogOutCircle fontSize="1.5rem" />}
               onClick={handleLogout}
+              isDisabled={!handleLogout}
             >
               {loggedInId} - Log out
             </Button>
           ) : null}
         </Flex>
       </Flex>
-      {/* Sentinel to know when sticky navbar is starting */}
-      <Waypoint topOffset="64px" onPositionChange={handlePositionChange} />
+      {
+        /* Sentinel to know when sticky navbar is starting */
+        showMiniHeader ? (
+          <Waypoint topOffset="64px" onPositionChange={handlePositionChange} />
+        ) : null
+      }
     </>
   )
 }

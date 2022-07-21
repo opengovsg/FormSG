@@ -31,10 +31,10 @@ export type FormPermission = {
 }
 
 export type FormStartPage = {
-  paragraph?: string
-  estTimeTaken?: number
-  colorTheme: FormColorTheme
   logo: FormLogo
+  colorTheme: FormColorTheme
+  estTimeTaken?: number
+  paragraph?: string
 }
 
 export type FormEndPage = {
@@ -226,7 +226,7 @@ export type CreateFormBodyDto =
   | CreateEmailFormBodyDto
   | CreateStorageFormBodyDto
 
-export type EndPageUpdateDto = FormEndPage
 export type StartPageUpdateDto = FormStartPage
+export type EndPageUpdateDto = FormEndPage
 export type FormPermissionsDto = FormPermission[]
 export type PermissionsUpdateDto = FormPermission[]
