@@ -76,9 +76,7 @@ export const MiniHeader = ({
               d={{ base: 'flex', md: 'none' }}
               onClick={onMobileDrawerOpen}
             />
-          ) : (
-            <></>
-          )}
+          ) : null}
         </Flex>
       </Skeleton>
     </Box>
