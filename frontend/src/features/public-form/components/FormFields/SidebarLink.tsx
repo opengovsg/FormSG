@@ -24,7 +24,7 @@ export const SidebarLink = ({
   isActive,
   sectionMeta,
 }: SidebarLinkProps): JSX.Element => {
-  const { sectionRefs } = useFormSections()
+  const { sectionRefs, setActiveSectionId } = useFormSections()
   const { miniHeaderRef, onMobileDrawerClose } = usePublicFormContext()
 
   const handleClick = useCallback(() => {
@@ -43,7 +43,14 @@ export const SidebarLink = ({
       behavior: 'smooth',
     })
     sectionRef.current.focus()
-  }, [miniHeaderRef, sectionMeta._id, sectionRefs, onMobileDrawerClose])
+    setActiveSectionId(sectionMeta._id)
+  }, [
+    sectionRefs,
+    sectionMeta._id,
+    miniHeaderRef,
+    onMobileDrawerClose,
+    setActiveSectionId,
+  ])
 
   const styles = useStyleConfig('Link', {
     colorScheme: 'secondary',

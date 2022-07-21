@@ -7,7 +7,9 @@ import {
   DrawerContent,
   DrawerOverlay,
   Flex,
+  ListItem,
   Text,
+  UnorderedList,
   VStack,
 } from '@chakra-ui/react'
 
@@ -71,24 +73,27 @@ export const SectionSidebar = (): JSX.Element => {
 
   return (
     <Box
+      as="nav"
+      aria-label="Form headers navigation"
       flex={1}
       d={{ base: 'none', md: 'initial' }}
       minW={sectionScrollData.length > 0 ? '20%' : undefined}
     >
-      <VStack
+      <UnorderedList
         pos="sticky"
         top={sectionTopOffset}
         spacing="1.25rem"
         alignSelf="flex-start"
-        align="flex-start"
+        alignItems="flex-start"
+        marginInlineStart={0}
         marginEnd="1rem"
       >
         {sectionScrollData?.map((d) => (
-          <Flex key={d._id} align="center">
+          <ListItem key={d._id} listStyleType="none">
             <SidebarLink isActive={activeSectionId === d._id} sectionMeta={d} />
-          </Flex>
+          </ListItem>
         ))}
-      </VStack>
+      </UnorderedList>
     </Box>
   )
 }
