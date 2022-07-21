@@ -15,6 +15,7 @@ export type SetEnvironmentParams = {
 
 export const RESPONDENT_COOKIE_OPTIONS = {
   httpOnly: false,
+  maxAge: 31 * 2 * 24 * 60 * 60, // 2 months
   sameSite: 'strict' as const,
   secure: !config.isDev,
 }
@@ -164,5 +165,24 @@ export const adminChooseEnvironment: ControllerHandler<
       ? UiCookieValues.React
       : UiCookieValues.Angular
   res.cookie(config.reactMigration.adminCookieName, ui, ADMIN_COOKIE_OPTIONS)
+  return res.json({ ui })
+}
+
+// Note: frontend is expected to refresh after executing this
+export const publicChooseEnvironment: ControllerHandler<
+  SetEnvironmentParams,
+  unknown,
+  unknown,
+  Record<string, string>
+> = (req, res) => {
+  const ui =
+    req.params.ui === UiCookieValues.React
+      ? UiCookieValues.React
+      : UiCookieValues.Angular
+  res.cookie(
+    config.reactMigration.respondentCookieName,
+    ui,
+    RESPONDENT_COOKIE_OPTIONS,
+  )
   return res.json({ ui })
 }
