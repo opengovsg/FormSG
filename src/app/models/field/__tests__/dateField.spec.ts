@@ -139,4 +139,24 @@ describe('models.fields.dateField', () => {
       }),
     ).rejects.toThrowError(mongoose.Error.ValidationError)
   })
+
+  it('should throw an error when null value is added to invalidDaysOfTheWeek attribute array with valid values', async () => {
+    // Arrange
+    const mockInvalidDaysOfTheWeek = [null, 1, 2, 3]
+    const mockDateField = {
+      dateValidation: {
+        selectedDateValidation: null,
+        customMaxDate: null,
+        customMinDate: null,
+      },
+      invalidDaysOfTheWeek: mockInvalidDaysOfTheWeek,
+    }
+
+    await expect(
+      MockParent.create({
+        responseMode: FormResponseMode.Encrypt,
+        field: mockDateField,
+      }),
+    ).rejects.toThrowError(mongoose.Error.ValidationError)
+  })
 })
