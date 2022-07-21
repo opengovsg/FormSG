@@ -151,26 +151,41 @@ export const updateWorkspaceTitle = [
  *
  * @returns 200 with success message
  * @returns 404 when workspace cannot be found
- * @returns 422 when user of given id cannnot be found in the database
  * @returns 500 when database error occurs
  */
 export const deleteWorkspace: ControllerHandler<
   { workspaceId: string },
-  any | ErrorDto,
+  ErrorDto,
   { shouldDeleteForms: boolean }
 > = async (req, res) => {
   const { workspaceId } = req.params
   const { shouldDeleteForms } = req.body
+  const userId = (req.session as AuthedSessionData).user._id
 
-  return WorkspaceService.deleteWorkspace(workspaceId, shouldDeleteForms)
+  return WorkspaceService.deleteWorkspace(
+    workspaceId,
+    userId,
+    shouldDeleteForms,
+  )
     .map(() =>
       res
         .status(StatusCodes.OK)
         .json({ message: 'Successfully deleted workspace' }),
     )
-    .mapErr((err) =>
-      res.status(StatusCodes.BAD_REQUEST).json({ message: err.message }),
-    )
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error deleting workspace',
+        meta: {
+          action: 'deleteWorkspace',
+          workspaceId,
+          userId,
+        },
+        error,
+      })
+
+      const { statusCode, errorMessage } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
 }
 
 /**
