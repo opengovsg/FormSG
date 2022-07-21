@@ -25,10 +25,16 @@ import Menu from '../../components/Menu'
 
 const BrandSmallLogo = chakra(BrandMarkSvg)
 
-const NAV_LINKS = [
+type AdminNavBarLinkProps = {
+  label: string
+  href: string
+  MobileIcon?: As
+}
+
+const NAV_LINKS: AdminNavBarLinkProps[] = [
   {
     label: 'Feature request',
-    href: '',
+    href: 'https://go.gov.sg/form-featurerequest',
     MobileIcon: BiCommentDetail,
   },
   {
@@ -37,12 +43,6 @@ const NAV_LINKS = [
     MobileIcon: BxsHelpCircle,
   },
 ]
-
-type AdminNavBarLinkProps = {
-  label: string
-  href: string
-  MobileIcon?: As
-}
 
 const AdminNavBarLink = ({ MobileIcon, href, label }: AdminNavBarLinkProps) => {
   const isMobile = useIsMobile()
@@ -96,13 +96,13 @@ export const AdminNavBar = ({ isMenuOpen }: AdminNavBarProps): JSX.Element => {
           textStyle="subhead-1"
           spacing={{ base: '0.75rem', md: '1.5rem' }}
         >
-          {NAV_LINKS?.map((link, index) => (
+          {NAV_LINKS.map((link, index) => (
             <AdminNavBarLink key={index} {...link} />
           ))}
           <AvatarMenu
-            isOpen={isMenuOpen}
-            fullName={user?.email}
-            userName={user?.email}
+            name={user?.email}
+            menuUsername={user?.email}
+            defaultIsOpen={isMenuOpen}
             menuListProps={{ maxWidth: '19rem' }}
           >
             {/* TODO: Replace with billing route when available */}
