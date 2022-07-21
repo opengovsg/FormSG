@@ -2,10 +2,13 @@ import { expect } from '@storybook/jest'
 import { Meta, Story } from '@storybook/react'
 import { userEvent, waitFor, within } from '@storybook/testing-library'
 
-import { BasicField } from '~shared/types/field'
+import { BasicField, FormFieldDto } from '~shared/types/field'
 import { FormAuthType, FormColorTheme } from '~shared/types/form'
 
-import { MOCK_PREFILLED_MYINFO_FIELDS } from '~/mocks/msw/handlers/admin-form'
+import {
+  MOCK_FORM_FIELDS,
+  MOCK_PREFILLED_MYINFO_FIELDS,
+} from '~/mocks/msw/handlers/admin-form'
 import { envHandlers } from '~/mocks/msw/handlers/env'
 import {
   getPublicFormErrorResponse,
@@ -18,6 +21,7 @@ import {
 } from '~/mocks/msw/handlers/public-form'
 
 import { getMobileViewParameters, StoryRouter } from '~utils/storybook'
+import { ShortTextFieldSchema } from '~templates/Field'
 
 import PublicFormPage from './PublicFormPage'
 
@@ -28,6 +32,29 @@ const DEFAULT_MSW_HANDLERS = [
   postGenerateVfnOtpResponse(),
   postVerifyVfnOtpResponse(),
 ]
+
+// Bunch of encodings to test prefill and its sanitization.
+const PREFILLABLE_TEST_STRING =
+  '%E8%87%AA%E7%94%B1 %F0%90%90%80 hello+world 日本語%20normal space'
+
+const PREFILLABLE_SHORTTEXT_FIELD: ShortTextFieldSchema = {
+  ValidationOptions: {
+    customVal: null,
+    selectedValidation: null,
+  },
+  allowPrefill: true, // This prop allows for prefill
+  title: 'Short Text With Prefill',
+  description:
+    'Probably do not have to worry so much, React automatically sanitizes what gets rendered',
+  required: true,
+  disabled: false,
+  fieldType: BasicField.ShortText,
+  _id: '5da04eafe397fc0013f63c22',
+}
+
+const FORM_FIELDS_WITH_PREFILL = (
+  [PREFILLABLE_SHORTTEXT_FIELD] as FormFieldDto[]
+).concat(MOCK_FORM_FIELDS)
 
 const generateMswHandlersForColorTheme = (colorTheme: FormColorTheme) => {
   return [
@@ -52,7 +79,9 @@ export default {
   component: PublicFormPage,
   decorators: [
     StoryRouter({
-      initialEntries: ['/61540ece3d4a6e50ac0cc6ff'],
+      initialEntries: [
+        `/61540ece3d4a6e50ac0cc6ff?${PREFILLABLE_SHORTTEXT_FIELD._id}=${PREFILLABLE_TEST_STRING}`,
+      ],
       path: '/:formId',
     }),
   ],
@@ -76,6 +105,20 @@ WithCaptcha.parameters = {
       overrides: {
         form: {
           hasCaptcha: true,
+        },
+      },
+    }),
+  ],
+}
+
+export const WithPrefilledFields = Template.bind({})
+WithPrefilledFields.parameters = {
+  msw: [
+    getPublicFormResponse({
+      delay: 0,
+      overrides: {
+        form: {
+          form_fields: FORM_FIELDS_WITH_PREFILL,
         },
       },
     }),
