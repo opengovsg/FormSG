@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { FormProvider, SubmitHandler, useForm } from 'react-hook-form'
+import { useSearchParams } from 'react-router-dom'
 import { Box, Stack } from '@chakra-ui/react'
 import { times } from 'lodash'
 
@@ -31,6 +32,25 @@ export const FormFields = ({
   colorTheme,
   onSubmit,
 }: FormFieldsProps): JSX.Element => {
+  const [searchParams] = useSearchParams()
+
+  const fieldPrefillMap = useMemo(() => {
+    const queryParams = Object.fromEntries([...searchParams])
+    const ids = new Set(Object.keys(queryParams))
+
+    // Return object containing field id and query param value only if id exists in form fields.
+    return formFields.reduce((acc, field) => {
+      if (
+        field.fieldType === BasicField.ShortText &&
+        field.allowPrefill &&
+        ids.has(field._id)
+      ) {
+        acc[field._id] = queryParams[field._id]
+      }
+      return acc
+    }, {} as Record<string, string>)
+  }, [formFields, searchParams])
+
   const augmentedFormFields = useMemo(
     () => formFields.map(augmentWithMyInfo),
     [formFields],
@@ -38,8 +58,15 @@ export const FormFields = ({
 
   const defaultFormValues = useMemo(() => {
     return augmentedFormFields.reduce<FormFieldValues>((acc, field) => {
+      // If server returns field with default value, use that.
       if (hasExistingFieldValue(field)) {
         acc[field._id] = extractPreviewValue(field)
+        return acc
+      }
+
+      // Use prefill value if exists.
+      if (fieldPrefillMap[field._id]) {
+        acc[field._id] = fieldPrefillMap[field._id]
         return acc
       }
 
@@ -54,7 +81,7 @@ export const FormFields = ({
       }
       return acc
     }, {})
-  }, [augmentedFormFields])
+  }, [augmentedFormFields, fieldPrefillMap])
 
   const formMethods = useForm<FormFieldValues>({
     defaultValues: defaultFormValues,
