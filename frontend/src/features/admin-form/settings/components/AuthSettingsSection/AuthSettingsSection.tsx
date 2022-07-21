@@ -6,12 +6,15 @@ import {
   useMemo,
   useState,
 } from 'react'
-import { Box, Skeleton } from '@chakra-ui/react'
+import { Box, Icon, Skeleton } from '@chakra-ui/react'
 
 import { FormAuthType, FormSettings, FormStatus } from '~shared/types/form'
 
+import { BxsHelpCircle } from '~assets/icons/BxsHelpCircle'
 import InlineMessage from '~components/InlineMessage'
+import Link from '~components/Link'
 import Radio from '~components/Radio'
+import Tooltip from '~components/Tooltip'
 
 import { useMutateFormSettings } from '../../mutations'
 
@@ -94,6 +97,21 @@ export const AuthSettingsSection = ({
     ][]
   }, [settings.responseMode])
 
+  const sgidTip = useMemo(
+    () =>
+      `Free Singpass authentication via Singpass app QR code login. Respondents\ 
+      must have the Singpass mobile app installed to log in and submit \
+      responses. Password login is not supported. Form admin will receive respondent's NRIC.`,
+    [],
+  )
+
+  const cpTip = useMemo(
+    () =>
+      `Corppass no longer has its own login page, and now uses Singpass to\
+      authenticate corporate users. You will still need a separate Corppass e-service ID.`,
+    [],
+  )
+
   return (
     <Box>
       {isFormPublic ? (
@@ -112,6 +130,26 @@ export const AuthSettingsSection = ({
             <Box onClick={handleOptionClick(authType)}>
               <Radio value={authType} isDisabled={isDisabled}>
                 {text}
+                {authType === FormAuthType.SGID ? (
+                  <>
+                    <Tooltip label={sgidTip} placement="top" textAlign="center">
+                      <Icon as={BxsHelpCircle} aria-hidden marginX="0.5rem" />
+                    </Tooltip>
+                    <Link
+                      href="https://go.gov.sg/sgid-formsg"
+                      isExternal
+                      // Needed for link to open since there are nested onClicks
+                      onClickCapture={(e) => e.stopPropagation()}
+                    >
+                      Contact us to find out more
+                    </Link>
+                  </>
+                ) : null}
+                {authType === FormAuthType.CP ? (
+                  <Tooltip label={cpTip} placement="top" textAlign="center">
+                    <Icon as={BxsHelpCircle} aria-hidden ml="0.5rem" />
+                  </Tooltip>
+                ) : null}
               </Radio>
             </Box>
             {authType !== FormAuthType.NIL && authType === settings.authType ? (
