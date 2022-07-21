@@ -29,6 +29,11 @@ export type BaseFieldProps = {
    * If not provided, will default to given `schema._id`.
    */
   errorKey?: string
+
+  /**
+   * Whether or not the field was prefilled.
+   */
+  isPrefilled?: boolean
 }
 
 export interface FieldContainerProps extends BaseFieldProps {

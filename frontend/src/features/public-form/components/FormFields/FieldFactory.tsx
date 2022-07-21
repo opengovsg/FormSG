@@ -38,68 +38,69 @@ import {
 
 interface FieldFactoryProps {
   field: FormFieldWithQuestionNo
+  isPrefilled?: boolean
   colorTheme?: FormColorTheme
 }
 
 export const FieldFactory = memo(
-  ({ field, colorTheme }: FieldFactoryProps) => {
+  ({ field, ...rest }: FieldFactoryProps) => {
     switch (field.fieldType) {
       case BasicField.Section:
-        return <SectionField schema={field} colorTheme={colorTheme} />
+        return <SectionField schema={field} {...rest} />
       case BasicField.Checkbox:
-        return <CheckboxField schema={field} colorTheme={colorTheme} />
+        return <CheckboxField schema={field} {...rest} />
       case BasicField.Radio:
-        return <RadioField schema={field} colorTheme={colorTheme} />
+        return <RadioField schema={field} {...rest} />
       case BasicField.Nric:
-        return <NricField schema={field} colorTheme={colorTheme} />
+        return <NricField schema={field} {...rest} />
       case BasicField.Number:
-        return <NumberField schema={field} colorTheme={colorTheme} />
+        return <NumberField schema={field} {...rest} />
       case BasicField.Decimal:
-        return <DecimalField schema={field} colorTheme={colorTheme} />
+        return <DecimalField schema={field} {...rest} />
       case BasicField.ShortText:
-        return <ShortTextField schema={field} colorTheme={colorTheme} />
+        return <ShortTextField schema={field} {...rest} />
       case BasicField.LongText:
-        return <LongTextField schema={field} colorTheme={colorTheme} />
+        return <LongTextField schema={field} {...rest} />
       case BasicField.YesNo:
-        return <YesNoField schema={field} colorTheme={colorTheme} />
+        return <YesNoField schema={field} {...rest} />
       case BasicField.Dropdown:
-        return <DropdownField schema={field} colorTheme={colorTheme} />
+        return <DropdownField schema={field} {...rest} />
       case BasicField.Date:
-        return <DateField schema={field} colorTheme={colorTheme} />
+        return <DateField schema={field} {...rest} />
       case BasicField.Uen:
-        return <UenField schema={field} colorTheme={colorTheme} />
+        return <UenField schema={field} {...rest} />
       case BasicField.Attachment:
-        return <AttachmentField schema={field} colorTheme={colorTheme} />
+        return <AttachmentField schema={field} {...rest} />
       case BasicField.HomeNo:
-        return <HomeNoField schema={field} colorTheme={colorTheme} />
+        return <HomeNoField schema={field} {...rest} />
       case BasicField.Mobile: {
         return field.isVerifiable ? (
           <VerifiableMobileField
             schema={field as VerifiableMobileFieldSchema}
-            colorTheme={colorTheme}
+            {...rest}
           />
         ) : (
-          <MobileField schema={field} colorTheme={colorTheme} />
+          <MobileField schema={field} {...rest} />
         )
       }
       case BasicField.Statement:
-        return <ParagraphField schema={field} colorTheme={colorTheme} />
+        return <ParagraphField schema={field} {...rest} />
       case BasicField.Rating:
-        return <RatingField schema={field} colorTheme={colorTheme} />
+        return <RatingField schema={field} {...rest} />
       case BasicField.Email: {
         return field.isVerifiable ? (
           <VerifiableEmailField
             schema={field as VerifiableEmailFieldSchema}
-            colorTheme={colorTheme}
+            {...rest}
           />
         ) : (
-          <EmailField schema={field} colorTheme={colorTheme} />
+          <EmailField schema={field} {...rest} />
         )
       }
       case BasicField.Image:
-        return <ImageField schema={field} colorTheme={colorTheme} />
+        return <ImageField schema={field} {...rest} />
       case BasicField.Table:
-        return <TableField schema={field} colorTheme={colorTheme} />
+        return <TableField schema={field} {...rest} />
     }
   },
   (prevProps, nextProps) =>
