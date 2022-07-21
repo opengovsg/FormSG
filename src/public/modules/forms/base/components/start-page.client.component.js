@@ -17,11 +17,11 @@ angular.module('forms').component('startPageComponent', {
     isTemplate: '<',
     formLogin: '&',
   },
-  controller: ['SpcpSession', 'Toastr', startPageController],
+  controller: ['SpcpSession', 'Toastr', '$window', startPageController],
   controllerAs: 'vm',
 })
 
-function startPageController(SpcpSession, Toastr) {
+function startPageController(SpcpSession, Toastr, $window) {
   const vm = this
 
   vm.formLogout = SpcpSession.logout
@@ -31,6 +31,7 @@ function startPageController(SpcpSession, Toastr) {
   }
 
   vm.$onInit = () => {
+    $window.document.title = this.formTitle
     vm.userName = SpcpSession.userName
     vm.FormLogoState = FormLogoState
 
@@ -43,6 +44,10 @@ function startPageController(SpcpSession, Toastr) {
         'There was an unexpected error with your log in. Please try again later.',
       )
     }
+  }
+
+  vm.$onDestroy = () => {
+    $window.document.title = 'FormSG'
   }
 
   const isInViewport = function () {

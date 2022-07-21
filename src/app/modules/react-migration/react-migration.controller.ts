@@ -1,6 +1,6 @@
 import path from 'path'
 
-import { FormAuthType } from '../../../../shared/types'
+import { FormAuthType, UiCookieValues } from '../../../../shared/types'
 import config from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { ControllerHandler } from '../core/core.types'
@@ -8,11 +8,6 @@ import * as FormService from '../form/form.service'
 import * as PublicFormController from '../form/public-form/public-form.controller'
 import { RedirectParams } from '../form/public-form/public-form.types'
 import * as HomeController from '../home/home.controller'
-
-export enum UiCookieValues {
-  React = 'react',
-  Angular = 'angular',
-}
 
 export type SetEnvironmentParams = {
   ui: UiCookieValues

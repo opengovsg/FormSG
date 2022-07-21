@@ -1,15 +1,18 @@
 import { useCallback, useMemo, useState } from 'react'
 import { useThrottle } from 'react-use'
 import { Box, MenuButton, Text, useDisclosure } from '@chakra-ui/react'
+import simplur from 'simplur'
 
 import { BxsChevronDown } from '~assets/icons/BxsChevronDown'
 import { BxsChevronUp } from '~assets/icons/BxsChevronUp'
 import { useTimeout } from '~hooks/useTimeout'
+import { useToast } from '~hooks/useToast'
 import Badge from '~components/Badge'
 import Button from '~components/Button'
 import Menu from '~components/Menu'
 
 import { useStorageResponsesContext } from '../StorageResponsesContext'
+import { CanceledResult, DownloadResult } from '../types'
 import useDecryptionWorkers from '../useDecryptionWorkers'
 
 import { DownloadWithAttachmentModal } from './DownloadWithAttachmentModal'
@@ -20,12 +23,22 @@ export const DownloadButton = (): JSX.Element => {
     isOpen: isDownloadModalOpen,
     onClose: onDownloadModalClose,
     onOpen: onDownloadModalOpen,
-  } = useDisclosure()
+  } = useDisclosure({
+    // Reset metadata if it exists.
+    onOpen: () => setDownloadMetadata(undefined),
+  })
   const {
     isOpen: isProgressModalOpen,
     onClose: onProgressModalClose,
     onOpen: onProgressModalOpen,
-  } = useDisclosure()
+  } = useDisclosure({
+    // Reset metadata if it exists.
+    onOpen: () => setDownloadMetadata(undefined),
+  })
+
+  const toast = useToast({
+    isClosable: true,
+  })
 
   const [progressModalTimeout, setProgressModalTimeout] = useState<
     number | null
@@ -43,14 +56,48 @@ export const DownloadButton = (): JSX.Element => {
 
   useTimeout(onProgressModalOpen, progressModalTimeout)
 
+  const [downloadMetadata, setDownloadMetadata] = useState<
+    DownloadResult | CanceledResult
+  >()
+
   const { handleExportCsvMutation, abortDecryption } = useDecryptionWorkers({
     onProgress: setDownloadCount,
     mutateProps: {
-      onSuccess: () => {
-        onDownloadModalClose()
+      onMutate: () => {
+        // Reset metadata if it exists.
+        setDownloadMetadata(undefined)
       },
-      onSettled: () => {
-        resetDownload()
+      onSuccess: ({ successCount, expectedCount, errorCount }) => {
+        if (downloadParams?.responsesCount === 0) {
+          toast({
+            description: 'No responses to download',
+          })
+          return
+        }
+        if (errorCount > 0) {
+          toast({
+            status: 'warning',
+            description: simplur`Partial success. ${successCount}/${expectedCount} ${[
+              successCount,
+            ]}response[|s] [was|were] decrypted. ${errorCount} failed.`,
+          })
+          return
+        }
+        toast({
+          description: simplur`Success. ${successCount}/${expectedCount} ${[
+            successCount,
+          ]}response[|s] [was|were] decrypted.`,
+        })
+      },
+      onError: () => {
+        toast({
+          status: 'danger',
+          description: 'Failed to start download. Please try again later.',
+        })
+      },
+      onSettled: (decryptResult) => {
+        setProgressModalTimeout(null)
+        setDownloadMetadata(decryptResult)
       },
     },
   })
@@ -79,10 +126,26 @@ export const DownloadButton = (): JSX.Element => {
     onProgressModalClose()
   }, [abortDecryption, onProgressModalClose])
 
-  const handleAbortDecryption = useCallback(() => {
+  const handleModalClose = useCallback(() => {
     resetDownload()
+    onDownloadModalClose()
     onProgressModalClose()
-  }, [onProgressModalClose, resetDownload])
+    setDownloadMetadata(undefined)
+  }, [onDownloadModalClose, onProgressModalClose, resetDownload])
+
+  const handleNoAttachmentsDownloadCancel = useCallback(() => {
+    handleModalClose()
+    toast({
+      status: 'warning',
+      description: 'Responses download has been canceled.',
+    })
+    setDownloadMetadata({ isCanceled: true })
+  }, [handleModalClose, toast])
+
+  const handleAttachmentsDownloadCancel = useCallback(() => {
+    resetDownload()
+    setDownloadMetadata({ isCanceled: true })
+  }, [resetDownload])
 
   return (
     <>
@@ -90,19 +153,22 @@ export const DownloadButton = (): JSX.Element => {
         <DownloadWithAttachmentModal
           responsesCount={dateRangeResponsesCount}
           isOpen={isDownloadModalOpen}
-          onClose={onDownloadModalClose}
+          onClose={handleModalClose}
           onDownload={handleExportCsvWithAttachments}
-          onCancel={resetDownload}
+          onCancel={handleAttachmentsDownloadCancel}
           downloadPercentage={downloadPercentage}
           isDownloading={handleExportCsvMutation.isLoading}
+          downloadMetadata={downloadMetadata}
         />
       )}
       {dateRangeResponsesCount !== undefined && (
         <ProgressModal
           isOpen={isProgressModalOpen}
-          onClose={handleAbortDecryption}
+          onClose={handleModalClose}
+          onCancel={handleNoAttachmentsDownloadCancel}
           downloadPercentage={downloadPercentage}
           isDownloading={handleExportCsvMutation.isLoading}
+          downloadMetadata={downloadMetadata}
         >
           <Text mb="1rem">
             <b>{dateRangeResponsesCount.toLocaleString()}</b> responses are

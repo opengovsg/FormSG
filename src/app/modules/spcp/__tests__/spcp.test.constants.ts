@@ -46,6 +46,7 @@ export const MOCK_SERVICE_PARAMS: ISpcpMyInfo = {
   spOidcRpRedirectUrl: 'spOidcRpRedirectUrl',
   spOidcRpJwksPublicPath: 'tests/certs/test_rp_public_jwks.json',
   spOidcRpJwksSecretPath: 'tests/certs/test_rp_secret_jwks.json',
+  cpOidcRpJwksPublicPath: 'tests/certs/test_rp_public_jwks.json',
 }
 
 export const MOCK_ESRVCID = 'eServiceId'

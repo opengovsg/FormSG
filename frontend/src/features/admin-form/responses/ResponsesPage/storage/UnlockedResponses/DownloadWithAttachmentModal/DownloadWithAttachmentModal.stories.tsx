@@ -53,3 +53,43 @@ DownloadingStateDesktop.args = {
 export const DownloadingStateMobile = Template.bind({})
 DownloadingStateMobile.args = DownloadingStateDesktop.args
 DownloadingStateMobile.parameters = getMobileViewParameters()
+
+export const CompleteStateDesktop = Template.bind({})
+CompleteStateDesktop.args = {
+  downloadMetadata: {
+    errorCount: 0,
+    successCount: 12345,
+    expectedCount: 12345,
+  },
+}
+
+export const CompleteStateMobile = Template.bind({})
+CompleteStateMobile.args = CompleteStateDesktop.args
+CompleteStateMobile.parameters = getMobileViewParameters()
+
+export const CanceledStateDesktop = Template.bind({})
+CanceledStateDesktop.args = {
+  downloadMetadata: {
+    isCanceled: true,
+  },
+}
+
+export const PartialSuccessStateDesktop = Template.bind({})
+PartialSuccessStateDesktop.args = {
+  downloadMetadata: {
+    errorCount: 10,
+    successCount: 12335,
+    expectedCount: 12345,
+  },
+}
+
+export const PartialSuccessStateMobile = Template.bind({})
+PartialSuccessStateMobile.args = {
+  downloadMetadata: {
+    errorCount: 10,
+    successCount: 1,
+    expectedCount: 11,
+  },
+}
+
+PartialSuccessStateMobile.parameters = getMobileViewParameters()

@@ -1,24 +1,61 @@
-import { ComponentMultiStyleConfig } from '@chakra-ui/react'
+import { avatarAnatomy as parts } from '@chakra-ui/anatomy'
+import { ThemingProps } from '@chakra-ui/react'
+import { PartsStyleFunction, SystemStyleObject } from '@chakra-ui/theme-tools'
 
-export const Avatar: ComponentMultiStyleConfig = {
-  parts: ['container', 'badge', 'usernameItem', 'usernameIcon'],
-  baseStyle: {
+import { textStyles } from '../textStyles'
+
+const baseStyle: PartsStyleFunction<typeof parts> = ({ colorScheme: c }) => {
+  return {
     container: {
-      backgroundColor: 'primary.500',
-      fontStyle: 'subhead-2',
-      width: '2.5rem',
-      height: '2.5rem',
+      bg: `${c}.500`,
       color: 'white',
+      textStyle: 'subhead-2',
     },
     badge: {
-      borderColor: 'white',
       bg: 'danger.500',
-      width: '0.55rem',
-      height: '0.55rem',
-      borderWidth: '0.0625rem',
-      position: 'absolute',
-      top: '2.125rem',
-      left: '2.125rem',
+      border: '1px solid white',
+      transform: 'none',
     },
+  }
+}
+
+const getBadgePlacement = (size: ThemingProps['size']): SystemStyleObject => {
+  switch (size) {
+    // Update width and height calculation in the future if needed.
+    default:
+      return {
+        bottom: '1px',
+        right: '1px',
+        borderWidth: '1px',
+        // 20% of container width + 1px border left right.
+        w: 'calc(20% + 2px)',
+        h: 'calc(20% + 2px)',
+      }
+  }
+}
+
+const sizes = {
+  xs: { badge: getBadgePlacement('xs') },
+  sm: { badge: getBadgePlacement('sm') },
+  md: {
+    container: {
+      width: '2.5rem',
+      height: '2.5rem',
+      fontSize: textStyles['subhead-2'].fontSize,
+    },
+    label: textStyles['subhead-2'],
+    badge: getBadgePlacement('md'),
+  },
+  lg: { badge: getBadgePlacement('lg') },
+  xl: { badge: getBadgePlacement('xl') },
+}
+
+export const Avatar = {
+  parts: parts.keys,
+  sizes,
+  baseStyle,
+  defaultProps: {
+    size: 'md',
+    colorScheme: 'primary',
   },
 }
