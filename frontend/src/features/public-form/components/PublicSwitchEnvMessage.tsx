@@ -6,7 +6,7 @@ import { publicChooseEnvironment } from '~services/EnvService'
 import InlineMessage from '~components/InlineMessage'
 import Link from '~components/Link'
 
-export const SwitchEnvMessage = (): JSX.Element => {
+export const PublicSwitchEnvMessage = (): JSX.Element => {
   const switchToUi = UiCookieValues.Angular
 
   const handleClick = async () => {

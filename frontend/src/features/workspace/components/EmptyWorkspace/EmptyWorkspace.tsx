@@ -4,6 +4,8 @@ import { Flex, Text } from '@chakra-ui/react'
 import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
 
+import { AdminSwitchEnvMessage } from '../AdminSwitchEnvMessage'
+
 import { EmptyWorkspaceSvgr } from './EmptyWorkspaceSvgr'
 
 export interface EmptyWorkspacePage {
@@ -26,6 +28,7 @@ export const EmptyWorkspace = ({
       py="1rem"
       bg="neutral.100"
     >
+      <AdminSwitchEnvMessage />
       <Text as="h2" textStyle="h2" color="primary.500" mb="1rem">
         You don't have any forms yet
       </Text>

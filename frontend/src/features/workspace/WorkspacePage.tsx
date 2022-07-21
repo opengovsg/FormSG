@@ -21,6 +21,7 @@ import { RolloutAnnouncementModal } from '~features/rollout-announcement/Rollout
 import { EmergencyContactModal } from '~features/user/emergency-contact/EmergencyContactModal'
 import { useUser } from '~features/user/queries'
 
+import { AdminSwitchEnvMessage } from './components/AdminSwitchEnvMessage'
 import CreateFormModal from './components/CreateFormModal'
 import { EmptyWorkspace } from './components/EmptyWorkspace'
 import { WorkspaceFormRows } from './components/WorkspaceFormRow'
@@ -150,6 +151,7 @@ export const WorkspacePage = (): JSX.Element => {
         isOpen={createFormModalDisclosure.isOpen}
         onClose={createFormModalDisclosure.onClose}
       />
+
       {totalFormCount === 0 ? (
         <EmptyWorkspace
           handleOpenCreateFormModal={createFormModalDisclosure.onOpen}
@@ -170,6 +172,7 @@ export const WorkspacePage = (): JSX.Element => {
             px="2rem"
             py="1rem"
           >
+            <AdminSwitchEnvMessage />
             <WorkspaceHeader
               isLoading={isLoading}
               totalFormCount={totalFormCount}

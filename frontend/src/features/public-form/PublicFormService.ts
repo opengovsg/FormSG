@@ -17,7 +17,7 @@ import {
   createEncryptedSubmissionData,
 } from './utils/createSubmission'
 
-const PUBLIC_FORMS_ENDPOINT = '/forms'
+export const PUBLIC_FORMS_ENDPOINT = '/forms'
 
 /**
  * Gets public view of form, along with any
