@@ -125,7 +125,7 @@
     "jszip": "^3.10.0",
     "jwk-to-pem": "^2.0.5",
     "jwt-decode": "^3.1.2",
-    "libphonenumber-js": "^1.10.8",
+    "libphonenumber-js": "^1.10.9",
     "lodash": "^4.17.21",
     "moment-timezone": "0.5.34",
     "mongodb-uri": "^0.9.7",
