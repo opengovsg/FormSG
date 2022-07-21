@@ -42,6 +42,7 @@ export const SidebarLink = ({
       top: offsetPosition,
       behavior: 'smooth',
     })
+    sectionRef.current.focus()
   }, [miniHeaderRef, sectionMeta._id, sectionRefs, onMobileDrawerClose])
 
   const styles = useStyleConfig('Link', {

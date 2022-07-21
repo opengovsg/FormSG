@@ -16,7 +16,10 @@ export interface SectionFieldProps extends SectionFieldContainerProps {
 
 // Used by SectionFieldContainer
 export const SectionField = forwardRef<SectionFieldProps, 'div'>(
-  ({ schema, colorTheme = FormColorTheme.Blue, handleSectionEnter }, ref) => {
+  (
+    { schema, colorTheme = FormColorTheme.Blue, handleSectionEnter, ...rest },
+    ref,
+  ) => {
     const sectionColor = useMemo(() => {
       switch (colorTheme) {
         case FormColorTheme.Orange:
@@ -25,7 +28,7 @@ export const SectionField = forwardRef<SectionFieldProps, 'div'>(
         default:
           return `theme-${colorTheme}.500` as const
       }
-    }, [])
+    }, [colorTheme])
 
     return (
       <Box
@@ -34,13 +37,22 @@ export const SectionField = forwardRef<SectionFieldProps, 'div'>(
         }}
       >
         {/* id given so app can scrolled to this section */}
-        <Box id={schema._id} ref={ref}>
+        <Box
+          id={schema._id}
+          ref={ref}
+          {...rest}
+          _focus={{
+            boxShadow: `0 0 0 2px var(--chakra-colors-theme-${colorTheme}-500)`,
+          }}
+        >
           <Text textStyle="h2" color={sectionColor}>
             {schema.title}
           </Text>
-          <Text textStyle="body-1" color="secondary.700" mt="1rem">
-            {schema.description}
-          </Text>
+          {schema.description && (
+            <Text textStyle="body-1" color="secondary.700" mt="1rem">
+              {schema.description}
+            </Text>
+          )}
         </Box>
         <Waypoint
           topOffset="80px"

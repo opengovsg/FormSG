@@ -20,6 +20,8 @@ export const SectionFieldContainer = ({
   return (
     <SectionField
       ref={sectionRefs[schema._id]}
+      // Allow focus on section title when sidebar link is clicked.
+      tabIndex={-1}
       schema={schema}
       colorTheme={colorTheme}
       handleSectionEnter={() => setActiveSectionId(schema._id)}
