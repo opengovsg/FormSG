@@ -26,6 +26,23 @@ const createDateFieldSchema = () => {
     invalidDaysOfTheWeek: {
       type: [Number],
       enum: [...Object.values(DaysOfTheWeek)],
+      validate: {
+        async validator(this: IDateFieldSchema) {
+          if (!this.invalidDaysOfTheWeek) {
+            return true
+          }
+
+          const daysOfTheWeekValues = Object.values(DaysOfTheWeek).filter(
+            (v) => !isNaN(Number(v)),
+          )
+          for (const daysOfTheWeek of this.invalidDaysOfTheWeek) {
+            if (!daysOfTheWeekValues.includes(daysOfTheWeek)) {
+              return false
+            }
+          }
+          return true
+        },
+      },
     },
   })
 }
