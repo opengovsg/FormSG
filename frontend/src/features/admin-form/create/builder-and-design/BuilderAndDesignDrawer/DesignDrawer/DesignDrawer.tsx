@@ -10,7 +10,6 @@ import { useParams } from 'react-router-dom'
 import { useDebounce } from 'react-use'
 import {
   Box,
-  Button,
   Divider,
   Flex,
   FormControl,
@@ -20,27 +19,13 @@ import {
   Tabs,
   Text,
   Textarea,
-  toast,
 } from '@chakra-ui/react'
-import { resetTelemetry } from '@datadog/browser-core'
 import { cloneDeep, get, isEmpty } from 'lodash'
 
-import {
-  MAX_UPLOAD_FILE_SIZE,
-  MB,
-  VALID_UPLOAD_FILE_TYPES,
-} from '~shared/constants/file'
-import {
-  CustomFormLogo,
-  FormColorTheme,
-  FormLogoState,
-  FormStartPage,
-} from '~shared/types'
+import { CustomFormLogo, FormColorTheme, FormLogoState } from '~shared/types'
 
-import { useIsMobile } from '~hooks/useIsMobile'
 import { useToast } from '~hooks/useToast'
-import { UploadedFileData, uploadLogo } from '~services/FileHandlerService'
-import Attachment from '~components/Field/Attachment'
+import { uploadLogo } from '~services/FileHandlerService'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import NumberInput from '~components/NumberInput'
 import Radio from '~components/Radio'
@@ -53,11 +38,9 @@ import { getTitleBg } from '~features/public-form/components/FormStartPage/useFo
 import { useCreateTabForm } from '../../useCreateTabForm'
 import {
   CustomLogoMeta,
-  customLogoMetaDataSelector,
   FormStartPageInput,
-  resetCustomLogoMetaDataSelector,
   resetDesignStoreSelector,
-  setCustomLogoFileSelector,
+  setAttachmentSelector,
   setCustomLogoMetaDataSelector,
   setStartPageInputDataSelector,
   startPageInputDataSelector,
@@ -70,7 +53,6 @@ import { FormFieldDrawerActions } from '../EditFieldDrawer/edit-fieldtype/common
 import { UploadImageInput } from '../EditFieldDrawer/edit-fieldtype/EditImage/UploadImageInput'
 
 export const DesignDrawer = (): JSX.Element | null => {
-  const isMobile = useIsMobile()
   const toast = useToast({ status: 'danger' })
   const { data: form } = useCreateTabForm()
   const { formId } = useParams()
@@ -90,19 +72,15 @@ export const DesignDrawer = (): JSX.Element | null => {
 
   const {
     startPageData,
-    customLogoMeta,
     setStartPageData,
-    setCustomLogoFile,
+    setAttachment,
     setCustomLogoMeta,
-    resetCustomLogoMeta,
     resetDesignStore,
   } = useDesignStore((state) => ({
     startPageData: startPageInputDataSelector(state),
-    customLogoMeta: customLogoMetaDataSelector(state),
     setStartPageData: setStartPageInputDataSelector(state),
-    setCustomLogoFile: setCustomLogoFileSelector(state),
+    setAttachment: setAttachmentSelector(state),
     setCustomLogoMeta: setCustomLogoMetaDataSelector(state),
-    resetCustomLogoMeta: resetCustomLogoMetaDataSelector(state),
     resetDesignStore: resetDesignStoreSelector(state),
   }))
 
@@ -116,31 +94,31 @@ export const DesignDrawer = (): JSX.Element | null => {
     setError,
   } = useForm<FormStartPageInput>({
     mode: 'onBlur',
-    defaultValues: { ...form?.startPage, customLogoFile: {} },
+    defaultValues: { ...form?.startPage, attachment: {} },
   })
 
   // On mount, fetch custom logo file to display as part of attachment field.
-  const setCustomLogoFileOnMount = useCallback(
+  const setAttachmentOnMount = useCallback(
     async (logo: CustomFormLogo) => {
       const srcUrl = `${logoBucketUrl}/${logo.fileId}`
       const customLogoBlob = await fetch(srcUrl).then((res) => res.blob())
-      setCustomLogoFile({
+      setAttachment({
         file: new File([customLogoBlob], logo.fileName),
         srcUrl,
       })
       setExistingCustomLogoFetched(true)
     },
-    [logoBucketUrl, setCustomLogoFile],
+    [logoBucketUrl, setAttachment],
   )
 
   // Load existing start page and custom logo into form when user opens drawer
   useEffect(() => {
     setStartPageData({
       ...form?.startPage,
-      customLogoFile: {},
+      attachment: {},
     } as FormStartPageInput)
     if (form?.startPage.logo.state === FormLogoState.Custom) {
-      setCustomLogoFileOnMount(form?.startPage.logo)
+      setAttachmentOnMount(form?.startPage.logo)
       setCustomLogoMeta(form?.startPage.logo)
     }
     return () => resetDesignStore()
@@ -148,8 +126,8 @@ export const DesignDrawer = (): JSX.Element | null => {
 
   useEffect(
     () =>
-      resetField('customLogoFile', {
-        defaultValue: startPageData?.customLogoFile,
+      resetField('attachment', {
+        defaultValue: startPageData?.attachment,
       }),
     [existingCustomLogoFetched],
   )
@@ -163,16 +141,11 @@ export const DesignDrawer = (): JSX.Element | null => {
     [watchedInputs],
   )
 
-  useDebounce(
-    () => {
-      console.log(clonedWatchedInputs)
-      setStartPageData(clonedWatchedInputs)
-    },
-    300,
-    [clonedWatchedInputs],
-  )
+  useDebounce(() => setStartPageData(clonedWatchedInputs), 300, [
+    clonedWatchedInputs,
+  ])
 
-  // Save design functions
+  // Save design handlers
   const uploadLogoMutation = useMutation((image: File) =>
     uploadLogo({ formId, image }),
   )
@@ -180,14 +153,11 @@ export const DesignDrawer = (): JSX.Element | null => {
   const handleUploadLogo = useCallback(
     (startPageData: FormStartPageInput): Promise<CustomLogoMeta> | null => {
       if (startPageData?.logo.state !== FormLogoState.Custom) return null
-      if (
-        !startPageData.customLogoFile.file ||
-        !startPageData.customLogoFile.srcUrl
-      )
+      if (!startPageData.attachment.file || !startPageData.attachment.srcUrl)
         throw new Error('Design pre-submit validation failed')
-      if (!startPageData.customLogoFile.srcUrl.startsWith('blob:')) return null
+      if (!startPageData.attachment.srcUrl.startsWith('blob:')) return null
       return uploadLogoMutation
-        .mutateAsync(startPageData.customLogoFile.file)
+        .mutateAsync(startPageData.attachment.file)
         .then((uploadedFileData) => {
           return {
             fileName: uploadedFileData.name,
@@ -201,7 +171,7 @@ export const DesignDrawer = (): JSX.Element | null => {
 
   const handleUpdateDesign = handleSubmit(
     async (startPageData: FormStartPageInput) => {
-      const { logo, customLogoFile, estTimeTaken, ...rest } = startPageData
+      const { logo, attachment, estTimeTaken, ...rest } = startPageData
       const estTimeTakenTransformed =
         estTimeTaken === '' ? undefined : estTimeTaken
       if (logo.state !== FormLogoState.Custom)
@@ -235,8 +205,6 @@ export const DesignDrawer = (): JSX.Element | null => {
     })
   }, [handleUpdateDesign, toast])
 
-  const handleCancel = useCallback(() => handleClose(), [handleClose])
-
   if (!startPageData) return null
 
   return (
@@ -254,7 +222,7 @@ export const DesignDrawer = (): JSX.Element | null => {
       <DrawerContentContainer>
         <FormControl
           isReadOnly={isLoading}
-          isInvalid={!isEmpty(errors.customLogoFile)}
+          isInvalid={!isEmpty(errors.attachment)}
         >
           <FormLabel>Logo</FormLabel>
           <Radio.RadioGroup
@@ -279,7 +247,7 @@ export const DesignDrawer = (): JSX.Element | null => {
               }
             >
               <Controller
-                name="customLogoFile"
+                name="attachment"
                 control={control}
                 rules={{
                   validate: (val) => {
@@ -293,17 +261,15 @@ export const DesignDrawer = (): JSX.Element | null => {
                   <UploadImageInput
                     {...rest}
                     onChange={(event) => {
-                      clearErrors('customLogoFile')
+                      clearErrors('attachment')
                       onChange(event)
                     }}
-                    onError={(message) =>
-                      setError('customLogoFile', { message })
-                    }
+                    onError={(message) => setError('attachment', { message })}
                   />
                 )}
               />
               <FormErrorMessage>
-                {get(errors, 'customLogoFile.message')}
+                {get(errors, 'attachment.message')}
               </FormErrorMessage>
             </Box>
             <Skeleton w="100%" h="4.5rem" hidden={existingCustomLogoFetched} />
@@ -384,7 +350,7 @@ export const DesignDrawer = (): JSX.Element | null => {
           isLoading={isLoading}
           isSaveEnabled={isDirty}
           handleClick={handleClick}
-          handleCancel={handleCancel}
+          handleCancel={handleClose}
           buttonText="Save design"
         />
       </DrawerContentContainer>

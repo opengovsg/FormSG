@@ -42,7 +42,7 @@ export const StartPageView = () => {
         ...rest,
       }
     }
-    setShowLogo(!!startPageData?.customLogoFile.srcUrl)
+    setShowLogo(!!startPageData?.attachment.srcUrl)
     return {
       logo: {
         state: FormLogoState.Custom,
@@ -80,7 +80,7 @@ export const StartPageView = () => {
           hasLogo={hasLogo}
           logoImgSrc={
             startPageData?.logo.state === FormLogoState.Custom
-              ? startPageData?.customLogoFile.srcUrl // manual override for admin to preview custom logo
+              ? startPageData.attachment.srcUrl // manual override to preview custom logo
               : logoImgSrc
           }
           logoImgAlt={logoImgAlt}

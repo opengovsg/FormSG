@@ -9,7 +9,7 @@ import { UploadedImage } from './BuilderAndDesignDrawer/EditFieldDrawer/edit-fie
 export type CustomLogoMeta = Omit<CustomFormLogo, keyof FormLogoBase>
 
 /** Design drawer form input fields. DesignStore keeps track of the data in the
- * drawer input as a single unit. Other data (specifically the logo metadata)
+ * drawer input as a single unit. Other data (specifically the logo metadata) is
  * kept separately with its own getters and setters.
  */
 export type FormStartPageInput = Omit<
@@ -18,14 +18,14 @@ export type FormStartPageInput = Omit<
 > & {
   estTimeTaken: number | ''
   logo: FormLogoBase
-  customLogoFile: UploadedImage
+  attachment: UploadedImage // Custom logo image
 }
 
 export type DesignStore = {
   startPageInputData?: FormStartPageInput
   customLogoMetaData?: CustomLogoMeta
   setStartPageInputData: (startPageInput: FormStartPageInput) => void
-  setCustomLogoFile: (customLogoFile: UploadedImage) => void
+  setAttachment: (attachment: UploadedImage) => void
   setCustomLogoMetaData: (customLogoMetaData: CustomLogoMeta) => void
   resetCustomLogoMetaData: () => void
   resetDesignStore: () => void
@@ -40,15 +40,14 @@ export const useDesignStore = create<DesignStore>(
         startPageInputData: startPageInput,
       })
     },
-    setCustomLogoFile: (customLogoFile: UploadedImage) => {
+    setAttachment: (attachment: UploadedImage) => {
       const current = get()
       if (!current.startPageInputData) return
-      if (isEqual(current.startPageInputData?.customLogoFile, customLogoFile))
-        return
+      if (isEqual(current.startPageInputData?.attachment, attachment)) return
       set({
         startPageInputData: {
           ...current.startPageInputData,
-          customLogoFile: customLogoFile,
+          attachment,
         },
       })
     },
@@ -83,9 +82,9 @@ export const setStartPageInputDataSelector = (
   state: DesignStore,
 ): DesignStore['setStartPageInputData'] => state.setStartPageInputData
 
-export const setCustomLogoFileSelector = (
+export const setAttachmentSelector = (
   state: DesignStore,
-): DesignStore['setCustomLogoFile'] => state.setCustomLogoFile
+): DesignStore['setAttachment'] => state.setAttachment
 
 export const setCustomLogoMetaDataSelector = (
   state: DesignStore,
