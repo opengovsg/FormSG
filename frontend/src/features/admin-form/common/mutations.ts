@@ -313,6 +313,8 @@ export const useMutateCollaborators = () => {
 export const useMutateFormPage = () => {
   const { formId } = useParams()
   if (!formId) throw new Error('No formId provided')
+
+  const queryClient = useQueryClient()
   const toast = useToast({ status: 'success', isClosable: true })
 
   const handleError = useCallback(
@@ -331,6 +333,11 @@ export const useMutateFormPage = () => {
     {
       onSuccess: (newData) => {
         toast.closeAll()
+        queryClient.setQueryData<AdminFormDto | undefined>(
+          adminFormKeys.id(formId),
+          (oldData) =>
+            oldData ? { ...oldData, startPage: newData } : undefined,
+        )
         toast({
           description: 'Successfully updated form design',
         })
@@ -344,6 +351,10 @@ export const useMutateFormPage = () => {
     {
       onSuccess: (newData) => {
         toast.closeAll()
+        queryClient.setQueryData<AdminFormDto | undefined>(
+          adminFormKeys.id(formId),
+          (oldData) => (oldData ? { ...oldData, endPage: newData } : undefined),
+        )
         toast({
           description: 'Successfully updated form thank you page',
         })
