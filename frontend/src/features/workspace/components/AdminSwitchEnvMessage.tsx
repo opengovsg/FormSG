@@ -15,7 +15,7 @@ export const AdminSwitchEnvMessage = (): JSX.Element => {
   }
 
   return (
-    <InlineMessage mb="1.5rem">
+    <InlineMessage>
       <Text>
         Welcome to the new FormSG! You can still{' '}
         <Link onClick={handleClick}>switch to the original one,</Link> which is

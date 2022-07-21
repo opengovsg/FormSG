@@ -1,5 +1,5 @@
 import { BiPlus } from 'react-icons/bi'
-import { Flex, Text } from '@chakra-ui/react'
+import { Box, Flex, Text } from '@chakra-ui/react'
 
 import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
@@ -28,7 +28,9 @@ export const EmptyWorkspace = ({
       py="1rem"
       bg="neutral.100"
     >
-      <AdminSwitchEnvMessage />
+      <Box pb="1.5rem">
+        <AdminSwitchEnvMessage />
+      </Box>
       <Text as="h2" textStyle="h2" color="primary.500" mb="1rem">
         You don't have any forms yet
       </Text>

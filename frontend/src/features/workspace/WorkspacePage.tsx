@@ -161,10 +161,13 @@ export const WorkspacePage = (): JSX.Element => {
         <Grid
           bg="neutral.100"
           templateColumns="1fr"
-          templateRows="auto 1fr auto"
+          templateRows="auto auto 1fr auto"
           minH="100vh"
-          templateAreas="'header' 'main' 'footer'"
+          templateAreas="'banner' 'header' 'main' 'footer'"
         >
+          <Container gridArea="banner" maxW={CONTAINER_MAXW} pt="1.5rem">
+            <AdminSwitchEnvMessage />
+          </Container>
           <Container
             gridArea="header"
             maxW={CONTAINER_MAXW}
@@ -172,7 +175,6 @@ export const WorkspacePage = (): JSX.Element => {
             px="2rem"
             py="1rem"
           >
-            <AdminSwitchEnvMessage />
             <WorkspaceHeader
               isLoading={isLoading}
               totalFormCount={totalFormCount}
