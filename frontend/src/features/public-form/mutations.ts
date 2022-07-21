@@ -4,6 +4,7 @@ import { FormAuthType, SubmitFormFeedbackBodyDto } from '~shared/types/form'
 
 import { useToast } from '~hooks/useToast'
 
+import { useStorePrefillQuery } from './hooks/useStorePrefillQuery'
 import {
   getPublicFormAuthRedirectUrl,
   logoutPublicForm,
@@ -16,12 +17,16 @@ import {
 import { publicFormKeys } from './queries'
 
 export const usePublicAuthMutations = (formId: string) => {
+  const { storePrefillQuery } = useStorePrefillQuery()
   const queryClient = useQueryClient()
 
   const toast = useToast({ status: 'success', isClosable: true })
 
   const handleLoginMutation = useMutation(
-    () => getPublicFormAuthRedirectUrl(formId),
+    () => {
+      const encodedQuery = storePrefillQuery()
+      return getPublicFormAuthRedirectUrl(formId, false, encodedQuery)
+    },
     {
       onSuccess: (redirectUrl) => {
         window.location.assign(redirectUrl)
