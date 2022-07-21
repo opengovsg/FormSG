@@ -2,13 +2,10 @@ import { expect } from '@storybook/jest'
 import { Meta, Story } from '@storybook/react'
 import { userEvent, waitFor, within } from '@storybook/testing-library'
 
-import { BasicField, FormFieldDto } from '~shared/types/field'
+import { BasicField } from '~shared/types/field'
 import { FormAuthType, FormColorTheme } from '~shared/types/form'
 
-import {
-  MOCK_FORM_FIELDS,
-  MOCK_PREFILLED_MYINFO_FIELDS,
-} from '~/mocks/msw/handlers/admin-form'
+import { MOCK_PREFILLED_MYINFO_FIELDS } from '~/mocks/msw/handlers/admin-form'
 import { envHandlers } from '~/mocks/msw/handlers/env'
 import {
   getPublicFormErrorResponse,
@@ -49,12 +46,8 @@ const PREFILLABLE_SHORTTEXT_FIELD: ShortTextFieldSchema = {
   required: true,
   disabled: false,
   fieldType: BasicField.ShortText,
-  _id: '5da04eafe397fc0013f63c22',
+  _id: '5da04eafe397fc0013f63b22',
 }
-
-const FORM_FIELDS_WITH_PREFILL = (
-  [PREFILLABLE_SHORTTEXT_FIELD] as FormFieldDto[]
-).concat(MOCK_FORM_FIELDS)
 
 const generateMswHandlersForColorTheme = (colorTheme: FormColorTheme) => {
   return [
@@ -118,7 +111,7 @@ WithPrefilledFields.parameters = {
       delay: 0,
       overrides: {
         form: {
-          form_fields: FORM_FIELDS_WITH_PREFILL,
+          form_fields: [PREFILLABLE_SHORTTEXT_FIELD],
         },
       },
     }),
