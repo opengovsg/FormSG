@@ -1,25 +1,21 @@
 import { Text } from '@chakra-ui/react'
 
-import { UiCookieValues } from '~shared/types'
-
-import { adminChooseEnvironment } from '~services/EnvService'
+import Button from '~components/Button'
 import InlineMessage from '~components/InlineMessage'
-import Link from '~components/Link'
+
+import { useEnvMutations } from '~features/env/mutations'
 
 export const AdminSwitchEnvMessage = (): JSX.Element => {
-  const switchToUi = UiCookieValues.Angular
-
-  const handleClick = async () => {
-    await adminChooseEnvironment(switchToUi)
-    window.location.reload()
-  }
+  const { adminSwitchEnvMutation } = useEnvMutations()
 
   return (
     <InlineMessage>
       <Text>
         Welcome to the new FormSG! You can still{' '}
-        <Link onClick={handleClick}>switch to the original one,</Link> which is
-        available until 28 May 2022.
+        <Button variant="link" onClick={() => adminSwitchEnvMutation.mutate()}>
+          switch to the original one,
+        </Button>{' '}
+        which is available until 28 May 2022.
       </Text>
     </InlineMessage>
   )

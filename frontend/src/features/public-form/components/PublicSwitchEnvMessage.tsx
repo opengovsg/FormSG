@@ -1,25 +1,21 @@
 import { Text } from '@chakra-ui/react'
 
-import { UiCookieValues } from '~shared/types'
-
-import { publicChooseEnvironment } from '~services/EnvService'
+import Button from '~components/Button'
 import InlineMessage from '~components/InlineMessage'
-import Link from '~components/Link'
+
+import { useEnvMutations } from '~features/env/mutations'
 
 export const PublicSwitchEnvMessage = (): JSX.Element => {
-  const switchToUi = UiCookieValues.Angular
-
-  const handleClick = async () => {
-    await publicChooseEnvironment(switchToUi)
-    window.location.reload()
-  }
+  const { publicSwitchEnvMutation } = useEnvMutations()
 
   return (
     <InlineMessage variant="warning" mb="1.5rem" mt={{ base: '2rem', md: '0' }}>
       <Text>
         You’re filling this form on the new FormSG. If you have trouble
         submitting,{' '}
-        <Link onClick={handleClick}>switch to the original one here.</Link>
+        <Button variant="link" onClick={() => publicSwitchEnvMutation.mutate()}>
+          switch to the original one here.
+        </Button>
       </Text>
     </InlineMessage>
   )
