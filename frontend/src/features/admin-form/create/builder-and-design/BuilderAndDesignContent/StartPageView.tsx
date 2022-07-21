@@ -1,6 +1,7 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
+import { Flex, Skeleton } from '@chakra-ui/react'
 
-import { FormAuthType, FormLogoState } from '~shared/types'
+import { FormAuthType, FormLogoState, FormStartPage } from '~shared/types'
 
 import { useEnv } from '~features/env/queries'
 import { FormBannerLogo } from '~features/public-form/components/FormStartPage/FormBannerLogo'
@@ -9,34 +10,86 @@ import { useFormBannerLogo } from '~features/public-form/components/FormStartPag
 import { useFormHeader } from '~features/public-form/components/FormStartPage/useFormHeader'
 
 import { useCreateTabForm } from '../useCreateTabForm'
-import { startPageDataSelector, useDesignStore } from '../useDesignStore'
+import {
+  customLogoMetaDataSelector,
+  startPageInputDataSelector,
+  useDesignStore,
+} from '../useDesignStore'
 
 export const StartPageView = () => {
   const { data: form } = useCreateTabForm()
-  const startPageFromStore = useDesignStore(startPageDataSelector)
+  const { startPageData, customLogoMeta } = useDesignStore((state) => ({
+    startPageData: startPageInputDataSelector(state),
+    customLogoMeta: customLogoMetaDataSelector(state),
+  }))
   const { data: { logoBucketUrl } = {} } = useEnv(
     form?.startPage.logo.state === FormLogoState.Custom,
   )
 
+  const [showLogo, setShowLogo] = useState<boolean>(false)
+
+  // Transform the FormStartPageInput into a FormStartPage
+  const startPageFromStore: FormStartPage | null = useMemo(() => {
+    if (!startPageData) return null
+    const { logo, estTimeTaken, ...rest } = startPageData
+    const estTimeTakenTransformed =
+      estTimeTaken === '' ? undefined : estTimeTaken
+    if (logo.state !== FormLogoState.Custom) {
+      setShowLogo(true)
+      return {
+        logo: { state: logo.state },
+        estTimeTaken: estTimeTakenTransformed,
+        ...rest,
+      }
+    }
+    setShowLogo(!!startPageData?.customLogoFile.srcUrl)
+    return {
+      logo: {
+        state: FormLogoState.Custom,
+        // Placeholder values
+        fileId: customLogoMeta?.fileId ?? '',
+        fileName: customLogoMeta?.fileName ?? '',
+        fileSizeInBytes: customLogoMeta?.fileSizeInBytes ?? 0,
+      },
+      estTimeTaken: estTimeTakenTransformed,
+      ...rest,
+    }
+  }, [startPageData, customLogoMeta])
+
   // When drawer is opened, store is populated. We always want the drawer settings
   // to be previewed, so when the store is populated, prioritize that setting.
-  const startPage = useMemo(
-    () => (startPageFromStore ? startPageFromStore : form?.startPage),
-    [startPageFromStore, form?.startPage],
-  )
+  const startPage = useMemo(() => {
+    if (startPageFromStore) return startPageFromStore
+    setShowLogo(true)
+    return form?.startPage
+  }, [form?.startPage, startPageFromStore])
 
   // Color theme options and other design stuff, identical to public form
   const { titleColor, titleBg, estTimeString } = useFormHeader(startPage)
 
-  const formBannerLogoProps = useFormBannerLogo({
-    logoBucketUrl, // This will be conditional once the logo field is added.
+  const { hasLogo, logoImgSrc, logoImgAlt } = useFormBannerLogo({
+    logoBucketUrl,
     logo: startPage?.logo,
     agency: form?.admin.agency,
   })
 
   return (
     <>
-      <FormBannerLogo {...formBannerLogoProps} />
+      {showLogo ? (
+        <FormBannerLogo
+          hasLogo={hasLogo}
+          logoImgSrc={
+            startPageData?.logo.state === FormLogoState.Custom
+              ? startPageData?.customLogoFile.srcUrl // manual override for admin to preview custom logo
+              : logoImgSrc
+          }
+          logoImgAlt={logoImgAlt}
+        />
+      ) : (
+        <Flex justify="center" p="1rem" bg="white">
+          <Skeleton w="4rem" h="4rem" />
+        </Flex>
+      )}
       <FormHeader
         title={form?.title}
         estTimeString={estTimeString}

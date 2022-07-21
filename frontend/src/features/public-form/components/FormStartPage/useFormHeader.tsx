@@ -3,26 +3,30 @@ import simplur from 'simplur'
 
 import { FormColorTheme, FormStartPage } from '~shared/types'
 
-export const useFormHeader = (startPage: FormStartPage | undefined) => {
-  const titleColor = useMemo(() => {
-    if (startPage?.colorTheme === FormColorTheme.Orange) {
-      return 'secondary.700'
-    }
-    return 'white'
-  }, [startPage?.colorTheme])
+export const getTitleBg = (colorTheme?: FormColorTheme) =>
+  colorTheme ? `theme-${colorTheme}.500` : `neutral.200`
 
-  const titleBg = useMemo(
+export const useFormHeader = (startPage?: FormStartPage) => {
+  const titleColor = useMemo(
     () =>
-      startPage?.colorTheme
-        ? `theme-${startPage.colorTheme}.500`
-        : `neutral.200`,
+      startPage?.colorTheme === FormColorTheme.Orange
+        ? 'secondary.700'
+        : 'white',
     [startPage?.colorTheme],
   )
 
-  const estTimeString = useMemo(() => {
-    if (!startPage?.estTimeTaken) return ''
-    return simplur`${startPage.estTimeTaken} min[|s] estimated time to complete`
-  }, [startPage])
+  const titleBg = useMemo(
+    () => getTitleBg(startPage?.colorTheme),
+    [startPage?.colorTheme],
+  )
+
+  const estTimeString = useMemo(
+    () =>
+      !startPage?.estTimeTaken
+        ? ''
+        : simplur`${startPage.estTimeTaken} min[|s] estimated time to complete`,
+    [startPage?.estTimeTaken],
+  )
 
   return { titleColor, titleBg, estTimeString }
 }
