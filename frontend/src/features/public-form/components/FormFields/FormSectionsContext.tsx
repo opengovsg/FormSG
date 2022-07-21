@@ -17,6 +17,8 @@ interface FormSectionsContextProps {
   sectionRefs: Record<string, RefObject<HTMLDivElement>>
   activeSectionId?: string
   setActiveSectionId: (activeId: string) => void
+  navigatedSectionTitle?: string
+  setNavigatedSectionTitle: (title: string) => void
 }
 
 const FormSectionsContext = createContext<FormSectionsContextProps | undefined>(
@@ -40,6 +42,7 @@ export const FormSectionsProvider = ({
     [form],
   )
   const [activeSectionId, setActiveSectionId] = useState<string>()
+  const [navigatedSectionTitle, setNavigatedSectionTitle] = useState<string>()
 
   const isFirstLoad = useRef(false)
 
@@ -64,7 +67,13 @@ export const FormSectionsProvider = ({
 
   return (
     <FormSectionsContext.Provider
-      value={{ sectionRefs, activeSectionId, setActiveSectionId }}
+      value={{
+        sectionRefs,
+        activeSectionId,
+        setActiveSectionId,
+        navigatedSectionTitle,
+        setNavigatedSectionTitle,
+      }}
     >
       {children}
     </FormSectionsContext.Provider>

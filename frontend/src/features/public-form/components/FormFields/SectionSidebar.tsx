@@ -10,6 +10,7 @@ import {
   ListItem,
   Text,
   UnorderedList,
+  VisuallyHidden,
   VStack,
 } from '@chakra-ui/react'
 
@@ -21,7 +22,7 @@ import { useFormSections } from './FormSectionsContext'
 import { SidebarLink } from './SidebarLink'
 
 export const SectionSidebar = (): JSX.Element => {
-  const { activeSectionId } = useFormSections()
+  const { activeSectionId, navigatedSectionTitle } = useFormSections()
   const {
     miniHeaderRef,
     sectionScrollData,
@@ -74,7 +75,7 @@ export const SectionSidebar = (): JSX.Element => {
   return (
     <Box
       as="nav"
-      aria-label="Form headers navigation"
+      aria-label="Form sections"
       flex={1}
       d={{ base: 'none', md: 'initial' }}
       minW={sectionScrollData.length > 0 ? '20%' : undefined}
@@ -94,6 +95,11 @@ export const SectionSidebar = (): JSX.Element => {
           </ListItem>
         ))}
       </UnorderedList>
+      {navigatedSectionTitle && (
+        <VisuallyHidden aria-live="assertive" aria-atomic>
+          Navigated to {navigatedSectionTitle} section
+        </VisuallyHidden>
+      )}
     </Box>
   )
 }

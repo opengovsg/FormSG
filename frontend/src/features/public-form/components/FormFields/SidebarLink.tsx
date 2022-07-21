@@ -1,5 +1,5 @@
 import { useCallback } from 'react'
-import { Box, chakra, useStyleConfig } from '@chakra-ui/react'
+import { Box, chakra, useStyleConfig, VisuallyHidden } from '@chakra-ui/react'
 
 import {
   SidebarSectionMeta,
@@ -24,7 +24,8 @@ export const SidebarLink = ({
   isActive,
   sectionMeta,
 }: SidebarLinkProps): JSX.Element => {
-  const { sectionRefs, setActiveSectionId } = useFormSections()
+  const { sectionRefs, setActiveSectionId, setNavigatedSectionTitle } =
+    useFormSections()
   const { miniHeaderRef, onMobileDrawerClose } = usePublicFormContext()
 
   const handleClick = useCallback(() => {
@@ -44,12 +45,15 @@ export const SidebarLink = ({
     })
     sectionRef.current.focus()
     setActiveSectionId(sectionMeta._id)
+    setNavigatedSectionTitle(sectionMeta.title)
   }, [
     sectionRefs,
     sectionMeta._id,
+    sectionMeta.title,
     miniHeaderRef,
     onMobileDrawerClose,
     setActiveSectionId,
+    setNavigatedSectionTitle,
   ])
 
   const styles = useStyleConfig('Link', {
@@ -79,6 +83,7 @@ export const SidebarLink = ({
           aria-hidden
         />
       )}
+      {isActive && <VisuallyHidden>Current section:</VisuallyHidden>}
       {sectionMeta.title}
     </chakra.button>
   )
