@@ -16,7 +16,7 @@ import {
   extractPreviewValue,
   hasExistingFieldValue,
 } from '~features/myinfo/utils'
-import { useStorePrefillQuery } from '~features/public-form/hooks/useStorePrefillQuery'
+import { useFetchPrefillQuery } from '~features/public-form/hooks/useFetchPrefillQuery'
 
 import { PublicFormSubmitButton } from './PublicFormSubmitButton'
 import { VisibleFormFields } from './VisibleFormFields'
@@ -34,7 +34,7 @@ export const FormFields = ({
   colorTheme,
   onSubmit,
 }: FormFieldsProps): JSX.Element => {
-  useStorePrefillQuery()
+  useFetchPrefillQuery()
   const [searchParams] = useSearchParams()
 
   const fieldPrefillMap = useMemo(() => {

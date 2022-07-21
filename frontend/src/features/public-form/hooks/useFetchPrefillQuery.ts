@@ -26,7 +26,7 @@ const isValidStoredQuery = (
   return queryId === (storedQuery as StoredRedirectionQuery)._id
 }
 
-export const useStorePrefillQuery = () => {
+export const useFetchPrefillQuery = () => {
   const [searchParams, setSearchParams] = useSearchParams()
   const [storedQuery, setStoredQuery, removeStoredQuery] = useSessionstorage(
     STORED_QUERY_KEY,
