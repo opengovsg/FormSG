@@ -18,7 +18,12 @@ import Tooltip from '~components/Tooltip'
 
 import { useMutateFormSettings } from '../../mutations'
 
-import { AUTHTYPE_TO_TEXT, STORAGE_MODE_AUTHTYPES } from './constants'
+import {
+  AUTHTYPE_TO_TEXT,
+  CP_TOOLTIP,
+  SGID_TOOLTIP,
+  STORAGE_MODE_AUTHTYPES,
+} from './constants'
 import { EsrvcIdBox } from './EsrvcIdBox'
 
 interface AuthSettingsSectionProps {
@@ -97,21 +102,6 @@ export const AuthSettingsSection = ({
     ][]
   }, [settings.responseMode])
 
-  const sgidTip = useMemo(
-    () =>
-      `Free Singpass authentication via Singpass app QR code login. Respondents\ 
-      must have the Singpass mobile app installed to log in and submit \
-      responses. Password login is not supported. Form admin will receive respondent's NRIC.`,
-    [],
-  )
-
-  const cpTip = useMemo(
-    () =>
-      `Corppass no longer has its own login page, and now uses Singpass to\
-      authenticate corporate users. You will still need a separate Corppass e-service ID.`,
-    [],
-  )
-
   return (
     <Box>
       {isFormPublic ? (
@@ -132,7 +122,11 @@ export const AuthSettingsSection = ({
                 {text}
                 {authType === FormAuthType.SGID ? (
                   <>
-                    <Tooltip label={sgidTip} placement="top" textAlign="center">
+                    <Tooltip
+                      label={SGID_TOOLTIP}
+                      placement="top"
+                      textAlign="center"
+                    >
                       <Icon as={BxsHelpCircle} aria-hidden marginX="0.5rem" />
                     </Tooltip>
                     <Link
@@ -146,7 +140,11 @@ export const AuthSettingsSection = ({
                   </>
                 ) : null}
                 {authType === FormAuthType.CP ? (
-                  <Tooltip label={cpTip} placement="top" textAlign="center">
+                  <Tooltip
+                    label={CP_TOOLTIP}
+                    placement="top"
+                    textAlign="center"
+                  >
                     <Icon as={BxsHelpCircle} aria-hidden ml="0.5rem" />
                   </Tooltip>
                 ) : null}
