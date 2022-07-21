@@ -294,4 +294,74 @@ describe('workspaces.routes', () => {
       })
     })
   })
+
+  describe('DELETE /workspaces/:workspaceId', () => {
+    const DELETE_WORKSPACE_ENDPOINT = `/workspaces/${MOCK_WORKSPACE_ID}`
+    const DELETE_SUCCESS_MESSAGE = 'Successfully deleted workspace'
+
+    it('should return 200 with success message on successful deletion', async () => {
+      await WorkspaceModel.create(MOCK_WORKSPACE_FIELDS)
+
+      const response = await request.delete(DELETE_WORKSPACE_ENDPOINT)
+      const expected = { message: DELETE_SUCCESS_MESSAGE }
+
+      expect(response.status).toEqual(200)
+      expect(response.body).toMatchObject(expected)
+    })
+
+    it('should return 401 when user is not logged in', async () => {
+      await logoutSession(request)
+      const response = await request.delete(DELETE_WORKSPACE_ENDPOINT)
+
+      expect(response.status).toEqual(401)
+      expect(response.body).toEqual({ message: 'User is unauthorized.' })
+    })
+
+    it('should return 404 when workspace is not found', async () => {
+      const response = await request.delete(DELETE_WORKSPACE_ENDPOINT)
+
+      expect(response.status).toEqual(404)
+      expect(response.body).toEqual({
+        message: new WorkspaceNotFoundError().message,
+      })
+    })
+
+    it('should return 404 when user does not own the workspace', async () => {
+      const otherUserId = new ObjectId()
+      await dbHandler.insertUser({
+        userId: otherUserId,
+        agencyId: new ObjectId(),
+        mailName: 'different',
+      })
+      const workspaceBelongingToOtherAdmin = {
+        _id: new ObjectId(),
+        title: 'Workspace2',
+        admin: otherUserId,
+        formIds: [],
+      }
+      await WorkspaceModel.create(workspaceBelongingToOtherAdmin)
+      const response = await request.delete(DELETE_WORKSPACE_ENDPOINT)
+
+      expect(response.status).toEqual(404)
+      expect(response.body).toEqual({
+        message: new WorkspaceNotFoundError().message,
+      })
+    })
+
+    it('should return 500 when database errors occur', async () => {
+      await WorkspaceModel.create(MOCK_WORKSPACE_FIELDS)
+
+      const mockErrorMessage = 'something went wrong'
+
+      jest
+        .spyOn(WorkspaceModel, 'deleteWorkspace')
+        .mockRejectedValueOnce(new Error(mockErrorMessage))
+      const response = await request.delete(DELETE_WORKSPACE_ENDPOINT)
+
+      expect(response.status).toEqual(500)
+      expect(response.body).toEqual({
+        message: formatErrorRecoveryMessage(mockErrorMessage),
+      })
+    })
+  })
 })

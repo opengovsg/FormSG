@@ -1,11 +1,14 @@
 import { ObjectId } from 'bson-ext'
 import { omit } from 'lodash'
 import mongoose from 'mongoose'
+import { FormStatus } from 'shared/types'
 
 import { getWorkspaceModel } from 'src/app/models/workspace.server.model'
 import { IUserSchema } from 'src/types'
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
+
+import getFormModel from '../form.server.model'
 
 const Workspace = getWorkspaceModel(mongoose)
 
@@ -197,6 +200,101 @@ describe('Workspace Model', () => {
         })
 
         expect(actual).toBeNull()
+      })
+    })
+
+    describe('deleteWorkspace', () => {
+      it('should return 1 upon successful workspace deletion', async () => {
+        const shouldDeleteForms = true
+        const actual = await Workspace.deleteWorkspace(
+          MOCK_WORKSPACE_ID,
+          MOCK_USER_ID,
+          shouldDeleteForms,
+        )
+
+        expect(actual).toEqual(1)
+      })
+
+      it('forms in workspace should be archived upon successful workspace deletion', async () => {
+        const shouldDeleteForms = true
+        const FormModel = await getFormModel(mongoose)
+
+        const workspaceId = new ObjectId()
+        const workspaceObject = {
+          _id: workspaceId,
+          title: 'Workspace2',
+          admin: MOCK_USER_ID,
+          formIds: [MOCK_FORM_ID],
+        }
+        const validWorkspace = new Workspace(workspaceObject)
+        await validWorkspace.save()
+
+        const privateForm = await FormModel.findById(MOCK_FORM_ID)
+        expect(privateForm?.status).toEqual(FormStatus.Private)
+
+        const actual = await Workspace.deleteWorkspace(
+          workspaceObject._id,
+          workspaceObject.admin,
+          shouldDeleteForms,
+        )
+        expect(actual).toEqual(1)
+
+        const archivedForm = await FormModel.findById(MOCK_FORM_ID)
+        expect(archivedForm?.status).toEqual(FormStatus.Archived)
+      })
+
+      it('forms in workspace should not be archived upon successful workspace deletion', async () => {
+        const shouldDeleteForms = false
+        const FormModel = await getFormModel(mongoose)
+
+        const workspaceId = new ObjectId()
+        const workspaceObject = {
+          _id: workspaceId,
+          title: 'Workspace2',
+          admin: MOCK_USER_ID,
+          formIds: [MOCK_FORM_ID],
+        }
+        const validWorkspace = new Workspace(workspaceObject)
+        await validWorkspace.save()
+
+        const privateForm = await FormModel.findById(MOCK_FORM_ID)
+        expect(privateForm?.status).toEqual(FormStatus.Private)
+
+        const actual = await Workspace.deleteWorkspace(
+          workspaceObject._id,
+          workspaceObject.admin,
+          shouldDeleteForms,
+        )
+        expect(actual).toEqual(1)
+
+        const archivedForm = await FormModel.findById(MOCK_FORM_ID)
+        expect(archivedForm?.status).toEqual(FormStatus.Private)
+      })
+
+      it('should return 0 upon unsuccessful delete due to invalid workspace id', async () => {
+        const shouldDeleteForms = true
+        const invalidWorkspaceId = new ObjectId()
+
+        const actual = await Workspace.deleteWorkspace(
+          invalidWorkspaceId,
+          MOCK_USER_ID,
+          shouldDeleteForms,
+        )
+
+        expect(actual).toEqual(0)
+      })
+
+      it('should return 0 upon unsuccessful delete due to admin not owning workspace', async () => {
+        const shouldDeleteForms = true
+        const invalidUserId = new ObjectId()
+
+        const actual = await Workspace.deleteWorkspace(
+          MOCK_WORKSPACE_ID,
+          invalidUserId,
+          shouldDeleteForms,
+        )
+
+        expect(actual).toEqual(0)
       })
     })
   })
