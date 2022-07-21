@@ -231,4 +231,53 @@ describe('workspace.controller', () => {
       expect(mockRes.json).toBeCalledWith({ message: mockErrorString })
     })
   })
+
+  describe('deleteWorkspace', () => {
+    const MOCK_REQ = expressHandler.mockRequest({
+      params: {
+        workspaceId: new ObjectId() as IWorkspaceSchema['_id'],
+      },
+      session: {
+        user: {
+          _id: 'exists',
+        },
+      },
+    })
+
+    it('should return 200 with success message', async () => {
+      const mockRes = expressHandler.mockResponse()
+      MockWorkspaceService.deleteWorkspace.mockReturnValueOnce(okAsync(1))
+      await WorkspaceController.deleteWorkspace(MOCK_REQ, mockRes, jest.fn())
+
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: 'Successfully deleted workspace',
+      })
+    })
+
+    it('should return 404 when workspace is not found', async () => {
+      const mockRes = expressHandler.mockResponse()
+      const mockErrorString = 'something went wrong'
+
+      MockWorkspaceService.deleteWorkspace.mockReturnValueOnce(
+        errAsync(new WorkspaceNotFoundError(mockErrorString)),
+      )
+      await WorkspaceController.deleteWorkspace(MOCK_REQ, mockRes, jest.fn())
+
+      expect(mockRes.status).toBeCalledWith(404)
+      expect(mockRes.json).toBeCalledWith({ message: mockErrorString })
+    })
+
+    it('should return 500 when database error occurs', async () => {
+      const mockRes = expressHandler.mockResponse()
+      const mockErrorString = 'something went wrong'
+
+      MockWorkspaceService.deleteWorkspace.mockReturnValueOnce(
+        errAsync(new DatabaseError(mockErrorString)),
+      )
+      await WorkspaceController.deleteWorkspace(MOCK_REQ, mockRes, jest.fn())
+
+      expect(mockRes.status).toBeCalledWith(500)
+      expect(mockRes.json).toBeCalledWith({ message: mockErrorString })
+    })
+  })
 })
