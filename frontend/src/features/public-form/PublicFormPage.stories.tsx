@@ -118,6 +118,12 @@ WithPrefilledFields.parameters = {
   ],
 }
 
+export const WithPrefilledFieldsMobile = Template.bind({})
+WithPrefilledFieldsMobile.parameters = {
+  ...WithPrefilledFields.parameters,
+  ...getMobileViewParameters(),
+}
+
 export const Mobile = Template.bind({})
 Mobile.parameters = getMobileViewParameters()
 
