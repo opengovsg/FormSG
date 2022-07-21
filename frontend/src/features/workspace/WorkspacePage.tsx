@@ -151,7 +151,6 @@ export const WorkspacePage = (): JSX.Element => {
         isOpen={createFormModalDisclosure.isOpen}
         onClose={createFormModalDisclosure.onClose}
       />
-
       {totalFormCount === 0 ? (
         <EmptyWorkspace
           handleOpenCreateFormModal={createFormModalDisclosure.onOpen}

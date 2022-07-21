@@ -15,7 +15,6 @@ export type SetEnvironmentParams = {
 
 export const RESPONDENT_COOKIE_OPTIONS = {
   httpOnly: false,
-  maxAge: 31 * 2 * 24 * 60 * 60, // 2 months
   sameSite: 'strict' as const,
   secure: !config.isDev,
 }
