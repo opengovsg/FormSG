@@ -24,10 +24,13 @@ const createDateFieldSchema = () => {
       },
     },
     invalidDaysOfTheWeek: {
-      type: [Number],
+      type: [
+        {
+          type: Number,
+          required: true,
+        },
+      ],
       enum: [...Object.values(DaysOfTheWeek)],
-      validate: (v: DaysOfTheWeek) =>
-        Array.isArray(v) && !v.some((el) => el === null),
     },
   })
 }
