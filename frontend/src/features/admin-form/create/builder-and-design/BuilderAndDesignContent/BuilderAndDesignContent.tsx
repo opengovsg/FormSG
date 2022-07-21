@@ -89,6 +89,7 @@ const FormBuilder = ({
           variant="outline"
           borderColor="secondary.200"
           colorScheme="secondary"
+          height="auto"
           onClick={() => {
             setEditEndPage()
             handleBuilderClick()
