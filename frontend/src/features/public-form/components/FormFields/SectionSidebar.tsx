@@ -11,7 +11,6 @@ import {
   Text,
   UnorderedList,
   VisuallyHidden,
-  VStack,
 } from '@chakra-ui/react'
 
 import { useIsMobile } from '~hooks/useIsMobile'
@@ -41,7 +40,7 @@ export const SectionSidebar = (): JSX.Element => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [miniHeaderRef?.current?.clientHeight])
 
-  if (isMobile && isMobileDrawerOpen && activeSectionId)
+  if (isMobile)
     return (
       <Drawer
         isOpen={isMobileDrawerOpen}
@@ -51,21 +50,26 @@ export const SectionSidebar = (): JSX.Element => {
         <DrawerOverlay />
         <DrawerContent maxW="16.5rem">
           <DrawerBody px={0} py="1.25rem">
-            <Flex flexDir="column">
+            <Flex as="nav" aria-label="Form sections" flexDir="column">
               <Text px="1.5rem" textStyle="subhead-1">
                 Skip to section
               </Text>
               <Divider mt="0.75rem" mb="1.75rem" />
-              <VStack px="3rem" spacing="1.25rem" alignItems="flex-start">
+              <UnorderedList
+                px="3rem"
+                spacing="1.25rem"
+                alignItems="flex-start"
+                marginInlineStart={0}
+              >
                 {sectionScrollData?.map((d) => (
-                  <Flex key={d._id} align="left">
+                  <ListItem key={d._id} listStyleType="none">
                     <SidebarLink
                       isActive={activeSectionId === d._id}
                       sectionMeta={d}
                     />
-                  </Flex>
+                  </ListItem>
                 ))}
-              </VStack>
+              </UnorderedList>
             </Flex>
           </DrawerBody>
         </DrawerContent>
