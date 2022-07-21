@@ -15,7 +15,7 @@ export const PublicSwitchEnvMessage = (): JSX.Element => {
   }
 
   return (
-    <InlineMessage variant="warning" mb="1.5rem">
+    <InlineMessage variant="warning" mb="1.5rem" mt={{ base: '2rem', md: '0' }}>
       <Text>
         You’re filling this form on the new FormSG. If you have trouble
         submitting,{' '}
