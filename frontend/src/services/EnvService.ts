@@ -6,18 +6,15 @@ import { ApiService } from './ApiService'
 
 const ENV_ENDPOINT = '/environment'
 const ADMIN_ENDPOINT = '/admin'
-export const publicChooseEnvironment = async (
-  ui: UiCookieValues,
-): Promise<UiCookieValues> => {
-  return ApiService.get(`${PUBLIC_FORMS_ENDPOINT}/${ENV_ENDPOINT}/${ui}`).then(
-    ({ data }) => data,
-  )
+
+export const publicChooseEnvironment = async (): Promise<UiCookieValues> => {
+  return ApiService.get(
+    `${PUBLIC_FORMS_ENDPOINT}/${ENV_ENDPOINT}/${UiCookieValues.Angular}`,
+  ).then(({ data }) => data)
 }
 
-export const adminChooseEnvironment = async (
-  ui: UiCookieValues,
-): Promise<UiCookieValues> => {
-  return ApiService.get(`${ADMIN_ENDPOINT}/${ENV_ENDPOINT}/${ui}`).then(
-    ({ data }) => data,
-  )
+export const adminChooseEnvironment = async (): Promise<UiCookieValues> => {
+  return ApiService.get(
+    `${ADMIN_ENDPOINT}/${ENV_ENDPOINT}/${UiCookieValues.Angular}`,
+  ).then(({ data }) => data)
 }
