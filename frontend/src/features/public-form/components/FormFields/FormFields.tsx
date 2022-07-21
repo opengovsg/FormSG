@@ -2,11 +2,12 @@ import { useMemo } from 'react'
 import { FormProvider, SubmitHandler, useForm } from 'react-hook-form'
 import { useSearchParams } from 'react-router-dom'
 import { Box, Stack } from '@chakra-ui/react'
-import { times } from 'lodash'
+import { isEmpty, times } from 'lodash'
 
 import { BasicField, FormFieldDto } from '~shared/types/field'
 import { FormColorTheme, LogicDto } from '~shared/types/form'
 
+import InlineMessage from '~components/InlineMessage'
 import { FormFieldValues } from '~templates/Field'
 import { createTableRow } from '~templates/Field/Table/utils/createRow'
 
@@ -94,6 +95,13 @@ export const FormFields = ({
       <form onSubmit={formMethods.handleSubmit(onSubmit)} noValidate>
         <Box bg="white" py="2.5rem" px={{ base: '1rem', md: '2.5rem' }}>
           <Stack spacing="2.25rem">
+            {!isEmpty(fieldPrefillMap) && (
+              <InlineMessage variant="warning">
+                The highlighted fields in this form have been pre-filled
+                according to the link that you clicked. Please check that these
+                values are what you intend to submit, and edit if necessary.
+              </InlineMessage>
+            )}
             <VisibleFormFields
               colorTheme={colorTheme}
               control={formMethods.control}
