@@ -26,7 +26,7 @@ const createDateFieldSchema = () => {
     invalidDaysOfTheWeek: {
       type: [
         {
-          type: Number,
+          type: String,
           required: true,
         },
       ],
