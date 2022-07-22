@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import { FormProvider, SubmitHandler, useForm } from 'react-hook-form'
 import { useSearchParams } from 'react-router-dom'
 import { Box, Stack } from '@chakra-ui/react'
@@ -88,6 +88,18 @@ export const FormFields = ({
     mode: 'onTouched',
     shouldUnregister: true,
   })
+
+  const {
+    reset,
+    formState: { isDirty },
+  } = formMethods
+
+  // Reset default values when they change
+  useEffect(() => {
+    if (!isDirty) {
+      reset(defaultFormValues)
+    }
+  }, [defaultFormValues, isDirty, reset])
 
   return (
     <FormProvider {...formMethods}>
