@@ -34,7 +34,7 @@ export const useFetchPrefillQuery = () => {
       previouslyStoredId &&
       isValidStoredQuery(previouslyStoredId, storedQuery)
     ) {
-      setSearchParams(storedQuery.queryString)
+      setSearchParams(JSON.parse(storedQuery.queryString))
       removeStoredQuery()
     }
   }, [
