@@ -5,6 +5,7 @@ import { UserId } from './user'
 export type WorkspaceId = Opaque<string, 'WorkspaceId'>
 
 export type Workspace = {
+  _id: WorkspaceId
   title: string
   count: number
   formIds: FormId[]

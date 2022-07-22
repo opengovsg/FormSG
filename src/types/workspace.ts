@@ -11,10 +11,7 @@ type IWorkspace = {
   count: number
 }
 
-export interface IWorkspaceSchema extends IWorkspace, Document {
-  created?: Date
-  lastModified?: Date
-}
+export interface IWorkspaceSchema extends IWorkspace, Document {}
 
 export interface IWorkspaceModel extends Model<IWorkspaceSchema> {
   getWorkspaces(admin: IUserSchema['_id']): Promise<WorkspaceDto[]>
