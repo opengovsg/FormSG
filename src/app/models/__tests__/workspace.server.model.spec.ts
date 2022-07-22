@@ -58,7 +58,10 @@ describe('Workspace Model', () => {
       expect(saved._id).toBeDefined()
       expect(saved.createdAt).toBeInstanceOf(Date)
       expect(saved.updatedAt).toBeInstanceOf(Date)
-      expect(actualSavedObject).toEqual(expectedWorkspaceObject)
+      expect(actualSavedObject).toEqual({
+        ...expectedWorkspaceObject,
+        count: 0,
+      })
     })
 
     it('should fail when formId in is not unique', async () => {
@@ -118,11 +121,42 @@ describe('Workspace Model', () => {
         expect(actual).toEqual([])
       })
 
-      it('should return array of workspaces belonging to user', async () => {
+      it('should return array of workspaces belonging to user sorted by workspace title', async () => {
         const mockUserId = FORM_ADMIN_USER._id
-        const actual = await Workspace.getWorkspaces(mockUserId)
+        const mockWorkspaces = [
+          {
+            _id: new ObjectId(),
+            title: 'aThird',
+            admin: MOCK_USER_ID,
+            formIds: [],
+          },
+          {
+            _id: new ObjectId(),
+            title: 'bFourth',
+            admin: MOCK_USER_ID,
+            formIds: [],
+          },
+          {
+            _id: new ObjectId(),
+            title: '9First',
+            admin: MOCK_USER_ID,
+            formIds: [],
+          },
+          {
+            _id: new ObjectId(),
+            title: 'ZSecond',
+            admin: MOCK_USER_ID,
+            formIds: [],
+          },
+        ]
 
-        expect(actual.length).toEqual(1)
+        await Workspace.insertMany(mockWorkspaces)
+        const actual = await Workspace.getWorkspaces(mockUserId)
+        const expected = await Workspace.find({ admin: mockUserId }).sort(
+          'title',
+        )
+
+        expect(actual).toEqual(expected)
       })
     })
 

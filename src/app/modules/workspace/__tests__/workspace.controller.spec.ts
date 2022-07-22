@@ -3,7 +3,7 @@ import { errAsync, okAsync } from 'neverthrow'
 import { mocked } from 'ts-jest/utils'
 
 import * as WorkspaceService from 'src/app/modules/workspace/workspace.service'
-import { IUserSchema } from 'src/types'
+import { IUserSchema, IWorkspaceSchema } from 'src/types'
 
 import expressHandler from 'tests/unit/backend/helpers/jest-express'
 
@@ -60,6 +60,7 @@ describe('workspace.controller', () => {
 
   describe('createWorkspace', () => {
     const MOCK_WORKSPACE = {
+      _id: new ObjectId() as IWorkspaceSchema['_id'],
       title: 'Workspace1',
       admin: new ObjectId() as IUserSchema['_id'],
       formIds: [],
@@ -88,6 +89,22 @@ describe('workspace.controller', () => {
       )
 
       expect(mockRes.json).toHaveBeenCalledWith(MOCK_WORKSPACE)
+    })
+
+    it('should return 409 when database conflict error occurs', async () => {
+      const mockRes = expressHandler.mockResponse()
+      const mockErrorString = 'something went wrong'
+      MockWorkspaceService.createWorkspace.mockReturnValueOnce(
+        errAsync(new DatabaseConflictError(mockErrorString)),
+      )
+      await WorkspaceController.handleCreateWorkspace(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      expect(mockRes.status).toBeCalledWith(409)
+      expect(mockRes.json).toBeCalledWith({ message: mockErrorString })
     })
 
     it('should return 500 when database error occurs', async () => {
