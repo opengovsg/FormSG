@@ -7,7 +7,9 @@ import {
   Icon,
   MenuDivider,
   MenuItemProps,
+  MenuListProps,
   MenuProps,
+  Text,
   useMultiStyleConfig,
 } from '@chakra-ui/react'
 
@@ -38,14 +40,19 @@ const AvatarMenuButton = (props: MenuButtonProps): JSX.Element => {
  * MenuItem styled for avatar username
  * @preconditions Must be a child of Menu component,
  */
-const AvatarMenuUsername = (props: MenuItemProps): JSX.Element => {
+const AvatarMenuUsername = ({ children }: MenuItemProps): JSX.Element => {
   // Required here due to nested style provider from menu.
   const styles = useMultiStyleConfig('AvatarMenu', {})
 
   return (
     <Box sx={styles.usernameItem} aria-hidden>
       <Icon as={BxsUser} sx={styles.usernameIcon} />
-      {props.children}
+      <Text
+        noOfLines={1}
+        title={typeof children === 'string' ? children : undefined}
+      >
+        {children}
+      </Text>
     </Box>
   )
 }
@@ -64,6 +71,7 @@ export interface AvatarMenuProps
   /** Name to display in the username section of the menu */
   menuUsername?: string
   hasNotification?: boolean
+  menuListProps?: MenuListProps
 }
 
 export const AvatarMenu = ({
@@ -72,6 +80,7 @@ export const AvatarMenu = ({
   menuUsername,
   hasNotification,
   defaultIsOpen,
+  menuListProps,
   children,
 }: AvatarMenuProps): JSX.Element => {
   const styles = useMultiStyleConfig('AvatarMenu', { colorScheme })
@@ -84,7 +93,7 @@ export const AvatarMenu = ({
     <Menu autoSelect={false} defaultIsOpen={defaultIsOpen}>
       {({ isOpen }) => (
         <>
-          <AvatarMenuButton role="group" isActive={isOpen} isOpen={isOpen}>
+          <AvatarMenuButton isActive={isOpen} isOpen={isOpen}>
             <Avatar
               name={name}
               sx={styles.avatar}
@@ -93,7 +102,7 @@ export const AvatarMenu = ({
               {hasNotification && <AvatarBadge />}
             </Avatar>
           </AvatarMenuButton>
-          <Menu.List marginTop="0.375rem">
+          <Menu.List role="menu" marginTop="0.375rem" {...menuListProps}>
             <AvatarMenuUsername>{menuUsername}</AvatarMenuUsername>
             <AvatarMenuDivider />
             {children}
