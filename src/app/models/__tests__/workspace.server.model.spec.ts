@@ -86,9 +86,9 @@ describe('Workspace Model', () => {
       )
     })
 
-    it('should fail when title length is more than 200 characters', async () => {
+    it('should fail when title length is more than 50 characters', async () => {
       const workspaceObject = {
-        title: new Array(202).join('a'),
+        title: new Array(52).join('a'),
         admin: FORM_ADMIN_USER,
         formIds: [],
       }
