@@ -36,17 +36,14 @@ export const FormFields = ({
   const [searchParams] = useSearchParams()
 
   const fieldPrefillMap = useMemo(() => {
-    const queryParams = Object.fromEntries([...searchParams])
-    const ids = new Set(Object.keys(queryParams))
-
     // Return object containing field id and query param value only if id exists in form fields.
     return formFields.reduce((acc, field) => {
       if (
         field.fieldType === BasicField.ShortText &&
         field.allowPrefill &&
-        ids.has(field._id)
+        searchParams.has(field._id)
       ) {
-        acc[field._id] = queryParams[field._id]
+        acc[field._id] = searchParams.get(field._id) ?? ''
       }
       return acc
     }, {} as Record<string, string>)
