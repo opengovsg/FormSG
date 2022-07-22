@@ -13,7 +13,7 @@ export const PublicSwitchEnvMessage = (): JSX.Element => {
       <Text>
         You’re filling this form on the new FormSG. If you have trouble
         submitting,{' '}
-        <Button variant="link" onClick={() => publicSwitchEnvMutation.mutate()}>
+        <Button variant="link" onClick={() => publicSwitchEnvMutation.mutate}>
           switch to the original one here.
         </Button>
       </Text>

@@ -12,7 +12,7 @@ export const AdminSwitchEnvMessage = (): JSX.Element => {
     <InlineMessage>
       <Text>
         Welcome to the new FormSG! You can still{' '}
-        <Button variant="link" onClick={() => adminSwitchEnvMutation.mutate()}>
+        <Button variant="link" onClick={() => adminSwitchEnvMutation.mutate}>
           switch to the original one,
         </Button>{' '}
         which is available until 28 May 2022.
