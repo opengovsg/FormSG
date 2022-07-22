@@ -24,14 +24,7 @@ const compileWorkspaceModel = (db: Mongoose): IWorkspaceModel => {
     },
     formIds: {
       type: [Schema.Types.ObjectId],
-      validate: {
-        async validator(this: IWorkspaceSchema) {
-          const areFormIdsUnique =
-            new Set(this.formIds).size === this.formIds.length
-
-          return areFormIdsUnique
-        },
-      },
+      validate: (v: Schema.Types.ObjectId[]) => new Set(v).size === v.length,
       message: "Failed to update workspace document's formIds",
     },
   })
