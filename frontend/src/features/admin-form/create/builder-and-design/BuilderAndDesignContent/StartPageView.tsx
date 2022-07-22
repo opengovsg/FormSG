@@ -11,7 +11,7 @@ import { useFormHeader } from '~features/public-form/components/FormStartPage/us
 
 import { useCreateTabForm } from '../useCreateTabForm'
 import {
-  customLogoMetaDataSelector,
+  customLogoMetaSelector,
   startPageInputDataSelector,
   useDesignStore,
 } from '../useDesignStore'
@@ -20,7 +20,7 @@ export const StartPageView = () => {
   const { data: form } = useCreateTabForm()
   const { startPageData, customLogoMeta } = useDesignStore((state) => ({
     startPageData: startPageInputDataSelector(state),
-    customLogoMeta: customLogoMetaDataSelector(state),
+    customLogoMeta: customLogoMetaSelector(state),
   }))
   const { data: { logoBucketUrl } = {} } = useEnv(
     form?.startPage.logo.state === FormLogoState.Custom,

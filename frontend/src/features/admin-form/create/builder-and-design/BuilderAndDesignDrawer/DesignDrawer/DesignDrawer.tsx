@@ -38,11 +38,11 @@ import { getTitleBg } from '~features/public-form/components/FormStartPage/useFo
 import { useCreateTabForm } from '../../useCreateTabForm'
 import {
   CustomLogoMeta,
-  customLogoMetaDataSelector,
+  customLogoMetaSelector,
   FormStartPageInput,
   resetDesignStoreSelector,
   setAttachmentSelector,
-  setCustomLogoMetaDataSelector,
+  setCustomLogoMetaSelector,
   setStartPageInputDataSelector,
   startPageInputDataSelector,
   useDesignStore,
@@ -83,10 +83,10 @@ export const DesignDrawer = (): JSX.Element | null => {
     resetDesignStore,
   } = useDesignStore((state) => ({
     startPageData: startPageInputDataSelector(state),
-    customLogoMeta: customLogoMetaDataSelector(state),
+    customLogoMeta: customLogoMetaSelector(state),
     setStartPageData: setStartPageInputDataSelector(state),
     setAttachment: setAttachmentSelector(state),
-    setCustomLogoMeta: setCustomLogoMetaDataSelector(state),
+    setCustomLogoMeta: setCustomLogoMetaSelector(state),
     resetDesignStore: resetDesignStoreSelector(state),
   }))
 

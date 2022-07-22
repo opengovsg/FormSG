@@ -23,11 +23,11 @@ export type FormStartPageInput = Omit<
 
 export type DesignStore = {
   startPageInputData?: FormStartPageInput
-  customLogoMetaData?: CustomLogoMeta
+  customLogoMeta?: CustomLogoMeta
   setStartPageInputData: (startPageInput: FormStartPageInput) => void
   setAttachment: (attachment: UploadedImage) => void
-  setCustomLogoMetaData: (customLogoMetaData: CustomLogoMeta) => void
-  resetCustomLogoMetaData: () => void
+  setCustomLogoMeta: (customLogoMetaData: CustomLogoMeta) => void
+  resetCustomLogoMeta: () => void
   resetDesignStore: () => void
 }
 
@@ -51,20 +51,20 @@ export const useDesignStore = create<DesignStore>(
         },
       })
     },
-    setCustomLogoMetaData: (customLogoMeta: CustomLogoMeta) => {
+    setCustomLogoMeta: (customLogoMeta: CustomLogoMeta) => {
       const current = get()
-      if (isEqual(current.customLogoMetaData, customLogoMeta)) return
+      if (isEqual(current.customLogoMeta, customLogoMeta)) return
       set({
-        customLogoMetaData: customLogoMeta,
+        customLogoMeta: customLogoMeta,
       })
     },
-    resetCustomLogoMetaData: () => {
-      set({ customLogoMetaData: undefined })
+    resetCustomLogoMeta: () => {
+      set({ customLogoMeta: undefined })
     },
     resetDesignStore: () => {
       set({
         startPageInputData: undefined,
-        customLogoMetaData: undefined,
+        customLogoMeta: undefined,
       })
     },
   })),
@@ -74,9 +74,9 @@ export const startPageInputDataSelector = (
   state: DesignStore,
 ): DesignStore['startPageInputData'] => state.startPageInputData
 
-export const customLogoMetaDataSelector = (
+export const customLogoMetaSelector = (
   state: DesignStore,
-): DesignStore['customLogoMetaData'] => state.customLogoMetaData
+): DesignStore['customLogoMeta'] => state.customLogoMeta
 
 export const setStartPageInputDataSelector = (
   state: DesignStore,
@@ -86,13 +86,13 @@ export const setAttachmentSelector = (
   state: DesignStore,
 ): DesignStore['setAttachment'] => state.setAttachment
 
-export const setCustomLogoMetaDataSelector = (
+export const setCustomLogoMetaSelector = (
   state: DesignStore,
-): DesignStore['setCustomLogoMetaData'] => state.setCustomLogoMetaData
+): DesignStore['setCustomLogoMeta'] => state.setCustomLogoMeta
 
-export const resetCustomLogoMetaDataSelector = (
+export const resetCustomLogoMetaSelector = (
   state: DesignStore,
-): DesignStore['resetCustomLogoMetaData'] => state.resetCustomLogoMetaData
+): DesignStore['resetCustomLogoMeta'] => state.resetCustomLogoMeta
 
 export const resetDesignStoreSelector = (
   state: DesignStore,
