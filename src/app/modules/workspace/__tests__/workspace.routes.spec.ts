@@ -22,7 +22,7 @@ const app = setupApp('/workspaces', WorkspacesRouter, {
 const MOCK_USER_ID = new ObjectId()
 const MOCK_FORM_ID = new ObjectId()
 const MOCK_WORKSPACE_ID = new ObjectId()
-const MOCK_WORKSPACE_FIELDS = {
+const MOCK_WORKSPACE_DOC = {
   _id: MOCK_WORKSPACE_ID,
   title: 'Workspace1',
   admin: MOCK_USER_ID,
@@ -57,13 +57,36 @@ describe('workspaces.routes', () => {
       expect(response.body).toEqual([])
     })
 
-    it("should return 200 with an array of the user's workspaces", async () => {
-      await WorkspaceModel.create(MOCK_WORKSPACE_FIELDS)
+    it("should return 200 with an array of the user's workspaces sorted by title", async () => {
+      const workspaceIds = [
+        MOCK_WORKSPACE_DOC._id,
+        new ObjectId(),
+        new ObjectId(),
+      ]
+      const workspaceDocs = [
+        {
+          _id: workspaceIds[1],
+          title: 'aSecondInOrder',
+          admin: MOCK_USER_ID,
+          formIds: [],
+        },
+        {
+          _id: workspaceIds[2],
+          title: 'bThirdInOrder',
+          admin: MOCK_USER_ID,
+          formIds: [],
+        },
+        MOCK_WORKSPACE_DOC,
+      ]
+      await WorkspaceModel.insertMany(workspaceDocs)
       const response = await request.get(GET_WORKSPACES_ENDPOINT)
-      const expected = await WorkspaceModel.find({ _id: MOCK_WORKSPACE_ID })
+      const expected = await WorkspaceModel.find({ _id: { $in: workspaceIds } })
+      const expectedWithVirtuals = expected.map((workspace) =>
+        workspace.toJSON(),
+      )
 
       expect(response.status).toEqual(200)
-      expect(response.body).toEqual(jsonParseStringify(expected))
+      expect(response.body).toEqual(jsonParseStringify(expectedWithVirtuals))
     })
 
     it('should return 401 when user is not logged in', async () => {
