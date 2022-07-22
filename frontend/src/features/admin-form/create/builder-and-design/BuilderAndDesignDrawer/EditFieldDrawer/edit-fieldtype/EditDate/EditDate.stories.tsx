@@ -82,6 +82,6 @@ export const WithParticularDaysRestricted = Template.bind({})
 WithParticularDaysRestricted.args = {
   field: {
     ...DEFAULT_DATE_FIELD,
-    invalidDaysOfTheWeek: [1, 2, 5],
+    invalidDaysOfTheWeek: [],
   },
 }

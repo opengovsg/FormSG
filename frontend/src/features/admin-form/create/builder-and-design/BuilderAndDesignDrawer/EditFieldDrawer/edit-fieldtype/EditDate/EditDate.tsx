@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { Controller, RegisterOptions } from 'react-hook-form'
 import {
   Box,
+  CheckboxGroup,
   FormControl,
   SimpleGrid,
   Stack,
@@ -39,7 +40,7 @@ import { useEditFieldForm } from '../common/useEditFieldForm'
 
 export interface InvalidDaysCheckboxOptions {
   label: string
-  value: number
+  value: string
 }
 
 const INVALID_DAYS_CHECKBOX_VALUES: InvalidDaysCheckboxOptions[] = [
@@ -71,6 +72,7 @@ type EditDateInputs = Pick<
     customMinDate: string
   }
   addParticularDayRestriction: boolean
+  invalidDaysOfTheWeek: NonNullable<DateFieldBase['invalidDaysOfTheWeek']>
 }
 
 const transformDateFieldToEditForm = (field: DateFieldBase): EditDateInputs => {
@@ -89,10 +91,13 @@ const transformDateFieldToEditForm = (field: DateFieldBase): EditDateInputs => {
     ? field.invalidDaysOfTheWeek.length > 0
     : false
 
+  const nextInvalidDayOptions = field.invalidDaysOfTheWeek ?? []
+
   return {
     ...pick(field, EDIT_DATE_FIELD_KEYS),
     dateValidation: nextValidationOptions,
     addParticularDayRestriction: nextAddParticularDayRestriction,
+    invalidDaysOfTheWeek: nextInvalidDayOptions,
   }
 }
 
@@ -101,7 +106,6 @@ const transformDateEditFormToField = (
   originalField: DateFieldBase,
 ): DateFieldBase => {
   let nextValidationOptions: DateValidationOptions
-  console.log(inputs)
 
   switch (inputs.dateValidation.selectedDateValidation) {
     case '':
@@ -155,6 +159,8 @@ export const EditDate = ({ field }: EditDateProps): JSX.Element => {
       output: transformDateEditFormToField,
     },
   })
+  const invalidDaysOfTheWeek = getValues('invalidDaysOfTheWeek') ?? []
+  console.log(invalidDaysOfTheWeek)
 
   const requiredValidationRule = useMemo(
     () => createBaseValidationRules({ required: true }),
@@ -264,8 +270,35 @@ export const EditDate = ({ field }: EditDateProps): JSX.Element => {
         </FormControl>
         {getValues('addParticularDayRestriction') ? (
           <FormControl isRequired isReadOnly={isLoading}>
+            <input
+              type="checkbox"
+              hidden
+              value=""
+              {...register('invalidDaysOfTheWeek')}
+            />
             <Wrap>
-              {INVALID_DAYS_CHECKBOX_VALUES.map((invalidDayOption) => {
+              <Controller
+                control={control}
+                name="invalidDaysOfTheWeek"
+                render={({ field: { ref, ...field } }) => {
+                  return (
+                    <CheckboxGroup {...field}>
+                      {INVALID_DAYS_CHECKBOX_VALUES.map((invalidDayOption) => {
+                        console.log(field.value)
+                        return (
+                          <Checkbox
+                            key={invalidDayOption.value}
+                            value={invalidDayOption.value}
+                          >
+                            {invalidDayOption.label}
+                          </Checkbox>
+                        )
+                      })}
+                    </CheckboxGroup>
+                  )
+                }}
+              />
+              {/* {INVALID_DAYS_CHECKBOX_VALUES.map((invalidDayOption) => {
                 let width = '9.25rem'
 
                 if (invalidDayOption.value % 2 === 0) {
@@ -274,22 +307,25 @@ export const EditDate = ({ field }: EditDateProps): JSX.Element => {
 
                 return (
                   <WrapItem key={invalidDayOption.value} width={width}>
-                    <Checkbox
-                      value={invalidDayOption.value}
-                      {...register('invalidDaysOfTheWeek')}
-                      defaultChecked={false}
+                    <Controller
+                      control={control}
                       name="invalidDaysOfTheWeek"
-                    >
-                      {invalidDayOption.label}
-                    </Checkbox>
+                      render={({ field: { onChange, value, ref } }) => {
+                        console.log(value)
+                        return (
+                          <Checkbox onChange={onChange}>
+                            {invalidDayOption.label}
+                          </Checkbox>
+                        )
+                      }}
+                    />
                   </WrapItem>
                 )
-              })}
+              })} */}
             </Wrap>
           </FormControl>
         ) : null}
       </Stack>
-
       <FormFieldDrawerActions
         isLoading={isLoading}
         isSaveEnabled={isSaveEnabled}
