@@ -1,7 +1,8 @@
 import { useSearchParams } from 'react-router-dom'
 import cuid from 'cuid'
 import { isEmpty } from 'lodash'
-import { useSessionstorageState } from 'rooks'
+
+import { useSessionStorage } from '~hooks/useSessionStorage'
 
 import { REDIRECTED_QUERY_KEY, STORED_QUERY_KEY } from './useFetchPrefillQuery'
 
@@ -12,7 +13,9 @@ export type StoredRedirectionQuery = {
 
 export const useStorePrefillQuery = () => {
   const [searchParams] = useSearchParams()
-  const [, setStoredQuery] = useSessionstorageState(STORED_QUERY_KEY)
+  const [, setStoredQuery] = useSessionStorage<
+    StoredRedirectionQuery | undefined
+  >(STORED_QUERY_KEY)
 
   const storePrefillQuery = () => {
     // Do nothing if key is already query key. Might result in infinite loop if handled.

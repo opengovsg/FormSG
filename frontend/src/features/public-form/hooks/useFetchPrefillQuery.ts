@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { useSessionstorageState } from 'rooks'
+
+import { useSessionStorage } from '~hooks/useSessionStorage'
 
 import { StoredRedirectionQuery } from './useStorePrefillQuery'
 
@@ -25,8 +26,9 @@ const isValidStoredQuery = (
 
 export const useFetchPrefillQuery = () => {
   const [searchParams, setSearchParams] = useSearchParams()
-  const [storedQuery, setStoredQuery, removeStoredQuery] =
-    useSessionstorageState(STORED_QUERY_KEY, {})
+  const [storedQuery, , removeStoredQuery] = useSessionStorage<
+    StoredRedirectionQuery | undefined
+  >(STORED_QUERY_KEY)
 
   useEffect(() => {
     const previouslyStoredId = searchParams.get(REDIRECTED_QUERY_KEY)
@@ -37,11 +39,5 @@ export const useFetchPrefillQuery = () => {
       setSearchParams(JSON.parse(storedQuery.queryString))
       removeStoredQuery()
     }
-  }, [
-    storedQuery,
-    setStoredQuery,
-    searchParams,
-    setSearchParams,
-    removeStoredQuery,
-  ])
+  }, [removeStoredQuery, searchParams, setSearchParams, storedQuery])
 }
