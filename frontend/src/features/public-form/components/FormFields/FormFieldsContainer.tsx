@@ -6,6 +6,7 @@ import { FormAuthType } from '~shared/types/form/form'
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
 import { FormAuth } from '../FormAuth'
+// TODO #4279: Remove after React rollout is complete
 import { PublicSwitchEnvMessage } from '../PublicSwitchEnvMessage'
 
 import { FormFields } from './FormFields'

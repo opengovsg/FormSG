@@ -1,3 +1,4 @@
+// TODO #4279: Remove after React rollout is complete
 import { useMutation } from 'react-query'
 import { useNavigate } from 'react-router-dom'
 

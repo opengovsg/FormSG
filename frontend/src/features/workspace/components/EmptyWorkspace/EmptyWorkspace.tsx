@@ -4,6 +4,7 @@ import { Box, Flex, Text } from '@chakra-ui/react'
 import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
 
+// TODO #4279: Remove after React rollout is complete
 import { AdminSwitchEnvMessage } from '../AdminSwitchEnvMessage'
 
 import { EmptyWorkspaceSvgr } from './EmptyWorkspaceSvgr'

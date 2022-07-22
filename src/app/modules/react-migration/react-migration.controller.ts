@@ -1,3 +1,4 @@
+// TODO #4279: Remove after React rollout is complete
 import path from 'path'
 
 import { FormAuthType, UiCookieValues } from '../../../../shared/types'

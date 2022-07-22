@@ -1,3 +1,4 @@
+// TODO #4279: Remove after React rollout is complete
 import { Text } from '@chakra-ui/react'
 
 import Button from '~components/Button'

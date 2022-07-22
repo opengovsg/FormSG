@@ -1,3 +1,4 @@
+// TODO #4279: Remove after React rollout is complete
 import { UiCookieValues } from '~shared/types'
 
 import { PUBLIC_FORMS_ENDPOINT } from '~features/public-form/PublicFormService'
