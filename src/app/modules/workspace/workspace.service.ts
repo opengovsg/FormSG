@@ -5,14 +5,13 @@ import { WorkspaceDto } from 'shared/types/workspace'
 import { createLoggerWithLabel } from '../../config/logger'
 import { getWorkspaceModel } from '../../models/workspace.server.model'
 import { DatabaseError } from '../core/core.errors'
-import { MissingUserError } from '../user/user.errors'
 
 const logger = createLoggerWithLabel(module)
 const WorkspaceModel = getWorkspaceModel(mongoose)
 
 export const getWorkspaces = (
   userId: string,
-): ResultAsync<WorkspaceDto[], MissingUserError | DatabaseError> => {
+): ResultAsync<WorkspaceDto[], DatabaseError> => {
   return ResultAsync.fromPromise(
     WorkspaceModel.getWorkspaces(userId),
     (error) => {
