@@ -6,16 +6,24 @@ import {
   useMemo,
   useState,
 } from 'react'
-import { Box, Skeleton } from '@chakra-ui/react'
+import { Box, Icon, Skeleton } from '@chakra-ui/react'
 
 import { FormAuthType, FormSettings, FormStatus } from '~shared/types/form'
 
+import { BxsHelpCircle } from '~assets/icons/BxsHelpCircle'
 import InlineMessage from '~components/InlineMessage'
+import Link from '~components/Link'
 import Radio from '~components/Radio'
+import Tooltip from '~components/Tooltip'
 
 import { useMutateFormSettings } from '../../mutations'
 
-import { AUTHTYPE_TO_TEXT, STORAGE_MODE_AUTHTYPES } from './constants'
+import {
+  AUTHTYPE_TO_TEXT,
+  CP_TOOLTIP,
+  SGID_TOOLTIP,
+  STORAGE_MODE_AUTHTYPES,
+} from './constants'
 import { EsrvcIdBox } from './EsrvcIdBox'
 
 interface AuthSettingsSectionProps {
@@ -112,6 +120,34 @@ export const AuthSettingsSection = ({
             <Box onClick={handleOptionClick(authType)}>
               <Radio value={authType} isDisabled={isDisabled}>
                 {text}
+                {authType === FormAuthType.SGID ? (
+                  <>
+                    <Tooltip
+                      label={SGID_TOOLTIP}
+                      placement="top"
+                      textAlign="center"
+                    >
+                      <Icon as={BxsHelpCircle} aria-hidden marginX="0.5rem" />
+                    </Tooltip>
+                    <Link
+                      href="https://go.gov.sg/sgid-formsg"
+                      isExternal
+                      // Needed for link to open since there are nested onClicks
+                      onClickCapture={(e) => e.stopPropagation()}
+                    >
+                      Contact us to find out more
+                    </Link>
+                  </>
+                ) : null}
+                {authType === FormAuthType.CP ? (
+                  <Tooltip
+                    label={CP_TOOLTIP}
+                    placement="top"
+                    textAlign="center"
+                  >
+                    <Icon as={BxsHelpCircle} aria-hidden ml="0.5rem" />
+                  </Tooltip>
+                ) : null}
               </Radio>
             </Box>
             {authType !== FormAuthType.NIL && authType === settings.authType ? (
