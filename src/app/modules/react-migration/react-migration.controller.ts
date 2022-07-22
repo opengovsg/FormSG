@@ -19,11 +19,20 @@ export const RESPONDENT_COOKIE_OPTIONS = {
   secure: !config.isDev,
 }
 
+export const RESPONDENT_COOKIE_OPTIONS_WITH_EXPIRY = {
+  ...RESPONDENT_COOKIE_OPTIONS,
+  maxAge: 31 * 2 * 24 * 60 * 60, // 2 months
+}
+
 export const ADMIN_COOKIE_OPTIONS = {
   httpOnly: false,
-  maxAge: 31 * 2 * 24 * 60 * 60, // 2 months
   sameSite: 'strict' as const,
   secure: !config.isDev,
+}
+
+export const ADMIN_COOKIE_OPTIONS_WITH_EXPIRY = {
+  ...ADMIN_COOKIE_OPTIONS,
+  maxAge: 31 * 2 * 24 * 60 * 60, // 2 months
 }
 
 const logger = createLoggerWithLabel(module)
@@ -163,7 +172,13 @@ export const adminChooseEnvironment: ControllerHandler<
     req.params.ui === UiCookieValues.React
       ? UiCookieValues.React
       : UiCookieValues.Angular
-  res.cookie(config.reactMigration.adminCookieName, ui, ADMIN_COOKIE_OPTIONS)
+  res.cookie(
+    config.reactMigration.adminCookieName,
+    ui,
+    // When admin chooses to switch environments, we want them to stay on their
+    // chosen environment until the alternative is stable.
+    ADMIN_COOKIE_OPTIONS_WITH_EXPIRY,
+  )
   return res.json({ ui })
 }
 
@@ -181,7 +196,9 @@ export const publicChooseEnvironment: ControllerHandler<
   res.cookie(
     config.reactMigration.respondentCookieName,
     ui,
-    RESPONDENT_COOKIE_OPTIONS,
+    // When public responded chooses to switch environments, we want them to stay on
+    // their chosen environment until the alternative is stable.
+    RESPONDENT_COOKIE_OPTIONS_WITH_EXPIRY,
   )
   return res.json({ ui })
 }
