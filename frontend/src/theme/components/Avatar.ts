@@ -58,7 +58,4 @@ export const Avatar = {
     size: 'md',
     colorScheme: 'primary',
   },
-  defaultProps: {
-    size: 'md',
-  },
 }
