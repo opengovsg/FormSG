@@ -63,7 +63,7 @@ describe('models.fields.dateField', () => {
     expect(actual.field.toObject()).toEqual(expected)
   })
 
-  it('should set expected array for invalidDaysOfTheWeek when date field specifies', async () => {
+  it('should successfully assign an array with valid values to invalidDaysOfTheWeek attribute', async () => {
     // Arrange
     const mockInvalidDaysOfTheWeek = [
       DaysOfTheWeek.Monday,
@@ -100,9 +100,9 @@ describe('models.fields.dateField', () => {
     expect(actual.field.toObject()).toEqual(expected)
   })
 
-  it('should throw an error when invalid values are added to invalidDaysOfTheWeek attribute', async () => {
+  it('should throw an error when an array with invalid values are assigned to invalidDaysOfTheWeek attribute', async () => {
     // Arrange
-    const mockInvalidDaysOfTheWeek = [10000]
+    const mockInvalidDaysOfTheWeek = ['January']
     const mockDateField = {
       dateValidation: {
         selectedDateValidation: null,
@@ -120,7 +120,7 @@ describe('models.fields.dateField', () => {
     ).rejects.toThrowError(mongoose.Error.ValidationError)
   })
 
-  it('should throw an error when null value is added to invalidDaysOfTheWeek attribute array', async () => {
+  it('should throw an error when an array with null value is assigned to invalidDaysOfTheWeek attribute array', async () => {
     // Arrange
     const mockInvalidDaysOfTheWeek = [null]
     const mockDateField = {
@@ -140,9 +140,14 @@ describe('models.fields.dateField', () => {
     ).rejects.toThrowError(mongoose.Error.ValidationError)
   })
 
-  it('should throw an error when null value is added to invalidDaysOfTheWeek attribute array with valid values', async () => {
+  it('should throw an error when an array with null value and valid values are assigned to invalidDaysOfTheWeek attribute array', async () => {
     // Arrange
-    const mockInvalidDaysOfTheWeek = [null, 1, 2, 3]
+    const mockInvalidDaysOfTheWeek = [
+      null,
+      DaysOfTheWeek.Monday,
+      DaysOfTheWeek.Tuesday,
+      DaysOfTheWeek.Wednesday,
+    ]
     const mockDateField = {
       dateValidation: {
         selectedDateValidation: null,
