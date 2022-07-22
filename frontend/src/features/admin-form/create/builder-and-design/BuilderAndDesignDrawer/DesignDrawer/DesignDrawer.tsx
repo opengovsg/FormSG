@@ -38,6 +38,7 @@ import { getTitleBg } from '~features/public-form/components/FormStartPage/useFo
 import { useCreateTabForm } from '../../useCreateTabForm'
 import {
   CustomLogoMeta,
+  customLogoMetaDataSelector,
   FormStartPageInput,
   resetDesignStoreSelector,
   setAttachmentSelector,
@@ -50,7 +51,10 @@ import { validateNumberInput } from '../../utils/validateNumberInput'
 import { CreatePageDrawerCloseButton } from '../CreatePageDrawerCloseButton'
 import { DrawerContentContainer } from '../EditFieldDrawer/edit-fieldtype/common/DrawerContentContainer'
 import { FormFieldDrawerActions } from '../EditFieldDrawer/edit-fieldtype/common/FormFieldDrawerActions'
-import { UploadImageInput } from '../EditFieldDrawer/edit-fieldtype/EditImage/UploadImageInput'
+import {
+  UploadedImage,
+  UploadImageInput,
+} from '../EditFieldDrawer/edit-fieldtype/EditImage/UploadImageInput'
 
 export const DesignDrawer = (): JSX.Element | null => {
   const toast = useToast({ status: 'danger' })
@@ -72,12 +76,14 @@ export const DesignDrawer = (): JSX.Element | null => {
 
   const {
     startPageData,
+    customLogoMeta,
     setStartPageData,
     setAttachment,
     setCustomLogoMeta,
     resetDesignStore,
   } = useDesignStore((state) => ({
     startPageData: startPageInputDataSelector(state),
+    customLogoMeta: customLogoMetaDataSelector(state),
     setStartPageData: setStartPageInputDataSelector(state),
     setAttachment: setAttachmentSelector(state),
     setCustomLogoMeta: setCustomLogoMetaDataSelector(state),
@@ -151,13 +157,17 @@ export const DesignDrawer = (): JSX.Element | null => {
   )
 
   const handleUploadLogo = useCallback(
-    (startPageData: FormStartPageInput): Promise<CustomLogoMeta> | null => {
-      if (startPageData?.logo.state !== FormLogoState.Custom) return null
-      if (!startPageData.attachment.file || !startPageData.attachment.srcUrl)
+    (attachment: UploadedImage): Promise<CustomLogoMeta> | CustomLogoMeta => {
+      if (!attachment.file || !attachment.srcUrl)
         throw new Error('Design pre-submit validation failed')
-      if (!startPageData.attachment.srcUrl.startsWith('blob:')) return null
+      if (!attachment.srcUrl.startsWith('blob:')) {
+        // Logo was not changed
+        if (!customLogoMeta)
+          throw new Error('Design: customLogoMeta is undefined')
+        return customLogoMeta
+      }
       return uploadLogoMutation
-        .mutateAsync(startPageData.attachment.file)
+        .mutateAsync(attachment.file)
         .then((uploadedFileData) => {
           return {
             fileName: uploadedFileData.name,
@@ -166,7 +176,7 @@ export const DesignDrawer = (): JSX.Element | null => {
           }
         })
     },
-    [uploadLogoMutation],
+    [uploadLogoMutation, customLogoMeta],
   )
 
   const handleUpdateDesign = handleSubmit(
@@ -184,9 +194,7 @@ export const DesignDrawer = (): JSX.Element | null => {
           { onSuccess: handleClose },
         )
       else {
-        const customLogoMeta = await handleUploadLogo(startPageData)
-        if (!customLogoMeta)
-          throw new Error('Logo upload failed, please try again later')
+        const customLogoMeta = await handleUploadLogo(attachment)
         startPageMutation.mutate(
           {
             logo: { state: FormLogoState.Custom, ...customLogoMeta },
@@ -285,7 +293,7 @@ export const DesignDrawer = (): JSX.Element | null => {
             value={startPageData.colorTheme}
             isDisabled={isLoading}
           >
-            <Stack spacing={0} direction="row" display="inline">
+            <Stack spacing="0" direction="row" display="inline">
               {Object.values(FormColorTheme).map((color) => (
                 <Radio
                   display="inline"
@@ -293,14 +301,12 @@ export const DesignDrawer = (): JSX.Element | null => {
                   value={color}
                   {...register('colorTheme')}
                   // CSS for inverted radio button
-                  // TODO: anti-aliasing at interface of border and ::before
+                  // TODO: anti-aliasing at interface of border and ::before?
                   border="2px solid"
                   borderRadius="50%"
                   borderColor="white"
                   background={getTitleBg(color)}
-                  _checked={{
-                    borderColor: getTitleBg(color),
-                  }}
+                  _checked={{ borderColor: getTitleBg(color) }}
                   _before={{
                     content: '""',
                     display: 'inline-block',

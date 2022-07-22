@@ -26,7 +26,7 @@ export const StartPageView = () => {
     form?.startPage.logo.state === FormLogoState.Custom,
   )
 
-  const [showLogo, setShowLogo] = useState<boolean>(false)
+  const [customLogoPending, setCustomLogoPending] = useState<boolean>(false)
 
   // Transform the FormStartPageInput into a FormStartPage
   const startPageFromStore: FormStartPage | null = useMemo(() => {
@@ -35,14 +35,14 @@ export const StartPageView = () => {
     const estTimeTakenTransformed =
       estTimeTaken === '' ? undefined : estTimeTaken
     if (logo.state !== FormLogoState.Custom) {
-      setShowLogo(true)
+      setCustomLogoPending(false)
       return {
         logo: { state: logo.state },
         estTimeTaken: estTimeTakenTransformed,
         ...rest,
       }
     }
-    setShowLogo(!!startPageData?.attachment.srcUrl)
+    setCustomLogoPending(!startPageData?.attachment.srcUrl)
     return {
       logo: {
         state: FormLogoState.Custom,
@@ -60,7 +60,7 @@ export const StartPageView = () => {
   // to be previewed, so when the store is populated, prioritize that setting.
   const startPage = useMemo(() => {
     if (startPageFromStore) return startPageFromStore
-    setShowLogo(true)
+    setCustomLogoPending(false)
     return form?.startPage
   }, [form?.startPage, startPageFromStore])
 
@@ -75,7 +75,12 @@ export const StartPageView = () => {
 
   return (
     <>
-      {showLogo ? (
+      {customLogoPending ? (
+        // Show skeleton if user has chosen custom logo but not yet uploaded
+        <Flex justify="center" p="1rem" bg="white">
+          <Skeleton w="4rem" h="4rem" />
+        </Flex>
+      ) : (
         <FormBannerLogo
           hasLogo={hasLogo}
           logoImgSrc={
@@ -85,10 +90,6 @@ export const StartPageView = () => {
           }
           logoImgAlt={logoImgAlt}
         />
-      ) : (
-        <Flex justify="center" p="1rem" bg="white">
-          <Skeleton w="4rem" h="4rem" />
-        </Flex>
       )}
       <FormHeader
         title={form?.title}
