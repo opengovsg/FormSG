@@ -67,10 +67,12 @@ export const DraggableBasicFieldListOption = ({
   fieldType,
   index,
   children,
+  isDisabled,
   ...props
 }: DraggableBasicFieldOptionProps): JSX.Element => (
   <Draggable
     index={index}
+    isDragDisabled={isDisabled}
     disableInteractiveElementBlocking
     draggableId={fieldType}
   >
@@ -79,6 +81,7 @@ export const DraggableBasicFieldListOption = ({
         <>
           <BasicFieldOption
             fieldType={fieldType}
+            isDisabled={isDisabled}
             {...props}
             {...provided.draggableProps}
             {...provided.dragHandleProps}
@@ -103,10 +106,12 @@ export const DraggableMyInfoFieldListOption = ({
   fieldType,
   index,
   children,
+  isDisabled,
   ...props
 }: DraggableMyInfoFieldOptionProps): JSX.Element => (
   <Draggable
     index={index}
+    isDragDisabled={isDisabled}
     disableInteractiveElementBlocking
     draggableId={fieldType}
   >
@@ -115,6 +120,7 @@ export const DraggableMyInfoFieldListOption = ({
         <>
           <MyInfoFieldOption
             fieldType={fieldType}
+            isDisabled={isDisabled}
             {...props}
             {...provided.draggableProps}
             {...provided.dragHandleProps}
@@ -136,7 +142,7 @@ export const DraggableMyInfoFieldListOption = ({
 )
 
 export const BasicFieldOption = forwardRef<BasicFieldOptionProps, 'button'>(
-  ({ fieldType, ...props }, ref) => {
+  ({ fieldType, isDisabled, ...props }, ref) => {
     const meta = useMemo(
       () => BASICFIELD_TO_DRAWER_META[fieldType],
       [fieldType],
@@ -154,11 +160,18 @@ export const BasicFieldOption = forwardRef<BasicFieldOptionProps, 'button'>(
     )
 
     const handleClick = useCallback(() => {
-      updateCreateState(newFieldMeta, numFields)
-    }, [newFieldMeta, numFields, updateCreateState])
+      if (!isDisabled) {
+        updateCreateState(newFieldMeta, numFields)
+      }
+    }, [newFieldMeta, numFields, updateCreateState, isDisabled])
 
     return (
-      <FieldListOption {...props} onClick={handleClick} ref={ref}>
+      <FieldListOption
+        {...props}
+        isDisabled={isDisabled}
+        onClick={handleClick}
+        ref={ref}
+      >
         <Icon fontSize="1.5rem" as={meta.icon} />
         <Text textStyle="body-1">{meta.label}</Text>
       </FieldListOption>
@@ -167,7 +180,7 @@ export const BasicFieldOption = forwardRef<BasicFieldOptionProps, 'button'>(
 )
 
 export const MyInfoFieldOption = forwardRef<MyInfoFieldOptionProps, 'button'>(
-  ({ fieldType, ...props }, ref) => {
+  ({ fieldType, isDisabled, ...props }, ref) => {
     const meta = useMemo(
       () => MYINFO_FIELD_TO_DRAWER_META[fieldType],
       [fieldType],
@@ -185,11 +198,16 @@ export const MyInfoFieldOption = forwardRef<MyInfoFieldOptionProps, 'button'>(
     )
 
     const handleClick = useCallback(() => {
-      updateCreateState(newFieldMeta, numFields)
-    }, [newFieldMeta, numFields, updateCreateState])
+      if (!isDisabled) updateCreateState(newFieldMeta, numFields)
+    }, [newFieldMeta, numFields, updateCreateState, isDisabled])
 
     return (
-      <FieldListOption {...props} onClick={handleClick} ref={ref}>
+      <FieldListOption
+        {...props}
+        isDisabled={isDisabled}
+        onClick={handleClick}
+        ref={ref}
+      >
         <Icon fontSize="1.5rem" as={meta.icon} />
         <Text textStyle="body-1">{meta.label}</Text>
       </FieldListOption>
