@@ -1,7 +1,13 @@
 import { StatusCodes } from 'http-status-codes'
 
 import { createLoggerWithLabel } from '../../config/logger'
-import { ApplicationError, DatabaseError } from '../core/core.errors'
+import {
+  ApplicationError,
+  DatabaseConflictError,
+  DatabaseError,
+  DatabasePayloadSizeError,
+  DatabaseValidationError,
+} from '../core/core.errors'
 import { ErrorResponseData } from '../core/core.types'
 
 const logger = createLoggerWithLabel(module)
@@ -10,11 +16,28 @@ export const mapRouteError = (
   error: ApplicationError,
   coreErrorMessage?: string,
 ): ErrorResponseData => {
+  const errorMessage = coreErrorMessage ?? error.message
+
   switch (error.constructor) {
     case DatabaseError:
       return {
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
-        errorMessage: coreErrorMessage ?? error.message,
+        errorMessage: errorMessage,
+      }
+    case DatabaseValidationError:
+      return {
+        statusCode: StatusCodes.UNPROCESSABLE_ENTITY,
+        errorMessage: errorMessage,
+      }
+    case DatabaseConflictError:
+      return {
+        statusCode: StatusCodes.CONFLICT,
+        errorMessage: errorMessage,
+      }
+    case DatabasePayloadSizeError:
+      return {
+        statusCode: StatusCodes.REQUEST_TOO_LONG,
+        errorMessage: errorMessage,
       }
     default:
       logger.error({
