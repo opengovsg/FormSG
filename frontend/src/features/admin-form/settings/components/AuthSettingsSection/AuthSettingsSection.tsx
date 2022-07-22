@@ -16,7 +16,7 @@ import Link from '~components/Link'
 import Radio from '~components/Radio'
 import Tooltip from '~components/Tooltip'
 
-import { useAdminForm } from '~features/admin-form/common/queries'
+import { useUser } from '~features/user/queries'
 
 import { useMutateFormSettings } from '../../mutations'
 
@@ -50,7 +50,7 @@ export const AuthSettingsSection = ({
   settings,
 }: AuthSettingsSectionProps): JSX.Element => {
   const { mutateFormAuthType } = useMutateFormSettings()
-  const { data: form } = useAdminForm()
+  const { user } = useUser()
 
   const [focusedValue, setFocusedValue] = useState<FormAuthType>()
 
@@ -63,8 +63,8 @@ export const AuthSettingsSection = ({
     (authType: FormAuthType) =>
       isFormPublic ||
       mutateFormAuthType.isLoading ||
-      (authType === FormAuthType.SGID && !form?.admin.betaFlags?.sgid),
-    [form?.admin.betaFlags?.sgid, isFormPublic, mutateFormAuthType.isLoading],
+      (authType === FormAuthType.SGID && !user?.betaFlags?.sgid),
+    [user?.betaFlags?.sgid, isFormPublic, mutateFormAuthType.isLoading],
   )
 
   const handleEnterKeyDown: KeyboardEventHandler = useCallback(
