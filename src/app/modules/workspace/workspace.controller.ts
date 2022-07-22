@@ -60,6 +60,7 @@ export const getWorkspaces: ControllerHandler<
  *
  * @returns 200 with newly created workspace
  * @returns 400 when workspace title is invalid
+ * @returns 409 when a database conflict error occurs
  * @returns 500 when database error occurs
  */
 export const handleCreateWorkspace: ControllerHandler<

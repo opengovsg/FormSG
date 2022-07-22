@@ -49,7 +49,7 @@ const compileWorkspaceModel = (db: Mongoose): IWorkspaceModel => {
   WorkspaceSchema.statics.createWorkspace = async function (
     title: string,
     admin: IUserSchema['_id'],
-  ): Promise<WorkspaceDto> {
+  ) {
     return this.create({ title, admin, formIds: [] })
   }
 

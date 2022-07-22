@@ -36,6 +36,7 @@ WorkspacesRouter.route('/')
    * @returns 200 with newly created workspace
    * @returns 400 when Joi validation fails
    * @returns 401 when user does not exist in session
+   * @returns 409 when a database conflict error occurs
    * @returns 500 when database error occurs
    */
   .post(WorkspaceController.createWorkspace)
