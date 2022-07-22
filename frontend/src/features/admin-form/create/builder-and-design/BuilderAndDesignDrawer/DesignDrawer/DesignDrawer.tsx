@@ -43,8 +43,8 @@ import {
   resetDesignStoreSelector,
   setAttachmentSelector,
   setCustomLogoMetaSelector,
-  setStartPageInputDataSelector,
-  startPageInputDataSelector,
+  setStartPageDataSelector,
+  startPageDataSelector,
   useDesignStore,
 } from '../../useDesignStore'
 import { validateNumberInput } from '../../utils/validateNumberInput'
@@ -82,9 +82,9 @@ export const DesignDrawer = (): JSX.Element | null => {
     setCustomLogoMeta,
     resetDesignStore,
   } = useDesignStore((state) => ({
-    startPageData: startPageInputDataSelector(state),
+    startPageData: startPageDataSelector(state),
     customLogoMeta: customLogoMetaSelector(state),
-    setStartPageData: setStartPageInputDataSelector(state),
+    setStartPageData: setStartPageDataSelector(state),
     setAttachment: setAttachmentSelector(state),
     setCustomLogoMeta: setCustomLogoMetaSelector(state),
     resetDesignStore: resetDesignStoreSelector(state),

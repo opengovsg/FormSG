@@ -22,9 +22,9 @@ export type FormStartPageInput = Omit<
 }
 
 export type DesignStore = {
-  startPageInputData?: FormStartPageInput
+  startPageData?: FormStartPageInput
   customLogoMeta?: CustomLogoMeta
-  setStartPageInputData: (startPageInput: FormStartPageInput) => void
+  setStartPageData: (startPageInput: FormStartPageInput) => void
   setAttachment: (attachment: UploadedImage) => void
   setCustomLogoMeta: (customLogoMetaData: CustomLogoMeta) => void
   resetCustomLogoMeta: () => void
@@ -33,20 +33,18 @@ export type DesignStore = {
 
 export const useDesignStore = create<DesignStore>(
   devtools((set, get) => ({
-    setStartPageInputData: (startPageInput: FormStartPageInput) => {
+    setStartPageData: (startPageData: FormStartPageInput) => {
       const current = get()
-      if (isEqual(current.startPageInputData, startPageInput)) return
-      set({
-        startPageInputData: startPageInput,
-      })
+      if (isEqual(current.startPageData, startPageData)) return
+      set({ startPageData })
     },
     setAttachment: (attachment: UploadedImage) => {
       const current = get()
-      if (!current.startPageInputData) return
-      if (isEqual(current.startPageInputData?.attachment, attachment)) return
+      if (!current.startPageData) return
+      if (isEqual(current.startPageData?.attachment, attachment)) return
       set({
-        startPageInputData: {
-          ...current.startPageInputData,
+        startPageData: {
+          ...current.startPageData,
           attachment,
         },
       })
@@ -54,33 +52,31 @@ export const useDesignStore = create<DesignStore>(
     setCustomLogoMeta: (customLogoMeta: CustomLogoMeta) => {
       const current = get()
       if (isEqual(current.customLogoMeta, customLogoMeta)) return
-      set({
-        customLogoMeta: customLogoMeta,
-      })
+      set({ customLogoMeta })
     },
     resetCustomLogoMeta: () => {
       set({ customLogoMeta: undefined })
     },
     resetDesignStore: () => {
       set({
-        startPageInputData: undefined,
+        startPageData: undefined,
         customLogoMeta: undefined,
       })
     },
   })),
 )
 
-export const startPageInputDataSelector = (
+export const startPageDataSelector = (
   state: DesignStore,
-): DesignStore['startPageInputData'] => state.startPageInputData
+): DesignStore['startPageData'] => state.startPageData
 
 export const customLogoMetaSelector = (
   state: DesignStore,
 ): DesignStore['customLogoMeta'] => state.customLogoMeta
 
-export const setStartPageInputDataSelector = (
+export const setStartPageDataSelector = (
   state: DesignStore,
-): DesignStore['setStartPageInputData'] => state.setStartPageInputData
+): DesignStore['setStartPageData'] => state.setStartPageData
 
 export const setAttachmentSelector = (
   state: DesignStore,
