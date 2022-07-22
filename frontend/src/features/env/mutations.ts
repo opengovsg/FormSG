@@ -14,7 +14,10 @@ export const useEnvMutations = () => {
   })
 
   const adminSwitchEnvMutation = useMutation(() => adminChooseEnvironment(), {
-    onSuccess: () => navigate('/#!/forms'),
+    onSuccess: () => {
+      navigate('/#!/forms')
+      window.location.reload()
+    },
   })
 
   return {
