@@ -20,6 +20,7 @@ import {
   Wrap,
 } from '@chakra-ui/react'
 import dedent from 'dedent'
+import { t } from 'i18next'
 
 import { AppFooter } from '~/app/AppFooter'
 import { AppPublicHeader } from '~/app/AppPublicHeader'
@@ -89,12 +90,10 @@ export const LandingPage = (): JSX.Element => {
               textStyle={{ base: 'display-1-mobile', md: 'display-1' }}
               color="secondary.700"
             >
-              Build secure government forms in minutes.
+              {t('pages.Landing.LandingPage.hero.slogan')}
             </Text>
             <SectionBodyText>
-              A free, easy to use, no-code form builder with advanced features
-              for public officers to securely collect classified and sensitive
-              data.
+              {t('pages.Landing.LandingPage.hero.subtitle')}
             </SectionBodyText>
             <Box mt="2.5rem">
               <Button
@@ -103,7 +102,7 @@ export const LandingPage = (): JSX.Element => {
                 to={LOGIN_ROUTE}
                 rightIcon={<BiRightArrowAlt fontSize="1.5rem" />}
               >
-                Start building your form now
+                {t('pages.Landing.LandingPage.hero.buttonText')}
               </Button>
             </Box>
           </Flex>
@@ -114,7 +113,7 @@ export const LandingPage = (): JSX.Element => {
       </LandingSection>
       <LandingSection>
         <SectionTitleText maxW="37.5rem">
-          Our form building and data collection features
+          {t('pages.Landing.LandingPage.features.title')}
         </SectionTitleText>
         <SimpleGrid
           columns={{ base: 1, md: 2, lg: 3 }}
@@ -124,43 +123,63 @@ export const LandingPage = (): JSX.Element => {
         >
           <FeatureGridItem
             image={featureDndImg}
-            title="Drag and drop builder"
-            description="Create and publish forms in minutes using our user-friendly drag and drop builder, with more than over 65 field types, including attachments, dates, tables, ratings, and many more."
+            title={t(
+              'pages.Landing.LandingPage.features.dragAndDropBuilder.title',
+            )}
+            description={t(
+              'pages.Landing.LandingPage.features.dragAndDropBuilder.text',
+            )}
           />
           <FeatureGridItem
             image={featureA11yImg}
-            title="Accessible"
-            description="All our forms are fully responsive and aim to meet Web Content Accessibility Guidelines (WCAG 2.1), which makes web content more accessible to people with disabilities."
+            title={t('pages.Landing.LandingPage.features.accessible.title')}
+            description={t(
+              'pages.Landing.LandingPage.features.accessible.text',
+            )}
           />
           <FeatureGridItem
             image={featureLogicImg}
-            title="Conditional logic"
-            description="Create advanced logic for your forms, and show or hide fields and/or sections based on your user’s input, personalising their experience."
+            title={t(
+              'pages.Landing.LandingPage.features.conditionalLogic.title',
+            )}
+            description={t(
+              'pages.Landing.LandingPage.features.conditionalLogic.text',
+            )}
           />
           <FeatureGridItem
             image={featureIntegrationsImg}
-            title="Government integrations"
-            description="Authenticate your users with Singpass or Corppass. MyInfo fields can also be pre-filled once citizens log in through Singpass."
+            title={t(
+              'pages.Landing.LandingPage.features.governmentIntegrations.title',
+            )}
+            description={t(
+              'pages.Landing.LandingPage.features.governmentIntegrations.text',
+            )}
           />
           <FeatureGridItem
             image={featureWebhooksImg}
-            title="Webhooks"
-            description="Get every form submission sent straight to a compatible web app or URL as soon as it’s submitted with Webhooks."
+            title={t('pages.Landing.LandingPage.features.webhooks.title')}
+            description={t('pages.Landing.LandingPage.features.webhooks.text')}
           />
           <FeatureGridItem
             image={featureSectionsImg}
-            title="Form sections"
-            description="Manage long forms by sectioning it so your users enjoy a more seamless experience."
+            title={t('pages.Landing.LandingPage.features.formSections.title')}
+            description={t(
+              'pages.Landing.LandingPage.features.formSections.text',
+            )}
           />
           <FeatureGridItem
             image={featurePrefillImg}
-            title="Prefill"
-            description="Speed up the form filling process for your users by prefilling fields for them."
+            title={t('pages.Landing.LandingPage.features.prefill.title')}
+            description={t('pages.Landing.LandingPage.features.prefill.text')}
           />
           <FeatureGridItem
             image={featureEmailImg}
-            title="Email confirmation"
-            description="Send confirmation emails to your respondents along with a copy of their response."
+            title={t(
+              'pages.Landing.LandingPage.features.emailConfirmation.title',
+            )}
+            description={t(
+              'pages.Landing.LandingPage.features.emailConfirmation.text',
+            )}
           />
         </SimpleGrid>
       </LandingSection>
