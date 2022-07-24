@@ -116,7 +116,7 @@ export const moveForms = (
   })
 }
 
-export const checkWorkspaceAdmin = (
+export const verifyWorkspaceAdmin = (
   workspaceId: string,
   userId: string,
 ): ResultAsync<true, DatabaseError | ForbiddenWorkspaceError> => {
@@ -126,7 +126,7 @@ export const checkWorkspaceAdmin = (
       logger.error({
         message: 'Database error when checking if user is workspace admin',
         meta: {
-          action: 'checkWorkspaceAdmin',
+          action: 'verifyWorkspaceAdmin',
           workspaceId,
           userId,
         },
@@ -138,5 +138,28 @@ export const checkWorkspaceAdmin = (
     isUserWorkspaceAdmin
       ? okAsync(true as const)
       : errAsync(new ForbiddenWorkspaceError()),
+  )
+}
+
+export const checkWorkspaceExists = (
+  workspaceId: string,
+): ResultAsync<true, DatabaseError | WorkspaceNotFoundError> => {
+  return ResultAsync.fromPromise(
+    WorkspaceModel.exists({ _id: workspaceId }),
+    (error) => {
+      logger.error({
+        message: 'Database error when checking if workspace exists',
+        meta: {
+          action: 'doesWorkspaceExist',
+          workspaceId,
+        },
+        error,
+      })
+      return transformMongoError(error)
+    },
+  ).andThen((doesWorkspaceExist) =>
+    doesWorkspaceExist
+      ? okAsync(true as const)
+      : errAsync(new WorkspaceNotFoundError()),
   )
 }

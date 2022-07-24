@@ -109,10 +109,17 @@ export const handleUpdateWorkspaceTitle: ControllerHandler<
   const { title } = req.body
   const userId = (req.session as AuthedSessionData).user._id
 
-  return WorkspaceService.checkWorkspaceAdmin(workspaceId, userId)
+  return WorkspaceService.checkWorkspaceExists(workspaceId)
+    .andThen(() => WorkspaceService.verifyWorkspaceAdmin(workspaceId, userId))
     .andThen(() =>
       WorkspaceService.updateWorkspaceTitle(workspaceId, title, userId).map(
-        (workspace) => res.status(StatusCodes.OK).json(workspace),
+        (workspace) =>
+          workspace
+            ? res.status(StatusCodes.OK).json(workspace)
+            : res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+                message:
+                  'Sorry something went wrong, we are unable to update the workspace title',
+              }),
       ),
     )
     .mapErr((error) => {
