@@ -57,12 +57,9 @@ const compileWorkspaceModel = (db: Mongoose): IWorkspaceModel => {
     title: string,
     workspaceId: IWorkspaceSchema['_id'],
     admin: IUserSchema['_id'],
-  ): Promise<WorkspaceDto | null> {
-    await this.updateOne(
-      { _id: workspaceId, admin: admin },
-      { title: title },
-    ).exec()
-    return this.findOne({ _id: workspaceId, admin: admin }).exec()
+  ) {
+    await this.updateOne({ _id: workspaceId, admin }, { title: title }).exec()
+    return this.findOne({ _id: workspaceId, admin }).exec()
   }
 
   return db.model<IWorkspaceSchema, IWorkspaceModel>(
