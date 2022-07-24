@@ -150,7 +150,9 @@ export const updateWorkspaceTitle = [
  * @security session
  *
  * @returns 200 with success message
+ * @returns 403 when user does not have permissions to delete the workspace
  * @returns 404 when workspace cannot be found
+ * @returns 409 when a database conflict error occurs
  * @returns 500 when database error occurs
  */
 export const deleteWorkspace: ControllerHandler<
@@ -162,15 +164,18 @@ export const deleteWorkspace: ControllerHandler<
   const { shouldDeleteForms } = req.body
   const userId = (req.session as AuthedSessionData).user._id
 
-  return WorkspaceService.deleteWorkspace(
-    workspaceId,
-    userId,
-    shouldDeleteForms,
-  )
-    .map(() =>
-      res
-        .status(StatusCodes.OK)
-        .json({ message: 'Successfully deleted workspace' }),
+  return WorkspaceService.checkWorkspaceExists(workspaceId)
+    .andThen(() => WorkspaceService.verifyWorkspaceAdmin(workspaceId, userId))
+    .andThen(() =>
+      WorkspaceService.deleteWorkspace({
+        workspaceId,
+        userId,
+        shouldDeleteForms,
+      }).map(() =>
+        res
+          .status(StatusCodes.OK)
+          .json({ message: 'Successfully deleted workspace' }),
+      ),
     )
     .mapErr((error) => {
       logger.error({

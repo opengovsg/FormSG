@@ -84,11 +84,15 @@ export const updateWorkspaceTitle = ({
   )
 }
 
-export const deleteWorkspace = (
-  workspaceId: string,
-  userId: string,
-  shouldDeleteForms: boolean,
-): ResultAsync<number, DatabaseError | WorkspaceNotFoundError> => {
+export const deleteWorkspace = ({
+  workspaceId,
+  userId,
+  shouldDeleteForms,
+}: {
+  workspaceId: string
+  userId: string
+  shouldDeleteForms: boolean
+}): ResultAsync<number, DatabaseError | WorkspaceNotFoundError> => {
   return ResultAsync.fromPromise(
     WorkspaceModel.deleteWorkspace(workspaceId, userId, shouldDeleteForms),
     (error) => {
