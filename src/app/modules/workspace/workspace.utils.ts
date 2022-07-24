@@ -10,7 +10,10 @@ import {
 } from '../core/core.errors'
 import { ErrorResponseData } from '../core/core.types'
 
-import { WorkspaceNotFoundError } from './workspace.errors'
+import {
+  ForbiddenWorkspaceError,
+  WorkspaceNotFoundError,
+} from './workspace.errors'
 
 const logger = createLoggerWithLabel(module)
 
@@ -44,7 +47,12 @@ export const mapRouteError = (
     case WorkspaceNotFoundError:
       return {
         statusCode: StatusCodes.NOT_FOUND,
-        errorMessage: coreErrorMessage ?? error.message,
+        errorMessage: errorMessage,
+      }
+    case ForbiddenWorkspaceError:
+      return {
+        statusCode: StatusCodes.FORBIDDEN,
+        errorMessage: errorMessage,
       }
     default:
       logger.error({

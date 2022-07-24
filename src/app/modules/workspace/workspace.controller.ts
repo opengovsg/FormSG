@@ -95,7 +95,9 @@ export const createWorkspace = [
  * @security session
  *
  * @returns 200 with updated workspace
+ * @returns 403 when user does not have permissions to update the workspace
  * @returns 404 when workspace cannot be found
+ * @returns 409 when a database conflict error occurs
  * @returns 500 when database error occurs
  */
 export const handleUpdateWorkspaceTitle: ControllerHandler<
@@ -107,8 +109,12 @@ export const handleUpdateWorkspaceTitle: ControllerHandler<
   const { title } = req.body
   const userId = (req.session as AuthedSessionData).user._id
 
-  return WorkspaceService.updateWorkspaceTitle(workspaceId, title, userId)
-    .map((workspace) => res.status(StatusCodes.OK).json(workspace))
+  return WorkspaceService.checkWorkspaceAdmin(workspaceId, userId)
+    .andThen(() =>
+      WorkspaceService.updateWorkspaceTitle(workspaceId, title, userId).map(
+        (workspace) => res.status(StatusCodes.OK).json(workspace),
+      ),
+    )
     .mapErr((error) => {
       logger.error({
         message: 'Error updating workspace title',

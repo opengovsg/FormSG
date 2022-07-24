@@ -7,7 +7,10 @@ import { getWorkspaceModel } from '../../models/workspace.server.model'
 import { transformMongoError } from '../../utils/handle-mongo-error'
 import { DatabaseError, DatabaseValidationError } from '../core/core.errors'
 
-import { WorkspaceNotFoundError } from './workspace.errors'
+import {
+  ForbiddenWorkspaceError,
+  WorkspaceNotFoundError,
+} from './workspace.errors'
 
 const logger = createLoggerWithLabel(module)
 const WorkspaceModel = getWorkspaceModel(mongoose)
@@ -111,4 +114,29 @@ export const moveForms = (
     destWorkspaceId: destWorkspaceId,
     formIds: formIds,
   })
+}
+
+export const checkWorkspaceAdmin = (
+  workspaceId: string,
+  userId: string,
+): ResultAsync<true, DatabaseError | ForbiddenWorkspaceError> => {
+  return ResultAsync.fromPromise(
+    WorkspaceModel.exists({ _id: workspaceId, admin: userId }),
+    (error) => {
+      logger.error({
+        message: 'Database error when checking if user is workspace admin',
+        meta: {
+          action: 'checkWorkspaceAdmin',
+          workspaceId,
+          userId,
+        },
+        error,
+      })
+      return transformMongoError(error)
+    },
+  ).andThen((isUserWorkspaceAdmin) =>
+    isUserWorkspaceAdmin
+      ? okAsync(true as const)
+      : errAsync(new ForbiddenWorkspaceError()),
+  )
 }
