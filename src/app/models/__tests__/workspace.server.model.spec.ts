@@ -177,11 +177,11 @@ describe('Workspace Model', () => {
       it('should return updated workspace upon successful workspace title update', async () => {
         const newWorkspaceTitle = 'Workspace'
 
-        const actual = await Workspace.updateWorkspaceTitle(
-          newWorkspaceTitle,
-          MOCK_WORKSPACE_ID,
-          MOCK_USER_ID,
-        )
+        const actual = await Workspace.updateWorkspaceTitle({
+          title: newWorkspaceTitle,
+          workspaceId: MOCK_WORKSPACE_ID,
+          admin: MOCK_USER_ID,
+        })
 
         expect(actual).toBeObject()
         expect(actual?.title).toEqual(newWorkspaceTitle)
@@ -191,11 +191,11 @@ describe('Workspace Model', () => {
         const newWorkspaceTitle = 'Workspace'
         const invalidWorkspaceId = new ObjectId()
 
-        const actual = await Workspace.updateWorkspaceTitle(
-          newWorkspaceTitle,
-          invalidWorkspaceId,
-          MOCK_USER_ID,
-        )
+        const actual = await Workspace.updateWorkspaceTitle({
+          title: newWorkspaceTitle,
+          workspaceId: invalidWorkspaceId,
+          admin: MOCK_USER_ID,
+        })
 
         expect(actual).toBeNull()
       })
@@ -204,11 +204,11 @@ describe('Workspace Model', () => {
         const newWorkspaceTitle = 'Workspace'
         const invalidUserId = new ObjectId()
 
-        const actual = await Workspace.updateWorkspaceTitle(
-          newWorkspaceTitle,
-          MOCK_WORKSPACE_ID,
-          invalidUserId,
-        )
+        const actual = await Workspace.updateWorkspaceTitle({
+          title: newWorkspaceTitle,
+          workspaceId: MOCK_WORKSPACE_ID,
+          admin: invalidUserId,
+        })
 
         expect(actual).toBeNull()
       })

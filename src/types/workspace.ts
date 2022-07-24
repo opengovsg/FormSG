@@ -18,9 +18,13 @@ export interface IWorkspaceModel extends Model<IWorkspaceSchema> {
     title: string,
     admin: IUserSchema['_id'],
   ): Promise<WorkspaceDto>
-  updateWorkspaceTitle(
-    title: string,
-    workspaceId: IWorkspaceSchema['_id'],
-    admin: IUserSchema['_id'],
-  ): Promise<WorkspaceDto | null>
+  updateWorkspaceTitle({
+    title,
+    workspaceId,
+    admin,
+  }: {
+    title: string
+    workspaceId: IWorkspaceSchema['_id']
+    admin: IUserSchema['_id']
+  }): Promise<WorkspaceDto | null>
 }
