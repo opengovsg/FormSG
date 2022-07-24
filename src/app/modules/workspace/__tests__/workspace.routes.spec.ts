@@ -187,7 +187,7 @@ describe('workspaces.routes', () => {
     const UPDATE_WORKSPACE_ENDPOINT = `/workspaces/${MOCK_WORKSPACE_ID}/title`
 
     it('should return 200 with updated workspace on successful title update', async () => {
-      await WorkspaceModel.create(MOCK_WORKSPACE_FIELDS)
+      await WorkspaceModel.create(MOCK_WORKSPACE_DOC)
 
       const updateWorkspaceParam = {
         title: 'newTitle',
@@ -249,7 +249,7 @@ describe('workspaces.routes', () => {
     })
 
     it('should return 500 when database errors occur', async () => {
-      await WorkspaceModel.create(MOCK_WORKSPACE_FIELDS)
+      await WorkspaceModel.create(MOCK_WORKSPACE_DOC)
 
       const updateWorkspaceParam = {
         title: 'validWorkspace',

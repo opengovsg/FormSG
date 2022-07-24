@@ -9,7 +9,10 @@ import expressHandler from 'tests/unit/backend/helpers/jest-express'
 
 import { DatabaseConflictError, DatabaseError } from '../../core/core.errors'
 import * as WorkspaceController from '../workspace.controller'
-import { WorkspaceNotFoundError } from '../workspace.errors'
+import {
+  ForbiddenWorkspaceError,
+  WorkspaceNotFoundError,
+} from '../workspace.errors'
 
 jest.mock('../workspace.service')
 const MockWorkspaceService = mocked(WorkspaceService)
@@ -149,6 +152,12 @@ describe('workspace.controller', () => {
 
     it('should return 200 with the updated workspace', async () => {
       const mockRes = expressHandler.mockResponse()
+      MockWorkspaceService.checkWorkspaceExists.mockReturnValueOnce(
+        okAsync(true),
+      )
+      MockWorkspaceService.verifyWorkspaceAdmin.mockReturnValueOnce(
+        okAsync(true),
+      )
       MockWorkspaceService.updateWorkspaceTitle.mockReturnValueOnce(
         okAsync(MOCK_WORKSPACE),
       )
@@ -161,12 +170,35 @@ describe('workspace.controller', () => {
       expect(mockRes.json).toHaveBeenCalledWith(MOCK_WORKSPACE)
     })
 
+    it('should return 403 when user is not workspace admin', async () => {
+      const mockRes = expressHandler.mockResponse()
+      const mockErrorString = 'something went wrong'
+
+      MockWorkspaceService.checkWorkspaceExists.mockReturnValueOnce(
+        okAsync(true),
+      )
+      MockWorkspaceService.verifyWorkspaceAdmin.mockReturnValueOnce(
+        errAsync(new ForbiddenWorkspaceError(mockErrorString)),
+      )
+      await WorkspaceController.handleUpdateWorkspaceTitle(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      expect(mockRes.status).toBeCalledWith(403)
+      expect(mockRes.json).toBeCalledWith({ message: mockErrorString })
+    })
+
     it('should return 404 when workspace is not found', async () => {
       const mockRes = expressHandler.mockResponse()
       const mockErrorString = 'something went wrong'
 
-      MockWorkspaceService.updateWorkspaceTitle.mockReturnValueOnce(
+      MockWorkspaceService.checkWorkspaceExists.mockReturnValueOnce(
         errAsync(new WorkspaceNotFoundError(mockErrorString)),
+      )
+      MockWorkspaceService.verifyWorkspaceAdmin.mockReturnValueOnce(
+        okAsync(true),
       )
       await WorkspaceController.handleUpdateWorkspaceTitle(
         MOCK_REQ,
@@ -182,6 +214,12 @@ describe('workspace.controller', () => {
       const mockRes = expressHandler.mockResponse()
       const mockErrorString = 'something went wrong'
 
+      MockWorkspaceService.checkWorkspaceExists.mockReturnValueOnce(
+        okAsync(true),
+      )
+      MockWorkspaceService.verifyWorkspaceAdmin.mockReturnValueOnce(
+        okAsync(true),
+      )
       MockWorkspaceService.updateWorkspaceTitle.mockReturnValueOnce(
         errAsync(new DatabaseError(mockErrorString)),
       )

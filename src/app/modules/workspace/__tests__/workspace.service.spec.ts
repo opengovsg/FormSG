@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
+import { ObjectId } from 'bson-ext'
 import mongoose from 'mongoose'
 import { FormId, UserId } from 'shared/types'
 import { WorkspaceDto, WorkspaceId } from 'shared/types/workspace'
@@ -7,12 +8,22 @@ import { getWorkspaceModel } from 'src/app/models/workspace.server.model'
 import * as WorkspaceService from 'src/app/modules/workspace/workspace.service'
 import { formatErrorRecoveryMessage } from 'src/app/utils/handle-mongo-error'
 
+import dbHandler from 'tests/unit/backend/helpers/jest-db'
+
 import { DatabaseError, DatabaseValidationError } from '../../core/core.errors'
-import { WorkspaceNotFoundError } from '../workspace.errors'
+import {
+  ForbiddenWorkspaceError,
+  WorkspaceNotFoundError,
+} from '../workspace.errors'
 
 const WorkspaceModel = getWorkspaceModel(mongoose)
 
 describe('workspace.service', () => {
+  beforeAll(() => dbHandler.connect())
+  afterAll(() => dbHandler.closeDatabase())
+  afterEach(async () => {
+    await dbHandler.clearDatabase()
+  })
   beforeEach(async () => {
     jest.clearAllMocks()
   })
@@ -57,6 +68,7 @@ describe('workspace.service', () => {
   describe('createWorkspace', () => {
     it('should successfully create workspace', async () => {
       const mockWorkspace = {
+        _id: 'workspaceId' as WorkspaceId,
         admin: 'user' as UserId,
         title: 'workspace1',
         formIds: [] as FormId[],
@@ -123,24 +135,23 @@ describe('workspace.service', () => {
       admin: 'user' as UserId,
       title: 'workspace1',
       formIds: [] as FormId[],
-      count: 0,
     }
 
     it('should successfully update workspace title', async () => {
       const updateSpy = jest
         .spyOn(WorkspaceModel, 'updateWorkspaceTitle')
         .mockResolvedValueOnce(mockWorkspace)
-      const actual = await WorkspaceService.updateWorkspaceTitle(
-        mockWorkspace._id,
-        mockWorkspace.title,
-        mockWorkspace.admin,
-      )
+      const actual = await WorkspaceService.updateWorkspaceTitle({
+        workspaceId: mockWorkspace._id,
+        title: mockWorkspace.title,
+        userId: mockWorkspace.admin,
+      })
 
-      expect(updateSpy).toHaveBeenCalledWith(
-        mockWorkspace.title,
-        mockWorkspace._id,
-        mockWorkspace.admin,
-      )
+      expect(updateSpy).toHaveBeenCalledWith({
+        workspaceId: mockWorkspace._id,
+        title: mockWorkspace.title,
+        admin: mockWorkspace.admin,
+      })
       expect(actual.isOk()).toEqual(true)
       expect(actual._unsafeUnwrap()).toEqual(mockWorkspace)
     })
@@ -151,17 +162,17 @@ describe('workspace.service', () => {
         // @ts-ignore
         .mockRejectedValueOnce(new mongoose.Error.ValidationError())
 
-      const actual = await WorkspaceService.updateWorkspaceTitle(
-        mockWorkspace._id,
-        mockWorkspace.title,
-        mockWorkspace.admin,
-      )
+      const actual = await WorkspaceService.updateWorkspaceTitle({
+        workspaceId: mockWorkspace._id,
+        title: mockWorkspace.title,
+        userId: mockWorkspace.admin,
+      })
 
-      expect(updateSpy).toHaveBeenCalledWith(
-        mockWorkspace.title,
-        mockWorkspace._id,
-        mockWorkspace.admin,
-      )
+      expect(updateSpy).toHaveBeenCalledWith({
+        workspaceId: mockWorkspace._id,
+        title: mockWorkspace.title,
+        admin: mockWorkspace.admin,
+      })
       expect(actual._unsafeUnwrapErr()).toBeInstanceOf(DatabaseValidationError)
     })
 
@@ -170,17 +181,17 @@ describe('workspace.service', () => {
         .spyOn(WorkspaceModel, 'updateWorkspaceTitle')
         .mockResolvedValueOnce(null)
 
-      const actual = await WorkspaceService.updateWorkspaceTitle(
-        mockWorkspace._id,
-        mockWorkspace.title,
-        mockWorkspace.admin,
-      )
+      const actual = await WorkspaceService.updateWorkspaceTitle({
+        workspaceId: mockWorkspace._id,
+        title: mockWorkspace.title,
+        userId: mockWorkspace.admin,
+      })
 
-      expect(updateSpy).toHaveBeenCalledWith(
-        mockWorkspace.title,
-        mockWorkspace._id,
-        mockWorkspace.admin,
-      )
+      expect(updateSpy).toHaveBeenCalledWith({
+        workspaceId: mockWorkspace._id,
+        title: mockWorkspace.title,
+        admin: mockWorkspace.admin,
+      })
       expect(actual._unsafeUnwrapErr()).toBeInstanceOf(WorkspaceNotFoundError)
     })
 
@@ -190,21 +201,94 @@ describe('workspace.service', () => {
       const updateSpy = jest
         .spyOn(WorkspaceModel, 'updateWorkspaceTitle')
         .mockRejectedValueOnce(new Error(mockErrorMessage))
-      const actual = await WorkspaceService.updateWorkspaceTitle(
-        mockWorkspace._id,
-        mockWorkspace.title,
-        mockWorkspace.admin,
-      )
+      const actual = await WorkspaceService.updateWorkspaceTitle({
+        workspaceId: mockWorkspace._id,
+        title: mockWorkspace.title,
+        userId: mockWorkspace.admin,
+      })
 
-      expect(updateSpy).toHaveBeenCalledWith(
-        mockWorkspace.title,
-        mockWorkspace._id,
-        mockWorkspace.admin,
-      )
+      expect(updateSpy).toHaveBeenCalledWith({
+        workspaceId: mockWorkspace._id,
+        title: mockWorkspace.title,
+        admin: mockWorkspace.admin,
+      })
       expect(actual.isErr()).toEqual(true)
       expect(actual._unsafeUnwrapErr()).toEqual(
         new DatabaseError(formatErrorRecoveryMessage(mockErrorMessage)),
       )
+    })
+  })
+
+  describe('verifyWorkspaceAdmin', () => {
+    const mockWorkspaceId = new ObjectId()
+    const mockAdmin = new ObjectId()
+
+    it('should return true when user is workspace admin', async () => {
+      await WorkspaceModel.create({
+        _id: mockWorkspaceId,
+        title: 'Workspace1',
+        formIds: [],
+        admin: mockAdmin,
+      })
+
+      const actual = await WorkspaceService.verifyWorkspaceAdmin(
+        mockWorkspaceId.toHexString(),
+        mockAdmin.toHexString(),
+      )
+
+      expect(actual.isOk()).toEqual(true)
+      expect(actual._unsafeUnwrap()).toEqual(true)
+    })
+
+    it('should return false when user is not workspace admin', async () => {
+      const mockNotAdmin = new ObjectId()
+      await WorkspaceModel.create({
+        _id: mockWorkspaceId,
+        title: 'Workspace1',
+        formIds: [],
+        admin: mockAdmin,
+      })
+      const actual = await WorkspaceService.verifyWorkspaceAdmin(
+        mockWorkspaceId.toHexString(),
+        mockNotAdmin.toHexString(),
+      )
+
+      expect(actual.isErr()).toEqual(true)
+      expect(actual._unsafeUnwrapErr()).toBeInstanceOf(ForbiddenWorkspaceError)
+    })
+  })
+
+  describe('checkWorkspaceExists', () => {
+    const mockWorkspaceId = new ObjectId()
+    it('should return true when workspace exists in the database', async () => {
+      await WorkspaceModel.create({
+        _id: mockWorkspaceId,
+        title: 'Workspace1',
+        formIds: [],
+        admin: new ObjectId(),
+      })
+
+      const actual = await WorkspaceService.checkWorkspaceExists(
+        mockWorkspaceId.toHexString(),
+      )
+
+      expect(actual.isOk()).toEqual(true)
+      expect(actual._unsafeUnwrap()).toEqual(true)
+    })
+
+    it('should return false when user is not workspace admin', async () => {
+      await WorkspaceModel.create({
+        _id: mockWorkspaceId,
+        title: 'Workspace1',
+        formIds: [],
+        admin: new ObjectId(),
+      })
+      const actual = await WorkspaceService.checkWorkspaceExists(
+        new ObjectId().toHexString(),
+      )
+
+      expect(actual.isErr()).toEqual(true)
+      expect(actual._unsafeUnwrapErr()).toBeInstanceOf(WorkspaceNotFoundError)
     })
   })
 })
