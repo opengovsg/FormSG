@@ -50,7 +50,9 @@ WorkspacesRouter.route('/:workspaceId([a-fA-F0-9]{24})')
    *
    * @returns 200 with success message
    * @returns 401 when user does not exist in session
+   * @returns 403 when user does not have permissions to delete the workspace
    * @returns 404 when workspace cannot be found
+   * @returns 409 when a database conflict error occurs
    * @returns 500 when database error occurs
    */
   .delete(WorkspaceController.deleteWorkspace)

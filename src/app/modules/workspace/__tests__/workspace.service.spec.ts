@@ -284,22 +284,22 @@ describe('workspace.service', () => {
       formIds: [] as FormId[],
       count: 0,
     }
-    const shouldDeleteWorkspace = true
+    const shouldDeleteForms = true
 
     it('should successfully delete workspace', async () => {
       const updateSpy = jest
         .spyOn(WorkspaceModel, 'deleteWorkspace')
         .mockResolvedValueOnce(1)
-      const actual = await WorkspaceService.deleteWorkspace(
-        mockWorkspace._id,
-        mockWorkspace.admin,
-        shouldDeleteWorkspace,
-      )
+      const actual = await WorkspaceService.deleteWorkspace({
+        workspaceId: mockWorkspace._id,
+        userId: mockWorkspace.admin,
+        shouldDeleteForms,
+      })
 
       expect(updateSpy).toHaveBeenCalledWith(
         mockWorkspace._id,
         mockWorkspace.admin,
-        shouldDeleteWorkspace,
+        shouldDeleteForms,
       )
       expect(actual.isOk()).toEqual(true)
       expect(actual._unsafeUnwrap()).toEqual(1)
@@ -311,16 +311,16 @@ describe('workspace.service', () => {
         .spyOn(WorkspaceModel, 'deleteWorkspace')
         .mockResolvedValueOnce(0)
 
-      const actual = await WorkspaceService.deleteWorkspace(
-        invalidWorkspaceId,
-        mockWorkspace.admin,
-        shouldDeleteWorkspace,
-      )
+      const actual = await WorkspaceService.deleteWorkspace({
+        workspaceId: invalidWorkspaceId,
+        userId: mockWorkspace.admin,
+        shouldDeleteForms,
+      })
 
       expect(updateSpy).toHaveBeenCalledWith(
         invalidWorkspaceId,
         mockWorkspace.admin,
-        shouldDeleteWorkspace,
+        shouldDeleteForms,
       )
       expect(actual._unsafeUnwrapErr()).toBeInstanceOf(WorkspaceNotFoundError)
     })
@@ -331,16 +331,16 @@ describe('workspace.service', () => {
       const updateSpy = jest
         .spyOn(WorkspaceModel, 'deleteWorkspace')
         .mockRejectedValueOnce(new Error(mockErrorMessage))
-      const actual = await WorkspaceService.deleteWorkspace(
-        mockWorkspace._id,
-        mockWorkspace.admin,
-        shouldDeleteWorkspace,
-      )
+      const actual = await WorkspaceService.deleteWorkspace({
+        workspaceId: mockWorkspace._id,
+        userId: mockWorkspace.admin,
+        shouldDeleteForms,
+      })
 
       expect(updateSpy).toHaveBeenCalledWith(
         mockWorkspace._id,
         mockWorkspace.admin,
-        shouldDeleteWorkspace,
+        shouldDeleteForms,
       )
       expect(actual.isErr()).toEqual(true)
       expect(actual._unsafeUnwrapErr()).toEqual(
