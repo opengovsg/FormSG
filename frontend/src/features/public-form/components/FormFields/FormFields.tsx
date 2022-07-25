@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import { FormProvider, SubmitHandler, useForm } from 'react-hook-form'
 import { useSearchParams } from 'react-router-dom'
 import { Box, Stack } from '@chakra-ui/react'
@@ -16,6 +16,7 @@ import {
   extractPreviewValue,
   hasExistingFieldValue,
 } from '~features/myinfo/utils'
+import { useFetchPrefillQuery } from '~features/public-form/hooks/useFetchPrefillQuery'
 
 import { PublicFormSubmitButton } from './PublicFormSubmitButton'
 import { VisibleFormFields } from './VisibleFormFields'
@@ -33,6 +34,7 @@ export const FormFields = ({
   colorTheme,
   onSubmit,
 }: FormFieldsProps): JSX.Element => {
+  useFetchPrefillQuery()
   const [searchParams] = useSearchParams()
 
   const fieldPrefillMap = useMemo(() => {
@@ -86,6 +88,18 @@ export const FormFields = ({
     mode: 'onTouched',
     shouldUnregister: true,
   })
+
+  const {
+    reset,
+    formState: { isDirty },
+  } = formMethods
+
+  // Reset default values when they change
+  useEffect(() => {
+    if (!isDirty) {
+      reset(defaultFormValues)
+    }
+  }, [defaultFormValues, isDirty, reset])
 
   return (
     <FormProvider {...formMethods}>
