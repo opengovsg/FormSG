@@ -79,13 +79,14 @@ const compileWorkspaceModel = (db: Mongoose): IWorkspaceModel => {
     admin: IUserSchema['_id']
     session?: ClientSession
   }) {
-    await this.deleteOne(
+    const deleted = await this.deleteOne(
       {
         _id: workspaceId,
         admin,
       },
       { session },
     )
+    return deleted.deletedCount == 1
   }
 
   return db.model<IWorkspaceSchema, IWorkspaceModel>(
