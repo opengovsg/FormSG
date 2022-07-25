@@ -881,6 +881,17 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       .exec()
   }
 
+  FormSchema.statics.archiveForms = async function (
+    formIds: IFormSchema['_id'][],
+    session?: ClientSession,
+  ) {
+    await this.updateMany(
+      { _id: { $in: formIds } },
+      { $set: { status: FormStatus.Archived } },
+      { session },
+    )
+  }
+
   // Hooks
   FormSchema.pre<IFormSchema>('validate', function (next) {
     // Reject save if form document is too large

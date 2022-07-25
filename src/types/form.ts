@@ -334,6 +334,11 @@ export interface IFormModel extends Model<IFormSchema> {
     logicId: string,
     updatedLogic: LogicDto,
   ): Promise<IFormSchema | null>
+
+  archiveForms(
+    formIds: IFormSchema['_id'][],
+    session?: ClientSession,
+  ): Promise<void>
 }
 
 export type IEncryptedFormModel = IFormModel & Model<IEncryptedFormSchema>

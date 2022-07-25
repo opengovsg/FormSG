@@ -1,4 +1,4 @@
-import mongoose from 'mongoose'
+import mongoose, { ClientSession } from 'mongoose'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 import { WorkspaceDto } from 'shared/types/workspace'
 
@@ -6,6 +6,7 @@ import { createLoggerWithLabel } from '../../config/logger'
 import { getWorkspaceModel } from '../../models/workspace.server.model'
 import { transformMongoError } from '../../utils/handle-mongo-error'
 import { DatabaseError, DatabaseValidationError } from '../core/core.errors'
+import * as FormService from '../form/form.service'
 
 import {
   ForbiddenWorkspaceError,
@@ -92,9 +93,20 @@ export const deleteWorkspace = ({
   workspaceId: string
   userId: string
   shouldDeleteForms: boolean
-}): ResultAsync<number, DatabaseError | WorkspaceNotFoundError> => {
+}): ResultAsync<void, DatabaseError> => {
   return ResultAsync.fromPromise(
-    WorkspaceModel.deleteWorkspace(workspaceId, userId, shouldDeleteForms),
+    WorkspaceModel.startSession().then((session: ClientSession) =>
+      session
+        .withTransaction(() =>
+          deleteWorkspaceTransaction({
+            workspaceId,
+            userId,
+            shouldDeleteForms,
+            session,
+          }),
+        )
+        .then(() => session.endSession()),
+    ),
     (error) => {
       logger.error({
         message: 'Database error when deleting workspace',
@@ -102,16 +114,68 @@ export const deleteWorkspace = ({
           action: 'deleteWorkspace',
           workspaceId,
           userId,
+          shouldDeleteForms,
         },
         error,
       })
-      return transformMongoError(error)
+      return error as ReturnType<typeof transformMongoError>
     },
-  ).andThen((numDeleted) =>
-    numDeleted == 0
-      ? errAsync(new WorkspaceNotFoundError())
-      : okAsync(numDeleted),
   )
+}
+
+const deleteWorkspaceTransaction = async ({
+  workspaceId,
+  userId,
+  shouldDeleteForms,
+  session,
+}: {
+  workspaceId: string
+  userId: string
+  shouldDeleteForms: boolean
+  session: ClientSession
+}): Promise<void> => {
+  const logMeta = {
+    action: 'deleteWorkspaceTransaction',
+    workspaceId,
+    userId,
+    shouldDeleteForms,
+  }
+  const workspaceToDelete = await WorkspaceModel.findOne({
+    _id: workspaceId,
+    admin: userId,
+  })
+
+  try {
+    await WorkspaceModel.deleteWorkspace({
+      workspaceId,
+      admin: userId,
+      session,
+    })
+  } catch (error) {
+    logger.error({
+      message: 'Error while deleting workspace, rolling back transaction',
+      meta: logMeta,
+      error,
+    })
+    throw transformMongoError(error)
+  }
+
+  if (shouldDeleteForms && workspaceToDelete?.formIds) {
+    try {
+      await FormService.archiveForms({
+        formIds: workspaceToDelete?.formIds,
+        userId,
+        session,
+      })
+    } catch (error) {
+      logger.error({
+        message: 'Error while archiving forms, rolling back transaction',
+        meta: logMeta,
+        error,
+      })
+      throw transformMongoError(error)
+    }
+  }
 }
 
 export const getForms = (
