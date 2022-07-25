@@ -14,7 +14,7 @@ import {
 import { AppFooter } from '~/app/AppFooter'
 import { AppPublicHeader } from '~/app/AppPublicHeader'
 
-import { OSS_README } from '~constants/externalLinks'
+import { OSS_README } from '~constants/links'
 import Link from '~components/Link'
 
 const SectionListItem: FC<ListItemProps> = ({

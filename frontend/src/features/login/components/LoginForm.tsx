@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { FormControl, Stack, useBreakpointValue } from '@chakra-ui/react'
 import isEmail from 'validator/lib/isEmail'
 
-import { FORM_GUIDE } from '~constants/externalLinks'
+import { FORM_GUIDE } from '~constants/links'
 import { INVALID_EMAIL_ERROR } from '~constants/validation'
 import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
