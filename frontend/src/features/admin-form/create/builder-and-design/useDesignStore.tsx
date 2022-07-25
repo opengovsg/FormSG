@@ -41,7 +41,7 @@ export const useDesignStore = create<DesignStore>(
     setAttachment: (attachment: UploadedImage) => {
       const current = get()
       if (!current.startPageData) return
-      if (isEqual(current.startPageData?.attachment, attachment)) return
+      if (isEqual(current.startPageData.attachment, attachment)) return
       set({
         startPageData: {
           ...current.startPageData,
