@@ -21,6 +21,8 @@ import { RolloutAnnouncementModal } from '~features/rollout-announcement/Rollout
 import { EmergencyContactModal } from '~features/user/emergency-contact/EmergencyContactModal'
 import { useUser } from '~features/user/queries'
 
+// TODO #4279: Remove after React rollout is complete
+import { AdminSwitchEnvMessage } from './components/AdminSwitchEnvMessage'
 import CreateFormModal from './components/CreateFormModal'
 import { EmptyWorkspace } from './components/EmptyWorkspace'
 import { WorkspaceFormRows } from './components/WorkspaceFormRow'
@@ -159,10 +161,13 @@ export const WorkspacePage = (): JSX.Element => {
         <Grid
           bg="neutral.100"
           templateColumns="1fr"
-          templateRows="auto 1fr auto"
+          templateRows="auto auto 1fr auto"
           minH="100vh"
-          templateAreas="'header' 'main' 'footer'"
+          templateAreas="'banner' 'header' 'main' 'footer'"
         >
+          <Container gridArea="banner" maxW={CONTAINER_MAXW} pt="1.5rem">
+            <AdminSwitchEnvMessage />
+          </Container>
           <Container
             gridArea="header"
             maxW={CONTAINER_MAXW}

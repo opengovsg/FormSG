@@ -1,6 +1,7 @@
 import { Router } from 'express'
 
 import * as PublicFormController from '../../../../modules/form/public-form/public-form.controller'
+import * as ReactMigrationController from '../../../../modules/react-migration/react-migration.controller'
 
 export const PublicFormsFormRouter = Router()
 
@@ -20,4 +21,13 @@ export const PublicFormsFormRouter = Router()
  */
 PublicFormsFormRouter.route('/:formId([a-fA-F0-9]{24})').get(
   PublicFormController.handleGetPublicForm,
+)
+
+// TODO #4279: Remove after React rollout is complete
+/**
+ * Switches the environment cookie for a public form
+ * @route GET /environment/:ui
+ */
+PublicFormsFormRouter.route('/environment/:ui(react|angular)').get(
+  ReactMigrationController.publicChooseEnvironment,
 )
