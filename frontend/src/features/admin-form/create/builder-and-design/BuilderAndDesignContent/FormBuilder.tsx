@@ -74,11 +74,13 @@ export const FormBuilder = ({
           </Droppable>
         </Flex>
         <Button
+          _hover={{ bg: 'primary.200' }}
           py="1.5rem"
           mt="1.5rem"
           variant="outline"
           borderColor="secondary.200"
           colorScheme="secondary"
+          height="auto"
           onClick={() => {
             setEditEndPage()
             handleBuilderClick()
