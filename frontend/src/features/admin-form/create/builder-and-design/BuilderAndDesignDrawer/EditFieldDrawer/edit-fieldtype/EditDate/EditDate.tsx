@@ -44,13 +44,14 @@ export interface InvalidDaysCheckboxOptions {
 }
 
 const INVALID_DAYS_CHECKBOX_VALUES: InvalidDaysCheckboxOptions[] = [
-  { label: 'Monday', value: DaysOfTheWeek.Monday },
-  { label: 'Tuesday', value: DaysOfTheWeek.Tuesday },
-  { label: 'Wednesday', value: DaysOfTheWeek.Wednesday },
-  { label: 'Thursday', value: DaysOfTheWeek.Thursday },
-  { label: 'Friday', value: DaysOfTheWeek.Friday },
-  { label: 'Saturday', value: DaysOfTheWeek.Saturday },
-  { label: 'Sunday', value: DaysOfTheWeek.Sunday },
+  { label: DaysOfTheWeek.Monday, value: DaysOfTheWeek.Monday },
+  { label: DaysOfTheWeek.Tuesday, value: DaysOfTheWeek.Tuesday },
+  { label: DaysOfTheWeek.Wednesday, value: DaysOfTheWeek.Wednesday },
+  { label: DaysOfTheWeek.Thursday, value: DaysOfTheWeek.Thursday },
+  { label: DaysOfTheWeek.Friday, value: DaysOfTheWeek.Friday },
+  { label: DaysOfTheWeek.Saturday, value: DaysOfTheWeek.Saturday },
+  { label: DaysOfTheWeek.Sunday, value: DaysOfTheWeek.Sunday },
+  { label: 'Singapore public holidays', value: 'Singapore public holidays' },
 ]
 
 type EditDateProps = EditFieldProps<DateFieldBase>
@@ -270,59 +271,34 @@ export const EditDate = ({ field }: EditDateProps): JSX.Element => {
         </FormControl>
         {getValues('addParticularDayRestriction') ? (
           <FormControl isRequired isReadOnly={isLoading}>
-            <input
-              type="checkbox"
-              hidden
-              value=""
-              {...register('invalidDaysOfTheWeek')}
-            />
-            <Wrap>
-              <Controller
-                control={control}
-                name="invalidDaysOfTheWeek"
-                render={({ field: { ref, ...field } }) => {
-                  return (
-                    <CheckboxGroup {...field}>
+            <Controller
+              control={control}
+              name="invalidDaysOfTheWeek"
+              render={({ field: { ref, ...field } }) => {
+                return (
+                  <CheckboxGroup {...field}>
+                    <Wrap spacing="0.75rem">
                       {INVALID_DAYS_CHECKBOX_VALUES.map((invalidDayOption) => {
-                        console.log(field.value)
                         return (
-                          <Checkbox
+                          <WrapItem
                             key={invalidDayOption.value}
-                            value={invalidDayOption.value}
+                            minW="9.75rem"
+                            maxW="21.25rem"
                           >
-                            {invalidDayOption.label}
-                          </Checkbox>
+                            <Checkbox
+                              key={invalidDayOption.value}
+                              value={invalidDayOption.value}
+                            >
+                              {invalidDayOption.label}
+                            </Checkbox>
+                          </WrapItem>
                         )
                       })}
-                    </CheckboxGroup>
-                  )
-                }}
-              />
-              {/* {INVALID_DAYS_CHECKBOX_VALUES.map((invalidDayOption) => {
-                let width = '9.25rem'
-
-                if (invalidDayOption.value % 2 === 0) {
-                  width = '20rem'
-                }
-
-                return (
-                  <WrapItem key={invalidDayOption.value} width={width}>
-                    <Controller
-                      control={control}
-                      name="invalidDaysOfTheWeek"
-                      render={({ field: { onChange, value, ref } }) => {
-                        console.log(value)
-                        return (
-                          <Checkbox onChange={onChange}>
-                            {invalidDayOption.label}
-                          </Checkbox>
-                        )
-                      }}
-                    />
-                  </WrapItem>
+                    </Wrap>
+                  </CheckboxGroup>
                 )
-              })} */}
-            </Wrap>
+              }}
+            />
           </FormControl>
         ) : null}
       </Stack>
