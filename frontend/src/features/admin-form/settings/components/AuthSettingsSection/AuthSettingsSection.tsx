@@ -16,6 +16,8 @@ import Link from '~components/Link'
 import Radio from '~components/Radio'
 import Tooltip from '~components/Tooltip'
 
+import { useUser } from '~features/user/queries'
+
 import { useMutateFormSettings } from '../../mutations'
 
 import {
@@ -48,6 +50,7 @@ export const AuthSettingsSection = ({
   settings,
 }: AuthSettingsSectionProps): JSX.Element => {
   const { mutateFormAuthType } = useMutateFormSettings()
+  const { user } = useUser()
 
   const [focusedValue, setFocusedValue] = useState<FormAuthType>()
 
@@ -56,9 +59,12 @@ export const AuthSettingsSection = ({
     [settings],
   )
 
-  const isDisabled = useMemo(
-    () => isFormPublic || mutateFormAuthType.isLoading,
-    [isFormPublic, mutateFormAuthType.isLoading],
+  const isDisabled = useCallback(
+    (authType: FormAuthType) =>
+      isFormPublic ||
+      mutateFormAuthType.isLoading ||
+      (authType === FormAuthType.SGID && !user?.betaFlags?.sgid),
+    [user?.betaFlags?.sgid, isFormPublic, mutateFormAuthType.isLoading],
   )
 
   const handleEnterKeyDown: KeyboardEventHandler = useCallback(
@@ -79,7 +85,7 @@ export const AuthSettingsSection = ({
     (authType: FormAuthType): MouseEventHandler =>
       (e) => {
         if (
-          !isDisabled &&
+          !isDisabled(authType) &&
           e.type === 'click' &&
           // Required so only real clicks get registered.
           // Typical radio behaviour is that the 'click' event is triggered on change.
@@ -115,10 +121,9 @@ export const AuthSettingsSection = ({
         onChange={(e: FormAuthType) => setFocusedValue(e)}
       >
         {radioOptions.map(([authType, text]) => (
-          // TODO: Check whether user has permissions for SGID, etc
           <Fragment key={authType}>
             <Box onClick={handleOptionClick(authType)}>
-              <Radio value={authType} isDisabled={isDisabled}>
+              <Radio value={authType} isDisabled={isDisabled(authType)}>
                 {text}
                 {authType === FormAuthType.SGID ? (
                   <>
@@ -151,7 +156,10 @@ export const AuthSettingsSection = ({
               </Radio>
             </Box>
             {authType !== FormAuthType.NIL && authType === settings.authType ? (
-              <EsrvcIdBox settings={settings} isDisabled={isDisabled} />
+              <EsrvcIdBox
+                settings={settings}
+                isDisabled={isDisabled(authType)}
+              />
             ) : null}
           </Fragment>
         ))}
