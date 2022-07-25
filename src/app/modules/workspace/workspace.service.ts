@@ -1,4 +1,4 @@
-import mongoose, { ClientSession } from 'mongoose'
+import mongoose from 'mongoose'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 import { WorkspaceDto } from 'shared/types/workspace'
 
@@ -93,20 +93,13 @@ export const deleteWorkspace = ({
   workspaceId: string
   userId: string
   shouldDeleteForms: boolean
-}): ResultAsync<void, DatabaseError> => {
+}): ResultAsync<boolean, DatabaseError> => {
   return ResultAsync.fromPromise(
-    WorkspaceModel.startSession().then((session: ClientSession) =>
-      session
-        .withTransaction(() =>
-          deleteWorkspaceTransaction({
-            workspaceId,
-            userId,
-            shouldDeleteForms,
-            session,
-          }),
-        )
-        .then(() => session.endSession()),
-    ),
+    deleteWorkspaceTransaction({
+      workspaceId,
+      userId,
+      shouldDeleteForms,
+    }),
     (error) => {
       logger.error({
         message: 'Database error when deleting workspace',
@@ -127,26 +120,28 @@ const deleteWorkspaceTransaction = async ({
   workspaceId,
   userId,
   shouldDeleteForms,
-  session,
 }: {
   workspaceId: string
   userId: string
   shouldDeleteForms: boolean
-  session: ClientSession
-}): Promise<void> => {
+}): Promise<boolean> => {
   const logMeta = {
     action: 'deleteWorkspaceTransaction',
     workspaceId,
     userId,
     shouldDeleteForms,
   }
+  let isDeleteSuccessful = false
   const workspaceToDelete = await WorkspaceModel.findOne({
     _id: workspaceId,
     admin: userId,
   })
 
+  const session = await WorkspaceModel.startSession()
+  session.startTransaction()
+
   try {
-    await WorkspaceModel.deleteWorkspace({
+    isDeleteSuccessful = await WorkspaceModel.deleteWorkspace({
       workspaceId,
       admin: userId,
       session,
@@ -176,6 +171,11 @@ const deleteWorkspaceTransaction = async ({
       throw transformMongoError(error)
     }
   }
+
+  await session.commitTransaction()
+  session.endSession()
+
+  return isDeleteSuccessful
 }
 
 export const getForms = (
