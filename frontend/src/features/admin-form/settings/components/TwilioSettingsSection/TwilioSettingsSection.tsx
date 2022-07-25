@@ -27,8 +27,8 @@ export const TwilioSettingsSection = (): JSX.Element => {
         </Link>
       </Text>
       <InlineMessage mb="1rem">
-        To verify your credentials are correct, please test it in your form
-        before activating.
+        Please test SMS verification in your form to verify that your
+        credentials work
       </InlineMessage>
       <TwilioDetailsInputs />
     </>
