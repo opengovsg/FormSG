@@ -3,7 +3,10 @@ import simplur from 'simplur'
 
 import { FormColorTheme, FormStartPage } from '~shared/types'
 
-export const useFormHeader = (startPage: FormStartPage | undefined) => {
+export const getTitleBg = (colorTheme?: FormColorTheme) =>
+  colorTheme ? `theme-${colorTheme}.500` : `neutral.200`
+
+export const useFormHeader = (startPage?: FormStartPage) => {
   const titleColor = useMemo(() => {
     if (startPage?.colorTheme === FormColorTheme.Orange) {
       return 'secondary.700'
@@ -12,10 +15,7 @@ export const useFormHeader = (startPage: FormStartPage | undefined) => {
   }, [startPage?.colorTheme])
 
   const titleBg = useMemo(
-    () =>
-      startPage?.colorTheme
-        ? `theme-${startPage.colorTheme}.500`
-        : `neutral.200`,
+    () => getTitleBg(startPage?.colorTheme),
     [startPage?.colorTheme],
   )
 

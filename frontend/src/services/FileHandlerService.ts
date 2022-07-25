@@ -1,8 +1,6 @@
 import { AxiosResponse } from 'axios'
 import SparkMD5 from 'spark-md5'
 
-import { MB } from '~shared/constants/file'
-
 import { ApiService } from './ApiService'
 
 export type UploadedFileData = {
@@ -10,7 +8,7 @@ export type UploadedFileData = {
   fileId: string
   fileMd5Hash: string
   name: string
-  size: string
+  size: number
 }
 
 type PresignUrlEndpoint =
@@ -126,7 +124,7 @@ const uploadFile = async ({
     fileId: encodedFileId,
     fileMd5Hash,
     name: file.name,
-    size: `${(file.size / MB).toFixed(2)} MB`,
+    size: file.size,
   }
 
   return uploadedFileData
