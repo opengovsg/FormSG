@@ -1,4 +1,4 @@
-import mongoose from 'mongoose'
+import mongoose, { ClientSession } from 'mongoose'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 import { WorkspaceDto } from 'shared/types/workspace'
 
@@ -95,11 +95,17 @@ export const deleteWorkspace = ({
   shouldDeleteForms: boolean
 }): ResultAsync<boolean, DatabaseError> => {
   return ResultAsync.fromPromise(
-    deleteWorkspaceTransaction({
-      workspaceId,
-      userId,
-      shouldDeleteForms,
-    }),
+    WorkspaceModel.startSession().then((session: ClientSession) =>
+      session.withTransaction(() =>
+        deleteWorkspaceTransaction({
+          workspaceId,
+          userId,
+          shouldDeleteForms,
+          session,
+        }).then(() => session.endSession()),
+      ),
+    ),
+
     (error) => {
       logger.error({
         message: 'Database error when deleting workspace',
@@ -120,10 +126,12 @@ const deleteWorkspaceTransaction = async ({
   workspaceId,
   userId,
   shouldDeleteForms,
+  session,
 }: {
   workspaceId: string
   userId: string
   shouldDeleteForms: boolean
+  session: ClientSession
 }): Promise<boolean> => {
   const logMeta = {
     action: 'deleteWorkspaceTransaction',
@@ -136,9 +144,6 @@ const deleteWorkspaceTransaction = async ({
     _id: workspaceId,
     admin: userId,
   })
-
-  const session = await WorkspaceModel.startSession()
-  session.startTransaction()
 
   try {
     isDeleteSuccessful = await WorkspaceModel.deleteWorkspace({
@@ -171,9 +176,6 @@ const deleteWorkspaceTransaction = async ({
       throw transformMongoError(error)
     }
   }
-
-  await session.commitTransaction()
-  session.endSession()
 
   return isDeleteSuccessful
 }
