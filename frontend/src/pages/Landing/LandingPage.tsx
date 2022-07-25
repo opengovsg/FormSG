@@ -42,7 +42,6 @@ import featureEmailImg from './assets/images/icon_email.svg'
 import featureIntegrationsImg from './assets/images/icon_integrations.svg'
 import featureLogicImg from './assets/images/icon_logic.svg'
 import featurePrefillImg from './assets/images/icon_prefill.svg'
-import featureSectionsImg from './assets/images/icon_sections.svg'
 import featureWebhooksImg from './assets/images/icon_webhooks.svg'
 import meetingCollaborationImg from './assets/images/meeting_collaboration.svg'
 import ogpSuiteImg from './assets/images/ogp_suite.svg'
@@ -92,9 +91,8 @@ export const LandingPage = (): JSX.Element => {
               Build secure government forms in minutes.
             </Text>
             <SectionBodyText>
-              A free, easy to use, no-code form builder with advanced features
-              for public officers to securely collect classified and sensitive
-              data.
+              A free and easy-to-use form builder with rich features, enabling
+              public officers to securely collect citizen data
             </SectionBodyText>
             <Box mt="2.5rem">
               <Button
@@ -103,7 +101,7 @@ export const LandingPage = (): JSX.Element => {
                 to={LOGIN_ROUTE}
                 rightIcon={<BiRightArrowAlt fontSize="1.5rem" />}
               >
-                Start building your form now
+                Launch your form now
               </Button>
             </Box>
           </Flex>
@@ -125,42 +123,37 @@ export const LandingPage = (): JSX.Element => {
           <FeatureGridItem
             image={featureDndImg}
             title="Drag and drop builder"
-            description="Create and publish forms in minutes using our user-friendly drag and drop builder, with more than over 65 field types, including attachments, dates, tables, ratings, and many more."
+            description="Create and publish forms in minutes using our user-friendly drag and drop builder, with over 65 field types including attachments, dates, tables, ratings, and many more"
           />
           <FeatureGridItem
             image={featureA11yImg}
             title="Accessible"
-            description="All our forms are fully responsive and aim to meet Web Content Accessibility Guidelines (WCAG 2.1), which makes web content more accessible to people with disabilities."
+            description="All our forms are fully responsive and aim to meet Web Content Accessibility Guidelines (WCAG 2.1), which makes web content more accessible to people with disabilities"
           />
           <FeatureGridItem
             image={featureLogicImg}
             title="Conditional logic"
-            description="Create advanced logic for your forms, and show or hide fields and/or sections based on your user’s input, personalising their experience."
+            description="Create advanced logic for your forms, and show or hide fields and/or sections based on your user’s input, personalising their experience"
           />
           <FeatureGridItem
             image={featureIntegrationsImg}
-            title="Government integrations"
-            description="Authenticate your users with Singpass or Corppass. MyInfo fields can also be pre-filled once citizens log in through Singpass."
+            title="National Digital Identity"
+            description="Authenticate individuals and businesses with Singpass, and get MyInfo data pre-filled"
           />
           <FeatureGridItem
             image={featureWebhooksImg}
             title="Webhooks"
-            description="Get every form submission sent straight to a compatible web app or URL as soon as it’s submitted with Webhooks."
-          />
-          <FeatureGridItem
-            image={featureSectionsImg}
-            title="Form sections"
-            description="Manage long forms by sectioning it so your users enjoy a more seamless experience."
+            description="Get every form response sent straight to a compatible web app or URL"
           />
           <FeatureGridItem
             image={featurePrefillImg}
             title="Prefill"
-            description="Speed up the form filling process for your users by prefilling fields for them."
+            description="Pre-fill known fields on respondents’ behalf"
           />
           <FeatureGridItem
             image={featureEmailImg}
             title="Email confirmation"
-            description="Send confirmation emails to your respondents along with a copy of their response."
+            description="Send confirmation emails to respondents along with a copy of their response"
           />
         </SimpleGrid>
       </LandingSection>
@@ -172,11 +165,11 @@ export const LandingPage = (): JSX.Element => {
         >
           <Flex flexDir="column" flex={1}>
             <SectionTitleText>
-              No onboarding, no fees, and no code required
+              No onboarding, fees nor code required
             </SectionTitleText>
             <SectionBodyText>
-              Sign in with your government email and start building your form
-              immediately. It’s free, and no onboarding or approvals are
+              Sign in with your public service email address and start building
+              your form immediately. No training, onboarding or approval
               required.
             </SectionBodyText>
             <Box mt="2.5rem">
@@ -191,7 +184,9 @@ export const LandingPage = (): JSX.Element => {
         </Stack>
       </LandingSection>
       <LandingSection>
-        <SectionTitleText>Used by most government agencies</SectionTitleText>
+        <SectionTitleText>
+          Used by every Singapore government agency
+        </SectionTitleText>
         <Wrap shouldWrapChildren spacingX="3rem" mt="2.5rem" spacingY="2.5rem">
           <StatsItem stat={data?.formCount} description="forms deployed" />
           <StatsItem
@@ -230,9 +225,8 @@ export const LandingPage = (): JSX.Element => {
           Supporting national and emergent use cases
         </SectionTitleText>
         <SectionBodyText textAlign={{ lg: 'center' }}>
-          An integral part of many agency workflows, Form has been instrumental
-          in data collection, especially during the COVID-19 pandemic. Notable
-          forms launched include:
+          Form is a critical enabler of many agency workflows. Notable forms
+          launched include:
         </SectionBodyText>
         <SimpleGrid
           w="full"
@@ -270,14 +264,14 @@ export const LandingPage = (): JSX.Element => {
       </LandingSection>
       <FeatureSection
         direction={{ base: 'column', lg: 'row' }}
-        title="Secure collection of responses"
+        title="Secure data collection"
         imgSrc={storageModeImg}
       >
         <SectionBodyText>
-          All form responses are either encrypted end-to-end (Storage mode) or
-          sent directly to your email inbox (Email mode). This means third
-          parties, including Form, will not be able to access or view your form
-          data.
+          All response data is either end-to-end encrypted (Storage mode) or
+          sent directly to your email inbox (Email mode). This ensures that
+          response data can only be accessed by the form admin and no other
+          third-party - not even Form’s servers.
         </SectionBodyText>
         <SimpleGrid
           columns={2}
@@ -313,11 +307,9 @@ export const LandingPage = (): JSX.Element => {
         direction={{ base: 'column', lg: 'row-reverse' }}
       >
         <SectionBodyText>
-          We hope that by open-sourcing Form, others can take advantage of our
-          codebase and build on it to create applications and platforms to help
-          improve the product, not just in Singapore but other countries as
-          well. Furthermore, there are lessons that we have learnt that we feel
-          could be of benefit to the wider developer community.
+          Form is a public good project. We open sourced Form so that other
+          countries, organisations and communities could benefit from our
+          journey, and contribute even richer functionality to the codebase.
         </SectionBodyText>
         <FeatureLink
           href="https://github.com/opengovsg/formsg"
@@ -334,7 +326,7 @@ export const LandingPage = (): JSX.Element => {
       >
         <Box>
           <SectionBodyText>
-            Have a question? Most answers can be found in our self service Help
+            Have a question? Most answers can be found in our self-service Help
             Center. Common questions include:
           </SectionBodyText>
           <Accordion
@@ -440,9 +432,9 @@ export const LandingPage = (): JSX.Element => {
           <TabPanels>
             <TabPanel>
               <SectionBodyText mt="1.5rem">
-                View your responses within Form. All data is end-to-end
-                encrypted, which means third parties, including Form, will not
-                be able to access or view your form data.
+                Log in to view and download responses. All response data is
+                end-to-end encrypted, meaning it can only be accessed by the
+                form admin and no other third-party - not even Form’s servers.
               </SectionBodyText>
               <OrderedList
                 spacing="1rem"
@@ -453,7 +445,7 @@ export const LandingPage = (): JSX.Element => {
               >
                 <ListItem textStyle="body-2">
                   <OrderedListIcon index={1} />
-                  Login to FormSG via Internet or Intranet
+                  Log in to FormSG via Internet or Intranet
                 </ListItem>
                 <ListItem textStyle="body-2">
                   <OrderedListIcon index={2} />
@@ -461,24 +453,19 @@ export const LandingPage = (): JSX.Element => {
                 </ListItem>
                 <ListItem textStyle="body-2">
                   <OrderedListIcon index={3} />
-                  Build and share form link with citizens
+                  Build and publish your form
                 </ListItem>
                 <ListItem textStyle="body-2">
                   <OrderedListIcon index={4} />
-                  Upload Secret Key and view your responses
-                </ListItem>
-                <ListItem textStyle="body-2">
-                  <OrderedListIcon index={5} />
-                  Download your responses as a CSV
+                  Upload secret key to download responses in CSV format
                 </ListItem>
               </OrderedList>
             </TabPanel>
             <TabPanel>
               <SectionBodyText mt="1.5rem">
-                View your responses with your email client. All responses are
-                directly transmitted to your email and not stored in Form. Third
-                parties, including Form, will not be able to access or view your
-                form data.
+                Receive your responses at your email address. Form sends
+                responses directly to your email and does not store any response
+                data.
               </SectionBodyText>
               <OrderedList
                 spacing="1rem"
@@ -489,7 +476,7 @@ export const LandingPage = (): JSX.Element => {
               >
                 <ListItem textStyle="body-2">
                   <OrderedListIcon index={1} />
-                  Login to FormSG via Internet or Intranet
+                  Log in to FormSG via Internet or Intranet
                 </ListItem>
                 <ListItem textStyle="body-2">
                   <OrderedListIcon index={2} />
@@ -497,11 +484,11 @@ export const LandingPage = (): JSX.Element => {
                 </ListItem>
                 <ListItem textStyle="body-2">
                   <OrderedListIcon index={3} />
-                  Build and share form link with citizens
+                  Build and publish your form
                 </ListItem>
                 <ListItem textStyle="body-2">
                   <OrderedListIcon index={4} />
-                  Collect responses in your government email
+                  Collect responses at your email address
                 </ListItem>
                 <ListItem textStyle="body-2">
                   <OrderedListIcon index={5} />
@@ -516,15 +503,15 @@ export const LandingPage = (): JSX.Element => {
         </Tabs>
       </FeatureSection>
       <FeatureSection
-        title="All the government tools you need to manage your workflow"
+        title="All the building blocks you need to manage your workflow"
         imgSrc={ogpSuiteImg}
         align="start"
         direction={{ base: 'column', lg: 'row' }}
       >
         <SectionBodyText>
-          Form is part of the **Open Government Products Suite**, and as a
-          public officer you can mix and match from our set of productivity and
-          collaboration tools.
+          Form is part of the **Open Government Products Suite** of easy-to-use
+          tools that public officers can use to speedily digitalise their
+          workflows.
         </SectionBodyText>
         <FeatureLink
           href="https://www.open.gov.sg/products/overview"
@@ -532,7 +519,7 @@ export const LandingPage = (): JSX.Element => {
             <Icon as={BiRightArrowAlt} ml="0.5rem" fontSize="1.5rem" />
           }
         >
-          Full list of OGP products
+          Check out the OGP Suite
         </FeatureLink>
       </FeatureSection>
       <LandingSection bg="secondary.700" align="center">
@@ -543,7 +530,7 @@ export const LandingPage = (): JSX.Element => {
           color="white"
           mt="2rem"
         >
-          Start building your form now.
+          Launch your form today.
         </Text>
         <Box mt="2rem">
           <Button as={ReactLink} to={LOGIN_ROUTE}>
