@@ -1,6 +1,9 @@
 import { Schema } from 'mongoose'
 
-import { DateSelectedValidation, DaysOfTheWeek } from '../../../../shared/types'
+import {
+  DateSelectedValidation,
+  ValidDaysOptions,
+} from '../../../../shared/types'
 import { IDateFieldSchema } from '../../../types'
 
 import { MyInfoSchema } from './baseField'
@@ -23,14 +26,15 @@ const createDateFieldSchema = () => {
         default: null,
       },
     },
-    invalidDaysOfTheWeek: {
+    validDays: {
       type: [
         {
           type: String,
           required: true,
         },
       ],
-      enum: [...Object.values(DaysOfTheWeek)],
+      enum: [...Object.values(ValidDaysOptions)],
+      default: Object.values(ValidDaysOptions),
     },
   })
 }
