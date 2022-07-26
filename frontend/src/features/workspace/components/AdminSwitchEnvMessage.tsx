@@ -4,11 +4,9 @@ import { Text, useDisclosure } from '@chakra-ui/react'
 import Button from '~components/Button'
 import InlineMessage from '~components/InlineMessage'
 
-import { useEnvMutations } from '~features/env/mutations'
 import { SwitchEnvFeedbackModal } from '~features/env/SwitchEnvFeedbackModal'
 
 export const AdminSwitchEnvMessage = (): JSX.Element => {
-  const { adminSwitchEnvMutation } = useEnvMutations()
   const { isOpen, onOpen, onClose } = useDisclosure()
 
   return (
@@ -19,7 +17,6 @@ export const AdminSwitchEnvMessage = (): JSX.Element => {
           <Button
             variant="link"
             onClick={() => {
-              // adminSwitchEnvMutation.mutate
               onOpen()
             }}
           >

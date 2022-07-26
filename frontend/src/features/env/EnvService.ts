@@ -3,17 +3,20 @@ import { ClientEnvVars, SuccessMessageDto } from '~shared/types/core'
 
 import { ApiService } from '~services/ApiService'
 
-import {
-  PUBLIC_FORMS_ENDPOINT,
-  SubmitEmailFormArgs,
-} from '~features/public-form/PublicFormService'
-import { createEmailSubmissionFormData } from '~features/public-form/utils'
+import { PUBLIC_FORMS_ENDPOINT } from '~features/public-form/PublicFormService'
 
 export const getClientEnvVars = async (): Promise<ClientEnvVars> => {
   return ApiService.get<ClientEnvVars>('/client/env').then(({ data }) => data)
 }
 
-const formId = '62da6a569ee8e90143b5da26'
+// TODO #4279: Remove after React rollout is complete
+// formId is different depending on the environment
+const formId =
+  process.env.NODE_ENV === 'production'
+    ? '62c3e0e417122f0012ec972e'
+    : process.env.NODE_ENV === 'test'
+    ? '62da5fc8bb546f00126ff457'
+    : '62da6a569ee8e90143b5da26'
 
 const createFeedbackResponsesArray = (
   formInputs: switchEnvFeedbackFormBodyDto,
@@ -28,7 +31,7 @@ const createFeedbackResponsesArray = (
           ? '62da6a679ee8e90143b5da35'
           : '62da6a6f9ee8e90143b5da40',
       question: key,
-      answer: value,
+      answer: value ?? '',
       fieldType:
         key === 'url' ? 'textfield' : key === 'feedback' ? 'textarea' : 'email',
     }
