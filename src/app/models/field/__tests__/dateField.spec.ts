@@ -1,6 +1,10 @@
 import merge from 'lodash/merge'
 import mongoose, { Model, Schema } from 'mongoose'
-import { DateFieldBase, FormResponseMode, ValidDaysOptions } from 'shared/types'
+import {
+  DateFieldBase,
+  FormResponseMode,
+  InvalidDaysOptions,
+} from 'shared/types'
 
 import { IDateFieldSchema } from 'src/types'
 
@@ -32,7 +36,7 @@ describe('models.fields.dateField', () => {
   beforeEach(async () => await dbHandler.clearDatabase())
   afterAll(async () => await dbHandler.closeDatabase())
 
-  it('should set default array containing all the enum valid days options for validDays when date field does not specify', async () => {
+  it('should set default empty array for invalidDays when date field does not specify', async () => {
     // Arrange
     const mockDateField = {
       dateValidation: {
@@ -47,7 +51,7 @@ describe('models.fields.dateField', () => {
         customMaxDate: null,
         customMinDate: null,
       },
-      validDays: Object.values(ValidDaysOptions),
+      invalidDays: [],
     }
 
     // Act
@@ -63,12 +67,12 @@ describe('models.fields.dateField', () => {
     expect(actual.field.toObject()).toEqual(expected)
   })
 
-  it('should successfully assign an array with valid values to validDays attribute', async () => {
+  it('should successfully assign an array with valid values to invalidDays attribute', async () => {
     // Arrange
     const mockInvalidDays = [
-      ValidDaysOptions.Monday,
-      ValidDaysOptions.Tuesday,
-      ValidDaysOptions.Wednesday,
+      InvalidDaysOptions.Monday,
+      InvalidDaysOptions.Tuesday,
+      InvalidDaysOptions.Wednesday,
     ]
     const mockDateField = {
       dateValidation: {
@@ -76,7 +80,7 @@ describe('models.fields.dateField', () => {
         customMaxDate: null,
         customMinDate: null,
       },
-      validDays: mockInvalidDays,
+      invalidDays: mockInvalidDays,
     }
     const expectedDateField: Partial<DateFieldBase> = {
       dateValidation: {
@@ -84,7 +88,7 @@ describe('models.fields.dateField', () => {
         customMaxDate: null,
         customMinDate: null,
       },
-      validDays: mockInvalidDays,
+      invalidDays: mockInvalidDays,
     }
 
     // Act
@@ -100,7 +104,7 @@ describe('models.fields.dateField', () => {
     expect(actual.field.toObject()).toEqual(expected)
   })
 
-  it('should throw an error when an array with invalid values are assigned to validDays attribute', async () => {
+  it('should throw an error when an array with invalid values are assigned to invalidDays attribute', async () => {
     // Arrange
     const mockInvalidDays = ['January']
     const mockDateField = {
@@ -109,7 +113,7 @@ describe('models.fields.dateField', () => {
         customMaxDate: null,
         customMinDate: null,
       },
-      validDays: mockInvalidDays,
+      invalidDays: mockInvalidDays,
     }
 
     await expect(
@@ -120,7 +124,7 @@ describe('models.fields.dateField', () => {
     ).rejects.toThrowError(mongoose.Error.ValidationError)
   })
 
-  it('should throw an error when an array with null value is assigned to validDays attribute array', async () => {
+  it('should throw an error when an array with null value is assigned to invalidDays attribute array', async () => {
     // Arrange
     const mockInvalidDays = [null]
     const mockDateField = {
@@ -129,7 +133,7 @@ describe('models.fields.dateField', () => {
         customMaxDate: null,
         customMinDate: null,
       },
-      validDays: mockInvalidDays,
+      invalidDays: mockInvalidDays,
     }
 
     await expect(
@@ -140,13 +144,13 @@ describe('models.fields.dateField', () => {
     ).rejects.toThrowError(mongoose.Error.ValidationError)
   })
 
-  it('should throw an error when an array with null value and valid values are assigned to validDays attribute array', async () => {
+  it('should throw an error when an array with null value and valid values are assigned to invalidDays attribute array', async () => {
     // Arrange
     const mockInvalidDays = [
       null,
-      ValidDaysOptions.Monday,
-      ValidDaysOptions.Tuesday,
-      ValidDaysOptions.Wednesday,
+      InvalidDaysOptions.Monday,
+      InvalidDaysOptions.Tuesday,
+      InvalidDaysOptions.Wednesday,
     ]
     const mockDateField = {
       dateValidation: {
@@ -154,7 +158,7 @@ describe('models.fields.dateField', () => {
         customMaxDate: null,
         customMinDate: null,
       },
-      validDays: mockInvalidDays,
+      invalidDays: mockInvalidDays,
     }
 
     await expect(
