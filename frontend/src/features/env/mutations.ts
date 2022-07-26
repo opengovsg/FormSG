@@ -1,6 +1,6 @@
 // TODO #4279: Remove after React rollout is complete
 import { useMutation } from 'react-query'
-import { useNavigate } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 
 import { switchEnvFeedbackFormBodyDto } from '~shared/types'
 
@@ -12,7 +12,7 @@ import {
 import { submitSwitchEnvFormFeedback } from './EnvService'
 
 export const useEnvMutations = () => {
-  const navigate = useNavigate()
+  const { formId } = useParams()
 
   const publicSwitchEnvMutation = useMutation(() => publicChooseEnvironment(), {
     onSuccess: () => window.location.reload(),
@@ -20,8 +20,11 @@ export const useEnvMutations = () => {
 
   const adminSwitchEnvMutation = useMutation(() => adminChooseEnvironment(), {
     onSuccess: () => {
-      navigate('/#!/forms')
-      window.location.reload()
+      if (window.location.href.indexOf('admin/form/') > -1) {
+        window.location.assign(`#!/${formId}/admin`)
+      } else {
+        window.location.assign('/#!/forms')
+      }
     },
   })
 
