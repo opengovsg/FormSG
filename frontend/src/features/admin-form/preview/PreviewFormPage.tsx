@@ -2,6 +2,7 @@ import { useParams } from 'react-router-dom'
 
 import GovtMasthead from '~components/GovtMasthead'
 
+import { SwitchEnvIcon } from '~features/env/SwitchEnvIcon'
 import FormEndPage from '~features/public-form/components/FormEndPage'
 import FormFields from '~features/public-form/components/FormFields'
 import { FormSectionsProvider } from '~features/public-form/components/FormFields/FormSectionsContext'
@@ -20,6 +21,7 @@ export const PreviewFormPage = (): JSX.Element => {
   return (
     <PreviewFormProvider formId={formId}>
       <GovtMasthead />
+      <SwitchEnvIcon />
       <PreviewFormHeader />
       <FormSectionsProvider>
         <FormStartPage />

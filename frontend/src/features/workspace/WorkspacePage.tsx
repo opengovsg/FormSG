@@ -17,6 +17,7 @@ import {
 import { useLocalStorage } from '~hooks/useLocalStorage'
 import Pagination from '~components/Pagination'
 
+import { SwitchEnvIcon } from '~features/env/SwitchEnvIcon'
 import { RolloutAnnouncementModal } from '~features/rollout-announcement/RolloutAnnouncementModal'
 import { EmergencyContactModal } from '~features/user/emergency-contact/EmergencyContactModal'
 import { useUser } from '~features/user/queries'
@@ -152,6 +153,7 @@ export const WorkspacePage = (): JSX.Element => {
         isOpen={createFormModalDisclosure.isOpen}
         onClose={createFormModalDisclosure.onClose}
       />
+      <SwitchEnvIcon />
       {totalFormCount === 0 ? (
         <EmptyWorkspace
           handleOpenCreateFormModal={createFormModalDisclosure.onOpen}

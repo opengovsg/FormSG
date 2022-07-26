@@ -11,9 +11,11 @@ export const getClientEnvVars = async (): Promise<ClientEnvVars> => {
 
 // TODO #4279: Remove after React rollout is complete
 // formId is different depending on the environment
+// TODO: Change formId depending on which site it's pushed to
+// prod: '62c3e0e417122f0012ec972e', staging: '62da5fc8bb546f00126ff457', staging-alt2: '62dfb373192e24001269171d'
 const formId =
   process.env.NODE_ENV === 'production'
-    ? '62c3e0e417122f0012ec972e'
+    ? '62dfb373192e24001269171d'
     : process.env.NODE_ENV === 'test'
     ? '62da5fc8bb546f00126ff457'
     : '62da6a569ee8e90143b5da26'
