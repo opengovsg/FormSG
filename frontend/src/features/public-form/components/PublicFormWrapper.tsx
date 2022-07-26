@@ -3,6 +3,9 @@ import { Flex } from '@chakra-ui/react'
 
 import { usePublicFormContext } from '../PublicFormContext'
 
+// TODO #4279: Remove after React rollout is complete
+import { PublicSwitchEnvMessage } from './PublicSwitchEnvMessage'
+
 export interface PublicFormWrapperProps {
   children: React.ReactNode
 }
@@ -23,6 +26,7 @@ export const PublicFormWrapper = ({
 
   return (
     <Flex bg={bgColour} p={{ base: 0, md: '1.5rem' }} flex={1} flexDir="column">
+      <PublicSwitchEnvMessage />
       {children}
     </Flex>
   )
