@@ -1,3 +1,4 @@
+// TODO #4279: Remove after React rollout is complete
 import { BiMessage } from 'react-icons/bi'
 import { Flex, useDisclosure } from '@chakra-ui/react'
 

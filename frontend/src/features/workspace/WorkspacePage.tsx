@@ -17,6 +17,7 @@ import {
 import { useLocalStorage } from '~hooks/useLocalStorage'
 import Pagination from '~components/Pagination'
 
+// TODO #4279: Remove after React rollout is complete
 import { SwitchEnvIcon } from '~features/env/SwitchEnvIcon'
 import { RolloutAnnouncementModal } from '~features/rollout-announcement/RolloutAnnouncementModal'
 import { EmergencyContactModal } from '~features/user/emergency-contact/EmergencyContactModal'

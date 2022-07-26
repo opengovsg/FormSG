@@ -2,6 +2,7 @@ import { useParams } from 'react-router-dom'
 
 import GovtMasthead from '~components/GovtMasthead'
 
+// TODO #4279: Remove after React rollout is complete
 import { SwitchEnvIcon } from '~features/env/SwitchEnvIcon'
 import FormEndPage from '~features/public-form/components/FormEndPage'
 import FormFields from '~features/public-form/components/FormFields'
