@@ -275,7 +275,7 @@ export const MYINFO_FIELD_TO_DRAWER_META: {
     isSubmitted: true,
   },
   [MyInfoAttribute.Marital]: {
-    label: 'Martial Status',
+    label: 'Marital Status',
     icon: BiHeartCircle,
     isSubmitted: true,
   },
