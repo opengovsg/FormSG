@@ -175,7 +175,7 @@ export interface IFormSchema extends IForm, Document, PublicView<PublicForm> {
    * Archives form.
    * @returns form that has been archived
    */
-  archive(): Promise<IFormSchema>
+  archive(session?: ClientSession): Promise<IFormSchema>
 
   /**
    * Transfer ownership of the form to another user.
@@ -334,11 +334,6 @@ export interface IFormModel extends Model<IFormSchema> {
     logicId: string,
     updatedLogic: LogicDto,
   ): Promise<IFormSchema | null>
-
-  archiveForms(
-    formIds: IFormSchema['_id'][],
-    session?: ClientSession,
-  ): Promise<void>
 }
 
 export type IEncryptedFormModel = IFormModel & Model<IEncryptedFormSchema>

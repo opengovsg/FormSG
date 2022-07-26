@@ -1,4 +1,4 @@
-import mongoose, { ClientSession } from 'mongoose'
+import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
 import {
@@ -342,22 +342,4 @@ export const retrievePublicFormsWithSmsVerification = (
     }
     return okAsync(forms)
   })
-}
-
-export const archiveForms = async ({
-  formIds,
-  userId,
-  session,
-}: {
-  formIds: string[]
-  userId: string
-  session?: ClientSession
-}): Promise<void> => {
-  const canBeArchivedForms = await FormModel.find({
-    _id: { $in: formIds },
-    admin: userId,
-  }).exec()
-
-  const canBeArchivedFormIds = canBeArchivedForms.map((form) => form._id)
-  await FormModel.archiveForms(canBeArchivedFormIds, session)
 }
