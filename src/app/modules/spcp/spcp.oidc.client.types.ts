@@ -3,6 +3,8 @@ import { JWK, JWTPayload, JWTVerifyResult } from 'jose'
 import { Options } from 'node-cache'
 import { BaseClient } from 'openid-client'
 
+import { FormAuthType } from '../../../../shared/types'
+
 type PublicJwk = Partial<JWK> & Required<Pick<JWK, 'use' | 'kid'>>
 
 type SecretJwk = PublicJwk & {
@@ -41,6 +43,7 @@ export type SpcpOidcBaseClientConstructorParams = {
   ndiJwksEndpoint: string
   rpSecretJwks: SecretJwks
   rpPublicJwks: PublicJwks
+  authType: FormAuthType.SP | FormAuthType.CP // Use to correctly label esrvc (for Singpass OIDC) and esrvcID (for Corppass OIDC) in authorisation url
 }
 
 export type SpOidcClientConstructorParams = {

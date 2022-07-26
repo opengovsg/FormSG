@@ -11,6 +11,8 @@ import jwkToPem from 'jwk-to-pem'
 import { BaseClient } from 'openid-client'
 import { ulid } from 'ulid'
 
+import { FormAuthType } from '../../../../shared/types'
+
 import { SpcpOidcBaseCilentCache } from './spcp.oidc.client.cache'
 import {
   CreateAuthorisationUrlError,
@@ -48,6 +50,7 @@ export class SpcpOidcBaseClient {
   #rpSecretKeys: CryptoKeys
   #rpPublicKeys: CryptoKeys
   #rpRedirectUrl: string
+  #authType: FormAuthType.SP | FormAuthType.CP
 
   /**
    * @private
@@ -67,6 +70,7 @@ export class SpcpOidcBaseClient {
     ndiJwksEndpoint,
     rpSecretJwks,
     rpPublicJwks,
+    authType,
   }: SpcpOidcBaseClientConstructorParams) {
     this._spcpOidcBaseCilentCache = new SpcpOidcBaseCilentCache({
       ndiDiscoveryEndpoint,
@@ -81,6 +85,7 @@ export class SpcpOidcBaseClient {
     })
 
     this.#rpRedirectUrl = rpRedirectUrl
+    this.#authType = authType
 
     this.#rpSecretKeys = rpSecretJwks.keys.map((jwk) => {
       if (!jwk.alg) {
@@ -173,8 +178,10 @@ export class SpcpOidcBaseClient {
       scope: 'openid',
       response_type: 'code',
       state: state,
-      esrvc: esrvcId,
       nonce: ulid(), // Not used - nonce is a required parameter for SPCP's OIDC implementation although it is optional in OIDC specs
+      ...(this.#authType === FormAuthType.SP
+        ? { esrvc: esrvcId }
+        : { esrvcID: esrvcId }), // Additional parameter for agencies' eservice Id. Labelled esrvc in Singpass OIDC and esrvcID in Corppass OIDC
     })
 
     return authorisationUrl
@@ -433,6 +440,7 @@ export class SpOidcClient extends SpcpOidcBaseClient {
       ndiJwksEndpoint: spOidcNdiJwksEndpoint,
       rpSecretJwks: spOidcRpSecretJwks,
       rpPublicJwks: spOidcRpPublicJwks,
+      authType: FormAuthType.SP,
     })
   }
 }
@@ -457,6 +465,7 @@ export class CpOidcClient extends SpcpOidcBaseClient {
       ndiJwksEndpoint: cpOidcNdiJwksEndpoint,
       rpSecretJwks: cpOidcRpSecretJwks,
       rpPublicJwks: cpOidcRpPublicJwks,
+      authType: FormAuthType.CP,
     })
   }
 
