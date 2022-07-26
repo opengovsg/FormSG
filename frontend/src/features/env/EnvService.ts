@@ -16,8 +16,6 @@ export const getClientEnvVars = async (): Promise<ClientEnvVars> => {
 const formId =
   process.env.NODE_ENV === 'production'
     ? '62dfb373192e24001269171d'
-    : process.env.NODE_ENV === 'test'
-    ? '62da5fc8bb546f00126ff457'
     : '62da6a569ee8e90143b5da26'
 
 const createFeedbackResponsesArray = (
