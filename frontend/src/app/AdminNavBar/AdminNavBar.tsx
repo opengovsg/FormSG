@@ -1,18 +1,13 @@
-import React from 'react'
+import React, { useMemo, useState } from 'react'
 import { BiCommentDetail } from 'react-icons/bi'
 import { Link as ReactLink } from 'react-router-dom'
-import {
-  As,
-  chakra,
-  Flex,
-  FlexProps,
-  HStack,
-  useDisclosure,
-} from '@chakra-ui/react'
+import { As, chakra, Flex, FlexProps, HStack } from '@chakra-ui/react'
 
 import { BxsHelpCircle } from '~assets/icons/BxsHelpCircle'
 import { ReactComponent as BrandMarkSvg } from '~assets/svgs/brand/brand-mark-colour.svg'
+import { EMERGENCY_CONTACT_KEY_PREFIX } from '~constants/localStorage'
 import { useIsMobile } from '~hooks/useIsMobile'
+import { useLocalStorage } from '~hooks/useLocalStorage'
 import { logout } from '~services/AuthService'
 import IconButton from '~components/IconButton'
 import Link from '~components/Link'
@@ -78,13 +73,39 @@ export interface AdminNavBarProps {
 }
 
 export const AdminNavBar = ({ isMenuOpen }: AdminNavBarProps): JSX.Element => {
-  const { user } = useUser()
+  const { user, isLoading: isUserLoading } = useUser()
 
-  const {
-    isOpen: isContactModalOpen,
-    onClose: onContactModalClose,
-    onOpen: onContactModalOpen,
-  } = useDisclosure()
+  const emergencyContactKey = useMemo(
+    () => (user?._id ? EMERGENCY_CONTACT_KEY_PREFIX + user._id : null),
+    [user],
+  )
+
+  const [hasSeenContactModal, setHasSeenContactModal] =
+    useLocalStorage<boolean>(emergencyContactKey)
+
+  const [isContactModalOpen, setIsContactModalOpen] = useState<boolean>(false)
+  const handleContactModalOpenClick = () => {
+    setIsContactModalOpen(true)
+  }
+  const onEmergencyContactModalClose = () => {
+    setIsContactModalOpen(false)
+    setHasSeenContactModal(true)
+  }
+
+  const isEmergencyContactModalOpenOnLogin = useMemo(
+    () => !isUserLoading && !hasSeenContactModal && !user?.contact,
+    [isUserLoading, hasSeenContactModal, user],
+  )
+
+  const isEmergencyContactModalOpen =
+    (isContactModalOpen && Boolean(user)) || isEmergencyContactModalOpenOnLogin
+
+  const handleLogout = () => {
+    logout()
+    if (emergencyContactKey) {
+      localStorage.removeItem(emergencyContactKey)
+    }
+  }
 
   return (
     <>
@@ -109,17 +130,17 @@ export const AdminNavBar = ({ isMenuOpen }: AdminNavBarProps): JSX.Element => {
             <Menu.Item as={ReactLink} to="/billing">
               Billing
             </Menu.Item>
-            <Menu.Item onClick={onContactModalOpen}>
+            <Menu.Item onClick={handleContactModalOpenClick}>
               Emergency contact
             </Menu.Item>
             <AvatarMenuDivider />
-            <Menu.Item onClick={logout}>Sign out</Menu.Item>
+            <Menu.Item onClick={handleLogout}>Sign out</Menu.Item>
           </AvatarMenu>
         </HStack>
       </AdminNavBar.Container>
       <EmergencyContactModal
-        isOpen={isContactModalOpen}
-        onClose={onContactModalClose}
+        onClose={onEmergencyContactModalClose}
+        isOpen={isEmergencyContactModalOpen}
       />
     </>
   )
