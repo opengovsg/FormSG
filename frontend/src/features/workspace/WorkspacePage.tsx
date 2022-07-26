@@ -10,15 +10,11 @@ import { useSearchParams } from 'react-router-dom'
 import { Box, Container, Grid, useDisclosure } from '@chakra-ui/react'
 import { chunk } from 'lodash'
 
-import {
-  EMERGENCY_CONTACT_KEY_PREFIX,
-  ROLLOUT_ANNOUNCEMENT_KEY_PREFIX,
-} from '~constants/localStorage'
+import { ROLLOUT_ANNOUNCEMENT_KEY_PREFIX } from '~constants/localStorage'
 import { useLocalStorage } from '~hooks/useLocalStorage'
 import Pagination from '~components/Pagination'
 
 import { RolloutAnnouncementModal } from '~features/rollout-announcement/RolloutAnnouncementModal'
-import { EmergencyContactModal } from '~features/user/emergency-contact/EmergencyContactModal'
 import { useUser } from '~features/user/queries'
 
 // TODO #4279: Remove after React rollout is complete
@@ -128,24 +124,6 @@ export const WorkspacePage = (): JSX.Element => {
     [isUserLoading, hasSeenAnnouncement],
   )
 
-  const emergencyContactKey = useMemo(
-    () => (user?._id ? EMERGENCY_CONTACT_KEY_PREFIX + user._id : null),
-    [user],
-  )
-
-  const [hasSeenEmergencyContact, setHasSeenEmergencyContact] =
-    useLocalStorage<boolean>(emergencyContactKey)
-
-  const isEmergencyContactModalOpen = useMemo(
-    () =>
-      !isUserLoading &&
-      // Open emergency contact modal after the rollout announcement modal
-      Boolean(hasSeenAnnouncement) &&
-      !hasSeenEmergencyContact &&
-      !user?.contact,
-    [isUserLoading, hasSeenAnnouncement, hasSeenEmergencyContact, user],
-  )
-
   return (
     <>
       <CreateFormModal
@@ -186,10 +164,6 @@ export const WorkspacePage = (): JSX.Element => {
             <RolloutAnnouncementModal
               onClose={() => setHasSeenAnnouncement(true)}
               isOpen={isAnnouncementModalOpen}
-            />
-            <EmergencyContactModal
-              onClose={() => setHasSeenEmergencyContact(true)}
-              isOpen={isEmergencyContactModalOpen}
             />
             <WorkspaceFormRows rows={paginatedData} isLoading={isLoading} />
           </Box>
