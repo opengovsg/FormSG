@@ -26,6 +26,7 @@ import { MalformedParametersError } from '../../core/core.errors'
 import { ControllerHandler } from '../../core/core.types'
 import { PermissionLevel } from '../../form/admin-form/admin-form.types'
 import * as FormService from '../../form/form.service'
+import { SgidService } from '../../sgid/sgid.service'
 import { SpOidcService } from '../../spcp/sp.oidc.service'
 import { SpcpService } from '../../spcp/spcp.service'
 import { getPopulatedUserById } from '../../user/user.service'
@@ -242,11 +243,36 @@ const submitEncryptModeForm: ControllerHandler<
       userInfo = jwtPayloadResult.value.userInfo
       break
     }
+    case FormAuthType.SGID: {
+      const jwtPayloadResult = await SgidService.extractSgidJwtPayload(
+        req.cookies.jwtSgid,
+      )
+      if (jwtPayloadResult.isErr()) {
+        const { statusCode, errorMessage } = mapRouteError(
+          jwtPayloadResult.error,
+        )
+        logger.error({
+          message: 'Failed to verify sgID JWT with auth client',
+          meta: logMeta,
+          error: jwtPayloadResult.error,
+        })
+        return res.status(statusCode).json({
+          message: errorMessage,
+          spcpSubmissionFailure: true,
+        })
+      }
+      uinFin = jwtPayloadResult.value.userName
+      break
+    }
   }
 
   // Encrypt Verified SPCP Fields
   let verified
-  if (form.authType === FormAuthType.SP || form.authType === FormAuthType.CP) {
+  if (
+    form.authType === FormAuthType.SP ||
+    form.authType === FormAuthType.CP ||
+    form.authType === FormAuthType.SGID
+  ) {
     const encryptVerifiedContentResult =
       VerifiedContentService.getVerifiedContent({
         type: form.authType,
