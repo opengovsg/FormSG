@@ -1,10 +1,12 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { ObjectId } from 'bson-ext'
 import mongoose from 'mongoose'
-import { FormId, UserId } from 'shared/types'
+import { FormId, FormStatus, UserId } from 'shared/types'
 import { WorkspaceDto, WorkspaceId } from 'shared/types/workspace'
 
+import getFormModel from 'src/app/models/form.server.model'
 import { getWorkspaceModel } from 'src/app/models/workspace.server.model'
+import * as AdminFormService from 'src/app/modules/form/admin-form/admin-form.service'
 import * as WorkspaceService from 'src/app/modules/workspace/workspace.service'
 import { formatErrorRecoveryMessage } from 'src/app/utils/handle-mongo-error'
 
@@ -17,6 +19,7 @@ import {
 } from '../workspace.errors'
 
 const WorkspaceModel = getWorkspaceModel(mongoose)
+const FormModel = getFormModel(mongoose)
 
 describe('workspace.service', () => {
   beforeAll(() => dbHandler.connect())
@@ -277,75 +280,186 @@ describe('workspace.service', () => {
   })
 
   describe('deleteWorkspace', () => {
+    const mockFormId = new ObjectId()
     const mockWorkspace = {
-      _id: 'workspaceId' as WorkspaceId,
-      admin: 'user' as UserId,
+      _id: new ObjectId(),
+      admin: new ObjectId(),
       title: 'workspace1',
-      formIds: [] as FormId[],
+      formIds: [mockFormId],
       count: 0,
     }
-    const shouldDeleteForms = true
 
-    it('should successfully delete workspace', async () => {
-      const updateSpy = jest
-        .spyOn(WorkspaceModel, 'deleteWorkspace')
-        .mockResolvedValueOnce(1)
+    it('should return undefined when successfully deleted workspace', async () => {
+      jest.spyOn(WorkspaceModel, 'deleteWorkspace').mockResolvedValueOnce(true)
+
       const actual = await WorkspaceService.deleteWorkspace({
-        workspaceId: mockWorkspace._id,
-        userId: mockWorkspace.admin,
-        shouldDeleteForms,
+        workspaceId: mockWorkspace._id.toHexString(),
+        userId: mockWorkspace.admin.toHexString(),
+        shouldDeleteForms: false,
       })
 
-      expect(updateSpy).toHaveBeenCalledWith(
-        mockWorkspace._id,
-        mockWorkspace.admin,
-        shouldDeleteForms,
-      )
       expect(actual.isOk()).toEqual(true)
-      expect(actual._unsafeUnwrap()).toEqual(1)
+      expect(actual._unsafeUnwrap()).toEqual(undefined)
     })
 
-    it('should return WorkspaceNotFoundError on invalid workspaceId', async () => {
-      const invalidWorkspaceId = new ObjectId().toHexString()
-      const updateSpy = jest
-        .spyOn(WorkspaceModel, 'deleteWorkspace')
-        .mockResolvedValueOnce(0)
+    it('should return undefined when failed to delete workspace', async () => {
+      jest.spyOn(WorkspaceModel, 'deleteWorkspace').mockResolvedValueOnce(false)
 
       const actual = await WorkspaceService.deleteWorkspace({
-        workspaceId: invalidWorkspaceId,
-        userId: mockWorkspace.admin,
-        shouldDeleteForms,
+        workspaceId: mockWorkspace._id.toHexString(),
+        userId: mockWorkspace.admin.toHexString(),
+        shouldDeleteForms: false,
       })
 
-      expect(updateSpy).toHaveBeenCalledWith(
-        invalidWorkspaceId,
-        mockWorkspace.admin,
-        shouldDeleteForms,
-      )
-      expect(actual._unsafeUnwrapErr()).toBeInstanceOf(WorkspaceNotFoundError)
+      expect(actual.isOk()).toEqual(true)
+      expect(actual._unsafeUnwrap()).toEqual(undefined)
+    })
+
+    it('should not archive forms in the workspace when shouldDeleteForms is false', async () => {
+      await dbHandler.insertEncryptForm({
+        formId: mockFormId,
+        userId: mockWorkspace.admin,
+      })
+      const createdWorkspace = await WorkspaceModel.create(mockWorkspace)
+
+      jest
+        .spyOn(WorkspaceModel, 'findOne')
+        .mockResolvedValueOnce(createdWorkspace)
+      jest.spyOn(WorkspaceModel, 'deleteWorkspace').mockResolvedValueOnce(true)
+
+      const actual = await WorkspaceService.deleteWorkspace({
+        workspaceId: mockWorkspace._id.toHexString(),
+        userId: mockWorkspace.admin.toHexString(),
+        shouldDeleteForms: false,
+      })
+      const doesFormExist = await FormModel.exists({ _id: mockFormId })
+      const isFormArchived = await FormModel.exists({
+        _id: mockFormId,
+        status: FormStatus.Archived,
+      })
+
+      expect(actual.isOk()).toEqual(true)
+      expect(actual._unsafeUnwrap()).toEqual(undefined)
+      expect(doesFormExist).toEqual(true)
+      expect(isFormArchived).toEqual(false)
+    })
+
+    it('should archive forms in the workspace when shouldDeleteForms is true', async () => {
+      await dbHandler.insertEncryptForm({
+        formId: mockFormId,
+        userId: mockWorkspace.admin,
+      })
+      const createdWorkspace = await WorkspaceModel.create(mockWorkspace)
+
+      jest
+        .spyOn(WorkspaceModel, 'findOne')
+        .mockResolvedValueOnce(createdWorkspace)
+      jest.spyOn(WorkspaceModel, 'deleteWorkspace').mockResolvedValueOnce(true)
+
+      const actual = await WorkspaceService.deleteWorkspace({
+        workspaceId: mockWorkspace._id.toHexString(),
+        userId: mockWorkspace.admin.toHexString(),
+        shouldDeleteForms: true,
+      })
+      const doesFormExist = await FormModel.exists({ _id: mockFormId })
+      const isFormArchived = await FormModel.exists({
+        _id: mockFormId,
+        status: FormStatus.Archived,
+      })
+
+      expect(actual.isOk()).toEqual(true)
+      expect(actual._unsafeUnwrap()).toEqual(undefined)
+      expect(doesFormExist).toEqual(true)
+      expect(isFormArchived).toEqual(true)
+    })
+
+    it('should not archive forms or delete workspace when transaction fails at workspace deletion', async () => {
+      const mockErrorMessage = 'some error'
+      await dbHandler.insertEncryptForm({
+        formId: mockFormId,
+        userId: mockWorkspace.admin,
+      })
+      const createdWorkspace = await WorkspaceModel.create(mockWorkspace)
+
+      jest
+        .spyOn(WorkspaceModel, 'findOne')
+        .mockResolvedValueOnce(createdWorkspace)
+      jest
+        .spyOn(WorkspaceModel, 'deleteWorkspace')
+        .mockRejectedValueOnce(new Error(mockErrorMessage))
+
+      const actual = await WorkspaceService.deleteWorkspace({
+        workspaceId: mockWorkspace._id.toHexString(),
+        userId: mockWorkspace.admin.toHexString(),
+        shouldDeleteForms: true,
+      })
+      const doesFormExist = await FormModel.exists({ _id: mockFormId })
+      const isFormArchived = await FormModel.exists({
+        _id: mockFormId,
+        status: FormStatus.Archived,
+      })
+      const doesWorkspaceExist = await WorkspaceModel.exists({
+        _id: mockWorkspace._id,
+      })
+
+      expect(actual.isErr()).toEqual(true)
+      expect(actual._unsafeUnwrapErr()).toBeInstanceOf(DatabaseError)
+      expect(doesWorkspaceExist).toEqual(true)
+      expect(doesFormExist).toEqual(true)
+      expect(isFormArchived).toEqual(false)
+    })
+
+    it('should not archive forms or delete workspace when transaction fails at forms deletion', async () => {
+      const mockErrorMessage = 'some error'
+      await dbHandler.insertEncryptForm({
+        formId: mockFormId,
+        userId: mockWorkspace.admin,
+      })
+      const createdWorkspace = await WorkspaceModel.create(mockWorkspace)
+
+      jest
+        .spyOn(WorkspaceModel, 'findOne')
+        .mockResolvedValueOnce(createdWorkspace)
+      jest
+        .spyOn(AdminFormService, 'archiveForms')
+        .mockRejectedValueOnce(new Error(mockErrorMessage))
+
+      const actual = await WorkspaceService.deleteWorkspace({
+        workspaceId: mockWorkspace._id.toHexString(),
+        userId: mockWorkspace.admin.toHexString(),
+        shouldDeleteForms: true,
+      })
+      const doesFormExist = await FormModel.exists({ _id: mockFormId })
+      const isFormArchived = await FormModel.exists({
+        _id: mockFormId,
+        status: FormStatus.Archived,
+      })
+      const doesWorkspaceExist = await WorkspaceModel.exists({
+        _id: mockWorkspace._id,
+      })
+
+      expect(actual.isErr()).toEqual(true)
+      expect(actual._unsafeUnwrapErr()).toBeInstanceOf(DatabaseError)
+      expect(doesWorkspaceExist).toEqual(true)
+      expect(doesFormExist).toEqual(true)
+      expect(isFormArchived).toEqual(false)
     })
 
     it('should return DatabaseError when error occurs whilst creating workspace', async () => {
       const mockErrorMessage = 'some error'
 
-      const updateSpy = jest
+      jest
         .spyOn(WorkspaceModel, 'deleteWorkspace')
         .mockRejectedValueOnce(new Error(mockErrorMessage))
+
       const actual = await WorkspaceService.deleteWorkspace({
-        workspaceId: mockWorkspace._id,
-        userId: mockWorkspace.admin,
-        shouldDeleteForms,
+        workspaceId: mockWorkspace._id.toHexString(),
+        userId: mockWorkspace.admin.toHexString(),
+        shouldDeleteForms: false,
       })
 
-      expect(updateSpy).toHaveBeenCalledWith(
-        mockWorkspace._id,
-        mockWorkspace.admin,
-        shouldDeleteForms,
-      )
       expect(actual.isErr()).toEqual(true)
-      expect(actual._unsafeUnwrapErr()).toEqual(
-        new DatabaseError(formatErrorRecoveryMessage(mockErrorMessage)),
-      )
+      expect(actual._unsafeUnwrapErr()).toBeInstanceOf(DatabaseError)
     })
   })
 })
