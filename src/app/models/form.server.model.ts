@@ -519,14 +519,14 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   }
 
   // Archives form.
-  FormSchema.methods.archive = function () {
+  FormSchema.methods.archive = function (session?: ClientSession) {
     // Return instantly when form is already archived.
     if (this.status === FormStatus.Archived) {
       return Promise.resolve(this)
     }
 
     this.status = FormStatus.Archived
-    return this.save()
+    return this.save({ session })
   }
 
   FormSchema.methods.updateMsgSrvcName = async function (
@@ -879,17 +879,6 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     })
       .read('secondary')
       .exec()
-  }
-
-  FormSchema.statics.archiveForms = async function (
-    formIds: IFormSchema['_id'][],
-    session?: ClientSession,
-  ) {
-    await this.updateMany(
-      { _id: { $in: formIds } },
-      { $set: { status: FormStatus.Archived } },
-      { session },
-    )
   }
 
   // Hooks
