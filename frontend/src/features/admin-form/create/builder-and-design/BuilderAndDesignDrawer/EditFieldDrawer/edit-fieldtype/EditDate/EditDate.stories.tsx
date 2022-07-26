@@ -4,7 +4,7 @@ import {
   BasicField,
   DateFieldBase,
   DateSelectedValidation,
-  DaysOfTheWeek,
+  InvalidDaysOptions,
 } from '~shared/types'
 
 import { EditFieldDrawerDecorator, StoryRouter } from '~utils/storybook'
@@ -19,7 +19,7 @@ const DEFAULT_DATE_FIELD: DateFieldBase = {
     customMaxDate: null,
     customMinDate: null,
   },
-  invalidDaysOfTheWeek: [],
+  invalidDays: [],
   required: true,
   disabled: false,
   fieldType: BasicField.Date,
@@ -83,6 +83,6 @@ export const WithParticularDaysRestricted = Template.bind({})
 WithParticularDaysRestricted.args = {
   field: {
     ...DEFAULT_DATE_FIELD,
-    invalidDaysOfTheWeek: [DaysOfTheWeek.Monday, DaysOfTheWeek.Saturday],
+    invalidDays: [InvalidDaysOptions.Monday, InvalidDaysOptions.Saturday],
   },
 }

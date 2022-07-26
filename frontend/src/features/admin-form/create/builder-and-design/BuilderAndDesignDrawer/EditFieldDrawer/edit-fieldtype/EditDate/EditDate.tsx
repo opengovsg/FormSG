@@ -16,11 +16,13 @@ import {
   DateFieldBase,
   DateSelectedValidation,
   DateValidationOptions,
-  DaysOfTheWeek,
+  InvalidDaysOptions,
 } from '~shared/types/field'
 
 import {
+  transformCheckedBoxesValueToInvalidDays,
   transformDateToShortIsoString,
+  transformInvalidDaysToCheckedBoxesValue,
   transformShortIsoStringToDate,
 } from '~utils/date'
 import { createBaseValidationRules } from '~utils/fieldValidation'
@@ -44,14 +46,17 @@ export interface InvalidDaysCheckboxOptions {
 }
 
 const INVALID_DAYS_CHECKBOX_VALUES: InvalidDaysCheckboxOptions[] = [
-  { label: DaysOfTheWeek.Monday, value: DaysOfTheWeek.Monday },
-  { label: DaysOfTheWeek.Tuesday, value: DaysOfTheWeek.Tuesday },
-  { label: DaysOfTheWeek.Wednesday, value: DaysOfTheWeek.Wednesday },
-  { label: DaysOfTheWeek.Thursday, value: DaysOfTheWeek.Thursday },
-  { label: DaysOfTheWeek.Friday, value: DaysOfTheWeek.Friday },
-  { label: DaysOfTheWeek.Saturday, value: DaysOfTheWeek.Saturday },
-  { label: DaysOfTheWeek.Sunday, value: DaysOfTheWeek.Sunday },
-  { label: 'Singapore public holidays', value: 'Singapore public holidays' },
+  { label: InvalidDaysOptions.Monday, value: InvalidDaysOptions.Monday },
+  { label: InvalidDaysOptions.Tuesday, value: InvalidDaysOptions.Tuesday },
+  { label: InvalidDaysOptions.Wednesday, value: InvalidDaysOptions.Wednesday },
+  { label: InvalidDaysOptions.Thursday, value: InvalidDaysOptions.Thursday },
+  { label: InvalidDaysOptions.Friday, value: InvalidDaysOptions.Friday },
+  { label: InvalidDaysOptions.Saturday, value: InvalidDaysOptions.Saturday },
+  { label: InvalidDaysOptions.Sunday, value: InvalidDaysOptions.Sunday },
+  {
+    label: InvalidDaysOptions.SingaporePublicHolidays,
+    value: InvalidDaysOptions.SingaporePublicHolidays,
+  },
 ]
 
 type EditDateProps = EditFieldProps<DateFieldBase>
@@ -60,7 +65,7 @@ const EDIT_DATE_FIELD_KEYS = [
   'title',
   'description',
   'required',
-  'invalidDaysOfTheWeek',
+  'invalidDays',
 ] as const
 
 type EditDateInputs = Pick<
@@ -73,7 +78,7 @@ type EditDateInputs = Pick<
     customMinDate: string
   }
   addParticularDayRestriction: boolean
-  invalidDaysOfTheWeek: NonNullable<DateFieldBase['invalidDaysOfTheWeek']>
+  invalidDays: NonNullable<DateFieldBase['invalidDays']>
 }
 
 const transformDateFieldToEditForm = (field: DateFieldBase): EditDateInputs => {
@@ -88,17 +93,19 @@ const transformDateFieldToEditForm = (field: DateFieldBase): EditDateInputs => {
       : ('' as const),
   }
 
-  const nextAddParticularDayRestriction = field.invalidDaysOfTheWeek
-    ? field.invalidDaysOfTheWeek.length > 0
+  const nextAddParticularDayRestriction = field.invalidDays
+    ? field.invalidDays.length > 0
     : false
 
-  const nextInvalidDayOptions = field.invalidDaysOfTheWeek ?? []
+  const nextInvalidDayOptions = field.invalidDays
+    ? transformInvalidDaysToCheckedBoxesValue(field.invalidDays)
+    : Object.values(InvalidDaysOptions)
 
   return {
     ...pick(field, EDIT_DATE_FIELD_KEYS),
     dateValidation: nextValidationOptions,
     addParticularDayRestriction: nextAddParticularDayRestriction,
-    invalidDaysOfTheWeek: nextInvalidDayOptions,
+    invalidDays: nextInvalidDayOptions,
   }
 }
 
@@ -107,6 +114,7 @@ const transformDateEditFormToField = (
   originalField: DateFieldBase,
 ): DateFieldBase => {
   let nextValidationOptions: DateValidationOptions
+  let nextInvalidDayOptions: InvalidDaysOptions[]
 
   switch (inputs.dateValidation.selectedDateValidation) {
     case '':
@@ -137,8 +145,17 @@ const transformDateEditFormToField = (
     }
   }
 
+  if (inputs.addParticularDayRestriction) {
+    nextInvalidDayOptions = transformCheckedBoxesValueToInvalidDays(
+      inputs.invalidDays,
+    )
+  } else {
+    nextInvalidDayOptions = []
+  }
+
   return extend({}, originalField, inputs, {
     dateValidation: nextValidationOptions,
+    invalidDays: nextInvalidDayOptions,
   })
 }
 
@@ -160,8 +177,6 @@ export const EditDate = ({ field }: EditDateProps): JSX.Element => {
       output: transformDateEditFormToField,
     },
   })
-  const invalidDaysOfTheWeek = getValues('invalidDaysOfTheWeek') ?? []
-  console.log(invalidDaysOfTheWeek)
 
   const requiredValidationRule = useMemo(
     () => createBaseValidationRules({ required: true }),
@@ -273,10 +288,13 @@ export const EditDate = ({ field }: EditDateProps): JSX.Element => {
           <FormControl isRequired isReadOnly={isLoading}>
             <Controller
               control={control}
-              name="invalidDaysOfTheWeek"
+              name="invalidDays"
               render={({ field: { ref, ...field } }) => {
                 return (
-                  <CheckboxGroup {...field}>
+                  <CheckboxGroup
+                    {...field}
+                    defaultValue={Object.values(InvalidDaysOptions)}
+                  >
                     <Wrap spacing="0.75rem">
                       {INVALID_DAYS_CHECKBOX_VALUES.map((invalidDayOption) => {
                         return (
