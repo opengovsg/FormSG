@@ -143,20 +143,20 @@ export const transformDateToShortIsoString = (date: unknown): string | null => {
   return isDate(date) ? format(date as Date, 'yyyy-MM-dd') : null
 }
 
-/** Transforms the invalid days array to checkbox group value */
+const ALL_INVALID_DAYS_ARR = Object.values(InvalidDaysOptions)
+
+/** Transforms the invalid days array to valid days checkbox group value */
 export const transformInvalidDaysToCheckedBoxesValue = (
   invalidDays: InvalidDaysOptions[],
 ): InvalidDaysOptions[] => {
-  return Object.values(InvalidDaysOptions).filter(
-    (invalidDaysOption) => !invalidDays.includes(invalidDaysOption),
-  )
+  const invalidDaysSet = new Set(invalidDays)
+  return ALL_INVALID_DAYS_ARR.filter((day) => !invalidDaysSet.has(day))
 }
 
-/** Transforms the checkbox group value to invalid days array */
+/** Transforms the valid days checkbox group value to invalid days array */
 export const transformCheckedBoxesValueToInvalidDays = (
   validDays: InvalidDaysOptions[],
 ): InvalidDaysOptions[] => {
-  return Object.values(InvalidDaysOptions).filter(
-    (invalidDaysOptions) => !validDays.includes(invalidDaysOptions),
-  )
+  const validDaysSet = new Set(validDays)
+  return ALL_INVALID_DAYS_ARR.filter((day) => !validDaysSet.has(day))
 }

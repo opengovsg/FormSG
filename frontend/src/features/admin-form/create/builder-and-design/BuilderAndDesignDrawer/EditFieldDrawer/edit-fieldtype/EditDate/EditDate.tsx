@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { Controller, RegisterOptions } from 'react-hook-form'
+import { Controller, RegisterOptions, useWatch } from 'react-hook-form'
 import {
   Box,
   CheckboxGroup,
@@ -40,26 +40,18 @@ import { FormFieldDrawerActions } from '../common/FormFieldDrawerActions'
 import { EditFieldProps } from '../common/types'
 import { useEditFieldForm } from '../common/useEditFieldForm'
 
-export interface InvalidDaysCheckboxOptions {
-  label: string
-  value: string
-}
-
-const INVALID_DAYS_CHECKBOX_VALUES: InvalidDaysCheckboxOptions[] = [
-  { label: InvalidDaysOptions.Monday, value: InvalidDaysOptions.Monday },
-  { label: InvalidDaysOptions.Tuesday, value: InvalidDaysOptions.Tuesday },
-  { label: InvalidDaysOptions.Wednesday, value: InvalidDaysOptions.Wednesday },
-  { label: InvalidDaysOptions.Thursday, value: InvalidDaysOptions.Thursday },
-  { label: InvalidDaysOptions.Friday, value: InvalidDaysOptions.Friday },
-  { label: InvalidDaysOptions.Saturday, value: InvalidDaysOptions.Saturday },
-  { label: InvalidDaysOptions.Sunday, value: InvalidDaysOptions.Sunday },
-  {
-    label: InvalidDaysOptions.SingaporePublicHolidays,
-    value: InvalidDaysOptions.SingaporePublicHolidays,
-  },
-]
-
 type EditDateProps = EditFieldProps<DateFieldBase>
+
+const INVALID_DAYS_OPTIONS: string[] = [
+  InvalidDaysOptions.Monday,
+  InvalidDaysOptions.Tuesday,
+  InvalidDaysOptions.Wednesday,
+  InvalidDaysOptions.Thursday,
+  InvalidDaysOptions.Friday,
+  InvalidDaysOptions.Saturday,
+  InvalidDaysOptions.Sunday,
+  InvalidDaysOptions.SingaporePublicHolidays,
+]
 
 const EDIT_DATE_FIELD_KEYS = [
   'title',
@@ -93,10 +85,14 @@ const transformDateFieldToEditForm = (field: DateFieldBase): EditDateInputs => {
       : ('' as const),
   }
 
-  const nextAddParticularDayRestriction = field.invalidDays
-    ? field.invalidDays.length > 0
-    : false
+  const nextAddParticularDayRestriction = !!field?.invalidDays?.length
 
+  /** Transformation is done because the invalid days array supplied from the server
+   * to the checkbox group should be unchecked instead of checked. Hence instead of
+   * supplying the invalid days array to the checkbox group, the valid days array
+   * should be supplied to the checkbox group. Therefore transforming the invalid days
+   * array into the valid days array.
+   */
   const nextInvalidDayOptions = field.invalidDays
     ? transformInvalidDaysToCheckedBoxesValue(field.invalidDays)
     : Object.values(InvalidDaysOptions)
@@ -146,6 +142,11 @@ const transformDateEditFormToField = (
   }
 
   if (inputs.addParticularDayRestriction) {
+    /** Transformation is done because the checked values in the checkbox group
+     * are actually the valid days instead of the invalid days values that should
+     * be sent over and stored on the server. Therefore the need to transform
+     * the valid days array into invalid days array.
+     */
     nextInvalidDayOptions = transformCheckedBoxesValueToInvalidDays(
       inputs.invalidDays,
     )
@@ -176,6 +177,11 @@ export const EditDate = ({ field }: EditDateProps): JSX.Element => {
       input: transformDateFieldToEditForm,
       output: transformDateEditFormToField,
     },
+  })
+
+  const watchAddParticularDayRestriction = useWatch({
+    control: control,
+    name: 'addParticularDayRestriction',
   })
 
   const requiredValidationRule = useMemo(
@@ -277,45 +283,42 @@ export const EditDate = ({ field }: EditDateProps): JSX.Element => {
         </FormErrorMessage>
       </FormControl>
       <Stack>
-        <FormControl isReadOnly={isLoading}>
+        <FormControl>
           <Toggle
             {...register('addParticularDayRestriction')}
             label="Customize days of the week"
             description="Checking a day will disable all the same days in the calendar"
           />
         </FormControl>
-        {getValues('addParticularDayRestriction') ? (
-          <FormControl isRequired isReadOnly={isLoading}>
+        {watchAddParticularDayRestriction ? (
+          <FormControl isRequired>
             <Controller
               control={control}
               name="invalidDays"
-              render={({ field: { ref, ...field } }) => {
-                return (
-                  <CheckboxGroup
-                    {...field}
-                    defaultValue={Object.values(InvalidDaysOptions)}
-                  >
-                    <Wrap spacing="0.75rem">
-                      {INVALID_DAYS_CHECKBOX_VALUES.map((invalidDayOption) => {
-                        return (
-                          <WrapItem
-                            key={invalidDayOption.value}
-                            minW="9.75rem"
-                            maxW="21.25rem"
-                          >
-                            <Checkbox
-                              key={invalidDayOption.value}
-                              value={invalidDayOption.value}
-                            >
-                              {invalidDayOption.label}
-                            </Checkbox>
-                          </WrapItem>
-                        )
-                      })}
-                    </Wrap>
-                  </CheckboxGroup>
-                )
-              }}
+              render={({ field: { ref, ...field } }) => (
+                <CheckboxGroup
+                  {...field}
+                  defaultValue={Object.values(InvalidDaysOptions)}
+                >
+                  <Wrap spacing="0.75rem">
+                    {INVALID_DAYS_OPTIONS.map((invalidDayOption, index) => (
+                      <WrapItem
+                        key={invalidDayOption}
+                        minW="9.75rem"
+                        maxW="21.25rem"
+                      >
+                        <Checkbox
+                          key={invalidDayOption}
+                          value={invalidDayOption}
+                          ref={index === 0 ? ref : null}
+                        >
+                          {invalidDayOption}
+                        </Checkbox>
+                      </WrapItem>
+                    ))}
+                  </Wrap>
+                </CheckboxGroup>
+              )}
             />
           </FormControl>
         ) : null}
