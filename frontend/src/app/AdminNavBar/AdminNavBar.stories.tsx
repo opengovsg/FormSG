@@ -7,6 +7,7 @@ import {
   getTabletViewParameters,
   LoggedInDecorator,
   StoryRouter,
+  ViewedEmergencyContactDecorator,
 } from '~utils/storybook'
 
 import { AdminNavBar, AdminNavBarProps } from './AdminNavBar'
@@ -21,6 +22,7 @@ export default {
   decorators: [
     StoryRouter({ initialEntries: ['/12345'], path: '/:formId' }),
     LoggedInDecorator,
+    ViewedEmergencyContactDecorator,
   ],
 } as Meta
 
