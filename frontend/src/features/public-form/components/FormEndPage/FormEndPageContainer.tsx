@@ -53,7 +53,7 @@ export const FormEndPageContainer = ({
         })
       }
     },
-    [submitFormFeedbackMutation, toast],
+    [isPreview, submitFormFeedbackMutation, toast],
   )
 
   if (!form || !submissionData) return null

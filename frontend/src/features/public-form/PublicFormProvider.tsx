@@ -149,7 +149,8 @@ export const PublicFormProvider = ({
           ),
           description: (
             <Text as="span">
-              <Link href="">Refresh</Link> for the latest version of the form.
+              <Link href={window.location.href}>Refresh</Link> for the latest
+              version of the form.
             </Text>
           ),
           duration: null,
