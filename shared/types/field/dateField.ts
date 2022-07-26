@@ -7,7 +7,7 @@ export enum DateSelectedValidation {
   Custom = 'Custom date range',
 }
 
-export enum DaysOfTheWeek {
+export enum InvalidDaysOptions {
   Sunday = 'Sunday',
   Monday = 'Monday',
   Tuesday = 'Tuesday',
@@ -15,6 +15,7 @@ export enum DaysOfTheWeek {
   Thursday = 'Thursday',
   Friday = 'Friday',
   Saturday = 'Saturday',
+  SingaporePublicHolidays = 'Singapore public holidays',
 }
 
 export type DateValidationOptions = {
@@ -26,5 +27,5 @@ export type DateValidationOptions = {
 export interface DateFieldBase extends MyInfoableFieldBase {
   fieldType: BasicField.Date
   dateValidation: DateValidationOptions
-  invalidDaysOfTheWeek?: DaysOfTheWeek[] | null
+  invalidDays?: InvalidDaysOptions[]
 }
