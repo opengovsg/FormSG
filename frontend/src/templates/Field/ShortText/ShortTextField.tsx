@@ -16,6 +16,7 @@ export interface ShortTextFieldProps extends BaseFieldProps {
 
 export const ShortTextField = ({
   schema,
+  isPrefilled,
 }: ShortTextFieldProps): JSX.Element => {
   const validationRules = useMemo(
     () => createTextValidationRules(schema),
@@ -27,6 +28,7 @@ export const ShortTextField = ({
   return (
     <FieldContainer schema={schema}>
       <Input
+        isPrefilled={isPrefilled}
         aria-label={schema.title}
         {...register(schema._id, validationRules)}
       />

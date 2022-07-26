@@ -16,6 +16,7 @@ interface VisibleFormFieldsProps {
   formFields: FormFieldWithQuestionNo[]
   formLogics: LogicDto[]
   colorTheme: FormColorTheme
+  fieldPrefillMap: Record<string, string>
 }
 
 /**
@@ -27,6 +28,7 @@ export const VisibleFormFields = ({
   formFields,
   formLogics,
   colorTheme,
+  fieldPrefillMap,
 }: VisibleFormFieldsProps) => {
   const watchedValues = useWatch({ control })
   const [visibleFormFields, setVisibleFormFields] = useState(formFields)
@@ -46,7 +48,12 @@ export const VisibleFormFields = ({
   return (
     <>
       {visibleFormFields.map((field) => (
-        <FieldFactory colorTheme={colorTheme} field={field} key={field._id} />
+        <FieldFactory
+          colorTheme={colorTheme}
+          field={field}
+          key={field._id}
+          isPrefilled={!!fieldPrefillMap[field._id]}
+        />
       ))}
     </>
   )

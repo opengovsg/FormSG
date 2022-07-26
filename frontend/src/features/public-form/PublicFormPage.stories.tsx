@@ -18,6 +18,7 @@ import {
 } from '~/mocks/msw/handlers/public-form'
 
 import { getMobileViewParameters, StoryRouter } from '~utils/storybook'
+import { ShortTextFieldSchema } from '~templates/Field'
 
 import PublicFormPage from './PublicFormPage'
 
@@ -28,6 +29,25 @@ const DEFAULT_MSW_HANDLERS = [
   postGenerateVfnOtpResponse(),
   postVerifyVfnOtpResponse(),
 ]
+
+// Bunch of encodings to test prefill and its sanitization.
+const PREFILLABLE_TEST_STRING =
+  '%E8%87%AA%E7%94%B1 %F0%90%90%80 hello+world 日本語%20normal space'
+
+const PREFILLABLE_SHORTTEXT_FIELD: ShortTextFieldSchema = {
+  ValidationOptions: {
+    customVal: null,
+    selectedValidation: null,
+  },
+  allowPrefill: true, // This prop allows for prefill
+  title: 'Short Text With Prefill',
+  description:
+    'Probably do not have to worry so much, React automatically sanitizes what gets rendered',
+  required: true,
+  disabled: false,
+  fieldType: BasicField.ShortText,
+  _id: '5da04eafe397fc0013f63b22',
+}
 
 const generateMswHandlersForColorTheme = (colorTheme: FormColorTheme) => {
   return [
@@ -52,7 +72,9 @@ export default {
   component: PublicFormPage,
   decorators: [
     StoryRouter({
-      initialEntries: ['/61540ece3d4a6e50ac0cc6ff'],
+      initialEntries: [
+        `/61540ece3d4a6e50ac0cc6ff?${PREFILLABLE_SHORTTEXT_FIELD._id}=${PREFILLABLE_TEST_STRING}`,
+      ],
       path: '/:formId',
     }),
   ],
@@ -80,6 +102,26 @@ WithCaptcha.parameters = {
       },
     }),
   ],
+}
+
+export const WithPrefilledFields = Template.bind({})
+WithPrefilledFields.parameters = {
+  msw: [
+    getPublicFormResponse({
+      delay: 0,
+      overrides: {
+        form: {
+          form_fields: [PREFILLABLE_SHORTTEXT_FIELD],
+        },
+      },
+    }),
+  ],
+}
+
+export const WithPrefilledFieldsMobile = Template.bind({})
+WithPrefilledFieldsMobile.parameters = {
+  ...WithPrefilledFields.parameters,
+  ...getMobileViewParameters(),
 }
 
 export const Mobile = Template.bind({})

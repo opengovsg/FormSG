@@ -24,3 +24,12 @@ export const AUTHTYPE_TO_TEXT = {
   [FormResponseMode.Email]: EMAIL_MODE_AUTHTYPES,
   [FormResponseMode.Encrypt]: STORAGE_MODE_AUTHTYPES,
 }
+
+export const SGID_TOOLTIP = `Free Singpass authentication via Singpass app QR\
+  code login. Respondents must have the Singpass mobile app installed to log in\
+  and submit responses. Password login is not supported. Form admin will receive\
+  respondent's NRIC.`
+
+export const CP_TOOLTIP = `Corppass no longer has its own login page, and now\
+  uses Singpass to authenticate corporate users. You will still need a separate\
+  Corppass e-service ID.`

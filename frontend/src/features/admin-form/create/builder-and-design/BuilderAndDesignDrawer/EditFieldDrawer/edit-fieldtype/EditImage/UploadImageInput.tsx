@@ -13,6 +13,11 @@ import Attachment from '~components/Field/Attachment'
 
 import { EditImageInputs } from './EditImage'
 
+export type UploadedImage = {
+  file?: File
+  srcUrl?: string
+}
+
 type UploadImageInputProps = Pick<
   ControllerRenderProps<EditImageInputs, 'attachment'>,
   'name' | 'onChange' | 'value'

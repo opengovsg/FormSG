@@ -6,16 +6,26 @@ import {
   useMemo,
   useState,
 } from 'react'
-import { Box, Skeleton } from '@chakra-ui/react'
+import { Box, Icon, Skeleton } from '@chakra-ui/react'
 
 import { FormAuthType, FormSettings, FormStatus } from '~shared/types/form'
 
+import { BxsHelpCircle } from '~assets/icons/BxsHelpCircle'
 import InlineMessage from '~components/InlineMessage'
+import Link from '~components/Link'
 import Radio from '~components/Radio'
+import Tooltip from '~components/Tooltip'
+
+import { useUser } from '~features/user/queries'
 
 import { useMutateFormSettings } from '../../mutations'
 
-import { AUTHTYPE_TO_TEXT, STORAGE_MODE_AUTHTYPES } from './constants'
+import {
+  AUTHTYPE_TO_TEXT,
+  CP_TOOLTIP,
+  SGID_TOOLTIP,
+  STORAGE_MODE_AUTHTYPES,
+} from './constants'
 import { EsrvcIdBox } from './EsrvcIdBox'
 
 interface AuthSettingsSectionProps {
@@ -40,6 +50,7 @@ export const AuthSettingsSection = ({
   settings,
 }: AuthSettingsSectionProps): JSX.Element => {
   const { mutateFormAuthType } = useMutateFormSettings()
+  const { user } = useUser()
 
   const [focusedValue, setFocusedValue] = useState<FormAuthType>()
 
@@ -48,9 +59,12 @@ export const AuthSettingsSection = ({
     [settings],
   )
 
-  const isDisabled = useMemo(
-    () => isFormPublic || mutateFormAuthType.isLoading,
-    [isFormPublic, mutateFormAuthType.isLoading],
+  const isDisabled = useCallback(
+    (authType: FormAuthType) =>
+      isFormPublic ||
+      mutateFormAuthType.isLoading ||
+      (authType === FormAuthType.SGID && !user?.betaFlags?.sgid),
+    [user?.betaFlags?.sgid, isFormPublic, mutateFormAuthType.isLoading],
   )
 
   const handleEnterKeyDown: KeyboardEventHandler = useCallback(
@@ -71,7 +85,7 @@ export const AuthSettingsSection = ({
     (authType: FormAuthType): MouseEventHandler =>
       (e) => {
         if (
-          !isDisabled &&
+          !isDisabled(authType) &&
           e.type === 'click' &&
           // Required so only real clicks get registered.
           // Typical radio behaviour is that the 'click' event is triggered on change.
@@ -107,15 +121,45 @@ export const AuthSettingsSection = ({
         onChange={(e: FormAuthType) => setFocusedValue(e)}
       >
         {radioOptions.map(([authType, text]) => (
-          // TODO: Check whether user has permissions for SGID, etc
           <Fragment key={authType}>
             <Box onClick={handleOptionClick(authType)}>
-              <Radio value={authType} isDisabled={isDisabled}>
+              <Radio value={authType} isDisabled={isDisabled(authType)}>
                 {text}
+                {authType === FormAuthType.SGID ? (
+                  <>
+                    <Tooltip
+                      label={SGID_TOOLTIP}
+                      placement="top"
+                      textAlign="center"
+                    >
+                      <Icon as={BxsHelpCircle} aria-hidden marginX="0.5rem" />
+                    </Tooltip>
+                    <Link
+                      href="https://go.gov.sg/sgid-formsg"
+                      isExternal
+                      // Needed for link to open since there are nested onClicks
+                      onClickCapture={(e) => e.stopPropagation()}
+                    >
+                      Contact us to find out more
+                    </Link>
+                  </>
+                ) : null}
+                {authType === FormAuthType.CP ? (
+                  <Tooltip
+                    label={CP_TOOLTIP}
+                    placement="top"
+                    textAlign="center"
+                  >
+                    <Icon as={BxsHelpCircle} aria-hidden ml="0.5rem" />
+                  </Tooltip>
+                ) : null}
               </Radio>
             </Box>
             {authType !== FormAuthType.NIL && authType === settings.authType ? (
-              <EsrvcIdBox settings={settings} isDisabled={isDisabled} />
+              <EsrvcIdBox
+                settings={settings}
+                isDisabled={isDisabled(authType)}
+              />
             ) : null}
           </Fragment>
         ))}
