@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 import { Box, chakra, useStyleConfig, VisuallyHidden } from '@chakra-ui/react'
 
 import {
@@ -28,8 +28,12 @@ export const SidebarLink = ({
     useFormSections()
   const { miniHeaderRef, onMobileDrawerClose } = usePublicFormContext()
 
+  const sectionRef = useMemo(
+    () => sectionRefs[sectionMeta._id],
+    [sectionMeta._id, sectionRefs],
+  )
+
   const handleClick = useCallback(() => {
-    const sectionRef = sectionRefs[sectionMeta._id]
     if (!sectionRef || !sectionRef.current) return
 
     const headerOffset = miniHeaderRef.current?.clientHeight ?? 0
@@ -43,16 +47,18 @@ export const SidebarLink = ({
       top: offsetPosition,
       behavior: 'smooth',
     })
-    sectionRef.current.focus()
+    // Remove scrolling on focus to prevent app from jumping immediately to the
+    // element without smooth scrolling.
+    sectionRef.current.focus({ preventScroll: true })
     setActiveSectionId(sectionMeta._id)
     setNavigatedSectionTitle(sectionMeta.title)
   }, [
-    sectionRefs,
-    sectionMeta._id,
-    sectionMeta.title,
+    sectionRef,
     miniHeaderRef,
     onMobileDrawerClose,
     setActiveSectionId,
+    sectionMeta._id,
+    sectionMeta.title,
     setNavigatedSectionTitle,
   ])
 
