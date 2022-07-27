@@ -89,7 +89,7 @@ export const SidebarLink = ({
           aria-hidden
         />
       )}
-      {isActive && <VisuallyHidden>Current section:</VisuallyHidden>}
+      <VisuallyHidden>Navigate to section: </VisuallyHidden>
       {sectionMeta.title}
     </chakra.button>
   )
