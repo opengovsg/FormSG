@@ -76,7 +76,12 @@ export const AdminNavBar = ({ isMenuOpen }: AdminNavBarProps): JSX.Element => {
   const { user, isLoading: isUserLoading } = useUser()
 
   const emergencyContactKey = useMemo(
-    () => (user?._id ? EMERGENCY_CONTACT_KEY_PREFIX + user._id : null),
+    () =>
+      user?._id
+        ? user.contact
+          ? null
+          : EMERGENCY_CONTACT_KEY_PREFIX + user._id
+        : null,
     [user],
   )
 
@@ -93,7 +98,7 @@ export const AdminNavBar = ({ isMenuOpen }: AdminNavBarProps): JSX.Element => {
   }
 
   const isEmergencyContactModalOpenOnLogin = useMemo(
-    () => !isUserLoading && !hasSeenContactModal && !user?.contact,
+    () => !isUserLoading && !user?.contact && !hasSeenContactModal,
     [isUserLoading, hasSeenContactModal, user],
   )
 
@@ -105,7 +110,6 @@ export const AdminNavBar = ({ isMenuOpen }: AdminNavBarProps): JSX.Element => {
     if (emergencyContactKey) {
       localStorage.removeItem(emergencyContactKey)
     }
-    window.location.reload()
   }
 
   return (
@@ -127,7 +131,6 @@ export const AdminNavBar = ({ isMenuOpen }: AdminNavBarProps): JSX.Element => {
             defaultIsOpen={isMenuOpen}
             menuListProps={{ maxWidth: '19rem' }}
           >
-            {/* TODO: Replace with billing route when available */}
             <Menu.Item as={ReactLink} to="/billing">
               Billing
             </Menu.Item>
