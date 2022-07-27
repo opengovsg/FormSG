@@ -28,7 +28,6 @@ export const FormInstructions = forwardRef<FormInstructionsProps, 'div'>(
           py="2.5rem"
           px={{ base: '1rem', md: '2.5rem' }}
           mb="1.5rem"
-          mt={{ base: '2rem', md: '0' }}
         >
           <Box id="instructions" ref={ref}>
             <Text textStyle="h2" color={sectionColor}>
