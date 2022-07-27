@@ -14,6 +14,16 @@ module.exports = {
     },
   },
   webpack: {
+    alias: {
+      'libphonenumber-js': path.resolve(
+        __dirname,
+        'node_modules/libphonenumber-js',
+      ),
+      jszip: path.resolve(__dirname, 'node_modules/jszip'),
+      lodash: path.resolve(__dirname, 'node_modules/lodash'),
+      validator: path.resolve(__dirname, 'node_modules/validator'),
+      'date-fns': path.resolve(__dirname, 'node_modules/date-fns/esm'),
+    },
     configure: {
       module: {
         rules: [
