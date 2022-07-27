@@ -1,3 +1,5 @@
+import { VerifiedKeys } from 'shared/utils/verified-content'
+
 import { MalformedVerifiedContentError } from '../verified-content.errors'
 import {
   getCpVerifiedContent,
@@ -18,7 +20,7 @@ describe('verified-content.utils', () => {
 
       // Assert
       expect(actualResult._unsafeUnwrap()).toEqual({
-        uinFin: correctDataWithExtra.uinFin,
+        [VerifiedKeys.SpUinFin]: correctDataWithExtra.uinFin,
       })
     })
     it('should return MalformedVerifiedContentError on invalid shape', async () => {
@@ -52,8 +54,8 @@ describe('verified-content.utils', () => {
 
       // Assert
       expect(actualResult._unsafeUnwrap()).toEqual({
-        cpUen: correctDataWithExtra.uinFin,
-        cpUid: correctDataWithExtra.userInfo,
+        [VerifiedKeys.CpUen]: correctDataWithExtra.uinFin,
+        [VerifiedKeys.CpUid]: correctDataWithExtra.userInfo,
       })
     })
 
