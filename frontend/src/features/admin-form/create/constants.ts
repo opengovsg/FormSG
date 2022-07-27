@@ -252,7 +252,7 @@ export const MYINFO_FIELD_TO_DRAWER_META: {
   },
   [MyInfoAttribute.MobileNo]: {
     label: 'Mobile Number',
-    icon: BiBuildings,
+    icon: BiMobile,
     isSubmitted: true,
   },
   [MyInfoAttribute.Occupation]: {
