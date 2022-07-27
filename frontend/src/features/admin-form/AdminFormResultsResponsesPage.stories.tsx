@@ -19,12 +19,8 @@ import {
 import { getMobileViewParameters, viewports } from '~utils/storybook'
 
 import { AdminFormLayout } from './common/AdminFormLayout'
-import {
-  FeedbackPage,
-  FormResultsLayout,
-  ResponsesLayout,
-  ResponsesPage,
-} from './responses'
+import ResponsesPage from './responses/ResponsesPage/ResponsesPage'
+import { FeedbackPage, FormResultsLayout, ResponsesLayout } from './responses'
 
 export default {
   title: 'Pages/AdminFormPage/Results/ResponsesTab',

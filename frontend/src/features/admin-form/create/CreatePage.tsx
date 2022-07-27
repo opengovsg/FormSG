@@ -44,3 +44,5 @@ export const CreatePage = (): JSX.Element => {
     </Flex>
   )
 }
+
+export default CreatePage

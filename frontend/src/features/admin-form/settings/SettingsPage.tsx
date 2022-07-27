@@ -103,3 +103,5 @@ export const SettingsPage = (): JSX.Element => {
     </Box>
   )
 }
+
+export default SettingsPage

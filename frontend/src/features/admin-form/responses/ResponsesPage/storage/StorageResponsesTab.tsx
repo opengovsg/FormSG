@@ -1,8 +1,8 @@
 import { EmptyResponses } from '../common/EmptyResponses'
 
+import { UnlockedResponses } from './UnlockedResponses/UnlockedResponses'
 import { SecretKeyVerification } from './SecretKeyVerification'
 import { useStorageResponsesContext } from './StorageResponsesContext'
-import { UnlockedResponses } from './UnlockedResponses'
 
 export const StorageResponsesTab = (): JSX.Element => {
   const { totalResponsesCount, secretKey } = useStorageResponsesContext()

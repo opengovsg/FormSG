@@ -19,21 +19,27 @@ import {
 
 import NotFoundErrorPage from '~pages/NotFoundError'
 import { AdminFormLayout } from '~features/admin-form/common/AdminFormLayout'
-import { CreatePage } from '~features/admin-form/create/CreatePage'
 import {
-  FeedbackPage,
   FormResultsLayout,
   IndividualResponsePage,
   ResponsesLayout,
-  ResponsesPage,
 } from '~features/admin-form/responses'
-import { SettingsPage } from '~features/admin-form/settings/SettingsPage'
-import { BillingPage } from '~features/user/billing'
 
 import { HashRouterElement } from './HashRouterElement'
 import { PrivateElement } from './PrivateElement'
 import { PublicElement } from './PublicElement'
 
+const FeedbackPage = lazy(
+  () => import('~features/admin-form/responses/FeedbackPage/FeedbackPage'),
+)
+const ResponsesPage = lazy(
+  () => import('~features/admin-form/responses/ResponsesPage/ResponsesPage'),
+)
+const SettingsPage = lazy(
+  () => import('~features/admin-form/settings/SettingsPage'),
+)
+const BillingPage = lazy(() => import('~features/user/billing'))
+const CreatePage = lazy(() => import('~features/admin-form/create/CreatePage'))
 const PublicFormPage = lazy(
   () => import('~features/public-form/PublicFormPage'),
 )

@@ -16,7 +16,8 @@ import {
 import { getMobileViewParameters, viewports } from '~utils/storybook'
 
 import { AdminFormLayout } from './common/AdminFormLayout'
-import { FeedbackPage, FormResultsLayout, ResponsesPage } from './responses'
+import ResponsesPage from './responses/ResponsesPage/ResponsesPage'
+import { FeedbackPage, FormResultsLayout } from './responses'
 
 const DEFAULT_MSW_ROUTES = [
   ...createFormBuilderMocks({}, 0),

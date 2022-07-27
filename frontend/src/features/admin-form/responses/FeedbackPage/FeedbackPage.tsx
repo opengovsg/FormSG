@@ -98,3 +98,5 @@ export const FeedbackPage = (): JSX.Element => {
     </Container>
   )
 }
+
+export default FeedbackPage
