@@ -17,7 +17,6 @@ export interface FeatureTourTooltipProps {
   step: FeatureTourStep
   tooltipProps: BoxProps
   primaryProps: ButtonProps
-  skipProps: ButtonProps
   closeProps: ButtonProps
   isLastStep: boolean
   index: number
