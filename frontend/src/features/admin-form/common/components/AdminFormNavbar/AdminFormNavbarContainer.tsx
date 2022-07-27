@@ -55,8 +55,11 @@ const useAdminFormNavbar = () => {
   )
 
   const handlePreviewForm = useCallback((): void => {
-    navigate(`${ADMINFORM_ROUTE}/${formId}/${ADMINFORM_PREVIEW_ROUTE}`)
-  }, [navigate, formId])
+    window.open(
+      window.location.origin +
+        `${ADMINFORM_ROUTE}/${formId}/${ADMINFORM_PREVIEW_ROUTE}`,
+    )
+  }, [formId])
 
   const handleTabsChange = useCallback(
     (index: number) => navigate(ADMINFORM_ROUTES[index]),
