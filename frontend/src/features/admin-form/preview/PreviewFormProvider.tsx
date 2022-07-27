@@ -84,6 +84,12 @@ export const PreviewFormProvider = ({
     }
   }, [data, cachedDto, toast, desyncToastIdRef])
 
+  useEffect(() => {
+    return () => {
+      document.title = 'FormSG'
+    }
+  }, [])
+
   const isFormNotFound = useMemo(() => {
     return (
       error instanceof HttpError && (error.code === 404 || error.code === 410)
