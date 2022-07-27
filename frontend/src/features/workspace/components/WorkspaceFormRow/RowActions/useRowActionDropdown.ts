@@ -26,8 +26,7 @@ export const useRowActionDropdown = (
     handleEditForm: () => navigate(`${ADMINFORM_ROUTE}/${formId}`),
     handlePreviewForm: () =>
       window.open(
-        window.location.origin +
-          `${ADMINFORM_ROUTE}/${formId}/${ADMINFORM_PREVIEW_ROUTE}`,
+        `${window.location.origin}${ADMINFORM_ROUTE}/${formId}/${ADMINFORM_PREVIEW_ROUTE}`,
       ),
     handleDuplicateForm: () =>
       console.log(`duplicate form button clicked for ${formId}`),

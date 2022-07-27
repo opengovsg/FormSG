@@ -56,8 +56,7 @@ const useAdminFormNavbar = () => {
 
   const handlePreviewForm = useCallback((): void => {
     window.open(
-      window.location.origin +
-        `${ADMINFORM_ROUTE}/${formId}/${ADMINFORM_PREVIEW_ROUTE}`,
+      `${window.location.origin}${ADMINFORM_ROUTE}/${formId}/${ADMINFORM_PREVIEW_ROUTE}`,
     )
   }, [formId])
 
