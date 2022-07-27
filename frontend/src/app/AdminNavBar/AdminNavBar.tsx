@@ -105,6 +105,7 @@ export const AdminNavBar = ({ isMenuOpen }: AdminNavBarProps): JSX.Element => {
     if (emergencyContactKey) {
       localStorage.removeItem(emergencyContactKey)
     }
+    window.location.reload()
   }
 
   return (
