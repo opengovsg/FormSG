@@ -185,7 +185,7 @@ export const LandingPage = (): JSX.Element => {
       </LandingSection>
       <LandingSection>
         <SectionTitleText>
-          Used by every Singapore government agency
+          Used by all Singapore government agencies
         </SectionTitleText>
         <Wrap shouldWrapChildren spacingX="3rem" mt="2.5rem" spacingY="2.5rem">
           <StatsItem stat={data?.formCount} description="forms deployed" />
