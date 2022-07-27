@@ -29,7 +29,13 @@ const buildMswRoutes = (
   delay?: number | 'infinite' | 'real',
 ) => {
   return [
-    ...createFormBuilderMocks(overrides, delay),
+    ...createFormBuilderMocks(
+      {
+        ...overrides,
+        startPage: { paragraph: 'Fill in this mock form in this story.' },
+      },
+      delay,
+    ),
     getUser({
       delay: 0,
       mockUser: { ...MOCK_USER, _id: 'adminFormTestUserId' as UserId },

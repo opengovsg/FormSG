@@ -69,6 +69,21 @@ export default {
 const Template: Story = () => <PreviewFormPage />
 export const Default = Template.bind({})
 
+export const WithInstructions = Template.bind({})
+WithInstructions.parameters = {
+  msw: [
+    ...envHandlers,
+    getPreviewFormResponse({
+      delay: 0,
+      overrides: {
+        form: {
+          startPage: { paragraph: 'Fill in this mock form in this story.' },
+        },
+      },
+    }),
+  ],
+}
+
 export const WithCaptcha = Template.bind({})
 WithCaptcha.parameters = {
   msw: [
