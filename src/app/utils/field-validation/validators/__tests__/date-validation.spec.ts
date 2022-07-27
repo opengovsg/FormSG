@@ -9,6 +9,7 @@ import {
 import {
   BasicField,
   DateSelectedValidation,
+  InvalidDaysOptions,
 } from '../../../../../../shared/types'
 
 describe('Date field validation', () => {
@@ -322,5 +323,39 @@ describe('Date field validation', () => {
     expect(validateResult._unsafeUnwrapErr()).toEqual(
       new ValidateFieldError('Attempted to submit response on a hidden field'),
     )
+  })
+
+  it('should allow dates that is not an invalid day', () => {
+    const formField = generateDefaultField(BasicField.Date, {
+      dateValidation: {
+        selectedDateValidation: null,
+        customMinDate: null,
+        customMaxDate: null,
+      },
+      invalidDays: [InvalidDaysOptions.Wednesday, InvalidDaysOptions.Thursday],
+    })
+    const response = generateNewSingleAnswerResponse(BasicField.Date, {
+      answer: '29 July 2022',
+    })
+
+    const validateResult = validateField('formId', formField, response)
+    expect(validateResult.isErr()).toBe(true)
+  })
+
+  it('should disallow dates that is an invalid day', () => {
+    const formField = generateDefaultField(BasicField.Date, {
+      dateValidation: {
+        selectedDateValidation: null,
+        customMinDate: null,
+        customMaxDate: null,
+      },
+      invalidDays: [InvalidDaysOptions.Wednesday, InvalidDaysOptions.Thursday],
+    })
+    const response = generateNewSingleAnswerResponse(BasicField.Date, {
+      answer: '27 July 2022',
+    })
+
+    const validateResult = validateField('formId', formField, response)
+    expect(validateResult.isErr()).toBe(true)
   })
 })
