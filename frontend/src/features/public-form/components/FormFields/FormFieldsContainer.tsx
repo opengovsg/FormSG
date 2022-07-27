@@ -43,10 +43,8 @@ export const FormFieldsContainer = (): JSX.Element | null => {
   if (submissionData) return null
 
   return (
-    <Flex justify="center">
-      <Box w="100%" minW={0} h="fit-content" maxW="57rem">
-        {renderFields}
-      </Box>
-    </Flex>
+    <Box w="100%" minW={0} h="fit-content" maxW="57rem">
+      {renderFields}
+    </Box>
   )
 }

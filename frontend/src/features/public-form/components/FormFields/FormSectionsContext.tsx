@@ -53,7 +53,7 @@ export const FormSectionsProvider = ({
    */
   useEffect(() => {
     if (isFirstLoad && orderedSectionFieldIds) {
-      setActiveSectionId(orderedSectionFieldIds?.[0])
+      setActiveSectionId(orderedSectionFieldIds[0])
       isFirstLoad.current = false
     }
   }, [orderedSectionFieldIds])
