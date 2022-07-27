@@ -1,3 +1,5 @@
+import { VerifiedKeys } from 'shared/utils/verified-content'
+
 import { MalformedVerifiedContentError } from '../verified-content.errors'
 import {
   getCpVerifiedContent,
