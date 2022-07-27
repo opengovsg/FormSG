@@ -10,6 +10,8 @@ import { useSearchParams } from 'react-router-dom'
 import { Box, Container, Grid, useDisclosure } from '@chakra-ui/react'
 import { chunk } from 'lodash'
 
+import { AdminNavBar } from '~/app/AdminNavBar/AdminNavBar'
+
 import { ROLLOUT_ANNOUNCEMENT_KEY_PREFIX } from '~constants/localStorage'
 import { useLocalStorage } from '~hooks/useLocalStorage'
 import Pagination from '~components/Pagination'
@@ -126,6 +128,7 @@ export const WorkspacePage = (): JSX.Element => {
 
   return (
     <>
+      <AdminNavBar />
       <CreateFormModal
         isOpen={createFormModalDisclosure.isOpen}
         onClose={createFormModalDisclosure.onClose}
