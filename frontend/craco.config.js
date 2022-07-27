@@ -2,6 +2,7 @@
 const CracoAlias = require('craco-alias')
 const merge = require('lodash/merge')
 const path = require('path')
+const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer')
 
 const customJestConfig = require('./jest.config')
 
@@ -24,6 +25,9 @@ module.exports = {
         ],
       },
     },
+    plugins: process.env.ANALYZE && [
+      new BundleAnalyzerPlugin({ generateStatsFile: true }),
+    ],
   },
   plugins: [
     {

@@ -99,6 +99,7 @@
     "postinstall": "npm run gen:theme-typings && npm run clean:emotion-types && npm run partytown && npm --prefix ../shared install",
     "start": "cross-env SKIP_PREFLIGHT_CHECK=true craco start",
     "build": "cross-env CI=false BUILD_PATH='../dist/frontend' INLINE_RUNTIME_CHUNK=false SKIP_PREFLIGHT_CHECK=true craco build",
+    "build:analyze": "cross-env ANALYZE=true npm run build",
     "test": "cross-env SKIP_PREFLIGHT_CHECK=true craco test",
     "eject": "react-scripts eject",
     "storybook": "start-storybook -p 6006",
@@ -182,6 +183,7 @@
     "storybook-preset-craco": "0.0.6",
     "storybook-react-i18next": "^1.0.20",
     "ts-jest": "^27.1.1",
+    "webpack-bundle-analyzer": "^4.5.0",
     "worker-loader": "^3.0.8"
   },
   "proxy": "http://localhost:5000",
