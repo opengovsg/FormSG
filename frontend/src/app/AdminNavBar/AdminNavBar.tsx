@@ -1,11 +1,21 @@
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo } from 'react'
 import { BiCommentDetail } from 'react-icons/bi'
 import { Link as ReactLink } from 'react-router-dom'
-import { As, chakra, Flex, FlexProps, HStack } from '@chakra-ui/react'
+import {
+  As,
+  chakra,
+  Flex,
+  FlexProps,
+  HStack,
+  useDisclosure,
+} from '@chakra-ui/react'
 
 import { BxsHelpCircle } from '~assets/icons/BxsHelpCircle'
 import { ReactComponent as BrandMarkSvg } from '~assets/svgs/brand/brand-mark-colour.svg'
-import { EMERGENCY_CONTACT_KEY_PREFIX } from '~constants/localStorage'
+import {
+  EMERGENCY_CONTACT_KEY_PREFIX,
+  ROLLOUT_ANNOUNCEMENT_KEY_PREFIX,
+} from '~constants/localStorage'
 import { useIsMobile } from '~hooks/useIsMobile'
 import { useLocalStorage } from '~hooks/useLocalStorage'
 import { logout } from '~services/AuthService'
@@ -73,37 +83,42 @@ export interface AdminNavBarProps {
 }
 
 export const AdminNavBar = ({ isMenuOpen }: AdminNavBarProps): JSX.Element => {
-  const { user, isLoading: isUserLoading } = useUser()
+  const { user } = useUser()
 
-  const emergencyContactKey = useMemo(
-    () =>
-      user?._id
-        ? user.contact
-          ? null
-          : EMERGENCY_CONTACT_KEY_PREFIX + user._id
-        : null,
+  const ROLLOUT_ANNOUNCEMENT_KEY = useMemo(
+    () => ROLLOUT_ANNOUNCEMENT_KEY_PREFIX + user?._id,
     [user],
   )
+  const [hasSeenAnnouncement] = useLocalStorage<boolean>(
+    ROLLOUT_ANNOUNCEMENT_KEY,
+  )
+
+  // Only want to show the modal if user id exists but user has no emergency contact
+  const shouldShowModal = user && !!user._id !== !!user.contact
+
+  const emergencyContactKey = shouldShowModal
+    ? EMERGENCY_CONTACT_KEY_PREFIX + user._id
+    : null
 
   const [hasSeenContactModal, setHasSeenContactModal] =
     useLocalStorage<boolean>(emergencyContactKey)
 
-  const [isContactModalOpen, setIsContactModalOpen] = useState<boolean>(false)
-  const handleContactModalOpenClick = () => {
-    setIsContactModalOpen(true)
-  }
-  const onEmergencyContactModalClose = () => {
-    setIsContactModalOpen(false)
-    setHasSeenContactModal(true)
-  }
+  const {
+    isOpen: isContactModalOpen,
+    onClose: onContactModalClose,
+    onOpen: onContactModalOpen,
+  } = useDisclosure({
+    onClose: () => {
+      setHasSeenContactModal(true)
+    },
+  })
 
-  const isEmergencyContactModalOpenOnLogin = useMemo(
-    () => !isUserLoading && !user?.contact && !hasSeenContactModal,
-    [isUserLoading, hasSeenContactModal, user],
-  )
-
-  const isEmergencyContactModalOpen =
-    (isContactModalOpen && Boolean(user)) || isEmergencyContactModalOpenOnLogin
+  // Emergency contact modal appears after the rollout announcement modal
+  useEffect(() => {
+    if (!hasSeenContactModal && !user?.contact && hasSeenAnnouncement) {
+      onContactModalOpen()
+    }
+  }, [hasSeenContactModal, onContactModalOpen, user, hasSeenAnnouncement])
 
   const handleLogout = () => {
     logout()
@@ -134,7 +149,7 @@ export const AdminNavBar = ({ isMenuOpen }: AdminNavBarProps): JSX.Element => {
             <Menu.Item as={ReactLink} to="/billing">
               Billing
             </Menu.Item>
-            <Menu.Item onClick={handleContactModalOpenClick}>
+            <Menu.Item onClick={onContactModalOpen}>
               Emergency contact
             </Menu.Item>
             <AvatarMenuDivider />
@@ -143,8 +158,8 @@ export const AdminNavBar = ({ isMenuOpen }: AdminNavBarProps): JSX.Element => {
         </HStack>
       </AdminNavBar.Container>
       <EmergencyContactModal
-        onClose={onEmergencyContactModalClose}
-        isOpen={isEmergencyContactModalOpen}
+        onClose={onContactModalClose}
+        isOpen={isContactModalOpen}
       />
     </>
   )
