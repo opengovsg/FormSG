@@ -42,7 +42,7 @@ import { useEditFieldForm } from '../common/useEditFieldForm'
 
 type EditDateProps = EditFieldProps<DateFieldBase>
 
-const INVALID_DAYS_OPTIONS: string[] = [
+const INVALID_DAYS_OPTIONS: InvalidDaysOptions[] = [
   InvalidDaysOptions.Monday,
   InvalidDaysOptions.Tuesday,
   InvalidDaysOptions.Wednesday,
@@ -291,10 +291,20 @@ export const EditDate = ({ field }: EditDateProps): JSX.Element => {
           />
         </FormControl>
         {watchAddParticularDayRestriction ? (
-          <FormControl isRequired>
+          <FormControl isRequired isInvalid={!!errors.invalidDays}>
             <Controller
               control={control}
               name="invalidDays"
+              rules={{
+                validate: (val) => {
+                  const validDaysSet = new Set(val)
+                  return validDaysSet.has(
+                    InvalidDaysOptions.SingaporePublicHolidays,
+                  )
+                    ? val.length >= 2
+                    : val.length >= 1
+                },
+              }}
               render={({ field: { ref, ...field } }) => (
                 <CheckboxGroup
                   {...field}
