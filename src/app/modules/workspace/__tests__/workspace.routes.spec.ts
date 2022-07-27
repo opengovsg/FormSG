@@ -15,7 +15,10 @@ import { buildCelebrateError } from 'tests/unit/backend/helpers/celebrate'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 import { jsonParseStringify } from 'tests/unit/backend/helpers/serialize-data'
 
-import { WorkspaceNotFoundError } from '../workspace.errors'
+import {
+  ForbiddenWorkspaceError,
+  WorkspaceNotFoundError,
+} from '../workspace.errors'
 
 const WorkspaceModel = getWorkspaceModel(mongoose)
 
@@ -231,6 +234,28 @@ describe('workspaces.routes', () => {
 
       expect(response.status).toEqual(401)
       expect(response.body).toEqual({ message: 'User is unauthorized.' })
+    })
+
+    it('should return 403 when user has no permissions to update the workspace title', async () => {
+      const updateWorkspaceParam = {
+        title: 'validWorkspace',
+      }
+      const validWorkspaceId = new ObjectId()
+      await WorkspaceModel.create({
+        _id: validWorkspaceId,
+        title: "Someone else's workspace",
+        admin: new ObjectId(),
+        formIds: [],
+      })
+
+      const response = await request
+        .put(`/workspaces/${validWorkspaceId.toHexString()}/title`)
+        .send(updateWorkspaceParam)
+
+      expect(response.status).toEqual(403)
+      expect(response.body).toEqual({
+        message: new ForbiddenWorkspaceError().message,
+      })
     })
 
     it('should return 404 when workspace is not found', async () => {
