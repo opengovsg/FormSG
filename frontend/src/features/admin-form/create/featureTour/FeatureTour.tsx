@@ -25,12 +25,7 @@ export const FeatureTour = ({ onClose }: FeatureTourProps): JSX.Element => {
       if (type === EVENTS.STEP_AFTER || type === EVENTS.TARGET_NOT_FOUND) {
         setStepIndex(index + 1)
       }
-
-      if (
-        status === STATUS.FINISHED ||
-        status === STATUS.SKIPPED ||
-        action === ACTIONS.CLOSE
-      ) {
+      if (status === STATUS.FINISHED || status === STATUS.SKIPPED) {
         onClose()
       }
     } else {
