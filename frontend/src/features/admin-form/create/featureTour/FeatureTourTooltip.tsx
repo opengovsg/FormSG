@@ -18,6 +18,7 @@ export interface FeatureTourTooltipProps {
   tooltipProps: BoxProps
   primaryProps: ButtonProps
   skipProps: ButtonProps
+  closeProps: ButtonProps
   isLastStep: boolean
   index: number
 }
@@ -26,7 +27,7 @@ export const FeatureTourTooltip = ({
   step,
   tooltipProps,
   primaryProps,
-  skipProps,
+  closeProps,
   isLastStep,
   index,
 }: FeatureTourTooltipProps): JSX.Element => {
@@ -49,7 +50,7 @@ export const FeatureTourTooltip = ({
         position="absolute"
         right="1.25rem"
         top="1.25rem"
-        {...skipProps}
+        {...closeProps}
       />
       <Badge
         colorScheme="success"
@@ -78,7 +79,9 @@ export const FeatureTourTooltip = ({
           onClick={paginationCallback}
         />
         {isLastStep ? (
-          <Button {...skipProps}>Done</Button>
+          <Button {...primaryProps} title="Done">
+            Done
+          </Button>
         ) : (
           <Button rightIcon={<BiRightArrowAlt />} {...primaryProps}>
             Next
