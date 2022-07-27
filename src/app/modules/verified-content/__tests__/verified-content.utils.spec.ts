@@ -18,7 +18,7 @@ describe('verified-content.utils', () => {
 
       // Assert
       expect(actualResult._unsafeUnwrap()).toEqual({
-        uinFin: correctDataWithExtra.uinFin,
+        [VerifiedKeys.SpUinFin]: correctDataWithExtra.uinFin,
       })
     })
     it('should return MalformedVerifiedContentError on invalid shape', async () => {
@@ -52,8 +52,8 @@ describe('verified-content.utils', () => {
 
       // Assert
       expect(actualResult._unsafeUnwrap()).toEqual({
-        cpUen: correctDataWithExtra.uinFin,
-        cpUid: correctDataWithExtra.userInfo,
+        [VerifiedKeys.CpUen]: correctDataWithExtra.uinFin,
+        [VerifiedKeys.CpUid]: correctDataWithExtra.userInfo,
       })
     })
 
