@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { Box, Flex, Spacer } from '@chakra-ui/react'
+import { Box, Flex } from '@chakra-ui/react'
 
 import { FormAuthType } from '~shared/types/form/form'
 
@@ -9,7 +9,6 @@ import { FormAuth } from '../FormAuth'
 
 import { FormFields } from './FormFields'
 import { FormFieldsSkeleton } from './FormFieldsSkeleton'
-import { SectionSidebar } from './SectionSidebar'
 
 export const FormFieldsContainer = (): JSX.Element | null => {
   const { form, isAuthRequired, isLoading, handleSubmitForm, submissionData } =
@@ -45,11 +44,9 @@ export const FormFieldsContainer = (): JSX.Element | null => {
 
   return (
     <Flex justify="center">
-      {isAuthRequired ? null : <SectionSidebar />}
       <Box w="100%" minW={0} h="fit-content" maxW="57rem">
         {renderFields}
       </Box>
-      {isAuthRequired ? null : <Spacer />}
     </Flex>
   )
 }

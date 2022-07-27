@@ -15,7 +15,8 @@ import { useIsMobile } from '~hooks/useIsMobile'
 
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
-import { useFormSections } from './FormSectionsContext'
+import { useFormSections } from '../FormFields/FormSectionsContext'
+
 import { SidebarLink } from './SidebarLink'
 
 export const SectionSidebar = (): JSX.Element => {
