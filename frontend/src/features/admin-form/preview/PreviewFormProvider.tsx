@@ -74,7 +74,8 @@ export const PreviewFormProvider = ({
           ),
           description: (
             <Text as="span">
-              <Link href="">Refresh</Link> for the latest version of the form.
+              <Link href={window.location.href}>Refresh</Link> for the latest
+              version of the form.
             </Text>
           ),
           duration: null,
@@ -82,6 +83,12 @@ export const PreviewFormProvider = ({
       }
     }
   }, [data, cachedDto, toast, desyncToastIdRef])
+
+  useEffect(() => {
+    return () => {
+      document.title = 'FormSG'
+    }
+  }, [])
 
   const isFormNotFound = useMemo(() => {
     return (

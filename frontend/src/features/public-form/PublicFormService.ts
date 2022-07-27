@@ -17,7 +17,7 @@ import {
   createEncryptedSubmissionData,
 } from './utils/createSubmission'
 
-const PUBLIC_FORMS_ENDPOINT = '/forms'
+export const PUBLIC_FORMS_ENDPOINT = '/forms'
 
 /**
  * Gets public view of form, along with any
@@ -42,10 +42,11 @@ export const getPublicFormView = async (
 export const getPublicFormAuthRedirectUrl = async (
   formId: string,
   isPersistentLogin = false,
+  encodedQuery?: string,
 ): Promise<PublicFormAuthRedirectDto['redirectURL']> => {
   return ApiService.get<PublicFormAuthRedirectDto>(
     `${PUBLIC_FORMS_ENDPOINT}/${formId}/auth/redirect`,
-    { params: { isPersistentLogin } },
+    { params: { encodedQuery, isPersistentLogin } },
   ).then(({ data }) => data.redirectURL)
 }
 

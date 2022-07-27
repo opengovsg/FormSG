@@ -1,3 +1,4 @@
+import { MemoryRouter } from 'react-router-dom'
 import { Meta, Story } from '@storybook/react'
 
 import { FormColorTheme } from '~shared/types/form/form'
@@ -27,9 +28,11 @@ export default {
   component: FormStartPage,
   decorators: [
     (storyFn) => (
-      <PublicFormProvider formId="61540ece3d4a6e50ac0cc6ff">
-        <FormSectionsProvider>{storyFn()}</FormSectionsProvider>
-      </PublicFormProvider>
+      <MemoryRouter initialEntries={['/12345']}>
+        <PublicFormProvider formId="61540ece3d4a6e50ac0cc6ff">
+          <FormSectionsProvider>{storyFn()}</FormSectionsProvider>
+        </PublicFormProvider>
+      </MemoryRouter>
     ),
   ],
   parameters: {

@@ -6,6 +6,8 @@ import { FormAuthType } from '~shared/types/form/form'
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
 import { FormAuth } from '../FormAuth'
+// TODO #4279: Remove after React rollout is complete
+import { PublicSwitchEnvMessage } from '../PublicSwitchEnvMessage'
 
 import { FormFields } from './FormFields'
 import { FormFieldsSkeleton } from './FormFieldsSkeleton'
@@ -47,6 +49,7 @@ export const FormFieldsContainer = (): JSX.Element | null => {
     <Flex justify="center">
       {isAuthRequired ? null : <SectionSidebar />}
       <Box w="100%" minW={0} h="fit-content" maxW="57rem">
+        <PublicSwitchEnvMessage />
         {renderFields}
       </Box>
       {isAuthRequired ? null : <Spacer />}
