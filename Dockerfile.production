@@ -1,4 +1,4 @@
-FROM node:fermium-alpine3.13 AS node-modules-builder
+FROM node:fermium-alpine3.16 AS node-modules-builder
 # node-modules-builder stage installs/compiles the node_modules folder
 # Python version must be specified starting in alpine3.12
 RUN apk update && apk upgrade && \
@@ -11,7 +11,7 @@ RUN npm ci
 COPY . /opt/formsg
 
 # This stage builds the final container
-FROM node:fermium-alpine3.13
+FROM node:fermium-alpine3.16
 LABEL maintainer=FormSG<formsg@data.gov.sg>
 WORKDIR /opt/formsg
 
