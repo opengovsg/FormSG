@@ -17,7 +17,7 @@ export const PublicSwitchEnvMessage = (): JSX.Element => {
       >
         <Text>
           You’re filling this form on the new FormSG. If you have trouble
-          submitting,{' '}
+          submitting,
           <Button variant="link" onClick={onOpen}>
             <Text as="u">switch to the original one here.</Text>
           </Button>

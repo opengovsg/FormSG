@@ -13,10 +13,10 @@ export const AdminSwitchEnvMessage = (): JSX.Element => {
     <>
       <InlineMessage>
         <Text>
-          Welcome to the new FormSG! You can still{' '}
+          Welcome to the new FormSG! You can still
           <Button variant="link" onClick={onOpen}>
             <Text as="u">switch to the original one,</Text>
-          </Button>{' '}
+          </Button>
           which is available until 28 May 2022.
         </Text>
       </InlineMessage>
