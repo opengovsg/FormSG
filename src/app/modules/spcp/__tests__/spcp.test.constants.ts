@@ -176,4 +176,20 @@ export const MOCK_DECODED_QUERY =
   '?61a9bb48ffca22004a307915=blahblah123&61a9bb53ffca22004a307921=blahblah456'
 
 export const MOCK_SP_OIDC_AUTHORISATION_CODE = 'abcdefg'
-export const MOCK_CP_OIDC_AUTHORISATION_CODE = 'abcdefg'
+export const MOCK_CP_OIDC_AUTHORISATION_CODE = 'defhijk'
+export const MOCK_OIDC_STATE = `${MOCK_DESTINATION}-${MOCK_REMEMBER_ME}`
+export const MOCK_NRIC = 'S1234567C'
+export const MOCK_UEN = 'A123456789X'
+export const MOCK_CP_OIDC_EXTRACTED_NDI_PAYLOAD = {
+  userName: MOCK_NRIC,
+  userInfo: MOCK_UEN,
+}
+export const MOCK_SP_OIDC_JWT_PAYLOAD = {
+  userName: MOCK_NRIC,
+  rememberMe: true,
+}
+export const MOCK_CP_OIDC_JWT_PAYLOAD = {
+  userName: MOCK_NRIC,
+  userInfo: MOCK_UEN,
+  rememberMe: true,
+}
