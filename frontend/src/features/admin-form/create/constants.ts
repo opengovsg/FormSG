@@ -23,6 +23,7 @@ import {
   BiHeartCircle,
   BiHome,
   BiHomeAlt,
+  BiHomeCircle,
   BiHomeHeart,
   BiIdCard,
   BiImage,
@@ -246,12 +247,12 @@ export const MYINFO_FIELD_TO_DRAWER_META: {
   },
   [MyInfoAttribute.RegisteredAddress]: {
     label: 'Registered Address',
-    icon: BiBuildings,
+    icon: BiHomeCircle,
     isSubmitted: true,
   },
   [MyInfoAttribute.MobileNo]: {
     label: 'Mobile Number',
-    icon: BiBuildings,
+    icon: BiMobile,
     isSubmitted: true,
   },
   [MyInfoAttribute.Occupation]: {
