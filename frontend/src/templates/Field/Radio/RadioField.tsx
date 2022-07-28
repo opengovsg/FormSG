@@ -82,14 +82,8 @@ export const RadioField = ({
             value={value}
             onChange={(nextValue) => {
               onChange(nextValue)
-              // Trigger validation of others input if value is becoming or
-              // not-becoming the special radio input value.
-              if (
-                nextValue === RADIO_OTHERS_INPUT_VALUE ||
-                value === RADIO_OTHERS_INPUT_VALUE
-              ) {
-                trigger(othersInputName)
-              }
+              // Trigger validation of others input if Other radio is selected.
+              if (value === RADIO_OTHERS_INPUT_VALUE) trigger(othersInputName)
             }}
           >
             {schema.fieldOptions.map((option, idx) => (
