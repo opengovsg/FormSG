@@ -26,6 +26,7 @@ import Textarea from '~components/Textarea'
 import { useUser } from '~features/user/queries'
 
 import { useEnvMutations } from './mutations'
+import { useSwitchEnvFeedbackFormView } from './queries'
 
 export interface SwitchEnvModalProps {
   isOpen: boolean
@@ -50,11 +51,14 @@ export const SwitchEnvFeedbackModal = ({
   const url = window.location.href
   const [showThanksPage, setShowThanksPage] = useState<boolean>(false)
 
+  // get the feedback form data
+  const { data: feedbackForm } = useSwitchEnvFeedbackFormView()
+
   const {
     submitSwitchEnvFormFeedbackMutation,
     adminSwitchEnvMutation,
     publicSwitchEnvMutation,
-  } = useEnvMutations()
+  } = useEnvMutations(feedbackForm)
 
   const submitFeedback = useCallback(
     (formInputs: switchEnvFeedbackFormBodyDto) => {
@@ -134,7 +138,7 @@ export const SwitchEnvFeedbackModal = ({
                     Please tell us what we can improve, before you switch to the
                     original one.
                   </FormLabel>
-                  <Textarea {...register('feedback')} ref={initialRef} />
+                  <Textarea {...register('feedback')} tabIndex={1} />
                 </FormControl>
                 <FormControl>
                   {user ? (

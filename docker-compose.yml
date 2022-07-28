@@ -98,6 +98,7 @@ services:
       - SES_USER
       - OTP_LIFE_SPAN
       - AWS_REGION
+      - REACT_TO_ANGULAR_FEEDBACK_FORM_ID=62da6a569ee8e90143b5da26
   mockpass:
     build: https://github.com/opengovsg/mockpass.git
     depends_on:

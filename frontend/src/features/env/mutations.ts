@@ -2,7 +2,7 @@
 import { useMutation } from 'react-query'
 import { useParams } from 'react-router-dom'
 
-import { switchEnvFeedbackFormBodyDto } from '~shared/types'
+import { PublicFormViewDto, switchEnvFeedbackFormBodyDto } from '~shared/types'
 
 import {
   adminChooseEnvironment,
@@ -11,7 +11,9 @@ import {
 
 import { submitSwitchEnvFormFeedback } from './EnvService'
 
-export const useEnvMutations = () => {
+export const useEnvMutations = (
+  feedbackForm: PublicFormViewDto | undefined,
+) => {
   const { formId } = useParams()
 
   const publicSwitchEnvMutation = useMutation(() => publicChooseEnvironment(), {
@@ -32,6 +34,7 @@ export const useEnvMutations = () => {
     (args: switchEnvFeedbackFormBodyDto) => {
       return submitSwitchEnvFormFeedback({
         formInputs: args,
+        feedbackForm: feedbackForm,
       })
     },
   )

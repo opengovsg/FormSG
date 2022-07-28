@@ -321,6 +321,12 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
       default: 'v2-qa-ui',
       env: 'REACT_MIGRATION_QA_COOKIE_NAME',
     },
+    reactToAngularFeedbackFormId: {
+      doc: 'Form ID of the React to Angular bug report feedback form',
+      format: String,
+      default: '',
+      env: 'REACT_TO_ANGULAR_FEEDBACK_FORM_ID',
+    },
   },
 }
 

@@ -1,6 +1,7 @@
-import { switchEnvFeedbackFormBodyDto } from '~shared/types'
+import { PublicFormViewDto, switchEnvFeedbackFormBodyDto } from '~shared/types'
 import { ClientEnvVars, SuccessMessageDto } from '~shared/types/core'
 
+import { transformAllIsoStringsToDate } from '~utils/date'
 import { ApiService } from '~services/ApiService'
 
 import { PUBLIC_FORMS_ENDPOINT } from '~features/public-form/PublicFormService'
@@ -10,30 +11,27 @@ export const getClientEnvVars = async (): Promise<ClientEnvVars> => {
 }
 
 // TODO #4279: Remove after React rollout is complete
-// formId is different depending on the environment
-// TODO: Change formId depending on which site it's pushed to
-// prod: '62c3e0e417122f0012ec972e', staging: '62da5fc8bb546f00126ff457', staging-alt2: '62dfb373192e24001269171d'
-const formId =
-  process.env.NODE_ENV === 'production'
-    ? '62da5fc8bb546f00126ff457'
-    : '62da6a569ee8e90143b5da26'
-
 const createFeedbackResponsesArray = (
   formInputs: switchEnvFeedbackFormBodyDto,
+  feedbackForm: PublicFormViewDto | undefined,
 ) => {
   const responses = []
   for (const [key, value] of Object.entries(formInputs)) {
     const entry = {
       _id:
         key === 'url'
-          ? '62df452222274b0074f79b12'
+          ? feedbackForm?.form.form_fields[0]._id
           : key === 'feedback'
-          ? '62da6a679ee8e90143b5da35'
-          : '62da6a6f9ee8e90143b5da40',
+          ? feedbackForm?.form.form_fields[1]._id
+          : feedbackForm?.form.form_fields[2]._id,
       question: key,
       answer: value ?? '',
       fieldType:
-        key === 'url' ? 'textfield' : key === 'feedback' ? 'textarea' : 'email',
+        key === 'url'
+          ? feedbackForm?.form.form_fields[0].fieldType
+          : key === 'feedback'
+          ? feedbackForm?.form.form_fields[1].fieldType
+          : feedbackForm?.form.form_fields[2].fieldType,
     }
     responses.push(entry)
   }
@@ -42,8 +40,9 @@ const createFeedbackResponsesArray = (
 
 const createSwitchFeedbackSubmissionFormData = (
   formInputs: switchEnvFeedbackFormBodyDto,
+  feedbackForm: PublicFormViewDto | undefined,
 ) => {
-  const responses = createFeedbackResponsesArray(formInputs)
+  const responses = createFeedbackResponsesArray(formInputs, feedbackForm)
   // convert content to FormData object
   const formData = new FormData()
   formData.append('body', JSON.stringify({ responses }))
@@ -52,18 +51,36 @@ const createSwitchFeedbackSubmissionFormData = (
 }
 
 /**
- * Post feedback for environment switch form
+ * Post feedback for the switch environment feedback form
  * @param formInputs object containing the feedback
  * @returns success message
  */
 export const submitSwitchEnvFormFeedback = async ({
   formInputs,
+  feedbackForm,
 }: {
   formInputs: switchEnvFeedbackFormBodyDto
+  feedbackForm: PublicFormViewDto | undefined
 }): Promise<SuccessMessageDto> => {
-  const formData = createSwitchFeedbackSubmissionFormData(formInputs)
+  const formData = createSwitchFeedbackSubmissionFormData(
+    formInputs,
+    feedbackForm,
+  )
   return ApiService.post<SuccessMessageDto>(
-    `${PUBLIC_FORMS_ENDPOINT}/${formId}/submissions/email?captchaResponse=null`,
+    `${PUBLIC_FORMS_ENDPOINT}/submissions/email/switchenvfeedback?captchaResponse=null`,
     formData,
   ).then(({ data }) => data)
+}
+
+/**
+ * Gets public view of the switch environment feedback form, along with any
+ * identify information obtained from Singpass/Corppass/MyInfo.
+ * @returns Public view of form, with additional identify information
+ */
+export const getSwitchEnvFormView = async (): Promise<PublicFormViewDto> => {
+  return ApiService.get<PublicFormViewDto>(
+    `${PUBLIC_FORMS_ENDPOINT}/switchenvfeedback`,
+  )
+    .then(({ data }) => data)
+    .then(transformAllIsoStringsToDate)
 }

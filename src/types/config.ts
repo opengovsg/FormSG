@@ -58,6 +58,7 @@ export type ReactMigrationConfig = {
   respondentCookieName: string
   adminCookieName: string
   qaCookieName: string
+  reactToAngularFeedbackFormId: string
 }
 
 export type Config = {
@@ -162,6 +163,7 @@ export interface IOptionalVarsSchema {
     respondentCookieName: string
     adminCookieName: string
     qaCookieName: string
+    reactToAngularFeedbackFormId: string
   }
 }
 
