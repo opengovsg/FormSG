@@ -95,7 +95,7 @@ export const DateInput = forwardRef<DateInputProps, 'input'>(
           initialFocusRef={initialFocusRef}
           isLazy
         >
-          {({ isOpen }) => (
+          {({ isOpen, onClose }) => (
             <>
               <PopoverAnchor>
                 <Input
@@ -157,7 +157,10 @@ export const DateInput = forwardRef<DateInputProps, 'input'>(
                       colorScheme={colorScheme}
                       date={datePickerDate}
                       isDateUnavailable={isDateUnavailable}
-                      onSelectDate={handleDatepickerSelection}
+                      onSelectDate={(e) => {
+                        handleDatepickerSelection(e)
+                        onClose()
+                      }}
                       ref={initialFocusRef}
                     />
                   </PopoverBody>
