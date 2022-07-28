@@ -8,12 +8,6 @@ const compileWorkspaceModel = (db: Mongoose): IWorkspaceModel => {
   const schemaOptions = {
     id: false,
     timestamps: true,
-    toObject: {
-      virtuals: true,
-    },
-    toJSON: {
-      virtuals: true,
-    },
   }
   const WorkspaceSchema = new Schema<IWorkspaceSchema, IWorkspaceModel>(
     {
@@ -44,10 +38,6 @@ const compileWorkspaceModel = (db: Mongoose): IWorkspaceModel => {
 
   WorkspaceSchema.index({
     admin: 1,
-  })
-
-  WorkspaceSchema.virtual('count').get(function (this: IWorkspaceSchema) {
-    return this.formIds.length
   })
 
   WorkspaceSchema.statics.getWorkspaces = async function (

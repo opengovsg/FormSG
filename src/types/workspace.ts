@@ -8,7 +8,6 @@ type IWorkspace = {
   title: string
   admin: IUserSchema['_id']
   formIds: IFormSchema['_id'][]
-  count: number
 }
 
 export interface IWorkspaceSchema extends IWorkspace, Document {}
