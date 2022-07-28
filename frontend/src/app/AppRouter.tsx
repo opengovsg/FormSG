@@ -51,7 +51,6 @@ const WithSuspense = ({ children }: { children: React.ReactNode }) => (
 )
 
 export const AppRouter = (): JSX.Element => {
-  // code here?
   return (
     <WithSuspense>
       <Routes>
