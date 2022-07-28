@@ -297,7 +297,12 @@ export const EditDate = ({ field }: EditDateProps): JSX.Element => {
               name="invalidDays"
               rules={{
                 validate: (val) => {
-                  return !!val.length || 'Error placeholder'
+                  const validDaysSet = new Set(val)
+                  return validDaysSet.has(
+                    InvalidDaysOptions.SingaporePublicHolidays,
+                  )
+                    ? val.length >= 2 || 'Error placeholder'
+                    : val.length >= 1 || 'Error placeholder'
                 },
               }}
               render={({ field: { ref, ...field } }) => (
