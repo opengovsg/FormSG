@@ -131,6 +131,11 @@ export const PreviewFormProvider = ({
       return []
     }
     const sections: SidebarSectionMeta[] = []
+    if (form.startPage.paragraph)
+      sections.push({
+        title: 'Instructions',
+        _id: 'instructions',
+      })
     form.form_fields.forEach((f) => {
       if (f.fieldType !== BasicField.Section) return
       sections.push({
@@ -138,7 +143,6 @@ export const PreviewFormProvider = ({
         _id: f._id,
       })
     })
-
     return sections
   }, [cachedDto, isAuthRequired])
 
