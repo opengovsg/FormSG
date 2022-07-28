@@ -325,6 +325,24 @@ describe('Date field validation', () => {
     )
   })
 
+  it('should allow dates if invalid day array is empty', () => {
+    const formField = generateDefaultField(BasicField.Date, {
+      dateValidation: {
+        selectedDateValidation: null,
+        customMinDate: null,
+        customMaxDate: null,
+      },
+      invalidDays: [],
+    })
+    const response = generateNewSingleAnswerResponse(BasicField.Date, {
+      answer: '26 Jul 2022',
+    })
+
+    const validateResult = validateField('formId', formField, response)
+    expect(validateResult.isOk()).toBe(true)
+    expect(validateResult._unsafeUnwrap()).toEqual(true)
+  })
+
   it('should allow dates that is not an invalid day', () => {
     const formField = generateDefaultField(BasicField.Date, {
       dateValidation: {
@@ -335,11 +353,12 @@ describe('Date field validation', () => {
       invalidDays: [InvalidDaysOptions.Wednesday, InvalidDaysOptions.Thursday],
     })
     const response = generateNewSingleAnswerResponse(BasicField.Date, {
-      answer: '29 July 2022',
+      answer: '29 Jul 2022',
     })
 
     const validateResult = validateField('formId', formField, response)
-    expect(validateResult.isErr()).toBe(true)
+    expect(validateResult.isOk()).toBe(true)
+    expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
 
   it('should disallow dates that is an invalid day', () => {
@@ -352,10 +371,13 @@ describe('Date field validation', () => {
       invalidDays: [InvalidDaysOptions.Wednesday, InvalidDaysOptions.Thursday],
     })
     const response = generateNewSingleAnswerResponse(BasicField.Date, {
-      answer: '27 July 2022',
+      answer: '27 Jul 2022',
     })
 
     const validateResult = validateField('formId', formField, response)
     expect(validateResult.isErr()).toBe(true)
+    expect(validateResult._unsafeUnwrapErr()).toEqual(
+      new ValidateFieldError('Invalid answer submitted'),
+    )
   })
 })

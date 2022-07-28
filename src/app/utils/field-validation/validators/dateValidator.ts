@@ -110,6 +110,9 @@ const makeDateValidator: DateValidatorConstructor = (dateField) => {
   }
 }
 
+/**
+ * Returns the number representation of a day of the week
+ */
 const convertInvalidDayToNumber = (invalidDay: InvalidDaysOptions): number => {
   switch (invalidDay) {
     case InvalidDaysOptions.Sunday:
@@ -131,45 +134,56 @@ const convertInvalidDayToNumber = (invalidDay: InvalidDaysOptions): number => {
   }
 }
 
-const convertInvalidDayToNumberSet = (
+/**
+ * Convert the days of the week in the invalidDays array
+ * to a number array representing the number representation
+ * of the corresponding day of the week
+ */
+const convertInvalidDayOfTheWeekToNumberSet = (
   invalidDays: InvalidDaysOptions[],
 ): Set<number> => {
+  if (invalidDays.length === 0) {
+    return new Set()
+  }
+
   const invaliDaysNumberArray = invalidDays.map((invalidDay) =>
     convertInvalidDayToNumber(invalidDay),
   )
   return new Set(invaliDaysNumberArray)
 }
 
-const invalidDaysValidator: DateValidatorConstructor =
+// TODO: Add logic to validate if date response is a Singapore public holiday
+const noPublicHolidayValidator: DateValidator = (response) => {
+  return right(response)
+}
+
+const makeInvalidDayOfTheWeekValidator: DateValidatorConstructor =
   (dateField) => (response) => {
-    const invalidDays = dateField.invalidDays
-
-    if (!invalidDays) {
-      return right(response)
-    }
-
-    const selectedInvalidDaysSet = new Set(invalidDays)
     const { answer } = response
 
-    /** TODO: Add logic to validate date against Singapore public holidays */
-    if (
-      selectedInvalidDaysSet.has(InvalidDaysOptions.SingaporePublicHolidays)
-    ) {
-      return right(response)
-    }
-
-    // Validate date against list of invalid days set for date field
-    const selectedDayNumberFormat: number = +format(new Date(answer), 'i')
-    const invalidDayNumberSet = convertInvalidDayToNumberSet(invalidDays)
-
-    if (invalidDayNumberSet.has(-1)) {
-      return left('DateValidator:\t invalid day is not a valid day option')
-    }
-
-    return invalidDayNumberSet.has(selectedDayNumberFormat)
-      ? left('DateValidator:\t answer is an invalid day')
+    // Convert invalidDays, containing only days of the week, to a Set<number>
+    const invalidDaysOfTheWeekSet = convertInvalidDayOfTheWeekToNumberSet(
+      dateField.invalidDays ?? [],
+    )
+    // Convert date response to a ISO day of the week number format
+    const dateResponseNumberFormat = parseInt(format(new Date(answer), 'i'))
+    // Validate date response
+    return invalidDaysOfTheWeekSet.has(dateResponseNumberFormat)
+      ? left(`DateValidator:\t answer is an invalid day`)
       : right(response)
   }
+
+const invalidDaysValidator: DateValidatorConstructor = (dateField) => {
+  const selectedInvalidDaysSet = new Set(dateField.invalidDays)
+
+  // Check if Singapore public holiday is a value in invalidDays
+  if (selectedInvalidDaysSet.has(InvalidDaysOptions.SingaporePublicHolidays)) {
+    // TODO: Validate if date response is a Singapore public holiday
+    return noPublicHolidayValidator
+  }
+
+  return makeInvalidDayOfTheWeekValidator(dateField)
+}
 
 /**
  * Returns a validation function for a date field when called.
