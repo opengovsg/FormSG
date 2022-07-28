@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { Box, Flex } from '@chakra-ui/react'
+import { Box } from '@chakra-ui/react'
 
 import { FormAuthType } from '~shared/types/form/form'
 

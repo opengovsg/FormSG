@@ -33,7 +33,12 @@ export const FormInstructions = forwardRef<FormInstructionsProps, 'div'>(
             <Text textStyle="h2" color={sectionColor}>
               Instructions
             </Text>
-            <Text textStyle="body-1" color="secondary.700" mt="1rem">
+            <Text
+              textStyle="body-1"
+              color="secondary.700"
+              mt="1rem"
+              whiteSpace="pre-line"
+            >
               {content}
             </Text>
           </Box>
