@@ -297,12 +297,7 @@ export const EditDate = ({ field }: EditDateProps): JSX.Element => {
               name="invalidDays"
               rules={{
                 validate: (val) => {
-                  const validDaysSet = new Set(val)
-                  return validDaysSet.has(
-                    InvalidDaysOptions.SingaporePublicHolidays,
-                  )
-                    ? val.length >= 2
-                    : val.length >= 1
+                  return !!val.length || 'Error placeholder'
                 },
               }}
               render={({ field: { ref, ...field } }) => (
@@ -330,6 +325,9 @@ export const EditDate = ({ field }: EditDateProps): JSX.Element => {
                 </CheckboxGroup>
               )}
             />
+            <FormErrorMessage>
+              {get(errors, 'invalidDays.message')}
+            </FormErrorMessage>
           </FormControl>
         ) : null}
       </Stack>
