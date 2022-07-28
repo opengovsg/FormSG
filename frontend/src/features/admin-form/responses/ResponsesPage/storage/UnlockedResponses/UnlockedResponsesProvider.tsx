@@ -81,17 +81,30 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
     submissionId,
   })
 
+  // Track the pages to use for various metadata.
+  const pages = useMemo(() => {
+    // Use current page if it exists, else use last navigated page.
+    const pageToUse = currentPage ?? lastNavPage ?? 1
+
+    return {
+      prev: Math.max(pageToUse - 1, 0),
+      current: pageToUse,
+      next: pageToUse + 1,
+    }
+  }, [currentPage, lastNavPage])
+
   const { data: { count, metadata = [] } = {}, isLoading } = useFormResponses({
-    page: lastNavPage ?? 1,
+    page: pages.current,
   })
+
   const {
     data: { metadata: prevMetadata = [] } = {},
     isFetching: isPrevFetching,
-  } = useFormResponses({ page: currentPage ? 0 : lastNavPage ?? 0 })
+  } = useFormResponses({ page: pages.prev })
   const {
     data: { metadata: nextMetadata = [] } = {},
     isFetching: isNextFetching,
-  } = useFormResponses({ page: currentPage ? 0 : lastNavPage ?? 2 })
+  } = useFormResponses({ page: pages.next })
 
   const totalPageCount = useMemo(
     () => (count ? Math.ceil(count / PAGE_SIZE) : 0),
