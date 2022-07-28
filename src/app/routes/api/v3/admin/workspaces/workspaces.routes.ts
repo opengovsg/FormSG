@@ -24,6 +24,7 @@ WorkspacesRouter.route('/')
    *
    * @returns 200 with a list of workspaces owned by the user
    * @returns 401 when user is not logged in
+   * @returns 409 when a database conflict error occurs
    * @returns 500 when database errors occur
    */
   .get(WorkspaceController.getWorkspaces)

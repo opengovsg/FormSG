@@ -5,7 +5,7 @@ import * as WorkspaceService from 'src/app/modules/workspace/workspace.service'
 
 import expressHandler from 'tests/unit/backend/helpers/jest-express'
 
-import { DatabaseError } from '../../core/core.errors'
+import { DatabaseConflictError, DatabaseError } from '../../core/core.errors'
 import * as WorkspaceController from '../workspace.controller'
 
 jest.mock('../workspace.service')
@@ -29,6 +29,18 @@ describe('workspace.controller', () => {
       await WorkspaceController.getWorkspaces(MOCK_REQ, mockRes, jest.fn())
 
       expect(mockRes.json).toHaveBeenCalledWith([])
+    })
+
+    it('should return 409 when database conflict error occurs', async () => {
+      const mockRes = expressHandler.mockResponse()
+      const mockErrorString = 'something went wrong'
+      MockWorkspaceService.getWorkspaces.mockReturnValueOnce(
+        errAsync(new DatabaseConflictError(mockErrorString)),
+      )
+      await WorkspaceController.getWorkspaces(MOCK_REQ, mockRes, jest.fn())
+
+      expect(mockRes.status).toBeCalledWith(409)
+      expect(mockRes.json).toBeCalledWith({ message: mockErrorString })
     })
 
     it('should return 500 when database error occurs', async () => {
