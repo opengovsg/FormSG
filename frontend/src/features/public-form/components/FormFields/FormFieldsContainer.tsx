@@ -13,7 +13,13 @@ import { FormFields } from './FormFields'
 import { FormFieldsSkeleton } from './FormFieldsSkeleton'
 import { SectionSidebar } from './SectionSidebar'
 
-export const FormFieldsContainer = (): JSX.Element | null => {
+interface FormFieldsContainerProps {
+  isPreview?: boolean
+}
+
+export const FormFieldsContainer = ({
+  isPreview,
+}: FormFieldsContainerProps): JSX.Element | null => {
   const { form, isAuthRequired, isLoading, handleSubmitForm, submissionData } =
     usePublicFormContext()
 
@@ -49,7 +55,8 @@ export const FormFieldsContainer = (): JSX.Element | null => {
     <Flex justify="center">
       {isAuthRequired ? null : <SectionSidebar />}
       <Box w="100%" minW={0} h="fit-content" maxW="57rem">
-        <PublicSwitchEnvMessage />
+        {/* TODO(#4279): Remove switch env message on full rollout */}
+        {!isPreview && <PublicSwitchEnvMessage />}
         {renderFields}
       </Box>
       {isAuthRequired ? null : <Spacer />}
