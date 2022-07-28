@@ -94,7 +94,7 @@ export const AdminNavBar = ({ isMenuOpen }: AdminNavBarProps): JSX.Element => {
   )
 
   // Only want to show the modal if user id exists but user has no emergency contact
-  const shouldShowModal = user && !!user._id !== !!user.contact
+  const shouldShowModal = user && user._id && !user.contact
 
   const emergencyContactKey = shouldShowModal
     ? EMERGENCY_CONTACT_KEY_PREFIX + user._id
