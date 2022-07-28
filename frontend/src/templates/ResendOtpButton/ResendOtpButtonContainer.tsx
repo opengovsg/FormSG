@@ -21,7 +21,7 @@ export const ResendOtpButtonContainer = ({
   ...buttonProps
 }: ResendOtpButtonContainerProps): JSX.Element => {
   // The counter
-  const [timer, setTimer] = useState(0)
+  const [timer, setTimer] = useState(propTimer)
 
   const { isLoading, mutate } = useMutation(onResendOtp, {
     // On success, restart the timer before this can be called again.
