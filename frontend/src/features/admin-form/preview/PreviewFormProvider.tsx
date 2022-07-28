@@ -121,8 +121,11 @@ export const PreviewFormProvider = ({
   useTimeout(generateVfnExpiryToast, expiryInMs)
 
   const isAuthRequired = useMemo(
-    () => !!cachedDto?.form && cachedDto.form.authType !== FormAuthType.NIL,
-    [cachedDto?.form],
+    () =>
+      !!cachedDto?.form &&
+      cachedDto.form.authType !== FormAuthType.NIL &&
+      !cachedDto.spcpSession,
+    [cachedDto?.form, cachedDto?.spcpSession],
   )
 
   const sectionScrollData = useMemo(() => {
