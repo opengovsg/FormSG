@@ -1,7 +1,11 @@
+import { merge } from 'lodash'
+import { PartialDeep } from 'type-fest'
+
 import { SubmissionResponseDto } from '~shared/types'
 import {
   AdminFormDto,
   AdminFormViewDto,
+  FormAuthType,
   FormPermissionsDto,
   PermissionsUpdateDto,
   PreviewFormViewDto,
@@ -11,6 +15,7 @@ import {
 import { transformAllIsoStringsToDate } from '~utils/date'
 import { ApiService } from '~services/ApiService'
 
+import { augmentWithMyInfoDisplayValue } from '~features/myinfo/utils'
 import {
   SubmitEmailFormArgs,
   SubmitStorageFormArgs,
@@ -19,6 +24,8 @@ import {
   createEmailSubmissionFormData,
   createEncryptedSubmissionData,
 } from '~features/public-form/utils'
+
+import { PREVIEW_MOCK_UINFIN } from '../preview/constants'
 
 // endpoint exported for testing
 export const ADMIN_FORM_ENDPOINT = 'admin/forms'
@@ -47,7 +54,19 @@ export const previewForm = async (
 ): Promise<PreviewFormViewDto> => {
   return ApiService.get<PreviewFormViewDto>(
     `${ADMIN_FORM_ENDPOINT}/${formId}/preview`,
-  ).then(({ data }) => data)
+  ).then(({ data }) => {
+    const mockedSpcpSession: PreviewFormViewDto['spcpSession'] =
+      data.spcpSession ?? data.form.authType !== FormAuthType.NIL
+        ? { userName: PREVIEW_MOCK_UINFIN }
+        : undefined
+    const partialMerge: PartialDeep<PreviewFormViewDto> = {
+      form: {
+        form_fields: data.form.form_fields.map(augmentWithMyInfoDisplayValue),
+      },
+      spcpSession: mockedSpcpSession,
+    }
+    return merge(data, partialMerge)
+  })
 }
 
 export const getFreeSmsQuota = async (formId: string) => {

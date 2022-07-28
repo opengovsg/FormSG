@@ -184,7 +184,7 @@ export type PublicFormViewDto = {
   myInfoError?: true
 }
 
-export type PreviewFormViewDto = Pick<PublicFormViewDto, 'form'>
+export type PreviewFormViewDto = Pick<PublicFormViewDto, 'form' | 'spcpSession'>
 
 export type SmsCountsDto = {
   quota: number
