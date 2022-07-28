@@ -12,7 +12,7 @@ const Workspace = getWorkspaceModel(mongoose)
 const MOCK_USER_ID = new ObjectId()
 const MOCK_FORM_ID = new ObjectId()
 const MOCK_WORKSPACE_ID = new ObjectId()
-const MOCK_WORKSPACE_FIELDS = {
+const MOCK_WORKSPACE_DOC = {
   _id: MOCK_WORKSPACE_ID,
   title: 'Workspace1',
   admin: MOCK_USER_ID,
@@ -29,7 +29,7 @@ describe('Workspace Model', () => {
       userId: MOCK_USER_ID,
     })
 
-    await Workspace.create(MOCK_WORKSPACE_FIELDS)
+    await Workspace.create(MOCK_WORKSPACE_DOC)
     FORM_ADMIN_USER = adminUser
   })
   afterEach(async () => await dbHandler.clearDatabase())

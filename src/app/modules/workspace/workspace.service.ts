@@ -1,12 +1,31 @@
+import mongoose from 'mongoose'
 import { okAsync, ResultAsync } from 'neverthrow'
+import { WorkspaceDto } from 'shared/types/workspace'
 
+import { createLoggerWithLabel } from '../../config/logger'
+import { getWorkspaceModel } from '../../models/workspace.server.model'
 import { DatabaseError } from '../core/core.errors'
-import { MissingUserError } from '../user/user.errors'
+
+const logger = createLoggerWithLabel(module)
+const WorkspaceModel = getWorkspaceModel(mongoose)
 
 export const getWorkspaces = (
   userId: string,
-): ResultAsync<any, MissingUserError | DatabaseError> => {
-  return okAsync([userId])
+): ResultAsync<WorkspaceDto[], DatabaseError> => {
+  return ResultAsync.fromPromise(
+    WorkspaceModel.getWorkspaces(userId),
+    (error) => {
+      logger.error({
+        message: 'Database error when retrieving workspaces',
+        meta: {
+          action: 'getWorkspaces',
+          userId,
+        },
+        error,
+      })
+      return new DatabaseError()
+    },
+  )
 }
 
 export const createWorkspace = (

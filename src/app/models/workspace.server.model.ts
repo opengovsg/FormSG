@@ -1,10 +1,14 @@
 import { Mongoose, Schema } from 'mongoose'
 
-import { IWorkspaceModel, IWorkspaceSchema } from '../../types'
+import { IUserSchema, IWorkspaceModel, IWorkspaceSchema } from '../../types'
 
 export const WORKSPACE_SCHEMA_ID = 'Workspace'
 
 const compileWorkspaceModel = (db: Mongoose): IWorkspaceModel => {
+  const schemaOptions = {
+    id: false,
+    timestamps: true,
+  }
   const WorkspaceSchema = new Schema<IWorkspaceSchema, IWorkspaceModel>(
     {
       title: {
@@ -29,12 +33,18 @@ const compileWorkspaceModel = (db: Mongoose): IWorkspaceModel => {
         message: "Failed to update workspace document's formIds",
       },
     },
-    { timestamps: true },
+    schemaOptions,
   )
 
   WorkspaceSchema.index({
     admin: 1,
   })
+
+  WorkspaceSchema.statics.getWorkspaces = async function (
+    admin: IUserSchema['_id'],
+  ) {
+    return this.find({ admin: admin }).sort('title').exec()
+  }
 
   return db.model<IWorkspaceSchema, IWorkspaceModel>(
     WORKSPACE_SCHEMA_ID,

@@ -1,4 +1,5 @@
 import { Document, Model } from 'mongoose'
+import { WorkspaceDto } from 'shared/types/workspace'
 
 import { IFormSchema } from './form'
 import { IUserSchema } from './user'
@@ -9,19 +10,8 @@ type IWorkspace = {
   formIds: IFormSchema['_id'][]
 }
 
-export interface IWorkspaceSchema extends IWorkspace, Document {
-  created?: Date
-  lastModified?: Date
-}
-
-interface IWorkspaceDocument extends IWorkspaceSchema {
-  title: Required<IWorkspaceSchema['title']>
-  admin: Required<IWorkspaceSchema['admin']>
-  formIds: Required<IWorkspaceSchema['formIds']>
-}
+export interface IWorkspaceSchema extends IWorkspace, Document {}
 
 export interface IWorkspaceModel extends Model<IWorkspaceSchema> {
-  getWorkspaces(admin: IUserSchema['_id']): Promise<IWorkspaceDocument[]>
-
-  // TODO (hans): Add workspace methods here
+  getWorkspaces(admin: IUserSchema['_id']): Promise<WorkspaceDto[]>
 }
