@@ -1,3 +1,4 @@
+import tracer from 'dd-trace'
 import { ok, okAsync, ResultAsync } from 'neverthrow'
 
 import {
@@ -76,16 +77,26 @@ const submitEmailModeForm: ControllerHandler<
         })
         return error
       })
-      .andThen((form) =>
-        EmailSubmissionService.checkFormIsEmailMode(form).mapErr((error) => {
-          logger.warn({
-            message: 'Attempt to submit non-email-mode form',
-            meta: logMeta,
-            error,
-          })
-          return error
-        }),
-      )
+      .andThen((form) => {
+        const span = tracer.scope().active()
+
+        if (span) {
+          span.setTag('form.id', formId)
+          span.setTag('form.adminid', `${form.admin._id}`)
+          span.setTag('form.agencyid', `${form.admin.agency._id}`)
+        }
+
+        return EmailSubmissionService.checkFormIsEmailMode(form).mapErr(
+          (error) => {
+            logger.warn({
+              message: 'Attempt to submit non-email-mode form',
+              meta: logMeta,
+              error,
+            })
+            return error
+          },
+        )
+      })
       .andThen((form) =>
         // Check that form is public
         // If it is, pass through and return the original form
