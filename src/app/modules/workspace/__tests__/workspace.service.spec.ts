@@ -144,13 +144,11 @@ describe('workspace.service', () => {
       const actual = await WorkspaceService.updateWorkspaceTitle({
         workspaceId: mockWorkspace._id,
         title: mockWorkspace.title,
-        userId: mockWorkspace.admin,
       })
 
       expect(updateSpy).toHaveBeenCalledWith({
         workspaceId: mockWorkspace._id,
         title: mockWorkspace.title,
-        admin: mockWorkspace.admin,
       })
       expect(actual.isOk()).toEqual(true)
       expect(actual._unsafeUnwrap()).toEqual(mockWorkspace)
@@ -165,13 +163,11 @@ describe('workspace.service', () => {
       const actual = await WorkspaceService.updateWorkspaceTitle({
         workspaceId: mockWorkspace._id,
         title: mockWorkspace.title,
-        userId: mockWorkspace.admin,
       })
 
       expect(updateSpy).toHaveBeenCalledWith({
         workspaceId: mockWorkspace._id,
         title: mockWorkspace.title,
-        admin: mockWorkspace.admin,
       })
       expect(actual._unsafeUnwrapErr()).toBeInstanceOf(DatabaseValidationError)
     })
@@ -184,13 +180,11 @@ describe('workspace.service', () => {
       const actual = await WorkspaceService.updateWorkspaceTitle({
         workspaceId: mockWorkspace._id,
         title: mockWorkspace.title,
-        userId: mockWorkspace.admin,
       })
 
       expect(updateSpy).toHaveBeenCalledWith({
         workspaceId: mockWorkspace._id,
         title: mockWorkspace.title,
-        admin: mockWorkspace.admin,
       })
       expect(actual._unsafeUnwrapErr()).toBeInstanceOf(WorkspaceNotFoundError)
     })
@@ -204,13 +198,11 @@ describe('workspace.service', () => {
       const actual = await WorkspaceService.updateWorkspaceTitle({
         workspaceId: mockWorkspace._id,
         title: mockWorkspace.title,
-        userId: mockWorkspace.admin,
       })
 
       expect(updateSpy).toHaveBeenCalledWith({
         workspaceId: mockWorkspace._id,
         title: mockWorkspace.title,
-        admin: mockWorkspace.admin,
       })
       expect(actual.isErr()).toEqual(true)
       expect(actual._unsafeUnwrapErr()).toEqual(

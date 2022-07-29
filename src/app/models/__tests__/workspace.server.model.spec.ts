@@ -180,7 +180,6 @@ describe('Workspace Model', () => {
         const actual = await Workspace.updateWorkspaceTitle({
           title: newWorkspaceTitle,
           workspaceId: MOCK_WORKSPACE_ID,
-          admin: MOCK_USER_ID,
         })
 
         expect(actual).toBeObject()
@@ -194,20 +193,6 @@ describe('Workspace Model', () => {
         const actual = await Workspace.updateWorkspaceTitle({
           title: newWorkspaceTitle,
           workspaceId: invalidWorkspaceId,
-          admin: MOCK_USER_ID,
-        })
-
-        expect(actual).toBeNull()
-      })
-
-      it('should return null upon unsuccessful update due to admin not owning workspace', async () => {
-        const newWorkspaceTitle = 'Workspace'
-        const invalidUserId = new ObjectId()
-
-        const actual = await Workspace.updateWorkspaceTitle({
-          title: newWorkspaceTitle,
-          workspaceId: MOCK_WORKSPACE_ID,
-          admin: invalidUserId,
         })
 
         expect(actual).toBeNull()

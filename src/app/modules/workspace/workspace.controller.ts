@@ -112,7 +112,7 @@ export const handleUpdateWorkspaceTitle: ControllerHandler<
   return WorkspaceService.checkWorkspaceExists(workspaceId)
     .andThen(() => WorkspaceService.verifyWorkspaceAdmin(workspaceId, userId))
     .andThen(() =>
-      WorkspaceService.updateWorkspaceTitle({ workspaceId, title, userId }).map(
+      WorkspaceService.updateWorkspaceTitle({ workspaceId, title }).map(
         (workspace) =>
           workspace
             ? res.status(StatusCodes.OK).json(workspace)
