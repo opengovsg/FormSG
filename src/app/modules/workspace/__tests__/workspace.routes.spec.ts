@@ -4,12 +4,14 @@ import supertest, { Session } from 'supertest-session'
 
 import { getWorkspaceModel } from 'src/app/models/workspace.server.model'
 import { WorkspacesRouter } from 'src/app/routes/api/v3/admin/workspaces'
+import { formatErrorRecoveryMessage } from 'src/app/utils/handle-mongo-error'
 
 import {
   createAuthedSession,
   logoutSession,
 } from 'tests/integration/helpers/express-auth'
 import { setupApp } from 'tests/integration/helpers/express-setup'
+import { buildCelebrateError } from 'tests/unit/backend/helpers/celebrate'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 import { jsonParseStringify } from 'tests/unit/backend/helpers/serialize-data'
 
@@ -98,14 +100,83 @@ describe('workspaces.routes', () => {
     })
 
     it('should return 500 when database errors occur', async () => {
+      const mockErrorMessage = 'something went wrong'
       jest
         .spyOn(WorkspaceModel, 'getWorkspaces')
-        .mockRejectedValueOnce(new Error('something went wrong'))
+        .mockRejectedValueOnce(new Error(mockErrorMessage))
       const response = await request.get(GET_WORKSPACES_ENDPOINT)
 
       expect(response.status).toEqual(500)
       expect(response.body).toEqual({
-        message: 'Something went wrong. Please try again.',
+        message: formatErrorRecoveryMessage(mockErrorMessage),
+      })
+    })
+  })
+
+  describe('POST /workspaces', () => {
+    const CREATE_WORKSPACE_ENDPOINT = '/workspaces'
+
+    it('should return 200 with created workspace on successful creation', async () => {
+      const createWorkspaceParam = {
+        title: 'validWorkspace',
+      }
+      const response = await request
+        .post('/workspaces')
+        .send(createWorkspaceParam)
+      const expected = {
+        title: createWorkspaceParam.title,
+        admin: MOCK_USER_ID.toHexString(),
+        formIds: [],
+      }
+
+      expect(response.status).toEqual(200)
+      expect(response.body).toMatchObject(expected)
+    })
+
+    it('should return 400 when workspace title is invalid', async () => {
+      const createInvalidWorkspaceParam = {
+        title: 'a',
+      }
+
+      const response = await request
+        .post(CREATE_WORKSPACE_ENDPOINT)
+        .send(createInvalidWorkspaceParam)
+
+      expect(response.status).toEqual(400)
+      expect(response.body).toEqual(
+        buildCelebrateError({
+          body: {
+            key: 'title',
+            message: '"title" length must be at least 4 characters long',
+          },
+        }),
+      )
+    })
+
+    it('should return 401 when user is not logged in', async () => {
+      await logoutSession(request)
+      const response = await request.post(CREATE_WORKSPACE_ENDPOINT)
+
+      expect(response.status).toEqual(401)
+      expect(response.body).toEqual({ message: 'User is unauthorized.' })
+    })
+
+    it('should return 500 when database errors occur', async () => {
+      const createWorkspaceParam = {
+        title: 'validWorkspace',
+      }
+
+      const mockErrorMessage = 'something went wrong'
+      jest
+        .spyOn(WorkspaceModel, 'createWorkspace')
+        .mockRejectedValueOnce(new Error(mockErrorMessage))
+      const response = await request
+        .post('/workspaces')
+        .send(createWorkspaceParam)
+
+      expect(response.status).toEqual(500)
+      expect(response.body).toEqual({
+        message: formatErrorRecoveryMessage(mockErrorMessage),
       })
     })
   })

@@ -109,5 +109,68 @@ describe('Workspace Model', () => {
         mongoose.Error.ValidationError,
       )
     })
+
+    describe('getWorkspaces', () => {
+      it('should return empty array when user has no workspaces', async () => {
+        const mockUserId = new ObjectId()
+        const actual = await Workspace.getWorkspaces(mockUserId)
+
+        expect(actual).toEqual([])
+      })
+
+      it('should return array of workspaces belonging to user sorted by workspace title', async () => {
+        const mockUserId = FORM_ADMIN_USER._id
+        const mockWorkspaces = [
+          {
+            _id: new ObjectId(),
+            title: 'aThird',
+            admin: MOCK_USER_ID,
+            formIds: [],
+          },
+          {
+            _id: new ObjectId(),
+            title: 'bFourth',
+            admin: MOCK_USER_ID,
+            formIds: [],
+          },
+          {
+            _id: new ObjectId(),
+            title: '9First',
+            admin: MOCK_USER_ID,
+            formIds: [],
+          },
+          {
+            _id: new ObjectId(),
+            title: 'ZSecond',
+            admin: MOCK_USER_ID,
+            formIds: [],
+          },
+        ]
+
+        await Workspace.insertMany(mockWorkspaces)
+        const actual = await Workspace.getWorkspaces(mockUserId)
+        const expected = await Workspace.find({ admin: mockUserId }).sort(
+          'title',
+        )
+
+        expect(actual).toEqual(expected)
+      })
+    })
+
+    describe('createWorkspace', () => {
+      it('should return created workspace upon successful workspace creation', async () => {
+        const mockUserId = FORM_ADMIN_USER._id
+        const mockWorkspaceTitle = 'Workspace'
+
+        const actual = await Workspace.createWorkspace(
+          mockWorkspaceTitle,
+          mockUserId,
+        )
+
+        expect(actual.title).toEqual(mockWorkspaceTitle)
+        expect(actual.formIds.length).toEqual(0)
+        expect(actual.admin).toEqual(mockUserId)
+      })
+    })
   })
 })
