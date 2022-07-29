@@ -8,6 +8,7 @@ import { PublicSwitchEnvMessage } from './PublicSwitchEnvMessage'
 import SectionSidebar from './SectionSidebar'
 
 export interface PublicFormWrapperProps {
+  isPreview?: boolean
   children: React.ReactNode
 }
 
@@ -16,6 +17,7 @@ export interface PublicFormWrapperProps {
  * @precondition Must be nested inside a `PublicFormProvider`
  */
 export const PublicFormWrapper = ({
+  isPreview,
   children,
 }: PublicFormWrapperProps): JSX.Element => {
   const { form, isLoading, isAuthRequired } = usePublicFormContext()
@@ -30,7 +32,7 @@ export const PublicFormWrapper = ({
       {isAuthRequired ? null : <SectionSidebar />}
       <Flex flexDir="column">
         {/* TODO(#4279): Remove switch env message on full rollout */}
-        <PublicSwitchEnvMessage />
+        {!isPreview && <PublicSwitchEnvMessage />}
         {children}
       </Flex>
       {isAuthRequired ? null : <Spacer />}

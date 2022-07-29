@@ -26,9 +26,9 @@ export const PreviewFormPage = (): JSX.Element => {
         <PreviewFormBanner />
         <FormSectionsProvider>
           <FormStartPage />
-          <PublicFormWrapper>
+          <PublicFormWrapper isPreview>
             <FormInstructions />
-            <FormFields isPreview />
+            <FormFields />
             <FormEndPage isPreview />
             <FormFooter />
           </PublicFormWrapper>

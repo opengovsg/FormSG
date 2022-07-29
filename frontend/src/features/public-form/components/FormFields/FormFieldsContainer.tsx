@@ -10,13 +10,7 @@ import { FormAuth } from '../FormAuth'
 import { FormFields } from './FormFields'
 import { FormFieldsSkeleton } from './FormFieldsSkeleton'
 
-interface FormFieldsContainerProps {
-  isPreview?: boolean
-}
-
-export const FormFieldsContainer = ({
-  isPreview,
-}: FormFieldsContainerProps): JSX.Element | null => {
+export const FormFieldsContainer = (): JSX.Element | null => {
   const { form, isAuthRequired, isLoading, handleSubmitForm, submissionData } =
     usePublicFormContext()
 
