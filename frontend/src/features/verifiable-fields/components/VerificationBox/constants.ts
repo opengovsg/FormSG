@@ -21,12 +21,12 @@ export const VFN_RENDER_DATA: Record<
     logo: MobileOtpSvgr,
     header: 'Verify your mobile number',
     subheader:
-      'An SMS with a 6-digit verification code was sent to you. It will be valid for 10 minutes.',
+      'An SMS with a 6-digit verification code was sent to you. It will be valid for 30 minutes.',
   },
   [BasicField.Email]: {
     logo: EmailOtpSvgr,
     header: 'Verify your email',
     subheader:
-      'An email with a 6-digit verification code was sent to you. It will be valid for 10 minutes.',
+      'An email with a 6-digit verification code was sent to you. It will be valid for 30 minutes.',
   },
 }

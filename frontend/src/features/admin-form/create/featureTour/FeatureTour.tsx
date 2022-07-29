@@ -16,16 +16,15 @@ export const FeatureTour = ({ onClose }: FeatureTourProps): JSX.Element => {
   const [isPaginationClicked, setIsPaginationClicked] = useState<boolean>(false)
 
   const handleJoyrideCallback = ({
-    action,
     index,
     status,
     type,
+    action,
   }: CallBackProps) => {
     if (!isPaginationClicked) {
       if (type === EVENTS.STEP_AFTER || type === EVENTS.TARGET_NOT_FOUND) {
         setStepIndex(index + 1)
       }
-
       if (
         status === STATUS.FINISHED ||
         status === STATUS.SKIPPED ||
@@ -53,6 +52,7 @@ export const FeatureTour = ({ onClose }: FeatureTourProps): JSX.Element => {
         steps={FEATURE_STEPS}
         callback={handleJoyrideCallback}
         stepIndex={stepIndex}
+        continuous
         run
         hideBackButton
         floaterProps={{

@@ -18,6 +18,7 @@ import {
 } from '~/mocks/msw/handlers/public-form'
 
 import { getMobileViewParameters, StoryRouter } from '~utils/storybook'
+import { ShortTextFieldSchema } from '~templates/Field'
 
 import PublicFormPage from './PublicFormPage'
 
@@ -28,6 +29,25 @@ const DEFAULT_MSW_HANDLERS = [
   postGenerateVfnOtpResponse(),
   postVerifyVfnOtpResponse(),
 ]
+
+// Bunch of encodings to test prefill and its sanitization.
+const PREFILLABLE_TEST_STRING =
+  '%E8%87%AA%E7%94%B1 %F0%90%90%80 hello+world 日本語%20normal space'
+
+const PREFILLABLE_SHORTTEXT_FIELD: ShortTextFieldSchema = {
+  ValidationOptions: {
+    customVal: null,
+    selectedValidation: null,
+  },
+  allowPrefill: true, // This prop allows for prefill
+  title: 'Short Text With Prefill',
+  description:
+    'Probably do not have to worry so much, React automatically sanitizes what gets rendered',
+  required: true,
+  disabled: false,
+  fieldType: BasicField.ShortText,
+  _id: '5da04eafe397fc0013f63b22',
+}
 
 const generateMswHandlersForColorTheme = (colorTheme: FormColorTheme) => {
   return [
@@ -52,7 +72,9 @@ export default {
   component: PublicFormPage,
   decorators: [
     StoryRouter({
-      initialEntries: ['/61540ece3d4a6e50ac0cc6ff'],
+      initialEntries: [
+        `/61540ece3d4a6e50ac0cc6ff?${PREFILLABLE_SHORTTEXT_FIELD._id}=${PREFILLABLE_TEST_STRING}`,
+      ],
       path: '/:formId',
     }),
   ],
@@ -67,6 +89,60 @@ export default {
 const Template: Story = () => <PublicFormPage />
 export const Default = Template.bind({})
 
+export const WithShortInstructions = Template.bind({})
+WithShortInstructions.parameters = {
+  msw: [
+    ...envHandlers,
+    getPublicFormResponse({
+      delay: 0,
+      overrides: {
+        form: {
+          startPage: { paragraph: 'Fill in this mock form in this story.' },
+        },
+      },
+    }),
+  ],
+}
+
+export const WithLongInstructions = Template.bind({})
+WithLongInstructions.parameters = {
+  msw: [
+    ...envHandlers,
+    getPublicFormResponse({
+      delay: 0,
+      overrides: {
+        form: {
+          startPage: {
+            paragraph: `Fill in this mock form in this story. Lorem\
+          ipsum dolor sit amet, consectetur adipiscing elit. Donec ac tincidunt\
+          orci. Vivamus id nisl tellus. Aliquam ullamcorper nec diam id ornare.\
+          Praesent mattis ligula egestas magna sagittis, non aliquet mauris\
+          sollicitudin. In maximus euismod nunc eget pellentesque. Maecenas\
+          sollicitudin lobortis consectetur. Suspendisse potenti. Nam a est\
+          risus.
+
+          Aliquam egestas diam in velit pellentesque lacinia. Praesent nunc ex,\
+          fermentum sed nunc nec, laoreet dignissim nisi. Vivamus et lorem non\
+          velit facilisis luctus. Sed et luctus magna, sed tincidunt odio. Fusce\
+          quis pretium eros. Mauris in est ornare, aliquam odio quis, porttitor\
+          lacus. Aliquam dignissim laoreet libero, sed pharetra enim.\
+          Pellentesque habitant morbi tristique senectus et netus et malesuada\
+          fames ac turpis egestas.
+          
+          Donec scelerisque eros mattis tempor commodo. Vestibulum massa ante,\
+          fermentum nec sollicitudin eu, tincidunt sed lectus. Etiam maximus\
+          luctus dapibus. Morbi et mollis nibh. Praesent ante orci, pellentesque\
+          vel molestie ut, lobortis nec dui. Aliquam eleifend luctus pharetra.\
+          Nullam lacinia eget erat ac commodo. Curabitur suscipit felis a\
+          venenatis consectetur. Cras dictum, metus a egestas aliquam, ipsum\
+          neque fermentum orci, vitae fermentum neque mi non arcu.`,
+          },
+        },
+      },
+    }),
+  ],
+}
+
 export const WithCaptcha = Template.bind({})
 WithCaptcha.parameters = {
   msw: [
@@ -80,6 +156,26 @@ WithCaptcha.parameters = {
       },
     }),
   ],
+}
+
+export const WithPrefilledFields = Template.bind({})
+WithPrefilledFields.parameters = {
+  msw: [
+    getPublicFormResponse({
+      delay: 0,
+      overrides: {
+        form: {
+          form_fields: [PREFILLABLE_SHORTTEXT_FIELD],
+        },
+      },
+    }),
+  ],
+}
+
+export const WithPrefilledFieldsMobile = Template.bind({})
+WithPrefilledFieldsMobile.parameters = {
+  ...WithPrefilledFields.parameters,
+  ...getMobileViewParameters(),
 }
 
 export const Mobile = Template.bind({})

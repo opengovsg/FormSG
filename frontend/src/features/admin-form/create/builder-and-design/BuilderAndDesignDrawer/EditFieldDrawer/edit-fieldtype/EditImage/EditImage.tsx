@@ -5,6 +5,7 @@ import { useParams } from 'react-router-dom'
 import { FormControl } from '@chakra-ui/react'
 import { extend, get, isEmpty, pick } from 'lodash'
 
+import { MB } from '~shared/constants/file'
 import { ImageFieldBase } from '~shared/types/field'
 
 import { useToast } from '~hooks/useToast'
@@ -23,7 +24,7 @@ import { FormFieldDrawerActions } from '../common/FormFieldDrawerActions'
 import { EditFieldProps } from '../common/types'
 import { useEditFieldForm } from '../common/useEditFieldForm'
 
-import { UploadImageInput } from './UploadImageInput'
+import { UploadedImage, UploadImageInput } from './UploadImageInput'
 
 type EditImageProps = EditFieldProps<ImageFieldBase>
 
@@ -33,10 +34,7 @@ export type EditImageInputs = Pick<
   ImageFieldBase,
   typeof EDIT_IMAGE_KEYS[number]
 > & {
-  attachment?: Partial<{
-    file: File
-    srcUrl: ImageFieldBase['url']
-  }>
+  attachment?: UploadedImage
 }
 
 const transformImageFieldToEditForm = (
@@ -114,6 +112,7 @@ export const EditImage = ({ field }: EditImageProps): JSX.Element => {
           return {
             ...output,
             ...uploadedFileData,
+            size: `${(uploadedFileData.size / MB).toFixed(2)} MB`,
           }
         })
     },

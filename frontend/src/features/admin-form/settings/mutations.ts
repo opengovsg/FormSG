@@ -308,7 +308,7 @@ export const useMutateTwilioCreds = () => {
         toast.closeAll()
         // Show toast on success.
         toast({
-          description: "Your form's twilio details has been updated.",
+          description: 'Updated Twilio credentials',
         })
       },
       onError: (error: Error) => {
@@ -329,7 +329,7 @@ export const useMutateTwilioCreds = () => {
         toast.closeAll()
         // Show toast on success.
         toast({
-          description: 'Your form twilio credentials have been deleted',
+          description: 'Deleted Twilio credentials',
         })
       },
       onError: (error: Error) => {

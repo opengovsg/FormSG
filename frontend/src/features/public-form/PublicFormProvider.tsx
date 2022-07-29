@@ -149,7 +149,8 @@ export const PublicFormProvider = ({
           ),
           description: (
             <Text as="span">
-              <Link href="">Refresh</Link> for the latest version of the form.
+              <Link href={window.location.href}>Refresh</Link> for the latest
+              version of the form.
             </Text>
           ),
           duration: null,
@@ -261,8 +262,11 @@ export const PublicFormProvider = ({
   useTimeout(generateVfnExpiryToast, expiryInMs)
 
   const isAuthRequired = useMemo(
-    () => !!cachedDto?.form && cachedDto.form.authType !== FormAuthType.NIL,
-    [cachedDto?.form],
+    () =>
+      !!cachedDto?.form &&
+      cachedDto.form.authType !== FormAuthType.NIL &&
+      !cachedDto.spcpSession,
+    [cachedDto?.form, cachedDto?.spcpSession],
   )
 
   const sectionScrollData = useMemo(() => {
@@ -271,6 +275,11 @@ export const PublicFormProvider = ({
       return []
     }
     const sections: SidebarSectionMeta[] = []
+    if (form.startPage.paragraph)
+      sections.push({
+        title: 'Instructions',
+        _id: 'instructions',
+      })
     form.form_fields.forEach((f) => {
       if (f.fieldType !== BasicField.Section) return
       sections.push({
@@ -278,7 +287,6 @@ export const PublicFormProvider = ({
         _id: f._id,
       })
     })
-
     return sections
   }, [cachedDto, isAuthRequired])
 

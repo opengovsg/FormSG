@@ -1,3 +1,4 @@
+import { MemoryRouter } from 'react-router-dom'
 import { Meta, Story } from '@storybook/react'
 
 import { FormColorTheme } from '~shared/types/form/form'
@@ -27,9 +28,11 @@ export default {
   component: FormStartPage,
   decorators: [
     (storyFn) => (
-      <PublicFormProvider formId="61540ece3d4a6e50ac0cc6ff">
-        <FormSectionsProvider>{storyFn()}</FormSectionsProvider>
-      </PublicFormProvider>
+      <MemoryRouter initialEntries={['/12345']}>
+        <PublicFormProvider formId="61540ece3d4a6e50ac0cc6ff">
+          <FormSectionsProvider>{storyFn()}</FormSectionsProvider>
+        </PublicFormProvider>
+      </MemoryRouter>
     ),
   ],
   parameters: {
@@ -181,19 +184,14 @@ export const MiniHeader: Story<MiniHeaderProps> = (args) => (
   <MiniHeaderComponent {...args} />
 )
 MiniHeader.args = {
+  title: 'storybook test title',
+  titleBg: 'theme-blue.500',
+  titleColor: 'white',
+  activeSectionId: '1',
   isOpen: true,
 }
 MiniHeader.parameters = {
-  msw: [
-    getPublicFormResponse({
-      overrides: {
-        form: {
-          title: 'storybook test title',
-        },
-      },
-      delay: 0,
-    }),
-  ],
+  msw: [getPublicFormResponse()],
 }
 
 export const MiniHeaderMobileWithSections: Story<MiniHeaderProps> = (args) => (
@@ -213,6 +211,7 @@ export const MiniHeaderMobileWithoutSections: Story<MiniHeaderProps> = (
 ) => <MiniHeaderComponent {...args} />
 MiniHeaderMobileWithoutSections.args = {
   ...MiniHeader.args,
+  activeSectionId: undefined,
 }
 MiniHeaderMobileWithoutSections.parameters = {
   msw: [

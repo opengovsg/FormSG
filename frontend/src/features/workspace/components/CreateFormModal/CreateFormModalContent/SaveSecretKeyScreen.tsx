@@ -43,7 +43,7 @@ const useSaveSecretKeyDefault = () => {
         I am sharing my form's secret key with you for safekeeping and backup. This is an important key that is needed to access all form responses.
 
         Form title: ${titleInputValue}
-    
+
         Secret key: ${secretKey}
 
         All you need to do is keep this email as a record, and please do not share this key with anyone else.
@@ -161,8 +161,8 @@ export const SaveSecretKeyScreen = ({
                 required: true,
               })}
             >
-              If I lose my Secret Key, I cannot activate my form and all my
-              responses will be lost
+              I acknowledge that if I lose my Secret Key, all my responses will
+              be lost permanently and I cannot activate my form
             </Checkbox>
           </Box>
           <Button

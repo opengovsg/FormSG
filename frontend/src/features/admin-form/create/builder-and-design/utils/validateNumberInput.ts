@@ -1,10 +1,10 @@
 /**
- * Validates the input given to Chakra's NumberInput component. Pass this to the
+ * Validates the input given to the NumberInput component. Pass this to the
  * onChange parameter for NumberInput. Calls onChange('') if the input is empty,
  * onChange(number) if the input is a number, and does nothing if the input is
  * invalid.
  *
- * Usage:
+ * @example
  *  <NumberInput
  *    ...
  *    onChange={validateNumberInput(onChange)}

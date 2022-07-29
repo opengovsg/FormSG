@@ -5,13 +5,16 @@ import { useAdminForm } from '~features/admin-form/common/queries'
 
 import { downloadResponseAttachment } from './utils/downloadCsv'
 import { EncryptedResponseCsvGenerator } from './utils/EncryptedResponseCsvGenerator'
-import { useStorageResponsesContext } from './StorageResponsesContext'
 import {
   EncryptedResponsesStreamParams,
   getEncryptedResponsesStream,
   makeWorkerApiAndCleanup,
 } from './StorageResponsesService'
-import { CleanableDecryptionWorkerApi, CsvRecordStatus } from './types'
+import {
+  CleanableDecryptionWorkerApi,
+  CsvRecordStatus,
+  DownloadResult,
+} from './types'
 
 const NUM_OF_METADATA_ROWS = 5
 
@@ -28,7 +31,7 @@ export type DownloadEncryptedParams = EncryptedResponsesStreamParams & {
 interface UseDecryptionWorkersProps {
   onProgress: (progress: number) => void
   mutateProps: UseMutationOptions<
-    void,
+    DownloadResult,
     unknown,
     DownloadEncryptedParams,
     unknown
@@ -43,7 +46,6 @@ const useDecryptionWorkers = ({
   const abortControllerRef = useRef(new AbortController())
 
   const { data: adminForm } = useAdminForm()
-  const { dateRange } = useStorageResponsesContext()
 
   useEffect(() => {
     return () => killWorkers(workers)
@@ -64,7 +66,13 @@ const useDecryptionWorkers = ({
       endDate,
       startDate,
     }: DownloadEncryptedParams) => {
-      if (!adminForm || !responsesCount) return
+      if (!adminForm || !responsesCount) {
+        return Promise.resolve({
+          expectedCount: 0,
+          successCount: 0,
+          errorCount: 0,
+        })
+      }
 
       abortControllerRef.current.abort()
       const freshAbortController = new AbortController()
@@ -107,145 +115,146 @@ const useDecryptionWorkers = ({
 
       let progress = 0
 
-      return reader
-        .read()
-        .then(
-          (read = async (result) => {
-            if (result.done) return
-            try {
-              // round-robin scheduling
-              const { workerApi } = workerPool[receivedRecordCount % numWorkers]
-              const decryptResult = await workerApi.decryptIntoCsv({
-                line: result.value,
-                secretKey,
-                downloadAttachments,
-              })
-              progress += 1
-              onProgress(progress)
+      return new Promise<DownloadResult>((resolve, reject) => {
+        reader
+          .read()
+          .then(
+            (read = async (result) => {
+              if (result.done) return
+              try {
+                // round-robin scheduling
+                const { workerApi } =
+                  workerPool[receivedRecordCount % numWorkers]
+                const decryptResult = await workerApi.decryptIntoCsv({
+                  line: result.value,
+                  secretKey,
+                  downloadAttachments,
+                })
+                progress += 1
+                onProgress(progress)
 
-              switch (decryptResult.status) {
-                case CsvRecordStatus.Error:
-                  errorCount++
-                  break
-                case CsvRecordStatus.Unverified:
-                  unverifiedCount++
-                  break
-                case CsvRecordStatus.AttachmentError:
-                  errorCount++
-                  attachmentErrorCount++
-                  break
-                case CsvRecordStatus.Ok: {
-                  try {
-                    csvGenerator.addRecord(decryptResult.submissionData)
-                    receivedRecordCount++
-                  } catch (e) {
+                switch (decryptResult.status) {
+                  case CsvRecordStatus.Error:
                     errorCount++
-                    console.error('Error in getResponseInstance', e)
-                  }
-                  if (downloadAttachments && decryptResult.downloadBlob) {
-                    await downloadResponseAttachment(
-                      decryptResult.downloadBlob,
-                      decryptResult.id,
-                    )
+                    break
+                  case CsvRecordStatus.Unverified:
+                    unverifiedCount++
+                    break
+                  case CsvRecordStatus.AttachmentError:
+                    errorCount++
+                    attachmentErrorCount++
+                    break
+                  case CsvRecordStatus.Ok: {
+                    try {
+                      csvGenerator.addRecord(decryptResult.submissionData)
+                      receivedRecordCount++
+                    } catch (e) {
+                      errorCount++
+                      console.error('Error in getResponseInstance', e)
+                    }
+                    if (downloadAttachments && decryptResult.downloadBlob) {
+                      await downloadResponseAttachment(
+                        decryptResult.downloadBlob,
+                        decryptResult.id,
+                      )
+                    }
                   }
                 }
+              } catch (e) {
+                console.error('Error parsing JSON', e)
               }
-            } catch (e) {
-              console.error('Error parsing JSON', e)
-            }
-            // recurse through the stream
-            return reader.read().then(read)
-          }),
-        )
-        .catch((err) => {
-          if (!downloadStartTime) {
-            // No start time, means did not even start http request.
-            // TODO: Google analytics tracking for failure.
-            // GTag.downloadNetworkFailure(params, err)
-          } else {
-            const downloadFailedTime = performance.now()
-            const timeDifference = downloadFailedTime - downloadStartTime
-            // TODO: Google analytics tracking for failure.
-            // GTag.downloadResponseFailure(
-            //   params,
-            //   numWorkers,
-            //   expectedNumResponses,
-            //   timeDifference,
-            //   err,
-            // )
-          }
-
-          console.error(
-            'Failed to download data, is there a network issue?',
-            err,
+              // recurse through the stream
+              return reader.read().then(read)
+            }),
           )
-          killWorkers(workerPool)
-          throw err
-        })
-        .finally(() => {
-          const checkComplete = () => {
-            // If all the records could not be decrypted
-            if (errorCount + unverifiedCount === responsesCount) {
-              const failureEndTime = performance.now()
-              const timeDifference = failureEndTime - downloadStartTime
-              // TODO: Google analytics tracking for partial decrypt
-              // failure.
-              // GTag.partialDecryptionFailure(
+          .catch((err) => {
+            if (!downloadStartTime) {
+              // No start time, means did not even start http request.
+              // TODO: Google analytics tracking for failure.
+              // GTag.downloadNetworkFailure(params, err)
+            } else {
+              const downloadFailedTime = performance.now()
+              const timeDifference = downloadFailedTime - downloadStartTime
+              // TODO: Google analytics tracking for failure.
+              // GTag.downloadResponseFailure(
               //   params,
               //   numWorkers,
-              //   csvGenerator.length(),
-              //   errorCount,
-              //   attachmentErrorCount,
+              //   expectedNumResponses,
               //   timeDifference,
+              //   err,
               // )
-              killWorkers(workerPool)
-              throw new Error(
-                JSON.stringify({
+            }
+
+            console.error(
+              'Failed to download data, is there a network issue?',
+              err,
+            )
+            killWorkers(workerPool)
+            reject(err)
+          })
+          .finally(() => {
+            const checkComplete = () => {
+              // If all the records could not be decrypted
+              if (errorCount + unverifiedCount === responsesCount) {
+                const failureEndTime = performance.now()
+                const timeDifference = failureEndTime - downloadStartTime
+                // TODO: Google analytics tracking for partial decrypt
+                // failure.
+                // GTag.partialDecryptionFailure(
+                //   params,
+                //   numWorkers,
+                //   csvGenerator.length(),
+                //   errorCount,
+                //   attachmentErrorCount,
+                //   timeDifference,
+                // )
+                killWorkers(workerPool)
+                resolve({
                   expectedCount: responsesCount,
                   successCount: csvGenerator.length(),
                   errorCount,
                   unverifiedCount,
-                }),
-              )
-            } else if (
-              // All results have been decrypted
-              csvGenerator.length() + errorCount + unverifiedCount >=
-              responsesCount
-            ) {
-              killWorkers(workerPool)
-              // Generate first three rows of meta-data before download
-              csvGenerator.addMetaDataFromSubmission(
-                errorCount,
-                unverifiedCount,
-              )
-              csvGenerator.downloadCsv(
-                `${adminForm.title}-${adminForm._id}.csv`,
-              )
+                })
+              } else if (
+                // All results have been decrypted
+                csvGenerator.length() + errorCount + unverifiedCount >=
+                responsesCount
+              ) {
+                killWorkers(workerPool)
+                // Generate first three rows of meta-data before download
+                csvGenerator.addMetaDataFromSubmission(
+                  errorCount,
+                  unverifiedCount,
+                )
+                csvGenerator.downloadCsv(
+                  `${adminForm.title}-${adminForm._id}.csv`,
+                )
 
-              const downloadEndTime = performance.now()
-              const timeDifference = downloadEndTime - downloadStartTime
+                const downloadEndTime = performance.now()
+                const timeDifference = downloadEndTime - downloadStartTime
 
-              // TODO: Google analytics tracking for success.
-              // GTag.downloadResponseSuccess(
-              //   params,
-              //   numWorkers,
-              //   csvGenerator.length(),
-              //   timeDifference,
-              // )
+                // TODO: Google analytics tracking for success.
+                // GTag.downloadResponseSuccess(
+                //   params,
+                //   numWorkers,
+                //   csvGenerator.length(),
+                //   timeDifference,
+                // )
 
-              return {
-                expectedCount: responsesCount,
-                successCount: csvGenerator.length(),
-                errorCount,
-                unverifiedCount,
+                resolve({
+                  expectedCount: responsesCount,
+                  successCount: csvGenerator.length(),
+                  errorCount,
+                  unverifiedCount,
+                })
+              } else {
+                setTimeout(checkComplete, 100)
               }
-            } else {
-              setTimeout(checkComplete, 100)
             }
-          }
 
-          checkComplete()
-        })
+            checkComplete()
+          })
+      })
     },
     [adminForm, onProgress, workers],
   )

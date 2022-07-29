@@ -37,10 +37,15 @@ export const FormSectionsProvider = ({
     Record<string, RefObject<HTMLDivElement>>
   >({})
 
-  const orderedSectionFields = useMemo(
-    () => form?.form_fields.filter((f) => f.fieldType === BasicField.Section),
-    [form],
-  )
+  const orderedSectionFieldIds = useMemo(() => {
+    if (!form) return
+    const sections = form.form_fields
+      .filter((f) => f.fieldType === BasicField.Section)
+      .map((f) => f._id)
+    return form.startPage.paragraph
+      ? ['instructions'].concat(sections)
+      : sections
+  }, [form])
   const [activeSectionId, setActiveSectionId] = useState<string>()
   const [navigatedSectionTitle, setNavigatedSectionTitle] = useState<string>()
 
@@ -50,20 +55,20 @@ export const FormSectionsProvider = ({
    * Set default active section id on first load of the form.
    */
   useEffect(() => {
-    if (isFirstLoad && orderedSectionFields) {
-      setActiveSectionId(orderedSectionFields[0]?._id)
+    if (isFirstLoad && orderedSectionFieldIds) {
+      setActiveSectionId(orderedSectionFieldIds[0])
       isFirstLoad.current = false
     }
-  }, [orderedSectionFields])
+  }, [orderedSectionFieldIds])
 
   useEffect(() => {
     if (!form) return
     const nextSectionRefs: Record<string, RefObject<HTMLDivElement>> = {}
-    orderedSectionFields?.forEach((f) => {
-      nextSectionRefs[f._id] = createRef()
+    orderedSectionFieldIds?.forEach((id) => {
+      nextSectionRefs[id] = createRef()
     })
     setSectionRefs(nextSectionRefs)
-  }, [activeSectionId, form, orderedSectionFields])
+  }, [activeSectionId, form, orderedSectionFieldIds])
 
   return (
     <FormSectionsContext.Provider

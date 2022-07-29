@@ -14,6 +14,17 @@ export interface SectionFieldProps extends SectionFieldContainerProps {
   handleSectionEnter?: () => void
 }
 
+export const useSectionColor = (colorTheme?: FormColorTheme) =>
+  useMemo(() => {
+    switch (colorTheme) {
+      case FormColorTheme.Orange:
+      case FormColorTheme.Red:
+        return `theme-${colorTheme}.600` as const
+      default:
+        return `theme-${colorTheme}.500` as const
+    }
+  }, [colorTheme])
+
 // Used by SectionFieldContainer
 export const SectionField = forwardRef<SectionFieldProps, 'div'>(
   ({ handleSectionEnter, ...rest }, ref) => {
@@ -38,15 +49,7 @@ export const BaseSectionField = forwardRef<
   Pick<SectionFieldProps, 'schema' | 'colorTheme'>,
   'div'
 >(({ schema, colorTheme = FormColorTheme.Blue, ...rest }, ref) => {
-  const sectionColor = useMemo(() => {
-    switch (colorTheme) {
-      case FormColorTheme.Orange:
-      case FormColorTheme.Red:
-        return `theme-${colorTheme}.600` as const
-      default:
-        return `theme-${colorTheme}.500` as const
-    }
-  }, [colorTheme])
+  const sectionColor = useSectionColor(colorTheme)
 
   return (
     // id given so app can scrolled to this section.

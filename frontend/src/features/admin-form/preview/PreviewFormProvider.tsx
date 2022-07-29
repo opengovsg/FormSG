@@ -74,7 +74,8 @@ export const PreviewFormProvider = ({
           ),
           description: (
             <Text as="span">
-              <Link href="">Refresh</Link> for the latest version of the form.
+              <Link href={window.location.href}>Refresh</Link> for the latest
+              version of the form.
             </Text>
           ),
           duration: null,
@@ -82,6 +83,12 @@ export const PreviewFormProvider = ({
       }
     }
   }, [data, cachedDto, toast, desyncToastIdRef])
+
+  useEffect(() => {
+    return () => {
+      document.title = 'FormSG'
+    }
+  }, [])
 
   const isFormNotFound = useMemo(() => {
     return (
@@ -124,6 +131,11 @@ export const PreviewFormProvider = ({
       return []
     }
     const sections: SidebarSectionMeta[] = []
+    if (form.startPage.paragraph)
+      sections.push({
+        title: 'Instructions',
+        _id: 'instructions',
+      })
     form.form_fields.forEach((f) => {
       if (f.fieldType !== BasicField.Section) return
       sections.push({
@@ -131,7 +143,6 @@ export const PreviewFormProvider = ({
         _id: f._id,
       })
     })
-
     return sections
   }, [cachedDto, isAuthRequired])
 
