@@ -152,11 +152,6 @@ const convertInvalidDayOfTheWeekToNumberSet = (
   return new Set(invaliDaysNumberArray)
 }
 
-// TODO: Add logic to validate if date response is a Singapore public holiday
-const noPublicHolidayValidator: DateValidator = (response) => {
-  return right(response)
-}
-
 const makeInvalidDayOfTheWeekValidator: DateValidatorConstructor =
   (dateField) => (response) => {
     const { answer } = response
@@ -174,14 +169,6 @@ const makeInvalidDayOfTheWeekValidator: DateValidatorConstructor =
   }
 
 const invalidDaysValidator: DateValidatorConstructor = (dateField) => {
-  const selectedInvalidDaysSet = new Set(dateField.invalidDays)
-
-  // Check if Singapore public holiday is a value in invalidDays
-  if (selectedInvalidDaysSet.has(InvalidDaysOptions.SingaporePublicHolidays)) {
-    // TODO: Validate if date response is a Singapore public holiday
-    return noPublicHolidayValidator
-  }
-
   return makeInvalidDayOfTheWeekValidator(dateField)
 }
 
