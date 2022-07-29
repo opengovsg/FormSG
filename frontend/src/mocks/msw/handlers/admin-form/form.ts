@@ -47,7 +47,7 @@ export const MOCK_MYINFO_IMPLEMENTED_TYPES = [
 export const MOCK_FORM_FIELDS: FormFieldDto[] = [
   {
     title: 'Yes/No',
-    description: 'This is a\nmultiline description\r\nanother line',
+    description: 'This is a\n\nmultiline description\r\nanother line',
     required: true,
     disabled: false,
     fieldType: BasicField.YesNo,
