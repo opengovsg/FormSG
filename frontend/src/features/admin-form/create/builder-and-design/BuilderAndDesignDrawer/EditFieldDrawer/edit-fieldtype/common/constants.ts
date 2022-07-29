@@ -9,8 +9,8 @@ export const SPLIT_TEXTAREA_TRANSFORM = {
 
 export const SPLIT_TEXTAREA_VALIDATION = {
   validate: (opts: string) => {
-    if (!opts) return 'Please provide at least 1 option.'
     const optsArr = SPLIT_TEXTAREA_TRANSFORM.output(opts)
+    if (!optsArr.length) return 'Please provide at least 1 option.'
     return (
       new Set(optsArr).size === optsArr.length ||
       'Please remove duplicate options.'
