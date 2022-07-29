@@ -56,13 +56,15 @@ export const SectionField = forwardRef<SectionFieldProps, 'div'>(
 )
 
 export const BaseSectionField = forwardRef<
-  Pick<SectionFieldProps, 'schema'>,
+  Pick<SectionFieldProps, 'schema' | 'colorTheme'>,
   'div'
->(({ schema }, ref) => {
+>(({ schema, colorTheme = FormColorTheme.Blue }, ref) => {
+  const sectionColor = useSectionColor(colorTheme)
+
   return (
     // id given so app can scrolled to this section.
     <Box id={schema._id} ref={ref}>
-      <Text textStyle="h2" color="primary.600">
+      <Text textStyle="h2" color={sectionColor}>
         {schema.title}
       </Text>
       <Text
