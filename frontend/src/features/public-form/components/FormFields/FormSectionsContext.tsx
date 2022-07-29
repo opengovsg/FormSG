@@ -8,6 +8,7 @@ import {
   useRef,
   useState,
 } from 'react'
+import { useDebouncedValue } from 'rooks'
 
 import { BasicField } from '~shared/types/field'
 
@@ -46,7 +47,9 @@ export const FormSectionsProvider = ({
       ? ['instructions'].concat(sections)
       : sections
   }, [form])
-  const [activeSectionId, setActiveSectionId] = useState<string>()
+  const [_activeSectionId, setActiveSectionId] = useState<string>()
+
+  const [activeSectionId] = useDebouncedValue(_activeSectionId, 200)
   const [navigatedSectionTitle, setNavigatedSectionTitle] = useState<string>()
 
   const isFirstLoad = useRef(false)
@@ -55,7 +58,7 @@ export const FormSectionsProvider = ({
    * Set default active section id on first load of the form.
    */
   useEffect(() => {
-    if (isFirstLoad && orderedSectionFieldIds) {
+    if (isFirstLoad.current && orderedSectionFieldIds) {
       setActiveSectionId(orderedSectionFieldIds[0])
       isFirstLoad.current = false
     }
@@ -74,7 +77,7 @@ export const FormSectionsProvider = ({
     <FormSectionsContext.Provider
       value={{
         sectionRefs,
-        activeSectionId,
+        activeSectionId: activeSectionId ?? undefined,
         setActiveSectionId,
         navigatedSectionTitle,
         setNavigatedSectionTitle,
