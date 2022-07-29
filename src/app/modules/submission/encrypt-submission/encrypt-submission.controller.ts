@@ -24,6 +24,7 @@ import { createReqMeta, getRequestIp } from '../../../utils/request'
 import { getFormAfterPermissionChecks } from '../../auth/auth.service'
 import { MalformedParametersError } from '../../core/core.errors'
 import { ControllerHandler } from '../../core/core.types'
+import { setFormTags } from '../../datadog/datadog.utils'
 import { PermissionLevel } from '../../form/admin-form/admin-form.types'
 import * as FormService from '../../form/form.service'
 import { SgidService } from '../../sgid/sgid.service'
@@ -94,6 +95,8 @@ const submitEncryptModeForm: ControllerHandler<
     const { errorMessage, statusCode } = mapRouteError(formResult.error)
     return res.status(statusCode).json({ message: errorMessage })
   }
+
+  setFormTags(formResult.value)
 
   const checkFormIsEncryptModeResult = checkFormIsEncryptMode(formResult.value)
   if (checkFormIsEncryptModeResult.isErr()) {
