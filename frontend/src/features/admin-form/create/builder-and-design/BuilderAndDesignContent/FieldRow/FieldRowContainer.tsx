@@ -14,6 +14,7 @@ import {
 } from '@chakra-ui/react'
 import { times } from 'lodash'
 
+import { FormColorTheme } from '~shared/types'
 import { BasicField, FormFieldDto } from '~shared/types/field'
 
 import { useIsMobile } from '~hooks/useIsMobile'
@@ -60,6 +61,8 @@ import {
   updateEditStateSelector,
   useBuilderAndDesignStore,
 } from '../../useBuilderAndDesignStore'
+import { useCreateTabForm } from '../../useCreateTabForm'
+import { startPageDataSelector, useDesignStore } from '../../useDesignStore'
 
 import { SectionFieldRow } from './SectionFieldRow'
 
@@ -75,6 +78,7 @@ export const FieldRowContainer = ({
   isDraggingOver,
 }: FieldRowContainerProps): JSX.Element => {
   const isMobile = useIsMobile()
+  const { data: form } = useCreateTabForm()
   const numFormFieldMutations = useIsMutating(adminFormKeys.base)
   const { stateData, setToInactive, updateEditState } =
     useBuilderAndDesignStore(
@@ -88,10 +92,18 @@ export const FieldRowContainer = ({
       ),
     )
 
+  const startPageData = useDesignStore(useMemo(() => startPageDataSelector, []))
+
   const { handleBuilderClick } = useCreatePageSidebar()
 
   const { duplicateFieldMutation } = useDuplicateFormField()
   const { deleteFieldMutation } = useDeleteFormField()
+
+  const colorTheme = useMemo(
+    () =>
+      startPageData ? startPageData.colorTheme : form?.startPage.colorTheme,
+    [startPageData, form?.startPage.colorTheme],
+  )
 
   const defaultFieldValues = useMemo(() => {
     if (field.fieldType === BasicField.Table) {
@@ -269,7 +281,7 @@ export const FieldRowContainer = ({
               pointerEvents={isActive ? undefined : 'none'}
             >
               <FormProvider {...formMethods}>
-                <MemoFieldRow field={field} />
+                <MemoFieldRow field={field} colorTheme={colorTheme} />
               </FormProvider>
             </Box>
             <Collapse in={isActive} style={{ width: '100%' }}>
@@ -325,6 +337,7 @@ export const FieldRowContainer = ({
 
 type MemoFieldRowProps = {
   field: FormFieldDto
+  colorTheme?: FormColorTheme
 }
 
 const MemoFieldRow = memo(({ field, ...rest }: MemoFieldRowProps) => {
