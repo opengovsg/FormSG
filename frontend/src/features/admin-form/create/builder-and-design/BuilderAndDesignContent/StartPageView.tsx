@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { Box, Flex, Skeleton } from '@chakra-ui/react'
 
 import { FormAuthType, FormLogoState, FormStartPage } from '~shared/types'
@@ -19,10 +19,15 @@ import {
 
 export const StartPageView = () => {
   const { data: form } = useCreateTabForm()
-  const { startPageData, customLogoMeta } = useDesignStore((state) => ({
-    startPageData: startPageDataSelector(state),
-    customLogoMeta: customLogoMetaSelector(state),
-  }))
+  const { startPageData, customLogoMeta } = useDesignStore(
+    useCallback(
+      (state) => ({
+        startPageData: startPageDataSelector(state),
+        customLogoMeta: customLogoMetaSelector(state),
+      }),
+      [],
+    ),
+  )
   const { data: { logoBucketUrl } = {} } = useEnv(
     form?.startPage.logo.state === FormLogoState.Custom,
   )
