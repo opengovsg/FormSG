@@ -1,11 +1,19 @@
 import { useMemo } from 'react'
 import { Flex, Spacer } from '@chakra-ui/react'
 
+import { FormColorTheme } from '~shared/types'
+
 import { usePublicFormContext } from '../PublicFormContext'
 
 // TODO #4279: Remove after React rollout is complete
 import { PublicSwitchEnvMessage } from './PublicSwitchEnvMessage'
 import SectionSidebar from './SectionSidebar'
+
+export const useBgColor = (colorTheme?: FormColorTheme) =>
+  useMemo(
+    () => (colorTheme ? `theme-${colorTheme}.100` : 'neutral.100'),
+    [colorTheme],
+  )
 
 export interface PublicFormWrapperProps {
   children: React.ReactNode
@@ -20,10 +28,9 @@ export const PublicFormWrapper = ({
 }: PublicFormWrapperProps): JSX.Element => {
   const { form, isLoading, isAuthRequired } = usePublicFormContext()
 
-  const bgColour = useMemo(() => {
-    if (isLoading || !form) return 'neutral.100'
-    return `theme-${form.startPage.colorTheme}.100`
-  }, [form, isLoading])
+  const bgColour = useBgColor(
+    isLoading ? undefined : form?.startPage.colorTheme,
+  )
 
   return (
     <Flex bg={bgColour} p={{ base: 0, md: '1.5rem' }} flex={1} justify="center">
