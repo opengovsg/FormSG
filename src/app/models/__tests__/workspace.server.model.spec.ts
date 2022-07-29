@@ -58,10 +58,7 @@ describe('Workspace Model', () => {
       expect(saved._id).toBeDefined()
       expect(saved.createdAt).toBeInstanceOf(Date)
       expect(saved.updatedAt).toBeInstanceOf(Date)
-      expect(actualSavedObject).toEqual({
-        ...expectedWorkspaceObject,
-        count: 0,
-      })
+      expect(actualSavedObject).toEqual(expectedWorkspaceObject)
     })
 
     it('should fail when formId in is not unique', async () => {
