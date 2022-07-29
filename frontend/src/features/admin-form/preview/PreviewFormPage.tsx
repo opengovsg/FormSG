@@ -10,7 +10,7 @@ import { FormFooter } from '~features/public-form/components/FormFooter'
 import FormStartPage from '~features/public-form/components/FormStartPage'
 import { PublicFormWrapper } from '~features/public-form/components/PublicFormWrapper'
 
-import { PreviewFormHeader } from '../common/components/PreviewFormHeader/PreviewFormHeader'
+import { PreviewFormBanner } from '../common/components/PreviewFormBanner'
 
 import { PreviewFormProvider } from './PreviewFormProvider'
 
@@ -22,7 +22,7 @@ export const PreviewFormPage = (): JSX.Element => {
     <Flex flexDir="column" height="100vh" pos="relative">
       <PreviewFormProvider formId={formId}>
         <GovtMasthead />
-        <PreviewFormHeader />
+        <PreviewFormBanner />
         <FormSectionsProvider>
           <FormStartPage />
           <PublicFormWrapper>

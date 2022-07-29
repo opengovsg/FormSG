@@ -9,15 +9,15 @@ import { getMobileViewParameters, StoryRouter } from '~utils/storybook'
 
 import { PreviewFormProvider } from '~features/admin-form/preview/PreviewFormProvider'
 
-import { PreviewFormHeader as PreviewFormHeaderComponent } from './PreviewFormHeader'
+import { PreviewFormBanner as PreviewFormBannerComponent } from './PreviewFormBanner'
 
 export default {
-  title: 'Features/AdminForm/PreviewFormHeader',
+  title: 'Features/AdminForm/PreviewFormBanner',
   parameters: {
     layout: 'fullscreen',
     msw: [getPreviewFormResponse()],
   },
-  component: PreviewFormHeaderComponent,
+  component: PreviewFormBannerComponent,
   decorators: [
     (storyFn) => (
       <PreviewFormProvider formId="61540ece3d4a6e50ac0cc6ff">
@@ -31,7 +31,7 @@ export default {
   ],
 } as Meta
 
-const Template: Story = () => <PreviewFormHeaderComponent />
+const Template: Story = () => <PreviewFormBannerComponent />
 
 export const Desktop = Template.bind({})
 

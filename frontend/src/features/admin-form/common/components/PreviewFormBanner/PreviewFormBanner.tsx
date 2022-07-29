@@ -9,9 +9,7 @@ import Link from '~components/Link'
 
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
-export type PreviewHeaderMode = 'preview'
-
-export const PreviewFormHeader = (): JSX.Element => {
+export const PreviewFormBanner = (): JSX.Element => {
   const { form, formId } = usePublicFormContext()
 
   return (
