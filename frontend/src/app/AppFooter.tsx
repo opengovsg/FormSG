@@ -1,4 +1,4 @@
-import { APP_FOOTER_LINKS } from '~constants/externalLinks'
+import { APP_FOOTER_LINKS } from '~constants/links'
 import Footer, { FooterProps } from '~components/Footer'
 
 type AppFooterProps = Pick<

@@ -107,6 +107,10 @@ const transformToTableOutput = (
   return {
     ...pickBaseOutputFromSchema(schema),
     answerArray,
+    // override schema question title to include column titles as well.
+    question: `${schema.title} (${schema.columns
+      .map((col) => col.title)
+      .join(', ')})`,
   }
 }
 

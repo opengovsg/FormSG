@@ -25,7 +25,9 @@ export const useRowActionDropdown = (
     shareFormModalDisclosure,
     handleEditForm: () => navigate(`${ADMINFORM_ROUTE}/${formId}`),
     handlePreviewForm: () =>
-      navigate(`${ADMINFORM_ROUTE}/${formId}/${ADMINFORM_PREVIEW_ROUTE}`),
+      window.open(
+        `${window.location.origin}${ADMINFORM_ROUTE}/${formId}/${ADMINFORM_PREVIEW_ROUTE}`,
+      ),
     handleDuplicateForm: () =>
       console.log(`duplicate form button clicked for ${formId}`),
     handleManageFormAccess: () =>

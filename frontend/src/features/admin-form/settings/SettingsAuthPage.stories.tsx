@@ -8,7 +8,9 @@ import {
 } from '~shared/types/form'
 
 import {
+  createFormBuilderMocks,
   getAdminFormSettings,
+  MOCK_FORM_FIELDS_WITH_MYINFO,
   patchAdminFormSettings,
 } from '~/mocks/msw/handlers/admin-form'
 
@@ -39,7 +41,6 @@ PrivateEmailForm.parameters = {
 }
 
 export const PrivateStorageForm = Template.bind({})
-
 PrivateStorageForm.parameters = {
   msw: buildMswRoutes({
     responseMode: FormResponseMode.Encrypt,
@@ -63,6 +64,18 @@ PrivateStorageCorppassForm.parameters = {
     authType: FormAuthType.CP,
     responseMode: FormResponseMode.Encrypt,
   }),
+}
+
+export const PrivateEmailMyinfoForm = Template.bind({})
+PrivateEmailMyinfoForm.parameters = {
+  msw: [
+    ...buildMswRoutes({
+      status: FormStatus.Private,
+      authType: FormAuthType.MyInfo,
+      esrvcId: 'STORYBOOK-TEST',
+    }),
+    ...createFormBuilderMocks({ form_fields: MOCK_FORM_FIELDS_WITH_MYINFO }),
+  ],
 }
 
 export const Loading = Template.bind({})

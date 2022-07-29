@@ -11,16 +11,9 @@ export interface FormResponseOptionsProps {
   value: FormResponseMode
 }
 
-const OptionDescription = ({
-  listTitle,
-  listItems = [],
-}: {
-  listTitle: string
-  listItems: string[]
-}) => {
+const OptionDescription = ({ listItems = [] }: { listItems: string[] }) => {
   return (
     <>
-      <Tile.Text textStyle="subhead-2">{listTitle}</Tile.Text>
       <UnorderedList color="secondary.400" ml="1.5rem">
         {listItems.map((text, index) => (
           <Tile.ListItem key={index} textStyle="body-2" textAlign="left">
@@ -48,10 +41,13 @@ export const FormResponseOptions = forwardRef<
         flex={1}
       >
         <Tile.Title>Storage Mode</Tile.Title>
-        <Tile.Subtitle>Receive responses in Form</Tile.Subtitle>
+        <Tile.Subtitle>View or download responses in FormSG</Tile.Subtitle>
         <OptionDescription
-          listTitle="Benefits"
-          listItems={['20 mb limit for attachments', 'End to end encryption']}
+          listItems={[
+            'Attachments: up to 20MB per form',
+            'Up to Restricted and Sensitive (Normal) data',
+            'Supports webhooks for responses',
+          ]}
         />
       </Tile>
       <Tile
@@ -66,10 +62,10 @@ export const FormResponseOptions = forwardRef<
         <Tile.Title>Email Mode</Tile.Title>
         <Tile.Subtitle>Receive responses in your inbox</Tile.Subtitle>
         <OptionDescription
-          listTitle="Benefits"
           listItems={[
-            'Users can receive emailed copy of response',
-            'MyInfo fields',
+            'Attachments: up to 7MB per form',
+            'Up to Restricted and Sensitive (High) data',
+            'Supports MyInfo fields',
           ]}
         />
       </Tile>

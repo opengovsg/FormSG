@@ -16,6 +16,8 @@ import Link from '~components/Link'
 import Radio from '~components/Radio'
 import Tooltip from '~components/Tooltip'
 
+import { useAdminForm } from '~features/admin-form/common/queries'
+import { isMyInfo } from '~features/myinfo/utils'
 import { useUser } from '~features/user/queries'
 
 import { useMutateFormSettings } from '../../mutations'
@@ -27,6 +29,17 @@ import {
   STORAGE_MODE_AUTHTYPES,
 } from './constants'
 import { EsrvcIdBox } from './EsrvcIdBox'
+
+const esrvcidRequired = (authType: FormAuthType) => {
+  switch (authType) {
+    case FormAuthType.SP:
+    case FormAuthType.MyInfo:
+    case FormAuthType.CP:
+      return true
+    default:
+      return false
+  }
+}
 
 interface AuthSettingsSectionProps {
   settings: FormSettings
@@ -51,6 +64,12 @@ export const AuthSettingsSection = ({
 }: AuthSettingsSectionProps): JSX.Element => {
   const { mutateFormAuthType } = useMutateFormSettings()
   const { user } = useUser()
+  const { data: form } = useAdminForm()
+
+  const containsMyInfoFields = useMemo(
+    () => form?.form_fields.some(isMyInfo) ?? false,
+    [form?.form_fields],
+  )
 
   const [focusedValue, setFocusedValue] = useState<FormAuthType>()
 
@@ -62,9 +81,15 @@ export const AuthSettingsSection = ({
   const isDisabled = useCallback(
     (authType: FormAuthType) =>
       isFormPublic ||
+      containsMyInfoFields ||
       mutateFormAuthType.isLoading ||
       (authType === FormAuthType.SGID && !user?.betaFlags?.sgid),
-    [user?.betaFlags?.sgid, isFormPublic, mutateFormAuthType.isLoading],
+    [
+      isFormPublic,
+      containsMyInfoFields,
+      mutateFormAuthType.isLoading,
+      user?.betaFlags?.sgid,
+    ],
   )
 
   const handleEnterKeyDown: KeyboardEventHandler = useCallback(
@@ -114,6 +139,11 @@ export const AuthSettingsSection = ({
         <InlineMessage mb="1.25rem">
           To change authentication method, close your form to new responses.
         </InlineMessage>
+      ) : containsMyInfoFields ? (
+        <InlineMessage mb="1.25rem">
+          Authentication method cannot be changed without first removing MyInfo
+          fields.
+        </InlineMessage>
       ) : null}
       <Radio.RadioGroup
         value={settings.authType}
@@ -155,7 +185,7 @@ export const AuthSettingsSection = ({
                 ) : null}
               </Radio>
             </Box>
-            {authType !== FormAuthType.NIL && authType === settings.authType ? (
+            {esrvcidRequired(authType) && authType === settings.authType ? (
               <EsrvcIdBox
                 settings={settings}
                 isDisabled={isDisabled(authType)}

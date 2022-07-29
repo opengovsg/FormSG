@@ -47,17 +47,15 @@ const useSecretKeyVerification = () => {
   const secretKeyValidationRules: RegisterOptions = useMemo(() => {
     return {
       required: "Please enter the form's secret key",
-      pattern: {
-        value: SECRET_KEY_REGEX,
-        message: 'The secret key provided is invalid',
-      },
       validate: (secretKey) => {
         // Should not see this error message.
         if (!formPublicKey) return 'This form is not a storage mode form'
-        const isKeypairValid = formsgSdk.crypto.valid(
-          formPublicKey,
-          secretKey.trim(),
-        )
+
+        const trimmedSecretKey = secretKey.trim()
+        const isKeypairValid =
+          SECRET_KEY_REGEX.test(trimmedSecretKey) &&
+          formsgSdk.crypto.valid(formPublicKey, trimmedSecretKey)
+
         return isKeypairValid || 'The secret key provided is invalid'
       },
     }
@@ -81,7 +79,7 @@ const useSecretKeyVerification = () => {
       const reader = new FileReader()
       reader.onload = async (e) => {
         if (!e.target) return
-        const text = e.target.result?.toString()
+        const text = e.target.result?.toString().trim()
 
         if (!text || !SECRET_KEY_REGEX.test(text)) {
           return setError(

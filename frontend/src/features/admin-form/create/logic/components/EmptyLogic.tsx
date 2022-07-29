@@ -27,8 +27,8 @@ export const EmptyLogic = (): JSX.Element => {
         Start creating logic for your form
       </Text>
       <Text textStyle="body-1" mt="1rem">
-        Use input from questions to show fields, change email notifications,
-        change Thank You pages, or to disable form submission.{' '}
+        Show or hide fields depending on user input, or disable form submission
+        for invalid answers.{' '}
         <Link
           isExternal
           href="https://guide.form.gov.sg/AdvancedGuide.html#form-logic"
