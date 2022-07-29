@@ -1,6 +1,5 @@
 import JoiDate from '@joi/date'
 import { celebrate, Joi as BaseJoi, Segments } from 'celebrate'
-import tracer from 'dd-trace'
 import { AuthedSessionData } from 'express-session'
 import { StatusCodes } from 'http-status-codes'
 import JSONStream from 'JSONStream'
@@ -25,6 +24,7 @@ import { createReqMeta, getRequestIp } from '../../../utils/request'
 import { getFormAfterPermissionChecks } from '../../auth/auth.service'
 import { MalformedParametersError } from '../../core/core.errors'
 import { ControllerHandler } from '../../core/core.types'
+import { setFormTags } from '../../datadog/datadog.utils'
 import { PermissionLevel } from '../../form/admin-form/admin-form.types'
 import * as FormService from '../../form/form.service'
 import { SpOidcService } from '../../spcp/sp.oidc.service'
@@ -95,13 +95,7 @@ const submitEncryptModeForm: ControllerHandler<
     return res.status(statusCode).json({ message: errorMessage })
   }
 
-  const span = tracer.scope().active()
-
-  if (span) {
-    span.setTag('form.id', formId)
-    span.setTag('form.adminid', `${formResult.value.admin._id}`)
-    span.setTag('form.agencyid', `${formResult.value.admin.agency._id}`)
-  }
+  setFormTags(formResult.value)
 
   const checkFormIsEncryptModeResult = checkFormIsEncryptMode(formResult.value)
   if (checkFormIsEncryptModeResult.isErr()) {

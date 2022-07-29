@@ -1,4 +1,3 @@
-import tracer from 'dd-trace'
 import { ok, okAsync, ResultAsync } from 'neverthrow'
 
 import {
@@ -14,6 +13,7 @@ import * as CaptchaService from '../../../services/captcha/captcha.service'
 import MailService from '../../../services/mail/mail.service'
 import { createReqMeta, getRequestIp } from '../../../utils/request'
 import { ControllerHandler } from '../../core/core.types'
+import { setFormTags } from '../../datadog/datadog.utils'
 import * as FormService from '../../form/form.service'
 import {
   MYINFO_COOKIE_NAME,
@@ -78,13 +78,7 @@ const submitEmailModeForm: ControllerHandler<
         return error
       })
       .andThen((form) => {
-        const span = tracer.scope().active()
-
-        if (span) {
-          span.setTag('form.id', formId)
-          span.setTag('form.adminid', `${form.admin._id}`)
-          span.setTag('form.agencyid', `${form.admin.agency._id}`)
-        }
+        setFormTags(form)
 
         return EmailSubmissionService.checkFormIsEmailMode(form).mapErr(
           (error) => {
