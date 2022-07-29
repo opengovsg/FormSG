@@ -1,14 +1,9 @@
-import {
-  ChangeEventHandler,
-  KeyboardEventHandler,
-  useCallback,
-  useMemo,
-  useRef,
-  useState,
-} from 'react'
+import { useCallback, useMemo } from 'react'
+import { useForm } from 'react-hook-form'
 import ReactMarkdown from 'react-markdown'
 import {
   Flex,
+  FormControl,
   FormLabel,
   InputGroup,
   InputRightElement,
@@ -19,6 +14,7 @@ import {
 import { FormAuthType, FormSettings } from '~shared/types/form'
 
 import { useMdComponents } from '~hooks/useMdComponents'
+import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import Input from '~components/Input'
 import Spinner from '~components/Spinner'
 
@@ -38,10 +34,20 @@ export const EsrvcIdBox = ({
 }: EsrvcIdBoxProps): JSX.Element => {
   const initialEsrvcId = useMemo(() => settings.esrvcId ?? '', [settings])
 
-  const [value, setValue] = useState<string>(initialEsrvcId)
-
-  const inputRef = useRef<HTMLInputElement>(null)
   const { mutateFormEsrvcId } = useMutateFormSettings()
+
+  const {
+    register,
+    setValue,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<{ esrvcId: string }>({
+    defaultValues: {
+      esrvcId: initialEsrvcId,
+    },
+    mode: 'onChange',
+  })
 
   const mdComponents = useMdComponents({
     styles: {
@@ -52,31 +58,17 @@ export const EsrvcIdBox = ({
     },
   })
 
-  const handleValueChange: ChangeEventHandler<HTMLInputElement> = useCallback(
-    (e) => setValue(e.target.value),
-    [],
-  )
+  const onSubmit = handleSubmit(({ esrvcId }) => {
+    if (esrvcId.trim() === initialEsrvcId) return
+    return mutateFormEsrvcId.mutate(esrvcId.trim(), {
+      onError: () => reset(),
+      onSuccess: ({ esrvcId }) => setValue('esrvcId', esrvcId ?? ''),
+    })
+  })
 
   const handleBlur = useCallback(() => {
-    if (value === initialEsrvcId) return
-
-    return mutateFormEsrvcId.mutate(value, {
-      onError: () => {
-        setValue(initialEsrvcId)
-      },
-    })
-  }, [initialEsrvcId, mutateFormEsrvcId, value])
-
-  const handleKeydown: KeyboardEventHandler<HTMLInputElement> = useCallback(
-    (e) => {
-      if (e.key === 'Enter') {
-        e.preventDefault()
-        e.stopPropagation()
-        inputRef.current?.blur()
-      }
-    },
-    [],
-  )
+    return errors.esrvcId ? reset() : onSubmit()
+  }, [errors, onSubmit, reset])
 
   const renderedHelperText = useMemo(() => {
     switch (settings.authType) {
@@ -90,31 +82,39 @@ export const EsrvcIdBox = ({
   }, [settings.authType])
 
   return (
-    <Stack ml="2.75rem" mb="1.25rem">
-      <ReactMarkdown components={mdComponents}>
-        {renderedHelperText}
-      </ReactMarkdown>
-      <VisuallyHidden>
-        <FormLabel htmlFor="esrvc-id">e-service ID:</FormLabel>
-      </VisuallyHidden>
-      <Flex maxW="20rem" w="100%">
-        <InputGroup>
-          <InputRightElement pointerEvents="none">
-            <Spinner display={mutateFormEsrvcId.isLoading ? 'flex' : 'none'} />
-          </InputRightElement>
-          <Input
-            isDisabled={isDisabled}
-            isReadOnly={mutateFormEsrvcId.isLoading}
-            ref={inputRef}
-            value={value}
-            onChange={handleValueChange}
-            onKeyDown={handleKeydown}
-            onBlur={handleBlur}
-            id="esrvc-id"
-            placeholder="Enter Singpass e-service ID"
-          />
-        </InputGroup>
-      </Flex>
-    </Stack>
+    <form onSubmit={onSubmit} onBlur={handleBlur}>
+      <Stack ml="2.75rem" mb="1.25rem">
+        <ReactMarkdown components={mdComponents}>
+          {renderedHelperText}
+        </ReactMarkdown>
+        <VisuallyHidden>
+          <FormLabel htmlFor="esrvcId">e-service ID:</FormLabel>
+        </VisuallyHidden>
+        <Flex maxW="20rem" w="100%">
+          <FormControl id="esrvcId" isInvalid={!!errors.esrvcId}>
+            <InputGroup>
+              <InputRightElement pointerEvents="none">
+                <Spinner
+                  display={mutateFormEsrvcId.isLoading ? 'flex' : 'none'}
+                />
+              </InputRightElement>
+              <Input
+                {...register('esrvcId', {
+                  validate: {
+                    noWhitespace: (value) =>
+                      !value.trim().match(/\s/) ||
+                      'e-service ID must not contain whitespace',
+                  },
+                })}
+                isDisabled={isDisabled}
+                isReadOnly={mutateFormEsrvcId.isLoading}
+                placeholder="Enter Singpass e-service ID"
+              />
+            </InputGroup>
+            <FormErrorMessage>{errors.esrvcId?.message}</FormErrorMessage>
+          </FormControl>
+        </Flex>
+      </Stack>
+    </form>
   )
 }
