@@ -1,4 +1,4 @@
-import { FC } from 'react'
+import { FC, useMemo } from 'react'
 import {
   Box,
   Container,
@@ -26,7 +26,12 @@ const SectionListItem: FC<ListItemProps> = ({
   children,
   listStyleType = 'decimal',
 }) => (
-  <ListItem fontWeight={600} textStyle="h3" listStyleType={listStyleType}>
+  <ListItem
+    fontWeight={600}
+    textStyle="h3"
+    pl="1rem"
+    listStyleType={listStyleType}
+  >
     {children}
   </ListItem>
 )
@@ -35,7 +40,12 @@ export const SubSectionOrderedList: FC<ListProps> = ({
   children,
   ...props
 }) => (
-  <OrderedList spacing="1.5rem" {...props} style={{ counterReset: 'section' }}>
+  <OrderedList
+    spacing="1.5rem"
+    marginInlineStart={0}
+    sx={{ counterReset: 'section' }}
+    {...props}
+  >
     {children}
   </OrderedList>
 )
@@ -44,7 +54,7 @@ export const SubSubSectionOrderedList: FC<ListProps> = ({
   children,
   ...props
 }) => (
-  <SubSectionOrderedList marginInlineStart="1.5rem" {...props}>
+  <SubSectionOrderedList marginInlineStart={0} {...props}>
     {children}
   </SubSectionOrderedList>
 )
@@ -54,30 +64,41 @@ export const SubSectionListItem: FC<ListItemProps & listItemMarkerProps> = ({
   prependSequenceMarker,
   isNumericMarker,
   ...props
-}) => (
-  // this might seem a bit messy, but what this is doing
-  // is allowing each list to have its own internal
-  // counter. _before is the psuedo  css selector and content
-  // is basically logic determining how the marker is displayed.
-  // refer to https://developer.mozilla.org/en-US/docs/Web/CSS/counter
-  // and https://developer.mozilla.org/en-US/docs/Web/CSS/counters
-  // and https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Counter_Styles/Using_CSS_counters
-  <ListItem
-    textStyle="body-1"
-    _before={{
-      counterIncrement: 'section',
-      content: `"${
-        prependSequenceMarker ? prependSequenceMarker : '('
-      }"counters(section, ".", ${
-        isNumericMarker ? 'numeric' : 'lower-alpha'
-      })"${prependSequenceMarker ? ' ' : ') '}"`,
-    }}
-    listStyleType="none"
-    {...props}
-  >
-    {children}
-  </ListItem>
-)
+}) => {
+  const sequenceMarker = useMemo(() => {
+    return `"${
+      prependSequenceMarker ? prependSequenceMarker : '('
+    }"counters(section, ".", ${isNumericMarker ? 'numeric' : 'lower-alpha'})"${
+      prependSequenceMarker ? ' ' : ') '
+    }"`
+  }, [isNumericMarker, prependSequenceMarker])
+
+  return (
+    // this might seem a bit messy, but what this is doing
+    // is allowing each list to have its own internal
+    // counter. _before is the psuedo  css selector and content
+    // is basically logic determining how the marker is displayed.
+    // refer to https://developer.mozilla.org/en-US/docs/Web/CSS/counter
+    // and https://developer.mozilla.org/en-US/docs/Web/CSS/counters
+    // and https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Counter_Styles/Using_CSS_counters
+    <ListItem
+      textStyle="body-1"
+      display="table"
+      _before={{
+        minWidth: '3rem',
+        counterIncrement: 'section',
+        content: sequenceMarker,
+        display: 'table-cell',
+        paddingRight: '0.5rem',
+      }}
+      listStyleType="none"
+      {...props}
+    >
+      {children}
+    </ListItem>
+  )
+}
+
 const SectionTitle: FC = ({ children }) => <Text mb="1.5rem">{children}</Text>
 
 export const TermsOfUsePage = (): JSX.Element => {

@@ -25,7 +25,7 @@ const SectionListItem: FC<ListItemProps> = ({
   children,
   listStyleType = 'decimal',
 }) => (
-  <ListItem textStyle="body-1" listStyleType={listStyleType}>
+  <ListItem textStyle="body-1" listStyleType={listStyleType} pl="1rem">
     {children}
   </ListItem>
 )
@@ -280,7 +280,7 @@ export const PrivacyPolicyPage = (): JSX.Element => {
               Annex
             </Text>
             <Text textStyle="h3">Name of Service: Form</Text>
-            <OrderedList spacing="1.5rem" marginInlineStart="1.5rem">
+            <OrderedList spacing="1.5rem" marginInlineStart="1.5rem !important">
               <SectionListItem>
                 If you are a form administrator or creator, please note that
                 GovTech will collect your email address and other contact
