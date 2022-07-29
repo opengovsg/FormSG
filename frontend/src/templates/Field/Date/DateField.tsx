@@ -6,6 +6,7 @@ import { DateSelectedValidation } from '~shared/types/field'
 
 import {
   isDateAfterToday,
+  isDateAnInvalidDay,
   isDateBeforeToday,
   isDateOutOfRange,
 } from '~utils/date'
@@ -34,23 +35,38 @@ export const DateField = ({
   const isDateUnavailable = useCallback(
     (date: Date) => {
       const { selectedDateValidation } = schema.dateValidation
+      const selectedInvalidDays = schema.invalidDays ?? []
+
       // All dates available.
-      if (!selectedDateValidation) return false
+      if (!selectedDateValidation && !!selectedInvalidDays.length) return false
+
+      let isDateUnavailable = false
+      let isDayUnavailable = false
 
       switch (selectedDateValidation) {
         case DateSelectedValidation.NoPast:
-          return isDateBeforeToday(date)
+          isDateUnavailable = isDateBeforeToday(date)
+          break
         case DateSelectedValidation.NoFuture:
-          return isDateAfterToday(date)
+          isDateUnavailable = isDateAfterToday(date)
+          break
         case DateSelectedValidation.Custom: {
           const { customMinDate, customMaxDate } = schema.dateValidation
-          return isDateOutOfRange(date, customMinDate, customMaxDate)
+          isDateUnavailable = isDateOutOfRange(
+            date,
+            customMinDate,
+            customMaxDate,
+          )
+          break
         }
         default:
-          return false
+          isDateUnavailable = false
       }
+
+      isDayUnavailable = isDateAnInvalidDay(date, selectedInvalidDays)
+      return isDateUnavailable || isDayUnavailable
     },
-    [schema.dateValidation],
+    [schema.dateValidation, schema.invalidDays],
   )
 
   const { control } = useFormContext<SingleAnswerFieldInput>()

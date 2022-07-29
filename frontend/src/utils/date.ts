@@ -160,3 +160,51 @@ export const transformCheckedBoxesValueToInvalidDays = (
   const validDaysSet = new Set(validDays)
   return ALL_INVALID_DAYS_ARR.filter((day) => !validDaysSet.has(day))
 }
+
+const convertInvalidDayToNumber = (invalidDay: InvalidDaysOptions): number => {
+  switch (invalidDay) {
+    case InvalidDaysOptions.Sunday:
+      return 0
+    case InvalidDaysOptions.Monday:
+      return 1
+    case InvalidDaysOptions.Tuesday:
+      return 2
+    case InvalidDaysOptions.Wednesday:
+      return 3
+    case InvalidDaysOptions.Thursday:
+      return 4
+    case InvalidDaysOptions.Friday:
+      return 5
+    case InvalidDaysOptions.Saturday:
+      return 6
+    default:
+      return -1
+  }
+}
+
+const convertInvalidDaysOfTheWeekToNumberSet = (
+  invalidDays: InvalidDaysOptions[],
+): Set<number> => {
+  if (invalidDays.length === 0) {
+    return new Set()
+  }
+
+  const invaliDaysNumberArray = invalidDays.map((invalidDay) =>
+    convertInvalidDayToNumber(invalidDay),
+  )
+  return new Set(invaliDaysNumberArray)
+}
+
+export const isDateAnInvalidDay = (
+  date: Date,
+  invalidDays: InvalidDaysOptions[],
+): boolean => {
+  const invalidDaySet = convertInvalidDaysOfTheWeekToNumberSet(invalidDays)
+
+  if (invalidDaySet.has(-1)) {
+    return true
+  }
+  const dayNumberFormat = parseInt(format(date, 'i'))
+
+  return invalidDaySet.has(dayNumberFormat)
+}
