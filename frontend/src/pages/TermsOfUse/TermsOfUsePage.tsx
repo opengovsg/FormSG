@@ -117,7 +117,7 @@ export const TermsOfUsePage = (): JSX.Element => {
                 <SubSectionOrderedList>
                   <SubSectionListItem
                     prependSequenceMarker="1."
-                    isNumericMarker={true}
+                    isNumericMarker
                   >
                     These Terms of Use govern your access to and use of our
                     services, including the application (whether as software or
@@ -127,7 +127,7 @@ export const TermsOfUsePage = (): JSX.Element => {
                   </SubSectionListItem>
                   <SubSectionListItem
                     prependSequenceMarker="1."
-                    isNumericMarker={true}
+                    isNumericMarker
                   >
                     This Service is provided to you by the Government Technology
                     Agency ("<b>GovTech</b>"). GovTech’s office is located at 10
@@ -136,7 +136,7 @@ export const TermsOfUsePage = (): JSX.Element => {
                   </SubSectionListItem>
                   <SubSectionListItem
                     prependSequenceMarker="1."
-                    isNumericMarker={true}
+                    isNumericMarker
                   >
                     By accessing or using any part of this Service, you
                     unconditionally agree and accept to be legally bound by
@@ -152,7 +152,7 @@ export const TermsOfUsePage = (): JSX.Element => {
                   </SubSectionListItem>
                   <SubSectionListItem
                     prependSequenceMarker="1."
-                    isNumericMarker={true}
+                    isNumericMarker
                   >
                     <b>
                       If you do not agree to these Terms of Use, please do not
@@ -161,7 +161,7 @@ export const TermsOfUsePage = (): JSX.Element => {
                   </SubSectionListItem>
                   <SubSectionListItem
                     prependSequenceMarker="1."
-                    isNumericMarker={true}
+                    isNumericMarker
                   >
                     If you are accessing or using the Service for and on behalf
                     of another entity (such as your employer), you warrant and
@@ -182,7 +182,7 @@ export const TermsOfUsePage = (): JSX.Element => {
                 <SubSectionOrderedList>
                   <SubSectionListItem
                     prependSequenceMarker="3."
-                    isNumericMarker={true}
+                    isNumericMarker
                   >
                     The Service, including the materials made available on or
                     through the Service, is owned by, licensed to, managed or
@@ -191,7 +191,7 @@ export const TermsOfUsePage = (): JSX.Element => {
                   </SubSectionListItem>
                   <SubSectionListItem
                     prependSequenceMarker="3."
-                    isNumericMarker={true}
+                    isNumericMarker
                   >
                     Subject to these Terms of Use, GovTech grants to you a
                     non-exclusive, revocable, and non-transferable right to
@@ -210,20 +210,20 @@ export const TermsOfUsePage = (): JSX.Element => {
                   </SubSectionListItem>
                   <SubSectionListItem
                     prependSequenceMarker="3."
-                    isNumericMarker={true}
+                    isNumericMarker
                   >
                     GovTech reserves the right to:
                     <SubSubSectionOrderedList>
                       <SubSectionListItem
                         prependSequenceMarker="3."
                         mt="1.5rem"
-                        isNumericMarker={true}
+                        isNumericMarker
                       >
                         Update or modify this Service from time to time;
                       </SubSectionListItem>
                       <SubSectionListItem
                         prependSequenceMarker="3."
-                        isNumericMarker={true}
+                        isNumericMarker
                       >
                         Deny or restrict access to or use of the Service by any
                         particular person without ascribing any reasons
@@ -231,7 +231,7 @@ export const TermsOfUsePage = (): JSX.Element => {
                       </SubSectionListItem>
                       <SubSectionListItem
                         prependSequenceMarker="3."
-                        isNumericMarker={true}
+                        isNumericMarker
                       >
                         Discontinue or terminate this Service at any time
                         without notice or liability to you whatsoever, whereupon
@@ -244,7 +244,7 @@ export const TermsOfUsePage = (): JSX.Element => {
                   </SubSectionListItem>
                   <SubSectionListItem
                     prependSequenceMarker="3."
-                    isNumericMarker={true}
+                    isNumericMarker
                   >
                     You will not interfere or attempt to interfere with the
                     proper working of the Service or otherwise do anything that
@@ -258,7 +258,7 @@ export const TermsOfUsePage = (): JSX.Element => {
                 <SubSectionOrderedList>
                   <SubSectionListItem
                     prependSequenceMarker="3A."
-                    isNumericMarker={true}
+                    isNumericMarker
                   >
                     You are solely responsible for maintaining the
                     confidentiality and security of any authentication
@@ -268,7 +268,7 @@ export const TermsOfUsePage = (): JSX.Element => {
                   </SubSectionListItem>
                   <SubSectionListItem
                     prependSequenceMarker="3A."
-                    isNumericMarker={true}
+                    isNumericMarker
                   >
                     GovTech shall be entitled, but not obliged, to verify the
                     identity of the person using the Service. Without prejudice
@@ -278,7 +278,7 @@ export const TermsOfUsePage = (): JSX.Element => {
                   </SubSectionListItem>
                   <SubSectionListItem
                     prependSequenceMarker="3A."
-                    isNumericMarker={true}
+                    isNumericMarker
                   >
                     GovTech shall have the sole and absolute discretion to
                     invalidate any authentication credentials at any time, or
@@ -288,7 +288,7 @@ export const TermsOfUsePage = (): JSX.Element => {
                   </SubSectionListItem>
                   <SubSectionListItem
                     prependSequenceMarker="3A."
-                    isNumericMarker={true}
+                    isNumericMarker
                   >
                     GovTech shall be entitled, but not obliged, to act upon or
                     rely on any instructions, information, transmissions of
@@ -300,7 +300,7 @@ export const TermsOfUsePage = (): JSX.Element => {
                   </SubSectionListItem>
                   <SubSectionListItem
                     prependSequenceMarker="3A."
-                    isNumericMarker={true}
+                    isNumericMarker
                   >
                     For the avoidance of doubt, you are solely responsible for
                     any loss of whatever nature arising from unauthorized or
@@ -317,7 +317,7 @@ export const TermsOfUsePage = (): JSX.Element => {
                 <SubSectionOrderedList>
                   <SubSectionListItem
                     prependSequenceMarker="4."
-                    isNumericMarker={true}
+                    isNumericMarker
                   >
                     The Service may require, enable or facilitate access to or
                     use of software or services of a third party ("
@@ -348,7 +348,7 @@ export const TermsOfUsePage = (): JSX.Element => {
                   </SubSectionListItem>
                   <SubSectionListItem
                     prependSequenceMarker="4."
-                    isNumericMarker={true}
+                    isNumericMarker
                   >
                     <b>
                       It is your responsibility to check and read the most
@@ -366,7 +366,7 @@ export const TermsOfUsePage = (): JSX.Element => {
                   </SubSectionListItem>
                   <SubSectionListItem
                     prependSequenceMarker="4."
-                    isNumericMarker={true}
+                    isNumericMarker
                   >
                     If the Third Party Terms require you to enter into an
                     agreement directly with the Third Party, then you
@@ -376,7 +376,7 @@ export const TermsOfUsePage = (): JSX.Element => {
                     <SubSubSectionOrderedList mt="1.5rem">
                       <SubSectionListItem
                         prependSequenceMarker="4."
-                        isNumericMarker={true}
+                        isNumericMarker
                       >
                         some Third Party Terms (particularly open-source terms)
                         permit either a direct licence to you from the Third
@@ -386,7 +386,7 @@ export const TermsOfUsePage = (): JSX.Element => {
                       </SubSectionListItem>
                       <SubSectionListItem
                         prependSequenceMarker="4."
-                        isNumericMarker={true}
+                        isNumericMarker
                       >
                         the terms of your agreement with the Third Party will
                         govern your use of the relevant third party software or
@@ -396,7 +396,7 @@ export const TermsOfUsePage = (): JSX.Element => {
                   </SubSectionListItem>
                   <SubSectionListItem
                     prependSequenceMarker="4."
-                    isNumericMarker={true}
+                    isNumericMarker
                   >
                     If the Third Party Terms expressly or impliedly require
                     GovTech to incorporate certain terms in these Terms of Use
@@ -415,7 +415,7 @@ export const TermsOfUsePage = (): JSX.Element => {
                   </SubSectionListItem>
                   <SubSectionListItem
                     prependSequenceMarker="4."
-                    isNumericMarker={true}
+                    isNumericMarker
                   >
                     Some Third Party Terms grant the Third Party, or require
                     GovTech to grant the Third Party, direct rights of
@@ -427,7 +427,7 @@ export const TermsOfUsePage = (): JSX.Element => {
                   </SubSectionListItem>
                   <SubSectionListItem
                     prependSequenceMarker="4."
-                    isNumericMarker={true}
+                    isNumericMarker
                   >
                     For the avoidance of doubt, without prejudice to Clause 4.4,
                     to the extent of any inconsistency between these Terms of
@@ -437,7 +437,7 @@ export const TermsOfUsePage = (): JSX.Element => {
                   </SubSectionListItem>
                   <SubSectionListItem
                     prependSequenceMarker="4."
-                    isNumericMarker={true}
+                    isNumericMarker
                   >
                     Without prejudice and in addition to the foregoing, GovTech
                     shall not be responsible for your use of any software or
@@ -475,7 +475,7 @@ export const TermsOfUsePage = (): JSX.Element => {
                 <SubSectionOrderedList>
                   <SubSectionListItem
                     prependSequenceMarker="5B."
-                    isNumericMarker={true}
+                    isNumericMarker
                   >
                     If you receive information or data (in whatever form) from
                     GovTech or a Third Party which is designated confidential or
@@ -497,27 +497,27 @@ export const TermsOfUsePage = (): JSX.Element => {
                   </SubSectionListItem>
                   <SubSectionListItem
                     prependSequenceMarker="5B."
-                    isNumericMarker={true}
+                    isNumericMarker
                   >
                     You shall destroy any Confidential Information immediately
                     upon request by GovTech or the Third Party.
                   </SubSectionListItem>
                   <SubSectionListItem
                     prependSequenceMarker="5B."
-                    isNumericMarker={true}
+                    isNumericMarker
                   >
                     In the event:
                     <SubSubSectionOrderedList mt="1.5rem">
                       <SubSectionListItem
                         prependSequenceMarker="5B."
-                        isNumericMarker={true}
+                        isNumericMarker
                       >
                         you are, or likely to be, required by an order of court
                         to disclose Confidential Information; or
                       </SubSectionListItem>
                       <SubSectionListItem
                         prependSequenceMarker="5B."
-                        isNumericMarker={true}
+                        isNumericMarker
                       >
                         you have reasonable grounds to suspect the unauthorised
                         use or disclosure or reproduction of Confidential
@@ -532,7 +532,7 @@ export const TermsOfUsePage = (): JSX.Element => {
                   </SubSectionListItem>
                   <SubSectionListItem
                     prependSequenceMarker="5B."
-                    isNumericMarker={true}
+                    isNumericMarker
                   >
                     Nothing in this Clause 5B shall prejudice GovTech’s or the
                     Third Party’s other rights at law.
@@ -544,7 +544,7 @@ export const TermsOfUsePage = (): JSX.Element => {
                 <SubSectionOrderedList>
                   <SubSectionListItem
                     prependSequenceMarker="6."
-                    isNumericMarker={true}
+                    isNumericMarker
                   >
                     <b>
                       The Service is provided on an "as is" and "as available"
@@ -561,7 +561,7 @@ export const TermsOfUsePage = (): JSX.Element => {
                     <SubSubSectionOrderedList mt="1.5rem">
                       <SubSectionListItem
                         prependSequenceMarker="6."
-                        isNumericMarker={true}
+                        isNumericMarker
                       >
                         <b>
                           as to the accuracy, completeness, correctness,
@@ -573,7 +573,7 @@ export const TermsOfUsePage = (): JSX.Element => {
                       </SubSectionListItem>
                       <SubSectionListItem
                         prependSequenceMarker="6."
-                        isNumericMarker={true}
+                        isNumericMarker
                       >
                         <b>
                           that the Service or any functions associated therewith
@@ -588,7 +588,7 @@ export const TermsOfUsePage = (): JSX.Element => {
                   </SubSectionListItem>
                   <SubSectionListItem
                     prependSequenceMarker="6."
-                    isNumericMarker={true}
+                    isNumericMarker
                   >
                     <b>
                       GovTech shall also not be liable to you or any third party
@@ -602,7 +602,7 @@ export const TermsOfUsePage = (): JSX.Element => {
                     <SubSubSectionOrderedList mt="1.5rem">
                       <SubSectionListItem
                         prependSequenceMarker="6."
-                        isNumericMarker={true}
+                        isNumericMarker
                       >
                         <b>
                           your access to or use of this Service, or any part
@@ -611,7 +611,7 @@ export const TermsOfUsePage = (): JSX.Element => {
                       </SubSectionListItem>
                       <SubSectionListItem
                         prependSequenceMarker="6."
-                        isNumericMarker={true}
+                        isNumericMarker
                       >
                         <b>
                           any loss of access or use of this Service or any part
@@ -620,7 +620,7 @@ export const TermsOfUsePage = (): JSX.Element => {
                       </SubSectionListItem>
                       <SubSectionListItem
                         prependSequenceMarker="6."
-                        isNumericMarker={true}
+                        isNumericMarker
                       >
                         <b>
                           any inaccuracy or incompleteness in, or errors or
@@ -629,7 +629,7 @@ export const TermsOfUsePage = (): JSX.Element => {
                       </SubSectionListItem>
                       <SubSectionListItem
                         prependSequenceMarker="6."
-                        isNumericMarker={true}
+                        isNumericMarker
                       >
                         <b>
                           any delay or interruption in the transmission of the
@@ -639,7 +639,7 @@ export const TermsOfUsePage = (): JSX.Element => {
                       </SubSectionListItem>
                       <SubSectionListItem
                         prependSequenceMarker="6."
-                        isNumericMarker={true}
+                        isNumericMarker
                       >
                         <b>
                           any decision made or action taken by you or any third
@@ -654,7 +654,7 @@ export const TermsOfUsePage = (): JSX.Element => {
                   </SubSectionListItem>
                   <SubSectionListItem
                     prependSequenceMarker="6."
-                    isNumericMarker={true}
+                    isNumericMarker
                   >
                     <b>
                       Without prejudice and in addition to the foregoing,
@@ -672,7 +672,7 @@ export const TermsOfUsePage = (): JSX.Element => {
                   </SubSectionListItem>
                   <SubSectionListItem
                     prependSequenceMarker="6."
-                    isNumericMarker={true}
+                    isNumericMarker
                   >
                     You shall not rely on any part of the Service to claim or
                     assert any form of legitimate expectation against GovTech,
@@ -681,7 +681,7 @@ export const TermsOfUsePage = (): JSX.Element => {
                   </SubSectionListItem>
                   <SubSectionListItem
                     prependSequenceMarker="6."
-                    isNumericMarker={true}
+                    isNumericMarker
                   >
                     You agree to defend and indemnify and keep GovTech and its
                     officers, employees, agents and contractors harmless against
@@ -702,14 +702,14 @@ export const TermsOfUsePage = (): JSX.Element => {
                   </SubSectionListItem>
                   <SubSectionListItem
                     prependSequenceMarker="6."
-                    isNumericMarker={true}
+                    isNumericMarker
                   >
                     Without prejudice and in addition to GovTech’s other rights
                     herein:
                     <SubSubSectionOrderedList mt="1.5rem">
                       <SubSectionListItem
                         prependSequenceMarker="6."
-                        isNumericMarker={true}
+                        isNumericMarker
                       >
                         in no event shall GovTech’s total cumulative liability
                         arising out of or in connection with these Terms of Use
@@ -720,7 +720,7 @@ export const TermsOfUsePage = (): JSX.Element => {
                       </SubSectionListItem>
                       <SubSectionListItem
                         prependSequenceMarker="6."
-                        isNumericMarker={true}
+                        isNumericMarker
                       >
                         no action may be brought by you against GovTech arising
                         out of or in connection with these Terms of Use more
@@ -735,7 +735,7 @@ export const TermsOfUsePage = (): JSX.Element => {
                 <SubSectionOrderedList>
                   <SubSectionListItem
                     prependSequenceMarker="7."
-                    isNumericMarker={true}
+                    isNumericMarker
                   >
                     Insofar as the Service provides a hyperlink to material not
                     maintained or controlled by GovTech, GovTech shall not be
@@ -750,7 +750,7 @@ export const TermsOfUsePage = (): JSX.Element => {
                   </SubSectionListItem>
                   <SubSectionListItem
                     prependSequenceMarker="7."
-                    isNumericMarker={true}
+                    isNumericMarker
                   >
                     Caching and hyperlinking to, and the framing of, any part of
                     the Service is prohibited save where you have obtained
@@ -765,13 +765,13 @@ export const TermsOfUsePage = (): JSX.Element => {
                   </SubSectionListItem>
                   <SubSectionListItem
                     prependSequenceMarker="7."
-                    isNumericMarker={true}
+                    isNumericMarker
                   >
                     GovTech reserves all rights:
                     <SubSubSectionOrderedList mt="1.5rem">
                       <SubSectionListItem
                         prependSequenceMarker="7."
-                        isNumericMarker={true}
+                        isNumericMarker
                       >
                         to disable any links to, or frames of, any materials
                         which are unauthorised (including without limitation
@@ -784,7 +784,7 @@ export const TermsOfUsePage = (): JSX.Element => {
                       </SubSectionListItem>
                       <SubSectionListItem
                         prependSequenceMarker="7."
-                        isNumericMarker={true}
+                        isNumericMarker
                       >
                         to disclaim responsibility and/or liability for
                         materials that link to or frame any part of the Service.
@@ -815,14 +815,14 @@ export const TermsOfUsePage = (): JSX.Element => {
                 <SubSectionOrderedList>
                   <SubSectionListItem
                     prependSequenceMarker="10."
-                    isNumericMarker={true}
+                    isNumericMarker
                   >
                     You may not assign or sub-contract this Terms of Use without
                     the prior written consent of GovTech.
                   </SubSectionListItem>
                   <SubSectionListItem
                     prependSequenceMarker="10."
-                    isNumericMarker={true}
+                    isNumericMarker
                   >
                     GovTech may assign, novate, transfer, or sub-contract the
                     rights and liabilities in respect of the Service and this
@@ -855,14 +855,14 @@ export const TermsOfUsePage = (): JSX.Element => {
                 <SubSectionOrderedList>
                   <SubSectionListItem
                     prependSequenceMarker="11."
-                    isNumericMarker={true}
+                    isNumericMarker
                   >
                     These Terms of Use shall be governed by and construed in
                     accordance with laws of Singapore.
                   </SubSectionListItem>
                   <SubSectionListItem
                     prependSequenceMarker="11."
-                    isNumericMarker={true}
+                    isNumericMarker
                   >
                     Subject to clause 11.3, any dispute arising out of or in
                     connection with these Terms of Use, including any question
@@ -874,7 +874,7 @@ export const TermsOfUsePage = (): JSX.Element => {
                   </SubSectionListItem>
                   <SubSectionListItem
                     prependSequenceMarker="11."
-                    isNumericMarker={true}
+                    isNumericMarker
                   >
                     GovTech may, at its sole discretion, refer any dispute
                     referred to in clause 11.2 above to arbitration administered
@@ -886,25 +886,25 @@ export const TermsOfUsePage = (): JSX.Element => {
                     <SubSubSectionOrderedList mt="1.5rem">
                       <SubSectionListItem
                         prependSequenceMarker="11."
-                        isNumericMarker={true}
+                        isNumericMarker
                       >
                         The seat of the arbitration shall be Singapore.
                       </SubSectionListItem>
                       <SubSectionListItem
                         prependSequenceMarker="11."
-                        isNumericMarker={true}
+                        isNumericMarker
                       >
                         The tribunal shall consist of one (1) arbitrator.
                       </SubSectionListItem>
                       <SubSectionListItem
                         prependSequenceMarker="11."
-                        isNumericMarker={true}
+                        isNumericMarker
                       >
                         The language of the arbitration shall be English.
                       </SubSectionListItem>
                       <SubSectionListItem
                         prependSequenceMarker="11."
-                        isNumericMarker={true}
+                        isNumericMarker
                       >
                         All information, pleadings, documents, evidence and all
                         matters relating to the arbitration shall be

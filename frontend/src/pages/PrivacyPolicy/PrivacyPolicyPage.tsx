@@ -64,7 +64,7 @@ export const PrivacyPolicyPage = (): JSX.Element => {
                 </SectionParagraph>
                 <SubSectionOrderedList>
                   <SubSectionListItem
-                    isNumericMarker={true}
+                    isNumericMarker
                     prependSequenceMarker="1."
                   >
                     We may use "cookies", where a small data file is sent to
@@ -76,7 +76,7 @@ export const PrivacyPolicyPage = (): JSX.Element => {
                     pages you visit, it cannot read data off your hard disk.
                   </SubSectionListItem>
                   <SubSectionListItem
-                    isNumericMarker={true}
+                    isNumericMarker
                     prependSequenceMarker="1."
                   >
                     You can choose to accept or decline cookies. Most web
@@ -113,21 +113,21 @@ export const PrivacyPolicyPage = (): JSX.Element => {
                 </SectionParagraph>
                 <SubSectionOrderedList>
                   <SubSectionListItem
-                    isNumericMarker={true}
+                    isNumericMarker
                     prependSequenceMarker="3."
                   >
                     We may use, disclose and process the data for any one or
                     more of the following purposes:
                     <SubSubSectionOrderedList mt="1.5rem">
                       <SubSectionListItem
-                        isNumericMarker={true}
+                        isNumericMarker
                         prependSequenceMarker="3."
                       >
                         to assist, process and facilitate your access or use of
                         the Service;
                       </SubSectionListItem>
                       <SubSectionListItem
-                        isNumericMarker={true}
+                        isNumericMarker
                         prependSequenceMarker="3."
                       >
                         to administer, process and facilitate any transactions
@@ -138,7 +138,7 @@ export const PrivacyPolicyPage = (): JSX.Element => {
                         duly authorized to act;
                       </SubSectionListItem>
                       <SubSectionListItem
-                        isNumericMarker={true}
+                        isNumericMarker
                         prependSequenceMarker="3."
                       >
                         to carry out your instructions or respond to any
@@ -148,7 +148,7 @@ export const PrivacyPolicyPage = (): JSX.Element => {
                         with your interactions with us;
                       </SubSectionListItem>
                       <SubSectionListItem
-                        isNumericMarker={true}
+                        isNumericMarker
                         prependSequenceMarker="3."
                       >
                         to monitor and track your usage of the Service, to
@@ -167,7 +167,7 @@ export const PrivacyPolicyPage = (): JSX.Element => {
                         purposes (whether internally or externally);
                       </SubSectionListItem>
                       <SubSectionListItem
-                        isNumericMarker={true}
+                        isNumericMarker
                         prependSequenceMarker="3."
                       >
                         for the purposes of storing or creating backups of your
@@ -176,7 +176,7 @@ export const PrivacyPolicyPage = (): JSX.Element => {
                         Singapore;
                       </SubSectionListItem>
                       <SubSectionListItem
-                        isNumericMarker={true}
+                        isNumericMarker
                         prependSequenceMarker="3."
                       >
                         to enable us to contact you or communicate with you on
@@ -190,7 +190,7 @@ export const PrivacyPolicyPage = (): JSX.Element => {
                     </SubSubSectionOrderedList>
                   </SubSectionListItem>
                   <SubSectionListItem
-                    isNumericMarker={true}
+                    isNumericMarker
                     prependSequenceMarker="3."
                   >
                     We may share necessary data with other Public Sector
@@ -200,7 +200,7 @@ export const PrivacyPolicyPage = (): JSX.Element => {
                     prohibited by law.
                   </SubSectionListItem>
                   <SubSectionListItem
-                    isNumericMarker={true}
+                    isNumericMarker
                     prependSequenceMarker="3."
                   >
                     We will NOT share your personal data with entities which are
@@ -209,7 +209,7 @@ export const PrivacyPolicyPage = (): JSX.Element => {
                     Service to you or for fulfilling any of the purposes herein.
                   </SubSectionListItem>
                   <SubSectionListItem
-                    isNumericMarker={true}
+                    isNumericMarker
                     prependSequenceMarker="3."
                   >
                     For your convenience, we may also display to you data you
@@ -257,14 +257,14 @@ export const PrivacyPolicyPage = (): JSX.Element => {
                 </SectionParagraph>
                 <SubSectionOrderedList>
                   <SubSectionListItem
-                    isNumericMarker={true}
+                    isNumericMarker
                     prependSequenceMarker="9."
                   >
                     have any enquiries or feedback on our data protection
                     policies and procedures; or
                   </SubSectionListItem>
                   <SubSectionListItem
-                    isNumericMarker={true}
+                    isNumericMarker
                     prependSequenceMarker="9."
                   >
                     need more information on or access to data which you have
