@@ -1010,7 +1010,6 @@ export const TermsOfUsePage = (): JSX.Element => {
                 <SectionTitle>Special terms/notices</SectionTitle>
                 <SubSectionOrderedList>
                   <Text textStyle="body-1">
-                    {' '}
                     Certain image(s) or footage (as applicable) are used under
                     license from Shutterstock.com.
                   </Text>
