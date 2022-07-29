@@ -9,6 +9,8 @@ import {
   startOfToday,
 } from 'date-fns'
 
+import { InvalidDaysOptions } from '~shared/types'
+
 import { JsonDate } from '~typings/core'
 
 /**
@@ -139,4 +141,22 @@ export const transformShortIsoStringToDate = (
 
 export const transformDateToShortIsoString = (date: unknown): string | null => {
   return isDate(date) ? format(date as Date, 'yyyy-MM-dd') : null
+}
+
+const ALL_INVALID_DAYS_ARR = Object.values(InvalidDaysOptions)
+
+/** Transforms the invalid days array to valid days checkbox group value */
+export const transformInvalidDaysToCheckedBoxesValue = (
+  invalidDays: InvalidDaysOptions[],
+): InvalidDaysOptions[] => {
+  const invalidDaysSet = new Set(invalidDays)
+  return ALL_INVALID_DAYS_ARR.filter((day) => !invalidDaysSet.has(day))
+}
+
+/** Transforms the valid days checkbox group value to invalid days array */
+export const transformCheckedBoxesValueToInvalidDays = (
+  validDays: InvalidDaysOptions[],
+): InvalidDaysOptions[] => {
+  const validDaysSet = new Set(validDays)
+  return ALL_INVALID_DAYS_ARR.filter((day) => !validDaysSet.has(day))
 }
