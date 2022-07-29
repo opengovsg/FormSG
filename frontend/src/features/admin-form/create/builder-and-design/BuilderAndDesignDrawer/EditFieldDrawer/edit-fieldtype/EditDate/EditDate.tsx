@@ -180,7 +180,7 @@ export const EditDate = ({ field }: EditDateProps): JSX.Element => {
   })
 
   const watchAddParticularDayRestriction = useWatch({
-    control: control,
+    control,
     name: 'addParticularDayRestriction',
   })
 
@@ -297,6 +297,12 @@ export const EditDate = ({ field }: EditDateProps): JSX.Element => {
               name="invalidDays"
               rules={{
                 validate: (val) => {
+                  /**
+                   * A day is considered to be restricted if it either falls on an invalid
+                   * day of the week or on a Singapore public holiday. Hence, to ensure that
+                   * public users are able to select unrestricted days, the array should
+                   * contain at least one valid day of the week.
+                   */
                   const validDaysSet = new Set(val)
                   return validDaysSet.has(
                     InvalidDaysOptions.SingaporePublicHolidays,
