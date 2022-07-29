@@ -1,10 +1,20 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import {
   RegisterOptions,
   useForm,
   UseFormRegisterReturn,
 } from 'react-hook-form'
-import { FormControl, Skeleton, Stack, useDisclosure } from '@chakra-ui/react'
+import { BiHappyHeartEyes, BiHide, BiShow } from 'react-icons/bi'
+import {
+  FormControl,
+  Icon,
+  InputGroup,
+  InputRightElement,
+  Skeleton,
+  Stack,
+  useDisclosure,
+} from '@chakra-ui/react'
+import { useToggle } from 'rooks'
 
 import { TwilioCredentials } from '~shared/types/twilio'
 
@@ -12,6 +22,7 @@ import { trimStringsInObject } from '~utils/trimStringsInObject'
 import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
+import IconButton from '~components/IconButton'
 import Input, { InputProps } from '~components/Input'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
@@ -67,6 +78,8 @@ const TWILIO_INPUT_RULES: Record<keyof TwilioCredentials, RegisterOptions> = {
 
 export const TwilioDetailsInputs = (): JSX.Element => {
   const { data: form, isLoading } = useAdminForm()
+
+  const [isApiSecretShown, toggleIsApiSecretShown] = useToggle(false)
 
   const hasExistingTwilioCreds = useMemo(
     () => !!form?.msgSrvcName,
@@ -142,7 +155,25 @@ export const TwilioDetailsInputs = (): JSX.Element => {
         >
           <FormLabel isRequired>API key secret</FormLabel>
           <Skeleton isLoaded={!isLoading}>
-            <Input {...registerPropsOrDisabled('apiSecret')} />
+            <InputGroup>
+              <Input
+                {...registerPropsOrDisabled('apiSecret')}
+                type={isApiSecretShown ? 'text' : 'password'}
+              />
+              <InputRightElement>
+                <IconButton
+                  colorScheme="secondary"
+                  minH="auto"
+                  right="2px"
+                  variant="clear"
+                  aria-label={`${
+                    isApiSecretShown ? 'Hide' : 'Show'
+                  } API key secret`}
+                  icon={isApiSecretShown ? <BiHide /> : <BiShow />}
+                  onClick={toggleIsApiSecretShown}
+                ></IconButton>
+              </InputRightElement>
+            </InputGroup>
           </Skeleton>
           <FormErrorMessage>{errors.apiSecret?.message}</FormErrorMessage>
         </FormControl>
