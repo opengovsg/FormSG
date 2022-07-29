@@ -93,12 +93,14 @@ export const AdminNavBar = ({ isMenuOpen }: AdminNavBarProps): JSX.Element => {
     ROLLOUT_ANNOUNCEMENT_KEY,
   )
 
-  // Only want to show the modal if user id exists but user has no emergency contact
-  const shouldShowModal = user && user._id && !user.contact
-
-  const emergencyContactKey = shouldShowModal
-    ? EMERGENCY_CONTACT_KEY_PREFIX + user._id
-    : null
+  // Only want to show the emergency contact modal if user id exists but user has no emergency contact
+  const emergencyContactKey = useMemo(
+    () =>
+      user && user._id && !user.contact
+        ? EMERGENCY_CONTACT_KEY_PREFIX + user._id
+        : null,
+    [user],
+  )
 
   const [hasSeenContactModal, setHasSeenContactModal] =
     useLocalStorage<boolean>(emergencyContactKey)
@@ -115,7 +117,7 @@ export const AdminNavBar = ({ isMenuOpen }: AdminNavBarProps): JSX.Element => {
 
   // Emergency contact modal appears after the rollout announcement modal
   useEffect(() => {
-    if (!hasSeenContactModal && !user?.contact && hasSeenAnnouncement) {
+    if (!hasSeenContactModal && user && !user?.contact && hasSeenAnnouncement) {
       onContactModalOpen()
     }
   }, [hasSeenContactModal, onContactModalOpen, user, hasSeenAnnouncement])
