@@ -8,6 +8,7 @@ import { FormControl, Skeleton, Stack, useDisclosure } from '@chakra-ui/react'
 
 import { TwilioCredentials } from '~shared/types/twilio'
 
+import { trimStringsInObject } from '~utils/trimStringsInObject'
 import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
@@ -26,6 +27,10 @@ const TWILIO_INPUT_RULES: Record<keyof TwilioCredentials, RegisterOptions> = {
       value: /^AC/,
       message: 'Account SID must start with AC',
     },
+    validate: {
+      noWhitespace: (value) =>
+        !value.trim().match(/\s/) || 'Account SID must not contain whitespace',
+    },
   },
   apiKey: {
     required: 'API key SID is required',
@@ -33,9 +38,18 @@ const TWILIO_INPUT_RULES: Record<keyof TwilioCredentials, RegisterOptions> = {
       value: /^SK/,
       message: 'API key SID must start with SK',
     },
+    validate: {
+      noWhitespace: (value) =>
+        !value.trim().match(/\s/) || 'API key SID must not contain whitespace',
+    },
   },
   apiSecret: {
     required: 'API key secret is required',
+    validate: {
+      noWhitespace: (value) =>
+        !value.trim().match(/\s/) ||
+        'API key secret must not contain whitespace',
+    },
   },
   messagingServiceSid: {
     required: 'Messaging service SID is required',
@@ -43,31 +57,46 @@ const TWILIO_INPUT_RULES: Record<keyof TwilioCredentials, RegisterOptions> = {
       value: /^MG/,
       message: 'Messaging service SID must start with MG',
     },
+    validate: {
+      noWhitespace: (value) =>
+        !value.trim().match(/\s/) ||
+        'Messaging service SID must not contain whitespace',
+    },
   },
 }
 
 export const TwilioDetailsInputs = (): JSX.Element => {
   const { data: form, isLoading } = useAdminForm()
-  const {
-    register,
-    formState: { errors },
-    handleSubmit,
-  } = useForm<TwilioCredentials>({
-    mode: 'onTouched',
-  })
-
-  const { isOpen, onOpen, onClose } = useDisclosure()
-
-  const { mutateFormTwilioDetails } = useMutateTwilioCreds()
 
   const hasExistingTwilioCreds = useMemo(
     () => !!form?.msgSrvcName,
     [form?.msgSrvcName],
   )
 
+  const {
+    register,
+    formState: { errors },
+    handleSubmit,
+    reset,
+  } = useForm<TwilioCredentials>({
+    mode: 'onTouched',
+    defaultValues: {
+      accountSid: hasExistingTwilioCreds ? '********************' : '',
+      apiKey: hasExistingTwilioCreds ? '********************' : '',
+      apiSecret: hasExistingTwilioCreds ? '********************' : '',
+      messagingServiceSid: hasExistingTwilioCreds ? '********************' : '',
+    },
+  })
+
+  const { isOpen, onOpen, onClose } = useDisclosure()
+
+  const { mutateFormTwilioDetails } = useMutateTwilioCreds()
+
   const handleUpdateTwilioDetails = handleSubmit((credentials) => {
     if (!form) return
-    return mutateFormTwilioDetails.mutate(credentials)
+    return mutateFormTwilioDetails.mutate(trimStringsInObject(credentials), {
+      onSuccess: () => reset(),
+    })
   })
 
   const registerPropsOrDisabled = useCallback(
@@ -144,7 +173,7 @@ export const TwilioDetailsInputs = (): JSX.Element => {
           </Button>
         )}
       </Skeleton>
-      <DeleteTwilioModal isOpen={isOpen} onClose={onClose} />
+      <DeleteTwilioModal isOpen={isOpen} onClose={onClose} onDelete={reset} />
     </>
   )
 }
