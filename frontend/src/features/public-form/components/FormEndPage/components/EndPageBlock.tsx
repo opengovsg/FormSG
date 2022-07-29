@@ -54,7 +54,11 @@ export const EndPageBlock = ({
                 </Text>
 
                 {endPage.paragraph ? (
-                  <Text color="secondary.500" textStyle="subhead-1">
+                  <Text
+                    color="secondary.500"
+                    textStyle="subhead-1"
+                    whiteSpace="pre-line"
+                  >
                     {endPage.paragraph}
                   </Text>
                 ) : null}

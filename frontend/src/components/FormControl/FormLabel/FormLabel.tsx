@@ -87,7 +87,10 @@ export const FormLabel = ({
         )}
       </Box>
       {description && (
-        <FormLabel.Description useMarkdown={useMarkdownForDescription}>
+        <FormLabel.Description
+          useMarkdown={useMarkdownForDescription}
+          whiteSpace="pre-line"
+        >
           {description}
         </FormLabel.Description>
       )}
