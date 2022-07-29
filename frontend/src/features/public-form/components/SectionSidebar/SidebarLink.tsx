@@ -6,7 +6,7 @@ import {
   usePublicFormContext,
 } from '~features/public-form/PublicFormContext'
 
-import { useFormSections } from './FormSectionsContext'
+import { useFormSections } from '../FormFields/FormSectionsContext'
 
 interface SidebarLinkProps {
   /**

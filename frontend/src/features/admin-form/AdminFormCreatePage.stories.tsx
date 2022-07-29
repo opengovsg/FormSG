@@ -4,6 +4,8 @@ import { UserId } from '~shared/types'
 import {
   AdminFormDto,
   FormAuthType,
+  FormColorTheme,
+  FormLogoState,
   FormResponseMode,
 } from '~shared/types/form'
 
@@ -29,7 +31,18 @@ const buildMswRoutes = (
   delay?: number | 'infinite' | 'real',
 ) => {
   return [
-    ...createFormBuilderMocks(overrides, delay),
+    ...createFormBuilderMocks(
+      {
+        ...overrides,
+        startPage: {
+          logo: { state: FormLogoState.Default },
+          colorTheme: FormColorTheme.Blue,
+          paragraph: 'Fill in this mock form in this story.',
+          estTimeTaken: 300,
+        },
+      },
+      delay,
+    ),
     getUser({
       delay: 0,
       mockUser: { ...MOCK_USER, _id: 'adminFormTestUserId' as UserId },
