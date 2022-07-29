@@ -3,6 +3,7 @@ import { Box, Flex, Skeleton } from '@chakra-ui/react'
 
 import { FormAuthType, FormLogoState, FormStartPage } from '~shared/types'
 
+import { PREVIEW_MOCK_UINFIN } from '~features/admin-form/preview/constants'
 import { useEnv } from '~features/env/queries'
 import { FormInstructions } from '~features/public-form/components/FormInstructions/FormInstructions'
 import { FormBannerLogo } from '~features/public-form/components/FormStartPage/FormBannerLogo'
@@ -104,7 +105,7 @@ export const StartPageView = () => {
         titleColor={titleColor}
         showHeader
         loggedInId={
-          form?.authType !== FormAuthType.NIL ? 'S8899000D' : undefined
+          form?.authType !== FormAuthType.NIL ? PREVIEW_MOCK_UINFIN : undefined
         }
       />
       <Box mt="1.5rem">
