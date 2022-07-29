@@ -401,7 +401,7 @@ export const TermsOfUsePage = (): JSX.Element => {
                     If the Third Party Terms expressly or impliedly require
                     GovTech to incorporate certain terms in these Terms of Use
                     (inclusive of terms which impose any minimum or maximum
-                    standards herein, and/or terms described in Clause 4.e
+                    standards herein, and/or terms described in Clause 4.5
                     below), such terms are deemed to have been so incorporated
                     (the "<b>Incorporated Terms</b>"). Examples of Incorporated
                     Terms include provisions which require GovTech to give you
@@ -429,7 +429,7 @@ export const TermsOfUsePage = (): JSX.Element => {
                     prependSequenceMarker="4."
                     isNumericMarker={true}
                   >
-                    For the avoidance of doubt, without prejudice to Clause 4.d,
+                    For the avoidance of doubt, without prejudice to Clause 4.4,
                     to the extent of any inconsistency between these Terms of
                     Use and the Third Party Terms, the latter shall prevail
                     provided nothing in the Third Party Terms increases the
@@ -864,7 +864,7 @@ export const TermsOfUsePage = (): JSX.Element => {
                     prependSequenceMarker="11."
                     isNumericMarker={true}
                   >
-                    Subject to clause 11.c, any dispute arising out of or in
+                    Subject to clause 11.3, any dispute arising out of or in
                     connection with these Terms of Use, including any question
                     regarding its existence, validity or termination, shall be
                     referred to and finally resolved in the Courts of the
@@ -877,7 +877,7 @@ export const TermsOfUsePage = (): JSX.Element => {
                     isNumericMarker={true}
                   >
                     GovTech may, at its sole discretion, refer any dispute
-                    referred to in clause 11.b above to arbitration administered
+                    referred to in clause 11.2 above to arbitration administered
                     by the Singapore International Arbitration Centre ("
                     <b>SIAC</b>") in Singapore in accordance with the
                     Arbitration Rules of the SIAC ("<b>SIAC Rules</b>") for the
@@ -996,11 +996,13 @@ export const TermsOfUsePage = (): JSX.Element => {
                 <SectionTitle>Third party software/services</SectionTitle>
                 <SubSectionOrderedList>
                   <SubSectionListItem>
-                    Please see this{' '}
-                    <Link href={OSS_README} isExternal>
-                      link
-                    </Link>{' '}
-                    for a list of open source components used in the Service.
+                    <Text>
+                      Please see this{' '}
+                      <Link href={OSS_README} isExternal>
+                        link
+                      </Link>{' '}
+                      for a list of open source components used in the Service.
+                    </Text>
                   </SubSectionListItem>
                 </SubSectionOrderedList>
               </SectionListItem>
