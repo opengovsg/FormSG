@@ -1,4 +1,14 @@
-import { endOfToday, isAfter, isBefore, parseISO, startOfToday } from 'date-fns'
+import {
+  endOfToday,
+  format,
+  isAfter,
+  isBefore,
+  isDate,
+  parseISO,
+  startOfToday,
+} from 'date-fns'
+
+import { InvalidDaysOptions } from '~shared/types'
 
 import { JsonDate } from '~typings/core'
 
@@ -121,4 +131,36 @@ export const mutableTransformAllIsoStringsToDate = (body: unknown) => {
 export const transformAllIsoStringsToDate = <T>(body: T): T => {
   mutableTransformAllIsoStringsToDate(body)
   return body
+}
+
+/** Transforms YYYY-MM-DD strings to date, otherwise null */
+export const transformShortIsoStringToDate = (
+  isoString: unknown,
+): Date | null => {
+  return isShortIsoDateString(isoString)
+    ? // Set to UTC time regardless.
+      parseISO(`${isoString}T00:00:00Z`)
+    : null
+}
+
+export const transformDateToShortIsoString = (date: unknown): string | null => {
+  return isDate(date) ? format(date as Date, 'yyyy-MM-dd') : null
+}
+
+const ALL_INVALID_DAYS_ARR = Object.values(InvalidDaysOptions)
+
+/** Transforms the invalid days array to valid days checkbox group value */
+export const transformInvalidDaysToCheckedBoxesValue = (
+  invalidDays: InvalidDaysOptions[],
+): InvalidDaysOptions[] => {
+  const invalidDaysSet = new Set(invalidDays)
+  return ALL_INVALID_DAYS_ARR.filter((day) => !invalidDaysSet.has(day))
+}
+
+/** Transforms the valid days checkbox group value to invalid days array */
+export const transformCheckedBoxesValueToInvalidDays = (
+  validDays: InvalidDaysOptions[],
+): InvalidDaysOptions[] => {
+  const validDaysSet = new Set(validDays)
+  return ALL_INVALID_DAYS_ARR.filter((day) => !validDaysSet.has(day))
 }
