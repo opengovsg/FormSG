@@ -139,7 +139,7 @@ const convertInvalidDayToNumber = (invalidDay: InvalidDaysOptions): number => {
  * to a number array representing the number representation
  * of the corresponding day of the week
  */
-const convertInvalidDayOfTheWeekToNumberSet = (
+const convertInvalidDaysOfTheWeekToNumberSet = (
   invalidDays: InvalidDaysOptions[],
 ): Set<number> => {
   if (invalidDays.length === 0) {
@@ -152,17 +152,19 @@ const convertInvalidDayOfTheWeekToNumberSet = (
   return new Set(invaliDaysNumberArray)
 }
 
+/**
+ * Returns a validator to check if date is an invalid day of the week.
+ */
 const makeInvalidDayOfTheWeekValidator: DateValidatorConstructor =
   (dateField) => (response) => {
     const { answer } = response
 
-    // Convert invalidDays, containing only days of the week, to a Set<number>
-    const invalidDaysOfTheWeekSet = convertInvalidDayOfTheWeekToNumberSet(
+    const invalidDaysOfTheWeekSet = convertInvalidDaysOfTheWeekToNumberSet(
       dateField.invalidDays ?? [],
     )
     // Convert date response to a ISO day of the week number format
     const dateResponseNumberFormat = parseInt(format(new Date(answer), 'i'))
-    // Validate date response
+
     return invalidDaysOfTheWeekSet.has(dateResponseNumberFormat)
       ? left(`DateValidator:\t answer is an invalid day`)
       : right(response)
