@@ -80,14 +80,14 @@ export const serveForm: ControllerHandler<
     hasAuth = formResult.value.authType !== FormAuthType.NIL
   }
 
-  const threshold = hasAuth
+  const respThreshold = hasAuth
     ? config.reactMigration.respondentRolloutAuth
     : config.reactMigration.respondentRolloutNoAuth
 
   if (config.reactMigration.qaCookieName in req.cookies) {
     showReact =
       req.cookies[config.reactMigration.qaCookieName] === UiCookieValues.React
-  } else if (threshold <= 0) {
+  } else if (respThreshold <= 0) {
     // Check the rollout value first, if it's 0, react is DISABLED
     // And we ignore cookies entirely!
     showReact = false
@@ -110,15 +110,15 @@ export const serveForm: ControllerHandler<
 
   if (showReact === undefined) {
     const rand = Math.random() * 100
-    showReact = rand <= threshold
+    showReact = rand <= respThreshold
 
     logger.info({
-      message: 'Randomly assigned UI environment',
+      message: 'Randomly assigned UI environment for respondent',
       meta: {
         action: 'routeReact.random',
         hasAuth,
         rand,
-        threshold,
+        respThreshold,
         showReact,
       },
     })
@@ -131,11 +131,11 @@ export const serveForm: ControllerHandler<
   }
 
   logger.info({
-    message: 'Routing evaluation done',
+    message: 'Routing evaluation done for respondent',
     meta: {
       action: 'routeReact',
       hasAuth,
-      threshold,
+      respThreshold,
       showReact,
       cwd: process.cwd(),
     },
@@ -150,10 +150,57 @@ export const serveForm: ControllerHandler<
 
 export const serveDefault: ControllerHandler = (req, res, next) => {
   // only admin who chose react should see react, everybody else is plain angular
-  if (
-    req.cookies?.[config.reactMigration.adminCookieName] ===
-    UiCookieValues.React
-  ) {
+  let showReact: boolean | undefined = undefined
+
+  const adminThreshold = config.reactMigration.adminRollout
+
+  if (config.reactMigration.qaCookieName in req.cookies) {
+    showReact =
+      req.cookies[config.reactMigration.qaCookieName] === UiCookieValues.React
+  } else if (adminThreshold <= 0) {
+    // Check the rollout value first, if it's 0, react is DISABLED
+    // And we ignore cookies entirely!
+    showReact = false
+  } else {
+    showReact =
+      req.cookies[config.reactMigration.adminCookieName] ===
+      UiCookieValues.React
+  }
+
+  if (showReact === undefined) {
+    const rand = Math.random() * 100
+    showReact = rand <= adminThreshold
+
+    logger.info({
+      message: 'Randomly assigned UI environment for admin',
+      meta: {
+        action: 'routeReact.random',
+        rand,
+        adminThreshold,
+        showReact,
+      },
+    })
+
+    res.cookie(
+      config.reactMigration.adminCookieName,
+      showReact ? UiCookieValues.React : UiCookieValues.Angular,
+      // If assigned react, admins will stay on it unless they opt out.
+      // If assigned angular, the admin cookie is for a single session
+      showReact ? ADMIN_COOKIE_OPTIONS_WITH_EXPIRY : ADMIN_COOKIE_OPTIONS,
+    )
+  }
+
+  logger.info({
+    message: 'Routing evaluation done for admin',
+    meta: {
+      action: 'routeReact',
+      adminThreshold,
+      showReact,
+      cwd: process.cwd(),
+    },
+  })
+
+  if (showReact) {
     // react
     return serveFormReact(req, res, next)
   } else {
