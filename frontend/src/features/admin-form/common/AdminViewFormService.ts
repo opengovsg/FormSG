@@ -1,6 +1,3 @@
-import { merge } from 'lodash'
-import { PartialDeep } from 'type-fest'
-
 import { SubmissionResponseDto } from '~shared/types'
 import {
   AdminFormDto,
@@ -55,17 +52,18 @@ export const previewForm = async (
   return ApiService.get<PreviewFormViewDto>(
     `${ADMIN_FORM_ENDPOINT}/${formId}/preview`,
   ).then(({ data }) => {
-    const mockedSpcpSession: PreviewFormViewDto['spcpSession'] =
-      data.spcpSession ?? data.form.authType !== FormAuthType.NIL
-        ? { userName: PREVIEW_MOCK_UINFIN }
-        : undefined
-    const partialMerge: PartialDeep<PreviewFormViewDto> = {
-      form: {
-        form_fields: data.form.form_fields.map(augmentWithMyInfoDisplayValue),
-      },
-      spcpSession: mockedSpcpSession,
+    // Add default mock authenticated state if previewing an authenticatable form
+    // and if server has not already sent back a mock authenticated state.
+    if (data.form.authType !== FormAuthType.NIL && !data.spcpSession) {
+      data.spcpSession = { userName: PREVIEW_MOCK_UINFIN }
     }
-    return merge(data, partialMerge)
+
+    // Inject MyInfo preview values into form fields (if they are MyInfo fields).
+    data.form.form_fields = data.form.form_fields.map(
+      augmentWithMyInfoDisplayValue,
+    )
+
+    return data
   })
 }
 
