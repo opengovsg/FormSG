@@ -22,10 +22,15 @@ export const useEnvMutations = (
 
   const adminSwitchEnvMutation = useMutation(() => adminChooseEnvironment(), {
     onSuccess: () => {
+      // If on form builder page
       if (window.location.href.indexOf('admin/form/') > -1) {
         window.location.assign(`#!/${formId}/admin`)
-      } else {
+        // If on admin workspace page
+      } else if (window.location.href.indexOf('workspace') > -1) {
         window.location.assign('/#!/forms')
+      } else {
+        // if on public form page
+        window.location.reload()
       }
     },
   })
