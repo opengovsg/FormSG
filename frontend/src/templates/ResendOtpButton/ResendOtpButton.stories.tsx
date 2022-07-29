@@ -28,6 +28,7 @@ InProgress.args = {
 
 export const Playground = () => (
   <ResendOtpButtonContainer
+    timer={0}
     onResendOtp={() => new Promise((res) => setTimeout(res, 800))}
   />
 )
