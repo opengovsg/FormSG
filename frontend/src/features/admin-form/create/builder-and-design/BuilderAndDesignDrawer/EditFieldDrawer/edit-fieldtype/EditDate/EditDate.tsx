@@ -296,7 +296,6 @@ export const EditDate = ({ field }: EditDateProps): JSX.Element => {
               name="invalidDays"
               rules={{
                 validate: (val) => {
-                  console.log(!!val.length)
                   return !!val.length || 'Error placeholder'
                 },
               }}
