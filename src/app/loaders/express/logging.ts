@@ -77,8 +77,8 @@ const loggingMiddleware = () => {
         req.cookies?.[config.reactMigration.qaCookieName]
       ) {
         meta.reactMigration = {
-          respRolloutAuth: config.reactMigration.respondentRolloutAuth,
-          respRolloutNoAuth: config.reactMigration.respondentRolloutNoAuth,
+          respRolloutAuth: config.reactMigration.respondentRolloutEmail,
+          respRolloutNoAuth: config.reactMigration.respondentRolloutStorage,
           adminRollout: config.reactMigration.adminRollout,
           qaCookie: req.cookies?.[config.reactMigration.qaCookieName],
           adminCookie: req.cookies?.[config.reactMigration.adminCookieName],
