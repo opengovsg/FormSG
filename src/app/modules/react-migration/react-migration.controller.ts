@@ -149,7 +149,8 @@ export const serveForm: ControllerHandler<
 }
 
 export const serveDefault: ControllerHandler = (req, res, next) => {
-  // only admin who chose react should see react, everybody else is plain angular
+  // Admins assigned react, or who choose react will stay on react until they opt out
+  // Admins assigned angular will stay on it for that session
   let showReact: boolean | undefined = undefined
 
   const adminThreshold = config.reactMigration.adminRollout
@@ -161,10 +162,13 @@ export const serveDefault: ControllerHandler = (req, res, next) => {
     // Check the rollout value first, if it's 0, react is DISABLED
     // And we ignore cookies entirely!
     showReact = false
-  } else {
-    showReact =
-      req.cookies[config.reactMigration.adminCookieName] ===
-      UiCookieValues.React
+  } else if (req.cookies) {
+    if (config.reactMigration.adminCookieName in req.cookies) {
+      // Check if admin had already chosen react previously
+      showReact =
+        req.cookies[config.reactMigration.adminCookieName] ===
+        UiCookieValues.React
+    }
   }
 
   if (showReact === undefined) {
