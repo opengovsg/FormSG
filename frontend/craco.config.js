@@ -55,6 +55,13 @@ module.exports = {
     {
       plugin: {
         overrideWebpackConfig: ({ webpackConfig }) => {
+          /**
+           * Utility to allow for referencing folders outside of create-react-app root. \
+           * See https://github.com/facebook/create-react-app/issues/9127.
+           *
+           * Retrieved from https://gist.github.com/stevemu/53c5006c5e66fc277dea1454eb6acdb4.
+           * bascially tells webpack to use babel-loader for specified paths
+           */
           const oneOfRule = webpackConfig.module.rules.find(
             (rule) => rule.oneOf,
           )
