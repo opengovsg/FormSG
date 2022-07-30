@@ -110,14 +110,26 @@ const makeDateValidator: DateValidatorConstructor = (dateField) => {
   }
 }
 
+<<<<<<< HEAD
 const DAY_TO_NUMBER_MAP: Record<InvalidDaysOptions, number> = {
+=======
+/**
+ * constant
+ */
+const INVALID_DAY_MAP: Record<InvalidDaysOptions, number> = {
+  [InvalidDaysOptions.Sunday]: 0,
+>>>>>>> d608629c (refactor: simplify mapping between InvalidDaysOptions and number into a constant instead of a function)
   [InvalidDaysOptions.Monday]: 1,
   [InvalidDaysOptions.Tuesday]: 2,
   [InvalidDaysOptions.Wednesday]: 3,
   [InvalidDaysOptions.Thursday]: 4,
   [InvalidDaysOptions.Friday]: 5,
   [InvalidDaysOptions.Saturday]: 6,
+<<<<<<< HEAD
   [InvalidDaysOptions.Sunday]: 7,
+=======
+  [InvalidDaysOptions.SingaporePublicHolidays]: 7,
+>>>>>>> d608629c (refactor: simplify mapping between InvalidDaysOptions and number into a constant instead of a function)
 }
 
 /**
@@ -132,7 +144,11 @@ const convertInvalidDaysOfTheWeekToNumberSet = (
     return new Set()
   }
 
+<<<<<<< HEAD
   return new Set(invalidDays.map((invalidDay) => DAY_TO_NUMBER_MAP[invalidDay]))
+=======
+  return new Set(invalidDays.map((invalidDay) => INVALID_DAY_MAP[invalidDay]))
+>>>>>>> d608629c (refactor: simplify mapping between InvalidDaysOptions and number into a constant instead of a function)
 }
 
 /**
