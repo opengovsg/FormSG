@@ -1,17 +1,14 @@
 import { useMemo } from 'react'
-import { Box, Flex, Spacer } from '@chakra-ui/react'
+import { Box } from '@chakra-ui/react'
 
 import { FormAuthType } from '~shared/types/form/form'
 
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
 import { FormAuth } from '../FormAuth'
-// TODO #4279: Remove after React rollout is complete
-import { PublicSwitchEnvMessage } from '../PublicSwitchEnvMessage'
 
 import { FormFields } from './FormFields'
 import { FormFieldsSkeleton } from './FormFieldsSkeleton'
-import { SectionSidebar } from './SectionSidebar'
 
 export const FormFieldsContainer = (): JSX.Element | null => {
   const { form, isAuthRequired, isLoading, handleSubmitForm, submissionData } =
@@ -46,13 +43,8 @@ export const FormFieldsContainer = (): JSX.Element | null => {
   if (submissionData) return null
 
   return (
-    <Flex justify="center">
-      {isAuthRequired ? null : <SectionSidebar />}
-      <Box w="100%" minW={0} h="fit-content" maxW="57rem">
-        <PublicSwitchEnvMessage />
-        {renderFields}
-      </Box>
-      {isAuthRequired ? null : <Spacer />}
-    </Flex>
+    <Box w="100%" minW={0} h="fit-content" maxW="57rem">
+      {renderFields}
+    </Box>
   )
 }

@@ -32,6 +32,7 @@ export const EndPageView = ({ ...props }: FlexProps): JSX.Element => {
       p={{ base: '1.5rem', md: 0 }}
       justify="center"
       overflow="auto"
+      height="100%"
       {...props}
     >
       <Stack w="100%">
@@ -50,7 +51,12 @@ export const EndPageView = ({ ...props }: FlexProps): JSX.Element => {
             <BxsChevronUp color="secondary.500" />
           </Flex>
 
-          <Text textStyle="subhead-1" color="secondary.500" mt="1rem">
+          <Text
+            textStyle="subhead-1"
+            color="secondary.500"
+            mt="1rem"
+            whiteSpace="pre-line"
+          >
             {endPage?.paragraph}
           </Text>
 

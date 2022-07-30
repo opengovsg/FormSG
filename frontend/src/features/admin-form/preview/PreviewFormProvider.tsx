@@ -121,8 +121,11 @@ export const PreviewFormProvider = ({
   useTimeout(generateVfnExpiryToast, expiryInMs)
 
   const isAuthRequired = useMemo(
-    () => !!cachedDto?.form && cachedDto.form.authType !== FormAuthType.NIL,
-    [cachedDto?.form],
+    () =>
+      !!cachedDto?.form &&
+      cachedDto.form.authType !== FormAuthType.NIL &&
+      !cachedDto.spcpSession,
+    [cachedDto?.form, cachedDto?.spcpSession],
   )
 
   const sectionScrollData = useMemo(() => {
@@ -131,6 +134,11 @@ export const PreviewFormProvider = ({
       return []
     }
     const sections: SidebarSectionMeta[] = []
+    if (form.startPage.paragraph)
+      sections.push({
+        title: 'Instructions',
+        _id: 'instructions',
+      })
     form.form_fields.forEach((f) => {
       if (f.fieldType !== BasicField.Section) return
       sections.push({
@@ -138,7 +146,6 @@ export const PreviewFormProvider = ({
         _id: f._id,
       })
     })
-
     return sections
   }, [cachedDto, isAuthRequired])
 

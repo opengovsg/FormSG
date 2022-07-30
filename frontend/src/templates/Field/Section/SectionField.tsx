@@ -14,18 +14,21 @@ export interface SectionFieldProps extends SectionFieldContainerProps {
   handleSectionEnter?: () => void
 }
 
+export const useSectionColor = (colorTheme?: FormColorTheme) =>
+  useMemo(() => {
+    switch (colorTheme) {
+      case FormColorTheme.Orange:
+      case FormColorTheme.Red:
+        return `theme-${colorTheme}.600` as const
+      default:
+        return `theme-${colorTheme}.500` as const
+    }
+  }, [colorTheme])
+
 // Used by SectionFieldContainer
 export const SectionField = forwardRef<SectionFieldProps, 'div'>(
   ({ schema, colorTheme = FormColorTheme.Blue, handleSectionEnter }, ref) => {
-    const sectionColor = useMemo(() => {
-      switch (colorTheme) {
-        case FormColorTheme.Orange:
-        case FormColorTheme.Red:
-          return `theme-${colorTheme}.600` as const
-        default:
-          return `theme-${colorTheme}.500` as const
-      }
-    }, [])
+    const sectionColor = useSectionColor(colorTheme)
 
     return (
       <Box
@@ -53,13 +56,15 @@ export const SectionField = forwardRef<SectionFieldProps, 'div'>(
 )
 
 export const BaseSectionField = forwardRef<
-  Pick<SectionFieldProps, 'schema'>,
+  Pick<SectionFieldProps, 'schema' | 'colorTheme'>,
   'div'
->(({ schema }, ref) => {
+>(({ schema, colorTheme = FormColorTheme.Blue }, ref) => {
+  const sectionColor = useSectionColor(colorTheme)
+
   return (
     // id given so app can scrolled to this section.
     <Box id={schema._id} ref={ref}>
-      <Text textStyle="h2" color="primary.600">
+      <Text textStyle="h2" color={sectionColor}>
         {schema.title}
       </Text>
       <Text

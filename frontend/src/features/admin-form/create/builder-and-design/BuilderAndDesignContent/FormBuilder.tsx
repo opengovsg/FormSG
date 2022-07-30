@@ -86,7 +86,7 @@ export const FormBuilder = ({
             handleBuilderClick()
           }}
         >
-          <Text textStyle="subhead-2">Customise your Thank you page</Text>
+          <Text textStyle="subhead-2">Customise Thank you page</Text>
         </Button>
       </Flex>
     </Flex>

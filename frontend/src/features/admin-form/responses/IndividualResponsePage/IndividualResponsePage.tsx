@@ -70,7 +70,7 @@ export const IndividualResponsePage = (): JSX.Element => {
     onNavPreviousSubmissionId,
     isAnyFetching,
   } = useUnlockedResponses()
-  const { data, isLoading } = useIndividualSubmission()
+  const { data, isLoading, isError } = useIndividualSubmission()
 
   const nextSubmissionId = useMemo(
     () => getNextSubmissionId(submissionId),
@@ -189,15 +189,15 @@ export const IndividualResponsePage = (): JSX.Element => {
           </Text>
           <Box display="inline-flex">
             <Text as="span" textStyle="subhead-1">
-              Time:
+              Time:&nbsp;
             </Text>
-            <Skeleton isLoaded={!isLoading}>
-              &nbsp;{data?.submissionTime ?? 'Loading...'}
+            <Skeleton isLoaded={!isLoading && !isError}>
+              {data?.submissionTime ?? 'Loading...'}
             </Skeleton>
           </Box>
         </Stack>
         <Stack>
-          {isLoading ? (
+          {isLoading || isError ? (
             <LoadingDecryption />
           ) : (
             <Stack spacing="1.5rem" divider={<StackDivider />}>

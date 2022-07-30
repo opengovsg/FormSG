@@ -81,14 +81,19 @@ export const DesignDrawer = (): JSX.Element | null => {
     setAttachment,
     setCustomLogoMeta,
     resetDesignStore,
-  } = useDesignStore((state) => ({
-    startPageData: startPageDataSelector(state),
-    customLogoMeta: customLogoMetaSelector(state),
-    setStartPageData: setStartPageDataSelector(state),
-    setAttachment: setAttachmentSelector(state),
-    setCustomLogoMeta: setCustomLogoMetaSelector(state),
-    resetDesignStore: resetDesignStoreSelector(state),
-  }))
+  } = useDesignStore(
+    useCallback(
+      (state) => ({
+        startPageData: startPageDataSelector(state),
+        customLogoMeta: customLogoMetaSelector(state),
+        setStartPageData: setStartPageDataSelector(state),
+        setAttachment: setAttachmentSelector(state),
+        setCustomLogoMeta: setCustomLogoMetaSelector(state),
+        resetDesignStore: resetDesignStoreSelector(state),
+      }),
+      [],
+    ),
+  )
 
   const {
     register,

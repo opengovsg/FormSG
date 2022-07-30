@@ -55,7 +55,7 @@ export const CheckboxField = ({
     [schema],
   )
 
-  const { register, getValues, trigger } = useFormContext<CheckboxFieldInputs>()
+  const { register, getValues } = useFormContext<CheckboxFieldInputs>()
   const { isValid, isSubmitting, errors } = useFormState<CheckboxFieldInputs>({
     name: schema._id,
   })
@@ -112,7 +112,6 @@ export const CheckboxField = ({
               colorScheme={fieldColorScheme}
               value={CHECKBOX_OTHERS_INPUT_VALUE}
               isInvalid={!!get(errors, checkboxInputName)}
-              triggerOthersInputValidation={() => trigger(othersInputName)}
               {...register(checkboxInputName, validationRules)}
             />
             <Checkbox.OthersInput
@@ -134,16 +133,8 @@ interface OtherCheckboxFieldProps
   extends UseFormRegisterReturn,
     Omit<CheckboxProps, keyof UseFormRegisterReturn> {
   value: string
-  triggerOthersInputValidation: () => void
 }
 const OtherCheckboxField = forwardRef<
   HTMLInputElement,
   OtherCheckboxFieldProps
->(({ onChange, triggerOthersInputValidation, ...rest }, ref) => {
-  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    onChange(event)
-    triggerOthersInputValidation()
-  }
-
-  return <Checkbox.OthersCheckbox onChange={handleChange} {...rest} ref={ref} />
-})
+>((props, ref) => <Checkbox.OthersCheckbox {...props} ref={ref} />)

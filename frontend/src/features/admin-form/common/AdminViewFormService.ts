@@ -2,6 +2,7 @@ import { SubmissionResponseDto } from '~shared/types'
 import {
   AdminFormDto,
   AdminFormViewDto,
+  FormAuthType,
   FormPermissionsDto,
   PermissionsUpdateDto,
   PreviewFormViewDto,
@@ -11,6 +12,7 @@ import {
 import { transformAllIsoStringsToDate } from '~utils/date'
 import { ApiService } from '~services/ApiService'
 
+import { augmentWithMyInfoDisplayValue } from '~features/myinfo/utils'
 import {
   SubmitEmailFormArgs,
   SubmitStorageFormArgs,
@@ -19,6 +21,8 @@ import {
   createEmailSubmissionFormData,
   createEncryptedSubmissionData,
 } from '~features/public-form/utils'
+
+import { PREVIEW_MOCK_UINFIN } from '../preview/constants'
 
 // endpoint exported for testing
 export const ADMIN_FORM_ENDPOINT = 'admin/forms'
@@ -47,7 +51,20 @@ export const previewForm = async (
 ): Promise<PreviewFormViewDto> => {
   return ApiService.get<PreviewFormViewDto>(
     `${ADMIN_FORM_ENDPOINT}/${formId}/preview`,
-  ).then(({ data }) => data)
+  ).then(({ data }) => {
+    // Add default mock authenticated state if previewing an authenticatable form
+    // and if server has not already sent back a mock authenticated state.
+    if (data.form.authType !== FormAuthType.NIL && !data.spcpSession) {
+      data.spcpSession = { userName: PREVIEW_MOCK_UINFIN }
+    }
+
+    // Inject MyInfo preview values into form fields (if they are MyInfo fields).
+    data.form.form_fields = data.form.form_fields.map(
+      augmentWithMyInfoDisplayValue,
+    )
+
+    return data
+  })
 }
 
 export const getFreeSmsQuota = async (formId: string) => {

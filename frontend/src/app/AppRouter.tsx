@@ -1,5 +1,6 @@
 import { lazy, Suspense } from 'react'
 import { Route, Routes } from 'react-router-dom'
+import { Box } from '@chakra-ui/react'
 
 import {
   ADMINFORM_PREVIEW_ROUTE,
@@ -44,11 +45,12 @@ const TermsOfUsePage = lazy(() => import('~pages/TermsOfUse'))
 const PreviewFormPage = lazy(() => import('~features/admin-form/preview'))
 
 const WithSuspense = ({ children }: { children: React.ReactNode }) => (
-  <Suspense fallback={<div>Loading...</div>}>{children}</Suspense>
+  <Suspense fallback={<Box bg="neutral.100" h="100vh" w="100vw" />}>
+    {children}
+  </Suspense>
 )
 
 export const AppRouter = (): JSX.Element => {
-  // code here?
   return (
     <WithSuspense>
       <Routes>
