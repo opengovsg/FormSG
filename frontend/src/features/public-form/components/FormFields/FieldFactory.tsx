@@ -66,7 +66,7 @@ export const FieldFactory = memo(
         return <YesNoField schema={field} {...rest} />
       case BasicField.Dropdown:
         return <DropdownField schema={field} {...rest} />
-      case BasicField.Country:
+      case BasicField.CountryRegion:
         return <CountryField schema={field} {...rest} />
       case BasicField.Date:
         return <DateField schema={field} {...rest} />

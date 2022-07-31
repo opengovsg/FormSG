@@ -15,7 +15,7 @@ angular.module('forms').service('FormFields', [FormFields])
 function FormFields() {
   // TODO: Unhide Country field once the frontend for Country field is done
   this.basicTypes = basicTypes.filter(
-    (type) => type.name !== BasicField.Country,
+    (type) => type.name !== BasicField.CountryRegion,
   )
   this.myInfoTypes = myInfoTypes
   this.customValFields = ['textarea', 'textfield', 'number']

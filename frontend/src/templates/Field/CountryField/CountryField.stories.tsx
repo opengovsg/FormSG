@@ -18,7 +18,7 @@ const baseSchema: CountryFieldSchema = {
   description: 'Type or select your residential country',
   required: true,
   disabled: false,
-  fieldType: BasicField.Country,
+  fieldType: BasicField.CountryRegion,
   fieldOptions: [],
   _id: 'random-id',
 }

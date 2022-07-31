@@ -417,7 +417,7 @@ const MemoFieldRow = memo(({ field, ...rest }: MemoFieldRowProps) => {
       return <DateField schema={field} {...rest} />
     case BasicField.Dropdown:
       return <DropdownField schema={field} {...rest} />
-    case BasicField.Country:
+    case BasicField.CountryRegion:
       return <CountryField schema={field} {...rest} />
     case BasicField.ShortText:
       return <ShortTextField schema={field} {...rest} />

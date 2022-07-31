@@ -11,8 +11,8 @@ import { BasicField } from '../../../../../../shared/types'
 
 describe('Country validation', () => {
   it('should allow valid option', () => {
-    const formField = generateDefaultField(BasicField.Country, {})
-    const response = generateNewSingleAnswerResponse(BasicField.Country, {
+    const formField = generateDefaultField(BasicField.CountryRegion, {})
+    const response = generateNewSingleAnswerResponse(BasicField.CountryRegion, {
       answer: CountryRegion.Singapore,
     })
 
@@ -34,8 +34,8 @@ describe('Country validation', () => {
   })
 
   it('should disallow empty answer when required', () => {
-    const formField = generateDefaultField(BasicField.Country, {})
-    const response = generateNewSingleAnswerResponse(BasicField.Country, {
+    const formField = generateDefaultField(BasicField.CountryRegion, {})
+    const response = generateNewSingleAnswerResponse(BasicField.CountryRegion, {
       answer: '',
     })
     const validateResult = validateField('formId', formField, response)
@@ -46,10 +46,10 @@ describe('Country validation', () => {
   })
 
   it('should allow empty answer when not required', () => {
-    const formField = generateDefaultField(BasicField.Country, {
+    const formField = generateDefaultField(BasicField.CountryRegion, {
       required: false,
     })
-    const response = generateNewSingleAnswerResponse(BasicField.Country, {
+    const response = generateNewSingleAnswerResponse(BasicField.CountryRegion, {
       answer: '',
     })
     const validateResult = validateField('formId', formField, response)
@@ -58,8 +58,8 @@ describe('Country validation', () => {
   })
 
   it('should allow empty answer when it is required but not visible', () => {
-    const formField = generateDefaultField(BasicField.Country, {})
-    const response = generateNewSingleAnswerResponse(BasicField.Country, {
+    const formField = generateDefaultField(BasicField.CountryRegion, {})
+    const response = generateNewSingleAnswerResponse(BasicField.CountryRegion, {
       answer: '',
       isVisible: false,
     })
@@ -69,8 +69,8 @@ describe('Country validation', () => {
   })
 
   it('should disallow empty answer when it is required and visible', () => {
-    const formField = generateDefaultField(BasicField.Country, {})
-    const response = generateNewSingleAnswerResponse(BasicField.Country, {
+    const formField = generateDefaultField(BasicField.CountryRegion, {})
+    const response = generateNewSingleAnswerResponse(BasicField.CountryRegion, {
       answer: '',
     })
     const validateResult = validateField('formId', formField, response)
@@ -81,8 +81,8 @@ describe('Country validation', () => {
   })
 
   it('should disallow multiple answers', () => {
-    const formField = generateDefaultField(BasicField.Country, {})
-    const response = generateNewSingleAnswerResponse(BasicField.Country, {
+    const formField = generateDefaultField(BasicField.CountryRegion, {})
+    const response = generateNewSingleAnswerResponse(BasicField.CountryRegion, {
       answer: [
         CountryRegion.Singapore,
         CountryRegion.Slovak_Republic,
@@ -95,8 +95,8 @@ describe('Country validation', () => {
     )
   })
   it('should disallow responses submitted for hidden fields', () => {
-    const formField = generateDefaultField(BasicField.Country, {})
-    const response = generateNewSingleAnswerResponse(BasicField.Country, {
+    const formField = generateDefaultField(BasicField.CountryRegion, {})
+    const response = generateNewSingleAnswerResponse(BasicField.CountryRegion, {
       answer: CountryRegion.Singapore,
       isVisible: false,
     })

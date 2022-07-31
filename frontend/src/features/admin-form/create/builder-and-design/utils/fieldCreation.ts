@@ -184,7 +184,7 @@ export const getFieldCreationMeta = (fieldType: BasicField): FieldCreateDto => {
         minimumRows: 2,
       }
     }
-    case BasicField.Country: {
+    case BasicField.CountryRegion: {
       return {
         fieldType,
         ...baseMeta,

@@ -26,7 +26,7 @@ export const BASIC_FIELDS_ORDERED = [
   BasicField.Email,
   BasicField.HomeNo,
   BasicField.Dropdown,
-  BasicField.Country,
+  BasicField.CountryRegion,
   BasicField.YesNo,
   BasicField.Rating,
   BasicField.Number,

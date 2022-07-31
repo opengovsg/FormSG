@@ -79,7 +79,7 @@ export const DropdownResponse = MyInfoableSingleResponse.extend({
 export type DropdownResponse = z.infer<typeof DropdownResponse>
 
 export const CountryResponse = MyInfoableSingleResponse.extend({
-  fieldType: z.literal(BasicField.Country),
+  fieldType: z.literal(BasicField.CountryRegion),
 })
 export type CountryResponse = z.infer<typeof CountryResponse>
 

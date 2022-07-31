@@ -14,7 +14,7 @@ const DEFAULT_COUNTRY_FIELD: CountryFieldBase = {
   description: 'Some description about Country',
   required: true,
   disabled: false,
-  fieldType: BasicField.Country,
+  fieldType: BasicField.CountryRegion,
   fieldOptions: Object.values(CountryRegion),
   globalId: 'unused',
 }

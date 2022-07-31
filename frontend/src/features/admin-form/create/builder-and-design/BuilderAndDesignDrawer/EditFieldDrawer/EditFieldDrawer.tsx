@@ -108,7 +108,7 @@ export const MemoFieldDrawerContent = memo<MemoFieldDrawerContentProps>(
         return <EditCheckbox {...props} field={field} />
       case BasicField.Dropdown:
         return <EditDropdown {...props} field={field} />
-      case BasicField.Country:
+      case BasicField.CountryRegion:
         return <EditCountry {...props} field={field} />
       case BasicField.Mobile:
         return <EditMobile {...props} field={field} />

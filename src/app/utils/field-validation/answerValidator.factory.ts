@@ -60,7 +60,7 @@ export const constructSingleAnswerValidator = (
       return constructDecimalValidator(formField)
     case BasicField.Dropdown:
       return constructDropdownValidator(formField)
-    case BasicField.Country:
+    case BasicField.CountryRegion:
       return constructCountryValidator()
     case BasicField.Email:
       return constructEmailValidator(formField)
