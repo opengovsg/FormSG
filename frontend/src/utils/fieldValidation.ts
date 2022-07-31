@@ -45,7 +45,12 @@ import { VerifiableFieldValues } from '~templates/Field/types'
 
 import { VerifiableFieldBase } from '~features/verifiable-fields/types'
 
-import { isDateAfterToday, isDateBeforeToday, isDateOutOfRange } from './date'
+import {
+  isDateAfterToday,
+  isDateAnInvalidDay,
+  isDateBeforeToday,
+  isDateOutOfRange,
+} from './date'
 import { formatNumberToLocaleString } from './stringFormat'
 
 type OmitUnusedProps<T extends FieldBase> = Omit<
@@ -389,6 +394,16 @@ export const createDateValidationRules: ValidationRuleFn<DateFieldBase> = (
         return (
           !isDateOutOfRange(parseISO(val), customMinDate, customMaxDate) ||
           'Selected date is not within the allowed date range'
+        )
+      },
+      invaliDays: (val) => {
+        if (!val || !schema.invalidDays || !!schema.invalidDays.length) {
+          return true
+        }
+
+        return (
+          !isDateAnInvalidDay(parseISO(val), schema.invalidDays) ||
+          'Error placeholder'
         )
       },
     },
