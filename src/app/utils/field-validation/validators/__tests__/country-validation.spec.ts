@@ -6,14 +6,14 @@ import {
   generateNewSingleAnswerResponse,
 } from 'tests/unit/backend/helpers/generate-form-data'
 
-import { Country } from '../../../../../../shared/constants/countries'
+import { CountryRegion } from '../../../../../../shared/constants/countryRegion'
 import { BasicField } from '../../../../../../shared/types'
 
 describe('Country validation', () => {
   it('should allow valid option', () => {
     const formField = generateDefaultField(BasicField.Country, {})
     const response = generateNewSingleAnswerResponse(BasicField.Country, {
-      answer: Country.Singapore,
+      answer: CountryRegion.Singapore,
     })
 
     const validateResult = validateField('formId', formField, response)
@@ -83,7 +83,10 @@ describe('Country validation', () => {
   it('should disallow multiple answers', () => {
     const formField = generateDefaultField(BasicField.Country, {})
     const response = generateNewSingleAnswerResponse(BasicField.Country, {
-      answer: [Country.Singapore, Country.Slovak_Republic] as unknown as string,
+      answer: [
+        CountryRegion.Singapore,
+        CountryRegion.Slovak_Republic,
+      ] as unknown as string,
     })
     const validateResult = validateField('formId', formField, response)
     expect(validateResult.isErr()).toBe(true)
@@ -94,7 +97,7 @@ describe('Country validation', () => {
   it('should disallow responses submitted for hidden fields', () => {
     const formField = generateDefaultField(BasicField.Country, {})
     const response = generateNewSingleAnswerResponse(BasicField.Country, {
-      answer: Country.Singapore,
+      answer: CountryRegion.Singapore,
       isVisible: false,
     })
     const validateResult = validateField('formId', formField, response)

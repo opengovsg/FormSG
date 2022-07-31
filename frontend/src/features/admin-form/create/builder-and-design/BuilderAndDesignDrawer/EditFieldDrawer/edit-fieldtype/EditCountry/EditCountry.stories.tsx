@@ -1,6 +1,6 @@
 import { Meta, Story } from '@storybook/react'
 
-import { Country } from '~shared/constants/countries'
+import { CountryRegion } from '~shared/constants/countryRegion'
 import { BasicField, CountryFieldBase } from '~shared/types'
 
 import { createFormBuilderMocks } from '~/mocks/msw/handlers/admin-form'
@@ -15,7 +15,7 @@ const DEFAULT_COUNTRY_FIELD: CountryFieldBase = {
   required: true,
   disabled: false,
   fieldType: BasicField.Country,
-  fieldOptions: Object.values(Country),
+  fieldOptions: Object.values(CountryRegion),
   globalId: 'unused',
 }
 

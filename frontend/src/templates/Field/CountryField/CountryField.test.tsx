@@ -2,7 +2,7 @@ import { composeStories } from '@storybook/testing-react'
 import { act, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
-import { Country } from '~shared/constants/countries'
+import { CountryRegion } from '~shared/constants/countryRegion'
 
 import { REQUIRED_ERROR } from '~constants/validation'
 
@@ -28,7 +28,7 @@ describe('required field', () => {
     // Arrange
     render(<ValidationRequired />)
 
-    const dropdownOptions = Object.values(Country)
+    const dropdownOptions = Object.values(CountryRegion)
     const optionToType = dropdownOptions[0]
     const submitButton = screen.getByRole('button', { name: /submit/i })
     const input = screen.getByRole('textbox') as HTMLInputElement
@@ -48,7 +48,7 @@ describe('required field', () => {
     // Arrange
     render(<ValidationRequired />)
 
-    const dropdownOptions = Object.values(Country)
+    const dropdownOptions = Object.values(CountryRegion)
     const expectedOption = dropdownOptions[1]
     const submitButton = screen.getByRole('button', { name: /submit/i })
     const input = screen.getByRole('textbox') as HTMLInputElement
@@ -109,7 +109,7 @@ describe('dropdown validation', () => {
     // Arrange
     render(<ValidationRequired />)
 
-    const dropdownOptions: string[] = Object.values(Country)
+    const dropdownOptions: string[] = Object.values(CountryRegion)
     const submitButton = screen.getByRole('button', { name: /submit/i })
     const inputElement = screen.getByRole('textbox') as HTMLInputElement
     const inputToType = 'this is not a valid option'

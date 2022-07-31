@@ -1,7 +1,7 @@
 import { chain, left, right } from 'fp-ts/lib/Either'
 import { flow } from 'fp-ts/lib/function'
 
-import { Country } from '../../../../../shared/constants/countries'
+import { CountryRegion } from '../../../../../shared/constants/countryRegion'
 import { ResponseValidator } from '../../../../types/field/utils/validation'
 import { ProcessedSingleAnswerResponse } from '../../../modules/submission/submission.types'
 
@@ -16,7 +16,7 @@ type CountryValidatorConstructor = () => CountryValidator
  * to check if country selection is one of the options.
  */
 const makeCountryValidator: CountryValidatorConstructor = () => (response) => {
-  const validOptions = Object.values(Country)
+  const validOptions = Object.values(CountryRegion)
   const { answer } = response
   return isOneOfOptions(validOptions, answer)
     ? right(response)
