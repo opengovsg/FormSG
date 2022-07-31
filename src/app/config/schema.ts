@@ -295,13 +295,13 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
       doc: 'Percentage threshold to serve React for respondents for Phase 1 (email mode forms)',
       format: 'int',
       default: 0,
-      env: 'REACT_MIGRATION_RESP_ROLLOUT_NO_AUTH',
+      env: 'REACT_MIGRATION_RESP_ROLLOUT_EMAIL',
     },
     respondentRolloutStorage: {
       doc: 'Percentage threshold to serve React for respondents for Phase 2 (storage mode forms)',
       format: 'int',
       default: 0,
-      env: 'REACT_MIGRATION_RESP_ROLLOUT_AUTH',
+      env: 'REACT_MIGRATION_RESP_ROLLOUT_STORAGE',
     },
     adminRollout: {
       doc: 'Percentage threshold to serve React for admins',

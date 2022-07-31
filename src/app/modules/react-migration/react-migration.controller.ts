@@ -75,7 +75,7 @@ export const serveForm: ControllerHandler<
 
   if (!formResult.isErr()) {
     // This conditional router is not the one to do error handling
-    // If there's any error, isEmail will retain its value of true, and
+    // If there's any error, isEmail will retain its value of false, and
     // the handling route will handle the error later in the usual fashion
     isEmail = formResult.value.responseMode === FormResponseMode.Email
   }
