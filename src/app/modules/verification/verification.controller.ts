@@ -8,6 +8,7 @@ import { createLoggerWithLabel } from '../../config/logger'
 import { generateOtpWithHash } from '../../utils/otp'
 import { createReqMeta, getRequestIp } from '../../utils/request'
 import { ControllerHandler } from '../core/core.types'
+import { setFormTags } from '../datadog/datadog.utils'
 import * as FormService from '../form/form.service'
 import * as MyInfoUtil from '../myinfo/myinfo.util'
 import { SgidService } from '../sgid/sgid.service'
@@ -220,6 +221,7 @@ export const _handleGenerateOtp: ControllerHandler<
     FormService.retrieveFullFormById(formId)
       // Step 2: Verify SPCP/MyInfo, if form requires it
       .andThen((form) => {
+        setFormTags(form)
         const { authType } = form
         switch (authType) {
           case FormAuthType.CP: {

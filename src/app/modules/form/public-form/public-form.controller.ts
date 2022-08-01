@@ -33,6 +33,7 @@ import {
   extractAndAssertMyInfoCookieValidity,
   validateMyInfoForm,
 } from '../../myinfo/myinfo.util'
+import { SgidInvalidJwtError, SgidVerifyJwtError } from '../../sgid/sgid.errors'
 import { SgidService } from '../../sgid/sgid.service'
 import { validateSgidForm } from '../../sgid/sgid.util'
 import { InvalidJwtError, VerifyJwtError } from '../../spcp/spcp.errors'
@@ -401,8 +402,8 @@ export const handleGetPublicForm: ControllerHandler<
         .mapErr((error) => {
           // Report only relevant errors - verification failed for user here
           if (
-            error instanceof VerifyJwtError ||
-            error instanceof InvalidJwtError
+            error instanceof SgidVerifyJwtError ||
+            error instanceof SgidInvalidJwtError
           ) {
             logger.error({
               message: 'Error getting public form',
