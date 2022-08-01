@@ -68,7 +68,6 @@ describe('workspace.controller', () => {
       title: 'Workspace1',
       admin: new ObjectId() as IUserSchema['_id'],
       formIds: [],
-      count: 0,
     }
     const MOCK_REQ = expressHandler.mockRequest({
       session: {
@@ -134,7 +133,6 @@ describe('workspace.controller', () => {
       title: 'Workspace1',
       admin: new ObjectId() as IUserSchema['_id'],
       formIds: [],
-      count: 0,
     }
     const MOCK_REQ = expressHandler.mockRequest({
       params: {
@@ -152,8 +150,8 @@ describe('workspace.controller', () => {
 
     it('should return 200 with the updated workspace', async () => {
       const mockRes = expressHandler.mockResponse()
-      MockWorkspaceService.checkWorkspaceExists.mockReturnValueOnce(
-        okAsync(true),
+      MockWorkspaceService.getWorkspace.mockReturnValueOnce(
+        okAsync(MOCK_WORKSPACE),
       )
       MockWorkspaceService.verifyWorkspaceAdmin.mockReturnValueOnce(
         okAsync(true),
@@ -174,8 +172,8 @@ describe('workspace.controller', () => {
       const mockRes = expressHandler.mockResponse()
       const mockErrorString = 'something went wrong'
 
-      MockWorkspaceService.checkWorkspaceExists.mockReturnValueOnce(
-        okAsync(true),
+      MockWorkspaceService.getWorkspace.mockReturnValueOnce(
+        okAsync(MOCK_WORKSPACE),
       )
       MockWorkspaceService.verifyWorkspaceAdmin.mockReturnValueOnce(
         errAsync(new ForbiddenWorkspaceError(mockErrorString)),
@@ -194,7 +192,7 @@ describe('workspace.controller', () => {
       const mockRes = expressHandler.mockResponse()
       const mockErrorString = 'something went wrong'
 
-      MockWorkspaceService.checkWorkspaceExists.mockReturnValueOnce(
+      MockWorkspaceService.getWorkspace.mockReturnValueOnce(
         errAsync(new WorkspaceNotFoundError(mockErrorString)),
       )
       MockWorkspaceService.verifyWorkspaceAdmin.mockReturnValueOnce(
@@ -214,8 +212,8 @@ describe('workspace.controller', () => {
       const mockRes = expressHandler.mockResponse()
       const mockErrorString = 'something went wrong'
 
-      MockWorkspaceService.checkWorkspaceExists.mockReturnValueOnce(
-        okAsync(true),
+      MockWorkspaceService.getWorkspace.mockReturnValueOnce(
+        okAsync(MOCK_WORKSPACE),
       )
       MockWorkspaceService.verifyWorkspaceAdmin.mockReturnValueOnce(
         okAsync(true),

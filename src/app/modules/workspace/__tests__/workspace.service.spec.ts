@@ -214,17 +214,18 @@ describe('workspace.service', () => {
   describe('verifyWorkspaceAdmin', () => {
     const mockWorkspaceId = new ObjectId()
     const mockAdmin = new ObjectId()
+    const mockWorkspace = {
+      _id: mockWorkspaceId.toHexString() as WorkspaceId,
+      title: 'Workspace1',
+      formIds: [],
+      admin: mockAdmin.toHexString() as UserId,
+    }
 
     it('should return true when user is workspace admin', async () => {
-      await WorkspaceModel.create({
-        _id: mockWorkspaceId,
-        title: 'Workspace1',
-        formIds: [],
-        admin: mockAdmin,
-      })
+      await WorkspaceModel.create(mockWorkspace)
 
       const actual = await WorkspaceService.verifyWorkspaceAdmin(
-        mockWorkspaceId.toHexString(),
+        mockWorkspace,
         mockAdmin.toHexString(),
       )
 
@@ -234,14 +235,9 @@ describe('workspace.service', () => {
 
     it('should return false when user is not workspace admin', async () => {
       const mockNotAdmin = new ObjectId()
-      await WorkspaceModel.create({
-        _id: mockWorkspaceId,
-        title: 'Workspace1',
-        formIds: [],
-        admin: mockAdmin,
-      })
+      await WorkspaceModel.create(mockWorkspace)
       const actual = await WorkspaceService.verifyWorkspaceAdmin(
-        mockWorkspaceId.toHexString(),
+        mockWorkspace,
         mockNotAdmin.toHexString(),
       )
 
@@ -250,32 +246,28 @@ describe('workspace.service', () => {
     })
   })
 
-  describe('checkWorkspaceExists', () => {
+  describe('getWorkspace', () => {
     const mockWorkspaceId = new ObjectId()
-    it('should return true when workspace exists in the database', async () => {
-      await WorkspaceModel.create({
-        _id: mockWorkspaceId,
-        title: 'Workspace1',
-        formIds: [],
-        admin: new ObjectId(),
-      })
+    const mockWorkspace = {
+      _id: mockWorkspaceId,
+      title: 'Workspace1',
+      formIds: [],
+      admin: new ObjectId(),
+    }
+    it('should return workspace when workspace exists in the database', async () => {
+      await WorkspaceModel.create(mockWorkspace)
 
-      const actual = await WorkspaceService.checkWorkspaceExists(
+      const saved = await WorkspaceService.getWorkspace(
         mockWorkspaceId.toHexString(),
       )
 
-      expect(actual.isOk()).toEqual(true)
-      expect(actual._unsafeUnwrap()).toEqual(true)
+      expect(saved.isOk()).toEqual(true)
+      expect(saved._unsafeUnwrap()._id).toEqual(mockWorkspaceId)
     })
 
-    it('should return false when user is not workspace admin', async () => {
-      await WorkspaceModel.create({
-        _id: mockWorkspaceId,
-        title: 'Workspace1',
-        formIds: [],
-        admin: new ObjectId(),
-      })
-      const actual = await WorkspaceService.checkWorkspaceExists(
+    it('should return WorkspaceNotFoundError when workspace is not in database', async () => {
+      await WorkspaceModel.create(mockWorkspace)
+      const actual = await WorkspaceService.getWorkspace(
         new ObjectId().toHexString(),
       )
 

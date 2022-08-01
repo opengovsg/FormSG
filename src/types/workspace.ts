@@ -14,10 +14,14 @@ export interface IWorkspaceSchema extends IWorkspace, Document {}
 
 export interface IWorkspaceModel extends Model<IWorkspaceSchema> {
   getWorkspaces(admin: IUserSchema['_id']): Promise<WorkspaceDto[]>
+
+  getWorkspace(workspaceId: IWorkspaceSchema['_id']): Promise<WorkspaceDto>
+
   createWorkspace(
     title: string,
     admin: IUserSchema['_id'],
   ): Promise<WorkspaceDto>
+
   updateWorkspaceTitle({
     title,
     workspaceId,

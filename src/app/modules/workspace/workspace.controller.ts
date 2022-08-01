@@ -109,8 +109,10 @@ export const handleUpdateWorkspaceTitle: ControllerHandler<
   const { title } = req.body
   const userId = (req.session as AuthedSessionData).user._id
 
-  return WorkspaceService.checkWorkspaceExists(workspaceId)
-    .andThen(() => WorkspaceService.verifyWorkspaceAdmin(workspaceId, userId))
+  return WorkspaceService.getWorkspace(workspaceId)
+    .andThen((workspace) =>
+      WorkspaceService.verifyWorkspaceAdmin(workspace, userId),
+    )
     .andThen(() =>
       WorkspaceService.updateWorkspaceTitle({ workspaceId, title }).map(
         (workspace) =>

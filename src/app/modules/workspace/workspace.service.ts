@@ -118,50 +118,34 @@ export const moveForms = (
   })
 }
 
-export const verifyWorkspaceAdmin = (
+export const getWorkspace = (
   workspaceId: string,
-  userId: string,
-): ResultAsync<true, DatabaseError | ForbiddenWorkspaceError> => {
+): ResultAsync<WorkspaceDto, DatabaseError | WorkspaceNotFoundError> => {
   return ResultAsync.fromPromise(
-    WorkspaceModel.exists({ _id: workspaceId, admin: userId }),
+    WorkspaceModel.getWorkspace(workspaceId),
     (error) => {
       logger.error({
-        message: 'Database error when checking if user is workspace admin',
+        message: 'Database error when getting workspace',
         meta: {
-          action: 'verifyWorkspaceAdmin',
+          action: 'getWorkspace',
           workspaceId,
-          userId,
         },
         error,
       })
       return transformMongoError(error)
     },
-  ).andThen((isUserWorkspaceAdmin) =>
-    isUserWorkspaceAdmin
-      ? okAsync(true as const)
-      : errAsync(new ForbiddenWorkspaceError()),
+  ).andThen((workspace: WorkspaceDto) =>
+    workspace ? okAsync(workspace) : errAsync(new WorkspaceNotFoundError()),
   )
 }
 
-export const checkWorkspaceExists = (
-  workspaceId: string,
-): ResultAsync<true, DatabaseError | WorkspaceNotFoundError> => {
-  return ResultAsync.fromPromise(
-    WorkspaceModel.exists({ _id: workspaceId }),
-    (error) => {
-      logger.error({
-        message: 'Database error when checking if workspace exists',
-        meta: {
-          action: 'doesWorkspaceExist',
-          workspaceId,
-        },
-        error,
-      })
-      return transformMongoError(error)
-    },
-  ).andThen((doesWorkspaceExist) =>
-    doesWorkspaceExist
-      ? okAsync(true as const)
-      : errAsync(new WorkspaceNotFoundError()),
-  )
+export const verifyWorkspaceAdmin = (
+  workspace: WorkspaceDto,
+  userId: string,
+): ResultAsync<true, ForbiddenWorkspaceError> => {
+  if (workspace.admin != userId) {
+    return errAsync(new ForbiddenWorkspaceError())
+  }
+
+  return okAsync(true as const)
 }

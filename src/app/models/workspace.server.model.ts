@@ -40,6 +40,12 @@ const compileWorkspaceModel = (db: Mongoose): IWorkspaceModel => {
     admin: 1,
   })
 
+  WorkspaceSchema.statics.getWorkspace = async function (
+    workspaceId: IWorkspaceSchema['_id'],
+  ) {
+    return this.findById(workspaceId).exec()
+  }
+
   WorkspaceSchema.statics.getWorkspaces = async function (
     admin: IUserSchema['_id'],
   ) {
