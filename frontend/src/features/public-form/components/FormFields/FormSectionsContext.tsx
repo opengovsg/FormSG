@@ -5,10 +5,9 @@ import {
   useContext,
   useEffect,
   useMemo,
-  useRef,
   useState,
 } from 'react'
-import { useDebouncedValue } from 'rooks'
+import useScrollSpy from 'react-use-scrollspy'
 
 import { BasicField } from '~shared/types/field'
 
@@ -17,7 +16,6 @@ import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 interface FormSectionsContextProps {
   sectionRefs: Record<string, RefObject<HTMLDivElement>>
   activeSectionId?: string
-  setActiveSectionId: (activeId: string) => void
   navigatedSectionTitle?: string
   setNavigatedSectionTitle: (title: string) => void
 }
@@ -37,6 +35,9 @@ export const FormSectionsProvider = ({
   const [sectionRefs, setSectionRefs] = useState<
     Record<string, RefObject<HTMLDivElement>>
   >({})
+  const [sectionRefsArr, setSectionRefsArr] = useState<
+    RefObject<HTMLDivElement>[]
+  >([])
 
   const orderedSectionFieldIds = useMemo(() => {
     if (!form) return
@@ -47,38 +48,33 @@ export const FormSectionsProvider = ({
       ? ['instructions'].concat(sections)
       : sections
   }, [form])
-  const [_activeSectionId, setActiveSectionId] = useState<string>()
-
-  const [activeSectionId] = useDebouncedValue(_activeSectionId, 200)
   const [navigatedSectionTitle, setNavigatedSectionTitle] = useState<string>()
-
-  const isFirstLoad = useRef(false)
-
-  /**
-   * Set default active section id on first load of the form.
-   */
-  useEffect(() => {
-    if (isFirstLoad.current && orderedSectionFieldIds) {
-      setActiveSectionId(orderedSectionFieldIds[0])
-      isFirstLoad.current = false
-    }
-  }, [orderedSectionFieldIds])
 
   useEffect(() => {
     if (!form) return
     const nextSectionRefs: Record<string, RefObject<HTMLDivElement>> = {}
+    const nextSectionRefsArr: RefObject<HTMLDivElement>[] = []
     orderedSectionFieldIds?.forEach((id) => {
-      nextSectionRefs[id] = createRef()
+      const sectionRef = createRef<HTMLDivElement>()
+      nextSectionRefs[id] = sectionRef
+      nextSectionRefsArr.push(sectionRef)
     })
     setSectionRefs(nextSectionRefs)
-  }, [activeSectionId, form, orderedSectionFieldIds])
+    setSectionRefsArr(nextSectionRefsArr)
+  }, [form, orderedSectionFieldIds])
+
+  const activeSection = useScrollSpy({
+    sectionElementRefs: sectionRefsArr,
+    // Seems to give the best results with this offset.
+    // Correctly switches the active section when the user navigates to the section.
+    offsetPx: -100,
+  })
 
   return (
     <FormSectionsContext.Provider
       value={{
         sectionRefs,
-        activeSectionId: activeSectionId ?? undefined,
-        setActiveSectionId,
+        activeSectionId: orderedSectionFieldIds?.[activeSection] ?? undefined,
         navigatedSectionTitle,
         setNavigatedSectionTitle,
       }}

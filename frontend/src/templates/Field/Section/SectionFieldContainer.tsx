@@ -15,7 +15,7 @@ export const SectionFieldContainer = ({
   schema,
   colorTheme = FormColorTheme.Blue,
 }: SectionFieldContainerProps): JSX.Element => {
-  const { sectionRefs, setActiveSectionId } = useFormSections()
+  const { sectionRefs } = useFormSections()
 
   return (
     <SectionField
@@ -24,7 +24,6 @@ export const SectionFieldContainer = ({
       tabIndex={-1}
       schema={schema}
       colorTheme={colorTheme}
-      handleSectionEnter={() => setActiveSectionId(schema._id)}
     />
   )
 }

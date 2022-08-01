@@ -1,18 +1,11 @@
 import { useMemo } from 'react'
-import { Waypoint } from 'react-waypoint'
 import { Box, forwardRef, Text } from '@chakra-ui/react'
 
 import { FormColorTheme } from '~shared/types'
 
 import { SectionFieldContainerProps } from './SectionFieldContainer'
 
-export interface SectionFieldProps extends SectionFieldContainerProps {
-  /**
-   * Callback to be invoked when section boundary enters viewport.
-   * Can be used to set the current active section.
-   */
-  handleSectionEnter?: () => void
-}
+export type SectionFieldProps = SectionFieldContainerProps
 
 export const useSectionColor = (colorTheme?: FormColorTheme) =>
   useMemo(() => {
@@ -26,20 +19,15 @@ export const useSectionColor = (colorTheme?: FormColorTheme) =>
   }, [colorTheme])
 
 // Used by SectionFieldContainer
-export const SectionField = forwardRef<SectionFieldProps, 'div'>(
-  ({ handleSectionEnter, ...rest }, ref) => {
+export const SectionField = forwardRef<SectionFieldContainerProps, 'div'>(
+  (props, ref) => {
     return (
       <Box
         _notFirst={{
           mt: '3.75rem',
         }}
       >
-        <BaseSectionField {...rest} ref={ref} />
-        <Waypoint
-          topOffset="80px"
-          bottomOffset="0%"
-          onEnter={handleSectionEnter}
-        />
+        <BaseSectionField {...props} ref={ref} />
       </Box>
     )
   },
