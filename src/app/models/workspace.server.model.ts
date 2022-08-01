@@ -71,17 +71,14 @@ const compileWorkspaceModel = (db: Mongoose): IWorkspaceModel => {
 
   WorkspaceSchema.statics.deleteWorkspace = async function ({
     workspaceId,
-    admin,
     session,
   }: {
     workspaceId: IWorkspaceSchema['_id']
-    admin: IUserSchema['_id']
     session?: ClientSession
   }) {
     const deleted = await this.deleteOne(
       {
         _id: workspaceId,
-        admin,
       },
       { session },
     )

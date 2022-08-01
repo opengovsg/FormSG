@@ -208,7 +208,6 @@ describe('Workspace Model', () => {
       it('workspace should no loger be in database when deleted', async () => {
         await Workspace.deleteWorkspace({
           workspaceId: MOCK_WORKSPACE_ID,
-          admin: MOCK_USER_ID,
         })
 
         const actual = await Workspace.exists({ _id: MOCK_WORKSPACE_ID })
@@ -222,7 +221,6 @@ describe('Workspace Model', () => {
         )
         await Workspace.deleteWorkspace({
           workspaceId: MOCK_WORKSPACE_ID,
-          admin: MOCK_USER_ID,
         })
 
         const actual = await Workspace.exists({ _id: MOCK_WORKSPACE_ID })

@@ -164,12 +164,13 @@ export const deleteWorkspace: ControllerHandler<
   const { shouldDeleteForms } = req.body
   const userId = (req.session as AuthedSessionData).user._id
 
-  return WorkspaceService.checkWorkspaceExists(workspaceId)
-    .andThen(() => WorkspaceService.verifyWorkspaceAdmin(workspaceId, userId))
+  return WorkspaceService.getWorkspace(workspaceId)
+    .andThen((workspace) =>
+      WorkspaceService.verifyWorkspaceAdmin(workspace, userId),
+    )
     .andThen(() =>
       WorkspaceService.deleteWorkspace({
         workspaceId,
-        userId,
         shouldDeleteForms,
       }).map(() =>
         res
