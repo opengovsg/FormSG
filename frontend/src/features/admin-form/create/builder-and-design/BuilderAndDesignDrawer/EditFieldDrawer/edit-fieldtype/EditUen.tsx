@@ -46,17 +46,17 @@ export const EditUen = ({ field }: EditUenProps): JSX.Element => {
 
   return (
     <DrawerContentContainer>
-      <FormControl isRequired isReadOnly={isLoading} isInvalid={!!errors.title}>
+      <FormControl isRequired isDisabled={isLoading} isInvalid={!!errors.title}>
         <FormLabel>Question</FormLabel>
         <Input autoFocus {...register('title', requiredValidationRule)} />
         <FormErrorMessage>{errors?.title?.message}</FormErrorMessage>
       </FormControl>
-      <FormControl isReadOnly={isLoading} isInvalid={!!errors.description}>
+      <FormControl isDisabled={isLoading} isInvalid={!!errors.description}>
         <FormLabel>Description</FormLabel>
         <Textarea {...register('description')} />
         <FormErrorMessage>{errors?.description?.message}</FormErrorMessage>
       </FormControl>
-      <FormControl isReadOnly={isLoading}>
+      <FormControl isDisabled={isLoading}>
         <Toggle {...register('required')} label="Required" />
       </FormControl>
       <FormFieldDrawerActions

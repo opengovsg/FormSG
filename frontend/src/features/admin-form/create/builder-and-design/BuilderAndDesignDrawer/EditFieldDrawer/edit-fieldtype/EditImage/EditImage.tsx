@@ -158,7 +158,7 @@ export const EditImage = ({ field }: EditImageProps): JSX.Element => {
     <DrawerContentContainer>
       <FormControl
         isRequired
-        isReadOnly={isLoading || isSubmitting}
+        isDisabled={isLoading || isSubmitting}
         isInvalid={!isEmpty(errors.attachment)}
       >
         <FormLabel>Uploaded image</FormLabel>
@@ -185,7 +185,7 @@ export const EditImage = ({ field }: EditImageProps): JSX.Element => {
         <FormErrorMessage>{get(errors, 'attachment.message')}</FormErrorMessage>
       </FormControl>
       <FormControl
-        isReadOnly={isLoading || isSubmitting}
+        isDisabled={isLoading || isSubmitting}
         isInvalid={!!errors.description}
       >
         <FormLabel isRequired>Description</FormLabel>

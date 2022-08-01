@@ -198,25 +198,25 @@ export const EditCheckbox = ({ field }: EditCheckboxProps): JSX.Element => {
 
   return (
     <DrawerContentContainer>
-      <FormControl isRequired isReadOnly={isLoading} isInvalid={!!errors.title}>
+      <FormControl isRequired isDisabled={isLoading} isInvalid={!!errors.title}>
         <FormLabel>Question</FormLabel>
         <Input autoFocus {...register('title', requiredValidationRule)} />
         <FormErrorMessage>{errors?.title?.message}</FormErrorMessage>
       </FormControl>
-      <FormControl isReadOnly={isLoading} isInvalid={!!errors.description}>
+      <FormControl isDisabled={isLoading} isInvalid={!!errors.description}>
         <FormLabel>Description</FormLabel>
         <Textarea {...register('description')} />
         <FormErrorMessage>{errors?.description?.message}</FormErrorMessage>
       </FormControl>
-      <FormControl isReadOnly={isLoading}>
+      <FormControl isDisabled={isLoading}>
         <Toggle {...register('required')} label="Required" />
       </FormControl>
-      <FormControl isReadOnly={isLoading}>
+      <FormControl isDisabled={isLoading}>
         <Toggle {...register('othersRadioButton')} label="Others" />
       </FormControl>
       <FormControl
         isRequired
-        isReadOnly={isLoading}
+        isDisabled={isLoading}
         isInvalid={!!errors.fieldOptions}
       >
         <FormLabel>Options</FormLabel>
@@ -234,8 +234,7 @@ export const EditCheckbox = ({ field }: EditCheckboxProps): JSX.Element => {
           description="Customise the number of options that users are allowed to select"
         />
         <FormControl
-          isDisabled={!watchedInputs.validateByValue}
-          isReadOnly={isLoading}
+          isDisabled={isLoading || !watchedInputs.validateByValue}
           isInvalid={!isEmpty(errors.ValidationOptions)}
         >
           <Stack mt="0.5rem" direction="row" spacing="0.5rem">

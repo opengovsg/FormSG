@@ -152,24 +152,24 @@ export const EditEmail = ({ field }: EditEmailProps): JSX.Element => {
 
   return (
     <DrawerContentContainer>
-      <FormControl isRequired isReadOnly={isLoading} isInvalid={!!errors.title}>
+      <FormControl isRequired isDisabled={isLoading} isInvalid={!!errors.title}>
         <FormLabel>Question</FormLabel>
         <Input autoFocus {...register('title', requiredValidationRule)} />
         <FormErrorMessage>{errors?.title?.message}</FormErrorMessage>
       </FormControl>
       <FormControl
         isRequired
-        isReadOnly={isLoading}
+        isDisabled={isLoading}
         isInvalid={!!errors.description}
       >
         <FormLabel>Description</FormLabel>
         <Textarea {...register('description')} />
         <FormErrorMessage>{errors?.description?.message}</FormErrorMessage>
       </FormControl>
-      <FormControl isReadOnly={isLoading}>
+      <FormControl isDisabled={isLoading}>
         <Toggle {...register('required')} label="Required" />
       </FormControl>
-      <FormControl isReadOnly={isLoading}>
+      <FormControl isDisabled={isLoading}>
         <Toggle
           {...register('isVerifiable')}
           label="OTP verification"
@@ -177,7 +177,7 @@ export const EditEmail = ({ field }: EditEmailProps): JSX.Element => {
         />
       </FormControl>
       <Box>
-        <FormControl isReadOnly={isLoading}>
+        <FormControl isDisabled={isLoading}>
           <Toggle
             {...allowedEmailDomainsRegister}
             ref={mergedAllowedEmailDomainsRef}
@@ -188,7 +188,7 @@ export const EditEmail = ({ field }: EditEmailProps): JSX.Element => {
         </FormControl>
         {watchedHasAllowedEmailDomains && (
           <FormControl
-            isReadOnly={isLoading}
+            isDisabled={isLoading}
             isRequired
             isInvalid={!!errors.allowedEmailDomains}
             mt="1.5rem"
@@ -206,7 +206,7 @@ export const EditEmail = ({ field }: EditEmailProps): JSX.Element => {
         )}
       </Box>
       <Box>
-        <FormControl isReadOnly={isLoading}>
+        <FormControl isDisabled={isLoading}>
           <Toggle
             {...register('autoReplyOptions.hasAutoReply')}
             label="Email confirmation"
@@ -214,7 +214,7 @@ export const EditEmail = ({ field }: EditEmailProps): JSX.Element => {
         </FormControl>
         {watchedHasAutoReply && (
           <>
-            <FormControl isRequired isReadOnly={isLoading} mt="1.5rem">
+            <FormControl isRequired isDisabled={isLoading} mt="1.5rem">
               <FormLabel>Subject</FormLabel>
               <Input
                 autoFocus
@@ -222,21 +222,21 @@ export const EditEmail = ({ field }: EditEmailProps): JSX.Element => {
                 {...register('autoReplyOptions.autoReplySubject')}
               />
             </FormControl>
-            <FormControl isRequired isReadOnly={isLoading} mt="1.5rem">
+            <FormControl isRequired isDisabled={isLoading} mt="1.5rem">
               <FormLabel>Sender name</FormLabel>
               <Input
                 placeholder="Default sender name is your agency name"
                 {...register('autoReplyOptions.autoReplySender')}
               />
             </FormControl>
-            <FormControl isReadOnly={isLoading} isRequired mt="1.5rem">
+            <FormControl isDisabled={isLoading} isRequired mt="1.5rem">
               <FormLabel>Content</FormLabel>
               <Textarea
                 placeholder="Default email body"
                 {...register('autoReplyOptions.autoReplyMessage')}
               />
             </FormControl>
-            <FormControl isReadOnly={isLoading} mt="1.5rem">
+            <FormControl isDisabled={isLoading} mt="1.5rem">
               <Toggle
                 {...register('autoReplyOptions.includeFormSummary')}
                 label="Include PDF response"

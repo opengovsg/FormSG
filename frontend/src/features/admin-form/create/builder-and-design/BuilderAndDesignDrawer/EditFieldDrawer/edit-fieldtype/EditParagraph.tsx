@@ -49,7 +49,7 @@ export const EditParagraph = ({ field }: EditParagraphProps): JSX.Element => {
     <DrawerContentContainer>
       <FormControl
         isRequired
-        isReadOnly={isLoading}
+        isDisabled={isLoading}
         isInvalid={!!errors.description}
       >
         <FormLabel>Statement</FormLabel>

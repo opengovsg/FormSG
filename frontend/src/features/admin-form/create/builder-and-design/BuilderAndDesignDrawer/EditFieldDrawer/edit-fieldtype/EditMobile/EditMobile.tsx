@@ -78,7 +78,7 @@ export const EditMobile = ({ field }: EditMobileProps): JSX.Element => {
       <DrawerContentContainer>
         <FormControl
           isRequired
-          isReadOnly={isLoading}
+          isDisabled={isLoading}
           isInvalid={!!errors.title}
         >
           <FormLabel>Question</FormLabel>
@@ -87,24 +87,24 @@ export const EditMobile = ({ field }: EditMobileProps): JSX.Element => {
         </FormControl>
         <FormControl
           isRequired
-          isReadOnly={isLoading}
+          isDisabled={isLoading}
           isInvalid={!!errors.description}
         >
           <FormLabel>Description</FormLabel>
           <Textarea {...register('description')} />
           <FormErrorMessage>{errors?.description?.message}</FormErrorMessage>
         </FormControl>
-        <FormControl isReadOnly={isLoading}>
+        <FormControl isDisabled={isLoading}>
           <Toggle {...register('required')} label="Required" />
         </FormControl>
-        <FormControl isReadOnly={isLoading}>
+        <FormControl isDisabled={isLoading}>
           <Toggle
             {...register('allowIntlNumbers')}
             label="Allow international numbers"
           />
         </FormControl>
         <Box>
-          <FormControl isReadOnly={isLoading} isDisabled={isToggleVfnDisabled}>
+          <FormControl isDisabled={isLoading || isToggleVfnDisabled}>
             <Toggle
               {...register('isVerifiable', {
                 onChange: (e) => {

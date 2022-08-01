@@ -153,25 +153,25 @@ export const EditShortText = ({ field }: EditShortTextProps): JSX.Element => {
 
   return (
     <DrawerContentContainer>
-      <FormControl isRequired isReadOnly={isLoading} isInvalid={!!errors.title}>
+      <FormControl isRequired isDisabled={isLoading} isInvalid={!!errors.title}>
         <FormLabel>Question</FormLabel>
         <Input autoFocus {...register('title', requiredValidationRule)} />
         <FormErrorMessage>{errors?.title?.message}</FormErrorMessage>
       </FormControl>
       <FormControl
         isRequired
-        isReadOnly={isLoading}
+        isDisabled={isLoading}
         isInvalid={!!errors.description}
       >
         <FormLabel>Description</FormLabel>
         <Textarea {...register('description')} />
         <FormErrorMessage>{errors?.description?.message}</FormErrorMessage>
       </FormControl>
-      <FormControl isReadOnly={isLoading}>
+      <FormControl isDisabled={isLoading}>
         <Toggle {...register('required')} label="Required" />
       </FormControl>
       <FormControl
-        isReadOnly={isLoading}
+        isDisabled={isLoading}
         isInvalid={!isEmpty(errors.ValidationOptions)}
       >
         <FormLabel isRequired>Number of characters allowed</FormLabel>
@@ -207,7 +207,7 @@ export const EditShortText = ({ field }: EditShortTextProps): JSX.Element => {
           {errors?.ValidationOptions?.customVal?.message}
         </FormErrorMessage>
       </FormControl>
-      <FormControl isReadOnly={isLoading}>
+      <FormControl isDisabled={isLoading}>
         <Toggle
           {...register('allowPrefill')}
           label="Enable pre-fill"

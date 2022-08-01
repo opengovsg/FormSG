@@ -6,7 +6,7 @@ import {
   UnpackNestedValue,
   useFormState,
 } from 'react-hook-form'
-import { FormControl, Stack, StackDivider } from '@chakra-ui/react'
+import { FormControl, Stack } from '@chakra-ui/react'
 import { extend, pick } from 'lodash'
 
 import { Column, ColumnDto, TableFieldBase } from '~shared/types/field'
@@ -120,12 +120,12 @@ export const EditTable = ({ field }: EditTableProps): JSX.Element => {
 
   return (
     <DrawerContentContainer>
-      <FormControl isRequired isReadOnly={isLoading} isInvalid={!!errors.title}>
+      <FormControl isRequired isDisabled={isLoading} isInvalid={!!errors.title}>
         <FormLabel>Question</FormLabel>
         <Input autoFocus {...register('title', requiredValidationRule)} />
         <FormErrorMessage>{errors?.title?.message}</FormErrorMessage>
       </FormControl>
-      <FormControl isReadOnly={isLoading} isInvalid={!!errors.description}>
+      <FormControl isDisabled={isLoading} isInvalid={!!errors.description}>
         <FormLabel>Description</FormLabel>
         <Textarea {...register('description')} />
         <FormErrorMessage>{errors?.description?.message}</FormErrorMessage>
@@ -133,7 +133,7 @@ export const EditTable = ({ field }: EditTableProps): JSX.Element => {
       <Stack spacing="2rem">
         <FormControl
           isRequired
-          isReadOnly={isLoading}
+          isDisabled={isLoading}
           isInvalid={!!errors.minimumRows}
         >
           <FormLabel>Minimum rows</FormLabel>
@@ -158,7 +158,7 @@ export const EditTable = ({ field }: EditTableProps): JSX.Element => {
           />
           <FormErrorMessage>{errors?.minimumRows?.message}</FormErrorMessage>
         </FormControl>
-        <FormControl isReadOnly={isLoading}>
+        <FormControl isDisabled={isLoading}>
           <Toggle
             {...register('addMoreRows')}
             label="Allow respondent to add more rows"
@@ -167,7 +167,7 @@ export const EditTable = ({ field }: EditTableProps): JSX.Element => {
         {getValues('addMoreRows') ? (
           <FormControl
             isRequired
-            isReadOnly={isLoading}
+            isDisabled={isLoading}
             isInvalid={!!errors.maximumRows}
           >
             <FormLabel>Maximum rows allowed</FormLabel>
