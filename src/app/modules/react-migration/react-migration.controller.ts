@@ -91,9 +91,10 @@ export const serveForm: ControllerHandler<
     // Check the rollout value first, if it's 0, react is DISABLED
     // And we ignore cookies entirely!
     showReact = false
-    // Delete existing cookie to prevent infinite redirection
+    // Delete existing cookies to prevent infinite redirection
     if (req.cookies) {
       res.cookie(config.reactMigration.respondentCookieName, '', { maxAge: 0 })
+      res.cookie(config.reactMigration.adminCookieName, '', { maxAge: 0 })
     }
   } else if (req.cookies) {
     if (config.reactMigration.adminCookieName in req.cookies) {
@@ -166,6 +167,10 @@ export const serveDefault: ControllerHandler = (req, res, next) => {
     // Check the rollout value first, if it's 0, react is DISABLED
     // And we ignore cookies entirely!
     showReact = false
+    // Delete existing cookie to prevent infinite redirection
+    if (req.cookies) {
+      res.cookie(config.reactMigration.adminCookieName, '', { maxAge: 0 })
+    }
   } else if (req.cookies) {
     if (config.reactMigration.adminCookieName in req.cookies) {
       // Check if admin had already chosen react previously
