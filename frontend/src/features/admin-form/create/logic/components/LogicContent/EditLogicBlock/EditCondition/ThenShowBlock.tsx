@@ -1,8 +1,9 @@
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Controller, UseFormReturn } from 'react-hook-form'
 import { BiShow, BiX } from 'react-icons/bi'
-import { FormControl, Stack } from '@chakra-ui/react'
+import { FormControl, Stack, Text } from '@chakra-ui/react'
 import get from 'lodash/get'
+import simplur from 'simplur'
 
 import { FormFieldDto } from '~shared/types/field'
 import { LogicType } from '~shared/types/form'
@@ -10,6 +11,7 @@ import { LogicType } from '~shared/types/form'
 import { useWatchDependency } from '~hooks/useWatchDependency'
 import { MultiSelect, SingleSelect } from '~components/Dropdown'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
+import InlineMessage from '~components/InlineMessage'
 import Textarea from '~components/Textarea'
 
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
@@ -34,7 +36,9 @@ export const ThenShowBlock = ({
   const {
     watch,
     formState: { errors },
+    setValue,
     resetField,
+    setError,
     control,
   } = formMethods
 
@@ -70,6 +74,41 @@ export const ThenShowBlock = ({
       : 'show'
   }, [logicTypeValue])
 
+  const [deletedFieldsCount, setDeletedFieldsCount] = useState<number>(0)
+
+  /**
+   * Compute whether any/all fields in the show fields are deleted, then run
+   * effect once on render to delete fields and show appropriate error/infobox.
+   */
+  const showValueWatch = useWatchDependency(watch, 'show')
+
+  useEffect(() => {
+    if (
+      logicTypeValue !== LogicType.ShowFields ||
+      !showValueWatch.value ||
+      !mapIdToField
+    )
+      return
+    const filteredShowFields = showValueWatch.value.filter(
+      (field) => field in mapIdToField,
+    )
+    const deletedFieldsCount =
+      showValueWatch.value.length - filteredShowFields.length
+    if (filteredShowFields.length === 0) {
+      resetField('show')
+      setError('show', {
+        type: 'manual',
+        message: 'All fields were deleted. Please select other field(s).',
+      })
+      return
+    }
+    if (deletedFieldsCount > 0) {
+      setDeletedFieldsCount(deletedFieldsCount)
+      setValue('show', filteredShowFields)
+      return
+    }
+  }, [])
+
   return (
     <Stack
       direction="column"
@@ -77,6 +116,18 @@ export const ThenShowBlock = ({
       py="1.5rem"
       px={{ base: '1.5rem', md: '2rem' }}
     >
+      {deletedFieldsCount ? (
+        <InlineMessage variant="info">
+          <Text>
+            <strong>{simplur`${deletedFieldsCount} Show field[|s]`}</strong>{' '}
+            {simplur`${[
+              deletedFieldsCount,
+            ]}[was|were] deleted. [It has|They have]`}{' '}
+            been removed from your logic.
+          </Text>
+        </InlineMessage>
+      ) : null}
+
       <Stack
         direction={{ base: 'column', md: 'row' }}
         spacing={{ base: 0, md: '0.5rem' }}

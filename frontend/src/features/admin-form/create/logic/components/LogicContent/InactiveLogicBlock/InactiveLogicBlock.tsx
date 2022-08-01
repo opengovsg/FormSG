@@ -44,17 +44,30 @@ export const InactiveLogicBlock = ({
     if (!mapIdToField) return null
 
     switch (logic.logicType) {
-      case LogicType.ShowFields:
+      case LogicType.ShowFields: {
+        const allInvalid = logic.show.every(
+          (fieldId) => !(fieldId in mapIdToField),
+        )
+        const errorType = allInvalid ? 'error' : 'info'
+        const errorStringEnd = allInvalid
+          ? '. Please select other fields.'
+          : ' and has been removed from your logic.'
         return (
           <>
             <Text>then show</Text>
             <Stack direction="column" spacing="0.25rem">
               {logic.show.map((fieldId, index) => (
-                <FieldLogicBadge key={index} field={mapIdToField[fieldId]} />
+                <FieldLogicBadge
+                  key={index}
+                  field={mapIdToField[fieldId]}
+                  errorType={errorType}
+                  errorString={`This field was deleted${errorStringEnd}`}
+                />
               ))}
             </Stack>
           </>
         )
+      }
       case LogicType.PreventSubmit:
         return (
           <>
@@ -114,7 +127,11 @@ export const InactiveLogicBlock = ({
             >
               <Stack>
                 <Text>{index === 0 ? 'If' : 'and'}</Text>
-                <FieldLogicBadge field={mapIdToField[condition.field]} />
+                <FieldLogicBadge
+                  field={mapIdToField[condition.field]}
+                  errorType="error"
+                  errorString="This field was deleted. Please select another field."
+                />
               </Stack>
               <Stack>
                 <Text>{condition.state}</Text>

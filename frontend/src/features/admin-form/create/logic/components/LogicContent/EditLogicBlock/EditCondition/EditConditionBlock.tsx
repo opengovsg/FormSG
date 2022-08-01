@@ -60,6 +60,7 @@ export const EditConditionBlock = ({
     register,
     setValue,
     control,
+    setError,
   } = formMethods
   const ifFieldIdValue = watch(`${name}.field`)
   const hasFieldIdChanged = useHasChanged(
@@ -74,6 +75,21 @@ export const EditConditionBlock = ({
     if (!ifFieldIdValue || !mapIdToField) return
     return mapIdToField[ifFieldIdValue]
   }, [ifFieldIdValue, mapIdToField])
+
+  /**
+   * Effect to set value and error if the user deleted the field. Run this only
+   * once, on render.
+   */
+  useEffect(() => {
+    if (!ifFieldIdValue || !mapIdToField) return
+    if (!(ifFieldIdValue in mapIdToField)) {
+      resetField(`${name}.field`)
+      setError(`${name}.field`, {
+        type: 'manual',
+        message: 'This field was deleted. Please add a different field.',
+      })
+    }
+  }, [])
 
   /**
    * Effect to reset the field if the field to apply a condition on is changed.
