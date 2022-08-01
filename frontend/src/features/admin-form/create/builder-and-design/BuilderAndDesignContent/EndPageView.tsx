@@ -45,11 +45,8 @@ export const EndPageView = ({ ...props }: FlexProps): JSX.Element => {
 
   return (
     <Flex
-      m={{ base: 0, md: '2rem' }}
-      mb={0}
       flex={1}
       bg="white"
-      p={{ base: '1.5rem', md: 0 }}
       justify="center"
       overflow="auto"
       height="100%"
