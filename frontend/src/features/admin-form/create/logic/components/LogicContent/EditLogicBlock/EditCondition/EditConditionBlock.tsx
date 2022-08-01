@@ -86,7 +86,7 @@ export const EditConditionBlock = ({
       resetField(`${name}.field`)
       setError(`${name}.field`, {
         type: 'manual',
-        message: 'This field was deleted. Please add a different field.',
+        message: 'This field was deleted. Please select a different field.',
       })
     }
   }, [])
