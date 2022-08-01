@@ -29,13 +29,12 @@ export interface IWorkspaceModel extends Model<IWorkspaceSchema> {
     title: string
     workspaceId: IWorkspaceSchema['_id']
   }): Promise<WorkspaceDto | null>
+
   deleteWorkspace({
     workspaceId,
-    admin,
     session,
   }: {
     workspaceId: IWorkspaceSchema['_id']
-    admin: IUserSchema['_id']
     session?: ClientSession
   }): Promise<boolean>
 }

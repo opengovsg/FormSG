@@ -294,7 +294,6 @@ describe('workspace.service', () => {
 
       const actual = await WorkspaceService.deleteWorkspace({
         workspaceId: mockWorkspace._id.toHexString(),
-        userId: mockWorkspace.admin.toHexString(),
         shouldDeleteForms: false,
       })
 
@@ -307,7 +306,6 @@ describe('workspace.service', () => {
 
       const actual = await WorkspaceService.deleteWorkspace({
         workspaceId: mockWorkspace._id.toHexString(),
-        userId: mockWorkspace.admin.toHexString(),
         shouldDeleteForms: false,
       })
 
@@ -329,7 +327,6 @@ describe('workspace.service', () => {
 
       const actual = await WorkspaceService.deleteWorkspace({
         workspaceId: mockWorkspace._id.toHexString(),
-        userId: mockWorkspace.admin.toHexString(),
         shouldDeleteForms: false,
       })
       const doesFormExist = await FormModel.exists({ _id: mockFormId })
@@ -358,7 +355,6 @@ describe('workspace.service', () => {
 
       const actual = await WorkspaceService.deleteWorkspace({
         workspaceId: mockWorkspace._id.toHexString(),
-        userId: mockWorkspace.admin.toHexString(),
         shouldDeleteForms: true,
       })
       const doesFormExist = await FormModel.exists({ _id: mockFormId })
@@ -390,7 +386,6 @@ describe('workspace.service', () => {
 
       const actual = await WorkspaceService.deleteWorkspace({
         workspaceId: mockWorkspace._id.toHexString(),
-        userId: mockWorkspace.admin.toHexString(),
         shouldDeleteForms: true,
       })
       const doesFormExist = await FormModel.exists({ _id: mockFormId })
@@ -426,7 +421,6 @@ describe('workspace.service', () => {
 
       const actual = await WorkspaceService.deleteWorkspace({
         workspaceId: mockWorkspace._id.toHexString(),
-        userId: mockWorkspace.admin.toHexString(),
         shouldDeleteForms: true,
       })
       const doesFormExist = await FormModel.exists({ _id: mockFormId })
@@ -454,7 +448,6 @@ describe('workspace.service', () => {
 
       const actual = await WorkspaceService.deleteWorkspace({
         workspaceId: mockWorkspace._id.toHexString(),
-        userId: mockWorkspace.admin.toHexString(),
         shouldDeleteForms: false,
       })
 

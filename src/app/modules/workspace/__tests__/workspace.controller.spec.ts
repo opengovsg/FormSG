@@ -246,15 +246,17 @@ describe('workspace.controller', () => {
         shouldDeleteForms: true,
       },
     })
-    const deleteWorkspaceSpy = jest.spyOn(
-      MockWorkspaceService,
-      'deleteWorkspace',
-    )
+    const MOCK_WORKSPACE = {
+      _id: new ObjectId() as IWorkspaceSchema['_id'],
+      title: 'Workspace1',
+      admin: new ObjectId() as IUserSchema['_id'],
+      formIds: [],
+    }
 
     it('should return 200 with success message', async () => {
       const mockRes = expressHandler.mockResponse()
-      MockWorkspaceService.checkWorkspaceExists.mockReturnValueOnce(
-        okAsync(true),
+      MockWorkspaceService.getWorkspace.mockReturnValueOnce(
+        okAsync(MOCK_WORKSPACE),
       )
       MockWorkspaceService.verifyWorkspaceAdmin.mockReturnValueOnce(
         okAsync(true),
@@ -274,7 +276,7 @@ describe('workspace.controller', () => {
       const mockRes = expressHandler.mockResponse()
       const mockErrorString = 'something went wrong'
 
-      MockWorkspaceService.checkWorkspaceExists.mockReturnValueOnce(
+      MockWorkspaceService.getWorkspace.mockReturnValueOnce(
         errAsync(new WorkspaceNotFoundError(mockErrorString)),
       )
       MockWorkspaceService.verifyWorkspaceAdmin.mockReturnValueOnce(
@@ -283,7 +285,6 @@ describe('workspace.controller', () => {
 
       await WorkspaceController.deleteWorkspace(MOCK_REQ, mockRes, jest.fn())
 
-      expect(deleteWorkspaceSpy).not.toHaveBeenCalled()
       expect(mockRes.status).toBeCalledWith(404)
       expect(mockRes.json).toBeCalledWith({ message: mockErrorString })
     })
@@ -292,8 +293,8 @@ describe('workspace.controller', () => {
       const mockRes = expressHandler.mockResponse()
       const mockErrorString = 'something went wrong'
 
-      MockWorkspaceService.checkWorkspaceExists.mockReturnValueOnce(
-        okAsync(true),
+      MockWorkspaceService.getWorkspace.mockReturnValueOnce(
+        okAsync(MOCK_WORKSPACE),
       )
       MockWorkspaceService.verifyWorkspaceAdmin.mockReturnValueOnce(
         okAsync(true),
@@ -311,8 +312,8 @@ describe('workspace.controller', () => {
       const mockRes = expressHandler.mockResponse()
       const mockErrorString = 'something went wrong'
 
-      MockWorkspaceService.checkWorkspaceExists.mockReturnValueOnce(
-        okAsync(true),
+      MockWorkspaceService.getWorkspace.mockReturnValueOnce(
+        okAsync(MOCK_WORKSPACE),
       )
       MockWorkspaceService.verifyWorkspaceAdmin.mockReturnValueOnce(
         okAsync(true),

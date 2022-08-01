@@ -72,7 +72,6 @@ export const updateWorkspaceTitle = ({
           action: 'updateWorkspaceTitle',
           workspaceId,
           title,
-          userId,
         },
         error,
       })
@@ -87,11 +86,9 @@ export const updateWorkspaceTitle = ({
 
 export const deleteWorkspace = ({
   workspaceId,
-  userId,
   shouldDeleteForms,
 }: {
   workspaceId: string
-  userId: string
   shouldDeleteForms: boolean
 }): ResultAsync<void, DatabaseError> => {
   return ResultAsync.fromPromise(
@@ -100,7 +97,6 @@ export const deleteWorkspace = ({
         .withTransaction(() =>
           deleteWorkspaceTransaction({
             workspaceId,
-            userId,
             shouldDeleteForms,
             session,
           }),
@@ -114,7 +110,6 @@ export const deleteWorkspace = ({
         meta: {
           action: 'deleteWorkspace',
           workspaceId,
-          userId,
           shouldDeleteForms,
         },
         error,
@@ -126,30 +121,25 @@ export const deleteWorkspace = ({
 
 const deleteWorkspaceTransaction = async ({
   workspaceId,
-  userId,
   shouldDeleteForms,
   session,
 }: {
   workspaceId: string
-  userId: string
   shouldDeleteForms: boolean
   session: ClientSession
 }): Promise<void> => {
   const workspaceToDelete = await WorkspaceModel.findOne({
     _id: workspaceId,
-    admin: userId,
   })
 
   await WorkspaceModel.deleteWorkspace({
     workspaceId,
-    admin: userId,
     session,
   })
 
   if (shouldDeleteForms && workspaceToDelete?.formIds) {
     await AdminFormService.archiveForms({
       formIds: workspaceToDelete?.formIds,
-      userId,
       session,
     })
   }

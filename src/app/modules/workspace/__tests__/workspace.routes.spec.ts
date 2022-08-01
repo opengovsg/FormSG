@@ -317,7 +317,6 @@ describe('workspaces.routes', () => {
       jest.spyOn(WorkspaceModel, 'deleteWorkspace').mockImplementationOnce(() =>
         WorkspaceModel.deleteWorkspace({
           workspaceId: MOCK_WORKSPACE_DOC._id,
-          admin: MOCK_WORKSPACE_DOC.admin,
         }),
       )
 
