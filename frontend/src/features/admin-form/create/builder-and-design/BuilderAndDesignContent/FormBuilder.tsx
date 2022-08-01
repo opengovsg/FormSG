@@ -36,6 +36,7 @@ export const FormBuilder = ({
 
   return (
     <Flex
+      m={{ base: 0, md: '2rem' }}
       mb={0}
       flex={1}
       bg={bg}
