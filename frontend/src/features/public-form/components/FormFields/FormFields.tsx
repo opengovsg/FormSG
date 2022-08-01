@@ -104,7 +104,7 @@ export const FormFields = ({
   return (
     <FormProvider {...formMethods}>
       <form onSubmit={formMethods.handleSubmit(onSubmit)} noValidate>
-        {formFields?.length !== 0 && (
+        {formFields?.length && (
           <Box bg={'white'} py="2.5rem" px={{ base: '1rem', md: '2.5rem' }}>
             <Stack spacing="2.25rem">
               {!isEmpty(fieldPrefillMap) && (
