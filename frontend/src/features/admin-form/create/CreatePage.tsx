@@ -27,7 +27,13 @@ export const CreatePage = (): JSX.Element => {
   }, [isLoading, hasAdminSeenFeatureTour])
 
   return (
-    <Flex h="100%" w="100%" overflow="auto" bg="neutral.200" direction="row">
+    <Flex
+      h="100%"
+      w="100%"
+      overflow="auto !important"
+      bg="neutral.200"
+      direction="row"
+    >
       <CreatePageSidebarProvider>
         {shouldFeatureTourRender && (
           <FeatureTour onClose={() => setHasAdminSeenFeatureTour(true)} />
