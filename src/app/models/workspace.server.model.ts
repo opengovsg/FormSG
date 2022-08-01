@@ -1,6 +1,11 @@
 import { ClientSession, Mongoose, Schema } from 'mongoose'
 
-import { IUserSchema, IWorkspaceModel, IWorkspaceSchema } from '../../types'
+import {
+  IFormSchema,
+  IUserSchema,
+  IWorkspaceModel,
+  IWorkspaceSchema,
+} from '../../types'
 
 export const WORKSPACE_SCHEMA_ID = 'Workspace'
 
@@ -84,6 +89,38 @@ const compileWorkspaceModel = (db: Mongoose): IWorkspaceModel => {
       { session },
     )
     return deleted.deletedCount == 1
+  }
+
+  WorkspaceSchema.statics.removeFormIdsFromWorkspace = async function ({
+    workspaceId,
+    formIds,
+    session,
+  }: {
+    workspaceId: IWorkspaceSchema['_id']
+    formIds: IFormSchema['_id'][]
+    session?: ClientSession
+  }) {
+    await this.updateOne(
+      { _id: workspaceId },
+      { $pullAll: { formIds } },
+      { session },
+    )
+  }
+
+  WorkspaceSchema.statics.addFormIdsToWorkspace = async function ({
+    workspaceId,
+    formIds,
+    session,
+  }: {
+    workspaceId: IWorkspaceSchema['_id']
+    formIds: IFormSchema['_id'][]
+    session?: ClientSession
+  }) {
+    await this.updateOne(
+      { _id: workspaceId },
+      { $addToSet: { formIds: { $each: formIds } } },
+      { session },
+    )
   }
 
   return db.model<IWorkspaceSchema, IWorkspaceModel>(

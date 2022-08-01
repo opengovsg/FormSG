@@ -12,10 +12,7 @@ export const WorkspacesRouter = Router()
 WorkspacesRouter.use(withUserAuthentication)
 WorkspacesRouter.use(logAdminAction)
 
-WorkspacesRouter.use(
-  '/:workspaceId([a-fA-F0-9]{24})/forms',
-  WorkspacesFormRouter,
-)
+WorkspacesRouter.use(WorkspacesFormRouter)
 
 WorkspacesRouter.route('/')
   /**
