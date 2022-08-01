@@ -397,7 +397,7 @@ export const createDateValidationRules: ValidationRuleFn<DateFieldBase> = (
         )
       },
       invaliDays: (val) => {
-        if (!val || !schema.invalidDays || !!schema.invalidDays.length) {
+        if (!val || !schema.invalidDays || schema.invalidDays.length === 0) {
           return true
         }
 
