@@ -455,4 +455,185 @@ describe('workspace.service', () => {
       expect(actual._unsafeUnwrapErr()).toBeInstanceOf(DatabaseError)
     })
   })
+
+  describe('moveForms', () => {
+    const mockAdmin = new ObjectId().toHexString()
+    const mockFormId1 = new ObjectId().toHexString()
+    const mockFormId2 = new ObjectId().toHexString()
+    const mockWorkspace1 = {
+      _id: new ObjectId(),
+      admin: mockAdmin,
+      title: 'workspace1',
+      formIds: [mockFormId1],
+    }
+    const mockWorkspace2 = {
+      _id: new ObjectId(),
+      admin: mockAdmin,
+      title: 'workspace2',
+      formIds: [mockFormId2],
+    }
+
+    beforeEach(async () => {
+      await WorkspaceModel.create(mockWorkspace1)
+      await WorkspaceModel.create(mockWorkspace2)
+      jest
+        .spyOn(WorkspaceModel, 'removeFormIdsFromWorkspace')
+        .mockImplementationOnce(({ workspaceId, formIds }) =>
+          WorkspaceModel.removeFormIdsFromWorkspace({
+            workspaceId,
+            formIds,
+          }),
+        )
+      jest
+        .spyOn(WorkspaceModel, 'addFormIdsToWorkspace')
+        .mockImplementationOnce(({ workspaceId, formIds }) =>
+          WorkspaceModel.addFormIdsToWorkspace({
+            workspaceId,
+            formIds,
+          }),
+        )
+    })
+
+    afterEach(async () => {
+      await dbHandler.clearDatabase()
+    })
+
+    it('should return destination workspace when successfully moved forms', async () => {
+      const actual = await WorkspaceService.moveForms({
+        sourceWorkspaceId: mockWorkspace2._id.toHexString(),
+        destWorkspaceId: mockWorkspace1._id.toHexString(),
+        formIds: [mockFormId2],
+      })
+
+      const expected = await WorkspaceModel.findById(mockWorkspace1._id)
+
+      expect(actual.isOk()).toBeTrue()
+      expect(actual._unsafeUnwrap()).toEqual(expected)
+    })
+
+    it('should remove formIds from source workspace when successfully moved forms', async () => {
+      const actual = await WorkspaceService.moveForms({
+        sourceWorkspaceId: mockWorkspace1._id.toHexString(),
+        destWorkspaceId: mockWorkspace2._id.toHexString(),
+        formIds: [mockFormId1],
+      })
+
+      const expected = await WorkspaceModel.findById(mockWorkspace2._id)
+
+      const sourceWorkspace = await WorkspaceModel.findOne({
+        _id: mockWorkspace1._id,
+      })
+      const isFormIdPresent = sourceWorkspace?.formIds.includes(mockFormId1)
+
+      expect(actual.isOk()).toBeTrue()
+      expect(actual._unsafeUnwrap()).toEqual(expected)
+      expect(isFormIdPresent).toBeFalse()
+    })
+
+    it('should have formIds in destination workspace when successfully moved forms', async () => {
+      const actual = await WorkspaceService.moveForms({
+        sourceWorkspaceId: mockWorkspace1._id.toHexString(),
+        destWorkspaceId: mockWorkspace2._id.toHexString(),
+        formIds: [mockFormId1],
+      })
+
+      const expected = await WorkspaceModel.findById(mockWorkspace2._id)
+
+      const destWorkspace = await WorkspaceModel.findOne({
+        _id: mockWorkspace2._id,
+      })
+      const isFormIdPresent = destWorkspace?.formIds.includes(mockFormId1)
+
+      expect(actual.isOk()).toBeTrue()
+      expect(actual._unsafeUnwrap()).toEqual(expected)
+      expect(isFormIdPresent).toBeTrue()
+    })
+
+    it('should have formIds in destination workspace when successfully moved forms from all workspaces', async () => {
+      const actual = await WorkspaceService.moveForms({
+        sourceWorkspaceId: mockWorkspace1._id.toHexString(),
+        destWorkspaceId: mockWorkspace2._id.toHexString(),
+        formIds: [mockFormId1],
+      })
+
+      const expected = await WorkspaceModel.findById(mockWorkspace2._id)
+
+      const workspace1 = await WorkspaceModel.findOne({
+        _id: mockWorkspace1._id,
+      })
+      const destWorkspace = await WorkspaceModel.findOne({
+        _id: mockWorkspace2._id,
+      })
+      const destFormIds = destWorkspace?.formIds
+
+      const isFormIdPresentInWorkspace1 =
+        workspace1?.formIds.includes(mockFormId1)
+
+      expect(actual.isOk()).toBeTrue()
+      expect(actual._unsafeUnwrap()).toEqual(expected)
+      expect(destFormIds?.includes(mockFormId1)).toBeTrue()
+      expect(destFormIds?.includes(mockFormId2)).toBeTrue()
+      expect(isFormIdPresentInWorkspace1).toBeFalse()
+    })
+
+    it('should not move formIds when transaction fails at removing formIds from source workspace', async () => {
+      jest.clearAllMocks()
+      jest
+        .spyOn(WorkspaceModel, 'removeFormIdsFromWorkspace')
+        .mockRejectedValueOnce(new Error())
+
+      const actual = await WorkspaceService.moveForms({
+        sourceWorkspaceId: mockWorkspace1._id.toHexString(),
+        destWorkspaceId: mockWorkspace2._id.toHexString(),
+        formIds: [mockFormId1],
+      })
+
+      const sourceWorkspace = await WorkspaceModel.findOne({
+        _id: mockWorkspace1._id,
+      })
+      const isFormIdPresent = sourceWorkspace?.formIds.includes(mockFormId1)
+
+      expect(actual.isErr()).toBeTrue()
+      expect(actual._unsafeUnwrapErr()).toBeInstanceOf(DatabaseError)
+      expect(isFormIdPresent).toBeTrue()
+    })
+
+    it('should not move formIds when transaction fails at adding formIds from destination workspace', async () => {
+      jest.clearAllMocks()
+      jest
+        .spyOn(WorkspaceModel, 'removeFormIdsFromWorkspace')
+        .mockRejectedValueOnce(new Error())
+
+      const actual = await WorkspaceService.moveForms({
+        sourceWorkspaceId: mockWorkspace1._id.toHexString(),
+        destWorkspaceId: mockWorkspace2._id.toHexString(),
+        formIds: [mockFormId1],
+      })
+
+      const destWorkspace = await WorkspaceModel.findOne({
+        _id: mockWorkspace2._id,
+      })
+      const isFormIdPresent = destWorkspace?.formIds.includes(mockFormId1)
+
+      expect(actual.isErr()).toBeTrue()
+      expect(actual._unsafeUnwrapErr()).toBeInstanceOf(DatabaseError)
+      expect(isFormIdPresent).toBeFalse()
+    })
+
+    it('should return DatabaseError when error occurs whilst moving forms', async () => {
+      jest.clearAllMocks()
+      jest
+        .spyOn(WorkspaceModel, 'removeFormIdsFromWorkspace')
+        .mockRejectedValueOnce(new Error())
+
+      const actual = await WorkspaceService.moveForms({
+        sourceWorkspaceId: mockWorkspace1._id.toHexString(),
+        destWorkspaceId: mockWorkspace2._id.toHexString(),
+        formIds: [mockFormId1],
+      })
+
+      expect(actual.isErr()).toBeTrue()
+      expect(actual._unsafeUnwrapErr()).toBeInstanceOf(DatabaseError)
+    })
+  })
 })
