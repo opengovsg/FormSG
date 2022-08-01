@@ -78,11 +78,7 @@ export const EndPageBlock = ({
       <Box mt="2.25rem">
         <Button
           as="a"
-          href={
-            endPage.buttonLink?.length
-              ? endPage.buttonLink
-              : window.location.href
-          }
+          href={endPage.buttonLink || window.location.href}
           variant="solid"
           colorScheme={`theme-${colorTheme}`}
         >
