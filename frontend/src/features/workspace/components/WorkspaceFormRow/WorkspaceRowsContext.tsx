@@ -4,12 +4,17 @@
 import { createContext, useContext, useState } from 'react'
 import { useDisclosure } from '@chakra-ui/react'
 
+import { AdminDashboardFormMetaDto, FormStatus } from '~shared/types'
+
+import { ShareFormModal } from '~features/admin-form/share'
+
 import CreateFormModal from '../CreateFormModal'
 
 interface WorkspaceRowsContextReturn {
-  activeFormId?: string
-  onOpenDupeFormModal: (id?: string) => void
+  activeFormMeta?: AdminDashboardFormMetaDto
+  onOpenDupeFormModal: (meta?: AdminDashboardFormMetaDto) => void
   onCloseDupeFormModal: () => void
+  onOpenShareFormModal: (meta?: AdminDashboardFormMetaDto) => void
 }
 
 const WorkspaceRowsContext = createContext<WorkspaceRowsContextReturn | null>(
@@ -21,28 +26,44 @@ export const WorkspaceRowsProvider = ({
 }: {
   children: React.ReactNode
 }) => {
-  const [activeFormId, setActiveFormId] = useState<string>()
+  const [activeFormMeta, setActiveFormMeta] =
+    useState<AdminDashboardFormMetaDto>()
 
   const dupeFormModalDisclosure = useDisclosure()
+  const shareFormModalDisclosure = useDisclosure()
 
-  const handleOpenDupeFormModal = (id?: string) => {
-    setActiveFormId(id)
-    if (id) {
+  const onOpenDupeFormModal = (meta?: AdminDashboardFormMetaDto) => {
+    setActiveFormMeta(meta)
+    if (meta) {
       dupeFormModalDisclosure.onOpen()
+    }
+  }
+
+  const onOpenShareFormModal = (meta?: AdminDashboardFormMetaDto) => {
+    setActiveFormMeta(meta)
+    if (meta) {
+      shareFormModalDisclosure.onOpen()
     }
   }
 
   return (
     <WorkspaceRowsContext.Provider
       value={{
-        activeFormId,
-        onOpenDupeFormModal: handleOpenDupeFormModal,
+        activeFormMeta,
+        onOpenDupeFormModal,
+        onOpenShareFormModal,
         onCloseDupeFormModal: dupeFormModalDisclosure.onClose,
       }}
     >
       <CreateFormModal
         isOpen={dupeFormModalDisclosure.isOpen}
         onClose={dupeFormModalDisclosure.onClose}
+      />
+      <ShareFormModal
+        isOpen={shareFormModalDisclosure.isOpen}
+        formId={activeFormMeta?._id}
+        onClose={shareFormModalDisclosure.onClose}
+        isFormPrivate={activeFormMeta?.status === FormStatus.Private}
       />
       {children}
     </WorkspaceRowsContext.Provider>
