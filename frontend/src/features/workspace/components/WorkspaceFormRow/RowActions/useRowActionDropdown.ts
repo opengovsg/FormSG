@@ -5,6 +5,8 @@ import { FormId } from '~shared/types/form/form'
 
 import { ADMINFORM_PREVIEW_ROUTE, ADMINFORM_ROUTE } from '~constants/routes'
 
+import { useWorkspaceRowsContext } from '../WorkspaceRowsContext'
+
 type UseRowActionDropdownReturn = {
   handleEditForm: () => void
   handlePreviewForm: () => void
@@ -20,6 +22,7 @@ export const useRowActionDropdown = (
   const navigate = useNavigate()
 
   const shareFormModalDisclosure = useDisclosure()
+  const { onOpenDupeFormModal } = useWorkspaceRowsContext()
 
   return {
     shareFormModalDisclosure,
@@ -28,8 +31,7 @@ export const useRowActionDropdown = (
       window.open(
         `${window.location.origin}${ADMINFORM_ROUTE}/${formId}/${ADMINFORM_PREVIEW_ROUTE}`,
       ),
-    handleDuplicateForm: () =>
-      console.log(`duplicate form button clicked for ${formId}`),
+    handleDuplicateForm: () => onOpenDupeFormModal(formId),
     handleManageFormAccess: () =>
       console.log(`manage form access button clicked for ${formId}`),
     handleDeleteForm: () =>
