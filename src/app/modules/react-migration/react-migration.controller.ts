@@ -91,6 +91,10 @@ export const serveForm: ControllerHandler<
     // Check the rollout value first, if it's 0, react is DISABLED
     // And we ignore cookies entirely!
     showReact = false
+    // Delete existing cookie to prevent infinite redirection
+    if (req.cookies) {
+      res.cookie(config.reactMigration.respondentCookieName, '', { maxAge: 0 })
+    }
   } else if (req.cookies) {
     if (config.reactMigration.adminCookieName in req.cookies) {
       // Admins are dogfooders, the choice they made for the admin environment
