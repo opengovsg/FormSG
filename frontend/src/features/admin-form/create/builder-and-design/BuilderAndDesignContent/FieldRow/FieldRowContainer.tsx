@@ -61,8 +61,7 @@ import {
   updateEditStateSelector,
   useBuilderAndDesignStore,
 } from '../../useBuilderAndDesignStore'
-import { useCreateTabForm } from '../../useCreateTabForm'
-import { startPageDataSelector, useDesignStore } from '../../useDesignStore'
+import { useDesignColorTheme } from '../../utils/useDesignColorTheme'
 
 import { SectionFieldRow } from './SectionFieldRow'
 
@@ -78,7 +77,6 @@ export const FieldRowContainer = ({
   isDraggingOver,
 }: FieldRowContainerProps): JSX.Element => {
   const isMobile = useIsMobile()
-  const { data: form } = useCreateTabForm()
   const numFormFieldMutations = useIsMutating(adminFormKeys.base)
   const { stateData, setToInactive, updateEditState } =
     useBuilderAndDesignStore(
@@ -92,18 +90,12 @@ export const FieldRowContainer = ({
       ),
     )
 
-  const startPageData = useDesignStore(useMemo(() => startPageDataSelector, []))
-
   const { handleBuilderClick } = useCreatePageSidebar()
 
   const { duplicateFieldMutation } = useDuplicateFormField()
   const { deleteFieldMutation } = useDeleteFormField()
 
-  const colorTheme = useMemo(
-    () =>
-      startPageData ? startPageData.colorTheme : form?.startPage.colorTheme,
-    [startPageData, form?.startPage.colorTheme],
-  )
+  const colorTheme = useDesignColorTheme()
 
   const defaultFieldValues = useMemo(() => {
     if (field.fieldType === BasicField.Table) {
