@@ -234,7 +234,7 @@ export const DesignDrawer = (): JSX.Element | null => {
 
       <DrawerContentContainer>
         <FormControl
-          isReadOnly={isLoading}
+          isDisabled={isLoading}
           isInvalid={!isEmpty(errors.attachment)}
         >
           <FormLabel>Logo</FormLabel>
@@ -290,7 +290,7 @@ export const DesignDrawer = (): JSX.Element | null => {
         </FormControl>
 
         <FormControl
-          isReadOnly={isLoading}
+          isDisabled={isLoading}
           isInvalid={!isEmpty(errors.colorTheme)}
         >
           <FormLabel>Theme colour</FormLabel>
@@ -328,7 +328,7 @@ export const DesignDrawer = (): JSX.Element | null => {
           <FormErrorMessage>{errors.colorTheme?.message}</FormErrorMessage>
         </FormControl>
 
-        <FormControl isReadOnly={isLoading} isInvalid={!!errors.estTimeTaken}>
+        <FormControl isDisabled={isLoading} isInvalid={!!errors.estTimeTaken}>
           <FormLabel>Time taken to complete form (minutes)</FormLabel>
           <Controller
             name="estTimeTaken"
@@ -351,7 +351,7 @@ export const DesignDrawer = (): JSX.Element | null => {
           <FormErrorMessage>{errors.estTimeTaken?.message}</FormErrorMessage>
         </FormControl>
 
-        <FormControl isReadOnly={isLoading} isInvalid={!!errors.paragraph}>
+        <FormControl isDisabled={isLoading} isInvalid={!!errors.paragraph}>
           <FormLabel>Instructions for your form</FormLabel>
           <Textarea {...register('paragraph')} />
           <FormErrorMessage>{errors.paragraph?.message}</FormErrorMessage>
