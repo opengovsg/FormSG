@@ -163,8 +163,6 @@ export const transformCheckedBoxesValueToInvalidDays = (
 
 const convertInvalidDayToNumber = (invalidDay: InvalidDaysOptions): number => {
   switch (invalidDay) {
-    case InvalidDaysOptions.Sunday:
-      return 0
     case InvalidDaysOptions.Monday:
       return 1
     case InvalidDaysOptions.Tuesday:
@@ -177,6 +175,8 @@ const convertInvalidDayToNumber = (invalidDay: InvalidDaysOptions): number => {
       return 5
     case InvalidDaysOptions.Saturday:
       return 6
+    case InvalidDaysOptions.Sunday:
+      return 7
     default:
       return -1
   }
