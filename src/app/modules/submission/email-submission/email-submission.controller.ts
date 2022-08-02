@@ -13,6 +13,7 @@ import * as CaptchaService from '../../../services/captcha/captcha.service'
 import MailService from '../../../services/mail/mail.service'
 import { createReqMeta, getRequestIp } from '../../../utils/request'
 import { ControllerHandler } from '../../core/core.types'
+import { setFormTags } from '../../datadog/datadog.utils'
 import * as FormService from '../../form/form.service'
 import {
   MYINFO_COOKIE_NAME,
@@ -76,16 +77,20 @@ const submitEmailModeForm: ControllerHandler<
         })
         return error
       })
-      .andThen((form) =>
-        EmailSubmissionService.checkFormIsEmailMode(form).mapErr((error) => {
-          logger.warn({
-            message: 'Attempt to submit non-email-mode form',
-            meta: logMeta,
-            error,
-          })
-          return error
-        }),
-      )
+      .andThen((form) => {
+        setFormTags(form)
+
+        return EmailSubmissionService.checkFormIsEmailMode(form).mapErr(
+          (error) => {
+            logger.warn({
+              message: 'Attempt to submit non-email-mode form',
+              meta: logMeta,
+              error,
+            })
+            return error
+          },
+        )
+      })
       .andThen((form) =>
         // Check that form is public
         // If it is, pass through and return the original form

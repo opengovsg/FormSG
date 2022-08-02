@@ -97,7 +97,7 @@ function SubmitFormController(
     }
   }
 
-  // For SP / CP forms, also include the spcpSession details
+  // For SP / CP / SGID forms, also include the spcpSession details
   // This allows the log out button to be correctly populated with the UID
   // Also provides time to cookie expiry so that client can refresh page
   if (isSpcpSgidForm && isUserLoggedIn) {

@@ -5,6 +5,7 @@ import { VerifiedKeys } from '../../../../shared/utils/verified-content'
 import { MalformedVerifiedContentError } from './verified-content.errors'
 import {
   CpVerifiedContent,
+  SgidVerifiedContent,
   SpVerifiedContent,
   VerifiedContentResult,
 } from './verified-content.types'
@@ -31,6 +32,15 @@ const isSpVerifiedContent = (
   data: Record<string, unknown>,
 ): data is SpVerifiedContent => {
   return typeof data[VerifiedKeys.SpUinFin] === 'string'
+}
+
+/**
+ * Typeguard to assert that the given data has the shape of `SgidVerifiedContent`.
+ */
+const isSgidVerifiedContent = (
+  data: Record<string, unknown>,
+): data is SgidVerifiedContent => {
+  return typeof data[VerifiedKeys.SgidUinFin] === 'string'
 }
 
 /**
@@ -73,5 +83,26 @@ export const getSpVerifiedContent = (
   // Check if the newly created object is of expected shape.
   return isSpVerifiedContent(createdSpVerifiedContent)
     ? ok(createdSpVerifiedContent)
+    : err(new MalformedVerifiedContentError())
+}
+
+/**
+ * Retrieve Sgid verified content object from given data.
+ * @param data the data to retrieve the verified content object from
+ * @returns ok(verified content object) if retrieved object is of valid expected shape
+ * @returns err(MalformedVerifiedContentError) if object cannot be retrieved
+ */
+export const getSgidVerifiedContent = (
+  data: Record<string, unknown>,
+): VerifiedContentResult<SgidVerifiedContent> => {
+  // Create new Sgid verifiedContent object from current data.
+  // Extract value of data.uinFin set to new VerifiedKeys.SgidUinFin key.
+  const createdSgidVerifiedContent = {
+    [VerifiedKeys.SgidUinFin]: data.uinFin,
+  }
+
+  // Check if the newly created object is of expected shape.
+  return isSgidVerifiedContent(createdSgidVerifiedContent)
+    ? ok(createdSgidVerifiedContent)
     : err(new MalformedVerifiedContentError())
 }
