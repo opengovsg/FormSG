@@ -15,7 +15,6 @@ export enum InvalidDaysOptions {
   Thursday = 'Thursday',
   Friday = 'Friday',
   Saturday = 'Saturday',
-  SingaporePublicHolidays = 'Singapore public holidays',
 }
 
 export type DateValidationOptions = {
