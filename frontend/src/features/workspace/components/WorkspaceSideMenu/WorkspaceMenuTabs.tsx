@@ -72,7 +72,7 @@ export const WorkspaceMenuTabs = ({
       <WorkspaceTab
         key={workspace._id}
         label={workspace.title}
-        numForms={workspace.numForms}
+        numForms={workspace.formIds.length}
         isSelected={workspace._id === currWorkspace}
         onClick={() => onClick(workspace._id)}
       />

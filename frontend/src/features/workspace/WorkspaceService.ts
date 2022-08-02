@@ -25,9 +25,9 @@ export const getDashboardView = async (): Promise<
 }
 
 export const getWorkspacesView = async (): Promise<WorkspaceDto[]> => {
-  return ApiService.get<WorkspaceDto[]>(
-    `${ADMIN_WORKSPACES_ENDPOINT}`,
-  ).then(({ data }) => data)
+  return ApiService.get<WorkspaceDto[]>(`${ADMIN_WORKSPACES_ENDPOINT}`).then(
+    ({ data }) => data,
+  )
 }
 
 export const createEmailModeForm = async (

@@ -9,30 +9,26 @@ const MOCK_WORKSPACES = [
   {
     _id: '' as WorkspaceId,
     title: 'All forms',
-    numForms: 531159249035,
     admin: '' as UserId,
-    formIds: [],
+    formIds: Array(531925).fill(''),
   },
   {
     _id: '2' as WorkspaceId,
     title: 'Product feedback',
-    numForms: 35002,
     admin: '' as UserId,
-    formIds: [],
+    formIds: Array(35002).fill(''),
   },
   {
     _id: '3' as WorkspaceId,
     title: 'Public sentiment',
-    numForms: 12,
     admin: '' as UserId,
-    formIds: [],
+    formIds: Array(12).fill(''),
   },
   {
     _id: '4' as WorkspaceId,
     title: 'Very long number of forms',
-    numForms: 531159214021,
     admin: '' as UserId,
-    formIds: [],
+    formIds: Array(592421).fill(''),
   },
 ]
 
