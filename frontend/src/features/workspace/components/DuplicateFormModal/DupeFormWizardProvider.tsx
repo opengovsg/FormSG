@@ -4,7 +4,7 @@ import { FormResponseMode } from '~shared/types'
 
 import { usePreviewForm } from '~features/admin-form/common/queries'
 import { isMyInfo } from '~features/myinfo/utils'
-import { useCreateFormMutations } from '~features/workspace/mutations'
+import { useDuplicateFormMutations } from '~features/workspace/mutations'
 import { useWorkspace } from '~features/workspace/queries'
 import { makeDuplicateFormTitle } from '~features/workspace/utils/createDuplicateFormTitle'
 
@@ -67,14 +67,16 @@ export const useDupeFormWizardContext = (): CreateFormWizardContextReturn => {
 
   const { handleSubmit } = formMethods
 
-  const { createEmailModeFormMutation, createStorageModeFormMutation } =
-    useCreateFormMutations()
+  const { dupeEmailModeFormMutation, dupeStorageModeFormMutation } =
+    useDuplicateFormMutations()
 
   const handleCreateStorageModeForm = handleSubmit(
     ({ title, responseMode }) => {
-      if (responseMode !== FormResponseMode.Encrypt) return
+      if (responseMode !== FormResponseMode.Encrypt || !activeFormMeta?._id)
+        return
 
-      return createStorageModeFormMutation.mutate({
+      return dupeStorageModeFormMutation.mutate({
+        formIdToDuplicate: activeFormMeta._id,
         title,
         responseMode,
         publicKey: keypair.publicKey,
@@ -83,8 +85,10 @@ export const useDupeFormWizardContext = (): CreateFormWizardContextReturn => {
   )
 
   const handleDetailsSubmit = handleSubmit((inputs) => {
+    if (!activeFormMeta?._id) return
     if (inputs.responseMode === FormResponseMode.Email) {
-      return createEmailModeFormMutation.mutate({
+      return dupeEmailModeFormMutation.mutate({
+        formIdToDuplicate: activeFormMeta._id,
         emails: inputs.emails.filter(Boolean),
         title: inputs.title,
         responseMode: inputs.responseMode,
@@ -100,8 +104,8 @@ export const useDupeFormWizardContext = (): CreateFormWizardContextReturn => {
   return {
     isFetching: isWorkspaceLoading || isPreviewFormLoading,
     isLoading:
-      createEmailModeFormMutation.isLoading ||
-      createStorageModeFormMutation.isLoading,
+      dupeEmailModeFormMutation.isLoading ||
+      dupeStorageModeFormMutation.isLoading,
     keypair,
     currentStep,
     direction,
