@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
+import MyInfoClient, { IMyInfoConfig } from '@opengovsg/myinfo-gov-client'
 import SPCPAuthClient from '@opengovsg/spcp-auth-client'
 import bcrypt from 'bcrypt'
 import { ObjectId } from 'bson-ext'
@@ -14,6 +15,9 @@ import { MockedObjectDeep } from 'ts-jest/dist/utils/testing'
 import { mocked } from 'ts-jest/utils'
 
 import getFormModel from 'src/app/models/form.server.model'
+import { MYINFO_COOKIE_NAME } from 'src/app/modules/myinfo/myinfo.constants'
+import { MyInfoCookieState } from 'src/app/modules/myinfo/myinfo.types'
+import getMyInfoHashModel from 'src/app/modules/myinfo/myinfo_hash.model'
 import { SpOidcClient } from 'src/app/modules/spcp/sp.oidc.client'
 import {
   generateFieldParams,
@@ -44,6 +48,11 @@ import {
 import { MOCK_OTP } from '../../../../../modules/verification/__tests__/verification.test.helpers'
 import { PublicFormsVerificationRouter } from '../public-forms.verification.routes'
 
+import {
+  MOCK_COOKIE_AGE,
+  MOCK_UINFIN,
+} from './public-forms.routes.spec.constants'
+
 const Form = getFormModel(mongoose)
 
 const verificationApp = setupApp('/forms', PublicFormsVerificationRouter)
@@ -63,6 +72,25 @@ jest.mock('nodemailer', () => ({
 
 jest.mock('@opengovsg/spcp-auth-client')
 const MockAuthClient = mocked(SPCPAuthClient, true)
+
+jest.mock('@opengovsg/myinfo-gov-client', () => ({
+  MyInfoGovClient: jest.fn().mockReturnValue({
+    extractUinFin: jest.fn(),
+  }),
+  MyInfoMode: jest.requireActual('@opengovsg/myinfo-gov-client').MyInfoMode,
+  MyInfoSource: jest.requireActual('@opengovsg/myinfo-gov-client').MyInfoSource,
+  MyInfoAddressType: jest.requireActual('@opengovsg/myinfo-gov-client')
+    .MyInfoAddressType,
+  MyInfoAttribute: jest.requireActual('@opengovsg/myinfo-gov-client')
+    .MyInfoAttribute,
+}))
+
+const MockMyInfoGovClient = mocked(
+  new MyInfoClient.MyInfoGovClient({} as IMyInfoConfig),
+  true,
+)
+
+const MyInfoHashModel = getMyInfoHashModel(mongoose)
 
 describe('public-forms.verification.routes', () => {
   let mockTransaction: IVerificationSchema
@@ -141,6 +169,19 @@ describe('public-forms.verification.routes', () => {
       },
     })
     mockCPFormId = String(CPForm._id)
+
+    // Form with MyInfo auth
+    const { form: MyInfoForm } = await dbHandler.insertEmailForm({
+      mailDomain: MOCK_EMAIL_DOMAIN_MYINFO,
+      formOptions: {
+        esrvcId: 'mockEsrvcId',
+        authType: FormAuthType.MyInfo,
+        hasCaptcha: false,
+        status: FormStatus.Public,
+        form_fields: [emailField, mobileField],
+      },
+    })
+    mockMyInfoFormId = String(MyInfoForm._id)
 
     // Mock transaction with both email and mobile fields
     mockTransaction = await VerificationModel.create({
@@ -390,6 +431,40 @@ describe('public-forms.verification.routes', () => {
       expect(response.text).toEqual(getReasonPhrase(StatusCodes.CREATED))
     })
 
+    it('should return 201 when using MyInfo auth and user is logged in to MyInfo', async () => {
+      // Arrange
+      MockMyInfoGovClient.extractUinFin.mockReturnValueOnce(MOCK_UINFIN)
+
+      await MyInfoHashModel.updateHashes(
+        MOCK_UINFIN,
+        mockMyInfoFormId,
+        {},
+        MOCK_COOKIE_AGE,
+      )
+      const cookie = JSON.stringify({
+        accessToken: 'mockAccessToken',
+        usedCount: 0,
+        state: MyInfoCookieState.Success,
+      })
+
+      // Act
+      const response = await request
+        .post(
+          `/forms/${mockMyInfoFormId}/fieldverifications/${mockTransactionId}/fields/${mockEmailFieldId}/otp/generate`,
+        )
+        .send({
+          answer: 'mail@me.com',
+        })
+        .set('Cookie', [
+          // The j: indicates that the cookie is in JSON
+          `${MYINFO_COOKIE_NAME}=j:${encodeURIComponent(cookie)}`,
+        ])
+
+      // Assert
+      expect(response.status).toBe(StatusCodes.CREATED)
+      expect(response.text).toEqual(getReasonPhrase(StatusCodes.CREATED))
+    })
+
     it('should return 400 when fieldType is email but the provided email is not valid', async () => {
       // Arrange
       const expectedResponse = {
@@ -575,6 +650,27 @@ describe('public-forms.verification.routes', () => {
         })
         // Note cookie is for CorpPass, not SingPass
         .set('Cookie', [`jwtCp=${mockJwt}`])
+
+      // Assert
+      expect(response.status).toBe(StatusCodes.BAD_REQUEST)
+      expect(response.body).toEqual(expectedResponse)
+    })
+
+    it('should return 400 when using MyInfo auth but user is not logged in to MyInfo', async () => {
+      // Arrange
+      const expectedResponse = {
+        message: 'Sorry, something went wrong. Please refresh and try again.',
+      }
+
+      // Act
+      const response = await request
+        .post(
+          `/forms/${mockMyInfoFormId}/fieldverifications/${mockTransactionId}/fields/${mockEmailFieldId}/otp/generate`,
+        )
+        .send({
+          answer: 'mail@me.com',
+        })
+      // Don't send MyInfo cookie
 
       // Assert
       expect(response.status).toBe(StatusCodes.BAD_REQUEST)
