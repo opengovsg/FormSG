@@ -29,13 +29,13 @@ const helmetMiddlewares = () => {
   const cspCoreDirectives: ContentSecurityPolicyOptions['directives'] = {
     imgSrc: [
       "'self'",
+      `blob:`,
       'data:',
       'https://www.googletagmanager.com/',
       'https://www.google-analytics.com/',
       `https://s3-${config.aws.region}.amazonaws.com/agency.form.sg/`, // Agency logos
       config.aws.imageBucketUrl, // Image field
       config.aws.logoBucketUrl, // Form logo
-      `blob:${config.app.appUrl}`,
       '*', // TODO: Remove when we host our own images for Image field and Form Logo
     ],
     fontSrc: ["'self'", 'data:', 'https://fonts.gstatic.com/'],
