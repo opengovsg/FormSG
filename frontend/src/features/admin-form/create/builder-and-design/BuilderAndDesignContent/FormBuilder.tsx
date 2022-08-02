@@ -1,5 +1,5 @@
 import { Droppable } from 'react-beautiful-dnd'
-import { Box, Flex, FlexProps, Text } from '@chakra-ui/react'
+import { Box, Flex, FlexProps, Skeleton, Text } from '@chakra-ui/react'
 
 import Button from '~components/Button'
 
@@ -48,37 +48,42 @@ export const FormBuilder = ({
       <Flex flexDir="column" w="100%" maxW="57rem" h="fit-content">
         <StartPageView />
         <Flex bg="white" p={{ base: 0, md: '2.5rem' }} flexDir="column">
-          <Droppable droppableId={FIELD_LIST_DROP_ID}>
-            {(provided, snapshot) =>
-              builderFields?.length ? (
-                <Box
-                  pos="relative"
-                  ref={provided.innerRef}
-                  {...provided.droppableProps}
-                >
-                  <BuilderFields
-                    fields={builderFields}
+          {builderFields === null ? (
+            <Skeleton h="13.75rem" m={{ base: '1.5rem', md: 0 }}></Skeleton>
+          ) : (
+            <Droppable droppableId={FIELD_LIST_DROP_ID}>
+              {(provided, snapshot) =>
+                builderFields.length ? (
+                  <Box
+                    pos="relative"
+                    ref={provided.innerRef}
+                    {...provided.droppableProps}
+                  >
+                    <BuilderFields
+                      fields={builderFields}
+                      isDraggingOver={snapshot.isDraggingOver}
+                    />
+                    {provided.placeholder}
+                    <BuilderAndDesignPlaceholder
+                      placeholderProps={placeholderProps}
+                      isDraggingOver={snapshot.isDraggingOver}
+                    />
+                  </Box>
+                ) : (
+                  <EmptyFormPlaceholder
+                    m={{ base: '1.5rem', md: 0 }}
+                    ref={provided.innerRef}
+                    {...provided.droppableProps}
                     isDraggingOver={snapshot.isDraggingOver}
+                    onClick={handleBuilderClick}
                   />
-                  {provided.placeholder}
-                  <BuilderAndDesignPlaceholder
-                    placeholderProps={placeholderProps}
-                    isDraggingOver={snapshot.isDraggingOver}
-                  />
-                </Box>
-              ) : (
-                <EmptyFormPlaceholder
-                  m={{ base: '1.5rem', md: 0 }}
-                  ref={provided.innerRef}
-                  {...provided.droppableProps}
-                  isDraggingOver={snapshot.isDraggingOver}
-                  onClick={handleBuilderClick}
-                />
-              )
-            }
-          </Droppable>
+                )
+              }
+            </Droppable>
+          )}
         </Flex>
         <Button
+          isDisabled={builderFields === null}
           _hover={{ bg: 'primary.200' }}
           py="1.5rem"
           mt="1.5rem"
