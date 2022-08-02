@@ -8,7 +8,7 @@ import { AdminDashboardFormMetaDto, FormStatus } from '~shared/types'
 
 import { ShareFormModal } from '~features/admin-form/share'
 
-import CreateFormModal from '../CreateFormModal'
+import { DuplicateFormModal } from '../DuplicateFormModal'
 
 interface WorkspaceRowsContextReturn {
   activeFormMeta?: AdminDashboardFormMetaDto
@@ -55,7 +55,7 @@ export const WorkspaceRowsProvider = ({
         onCloseDupeFormModal: dupeFormModalDisclosure.onClose,
       }}
     >
-      <CreateFormModal
+      <DuplicateFormModal
         isOpen={dupeFormModalDisclosure.isOpen}
         onClose={dupeFormModalDisclosure.onClose}
       />

@@ -26,7 +26,8 @@ import { FormResponseOptions } from './FormResponseOptions'
 const FORM_TITLE_LENGTH_WARNING = 65
 
 export const CreateFormDetailsScreen = (): JSX.Element => {
-  const { formMethods, handleDetailsSubmit, isLoading } = useCreateFormWizard()
+  const { formMethods, handleDetailsSubmit, isLoading, modalHeader } =
+    useCreateFormWizard()
   const {
     register,
     control,
@@ -41,7 +42,7 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
     <>
       <ModalHeader color="secondary.700">
         <Container maxW="42.5rem" p={0}>
-          Set up your form
+          {modalHeader}
         </Container>
       </ModalHeader>
       <ModalBody whiteSpace="pre-line">

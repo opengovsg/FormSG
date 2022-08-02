@@ -12,10 +12,8 @@ import { ModalCloseButton } from '~components/Modal'
 
 import { SaveSecretKeyScreen } from './CreateFormModalContent/SaveSecretKeyScreen'
 import { CreateFormModal, CreateFormModalProps } from './CreateFormModal'
-import {
-  CreateFormWizardInputProps,
-  CreateFormWizardProvider,
-} from './CreateFormWizardContext'
+import { CreateFormWizardInputProps } from './CreateFormWizardContext'
+import { CreateFormWizardProvider } from './CreateFormWizardProvider'
 
 export default {
   title: 'Pages/WorkspacePage/CreateFormModal',
