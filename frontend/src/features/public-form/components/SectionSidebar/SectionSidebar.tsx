@@ -21,7 +21,7 @@ import { useFormSections } from '../FormFields/FormSectionsContext'
 
 import { SidebarLink } from './SidebarLink'
 
-export const SectionSidebar = (): JSX.Element | null => {
+export const SectionSidebar = (): JSX.Element => {
   const { activeSectionId, navigatedSectionTitle } = useFormSections()
   const {
     miniHeaderRef,
