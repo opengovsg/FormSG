@@ -97,7 +97,7 @@ export const DesignDrawer = (): JSX.Element | null => {
 
   const {
     register,
-    formState: { errors, isDirty },
+    formState: { errors },
     control,
     handleSubmit,
     resetField,
@@ -359,7 +359,6 @@ export const DesignDrawer = (): JSX.Element | null => {
 
         <FormFieldDrawerActions
           isLoading={isLoading}
-          isSaveEnabled={isDirty}
           handleClick={handleClick}
           handleCancel={handleClose}
           buttonText="Save design"

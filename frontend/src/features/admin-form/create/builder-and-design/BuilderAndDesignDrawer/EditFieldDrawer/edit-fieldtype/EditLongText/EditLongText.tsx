@@ -73,7 +73,6 @@ export const EditLongText = ({ field }: EditLongTextProps): JSX.Element => {
     register,
     formState: { errors },
     getValues,
-    isSaveEnabled,
     buttonText,
     handleUpdateField,
     watch,
@@ -189,7 +188,6 @@ export const EditLongText = ({ field }: EditLongTextProps): JSX.Element => {
       </FormControl>
       <FormFieldDrawerActions
         isLoading={isLoading}
-        isSaveEnabled={isSaveEnabled}
         buttonText={buttonText}
         handleClick={handleUpdateField}
         handleCancel={handleCancel}

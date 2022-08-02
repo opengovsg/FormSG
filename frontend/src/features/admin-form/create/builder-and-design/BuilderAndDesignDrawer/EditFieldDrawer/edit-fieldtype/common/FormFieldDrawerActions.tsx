@@ -6,7 +6,6 @@ import Button from '~components/Button'
 
 interface FormFieldDrawerActionsProps {
   isLoading: boolean
-  isSaveEnabled: boolean
   handleClick: ReturnType<UseFormHandleSubmit<FieldValues>>
   handleCancel: () => void
   buttonText: string
@@ -14,7 +13,6 @@ interface FormFieldDrawerActionsProps {
 
 export const FormFieldDrawerActions = ({
   isLoading,
-  isSaveEnabled,
   handleClick,
   handleCancel,
   buttonText,
@@ -30,7 +28,7 @@ export const FormFieldDrawerActions = ({
     >
       <Button
         isFullWidth={isMobile}
-        isDisabled={isLoading || !isSaveEnabled}
+        isDisabled={isLoading}
         isLoading={isLoading}
         onClick={handleClick}
       >

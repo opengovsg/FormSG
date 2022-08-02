@@ -73,7 +73,6 @@ export const EditNumber = ({ field }: EditNumberProps): JSX.Element => {
     register,
     formState: { errors },
     getValues,
-    isSaveEnabled,
     buttonText,
     handleUpdateField,
     watch,
@@ -196,7 +195,6 @@ export const EditNumber = ({ field }: EditNumberProps): JSX.Element => {
       </FormControl>
       <FormFieldDrawerActions
         isLoading={isLoading}
-        isSaveEnabled={isSaveEnabled}
         buttonText={buttonText}
         handleClick={handleUpdateField}
         handleCancel={handleCancel}

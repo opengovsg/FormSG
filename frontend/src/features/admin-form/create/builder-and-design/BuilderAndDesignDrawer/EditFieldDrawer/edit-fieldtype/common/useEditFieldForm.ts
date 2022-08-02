@@ -54,7 +54,6 @@ export type UseEditFieldFormReturn<U> = UseFormReturn<U> & {
   handleUpdateField: () => Promise<void>
   handleCancel: () => void
   buttonText: string
-  isSaveEnabled: boolean
   isLoading: boolean
   formMethods: UseFormReturn<U>
 }
@@ -160,16 +159,10 @@ export const useEditFieldForm = <FormShape, FieldShape extends FormField>({
     [isPendingField],
   )
 
-  const isSaveEnabled = useMemo(
-    () => editForm.formState.isDirty || isPendingField,
-    [editForm.formState.isDirty, isPendingField],
-  )
-
   return {
     ...editForm,
     formMethods: editForm,
     buttonText,
-    isSaveEnabled,
     handleUpdateField,
     handleCancel: setToInactive,
     isLoading: createFieldMutation.isLoading || editFieldMutation.isLoading,
