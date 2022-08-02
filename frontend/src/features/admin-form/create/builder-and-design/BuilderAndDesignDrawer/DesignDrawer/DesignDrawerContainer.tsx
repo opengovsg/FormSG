@@ -39,12 +39,9 @@ export const DesignDrawerContainer = (): JSX.Element | null => {
   // Load existing start page and custom logo into drawer form
   useEffect(() => {
     if (!form) return
-    console.log('set')
     setStartPageData({
       ...form.startPage,
-      estTimeTaken: !form.startPage.estTimeTaken
-        ? ''
-        : form.startPage.estTimeTaken,
+      estTimeTaken: form.startPage.estTimeTaken || '',
       attachment:
         form.startPage.logo.state !== FormLogoState.Custom
           ? {}
@@ -59,8 +56,8 @@ export const DesignDrawerContainer = (): JSX.Element | null => {
               srcUrl: `${logoBucketUrl}/${form.startPage.logo.fileId}`,
             },
     })
-    if (form?.startPage.logo.state === FormLogoState.Custom)
-      setCustomLogoMeta(form?.startPage.logo)
+    if (form.startPage.logo.state === FormLogoState.Custom)
+      setCustomLogoMeta(form.startPage.logo)
     return resetDesignStore
   }, [
     form,
