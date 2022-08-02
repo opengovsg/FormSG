@@ -48,8 +48,8 @@ export const InactiveLogicBlock = ({
         const allInvalid = logic.show.every(
           (fieldId) => !(fieldId in mapIdToField),
         )
-        const errorType = allInvalid ? 'error' : 'info'
-        const errorStringEnd = allInvalid
+        const defaultsVariant = allInvalid ? 'error' : 'info'
+        const defaultsMessageEnd = allInvalid
           ? '. Please select other fields.'
           : ' and has been removed from your logic.'
         return (
@@ -60,8 +60,10 @@ export const InactiveLogicBlock = ({
                 <FieldLogicBadge
                   key={index}
                   field={mapIdToField[fieldId]}
-                  errorType={errorType}
-                  errorString={`This field was deleted${errorStringEnd}`}
+                  defaults={{
+                    variant: defaultsVariant,
+                    message: `This field was deleted${defaultsMessageEnd}`,
+                  }}
                 />
               ))}
             </Stack>
@@ -129,8 +131,11 @@ export const InactiveLogicBlock = ({
                 <Text>{index === 0 ? 'If' : 'and'}</Text>
                 <FieldLogicBadge
                   field={mapIdToField[condition.field]}
-                  errorType="error"
-                  errorString="This field was deleted. Please select another field."
+                  defaults={{
+                    variant: 'error',
+                    message:
+                      'This field was deleted. Please select another field.',
+                  }}
                 />
               </Stack>
               <Stack>

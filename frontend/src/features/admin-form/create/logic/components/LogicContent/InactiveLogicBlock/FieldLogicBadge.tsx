@@ -10,9 +10,11 @@ import { FormFieldWithQuestionNo } from '~features/form/types'
 import { LogicBadge } from './LogicBadge'
 
 interface FieldLogicBadgeProps {
-  field: FormFieldWithQuestionNo | null
-  errorType?: 'error' | 'info'
-  errorString?: string
+  field?: FormFieldWithQuestionNo
+  defaults?: {
+    variant: 'error' | 'info'
+    message: string
+  }
 }
 
 /**
@@ -20,8 +22,7 @@ interface FieldLogicBadgeProps {
  */
 export const FieldLogicBadge = ({
   field,
-  errorType = 'error',
-  errorString = 'Field not found',
+  defaults = { variant: 'error', message: 'Field not found' },
 }: FieldLogicBadgeProps) => {
   const fieldMeta = useMemo(
     () => (field ? BASICFIELD_TO_DRAWER_META[field.fieldType] : null),
@@ -29,35 +30,35 @@ export const FieldLogicBadge = ({
   )
 
   const tooltipLabel = useMemo(
-    () => (!fieldMeta ? errorString : `${fieldMeta.label} field`),
-    [fieldMeta, errorString],
+    () => (!fieldMeta ? defaults.message : `${fieldMeta.label} field`),
+    [fieldMeta, defaults.message],
   )
 
   const errorIcon = useMemo(() => {
-    switch (errorType) {
+    switch (defaults.variant) {
       case 'error':
         return <Icon as={BxsErrorCircle} fontSize="1rem" color="danger.500" />
       case 'info':
         return <Icon as={BxsInfoCircle} fontSize="1rem" color="primary.500" />
     }
-  }, [errorType])
+  }, [defaults.variant])
 
   const errorText = useMemo(() => {
-    switch (errorType) {
+    switch (defaults.variant) {
       case 'error':
         return (
           <Text textColor="danger.500" noOfLines={1}>
-            {errorString}
+            {defaults.message}
           </Text>
         )
       case 'info':
         return (
           <Text textColor="primary.500" noOfLines={1}>
-            {errorString}
+            {defaults.message}
           </Text>
         )
     }
-  }, [errorType, errorString])
+  }, [defaults])
 
   return (
     <LogicBadge display="inline-flex">
