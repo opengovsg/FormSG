@@ -11,6 +11,7 @@ import Mail from 'nodemailer/lib/mailer'
 import session, { Session } from 'supertest-session'
 
 import getFormModel from 'src/app/models/form.server.model'
+import { SpOidcClient } from 'src/app/modules/spcp/sp.oidc.client'
 import {
   generateFieldParams,
   MOCK_HASHED_OTP,
@@ -28,7 +29,11 @@ import MockTwilio from 'tests/integration/helpers/twilio'
 import { generateDefaultField } from 'tests/unit/backend/helpers/generate-form-data'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
-import { BasicField } from '../../../../../../../shared/types'
+import {
+  BasicField,
+  FormAuthType,
+  FormStatus,
+} from '../../../../../../../shared/types'
 import {
   NUM_OTP_RETRIES,
   WAIT_FOR_OTP_SECONDS,
@@ -66,6 +71,9 @@ describe('public-forms.verification.routes', () => {
   const MOCK_EMAIL = `mock@${MOCK_VALID_EMAIL_DOMAIN}`
   let MockTransport: jest.Mocked<Mail>
 
+  let mockSPFormId: string
+  const MOCK_EMAIL_DOMAIN_SP = 'sp.com'
+
   beforeAll(async () => {
     await dbHandler.connect()
     MockTransport = jest.mocked(nodemailer.createTransport())
@@ -97,6 +105,19 @@ describe('public-forms.verification.routes', () => {
       },
     })
     mockVerifiableFormId = String(verifiableForm._id)
+
+    // Form with SP auth
+    const { form: SPForm } = await dbHandler.insertEmailForm({
+      mailDomain: MOCK_EMAIL_DOMAIN_SP,
+      formOptions: {
+        esrvcId: 'mockEsrvcId',
+        authType: FormAuthType.SP,
+        hasCaptcha: false,
+        status: FormStatus.Public,
+        form_fields: [emailField, mobileField],
+      },
+    })
+    mockSPFormId = String(SPForm._id)
 
     // Mock transaction with both email and mobile fields
     mockTransaction = await VerificationModel.create({
@@ -295,6 +316,30 @@ describe('public-forms.verification.routes', () => {
       expect(response.text).toBe(getReasonPhrase(StatusCodes.CREATED))
     })
 
+    it('should return 201 when using SingPass auth and user is logged in to SingPass', async () => {
+      // Arrange
+      const mockJwt = 'mockJwt'
+
+      jest.spyOn(SpOidcClient.prototype, 'verifyJwt').mockResolvedValueOnce({
+        userName: 'S1234567A',
+      })
+
+      // Act
+      const response = await request
+        .post(
+          `/forms/${mockSPFormId}/fieldverifications/${mockTransactionId}/fields/${mockEmailFieldId}/otp/generate`,
+        )
+        .send({
+          answer: 'mail@me.com',
+        })
+        // Note cookie is for SingPass, not CorpPass
+        .set('Cookie', [`jwtSp=${mockJwt}`])
+
+      // Assert
+      expect(response.status).toBe(StatusCodes.CREATED)
+      expect(response.text).toEqual(getReasonPhrase(StatusCodes.CREATED))
+    })
+
     it('should return 400 when fieldType is email but the provided email is not valid', async () => {
       // Arrange
       const expectedResponse = {
@@ -424,6 +469,34 @@ describe('public-forms.verification.routes', () => {
         .send({
           answer: 'mail@me.com',
         })
+
+      // Assert
+      expect(response.status).toBe(StatusCodes.BAD_REQUEST)
+      expect(response.body).toEqual(expectedResponse)
+    })
+
+    it('should return 400 when using SingPass auth but user is not logged in to SingPass', async () => {
+      // Arrange
+      const expectedResponse = {
+        message: 'Sorry, something went wrong. Please refresh and try again.',
+      }
+
+      const mockJwt = 'mockJwt'
+
+      jest
+        .spyOn(SpOidcClient.prototype, 'verifyJwt')
+        .mockRejectedValueOnce(new Error())
+
+      // Act
+      const response = await request
+        .post(
+          `/forms/${mockSPFormId}/fieldverifications/${mockTransactionId}/fields/${mockEmailFieldId}/otp/generate`,
+        )
+        .send({
+          answer: 'mail@me.com',
+        })
+        // Note cookie is for SingPass, not CorpPass
+        .set('Cookie', [`jwtSp=${mockJwt}`])
 
       // Assert
       expect(response.status).toBe(StatusCodes.BAD_REQUEST)
