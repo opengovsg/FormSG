@@ -6,7 +6,7 @@ import {
   UnpackNestedValue,
   useFormState,
 } from 'react-hook-form'
-import { FormControl, Stack, StackDivider } from '@chakra-ui/react'
+import { FormControl, Stack } from '@chakra-ui/react'
 import { extend, pick } from 'lodash'
 
 import { Column, ColumnDto, TableFieldBase } from '~shared/types/field'
@@ -96,7 +96,6 @@ export const EditTable = ({ field }: EditTableProps): JSX.Element => {
 
   const {
     formMethods,
-    isSaveEnabled,
     buttonText,
     handleUpdateField,
     isLoading,
@@ -204,7 +203,6 @@ export const EditTable = ({ field }: EditTableProps): JSX.Element => {
       </FormProvider>
       <FormFieldDrawerActions
         isLoading={isLoading}
-        isSaveEnabled={isSaveEnabled}
         buttonText={buttonText}
         handleClick={handleUpdateField}
         handleCancel={handleCancel}
