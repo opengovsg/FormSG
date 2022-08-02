@@ -78,7 +78,7 @@ export const ThenShowBlock = ({
 
   /**
    * Compute whether any/all fields in the show fields are deleted, then run
-   * effect once on render to delete fields and show appropriate error/infobox.
+   * effect to delete fields on render and show appropriate error/infobox.
    */
   const showValueWatch = useWatchDependency(watch, 'show')
 
@@ -107,7 +107,14 @@ export const ThenShowBlock = ({
       setValue('show', filteredShowFields)
       return
     }
-  }, [])
+  }, [
+    logicTypeValue,
+    mapIdToField,
+    resetField,
+    setError,
+    setValue,
+    showValueWatch.value,
+  ])
 
   return (
     <Stack

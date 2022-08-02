@@ -77,8 +77,7 @@ export const EditConditionBlock = ({
   }, [ifFieldIdValue, mapIdToField])
 
   /**
-   * Effect to set value and error if the user deleted the field. Run this only
-   * once, on render.
+   * Effect to set value and error if the user conditions on a deleted field.
    */
   useEffect(() => {
     if (!ifFieldIdValue || !mapIdToField) return
@@ -89,7 +88,7 @@ export const EditConditionBlock = ({
         message: 'This field was deleted. Please select a different field.',
       })
     }
-  }, [])
+  }, [ifFieldIdValue, mapIdToField, name, resetField, setError])
 
   /**
    * Effect to reset the field if the field to apply a condition on is changed.
