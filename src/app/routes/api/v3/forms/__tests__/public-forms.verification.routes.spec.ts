@@ -72,18 +72,6 @@ jest.mock('nodemailer', () => ({
 jest.mock('@opengovsg/spcp-auth-client')
 const MockAuthClient = mocked(SPCPAuthClient, true)
 
-jest.mock('@opengovsg/myinfo-gov-client', () => ({
-  MyInfoGovClient: jest.fn().mockReturnValue({
-    extractUinFin: jest.fn(),
-  }),
-  MyInfoMode: jest.requireActual('@opengovsg/myinfo-gov-client').MyInfoMode,
-  MyInfoSource: jest.requireActual('@opengovsg/myinfo-gov-client').MyInfoSource,
-  MyInfoAddressType: jest.requireActual('@opengovsg/myinfo-gov-client')
-    .MyInfoAddressType,
-  MyInfoAttribute: jest.requireActual('@opengovsg/myinfo-gov-client')
-    .MyInfoAttribute,
-}))
-
 const MyInfoHashModel = getMyInfoHashModel(mongoose)
 
 jest.mock('jsonwebtoken')
@@ -105,15 +93,15 @@ describe('public-forms.verification.routes', () => {
   let mockSPFormId: string
   const MOCK_EMAIL_DOMAIN_SP = 'sp.com'
 
-  let mockSGIDFormId: string
-  const MOCK_EMAIL_DOMAIN_SGID = 'sgid.com'
+  let mockCPFormId: string
+  const MOCK_EMAIL_DOMAIN_CP = 'cp.com'
+  const mockCpClient = mocked(MockAuthClient.mock.instances[1], true)
 
   let mockMyInfoFormId: string
   const MOCK_EMAIL_DOMAIN_MYINFO = 'myinfo.com'
 
-  let mockCPFormId: string
-  const MOCK_EMAIL_DOMAIN_CP = 'cp.com'
-  const mockCpClient = mocked(MockAuthClient.mock.instances[1], true)
+  let mockSGIDFormId: string
+  const MOCK_EMAIL_DOMAIN_SGID = 'sgid.com'
 
   beforeAll(async () => {
     await dbHandler.connect()
