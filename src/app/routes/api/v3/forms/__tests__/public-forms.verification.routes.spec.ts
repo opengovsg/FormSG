@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import MyInfoClient, { IMyInfoConfig } from '@opengovsg/myinfo-gov-client'
 import SPCPAuthClient from '@opengovsg/spcp-auth-client'
 import bcrypt from 'bcrypt'
 import { ObjectId } from 'bson-ext'
@@ -84,11 +83,6 @@ jest.mock('@opengovsg/myinfo-gov-client', () => ({
   MyInfoAttribute: jest.requireActual('@opengovsg/myinfo-gov-client')
     .MyInfoAttribute,
 }))
-
-const MockMyInfoGovClient = mocked(
-  new MyInfoClient.MyInfoGovClient({} as IMyInfoConfig),
-  true,
-)
 
 const MyInfoHashModel = getMyInfoHashModel(mongoose)
 
@@ -455,8 +449,6 @@ describe('public-forms.verification.routes', () => {
 
     it('should return 201 when using MyInfo auth and user is logged in to MyInfo', async () => {
       // Arrange
-      MockMyInfoGovClient.extractUinFin.mockReturnValueOnce(MOCK_UINFIN)
-
       await MyInfoHashModel.updateHashes(
         MOCK_UINFIN,
         mockMyInfoFormId,
@@ -707,6 +699,11 @@ describe('public-forms.verification.routes', () => {
       const expectedResponse = {
         message: 'Sorry, something went wrong. Please refresh and try again.',
       }
+      const cookie = JSON.stringify({
+        accessToken: 'mockAccessToken',
+        usedCount: 0,
+        state: MyInfoCookieState.Error,
+      })
 
       // Act
       const response = await request
@@ -716,6 +713,10 @@ describe('public-forms.verification.routes', () => {
         .send({
           answer: 'mail@me.com',
         })
+        .set('Cookie', [
+          // The j: indicates that the cookie is in JSON
+          `${MYINFO_COOKIE_NAME}=j:${encodeURIComponent(cookie)}`,
+        ])
 
       // Assert
       expect(response.status).toBe(StatusCodes.BAD_REQUEST)
