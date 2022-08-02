@@ -8,9 +8,12 @@ import {
   FormStatus,
 } from '~shared/types/form/form'
 
+import { getUser, MOCK_USER } from '~/mocks/msw/handlers/user'
+
 import { ROOT_ROUTE } from '~constants/routes'
 import {
   getMobileViewParameters,
+  LoggedInDecorator,
   mockDateDecorator,
   StoryRouter,
   ViewedEmergencyContactDecorator,
@@ -57,12 +60,13 @@ export default {
   component: WorkspacePage,
   decorators: [
     ViewedRolloutDecorator,
-    ViewedEmergencyContactDecorator,
     StoryRouter({
       initialEntries: [ROOT_ROUTE],
       path: ROOT_ROUTE,
     }),
     mockDateDecorator,
+    LoggedInDecorator,
+    ViewedEmergencyContactDecorator,
   ],
   parameters: {
     layout: 'fullscreen',
@@ -76,6 +80,13 @@ export default {
           return res(ctx.json(THIRTY_FORMS))
         },
       ),
+      getUser({
+        delay: 0,
+        mockUser: {
+          ...MOCK_USER,
+          email: 'super_super_super_super_super_long_name@example.com',
+        },
+      }),
     ],
   },
 } as Meta
