@@ -37,13 +37,13 @@ export interface FooterVariantProps {
    */
   textColorScheme: ThemeColorScheme
   containerProps?: Partial<FooterContainerProps>
-  bgColorScheme?: string
+  // bgColorScheme?: string
 }
 
 export interface FooterProps
   extends SetOptional<
     FooterVariantProps,
-    'socialMediaLinks' | 'textColorScheme' | 'footerIconLink' | 'bgColorScheme'
+    'socialMediaLinks' | 'textColorScheme' | 'footerIconLink'
   > {
   /**
    * The footer variant to display. Defaults to `full` if not provided.

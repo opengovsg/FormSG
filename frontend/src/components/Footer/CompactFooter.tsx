@@ -19,11 +19,10 @@ export const CompactFooter = ({
   footerLinks,
   compactMonochromeLogos,
   appLink,
-  bgColorScheme = 'primary.100',
   containerProps,
 }: CompactedFooterProps): JSX.Element => {
   return (
-    <CompactFooter.Container bgColorScheme={bgColorScheme} {...containerProps}>
+    <CompactFooter.Container {...containerProps}>
       <Stack direction="row" h="2.25rem" align="center" spacing="2rem">
         <Link
           colorScheme={compactMonochromeLogos ? 'white' : textColorScheme}
@@ -78,7 +77,7 @@ export const CompactFooter = ({
 }
 
 CompactFooter.Container = ({
-  bgColorScheme,
+  bgColorScheme = 'primary.100',
   children,
   ...props
 }: FooterContainerProps): JSX.Element => {

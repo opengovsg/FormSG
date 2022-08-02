@@ -3,7 +3,7 @@ import Footer, { FooterProps } from '~components/Footer'
 
 type AppFooterProps = Pick<
   FooterProps,
-  'variant' | 'containerProps' | 'compactMonochromeLogos' | 'bgColorScheme'
+  'variant' | 'containerProps' | 'compactMonochromeLogos'
 >
 export const AppFooter = (props: AppFooterProps): JSX.Element => {
   return (

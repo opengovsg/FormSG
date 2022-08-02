@@ -36,7 +36,12 @@ export const FormFooter = (): JSX.Element => {
         >
           <Box id={captchaContainerId} />
           <Box w="100%">
-            <AppFooter variant="compact" bgColorScheme={bgColor} />
+            <AppFooter
+              variant="compact"
+              containerProps={{
+                bgColorScheme: bgColor,
+              }}
+            />
           </Box>
         </Stack>
       </Box>
