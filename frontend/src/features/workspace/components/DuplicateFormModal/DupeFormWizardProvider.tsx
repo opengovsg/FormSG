@@ -1,8 +1,9 @@
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 
 import { FormResponseMode } from '~shared/types'
 
 import { usePreviewForm } from '~features/admin-form/common/queries'
+import { isMyInfo } from '~features/myinfo/utils'
 import { useCreateFormMutations } from '~features/workspace/mutations'
 import { useWorkspace } from '~features/workspace/queries'
 import { makeDuplicateFormTitle } from '~features/workspace/utils/createDuplicateFormTitle'
@@ -26,12 +27,13 @@ export const useDupeFormWizardContext = (): CreateFormWizardContextReturn => {
       /* enabled= */ !!activeFormMeta,
     )
 
+  const containsMyInfoFields = useMemo(
+    () => !!previewFormData?.form.form_fields.find((ff) => isMyInfo(ff)),
+    [previewFormData?.form.form_fields],
+  )
+
   const { formMethods, currentStep, direction, keypair, setCurrentStep } =
-    useCommonFormWizardProvider({
-      defaultValues: {
-        responseMode: FormResponseMode.Encrypt,
-      },
-    })
+    useCommonFormWizardProvider()
 
   const { reset, getValues } = formMethods
 
@@ -48,6 +50,9 @@ export const useDupeFormWizardContext = (): CreateFormWizardContextReturn => {
 
     reset({
       ...getValues(),
+      responseMode: containsMyInfoFields
+        ? FormResponseMode.Email
+        : FormResponseMode.Encrypt,
       title: makeDuplicateFormTitle(previewFormData.form.title, dashboardForms),
     })
   }, [
@@ -57,6 +62,7 @@ export const useDupeFormWizardContext = (): CreateFormWizardContextReturn => {
     isPreviewFormLoading,
     isWorkspaceLoading,
     dashboardForms,
+    containsMyInfoFields,
   ])
 
   const { handleSubmit } = formMethods
@@ -103,6 +109,7 @@ export const useDupeFormWizardContext = (): CreateFormWizardContextReturn => {
     handleDetailsSubmit,
     handleCreateStorageModeForm,
     handleBackToDetails,
+    containsMyInfoFields,
     modalHeader: 'Duplicate form',
   }
 }

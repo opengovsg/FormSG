@@ -15,6 +15,7 @@ import { useToast } from '~hooks/useToast'
 
 import { adminFormKeys } from '~features/admin-form/common/queries'
 
+import { workspaceKeys } from './queries'
 import { createEmailModeForm, createStorageModeForm } from './WorkspaceService'
 
 export const useCreateFormMutations = () => {
@@ -25,6 +26,7 @@ export const useCreateFormMutations = () => {
   const handleSuccess = useCallback(
     (data: FormDto) => {
       queryClient.setQueryData(adminFormKeys.id(data._id), data)
+      queryClient.invalidateQueries(workspaceKeys.all)
       navigate(`${ADMINFORM_ROUTE}/${data._id}`)
     },
     [navigate, queryClient],

@@ -25,7 +25,7 @@ interface UseCommonFormWizardProviderProps {
 
 export const useCommonFormWizardProvider = ({
   defaultValues,
-}: UseCommonFormWizardProviderProps) => {
+}: UseCommonFormWizardProviderProps = {}) => {
   const [[currentStep, direction], setCurrentStep] =
     useState(INITIAL_STEP_STATE)
 
@@ -101,6 +101,8 @@ const useCreateFormWizardContext = (): CreateFormWizardContextReturn => {
     handleCreateStorageModeForm,
     handleBackToDetails,
     modalHeader: 'Set up your form',
+    // Creation will never contain any fields.
+    containsMyInfoFields: false,
   }
 }
 

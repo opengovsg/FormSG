@@ -6,7 +6,7 @@ import { ApiError } from '~typings/core'
 
 import { getDashboardView } from './WorkspaceService'
 
-const workspaceKeys = {
+export const workspaceKeys = {
   all: ['workspace'] as const,
 }
 
