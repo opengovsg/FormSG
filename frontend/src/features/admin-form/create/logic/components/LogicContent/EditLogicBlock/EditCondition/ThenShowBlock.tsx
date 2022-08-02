@@ -94,8 +94,6 @@ export const ThenShowBlock = ({
     const filteredShowFields = showValueWatch.value.filter(
       (field) => field in mapIdToField,
     )
-    const deletedFieldsCount =
-      showValueWatch.value.length - filteredShowFields.length
     if (filteredShowFields.length === 0) {
       resetField('show')
       setError('show', {
@@ -104,6 +102,8 @@ export const ThenShowBlock = ({
       })
       return
     }
+    const deletedFieldsCount =
+      showValueWatch.value.length - filteredShowFields.length
     if (deletedFieldsCount > 0) {
       setDeletedFieldsCount(deletedFieldsCount)
       setValue('show', filteredShowFields)
