@@ -5,6 +5,7 @@ import bcrypt from 'bcrypt'
 import { ObjectId } from 'bson-ext'
 import { subMinutes, subYears } from 'date-fns'
 import { getReasonPhrase, StatusCodes } from 'http-status-codes'
+import Jwt from 'jsonwebtoken'
 import _ from 'lodash'
 import mongoose from 'mongoose'
 import { okAsync } from 'neverthrow'
@@ -18,6 +19,7 @@ import getFormModel from 'src/app/models/form.server.model'
 import { MYINFO_COOKIE_NAME } from 'src/app/modules/myinfo/myinfo.constants'
 import { MyInfoCookieState } from 'src/app/modules/myinfo/myinfo.types'
 import getMyInfoHashModel from 'src/app/modules/myinfo/myinfo_hash.model'
+import { SGID_COOKIE_NAME } from 'src/app/modules/sgid/sgid.constants'
 import { SpOidcClient } from 'src/app/modules/spcp/sp.oidc.client'
 import {
   generateFieldParams,
@@ -92,6 +94,9 @@ const MockMyInfoGovClient = mocked(
 
 const MyInfoHashModel = getMyInfoHashModel(mongoose)
 
+jest.mock('jsonwebtoken')
+const MockJwt = mocked(Jwt)
+
 describe('public-forms.verification.routes', () => {
   let mockTransaction: IVerificationSchema
   let mockTransactionId: string
@@ -107,6 +112,12 @@ describe('public-forms.verification.routes', () => {
 
   let mockSPFormId: string
   const MOCK_EMAIL_DOMAIN_SP = 'sp.com'
+
+  let mockSGIDFormId: string
+  const MOCK_EMAIL_DOMAIN_SGID = 'sgid.com'
+
+  let mockMyInfoFormId: string
+  const MOCK_EMAIL_DOMAIN_MYINFO = 'myinfo.com'
 
   let mockCPFormId: string
   const MOCK_EMAIL_DOMAIN_CP = 'cp.com'
@@ -182,6 +193,19 @@ describe('public-forms.verification.routes', () => {
       },
     })
     mockMyInfoFormId = String(MyInfoForm._id)
+
+    // Form with SGID auth
+    const { form: SGIDForm } = await dbHandler.insertEmailForm({
+      mailDomain: MOCK_EMAIL_DOMAIN_SGID,
+      formOptions: {
+        esrvcId: 'mockEsrvcId',
+        authType: FormAuthType.SGID,
+        hasCaptcha: false,
+        status: FormStatus.Public,
+        form_fields: [emailField, mobileField],
+      },
+    })
+    mockSGIDFormId = String(SGIDForm._id)
 
     // Mock transaction with both email and mobile fields
     mockTransaction = await VerificationModel.create({
@@ -465,6 +489,30 @@ describe('public-forms.verification.routes', () => {
       expect(response.text).toEqual(getReasonPhrase(StatusCodes.CREATED))
     })
 
+    it('should return 201 when using SGID auth and user is logged in to SGID', async () => {
+      // Arrange
+      const MOCK_JWT = 'jwt'
+      const MOCK_JWT_PAYLOAD = {
+        userName: 'S1234567A',
+      }
+
+      MockJwt.verify.mockReturnValue(MOCK_JWT_PAYLOAD)
+
+      // Act
+      const response = await request
+        .post(
+          `/forms/${mockSGIDFormId}/fieldverifications/${mockTransactionId}/fields/${mockEmailFieldId}/otp/generate`,
+        )
+        .send({
+          answer: 'mail@me.com',
+        })
+        .set('Cookie', [`${SGID_COOKIE_NAME}=${MOCK_JWT}`])
+
+      // Assert
+      expect(response.status).toBe(StatusCodes.CREATED)
+      expect(response.text).toEqual(getReasonPhrase(StatusCodes.CREATED))
+    })
+
     it('should return 400 when fieldType is email but the provided email is not valid', async () => {
       // Arrange
       const expectedResponse = {
@@ -670,7 +718,33 @@ describe('public-forms.verification.routes', () => {
         .send({
           answer: 'mail@me.com',
         })
-      // Don't send MyInfo cookie
+
+      // Assert
+      expect(response.status).toBe(StatusCodes.BAD_REQUEST)
+      expect(response.body).toEqual(expectedResponse)
+    })
+
+    it('should return 400 when using SGID auth but user is not logged in to SGID', async () => {
+      // Arrange
+      const expectedResponse = {
+        message: 'Sorry, something went wrong. Please refresh and try again.',
+      }
+      const MOCK_JWT = 'jwt'
+      // Throw error because user is not logged in
+      // Invalid token provided
+      MockJwt.verify.mockImplementationOnce(() => {
+        throw new Error()
+      })
+
+      // Act
+      const response = await request
+        .post(
+          `/forms/${mockSGIDFormId}/fieldverifications/${mockTransactionId}/fields/${mockEmailFieldId}/otp/generate`,
+        )
+        .send({
+          answer: 'mail@me.com',
+        })
+        .set('Cookie', [`${SGID_COOKIE_NAME}=${MOCK_JWT}`])
 
       // Assert
       expect(response.status).toBe(StatusCodes.BAD_REQUEST)
