@@ -14,6 +14,7 @@ export type FooterLinkWithIcon = FooterLink & {
 }
 
 export interface FooterContainerProps extends FlexProps {
+  bgColorScheme?: string
   children: React.ReactNode
 }
 
@@ -36,12 +37,13 @@ export interface FooterVariantProps {
    */
   textColorScheme: ThemeColorScheme
   containerProps?: Partial<FooterContainerProps>
+  bgColorScheme?: string
 }
 
 export interface FooterProps
   extends SetOptional<
     FooterVariantProps,
-    'socialMediaLinks' | 'textColorScheme' | 'footerIconLink'
+    'socialMediaLinks' | 'textColorScheme' | 'footerIconLink' | 'bgColorScheme'
   > {
   /**
    * The footer variant to display. Defaults to `full` if not provided.
