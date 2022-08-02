@@ -1,13 +1,6 @@
 import { get, inRange, isEmpty } from 'lodash'
 import moment from 'moment-timezone'
-import {
-  combine,
-  err,
-  errAsync,
-  okAsync,
-  Result,
-  ResultAsync,
-} from 'neverthrow'
+import { err, errAsync, okAsync, Result, ResultAsync } from 'neverthrow'
 import Mail from 'nodemailer/lib/mailer'
 import promiseRetry from 'promise-retry'
 import validator from 'validator'
@@ -631,7 +624,7 @@ export class MailService {
       })
       .andThen((forms) => {
         // Step 3: Send to each individual form
-        return combine(
+        return ResultAsync.combine(
           forms.map((f) =>
             // If there are no collaborators, do not send out the email.
             // Admin would already have received a summary email from Step 2.
@@ -764,7 +757,7 @@ export class MailService {
       })
       .andThen((forms) => {
         // Step 3: Send to each individual form
-        return combine(
+        return ResultAsync.combine(
           forms.map((f) =>
             // If there are no collaborators, do not send out the email.
             // Admin would already have received a summary email from Step 2.
