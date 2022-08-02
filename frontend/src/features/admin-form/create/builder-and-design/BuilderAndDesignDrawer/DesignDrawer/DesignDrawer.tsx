@@ -38,7 +38,6 @@ import {
   customLogoMetaSelector,
   FormStartPageInput,
   setStartPageDataSelector,
-  startPageDataSelector,
   useDesignStore,
 } from '../../useDesignStore'
 import { validateNumberInput } from '../../utils/validateNumberInput'
@@ -50,7 +49,13 @@ import {
   UploadImageInput,
 } from '../EditFieldDrawer/edit-fieldtype/EditImage/UploadImageInput'
 
-export const DesignDrawer = (): JSX.Element | null => {
+type DesignDrawerProps = {
+  startPageData: FormStartPageInput
+}
+
+export const DesignDrawer = ({
+  startPageData,
+}: DesignDrawerProps): JSX.Element | null => {
   const toast = useToast({ status: 'danger' })
   const { formId } = useParams()
   if (!formId) throw new Error('No formId provided')
@@ -58,10 +63,9 @@ export const DesignDrawer = (): JSX.Element | null => {
   const { startPageMutation } = useMutateFormPage()
   const { handleClose } = useCreatePageSidebar()
 
-  const { startPageData, customLogoMeta, setStartPageData } = useDesignStore(
+  const { customLogoMeta, setStartPageData } = useDesignStore(
     useCallback(
       (state) => ({
-        startPageData: startPageDataSelector(state),
         customLogoMeta: customLogoMetaSelector(state),
         setStartPageData: setStartPageDataSelector(state),
       }),
@@ -78,10 +82,7 @@ export const DesignDrawer = (): JSX.Element | null => {
     setError,
   } = useForm<FormStartPageInput>({
     mode: 'onBlur',
-    defaultValues: (() => {
-      console.log(startPageData)
-      return startPageData
-    })(),
+    defaultValues: startPageData,
   })
 
   const watchedInputs = useWatch({
@@ -265,7 +266,7 @@ export const DesignDrawer = (): JSX.Element | null => {
         </FormControl>
 
         <FormControl
-          isDisabled={startPageMutation.isLoading}
+          isReadOnly={startPageMutation.isLoading}
           isInvalid={!!errors.estTimeTaken}
         >
           <FormLabel>Time taken to complete form (minutes)</FormLabel>
@@ -291,7 +292,7 @@ export const DesignDrawer = (): JSX.Element | null => {
         </FormControl>
 
         <FormControl
-          isDisabled={startPageMutation.isLoading}
+          isReadOnly={startPageMutation.isLoading}
           isInvalid={!!errors.paragraph}
         >
           <FormLabel>Instructions for your form</FormLabel>

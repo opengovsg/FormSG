@@ -39,6 +39,7 @@ export const DesignDrawerContainer = (): JSX.Element | null => {
   // Load existing start page and custom logo into drawer form
   useEffect(() => {
     if (!form) return
+    console.log('set')
     setStartPageData({
       ...form.startPage,
       estTimeTaken: !form.startPage.estTimeTaken
@@ -71,5 +72,5 @@ export const DesignDrawerContainer = (): JSX.Element | null => {
 
   if (!startPageData) return null
 
-  return <DesignDrawer />
+  return <DesignDrawer startPageData={startPageData} />
 }
