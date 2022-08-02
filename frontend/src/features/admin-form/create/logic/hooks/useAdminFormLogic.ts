@@ -23,22 +23,19 @@ export const useAdminFormLogic = () => {
     return pickBy(mapIdToField, (f) => ALLOWED_LOGIC_FIELDS.has(f.fieldType))
   }, [mapIdToField])
 
-  const hasError = useMemo(
-    () =>
-      !mapIdToField
-        ? false
-        : form?.form_logics.some(
-            (logic) =>
-              // Logic is errored if some condition does not exist, or all the
-              // show fields do not exist.
-              logic.conditions.some(
-                (condition) => !(condition.field in mapIdToField),
-              ) ||
-              (logic.logicType === LogicType.ShowFields &&
-                logic.show.every((field) => !(field in mapIdToField))),
-          ),
-    [form?.form_logics, mapIdToField],
-  )
+  const hasError = useMemo(() => {
+    if (!mapIdToField || !form?.form_logics) return false
+    return form.form_logics.some(
+      (logic) =>
+        // Logic is errored if some condition does not exist, or all the
+        // show fields do not exist.
+        logic.conditions.some(
+          (condition) => !(condition.field in mapIdToField),
+        ) ||
+        (logic.logicType === LogicType.ShowFields &&
+          logic.show.every((field) => !(field in mapIdToField))),
+    )
+  }, [form?.form_logics, mapIdToField])
 
   return {
     isLoading,

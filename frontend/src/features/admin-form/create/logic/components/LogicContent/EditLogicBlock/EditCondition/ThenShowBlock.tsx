@@ -74,11 +74,13 @@ export const ThenShowBlock = ({
       : 'show'
   }, [logicTypeValue])
 
-  const [deletedFieldsCount, setDeletedFieldsCount] = useState<number>(0)
+  const [deletedFieldsCount, setDeletedFieldsCount] = useState(0)
 
   /**
    * Compute whether any/all fields in the show fields are deleted, then run
    * effect to delete fields on render and show appropriate error/infobox.
+   * useWatch here to avoid infinite re-render (since if there are deleted
+   * fields, we always reset the value of the show).
    */
   const showValueWatch = useWatchDependency(watch, 'show')
 
