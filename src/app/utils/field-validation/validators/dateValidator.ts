@@ -111,13 +111,13 @@ const makeDateValidator: DateValidatorConstructor = (dateField) => {
 }
 
 const DAY_TO_NUMBER_MAP: Record<InvalidDaysOptions, number> = {
-  [InvalidDaysOptions.Sunday]: 0,
   [InvalidDaysOptions.Monday]: 1,
   [InvalidDaysOptions.Tuesday]: 2,
   [InvalidDaysOptions.Wednesday]: 3,
   [InvalidDaysOptions.Thursday]: 4,
   [InvalidDaysOptions.Friday]: 5,
   [InvalidDaysOptions.Saturday]: 6,
+  [InvalidDaysOptions.Sunday]: 7,
 }
 
 /**
