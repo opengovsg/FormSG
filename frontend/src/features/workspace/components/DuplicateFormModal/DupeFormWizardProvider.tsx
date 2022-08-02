@@ -1,6 +1,11 @@
+import { useEffect } from 'react'
+
 import { FormResponseMode } from '~shared/types'
 
+import { usePreviewForm } from '~features/admin-form/common/queries'
 import { useCreateFormMutations } from '~features/workspace/mutations'
+import { useWorkspace } from '~features/workspace/queries'
+import { makeDuplicateFormTitle } from '~features/workspace/utils/createDuplicateFormTitle'
 
 import {
   CreateFormFlowStates,
@@ -8,14 +13,51 @@ import {
   CreateFormWizardContextReturn,
 } from '../CreateFormModal/CreateFormWizardContext'
 import { useCommonFormWizardProvider } from '../CreateFormModal/CreateFormWizardProvider'
+import { useWorkspaceRowsContext } from '../WorkspaceFormRow/WorkspaceRowsContext'
 
 export const useDupeFormWizardContext = (): CreateFormWizardContextReturn => {
+  const { data: dashboardForms, isLoading: isWorkspaceLoading } = useWorkspace()
+  const { activeFormMeta } = useWorkspaceRowsContext()
+
+  const { data: previewFormData, isLoading: isPreviewFormLoading } =
+    usePreviewForm(
+      activeFormMeta?._id ?? '',
+      // Stop querying once submissionData is present.
+      /* enabled= */ !!activeFormMeta,
+    )
+
   const { formMethods, currentStep, direction, keypair, setCurrentStep } =
     useCommonFormWizardProvider({
       defaultValues: {
         responseMode: FormResponseMode.Encrypt,
       },
     })
+
+  const { reset, getValues } = formMethods
+
+  // Async set defaultValues onto modal inputs.
+  useEffect(() => {
+    if (
+      isPreviewFormLoading ||
+      isWorkspaceLoading ||
+      !previewFormData ||
+      !dashboardForms
+    ) {
+      return
+    }
+
+    reset({
+      ...getValues(),
+      title: makeDuplicateFormTitle(previewFormData.form.title, dashboardForms),
+    })
+  }, [
+    reset,
+    getValues,
+    previewFormData,
+    isPreviewFormLoading,
+    isWorkspaceLoading,
+    dashboardForms,
+  ])
 
   const { handleSubmit } = formMethods
 
@@ -50,6 +92,7 @@ export const useDupeFormWizardContext = (): CreateFormWizardContextReturn => {
   }
 
   return {
+    isFetching: isWorkspaceLoading || isPreviewFormLoading,
     isLoading:
       createEmailModeFormMutation.isLoading ||
       createStorageModeFormMutation.isLoading,

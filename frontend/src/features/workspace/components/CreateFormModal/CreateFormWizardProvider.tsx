@@ -89,6 +89,7 @@ const useCreateFormWizardContext = (): CreateFormWizardContextReturn => {
   }
 
   return {
+    isFetching: false,
     isLoading:
       createEmailModeFormMutation.isLoading ||
       createStorageModeFormMutation.isLoading,

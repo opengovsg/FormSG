@@ -31,6 +31,8 @@ export type CreateFormWizardContextReturn = {
   >
   handleBackToDetails: () => void
   keypair: ReturnType<typeof formsgSdk.crypto.generate>
+  // Whether any async operation is in progress.
+  isFetching: boolean
   isLoading: boolean
   modalHeader: string
 }

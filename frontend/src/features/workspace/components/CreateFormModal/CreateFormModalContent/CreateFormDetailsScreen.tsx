@@ -5,6 +5,7 @@ import {
   FormControl,
   ModalBody,
   ModalHeader,
+  Skeleton,
   Text,
 } from '@chakra-ui/react'
 
@@ -26,8 +27,13 @@ import { FormResponseOptions } from './FormResponseOptions'
 const FORM_TITLE_LENGTH_WARNING = 65
 
 export const CreateFormDetailsScreen = (): JSX.Element => {
-  const { formMethods, handleDetailsSubmit, isLoading, modalHeader } =
-    useCreateFormWizard()
+  const {
+    formMethods,
+    handleDetailsSubmit,
+    isLoading,
+    isFetching,
+    modalHeader,
+  } = useCreateFormWizard()
   const {
     register,
     control,
@@ -49,10 +55,12 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
         <Container maxW="42.5rem" p={0}>
           <FormControl isRequired isInvalid={!!errors.title} mb="2.25rem">
             <FormLabel useMarkdownForDescription>Form name</FormLabel>
-            <Input
-              autoFocus
-              {...register('title', FORM_TITLE_VALIDATION_RULES)}
-            />
+            <Skeleton isLoaded={!isFetching}>
+              <Input
+                autoFocus
+                {...register('title', FORM_TITLE_VALIDATION_RULES)}
+              />
+            </Skeleton>
             <FormErrorMessage>{errors.title?.message}</FormErrorMessage>
             {titleInputValue?.length > FORM_TITLE_LENGTH_WARNING ? (
               <FormFieldMessage>
@@ -64,12 +72,14 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
             <FormLabel>
               How do you want to receive your form responses?
             </FormLabel>
-            <Controller
-              name="responseMode"
-              control={control}
-              render={({ field }) => <FormResponseOptions {...field} />}
-              rules={{ required: 'Please select a form response mode' }}
-            />
+            <Skeleton isLoaded={!isFetching}>
+              <Controller
+                name="responseMode"
+                control={control}
+                render={({ field }) => <FormResponseOptions {...field} />}
+                rules={{ required: 'Please select a form response mode' }}
+              />
+            </Skeleton>
             <FormErrorMessage>{errors.responseMode?.message}</FormErrorMessage>
           </FormControl>
           {responseModeValue === FormResponseMode.Email && (
@@ -87,6 +97,7 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
             rightIcon={<BiRightArrowAlt fontSize="1.5rem" />}
             type="submit"
             isLoading={isLoading}
+            isDisabled={isFetching}
             onClick={handleDetailsSubmit}
             isFullWidth
           >
