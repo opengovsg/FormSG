@@ -50,7 +50,6 @@ const INVALID_DAYS_OPTIONS: InvalidDaysOptions[] = [
   InvalidDaysOptions.Friday,
   InvalidDaysOptions.Saturday,
   InvalidDaysOptions.Sunday,
-  InvalidDaysOptions.SingaporePublicHolidays,
 ]
 
 const EDIT_DATE_FIELD_KEYS = [
@@ -297,18 +296,7 @@ export const EditDate = ({ field }: EditDateProps): JSX.Element => {
               name="invalidDays"
               rules={{
                 validate: (val) => {
-                  /**
-                   * A day is considered to be restricted if it either falls on an invalid
-                   * day of the week or on a Singapore public holiday. Hence, to ensure that
-                   * public users are able to select unrestricted days, the array should
-                   * contain at least one valid day of the week.
-                   */
-                  const validDaysSet = new Set(val)
-                  return validDaysSet.has(
-                    InvalidDaysOptions.SingaporePublicHolidays,
-                  )
-                    ? val.length >= 2 || 'Error placeholder'
-                    : val.length >= 1 || 'Error placeholder'
+                  return !!val.length || 'Error placeholder'
                 },
               }}
               render={({ field: { ref, ...field } }) => (
