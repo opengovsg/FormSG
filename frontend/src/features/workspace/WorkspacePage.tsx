@@ -8,10 +8,13 @@ import {
   DrawerOverlay,
   Flex,
   Grid,
+  GridItem,
   Stack,
   useBreakpointValue,
   useDisclosure,
 } from '@chakra-ui/react'
+
+import { AdminNavBar } from '~/app/AdminNavBar/AdminNavBar'
 
 import {
   EMERGENCY_CONTACT_KEY_PREFIX,
@@ -125,7 +128,22 @@ export const WorkspacePage = (): JSX.Element => {
         </DrawerContent>
       </Drawer>
 
-      <Grid templateColumns={{ base: 'inherit', lg: '15.5rem 1fr' }} h="100vh">
+      <Grid
+        templateAreas={`
+          "header header"
+          "nav main"
+        `}
+        gridTemplateRows={`auto 1fr`}
+        gridTemplateColumns={{
+          base: 'inherit',
+          lg: '15.5rem 1fr',
+        }}
+        h="100vh"
+      >
+        <GridItem area="header">
+          <AdminNavBar />
+        </GridItem>
+
         {shouldUseTopMenu ? (
           <WorkspaceMenuHeader
             shouldShowMenuIcon
