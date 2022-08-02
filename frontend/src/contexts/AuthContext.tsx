@@ -1,7 +1,13 @@
 import { createContext, FC, useContext } from 'react'
+import { useQuery } from 'react-query'
+
+import { UserDto } from '~shared/types'
 
 import { LOGGED_IN_KEY } from '~constants/localStorage'
 import { useLocalStorage } from '~hooks/useLocalStorage'
+import { fetchUser } from '~services/UserService'
+
+import { userKeys } from '~features/user/queries'
 
 type AuthContextProps = {
   isAuthenticated?: boolean
@@ -35,7 +41,15 @@ export const useAuth = (): AuthContextProps => {
 
 // Provider hook that creates auth object and handles state
 const useProvideAuth = () => {
-  const [isAuthenticated] = useLocalStorage<boolean>(LOGGED_IN_KEY)
+  // TODO #4279: Remove after React rollout is complete
+  const { data: user } = useQuery<UserDto>(
+    userKeys.base,
+    () => fetchUser(),
+    // 10 minutes staletime, do not need to retrieve so often.
+    { staleTime: 600000 },
+  )
+  const [isLocalStorageAuthenticated] = useLocalStorage<boolean>(LOGGED_IN_KEY)
+  const isAuthenticated = isLocalStorageAuthenticated || !!user
 
   // Return the user object and auth methods
   return {
