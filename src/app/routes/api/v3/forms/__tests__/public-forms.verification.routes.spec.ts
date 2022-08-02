@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
+import SPCPAuthClient from '@opengovsg/spcp-auth-client'
 import bcrypt from 'bcrypt'
 import { ObjectId } from 'bson-ext'
 import { subMinutes, subYears } from 'date-fns'
@@ -58,6 +59,9 @@ jest.mock('nodemailer', () => ({
   }),
 }))
 
+jest.mock('@opengovsg/spcp-auth-client')
+const MockAuthClient = mocked(SPCPAuthClient, true)
+
 describe('public-forms.verification.routes', () => {
   let mockTransaction: IVerificationSchema
   let mockTransactionId: string
@@ -73,6 +77,10 @@ describe('public-forms.verification.routes', () => {
 
   let mockSPFormId: string
   const MOCK_EMAIL_DOMAIN_SP = 'sp.com'
+
+  let mockCPFormId: string
+  const MOCK_EMAIL_DOMAIN_CP = 'cp.com'
+  const mockCpClient = mocked(MockAuthClient.mock.instances[1], true)
 
   beforeAll(async () => {
     await dbHandler.connect()
@@ -118,6 +126,19 @@ describe('public-forms.verification.routes', () => {
       },
     })
     mockSPFormId = String(SPForm._id)
+
+    // Form with CP auth
+    const { form: CPForm } = await dbHandler.insertEmailForm({
+      mailDomain: MOCK_EMAIL_DOMAIN_CP,
+      formOptions: {
+        esrvcId: 'mockEsrvcId',
+        authType: FormAuthType.CP,
+        hasCaptcha: false,
+        status: FormStatus.Public,
+        form_fields: [emailField, mobileField],
+      },
+    })
+    mockCPFormId = String(CPForm._id)
 
     // Mock transaction with both email and mobile fields
     mockTransaction = await VerificationModel.create({
@@ -340,6 +361,33 @@ describe('public-forms.verification.routes', () => {
       expect(response.text).toEqual(getReasonPhrase(StatusCodes.CREATED))
     })
 
+    it('should return 201 when using CorpPass auth and user is logged in to CorpPass', async () => {
+      // Arrange
+      const mockJwt = 'mockJwt'
+
+      mockCpClient.verifyJWT.mockImplementationOnce((_jwt, cb) =>
+        cb(null, {
+          userName: 'S1234567A',
+          userInfo: 'MyCorpPassUEN',
+        }),
+      )
+
+      // Act
+      const response = await request
+        .post(
+          `/forms/${mockCPFormId}/fieldverifications/${mockTransactionId}/fields/${mockEmailFieldId}/otp/generate`,
+        )
+        .send({
+          answer: 'mail@me.com',
+        })
+        // Note cookie is for CorpPass, not SingPass
+        .set('Cookie', [`jwtCp=${mockJwt}`])
+
+      // Assert
+      expect(response.status).toBe(StatusCodes.CREATED)
+      expect(response.text).toEqual(getReasonPhrase(StatusCodes.CREATED))
+    })
+
     it('should return 400 when fieldType is email but the provided email is not valid', async () => {
       // Arrange
       const expectedResponse = {
@@ -497,6 +545,34 @@ describe('public-forms.verification.routes', () => {
         })
         // Note cookie is for SingPass, not CorpPass
         .set('Cookie', [`jwtSp=${mockJwt}`])
+
+      // Assert
+      expect(response.status).toBe(StatusCodes.BAD_REQUEST)
+      expect(response.body).toEqual(expectedResponse)
+    })
+
+    it('should return 400 when using CorpPass auth but user is not logged in to CorpPass', async () => {
+      // Arrange
+      const expectedResponse = {
+        message: 'Sorry, something went wrong. Please refresh and try again.',
+      }
+
+      const mockJwt = 'mockJwt'
+
+      mockCpClient.verifyJWT.mockImplementationOnce((_jwt, cb) =>
+        cb(new Error()),
+      )
+
+      // Act
+      const response = await request
+        .post(
+          `/forms/${mockCPFormId}/fieldverifications/${mockTransactionId}/fields/${mockEmailFieldId}/otp/generate`,
+        )
+        .send({
+          answer: 'mail@me.com',
+        })
+        // Note cookie is for CorpPass, not SingPass
+        .set('Cookie', [`jwtCp=${mockJwt}`])
 
       // Assert
       expect(response.status).toBe(StatusCodes.BAD_REQUEST)
