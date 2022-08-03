@@ -26,6 +26,7 @@ export const SectionSidebar = (): JSX.Element => {
   const {
     miniHeaderRef,
     sectionScrollData,
+    submissionData,
     isMobileDrawerOpen,
     onMobileDrawerClose,
   } = usePublicFormContext()
@@ -77,7 +78,13 @@ export const SectionSidebar = (): JSX.Element => {
       </Drawer>
     )
 
-  return (
+  return submissionData ? (
+    <Box
+      flex={1}
+      d={{ base: 'none', md: 'initial' }}
+      minW={sectionScrollData.length > 0 ? '20%' : undefined}
+    ></Box>
+  ) : (
     <Box
       as="nav"
       aria-label="Form sections"
