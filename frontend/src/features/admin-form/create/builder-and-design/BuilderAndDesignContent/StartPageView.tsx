@@ -81,7 +81,7 @@ export const StartPageView = () => {
   })
 
   return (
-    <>
+    <Box>
       {customLogoPending ? (
         // Show skeleton if user has chosen custom logo but not yet uploaded
         <Flex justify="center" p="1rem" bg="white">
@@ -108,12 +108,14 @@ export const StartPageView = () => {
           form?.authType !== FormAuthType.NIL ? PREVIEW_MOCK_UINFIN : undefined
         }
       />
-      <Box mt="1.5rem">
-        <FormInstructions
-          content={startPage?.paragraph}
-          colorTheme={startPage?.colorTheme}
-        />
-      </Box>
-    </>
+      {startPage?.paragraph && (
+        <Box mt="1.5rem" mx="2.5rem" mb="-1.5rem">
+          <FormInstructions
+            content={startPage?.paragraph}
+            colorTheme={startPage?.colorTheme}
+          />
+        </Box>
+      )}
+    </Box>
   )
 }
