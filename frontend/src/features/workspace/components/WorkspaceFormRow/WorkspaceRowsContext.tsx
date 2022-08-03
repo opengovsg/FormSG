@@ -14,10 +14,8 @@ import { DuplicateFormModal } from '../DuplicateFormModal'
 interface WorkspaceRowsContextReturn {
   activeFormMeta?: AdminDashboardFormMetaDto
   onOpenDupeFormModal: (meta?: AdminDashboardFormMetaDto) => void
-  onCloseDupeFormModal: () => void
   onOpenShareFormModal: (meta?: AdminDashboardFormMetaDto) => void
   onOpenDeleteFormModal: (meta?: AdminDashboardFormMetaDto) => void
-  onCloseDeleteFormModal: () => void
 }
 
 const WorkspaceRowsContext = createContext<WorkspaceRowsContextReturn | null>(
@@ -63,9 +61,7 @@ export const WorkspaceRowsProvider = ({
         activeFormMeta,
         onOpenDupeFormModal,
         onOpenShareFormModal,
-        onCloseDupeFormModal: dupeFormModalDisclosure.onClose,
         onOpenDeleteFormModal,
-        onCloseDeleteFormModal: deleteFormModalDisclosure.onClose,
       }}
     >
       <DuplicateFormModal
@@ -81,6 +77,7 @@ export const WorkspaceRowsProvider = ({
       <DeleteFormModal
         isOpen={deleteFormModalDisclosure.isOpen}
         onClose={deleteFormModalDisclosure.onClose}
+        formsToDelete={activeFormMeta ? [activeFormMeta] : []}
       />
       {children}
     </WorkspaceRowsContext.Provider>
