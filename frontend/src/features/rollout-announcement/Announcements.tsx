@@ -1,8 +1,5 @@
 import FirstAnnouncement from './assets/1-dnd.json'
 import SecondAnnouncement from './assets/2-listview.json'
-import ThirdAnnouncement from './assets/3-a11y.json'
-import { LogicOrderSvgr } from './assets/LogicOrderSvgr'
-import { TwilioSvgr } from './assets/TwilioSvgr'
 
 export const NEW_FEATURES = [
   {
@@ -16,25 +13,5 @@ export const NEW_FEATURES = [
     description:
       'Get an overview of your forms in a structured and organised way.',
     animationData: SecondAnnouncement,
-  },
-  {
-    title: 'Form filling is now accessible for visually impaired users',
-    description:
-      "Form filling should be accessible to everyone. We've prioritised it in the redesign so everyone can have a pleasant form filling experience.",
-    animationData: ThirdAnnouncement,
-  },
-]
-
-export const OTHER_UPDATES = [
-  {
-    // TODO: Implement this functionality, issue tracked in #3796
-    title:
-      'Logic is now ordered by question number so you can find your conditions easily',
-    ImageSvgr: <LogicOrderSvgr />,
-  },
-  {
-    title:
-      'Add your Twilio credentials so your end-users can verify their mobile number',
-    ImageSvgr: <TwilioSvgr />,
   },
 ]
