@@ -77,7 +77,7 @@ export const WorkspaceRowsProvider = ({
       <DeleteFormModal
         isOpen={deleteFormModalDisclosure.isOpen}
         onClose={deleteFormModalDisclosure.onClose}
-        formsToDelete={activeFormMeta ? [activeFormMeta] : []}
+        formToDelete={activeFormMeta}
       />
       {children}
     </WorkspaceRowsContext.Provider>

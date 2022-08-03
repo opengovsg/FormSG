@@ -25,18 +25,16 @@ import { ModalCloseButton } from '~components/Modal'
 
 import { useDeleteFormMutation } from '~features/workspace/mutations'
 
-import { useWorkspaceRowsContext } from '../WorkspaceFormRow/WorkspaceRowsContext'
-
 export interface DeleteFormModalProps
   extends Pick<UseDisclosureReturn, 'onClose' | 'isOpen'> {
-  formsToDelete: AdminDashboardFormMetaDto[]
+  formToDelete?: Pick<AdminDashboardFormMetaDto, '_id' | 'title' | 'admin'>
 }
 
 export const DeleteFormModal = ({
   isOpen,
   onClose,
-  formsToDelete,
-}: DeleteFormModalProps): JSX.Element => {
+  formToDelete,
+}: DeleteFormModalProps): JSX.Element | null => {
   const modalSize = useBreakpointValue({
     base: 'mobile',
     xs: 'mobile',
@@ -44,14 +42,15 @@ export const DeleteFormModal = ({
   })
 
   const { deleteFormMutation } = useDeleteFormMutation()
-  const { activeFormMeta } = useWorkspaceRowsContext()
 
   const handleDeleteForm = useCallback(() => {
-    if (!activeFormMeta?._id) return
-    return deleteFormMutation.mutate(activeFormMeta._id, {
+    if (!formToDelete) return
+    return deleteFormMutation.mutate(formToDelete._id, {
       onSuccess: onClose,
     })
-  }, [activeFormMeta?._id, deleteFormMutation, onClose])
+  }, [deleteFormMutation, formToDelete, onClose])
+
+  if (!formToDelete) return null
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size={modalSize}>
@@ -65,12 +64,8 @@ export const DeleteFormModal = ({
         </ModalHeader>
         <ModalBody whiteSpace="pre-line">
           <Text color="secondary.500">
-            {simplur`You will lose all responses and feedback for the following ${[
-              formsToDelete.length,
-            ]} form[|s]
-            permanently. Are you sure you want to delete the ${[
-              formsToDelete.length,
-            ]} form[|s]?`}
+            You will lose all responses and feedback for the following form
+            permanently. Are you sure you want to delete the form?
           </Text>
           <OrderedList
             spacing="0.5rem"
@@ -78,18 +73,16 @@ export const DeleteFormModal = ({
             ml="1.75rem"
             mt="1rem"
           >
-            {formsToDelete.map((form) => (
-              <ListItem key={form._id} display="flex" alignItems="flex-start">
-                <Icon
-                  as={BiFileBlank}
-                  fontSize="1.25rem"
-                  h="1.5rem"
-                  ml="-1.75rem"
-                  mr="0.5rem"
-                />
-                {form.title}
-              </ListItem>
-            ))}
+            <ListItem display="flex" alignItems="flex-start">
+              <Icon
+                as={BiFileBlank}
+                fontSize="1.25rem"
+                h="1.5rem"
+                ml="-1.75rem"
+                mr="0.5rem"
+              />
+              {formToDelete?.title}
+            </ListItem>
           </OrderedList>
         </ModalBody>
         <ModalFooter>
@@ -104,7 +97,7 @@ export const DeleteFormModal = ({
             </Button>
             <Button
               colorScheme="danger"
-              isDisabled={!formsToDelete.length || !activeFormMeta?._id}
+              isDisabled={!formToDelete}
               isLoading={deleteFormMutation.isLoading}
               onClick={handleDeleteForm}
             >
