@@ -1,3 +1,4 @@
+import { useCallback } from 'react'
 import { BiFileBlank } from 'react-icons/bi'
 import {
   ButtonGroup,
@@ -22,6 +23,10 @@ import { AdminDashboardFormMetaDto } from '~shared/types'
 import Button from '~components/Button'
 import { ModalCloseButton } from '~components/Modal'
 
+import { useDeleteFormMutation } from '~features/workspace/mutations'
+
+import { useWorkspaceRowsContext } from '../WorkspaceFormRow/WorkspaceRowsContext'
+
 export interface DeleteFormModalProps
   extends Pick<UseDisclosureReturn, 'onClose' | 'isOpen'> {
   formsToDelete: AdminDashboardFormMetaDto[]
@@ -37,6 +42,16 @@ export const DeleteFormModal = ({
     xs: 'mobile',
     md: 'md',
   })
+
+  const { deleteFormMutation } = useDeleteFormMutation()
+  const { activeFormMeta } = useWorkspaceRowsContext()
+
+  const handleDeleteForm = useCallback(() => {
+    if (!activeFormMeta?._id) return
+    return deleteFormMutation.mutate(activeFormMeta._id, {
+      onSuccess: onClose,
+    })
+  }, [activeFormMeta?._id, deleteFormMutation, onClose])
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size={modalSize}>
@@ -79,10 +94,20 @@ export const DeleteFormModal = ({
         </ModalBody>
         <ModalFooter>
           <ButtonGroup>
-            <Button variant="clear" colorScheme="secondary" onClick={onClose}>
+            <Button
+              variant="clear"
+              colorScheme="secondary"
+              onClick={onClose}
+              isDisabled={deleteFormMutation.isLoading}
+            >
               Cancel
             </Button>
-            <Button colorScheme="danger" isDisabled={!formsToDelete.length}>
+            <Button
+              colorScheme="danger"
+              isDisabled={!formsToDelete.length || !activeFormMeta?._id}
+              isLoading={deleteFormMutation.isLoading}
+              onClick={handleDeleteForm}
+            >
               Yes, delete form
             </Button>
           </ButtonGroup>
