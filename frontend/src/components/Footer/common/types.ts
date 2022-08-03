@@ -37,7 +37,6 @@ export interface FooterVariantProps {
    */
   textColorScheme: ThemeColorScheme
   containerProps?: Partial<FooterContainerProps>
-  // bgColorScheme?: string
 }
 
 export interface FooterProps
