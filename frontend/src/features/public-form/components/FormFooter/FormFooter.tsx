@@ -25,7 +25,6 @@ export const FormFooter = (): JSX.Element => {
 
   return (
     <Flex justify="center" w="100%">
-      {showSpacer ? <Spacer minW="20%" /> : null}
       <Box w="100%" minW={0} h="fit-content" maxW="57rem">
         <Stack
           direction="column"
