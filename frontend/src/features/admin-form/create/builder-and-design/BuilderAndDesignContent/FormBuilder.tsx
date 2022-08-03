@@ -26,7 +26,7 @@ interface FormBuilderProps extends FlexProps {
 }
 
 const BuilderFieldsSkeleton = (): JSX.Element => (
-  <Stack spacing="1rem">
+  <Stack spacing="1rem" m={{ base: '0.75rem', md: 0 }}>
     <Skeleton h="2rem" mb="2rem" />
     <Skeleton h="4rem" />
     <Skeleton h="4rem" />
