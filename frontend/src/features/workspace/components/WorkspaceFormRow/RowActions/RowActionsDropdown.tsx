@@ -27,6 +27,7 @@ export const RowActionsDropdown = ({
     handleDuplicateForm,
     handleManageFormAccess,
     handleShareForm,
+    isFormAdmin,
   } = useRowActionDropdown(formMeta)
 
   return (
@@ -80,14 +81,18 @@ export const RowActionsDropdown = ({
             >
               Manage form access
             </Menu.Item>
-            <MenuDivider />
-            <Menu.Item
-              onClick={handleDeleteForm}
-              color="danger.500"
-              icon={<BiTrash fontSize="1.25rem" />}
-            >
-              Delete
-            </Menu.Item>
+            {isFormAdmin && (
+              <>
+                <MenuDivider />
+                <Menu.Item
+                  onClick={handleDeleteForm}
+                  color="danger.500"
+                  icon={<BiTrash fontSize="1.25rem" />}
+                >
+                  Delete
+                </Menu.Item>
+              </>
+            )}
           </Menu.List>
         </>
       )}
