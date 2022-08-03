@@ -93,16 +93,14 @@ export const FormBuilder = ({
             </Droppable>
           )}
         </Flex>
-        {isLoading ? (
-          <Skeleton mt="1.5rem" h="4rem" />
-        ) : (
+        <Skeleton mt="1.5rem" isLoaded={!isLoading}>
           <Button
             _hover={{ bg: 'primary.200' }}
             py="1.5rem"
-            mt="1.5rem"
             variant="outline"
             borderColor="secondary.200"
             colorScheme="secondary"
+            width="100%"
             height="auto"
             onClick={() => {
               setEditEndPage()
@@ -111,7 +109,7 @@ export const FormBuilder = ({
           >
             <Text textStyle="subhead-2">Customise Thank you page</Text>
           </Button>
-        )}
+        </Skeleton>
       </Flex>
     </Flex>
   )
