@@ -1,5 +1,6 @@
+import { useMemo } from 'react'
 import { Droppable } from 'react-beautiful-dnd'
-import { Box, Flex, FlexProps, Skeleton, Text } from '@chakra-ui/react'
+import { Box, Flex, FlexProps, Skeleton, Stack, Text } from '@chakra-ui/react'
 
 import Button from '~components/Button'
 
@@ -24,6 +25,15 @@ interface FormBuilderProps extends FlexProps {
   placeholderProps: DndPlaceholderProps
 }
 
+const BuilderFieldsSkeleton = (): JSX.Element => (
+  <Stack spacing="1rem">
+    <Skeleton h="2rem" mb="2rem" />
+    <Skeleton h="4rem" />
+    <Skeleton h="4rem" />
+    <Skeleton h="4rem" />
+  </Stack>
+)
+
 export const FormBuilder = ({
   placeholderProps,
   ...props
@@ -32,6 +42,7 @@ export const FormBuilder = ({
   const { handleBuilderClick } = useCreatePageSidebar()
   const setEditEndPage = useBuilderAndDesignStore(setToEditEndPageSelector)
 
+  const isLoading = useMemo(() => builderFields === null, [builderFields])
   const bg = useBgColor(useDesignColorTheme())
 
   return (
@@ -49,7 +60,7 @@ export const FormBuilder = ({
         <StartPageView />
         <Flex bg="white" p={{ base: 0, md: '2.5rem' }} flexDir="column">
           {builderFields === null ? (
-            <Skeleton h="13.75rem" m={{ base: '1.5rem', md: 0 }}></Skeleton>
+            <BuilderFieldsSkeleton />
           ) : (
             <Droppable droppableId={FIELD_LIST_DROP_ID}>
               {(provided, snapshot) =>
@@ -82,22 +93,25 @@ export const FormBuilder = ({
             </Droppable>
           )}
         </Flex>
-        <Button
-          isDisabled={builderFields === null}
-          _hover={{ bg: 'primary.200' }}
-          py="1.5rem"
-          mt="1.5rem"
-          variant="outline"
-          borderColor="secondary.200"
-          colorScheme="secondary"
-          height="auto"
-          onClick={() => {
-            setEditEndPage()
-            handleBuilderClick()
-          }}
-        >
-          <Text textStyle="subhead-2">Customise Thank you page</Text>
-        </Button>
+        {isLoading ? (
+          <Skeleton mt="1.5rem" h="4rem" />
+        ) : (
+          <Button
+            _hover={{ bg: 'primary.200' }}
+            py="1.5rem"
+            mt="1.5rem"
+            variant="outline"
+            borderColor="secondary.200"
+            colorScheme="secondary"
+            height="auto"
+            onClick={() => {
+              setEditEndPage()
+              handleBuilderClick()
+            }}
+          >
+            <Text textStyle="subhead-2">Customise Thank you page</Text>
+          </Button>
+        )}
       </Flex>
     </Flex>
   )
