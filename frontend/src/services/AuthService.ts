@@ -1,5 +1,7 @@
 import { UserDto } from '~shared/types/user'
 
+import { LOCAL_STORAGE_EVENT, LOGGED_IN_KEY } from '~constants/localStorage'
+
 import { ApiService } from './ApiService'
 
 const AUTH_ENDPOINT = '/auth'
@@ -32,5 +34,9 @@ export const verifyLoginOtp = async (params: {
 }
 
 export const logout = async (): Promise<void> => {
+  // Remove logged in state from localStorage
+  localStorage.removeItem(LOGGED_IN_KEY)
+  // Event to let useLocalStorage know that key is being deleted.
+  window.dispatchEvent(new Event(LOCAL_STORAGE_EVENT))
   return ApiService.get(`${AUTH_ENDPOINT}/logout`)
 }

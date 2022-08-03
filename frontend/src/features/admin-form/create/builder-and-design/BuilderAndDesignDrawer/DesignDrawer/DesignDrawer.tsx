@@ -75,7 +75,7 @@ export const DesignDrawer = ({
 
   const {
     register,
-    formState: { errors, isDirty },
+    formState: { errors },
     control,
     handleSubmit,
     clearErrors,
@@ -302,7 +302,6 @@ export const DesignDrawer = ({
 
         <FormFieldDrawerActions
           isLoading={startPageMutation.isLoading}
-          isSaveEnabled={isDirty}
           handleClick={handleClick}
           handleCancel={handleClose}
           buttonText="Save design"

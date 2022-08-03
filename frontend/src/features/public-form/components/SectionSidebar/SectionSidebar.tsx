@@ -7,8 +7,10 @@ import {
   DrawerContent,
   DrawerOverlay,
   Flex,
+  ListItem,
   Text,
-  VStack,
+  UnorderedList,
+  VisuallyHidden,
 } from '@chakra-ui/react'
 
 import { useIsMobile } from '~hooks/useIsMobile'
@@ -20,10 +22,11 @@ import { useFormSections } from '../FormFields/FormSectionsContext'
 import { SidebarLink } from './SidebarLink'
 
 export const SectionSidebar = (): JSX.Element => {
-  const { activeSectionId } = useFormSections()
+  const { activeSectionId, navigatedSectionTitle } = useFormSections()
   const {
     miniHeaderRef,
     sectionScrollData,
+    submissionData,
     isMobileDrawerOpen,
     onMobileDrawerClose,
   } = usePublicFormContext()
@@ -39,7 +42,7 @@ export const SectionSidebar = (): JSX.Element => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [miniHeaderRef?.current?.clientHeight])
 
-  if (isMobile && isMobileDrawerOpen && activeSectionId)
+  if (isMobile)
     return (
       <Drawer
         isOpen={isMobileDrawerOpen}
@@ -49,47 +52,66 @@ export const SectionSidebar = (): JSX.Element => {
         <DrawerOverlay />
         <DrawerContent maxW="16.5rem">
           <DrawerBody px={0} py="1.25rem">
-            <Flex flexDir="column">
+            <Flex as="nav" aria-label="Form sections" flexDir="column">
               <Text px="1.5rem" textStyle="subhead-1">
                 Skip to section
               </Text>
               <Divider mt="0.75rem" mb="1.75rem" />
-              <VStack px="3rem" spacing="1.25rem" alignItems="flex-start">
+              <UnorderedList
+                px="3rem"
+                spacing="1.25rem"
+                alignItems="flex-start"
+                marginInlineStart={0}
+              >
                 {sectionScrollData?.map((d) => (
-                  <Flex key={d._id} align="left">
+                  <ListItem key={d._id} listStyleType="none">
                     <SidebarLink
                       isActive={activeSectionId === d._id}
                       sectionMeta={d}
                     />
-                  </Flex>
+                  </ListItem>
                 ))}
-              </VStack>
+              </UnorderedList>
             </Flex>
           </DrawerBody>
         </DrawerContent>
       </Drawer>
     )
 
-  return (
+  return submissionData ? (
     <Box
       flex={1}
       d={{ base: 'none', md: 'initial' }}
       minW={sectionScrollData.length > 0 ? '20%' : undefined}
+    ></Box>
+  ) : (
+    <Box
+      as="nav"
+      aria-label="Form sections"
+      flex={1}
+      d={{ base: 'none', md: 'initial' }}
+      minW={sectionScrollData.length > 0 ? '20%' : undefined}
     >
-      <VStack
+      <UnorderedList
         pos="sticky"
         top={sectionTopOffset}
         spacing="1.25rem"
         alignSelf="flex-start"
-        align="flex-start"
+        alignItems="flex-start"
+        marginInlineStart={0}
         marginEnd="1rem"
       >
         {sectionScrollData?.map((d) => (
-          <Flex key={d._id} align="center">
+          <ListItem key={d._id} listStyleType="none">
             <SidebarLink isActive={activeSectionId === d._id} sectionMeta={d} />
-          </Flex>
+          </ListItem>
         ))}
-      </VStack>
+      </UnorderedList>
+      {navigatedSectionTitle && (
+        <VisuallyHidden aria-live="assertive" aria-atomic>
+          Navigated to {navigatedSectionTitle} section
+        </VisuallyHidden>
+      )}
     </Box>
   )
 }

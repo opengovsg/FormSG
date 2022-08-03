@@ -42,7 +42,6 @@ export const EditRating = ({ field }: EditRatingProps): JSX.Element => {
     register,
     control,
     formState: { errors },
-    isSaveEnabled,
     buttonText,
     handleUpdateField,
     isLoading,
@@ -107,7 +106,6 @@ export const EditRating = ({ field }: EditRatingProps): JSX.Element => {
       </FormControl>
       <FormFieldDrawerActions
         isLoading={isLoading}
-        isSaveEnabled={isSaveEnabled}
         buttonText={buttonText}
         handleClick={handleUpdateField}
         handleCancel={handleCancel}
