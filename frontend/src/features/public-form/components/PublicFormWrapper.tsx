@@ -10,7 +10,7 @@ import { PublicSwitchEnvMessage } from './PublicSwitchEnvMessage'
 import SectionSidebar from './SectionSidebar'
 
 export interface BgColorProps {
-  colorTheme?: FormColorTheme
+  colorTheme?: FormColorTheme | undefined
   isFooter?: boolean
 }
 
