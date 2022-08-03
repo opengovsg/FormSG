@@ -79,7 +79,7 @@ export const DeleteFormModal = ({
             mt="1rem"
           >
             {formsToDelete.map((form) => (
-              <ListItem display="flex" alignItems="flex-start">
+              <ListItem key={form._id} display="flex" alignItems="flex-start">
                 <Icon
                   as={BiFileBlank}
                   fontSize="1.25rem"
