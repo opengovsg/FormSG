@@ -16,7 +16,6 @@ import {
   useBreakpointValue,
   UseDisclosureReturn,
 } from '@chakra-ui/react'
-import simplur from 'simplur'
 
 import { AdminDashboardFormMetaDto } from '~shared/types'
 
