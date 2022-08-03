@@ -12,6 +12,7 @@ import {
 import {
   createFormBuilderMocks,
   MOCK_FORM_FIELDS_WITH_MYINFO,
+  MOCK_FORM_LOGICS,
 } from '~/mocks/msw/handlers/admin-form'
 import { getFreeSmsQuota } from '~/mocks/msw/handlers/admin-form/twilio'
 import { getUser, MOCK_USER } from '~/mocks/msw/handlers/user'
@@ -80,6 +81,17 @@ DesktopAllFields.parameters = {
     responseMode: FormResponseMode.Email,
   }),
 }
+
+export const DesktopAllFieldsFieldsHiddenByLogic = Template.bind({})
+DesktopAllFieldsFieldsHiddenByLogic.parameters = {
+  msw: buildMswRoutes({
+    form_fields: MOCK_FORM_FIELDS_WITH_MYINFO,
+    form_logics: MOCK_FORM_LOGICS,
+    authType: FormAuthType.MyInfo,
+    responseMode: FormResponseMode.Email,
+  }),
+}
+
 export const DesktopLoading = Template.bind({})
 DesktopLoading.parameters = {
   msw: buildMswRoutes({}, 'infinite'),
