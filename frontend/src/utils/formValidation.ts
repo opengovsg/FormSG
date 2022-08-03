@@ -3,7 +3,7 @@ import validator from 'validator'
 
 const MAX_EMAIL_LENGTH = 30
 
-const MAX_TITLE_LENGTH = 200
+const MAX_TITLE_LENGTH = 24
 const MIN_TITLE_LENGTH = 4
 
 export const FORM_TITLE_VALIDATION_RULES: UseControllerProps['rules'] = {
