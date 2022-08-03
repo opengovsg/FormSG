@@ -20,7 +20,7 @@ export const useRowActionDropdown = (
 ): UseRowActionDropdownReturn => {
   const navigate = useNavigate()
 
-  const { onOpenDupeFormModal, onOpenShareFormModal } =
+  const { onOpenDupeFormModal, onOpenShareFormModal, onOpenDeleteFormModal } =
     useWorkspaceRowsContext()
 
   return {
@@ -33,7 +33,6 @@ export const useRowActionDropdown = (
     handleDuplicateForm: () => onOpenDupeFormModal(formMeta),
     handleManageFormAccess: () =>
       console.log(`manage form access button clicked for ${formMeta._id}`),
-    handleDeleteForm: () =>
-      console.log(`delete form  button clicked for ${formMeta._id}`),
+    handleDeleteForm: () => onOpenDeleteFormModal(formMeta),
   }
 }
