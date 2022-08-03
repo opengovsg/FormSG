@@ -3,15 +3,15 @@ import SecondAnnouncement from './assets/2-listview.json'
 
 export const NEW_FEATURES = [
   {
-    title: 'Drag and drop fields to build your form',
+    title: 'Drag-and-drop form creation',
     description:
-      'Add and arrange fields with ease. Additionally, you can now preview your form while editing it.',
+      'Add and rearrange fields with ease, and see a preview of your form while editing it.',
     animationData: FirstAnnouncement,
   },
   {
-    title: 'Forms now appear in list view',
+    title: 'List view for homepages',
     description:
-      'Get an overview of your forms in a structured and organised way.',
+      'See the important details of all your forms at a glance, in this improved homepage layout.',
     animationData: SecondAnnouncement,
   },
 ]
