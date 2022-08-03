@@ -341,9 +341,6 @@ export const EditConditionBlock = ({
                     />
                   )}
                 />
-                <FormErrorMessage>
-                  {get(errors, `${name}.state.message`)}
-                </FormErrorMessage>
               </FormControl>
               <FormControl
                 id={`${name}.value`}
@@ -367,11 +364,18 @@ export const EditConditionBlock = ({
                   }}
                   render={({ field }) => renderValueInputComponent(field)}
                 />
-                <FormErrorMessage>
-                  {get(errors, `${name}.value.message`)}
-                </FormErrorMessage>
               </FormControl>
             </Stack>
+            <FormControl
+              isInvalid={
+                !!(get(errors, `${name}.state`) ?? get(errors, `${name}.value`))
+              }
+            >
+              <FormErrorMessage>
+                {get(errors, `${name}.state.message`) ??
+                  get(errors, `${name}.value.message`)}
+              </FormErrorMessage>
+            </FormControl>
           </Flex>
           {handleRemoveCondition ? <Box aria-hidden w="2.75rem" /> : null}
         </Stack>
