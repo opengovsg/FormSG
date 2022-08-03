@@ -68,12 +68,14 @@ import { SectionFieldRow } from './SectionFieldRow'
 export interface FieldRowContainerProps {
   field: FormFieldDto
   index: number
+  isVisible: boolean
   isDraggingOver: boolean
 }
 
 export const FieldRowContainer = ({
   field,
   index,
+  isVisible,
   isDraggingOver,
 }: FieldRowContainerProps): JSX.Element => {
   const isMobile = useIsMobile()
@@ -271,6 +273,7 @@ export const FieldRowContainer = ({
               pb={{ base: '0.75rem', md: '1.5rem' }}
               w="100%"
               pointerEvents={isActive ? undefined : 'none'}
+              opacity={isActive || isVisible ? '100%' : '30%'}
             >
               <FormProvider {...formMethods}>
                 <MemoFieldRow field={field} colorTheme={colorTheme} />
