@@ -19,6 +19,7 @@ const MOCK_WORKSPACE_DOC = {
   formIds: [],
 }
 
+//
 describe('Workspace Model', () => {
   let FORM_ADMIN_USER: IUserSchema
 
@@ -170,6 +171,32 @@ describe('Workspace Model', () => {
         expect(actual.title).toEqual(mockWorkspaceTitle)
         expect(actual.formIds.length).toEqual(0)
         expect(actual.admin).toEqual(mockUserId)
+      })
+    })
+
+    describe('updateWorkspaceTitle', () => {
+      it('should return updated workspace upon successful workspace title update', async () => {
+        const newWorkspaceTitle = 'Workspace'
+
+        const actual = await Workspace.updateWorkspaceTitle({
+          title: newWorkspaceTitle,
+          workspaceId: MOCK_WORKSPACE_ID,
+        })
+
+        expect(actual).toBeObject()
+        expect(actual?.title).toEqual(newWorkspaceTitle)
+      })
+
+      it('should return null upon unsuccessful update due to invalid workspace id', async () => {
+        const newWorkspaceTitle = 'Workspace'
+        const invalidWorkspaceId = new ObjectId()
+
+        const actual = await Workspace.updateWorkspaceTitle({
+          title: newWorkspaceTitle,
+          workspaceId: invalidWorkspaceId,
+        })
+
+        expect(actual).toBeNull()
       })
     })
   })

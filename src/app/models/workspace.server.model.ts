@@ -40,6 +40,12 @@ const compileWorkspaceModel = (db: Mongoose): IWorkspaceModel => {
     admin: 1,
   })
 
+  WorkspaceSchema.statics.getWorkspace = async function (
+    workspaceId: IWorkspaceSchema['_id'],
+  ) {
+    return this.findById(workspaceId).exec()
+  }
+
   WorkspaceSchema.statics.getWorkspaces = async function (
     admin: IUserSchema['_id'],
   ) {
@@ -51,6 +57,16 @@ const compileWorkspaceModel = (db: Mongoose): IWorkspaceModel => {
     admin: IUserSchema['_id'],
   ) {
     return this.create({ title, admin, formIds: [] })
+  }
+
+  WorkspaceSchema.statics.updateWorkspaceTitle = async function ({
+    title,
+    workspaceId,
+  }: {
+    title: string
+    workspaceId: IWorkspaceSchema['_id']
+  }) {
+    return this.findOneAndUpdate({ _id: workspaceId }, { title }, { new: true })
   }
 
   return db.model<IWorkspaceSchema, IWorkspaceModel>(

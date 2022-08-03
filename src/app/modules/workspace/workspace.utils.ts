@@ -10,6 +10,11 @@ import {
 } from '../core/core.errors'
 import { ErrorResponseData } from '../core/core.types'
 
+import {
+  ForbiddenWorkspaceError,
+  WorkspaceNotFoundError,
+} from './workspace.errors'
+
 const logger = createLoggerWithLabel(module)
 
 export const mapRouteError = (
@@ -22,22 +27,32 @@ export const mapRouteError = (
     case DatabaseError:
       return {
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
-        errorMessage: errorMessage,
+        errorMessage,
       }
     case DatabaseValidationError:
       return {
         statusCode: StatusCodes.UNPROCESSABLE_ENTITY,
-        errorMessage: errorMessage,
+        errorMessage,
       }
     case DatabaseConflictError:
       return {
         statusCode: StatusCodes.CONFLICT,
-        errorMessage: errorMessage,
+        errorMessage,
       }
     case DatabasePayloadSizeError:
       return {
         statusCode: StatusCodes.REQUEST_TOO_LONG,
-        errorMessage: errorMessage,
+        errorMessage,
+      }
+    case WorkspaceNotFoundError:
+      return {
+        statusCode: StatusCodes.NOT_FOUND,
+        errorMessage,
+      }
+    case ForbiddenWorkspaceError:
+      return {
+        statusCode: StatusCodes.FORBIDDEN,
+        errorMessage,
       }
     default:
       logger.error({

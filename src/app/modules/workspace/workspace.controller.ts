@@ -13,14 +13,10 @@ import { mapRouteError } from './workspace.utils'
 const logger = createLoggerWithLabel(module)
 
 // Validators
-const createWorkspaceValidator = celebrate({
+const workspaceTitleValidator = celebrate({
   [Segments.BODY]: {
     title: Joi.string().min(4).max(50).required(),
   },
-})
-
-const updateWorkspaceTitleValidator = celebrate({
-  [Segments.BODY]: {},
 })
 
 /**
@@ -90,7 +86,7 @@ export const handleCreateWorkspace: ControllerHandler<
 }
 
 export const createWorkspace = [
-  createWorkspaceValidator,
+  workspaceTitleValidator,
   handleCreateWorkspace,
 ] as ControllerHandler[]
 
@@ -99,25 +95,53 @@ export const createWorkspace = [
  * @security session
  *
  * @returns 200 with updated workspace
+ * @returns 403 when user does not have permissions to update the workspace
  * @returns 404 when workspace cannot be found
- * @returns 422 when user of given id cannnot be found in the database
+ * @returns 409 when a database conflict error occurs
  * @returns 500 when database error occurs
  */
-const handleUpdateWorkspaceTitle: ControllerHandler<
-  unknown,
-  any | ErrorDto,
+export const handleUpdateWorkspaceTitle: ControllerHandler<
+  { workspaceId: string },
+  WorkspaceDto | ErrorDto,
   { title: string }
 > = async (req, res) => {
+  const { workspaceId } = req.params
   const { title } = req.body
-  return WorkspaceService.updateWorkspaceTitle('', title)
-    .map((workspace) => res.status(StatusCodes.OK).json(workspace))
-    .mapErr((err) =>
-      res.status(StatusCodes.BAD_REQUEST).json({ message: err.message }),
+  const userId = (req.session as AuthedSessionData).user._id
+
+  return WorkspaceService.getWorkspace(workspaceId)
+    .andThen((workspace) =>
+      WorkspaceService.verifyWorkspaceAdmin(workspace, userId),
     )
+    .andThen(() =>
+      WorkspaceService.updateWorkspaceTitle({ workspaceId, title }).map(
+        (workspace) =>
+          workspace
+            ? res.status(StatusCodes.OK).json(workspace)
+            : res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+                message:
+                  'Sorry something went wrong, we are unable to update the workspace title',
+              }),
+      ),
+    )
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error updating workspace title',
+        meta: {
+          action: 'handleUpdateWorkspaceTitle',
+          title,
+          workspaceId,
+        },
+        error,
+      })
+
+      const { statusCode, errorMessage } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
 }
 
 export const updateWorkspaceTitle = [
-  updateWorkspaceTitleValidator,
+  workspaceTitleValidator,
   handleUpdateWorkspaceTitle,
 ] as ControllerHandler[]
 
