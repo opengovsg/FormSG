@@ -77,7 +77,6 @@ export const CompactFooter = ({
 }
 
 CompactFooter.Container = ({
-  bgColorScheme = 'primary.100',
   children,
   ...props
 }: FooterContainerProps): JSX.Element => {
@@ -88,7 +87,6 @@ CompactFooter.Container = ({
       justify="space-between"
       flexDir="row"
       as="footer"
-      bg={bgColorScheme}
       {...props}
     >
       {children}

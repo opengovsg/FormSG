@@ -117,7 +117,6 @@ export const FullFooter = ({
 }
 
 FullFooter.Container = ({
-  bgColorScheme = 'primary.100',
   children,
   ...props
 }: FooterContainerProps): JSX.Element => {
@@ -125,7 +124,6 @@ FullFooter.Container = ({
     <Flex
       as="footer"
       flexDirection="column"
-      bg={bgColorScheme}
       py="3rem"
       px={{ base: '1.5rem', md: '5.5rem', lg: '9.25rem' }}
       {...props}

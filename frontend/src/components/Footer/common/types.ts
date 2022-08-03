@@ -14,7 +14,6 @@ export type FooterLinkWithIcon = FooterLink & {
 }
 
 export interface FooterContainerProps extends FlexProps {
-  bgColorScheme?: string
   children: React.ReactNode
 }
 

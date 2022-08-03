@@ -9,10 +9,15 @@ import { usePublicFormContext } from '../PublicFormContext'
 import { PublicSwitchEnvMessage } from './PublicSwitchEnvMessage'
 import SectionSidebar from './SectionSidebar'
 
-export const useBgColor = (colorTheme?: FormColorTheme) =>
+export const useBgColor = (colorTheme?: FormColorTheme, isFooter?: boolean) =>
   useMemo(
-    () => (colorTheme ? `theme-${colorTheme}.100` : 'neutral.100'),
-    [colorTheme],
+    () =>
+      colorTheme
+        ? `theme-${colorTheme}.100`
+        : isFooter
+        ? 'primary.100'
+        : 'neutral.100',
+    [colorTheme, isFooter],
   )
 
 export interface PublicFormWrapperProps {

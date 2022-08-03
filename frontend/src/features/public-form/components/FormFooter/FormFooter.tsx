@@ -16,7 +16,7 @@ export const FormFooter = (): JSX.Element => {
   const { captchaContainerId, sectionScrollData } = usePublicFormContext()
 
   const isDesktop = useBreakpointValue({ base: false, xs: false, lg: true })
-  const bgColor = useBgColor(useDesignColorTheme())
+  const bgColor = useBgColor(useDesignColorTheme(), true)
 
   const showSpacer = useMemo(
     () => isDesktop && !isEmpty(sectionScrollData),
@@ -38,7 +38,7 @@ export const FormFooter = (): JSX.Element => {
             <AppFooter
               variant="compact"
               containerProps={{
-                bgColorScheme: bgColor,
+                bg: bgColor,
               }}
             />
           </Box>
