@@ -9,7 +9,12 @@ import { usePublicFormContext } from '../PublicFormContext'
 import { PublicSwitchEnvMessage } from './PublicSwitchEnvMessage'
 import SectionSidebar from './SectionSidebar'
 
-export const useBgColor = (colorTheme?: FormColorTheme, isFooter?: boolean) =>
+export interface BgColorProps {
+  colorTheme?: FormColorTheme
+  isFooter?: boolean
+}
+
+export const useBgColor = ({ colorTheme, isFooter }: BgColorProps) =>
   useMemo(
     () =>
       colorTheme
@@ -35,9 +40,9 @@ export const PublicFormWrapper = ({
 }: PublicFormWrapperProps): JSX.Element => {
   const { form, isLoading, isAuthRequired } = usePublicFormContext()
 
-  const bgColour = useBgColor(
-    isLoading ? undefined : form?.startPage.colorTheme,
-  )
+  const bgColour = useBgColor({
+    colorTheme: isLoading ? undefined : form?.startPage.colorTheme,
+  })
 
   return (
     <Flex bg={bgColour} p={{ base: 0, md: '1.5rem' }} flex={1} justify="center">

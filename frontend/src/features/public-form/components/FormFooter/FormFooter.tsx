@@ -4,7 +4,6 @@ import { isEmpty } from 'lodash'
 
 import { AppFooter } from '~/app/AppFooter'
 
-import { useDesignColorTheme } from '~features/admin-form/create/builder-and-design/utils/useDesignColorTheme'
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
 import { useBgColor } from '../PublicFormWrapper'
@@ -13,10 +12,13 @@ import { useBgColor } from '../PublicFormWrapper'
  * @precondition Must be nested inside `PublicFormProvider`
  */
 export const FormFooter = (): JSX.Element => {
-  const { captchaContainerId, sectionScrollData } = usePublicFormContext()
+  const { captchaContainerId, sectionScrollData, form } = usePublicFormContext()
 
   const isDesktop = useBreakpointValue({ base: false, xs: false, lg: true })
-  const bgColor = useBgColor(useDesignColorTheme(), true)
+  const bgColor = useBgColor({
+    colorTheme: form?.startPage.colorTheme,
+    isFooter: true,
+  })
 
   const showSpacer = useMemo(
     () => isDesktop && !isEmpty(sectionScrollData),
