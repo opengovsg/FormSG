@@ -82,16 +82,6 @@ DesktopAllFields.parameters = {
   }),
 }
 
-export const DesktopAllFieldsFieldsHiddenByLogic = Template.bind({})
-DesktopAllFieldsFieldsHiddenByLogic.parameters = {
-  msw: buildMswRoutes({
-    form_fields: MOCK_FORM_FIELDS_WITH_MYINFO,
-    form_logics: MOCK_FORM_LOGICS,
-    authType: FormAuthType.MyInfo,
-    responseMode: FormResponseMode.Email,
-  }),
-}
-
 export const DesktopLoading = Template.bind({})
 DesktopLoading.parameters = {
   msw: buildMswRoutes({}, 'infinite'),
@@ -121,4 +111,14 @@ export const MobileLoading = Template.bind({})
 MobileLoading.parameters = {
   ...getMobileViewParameters(),
   msw: buildMswRoutes({}, 'infinite'),
+}
+
+export const AllFieldsFieldsHiddenByLogic = Template.bind({})
+AllFieldsFieldsHiddenByLogic.parameters = {
+  msw: buildMswRoutes({
+    form_fields: MOCK_FORM_FIELDS_WITH_MYINFO,
+    form_logics: MOCK_FORM_LOGICS,
+    authType: FormAuthType.MyInfo,
+    responseMode: FormResponseMode.Email,
+  }),
 }
