@@ -1,3 +1,4 @@
+import axios from 'axios'
 import { createPrivateKey, createPublicKey, KeyObject } from 'crypto'
 import {
   compactDecrypt,
@@ -8,8 +9,9 @@ import {
   SignJWT,
 } from 'jose'
 import jwkToPem from 'jwk-to-pem'
-import { BaseClient } from 'openid-client'
+import { BaseClient, TokenSet } from 'openid-client'
 import { ulid } from 'ulid'
+import { URLSearchParams } from 'url'
 
 import { FormAuthType } from '../../../../shared/types'
 
@@ -19,6 +21,7 @@ import {
   CreateJwtError,
   ExchangeAuthTokenError,
   GetDecryptionKeyError,
+  GetSigningKeyError,
   GetVerificationKeyError,
   InvalidIdTokenError,
   JwkError,
@@ -50,6 +53,7 @@ export class SpcpOidcBaseClient {
   #rpSecretKeys: CryptoKeys
   #rpPublicKeys: CryptoKeys
   #rpRedirectUrl: string
+  #rpClientId: string
   #authType: FormAuthType.SP | FormAuthType.CP
 
   /**
@@ -86,6 +90,7 @@ export class SpcpOidcBaseClient {
 
     this.#rpRedirectUrl = rpRedirectUrl
     this.#authType = authType
+    this.#rpClientId = rpClientId
 
     this.#rpSecretKeys = rpSecretJwks.keys.map((jwk) => {
       if (!jwk.alg) {
@@ -272,18 +277,62 @@ export class SpcpOidcBaseClient {
 
     const baseClient = await this.getBaseClientFromCache()
 
+    const signingKeyResult = this.getSigningKey()
+
+    if (signingKeyResult instanceof GetSigningKeyError) {
+      throw new ExchangeAuthTokenError(
+        'Failed to exchange Auth Code, no signing key found',
+      )
+    }
+
+    const tokenEndpoint = baseClient.issuer.metadata.token_endpoint
+
+    if (!tokenEndpoint) {
+      throw new ExchangeAuthTokenError(
+        'Failed to exchange Auth Code, no token endpoint in issuer metadata',
+      )
+    }
+
     try {
       // Exchange Auth Code for tokenSet
-      const tokenSet = await baseClient.grant({
+
+      // Create client assertion
+      // We use axios because openid-client library does not include typ attribute in header
+      // which is required by NDI
+      const clientAssertion = await new SignJWT({})
+        .setIssuedAt()
+        .setIssuer(this.#rpClientId)
+        .setAudience(baseClient.issuer.metadata.issuer)
+        .setSubject(this.#rpClientId)
+        .setProtectedHeader({
+          typ: 'JWT',
+          alg: signingKeyResult.alg,
+          kid: signingKeyResult.kid,
+        })
+        .setExpirationTime('60s')
+        .sign(signingKeyResult.key)
+
+      // Construct request body. It is necessary to stringify the body because
+      // SP/CP OIDC requires content type to be application/x-www-form-urlencoded
+      const body = new URLSearchParams({
         grant_type: 'authorization_code',
         redirect_uri: this.#rpRedirectUrl,
         code: authCode,
         client_assertion_type:
           'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
+        client_assertion: clientAssertion,
+        ...(this.#authType === FormAuthType.SP
+          ? { client_id: this.#rpClientId } // client_id required only for Singpass
+          : {}),
+      }).toString()
+
+      const tokenSet = await axios.post<TokenSet>(tokenEndpoint, body, {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
       })
 
-      // Retrieve idToken from tokenSet
-      const { id_token: idToken } = tokenSet
+      const { id_token: idToken } = tokenSet.data
 
       if (!idToken) {
         throw new MissingIdTokenError()
@@ -369,6 +418,25 @@ export class SpcpOidcBaseClient {
   }
 
   /**
+   * Selects the first of RP's signing keys from #rpSecretKeys
+   * @return One RP's signing key
+   * @returns GetSigningKeyError if no signing keys found in RP's secret keys
+   */
+  getSigningKey(): SigningKey | GetSigningKeyError {
+    const possibleSigningKeys = this.#rpSecretKeys.filter(
+      (key): key is SigningKey => isSigningKey(key),
+    )
+
+    if (possibleSigningKeys.length === 0) {
+      return new GetSigningKeyError('No signing keys found.')
+    }
+
+    const signingKey = possibleSigningKeys[0] // Can use any of the RP's secret keys. For key rotation, we need to expose the RP's old + new public signing keys for 1h (to allow NDI to refresh cache), and then load only the new secret signing key on our servers.
+
+    return signingKey
+  }
+
+  /**
    * Creates a JSON Web Token (JWT) for a web session authenticated by SingPass/Corppass
    * @param  payload - Payload to sign
    * @param  expiresIn - The lifetime of the jwt token
@@ -379,20 +447,19 @@ export class SpcpOidcBaseClient {
     payload: Record<string, unknown>,
     expiresIn: string | number,
   ): Promise<string> {
-    const possibleSigningKeys = this.#rpSecretKeys.filter(
-      (key): key is SigningKey => isSigningKey(key),
-    )
+    const signingKeyResult = this.getSigningKey()
 
-    if (possibleSigningKeys.length === 0) {
-      throw new CreateJwtError('Create JWT failed. No signing keys found.')
+    if (signingKeyResult instanceof GetSigningKeyError) {
+      throw new CreateJwtError('Failed to create JWT, no signing key found')
     }
 
-    const signingKey = possibleSigningKeys[0] // Can use any of the RP's secret keys. For key rotation, we need to expose the RP's old + new public signing keys for 1h (to allow NDI to refresh cache), and then load only the new secret signing key on our servers.
-
     const jwt = await new SignJWT(payload)
-      .setProtectedHeader({ alg: signingKey.alg, kid: signingKey.kid })
+      .setProtectedHeader({
+        alg: signingKeyResult.alg,
+        kid: signingKeyResult.kid,
+      })
       .setExpirationTime(expiresIn)
-      .sign(signingKey.key)
+      .sign(signingKeyResult.key)
 
     return jwt
   }
