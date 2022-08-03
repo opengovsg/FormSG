@@ -1,4 +1,4 @@
-import { useCallback, useRef } from 'react'
+import { useCallback, useMemo, useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import { BiRightArrowAlt, BiUpload } from 'react-icons/bi'
 import {
@@ -49,6 +49,7 @@ const useSecretKeyActivationModal = ({
     formState: { errors },
     setError,
     register,
+    watch,
     setValue,
     reset,
     handleSubmit,
@@ -117,11 +118,23 @@ const useSecretKeyActivationModal = ({
     return onClose()
   }, [onClose, reset])
 
+  const watchedSecretKey = watch(SECRET_KEY_NAME)
+  const watchedAck = watch('ack')
+
+  const ackHidden = useMemo(() => !watchedSecretKey, [watchedSecretKey])
+
+  const activateHidden = useMemo(
+    () => ackHidden || !watchedAck,
+    [ackHidden, watchedAck],
+  )
+
   return {
     fileUploadRef,
     handleFileSelect,
     handleVerifyKeypair,
     register,
+    ackHidden,
+    activateHidden,
     errors,
     isLoading: mutateFormStatus.isLoading,
     handleOnClose,
@@ -138,6 +151,8 @@ export const SecretKeyActivationModal = ({
     handleFileSelect,
     handleVerifyKeypair,
     register,
+    ackHidden,
+    activateHidden,
     errors,
     isLoading,
     handleOnClose,
@@ -197,7 +212,7 @@ export const SecretKeyActivationModal = ({
                 </Stack>
                 <FormErrorMessage>{errors.secretKey?.message}</FormErrorMessage>
               </FormControl>
-              <FormControl mb="1.25rem">
+              <FormControl hidden={ackHidden} mb="1.25rem">
                 <Checkbox
                   isDisabled={isLoading}
                   isInvalid={!!errors.ack}
@@ -213,6 +228,7 @@ export const SecretKeyActivationModal = ({
                 rightIcon={<BiRightArrowAlt fontSize="1.5rem" />}
                 type="submit"
                 isFullWidth
+                hidden={activateHidden}
                 isLoading={isLoading}
               >
                 Activate form
