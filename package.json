@@ -82,7 +82,7 @@
     "angular-ui-bootstrap": "~2.5.6",
     "angular-ui-router": "~1.0.30",
     "aws-info": "^1.2.0",
-    "aws-sdk": "^2.1184.0",
+    "aws-sdk": "^2.1186.0",
     "axios": "^0.27.2",
     "bcrypt": "^5.0.1",
     "bluebird": "^3.5.2",
@@ -168,7 +168,7 @@
     "zod": "^3.17.10"
   },
   "devDependencies": {
-    "@babel/core": "^7.18.9",
+    "@babel/core": "^7.18.10",
     "@babel/plugin-transform-runtime": "^7.18.9",
     "@babel/preset-env": "^7.18.9",
     "@opengovsg/mockpass": "^2.9.2",
