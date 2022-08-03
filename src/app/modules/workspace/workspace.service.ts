@@ -143,7 +143,7 @@ export const verifyWorkspaceAdmin = (
   workspace: WorkspaceDto,
   userId: string,
 ): ResultAsync<true, ForbiddenWorkspaceError> => {
-  if (workspace.admin != userId) {
+  if (workspace.admin.toString() !== userId) {
     return errAsync(new ForbiddenWorkspaceError())
   }
 

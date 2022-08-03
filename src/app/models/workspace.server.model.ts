@@ -65,7 +65,6 @@ const compileWorkspaceModel = (db: Mongoose): IWorkspaceModel => {
   }: {
     title: string
     workspaceId: IWorkspaceSchema['_id']
-    admin: IUserSchema['_id']
   }) {
     return this.findOneAndUpdate({ _id: workspaceId }, { title }, { new: true })
   }

@@ -27,32 +27,32 @@ export const mapRouteError = (
     case DatabaseError:
       return {
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
-        errorMessage: errorMessage,
+        errorMessage,
       }
     case DatabaseValidationError:
       return {
         statusCode: StatusCodes.UNPROCESSABLE_ENTITY,
-        errorMessage: errorMessage,
+        errorMessage,
       }
     case DatabaseConflictError:
       return {
         statusCode: StatusCodes.CONFLICT,
-        errorMessage: errorMessage,
+        errorMessage,
       }
     case DatabasePayloadSizeError:
       return {
         statusCode: StatusCodes.REQUEST_TOO_LONG,
-        errorMessage: errorMessage,
+        errorMessage,
       }
     case WorkspaceNotFoundError:
       return {
         statusCode: StatusCodes.NOT_FOUND,
-        errorMessage: errorMessage,
+        errorMessage,
       }
     case ForbiddenWorkspaceError:
       return {
         statusCode: StatusCodes.FORBIDDEN,
-        errorMessage: errorMessage,
+        errorMessage,
       }
     default:
       logger.error({
