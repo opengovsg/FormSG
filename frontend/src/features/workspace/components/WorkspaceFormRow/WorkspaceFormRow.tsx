@@ -29,7 +29,7 @@ export const WorkspaceFormRow = ({
     return dayjs(formMeta.lastModified).calendar(null, RELATIVE_DATE_FORMAT)
   }, [formMeta.lastModified])
 
-  const { handleEditForm } = useRowActionDropdown(formMeta._id)
+  const { handleEditForm } = useRowActionDropdown(formMeta)
 
   return (
     <Box pos="relative">

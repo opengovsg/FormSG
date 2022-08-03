@@ -15,16 +15,23 @@ import { useToast } from '~hooks/useToast'
 
 import { adminFormKeys } from '~features/admin-form/common/queries'
 
-import { createEmailModeForm, createStorageModeForm } from './WorkspaceService'
+import { workspaceKeys } from './queries'
+import {
+  createEmailModeForm,
+  createStorageModeForm,
+  dupeEmailModeForm,
+  dupeStorageModeForm,
+} from './WorkspaceService'
 
-export const useCreateFormMutations = () => {
+const useCommonHooks = () => {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const toast = useToast({ status: 'danger', isClosable: true })
 
   const handleSuccess = useCallback(
-    (data: FormDto) => {
-      queryClient.setQueryData(adminFormKeys.id(data._id), data)
+    (data: Pick<FormDto, '_id'>) => {
+      queryClient.invalidateQueries(adminFormKeys.base)
+      queryClient.invalidateQueries(workspaceKeys.all)
       navigate(`${ADMINFORM_ROUTE}/${data._id}`)
     },
     [navigate, queryClient],
@@ -38,6 +45,15 @@ export const useCreateFormMutations = () => {
     },
     [toast],
   )
+
+  return {
+    handleSuccess,
+    handleError,
+  }
+}
+
+export const useCreateFormMutations = () => {
+  const { handleSuccess, handleError } = useCommonHooks()
 
   const createEmailModeFormMutation = useMutation<
     FormDto,
@@ -60,5 +76,40 @@ export const useCreateFormMutations = () => {
   return {
     createEmailModeFormMutation,
     createStorageModeFormMutation,
+  }
+}
+
+export const useDuplicateFormMutations = () => {
+  const { handleSuccess, handleError } = useCommonHooks()
+
+  const dupeEmailModeFormMutation = useMutation<
+    FormDto,
+    ApiError,
+    CreateEmailFormBodyDto & { formIdToDuplicate: string }
+  >(
+    ({ formIdToDuplicate, ...params }) =>
+      dupeEmailModeForm(formIdToDuplicate, params),
+    {
+      onSuccess: handleSuccess,
+      onError: handleError,
+    },
+  )
+
+  const dupeStorageModeFormMutation = useMutation<
+    FormDto,
+    ApiError,
+    CreateStorageFormBodyDto & { formIdToDuplicate: string }
+  >(
+    ({ formIdToDuplicate, ...params }) =>
+      dupeStorageModeForm(formIdToDuplicate, params),
+    {
+      onSuccess: handleSuccess,
+      onError: handleError,
+    },
+  )
+
+  return {
+    dupeEmailModeFormMutation,
+    dupeStorageModeFormMutation,
   }
 }
