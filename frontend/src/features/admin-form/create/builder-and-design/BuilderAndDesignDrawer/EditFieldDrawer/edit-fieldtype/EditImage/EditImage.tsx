@@ -109,6 +109,7 @@ export const EditImage = ({ field }: EditImageProps): JSX.Element => {
       return uploadImageMutation
         .mutateAsync(inputs.attachment.file)
         .then((uploadedFileData) => {
+          console.log(uploadedFileData.fileId)
           return {
             ...output,
             ...uploadedFileData,
