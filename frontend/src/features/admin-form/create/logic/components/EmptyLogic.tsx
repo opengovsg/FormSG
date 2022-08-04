@@ -2,6 +2,7 @@ import { useCallback } from 'react'
 import { BiPlus } from 'react-icons/bi'
 import { Divider, Flex, Grid, Icon, Stack, Text } from '@chakra-ui/react'
 
+import { GUIDE_FORM_LOGIC } from '~constants/links'
 import Button from '~components/Button'
 import Link from '~components/Link'
 
@@ -29,10 +30,7 @@ export const EmptyLogic = (): JSX.Element => {
       <Text textStyle="body-1" mt="1rem">
         Show or hide fields depending on user input, or disable form submission
         for invalid answers.{' '}
-        <Link
-          isExternal
-          href="https://guide.form.gov.sg/AdvancedGuide.html#form-logic"
-        >
+        <Link isExternal href={GUIDE_FORM_LOGIC}>
           Learn to work with logic
         </Link>
       </Text>
