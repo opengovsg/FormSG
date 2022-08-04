@@ -93,8 +93,8 @@ export const serveForm: ControllerHandler<
     showReact = false
     // Delete existing cookies to prevent infinite redirection
     if (req.cookies) {
-      res.cookie(config.reactMigration.respondentCookieName, '', { maxAge: 0 })
-      res.cookie(config.reactMigration.adminCookieName, '', { maxAge: 0 })
+      res.clearCookie(config.reactMigration.respondentCookieName)
+      res.clearCookie(config.reactMigration.adminCookieName)
     }
   } else if (req.cookies) {
     if (config.reactMigration.adminCookieName in req.cookies) {
@@ -169,7 +169,7 @@ export const serveDefault: ControllerHandler = (req, res, next) => {
     showReact = false
     // Delete existing cookie to prevent infinite redirection
     if (req.cookies) {
-      res.cookie(config.reactMigration.adminCookieName, '', { maxAge: 0 })
+      res.clearCookie(config.reactMigration.adminCookieName)
     }
   } else if (req.cookies) {
     if (config.reactMigration.adminCookieName in req.cookies) {
