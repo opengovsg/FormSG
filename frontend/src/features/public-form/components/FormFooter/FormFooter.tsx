@@ -6,13 +6,19 @@ import { AppFooter } from '~/app/AppFooter'
 
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
+import { useBgColor } from '../PublicFormWrapper'
+
 /**
  * @precondition Must be nested inside `PublicFormProvider`
  */
 export const FormFooter = (): JSX.Element => {
-  const { captchaContainerId, sectionScrollData } = usePublicFormContext()
+  const { captchaContainerId, sectionScrollData, form } = usePublicFormContext()
 
   const isDesktop = useBreakpointValue({ base: false, xs: false, lg: true })
+  const bgColor = useBgColor({
+    colorTheme: form?.startPage.colorTheme,
+    isFooter: true,
+  })
 
   const showSpacer = useMemo(
     () => isDesktop && !isEmpty(sectionScrollData),
@@ -21,7 +27,6 @@ export const FormFooter = (): JSX.Element => {
 
   return (
     <Flex justify="center" w="100%">
-      {showSpacer ? <Spacer minW="20%" /> : null}
       <Box w="100%" minW={0} h="fit-content" maxW="57rem">
         <Stack
           direction="column"
@@ -32,7 +37,12 @@ export const FormFooter = (): JSX.Element => {
         >
           <Box id={captchaContainerId} />
           <Box w="100%">
-            <AppFooter variant="compact" />
+            <AppFooter
+              variant="compact"
+              containerProps={{
+                bg: bgColor,
+              }}
+            />
           </Box>
         </Stack>
       </Box>

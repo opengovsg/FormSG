@@ -35,7 +35,7 @@ export const BuilderAndDesignContent = ({
 
   useEffect(() => setFieldsToInactive, [setFieldsToInactive])
 
-  const bg = useBgColor(useDesignColorTheme())
+  const bg = useBgColor({ colorTheme: useDesignColorTheme() })
 
   return (
     <Flex flex={1} bg={bg} overflow="auto">

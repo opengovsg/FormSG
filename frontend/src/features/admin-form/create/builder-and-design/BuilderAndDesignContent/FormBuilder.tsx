@@ -32,7 +32,7 @@ export const FormBuilder = ({
   const { handleBuilderClick } = useCreatePageSidebar()
   const setEditEndPage = useBuilderAndDesignStore(setToEditEndPageSelector)
 
-  const bg = useBgColor(useDesignColorTheme())
+  const bg = useBgColor({ colorTheme: useDesignColorTheme() })
 
   return (
     <Flex
