@@ -3,6 +3,7 @@ import { HStack, Icon, Text, VStack } from '@chakra-ui/react'
 
 import { MyInfoField } from '~shared/types'
 
+import { SINGPASS_FAQ } from '~constants/links'
 import Link from '~components/Link'
 
 import { DrawerContentContainer } from '../common/DrawerContentContainer'
@@ -66,10 +67,7 @@ export const EditMyInfo = ({ field }: EditMyInfoProps): JSX.Element => {
           />
           <Text>
             Foreigners with{' '}
-            <Link
-              isExternal
-              href="https://www.singpass.gov.sg/main/html/faq.html"
-            >
+            <Link isExternal href={SINGPASS_FAQ}>
               Singpass
             </Link>
           </Text>

@@ -1,5 +1,6 @@
 import { Flex, Text } from '@chakra-ui/react'
 
+import { OGP_POSTMAN } from '~constants/links'
 import Link from '~components/Link'
 
 import { EmptyResponsesSvgr } from './EmptyResponsesSvgr'
@@ -12,7 +13,7 @@ export const EmptyResponses = (): JSX.Element => {
       </Text>
       <Text textStyle="body-1" color="secondary.500">
         Try using{' '}
-        <Link isExternal href="https://postman.gov.sg">
+        <Link isExternal href={OGP_POSTMAN}>
           Postman.gov.sg
         </Link>{' '}
         to send out your form links!

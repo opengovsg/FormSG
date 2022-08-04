@@ -15,6 +15,7 @@ import {
 
 import { AdminFormDto, FormAuthType, FormResponseMode } from '~shared/types'
 
+import { GUIDE_EMAIL_MODE } from '~constants/links'
 import InlineMessage from '~components/InlineMessage'
 import Link from '~components/Link'
 import { Tab } from '~components/Tabs'
@@ -237,10 +238,7 @@ const MyInfoText = ({
   return (
     <Text>
       {`Only 30 MyInfo fields are allowed in Email mode (${numMyInfoFields}/30).`}{' '}
-      <Link
-        isExternal
-        href="https://guide.form.gov.sg/AdvancedGuide.html#email-mode"
-      >
+      <Link isExternal href={GUIDE_EMAIL_MODE}>
         Learn more
       </Link>
     </Text>

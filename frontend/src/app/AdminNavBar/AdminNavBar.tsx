@@ -12,6 +12,7 @@ import {
 
 import { BxsHelpCircle } from '~assets/icons/BxsHelpCircle'
 import { ReactComponent as BrandMarkSvg } from '~assets/svgs/brand/brand-mark-colour.svg'
+import { FEATURE_REQUEST, FORM_GUIDE } from '~constants/links'
 import {
   EMERGENCY_CONTACT_KEY_PREFIX,
   ROLLOUT_ANNOUNCEMENT_KEY_PREFIX,
@@ -39,12 +40,12 @@ type AdminNavBarLinkProps = {
 const NAV_LINKS: AdminNavBarLinkProps[] = [
   {
     label: 'Feature request',
-    href: 'https://go.gov.sg/form-featurerequest',
+    href: FEATURE_REQUEST,
     MobileIcon: BiCommentDetail,
   },
   {
     label: 'Help',
-    href: 'https://guide.form.gov.sg',
+    href: FORM_GUIDE,
     MobileIcon: BxsHelpCircle,
   },
 ]
@@ -132,7 +133,7 @@ export const AdminNavBar = ({ isMenuOpen }: AdminNavBarProps): JSX.Element => {
   return (
     <>
       <AdminNavBar.Container>
-        <Link title="Form Logo" href="https://form.gov.sg/">
+        <Link title="Form Logo" href={window.location.origin}>
           {<BrandSmallLogo w="2rem" />}
         </Link>
         <HStack
