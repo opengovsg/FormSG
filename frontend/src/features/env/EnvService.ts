@@ -1,4 +1,8 @@
-import { PublicFormViewDto, switchEnvFeedbackFormBodyDto } from '~shared/types'
+import {
+  ErrorDto,
+  PublicFormViewDto,
+  switchEnvFeedbackFormBodyDto,
+} from '~shared/types'
 import { ClientEnvVars, SuccessMessageDto } from '~shared/types/core'
 
 import { transformAllIsoStringsToDate } from '~utils/date'
@@ -13,25 +17,17 @@ export const getClientEnvVars = async (): Promise<ClientEnvVars> => {
 // TODO #4279: Remove after React rollout is complete
 const createFeedbackResponsesArray = (
   formInputs: switchEnvFeedbackFormBodyDto,
-  feedbackForm: PublicFormViewDto | undefined,
+  feedbackForm: PublicFormViewDto,
 ) => {
   const responses = []
   for (const [key, value] of Object.entries(formInputs)) {
+    const fieldIndex = key === 'url' ? 0 : key === 'feedback' ? 1 : 2
+    const { _id, fieldType } = feedbackForm?.form.form_fields[fieldIndex] ?? {}
     const entry = {
-      _id:
-        key === 'url'
-          ? feedbackForm?.form.form_fields[0]._id
-          : key === 'feedback'
-          ? feedbackForm?.form.form_fields[1]._id
-          : feedbackForm?.form.form_fields[2]._id,
+      _id,
       question: key,
       answer: value ?? '',
-      fieldType:
-        key === 'url'
-          ? feedbackForm?.form.form_fields[0].fieldType
-          : key === 'feedback'
-          ? feedbackForm?.form.form_fields[1].fieldType
-          : feedbackForm?.form.form_fields[2].fieldType,
+      fieldType,
     }
     responses.push(entry)
   }
@@ -40,7 +36,7 @@ const createFeedbackResponsesArray = (
 
 const createSwitchFeedbackSubmissionFormData = (
   formInputs: switchEnvFeedbackFormBodyDto,
-  feedbackForm: PublicFormViewDto | undefined,
+  feedbackForm: PublicFormViewDto,
 ) => {
   const responses = createFeedbackResponsesArray(formInputs, feedbackForm)
   // convert content to FormData object
@@ -61,7 +57,8 @@ export const submitSwitchEnvFormFeedback = async ({
 }: {
   formInputs: switchEnvFeedbackFormBodyDto
   feedbackForm: PublicFormViewDto | undefined
-}): Promise<SuccessMessageDto> => {
+}): Promise<SuccessMessageDto | ErrorDto> => {
+  if (!feedbackForm) return new Error('feedback form not provided')
   const formData = createSwitchFeedbackSubmissionFormData(
     formInputs,
     feedbackForm,

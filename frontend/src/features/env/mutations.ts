@@ -24,7 +24,7 @@ export const useEnvMutations = (
     onSuccess: () => {
       // If on form builder page
       if (window.location.href.indexOf('admin/form/') > -1) {
-        window.location.assign(`#!/${formId}/admin`)
+        window.location.assign(`/#!/${formId}/admin`)
         // If on admin workspace page
       } else if (window.location.href.indexOf('workspace') > -1) {
         window.location.assign('/#!/forms')
