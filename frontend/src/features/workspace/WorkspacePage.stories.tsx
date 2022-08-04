@@ -8,6 +8,8 @@ import {
   FormStatus,
 } from '~shared/types/form/form'
 
+import { getWorkspaces } from '~/mocks/msw/handlers/workspace'
+
 import { ROOT_ROUTE } from '~constants/routes'
 import {
   getMobileViewParameters,
@@ -76,6 +78,7 @@ export default {
           return res(ctx.json(THIRTY_FORMS))
         },
       ),
+      getWorkspaces(),
     ],
   },
 } as Meta

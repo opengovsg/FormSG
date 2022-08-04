@@ -1,120 +1,53 @@
+import { useMemo, useState } from 'react'
 import {
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react'
-import { useSearchParams } from 'react-router-dom'
-import { Box, Container, Grid, useDisclosure } from '@chakra-ui/react'
-import { chunk } from 'lodash'
+  Box,
+  Drawer,
+  DrawerBody,
+  DrawerContent,
+  DrawerHeader,
+  DrawerOverlay,
+  Flex,
+  Grid,
+  GridItem,
+  Stack,
+  useBreakpointValue,
+  useDisclosure,
+} from '@chakra-ui/react'
+
+import { AdminNavBar } from '~/app/AdminNavBar/AdminNavBar'
 
 import {
   EMERGENCY_CONTACT_KEY_PREFIX,
   ROLLOUT_ANNOUNCEMENT_KEY_PREFIX,
 } from '~constants/localStorage'
 import { useLocalStorage } from '~hooks/useLocalStorage'
-import Pagination from '~components/Pagination'
 
 import { RolloutAnnouncementModal } from '~features/rollout-announcement/RolloutAnnouncementModal'
 import { EmergencyContactModal } from '~features/user/emergency-contact/EmergencyContactModal'
 import { useUser } from '~features/user/queries'
+import { WorkspaceContent } from '~features/workspace/WorkspaceContent'
 
-// TODO #4279: Remove after React rollout is complete
-import { AdminSwitchEnvMessage } from './components/AdminSwitchEnvMessage'
 import CreateFormModal from './components/CreateFormModal'
 import { EmptyWorkspace } from './components/EmptyWorkspace'
-import { WorkspaceFormRows } from './components/WorkspaceFormRow'
-import { WorkspaceHeader } from './components/WorkspaceHeader'
-import { useWorkspace } from './queries'
-
-const PAGE_DEFAULTS = {
-  size: 20,
-  pageNumber: 1,
-}
-
-export const CONTAINER_MAXW = '69.5rem'
-
-const useWorkspaceForms = () => {
-  const { data: dashboardForms, isLoading } = useWorkspace()
-  const [searchParams, setSearchParams] = useSearchParams()
-  const [sortedForms, setSortedForms] = useState(dashboardForms)
-  const [isManipulating, setIsManipulating] = useState(false)
-
-  const createFormModalDisclosure = useDisclosure()
-
-  const topRef = useRef<HTMLDivElement>(null)
-
-  const currentPage = Number(
-    searchParams.get('page') ?? PAGE_DEFAULTS.pageNumber,
-  )
-  const pageSize = Number(searchParams.get('size') ?? PAGE_DEFAULTS.size)
-  const sort = searchParams.get('sort')
-
-  const setSortOrder = useCallback(
-    (sort: string) => {
-      setSearchParams({ sort })
-    },
-    [setSearchParams],
-  )
-
-  const setPageNumber = useCallback(
-    (page: number) => {
-      setSearchParams({ page: String(page) })
-    },
-    [setSearchParams],
-  )
-
-  useEffect(() => {
-    setIsManipulating(true)
-    // TODO: Perform actual sorts
-    setIsManipulating(false)
-    setSortedForms(dashboardForms)
-
-    // Only run when sort changes
-  }, [dashboardForms, sort])
-
-  const chunkedData = useMemo(
-    () => chunk(sortedForms, pageSize),
-    [pageSize, sortedForms],
-  )
-
-  useLayoutEffect(() => {
-    // Scroll to top on workspace list page on change
-    topRef.current?.scrollIntoView()
-  }, [currentPage])
-
-  const paginatedData = useMemo(() => {
-    if (currentPage < 1 || currentPage > chunkedData.length) {
-      return []
-    }
-    return chunkedData[currentPage - 1]
-  }, [chunkedData, currentPage])
-
-  return {
-    isLoading: isLoading || isManipulating,
-    currentPage,
-    totalFormCount: dashboardForms?.length,
-    paginatedData,
-    setPageNumber,
-    setSortOrder,
-    topRef,
-    createFormModalDisclosure,
-  }
-}
+import { WorkspaceMenuHeader } from './components/WorkspaceSideMenu/WorkspaceMenuHeader'
+import { WorkspaceMenuTabs } from './components/WorkspaceSideMenu/WorkspaceMenuTabs'
+import { useDashboard, useWorkspace } from './queries'
 
 export const WorkspacePage = (): JSX.Element => {
-  const {
-    isLoading,
-    totalFormCount,
-    paginatedData,
-    currentPage,
-    setPageNumber,
-    topRef,
-    createFormModalDisclosure,
-  } = useWorkspaceForms()
+  const [currWorkspaceId, setCurrWorkspaceId] = useState<string>('')
+
+  const shouldUseTopMenu = useBreakpointValue({
+    base: true,
+    xs: true,
+    md: true,
+    lg: false,
+  })
+  const createFormModal = useDisclosure()
+  const mobileDrawer = useDisclosure()
+
   const { user, isLoading: isUserLoading } = useUser()
+  const { data: dashboardForms, isLoading: isDashboardLoading } = useDashboard()
+  const { data: workspaces } = useWorkspace()
 
   const ROLLOUT_ANNOUNCEMENT_KEY = useMemo(
     () => ROLLOUT_ANNOUNCEMENT_KEY_PREFIX + user?._id,
@@ -146,70 +79,106 @@ export const WorkspacePage = (): JSX.Element => {
     [isUserLoading, hasSeenAnnouncement, hasSeenEmergencyContact, user],
   )
 
+  if (dashboardForms?.length === 0) {
+    return (
+      <>
+        <CreateFormModal
+          isOpen={createFormModal.isOpen}
+          onClose={createFormModal.onClose}
+        />
+        <EmptyWorkspace
+          isLoading={isDashboardLoading}
+          handleOpenCreateFormModal={createFormModal.onOpen}
+        />
+      </>
+    )
+  }
+
   return (
     <>
-      <CreateFormModal
-        isOpen={createFormModalDisclosure.isOpen}
-        onClose={createFormModalDisclosure.onClose}
-      />
-      {totalFormCount === 0 ? (
-        <EmptyWorkspace
-          handleOpenCreateFormModal={createFormModalDisclosure.onOpen}
-          isLoading={isLoading}
-        />
-      ) : (
-        <Grid
-          bg="neutral.100"
-          templateColumns="1fr"
-          templateRows="auto auto 1fr auto"
-          minH="100vh"
-          templateAreas="'banner' 'header' 'main' 'footer'"
-        >
-          <Container gridArea="banner" maxW={CONTAINER_MAXW} pt="1.5rem">
-            <AdminSwitchEnvMessage />
-          </Container>
-          <Container
-            gridArea="header"
-            maxW={CONTAINER_MAXW}
-            borderBottom="1px solid var(--chakra-colors-neutral-300)"
-            px="2rem"
+      <Drawer
+        placement="left"
+        onClose={mobileDrawer.onClose}
+        isOpen={mobileDrawer.isOpen}
+      >
+        <DrawerOverlay />
+        <DrawerContent maxW="15.5rem">
+          <DrawerHeader p={0}>
+            <Flex pt="1rem" px="1rem" alignItems="center">
+              <WorkspaceMenuHeader
+                onMenuClick={mobileDrawer.onClose}
+                shouldShowAddWorkspaceButton
+                shouldShowMenuIcon
+                justifyContent="space-between"
+                w="100%"
+                px={0}
+              />
+            </Flex>
+          </DrawerHeader>
+          <DrawerBody px={0} pt="1rem">
+            <WorkspaceMenuTabs
+              workspaces={workspaces ?? []}
+              currWorkspace={currWorkspaceId}
+              onClick={(id) => {
+                setCurrWorkspaceId(id)
+                mobileDrawer.onClose()
+              }}
+            />
+          </DrawerBody>
+        </DrawerContent>
+      </Drawer>
+
+      <Grid
+        templateAreas={`
+          "header header"
+          "nav main"
+        `}
+        gridTemplateRows={`auto 1fr`}
+        gridTemplateColumns={{
+          base: 'inherit',
+          lg: '15.5rem 1fr',
+        }}
+        h="100vh"
+      >
+        <GridItem area="header">
+          <AdminNavBar />
+        </GridItem>
+
+        {shouldUseTopMenu ? (
+          <WorkspaceMenuHeader
+            shouldShowMenuIcon
+            onMenuClick={mobileDrawer.onOpen}
+            borderBottom="1px"
+            borderBottomColor="neutral.300"
             py="1rem"
-          >
-            <WorkspaceHeader
-              isLoading={isLoading}
-              totalFormCount={totalFormCount}
-              handleOpenCreateFormModal={createFormModalDisclosure.onOpen}
-            />
-          </Container>
-          <Box gridArea="main">
-            <Box ref={topRef} />
-            <RolloutAnnouncementModal
-              onClose={() => setHasSeenAnnouncement(true)}
-              isOpen={isAnnouncementModalOpen}
-            />
-            <EmergencyContactModal
-              onClose={() => setHasSeenEmergencyContact(true)}
-              isOpen={isEmergencyContactModalOpen}
-            />
-            <WorkspaceFormRows rows={paginatedData} isLoading={isLoading} />
+          />
+        ) : (
+          <Box overflowY="scroll">
+            <Stack
+              borderRight="1px"
+              borderRightColor="neutral.300"
+              minH="100vh"
+            >
+              <WorkspaceMenuHeader shouldShowAddWorkspaceButton />
+              <WorkspaceMenuTabs
+                workspaces={workspaces ?? []}
+                currWorkspace={currWorkspaceId}
+                onClick={setCurrWorkspaceId}
+              />
+            </Stack>
           </Box>
-          <Container
-            gridArea="footer"
-            py={{ base: '1rem', md: '3rem' }}
-            px="2rem"
-            maxW={CONTAINER_MAXW}
-            borderTop="1px solid var(--chakra-colors-neutral-300)"
-          >
-            <Pagination
-              isDisabled={isLoading}
-              currentPage={currentPage}
-              totalCount={totalFormCount ?? 0}
-              onPageChange={setPageNumber}
-              pageSize={PAGE_DEFAULTS.size}
-            />
-          </Container>
-        </Grid>
-      )}
+        )}
+        <WorkspaceContent workspaceId={currWorkspaceId} />
+      </Grid>
+
+      <RolloutAnnouncementModal
+        onClose={() => setHasSeenAnnouncement(true)}
+        isOpen={isAnnouncementModalOpen}
+      />
+      <EmergencyContactModal
+        onClose={() => setHasSeenEmergencyContact(true)}
+        isOpen={isEmergencyContactModalOpen}
+      />
     </>
   )
 }
