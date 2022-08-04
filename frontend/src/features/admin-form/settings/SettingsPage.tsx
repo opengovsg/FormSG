@@ -1,4 +1,6 @@
+import { useEffect } from 'react'
 import { BiCodeBlock, BiCog, BiKey, BiMessage } from 'react-icons/bi'
+import { useNavigate, useParams } from 'react-router-dom'
 import {
   Box,
   Flex,
@@ -11,7 +13,10 @@ import {
   UseTabsProps,
 } from '@chakra-ui/react'
 
+import { ADMINFORM_RESULTS_SUBROUTE, ADMINFORM_ROUTE } from '~constants/routes'
 import { useDraggable } from '~hooks/useDraggable'
+
+import { useAdminFormCollaborators } from '../common/queries'
 
 import { SettingsTab } from './components/SettingsTab'
 import { SettingsAuthPage } from './SettingsAuthPage'
@@ -20,6 +25,16 @@ import { SettingsTwilioPage } from './SettingsTwilioPage'
 import { SettingsWebhooksPage } from './SettingsWebhooksPage'
 
 export const SettingsPage = (): JSX.Element => {
+  const { formId } = useParams()
+  const { hasEditAccess } = useAdminFormCollaborators()
+  const navigate = useNavigate()
+
+  // Redirect view-only collaborators to results screen.
+  useEffect(() => {
+    if (!hasEditAccess)
+      navigate(`${ADMINFORM_ROUTE}/${formId}/${ADMINFORM_RESULTS_SUBROUTE}`)
+  }, [formId, hasEditAccess, navigate])
+
   const tabOrientation: UseTabsProps['orientation'] = useBreakpointValue({
     base: 'horizontal',
     xs: 'horizontal',

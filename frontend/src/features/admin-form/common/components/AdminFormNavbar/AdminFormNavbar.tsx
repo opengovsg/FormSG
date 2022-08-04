@@ -28,6 +28,8 @@ import IconButton from '~components/IconButton'
 import { Tab } from '~components/Tabs'
 import Tooltip from '~components/Tooltip'
 
+import { useAdminFormCollaborators } from '../../queries'
+
 import { AdminFormNavbarDetails } from './AdminFormNavbarDetails'
 
 export interface AdminFormNavbarProps {
@@ -55,6 +57,7 @@ export const AdminFormNavbar = ({
 }: AdminFormNavbarProps): JSX.Element => {
   const { ref, onMouseDown } = useDraggable<HTMLDivElement>()
   const { isOpen, onClose, onOpen } = useDisclosure()
+  const { hasEditAccess } = useAdminFormCollaborators()
 
   const mobileDrawerExtraButtonProps: Partial<ButtonProps> = useMemo(
     () => ({
@@ -121,8 +124,12 @@ export const AdminFormNavbar = ({
         justifyContent={{ base: 'flex-start', lg: 'center' }}
         alignSelf="center"
       >
-        <Tab isDisabled={!formInfo}>Create</Tab>
-        <Tab isDisabled={!formInfo}>Settings</Tab>
+        <Tab hidden={!hasEditAccess} isDisabled={!formInfo}>
+          Create
+        </Tab>
+        <Tab hidden={!hasEditAccess} isDisabled={!formInfo}>
+          Settings
+        </Tab>
         <Tab isDisabled={!formInfo}>Results</Tab>
       </TabList>
       <Flex

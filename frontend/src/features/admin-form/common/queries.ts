@@ -76,7 +76,7 @@ export const useAdminFormCollaborators = () => {
     [form, user],
   )
 
-  const showEditableModal = useMemo(() => {
+  const hasEditAccess = useMemo(() => {
     if (!form || !user) return false
     if (isFormAdmin) return true
     // Collaborators is source of truth if it has already loaded.
@@ -97,7 +97,7 @@ export const useAdminFormCollaborators = () => {
     collaborators,
     isLoading: isCollabLoading || isAdminFormLoading || isUserLoading,
     isFormAdmin,
-    showEditableModal,
+    hasEditAccess,
   }
 }
 
