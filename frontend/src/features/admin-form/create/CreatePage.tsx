@@ -20,6 +20,7 @@ export const CreatePage = (): JSX.Element => {
   const { hasEditAccess } = useAdminFormCollaborators()
   const navigate = useNavigate()
 
+  // Redirect view-only collaborators to results screen.
   useEffect(() => {
     if (!hasEditAccess)
       navigate(`${ADMINFORM_ROUTE}/${formId}/${ADMINFORM_RESULTS_SUBROUTE}`)
