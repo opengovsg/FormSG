@@ -50,7 +50,7 @@ export const UploadImageInput = forwardRef<UploadImageInputProps, 'div'>(
         maxSizeMB: MAX_UPLOAD_FILE_SIZE / MB,
         alwaysKeepResolution: true,
         initialQuality: 0.8,
-        useWebWorker: true,
+        useWebWorker: false,
       }).then((compressed) => {
         onChange({
           file: compressed,
