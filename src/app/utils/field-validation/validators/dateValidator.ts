@@ -1,8 +1,12 @@
+import { format } from 'date-fns'
 import { chain, left, right } from 'fp-ts/lib/Either'
 import { flow } from 'fp-ts/lib/function'
 import moment from 'moment-timezone'
 
-import { DateSelectedValidation } from '../../../../../shared/types'
+import {
+  DateSelectedValidation,
+  InvalidDaysOptions,
+} from '../../../../../shared/types'
 import {
   IDateFieldSchema,
   OmitUnusedValidatorProps,
@@ -106,6 +110,60 @@ const makeDateValidator: DateValidatorConstructor = (dateField) => {
   }
 }
 
+const DAY_TO_NUMBER_MAP: Record<InvalidDaysOptions, number> = {
+  [InvalidDaysOptions.Monday]: 1,
+  [InvalidDaysOptions.Tuesday]: 2,
+  [InvalidDaysOptions.Wednesday]: 3,
+  [InvalidDaysOptions.Thursday]: 4,
+  [InvalidDaysOptions.Friday]: 5,
+  [InvalidDaysOptions.Saturday]: 6,
+  [InvalidDaysOptions.Sunday]: 7,
+}
+
+/**
+ * Convert the days of the week in the invalidDays array
+ * to a number array representing the number representation
+ * of the corresponding day of the week
+ */
+const convertInvalidDaysOfTheWeekToNumberSet = (
+  invalidDays: InvalidDaysOptions[],
+): Set<number> => {
+  if (invalidDays.length === 0) {
+    return new Set()
+  }
+
+  return new Set(invalidDays.map((invalidDay) => DAY_TO_NUMBER_MAP[invalidDay]))
+}
+
+/**
+ * Returns a validator to check if date is an invalid day of the week.
+ */
+const makeInvalidDayOfTheWeekValidator: DateValidatorConstructor =
+  (dateField) => (response) => {
+    const { answer } = response
+
+    const invalidDaysOfTheWeekSet = convertInvalidDaysOfTheWeekToNumberSet(
+      dateField.invalidDays ?? [],
+    )
+
+    if (invalidDaysOfTheWeekSet.has(-1)) {
+      return left(
+        `DateValidator:\t invalid day value is not a valid invalid day option`,
+      )
+    }
+
+    // Convert date response to a ISO day of the week number format
+    const dateResponseNumberFormat = parseInt(format(new Date(answer), 'i'))
+
+    return invalidDaysOfTheWeekSet.has(dateResponseNumberFormat)
+      ? left(`DateValidator:\t answer is an invalid day`)
+      : right(response)
+  }
+
+const invalidDaysValidator: DateValidatorConstructor = (dateField) => {
+  return makeInvalidDayOfTheWeekValidator(dateField)
+}
+
 /**
  * Returns a validation function for a date field when called.
  */
@@ -114,4 +172,5 @@ export const constructDateValidator: DateValidatorConstructor = (dateField) =>
     notEmptySingleAnswerResponse,
     chain(dateFormatValidator),
     chain(makeDateValidator(dateField)),
+    chain(invalidDaysValidator(dateField)),
   )
