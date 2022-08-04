@@ -192,9 +192,6 @@ export const isDateAnInvalidDay = (
 ): boolean => {
   const invalidDaySet = convertInvalidDaysOfTheWeekToNumberSet(invalidDays)
 
-  if (invalidDaySet.has(-1)) {
-    return true
-  }
   const dayNumberFormat = parseInt(format(date, 'i'))
 
   return invalidDaySet.has(dayNumberFormat)
