@@ -1502,13 +1502,17 @@ const deleteTwilioTransaction = async (
 export const archiveForms = async ({
   formIds,
   session,
+  admin,
 }: {
   formIds: string[]
-  session?: ClientSession
+  admin: string
+  session: ClientSession
 }): Promise<void> => {
   const canBeArchivedForms = await FormModel.find({
     _id: { $in: formIds },
+    admin,
   })
+  const canBeArchivedFormIds = canBeArchivedForms.map((form) => form._id)
 
-  canBeArchivedForms.forEach(async (form) => await form.archive(session))
+  await FormModel.archiveForms(canBeArchivedFormIds, session)
 }

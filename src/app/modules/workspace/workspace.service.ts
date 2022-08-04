@@ -1,11 +1,15 @@
-import mongoose, { ClientSession } from 'mongoose'
+import mongoose from 'mongoose'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 import { WorkspaceDto } from 'shared/types/workspace'
 
 import { createLoggerWithLabel } from '../../config/logger'
 import { getWorkspaceModel } from '../../models/workspace.server.model'
 import { transformMongoError } from '../../utils/handle-mongo-error'
-import { DatabaseError, DatabaseValidationError } from '../core/core.errors'
+import {
+  DatabaseError,
+  DatabaseValidationError,
+  PossibleDatabaseError,
+} from '../core/core.errors'
 import * as AdminFormService from '../form/admin-form/admin-form.service'
 
 import {
@@ -86,23 +90,15 @@ export const updateWorkspaceTitle = ({
 
 export const deleteWorkspace = ({
   workspaceId,
+  userId,
   shouldDeleteForms,
 }: {
   workspaceId: string
+  userId: string
   shouldDeleteForms: boolean
-}): ResultAsync<void, DatabaseError> => {
+}): ResultAsync<WorkspaceDto | null, PossibleDatabaseError> => {
   return ResultAsync.fromPromise(
-    WorkspaceModel.startSession().then((session: ClientSession) =>
-      session
-        .withTransaction(() =>
-          deleteWorkspaceTransaction({
-            workspaceId,
-            shouldDeleteForms,
-            session,
-          }),
-        )
-        .then(() => session.endSession()),
-    ),
+    deleteWorkspaceTransaction({ workspaceId, userId, shouldDeleteForms }),
     (error) => {
       logger.error({
         message:
@@ -121,28 +117,33 @@ export const deleteWorkspace = ({
 
 const deleteWorkspaceTransaction = async ({
   workspaceId,
+  userId,
   shouldDeleteForms,
-  session,
 }: {
   workspaceId: string
+  userId: string
   shouldDeleteForms: boolean
-  session: ClientSession
-}): Promise<void> => {
-  const workspaceToDelete = await WorkspaceModel.findOne({
-    _id: workspaceId,
-  })
+}): Promise<WorkspaceDto | null> => {
+  let deleted: WorkspaceDto | null
 
-  await WorkspaceModel.deleteWorkspace({
-    workspaceId,
-    session,
-  })
+  const session = await WorkspaceModel.startSession()
+  return session
+    .withTransaction(async () => {
+      deleted = await WorkspaceModel.deleteWorkspace({
+        workspaceId,
+        session,
+      })
 
-  if (shouldDeleteForms && workspaceToDelete?.formIds) {
-    await AdminFormService.archiveForms({
-      formIds: workspaceToDelete?.formIds,
-      session,
+      if (shouldDeleteForms && deleted?.formIds) {
+        await AdminFormService.archiveForms({
+          formIds: deleted?.formIds,
+          admin: userId,
+          session,
+        })
+      }
     })
-  }
+    .then(() => deleted)
+    .finally(() => session.endSession())
 }
 
 export const getForms = (

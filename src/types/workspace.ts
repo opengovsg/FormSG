@@ -35,6 +35,11 @@ export interface IWorkspaceModel extends Model<IWorkspaceSchema> {
     session,
   }: {
     workspaceId: IWorkspaceSchema['_id']
+    /**
+     * Session is optional so that we can mock this function in our tests to test it without a session.
+     * Reason is our mocked mongo database does not support transactions.
+     * See issue #4503 for more details.
+     */
     session?: ClientSession
-  }): Promise<boolean>
+  }): Promise<WorkspaceDto | null>
 }

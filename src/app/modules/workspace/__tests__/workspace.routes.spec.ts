@@ -2,6 +2,7 @@ import { ObjectId } from 'bson-ext'
 import mongoose from 'mongoose'
 import supertest, { Session } from 'supertest-session'
 
+import getFormModel from 'src/app/models/form.server.model'
 import { getWorkspaceModel } from 'src/app/models/workspace.server.model'
 import { WorkspacesRouter } from 'src/app/routes/api/v3/admin/workspaces'
 import { formatErrorRecoveryMessage } from 'src/app/utils/handle-mongo-error'
@@ -21,6 +22,7 @@ import {
 } from '../workspace.errors'
 
 const WorkspaceModel = getWorkspaceModel(mongoose)
+const FormModel = getFormModel(mongoose)
 
 const app = setupApp('/workspaces', WorkspacesRouter, {
   setupWithAuth: true,
@@ -310,15 +312,20 @@ describe('workspaces.routes', () => {
 
     it('should return 200 with success message on successful deletion', async () => {
       await WorkspaceModel.create(MOCK_WORKSPACE_DOC)
+
       /**
        * We mock deleteWorkspace to run without use of mongoose session, i.e without a transaction
        * because the mocked mongoose MemoryDatabaseServer doesn't support transactions.
+       * See issue #4503 for more details.
        **/
       jest.spyOn(WorkspaceModel, 'deleteWorkspace').mockImplementationOnce(() =>
         WorkspaceModel.deleteWorkspace({
           workspaceId: MOCK_WORKSPACE_DOC._id,
         }),
       )
+      jest
+        .spyOn(FormModel, 'archiveForms')
+        .mockImplementationOnce((formIds) => FormModel.archiveForms(formIds))
 
       const response = await request
         .delete(DELETE_WORKSPACE_ENDPOINT)

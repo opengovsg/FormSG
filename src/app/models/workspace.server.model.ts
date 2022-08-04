@@ -9,6 +9,7 @@ const compileWorkspaceModel = (db: Mongoose): IWorkspaceModel => {
     id: false,
     timestamps: true,
   }
+
   const WorkspaceSchema = new Schema<IWorkspaceSchema, IWorkspaceModel>(
     {
       title: {
@@ -74,15 +75,14 @@ const compileWorkspaceModel = (db: Mongoose): IWorkspaceModel => {
     session,
   }: {
     workspaceId: IWorkspaceSchema['_id']
-    session?: ClientSession
+    session: ClientSession
   }) {
-    const deleted = await this.deleteOne(
+    return this.findOneAndDelete(
       {
         _id: workspaceId,
       },
       { session },
     )
-    return deleted.deletedCount == 1
   }
 
   return db.model<IWorkspaceSchema, IWorkspaceModel>(

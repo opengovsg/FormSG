@@ -262,7 +262,7 @@ describe('workspace.controller', () => {
         okAsync(true),
       )
       MockWorkspaceService.deleteWorkspace.mockReturnValueOnce(
-        okAsync(undefined),
+        okAsync(MOCK_WORKSPACE),
       )
 
       await WorkspaceController.deleteWorkspace(MOCK_REQ, mockRes, jest.fn())

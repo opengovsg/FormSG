@@ -205,7 +205,7 @@ describe('Workspace Model', () => {
     })
 
     describe('deleteWorkspace', () => {
-      it('workspace should no loger be in database when deleted', async () => {
+      it('should correctly remove workspace from database when deleted', async () => {
         await Workspace.deleteWorkspace({
           workspaceId: MOCK_WORKSPACE_ID,
         })

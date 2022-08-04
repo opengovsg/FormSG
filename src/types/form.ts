@@ -334,6 +334,16 @@ export interface IFormModel extends Model<IFormSchema> {
     logicId: string,
     updatedLogic: LogicDto,
   ): Promise<IFormSchema | null>
+
+  archiveForms(
+    formIds: IFormSchema['_id'][],
+    /**
+     * Session is optional so that we can mock this function in our tests to test it without a session.
+     * Reason is our mocked mongo database does not support transactions.
+     * See issue #4503 for more details.
+     */
+    session?: ClientSession,
+  ): Promise<void>
 }
 
 export type IEncryptedFormModel = IFormModel & Model<IEncryptedFormSchema>

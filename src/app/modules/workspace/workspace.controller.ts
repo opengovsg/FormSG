@@ -171,12 +171,18 @@ export const deleteWorkspace: ControllerHandler<
     .andThen(() =>
       WorkspaceService.deleteWorkspace({
         workspaceId,
+        userId,
         shouldDeleteForms,
-      }).map(() =>
-        res
-          .status(StatusCodes.OK)
-          .json({ message: 'Successfully deleted workspace' }),
-      ),
+      }).map((workspace) => {
+        return workspace
+          ? res
+              .status(StatusCodes.OK)
+              .json({ message: 'Successfully deleted workspace' })
+          : res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+              message:
+                'Sorry something went wrong, we are unable to delete the workspace',
+            })
+      }),
     )
     .mapErr((error) => {
       logger.error({
