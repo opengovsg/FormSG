@@ -333,6 +333,12 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
       default: '',
       env: 'REACT_TO_ANGULAR_FEEDBACK_FORM_ID',
     },
+    angularPhaseOutDate: {
+      doc: 'Last date that AngularJS app is available',
+      format: String,
+      default: 'v2-angular-end-date',
+      env: 'REACT_MIGRATION_ANGULAR_END_DATE',
+    },
   },
 }
 

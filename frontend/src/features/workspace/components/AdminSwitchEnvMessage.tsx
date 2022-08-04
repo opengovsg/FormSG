@@ -4,11 +4,12 @@ import { Text, useDisclosure } from '@chakra-ui/react'
 import Button from '~components/Button'
 import InlineMessage from '~components/InlineMessage'
 
+import { useEnv } from '~features/env/queries'
 import { SwitchEnvFeedbackModal } from '~features/env/SwitchEnvFeedbackModal'
 
 export const AdminSwitchEnvMessage = (): JSX.Element => {
   const { isOpen, onOpen, onClose } = useDisclosure()
-
+  const { data: { angularPhaseOutDate } = {} } = useEnv()
   return (
     <>
       <InlineMessage>
@@ -17,7 +18,7 @@ export const AdminSwitchEnvMessage = (): JSX.Element => {
           <Button variant="link" onClick={onOpen}>
             <Text as="u">switch to the original one,</Text>
           </Button>
-          which is available until 28 May 2022.
+          which is available until {angularPhaseOutDate}.
         </Text>
       </InlineMessage>
       <SwitchEnvFeedbackModal isOpen={isOpen} onClose={onClose} />

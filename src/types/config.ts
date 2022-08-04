@@ -60,6 +60,7 @@ export type ReactMigrationConfig = {
   adminCookieName: string
   qaCookieName: string
   reactToAngularFeedbackFormId: string
+  angularPhaseOutDate: string
 }
 
 export type Config = {
@@ -166,6 +167,7 @@ export interface IOptionalVarsSchema {
     adminCookieName: string
     qaCookieName: string
     reactToAngularFeedbackFormId: string
+    angularPhaseOutDate: string
   }
 }
 

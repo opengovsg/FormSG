@@ -25,6 +25,7 @@ const frontendVars = {
   reactMigrationRespondentCookieName:
     config.reactMigration.respondentCookieName,
   reactMigrationAdminCookieName: config.reactMigration.adminCookieName,
+  reactMigrationAngularPhaseOutDate: config.reactMigration.angularPhaseOutDate,
 }
 const environment = ejs.render(
   `
@@ -51,6 +52,7 @@ const environment = ejs.render(
     // React Migration
     var reactMigrationRespondentCookieName = "<%= reactMigrationRespondentCookieName%>"
     var reactMigrationAdminCookieName = "<%= reactMigrationAdminCookieName%>"
+    var reactMigrationAngularPhaseOutDate = "<%= reactMigrationAngularPhaseOutDate%>"
   `,
   frontendVars,
 )
