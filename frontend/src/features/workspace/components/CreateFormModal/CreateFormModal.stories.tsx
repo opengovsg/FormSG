@@ -49,6 +49,7 @@ export const StorageModeAckScreen = () => {
   const mockHook = useCallback(() => {
     return {
       isLoading: false,
+      isSubmitEnabled: false,
       hasActioned: false,
       hasCopiedKey: false,
       handleCopyKey: () => console.log('copy key'),

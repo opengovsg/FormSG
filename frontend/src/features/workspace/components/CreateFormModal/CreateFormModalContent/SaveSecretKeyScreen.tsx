@@ -1,9 +1,18 @@
 import { MouseEvent, useCallback, useMemo, useState } from 'react'
 import { useWatch } from 'react-hook-form'
-import { BiCopy, BiDownload, BiMailSend, BiRightArrowAlt } from 'react-icons/bi'
+import {
+  BiCheck,
+  BiCopy,
+  BiDownload,
+  BiMailSend,
+  BiRightArrowAlt,
+} from 'react-icons/bi'
 import {
   Box,
   Container,
+  Icon,
+  InputGroup,
+  InputRightElement,
   ModalBody,
   ModalHeader,
   Stack,
@@ -13,17 +22,23 @@ import {
 import dedent from 'dedent'
 import FileSaver from 'file-saver'
 
+import { BxsError } from '~assets/icons'
+import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
 import Checkbox from '~components/Checkbox'
+import IconButton from '~components/IconButton'
+import Input from '~components/Input'
 
 import { useCreateFormWizard } from '../CreateFormWizardContext'
-
-import { SecretKeyChoice } from './SecretKeyChoice'
 
 /** Default hook to be used in SaveSecretKeyScreen */
 const useSaveSecretKeyDefault = () => {
   const {
-    formMethods: { control, register },
+    formMethods: {
+      control,
+      register,
+      formState: { isValid },
+    },
     handleCreateStorageModeForm,
     isLoading,
     keypair: { secretKey },
@@ -82,6 +97,7 @@ const useSaveSecretKeyDefault = () => {
   return {
     isLoading,
     hasActioned,
+    isSubmitEnabled: isValid && hasActioned,
     hasCopiedKey: hasCopied,
     handleCopyKey,
     handleDownloadKey,
@@ -105,68 +121,96 @@ export const SaveSecretKeyScreen = ({
     handleCreateStorageModeForm,
     handleDownloadKey,
     handleEmailKey,
+    isSubmitEnabled,
     hasActioned,
     hasCopiedKey,
     secretKey,
     register,
   } = useSaveSecretKey()
 
+  const isMobile = useIsMobile()
+
   return (
     <>
       <ModalHeader color="secondary.700">
         <Container maxW="42.5rem" p={0}>
-          Save your secret key
+          <Stack direction="column" spacing="1rem">
+            <Icon
+              as={BxsError}
+              fontSize="3rem"
+              aria-hidden
+              color="danger.500"
+            />
+            <Text>Download Secret Key to proceed</Text>
+          </Stack>
         </Container>
       </ModalHeader>
       <ModalBody whiteSpace="pre-line">
         <Container maxW="42.5rem" p={0}>
-          <Text textStyle="body-2" color="secondary.500" mb="2.5rem">
-            You need this Secret Key to activate your form and view
-            responses.&nbsp;
-            <Text color="danger.500" textStyle="subhead-2" as="span">
-              If you lose it, all responses will be permanently lost and Form
-              will not be able to retrieve it.&nbsp;
+          <Text textStyle="body-1" color="secondary.500" mb="2.5rem">
+            You'll need it every time you access your responses to this form. If
+            you lose it,{' '}
+            <Text color="danger.500" textStyle="subhead-1" as="span">
+              all responses will be permanently lost
             </Text>
-            You need to at least download the key.
+            . You can also email it for safekeeping.
           </Text>
-          <Stack
-            spacing="-1px"
-            direction={{ base: 'column', md: 'row' }}
-            mb="1rem"
-          >
-            <SecretKeyChoice
-              icon={BiDownload}
-              actionTitle="Download key"
-              description="Check your Downloads folder, and organise your keys in a spreadsheet."
-              onActionClick={handleDownloadKey}
-            />
-            <SecretKeyChoice
-              icon={BiMailSend}
-              actionTitle="Email key"
-              onActionClick={handleEmailKey}
-              description="Email to yourself and collaborators for safekeeping."
-            />
-            <SecretKeyChoice
-              wordBreak="break-all"
-              icon={BiCopy}
-              actionTitle={hasCopiedKey ? 'Copied!' : 'Copy key'}
-              description={secretKey}
-              onActionClick={handleCopyKey}
-            />
-          </Stack>
-          <Box mb="2.5rem">
-            <Checkbox
-              aria-label="Storage mode form acknowledgement"
-              {...register('storageAck', {
-                required: true,
-              })}
+          <Stack direction={{ base: 'column', md: 'row' }}>
+            <InputGroup>
+              <Input isReadOnly value={secretKey} />
+              <InputRightElement>
+                <IconButton
+                  variant="clear"
+                  minH="2.5rem"
+                  minW="2.5rem"
+                  icon={hasCopiedKey ? <BiCheck /> : <BiCopy />}
+                  onClick={handleCopyKey}
+                  aria-label="Copy secret key"
+                />
+              </InputRightElement>
+            </InputGroup>
+            <Button
+              leftIcon={
+                isMobile ? <BiDownload fontSize="1.25rem" /> : undefined
+              }
+              onClick={handleDownloadKey}
             >
-              I acknowledge that if I lose my Secret Key, all my responses will
-              be lost permanently and I cannot activate my form
-            </Checkbox>
-          </Box>
+              Download key
+            </Button>
+            {isMobile ? (
+              <Button
+                onClick={handleEmailKey}
+                aria-label="Email the secret key to someone"
+                leftIcon={<BiMailSend fontSize="1.25rem" />}
+                variant="outline"
+              >
+                Email key
+              </Button>
+            ) : (
+              <IconButton
+                onClick={handleEmailKey}
+                icon={<BiMailSend />}
+                aria-label="Email the secret key to someone"
+                variant="outline"
+              />
+            )}
+          </Stack>
+          {hasActioned && (
+            <Box mt="4rem">
+              <Checkbox
+                aria-label="Storage mode form acknowledgement"
+                {...register('storageAck', {
+                  required: true,
+                })}
+              >
+                If I lose my Secret Key, I cannot activate my form or access any
+                responses to it
+              </Checkbox>
+            </Box>
+          )}
           <Button
-            isDisabled={!hasActioned}
+            mt="2.25rem"
+            isDisabled={!isSubmitEnabled}
             rightIcon={<BiRightArrowAlt fontSize="1.5rem" />}
             type="submit"
             isLoading={isLoading}
