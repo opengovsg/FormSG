@@ -81,7 +81,6 @@ export const FormBuilder = ({
                   </Box>
                 ) : (
                   <EmptyFormPlaceholder
-                    m={{ base: '1.5rem', md: 0 }}
                     ref={provided.innerRef}
                     {...provided.droppableProps}
                     isDraggingOver={snapshot.isDraggingOver}

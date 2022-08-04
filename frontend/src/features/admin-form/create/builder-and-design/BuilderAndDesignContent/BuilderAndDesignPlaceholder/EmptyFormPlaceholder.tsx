@@ -33,7 +33,7 @@ export const EmptyFormPlaceholder = forwardRef<
   }, [isDraggingOver, isMobile])
 
   return (
-    <Box h="13.75rem" m={{ base: '1rem', lg: '1.625rem' }}>
+    <Box h="13.75rem" m={{ base: 0, lg: '1.625rem' }}>
       <chakra.button
         _hover={{
           bg: 'primary.200',
