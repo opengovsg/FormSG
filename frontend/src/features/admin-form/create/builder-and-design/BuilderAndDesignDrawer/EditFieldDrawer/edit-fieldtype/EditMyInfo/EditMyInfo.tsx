@@ -26,20 +26,15 @@ type EditMyInfoProps = EditFieldProps<MyInfoField>
 
 export const EditMyInfo = ({ field }: EditMyInfoProps): JSX.Element => {
   const extendedField = extendWithMyInfo(field)
-  const {
-    isSaveEnabled,
-    buttonText,
-    handleUpdateField,
-    isLoading,
-    handleCancel,
-  } = useEditFieldForm<EditMyInfoProps, MyInfoField>({
-    field,
-    transform: {
-      // MyInfo fields are not editable, so omit any transformation and output the original field
-      input: () => ({}),
-      output: (_, originalField) => originalField,
-    },
-  })
+  const { buttonText, handleUpdateField, isLoading, handleCancel } =
+    useEditFieldForm<EditMyInfoProps, MyInfoField>({
+      field,
+      transform: {
+        // MyInfo fields are not editable, so omit any transformation and output the original field
+        input: () => ({}),
+        output: (_, originalField) => originalField,
+      },
+    })
 
   return (
     <DrawerContentContainer>
@@ -86,7 +81,6 @@ export const EditMyInfo = ({ field }: EditMyInfoProps): JSX.Element => {
       </VStack>
       <FormFieldDrawerActions
         isLoading={isLoading}
-        isSaveEnabled={isSaveEnabled}
         buttonText={buttonText}
         handleClick={handleUpdateField}
         handleCancel={handleCancel}

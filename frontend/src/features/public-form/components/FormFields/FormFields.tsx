@@ -104,24 +104,27 @@ export const FormFields = ({
   return (
     <FormProvider {...formMethods}>
       <form onSubmit={formMethods.handleSubmit(onSubmit)} noValidate>
-        <Box bg="white" py="2.5rem" px={{ base: '1rem', md: '2.5rem' }}>
-          <Stack spacing="2.25rem">
-            {!isEmpty(fieldPrefillMap) && (
-              <InlineMessage variant="warning">
-                The highlighted fields in this form have been pre-filled
-                according to the link that you clicked. Please check that these
-                values are what you intend to submit, and edit if necessary.
-              </InlineMessage>
-            )}
-            <VisibleFormFields
-              colorTheme={colorTheme}
-              control={formMethods.control}
-              formFields={augmentedFormFields}
-              formLogics={formLogics}
-              fieldPrefillMap={fieldPrefillMap}
-            />
-          </Stack>
-        </Box>
+        {!!formFields?.length && (
+          <Box bg={'white'} py="2.5rem" px={{ base: '1rem', md: '2.5rem' }}>
+            <Stack spacing="2.25rem">
+              {!isEmpty(fieldPrefillMap) && (
+                <InlineMessage variant="warning">
+                  The highlighted fields in this form have been pre-filled
+                  according to the link that you clicked. Please check that
+                  these values are what you intend to submit, and edit if
+                  necessary.
+                </InlineMessage>
+              )}
+              <VisibleFormFields
+                colorTheme={colorTheme}
+                control={formMethods.control}
+                formFields={augmentedFormFields}
+                formLogics={formLogics}
+                fieldPrefillMap={fieldPrefillMap}
+              />
+            </Stack>
+          </Box>
+        )}
         <PublicFormSubmitButton
           formFields={augmentedFormFields}
           formLogics={formLogics}

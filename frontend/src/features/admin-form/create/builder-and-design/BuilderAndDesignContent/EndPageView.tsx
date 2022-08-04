@@ -1,17 +1,24 @@
 import { useMemo } from 'react'
-import { Box, Flex, FlexProps, Image, Stack, Text } from '@chakra-ui/react'
+import { Box, Flex, FlexProps, Stack, Text } from '@chakra-ui/react'
 import { format } from 'date-fns'
+
+import { FormColorTheme, FormLogoState } from '~shared/types'
 
 import { BxsChevronUp } from '~assets/icons/BxsChevronUp'
 import Button from '~components/Button'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
+import { useEnv } from '~features/env/queries'
 import { ThankYouSvgr } from '~features/public-form/components/FormEndPage/components/ThankYouSvgr'
+import { FormBannerLogo } from '~features/public-form/components/FormStartPage/FormBannerLogo'
+import { useFormBannerLogo } from '~features/public-form/components/FormStartPage/useFormBannerLogo'
+import { useBgColor } from '~features/public-form/components/PublicFormWrapper'
 
 import {
   endPageDataSelector,
   useEndPageBuilderStore,
 } from '../useEndPageBuilderStore'
+import { useDesignColorTheme } from '../utils/useDesignColorTheme'
 
 export const EndPageView = ({ ...props }: FlexProps): JSX.Element => {
   const { data: form } = useAdminForm()
@@ -23,6 +30,19 @@ export const EndPageView = ({ ...props }: FlexProps): JSX.Element => {
     () => (endPageFromStore ? endPageFromStore : form?.endPage),
     [endPageFromStore, form?.endPage],
   )
+  const { data: { logoBucketUrl } = {} } = useEnv(
+    form?.startPage.logo.state === FormLogoState.Custom,
+  )
+
+  const formBannerLogoProps = useFormBannerLogo({
+    logoBucketUrl,
+    logo: form?.startPage.logo,
+    agency: form?.admin.agency,
+  })
+
+  const colorTheme = useDesignColorTheme()
+  const backgroundColor = useBgColor(colorTheme)
+
   return (
     <Flex
       m={{ base: 0, md: '2rem' }}
@@ -32,13 +52,12 @@ export const EndPageView = ({ ...props }: FlexProps): JSX.Element => {
       p={{ base: '1.5rem', md: 0 }}
       justify="center"
       overflow="auto"
+      height="100%"
       {...props}
     >
       <Stack w="100%">
-        <Flex justifyContent="center" pt="1rem" pb="0.5rem">
-          <Image src={form?.admin?.agency?.logo} h="4rem" />
-        </Flex>
-        <Flex backgroundColor="primary.100" justifyContent="center">
+        <FormBannerLogo {...formBannerLogoProps} />
+        <Flex backgroundColor={backgroundColor} justifyContent="center">
           <ThankYouSvgr h="100%" pt="2.5rem" />
         </Flex>
 
@@ -50,7 +69,12 @@ export const EndPageView = ({ ...props }: FlexProps): JSX.Element => {
             <BxsChevronUp color="secondary.500" />
           </Flex>
 
-          <Text textStyle="subhead-1" color="secondary.500" mt="1rem">
+          <Text
+            textStyle="subhead-1"
+            color="secondary.500"
+            mt="1rem"
+            whiteSpace="pre-line"
+          >
             {endPage?.paragraph}
           </Text>
 
@@ -63,10 +87,16 @@ export const EndPageView = ({ ...props }: FlexProps): JSX.Element => {
             {format(new Date(), 'dd MMM yyyy, h:m aa')}
           </Text>
 
-          <Flex pt="1.75rem" gap="2rem">
-            <Button>Save this response</Button>
-            <Button variant="clear">{endPage?.buttonText}</Button>
-          </Flex>
+          <Box mt="2.25rem">
+            <Button
+              variant="solid"
+              colorScheme={`theme-${
+                colorTheme ? colorTheme : FormColorTheme.Blue
+              }`}
+            >
+              {endPage?.buttonText}
+            </Button>
+          </Box>
         </Box>
       </Stack>
     </Flex>

@@ -63,7 +63,6 @@ export const EditAttachment = ({ field }: EditAttachmentProps): JSX.Element => {
     formState: { errors },
     control,
     getValues,
-    isSaveEnabled,
     buttonText,
     handleUpdateField,
     isLoading,
@@ -181,7 +180,6 @@ export const EditAttachment = ({ field }: EditAttachmentProps): JSX.Element => {
       </InlineMessage>
       <FormFieldDrawerActions
         isLoading={isLoading}
-        isSaveEnabled={isSaveEnabled}
         buttonText={buttonText}
         handleClick={handleUpdateField}
         handleCancel={handleCancel}

@@ -39,7 +39,6 @@ export const EditMobile = ({ field }: EditMobileProps): JSX.Element => {
   const {
     register,
     formState: { errors },
-    isSaveEnabled,
     buttonText,
     handleUpdateField,
     isLoading,
@@ -128,7 +127,6 @@ export const EditMobile = ({ field }: EditMobileProps): JSX.Element => {
         </Box>
         <FormFieldDrawerActions
           isLoading={isLoading}
-          isSaveEnabled={isSaveEnabled}
           buttonText={buttonText}
           handleClick={handleUpdateField}
           handleCancel={handleCancel}

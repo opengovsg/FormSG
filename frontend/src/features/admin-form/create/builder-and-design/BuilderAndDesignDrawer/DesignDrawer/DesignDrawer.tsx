@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useMemo } from 'react'
 import {
   Controller,
   UnpackNestedValue,
@@ -14,7 +14,6 @@ import {
   Flex,
   FormControl,
   FormLabel,
-  Skeleton,
   Stack,
   Tabs,
   Text,
@@ -22,7 +21,7 @@ import {
 } from '@chakra-ui/react'
 import { cloneDeep, get, isEmpty } from 'lodash'
 
-import { CustomFormLogo, FormColorTheme, FormLogoState } from '~shared/types'
+import { FormColorTheme, FormLogoState } from '~shared/types'
 
 import { useToast } from '~hooks/useToast'
 import { uploadLogo } from '~services/FileHandlerService'
@@ -32,19 +31,13 @@ import Radio from '~components/Radio'
 
 import { useMutateFormPage } from '~features/admin-form/common/mutations'
 import { useCreatePageSidebar } from '~features/admin-form/create/common/CreatePageSidebarContext'
-import { useEnv } from '~features/env/queries'
 import { getTitleBg } from '~features/public-form/components/FormStartPage/useFormHeader'
 
-import { useCreateTabForm } from '../../useCreateTabForm'
 import {
   CustomLogoMeta,
   customLogoMetaSelector,
   FormStartPageInput,
-  resetDesignStoreSelector,
-  setAttachmentSelector,
-  setCustomLogoMetaSelector,
   setStartPageDataSelector,
-  startPageDataSelector,
   useDesignStore,
 } from '../../useDesignStore'
 import { validateNumberInput } from '../../utils/validateNumberInput'
@@ -56,40 +49,25 @@ import {
   UploadImageInput,
 } from '../EditFieldDrawer/edit-fieldtype/EditImage/UploadImageInput'
 
-export const DesignDrawer = (): JSX.Element | null => {
+type DesignDrawerProps = {
+  startPageData: FormStartPageInput
+}
+
+export const DesignDrawer = ({
+  startPageData,
+}: DesignDrawerProps): JSX.Element | null => {
   const toast = useToast({ status: 'danger' })
-  const { data: form } = useCreateTabForm()
   const { formId } = useParams()
   if (!formId) throw new Error('No formId provided')
 
   const { startPageMutation } = useMutateFormPage()
-  const { data: { logoBucketUrl } = {} } = useEnv()
   const { handleClose } = useCreatePageSidebar()
 
-  const [existingCustomLogoFetched, setExistingCustomLogoFetched] =
-    useState<boolean>(form?.startPage.logo.state !== FormLogoState.Custom)
-
-  const isLoading = useMemo(
-    () => startPageMutation.isLoading || !existingCustomLogoFetched,
-    [startPageMutation.isLoading, existingCustomLogoFetched],
-  )
-
-  const {
-    startPageData,
-    customLogoMeta,
-    setStartPageData,
-    setAttachment,
-    setCustomLogoMeta,
-    resetDesignStore,
-  } = useDesignStore(
+  const { customLogoMeta, setStartPageData } = useDesignStore(
     useCallback(
       (state) => ({
-        startPageData: startPageDataSelector(state),
         customLogoMeta: customLogoMetaSelector(state),
         setStartPageData: setStartPageDataSelector(state),
-        setAttachment: setAttachmentSelector(state),
-        setCustomLogoMeta: setCustomLogoMetaSelector(state),
-        resetDesignStore: resetDesignStoreSelector(state),
       }),
       [],
     ),
@@ -97,51 +75,15 @@ export const DesignDrawer = (): JSX.Element | null => {
 
   const {
     register,
-    formState: { errors, isDirty },
+    formState: { errors },
     control,
     handleSubmit,
-    resetField,
     clearErrors,
     setError,
   } = useForm<FormStartPageInput>({
     mode: 'onBlur',
-    defaultValues: { ...form?.startPage, attachment: {} },
+    defaultValues: startPageData,
   })
-
-  // On mount, fetch custom logo file to display as part of attachment field.
-  const setAttachmentOnMount = useCallback(
-    async (logo: CustomFormLogo) => {
-      const srcUrl = `${logoBucketUrl}/${logo.fileId}`
-      const customLogoBlob = await fetch(srcUrl).then((res) => res.blob())
-      setAttachment({
-        file: new File([customLogoBlob], logo.fileName),
-        srcUrl,
-      })
-      setExistingCustomLogoFetched(true)
-    },
-    [logoBucketUrl, setAttachment],
-  )
-
-  // Load existing start page and custom logo into form when user opens drawer
-  useEffect(() => {
-    setStartPageData({
-      ...form?.startPage,
-      attachment: {},
-    } as FormStartPageInput)
-    if (form?.startPage.logo.state === FormLogoState.Custom) {
-      setAttachmentOnMount(form?.startPage.logo)
-      setCustomLogoMeta(form?.startPage.logo)
-    }
-    return () => resetDesignStore()
-  }, [])
-
-  useEffect(
-    () =>
-      resetField('attachment', {
-        defaultValue: startPageData?.attachment,
-      }),
-    [existingCustomLogoFetched],
-  )
 
   const watchedInputs = useWatch({
     control: control,
@@ -234,13 +176,13 @@ export const DesignDrawer = (): JSX.Element | null => {
 
       <DrawerContentContainer>
         <FormControl
-          isReadOnly={isLoading}
+          isReadOnly={startPageMutation.isLoading}
           isInvalid={!isEmpty(errors.attachment)}
         >
           <FormLabel>Logo</FormLabel>
           <Radio.RadioGroup
             value={startPageData.logo.state}
-            isDisabled={isLoading}
+            isDisabled={startPageMutation.isLoading}
           >
             <Radio value={FormLogoState.Default} {...register('logo.state')}>
               Default
@@ -253,12 +195,7 @@ export const DesignDrawer = (): JSX.Element | null => {
             </Radio>
           </Radio.RadioGroup>
           <Box ml="45px" mt="0.5rem">
-            <Box
-              hidden={
-                startPageData.logo.state !== FormLogoState.Custom ||
-                !existingCustomLogoFetched
-              }
-            >
+            <Box hidden={startPageData.logo.state !== FormLogoState.Custom}>
               <Controller
                 name="attachment"
                 control={control}
@@ -285,22 +222,22 @@ export const DesignDrawer = (): JSX.Element | null => {
                 {get(errors, 'attachment.message')}
               </FormErrorMessage>
             </Box>
-            <Skeleton w="100%" h="4.5rem" hidden={existingCustomLogoFetched} />
           </Box>
         </FormControl>
 
         <FormControl
-          isReadOnly={isLoading}
+          isReadOnly={startPageMutation.isLoading}
           isInvalid={!isEmpty(errors.colorTheme)}
         >
           <FormLabel>Theme colour</FormLabel>
           <Radio.RadioGroup
             value={startPageData.colorTheme}
-            isDisabled={isLoading}
+            isDisabled={startPageMutation.isLoading}
           >
             <Stack spacing="0" direction="row" display="inline">
-              {Object.values(FormColorTheme).map((color) => (
+              {Object.values(FormColorTheme).map((color, idx) => (
                 <Radio
+                  key={idx}
                   display="inline"
                   width="1rem"
                   value={color}
@@ -328,7 +265,10 @@ export const DesignDrawer = (): JSX.Element | null => {
           <FormErrorMessage>{errors.colorTheme?.message}</FormErrorMessage>
         </FormControl>
 
-        <FormControl isReadOnly={isLoading} isInvalid={!!errors.estTimeTaken}>
+        <FormControl
+          isReadOnly={startPageMutation.isLoading}
+          isInvalid={!!errors.estTimeTaken}
+        >
           <FormLabel>Time taken to complete form (minutes)</FormLabel>
           <Controller
             name="estTimeTaken"
@@ -351,15 +291,17 @@ export const DesignDrawer = (): JSX.Element | null => {
           <FormErrorMessage>{errors.estTimeTaken?.message}</FormErrorMessage>
         </FormControl>
 
-        <FormControl isReadOnly={isLoading} isInvalid={!!errors.paragraph}>
+        <FormControl
+          isReadOnly={startPageMutation.isLoading}
+          isInvalid={!!errors.paragraph}
+        >
           <FormLabel>Instructions for your form</FormLabel>
           <Textarea {...register('paragraph')} />
           <FormErrorMessage>{errors.paragraph?.message}</FormErrorMessage>
         </FormControl>
 
         <FormFieldDrawerActions
-          isLoading={isLoading}
-          isSaveEnabled={isDirty}
+          isLoading={startPageMutation.isLoading}
           handleClick={handleClick}
           handleCancel={handleClose}
           buttonText="Save design"

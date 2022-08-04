@@ -10,11 +10,13 @@ import {
   CpVerifiedContent,
   EncryptVerificationContentParams,
   GetVerifiedContentParams,
+  SgidVerifiedContent,
   SpVerifiedContent,
   VerifiedContentResult,
 } from './verified-content.types'
 import {
   getCpVerifiedContent,
+  getSgidVerifiedContent,
   getSpVerifiedContent,
 } from './verified-content.utils'
 
@@ -29,7 +31,7 @@ export const getVerifiedContent = ({
   type,
   data,
 }: GetVerifiedContentParams): VerifiedContentResult<
-  CpVerifiedContent | SpVerifiedContent
+  CpVerifiedContent | SpVerifiedContent | SgidVerifiedContent
 > => {
   switch (type) {
     case FormAuthType.SP:
@@ -37,11 +39,7 @@ export const getVerifiedContent = ({
     case FormAuthType.CP:
       return getCpVerifiedContent(data)
     case FormAuthType.SGID:
-      return err(
-        new EncryptVerifiedContentError(
-          'Fields from sgID not currently supported',
-        ),
-      )
+      return getSgidVerifiedContent(data)
   }
 }
 

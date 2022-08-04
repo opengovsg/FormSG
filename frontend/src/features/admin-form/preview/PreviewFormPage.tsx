@@ -1,4 +1,5 @@
 import { useParams } from 'react-router-dom'
+import { Flex } from '@chakra-ui/react'
 
 import GovtMasthead from '~components/GovtMasthead'
 
@@ -10,7 +11,7 @@ import FormInstructions from '~features/public-form/components/FormInstructions'
 import FormStartPage from '~features/public-form/components/FormStartPage'
 import { PublicFormWrapper } from '~features/public-form/components/PublicFormWrapper'
 
-import { PreviewFormHeader } from '../common/components/PreviewFormHeader/PreviewFormHeader'
+import { PreviewFormBanner } from '../common/components/PreviewFormBanner'
 
 import { PreviewFormProvider } from './PreviewFormProvider'
 
@@ -19,19 +20,21 @@ export const PreviewFormPage = (): JSX.Element => {
   if (!formId) throw new Error('No formId provided')
 
   return (
-    <PreviewFormProvider formId={formId}>
-      <GovtMasthead />
-      <PreviewFormHeader />
-      <FormSectionsProvider>
-        <FormStartPage />
-        <PublicFormWrapper>
-          <FormInstructions />
-          <FormFields />
-          <FormEndPage isPreview />
-          <FormFooter />
-        </PublicFormWrapper>
-      </FormSectionsProvider>
-    </PreviewFormProvider>
+    <Flex flexDir="column" height="100vh" pos="relative">
+      <PreviewFormProvider formId={formId}>
+        <GovtMasthead />
+        <PreviewFormBanner />
+        <FormSectionsProvider>
+          <FormStartPage />
+          <PublicFormWrapper isPreview>
+            <FormInstructions />
+            <FormFields />
+            <FormEndPage isPreview />
+            <FormFooter />
+          </PublicFormWrapper>
+        </FormSectionsProvider>
+      </PreviewFormProvider>
+    </Flex>
   )
 }
 

@@ -54,7 +54,11 @@ export const EndPageBlock = ({
                 </Text>
 
                 {endPage.paragraph ? (
-                  <Text color="secondary.500" textStyle="subhead-1">
+                  <Text
+                    color="secondary.500"
+                    textStyle="subhead-1"
+                    whiteSpace="pre-line"
+                  >
                     {endPage.paragraph}
                   </Text>
                 ) : null}
@@ -74,7 +78,7 @@ export const EndPageBlock = ({
       <Box mt="2.25rem">
         <Button
           as="a"
-          href={endPage.buttonLink ?? window.location.href}
+          href={endPage.buttonLink || window.location.href}
           variant="solid"
           colorScheme={`theme-${colorTheme}`}
         >

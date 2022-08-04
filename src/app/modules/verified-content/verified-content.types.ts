@@ -14,7 +14,11 @@ export type ICpVerifiedKeys = {
   userInfo: VerifiedKeys.CpUid
 }
 
-export type VerifiedKeyMap = SpVerifiedKeys | ICpVerifiedKeys
+export type SgidVerifiedKeys = {
+  uinFin: VerifiedKeys.SgidUinFin
+}
+
+export type VerifiedKeyMap = SpVerifiedKeys | ICpVerifiedKeys | SgidVerifiedKeys
 
 export type CpVerifiedContent = {
   [VerifiedKeys.CpUen]: string
@@ -25,10 +29,14 @@ export type SpVerifiedContent = {
   [VerifiedKeys.SpUinFin]: string
 }
 
+export type SgidVerifiedContent = {
+  [VerifiedKeys.SgidUinFin]: string
+}
+
 export type VerifiedContentResult<T> = Result<T, MalformedVerifiedContentError>
 
 export type EncryptVerificationContentParams = {
-  verifiedContent: CpVerifiedContent | SpVerifiedContent
+  verifiedContent: CpVerifiedContent | SpVerifiedContent | SgidVerifiedContent
   formPublicKey: string
 }
 

@@ -25,9 +25,7 @@ export type DesignStore = {
   startPageData?: FormStartPageInput
   customLogoMeta?: CustomLogoMeta
   setStartPageData: (startPageInput: FormStartPageInput) => void
-  setAttachment: (attachment: UploadedImage) => void
   setCustomLogoMeta: (customLogoMetaData: CustomLogoMeta) => void
-  resetCustomLogoMeta: () => void
   resetDesignStore: () => void
 }
 
@@ -38,24 +36,10 @@ export const useDesignStore = create<DesignStore>(
       if (isEqual(current.startPageData, startPageData)) return
       set({ startPageData })
     },
-    setAttachment: (attachment: UploadedImage) => {
-      const current = get()
-      if (!current.startPageData) return
-      if (isEqual(current.startPageData.attachment, attachment)) return
-      set({
-        startPageData: {
-          ...current.startPageData,
-          attachment,
-        },
-      })
-    },
     setCustomLogoMeta: (customLogoMeta: CustomLogoMeta) => {
       const current = get()
       if (isEqual(current.customLogoMeta, customLogoMeta)) return
       set({ customLogoMeta })
-    },
-    resetCustomLogoMeta: () => {
-      set({ customLogoMeta: undefined })
     },
     resetDesignStore: () => {
       set({
@@ -78,17 +62,9 @@ export const setStartPageDataSelector = (
   state: DesignStore,
 ): DesignStore['setStartPageData'] => state.setStartPageData
 
-export const setAttachmentSelector = (
-  state: DesignStore,
-): DesignStore['setAttachment'] => state.setAttachment
-
 export const setCustomLogoMetaSelector = (
   state: DesignStore,
 ): DesignStore['setCustomLogoMeta'] => state.setCustomLogoMeta
-
-export const resetCustomLogoMetaSelector = (
-  state: DesignStore,
-): DesignStore['resetCustomLogoMeta'] => state.resetCustomLogoMeta
 
 export const resetDesignStoreSelector = (
   state: DesignStore,

@@ -26,4 +26,4 @@ export const FEATURE_TOUR_KEY_PREFIX = 'has-seen-feature-tour-'
 /**
  * Key to store whether a user has seen the emergency contact number modal in localStorage.
  */
-export const EMERGENCY_CONTACT_KEY_PREFIX = 'has-emergency-contact'
+export const EMERGENCY_CONTACT_KEY_PREFIX = 'has-seen-emergency-contact'

@@ -7,15 +7,11 @@ import {
 } from 'react-icons/bi'
 import { ButtonGroup, MenuButton, MenuDivider } from '@chakra-ui/react'
 
-import { FormStatus } from '~shared/types'
-
 import { BxsChevronDown } from '~assets/icons/BxsChevronDown'
 import { BxsChevronUp } from '~assets/icons/BxsChevronUp'
 import Button from '~components/Button'
 import IconButton from '~components/IconButton'
 import Menu from '~components/Menu'
-
-import { ShareFormModal } from '~features/admin-form/share'
 
 import { RowActionsProps } from './RowActions'
 import { useRowActionDropdown } from './useRowActionDropdown'
@@ -30,79 +26,71 @@ export const RowActionsDropdown = ({
     handleDeleteForm,
     handleDuplicateForm,
     handleManageFormAccess,
-    shareFormModalDisclosure,
-  } = useRowActionDropdown(formMeta._id)
+    handleShareForm,
+  } = useRowActionDropdown(formMeta)
 
   return (
-    <>
-      <ShareFormModal
-        isOpen={shareFormModalDisclosure.isOpen}
-        formId={formMeta._id}
-        onClose={shareFormModalDisclosure.onClose}
-        isFormPrivate={formMeta.status === FormStatus.Private}
-      />
-      <Menu
-        placement="bottom-end"
-        // Prevents massize render load when there are a ton of rows
-        isLazy
-      >
-        {({ isOpen }) => (
-          <>
-            <ButtonGroup
-              isAttached
-              variant="outline"
-              colorScheme="secondary"
-              display={{ base: 'none', md: 'flex' }}
+    <Menu
+      placement="bottom-end"
+      // Prevents massize render load when there are a ton of rows
+      isLazy
+    >
+      {({ isOpen }) => (
+        <>
+          <ButtonGroup
+            isAttached
+            variant="outline"
+            colorScheme="secondary"
+            display={{ base: 'none', md: 'flex' }}
+          >
+            <Button px="1.5rem" mr="-1px" onClick={handleEditForm}>
+              Edit
+            </Button>
+            <MenuButton
+              as={IconButton}
+              isDisabled={isDisabled}
+              _active={{ bg: 'secondary.100' }}
+              isActive={isOpen}
+              aria-label="More actions"
+              icon={isOpen ? <BxsChevronUp /> : <BxsChevronDown />}
+            />
+          </ButtonGroup>
+          <Menu.List>
+            <Menu.Item
+              onClick={handlePreviewForm}
+              icon={<BiShow fontSize="1.25rem" />}
             >
-              <Button px="1.5rem" mr="-1px" onClick={handleEditForm}>
-                Edit
-              </Button>
-              <MenuButton
-                as={IconButton}
-                isDisabled={isDisabled}
-                _active={{ bg: 'secondary.100' }}
-                isActive={isOpen}
-                aria-label="More actions"
-                icon={isOpen ? <BxsChevronUp /> : <BxsChevronDown />}
-              />
-            </ButtonGroup>
-            <Menu.List>
-              <Menu.Item
-                onClick={handlePreviewForm}
-                icon={<BiShow fontSize="1.25rem" />}
-              >
-                Preview
-              </Menu.Item>
-              <Menu.Item
-                onClick={handleDuplicateForm}
-                icon={<BiDuplicate fontSize="1.25rem" />}
-              >
-                Duplicate
-              </Menu.Item>
-              <Menu.Item
-                onClick={shareFormModalDisclosure.onOpen}
-                icon={<BiShareAlt fontSize="1.25rem" />}
-              >
-                Share form
-              </Menu.Item>
-              <Menu.Item
-                onClick={handleManageFormAccess}
-                icon={<BiUserPlus fontSize="1.25rem" />}
-              >
-                Manage form access
-              </Menu.Item>
-              <MenuDivider />
-              <Menu.Item
-                onClick={handleDeleteForm}
-                color="danger.500"
-                icon={<BiTrash fontSize="1.25rem" />}
-              >
-                Delete
-              </Menu.Item>
-            </Menu.List>
-          </>
-        )}
-      </Menu>
-    </>
+              Preview
+            </Menu.Item>
+            <Menu.Item
+              onClick={handleDuplicateForm}
+              icon={<BiDuplicate fontSize="1.25rem" />}
+            >
+              Duplicate
+            </Menu.Item>
+            <Menu.Item
+              onClick={handleShareForm}
+              icon={<BiShareAlt fontSize="1.25rem" />}
+            >
+              Share form
+            </Menu.Item>
+            <Menu.Item
+              onClick={handleManageFormAccess}
+              icon={<BiUserPlus fontSize="1.25rem" />}
+            >
+              Manage form access
+            </Menu.Item>
+            <MenuDivider />
+            <Menu.Item
+              onClick={handleDeleteForm}
+              color="danger.500"
+              icon={<BiTrash fontSize="1.25rem" />}
+            >
+              Delete
+            </Menu.Item>
+          </Menu.List>
+        </>
+      )}
+    </Menu>
   )
 }

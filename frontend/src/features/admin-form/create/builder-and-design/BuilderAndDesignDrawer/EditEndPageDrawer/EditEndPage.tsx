@@ -140,7 +140,13 @@ export const EndPageBuilderInput = ({
         justifyContent="end"
         spacing="1rem"
       >
-        <Button isFullWidth={isMobile} onClick={handleUpdateEndPage}>
+        <Button
+          isFullWidth={isMobile}
+          onClick={() => {
+            handleUpdateEndPage()
+            closeBuilderDrawer()
+          }}
+        >
           Save field
         </Button>
         <Button

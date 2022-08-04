@@ -309,6 +309,12 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
       default: 0,
       env: 'REACT_MIGRATION_ADMIN_ROLLOUT',
     },
+    adminRollout: {
+      doc: 'Percentage threshold to serve React for admins',
+      format: 'int',
+      default: 0,
+      env: 'REACT_MIGRATION_ADMIN_ROLLOUT',
+    },
     respondentCookieName: {
       doc: "Name of the cookie that will store respondents' assigned environment.",
       format: String,
