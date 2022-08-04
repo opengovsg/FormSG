@@ -17,14 +17,15 @@ import { FeatureTour } from './featureTour/FeatureTour'
 
 export const CreatePage = (): JSX.Element => {
   const { formId } = useParams()
-  const { hasEditAccess } = useAdminFormCollaborators()
+  const { hasEditAccess, isLoading: isCollabLoading } =
+    useAdminFormCollaborators()
   const navigate = useNavigate()
 
   // Redirect view-only collaborators to results screen.
   useEffect(() => {
-    if (!hasEditAccess)
+    if (!isCollabLoading && !hasEditAccess)
       navigate(`${ADMINFORM_ROUTE}/${formId}/${ADMINFORM_RESULTS_SUBROUTE}`)
-  }, [formId, hasEditAccess, navigate])
+  }, [formId, hasEditAccess, isCollabLoading, navigate])
 
   const { user, isLoading } = useUser()
   const localStorageFeatureTourKey = useMemo(() => {

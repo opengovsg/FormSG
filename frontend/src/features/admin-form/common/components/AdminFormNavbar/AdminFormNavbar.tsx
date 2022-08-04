@@ -28,8 +28,6 @@ import IconButton from '~components/IconButton'
 import { Tab } from '~components/Tabs'
 import Tooltip from '~components/Tooltip'
 
-import { useAdminFormCollaborators } from '../../queries'
-
 import { AdminFormNavbarDetails } from './AdminFormNavbarDetails'
 
 export interface AdminFormNavbarProps {
@@ -38,6 +36,8 @@ export interface AdminFormNavbarProps {
    * If not provided, the navbar will be in a loading state.
    */
   formInfo?: Pick<AdminFormDto, 'title' | 'lastModified'>
+
+  viewOnly: boolean
 
   handleBackButtonClick: () => void
   handleAddCollabButtonClick: () => void
@@ -50,6 +50,7 @@ export interface AdminFormNavbarProps {
  */
 export const AdminFormNavbar = ({
   formInfo,
+  viewOnly,
   handleAddCollabButtonClick,
   handleBackButtonClick,
   handlePreviewFormButtonClick,
@@ -57,7 +58,6 @@ export const AdminFormNavbar = ({
 }: AdminFormNavbarProps): JSX.Element => {
   const { ref, onMouseDown } = useDraggable<HTMLDivElement>()
   const { isOpen, onClose, onOpen } = useDisclosure()
-  const { hasEditAccess } = useAdminFormCollaborators()
 
   const mobileDrawerExtraButtonProps: Partial<ButtonProps> = useMemo(
     () => ({
@@ -124,10 +124,10 @@ export const AdminFormNavbar = ({
         justifyContent={{ base: 'flex-start', lg: 'center' }}
         alignSelf="center"
       >
-        <Tab hidden={!hasEditAccess} isDisabled={!formInfo}>
+        <Tab hidden={viewOnly} isDisabled={!formInfo}>
           Create
         </Tab>
-        <Tab hidden={!hasEditAccess} isDisabled={!formInfo}>
+        <Tab hidden={viewOnly} isDisabled={!formInfo}>
           Settings
         </Tab>
         <Tab isDisabled={!formInfo}>Results</Tab>
