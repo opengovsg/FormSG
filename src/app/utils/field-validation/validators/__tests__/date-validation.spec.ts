@@ -9,6 +9,7 @@ import {
 import {
   BasicField,
   DateSelectedValidation,
+  InvalidDaysOptions,
 } from '../../../../../../shared/types'
 
 describe('Date field validation', () => {
@@ -321,6 +322,62 @@ describe('Date field validation', () => {
     expect(validateResult.isErr()).toBe(true)
     expect(validateResult._unsafeUnwrapErr()).toEqual(
       new ValidateFieldError('Attempted to submit response on a hidden field'),
+    )
+  })
+
+  it('should allow dates if invalid day array is empty', () => {
+    const formField = generateDefaultField(BasicField.Date, {
+      dateValidation: {
+        selectedDateValidation: null,
+        customMinDate: null,
+        customMaxDate: null,
+      },
+      invalidDays: [],
+    })
+    const response = generateNewSingleAnswerResponse(BasicField.Date, {
+      answer: '26 Jul 2022',
+    })
+
+    const validateResult = validateField('formId', formField, response)
+    expect(validateResult.isOk()).toBe(true)
+    expect(validateResult._unsafeUnwrap()).toEqual(true)
+  })
+
+  it('should allow dates that is not an invalid day', () => {
+    const formField = generateDefaultField(BasicField.Date, {
+      dateValidation: {
+        selectedDateValidation: null,
+        customMinDate: null,
+        customMaxDate: null,
+      },
+      invalidDays: [InvalidDaysOptions.Wednesday, InvalidDaysOptions.Thursday],
+    })
+    const response = generateNewSingleAnswerResponse(BasicField.Date, {
+      answer: '29 Jul 2022',
+    })
+
+    const validateResult = validateField('formId', formField, response)
+    expect(validateResult.isOk()).toBe(true)
+    expect(validateResult._unsafeUnwrap()).toEqual(true)
+  })
+
+  it('should disallow dates that is an invalid day', () => {
+    const formField = generateDefaultField(BasicField.Date, {
+      dateValidation: {
+        selectedDateValidation: null,
+        customMinDate: null,
+        customMaxDate: null,
+      },
+      invalidDays: [InvalidDaysOptions.Wednesday, InvalidDaysOptions.Thursday],
+    })
+    const response = generateNewSingleAnswerResponse(BasicField.Date, {
+      answer: '27 Jul 2022',
+    })
+
+    const validateResult = validateField('formId', formField, response)
+    expect(validateResult.isErr()).toBe(true)
+    expect(validateResult._unsafeUnwrapErr()).toEqual(
+      new ValidateFieldError('Invalid answer submitted'),
     )
   })
 })
