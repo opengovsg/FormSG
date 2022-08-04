@@ -11,8 +11,8 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
-  OrderedList,
   Text,
+  UnorderedList,
   useBreakpointValue,
   UseDisclosureReturn,
 } from '@chakra-ui/react'
@@ -66,7 +66,7 @@ export const DeleteFormModal = ({
             You will lose all responses and feedback for the following form
             permanently. Are you sure you want to delete the form?
           </Text>
-          <OrderedList
+          <UnorderedList
             spacing="0.5rem"
             listStyleType="none"
             ml="1.75rem"
@@ -82,7 +82,7 @@ export const DeleteFormModal = ({
               />
               {formToDelete?.title}
             </ListItem>
-          </OrderedList>
+          </UnorderedList>
         </ModalBody>
         <ModalFooter>
           <ButtonGroup>
