@@ -68,7 +68,6 @@ export const EditEmail = ({ field }: EditEmailProps): JSX.Element => {
   const {
     register,
     formState: { errors },
-    isSaveEnabled,
     buttonText,
     handleUpdateField,
     watch,
@@ -248,7 +247,6 @@ export const EditEmail = ({ field }: EditEmailProps): JSX.Element => {
       </Box>
       <FormFieldDrawerActions
         isLoading={isLoading}
-        isSaveEnabled={isSaveEnabled}
         buttonText={buttonText}
         handleClick={handleUpdateField}
         handleCancel={handleCancel}

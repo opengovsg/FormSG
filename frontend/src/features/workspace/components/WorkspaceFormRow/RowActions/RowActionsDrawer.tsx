@@ -19,12 +19,8 @@ import {
   useDisclosure,
 } from '@chakra-ui/react'
 
-import { FormStatus } from '~shared/types'
-
 import Button, { ButtonProps } from '~components/Button'
 import IconButton from '~components/IconButton'
-
-import { ShareFormModal } from '~features/admin-form/share'
 
 import { RowActionsProps } from './RowActions'
 import { useRowActionDropdown } from './useRowActionDropdown'
@@ -44,8 +40,8 @@ export const RowActionsDrawer = ({
     handleEditForm,
     handleManageFormAccess,
     handlePreviewForm,
-    shareFormModalDisclosure,
-  } = useRowActionDropdown(formMeta._id)
+    handleShareForm,
+  } = useRowActionDropdown(formMeta)
 
   const buttonProps: Partial<ButtonProps> = useMemo(
     () => ({
@@ -59,12 +55,6 @@ export const RowActionsDrawer = ({
 
   return (
     <Box display={{ md: 'none' }}>
-      <ShareFormModal
-        isOpen={shareFormModalDisclosure.isOpen}
-        formId={formMeta._id}
-        onClose={shareFormModalDisclosure.onClose}
-        isFormPrivate={formMeta.status === FormStatus.Private}
-      />
       <IconButton
         variant="clear"
         aria-label="More options"
@@ -106,7 +96,7 @@ export const RowActionsDrawer = ({
               </Button>
               <Button
                 {...buttonProps}
-                onClick={shareFormModalDisclosure.onOpen}
+                onClick={handleShareForm}
                 leftIcon={<BiShareAlt fontSize="1.25rem" />}
               >
                 Share form

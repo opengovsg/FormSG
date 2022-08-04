@@ -125,7 +125,6 @@ export const EditImage = ({ field }: EditImageProps): JSX.Element => {
     formState: { errors, isSubmitting },
     setError,
     clearErrors,
-    isSaveEnabled,
     buttonText,
     handleUpdateField,
     isLoading,
@@ -194,7 +193,6 @@ export const EditImage = ({ field }: EditImageProps): JSX.Element => {
       </FormControl>
       <FormFieldDrawerActions
         isLoading={isLoading || isSubmitting}
-        isSaveEnabled={isSaveEnabled}
         buttonText={buttonText}
         handleClick={handleUpdateFieldWithCatch}
         handleCancel={handleCancel}

@@ -109,13 +109,14 @@ export const ShareFormModal = ({
             {isFormPrivate ? (
               <InlineMessage variant="warning">
                 <Box>
-                  This form is currently closed to new responses.{' '}
+                  This form is currently closed to new responses. Activate your
+                  form in{' '}
                   <Button
                     p={0}
                     variant="link"
                     onClick={handleRedirectToSettings}
                   >
-                    Activate your form
+                    Settings
                   </Button>{' '}
                   to allow new responses.
                 </Box>

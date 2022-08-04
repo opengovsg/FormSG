@@ -14,6 +14,7 @@ import {
 } from '@chakra-ui/react'
 import { times } from 'lodash'
 
+import { FormColorTheme } from '~shared/types'
 import { BasicField, FormFieldDto } from '~shared/types/field'
 
 import { useIsMobile } from '~hooks/useIsMobile'
@@ -60,6 +61,7 @@ import {
   updateEditStateSelector,
   useBuilderAndDesignStore,
 } from '../../useBuilderAndDesignStore'
+import { useDesignColorTheme } from '../../utils/useDesignColorTheme'
 
 import { SectionFieldRow } from './SectionFieldRow'
 
@@ -92,6 +94,8 @@ export const FieldRowContainer = ({
 
   const { duplicateFieldMutation } = useDuplicateFormField()
   const { deleteFieldMutation } = useDeleteFormField()
+
+  const colorTheme = useDesignColorTheme()
 
   const defaultFieldValues = useMemo(() => {
     if (field.fieldType === BasicField.Table) {
@@ -269,7 +273,7 @@ export const FieldRowContainer = ({
               pointerEvents={isActive ? undefined : 'none'}
             >
               <FormProvider {...formMethods}>
-                <MemoFieldRow field={field} />
+                <MemoFieldRow field={field} colorTheme={colorTheme} />
               </FormProvider>
             </Box>
             <Collapse in={isActive} style={{ width: '100%' }}>
@@ -325,6 +329,7 @@ export const FieldRowContainer = ({
 
 type MemoFieldRowProps = {
   field: FormFieldDto
+  colorTheme?: FormColorTheme
 }
 
 const MemoFieldRow = memo(({ field, ...rest }: MemoFieldRowProps) => {

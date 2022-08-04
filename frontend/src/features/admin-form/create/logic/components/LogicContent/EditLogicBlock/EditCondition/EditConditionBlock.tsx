@@ -160,6 +160,22 @@ export const EditConditionBlock = ({
     }
   }, [currentSelectedField])
 
+  const validateValueInputComponent = useCallback(
+    (val) => {
+      switch (ifValueTypeValue) {
+        case LogicIfValue.Number: {
+          if (currentSelectedField?.fieldType === BasicField.Decimal)
+            // Mimics behavior of actual decimal field in public forms
+            return !val || !isNaN(Number(val)) || 'Please enter a valid decimal'
+          return true
+        }
+        default:
+          return true
+      }
+    },
+    [currentSelectedField?.fieldType, ifValueTypeValue],
+  )
+
   const renderValueInputComponent = useCallback(
     (field: ControllerRenderProps<EditLogicInputs, `${typeof name}.value`>) => {
       const selectProps = {
@@ -183,7 +199,21 @@ export const EditConditionBlock = ({
               {...rest}
             />
           )
-        case LogicIfValue.Number:
+        case LogicIfValue.Number: {
+          if (currentSelectedField?.fieldType === BasicField.Number)
+            return (
+              <NumberInput
+                inputMode="numeric"
+                isDisabled={!conditionStateValue}
+                value={String(value ?? '')}
+                {...rest}
+                onChange={(val) => {
+                  // Only allow numeric inputs, mimics behavior of NumberField
+                  rest.onChange(val.replace(/\D/g, ''))
+                }}
+                min={0}
+              />
+            )
           return (
             <NumberInput
               isDisabled={!conditionStateValue}
@@ -191,6 +221,7 @@ export const EditConditionBlock = ({
               {...rest}
             />
           )
+        }
         case undefined:
           return (
             <SingleSelect
@@ -202,7 +233,13 @@ export const EditConditionBlock = ({
           )
       }
     },
-    [conditionStateValue, conditionValueItems, ifValueTypeValue, isLoading],
+    [
+      conditionStateValue,
+      conditionValueItems,
+      currentSelectedField?.fieldType,
+      ifValueTypeValue,
+      isLoading,
+    ],
   )
 
   return (
@@ -323,6 +360,7 @@ export const EditConditionBlock = ({
                   name={`${name}.value`}
                   rules={{
                     required: 'Please enter logic criteria.',
+                    validate: validateValueInputComponent,
                   }}
                   render={({ field }) => renderValueInputComponent(field)}
                 />

@@ -15,8 +15,8 @@ import {
   useBuilderAndDesignStore,
 } from '../useBuilderAndDesignStore'
 
-import { DesignDrawer } from './DesignDrawer/DesignDrawer'
 import { EditEndPageDrawer } from './EditEndPageDrawer/EditEndPageDrawer'
+import DesignDrawer from './DesignDrawer'
 import { EditFieldDrawer } from './EditFieldDrawer'
 import { FieldListDrawer } from './FieldListDrawer'
 

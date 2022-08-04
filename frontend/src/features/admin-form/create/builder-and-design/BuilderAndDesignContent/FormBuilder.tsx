@@ -3,6 +3,8 @@ import { Box, Flex, FlexProps, Text } from '@chakra-ui/react'
 
 import Button from '~components/Button'
 
+import { useBgColor } from '~features/public-form/components/PublicFormWrapper'
+
 import { useCreatePageSidebar } from '../../common/CreatePageSidebarContext'
 import { FIELD_LIST_DROP_ID } from '../constants'
 import { DndPlaceholderProps } from '../types'
@@ -10,6 +12,7 @@ import {
   setToEditEndPageSelector,
   useBuilderAndDesignStore,
 } from '../useBuilderAndDesignStore'
+import { useDesignColorTheme } from '../utils/useDesignColorTheme'
 
 import { EmptyFormPlaceholder } from './BuilderAndDesignPlaceholder/EmptyFormPlaceholder'
 import BuilderAndDesignPlaceholder from './BuilderAndDesignPlaceholder'
@@ -29,12 +32,14 @@ export const FormBuilder = ({
   const { handleBuilderClick } = useCreatePageSidebar()
   const setEditEndPage = useBuilderAndDesignStore(setToEditEndPageSelector)
 
+  const bg = useBgColor(useDesignColorTheme())
+
   return (
     <Flex
       m={{ base: 0, md: '2rem' }}
       mb={0}
       flex={1}
-      bg={{ base: 'secondary.100', md: 'primary.100' }}
+      bg={bg}
       p={{ base: '1.5rem', md: '2.5rem' }}
       justify="center"
       overflow="auto"

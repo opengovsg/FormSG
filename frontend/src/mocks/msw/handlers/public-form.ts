@@ -79,7 +79,7 @@ export const BASE_FORM = {
   form_fields: [
     {
       title: 'Yes/No',
-      description: '',
+      description: 'This is a\n\nmultiline description\r\nanother line',
       required: true,
       disabled: false,
       fieldType: 'yes_no',

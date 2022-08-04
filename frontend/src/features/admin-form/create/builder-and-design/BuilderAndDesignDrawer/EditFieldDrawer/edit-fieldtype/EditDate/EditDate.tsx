@@ -104,7 +104,6 @@ export const EditDate = ({ field }: EditDateProps): JSX.Element => {
     register,
     formState: { errors },
     getValues,
-    isSaveEnabled,
     control,
     buttonText,
     handleUpdateField,
@@ -218,7 +217,6 @@ export const EditDate = ({ field }: EditDateProps): JSX.Element => {
       </FormControl>
       <FormFieldDrawerActions
         isLoading={isLoading}
-        isSaveEnabled={isSaveEnabled}
         buttonText={buttonText}
         handleClick={handleUpdateField}
         handleCancel={handleCancel}

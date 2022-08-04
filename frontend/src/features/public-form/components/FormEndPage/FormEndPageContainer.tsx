@@ -9,11 +9,13 @@ import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 import { FeedbackFormInput } from './components/FeedbackBlock'
 import { FormEndPage } from './FormEndPage'
 
+interface FormEndPageContainerProps {
+  isPreview?: boolean
+}
+
 export const FormEndPageContainer = ({
   isPreview,
-}: {
-  isPreview?: boolean
-}): JSX.Element | null => {
+}: FormEndPageContainerProps): JSX.Element | null => {
   const { form, formId, submissionData } = usePublicFormContext()
   const { submitFormFeedbackMutation } = usePublicFormMutations(
     formId,
