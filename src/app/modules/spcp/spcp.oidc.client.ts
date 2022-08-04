@@ -295,22 +295,19 @@ export class SpcpOidcBaseClient {
 
     try {
       // Exchange Auth Code for tokenSet
+      // We use axios because openid-client library 1) does not include typ attribute in header
+      // which is required by NDI and 2) constructs aud claim as an array, instead of string
+      // as required by NDI
 
       // Create client assertion
-      // We use axios because openid-client library does not include typ attribute in header
-      // which is required by NDI
-      const clientAssertion = await new SignJWT({})
-        .setIssuedAt()
-        .setIssuer(this.#rpClientId)
-        .setAudience(baseClient.issuer.metadata.issuer)
-        .setSubject(this.#rpClientId)
-        .setProtectedHeader({
-          typ: 'JWT',
-          alg: signingKeyResult.alg,
-          kid: signingKeyResult.kid,
-        })
-        .setExpirationTime('60s')
-        .sign(signingKeyResult.key)
+      const clientAssertion = await this.createJWT(
+        {
+          iss: this.#rpClientId,
+          aud: baseClient.issuer.metadata.issuer,
+          sub: this.#rpClientId,
+        },
+        '60s',
+      )
 
       // Construct request body. It is necessary to stringify the body because
       // SP/CP OIDC requires content type to be application/x-www-form-urlencoded
@@ -326,13 +323,13 @@ export class SpcpOidcBaseClient {
           : {}),
       }).toString()
 
-      const tokenSet = await axios.post<TokenSet>(tokenEndpoint, body, {
+      const { data } = await axios.post<TokenSet>(tokenEndpoint, body, {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
         },
       })
 
-      const { id_token: idToken } = tokenSet.data
+      const { id_token: idToken } = data
 
       if (!idToken) {
         throw new MissingIdTokenError()
@@ -438,6 +435,7 @@ export class SpcpOidcBaseClient {
 
   /**
    * Creates a JSON Web Token (JWT) for a web session authenticated by SingPass/Corppass
+   * Also used to sign client assertion for token exchange
    * @param  payload - Payload to sign
    * @param  expiresIn - The lifetime of the jwt token
    * @return the created JWT
@@ -455,9 +453,11 @@ export class SpcpOidcBaseClient {
 
     const jwt = await new SignJWT(payload)
       .setProtectedHeader({
+        typ: 'JWT',
         alg: signingKeyResult.alg,
         kid: signingKeyResult.kid,
       })
+      .setIssuedAt()
       .setExpirationTime(expiresIn)
       .sign(signingKeyResult.key)
 
