@@ -125,7 +125,7 @@ const DAY_TO_NUMBER_MAP: Record<InvalidDaysOptions, number> = {
  * to a number array representing the number representation
  * of the corresponding day of the week
  */
-const convertInvalidDaysOfTheWeekToNumberSet = (
+export const convertInvalidDaysOfTheWeekToNumberSet = (
   invalidDays: InvalidDaysOptions[],
 ): Set<number> => {
   if (invalidDays.length === 0) {
@@ -145,12 +145,6 @@ const makeInvalidDayOfTheWeekValidator: DateValidatorConstructor =
     const invalidDaysOfTheWeekSet = convertInvalidDaysOfTheWeekToNumberSet(
       dateField.invalidDays ?? [],
     )
-
-    if (invalidDaysOfTheWeekSet.has(-1)) {
-      return left(
-        `DateValidator:\t invalid day value is not a valid invalid day option`,
-      )
-    }
 
     // Convert date response to a ISO day of the week number format
     const dateResponseNumberFormat = parseInt(format(new Date(answer), 'i'))

@@ -161,38 +161,29 @@ export const transformCheckedBoxesValueToInvalidDays = (
   return ALL_INVALID_DAYS_ARR.filter((day) => !validDaysSet.has(day))
 }
 
-const convertInvalidDayToNumber = (invalidDay: InvalidDaysOptions): number => {
-  switch (invalidDay) {
-    case InvalidDaysOptions.Monday:
-      return 1
-    case InvalidDaysOptions.Tuesday:
-      return 2
-    case InvalidDaysOptions.Wednesday:
-      return 3
-    case InvalidDaysOptions.Thursday:
-      return 4
-    case InvalidDaysOptions.Friday:
-      return 5
-    case InvalidDaysOptions.Saturday:
-      return 6
-    case InvalidDaysOptions.Sunday:
-      return 7
-    default:
-      return -1
-  }
+const DAY_TO_NUMBER_MAP: Record<InvalidDaysOptions, number> = {
+  [InvalidDaysOptions.Monday]: 1,
+  [InvalidDaysOptions.Tuesday]: 2,
+  [InvalidDaysOptions.Wednesday]: 3,
+  [InvalidDaysOptions.Thursday]: 4,
+  [InvalidDaysOptions.Friday]: 5,
+  [InvalidDaysOptions.Saturday]: 6,
+  [InvalidDaysOptions.Sunday]: 7,
 }
 
-const convertInvalidDaysOfTheWeekToNumberSet = (
+/**
+ * Convert the days of the week in the invalidDays array
+ * to a number array representing the number representation
+ * of the corresponding day of the week
+ */
+export const convertInvalidDaysOfTheWeekToNumberSet = (
   invalidDays: InvalidDaysOptions[],
 ): Set<number> => {
   if (invalidDays.length === 0) {
     return new Set()
   }
 
-  const invaliDaysNumberArray = invalidDays.map((invalidDay) =>
-    convertInvalidDayToNumber(invalidDay),
-  )
-  return new Set(invaliDaysNumberArray)
+  return new Set(invalidDays.map((invalidDay) => DAY_TO_NUMBER_MAP[invalidDay]))
 }
 
 export const isDateAnInvalidDay = (
