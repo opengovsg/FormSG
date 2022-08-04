@@ -1,13 +1,12 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo } from 'react'
 import {
   RegisterOptions,
   useForm,
   UseFormRegisterReturn,
 } from 'react-hook-form'
-import { BiHappyHeartEyes, BiHide, BiShow } from 'react-icons/bi'
+import { BiHide, BiShow } from 'react-icons/bi'
 import {
   FormControl,
-  Icon,
   InputGroup,
   InputRightElement,
   Skeleton,
@@ -35,23 +34,15 @@ const TWILIO_INPUT_RULES: Record<keyof TwilioCredentials, RegisterOptions> = {
   accountSid: {
     required: 'Account SID is required',
     pattern: {
-      value: /^AC/,
+      value: /^\s*AC\s*/,
       message: 'Account SID must start with AC',
-    },
-    validate: {
-      noWhitespace: (value) =>
-        !value.trim().match(/\s/) || 'Account SID must not contain whitespace',
     },
   },
   apiKey: {
     required: 'API key SID is required',
     pattern: {
-      value: /^SK/,
+      value: /^\s*SK\s*/,
       message: 'API key SID must start with SK',
-    },
-    validate: {
-      noWhitespace: (value) =>
-        !value.trim().match(/\s/) || 'API key SID must not contain whitespace',
     },
   },
   apiSecret: {
@@ -65,13 +56,8 @@ const TWILIO_INPUT_RULES: Record<keyof TwilioCredentials, RegisterOptions> = {
   messagingServiceSid: {
     required: 'Messaging service SID is required',
     pattern: {
-      value: /^MG/,
+      value: /^\s*MG\s*/,
       message: 'Messaging service SID must start with MG',
-    },
-    validate: {
-      noWhitespace: (value) =>
-        !value.trim().match(/\s/) ||
-        'Messaging service SID must not contain whitespace',
     },
   },
 }
