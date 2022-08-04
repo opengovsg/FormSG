@@ -52,8 +52,15 @@ export const FormBuilder = ({
         bg={bg}
       >
         <StartPageView />
-        <Flex flexDir="column" alignSelf="center" px="2.5rem" w="100%">
-          <Box bg="white" w="100%" maxW="57rem" alignSelf="center">
+        <Flex flexDir="column" alignSelf="center" w="100%" px="2.5rem">
+          <Box
+            bg="white"
+            w="100%"
+            maxW="57rem"
+            alignSelf="center"
+            px="1.625rem"
+            py="2.5rem"
+          >
             <Droppable droppableId={FIELD_LIST_DROP_ID}>
               {(provided, snapshot) =>
                 builderFields?.length ? (
