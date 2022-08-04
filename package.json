@@ -63,7 +63,7 @@
     "@opengovsg/ng-file-upload": "^12.2.15",
     "@opengovsg/sgid-client": "1.0.3",
     "@opengovsg/spcp-auth-client": "^1.4.17",
-    "@sentry/browser": "^7.8.0",
+    "@sentry/browser": "^7.8.1",
     "@sentry/integrations": "^6.19.7",
     "@stablelib/base64": "^1.0.1",
     "JSONStream": "^1.3.5",
@@ -170,7 +170,7 @@
   "devDependencies": {
     "@babel/core": "^7.18.10",
     "@babel/plugin-transform-runtime": "^7.18.9",
-    "@babel/preset-env": "^7.18.9",
+    "@babel/preset-env": "^7.18.10",
     "@opengovsg/mockpass": "^2.9.2",
     "@types/bcrypt": "^5.0.0",
     "@types/bluebird": "^3.5.36",
