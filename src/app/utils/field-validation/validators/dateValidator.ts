@@ -125,7 +125,7 @@ const DAY_TO_NUMBER_MAP: Record<InvalidDaysOptions, number> = {
  * to a number array representing the number representation
  * of the corresponding day of the week
  */
-export const convertInvalidDaysOfTheWeekToNumberSet = (
+const convertInvalidDaysOfTheWeekToNumberSet = (
   invalidDays: InvalidDaysOptions[],
 ): Set<number> => {
   if (invalidDays.length === 0) {
