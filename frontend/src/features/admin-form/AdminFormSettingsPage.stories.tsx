@@ -10,11 +10,13 @@ import {
 
 import {
   createFormBuilderMocks,
+  getAdminFormCollaborators,
   getAdminFormSettings,
   getAdminFormSubmissions,
   patchAdminFormSettings,
 } from '~/mocks/msw/handlers/admin-form'
 import { getFreeSmsQuota } from '~/mocks/msw/handlers/admin-form/twilio'
+import { getUser } from '~/mocks/msw/handlers/user'
 
 import formsgSdk from '~utils/formSdk'
 import { viewports } from '~utils/storybook'
@@ -50,6 +52,8 @@ export default {
       getAdminFormSettings(),
       getAdminFormSubmissions(),
       patchAdminFormSettings(),
+      getUser(),
+      getAdminFormCollaborators(),
     ],
   },
 } as Meta

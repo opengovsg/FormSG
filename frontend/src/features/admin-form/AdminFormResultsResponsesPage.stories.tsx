@@ -8,9 +8,11 @@ import { FormResponseMode } from '~shared/types/form'
 
 import {
   createFormBuilderMocks,
+  getAdminFormCollaborators,
   getAdminFormSubmissions,
   getStorageSubmissionMetadataResponse,
 } from '~/mocks/msw/handlers/admin-form'
+import { getUser } from '~/mocks/msw/handlers/user'
 
 import {
   ADMINFORM_RESULTS_SUBROUTE,
@@ -32,7 +34,12 @@ export default {
     // Required so skeleton "animation" does not hide content.
     chromatic: { pauseAnimationAtEnd: true },
     layout: 'fullscreen',
-    msw: [...createFormBuilderMocks({}, 0), getAdminFormSubmissions()],
+    msw: [
+      ...createFormBuilderMocks({}, 0),
+      getAdminFormSubmissions(),
+      getUser(),
+      getAdminFormCollaborators(),
+    ],
   },
 } as Meta
 
