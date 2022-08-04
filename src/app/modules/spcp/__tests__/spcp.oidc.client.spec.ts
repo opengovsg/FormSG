@@ -1,3 +1,4 @@
+import axios from 'axios'
 import { createPrivateKey, createPublicKey } from 'crypto'
 import fs from 'fs'
 import * as jose from 'jose'
@@ -15,6 +16,7 @@ import {
   CreateJwtError,
   ExchangeAuthTokenError,
   GetDecryptionKeyError,
+  GetSigningKeyError,
   GetVerificationKeyError,
   InvalidIdTokenError,
   JwkError,
@@ -28,6 +30,7 @@ import {
   PublicJwks,
   Refresh,
   SecretJwks,
+  SigningKey,
   SpOidcClientConstructorParams,
 } from '../spcp.oidc.client.types'
 
@@ -880,6 +883,10 @@ describe('SpOidcClient', () => {
       }
     })
 
+    const AXIOS_HEADER = {
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    }
+
     it('should throw ExchangeAuthTokenError if authCode is empty and NOT call refresh', async () => {
       // Arrange
       const refreshSpy = jest
@@ -934,15 +941,19 @@ describe('SpOidcClient', () => {
         .mockResolvedValueOnce('ok' as unknown as Refresh)
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
-      const mockGrant = jest
-        .fn()
-        .mockRejectedValueOnce(new Error('grant failed'))
-
       jest
         .spyOn(SpOidcClient.prototype, 'getBaseClientFromCache')
         .mockResolvedValueOnce({
-          grant: mockGrant,
+          issuer: {
+            metadata: {
+              token_endpoint: 'endpoint',
+            },
+          },
         } as unknown as BaseClient)
+
+      const axiosSpy = jest
+        .spyOn(axios, 'post')
+        .mockRejectedValueOnce(new Error('failed'))
 
       const MOCK_AUTHCODE = 'authCode'
 
@@ -954,7 +965,13 @@ describe('SpOidcClient', () => {
         spOidcClient.exchangeAuthCodeAndDecodeVerifyToken(MOCK_AUTHCODE)
 
       // Assert
-      await expect(tryExchangeAuthCode).rejects.toThrowError('grant failed')
+      await expect(tryExchangeAuthCode).rejects.toThrowError('failed')
+      expect(axiosSpy).toHaveBeenCalledOnce()
+      expect(axiosSpy).toBeCalledWith(
+        'endpoint',
+        expect.stringContaining('client_id'),
+        expect.objectContaining(AXIOS_HEADER),
+      )
       expect(refreshSpy).toHaveBeenCalledTimes(2)
     })
 
@@ -965,13 +982,19 @@ describe('SpOidcClient', () => {
         .mockResolvedValueOnce('ok' as unknown as Refresh)
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
-      const mockGrant = jest.fn().mockResolvedValueOnce({})
-
       jest
         .spyOn(SpOidcClient.prototype, 'getBaseClientFromCache')
         .mockResolvedValueOnce({
-          grant: mockGrant,
+          issuer: {
+            metadata: {
+              token_endpoint: 'endpoint',
+            },
+          },
         } as unknown as BaseClient)
+
+      const axiosSpy = jest
+        .spyOn(axios, 'post')
+        .mockResolvedValueOnce({ data: {} })
 
       const MOCK_AUTHCODE = 'authCode'
 
@@ -986,6 +1009,12 @@ describe('SpOidcClient', () => {
       await expect(tryExchangeAuthCode).rejects.toThrowError(
         MissingIdTokenError,
       )
+      expect(axiosSpy).toHaveBeenCalledOnce()
+      expect(axiosSpy).toBeCalledWith(
+        'endpoint',
+        expect.stringContaining('client_id'),
+        expect.objectContaining(AXIOS_HEADER),
+      )
       expect(refreshSpy).toHaveBeenCalledTimes(2)
     })
 
@@ -996,13 +1025,19 @@ describe('SpOidcClient', () => {
         .mockResolvedValueOnce('ok' as unknown as Refresh)
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
-      const mockGrant = jest.fn().mockResolvedValueOnce({ id_token: '' })
-
       jest
         .spyOn(SpOidcClient.prototype, 'getBaseClientFromCache')
         .mockResolvedValueOnce({
-          grant: mockGrant,
+          issuer: {
+            metadata: {
+              token_endpoint: 'endpoint',
+            },
+          },
         } as unknown as BaseClient)
+
+      const axiosSpy = jest
+        .spyOn(axios, 'post')
+        .mockResolvedValueOnce({ data: { id_token: '' } })
 
       const MOCK_AUTHCODE = 'authCode'
 
@@ -1016,6 +1051,12 @@ describe('SpOidcClient', () => {
       // Assert
       await expect(tryExchangeAuthCode).rejects.toThrowError(
         MissingIdTokenError,
+      )
+      expect(axiosSpy).toHaveBeenCalledOnce()
+      expect(axiosSpy).toBeCalledWith(
+        'endpoint',
+        expect.stringContaining('client_id'),
+        expect.objectContaining(AXIOS_HEADER),
       )
       expect(refreshSpy).toHaveBeenCalledTimes(2)
     })
@@ -1029,13 +1070,19 @@ describe('SpOidcClient', () => {
         .spyOn(SpcpOidcBaseCilentCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
-      const mockGrant = jest.fn().mockResolvedValueOnce({ id_token: MOCK_JWE })
-
       jest
         .spyOn(SpOidcClient.prototype, 'getBaseClientFromCache')
         .mockResolvedValueOnce({
-          grant: mockGrant,
+          issuer: {
+            metadata: {
+              token_endpoint: 'endpoint',
+            },
+          },
         } as unknown as BaseClient)
+
+      const axiosSpy = jest
+        .spyOn(axios, 'post')
+        .mockResolvedValueOnce({ data: { id_token: MOCK_JWE } })
 
       jest
         .spyOn(SpOidcClient.prototype, 'getNdiPublicKeysFromCache')
@@ -1052,6 +1099,12 @@ describe('SpOidcClient', () => {
       )
 
       // Assert
+      expect(axiosSpy).toHaveBeenCalledOnce()
+      expect(axiosSpy).toBeCalledWith(
+        'endpoint',
+        expect.stringContaining('client_id'),
+        expect.objectContaining(AXIOS_HEADER),
+      )
       expect(result.payload.sub).toBeDefined()
       expect(result.payload.sub).toBe(MOCK_SUB_CLAIM)
     })
@@ -1065,15 +1118,19 @@ describe('SpOidcClient', () => {
         .spyOn(SpcpOidcBaseCilentCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
         .mockResolvedValueOnce('ok' as unknown as Refresh)
-
-      const mockGrant = jest.fn().mockResolvedValueOnce({ id_token: MOCK_JWE })
-
       jest
         .spyOn(SpOidcClient.prototype, 'getBaseClientFromCache')
         .mockResolvedValueOnce({
-          grant: mockGrant,
+          issuer: {
+            metadata: {
+              token_endpoint: 'endpoint',
+            },
+          },
         } as unknown as BaseClient)
 
+      const axiosSpy = jest
+        .spyOn(axios, 'post')
+        .mockResolvedValueOnce({ data: { id_token: MOCK_JWE } })
       jest
         .spyOn(SpOidcClient.prototype, 'getDecryptionKey')
         .mockReturnValueOnce(new GetDecryptionKeyError())
@@ -1091,6 +1148,12 @@ describe('SpOidcClient', () => {
       await expect(tryExchangeAuthCode).rejects.toThrowError(
         GetDecryptionKeyError,
       )
+      expect(axiosSpy).toHaveBeenCalledOnce()
+      expect(axiosSpy).toBeCalledWith(
+        'endpoint',
+        expect.stringContaining('client_id'),
+        expect.objectContaining(AXIOS_HEADER),
+      )
       expect(refreshSpy).toHaveBeenCalledTimes(2)
     })
 
@@ -1104,13 +1167,19 @@ describe('SpOidcClient', () => {
         .mockResolvedValueOnce('ok' as unknown as Refresh)
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
-      const mockGrant = jest.fn().mockResolvedValueOnce({ id_token: MOCK_JWE })
-
       jest
         .spyOn(SpOidcClient.prototype, 'getBaseClientFromCache')
         .mockResolvedValueOnce({
-          grant: mockGrant,
+          issuer: {
+            metadata: {
+              token_endpoint: 'endpoint',
+            },
+          },
         } as unknown as BaseClient)
+
+      const axiosSpy = jest
+        .spyOn(axios, 'post')
+        .mockResolvedValueOnce({ data: { id_token: MOCK_JWE } })
 
       jest
         .spyOn(SpOidcClient.prototype, 'getDecryptionKey')
@@ -1133,6 +1202,12 @@ describe('SpOidcClient', () => {
       await expect(tryExchangeAuthCode).rejects.toThrowError(
         GetDecryptionKeyError,
       )
+      expect(axiosSpy).toHaveBeenCalledOnce()
+      expect(axiosSpy).toBeCalledWith(
+        'endpoint',
+        expect.stringContaining('client_id'),
+        expect.objectContaining(AXIOS_HEADER),
+      )
       expect(refreshSpy).toHaveBeenCalledTimes(2)
     })
 
@@ -1146,13 +1221,19 @@ describe('SpOidcClient', () => {
         .mockResolvedValueOnce('ok' as unknown as Refresh)
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
-      const mockGrant = jest.fn().mockResolvedValueOnce({ id_token: MOCK_JWE })
-
       jest
         .spyOn(SpOidcClient.prototype, 'getBaseClientFromCache')
         .mockResolvedValueOnce({
-          grant: mockGrant,
+          issuer: {
+            metadata: {
+              token_endpoint: 'endpoint',
+            },
+          },
         } as unknown as BaseClient)
+
+      const axiosSpy = jest
+        .spyOn(axios, 'post')
+        .mockResolvedValueOnce({ data: { id_token: MOCK_JWE } })
 
       jest
         .spyOn(SpOidcClient.prototype, 'getNdiPublicKeysFromCache')
@@ -1171,6 +1252,12 @@ describe('SpOidcClient', () => {
       await expect(tryExchangeAuthCode).rejects.toThrowError(
         ExchangeAuthTokenError,
       )
+      expect(axiosSpy).toHaveBeenCalledOnce()
+      expect(axiosSpy).toBeCalledWith(
+        'endpoint',
+        expect.stringContaining('client_id'),
+        expect.objectContaining(AXIOS_HEADER),
+      )
       expect(refreshSpy).toHaveBeenCalledTimes(2)
     })
 
@@ -1184,13 +1271,19 @@ describe('SpOidcClient', () => {
         .mockResolvedValueOnce('ok' as unknown as Refresh)
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
-      const mockGrant = jest.fn().mockResolvedValueOnce({ id_token: MOCK_JWE })
-
       jest
         .spyOn(SpOidcClient.prototype, 'getBaseClientFromCache')
         .mockResolvedValueOnce({
-          grant: mockGrant,
+          issuer: {
+            metadata: {
+              token_endpoint: 'endpoint',
+            },
+          },
         } as unknown as BaseClient)
+
+      const axiosSpy = jest
+        .spyOn(axios, 'post')
+        .mockResolvedValueOnce({ data: { id_token: MOCK_JWE } })
 
       jest
         .spyOn(SpOidcClient.prototype, 'getNdiPublicKeysFromCache')
@@ -1210,8 +1303,15 @@ describe('SpOidcClient', () => {
         spOidcClient.exchangeAuthCodeAndDecodeVerifyToken(MOCK_AUTHCODE)
 
       // Assert
+
       await expect(tryExchangeAuthCode).rejects.toThrowError(
         GetVerificationKeyError,
+      )
+      expect(axiosSpy).toHaveBeenCalledOnce()
+      expect(axiosSpy).toBeCalledWith(
+        'endpoint',
+        expect.stringContaining('client_id'),
+        expect.objectContaining(AXIOS_HEADER),
       )
       expect(refreshSpy).toHaveBeenCalledTimes(2)
     })
@@ -1226,13 +1326,19 @@ describe('SpOidcClient', () => {
         .mockResolvedValueOnce('ok' as unknown as Refresh)
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
-      const mockGrant = jest.fn().mockResolvedValueOnce({ id_token: MOCK_JWE })
-
       jest
         .spyOn(SpOidcClient.prototype, 'getBaseClientFromCache')
         .mockResolvedValueOnce({
-          grant: mockGrant,
+          issuer: {
+            metadata: {
+              token_endpoint: 'endpoint',
+            },
+          },
         } as unknown as BaseClient)
+
+      const axiosSpy = jest
+        .spyOn(axios, 'post')
+        .mockResolvedValueOnce({ data: { id_token: MOCK_JWE } })
 
       jest
         .spyOn(SpOidcClient.prototype, 'getNdiPublicKeysFromCache')
@@ -1254,6 +1360,12 @@ describe('SpOidcClient', () => {
       // Assert
       await expect(tryExchangeAuthCode).rejects.toThrowError(
         'verify jwt failed',
+      )
+      expect(axiosSpy).toHaveBeenCalledOnce()
+      expect(axiosSpy).toBeCalledWith(
+        'endpoint',
+        expect.stringContaining('client_id'),
+        expect.objectContaining(AXIOS_HEADER),
       )
       expect(refreshSpy).toHaveBeenCalledTimes(2)
     })
@@ -1387,6 +1499,56 @@ describe('SpOidcClient', () => {
     })
   })
 
+  describe('getSigningKey', () => {
+    it('should return the first correct signing key', () => {
+      // Arrange
+      jest
+        .spyOn(SpcpOidcBaseCilentCache.prototype, 'refresh')
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
+
+      const correctKid = TEST_SP_RP_SECRET_JWKS.keys.filter(
+        (key) => key.use === 'sig',
+      )[0].kid
+
+      // Act
+
+      const spOidcClient = new SpOidcClient(spOidcClientConfig)
+      const result = spOidcClient.getSigningKey()
+
+      // Assert
+      expect((result as SigningKey).kid).toBe(correctKid)
+    })
+
+    it('should return GetSigningKeyError if no signing keys are found', () => {
+      // Arrange
+      jest
+        .spyOn(SpcpOidcBaseCilentCache.prototype, 'refresh')
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
+
+      const spOidcClientConfigWithoutSigningKeys = {
+        ...spOidcClientConfig,
+        spOidcRpSecretJwks: {
+          keys: spOidcClientConfig.spOidcRpSecretJwks.keys.filter(
+            (key) => key.use !== 'sig',
+          ),
+        },
+      }
+
+      // Act
+
+      const spOidcClient = new SpOidcClient(
+        spOidcClientConfigWithoutSigningKeys,
+      )
+      const result = spOidcClient.getSigningKey()
+
+      // Assert
+      expect(result).toBeInstanceOf(GetSigningKeyError)
+      expect((result as GetSigningKeyError).message).toContain(
+        'No signing keys found',
+      )
+    })
+  })
+
   describe('createJWT', () => {
     const MOCK_PAYLOAD = {
       key: 'value',
@@ -1420,7 +1582,7 @@ describe('SpOidcClient', () => {
       // Assert
 
       await expect(tryCreateJWT).rejects.toThrowError(CreateJwtError)
-      await expect(tryCreateJWT).rejects.toThrowError('No signing keys found')
+      await expect(tryCreateJWT).rejects.toThrowError('no signing key found')
     })
   })
 
@@ -2317,6 +2479,10 @@ describe('CpOidcClient', () => {
       }
     })
 
+    const AXIOS_HEADER = {
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    }
+
     it('should throw ExchangeAuthTokenError if authCode is empty and NOT call refresh', async () => {
       // Arrange
       const refreshSpy = jest
@@ -2371,15 +2537,19 @@ describe('CpOidcClient', () => {
         .mockResolvedValueOnce('ok' as unknown as Refresh)
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
-      const mockGrant = jest
-        .fn()
-        .mockRejectedValueOnce(new Error('grant failed'))
-
       jest
         .spyOn(CpOidcClient.prototype, 'getBaseClientFromCache')
         .mockResolvedValueOnce({
-          grant: mockGrant,
+          issuer: {
+            metadata: {
+              token_endpoint: 'endpoint',
+            },
+          },
         } as unknown as BaseClient)
+
+      const axiosSpy = jest
+        .spyOn(axios, 'post')
+        .mockRejectedValueOnce(new Error('failed'))
 
       const MOCK_AUTHCODE = 'authCode'
 
@@ -2391,7 +2561,13 @@ describe('CpOidcClient', () => {
         cpOidcClient.exchangeAuthCodeAndDecodeVerifyToken(MOCK_AUTHCODE)
 
       // Assert
-      await expect(tryExchangeAuthCode).rejects.toThrowError('grant failed')
+      await expect(tryExchangeAuthCode).rejects.toThrowError('failed')
+      expect(axiosSpy).toHaveBeenCalledOnce()
+      expect(axiosSpy).toBeCalledWith(
+        'endpoint',
+        expect.not.stringContaining('client_id'),
+        expect.objectContaining(AXIOS_HEADER),
+      )
       expect(refreshSpy).toHaveBeenCalledTimes(2)
     })
 
@@ -2402,13 +2578,19 @@ describe('CpOidcClient', () => {
         .mockResolvedValueOnce('ok' as unknown as Refresh)
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
-      const mockGrant = jest.fn().mockResolvedValueOnce({})
-
       jest
         .spyOn(CpOidcClient.prototype, 'getBaseClientFromCache')
         .mockResolvedValueOnce({
-          grant: mockGrant,
+          issuer: {
+            metadata: {
+              token_endpoint: 'endpoint',
+            },
+          },
         } as unknown as BaseClient)
+
+      const axiosSpy = jest
+        .spyOn(axios, 'post')
+        .mockResolvedValueOnce({ data: {} })
 
       const MOCK_AUTHCODE = 'authCode'
 
@@ -2423,6 +2605,12 @@ describe('CpOidcClient', () => {
       await expect(tryExchangeAuthCode).rejects.toThrowError(
         MissingIdTokenError,
       )
+      expect(axiosSpy).toHaveBeenCalledOnce()
+      expect(axiosSpy).toBeCalledWith(
+        'endpoint',
+        expect.not.stringContaining('client_id'),
+        expect.objectContaining(AXIOS_HEADER),
+      )
       expect(refreshSpy).toHaveBeenCalledTimes(2)
     })
 
@@ -2433,13 +2621,19 @@ describe('CpOidcClient', () => {
         .mockResolvedValueOnce('ok' as unknown as Refresh)
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
-      const mockGrant = jest.fn().mockResolvedValueOnce({ id_token: '' })
-
       jest
         .spyOn(CpOidcClient.prototype, 'getBaseClientFromCache')
         .mockResolvedValueOnce({
-          grant: mockGrant,
+          issuer: {
+            metadata: {
+              token_endpoint: 'endpoint',
+            },
+          },
         } as unknown as BaseClient)
+
+      const axiosSpy = jest
+        .spyOn(axios, 'post')
+        .mockResolvedValueOnce({ data: { id_token: '' } })
 
       const MOCK_AUTHCODE = 'authCode'
 
@@ -2453,6 +2647,12 @@ describe('CpOidcClient', () => {
       // Assert
       await expect(tryExchangeAuthCode).rejects.toThrowError(
         MissingIdTokenError,
+      )
+      expect(axiosSpy).toHaveBeenCalledOnce()
+      expect(axiosSpy).toBeCalledWith(
+        'endpoint',
+        expect.not.stringContaining('client_id'),
+        expect.objectContaining(AXIOS_HEADER),
       )
       expect(refreshSpy).toHaveBeenCalledTimes(2)
     })
@@ -2466,13 +2666,19 @@ describe('CpOidcClient', () => {
         .spyOn(SpcpOidcBaseCilentCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
-      const mockGrant = jest.fn().mockResolvedValueOnce({ id_token: MOCK_JWE })
-
       jest
         .spyOn(CpOidcClient.prototype, 'getBaseClientFromCache')
         .mockResolvedValueOnce({
-          grant: mockGrant,
+          issuer: {
+            metadata: {
+              token_endpoint: 'endpoint',
+            },
+          },
         } as unknown as BaseClient)
+
+      const axiosSpy = jest
+        .spyOn(axios, 'post')
+        .mockResolvedValueOnce({ data: { id_token: MOCK_JWE } })
 
       jest
         .spyOn(CpOidcClient.prototype, 'getNdiPublicKeysFromCache')
@@ -2489,6 +2695,12 @@ describe('CpOidcClient', () => {
       )
 
       // Assert
+      expect(axiosSpy).toHaveBeenCalledOnce()
+      expect(axiosSpy).toBeCalledWith(
+        'endpoint',
+        expect.not.stringContaining('client_id'),
+        expect.objectContaining(AXIOS_HEADER),
+      )
       expect(result.payload.sub).toBeDefined()
       expect(result.payload.sub).toBe(MOCK_SUB_CLAIM)
     })
@@ -2502,15 +2714,19 @@ describe('CpOidcClient', () => {
         .spyOn(SpcpOidcBaseCilentCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
         .mockResolvedValueOnce('ok' as unknown as Refresh)
-
-      const mockGrant = jest.fn().mockResolvedValueOnce({ id_token: MOCK_JWE })
-
       jest
         .spyOn(CpOidcClient.prototype, 'getBaseClientFromCache')
         .mockResolvedValueOnce({
-          grant: mockGrant,
+          issuer: {
+            metadata: {
+              token_endpoint: 'endpoint',
+            },
+          },
         } as unknown as BaseClient)
 
+      const axiosSpy = jest
+        .spyOn(axios, 'post')
+        .mockResolvedValueOnce({ data: { id_token: MOCK_JWE } })
       jest
         .spyOn(CpOidcClient.prototype, 'getDecryptionKey')
         .mockReturnValueOnce(new GetDecryptionKeyError())
@@ -2528,6 +2744,12 @@ describe('CpOidcClient', () => {
       await expect(tryExchangeAuthCode).rejects.toThrowError(
         GetDecryptionKeyError,
       )
+      expect(axiosSpy).toHaveBeenCalledOnce()
+      expect(axiosSpy).toBeCalledWith(
+        'endpoint',
+        expect.not.stringContaining('client_id'),
+        expect.objectContaining(AXIOS_HEADER),
+      )
       expect(refreshSpy).toHaveBeenCalledTimes(2)
     })
 
@@ -2541,13 +2763,19 @@ describe('CpOidcClient', () => {
         .mockResolvedValueOnce('ok' as unknown as Refresh)
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
-      const mockGrant = jest.fn().mockResolvedValueOnce({ id_token: MOCK_JWE })
-
       jest
         .spyOn(CpOidcClient.prototype, 'getBaseClientFromCache')
         .mockResolvedValueOnce({
-          grant: mockGrant,
+          issuer: {
+            metadata: {
+              token_endpoint: 'endpoint',
+            },
+          },
         } as unknown as BaseClient)
+
+      const axiosSpy = jest
+        .spyOn(axios, 'post')
+        .mockResolvedValueOnce({ data: { id_token: MOCK_JWE } })
 
       jest
         .spyOn(CpOidcClient.prototype, 'getDecryptionKey')
@@ -2570,6 +2798,12 @@ describe('CpOidcClient', () => {
       await expect(tryExchangeAuthCode).rejects.toThrowError(
         GetDecryptionKeyError,
       )
+      expect(axiosSpy).toHaveBeenCalledOnce()
+      expect(axiosSpy).toBeCalledWith(
+        'endpoint',
+        expect.not.stringContaining('client_id'),
+        expect.objectContaining(AXIOS_HEADER),
+      )
       expect(refreshSpy).toHaveBeenCalledTimes(2)
     })
 
@@ -2583,13 +2817,19 @@ describe('CpOidcClient', () => {
         .mockResolvedValueOnce('ok' as unknown as Refresh)
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
-      const mockGrant = jest.fn().mockResolvedValueOnce({ id_token: MOCK_JWE })
-
       jest
         .spyOn(CpOidcClient.prototype, 'getBaseClientFromCache')
         .mockResolvedValueOnce({
-          grant: mockGrant,
+          issuer: {
+            metadata: {
+              token_endpoint: 'endpoint',
+            },
+          },
         } as unknown as BaseClient)
+
+      const axiosSpy = jest
+        .spyOn(axios, 'post')
+        .mockResolvedValueOnce({ data: { id_token: MOCK_JWE } })
 
       jest
         .spyOn(CpOidcClient.prototype, 'getNdiPublicKeysFromCache')
@@ -2608,6 +2848,12 @@ describe('CpOidcClient', () => {
       await expect(tryExchangeAuthCode).rejects.toThrowError(
         ExchangeAuthTokenError,
       )
+      expect(axiosSpy).toHaveBeenCalledOnce()
+      expect(axiosSpy).toBeCalledWith(
+        'endpoint',
+        expect.not.stringContaining('client_id'),
+        expect.objectContaining(AXIOS_HEADER),
+      )
       expect(refreshSpy).toHaveBeenCalledTimes(2)
     })
 
@@ -2621,13 +2867,19 @@ describe('CpOidcClient', () => {
         .mockResolvedValueOnce('ok' as unknown as Refresh)
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
-      const mockGrant = jest.fn().mockResolvedValueOnce({ id_token: MOCK_JWE })
-
       jest
         .spyOn(CpOidcClient.prototype, 'getBaseClientFromCache')
         .mockResolvedValueOnce({
-          grant: mockGrant,
+          issuer: {
+            metadata: {
+              token_endpoint: 'endpoint',
+            },
+          },
         } as unknown as BaseClient)
+
+      const axiosSpy = jest
+        .spyOn(axios, 'post')
+        .mockResolvedValueOnce({ data: { id_token: MOCK_JWE } })
 
       jest
         .spyOn(CpOidcClient.prototype, 'getNdiPublicKeysFromCache')
@@ -2647,8 +2899,15 @@ describe('CpOidcClient', () => {
         cpOidcClient.exchangeAuthCodeAndDecodeVerifyToken(MOCK_AUTHCODE)
 
       // Assert
+
       await expect(tryExchangeAuthCode).rejects.toThrowError(
         GetVerificationKeyError,
+      )
+      expect(axiosSpy).toHaveBeenCalledOnce()
+      expect(axiosSpy).toBeCalledWith(
+        'endpoint',
+        expect.not.stringContaining('client_id'),
+        expect.objectContaining(AXIOS_HEADER),
       )
       expect(refreshSpy).toHaveBeenCalledTimes(2)
     })
@@ -2663,13 +2922,19 @@ describe('CpOidcClient', () => {
         .mockResolvedValueOnce('ok' as unknown as Refresh)
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
-      const mockGrant = jest.fn().mockResolvedValueOnce({ id_token: MOCK_JWE })
-
       jest
         .spyOn(CpOidcClient.prototype, 'getBaseClientFromCache')
         .mockResolvedValueOnce({
-          grant: mockGrant,
+          issuer: {
+            metadata: {
+              token_endpoint: 'endpoint',
+            },
+          },
         } as unknown as BaseClient)
+
+      const axiosSpy = jest
+        .spyOn(axios, 'post')
+        .mockResolvedValueOnce({ data: { id_token: MOCK_JWE } })
 
       jest
         .spyOn(CpOidcClient.prototype, 'getNdiPublicKeysFromCache')
@@ -2691,6 +2956,12 @@ describe('CpOidcClient', () => {
       // Assert
       await expect(tryExchangeAuthCode).rejects.toThrowError(
         'verify jwt failed',
+      )
+      expect(axiosSpy).toHaveBeenCalledOnce()
+      expect(axiosSpy).toBeCalledWith(
+        'endpoint',
+        expect.not.stringContaining('client_id'),
+        expect.objectContaining(AXIOS_HEADER),
       )
       expect(refreshSpy).toHaveBeenCalledTimes(2)
     })
@@ -2824,6 +3095,56 @@ describe('CpOidcClient', () => {
     })
   })
 
+  describe('getSigningKey', () => {
+    it('should return the first correct signing key', () => {
+      // Arrange
+      jest
+        .spyOn(SpcpOidcBaseCilentCache.prototype, 'refresh')
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
+
+      const correctKid = TEST_CP_RP_SECRET_JWKS.keys.filter(
+        (key) => key.use === 'sig',
+      )[0].kid
+
+      // Act
+
+      const cpOidcClient = new CpOidcClient(cpOidcClientConfig)
+      const result = cpOidcClient.getSigningKey()
+
+      // Assert
+      expect((result as SigningKey).kid).toBe(correctKid)
+    })
+
+    it('should return GetSigningKeyError if no signing keys are found', () => {
+      // Arrange
+      jest
+        .spyOn(SpcpOidcBaseCilentCache.prototype, 'refresh')
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
+
+      const cpOidcClientConfigWithoutSigningKeys = {
+        ...cpOidcClientConfig,
+        cpOidcRpSecretJwks: {
+          keys: cpOidcClientConfig.cpOidcRpSecretJwks.keys.filter(
+            (key) => key.use !== 'sig',
+          ),
+        },
+      }
+
+      // Act
+
+      const cpOidcClient = new CpOidcClient(
+        cpOidcClientConfigWithoutSigningKeys,
+      )
+      const result = cpOidcClient.getSigningKey()
+
+      // Assert
+      expect(result).toBeInstanceOf(GetSigningKeyError)
+      expect((result as GetSigningKeyError).message).toContain(
+        'No signing keys found',
+      )
+    })
+  })
+
   describe('createJWT', () => {
     const MOCK_PAYLOAD = {
       key: 'value',
@@ -2857,7 +3178,7 @@ describe('CpOidcClient', () => {
       // Assert
 
       await expect(tryCreateJWT).rejects.toThrowError(CreateJwtError)
-      await expect(tryCreateJWT).rejects.toThrowError('No signing keys found')
+      await expect(tryCreateJWT).rejects.toThrowError('no signing key found')
     })
   })
 
