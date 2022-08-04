@@ -121,11 +121,14 @@ const useSecretKeyActivationModal = ({
   const watchedSecretKey = watch(SECRET_KEY_NAME)
   const watchedAck = watch('ack')
 
-  const ackHidden = useMemo(() => !watchedSecretKey, [watchedSecretKey])
+  const secretKeyNotUploaded = useMemo(
+    () => !watchedSecretKey,
+    [watchedSecretKey],
+  )
 
-  const activateHidden = useMemo(
-    () => ackHidden || !watchedAck,
-    [ackHidden, watchedAck],
+  const activateDisabled = useMemo(
+    () => !watchedSecretKey || !watchedAck,
+    [watchedSecretKey, watchedAck],
   )
 
   return {
@@ -133,8 +136,8 @@ const useSecretKeyActivationModal = ({
     handleFileSelect,
     handleVerifyKeypair,
     register,
-    ackHidden,
-    activateHidden,
+    secretKeyNotUploaded,
+    activateDisabled,
     errors,
     isLoading: mutateFormStatus.isLoading,
     handleOnClose,
@@ -151,8 +154,8 @@ export const SecretKeyActivationModal = ({
     handleFileSelect,
     handleVerifyKeypair,
     register,
-    ackHidden,
-    activateHidden,
+    secretKeyNotUploaded,
+    activateDisabled,
     errors,
     isLoading,
     handleOnClose,
@@ -212,7 +215,7 @@ export const SecretKeyActivationModal = ({
                 </Stack>
                 <FormErrorMessage>{errors.secretKey?.message}</FormErrorMessage>
               </FormControl>
-              <FormControl hidden={ackHidden} mb="1.25rem">
+              <FormControl hidden={secretKeyNotUploaded} mb="1.25rem">
                 <Checkbox
                   isDisabled={isLoading}
                   isInvalid={!!errors.ack}
@@ -228,7 +231,8 @@ export const SecretKeyActivationModal = ({
                 rightIcon={<BiRightArrowAlt fontSize="1.5rem" />}
                 type="submit"
                 isFullWidth
-                hidden={activateHidden}
+                hidden={secretKeyNotUploaded}
+                isDisabled={activateDisabled}
                 isLoading={isLoading}
               >
                 Activate form
