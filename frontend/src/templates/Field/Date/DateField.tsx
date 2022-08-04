@@ -3,10 +3,10 @@ import { Controller, useFormContext } from 'react-hook-form'
 
 import { FormColorTheme } from '~shared/types'
 import { DateSelectedValidation } from '~shared/types/field'
+import { isDateAnInvalidDay } from '~shared/utils/date-validation'
 
 import {
   isDateAfterToday,
-  isDateAnInvalidDay,
   isDateBeforeToday,
   isDateOutOfRange,
 } from '~utils/date'

@@ -28,6 +28,7 @@ import {
   TextSelectedValidation,
   UenFieldBase,
 } from '~shared/types/field'
+import { isDateAnInvalidDay } from '~shared/utils/date-validation'
 import { isMFinSeriesValid, isNricValid } from '~shared/utils/nric-validation'
 import {
   isHomePhoneNumber,
@@ -45,12 +46,7 @@ import { VerifiableFieldValues } from '~templates/Field/types'
 
 import { VerifiableFieldBase } from '~features/verifiable-fields/types'
 
-import {
-  isDateAfterToday,
-  isDateAnInvalidDay,
-  isDateBeforeToday,
-  isDateOutOfRange,
-} from './date'
+import { isDateAfterToday, isDateBeforeToday, isDateOutOfRange } from './date'
 import { formatNumberToLocaleString } from './stringFormat'
 
 type OmitUnusedProps<T extends FieldBase> = Omit<
@@ -396,7 +392,7 @@ export const createDateValidationRules: ValidationRuleFn<DateFieldBase> = (
           'Selected date is not within the allowed date range'
         )
       },
-      invaliDays: (val) => {
+      invalidDays: (val) => {
         if (!val || !schema.invalidDays || schema.invalidDays.length === 0) {
           return true
         }
