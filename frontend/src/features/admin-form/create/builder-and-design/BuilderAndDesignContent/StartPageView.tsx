@@ -105,7 +105,9 @@ export const StartPageView = () => {
         titleColor={titleColor}
         showHeader
         loggedInId={
-          form?.authType !== FormAuthType.NIL ? PREVIEW_MOCK_UINFIN : undefined
+          !form || form.authType === FormAuthType.NIL
+            ? undefined
+            : PREVIEW_MOCK_UINFIN
         }
       />
       <Box mt="1.5rem">
