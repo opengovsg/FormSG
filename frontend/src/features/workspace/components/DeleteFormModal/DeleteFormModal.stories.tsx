@@ -1,4 +1,3 @@
-import { MemoryRouter } from 'react-router-dom'
 import { useDisclosure } from '@chakra-ui/react'
 import { Meta, Story } from '@storybook/react'
 
@@ -11,7 +10,6 @@ import { DeleteFormModal, DeleteFormModalProps } from './DeleteFormModal'
 export default {
   title: 'Pages/WorkspacePage/DeleteFormModal',
   component: DeleteFormModal,
-  // decorators: [(storyFn) => <MemoryRouter>{storyFn()}</MemoryRouter>],
   args: {
     formToDelete: {
       _id: 'mock-form-id' as FormId,
