@@ -334,16 +334,12 @@ describe('workspace.service', () => {
         userId: mockWorkspace.admin,
         shouldDeleteForms: false,
       })
-      const doesFormExist = await FormModel.exists({ _id: mockFormId })
-      const isFormArchived = await FormModel.exists({
-        _id: mockFormId,
-        status: FormStatus.Archived,
-      })
+      const form = await FormModel.findById(mockFormId)
 
       expect(actual.isOk()).toEqual(true)
       expect(actual._unsafeUnwrap()).toEqual(mockWorkspace)
-      expect(doesFormExist).toEqual(true)
-      expect(isFormArchived).toEqual(false)
+      expect(form).not.toBeNull()
+      expect(form?.status).not.toEqual(FormStatus.Archived)
     })
 
     it('should archive forms in the workspace when shouldDeleteForms is true', async () => {
@@ -368,16 +364,12 @@ describe('workspace.service', () => {
         userId: mockWorkspace.admin,
         shouldDeleteForms: true,
       })
-      const doesFormExist = await FormModel.exists({ _id: mockFormId })
-      const isFormArchived = await FormModel.exists({
-        _id: mockFormId,
-        status: FormStatus.Archived,
-      })
+      const form = await FormModel.findById(mockFormId)
 
       expect(actual.isOk()).toEqual(true)
       expect(actual._unsafeUnwrap()).toEqual(mockWorkspace)
-      expect(doesFormExist).toEqual(true)
-      expect(isFormArchived).toEqual(true)
+      expect(form).not.toBeNull()
+      expect(form?.status).toEqual(FormStatus.Archived)
     })
 
     it('should return DatabaseError when error occurs whilst creating workspace', async () => {
