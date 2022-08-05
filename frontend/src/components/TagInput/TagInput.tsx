@@ -7,8 +7,8 @@ import {
 import { RovingTabIndexProvider } from 'react-roving-tabindex'
 import {
   Box,
-  Flex,
   forwardRef,
+  StylesProvider,
   useControllableState,
   useMultiStyleConfig,
 } from '@chakra-ui/react'
@@ -50,7 +50,7 @@ export const TagInput = forwardRef<TagInputProps, 'input'>(
     },
     ref,
   ): JSX.Element => {
-    const inputStyle = useMultiStyleConfig('Input', { size, ...props })
+    const styles = useMultiStyleConfig('TagInput', { size, ...props })
 
     const [value, onChange] = useControllableState({
       value: valueProp,
@@ -129,35 +129,8 @@ export const TagInput = forwardRef<TagInputProps, 'input'>(
 
     return (
       <RovingTabIndexProvider>
-        <Box
-          sx={{
-            ...inputStyle.field,
-            display: 'flex',
-            flexWrap: 'wrap',
-            p: '0.375rem',
-            minH: '2.75rem',
-            cursor: 'pointer',
-            _disabled: {
-              cursor: 'not-allowed',
-            },
-            transitionProperty: 'common',
-            transitionDuration: 'normal',
-            borderRadius: '4px',
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            //@ts-ignore
-            _focusWithin: inputStyle.field._focus,
-            height: 'auto',
-            maxW: '100%',
-            w: '100%',
-          }}
-        >
-          <Flex
-            flexWrap="wrap"
-            align="center"
-            maxW="inherit"
-            w="100%"
-            gap="0.25rem"
-          >
+        <StylesProvider value={styles}>
+          <Box sx={styles.container}>
             {value.map((tag, index) => (
               <TagInputTag
                 key={index}
@@ -167,14 +140,13 @@ export const TagInput = forwardRef<TagInputProps, 'input'>(
               />
             ))}
             <TagInputInput
-              flexGrow={1}
               {...props}
               onKeyDown={handleKeyDown}
               onBlur={handleBlur}
               ref={ref}
             />
-          </Flex>
-        </Box>
+          </Box>
+        </StylesProvider>
       </RovingTabIndexProvider>
     )
   },

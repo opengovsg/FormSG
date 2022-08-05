@@ -1,11 +1,12 @@
 import { KeyboardEventHandler, useCallback, useRef } from 'react'
 import { useFocusEffect, useRovingTabIndex } from 'react-roving-tabindex'
-import { chakra, forwardRef, useMergeRefs } from '@chakra-ui/react'
+import { chakra, forwardRef, useMergeRefs, useStyles } from '@chakra-ui/react'
 
 import { InputProps } from '~components/Input'
 
 export const TagInputInput = forwardRef<Omit<InputProps, 'size'>, 'input'>(
   ({ onKeyDown, ...props }, ref) => {
+    const styles = useStyles()
     // The ref of the input to be controlled.
     const focusedRef = useRef<HTMLElement>(null)
 
@@ -33,9 +34,7 @@ export const TagInputInput = forwardRef<Omit<InputProps, 'size'>, 'input'>(
 
     return (
       <chakra.input
-        flexGrow={1}
-        py="0.25rem"
-        pl="0.5rem"
+        sx={styles.field}
         {...props}
         ref={mergedRefs}
         tabIndex={tabIndex}
