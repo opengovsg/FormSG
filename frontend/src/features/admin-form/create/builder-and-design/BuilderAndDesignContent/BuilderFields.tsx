@@ -27,7 +27,7 @@ export const BuilderFields = memo(
             index={i}
             key={f._id}
             field={f}
-            isVisible={visibleFieldIds.has(f._id)}
+            isHiddenByLogic={!visibleFieldIds.has(f._id)}
             isDraggingOver={isDraggingOver}
           />
         ))}
