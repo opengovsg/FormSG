@@ -11,6 +11,7 @@ import { FormHeader } from '~features/public-form/components/FormStartPage/FormH
 import { useFormBannerLogo } from '~features/public-form/components/FormStartPage/useFormBannerLogo'
 import { useFormHeader } from '~features/public-form/components/FormStartPage/useFormHeader'
 
+import { useCreatePageSidebar } from '../../common/CreatePageSidebarContext'
 import { useCreateTabForm } from '../useCreateTabForm'
 import {
   customLogoMetaSelector,
@@ -33,7 +34,8 @@ export const StartPageView = () => {
     form?.startPage.logo.state === FormLogoState.Custom,
   )
 
-  const [customLogoPending, setCustomLogoPending] = useState<boolean>(false)
+  const [hoverStartPage, setHoverStartPage] = useState(false)
+  const [customLogoPending, setCustomLogoPending] = useState(false)
 
   // Transform the FormStartPageInput into a FormStartPage
   const startPageFromStore: FormStartPage | null = useMemo(() => {
@@ -72,7 +74,10 @@ export const StartPageView = () => {
   }, [form?.startPage, startPageFromStore])
 
   // Color theme options and other design stuff, identical to public form
-  const { titleColor, titleBg, estTimeString } = useFormHeader(startPage)
+  const { titleColor, titleBg, estTimeString } = useFormHeader({
+    startPage,
+    hover: hoverStartPage,
+  })
 
   const { hasLogo, logoImgSrc, logoImgAlt } = useFormBannerLogo({
     logoBucketUrl,
@@ -80,34 +85,47 @@ export const StartPageView = () => {
     agency: form?.admin.agency,
   })
 
+  const { handleDesignClick } = useCreatePageSidebar()
+
   return (
     <>
-      {customLogoPending ? (
-        // Show skeleton if user has chosen custom logo but not yet uploaded
-        <Flex justify="center" p="1rem" bg="white">
-          <Skeleton w="4rem" h="4rem" />
-        </Flex>
-      ) : (
-        <FormBannerLogo
-          hasLogo={hasLogo}
-          logoImgSrc={
-            startPageData?.logo.state === FormLogoState.Custom
-              ? startPageData.attachment.srcUrl // manual override to preview custom logo
-              : logoImgSrc
+      <Box
+        onPointerEnter={() => setHoverStartPage(true)}
+        onPointerLeave={() => setHoverStartPage(false)}
+        onClick={handleDesignClick}
+        role="button"
+        cursor={hoverStartPage ? 'pointer' : 'initial'}
+      >
+        {customLogoPending ? (
+          // Show skeleton if user has chosen custom logo but not yet uploaded
+          <Flex justify="center" p="1rem" bg="white">
+            <Skeleton w="4rem" h="4rem" />
+          </Flex>
+        ) : (
+          <FormBannerLogo
+            hasLogo={hasLogo}
+            logoImgSrc={
+              startPageData?.logo.state === FormLogoState.Custom
+                ? startPageData.attachment.srcUrl // manual override to preview custom logo
+                : logoImgSrc
+            }
+            logoImgAlt={logoImgAlt}
+            logoBg={hoverStartPage ? 'neutral.200' : undefined}
+          />
+        )}
+        <FormHeader
+          title={form?.title}
+          estTimeString={estTimeString}
+          titleBg={titleBg}
+          titleColor={titleColor}
+          showHeader
+          loggedInId={
+            form?.authType !== FormAuthType.NIL
+              ? PREVIEW_MOCK_UINFIN
+              : undefined
           }
-          logoImgAlt={logoImgAlt}
         />
-      )}
-      <FormHeader
-        title={form?.title}
-        estTimeString={estTimeString}
-        titleBg={titleBg}
-        titleColor={titleColor}
-        showHeader
-        loggedInId={
-          form?.authType !== FormAuthType.NIL ? PREVIEW_MOCK_UINFIN : undefined
-        }
-      />
+      </Box>
       <Box mt="1.5rem">
         <FormInstructions
           content={startPage?.paragraph}
