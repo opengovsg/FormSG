@@ -34,7 +34,7 @@ import {
 } from '~features/verifiable-fields'
 
 import { FormNotFound } from './components/FormNotFound'
-import { usePublicFormMutations } from './mutations'
+import { usePublicAuthMutations, usePublicFormMutations } from './mutations'
 import {
   PublicFormContext,
   SidebarSectionMeta,
@@ -190,6 +190,8 @@ export const PublicFormProvider = ({
   const { submitEmailModeFormMutation, submitStorageModeFormMutation } =
     usePublicFormMutations(formId, submissionData?.id ?? '')
 
+  const { handleLogoutMutation } = usePublicAuthMutations(formId)
+
   const handleSubmitForm: SubmitHandler<FormFieldValues> = useCallback(
     async (formInputs) => {
       const { form } = cachedDto ?? {}
@@ -261,6 +263,11 @@ export const PublicFormProvider = ({
 
   useTimeout(generateVfnExpiryToast, expiryInMs)
 
+  const handleLogout = useCallback(() => {
+    if (!cachedDto?.form || cachedDto.form.authType === FormAuthType.NIL) return
+    return handleLogoutMutation.mutate(cachedDto.form.authType)
+  }, [cachedDto?.form, handleLogoutMutation])
+
   const isAuthRequired = useMemo(
     () =>
       !!cachedDto?.form &&
@@ -298,6 +305,7 @@ export const PublicFormProvider = ({
     <PublicFormContext.Provider
       value={{
         handleSubmitForm,
+        handleLogout,
         formId,
         error,
         submissionData,
