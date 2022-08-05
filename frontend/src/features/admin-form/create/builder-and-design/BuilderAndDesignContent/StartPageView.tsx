@@ -72,7 +72,8 @@ export const StartPageView = () => {
   }, [form?.startPage, startPageFromStore])
 
   // Color theme options and other design stuff, identical to public form
-  const { titleColor, titleBg, estTimeString } = useFormHeader(startPage)
+  const { titleColor, titleBg, estTimeString, colorScheme } =
+    useFormHeader(startPage)
 
   const { hasLogo, logoImgSrc, logoImgAlt } = useFormBannerLogo({
     logoBucketUrl,
@@ -103,6 +104,7 @@ export const StartPageView = () => {
         estTimeString={estTimeString}
         titleBg={titleBg}
         titleColor={titleColor}
+        colorScheme={colorScheme}
         showHeader
         loggedInId={
           form?.authType !== FormAuthType.NIL ? PREVIEW_MOCK_UINFIN : undefined
