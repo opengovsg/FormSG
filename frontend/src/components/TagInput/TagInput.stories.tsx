@@ -16,3 +16,20 @@ export const WithValue = Template.bind({})
 WithValue.args = {
   defaultValue: ['foo', 'bar'],
 }
+
+export const Disabled = Template.bind({})
+Disabled.args = {
+  isDisabled: true,
+}
+
+export const DisabledWithValue = Template.bind({})
+DisabledWithValue.args = {
+  ...WithValue.args,
+  ...Disabled.args,
+}
+
+export const Invalid = Template.bind({})
+Invalid.args = {
+  ...WithValue.args,
+  isInvalid: true,
+}

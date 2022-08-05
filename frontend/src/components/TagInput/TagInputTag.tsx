@@ -10,20 +10,34 @@ import { TagLabel } from '@chakra-ui/react'
 import { Tag, TagCloseButton, TagProps } from '~components/Tag/Tag'
 
 export interface TagInputTagProps extends TagProps {
+  isDisabled?: boolean
   label: string
   onClose: (event: SyntheticEvent) => void
 }
 
-export const TagInputTag = ({ label, onClose, ...props }: TagInputTagProps) => {
+export const TagInputTag = ({
+  label,
+  onClose,
+  isDisabled = false,
+  ...props
+}: TagInputTagProps) => {
   // The ref of the input to be controlled.
   const focusedRef = useRef<HTMLElement>(null)
 
   // handleKeyDown and handleClick are stable for the lifetime of the component:
-  const [tabIndex, focused, handleRovingKeyDown, handleClick] =
-    useRovingTabIndex(focusedRef, /* disabled= */ false)
+  const [tabIndex, focused, handleRovingKeyDown, handleRovingClick] =
+    useRovingTabIndex(focusedRef, isDisabled)
 
   // Set focus on the tag if it gets focus.
   useFocusEffect(focused, focusedRef)
+
+  const handleClick = useCallback(
+    (event: SyntheticEvent) => {
+      handleRovingClick()
+      event.stopPropagation()
+    },
+    [handleRovingClick],
+  )
 
   const handleKeyDown: KeyboardEventHandler<HTMLInputElement> = useCallback(
     (event) => {
@@ -39,6 +53,7 @@ export const TagInputTag = ({ label, onClose, ...props }: TagInputTagProps) => {
 
   return (
     <Tag
+      cursor="pointer"
       {...props}
       ref={focusedRef}
       tabIndex={tabIndex}

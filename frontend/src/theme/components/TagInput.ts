@@ -13,7 +13,7 @@ const baseStyle: PartsStyleFunction<typeof parts> = (props) => {
     container: {
       display: 'flex',
       flexWrap: 'wrap',
-      cursor: 'pointer',
+      cursor: 'text',
       height: 'auto',
       maxW: '100%',
       w: '100%',
@@ -25,6 +25,9 @@ const baseStyle: PartsStyleFunction<typeof parts> = (props) => {
     },
     field: {
       flexGrow: 1,
+      _disabled: {
+        cursor: 'not-allowed',
+      },
     },
   }
 }

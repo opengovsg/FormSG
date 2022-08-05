@@ -5,7 +5,7 @@ import { chakra, forwardRef, useMergeRefs, useStyles } from '@chakra-ui/react'
 import { InputProps } from '~components/Input'
 
 export const TagInputInput = forwardRef<Omit<InputProps, 'size'>, 'input'>(
-  ({ onKeyDown, ...props }, ref) => {
+  ({ onKeyDown, isDisabled = false, isReadOnly, isInvalid, ...props }, ref) => {
     const styles = useStyles()
     // The ref of the input to be controlled.
     const focusedRef = useRef<HTMLElement>(null)
@@ -14,10 +14,8 @@ export const TagInputInput = forwardRef<Omit<InputProps, 'size'>, 'input'>(
 
     // handleKeyDown and handleClick are stable for the lifetime of the component:
     const [tabIndex, focused, handleRovingKeyDown, handleClick] =
-      useRovingTabIndex(
-        focusedRef,
-        /* disabled= */ false, // But change this as you like throughout the lifetime of the component.
-      )
+      useRovingTabIndex(focusedRef, isDisabled)
+
     // Set focus on the input if it gets focus
     useFocusEffect(focused, focusedRef)
 
@@ -34,6 +32,9 @@ export const TagInputInput = forwardRef<Omit<InputProps, 'size'>, 'input'>(
 
     return (
       <chakra.input
+        disabled={isDisabled}
+        readOnly={isReadOnly}
+        aria-invalid={isInvalid}
         sx={styles.field}
         {...props}
         ref={mergedRefs}

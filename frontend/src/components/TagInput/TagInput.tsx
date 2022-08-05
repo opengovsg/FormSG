@@ -3,6 +3,7 @@ import {
   KeyboardEvent,
   SyntheticEvent,
   useCallback,
+  useRef,
 } from 'react'
 import { RovingTabIndexProvider } from 'react-roving-tabindex'
 import {
@@ -10,6 +11,7 @@ import {
   forwardRef,
   StylesProvider,
   useControllableState,
+  useMergeRefs,
   useMultiStyleConfig,
 } from '@chakra-ui/react'
 
@@ -50,13 +52,23 @@ export const TagInput = forwardRef<TagInputProps, 'input'>(
     },
     ref,
   ): JSX.Element => {
-    const styles = useMultiStyleConfig('TagInput', { size, ...props })
+    const styles = useMultiStyleConfig('TagInput', {
+      size,
+      ...props,
+    })
 
     const [value, onChange] = useControllableState({
       value: valueProp,
       onChange: onChangeProp,
       defaultValue,
     })
+
+    const inputRef = useRef<HTMLInputElement>(null)
+    const mergedInputRefs = useMergeRefs(ref, inputRef)
+
+    const handleFieldClick = useCallback(() => {
+      inputRef.current?.focus()
+    }, [])
 
     const addTag = useCallback(
       (event: SyntheticEvent, tag: string) => {
@@ -130,7 +142,13 @@ export const TagInput = forwardRef<TagInputProps, 'input'>(
     return (
       <RovingTabIndexProvider>
         <StylesProvider value={styles}>
-          <Box sx={styles.container}>
+          <Box
+            sx={styles.container}
+            onClick={handleFieldClick}
+            aria-disabled={props.isDisabled}
+            aria-invalid={props.isInvalid}
+            aria-readonly={props.isReadOnly}
+          >
             {value.map((tag, index) => (
               <TagInputTag
                 key={index}
@@ -143,7 +161,7 @@ export const TagInput = forwardRef<TagInputProps, 'input'>(
               {...props}
               onKeyDown={handleKeyDown}
               onBlur={handleBlur}
-              ref={ref}
+              ref={mergedInputRefs}
             />
           </Box>
         </StylesProvider>
