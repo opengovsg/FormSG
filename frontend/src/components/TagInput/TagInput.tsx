@@ -42,6 +42,8 @@ export interface TagInputProps
    * Should return `true` if tag is invalid
    */
   tagInvalidation?: (tag: string) => boolean
+
+  onBlur?: (event: SyntheticEvent) => void
 }
 
 export const TagInput = forwardRef<TagInputProps, 'input'>(
@@ -163,7 +165,7 @@ export const TagInput = forwardRef<TagInputProps, 'input'>(
                 colorScheme={tagColorScheme}
                 isInvalid={tagInvalidation?.(tag)}
                 label={tag}
-                onClose={handleRemoveTag(index)}
+                onClearTag={handleRemoveTag(index)}
                 onBlur={onBlur}
               />
             ))}

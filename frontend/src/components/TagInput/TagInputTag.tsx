@@ -13,15 +13,17 @@ export interface TagInputTagProps extends TagProps {
   isDisabled?: boolean
   isInvalid?: boolean
   label: string
-  onClose: (event: SyntheticEvent) => void
+  onClearTag: (event: SyntheticEvent) => void
+  onBlur?: (event: SyntheticEvent) => void
 }
 
 export const TagInputTag = ({
   label,
-  onClose,
   isDisabled = false,
   isInvalid,
   colorScheme,
+  onClearTag,
+  onBlur,
   ...props
 }: TagInputTagProps) => {
   // The ref of the input to be controlled.
@@ -42,16 +44,25 @@ export const TagInputTag = ({
     [handleRovingClick],
   )
 
+  const handleCloseButtonClick = useCallback(
+    (event: SyntheticEvent) => {
+      onClearTag(event)
+      onBlur?.(event)
+      event.stopPropagation()
+    },
+    [onBlur, onClearTag],
+  )
+
   const handleKeyDown: KeyboardEventHandler<HTMLInputElement> = useCallback(
     (event) => {
       switch (event.key) {
         case 'Delete':
         case 'Backspace':
-          return onClose(event)
+          return onClearTag(event)
       }
       handleRovingKeyDown(event)
     },
-    [handleRovingKeyDown, onClose],
+    [handleRovingKeyDown, onClearTag],
   )
 
   return (
@@ -69,7 +80,11 @@ export const TagInputTag = ({
       <TagLabel title={label} isTruncated>
         {label}
       </TagLabel>
-      <TagCloseButton tabIndex={-1} isDisabled={isDisabled} onClick={onClose} />
+      <TagCloseButton
+        tabIndex={-1}
+        isDisabled={isDisabled}
+        onClick={handleCloseButtonClick}
+      />
     </Tag>
   )
 }
