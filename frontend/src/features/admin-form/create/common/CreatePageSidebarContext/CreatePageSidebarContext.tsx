@@ -10,6 +10,7 @@ import {
 
 import { useIsMobile } from '~hooks/useIsMobile'
 
+import { FieldListTabIndex } from '../../builder-and-design/constants'
 import {
   setToInactiveSelector,
   useBuilderAndDesignStore,
@@ -28,6 +29,8 @@ type CreatePageSidebarContextProps = {
   handleDesignClick: () => void
   handleLogicClick: () => void
   handleClose: () => void
+  fieldListTabIndex: FieldListTabIndex
+  setFieldListTabIndex: (tabIndex: FieldListTabIndex) => void
 }
 
 const CreatePageSidebarContext = createContext<
@@ -53,6 +56,9 @@ export const useCreatePageSidebarContext =
       [activeTab],
     )
     const setFieldsToInactive = useBuilderAndDesignStore(setToInactiveSelector)
+
+    const [fieldListTabIndex, setFieldListTabIndex] =
+      useState<FieldListTabIndex>(FieldListTabIndex.Basic)
 
     // Set state to inactive whenever active tab is not builder
     useEffect(() => {
@@ -90,6 +96,8 @@ export const useCreatePageSidebarContext =
       handleDesignClick,
       handleLogicClick,
       handleClose,
+      fieldListTabIndex,
+      setFieldListTabIndex,
     }
   }
 

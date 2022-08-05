@@ -34,6 +34,7 @@ import {
   CREATE_PAGE_DROP_ID,
   CREATE_PAGE_FIELDS_ORDERED,
 } from '~features/admin-form/create/builder-and-design/constants'
+import { useCreatePageSidebar } from '~features/admin-form/create/common/CreatePageSidebarContext'
 import { isMyInfo } from '~features/myinfo/utils'
 
 import { useCreateTabForm } from '../../useCreateTabForm'
@@ -45,10 +46,18 @@ import {
 } from './FieldListOption'
 
 export const FieldListDrawer = (): JSX.Element => {
+  const { fieldListTabIndex, setFieldListTabIndex } = useCreatePageSidebar()
   const { isLoading } = useCreateTabForm()
 
   return (
-    <Tabs pos="relative" h="100%" display="flex" flexDir="column">
+    <Tabs
+      pos="relative"
+      h="100%"
+      display="flex"
+      flexDir="column"
+      index={fieldListTabIndex}
+      onChange={setFieldListTabIndex}
+    >
       <Box pt="1rem" px="1.5rem" bg="white">
         <Flex justify="space-between">
           <Text textStyle="subhead-3" color="secondary.500" mb="1rem">
