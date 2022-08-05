@@ -175,7 +175,7 @@ export interface IFormSchema extends IForm, Document, PublicView<PublicForm> {
    * Archives form.
    * @returns form that has been archived
    */
-  archive(session?: ClientSession): Promise<IFormSchema>
+  archive(): Promise<IFormSchema>
 
   /**
    * Transfer ownership of the form to another user.

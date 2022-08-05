@@ -519,14 +519,14 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   }
 
   // Archives form.
-  FormSchema.methods.archive = function (session?: ClientSession) {
+  FormSchema.methods.archive = function () {
     // Return instantly when form is already archived.
     if (this.status === FormStatus.Archived) {
       return Promise.resolve(this)
     }
 
     this.status = FormStatus.Archived
-    return this.save({ session })
+    return this.save()
   }
 
   FormSchema.methods.updateMsgSrvcName = async function (
