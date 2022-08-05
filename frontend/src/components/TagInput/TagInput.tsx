@@ -51,6 +51,7 @@ export const TagInput = forwardRef<TagInputProps, 'input'>(
       defaultValue = [],
       onChange: onChangeProp,
       onKeyDown,
+      onBlur,
       keyDownKeys = ['Enter', ',', ' '],
       tagColorScheme = 'secondary',
       tagInvalidation,
@@ -111,8 +112,9 @@ export const TagInput = forwardRef<TagInputProps, 'input'>(
           }
           event.preventDefault()
         }
+        onBlur?.(event)
       },
-      [addTag],
+      [addTag, onBlur],
     )
 
     const handleKeyDown = useCallback(
@@ -162,6 +164,7 @@ export const TagInput = forwardRef<TagInputProps, 'input'>(
                 isInvalid={tagInvalidation?.(tag)}
                 label={tag}
                 onClose={handleRemoveTag(index)}
+                onBlur={onBlur}
               />
             ))}
             <TagInputInput

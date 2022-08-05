@@ -1,11 +1,19 @@
-import { KeyboardEventHandler, useCallback, useRef } from 'react'
+import {
+  KeyboardEventHandler,
+  MouseEventHandler,
+  useCallback,
+  useRef,
+} from 'react'
 import { useFocusEffect, useRovingTabIndex } from 'react-roving-tabindex'
 import { chakra, forwardRef, useMergeRefs, useStyles } from '@chakra-ui/react'
 
 import { InputProps } from '~components/Input'
 
 export const TagInputInput = forwardRef<Omit<InputProps, 'size'>, 'input'>(
-  ({ onKeyDown, isDisabled = false, isReadOnly, isInvalid, ...props }, ref) => {
+  (
+    { onKeyDown, isDisabled = false, isReadOnly, isInvalid, onClick, ...props },
+    ref,
+  ) => {
     const styles = useStyles()
     // The ref of the input to be controlled.
     const focusedRef = useRef<HTMLElement>(null)
@@ -13,7 +21,7 @@ export const TagInputInput = forwardRef<Omit<InputProps, 'size'>, 'input'>(
     const mergedRefs = useMergeRefs(ref, focusedRef)
 
     // handleKeyDown and handleClick are stable for the lifetime of the component:
-    const [tabIndex, focused, handleRovingKeyDown, handleClick] =
+    const [tabIndex, focused, handleRovingKeyDown, handleRovingClick] =
       useRovingTabIndex(focusedRef, isDisabled)
 
     // Set focus on the input if it gets focus
@@ -28,6 +36,14 @@ export const TagInputInput = forwardRef<Omit<InputProps, 'size'>, 'input'>(
         }
       },
       [handleRovingKeyDown, onKeyDown],
+    )
+
+    const handleClick: MouseEventHandler<HTMLInputElement> = useCallback(
+      (event) => {
+        onClick?.(event)
+        handleRovingClick()
+      },
+      [handleRovingClick, onClick],
     )
 
     return (
