@@ -1,7 +1,6 @@
 import { useCallback } from 'react'
 import { BiFileBlank } from 'react-icons/bi'
 import {
-  ButtonGroup,
   Container,
   Icon,
   ListItem,
@@ -11,6 +10,7 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
+  Stack,
   Text,
   UnorderedList,
   useBreakpointValue,
@@ -19,6 +19,7 @@ import {
 
 import { AdminDashboardFormMetaDto } from '~shared/types'
 
+import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
 import { ModalCloseButton } from '~components/Modal'
 
@@ -39,6 +40,7 @@ export const DeleteFormModal = ({
     xs: 'mobile',
     md: 'md',
   })
+  const isMobile = useIsMobile()
 
   const { deleteFormMutation } = useDeleteFormMutation()
 
@@ -85,8 +87,22 @@ export const DeleteFormModal = ({
           </UnorderedList>
         </ModalBody>
         <ModalFooter>
-          <ButtonGroup>
+          <Stack
+            flex={1}
+            spacing="1rem"
+            direction={{ base: 'column', md: 'row-reverse' }}
+          >
             <Button
+              colorScheme="danger"
+              isFullWidth={isMobile}
+              isDisabled={!formToDelete}
+              isLoading={deleteFormMutation.isLoading}
+              onClick={handleDeleteForm}
+            >
+              Yes, delete form
+            </Button>
+            <Button
+              isFullWidth={isMobile}
               variant="clear"
               colorScheme="secondary"
               onClick={onClose}
@@ -94,15 +110,7 @@ export const DeleteFormModal = ({
             >
               Cancel
             </Button>
-            <Button
-              colorScheme="danger"
-              isDisabled={!formToDelete}
-              isLoading={deleteFormMutation.isLoading}
-              onClick={handleDeleteForm}
-            >
-              Yes, delete form
-            </Button>
-          </ButtonGroup>
+          </Stack>
         </ModalFooter>
       </ModalContent>
     </Modal>
