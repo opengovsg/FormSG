@@ -7,14 +7,15 @@ import {
 } from 'react-hook-form'
 import { FormControl } from '@chakra-ui/react'
 import { get, isEmpty, isEqual } from 'lodash'
+import isEmail from 'validator/lib/isEmail'
 
 import { EmailFormSettings } from '~shared/types/form/form'
 
 import { GUIDE_PREVENT_EMAIL_BOUNCE } from '~constants/links'
-import { createAdminEmailValidationTransform } from '~utils/formValidation'
+import { ADMIN_EMAIL_VALIDATION_RULES } from '~utils/formValidation'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
-import Input from '~components/Input'
+import { TagInput } from '~components/TagInput'
 
 import { useMutateFormSettings } from '../mutations'
 
@@ -78,11 +79,6 @@ const AdminEmailRecipientsInput = ({
   const { control, handleSubmit, reset } =
     useFormContext<{ emails: string[] }>()
 
-  const { rules, transform } = useMemo(
-    () => createAdminEmailValidationTransform(),
-    [],
-  )
-
   const handleBlur = useCallback(() => {
     return handleSubmit(onSubmit, () => reset())()
   }, [handleSubmit, onSubmit, reset])
@@ -91,12 +87,16 @@ const AdminEmailRecipientsInput = ({
     <Controller
       control={control}
       name="emails"
-      rules={rules}
+      rules={ADMIN_EMAIL_VALIDATION_RULES}
       render={({ field }) => (
-        <Input
-          value={transform.input(field.value)}
-          onChange={(e) => field.onChange(transform.output(e.target.value))}
-          onBlur={handleBlur}
+        <TagInput
+          placeholder="Separate emails with a comma"
+          {...field}
+          tagInvalidation={(tag) => !isEmail(tag)}
+          onBlur={() => {
+            console.log('blurring')
+            return handleBlur()
+          }}
         />
       )}
     />
