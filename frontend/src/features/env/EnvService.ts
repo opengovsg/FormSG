@@ -1,4 +1,5 @@
 import {
+  BasicField,
   ErrorDto,
   PublicFormViewDto,
   switchEnvFeedbackFormBodyDto,
@@ -19,18 +20,27 @@ const createFeedbackResponsesArray = (
   formInputs: switchEnvFeedbackFormBodyDto,
   feedbackForm: PublicFormViewDto,
 ) => {
-  const responses = []
-  for (const [key, value] of Object.entries(formInputs)) {
-    const fieldIndex = key === 'url' ? 0 : key === 'feedback' ? 1 : 2
-    const { _id, fieldType } = feedbackForm?.form.form_fields[fieldIndex] ?? {}
-    const entry = {
+  const feedbackFormFieldsStructure: [string, number][] = [
+    ['url', 0],
+    ['feedback', 1],
+    ['email', 2],
+  ]
+  const responses: {
+    _id: string
+    question: string
+    answer: string
+    fieldType: BasicField
+  }[] = feedbackFormFieldsStructure.map(([inputKey, formFieldIndex]) => {
+    const { _id, fieldType } = feedbackForm.form.form_fields[formFieldIndex]
+    const answer = formInputs[inputKey] ?? ''
+    return {
       _id,
-      question: key,
-      answer: value ?? '',
+      question: inputKey,
+      answer,
       fieldType,
     }
-    responses.push(entry)
-  }
+  })
+
   return responses
 }
 
