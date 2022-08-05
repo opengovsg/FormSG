@@ -12,10 +12,7 @@ export const WorkspacesRouter = Router()
 WorkspacesRouter.use(withUserAuthentication)
 WorkspacesRouter.use(logAdminAction)
 
-WorkspacesRouter.use(
-  '/:workspaceId([a-fA-F0-9]{24})/forms',
-  WorkspacesFormRouter,
-)
+WorkspacesRouter.use(WorkspacesFormRouter)
 
 WorkspacesRouter.route('/')
   /**
@@ -69,3 +66,18 @@ WorkspacesRouter.route('/:workspaceId([a-fA-F0-9]{24})/title')
    * @returns 500 when database error occurs
    */
   .put(WorkspaceController.updateWorkspaceTitle)
+
+WorkspacesRouter.route('/move')
+  /**
+   * Move forms from to destination workspace. Forms may come from one source workspace, or from
+   * multiple different source workspaces.
+   * @security session
+   *
+   * @returns 200 with a list of remaining forms in the source workspace
+   * @returns 401 when user is not logged in
+   * @returns 403 when user does not have permissions to update the source or destination workspace
+   * @returns 404 when the source or destination workspace does not exist
+   * @returns 422 when user of given id cannnot be found in the database
+   * @returns 500 when database errors occur
+   */
+  .post(WorkspaceController.moveFormsToWorkspace)
