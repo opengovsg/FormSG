@@ -5,6 +5,8 @@ import { FormId } from '~shared/types'
 
 import { MOCK_USER, userHandlers } from '~/mocks/msw/handlers/user'
 
+import { getMobileViewParameters } from '~utils/storybook'
+
 import { DeleteFormModal, DeleteFormModalProps } from './DeleteFormModal'
 
 export default {
@@ -38,3 +40,6 @@ const Template: Story<DeleteFormModalProps> = (args) => {
   )
 }
 export const Default = Template.bind({})
+
+export const Mobile = Template.bind({})
+Mobile.parameters = getMobileViewParameters()
