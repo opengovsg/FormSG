@@ -79,6 +79,8 @@ EmailFormLoading.parameters = {
   msw: [
     ...createFormBuilderMocks({}, 0),
     getAdminFormSubmissions({ delay: 'infinite' }),
+    getUser(),
+    getAdminFormCollaborators(),
   ],
 }
 
@@ -89,6 +91,8 @@ EmptyEmailForm.parameters = {
     getAdminFormSubmissions({
       override: 0,
     }),
+    getUser(),
+    getAdminFormCollaborators(),
   ],
 }
 
@@ -115,6 +119,8 @@ StorageForm.parameters = {
     ),
     getAdminFormSubmissions(),
     getStorageSubmissionMetadataResponse(),
+    getUser(),
+    getAdminFormCollaborators(),
   ],
 }
 
@@ -180,5 +186,7 @@ StorageFormLoading.parameters = {
     ...createFormBuilderMocks({ responseMode: FormResponseMode.Encrypt }, 0),
     getAdminFormSubmissions({ delay: 'infinite' }),
     getStorageSubmissionMetadataResponse({}, 'infinite'),
+    getUser(),
+    getAdminFormCollaborators(),
   ],
 }

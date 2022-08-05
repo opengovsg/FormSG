@@ -75,6 +75,8 @@ PreventActivation.parameters = {
         esrvcId: '',
       },
     }),
+    getUser(),
+    getAdminFormCollaborators(),
   ],
 }
 
@@ -116,5 +118,7 @@ StorageModeSettings.parameters = {
       mode: FormResponseMode.Encrypt,
       overrides: { publicKey: storageModeKeypair.publicKey },
     }),
+    getUser(),
+    getAdminFormCollaborators(),
   ],
 }
