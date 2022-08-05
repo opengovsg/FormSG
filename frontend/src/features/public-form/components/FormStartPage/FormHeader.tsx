@@ -56,11 +56,18 @@ export const MiniHeader = ({
           justify="space-between"
           flexDir="row"
         >
-          <Flex alignItems="center" minH={{ base: '4rem', md: '0' }}>
+          <Flex
+            alignItems="center"
+            minH={{ base: '4rem', md: '0' }}
+            flex="1 1 0"
+            w="100%"
+            overflow="hidden"
+          >
             <Text
               textStyle={{ base: 'h4', md: 'h2' }}
               textAlign="start"
               color={titleColor}
+              noOfLines={2}
             >
               {title ?? 'Loading title'}
             </Text>
