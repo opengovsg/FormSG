@@ -5,11 +5,13 @@ import Button from '~components/Button'
 import InlineMessage from '~components/InlineMessage'
 
 import { useEnvMutations } from '~features/env/mutations'
+import { useEnv } from '~features/env/queries'
 
 export const AdminSwitchEnvMessage = (): JSX.Element => {
   const { adminSwitchEnvMutation } = useEnvMutations()
-
-  return (
+  const { data: { adminRollout } = {} } = useEnv()
+  const showSwitchEnvMessage = adminRollout && adminRollout <= 100
+  return showSwitchEnvMessage ? (
     <InlineMessage>
       <Text>
         Welcome to the new FormSG! You can still{' '}
@@ -19,5 +21,7 @@ export const AdminSwitchEnvMessage = (): JSX.Element => {
         which is available until 28 May 2022.
       </Text>
     </InlineMessage>
+  ) : (
+    <></>
   )
 }

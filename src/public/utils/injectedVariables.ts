@@ -16,6 +16,7 @@ interface FrontendInjectedVariables {
   spcpCookieDomain: string | null
   respondentRolloutEmail: number
   respondentRolloutStorage: number
+  adminRollout: number
 }
 
 // NOTE: As these variables are not injected until runtime
@@ -39,4 +40,5 @@ export const injectedVariables: FrontendInjectedVariables = {
   spcpCookieDomain: formsgWindow.spcpCookieDomain ?? null,
   respondentRolloutEmail: formsgWindow.respondentRolloutEmail,
   respondentRolloutStorage: formsgWindow.respondentRolloutStorage,
+  adminRollout: formsgWindow.adminRollout,
 }

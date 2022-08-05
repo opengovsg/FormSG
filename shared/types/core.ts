@@ -28,4 +28,5 @@ export type ClientEnvVars = {
   spcpCookieDomain: string // Cookie domain used for removing spcp cookies
   respondentRolloutEmail: number
   respondentRolloutStorage: number
+  adminRollout: number
 }

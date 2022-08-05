@@ -29,6 +29,7 @@ const frontendVars = {
     config.reactMigration.respondentRolloutEmail,
   reactMigrationRespondentRolloutStorage:
     config.reactMigration.respondentRolloutStorage,
+  reactMigrationAdminRollout: config.reactMigration.adminRollout,
 }
 const environment = ejs.render(
   `
@@ -57,6 +58,7 @@ const environment = ejs.render(
     var reactMigrationAdminCookieName = "<%= reactMigrationAdminCookieName%>"
     var reactMigrationRespondentRolloutEmail = "<%= reactMigrationRespondentRolloutEmail%>"
     var reactMigrationRespondentRolloutStorage = "<%= reactMigrationRespondentRolloutStorage%>"
+    var reactMigrationAdminRollout = "<%= reactMigrationAdminRollout%>"
   `,
   frontendVars,
 )
