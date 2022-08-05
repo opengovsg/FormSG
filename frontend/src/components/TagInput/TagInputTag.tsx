@@ -11,6 +11,7 @@ import { Tag, TagCloseButton, TagProps } from '~components/Tag/Tag'
 
 export interface TagInputTagProps extends TagProps {
   isDisabled?: boolean
+  isInvalid?: boolean
   label: string
   onClose: (event: SyntheticEvent) => void
 }
@@ -19,6 +20,8 @@ export const TagInputTag = ({
   label,
   onClose,
   isDisabled = false,
+  isInvalid,
+  colorScheme,
   ...props
 }: TagInputTagProps) => {
   // The ref of the input to be controlled.
@@ -55,6 +58,8 @@ export const TagInputTag = ({
     <Tag
       cursor="pointer"
       aria-disabled={isDisabled}
+      aria-invalid={isInvalid}
+      colorScheme={isInvalid ? 'danger' : colorScheme}
       {...props}
       ref={focusedRef}
       tabIndex={tabIndex}

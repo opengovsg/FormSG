@@ -33,10 +33,17 @@ DisabledWithValue.args = {
   ...Disabled.args,
 }
 
-export const Invalid = Template.bind({})
-Invalid.args = {
+export const InvalidField = Template.bind({})
+InvalidField.args = {
   ...WithValue.args,
   isInvalid: true,
+}
+
+export const InvalidFieldWithInvalidTags = Template.bind({})
+InvalidFieldWithInvalidTags.args = {
+  isInvalid: true,
+  defaultValue: ['foo', 'bar', 'bazinvalid'],
+  tagInvalidation: (tag) => tag.length > 3,
 }
 
 export const Mobile = Template.bind({})

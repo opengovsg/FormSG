@@ -36,6 +36,11 @@ export interface TagInputProps
   tagColorScheme?: TagProps['colorScheme']
   /** Keys that will trigger the creation of new tags. Defaults to `['Enter', ',', ' ']` */
   keyDownKeys?: string[]
+  /**
+   * Optional function to call to validate created tags.
+   * Should return `true` if tag is invalid
+   */
+  tagInvalidation?: (tag: string) => boolean
 }
 
 export const TagInput = forwardRef<TagInputProps, 'input'>(
@@ -47,6 +52,7 @@ export const TagInput = forwardRef<TagInputProps, 'input'>(
       onKeyDown,
       keyDownKeys = ['Enter', ',', ' '],
       tagColorScheme = 'secondary',
+      tagInvalidation,
       size,
       ...props
     },
@@ -154,6 +160,7 @@ export const TagInput = forwardRef<TagInputProps, 'input'>(
                 isDisabled={props.isDisabled}
                 key={index}
                 colorScheme={tagColorScheme}
+                isInvalid={tagInvalidation?.(tag)}
                 label={tag}
                 onClose={handleRemoveTag(index)}
               />
