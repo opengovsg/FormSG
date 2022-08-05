@@ -13,7 +13,7 @@ import {
   PublicJwks,
   Refresh,
   SecretJwks,
-  SpcpOidcBaseCilentCacheConstructorParams,
+  SpcpOidcBaseClientCacheConstructorParams,
 } from './spcp.oidc.client.types'
 import {
   isEC,
@@ -36,7 +36,7 @@ const INITIAL_REFRESH_TIMEOUT = 10000
  * Cache class which provides read-through capability and refresh-ahead before expiry
  * Handles discovery and retrieval of NDI's public jwks
  */
-export class SpcpOidcBaseCilentCache {
+export class SpcpOidcBaseClientCache {
   /**
    * Cache to store NDI's keys and client
    * @private
@@ -70,7 +70,7 @@ export class SpcpOidcBaseCilentCache {
     rpClientId,
     rpRedirectUrl,
     rpSecretJwks,
-  }: SpcpOidcBaseCilentCacheConstructorParams) {
+  }: SpcpOidcBaseClientCacheConstructorParams) {
     this.#ndiDiscoveryEndpoint = ndiDiscoveryEndpoint
     this.#ndiJwksEndpoint = ndiJwksEndpoint
     this.#rpClientId = rpClientId

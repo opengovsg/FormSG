@@ -15,7 +15,7 @@ import { URLSearchParams } from 'url'
 
 import { FormAuthType } from '../../../../shared/types'
 
-import { SpcpOidcBaseCilentCache } from './spcp.oidc.client.cache'
+import { SpcpOidcBaseClientCache } from './spcp.oidc.client.cache'
 import {
   CreateAuthorisationUrlError,
   CreateJwtError,
@@ -60,7 +60,7 @@ export class SpcpOidcBaseClient {
    * @private
    * accessible only for testing
    */
-  _spcpOidcBaseCilentCache: SpcpOidcBaseCilentCache
+  _spcpOidcBaseClientCache: SpcpOidcBaseClientCache
 
   /**
    * Constructor for client
@@ -76,7 +76,7 @@ export class SpcpOidcBaseClient {
     rpPublicJwks,
     authType,
   }: SpcpOidcBaseClientConstructorParams) {
-    this._spcpOidcBaseCilentCache = new SpcpOidcBaseCilentCache({
+    this._spcpOidcBaseClientCache = new SpcpOidcBaseClientCache({
       ndiDiscoveryEndpoint,
       ndiJwksEndpoint,
       rpClientId,
@@ -139,20 +139,20 @@ export class SpcpOidcBaseClient {
    * Method to retrieve NDI's public keys from cache
    * @async
    * @returns NDI's Public Key
-   * @throws error if this._spcpOidcBaseCilentCache.getNdiPublicKeys() rejects
+   * @throws error if this._spcpOidcBaseClientCache.getNdiPublicKeys() rejects
    */
   async getNdiPublicKeysFromCache(): Promise<CryptoKeys> {
-    return this._spcpOidcBaseCilentCache.getNdiPublicKeys()
+    return this._spcpOidcBaseClientCache.getNdiPublicKeys()
   }
 
   /**
    * Method to retrieve baseClient from cache
    * @async
    * @returns baseClient from discovery of NDI's discovery endpoint
-   * @throws error if this._spcpOidcBaseCilentCache.getBaseClient() rejects
+   * @throws error if this._spcpOidcBaseClientCache.getBaseClient() rejects
    */
   async getBaseClientFromCache(): Promise<BaseClient> {
-    return this._spcpOidcBaseCilentCache.getBaseClient()
+    return this._spcpOidcBaseClientCache.getBaseClient()
   }
 
   /**
@@ -375,7 +375,7 @@ export class SpcpOidcBaseClient {
       // If any error in the exchange, trigger refresh of cache. Possible sources of failure are:
       // NDI changed /token endpoint url, hence need to rediscover well-known endpoint
       // NDI changed the signing keys without broadcasting both old and new keys for the 1h cache duration, hence need to refetch keys
-      void this._spcpOidcBaseCilentCache.refresh()
+      void this._spcpOidcBaseClientCache.refresh()
       if (err instanceof Error) {
         throw err
       } else {

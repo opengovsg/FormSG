@@ -64,7 +64,7 @@ export type CpOidcClientConstructorParams = {
   cpOidcRpPublicJwks: SpcpOidcBaseClientConstructorParams['rpPublicJwks']
 }
 
-export type SpcpOidcBaseCilentCacheConstructorParams = {
+export type SpcpOidcBaseClientCacheConstructorParams = {
   options?: Options
   ndiDiscoveryEndpoint: string
   ndiJwksEndpoint: string
