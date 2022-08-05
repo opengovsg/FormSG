@@ -11,6 +11,7 @@ import {
   forwardRef,
   StylesProvider,
   useControllableState,
+  useFormControl,
   useMergeRefs,
   useMultiStyleConfig,
 } from '@chakra-ui/react'
@@ -58,10 +59,8 @@ export const TagInput = forwardRef<TagInputProps, 'input'>(
     },
     ref,
   ): JSX.Element => {
-    const styles = useMultiStyleConfig('TagInput', {
-      size,
-      ...props,
-    })
+    const inputProps = useFormControl<HTMLInputElement>(props)
+    const styles = useMultiStyleConfig('TagInput', inputProps)
 
     const [value, onChange] = useControllableState({
       value: valueProp,
@@ -151,13 +150,13 @@ export const TagInput = forwardRef<TagInputProps, 'input'>(
           <Box
             sx={styles.container}
             onClick={handleFieldClick}
-            aria-disabled={props.isDisabled}
-            aria-invalid={props.isInvalid}
-            aria-readonly={props.isReadOnly}
+            aria-disabled={inputProps.disabled}
+            aria-invalid={inputProps['aria-invalid']}
+            aria-readonly={inputProps.readOnly}
           >
             {value.map((tag, index) => (
               <TagInputTag
-                isDisabled={props.isDisabled}
+                isDisabled={inputProps.disabled}
                 key={index}
                 colorScheme={tagColorScheme}
                 isInvalid={tagInvalidation?.(tag)}
@@ -166,7 +165,7 @@ export const TagInput = forwardRef<TagInputProps, 'input'>(
               />
             ))}
             <TagInputInput
-              {...props}
+              {...inputProps}
               onKeyDown={handleKeyDown}
               onBlur={handleBlur}
               ref={mergedInputRefs}
