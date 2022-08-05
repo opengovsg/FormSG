@@ -54,6 +54,7 @@ export const TagInputTag = ({
   return (
     <Tag
       cursor="pointer"
+      aria-disabled={isDisabled}
       {...props}
       ref={focusedRef}
       tabIndex={tabIndex}
@@ -63,7 +64,7 @@ export const TagInputTag = ({
       <TagLabel title={label} isTruncated>
         {label}
       </TagLabel>
-      <TagCloseButton tabIndex={-1} onClick={onClose} />
+      <TagCloseButton tabIndex={-1} isDisabled={isDisabled} onClick={onClose} />
     </Tag>
   )
 }

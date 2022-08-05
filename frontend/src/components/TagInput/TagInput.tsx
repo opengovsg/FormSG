@@ -151,6 +151,7 @@ export const TagInput = forwardRef<TagInputProps, 'input'>(
           >
             {value.map((tag, index) => (
               <TagInputTag
+                isDisabled={props.isDisabled}
                 key={index}
                 colorScheme={tagColorScheme}
                 label={tag}
