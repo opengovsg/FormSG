@@ -40,6 +40,7 @@ export const PublicFormWrapper = ({
   isPreview,
   children,
 }: PublicFormWrapperProps): JSX.Element => {
+  const REMOVE_RESPONDENTS_INFOBOX_THRESHOLD = 10
   const { form, isLoading, isAuthRequired } = usePublicFormContext()
   const { data: { respondentRolloutEmail, respondentRolloutStorage } = {} } =
     useEnv()
@@ -53,7 +54,8 @@ export const PublicFormWrapper = ({
     : respondentRolloutStorage
   // Remove the switch env message if the React rollout for public form respondents is >10%
   const showSwitchEnvMessage = !!(
-    switchEnvRolloutPercentage && switchEnvRolloutPercentage <= 10
+    switchEnvRolloutPercentage &&
+    switchEnvRolloutPercentage <= REMOVE_RESPONDENTS_INFOBOX_THRESHOLD
   )
   return (
     <Flex bg={bgColour} p={{ base: 0, md: '1.5rem' }} flex={1} justify="center">
