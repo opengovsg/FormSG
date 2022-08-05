@@ -58,27 +58,27 @@ export class SpcpOidcServiceClass {
 
   constructor(props: ISpcpMyInfo) {
     this.#spOidcClient = new SpOidcClient({
-      spOidcRpClientId: props.spOidcRpClientId,
-      spOidcRpRedirectUrl: props.spOidcRpRedirectUrl,
-      spOidcNdiDiscoveryEndpoint: props.spOidcNdiDiscoveryEndpoint,
-      spOidcNdiJwksEndpoint: props.spOidcNdiJwksEndpoint,
-      spOidcRpPublicJwks: JSON.parse(
+      rpClientId: props.spOidcRpClientId,
+      rpRedirectUrl: props.spOidcRpRedirectUrl,
+      ndiDiscoveryEndpoint: props.spOidcNdiDiscoveryEndpoint,
+      ndiJwksEndpoint: props.spOidcNdiJwksEndpoint,
+      rpPublicJwks: JSON.parse(
         fs.readFileSync(props.spOidcRpJwksPublicPath).toString(),
       ),
-      spOidcRpSecretJwks: JSON.parse(
+      rpSecretJwks: JSON.parse(
         fs.readFileSync(props.spOidcRpJwksSecretPath).toString(),
       ),
     })
 
     this.#cpOidcClient = new CpOidcClient({
-      cpOidcRpClientId: props.cpOidcRpClientId,
-      cpOidcRpRedirectUrl: props.cpOidcRpRedirectUrl,
-      cpOidcNdiDiscoveryEndpoint: props.cpOidcNdiDiscoveryEndpoint,
-      cpOidcNdiJwksEndpoint: props.cpOidcNdiJwksEndpoint,
-      cpOidcRpPublicJwks: JSON.parse(
+      rpClientId: props.cpOidcRpClientId,
+      rpRedirectUrl: props.cpOidcRpRedirectUrl,
+      ndiDiscoveryEndpoint: props.cpOidcNdiDiscoveryEndpoint,
+      ndiJwksEndpoint: props.cpOidcNdiJwksEndpoint,
+      rpPublicJwks: JSON.parse(
         fs.readFileSync(props.cpOidcRpJwksPublicPath).toString(),
       ),
-      cpOidcRpSecretJwks: JSON.parse(
+      rpSecretJwks: JSON.parse(
         fs.readFileSync(props.cpOidcRpJwksSecretPath).toString(),
       ),
     })

@@ -29,11 +29,9 @@ import {
   VerificationKeyError,
 } from './spcp.oidc.client.errors'
 import {
-  CpOidcClientConstructorParams,
   CryptoKeys,
   SigningKey,
-  SpcpOidcBaseClientConstructorParams,
-  SpOidcClientConstructorParams,
+  SpcpOidcClientConstructorParams,
 } from './spcp.oidc.client.types'
 import {
   extractNricFromParsedSub,
@@ -46,15 +44,17 @@ import {
 
 /**
  * Wrapper around the openid-client library to carry out authentication related tasks with Singpass and Corppass NDI,
- * and provides methods for decryption and verification of JWE/JWS returned by NDI after authorisation code exchange
+ * and provides methods for decryption and verification of JWE/JWS returned by NDI after authorisation code exchange.
+ * This is a base class for the Singpass and CorpPass OIDC client classes and is meant to be instantiated on its own.
  * @parent for SpOidcClient and CpOidcClient classes
  */
-export class SpcpOidcBaseClient {
+class SpcpOidcBaseClient {
   #rpSecretKeys: CryptoKeys
   #rpPublicKeys: CryptoKeys
   #rpRedirectUrl: string
-  #rpClientId: string
-  #authType: FormAuthType.SP | FormAuthType.CP
+
+  rpClientId: string
+  eServiceIdKey = 'esrvcID'
 
   /**
    * @private
@@ -74,8 +74,7 @@ export class SpcpOidcBaseClient {
     ndiJwksEndpoint,
     rpSecretJwks,
     rpPublicJwks,
-    authType,
-  }: SpcpOidcBaseClientConstructorParams) {
+  }: SpcpOidcClientConstructorParams) {
     this._spcpOidcBaseClientCache = new SpcpOidcBaseClientCache({
       ndiDiscoveryEndpoint,
       ndiJwksEndpoint,
@@ -89,8 +88,7 @@ export class SpcpOidcBaseClient {
     })
 
     this.#rpRedirectUrl = rpRedirectUrl
-    this.#authType = authType
-    this.#rpClientId = rpClientId
+    this.rpClientId = rpClientId
 
     this.#rpSecretKeys = rpSecretJwks.keys.map((jwk) => {
       if (!jwk.alg) {
@@ -184,9 +182,7 @@ export class SpcpOidcBaseClient {
       response_type: 'code',
       state: state,
       nonce: ulid(), // Not used - nonce is a required parameter for SPCP's OIDC implementation although it is optional in OIDC specs
-      ...(this.#authType === FormAuthType.SP
-        ? { esrvc: esrvcId }
-        : { esrvcID: esrvcId }), // Additional parameter for agencies' eservice Id. Labelled esrvc in Singpass OIDC and esrvcID in Corppass OIDC
+      [this.eServiceIdKey]: esrvcId,
     })
 
     return authorisationUrl
@@ -258,6 +254,10 @@ export class SpcpOidcBaseClient {
     return verificationKey
   }
 
+  getExtraTokenFields() {
+    return {}
+  }
+
   /**
    * Method to exchange authorisation code for idToken from NDI and then decode and verify it
    * @async
@@ -302,9 +302,9 @@ export class SpcpOidcBaseClient {
       // Create client assertion
       const clientAssertion = await this.createJWT(
         {
-          iss: this.#rpClientId,
+          iss: this.rpClientId,
           aud: baseClient.issuer.metadata.issuer,
-          sub: this.#rpClientId,
+          sub: this.rpClientId,
         },
         '60s',
       )
@@ -318,9 +318,7 @@ export class SpcpOidcBaseClient {
         client_assertion_type:
           'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
         client_assertion: clientAssertion,
-        ...(this.#authType === FormAuthType.SP
-          ? { client_id: this.#rpClientId } // client_id required only for Singpass
-          : {}),
+        ...this.getExtraTokenFields(),
       }).toString()
 
       const { data } = await axios.post<TokenSet>(tokenEndpoint, body, {
@@ -492,23 +490,15 @@ export class SpcpOidcBaseClient {
  * @extends SpcpOidcBaseClient
  */
 export class SpOidcClient extends SpcpOidcBaseClient {
-  constructor({
-    spOidcRpClientId,
-    spOidcRpRedirectUrl,
-    spOidcNdiDiscoveryEndpoint,
-    spOidcNdiJwksEndpoint,
-    spOidcRpSecretJwks,
-    spOidcRpPublicJwks,
-  }: SpOidcClientConstructorParams) {
-    super({
-      rpClientId: spOidcRpClientId,
-      rpRedirectUrl: spOidcRpRedirectUrl,
-      ndiDiscoveryEndpoint: spOidcNdiDiscoveryEndpoint,
-      ndiJwksEndpoint: spOidcNdiJwksEndpoint,
-      rpSecretJwks: spOidcRpSecretJwks,
-      rpPublicJwks: spOidcRpPublicJwks,
-      authType: FormAuthType.SP,
-    })
+  authType = FormAuthType.SP
+  eServiceIdKey = 'esrvc'
+
+  constructor(params: SpcpOidcClientConstructorParams) {
+    super(params)
+  }
+
+  getExtraTokenFields() {
+    return { client_id: this.rpClientId }
   }
 }
 
@@ -517,23 +507,11 @@ export class SpOidcClient extends SpcpOidcBaseClient {
  * @extends SpcpOidcBaseClient
  */
 export class CpOidcClient extends SpcpOidcBaseClient {
-  constructor({
-    cpOidcRpClientId,
-    cpOidcRpRedirectUrl,
-    cpOidcNdiDiscoveryEndpoint,
-    cpOidcNdiJwksEndpoint,
-    cpOidcRpSecretJwks,
-    cpOidcRpPublicJwks,
-  }: CpOidcClientConstructorParams) {
-    super({
-      rpClientId: cpOidcRpClientId,
-      rpRedirectUrl: cpOidcRpRedirectUrl,
-      ndiDiscoveryEndpoint: cpOidcNdiDiscoveryEndpoint,
-      ndiJwksEndpoint: cpOidcNdiJwksEndpoint,
-      rpSecretJwks: cpOidcRpSecretJwks,
-      rpPublicJwks: cpOidcRpPublicJwks,
-      authType: FormAuthType.CP,
-    })
+  authType = FormAuthType.CP
+  eServiceIdKey = 'esrvcID'
+
+  constructor(params: SpcpOidcClientConstructorParams) {
+    super(params)
   }
 
   /**
