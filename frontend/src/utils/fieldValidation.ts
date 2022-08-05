@@ -399,7 +399,7 @@ export const createDateValidationRules: ValidationRuleFn<DateFieldBase> = (
 
         return (
           !isDateAnInvalidDay(parseISO(val), schema.invalidDays) ||
-          'Error placeholder'
+          'This date is not allowed by form admin'
         )
       },
     },
