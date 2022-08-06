@@ -48,7 +48,7 @@ import {
  * This is a base class for the Singpass and CorpPass OIDC client classes and is meant to be instantiated on its own.
  * @parent for SpOidcClient and CpOidcClient classes
  */
-class SpcpOidcBaseClient {
+export class SpcpOidcBaseClient {
   #rpSecretKeys: CryptoKeys
   #rpPublicKeys: CryptoKeys
   #rpRedirectUrl: string

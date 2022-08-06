@@ -19,7 +19,11 @@ import {
   MissingJwtError,
   VerifyJwtError,
 } from './spcp.errors'
-import { CpOidcClient, SpOidcClient } from './spcp.oidc.client'
+import {
+  CpOidcClient,
+  SpcpOidcBaseClient,
+  SpOidcClient,
+} from './spcp.oidc.client'
 import {
   CorppassJwtPayloadFromCookie,
   ExtractedCorppassNDIPayload,
@@ -44,89 +48,48 @@ const logger = createLoggerWithLabel(module)
  * Class for executing Singpass/Corppass OIDC-related services.
  * Exported for testing.
  */
-export class SpcpOidcServiceClass {
-  #spcpOidcProps: Pick<
-    ISpcpMyInfo,
-    | 'spCookieMaxAge'
-    | 'spCookieMaxAgePreserved'
-    | 'spcpCookieDomain'
-    | 'cpCookieMaxAge'
-  >
+export abstract class SpcpOidcServiceClass {
+  authType = '-'
+  jwtName = '-'
+  oidcProps: {
+    cookieMaxAge: number
+    cookieMaxAgePreserved?: number
+    cookieDomain?: string
+  } = { cookieMaxAge: 3600 }
 
-  #spOidcClient: SpOidcClient
-  #cpOidcClient: CpOidcClient
+  oidcClient: SpcpOidcBaseClient
 
-  constructor(props: ISpcpMyInfo) {
-    this.#spOidcClient = new SpOidcClient({
-      rpClientId: props.spOidcRpClientId,
-      rpRedirectUrl: props.spOidcRpRedirectUrl,
-      ndiDiscoveryEndpoint: props.spOidcNdiDiscoveryEndpoint,
-      ndiJwksEndpoint: props.spOidcNdiJwksEndpoint,
-      rpPublicJwks: JSON.parse(
-        fs.readFileSync(props.spOidcRpJwksPublicPath).toString(),
-      ),
-      rpSecretJwks: JSON.parse(
-        fs.readFileSync(props.spOidcRpJwksSecretPath).toString(),
-      ),
-    })
-
-    this.#cpOidcClient = new CpOidcClient({
-      rpClientId: props.cpOidcRpClientId,
-      rpRedirectUrl: props.cpOidcRpRedirectUrl,
-      ndiDiscoveryEndpoint: props.cpOidcNdiDiscoveryEndpoint,
-      ndiJwksEndpoint: props.cpOidcNdiJwksEndpoint,
-      rpPublicJwks: JSON.parse(
-        fs.readFileSync(props.cpOidcRpJwksPublicPath).toString(),
-      ),
-      rpSecretJwks: JSON.parse(
-        fs.readFileSync(props.cpOidcRpJwksSecretPath).toString(),
-      ),
-    })
-
-    this.#spcpOidcProps = {
-      spCookieMaxAge: props.spCookieMaxAge,
-      cpCookieMaxAge: props.cpCookieMaxAge,
-      spCookieMaxAgePreserved: props.spCookieMaxAgePreserved,
-      spcpCookieDomain: props.spcpCookieDomain,
-    }
+  constructor(oidcClient: SpcpOidcBaseClient) {
+    this.oidcClient = oidcClient
   }
 
   /**
    * Retrieve the correct client.
-   * @param authType FormAuthType.SP or FormAuthType.CP
-   * @returns spOidcClient or cpOidcClient
+   * @returns SpcpOidcBaseClient
    */
-  getClient(
-    authType: FormAuthType.SP | FormAuthType.CP,
-  ): SpOidcClient | CpOidcClient {
-    if (authType === FormAuthType.SP) {
-      return this.#spOidcClient
-    } else {
-      return this.#cpOidcClient
-    }
+  getClient(): SpcpOidcBaseClient {
+    return this.oidcClient
   }
 
   /**
    * Create the URL to which the client should be redirected for Singpass/Corppass OIDC login.
    * @param state - contains formId, remember me, and stored queryId
    * @param esrvcId SP/CP OIDC e-service ID
-   * @param authType FormAuthType.SP or FormAuthType.CP
    * @returns okAsync(redirectUrl)
    * @returns errAsync(CreateRedirectUrlError)
    */
   createRedirectUrl(
     state: string,
     esrvcId: string,
-    authType: FormAuthType.SP | FormAuthType.CP,
   ): ResultAsync<string, CreateRedirectUrlError> {
     const logMeta = {
       action: 'createRedirectUrl',
       state,
       esrvcId,
-      authType,
+      authType: this.authType,
     }
 
-    const client = this.getClient(authType)
+    const client = this.getClient()
 
     return ResultAsync.fromPromise(
       client.createAuthorisationUrl(state, esrvcId),
@@ -144,119 +107,23 @@ export class SpcpOidcServiceClass {
   /**
    * Extracts the SP/CP JWT from an object containing cookies
    * @param cookies Object containing cookies
-   * @param authType FormAuthType.SP or FormAuthType.CP
    * @returns ok(cookie)
    * @returns err(missingJwtError) if the SP/CP JWT does not exist
    */
-  extractJwt(
-    cookies: SpcpCookies,
-    authType: FormAuthType.SP | FormAuthType.CP,
-  ): Result<string, MissingJwtError> {
-    const jwtName = authType === FormAuthType.SP ? JwtName.SP : JwtName.CP
-    const cookie = cookies[jwtName]
+  extractJwt(cookies: SpcpCookies): Result<string, MissingJwtError> {
+    const cookie = cookies[this.jwtName]
     return cookie ? ok(cookie) : err(new MissingJwtError())
   }
 
-  /**
-   * Verifies a Singpass JWT and extracts its payload.
-   * @param jwt The contents of the JWT cookie
-   * @returns ok(Singpass JWT payload)
-   * @returns err(VerifyJwtError) if JWT verification failed
-   * @returns err(InvalidJwtError) if JWT has invalid shape
-   */
-  extractSingpassJwtPayload(
+  abstract extractJwtPayload(
     jwt: string,
-  ): ResultAsync<
-    SingpassJwtPayloadFromCookie,
-    VerifyJwtError | InvalidJwtError
-  > {
-    const logMeta = {
-      action: 'extractSingpassJwtPayload',
-    }
+  ): ResultAsync<any, VerifyJwtError | InvalidJwtError>
 
-    const result = ResultAsync.fromPromise(
-      this.#spOidcClient.verifyJwt(jwt),
-      (error) => {
-        logger.error({
-          message: 'Failed to verify JWT with auth client',
-          meta: logMeta,
-          error,
-        })
-        return new VerifyJwtError()
-      },
-    ).andThen((payload) => {
-      if (isSingpassJwtPayload(payload)) {
-        return okAsync(payload)
-      }
-      const payloadIsDefined = !!payload
-      const payloadKeys =
-        typeof payload === 'object' && !!payload && Object.keys(payload)
-      logger.error({
-        message: 'JWT has incorrect shape',
-        meta: {
-          ...logMeta,
-          payloadIsDefined,
-          payloadKeys,
-        },
-      })
-      return errAsync(new InvalidJwtError())
-    })
-
-    return result
-  }
-
-  /**
-   * Verifies a Corppass JWT and extracts its payload.
-   * @param jwt The contents of the JWT cookie
-   * @returns ok(Corppass JWT payload)
-   * @returns err(VerifyJwtError) if JWT verification failed
-   * @returns err(InvalidJwtError) if JWT has invalid shape
-   */
-  extractCorppassJwtPayload(
-    jwt: string,
-  ): ResultAsync<
-    CorppassJwtPayloadFromCookie,
-    VerifyJwtError | InvalidJwtError
-  > {
-    const logMeta = {
-      action: 'extractCorppassJwtPayload',
-    }
-
-    const result = ResultAsync.fromPromise(
-      this.#cpOidcClient.verifyJwt(jwt),
-      (error) => {
-        logger.error({
-          message: 'Failed to verify JWT with auth client',
-          meta: logMeta,
-          error,
-        })
-        return new VerifyJwtError()
-      },
-    ).andThen((payload) => {
-      if (isCorppassJwtPayload(payload)) {
-        return okAsync(payload)
-      }
-      const payloadIsDefined = !!payload
-      const payloadKeys =
-        typeof payload === 'object' && !!payload && Object.keys(payload)
-      logger.error({
-        message: 'JWT has incorrect shape',
-        meta: {
-          ...logMeta,
-          payloadIsDefined,
-          payloadKeys,
-        },
-      })
-      return errAsync(new InvalidJwtError())
-    })
-
-    return result
-  }
+  abstract getCookieDuration(rememberMe: boolean): number
 
   /**
    * Gets the sp/cp session info from the cookies
    * @param cookies The sp/cp cookies set by the redirect
-   * @param authType FormAuthType.SP or FormAuthType.CP
    * @return ok(jwtPayload) if successful
    * @return err(MissingJwtError) if the specified cookie does not exist
    * @return err(VerifyJwtError) if the jwt exists but could not be authenticated
@@ -264,121 +131,25 @@ export class SpcpOidcServiceClass {
    */
   extractJwtPayloadFromRequest(
     cookies: SpcpCookies,
-    authType: FormAuthType.SP | FormAuthType.CP,
   ): ResultAsync<
     JwtPayloadFromCookie,
     VerifyJwtError | InvalidJwtError | MissingJwtError
   > {
-    return this.extractJwt(cookies, authType).asyncAndThen((jwtResult) => {
-      switch (authType) {
-        case FormAuthType.SP:
-          return this.extractSingpassJwtPayload(jwtResult)
-        case FormAuthType.CP:
-          return this.extractCorppassJwtPayload(jwtResult)
-      }
+    return this.extractJwt(cookies).asyncAndThen((jwtResult) => {
+      return this.extractJwtPayload(jwtResult)
     })
-  }
-
-  /**
-   * Method to exchange auth code for decrypted and verified idToken and then extract NRIC
-   * Used for Singpass forms
-   * @param code authorisation code
-   * @returns okAsync(nric)
-   * @returns errAsync(InvalidIdTokenError) if failed to retrieve NRIC
-   */
-  exchangeAuthCodeAndRetrieveNric(
-    code: string,
-  ): ResultAsync<string, InvalidIdTokenError> {
-    const logMeta = {
-      action: 'exchangeAuthCodeAndRetrieveNric',
-    }
-
-    return ResultAsync.fromPromise(
-      this.#spOidcClient
-        .exchangeAuthCodeAndDecodeVerifyToken(code)
-        .then((decodedVerifiedToken) => {
-          return this.#spOidcClient.extractNricFromIdToken(decodedVerifiedToken)
-        })
-        .then((result) => {
-          if (result instanceof Error) {
-            return Promise.reject(result)
-          }
-          return result
-        }),
-      (error) => {
-        logger.error({
-          message: 'Failed to exchange auth code and retrieve nric',
-          meta: logMeta,
-          error,
-        })
-        return new ExchangeAuthTokenError()
-      },
-    )
-  }
-
-  /**
-   * Method to exchange auth code for decrypted and verified idToken and then extract NRIC and entityId
-   * Used for Corppass forms
-   * @param code authorisation code
-   * @returns okAsync(ExtractedCorppassNDIPayload)
-   * @returns errAsync(InvalidIdTokenError) if failed to retrieve NRIC or entityId
-   */
-  exchangeAuthCodeAndRetrieveNricEntID(
-    code: string,
-  ): ResultAsync<ExtractedCorppassNDIPayload, InvalidIdTokenError> {
-    const logMeta = {
-      action: 'exchangeAuthCodeAndRetrieveNricEntID',
-    }
-
-    return ResultAsync.fromPromise(
-      this.#cpOidcClient
-        .exchangeAuthCodeAndDecodeVerifyToken(code)
-        .then((decodedVerifiedToken) => {
-          return {
-            userInfo:
-              this.#cpOidcClient.extractNricFromIdToken(decodedVerifiedToken),
-            userName:
-              this.#cpOidcClient.extractCPEntityIdFromIdToken(
-                decodedVerifiedToken,
-              ),
-          }
-        })
-        .then((result) => {
-          if (isExtractedCorppassNDIPayload(result)) {
-            return result
-          }
-          if (result.userName instanceof Error) {
-            return Promise.reject(result.userName)
-          } else {
-            return Promise.reject(result.userInfo)
-          }
-        }),
-      (error) => {
-        logger.error({
-          message: 'Failed to exchange auth code and retrieve nric and entID',
-          meta: logMeta,
-          error,
-        })
-        return new ExchangeAuthTokenError()
-      },
-    )
   }
 
   /**
    * Method to parse state and extract formId, destination, rememberMe setting, cookie duration
    * @param state
-   * @param authType FormAuthType.SP | FormAuthType.CP
    * @returns ok(ParsedSpcpParams)
    * @returns err(InvalidStateError)
    */
-  parseState(
-    state: string,
-    authType: FormAuthType.SP | FormAuthType.CP,
-  ): Result<ParsedSpcpParams, InvalidStateError> {
+  parseState(state: string): Result<ParsedSpcpParams, InvalidStateError> {
     const logMeta = {
       action: 'parseState',
       state,
-      authType,
     }
     const payloads = state.split('-')
     const formId = extractFormId(payloads[0])
@@ -412,27 +183,17 @@ export class SpcpOidcServiceClass {
 
     const destination = `${payloads[0]}${decodedQuery}`
 
-    let cookieDuration
-    if (authType === FormAuthType.CP) {
-      cookieDuration = this.#spcpOidcProps.cpCookieMaxAge
-    } else {
-      cookieDuration = rememberMe
-        ? this.#spcpOidcProps.spCookieMaxAgePreserved
-        : this.#spcpOidcProps.spCookieMaxAge
-    }
-
     return ok({
       formId,
       destination,
       rememberMe,
-      cookieDuration,
+      cookieDuration: this.getCookieDuration(rememberMe),
     })
   }
 
   /**
    * Creates a JWT with a payload of SP user data.
    * @param payload Information to add to JWT
-   * @param authType FormAuthType.SP | FormAuthType.CP
    * @param cookieDuration Cookie validity duration
    * @return okAsync(The JWT in a string)
    * @return errAsync(CreateJwtError)
@@ -440,14 +201,13 @@ export class SpcpOidcServiceClass {
   createJWT(
     payload: JwtPayload,
     cookieDuration: number,
-    authType: FormAuthType.SP | FormAuthType.CP,
   ): ResultAsync<string, CreateJwtError> {
     const logMeta = {
       action: 'createJWT',
-      authType,
+      authType: this.authType,
     }
 
-    const client = this.getClient(authType)
+    const client = this.getClient()
 
     return ResultAsync.fromPromise(
       client.createJWT(
@@ -470,25 +230,293 @@ export class SpcpOidcServiceClass {
   }
 
   /**
-   * Creates a payload of SP/CP user data based on attributes
-   * @param attributes user data returned by SP/CP from client
+   * Gets the cookie domain settings.
+   */
+  getCookieSettings(): SpcpDomainSettings {
+    const cookieDomain = this.oidcProps.cookieDomain
+    return cookieDomain ? { domain: cookieDomain, path: '/' } : {}
+  }
+}
+
+export class SpOidcServiceClass extends SpcpOidcServiceClass {
+  authType = FormAuthType.SP
+  jwtName = JwtName.SP
+  oidcProps: {
+    cookieMaxAge: number
+    cookieMaxAgePreserved: number
+    cookieDomain: string
+  }
+
+  constructor(props: ISpcpMyInfo) {
+    super(
+      new SpOidcClient({
+        rpClientId: props.spOidcRpClientId,
+        rpRedirectUrl: props.spOidcRpRedirectUrl,
+        ndiDiscoveryEndpoint: props.spOidcNdiDiscoveryEndpoint,
+        ndiJwksEndpoint: props.spOidcNdiJwksEndpoint,
+        rpPublicJwks: JSON.parse(
+          fs.readFileSync(props.spOidcRpJwksPublicPath).toString(),
+        ),
+        rpSecretJwks: JSON.parse(
+          fs.readFileSync(props.spOidcRpJwksSecretPath).toString(),
+        ),
+      }),
+    )
+
+    this.oidcProps = {
+      cookieMaxAge: props.spCookieMaxAge,
+      cookieMaxAgePreserved: props.spCookieMaxAgePreserved,
+      cookieDomain: props.spcpCookieDomain,
+    }
+  }
+
+  /**
+   * Verifies a Singpass JWT and extracts its payload.
+   * @param jwt The contents of the JWT cookie
+   * @returns ok(Singpass JWT payload)
+   * @returns err(VerifyJwtError) if JWT verification failed
+   * @returns err(InvalidJwtError) if JWT has invalid shape
+   */
+  extractJwtPayload(
+    jwt: string,
+  ): ResultAsync<
+    SingpassJwtPayloadFromCookie,
+    VerifyJwtError | InvalidJwtError
+  > {
+    const logMeta = {
+      action: 'SpOidcService.extractJwtPayload',
+    }
+
+    const result = ResultAsync.fromPromise(
+      this.oidcClient.verifyJwt(jwt),
+      (error) => {
+        logger.error({
+          message: 'Failed to verify JWT with auth client',
+          meta: logMeta,
+          error,
+        })
+        return new VerifyJwtError()
+      },
+    ).andThen((payload) => {
+      if (isSingpassJwtPayload(payload)) {
+        return okAsync(payload)
+      }
+      const payloadIsDefined = !!payload
+      const payloadKeys =
+        typeof payload === 'object' && !!payload && Object.keys(payload)
+      logger.error({
+        message: 'JWT has incorrect shape',
+        meta: {
+          ...logMeta,
+          payloadIsDefined,
+          payloadKeys,
+        },
+      })
+      return errAsync(new InvalidJwtError())
+    })
+
+    return result
+  }
+
+  /**
+   * Method to exchange auth code for decrypted and verified idToken and then extract NRIC
+   * Used for Singpass forms
+   * @param code authorisation code
+   * @returns okAsync(nric)
+   * @returns errAsync(InvalidIdTokenError) if failed to retrieve NRIC
+   */
+  exchangeAuthCodeAndRetrieveNric(
+    code: string,
+  ): ResultAsync<string, InvalidIdTokenError> {
+    const logMeta = {
+      action: 'exchangeAuthCodeAndRetrieveNric',
+    }
+
+    return ResultAsync.fromPromise(
+      this.oidcClient
+        .exchangeAuthCodeAndDecodeVerifyToken(code)
+        .then((decodedVerifiedToken) => {
+          return this.oidcClient.extractNricFromIdToken(decodedVerifiedToken)
+        })
+        .then((result) => {
+          if (result instanceof Error) {
+            return Promise.reject(result)
+          }
+          return result
+        }),
+      (error) => {
+        logger.error({
+          message: 'Failed to exchange auth code and retrieve nric',
+          meta: logMeta,
+          error,
+        })
+        return new ExchangeAuthTokenError()
+      },
+    )
+  }
+
+  getCookieDuration(rememberMe: boolean) {
+    return rememberMe
+      ? this.oidcProps.cookieMaxAgePreserved
+      : this.oidcProps.cookieMaxAge
+  }
+
+  /**
+   * Creates a payload of SP user data based on attributes
+   * @param attributes user data returned by SP from client
    * @param rememberMe Whether to enable longer duration for SingPass cookies
-   * @param authType FormAuthType.SP | FormAuthType.CP
    * @return The payload
    */
   createJWTPayload(
-    attributes: string | ExtractedCorppassNDIPayload,
+    attributes: string,
     rememberMe: boolean,
-    authType: FormAuthType.SP | FormAuthType.CP,
   ): Result<JwtPayload, MissingAttributesError> {
-    // Singpass
-    if (authType === FormAuthType.SP) {
-      const userName = attributes
-      return userName && typeof userName === 'string'
-        ? ok({ userName, rememberMe })
-        : err(new MissingAttributesError())
+    const userName = attributes
+    return userName && typeof userName === 'string'
+      ? ok({ userName, rememberMe })
+      : err(new MissingAttributesError())
+  }
+}
+
+export class CpOidcServiceClass extends SpcpOidcServiceClass {
+  authType = FormAuthType.CP
+  jwtName = JwtName.CP
+  oidcClient: CpOidcClient // typescript error is invalid, assignment is done in super constructor :'(
+  oidcProps: {
+    cookieMaxAge: number
+  }
+
+  constructor(props: ISpcpMyInfo) {
+    super(
+      new CpOidcClient({
+        rpClientId: props.cpOidcRpClientId,
+        rpRedirectUrl: props.cpOidcRpRedirectUrl,
+        ndiDiscoveryEndpoint: props.cpOidcNdiDiscoveryEndpoint,
+        ndiJwksEndpoint: props.cpOidcNdiJwksEndpoint,
+        rpPublicJwks: JSON.parse(
+          fs.readFileSync(props.cpOidcRpJwksPublicPath).toString(),
+        ),
+        rpSecretJwks: JSON.parse(
+          fs.readFileSync(props.cpOidcRpJwksSecretPath).toString(),
+        ),
+      }),
+    )
+
+    this.oidcProps = {
+      cookieMaxAge: props.cpCookieMaxAge,
     }
-    // CorpPass
+  }
+
+  /**
+   * Verifies a Corppass JWT and extracts its payload.
+   * @param jwt The contents of the JWT cookie
+   * @returns ok(Corppass JWT payload)
+   * @returns err(VerifyJwtError) if JWT verification failed
+   * @returns err(InvalidJwtError) if JWT has invalid shape
+   */
+  extractJwtPayload(
+    jwt: string,
+  ): ResultAsync<
+    CorppassJwtPayloadFromCookie,
+    VerifyJwtError | InvalidJwtError
+  > {
+    const logMeta = {
+      action: 'CpOidcService.extractJwtPayload',
+    }
+
+    const result = ResultAsync.fromPromise(
+      this.oidcClient.verifyJwt(jwt),
+      (error) => {
+        logger.error({
+          message: 'Failed to verify JWT with auth client',
+          meta: logMeta,
+          error,
+        })
+        return new VerifyJwtError()
+      },
+    ).andThen((payload) => {
+      if (isCorppassJwtPayload(payload)) {
+        return okAsync(payload)
+      }
+      const payloadIsDefined = !!payload
+      const payloadKeys =
+        typeof payload === 'object' && !!payload && Object.keys(payload)
+      logger.error({
+        message: 'JWT has incorrect shape',
+        meta: {
+          ...logMeta,
+          payloadIsDefined,
+          payloadKeys,
+        },
+      })
+      return errAsync(new InvalidJwtError())
+    })
+
+    return result
+  }
+
+  /**
+   * Method to exchange auth code for decrypted and verified idToken and then extract NRIC and entityId
+   * Used for Corppass forms
+   * @param code authorisation code
+   * @returns okAsync(ExtractedCorppassNDIPayload)
+   * @returns errAsync(InvalidIdTokenError) if failed to retrieve NRIC or entityId
+   */
+  exchangeAuthCodeAndRetrieveNricEntID(
+    code: string,
+  ): ResultAsync<ExtractedCorppassNDIPayload, InvalidIdTokenError> {
+    const logMeta = {
+      action: 'exchangeAuthCodeAndRetrieveNricEntID',
+    }
+
+    return ResultAsync.fromPromise(
+      this.oidcClient
+        .exchangeAuthCodeAndDecodeVerifyToken(code)
+        .then((decodedVerifiedToken) => {
+          return {
+            userInfo:
+              this.oidcClient.extractNricFromIdToken(decodedVerifiedToken),
+            userName:
+              this.oidcClient.extractCPEntityIdFromIdToken(
+                decodedVerifiedToken,
+              ),
+          }
+        })
+        .then((result) => {
+          if (isExtractedCorppassNDIPayload(result)) {
+            return result
+          }
+          if (result.userName instanceof Error) {
+            return Promise.reject(result.userName)
+          } else {
+            return Promise.reject(result.userInfo)
+          }
+        }),
+      (error) => {
+        logger.error({
+          message: 'Failed to exchange auth code and retrieve nric and entID',
+          meta: logMeta,
+          error,
+        })
+        return new ExchangeAuthTokenError()
+      },
+    )
+  }
+
+  getCookieDuration() {
+    return this.oidcProps.cookieMaxAge
+  }
+
+  /**
+   * Creates a payload of SP/CP user data based on attributes
+   * @param attributes user data returned by SP/CP from client
+   * @param rememberMe Whether to enable longer duration for SingPass cookies
+   * @return The payload
+   */
+  createJWTPayload(
+    attributes: ExtractedCorppassNDIPayload,
+    rememberMe: boolean,
+  ): Result<JwtPayload, MissingAttributesError> {
     if (isExtractedCorppassNDIPayload(attributes)) {
       const { userName, userInfo } = attributes
       return userName && userInfo
@@ -498,14 +526,7 @@ export class SpcpOidcServiceClass {
 
     return err(new MissingAttributesError())
   }
-
-  /**
-   * Gets the cookie domain settings.
-   */
-  getCookieSettings(): SpcpDomainSettings {
-    const spcpCookieDomain = this.#spcpOidcProps.spcpCookieDomain
-    return spcpCookieDomain ? { domain: spcpCookieDomain, path: '/' } : {}
-  }
 }
 
-export const SpcpOidcService = new SpcpOidcServiceClass(spcpMyInfoConfig)
+export const SpOidcService = new SpOidcServiceClass(spcpMyInfoConfig)
+export const CpOidcService = new CpOidcServiceClass(spcpMyInfoConfig)
