@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import {
   BiDotsHorizontalRounded,
+  BiHelpCircle,
   BiLeftArrowAlt,
   BiShareAlt,
   BiShow,
@@ -142,6 +143,17 @@ export const AdminFormNavbar = ({
         />
         <Box display={{ base: 'none', md: 'flex' }}>
           <ButtonGroup spacing="0.5rem" isDisabled={!formInfo}>
+            <Tooltip label="Help">
+              <IconButton
+                aria-label="Help"
+                variant="outline"
+                onClick={(e) => {
+                  e.preventDefault()
+                  window.open('https://guide.form.gov.sg/')
+                }}
+                icon={<BiHelpCircle />}
+              />
+            </Tooltip>
             <Tooltip label="Manage collaborators">
               <IconButton
                 aria-label="Manage collaborators"
