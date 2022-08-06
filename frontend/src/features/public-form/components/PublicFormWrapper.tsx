@@ -60,7 +60,7 @@ export const PublicFormWrapper = ({
   return (
     <Flex bg={bgColour} p={{ base: 0, md: '1.5rem' }} flex={1} justify="center">
       {isAuthRequired ? null : <SectionSidebar />}
-      <Flex flexDir="column">
+      <Flex flexDir="column" maxW="57rem" w="100%">
         {/* TODO(#4279): Remove switch env message on full rollout */}
         {!isPreview && showSwitchEnvMessage && <PublicSwitchEnvMessage />}
         {children}
