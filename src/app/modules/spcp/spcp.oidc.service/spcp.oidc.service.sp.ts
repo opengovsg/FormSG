@@ -30,11 +30,16 @@ type spOidcProps = {
 export class SpOidcServiceClass extends SpcpOidcServiceClass {
   authType = FormAuthType.SP
   jwtName = JwtName.SP
+
   oidcClient: SpOidcClient
+  oidcProps: spOidcProps
 
   constructor(oidcClient: SpOidcClient, oidcProps: spOidcProps) {
     super(oidcClient, oidcProps)
+
+    // re-assign to let typescript register the types -_-
     this.oidcClient = oidcClient
+    this.oidcProps = oidcProps
   }
 
   getClient(): SpOidcClient {
@@ -126,10 +131,10 @@ export class SpOidcServiceClass extends SpcpOidcServiceClass {
     )
   }
 
-  getCookieDuration(rememberMe: boolean): number  {
-    return (rememberMe
+  getCookieDuration(rememberMe: boolean): number {
+    return rememberMe
       ? this.oidcProps.cookieMaxAgePreserved
-      : this.oidcProps.cookieMaxAge) as number // 'as number' shouldn't be needed :(
+      : this.oidcProps.cookieMaxAge
   }
 
   /**

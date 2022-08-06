@@ -32,11 +32,16 @@ type cpOidcProps = {
 export class CpOidcServiceClass extends SpcpOidcServiceClass {
   authType = FormAuthType.CP
   jwtName = JwtName.CP
+
   oidcClient: CpOidcClient
+  oidcProps: cpOidcProps
 
   constructor(oidcClient: CpOidcClient, oidcProps: cpOidcProps) {
     super(oidcClient, oidcProps)
+
+    // re-assign to let typescript register the types -_-
     this.oidcClient = oidcClient
+    this.oidcProps = oidcProps
   }
 
   getClient(): CpOidcClient {
