@@ -30,9 +30,11 @@ type spOidcProps = {
 export class SpOidcServiceClass extends SpcpOidcServiceClass {
   authType = FormAuthType.SP
   jwtName = JwtName.SP
+  oidcClient: SpOidcClient
 
   constructor(oidcClient: SpOidcClient, oidcProps: spOidcProps) {
     super(oidcClient, oidcProps)
+    this.oidcClient = oidcClient
   }
 
   getClient(): SpOidcClient {
@@ -94,7 +96,7 @@ export class SpOidcServiceClass extends SpcpOidcServiceClass {
    * @returns okAsync(nric)
    * @returns errAsync(InvalidIdTokenError) if failed to retrieve NRIC
    */
-  exchangeAuthCodeAndRetrieveNric(
+  exchangeAuthCodeAndRetrieveData(
     code: string,
   ): ResultAsync<string, InvalidIdTokenError> {
     const logMeta = {
@@ -124,10 +126,10 @@ export class SpOidcServiceClass extends SpcpOidcServiceClass {
     )
   }
 
-  getCookieDuration(rememberMe: boolean) {
-    return rememberMe
+  getCookieDuration(rememberMe: boolean): number  {
+    return (rememberMe
       ? this.oidcProps.cookieMaxAgePreserved
-      : this.oidcProps.cookieMaxAge
+      : this.oidcProps.cookieMaxAge) as number // 'as number' shouldn't be needed :(
   }
 
   /**

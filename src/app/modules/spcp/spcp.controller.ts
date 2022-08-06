@@ -11,7 +11,7 @@ import * as BillingService from '../billing/billing.service'
 import { ControllerHandler } from '../core/core.types'
 import * as FormService from '../form/form.service'
 
-import { SpcpOidcService } from './spcp.oidc.service'
+import { getOidcService } from './spcp.oidc.service'
 import { SpcpService } from './spcp.service'
 import { JwtName } from './spcp.types'
 import { mapRouteError } from './spcp.util'
@@ -207,11 +207,9 @@ export const handleSpcpOidcLogin: (
     code,
     authType,
   }
+  const SpcpOidcService = getOidcService(authType)
 
-  const result =
-    authType === FormAuthType.SP
-      ? await SpcpOidcService.exchangeAuthCodeAndRetrieveNric(code)
-      : await SpcpOidcService.exchangeAuthCodeAndRetrieveNricEntID(code)
+  const result = await SpcpOidcService.exchangeAuthCodeAndRetrieveData(code)
 
   if (result.isErr()) {
     logger.error({
@@ -222,7 +220,7 @@ export const handleSpcpOidcLogin: (
     return res.sendStatus(StatusCodes.BAD_REQUEST)
   }
 
-  const parseResult = SpcpOidcService.parseState(state, authType)
+  const parseResult = SpcpOidcService.parseState(state)
   if (parseResult.isErr()) {
     logger.error({
       message: 'Invalid login parameters',
@@ -259,9 +257,8 @@ export const handleSpcpOidcLogin: (
   const jwtResult = await SpcpOidcService.createJWTPayload(
     attributes,
     rememberMe,
-    authType,
   ).asyncAndThen((jwtPayload) =>
-    SpcpOidcService.createJWT(jwtPayload, cookieDuration, authType),
+    SpcpOidcService.createJWT(jwtPayload, cookieDuration),
   )
 
   if (jwtResult.isErr()) {
@@ -276,7 +273,7 @@ export const handleSpcpOidcLogin: (
 
   return BillingService.recordLoginByForm(form)
     .map(() => {
-      res.cookie(JwtName[authType], jwtResult.value, {
+      res.cookie(SpcpOidcService.jwtName, jwtResult.value, {
         maxAge: cookieDuration,
         httpOnly: true,
         sameSite: 'lax', // Setting to 'strict' prevents Singpass login on Safari, Firefox

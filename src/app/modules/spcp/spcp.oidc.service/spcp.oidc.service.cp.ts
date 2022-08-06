@@ -32,9 +32,11 @@ type cpOidcProps = {
 export class CpOidcServiceClass extends SpcpOidcServiceClass {
   authType = FormAuthType.CP
   jwtName = JwtName.CP
+  oidcClient: CpOidcClient
 
   constructor(oidcClient: CpOidcClient, oidcProps: cpOidcProps) {
     super(oidcClient, oidcProps)
+    this.oidcClient = oidcClient
   }
 
   getClient(): CpOidcClient {
@@ -96,7 +98,7 @@ export class CpOidcServiceClass extends SpcpOidcServiceClass {
    * @returns okAsync(ExtractedCorppassNDIPayload)
    * @returns errAsync(InvalidIdTokenError) if failed to retrieve NRIC or entityId
    */
-  exchangeAuthCodeAndRetrieveNricEntID(
+  exchangeAuthCodeAndRetrieveData(
     code: string,
   ): ResultAsync<ExtractedCorppassNDIPayload, InvalidIdTokenError> {
     const logMeta = {

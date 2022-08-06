@@ -5,13 +5,16 @@ import { createLoggerWithLabel } from '../../../config/logger'
 import {
   CreateJwtError,
   CreateRedirectUrlError,
+  InvalidIdTokenError,
   InvalidJwtError,
   InvalidStateError,
+  MissingAttributesError,
   MissingJwtError,
   VerifyJwtError,
 } from '../spcp.errors'
 import { SpcpOidcBaseClient } from '../spcp.oidc.client'
 import {
+  ExtractedCorppassNDIPayload,
   JwtName,
   JwtPayload,
   JwtPayloadFromCookie,
@@ -103,6 +106,15 @@ export abstract class SpcpOidcServiceClass {
   ): ResultAsync<any, VerifyJwtError | InvalidJwtError>
 
   abstract getCookieDuration(rememberMe: boolean): number
+
+  abstract exchangeAuthCodeAndRetrieveData(
+    code: string,
+  ): ResultAsync<string | ExtractedCorppassNDIPayload, InvalidIdTokenError>
+
+  abstract createJWTPayload(
+    attributes: string | ExtractedCorppassNDIPayload,
+    rememberMe: boolean,
+  ): Result<JwtPayload, MissingAttributesError>
 
   /**
    * Gets the sp/cp session info from the cookies
