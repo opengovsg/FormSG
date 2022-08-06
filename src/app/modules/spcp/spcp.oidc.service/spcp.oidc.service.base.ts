@@ -1,5 +1,6 @@
 import { err, ok, Result, ResultAsync } from 'neverthrow'
 
+import { FormAuthType } from '../../../../../shared/types'
 import { createLoggerWithLabel } from '../../../config/logger'
 import {
   CreateJwtError,
@@ -11,6 +12,7 @@ import {
 } from '../spcp.errors'
 import { SpcpOidcBaseClient } from '../spcp.oidc.client'
 import {
+  JwtName,
   JwtPayload,
   JwtPayloadFromCookie,
   ParsedSpcpParams,
@@ -21,23 +23,27 @@ import { extractFormId } from '../spcp.util'
 
 const logger = createLoggerWithLabel(module)
 
+type SpcpOidcProps = {
+  cookieMaxAge: number
+  cookieMaxAgePreserved?: number
+  cookieDomain?: string
+}
+
 /**
  * Class for executing Singpass/Corppass OIDC-related services.
  * Exported for testing.
  */
 export abstract class SpcpOidcServiceClass {
-  authType = '-'
-  jwtName = '-'
-  oidcProps: {
-    cookieMaxAge: number
-    cookieMaxAgePreserved?: number
-    cookieDomain?: string
-  } = { cookieMaxAge: 3600 }
+  // why do I have to specify default value in the abstract class? 🤔
+  authType: FormAuthType = FormAuthType.SP
+  jwtName: JwtName = JwtName.SP
 
   oidcClient: SpcpOidcBaseClient
+  oidcProps: SpcpOidcProps
 
-  constructor(oidcClient: SpcpOidcBaseClient) {
+  constructor(oidcClient: SpcpOidcBaseClient, oidcProps: SpcpOidcProps) {
     this.oidcClient = oidcClient
+    this.oidcProps = oidcProps
   }
 
   /**

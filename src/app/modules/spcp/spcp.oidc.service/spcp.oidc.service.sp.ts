@@ -1,8 +1,6 @@
-import fs from 'fs'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
 import { FormAuthType } from '../../../../../shared/types'
-import { ISpcpMyInfo } from '../../../config/features/spcp-myinfo.config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import {
   ExchangeAuthTokenError,
@@ -23,36 +21,18 @@ import { SpcpOidcServiceClass } from './spcp.oidc.service.base'
 
 const logger = createLoggerWithLabel(module)
 
+type spOidcProps = {
+  cookieMaxAge: number
+  cookieMaxAgePreserved: number
+  cookieDomain: string
+}
+
 export class SpOidcServiceClass extends SpcpOidcServiceClass {
   authType = FormAuthType.SP
   jwtName = JwtName.SP
-  oidcProps: {
-    cookieMaxAge: number
-    cookieMaxAgePreserved: number
-    cookieDomain: string
-  }
 
-  constructor(props: ISpcpMyInfo) {
-    super(
-      new SpOidcClient({
-        rpClientId: props.spOidcRpClientId,
-        rpRedirectUrl: props.spOidcRpRedirectUrl,
-        ndiDiscoveryEndpoint: props.spOidcNdiDiscoveryEndpoint,
-        ndiJwksEndpoint: props.spOidcNdiJwksEndpoint,
-        rpPublicJwks: JSON.parse(
-          fs.readFileSync(props.spOidcRpJwksPublicPath).toString(),
-        ),
-        rpSecretJwks: JSON.parse(
-          fs.readFileSync(props.spOidcRpJwksSecretPath).toString(),
-        ),
-      }),
-    )
-
-    this.oidcProps = {
-      cookieMaxAge: props.spCookieMaxAge,
-      cookieMaxAgePreserved: props.spCookieMaxAgePreserved,
-      cookieDomain: props.spcpCookieDomain,
-    }
+  constructor(oidcClient: SpOidcClient, oidcProps: spOidcProps) {
+    super(oidcClient, oidcProps)
   }
 
   getClient(): SpOidcClient {
