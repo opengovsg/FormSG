@@ -44,10 +44,6 @@ export class CpOidcServiceClass extends SpcpOidcServiceClass {
     this.oidcProps = oidcProps
   }
 
-  getClient(): CpOidcClient {
-    return this.oidcClient as CpOidcClient
-  }
-
   /**
    * Verifies a Corppass JWT and extracts its payload.
    * @param jwt The contents of the JWT cookie

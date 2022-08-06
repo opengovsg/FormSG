@@ -42,10 +42,6 @@ export class SpOidcServiceClass extends SpcpOidcServiceClass {
     this.oidcProps = oidcProps
   }
 
-  getClient(): SpOidcClient {
-    return this.oidcClient as SpOidcClient
-  }
-
   /**
    * Verifies a Singpass JWT and extracts its payload.
    * @param jwt The contents of the JWT cookie
