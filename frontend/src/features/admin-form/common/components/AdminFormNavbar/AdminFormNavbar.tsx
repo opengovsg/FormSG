@@ -23,6 +23,7 @@ import {
 
 import { AdminFormDto } from '~shared/types/form/form'
 
+import { FORM_GUIDE } from '~constants/links'
 import { useDraggable } from '~hooks/useDraggable'
 import Button, { ButtonProps } from '~components/Button'
 import IconButton from '~components/IconButton'
@@ -149,7 +150,7 @@ export const AdminFormNavbar = ({
                 variant="outline"
                 onClick={(e) => {
                   e.preventDefault()
-                  window.open('https://guide.form.gov.sg/')
+                  window.open(FORM_GUIDE)
                 }}
                 icon={<BiHelpCircle />}
               />
