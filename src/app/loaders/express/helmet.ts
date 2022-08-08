@@ -29,6 +29,7 @@ const helmetMiddlewares = () => {
   const cspCoreDirectives: ContentSecurityPolicyOptions['directives'] = {
     imgSrc: [
       "'self'",
+      'blob:',
       'data:',
       'https://www.googletagmanager.com/',
       'https://www.google-analytics.com/',

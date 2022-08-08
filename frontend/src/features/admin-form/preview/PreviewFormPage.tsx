@@ -23,9 +23,9 @@ export const PreviewFormPage = (): JSX.Element => {
 
   return (
     <Flex flexDir="column" height="100vh" pos="relative">
+      <GovtMasthead />
       <PreviewFormProvider formId={formId}>
         <GovtMasthead />
-        <SwitchEnvIcon />
         <PreviewFormBanner />
         <FormSectionsProvider>
           <FormStartPage />

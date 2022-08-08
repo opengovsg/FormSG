@@ -1,4 +1,11 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import { Helmet } from 'react-helmet-async'
 import { SubmitHandler } from 'react-hook-form'
 import { Text, useDisclosure } from '@chakra-ui/react'
@@ -34,7 +41,7 @@ import {
 } from '~features/verifiable-fields'
 
 import { FormNotFound } from './components/FormNotFound'
-import { usePublicFormMutations } from './mutations'
+import { usePublicAuthMutations, usePublicFormMutations } from './mutations'
 import {
   PublicFormContext,
   SidebarSectionMeta,
@@ -115,6 +122,13 @@ export const PublicFormProvider = ({
     /* enabled= */ !submissionData,
   )
 
+  // Scroll to top of page when user has finished their submission.
+  useLayoutEffect(() => {
+    if (submissionData) {
+      window.scrollTo(0, 0)
+    }
+  }, [submissionData])
+
   const { data: { captchaPublicKey } = {} } = useEnv(
     /* enabled= */ !!data?.form.hasCaptcha,
   )
@@ -190,6 +204,8 @@ export const PublicFormProvider = ({
   const { submitEmailModeFormMutation, submitStorageModeFormMutation } =
     usePublicFormMutations(formId, submissionData?.id ?? '')
 
+  const { handleLogoutMutation } = usePublicAuthMutations(formId)
+
   const handleSubmitForm: SubmitHandler<FormFieldValues> = useCallback(
     async (formInputs) => {
       const { form } = cachedDto ?? {}
@@ -261,6 +277,11 @@ export const PublicFormProvider = ({
 
   useTimeout(generateVfnExpiryToast, expiryInMs)
 
+  const handleLogout = useCallback(() => {
+    if (!cachedDto?.form || cachedDto.form.authType === FormAuthType.NIL) return
+    return handleLogoutMutation.mutate(cachedDto.form.authType)
+  }, [cachedDto?.form, handleLogoutMutation])
+
   const isAuthRequired = useMemo(
     () =>
       !!cachedDto?.form &&
@@ -298,6 +319,7 @@ export const PublicFormProvider = ({
     <PublicFormContext.Provider
       value={{
         handleSubmitForm,
+        handleLogout,
         formId,
         error,
         submissionData,

@@ -117,7 +117,7 @@ const uploadFile = async ({
   // POST generated formData to presigned url.
   const response = await postToPresignedUrl(postData.url, formData)
 
-  const encodedFileId = encodeURIComponent(fileId)
+  const encodedFileId = encodeURIComponent(postData.fields.key)
 
   const uploadedFileData: UploadedFileData = {
     url: `${response.config.url}/${encodedFileId}`,

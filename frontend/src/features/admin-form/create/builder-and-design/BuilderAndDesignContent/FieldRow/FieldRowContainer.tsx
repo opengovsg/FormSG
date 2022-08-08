@@ -206,7 +206,6 @@ export const FieldRowContainer = ({
         <Box
           _first={{ pt: 0 }}
           _last={{ pb: 0 }}
-          m="0.75rem"
           py="0.375rem"
           {...provided.draggableProps}
           ref={provided.innerRef}
