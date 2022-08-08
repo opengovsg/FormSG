@@ -10,6 +10,7 @@ import { augmentWithQuestionNo } from '~features/form/utils'
 import { getVisibleFieldIds } from '~features/logic/utils'
 
 import { FieldFactory } from './FieldFactory'
+import { useFormSections } from './FormSectionsContext'
 
 interface VisibleFormFieldsProps {
   control: Control<FormFieldValues>
@@ -31,6 +32,7 @@ export const VisibleFormFields = ({
   fieldPrefillMap,
 }: VisibleFormFieldsProps) => {
   const watchedValues = useWatch({ control })
+  const { updateSectionScrollData } = useFormSections()
   const [visibleFormFields, setVisibleFormFields] = useState(formFields)
 
   useEffect(() => {
@@ -38,12 +40,13 @@ export const VisibleFormFields = ({
       formFields,
       formLogics,
     })
+    updateSectionScrollData(visibleFieldIds)
     const visibleFields = formFields.filter((field) =>
       visibleFieldIds.has(field._id),
     )
     const visibleFieldsWithQuestionNo = augmentWithQuestionNo(visibleFields)
     setVisibleFormFields(visibleFieldsWithQuestionNo)
-  }, [formFields, formLogics, watchedValues])
+  }, [formFields, formLogics, updateSectionScrollData, watchedValues])
 
   return (
     <>
