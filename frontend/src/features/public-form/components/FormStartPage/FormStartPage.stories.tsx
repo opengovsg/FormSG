@@ -209,7 +209,7 @@ ColorThemeRed.parameters = {
   ],
 }
 
-export const MiniHeaderTemplate: Story<MiniHeaderProps> = (args) => (
+const MiniHeaderTemplate: Story<MiniHeaderProps> = (args) => (
   <MiniHeaderComponent {...args} />
 )
 
