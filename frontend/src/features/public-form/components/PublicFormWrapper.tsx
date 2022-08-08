@@ -9,10 +9,20 @@ import { usePublicFormContext } from '../PublicFormContext'
 import { PublicSwitchEnvMessage } from './PublicSwitchEnvMessage'
 import SectionSidebar from './SectionSidebar'
 
-export const useBgColor = (colorTheme?: FormColorTheme) =>
+export interface BgColorProps {
+  colorTheme?: FormColorTheme | undefined
+  isFooter?: boolean
+}
+
+export const useBgColor = ({ colorTheme, isFooter }: BgColorProps) =>
   useMemo(
-    () => (colorTheme ? `theme-${colorTheme}.100` : 'neutral.100'),
-    [colorTheme],
+    () =>
+      colorTheme
+        ? `theme-${colorTheme}.100`
+        : isFooter
+        ? 'primary.100'
+        : 'neutral.100',
+    [colorTheme, isFooter],
   )
 
 export interface PublicFormWrapperProps {
@@ -30,14 +40,14 @@ export const PublicFormWrapper = ({
 }: PublicFormWrapperProps): JSX.Element => {
   const { form, isLoading, isAuthRequired } = usePublicFormContext()
 
-  const bgColour = useBgColor(
-    isLoading ? undefined : form?.startPage.colorTheme,
-  )
+  const bgColour = useBgColor({
+    colorTheme: isLoading ? undefined : form?.startPage.colorTheme,
+  })
 
   return (
     <Flex bg={bgColour} p={{ base: 0, md: '1.5rem' }} flex={1} justify="center">
       {isAuthRequired ? null : <SectionSidebar />}
-      <Flex flexDir="column">
+      <Flex flexDir="column" maxW="57rem" w="100%">
         {/* TODO(#4279): Remove switch env message on full rollout */}
         {!isPreview && <PublicSwitchEnvMessage />}
         {children}

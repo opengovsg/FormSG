@@ -41,7 +41,7 @@ export const EndPageView = ({ ...props }: FlexProps): JSX.Element => {
   })
 
   const colorTheme = useDesignColorTheme()
-  const backgroundColor = useBgColor(colorTheme)
+  const backgroundColor = useBgColor({ colorTheme })
 
   return (
     <Flex

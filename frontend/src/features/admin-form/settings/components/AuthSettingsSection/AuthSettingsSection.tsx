@@ -11,6 +11,7 @@ import { Box, Icon, Skeleton } from '@chakra-ui/react'
 import { FormAuthType, FormSettings, FormStatus } from '~shared/types/form'
 
 import { BxsHelpCircle } from '~assets/icons/BxsHelpCircle'
+import { OGP_SGID } from '~constants/links'
 import InlineMessage from '~components/InlineMessage'
 import Link from '~components/Link'
 import Radio from '~components/Radio'
@@ -165,7 +166,7 @@ export const AuthSettingsSection = ({
                       <Icon as={BxsHelpCircle} aria-hidden marginX="0.5rem" />
                     </Tooltip>
                     <Link
-                      href="https://go.gov.sg/sgid-formsg"
+                      href={OGP_SGID}
                       isExternal
                       // Needed for link to open since there are nested onClicks
                       onClickCapture={(e) => e.stopPropagation()}

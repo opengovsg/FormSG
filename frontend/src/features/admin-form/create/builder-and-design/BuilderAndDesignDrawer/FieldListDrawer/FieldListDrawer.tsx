@@ -15,6 +15,7 @@ import {
 
 import { AdminFormDto, FormAuthType, FormResponseMode } from '~shared/types'
 
+import { GUIDE_EMAIL_MODE } from '~constants/links'
 import InlineMessage from '~components/InlineMessage'
 import Link from '~components/Link'
 import { Tab } from '~components/Tabs'
@@ -33,6 +34,7 @@ import {
   CREATE_PAGE_DROP_ID,
   CREATE_PAGE_FIELDS_ORDERED,
 } from '~features/admin-form/create/builder-and-design/constants'
+import { useCreatePageSidebar } from '~features/admin-form/create/common/CreatePageSidebarContext'
 import { isMyInfo } from '~features/myinfo/utils'
 
 import { useCreateTabForm } from '../../useCreateTabForm'
@@ -44,10 +46,18 @@ import {
 } from './FieldListOption'
 
 export const FieldListDrawer = (): JSX.Element => {
+  const { fieldListTabIndex, setFieldListTabIndex } = useCreatePageSidebar()
   const { isLoading } = useCreateTabForm()
 
   return (
-    <Tabs pos="relative" h="100%" display="flex" flexDir="column">
+    <Tabs
+      pos="relative"
+      h="100%"
+      display="flex"
+      flexDir="column"
+      index={fieldListTabIndex}
+      onChange={setFieldListTabIndex}
+    >
       <Box pt="1rem" px="1.5rem" bg="white">
         <Flex justify="space-between">
           <Text textStyle="subhead-3" color="secondary.500" mb="1rem">
@@ -237,10 +247,7 @@ const MyInfoText = ({
   return (
     <Text>
       {`Only 30 MyInfo fields are allowed in Email mode (${numMyInfoFields}/30).`}{' '}
-      <Link
-        isExternal
-        href="https://guide.form.gov.sg/AdvancedGuide.html#email-mode"
-      >
+      <Link isExternal href={GUIDE_EMAIL_MODE}>
         Learn more
       </Link>
     </Text>

@@ -24,7 +24,7 @@ export const FormFieldDrawerActions = ({
       direction={{ base: 'column', md: 'row-reverse' }}
       justifyContent="end"
       w="100%"
-      spacing="1rem"
+      spacing={{ base: '0.5rem', md: '1rem' }}
     >
       <Button
         isFullWidth={isMobile}

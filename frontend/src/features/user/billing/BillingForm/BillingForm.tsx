@@ -8,6 +8,7 @@ import {
   useBreakpointValue,
 } from '@chakra-ui/react'
 
+import { GUIDE_SPCP_ESRVCID } from '~constants/links'
 import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
@@ -79,11 +80,7 @@ export const BillingForm = ({
             >
               Search
             </Button>
-            <Link
-              isExternal
-              variant="standalone"
-              href="https://guide.form.gov.sg/AdvancedGuide.html#singpass-corppass-and-myinfo"
-            >
+            <Link isExternal variant="standalone" href={GUIDE_SPCP_ESRVCID}>
               What's an e-service ID?
             </Link>
           </Stack>

@@ -18,14 +18,12 @@ import {
 
 import { FormAuthType, FormSettings } from '~shared/types/form'
 
+import { GUIDE_ENABLE_SPCP } from '~constants/links'
 import { useMdComponents } from '~hooks/useMdComponents'
 import Input from '~components/Input'
 import Spinner from '~components/Spinner'
 
 import { useMutateFormSettings } from '../../mutations'
-
-const SPCP_GUIDE_LINK =
-  'https://guide.form.gov.sg/AdvancedGuide.html#how-do-you-enable-singpass-or-corppass'
 
 interface EsrvcIdBoxProps {
   settings: FormSettings
@@ -81,9 +79,9 @@ export const EsrvcIdBox = ({
   const renderedHelperText = useMemo(() => {
     switch (settings.authType) {
       case FormAuthType.SP:
-        return `Find out [how to get your Singpass e-service ID](${SPCP_GUIDE_LINK}).`
+        return `Find out [how to get your Singpass e-service ID](${GUIDE_ENABLE_SPCP}).`
       case FormAuthType.CP:
-        return `Corppass now uses Singpass to authenticate corporate users. You will still need a separate **Corppass e-service ID**. Find out [how to get your Corppass e-service ID](${SPCP_GUIDE_LINK}).`
+        return `Corppass now uses Singpass to authenticate corporate users. You will still need a separate **Corppass e-service ID**. Find out [how to get your Corppass e-service ID](${GUIDE_ENABLE_SPCP}).`
       default:
         return ''
     }

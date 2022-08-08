@@ -1,7 +1,7 @@
 import { SVGProps } from 'react'
-import * as React from 'react'
-import { Box, Flex, Text } from '@chakra-ui/react'
+import { Flex, Text } from '@chakra-ui/react'
 
+import { GUIDE_WEBHOOKS } from '~constants/links'
 import Link from '~components/Link'
 
 const UnsupportedSvgr = (props: SVGProps<SVGSVGElement>) => (
@@ -151,10 +151,7 @@ export const WebhooksUnsupportedMsg = (): JSX.Element => {
         Webhooks are useful for agencies who wish to have form response data
         sent directly to existing IT systems. This feature is only available in
         Storage Mode.{' '}
-        <Link
-          isExternal
-          href="https://guide.form.gov.sg/AdvancedGuide.html#webhooks"
-        >
+        <Link isExternal href={GUIDE_WEBHOOKS}>
           Read more about webhooks
         </Link>
       </Text>

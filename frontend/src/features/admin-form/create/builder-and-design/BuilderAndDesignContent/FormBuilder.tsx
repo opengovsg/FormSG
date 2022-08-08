@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { Droppable } from 'react-beautiful-dnd'
-import { Box, Flex, FlexProps, Text } from '@chakra-ui/react'
+import { Box, Flex, FlexProps, Stack } from '@chakra-ui/react'
 
 import Button from '~components/Button'
 
@@ -44,69 +44,87 @@ export const FormBuilder = ({
     [builderFields, formLogics],
   )
 
-  const bg = useBgColor(useDesignColorTheme())
+  const bg = useBgColor({ colorTheme: useDesignColorTheme() })
 
   return (
     <Flex
-      m={{ base: 0, md: '2rem' }}
       mb={0}
       flex={1}
-      bg={bg}
-      p={{ base: '1.5rem', md: '2.5rem' }}
+      bg="neutral.200"
+      p={{ base: 0, md: '2rem' }}
       justify="center"
       overflow="auto"
       {...props}
     >
-      <Flex flexDir="column" w="100%" maxW="57rem" h="fit-content">
+      <Stack
+        direction="column"
+        w="100%"
+        h="fit-content"
+        spacing="1.5rem"
+        bg={bg}
+      >
         <StartPageView />
-        <Flex bg="white" p={{ base: 0, md: '2.5rem' }} flexDir="column">
-          <Droppable droppableId={FIELD_LIST_DROP_ID}>
-            {(provided, snapshot) =>
-              builderFields?.length ? (
-                <Box
-                  pos="relative"
-                  ref={provided.innerRef}
-                  {...provided.droppableProps}
-                >
-                  <BuilderFields
-                    fields={builderFields}
-                    visibleFieldIds={visibleFieldIds}
+        <Flex flexDir="column" alignSelf="center" w="100%" px="2.5rem">
+          <Box
+            bg="white"
+            w="100%"
+            maxW="57rem"
+            alignSelf="center"
+            px="1.625rem"
+            py="2.5rem"
+          >
+            <Droppable droppableId={FIELD_LIST_DROP_ID}>
+              {(provided, snapshot) =>
+                builderFields?.length ? (
+                  <Box
+                    pos="relative"
+                    ref={provided.innerRef}
+                    {...provided.droppableProps}
+                  >
+                    <BuilderFields
+                      fields={builderFields}
+                      visibleFieldIds={visibleFieldIds}
+                      isDraggingOver={snapshot.isDraggingOver}
+                    />
+                    {provided.placeholder}
+                    <BuilderAndDesignPlaceholder
+                      placeholderProps={placeholderProps}
+                      isDraggingOver={snapshot.isDraggingOver}
+                    />
+                  </Box>
+                ) : (
+                  <EmptyFormPlaceholder
+                    ref={provided.innerRef}
+                    {...provided.droppableProps}
                     isDraggingOver={snapshot.isDraggingOver}
+                    onClick={handleBuilderClick}
                   />
-                  {provided.placeholder}
-                  <BuilderAndDesignPlaceholder
-                    placeholderProps={placeholderProps}
-                    isDraggingOver={snapshot.isDraggingOver}
-                  />
-                </Box>
-              ) : (
-                <EmptyFormPlaceholder
-                  m={{ base: '1.5rem', md: 0 }}
-                  ref={provided.innerRef}
-                  {...provided.droppableProps}
-                  isDraggingOver={snapshot.isDraggingOver}
-                  onClick={handleBuilderClick}
-                />
-              )
-            }
-          </Droppable>
+                )
+              }
+            </Droppable>
+          </Box>
         </Flex>
-        <Button
-          _hover={{ bg: 'primary.200' }}
-          py="1.5rem"
-          mt="1.5rem"
-          variant="outline"
-          borderColor="secondary.200"
-          colorScheme="secondary"
-          height="auto"
-          onClick={() => {
-            setEditEndPage()
-            handleBuilderClick()
-          }}
-        >
-          <Text textStyle="subhead-2">Customise Thank you page</Text>
-        </Button>
-      </Flex>
+        <Flex justify="center" w="100%" px="2.5rem">
+          <Button
+            _hover={{ bg: 'primary.200' }}
+            py="1.5rem"
+            mb="1.5rem"
+            variant="outline"
+            borderColor="secondary.200"
+            colorScheme="secondary"
+            height="auto"
+            maxW="57rem"
+            width="100%"
+            onClick={() => {
+              setEditEndPage()
+              handleBuilderClick()
+            }}
+            textStyle="subhead-2"
+          >
+            Customise Thank you page
+          </Button>
+        </Flex>
+      </Stack>
     </Flex>
   )
 }

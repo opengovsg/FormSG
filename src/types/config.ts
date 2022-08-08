@@ -53,8 +53,9 @@ export type RateLimitConfig = {
 }
 
 export type ReactMigrationConfig = {
-  respondentRolloutNoAuth: number
-  respondentRolloutAuth: number
+  respondentRolloutEmail: number
+  respondentRolloutStorage: number
+  adminRollout: number
   respondentCookieName: string
   adminCookieName: string
   qaCookieName: string
@@ -157,8 +158,9 @@ export interface IOptionalVarsSchema {
     sendAuthOtp: number
   }
   reactMigration: {
-    respondentRolloutNoAuth: number
-    respondentRolloutAuth: number
+    respondentRolloutEmail: number
+    respondentRolloutStorage: number
+    adminRollout: number
     respondentCookieName: string
     adminCookieName: string
     qaCookieName: string

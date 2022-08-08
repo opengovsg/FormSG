@@ -1,9 +1,8 @@
-import { useCallback, useMemo } from 'react'
+import { useMemo } from 'react'
 
-import { FormAuthType, FormLogoState } from '~shared/types'
+import { FormLogoState } from '~shared/types'
 
 import { useEnv } from '~features/env/queries'
-import { usePublicAuthMutations } from '~features/public-form/mutations'
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
 import { useFormSections } from '../FormFields/FormSectionsContext'
@@ -17,10 +16,10 @@ export const FormStartPage = (): JSX.Element => {
   const {
     form,
     spcpSession,
-    formId,
     submissionData,
     miniHeaderRef,
     onMobileDrawerOpen,
+    handleLogout,
   } = usePublicFormContext()
   const { activeSectionId } = useFormSections()
 
@@ -40,12 +39,6 @@ export const FormStartPage = (): JSX.Element => {
   })
 
   const formHeaderProps = useFormHeader(form?.startPage)
-
-  const { handleLogoutMutation } = usePublicAuthMutations(formId)
-  const handleLogout = useCallback(() => {
-    if (!form || form?.authType === FormAuthType.NIL) return
-    return handleLogoutMutation.mutate(form.authType)
-  }, [form, handleLogoutMutation])
 
   return (
     <>

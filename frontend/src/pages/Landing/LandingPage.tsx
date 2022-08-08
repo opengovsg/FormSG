@@ -27,6 +27,18 @@ import FormBrandLogo from '~/assets/svgs/brand/brand-mark-colour.svg'
 
 import { BxlGithub } from '~assets/icons/BxlGithub'
 import { BxsHelpCircle } from '~assets/icons/BxsHelpCircle'
+import {
+  FORM_GUIDE,
+  GUIDE_ATTACHMENT_SIZE_LIMIT,
+  GUIDE_E2EE,
+  GUIDE_SECRET_KEY_LOSS,
+  GUIDE_STORAGE_MODE,
+  GUIDE_TRANSFER_OWNERSHIP,
+  LANDING_PAGE_EXAMPLE_FORMS,
+  OGP_ALL_PRODUCTS,
+  OGP_FORMSG_COLLATE,
+  OGP_FORMSG_REPO,
+} from '~constants/links'
 import { LOGIN_ROUTE } from '~constants/routes'
 import { useIsMobile } from '~hooks/useIsMobile'
 import { useMdComponents } from '~hooks/useMdComponents'
@@ -235,30 +247,9 @@ export const LandingPage = (): JSX.Element => {
           spacingY="1rem"
           mt="2.5rem"
         >
-          <ExternalFormLink
-            href="https://form.gov.sg/600c490b7c026600138d4ca9"
-            label="Register for COVID-19 Vaccination"
-          />
-          <ExternalFormLink
-            href="https://form.gov.sg/6162b3c7ed9ee00013726baf"
-            label="Covid Positive Patient Details"
-          />
-          <ExternalFormLink
-            href="https://form.gov.sg/5eb38e989bd7d80011066a02"
-            label="Daily Reporting Health Symptoms"
-          />
-          <ExternalFormLink
-            href="https://form.gov.sg/5f085b4b3583420013af9a55"
-            label="Health and Travel Declaration Form"
-          />
-          <ExternalFormLink
-            href="https://form.gov.sg/6057667b248bbc0012ceda2f"
-            label="Gov.sg WhatsApp Subscription"
-          />
-          <ExternalFormLink
-            href="https://form.gov.sg/60b81af0f7c4df001210f2b3"
-            label="MOM ART Self Swab"
-          />
+          {LANDING_PAGE_EXAMPLE_FORMS.map((example, index) => (
+            <ExternalFormLink key={index} {...example} />
+          ))}
         </SimpleGrid>
         <Image src={meetingCollaborationImg} aria-hidden mt="5rem" />
       </LandingSection>
@@ -293,7 +284,7 @@ export const LandingPage = (): JSX.Element => {
           <SectionBodyText mt={0}>Sensitive (High)</SectionBodyText>
         </SimpleGrid>
         <FeatureLink
-          href="https://go.gov.sg/form-what-is-storage-mode"
+          href={GUIDE_STORAGE_MODE}
           externalLinkIcon={
             <Icon as={BiRightArrowAlt} ml="0.5rem" fontSize="1.5rem" />
           }
@@ -312,7 +303,7 @@ export const LandingPage = (): JSX.Element => {
           journey, and contribute even richer functionality to the codebase.
         </SectionBodyText>
         <FeatureLink
-          href="https://github.com/opengovsg/formsg"
+          href={OGP_FORMSG_REPO}
           externalLinkIcon={<BxlGithub ml="0.5rem" fontSize="1.5rem" />}
         >
           Fork it on Github
@@ -354,7 +345,7 @@ export const LandingPage = (): JSX.Element => {
                   Without your secret key, you will not be able to access your existing response data. Additionally, it's not possible for us to recover your lost secret key or response data on your behalf. This is because Form does not retain your secret key or any other way to unlock your encrypted data - the only way to ensure response data is truly private to agencies only. This is an important security benefit, because that means even if our server were to be compromised, an attacker would never be able to unlock your encrypted responses.
                 `}
               </ReactMarkdown>
-              <FeatureLink mt="1rem" href="https://go.gov.sg/secretkeyloss">
+              <FeatureLink mt="1rem" href={GUIDE_SECRET_KEY_LOSS}>
                 Source
               </FeatureLink>
             </HelpAccordionItem>
@@ -368,10 +359,7 @@ export const LandingPage = (): JSX.Element => {
                   Because the smallest unit you can attach per attachment field is 1 MB, you can have a max of 7 attachments on your form in email mode, and a max of 20 attachments in storage mode. If your user has to submit more than 7  documents in email mode (or more than 20 in storage mode), you may create just one attachment field of 7 or 20 MB in their respective modes, and advise your user to zip documents up and submit as one attachment.
                 `}
               </ReactMarkdown>
-              <FeatureLink
-                mt="1rem"
-                href="https://guide.form.gov.sg/AdvancedGuide.html#how-do-i-increase-attachment-size-limit-and-what-if-there-are-many-attachments-for-my-form"
-              >
+              <FeatureLink mt="1rem" href={GUIDE_ATTACHMENT_SIZE_LIMIT}>
                 Source
               </FeatureLink>
             </HelpAccordionItem>
@@ -383,10 +371,7 @@ export const LandingPage = (): JSX.Element => {
                 The benefit of end-to-end encryption is that response data enters and remains in Form's servers in an encrypted state. This ensures that even if our servers are compromised by an attack, attackers will still not be able to decrypt and view your response data, as they do not possess your secret key.  
               `}
               </ReactMarkdown>
-              <FeatureLink
-                mt="1rem"
-                href="https://guide.form.gov.sg/AdvancedGuide.html#how-does-end-to-end-encryption-work"
-              >
+              <FeatureLink mt="1rem" href={GUIDE_E2EE}>
                 Source
               </FeatureLink>
             </HelpAccordionItem>
@@ -398,17 +383,14 @@ export const LandingPage = (): JSX.Element => {
                   Note that you might not need to transfer ownership of your form. You may simply add your colleague as a collaborator. Collaborators have the same rights as form creators, except they cannot delete the form.
                 `}
               </ReactMarkdown>
-              <FeatureLink
-                mt="1rem"
-                href="https://guide.form.gov.sg/AdvancedGuide.html#i-am-leaving-the-organisation-or-switching-over-to-a-new-email-how-do-i-transfer-ownership-of-my-forms"
-              >
+              <FeatureLink mt="1rem" href={GUIDE_TRANSFER_OWNERSHIP}>
                 Source
               </FeatureLink>
             </HelpAccordionItem>
           </Accordion>
         </Box>
         <FeatureLink
-          href="https://guide.form.gov.sg/"
+          href={FORM_GUIDE}
           externalLinkIcon={
             <Icon as={BxsHelpCircle} ml="0.5rem" fontSize="1.5rem" />
           }
@@ -493,7 +475,7 @@ export const LandingPage = (): JSX.Element => {
                 <ListItem textStyle="body-2">
                   <OrderedListIcon index={5} />
                   Collate responses with our{' '}
-                  <Link isExternal href="https://collate.form.gov.sg/">
+                  <Link isExternal href={OGP_FORMSG_COLLATE}>
                     data collation tool
                   </Link>
                 </ListItem>
@@ -514,7 +496,7 @@ export const LandingPage = (): JSX.Element => {
           workflows.
         </SectionBodyText>
         <FeatureLink
-          href="https://www.open.gov.sg/products/overview"
+          href={OGP_ALL_PRODUCTS}
           externalLinkIcon={
             <Icon as={BiRightArrowAlt} ml="0.5rem" fontSize="1.5rem" />
           }

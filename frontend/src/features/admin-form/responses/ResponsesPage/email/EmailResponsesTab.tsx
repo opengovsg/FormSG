@@ -1,6 +1,7 @@
 import { Container, Skeleton, Stack, Text } from '@chakra-ui/react'
 import simplur from 'simplur'
 
+import { OGP_FORMSG_COLLATE } from '~constants/links'
 import Link from '~components/Link'
 
 import { useFormResponsesCount } from '../../queries'
@@ -31,7 +32,7 @@ export const EmailResponsesTab = (): JSX.Element => {
         <Text textStyle="body-1">
           FormSG does not store responses in Email mode. To collate the
           responses in your Outlook Inbox, use the{' '}
-          <Link isExternal href="https://collate.form.gov.sg">
+          <Link isExternal href={OGP_FORMSG_COLLATE}>
             Data Collation Tool
           </Link>
           .
