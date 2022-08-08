@@ -7,6 +7,7 @@ import {
   ModalHeader,
   ModalOverlay,
   Text,
+  useBreakpointValue,
 } from '@chakra-ui/react'
 
 import { SmsCountsDto } from '~shared/types/form'
@@ -32,13 +33,25 @@ export const SmsCountsModal = ({
   onClose,
 }: SmsCountsModalProps) => {
   const { formId } = useParams()
+
+  const modalSize = useBreakpointValue({
+    base: 'mobile',
+    xs: 'mobile',
+    md: 'md',
+  })
+
   const isMobile = useIsMobile()
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      size={modalSize}
+      closeOnEsc={false}
+      closeOnOverlayClick={false}
+    >
       <ModalOverlay />
       <ModalContent>
-        {isMobile ? null : <ModalCloseButton />}
         <ModalHeader>Verified SMS Billing</ModalHeader>
         <ModalBody>
           {freeSmsCount === undefined ? (
@@ -74,7 +87,9 @@ export const SmsCountsModal = ({
           )}
         </ModalBody>
         <ModalFooter>
-          <Button onClick={onClose}>Yes, I understand</Button>
+          <Button isFullWidth={isMobile} onClick={onClose}>
+            Yes, I understand
+          </Button>
         </ModalFooter>
       </ModalContent>
     </Modal>
