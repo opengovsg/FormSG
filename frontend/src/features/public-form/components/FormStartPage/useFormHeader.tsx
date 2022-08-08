@@ -3,6 +3,8 @@ import simplur from 'simplur'
 
 import { FormColorTheme, FormStartPage } from '~shared/types'
 
+import { ThemeColorScheme } from '~theme/foundations/colours'
+
 interface UseFormHeaderProps {
   startPage?: FormStartPage
   hover?: boolean
@@ -29,5 +31,15 @@ export const useFormHeader = ({ startPage, hover }: UseFormHeaderProps) => {
     return simplur`${startPage.estTimeTaken} min[|s] estimated time to complete`
   }, [startPage])
 
-  return { titleColor, titleBg, estTimeString }
+  const colorScheme: ThemeColorScheme | undefined = useMemo(() => {
+    if (!startPage?.colorTheme) return
+    return `theme-${startPage.colorTheme}` as const
+  }, [startPage?.colorTheme])
+
+  return {
+    titleColor,
+    titleBg,
+    estTimeString,
+    colorScheme,
+  }
 }

@@ -17,7 +17,9 @@ export const PreviewFormBanner = (): JSX.Element => {
       <Flex align="center" flex={1} justify="space-between" flexDir="row">
         <Text textStyle="caption-1">
           Preview{' '}
-          {form?.authType !== FormAuthType.NIL ? 'with test data' : 'mode'}
+          {form?.authType && form.authType !== FormAuthType.NIL
+            ? 'with test data'
+            : 'mode'}
         </Text>
         <Link
           variant="standalone"

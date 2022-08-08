@@ -1,7 +1,7 @@
 // TODO #4279: Remove after React rollout is complete
 import path from 'path'
 
-import { FormAuthType, UiCookieValues } from '../../../../shared/types'
+import { FormResponseMode, UiCookieValues } from '../../../../shared/types'
 import config from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { ControllerHandler } from '../core/core.types'
@@ -68,21 +68,21 @@ export const serveForm: ControllerHandler<
   Record<string, string>
 > = async (req, res, next) => {
   const formResult = await FormService.retrieveFormKeysById(req.params.formId, [
-    'authType',
+    'responseMode',
   ])
   let showReact: boolean | undefined = undefined
-  let hasAuth = true
+  let isEmail = false
 
   if (!formResult.isErr()) {
     // This conditional router is not the one to do error handling
-    // If there's any error, hasAuth will retain its value of true, and
+    // If there's any error, isEmail will retain its value of false, and
     // the handling route will handle the error later in the usual fashion
-    hasAuth = formResult.value.authType !== FormAuthType.NIL
+    isEmail = formResult.value.responseMode === FormResponseMode.Email
   }
 
-  const respThreshold = hasAuth
-    ? config.reactMigration.respondentRolloutAuth
-    : config.reactMigration.respondentRolloutNoAuth
+  const respThreshold = isEmail
+    ? config.reactMigration.respondentRolloutEmail
+    : config.reactMigration.respondentRolloutStorage
 
   if (config.reactMigration.qaCookieName in req.cookies) {
     showReact =
@@ -91,6 +91,11 @@ export const serveForm: ControllerHandler<
     // Check the rollout value first, if it's 0, react is DISABLED
     // And we ignore cookies entirely!
     showReact = false
+    // Delete existing cookies to prevent infinite redirection
+    if (req.cookies) {
+      res.clearCookie(config.reactMigration.respondentCookieName)
+      res.clearCookie(config.reactMigration.adminCookieName)
+    }
   } else if (req.cookies) {
     if (config.reactMigration.adminCookieName in req.cookies) {
       // Admins are dogfooders, the choice they made for the admin environment
@@ -116,7 +121,7 @@ export const serveForm: ControllerHandler<
       message: 'Randomly assigned UI environment for respondent',
       meta: {
         action: 'routeReact.random',
-        hasAuth,
+        isEmail,
         rand,
         respThreshold,
         showReact,
@@ -134,7 +139,7 @@ export const serveForm: ControllerHandler<
     message: 'Routing evaluation done for respondent',
     meta: {
       action: 'routeReact',
-      hasAuth,
+      isEmail,
       respThreshold,
       showReact,
       cwd: process.cwd(),
@@ -162,6 +167,10 @@ export const serveDefault: ControllerHandler = (req, res, next) => {
     // Check the rollout value first, if it's 0, react is DISABLED
     // And we ignore cookies entirely!
     showReact = false
+    // Delete existing cookie to prevent infinite redirection
+    if (req.cookies) {
+      res.clearCookie(config.reactMigration.adminCookieName)
+    }
   } else if (req.cookies) {
     if (config.reactMigration.adminCookieName in req.cookies) {
       // Check if admin had already chosen react previously
