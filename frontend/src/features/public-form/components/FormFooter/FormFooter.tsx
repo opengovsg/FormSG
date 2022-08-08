@@ -6,13 +6,15 @@ import { AppFooter } from '~/app/AppFooter'
 
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
+import { useFormSections } from '../FormFields/FormSectionsContext'
 import { useBgColor } from '../PublicFormWrapper'
 
 /**
  * @precondition Must be nested inside `PublicFormProvider`
  */
 export const FormFooter = (): JSX.Element => {
-  const { captchaContainerId, sectionScrollData, form } = usePublicFormContext()
+  const { captchaContainerId, form } = usePublicFormContext()
+  const { sectionScrollData } = useFormSections()
 
   const isDesktop = useBreakpointValue({ base: false, xs: false, lg: true })
   const bgColor = useBgColor({

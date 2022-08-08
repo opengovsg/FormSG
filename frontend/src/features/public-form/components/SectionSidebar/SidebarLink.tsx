@@ -1,12 +1,12 @@
 import { useCallback, useMemo } from 'react'
 import { Box, chakra, useStyleConfig, VisuallyHidden } from '@chakra-ui/react'
 
+import { usePublicFormContext } from '~features/public-form/PublicFormContext'
+
 import {
   SidebarSectionMeta,
-  usePublicFormContext,
-} from '~features/public-form/PublicFormContext'
-
-import { useFormSections } from '../FormFields/FormSectionsContext'
+  useFormSections,
+} from '../FormFields/FormSectionsContext'
 
 interface SidebarLinkProps {
   /**
