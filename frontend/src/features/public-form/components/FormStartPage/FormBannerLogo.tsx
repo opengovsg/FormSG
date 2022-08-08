@@ -17,12 +17,7 @@ export const FormBannerLogo = ({
   if (!hasLogo) return null
 
   return (
-    <Flex
-      transition="background 0.2s ease"
-      justify="center"
-      p="1rem"
-      bg="white"
-    >
+    <Flex justify="center" p="1rem" bg="white">
       <Skeleton isLoaded={hasImageLoaded}>
         <Image
           onLoad={() => setHasImageLoaded(true)}
