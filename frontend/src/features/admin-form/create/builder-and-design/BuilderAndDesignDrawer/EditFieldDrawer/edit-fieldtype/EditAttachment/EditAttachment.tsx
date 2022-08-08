@@ -158,7 +158,11 @@ export const EditAttachment = ({ field }: EditAttachmentProps): JSX.Element => {
             rules={attachmentSizeValidationRule}
             name="attachmentSize"
             render={({ field }) => (
-              <SingleSelect items={attachmentSizeOptions} {...field} />
+              <SingleSelect
+                isClearable={false}
+                items={attachmentSizeOptions}
+                {...field}
+              />
             )}
           />
         </Skeleton>
