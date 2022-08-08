@@ -1,8 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { SubmitHandler } from 'react-hook-form'
-import { Link, Text } from '@chakra-ui/react'
-import { isEqual } from 'lodash'
 import get from 'lodash/get'
 import simplur from 'simplur'
 
@@ -54,7 +52,6 @@ export const PreviewFormProvider = ({
     isNotFormId,
     toast,
     showErrorToast,
-    desyncToastIdRef,
     vfnToastIdRef,
     expiryInMs,
     ...commonFormValues
@@ -64,25 +61,9 @@ export const PreviewFormProvider = ({
     if (data) {
       if (!cachedDto) {
         setCachedDto(data)
-      } else if (!desyncToastIdRef.current && !isEqual(data, cachedDto)) {
-        desyncToastIdRef.current = toast({
-          status: 'warning',
-          title: (
-            <Text textStyle="subhead-1">
-              The form has been modified and your submission may fail.
-            </Text>
-          ),
-          description: (
-            <Text as="span">
-              <Link href={window.location.href}>Refresh</Link> for the latest
-              version of the form.
-            </Text>
-          ),
-          duration: null,
-        })
       }
     }
-  }, [data, cachedDto, toast, desyncToastIdRef])
+  }, [data, cachedDto])
 
   useEffect(() => {
     return () => {

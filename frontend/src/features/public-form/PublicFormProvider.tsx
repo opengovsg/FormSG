@@ -68,7 +68,6 @@ export function useCommonFormProvider(formId: string) {
   const { createTransactionMutation } = useTransactionMutations(formId)
   const toast = useToast({ isClosable: true })
   const vfnToastIdRef = useRef<string | number>()
-  const desyncToastIdRef = useRef<string | number>()
 
   const getTransactionId = useCallback(async () => {
     if (!vfnTransaction || isPast(vfnTransaction.expireAt)) {
@@ -98,7 +97,6 @@ export function useCommonFormProvider(formId: string) {
     isNotFormId,
     toast,
     showErrorToast,
-    desyncToastIdRef,
     vfnToastIdRef,
     expiryInMs,
     miniHeaderRef,
@@ -137,12 +135,12 @@ export const PublicFormProvider = ({
   })
 
   const [cachedDto, setCachedDto] = useState<PublicFormViewDto>()
+  const desyncToastIdRef = useRef<string | number>()
 
   const {
     isNotFormId,
     toast,
     showErrorToast,
-    desyncToastIdRef,
     vfnToastIdRef,
     expiryInMs,
     ...commonFormValues
