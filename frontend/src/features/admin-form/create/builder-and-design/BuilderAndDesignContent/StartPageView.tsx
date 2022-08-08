@@ -173,14 +173,14 @@ export const StartPageView = () => {
           }
         />
       </Box>
-      <Flex
-        flexDir="column"
-        alignSelf="center"
-        w="100%"
-        px="2.5rem"
-        mt="1.5rem"
-      >
-        {content ? (
+      {content ? (
+        <Flex
+          flexDir="column"
+          alignSelf="center"
+          w="100%"
+          px="2.5rem"
+          mt="1.5rem"
+        >
           <Flex justify="center">
             <Box
               w="100%"
@@ -239,8 +239,8 @@ export const StartPageView = () => {
               </Box>
             </Box>
           </Flex>
-        ) : null}
-      </Flex>
+        </Flex>
+      ) : null}
     </>
   )
 }
