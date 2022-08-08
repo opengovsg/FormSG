@@ -1,4 +1,11 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import { Helmet } from 'react-helmet-async'
 import { SubmitHandler } from 'react-hook-form'
 import { Text, useDisclosure } from '@chakra-ui/react'
@@ -114,6 +121,13 @@ export const PublicFormProvider = ({
     // Stop querying once submissionData is present.
     /* enabled= */ !submissionData,
   )
+
+  // Scroll to top of page when user has finished their submission.
+  useLayoutEffect(() => {
+    if (submissionData) {
+      window.scrollTo(0, 0)
+    }
+  }, [submissionData])
 
   const { data: { captchaPublicKey } = {} } = useEnv(
     /* enabled= */ !!data?.form.hasCaptcha,
