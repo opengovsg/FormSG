@@ -1,4 +1,3 @@
-import { useMemo } from 'react'
 import { Box, Flex } from '@chakra-ui/react'
 
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
@@ -11,12 +10,7 @@ export const FormInstructionsContainer = (): JSX.Element | null => {
   const { sectionRefs } = useFormSections()
   const { form, submissionData } = usePublicFormContext()
 
-  const content = useMemo(
-    () => form?.startPage.paragraph,
-    [form?.startPage.paragraph],
-  )
-
-  if (!!submissionData || !content) return null
+  if (submissionData || !form?.startPage.paragraph) return null
 
   return (
     <Flex justify="center">
@@ -32,7 +26,7 @@ export const FormInstructionsContainer = (): JSX.Element | null => {
       >
         <Box id="instructions" ref={sectionRefs['instructions']}>
           <FormInstructions
-            content={content}
+            content={form?.startPage.paragraph}
             colorTheme={form?.startPage.colorTheme}
           />
         </Box>

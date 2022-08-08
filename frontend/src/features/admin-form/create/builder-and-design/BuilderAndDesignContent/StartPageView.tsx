@@ -108,8 +108,6 @@ export const StartPageView = () => {
     agency: form?.admin.agency,
   })
 
-  const content = useMemo(() => startPage?.paragraph, [startPage?.paragraph])
-
   const { handleDesignClick } = useCreatePageSidebar()
 
   const handleHeaderClick = useCallback(() => {
@@ -173,7 +171,7 @@ export const StartPageView = () => {
           }
         />
       </Box>
-      {content ? (
+      {startPage?.paragraph ? (
         <Flex
           flexDir="column"
           alignSelf="center"
@@ -205,7 +203,7 @@ export const StartPageView = () => {
               >
                 <Box p={{ base: '0.75rem', md: '1.5rem' }}>
                   <FormInstructions
-                    content={content}
+                    content={startPage?.paragraph}
                     colorTheme={startPage?.colorTheme}
                   />
                 </Box>
