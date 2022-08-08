@@ -15,21 +15,27 @@ import { useCreatePageSidebar } from '../../common/CreatePageSidebarContext'
 import { useCreateTabForm } from '../useCreateTabForm'
 import {
   customLogoMetaSelector,
+  DesignState,
+  setStateSelector,
   startPageDataSelector,
+  stateSelector,
   useDesignStore,
 } from '../useDesignStore'
 
 export const StartPageView = () => {
   const { data: form } = useCreateTabForm()
-  const { startPageData, customLogoMeta } = useDesignStore(
-    useCallback(
-      (state) => ({
-        startPageData: startPageDataSelector(state),
-        customLogoMeta: customLogoMetaSelector(state),
-      }),
-      [],
-    ),
-  )
+  const { designState, startPageData, customLogoMeta, setDesignState } =
+    useDesignStore(
+      useCallback(
+        (state) => ({
+          designState: stateSelector(state),
+          startPageData: startPageDataSelector(state),
+          customLogoMeta: customLogoMetaSelector(state),
+          setDesignState: setStateSelector(state),
+        }),
+        [],
+      ),
+    )
   const { data: { logoBucketUrl } = {} } = useEnv(
     form?.startPage.logo.state === FormLogoState.Custom,
   )
@@ -85,16 +91,32 @@ export const StartPageView = () => {
     agency: form?.admin.agency,
   })
 
+  const content = useMemo(() => startPage?.paragraph, [startPage?.paragraph])
+
   const { handleDesignClick } = useCreatePageSidebar()
+
+  const onHeaderClick = useCallback(() => {
+    handleDesignClick()
+    setDesignState(DesignState.EditingHeader)
+  }, [handleDesignClick, setDesignState])
+
+  const onInstructionsClick = useCallback(() => {
+    handleDesignClick()
+    setDesignState(DesignState.EditingInstructions)
+  }, [handleDesignClick, setDesignState])
 
   return (
     <>
       <Box
         onPointerEnter={() => setHoverStartPage(true)}
         onPointerLeave={() => setHoverStartPage(false)}
-        onClick={handleDesignClick}
+        onClick={onHeaderClick}
         role="button"
         cursor={hoverStartPage ? 'pointer' : 'initial'}
+        {...(designState === DesignState.EditingHeader
+          ? { border: '2px solid var(--chakra-colors-primary-500)' }
+          : { borderY: '2px solid transparent' })}
+        borderRadius="4px"
       >
         {customLogoPending ? (
           // Show skeleton if user has chosen custom logo but not yet uploaded
@@ -110,7 +132,6 @@ export const StartPageView = () => {
                 : logoImgSrc
             }
             logoImgAlt={logoImgAlt}
-            logoBg={hoverStartPage ? 'neutral.200' : undefined}
           />
         )}
         <FormHeader
@@ -127,10 +148,39 @@ export const StartPageView = () => {
         />
       </Box>
       <Box mt="1.5rem">
-        <FormInstructions
-          content={startPage?.paragraph}
-          colorTheme={startPage?.colorTheme}
-        />
+        {content ? (
+          <Flex justify="center">
+            <Box
+              w="100%"
+              minW={0}
+              h="fit-content"
+              maxW="57rem"
+              bg="white"
+              py="2.5rem"
+              px={{ base: '1rem', md: '2.5rem' }}
+              mb="1.5rem"
+            >
+              <Box
+                p={{ base: '0.75rem', md: '1.5rem' }}
+                transition="background 0.2s ease"
+                _hover={{ bg: 'secondary.100', cursor: 'pointer' }}
+                borderRadius="4px"
+                {...(designState === DesignState.EditingInstructions
+                  ? {
+                      bg: 'secondary.100',
+                      border: '2px solid var(--chakra-colors-primary-500)',
+                    }
+                  : { border: '2px solid white' })}
+                onClick={onInstructionsClick}
+              >
+                <FormInstructions
+                  content={content}
+                  colorTheme={startPage?.colorTheme}
+                />
+              </Box>
+            </Box>
+          </Flex>
+        ) : null}
       </Box>
     </>
   )

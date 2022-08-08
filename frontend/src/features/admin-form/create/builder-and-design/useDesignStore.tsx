@@ -8,6 +8,12 @@ import { UploadedImage } from './BuilderAndDesignDrawer/EditFieldDrawer/edit-fie
 
 export type CustomLogoMeta = Omit<CustomFormLogo, keyof FormLogoBase>
 
+export enum DesignState {
+  EditingHeader,
+  EditingInstructions,
+  Inactive,
+}
+
 /** Design drawer form input fields. DesignStore keeps track of the data in the
  * drawer input as a single unit. Other data (specifically the logo metadata) is
  * kept separately with its own getters and setters.
@@ -22,8 +28,10 @@ export type FormStartPageInput = Omit<
 }
 
 export type DesignStore = {
+  state: DesignState
   startPageData?: FormStartPageInput
   customLogoMeta?: CustomLogoMeta
+  setState: (state: DesignState) => void
   setStartPageData: (startPageInput: FormStartPageInput) => void
   setCustomLogoMeta: (customLogoMetaData: CustomLogoMeta) => void
   resetDesignStore: () => void
@@ -31,6 +39,8 @@ export type DesignStore = {
 
 export const useDesignStore = create<DesignStore>(
   devtools((set, get) => ({
+    state: DesignState.Inactive,
+    setState: (state: DesignState) => set({ state }),
     setStartPageData: (startPageData: FormStartPageInput) => {
       const current = get()
       if (isEqual(current.startPageData, startPageData)) return
@@ -50,6 +60,9 @@ export const useDesignStore = create<DesignStore>(
   })),
 )
 
+export const stateSelector = (state: DesignStore): DesignStore['state'] =>
+  state.state
+
 export const startPageDataSelector = (
   state: DesignStore,
 ): DesignStore['startPageData'] => state.startPageData
@@ -57,6 +70,9 @@ export const startPageDataSelector = (
 export const customLogoMetaSelector = (
   state: DesignStore,
 ): DesignStore['customLogoMeta'] => state.customLogoMeta
+
+export const setStateSelector = (state: DesignStore): DesignStore['setState'] =>
+  state.setState
 
 export const setStartPageDataSelector = (
   state: DesignStore,

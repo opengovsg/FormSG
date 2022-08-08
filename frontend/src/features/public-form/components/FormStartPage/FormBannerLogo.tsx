@@ -5,14 +5,12 @@ interface FormBannerLogoInputProps {
   hasLogo: boolean
   logoImgSrc?: string
   logoImgAlt?: string
-  logoBg?: string
 }
 
 export const FormBannerLogo = ({
   hasLogo,
   logoImgSrc,
   logoImgAlt,
-  logoBg = 'white',
 }: FormBannerLogoInputProps): JSX.Element | null => {
   const [hasImageLoaded, setHasImageLoaded] = useState(false)
 
@@ -23,7 +21,7 @@ export const FormBannerLogo = ({
       transition="background 0.2s ease"
       justify="center"
       p="1rem"
-      bg={logoBg}
+      bg="white"
     >
       <Skeleton isLoaded={hasImageLoaded}>
         <Image
