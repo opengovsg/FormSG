@@ -34,14 +34,14 @@ const TWILIO_INPUT_RULES: Record<keyof TwilioCredentials, RegisterOptions> = {
   accountSid: {
     required: 'Account SID is required',
     pattern: {
-      value: /^\s*AC\s*/,
+      value: /^\s*AC\S+\s*$/,
       message: 'Account SID must start with AC',
     },
   },
   apiKey: {
     required: 'API key SID is required',
     pattern: {
-      value: /^\s*SK\s*/,
+      value: /^\s*SK\S+\s*$/,
       message: 'API key SID must start with SK',
     },
   },
@@ -56,7 +56,7 @@ const TWILIO_INPUT_RULES: Record<keyof TwilioCredentials, RegisterOptions> = {
   messagingServiceSid: {
     required: 'Messaging service SID is required',
     pattern: {
-      value: /^\s*MG\s*/,
+      value: /^\s*MG\S+\s*$/,
       message: 'Messaging service SID must start with MG',
     },
   },
