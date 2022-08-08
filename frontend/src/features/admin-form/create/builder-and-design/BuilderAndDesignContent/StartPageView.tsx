@@ -107,7 +107,9 @@ export const StartPageView = () => {
         colorScheme={colorScheme}
         showHeader
         loggedInId={
-          form?.authType !== FormAuthType.NIL ? PREVIEW_MOCK_UINFIN : undefined
+          form && form.authType !== FormAuthType.NIL
+            ? PREVIEW_MOCK_UINFIN
+            : undefined
         }
       />
       {startPage?.paragraph && (
