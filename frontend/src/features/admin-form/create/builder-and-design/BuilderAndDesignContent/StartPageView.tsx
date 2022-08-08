@@ -1,7 +1,17 @@
 import { useCallback, useMemo, useState } from 'react'
-import { Box, Flex, Skeleton } from '@chakra-ui/react'
+import { BiCog } from 'react-icons/bi'
+import {
+  Box,
+  ButtonGroup,
+  Collapse,
+  Flex,
+  IconButton,
+  Skeleton,
+} from '@chakra-ui/react'
 
 import { FormAuthType, FormLogoState, FormStartPage } from '~shared/types'
+
+import { useIsMobile } from '~hooks/useIsMobile'
 
 import { PREVIEW_MOCK_UINFIN } from '~features/admin-form/preview/constants'
 import { useEnv } from '~features/env/queries'
@@ -12,6 +22,10 @@ import { useFormBannerLogo } from '~features/public-form/components/FormStartPag
 import { useFormHeader } from '~features/public-form/components/FormStartPage/useFormHeader'
 
 import { useCreatePageSidebar } from '../../common/CreatePageSidebarContext'
+import {
+  setToInactiveSelector,
+  useBuilderAndDesignStore,
+} from '../useBuilderAndDesignStore'
 import { useCreateTabForm } from '../useCreateTabForm'
 import {
   customLogoMetaSelector,
@@ -23,7 +37,9 @@ import {
 } from '../useDesignStore'
 
 export const StartPageView = () => {
+  const isMobile = useIsMobile()
   const { data: form } = useCreateTabForm()
+  const setToInactive = useBuilderAndDesignStore(setToInactiveSelector)
   const { designState, startPageData, customLogoMeta, setDesignState } =
     useDesignStore(
       useCallback(
@@ -36,6 +52,7 @@ export const StartPageView = () => {
         [],
       ),
     )
+
   const { data: { logoBucketUrl } = {} } = useEnv(
     form?.startPage.logo.state === FormLogoState.Custom,
   )
@@ -95,27 +112,36 @@ export const StartPageView = () => {
 
   const { handleDesignClick } = useCreatePageSidebar()
 
-  const onHeaderClick = useCallback(() => {
-    handleDesignClick()
+  const handleHeaderClick = useCallback(() => {
     setDesignState(DesignState.EditingHeader)
-  }, [handleDesignClick, setDesignState])
-
-  const onInstructionsClick = useCallback(() => {
+    setToInactive()
     handleDesignClick()
+  }, [handleDesignClick, setDesignState, setToInactive])
+
+  const handleInstructionsClick = useCallback(() => {
     setDesignState(DesignState.EditingInstructions)
-  }, [handleDesignClick, setDesignState])
+    setToInactive()
+    if (!isMobile) handleDesignClick()
+  }, [handleDesignClick, isMobile, setDesignState, setToInactive])
+
+  const handleEditInstructionsClick = useCallback(() => {
+    if (isMobile) handleDesignClick()
+  }, [handleDesignClick, isMobile])
 
   return (
     <>
       <Box
         onPointerEnter={() => setHoverStartPage(true)}
         onPointerLeave={() => setHoverStartPage(false)}
-        onClick={onHeaderClick}
+        onClick={handleHeaderClick}
         role="button"
         cursor={hoverStartPage ? 'pointer' : 'initial'}
         {...(designState === DesignState.EditingHeader
           ? { border: '2px solid var(--chakra-colors-primary-500)' }
-          : { borderY: '2px solid transparent' })}
+          : {
+              borderTop: '2px solid var(--chakra-colors-neutral-200)',
+              borderBottom: '2px solid transparent',
+            })}
         borderRadius="4px"
       >
         {customLogoPending ? (
@@ -147,7 +173,13 @@ export const StartPageView = () => {
           }
         />
       </Box>
-      <Box mt="1.5rem">
+      <Flex
+        flexDir="column"
+        alignSelf="center"
+        w="100%"
+        px="2.5rem"
+        mt="1.5rem"
+      >
         {content ? (
           <Flex justify="center">
             <Box
@@ -157,11 +189,9 @@ export const StartPageView = () => {
               maxW="57rem"
               bg="white"
               py="2.5rem"
-              px={{ base: '1rem', md: '2.5rem' }}
-              mb="1.5rem"
+              px="1.5rem"
             >
               <Box
-                p={{ base: '0.75rem', md: '1.5rem' }}
                 transition="background 0.2s ease"
                 _hover={{ bg: 'secondary.100', cursor: 'pointer' }}
                 borderRadius="4px"
@@ -171,17 +201,46 @@ export const StartPageView = () => {
                       border: '2px solid var(--chakra-colors-primary-500)',
                     }
                   : { border: '2px solid white' })}
-                onClick={onInstructionsClick}
+                onClick={handleInstructionsClick}
               >
-                <FormInstructions
-                  content={content}
-                  colorTheme={startPage?.colorTheme}
-                />
+                <Box p={{ base: '0.75rem', md: '1.5rem' }}>
+                  <FormInstructions
+                    content={content}
+                    colorTheme={startPage?.colorTheme}
+                  />
+                </Box>
+                {isMobile ? (
+                  <Collapse
+                    in={designState === DesignState.EditingInstructions}
+                    style={{ width: '100%' }}
+                  >
+                    <Flex
+                      px={{ base: '0.75rem', md: '1.5rem' }}
+                      flex={1}
+                      borderTop="1px solid var(--chakra-colors-neutral-300)"
+                      justify="flex-end"
+                    >
+                      <ButtonGroup
+                        variant="clear"
+                        colorScheme="secondary"
+                        spacing={0}
+                      >
+                        <IconButton
+                          variant="clear"
+                          colorScheme="secondary"
+                          aria-label="Edit field"
+                          icon={<BiCog fontSize="1.25rem" />}
+                          onClick={handleEditInstructionsClick}
+                        />
+                      </ButtonGroup>
+                    </Flex>
+                  </Collapse>
+                ) : null}
               </Box>
             </Box>
           </Flex>
         ) : null}
-      </Box>
+      </Flex>
     </>
   )
 }

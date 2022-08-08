@@ -61,6 +61,11 @@ import {
   updateEditStateSelector,
   useBuilderAndDesignStore,
 } from '../../useBuilderAndDesignStore'
+import {
+  DesignState,
+  setStateSelector,
+  useDesignStore,
+} from '../../useDesignStore'
 import { useDesignColorTheme } from '../../utils/useDesignColorTheme'
 
 import { SectionFieldRow } from './SectionFieldRow'
@@ -89,6 +94,8 @@ export const FieldRowContainer = ({
         [],
       ),
     )
+
+  const setDesignState = useDesignStore(setStateSelector)
 
   const { handleBuilderClick } = useCreatePageSidebar()
 
@@ -146,13 +153,21 @@ export const FieldRowContainer = ({
   const handleFieldClick = useCallback(() => {
     if (!isActive) {
       updateEditState(field)
+      setDesignState(DesignState.Inactive)
       if (!isMobile) {
         // Do not open builder if in mobile so user can view active state without
         // drawer blocking the view.
         handleBuilderClick()
       }
     }
-  }, [isActive, updateEditState, field, isMobile, handleBuilderClick])
+  }, [
+    isActive,
+    updateEditState,
+    field,
+    setDesignState,
+    isMobile,
+    handleBuilderClick,
+  ])
 
   const handleKeydown = useCallback(
     (e: React.KeyboardEvent<HTMLDivElement>) => {

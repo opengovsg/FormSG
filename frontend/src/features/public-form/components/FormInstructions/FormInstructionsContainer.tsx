@@ -30,11 +30,7 @@ export const FormInstructionsContainer = (): JSX.Element | null => {
         px={{ base: '1rem', md: '2.5rem' }}
         mb="1.5rem"
       >
-        <Box
-          id="instructions"
-          ref={sectionRefs['instructions']}
-          p={{ base: '0.75rem', md: '1.5rem' }}
-        >
+        <Box id="instructions" ref={sectionRefs['instructions']}>
           <FormInstructions
             content={content}
             colorTheme={form?.startPage.colorTheme}
