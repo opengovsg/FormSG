@@ -146,19 +146,21 @@ export const TwilioDetailsInputs = (): JSX.Element => {
                 {...registerPropsOrDisabled('apiSecret')}
                 type={isApiSecretShown ? 'text' : 'password'}
               />
-              <InputRightElement>
-                <IconButton
-                  colorScheme="secondary"
-                  minH="auto"
-                  right="2px"
-                  variant="clear"
-                  aria-label={`${
-                    isApiSecretShown ? 'Hide' : 'Show'
-                  } API key secret`}
-                  icon={isApiSecretShown ? <BiHide /> : <BiShow />}
-                  onClick={toggleIsApiSecretShown}
-                ></IconButton>
-              </InputRightElement>
+              {!hasExistingTwilioCreds && (
+                <InputRightElement>
+                  <IconButton
+                    colorScheme="secondary"
+                    minH="auto"
+                    right="2px"
+                    variant="clear"
+                    aria-label={`${
+                      isApiSecretShown ? 'Hide' : 'Show'
+                    } API key secret`}
+                    icon={isApiSecretShown ? <BiHide /> : <BiShow />}
+                    onClick={toggleIsApiSecretShown}
+                  ></IconButton>
+                </InputRightElement>
+              )}
             </InputGroup>
           </Skeleton>
           <FormErrorMessage>{errors.apiSecret?.message}</FormErrorMessage>
