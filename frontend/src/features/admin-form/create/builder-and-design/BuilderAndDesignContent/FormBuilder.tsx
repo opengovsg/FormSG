@@ -59,14 +59,19 @@ export const FormBuilder = ({
         bg={bg}
       >
         <StartPageView />
-        <Flex flexDir="column" alignSelf="center" w="100%" px="2.5rem">
+        <Flex
+          flexDir="column"
+          alignSelf="center"
+          w="100%"
+          px={{ base: '0.5rem', md: '1.5rem', lg: '2.5rem' }}
+        >
           <Box
             bg="white"
             w="100%"
             maxW="57rem"
             alignSelf="center"
-            px="1.625rem"
-            py="2.5rem"
+            px={{ base: '0.5rem', md: '1.625rem' }}
+            py={{ base: '0.5rem', md: '2.5rem' }}
           >
             {isLoading || !builderFields ? (
               <FormBuilderFieldsSkeleton />
@@ -102,7 +107,11 @@ export const FormBuilder = ({
             )}
           </Box>
         </Flex>
-        <Flex justify="center" w="100%" px="2.5rem">
+        <Flex
+          justify="center"
+          w="100%"
+          px={{ base: '0.5rem', md: '1.5rem', lg: '2.5rem' }}
+        >
           <Skeleton isLoaded={!isLoading} mb="1.5rem" maxW="57rem" width="100%">
             <Button
               _hover={{ bg: 'primary.200' }}

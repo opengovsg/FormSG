@@ -113,7 +113,11 @@ export const StartPageView = () => {
         }
       />
       {startPage?.paragraph && (
-        <Box mt="1.5rem" mx="2.5rem" mb="-1.5rem">
+        <Box
+          mt="1.5rem"
+          px={{ base: '0.5rem', md: '1.5rem', lg: '2.5rem' }}
+          mb="-1.5rem"
+        >
           <FormInstructions
             content={startPage?.paragraph}
             colorTheme={startPage?.colorTheme}
