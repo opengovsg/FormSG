@@ -16,6 +16,7 @@ import {
 import { useDesignColorTheme } from '../utils/useDesignColorTheme'
 
 import { EmptyFormPlaceholder } from './BuilderAndDesignPlaceholder/EmptyFormPlaceholder'
+import { FormBuilderFieldsSkeleton } from './FormBuilder/FormBuilderFieldsSkeleton'
 import BuilderAndDesignPlaceholder from './BuilderAndDesignPlaceholder'
 import { BuilderFields } from './BuilderFields'
 import { StartPageView } from './StartPageView'
@@ -67,34 +68,38 @@ export const FormBuilder = ({
             px="1.625rem"
             py="2.5rem"
           >
-            <Droppable droppableId={FIELD_LIST_DROP_ID}>
-              {(provided, snapshot) =>
-                builderFields?.length ? (
-                  <Box
-                    pos="relative"
-                    ref={provided.innerRef}
-                    {...provided.droppableProps}
-                  >
-                    <BuilderFields
-                      fields={builderFields}
+            {isLoading || !builderFields ? (
+              <FormBuilderFieldsSkeleton />
+            ) : (
+              <Droppable droppableId={FIELD_LIST_DROP_ID}>
+                {(provided, snapshot) =>
+                  builderFields.length ? (
+                    <Box
+                      pos="relative"
+                      ref={provided.innerRef}
+                      {...provided.droppableProps}
+                    >
+                      <BuilderFields
+                        fields={builderFields}
+                        isDraggingOver={snapshot.isDraggingOver}
+                      />
+                      {provided.placeholder}
+                      <BuilderAndDesignPlaceholder
+                        placeholderProps={placeholderProps}
+                        isDraggingOver={snapshot.isDraggingOver}
+                      />
+                    </Box>
+                  ) : (
+                    <EmptyFormPlaceholder
+                      ref={provided.innerRef}
+                      {...provided.droppableProps}
                       isDraggingOver={snapshot.isDraggingOver}
+                      onClick={handleBuilderClick}
                     />
-                    {provided.placeholder}
-                    <BuilderAndDesignPlaceholder
-                      placeholderProps={placeholderProps}
-                      isDraggingOver={snapshot.isDraggingOver}
-                    />
-                  </Box>
-                ) : (
-                  <EmptyFormPlaceholder
-                    ref={provided.innerRef}
-                    {...provided.droppableProps}
-                    isDraggingOver={snapshot.isDraggingOver}
-                    onClick={handleBuilderClick}
-                  />
-                )
-              }
-            </Droppable>
+                  )
+                }
+              </Droppable>
+            )}
           </Box>
         </Flex>
         <Flex justify="center" w="100%" px="2.5rem">
