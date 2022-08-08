@@ -1,5 +1,6 @@
+import { useCallback } from 'react'
 import { Droppable } from 'react-beautiful-dnd'
-import { Box, Flex, FlexProps, Stack } from '@chakra-ui/react'
+import { Box, Flex, FlexProps, Skeleton, Stack } from '@chakra-ui/react'
 
 import Button from '~components/Button'
 
@@ -28,9 +29,14 @@ export const FormBuilder = ({
   placeholderProps,
   ...props
 }: FormBuilderProps): JSX.Element => {
-  const { builderFields } = useBuilderFields()
+  const { builderFields, isLoading } = useBuilderFields()
   const { handleBuilderClick } = useCreatePageSidebar()
   const setEditEndPage = useBuilderAndDesignStore(setToEditEndPageSelector)
+
+  const handleEditEndPageClick = useCallback(() => {
+    setEditEndPage()
+    handleBuilderClick()
+  }, [handleBuilderClick, setEditEndPage])
 
   const bg = useBgColor({ colorTheme: useDesignColorTheme() })
 
@@ -92,24 +98,21 @@ export const FormBuilder = ({
           </Box>
         </Flex>
         <Flex justify="center" w="100%" px="2.5rem">
-          <Button
-            _hover={{ bg: 'primary.200' }}
-            py="1.5rem"
-            mb="1.5rem"
-            variant="outline"
-            borderColor="secondary.200"
-            colorScheme="secondary"
-            height="auto"
-            maxW="57rem"
-            width="100%"
-            onClick={() => {
-              setEditEndPage()
-              handleBuilderClick()
-            }}
-            textStyle="subhead-2"
-          >
-            Customise Thank you page
-          </Button>
+          <Skeleton isLoaded={!isLoading} mb="1.5rem" maxW="57rem" width="100%">
+            <Button
+              _hover={{ bg: 'primary.200' }}
+              py="1.5rem"
+              width="100%"
+              variant="outline"
+              borderColor="secondary.200"
+              colorScheme="secondary"
+              height="auto"
+              onClick={handleEditEndPageClick}
+              textStyle="subhead-2"
+            >
+              Customise Thank you page
+            </Button>
+          </Skeleton>
         </Flex>
       </Stack>
     </Flex>
