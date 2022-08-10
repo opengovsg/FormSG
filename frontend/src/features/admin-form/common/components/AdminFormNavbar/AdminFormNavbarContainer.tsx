@@ -75,6 +75,7 @@ const useAdminFormNavbar = () => {
     handleBackToDashboard,
     handlePreviewForm,
     form,
+    formId,
     collaboratorModalDisclosure,
     shareFormModalDisclosure,
     viewOnly: !isLoading && !hasEditAccess,
@@ -93,6 +94,7 @@ export const AdminFormNavbarContainer = (): JSX.Element => {
     collaboratorModalDisclosure,
     shareFormModalDisclosure,
     form,
+    formId,
     viewOnly,
   } = useAdminFormNavbar()
 
@@ -107,6 +109,7 @@ export const AdminFormNavbarContainer = (): JSX.Element => {
       <CollaboratorModal
         isOpen={collaboratorModalDisclosure.isOpen}
         onClose={collaboratorModalDisclosure.onClose}
+        formId={formId}
       />
       <ShareFormModal
         isOpen={shareFormModalDisclosure.isOpen}

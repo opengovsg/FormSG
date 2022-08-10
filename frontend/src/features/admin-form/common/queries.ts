@@ -10,6 +10,7 @@ import { FORMID_REGEX } from '~constants/routes'
 
 import { useUser } from '~features/user/queries'
 
+import { useCollaboratorWizard } from './components/CollaboratorModal/CollaboratorWizardContext'
 import {
   getAdminFormView,
   getFormCollaborators,
@@ -39,8 +40,8 @@ export const useAdminForm = (
     ReturnType<typeof adminFormKeys.id>
   >,
 ): UseQueryResult<AdminFormDto, ApiError> => {
-  const { formId } = useParams()
-  if (!formId) throw new Error('No formId provided')
+  const { formId } = useCollaboratorWizard()
+  if (!formId) throw new Error('No formId provided to useAdminForm')
 
   return useQuery(
     adminFormKeys.id(formId),
@@ -51,7 +52,7 @@ export const useAdminForm = (
 
 export const useFreeSmsQuota = () => {
   const { formId } = useParams()
-  if (!formId) throw new Error('No formId provided')
+  if (!formId) throw new Error('No formId provided to useFreeSmsQuota')
 
   return useQuery(adminFormKeys.freeSmsCount(formId), () =>
     getFreeSmsQuota(formId),
@@ -59,8 +60,10 @@ export const useFreeSmsQuota = () => {
 }
 
 export const useAdminFormCollaborators = () => {
-  const { formId } = useParams()
-  if (!formId) throw new Error('No formId provided')
+  const { formId } = useCollaboratorWizard()
+  if (!formId)
+    throw new Error('No formId provided to useAdminFormCollaborators')
+  console.log(formId + ' received by useAdminFormCollaborators')
 
   const { user, isLoading: isUserLoading } = useUser()
   const { data: form, isLoading: isAdminFormLoading } = useAdminForm()
