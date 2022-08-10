@@ -10,7 +10,6 @@ import {
   FlexProps,
   HStack,
   Icon,
-  Text,
   useDisclosure,
 } from '@chakra-ui/react'
 
