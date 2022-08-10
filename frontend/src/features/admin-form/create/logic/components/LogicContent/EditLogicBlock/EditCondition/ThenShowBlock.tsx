@@ -95,22 +95,19 @@ export const ThenShowBlock = ({
     const filteredShowFields = showValueWatch.value.filter(
       (field) => field in mapIdToField,
     )
-    if (filteredShowFields.length === 0) {
-      resetField('show')
+    const deletedFieldsCount =
+      showValueWatch.value.length - filteredShowFields.length
+    if (deletedFieldsCount === 0) {
+      trigger('show')
+      return
+    }
+    setValue('show', filteredShowFields)
+    if (filteredShowFields.length === 0)
       setError('show', {
         type: 'manual',
         message: 'All fields were deleted. Please select other field(s).',
       })
-      return
-    }
-    const deletedFieldsCount =
-      showValueWatch.value.length - filteredShowFields.length
-    if (deletedFieldsCount > 0) {
-      setDeletedFieldsCount(deletedFieldsCount)
-      setValue('show', filteredShowFields)
-      return
-    }
-    trigger('show')
+    else setDeletedFieldsCount(deletedFieldsCount)
   }, [
     logicTypeValue,
     mapIdToField,
