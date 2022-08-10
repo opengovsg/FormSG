@@ -23,7 +23,7 @@ import Button, { ButtonProps } from '~components/Button'
 import IconButton from '~components/IconButton'
 
 import { RowActionsProps } from './RowActions'
-import { useRowActionDropdown } from './useRowActionDropdown'
+import { useRowAction } from './useRowAction'
 
 /**
  * Drawer variant of form actions. Most probably used only in mobile breakpoints.
@@ -41,7 +41,7 @@ export const RowActionsDrawer = ({
     handleManageFormAccess,
     handlePreviewForm,
     handleShareForm,
-  } = useRowActionDropdown(formMeta)
+  } = useRowAction(formMeta)
 
   const buttonProps: Partial<ButtonProps> = useMemo(
     () => ({

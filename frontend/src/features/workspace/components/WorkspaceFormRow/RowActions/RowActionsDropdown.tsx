@@ -14,7 +14,7 @@ import IconButton from '~components/IconButton'
 import Menu from '~components/Menu'
 
 import { RowActionsProps } from './RowActions'
-import { useRowActionDropdown } from './useRowActionDropdown'
+import { useRowAction } from './useRowAction'
 
 export const RowActionsDropdown = ({
   isDisabled,
@@ -27,7 +27,7 @@ export const RowActionsDropdown = ({
     handleDuplicateForm,
     handleManageFormAccess,
     handleShareForm,
-  } = useRowActionDropdown(formMeta)
+  } = useRowAction(formMeta)
 
   return (
     <Menu

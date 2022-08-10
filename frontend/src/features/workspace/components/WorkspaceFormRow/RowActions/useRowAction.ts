@@ -6,7 +6,7 @@ import { ADMINFORM_PREVIEW_ROUTE, ADMINFORM_ROUTE } from '~constants/routes'
 
 import { useWorkspaceRowsContext } from '../WorkspaceRowsContext'
 
-type UseRowActionDropdownReturn = {
+type UseRowActionReturn = {
   handleEditForm: () => void
   handlePreviewForm: () => void
   handleDuplicateForm: () => void
@@ -15,9 +15,9 @@ type UseRowActionDropdownReturn = {
   handleShareForm: () => void
 }
 
-export const useRowActionDropdown = (
+export const useRowAction = (
   formMeta: AdminDashboardFormMetaDto,
-): UseRowActionDropdownReturn => {
+): UseRowActionReturn => {
   const navigate = useNavigate()
 
   const { onOpenDupeFormModal, onOpenShareFormModal } =
