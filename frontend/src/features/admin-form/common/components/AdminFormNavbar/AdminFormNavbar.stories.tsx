@@ -3,7 +3,14 @@ import { Meta, Story } from '@storybook/react'
 
 import { DateString } from '~shared/types/generic'
 
+import { getMobileViewParameters } from '~utils/storybook'
+
 import { AdminFormNavbar, AdminFormNavbarProps } from './AdminFormNavbar'
+
+const MOCK_FORM: AdminFormNavbarProps['formInfo'] = {
+  title: 'Storybook Test Form',
+  lastModified: '2020-01-01T00:00:00.000Z' as DateString,
+} as const
 
 export default {
   title: 'Features/AdminForm/AdminFormNavbar',
@@ -25,25 +32,19 @@ export default {
   parameters: {
     layout: 'fullscreen',
   },
-} as Meta
-
-const mockForm = {
-  _id: '1',
-  title: 'Storybook Test Form',
-  lastModified: '2020-01-01T00:00:00.000Z' as DateString,
-} as AdminFormNavbarProps['formInfo']
+  args: {
+    formInfo: MOCK_FORM,
+  },
+} as Meta<AdminFormNavbarProps>
 
 const Template: Story<AdminFormNavbarProps> = (args) => (
   <AdminFormNavbar {...args} />
 )
 export const DefaultEditor = Template.bind({})
-DefaultEditor.args = {
-  formInfo: mockForm,
-}
 
 export const DefaultViewOnly = Template.bind({})
 DefaultViewOnly.args = {
-  formInfo: mockForm,
+  formInfo: MOCK_FORM,
   viewOnly: true,
 }
 
@@ -51,3 +52,17 @@ export const Skeleton = Template.bind({})
 Skeleton.args = {
   formInfo: undefined,
 }
+
+export const Mobile: Story<AdminFormNavbarProps> = (args) => (
+  <Tabs variant="line-dark">
+    <AdminFormNavbar {...args} />
+  </Tabs>
+)
+Mobile.args = {
+  formInfo: {
+    ...MOCK_FORM,
+    title:
+      'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+  },
+}
+Mobile.parameters = getMobileViewParameters()

@@ -5,10 +5,15 @@ import { FormColorTheme, FormStartPage } from '~shared/types'
 
 import { ThemeColorScheme } from '~theme/foundations/colours'
 
-export const getTitleBg = (colorTheme?: FormColorTheme) =>
-  colorTheme ? `theme-${colorTheme}.500` : `neutral.200`
+interface UseFormHeaderProps {
+  startPage?: FormStartPage
+  hover?: boolean
+}
 
-export const useFormHeader = (startPage?: FormStartPage) => {
+export const getTitleBg = (colorTheme?: FormColorTheme, hover?: boolean) =>
+  colorTheme ? `theme-${colorTheme}.${hover ? 6 : 5}00` : `neutral.200`
+
+export const useFormHeader = ({ startPage, hover }: UseFormHeaderProps) => {
   const titleColor = useMemo(() => {
     if (startPage?.colorTheme === FormColorTheme.Orange) {
       return 'secondary.700'
@@ -17,8 +22,8 @@ export const useFormHeader = (startPage?: FormStartPage) => {
   }, [startPage?.colorTheme])
 
   const titleBg = useMemo(
-    () => getTitleBg(startPage?.colorTheme),
-    [startPage?.colorTheme],
+    () => getTitleBg(startPage?.colorTheme, hover),
+    [hover, startPage?.colorTheme],
   )
 
   const estTimeString = useMemo(() => {

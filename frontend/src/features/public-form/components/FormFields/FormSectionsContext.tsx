@@ -9,11 +9,17 @@ import {
 } from 'react'
 import useScrollSpy from 'react-use-scrollspy'
 
-import { BasicField } from '~shared/types/field'
+import { BasicField, FormFieldDto } from '~shared/types'
 
+import { FieldIdSet } from '~features/logic/types'
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
+export type SidebarSectionMeta = Pick<FormFieldDto, 'title' | '_id'>
+
 interface FormSectionsContextProps {
+  /** Scroll data to allow form-fillers to scroll to a particular section. */
+  sectionScrollData: SidebarSectionMeta[]
+  setVisibleFieldIdsForScrollData: (visibleFieldIds: FieldIdSet) => void
   sectionRefs: Record<string, RefObject<HTMLDivElement>>
   activeSectionId?: string
   navigatedSectionTitle?: string
@@ -31,7 +37,29 @@ interface FormSectionsProviderProps {
 export const FormSectionsProvider = ({
   children,
 }: FormSectionsProviderProps): JSX.Element => {
-  const { form } = usePublicFormContext()
+  const { form, isAuthRequired } = usePublicFormContext()
+
+  const [visibleFieldIds, setVisibleFieldIds] = useState<FieldIdSet>()
+
+  const sectionScrollData = useMemo(() => {
+    if (!form || isAuthRequired) return []
+    const sections: SidebarSectionMeta[] = []
+    if (form.startPage.paragraph)
+      sections.push({
+        title: 'Instructions',
+        _id: 'instructions',
+      })
+    form.form_fields.forEach((f) => {
+      if (f.fieldType !== BasicField.Section || !visibleFieldIds?.has(f._id))
+        return
+      sections.push({
+        title: f.title,
+        _id: f._id,
+      })
+    })
+    return sections
+  }, [form, isAuthRequired, visibleFieldIds])
+
   const [sectionRefs, setSectionRefs] = useState<
     Record<string, RefObject<HTMLDivElement>>
   >({})
@@ -73,6 +101,8 @@ export const FormSectionsProvider = ({
   return (
     <FormSectionsContext.Provider
       value={{
+        sectionScrollData,
+        setVisibleFieldIdsForScrollData: setVisibleFieldIds,
         sectionRefs,
         activeSectionId: orderedSectionFieldIds?.[activeSection] ?? undefined,
         navigatedSectionTitle,

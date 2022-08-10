@@ -1,6 +1,4 @@
-import { useMemo } from 'react'
-import { Box, Flex, Spacer, Stack, useBreakpointValue } from '@chakra-ui/react'
-import { isEmpty } from 'lodash'
+import { Box, Flex, Stack } from '@chakra-ui/react'
 
 import { AppFooter } from '~/app/AppFooter'
 
@@ -12,18 +10,11 @@ import { useBgColor } from '../PublicFormWrapper'
  * @precondition Must be nested inside `PublicFormProvider`
  */
 export const FormFooter = (): JSX.Element => {
-  const { captchaContainerId, sectionScrollData, form } = usePublicFormContext()
-
-  const isDesktop = useBreakpointValue({ base: false, xs: false, lg: true })
+  const { captchaContainerId, form } = usePublicFormContext()
   const bgColor = useBgColor({
     colorTheme: form?.startPage.colorTheme,
     isFooter: true,
   })
-
-  const showSpacer = useMemo(
-    () => isDesktop && !isEmpty(sectionScrollData),
-    [isDesktop, sectionScrollData],
-  )
 
   return (
     <Flex justify="center" w="100%">
@@ -46,7 +37,6 @@ export const FormFooter = (): JSX.Element => {
           </Box>
         </Stack>
       </Box>
-      {showSpacer ? <Spacer /> : null}
     </Flex>
   )
 }
