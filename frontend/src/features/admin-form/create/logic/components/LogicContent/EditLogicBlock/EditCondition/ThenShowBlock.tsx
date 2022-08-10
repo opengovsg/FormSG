@@ -105,7 +105,7 @@ export const ThenShowBlock = ({
     if (filteredShowFields.length === 0)
       setError('show', {
         type: 'manual',
-        message: 'All fields were deleted. Please select other field(s).',
+        message: 'All fields were deleted, please select at least one field',
       })
     else setDeletedFieldsCount(deletedFieldsCount)
   }, [
@@ -126,13 +126,11 @@ export const ThenShowBlock = ({
       px={{ base: '1.5rem', md: '2rem' }}
     >
       {deletedFieldsCount ? (
-        <InlineMessage variant="info">
+        <InlineMessage variant="info" p={0}>
           <Text>
             <strong>{simplur`${deletedFieldsCount} Show field[|s]`}</strong>{' '}
-            {simplur`${[
-              deletedFieldsCount,
-            ]}[was|were] deleted. [It has|They have]`}{' '}
-            been removed from your logic.
+            {simplur`${[deletedFieldsCount]}[was|were] deleted, and [has|have]`}{' '}
+            been removed from your logic
           </Text>
         </InlineMessage>
       ) : null}

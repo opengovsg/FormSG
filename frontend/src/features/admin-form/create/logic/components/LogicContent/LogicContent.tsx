@@ -24,8 +24,8 @@ export const LogicContent = (): JSX.Element => {
     <Stack color="secondary.500" spacing="1rem">
       {hasError ? (
         <InlineMessage variant="error">
-          Your form's logic has errors. Please fix them before sharing your
-          form.
+          There are errors in your form's logic, please fix them before sharing
+          your form
         </InlineMessage>
       ) : null}
       <HeaderBlock />

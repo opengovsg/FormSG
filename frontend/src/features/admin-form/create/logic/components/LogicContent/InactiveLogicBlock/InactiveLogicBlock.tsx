@@ -48,10 +48,6 @@ export const InactiveLogicBlock = ({
         const allInvalid = logic.show.every(
           (fieldId) => !(fieldId in mapIdToField),
         )
-        const defaultsVariant = allInvalid ? 'error' : 'info'
-        const defaultsMessageEnd = allInvalid
-          ? '. Please select other fields.'
-          : ' and has been removed from your logic.'
         return (
           <>
             <Text>then show</Text>
@@ -61,8 +57,10 @@ export const InactiveLogicBlock = ({
                   key={index}
                   field={mapIdToField[fieldId]}
                   defaults={{
-                    variant: defaultsVariant,
-                    message: `This field was deleted${defaultsMessageEnd}`,
+                    variant: allInvalid ? 'error' : 'info',
+                    message: allInvalid
+                      ? 'All fields were deleted, please select at least one field'
+                      : 'This field was deleted and has been removed from your logic',
                   }}
                 />
               ))}
@@ -134,7 +132,7 @@ export const InactiveLogicBlock = ({
                   defaults={{
                     variant: 'error',
                     message:
-                      'This field was deleted. Please select another field.',
+                      'This field was deleted, please select another field',
                   }}
                 />
               </Stack>
