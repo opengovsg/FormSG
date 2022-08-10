@@ -1,11 +1,14 @@
+import { useMemo } from 'react'
 import { Droppable } from 'react-beautiful-dnd'
 import { Box, Flex, FlexProps, Stack } from '@chakra-ui/react'
 
 import Button from '~components/Button'
 
+import { getVisibleFieldIds } from '~features/logic/utils'
 import { useBgColor } from '~features/public-form/components/PublicFormWrapper'
 
 import { useCreatePageSidebar } from '../../common/CreatePageSidebarContext'
+import { useAdminFormLogic } from '../../logic/hooks/useAdminFormLogic'
 import { FIELD_LIST_DROP_ID } from '../constants'
 import { DndPlaceholderProps } from '../types'
 import {
@@ -29,8 +32,17 @@ export const FormBuilder = ({
   ...props
 }: FormBuilderProps): JSX.Element => {
   const { builderFields } = useBuilderFields()
+  const { formLogics } = useAdminFormLogic()
   const { handleBuilderClick } = useCreatePageSidebar()
   const setEditEndPage = useBuilderAndDesignStore(setToEditEndPageSelector)
+  const visibleFieldIds = useMemo(
+    () =>
+      getVisibleFieldIds(
+        {}, // Assume form has no inputs yet.
+        { formFields: builderFields ?? [], formLogics: formLogics ?? [] },
+      ),
+    [builderFields, formLogics],
+  )
 
   const bg = useBgColor({ colorTheme: useDesignColorTheme() })
 
@@ -71,6 +83,7 @@ export const FormBuilder = ({
                   >
                     <BuilderFields
                       fields={builderFields}
+                      visibleFieldIds={visibleFieldIds}
                       isDraggingOver={snapshot.isDraggingOver}
                     />
                     {provided.placeholder}
