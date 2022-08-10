@@ -96,7 +96,8 @@ export const AdminFormNavbar = ({
     >
       <GridItem
         display="flex"
-        flex={1}
+        flex="1 1 0"
+        overflow="hidden"
         alignItems="center"
         gridArea="left"
         py="0.625rem"

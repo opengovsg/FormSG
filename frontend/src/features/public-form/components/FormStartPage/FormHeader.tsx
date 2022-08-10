@@ -59,11 +59,18 @@ export const MiniHeader = ({
           justify="space-between"
           flexDir="row"
         >
-          <Flex alignItems="center" minH={{ base: '4rem', md: '0' }}>
+          <Flex
+            alignItems="center"
+            minH={{ base: '4rem', md: '0' }}
+            flex="1 1 0"
+            w="100%"
+            overflow="hidden"
+          >
             <Text
               textStyle={{ base: 'h4', md: 'h2' }}
               textAlign="start"
               color={titleColor}
+              noOfLines={2}
             >
               {title ?? 'Loading title'}
             </Text>
@@ -149,6 +156,7 @@ export const FormHeader = ({
         transition="background 0.2s ease"
         px={{ base: '1.5rem', md: '3rem' }}
         py={{ base: '2rem', md: '3rem' }}
+        wordBreak="break-word"
         justify="center"
         bg={titleBg}
       >
