@@ -18,7 +18,6 @@ import Pagination from '~components/Pagination'
 
 import { RolloutAnnouncementModal } from '~features/rollout-announcement/RolloutAnnouncementModal'
 import { useUser } from '~features/user/queries'
-import { WhatsNewDrawer } from '~features/whats-new/WhatsNewDrawer'
 
 // TODO #4279: Remove after React rollout is complete
 import { AdminSwitchEnvMessage } from './components/AdminSwitchEnvMessage'
