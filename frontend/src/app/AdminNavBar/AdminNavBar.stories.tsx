@@ -79,3 +79,17 @@ WhatsNewFeatureNotificationNotShown.parameters = {
     }),
   ],
 }
+
+export const WhatsNewFeatureMobileNotificationShown = Template.bind({})
+WhatsNewFeatureMobileNotificationShown.parameters = {
+  ...Mobile.parameters,
+  msw: [
+    getUser({
+      delay: 0,
+      mockUser: {
+        ...MOCK_USER,
+        flags: {},
+      },
+    }),
+  ],
+}

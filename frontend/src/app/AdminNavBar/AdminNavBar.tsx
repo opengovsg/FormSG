@@ -105,12 +105,23 @@ const WhatsNewNavBarTab = ({
 
   if (isMobile && MobileIcon) {
     return (
-      <IconButton
-        variant="clear"
-        as="a"
-        aria-label={label}
-        icon={<MobileIcon fontSize="1.25rem" color="primary.500" />}
-      />
+      <Box position="relative">
+        <IconButton
+          variant="clear"
+          as="a"
+          aria-label={label}
+          icon={<MobileIcon fontSize="1.25rem" color="primary.500" />}
+          onClick={onClick}
+        />
+        {shouldShowNotiifcation && (
+          <Icon
+            as={GoPrimitiveDot}
+            color="danger.500"
+            position="absolute"
+            ml="-15px"
+          />
+        )}
+      </Box>
     )
   }
 
