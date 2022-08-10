@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import {
   BiDotsHorizontalRounded,
+  BiHelpCircle,
   BiLeftArrowAlt,
   BiShareAlt,
   BiShow,
@@ -22,6 +23,7 @@ import {
 
 import { AdminFormDto } from '~shared/types/form/form'
 
+import { FORM_GUIDE } from '~constants/links'
 import { useDraggable } from '~hooks/useDraggable'
 import Button, { ButtonProps } from '~components/Button'
 import IconButton from '~components/IconButton'
@@ -37,6 +39,8 @@ export interface AdminFormNavbarProps {
    */
   formInfo?: Pick<AdminFormDto, 'title' | 'lastModified'>
 
+  viewOnly: boolean
+
   handleBackButtonClick: () => void
   handleAddCollabButtonClick: () => void
   handlePreviewFormButtonClick: () => void
@@ -48,6 +52,7 @@ export interface AdminFormNavbarProps {
  */
 export const AdminFormNavbar = ({
   formInfo,
+  viewOnly,
   handleAddCollabButtonClick,
   handleBackButtonClick,
   handlePreviewFormButtonClick,
@@ -122,8 +127,12 @@ export const AdminFormNavbar = ({
         justifyContent={{ base: 'flex-start', lg: 'center' }}
         alignSelf="center"
       >
-        <Tab isDisabled={!formInfo}>Create</Tab>
-        <Tab isDisabled={!formInfo}>Settings</Tab>
+        <Tab hidden={viewOnly} isDisabled={!formInfo}>
+          Create
+        </Tab>
+        <Tab hidden={viewOnly} isDisabled={!formInfo}>
+          Settings
+        </Tab>
         <Tab isDisabled={!formInfo}>Results</Tab>
       </TabList>
       <Flex
@@ -143,6 +152,17 @@ export const AdminFormNavbar = ({
         />
         <Box display={{ base: 'none', md: 'flex' }}>
           <ButtonGroup spacing="0.5rem" isDisabled={!formInfo}>
+            <Tooltip label="Help">
+              <IconButton
+                aria-label="Help"
+                variant="outline"
+                onClick={(e) => {
+                  e.preventDefault()
+                  window.open(FORM_GUIDE)
+                }}
+                icon={<BiHelpCircle />}
+              />
+            </Tooltip>
             <Tooltip label="Manage collaborators">
               <IconButton
                 aria-label="Manage collaborators"

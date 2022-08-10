@@ -40,7 +40,13 @@ export default {
 const Template: Story<AdminFormNavbarProps> = (args) => (
   <AdminFormNavbar {...args} />
 )
-export const Default = Template.bind({})
+export const DefaultEditor = Template.bind({})
+
+export const DefaultViewOnly = Template.bind({})
+DefaultViewOnly.args = {
+  formInfo: MOCK_FORM,
+  viewOnly: true,
+}
 
 export const Skeleton = Template.bind({})
 Skeleton.args = {

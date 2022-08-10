@@ -13,6 +13,7 @@ import {
 
 import { BxMenuAltLeft } from '~assets/icons/BxMenuAltLeft'
 import { BxsTimeFive } from '~assets/icons/BxsTimeFive'
+import { ThemeColorScheme } from '~theme/foundations/colours'
 import Button from '~components/Button'
 import IconButton from '~components/IconButton'
 
@@ -24,6 +25,7 @@ export type MiniHeaderProps = Pick<
   | 'activeSectionId'
   | 'miniHeaderRef'
   | 'onMobileDrawerOpen'
+  | 'colorScheme'
 > & { isOpen: boolean }
 
 export const MiniHeader = ({
@@ -33,6 +35,7 @@ export const MiniHeader = ({
   activeSectionId,
   miniHeaderRef,
   onMobileDrawerOpen,
+  colorScheme,
   isOpen,
 }: MiniHeaderProps): JSX.Element => (
   <Slide
@@ -75,8 +78,7 @@ export const MiniHeader = ({
           {activeSectionId ? (
             // Section sidebar icon should only show up if sections exist
             <IconButton
-              variant="solid"
-              colorScheme="primary"
+              colorScheme={colorScheme}
               aria-label="Mobile section sidebar"
               fontSize="1.5rem"
               icon={<BxMenuAltLeft />}
@@ -95,6 +97,7 @@ interface FormHeaderProps {
   estTimeString: string
   titleBg: string
   titleColor: string
+  colorScheme?: ThemeColorScheme
   showHeader?: boolean
   loggedInId?: string
   showMiniHeader?: boolean
@@ -109,6 +112,7 @@ export const FormHeader = ({
   estTimeString,
   titleBg,
   titleColor,
+  colorScheme,
   showHeader,
   loggedInId,
   showMiniHeader,
@@ -141,6 +145,7 @@ export const FormHeader = ({
           title={title}
           titleBg={titleBg}
           titleColor={titleColor}
+          colorScheme={colorScheme}
           activeSectionId={activeSectionId}
           miniHeaderRef={miniHeaderRef}
           onMobileDrawerOpen={onMobileDrawerOpen}
@@ -148,6 +153,7 @@ export const FormHeader = ({
         />
       ) : null}
       <Flex
+        transition="background 0.2s ease"
         px={{ base: '1.5rem', md: '3rem' }}
         py={{ base: '2rem', md: '3rem' }}
         wordBreak="break-word"
@@ -180,6 +186,7 @@ export const FormHeader = ({
           {loggedInId ? (
             <Button
               mt="2.25rem"
+              colorScheme={colorScheme}
               variant="reverse"
               aria-label="Log out"
               rightIcon={<BiLogOutCircle fontSize="1.5rem" />}

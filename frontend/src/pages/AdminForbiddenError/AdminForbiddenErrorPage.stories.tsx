@@ -36,13 +36,15 @@ export const WithMessage = Template.bind({})
 WithMessage.args = {
   message: 'You are not authorized to access this page.',
 }
+WithMessage.decorators = [LoggedInDecorator]
 
 export const MobileNotLoggedIn = Template.bind({})
 MobileNotLoggedIn.parameters = getMobileViewParameters()
+MobileNotLoggedIn.decorators = NotLoggedIn.decorators
 
 export const LoggedIn = Template.bind({})
 LoggedIn.decorators = [LoggedInDecorator]
 
 export const MobileLoggedIn = Template.bind({})
 MobileLoggedIn.parameters = getMobileViewParameters()
-MobileLoggedIn.decorators = [LoggedInDecorator]
+MobileLoggedIn.decorators = LoggedIn.decorators

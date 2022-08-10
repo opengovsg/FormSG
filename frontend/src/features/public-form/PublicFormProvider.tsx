@@ -1,4 +1,11 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import { Helmet } from 'react-helmet-async'
 import { SubmitHandler } from 'react-hook-form'
 import { Text, useDisclosure } from '@chakra-ui/react'
@@ -7,7 +14,6 @@ import { isEqual } from 'lodash'
 import get from 'lodash/get'
 import simplur from 'simplur'
 
-import { BasicField } from '~shared/types'
 import {
   FormAuthType,
   FormResponseMode,
@@ -34,12 +40,8 @@ import {
 } from '~features/verifiable-fields'
 
 import { FormNotFound } from './components/FormNotFound'
-import { usePublicFormMutations } from './mutations'
-import {
-  PublicFormContext,
-  SidebarSectionMeta,
-  SubmissionData,
-} from './PublicFormContext'
+import { usePublicAuthMutations, usePublicFormMutations } from './mutations'
+import { PublicFormContext, SubmissionData } from './PublicFormContext'
 import { usePublicFormView } from './queries'
 
 interface PublicFormProviderProps {
@@ -61,7 +63,6 @@ export function useCommonFormProvider(formId: string) {
   const { createTransactionMutation } = useTransactionMutations(formId)
   const toast = useToast({ isClosable: true })
   const vfnToastIdRef = useRef<string | number>()
-  const desyncToastIdRef = useRef<string | number>()
 
   const getTransactionId = useCallback(async () => {
     if (!vfnTransaction || isPast(vfnTransaction.expireAt)) {
@@ -91,7 +92,6 @@ export function useCommonFormProvider(formId: string) {
     isNotFormId,
     toast,
     showErrorToast,
-    desyncToastIdRef,
     vfnToastIdRef,
     expiryInMs,
     miniHeaderRef,
@@ -115,6 +115,13 @@ export const PublicFormProvider = ({
     /* enabled= */ !submissionData,
   )
 
+  // Scroll to top of page when user has finished their submission.
+  useLayoutEffect(() => {
+    if (submissionData) {
+      window.scrollTo(0, 0)
+    }
+  }, [submissionData])
+
   const { data: { captchaPublicKey } = {} } = useEnv(
     /* enabled= */ !!data?.form.hasCaptcha,
   )
@@ -123,12 +130,12 @@ export const PublicFormProvider = ({
   })
 
   const [cachedDto, setCachedDto] = useState<PublicFormViewDto>()
+  const desyncToastIdRef = useRef<string | number>()
 
   const {
     isNotFormId,
     toast,
     showErrorToast,
-    desyncToastIdRef,
     vfnToastIdRef,
     expiryInMs,
     ...commonFormValues
@@ -189,6 +196,8 @@ export const PublicFormProvider = ({
 
   const { submitEmailModeFormMutation, submitStorageModeFormMutation } =
     usePublicFormMutations(formId, submissionData?.id ?? '')
+
+  const { handleLogoutMutation } = usePublicAuthMutations(formId)
 
   const handleSubmitForm: SubmitHandler<FormFieldValues> = useCallback(
     async (formInputs) => {
@@ -261,6 +270,11 @@ export const PublicFormProvider = ({
 
   useTimeout(generateVfnExpiryToast, expiryInMs)
 
+  const handleLogout = useCallback(() => {
+    if (!cachedDto?.form || cachedDto.form.authType === FormAuthType.NIL) return
+    return handleLogoutMutation.mutate(cachedDto.form.authType)
+  }, [cachedDto?.form, handleLogoutMutation])
+
   const isAuthRequired = useMemo(
     () =>
       !!cachedDto?.form &&
@@ -268,27 +282,6 @@ export const PublicFormProvider = ({
       !cachedDto.spcpSession,
     [cachedDto?.form, cachedDto?.spcpSession],
   )
-
-  const sectionScrollData = useMemo(() => {
-    const { form } = cachedDto ?? {}
-    if (!form || isAuthRequired) {
-      return []
-    }
-    const sections: SidebarSectionMeta[] = []
-    if (form.startPage.paragraph)
-      sections.push({
-        title: 'Instructions',
-        _id: 'instructions',
-      })
-    form.form_fields.forEach((f) => {
-      if (f.fieldType !== BasicField.Section) return
-      sections.push({
-        title: f.title,
-        _id: f._id,
-      })
-    })
-    return sections
-  }, [cachedDto, isAuthRequired])
 
   if (isNotFormId) {
     return <NotFoundErrorPage />
@@ -298,10 +291,10 @@ export const PublicFormProvider = ({
     <PublicFormContext.Provider
       value={{
         handleSubmitForm,
+        handleLogout,
         formId,
         error,
         submissionData,
-        sectionScrollData,
         isAuthRequired,
         captchaContainerId: containerId,
         expiryInMs,
