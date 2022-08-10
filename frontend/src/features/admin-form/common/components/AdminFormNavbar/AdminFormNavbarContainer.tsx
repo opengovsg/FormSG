@@ -15,7 +15,7 @@ import {
 
 import { ShareFormModal } from '~features/admin-form/share'
 
-import { useAdminForm } from '../../queries'
+import { useAdminForm, useAdminFormCollaborators } from '../../queries'
 import CollaboratorModal from '../CollaboratorModal'
 
 import { AdminFormNavbar } from './AdminFormNavbar'
@@ -30,6 +30,7 @@ const useAdminFormNavbar = () => {
   const { data: form } = useAdminForm()
   const { pathname } = useLocation()
   const { formId } = useParams()
+  const { hasEditAccess, isLoading } = useAdminFormCollaborators()
   const navigate = useNavigate()
 
   const calcCurrentIndex = useCallback(() => {
@@ -76,6 +77,7 @@ const useAdminFormNavbar = () => {
     form,
     collaboratorModalDisclosure,
     shareFormModalDisclosure,
+    viewOnly: !isLoading && !hasEditAccess,
   }
 }
 
@@ -91,6 +93,7 @@ export const AdminFormNavbarContainer = (): JSX.Element => {
     collaboratorModalDisclosure,
     shareFormModalDisclosure,
     form,
+    viewOnly,
   } = useAdminFormNavbar()
 
   const responsiveVariant = useBreakpointValue({
@@ -120,6 +123,7 @@ export const AdminFormNavbarContainer = (): JSX.Element => {
       >
         <AdminFormNavbar
           formInfo={form}
+          viewOnly={viewOnly}
           handleBackButtonClick={handleBackToDashboard}
           handleAddCollabButtonClick={collaboratorModalDisclosure.onOpen}
           handlePreviewFormButtonClick={handlePreviewForm}
