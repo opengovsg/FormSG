@@ -19,7 +19,7 @@ export type SidebarSectionMeta = Pick<FormFieldDto, 'title' | '_id'>
 interface FormSectionsContextProps {
   /** Scroll data to allow form-fillers to scroll to a particular section. */
   sectionScrollData: SidebarSectionMeta[]
-  updateSectionScrollData: (visibleFieldIds: FieldIdSet) => void
+  setVisibleFieldIdsForScrollData: (visibleFieldIds: FieldIdSet) => void
   sectionRefs: Record<string, RefObject<HTMLDivElement>>
   activeSectionId?: string
   navigatedSectionTitle?: string
@@ -102,7 +102,7 @@ export const FormSectionsProvider = ({
     <FormSectionsContext.Provider
       value={{
         sectionScrollData,
-        updateSectionScrollData: setVisibleFieldIds,
+        setVisibleFieldIdsForScrollData: setVisibleFieldIds,
         sectionRefs,
         activeSectionId: orderedSectionFieldIds?.[activeSection] ?? undefined,
         navigatedSectionTitle,
