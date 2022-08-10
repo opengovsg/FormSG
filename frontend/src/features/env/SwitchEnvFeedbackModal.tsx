@@ -134,9 +134,14 @@ export const SwitchEnvFeedbackModal = ({
                   <Input type="hidden" {...register('url')} value={url} />
                 </FormControl>
                 <FormControl>
-                  <FormLabel>
-                    Please tell us what we can improve, before you switch to the
-                    original one.
+                  <FormLabel
+                    description={
+                      user
+                        ? ''
+                        : 'Any fields you’ve filled in your form so far will be cleared'
+                    }
+                  >
+                    Please tell us what we can improve on.
                   </FormLabel>
                   <Textarea {...register('feedback')} tabIndex={1} />
                 </FormControl>
@@ -148,10 +153,7 @@ export const SwitchEnvFeedbackModal = ({
                       value={user.email}
                     />
                   ) : (
-                    <>
-                      <FormLabel>What's your email?</FormLabel>
-                      <Input {...register('email')} />
-                    </>
+                    <></>
                   )}
                 </FormControl>
               </Stack>
