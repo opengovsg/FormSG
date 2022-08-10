@@ -146,6 +146,7 @@ export const FormHeader = ({
         />
       ) : null}
       <Flex
+        transition="background 0.2s ease"
         px={{ base: '1.5rem', md: '3rem' }}
         py={{ base: '2rem', md: '3rem' }}
         justify="center"

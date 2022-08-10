@@ -15,6 +15,11 @@ import {
   setToInactiveSelector,
   useBuilderAndDesignStore,
 } from '../../builder-and-design/useBuilderAndDesignStore'
+import {
+  DesignState,
+  setStateSelector,
+  useDesignStore,
+} from '../../builder-and-design/useDesignStore'
 
 export enum DrawerTabs {
   Builder,
@@ -56,6 +61,7 @@ export const useCreatePageSidebarContext =
       [activeTab],
     )
     const setFieldsToInactive = useBuilderAndDesignStore(setToInactiveSelector)
+    const setDesignState = useDesignStore(setStateSelector)
 
     const [fieldListTabIndex, setFieldListTabIndex] =
       useState<FieldListTabIndex>(FieldListTabIndex.Basic)
@@ -66,6 +72,10 @@ export const useCreatePageSidebarContext =
         setFieldsToInactive()
       }
     }, [activeTab, setFieldsToInactive])
+
+    useEffect(() => {
+      if (activeTab !== DrawerTabs.Design) setDesignState(DesignState.Inactive)
+    }, [activeTab, setDesignState])
 
     const handleBuilderClick = useCallback(
       () => setActiveTab(DrawerTabs.Builder),
