@@ -26,4 +26,7 @@ export type ClientEnvVars = {
   myInfoBannerContent: string // MyInfo maintenance message
   GATrackingID: string | null
   spcpCookieDomain: string // Cookie domain used for removing spcp cookies
+  respondentRolloutEmail: number
+  respondentRolloutStorage: number
+  adminRollout: number
 }
