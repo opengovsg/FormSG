@@ -40,6 +40,7 @@ export const ThenShowBlock = ({
     resetField,
     setError,
     control,
+    trigger,
   } = formMethods
 
   const logicTypeValue = watch('logicType')
@@ -87,7 +88,7 @@ export const ThenShowBlock = ({
   useEffect(() => {
     if (
       logicTypeValue !== LogicType.ShowFields ||
-      !showValueWatch.value ||
+      !showValueWatch.value?.length ||
       !mapIdToField
     )
       return
@@ -109,6 +110,7 @@ export const ThenShowBlock = ({
       setValue('show', filteredShowFields)
       return
     }
+    trigger('show')
   }, [
     logicTypeValue,
     mapIdToField,
@@ -116,6 +118,7 @@ export const ThenShowBlock = ({
     setError,
     setValue,
     showValueWatch.value,
+    trigger,
   ])
 
   return (

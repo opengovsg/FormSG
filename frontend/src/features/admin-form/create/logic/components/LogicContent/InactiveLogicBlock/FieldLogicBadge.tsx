@@ -29,36 +29,30 @@ export const FieldLogicBadge = ({
     [field],
   )
 
+  const textColor = useMemo(() => {
+    if (fieldMeta) return undefined
+    switch (defaults.variant) {
+      case 'error':
+        return 'danger.500'
+      case 'info':
+        return 'primary.500'
+    }
+  }, [defaults.variant, fieldMeta])
+
   const tooltipLabel = useMemo(
     () => (!fieldMeta ? defaults.message : `${fieldMeta.label} field`),
     [fieldMeta, defaults.message],
   )
 
-  const errorIcon = useMemo(() => {
+  const tooltipIcon = useMemo(() => {
+    if (fieldMeta) return fieldMeta.icon
     switch (defaults.variant) {
       case 'error':
-        return <Icon as={BxsErrorCircle} fontSize="1rem" color="danger.500" />
+        return BxsErrorCircle
       case 'info':
-        return <Icon as={BxsInfoCircle} fontSize="1rem" color="primary.500" />
+        return BxsInfoCircle
     }
-  }, [defaults.variant])
-
-  const errorText = useMemo(() => {
-    switch (defaults.variant) {
-      case 'error':
-        return (
-          <Text textColor="danger.500" noOfLines={1}>
-            {defaults.message}
-          </Text>
-        )
-      case 'info':
-        return (
-          <Text textColor="primary.500" noOfLines={1}>
-            {defaults.message}
-          </Text>
-        )
-    }
-  }, [defaults])
+  }, [defaults.variant, fieldMeta])
 
   return (
     <LogicBadge display="inline-flex">
@@ -68,7 +62,7 @@ export const FieldLogicBadge = ({
           label={tooltipLabel}
           wrapperStyles={{ display: 'flex' }}
         >
-          {fieldMeta ? <Icon as={fieldMeta.icon} fontSize="1rem" /> : errorIcon}
+          <Icon as={tooltipIcon} fontSize="1rem" color={textColor} />
         </Tooltip>
         {field ? (
           <>
@@ -76,7 +70,9 @@ export const FieldLogicBadge = ({
             <Text noOfLines={1}>{field.title}</Text>
           </>
         ) : (
-          errorText
+          <Text textColor={textColor} noOfLines={1}>
+            {defaults.message}
+          </Text>
         )}
       </Stack>
     </LogicBadge>
