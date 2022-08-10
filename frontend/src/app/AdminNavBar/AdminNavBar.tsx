@@ -92,7 +92,7 @@ const AdminNavBarLink = ({ MobileIcon, href, label }: AdminNavBarLinkProps) => {
 interface WhatsNewNavBarTabProps {
   onClick: () => void
   label: string
-  shoudlShowNotiifcation: boolean
+  shouldShowNotiifcation: boolean
   MobileIcon?: As
 }
 
@@ -100,7 +100,7 @@ const WhatsNewNavBarTab = ({
   onClick,
   label,
   MobileIcon,
-  shoudlShowNotiifcation,
+  shouldShowNotiifcation,
 }: WhatsNewNavBarTabProps) => {
   const isMobile = useIsMobile()
 
@@ -127,7 +127,7 @@ const WhatsNewNavBarTab = ({
       >
         {label}
       </Button>
-      {shoudlShowNotiifcation && (
+      {shouldShowNotiifcation && (
         <Icon
           as={GoPrimitiveDot}
           color="danger.500"
