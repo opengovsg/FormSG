@@ -224,7 +224,7 @@ export const AdminNavBar = ({ isMenuOpen }: AdminNavBarProps): JSX.Element => {
             label={WHATS_NEW_LABEL}
             onClick={onWhatsNewDrawerOpen}
             MobileIcon={BxsRocket}
-            shoudlShowNotiifcation={shouldShowFeatureUpdateNotification}
+            shouldShowNotiifcation={shouldShowFeatureUpdateNotification}
           />
           <AvatarMenu
             name={user?.email}
