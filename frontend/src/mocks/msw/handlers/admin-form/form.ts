@@ -11,7 +11,12 @@ import {
   RatingShape,
   TableFieldDto,
 } from '~shared/types/field'
-import { FormLogic } from '~shared/types/form'
+import {
+  FormLogic,
+  LogicConditionState,
+  LogicIfValue,
+  LogicType,
+} from '~shared/types/form'
 import {
   AdminFormDto,
   AdminFormViewDto,
@@ -544,6 +549,25 @@ export const MOCK_PREFILLED_MYINFO_FIELDS = MOCK_MYINFO_FIELDS.map(
 export const MOCK_FORM_FIELDS_WITH_MYINFO = [
   ...MOCK_FORM_FIELDS,
   ...MOCK_MYINFO_FIELDS,
+]
+
+export const MOCK_FORM_LOGICS = [
+  // Note: this logic is actually invalid since the if field cannot be a show
+  // field at the same time. But it's fine just for the purposes of displaying
+  // the hidden view.
+  {
+    show: MOCK_FORM_FIELDS_WITH_MYINFO.map((f) => f._id),
+    _id: '620115f74ad4f00012900a8c',
+    logicType: LogicType.ShowFields as const,
+    conditions: [
+      {
+        ifValueType: LogicIfValue.SingleSelect,
+        field: '5da04eb5e397fc0013f63c7e',
+        state: LogicConditionState.Equal,
+        value: 'Yes',
+      },
+    ],
+  },
 ]
 
 export const createMockForm = (
