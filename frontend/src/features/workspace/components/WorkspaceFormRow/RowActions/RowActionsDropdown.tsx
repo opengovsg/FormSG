@@ -25,7 +25,7 @@ export const RowActionsDropdown = ({
     handlePreviewForm,
     handleDeleteForm,
     handleDuplicateForm,
-    handleManageFormAccess,
+    handleCollaborators,
     handleShareForm,
   } = useRowAction(formMeta)
 
@@ -75,10 +75,10 @@ export const RowActionsDropdown = ({
               Share form
             </Menu.Item>
             <Menu.Item
-              onClick={handleManageFormAccess}
+              onClick={handleCollaborators}
               icon={<BiUserPlus fontSize="1.25rem" />}
             >
-              Manage form access
+              Manage form admins
             </Menu.Item>
             <MenuDivider />
             <Menu.Item

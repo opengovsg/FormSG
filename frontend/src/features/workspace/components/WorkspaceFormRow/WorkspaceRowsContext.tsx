@@ -6,6 +6,7 @@ import { useDisclosure } from '@chakra-ui/react'
 
 import { AdminDashboardFormMetaDto, FormStatus } from '~shared/types'
 
+import CollaboratorModal from '~features/admin-form/common/components/CollaboratorModal'
 import { ShareFormModal } from '~features/admin-form/share'
 
 import { DuplicateFormModal } from '../DuplicateFormModal'
@@ -15,6 +16,7 @@ interface WorkspaceRowsContextReturn {
   onOpenDupeFormModal: (meta?: AdminDashboardFormMetaDto) => void
   onCloseDupeFormModal: () => void
   onOpenShareFormModal: (meta?: AdminDashboardFormMetaDto) => void
+  onOpenCollabModal: (meta?: AdminDashboardFormMetaDto) => void
 }
 
 const WorkspaceRowsContext = createContext<WorkspaceRowsContextReturn | null>(
@@ -31,6 +33,7 @@ export const WorkspaceRowsProvider = ({
 
   const dupeFormModalDisclosure = useDisclosure()
   const shareFormModalDisclosure = useDisclosure()
+  const collabModalDisclosure = useDisclosure()
 
   const onOpenDupeFormModal = (meta?: AdminDashboardFormMetaDto) => {
     setActiveFormMeta(meta)
@@ -46,6 +49,13 @@ export const WorkspaceRowsProvider = ({
     }
   }
 
+  const onOpenCollabModal = (meta?: AdminDashboardFormMetaDto) => {
+    setActiveFormMeta(meta)
+    if (meta) {
+      collabModalDisclosure.onOpen()
+    }
+  }
+
   return (
     <WorkspaceRowsContext.Provider
       value={{
@@ -53,6 +63,7 @@ export const WorkspaceRowsProvider = ({
         onOpenDupeFormModal,
         onOpenShareFormModal,
         onCloseDupeFormModal: dupeFormModalDisclosure.onClose,
+        onOpenCollabModal,
       }}
     >
       <DuplicateFormModal
@@ -64,6 +75,11 @@ export const WorkspaceRowsProvider = ({
         formId={activeFormMeta?._id}
         onClose={shareFormModalDisclosure.onClose}
         isFormPrivate={activeFormMeta?.status === FormStatus.Private}
+      />
+      <CollaboratorModal
+        isOpen={collabModalDisclosure.isOpen}
+        formId={activeFormMeta?._id}
+        onClose={collabModalDisclosure.onClose}
       />
       {children}
     </WorkspaceRowsContext.Provider>

@@ -10,7 +10,7 @@ type UseRowActionReturn = {
   handleEditForm: () => void
   handlePreviewForm: () => void
   handleDuplicateForm: () => void
-  handleManageFormAccess: () => void
+  handleCollaborators: () => void
   handleDeleteForm: () => void
   handleShareForm: () => void
 }
@@ -20,7 +20,7 @@ export const useRowAction = (
 ): UseRowActionReturn => {
   const navigate = useNavigate()
 
-  const { onOpenDupeFormModal, onOpenShareFormModal } =
+  const { onOpenDupeFormModal, onOpenShareFormModal, onOpenCollabModal } =
     useWorkspaceRowsContext()
 
   return {
@@ -31,8 +31,7 @@ export const useRowAction = (
         `${window.location.origin}${ADMINFORM_ROUTE}/${formMeta._id}/${ADMINFORM_PREVIEW_ROUTE}`,
       ),
     handleDuplicateForm: () => onOpenDupeFormModal(formMeta),
-    handleManageFormAccess: () =>
-      console.log(`manage form access button clicked for ${formMeta._id}`),
+    handleCollaborators: () => onOpenCollabModal(formMeta),
     handleDeleteForm: () =>
       console.log(`delete form  button clicked for ${formMeta._id}`),
   }

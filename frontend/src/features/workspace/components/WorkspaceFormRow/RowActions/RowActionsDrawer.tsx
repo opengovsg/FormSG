@@ -38,7 +38,7 @@ export const RowActionsDrawer = ({
     handleDeleteForm,
     handleDuplicateForm,
     handleEditForm,
-    handleManageFormAccess,
+    handleCollaborators,
     handlePreviewForm,
     handleShareForm,
   } = useRowAction(formMeta)
@@ -103,10 +103,10 @@ export const RowActionsDrawer = ({
               </Button>
               <Button
                 {...buttonProps}
-                onClick={handleManageFormAccess}
+                onClick={handleCollaborators}
                 leftIcon={<BiUserPlus fontSize="1.25rem" />}
               >
-                Manage form access
+                Manage form admins
               </Button>
               <Divider />
               <Button
