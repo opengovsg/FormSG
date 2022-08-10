@@ -48,6 +48,7 @@ import {
   augmentWithMyInfoDisplayValue,
   extractPreviewValue,
   hasExistingFieldValue,
+  isMyInfo,
 } from '~features/myinfo/utils'
 
 import { useBuilderAndDesignContext } from '../../BuilderAndDesignContext'
@@ -272,7 +273,11 @@ export const FieldRowContainer = ({
               pointerEvents={isActive ? undefined : 'none'}
             >
               <FormProvider {...formMethods}>
-                <MemoFieldRow field={field} colorTheme={colorTheme} />
+                <MemoFieldRow
+                  field={field}
+                  colorTheme={colorTheme}
+                  showMyInfoBadge={isMyInfo(field)}
+                />
               </FormProvider>
             </Box>
             <Collapse in={isActive} style={{ width: '100%' }}>
@@ -329,6 +334,7 @@ export const FieldRowContainer = ({
 type MemoFieldRowProps = {
   field: FormFieldDto
   colorTheme?: FormColorTheme
+  showMyInfoBadge?: boolean
 }
 
 const MemoFieldRow = memo(({ field, ...rest }: MemoFieldRowProps) => {
