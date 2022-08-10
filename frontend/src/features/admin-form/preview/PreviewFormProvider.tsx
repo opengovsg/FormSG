@@ -4,7 +4,6 @@ import { SubmitHandler } from 'react-hook-form'
 import get from 'lodash/get'
 import simplur from 'simplur'
 
-import { BasicField } from '~shared/types'
 import {
   FormAuthType,
   FormResponseMode,
@@ -15,7 +14,6 @@ import { usePreviewForm } from '~/features/admin-form/common/queries'
 import { FormNotFound } from '~/features/public-form/components/FormNotFound'
 import {
   PublicFormContext,
-  SidebarSectionMeta,
   SubmissionData,
 } from '~/features/public-form/PublicFormContext'
 import { useCommonFormProvider } from '~/features/public-form/PublicFormProvider'
@@ -109,27 +107,6 @@ export const PreviewFormProvider = ({
     [cachedDto?.form, cachedDto?.spcpSession],
   )
 
-  const sectionScrollData = useMemo(() => {
-    const { form } = cachedDto ?? {}
-    if (!form || isAuthRequired) {
-      return []
-    }
-    const sections: SidebarSectionMeta[] = []
-    if (form.startPage.paragraph)
-      sections.push({
-        title: 'Instructions',
-        _id: 'instructions',
-      })
-    form.form_fields.forEach((f) => {
-      if (f.fieldType !== BasicField.Section) return
-      sections.push({
-        title: f.title,
-        _id: f._id,
-      })
-    })
-    return sections
-  }, [cachedDto, isAuthRequired])
-
   const { submitEmailModeFormMutation, submitStorageModeFormMutation } =
     usePreviewFormMutations(formId)
 
@@ -200,7 +177,6 @@ export const PreviewFormProvider = ({
         formId,
         error,
         submissionData,
-        sectionScrollData,
         isAuthRequired,
         expiryInMs,
         isLoading,
