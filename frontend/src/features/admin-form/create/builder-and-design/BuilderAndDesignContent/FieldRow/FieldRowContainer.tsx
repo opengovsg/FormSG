@@ -49,6 +49,7 @@ import {
   augmentWithMyInfoDisplayValue,
   extractPreviewValue,
   hasExistingFieldValue,
+  isMyInfo,
 } from '~features/myinfo/utils'
 
 import { useBuilderAndDesignContext } from '../../BuilderAndDesignContext'
@@ -106,6 +107,8 @@ export const FieldRowContainer = ({
   const { deleteFieldMutation } = useDeleteFormField()
 
   const colorTheme = useDesignColorTheme()
+
+  const isMyInfoField = useMemo(() => isMyInfo(field), [field])
 
   const defaultFieldValues = useMemo(() => {
     if (field.fieldType === BasicField.Table) {
@@ -296,7 +299,11 @@ export const FieldRowContainer = ({
                 opacity={isActive || !isHiddenByLogic ? '100%' : '30%'}
               >
                 <FormProvider {...formMethods}>
-                  <MemoFieldRow field={field} colorTheme={colorTheme} />
+                  <MemoFieldRow
+                    field={field}
+                    colorTheme={colorTheme}
+                    showMyInfoBadge={isMyInfoField}
+                  />
                 </FormProvider>
               </Box>
               <Collapse in={isActive} style={{ width: '100%' }}>
@@ -354,6 +361,7 @@ export const FieldRowContainer = ({
 type MemoFieldRowProps = {
   field: FormFieldDto
   colorTheme?: FormColorTheme
+  showMyInfoBadge?: boolean
 }
 
 const MemoFieldRow = memo(({ field, ...rest }: MemoFieldRowProps) => {
