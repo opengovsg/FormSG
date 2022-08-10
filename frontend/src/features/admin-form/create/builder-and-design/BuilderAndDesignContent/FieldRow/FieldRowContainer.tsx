@@ -98,6 +98,8 @@ export const FieldRowContainer = ({
 
   const colorTheme = useDesignColorTheme()
 
+  const isMyInfoField = useMemo(() => isMyInfo(field), [field])
+
   const defaultFieldValues = useMemo(() => {
     if (field.fieldType === BasicField.Table) {
       return {
@@ -276,7 +278,7 @@ export const FieldRowContainer = ({
                 <MemoFieldRow
                   field={field}
                   colorTheme={colorTheme}
-                  showMyInfoBadge={isMyInfo(field)}
+                  showMyInfoBadge={isMyInfoField}
                 />
               </FormProvider>
             </Box>
