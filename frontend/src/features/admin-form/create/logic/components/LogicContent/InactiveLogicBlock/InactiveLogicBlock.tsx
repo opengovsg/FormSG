@@ -52,18 +52,27 @@ export const InactiveLogicBlock = ({
           <>
             <Text>then show</Text>
             <Stack direction="column" spacing="0.25rem">
-              {logic.show.map((fieldId, index) => (
+              {allInvalid ? (
                 <FieldLogicBadge
-                  key={index}
-                  field={mapIdToField[fieldId]}
                   defaults={{
-                    variant: allInvalid ? 'error' : 'info',
-                    message: allInvalid
-                      ? 'All fields were deleted, please select at least one field'
-                      : 'This field was deleted and has been removed from your logic',
+                    variant: 'error',
+                    message:
+                      'All fields were deleted, please select at least one field',
                   }}
                 />
-              ))}
+              ) : (
+                logic.show.map((fieldId, index) => (
+                  <FieldLogicBadge
+                    key={index}
+                    field={mapIdToField[fieldId]}
+                    defaults={{
+                      variant: 'info',
+                      message:
+                        'This field was deleted and has been removed from your logic',
+                    }}
+                  />
+                ))
+              )}
             </Stack>
           </>
         )
