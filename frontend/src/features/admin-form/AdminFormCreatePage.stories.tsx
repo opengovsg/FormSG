@@ -64,7 +64,7 @@ export default {
     // Required so skeleton "animation" does not hide content.
     // Pass a very short delay to avoid bug where Chromatic takes a snapshot before
     // the story has loaded
-    chromatic: { pauseAnimationAtEnd: true, delay: 200 },
+    chromatic: { pauseAnimationAtEnd: true, delay: 200, layout: 'fullscreen' },
     layout: 'fullscreen',
     msw: buildMswRoutes(),
     userId: 'adminFormTestUserId',
