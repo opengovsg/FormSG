@@ -90,27 +90,22 @@ const AdminNavBarLink = ({ MobileIcon, href, label }: AdminNavBarLinkProps) => {
 
 interface WhatsNewNavBarTabProps {
   onClick: () => void
-  label: string
   shouldShowNotiifcation: boolean
-  MobileIcon?: As
 }
 
 const WhatsNewNavBarTab = ({
   onClick,
-  label,
-  MobileIcon,
   shouldShowNotiifcation,
 }: WhatsNewNavBarTabProps) => {
   const isMobile = useIsMobile()
 
-  if (isMobile && MobileIcon) {
+  if (isMobile) {
     return (
       <Box position="relative">
         <IconButton
           variant="clear"
-          as="a"
-          aria-label={label}
-          icon={<MobileIcon fontSize="1.25rem" color="primary.500" />}
+          aria-label={WHATS_NEW_LABEL}
+          icon={<BxsRocket fontSize="1.25rem" color="primary.500" />}
           onClick={onClick}
         />
         {shouldShowNotiifcation && (
@@ -132,10 +127,9 @@ const WhatsNewNavBarTab = ({
         variant="link"
         color="secondary.500"
         onClick={onClick}
-        aria-label={label}
-        textStyle="subhead-1"
+        aria-label={WHATS_NEW_LABEL}
       >
-        {label}
+        {WHATS_NEW_LABEL}
       </Button>
       {shouldShowNotiifcation && (
         <Icon
@@ -231,9 +225,7 @@ export const AdminNavBar = ({ isMenuOpen }: AdminNavBarProps): JSX.Element => {
             <AdminNavBarLink key={index} {...link} />
           ))}
           <WhatsNewNavBarTab
-            label={WHATS_NEW_LABEL}
             onClick={onWhatsNewDrawerOpen}
-            MobileIcon={BxsRocket}
             shouldShowNotiifcation={shouldShowFeatureUpdateNotification}
           />
           <AvatarMenu
