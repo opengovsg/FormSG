@@ -1,4 +1,4 @@
-import { MouseEvent, useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { useWatch } from 'react-hook-form'
 import {
   BiCheck,
@@ -13,6 +13,7 @@ import {
   Icon,
   InputGroup,
   InputRightElement,
+  Link,
   ModalBody,
   ModalHeader,
   Stack,
@@ -71,6 +72,10 @@ const useSaveSecretKeyDefault = () => {
     return href
   }, [secretKey, titleInputValue])
 
+  const handleActioned = useCallback(() => {
+    setHasActioned(true)
+  }, [])
+
   const handleDownloadKey = useCallback(() => {
     FileSaver.saveAs(
       new Blob([secretKey], { type: 'text/plain;charset=utf-8' }),
@@ -78,16 +83,6 @@ const useSaveSecretKeyDefault = () => {
     )
     setHasActioned(true)
   }, [secretKey, titleInputValue])
-
-  const handleEmailKey = useCallback(
-    (e: MouseEvent) => {
-      window.location.href = mailToHref
-
-      setHasActioned(true)
-      e.preventDefault()
-    },
-    [mailToHref],
-  )
 
   const handleCopyKey = useCallback(() => {
     onCopy()
@@ -97,11 +92,12 @@ const useSaveSecretKeyDefault = () => {
   return {
     isLoading,
     hasActioned,
+    handleActioned,
     isSubmitEnabled: isValid && hasActioned,
     hasCopiedKey: hasCopied,
     handleCopyKey,
     handleDownloadKey,
-    handleEmailKey,
+    mailToHref,
     handleCreateStorageModeForm,
     secretKey,
     register,
@@ -120,7 +116,8 @@ export const SaveSecretKeyScreen = ({
     handleCopyKey,
     handleCreateStorageModeForm,
     handleDownloadKey,
-    handleEmailKey,
+    mailToHref,
+    handleActioned,
     isSubmitEnabled,
     hasActioned,
     hasCopiedKey,
@@ -153,7 +150,11 @@ export const SaveSecretKeyScreen = ({
             <Text color="danger.500" textStyle="subhead-1" as="span">
               all responses will be permanently lost
             </Text>
-            . You can also email it for safekeeping.
+            . You can also{' '}
+            <Link variant="inline" href={mailToHref} onClick={handleActioned}>
+              email it
+            </Link>{' '}
+            for safekeeping.
           </Text>
           <Stack direction={{ base: 'column', md: 'row' }}>
             <InputGroup>
@@ -179,24 +180,28 @@ export const SaveSecretKeyScreen = ({
             </Button>
             {isMobile ? (
               <Button
-                onClick={handleEmailKey}
+                as="a"
+                onClick={handleActioned}
                 aria-label="Email the secret key to someone"
                 leftIcon={<BiMailSend fontSize="1.25rem" />}
+                href={mailToHref}
                 variant="outline"
               >
                 Email key
               </Button>
             ) : (
               <IconButton
-                onClick={handleEmailKey}
+                as="a"
+                onClick={handleActioned}
                 icon={<BiMailSend />}
                 aria-label="Email the secret key to someone"
+                href={mailToHref}
                 variant="outline"
               />
             )}
           </Stack>
           {hasActioned && (
-            <Box mt="4rem">
+            <Box mt="1rem">
               <Checkbox
                 aria-label="Storage mode form acknowledgement"
                 {...register('storageAck', {

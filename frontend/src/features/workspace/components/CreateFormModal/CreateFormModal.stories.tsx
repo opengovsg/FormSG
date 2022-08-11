@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { useCallback } from 'react'
+import { useCallback, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { MemoryRouter } from 'react-router-dom'
 import { Modal, ModalContent, useDisclosure } from '@chakra-ui/react'
@@ -46,21 +46,24 @@ export const Default = Template.bind({})
 
 export const StorageModeAckScreen = () => {
   const { register } = useForm<CreateFormWizardInputProps>()
+  const [hasActioned, setHasActioned] = useState(false)
   const mockHook = useCallback(() => {
     return {
       isLoading: false,
       isSubmitEnabled: false,
-      hasActioned: false,
+      hasActioned,
       hasCopiedKey: false,
       handleCopyKey: () => console.log('copy key'),
       handleDownloadKey: () => console.log('download key'),
       handleEmailKey: () => console.log('email key'),
+      mailToHref: 'mailto:?subject=&body=',
+      handleActioned: () => setHasActioned(true),
       handleCreateStorageModeForm: () =>
         Promise.resolve(console.log('create storage mode form')),
       secretKey: 'mock-secret-key',
       register,
     }
-  }, [register])
+  }, [hasActioned, register])
 
   return (
     <Modal isOpen onClose={() => console.log('close modal')} size="full">
