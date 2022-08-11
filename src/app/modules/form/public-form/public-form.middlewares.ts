@@ -8,7 +8,7 @@ export const injectFeedbackFormUrl: ControllerHandler = (req, res, next) => {
   const formId = reactMigration.reactToAngularFeedbackFormId
   if (!formId) {
     return res
-      .status(StatusCodes.BAD_REQUEST)
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ message: 'No feedback form id provided' })
   }
   req.params = { formId: formId }
