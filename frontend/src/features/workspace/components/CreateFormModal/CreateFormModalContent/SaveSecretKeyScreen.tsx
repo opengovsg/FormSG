@@ -154,7 +154,7 @@ export const SaveSecretKeyScreen = ({
             <Stack direction={{ base: 'column', md: 'row' }}>
               <Tooltip
                 mt={0}
-                label={hasCopiedKey ? 'Copied!' : 'Copy Secret Key'}
+                label={hasCopiedKey ? 'Copied!' : 'Copy key'}
                 wrapperProps={{
                   // To allow for focus styling on code element.
                   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
