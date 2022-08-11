@@ -30,6 +30,8 @@ export const GUIDE_E2EE =
 export const GUIDE_TRANSFER_OWNERSHIP =
   'https://guide.form.gov.sg/AdvancedGuide.html#i-am-leaving-the-organisation-or-switching-over-to-a-new-email-how-do-i-transfer-ownership-of-my-forms'
 export const GUIDE_SECRET_KEY_LOSS = 'https://go.gov.sg/secretkeyloss'
+export const GUIDE_PREVENT_EMAIL_BOUNCE =
+  'https://go.gov.sg/form-prevent-bounce'
 
 export const APP_FOOTER_LINKS = [
   { label: 'Contact us', href: CONTACT_US },
