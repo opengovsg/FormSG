@@ -1,8 +1,9 @@
 import { SyntheticEvent, useCallback, useMemo, useState } from 'react'
 import { useWatch } from 'react-hook-form'
-import { BiDownload, BiMailSend, BiRightArrowAlt } from 'react-icons/bi'
+import { BiMailSend, BiRightArrowAlt } from 'react-icons/bi'
 import {
   Box,
+  ButtonGroup,
   Code,
   Container,
   Icon,
@@ -17,7 +18,6 @@ import dedent from 'dedent'
 import FileSaver from 'file-saver'
 
 import { BxsError } from '~assets/icons'
-import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
 import Checkbox from '~components/Checkbox'
 import IconButton from '~components/IconButton'
@@ -123,8 +123,6 @@ export const SaveSecretKeyScreen = ({
     register,
   } = useSaveSecretKey()
 
-  const isMobile = useIsMobile()
-
   return (
     <>
       <ModalHeader color="secondary.700">
@@ -180,26 +178,8 @@ export const SaveSecretKeyScreen = ({
                 {secretKey}
               </Code>
             </Tooltip>
-            <Button
-              leftIcon={
-                isMobile ? <BiDownload fontSize="1.25rem" /> : undefined
-              }
-              onClick={handleDownloadKey}
-            >
-              Download key
-            </Button>
-            {isMobile ? (
-              <Button
-                as="a"
-                onClick={handleActioned}
-                aria-label="Email the secret key to someone"
-                leftIcon={<BiMailSend fontSize="1.25rem" />}
-                href={mailToHref}
-                variant="outline"
-              >
-                Email key
-              </Button>
-            ) : (
+            <ButtonGroup>
+              <Button onClick={handleDownloadKey}>Download key</Button>
               <IconButton
                 as="a"
                 onClick={handleActioned}
@@ -208,7 +188,7 @@ export const SaveSecretKeyScreen = ({
                 href={mailToHref}
                 variant="outline"
               />
-            )}
+            </ButtonGroup>
           </Stack>
           {hasActioned && (
             <Box mt="1rem">
