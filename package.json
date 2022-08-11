@@ -211,7 +211,7 @@
     "@typescript-eslint/eslint-plugin": "^4.33.0",
     "@typescript-eslint/parser": "^4.33.0",
     "auto-changelog": "^2.4.0",
-    "axios-mock-adapter": "^1.21.1",
+    "axios-mock-adapter": "^1.21.2",
     "babel-loader": "^8.2.5",
     "concurrently": "^7.3.0",
     "copy-webpack-plugin": "^6.0.2",
