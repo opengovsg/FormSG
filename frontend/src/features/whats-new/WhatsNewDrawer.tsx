@@ -50,12 +50,13 @@ export const WhatsNewDrawer = ({ isOpen, onClose }: WhatsNewDrawerProps) => {
     <Drawer isOpen={isOpen} onClose={onClose} placement="right" size="lg">
       <DrawerOverlay />
       <DrawerContent>
-        <DrawerCloseButton top="2rem" />
+        <DrawerCloseButton top="1.25rem" />
         <DrawerHeader
           textStyle="h2"
           fontSize="24px"
-          paddingTop="2rem"
-          paddingLeft="1.5rem"
+          paddingTop="1.25rem"
+          paddingLeft="2.5rem"
+          color="secondary.700"
         >
           What’s new
         </DrawerHeader>
