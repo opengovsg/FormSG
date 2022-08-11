@@ -26,6 +26,7 @@ export const LongTextField = ({ schema }: LongTextFieldProps): JSX.Element => {
     <FieldContainer schema={schema}>
       <Textarea
         aria-label={schema.title}
+        defaultValue=""
         {...register(schema._id, validationRules)}
       />
     </FieldContainer>

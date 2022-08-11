@@ -30,6 +30,7 @@ export const NumberField = ({
         control={control}
         rules={validationRules}
         name={schema._id}
+        defaultValue=""
         render={({ field: { value, onChange, ...rest } }) => (
           <NumberInput
             min={0}

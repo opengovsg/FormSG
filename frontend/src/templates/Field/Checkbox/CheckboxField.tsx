@@ -84,6 +84,7 @@ export const CheckboxField = ({
           colorScheme={fieldColorScheme}
           key={idx}
           value={o}
+          defaultValue={[]}
           {...register(checkboxInputName, validationRules)}
         >
           {o}
