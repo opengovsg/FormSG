@@ -1,18 +1,11 @@
-import { useCallback, useMemo, useState } from 'react'
+import { SyntheticEvent, useCallback, useMemo, useState } from 'react'
 import { useWatch } from 'react-hook-form'
-import {
-  BiCheck,
-  BiCopy,
-  BiDownload,
-  BiMailSend,
-  BiRightArrowAlt,
-} from 'react-icons/bi'
+import { BiDownload, BiMailSend, BiRightArrowAlt } from 'react-icons/bi'
 import {
   Box,
+  Code,
   Container,
   Icon,
-  InputGroup,
-  InputRightElement,
   Link,
   ModalBody,
   ModalHeader,
@@ -28,7 +21,7 @@ import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
 import Checkbox from '~components/Checkbox'
 import IconButton from '~components/IconButton'
-import Input from '~components/Input'
+import Tooltip from '~components/Tooltip'
 
 import { useCreateFormWizard } from '../CreateFormWizardContext'
 
@@ -84,10 +77,15 @@ const useSaveSecretKeyDefault = () => {
     setHasActioned(true)
   }, [secretKey, titleInputValue])
 
-  const handleCopyKey = useCallback(() => {
-    onCopy()
-    setHasActioned(true)
-  }, [onCopy])
+  const handleCopyKey = useCallback(
+    (e?: SyntheticEvent) => {
+      e?.preventDefault()
+      e?.stopPropagation()
+      onCopy()
+      setHasActioned(true)
+    },
+    [onCopy],
+  )
 
   return {
     isLoading,
@@ -157,19 +155,31 @@ export const SaveSecretKeyScreen = ({
             for safekeeping.
           </Text>
           <Stack direction={{ base: 'column', md: 'row' }}>
-            <InputGroup>
-              <Input isReadOnly value={secretKey} />
-              <InputRightElement>
-                <IconButton
-                  variant="clear"
-                  minH="2.5rem"
-                  minW="2.5rem"
-                  icon={hasCopiedKey ? <BiCheck /> : <BiCopy />}
-                  onClick={handleCopyKey}
-                  aria-label="Copy secret key"
-                />
-              </InputRightElement>
-            </InputGroup>
+            <Tooltip
+              mt={0}
+              label={hasCopiedKey ? 'Copied!' : 'Copy Secret Key'}
+              wrapperProps={{
+                tabIndex: 0,
+                flex: 1,
+              }}
+            >
+              <Code
+                cursor="pointer"
+                onClick={handleCopyKey}
+                wordBreak="break-word"
+                display="inline-flex"
+                alignItems="center"
+                w="100%"
+                h="100%"
+                px="0.75rem"
+                py="0.625rem"
+                bg="neutral.300"
+                color="secondary.500"
+                borderRadius="4px"
+              >
+                {secretKey}
+              </Code>
+            </Tooltip>
             <Button
               leftIcon={
                 isMobile ? <BiDownload fontSize="1.25rem" /> : undefined
