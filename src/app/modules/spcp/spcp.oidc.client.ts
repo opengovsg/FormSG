@@ -31,6 +31,7 @@ import {
 import {
   CryptoKeys,
   SigningKey,
+  SpClientIdField,
   SpcpOidcClientConstructorParams,
 } from './spcp.oidc.client.types'
 import {
@@ -45,16 +46,16 @@ import {
 /**
  * Wrapper around the openid-client library to carry out authentication related tasks with Singpass and Corppass NDI,
  * and provides methods for decryption and verification of JWE/JWS returned by NDI after authorisation code exchange.
- * This is a base class for the Singpass and CorpPass OIDC client classes and is meant to be instantiated on its own.
+ * This is a base class for the Singpass and CorpPass OIDC client classes and is not meant to be instantiated on its own.
  * @parent for SpOidcClient and CpOidcClient classes
+ * Exported for testing.
  */
-export class SpcpOidcBaseClient {
+export abstract class SpcpOidcBaseClient {
   #rpSecretKeys: CryptoKeys
   #rpPublicKeys: CryptoKeys
   #rpRedirectUrl: string
-
   rpClientId: string
-  eServiceIdKey = 'esrvcID'
+  abstract eServiceIdKey: string
 
   /**
    * @private
@@ -254,9 +255,12 @@ export class SpcpOidcBaseClient {
     return verificationKey
   }
 
-  getExtraTokenFields() {
-    return {}
-  }
+  /**
+   * Optional method to inject additional fields into token exchange request
+   * @returns Object with string key and properties
+   */
+
+  getExtraTokenFields?(): { [key: string]: string }
 
   /**
    * Method to exchange authorisation code for idToken from NDI and then decode and verify it
@@ -318,7 +322,7 @@ export class SpcpOidcBaseClient {
         client_assertion_type:
           'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
         client_assertion: clientAssertion,
-        ...this.getExtraTokenFields(),
+        ...(this.getExtraTokenFields ? this.getExtraTokenFields() : {}),
       }).toString()
 
       const { data } = await axios.post<TokenSet>(tokenEndpoint, body, {
@@ -497,7 +501,11 @@ export class SpOidcClient extends SpcpOidcBaseClient {
     super(params)
   }
 
-  getExtraTokenFields() {
+  /**
+   * Method to inject client ID when sending the token exchange request for singpass oidc
+   */
+
+  getExtraTokenFields(): SpClientIdField {
     return { client_id: this.rpClientId }
   }
 }
