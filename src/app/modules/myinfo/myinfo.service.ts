@@ -293,7 +293,7 @@ export class MyInfoServiceClass {
 
   /**
    * Prefill given current form fields with given MyInfo data.
-   * Saves the has of the prefilled fields as well because the two operations are atomic and should not be separated
+   * Saves the hash of the prefilled fields as well because the two operations are atomic and should not be separated
    * @param myInfoData
    * @param currFormFields
    * @returns currFormFields with the MyInfo fields prefilled with data from myInfoData
