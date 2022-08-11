@@ -168,7 +168,6 @@ export const SwitchEnvFeedbackModal = ({
                 <Button
                   isFullWidth={isMobile}
                   variant="clear"
-                  mr="1rem"
                   onClick={onClose}
                 >
                   Cancel
