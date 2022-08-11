@@ -97,7 +97,7 @@ export const StartPageView = () => {
   }, [form?.startPage, startPageFromStore])
 
   // Color theme options and other design stuff, identical to public form
-  const { titleColor, titleBg, estTimeString } = useFormHeader({
+  const { titleColor, titleBg, estTimeString, colorScheme } = useFormHeader({
     startPage,
     hover: hoverStartPage,
   })
@@ -163,6 +163,7 @@ export const StartPageView = () => {
           estTimeString={estTimeString}
           titleBg={titleBg}
           titleColor={titleColor}
+          colorScheme={colorScheme}
           showHeader
           loggedInId={
             form && form.authType !== FormAuthType.NIL
