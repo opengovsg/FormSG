@@ -5,11 +5,18 @@ import { Flex, useDisclosure } from '@chakra-ui/react'
 import IconButton from '~components/IconButton'
 import Tooltip from '~components/Tooltip'
 
+import { REMOVE_ADMIN_INFOBOX_THRESHOLD } from '~features/workspace/components/AdminSwitchEnvMessage'
+
+import { useEnv } from './queries'
 import { SwitchEnvFeedbackModal } from './SwitchEnvFeedbackModal'
 
 export const SwitchEnvIcon = (): JSX.Element => {
   const { isOpen, onOpen, onClose } = useDisclosure()
-  return (
+  const { data: { adminRollout } = {} } = useEnv()
+  const showSwitchEnvMessage =
+    adminRollout && adminRollout < REMOVE_ADMIN_INFOBOX_THRESHOLD
+  console.log(adminRollout)
+  return showSwitchEnvMessage ? (
     <Flex
       position="fixed"
       bottom="2.75rem"
@@ -32,5 +39,7 @@ export const SwitchEnvIcon = (): JSX.Element => {
       </Tooltip>
       <SwitchEnvFeedbackModal isOpen={isOpen} onClose={onClose} />
     </Flex>
+  ) : (
+    <></>
   )
 }
