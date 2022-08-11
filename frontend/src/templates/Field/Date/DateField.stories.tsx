@@ -4,7 +4,11 @@ import { Text } from '@chakra-ui/react'
 import { Meta, Story } from '@storybook/react'
 import { addDays, lightFormat } from 'date-fns'
 
-import { BasicField, DateSelectedValidation } from '~shared/types/field'
+import {
+  BasicField,
+  DateSelectedValidation,
+  InvalidDaysOptions,
+} from '~shared/types/field'
 
 import { mockDateDecorator } from '~utils/storybook'
 import Button from '~components/Button'
@@ -42,6 +46,7 @@ const baseSchema: DateFieldSchema = {
     customMinDate: null,
     selectedDateValidation: null,
   },
+  invalidDays: [],
   title: 'Date field snapshot',
   description: '',
   required: true,
@@ -153,4 +158,14 @@ ValidationCustomRange.args = {
     },
   },
   defaultValue: '2021-12-26',
+}
+
+export const ValidationInvalidDaysOfTheWeek = Template.bind({})
+ValidationInvalidDaysOfTheWeek.args = {
+  schema: {
+    ...baseSchema,
+    description: 'Wednesdays and Thursdays are invalid days',
+    invalidDays: [InvalidDaysOptions.Wednesday, InvalidDaysOptions.Thursday],
+  },
+  defaultValue: '2022-07-27',
 }
