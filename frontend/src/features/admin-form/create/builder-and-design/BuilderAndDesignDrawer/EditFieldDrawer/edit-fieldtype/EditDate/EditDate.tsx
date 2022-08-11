@@ -285,8 +285,7 @@ export const EditDate = ({ field }: EditDateProps): JSX.Element => {
         <FormControl>
           <Toggle
             {...register('addParticularDayRestriction')}
-            label="Customize days of the week"
-            description="Checking a day will disable all the same days in the calendar"
+            label="Custom availability during the week"
           />
         </FormControl>
         {watchAddParticularDayRestriction ? (
@@ -296,7 +295,9 @@ export const EditDate = ({ field }: EditDateProps): JSX.Element => {
               name="invalidDays"
               rules={{
                 validate: (val) => {
-                  return !!val.length || 'Error placeholder'
+                  return (
+                    !!val.length || 'Please select available days of the week'
+                  )
                 },
               }}
               render={({ field: { ref, ...field } }) => (
