@@ -145,17 +145,15 @@ export const SwitchEnvFeedbackModal = ({
                   </FormLabel>
                   <Textarea {...register('feedback')} tabIndex={1} />
                 </FormControl>
-                <FormControl>
-                  {user ? (
+                {user ? (
+                  <FormControl>
                     <Input
                       type="hidden"
                       {...register('email')}
                       value={user.email}
                     />
-                  ) : (
-                    <></>
-                  )}
-                </FormControl>
+                  </FormControl>
+                ) : null}
               </Stack>
             </ModalBody>
             <ModalFooter mt={{ base: '2.5rem', md: '0' }}>
