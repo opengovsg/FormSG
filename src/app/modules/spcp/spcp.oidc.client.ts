@@ -260,7 +260,9 @@ export abstract class SpcpOidcBaseClient {
    * @returns Object with string key and properties
    */
 
-  getExtraTokenFields?(): { [key: string]: string }
+  getExtraTokenFields(): { [key: string]: string } {
+    return {}
+  }
 
   /**
    * Method to exchange authorisation code for idToken from NDI and then decode and verify it
@@ -322,7 +324,7 @@ export abstract class SpcpOidcBaseClient {
         client_assertion_type:
           'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
         client_assertion: clientAssertion,
-        ...(this.getExtraTokenFields ? this.getExtraTokenFields() : {}),
+        ...this.getExtraTokenFields(),
       }).toString()
 
       const { data } = await axios.post<TokenSet>(tokenEndpoint, body, {
