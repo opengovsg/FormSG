@@ -14,32 +14,29 @@ import {
 } from '../spcp.errors'
 import { SpcpOidcBaseClient } from '../spcp.oidc.client'
 import {
+  CorppassJwtPayloadFromCookie,
   ExtractedCorppassNDIPayload,
   JwtName,
   JwtPayload,
   JwtPayloadFromCookie,
   ParsedSpcpParams,
+  SingpassJwtPayloadFromCookie,
   SpcpCookies,
   SpcpDomainSettings,
 } from '../spcp.types'
 import { extractFormId } from '../spcp.util'
 
-const logger = createLoggerWithLabel(module)
+import { SpcpOidcProps } from './spcp.oidc.service.types'
 
-type SpcpOidcProps = {
-  cookieMaxAge: number
-  cookieMaxAgePreserved?: number
-  cookieDomain?: string
-}
+const logger = createLoggerWithLabel(module)
 
 /**
  * Class for executing Singpass/Corppass OIDC-related services.
  * Exported for testing.
  */
 export abstract class SpcpOidcServiceClass {
-  // why do I have to specify default value in the abstract class? 🤔
-  authType: FormAuthType = FormAuthType.SP
-  jwtName: JwtName = JwtName.SP
+  abstract authType: FormAuthType
+  abstract jwtName: JwtName
 
   oidcClient: SpcpOidcBaseClient
   oidcProps: SpcpOidcProps
@@ -103,7 +100,10 @@ export abstract class SpcpOidcServiceClass {
 
   abstract extractJwtPayload(
     jwt: string,
-  ): ResultAsync<any, VerifyJwtError | InvalidJwtError>
+  ): ResultAsync<
+    CorppassJwtPayloadFromCookie | SingpassJwtPayloadFromCookie,
+    VerifyJwtError | InvalidJwtError
+  >
 
   abstract getCookieDuration(rememberMe: boolean): number
 
