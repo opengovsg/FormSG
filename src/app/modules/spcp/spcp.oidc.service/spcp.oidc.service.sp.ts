@@ -18,23 +18,18 @@ import {
 import { isSingpassJwtPayload } from '../spcp.util'
 
 import { SpcpOidcServiceClass } from './spcp.oidc.service.base'
+import { SpOidcProps } from './spcp.oidc.service.types'
 
 const logger = createLoggerWithLabel(module)
-
-type spOidcProps = {
-  cookieMaxAge: number
-  cookieMaxAgePreserved: number
-  cookieDomain: string
-}
 
 export class SpOidcServiceClass extends SpcpOidcServiceClass {
   authType = FormAuthType.SP
   jwtName = JwtName.SP
 
   oidcClient: SpOidcClient
-  oidcProps: spOidcProps
+  oidcProps: SpOidcProps
 
-  constructor(oidcClient: SpOidcClient, oidcProps: spOidcProps) {
+  constructor(oidcClient: SpOidcClient, oidcProps: SpOidcProps) {
     super(oidcClient, oidcProps)
 
     // re-assign to let typescript register the types -_-

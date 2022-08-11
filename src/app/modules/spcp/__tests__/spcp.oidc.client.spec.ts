@@ -1,6 +1,5 @@
 import axios from 'axios'
 import { createPrivateKey, createPublicKey } from 'crypto'
-import fs from 'fs'
 import * as jose from 'jose'
 import { JWTVerifyResult } from 'jose'
 import jwkToPem from 'jwk-to-pem'
@@ -26,57 +25,37 @@ import {
 import {
   CPJWTVerifyResult,
   CryptoKeys,
-  PublicJwks,
   Refresh,
-  SecretJwks,
   SigningKey,
-  SpcpOidcClientConstructorParams,
 } from '../spcp.oidc.client.types'
+
+import {
+  CP_OIDC_NDI_DISCOVERY_ENDPOINT,
+  CP_OIDC_NDI_JWKS_ENDPOINT,
+  CP_OIDC_RP_CLIENT_ID,
+  CP_OIDC_RP_REDIRECT_URL,
+  cpOidcClientConfig,
+  SP_OIDC_NDI_DISCOVERY_ENDPOINT,
+  SP_OIDC_NDI_JWKS_ENDPOINT,
+  SP_OIDC_RP_CLIENT_ID,
+  SP_OIDC_RP_REDIRECT_URL,
+  spOidcClientConfig,
+  TEST_CP_RP_PUBLIC_JWKS,
+  TEST_CP_RP_SECRET_JWKS,
+  TEST_NDI_PUBLIC_JWKS,
+  TEST_NDI_SECRET_JWKS,
+  TEST_SP_RP_PUBLIC_JWKS,
+  TEST_SP_RP_SECRET_JWKS,
+} from './spcp.test.constants'
 
 jest.mock('openid-client')
 jest.mock('axios')
-
-const TEST_SP_RP_PUBLIC_JWKS: PublicJwks = JSON.parse(
-  fs.readFileSync('tests/certs/test_sp_rp_public_jwks.json').toString(),
-)
-const TEST_SP_RP_SECRET_JWKS: SecretJwks = JSON.parse(
-  fs.readFileSync('tests/certs/test_sp_rp_secret_jwks.json').toString(),
-)
-
-const TEST_CP_RP_PUBLIC_JWKS: PublicJwks = JSON.parse(
-  fs.readFileSync('tests/certs/test_cp_rp_public_jwks.json').toString(),
-)
-const TEST_CP_RP_SECRET_JWKS: SecretJwks = JSON.parse(
-  fs.readFileSync('tests/certs/test_cp_rp_secret_jwks.json').toString(),
-)
-
-const TEST_NDI_SECRET_JWKS: PublicJwks = JSON.parse(
-  fs.readFileSync('tests/certs/test_ndi_secret_jwks.json').toString(),
-)
-
-const TEST_NDI_PUBLIC_JWKS: PublicJwks = JSON.parse(
-  fs.readFileSync('tests/certs/test_ndi_public_jwks.json').toString(),
-)
 
 describe('SpOidcClient', () => {
   afterEach(() => {
     jest.clearAllMocks()
     jest.restoreAllMocks()
   })
-
-  const SP_OIDC_NDI_DISCOVERY_ENDPOINT = 'spOidcNdiDiscoveryEndpoint'
-  const SP_OIDC_NDI_JWKS_ENDPOINT = 'spOidcNdiJwksEndpoint'
-  const SP_OIDC_RP_CLIENT_ID = 'spOidcRpClientId'
-  const SP_OIDC_RP_REDIRECT_URL = 'spOidcRpRedirectUrl'
-
-  const spOidcClientConfig: SpcpOidcClientConstructorParams = {
-    ndiDiscoveryEndpoint: SP_OIDC_NDI_DISCOVERY_ENDPOINT,
-    ndiJwksEndpoint: SP_OIDC_NDI_JWKS_ENDPOINT,
-    rpClientId: SP_OIDC_RP_CLIENT_ID,
-    rpRedirectUrl: SP_OIDC_RP_REDIRECT_URL,
-    rpSecretJwks: TEST_SP_RP_SECRET_JWKS,
-    rpPublicJwks: TEST_SP_RP_PUBLIC_JWKS,
-  }
 
   describe('Constructor', () => {
     it('should correctly call the SpOidcClient constructor', () => {
@@ -1678,20 +1657,6 @@ describe('CpOidcClient', () => {
     jest.clearAllMocks()
     jest.restoreAllMocks()
   })
-
-  const CP_OIDC_NDI_DISCOVERY_ENDPOINT = 'cpOidcNdiDiscoveryEndpoint'
-  const CP_OIDC_NDI_JWKS_ENDPOINT = 'cpOidcNdiJwksEndpoint'
-  const CP_OIDC_RP_CLIENT_ID = 'cpOidcRpClientId'
-  const CP_OIDC_RP_REDIRECT_URL = 'cpOidcRpRedirectUrl'
-
-  const cpOidcClientConfig: SpcpOidcClientConstructorParams = {
-    ndiDiscoveryEndpoint: CP_OIDC_NDI_DISCOVERY_ENDPOINT,
-    ndiJwksEndpoint: CP_OIDC_NDI_JWKS_ENDPOINT,
-    rpClientId: CP_OIDC_RP_CLIENT_ID,
-    rpRedirectUrl: CP_OIDC_RP_REDIRECT_URL,
-    rpSecretJwks: TEST_CP_RP_SECRET_JWKS,
-    rpPublicJwks: TEST_CP_RP_PUBLIC_JWKS,
-  }
 
   describe('Constructor', () => {
     it('should correctly call the CpOidcClient constructor', () => {
