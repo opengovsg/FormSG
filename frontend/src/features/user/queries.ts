@@ -12,12 +12,17 @@ export const userKeys = {
 type UseUserReturn = {
   user: UserDto | undefined
   isLoading: boolean
+  removeQuery: () => void
 }
 
 export const useUser = (): UseUserReturn => {
   const { isAuthenticated } = useAuth()
 
-  const { data: user, isLoading } = useQuery<UserDto>(
+  const {
+    data: user,
+    isLoading,
+    remove,
+  } = useQuery<UserDto>(
     userKeys.base,
     () => fetchUser(),
     // 10 minutes staletime, do not need to retrieve so often.
@@ -27,5 +32,6 @@ export const useUser = (): UseUserReturn => {
   return {
     user: isAuthenticated ? user : undefined,
     isLoading,
+    removeQuery: remove,
   }
 }

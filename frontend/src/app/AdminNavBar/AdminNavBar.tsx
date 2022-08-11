@@ -84,7 +84,7 @@ export interface AdminNavBarProps {
 }
 
 export const AdminNavBar = ({ isMenuOpen }: AdminNavBarProps): JSX.Element => {
-  const { user } = useUser()
+  const { user, removeQuery } = useUser()
 
   const ROLLOUT_ANNOUNCEMENT_KEY = useMemo(
     () => ROLLOUT_ANNOUNCEMENT_KEY_PREFIX + user?._id,
@@ -125,6 +125,7 @@ export const AdminNavBar = ({ isMenuOpen }: AdminNavBarProps): JSX.Element => {
 
   const handleLogout = () => {
     logout()
+    removeQuery()
     if (emergencyContactKey) {
       localStorage.removeItem(emergencyContactKey)
     }
