@@ -175,67 +175,68 @@ export const StartPageView = () => {
       {startPage?.paragraph ? (
         <Flex
           flexDir="column"
-          alignSelf="center"
+          align="center"
           w="100%"
-          px="2.5rem"
+          px={{ base: '0.5rem', md: '1.5rem', lg: '2.5rem' }}
           mt="1.5rem"
         >
-          <Flex justify="center">
+          <Flex
+            justify="center"
+            px={{ base: '0.5rem', md: '1.625rem' }}
+            py={{ base: '0.5rem', md: '1.5rem' }}
+            bg="white"
+            borderRadius="4px"
+            maxW="57rem"
+            w="100%"
+          >
             <Box
               w="100%"
               minW={0}
               h="fit-content"
-              maxW="57rem"
-              bg="white"
-              py="2.5rem"
+              py="1rem"
               px="1.5rem"
+              transition="background 0.2s ease"
+              _hover={{ bg: 'secondary.100', cursor: 'pointer' }}
+              borderRadius="4px"
+              {...(designState === DesignState.EditingInstructions
+                ? {
+                    bg: 'secondary.100',
+                    border: '2px solid var(--chakra-colors-primary-500)',
+                  }
+                : { bg: 'white', border: '2px solid white' })}
+              onClick={handleInstructionsClick}
             >
-              <Box
-                transition="background 0.2s ease"
-                _hover={{ bg: 'secondary.100', cursor: 'pointer' }}
-                borderRadius="4px"
-                {...(designState === DesignState.EditingInstructions
-                  ? {
-                      bg: 'secondary.100',
-                      border: '2px solid var(--chakra-colors-primary-500)',
-                    }
-                  : { border: '2px solid white' })}
-                onClick={handleInstructionsClick}
-              >
-                <Box p={{ base: '0.75rem', md: '1.5rem' }}>
-                  <FormInstructions
-                    content={startPage?.paragraph}
-                    colorTheme={startPage?.colorTheme}
-                  />
-                </Box>
-                {isMobile ? (
-                  <Collapse
-                    in={designState === DesignState.EditingInstructions}
-                    style={{ width: '100%' }}
+              <FormInstructions
+                content={startPage?.paragraph}
+                colorTheme={startPage?.colorTheme}
+              />
+              {isMobile ? (
+                <Collapse
+                  in={designState === DesignState.EditingInstructions}
+                  style={{ width: '100%' }}
+                >
+                  <Flex
+                    px={{ base: '0.75rem', md: '1.5rem' }}
+                    flex={1}
+                    borderTop="1px solid var(--chakra-colors-neutral-300)"
+                    justify="flex-end"
                   >
-                    <Flex
-                      px={{ base: '0.75rem', md: '1.5rem' }}
-                      flex={1}
-                      borderTop="1px solid var(--chakra-colors-neutral-300)"
-                      justify="flex-end"
+                    <ButtonGroup
+                      variant="clear"
+                      colorScheme="secondary"
+                      spacing={0}
                     >
-                      <ButtonGroup
+                      <IconButton
                         variant="clear"
                         colorScheme="secondary"
-                        spacing={0}
-                      >
-                        <IconButton
-                          variant="clear"
-                          colorScheme="secondary"
-                          aria-label="Edit field"
-                          icon={<BiCog fontSize="1.25rem" />}
-                          onClick={handleEditInstructionsClick}
-                        />
-                      </ButtonGroup>
-                    </Flex>
-                  </Collapse>
-                ) : null}
-              </Box>
+                        aria-label="Edit field"
+                        icon={<BiCog fontSize="1.25rem" />}
+                        onClick={handleEditInstructionsClick}
+                      />
+                    </ButtonGroup>
+                  </Flex>
+                </Collapse>
+              ) : null}
             </Box>
           </Flex>
         </Flex>
