@@ -15,7 +15,6 @@ export const SwitchEnvIcon = (): JSX.Element => {
   const { data: { adminRollout } = {} } = useEnv()
   const showSwitchEnvMessage =
     adminRollout && adminRollout < REMOVE_ADMIN_INFOBOX_THRESHOLD
-  console.log(adminRollout)
   return showSwitchEnvMessage ? (
     <Flex
       position="fixed"
