@@ -10,6 +10,7 @@ import { get, isEmpty, isEqual } from 'lodash'
 
 import { EmailFormSettings } from '~shared/types/form/form'
 
+import { GUIDE_PREVENT_EMAIL_BOUNCE } from '~constants/links'
 import { createAdminEmailValidationTransform } from '~utils/formValidation'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
@@ -56,7 +57,7 @@ export const EmailFormSection = ({
         <FormLabel
           isRequired
           useMarkdownForDescription
-          description="Add at least **2 recipients** to prevent loss of response. Learn more on [how to guard against email bounces](https://go.gov.sg/form-prevent-bounce)."
+          description={`Add at least **2 recipients** to prevent loss of response. Learn more on [how to guard against email bounces](${GUIDE_PREVENT_EMAIL_BOUNCE}).`}
         >
           Emails where responses will be sent
         </FormLabel>
