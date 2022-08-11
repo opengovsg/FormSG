@@ -1,7 +1,6 @@
 import fs from 'fs'
 
 import { FormAuthType } from '../../../../../shared/types'
-
 import { spcpMyInfoConfig } from '../../../config/features/spcp-myinfo.config'
 import { CpOidcClient, SpOidcClient } from '../spcp.oidc.client'
 
@@ -49,6 +48,4 @@ const SpOidcService = new SpOidcServiceClass(spOidcClient, spOidcProps)
 const CpOidcService = new CpOidcServiceClass(cpOidcClient, cpOidcProps)
 
 export const getOidcService = (authType: FormAuthType): SpcpOidcServiceClass =>
-    authType === FormAuthType.SP
-        ? SpOidcService
-        : CpOidcService
+  authType === FormAuthType.SP ? SpOidcService : CpOidcService

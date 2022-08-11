@@ -140,7 +140,7 @@ export class CpOidcServiceClass extends SpcpOidcServiceClass {
     )
   }
 
-  getCookieDuration() {
+  getCookieDuration(): number {
     return this.oidcProps.cookieMaxAge
   }
 
