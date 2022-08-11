@@ -193,8 +193,6 @@ export const StartPageView = () => {
               w="100%"
               minW={0}
               h="fit-content"
-              py="1rem"
-              px="1.5rem"
               transition="background 0.2s ease"
               _hover={{ bg: 'secondary.100', cursor: 'pointer' }}
               borderRadius="4px"
@@ -206,10 +204,12 @@ export const StartPageView = () => {
                 : { bg: 'white', border: '2px solid white' })}
               onClick={handleInstructionsClick}
             >
-              <FormInstructions
-                content={startPage?.paragraph}
-                colorTheme={startPage?.colorTheme}
-              />
+              <Box py="1rem" px="1.5rem">
+                <FormInstructions
+                  content={startPage?.paragraph}
+                  colorTheme={startPage?.colorTheme}
+                />
+              </Box>
               {isMobile ? (
                 <Collapse
                   in={designState === DesignState.EditingInstructions}
