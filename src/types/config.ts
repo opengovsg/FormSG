@@ -112,6 +112,9 @@ export interface ICompulsoryVarsSchema {
     logoS3Bucket: string
     attachmentS3Bucket: string
   }
+  reactMigration: {
+    reactToAngularFeedbackFormId: string
+  }
 }
 
 export interface ISgidVarsSchema {
@@ -166,7 +169,6 @@ export interface IOptionalVarsSchema {
     respondentCookieName: string
     adminCookieName: string
     qaCookieName: string
-    reactToAngularFeedbackFormId: string
     angularPhaseOutDate: string
   }
 }
