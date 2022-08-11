@@ -38,11 +38,11 @@ export const DateField = ({
       const selectedInvalidDays = schema.invalidDays ?? []
 
       // All dates available.
-      if (!selectedDateValidation && selectedInvalidDays.length === 0)
+      if (!selectedDateValidation && selectedInvalidDays.length === 0) {
         return false
+      }
 
       let isDateUnavailable = false
-      let isDayUnavailable = false
 
       switch (selectedDateValidation) {
         case DateSelectedValidation.NoPast:
@@ -64,8 +64,9 @@ export const DateField = ({
           isDateUnavailable = false
       }
 
-      isDayUnavailable = isDateAnInvalidDay(date, selectedInvalidDays)
-      return isDateUnavailable || isDayUnavailable
+      if (isDateUnavailable) return true
+
+      return isDateAnInvalidDay(date, selectedInvalidDays)
     },
     [schema.dateValidation, schema.invalidDays],
   )
