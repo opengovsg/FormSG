@@ -6,6 +6,7 @@ import { useDisclosure } from '@chakra-ui/react'
 
 import { AdminDashboardFormMetaDto, FormStatus } from '~shared/types'
 
+import CollaboratorModal from '~features/admin-form/common/components/CollaboratorModal'
 import { ShareFormModal } from '~features/admin-form/share'
 
 import { DeleteFormModal } from '../DeleteFormModal/DeleteFormModal'
@@ -15,6 +16,7 @@ interface WorkspaceRowsContextReturn {
   activeFormMeta?: AdminDashboardFormMetaDto
   onOpenDupeFormModal: (meta?: AdminDashboardFormMetaDto) => void
   onOpenShareFormModal: (meta?: AdminDashboardFormMetaDto) => void
+  onOpenCollabModal: (meta?: AdminDashboardFormMetaDto) => void
   onOpenDeleteFormModal: (meta?: AdminDashboardFormMetaDto) => void
 }
 
@@ -32,6 +34,7 @@ export const WorkspaceRowsProvider = ({
 
   const dupeFormModalDisclosure = useDisclosure()
   const shareFormModalDisclosure = useDisclosure()
+  const collabModalDisclosure = useDisclosure()
   const deleteFormModalDisclosure = useDisclosure()
 
   const onOpenDupeFormModal = (meta?: AdminDashboardFormMetaDto) => {
@@ -48,6 +51,13 @@ export const WorkspaceRowsProvider = ({
     }
   }
 
+  const onOpenCollabModal = (meta?: AdminDashboardFormMetaDto) => {
+    setActiveFormMeta(meta)
+    if (meta) {
+      collabModalDisclosure.onOpen()
+    }
+  }
+
   const onOpenDeleteFormModal = (meta?: AdminDashboardFormMetaDto) => {
     setActiveFormMeta(meta)
     if (meta) {
@@ -61,6 +71,7 @@ export const WorkspaceRowsProvider = ({
         activeFormMeta,
         onOpenDupeFormModal,
         onOpenShareFormModal,
+        onOpenCollabModal,
         onOpenDeleteFormModal,
       }}
     >
@@ -74,6 +85,13 @@ export const WorkspaceRowsProvider = ({
         onClose={shareFormModalDisclosure.onClose}
         isFormPrivate={activeFormMeta?.status === FormStatus.Private}
       />
+      {activeFormMeta?._id && (
+        <CollaboratorModal
+          isOpen={collabModalDisclosure.isOpen}
+          formId={activeFormMeta._id}
+          onClose={collabModalDisclosure.onClose}
+        />
+      )}
       <DeleteFormModal
         isOpen={deleteFormModalDisclosure.isOpen}
         onClose={deleteFormModalDisclosure.onClose}

@@ -39,10 +39,13 @@ const RemoveCollaboratorButton = (
 export const CollaboratorList = (): JSX.Element => {
   const isMobile = useIsMobile()
   // Admin form data required for checking for duplicate emails.
-  const { handleForwardToTransferOwnership, handleForwardToRemoveSelf } =
-    useCollaboratorWizard()
+  const {
+    handleForwardToTransferOwnership,
+    handleForwardToRemoveSelf,
+    formId,
+  } = useCollaboratorWizard()
   const { collaborators, user, isFormAdmin, form, isLoading, hasEditAccess } =
-    useAdminFormCollaborators()
+    useAdminFormCollaborators(formId)
 
   const { mutateUpdateCollaborator, mutateRemoveCollaborator } =
     useMutateCollaborators()

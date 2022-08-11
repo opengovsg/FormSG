@@ -27,10 +27,12 @@ const ADMINFORM_ROUTES = [
 ]
 
 const useAdminFormNavbar = () => {
+  const { formId } = useParams()
+  if (!formId) throw new Error('No formId provided')
+
   const { data: form } = useAdminForm()
   const { pathname } = useLocation()
-  const { formId } = useParams()
-  const { hasEditAccess, isLoading } = useAdminFormCollaborators()
+  const { hasEditAccess, isLoading } = useAdminFormCollaborators(formId)
   const navigate = useNavigate()
 
   const calcCurrentIndex = useCallback(() => {
@@ -75,6 +77,7 @@ const useAdminFormNavbar = () => {
     handleBackToDashboard,
     handlePreviewForm,
     form,
+    formId,
     collaboratorModalDisclosure,
     shareFormModalDisclosure,
     viewOnly: !isLoading && !hasEditAccess,
@@ -93,6 +96,7 @@ export const AdminFormNavbarContainer = (): JSX.Element => {
     collaboratorModalDisclosure,
     shareFormModalDisclosure,
     form,
+    formId,
     viewOnly,
   } = useAdminFormNavbar()
 
@@ -107,6 +111,7 @@ export const AdminFormNavbarContainer = (): JSX.Element => {
       <CollaboratorModal
         isOpen={collaboratorModalDisclosure.isOpen}
         onClose={collaboratorModalDisclosure.onClose}
+        formId={formId}
       />
       <ShareFormModal
         isOpen={shareFormModalDisclosure.isOpen}
