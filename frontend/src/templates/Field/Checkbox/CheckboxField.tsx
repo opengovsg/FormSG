@@ -1,4 +1,4 @@
-import { forwardRef, useEffect, useMemo } from 'react'
+import { forwardRef, useMemo } from 'react'
 import {
   get,
   useFormContext,
@@ -55,8 +55,7 @@ export const CheckboxField = ({
     [schema],
   )
 
-  const { register, getValues, resetField } =
-    useFormContext<CheckboxFieldInputs>()
+  const { register, getValues } = useFormContext<CheckboxFieldInputs>()
   const { isValid, isSubmitting, errors } = useFormState<CheckboxFieldInputs>({
     name: schema._id,
   })
@@ -76,11 +75,6 @@ export const CheckboxField = ({
       },
     }),
     [checkboxInputName, getValues],
-  )
-
-  useEffect(
-    () => resetField(checkboxInputName, { defaultValue: '' }),
-    [checkboxInputName, resetField],
   )
 
   return (

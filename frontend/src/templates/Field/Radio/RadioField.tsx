@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react'
+import { useMemo } from 'react'
 import { Controller, useFormContext, useFormState } from 'react-hook-form'
 import { FormControl, useMultiStyleConfig } from '@chakra-ui/react'
 import { get } from 'lodash'
@@ -49,8 +49,7 @@ export const RadioField = ({
     [schema],
   )
 
-  const { register, getValues, trigger, resetField } =
-    useFormContext<RadioFieldInputs>()
+  const { register, getValues, trigger } = useFormContext<RadioFieldInputs>()
   const { isValid, isSubmitting, errors } = useFormState<RadioFieldInputs>({
     name: schema._id,
   })
@@ -67,11 +66,6 @@ export const RadioField = ({
       },
     }),
     [getValues, radioInputName, schema.othersRadioButton],
-  )
-
-  useEffect(
-    () => resetField(radioInputName, { defaultValue: '' }),
-    [radioInputName, resetField],
   )
 
   return (
