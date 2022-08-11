@@ -121,6 +121,9 @@ export const SaveSecretKeyScreen = ({
         <Container maxW="42.5rem" p={0}>
           <Box
             bg="white"
+            borderRadius="4px"
+            border="1px solid"
+            borderColor="neutral.200"
             py="3rem"
             px={{ base: '1.5rem', md: '2.5rem' }}
             mt={{ base: '5.5rem', md: '1rem' }}
