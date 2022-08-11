@@ -17,15 +17,13 @@ export interface BgColorProps {
 }
 
 export const useBgColor = ({ colorTheme, isFooter }: BgColorProps) =>
-  useMemo(
-    () =>
-      colorTheme
-        ? `theme-${colorTheme}.100`
-        : isFooter
-        ? 'primary.100'
-        : 'neutral.100',
-    [colorTheme, isFooter],
-  )
+  useMemo(() => {
+    if (isFooter) {
+      return 'transparent'
+    }
+    if (!colorTheme) return 'neutral.100'
+    return `theme-${colorTheme}.100`
+  }, [colorTheme, isFooter])
 
 export interface PublicFormWrapperProps {
   isPreview?: boolean
@@ -41,12 +39,12 @@ export const PublicFormWrapper = ({
   children,
 }: PublicFormWrapperProps): JSX.Element => {
   const REMOVE_RESPONDENTS_INFOBOX_THRESHOLD = 10
-  const { form, isLoading, isAuthRequired } = usePublicFormContext()
+  const { form, isAuthRequired } = usePublicFormContext()
   const { data: { respondentRolloutEmail, respondentRolloutStorage } = {} } =
     useEnv()
 
   const bgColour = useBgColor({
-    colorTheme: isLoading ? undefined : form?.startPage.colorTheme,
+    colorTheme: form?.startPage.colorTheme,
   })
   const isEmailForm = form?.responseMode === FormResponseMode.Email
   const switchEnvRolloutPercentage = isEmailForm
