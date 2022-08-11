@@ -85,11 +85,13 @@ export const WorkspaceRowsProvider = ({
         onClose={shareFormModalDisclosure.onClose}
         isFormPrivate={activeFormMeta?.status === FormStatus.Private}
       />
-      <CollaboratorModal
-        isOpen={collabModalDisclosure.isOpen}
-        formId={activeFormMeta?._id}
-        onClose={collabModalDisclosure.onClose}
-      />
+      {activeFormMeta?._id && (
+        <CollaboratorModal
+          isOpen={collabModalDisclosure.isOpen}
+          formId={activeFormMeta._id}
+          onClose={collabModalDisclosure.onClose}
+        />
+      )}
       <DeleteFormModal
         isOpen={deleteFormModalDisclosure.isOpen}
         onClose={deleteFormModalDisclosure.onClose}
