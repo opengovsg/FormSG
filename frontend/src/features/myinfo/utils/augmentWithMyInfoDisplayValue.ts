@@ -13,5 +13,10 @@ export const augmentWithMyInfoDisplayValue = (
   if (!isMyInfo(field)) return field
 
   const myInfoBlock = MAP_ATTR_TO_NAME[field.myInfo.attr]
-  return { ...field, fieldValue: myInfoBlock.previewValue }
+  return {
+    ...field,
+    fieldValue: myInfoBlock.previewValue,
+    // Leave default as false, same as in MyInfoData class
+    disabled: myInfoBlock.previewIsDisabled ?? false,
+  }
 }

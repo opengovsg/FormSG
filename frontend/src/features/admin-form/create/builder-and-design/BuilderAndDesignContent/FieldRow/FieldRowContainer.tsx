@@ -120,6 +120,7 @@ export const FieldRowContainer = ({
     const augmentedField = augmentWithMyInfoDisplayValue(field)
 
     if (hasExistingFieldValue(augmentedField)) {
+      field.disabled = augmentedField.disabled
       return {
         [field._id]: extractPreviewValue(augmentedField),
       }
