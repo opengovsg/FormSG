@@ -38,7 +38,7 @@ export const FormStartPage = (): JSX.Element => {
     agency: form?.admin.agency,
   })
 
-  const formHeaderProps = useFormHeader(form?.startPage)
+  const formHeaderProps = useFormHeader({ startPage: form?.startPage })
 
   return (
     <>

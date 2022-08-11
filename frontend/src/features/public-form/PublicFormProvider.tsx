@@ -14,7 +14,6 @@ import { isEqual } from 'lodash'
 import get from 'lodash/get'
 import simplur from 'simplur'
 
-import { BasicField } from '~shared/types'
 import {
   FormAuthType,
   FormResponseMode,
@@ -42,11 +41,7 @@ import {
 
 import { FormNotFound } from './components/FormNotFound'
 import { usePublicAuthMutations, usePublicFormMutations } from './mutations'
-import {
-  PublicFormContext,
-  SidebarSectionMeta,
-  SubmissionData,
-} from './PublicFormContext'
+import { PublicFormContext, SubmissionData } from './PublicFormContext'
 import { usePublicFormView } from './queries'
 
 interface PublicFormProviderProps {
@@ -68,7 +63,6 @@ export function useCommonFormProvider(formId: string) {
   const { createTransactionMutation } = useTransactionMutations(formId)
   const toast = useToast({ isClosable: true })
   const vfnToastIdRef = useRef<string | number>()
-  const desyncToastIdRef = useRef<string | number>()
 
   const getTransactionId = useCallback(async () => {
     if (!vfnTransaction || isPast(vfnTransaction.expireAt)) {
@@ -98,7 +92,6 @@ export function useCommonFormProvider(formId: string) {
     isNotFormId,
     toast,
     showErrorToast,
-    desyncToastIdRef,
     vfnToastIdRef,
     expiryInMs,
     miniHeaderRef,
@@ -137,12 +130,12 @@ export const PublicFormProvider = ({
   })
 
   const [cachedDto, setCachedDto] = useState<PublicFormViewDto>()
+  const desyncToastIdRef = useRef<string | number>()
 
   const {
     isNotFormId,
     toast,
     showErrorToast,
-    desyncToastIdRef,
     vfnToastIdRef,
     expiryInMs,
     ...commonFormValues
@@ -290,27 +283,6 @@ export const PublicFormProvider = ({
     [cachedDto?.form, cachedDto?.spcpSession],
   )
 
-  const sectionScrollData = useMemo(() => {
-    const { form } = cachedDto ?? {}
-    if (!form || isAuthRequired) {
-      return []
-    }
-    const sections: SidebarSectionMeta[] = []
-    if (form.startPage.paragraph)
-      sections.push({
-        title: 'Instructions',
-        _id: 'instructions',
-      })
-    form.form_fields.forEach((f) => {
-      if (f.fieldType !== BasicField.Section) return
-      sections.push({
-        title: f.title,
-        _id: f._id,
-      })
-    })
-    return sections
-  }, [cachedDto, isAuthRequired])
-
   if (isNotFormId) {
     return <NotFoundErrorPage />
   }
@@ -323,7 +295,6 @@ export const PublicFormProvider = ({
         formId,
         error,
         submissionData,
-        sectionScrollData,
         isAuthRequired,
         captchaContainerId: containerId,
         expiryInMs,

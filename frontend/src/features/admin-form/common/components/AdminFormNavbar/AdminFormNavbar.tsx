@@ -39,6 +39,8 @@ export interface AdminFormNavbarProps {
    */
   formInfo?: Pick<AdminFormDto, 'title' | 'lastModified'>
 
+  viewOnly: boolean
+
   handleBackButtonClick: () => void
   handleAddCollabButtonClick: () => void
   handlePreviewFormButtonClick: () => void
@@ -50,6 +52,7 @@ export interface AdminFormNavbarProps {
  */
 export const AdminFormNavbar = ({
   formInfo,
+  viewOnly,
   handleAddCollabButtonClick,
   handleBackButtonClick,
   handlePreviewFormButtonClick,
@@ -93,7 +96,8 @@ export const AdminFormNavbar = ({
     >
       <GridItem
         display="flex"
-        flex={1}
+        flex="1 1 0"
+        overflow="hidden"
         alignItems="center"
         gridArea="left"
         py="0.625rem"
@@ -123,8 +127,12 @@ export const AdminFormNavbar = ({
         justifyContent={{ base: 'flex-start', lg: 'center' }}
         alignSelf="center"
       >
-        <Tab isDisabled={!formInfo}>Create</Tab>
-        <Tab isDisabled={!formInfo}>Settings</Tab>
+        <Tab hidden={viewOnly} isDisabled={!formInfo}>
+          Create
+        </Tab>
+        <Tab hidden={viewOnly} isDisabled={!formInfo}>
+          Settings
+        </Tab>
         <Tab isDisabled={!formInfo}>Results</Tab>
       </TabList>
       <Flex

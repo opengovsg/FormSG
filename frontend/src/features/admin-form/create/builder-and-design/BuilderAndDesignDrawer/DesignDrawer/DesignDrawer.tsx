@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 import {
   Controller,
   UnpackNestedValue,
@@ -36,8 +36,11 @@ import { getTitleBg } from '~features/public-form/components/FormStartPage/useFo
 import {
   CustomLogoMeta,
   customLogoMetaSelector,
+  DesignState,
   FormStartPageInput,
   setStartPageDataSelector,
+  setStateSelector,
+  stateSelector,
   useDesignStore,
 } from '../../useDesignStore'
 import { validateNumberInput } from '../../utils/validateNumberInput'
@@ -63,14 +66,26 @@ export const DesignDrawer = ({
   const { startPageMutation } = useMutateFormPage()
   const { handleClose } = useCreatePageSidebar()
 
-  const { customLogoMeta, setStartPageData } = useDesignStore(
-    useCallback(
-      (state) => ({
-        customLogoMeta: customLogoMetaSelector(state),
-        setStartPageData: setStartPageDataSelector(state),
-      }),
-      [],
-    ),
+  const { designState, setDesignState, customLogoMeta, setStartPageData } =
+    useDesignStore(
+      useCallback(
+        (state) => ({
+          designState: stateSelector(state),
+          setDesignState: setStateSelector(state),
+          customLogoMeta: customLogoMetaSelector(state),
+          setStartPageData: setStartPageDataSelector(state),
+        }),
+        [],
+      ),
+    )
+
+  const setToEditingHeader = useCallback(
+    () => setDesignState(DesignState.EditingHeader),
+    [setDesignState],
+  )
+  const setToEditingInstructions = useCallback(
+    () => setDesignState(DesignState.EditingInstructions),
+    [setDesignState],
   )
 
   const {
@@ -80,6 +95,7 @@ export const DesignDrawer = ({
     handleSubmit,
     clearErrors,
     setError,
+    setFocus,
   } = useForm<FormStartPageInput>({
     mode: 'onBlur',
     defaultValues: startPageData,
@@ -97,6 +113,11 @@ export const DesignDrawer = ({
   useDebounce(() => setStartPageData(clonedWatchedInputs), 300, [
     clonedWatchedInputs,
   ])
+
+  // Focus on paragraph field if state is editing instructions
+  useEffect(() => {
+    if (designState === DesignState.EditingInstructions) setFocus('paragraph')
+  }, [designState, setFocus])
 
   // Save design handlers
   const uploadLogoMutation = useMutation((image: File) =>
@@ -178,6 +199,7 @@ export const DesignDrawer = ({
         <FormControl
           isReadOnly={startPageMutation.isLoading}
           isInvalid={!isEmpty(errors.attachment)}
+          onFocus={setToEditingHeader}
         >
           <FormLabel>Logo</FormLabel>
           <Radio.RadioGroup
@@ -228,6 +250,7 @@ export const DesignDrawer = ({
         <FormControl
           isReadOnly={startPageMutation.isLoading}
           isInvalid={!isEmpty(errors.colorTheme)}
+          onFocus={setToEditingHeader}
         >
           <FormLabel>Theme colour</FormLabel>
           <Radio.RadioGroup
@@ -268,6 +291,7 @@ export const DesignDrawer = ({
         <FormControl
           isReadOnly={startPageMutation.isLoading}
           isInvalid={!!errors.estTimeTaken}
+          onFocus={setToEditingHeader}
         >
           <FormLabel>Time taken to complete form (minutes)</FormLabel>
           <Controller
@@ -296,7 +320,10 @@ export const DesignDrawer = ({
           isInvalid={!!errors.paragraph}
         >
           <FormLabel>Instructions for your form</FormLabel>
-          <Textarea {...register('paragraph')} />
+          <Textarea
+            onFocus={setToEditingInstructions}
+            {...register('paragraph')}
+          />
           <FormErrorMessage>{errors.paragraph?.message}</FormErrorMessage>
         </FormControl>
 

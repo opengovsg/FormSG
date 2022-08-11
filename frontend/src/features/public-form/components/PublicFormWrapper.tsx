@@ -1,7 +1,9 @@
 import { useMemo } from 'react'
 import { Flex, Spacer } from '@chakra-ui/react'
 
-import { FormColorTheme } from '~shared/types'
+import { FormColorTheme, FormResponseMode } from '~shared/types'
+
+import { useEnv } from '~features/env/queries'
 
 import { usePublicFormContext } from '../PublicFormContext'
 
@@ -38,18 +40,29 @@ export const PublicFormWrapper = ({
   isPreview,
   children,
 }: PublicFormWrapperProps): JSX.Element => {
+  const REMOVE_RESPONDENTS_INFOBOX_THRESHOLD = 10
   const { form, isLoading, isAuthRequired } = usePublicFormContext()
+  const { data: { respondentRolloutEmail, respondentRolloutStorage } = {} } =
+    useEnv()
 
   const bgColour = useBgColor({
     colorTheme: isLoading ? undefined : form?.startPage.colorTheme,
   })
-
+  const isEmailForm = form?.responseMode === FormResponseMode.Email
+  const switchEnvRolloutPercentage = isEmailForm
+    ? respondentRolloutEmail
+    : respondentRolloutStorage
+  // Remove the switch env message if the React rollout for public form respondents is >10%
+  const showSwitchEnvMessage = !!(
+    switchEnvRolloutPercentage &&
+    switchEnvRolloutPercentage <= REMOVE_RESPONDENTS_INFOBOX_THRESHOLD
+  )
   return (
     <Flex bg={bgColour} p={{ base: 0, md: '1.5rem' }} flex={1} justify="center">
       {isAuthRequired ? null : <SectionSidebar />}
       <Flex flexDir="column" maxW="57rem" w="100%">
         {/* TODO(#4279): Remove switch env message on full rollout */}
-        {!isPreview && <PublicSwitchEnvMessage />}
+        {!isPreview && showSwitchEnvMessage && <PublicSwitchEnvMessage />}
         {children}
       </Flex>
       {isAuthRequired ? null : <Spacer />}
