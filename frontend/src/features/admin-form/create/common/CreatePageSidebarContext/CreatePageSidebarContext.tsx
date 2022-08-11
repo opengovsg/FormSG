@@ -10,10 +10,16 @@ import {
 
 import { useIsMobile } from '~hooks/useIsMobile'
 
+import { FieldListTabIndex } from '../../builder-and-design/constants'
 import {
   setToInactiveSelector,
   useBuilderAndDesignStore,
 } from '../../builder-and-design/useBuilderAndDesignStore'
+import {
+  DesignState,
+  setStateSelector,
+  useDesignStore,
+} from '../../builder-and-design/useDesignStore'
 
 export enum DrawerTabs {
   Builder,
@@ -28,6 +34,8 @@ type CreatePageSidebarContextProps = {
   handleDesignClick: () => void
   handleLogicClick: () => void
   handleClose: () => void
+  fieldListTabIndex: FieldListTabIndex
+  setFieldListTabIndex: (tabIndex: FieldListTabIndex) => void
 }
 
 const CreatePageSidebarContext = createContext<
@@ -53,6 +61,10 @@ export const useCreatePageSidebarContext =
       [activeTab],
     )
     const setFieldsToInactive = useBuilderAndDesignStore(setToInactiveSelector)
+    const setDesignState = useDesignStore(setStateSelector)
+
+    const [fieldListTabIndex, setFieldListTabIndex] =
+      useState<FieldListTabIndex>(FieldListTabIndex.Basic)
 
     // Set state to inactive whenever active tab is not builder
     useEffect(() => {
@@ -60,6 +72,10 @@ export const useCreatePageSidebarContext =
         setFieldsToInactive()
       }
     }, [activeTab, setFieldsToInactive])
+
+    useEffect(() => {
+      if (activeTab !== DrawerTabs.Design) setDesignState(DesignState.Inactive)
+    }, [activeTab, setDesignState])
 
     const handleBuilderClick = useCallback(
       () => setActiveTab(DrawerTabs.Builder),
@@ -90,6 +106,8 @@ export const useCreatePageSidebarContext =
       handleDesignClick,
       handleLogicClick,
       handleClose,
+      fieldListTabIndex,
+      setFieldListTabIndex,
     }
   }
 

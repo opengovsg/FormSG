@@ -21,7 +21,7 @@ export const AdminFormLayout = (): JSX.Element => {
 
   const { error } = useAdminForm()
 
-  if (get(error, 'code') === 404) {
+  if (get(error, 'code') === 404 || get(error, 'code') === 410) {
     return <NotFoundErrorPage />
   }
   if (get(error, 'code') === 403) {

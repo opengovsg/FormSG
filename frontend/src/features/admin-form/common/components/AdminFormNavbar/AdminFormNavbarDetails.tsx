@@ -19,8 +19,14 @@ export const AdminFormNavbarDetails = ({
   }, [formInfo])
 
   return (
-    <Flex align="flex-start" flexDir="column" justify="center">
-      <Skeleton isLoaded={!!formInfo}>
+    <Flex
+      align="flex-start"
+      direction="column"
+      justify="center"
+      flex="1 1 auto"
+      overflow="auto"
+    >
+      <Skeleton isLoaded={!!formInfo} w="100%">
         <Text
           textStyle="body-1"
           color="secondary.500"

@@ -22,10 +22,10 @@ import { useFormSections } from '../FormFields/FormSectionsContext'
 import { SidebarLink } from './SidebarLink'
 
 export const SectionSidebar = (): JSX.Element => {
-  const { activeSectionId, navigatedSectionTitle } = useFormSections()
+  const { sectionScrollData, activeSectionId, navigatedSectionTitle } =
+    useFormSections()
   const {
     miniHeaderRef,
-    sectionScrollData,
     submissionData,
     isMobileDrawerOpen,
     onMobileDrawerClose,

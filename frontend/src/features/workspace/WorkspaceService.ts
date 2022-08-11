@@ -57,3 +57,7 @@ export const dupeStorageModeForm = async (
     body,
   ).then(({ data }) => data)
 }
+
+export const deleteAdminForm = async (formId: string): Promise<void> => {
+  return ApiService.delete(`${ADMIN_FORM_ENDPOINT}/${formId}`)
+}

@@ -25,6 +25,11 @@ const frontendVars = {
   reactMigrationRespondentCookieName:
     config.reactMigration.respondentCookieName,
   reactMigrationAdminCookieName: config.reactMigration.adminCookieName,
+  reactMigrationRespondentRolloutEmail:
+    config.reactMigration.respondentRolloutEmail,
+  reactMigrationRespondentRolloutStorage:
+    config.reactMigration.respondentRolloutStorage,
+  reactMigrationAdminRollout: config.reactMigration.adminRollout,
   reactMigrationAngularPhaseOutDate: config.reactMigration.angularPhaseOutDate,
 }
 const environment = ejs.render(
@@ -52,6 +57,9 @@ const environment = ejs.render(
     // React Migration
     var reactMigrationRespondentCookieName = "<%= reactMigrationRespondentCookieName%>"
     var reactMigrationAdminCookieName = "<%= reactMigrationAdminCookieName%>"
+    var reactMigrationRespondentRolloutEmail = "<%= reactMigrationRespondentRolloutEmail%>"
+    var reactMigrationRespondentRolloutStorage = "<%= reactMigrationRespondentRolloutStorage%>"
+    var reactMigrationAdminRollout = "<%= reactMigrationAdminRollout%>"
     var reactMigrationAngularPhaseOutDate = "<%= reactMigrationAngularPhaseOutDate%>"
   `,
   frontendVars,

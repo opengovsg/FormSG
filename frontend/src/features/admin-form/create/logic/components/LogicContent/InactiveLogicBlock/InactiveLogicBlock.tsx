@@ -44,17 +44,39 @@ export const InactiveLogicBlock = ({
     if (!mapIdToField) return null
 
     switch (logic.logicType) {
-      case LogicType.ShowFields:
+      case LogicType.ShowFields: {
+        const allInvalid = logic.show.every(
+          (fieldId) => !(fieldId in mapIdToField),
+        )
         return (
           <>
             <Text>then show</Text>
             <Stack direction="column" spacing="0.25rem">
-              {logic.show.map((fieldId, index) => (
-                <FieldLogicBadge key={index} field={mapIdToField[fieldId]} />
-              ))}
+              {allInvalid ? (
+                <FieldLogicBadge
+                  defaults={{
+                    variant: 'error',
+                    message:
+                      'All fields were deleted, please select at least one field',
+                  }}
+                />
+              ) : (
+                logic.show.map((fieldId, index) => (
+                  <FieldLogicBadge
+                    key={index}
+                    field={mapIdToField[fieldId]}
+                    defaults={{
+                      variant: 'info',
+                      message:
+                        'This field was deleted and has been removed from your logic',
+                    }}
+                  />
+                ))
+              )}
             </Stack>
           </>
         )
+      }
       case LogicType.PreventSubmit:
         return (
           <>
@@ -114,7 +136,14 @@ export const InactiveLogicBlock = ({
             >
               <Stack>
                 <Text>{index === 0 ? 'If' : 'and'}</Text>
-                <FieldLogicBadge field={mapIdToField[condition.field]} />
+                <FieldLogicBadge
+                  field={mapIdToField[condition.field]}
+                  defaults={{
+                    variant: 'error',
+                    message:
+                      'This field was deleted, please select another field',
+                  }}
+                />
               </Stack>
               <Stack>
                 <Text>{condition.state}</Text>

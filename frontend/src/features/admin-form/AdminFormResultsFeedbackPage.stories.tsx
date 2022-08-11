@@ -4,10 +4,12 @@ import { Meta, Story } from '@storybook/react'
 
 import {
   createFormBuilderMocks,
+  getAdminFormCollaborators,
   getAdminFormFeedback,
   getEmptyAdminFormFeedback,
   getStorageSubmissionMetadataResponse,
 } from '~/mocks/msw/handlers/admin-form'
+import { getUser } from '~/mocks/msw/handlers/user'
 
 import {
   ADMINFORM_RESULTS_SUBROUTE,
@@ -22,6 +24,8 @@ const DEFAULT_MSW_ROUTES = [
   ...createFormBuilderMocks({}, 0),
   getStorageSubmissionMetadataResponse(),
   getAdminFormFeedback(),
+  getUser(),
+  getAdminFormCollaborators(),
 ]
 
 export default {

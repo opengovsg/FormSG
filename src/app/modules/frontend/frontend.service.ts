@@ -20,6 +20,9 @@ export const getClientEnvVars = (): ClientEnvVars => {
     myInfoBannerContent: spcpMyInfoConfig.myInfoBannerContent, // MyInfo maintenance message
     GATrackingID: googleAnalyticsConfig.GATrackingID,
     spcpCookieDomain: spcpMyInfoConfig.spcpCookieDomain, // Cookie domain used for removing spcp cookies
+    respondentRolloutEmail: config.reactMigration.respondentRolloutEmail,
+    respondentRolloutStorage: config.reactMigration.respondentRolloutStorage,
+    adminRollout: config.reactMigration.adminRollout,
     angularPhaseOutDate: config.reactMigration.angularPhaseOutDate,
   }
 }
