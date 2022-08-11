@@ -9,7 +9,6 @@ import {
   Icon,
   Link,
   ModalBody,
-  ModalHeader,
   Stack,
   Text,
   useClipboard,
@@ -125,71 +124,76 @@ export const SaveSecretKeyScreen = ({
 
   return (
     <>
-      <ModalHeader color="secondary.700">
-        <Container maxW="42.5rem" p={0}>
-          <Stack direction="column" spacing="1rem">
-            <Icon
-              as={BxsError}
-              fontSize="3rem"
-              aria-hidden
-              color="danger.500"
-            />
-            <Text>Download Secret Key to proceed</Text>
-          </Stack>
-        </Container>
-      </ModalHeader>
       <ModalBody whiteSpace="pre-line">
         <Container maxW="42.5rem" p={0}>
-          <Text textStyle="body-1" color="secondary.500" mb="2.5rem">
-            You'll need it every time you access your responses to this form. If
-            you lose it,{' '}
-            <Text color="danger.500" textStyle="subhead-1" as="span">
-              all responses will be permanently lost
-            </Text>
-            . You can also{' '}
-            <Link variant="inline" href={mailToHref} onClick={handleActioned}>
-              email it
-            </Link>{' '}
-            for safekeeping.
-          </Text>
-          <Stack direction={{ base: 'column', md: 'row' }}>
-            <Tooltip
-              mt={0}
-              label={hasCopiedKey ? 'Copied!' : 'Copy Secret Key'}
-              wrapperProps={{
-                tabIndex: 0,
-                flex: 1,
-              }}
-            >
-              <Code
-                cursor="pointer"
-                onClick={handleCopyKey}
-                wordBreak="break-word"
-                display="inline-flex"
-                alignItems="center"
-                w="100%"
-                h="100%"
-                px="0.75rem"
-                py="0.625rem"
-                bg="neutral.300"
-                color="secondary.500"
-                borderRadius="4px"
-              >
-                {secretKey}
-              </Code>
-            </Tooltip>
-            <ButtonGroup>
-              <Button onClick={handleDownloadKey}>Download key</Button>
-              <IconButton
-                as="a"
-                onClick={handleActioned}
-                icon={<BiMailSend />}
-                aria-label="Email the secret key to someone"
-                href={mailToHref}
-                variant="outline"
+          <Box
+            bg="white"
+            py="3rem"
+            px={{ base: '1.5rem', md: '2.5rem' }}
+            mt={{ base: '5.5rem', md: '1rem' }}
+          >
+            <Stack direction="column" spacing="1rem" mb="1rem">
+              <Icon
+                as={BxsError}
+                fontSize="3rem"
+                aria-hidden
+                color="danger.500"
               />
-            </ButtonGroup>
-          </Stack>
+              <Text as="header" textStyle="h2" color="secondary.700">
+                Download Secret Key to proceed
+              </Text>
+            </Stack>
+            <Text textStyle="body-1" color="secondary.500" mb="2.5rem">
+              You'll need it every time you access your responses to this form.
+              If you lose it,{' '}
+              <Text color="danger.500" textStyle="subhead-1" as="span">
+                all responses will be permanently lost
+              </Text>
+              . You can also{' '}
+              <Link variant="inline" href={mailToHref} onClick={handleActioned}>
+                email it
+              </Link>{' '}
+              for safekeeping.
+            </Text>
+            <Stack direction={{ base: 'column', md: 'row' }}>
+              <Tooltip
+                mt={0}
+                label={hasCopiedKey ? 'Copied!' : 'Copy Secret Key'}
+                wrapperProps={{
+                  tabIndex: 0,
+                  flex: 1,
+                }}
+              >
+                <Code
+                  cursor="pointer"
+                  onClick={handleCopyKey}
+                  wordBreak="break-word"
+                  display="inline-flex"
+                  alignItems="center"
+                  w="100%"
+                  h="100%"
+                  px="0.75rem"
+                  py="0.625rem"
+                  bg="neutral.300"
+                  color="secondary.500"
+                  borderRadius="4px"
+                >
+                  {secretKey}
+                </Code>
+              </Tooltip>
+              <ButtonGroup>
+                <Button onClick={handleDownloadKey}>Download key</Button>
+                <IconButton
+                  as="a"
+                  onClick={handleActioned}
+                  icon={<BiMailSend />}
+                  aria-label="Email the secret key to someone"
+                  href={mailToHref}
+                  variant="outline"
+                />
+              </ButtonGroup>
+            </Stack>
+          </Box>
           {hasActioned && (
             <Box mt="1rem">
               <Checkbox
