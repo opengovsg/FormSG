@@ -14,7 +14,6 @@ import {
   Flex,
   FormControl,
   FormLabel,
-  Stack,
   Tabs,
   Text,
   Textarea,
@@ -31,7 +30,6 @@ import Radio from '~components/Radio'
 
 import { useMutateFormPage } from '~features/admin-form/common/mutations'
 import { useCreatePageSidebar } from '~features/admin-form/create/common/CreatePageSidebarContext'
-import { getTitleBg } from '~features/public-form/components/FormStartPage/useFormHeader'
 
 import {
   CustomLogoMeta,
