@@ -259,6 +259,7 @@ export const DesignDrawer = ({
           >
             {Object.values(FormColorTheme).map((color) => (
               <Radio
+                key={color}
                 {...register('colorTheme')}
                 colorScheme={`theme-${color}`}
                 value={color}
