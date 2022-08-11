@@ -8,13 +8,13 @@ export enum DateSelectedValidation {
 }
 
 export enum InvalidDaysOptions {
-  Sunday = 'Sunday',
-  Monday = 'Monday',
-  Tuesday = 'Tuesday',
-  Wednesday = 'Wednesday',
-  Thursday = 'Thursday',
-  Friday = 'Friday',
-  Saturday = 'Saturday',
+  Sunday = 'Sundays',
+  Monday = 'Mondays',
+  Tuesday = 'Tuesdays',
+  Wednesday = 'Wednesdays',
+  Thursday = 'Thursdays',
+  Friday = 'Fridays',
+  Saturday = 'Saturdays',
 }
 
 export type DateValidationOptions = {
