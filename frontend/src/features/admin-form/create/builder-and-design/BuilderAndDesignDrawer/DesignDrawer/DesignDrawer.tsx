@@ -254,36 +254,17 @@ export const DesignDrawer = ({
         >
           <FormLabel>Theme colour</FormLabel>
           <Radio.RadioGroup
-            value={startPageData.colorTheme}
+            defaultValue={startPageData.colorTheme}
             isDisabled={startPageMutation.isLoading}
           >
-            <Stack spacing="0" direction="row" display="inline">
-              {Object.values(FormColorTheme).map((color, idx) => (
-                <Radio
-                  key={idx}
-                  display="inline"
-                  width="1rem"
-                  value={color}
-                  {...register('colorTheme')}
-                  // CSS for inverted radio button
-                  // TODO: anti-aliasing at interface of border and ::before?
-                  border="2px solid"
-                  borderRadius="50%"
-                  borderColor="white"
-                  background={getTitleBg(color)}
-                  _checked={{ borderColor: getTitleBg(color) }}
-                  _before={{
-                    content: '""',
-                    display: 'inline-block',
-                    width: '20px',
-                    height: '20px',
-                    border: '2px solid',
-                    borderColor: 'white',
-                    borderRadius: '50%',
-                  }}
-                />
-              ))}
-            </Stack>
+            {Object.values(FormColorTheme).map((color) => (
+              <Radio
+                {...register('colorTheme')}
+                colorScheme={`theme-${color}`}
+                value={color}
+                w="auto"
+              />
+            ))}
           </Radio.RadioGroup>
           <FormErrorMessage>{errors.colorTheme?.message}</FormErrorMessage>
         </FormControl>
