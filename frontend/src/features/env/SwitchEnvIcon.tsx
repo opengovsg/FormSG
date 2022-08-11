@@ -10,7 +10,13 @@ import { SwitchEnvFeedbackModal } from './SwitchEnvFeedbackModal'
 export const SwitchEnvIcon = (): JSX.Element => {
   const { isOpen, onOpen, onClose } = useDisclosure()
   return (
-    <Flex position="fixed" bottom="2.75rem" right="2.75rem" zIndex="9999">
+    <Flex
+      position="fixed"
+      bottom="2.75rem"
+      right="2.75rem"
+      zIndex="9999"
+      cursor="pointer"
+    >
       <Tooltip
         placement="left"
         label="Have feedback?"
