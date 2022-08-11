@@ -128,6 +128,7 @@ const WhatsNewNavBarTab = ({
         color="secondary.500"
         onClick={onClick}
         aria-label={WHATS_NEW_LABEL}
+        fontWeight="500"
       >
         {WHATS_NEW_LABEL}
       </Button>
