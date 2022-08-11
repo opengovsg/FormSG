@@ -39,4 +39,8 @@ export const injectedVariables: FrontendInjectedVariables = {
   myInfoBannerContent: formsgWindow.myInfoBannerContent ?? null,
   GATrackingID: formsgWindow.GATrackingID ?? null,
   spcpCookieDomain: formsgWindow.spcpCookieDomain ?? null,
+  respondentRolloutEmail: formsgWindow.respondentRolloutEmail,
+  respondentRolloutStorage: formsgWindow.respondentRolloutStorage,
+  adminRollout: formsgWindow.adminRollout,
+  angularPhaseOutDate: formsgWindow.angularPhaseOutDate ?? null,
 }
