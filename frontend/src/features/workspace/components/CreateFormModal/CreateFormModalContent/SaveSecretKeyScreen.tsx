@@ -153,13 +153,24 @@ export const SaveSecretKeyScreen = ({
                 mt={0}
                 label={hasCopiedKey ? 'Copied!' : 'Copy Secret Key'}
                 wrapperProps={{
+                  // To allow for focus styling on code element.
+                  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                  // @ts-ignore
+                  'data-group': true,
                   tabIndex: 0,
                   flex: 1,
                 }}
               >
                 <Code
+                  transition="background 0.2s ease"
                   cursor="pointer"
                   onClick={handleCopyKey}
+                  _groupFocus={{
+                    bg: 'neutral.400',
+                  }}
+                  _hover={{
+                    bg: 'neutral.300',
+                  }}
                   wordBreak="break-word"
                   display="inline-flex"
                   alignItems="center"
@@ -167,7 +178,7 @@ export const SaveSecretKeyScreen = ({
                   h="100%"
                   px="0.75rem"
                   py="0.625rem"
-                  bg="neutral.300"
+                  bg="neutral.200"
                   color="secondary.500"
                   borderRadius="4px"
                 >
