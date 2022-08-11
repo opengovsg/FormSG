@@ -91,7 +91,7 @@ export const SwitchEnvFeedbackModal = ({
           <>
             <ModalHeader>Thank you for your feedback!</ModalHeader>
             <ModalBody>
-              Would you like to switch back to the original FormSG now?
+              Would you like to switch back to the original FormSG?
             </ModalBody>
             <ModalFooter mt={{ base: '2.5rem', md: '0' }}>
               <Stack
@@ -141,7 +141,7 @@ export const SwitchEnvFeedbackModal = ({
                         : 'Any fields you’ve filled in your form so far will be cleared'
                     }
                   >
-                    Please tell us what we can improve on.
+                    Please tell us what we can improve on
                   </FormLabel>
                   <Textarea {...register('feedback')} tabIndex={1} />
                 </FormControl>
