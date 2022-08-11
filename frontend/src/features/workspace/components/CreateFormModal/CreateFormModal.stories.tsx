@@ -46,24 +46,22 @@ export const Default = Template.bind({})
 
 export const StorageModeAckScreen = () => {
   const { register } = useForm<CreateFormWizardInputProps>()
-  const [hasActioned, setHasActioned] = useState(false)
   const mockHook = useCallback(() => {
     return {
       isLoading: false,
       isSubmitEnabled: false,
-      hasActioned,
+      hasDownloaded: false,
       hasCopiedKey: false,
       handleCopyKey: () => console.log('copy key'),
       handleDownloadKey: () => console.log('download key'),
       handleEmailKey: () => console.log('email key'),
       mailToHref: 'mailto:?subject=&body=',
-      handleActioned: () => setHasActioned(true),
       handleCreateStorageModeForm: () =>
         Promise.resolve(console.log('create storage mode form')),
       secretKey: 'mock-secret-key',
       register,
     }
-  }, [hasActioned, register])
+  }, [register])
 
   return (
     <Modal isOpen onClose={() => console.log('close modal')} size="full">

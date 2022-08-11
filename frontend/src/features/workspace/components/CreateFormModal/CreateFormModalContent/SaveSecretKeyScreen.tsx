@@ -37,7 +37,7 @@ const useSaveSecretKeyDefault = () => {
     keypair: { secretKey },
   } = useCreateFormWizard()
 
-  const [hasActioned, setHasActioned] = useState(false)
+  const [hasDownloaded, setHasDownloaded] = useState(false)
 
   const { hasCopied, onCopy } = useClipboard(secretKey)
 
@@ -64,16 +64,12 @@ const useSaveSecretKeyDefault = () => {
     return href
   }, [secretKey, titleInputValue])
 
-  const handleActioned = useCallback(() => {
-    setHasActioned(true)
-  }, [])
-
   const handleDownloadKey = useCallback(() => {
     FileSaver.saveAs(
       new Blob([secretKey], { type: 'text/plain;charset=utf-8' }),
       `Form Secret Key - ${titleInputValue}.txt`,
     )
-    setHasActioned(true)
+    setHasDownloaded(true)
   }, [secretKey, titleInputValue])
 
   const handleCopyKey = useCallback(
@@ -81,16 +77,14 @@ const useSaveSecretKeyDefault = () => {
       e?.preventDefault()
       e?.stopPropagation()
       onCopy()
-      setHasActioned(true)
     },
     [onCopy],
   )
 
   return {
     isLoading,
-    hasActioned,
-    handleActioned,
-    isSubmitEnabled: isValid && hasActioned,
+    hasDownloaded,
+    isSubmitEnabled: isValid && hasDownloaded,
     hasCopiedKey: hasCopied,
     handleCopyKey,
     handleDownloadKey,
@@ -114,9 +108,8 @@ export const SaveSecretKeyScreen = ({
     handleCreateStorageModeForm,
     handleDownloadKey,
     mailToHref,
-    handleActioned,
+    hasDownloaded,
     isSubmitEnabled,
-    hasActioned,
     hasCopiedKey,
     secretKey,
     register,
@@ -150,7 +143,7 @@ export const SaveSecretKeyScreen = ({
                 all responses will be permanently lost
               </Text>
               . You can also{' '}
-              <Link variant="inline" href={mailToHref} onClick={handleActioned}>
+              <Link variant="inline" href={mailToHref}>
                 email it
               </Link>{' '}
               for safekeeping.
@@ -185,7 +178,6 @@ export const SaveSecretKeyScreen = ({
                 <Button onClick={handleDownloadKey}>Download key</Button>
                 <IconButton
                   as="a"
-                  onClick={handleActioned}
                   icon={<BiMailSend />}
                   aria-label="Email the secret key to someone"
                   href={mailToHref}
@@ -194,7 +186,7 @@ export const SaveSecretKeyScreen = ({
               </ButtonGroup>
             </Stack>
           </Box>
-          {hasActioned && (
+          {hasDownloaded && (
             <Box mt="1rem">
               <Checkbox
                 aria-label="Storage mode form acknowledgement"
