@@ -43,13 +43,13 @@ import {
   MOCK_JWT_PAYLOAD,
   MOCK_LOGIN_DOC,
   MOCK_LOGIN_HTML,
-  MOCK_NRIC,
   MOCK_OIDC_STATE,
   MOCK_REDIRECT_URL,
   MOCK_RELAY_STATE,
   MOCK_REMEMBER_ME,
   MOCK_SP_FORM,
   MOCK_SP_OIDC_AUTHORISATION_CODE,
+  MOCK_SP_OIDC_EXTRACTED_NDI_PAYLOAD,
   MOCK_SP_OIDC_JWT_PAYLOAD,
   MOCK_SP_SAML,
   MOCK_TARGET,
@@ -806,7 +806,7 @@ describe('spcp.controller', () => {
 
       beforeEach(() => {
         mockSpOidcServiceClass.exchangeAuthCodeAndRetrieveData.mockReturnValue(
-          okAsync(MOCK_NRIC),
+          okAsync(MOCK_SP_OIDC_EXTRACTED_NDI_PAYLOAD),
         )
 
         mockSpOidcServiceClass.parseState.mockReturnValue(
@@ -852,7 +852,7 @@ describe('spcp.controller', () => {
           MOCK_OIDC_STATE,
         )
         expect(mockSpOidcServiceClass.createJWTPayload).toHaveBeenCalledWith(
-          MOCK_NRIC,
+          MOCK_SP_OIDC_EXTRACTED_NDI_PAYLOAD,
           MOCK_REMEMBER_ME,
         )
         expect(mockSpOidcServiceClass.createJWT).toHaveBeenCalledWith(
@@ -1010,7 +1010,7 @@ describe('spcp.controller', () => {
           MOCK_OIDC_STATE,
         )
         expect(mockSpOidcServiceClass.createJWTPayload).toHaveBeenCalledWith(
-          MOCK_NRIC,
+          MOCK_SP_OIDC_EXTRACTED_NDI_PAYLOAD,
           MOCK_REMEMBER_ME,
         )
 
@@ -1042,7 +1042,7 @@ describe('spcp.controller', () => {
           MOCK_OIDC_STATE,
         )
         expect(mockSpOidcServiceClass.createJWTPayload).toHaveBeenCalledWith(
-          MOCK_NRIC,
+          MOCK_SP_OIDC_EXTRACTED_NDI_PAYLOAD,
           MOCK_REMEMBER_ME,
         )
 
@@ -1078,7 +1078,7 @@ describe('spcp.controller', () => {
           MOCK_OIDC_STATE,
         )
         expect(mockSpOidcServiceClass.createJWTPayload).toHaveBeenCalledWith(
-          MOCK_NRIC,
+          MOCK_SP_OIDC_EXTRACTED_NDI_PAYLOAD,
           MOCK_REMEMBER_ME,
         )
 

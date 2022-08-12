@@ -17,6 +17,7 @@ import {
   MOCK_SERVICE_PARAMS as MOCK_PARAMS,
   MOCK_SP_JWT_PAYLOAD,
   MOCK_SP_OIDC_AUTHORISATION_CODE,
+  MOCK_SP_OIDC_EXTRACTED_NDI_PAYLOAD,
   MOCK_TARGET,
 } from '../../__tests__/spcp.test.constants'
 import {
@@ -484,7 +485,7 @@ describe('spcp.oidc.service.sp', () => {
       expect(
         mockSpOidcClient.exchangeAuthCodeAndDecodeVerifyToken,
       ).toHaveBeenCalledWith(MOCK_SP_OIDC_AUTHORISATION_CODE)
-      expect(result._unsafeUnwrap()).toEqual(MOCK_NRIC)
+      expect(result._unsafeUnwrap()).toEqual({ userName: MOCK_NRIC })
     })
 
     it('should should return ExchangeAuthTokenError if client errors', async () => {
@@ -563,7 +564,7 @@ describe('spcp.oidc.service.sp', () => {
         mockSpOidcClient,
         MOCK_PARAMS_SP,
       )
-      const MOCK_NRIC = 'S1234567A'
+      const MOCK_NRIC = 'S1234567C'
       const expectedPayload = {
         userName: MOCK_NRIC,
         rememberMe: true,
@@ -571,32 +572,12 @@ describe('spcp.oidc.service.sp', () => {
 
       // Act
       const jwtPayloadResult = spOidcServiceClass.createJWTPayload(
-        MOCK_NRIC,
+        MOCK_SP_OIDC_EXTRACTED_NDI_PAYLOAD,
         true,
       )
 
       // Assert
       expect(jwtPayloadResult._unsafeUnwrap()).toMatchObject(expectedPayload)
-    })
-
-    it('should return MissingAttributesError if attribute is not string', () => {
-      // Arrange
-      const spOidcServiceClass = new SpOidcServiceClass(
-        mockSpOidcClient,
-        MOCK_PARAMS_SP,
-      )
-      const MOCK_NRIC = { nric: 'S1234567A' } as unknown as string
-
-      // Act
-      const jwtPayloadResult = spOidcServiceClass.createJWTPayload(
-        MOCK_NRIC,
-        true,
-      )
-
-      // Assert
-      expect(jwtPayloadResult._unsafeUnwrapErr()).toBeInstanceOf(
-        MissingAttributesError,
-      )
     })
 
     it('should return MissingAttributesError if attribute is empty string string', () => {
@@ -609,7 +590,7 @@ describe('spcp.oidc.service.sp', () => {
 
       // Act
       const jwtPayloadResult = spOidcServiceClass.createJWTPayload(
-        MOCK_NRIC,
+        { userName: MOCK_NRIC },
         true,
       )
 

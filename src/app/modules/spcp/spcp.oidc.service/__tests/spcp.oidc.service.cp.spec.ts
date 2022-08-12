@@ -592,26 +592,6 @@ describe('spcp.oidc.service', () => {
       expect(jwtPayloadResult._unsafeUnwrap()).toMatchObject(expectedPayload)
     })
 
-    it('should return MissingAttributesError if attribute is not object', () => {
-      // Arrange
-      const cpOidcServiceClass = new CpOidcServiceClass(
-        mockCpOidcClient,
-        MOCK_PARAMS_CP,
-      )
-      const nric = 'S1234567A'
-
-      // Act
-      const jwtPayloadResult = cpOidcServiceClass.createJWTPayload(
-        nric as unknown as ExtractedCorppassNDIPayload,
-        true,
-      )
-
-      // Assert
-      expect(jwtPayloadResult._unsafeUnwrapErr()).toBeInstanceOf(
-        MissingAttributesError,
-      )
-    })
-
     it('should return MissingAttributesError if nric is empty string string', () => {
       // Arrange
       const cpOidcServiceClass = new CpOidcServiceClass(
