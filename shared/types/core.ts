@@ -29,4 +29,5 @@ export type ClientEnvVars = {
   respondentRolloutEmail: number
   respondentRolloutStorage: number
   adminRollout: number
+  angularPhaseOutDate: string | null
 }

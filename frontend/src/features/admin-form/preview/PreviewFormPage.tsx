@@ -3,6 +3,8 @@ import { Flex } from '@chakra-ui/react'
 
 import GovtMasthead from '~components/GovtMasthead'
 
+// TODO #4279: Remove after React rollout is complete
+import { SwitchEnvIcon } from '~features/env/SwitchEnvIcon'
 import FormEndPage from '~features/public-form/components/FormEndPage'
 import FormFields from '~features/public-form/components/FormFields'
 import { FormSectionsProvider } from '~features/public-form/components/FormFields/FormSectionsContext'
@@ -21,9 +23,10 @@ export const PreviewFormPage = (): JSX.Element => {
 
   return (
     <Flex flexDir="column" height="100vh" pos="relative">
-      <GovtMasthead />
       <PreviewFormProvider formId={formId}>
+        <GovtMasthead />
         <PreviewFormBanner />
+        <SwitchEnvIcon />
         <FormSectionsProvider>
           <FormStartPage />
           <PublicFormWrapper isPreview>

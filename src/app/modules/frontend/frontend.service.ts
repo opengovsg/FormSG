@@ -23,5 +23,6 @@ export const getClientEnvVars = (): ClientEnvVars => {
     respondentRolloutEmail: config.reactMigration.respondentRolloutEmail,
     respondentRolloutStorage: config.reactMigration.respondentRolloutStorage,
     adminRollout: config.reactMigration.adminRollout,
+    angularPhaseOutDate: config.reactMigration.angularPhaseOutDate,
   }
 }

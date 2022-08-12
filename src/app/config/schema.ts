@@ -103,6 +103,14 @@ export const compulsoryVarsSchema: Schema<ICompulsoryVarsSchema> = {
       env: 'SECRET_ENV',
     },
   },
+  reactMigration: {
+    reactToAngularFeedbackFormId: {
+      doc: 'Form ID of the React to Angular bug report feedback form',
+      format: String,
+      default: null,
+      env: 'REACT_TO_ANGULAR_FEEDBACK_FORM_ID',
+    },
+  },
 }
 
 // If the following environment variables are not specified, we will fall back to the defaults provided
@@ -326,6 +334,12 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
       format: String,
       default: 'v2-qa-ui',
       env: 'REACT_MIGRATION_QA_COOKIE_NAME',
+    },
+    angularPhaseOutDate: {
+      doc: 'Last date that AngularJS app is available',
+      format: String,
+      default: '15 September 2022',
+      env: 'REACT_MIGRATION_ANGULAR_END_DATE',
     },
   },
 }

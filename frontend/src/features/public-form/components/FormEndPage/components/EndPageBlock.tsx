@@ -24,6 +24,7 @@ export interface EndPageBlockProps {
   endPage: FormDto['endPage']
   submissionData: SubmissionData
   colorTheme?: FormColorTheme
+  isExpandable?: boolean
 }
 
 export const EndPageBlock = ({
@@ -31,6 +32,7 @@ export const EndPageBlock = ({
   endPage,
   submissionData,
   colorTheme = FormColorTheme.Blue,
+  isExpandable = true,
 }: EndPageBlockProps): JSX.Element => {
   const prettifiedDateString = useMemo(() => {
     return format(new Date(submissionData.timeInEpochMs), 'dd MMM yyyy, h:mm a')
@@ -38,7 +40,12 @@ export const EndPageBlock = ({
 
   return (
     <Flex flexDir="column">
-      <Accordion allowToggle m="-1rem" flex={1} variant="medium">
+      <Accordion
+        {...(isExpandable ? { allowToggle: true } : { defaultIndex: [0] })}
+        m="-1rem"
+        flex={1}
+        variant="medium"
+      >
         <AccordionItem color="secondary.500" border="none">
           <AccordionButton>
             <Stack

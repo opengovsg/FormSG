@@ -4,6 +4,8 @@ import { get } from 'lodash'
 
 import AdminForbiddenErrorPage from '~pages/AdminForbiddenError'
 import NotFoundErrorPage from '~pages/NotFoundError'
+// TODO #4279: Remove after React rollout is complete
+import { SwitchEnvIcon } from '~features/env/SwitchEnvIcon'
 
 import { StorageResponsesProvider } from '../responses/ResponsesPage/storage/StorageResponsesProvider'
 
@@ -29,6 +31,7 @@ export const AdminFormLayout = (): JSX.Element => {
   return (
     <Flex flexDir="column" height="100vh" overflow="hidden" pos="relative">
       <AdminFormNavbar />
+      <SwitchEnvIcon />
       <StorageResponsesProvider>
         <Outlet />
       </StorageResponsesProvider>

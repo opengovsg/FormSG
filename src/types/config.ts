@@ -59,6 +59,8 @@ export type ReactMigrationConfig = {
   respondentCookieName: string
   adminCookieName: string
   qaCookieName: string
+  reactToAngularFeedbackFormId: string
+  angularPhaseOutDate: string
 }
 
 export type Config = {
@@ -109,6 +111,9 @@ export interface ICompulsoryVarsSchema {
     imageS3Bucket: string
     logoS3Bucket: string
     attachmentS3Bucket: string
+  }
+  reactMigration: {
+    reactToAngularFeedbackFormId: string
   }
 }
 
@@ -164,6 +169,7 @@ export interface IOptionalVarsSchema {
     respondentCookieName: string
     adminCookieName: string
     qaCookieName: string
+    angularPhaseOutDate: string
   }
 }
 
