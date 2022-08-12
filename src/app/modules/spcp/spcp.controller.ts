@@ -208,179 +208,87 @@ export const handleSpcpOidcLogin: (
     authType,
   }
 
-  // Switch statement necessary for compiler to infer the type of oidcService. Otherwise it will throw an error because oidcService = SpOidcServiceClass | CpOidcServiceClass, but oidcService.createJWTPayload will expect  string & ExtractedNDICorppassPayload as its first parameter
-  switch (authType) {
-    case FormAuthType.SP: {
-      const oidcService = getOidcService(authType)
+  const oidcService = getOidcService(authType)
 
-      const result = await oidcService.exchangeAuthCodeAndRetrieveData(code)
+  const result = await oidcService.exchangeAuthCodeAndRetrieveData(code)
 
-      if (result.isErr()) {
-        logger.error({
-          message: 'Failed to exchange auth code and retrieve nric',
-          meta: logMeta,
-          error: result.error,
-        })
-        return res.sendStatus(StatusCodes.BAD_REQUEST)
-      }
-
-      const parseResult = oidcService.parseState(state)
-      if (parseResult.isErr()) {
-        logger.error({
-          message: 'Invalid login parameters',
-          meta: logMeta,
-          error: parseResult.error,
-        })
-        return res.sendStatus(StatusCodes.BAD_REQUEST)
-      }
-      const { formId, destination, rememberMe, cookieDuration } =
-        parseResult.value
-      const formResult = await FormService.retrieveFullFormById(formId)
-      if (formResult.isErr()) {
-        logger.error({
-          message: 'Form not found',
-          meta: logMeta,
-          error: formResult.error,
-        })
-        return res.sendStatus(StatusCodes.NOT_FOUND)
-      }
-      const form = formResult.value
-      if (form.authType !== authType) {
-        logger.error({
-          message: "Log in attempt to wrong endpoint for form's authType",
-          meta: {
-            ...logMeta,
-            formAuthType: form.authType,
-            endpointAuthType: authType,
-          },
-        })
-        res.cookie('isLoginError', true)
-        return res.redirect(destination)
-      }
-
-      const attributes = result.value
-      const jwtResult = await oidcService
-        .createJWTPayload(attributes, rememberMe)
-        .asyncAndThen((jwtPayload) =>
-          oidcService.createJWT(jwtPayload, cookieDuration),
-        )
-
-      if (jwtResult.isErr()) {
-        logger.error({
-          message: 'Error creating JWT',
-          meta: logMeta,
-          error: jwtResult.error,
-        })
-        res.cookie('isLoginError', true)
-        return res.redirect(destination)
-      }
-
-      return BillingService.recordLoginByForm(form)
-        .map(() => {
-          res.cookie(oidcService.jwtName, jwtResult.value, {
-            maxAge: cookieDuration,
-            httpOnly: true,
-            sameSite: 'lax', // Setting to 'strict' prevents Singpass login on Safari, Firefox
-            secure: !config.isDev,
-            ...oidcService.getCookieSettings(),
-          })
-          return res.redirect(destination)
-        })
-        .mapErr((error) => {
-          logger.error({
-            message: 'Error while adding login to database',
-            meta: logMeta,
-            error,
-          })
-          res.cookie('isLoginError', true)
-          return res.redirect(destination)
-        })
-    }
-    case FormAuthType.CP: {
-      const oidcService = getOidcService(authType)
-
-      const result = await oidcService.exchangeAuthCodeAndRetrieveData(code)
-
-      if (result.isErr()) {
-        logger.error({
-          message: 'Failed to exchange auth code and retrieve nric',
-          meta: logMeta,
-          error: result.error,
-        })
-        return res.sendStatus(StatusCodes.BAD_REQUEST)
-      }
-
-      const parseResult = oidcService.parseState(state)
-      if (parseResult.isErr()) {
-        logger.error({
-          message: 'Invalid login parameters',
-          meta: logMeta,
-          error: parseResult.error,
-        })
-        return res.sendStatus(StatusCodes.BAD_REQUEST)
-      }
-      const { formId, destination, rememberMe, cookieDuration } =
-        parseResult.value
-      const formResult = await FormService.retrieveFullFormById(formId)
-      if (formResult.isErr()) {
-        logger.error({
-          message: 'Form not found',
-          meta: logMeta,
-          error: formResult.error,
-        })
-        return res.sendStatus(StatusCodes.NOT_FOUND)
-      }
-      const form = formResult.value
-      if (form.authType !== authType) {
-        logger.error({
-          message: "Log in attempt to wrong endpoint for form's authType",
-          meta: {
-            ...logMeta,
-            formAuthType: form.authType,
-            endpointAuthType: authType,
-          },
-        })
-        res.cookie('isLoginError', true)
-        return res.redirect(destination)
-      }
-
-      const attributes = result.value
-      const jwtResult = await oidcService
-        .createJWTPayload(attributes, rememberMe)
-        .asyncAndThen((jwtPayload) =>
-          oidcService.createJWT(jwtPayload, cookieDuration),
-        )
-
-      if (jwtResult.isErr()) {
-        logger.error({
-          message: 'Error creating JWT',
-          meta: logMeta,
-          error: jwtResult.error,
-        })
-        res.cookie('isLoginError', true)
-        return res.redirect(destination)
-      }
-
-      return BillingService.recordLoginByForm(form)
-        .map(() => {
-          res.cookie(oidcService.jwtName, jwtResult.value, {
-            maxAge: cookieDuration,
-            httpOnly: true,
-            sameSite: 'lax', // Setting to 'strict' prevents Singpass login on Safari, Firefox
-            secure: !config.isDev,
-            ...oidcService.getCookieSettings(),
-          })
-          return res.redirect(destination)
-        })
-        .mapErr((error) => {
-          logger.error({
-            message: 'Error while adding login to database',
-            meta: logMeta,
-            error,
-          })
-          res.cookie('isLoginError', true)
-          return res.redirect(destination)
-        })
-    }
+  if (result.isErr()) {
+    logger.error({
+      message: 'Failed to exchange auth code and retrieve nric',
+      meta: logMeta,
+      error: result.error,
+    })
+    return res.sendStatus(StatusCodes.BAD_REQUEST)
   }
+
+  const parseResult = oidcService.parseState(state)
+  if (parseResult.isErr()) {
+    logger.error({
+      message: 'Invalid login parameters',
+      meta: logMeta,
+      error: parseResult.error,
+    })
+    return res.sendStatus(StatusCodes.BAD_REQUEST)
+  }
+  const { formId, destination, rememberMe, cookieDuration } = parseResult.value
+  const formResult = await FormService.retrieveFullFormById(formId)
+  if (formResult.isErr()) {
+    logger.error({
+      message: 'Form not found',
+      meta: logMeta,
+      error: formResult.error,
+    })
+    return res.sendStatus(StatusCodes.NOT_FOUND)
+  }
+  const form = formResult.value
+  if (form.authType !== authType) {
+    logger.error({
+      message: "Log in attempt to wrong endpoint for form's authType",
+      meta: {
+        ...logMeta,
+        formAuthType: form.authType,
+        endpointAuthType: authType,
+      },
+    })
+    res.cookie('isLoginError', true)
+    return res.redirect(destination)
+  }
+
+  const attributes = result.value
+  const jwtResult = await oidcService
+    .createJWTPayload(attributes, rememberMe)
+    .asyncAndThen((jwtPayload) =>
+      oidcService.createJWT(jwtPayload, cookieDuration),
+    )
+
+  if (jwtResult.isErr()) {
+    logger.error({
+      message: 'Error creating JWT',
+      meta: logMeta,
+      error: jwtResult.error,
+    })
+    res.cookie('isLoginError', true)
+    return res.redirect(destination)
+  }
+
+  return BillingService.recordLoginByForm(form)
+    .map(() => {
+      res.cookie(oidcService.jwtName, jwtResult.value, {
+        maxAge: cookieDuration,
+        httpOnly: true,
+        sameSite: 'lax', // Setting to 'strict' prevents Singpass login on Safari, Firefox
+        secure: !config.isDev,
+        ...oidcService.getCookieSettings(),
+      })
+      return res.redirect(destination)
+    })
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error while adding login to database',
+        meta: logMeta,
+        error,
+      })
+      res.cookie('isLoginError', true)
+      return res.redirect(destination)
+    })
 }

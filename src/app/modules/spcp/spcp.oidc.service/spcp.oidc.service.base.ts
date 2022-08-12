@@ -15,7 +15,7 @@ import {
 import { SpcpOidcBaseClient } from '../spcp.oidc.client'
 import {
   CorppassJwtPayloadFromCookie,
-  ExtractedCorppassNDIPayload,
+  ExtractedNDIPayload,
   JwtName,
   JwtPayload,
   JwtPayloadFromCookie,
@@ -109,13 +109,27 @@ export abstract class SpcpOidcServiceClass {
 
   abstract exchangeAuthCodeAndRetrieveData(
     code: string,
-  ): ResultAsync<string | ExtractedCorppassNDIPayload, InvalidIdTokenError>
+  ): ResultAsync<ExtractedNDIPayload, InvalidIdTokenError>
 
-  abstract createJWTPayload(
-    attributes: string | ExtractedCorppassNDIPayload,
+  /**
+   * Creates a payload of SP/CP user data based on attributes
+   * @param attributes user data returned by SP/CP from client
+   * @param rememberMe Whether to enable longer duration for SingPass cookies
+   * @return The payload
+   */
+  createJWTPayload(
+    attributes: ExtractedNDIPayload,
     rememberMe: boolean,
-  ): Result<JwtPayload, MissingAttributesError>
+  ): Result<JwtPayload, MissingAttributesError> {
+    const { userName } = attributes
+    const payload: JwtPayload = { userName, rememberMe }
 
+    if ('userInfo' in attributes) {
+      payload.userInfo = attributes.userInfo
+    }
+
+    return userName ? ok(payload) : err(new MissingAttributesError())
+  }
   /**
    * Gets the sp/cp session info from the cookies
    * @param cookies The sp/cp cookies set by the redirect

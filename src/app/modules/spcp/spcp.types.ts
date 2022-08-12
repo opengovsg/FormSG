@@ -19,10 +19,18 @@ export type CorppassJwtPayload = {
   rememberMe: boolean
 }
 
+export type ExtractedSingpassNDIPayload = {
+  userName: string
+}
+
 export type ExtractedCorppassNDIPayload = {
   userName: string
   userInfo: string
 }
+
+export type ExtractedNDIPayload =
+  | ExtractedSingpassNDIPayload
+  | ExtractedCorppassNDIPayload
 
 export type SgidJwtPayload = {
   userName: string

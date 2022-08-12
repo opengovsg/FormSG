@@ -1,4 +1,4 @@
-import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
+import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 
 import { FormAuthType } from '../../../../../shared/types'
 import { createLoggerWithLabel } from '../../../config/logger'
@@ -6,13 +6,12 @@ import {
   ExchangeAuthTokenError,
   InvalidIdTokenError,
   InvalidJwtError,
-  MissingAttributesError,
   VerifyJwtError,
 } from '../spcp.errors'
 import { SpOidcClient } from '../spcp.oidc.client'
 import {
+  ExtractedSingpassNDIPayload,
   JwtName,
-  JwtPayload,
   SingpassJwtPayloadFromCookie,
 } from '../spcp.types'
 import { isSingpassJwtPayload } from '../spcp.util'
@@ -94,7 +93,7 @@ export class SpOidcServiceClass extends SpcpOidcServiceClass {
    */
   exchangeAuthCodeAndRetrieveData(
     code: string,
-  ): ResultAsync<string, InvalidIdTokenError> {
+  ): ResultAsync<ExtractedSingpassNDIPayload, InvalidIdTokenError> {
     const logMeta = {
       action: 'exchangeAuthCodeAndRetrieveData',
     }
@@ -109,7 +108,7 @@ export class SpOidcServiceClass extends SpcpOidcServiceClass {
           if (result instanceof Error) {
             return Promise.reject(result)
           }
-          return result
+          return { userName: result }
         }),
       (error) => {
         logger.error({
@@ -126,21 +125,5 @@ export class SpOidcServiceClass extends SpcpOidcServiceClass {
     return rememberMe
       ? this.oidcProps.cookieMaxAgePreserved
       : this.oidcProps.cookieMaxAge
-  }
-
-  /**
-   * Creates a payload of SP user data based on attributes
-   * @param attributes user data returned by SP from client
-   * @param rememberMe Whether to enable longer duration for SingPass cookies
-   * @return The payload
-   */
-  createJWTPayload(
-    attributes: string,
-    rememberMe: boolean,
-  ): Result<JwtPayload, MissingAttributesError> {
-    const userName = attributes
-    return userName && typeof userName === 'string'
-      ? ok({ userName, rememberMe })
-      : err(new MissingAttributesError())
   }
 }
