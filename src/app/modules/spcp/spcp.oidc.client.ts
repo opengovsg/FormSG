@@ -283,14 +283,6 @@ export abstract class SpcpOidcBaseClient {
 
     const baseClient = await this.getBaseClientFromCache()
 
-    const signingKeyResult = this.getSigningKey()
-
-    if (signingKeyResult instanceof GetSigningKeyError) {
-      throw new ExchangeAuthTokenError(
-        'Failed to exchange Auth Code, no signing key found',
-      )
-    }
-
     const tokenEndpoint = baseClient.issuer.metadata.token_endpoint
 
     if (!tokenEndpoint) {
