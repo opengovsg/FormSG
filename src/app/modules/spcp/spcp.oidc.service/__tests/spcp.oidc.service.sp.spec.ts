@@ -63,7 +63,7 @@ describe('spcp.oidc.service.sp', () => {
 
   const mockSpOidcClient = new SpOidcClient(spOidcClientConfig)
   describe('getClient', () => {
-    it('should correctly return sp oidc client if authtype if SP', () => {
+    it('should correctly return sp oidc client', () => {
       // Arrange
 
       const spOidcServiceClass = new SpOidcServiceClass(
@@ -81,7 +81,7 @@ describe('spcp.oidc.service.sp', () => {
     })
   })
 
-  describe('createRedirectUrl for SP forms', () => {
+  describe('createRedirectUrl', () => {
     it('should call sp oidc client createRedirectUrl with the correct params and return the redirectUrl if it resolves', async () => {
       // Arrange
 
@@ -90,8 +90,8 @@ describe('spcp.oidc.service.sp', () => {
         MOCK_PARAMS_SP,
       )
 
-      mockSpOidcClient.createAuthorisationUrl = jest
-        .fn()
+      jest
+        .spyOn(mockSpOidcClient, 'createAuthorisationUrl')
         .mockResolvedValueOnce(MOCK_REDIRECT_URL)
 
       // Act
@@ -119,8 +119,8 @@ describe('spcp.oidc.service.sp', () => {
         MOCK_PARAMS_SP,
       )
 
-      mockSpOidcClient.createAuthorisationUrl = jest
-        .fn()
+      jest
+        .spyOn(mockSpOidcClient, 'createAuthorisationUrl')
         .mockRejectedValueOnce(new Error())
 
       // Act
@@ -143,7 +143,7 @@ describe('spcp.oidc.service.sp', () => {
     })
   })
 
-  describe('extractJwt for SP forms', () => {
+  describe('extractJwt', () => {
     it('should return SingPass JWT correctly', () => {
       // Arrange
       const spOidcServiceClass = new SpOidcServiceClass(
@@ -217,7 +217,9 @@ describe('spcp.oidc.service.sp', () => {
         MOCK_PARAMS_SP,
       )
 
-      mockSpOidcClient.verifyJwt = jest.fn().mockRejectedValueOnce(new Error())
+      jest
+        .spyOn(mockSpOidcClient, 'verifyJwt')
+        .mockRejectedValueOnce(new Error())
 
       // Act
       const result = await spOidcServiceClass.extractJwtPayload(MOCK_JWT)
@@ -233,7 +235,7 @@ describe('spcp.oidc.service.sp', () => {
         MOCK_PARAMS_SP,
       )
 
-      mockSpOidcClient.verifyJwt = jest.fn().mockResolvedValueOnce({})
+      jest.spyOn(mockSpOidcClient, 'verifyJwt').mockResolvedValueOnce({})
 
       // Act
       const result = await spOidcServiceClass.extractJwtPayload(MOCK_JWT)
@@ -243,7 +245,7 @@ describe('spcp.oidc.service.sp', () => {
     })
   })
 
-  describe('extractJwtPayloadFromRequest for SP', () => {
+  describe('extractJwtPayloadFromRequest', () => {
     it('should return a SP JWT payload when there is a valid JWT in the request', async () => {
       // Arrange
       const spOidcServiceClass = new SpOidcServiceClass(
@@ -285,7 +287,7 @@ describe('spcp.oidc.service.sp', () => {
         MOCK_PARAMS_SP,
       )
 
-      mockSpOidcClient.verifyJwt = jest.fn().mockResolvedValueOnce({})
+      jest.spyOn(mockSpOidcClient, 'verifyJwt').mockResolvedValueOnce({})
 
       // Act
       const result = await spOidcServiceClass.extractJwtPayloadFromRequest(
@@ -297,7 +299,7 @@ describe('spcp.oidc.service.sp', () => {
     })
   })
 
-  describe('parseState for SP forms', () => {
+  describe('parseState', () => {
     it('should parse SP params correctly when rememberMe is true', () => {
       // Arrange
 
@@ -510,7 +512,7 @@ describe('spcp.oidc.service.sp', () => {
     })
   })
 
-  describe('createJWT for SP forms', () => {
+  describe('createJWT', () => {
     it('should call sp oidc client with the correct params', async () => {
       // Arrange
       const spOidcServiceClass = new SpOidcServiceClass(
@@ -518,7 +520,7 @@ describe('spcp.oidc.service.sp', () => {
         MOCK_PARAMS_SP,
       )
 
-      mockSpOidcClient.createJWT = jest.fn().mockResolvedValueOnce(MOCK_JWT)
+      jest.spyOn(mockSpOidcClient, 'createJWT').mockResolvedValueOnce(MOCK_JWT)
 
       // Act
       const jwtResult = await spOidcServiceClass.createJWT(
@@ -555,7 +557,7 @@ describe('spcp.oidc.service.sp', () => {
   })
 
   describe('createJWTPayload', () => {
-    it('should correctly return payload for SP forms', () => {
+    it('should correctly return payload', () => {
       // Arrange
       const spOidcServiceClass = new SpOidcServiceClass(
         mockSpOidcClient,
@@ -577,7 +579,7 @@ describe('spcp.oidc.service.sp', () => {
       expect(jwtPayloadResult._unsafeUnwrap()).toMatchObject(expectedPayload)
     })
 
-    it('should return MissingAttributesError if attribute is not string for SP forms', () => {
+    it('should return MissingAttributesError if attribute is not string', () => {
       // Arrange
       const spOidcServiceClass = new SpOidcServiceClass(
         mockSpOidcClient,
@@ -597,7 +599,7 @@ describe('spcp.oidc.service.sp', () => {
       )
     })
 
-    it('should return MissingAttributesError if attribute is empty string string for SP forms', () => {
+    it('should return MissingAttributesError if attribute is empty string string', () => {
       // Arrange
       const spOidcServiceClass = new SpOidcServiceClass(
         mockSpOidcClient,

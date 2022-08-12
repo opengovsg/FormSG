@@ -22,21 +22,18 @@ import {
 } from '../spcp.util'
 
 import { SpcpOidcServiceClass } from './spcp.oidc.service.base'
+import { CpOidcProps } from './spcp.oidc.service.types'
 
 const logger = createLoggerWithLabel(module)
-
-type cpOidcProps = {
-  cookieMaxAge: number
-}
 
 export class CpOidcServiceClass extends SpcpOidcServiceClass {
   authType = FormAuthType.CP
   jwtName = JwtName.CP
 
   oidcClient: CpOidcClient
-  oidcProps: cpOidcProps
+  oidcProps: CpOidcProps
 
-  constructor(oidcClient: CpOidcClient, oidcProps: cpOidcProps) {
+  constructor(oidcClient: CpOidcClient, oidcProps: CpOidcProps) {
     super(oidcClient, oidcProps)
 
     // re-assign to let typescript register the types -_-
