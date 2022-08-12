@@ -100,7 +100,7 @@ export class CpOidcServiceClass extends SpcpOidcServiceClass {
     code: string,
   ): ResultAsync<ExtractedCorppassNDIPayload, InvalidIdTokenError> {
     const logMeta = {
-      action: 'exchangeAuthCodeAndRetrieveNricEntID',
+      action: 'exchangeAuthCodeAndRetrieveData',
     }
 
     return ResultAsync.fromPromise(

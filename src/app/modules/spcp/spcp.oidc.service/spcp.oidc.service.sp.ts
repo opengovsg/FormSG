@@ -96,7 +96,7 @@ export class SpOidcServiceClass extends SpcpOidcServiceClass {
     code: string,
   ): ResultAsync<string, InvalidIdTokenError> {
     const logMeta = {
-      action: 'exchangeAuthCodeAndRetrieveNric',
+      action: 'exchangeAuthCodeAndRetrieveData',
     }
 
     return ResultAsync.fromPromise(

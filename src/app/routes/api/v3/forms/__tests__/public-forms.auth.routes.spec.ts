@@ -23,7 +23,7 @@ import {
   CpOidcClient,
   SpOidcClient,
 } from '../../../../../modules/spcp/spcp.oidc.client'
-import { SpcpOidcService } from '../../../../../modules/spcp/spcp.oidc.service'
+import { SpOidcServiceClass } from '../../../../../modules/spcp/spcp.oidc.service/spcp.oidc.service.sp'
 import { PublicFormsRouter } from '../public-forms.routes'
 
 // NOTE: Mocking axios here because there is a network call to an external service
@@ -270,7 +270,7 @@ describe('public-form.auth.routes', () => {
         message: 'Sorry, something went wrong. Please try again.',
       })
       jest
-        .spyOn(SpcpOidcService, 'createRedirectUrl')
+        .spyOn(SpOidcServiceClass.prototype, 'createRedirectUrl')
         .mockResolvedValueOnce(err(new CreateRedirectUrlError()))
 
       // Act
