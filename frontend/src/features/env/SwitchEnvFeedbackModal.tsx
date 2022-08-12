@@ -127,7 +127,9 @@ export const SwitchEnvFeedbackModal = ({
           </>
         ) : (
           <chakra.form noValidate onSubmit={handleFormSubmit}>
-            <ModalHeader>Something not right on the new FormSG?</ModalHeader>
+            <ModalHeader pr="48px">
+              Something not right on the new FormSG?
+            </ModalHeader>
             <ModalBody mt="0" pt="0">
               <Stack spacing="1rem">
                 <FormControl>

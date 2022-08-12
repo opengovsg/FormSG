@@ -36,6 +36,7 @@ NotLoggedIn.decorators = [LoggedOutDecorator]
 
 export const MobileNotLoggedIn = Template.bind({})
 MobileNotLoggedIn.parameters = getMobileViewParameters()
+MobileNotLoggedIn.decorators = [LoggedOutDecorator]
 
 export const LoggedIn = Template.bind({})
 LoggedIn.decorators = [LoggedInDecorator]
