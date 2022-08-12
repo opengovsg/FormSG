@@ -22,10 +22,6 @@ import { useFormBannerLogo } from '~features/public-form/components/FormStartPag
 import { useFormHeader } from '~features/public-form/components/FormStartPage/useFormHeader'
 
 import { useCreatePageSidebar } from '../../common/CreatePageSidebarContext'
-import {
-  setToInactiveSelector,
-  useBuilderAndDesignStore,
-} from '../useBuilderAndDesignStore'
 import { useCreateTabForm } from '../useCreateTabForm'
 import {
   customLogoMetaSelector,
@@ -35,11 +31,15 @@ import {
   stateSelector,
   useDesignStore,
 } from '../useDesignStore'
+import {
+  setToInactiveSelector,
+  useFieldBuilderStore,
+} from '../useFieldBuilderStore'
 
 export const StartPageView = () => {
   const isMobile = useIsMobile()
   const { data: form } = useCreateTabForm()
-  const setToInactive = useBuilderAndDesignStore(setToInactiveSelector)
+  const setToInactive = useFieldBuilderStore(setToInactiveSelector)
   const { designState, startPageData, customLogoMeta, setDesignState } =
     useDesignStore(
       useCallback(

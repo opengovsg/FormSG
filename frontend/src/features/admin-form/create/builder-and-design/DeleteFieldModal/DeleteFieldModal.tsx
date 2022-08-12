@@ -16,19 +16,19 @@ import { BASICFIELD_TO_DRAWER_META } from '../../constants'
 import { useBuilderAndDesignContext } from '../BuilderAndDesignContext'
 import { useDeleteFormField } from '../mutations/useDeleteFormField'
 import {
-  BuildFieldState,
+  FieldBuilderState,
   stateDataSelector,
-  useBuilderAndDesignStore,
-} from '../useBuilderAndDesignStore'
+  useFieldBuilderStore,
+} from '../useFieldBuilderStore'
 
 export const DeleteFieldModal = (): JSX.Element => {
-  const stateData = useBuilderAndDesignStore(stateDataSelector)
+  const stateData = useFieldBuilderStore(stateDataSelector)
   const {
     deleteFieldModalDisclosure: { isOpen, onClose },
   } = useBuilderAndDesignContext()
 
   const fieldTypeLabel = useMemo(() => {
-    if (stateData.state === BuildFieldState.EditingField) {
+    if (stateData.state === FieldBuilderState.EditingField) {
       return BASICFIELD_TO_DRAWER_META[stateData.field.fieldType].label
     }
     return null
@@ -37,7 +37,7 @@ export const DeleteFieldModal = (): JSX.Element => {
   const { deleteFieldMutation } = useDeleteFormField()
 
   const handleDeleteConfirmation = useCallback(() => {
-    if (stateData.state === BuildFieldState.EditingField) {
+    if (stateData.state === FieldBuilderState.EditingField) {
       deleteFieldMutation.mutate(stateData.field._id, {
         onSuccess: onClose,
       })

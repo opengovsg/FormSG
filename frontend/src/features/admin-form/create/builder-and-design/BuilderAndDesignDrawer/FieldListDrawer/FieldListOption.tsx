@@ -13,11 +13,11 @@ import {
   MYINFO_FIELD_TO_DRAWER_META,
 } from '~features/admin-form/create/constants'
 
+import { useCreateTabForm } from '../../useCreateTabForm'
 import {
   updateCreateStateSelector,
-  useBuilderAndDesignStore,
-} from '../../useBuilderAndDesignStore'
-import { useCreateTabForm } from '../../useCreateTabForm'
+  useFieldBuilderStore,
+} from '../../useFieldBuilderStore'
 import {
   getFieldCreationMeta,
   getMyInfoFieldCreationMeta,
@@ -155,9 +155,7 @@ export const BasicFieldOption = forwardRef<BasicFieldOptionProps, 'button'>(
       [fieldType],
     )
 
-    const updateCreateState = useBuilderAndDesignStore(
-      updateCreateStateSelector,
-    )
+    const updateCreateState = useFieldBuilderStore(updateCreateStateSelector)
 
     const handleClick = useCallback(() => {
       if (!isDisabled) {
@@ -193,9 +191,7 @@ export const MyInfoFieldOption = forwardRef<MyInfoFieldOptionProps, 'button'>(
       [fieldType],
     )
 
-    const updateCreateState = useBuilderAndDesignStore(
-      updateCreateStateSelector,
-    )
+    const updateCreateState = useFieldBuilderStore(updateCreateStateSelector)
 
     const handleClick = useCallback(() => {
       if (!isDisabled) updateCreateState(newFieldMeta, numFields)

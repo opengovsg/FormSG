@@ -13,15 +13,15 @@ import {
 
 import {
   setToInactiveSelector,
-  useBuilderAndDesignStore,
-} from '../../builder-and-design/useBuilderAndDesignStore'
+  useFieldBuilderStore,
+} from '../../builder-and-design/useFieldBuilderStore'
 import { FEATURE_TOUR } from '../../featureTour/constants'
 
 import { DrawerTabIcon } from './DrawerTabIcon'
 
 export const CreatePageSidebar = (): JSX.Element | null => {
   const isMobile = useIsMobile()
-  const setFieldsToInactive = useBuilderAndDesignStore(setToInactiveSelector)
+  const setFieldsToInactive = useFieldBuilderStore(setToInactiveSelector)
   const { activeTab, handleBuilderClick, handleDesignClick, handleLogicClick } =
     useCreatePageSidebar()
 

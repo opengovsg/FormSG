@@ -6,8 +6,8 @@ import IconButton from '~components/IconButton'
 
 import {
   setToInactiveSelector,
-  useBuilderAndDesignStore,
-} from '../../useBuilderAndDesignStore'
+  useFieldBuilderStore,
+} from '../../useFieldBuilderStore'
 import { CreatePageDrawerCloseButton } from '../CreatePageDrawerCloseButton'
 
 interface BuilderDrawerContainerProps {
@@ -19,7 +19,7 @@ export const BuilderDrawerContainer = ({
   title,
   children,
 }: BuilderDrawerContainerProps): JSX.Element | null => {
-  const setToInactive = useBuilderAndDesignStore(setToInactiveSelector)
+  const setToInactive = useFieldBuilderStore(setToInactiveSelector)
 
   return (
     <>
