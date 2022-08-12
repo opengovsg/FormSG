@@ -16,7 +16,8 @@ import { VALID_EXTENSIONS } from '~shared/utils/file-validation'
 
 import { REQUIRED_ERROR } from '~constants/validation'
 
-import { AttachmentFieldSchema } from './AttachmentField'
+import { AttachmentFieldSchema } from '../types'
+
 import * as stories from './AttachmentField.stories'
 
 const { ValidationRequired, ValidationOptional } = composeStories(stories)

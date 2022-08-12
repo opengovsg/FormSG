@@ -15,7 +15,7 @@ const {
   ValidationCustomRange,
 } = composeStories(stories)
 
-const { MOCKED_TODAY_DATE } = stories.default.parameters?.test
+const { MOCKED_TODAY_DATE } = stories.default.parameters!.test
 
 describe('required field', () => {
   it('renders error when field is empty before submitting', async () => {
@@ -242,7 +242,7 @@ describe('validation', () => {
     it('renders invalid date error when date after max is selected', async () => {
       // Arrange
       const schema = ValidationCustomRange.args?.schema
-      const { customMaxDate } = schema.dateValidation
+      const { customMaxDate } = schema!.dateValidation
       await act(async () => {
         render(<ValidationCustomRange defaultValue={undefined} />)
       })
@@ -254,7 +254,10 @@ describe('validation', () => {
       expect(input.value).toBe('')
 
       // Act
-      const afterMaxDate = lightFormat(addDays(customMaxDate, 10), 'yyyy-MM-dd')
+      const afterMaxDate = lightFormat(
+        addDays(customMaxDate!, 10),
+        'yyyy-MM-dd',
+      )
       await act(async () => userEvent.type(input, afterMaxDate))
       await act(async () => userEvent.click(submitButton))
 
@@ -269,7 +272,7 @@ describe('validation', () => {
     it('renders invalid date error when date before min is selected', async () => {
       // Arrange
       const schema = ValidationCustomRange.args?.schema
-      const { customMinDate } = schema.dateValidation
+      const { customMinDate } = schema!.dateValidation
       await act(async () => {
         render(<ValidationCustomRange defaultValue={undefined} />)
       })
@@ -282,7 +285,7 @@ describe('validation', () => {
 
       // Act
       const beforeMinDate = lightFormat(
-        addDays(customMinDate, -10),
+        addDays(customMinDate!, -10),
         'yyyy-MM-dd',
       )
       await act(async () => userEvent.type(input, beforeMinDate))
@@ -299,7 +302,7 @@ describe('validation', () => {
     it('renders success when selected date is in range', async () => {
       // Arrange
       const schema = ValidationCustomRange.args?.schema
-      const { customMinDate, customMaxDate } = schema.dateValidation
+      const { customMinDate, customMaxDate } = schema!.dateValidation
       await act(async () => {
         render(<ValidationCustomRange defaultValue={undefined} />)
       })
@@ -310,10 +313,10 @@ describe('validation', () => {
 
       expect(input.value).toBe('')
 
-      const inRangeDate = addDays(customMinDate, 10)
+      const inRangeDate = addDays(customMinDate!, 10)
       const inRangeDateString = lightFormat(inRangeDate, 'yyyy-MM-dd')
       // Should be in range.
-      expect(isBefore(inRangeDate, customMaxDate)).toEqual(true)
+      expect(isBefore(inRangeDate, customMaxDate!)).toEqual(true)
 
       // Act
       await act(async () => userEvent.type(input, inRangeDateString))
