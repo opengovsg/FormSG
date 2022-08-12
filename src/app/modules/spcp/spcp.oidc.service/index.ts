@@ -4,9 +4,9 @@ import { FormAuthType } from '../../../../../shared/types'
 import { spcpMyInfoConfig } from '../../../config/features/spcp-myinfo.config'
 import { CpOidcClient, SpOidcClient } from '../spcp.oidc.client'
 
-import { SpcpOidcServiceClass } from './spcp.oidc.service.base'
 import { CpOidcServiceClass } from './spcp.oidc.service.cp'
 import { SpOidcServiceClass } from './spcp.oidc.service.sp'
+import { OidcServiceType } from './spcp.oidc.service.types'
 
 const spOidcClient = new SpOidcClient({
   rpClientId: spcpMyInfoConfig.spOidcRpClientId,
@@ -48,5 +48,10 @@ const cpOidcProps = {
 const SpOidcService = new SpOidcServiceClass(spOidcClient, spOidcProps)
 const CpOidcService = new CpOidcServiceClass(cpOidcClient, cpOidcProps)
 
-export const getOidcService = (authType: FormAuthType): SpcpOidcServiceClass =>
-  authType === FormAuthType.SP ? SpOidcService : CpOidcService
+export const getOidcService = <T extends FormAuthType.SP | FormAuthType.CP>(
+  authType: T,
+): OidcServiceType<T> => {
+  return (
+    authType === FormAuthType.SP ? SpOidcService : CpOidcService
+  ) as OidcServiceType<T>
+}
