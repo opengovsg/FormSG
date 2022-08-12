@@ -3,8 +3,6 @@ import { JWK, JWTPayload, JWTVerifyResult } from 'jose'
 import { Options } from 'node-cache'
 import { BaseClient } from 'openid-client'
 
-import { FormAuthType } from '../../../../shared/types'
-
 type PublicJwk = Partial<JWK> & Required<Pick<JWK, 'use' | 'kid'>>
 
 type SecretJwk = PublicJwk & {
@@ -36,32 +34,13 @@ export type SigningKey = Required<CryptoKey>
 
 export type CryptoKeys = CryptoKey[]
 
-export type SpcpOidcBaseClientConstructorParams = {
+export type SpcpOidcClientConstructorParams = {
   rpClientId: string
   rpRedirectUrl: string
   ndiDiscoveryEndpoint: string
   ndiJwksEndpoint: string
   rpSecretJwks: SecretJwks
   rpPublicJwks: PublicJwks
-  authType: FormAuthType.SP | FormAuthType.CP // Use to correctly label esrvc (for Singpass OIDC) and esrvcID (for Corppass OIDC) in authorisation url
-}
-
-export type SpOidcClientConstructorParams = {
-  spOidcRpClientId: SpcpOidcBaseClientConstructorParams['rpClientId']
-  spOidcRpRedirectUrl: SpcpOidcBaseClientConstructorParams['rpRedirectUrl']
-  spOidcNdiDiscoveryEndpoint: SpcpOidcBaseClientConstructorParams['ndiDiscoveryEndpoint']
-  spOidcNdiJwksEndpoint: SpcpOidcBaseClientConstructorParams['ndiJwksEndpoint']
-  spOidcRpSecretJwks: SpcpOidcBaseClientConstructorParams['rpSecretJwks']
-  spOidcRpPublicJwks: SpcpOidcBaseClientConstructorParams['rpPublicJwks']
-}
-
-export type CpOidcClientConstructorParams = {
-  cpOidcRpClientId: SpcpOidcBaseClientConstructorParams['rpClientId']
-  cpOidcRpRedirectUrl: SpcpOidcBaseClientConstructorParams['rpRedirectUrl']
-  cpOidcNdiDiscoveryEndpoint: SpcpOidcBaseClientConstructorParams['ndiDiscoveryEndpoint']
-  cpOidcNdiJwksEndpoint: SpcpOidcBaseClientConstructorParams['ndiJwksEndpoint']
-  cpOidcRpSecretJwks: SpcpOidcBaseClientConstructorParams['rpSecretJwks']
-  cpOidcRpPublicJwks: SpcpOidcBaseClientConstructorParams['rpPublicJwks']
 }
 
 export type SpcpOidcBaseClientCacheConstructorParams = {
@@ -91,4 +70,11 @@ export type CPJWTVerifyResult = JWTVerifyResult & {
       CPEntID: string
     }
   }
+}
+
+/**
+ * Singpass Oidc Client Id field to be injected into token exchange request
+ */
+export type SpClientIdField = {
+  client_id: string
 }

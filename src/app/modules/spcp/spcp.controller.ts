@@ -11,7 +11,7 @@ import * as BillingService from '../billing/billing.service'
 import { ControllerHandler } from '../core/core.types'
 import * as FormService from '../form/form.service'
 
-import { SpcpOidcService } from './spcp.oidc.service'
+import { getOidcService } from './spcp.oidc.service'
 import { SpcpService } from './spcp.service'
 import { JwtName } from './spcp.types'
 import { mapRouteError } from './spcp.util'
@@ -208,10 +208,9 @@ export const handleSpcpOidcLogin: (
     authType,
   }
 
-  const result =
-    authType === FormAuthType.SP
-      ? await SpcpOidcService.exchangeAuthCodeAndRetrieveNric(code)
-      : await SpcpOidcService.exchangeAuthCodeAndRetrieveNricEntID(code)
+  const oidcService = getOidcService(authType)
+
+  const result = await oidcService.exchangeAuthCodeAndRetrieveData(code)
 
   if (result.isErr()) {
     logger.error({
@@ -222,7 +221,7 @@ export const handleSpcpOidcLogin: (
     return res.sendStatus(StatusCodes.BAD_REQUEST)
   }
 
-  const parseResult = SpcpOidcService.parseState(state, authType)
+  const parseResult = oidcService.parseState(state)
   if (parseResult.isErr()) {
     logger.error({
       message: 'Invalid login parameters',
@@ -256,13 +255,11 @@ export const handleSpcpOidcLogin: (
   }
 
   const attributes = result.value
-  const jwtResult = await SpcpOidcService.createJWTPayload(
-    attributes,
-    rememberMe,
-    authType,
-  ).asyncAndThen((jwtPayload) =>
-    SpcpOidcService.createJWT(jwtPayload, cookieDuration, authType),
-  )
+  const jwtResult = await oidcService
+    .createJWTPayload(attributes, rememberMe)
+    .asyncAndThen((jwtPayload) =>
+      oidcService.createJWT(jwtPayload, cookieDuration),
+    )
 
   if (jwtResult.isErr()) {
     logger.error({
@@ -276,12 +273,12 @@ export const handleSpcpOidcLogin: (
 
   return BillingService.recordLoginByForm(form)
     .map(() => {
-      res.cookie(JwtName[authType], jwtResult.value, {
+      res.cookie(oidcService.jwtName, jwtResult.value, {
         maxAge: cookieDuration,
         httpOnly: true,
         sameSite: 'lax', // Setting to 'strict' prevents Singpass login on Safari, Firefox
         secure: !config.isDev,
-        ...SpcpOidcService.getCookieSettings(),
+        ...oidcService.getCookieSettings(),
       })
       return res.redirect(destination)
     })

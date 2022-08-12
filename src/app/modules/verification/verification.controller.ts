@@ -12,7 +12,7 @@ import { setFormTags } from '../datadog/datadog.utils'
 import * as FormService from '../form/form.service'
 import * as MyInfoUtil from '../myinfo/myinfo.util'
 import { SgidService } from '../sgid/sgid.service'
-import { SpcpOidcService } from '../spcp/spcp.oidc.service'
+import { getOidcService } from '../spcp/spcp.oidc.service'
 
 import * as VerificationService from './verification.service'
 import { Transaction } from './verification.types'
@@ -225,10 +225,10 @@ export const _handleGenerateOtp: ControllerHandler<
         const { authType } = form
         switch (authType) {
           case FormAuthType.CP: {
-            return SpcpOidcService.extractJwt(req.cookies, authType)
-              .asyncAndThen((jwt) =>
-                SpcpOidcService.extractCorppassJwtPayload(jwt),
-              )
+            const oidcService = getOidcService(FormAuthType.CP)
+            return oidcService
+              .extractJwt(req.cookies)
+              .asyncAndThen((jwt) => oidcService.extractJwtPayload(jwt))
               .map(() => form)
               .mapErr((error) => {
                 logger.error({
@@ -239,11 +239,11 @@ export const _handleGenerateOtp: ControllerHandler<
                 return error
               })
           }
-          case FormAuthType.SP:
-            return SpcpOidcService.extractJwt(req.cookies, FormAuthType.SP)
-              .asyncAndThen((jwt) =>
-                SpcpOidcService.extractSingpassJwtPayload(jwt),
-              )
+          case FormAuthType.SP: {
+            const oidcService = getOidcService(FormAuthType.SP)
+            return oidcService
+              .extractJwt(req.cookies)
+              .asyncAndThen((jwt) => oidcService.extractJwtPayload(jwt))
               .map(() => form)
               .mapErr((error) => {
                 logger.error({
@@ -253,6 +253,7 @@ export const _handleGenerateOtp: ControllerHandler<
                 })
                 return error
               })
+          }
           case FormAuthType.SGID:
             return SgidService.extractSgidJwtPayload(req.cookies.jwtSgid)
               .map(() => form)

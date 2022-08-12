@@ -1,6 +1,5 @@
 import axios from 'axios'
 import { createPrivateKey, createPublicKey } from 'crypto'
-import fs from 'fs'
 import * as jose from 'jose'
 import { JWTVerifyResult } from 'jose'
 import jwkToPem from 'jwk-to-pem'
@@ -25,59 +24,40 @@ import {
 } from '../spcp.oidc.client.errors'
 import {
   CPJWTVerifyResult,
-  CpOidcClientConstructorParams,
   CryptoKeys,
-  PublicJwks,
   Refresh,
-  SecretJwks,
   SigningKey,
-  SpOidcClientConstructorParams,
 } from '../spcp.oidc.client.types'
+
+import {
+  cpOidcClientConfig,
+  spOidcClientConfig,
+  TEST_CP_RP_PUBLIC_JWKS,
+  TEST_CP_RP_SECRET_JWKS,
+  TEST_NDI_PUBLIC_JWKS,
+  TEST_NDI_SECRET_JWKS,
+  TEST_SP_RP_PUBLIC_JWKS,
+  TEST_SP_RP_SECRET_JWKS,
+} from './spcp.oidc.test.constants'
+import {
+  CP_OIDC_NDI_DISCOVERY_ENDPOINT,
+  CP_OIDC_NDI_JWKS_ENDPOINT,
+  CP_OIDC_RP_CLIENT_ID,
+  CP_OIDC_RP_REDIRECT_URL,
+  SP_OIDC_NDI_DISCOVERY_ENDPOINT,
+  SP_OIDC_NDI_JWKS_ENDPOINT,
+  SP_OIDC_RP_CLIENT_ID,
+  SP_OIDC_RP_REDIRECT_URL,
+} from './spcp.test.constants'
 
 jest.mock('openid-client')
 jest.mock('axios')
-
-const TEST_SP_RP_PUBLIC_JWKS: PublicJwks = JSON.parse(
-  fs.readFileSync('tests/certs/test_sp_rp_public_jwks.json').toString(),
-)
-const TEST_SP_RP_SECRET_JWKS: SecretJwks = JSON.parse(
-  fs.readFileSync('tests/certs/test_sp_rp_secret_jwks.json').toString(),
-)
-
-const TEST_CP_RP_PUBLIC_JWKS: PublicJwks = JSON.parse(
-  fs.readFileSync('tests/certs/test_cp_rp_public_jwks.json').toString(),
-)
-const TEST_CP_RP_SECRET_JWKS: SecretJwks = JSON.parse(
-  fs.readFileSync('tests/certs/test_cp_rp_secret_jwks.json').toString(),
-)
-
-const TEST_NDI_SECRET_JWKS: PublicJwks = JSON.parse(
-  fs.readFileSync('tests/certs/test_ndi_secret_jwks.json').toString(),
-)
-
-const TEST_NDI_PUBLIC_JWKS: PublicJwks = JSON.parse(
-  fs.readFileSync('tests/certs/test_ndi_public_jwks.json').toString(),
-)
 
 describe('SpOidcClient', () => {
   afterEach(() => {
     jest.clearAllMocks()
     jest.restoreAllMocks()
   })
-
-  const SP_OIDC_NDI_DISCOVERY_ENDPOINT = 'spOidcNdiDiscoveryEndpoint'
-  const SP_OIDC_NDI_JWKS_ENDPOINT = 'spOidcNdiJwksEndpoint'
-  const SP_OIDC_RP_CLIENT_ID = 'spOidcRpClientId'
-  const SP_OIDC_RP_REDIRECT_URL = 'spOidcRpRedirectUrl'
-
-  const spOidcClientConfig: SpOidcClientConstructorParams = {
-    spOidcNdiDiscoveryEndpoint: SP_OIDC_NDI_DISCOVERY_ENDPOINT,
-    spOidcNdiJwksEndpoint: SP_OIDC_NDI_JWKS_ENDPOINT,
-    spOidcRpClientId: SP_OIDC_RP_CLIENT_ID,
-    spOidcRpRedirectUrl: SP_OIDC_RP_REDIRECT_URL,
-    spOidcRpSecretJwks: TEST_SP_RP_SECRET_JWKS,
-    spOidcRpPublicJwks: TEST_SP_RP_PUBLIC_JWKS,
-  }
 
   describe('Constructor', () => {
     it('should correctly call the SpOidcClient constructor', () => {
@@ -138,10 +118,10 @@ describe('SpOidcClient', () => {
         .spyOn(SpcpOidcBaseClientCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
-      const spOidcClientConfigNoAlg = {
+      const spOidcClientConfigIncorrect = {
         ...spOidcClientConfig,
-        spOidcRpSecretJwks: {
-          keys: spOidcClientConfig.spOidcRpSecretJwks.keys.map((jwk) => ({
+        rpSecretJwks: {
+          keys: spOidcClientConfig.rpSecretJwks.keys.map((jwk) => ({
             ...omit(jwk, 'alg'),
           })),
         },
@@ -150,7 +130,7 @@ describe('SpOidcClient', () => {
       // Act
       const attemptConstructor = () => {
         new SpOidcClient(
-          spOidcClientConfigNoAlg as unknown as typeof spOidcClientConfig,
+          spOidcClientConfigIncorrect as unknown as typeof spOidcClientConfig,
         )
       }
 
@@ -164,10 +144,10 @@ describe('SpOidcClient', () => {
         .spyOn(SpcpOidcBaseClientCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
-      const spOidcClientConfigNoAlg = {
+      const spOidcClientConfigIncorrect = {
         ...spOidcClientConfig,
-        spOidcRpSecretJwks: {
-          keys: spOidcClientConfig.spOidcRpSecretJwks.keys.map((jwk) => ({
+        rpSecretJwks: {
+          keys: spOidcClientConfig.rpSecretJwks.keys.map((jwk) => ({
             ...omit(jwk, 'kty'),
           })),
         },
@@ -176,7 +156,7 @@ describe('SpOidcClient', () => {
       // Act
       const attemptConstructor = () => {
         new SpOidcClient(
-          spOidcClientConfigNoAlg as unknown as typeof spOidcClientConfig,
+          spOidcClientConfigIncorrect as unknown as typeof spOidcClientConfig,
         )
       }
 
@@ -190,10 +170,10 @@ describe('SpOidcClient', () => {
         .spyOn(SpcpOidcBaseClientCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
-      const spOidcClientConfigNoAlg = {
+      const spOidcClientConfigIncorrect = {
         ...spOidcClientConfig,
-        spOidcRpSecretJwks: {
-          keys: spOidcClientConfig.spOidcRpSecretJwks.keys.map((jwk) => ({
+        rpSecretJwks: {
+          keys: spOidcClientConfig.rpSecretJwks.keys.map((jwk) => ({
             ...jwk,
             kty: 'something',
           })),
@@ -203,7 +183,7 @@ describe('SpOidcClient', () => {
       // Act
       const attemptConstructor = () => {
         new SpOidcClient(
-          spOidcClientConfigNoAlg as unknown as typeof spOidcClientConfig,
+          spOidcClientConfigIncorrect as unknown as typeof spOidcClientConfig,
         )
       }
 
@@ -217,10 +197,10 @@ describe('SpOidcClient', () => {
         .spyOn(SpcpOidcBaseClientCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
-      const spOidcClientConfigNoAlg = {
+      const spOidcClientConfigIncorrect = {
         ...spOidcClientConfig,
-        spOidcRpSecretJwks: {
-          keys: spOidcClientConfig.spOidcRpSecretJwks.keys.map((jwk) => ({
+        rpSecretJwks: {
+          keys: spOidcClientConfig.rpSecretJwks.keys.map((jwk) => ({
             ...omit(jwk, 'crv'),
           })),
         },
@@ -229,7 +209,7 @@ describe('SpOidcClient', () => {
       // Act
       const attemptConstructor = () => {
         new SpOidcClient(
-          spOidcClientConfigNoAlg as unknown as typeof spOidcClientConfig,
+          spOidcClientConfigIncorrect as unknown as typeof spOidcClientConfig,
         )
       }
 
@@ -243,10 +223,10 @@ describe('SpOidcClient', () => {
         .spyOn(SpcpOidcBaseClientCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
-      const spOidcClientConfigNoAlg = {
+      const spOidcClientConfigIncorrect = {
         ...spOidcClientConfig,
-        spOidcRpSecretJwks: {
-          keys: spOidcClientConfig.spOidcRpSecretJwks.keys.map((jwk) => ({
+        rpSecretJwks: {
+          keys: spOidcClientConfig.rpSecretJwks.keys.map((jwk) => ({
             ...omit(jwk, 'd'),
           })),
         },
@@ -255,7 +235,7 @@ describe('SpOidcClient', () => {
       // Act
       const attemptConstructor = () => {
         new SpOidcClient(
-          spOidcClientConfigNoAlg as unknown as typeof spOidcClientConfig,
+          spOidcClientConfigIncorrect as unknown as typeof spOidcClientConfig,
         )
       }
 
@@ -269,10 +249,10 @@ describe('SpOidcClient', () => {
         .spyOn(SpcpOidcBaseClientCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
-      const spOidcClientConfigNoAlg = {
+      const spOidcClientConfigIncorrect = {
         ...spOidcClientConfig,
-        spOidcRpPublicJwks: {
-          keys: spOidcClientConfig.spOidcRpPublicJwks.keys.map((jwk) => ({
+        rpSecretJwks: {
+          keys: spOidcClientConfig.rpSecretJwks.keys.map((jwk) => ({
             ...omit(jwk, 'alg'),
           })),
         },
@@ -281,7 +261,7 @@ describe('SpOidcClient', () => {
       // Act
       const attemptConstructor = () => {
         new SpOidcClient(
-          spOidcClientConfigNoAlg as unknown as typeof spOidcClientConfig,
+          spOidcClientConfigIncorrect as unknown as typeof spOidcClientConfig,
         )
       }
 
@@ -295,10 +275,10 @@ describe('SpOidcClient', () => {
         .spyOn(SpcpOidcBaseClientCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
-      const spOidcClientConfigNoAlg = {
+      const spOidcClientConfigIncorrect = {
         ...spOidcClientConfig,
-        spOidcRpPublicJwks: {
-          keys: spOidcClientConfig.spOidcRpPublicJwks.keys.map((jwk) => ({
+        rpSecretJwks: {
+          keys: spOidcClientConfig.rpSecretJwks.keys.map((jwk) => ({
             ...omit(jwk, 'kty'),
           })),
         },
@@ -307,7 +287,7 @@ describe('SpOidcClient', () => {
       // Act
       const attemptConstructor = () => {
         new SpOidcClient(
-          spOidcClientConfigNoAlg as unknown as typeof spOidcClientConfig,
+          spOidcClientConfigIncorrect as unknown as typeof spOidcClientConfig,
         )
       }
 
@@ -321,10 +301,10 @@ describe('SpOidcClient', () => {
         .spyOn(SpcpOidcBaseClientCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
-      const spOidcClientConfigNoAlg = {
+      const spOidcClientConfigIncorrect = {
         ...spOidcClientConfig,
-        spOidcRpPublicJwks: {
-          keys: spOidcClientConfig.spOidcRpPublicJwks.keys.map((jwk) => ({
+        rpSecretJwks: {
+          keys: spOidcClientConfig.rpSecretJwks.keys.map((jwk) => ({
             ...jwk,
             kty: 'something',
           })),
@@ -334,7 +314,7 @@ describe('SpOidcClient', () => {
       // Act
       const attemptConstructor = () => {
         new SpOidcClient(
-          spOidcClientConfigNoAlg as unknown as typeof spOidcClientConfig,
+          spOidcClientConfigIncorrect as unknown as typeof spOidcClientConfig,
         )
       }
 
@@ -347,10 +327,10 @@ describe('SpOidcClient', () => {
         .spyOn(SpcpOidcBaseClientCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
-      const spOidcClientConfigNoAlg = {
+      const spOidcClientConfigIncorrect = {
         ...spOidcClientConfig,
-        spOidcRpPublicJwks: {
-          keys: spOidcClientConfig.spOidcRpPublicJwks.keys.map((jwk) => ({
+        rpSecretJwks: {
+          keys: spOidcClientConfig.rpSecretJwks.keys.map((jwk) => ({
             ...omit(jwk, 'crv'),
           })),
         },
@@ -359,7 +339,7 @@ describe('SpOidcClient', () => {
       // Act
       const attemptConstructor = () => {
         new SpOidcClient(
-          spOidcClientConfigNoAlg as unknown as typeof spOidcClientConfig,
+          spOidcClientConfigIncorrect as unknown as typeof spOidcClientConfig,
         )
       }
 
@@ -373,10 +353,10 @@ describe('SpOidcClient', () => {
         .spyOn(SpcpOidcBaseClientCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
-      const spOidcClientConfigNoAlg = {
+      const spOidcClientConfigIncorrect = {
         ...spOidcClientConfig,
-        spOidcRpPublicJwks: {
-          keys: spOidcClientConfig.spOidcRpPublicJwks.keys.map((jwk) => ({
+        rpPublicJwks: {
+          keys: spOidcClientConfig.rpPublicJwks.keys.map((jwk) => ({
             ...omit(jwk, 'x'),
           })),
         },
@@ -385,7 +365,7 @@ describe('SpOidcClient', () => {
       // Act
       const attemptConstructor = () => {
         new SpOidcClient(
-          spOidcClientConfigNoAlg as unknown as typeof spOidcClientConfig,
+          spOidcClientConfigIncorrect as unknown as typeof spOidcClientConfig,
         )
       }
 
@@ -399,10 +379,10 @@ describe('SpOidcClient', () => {
         .spyOn(SpcpOidcBaseClientCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
-      const spOidcClientConfigNoAlg = {
+      const spOidcClientConfigIncorrect = {
         ...spOidcClientConfig,
-        spOidcRpPublicJwks: {
-          keys: spOidcClientConfig.spOidcRpPublicJwks.keys.map((jwk) => ({
+        rpPublicJwks: {
+          keys: spOidcClientConfig.rpPublicJwks.keys.map((jwk) => ({
             ...omit(jwk, 'y'),
           })),
         },
@@ -411,7 +391,7 @@ describe('SpOidcClient', () => {
       // Act
       const attemptConstructor = () => {
         new SpOidcClient(
-          spOidcClientConfigNoAlg as unknown as typeof spOidcClientConfig,
+          spOidcClientConfigIncorrect as unknown as typeof spOidcClientConfig,
         )
       }
 
@@ -1527,8 +1507,8 @@ describe('SpOidcClient', () => {
 
       const spOidcClientConfigWithoutSigningKeys = {
         ...spOidcClientConfig,
-        spOidcRpSecretJwks: {
-          keys: spOidcClientConfig.spOidcRpSecretJwks.keys.filter(
+        rpSecretJwks: {
+          keys: spOidcClientConfig.rpSecretJwks.keys.filter(
             (key) => key.use !== 'sig',
           ),
         },
@@ -1564,8 +1544,8 @@ describe('SpOidcClient', () => {
 
       const spOidcClientConfigWithoutSigningKeys = {
         ...spOidcClientConfig,
-        spOidcRpSecretJwks: {
-          keys: spOidcClientConfig.spOidcRpSecretJwks.keys.filter(
+        rpSecretJwks: {
+          keys: spOidcClientConfig.rpSecretJwks.keys.filter(
             (key) => key.use !== 'sig',
           ),
         },
@@ -1601,8 +1581,8 @@ describe('SpOidcClient', () => {
 
       const spOidcClientConfigWithoutVerificationKeys = {
         ...spOidcClientConfig,
-        spOidcRpPublicJwks: {
-          keys: spOidcClientConfig.spOidcRpPublicJwks.keys.filter(
+        rpSecretJwks: {
+          keys: spOidcClientConfig.rpSecretJwks.keys.filter(
             (key) => key.use !== 'sig',
           ),
         },
@@ -1653,6 +1633,25 @@ describe('SpOidcClient', () => {
       expect(decodedJwt).toMatchObject(MOCK_PAYLOAD)
     })
   })
+
+  describe('getExtraTokenFields', () => {
+    it('should return client_id object', () => {
+      // Arrange
+
+      jest
+        .spyOn(SpcpOidcBaseClientCache.prototype, 'refresh')
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
+
+      const spOidcClient = new SpOidcClient(spOidcClientConfig)
+
+      // Act
+
+      const extraFields = spOidcClient.getExtraTokenFields()
+
+      // Assert
+      expect(extraFields.client_id).toBe(spOidcClientConfig.rpClientId)
+    })
+  })
 })
 
 describe('CpOidcClient', () => {
@@ -1660,20 +1659,6 @@ describe('CpOidcClient', () => {
     jest.clearAllMocks()
     jest.restoreAllMocks()
   })
-
-  const CP_OIDC_NDI_DISCOVERY_ENDPOINT = 'cpOidcNdiDiscoveryEndpoint'
-  const CP_OIDC_NDI_JWKS_ENDPOINT = 'cpOidcNdiJwksEndpoint'
-  const CP_OIDC_RP_CLIENT_ID = 'cpOidcRpClientId'
-  const CP_OIDC_RP_REDIRECT_URL = 'cpOidcRpRedirectUrl'
-
-  const cpOidcClientConfig: CpOidcClientConstructorParams = {
-    cpOidcNdiDiscoveryEndpoint: CP_OIDC_NDI_DISCOVERY_ENDPOINT,
-    cpOidcNdiJwksEndpoint: CP_OIDC_NDI_JWKS_ENDPOINT,
-    cpOidcRpClientId: CP_OIDC_RP_CLIENT_ID,
-    cpOidcRpRedirectUrl: CP_OIDC_RP_REDIRECT_URL,
-    cpOidcRpSecretJwks: TEST_CP_RP_SECRET_JWKS,
-    cpOidcRpPublicJwks: TEST_CP_RP_PUBLIC_JWKS,
-  }
 
   describe('Constructor', () => {
     it('should correctly call the CpOidcClient constructor', () => {
@@ -1734,10 +1719,10 @@ describe('CpOidcClient', () => {
         .spyOn(SpcpOidcBaseClientCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
-      const cpOidcClientConfigNoAlg = {
+      const cpOidcClientConfigIncorrect = {
         ...cpOidcClientConfig,
-        cpOidcRpSecretJwks: {
-          keys: cpOidcClientConfig.cpOidcRpSecretJwks.keys.map((jwk) => ({
+        rpSecretJwks: {
+          keys: cpOidcClientConfig.rpSecretJwks.keys.map((jwk) => ({
             ...omit(jwk, 'alg'),
           })),
         },
@@ -1746,7 +1731,7 @@ describe('CpOidcClient', () => {
       // Act
       const attemptConstructor = () => {
         new CpOidcClient(
-          cpOidcClientConfigNoAlg as unknown as typeof cpOidcClientConfig,
+          cpOidcClientConfigIncorrect as unknown as typeof cpOidcClientConfig,
         )
       }
 
@@ -1760,10 +1745,10 @@ describe('CpOidcClient', () => {
         .spyOn(SpcpOidcBaseClientCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
-      const cpOidcClientConfigNoAlg = {
+      const cpOidcClientConfigIncorrect = {
         ...cpOidcClientConfig,
-        cpOidcRpSecretJwks: {
-          keys: cpOidcClientConfig.cpOidcRpSecretJwks.keys.map((jwk) => ({
+        rpSecretJwks: {
+          keys: cpOidcClientConfig.rpSecretJwks.keys.map((jwk) => ({
             ...omit(jwk, 'kty'),
           })),
         },
@@ -1772,7 +1757,7 @@ describe('CpOidcClient', () => {
       // Act
       const attemptConstructor = () => {
         new CpOidcClient(
-          cpOidcClientConfigNoAlg as unknown as typeof cpOidcClientConfig,
+          cpOidcClientConfigIncorrect as unknown as typeof cpOidcClientConfig,
         )
       }
 
@@ -1786,10 +1771,10 @@ describe('CpOidcClient', () => {
         .spyOn(SpcpOidcBaseClientCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
-      const cpOidcClientConfigNoAlg = {
+      const cpOidcClientConfigIncorrect = {
         ...cpOidcClientConfig,
-        cpOidcRpSecretJwks: {
-          keys: cpOidcClientConfig.cpOidcRpSecretJwks.keys.map((jwk) => ({
+        rpSecretJwks: {
+          keys: cpOidcClientConfig.rpSecretJwks.keys.map((jwk) => ({
             ...jwk,
             kty: 'something',
           })),
@@ -1799,7 +1784,7 @@ describe('CpOidcClient', () => {
       // Act
       const attemptConstructor = () => {
         new CpOidcClient(
-          cpOidcClientConfigNoAlg as unknown as typeof cpOidcClientConfig,
+          cpOidcClientConfigIncorrect as unknown as typeof cpOidcClientConfig,
         )
       }
 
@@ -1813,10 +1798,10 @@ describe('CpOidcClient', () => {
         .spyOn(SpcpOidcBaseClientCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
-      const cpOidcClientConfigNoAlg = {
+      const cpOidcClientConfigIncorrect = {
         ...cpOidcClientConfig,
-        cpOidcRpSecretJwks: {
-          keys: cpOidcClientConfig.cpOidcRpSecretJwks.keys.map((jwk) => ({
+        rpSecretJwks: {
+          keys: cpOidcClientConfig.rpSecretJwks.keys.map((jwk) => ({
             ...omit(jwk, 'crv'),
           })),
         },
@@ -1825,7 +1810,7 @@ describe('CpOidcClient', () => {
       // Act
       const attemptConstructor = () => {
         new CpOidcClient(
-          cpOidcClientConfigNoAlg as unknown as typeof cpOidcClientConfig,
+          cpOidcClientConfigIncorrect as unknown as typeof cpOidcClientConfig,
         )
       }
 
@@ -1839,10 +1824,10 @@ describe('CpOidcClient', () => {
         .spyOn(SpcpOidcBaseClientCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
-      const cpOidcClientConfigNoAlg = {
+      const cpOidcClientConfigIncorrect = {
         ...cpOidcClientConfig,
-        cpOidcRpSecretJwks: {
-          keys: cpOidcClientConfig.cpOidcRpSecretJwks.keys.map((jwk) => ({
+        rpSecretJwks: {
+          keys: cpOidcClientConfig.rpSecretJwks.keys.map((jwk) => ({
             ...omit(jwk, 'd'),
           })),
         },
@@ -1851,7 +1836,7 @@ describe('CpOidcClient', () => {
       // Act
       const attemptConstructor = () => {
         new CpOidcClient(
-          cpOidcClientConfigNoAlg as unknown as typeof cpOidcClientConfig,
+          cpOidcClientConfigIncorrect as unknown as typeof cpOidcClientConfig,
         )
       }
 
@@ -1865,10 +1850,10 @@ describe('CpOidcClient', () => {
         .spyOn(SpcpOidcBaseClientCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
-      const cpOidcClientConfigNoAlg = {
+      const cpOidcClientConfigIncorrect = {
         ...cpOidcClientConfig,
-        cpOidcRpPublicJwks: {
-          keys: cpOidcClientConfig.cpOidcRpPublicJwks.keys.map((jwk) => ({
+        rpSecretJwks: {
+          keys: cpOidcClientConfig.rpSecretJwks.keys.map((jwk) => ({
             ...omit(jwk, 'alg'),
           })),
         },
@@ -1877,7 +1862,7 @@ describe('CpOidcClient', () => {
       // Act
       const attemptConstructor = () => {
         new CpOidcClient(
-          cpOidcClientConfigNoAlg as unknown as typeof cpOidcClientConfig,
+          cpOidcClientConfigIncorrect as unknown as typeof cpOidcClientConfig,
         )
       }
 
@@ -1891,10 +1876,10 @@ describe('CpOidcClient', () => {
         .spyOn(SpcpOidcBaseClientCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
-      const cpOidcClientConfigNoAlg = {
+      const cpOidcClientConfigIncorrect = {
         ...cpOidcClientConfig,
-        cpOidcRpPublicJwks: {
-          keys: cpOidcClientConfig.cpOidcRpPublicJwks.keys.map((jwk) => ({
+        rpSecretJwks: {
+          keys: cpOidcClientConfig.rpSecretJwks.keys.map((jwk) => ({
             ...omit(jwk, 'kty'),
           })),
         },
@@ -1903,7 +1888,7 @@ describe('CpOidcClient', () => {
       // Act
       const attemptConstructor = () => {
         new CpOidcClient(
-          cpOidcClientConfigNoAlg as unknown as typeof cpOidcClientConfig,
+          cpOidcClientConfigIncorrect as unknown as typeof cpOidcClientConfig,
         )
       }
 
@@ -1917,10 +1902,10 @@ describe('CpOidcClient', () => {
         .spyOn(SpcpOidcBaseClientCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
-      const cpOidcClientConfigNoAlg = {
+      const cpOidcClientConfigIncorrect = {
         ...cpOidcClientConfig,
-        cpOidcRpPublicJwks: {
-          keys: cpOidcClientConfig.cpOidcRpPublicJwks.keys.map((jwk) => ({
+        rpSecretJwks: {
+          keys: cpOidcClientConfig.rpSecretJwks.keys.map((jwk) => ({
             ...jwk,
             kty: 'something',
           })),
@@ -1930,7 +1915,7 @@ describe('CpOidcClient', () => {
       // Act
       const attemptConstructor = () => {
         new CpOidcClient(
-          cpOidcClientConfigNoAlg as unknown as typeof cpOidcClientConfig,
+          cpOidcClientConfigIncorrect as unknown as typeof cpOidcClientConfig,
         )
       }
 
@@ -1943,10 +1928,10 @@ describe('CpOidcClient', () => {
         .spyOn(SpcpOidcBaseClientCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
-      const cpOidcClientConfigNoAlg = {
+      const cpOidcClientConfigIncorrect = {
         ...cpOidcClientConfig,
-        cpOidcRpPublicJwks: {
-          keys: cpOidcClientConfig.cpOidcRpPublicJwks.keys.map((jwk) => ({
+        rpSecretJwks: {
+          keys: cpOidcClientConfig.rpSecretJwks.keys.map((jwk) => ({
             ...omit(jwk, 'crv'),
           })),
         },
@@ -1955,7 +1940,7 @@ describe('CpOidcClient', () => {
       // Act
       const attemptConstructor = () => {
         new CpOidcClient(
-          cpOidcClientConfigNoAlg as unknown as typeof cpOidcClientConfig,
+          cpOidcClientConfigIncorrect as unknown as typeof cpOidcClientConfig,
         )
       }
 
@@ -1969,10 +1954,10 @@ describe('CpOidcClient', () => {
         .spyOn(SpcpOidcBaseClientCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
-      const cpOidcClientConfigNoAlg = {
+      const cpOidcClientConfigIncorrect = {
         ...cpOidcClientConfig,
-        cpOidcRpPublicJwks: {
-          keys: cpOidcClientConfig.cpOidcRpPublicJwks.keys.map((jwk) => ({
+        rpPublicJwks: {
+          keys: cpOidcClientConfig.rpPublicJwks.keys.map((jwk) => ({
             ...omit(jwk, 'x'),
           })),
         },
@@ -1981,7 +1966,7 @@ describe('CpOidcClient', () => {
       // Act
       const attemptConstructor = () => {
         new CpOidcClient(
-          cpOidcClientConfigNoAlg as unknown as typeof cpOidcClientConfig,
+          cpOidcClientConfigIncorrect as unknown as typeof cpOidcClientConfig,
         )
       }
 
@@ -1995,10 +1980,10 @@ describe('CpOidcClient', () => {
         .spyOn(SpcpOidcBaseClientCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
-      const cpOidcClientConfigNoAlg = {
+      const cpOidcClientConfigIncorrect = {
         ...cpOidcClientConfig,
-        cpOidcRpPublicJwks: {
-          keys: cpOidcClientConfig.cpOidcRpPublicJwks.keys.map((jwk) => ({
+        rpPublicJwks: {
+          keys: cpOidcClientConfig.rpPublicJwks.keys.map((jwk) => ({
             ...omit(jwk, 'y'),
           })),
         },
@@ -2007,7 +1992,7 @@ describe('CpOidcClient', () => {
       // Act
       const attemptConstructor = () => {
         new CpOidcClient(
-          cpOidcClientConfigNoAlg as unknown as typeof cpOidcClientConfig,
+          cpOidcClientConfigIncorrect as unknown as typeof cpOidcClientConfig,
         )
       }
 
@@ -3123,8 +3108,8 @@ describe('CpOidcClient', () => {
 
       const cpOidcClientConfigWithoutSigningKeys = {
         ...cpOidcClientConfig,
-        cpOidcRpSecretJwks: {
-          keys: cpOidcClientConfig.cpOidcRpSecretJwks.keys.filter(
+        rpSecretJwks: {
+          keys: cpOidcClientConfig.rpSecretJwks.keys.filter(
             (key) => key.use !== 'sig',
           ),
         },
@@ -3160,8 +3145,8 @@ describe('CpOidcClient', () => {
 
       const cpOidcClientConfigWithoutSigningKeys = {
         ...cpOidcClientConfig,
-        cpOidcRpSecretJwks: {
-          keys: cpOidcClientConfig.cpOidcRpSecretJwks.keys.filter(
+        rpSecretJwks: {
+          keys: cpOidcClientConfig.rpSecretJwks.keys.filter(
             (key) => key.use !== 'sig',
           ),
         },
@@ -3197,8 +3182,8 @@ describe('CpOidcClient', () => {
 
       const cpOidcClientConfigWithoutVerificationKeys = {
         ...cpOidcClientConfig,
-        cpOidcRpPublicJwks: {
-          keys: cpOidcClientConfig.cpOidcRpPublicJwks.keys.filter(
+        rpSecretJwks: {
+          keys: cpOidcClientConfig.rpSecretJwks.keys.filter(
             (key) => key.use !== 'sig',
           ),
         },
@@ -3356,6 +3341,25 @@ describe('CpOidcClient', () => {
       // Assert
 
       expect(result).toBe(CORRECT_ENT_ID)
+    })
+  })
+
+  describe('getExtraTokenFields', () => {
+    it('should return empty object', () => {
+      // Arrange
+
+      jest
+        .spyOn(SpcpOidcBaseClientCache.prototype, 'refresh')
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
+
+      const cpOidcClient = new CpOidcClient(cpOidcClientConfig)
+
+      // Act
+
+      const extraFields = cpOidcClient.getExtraTokenFields()
+
+      // Assert
+      expect(extraFields).toEqual({})
     })
   })
 })

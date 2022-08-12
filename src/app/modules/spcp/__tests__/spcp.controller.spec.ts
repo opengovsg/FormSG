@@ -23,8 +23,10 @@ import {
   MissingAttributesError,
   RetrieveAttributesError,
 } from '../spcp.errors'
-import { SpcpOidcService } from '../spcp.oidc.service'
+import { CpOidcServiceClass } from '../spcp.oidc.service/spcp.oidc.service.cp'
+import { SpOidcServiceClass } from '../spcp.oidc.service/spcp.oidc.service.sp'
 import { SpcpService } from '../spcp.service'
+import { JwtName } from '../spcp.types'
 
 import {
   MOCK_ATTRIBUTES,
@@ -41,13 +43,13 @@ import {
   MOCK_JWT_PAYLOAD,
   MOCK_LOGIN_DOC,
   MOCK_LOGIN_HTML,
-  MOCK_NRIC,
   MOCK_OIDC_STATE,
   MOCK_REDIRECT_URL,
   MOCK_RELAY_STATE,
   MOCK_REMEMBER_ME,
   MOCK_SP_FORM,
   MOCK_SP_OIDC_AUTHORISATION_CODE,
+  MOCK_SP_OIDC_EXTRACTED_NDI_PAYLOAD,
   MOCK_SP_OIDC_JWT_PAYLOAD,
   MOCK_SP_SAML,
   MOCK_TARGET,
@@ -57,8 +59,10 @@ jest.mock('../spcp.oidc.client')
 
 jest.mock('../spcp.service')
 const MockSpcpService = mocked(SpcpService, true)
-jest.mock('../spcp.oidc.service')
-const MockSpcpOidcService = mocked(SpcpOidcService, true)
+jest.mock('../spcp.oidc.service/spcp.oidc.service.sp')
+const MockSpOidcServiceClass = mocked(SpOidcServiceClass, true)
+jest.mock('../spcp.oidc.service/spcp.oidc.service.cp')
+const MockCpOidcServiceClass = mocked(CpOidcServiceClass, true)
 jest.mock('../../billing/billing.service')
 const MockBillingService = mocked(BillingService, true)
 jest.mock('src/app/modules/form/form.service')
@@ -795,12 +799,17 @@ describe('spcp.controller', () => {
     describe('(Singpass)', () => {
       const loginHandler = SpcpController.handleSpcpOidcLogin(FormAuthType.SP)
 
+      const mockSpOidcServiceClass = mocked(
+        MockSpOidcServiceClass.mock.instances[0],
+        true,
+      )
+
       beforeEach(() => {
-        MockSpcpOidcService.exchangeAuthCodeAndRetrieveNric.mockReturnValue(
-          okAsync(MOCK_NRIC),
+        mockSpOidcServiceClass.exchangeAuthCodeAndRetrieveData.mockReturnValue(
+          okAsync(MOCK_SP_OIDC_EXTRACTED_NDI_PAYLOAD),
         )
 
-        MockSpcpOidcService.parseState.mockReturnValue(
+        mockSpOidcServiceClass.parseState.mockReturnValue(
           ok({
             formId: MOCK_TARGET,
             destination: MOCK_DESTINATION,
@@ -813,42 +822,42 @@ describe('spcp.controller', () => {
           okAsync(MOCK_SP_FORM),
         )
 
-        MockSpcpOidcService.createJWTPayload.mockReturnValue(
+        mockSpOidcServiceClass.createJWTPayload.mockReturnValue(
           ok(MOCK_SP_OIDC_JWT_PAYLOAD),
         )
-        MockSpcpOidcService.createJWT.mockResolvedValue(ok(MOCK_JWT))
+        mockSpOidcServiceClass.createJWT.mockResolvedValue(ok(MOCK_JWT))
         MockBillingService.recordLoginByForm.mockReturnValue(
           okAsync(MOCK_LOGIN_DOC),
         )
-        MockSpcpOidcService.getCookieSettings.mockReturnValue(
+        mockSpOidcServiceClass.getCookieSettings.mockReturnValue(
           MOCK_COOKIE_SETTINGS,
         )
       })
 
       it('should set the cookie with the correct params and redirect to the destination', async () => {
+        // Arrange
+        mockSpOidcServiceClass.jwtName = JwtName.SP
+
         // Act
         await loginHandler(MOCK_SPOIDC_LOGIN_REQ, MOCK_RESPONSE, jest.fn())
 
         // Assert
         expect(
-          MockSpcpOidcService.exchangeAuthCodeAndRetrieveNric,
+          mockSpOidcServiceClass.exchangeAuthCodeAndRetrieveData,
         ).toHaveBeenCalledWith(MOCK_SP_OIDC_AUTHORISATION_CODE)
         expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
           MOCK_TARGET,
         )
-        expect(MockSpcpOidcService.parseState).toHaveBeenCalledWith(
+        expect(mockSpOidcServiceClass.parseState).toHaveBeenCalledWith(
           MOCK_OIDC_STATE,
-          FormAuthType.SP,
         )
-        expect(MockSpcpOidcService.createJWTPayload).toHaveBeenCalledWith(
-          MOCK_NRIC,
+        expect(mockSpOidcServiceClass.createJWTPayload).toHaveBeenCalledWith(
+          MOCK_SP_OIDC_EXTRACTED_NDI_PAYLOAD,
           MOCK_REMEMBER_ME,
-          FormAuthType.SP,
         )
-        expect(MockSpcpOidcService.createJWT).toHaveBeenCalledWith(
+        expect(mockSpOidcServiceClass.createJWT).toHaveBeenCalledWith(
           MOCK_SP_OIDC_JWT_PAYLOAD,
           MOCK_COOKIE_AGE,
-          FormAuthType.SP,
         )
         expect(MockBillingService.recordLoginByForm).toHaveBeenCalledWith(
           MOCK_SP_FORM,
@@ -862,15 +871,12 @@ describe('spcp.controller', () => {
           ...MOCK_COOKIE_SETTINGS,
         })
         expect(MOCK_RESPONSE.redirect).toHaveBeenCalledWith(MOCK_DESTINATION)
-        expect(
-          MockSpcpOidcService.exchangeAuthCodeAndRetrieveNricEntID,
-        ).not.toHaveBeenCalled()
       })
 
       it('should return 400 when token exchange fails', async () => {
         // Arrange
 
-        MockSpcpOidcService.exchangeAuthCodeAndRetrieveNric.mockReturnValue(
+        mockSpOidcServiceClass.exchangeAuthCodeAndRetrieveData.mockReturnValue(
           errAsync(new InvalidIdTokenError()),
         )
 
@@ -879,27 +885,24 @@ describe('spcp.controller', () => {
 
         // Assert
         expect(
-          MockSpcpOidcService.exchangeAuthCodeAndRetrieveNric,
+          mockSpOidcServiceClass.exchangeAuthCodeAndRetrieveData,
         ).toHaveBeenCalledWith(MOCK_SP_OIDC_AUTHORISATION_CODE)
         expect(MOCK_RESPONSE.sendStatus).toHaveBeenCalledWith(400)
         expect(MOCK_RESPONSE.cookie).not.toHaveBeenCalled()
         expect(MOCK_RESPONSE.redirect).not.toHaveBeenCalled()
         expect(MockFormService.retrieveFullFormById).not.toHaveBeenCalled()
-        expect(MockSpcpOidcService.parseState).not.toHaveBeenCalled()
-        expect(MockSpcpOidcService.createJWTPayload).not.toHaveBeenCalled()
-        expect(MockSpcpOidcService.createJWT).not.toHaveBeenCalled()
+        expect(mockSpOidcServiceClass.parseState).not.toHaveBeenCalled()
+        expect(mockSpOidcServiceClass.createJWTPayload).not.toHaveBeenCalled()
+        expect(mockSpOidcServiceClass.createJWT).not.toHaveBeenCalled()
         expect(MockBillingService.recordLoginByForm).not.toHaveBeenCalled()
-        expect(MockSpcpOidcService.getCookieSettings).not.toHaveBeenCalled()
+        expect(mockSpOidcServiceClass.getCookieSettings).not.toHaveBeenCalled()
         expect(MOCK_RESPONSE.cookie).not.toHaveBeenCalled()
-        expect(
-          MockSpcpOidcService.exchangeAuthCodeAndRetrieveNricEntID,
-        ).not.toHaveBeenCalled()
       })
 
       it('should return 400 when parse state fails', async () => {
         // Arrange
 
-        MockSpcpOidcService.parseState.mockReturnValueOnce(
+        mockSpOidcServiceClass.parseState.mockReturnValueOnce(
           err(new InvalidStateError()),
         )
 
@@ -908,24 +911,20 @@ describe('spcp.controller', () => {
 
         // Assert
         expect(
-          MockSpcpOidcService.exchangeAuthCodeAndRetrieveNric,
+          mockSpOidcServiceClass.exchangeAuthCodeAndRetrieveData,
         ).toHaveBeenCalledWith(MOCK_SP_OIDC_AUTHORISATION_CODE)
-        expect(MockSpcpOidcService.parseState).toHaveBeenCalledWith(
+        expect(mockSpOidcServiceClass.parseState).toHaveBeenCalledWith(
           MOCK_OIDC_STATE,
-          FormAuthType.SP,
         )
         expect(MOCK_RESPONSE.sendStatus).toHaveBeenCalledWith(400)
         expect(MOCK_RESPONSE.cookie).not.toHaveBeenCalled()
         expect(MOCK_RESPONSE.redirect).not.toHaveBeenCalled()
         expect(MockFormService.retrieveFullFormById).not.toHaveBeenCalled()
-        expect(MockSpcpOidcService.createJWTPayload).not.toHaveBeenCalled()
-        expect(MockSpcpOidcService.createJWT).not.toHaveBeenCalled()
+        expect(mockSpOidcServiceClass.createJWTPayload).not.toHaveBeenCalled()
+        expect(mockSpOidcServiceClass.createJWT).not.toHaveBeenCalled()
         expect(MockBillingService.recordLoginByForm).not.toHaveBeenCalled()
-        expect(MockSpcpOidcService.getCookieSettings).not.toHaveBeenCalled()
+        expect(mockSpOidcServiceClass.getCookieSettings).not.toHaveBeenCalled()
         expect(MOCK_RESPONSE.cookie).not.toHaveBeenCalled()
-        expect(
-          MockSpcpOidcService.exchangeAuthCodeAndRetrieveNricEntID,
-        ).not.toHaveBeenCalled()
       })
 
       it('should return 404 when form cannot be found', async () => {
@@ -941,14 +940,13 @@ describe('spcp.controller', () => {
 
         // Assert
         expect(
-          MockSpcpOidcService.exchangeAuthCodeAndRetrieveNric,
+          mockSpOidcServiceClass.exchangeAuthCodeAndRetrieveData,
         ).toHaveBeenCalledWith(MOCK_SP_OIDC_AUTHORISATION_CODE)
         expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
           MOCK_TARGET,
         )
-        expect(MockSpcpOidcService.parseState).toHaveBeenCalledWith(
+        expect(mockSpOidcServiceClass.parseState).toHaveBeenCalledWith(
           MOCK_OIDC_STATE,
-          FormAuthType.SP,
         )
         expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
           MOCK_TARGET,
@@ -956,14 +954,11 @@ describe('spcp.controller', () => {
         expect(MOCK_RESPONSE.sendStatus).toHaveBeenCalledWith(404)
         expect(MOCK_RESPONSE.cookie).not.toHaveBeenCalled()
         expect(MOCK_RESPONSE.redirect).not.toHaveBeenCalled()
-        expect(MockSpcpOidcService.createJWTPayload).not.toHaveBeenCalled()
-        expect(MockSpcpOidcService.createJWT).not.toHaveBeenCalled()
+        expect(mockSpOidcServiceClass.createJWTPayload).not.toHaveBeenCalled()
+        expect(mockSpOidcServiceClass.createJWT).not.toHaveBeenCalled()
         expect(MockBillingService.recordLoginByForm).not.toHaveBeenCalled()
-        expect(MockSpcpOidcService.getCookieSettings).not.toHaveBeenCalled()
+        expect(mockSpOidcServiceClass.getCookieSettings).not.toHaveBeenCalled()
         expect(MOCK_RESPONSE.cookie).not.toHaveBeenCalled()
-        expect(
-          MockSpcpOidcService.exchangeAuthCodeAndRetrieveNricEntID,
-        ).not.toHaveBeenCalled()
       })
 
       it('should set isLoginError cookie and redirect when form has wrong auth type', async () => {
@@ -978,29 +973,25 @@ describe('spcp.controller', () => {
 
         // Assert
         expect(
-          MockSpcpOidcService.exchangeAuthCodeAndRetrieveNric,
+          mockSpOidcServiceClass.exchangeAuthCodeAndRetrieveData,
         ).toHaveBeenCalledWith(MOCK_SP_OIDC_AUTHORISATION_CODE)
         expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
           MOCK_TARGET,
         )
-        expect(MockSpcpOidcService.parseState).toHaveBeenCalledWith(
+        expect(mockSpOidcServiceClass.parseState).toHaveBeenCalledWith(
           MOCK_OIDC_STATE,
-          FormAuthType.SP,
         )
         expect(MOCK_RESPONSE.cookie).toHaveBeenCalledWith('isLoginError', true)
         expect(MOCK_RESPONSE.redirect).toHaveBeenCalledWith(MOCK_DESTINATION)
-        expect(MockSpcpOidcService.createJWTPayload).not.toHaveBeenCalled()
-        expect(MockSpcpOidcService.createJWT).not.toHaveBeenCalled()
+        expect(mockSpOidcServiceClass.createJWTPayload).not.toHaveBeenCalled()
+        expect(mockSpOidcServiceClass.createJWT).not.toHaveBeenCalled()
         expect(MockBillingService.recordLoginByForm).not.toHaveBeenCalled()
         expect(MockSpcpService.getCookieSettings).not.toHaveBeenCalled()
-        expect(
-          MockSpcpOidcService.exchangeAuthCodeAndRetrieveNricEntID,
-        ).not.toHaveBeenCalled()
       })
 
       it('should set isLoginError cookie and redirect when createJWTPayload errors', async () => {
         // Arrange
-        MockSpcpOidcService.createJWTPayload.mockReturnValue(
+        mockSpOidcServiceClass.createJWTPayload.mockReturnValue(
           err(new MissingAttributesError()),
         )
 
@@ -1010,34 +1001,29 @@ describe('spcp.controller', () => {
         // Assert
 
         expect(
-          MockSpcpOidcService.exchangeAuthCodeAndRetrieveNric,
+          mockSpOidcServiceClass.exchangeAuthCodeAndRetrieveData,
         ).toHaveBeenCalledWith(MOCK_SP_OIDC_AUTHORISATION_CODE)
         expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
           MOCK_TARGET,
         )
-        expect(MockSpcpOidcService.parseState).toHaveBeenCalledWith(
+        expect(mockSpOidcServiceClass.parseState).toHaveBeenCalledWith(
           MOCK_OIDC_STATE,
-          FormAuthType.SP,
         )
-        expect(MockSpcpOidcService.createJWTPayload).toHaveBeenCalledWith(
-          MOCK_NRIC,
+        expect(mockSpOidcServiceClass.createJWTPayload).toHaveBeenCalledWith(
+          MOCK_SP_OIDC_EXTRACTED_NDI_PAYLOAD,
           MOCK_REMEMBER_ME,
-          FormAuthType.SP,
         )
 
         expect(MOCK_RESPONSE.cookie).toHaveBeenCalledWith('isLoginError', true)
         expect(MOCK_RESPONSE.redirect).toHaveBeenCalledWith(MOCK_DESTINATION)
-        expect(MockSpcpOidcService.createJWT).not.toHaveBeenCalled()
+        expect(mockSpOidcServiceClass.createJWT).not.toHaveBeenCalled()
         expect(MockBillingService.recordLoginByForm).not.toHaveBeenCalled()
         expect(MockSpcpService.getCookieSettings).not.toHaveBeenCalled()
-        expect(
-          MockSpcpOidcService.exchangeAuthCodeAndRetrieveNricEntID,
-        ).not.toHaveBeenCalled()
       })
 
       it('should set isLoginError cookie and redirect when createJWT errors', async () => {
         // Arrange
-        MockSpcpOidcService.createJWT.mockReturnValue(
+        mockSpOidcServiceClass.createJWT.mockReturnValue(
           errAsync(new CreateJwtError()),
         )
 
@@ -1047,34 +1033,28 @@ describe('spcp.controller', () => {
         // Assert
 
         expect(
-          MockSpcpOidcService.exchangeAuthCodeAndRetrieveNric,
+          mockSpOidcServiceClass.exchangeAuthCodeAndRetrieveData,
         ).toHaveBeenCalledWith(MOCK_SP_OIDC_AUTHORISATION_CODE)
         expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
           MOCK_TARGET,
         )
-        expect(MockSpcpOidcService.parseState).toHaveBeenCalledWith(
+        expect(mockSpOidcServiceClass.parseState).toHaveBeenCalledWith(
           MOCK_OIDC_STATE,
-          FormAuthType.SP,
         )
-        expect(MockSpcpOidcService.createJWTPayload).toHaveBeenCalledWith(
-          MOCK_NRIC,
+        expect(mockSpOidcServiceClass.createJWTPayload).toHaveBeenCalledWith(
+          MOCK_SP_OIDC_EXTRACTED_NDI_PAYLOAD,
           MOCK_REMEMBER_ME,
-          FormAuthType.SP,
         )
 
-        expect(MockSpcpOidcService.createJWT).toHaveBeenCalledWith(
+        expect(mockSpOidcServiceClass.createJWT).toHaveBeenCalledWith(
           MOCK_SP_OIDC_JWT_PAYLOAD,
           MOCK_COOKIE_AGE,
-          FormAuthType.SP,
         )
         expect(MOCK_RESPONSE.cookie).toHaveBeenCalledWith('isLoginError', true)
         expect(MOCK_RESPONSE.redirect).toHaveBeenCalledWith(MOCK_DESTINATION)
 
         expect(MockBillingService.recordLoginByForm).not.toHaveBeenCalled()
         expect(MockSpcpService.getCookieSettings).not.toHaveBeenCalled()
-        expect(
-          MockSpcpOidcService.exchangeAuthCodeAndRetrieveNricEntID,
-        ).not.toHaveBeenCalled()
       })
 
       it('should set isLoginError cookie and redirect when recordLoginByForm errors', async () => {
@@ -1089,25 +1069,22 @@ describe('spcp.controller', () => {
         // Assert
 
         expect(
-          MockSpcpOidcService.exchangeAuthCodeAndRetrieveNric,
+          mockSpOidcServiceClass.exchangeAuthCodeAndRetrieveData,
         ).toHaveBeenCalledWith(MOCK_SP_OIDC_AUTHORISATION_CODE)
         expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
           MOCK_TARGET,
         )
-        expect(MockSpcpOidcService.parseState).toHaveBeenCalledWith(
+        expect(mockSpOidcServiceClass.parseState).toHaveBeenCalledWith(
           MOCK_OIDC_STATE,
-          FormAuthType.SP,
         )
-        expect(MockSpcpOidcService.createJWTPayload).toHaveBeenCalledWith(
-          MOCK_NRIC,
+        expect(mockSpOidcServiceClass.createJWTPayload).toHaveBeenCalledWith(
+          MOCK_SP_OIDC_EXTRACTED_NDI_PAYLOAD,
           MOCK_REMEMBER_ME,
-          FormAuthType.SP,
         )
 
-        expect(MockSpcpOidcService.createJWT).toHaveBeenCalledWith(
+        expect(mockSpOidcServiceClass.createJWT).toHaveBeenCalledWith(
           MOCK_SP_OIDC_JWT_PAYLOAD,
           MOCK_COOKIE_AGE,
-          FormAuthType.SP,
         )
         expect(MOCK_RESPONSE.cookie).toHaveBeenCalledWith('isLoginError', true)
         expect(MOCK_RESPONSE.redirect).toHaveBeenCalledWith(MOCK_DESTINATION)
@@ -1116,20 +1093,22 @@ describe('spcp.controller', () => {
           MOCK_SP_FORM,
         )
         expect(MockSpcpService.getCookieSettings).not.toHaveBeenCalled()
-        expect(
-          MockSpcpOidcService.exchangeAuthCodeAndRetrieveNricEntID,
-        ).not.toHaveBeenCalled()
       })
     })
     describe('(Corppass)', () => {
       const loginHandler = SpcpController.handleSpcpOidcLogin(FormAuthType.CP)
 
+      const mockCpOidcServiceClass = mocked(
+        MockCpOidcServiceClass.mock.instances[0],
+        true,
+      )
+
       beforeEach(() => {
-        MockSpcpOidcService.exchangeAuthCodeAndRetrieveNricEntID.mockReturnValue(
+        mockCpOidcServiceClass.exchangeAuthCodeAndRetrieveData.mockReturnValue(
           okAsync(MOCK_CP_OIDC_EXTRACTED_NDI_PAYLOAD),
         )
 
-        MockSpcpOidcService.parseState.mockReturnValue(
+        mockCpOidcServiceClass.parseState.mockReturnValue(
           ok({
             formId: MOCK_TARGET,
             destination: MOCK_DESTINATION,
@@ -1142,42 +1121,42 @@ describe('spcp.controller', () => {
           okAsync(MOCK_CP_FORM),
         )
 
-        MockSpcpOidcService.createJWTPayload.mockReturnValue(
+        mockCpOidcServiceClass.createJWTPayload.mockReturnValue(
           ok(MOCK_CP_OIDC_JWT_PAYLOAD),
         )
-        MockSpcpOidcService.createJWT.mockResolvedValue(ok(MOCK_JWT))
+        mockCpOidcServiceClass.createJWT.mockResolvedValue(ok(MOCK_JWT))
         MockBillingService.recordLoginByForm.mockReturnValue(
           okAsync(MOCK_LOGIN_DOC),
         )
-        MockSpcpOidcService.getCookieSettings.mockReturnValue(
+        mockCpOidcServiceClass.getCookieSettings.mockReturnValue(
           MOCK_COOKIE_SETTINGS,
         )
       })
 
       it('should set the cookie with the correct params and redirect to the destination', async () => {
+        // Arrange
+        mockCpOidcServiceClass.jwtName = JwtName.CP
+
         // Act
         await loginHandler(MOCK_CPOIDC_LOGIN_REQ, MOCK_RESPONSE, jest.fn())
 
         // Assert
         expect(
-          MockSpcpOidcService.exchangeAuthCodeAndRetrieveNricEntID,
+          mockCpOidcServiceClass.exchangeAuthCodeAndRetrieveData,
         ).toHaveBeenCalledWith(MOCK_CP_OIDC_AUTHORISATION_CODE)
         expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
           MOCK_TARGET,
         )
-        expect(MockSpcpOidcService.parseState).toHaveBeenCalledWith(
+        expect(mockCpOidcServiceClass.parseState).toHaveBeenCalledWith(
           MOCK_OIDC_STATE,
-          FormAuthType.CP,
         )
-        expect(MockSpcpOidcService.createJWTPayload).toHaveBeenCalledWith(
+        expect(mockCpOidcServiceClass.createJWTPayload).toHaveBeenCalledWith(
           MOCK_CP_OIDC_EXTRACTED_NDI_PAYLOAD,
           MOCK_REMEMBER_ME,
-          FormAuthType.CP,
         )
-        expect(MockSpcpOidcService.createJWT).toHaveBeenCalledWith(
+        expect(mockCpOidcServiceClass.createJWT).toHaveBeenCalledWith(
           MOCK_CP_OIDC_JWT_PAYLOAD,
           MOCK_COOKIE_AGE,
-          FormAuthType.CP,
         )
         expect(MockBillingService.recordLoginByForm).toHaveBeenCalledWith(
           MOCK_CP_FORM,
@@ -1191,15 +1170,12 @@ describe('spcp.controller', () => {
           ...MOCK_COOKIE_SETTINGS,
         })
         expect(MOCK_RESPONSE.redirect).toHaveBeenCalledWith(MOCK_DESTINATION)
-        expect(
-          MockSpcpOidcService.exchangeAuthCodeAndRetrieveNric,
-        ).not.toHaveBeenCalled()
       })
 
       it('should return 400 when token exchange fails', async () => {
         // Arrange
 
-        MockSpcpOidcService.exchangeAuthCodeAndRetrieveNricEntID.mockReturnValue(
+        mockCpOidcServiceClass.exchangeAuthCodeAndRetrieveData.mockReturnValue(
           errAsync(new InvalidIdTokenError()),
         )
 
@@ -1208,27 +1184,24 @@ describe('spcp.controller', () => {
 
         // Assert
         expect(
-          MockSpcpOidcService.exchangeAuthCodeAndRetrieveNricEntID,
+          mockCpOidcServiceClass.exchangeAuthCodeAndRetrieveData,
         ).toHaveBeenCalledWith(MOCK_CP_OIDC_AUTHORISATION_CODE)
         expect(MOCK_RESPONSE.sendStatus).toHaveBeenCalledWith(400)
         expect(MOCK_RESPONSE.cookie).not.toHaveBeenCalled()
         expect(MOCK_RESPONSE.redirect).not.toHaveBeenCalled()
         expect(MockFormService.retrieveFullFormById).not.toHaveBeenCalled()
-        expect(MockSpcpOidcService.parseState).not.toHaveBeenCalled()
-        expect(MockSpcpOidcService.createJWTPayload).not.toHaveBeenCalled()
-        expect(MockSpcpOidcService.createJWT).not.toHaveBeenCalled()
+        expect(mockCpOidcServiceClass.parseState).not.toHaveBeenCalled()
+        expect(mockCpOidcServiceClass.createJWTPayload).not.toHaveBeenCalled()
+        expect(mockCpOidcServiceClass.createJWT).not.toHaveBeenCalled()
         expect(MockBillingService.recordLoginByForm).not.toHaveBeenCalled()
-        expect(MockSpcpOidcService.getCookieSettings).not.toHaveBeenCalled()
+        expect(mockCpOidcServiceClass.getCookieSettings).not.toHaveBeenCalled()
         expect(MOCK_RESPONSE.cookie).not.toHaveBeenCalled()
-        expect(
-          MockSpcpOidcService.exchangeAuthCodeAndRetrieveNric,
-        ).not.toHaveBeenCalled()
       })
 
       it('should return 400 when parse state fails', async () => {
         // Arrange
 
-        MockSpcpOidcService.parseState.mockReturnValueOnce(
+        mockCpOidcServiceClass.parseState.mockReturnValueOnce(
           err(new InvalidStateError()),
         )
 
@@ -1237,24 +1210,20 @@ describe('spcp.controller', () => {
 
         // Assert
         expect(
-          MockSpcpOidcService.exchangeAuthCodeAndRetrieveNricEntID,
+          mockCpOidcServiceClass.exchangeAuthCodeAndRetrieveData,
         ).toHaveBeenCalledWith(MOCK_CP_OIDC_AUTHORISATION_CODE)
-        expect(MockSpcpOidcService.parseState).toHaveBeenCalledWith(
+        expect(mockCpOidcServiceClass.parseState).toHaveBeenCalledWith(
           MOCK_OIDC_STATE,
-          FormAuthType.CP,
         )
         expect(MOCK_RESPONSE.sendStatus).toHaveBeenCalledWith(400)
         expect(MOCK_RESPONSE.cookie).not.toHaveBeenCalled()
         expect(MOCK_RESPONSE.redirect).not.toHaveBeenCalled()
         expect(MockFormService.retrieveFullFormById).not.toHaveBeenCalled()
-        expect(MockSpcpOidcService.createJWTPayload).not.toHaveBeenCalled()
-        expect(MockSpcpOidcService.createJWT).not.toHaveBeenCalled()
+        expect(mockCpOidcServiceClass.createJWTPayload).not.toHaveBeenCalled()
+        expect(mockCpOidcServiceClass.createJWT).not.toHaveBeenCalled()
         expect(MockBillingService.recordLoginByForm).not.toHaveBeenCalled()
-        expect(MockSpcpOidcService.getCookieSettings).not.toHaveBeenCalled()
+        expect(mockCpOidcServiceClass.getCookieSettings).not.toHaveBeenCalled()
         expect(MOCK_RESPONSE.cookie).not.toHaveBeenCalled()
-        expect(
-          MockSpcpOidcService.exchangeAuthCodeAndRetrieveNric,
-        ).not.toHaveBeenCalled()
       })
 
       it('should return 404 when form cannot be found', async () => {
@@ -1270,14 +1239,13 @@ describe('spcp.controller', () => {
 
         // Assert
         expect(
-          MockSpcpOidcService.exchangeAuthCodeAndRetrieveNricEntID,
+          mockCpOidcServiceClass.exchangeAuthCodeAndRetrieveData,
         ).toHaveBeenCalledWith(MOCK_CP_OIDC_AUTHORISATION_CODE)
         expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
           MOCK_TARGET,
         )
-        expect(MockSpcpOidcService.parseState).toHaveBeenCalledWith(
+        expect(mockCpOidcServiceClass.parseState).toHaveBeenCalledWith(
           MOCK_OIDC_STATE,
-          FormAuthType.CP,
         )
         expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
           MOCK_TARGET,
@@ -1285,14 +1253,11 @@ describe('spcp.controller', () => {
         expect(MOCK_RESPONSE.sendStatus).toHaveBeenCalledWith(404)
         expect(MOCK_RESPONSE.cookie).not.toHaveBeenCalled()
         expect(MOCK_RESPONSE.redirect).not.toHaveBeenCalled()
-        expect(MockSpcpOidcService.createJWTPayload).not.toHaveBeenCalled()
-        expect(MockSpcpOidcService.createJWT).not.toHaveBeenCalled()
+        expect(mockCpOidcServiceClass.createJWTPayload).not.toHaveBeenCalled()
+        expect(mockCpOidcServiceClass.createJWT).not.toHaveBeenCalled()
         expect(MockBillingService.recordLoginByForm).not.toHaveBeenCalled()
-        expect(MockSpcpOidcService.getCookieSettings).not.toHaveBeenCalled()
+        expect(mockCpOidcServiceClass.getCookieSettings).not.toHaveBeenCalled()
         expect(MOCK_RESPONSE.cookie).not.toHaveBeenCalled()
-        expect(
-          MockSpcpOidcService.exchangeAuthCodeAndRetrieveNric,
-        ).not.toHaveBeenCalled()
       })
 
       it('should set isLoginError cookie and redirect when form has wrong auth type', async () => {
@@ -1307,29 +1272,25 @@ describe('spcp.controller', () => {
 
         // Assert
         expect(
-          MockSpcpOidcService.exchangeAuthCodeAndRetrieveNricEntID,
+          mockCpOidcServiceClass.exchangeAuthCodeAndRetrieveData,
         ).toHaveBeenCalledWith(MOCK_CP_OIDC_AUTHORISATION_CODE)
         expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
           MOCK_TARGET,
         )
-        expect(MockSpcpOidcService.parseState).toHaveBeenCalledWith(
+        expect(mockCpOidcServiceClass.parseState).toHaveBeenCalledWith(
           MOCK_OIDC_STATE,
-          FormAuthType.CP,
         )
         expect(MOCK_RESPONSE.cookie).toHaveBeenCalledWith('isLoginError', true)
         expect(MOCK_RESPONSE.redirect).toHaveBeenCalledWith(MOCK_DESTINATION)
-        expect(MockSpcpOidcService.createJWTPayload).not.toHaveBeenCalled()
-        expect(MockSpcpOidcService.createJWT).not.toHaveBeenCalled()
+        expect(mockCpOidcServiceClass.createJWTPayload).not.toHaveBeenCalled()
+        expect(mockCpOidcServiceClass.createJWT).not.toHaveBeenCalled()
         expect(MockBillingService.recordLoginByForm).not.toHaveBeenCalled()
         expect(MockSpcpService.getCookieSettings).not.toHaveBeenCalled()
-        expect(
-          MockSpcpOidcService.exchangeAuthCodeAndRetrieveNric,
-        ).not.toHaveBeenCalled()
       })
 
       it('should set isLoginError cookie and redirect when createJWTPayload errors', async () => {
         // Arrange
-        MockSpcpOidcService.createJWTPayload.mockReturnValue(
+        mockCpOidcServiceClass.createJWTPayload.mockReturnValue(
           err(new MissingAttributesError()),
         )
 
@@ -1339,34 +1300,29 @@ describe('spcp.controller', () => {
         // Assert
 
         expect(
-          MockSpcpOidcService.exchangeAuthCodeAndRetrieveNricEntID,
+          mockCpOidcServiceClass.exchangeAuthCodeAndRetrieveData,
         ).toHaveBeenCalledWith(MOCK_CP_OIDC_AUTHORISATION_CODE)
         expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
           MOCK_TARGET,
         )
-        expect(MockSpcpOidcService.parseState).toHaveBeenCalledWith(
+        expect(mockCpOidcServiceClass.parseState).toHaveBeenCalledWith(
           MOCK_OIDC_STATE,
-          FormAuthType.CP,
         )
-        expect(MockSpcpOidcService.createJWTPayload).toHaveBeenCalledWith(
+        expect(mockCpOidcServiceClass.createJWTPayload).toHaveBeenCalledWith(
           MOCK_CP_OIDC_EXTRACTED_NDI_PAYLOAD,
           MOCK_REMEMBER_ME,
-          FormAuthType.CP,
         )
 
         expect(MOCK_RESPONSE.cookie).toHaveBeenCalledWith('isLoginError', true)
         expect(MOCK_RESPONSE.redirect).toHaveBeenCalledWith(MOCK_DESTINATION)
-        expect(MockSpcpOidcService.createJWT).not.toHaveBeenCalled()
+        expect(mockCpOidcServiceClass.createJWT).not.toHaveBeenCalled()
         expect(MockBillingService.recordLoginByForm).not.toHaveBeenCalled()
         expect(MockSpcpService.getCookieSettings).not.toHaveBeenCalled()
-        expect(
-          MockSpcpOidcService.exchangeAuthCodeAndRetrieveNric,
-        ).not.toHaveBeenCalled()
       })
 
       it('should set isLoginError cookie and redirect when createJWT errors', async () => {
         // Arrange
-        MockSpcpOidcService.createJWT.mockReturnValue(
+        mockCpOidcServiceClass.createJWT.mockReturnValue(
           errAsync(new CreateJwtError()),
         )
 
@@ -1376,34 +1332,28 @@ describe('spcp.controller', () => {
         // Assert
 
         expect(
-          MockSpcpOidcService.exchangeAuthCodeAndRetrieveNricEntID,
+          mockCpOidcServiceClass.exchangeAuthCodeAndRetrieveData,
         ).toHaveBeenCalledWith(MOCK_CP_OIDC_AUTHORISATION_CODE)
         expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
           MOCK_TARGET,
         )
-        expect(MockSpcpOidcService.parseState).toHaveBeenCalledWith(
+        expect(mockCpOidcServiceClass.parseState).toHaveBeenCalledWith(
           MOCK_OIDC_STATE,
-          FormAuthType.CP,
         )
-        expect(MockSpcpOidcService.createJWTPayload).toHaveBeenCalledWith(
+        expect(mockCpOidcServiceClass.createJWTPayload).toHaveBeenCalledWith(
           MOCK_CP_OIDC_EXTRACTED_NDI_PAYLOAD,
           MOCK_REMEMBER_ME,
-          FormAuthType.CP,
         )
 
-        expect(MockSpcpOidcService.createJWT).toHaveBeenCalledWith(
+        expect(mockCpOidcServiceClass.createJWT).toHaveBeenCalledWith(
           MOCK_CP_OIDC_JWT_PAYLOAD,
           MOCK_COOKIE_AGE,
-          FormAuthType.CP,
         )
         expect(MOCK_RESPONSE.cookie).toHaveBeenCalledWith('isLoginError', true)
         expect(MOCK_RESPONSE.redirect).toHaveBeenCalledWith(MOCK_DESTINATION)
 
         expect(MockBillingService.recordLoginByForm).not.toHaveBeenCalled()
         expect(MockSpcpService.getCookieSettings).not.toHaveBeenCalled()
-        expect(
-          MockSpcpOidcService.exchangeAuthCodeAndRetrieveNric,
-        ).not.toHaveBeenCalled()
       })
 
       it('should set isLoginError cookie and redirect when recordLoginByForm errors', async () => {
@@ -1418,25 +1368,22 @@ describe('spcp.controller', () => {
         // Assert
 
         expect(
-          MockSpcpOidcService.exchangeAuthCodeAndRetrieveNricEntID,
+          mockCpOidcServiceClass.exchangeAuthCodeAndRetrieveData,
         ).toHaveBeenCalledWith(MOCK_CP_OIDC_AUTHORISATION_CODE)
         expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
           MOCK_TARGET,
         )
-        expect(MockSpcpOidcService.parseState).toHaveBeenCalledWith(
+        expect(mockCpOidcServiceClass.parseState).toHaveBeenCalledWith(
           MOCK_OIDC_STATE,
-          FormAuthType.CP,
         )
-        expect(MockSpcpOidcService.createJWTPayload).toHaveBeenCalledWith(
+        expect(mockCpOidcServiceClass.createJWTPayload).toHaveBeenCalledWith(
           MOCK_CP_OIDC_EXTRACTED_NDI_PAYLOAD,
           MOCK_REMEMBER_ME,
-          FormAuthType.CP,
         )
 
-        expect(MockSpcpOidcService.createJWT).toHaveBeenCalledWith(
+        expect(mockCpOidcServiceClass.createJWT).toHaveBeenCalledWith(
           MOCK_CP_OIDC_JWT_PAYLOAD,
           MOCK_COOKIE_AGE,
-          FormAuthType.CP,
         )
         expect(MOCK_RESPONSE.cookie).toHaveBeenCalledWith('isLoginError', true)
         expect(MOCK_RESPONSE.redirect).toHaveBeenCalledWith(MOCK_DESTINATION)
@@ -1445,9 +1392,6 @@ describe('spcp.controller', () => {
           MOCK_CP_FORM,
         )
         expect(MockSpcpService.getCookieSettings).not.toHaveBeenCalled()
-        expect(
-          MockSpcpOidcService.exchangeAuthCodeAndRetrieveNric,
-        ).not.toHaveBeenCalled()
       })
     })
   })
