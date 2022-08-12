@@ -6,6 +6,8 @@ import { AdminNavBar } from '~/app/AdminNavBar'
 import { ROLLOUT_ANNOUNCEMENT_KEY_PREFIX } from '~constants/localStorage'
 import { useLocalStorage } from '~hooks/useLocalStorage'
 
+// TODO #4279: Remove after React rollout is complete
+import { SwitchEnvIcon } from '~features/env/SwitchEnvIcon'
 import { RolloutAnnouncementModal } from '~features/rollout-announcement/RolloutAnnouncementModal'
 import { useUser } from '~features/user/queries'
 
@@ -57,6 +59,7 @@ export const WorkspacePage = (): JSX.Element => {
       />
       <Flex direction="column" h="100vh">
         <AdminNavBar />
+        <SwitchEnvIcon />
         {totalFormCount === 0 ? (
           <EmptyWorkspace
             handleOpenCreateFormModal={createFormModalDisclosure.onOpen}
