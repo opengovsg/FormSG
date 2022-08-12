@@ -39,6 +39,7 @@ export const DropdownField = ({
           <SingleSelect
             colorScheme={`theme-${colorTheme}`}
             items={schema.fieldOptions}
+            isDisabled={schema.disabled}
             {...field}
           />
         )}

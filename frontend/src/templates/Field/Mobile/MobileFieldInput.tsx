@@ -46,6 +46,7 @@ export const MobileFieldInput = ({
           autoComplete="tel"
           allowInternational={schema.allowIntlNumbers}
           value={value?.value}
+          isDisabled={schema.disabled}
           onChange={
             handleInputChange
               ? handleInputChange(onChange)

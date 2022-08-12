@@ -59,7 +59,6 @@ export const FieldContainer = ({
   return (
     <FormControl
       isRequired={schema.required}
-      isDisabled={schema.disabled}
       isReadOnly={isValid && isSubmitting}
       isInvalid={!!error}
       id={schema._id}
