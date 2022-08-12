@@ -42,6 +42,7 @@ const cpOidcClient = new CpOidcClient({
 
 const cpOidcProps = {
   cookieMaxAge: spcpMyInfoConfig.cpCookieMaxAge,
+  cookieDomain: spcpMyInfoConfig.spcpCookieDomain,
 }
 
 const SpOidcService = new SpOidcServiceClass(spOidcClient, spOidcProps)
