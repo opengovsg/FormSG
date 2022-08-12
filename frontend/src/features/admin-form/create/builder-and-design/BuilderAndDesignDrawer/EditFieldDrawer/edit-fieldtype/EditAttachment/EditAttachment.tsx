@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 import { Controller, RegisterOptions } from 'react-hook-form'
 import { FormControl, Skeleton } from '@chakra-ui/react'
 import { extend, pick } from 'lodash'
@@ -67,6 +67,7 @@ export const EditAttachment = ({ field }: EditAttachmentProps): JSX.Element => {
     handleUpdateField,
     isLoading,
     handleCancel,
+    trigger,
   } = useEditFieldForm<EditAttachmentInputs, AttachmentFieldBase>({
     field,
     transform: {
@@ -135,6 +136,15 @@ export const EditAttachment = ({ field }: EditAttachmentProps): JSX.Element => {
     [maxTotalSizeMb, otherAttachmentsSize],
   )
 
+  const validateAttachmentSize = useCallback(() => {
+    trigger('attachmentSize')
+  }, [trigger])
+
+  // Validate on render in order to inform users when other attachments have
+  // already hit the limit, so the user doesn't try to create this attachment
+  // field before changing the other fields.
+  useEffect(() => validateAttachmentSize(), [validateAttachmentSize])
+
   return (
     <DrawerContentContainer>
       <FormControl isRequired isReadOnly={isLoading} isInvalid={!!errors.title}>
@@ -157,22 +167,23 @@ export const EditAttachment = ({ field }: EditAttachmentProps): JSX.Element => {
             control={control}
             rules={attachmentSizeValidationRule}
             name="attachmentSize"
-            render={({ field }) => (
+            render={({ field: { onChange, ...rest } }) => (
               <SingleSelect
                 isClearable={false}
                 items={attachmentSizeOptions}
-                {...field}
+                onChange={(size) => {
+                  onChange(size)
+                  validateAttachmentSize()
+                }}
+                {...rest}
               />
             )}
           />
         </Skeleton>
         <FormErrorMessage>{errors?.attachmentSize?.message}</FormErrorMessage>
         <AttachmentStackedBar
-          values={
-            form
-              ? [otherAttachmentsSize, Number(getValues('attachmentSize'))]
-              : undefined
-          }
+          existingValues={form ? [otherAttachmentsSize] : undefined}
+          newValue={Number(getValues('attachmentSize'))}
           max={maxTotalSizeMb}
         />
       </FormControl>
