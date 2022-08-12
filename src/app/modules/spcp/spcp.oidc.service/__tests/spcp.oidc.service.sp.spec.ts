@@ -5,6 +5,7 @@ import { MOCK_COOKIE_AGE } from 'src/app/modules/myinfo/__tests__/myinfo.test.co
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
+import { spOidcClientConfig } from '../../__tests__/spcp.oidc.test.constants'
 import {
   MOCK_COOKIES,
   MOCK_DECODED_QUERY,
@@ -17,7 +18,6 @@ import {
   MOCK_SP_JWT_PAYLOAD,
   MOCK_SP_OIDC_AUTHORISATION_CODE,
   MOCK_TARGET,
-  spOidcClientConfig,
 } from '../../__tests__/spcp.test.constants'
 import {
   CreateJwtError,
