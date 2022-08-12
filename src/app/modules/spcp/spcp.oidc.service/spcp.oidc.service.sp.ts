@@ -1,4 +1,4 @@
-import { errAsync, okAsync, ResultAsync } from 'neverthrow'
+import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
 import { FormAuthType } from '../../../../../shared/types'
 import { createLoggerWithLabel } from '../../../config/logger'
@@ -6,12 +6,15 @@ import {
   ExchangeAuthTokenError,
   InvalidIdTokenError,
   InvalidJwtError,
+  MissingAttributesError,
   VerifyJwtError,
 } from '../spcp.errors'
 import { SpOidcClient } from '../spcp.oidc.client'
 import {
+  ExtractedNDIPayload,
   ExtractedSingpassNDIPayload,
   JwtName,
+  JwtPayload,
   SingpassJwtPayloadFromCookie,
 } from '../spcp.types'
 import { isSingpassJwtPayload } from '../spcp.util'
@@ -125,5 +128,24 @@ export class SpOidcServiceClass extends SpcpOidcServiceClass {
     return rememberMe
       ? this.oidcProps.cookieMaxAgePreserved
       : this.oidcProps.cookieMaxAge
+  }
+
+  /**
+   * Creates a payload of SP user data based on attributes
+   * @param attributes user data returned by SP from client
+   * @param rememberMe Whether to enable longer duration for SingPass cookies
+   * @return The payload
+   */
+  createJWTPayload(
+    attributes: ExtractedNDIPayload,
+    rememberMe: boolean,
+  ): Result<JwtPayload, MissingAttributesError> {
+    const { userName } = attributes
+    const payload = {
+      userName,
+      rememberMe,
+    }
+
+    return userName ? ok(payload) : err(new MissingAttributesError())
   }
 }

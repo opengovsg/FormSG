@@ -111,25 +111,11 @@ export abstract class SpcpOidcServiceClass {
     code: string,
   ): ResultAsync<ExtractedNDIPayload, InvalidIdTokenError>
 
-  /**
-   * Creates a payload of SP/CP user data based on attributes
-   * @param attributes user data returned by SP/CP from client
-   * @param rememberMe Whether to enable longer duration for SingPass cookies
-   * @return The payload
-   */
-  createJWTPayload(
+  abstract createJWTPayload(
     attributes: ExtractedNDIPayload,
     rememberMe: boolean,
-  ): Result<JwtPayload, MissingAttributesError> {
-    const { userName } = attributes
-    const payload = {
-      userName,
-      rememberMe,
-      ...('userInfo' in attributes ? { userInfo: attributes.userInfo } : {}),
-    }
+  ): Result<JwtPayload, MissingAttributesError>
 
-    return userName ? ok(payload) : err(new MissingAttributesError())
-  }
   /**
    * Gets the sp/cp session info from the cookies
    * @param cookies The sp/cp cookies set by the redirect
