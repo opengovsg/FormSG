@@ -37,7 +37,7 @@ import { SgidInvalidJwtError, SgidVerifyJwtError } from '../../sgid/sgid.errors'
 import { SgidService } from '../../sgid/sgid.service'
 import { validateSgidForm } from '../../sgid/sgid.util'
 import { InvalidJwtError, VerifyJwtError } from '../../spcp/spcp.errors'
-import { SpcpOidcService } from '../../spcp/spcp.oidc.service'
+import { getOidcService } from '../../spcp/spcp.oidc.service'
 import { SpcpService } from '../../spcp/spcp.service'
 import {
   getRedirectTargetSpcpOidc,
@@ -273,10 +273,8 @@ export const handleGetPublicForm: ControllerHandler<
     case FormAuthType.NIL:
       return res.json({ form: publicForm, isIntranetUser })
     case FormAuthType.SP:
-      return SpcpOidcService.extractJwtPayloadFromRequest(
-        req.cookies,
-        FormAuthType.SP,
-      )
+      return getOidcService(FormAuthType.SP)
+        .extractJwtPayloadFromRequest(req.cookies)
         .map((spcpSession) => {
           return res.json({
             form: publicForm,
@@ -299,10 +297,8 @@ export const handleGetPublicForm: ControllerHandler<
           return res.json({ form: publicForm, isIntranetUser })
         })
     case FormAuthType.CP:
-      return SpcpOidcService.extractJwtPayloadFromRequest(
-        req.cookies,
-        FormAuthType.CP,
-      )
+      return getOidcService(FormAuthType.CP)
+        .extractJwtPayloadFromRequest(req.cookies)
         .map((spcpSession) => {
           return res.json({
             form: publicForm,
@@ -465,10 +461,9 @@ export const _handleFormAuthRedirect: ControllerHandler<
               isPersistentLogin,
               encodedQuery,
             )
-            return SpcpOidcService.createRedirectUrl(
+            return getOidcService(FormAuthType.SP).createRedirectUrl(
               target,
               form.esrvcId,
-              FormAuthType.SP,
             )
           })
         }
@@ -482,10 +477,9 @@ export const _handleFormAuthRedirect: ControllerHandler<
               isPersistentLogin,
               encodedQuery,
             )
-            return SpcpOidcService.createRedirectUrl(
+            return getOidcService(FormAuthType.CP).createRedirectUrl(
               target,
               form.esrvcId,
-              FormAuthType.CP,
             )
           })
         }

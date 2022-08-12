@@ -22,7 +22,7 @@ import {
 import { MyInfoService } from '../../myinfo/myinfo.service'
 import * as MyInfoUtil from '../../myinfo/myinfo.util'
 import { SgidService } from '../../sgid/sgid.service'
-import { SpcpOidcService } from '../../spcp/spcp.oidc.service'
+import { getOidcService } from '../../spcp/spcp.oidc.service'
 import * as EmailSubmissionMiddleware from '../email-submission/email-submission.middleware'
 import * as SubmissionService from '../submission.service'
 import { extractEmailConfirmationData } from '../submission.utils'
@@ -156,11 +156,11 @@ const submitEmailModeForm: ControllerHandler<
       .andThen(({ parsedResponses, form }) => {
         const { authType } = form
         switch (authType) {
-          case FormAuthType.CP:
-            return SpcpOidcService.extractJwt(req.cookies, authType)
-              .asyncAndThen((jwt) =>
-                SpcpOidcService.extractCorppassJwtPayload(jwt),
-              )
+          case FormAuthType.CP: {
+            const oidcService = getOidcService(FormAuthType.CP)
+            return oidcService
+              .extractJwt(req.cookies)
+              .asyncAndThen((jwt) => oidcService.extractJwtPayload(jwt))
               .map<IPopulatedEmailFormWithResponsesAndHash>((jwt) => ({
                 form,
                 parsedResponses: parsedResponses.addNdiResponses({
@@ -178,11 +178,12 @@ const submitEmailModeForm: ControllerHandler<
                 })
                 return error
               })
-          case FormAuthType.SP:
-            return SpcpOidcService.extractJwt(req.cookies, FormAuthType.SP)
-              .asyncAndThen((jwt) =>
-                SpcpOidcService.extractSingpassJwtPayload(jwt),
-              )
+          }
+          case FormAuthType.SP: {
+            const oidcService = getOidcService(FormAuthType.SP)
+            return oidcService
+              .extractJwt(req.cookies)
+              .asyncAndThen((jwt) => oidcService.extractJwtPayload(jwt))
               .map<IPopulatedEmailFormWithResponsesAndHash>((jwt) => ({
                 form,
                 parsedResponses: parsedResponses.addNdiResponses({
@@ -199,6 +200,7 @@ const submitEmailModeForm: ControllerHandler<
                 })
                 return error
               })
+          }
           case FormAuthType.MyInfo:
             return MyInfoUtil.extractMyInfoCookie(req.cookies)
               .andThen(MyInfoUtil.extractAccessTokenFromCookie)
