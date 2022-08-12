@@ -20,12 +20,12 @@ export type CorppassJwtPayload = {
 }
 
 export type ExtractedSingpassNDIPayload = {
-  userName: string
+  userName: string // Continue SAML convention, userName is NRIC
 }
 
 export type ExtractedCorppassNDIPayload = {
-  userName: string
-  userInfo: string
+  userName: string // Continue SAML convention, userName is UEN
+  userInfo: string // Continue SAML convention, userInfo is NRIC
 }
 
 export type ExtractedNDIPayload =
