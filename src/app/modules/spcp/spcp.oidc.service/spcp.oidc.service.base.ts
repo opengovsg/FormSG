@@ -122,10 +122,10 @@ export abstract class SpcpOidcServiceClass {
     rememberMe: boolean,
   ): Result<JwtPayload, MissingAttributesError> {
     const { userName } = attributes
-    const payload: JwtPayload = { userName, rememberMe }
-
-    if ('userInfo' in attributes) {
-      payload.userInfo = attributes.userInfo
+    const payload = {
+      userName,
+      rememberMe,
+      ...('userInfo' in attributes ? { userInfo: attributes.userInfo } : {}),
     }
 
     return userName ? ok(payload) : err(new MissingAttributesError())
