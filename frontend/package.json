@@ -177,6 +177,7 @@
     "mockdate": "^3.0.5",
     "msw": "^0.36.3",
     "msw-storybook-addon": "^1.6.3",
+    "postcss": "^8.4.16",
     "prettier": "^2.5.1",
     "puppeteer": "^13.0.0",
     "react-scripts": "^5.0.1",
@@ -186,7 +187,6 @@
     "storybook-react-i18next": "^1.1.2",
     "stream-browserify": "^3.0.0",
     "ts-jest": "^27.1.1",
-    "webpack": "^5.74.0",
     "worker-loader": "^3.0.8"
   },
   "proxy": "http://localhost:5000",
