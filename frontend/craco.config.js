@@ -12,19 +12,6 @@ module.exports = {
       return newConfig
     },
   },
-  webpack: {
-    configure: {
-      module: {
-        rules: [
-          {
-            type: 'javascript/auto',
-            test: /\.mjs$/,
-            include: /node_modules/,
-          },
-        ],
-      },
-    },
-  },
   plugins: [
     {
       plugin: CracoAlias,
@@ -41,6 +28,7 @@ module.exports = {
     {
       plugin: {
         overrideWebpackConfig: ({ webpackConfig }) => {
+          // include shared folder under babel-loader
           const oneOfRule = webpackConfig.module.rules.find(
             (rule) => rule.oneOf,
           )
@@ -60,15 +48,10 @@ module.exports = {
             }
           }
 
-          webpackConfig.module.rules.unshift({
-            test: /\.worker\.ts$/,
-            use: {
-              loader: 'worker-loader',
-              options: {
-                filename: '[name].[contenthash:8].js',
-              },
-            },
-          })
+          // polyfill node built-in for csv-string dependency
+          webpackConfig.resolve.fallback = {
+            stream: require.resolve('stream-browserify'),
+          }
 
           return webpackConfig
         },
