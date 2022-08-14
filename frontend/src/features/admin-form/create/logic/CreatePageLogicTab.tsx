@@ -52,7 +52,7 @@ export const CreatePageLogicTab = (): JSX.Element => {
             <IconButton
               zIndex="docked"
               pos={{ base: 'fixed', md: 'sticky' }}
-              top={{ md: '1rem' }}
+              top={{ md: '17.1rem' }}
               ml="1rem"
               bottom={{ base: '5rem', md: undefined }}
               right={{ base: '1rem', md: undefined }}
