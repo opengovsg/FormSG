@@ -778,7 +778,7 @@ export const getStorageSubmissionMetadataResponse = (
   )
 }
 
-export const createLogic = (delay?: number) => {
+export const createLogic = (delay?: number | 'infinite') => {
   return rest.post<FormLogic>(
     '/api/v3/admin/forms/:formId/logic',
     (req, res, ctx) => {
@@ -791,7 +791,7 @@ export const createLogic = (delay?: number) => {
   )
 }
 
-export const deleteLogic = (delay?: number) => {
+export const deleteLogic = (delay?: number | 'infinite') => {
   return rest.delete(
     '/api/v3/admin/forms/:formId/logic/:logicId',
     (_req, res, ctx) => {

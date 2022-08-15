@@ -19,7 +19,10 @@ import { StoryRouter, viewports } from '~utils/storybook'
 
 import { CreatePageLogicTab } from './CreatePageLogicTab'
 
-const buildMswRoutes = (overrides?: Partial<AdminFormDto>, delay = 0) => [
+const buildMswRoutes = (
+  overrides?: Partial<AdminFormDto>,
+  delay: number | 'infinite' = 0,
+) => [
   ...createFormBuilderMocks(overrides, delay),
   createLogic(delay),
   deleteLogic(delay),
