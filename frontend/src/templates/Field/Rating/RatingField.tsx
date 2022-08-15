@@ -52,7 +52,6 @@ export const RatingField = ({
         rules={validationRules}
         control={control}
         name={schema._id}
-        defaultValue=""
         render={({ field: { value, onChange, ...rest } }) => (
           <Rating
             colorScheme={`theme-${colorTheme}`}
