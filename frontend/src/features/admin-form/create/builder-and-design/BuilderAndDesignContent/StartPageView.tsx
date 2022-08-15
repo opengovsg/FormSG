@@ -106,11 +106,14 @@ export const StartPageView = () => {
 
   const headerRef = useRef<HTMLDivElement | null>(null)
   const instructionsRef = useRef<HTMLDivElement | null>(null)
+
   useEffect(() => {
-    if (designState === DesignState.EditingHeader)
+    if (designState === DesignState.EditingHeader) {
       headerRef.current?.scrollIntoView({ block: 'nearest' })
-    if (designState === DesignState.EditingInstructions)
+    }
+    if (designState === DesignState.EditingInstructions) {
       instructionsRef.current?.scrollIntoView({ block: 'nearest' })
+    }
   }, [designState])
 
   const { handleDesignClick } = useCreatePageSidebar()
