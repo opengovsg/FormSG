@@ -228,7 +228,10 @@ export const adminChooseEnvironment: ControllerHandler<
   unknown,
   unknown,
   Record<string, string>
-> = (req, res) => {
+> = (req, res, next) => {
+  const redirectPath = new RegExp('^/environment')
+  const isMiddleware = req.path.match(redirectPath)
+
   const ui =
     req.params.ui === UiCookieValues.React
       ? UiCookieValues.React
@@ -240,6 +243,7 @@ export const adminChooseEnvironment: ControllerHandler<
     // chosen environment until the alternative is stable.
     ADMIN_COOKIE_OPTIONS_WITH_EXPIRY,
   )
+  if (isMiddleware) return next()
   return res.json({ ui })
 }
 
@@ -263,3 +267,19 @@ export const publicChooseEnvironment: ControllerHandler<
   )
   return res.json({ ui })
 }
+
+export const redirectToLanding: ControllerHandler<
+  SetEnvironmentParams,
+  unknown,
+  unknown,
+  Record<string, string>
+> = (req, res) => {
+  const target = '/'
+  return res.redirect(target)
+}
+
+// Redirect to landing after setting the admin cookie
+export const redirectEnvironment = [
+  adminChooseEnvironment,
+  redirectToLanding,
+] as ControllerHandler[]
