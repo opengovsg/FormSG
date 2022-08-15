@@ -9,24 +9,28 @@ import { useUser } from '~features/user/queries'
 
 import { useWorkspaceRowsContext } from '../WorkspaceRowsContext'
 
-type UseRowActionDropdownReturn = {
+type UseRowActionReturn = {
   handleEditForm: () => void
   handlePreviewForm: () => void
   handleDuplicateForm: () => void
-  handleManageFormAccess: () => void
+  handleCollaborators: () => void
   handleDeleteForm: () => void
   handleShareForm: () => void
   isFormAdmin: boolean
 }
 
-export const useRowActionDropdown = (
+export const useRowAction = (
   formMeta: AdminDashboardFormMetaDto,
-): UseRowActionDropdownReturn => {
+): UseRowActionReturn => {
   const navigate = useNavigate()
   const { user } = useUser()
 
-  const { onOpenDupeFormModal, onOpenShareFormModal, onOpenDeleteFormModal } =
-    useWorkspaceRowsContext()
+  const {
+    onOpenDupeFormModal,
+    onOpenShareFormModal,
+    onOpenCollabModal,
+    onOpenDeleteFormModal,
+  } = useWorkspaceRowsContext()
 
   const isFormAdmin = useMemo(
     () => !!user && !!formMeta && user.email === formMeta.admin.email,
@@ -54,9 +58,9 @@ export const useRowActionDropdown = (
     [formMeta, onOpenDupeFormModal],
   )
 
-  const handleManageFormAccess = useCallback(
-    () => console.log(`manage form access button clicked for ${formMeta._id}`),
-    [formMeta],
+  const handleCollaborators = useCallback(
+    () => onOpenCollabModal(formMeta),
+    [formMeta, onOpenCollabModal],
   )
 
   const handleDeleteForm = useCallback(() => {
@@ -69,7 +73,7 @@ export const useRowActionDropdown = (
     handleEditForm,
     handlePreviewForm,
     handleDuplicateForm,
-    handleManageFormAccess,
+    handleCollaborators,
     handleDeleteForm,
     isFormAdmin,
   }

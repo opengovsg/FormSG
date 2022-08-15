@@ -24,6 +24,7 @@ import {
   submitStorageModeFormPreview,
 } from '../common/AdminViewFormService'
 
+import { useCollaboratorWizard } from './components/CollaboratorModal/CollaboratorWizardContext'
 import { permissionsToRole } from './components/CollaboratorModal/utils'
 import { updateFormEndPage, updateFormStartPage } from './AdminFormPageService'
 import {
@@ -52,8 +53,8 @@ enum FormCollaboratorAction {
 }
 
 export const useMutateCollaborators = () => {
-  const { formId } = useParams()
-  if (!formId) throw new Error('No formId provided')
+  const { formId } = useCollaboratorWizard()
+  if (!formId) throw new Error('No formId provided to useMutateCollaborators')
 
   const navigate = useNavigate()
   const queryClient = useQueryClient()

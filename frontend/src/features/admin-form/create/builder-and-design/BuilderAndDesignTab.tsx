@@ -37,14 +37,14 @@ import {
 } from './constants'
 import { DeleteFieldModal } from './DeleteFieldModal'
 import { DndPlaceholderProps } from './types'
+import { useCreateTabForm } from './useCreateTabForm'
 import {
   updateCreateStateSelector,
-  useBuilderAndDesignStore,
-} from './useBuilderAndDesignStore'
-import { useCreateTabForm } from './useCreateTabForm'
+  useFieldBuilderStore,
+} from './useFieldBuilderStore'
 
 export const BuilderAndDesignTab = (): JSX.Element => {
-  const setToCreating = useBuilderAndDesignStore(updateCreateStateSelector)
+  const setToCreating = useFieldBuilderStore(updateCreateStateSelector)
   const { data } = useCreateTabForm()
 
   const { reorderFieldMutation } = useReorderFormField()

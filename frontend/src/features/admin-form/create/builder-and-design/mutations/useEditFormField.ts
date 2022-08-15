@@ -11,16 +11,16 @@ import { adminFormKeys } from '~features/admin-form/common/queries'
 
 import { updateSingleFormField } from '../UpdateFormFieldService'
 import {
-  BuildFieldState,
+  FieldBuilderState,
   stateDataSelector,
-  useBuilderAndDesignStore,
-} from '../useBuilderAndDesignStore'
+  useFieldBuilderStore,
+} from '../useFieldBuilderStore'
 
 export const useEditFormField = () => {
   const { formId } = useParams()
   if (!formId) throw new Error('No formId provided')
 
-  const stateData = useBuilderAndDesignStore(stateDataSelector)
+  const stateData = useFieldBuilderStore(stateDataSelector)
 
   const queryClient = useQueryClient()
   const toast = useToast({ status: 'success', isClosable: true })
@@ -29,7 +29,7 @@ export const useEditFormField = () => {
   const handleSuccess = useCallback(
     (newField: FormFieldDto) => {
       toast.closeAll()
-      if (stateData.state !== BuildFieldState.EditingField) {
+      if (stateData.state !== FieldBuilderState.EditingField) {
         toast({
           status: 'warning',
           description:

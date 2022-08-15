@@ -26,6 +26,7 @@ export const FormCaptchaToggle = (): JSX.Element => {
         isLoading={mutateFormCaptcha.isLoading}
         isChecked={hasCaptcha}
         label="Enable reCAPTCHA"
+        description="If you expect non-English-speaking respondents, they may have difficulty understanding the reCAPTCHA selection instructions."
         onChange={() => handleToggleCaptcha()}
       />
     </Skeleton>

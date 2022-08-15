@@ -14,7 +14,7 @@ import IconButton from '~components/IconButton'
 import Menu from '~components/Menu'
 
 import { RowActionsProps } from './RowActions'
-import { useRowActionDropdown } from './useRowActionDropdown'
+import { useRowAction } from './useRowAction'
 
 export const RowActionsDropdown = ({
   isDisabled,
@@ -25,10 +25,10 @@ export const RowActionsDropdown = ({
     handlePreviewForm,
     handleDeleteForm,
     handleDuplicateForm,
-    handleManageFormAccess,
+    handleCollaborators,
     handleShareForm,
     isFormAdmin,
-  } = useRowActionDropdown(formMeta)
+  } = useRowAction(formMeta)
 
   return (
     <Menu
@@ -76,10 +76,10 @@ export const RowActionsDropdown = ({
               Share form
             </Menu.Item>
             <Menu.Item
-              onClick={handleManageFormAccess}
+              onClick={handleCollaborators}
               icon={<BiUserPlus fontSize="1.25rem" />}
             >
-              Manage form access
+              Manage form admins
             </Menu.Item>
             {isFormAdmin && (
               <>

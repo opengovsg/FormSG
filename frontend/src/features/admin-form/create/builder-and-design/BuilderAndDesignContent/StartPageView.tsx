@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { BiCog } from 'react-icons/bi'
 import {
   Box,
@@ -22,10 +22,6 @@ import { useFormBannerLogo } from '~features/public-form/components/FormStartPag
 import { useFormHeader } from '~features/public-form/components/FormStartPage/useFormHeader'
 
 import { useCreatePageSidebar } from '../../common/CreatePageSidebarContext'
-import {
-  setToInactiveSelector,
-  useBuilderAndDesignStore,
-} from '../useBuilderAndDesignStore'
 import { useCreateTabForm } from '../useCreateTabForm'
 import {
   customLogoMetaSelector,
@@ -35,11 +31,15 @@ import {
   stateSelector,
   useDesignStore,
 } from '../useDesignStore'
+import {
+  setToInactiveSelector,
+  useFieldBuilderStore,
+} from '../useFieldBuilderStore'
 
 export const StartPageView = () => {
   const isMobile = useIsMobile()
   const { data: form } = useCreateTabForm()
-  const setToInactive = useBuilderAndDesignStore(setToInactiveSelector)
+  const setToInactive = useFieldBuilderStore(setToInactiveSelector)
   const { designState, startPageData, customLogoMeta, setDesignState } =
     useDesignStore(
       useCallback(
@@ -97,16 +97,24 @@ export const StartPageView = () => {
   }, [form?.startPage, startPageFromStore])
 
   // Color theme options and other design stuff, identical to public form
-  const { titleColor, titleBg, estTimeString, colorScheme } = useFormHeader({
-    startPage,
-    hover: hoverStartPage,
-  })
-
-  const { hasLogo, logoImgSrc, logoImgAlt } = useFormBannerLogo({
+  const { logoImgSrc, ...formBannerLogoProps } = useFormBannerLogo({
     logoBucketUrl,
     logo: startPage?.logo,
     agency: form?.admin.agency,
   })
+  const formHeaderProps = useFormHeader({ startPage, hover: hoverStartPage })
+
+  const headerRef = useRef<HTMLDivElement | null>(null)
+  const instructionsRef = useRef<HTMLDivElement | null>(null)
+
+  useEffect(() => {
+    if (designState === DesignState.EditingHeader) {
+      headerRef.current?.scrollIntoView({ block: 'nearest' })
+    }
+    if (designState === DesignState.EditingInstructions) {
+      instructionsRef.current?.scrollIntoView({ block: 'nearest' })
+    }
+  }, [designState])
 
   const { handleDesignClick } = useCreatePageSidebar()
 
@@ -141,6 +149,7 @@ export const StartPageView = () => {
               borderBottom: '2px solid transparent',
             })}
         borderRadius="4px"
+        ref={headerRef}
       >
         {customLogoPending ? (
           // Show skeleton if user has chosen custom logo but not yet uploaded
@@ -149,94 +158,90 @@ export const StartPageView = () => {
           </Flex>
         ) : (
           <FormBannerLogo
-            hasLogo={hasLogo}
             logoImgSrc={
               startPageData?.logo.state === FormLogoState.Custom
                 ? startPageData.attachment.srcUrl // manual override to preview custom logo
                 : logoImgSrc
             }
-            logoImgAlt={logoImgAlt}
+            {...formBannerLogoProps}
           />
         )}
         <FormHeader
           title={form?.title}
-          estTimeString={estTimeString}
-          titleBg={titleBg}
-          titleColor={titleColor}
-          colorScheme={colorScheme}
           showHeader
           loggedInId={
-            form && form.authType !== FormAuthType.NIL
+            form?.authType !== FormAuthType.NIL
               ? PREVIEW_MOCK_UINFIN
               : undefined
           }
+          {...formHeaderProps}
         />
       </Box>
       {startPage?.paragraph ? (
         <Flex
           flexDir="column"
-          align="center"
+          alignSelf="center"
           w="100%"
-          px={{ base: '0.5rem', md: '1.5rem', lg: '2.5rem' }}
+          px="2.5rem"
           mt="1.5rem"
         >
-          <Flex
-            justify="center"
-            px={{ base: '0.5rem', md: '1.625rem' }}
-            py={{ base: '0.5rem', md: '1.5rem' }}
-            bg="white"
-            borderRadius="4px"
-            maxW="57rem"
-            w="100%"
-          >
+          <Flex justify="center">
             <Box
               w="100%"
               minW={0}
               h="fit-content"
-              transition="background 0.2s ease"
-              _hover={{ bg: 'secondary.100', cursor: 'pointer' }}
-              borderRadius="4px"
-              {...(designState === DesignState.EditingInstructions
-                ? {
-                    bg: 'secondary.100',
-                    border: '2px solid var(--chakra-colors-primary-500)',
-                  }
-                : { bg: 'white', border: '2px solid white' })}
-              onClick={handleInstructionsClick}
+              maxW="57rem"
+              bg="white"
+              py="2.5rem"
+              px="1.5rem"
             >
-              <Box py="1rem" px="1.5rem">
-                <FormInstructions
-                  content={startPage?.paragraph}
-                  colorTheme={startPage?.colorTheme}
-                />
-              </Box>
-              {isMobile ? (
-                <Collapse
-                  in={designState === DesignState.EditingInstructions}
-                  style={{ width: '100%' }}
-                >
-                  <Flex
-                    px={{ base: '0.75rem', md: '1.5rem' }}
-                    flex={1}
-                    borderTop="1px solid var(--chakra-colors-neutral-300)"
-                    justify="flex-end"
+              <Box
+                transition="background 0.2s ease"
+                _hover={{ bg: 'secondary.100', cursor: 'pointer' }}
+                borderRadius="4px"
+                {...(designState === DesignState.EditingInstructions
+                  ? {
+                      bg: 'secondary.100',
+                      border: '2px solid var(--chakra-colors-primary-500)',
+                    }
+                  : { border: '2px solid white' })}
+                onClick={handleInstructionsClick}
+                ref={instructionsRef}
+              >
+                <Box p={{ base: '0.75rem', md: '1.5rem' }}>
+                  <FormInstructions
+                    content={startPage?.paragraph}
+                    colorTheme={startPage?.colorTheme}
+                  />
+                </Box>
+                {isMobile ? (
+                  <Collapse
+                    in={designState === DesignState.EditingInstructions}
+                    style={{ width: '100%' }}
                   >
-                    <ButtonGroup
-                      variant="clear"
-                      colorScheme="secondary"
-                      spacing={0}
+                    <Flex
+                      px={{ base: '0.75rem', md: '1.5rem' }}
+                      flex={1}
+                      borderTop="1px solid var(--chakra-colors-neutral-300)"
+                      justify="flex-end"
                     >
-                      <IconButton
+                      <ButtonGroup
                         variant="clear"
                         colorScheme="secondary"
-                        aria-label="Edit field"
-                        icon={<BiCog fontSize="1.25rem" />}
-                        onClick={handleEditInstructionsClick}
-                      />
-                    </ButtonGroup>
-                  </Flex>
-                </Collapse>
-              ) : null}
+                        spacing={0}
+                      >
+                        <IconButton
+                          variant="clear"
+                          colorScheme="secondary"
+                          aria-label="Edit field"
+                          icon={<BiCog fontSize="1.25rem" />}
+                          onClick={handleEditInstructionsClick}
+                        />
+                      </ButtonGroup>
+                    </Flex>
+                  </Collapse>
+                ) : null}
+              </Box>
             </Box>
           </Flex>
         </Flex>

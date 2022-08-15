@@ -57,17 +57,17 @@ import { PENDING_CREATE_FIELD_ID } from '../../constants'
 import { useDeleteFormField } from '../../mutations/useDeleteFormField'
 import { useDuplicateFormField } from '../../mutations/useDuplicateFormField'
 import {
-  BuildFieldState,
-  setToInactiveSelector,
-  stateDataSelector,
-  updateEditStateSelector,
-  useBuilderAndDesignStore,
-} from '../../useBuilderAndDesignStore'
-import {
   DesignState,
   setStateSelector,
   useDesignStore,
 } from '../../useDesignStore'
+import {
+  FieldBuilderState,
+  setToInactiveSelector,
+  stateDataSelector,
+  updateEditStateSelector,
+  useFieldBuilderStore,
+} from '../../useFieldBuilderStore'
 import { useDesignColorTheme } from '../../utils/useDesignColorTheme'
 
 import { SectionFieldRow } from './SectionFieldRow'
@@ -87,17 +87,16 @@ export const FieldRowContainer = ({
 }: FieldRowContainerProps): JSX.Element => {
   const isMobile = useIsMobile()
   const numFormFieldMutations = useIsMutating(adminFormKeys.base)
-  const { stateData, setToInactive, updateEditState } =
-    useBuilderAndDesignStore(
-      useCallback(
-        (state) => ({
-          stateData: stateDataSelector(state),
-          setToInactive: setToInactiveSelector(state),
-          updateEditState: updateEditStateSelector(state),
-        }),
-        [],
-      ),
-    )
+  const { stateData, setToInactive, updateEditState } = useFieldBuilderStore(
+    useCallback(
+      (state) => ({
+        stateData: stateDataSelector(state),
+        setToInactive: setToInactiveSelector(state),
+        updateEditState: updateEditStateSelector(state),
+      }),
+      [],
+    ),
+  )
 
   const setDesignState = useDesignStore(setStateSelector)
 
@@ -132,9 +131,9 @@ export const FieldRowContainer = ({
   })
 
   const isActive = useMemo(() => {
-    if (stateData.state === BuildFieldState.EditingField) {
+    if (stateData.state === FieldBuilderState.EditingField) {
       return field._id === stateData.field._id
-    } else if (stateData.state === BuildFieldState.CreatingField) {
+    } else if (stateData.state === FieldBuilderState.CreatingField) {
       return field._id === PENDING_CREATE_FIELD_ID
     }
     return false
@@ -194,15 +193,15 @@ export const FieldRowContainer = ({
   const handleDuplicateClick = useCallback(() => {
     // Duplicate button should be hidden if field
     // is not yet created, but guard here just in case
-    if (stateData.state !== BuildFieldState.CreatingField) {
+    if (stateData.state !== FieldBuilderState.CreatingField) {
       duplicateFieldMutation.mutate(field._id)
     }
   }, [stateData.state, duplicateFieldMutation, field._id])
 
   const handleDeleteClick = useCallback(() => {
-    if (stateData.state === BuildFieldState.CreatingField) {
+    if (stateData.state === FieldBuilderState.CreatingField) {
       setToInactive()
-    } else if (stateData.state === BuildFieldState.EditingField) {
+    } else if (stateData.state === FieldBuilderState.EditingField) {
       onDeleteModalOpen()
     }
   }, [setToInactive, stateData.state, onDeleteModalOpen])
@@ -218,7 +217,7 @@ export const FieldRowContainer = ({
       isDragDisabled={
         !isActive ||
         !!numFormFieldMutations ||
-        stateData.state === BuildFieldState.CreatingField
+        stateData.state === FieldBuilderState.CreatingField
       }
       disableInteractiveElementBlocking
       draggableId={field._id}
@@ -329,7 +328,7 @@ export const FieldRowContainer = ({
                     ) : null}
                     {
                       // Fields which are not yet created cannot be duplicated
-                      stateData.state !== BuildFieldState.CreatingField && (
+                      stateData.state !== FieldBuilderState.CreatingField && (
                         <IconButton
                           aria-label="Duplicate field"
                           isDisabled={isAnyMutationLoading}

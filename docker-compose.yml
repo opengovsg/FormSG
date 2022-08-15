@@ -98,6 +98,11 @@ services:
       - SES_USER
       - OTP_LIFE_SPAN
       - AWS_REGION
+      - REACT_TO_ANGULAR_FEEDBACK_FORM_ID=62da6a569ee8e90143b5da26
+      - REACT_MIGRATION_ANGULAR_END_DATE=15 September 2022
+      - REACT_MIGRATION_RESP_ROLLOUT_EMAIL=1
+      - REACT_MIGRATION_RESP_ROLLOUT_STORAGE=1
+      - REACT_MIGRATION_ADMIN_ROLLOUT=1
   mockpass:
     build: https://github.com/opengovsg/mockpass.git
     depends_on:

@@ -26,8 +26,10 @@ import { SettingsWebhooksPage } from './SettingsWebhooksPage'
 
 export const SettingsPage = (): JSX.Element => {
   const { formId } = useParams()
+  if (!formId) throw new Error('No formId provided')
+
   const { hasEditAccess, isLoading: isCollabLoading } =
-    useAdminFormCollaborators()
+    useAdminFormCollaborators(formId)
   const navigate = useNavigate()
 
   // Redirect view-only collaborators to results screen.

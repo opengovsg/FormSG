@@ -1,4 +1,4 @@
-import { combineWithAllErrors, err, ok, Result } from 'neverthrow'
+import { err, ok, Result } from 'neverthrow'
 
 import {
   FieldResponse,
@@ -179,7 +179,8 @@ export abstract class IncomingSubmission {
       )
     })
 
-    const validationResultCombined = combineWithAllErrors(validationResultList)
+    const validationResultCombined =
+      Result.combineWithAllErrors(validationResultList)
     if (validationResultCombined.isErr()) {
       return err(validationResultCombined.error)
     }

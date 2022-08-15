@@ -17,6 +17,7 @@ interface FrontendInjectedVariables {
   respondentRolloutEmail: number
   respondentRolloutStorage: number
   adminRollout: number
+  angularPhaseOutDate: string | null
 }
 
 // NOTE: As these variables are not injected until runtime
@@ -41,4 +42,5 @@ export const injectedVariables: FrontendInjectedVariables = {
   respondentRolloutEmail: formsgWindow.respondentRolloutEmail,
   respondentRolloutStorage: formsgWindow.respondentRolloutStorage,
   adminRollout: formsgWindow.adminRollout,
+  angularPhaseOutDate: formsgWindow.angularPhaseOutDate ?? null,
 }

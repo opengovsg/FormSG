@@ -1,15 +1,15 @@
 import { useAdminForm } from '~features/admin-form/common/queries'
 
 import {
-  BuildFieldState,
+  FieldBuilderState,
   stateDataSelector,
-  useBuilderAndDesignStore,
-} from './useBuilderAndDesignStore'
+  useFieldBuilderStore,
+} from './useFieldBuilderStore'
 
 export const useCreateTabForm = () => {
-  const stateData = useBuilderAndDesignStore(stateDataSelector)
+  const stateData = useFieldBuilderStore(stateDataSelector)
   return useAdminForm({
     // Only fetch data if no field is being created or edited
-    enabled: stateData.state === BuildFieldState.Inactive,
+    enabled: stateData.state === FieldBuilderState.Inactive,
   })
 }

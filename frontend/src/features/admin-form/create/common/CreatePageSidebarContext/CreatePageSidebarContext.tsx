@@ -12,14 +12,14 @@ import { useIsMobile } from '~hooks/useIsMobile'
 
 import { FieldListTabIndex } from '../../builder-and-design/constants'
 import {
-  setToInactiveSelector,
-  useBuilderAndDesignStore,
-} from '../../builder-and-design/useBuilderAndDesignStore'
-import {
   DesignState,
   setStateSelector,
   useDesignStore,
 } from '../../builder-and-design/useDesignStore'
+import {
+  setToInactiveSelector,
+  useFieldBuilderStore,
+} from '../../builder-and-design/useFieldBuilderStore'
 
 export enum DrawerTabs {
   Builder,
@@ -60,7 +60,7 @@ export const useCreatePageSidebarContext =
       () => activeTab !== null && activeTab !== DrawerTabs.Logic,
       [activeTab],
     )
-    const setFieldsToInactive = useBuilderAndDesignStore(setToInactiveSelector)
+    const setFieldsToInactive = useFieldBuilderStore(setToInactiveSelector)
     const setDesignState = useDesignStore(setStateSelector)
 
     const [fieldListTabIndex, setFieldListTabIndex] =

@@ -2,11 +2,14 @@ import { ModalBody, ModalHeader, Stack } from '@chakra-ui/react'
 
 import { useAdminFormCollaborators } from '~features/admin-form/common/queries'
 
+import { useCollaboratorWizard } from '../CollaboratorWizardContext'
+
 import { AddCollaboratorInput } from './AddCollaboratorInput'
 import { CollaboratorList } from './CollaboratorList'
 
 export const CollaboratorListScreen = (): JSX.Element => {
-  const { hasEditAccess } = useAdminFormCollaborators()
+  const { formId } = useCollaboratorWizard()
+  const { hasEditAccess } = useAdminFormCollaborators(formId)
   return (
     <>
       <ModalHeader color="secondary.700">

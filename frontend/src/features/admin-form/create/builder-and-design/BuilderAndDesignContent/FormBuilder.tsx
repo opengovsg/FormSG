@@ -13,8 +13,8 @@ import { FIELD_LIST_DROP_ID } from '../constants'
 import { DndPlaceholderProps } from '../types'
 import {
   setToEditEndPageSelector,
-  useBuilderAndDesignStore,
-} from '../useBuilderAndDesignStore'
+  useFieldBuilderStore,
+} from '../useFieldBuilderStore'
 import { useDesignColorTheme } from '../utils/useDesignColorTheme'
 
 import { EmptyFormPlaceholder } from './BuilderAndDesignPlaceholder/EmptyFormPlaceholder'
@@ -35,7 +35,7 @@ export const FormBuilder = ({
   const { builderFields, isLoading } = useBuilderFields()
   const { formLogics } = useAdminFormLogic()
   const { handleBuilderClick } = useCreatePageSidebar()
-  const setEditEndPage = useBuilderAndDesignStore(setToEditEndPageSelector)
+  const setEditEndPage = useFieldBuilderStore(setToEditEndPageSelector)
   const visibleFieldIds = useMemo(
     () =>
       getVisibleFieldIds(

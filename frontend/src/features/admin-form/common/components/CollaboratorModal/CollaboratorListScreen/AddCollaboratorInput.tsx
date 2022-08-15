@@ -27,9 +27,9 @@ export type AddCollaboratorInputs = {
 }
 
 const useAddCollaboratorInput = () => {
-  const { handleForwardToTransferOwnership } = useCollaboratorWizard()
+  const { handleForwardToTransferOwnership, formId } = useCollaboratorWizard()
   const { isLoading, collaborators, form, isFormAdmin } =
-    useAdminFormCollaborators()
+    useAdminFormCollaborators(formId)
   const { mutateAddCollaborator } = useMutateCollaborators()
 
   const formMethods = useForm<AddCollaboratorInputs>({

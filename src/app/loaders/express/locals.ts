@@ -30,6 +30,7 @@ const frontendVars = {
   reactMigrationRespondentRolloutStorage:
     config.reactMigration.respondentRolloutStorage,
   reactMigrationAdminRollout: config.reactMigration.adminRollout,
+  reactMigrationAngularPhaseOutDate: config.reactMigration.angularPhaseOutDate,
 }
 const environment = ejs.render(
   `
@@ -59,6 +60,7 @@ const environment = ejs.render(
     var reactMigrationRespondentRolloutEmail = "<%= reactMigrationRespondentRolloutEmail%>"
     var reactMigrationRespondentRolloutStorage = "<%= reactMigrationRespondentRolloutStorage%>"
     var reactMigrationAdminRollout = "<%= reactMigrationAdminRollout%>"
+    var reactMigrationAngularPhaseOutDate = "<%= reactMigrationAngularPhaseOutDate%>"
   `,
   frontendVars,
 )

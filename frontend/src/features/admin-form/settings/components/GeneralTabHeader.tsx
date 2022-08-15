@@ -29,7 +29,7 @@ export const GeneralTabHeader = (): JSX.Element => {
       justify="space-between"
       mb="2.5rem"
     >
-      <CategoryHeader mb={0}>Respondent access</CategoryHeader>
+      <CategoryHeader mb={0}>General settings</CategoryHeader>
       <Skeleton isLoaded={!isLoadingSettings}>
         <Badge variant="subtle" colorScheme="primary" color="secondary.500">
           {readableFormResponseMode}

@@ -1,14 +1,20 @@
 // TODO #4279: Remove after React rollout is complete
 import { useMutation } from 'react-query'
-import { useNavigate } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
+
+import { PublicFormViewDto, switchEnvFeedbackFormBodyDto } from '~shared/types'
 
 import {
   adminChooseEnvironment,
   publicChooseEnvironment,
 } from '~services/EnvService'
 
-export const useEnvMutations = () => {
-  const navigate = useNavigate()
+import { submitSwitchEnvFormFeedback } from './EnvService'
+
+export const useEnvMutations = (
+  feedbackForm: PublicFormViewDto | undefined,
+) => {
+  const { formId } = useParams()
 
   const publicSwitchEnvMutation = useMutation(() => publicChooseEnvironment(), {
     onSuccess: () => window.location.reload(),
@@ -16,13 +22,38 @@ export const useEnvMutations = () => {
 
   const adminSwitchEnvMutation = useMutation(() => adminChooseEnvironment(), {
     onSuccess: () => {
-      navigate('/#!/forms')
-      window.location.reload()
+      const previewFormReactPath = new RegExp(`^/admin/form/${formId}/preview`)
+      const adminWorkspaceReactPath = new RegExp('^/workspace')
+      const formBuilderReactPath = new RegExp('^/admin/form/')
+
+      // If on admin preview form page
+      if (window.location.pathname.match(previewFormReactPath)) {
+        window.location.assign(`/#!/${formId}/preview`)
+        // If on admin workspace page
+      } else if (window.location.pathname.match(adminWorkspaceReactPath)) {
+        window.location.assign('/#!/forms')
+        // If on form builder page
+      } else if (window.location.pathname.match(formBuilderReactPath)) {
+        window.location.assign(`/#!/${formId}/admin`)
+      } else {
+        // if on public form page
+        window.location.reload()
+      }
     },
   })
+
+  const submitSwitchEnvFormFeedbackMutation = useMutation(
+    (args: switchEnvFeedbackFormBodyDto) => {
+      return submitSwitchEnvFormFeedback({
+        formInputs: args,
+        feedbackForm: feedbackForm,
+      })
+    },
+  )
 
   return {
     publicSwitchEnvMutation,
     adminSwitchEnvMutation,
+    submitSwitchEnvFormFeedbackMutation,
   }
 }
