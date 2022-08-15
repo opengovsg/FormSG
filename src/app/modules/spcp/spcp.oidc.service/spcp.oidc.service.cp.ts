@@ -37,9 +37,9 @@ export class CpOidcServiceClass extends SpcpOidcServiceClass {
   oidcProps: CpOidcProps
 
   constructor(oidcClient: CpOidcClient, oidcProps: CpOidcProps) {
-    super(oidcClient, oidcProps)
+    super()
 
-    // re-assign to let typescript register the types -_-
+    // assign members in subclass to let typescript register the types
     this.oidcClient = oidcClient
     this.oidcProps = oidcProps
   }

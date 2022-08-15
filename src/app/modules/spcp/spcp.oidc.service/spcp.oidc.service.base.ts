@@ -38,13 +38,8 @@ export abstract class SpcpOidcServiceClass {
   abstract authType: FormAuthType
   abstract jwtName: JwtName
 
-  oidcClient: SpcpOidcBaseClient
-  oidcProps: SpcpOidcProps
-
-  constructor(oidcClient: SpcpOidcBaseClient, oidcProps: SpcpOidcProps) {
-    this.oidcClient = oidcClient
-    this.oidcProps = oidcProps
-  }
+  abstract oidcClient: SpcpOidcBaseClient
+  abstract oidcProps: SpcpOidcProps
 
   /**
    * Retrieve the correct client.
