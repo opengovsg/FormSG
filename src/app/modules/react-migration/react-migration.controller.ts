@@ -283,6 +283,5 @@ export const redirectAdminEnvironment: ControllerHandler<
     // chosen environment until the alternative is stable.
     ADMIN_COOKIE_OPTIONS_WITH_EXPIRY,
   )
-  const target = '/'
-  return res.redirect(target)
+  return res.redirect('/')
 }
