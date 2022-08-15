@@ -138,7 +138,7 @@ export const TagInput = forwardRef<TagInputProps, 'input'>(
         const { currentTarget, key } = event
         const { selectionStart, selectionEnd } = currentTarget
         if (
-          key === 'Delete' &&
+          key === 'Backspace' &&
           value.length > 0 &&
           selectionStart === 0 &&
           selectionEnd === 0
