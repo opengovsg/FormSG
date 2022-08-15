@@ -191,7 +191,7 @@ export const EditAttachment = ({ field }: EditAttachmentProps): JSX.Element => {
         </Skeleton>
         <FormErrorMessage>{errors?.attachmentSize?.message}</FormErrorMessage>
         <AttachmentStackedBar
-          existingValues={form ? [otherAttachmentsSize] : undefined}
+          existingValue={form ? otherAttachmentsSize : undefined}
           newValue={Number(getValues('attachmentSize'))}
           max={maxTotalSizeMb}
         />

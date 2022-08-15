@@ -3,10 +3,11 @@ import { Box, BoxProps, Flex, Grid, Skeleton, Stack } from '@chakra-ui/react'
 import { valueToPercent } from '@chakra-ui/utils'
 
 export interface AttachmentStackedBarProps {
-  /** Existing values to render in the stacked bar. If `undefined` the progress
-   * bar will be in the loading state */
-  existingValues?: number[]
-  /** The new value to add into the stacked bar. */
+  /** Existing value to render in the stacked bar. If `undefined` the progress
+   * bar will be in the loading state. */
+  existingValue?: number
+  /** The new value to add into the stacked bar. If `undefined`, will not be
+   * displayed. */
   newValue?: number
   /** The min value of the bar. Defaults to `0` if not provided. */
   min?: number
@@ -31,21 +32,24 @@ const FilledTrack = (props: BoxProps) => {
 }
 
 export const AttachmentStackedBar = ({
-  existingValues: existingValuesProp,
+  existingValue: existingValueProp,
   newValue = 0,
   min = 0,
   max,
 }: AttachmentStackedBarProps): JSX.Element => {
-  const isLoading = useMemo(() => !existingValuesProp, [existingValuesProp])
+  const isLoading = useMemo(
+    () => existingValueProp === undefined,
+    [existingValueProp],
+  )
 
-  const existingValues = useMemo(
-    () => existingValuesProp ?? [],
-    [existingValuesProp],
+  const existingValue = useMemo(
+    () => existingValueProp ?? 0,
+    [existingValueProp],
   )
 
   const totalAttachmentSize = useMemo(
-    () => existingValues.reduce((sum, v) => sum + v, 0) + newValue,
-    [existingValues, newValue],
+    () => existingValue + newValue,
+    [existingValue, newValue],
   )
 
   const isOverQuota = useMemo(
@@ -54,34 +58,41 @@ export const AttachmentStackedBar = ({
   )
 
   const barProps = useMemo(() => {
-    const barProps = existingValues.map(() => ({
-      bg: 'warning.500',
-      border: 'none',
-    }))
-    if (newValue > 0) {
+    const barProps = []
+    if (existingValue) {
+      barProps.push({
+        bg: 'warning.500',
+        border: 'none',
+      })
+    }
+    if (newValue) {
       barProps.push({
         bg: 'success.500',
         border: '1px dashed var(--chakra-colors-success-800)',
       })
     }
     return barProps
-  }, [existingValues, newValue])
+  }, [existingValue, newValue])
 
   const gridTemplateColumns = useMemo(() => {
-    const gridTemplateColumns = existingValues.map(
-      (value) => `${valueToPercent(value, min, max)}%`,
-    )
-    if (newValue > 0)
+    const gridTemplateColumns = []
+    if (existingValue) {
+      gridTemplateColumns.push(`${valueToPercent(existingValue, min, max)}%`)
+    }
+    if (newValue) {
       gridTemplateColumns.push(
         `minmax(auto, ${valueToPercent(newValue, min, max)}%)`,
       )
+    }
     return gridTemplateColumns.join(' ')
-  }, [existingValues, newValue, min, max])
+  }, [existingValue, newValue, min, max])
 
-  const values = useMemo(() => {
-    if (newValue > 0) return [...existingValues, newValue]
-    return existingValues
-  }, [existingValues, newValue])
+  const valueLabels = useMemo(() => {
+    const valueLabels = []
+    if (existingValue) valueLabels.push('Used')
+    if (newValue) valueLabels.push(`${newValue} MB`)
+    return valueLabels
+  }, [existingValue, newValue])
 
   return (
     <Skeleton isLoaded={!isLoading}>
@@ -113,15 +124,11 @@ export const AttachmentStackedBar = ({
               textStyle="caption-1"
               color="secondary.700"
             >
-              {values.map((value, i) =>
-                value ? (
-                  <Flex key={i} justify="center">
-                    {value} MB
-                  </Flex>
-                ) : (
-                  <Box key={i} />
-                ),
-              )}
+              {valueLabels.map((value, i) => (
+                <Flex key={i} justify="center">
+                  {value}
+                </Flex>
+              ))}
             </Grid>
           </>
         )}
