@@ -11,6 +11,10 @@ import {
   FormFieldDto,
 } from '~shared/types/field'
 
+import {
+  ACCEPTED_FILETYPES_SPREADSHEET,
+  GUIDE_EMAIL_RELIABILITY,
+} from '~constants/links'
 import { createBaseValidationRules } from '~utils/fieldValidation'
 import { SingleSelect } from '~components/Dropdown'
 import type { ComboboxItem } from '~components/Dropdown/types'
@@ -143,7 +147,10 @@ export const EditAttachment = ({ field }: EditAttachmentProps): JSX.Element => {
   // Validate on render in order to inform users when other attachments have
   // already hit the limit, so the user doesn't try to create this attachment
   // field before changing the other fields.
-  useEffect(() => validateAttachmentSize(), [validateAttachmentSize])
+  useEffect(() => {
+    if (!form) return
+    validateAttachmentSize()
+  }, [form, validateAttachmentSize])
 
   return (
     <DrawerContentContainer>
@@ -173,6 +180,8 @@ export const EditAttachment = ({ field }: EditAttachmentProps): JSX.Element => {
                 items={attachmentSizeOptions}
                 onChange={(size) => {
                   onChange(size)
+                  // Validate on each change so that appropriate error message
+                  // is displayed when the attachment size bar also shows red
                   validateAttachmentSize()
                 }}
                 {...rest}
@@ -188,10 +197,9 @@ export const EditAttachment = ({ field }: EditAttachmentProps): JSX.Element => {
         />
       </FormControl>
       <InlineMessage useMarkdown>
-        View our [complete list](https://go.gov.sg/formsg-cwl) of accepted file
-        types. Please also read our [FAQ on email
-        reliability](https://go.gov.sg/form-email-reliability) relating to
-        unaccepted file types.
+        {`View our [complete list](${ACCEPTED_FILETYPES_SPREADSHEET}) of accepted
+        file types. Please also read our [FAQ on email reliability](
+        ${GUIDE_EMAIL_RELIABILITY}) relating to unaccepted file types.`}
       </InlineMessage>
       <FormFieldDrawerActions
         isLoading={isLoading}
