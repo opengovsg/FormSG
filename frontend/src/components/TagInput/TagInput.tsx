@@ -43,7 +43,14 @@ export interface TagInputProps
    */
   tagInvalidation?: (tag: string) => boolean
 
+  /**
+   * Optional function to call when input is blurred.
+   */
   onBlur?: (event: SyntheticEvent) => void
+  /**
+   * If true, duplicate tags will not be created. Defaults to `true`.
+   */
+  preventDuplicates?: boolean
 }
 
 export const TagInput = forwardRef<TagInputProps, 'input'>(
@@ -58,6 +65,7 @@ export const TagInput = forwardRef<TagInputProps, 'input'>(
       tagColorScheme = 'secondary',
       tagInvalidation,
       size,
+      preventDuplicates = true,
       ...props
     },
     ref,
@@ -81,10 +89,11 @@ export const TagInput = forwardRef<TagInputProps, 'input'>(
     const addTag = useCallback(
       (event: SyntheticEvent, tag: string) => {
         if (event.isDefaultPrevented()) return
+        if (preventDuplicates && value.includes(tag)) return
 
         onChange(value.concat([tag]))
       },
-      [onChange, value],
+      [onChange, preventDuplicates, value],
     )
     const removeTag = useCallback(
       (event: SyntheticEvent, index: number) => {
