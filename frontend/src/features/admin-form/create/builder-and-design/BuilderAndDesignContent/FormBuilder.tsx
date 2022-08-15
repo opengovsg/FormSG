@@ -66,7 +66,7 @@ export const FormBuilder = ({
         direction="column"
         w="100%"
         h="fit-content"
-        spacing="1.5rem"
+        spacing={{ base: 0, md: '1.5rem' }}
         bg={bg}
       >
         <StartPageView />
@@ -74,15 +74,15 @@ export const FormBuilder = ({
           flexDir="column"
           alignSelf="center"
           w="100%"
-          px={{ base: '0.5rem', md: '1.5rem', lg: '2.5rem' }}
+          px={{ base: 0, md: '1.5rem', lg: '2.5rem' }}
         >
           <Box
             bg="white"
             w="100%"
             maxW="57rem"
             alignSelf="center"
-            px={{ base: '0.5rem', md: '1.625rem' }}
-            py={{ base: '0.5rem', md: '2.5rem' }}
+            px={{ base: '1.5rem', md: '1.625rem' }}
+            py={{ base: '1.5rem', md: '2.5rem' }}
           >
             {isLoading || !builderFields ? (
               <FormBuilderFieldsSkeleton />
@@ -122,7 +122,8 @@ export const FormBuilder = ({
         <Flex
           justify="center"
           w="100%"
-          px={{ base: '0.5rem', md: '1.5rem', lg: '2.5rem' }}
+          pt={{ base: '1rem', md: 0 }}
+          px={{ base: '1rem', md: '1.5rem', lg: '2.5rem' }}
         >
           <Skeleton isLoaded={!isLoading} mb="1.5rem" maxW="57rem" width="100%">
             <Button
