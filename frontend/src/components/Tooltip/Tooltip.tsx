@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import {
   Box,
+  BoxProps,
   CSSObject,
   Tooltip as ChakraTooltip,
   TooltipProps as ChakraTooltipProps,
@@ -16,11 +17,13 @@ export interface TooltipProps extends ChakraTooltipProps {
    * Styles for the container which wraps the children.
    */
   wrapperStyles?: CSSObject
+  wrapperProps?: BoxProps
 }
 
 export const Tooltip = ({
   children,
   wrapperStyles,
+  wrapperProps,
   ...props
 }: TooltipProps): JSX.Element => {
   // ChakraTooltip does not work on mobile by design. (see
@@ -35,8 +38,11 @@ export const Tooltip = ({
           onMouseEnter={() => setIsLabelOpen(true)}
           onMouseLeave={() => setIsLabelOpen(false)}
           onClick={() => setIsLabelOpen((currentState) => !currentState)}
+          onFocus={() => setIsLabelOpen(true)}
+          onBlur={() => setIsLabelOpen(false)}
           verticalAlign="middle"
           __css={wrapperStyles}
+          {...wrapperProps}
         >
           {children}
         </Box>
