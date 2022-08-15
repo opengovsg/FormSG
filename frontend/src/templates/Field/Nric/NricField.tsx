@@ -26,6 +26,7 @@ export const NricField = ({ schema }: NricFieldProps): JSX.Element => {
     <FieldContainer schema={schema}>
       <Input
         aria-label={schema.title}
+        defaultValue=""
         {...register(schema._id, validationRules)}
       />
     </FieldContainer>

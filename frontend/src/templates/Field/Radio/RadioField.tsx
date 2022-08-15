@@ -73,6 +73,7 @@ export const RadioField = ({
       <Controller
         name={radioInputName}
         rules={validationRules}
+        defaultValue=""
         // `ref` omitted so the radiogroup will not have a ref and only the
         // radio themselves get the ref.
         render={({ field: { ref, onChange, value, ...rest } }) => (

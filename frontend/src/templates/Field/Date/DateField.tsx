@@ -62,6 +62,7 @@ export const DateField = ({
         control={control}
         name={schema._id}
         rules={validationRules}
+        defaultValue=""
         render={({ field }) => (
           <DateInput
             colorScheme={`theme-${colorTheme}`}
