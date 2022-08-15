@@ -45,15 +45,16 @@ export const ADMIN_EMAIL_VALIDATION_RULES: UseControllerProps['rules'] = {
       )
     },
     duplicate: (emails: string[]) => {
+      const truthyEmails = emails.filter(Boolean)
       return (
-        new Set(emails).size === emails.length ||
+        new Set(truthyEmails).size === truthyEmails.length ||
         'Please remove duplicate emails.'
       )
     },
     maxLength: (emails: string[]) => {
       return (
-        emails.length <= MAX_EMAIL_LENGTH ||
-        'Please limit number of emails to 30.'
+        emails.filter(Boolean).length <= MAX_EMAIL_LENGTH ||
+        `Please limit number of emails to ${MAX_EMAIL_LENGTH}.`
       )
     },
   },
