@@ -17,7 +17,7 @@ ReactMigrationRouter.get('/#!/:formId([a-fA-F0-9]{24})', (req, res) => {
 // Redirect to the landing page after setting the admin cookie
 ReactMigrationRouter.get(
   '/environment/:ui(react|angular)',
-  ReactMigrationController.redirectEnvironment,
+  ReactMigrationController.redirectAdminEnvironment,
 )
 
 ReactMigrationRouter.get('*', ReactMigrationController.serveDefault)
