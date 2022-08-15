@@ -93,10 +93,7 @@ const AdminEmailRecipientsInput = ({
           placeholder="Separate emails with a comma"
           {...field}
           tagInvalidation={(tag) => !isEmail(tag)}
-          onBlur={() => {
-            console.log('blurring')
-            return handleBlur()
-          }}
+          onBlur={handleBlur}
         />
       )}
     />
