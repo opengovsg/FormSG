@@ -43,7 +43,7 @@ export const InvalidFieldWithInvalidTags = Template.bind({})
 InvalidFieldWithInvalidTags.args = {
   isInvalid: true,
   defaultValue: ['foo', 'bar', 'bazinvalid'],
-  tagInvalidation: (tag) => tag.length > 3,
+  tagValidation: (tag) => tag.length <= 3,
 }
 
 export const Mobile = Template.bind({})
