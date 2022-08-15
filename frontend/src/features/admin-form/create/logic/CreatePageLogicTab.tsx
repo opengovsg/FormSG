@@ -21,9 +21,9 @@ export const CreatePageLogicTab = (): JSX.Element => {
   )
   const { isLoading, formLogics } = useAdminFormLogic()
 
-  const isEmptyLogic = useMemo(
-    () => formLogics?.length === 0 && !createOrEditData,
-    [createOrEditData, formLogics?.length],
+  const isLoadingOrEmptyLogic = useMemo(
+    () => isLoading || (formLogics?.length === 0 && !createOrEditData),
+    [createOrEditData, formLogics?.length, isLoading],
   )
 
   useEffect(() => {
@@ -31,11 +31,6 @@ export const CreatePageLogicTab = (): JSX.Element => {
       reset()
     }
   }, [reset])
-
-  if (isLoading) {
-    // TODO: Some loading skeleton
-    return <div>Loading...</div>
-  }
 
   return (
     <Box flex={1} overflow="auto" bg="neutral.100">
@@ -45,10 +40,14 @@ export const CreatePageLogicTab = (): JSX.Element => {
       >
         <Spacer />
         <Container p={0} maxW="42.5rem">
-          {isEmptyLogic ? <EmptyLogic /> : <LogicContent />}
+          {isLoadingOrEmptyLogic ? (
+            <EmptyLogic isLoaded={!isLoading} />
+          ) : (
+            <LogicContent />
+          )}
         </Container>
         <Flex flex={1} pos="relative">
-          {!isEmptyLogic && (
+          {!isLoadingOrEmptyLogic && (
             <IconButton
               zIndex="docked"
               pos={{ base: 'fixed', md: 'sticky' }}

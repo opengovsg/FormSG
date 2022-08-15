@@ -12,13 +12,11 @@ import { HeaderBlock } from './HeaderBlock'
 import { LogicBlockFactory } from './LogicBlockFactory'
 import { NewLogicBlock } from './NewLogicBlock'
 
-export const LogicContent = (): JSX.Element => {
+export const LogicContent = (): JSX.Element | null => {
   const isCreatingState = useAdminLogicStore(isCreatingStateSelector)
   const { formLogics, isLoading, hasError } = useAdminFormLogic()
 
-  if (isLoading) {
-    return <div>Loading...</div>
-  }
+  if (isLoading) return null
 
   return (
     <Stack color="secondary.500" spacing="1rem">
