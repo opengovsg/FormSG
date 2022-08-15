@@ -134,12 +134,14 @@ export const DesignInput = (): JSX.Element | null => {
 
   const handleUploadLogo = useCallback(
     (attachment: UploadedImage): Promise<CustomLogoMeta> | CustomLogoMeta => {
-      if (!attachment.file || !attachment.srcUrl)
+      if (!attachment.file || !attachment.srcUrl) {
         throw new Error('Design pre-submit validation failed')
+      }
       if (!attachment.srcUrl.startsWith('blob:')) {
         // Logo was not changed
-        if (!customLogoMeta)
+        if (!customLogoMeta) {
           throw new Error('Design: customLogoMeta is undefined')
+        }
         return customLogoMeta
       }
       return uploadLogoMutation
@@ -160,7 +162,7 @@ export const DesignInput = (): JSX.Element | null => {
       const { logo, attachment, estTimeTaken, ...rest } = startPageData
       const estTimeTakenTransformed =
         estTimeTaken === '' ? undefined : estTimeTaken
-      if (logo.state !== FormLogoState.Custom)
+      if (logo.state !== FormLogoState.Custom) {
         startPageMutation.mutate(
           {
             logo: { state: logo.state },
@@ -169,7 +171,7 @@ export const DesignInput = (): JSX.Element | null => {
           },
           { onSuccess: handleClose },
         )
-      else {
+      } else {
         const customLogoMeta = await handleUploadLogo(attachment)
         startPageMutation.mutate(
           {
@@ -375,8 +377,9 @@ export const DesignDrawer = ({
               srcUrl: `${logoBucketUrl}/${startPage.logo.fileId}`,
             },
     })
-    if (startPage.logo.state === FormLogoState.Custom)
+    if (startPage.logo.state === FormLogoState.Custom) {
       setCustomLogoMeta(startPage.logo)
+    }
     return resetDesignStore
   }, [
     startPage,
