@@ -54,7 +54,7 @@ UserRouter.post('/contact/otp/verify', UserController.handleContactVerifyOtp)
  */
 UserRouter.post(
   '/flag/new-features-last-seen',
-  UserController.handleUpdateUserLastSeenFeatureUpdateDate,
+  UserController.handleUpdateUserLastSeenFeatureUpdateVersion,
 )
 
 export default UserRouter

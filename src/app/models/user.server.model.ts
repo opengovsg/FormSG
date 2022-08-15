@@ -72,7 +72,7 @@ const compileUserModel = (db: Mongoose) => {
         sgid: Boolean,
       },
       flags: {
-        lastSeenFeatureUpdateDate: Date,
+        lastSeenFeatureUpdateVersion: Number,
       },
     },
     {

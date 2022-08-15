@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import {
   Drawer,
   DrawerBody,
@@ -25,24 +25,15 @@ const EXTENDED_LIST_LINK_TEXT = 'Show less'
 const DEFAULT_FEATURE_UPDATE_COUNT = 10
 
 export const WhatsNewDrawer = ({ isOpen, onClose }: WhatsNewDrawerProps) => {
-  const [numberOfFeatureUpdatesShown, setNumberOfFeatureUpdatesShown] =
-    useState<number>(DEFAULT_FEATURE_UPDATE_COUNT)
-  const [linkText, setLinkText] = useState<string>(UNEXTENDED_LIST_LINK_TEXT)
   const [isListExtended, setIsListExtended] = useState<boolean>(false)
 
-  const listOfFeatureUpdatesShown: FeatureUpdate[] = FEATURE_UPDATE_LIST.filter(
-    (featureUpdate) => featureUpdate.id <= numberOfFeatureUpdatesShown,
-  )
+  const listOfFeatureUpdatesShown: FeatureUpdate[] = useMemo(() => {
+    return isListExtended
+      ? FEATURE_UPDATE_LIST.features
+      : FEATURE_UPDATE_LIST.features.slice(0, DEFAULT_FEATURE_UPDATE_COUNT)
+  }, [isListExtended])
 
   const handleOnViewAllUpdatesClick = () => {
-    setNumberOfFeatureUpdatesShown(
-      isListExtended
-        ? DEFAULT_FEATURE_UPDATE_COUNT
-        : FEATURE_UPDATE_LIST.length,
-    )
-    setLinkText(
-      isListExtended ? UNEXTENDED_LIST_LINK_TEXT : EXTENDED_LIST_LINK_TEXT,
-    )
     setIsListExtended(!isListExtended)
   }
 
@@ -73,7 +64,9 @@ export const WhatsNewDrawer = ({ isOpen, onClose }: WhatsNewDrawerProps) => {
             })}
           </Stack>
           <Link mt="2rem" mb="5.75rem" onClick={handleOnViewAllUpdatesClick}>
-            {linkText}
+            {isListExtended
+              ? UNEXTENDED_LIST_LINK_TEXT
+              : EXTENDED_LIST_LINK_TEXT}
           </Link>
         </DrawerBody>
       </DrawerContent>

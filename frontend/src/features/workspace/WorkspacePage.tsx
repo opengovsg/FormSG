@@ -12,17 +12,14 @@ import { chunk } from 'lodash'
 
 import { AdminNavBar } from '~/app/AdminNavBar/AdminNavBar'
 
-import {
-  EMERGENCY_CONTACT_KEY_PREFIX,
-  ROLLOUT_ANNOUNCEMENT_KEY_PREFIX,
-} from '~constants/localStorage'
+import { ROLLOUT_ANNOUNCEMENT_KEY_PREFIX } from '~constants/localStorage'
 import { useLocalStorage } from '~hooks/useLocalStorage'
 import Pagination from '~components/Pagination'
 
 import { RolloutAnnouncementModal } from '~features/rollout-announcement/RolloutAnnouncementModal'
-import { EmergencyContactModal } from '~features/user/emergency-contact/EmergencyContactModal'
 import { useUserMutations } from '~features/user/mutations'
 import { useUser } from '~features/user/queries'
+import { FEATURE_UPDATE_LIST } from '~features/whats-new/FeatureUpdateList'
 import { getShowLatestFeatureUpdateNotification } from '~features/whats-new/utils/utils'
 import { WhatsNewDrawer } from '~features/whats-new/WhatsNewDrawer'
 
@@ -123,7 +120,7 @@ export const WorkspacePage = (): JSX.Element => {
     whatsNewFeatureDrawerDisclosure,
   } = useWorkspaceForms()
   const { user, isLoading: isUserLoading } = useUser()
-  const { updateUserLastSeenFeatureUpdateDateMutation } = useUserMutations()
+  const { updateLastSeenFeatureVersionMutation } = useUserMutations()
 
   const ROLLOUT_ANNOUNCEMENT_KEY = useMemo(
     () => ROLLOUT_ANNOUNCEMENT_KEY_PREFIX + user?._id,
@@ -137,34 +134,27 @@ export const WorkspacePage = (): JSX.Element => {
     [isUserLoading, hasSeenAnnouncement],
   )
 
-  const emergencyContactKey = useMemo(
-    () => (user?._id ? EMERGENCY_CONTACT_KEY_PREFIX + user._id : null),
-    [user],
-  )
-
-  const [hasSeenEmergencyContact, setHasSeenEmergencyContact] =
-    useLocalStorage<boolean>(emergencyContactKey)
-
-  const isEmergencyContactModalOpen = useMemo(
-    () =>
-      !isUserLoading &&
-      // Open emergency contact modal after the rollout announcement modal
-      Boolean(hasSeenAnnouncement) &&
-      !hasSeenEmergencyContact &&
-      !user?.contact,
-    [isUserLoading, hasSeenAnnouncement, hasSeenEmergencyContact, user],
-  )
-
   const shouldShowFeatureUpdateNotification = useMemo(() => {
     if (isUserLoading || !user) return false
     return getShowLatestFeatureUpdateNotification(user)
   }, [isUserLoading, user])
 
-  const onWhatsNewDrawerOpen = useCallback(() => {
+  const handleWhatsNewDrawerOpen = useCallback(() => {
     whatsNewFeatureDrawerDisclosure.onOpen()
-    updateUserLastSeenFeatureUpdateDateMutation.mutate()
+
+    // Update user last seen version if needed.
+    if (isUserLoading || !user) return
+    // Update version if current user version is not set or is less than the latest version.
+    if (
+      user.flags?.lastSeenFeatureUpdateVersion === undefined ||
+      user.flags?.lastSeenFeatureUpdateVersion < FEATURE_UPDATE_LIST.version
+    ) {
+      updateLastSeenFeatureVersionMutation.mutate(FEATURE_UPDATE_LIST.version)
+    }
   }, [
-    updateUserLastSeenFeatureUpdateDateMutation,
+    isUserLoading,
+    updateLastSeenFeatureVersionMutation,
+    user,
     whatsNewFeatureDrawerDisclosure,
   ])
 
@@ -206,7 +196,7 @@ export const WorkspacePage = (): JSX.Element => {
               isLoading={isLoading}
               totalFormCount={totalFormCount}
               handleOpenCreateFormModal={createFormModalDisclosure.onOpen}
-              handleOpenWhatsNewDrawer={onWhatsNewDrawerOpen}
+              handleOpenWhatsNewDrawer={handleWhatsNewDrawerOpen}
               isWhatsNewButtonSolid={shouldShowFeatureUpdateNotification}
             />
           </Container>
