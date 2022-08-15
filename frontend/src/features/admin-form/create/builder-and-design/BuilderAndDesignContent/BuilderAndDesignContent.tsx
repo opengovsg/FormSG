@@ -3,11 +3,11 @@ import { Flex } from '@chakra-ui/react'
 
 import { DndPlaceholderProps } from '../types'
 import {
-  BuildFieldState,
+  FieldBuilderState,
   setToInactiveSelector,
   stateDataSelector,
-  useBuilderAndDesignStore,
-} from '../useBuilderAndDesignStore'
+  useFieldBuilderStore,
+} from '../useFieldBuilderStore'
 
 import { EndPageView } from './EndPageView'
 import { FormBuilder } from './FormBuilder'
@@ -20,7 +20,7 @@ export const BuilderAndDesignContent = ({
   placeholderProps,
 }: BuilderAndDesignContentProps): JSX.Element => {
   const { stateData, setToInactive: setFieldsToInactive } =
-    useBuilderAndDesignStore(
+    useFieldBuilderStore(
       useCallback(
         (state) => ({
           stateData: stateDataSelector(state),
@@ -38,13 +38,13 @@ export const BuilderAndDesignContent = ({
         display={
           // Don't conditionally render EndPageView and FormBuilder because it
           // is expensive and takes time.
-          stateData.state === BuildFieldState.EditingEndPage ? 'flex' : 'none'
+          stateData.state === FieldBuilderState.EditingEndPage ? 'flex' : 'none'
         }
       />
       <FormBuilder
         placeholderProps={placeholderProps}
         display={
-          stateData.state === BuildFieldState.EditingEndPage ? 'none' : 'flex'
+          stateData.state === FieldBuilderState.EditingEndPage ? 'none' : 'flex'
         }
       />
     </Flex>

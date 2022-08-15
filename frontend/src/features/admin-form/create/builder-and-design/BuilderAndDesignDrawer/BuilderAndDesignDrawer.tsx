@@ -10,10 +10,10 @@ import {
   useCreatePageSidebar,
 } from '../../common/CreatePageSidebarContext'
 import {
-  BuildFieldState,
+  FieldBuilderState,
   stateDataSelector,
-  useBuilderAndDesignStore,
-} from '../useBuilderAndDesignStore'
+  useFieldBuilderStore,
+} from '../useFieldBuilderStore'
 
 import { EditEndPageDrawer } from './EditEndPageDrawer/EditEndPageDrawer'
 import DesignDrawer from './DesignDrawer'
@@ -23,7 +23,7 @@ import { FieldListDrawer } from './FieldListDrawer'
 export const BuilderAndDesignDrawer = (): JSX.Element | null => {
   const isMobile = useIsMobile()
   const { activeTab, isDrawerOpen } = useCreatePageSidebar()
-  const createOrEditData = useBuilderAndDesignStore(stateDataSelector)
+  const createOrEditData = useFieldBuilderStore(stateDataSelector)
 
   const drawerMotionProps = useMemo(() => {
     return {
@@ -50,10 +50,10 @@ export const BuilderAndDesignDrawer = (): JSX.Element | null => {
     switch (activeTab) {
       case DrawerTabs.Builder:
         switch (createOrEditData.state) {
-          case BuildFieldState.EditingField:
-          case BuildFieldState.CreatingField:
+          case FieldBuilderState.EditingField:
+          case FieldBuilderState.CreatingField:
             return <EditFieldDrawer />
-          case BuildFieldState.EditingEndPage:
+          case FieldBuilderState.EditingEndPage:
             return <EditEndPageDrawer />
           default:
             // Inactive state

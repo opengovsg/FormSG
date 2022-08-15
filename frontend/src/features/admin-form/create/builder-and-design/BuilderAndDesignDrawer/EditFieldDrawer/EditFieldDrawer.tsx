@@ -8,10 +8,10 @@ import { isMyInfo } from '~features/myinfo/utils'
 import { useBuilderFields } from '../../BuilderAndDesignContent/useBuilderFields'
 import { MYINFO_FIELD_CONSTANTS } from '../../constants'
 import {
-  BuildFieldState,
+  FieldBuilderState,
   stateDataSelector,
-  useBuilderAndDesignStore,
-} from '../../useBuilderAndDesignStore'
+  useFieldBuilderStore,
+} from '../../useFieldBuilderStore'
 import { BuilderDrawerContainer } from '../common/BuilderDrawerContainer'
 
 import {
@@ -39,12 +39,12 @@ import {
 } from './edit-fieldtype'
 
 export const EditFieldDrawer = (): JSX.Element | null => {
-  const stateData = useBuilderAndDesignStore(stateDataSelector)
+  const stateData = useFieldBuilderStore(stateDataSelector)
 
   const fieldToEdit: FieldCreateDto | undefined = useMemo(() => {
     if (
-      stateData.state === BuildFieldState.EditingField ||
-      stateData.state === BuildFieldState.CreatingField
+      stateData.state === FieldBuilderState.EditingField ||
+      stateData.state === FieldBuilderState.CreatingField
     ) {
       return stateData.field
     }
@@ -68,9 +68,9 @@ export const EditFieldDrawer = (): JSX.Element | null => {
   // then fieldIndex changes.
   const { builderFields } = useBuilderFields()
   const fieldIndex = useMemo(() => {
-    if (stateData.state === BuildFieldState.CreatingField) {
+    if (stateData.state === FieldBuilderState.CreatingField) {
       return stateData.insertionIndex
-    } else if (stateData.state === BuildFieldState.EditingField) {
+    } else if (stateData.state === FieldBuilderState.EditingField) {
       return builderFields?.findIndex(
         (field) => field._id === stateData.field._id,
       )

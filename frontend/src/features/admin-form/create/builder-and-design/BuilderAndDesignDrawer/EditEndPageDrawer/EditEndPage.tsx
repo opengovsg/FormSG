@@ -25,14 +25,14 @@ import { useMutateFormPage } from '~features/admin-form/common/mutations'
 import { useAdminForm } from '~features/admin-form/common/queries'
 
 import {
-  setToInactiveSelector,
-  useBuilderAndDesignStore,
-} from '../../useBuilderAndDesignStore'
-import {
   resetEndPageDataSelector,
   setEndPageDataSelector,
   useEndPageBuilderStore,
 } from '../../useEndPageBuilderStore'
+import {
+  setToInactiveSelector,
+  useFieldBuilderStore,
+} from '../../useFieldBuilderStore'
 import { DrawerContentContainer } from '../EditFieldDrawer/edit-fieldtype/common/DrawerContentContainer'
 
 const buttonLinkRules: RegisterOptions<FormEndPage, 'buttonLink'> = {
@@ -55,7 +55,7 @@ export const EndPageBuilderInput = ({
   const isMobile = useIsMobile()
   const { endPageMutation } = useMutateFormPage()
 
-  const closeBuilderDrawer = useBuilderAndDesignStore(setToInactiveSelector)
+  const closeBuilderDrawer = useFieldBuilderStore(setToInactiveSelector)
   const { setEndPageBuilderState, resetEndPageBuilderState } =
     useEndPageBuilderStore((state) => ({
       setEndPageBuilderState: setEndPageDataSelector(state),
