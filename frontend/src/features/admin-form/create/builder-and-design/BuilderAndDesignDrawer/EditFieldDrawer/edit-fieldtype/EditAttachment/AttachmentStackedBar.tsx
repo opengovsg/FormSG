@@ -49,8 +49,8 @@ export const AttachmentStackedBar = ({
   )
 
   const isOverQuota = useMemo(
-    () => !!existingValues && max < totalAttachmentSize,
-    [max, totalAttachmentSize, existingValues],
+    () => max < totalAttachmentSize,
+    [max, totalAttachmentSize],
   )
 
   const barProps = useMemo(() => {
@@ -58,11 +58,12 @@ export const AttachmentStackedBar = ({
       bg: 'warning.500',
       border: 'none',
     }))
-    if (newValue > 0)
+    if (newValue > 0) {
       barProps.push({
         bg: 'success.500',
         border: '1px dashed var(--chakra-colors-success-800)',
       })
+    }
     return barProps
   }, [existingValues, newValue])
 
