@@ -265,16 +265,6 @@ export const publicChooseEnvironment: ControllerHandler<
   return res.json({ ui })
 }
 
-export const redirectToLanding: ControllerHandler<
-  SetEnvironmentParams,
-  unknown,
-  unknown,
-  Record<string, string>
-> = (req, res) => {
-  const target = '/'
-  return res.redirect(target)
-}
-
 // Redirect to landing after setting the admin cookie
 export const redirectAdminEnvironment: ControllerHandler<
   SetEnvironmentParams,
