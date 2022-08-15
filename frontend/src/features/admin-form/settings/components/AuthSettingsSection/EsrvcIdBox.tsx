@@ -23,13 +23,9 @@ import { useMutateFormSettings } from '../../mutations'
 
 interface EsrvcIdBoxProps {
   settings: FormSettings
-  isDisabled: boolean
 }
 
-export const EsrvcIdBox = ({
-  settings,
-  isDisabled,
-}: EsrvcIdBoxProps): JSX.Element => {
+export const EsrvcIdBox = ({ settings }: EsrvcIdBoxProps): JSX.Element => {
   const initialEsrvcId = useMemo(() => settings.esrvcId ?? '', [settings])
 
   const { mutateFormEsrvcId } = useMutateFormSettings()
@@ -104,7 +100,6 @@ export const EsrvcIdBox = ({
                       'e-service ID must not contain whitespace',
                   },
                 })}
-                isDisabled={isDisabled}
                 isReadOnly={mutateFormEsrvcId.isLoading}
                 placeholder="Enter Singpass e-service ID"
               />

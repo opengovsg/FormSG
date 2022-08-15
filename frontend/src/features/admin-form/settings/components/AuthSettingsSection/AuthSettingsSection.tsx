@@ -187,10 +187,7 @@ export const AuthSettingsSection = ({
               </Radio>
             </Box>
             {esrvcidRequired(authType) && authType === settings.authType ? (
-              <EsrvcIdBox
-                settings={settings}
-                isDisabled={isDisabled(authType)}
-              />
+              <EsrvcIdBox settings={settings} />
             ) : null}
           </Fragment>
         ))}
