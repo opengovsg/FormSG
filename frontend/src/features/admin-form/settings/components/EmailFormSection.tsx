@@ -92,7 +92,7 @@ const AdminEmailRecipientsInput = ({
         <TagInput
           placeholder="Separate emails with a comma"
           {...field}
-          tagInvalidation={(tag) => !isEmail(tag)}
+          tagValidation={isEmail}
           onBlur={handleBlur}
         />
       )}

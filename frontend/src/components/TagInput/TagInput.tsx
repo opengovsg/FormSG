@@ -39,9 +39,10 @@ export interface TagInputProps
   keyDownKeys?: string[]
   /**
    * Optional function to call to validate created tags.
-   * Should return `true` if tag is invalid
+   * Should return `true` if tag is valid.
+   * If no function is provided, all tags are considered valid.
    */
-  tagInvalidation?: (tag: string) => boolean
+  tagValidation?: (tag: string) => boolean
 
   /**
    * Optional function to call when input is blurred.
@@ -63,7 +64,7 @@ export const TagInput = forwardRef<TagInputProps, 'input'>(
       onBlur,
       keyDownKeys = ['Enter', ',', ' '],
       tagColorScheme = 'secondary',
-      tagInvalidation,
+      tagValidation = () => true,
       size,
       preventDuplicates = true,
       ...props
@@ -172,7 +173,7 @@ export const TagInput = forwardRef<TagInputProps, 'input'>(
                 isDisabled={inputProps.disabled}
                 key={index}
                 colorScheme={tagColorScheme}
-                isInvalid={tagInvalidation?.(tag)}
+                isInvalid={!tagValidation(tag)}
                 label={tag}
                 onClearTag={handleRemoveTag(index)}
                 onBlur={onBlur}
