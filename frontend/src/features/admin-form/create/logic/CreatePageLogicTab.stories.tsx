@@ -183,3 +183,8 @@ export const ErrorAllDeleted = Template.bind({})
 ErrorAllDeleted.parameters = {
   msw: buildMswRoutes({ form_logics: [if_12_show_34, if_12_preventsubmit] }),
 }
+
+export const Loading = Template.bind({})
+Loading.parameters = {
+  msw: buildMswRoutes({}, 'infinite'),
+}
