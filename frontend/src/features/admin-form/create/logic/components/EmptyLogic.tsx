@@ -6,6 +6,7 @@ import {
   Grid,
   Icon,
   Skeleton,
+  Spacer,
   Stack,
   Text,
 } from '@chakra-ui/react'
@@ -56,9 +57,7 @@ export const EmptyLogic = ({ isLoaded }: EmptyLogicProps): JSX.Element => {
         </Button>
       </Skeleton>
       {isLoaded ? <LogicSvgr maxW="292px" /> : <Skeleton h="230px" w="292px" />}
-      <Skeleton my="2.5rem" isLoaded={isLoaded}>
-        <Divider />
-      </Skeleton>
+      {isLoaded ? <Divider my="2.5rem" /> : <Skeleton h="2.5rem" />}
       <Stack spacing="1.5rem" textAlign="center" maxW="28rem">
         <Skeleton isLoaded={isLoaded}>
           <Text textStyle="subhead-3">Allowed fields</Text>
