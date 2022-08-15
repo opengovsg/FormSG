@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { BiCog } from 'react-icons/bi'
 import {
   Box,
@@ -97,16 +97,24 @@ export const StartPageView = () => {
   }, [form?.startPage, startPageFromStore])
 
   // Color theme options and other design stuff, identical to public form
-  const { titleColor, titleBg, estTimeString } = useFormHeader({
-    startPage,
-    hover: hoverStartPage,
-  })
-
-  const { hasLogo, logoImgSrc, logoImgAlt } = useFormBannerLogo({
+  const { logoImgSrc, ...formBannerLogoProps } = useFormBannerLogo({
     logoBucketUrl,
     logo: startPage?.logo,
     agency: form?.admin.agency,
   })
+  const formHeaderProps = useFormHeader({ startPage, hover: hoverStartPage })
+
+  const headerRef = useRef<HTMLDivElement | null>(null)
+  const instructionsRef = useRef<HTMLDivElement | null>(null)
+
+  useEffect(() => {
+    if (designState === DesignState.EditingHeader) {
+      headerRef.current?.scrollIntoView({ block: 'nearest' })
+    }
+    if (designState === DesignState.EditingInstructions) {
+      instructionsRef.current?.scrollIntoView({ block: 'nearest' })
+    }
+  }, [designState])
 
   const { handleDesignClick } = useCreatePageSidebar()
 
@@ -141,6 +149,7 @@ export const StartPageView = () => {
               borderBottom: '2px solid transparent',
             })}
         borderRadius="4px"
+        ref={headerRef}
       >
         {customLogoPending ? (
           // Show skeleton if user has chosen custom logo but not yet uploaded
@@ -149,26 +158,23 @@ export const StartPageView = () => {
           </Flex>
         ) : (
           <FormBannerLogo
-            hasLogo={hasLogo}
             logoImgSrc={
               startPageData?.logo.state === FormLogoState.Custom
                 ? startPageData.attachment.srcUrl // manual override to preview custom logo
                 : logoImgSrc
             }
-            logoImgAlt={logoImgAlt}
+            {...formBannerLogoProps}
           />
         )}
         <FormHeader
           title={form?.title}
-          estTimeString={estTimeString}
-          titleBg={titleBg}
-          titleColor={titleColor}
           showHeader
           loggedInId={
             form?.authType !== FormAuthType.NIL
               ? PREVIEW_MOCK_UINFIN
               : undefined
           }
+          {...formHeaderProps}
         />
       </Box>
       {startPage?.paragraph ? (
@@ -200,6 +206,7 @@ export const StartPageView = () => {
                     }
                   : { border: '2px solid white' })}
                 onClick={handleInstructionsClick}
+                ref={instructionsRef}
               >
                 <Box p={{ base: '0.75rem', md: '1.5rem' }}>
                   <FormInstructions
