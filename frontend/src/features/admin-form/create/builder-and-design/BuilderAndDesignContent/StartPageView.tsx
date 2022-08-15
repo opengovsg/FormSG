@@ -170,7 +170,7 @@ export const StartPageView = () => {
           title={form?.title}
           showHeader
           loggedInId={
-            form?.authType !== FormAuthType.NIL
+            form && form.authType !== FormAuthType.NIL
               ? PREVIEW_MOCK_UINFIN
               : undefined
           }
