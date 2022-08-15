@@ -14,9 +14,14 @@ SP_OIDC_NDI_DISCOVERY_ENDPOINT=https://stg-id.singpass.gov.sg/.well-known/openid
 SP_OIDC_NDI_JWKS_ENDPOINT=https://stg-id.singpass.gov.sg/.well-known/keys
 SP_OIDC_RP_CLIENT_ID=rpClientId
 SP_OIDC_RP_REDIRECT_URL=https://staging.form.gov.sg/api/v3/singpass/login
-SP_OIDC_RP_JWKS_PUBLIC_PATH=./tests/certs/test_rp_public_jwks.json
-SP_OIDC_RP_JWKS_SECRET_PATH=./tests/certs/test_rp_secret_jwks.json
-CP_OIDC_RP_JWKS_PUBLIC_PATH=./tests/certs/test_rp_public_jwks.json
+SP_OIDC_RP_JWKS_PUBLIC_PATH=./tests/certs/test_sp_rp_public_jwks.json
+SP_OIDC_RP_JWKS_SECRET_PATH=./tests/certs/test_sp_rp_secret_jwks.json
+CP_OIDC_NDI_DISCOVERY_ENDPOINT=https://stg-id.corppass.gov.sg/.well-known/openid-configuration
+CP_OIDC_NDI_JWKS_ENDPOINT=https://stg-id.corppass.gov.sg/.well-known/keys
+CP_OIDC_RP_CLIENT_ID=rpClientId
+CP_OIDC_RP_REDIRECT_URL=https://staging.form.gov.sg/api/v3/corppass/login
+CP_OIDC_RP_JWKS_PUBLIC_PATH=./tests/certs/test_cp_rp_public_jwks.json
+CP_OIDC_RP_JWKS_SECRET_PATH=./tests/certs/test_cp_rp_secret_jwks.json
 
 MYINFO_CLIENT_CONFIG=dev
 MYINFO_FORMSG_KEY_PATH=./node_modules/@opengovsg/mockpass/static/certs/key.pem
