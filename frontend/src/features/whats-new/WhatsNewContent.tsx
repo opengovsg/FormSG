@@ -35,11 +35,11 @@ export const WhatsNewContent = ({
   })
   const formattedDate = format(date, DATE_FORMAT)
   return (
-    <Box paddingX="2.5rem" paddingY="1.25">
+    <Box>
       <Text textStyle="caption-1" color="secondary.400">
         {formattedDate}
       </Text>
-      <Text textStyle="h4" mb="0.5rem" mt="1rem" color="secondary.700">
+      <Text as="h4" textStyle="h4" mb="0.5rem" mt="1rem" color="secondary.700">
         {title}
       </Text>
       <ReactMarkdown components={mdComponents} remarkPlugins={[gfm]}>

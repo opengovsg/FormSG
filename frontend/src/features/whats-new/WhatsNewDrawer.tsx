@@ -50,23 +50,18 @@ export const WhatsNewDrawer = ({ isOpen, onClose }: WhatsNewDrawerProps) => {
     <Drawer isOpen={isOpen} onClose={onClose} placement="right" size="lg">
       <DrawerOverlay />
       <DrawerContent>
-        <DrawerCloseButton top="1.25rem" />
-        <DrawerHeader
-          textStyle="h2"
-          fontSize="24px"
-          paddingTop="1.25rem"
-          paddingLeft="2.5rem"
-          color="secondary.700"
-        >
+        <DrawerCloseButton
+          variant="clear"
+          colorScheme="secondary"
+          top="1.25rem"
+        />
+        <DrawerHeader textStyle="h2" color="secondary.700">
           What’s new
         </DrawerHeader>
         <DrawerBody
-          py={0}
-          px={0}
-          mt="1.25rem"
-          display="flex"
-          alignItems="center"
-          flexDirection="column"
+          whiteSpace="pre-line"
+          color="secondary.500"
+          textStyle="body-2"
         >
           <Stack divider={<StackDivider />} spacing="2rem">
             {listOfFeatureUpdatesShown.map((featureUpdate, key) => {
