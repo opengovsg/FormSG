@@ -61,7 +61,9 @@ export const useMdComponents = ({
           {...textStyles}
         />
       ),
-      ul: ({ node, ...props }) => <UnorderedList {...props} {...listStyles} />,
+      ul: ({ node, ordered, ...props }) => (
+        <UnorderedList {...props} {...listStyles} />
+      ),
       li: ({ node, ordered, ...props }) => (
         <ListItem {...props} {...textStyles} />
       ),

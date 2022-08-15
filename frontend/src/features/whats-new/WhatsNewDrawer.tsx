@@ -6,11 +6,12 @@ import {
   DrawerContent,
   DrawerHeader,
   DrawerOverlay,
-  Link,
   Stack,
   StackDivider,
   UseDisclosureReturn,
 } from '@chakra-ui/react'
+
+import Button from '~components/Button'
 
 import { FEATURE_UPDATE_LIST, FeatureUpdate } from './FeatureUpdateList'
 import { WhatsNewContent } from './WhatsNewContent'
@@ -63,14 +64,19 @@ export const WhatsNewDrawer = ({ isOpen, onClose }: WhatsNewDrawerProps) => {
           color="secondary.500"
           textStyle="body-2"
         >
-          <Stack divider={<StackDivider />} spacing="2rem">
+          <Stack divider={<StackDivider />} spacing="2rem" mb="2rem">
             {listOfFeatureUpdatesShown.map((featureUpdate, key) => {
               return <WhatsNewContent {...featureUpdate} key={key} />
             })}
+            <Button
+              variant="link"
+              textDecoration="underline"
+              alignSelf="center"
+              onClick={handleOnViewAllUpdatesClick}
+            >
+              {linkText}
+            </Button>
           </Stack>
-          <Link mt="2rem" mb="5.75rem" onClick={handleOnViewAllUpdatesClick}>
-            {linkText}
-          </Link>
         </DrawerBody>
       </DrawerContent>
     </Drawer>

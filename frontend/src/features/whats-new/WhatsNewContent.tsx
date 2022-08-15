@@ -30,6 +30,7 @@ export const WhatsNewContent = ({
       },
       list: {
         color: 'secondary.500',
+        marginInlineStart: '1.25em',
       },
     },
   })
