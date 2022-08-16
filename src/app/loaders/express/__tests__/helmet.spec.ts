@@ -19,6 +19,7 @@ describe('helmetMiddlewares', () => {
   const cspCoreDirectives = {
     imgSrc: [
       "'self'",
+      'blob:',
       'data:',
       'https://www.googletagmanager.com/',
       'https://www.google-analytics.com/',
@@ -44,6 +45,7 @@ describe('helmetMiddlewares', () => {
       "'self'",
       'https://www.google-analytics.com/',
       'https://ssl.google-analytics.com/',
+      'https://*.browser-intake-datadoghq.com',
       'https://sentry.io/api/',
       config.aws.attachmentBucketUrl,
       config.aws.imageBucketUrl,
@@ -61,6 +63,10 @@ describe('helmetMiddlewares', () => {
       'https://www.gstatic.com/recaptcha/',
       'https://www.gstatic.cn/',
       "'unsafe-inline'",
+    ],
+    workerSrc: [
+      "'self'",
+      'blob:', // DataDog RUM session replay - https://docs.datadoghq.com/real_user_monitoring/faq/content_security_policy/
     ],
     frameAncestors: ['*'],
   }
