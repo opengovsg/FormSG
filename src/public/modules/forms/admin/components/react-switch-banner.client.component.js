@@ -17,9 +17,9 @@ function reactSwitchBannerController($q, $window) {
     return (
       $q
         .when(AdminService.adminChooseEnvironment(ui))
-        // Navigate to the React workspace page after changing the environment cookie
+        // Navigate to the React dashboard page after changing the environment cookie
         .then(() => {
-          $window.location.assign('/workspace')
+          $window.location.assign('/dashboard')
         })
         .catch((error) => {
           console.error('switch to react failed:', error)

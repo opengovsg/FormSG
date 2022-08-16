@@ -23,7 +23,7 @@ export const useEnvMutations = (
   const adminSwitchEnvMutation = useMutation(() => adminChooseEnvironment(), {
     onSuccess: () => {
       const previewFormReactPath = new RegExp(`^/admin/form/${formId}/preview`)
-      const adminWorkspaceReactPath = new RegExp('^/workspace')
+      const adminWorkspaceReactPath = new RegExp('^/dashboard')
       const formBuilderReactPath = new RegExp('^/admin/form/')
 
       // If on admin preview form page
