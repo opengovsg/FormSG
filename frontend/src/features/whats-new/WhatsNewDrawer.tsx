@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import {
   Drawer,
   DrawerBody,
@@ -26,24 +26,19 @@ const EXTENDED_LIST_LINK_TEXT = 'Show less'
 const DEFAULT_FEATURE_UPDATE_COUNT = 10
 
 export const WhatsNewDrawer = ({ isOpen, onClose }: WhatsNewDrawerProps) => {
-  const [numberOfFeatureUpdatesShown, setNumberOfFeatureUpdatesShown] =
-    useState<number>(DEFAULT_FEATURE_UPDATE_COUNT)
-  const [linkText, setLinkText] = useState<string>(UNEXTENDED_LIST_LINK_TEXT)
   const [isListExtended, setIsListExtended] = useState<boolean>(false)
 
-  const listOfFeatureUpdatesShown: FeatureUpdate[] = FEATURE_UPDATE_LIST.filter(
-    (featureUpdate) => featureUpdate.id <= numberOfFeatureUpdatesShown,
-  )
+  const listOfFeatureUpdatesShown: FeatureUpdate[] = useMemo(() => {
+    return isListExtended
+      ? FEATURE_UPDATE_LIST
+      : FEATURE_UPDATE_LIST.slice(0, DEFAULT_FEATURE_UPDATE_COUNT)
+  }, [isListExtended])
+
+  const showExtendListButton = useMemo(() => {
+    return FEATURE_UPDATE_LIST.length > DEFAULT_FEATURE_UPDATE_COUNT
+  }, [])
 
   const handleOnViewAllUpdatesClick = () => {
-    setNumberOfFeatureUpdatesShown(
-      isListExtended
-        ? DEFAULT_FEATURE_UPDATE_COUNT
-        : FEATURE_UPDATE_LIST.length,
-    )
-    setLinkText(
-      isListExtended ? UNEXTENDED_LIST_LINK_TEXT : EXTENDED_LIST_LINK_TEXT,
-    )
     setIsListExtended(!isListExtended)
   }
 
@@ -57,7 +52,7 @@ export const WhatsNewDrawer = ({ isOpen, onClose }: WhatsNewDrawerProps) => {
           top="1.25rem"
         />
         <DrawerHeader textStyle="h2" color="secondary.700">
-          What’s new
+          What's new
         </DrawerHeader>
         <DrawerBody
           whiteSpace="pre-line"
@@ -68,14 +63,18 @@ export const WhatsNewDrawer = ({ isOpen, onClose }: WhatsNewDrawerProps) => {
             {listOfFeatureUpdatesShown.map((featureUpdate, key) => {
               return <WhatsNewContent {...featureUpdate} key={key} />
             })}
-            <Button
-              variant="link"
-              textDecoration="underline"
-              alignSelf="center"
-              onClick={handleOnViewAllUpdatesClick}
-            >
-              {linkText}
-            </Button>
+            {showExtendListButton && (
+              <Button
+                variant="link"
+                textDecoration="underline"
+                alignSelf="center"
+                onClick={handleOnViewAllUpdatesClick}
+              >
+                {isListExtended
+                  ? EXTENDED_LIST_LINK_TEXT
+                  : UNEXTENDED_LIST_LINK_TEXT}
+              </Button>
+            )}
           </Stack>
         </DrawerBody>
       </DrawerContent>
