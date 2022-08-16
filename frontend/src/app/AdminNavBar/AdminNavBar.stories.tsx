@@ -53,3 +53,43 @@ MobileExpanded.args = Expanded.args
 
 export const Tablet = Template.bind({})
 Tablet.parameters = getTabletViewParameters()
+
+export const WhatsNewFeatureNotificationShown = Template.bind({})
+WhatsNewFeatureNotificationShown.parameters = {
+  msw: [
+    getUser({
+      delay: 0,
+      mockUser: {
+        ...MOCK_USER,
+        flags: {},
+      },
+    }),
+  ],
+}
+
+export const WhatsNewFeatureNotificationNotShown = Template.bind({})
+WhatsNewFeatureNotificationNotShown.parameters = {
+  msw: [
+    getUser({
+      delay: 0,
+      mockUser: {
+        ...MOCK_USER,
+        flags: { lastSeenFeatureUpdateDate: new Date() },
+      },
+    }),
+  ],
+}
+
+export const WhatsNewFeatureMobileNotificationShown = Template.bind({})
+WhatsNewFeatureMobileNotificationShown.parameters = {
+  ...Mobile.parameters,
+  msw: [
+    getUser({
+      delay: 0,
+      mockUser: {
+        ...MOCK_USER,
+        flags: {},
+      },
+    }),
+  ],
+}
