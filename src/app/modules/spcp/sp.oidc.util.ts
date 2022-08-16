@@ -1,4 +1,3 @@
-import { JWTVerifyResult } from 'jose'
 import { EC, ECPrivate } from 'jwk-to-pem'
 import promiseRetry from 'promise-retry'
 
@@ -9,13 +8,8 @@ import {
 } from '../../../../shared/utils/nric-validation'
 import { createLoggerWithLabel } from '../../config/logger'
 
-import { InvalidIdTokenError } from './spcp.oidc.client.errors'
-import {
-  CPJWTVerifyResult,
-  CryptoKey,
-  ParsedSub,
-  SigningKey,
-} from './spcp.oidc.client.types'
+import { InvalidIdTokenError } from './sp.oidc.client.errors'
+import { CryptoKey, ParsedSub, SigningKey } from './sp.oidc.client.types'
 
 const logger = createLoggerWithLabel(module)
 /**
@@ -206,16 +200,4 @@ export const isECPrivate = (jwk: unknown): jwk is ECPrivate => {
 
 export const isSigningKey = (key: CryptoKey): key is SigningKey => {
   return !!key.alg && key.use === 'sig'
-}
-
-export const isCPJWTVerifyResult = (
-  jwt: JWTVerifyResult,
-): jwt is CPJWTVerifyResult => {
-  return (
-    typeof jwt === 'object' &&
-    !!jwt &&
-    hasProp(jwt, 'payload') &&
-    hasProp(jwt.payload, 'entityInfo') &&
-    hasProp(jwt.payload.entityInfo, 'CPEntID')
-  )
 }

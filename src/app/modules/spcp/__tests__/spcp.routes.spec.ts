@@ -31,7 +31,7 @@ import {
   MOCK_TARGET,
 } from './spcp.test.constants'
 
-jest.mock('../spcp.oidc.client')
+jest.mock('../sp.oidc.client')
 
 jest.mock('axios')
 const MockAxios = mocked(axios, true)
