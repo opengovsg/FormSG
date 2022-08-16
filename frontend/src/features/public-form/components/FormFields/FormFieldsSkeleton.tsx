@@ -2,8 +2,7 @@ import { Box, Flex, Skeleton, Spacer, Stack } from '@chakra-ui/react'
 
 export const FormFieldsSkeleton = (): JSX.Element => {
   return (
-    <Flex bg="neutral.100" flex={1} justify="center" p="1.5rem">
-      <Spacer />
+    <Flex flex={1} justify="center">
       <Box bg="white" p="2.5rem" w="100%" minW={0} maxW="57rem">
         <Stack spacing="2.25rem">
           <Flex flexDir="column">

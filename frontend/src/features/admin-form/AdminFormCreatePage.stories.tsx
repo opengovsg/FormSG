@@ -11,6 +11,7 @@ import {
 
 import {
   createFormBuilderMocks,
+  getAdminFormSubmissions,
   MOCK_FORM_FIELDS_WITH_MYINFO,
   MOCK_FORM_LOGICS,
 } from '~/mocks/msw/handlers/admin-form'
@@ -44,6 +45,7 @@ const buildMswRoutes = (
       },
       delay,
     ),
+    getAdminFormSubmissions(),
     getUser({
       delay: 0,
       mockUser: { ...MOCK_USER, _id: 'adminFormTestUserId' as UserId },

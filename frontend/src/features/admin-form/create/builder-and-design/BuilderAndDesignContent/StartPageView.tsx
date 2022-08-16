@@ -170,7 +170,7 @@ export const StartPageView = () => {
           title={form?.title}
           showHeader
           loggedInId={
-            form?.authType !== FormAuthType.NIL
+            form && form.authType !== FormAuthType.NIL
               ? PREVIEW_MOCK_UINFIN
               : undefined
           }
@@ -178,14 +178,14 @@ export const StartPageView = () => {
         />
       </Box>
       {startPage?.paragraph ? (
-        <Flex
-          flexDir="column"
-          alignSelf="center"
-          w="100%"
-          px="2.5rem"
-          mt="1.5rem"
-        >
-          <Flex justify="center">
+        <Box>
+          <Flex
+            flexDir="column"
+            align="center"
+            w="100%"
+            px={{ base: 0, md: '1.5rem', lg: '2.5rem' }}
+            mb={{ base: '1.5rem', md: 0 }}
+          >
             <Box
               w="100%"
               minW={0}
@@ -244,7 +244,7 @@ export const StartPageView = () => {
               </Box>
             </Box>
           </Flex>
-        </Flex>
+        </Box>
       ) : null}
     </>
   )

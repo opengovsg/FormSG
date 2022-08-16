@@ -1,4 +1,5 @@
 import { useParams } from 'react-router-dom'
+import { Flex } from '@chakra-ui/react'
 
 import FormEndPage from './components/FormEndPage'
 import FormFields from './components/FormFields'
@@ -16,13 +17,15 @@ export const PublicFormPage = (): JSX.Element => {
   return (
     <PublicFormProvider formId={formId}>
       <FormSectionsProvider>
-        <FormStartPage />
-        <PublicFormWrapper>
-          <FormInstructions />
-          <FormFields />
-          <FormEndPage />
-          <FormFooter />
-        </PublicFormWrapper>
+        <Flex direction="column" minH="100vh">
+          <FormStartPage />
+          <PublicFormWrapper>
+            <FormInstructions />
+            <FormFields />
+            <FormEndPage />
+            <FormFooter />
+          </PublicFormWrapper>
+        </Flex>
       </FormSectionsProvider>
     </PublicFormProvider>
   )

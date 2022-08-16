@@ -1,6 +1,6 @@
-import { useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import { Droppable } from 'react-beautiful-dnd'
-import { Box, Flex, FlexProps, Stack } from '@chakra-ui/react'
+import { Box, Flex, FlexProps, Skeleton, Stack } from '@chakra-ui/react'
 
 import Button from '~components/Button'
 
@@ -18,6 +18,7 @@ import {
 import { useDesignColorTheme } from '../utils/useDesignColorTheme'
 
 import { EmptyFormPlaceholder } from './BuilderAndDesignPlaceholder/EmptyFormPlaceholder'
+import { FormBuilderFieldsSkeleton } from './FormBuilder/FormBuilderFieldsSkeleton'
 import BuilderAndDesignPlaceholder from './BuilderAndDesignPlaceholder'
 import { BuilderFields } from './BuilderFields'
 import { StartPageView } from './StartPageView'
@@ -31,7 +32,7 @@ export const FormBuilder = ({
   placeholderProps,
   ...props
 }: FormBuilderProps): JSX.Element => {
-  const { builderFields } = useBuilderFields()
+  const { builderFields, isLoading } = useBuilderFields()
   const { formLogics } = useAdminFormLogic()
   const { handleBuilderClick } = useCreatePageSidebar()
   const setEditEndPage = useFieldBuilderStore(setToEditEndPageSelector)
@@ -43,6 +44,11 @@ export const FormBuilder = ({
       ),
     [builderFields, formLogics],
   )
+
+  const handleEditEndPageClick = useCallback(() => {
+    setEditEndPage()
+    handleBuilderClick()
+  }, [handleBuilderClick, setEditEndPage])
 
   const bg = useBgColor({ colorTheme: useDesignColorTheme() })
 
@@ -60,69 +66,80 @@ export const FormBuilder = ({
         direction="column"
         w="100%"
         h="fit-content"
-        spacing="1.5rem"
+        spacing={{ base: 0, md: '1.5rem' }}
         bg={bg}
       >
         <StartPageView />
-        <Flex flexDir="column" alignSelf="center" w="100%" px="2.5rem">
+        <Flex
+          flexDir="column"
+          alignSelf="center"
+          w="100%"
+          px={{ base: 0, md: '1.5rem', lg: '2.5rem' }}
+        >
           <Box
             bg="white"
             w="100%"
             maxW="57rem"
             alignSelf="center"
-            px="1.625rem"
-            py="2.5rem"
+            px={{ base: '1.5rem', md: '1.625rem' }}
+            py={{ base: '1.5rem', md: '2.5rem' }}
           >
-            <Droppable droppableId={FIELD_LIST_DROP_ID}>
-              {(provided, snapshot) =>
-                builderFields?.length ? (
-                  <Box
-                    pos="relative"
-                    ref={provided.innerRef}
-                    {...provided.droppableProps}
-                  >
-                    <BuilderFields
-                      fields={builderFields}
-                      visibleFieldIds={visibleFieldIds}
+            {isLoading || !builderFields ? (
+              <FormBuilderFieldsSkeleton />
+            ) : (
+              <Droppable droppableId={FIELD_LIST_DROP_ID}>
+                {(provided, snapshot) =>
+                  builderFields?.length ? (
+                    <Box
+                      pos="relative"
+                      ref={provided.innerRef}
+                      {...provided.droppableProps}
+                    >
+                      <BuilderFields
+                        fields={builderFields}
+                        visibleFieldIds={visibleFieldIds}
+                        isDraggingOver={snapshot.isDraggingOver}
+                      />
+                      {provided.placeholder}
+                      <BuilderAndDesignPlaceholder
+                        placeholderProps={placeholderProps}
+                        isDraggingOver={snapshot.isDraggingOver}
+                      />
+                    </Box>
+                  ) : (
+                    <EmptyFormPlaceholder
+                      ref={provided.innerRef}
+                      {...provided.droppableProps}
                       isDraggingOver={snapshot.isDraggingOver}
+                      onClick={handleBuilderClick}
                     />
-                    {provided.placeholder}
-                    <BuilderAndDesignPlaceholder
-                      placeholderProps={placeholderProps}
-                      isDraggingOver={snapshot.isDraggingOver}
-                    />
-                  </Box>
-                ) : (
-                  <EmptyFormPlaceholder
-                    ref={provided.innerRef}
-                    {...provided.droppableProps}
-                    isDraggingOver={snapshot.isDraggingOver}
-                    onClick={handleBuilderClick}
-                  />
-                )
-              }
-            </Droppable>
+                  )
+                }
+              </Droppable>
+            )}
           </Box>
         </Flex>
-        <Flex justify="center" w="100%" px="2.5rem">
-          <Button
-            _hover={{ bg: 'primary.200' }}
-            py="1.5rem"
-            mb="1.5rem"
-            variant="outline"
-            borderColor="secondary.200"
-            colorScheme="secondary"
-            height="auto"
-            maxW="57rem"
-            width="100%"
-            onClick={() => {
-              setEditEndPage()
-              handleBuilderClick()
-            }}
-            textStyle="subhead-2"
-          >
-            Customise Thank you page
-          </Button>
+        <Flex
+          justify="center"
+          w="100%"
+          pt={{ base: '1rem', md: 0 }}
+          px={{ base: '1rem', md: '1.5rem', lg: '2.5rem' }}
+        >
+          <Skeleton isLoaded={!isLoading} mb="1.5rem" maxW="57rem" width="100%">
+            <Button
+              _hover={{ bg: 'primary.200' }}
+              py="1.5rem"
+              width="100%"
+              variant="outline"
+              borderColor="secondary.200"
+              colorScheme="secondary"
+              height="auto"
+              onClick={handleEditEndPageClick}
+              textStyle="subhead-2"
+            >
+              Customise Thank you page
+            </Button>
+          </Skeleton>
         </Flex>
       </Stack>
     </Flex>
