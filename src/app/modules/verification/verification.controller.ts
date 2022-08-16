@@ -12,7 +12,8 @@ import { setFormTags } from '../datadog/datadog.utils'
 import * as FormService from '../form/form.service'
 import * as MyInfoUtil from '../myinfo/myinfo.util'
 import { SgidService } from '../sgid/sgid.service'
-import { getOidcService } from '../spcp/spcp.oidc.service'
+import { SpOidcService } from '../spcp/sp.oidc.service'
+import { SpcpService } from '../spcp/spcp.service'
 
 import * as VerificationService from './verification.service'
 import { Transaction } from './verification.types'
@@ -225,25 +226,23 @@ export const _handleGenerateOtp: ControllerHandler<
         const { authType } = form
         switch (authType) {
           case FormAuthType.CP: {
-            const oidcService = getOidcService(FormAuthType.CP)
-            return oidcService
-              .extractJwt(req.cookies)
-              .asyncAndThen((jwt) => oidcService.extractJwtPayload(jwt))
+            return SpcpService.extractJwt(req.cookies, authType)
+              .asyncAndThen((jwt) => SpcpService.extractCorppassJwtPayload(jwt))
               .map(() => form)
               .mapErr((error) => {
                 logger.error({
-                  message: 'Failed to verify Corppass JWT with cp oidc client',
+                  message: 'Failed to verify Corppass JWT with auth client',
                   meta: logMeta,
                   error,
                 })
                 return error
               })
           }
-          case FormAuthType.SP: {
-            const oidcService = getOidcService(FormAuthType.SP)
-            return oidcService
-              .extractJwt(req.cookies)
-              .asyncAndThen((jwt) => oidcService.extractJwtPayload(jwt))
+          case FormAuthType.SP:
+            return SpOidcService.extractJwt(req.cookies)
+              .asyncAndThen((jwt) =>
+                SpOidcService.extractSingpassJwtPayload(jwt),
+              )
               .map(() => form)
               .mapErr((error) => {
                 logger.error({
@@ -253,7 +252,6 @@ export const _handleGenerateOtp: ControllerHandler<
                 })
                 return error
               })
-          }
           case FormAuthType.SGID:
             return SgidService.extractSgidJwtPayload(req.cookies.jwtSgid)
               .map(() => form)

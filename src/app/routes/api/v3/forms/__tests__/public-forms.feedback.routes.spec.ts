@@ -19,7 +19,7 @@ import { PublicFormsRouter } from '../public-forms.routes'
 const app = setupApp('/forms', PublicFormsRouter)
 
 // Avoid async refresh calls
-jest.mock('src/app/modules/spcp/spcp.oidc.client.ts')
+jest.mock('src/app/modules/spcp/sp.oidc.client.ts')
 
 /**
  * TODO #3964: Remove 'public-form.feedback.routes' test, and keep 'public-form.submissions.feedback.routes' test

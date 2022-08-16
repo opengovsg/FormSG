@@ -6,23 +6,23 @@ import { omit } from 'lodash'
 import NodeCache from 'node-cache'
 import { BaseClient, Issuer } from 'openid-client'
 
-import * as SpcpOidcBaseClientCacheClass from '../spcp.oidc.client.cache'
-import { SpcpOidcBaseClientCache } from '../spcp.oidc.client.cache'
-import { JwkError } from '../spcp.oidc.client.errors'
+import * as SpOidcClientCacheClass from '../sp.oidc.client.cache'
+import { SpOidcClientCache } from '../sp.oidc.client.cache'
+import { JwkError } from '../sp.oidc.client.errors'
 import {
   CryptoKeys,
   PublicJwks,
   Refresh,
   SecretJwks,
-  SpcpOidcBaseClientCacheConstructorParams,
-} from '../spcp.oidc.client.types'
-import * as SpOidcUtils from '../spcp.oidc.util'
+  SpOidcClientCacheConstructorParams,
+} from '../sp.oidc.client.types'
+import * as SpOidcUtils from '../sp.oidc.util'
 
 jest.mock('openid-client')
 jest.mock('axios')
 
 const TEST_RP_SECRET_JWKS: SecretJwks = JSON.parse(
-  fs.readFileSync('tests/certs/test_sp_rp_secret_jwks.json').toString(),
+  fs.readFileSync('tests/certs/test_rp_secret_jwks.json').toString(),
 )
 const TEST_NDI_PUBLIC_JWKS: PublicJwks = JSON.parse(
   fs.readFileSync('tests/certs/test_ndi_public_jwks.json').toString(),
@@ -36,59 +36,54 @@ const createPublicKeysFromJwks = (jwks: PublicJwks) => {
   }))
 }
 
-const NDI_DISCOVERY_ENDPOINT = 'ndiDiscoveryEndpoint'
-const NDI_JWKS_ENDPOINT = 'ndiJwksEndpoint'
-const RP_CLIENT_ID = 'rpClientId'
-const RP_REDIRECT_URL = 'rpRedirectUrl'
+const SP_OIDC_NDI_DISCOVERY_ENDPOINT = 'spOidcNdiDiscoveryEndpoint'
+const SP_OIDC_NDI_JWKS_ENDPOINT = 'spOidcNdiJwksEndpoint'
+const SP_OIDC_RP_CLIENT_ID = 'spOidcRpClientId'
+const SP_OIDC_RP_REDIRECT_URL = 'spOidcRpRedirectUrl'
 
-describe('SpcpOidcBaseClientCache', () => {
+describe('SpOidcClientCache', () => {
   afterEach(() => {
     jest.clearAllMocks()
     jest.restoreAllMocks()
   })
-  const spcpOidcBaseClientCacheConfig: SpcpOidcBaseClientCacheConstructorParams =
-    {
-      ndiDiscoveryEndpoint: NDI_DISCOVERY_ENDPOINT,
-      ndiJwksEndpoint: NDI_JWKS_ENDPOINT,
-      rpClientId: RP_CLIENT_ID,
-      rpRedirectUrl: RP_REDIRECT_URL,
-      rpSecretJwks: TEST_RP_SECRET_JWKS,
-      options: {
-        useClones: false,
-        checkperiod: 60,
-      },
-    }
+  const spOidcClientCacheConfig: SpOidcClientCacheConstructorParams = {
+    spOidcNdiDiscoveryEndpoint: SP_OIDC_NDI_DISCOVERY_ENDPOINT,
+    spOidcNdiJwksEndpoint: SP_OIDC_NDI_JWKS_ENDPOINT,
+    spOidcRpClientId: SP_OIDC_RP_CLIENT_ID,
+    spOidcRpRedirectUrl: SP_OIDC_RP_REDIRECT_URL,
+    spOidcRpSecretJwks: TEST_RP_SECRET_JWKS,
+    options: {
+      useClones: false,
+      checkperiod: 60,
+    },
+  }
   describe('constructor', () => {
-    it('should correctly call the SpcpOidcBaseClientCache constructor', () => {
+    it('should correctly call the SpOidcClientCache constructor', () => {
       // Arrange
       const constructorSpy = jest
-        .spyOn(SpcpOidcBaseClientCacheClass, 'SpcpOidcBaseClientCache')
-        .mockReturnValueOnce(undefined as unknown as SpcpOidcBaseClientCache)
+        .spyOn(SpOidcClientCacheClass, 'SpOidcClientCache')
+        .mockReturnValueOnce(undefined as unknown as SpOidcClientCache)
 
       // Act
-      const spcpOidcBaseClientCache = new SpcpOidcBaseClientCache(
-        spcpOidcBaseClientCacheConfig,
-      )
+      const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
 
       // Assert
-      expect(spcpOidcBaseClientCache).toBeInstanceOf(SpcpOidcBaseClientCache)
+      expect(spOidcClientCache).toBeInstanceOf(SpOidcClientCache)
       expect(constructorSpy).toHaveBeenCalledOnce()
-      expect(constructorSpy).toBeCalledWith(spcpOidcBaseClientCacheConfig)
+      expect(constructorSpy).toBeCalledWith(spOidcClientCacheConfig)
     })
 
     it('should call refresh() on instantiation', async () => {
       // Arrange
       const refreshSpy = jest
-        .spyOn(SpcpOidcBaseClientCache.prototype, 'refresh')
+        .spyOn(SpOidcClientCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
       // Act
-      const spcpOidcBaseClientCache = new SpcpOidcBaseClientCache(
-        spcpOidcBaseClientCacheConfig,
-      )
+      const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
 
       // Assert
-      expect(spcpOidcBaseClientCache).toBeInstanceOf(SpcpOidcBaseClientCache)
+      expect(spOidcClientCache).toBeInstanceOf(SpOidcClientCache)
       expect(refreshSpy).toHaveBeenCalledOnce()
     })
 
@@ -96,16 +91,14 @@ describe('SpcpOidcBaseClientCache', () => {
       // Arrange
       const onSpy = jest.spyOn(NodeCache.prototype, 'on')
       jest
-        .spyOn(SpcpOidcBaseClientCache.prototype, 'refresh')
+        .spyOn(SpOidcClientCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
       // Act
-      const spcpOidcBaseClientCache = new SpcpOidcBaseClientCache(
-        spcpOidcBaseClientCacheConfig,
-      )
+      const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
 
       // Assert
-      expect(spcpOidcBaseClientCache).toBeInstanceOf(SpcpOidcBaseClientCache)
+      expect(spOidcClientCache).toBeInstanceOf(SpOidcClientCache)
       expect(onSpy).toHaveBeenCalledOnce()
       expect(onSpy).toHaveBeenCalledWith('expired', expect.any(Function))
     })
@@ -115,7 +108,7 @@ describe('SpcpOidcBaseClientCache', () => {
     it('should retrieve and return the keys from the cache and not refresh the cache if key is present', async () => {
       // Arrange
       const refreshSpy = jest
-        .spyOn(SpcpOidcBaseClientCache.prototype, 'refresh')
+        .spyOn(SpOidcClientCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
       const getSpy = jest
@@ -123,10 +116,8 @@ describe('SpcpOidcBaseClientCache', () => {
         .mockReturnValueOnce('keys')
 
       // Act
-      const spcpOidcBaseClientCache = new SpcpOidcBaseClientCache(
-        spcpOidcBaseClientCacheConfig,
-      )
-      const ndiPublicKeys = await spcpOidcBaseClientCache.getNdiPublicKeys()
+      const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
+      const ndiPublicKeys = await spOidcClientCache.getNdiPublicKeys()
 
       // Assert
 
@@ -139,15 +130,13 @@ describe('SpcpOidcBaseClientCache', () => {
     it('should attempt to retrieve the keys from the cache and refresh the cache if key is not present', async () => {
       // Arrange
       const refreshSpy = jest
-        .spyOn(SpcpOidcBaseClientCache.prototype, 'refresh')
+        .spyOn(SpOidcClientCache.prototype, 'refresh')
         .mockResolvedValueOnce({ ndiPublicKeys: 'ok' } as unknown as Refresh)
         .mockResolvedValueOnce({ ndiPublicKeys: 'ok' } as unknown as Refresh)
 
       // Act
-      const spcpOidcBaseClientCache = new SpcpOidcBaseClientCache(
-        spcpOidcBaseClientCacheConfig,
-      )
-      const ndiPublicKeys = await spcpOidcBaseClientCache.getNdiPublicKeys()
+      const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
+      const ndiPublicKeys = await spOidcClientCache.getNdiPublicKeys()
 
       // Assert
       expect(refreshSpy).toHaveBeenCalledTimes(2) // Once on instantiation, once on key retrieval
@@ -157,15 +146,13 @@ describe('SpcpOidcBaseClientCache', () => {
     it('should return a rejected promise if key is not present in cache and refresh() returns a rejected promise', async () => {
       // Arrange
       const refreshSpy = jest
-        .spyOn(SpcpOidcBaseClientCache.prototype, 'refresh')
+        .spyOn(SpOidcClientCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
         .mockRejectedValueOnce(new Error('failed'))
 
       // Act
-      const spcpOidcBaseClientCache = new SpcpOidcBaseClientCache(
-        spcpOidcBaseClientCacheConfig,
-      )
-      const ndiPublicKeysReusult = spcpOidcBaseClientCache.getNdiPublicKeys()
+      const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
+      const ndiPublicKeysReusult = spOidcClientCache.getNdiPublicKeys()
 
       // Assert
 
@@ -176,7 +163,7 @@ describe('SpcpOidcBaseClientCache', () => {
   it('should return a rejected promise if refresh fails to resolve within 10s', async () => {
     // Arrange
     const refreshSpy = jest
-      .spyOn(SpcpOidcBaseClientCache.prototype, 'refresh')
+      .spyOn(SpOidcClientCache.prototype, 'refresh')
       .mockResolvedValueOnce('ok' as unknown as Refresh)
       .mockImplementation(
         () =>
@@ -188,10 +175,8 @@ describe('SpcpOidcBaseClientCache', () => {
     jest.useFakeTimers()
 
     // Act
-    const spcpOidcBaseClientCache = new SpcpOidcBaseClientCache(
-      spcpOidcBaseClientCacheConfig,
-    )
-    const baseClientResult = spcpOidcBaseClientCache.getNdiPublicKeys()
+    const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
+    const baseClientResult = spOidcClientCache.getNdiPublicKeys()
 
     jest.advanceTimersByTime(30000)
     // Assert
@@ -205,7 +190,7 @@ describe('SpcpOidcBaseClientCache', () => {
     it('should retrieve and return the baseClilent from the cache and not refresh the cache if baseClient is present', async () => {
       // Arrange
       const refreshSpy = jest
-        .spyOn(SpcpOidcBaseClientCache.prototype, 'refresh')
+        .spyOn(SpOidcClientCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
       const getSpy = jest
@@ -213,10 +198,8 @@ describe('SpcpOidcBaseClientCache', () => {
         .mockReturnValueOnce('baseClient')
 
       // Act
-      const spcpOidcBaseClientCache = new SpcpOidcBaseClientCache(
-        spcpOidcBaseClientCacheConfig,
-      )
-      const baseClient = await spcpOidcBaseClientCache.getBaseClient()
+      const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
+      const baseClient = await spOidcClientCache.getBaseClient()
 
       // Assert
 
@@ -229,15 +212,13 @@ describe('SpcpOidcBaseClientCache', () => {
     it('should attempt to retrieve the baseClient from the cache and refresh the cache if baseClient is not present', async () => {
       // Arrange
       const refreshSpy = jest
-        .spyOn(SpcpOidcBaseClientCache.prototype, 'refresh')
+        .spyOn(SpOidcClientCache.prototype, 'refresh')
         .mockResolvedValueOnce({ baseClient: 'ok' } as unknown as Refresh)
         .mockResolvedValueOnce({ baseClient: 'ok' } as unknown as Refresh)
 
       // Act
-      const spcpOidcBaseClientCache = new SpcpOidcBaseClientCache(
-        spcpOidcBaseClientCacheConfig,
-      )
-      const baseClient = await spcpOidcBaseClientCache.getBaseClient()
+      const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
+      const baseClient = await spOidcClientCache.getBaseClient()
 
       // Assert
       expect(refreshSpy).toHaveBeenCalledTimes(2) // Once on instantiation, once on key retrieval
@@ -247,15 +228,13 @@ describe('SpcpOidcBaseClientCache', () => {
     it('should return a rejected promise if baseClient is not present in cache and refresh() returns a rejected promise', async () => {
       // Arrange
       const refreshSpy = jest
-        .spyOn(SpcpOidcBaseClientCache.prototype, 'refresh')
+        .spyOn(SpOidcClientCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
         .mockRejectedValueOnce(new Error('failed'))
 
       // Act
-      const spcpOidcBaseClientCache = new SpcpOidcBaseClientCache(
-        spcpOidcBaseClientCacheConfig,
-      )
-      const baseClientResult = spcpOidcBaseClientCache.getBaseClient()
+      const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
+      const baseClientResult = spOidcClientCache.getBaseClient()
 
       // Assert
 
@@ -266,7 +245,7 @@ describe('SpcpOidcBaseClientCache', () => {
     it('should return a rejected promise if refresh fails to resolve within 10s', async () => {
       // Arrange
       const refreshSpy = jest
-        .spyOn(SpcpOidcBaseClientCache.prototype, 'refresh')
+        .spyOn(SpOidcClientCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
         .mockImplementation(
           () =>
@@ -278,10 +257,8 @@ describe('SpcpOidcBaseClientCache', () => {
       jest.useFakeTimers()
 
       // Act
-      const spcpOidcBaseClientCache = new SpcpOidcBaseClientCache(
-        spcpOidcBaseClientCacheConfig,
-      )
-      const baseClientResult = spcpOidcBaseClientCache.getBaseClient()
+      const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
+      const baseClientResult = spOidcClientCache.getBaseClient()
 
       jest.advanceTimersByTime(30000)
       // Assert
@@ -297,17 +274,17 @@ describe('SpcpOidcBaseClientCache', () => {
       // Arrange
 
       jest
-        .spyOn(SpcpOidcBaseClientCache.prototype, 'retrievePublicKeysFromNdi')
+        .spyOn(SpOidcClientCache.prototype, 'retrievePublicKeysFromNdi')
         .mockResolvedValueOnce('keys' as unknown as CryptoKeys)
       jest
-        .spyOn(SpcpOidcBaseClientCache.prototype, 'retrieveBaseClientFromNdi')
+        .spyOn(SpOidcClientCache.prototype, 'retrieveBaseClientFromNdi')
         .mockResolvedValueOnce('baseClient' as unknown as BaseClient)
 
       const retryForeverSpy = jest.spyOn(SpOidcUtils, 'retryPromiseForever')
 
       // Act
 
-      new SpcpOidcBaseClientCache(spcpOidcBaseClientCacheConfig)
+      new SpOidcClientCache(spOidcClientCacheConfig)
 
       //Assert
       expect(retryForeverSpy).toHaveBeenCalledOnce()
@@ -317,10 +294,10 @@ describe('SpcpOidcBaseClientCache', () => {
       // Arrange
 
       jest
-        .spyOn(SpcpOidcBaseClientCache.prototype, 'retrievePublicKeysFromNdi')
+        .spyOn(SpOidcClientCache.prototype, 'retrievePublicKeysFromNdi')
         .mockResolvedValueOnce('keys' as unknown as CryptoKeys)
       jest
-        .spyOn(SpcpOidcBaseClientCache.prototype, 'retrieveBaseClientFromNdi')
+        .spyOn(SpOidcClientCache.prototype, 'retrieveBaseClientFromNdi')
         .mockResolvedValueOnce('baseClient' as unknown as BaseClient)
 
       const setSpy = jest.spyOn(NodeCache.prototype, 'set')
@@ -331,26 +308,22 @@ describe('SpcpOidcBaseClientCache', () => {
       }
 
       // Act
-      const spcpOidcBaseClientCache = new SpcpOidcBaseClientCache(
-        spcpOidcBaseClientCacheConfig,
-      )
+      const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
       await Promise.resolve() // void refresh after instantiation
-      const result = await spcpOidcBaseClientCache.refresh()
+      const result = await spOidcClientCache.refresh()
 
-      const keysTtl = spcpOidcBaseClientCache._cache.getTtl('ndiPublicKeys')
-      const clientTtl = spcpOidcBaseClientCache._cache.getTtl('baseClient')
-      const expiryTtl = spcpOidcBaseClientCache._cache.getTtl('expiry') || 0
+      const keysTtl = spOidcClientCache._cache.getTtl('ndiPublicKeys')
+      const clientTtl = spOidcClientCache._cache.getTtl('baseClient')
+      const expiryTtl = spOidcClientCache._cache.getTtl('expiry') || 0
 
       // Assert
       expect(setSpy).toBeCalledTimes(3)
       expect(setSpy).toHaveBeenCalledWith('ndiPublicKeys', 'keys')
       expect(setSpy).toHaveBeenCalledWith('baseClient', 'baseClient')
       expect(setSpy).toHaveBeenLastCalledWith('expiry', 'expiry', 3600)
-      expect(spcpOidcBaseClientCache._cache.get('ndiPublicKeys')).toBe('keys')
-      expect(spcpOidcBaseClientCache._cache.get('baseClient')).toBe(
-        'baseClient',
-      )
-      expect(spcpOidcBaseClientCache._cache.get('expiry')).toBe('expiry')
+      expect(spOidcClientCache._cache.get('ndiPublicKeys')).toBe('keys')
+      expect(spOidcClientCache._cache.get('baseClient')).toBe('baseClient')
+      expect(spOidcClientCache._cache.get('expiry')).toBe('expiry')
       expect(keysTtl).toBe(0)
       expect(clientTtl).toBe(0)
       expect(Date.now() + 3300 * 1000 - expiryTtl).toBeLessThan(100) // not more than 100ms difference
@@ -366,17 +339,14 @@ describe('SpcpOidcBaseClientCache', () => {
         .mockResolvedValueOnce({ data: TEST_NDI_PUBLIC_JWKS })
 
       const refreshSpy = jest
-        .spyOn(SpcpOidcBaseClientCache.prototype, 'refresh')
+        .spyOn(SpOidcClientCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
       const expectedKeyResult = createPublicKeysFromJwks(TEST_NDI_PUBLIC_JWKS)
 
       // Act
-      const spcpOidcBaseClientCache = new SpcpOidcBaseClientCache(
-        spcpOidcBaseClientCacheConfig,
-      )
-      const keyResult =
-        await spcpOidcBaseClientCache.retrievePublicKeysFromNdi()
+      const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
+      const keyResult = await spOidcClientCache.retrievePublicKeysFromNdi()
 
       // Assert
       expect(axiosSpy).toHaveBeenCalledOnce()
@@ -393,17 +363,14 @@ describe('SpcpOidcBaseClientCache', () => {
         .mockResolvedValueOnce({ data: TEST_NDI_PUBLIC_JWKS })
 
       const refreshSpy = jest
-        .spyOn(SpcpOidcBaseClientCache.prototype, 'refresh')
+        .spyOn(SpOidcClientCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
       const expectedKeyResult = createPublicKeysFromJwks(TEST_NDI_PUBLIC_JWKS)
 
       // Act
-      const spcpOidcBaseClientCache = new SpcpOidcBaseClientCache(
-        spcpOidcBaseClientCacheConfig,
-      )
-      const keyResult =
-        await spcpOidcBaseClientCache.retrievePublicKeysFromNdi()
+      const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
+      const keyResult = await spOidcClientCache.retrievePublicKeysFromNdi()
 
       // Assert
       expect(refreshSpy).toHaveBeenCalledOnce()
@@ -421,15 +388,12 @@ describe('SpcpOidcBaseClientCache', () => {
         .mockRejectedValueOnce(new Error('Failure'))
 
       jest
-        .spyOn(SpcpOidcBaseClientCache.prototype, 'refresh')
+        .spyOn(SpOidcClientCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
       // Act
-      const spcpOidcBaseClientCache = new SpcpOidcBaseClientCache(
-        spcpOidcBaseClientCacheConfig,
-      )
-      const keyResultPromise =
-        spcpOidcBaseClientCache.retrievePublicKeysFromNdi()
+      const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
+      const keyResultPromise = spOidcClientCache.retrievePublicKeysFromNdi()
 
       // Assert
       await expect(keyResultPromise).rejects.toThrowError('Failure')
@@ -445,15 +409,13 @@ describe('SpcpOidcBaseClientCache', () => {
       })
 
       jest
-        .spyOn(SpcpOidcBaseClientCache.prototype, 'refresh')
+        .spyOn(SpOidcClientCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
       // Act
-      const spcpOidcBaseClientCache = new SpcpOidcBaseClientCache(
-        spcpOidcBaseClientCacheConfig,
-      )
+      const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
       const keyResult = async () => {
-        const key = await spcpOidcBaseClientCache.retrievePublicKeysFromNdi()
+        const key = await spOidcClientCache.retrievePublicKeysFromNdi()
         return key
       }
 
@@ -474,15 +436,13 @@ describe('SpcpOidcBaseClientCache', () => {
       })
 
       jest
-        .spyOn(SpcpOidcBaseClientCache.prototype, 'refresh')
+        .spyOn(SpOidcClientCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
       // Act
-      const spcpOidcBaseClientCache = new SpcpOidcBaseClientCache(
-        spcpOidcBaseClientCacheConfig,
-      )
+      const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
       const keyResult = async () => {
-        const key = await spcpOidcBaseClientCache.retrievePublicKeysFromNdi()
+        const key = await spOidcClientCache.retrievePublicKeysFromNdi()
         return key
       }
 
@@ -500,15 +460,13 @@ describe('SpcpOidcBaseClientCache', () => {
       })
 
       jest
-        .spyOn(SpcpOidcBaseClientCache.prototype, 'refresh')
+        .spyOn(SpOidcClientCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
       // Act
-      const spcpOidcBaseClientCache = new SpcpOidcBaseClientCache(
-        spcpOidcBaseClientCacheConfig,
-      )
+      const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
       const keyResult = async () => {
-        const key = await spcpOidcBaseClientCache.retrievePublicKeysFromNdi()
+        const key = await spOidcClientCache.retrievePublicKeysFromNdi()
         return key
       }
 
@@ -525,15 +483,13 @@ describe('SpcpOidcBaseClientCache', () => {
       })
 
       jest
-        .spyOn(SpcpOidcBaseClientCache.prototype, 'refresh')
+        .spyOn(SpOidcClientCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
       // Act
-      const spcpOidcBaseClientCache = new SpcpOidcBaseClientCache(
-        spcpOidcBaseClientCacheConfig,
-      )
+      const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
       const keyResult = async () => {
-        const key = await spcpOidcBaseClientCache.retrievePublicKeysFromNdi()
+        const key = await spOidcClientCache.retrievePublicKeysFromNdi()
         return key
       }
 
@@ -550,15 +506,13 @@ describe('SpcpOidcBaseClientCache', () => {
       })
 
       jest
-        .spyOn(SpcpOidcBaseClientCache.prototype, 'refresh')
+        .spyOn(SpOidcClientCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
       // Act
-      const spcpOidcBaseClientCache = new SpcpOidcBaseClientCache(
-        spcpOidcBaseClientCacheConfig,
-      )
+      const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
       const keyResult = async () => {
-        const key = await spcpOidcBaseClientCache.retrievePublicKeysFromNdi()
+        const key = await spOidcClientCache.retrievePublicKeysFromNdi()
         return key
       }
 
@@ -575,15 +529,13 @@ describe('SpcpOidcBaseClientCache', () => {
       })
 
       jest
-        .spyOn(SpcpOidcBaseClientCache.prototype, 'refresh')
+        .spyOn(SpOidcClientCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
       // Act
-      const spcpOidcBaseClientCache = new SpcpOidcBaseClientCache(
-        spcpOidcBaseClientCacheConfig,
-      )
+      const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
       const keyResult = async () => {
-        const key = await spcpOidcBaseClientCache.retrievePublicKeysFromNdi()
+        const key = await spOidcClientCache.retrievePublicKeysFromNdi()
         return key
       }
 
@@ -600,15 +552,13 @@ describe('SpcpOidcBaseClientCache', () => {
       })
 
       jest
-        .spyOn(SpcpOidcBaseClientCache.prototype, 'refresh')
+        .spyOn(SpOidcClientCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
       // Act
-      const spcpOidcBaseClientCache = new SpcpOidcBaseClientCache(
-        spcpOidcBaseClientCacheConfig,
-      )
+      const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
       const keyResult = async () => {
-        const key = await spcpOidcBaseClientCache.retrievePublicKeysFromNdi()
+        const key = await spOidcClientCache.retrievePublicKeysFromNdi()
         return key
       }
 
@@ -626,15 +576,12 @@ describe('SpcpOidcBaseClientCache', () => {
       })
 
       jest
-        .spyOn(SpcpOidcBaseClientCache.prototype, 'refresh')
+        .spyOn(SpOidcClientCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
       // Act
-      const spcpOidcBaseClientCache = new SpcpOidcBaseClientCache(
-        spcpOidcBaseClientCacheConfig,
-      )
-      const keyResult =
-        await spcpOidcBaseClientCache.retrievePublicKeysFromNdi()
+      const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
+      const keyResult = await spOidcClientCache.retrievePublicKeysFromNdi()
 
       // Assert
       expect(keyResult.length).toEqual(2)
@@ -664,24 +611,21 @@ describe('SpcpOidcBaseClientCache', () => {
       const expectedClientResult = mockBaseClient
 
       jest
-        .spyOn(SpcpOidcBaseClientCache.prototype, 'refresh')
+        .spyOn(SpOidcClientCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
       // Act
-      const spcpOidcBaseClientCache = new SpcpOidcBaseClientCache(
-        spcpOidcBaseClientCacheConfig,
-      )
-      const clientResult =
-        await spcpOidcBaseClientCache.retrieveBaseClientFromNdi()
+      const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
+      const clientResult = await spOidcClientCache.retrieveBaseClientFromNdi()
 
       // Assert
       expect(discoverySpy).toHaveBeenCalledOnce()
       expect(clientSpy).toHaveBeenCalledOnce()
       expect(clientSpy).toHaveBeenCalledWith(
         expect.objectContaining({
-          client_id: RP_CLIENT_ID,
+          client_id: SP_OIDC_RP_CLIENT_ID,
           token_endpoint_auth_method: 'private_key_jwt',
-          redirect_uris: [RP_REDIRECT_URL],
+          redirect_uris: [SP_OIDC_RP_REDIRECT_URL],
         }),
         TEST_RP_SECRET_JWKS,
       )
@@ -711,24 +655,21 @@ describe('SpcpOidcBaseClientCache', () => {
       const expectedClientResult = mockBaseClient
 
       jest
-        .spyOn(SpcpOidcBaseClientCache.prototype, 'refresh')
+        .spyOn(SpOidcClientCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
       // Act
-      const spcpOidcBaseClientCache = new SpcpOidcBaseClientCache(
-        spcpOidcBaseClientCacheConfig,
-      )
-      const clientResult =
-        await spcpOidcBaseClientCache.retrieveBaseClientFromNdi()
+      const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
+      const clientResult = await spOidcClientCache.retrieveBaseClientFromNdi()
 
       // Assert
       expect(discoverySpy).toHaveBeenCalledTimes(3)
       expect(clientSpy).toHaveBeenCalledOnce()
       expect(clientSpy).toHaveBeenCalledWith(
         expect.objectContaining({
-          client_id: RP_CLIENT_ID,
+          client_id: SP_OIDC_RP_CLIENT_ID,
           token_endpoint_auth_method: 'private_key_jwt',
-          redirect_uris: [RP_REDIRECT_URL],
+          redirect_uris: [SP_OIDC_RP_REDIRECT_URL],
         }),
         TEST_RP_SECRET_JWKS,
       )
@@ -744,15 +685,13 @@ describe('SpcpOidcBaseClientCache', () => {
         .mockRejectedValueOnce(new Error('Failed'))
 
       jest
-        .spyOn(SpcpOidcBaseClientCache.prototype, 'refresh')
+        .spyOn(SpOidcClientCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
       // Act
-      const spcpOidcBaseClientCache = new SpcpOidcBaseClientCache(
-        spcpOidcBaseClientCacheConfig,
-      )
+      const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
       const clientResult = async () => {
-        const result = await spcpOidcBaseClientCache.retrieveBaseClientFromNdi()
+        const result = await spOidcClientCache.retrieveBaseClientFromNdi()
         return result
       }
 
@@ -765,15 +704,15 @@ describe('SpcpOidcBaseClientCache', () => {
     it('should call both retrievePublicKeysFromNdi and retrieveBaseClientFromNdi and return the correct values', async () => {
       // Arrange
       const retrieveKeysSpy = jest
-        .spyOn(SpcpOidcBaseClientCache.prototype, 'retrievePublicKeysFromNdi')
+        .spyOn(SpOidcClientCache.prototype, 'retrievePublicKeysFromNdi')
         .mockResolvedValueOnce('keys' as unknown as CryptoKeys)
 
       const retrieveBaseClientSpy = jest
-        .spyOn(SpcpOidcBaseClientCache.prototype, 'retrieveBaseClientFromNdi')
+        .spyOn(SpOidcClientCache.prototype, 'retrieveBaseClientFromNdi')
         .mockResolvedValueOnce('baseClient' as unknown as BaseClient)
 
       const refreshSpy = jest
-        .spyOn(SpcpOidcBaseClientCache.prototype, 'refresh')
+        .spyOn(SpOidcClientCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh) // On instantiation
 
       const expectedResult = {
@@ -782,11 +721,9 @@ describe('SpcpOidcBaseClientCache', () => {
       }
 
       // Act
-      const spcpOidcBaseClientCache = new SpcpOidcBaseClientCache(
-        spcpOidcBaseClientCacheConfig,
-      )
+      const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
       await Promise.resolve() // void refresh after instantiation
-      const result = await spcpOidcBaseClientCache.refresh()
+      const result = await spOidcClientCache.refresh()
 
       // Assert
       expect(retrieveKeysSpy).toHaveBeenCalledOnce()
@@ -798,19 +735,19 @@ describe('SpcpOidcBaseClientCache', () => {
     it('should call createRefreshPromise and return the created promise if _refreshPromise does not exist', async () => {
       // Arrange
       const retrieveKeysSpy = jest
-        .spyOn(SpcpOidcBaseClientCache.prototype, 'retrievePublicKeysFromNdi')
+        .spyOn(SpOidcClientCache.prototype, 'retrievePublicKeysFromNdi')
         .mockResolvedValueOnce('keys' as unknown as CryptoKeys)
 
       const retrieveBaseClientSpy = jest
-        .spyOn(SpcpOidcBaseClientCache.prototype, 'retrieveBaseClientFromNdi')
+        .spyOn(SpOidcClientCache.prototype, 'retrieveBaseClientFromNdi')
         .mockResolvedValueOnce('baseClient' as unknown as BaseClient)
 
       const refreshSpy = jest
-        .spyOn(SpcpOidcBaseClientCache.prototype, 'refresh')
+        .spyOn(SpOidcClientCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh) // On instantiation
 
       const createRefreshSpy = jest.spyOn(
-        SpcpOidcBaseClientCache.prototype,
+        SpOidcClientCache.prototype,
         'createRefreshPromise',
       )
 
@@ -820,11 +757,9 @@ describe('SpcpOidcBaseClientCache', () => {
       }
 
       // Act
-      const spcpOidcBaseClientCache = new SpcpOidcBaseClientCache(
-        spcpOidcBaseClientCacheConfig,
-      )
+      const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
       await Promise.resolve() // void refresh after instantiation
-      const result = await spcpOidcBaseClientCache.refresh()
+      const result = await spOidcClientCache.refresh()
 
       // Assert
       expect(retrieveKeysSpy).toHaveBeenCalledOnce()
@@ -837,44 +772,40 @@ describe('SpcpOidcBaseClientCache', () => {
     it('should clean up refreshPromise after createRefreshPromise resolves', async () => {
       // Arrange
       const refreshSpy = jest
-        .spyOn(SpcpOidcBaseClientCache.prototype, 'refresh')
+        .spyOn(SpOidcClientCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh) // On instantiation
 
       const createRefreshSpy = jest
-        .spyOn(SpcpOidcBaseClientCache.prototype, 'createRefreshPromise')
+        .spyOn(SpOidcClientCache.prototype, 'createRefreshPromise')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
       // Act
-      const spcpOidcBaseClientCache = new SpcpOidcBaseClientCache(
-        spcpOidcBaseClientCacheConfig,
-      )
+      const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
       await Promise.resolve() // void refresh after instantiation
-      await spcpOidcBaseClientCache.refresh()
+      await spOidcClientCache.refresh()
 
       // Assert
       expect(refreshSpy).toHaveBeenCalledTimes(2) // once in instantiation, once in act
       expect(createRefreshSpy).toHaveBeenCalledOnce()
-      expect(spcpOidcBaseClientCache._refreshPromise).toBeUndefined()
+      expect(spOidcClientCache._refreshPromise).toBeUndefined()
     })
 
     it('should clean up refreshPromise after createRefreshPromise rejects', async () => {
       // Arrange
       const refreshSpy = jest
-        .spyOn(SpcpOidcBaseClientCache.prototype, 'refresh')
+        .spyOn(SpOidcClientCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh) // On instantiation
 
       const createRefreshSpy = jest
-        .spyOn(SpcpOidcBaseClientCache.prototype, 'createRefreshPromise')
+        .spyOn(SpOidcClientCache.prototype, 'createRefreshPromise')
         .mockRejectedValueOnce(new Error('failed'))
 
       // Act
-      const spcpOidcBaseClientCache = new SpcpOidcBaseClientCache(
-        spcpOidcBaseClientCacheConfig,
-      )
+      const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
       await Promise.resolve() // void refresh after instantiation
 
       const attemptRefresh = async () => {
-        const result = await spcpOidcBaseClientCache.refresh()
+        const result = await spOidcClientCache.refresh()
         return result
       }
 
@@ -882,28 +813,26 @@ describe('SpcpOidcBaseClientCache', () => {
       await expect(attemptRefresh()).rejects.toThrowError('failed')
       expect(refreshSpy).toHaveBeenCalledTimes(2) // once in instantiation, once in act
       expect(createRefreshSpy).toHaveBeenCalledOnce()
-      expect(spcpOidcBaseClientCache._refreshPromise).toBeUndefined()
+      expect(spOidcClientCache._refreshPromise).toBeUndefined()
     })
 
     it('should return the promise stored in _refreshPromise if it exists', async () => {
       // Arrange
       const refreshSpy = jest
-        .spyOn(SpcpOidcBaseClientCache.prototype, 'refresh')
+        .spyOn(SpOidcClientCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh) // On instantiation
 
-      const spcpOidcBaseClientCache = new SpcpOidcBaseClientCache(
-        spcpOidcBaseClientCacheConfig,
-      )
+      const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
 
       const existingPromise = new Promise((resolve) =>
         resolve('ok'),
       ) as unknown as Promise<Refresh>
 
-      spcpOidcBaseClientCache._refreshPromise = existingPromise
+      spOidcClientCache._refreshPromise = existingPromise
 
       // Act
 
-      const result = await spcpOidcBaseClientCache.refresh()
+      const result = await spOidcClientCache.refresh()
       await Promise.resolve() // void refresh after instantiation
 
       // Assert
@@ -914,40 +843,36 @@ describe('SpcpOidcBaseClientCache', () => {
     it('should set the cache correctly after calling retrievePublicKeysFromNdi and retrieveBaseClientFromNdi', async () => {
       // Arrange
       jest
-        .spyOn(SpcpOidcBaseClientCache.prototype, 'retrievePublicKeysFromNdi')
+        .spyOn(SpOidcClientCache.prototype, 'retrievePublicKeysFromNdi')
         .mockResolvedValueOnce('keys' as unknown as CryptoKeys)
 
       jest
-        .spyOn(SpcpOidcBaseClientCache.prototype, 'retrieveBaseClientFromNdi')
+        .spyOn(SpOidcClientCache.prototype, 'retrieveBaseClientFromNdi')
         .mockResolvedValueOnce('baseClient' as unknown as BaseClient)
 
       jest
-        .spyOn(SpcpOidcBaseClientCache.prototype, 'refresh')
+        .spyOn(SpOidcClientCache.prototype, 'refresh')
         .mockResolvedValueOnce('ok' as unknown as Refresh)
 
       const setSpy = jest.spyOn(NodeCache.prototype, 'set')
 
       // Act
-      const spcpOidcBaseClientCache = new SpcpOidcBaseClientCache(
-        spcpOidcBaseClientCacheConfig,
-      )
+      const spOidcClientCache = new SpOidcClientCache(spOidcClientCacheConfig)
       await Promise.resolve() // void refresh after instantiation
-      await spcpOidcBaseClientCache.refresh()
+      await spOidcClientCache.refresh()
 
-      const keysTtl = spcpOidcBaseClientCache._cache.getTtl('ndiPublicKeys')
-      const clientTtl = spcpOidcBaseClientCache._cache.getTtl('baseClient')
-      const expiryTtl = spcpOidcBaseClientCache._cache.getTtl('expiry') || 0
+      const keysTtl = spOidcClientCache._cache.getTtl('ndiPublicKeys')
+      const clientTtl = spOidcClientCache._cache.getTtl('baseClient')
+      const expiryTtl = spOidcClientCache._cache.getTtl('expiry') || 0
 
       // Assert
       expect(setSpy).toBeCalledTimes(3)
       expect(setSpy).toHaveBeenCalledWith('ndiPublicKeys', 'keys')
       expect(setSpy).toHaveBeenCalledWith('baseClient', 'baseClient')
       expect(setSpy).toHaveBeenLastCalledWith('expiry', 'expiry', 3600)
-      expect(spcpOidcBaseClientCache._cache.get('ndiPublicKeys')).toBe('keys')
-      expect(spcpOidcBaseClientCache._cache.get('baseClient')).toBe(
-        'baseClient',
-      )
-      expect(spcpOidcBaseClientCache._cache.get('expiry')).toBe('expiry')
+      expect(spOidcClientCache._cache.get('ndiPublicKeys')).toBe('keys')
+      expect(spOidcClientCache._cache.get('baseClient')).toBe('baseClient')
+      expect(spOidcClientCache._cache.get('expiry')).toBe('expiry')
       expect(keysTtl).toBe(0)
       expect(clientTtl).toBe(0)
       expect(Date.now() + 3300 * 1000 - expiryTtl).toBeLessThan(100) // not more than 100ms difference

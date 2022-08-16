@@ -36,11 +36,12 @@ import {
 import { SgidInvalidJwtError, SgidVerifyJwtError } from '../../sgid/sgid.errors'
 import { SgidService } from '../../sgid/sgid.service'
 import { validateSgidForm } from '../../sgid/sgid.util'
+import { SpOidcService } from '../../spcp/sp.oidc.service'
 import { InvalidJwtError, VerifyJwtError } from '../../spcp/spcp.errors'
-import { getOidcService } from '../../spcp/spcp.oidc.service'
 import { SpcpService } from '../../spcp/spcp.service'
 import {
-  getRedirectTargetSpcpOidc,
+  getRedirectTarget,
+  getRedirectTargetSpOidc,
   validateSpcpForm,
 } from '../../spcp/spcp.util'
 import { AuthTypeMismatchError, PrivateFormError } from '../form.errors'
@@ -273,8 +274,7 @@ export const handleGetPublicForm: ControllerHandler<
     case FormAuthType.NIL:
       return res.json({ form: publicForm, isIntranetUser })
     case FormAuthType.SP:
-      return getOidcService(FormAuthType.SP)
-        .extractJwtPayloadFromRequest(req.cookies)
+      return SpOidcService.extractJwtPayloadFromRequest(req.cookies)
         .map((spcpSession) => {
           return res.json({
             form: publicForm,
@@ -297,8 +297,7 @@ export const handleGetPublicForm: ControllerHandler<
           return res.json({ form: publicForm, isIntranetUser })
         })
     case FormAuthType.CP:
-      return getOidcService(FormAuthType.CP)
-        .extractJwtPayloadFromRequest(req.cookies)
+      return SpcpService.extractJwtPayloadFromRequest(authType, req.cookies)
         .map((spcpSession) => {
           return res.json({
             form: publicForm,
@@ -455,29 +454,26 @@ export const _handleFormAuthRedirect: ControllerHandler<
           )
         case FormAuthType.SP: {
           return validateSpcpForm(form).asyncAndThen((form) => {
-            const target = getRedirectTargetSpcpOidc(
+            const target = getRedirectTargetSpOidc(
               formId,
-              FormAuthType.SP,
               isPersistentLogin,
               encodedQuery,
             )
-            return getOidcService(FormAuthType.SP).createRedirectUrl(
-              target,
-              form.esrvcId,
-            )
+            return SpOidcService.createRedirectUrl(target, form.esrvcId)
           })
         }
         case FormAuthType.CP: {
           // NOTE: Persistent login is only set (and relevant) when the authType is SP.
           // If authType is not SP, assume that it was set erroneously and default it to false
-          return validateSpcpForm(form).asyncAndThen((form) => {
-            const target = getRedirectTargetSpcpOidc(
+          return validateSpcpForm(form).andThen((form) => {
+            const target = getRedirectTarget(
               formId,
-              FormAuthType.CP,
+              form.authType,
               isPersistentLogin,
               encodedQuery,
             )
-            return getOidcService(FormAuthType.CP).createRedirectUrl(
+            return SpcpService.createRedirectUrl(
+              form.authType,
               target,
               form.esrvcId,
             )

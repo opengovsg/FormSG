@@ -1,3 +1,4 @@
+import SPCPAuthClient from '@opengovsg/spcp-auth-client'
 import { ObjectId } from 'bson-ext'
 import { errAsync } from 'neverthrow'
 import supertest, { Session } from 'supertest-session'
@@ -12,7 +13,7 @@ import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import { FormAuthType, FormStatus } from '../../../../../../shared/types'
 import * as AuthService from '../../../auth/auth.service'
-import { CpOidcClient, SpOidcClient } from '../../../spcp/spcp.oidc.client'
+import { SpOidcClient } from '../../../spcp/sp.oidc.client'
 import { PublicFormRouter } from '../public-form.routes'
 
 jest.mock('@opengovsg/myinfo-gov-client', () => ({
@@ -28,10 +29,10 @@ jest.mock('@opengovsg/myinfo-gov-client', () => ({
     .MyInfoAttribute,
 }))
 
-jest.mock('../../../spcp/spcp.oidc.client')
+jest.mock('../../../spcp/sp.oidc.client')
 
 jest.mock('@opengovsg/spcp-auth-client')
-const MockCpOidcClient = mocked(CpOidcClient, true)
+const MockSpcpAuthClient = mocked(SPCPAuthClient, true)
 
 const app = setupApp('/', PublicFormRouter, {
   setupWithAuth: false,
@@ -40,7 +41,7 @@ const app = setupApp('/', PublicFormRouter, {
 describe('public-form.routes', () => {
   let request: Session
 
-  const mockCpClient = mocked(MockCpOidcClient.mock.instances[0], true)
+  const mockCpClient = mocked(MockSpcpAuthClient.mock.instances[1], true)
 
   beforeAll(async () => await dbHandler.connect())
   beforeEach(async () => {
@@ -126,13 +127,15 @@ describe('public-form.routes', () => {
     })
     it('should return 200 with public form when form has FormAuthType.CP and valid formId', async () => {
       // Arrange
-      mockCpClient.verifyJwt.mockResolvedValueOnce({
-        userName: MOCK_COOKIE_PAYLOAD.userName,
-        userInfo: 'MyCorpPassUEN',
-        iat: 100000000,
-        exp: 1000000000,
-        rememberMe: false,
-      })
+      mockCpClient.verifyJWT.mockImplementationOnce((_jwt, cb) =>
+        cb(null, {
+          userName: MOCK_COOKIE_PAYLOAD.userName,
+          userInfo: 'MyCorpPassUEN',
+          iat: 100000000,
+          exp: 1000000000,
+          rememberMe: false,
+        }),
+      )
       const { form } = await dbHandler.insertEmailForm({
         formOptions: {
           esrvcId: 'mockEsrvcId',
