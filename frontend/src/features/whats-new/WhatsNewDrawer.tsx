@@ -65,8 +65,8 @@ export const WhatsNewDrawer = ({ isOpen, onClose }: WhatsNewDrawerProps) => {
           </Stack>
           <Link mt="2rem" mb="5.75rem" onClick={handleOnViewAllUpdatesClick}>
             {isListExtended
-              ? UNEXTENDED_LIST_LINK_TEXT
-              : EXTENDED_LIST_LINK_TEXT}
+              ? EXTENDED_LIST_LINK_TEXT
+              : UNEXTENDED_LIST_LINK_TEXT}
           </Link>
         </DrawerBody>
       </DrawerContent>
