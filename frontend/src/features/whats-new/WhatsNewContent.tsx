@@ -1,9 +1,11 @@
+import { useMemo } from 'react'
 import ReactMarkdown from 'react-markdown'
 import { Box, Image, Text } from '@chakra-ui/react'
 import { format } from 'date-fns'
 import gfm from 'remark-gfm'
 
 import { useMdComponents } from '~hooks/useMdComponents'
+import { LottieAnimation } from '~templates/LottieAnimation'
 
 import { FeatureUpdateImage } from './FeatureUpdateList'
 
@@ -34,6 +36,24 @@ export const WhatsNewContent = ({
       },
     },
   })
+
+  const renderedImage = useMemo(() => {
+    if (!image) return
+
+    if (image.animationData) {
+      return (
+        <LottieAnimation
+          title={image.alt}
+          aria-label={image.alt}
+          animationData={image.animationData}
+        />
+      )
+    }
+    return (
+      <Image width="100%" src={image.url} title={image.alt} alt={image.alt} />
+    )
+  }, [image])
+
   const formattedDate = format(date, DATE_FORMAT)
   return (
     <Box>
@@ -46,9 +66,7 @@ export const WhatsNewContent = ({
       <ReactMarkdown components={mdComponents} remarkPlugins={[gfm]}>
         {description}
       </ReactMarkdown>
-      {image && (
-        <Image width="100%" src={image.url} mt="2rem" alt={image.alt} />
-      )}
+      <Box mt="2rem">{renderedImage}</Box>
     </Box>
   )
 }
