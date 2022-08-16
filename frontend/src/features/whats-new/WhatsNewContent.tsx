@@ -66,7 +66,9 @@ export const WhatsNewContent = ({
       <ReactMarkdown components={mdComponents} remarkPlugins={[gfm]}>
         {description}
       </ReactMarkdown>
-      <Box mt="2rem">{renderedImage}</Box>
+      <Box mt="2rem" role="presentation">
+        {renderedImage}
+      </Box>
     </Box>
   )
 }
