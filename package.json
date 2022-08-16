@@ -137,7 +137,7 @@
     "ngclipboard": "^2.0.0",
     "nocache": "^3.0.4",
     "node-cache": "^5.1.2",
-    "nodemailer": "^6.7.7",
+    "nodemailer": "^6.7.8",
     "openid-client": "^5.1.8",
     "opossum": "^6.4.0",
     "p-queue": "^6.6.2",
