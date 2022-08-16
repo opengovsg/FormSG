@@ -74,7 +74,9 @@ export const useMdComponents = ({
 
         return <Link {...props} isExternal={isExternal} {...linkStyles} />
       },
-      p: ({ node, ...props }) => <Text {...props} {...textStyles} />,
+      p: ({ node, ...props }) => (
+        <Text whiteSpace="pre-wrap" {...props} {...textStyles} />
+      ),
       ...overrides,
     }),
     [linkStyles, overrides, textStyles, listStyles],
