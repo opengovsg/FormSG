@@ -177,7 +177,7 @@ describe('user.controller', () => {
       agency: 'mockAgency',
       email: 'mockEmail',
       _id: VALID_SESSION_USER_ID,
-    } as IPopulatedUser
+    } as unknown as IPopulatedUser
 
     const MOCK_REQ = expressHandler.mockRequest({
       body: {
@@ -432,12 +432,16 @@ describe('user.controller', () => {
     })
   })
 
-  describe('handleUpdateUserLastSeenFeatureUpdateDate', () => {
+  describe('handleUpdateUserLastSeenFeatureUpdateVersion', () => {
+    const MOCK_UPDATE_VERSION = 10
     const MOCK_REQ = expressHandler.mockRequest({
       session: {
         user: {
           _id: VALID_SESSION_USER_ID,
         },
+      },
+      body: {
+        version: MOCK_UPDATE_VERSION,
       },
     })
 
@@ -451,12 +455,12 @@ describe('user.controller', () => {
       }
 
       // Mock all UserService calls to pass.
-      MockUserService.updateUserLastSeenFeatureUpdateDate.mockReturnValueOnce(
+      MockUserService.updateUserLastSeenFeatureUpdateVersion.mockReturnValueOnce(
         okAsync(mockPopulatedUser as IPopulatedUser),
       )
 
       // Act
-      await UserController.handleUpdateUserLastSeenFeatureUpdateDate(
+      await UserController._handleUpdateUserLastSeenFeatureUpdateVersion(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -465,8 +469,8 @@ describe('user.controller', () => {
       // Assert
       // Expect services to be called with correct arguments.
       expect(
-        MockUserService.updateUserLastSeenFeatureUpdateDate,
-      ).toBeCalledWith(MOCK_REQ.session.user?._id)
+        MockUserService.updateUserLastSeenFeatureUpdateVersion,
+      ).toBeCalledWith(MOCK_REQ.session.user?._id, MOCK_UPDATE_VERSION)
       expect(mockRes.status).toBeCalledWith(200)
       expect(mockRes.json).toBeCalledWith(mockPopulatedUser)
     })
@@ -475,18 +479,21 @@ describe('user.controller', () => {
       // Arrange
       const MOCK_REQ_WITH_NO_USER_ID_IN_SESSION = expressHandler.mockRequest({
         session: {},
+        body: {
+          version: MOCK_UPDATE_VERSION,
+        },
       })
       const mockRes = expressHandler.mockResponse()
 
       // Act
-      await UserController.handleUpdateUserLastSeenFeatureUpdateDate(
+      await UserController._handleUpdateUserLastSeenFeatureUpdateVersion(
         MOCK_REQ_WITH_NO_USER_ID_IN_SESSION,
         mockRes,
         jest.fn(),
       )
 
       expect(
-        MockUserService.updateUserLastSeenFeatureUpdateDate,
+        MockUserService.updateUserLastSeenFeatureUpdateVersion,
       ).not.toHaveBeenCalled()
       expect(mockRes.status).toBeCalledWith(StatusCodes.UNAUTHORIZED)
       expect(mockRes.json).toBeCalledWith(UNAUTHORIZED_USER_MESSAGE)
@@ -498,20 +505,20 @@ describe('user.controller', () => {
       const expectedError = new MissingUserError('mock missing user error')
 
       // Mock all UserService calls to pass.
-      MockUserService.updateUserLastSeenFeatureUpdateDate.mockReturnValueOnce(
+      MockUserService.updateUserLastSeenFeatureUpdateVersion.mockReturnValueOnce(
         errAsync(expectedError),
       )
 
       // Act
-      await UserController.handleUpdateUserLastSeenFeatureUpdateDate(
+      await UserController._handleUpdateUserLastSeenFeatureUpdateVersion(
         MOCK_REQ,
         mockRes,
         jest.fn(),
       )
 
       expect(
-        MockUserService.updateUserLastSeenFeatureUpdateDate,
-      ).toBeCalledWith(MOCK_REQ.session.user?._id)
+        MockUserService.updateUserLastSeenFeatureUpdateVersion,
+      ).toBeCalledWith(MOCK_REQ.session.user?._id, MOCK_UPDATE_VERSION)
       expect(mockRes.status).toBeCalledWith(StatusCodes.UNPROCESSABLE_ENTITY)
       expect(mockRes.json).toBeCalledWith(expectedError.message)
     })
@@ -522,20 +529,20 @@ describe('user.controller', () => {
       const expectedError = new DatabaseError('mock error')
 
       // Mock all UserService calls to pass.
-      MockUserService.updateUserLastSeenFeatureUpdateDate.mockReturnValueOnce(
+      MockUserService.updateUserLastSeenFeatureUpdateVersion.mockReturnValueOnce(
         errAsync(expectedError),
       )
 
       // Act
-      await UserController.handleUpdateUserLastSeenFeatureUpdateDate(
+      await UserController._handleUpdateUserLastSeenFeatureUpdateVersion(
         MOCK_REQ,
         mockRes,
         jest.fn(),
       )
 
       expect(
-        MockUserService.updateUserLastSeenFeatureUpdateDate,
-      ).toBeCalledWith(MOCK_REQ.session.user?._id)
+        MockUserService.updateUserLastSeenFeatureUpdateVersion,
+      ).toBeCalledWith(MOCK_REQ.session.user?._id, MOCK_UPDATE_VERSION)
       expect(mockRes.status).toBeCalledWith(StatusCodes.INTERNAL_SERVER_ERROR)
       expect(mockRes.json).toBeCalledWith(expectedError.message)
     })

@@ -25,18 +25,17 @@ const UNEXTENDED_LIST_LINK_TEXT = 'View all updates'
 const EXTENDED_LIST_LINK_TEXT = 'Show less'
 const DEFAULT_FEATURE_UPDATE_COUNT = 10
 
+const showExtendListButton =
+  FEATURE_UPDATE_LIST.features.length > DEFAULT_FEATURE_UPDATE_COUNT
+
 export const WhatsNewDrawer = ({ isOpen, onClose }: WhatsNewDrawerProps) => {
   const [isListExtended, setIsListExtended] = useState<boolean>(false)
 
   const listOfFeatureUpdatesShown: FeatureUpdate[] = useMemo(() => {
     return isListExtended
-      ? FEATURE_UPDATE_LIST
-      : FEATURE_UPDATE_LIST.slice(0, DEFAULT_FEATURE_UPDATE_COUNT)
+      ? FEATURE_UPDATE_LIST.features
+      : FEATURE_UPDATE_LIST.features.slice(0, DEFAULT_FEATURE_UPDATE_COUNT)
   }, [isListExtended])
-
-  const showExtendListButton = useMemo(() => {
-    return FEATURE_UPDATE_LIST.length > DEFAULT_FEATURE_UPDATE_COUNT
-  }, [])
 
   const handleOnViewAllUpdatesClick = () => {
     setIsListExtended(!isListExtended)

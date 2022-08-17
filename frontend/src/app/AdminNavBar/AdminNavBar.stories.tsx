@@ -10,6 +10,8 @@ import {
   ViewedEmergencyContactDecorator,
 } from '~utils/storybook'
 
+import { FEATURE_UPDATE_LIST } from '~features/whats-new/FeatureUpdateList'
+
 import { AdminNavBar, AdminNavBarProps } from './AdminNavBar'
 
 export default {
@@ -74,7 +76,7 @@ WhatsNewFeatureNotificationNotShown.parameters = {
       delay: 0,
       mockUser: {
         ...MOCK_USER,
-        flags: { lastSeenFeatureUpdateDate: new Date() },
+        flags: { lastSeenFeatureUpdateVersion: FEATURE_UPDATE_LIST.version },
       },
     }),
   ],

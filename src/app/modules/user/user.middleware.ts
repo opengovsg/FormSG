@@ -25,3 +25,9 @@ export const validateContactOtpVerificationParams = celebrate({
     contact: Joi.string().required(),
   }),
 })
+
+export const validateUpdateUserLastSeenFeatureUpdateVersion = celebrate({
+  [Segments.BODY]: Joi.object({
+    version: Joi.number().required(),
+  }),
+})

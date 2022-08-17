@@ -1,6 +1,5 @@
 import { ObjectId } from 'bson-ext'
 import { pick } from 'lodash'
-import MockDate from 'mockdate'
 import mongoose from 'mongoose'
 import { errAsync, okAsync } from 'neverthrow'
 import supertest, { Session } from 'supertest-session'
@@ -22,9 +21,6 @@ import * as UserService from '../../../../../modules/user/user.service'
 import UserRouter from '../user.routes'
 
 const UserModel = getUserModel(mongoose)
-
-const MOCKED_DATE = new Date()
-MockDate.set(MOCKED_DATE)
 
 const app = setupApp('/user', UserRouter, {
   setupWithAuth: true,
@@ -520,12 +516,17 @@ describe('user.routes', () => {
   })
 
   describe('POST /user/flag/new-features-last-seen', () => {
+    const MOCK_UPDATE_VERSION = 3
     it('should return 200 if update is successful', async () => {
       // Arrange
       const session = await createAuthedSession(defaultUser.email, request)
 
       // Act
-      const response = await session.post('/user/flag/new-features-last-seen')
+      const response = await session
+        .post('/user/flag/new-features-last-seen')
+        .send({
+          version: MOCK_UPDATE_VERSION,
+        })
 
       // Assert
       expect(response.status).toEqual(200)
@@ -535,13 +536,31 @@ describe('user.routes', () => {
         // Dynamic date strings to be returned.
         updatedAt: expect.any(String),
         lastAccessed: expect.any(String),
-        flags: { lastSeenFeatureUpdateDate: MOCKED_DATE.toISOString() },
+        flags: { lastSeenFeatureUpdateVersion: MOCK_UPDATE_VERSION },
       })
+    })
+
+    it('should return 400 if body.version is not provided', async () => {
+      // Arrange
+      const session = await createAuthedSession(defaultUser.email, request)
+
+      // Act
+      const response = await session
+        // No body sent.
+        .post('/user/flag/new-features-last-seen')
+
+      // Assert
+      expect(response.status).toEqual(400)
+      expect(response.body).toEqual(
+        buildCelebrateError({ body: { key: 'version' } }),
+      )
     })
 
     it('should return 401 if user is not logged in', async () => {
       // Act
-      const response = await request.post('/user/flag/new-features-last-seen')
+      const response = await request
+        .post('/user/flag/new-features-last-seen')
+        .send({ version: MOCK_UPDATE_VERSION })
 
       // Assert
       expect(response.status).toEqual(401)
@@ -555,7 +574,9 @@ describe('user.routes', () => {
       await dbHandler.clearCollection(UserModel.collection.name)
 
       // Act
-      const response = await session.post('/user/flag/new-features-last-seen')
+      const response = await session
+        .post('/user/flag/new-features-last-seen')
+        .send({ version: MOCK_UPDATE_VERSION })
 
       // Assert
       expect(response.status).toEqual(422)
@@ -570,11 +591,13 @@ describe('user.routes', () => {
       const mockErrorString = 'Database goes boom'
       // Mock database error from service call.
       const retrieveUserSpy = jest
-        .spyOn(UserService, 'updateUserLastSeenFeatureUpdateDate')
+        .spyOn(UserService, 'updateUserLastSeenFeatureUpdateVersion')
         .mockReturnValueOnce(errAsync(new DatabaseError(mockErrorString)))
 
       // Act
-      const response = await session.post('/user/flag/new-features-last-seen')
+      const response = await session
+        .post('/user/flag/new-features-last-seen')
+        .send({ version: MOCK_UPDATE_VERSION })
 
       // Assert
       expect(retrieveUserSpy).toBeCalled()

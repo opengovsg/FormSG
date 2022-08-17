@@ -311,25 +311,29 @@ describe('user.service', () => {
     })
   })
 
-  describe('updateUserLastSeenFeatureUpdateDate', () => {
+  describe('updateUserLastSeenFeatureUpdateVersion', () => {
+    const MOCK_FEATURE_VERSION = 10
+
     it('should update user successfully', async () => {
       const user = await dbHandler.insertUser({
         agencyId: defaultAgency._id,
-        mailName: 'updateUserLastSeenFeatureUpdateDate',
+        mailName: 'updateUserLastSeenFeatureUpdateVersion',
       })
-      const MOCK_DATE = new Date()
 
-      expect(user.flags?.lastSeenFeatureUpdateDate).toBeUndefined()
+      expect(user.flags?.lastSeenFeatureUpdateVersion).toBeUndefined()
 
       const actualResult =
-        await UserService.updateUserLastSeenFeatureUpdateDate(user._id)
+        await UserService.updateUserLastSeenFeatureUpdateVersion(
+          user._id,
+          MOCK_FEATURE_VERSION,
+        )
 
       const updatedUser = await UserService.getPopulatedUserById(user._id)
       expect(actualResult.isOk()).toEqual(true)
       expect(
         updatedUser._unsafeUnwrap()?.toObject().flags
-          ?.lastSeenFeatureUpdateDate,
-      ).toEqual(MOCK_DATE)
+          ?.lastSeenFeatureUpdateVersion,
+      ).toEqual(MOCK_FEATURE_VERSION)
     })
 
     it('should return MissingUserError if userId is invalid', async () => {
@@ -338,7 +342,10 @@ describe('user.service', () => {
 
       // Act
       const actualResult =
-        await UserService.updateUserLastSeenFeatureUpdateDate(invalidUserId)
+        await UserService.updateUserLastSeenFeatureUpdateVersion(
+          invalidUserId,
+          MOCK_FEATURE_VERSION,
+        )
       expect(actualResult.isErr()).toEqual(true)
       expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(MissingUserError)
     })
@@ -360,13 +367,13 @@ describe('user.service', () => {
       expect(actualResult._unsafeUnwrap()?.toObject()).toEqual(expected)
     })
 
-    it('should return populated user with last seen feature update date successfully', async () => {
+    it('should return populated user with last seen feature update version successfully', async () => {
       const mockUserIdWithLastSeenFeatureUpdate = new ObjectID()
       const { agency, user } = await dbHandler.insertFormCollectionReqs({
         userId: mockUserIdWithLastSeenFeatureUpdate,
         mailName: 'userWithLastSeenFeatureUpdate',
         mailDomain: ALLOWED_DOMAIN,
-        flags: { lastSeenFeatureUpdateDate: MOCKED_DATE },
+        flags: { lastSeenFeatureUpdateVersion: 3 },
       })
 
       const defaultUserWithLastSeenFeatureUpdate: IUserSchema = user

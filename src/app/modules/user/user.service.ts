@@ -170,10 +170,10 @@ export const updateUserContact = (
  * @returns err(MissingUserError) if user document cannot be found
  * @returns err(DatabaseError) if any error occurs whilst querying the database
  */
-export const updateUserLastSeenFeatureUpdateDate = (
+export const updateUserLastSeenFeatureUpdateVersion = (
   userId: IUserSchema['_id'],
+  version: number,
 ): ResultAsync<IPopulatedUser, MissingUserError | DatabaseError> => {
-  const currentDate = new Date()
   // Retrieve user from database and
   // update user's last seen feature update date attribute.
   return ResultAsync.fromPromise(
@@ -181,7 +181,7 @@ export const updateUserLastSeenFeatureUpdateDate = (
       userId,
       {
         $set: {
-          flags: { lastSeenFeatureUpdateDate: currentDate },
+          flags: { lastSeenFeatureUpdateVersion: version },
         },
       },
       { new: true },
@@ -194,8 +194,8 @@ export const updateUserLastSeenFeatureUpdateDate = (
     (error) => {
       logger.error({
         message:
-          'Database error when updating user last seen feature update date',
-        meta: { action: 'updateUserLastSeenFeatureUpdateDate', userId },
+          'Database error when updating user last seen feature update version',
+        meta: { action: 'updateUserLastSeenFeatureUpdateVersion', userId },
         error,
       })
 

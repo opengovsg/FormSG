@@ -74,12 +74,12 @@ const insertAgency = async ({
   shortName?: string
 } = {}): Promise<AgencyDocument> => {
   const Agency = getAgencyModel(mongoose)
-  const agency = await Agency.create({
+  const agency = (await Agency.create({
     shortName,
     fullName: `Government Testing Agency (${shortName})`,
     emailDomain: [mailDomain],
     logo: `/invalid-path/test-${shortName}.jpg`,
-  })
+  })) as AgencyDocument
 
   return agency
 }
@@ -121,7 +121,7 @@ const insertFormCollectionReqs = async ({
   mailName?: string
   mailDomain?: string
   shortName?: string
-  flags?: { lastSeenFeatureUpdateDate: Date }
+  flags?: { lastSeenFeatureUpdateVersion: number }
 } = {}): Promise<{
   agency: AgencyDocument
   user: IUserSchema
