@@ -62,14 +62,12 @@ export const EndPageView = ({ ...props }: FlexProps): JSX.Element => {
           w="100%"
         >
           <EndPageBlock
-            formTitle={form?.title ?? 'Form Title'}
             endPage={endPage ?? { title: '', buttonText: '' }}
             submissionData={{
               id: form?._id ?? 'Submission ID',
               timeInEpochMs: Date.now(),
             }}
             colorTheme={colorTheme ?? FormColorTheme.Blue}
-            isExpandable={false}
           />
         </Box>
       </Stack>
