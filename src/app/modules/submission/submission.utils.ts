@@ -52,8 +52,6 @@ const encryptFormFieldModeFilter = <T extends FormField>(
 ) => {
   // To filter for autoreply-able fields.
   return responses.filter((response) => {
-    if ([BasicField.Mobile, BasicField.Email].includes(response.fieldType))
-      return false
     switch (response.fieldType) {
       case BasicField.Mobile:
         return response.isVerifiable
