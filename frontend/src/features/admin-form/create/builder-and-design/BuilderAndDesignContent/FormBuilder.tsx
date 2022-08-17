@@ -2,8 +2,8 @@ import { useCallback, useMemo } from 'react'
 import { Droppable } from 'react-beautiful-dnd'
 import { Box, Flex, FlexProps, Skeleton, Stack } from '@chakra-ui/react'
 
-import { Banner } from '~components/Banner'
 import Button from '~components/Button'
+import InlineMessage from '~components/InlineMessage'
 
 import { useAdminFormSettings } from '~features/admin-form/settings/queries'
 import { getVisibleFieldIds } from '~features/logic/utils'
@@ -58,16 +58,23 @@ export const FormBuilder = ({
   return (
     <Box w="100%">
       {settings?.webhook?.url ? (
-        <Banner showCloseButton={false}>
+        <InlineMessage
+          mx={{ base: 0, md: '2rem' }}
+          mt={{ base: 0, md: '2rem' }}
+          mb={{ base: 0, md: '-1rem' }}
+        >
           Webhooks are enabled on this form. Please ensure the webhook server is
           able to handle any field changes.
-        </Banner>
+        </InlineMessage>
       ) : null}
       <Flex
         mb={0}
         flex={1}
         bg="neutral.200"
-        p={{ base: 0, md: '2rem' }}
+        // Using margin for margin collapse when there are inline messages above.
+        mt={{ base: 0, md: '2rem' }}
+        pb={{ base: 0, md: '2rem' }}
+        px={{ base: 0, md: '2rem' }}
         justify="center"
         overflow="auto"
         {...props}
