@@ -132,7 +132,7 @@ export const EditAttachment = ({ field }: EditAttachmentProps): JSX.Element => {
       validate: (val) => {
         return (
           maxTotalSizeMb - otherAttachmentsSize >= Number(val) ||
-          `You have exceeded your form's attachment size limit of ${maxTotalSizeMb} MB. Kindly reduce the size of your attachments.
+          `You have exceeded your form's attachment size limit of ${maxTotalSizeMb} MB
 `
         )
       },
