@@ -1,16 +1,20 @@
-import React, { useEffect, useMemo } from 'react'
+import React, { useCallback, useEffect, useMemo } from 'react'
 import { BiCommentDetail } from 'react-icons/bi'
+import { GoPrimitiveDot } from 'react-icons/go'
 import { Link as ReactLink } from 'react-router-dom'
 import {
   As,
+  Box,
   chakra,
   Flex,
   FlexProps,
   HStack,
+  Icon,
   useDisclosure,
 } from '@chakra-ui/react'
 
 import { BxsHelpCircle } from '~assets/icons/BxsHelpCircle'
+import { BxsRocket } from '~assets/icons/BxsRocket'
 import { ReactComponent as BrandMarkSvg } from '~assets/svgs/brand/brand-mark-colour.svg'
 import { FEATURE_REQUEST, FORM_GUIDE } from '~constants/links'
 import {
@@ -20,12 +24,16 @@ import {
 import { useIsMobile } from '~hooks/useIsMobile'
 import { useLocalStorage } from '~hooks/useLocalStorage'
 import { logout } from '~services/AuthService'
+import Button from '~components/Button'
 import IconButton from '~components/IconButton'
 import Link from '~components/Link'
 import { AvatarMenu, AvatarMenuDivider } from '~templates/AvatarMenu/AvatarMenu'
 
 import { EmergencyContactModal } from '~features/user/emergency-contact/EmergencyContactModal'
+import { useUserMutations } from '~features/user/mutations'
 import { useUser } from '~features/user/queries'
+import { getShowLatestFeatureUpdateNotification } from '~features/whats-new/utils/utils'
+import { WhatsNewDrawer } from '~features/whats-new/WhatsNewDrawer'
 
 import Menu from '../../components/Menu'
 
@@ -49,6 +57,8 @@ const NAV_LINKS: AdminNavBarLinkProps[] = [
     MobileIcon: BxsHelpCircle,
   },
 ]
+
+const WHATS_NEW_LABEL = "What's new"
 
 const AdminNavBarLink = ({ MobileIcon, href, label }: AdminNavBarLinkProps) => {
   const isMobile = useIsMobile()
@@ -78,13 +88,72 @@ const AdminNavBarLink = ({ MobileIcon, href, label }: AdminNavBarLinkProps) => {
   )
 }
 
+interface WhatsNewNavBarTabProps {
+  onClick: () => void
+  shouldShowNotiifcation: boolean
+}
+
+const WhatsNewNavBarTab = ({
+  onClick,
+  shouldShowNotiifcation,
+}: WhatsNewNavBarTabProps) => {
+  const isMobile = useIsMobile()
+
+  if (isMobile) {
+    return (
+      <Box position="relative">
+        <IconButton
+          variant="clear"
+          aria-label={WHATS_NEW_LABEL}
+          icon={<BxsRocket fontSize="1.25rem" color="primary.500" />}
+          onClick={onClick}
+        />
+        {shouldShowNotiifcation && (
+          <Icon
+            as={GoPrimitiveDot}
+            color="danger.500"
+            position="absolute"
+            ml="-15px"
+          />
+        )}
+      </Box>
+    )
+  }
+
+  return (
+    <Box position="relative">
+      <Button
+        w="fit-content"
+        variant="link"
+        color="secondary.500"
+        onClick={onClick}
+        aria-label={WHATS_NEW_LABEL}
+        fontWeight="500"
+      >
+        {WHATS_NEW_LABEL}
+      </Button>
+      {shouldShowNotiifcation && (
+        <Icon
+          as={GoPrimitiveDot}
+          color="danger.500"
+          position="absolute"
+          ml="-5px"
+        />
+      )}
+    </Box>
+  )
+}
+
 export interface AdminNavBarProps {
   /* This prop is only for testing to show expanded menu state */
   isMenuOpen?: boolean
 }
 
 export const AdminNavBar = ({ isMenuOpen }: AdminNavBarProps): JSX.Element => {
-  const { user } = useUser()
+  const { user, isLoading: isUserLoading } = useUser()
+  const { updateUserLastSeenFeatureUpdateDateMutation } = useUserMutations()
+
+  const whatsNewFeatureDrawerDisclosure = useDisclosure()
 
   const ROLLOUT_ANNOUNCEMENT_KEY = useMemo(
     () => ROLLOUT_ANNOUNCEMENT_KEY_PREFIX + user?._id,
@@ -116,6 +185,19 @@ export const AdminNavBar = ({ isMenuOpen }: AdminNavBarProps): JSX.Element => {
     },
   })
 
+  const shouldShowFeatureUpdateNotification = useMemo(() => {
+    if (isUserLoading || !user) return false
+    return getShowLatestFeatureUpdateNotification(user)
+  }, [isUserLoading, user])
+
+  const onWhatsNewDrawerOpen = useCallback(() => {
+    whatsNewFeatureDrawerDisclosure.onOpen()
+    updateUserLastSeenFeatureUpdateDateMutation.mutate()
+  }, [
+    updateUserLastSeenFeatureUpdateDateMutation,
+    whatsNewFeatureDrawerDisclosure,
+  ])
+
   // Emergency contact modal appears after the rollout announcement modal
   useEffect(() => {
     if (!hasSeenContactModal && user && !user?.contact && hasSeenAnnouncement) {
@@ -143,6 +225,10 @@ export const AdminNavBar = ({ isMenuOpen }: AdminNavBarProps): JSX.Element => {
           {NAV_LINKS.map((link, index) => (
             <AdminNavBarLink key={index} {...link} />
           ))}
+          <WhatsNewNavBarTab
+            onClick={onWhatsNewDrawerOpen}
+            shouldShowNotiifcation={shouldShowFeatureUpdateNotification}
+          />
           <AvatarMenu
             name={user?.email}
             menuUsername={user?.email}
@@ -160,6 +246,10 @@ export const AdminNavBar = ({ isMenuOpen }: AdminNavBarProps): JSX.Element => {
           </AvatarMenu>
         </HStack>
       </AdminNavBar.Container>
+      <WhatsNewDrawer
+        isOpen={whatsNewFeatureDrawerDisclosure.isOpen}
+        onClose={whatsNewFeatureDrawerDisclosure.onClose}
+      />
       <EmergencyContactModal
         onClose={onContactModalClose}
         isOpen={isContactModalOpen}

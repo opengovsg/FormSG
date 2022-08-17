@@ -17,11 +17,7 @@ import { useLocalStorage } from '~hooks/useLocalStorage'
 import Pagination from '~components/Pagination'
 
 import { RolloutAnnouncementModal } from '~features/rollout-announcement/RolloutAnnouncementModal'
-import { useUserMutations } from '~features/user/mutations'
 import { useUser } from '~features/user/queries'
-import { FEATURE_UPDATE_LIST } from '~features/whats-new/FeatureUpdateList'
-import { getShowLatestFeatureUpdateNotification } from '~features/whats-new/utils/utils'
-import { WhatsNewDrawer } from '~features/whats-new/WhatsNewDrawer'
 
 // TODO #4279: Remove after React rollout is complete
 import { AdminSwitchEnvMessage } from './components/AdminSwitchEnvMessage'
@@ -45,7 +41,6 @@ const useWorkspaceForms = () => {
   const [isManipulating, setIsManipulating] = useState(false)
 
   const createFormModalDisclosure = useDisclosure()
-  const whatsNewFeatureDrawerDisclosure = useDisclosure()
 
   const topRef = useRef<HTMLDivElement>(null)
 
@@ -104,7 +99,6 @@ const useWorkspaceForms = () => {
     setSortOrder,
     topRef,
     createFormModalDisclosure,
-    whatsNewFeatureDrawerDisclosure,
   }
 }
 
@@ -117,10 +111,8 @@ export const WorkspacePage = (): JSX.Element => {
     setPageNumber,
     topRef,
     createFormModalDisclosure,
-    whatsNewFeatureDrawerDisclosure,
   } = useWorkspaceForms()
   const { user, isLoading: isUserLoading } = useUser()
-  const { updateLastSeenFeatureVersionMutation } = useUserMutations()
 
   const ROLLOUT_ANNOUNCEMENT_KEY = useMemo(
     () => ROLLOUT_ANNOUNCEMENT_KEY_PREFIX + user?._id,
@@ -134,40 +126,12 @@ export const WorkspacePage = (): JSX.Element => {
     [isUserLoading, hasSeenAnnouncement],
   )
 
-  const shouldShowFeatureUpdateNotification = useMemo(() => {
-    if (isUserLoading || !user) return false
-    return getShowLatestFeatureUpdateNotification(user)
-  }, [isUserLoading, user])
-
-  const handleWhatsNewDrawerOpen = useCallback(() => {
-    whatsNewFeatureDrawerDisclosure.onOpen()
-
-    // Update user last seen version if needed.
-    if (isUserLoading || !user) return
-    // Update version if current user version is not set or is less than the latest version.
-    if (
-      user.flags?.lastSeenFeatureUpdateVersion === undefined ||
-      user.flags?.lastSeenFeatureUpdateVersion < FEATURE_UPDATE_LIST.version
-    ) {
-      updateLastSeenFeatureVersionMutation.mutate(FEATURE_UPDATE_LIST.version)
-    }
-  }, [
-    isUserLoading,
-    updateLastSeenFeatureVersionMutation,
-    user,
-    whatsNewFeatureDrawerDisclosure,
-  ])
-
   return (
     <>
       <AdminNavBar />
       <CreateFormModal
         isOpen={createFormModalDisclosure.isOpen}
         onClose={createFormModalDisclosure.onClose}
-      />
-      <WhatsNewDrawer
-        isOpen={whatsNewFeatureDrawerDisclosure.isOpen}
-        onClose={whatsNewFeatureDrawerDisclosure.onClose}
       />
       {totalFormCount === 0 ? (
         <EmptyWorkspace
@@ -196,8 +160,6 @@ export const WorkspacePage = (): JSX.Element => {
               isLoading={isLoading}
               totalFormCount={totalFormCount}
               handleOpenCreateFormModal={createFormModalDisclosure.onOpen}
-              handleOpenWhatsNewDrawer={handleWhatsNewDrawerOpen}
-              isWhatsNewButtonSolid={shouldShowFeatureUpdateNotification}
             />
           </Container>
           <Box gridArea="main">

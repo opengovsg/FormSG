@@ -25,19 +25,22 @@ export const WhatsNewContent = ({
   const mdComponents = useMdComponents({
     styles: {
       text: {
-        color: 'secondary.700',
+        color: 'secondary.500',
         textStyle: 'body-1',
       },
       list: {
-        color: 'secondary.700',
+        color: 'secondary.500',
+        marginInlineStart: '1.25em',
       },
     },
   })
   const formattedDate = format(date, DATE_FORMAT)
   return (
-    <Box paddingX="2.5rem" paddingY="1.25">
-      <Text textStyle="caption-1">{formattedDate}</Text>
-      <Text textStyle="h4" mb="0.5rem" mt="1rem">
+    <Box>
+      <Text textStyle="caption-1" color="secondary.400">
+        {formattedDate}
+      </Text>
+      <Text as="h4" textStyle="h4" mb="0.5rem" mt="1rem" color="secondary.700">
         {title}
       </Text>
       <ReactMarkdown components={mdComponents} remarkPlugins={[gfm]}>
