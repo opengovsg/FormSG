@@ -32,6 +32,7 @@ import { AvatarMenu, AvatarMenuDivider } from '~templates/AvatarMenu/AvatarMenu'
 import { EmergencyContactModal } from '~features/user/emergency-contact/EmergencyContactModal'
 import { useUserMutations } from '~features/user/mutations'
 import { useUser } from '~features/user/queries'
+import { FEATURE_UPDATE_LIST } from '~features/whats-new/FeatureUpdateList'
 import { getShowLatestFeatureUpdateNotification } from '~features/whats-new/utils/utils'
 import { WhatsNewDrawer } from '~features/whats-new/WhatsNewDrawer'
 
@@ -151,7 +152,7 @@ export interface AdminNavBarProps {
 
 export const AdminNavBar = ({ isMenuOpen }: AdminNavBarProps): JSX.Element => {
   const { user, isLoading: isUserLoading } = useUser()
-  const { updateUserLastSeenFeatureUpdateDateMutation } = useUserMutations()
+  const { updateLastSeenFeatureVersionMutation } = useUserMutations()
 
   const whatsNewFeatureDrawerDisclosure = useDisclosure()
 
@@ -191,10 +192,21 @@ export const AdminNavBar = ({ isMenuOpen }: AdminNavBarProps): JSX.Element => {
   }, [isUserLoading, user])
 
   const onWhatsNewDrawerOpen = useCallback(() => {
+    if (isUserLoading || !user) return
+    // Update version if current user version is not set or is less than the latest version.
+    if (
+      user.flags?.lastSeenFeatureUpdateVersion === undefined ||
+      user.flags?.lastSeenFeatureUpdateVersion < FEATURE_UPDATE_LIST.version
+    ) {
+      updateLastSeenFeatureVersionMutation.mutateAsync(
+        FEATURE_UPDATE_LIST.version,
+      )
+    }
     whatsNewFeatureDrawerDisclosure.onOpen()
-    updateUserLastSeenFeatureUpdateDateMutation.mutate()
   }, [
-    updateUserLastSeenFeatureUpdateDateMutation,
+    isUserLoading,
+    updateLastSeenFeatureVersionMutation,
+    user,
     whatsNewFeatureDrawerDisclosure,
   ])
 
