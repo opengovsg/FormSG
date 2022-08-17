@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 import {
   DeepPartial,
   UnpackNestedValue,
@@ -6,6 +6,7 @@ import {
   UseFormReturn,
   useWatch,
 } from 'react-hook-form'
+import { useNavigate } from 'react-router-dom'
 import { useDebounce } from 'react-use'
 import { cloneDeep } from 'lodash'
 
@@ -20,6 +21,8 @@ import { useCreateFormField } from '~features/admin-form/create/builder-and-desi
 import { useEditFormField } from '~features/admin-form/create/builder-and-design/mutations/useEditFormField'
 import {
   FieldBuilderState,
+  isDirtySelector,
+  setIsDirtySelector,
   setToInactiveSelector,
   stateDataSelector,
   updateCreateStateSelector,
@@ -65,18 +68,25 @@ export const useEditFieldForm = <FormShape, FieldShape extends FormField>({
   FormShape,
   FieldShape
 >): UseEditFieldFormReturn<FormShape> => {
-  const { stateData, setToInactive, updateEditState, updateCreateState } =
-    useFieldBuilderStore(
-      useCallback(
-        (state) => ({
-          stateData: stateDataSelector(state),
-          setToInactive: setToInactiveSelector(state),
-          updateEditState: updateEditStateSelector(state),
-          updateCreateState: updateCreateStateSelector(state),
-        }),
-        [],
-      ),
-    )
+  const {
+    stateData,
+    setToInactive,
+    updateEditState,
+    updateCreateState,
+    setIsDirty,
+  } = useFieldBuilderStore(
+    useCallback(
+      (state) => ({
+        stateData: stateDataSelector(state),
+        setToInactive: setToInactiveSelector(state),
+        updateEditState: updateEditStateSelector(state),
+        updateCreateState: updateCreateStateSelector(state),
+        isDirty: isDirtySelector(state),
+        setIsDirty: setIsDirtySelector(state),
+      }),
+      [],
+    ),
+  )
 
   const { editFieldMutation } = useEditFormField()
   const { createFieldMutation } = useCreateFormField()
@@ -93,6 +103,16 @@ export const useEditFieldForm = <FormShape, FieldShape extends FormField>({
   const editForm = useForm<FormShape>({
     defaultValues,
   })
+
+  const { isDirty } = editForm.formState
+  // Update dirty state of builder so confirmation modal can be shown
+  useEffect(() => {
+    setIsDirty(isDirty)
+
+    return () => {
+      setIsDirty(false)
+    }
+  }, [isDirty, setIsDirty])
 
   const watchedInputs = useWatch({
     control: editForm.control,

@@ -63,6 +63,7 @@ import {
 } from '../../useDesignStore'
 import {
   FieldBuilderState,
+  isDirtySelector,
   setToInactiveSelector,
   stateDataSelector,
   updateEditStateSelector,
@@ -87,16 +88,18 @@ export const FieldRowContainer = ({
 }: FieldRowContainerProps): JSX.Element => {
   const isMobile = useIsMobile()
   const numFormFieldMutations = useIsMutating(adminFormKeys.base)
-  const { stateData, setToInactive, updateEditState } = useFieldBuilderStore(
-    useCallback(
-      (state) => ({
-        stateData: stateDataSelector(state),
-        setToInactive: setToInactiveSelector(state),
-        updateEditState: updateEditStateSelector(state),
-      }),
-      [],
-    ),
-  )
+  const { stateData, setToInactive, updateEditState, isDirty } =
+    useFieldBuilderStore(
+      useCallback(
+        (state) => ({
+          stateData: stateDataSelector(state),
+          setToInactive: setToInactiveSelector(state),
+          updateEditState: updateEditStateSelector(state),
+          isDirty: isDirtySelector(state),
+        }),
+        [],
+      ),
+    )
 
   const setDesignState = useDesignStore(setStateSelector)
 
@@ -156,6 +159,7 @@ export const FieldRowContainer = ({
   }, [isActive])
 
   const handleFieldClick = useCallback(() => {
+    if (isDirty) return
     if (!isActive) {
       updateEditState(field)
       setDesignState(DesignState.Inactive)
@@ -166,6 +170,7 @@ export const FieldRowContainer = ({
       }
     }
   }, [
+    isDirty,
     isActive,
     updateEditState,
     field,
