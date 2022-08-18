@@ -18,6 +18,7 @@ import {
   Flex,
   Grid,
   GridItem,
+  useBreakpointValue,
   useDisclosure,
 } from '@chakra-ui/react'
 
@@ -67,6 +68,12 @@ export const AdminFormNavbar = ({
   const { ref, onMouseDown } = useDraggable<HTMLDivElement>()
   const { isOpen, onClose, onOpen } = useDisclosure()
   const { pathname } = useLocation()
+
+  const tabResponsiveVariant = useBreakpointValue({
+    base: 'line-dark',
+    xs: 'line-dark',
+    lg: 'line-light',
+  })
 
   const checkTabActive = useCallback(
     (to: string) => {
@@ -137,7 +144,18 @@ export const AdminFormNavbar = ({
         </Box>
         <AdminFormNavbarDetails formInfo={formInfo} />
       </GridItem>
-      <NavigationTabList ref={ref} onMouseDown={onMouseDown}>
+      <NavigationTabList
+        variant={tabResponsiveVariant}
+        ref={ref}
+        onMouseDown={onMouseDown}
+        pt={{ base: '0.625rem', lg: 0 }}
+        px={{ base: '1.25rem', lg: '1rem' }}
+        w={{ base: '100vw', lg: 'initial' }}
+        gridArea="tabs"
+        borderBottom="none"
+        justifySelf={{ base: 'flex-start', lg: 'center' }}
+        alignSelf="center"
+      >
         <NavigationTab
           hidden={viewOnly}
           isDisabled={!formInfo}
