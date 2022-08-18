@@ -81,8 +81,9 @@ const variantLineLight: PartsStyleFunction<typeof parts> = (props) => {
         color: 'primary.500',
       },
       _disabled: {
+        color: 'primary.300',
         _hover: {
-          color: 'secondary.400',
+          color: 'primary.300',
         },
       },
       _selected: {
@@ -116,8 +117,9 @@ const variantLineDark: PartsStyleFunction<typeof parts> = (props) => {
         color: 'white',
       },
       _disabled: {
+        color: 'neutral.500',
         _hover: {
-          color: 'neutral.400',
+          color: 'neutral.500',
         },
       },
       _focusVisible: {
