@@ -95,12 +95,6 @@ export const AdminFormNavbar = ({
     [],
   )
 
-  const ADMINFORM_ROUTES = [
-    ADMINFORM_BUILD_SUBROUTE,
-    ADMINFORM_SETTINGS_SUBROUTE,
-    ADMINFORM_RESULTS_SUBROUTE,
-  ]
-
   return (
     <Grid
       w="100vw"
@@ -159,24 +153,24 @@ export const AdminFormNavbar = ({
         <NavigationTab
           hidden={viewOnly}
           isDisabled={!formInfo}
-          to={ADMINFORM_ROUTES[0]}
-          isActive={checkTabActive(ADMINFORM_ROUTES[0])}
+          to={ADMINFORM_BUILD_SUBROUTE}
+          isActive={checkTabActive(ADMINFORM_BUILD_SUBROUTE)}
         >
           Create
         </NavigationTab>
         <NavigationTab
           hidden={viewOnly}
           isDisabled={!formInfo}
-          to={ADMINFORM_ROUTES[1]}
-          isActive={checkTabActive(ADMINFORM_ROUTES[1])}
+          to={ADMINFORM_SETTINGS_SUBROUTE}
+          isActive={checkTabActive(ADMINFORM_SETTINGS_SUBROUTE)}
         >
           Settings
         </NavigationTab>
         <NavigationTab
           hidden={viewOnly}
           isDisabled={!formInfo}
-          to={ADMINFORM_ROUTES[2]}
-          isActive={checkTabActive(ADMINFORM_ROUTES[2])}
+          to={ADMINFORM_RESULTS_SUBROUTE}
+          isActive={checkTabActive(ADMINFORM_RESULTS_SUBROUTE)}
         >
           Results
         </NavigationTab>

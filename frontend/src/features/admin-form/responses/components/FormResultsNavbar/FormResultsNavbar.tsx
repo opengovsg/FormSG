@@ -10,8 +10,6 @@ import {
 import { useDraggable } from '~hooks/useDraggable'
 import { NavigationTab, NavigationTabList } from '~templates/NavigationTabs'
 
-const RESULTS_ROUTES = [RESULTS_RESPONSES_SUBROUTE, RESULTS_FEEDBACK_SUBROUTE]
-
 export const FormResultsNavbar = (): JSX.Element => {
   const { ref, onMouseDown } = useDraggable<HTMLDivElement>()
 
@@ -48,14 +46,14 @@ export const FormResultsNavbar = (): JSX.Element => {
         justifySelf="flex-start"
       >
         <NavigationTab
-          to={RESULTS_ROUTES[0]}
-          isActive={checkTabActive(RESULTS_ROUTES[0])}
+          to={RESULTS_RESPONSES_SUBROUTE}
+          isActive={checkTabActive(RESULTS_RESPONSES_SUBROUTE)}
         >
           Responses
         </NavigationTab>
         <NavigationTab
-          to={RESULTS_ROUTES[1]}
-          isActive={checkTabActive(RESULTS_ROUTES[1])}
+          to={RESULTS_FEEDBACK_SUBROUTE}
+          isActive={checkTabActive(RESULTS_FEEDBACK_SUBROUTE)}
         >
           Feedback
         </NavigationTab>
