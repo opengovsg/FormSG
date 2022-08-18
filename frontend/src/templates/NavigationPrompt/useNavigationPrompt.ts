@@ -40,15 +40,11 @@ export const useNavigationPrompt = (when?: boolean) => {
   }, [])
 
   useEffect(() => {
+    if (!when) return
     unblockRef.current = navigationContext.navigator.block((transaction) => {
-      if (when) {
-        setCurrentPath(transaction.location.pathname)
-        handleShowModal()
-        return false
-      }
-      unblockRef.current?.()
-      transaction.retry()
-      return true
+      setCurrentPath(transaction.location.pathname)
+      handleShowModal()
+      return false
     })
     return () => {
       unblockRef.current && unblockRef.current()
