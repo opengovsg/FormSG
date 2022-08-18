@@ -74,7 +74,6 @@ const Template: Story = () => {
 export const EmailForm = Template.bind({})
 
 export const EmailFormLoading = Template.bind({})
-EmailFormLoading.parameters = EmailForm.parameters
 EmailFormLoading.parameters = {
   msw: [
     ...createFormBuilderMocks({}, 0),
@@ -180,12 +179,21 @@ StorageFormMobile.parameters = {
 }
 
 export const StorageFormLoading = Template.bind({})
-StorageFormLoading.parameters = StorageForm.parameters
 StorageFormLoading.parameters = {
   msw: [
     ...createFormBuilderMocks({ responseMode: FormResponseMode.Encrypt }, 0),
     getAdminFormSubmissions({ delay: 'infinite' }),
     getStorageSubmissionMetadataResponse({}, 'infinite'),
+    getUser(),
+    getAdminFormCollaborators(),
+  ],
+}
+
+export const Loading = Template.bind({})
+Loading.parameters = {
+  msw: [
+    ...createFormBuilderMocks({ responseMode: undefined }, 'infinite'),
+    getAdminFormSubmissions({ delay: 'infinite' }),
     getUser(),
     getAdminFormCollaborators(),
   ],
