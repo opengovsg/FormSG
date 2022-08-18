@@ -51,7 +51,11 @@ import {
   MyInfoMissingAccessTokenError,
   MyInfoMissingHashError,
 } from '../../myinfo/myinfo.errors'
-import { SgidMissingJwtError } from '../../sgid/sgid.errors'
+import {
+  SgidInvalidJwtError,
+  SgidMissingJwtError,
+  SgidVerifyJwtError,
+} from '../../sgid/sgid.errors'
 import {
   InvalidJwtError,
   MissingJwtError,
@@ -422,6 +426,8 @@ export const mapRouteError: MapRouteError = (error) => {
         errorMessage: 'Captcha was missing. Please refresh and submit again.',
       }
     case SgidMissingJwtError:
+    case SgidVerifyJwtError:
+    case SgidInvalidJwtError:
     case MissingJwtError:
     case VerifyJwtError:
     case InvalidJwtError:
