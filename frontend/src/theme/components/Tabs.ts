@@ -46,6 +46,7 @@ const variantLineColor: PartsStyleFunction<typeof parts> = () => ({
   },
   tab: {
     ...textStyles['subhead-3'],
+    display: 'inline-flex',
     position: 'relative',
     borderRadius: '0.25rem',
     _selected: {
