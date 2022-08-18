@@ -32,6 +32,10 @@ export const GUIDE_TRANSFER_OWNERSHIP =
 export const GUIDE_SECRET_KEY_LOSS = 'https://go.gov.sg/secretkeyloss'
 export const GUIDE_PREVENT_EMAIL_BOUNCE =
   'https://go.gov.sg/form-prevent-bounce'
+export const GUIDE_EMAIL_RELIABILITY =
+  'https://go.gov.sg/form-email-reliability'
+
+export const ACCEPTED_FILETYPES_SPREADSHEET = 'https://go.gov.sg/formsg-cwl'
 
 export const APP_FOOTER_LINKS = [
   { label: 'Contact us', href: CONTACT_US },
