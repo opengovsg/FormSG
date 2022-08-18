@@ -17,20 +17,24 @@ import {
   Flex,
   Grid,
   GridItem,
-  TabList,
   useDisclosure,
 } from '@chakra-ui/react'
 
 import { AdminFormDto } from '~shared/types/form/form'
 
 import { FORM_GUIDE } from '~constants/links'
+import {
+  ADMINFORM_BUILD_SUBROUTE,
+  ADMINFORM_RESULTS_SUBROUTE,
+  ADMINFORM_SETTINGS_SUBROUTE,
+} from '~constants/routes'
 import { useDraggable } from '~hooks/useDraggable'
 import Button, { ButtonProps } from '~components/Button'
 import IconButton from '~components/IconButton'
-import { Tab } from '~components/Tabs'
 import Tooltip from '~components/Tooltip'
 
 import { AdminFormNavbarDetails } from './AdminFormNavbarDetails'
+import { FauxTabLink, FauxTabs } from './FauxTabs'
 
 export interface AdminFormNavbarProps {
   /**
@@ -73,6 +77,12 @@ export const AdminFormNavbar = ({
     [],
   )
 
+  const ADMINFORM_ROUTES = [
+    ADMINFORM_BUILD_SUBROUTE,
+    ADMINFORM_SETTINGS_SUBROUTE,
+    ADMINFORM_RESULTS_SUBROUTE,
+  ]
+
   return (
     <Grid
       w="100vw"
@@ -92,7 +102,7 @@ export const AdminFormNavbar = ({
       mb="1px"
       bg="white"
       zIndex="docked"
-      flex={1}
+      flex={0}
     >
       <GridItem
         display="flex"
@@ -116,25 +126,25 @@ export const AdminFormNavbar = ({
         </Box>
         <AdminFormNavbarDetails formInfo={formInfo} />
       </GridItem>
-      <TabList
-        ref={ref}
-        onMouseDown={onMouseDown}
-        pt={{ base: '0.625rem', lg: 0 }}
-        px={{ base: '1.25rem', lg: '1rem' }}
-        w={{ base: '100vw', lg: 'initial' }}
-        gridArea="tabs"
-        borderBottom="none"
-        justifyContent={{ base: 'flex-start', lg: 'center' }}
-        alignSelf="center"
-      >
-        <Tab hidden={viewOnly} isDisabled={!formInfo}>
+      <FauxTabs ref={ref} onMouseDown={onMouseDown}>
+        <FauxTabLink
+          hidden={viewOnly}
+          isDisabled={!formInfo}
+          to={ADMINFORM_ROUTES[0]}
+        >
           Create
-        </Tab>
-        <Tab hidden={viewOnly} isDisabled={!formInfo}>
+        </FauxTabLink>
+        <FauxTabLink
+          hidden={viewOnly}
+          isDisabled={!formInfo}
+          to={ADMINFORM_ROUTES[1]}
+        >
           Settings
-        </Tab>
-        <Tab isDisabled={!formInfo}>Results</Tab>
-      </TabList>
+        </FauxTabLink>
+        <FauxTabLink hidden={viewOnly} isDisabled to={ADMINFORM_ROUTES[2]}>
+          Results
+        </FauxTabLink>
+      </FauxTabs>
       <Flex
         py="0.625rem"
         pl="1rem"
