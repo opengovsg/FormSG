@@ -152,7 +152,6 @@ export const AdminFormNavbar = ({
       >
         <NavigationTab
           hidden={viewOnly}
-          isDisabled={!formInfo}
           to={ADMINFORM_BUILD_SUBROUTE}
           isActive={checkTabActive(ADMINFORM_BUILD_SUBROUTE)}
         >
@@ -160,7 +159,6 @@ export const AdminFormNavbar = ({
         </NavigationTab>
         <NavigationTab
           hidden={viewOnly}
-          isDisabled={!formInfo}
           to={ADMINFORM_SETTINGS_SUBROUTE}
           isActive={checkTabActive(ADMINFORM_SETTINGS_SUBROUTE)}
         >
@@ -168,7 +166,6 @@ export const AdminFormNavbar = ({
         </NavigationTab>
         <NavigationTab
           hidden={viewOnly}
-          isDisabled={!formInfo}
           to={ADMINFORM_RESULTS_SUBROUTE}
           isActive={checkTabActive(ADMINFORM_RESULTS_SUBROUTE)}
         >
