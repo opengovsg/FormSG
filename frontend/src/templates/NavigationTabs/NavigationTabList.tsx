@@ -1,27 +1,21 @@
-import { ComponentProps, useMemo } from 'react'
-import { Link as ReactLink, useLocation } from 'react-router-dom'
 import {
   Box,
   BoxProps,
-  chakra,
   forwardRef,
   StylesProvider,
   useBreakpointValue,
   useMultiStyleConfig,
-  useStyles,
 } from '@chakra-ui/react'
 
-import { ACTIVE_ADMINFORM_BUILDER_ROUTE_REGEX } from '~constants/routes'
-
-const Link = chakra(ReactLink)
-
-export const FauxTabs = forwardRef<BoxProps, 'div'>(
+/** Component to be styled as a tab list, but used for routing instead of conditionally showing tab panels.  */
+export const NavigationTabList = forwardRef<BoxProps, 'div'>(
   ({ onMouseDown, children, ...props }, ref): JSX.Element => {
     const responsiveVariant = useBreakpointValue({
       base: 'line-dark',
       xs: 'line-dark',
       lg: 'line-light',
     })
+
     const styles = useMultiStyleConfig('Tabs', {
       variant: responsiveVariant,
       ...props,
@@ -44,28 +38,6 @@ export const FauxTabs = forwardRef<BoxProps, 'div'>(
           {children}
         </Box>
       </StylesProvider>
-    )
-  },
-)
-
-export const FauxTabLink = forwardRef<ComponentProps<typeof Link>, 'a'>(
-  ({ to, ...props }, ref) => {
-    const styles = useStyles()
-    const { pathname } = useLocation()
-
-    const isActive = useMemo(() => {
-      const match = pathname.match(ACTIVE_ADMINFORM_BUILDER_ROUTE_REGEX)
-      return (match?.[2] ?? '/') === `/${to}`
-    }, [pathname, to])
-
-    return (
-      <Link
-        to={to}
-        ref={ref}
-        aria-selected={isActive}
-        __css={styles.tab}
-        {...props}
-      />
     )
   },
 )

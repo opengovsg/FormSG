@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import {
   BiDotsHorizontalRounded,
   BiHelpCircle,
@@ -7,6 +7,7 @@ import {
   BiShow,
   BiUserPlus,
 } from 'react-icons/bi'
+import { useLocation } from 'react-router-dom'
 import {
   Box,
   ButtonGroup,
@@ -24,6 +25,7 @@ import { AdminFormDto } from '~shared/types/form/form'
 
 import { FORM_GUIDE } from '~constants/links'
 import {
+  ACTIVE_ADMINFORM_BUILDER_ROUTE_REGEX,
   ADMINFORM_BUILD_SUBROUTE,
   ADMINFORM_RESULTS_SUBROUTE,
   ADMINFORM_SETTINGS_SUBROUTE,
@@ -32,9 +34,9 @@ import { useDraggable } from '~hooks/useDraggable'
 import Button, { ButtonProps } from '~components/Button'
 import IconButton from '~components/IconButton'
 import Tooltip from '~components/Tooltip'
+import { NavigationTab, NavigationTabList } from '~templates/NavigationTabs'
 
 import { AdminFormNavbarDetails } from './AdminFormNavbarDetails'
-import { FauxTabLink, FauxTabs } from './FauxTabs'
 
 export interface AdminFormNavbarProps {
   /**
@@ -64,6 +66,15 @@ export const AdminFormNavbar = ({
 }: AdminFormNavbarProps): JSX.Element => {
   const { ref, onMouseDown } = useDraggable<HTMLDivElement>()
   const { isOpen, onClose, onOpen } = useDisclosure()
+  const { pathname } = useLocation()
+
+  const checkTabActive = useCallback(
+    (to: string) => {
+      const match = pathname.match(ACTIVE_ADMINFORM_BUILDER_ROUTE_REGEX)
+      return (match?.[2] ?? '/') === `/${to}`
+    },
+    [pathname],
+  )
 
   const mobileDrawerExtraButtonProps: Partial<ButtonProps> = useMemo(
     () => ({
@@ -126,25 +137,32 @@ export const AdminFormNavbar = ({
         </Box>
         <AdminFormNavbarDetails formInfo={formInfo} />
       </GridItem>
-      <FauxTabs ref={ref} onMouseDown={onMouseDown}>
-        <FauxTabLink
+      <NavigationTabList ref={ref} onMouseDown={onMouseDown}>
+        <NavigationTab
           hidden={viewOnly}
           isDisabled={!formInfo}
           to={ADMINFORM_ROUTES[0]}
+          isActive={checkTabActive(ADMINFORM_ROUTES[0])}
         >
           Create
-        </FauxTabLink>
-        <FauxTabLink
+        </NavigationTab>
+        <NavigationTab
           hidden={viewOnly}
           isDisabled={!formInfo}
           to={ADMINFORM_ROUTES[1]}
+          isActive={checkTabActive(ADMINFORM_ROUTES[1])}
         >
           Settings
-        </FauxTabLink>
-        <FauxTabLink hidden={viewOnly} isDisabled to={ADMINFORM_ROUTES[2]}>
+        </NavigationTab>
+        <NavigationTab
+          hidden={viewOnly}
+          isDisabled={!formInfo}
+          to={ADMINFORM_ROUTES[2]}
+          isActive={checkTabActive(ADMINFORM_ROUTES[2])}
+        >
           Results
-        </FauxTabLink>
-      </FauxTabs>
+        </NavigationTab>
+      </NavigationTabList>
       <Flex
         py="0.625rem"
         pl="1rem"
