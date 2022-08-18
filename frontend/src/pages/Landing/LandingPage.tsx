@@ -86,7 +86,6 @@ export const LandingPage = (): JSX.Element => {
 
   return (
     <>
-      {/* <GovtMasthead /> */}
       <AppPublicHeader />
       <LandingSection bg="primary.100" pt={{ base: '2rem', md: 0 }}>
         <Stack
