@@ -20,7 +20,7 @@ export const EndPageBlock = ({
   return (
     <Flex flexDir="column">
       <Stack spacing="1rem">
-        <Text as="h2" textStyle="h2">
+        <Text as="h2" textStyle="h2" textColor="secondary.700">
           {endPage.title}
         </Text>
         {endPage.paragraph ? (
