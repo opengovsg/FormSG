@@ -1,16 +1,4 @@
-import {
-  ContextType,
-  memo,
-  useCallback,
-  useContext,
-  useEffect,
-  useRef,
-  useState,
-} from 'react'
-import {
-  Navigator as BaseNavigator,
-  UNSAFE_NavigationContext as NavigationContext,
-} from 'react-router-dom'
+import { memo } from 'react'
 import {
   Modal,
   ModalBody,
@@ -20,20 +8,12 @@ import {
   ModalOverlay,
   Stack,
 } from '@chakra-ui/react'
-import type { History } from 'history'
 
 import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
 import { ModalCloseButton } from '~components/Modal'
 
-interface Navigator extends BaseNavigator {
-  block: History['block']
-}
-
-type NavigationContextWithBlock =
-  | ContextType<typeof NavigationContext> & {
-      navigator: Navigator
-    }
+import { useNavigationPrompt } from './useNavigationPrompt'
 
 interface NavigationPromptProps {
   /** Whether modal should appear. */
@@ -58,51 +38,11 @@ export const NavigationPrompt = memo(
     confirmButtonText = 'Yes, discard changes',
     cancelButtonText = 'No, stay on page',
   }: NavigationPromptProps) => {
-    const navigationContext = useContext(
-      NavigationContext,
-    ) as NavigationContextWithBlock
-
-    const [showPrompt, setShowPrompt] = useState(false)
-    const [currentPath, setCurrentPath] = useState('')
-
+    const { isPromptShown, onCancel, onConfirm } = useNavigationPrompt(when)
     const isMobile = useIsMobile()
 
-    const unblockRef = useRef<() => void>()
-
-    const handleShowModal = useCallback(() => {
-      setShowPrompt(true)
-    }, [])
-
-    const onCancel = useCallback(() => {
-      setShowPrompt(false)
-    }, [])
-
-    useEffect(() => {
-      unblockRef.current = navigationContext.navigator.block((transaction) => {
-        if (when) {
-          setCurrentPath(transaction.location.pathname)
-          handleShowModal()
-          return false
-        }
-        unblockRef.current?.()
-        transaction.retry()
-        return true
-      })
-      return () => {
-        unblockRef.current && unblockRef.current()
-      }
-    }, [handleShowModal, navigationContext.navigator, when])
-
-    const handleConfirm = useCallback(() => {
-      if (unblockRef.current) {
-        unblockRef.current()
-      }
-      setShowPrompt(false)
-      navigationContext?.navigator.push(currentPath)
-    }, [currentPath, navigationContext?.navigator])
-
     return (
-      <Modal isOpen={showPrompt} onClose={onCancel}>
+      <Modal isOpen={isPromptShown} onClose={onCancel}>
         <ModalOverlay />
         <ModalContent>
           <ModalCloseButton />
@@ -121,7 +61,7 @@ export const NavigationPrompt = memo(
               <Button
                 isFullWidth={isMobile}
                 colorScheme="danger"
-                onClick={handleConfirm}
+                onClick={onConfirm}
                 autoFocus
               >
                 {confirmButtonText}
