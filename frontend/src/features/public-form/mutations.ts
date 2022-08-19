@@ -63,7 +63,7 @@ export const usePublicFormMutations = (
   formId: string,
   submissionId: string,
 ) => {
-  const toast = useToast({ status: 'success', isClosable: true })
+  const toast = useToast({ isClosable: true })
 
   const submitEmailModeFormMutation = useMutation(
     (args: Omit<SubmitEmailFormArgs, 'formId'>) => {
@@ -82,10 +82,7 @@ export const usePublicFormMutations = (
       submitFormFeedback(formId, submissionId, args),
     {
       onError: (error: Error) => {
-        toast({
-          description: error.message,
-          status: 'danger',
-        })
+        toast({ status: 'danger', description: error.message })
       },
     },
   )
