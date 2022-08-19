@@ -159,15 +159,17 @@ export const FieldRowContainer = ({
   }, [isActive])
 
   const handleFieldClick = useCallback(() => {
-    if (isDirty) return
-    if (!isActive) {
-      updateEditState(field)
-      setDesignState(DesignState.Inactive)
-      if (!isMobile) {
-        // Do not open builder if in mobile so user can view active state without
-        // drawer blocking the view.
-        handleBuilderClick()
-      }
+    if (isActive) return
+
+    if (isDirty) {
+      return updateEditState(field, true)
+    }
+    updateEditState(field)
+    setDesignState(DesignState.Inactive)
+    if (!isMobile) {
+      // Do not open builder if in mobile so user can view active state without
+      // drawer blocking the view.
+      handleBuilderClick()
     }
   }, [
     isDirty,

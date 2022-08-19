@@ -11,62 +11,93 @@ export enum FieldBuilderState {
   Inactive,
 }
 
+type FieldBuilderCreateEditStateData =
+  | {
+      state: FieldBuilderState.CreatingField
+      field: FieldCreateDto
+      insertionIndex: number
+    }
+  | {
+      state: FieldBuilderState.EditingField
+      field: FormFieldDto
+    }
+  | { state: FieldBuilderState.EditingEndPage }
+
 export type FieldBuilderStore = {
-  updateCreateState: (field: FieldCreateDto, insertionIndex: number) => void
-  updateEditState: (field: FormFieldDto) => void
+  updateCreateState: (
+    field: FieldCreateDto,
+    insertionIndex: number,
+    holding?: boolean,
+  ) => void
+  updateEditState: (field: FormFieldDto, holding?: boolean) => void
   setEditEndPage: () => void
   setToInactive: () => void
   isDirty: boolean
   setIsDirty: (isDirty: boolean) => void
   stateData:
-    | {
-        state: FieldBuilderState.CreatingField
-        field: FieldCreateDto
-        insertionIndex: number
-      }
-    | {
-        state: FieldBuilderState.EditingField
-        field: FormFieldDto
-      }
-    | { state: FieldBuilderState.EditingEndPage }
+    | FieldBuilderCreateEditStateData
     | { state: FieldBuilderState.Inactive }
+  // Used when there is a dirty state and we want to hold the next state to be set.
+  // Will be used to set stateData if user confirms discarding changes.
+  holdingStateData: FieldBuilderCreateEditStateData | null
+  clearHoldingStateData: () => void
+  moveFromHoldingToStateData: () => void
 }
 
 export const useFieldBuilderStore = create<FieldBuilderStore>(
   devtools((set, get) => ({
     stateData: { state: FieldBuilderState.Inactive },
+    holdingStateData: null,
+    clearHoldingStateData: () => set({ holdingStateData: null }),
+    moveFromHoldingToStateData: () => {
+      const holdingStateData = get().holdingStateData
+      if (!holdingStateData) return
+      set({
+        stateData: holdingStateData,
+        holdingStateData: null,
+      })
+    },
     isDirty: false,
     setIsDirty: (isDirty: boolean) => set({ isDirty }),
-    updateCreateState: (field, insertionIndex) => {
+    updateCreateState: (field, insertionIndex, holding) => {
       // perf: prevent store update if field is the same
       const current = get()
-      if (
+      const shouldIgnore =
         current.stateData.state === FieldBuilderState.CreatingField &&
         current.stateData.insertionIndex === insertionIndex &&
         isEqual(current.stateData.field, field)
-      ) {
+      if (shouldIgnore && !holding) {
         return
       }
-      set({
-        stateData: {
-          state: FieldBuilderState.CreatingField,
-          field,
-          insertionIndex,
-        },
-      })
+      const stateData: FieldBuilderCreateEditStateData = {
+        state: FieldBuilderState.CreatingField,
+        field,
+        insertionIndex,
+      }
+      if (holding) {
+        set({ holdingStateData: stateData })
+      } else {
+        set({ stateData })
+      }
     },
-    updateEditState: (field) => {
+    updateEditState: (field, holding) => {
       // perf: prevent store update if field is the same
       const current = get()
-      if (
+      const shouldIgnore =
         current.stateData.state === FieldBuilderState.EditingField &&
         isEqual(current.stateData.field, field)
-      ) {
+      if (shouldIgnore && !holding) {
         return
       }
-      set({
-        stateData: { state: FieldBuilderState.EditingField, field },
-      })
+      const stateData: FieldBuilderCreateEditStateData = {
+        state: FieldBuilderState.EditingField,
+        field,
+      }
+      if (holding) {
+        set({ holdingStateData: stateData })
+      } else {
+        set({ stateData })
+      }
     },
     setEditEndPage: () => {
       set({ stateData: { state: FieldBuilderState.EditingEndPage } })

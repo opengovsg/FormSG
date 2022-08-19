@@ -9,6 +9,7 @@ import { NavigationPrompt } from '~templates/NavigationPrompt/NavigationPrompt'
 
 import { useUser } from '~features/user/queries'
 
+import { DirtyModal } from '../common/components/DirtyModal'
 import { useAdminFormCollaborators } from '../common/queries'
 
 import {
@@ -53,6 +54,7 @@ export const CreatePage = (): JSX.Element => {
   return (
     <>
       <NavigationPrompt when={isDirty} />
+      <DirtyModal />
       <Flex
         h="100%"
         w="100%"
