@@ -45,7 +45,11 @@ export const EndPageView = ({ ...props }: FlexProps): JSX.Element => {
       mb={0}
       flex={1}
       bg="neutral.200"
-      p={{ base: 0, md: '2rem' }}
+      // Using margin for margin collapse when there are inline messages above.
+      mt={{ base: 0, md: '1rem' }}
+      pt={{ base: 0, md: '1rem' }}
+      pb={{ base: 0, md: '2rem' }}
+      px={{ base: 0, md: '2rem' }}
       justify="center"
       overflow="auto"
       {...props}
