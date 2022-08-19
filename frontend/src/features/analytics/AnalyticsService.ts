@@ -1,6 +1,9 @@
 import { AdminFormDto, FormStatus, PublicFormDto } from '~shared/types/form'
 
-const gtag = window.gtag
+let gtag = window.gtag
+window.onload = function () {
+  gtag = window.gtag
+}
 
 export const trackAdminLogin = () => {
   if (!gtag) return
@@ -46,6 +49,7 @@ export const trackVisitPublicForm = (form: PublicFormDto) => {
 }
 
 export const trackSubmitForm = (form: PublicFormDto) => {
+  console.log('tracksubmitform')
   return trackPublicFormEvent('submit_form_success', form)
 }
 
