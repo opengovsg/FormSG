@@ -49,7 +49,6 @@ const helmetMiddlewares = () => {
       'https://www.recaptcha.net/recaptcha/',
       'https://www.gstatic.com/recaptcha/',
       'https://www.gstatic.cn/',
-      'https://www.google-analytics.com/',
     ],
     connectSrc: [
       "'self'",
