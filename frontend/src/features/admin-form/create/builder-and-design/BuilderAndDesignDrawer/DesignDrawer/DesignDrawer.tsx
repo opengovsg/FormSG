@@ -231,6 +231,7 @@ export const DesignInput = (): JSX.Element | null => {
             hidden={startPageData.logo.state !== FormLogoState.Custom}
             isInvalid={!isEmpty(errors.attachment)}
             ml="2.625rem"
+            mt="0.5rem"
             w="auto"
           >
             <Controller
