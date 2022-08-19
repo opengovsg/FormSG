@@ -52,7 +52,7 @@ export const SwitchEnvFeedbackModal = ({
   const [showThanksPage, setShowThanksPage] = useState<boolean>(false)
 
   // get the feedback form data
-  const { data: feedbackForm } = useSwitchEnvFeedbackFormView()
+  const { data: feedbackForm } = useSwitchEnvFeedbackFormView(isOpen)
 
   const {
     submitSwitchEnvFormFeedbackMutation,
