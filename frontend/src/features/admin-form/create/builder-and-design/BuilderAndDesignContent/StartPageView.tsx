@@ -1,13 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { BiCog } from 'react-icons/bi'
-import {
-  Box,
-  ButtonGroup,
-  Collapse,
-  Flex,
-  IconButton,
-  Skeleton,
-} from '@chakra-ui/react'
+import { Box, ButtonGroup, Collapse, Flex, IconButton } from '@chakra-ui/react'
 
 import { FormAuthType, FormLogoState, FormStartPage } from '~shared/types'
 
@@ -58,7 +51,6 @@ export const StartPageView = () => {
   )
 
   const [hoverStartPage, setHoverStartPage] = useState(false)
-  const [customLogoPending, setCustomLogoPending] = useState(false)
 
   // Transform the FormStartPageInput into a FormStartPage
   const startPageFromStore: FormStartPage | null = useMemo(() => {
@@ -67,14 +59,12 @@ export const StartPageView = () => {
     const estTimeTakenTransformed =
       estTimeTaken === '' ? undefined : estTimeTaken
     if (logo.state !== FormLogoState.Custom) {
-      setCustomLogoPending(false)
       return {
         logo: { state: logo.state },
         estTimeTaken: estTimeTakenTransformed,
         ...rest,
       }
     }
-    setCustomLogoPending(!startPageData?.attachment.srcUrl)
     return {
       logo: {
         state: FormLogoState.Custom,
@@ -92,7 +82,6 @@ export const StartPageView = () => {
   // to be previewed, so when the store is populated, prioritize that setting.
   const startPage = useMemo(() => {
     if (startPageFromStore) return startPageFromStore
-    setCustomLogoPending(false)
     return form?.startPage
   }, [form?.startPage, startPageFromStore])
 
@@ -157,21 +146,14 @@ export const StartPageView = () => {
         overflow="hidden"
         ref={headerRef}
       >
-        {customLogoPending ? (
-          // Show skeleton if user has chosen custom logo but not yet uploaded
-          <Flex justify="center" p="1rem" bg="white">
-            <Skeleton w="4rem" h="4rem" />
-          </Flex>
-        ) : (
-          <FormBannerLogo
-            logoImgSrc={
-              startPageData?.logo.state === FormLogoState.Custom
-                ? startPageData.attachment.srcUrl // manual override to preview custom logo
-                : logoImgSrc
-            }
-            {...formBannerLogoProps}
-          />
-        )}
+        <FormBannerLogo
+          logoImgSrc={
+            startPageData?.logo.state === FormLogoState.Custom
+              ? startPageData.attachment.srcUrl // manual override to preview custom logo
+              : logoImgSrc
+          }
+          {...formBannerLogoProps}
+        />
         <FormHeader
           title={form?.title}
           showHeader
