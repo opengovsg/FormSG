@@ -134,6 +134,17 @@ export const StartPageView = () => {
     if (isMobile) handleDesignClick()
   }, [handleDesignClick, isMobile])
 
+  const headerWrapperEditProps = useMemo(() => {
+    switch (designState) {
+      case DesignState.EditingHeader:
+        return {
+          border: '2px solid var(--chakra-colors-primary-500)',
+          m: '-2px',
+          borderRadius: '4px',
+        }
+    }
+  }, [designState])
+
   return (
     <>
       <Box
@@ -141,14 +152,9 @@ export const StartPageView = () => {
         onPointerLeave={() => setHoverStartPage(false)}
         onClick={handleHeaderClick}
         role="button"
-        cursor={hoverStartPage ? 'pointer' : 'initial'}
-        {...(designState === DesignState.EditingHeader
-          ? { border: '2px solid var(--chakra-colors-primary-500)' }
-          : {
-              borderTop: '2px solid var(--chakra-colors-neutral-200)',
-              borderBottom: '2px solid transparent',
-            })}
-        borderRadius="4px"
+        cursor="pointer"
+        {...headerWrapperEditProps}
+        overflow="hidden"
         ref={headerRef}
       >
         {customLogoPending ? (
