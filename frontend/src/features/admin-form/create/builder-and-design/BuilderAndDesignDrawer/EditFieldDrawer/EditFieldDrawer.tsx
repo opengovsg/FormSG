@@ -2,8 +2,6 @@ import { memo, useMemo } from 'react'
 
 import { BasicField, FieldCreateDto } from '~shared/types/field'
 
-import { NavigationPrompt } from '~templates/NavigationPrompt/NavigationPrompt'
-
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
 import { isMyInfo } from '~features/myinfo/utils'
 
@@ -11,7 +9,6 @@ import { useBuilderFields } from '../../BuilderAndDesignContent/useBuilderFields
 import { MYINFO_FIELD_CONSTANTS } from '../../constants'
 import {
   FieldBuilderState,
-  isDirtySelector,
   stateDataSelector,
   useFieldBuilderStore,
 } from '../../useFieldBuilderStore'
@@ -43,7 +40,6 @@ import {
 
 export const EditFieldDrawer = (): JSX.Element | null => {
   const stateData = useFieldBuilderStore(stateDataSelector)
-  const isDirty = useFieldBuilderStore(isDirtySelector)
 
   const fieldToEdit: FieldCreateDto | undefined = useMemo(() => {
     if (
@@ -85,15 +81,12 @@ export const EditFieldDrawer = (): JSX.Element | null => {
   if (!fieldToEdit) return null
 
   return (
-    <>
-      <NavigationPrompt when={isDirty} />
-      <BuilderDrawerContainer title={basicFieldText}>
-        <MemoFieldDrawerContent
-          field={fieldToEdit}
-          key={`${fieldIndex}-${numFields}`}
-        />
-      </BuilderDrawerContainer>
-    </>
+    <BuilderDrawerContainer title={basicFieldText}>
+      <MemoFieldDrawerContent
+        field={fieldToEdit}
+        key={`${fieldIndex}-${numFields}`}
+      />
+    </BuilderDrawerContainer>
   )
 }
 

@@ -30,6 +30,7 @@ import {
   useEndPageBuilderStore,
 } from '../../useEndPageBuilderStore'
 import {
+  setIsDirtySelector,
   setToInactiveSelector,
   useFieldBuilderStore,
 } from '../../useFieldBuilderStore'
@@ -56,6 +57,8 @@ export const EndPageBuilderInput = ({
   const { endPageMutation } = useMutateFormPage()
 
   const closeBuilderDrawer = useFieldBuilderStore(setToInactiveSelector)
+  const setIsDirty = useFieldBuilderStore(setIsDirtySelector)
+
   const { setEndPageBuilderState, resetEndPageBuilderState } =
     useEndPageBuilderStore((state) => ({
       setEndPageBuilderState: setEndPageDataSelector(state),
@@ -70,13 +73,22 @@ export const EndPageBuilderInput = ({
 
   const {
     register,
-    formState: { errors },
+    formState: { errors, isDirty },
     control,
     handleSubmit,
   } = useForm<FormEndPage>({
     mode: 'onBlur',
     defaultValues: endPage,
   })
+
+  // Update dirty state of builder so confirmation modal can be shown
+  useEffect(() => {
+    setIsDirty(isDirty)
+
+    return () => {
+      setIsDirty(false)
+    }
+  }, [isDirty, setIsDirty])
 
   const handleEndPageBuilderChanges = useCallback(
     (endPageInputs) => {

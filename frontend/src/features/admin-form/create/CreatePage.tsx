@@ -5,11 +5,16 @@ import { Flex } from '@chakra-ui/react'
 import { FEATURE_TOUR_KEY_PREFIX } from '~constants/localStorage'
 import { ADMINFORM_RESULTS_SUBROUTE, ADMINFORM_ROUTE } from '~constants/routes'
 import { useLocalStorage } from '~hooks/useLocalStorage'
+import { NavigationPrompt } from '~templates/NavigationPrompt/NavigationPrompt'
 
 import { useUser } from '~features/user/queries'
 
 import { useAdminFormCollaborators } from '../common/queries'
 
+import {
+  isDirtySelector,
+  useFieldBuilderStore,
+} from './builder-and-design/useFieldBuilderStore'
 import { CreatePageContent } from './common/CreatePageContent'
 import { CreatePageSidebar } from './common/CreatePageSidebar'
 import { CreatePageSidebarProvider } from './common/CreatePageSidebarContext'
@@ -43,21 +48,26 @@ export const CreatePage = (): JSX.Element => {
     return !isLoading && !hasAdminSeenFeatureTour
   }, [isLoading, hasAdminSeenFeatureTour])
 
+  const isDirty = useFieldBuilderStore(isDirtySelector)
+
   return (
-    <Flex
-      h="100%"
-      w="100%"
-      overflow="auto !important"
-      bg="neutral.200"
-      direction="row"
-    >
-      <CreatePageSidebarProvider>
-        {shouldFeatureTourRender && (
-          <FeatureTour onClose={() => setHasAdminSeenFeatureTour(true)} />
-        )}
-        <CreatePageSidebar />
-        <CreatePageContent />
-      </CreatePageSidebarProvider>
-    </Flex>
+    <>
+      <NavigationPrompt when={isDirty} />
+      <Flex
+        h="100%"
+        w="100%"
+        overflow="auto !important"
+        bg="neutral.200"
+        direction="row"
+      >
+        <CreatePageSidebarProvider>
+          {shouldFeatureTourRender && (
+            <FeatureTour onClose={() => setHasAdminSeenFeatureTour(true)} />
+          )}
+          <CreatePageSidebar />
+          <CreatePageContent />
+        </CreatePageSidebarProvider>
+      </Flex>
+    </>
   )
 }

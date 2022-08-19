@@ -46,6 +46,10 @@ import {
   stateSelector,
   useDesignStore,
 } from '../../useDesignStore'
+import {
+  setIsDirtySelector,
+  useFieldBuilderStore,
+} from '../../useFieldBuilderStore'
 import { validateNumberInput } from '../../utils/validateNumberInput'
 import { CreatePageDrawerCloseButton } from '../CreatePageDrawerCloseButton'
 import { DrawerContentContainer } from '../EditFieldDrawer/edit-fieldtype/common/DrawerContentContainer'
@@ -86,6 +90,8 @@ export const DesignInput = (): JSX.Element | null => {
     ),
   )
 
+  const setIsDirty = useFieldBuilderStore(setIsDirtySelector)
+
   const setToEditingHeader = useCallback(
     () => setDesignState(DesignState.EditingHeader),
     [setDesignState],
@@ -97,7 +103,7 @@ export const DesignInput = (): JSX.Element | null => {
 
   const {
     register,
-    formState: { errors },
+    formState: { errors, isDirty },
     control,
     handleSubmit,
     clearErrors,
@@ -107,6 +113,15 @@ export const DesignInput = (): JSX.Element | null => {
     mode: 'onBlur',
     defaultValues: startPageData,
   })
+
+  // Update dirty state of builder so confirmation modal can be shown
+  useEffect(() => {
+    setIsDirty(isDirty)
+
+    return () => {
+      setIsDirty(false)
+    }
+  }, [isDirty, setIsDirty])
 
   const watchedInputs = useWatch({
     control: control,
