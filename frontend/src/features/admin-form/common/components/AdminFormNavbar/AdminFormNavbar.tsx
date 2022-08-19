@@ -165,7 +165,6 @@ export const AdminFormNavbar = ({
           Settings
         </NavigationTab>
         <NavigationTab
-          hidden={viewOnly}
           to={ADMINFORM_RESULTS_SUBROUTE}
           isActive={checkTabActive(ADMINFORM_RESULTS_SUBROUTE)}
         >
