@@ -25,7 +25,9 @@ export const useSwitchEnvFeedbackFormView = (
   /** Extra override to determine whether query is enabled */
   enabled = true,
 ): UseQueryResult<PublicFormViewDto, ApiError> => {
-  return useQuery<PublicFormViewDto, ApiError>(envKeys.viewSwitchEnvForm, () =>
-    getSwitchEnvFormView(),
+  return useQuery<PublicFormViewDto, ApiError>(
+    envKeys.viewSwitchEnvForm,
+    () => getSwitchEnvFormView(),
+    { enabled },
   )
 }
