@@ -196,6 +196,7 @@ export const DesignInput = (): JSX.Element | null => {
   return (
     <DrawerContentContainer>
       <FormControl
+        id="logo.state"
         isReadOnly={startPageMutation.isLoading}
         isInvalid={!isEmpty(errors.attachment)}
         onFocus={setToEditingHeader}
@@ -205,18 +206,34 @@ export const DesignInput = (): JSX.Element | null => {
           defaultValue={startPageData.logo.state}
           isDisabled={startPageMutation.isLoading}
         >
-          <Radio value={FormLogoState.Default} {...register('logo.state')}>
+          <Radio
+            allowDeselect={false}
+            value={FormLogoState.Default}
+            {...register('logo.state')}
+          >
             Default
           </Radio>
-          <Radio value={FormLogoState.None} {...register('logo.state')}>
+          <Radio
+            allowDeselect={false}
+            value={FormLogoState.None}
+            {...register('logo.state')}
+          >
             None
           </Radio>
-          <Radio value={FormLogoState.Custom} {...register('logo.state')}>
+          <Radio
+            allowDeselect={false}
+            value={FormLogoState.Custom}
+            {...register('logo.state')}
+          >
             Upload custom logo (jpg, png, or gif)
           </Radio>
-        </Radio.RadioGroup>
-        <Box ml="45px" mt="0.5rem">
-          <Box hidden={startPageData.logo.state !== FormLogoState.Custom}>
+          <FormControl
+            id="attachment"
+            hidden={startPageData.logo.state !== FormLogoState.Custom}
+            isInvalid={!isEmpty(errors.attachment)}
+            ml="2.625rem"
+            w="auto"
+          >
             <Controller
               name="attachment"
               control={control}
@@ -242,8 +259,8 @@ export const DesignInput = (): JSX.Element | null => {
             <FormErrorMessage>
               {get(errors, 'attachment.message')}
             </FormErrorMessage>
-          </Box>
-        </Box>
+          </FormControl>
+        </Radio.RadioGroup>
       </FormControl>
 
       <FormControl
