@@ -46,14 +46,16 @@ export const PreviewFormProvider = ({
 
   const [cachedDto, setCachedDto] = useState<PreviewFormViewDto>()
 
-  const {
-    isNotFormId,
-    toast,
-    showErrorToast,
-    vfnToastIdRef,
-    expiryInMs,
-    ...commonFormValues
-  } = useCommonFormProvider(formId)
+  const { isNotFormId, toast, vfnToastIdRef, expiryInMs, ...commonFormValues } =
+    useCommonFormProvider(formId)
+
+  const showErrorToast = useCallback(() => {
+    toast({
+      status: 'danger',
+      description:
+        'An error occurred whilst processing your submission. Please refresh and try again.',
+    })
+  }, [toast])
 
   useEffect(() => {
     if (data) {

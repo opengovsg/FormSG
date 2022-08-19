@@ -17,6 +17,7 @@ import simplur from 'simplur'
 import {
   FormAuthType,
   FormResponseMode,
+  PublicFormDto,
   PublicFormViewDto,
 } from '~shared/types/form'
 
@@ -28,7 +29,12 @@ import Link from '~components/Link'
 import { FormFieldValues } from '~templates/Field'
 
 import NotFoundErrorPage from '~pages/NotFoundError'
-import { trackVisitPublicForm } from '~features/analytics/AnalyticsService'
+import {
+  trackReCaptchaOnError,
+  trackSubmitForm,
+  trackSubmitFormFailure,
+  trackVisitPublicForm,
+} from '~features/analytics/AnalyticsService'
 import { useEnv } from '~features/env/queries'
 import {
   RecaptchaClosedError,
@@ -80,18 +86,9 @@ export function useCommonFormProvider(formId: string) {
     return differenceInMilliseconds(vfnTransaction.expireAt, Date.now())
   }, [vfnTransaction])
 
-  const showErrorToast = useCallback(() => {
-    toast({
-      status: 'danger',
-      description:
-        'An error occurred whilst processing your submission. Please refresh and try again.',
-    })
-  }, [toast])
-
   return {
     isNotFormId,
     toast,
-    showErrorToast,
     vfnToastIdRef,
     expiryInMs,
     miniHeaderRef,
@@ -132,14 +129,20 @@ export const PublicFormProvider = ({
   const [cachedDto, setCachedDto] = useState<PublicFormViewDto>()
   const desyncToastIdRef = useRef<string | number>()
 
-  const {
-    isNotFormId,
-    toast,
-    showErrorToast,
-    vfnToastIdRef,
-    expiryInMs,
-    ...commonFormValues
-  } = useCommonFormProvider(formId)
+  const { isNotFormId, toast, vfnToastIdRef, expiryInMs, ...commonFormValues } =
+    useCommonFormProvider(formId)
+
+  const showErrorToast = useCallback(
+    (form: PublicFormDto) => {
+      toast({
+        status: 'danger',
+        description:
+          'An error occurred whilst processing your submission. Please refresh and try again.',
+      })
+      trackSubmitFormFailure(form)
+    },
+    [toast],
+  )
 
   useEffect(() => {
     if (data) {
@@ -212,7 +215,8 @@ export const PublicFormProvider = ({
           // Do nothing if recaptcha is closed.
           return
         }
-        return showErrorToast()
+        trackReCaptchaOnError(form)
+        return showErrorToast(form)
       }
 
       switch (form.responseMode) {
@@ -223,12 +227,14 @@ export const PublicFormProvider = ({
               .mutateAsync(
                 { formFields: form.form_fields, formInputs, captchaResponse },
                 {
-                  onSuccess: ({ submissionId }) =>
+                  onSuccess: ({ submissionId }) => {
                     setSubmissionData({
                       id: submissionId,
                       // TODO: Server should return server time so browser time is not used.
                       timeInEpochMs: Date.now(),
-                    }),
+                    })
+                    trackSubmitForm(form)
+                  },
                 },
               )
               // Using catch since we are using mutateAsync and react-hook-form will continue bubbling this up.
