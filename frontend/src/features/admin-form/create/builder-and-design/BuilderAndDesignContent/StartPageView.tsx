@@ -25,6 +25,7 @@ import {
   useDesignStore,
 } from '../useDesignStore'
 import {
+  isDirtySelector,
   setToInactiveSelector,
   useFieldBuilderStore,
 } from '../useFieldBuilderStore'
@@ -32,7 +33,16 @@ import {
 export const StartPageView = () => {
   const isMobile = useIsMobile()
   const { data: form } = useCreateTabForm()
-  const setToInactive = useFieldBuilderStore(setToInactiveSelector)
+  const { setToInactive, isDirty } = useFieldBuilderStore(
+    useCallback(
+      (state) => ({
+        setToInactive: setToInactiveSelector(state),
+        isDirty: isDirtySelector(state),
+      }),
+      [],
+    ),
+  )
+
   const { designState, startPageData, customLogoMeta, setDesignState } =
     useDesignStore(
       useCallback(
@@ -108,10 +118,14 @@ export const StartPageView = () => {
   const { handleDesignClick } = useCreatePageSidebar()
 
   const handleHeaderClick = useCallback(() => {
+    if (isDirty) {
+      return setDesignState(DesignState.EditingHeader, true)
+    }
+
     setDesignState(DesignState.EditingHeader)
     setToInactive()
     handleDesignClick()
-  }, [handleDesignClick, setDesignState, setToInactive])
+  }, [handleDesignClick, isDirty, setDesignState, setToInactive])
 
   const handleInstructionsClick = useCallback(() => {
     setDesignState(DesignState.EditingInstructions)

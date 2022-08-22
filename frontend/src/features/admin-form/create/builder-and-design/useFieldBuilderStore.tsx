@@ -41,7 +41,7 @@ export type FieldBuilderStore = {
   // Will be used to set stateData if user confirms discarding changes.
   holdingStateData: FieldBuilderCreateEditStateData | null
   clearHoldingStateData: () => void
-  moveFromHoldingToStateData: () => void
+  moveFromHolding: () => void
 }
 
 export const useFieldBuilderStore = create<FieldBuilderStore>(
@@ -49,7 +49,7 @@ export const useFieldBuilderStore = create<FieldBuilderStore>(
     stateData: { state: FieldBuilderState.Inactive },
     holdingStateData: null,
     clearHoldingStateData: () => set({ holdingStateData: null }),
-    moveFromHoldingToStateData: () => {
+    moveFromHolding: () => {
       const holdingStateData = get().holdingStateData
       if (!holdingStateData) return
       set({

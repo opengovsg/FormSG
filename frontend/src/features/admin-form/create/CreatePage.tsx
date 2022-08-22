@@ -54,22 +54,22 @@ export const CreatePage = (): JSX.Element => {
   return (
     <>
       <NavigationPrompt when={isDirty} />
-      <DirtyModal />
-      <Flex
-        h="100%"
-        w="100%"
-        overflow="auto !important"
-        bg="neutral.200"
-        direction="row"
-      >
-        <CreatePageSidebarProvider>
+      <CreatePageSidebarProvider>
+        <DirtyModal />
+        <Flex
+          h="100%"
+          w="100%"
+          overflow="auto !important"
+          bg="neutral.200"
+          direction="row"
+        >
           {shouldFeatureTourRender && (
             <FeatureTour onClose={() => setHasAdminSeenFeatureTour(true)} />
           )}
           <CreatePageSidebar />
           <CreatePageContent />
-        </CreatePageSidebarProvider>
-      </Flex>
+        </Flex>
+      </CreatePageSidebarProvider>
     </>
   )
 }

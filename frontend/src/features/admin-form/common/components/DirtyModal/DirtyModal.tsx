@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 import {
   Modal,
   ModalBody,
@@ -13,28 +13,95 @@ import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
 import { ModalCloseButton } from '~components/Modal'
 
+import { useDesignStore } from '~features/admin-form/create/builder-and-design/useDesignStore'
 import { useFieldBuilderStore } from '~features/admin-form/create/builder-and-design/useFieldBuilderStore'
+import { useCreatePageSidebar } from '~features/admin-form/create/common'
 
-export const DirtyModal = (): JSX.Element => {
+const useDirtyModal = () => {
   const isMobile = useIsMobile()
+  const { handleBuilderClick, handleDesignClick, handleLogicClick } =
+    useCreatePageSidebar()
+
+  const { designHoldingState, designMoveFromHolding, designClearHoldingState } =
+    useDesignStore(
+      useCallback(
+        (state) => ({
+          designHoldingState: state.holdingState,
+          designMoveFromHolding: state.moveFromHolding,
+          designClearHoldingState: state.clearHoldingState,
+        }),
+        [],
+      ),
+    )
+
   const {
-    holdingStateData,
-    clearHoldingStateData,
-    moveFromHoldingToStateData,
+    builderHoldingStateData,
+    builderClearHoldingStateData,
+    builderMoveFromHolding,
   } = useFieldBuilderStore(
     useCallback((state) => {
       return {
-        holdingStateData: state.holdingStateData,
-        clearHoldingStateData: state.clearHoldingStateData,
-        moveFromHoldingToStateData: state.moveFromHoldingToStateData,
+        builderHoldingStateData: state.holdingStateData,
+        builderClearHoldingStateData: state.clearHoldingStateData,
+        builderMoveFromHolding: state.moveFromHolding,
       }
     }, []),
   )
 
+  const handleConfirmNavigate = useCallback(() => {
+    if (builderHoldingStateData !== null) {
+      builderMoveFromHolding()
+      handleBuilderClick()
+    } else if (designHoldingState !== null) {
+      designMoveFromHolding()
+      handleDesignClick()
+    }
+  }, [
+    builderHoldingStateData,
+    builderMoveFromHolding,
+    designHoldingState,
+    designMoveFromHolding,
+    handleBuilderClick,
+    handleDesignClick,
+  ])
+
+  const handleCancelNavigate = useCallback(() => {
+    if (builderHoldingStateData !== null) {
+      builderClearHoldingStateData()
+    } else if (designHoldingState !== null) {
+      designClearHoldingState()
+    }
+  }, [
+    builderClearHoldingStateData,
+    builderHoldingStateData,
+    designClearHoldingState,
+    designHoldingState,
+  ])
+
+  const isOpen = useMemo(
+    () => builderHoldingStateData !== null || designHoldingState !== null,
+    [builderHoldingStateData, designHoldingState],
+  )
+
+  return {
+    isMobile,
+    isOpen,
+    handleConfirmNavigate,
+    handleCancelNavigate,
+  }
+}
+
+/**
+ * @preconditions Must be nested in CreatePageSidebarProvider as context is used.
+ */
+export const DirtyModal = (): JSX.Element => {
+  const { isOpen, handleCancelNavigate, handleConfirmNavigate, isMobile } =
+    useDirtyModal()
+
   return (
     <Modal
-      isOpen={!!holdingStateData}
-      onClose={clearHoldingStateData}
+      isOpen={isOpen}
+      onClose={handleCancelNavigate}
       returnFocusOnClose={false}
     >
       <ModalOverlay />
@@ -55,7 +122,7 @@ export const DirtyModal = (): JSX.Element => {
             <Button
               isFullWidth={isMobile}
               colorScheme="danger"
-              onClick={moveFromHoldingToStateData}
+              onClick={handleConfirmNavigate}
               autoFocus
             >
               Yes, discard changes
@@ -64,7 +131,7 @@ export const DirtyModal = (): JSX.Element => {
               colorScheme="secondary"
               variant="clear"
               isFullWidth={isMobile}
-              onClick={clearHoldingStateData}
+              onClick={handleCancelNavigate}
             >
               No, return to editing
             </Button>
