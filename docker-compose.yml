@@ -124,6 +124,7 @@ services:
     container_name: 'formsg-db'
     environment:
       - MONGODB_DATABASE=formsg
+      - MONGODB_ADVERTISED_HOSTNAME=database
       - MONGODB_REPLICA_SET_MODE=primary
       - ALLOW_EMPTY_PASSWORD=yes
     volumes:
