@@ -39,7 +39,7 @@ export const transformAxiosError = (e: Error): ApiError => {
       return new Error(
         'There was a problem with your internet connection. Please check your network and try again.',
       )
-    }
+    } else return e
   }
   return e
 }
