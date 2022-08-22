@@ -252,12 +252,14 @@ export const PublicFormProvider = ({
                   captchaResponse,
                 },
                 {
-                  onSuccess: ({ submissionId }) =>
+                  onSuccess: ({ submissionId }) => {
                     setSubmissionData({
                       id: submissionId,
                       // TODO: Server should return server time so browser time is not used.
                       timeInEpochMs: Date.now(),
-                    }),
+                    })
+                    trackSubmitForm(form)
+                  },
                 },
               )
               // Using catch since we are using mutateAsync and react-hook-form will continue bubbling this up.
