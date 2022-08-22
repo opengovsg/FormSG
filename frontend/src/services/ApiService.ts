@@ -19,22 +19,27 @@ export class HttpError extends Error {
  * @returns HttpError if AxiosError, else original error
  */
 export const transformAxiosError = (e: Error): ApiError => {
-  if (axios.isAxiosError(e) && e.response) {
-    const statusCode = e.response.status
-    if (statusCode === 429) {
-      return new HttpError('Please try again later.', statusCode)
+  if (axios.isAxiosError(e)) {
+    if (e.response) {
+      const statusCode = e.response.status
+      if (statusCode === 429) {
+        return new HttpError('Please try again later.', statusCode)
+      }
+      if (typeof e.response.data === 'string') {
+        return new HttpError(e.response.data, statusCode)
+      }
+      if (e.response.data?.message) {
+        return new HttpError(e.response.data.message, statusCode)
+      }
+      if (e.response.statusText) {
+        return new HttpError(e.response.statusText, statusCode)
+      }
+      return new HttpError(`Http ${statusCode} error`, statusCode)
+    } else if (e.request) {
+      return new Error(
+        'There was a problem with your internet connection. Please check your network and try again.',
+      )
     }
-    if (typeof e.response.data === 'string') {
-      return new HttpError(e.response.data, statusCode)
-    }
-    if (e.response.data?.message) {
-      return new HttpError(e.response.data.message, statusCode)
-    }
-    if (e.response.statusText) {
-      return new HttpError(e.response.statusText, statusCode)
-    }
-
-    return new HttpError(`Http ${statusCode} error`, statusCode)
   }
   return e
 }
