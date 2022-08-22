@@ -12,6 +12,7 @@ import { useAdminFormLogic } from '../../logic/hooks/useAdminFormLogic'
 import { FIELD_LIST_DROP_ID } from '../constants'
 import { DndPlaceholderProps } from '../types'
 import {
+  isDirtySelector,
   setToEditEndPageSelector,
   useFieldBuilderStore,
 } from '../useFieldBuilderStore'
@@ -36,6 +37,7 @@ export const FormBuilder = ({
   const { formLogics } = useAdminFormLogic()
   const { handleBuilderClick } = useCreatePageSidebar()
   const setEditEndPage = useFieldBuilderStore(setToEditEndPageSelector)
+  const isDirty = useFieldBuilderStore(isDirtySelector)
   const visibleFieldIds = useMemo(
     () =>
       getVisibleFieldIds(
@@ -46,9 +48,11 @@ export const FormBuilder = ({
   )
 
   const handleEditEndPageClick = useCallback(() => {
-    setEditEndPage()
+    setEditEndPage(isDirty)
+    if (isDirty) return
+
     handleBuilderClick()
-  }, [handleBuilderClick, setEditEndPage])
+  }, [handleBuilderClick, isDirty, setEditEndPage])
 
   const bg = useBgColor({ colorTheme: useDesignColorTheme() })
 

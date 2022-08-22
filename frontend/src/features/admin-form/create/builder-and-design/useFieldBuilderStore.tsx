@@ -30,7 +30,7 @@ export type FieldBuilderStore = {
     holding?: boolean,
   ) => void
   updateEditState: (field: FormFieldDto, holding?: boolean) => void
-  setEditEndPage: () => void
+  setEditEndPage: (holding?: boolean) => void
   setToInactive: () => void
   isDirty: boolean
   setIsDirty: (isDirty: boolean) => void
@@ -99,8 +99,15 @@ export const useFieldBuilderStore = create<FieldBuilderStore>(
         set({ stateData })
       }
     },
-    setEditEndPage: () => {
-      set({ stateData: { state: FieldBuilderState.EditingEndPage } })
+    setEditEndPage: (holding?: boolean) => {
+      const nextState: FieldBuilderCreateEditStateData = {
+        state: FieldBuilderState.EditingEndPage,
+      }
+      if (holding) {
+        set({ holdingStateData: nextState })
+      } else {
+        set({ stateData: nextState })
+      }
     },
     setToInactive: () => {
       set({ stateData: { state: FieldBuilderState.Inactive } })
