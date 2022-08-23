@@ -2,7 +2,6 @@ import { HelmetProvider } from 'react-helmet-async'
 import { QueryClient, QueryClientProvider } from 'react-query'
 import { ReactQueryDevtools } from 'react-query/devtools'
 import { BrowserRouter } from 'react-router-dom'
-import { Partytown } from '@builder.io/partytown/react'
 import { ChakraProvider } from '@chakra-ui/react'
 
 import { theme } from '~theme/index'
@@ -33,7 +32,6 @@ export const App = (): JSX.Element => (
     <QueryClientProvider client={queryClient}>
       <ReactQueryDevtools initialIsOpen={false} />
       <AppHelmet />
-      <Partytown debug={true} forward={['dataLayer.push']} />
       <BrowserRouter>
         <ChakraProvider theme={theme} resetCSS>
           <AuthProvider>

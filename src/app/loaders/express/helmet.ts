@@ -37,6 +37,8 @@ const helmetMiddlewares = () => {
       config.aws.imageBucketUrl, // Image field
       config.aws.logoBucketUrl, // Form logo
       '*', // TODO: Remove when we host our own images for Image field and Form Logo
+      'https://*.google-analytics.com', // GA4 https://developers.google.com/tag-platform/tag-manager/web/csp
+      'https://*.googletagmanager.com',
     ],
     fontSrc: ["'self'", 'data:', 'https://fonts.gstatic.com/'],
     scriptSrc: [
@@ -49,6 +51,7 @@ const helmetMiddlewares = () => {
       'https://www.recaptcha.net/recaptcha/',
       'https://www.gstatic.com/recaptcha/',
       'https://www.gstatic.cn/',
+      'https://*.googletagmanager.com', // GA4 https://developers.google.com/tag-platform/tag-manager/web/csp
     ],
     connectSrc: [
       "'self'",
@@ -59,6 +62,9 @@ const helmetMiddlewares = () => {
       config.aws.attachmentBucketUrl, // Attachment downloads
       config.aws.imageBucketUrl, // Image field
       config.aws.logoBucketUrl, // Form logo
+      'https://*.google-analytics.com', // GA4 https://developers.google.com/tag-platform/tag-manager/web/csp
+      'https://*.analytics.google.com',
+      'https://*.googletagmanager.com',
     ],
     frameSrc: [
       "'self'",
