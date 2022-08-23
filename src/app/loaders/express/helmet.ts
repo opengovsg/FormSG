@@ -1,4 +1,3 @@
-import crypto from 'crypto'
 import { RequestHandler } from 'express'
 import helmet from 'helmet'
 import { ContentSecurityPolicyOptions } from 'helmet/dist/types/middlewares/content-security-policy'
@@ -12,11 +11,6 @@ const helmetMiddlewares = () => {
     if (req.secure) {
       helmet.hsts({ maxAge: 5184000 })(req, res, next) // 60 days
     } else next()
-  }
-
-  const addNonce: RequestHandler = (req, res, next) => {
-    res.locals.cspNonce = crypto.randomBytes(16).toString('hex')
-    next()
   }
 
   const xssFilterMiddleware = helmet.xssFilter()
@@ -38,7 +32,7 @@ const helmetMiddlewares = () => {
       "'self'",
       'blob:',
       'data:',
-      'https://www.googletagmanager.com/',
+      'https://www.googletagmanager.com/', // TODO #4279: This is used for Universal Analytics, so remove after react rollout
       'https://www.google-analytics.com/',
       `https://s3-${config.aws.region}.amazonaws.com/agency.form.sg/`, // Agency logos
       config.aws.imageBucketUrl, // Image field
@@ -48,19 +42,18 @@ const helmetMiddlewares = () => {
       'https://*.googletagmanager.com',
     ],
     fontSrc: ["'self'", 'data:', 'https://fonts.gstatic.com/'],
-    // scriptSrc: [
-    //   "'self'",
-    //   'https://www.googletagmanager.com/',
-    //   'https://ssl.google-analytics.com/',
-    //   'https://www.google-analytics.com/',
-    //   'https://www.tagmanager.google.com/',
-    //   'https://www.google.com/recaptcha/',
-    //   'https://www.recaptcha.net/recaptcha/',
-    //   'https://www.gstatic.com/recaptcha/',
-    //   'https://www.gstatic.cn/',
-    //   'https://*.googletagmanager.com', // GA4 https://developers.google.com/tag-platform/tag-manager/web/csp
-    //   `'nonce-${res.locals.cspNonce}'`,
-    // ],
+    scriptSrc: [
+      "'self'",
+      'https://www.googletagmanager.com/',
+      'https://ssl.google-analytics.com/',
+      'https://www.google-analytics.com/',
+      'https://www.tagmanager.google.com/',
+      'https://www.google.com/recaptcha/',
+      'https://www.recaptcha.net/recaptcha/',
+      'https://www.gstatic.com/recaptcha/',
+      'https://www.gstatic.cn/',
+      'https://*.googletagmanager.com', // GA4 https://developers.google.com/tag-platform/tag-manager/web/csp
+    ],
     connectSrc: [
       "'self'",
       'https://www.google-analytics.com/',
@@ -109,31 +102,13 @@ const helmetMiddlewares = () => {
   // See https://github.com/helmetjs/helmet for use of null to disable default
   if (config.isDev) cspOptionalDirectives.upgradeInsecureRequests = null
 
-  const contentSecurityPolicyMiddleware: RequestHandler = (req, res, next) => {
-    res.locals.cspNonce = crypto.randomBytes(16).toString('hex')
-
-    helmet.contentSecurityPolicy({
-      useDefaults: true,
-      directives: {
-        ...cspCoreDirectives,
-        ...cspOptionalDirectives,
-        scriptSrc: [
-          "'self'",
-          'https://www.googletagmanager.com/',
-          'https://ssl.google-analytics.com/',
-          'https://www.google-analytics.com/',
-          'https://www.tagmanager.google.com/',
-          'https://www.google.com/recaptcha/',
-          'https://www.recaptcha.net/recaptcha/',
-          'https://www.gstatic.com/recaptcha/',
-          'https://www.gstatic.cn/',
-          'https://*.googletagmanager.com', // GA4 https://developers.google.com/tag-platform/tag-manager/web/csp
-          `'nonce-${res.locals.cspNonce}'`,
-        ],
-      },
-    })(req, res, next)
-  }
-
+  const contentSecurityPolicyMiddleware = helmet.contentSecurityPolicy({
+    useDefaults: true,
+    directives: {
+      ...cspCoreDirectives,
+      ...cspOptionalDirectives,
+    },
+  })
   return [
     xssFilterMiddleware,
     noSniffMiddleware,
@@ -142,7 +117,6 @@ const helmetMiddlewares = () => {
     hidePoweredByMiddleware,
     hstsMiddleware,
     referrerPolicyMiddleware,
-    addNonce,
     contentSecurityPolicyMiddleware,
   ]
 }
