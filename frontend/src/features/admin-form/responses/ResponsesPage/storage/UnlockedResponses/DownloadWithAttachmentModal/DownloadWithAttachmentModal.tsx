@@ -99,7 +99,6 @@ export const DownloadWithAttachmentModal = ({
           {currentStep === DownloadWithAttachmentFlowStates.Progress && (
             <ProgressModalContent
               downloadPercentage={downloadPercentage}
-              isDownloading={isDownloading}
               onCancel={onCancel}
             >
               <Text mb="1rem">
