@@ -73,6 +73,8 @@ If you are on macOS Monetery or higher, port 5000 is now used by the system. Thi
   - `docker-compose.yml`
     - Introduce a new env var `PORT`
     - Update `APP_URL`
+  - `frontend/package.json`
+    - Update the proxy URL
 - [Disable control center](https://apple.stackexchange.com/a/431164)
 
 ### Running Locally
