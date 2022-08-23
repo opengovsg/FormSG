@@ -17,10 +17,14 @@ import { useDesignStore } from '~features/admin-form/create/builder-and-design/u
 import { useFieldBuilderStore } from '~features/admin-form/create/builder-and-design/useFieldBuilderStore'
 import { useCreatePageSidebar } from '~features/admin-form/create/common'
 
-const useDirtyModal = () => {
+export const useDirtyModal = () => {
   const isMobile = useIsMobile()
-  const { handleBuilderClick, handleDesignClick, handleLogicClick } =
-    useCreatePageSidebar()
+  const {
+    handleBuilderClick,
+    handleDesignClick,
+    pendingTab,
+    movePendingToActiveTab,
+  } = useCreatePageSidebar()
 
   const { designHoldingState, designMoveFromHolding, designClearHoldingState } =
     useDesignStore(
@@ -55,6 +59,8 @@ const useDirtyModal = () => {
     } else if (designHoldingState !== null) {
       designMoveFromHolding()
       handleDesignClick()
+    } else if (pendingTab !== null) {
+      movePendingToActiveTab()
     }
   }, [
     builderHoldingStateData,
@@ -63,6 +69,8 @@ const useDirtyModal = () => {
     designMoveFromHolding,
     handleBuilderClick,
     handleDesignClick,
+    movePendingToActiveTab,
+    pendingTab,
   ])
 
   const handleCancelNavigate = useCallback(() => {
@@ -79,8 +87,11 @@ const useDirtyModal = () => {
   ])
 
   const isOpen = useMemo(
-    () => builderHoldingStateData !== null || designHoldingState !== null,
-    [builderHoldingStateData, designHoldingState],
+    () =>
+      builderHoldingStateData !== null ||
+      designHoldingState !== null ||
+      pendingTab !== null,
+    [builderHoldingStateData, designHoldingState, pendingTab],
   )
 
   return {

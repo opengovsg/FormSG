@@ -17,6 +17,7 @@ import {
   useDesignStore,
 } from '../../builder-and-design/useDesignStore'
 import {
+  isDirtySelector,
   setToInactiveSelector,
   useFieldBuilderStore,
 } from '../../builder-and-design/useFieldBuilderStore'
@@ -29,10 +30,12 @@ export enum DrawerTabs {
 
 type CreatePageSidebarContextProps = {
   activeTab: DrawerTabs | null
-  isDrawerOpen: boolean
+  pendingTab: DrawerTabs | null
+  movePendingToActiveTab: () => void
   handleBuilderClick: () => void
   handleDesignClick: () => void
   handleLogicClick: () => void
+  isDrawerOpen: boolean
   handleClose: () => void
   fieldListTabIndex: FieldListTabIndex
   setFieldListTabIndex: (tabIndex: FieldListTabIndex) => void
@@ -56,11 +59,14 @@ export const useCreatePageSidebarContext =
   (): CreatePageSidebarContextProps => {
     const isMobile = useIsMobile()
     const [activeTab, setActiveTab] = useState<DrawerTabs | null>(null)
+    // Any pending tab due to unsaved changes.
+    const [pendingTab, setPendingTab] = useState<DrawerTabs | null>(null)
     const isDrawerOpen = useMemo(
       () => activeTab !== null && activeTab !== DrawerTabs.Logic,
       [activeTab],
     )
     const setFieldsToInactive = useFieldBuilderStore(setToInactiveSelector)
+    const isDirty = useFieldBuilderStore(isDirtySelector)
     const setDesignState = useDesignStore(setStateSelector)
 
     const [fieldListTabIndex, setFieldListTabIndex] =
@@ -77,19 +83,30 @@ export const useCreatePageSidebarContext =
       if (activeTab !== DrawerTabs.Design) setDesignState(DesignState.Inactive)
     }, [activeTab, setDesignState])
 
+    const setPendingTabIfDirty = useCallback(
+      (tab: DrawerTabs) => {
+        if (isDirty) {
+          setPendingTab(tab)
+        } else {
+          setActiveTab(tab)
+        }
+      },
+      [isDirty],
+    )
+
     const handleBuilderClick = useCallback(
-      () => setActiveTab(DrawerTabs.Builder),
-      [setActiveTab],
+      () => setPendingTabIfDirty(DrawerTabs.Builder),
+      [setPendingTabIfDirty],
     )
 
     const handleDesignClick = useCallback(
-      () => setActiveTab(DrawerTabs.Design),
-      [setActiveTab],
+      () => setPendingTabIfDirty(DrawerTabs.Design),
+      [setPendingTabIfDirty],
     )
 
     const handleLogicClick = useCallback(
-      () => setActiveTab(DrawerTabs.Logic),
-      [setActiveTab],
+      () => setPendingTabIfDirty(DrawerTabs.Logic),
+      [setPendingTabIfDirty],
     )
 
     const handleClose = useCallback(() => {
@@ -99,8 +116,16 @@ export const useCreatePageSidebarContext =
       setActiveTab(null)
     }, [isMobile, setFieldsToInactive])
 
+    const movePendingToActiveTab = useCallback(() => {
+      if (pendingTab === null) return
+      setActiveTab(pendingTab)
+      setPendingTab(null)
+    }, [pendingTab, setActiveTab, setPendingTab])
+
     return {
       activeTab,
+      pendingTab,
+      movePendingToActiveTab,
       isDrawerOpen,
       handleBuilderClick,
       handleDesignClick,
