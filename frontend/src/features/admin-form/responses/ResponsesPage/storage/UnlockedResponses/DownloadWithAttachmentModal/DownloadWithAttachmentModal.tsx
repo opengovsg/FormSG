@@ -84,6 +84,7 @@ export const DownloadWithAttachmentModal = ({
       closeOnOverlayClick={
         currentStep !== DownloadWithAttachmentFlowStates.Progress
       }
+      closeOnEsc={currentStep !== DownloadWithAttachmentFlowStates.Progress}
     >
       <ModalOverlay />
       <ModalContent overflow="hidden">

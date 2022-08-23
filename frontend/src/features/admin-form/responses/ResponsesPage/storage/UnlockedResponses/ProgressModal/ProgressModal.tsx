@@ -68,6 +68,7 @@ export const ProgressModal = ({
       size={modalSize}
       isOpen={isOpen}
       onClose={onClose}
+      closeOnEsc={currentStep !== ProgressFlowStates.Progress}
       closeOnOverlayClick={currentStep !== ProgressFlowStates.Progress}
     >
       <ModalOverlay />
