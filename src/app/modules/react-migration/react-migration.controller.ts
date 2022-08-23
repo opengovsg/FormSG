@@ -94,7 +94,6 @@ export const serveForm: ControllerHandler<
     // Delete existing cookies to prevent infinite redirection
     if (req.cookies) {
       res.clearCookie(config.reactMigration.respondentCookieName)
-      res.clearCookie(config.reactMigration.adminCookieName)
     }
   } else if (config.reactMigration.respondentCookieName in req.cookies) {
     // Note: the respondent cookie is for the whole session, not for a specific form.
