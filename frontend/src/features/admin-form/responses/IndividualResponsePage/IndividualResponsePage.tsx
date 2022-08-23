@@ -1,5 +1,11 @@
 import { memo, useCallback, useMemo } from 'react'
-import { BiChevronLeft, BiChevronRight, BiLeftArrowAlt } from 'react-icons/bi'
+import {
+  BiChevronLeft,
+  BiChevronRight,
+  BiDownload,
+  BiLeftArrowAlt,
+} from 'react-icons/bi'
+import { useMutation } from 'react-query'
 import {
   Link as ReactLink,
   useLocation,
@@ -17,14 +23,19 @@ import {
   StackDivider,
   Text,
 } from '@chakra-ui/react'
+import FileSaver from 'file-saver'
+import simplur from 'simplur'
 
+import Button from '~components/Button'
 import IconButton from '~components/IconButton'
 
 import {
   SecretKeyVerification,
   useStorageResponsesContext,
 } from '../ResponsesPage/storage'
+import { AttachmentsDownloadMap } from '../ResponsesPage/storage/types'
 import { useUnlockedResponses } from '../ResponsesPage/storage/UnlockedResponses/UnlockedResponsesProvider'
+import { downloadAndDecryptAttachmentsAsZip } from '../ResponsesPage/storage/utils/downloadAndDecryptAttachment'
 
 import { DecryptedRow } from './DecryptedRow'
 import { useIndividualSubmission } from './queries'
@@ -132,6 +143,43 @@ export const IndividualResponsePage = (): JSX.Element => {
     return `..?${searchParams}`
   }, [lastNavPage, lastNavSubmissionId])
 
+  const attachmentDownloadUrls = useMemo(() => {
+    const attachmentDownloadUrls = new Map()
+    data?.responses.forEach(({ questionNumber, downloadUrl, answer }) => {
+      if (!questionNumber || !downloadUrl || !answer) return
+      attachmentDownloadUrls.set(questionNumber, {
+        url: downloadUrl,
+        filename: answer,
+      })
+    })
+    return attachmentDownloadUrls
+  }, [data?.responses])
+
+  const handleDownloadMutation = useMutation(
+    async ({
+      attachmentDownloadUrls,
+      secretKey,
+    }: {
+      attachmentDownloadUrls: AttachmentsDownloadMap
+      secretKey: string
+    }) => {
+      const byteArray = await downloadAndDecryptAttachmentsAsZip(
+        attachmentDownloadUrls,
+        secretKey,
+      )
+      if (!byteArray) throw new Error('Invalid file')
+      return FileSaver.saveAs(
+        new Blob([byteArray]),
+        `RefNo ${submissionId}.zip`,
+      )
+    },
+  )
+
+  const handleDownload = useCallback(() => {
+    if (!secretKey) return
+    return handleDownloadMutation.mutate({ attachmentDownloadUrls, secretKey })
+  }, [attachmentDownloadUrls, handleDownloadMutation, secretKey])
+
   if (!secretKey) {
     return <SecretKeyVerification />
   }
@@ -189,10 +237,31 @@ export const IndividualResponsePage = (): JSX.Element => {
           </Text>
           <Box display="inline-flex">
             <Text as="span" textStyle="subhead-1">
-              Time:&nbsp;
+              Timestamp:
             </Text>
             <Skeleton isLoaded={!isLoading && !isError}>
-              {data?.submissionTime ?? 'Loading...'}
+              &nbsp;{data?.submissionTime ?? 'Loading...'}
+            </Skeleton>
+          </Box>
+          <Box
+            alignItems="center"
+            display="inline-flex"
+            hidden={attachmentDownloadUrls.size === 0}
+          >
+            <Text as="span" textStyle="subhead-1">
+              Attachments:
+            </Text>
+            <Skeleton isLoaded={!isLoading && !isError}>
+              &nbsp;
+              <Button
+                variant="link"
+                aria-label="Download attachments as ZIP"
+                isDisabled={handleDownloadMutation.isLoading}
+                onClick={handleDownload}
+                rightIcon={<BiDownload fontSize="1.5rem" />}
+              >
+                {simplur`Download ${attachmentDownloadUrls.size} attachment[|s] as ZIP`}
+              </Button>
             </Skeleton>
           </Box>
         </Stack>
