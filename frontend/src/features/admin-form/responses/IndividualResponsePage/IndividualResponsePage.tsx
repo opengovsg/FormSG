@@ -183,7 +183,7 @@ export const IndividualResponsePage = (): JSX.Element => {
         >
           <Text display="inline-flex">
             <Text as="span" textStyle="subhead-1">
-              Reference number:
+              Response ID:
             </Text>
             &nbsp;{submissionId}
           </Text>
