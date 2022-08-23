@@ -69,7 +69,10 @@ If you are on macOS Monetery or higher, port 5000 is now used by the system. Thi
 
 - Update the backend ports in these environment variables:
   - `Dockerfile.development`
+    - Update exposed port
   - `docker-compose.yml`
+    - Introduce a new env var `PORT`
+    - Update `APP_URL`
 - [Disable control center](https://apple.stackexchange.com/a/431164)
 
 ### Running Locally
