@@ -176,7 +176,7 @@ export const EndPageBuilderInput = ({
           variant="clear"
           colorScheme="secondary"
           isDisabled={endPageMutation.isLoading}
-          onClick={closeBuilderDrawer}
+          onClick={() => closeBuilderDrawer()}
         >
           Cancel
         </Button>

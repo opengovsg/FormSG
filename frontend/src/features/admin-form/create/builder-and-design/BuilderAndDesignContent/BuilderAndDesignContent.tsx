@@ -36,7 +36,9 @@ export const BuilderAndDesignContent = ({
       ),
     )
 
-  useEffect(() => setFieldsToInactive, [setFieldsToInactive])
+  useEffect(() => {
+    setFieldsToInactive()
+  }, [setFieldsToInactive])
 
   return (
     <Flex flex={1} overflow="auto">

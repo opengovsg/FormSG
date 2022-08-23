@@ -167,6 +167,10 @@ export const useEditFieldForm = <FormShape, FieldShape extends FormField>({
     [stateData, updateCreateState, updateEditState],
   )
 
+  const handleCancel = useCallback(() => {
+    setToInactive()
+  }, [setToInactive])
+
   useDebounce(
     () => handleChange(transform.output(clonedWatchedInputs, field)),
     300,
@@ -183,7 +187,7 @@ export const useEditFieldForm = <FormShape, FieldShape extends FormField>({
     formMethods: editForm,
     buttonText,
     handleUpdateField,
-    handleCancel: setToInactive,
+    handleCancel,
     isLoading: createFieldMutation.isLoading || editFieldMutation.isLoading,
   }
 }

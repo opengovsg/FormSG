@@ -31,7 +31,7 @@ export type FieldBuilderStore = {
   ) => void
   updateEditState: (field: FormFieldDto, holding?: boolean) => void
   setEditEndPage: (holding?: boolean) => void
-  setToInactive: () => void
+  setToInactive: (holding?: boolean) => void
   isDirty: boolean
   setIsDirty: (isDirty: boolean) => void
   stateData:
@@ -39,7 +39,10 @@ export type FieldBuilderStore = {
     | { state: FieldBuilderState.Inactive }
   // Used when there is a dirty state and we want to hold the next state to be set.
   // Will be used to set stateData if user confirms discarding changes.
-  holdingStateData: FieldBuilderCreateEditStateData | null
+  holdingStateData:
+    | FieldBuilderCreateEditStateData
+    | { state: FieldBuilderState.Inactive }
+    | null
   clearHoldingStateData: () => void
   moveFromHolding: () => void
 }
@@ -109,8 +112,15 @@ export const useFieldBuilderStore = create<FieldBuilderStore>(
         set({ stateData: nextState })
       }
     },
-    setToInactive: () => {
-      set({ stateData: { state: FieldBuilderState.Inactive } })
+    setToInactive: (holding?: boolean) => {
+      const nextState: FieldBuilderStore['holdingStateData'] = {
+        state: FieldBuilderState.Inactive,
+      }
+      if (holding) {
+        set({ holdingStateData: nextState })
+      } else {
+        set({ stateData: nextState })
+      }
     },
   })),
 )

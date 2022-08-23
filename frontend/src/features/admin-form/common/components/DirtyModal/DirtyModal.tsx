@@ -24,6 +24,7 @@ export const useDirtyModal = () => {
     handleDesignClick,
     pendingTab,
     movePendingToActiveTab,
+    clearPendingTab,
   } = useCreatePageSidebar()
 
   const { designHoldingState, designMoveFromHolding, designClearHoldingState } =
@@ -59,7 +60,7 @@ export const useDirtyModal = () => {
     } else if (designHoldingState !== null) {
       designMoveFromHolding()
       handleDesignClick()
-    } else if (pendingTab !== null) {
+    } else if (pendingTab !== undefined) {
       movePendingToActiveTab()
     }
   }, [
@@ -78,19 +79,23 @@ export const useDirtyModal = () => {
       builderClearHoldingStateData()
     } else if (designHoldingState !== null) {
       designClearHoldingState()
+    } else if (pendingTab !== undefined) {
+      clearPendingTab()
     }
   }, [
     builderClearHoldingStateData,
     builderHoldingStateData,
+    clearPendingTab,
     designClearHoldingState,
     designHoldingState,
+    pendingTab,
   ])
 
   const isOpen = useMemo(
     () =>
       builderHoldingStateData !== null ||
       designHoldingState !== null ||
-      pendingTab !== null,
+      pendingTab !== undefined,
     [builderHoldingStateData, designHoldingState, pendingTab],
   )
 

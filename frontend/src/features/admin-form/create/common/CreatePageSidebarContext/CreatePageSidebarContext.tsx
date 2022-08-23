@@ -17,7 +17,6 @@ import {
   useDesignStore,
 } from '../../builder-and-design/useDesignStore'
 import {
-  isDirtySelector,
   setToInactiveSelector,
   useFieldBuilderStore,
 } from '../../builder-and-design/useFieldBuilderStore'
@@ -30,13 +29,14 @@ export enum DrawerTabs {
 
 type CreatePageSidebarContextProps = {
   activeTab: DrawerTabs | null
-  pendingTab: DrawerTabs | null
+  pendingTab?: DrawerTabs | null
   movePendingToActiveTab: () => void
-  handleBuilderClick: () => void
-  handleDesignClick: () => void
-  handleLogicClick: () => void
+  clearPendingTab: () => void
+  handleBuilderClick: (shouldBePending?: boolean) => void
+  handleDesignClick: (shouldBePending?: boolean) => void
+  handleLogicClick: (shouldBePending?: boolean) => void
+  handleClose: (shouldBePending?: boolean) => void
   isDrawerOpen: boolean
-  handleClose: () => void
   fieldListTabIndex: FieldListTabIndex
   setFieldListTabIndex: (tabIndex: FieldListTabIndex) => void
 }
@@ -60,13 +60,15 @@ export const useCreatePageSidebarContext =
     const isMobile = useIsMobile()
     const [activeTab, setActiveTab] = useState<DrawerTabs | null>(null)
     // Any pending tab due to unsaved changes.
-    const [pendingTab, setPendingTab] = useState<DrawerTabs | null>(null)
+    // Pending tab can be `null` if the next tab state is to be closed.
+    const [pendingTab, setPendingTab] = useState<
+      DrawerTabs | null | undefined
+    >()
     const isDrawerOpen = useMemo(
       () => activeTab !== null && activeTab !== DrawerTabs.Logic,
       [activeTab],
     )
     const setFieldsToInactive = useFieldBuilderStore(setToInactiveSelector)
-    const isDirty = useFieldBuilderStore(isDirtySelector)
     const setDesignState = useDesignStore(setStateSelector)
 
     const [fieldListTabIndex, setFieldListTabIndex] =
@@ -83,48 +85,62 @@ export const useCreatePageSidebarContext =
       if (activeTab !== DrawerTabs.Design) setDesignState(DesignState.Inactive)
     }, [activeTab, setDesignState])
 
-    const setPendingTabIfDirty = useCallback(
-      (tab: DrawerTabs) => {
-        if (isDirty) {
+    const setActiveOrPendingTab = useCallback(
+      (tab: DrawerTabs | null, shouldBePending?: boolean) => {
+        if (shouldBePending) {
           setPendingTab(tab)
         } else {
           setActiveTab(tab)
+          if (tab === null && !isMobile) {
+            setFieldsToInactive()
+          }
         }
       },
-      [isDirty],
+      [isMobile, setFieldsToInactive],
     )
 
+    const clearPendingTab = useCallback(() => {
+      setPendingTab(undefined)
+    }, [])
+
     const handleBuilderClick = useCallback(
-      () => setPendingTabIfDirty(DrawerTabs.Builder),
-      [setPendingTabIfDirty],
+      (shouldBePending?: boolean) =>
+        setActiveOrPendingTab(DrawerTabs.Builder, shouldBePending),
+      [setActiveOrPendingTab],
     )
 
     const handleDesignClick = useCallback(
-      () => setPendingTabIfDirty(DrawerTabs.Design),
-      [setPendingTabIfDirty],
+      (shouldBePending?: boolean) =>
+        setActiveOrPendingTab(DrawerTabs.Design, shouldBePending),
+      [setActiveOrPendingTab],
     )
 
     const handleLogicClick = useCallback(
-      () => setPendingTabIfDirty(DrawerTabs.Logic),
-      [setPendingTabIfDirty],
+      (shouldBePending?: boolean) =>
+        setActiveOrPendingTab(DrawerTabs.Logic, shouldBePending),
+      [setActiveOrPendingTab],
     )
 
-    const handleClose = useCallback(() => {
-      if (!isMobile) {
-        setFieldsToInactive()
-      }
-      setActiveTab(null)
-    }, [isMobile, setFieldsToInactive])
+    const handleClose = useCallback(
+      (shouldBePending?: boolean) => {
+        setActiveOrPendingTab(null, shouldBePending)
+      },
+      [setActiveOrPendingTab],
+    )
 
     const movePendingToActiveTab = useCallback(() => {
-      if (pendingTab === null) return
+      if (pendingTab === undefined) return
       setActiveTab(pendingTab)
-      setPendingTab(null)
-    }, [pendingTab, setActiveTab, setPendingTab])
+      if (pendingTab === null && !isMobile) {
+        setFieldsToInactive()
+      }
+      setPendingTab(undefined)
+    }, [isMobile, pendingTab, setFieldsToInactive])
 
     return {
       activeTab,
       pendingTab,
+      clearPendingTab,
       movePendingToActiveTab,
       isDrawerOpen,
       handleBuilderClick,

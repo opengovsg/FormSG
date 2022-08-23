@@ -183,7 +183,7 @@ export const DesignInput = (): JSX.Element | null => {
             estTimeTaken: estTimeTakenTransformed,
             ...rest,
           },
-          { onSuccess: handleClose },
+          { onSuccess: () => handleClose() },
         )
       } else {
         const customLogoMeta = await handleUploadLogo(attachment)
@@ -193,7 +193,7 @@ export const DesignInput = (): JSX.Element | null => {
             estTimeTaken: estTimeTakenTransformed,
             ...rest,
           },
-          { onSuccess: handleClose },
+          { onSuccess: () => handleClose() },
         )
       }
     },
