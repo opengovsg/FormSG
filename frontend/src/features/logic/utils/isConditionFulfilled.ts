@@ -41,9 +41,19 @@ export const isConditionFulfilled = (
 
   switch (condition.state) {
     case LogicConditionState.Lte:
-      return Number(currentValue) <= Number(condition.value)
+      if (!currentValue)
+        // currentValue must be populated for the condition to be checked
+        return false
+      else {
+        return Number(currentValue) <= Number(condition.value)
+      }
     case LogicConditionState.Gte:
-      return Number(currentValue) >= Number(condition.value)
+      if (!currentValue)
+        // currentValue must be populated for the condition to be checked
+        return false
+      else {
+        return Number(currentValue) >= Number(condition.value)
+      }
     case LogicConditionState.Either: {
       // currentValue must be in a value in condition.value
       const condValuesArray = Array.isArray(condition.value)
