@@ -218,14 +218,19 @@ export const FieldRowContainer = ({
     [duplicateFieldMutation, deleteFieldMutation],
   )
 
+  const isDragDisabled = useMemo(() => {
+    return (
+      !isActive ||
+      isDirty ||
+      !!numFormFieldMutations ||
+      stateData.state === FieldBuilderState.CreatingField
+    )
+  }, [isActive, isDirty, numFormFieldMutations, stateData.state])
+
   return (
     <Draggable
       index={index}
-      isDragDisabled={
-        !isActive ||
-        !!numFormFieldMutations ||
-        stateData.state === FieldBuilderState.CreatingField
-      }
+      isDragDisabled={isDragDisabled}
       disableInteractiveElementBlocking
       draggableId={field._id}
     >
