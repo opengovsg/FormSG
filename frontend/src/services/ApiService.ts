@@ -1,4 +1,5 @@
 import axios, { AxiosError } from 'axios'
+import { StatusCodes } from 'http-status-codes'
 
 import { ApiError } from '~typings/core'
 
@@ -22,7 +23,7 @@ export const transformAxiosError = (e: Error): ApiError => {
   if (axios.isAxiosError(e)) {
     if (e.response) {
       const statusCode = e.response.status
-      if (statusCode === 429) {
+      if (statusCode === StatusCodes.TOO_MANY_REQUESTS) {
         return new HttpError('Please try again later.', statusCode)
       }
       if (typeof e.response.data === 'string') {
