@@ -9,9 +9,9 @@ import { EditFieldDrawerDecorator, StoryRouter } from '~utils/storybook'
 
 import { EditCountryRegion } from './EditCountryRegion'
 
-const DEFAULT_COUNTRY_FIELD: CountryRegionFieldBase = {
-  title: 'Storybook Country',
-  description: 'Some description about Country',
+const DEFAULT_COUNTRY_REGION_FIELD: CountryRegionFieldBase = {
+  title: 'Storybook Country/Region',
+  description: 'Some description about Country/Region',
   required: true,
   disabled: false,
   fieldType: BasicField.CountryRegion,
@@ -20,7 +20,7 @@ const DEFAULT_COUNTRY_FIELD: CountryRegionFieldBase = {
 }
 
 export default {
-  title: 'Features/AdminForm/EditFieldDrawer/EditCountry',
+  title: 'Features/AdminForm/EditFieldDrawer/EditCountryRegion',
   component: EditCountryRegion,
   decorators: [
     StoryRouter({
@@ -35,7 +35,7 @@ export default {
     msw: createFormBuilderMocks({}, 0),
   },
   args: {
-    field: DEFAULT_COUNTRY_FIELD,
+    field: DEFAULT_COUNTRY_REGION_FIELD,
   },
 } as Meta<StoryArgs>
 
@@ -48,4 +48,4 @@ const Template: Story<StoryArgs> = ({ field }) => {
 }
 
 export const Default = Template.bind({})
-Default.storyName = 'EditCountry'
+Default.storyName = 'EditCountryRegion'
