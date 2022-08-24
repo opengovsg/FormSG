@@ -1,7 +1,7 @@
 import { CountryRegion } from '~shared/constants/countryRegion'
 import {
   BasicField,
-  CountryFieldBase,
+  CountryRegionFieldBase,
   FormFieldWithId,
 } from '~shared/types/field'
 
@@ -9,12 +9,14 @@ import DropdownField from '~templates/Field/Dropdown'
 
 import { BaseFieldProps } from '../FieldContainer'
 
-export type CountryFieldSchema = FormFieldWithId<CountryFieldBase>
-export interface CountryFieldProps extends BaseFieldProps {
-  schema: CountryFieldSchema
+export type CountryRegionFieldSchema = FormFieldWithId<CountryRegionFieldBase>
+export interface CountryRegionFieldProps extends BaseFieldProps {
+  schema: CountryRegionFieldSchema
 }
 
-export const CountryField = ({ schema }: CountryFieldProps): JSX.Element => {
+export const CountryRegionField = ({
+  schema,
+}: CountryRegionFieldProps): JSX.Element => {
   return (
     <DropdownField
       schema={{

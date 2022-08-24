@@ -3,7 +3,7 @@ import { ConditionalExcept, Merge } from 'type-fest'
 
 import { IAttachmentFieldSchema } from './attachmentField'
 import { ICheckboxFieldSchema } from './checkboxField'
-import { ICountryFieldSchema } from './countryField'
+import { ICountryRegionFieldSchema } from './countryRegionField'
 import { IDateFieldSchema } from './dateField'
 import { IDecimalFieldSchema } from './decimalField'
 import { IDropdownFieldSchema } from './dropdownField'
@@ -29,7 +29,7 @@ export * from './checkboxField'
 export * from './dateField'
 export * from './decimalField'
 export * from './dropdownField'
-export * from './countryField'
+export * from './countryRegionField'
 export * from './emailField'
 export * from './homeNoField'
 export * from './imageField'
@@ -63,7 +63,7 @@ export type FormFieldSchema =
   | IDateFieldSchema
   | IDecimalFieldSchema
   | IDropdownFieldSchema
-  | ICountryFieldSchema
+  | ICountryRegionFieldSchema
   | IEmailFieldSchema
   | IHomenoFieldSchema
   | IImageFieldSchema
@@ -104,7 +104,7 @@ export type FieldValidationSchema =
   | OmitUnusedValidatorProps<IDateFieldSchema>
   | OmitUnusedValidatorProps<IDecimalFieldSchema>
   | OmitUnusedValidatorProps<IDropdownFieldSchema>
-  | OmitUnusedValidatorProps<ICountryFieldSchema>
+  | OmitUnusedValidatorProps<ICountryRegionFieldSchema>
   | OmitUnusedValidatorProps<IEmailFieldSchema>
   | OmitUnusedValidatorProps<IHomenoFieldSchema>
   | OmitUnusedValidatorProps<IImageFieldSchema>

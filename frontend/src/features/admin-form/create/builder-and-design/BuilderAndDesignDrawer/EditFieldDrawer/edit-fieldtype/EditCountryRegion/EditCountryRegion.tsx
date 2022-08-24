@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { FormControl } from '@chakra-ui/react'
 import { extend, pick } from 'lodash'
 
-import { CountryFieldBase } from '~shared/types/field'
+import { CountryRegionFieldBase } from '~shared/types/field'
 
 import { createBaseValidationRules } from '~utils/fieldValidation'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
@@ -16,30 +16,35 @@ import { FormFieldDrawerActions } from '../common/FormFieldDrawerActions'
 import { EditFieldProps } from '../common/types'
 import { useEditFieldForm } from '../common/useEditFieldForm'
 
-type EditCountryProps = EditFieldProps<CountryFieldBase>
+type EditCountryRegionProps = EditFieldProps<CountryRegionFieldBase>
 
 const EDIT_COUNTRY_FIELD_KEYS = ['title', 'description', 'required'] as const
 
-type EditCountryKeys = typeof EDIT_COUNTRY_FIELD_KEYS[number]
+type EditCountryRegionKeys = typeof EDIT_COUNTRY_FIELD_KEYS[number]
 
-type EditCountryInputs = Pick<CountryFieldBase, EditCountryKeys>
+type EditCountryRegionInputs = Pick<
+  CountryRegionFieldBase,
+  EditCountryRegionKeys
+>
 
-const transformCountryFieldToEditForm = (
-  field: CountryFieldBase,
-): EditCountryInputs => {
+const transformCountryRegionFieldToEditForm = (
+  field: CountryRegionFieldBase,
+): EditCountryRegionInputs => {
   return {
     ...pick(field, EDIT_COUNTRY_FIELD_KEYS),
   }
 }
 
-const transformCountryEditFormToField = (
-  inputs: EditCountryInputs,
-  originalField: CountryFieldBase,
-): CountryFieldBase => {
+const transformCountryRegionEditFormToField = (
+  inputs: EditCountryRegionInputs,
+  originalField: CountryRegionFieldBase,
+): CountryRegionFieldBase => {
   return extend({}, originalField, inputs, {})
 }
 
-export const EditCountry = ({ field }: EditCountryProps): JSX.Element => {
+export const EditCountryRegion = ({
+  field,
+}: EditCountryRegionProps): JSX.Element => {
   const {
     register,
     formState: { errors },
@@ -48,11 +53,11 @@ export const EditCountry = ({ field }: EditCountryProps): JSX.Element => {
     handleUpdateField,
     isLoading,
     handleCancel,
-  } = useEditFieldForm<EditCountryInputs, CountryFieldBase>({
+  } = useEditFieldForm<EditCountryRegionInputs, CountryRegionFieldBase>({
     field,
     transform: {
-      input: transformCountryFieldToEditForm,
-      output: transformCountryEditFormToField,
+      input: transformCountryRegionFieldToEditForm,
+      output: transformCountryRegionEditFormToField,
     },
   })
 

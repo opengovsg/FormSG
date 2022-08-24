@@ -80,7 +80,7 @@ export const types: BasicFieldBlock[] = [
   },
   {
     name: BasicField.CountryRegion,
-    value: 'Country',
+    value: 'Country/Region',
     submitted: true,
     answerArray: false,
   },

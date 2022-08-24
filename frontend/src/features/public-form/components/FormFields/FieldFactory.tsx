@@ -6,7 +6,7 @@ import { FormColorTheme } from '~shared/types/form'
 import {
   AttachmentField,
   CheckboxField,
-  CountryField,
+  CountryRegionField,
   DateField,
   DecimalField,
   DropdownField,
@@ -67,7 +67,7 @@ export const FieldFactory = memo(
       case BasicField.Dropdown:
         return <DropdownField schema={field} {...rest} />
       case BasicField.CountryRegion:
-        return <CountryField schema={field} {...rest} />
+        return <CountryRegionField schema={field} {...rest} />
       case BasicField.Date:
         return <DateField schema={field} {...rest} />
       case BasicField.Uen:

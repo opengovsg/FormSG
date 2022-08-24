@@ -3,7 +3,7 @@ import { CheckboxFieldBase } from './checkboxField'
 import { DateFieldBase } from './dateField'
 import { DecimalFieldBase } from './decimalField'
 import { DropdownFieldBase } from './dropdownField'
-import { CountryFieldBase } from './countryField'
+import { CountryRegionFieldBase } from './countryRegionField'
 import { EmailFieldBase } from './emailField'
 import { HomenoFieldBase } from './homeNoField'
 import { ImageFieldBase } from './imageField'
@@ -27,7 +27,7 @@ export * from './checkboxField'
 export * from './dateField'
 export * from './decimalField'
 export * from './dropdownField'
-export * from './countryField'
+export * from './countryRegionField'
 export * from './emailField'
 export * from './homeNoField'
 export * from './imageField'
@@ -51,7 +51,7 @@ export type FormField =
   | DateFieldBase
   | DecimalFieldBase
   | DropdownFieldBase
-  | CountryFieldBase
+  | CountryRegionFieldBase
   | EmailFieldBase
   | HomenoFieldBase
   | ImageFieldBase

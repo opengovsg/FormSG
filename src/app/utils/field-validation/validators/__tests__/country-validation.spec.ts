@@ -9,7 +9,7 @@ import {
 import { CountryRegion } from '../../../../../../shared/constants/countryRegion'
 import { BasicField } from '../../../../../../shared/types'
 
-describe('Country validation', () => {
+describe('Country/region validation', () => {
   it('should allow valid option', () => {
     const formField = generateDefaultField(BasicField.CountryRegion, {})
     const response = generateNewSingleAnswerResponse(BasicField.CountryRegion, {
@@ -24,7 +24,7 @@ describe('Country validation', () => {
   it('should disallow invalid option', () => {
     const formField = generateDefaultField(BasicField.Dropdown, {})
     const response = generateNewSingleAnswerResponse(BasicField.Dropdown, {
-      answer: 'NOT A COUNTRY',
+      answer: 'NOT A COUNTRY/REGION',
     })
     const validateResult = validateField('formId', formField, response)
     expect(validateResult.isErr()).toBe(true)

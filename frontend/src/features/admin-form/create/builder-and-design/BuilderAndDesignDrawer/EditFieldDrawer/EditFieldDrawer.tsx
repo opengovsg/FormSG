@@ -17,7 +17,7 @@ import { BuilderDrawerContainer } from '../common/BuilderDrawerContainer'
 import {
   EditAttachment,
   EditCheckbox,
-  EditCountry,
+  EditCountryRegion,
   EditDate,
   EditDecimal,
   EditDropdown,
@@ -109,7 +109,7 @@ export const MemoFieldDrawerContent = memo<MemoFieldDrawerContentProps>(
       case BasicField.Dropdown:
         return <EditDropdown {...props} field={field} />
       case BasicField.CountryRegion:
-        return <EditCountry {...props} field={field} />
+        return <EditCountryRegion {...props} field={field} />
       case BasicField.Mobile:
         return <EditMobile {...props} field={field} />
       case BasicField.HomeNo:

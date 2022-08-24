@@ -1,15 +1,15 @@
 import { Meta, Story } from '@storybook/react'
 
 import { CountryRegion } from '~shared/constants/countryRegion'
-import { BasicField, CountryFieldBase } from '~shared/types'
+import { BasicField, CountryRegionFieldBase } from '~shared/types'
 
 import { createFormBuilderMocks } from '~/mocks/msw/handlers/admin-form'
 
 import { EditFieldDrawerDecorator, StoryRouter } from '~utils/storybook'
 
-import { EditCountry } from './EditCountry'
+import { EditCountryRegion } from './EditCountryRegion'
 
-const DEFAULT_COUNTRY_FIELD: CountryFieldBase = {
+const DEFAULT_COUNTRY_FIELD: CountryRegionFieldBase = {
   title: 'Storybook Country',
   description: 'Some description about Country',
   required: true,
@@ -21,7 +21,7 @@ const DEFAULT_COUNTRY_FIELD: CountryFieldBase = {
 
 export default {
   title: 'Features/AdminForm/EditFieldDrawer/EditCountry',
-  component: EditCountry,
+  component: EditCountryRegion,
   decorators: [
     StoryRouter({
       initialEntries: ['/61540ece3d4a6e50ac0cc6ff'],
@@ -40,11 +40,11 @@ export default {
 } as Meta<StoryArgs>
 
 interface StoryArgs {
-  field: CountryFieldBase
+  field: CountryRegionFieldBase
 }
 
 const Template: Story<StoryArgs> = ({ field }) => {
-  return <EditCountry field={field} />
+  return <EditCountryRegion field={field} />
 }
 
 export const Default = Template.bind({})

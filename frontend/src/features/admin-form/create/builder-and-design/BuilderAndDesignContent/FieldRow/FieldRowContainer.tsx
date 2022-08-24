@@ -24,7 +24,7 @@ import Tooltip from '~components/Tooltip'
 import {
   AttachmentField,
   CheckboxField,
-  CountryField,
+  CountryRegionField,
   DateField,
   DecimalField,
   DropdownField,
@@ -418,7 +418,7 @@ const MemoFieldRow = memo(({ field, ...rest }: MemoFieldRowProps) => {
     case BasicField.Dropdown:
       return <DropdownField schema={field} {...rest} />
     case BasicField.CountryRegion:
-      return <CountryField schema={field} {...rest} />
+      return <CountryRegionField schema={field} {...rest} />
     case BasicField.ShortText:
       return <ShortTextField schema={field} {...rest} />
     case BasicField.LongText:

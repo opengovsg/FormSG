@@ -6,7 +6,7 @@ import { CountryRegion } from '~shared/constants/countryRegion'
 
 import { REQUIRED_ERROR } from '~constants/validation'
 
-import * as stories from './CountryField.stories'
+import * as stories from './CountryRegionField.stories'
 
 const { ValidationOptional, ValidationRequired } = composeStories(stories)
 
