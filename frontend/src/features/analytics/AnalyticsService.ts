@@ -1,9 +1,9 @@
 import { AdminFormDto, FormStatus, PublicFormDto } from '~shared/types/form'
 
-// let gtag = window.gtag
-// window.onload = function () {
-//   gtag = window.gtag
-// }
+let gtag = window.gtag
+window.onload = function () {
+  gtag = window.gtag
+}
 
 export const trackAdminLogin = () => {
   if (!gtag) return
