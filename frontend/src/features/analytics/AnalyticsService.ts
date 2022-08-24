@@ -1,9 +1,9 @@
 import { AdminFormDto, FormStatus, PublicFormDto } from '~shared/types/form'
 
-let gtag = window.gtag
-window.onload = function () {
-  gtag = window.gtag
-}
+// let gtag = window.gtag
+// window.onload = function () {
+//   gtag = window.gtag
+// }
 
 export const trackAdminLogin = () => {
   if (!gtag) return
@@ -77,6 +77,7 @@ export const trackDownloadResponseStart = (
   expectedNumSubmissions: number,
 ) => {
   if (!gtag) return
+  console.log('trackDownloadResponseStart')
   gtag('event', 'storage_mode', {
     event_action: 'download_start',
     form_title: adminForm.title,
@@ -101,6 +102,7 @@ export const trackDownloadResponseSuccess = (
   duration: number,
 ) => {
   if (!gtag) return
+  console.log('trackDownloadResponseSuccess')
   gtag('event', 'storage_mode', {
     event_action: 'download_success',
     form_title: adminForm.title,

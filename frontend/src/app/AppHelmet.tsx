@@ -20,7 +20,6 @@ export const AppHelmet = (): JSX.Element => {
               function gtag(){dataLayer.push(arguments);}
               gtag('js', new Date());
               gtag('config', '${GATrackingID}', { 'debug_mode':true });
-              window.gtag = gtag;
             `}
         </script>
       ) : null}
