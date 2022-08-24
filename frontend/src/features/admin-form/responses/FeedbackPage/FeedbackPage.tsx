@@ -7,6 +7,8 @@ import Pagination from '~/components/Pagination'
 
 import { useIsMobile } from '~hooks/useIsMobile'
 
+import { useAdminForm } from '~features/admin-form/common/queries'
+
 import { useFormFeedback } from '../queries'
 
 import { EmptyFeedback } from './EmptyFeedback'
@@ -20,6 +22,9 @@ import { FeedbackTable } from './FeedbackTable'
 export const FeedbackPage = (): JSX.Element => {
   const { data: { average, count, feedback } = {}, isLoading } =
     useFormFeedback()
+  const { data: form } = useAdminForm()
+  const formTitle = form?.title
+
   const { formId } = useParams()
   const isMobile = useIsMobile()
   const [currentPage, setCurrentPage] = useState<number>(1)
@@ -80,7 +85,7 @@ export const FeedbackPage = (): JSX.Element => {
           <FeedbackDownloadButton
             isDisabled={isLoading || count === 0}
             formId={formId}
-            feedback={feedback}
+            formTitle={formTitle}
           />
         </Box>
       </Grid>

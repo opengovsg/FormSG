@@ -1,39 +1,30 @@
-import { useMemo } from 'react'
-import { CSVLink } from 'react-csv'
+import { useCallback } from 'react'
 import { BiDownload } from 'react-icons/bi'
 
-import { ProcessedFeedbackMeta } from '~shared/types'
-
 import Button from '~components/Button'
+
+import { downloadFeedback } from './FeedbackService'
 
 type FeedbackDownloadButtonProps = {
   isDisabled: boolean
   formId: string | undefined
-  feedback: ProcessedFeedbackMeta[] | undefined
+  formTitle: string | undefined
 }
 
 export const FeedbackDownloadButton = ({
-  feedback,
   isDisabled,
   formId,
+  formTitle,
 }: FeedbackDownloadButtonProps) => {
-  const data = useMemo(() => {
-    if (!feedback) return ''
-    return feedback?.map((entry) => ({
-      index: entry.index,
-      date: entry.date,
-      feedback: entry.comment,
-      rating: entry.rating,
-    }))
-  }, [feedback])
+  const handleClick = useCallback(
+    () => downloadFeedback(formId || '', formTitle || ''),
+    [formId, formTitle],
+  )
 
   return (
     <Button
       disabled={isDisabled}
-      as={CSVLink}
-      filename={`${formId}-feedback.csv`}
-      data={data}
-      target="_blank"
+      onClick={handleClick}
       leftIcon={<BiDownload fontSize="1.5rem" />}
     >
       Export
