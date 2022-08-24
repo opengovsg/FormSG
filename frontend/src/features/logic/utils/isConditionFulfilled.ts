@@ -37,23 +37,19 @@ export const isConditionFulfilled = (
   if (!isLogicableField(args)) return false
 
   const currentValue = getCurrentFieldValue(args.input, args.fieldType)
-  if (currentValue === undefined) return false
+  if (
+    currentValue === null ||
+    currentValue === undefined ||
+    currentValue.toString().length === 0
+  ) {
+    return false
+  }
 
   switch (condition.state) {
     case LogicConditionState.Lte:
-      if (!currentValue)
-        // currentValue must be populated for the condition to be checked
-        return false
-      else {
-        return Number(currentValue) <= Number(condition.value)
-      }
+      return Number(currentValue) <= Number(condition.value)
     case LogicConditionState.Gte:
-      if (!currentValue)
-        // currentValue must be populated for the condition to be checked
-        return false
-      else {
-        return Number(currentValue) >= Number(condition.value)
-      }
+      return Number(currentValue) >= Number(condition.value)
     case LogicConditionState.Either: {
       // currentValue must be in a value in condition.value
       const condValuesArray = Array.isArray(condition.value)
