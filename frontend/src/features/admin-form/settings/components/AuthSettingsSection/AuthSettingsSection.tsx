@@ -93,12 +93,17 @@ export const AuthSettingsSection = ({
     ],
   )
 
+  const isEsrvcIdBoxDisabled = useMemo(
+    () => isFormPublic || mutateFormAuthType.isLoading,
+    [isFormPublic, mutateFormAuthType.isLoading],
+  )
+
   const handleEnterKeyDown: KeyboardEventHandler = useCallback(
     (e) => {
       if (
-        !isDisabled &&
         (e.key === 'Enter' || e.key === ' ') &&
         focusedValue &&
+        !isDisabled(focusedValue) &&
         focusedValue !== settings.authType
       ) {
         return mutateFormAuthType.mutate(focusedValue)
@@ -143,7 +148,7 @@ export const AuthSettingsSection = ({
       ) : containsMyInfoFields ? (
         <InlineMessage mb="1.25rem">
           Authentication method cannot be changed without first removing MyInfo
-          fields.
+          fields. You can still update your e-service ID.
         </InlineMessage>
       ) : null}
       <Radio.RadioGroup
@@ -189,7 +194,7 @@ export const AuthSettingsSection = ({
             {esrvcidRequired(authType) && authType === settings.authType ? (
               <EsrvcIdBox
                 settings={settings}
-                isDisabled={isDisabled(authType)}
+                isDisabled={isEsrvcIdBoxDisabled}
               />
             ) : null}
           </Fragment>
