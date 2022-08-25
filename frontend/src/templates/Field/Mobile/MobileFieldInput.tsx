@@ -41,7 +41,6 @@ export const MobileFieldInput = ({
       control={control}
       rules={validationRules}
       name={schema._id}
-      defaultValue={{ value: '' }}
       render={({ field: { onChange, value, ...field } }) => (
         <PhoneNumberInput
           autoComplete="tel"
