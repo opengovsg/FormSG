@@ -1,9 +1,8 @@
-import { TabPanel, TabPanels, Tabs } from '@chakra-ui/react'
 import { Meta, Story } from '@storybook/react'
 
 import { DateString } from '~shared/types/generic'
 
-import { getMobileViewParameters } from '~utils/storybook'
+import { getMobileViewParameters, StoryRouter } from '~utils/storybook'
 
 import { AdminFormNavbar, AdminFormNavbarProps } from './AdminFormNavbar'
 
@@ -15,20 +14,7 @@ const MOCK_FORM: AdminFormNavbarProps['formInfo'] = {
 export default {
   title: 'Features/AdminForm/AdminFormNavbar',
   component: AdminFormNavbar,
-  decorators: [
-    (storyFn) => {
-      return (
-        <Tabs>
-          {storyFn()}
-          <TabPanels>
-            <TabPanel></TabPanel>
-            <TabPanel></TabPanel>
-            <TabPanel></TabPanel>
-          </TabPanels>
-        </Tabs>
-      )
-    },
-  ],
+  decorators: [StoryRouter({ path: 'test', initialEntries: ['/test'] })],
   parameters: {
     layout: 'fullscreen',
   },
@@ -53,11 +39,7 @@ Skeleton.args = {
   formInfo: undefined,
 }
 
-export const Mobile: Story<AdminFormNavbarProps> = (args) => (
-  <Tabs variant="line-dark">
-    <AdminFormNavbar {...args} />
-  </Tabs>
-)
+export const Mobile = Template.bind({})
 Mobile.args = {
   formInfo: {
     ...MOCK_FORM,
