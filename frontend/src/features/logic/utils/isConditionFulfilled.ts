@@ -37,12 +37,7 @@ export const isConditionFulfilled = (
   if (!isLogicableField(args)) return false
 
   const currentValue = getCurrentFieldValue(args.input, args.fieldType)
-  if (
-    currentValue === null ||
-    currentValue === undefined ||
-    // check if currentValue is empty for Decimal and Number fields
-    (typeof currentValue === 'string' && currentValue.length === 0)
-  ) {
+  if (currentValue === '') {
     return false
   }
 
