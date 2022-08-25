@@ -5,7 +5,6 @@ import {
   BiDownload,
   BiLeftArrowAlt,
 } from 'react-icons/bi'
-import { useMutation } from 'react-query'
 import {
   Link as ReactLink,
   useLocation,
@@ -23,7 +22,6 @@ import {
   StackDivider,
   Text,
 } from '@chakra-ui/react'
-import FileSaver from 'file-saver'
 import simplur from 'simplur'
 
 import Button from '~components/Button'
@@ -33,11 +31,10 @@ import {
   SecretKeyVerification,
   useStorageResponsesContext,
 } from '../ResponsesPage/storage'
-import { AttachmentsDownloadMap } from '../ResponsesPage/storage/types'
 import { useUnlockedResponses } from '../ResponsesPage/storage/UnlockedResponses/UnlockedResponsesProvider'
-import { downloadAndDecryptAttachmentsAsZip } from '../ResponsesPage/storage/utils/downloadAndDecryptAttachment'
 
 import { DecryptedRow } from './DecryptedRow'
+import { useMutateDownloadAttachments } from './mutations'
 import { useIndividualSubmission } from './queries'
 
 const LoadingDecryption = memo(() => {
@@ -155,34 +152,23 @@ export const IndividualResponsePage = (): JSX.Element => {
     return attachmentDownloadUrls
   }, [data?.responses])
 
-  const handleDownloadMutation = useMutation(
-    async ({
-      attachmentDownloadUrls,
-      secretKey,
-    }: {
-      attachmentDownloadUrls: AttachmentsDownloadMap
-      secretKey: string
-    }) => {
-      const byteArray = await downloadAndDecryptAttachmentsAsZip(
-        attachmentDownloadUrls,
-        secretKey,
-      )
-      if (!byteArray) throw new Error('Invalid file')
-      return FileSaver.saveAs(
-        new Blob([byteArray]),
-        `RefNo ${submissionId}.zip`,
-      )
-    },
-  )
+  const { downloadAttachmentsAsZipMutation } = useMutateDownloadAttachments()
 
   const handleDownload = useCallback(() => {
-    if (!secretKey) return
-    return handleDownloadMutation.mutate({ attachmentDownloadUrls, secretKey })
-  }, [attachmentDownloadUrls, handleDownloadMutation, secretKey])
+    if (attachmentDownloadUrls.size === 0 || !secretKey) return
+    return downloadAttachmentsAsZipMutation.mutate({
+      attachmentDownloadUrls,
+      secretKey,
+      fileName: `RefNo ${submissionId}.zip`,
+    })
+  }, [
+    attachmentDownloadUrls,
+    downloadAttachmentsAsZipMutation,
+    secretKey,
+    submissionId,
+  ])
 
-  if (!secretKey) {
-    return <SecretKeyVerification />
-  }
+  if (!secretKey) return <SecretKeyVerification />
 
   return (
     <Grid
@@ -243,27 +229,24 @@ export const IndividualResponsePage = (): JSX.Element => {
               &nbsp;{data?.submissionTime ?? 'Loading...'}
             </Skeleton>
           </Box>
-          <Box
-            alignItems="center"
-            display="inline-flex"
-            hidden={attachmentDownloadUrls.size === 0}
-          >
-            <Text as="span" textStyle="subhead-1">
-              Attachments:
-            </Text>
-            <Skeleton isLoaded={!isLoading && !isError}>
-              &nbsp;
-              <Button
-                variant="link"
-                aria-label="Download attachments as ZIP"
-                isDisabled={handleDownloadMutation.isLoading}
-                onClick={handleDownload}
-                rightIcon={<BiDownload fontSize="1.5rem" />}
-              >
-                {simplur`Download ${attachmentDownloadUrls.size} attachment[|s] as ZIP`}
-              </Button>
-            </Skeleton>
-          </Box>
+          {attachmentDownloadUrls.size > 0 && (
+            <Box alignItems="center" display="inline-flex">
+              <Text as="span" textStyle="subhead-1">
+                Attachments:
+              </Text>
+              <Skeleton isLoaded={!isLoading && !isError}>
+                &nbsp;
+                <Button
+                  variant="link"
+                  isDisabled={downloadAttachmentsAsZipMutation.isLoading}
+                  onClick={handleDownload}
+                  rightIcon={<BiDownload fontSize="1.5rem" />}
+                >
+                  {simplur`Download ${attachmentDownloadUrls.size} attachment[|s] as .zip`}
+                </Button>
+              </Skeleton>
+            </Box>
+          )}
         </Stack>
         <Stack>
           {isLoading || isError ? (
