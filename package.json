@@ -192,7 +192,7 @@
     "@types/jsonfile": "^6.1.0",
     "@types/jsonwebtoken": "^8.5.8",
     "@types/jwk-to-pem": "^2.0.1",
-    "@types/lodash": "^4.14.182",
+    "@types/lodash": "^4.14.184",
     "@types/mongodb": "^3.6.20",
     "@types/mongodb-uri": "^0.9.1",
     "@types/node": "^14.18.23",
