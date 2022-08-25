@@ -111,7 +111,7 @@ export const EndPageBuilderInput = ({
   ])
 
   const handleUpdateEndPage = handleSubmit((endPage) =>
-    endPageMutation.mutate(endPage, { onSuccess: closeBuilderDrawer }),
+    endPageMutation.mutate(endPage, { onSuccess: () => closeBuilderDrawer() }),
   )
 
   return (
