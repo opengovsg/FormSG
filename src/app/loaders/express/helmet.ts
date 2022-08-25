@@ -53,7 +53,7 @@ const helmetMiddlewares = () => {
       'https://www.gstatic.com/recaptcha/',
       'https://www.gstatic.cn/',
       'https://*.googletagmanager.com', // GA4 https://developers.google.com/tag-platform/tag-manager/web/csp
-      "'unsafe-inline'",
+      "'sha256-nbH0F9Sfpd6RHusUyYB1HsUGHgMdv9PB5Y+8ArzRa2s='", // for GA4 script
     ],
     connectSrc: [
       "'self'",
