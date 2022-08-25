@@ -157,7 +157,7 @@ export const AdminNavBar = ({ isMenuOpen }: AdminNavBarProps): JSX.Element => {
               Emergency contact
             </Menu.Item>
             <AvatarMenuDivider />
-            <Menu.Item onClick={handleLogout}>Sign out</Menu.Item>
+            <Menu.Item onClick={handleLogout}>Log out</Menu.Item>
           </AvatarMenu>
         </HStack>
       </AdminNavBar.Container>
