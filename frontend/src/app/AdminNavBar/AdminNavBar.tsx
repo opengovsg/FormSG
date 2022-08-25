@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react'
+import React, { useCallback, useEffect, useMemo } from 'react'
 import { BiCommentDetail } from 'react-icons/bi'
 import { Link as ReactLink } from 'react-router-dom'
 import {
@@ -93,6 +93,7 @@ export const AdminNavBar = ({ isMenuOpen }: AdminNavBarProps): JSX.Element => {
   )
   const [hasSeenAnnouncement] = useLocalStorage<boolean>(
     ROLLOUT_ANNOUNCEMENT_KEY,
+    false,
   )
 
   // Only want to show the emergency contact modal if user id exists but user has no emergency contact
@@ -105,7 +106,7 @@ export const AdminNavBar = ({ isMenuOpen }: AdminNavBarProps): JSX.Element => {
   )
 
   const [hasSeenContactModal, setHasSeenContactModal] =
-    useLocalStorage<boolean>(emergencyContactKey)
+    useLocalStorage<boolean>(emergencyContactKey, false)
 
   const {
     isOpen: isContactModalOpen,
@@ -119,18 +120,23 @@ export const AdminNavBar = ({ isMenuOpen }: AdminNavBarProps): JSX.Element => {
 
   // Emergency contact modal appears after the rollout announcement modal
   useEffect(() => {
-    if (!hasSeenContactModal && user && !user?.contact && hasSeenAnnouncement) {
+    if (
+      hasSeenContactModal === false &&
+      user &&
+      !user.contact &&
+      hasSeenAnnouncement === true
+    ) {
       onContactModalOpen()
     }
   }, [hasSeenContactModal, onContactModalOpen, user, hasSeenAnnouncement])
 
-  const handleLogout = () => {
+  const handleLogout = useCallback(() => {
     logout()
     removeQuery()
     if (emergencyContactKey) {
       localStorage.removeItem(emergencyContactKey)
     }
-  }
+  }, [emergencyContactKey, removeQuery])
 
   return (
     <>
