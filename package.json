@@ -63,7 +63,7 @@
     "@opengovsg/ng-file-upload": "^12.2.15",
     "@opengovsg/sgid-client": "1.0.3",
     "@opengovsg/spcp-auth-client": "^1.4.17",
-    "@sentry/browser": "^7.10.0",
+    "@sentry/browser": "^7.11.1",
     "@sentry/integrations": "^6.19.7",
     "@stablelib/base64": "^1.0.1",
     "JSONStream": "^1.3.5",
