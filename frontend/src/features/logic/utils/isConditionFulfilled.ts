@@ -40,7 +40,8 @@ export const isConditionFulfilled = (
   if (
     currentValue === null ||
     currentValue === undefined ||
-    currentValue.toString().length === 0
+    // check if currentValue is empty for Decimal and Number fields
+    (typeof currentValue === 'string' && currentValue.length === 0)
   ) {
     return false
   }
