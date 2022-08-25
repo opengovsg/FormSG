@@ -46,7 +46,6 @@ export const WorkspaceHeader = ({
         direction={{ base: 'column', md: 'row' }}
         h="fit-content"
       >
-        {/* Future: add form sorting dropdown here, can use WorkspaceSortDropdown component */}
         <Button
           isFullWidth={isMobile}
           isDisabled={isLoading}
