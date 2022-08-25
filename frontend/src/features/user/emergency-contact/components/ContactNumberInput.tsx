@@ -34,11 +34,7 @@ const useContactNumberInput = () => {
     handleSubmit,
     reset,
     formState: { isValid, isSubmitting, errors },
-  } = useForm<ContactNumberFormInputs>({
-    defaultValues: {
-      contact: user?.contact,
-    },
-  })
+  } = useForm<ContactNumberFormInputs>()
 
   useEffect(() => {
     if (user) {
@@ -57,12 +53,15 @@ const useContactNumberInput = () => {
 
   const { generateOtpMutation } = useUserMutations()
 
-  const handleInputChange = (nextVal?: string) => {
-    setIsVfnBoxOpen(!!contactToVerify && nextVal === contactToVerify)
-    if (isSuccess) {
-      setIsSuccess(false)
-    }
-  }
+  const handleInputChange = useCallback(
+    (nextVal?: string) => {
+      setIsVfnBoxOpen(!!contactToVerify && nextVal === contactToVerify)
+      if (isSuccess) {
+        setIsSuccess(false)
+      }
+    },
+    [contactToVerify, isSuccess],
+  )
 
   const handleVfnSuccess = useCallback(() => {
     setIsSuccess(true)
