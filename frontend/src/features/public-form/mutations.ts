@@ -45,10 +45,8 @@ export const usePublicAuthMutations = (formId: string) => {
       logoutPublicForm(authType),
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(publicFormKeys.base)
-        toast({
-          description: 'Logged out successfully',
-        })
+        // Refresh browser to reset form state.
+        window.location.reload()
       },
     },
   )
