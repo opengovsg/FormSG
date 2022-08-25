@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient } from 'react-query'
+import { useMutation } from 'react-query'
 
 import { FormAuthType, SubmitFormFeedbackBodyDto } from '~shared/types/form'
 
@@ -14,11 +14,9 @@ import {
   SubmitStorageFormArgs,
   submitStorageModeForm,
 } from './PublicFormService'
-import { publicFormKeys } from './queries'
 
 export const usePublicAuthMutations = (formId: string) => {
   const { storePrefillQuery } = useStorePrefillQuery()
-  const queryClient = useQueryClient()
 
   const toast = useToast({ status: 'success', isClosable: true })
 
