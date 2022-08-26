@@ -10,23 +10,23 @@ export const getBannerProps = (bannerContent?: string): BannerProps | null => {
   if (bannerContent.startsWith('info:')) {
     return {
       variant: 'info',
-      msg: bannerContent.slice(5),
+      msg: bannerContent.slice(5).trim(),
     }
   }
   if (bannerContent.startsWith('warn:')) {
     return {
       variant: 'warn',
-      msg: bannerContent.slice(5),
+      msg: bannerContent.slice(5).trim(),
     }
   }
   if (bannerContent.startsWith('error:')) {
     return {
       variant: 'error',
-      msg: bannerContent.slice(6),
+      msg: bannerContent.slice(6).trim(),
     }
   }
   return {
     variant: 'info',
-    msg: bannerContent,
+    msg: bannerContent.trim(),
   }
 }

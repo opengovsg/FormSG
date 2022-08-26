@@ -27,6 +27,7 @@ export const AdminFormLayout = (): JSX.Element => {
   const { data: { siteBannerContent, adminBannerContent } = {} } = useEnv()
 
   const bannerContent = useMemo(
+    // Use || instead of ?? so that we fall through even if previous banners are empty string.
     () => siteBannerContent || adminBannerContent,
     [adminBannerContent, siteBannerContent],
   )

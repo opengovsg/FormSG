@@ -22,6 +22,7 @@ export const FormBanner = (): JSX.Element | null => {
   const { form } = usePublicFormContext()
 
   const bannerContent = useMemo(
+    // Use || instead of ?? so that we fall through even if previous banners are empty string.
     () =>
       siteBannerContent ||
       isGeneralMaintenance ||

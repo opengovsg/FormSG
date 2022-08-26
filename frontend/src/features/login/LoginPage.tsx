@@ -102,6 +102,7 @@ export const LoginPage = (): JSX.Element => {
   const { t } = useTranslation()
 
   const bannerContent = useMemo(
+    // Use || instead of ?? so that we fall through even if previous banners are empty string.
     () => siteBannerContent || isLoginBanner,
     [siteBannerContent, isLoginBanner],
   )
