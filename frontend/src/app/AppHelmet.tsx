@@ -1,9 +1,11 @@
+import { useCookies } from 'react-cookie'
 import { Helmet } from 'react-helmet-async'
 
 import { useEnv } from '~features/env/queries'
 
 export const AppHelmet = (): JSX.Element => {
   const { data: { GATrackingID } = {} } = useEnv()
+  const [cookies] = useCookies(['cspNonce'])
 
   return (
     <Helmet titleTemplate="%s | FormSG" defer={false}>
@@ -11,6 +13,7 @@ export const AppHelmet = (): JSX.Element => {
         <script
           async
           src={`https://www.googletagmanager.com/gtag/js?id=${GATrackingID}`}
+          nonce={`${cookies.cspNonce}`}
         />
       ) : null}
       {GATrackingID ? (
