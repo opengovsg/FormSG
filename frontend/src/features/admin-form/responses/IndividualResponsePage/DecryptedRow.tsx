@@ -6,6 +6,7 @@ import { BasicField } from '~shared/types'
 
 import Button from '~components/Button'
 import FormLabel from '~components/FormControl/FormLabel'
+import Spinner from '~components/Spinner'
 
 import { AugmentedDecryptedResponse } from '../ResponsesPage/storage/utils/augmentDecryptedResponses'
 
@@ -85,7 +86,13 @@ const DecryptedAttachmentRow = ({ row, secretKey }: DecryptedRowProps) => {
             aria-label="Download file"
             isDisabled={downloadAttachmentMutation.isLoading}
             onClick={handleDownload}
-            rightIcon={<BiDownload fontSize="1.5rem" />}
+            rightIcon={
+              downloadAttachmentMutation.isLoading ? (
+                <Spinner fontSize="1.5rem" />
+              ) : (
+                <BiDownload fontSize="1.5rem" />
+              )
+            }
           >
             {row.answer}
           </Button>

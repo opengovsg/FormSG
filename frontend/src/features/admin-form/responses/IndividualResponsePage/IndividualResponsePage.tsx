@@ -26,6 +26,7 @@ import simplur from 'simplur'
 
 import Button from '~components/Button'
 import IconButton from '~components/IconButton'
+import Spinner from '~components/Spinner'
 
 import {
   SecretKeyVerification,
@@ -240,7 +241,13 @@ export const IndividualResponsePage = (): JSX.Element => {
                   variant="link"
                   isDisabled={downloadAttachmentsAsZipMutation.isLoading}
                   onClick={handleDownload}
-                  rightIcon={<BiDownload fontSize="1.5rem" />}
+                  rightIcon={
+                    downloadAttachmentsAsZipMutation.isLoading ? (
+                      <Spinner fontSize="1.5rem" />
+                    ) : (
+                      <BiDownload fontSize="1.5rem" />
+                    )
+                  }
                 >
                   {simplur`Download ${attachmentDownloadUrls.size} attachment[|s] as .zip`}
                 </Button>
