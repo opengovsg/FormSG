@@ -47,7 +47,7 @@ export const useCreateFormField = () => {
         return
       }
       toast({
-        description: `Field "${newField.title}" created`,
+        description: `The field "${newField.title}" was created.`,
       })
       queryClient.setQueryData<AdminFormDto>(adminFormKey, (oldForm) => {
         // Should not happen, should not be able to update field if there is no
