@@ -38,7 +38,7 @@ export const useEditFormField = () => {
         return
       }
       toast({
-        description: `Field "${newField.title}" updated`,
+        description: `The field "${newField.title}" was updated.`,
       })
       queryClient.setQueryData<AdminFormDto>(adminFormKey, (oldForm) => {
         // Should not happen, should not be able to update field if there is no
