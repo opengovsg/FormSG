@@ -15,8 +15,8 @@ type LogMeta = {
   transactionId?: string
   trace?: string
   reactMigration?: {
-    respRolloutAuth: number
-    respRolloutNoAuth: number
+    respRolloutEmail: number
+    respRolloutStorage: number
     adminRollout: number
     qaCookie: string | undefined
     adminCookie: string | undefined
@@ -77,8 +77,8 @@ const loggingMiddleware = () => {
         req.cookies?.[config.reactMigration.qaCookieName]
       ) {
         meta.reactMigration = {
-          respRolloutAuth: config.reactMigration.respondentRolloutEmail,
-          respRolloutNoAuth: config.reactMigration.respondentRolloutStorage,
+          respRolloutEmail: config.reactMigration.respondentRolloutEmail,
+          respRolloutStorage: config.reactMigration.respondentRolloutStorage,
           adminRollout: config.reactMigration.adminRollout,
           qaCookie: req.cookies?.[config.reactMigration.qaCookieName],
           adminCookie: req.cookies?.[config.reactMigration.adminCookieName],
