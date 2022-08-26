@@ -44,7 +44,7 @@ export const Banner = ({
   }, [showCloseButton, variant])
 
   return (
-    <Collapse in={isOpen} animateOpacity>
+    <Collapse style={{ overflow: 'visible' }} in={isOpen} animateOpacity>
       <Box __css={styles.banner}>
         <Flex sx={styles.item}>
           <Flex>
