@@ -3,6 +3,8 @@ import { Box, Flex, FlexProps, Stack } from '@chakra-ui/react'
 
 import { FormAuthType, FormColorTheme, FormLogoState } from '~shared/types'
 
+import { ThemeColorScheme } from '~theme/foundations/colours'
+
 import { useAdminForm } from '~features/admin-form/common/queries'
 import { PREVIEW_MOCK_UINFIN } from '~features/admin-form/preview/constants'
 import { useEnv } from '~features/env/queries'
@@ -32,13 +34,20 @@ export const EndPageView = ({ ...props }: FlexProps): JSX.Element => {
     form?.startPage.logo.state === FormLogoState.Custom,
   )
 
+  const colorTheme = useDesignColorTheme()
+
+  const colorScheme: ThemeColorScheme | undefined = useMemo(() => {
+    if (!colorTheme) return
+    return `theme-${colorTheme}` as const
+  }, [colorTheme])
+
   const formBannerLogoProps = useFormBannerLogo({
     logoBucketUrl,
     logo: form?.startPage.logo,
     agency: form?.admin.agency,
+    colorScheme,
   })
 
-  const colorTheme = useDesignColorTheme()
   const backgroundColor = useBgColor({ colorTheme })
 
   return (

@@ -3,16 +3,20 @@ import { useMemo } from 'react'
 import { AgencyBase } from '~shared/types'
 import { FormLogo, FormLogoState } from '~shared/types/form/form_logo'
 
+import { ThemeColorScheme } from '~theme/foundations/colours'
+
 interface UseFormBannerLogoInputs {
   logoBucketUrl?: string
   logo?: FormLogo
   agency?: AgencyBase
+  colorScheme?: ThemeColorScheme
 }
 
 export const useFormBannerLogo = ({
   logoBucketUrl,
   logo,
   agency,
+  colorScheme,
 }: UseFormBannerLogoInputs) => {
   const logoImgSrc = useMemo(() => {
     if (!logo) return undefined
@@ -42,5 +46,6 @@ export const useFormBannerLogo = ({
     hasLogo: logo?.state !== FormLogoState.None,
     logoImgSrc,
     logoImgAlt,
+    colorScheme,
   }
 }

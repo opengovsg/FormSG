@@ -32,13 +32,14 @@ export const FormStartPage = (): JSX.Element => {
     [submissionData],
   )
 
+  const formHeaderProps = useFormHeader({ startPage: form?.startPage })
+
   const formBannerLogoProps = useFormBannerLogo({
     logoBucketUrl,
     logo: form?.startPage.logo,
     agency: form?.admin.agency,
+    colorScheme: formHeaderProps.colorScheme,
   })
-
-  const formHeaderProps = useFormHeader({ startPage: form?.startPage })
 
   const formBannerLoggedInId = useMemo(() => {
     if (!submissionData || !spcpSession) return
