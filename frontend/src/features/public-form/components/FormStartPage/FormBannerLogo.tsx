@@ -1,11 +1,29 @@
 import { useEffect, useMemo, useState } from 'react'
 import { BiImage } from 'react-icons/bi'
-import { Box, Flex, Icon, Image, Skeleton, Stack, Text } from '@chakra-ui/react'
+import {
+  Box,
+  Flex,
+  Grid,
+  Icon,
+  Image,
+  Skeleton,
+  Spacer,
+  Stack,
+  Text,
+} from '@chakra-ui/react'
 
-interface FormBannerLogoInputProps {
+import { FormLogoutButton } from './FormLogoutButton'
+
+export interface FormBannerLogoProps {
   hasLogo: boolean
   logoImgSrc?: string
   logoImgAlt?: string
+  /**
+   * id of currently logged in user.
+   * If not provided, logout button will be hidden.
+   */
+  loggedInId?: string
+  onLogout?: () => void
 }
 
 export const InvalidLogo = ({ message }: { message: string }): JSX.Element => {
@@ -30,7 +48,9 @@ export const FormBannerLogo = ({
   hasLogo,
   logoImgSrc,
   logoImgAlt,
-}: FormBannerLogoInputProps): JSX.Element | null => {
+  loggedInId,
+  onLogout,
+}: FormBannerLogoProps): JSX.Element | null => {
   const [fallbackType, setFallbackType] = useState<
     'loading' | 'error' | 'loaded'
   >('loading')
@@ -56,15 +76,19 @@ export const FormBannerLogo = ({
   if (!hasLogo) return null
 
   return (
-    <Flex justify="center" p="1rem" bg="white">
-      <Image
-        fallback={fallback}
-        onLoad={() => setFallbackType('loaded')}
-        onError={() => setFallbackType('error')}
-        src={logoImgSrc}
-        alt={logoImgAlt}
-        maxH="4rem"
-      />
-    </Flex>
+    <Grid p="1rem" bg="white" gridTemplateColumns="1fr auto 1fr">
+      <Spacer />
+      <Flex maxW="57rem">
+        <Image
+          fallback={fallback}
+          onLoad={() => setFallbackType('loaded')}
+          onError={() => setFallbackType('error')}
+          src={logoImgSrc}
+          alt={logoImgAlt}
+          maxH="4rem"
+        />
+      </Flex>
+      <FormLogoutButton loggedInId={loggedInId} onLogout={onLogout} />
+    </Grid>
   )
 }

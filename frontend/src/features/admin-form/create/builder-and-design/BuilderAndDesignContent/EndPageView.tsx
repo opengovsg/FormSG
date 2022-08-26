@@ -1,9 +1,10 @@
 import { useMemo } from 'react'
 import { Box, Flex, FlexProps, Stack } from '@chakra-ui/react'
 
-import { FormColorTheme, FormLogoState } from '~shared/types'
+import { FormAuthType, FormColorTheme, FormLogoState } from '~shared/types'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
+import { PREVIEW_MOCK_UINFIN } from '~features/admin-form/preview/constants'
 import { useEnv } from '~features/env/queries'
 import { EndPageBlock } from '~features/public-form/components/FormEndPage/components/EndPageBlock'
 import { ThankYouSvgr } from '~features/public-form/components/FormEndPage/components/ThankYouSvgr'
@@ -55,7 +56,14 @@ export const EndPageView = ({ ...props }: FlexProps): JSX.Element => {
       {...props}
     >
       <Stack w="100%" bg="white">
-        <FormBannerLogo {...formBannerLogoProps} />
+        <FormBannerLogo
+          {...formBannerLogoProps}
+          loggedInId={
+            form && form.authType !== FormAuthType.NIL
+              ? PREVIEW_MOCK_UINFIN
+              : undefined
+          }
+        />
         <Flex backgroundColor={backgroundColor} justifyContent="center">
           <ThankYouSvgr h="100%" pt="2.5rem" />
         </Flex>

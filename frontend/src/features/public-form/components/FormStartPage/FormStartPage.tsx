@@ -40,9 +40,18 @@ export const FormStartPage = (): JSX.Element => {
 
   const formHeaderProps = useFormHeader({ startPage: form?.startPage })
 
+  const formBannerLoggedInId = useMemo(() => {
+    if (!submissionData || !spcpSession) return
+    return spcpSession.userName
+  }, [spcpSession, submissionData])
+
   return (
     <>
-      <FormBannerLogo {...formBannerLogoProps} />
+      <FormBannerLogo
+        {...formBannerLogoProps}
+        loggedInId={formBannerLoggedInId}
+        onLogout={handleLogout}
+      />
       <FormHeader
         title={form?.title}
         showHeader={showHeaderAndMiniHeader}
