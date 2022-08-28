@@ -189,6 +189,7 @@ export const BillCharges = ({
                 name={'selectDate'}
                 items={selectDateDropdownItems}
                 isClearable={false}
+                isDisabled={isLoadingOrRefetching}
               />
             </Box>
 
