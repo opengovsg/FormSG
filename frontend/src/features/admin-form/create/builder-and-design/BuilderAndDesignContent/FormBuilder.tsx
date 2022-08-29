@@ -63,7 +63,6 @@ export const FormBuilder = ({
       pb={{ base: 0, md: '2rem' }}
       px={{ base: 0, md: '2rem' }}
       justify="center"
-      overflow="auto"
       {...props}
     >
       <Stack
