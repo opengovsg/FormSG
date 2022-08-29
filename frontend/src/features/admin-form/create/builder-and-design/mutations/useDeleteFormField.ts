@@ -45,7 +45,7 @@ export const useDeleteFormField = () => {
       return
     }
     toast({
-      description: `Field "${stateData.field.title}" deleted`,
+      description: `The field "${stateData.field.title}" was deleted.`,
     })
     queryClient.setQueryData<AdminFormDto>(adminFormKey, (oldForm) => {
       // Should not happen, should not be able to update field if there is no

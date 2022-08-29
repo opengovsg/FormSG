@@ -26,6 +26,7 @@ import Textarea from '~components/Textarea'
 import Toggle from '~components/Toggle'
 
 import { useCreateTabForm } from '~features/admin-form/create/builder-and-design/useCreateTabForm'
+import { getAttachmentSizeLimit } from '~features/admin-form/create/builder-and-design/utils/getAttachmentSizeLimit'
 
 import { DrawerContentContainer } from '../common/DrawerContentContainer'
 import { FormFieldDrawerActions } from '../common/FormFieldDrawerActions'
@@ -95,15 +96,10 @@ export const EditAttachment = ({ field }: EditAttachmentProps): JSX.Element => {
       .reduce((sum, ff) => sum + Number(ff.attachmentSize), 0)
   }, [field._id, form?.form_fields])
 
-  const maxTotalSizeMb: number = useMemo(() => {
-    if (!form?.responseMode) return 0
-    switch (form.responseMode) {
-      case FormResponseMode.Email:
-        return Number(AttachmentSize.SevenMb)
-      case FormResponseMode.Encrypt:
-        return Number(AttachmentSize.TwentyMb)
-    }
-  }, [form?.responseMode])
+  const maxTotalSizeMb: number = useMemo(
+    () => getAttachmentSizeLimit(form?.responseMode),
+    [form?.responseMode],
+  )
 
   const attachmentSizeOptions: ComboboxItem[] = useMemo(() => {
     if (!form) return []
