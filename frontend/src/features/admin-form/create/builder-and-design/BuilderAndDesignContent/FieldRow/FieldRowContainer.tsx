@@ -197,11 +197,11 @@ export const FieldRowContainer = ({
   }, [handleBuilderClick, isMobile])
 
   const handleDuplicateClick = useCallback(() => {
+    if (!form) return
     // Duplicate button should be hidden if field is not yet created, but guard here just in case
     if (stateData.state === FieldBuilderState.CreatingField) return
     // Disallow duplicating attachment fields if after the dupe, the filesize exceeds the limit
     if (field.fieldType === BasicField.Attachment) {
-      if (!form) return
       const existingAttachmentsSize = form.form_fields.reduce(
         (sum, ff) =>
           ff.fieldType === BasicField.Attachment
