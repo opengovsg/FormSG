@@ -36,6 +36,21 @@ datadogRum.startSessionReplayRecording()
 // Init dayjs
 dayjs.init()
 
+// Init Google Analytics
+declare global {
+  // eslint-disable-next-line no-var
+  var dataLayer: unknown[]
+}
+
+globalThis.dataLayer = window.dataLayer || []
+function gtag(...args: unknown[]) {
+  // eslint-disable-next-line prefer-rest-params
+  dataLayer.push(arguments)
+}
+gtag('js', new Date())
+gtag('config', process.env.GA_TRACKING_ID || '', { debug_mode: true })
+globalThis.gtag = gtag
+
 ReactDOM.render(
   <React.StrictMode>
     <App />

@@ -1,28 +1,26 @@
 import { AdminFormDto, FormStatus, PublicFormDto } from '~shared/types/form'
 
-let gtag = window.gtag
-window.onload = function () {
-  gtag = window.gtag
+const GA = function () {
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  return { gtag: globalThis.gtag || function () {} }
 }
 
 export const trackAdminLogin = () => {
-  if (!gtag) return
-  gtag('event', 'login', {
+  console.log('foo login')
+  GA().gtag('event', 'login', {
     event_category: 'admin_login',
   })
 }
 
 export const trackAdminLoginFailure = (error: string) => {
-  if (!gtag) return
-  gtag('event', 'login', {
+  GA().gtag('event', 'login', {
     event_category: 'admin_login_failure',
     message: error,
   })
 }
 
 export const trackCreateFormFailed = () => {
-  if (!gtag) return
-  gtag('event', 'create_form', {
+  GA().gtag('event', 'create_form', {
     event_category: 'create_form',
     event_action: 'Create Form failed',
   })
@@ -33,10 +31,10 @@ const trackPublicFormEvent = (
   form: PublicFormDto,
   others?: Record<string, unknown>,
 ) => {
-  if (!gtag || form.status !== FormStatus.Public) {
+  if (form.status !== FormStatus.Public) {
     return
   }
-  gtag('event', 'public_form', {
+  GA().gtag('event', 'public_form', {
     event_action: eventAction,
     form_title: form.title,
     form_id: form._id,
@@ -76,9 +74,8 @@ export const trackDownloadResponseStart = (
   numWorkers: number,
   expectedNumSubmissions: number,
 ) => {
-  if (!gtag) return
   console.log('trackDownloadResponseStart')
-  gtag('event', 'storage_mode', {
+  GA().gtag('event', 'storage_mode', {
     event_action: 'download_start',
     form_title: adminForm.title,
     form_id: adminForm._id,
@@ -101,9 +98,8 @@ export const trackDownloadResponseSuccess = (
   expectedNumSubmissions: number,
   duration: number,
 ) => {
-  if (!gtag) return
   console.log('trackDownloadResponseSuccess')
-  gtag('event', 'storage_mode', {
+  GA().gtag('event', 'storage_mode', {
     event_action: 'download_success',
     form_title: adminForm.title,
     form_id: adminForm._id,
@@ -129,8 +125,7 @@ export const trackDownloadResponseFailure = (
   duration: number,
   errorMessage: string,
 ) => {
-  if (!gtag) return
-  gtag('event', 'storage_mode', {
+  GA().gtag('event', 'storage_mode', {
     event_action: 'download_success',
     form_title: adminForm.title,
     form_id: adminForm._id,
@@ -151,8 +146,7 @@ export const trackDownloadNetworkFailure = (
   adminForm: AdminFormDto,
   errorMessage: string,
 ) => {
-  if (!gtag) return
-  gtag('event', 'storage_mode', {
+  GA().gtag('event', 'storage_mode', {
     event_action: 'network_failure',
     form_title: adminForm.title,
     form_id: adminForm._id,
@@ -178,8 +172,7 @@ export const trackPartialDecryptionFailure = (
   errorCount: number,
   attachmentErrorCount: number,
 ) => {
-  if (!gtag) return
-  gtag('event', 'storage_mode', {
+  GA().gtag('event', 'storage_mode', {
     event_action: 'partial_decrypt_error',
     form_title: adminForm.title,
     form_id: adminForm._id,
@@ -195,8 +188,7 @@ export const trackPartialDecryptionFailure = (
  * Logs clicking on mailto link to share form secret key with collaborators.
  */
 export const trackClickSecretKeyMailTo = (formTitle: string) => {
-  if (!gtag) return
-  gtag('event', 'storage', {
+  GA().gtag('event', 'storage', {
     event_action: 'Secret key mailto clicked',
     form_title: formTitle,
   })

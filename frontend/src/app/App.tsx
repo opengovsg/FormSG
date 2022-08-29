@@ -1,4 +1,3 @@
-import { CookiesProvider } from 'react-cookie'
 import { HelmetProvider } from 'react-helmet-async'
 import { QueryClient, QueryClientProvider } from 'react-query'
 import { ReactQueryDevtools } from 'react-query/devtools'
@@ -32,9 +31,7 @@ export const App = (): JSX.Element => (
   <HelmetProvider>
     <QueryClientProvider client={queryClient}>
       <ReactQueryDevtools initialIsOpen={false} />
-      <CookiesProvider>
-        <AppHelmet />
-      </CookiesProvider>
+      <AppHelmet />
       <BrowserRouter>
         <ChakraProvider theme={theme} resetCSS>
           <AuthProvider>
