@@ -157,6 +157,7 @@ export const SaveSecretKeyScreen = ({
                   // To allow for focus styling on code element.
                   data-group
                   tabIndex={0}
+                  flex={1}
                   transition="background 0.2s ease"
                   cursor="pointer"
                   onClick={handleCopyKey}
@@ -170,7 +171,7 @@ export const SaveSecretKeyScreen = ({
                   display="inline-flex"
                   alignItems="center"
                   w="100%"
-                  h="100%"
+                  h="auto"
                   px="0.75rem"
                   py="0.625rem"
                   bg="neutral.200"

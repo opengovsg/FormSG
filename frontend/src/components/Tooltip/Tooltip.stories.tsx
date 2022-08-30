@@ -1,4 +1,4 @@
-import { Box, Icon, Placement, TooltipProps, VStack } from '@chakra-ui/react'
+import { Flex, Icon, Placement, TooltipProps, VStack } from '@chakra-ui/react'
 import { Meta, Story } from '@storybook/react'
 
 import { BxsHelpCircle } from '~/assets/icons/BxsHelpCircle'
@@ -20,7 +20,7 @@ const TooltipStack = (
     // bottom margin just so that story snapshot does not get cut off at bottom
     <VStack align="left" spacing="4rem" mb="4rem">
       {args.labels.map(({ value, placement }, idx) => (
-        <Box key={idx}>
+        <Flex key={idx} align="center">
           {value}
           <Tooltip
             {...args}
@@ -29,7 +29,7 @@ const TooltipStack = (
           >
             <Icon as={BxsHelpCircle} aria-hidden ml="0.5rem" />
           </Tooltip>
-        </Box>
+        </Flex>
       ))}
     </VStack>
   )
