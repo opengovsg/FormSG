@@ -1,12 +1,10 @@
 import { AdminFormDto, FormStatus, PublicFormDto } from '~shared/types/form'
 
 const GA = function () {
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  return { gtag: globalThis.gtag || function () {} }
+  return { gtag: globalThis.gtag }
 }
 
 export const trackAdminLogin = () => {
-  console.log('foo login')
   GA().gtag('event', 'login', {
     event_category: 'admin_login',
   })
@@ -47,7 +45,6 @@ export const trackVisitPublicForm = (form: PublicFormDto) => {
 }
 
 export const trackSubmitForm = (form: PublicFormDto) => {
-  console.log('tracksubmitform')
   return trackPublicFormEvent('submit_form_success', form)
 }
 
@@ -74,7 +71,6 @@ export const trackDownloadResponseStart = (
   numWorkers: number,
   expectedNumSubmissions: number,
 ) => {
-  console.log('trackDownloadResponseStart')
   GA().gtag('event', 'storage_mode', {
     event_action: 'download_start',
     form_title: adminForm.title,
@@ -98,7 +94,6 @@ export const trackDownloadResponseSuccess = (
   expectedNumSubmissions: number,
   duration: number,
 ) => {
-  console.log('trackDownloadResponseSuccess')
   GA().gtag('event', 'storage_mode', {
     event_action: 'download_success',
     form_title: adminForm.title,
