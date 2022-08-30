@@ -42,14 +42,14 @@ declare global {
   var dataLayer: unknown[]
 }
 
-globalThis.dataLayer = window.dataLayer || []
+window.dataLayer = window.dataLayer || []
 function gtag(...args: unknown[]) {
   // eslint-disable-next-line prefer-rest-params
   dataLayer.push(arguments)
 }
 gtag('js', new Date())
-gtag('config', process.env.GA_TRACKING_ID, { debug_mode: true })
-globalThis.gtag = gtag
+gtag('config', process.env.GA_TRACKING_ID || '', { debug_mode: true })
+window.gtag = gtag
 
 ReactDOM.render(
   <React.StrictMode>
