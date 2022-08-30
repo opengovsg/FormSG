@@ -1,8 +1,7 @@
 import { useMemo } from 'react'
-import { Icon, Stack, Text } from '@chakra-ui/react'
+import { Box, Icon, Stack, Text, Tooltip } from '@chakra-ui/react'
 
 import { BxsErrorCircle, BxsInfoCircle } from '~assets/icons'
-import Tooltip from '~components/Tooltip'
 
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
 import { FormFieldWithQuestionNo } from '~features/form/types'
@@ -56,13 +55,11 @@ export const FieldLogicBadge = ({
 
   return (
     <LogicBadge display="inline-flex">
-      <Stack direction="row" spacing="0.25rem" maxW="100%">
-        <Tooltip
-          placement="top"
-          label={tooltipLabel}
-          wrapperStyles={{ display: 'flex' }}
-        >
-          <Icon as={tooltipIcon} fontSize="1rem" color={textColor} />
+      <Stack direction="row" spacing="0.25rem" maxW="100%" align="center">
+        <Tooltip placement="top" label={tooltipLabel} hasArrow>
+          <Box display="inline-flex" alignItems="center">
+            <Icon as={tooltipIcon} fontSize="1rem" color={textColor} />
+          </Box>
         </Tooltip>
         {field ? (
           <>

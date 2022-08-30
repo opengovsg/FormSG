@@ -23,11 +23,7 @@ export const SwitchEnvIcon = (): JSX.Element => {
       zIndex="9999"
       cursor="pointer"
     >
-      <Tooltip
-        placement="left"
-        label="Have feedback?"
-        wrapperStyles={{ display: 'flex' }}
-      >
+      <Tooltip placement="left" label="Have feedback?">
         <IconButton
           variant="outline"
           as="a"
