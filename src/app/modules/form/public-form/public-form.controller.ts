@@ -494,6 +494,13 @@ export const _handleFormAuthRedirect: ControllerHandler<
       }
     })
     .map((redirectURL) => {
+      logger.info({
+        message: 'Redirecting user to login page',
+        meta: {
+          redirectURL,
+          ...logMeta,
+        },
+      })
       return res.status(StatusCodes.OK).json({ redirectURL })
     })
     .mapErr((error) => {
