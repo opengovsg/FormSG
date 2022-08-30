@@ -6,7 +6,10 @@ import supertest, { Session } from 'supertest-session'
 import { mocked } from 'ts-jest/utils'
 
 import { DatabaseError } from 'src/app/modules/core/core.errors'
-import { getRedirectTargetSpcpOidc } from 'src/app/modules/spcp/spcp.util'
+import {
+  getRedirectTarget,
+  getRedirectTargetSpOidc,
+} from 'src/app/modules/spcp/spcp.util'
 
 import { setupApp } from 'tests/integration/helpers/express-setup'
 import { buildCelebrateError } from 'tests/unit/backend/helpers/celebrate'
@@ -15,15 +18,12 @@ import { jsonParseStringify } from 'tests/unit/backend/helpers/serialize-data'
 
 import { FormAuthType, FormStatus } from '../../../../../../../shared/types'
 import * as FormService from '../../../../../modules/form/form.service'
+import { SpOidcClient } from '../../../../../modules/spcp/sp.oidc.client'
+import { SpOidcService } from '../../../../../modules/spcp/sp.oidc.service'
 import {
   CreateRedirectUrlError,
   FetchLoginPageError,
 } from '../../../../../modules/spcp/spcp.errors'
-import {
-  CpOidcClient,
-  SpOidcClient,
-} from '../../../../../modules/spcp/spcp.oidc.client'
-import { SpOidcServiceClass } from '../../../../../modules/spcp/spcp.oidc.service/spcp.oidc.service.sp'
 import { PublicFormsRouter } from '../public-forms.routes'
 
 // NOTE: Mocking axios here because there is a network call to an external service
@@ -31,7 +31,7 @@ import { PublicFormsRouter } from '../public-forms.routes'
 jest.mock('axios')
 const MockAxios = mocked(axios, true)
 
-jest.mock('../../../../../modules/spcp/spcp.oidc.client')
+jest.mock('../../../../../modules/spcp/sp.oidc.client')
 
 const app = setupApp('/forms', PublicFormsRouter)
 describe('public-form.auth.routes', () => {
@@ -60,9 +60,9 @@ describe('public-form.auth.routes', () => {
       jest
         .spyOn(SpOidcClient.prototype, 'createAuthorisationUrl')
         .mockResolvedValue(
-          `${encodeURI(
-            getRedirectTargetSpcpOidc(form._id, FormAuthType.SP, false),
-          )}&esrvc=${form.esrvcId}`,
+          `${encodeURI(getRedirectTargetSpOidc(form._id, false))}&esrvc=${
+            form.esrvcId
+          }`,
         )
 
       // Act
@@ -74,9 +74,7 @@ describe('public-form.auth.routes', () => {
       expect(response.status).toEqual(StatusCodes.OK)
       expect(response.body).toMatchObject({
         redirectURL: expect.toIncludeMultiple([
-          encodeURI(
-            getRedirectTargetSpcpOidc(form._id, FormAuthType.SP, false),
-          ),
+          encodeURI(getRedirectTargetSpOidc(form._id, false)),
           form.esrvcId!,
         ]),
       })
@@ -92,14 +90,6 @@ describe('public-form.auth.routes', () => {
         },
       })
 
-      jest
-        .spyOn(CpOidcClient.prototype, 'createAuthorisationUrl')
-        .mockResolvedValue(
-          `${encodeURI(
-            getRedirectTargetSpcpOidc(form._id, FormAuthType.CP, false),
-          )}&esrvc=${form.esrvcId}`,
-        )
-
       // Act
       const response = await request
         .get(`/forms/${form._id}/auth/redirect`)
@@ -109,9 +99,7 @@ describe('public-form.auth.routes', () => {
       expect(response.status).toEqual(StatusCodes.OK)
       expect(response.body).toMatchObject({
         redirectURL: expect.toIncludeMultiple([
-          encodeURI(
-            getRedirectTargetSpcpOidc(form._id, FormAuthType.CP, false),
-          ),
+          encodeURI(getRedirectTarget(form._id, FormAuthType.CP, false)),
           form.esrvcId!,
         ]),
       })
@@ -270,7 +258,7 @@ describe('public-form.auth.routes', () => {
         message: 'Sorry, something went wrong. Please try again.',
       })
       jest
-        .spyOn(SpOidcServiceClass.prototype, 'createRedirectUrl')
+        .spyOn(SpOidcService, 'createRedirectUrl')
         .mockResolvedValueOnce(err(new CreateRedirectUrlError()))
 
       // Act

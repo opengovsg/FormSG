@@ -11,7 +11,7 @@ import * as BillingService from '../billing/billing.service'
 import { ControllerHandler } from '../core/core.types'
 import * as FormService from '../form/form.service'
 
-import { getOidcService } from './spcp.oidc.service'
+import { SpOidcService } from './sp.oidc.service'
 import { SpcpService } from './spcp.service'
 import { JwtName } from './spcp.types'
 import { mapRouteError } from './spcp.util'
@@ -188,43 +188,36 @@ export const handleLogin: (
 }
 
 /**
- * Higher-order function which returns an Express handler to handle Singpass
- * and Corppass OIDC login requests.
- * @param authType 'SP' or 'CP'
+ * Handler for SP OIDC logins
  */
-export const handleSpcpOidcLogin: (
-  authType: FormAuthType.SP | FormAuthType.CP,
-) => ControllerHandler<
+export const handleSpOidcLogin: ControllerHandler<
   unknown,
   unknown,
   unknown,
   { state: string; code: string }
-> = (authType) => async (req, res) => {
+> = async (req, res) => {
   const { state, code } = req.query
   const logMeta = {
-    action: 'handleSpcpOidcLogin',
+    action: 'handleSpOidcLogin',
     state,
     code,
-    authType,
   }
 
-  const oidcService = getOidcService(authType)
+  const nricResult = await SpOidcService.exchangeAuthCodeAndRetrieveNric(code)
 
-  const result = await oidcService.exchangeAuthCodeAndRetrieveData(code)
-
-  if (result.isErr()) {
+  if (nricResult.isErr()) {
     logger.error({
       message: 'Failed to exchange auth code and retrieve nric',
       meta: logMeta,
-      error: result.error,
+      error: nricResult.error,
     })
     return res.sendStatus(StatusCodes.BAD_REQUEST)
   }
 
-  const parseResult = oidcService.parseState(state)
+  const parseResult = SpOidcService.parseState(state)
   if (parseResult.isErr()) {
     logger.error({
-      message: 'Invalid login parameters',
+      message: 'Invalid SP login parameters',
       meta: logMeta,
       error: parseResult.error,
     })
@@ -241,25 +234,22 @@ export const handleSpcpOidcLogin: (
     return res.sendStatus(StatusCodes.NOT_FOUND)
   }
   const form = formResult.value
-  if (form.authType !== authType) {
+  if (form.authType !== FormAuthType.SP) {
     logger.error({
       message: "Log in attempt to wrong endpoint for form's authType",
       meta: {
         ...logMeta,
         formAuthType: form.authType,
-        endpointAuthType: authType,
+        endpointAuthType: FormAuthType.SP,
       },
     })
     res.cookie('isLoginError', true)
     return res.redirect(destination)
   }
 
-  const attributes = result.value
-  const jwtResult = await oidcService
-    .createJWTPayload(attributes, rememberMe)
-    .asyncAndThen((jwtPayload) =>
-      oidcService.createJWT(jwtPayload, cookieDuration),
-    )
+  const nric = nricResult.value
+  const jwtPayload = { userName: nric, rememberMe }
+  const jwtResult = await SpOidcService.createJWT(jwtPayload, cookieDuration)
 
   if (jwtResult.isErr()) {
     logger.error({
@@ -273,12 +263,12 @@ export const handleSpcpOidcLogin: (
 
   return BillingService.recordLoginByForm(form)
     .map(() => {
-      res.cookie(oidcService.jwtName, jwtResult.value, {
+      res.cookie(JwtName[FormAuthType.SP], jwtResult.value, {
         maxAge: cookieDuration,
         httpOnly: true,
         sameSite: 'lax', // Setting to 'strict' prevents Singpass login on Safari, Firefox
         secure: !config.isDev,
-        ...oidcService.getCookieSettings(),
+        ...SpOidcService.getCookieSettings(),
       })
       return res.redirect(destination)
     })

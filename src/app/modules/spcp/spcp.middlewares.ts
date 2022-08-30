@@ -17,7 +17,7 @@ export const loginParamsMiddleware = celebrate({
   }),
 })
 
-export const spcpOidcLoginParamsMiddleware = celebrate({
+export const spOidcLoginParamsMiddleware = celebrate({
   [Segments.QUERY]: Joi.object({
     state: Joi.string().required(),
     code: Joi.string().required(),

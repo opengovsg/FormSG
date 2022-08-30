@@ -1,10 +1,10 @@
-import { InvalidIdTokenError } from '../spcp.oidc.client.errors'
+import { InvalidIdTokenError } from '../sp.oidc.client.errors'
 import {
   extractNricFromParsedSub,
   parseSub,
   retryPromiseForever,
   retryPromiseThreeAttempts,
-} from '../spcp.oidc.util'
+} from '../sp.oidc.util'
 
 const MOCK_PROMISE_NAME = 'promise'
 

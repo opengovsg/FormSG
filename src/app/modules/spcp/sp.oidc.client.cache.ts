@@ -7,19 +7,19 @@ import { timeout, TimeoutError } from 'promise-timeout'
 
 import { createLoggerWithLabel } from '../../config/logger'
 
-import { JwkError } from './spcp.oidc.client.errors'
+import { JwkError } from './sp.oidc.client.errors'
 import {
   CryptoKeys,
   PublicJwks,
   Refresh,
   SecretJwks,
-  SpcpOidcBaseClientCacheConstructorParams,
-} from './spcp.oidc.client.types'
+  SpOidcClientCacheConstructorParams,
+} from './sp.oidc.client.types'
 import {
   isEC,
   retryPromiseForever,
   retryPromiseThreeAttempts,
-} from './spcp.oidc.util'
+} from './sp.oidc.util'
 
 const logger = createLoggerWithLabel(module)
 
@@ -36,7 +36,7 @@ const INITIAL_REFRESH_TIMEOUT = 10000
  * Cache class which provides read-through capability and refresh-ahead before expiry
  * Handles discovery and retrieval of NDI's public jwks
  */
-export class SpcpOidcBaseClientCache {
+export class SpOidcClientCache {
   /**
    * Cache to store NDI's keys and client
    * @private
@@ -53,11 +53,11 @@ export class SpcpOidcBaseClientCache {
    */
   _refreshPromise?: Promise<Refresh>
 
-  #ndiDiscoveryEndpoint: string
-  #ndiJwksEndpoint: string
-  #rpClientId: string
-  #rpRedirectUrl: string
-  #rpSecretJwks: SecretJwks
+  #spOidcNdiDiscoveryEndpoint: string
+  #spOidcNdiJwksEndpoint: string
+  #spOidcRpClientId: string
+  #spOidcRpRedirectUrl: string
+  #spOidcRpSecretJwks: SecretJwks
 
   /**
    * Constructor for cache
@@ -65,17 +65,17 @@ export class SpcpOidcBaseClientCache {
    */
   constructor({
     options,
-    ndiDiscoveryEndpoint,
-    ndiJwksEndpoint,
-    rpClientId,
-    rpRedirectUrl,
-    rpSecretJwks,
-  }: SpcpOidcBaseClientCacheConstructorParams) {
-    this.#ndiDiscoveryEndpoint = ndiDiscoveryEndpoint
-    this.#ndiJwksEndpoint = ndiJwksEndpoint
-    this.#rpClientId = rpClientId
-    this.#rpRedirectUrl = rpRedirectUrl
-    this.#rpSecretJwks = rpSecretJwks
+    spOidcNdiDiscoveryEndpoint,
+    spOidcNdiJwksEndpoint,
+    spOidcRpClientId,
+    spOidcRpRedirectUrl,
+    spOidcRpSecretJwks,
+  }: SpOidcClientCacheConstructorParams) {
+    this.#spOidcNdiDiscoveryEndpoint = spOidcNdiDiscoveryEndpoint
+    this.#spOidcNdiJwksEndpoint = spOidcNdiJwksEndpoint
+    this.#spOidcRpClientId = spOidcRpClientId
+    this.#spOidcRpRedirectUrl = spOidcRpRedirectUrl
+    this.#spOidcRpSecretJwks = spOidcRpSecretJwks
     this._cache = new NodeCache(options)
 
     // On expiry, refresh cache.
@@ -201,8 +201,9 @@ export class SpcpOidcBaseClientCache {
    */
   async retrievePublicKeysFromNdi(): Promise<CryptoKeys> {
     const getJwksWithRetries = retryPromiseThreeAttempts(
-      () => axios.get<PublicJwks>(this.#ndiJwksEndpoint, { timeout: 3000 }),
-      `axios.get<PublicJwks>(this.#ndiJwksEndpoint)`,
+      () =>
+        axios.get<PublicJwks>(this.#spOidcNdiJwksEndpoint, { timeout: 3000 }),
+      `axios.get<PublicJwks>(this.#spOidcNdiJwksEndpoint)`,
     )
 
     const { data: spOidcNdiPublicJwks } = await getJwksWithRetries
@@ -229,19 +230,19 @@ export class SpcpOidcBaseClientCache {
    */
   async retrieveBaseClientFromNdi(): Promise<BaseClient> {
     const getIssuerWithRetries = retryPromiseThreeAttempts(
-      () => Issuer.discover(this.#ndiDiscoveryEndpoint),
-      `Issuer.discover(this.#ndiDiscoveryEndpoint)`,
+      () => Issuer.discover(this.#spOidcNdiDiscoveryEndpoint),
+      `Issuer.discover(this.#spOidcNdiDiscoveryEndpoint)`,
     )
 
     const issuer = await getIssuerWithRetries
 
     const baseClient = new issuer.Client(
       {
-        client_id: this.#rpClientId,
+        client_id: this.#spOidcRpClientId,
         token_endpoint_auth_method: 'private_key_jwt',
-        redirect_uris: [this.#rpRedirectUrl],
+        redirect_uris: [this.#spOidcRpRedirectUrl],
       },
-      this.#rpSecretJwks,
+      this.#spOidcRpSecretJwks,
     )
 
     return baseClient
