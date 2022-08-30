@@ -1,5 +1,5 @@
 import { Virtuoso } from 'react-virtuoso'
-import { Box, List, ListItem } from '@chakra-ui/react'
+import { List, ListItem } from '@chakra-ui/react'
 
 import { VIRTUAL_LIST_OVERSCAN_HEIGHT } from '../constants'
 import { useSelectContext } from '../SelectContext'
@@ -19,44 +19,39 @@ export const SelectMenu = (): JSX.Element => {
     virtualListHeight,
   } = useSelectContext()
 
-  const { popperRef, popperStyles, popperAttributes } = useSelectPopover()
+  const { floatingRef, floatingStyles } = useSelectPopover()
 
   return (
-    <Box
-      ref={popperRef}
-      style={popperStyles.popper}
-      {...popperAttributes.popper}
+    <List
+      {...getMenuProps({
+        ref: floatingRef,
+      })}
+      style={floatingStyles}
       zIndex="dropdown"
+      sx={styles.list}
     >
-      <List
-        {...getMenuProps({
-          hidden: !isOpen,
-        })}
-        sx={styles.list}
-      >
-        {isOpen && items.length > 0 && (
-          <Virtuoso
-            ref={virtualListRef}
-            data={items}
-            overscan={VIRTUAL_LIST_OVERSCAN_HEIGHT}
-            style={{ height: virtualListHeight }}
-            itemContent={(index, item) => {
-              return (
-                <DropdownItem
-                  key={`${itemToValue(item)}${index}`}
-                  item={item}
-                  index={index}
-                />
-              )
-            }}
-          />
-        )}
-        {isOpen && items.length === 0 ? (
-          <ListItem role="option" sx={styles.emptyItem}>
-            {nothingFoundLabel}
-          </ListItem>
-        ) : null}
-      </List>
-    </Box>
+      {isOpen && items.length > 0 && (
+        <Virtuoso
+          ref={virtualListRef}
+          data={items}
+          overscan={VIRTUAL_LIST_OVERSCAN_HEIGHT}
+          style={{ height: virtualListHeight }}
+          itemContent={(index, item) => {
+            return (
+              <DropdownItem
+                key={`${itemToValue(item)}${index}`}
+                item={item}
+                index={index}
+              />
+            )
+          }}
+        />
+      )}
+      {isOpen && items.length === 0 ? (
+        <ListItem role="option" sx={styles.emptyItem}>
+          {nothingFoundLabel}
+        </ListItem>
+      ) : null}
+    </List>
   )
 }
