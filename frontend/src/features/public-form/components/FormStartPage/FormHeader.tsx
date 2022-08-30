@@ -5,6 +5,7 @@ import {
   Box,
   Flex,
   Icon,
+  Portal,
   Skeleton,
   Slide,
   Text,
@@ -38,58 +39,59 @@ export const MiniHeader = ({
   colorScheme,
   isOpen,
 }: MiniHeaderProps): JSX.Element => (
-  <Slide
-    // Screen readers do not need to know of the existence of this component.
-    aria-hidden
-    ref={miniHeaderRef}
-    direction="top"
-    in={isOpen}
-    style={{ zIndex: 1000 }}
-  >
-    <Box
-      bg={titleBg}
-      px={{ base: '1.5rem', md: '2rem' }}
-      py={{ base: '0.5rem', md: '1rem' }}
+  <Portal>
+    <Slide
+      // Screen readers do not need to know of the existence of this component.
+      aria-hidden
+      ref={miniHeaderRef}
+      direction="top"
+      in={isOpen}
     >
-      <Skeleton isLoaded={!!title}>
-        <Flex
-          align="center"
-          flex={1}
-          gap="0.5rem"
-          justify="space-between"
-          flexDir="row"
-        >
+      <Box
+        bg={titleBg}
+        px={{ base: '1.5rem', md: '2rem' }}
+        py={{ base: '0.5rem', md: '1rem' }}
+      >
+        <Skeleton isLoaded={!!title}>
           <Flex
-            alignItems="center"
-            minH={{ base: '4rem', md: '0' }}
-            flex="1 1 0"
-            w="100%"
-            overflow="hidden"
+            align="center"
+            flex={1}
+            gap="0.5rem"
+            justify="space-between"
+            flexDir="row"
           >
-            <Text
-              textStyle={{ base: 'h4', md: 'h2' }}
-              textAlign="start"
-              color={titleColor}
-              noOfLines={2}
+            <Flex
+              alignItems="center"
+              minH={{ base: '4rem', md: '0' }}
+              flex="1 1 0"
+              w="100%"
+              overflow="hidden"
             >
-              {title ?? 'Loading title'}
-            </Text>
+              <Text
+                textStyle={{ base: 'h4', md: 'h2' }}
+                textAlign="start"
+                color={titleColor}
+                noOfLines={2}
+              >
+                {title ?? 'Loading title'}
+              </Text>
+            </Flex>
+            {activeSectionId ? (
+              // Section sidebar icon should only show up if sections exist
+              <IconButton
+                colorScheme={colorScheme}
+                aria-label="Mobile section sidebar"
+                fontSize="1.5rem"
+                icon={<BxMenuAltLeft />}
+                d={{ base: 'flex', md: 'none' }}
+                onClick={onMobileDrawerOpen}
+              />
+            ) : null}
           </Flex>
-          {activeSectionId ? (
-            // Section sidebar icon should only show up if sections exist
-            <IconButton
-              colorScheme={colorScheme}
-              aria-label="Mobile section sidebar"
-              fontSize="1.5rem"
-              icon={<BxMenuAltLeft />}
-              d={{ base: 'flex', md: 'none' }}
-              onClick={onMobileDrawerOpen}
-            />
-          ) : null}
-        </Flex>
-      </Skeleton>
-    </Box>
-  </Slide>
+        </Skeleton>
+      </Box>
+    </Slide>
+  </Portal>
 )
 
 interface FormHeaderProps {
