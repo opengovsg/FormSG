@@ -48,7 +48,7 @@ function gtag(...args: unknown[]) {
   dataLayer.push(arguments)
 }
 gtag('js', new Date())
-gtag('config', process.env.GA_TRACKING_ID || '', { debug_mode: true })
+gtag('config', process.env.REACT_APP_GA_TRACKING_ID || '', { debug_mode: true })
 window.gtag = gtag
 
 ReactDOM.render(
