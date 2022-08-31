@@ -29,6 +29,7 @@ export const WhatsNewContent = ({
       text: {
         color: 'secondary.500',
         textStyle: 'body-1',
+        whiteSpace: 'pre-wrap',
       },
       list: {
         color: 'secondary.500',
