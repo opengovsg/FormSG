@@ -20,7 +20,6 @@ import { useCreateFormField } from '~features/admin-form/create/builder-and-desi
 import { useEditFormField } from '~features/admin-form/create/builder-and-design/mutations/useEditFormField'
 import {
   FieldBuilderState,
-  isDirtySelector,
   setIsDirtySelector,
   setToInactiveSelector,
   stateDataSelector,
@@ -80,7 +79,6 @@ export const useEditFieldForm = <FormShape, FieldShape extends FormField>({
         setToInactive: setToInactiveSelector(state),
         updateEditState: updateEditStateSelector(state),
         updateCreateState: updateCreateStateSelector(state),
-        isDirty: isDirtySelector(state),
         setIsDirty: setIsDirtySelector(state),
       }),
       [],
