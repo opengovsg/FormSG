@@ -33,7 +33,7 @@ export const RowActionsDropdown = ({
   return (
     <Menu
       placement="bottom-end"
-      // Prevents massize render load when there are a ton of rows
+      // Prevents massive render load when there are a ton of rows
       isLazy
     >
       {({ isOpen }) => (
@@ -83,7 +83,7 @@ export const RowActionsDropdown = ({
             </Menu.Item>
             {isFormAdmin && (
               <>
-                <MenuDivider />
+                <MenuDivider aria-hidden borderColor="neutral.300" />
                 <Menu.Item
                   onClick={handleDeleteForm}
                   color="danger.500"
