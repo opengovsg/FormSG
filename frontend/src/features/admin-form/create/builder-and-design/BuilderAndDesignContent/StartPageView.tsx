@@ -24,8 +24,8 @@ import {
   stateSelector,
   useDesignStore,
 } from '../useDesignStore'
+import { isDirtySelector, useDirtyFieldStore } from '../useDirtyFieldStore'
 import {
-  isDirtySelector,
   setToInactiveSelector,
   useFieldBuilderStore,
 } from '../useFieldBuilderStore'
@@ -33,15 +33,8 @@ import {
 export const StartPageView = () => {
   const isMobile = useIsMobile()
   const { data: form } = useCreateTabForm()
-  const { setToInactive, isDirty } = useFieldBuilderStore(
-    useCallback(
-      (state) => ({
-        setToInactive: setToInactiveSelector(state),
-        isDirty: isDirtySelector(state),
-      }),
-      [],
-    ),
-  )
+  const setToInactive = useFieldBuilderStore(setToInactiveSelector)
+  const isDirty = useDirtyFieldStore(isDirtySelector)
 
   const { designState, startPageData, customLogoMeta, setDesignState } =
     useDesignStore(

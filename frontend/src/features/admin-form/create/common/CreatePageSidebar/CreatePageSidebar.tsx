@@ -13,6 +13,9 @@ import {
 
 import {
   isDirtySelector,
+  useDirtyFieldStore,
+} from '../../builder-and-design/useDirtyFieldStore'
+import {
   setToInactiveSelector,
   useFieldBuilderStore,
 } from '../../builder-and-design/useFieldBuilderStore'
@@ -23,7 +26,7 @@ import { DrawerTabIcon } from './DrawerTabIcon'
 export const CreatePageSidebar = (): JSX.Element | null => {
   const isMobile = useIsMobile()
   const setFieldsToInactive = useFieldBuilderStore(setToInactiveSelector)
-  const isDirty = useFieldBuilderStore(isDirtySelector)
+  const isDirty = useDirtyFieldStore(isDirtySelector)
   const { activeTab, handleBuilderClick, handleDesignClick, handleLogicClick } =
     useCreatePageSidebar()
 

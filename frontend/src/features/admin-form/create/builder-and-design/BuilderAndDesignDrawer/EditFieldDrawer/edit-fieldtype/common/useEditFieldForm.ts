@@ -19,8 +19,11 @@ import {
 import { useCreateFormField } from '~features/admin-form/create/builder-and-design/mutations/useCreateFormField'
 import { useEditFormField } from '~features/admin-form/create/builder-and-design/mutations/useEditFormField'
 import {
-  FieldBuilderState,
   setIsDirtySelector,
+  useDirtyFieldStore,
+} from '~features/admin-form/create/builder-and-design/useDirtyFieldStore'
+import {
+  FieldBuilderState,
   setToInactiveSelector,
   stateDataSelector,
   updateCreateStateSelector,
@@ -66,24 +69,20 @@ export const useEditFieldForm = <FormShape, FieldShape extends FormField>({
   FormShape,
   FieldShape
 >): UseEditFieldFormReturn<FormShape> => {
-  const {
-    stateData,
-    setToInactive,
-    updateEditState,
-    updateCreateState,
-    setIsDirty,
-  } = useFieldBuilderStore(
-    useCallback(
-      (state) => ({
-        stateData: stateDataSelector(state),
-        setToInactive: setToInactiveSelector(state),
-        updateEditState: updateEditStateSelector(state),
-        updateCreateState: updateCreateStateSelector(state),
-        setIsDirty: setIsDirtySelector(state),
-      }),
-      [],
-    ),
-  )
+  const { stateData, setToInactive, updateEditState, updateCreateState } =
+    useFieldBuilderStore(
+      useCallback(
+        (state) => ({
+          stateData: stateDataSelector(state),
+          setToInactive: setToInactiveSelector(state),
+          updateEditState: updateEditStateSelector(state),
+          updateCreateState: updateCreateStateSelector(state),
+        }),
+        [],
+      ),
+    )
+
+  const setIsDirty = useDirtyFieldStore(setIsDirtySelector)
 
   const { editFieldMutation } = useEditFormField()
   const { createFieldMutation } = useCreateFormField()

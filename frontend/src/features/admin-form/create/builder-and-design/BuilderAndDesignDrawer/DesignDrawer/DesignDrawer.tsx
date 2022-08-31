@@ -48,8 +48,8 @@ import {
 } from '../../useDesignStore'
 import {
   setIsDirtySelector,
-  useFieldBuilderStore,
-} from '../../useFieldBuilderStore'
+  useDirtyFieldStore,
+} from '../../useDirtyFieldStore'
 import { validateNumberInput } from '../../utils/validateNumberInput'
 import { CreatePageDrawerCloseButton } from '../CreatePageDrawerCloseButton'
 import { DrawerContentContainer } from '../EditFieldDrawer/edit-fieldtype/common/DrawerContentContainer'
@@ -90,7 +90,7 @@ export const DesignInput = (): JSX.Element | null => {
     ),
   )
 
-  const setIsDirty = useFieldBuilderStore(setIsDirtySelector)
+  const setIsDirty = useDirtyFieldStore(setIsDirtySelector)
 
   const setToEditingHeader = useCallback(
     () => setDesignState(DesignState.EditingHeader),

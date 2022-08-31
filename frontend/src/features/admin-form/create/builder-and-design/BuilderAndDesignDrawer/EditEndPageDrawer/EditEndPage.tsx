@@ -25,12 +25,15 @@ import { useMutateFormPage } from '~features/admin-form/common/mutations'
 import { useAdminForm } from '~features/admin-form/common/queries'
 
 import {
+  setIsDirtySelector,
+  useDirtyFieldStore,
+} from '../../useDirtyFieldStore'
+import {
   resetEndPageDataSelector,
   setEndPageDataSelector,
   useEndPageBuilderStore,
 } from '../../useEndPageBuilderStore'
 import {
-  setIsDirtySelector,
   setToInactiveSelector,
   useFieldBuilderStore,
 } from '../../useFieldBuilderStore'
@@ -57,7 +60,7 @@ export const EndPageBuilderInput = ({
   const { endPageMutation } = useMutateFormPage()
 
   const closeBuilderDrawer = useFieldBuilderStore(setToInactiveSelector)
-  const setIsDirty = useFieldBuilderStore(setIsDirtySelector)
+  const setIsDirty = useDirtyFieldStore(setIsDirtySelector)
 
   const { setEndPageBuilderState, resetEndPageBuilderState } =
     useEndPageBuilderStore((state) => ({

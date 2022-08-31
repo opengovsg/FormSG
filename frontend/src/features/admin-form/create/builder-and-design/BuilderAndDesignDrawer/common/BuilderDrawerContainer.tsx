@@ -4,8 +4,8 @@ import { Stack, Text } from '@chakra-ui/react'
 
 import IconButton from '~components/IconButton'
 
+import { isDirtySelector, useDirtyFieldStore } from '../../useDirtyFieldStore'
 import {
-  isDirtySelector,
   setToInactiveSelector,
   useFieldBuilderStore,
 } from '../../useFieldBuilderStore'
@@ -20,7 +20,7 @@ export const BuilderDrawerContainer = ({
   title,
   children,
 }: BuilderDrawerContainerProps): JSX.Element | null => {
-  const isDirty = useFieldBuilderStore(isDirtySelector)
+  const isDirty = useDirtyFieldStore(isDirtySelector)
   const setToInactive = useFieldBuilderStore(setToInactiveSelector)
 
   const handleBack = useCallback(() => {

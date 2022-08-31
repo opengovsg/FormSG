@@ -11,8 +11,8 @@ import { useCreatePageSidebar } from '../../common/CreatePageSidebarContext'
 import { useAdminFormLogic } from '../../logic/hooks/useAdminFormLogic'
 import { FIELD_LIST_DROP_ID } from '../constants'
 import { DndPlaceholderProps } from '../types'
+import { isDirtySelector, useDirtyFieldStore } from '../useDirtyFieldStore'
 import {
-  isDirtySelector,
   setToEditEndPageSelector,
   useFieldBuilderStore,
 } from '../useFieldBuilderStore'
@@ -37,7 +37,7 @@ export const FormBuilder = ({
   const { formLogics } = useAdminFormLogic()
   const { handleBuilderClick } = useCreatePageSidebar()
   const setEditEndPage = useFieldBuilderStore(setToEditEndPageSelector)
-  const isDirty = useFieldBuilderStore(isDirtySelector)
+  const isDirty = useDirtyFieldStore(isDirtySelector)
   const visibleFieldIds = useMemo(
     () =>
       getVisibleFieldIds(

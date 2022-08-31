@@ -14,8 +14,8 @@ import { useAdminFormCollaborators } from '../common/queries'
 
 import {
   isDirtySelector,
-  useFieldBuilderStore,
-} from './builder-and-design/useFieldBuilderStore'
+  useDirtyFieldStore,
+} from './builder-and-design/useDirtyFieldStore'
 import { CreatePageContent } from './common/CreatePageContent'
 import { CreatePageSidebar } from './common/CreatePageSidebar'
 import { CreatePageSidebarProvider } from './common/CreatePageSidebarContext'
@@ -49,7 +49,7 @@ export const CreatePage = (): JSX.Element => {
     return !isLoading && !hasAdminSeenFeatureTour
   }, [isLoading, hasAdminSeenFeatureTour])
 
-  const isDirty = useFieldBuilderStore(isDirtySelector)
+  const isDirty = useDirtyFieldStore(isDirtySelector)
 
   return (
     <>
