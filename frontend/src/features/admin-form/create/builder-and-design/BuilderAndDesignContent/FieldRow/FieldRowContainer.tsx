@@ -433,5 +433,7 @@ const MemoFieldRow = memo(({ field, ...rest }: MemoFieldRowProps) => {
       return <YesNoField schema={field} {...rest} />
     case BasicField.Table:
       return <TableField schema={field} {...rest} />
+    default:
+      return <div>TODO: Add field row for {field.fieldType}</div>
   }
 })
