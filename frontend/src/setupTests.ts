@@ -38,3 +38,5 @@ window.matchMedia =
   }
 
 global.ResizeObserver = require('resize-observer-polyfill')
+
+jest.setTimeout(20000)

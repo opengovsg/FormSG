@@ -8,10 +8,6 @@ import * as stories from './DropdownField.stories'
 
 const { ValidationOptional, ValidationRequired } = composeStories(stories)
 
-beforeEach(() => {
-  jest.setTimeout(10000)
-})
-
 describe('required field', () => {
   it('renders error when field is not selected before submitting', async () => {
     // Arrange
