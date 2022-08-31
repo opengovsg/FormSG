@@ -5,7 +5,7 @@ import { PUBLIC_FORMS_ENDPOINT } from '~features/public-form/PublicFormService'
 
 import { ApiService } from './ApiService'
 
-const ENV_ENDPOINT = '/environment'
+const ENV_ENDPOINT = 'environment'
 const ADMIN_ENDPOINT = '/admin'
 
 export const publicChooseEnvironment = async (): Promise<UiCookieValues> => {

@@ -240,6 +240,7 @@ export const adminChooseEnvironment: ControllerHandler<
     // chosen environment until the alternative is stable.
     ADMIN_COOKIE_OPTIONS_WITH_EXPIRY,
   )
+
   return res.json({ ui })
 }
 
@@ -262,4 +263,25 @@ export const publicChooseEnvironment: ControllerHandler<
     RESPONDENT_COOKIE_OPTIONS_WITH_EXPIRY,
   )
   return res.json({ ui })
+}
+
+// Redirect to landing after setting the admin cookie
+export const redirectAdminEnvironment: ControllerHandler<
+  SetEnvironmentParams,
+  unknown,
+  unknown,
+  Record<string, string>
+> = (req, res) => {
+  const ui =
+    req.params.ui === UiCookieValues.React
+      ? UiCookieValues.React
+      : UiCookieValues.Angular
+  res.cookie(
+    config.reactMigration.adminCookieName,
+    ui,
+    // When admin chooses to switch environments, we want them to stay on their
+    // chosen environment until the alternative is stable.
+    ADMIN_COOKIE_OPTIONS_WITH_EXPIRY,
+  )
+  return res.redirect('/')
 }

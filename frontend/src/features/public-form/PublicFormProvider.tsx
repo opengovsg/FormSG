@@ -80,13 +80,18 @@ export function useCommonFormProvider(formId: string) {
     return differenceInMilliseconds(vfnTransaction.expireAt, Date.now())
   }, [vfnTransaction])
 
-  const showErrorToast = useCallback(() => {
-    toast({
-      status: 'danger',
-      description:
-        'An error occurred whilst processing your submission. Please refresh and try again.',
-    })
-  }, [toast])
+  const showErrorToast = useCallback(
+    (error) => {
+      toast({
+        status: 'danger',
+        description:
+          error instanceof Error
+            ? error.message
+            : 'An error occurred whilst processing your submission. Please refresh and try again.',
+      })
+    },
+    [toast],
+  )
 
   return {
     isNotFormId,
@@ -212,7 +217,7 @@ export const PublicFormProvider = ({
           // Do nothing if recaptcha is closed.
           return
         }
-        return showErrorToast()
+        return showErrorToast(error)
       }
 
       switch (form.responseMode) {

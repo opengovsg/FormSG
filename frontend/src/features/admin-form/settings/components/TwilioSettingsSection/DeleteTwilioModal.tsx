@@ -20,11 +20,13 @@ import { useMutateTwilioCreds } from '../../mutations'
 interface DeleteTwilioModalProps {
   isOpen: boolean
   onClose: () => void
+  onDelete: () => void
 }
 
 export const DeleteTwilioModal = ({
   isOpen,
   onClose,
+  onDelete,
 }: DeleteTwilioModalProps): JSX.Element => {
   const modalSize = useBreakpointValue({
     base: 'mobile',
@@ -39,9 +41,12 @@ export const DeleteTwilioModal = ({
 
   const handleConfirmDeleteCreds = useCallback(() => {
     mutateFormTwilioDeletion.mutate(undefined, {
-      onSuccess: onClose,
+      onSuccess: () => {
+        onDelete()
+        onClose()
+      },
     })
-  }, [mutateFormTwilioDeletion, onClose])
+  }, [mutateFormTwilioDeletion, onClose, onDelete])
 
   return (
     <Modal size={modalSize} isOpen={isOpen} onClose={onClose}>

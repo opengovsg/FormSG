@@ -27,17 +27,16 @@ If you cannot login to the app and see an `MongoError: not primary and secondary
 
 This is most likely due to the replicaSet being misconfigured with the wrong IP address of the MongoDB container.
 
-To fix this issue, follow these steps:
+This should only happen if your MongoDB volume was created before [#4603](https://github.com/opengovsg/FormSG/pull/4603).
 
-1. Retrieve the container ID of the mongodb container using `docker ps`,
-2. Retrieve the IP address of the container `docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' <mongodb-container-id>`.
-3. Login to the docker container using `docker exec -it <mongodb-container-id> /bin/sh`
-4. Start the mongodb shell with `mongosh`.
-5. Look at the replica set configuration by entering `rs.config()`. Look to see if the IP address listed is different than the one in step 2.
-6. Run the following commands within `mongosh` to force set the IP address within the replica set:
+To fix this issue, either delete and re-create the MongoDB volume, or follow these steps:
+
+1. Login to the docker container using `docker exec -it <mongodb-container-id> /bin/sh`
+2. Start the mongodb shell with `mongosh`.
+3. Run the following commands within `mongosh` to force set the IP address within the replica set:
 
 ```
 conf = rs.config()
-conf.members[0].host = '<ip-address>:27017'
+conf.members[0].host = 'database:27017'
 rs.reconfig(conf, {force:true})
 ```

@@ -7,13 +7,15 @@ import {
 } from 'react-hook-form'
 import { FormControl } from '@chakra-ui/react'
 import { get, isEmpty, isEqual } from 'lodash'
+import isEmail from 'validator/lib/isEmail'
 
 import { EmailFormSettings } from '~shared/types/form/form'
 
-import { createAdminEmailValidationTransform } from '~utils/formValidation'
+import { GUIDE_PREVENT_EMAIL_BOUNCE } from '~constants/links'
+import { ADMIN_EMAIL_VALIDATION_RULES } from '~utils/formValidation'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
-import Input from '~components/Input'
+import { TagInput } from '~components/TagInput'
 
 import { useMutateFormSettings } from '../mutations'
 
@@ -56,7 +58,7 @@ export const EmailFormSection = ({
         <FormLabel
           isRequired
           useMarkdownForDescription
-          description="Add at least **2 recipients** to prevent loss of response. Learn more [how to guard against bounce emails](https://go.gov.sg/form-prevent-bounce)."
+          description={`Add at least **2 recipients** to prevent loss of response. Learn more on [how to guard against email bounces](${GUIDE_PREVENT_EMAIL_BOUNCE}).`}
         >
           Emails where responses will be sent
         </FormLabel>
@@ -77,11 +79,6 @@ const AdminEmailRecipientsInput = ({
   const { control, handleSubmit, reset } =
     useFormContext<{ emails: string[] }>()
 
-  const { rules, transform } = useMemo(
-    () => createAdminEmailValidationTransform(),
-    [],
-  )
-
   const handleBlur = useCallback(() => {
     return handleSubmit(onSubmit, () => reset())()
   }, [handleSubmit, onSubmit, reset])
@@ -90,11 +87,12 @@ const AdminEmailRecipientsInput = ({
     <Controller
       control={control}
       name="emails"
-      rules={rules}
+      rules={ADMIN_EMAIL_VALIDATION_RULES}
       render={({ field }) => (
-        <Input
-          value={transform.input(field.value)}
-          onChange={(e) => field.onChange(transform.output(e.target.value))}
+        <TagInput
+          placeholder="Separate emails with a comma"
+          {...field}
+          tagValidation={isEmail}
           onBlur={handleBlur}
         />
       )}

@@ -1,16 +1,17 @@
 import { useCallback, useEffect } from 'react'
-import { Flex } from '@chakra-ui/react'
+import { Box, Flex } from '@chakra-ui/react'
 
-import { useBgColor } from '~features/public-form/components/PublicFormWrapper'
+import InlineMessage from '~components/InlineMessage'
+
+import { useAdminFormSettings } from '~features/admin-form/settings/queries'
 
 import { DndPlaceholderProps } from '../types'
 import {
-  BuildFieldState,
+  FieldBuilderState,
   setToInactiveSelector,
   stateDataSelector,
-  useBuilderAndDesignStore,
-} from '../useBuilderAndDesignStore'
-import { useDesignColorTheme } from '../utils/useDesignColorTheme'
+  useFieldBuilderStore,
+} from '../useFieldBuilderStore'
 
 import { EndPageView } from './EndPageView'
 import { FormBuilder } from './FormBuilder'
@@ -22,8 +23,10 @@ interface BuilderAndDesignContentProps {
 export const BuilderAndDesignContent = ({
   placeholderProps,
 }: BuilderAndDesignContentProps): JSX.Element => {
+  const { data: settings } = useAdminFormSettings()
+
   const { stateData, setToInactive: setFieldsToInactive } =
-    useBuilderAndDesignStore(
+    useFieldBuilderStore(
       useCallback(
         (state) => ({
           stateData: stateDataSelector(state),
@@ -35,23 +38,37 @@ export const BuilderAndDesignContent = ({
 
   useEffect(() => setFieldsToInactive, [setFieldsToInactive])
 
-  const bg = useBgColor({ colorTheme: useDesignColorTheme() })
-
   return (
-    <Flex flex={1} bg={bg} overflow="auto">
-      <EndPageView
-        display={
-          // Don't conditionally render EndPageView and FormBuilder because it
-          // is expensive and takes time.
-          stateData.state === BuildFieldState.EditingEndPage ? 'flex' : 'none'
-        }
-      />
-      <FormBuilder
-        placeholderProps={placeholderProps}
-        display={
-          stateData.state === BuildFieldState.EditingEndPage ? 'none' : 'flex'
-        }
-      />
+    <Flex flex={1} overflow="auto">
+      <Box w="100%">
+        {settings?.webhook?.url ? (
+          <InlineMessage
+            mx={{ base: 0, md: '2rem' }}
+            mt={{ base: 0, md: '2rem' }}
+            mb={{ base: 0, md: '-1rem' }}
+          >
+            Webhooks are enabled on this form. Please ensure the webhook server
+            is able to handle any field changes.
+          </InlineMessage>
+        ) : null}
+        <EndPageView
+          display={
+            // Don't conditionally render EndPageView and FormBuilder because it
+            // is expensive and takes time.
+            stateData.state === FieldBuilderState.EditingEndPage
+              ? 'flex'
+              : 'none'
+          }
+        />
+        <FormBuilder
+          placeholderProps={placeholderProps}
+          display={
+            stateData.state === FieldBuilderState.EditingEndPage
+              ? 'none'
+              : 'flex'
+          }
+        />
+      </Box>
     </Flex>
   )
 }

@@ -275,7 +275,7 @@ describe('public-form.controller', () => {
   describe('handleRedirect', () => {
     const MOCK_FORM_ID = new ObjectId().toHexString()
     const MOCK_REQ = expressHandler.mockRequest({
-      params: { Id: MOCK_FORM_ID },
+      params: { formId: MOCK_FORM_ID },
       others: {
         protocol: 'https',
         hostname: 'mockHostName',
@@ -1236,8 +1236,10 @@ describe('public-form.controller', () => {
       )
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(200)
-      expect(mockRes.json).toBeCalledWith({ redirectURL: MOCK_REDIRECT_URL })
+      expect(mockRes.status).toHaveBeenCalledWith(200)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        redirectURL: MOCK_REDIRECT_URL,
+      })
     })
 
     it('should return 200 with the redirect url when the request is valid, form has authType SP and isPersistentLogin is undefined', async () => {
@@ -1267,8 +1269,10 @@ describe('public-form.controller', () => {
       )
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(200)
-      expect(mockRes.json).toBeCalledWith({ redirectURL: MOCK_REDIRECT_URL })
+      expect(mockRes.status).toHaveBeenCalledWith(200)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        redirectURL: MOCK_REDIRECT_URL,
+      })
     })
 
     it('should return 200 with the redirect url when the request is valid, form has authType SP and isPersistentLogin is false', async () => {
@@ -1301,8 +1305,10 @@ describe('public-form.controller', () => {
       )
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(200)
-      expect(mockRes.json).toBeCalledWith({ redirectURL: MOCK_REDIRECT_URL })
+      expect(mockRes.status).toHaveBeenCalledWith(200)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        redirectURL: MOCK_REDIRECT_URL,
+      })
     })
 
     it('should return 200 with the redirect url when the request is valid and the form has authType CP', async () => {
@@ -1328,8 +1334,10 @@ describe('public-form.controller', () => {
       )
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(200)
-      expect(mockRes.json).toBeCalledWith({ redirectURL: MOCK_REDIRECT_URL })
+      expect(mockRes.status).toHaveBeenCalledWith(200)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        redirectURL: MOCK_REDIRECT_URL,
+      })
     })
 
     it('should return 200 with the redirect url when the request is valid and the form has authType MyInfo', async () => {
@@ -1356,8 +1364,10 @@ describe('public-form.controller', () => {
       )
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(200)
-      expect(mockRes.json).toBeCalledWith({ redirectURL: MOCK_REDIRECT_URL })
+      expect(mockRes.status).toHaveBeenCalledWith(200)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        redirectURL: MOCK_REDIRECT_URL,
+      })
     })
 
     it('should return 400 when the form has authType NIL', async () => {
@@ -1380,8 +1390,8 @@ describe('public-form.controller', () => {
       )
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(400)
-      expect(mockRes.json).toBeCalledWith({
+      expect(mockRes.status).toHaveBeenCalledWith(400)
+      expect(mockRes.json).toHaveBeenCalledWith({
         message:
           'Please ensure that the form has authentication enabled. Please refresh and try again.',
       })
@@ -1406,8 +1416,8 @@ describe('public-form.controller', () => {
       )
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(400)
-      expect(mockRes.json).toBeCalledWith({
+      expect(mockRes.status).toHaveBeenCalledWith(400)
+      expect(mockRes.json).toHaveBeenCalledWith({
         message:
           'This form does not have a valid eServiceId. Please refresh and try again.',
       })
@@ -1432,8 +1442,8 @@ describe('public-form.controller', () => {
       )
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(400)
-      expect(mockRes.json).toBeCalledWith({
+      expect(mockRes.status).toHaveBeenCalledWith(400)
+      expect(mockRes.json).toHaveBeenCalledWith({
         message:
           'This form does not have a valid eServiceId. Please refresh and try again.',
       })
@@ -1458,8 +1468,8 @@ describe('public-form.controller', () => {
       )
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(400)
-      expect(mockRes.json).toBeCalledWith({
+      expect(mockRes.status).toHaveBeenCalledWith(400)
+      expect(mockRes.json).toHaveBeenCalledWith({
         message:
           'This form does not have a valid eServiceId. Please refresh and try again.',
       })
@@ -1481,8 +1491,8 @@ describe('public-form.controller', () => {
       )
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(500)
-      expect(mockRes.json).toBeCalledWith({
+      expect(mockRes.status).toHaveBeenCalledWith(500)
+      expect(mockRes.json).toHaveBeenCalledWith({
         message: 'Sorry, something went wrong. Please try again.',
       })
     })
@@ -1510,8 +1520,8 @@ describe('public-form.controller', () => {
       )
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(500)
-      expect(mockRes.json).toBeCalledWith({
+      expect(mockRes.status).toHaveBeenCalledWith(500)
+      expect(mockRes.json).toHaveBeenCalledWith({
         message: 'Sorry, something went wrong. Please try again.',
       })
     })
@@ -1539,8 +1549,8 @@ describe('public-form.controller', () => {
       )
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(500)
-      expect(mockRes.json).toBeCalledWith({
+      expect(mockRes.status).toHaveBeenCalledWith(500)
+      expect(mockRes.json).toHaveBeenCalledWith({
         message: 'Sorry, something went wrong. Please try again.',
       })
     })
@@ -1567,9 +1577,9 @@ describe('public-form.controller', () => {
         jest.fn(),
       )
 
-      expect(mockRes.status).toBeCalledWith(200)
+      expect(mockRes.status).toHaveBeenCalledWith(200)
       expect(mockRes.clearCookie).toHaveBeenCalledWith(JwtName[authType])
-      expect(mockRes.json).toBeCalledWith({
+      expect(mockRes.json).toHaveBeenCalledWith({
         message: 'Successfully logged out.',
       })
     })
@@ -1594,9 +1604,9 @@ describe('public-form.controller', () => {
         jest.fn(),
       )
 
-      expect(mockRes.status).toBeCalledWith(200)
+      expect(mockRes.status).toHaveBeenCalledWith(200)
       expect(mockRes.clearCookie).toHaveBeenCalledWith(JwtName[authType])
-      expect(mockRes.json).toBeCalledWith({
+      expect(mockRes.json).toHaveBeenCalledWith({
         message: 'Successfully logged out.',
       })
     })
@@ -1621,9 +1631,9 @@ describe('public-form.controller', () => {
         jest.fn(),
       )
 
-      expect(mockRes.status).toBeCalledWith(200)
+      expect(mockRes.status).toHaveBeenCalledWith(200)
       expect(mockRes.clearCookie).toHaveBeenCalledWith(MYINFO_COOKIE_NAME)
-      expect(mockRes.json).toBeCalledWith({
+      expect(mockRes.json).toHaveBeenCalledWith({
         message: 'Successfully logged out.',
       })
     })
@@ -1648,9 +1658,9 @@ describe('public-form.controller', () => {
         jest.fn(),
       )
 
-      expect(mockRes.status).toBeCalledWith(200)
+      expect(mockRes.status).toHaveBeenCalledWith(200)
       expect(mockRes.clearCookie).toHaveBeenCalledWith(SGID_COOKIE_NAME)
-      expect(mockRes.json).toBeCalledWith({
+      expect(mockRes.json).toHaveBeenCalledWith({
         message: 'Successfully logged out.',
       })
     })
@@ -1689,8 +1699,8 @@ describe('public-form.controller', () => {
       )
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(200)
-      expect(mockRes.json).toBeCalledWith(expectedResBody)
+      expect(mockRes.status).toHaveBeenCalledWith(200)
+      expect(mockRes.json).toHaveBeenCalledWith(expectedResBody)
     })
 
     it('should return 200 with isValid set to true when a valid SP form authenticates successfully', async () => {
@@ -1718,8 +1728,8 @@ describe('public-form.controller', () => {
       )
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(200)
-      expect(mockRes.json).toBeCalledWith(expectedResBody)
+      expect(mockRes.status).toHaveBeenCalledWith(200)
+      expect(mockRes.json).toHaveBeenCalledWith(expectedResBody)
     })
     it('should return 200 with isValid set to false when an invalid MyInfo form authenticates successfully', async () => {
       // Arrange
@@ -1746,8 +1756,8 @@ describe('public-form.controller', () => {
       )
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(200)
-      expect(mockRes.json).toBeCalledWith(expectedResBody)
+      expect(mockRes.status).toHaveBeenCalledWith(200)
+      expect(mockRes.json).toHaveBeenCalledWith(expectedResBody)
     })
 
     it('should return 200 with isValid set to false when an invalid SP form authenticates successfully', async () => {
@@ -1775,8 +1785,8 @@ describe('public-form.controller', () => {
       )
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(200)
-      expect(mockRes.json).toBeCalledWith(expectedResBody)
+      expect(mockRes.status).toHaveBeenCalledWith(200)
+      expect(mockRes.json).toHaveBeenCalledWith(expectedResBody)
     })
 
     it('should return 400 when the form has authType.NIL', async () => {
@@ -1800,8 +1810,8 @@ describe('public-form.controller', () => {
       )
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(400)
-      expect(mockRes.json).toBeCalledWith(expectedError)
+      expect(mockRes.status).toHaveBeenCalledWith(400)
+      expect(mockRes.json).toHaveBeenCalledWith(expectedError)
     })
 
     it('should return 400 when the form has authType.CP', async () => {
@@ -1825,8 +1835,8 @@ describe('public-form.controller', () => {
       )
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(400)
-      expect(mockRes.json).toBeCalledWith(expectedError)
+      expect(mockRes.status).toHaveBeenCalledWith(400)
+      expect(mockRes.json).toHaveBeenCalledWith(expectedError)
     })
 
     it('should return 400 when the form does not have an eServiceId', async () => {
@@ -1849,8 +1859,8 @@ describe('public-form.controller', () => {
       )
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(400)
-      expect(mockRes.json).toBeCalledWith(expectedError)
+      expect(mockRes.status).toHaveBeenCalledWith(400)
+      expect(mockRes.json).toHaveBeenCalledWith(expectedError)
     })
 
     it('should return 404 when there is no form with the given formId', async () => {
@@ -1872,8 +1882,8 @@ describe('public-form.controller', () => {
       )
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(404)
-      expect(mockRes.json).toBeCalledWith(expectedError)
+      expect(mockRes.status).toHaveBeenCalledWith(404)
+      expect(mockRes.json).toHaveBeenCalledWith(expectedError)
     })
 
     it('should return 500 when the returned html has no title', async () => {
@@ -1903,8 +1913,8 @@ describe('public-form.controller', () => {
       )
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(502)
-      expect(mockRes.json).toBeCalledWith(expectedError)
+      expect(mockRes.status).toHaveBeenCalledWith(502)
+      expect(mockRes.json).toHaveBeenCalledWith(expectedError)
     })
 
     it('should return 500 when a database error occurs', async () => {
@@ -1925,8 +1935,8 @@ describe('public-form.controller', () => {
       )
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(500)
-      expect(mockRes.json).toBeCalledWith(expectedError)
+      expect(mockRes.status).toHaveBeenCalledWith(500)
+      expect(mockRes.json).toHaveBeenCalledWith(expectedError)
     })
 
     it('should return 500 when the redirect url could not be generated', async () => {
@@ -1952,8 +1962,8 @@ describe('public-form.controller', () => {
       )
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(500)
-      expect(mockRes.json).toBeCalledWith(expectedError)
+      expect(mockRes.status).toHaveBeenCalledWith(500)
+      expect(mockRes.json).toHaveBeenCalledWith(expectedError)
     })
 
     it('should return 503 when the login page for the form could not be retrieved', async () => {
@@ -1982,8 +1992,8 @@ describe('public-form.controller', () => {
       )
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(503)
-      expect(mockRes.json).toBeCalledWith(expectedError)
+      expect(mockRes.status).toHaveBeenCalledWith(503)
+      expect(mockRes.json).toHaveBeenCalledWith(expectedError)
     })
   })
 })

@@ -19,13 +19,13 @@ import {
 import { useCreateFormField } from '~features/admin-form/create/builder-and-design/mutations/useCreateFormField'
 import { useEditFormField } from '~features/admin-form/create/builder-and-design/mutations/useEditFormField'
 import {
-  BuildFieldState,
+  FieldBuilderState,
   setToInactiveSelector,
   stateDataSelector,
   updateCreateStateSelector,
   updateEditStateSelector,
-  useBuilderAndDesignStore,
-} from '~features/admin-form/create/builder-and-design/useBuilderAndDesignStore'
+  useFieldBuilderStore,
+} from '~features/admin-form/create/builder-and-design/useFieldBuilderStore'
 
 import { EditFieldProps } from './types'
 
@@ -66,7 +66,7 @@ export const useEditFieldForm = <FormShape, FieldShape extends FormField>({
   FieldShape
 >): UseEditFieldFormReturn<FormShape> => {
   const { stateData, setToInactive, updateEditState, updateCreateState } =
-    useBuilderAndDesignStore(
+    useFieldBuilderStore(
       useCallback(
         (state) => ({
           stateData: stateDataSelector(state),
@@ -82,7 +82,7 @@ export const useEditFieldForm = <FormShape, FieldShape extends FormField>({
   const { createFieldMutation } = useCreateFormField()
 
   const isPendingField = useMemo(
-    () => stateData.state === BuildFieldState.CreatingField,
+    () => stateData.state === FieldBuilderState.CreatingField,
     [stateData.state],
   )
 
@@ -122,11 +122,11 @@ export const useEditFieldForm = <FormShape, FieldShape extends FormField>({
     if (transform.preSubmit) {
       updatedFormField = await transform.preSubmit(inputs, updatedFormField)
     }
-    if (stateData.state === BuildFieldState.CreatingField) {
+    if (stateData.state === FieldBuilderState.CreatingField) {
       return createFieldMutation.mutate(updatedFormField, {
         onSuccess: onSaveSuccess,
       })
-    } else if (stateData.state === BuildFieldState.EditingField) {
+    } else if (stateData.state === FieldBuilderState.EditingField) {
       return editFieldMutation.mutate(
         { ...updatedFormField, _id: stateData.field._id } as FormFieldDto,
         { onSuccess: onSaveSuccess },
@@ -136,9 +136,9 @@ export const useEditFieldForm = <FormShape, FieldShape extends FormField>({
 
   const handleChange = useCallback(
     (field: FieldCreateDto | FormFieldDto) => {
-      if (stateData.state === BuildFieldState.CreatingField) {
+      if (stateData.state === FieldBuilderState.CreatingField) {
         updateCreateState(field, stateData.insertionIndex)
-      } else if (stateData.state === BuildFieldState.EditingField) {
+      } else if (stateData.state === FieldBuilderState.EditingField) {
         updateEditState({
           ...(field as FormFieldDto),
           _id: stateData.field._id,

@@ -29,6 +29,11 @@ import {
   PrivateFormError,
 } from '../../form/form.errors'
 import {
+  SgidInvalidJwtError,
+  SgidMissingJwtError,
+  SgidVerifyJwtError,
+} from '../../sgid/sgid.errors'
+import {
   CreateRedirectUrlError,
   FetchLoginPageError,
   InvalidJwtError,
@@ -79,6 +84,9 @@ const errorMapper: MapRouteError = (
         statusCode: StatusCodes.BAD_GATEWAY,
         errorMessage: 'Error while contacting SingPass. Please try again.',
       }
+    case SgidMissingJwtError:
+    case SgidVerifyJwtError:
+    case SgidInvalidJwtError:
     case MissingJwtError:
     case VerifyJwtError:
     case InvalidJwtError:

@@ -4,7 +4,7 @@ import dayjs from 'dayjs'
 
 import { AdminDashboardFormMetaDto } from '~shared/types/form/form'
 
-import { useRowActionDropdown } from './RowActions/useRowActionDropdown'
+import { useRowAction } from './RowActions/useRowAction'
 import { FormStatusLabel } from './FormStatusLabel'
 import { RowActions } from './RowActions'
 
@@ -29,7 +29,7 @@ export const WorkspaceFormRow = ({
     return dayjs(formMeta.lastModified).calendar(null, RELATIVE_DATE_FORMAT)
   }, [formMeta.lastModified])
 
-  const { handleEditForm } = useRowActionDropdown(formMeta)
+  const { handleEditForm } = useRowAction(formMeta)
 
   return (
     <Box pos="relative">
@@ -43,7 +43,7 @@ export const WorkspaceFormRow = ({
         justifyContent="space-between"
         gridTemplateColumns={{
           base: '1fr 2.75rem',
-          md: '1fr min-content 8rem',
+          md: '1fr 4rem 8rem',
         }}
         gridTemplateRows={{ base: 'auto 2.75rem', md: 'auto' }}
         gridTemplateAreas={{

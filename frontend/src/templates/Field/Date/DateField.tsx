@@ -25,6 +25,7 @@ export interface DateFieldProps extends BaseFieldProps {
 export const DateField = ({
   schema,
   colorTheme = FormColorTheme.Blue,
+  ...fieldContainerProps
 }: DateFieldProps): JSX.Element => {
   const validationRules = useMemo(
     () => createDateValidationRules(schema),
@@ -56,11 +57,12 @@ export const DateField = ({
   const { control } = useFormContext<SingleAnswerFieldInput>()
 
   return (
-    <FieldContainer schema={schema}>
+    <FieldContainer schema={schema} {...fieldContainerProps}>
       <Controller
         control={control}
         name={schema._id}
         rules={validationRules}
+        defaultValue=""
         render={({ field }) => (
           <DateInput
             colorScheme={`theme-${colorTheme}`}

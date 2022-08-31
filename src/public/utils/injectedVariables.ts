@@ -14,6 +14,10 @@ interface FrontendInjectedVariables {
   myInfoBannerContent: string | null
   GATrackingID: string | null
   spcpCookieDomain: string | null
+  respondentRolloutEmail: number
+  respondentRolloutStorage: number
+  adminRollout: number
+  angularPhaseOutDate: string | null
 }
 
 // NOTE: As these variables are not injected until runtime
@@ -35,4 +39,8 @@ export const injectedVariables: FrontendInjectedVariables = {
   myInfoBannerContent: formsgWindow.myInfoBannerContent ?? null,
   GATrackingID: formsgWindow.GATrackingID ?? null,
   spcpCookieDomain: formsgWindow.spcpCookieDomain ?? null,
+  respondentRolloutEmail: formsgWindow.respondentRolloutEmail,
+  respondentRolloutStorage: formsgWindow.respondentRolloutStorage,
+  adminRollout: formsgWindow.adminRollout,
+  angularPhaseOutDate: formsgWindow.angularPhaseOutDate ?? null,
 }

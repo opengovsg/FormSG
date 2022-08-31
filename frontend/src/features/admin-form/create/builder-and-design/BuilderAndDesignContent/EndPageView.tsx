@@ -1,14 +1,11 @@
 import { useMemo } from 'react'
-import { Box, Flex, FlexProps, Stack, Text } from '@chakra-ui/react'
-import { format } from 'date-fns'
+import { Box, Flex, FlexProps, Stack } from '@chakra-ui/react'
 
 import { FormColorTheme, FormLogoState } from '~shared/types'
 
-import { BxsChevronUp } from '~assets/icons/BxsChevronUp'
-import Button from '~components/Button'
-
 import { useAdminForm } from '~features/admin-form/common/queries'
 import { useEnv } from '~features/env/queries'
+import { EndPageBlock } from '~features/public-form/components/FormEndPage/components/EndPageBlock'
 import { ThankYouSvgr } from '~features/public-form/components/FormEndPage/components/ThankYouSvgr'
 import { FormBannerLogo } from '~features/public-form/components/FormStartPage/FormBannerLogo'
 import { useFormBannerLogo } from '~features/public-form/components/FormStartPage/useFormBannerLogo'
@@ -45,58 +42,37 @@ export const EndPageView = ({ ...props }: FlexProps): JSX.Element => {
 
   return (
     <Flex
-      m={{ base: 0, md: '2rem' }}
       mb={0}
       flex={1}
-      bg="white"
-      p={{ base: '1.5rem', md: 0 }}
+      bg="neutral.200"
+      // Using margin for margin collapse when there are inline messages above.
+      mt={{ base: 0, md: '1rem' }}
+      pt={{ base: 0, md: '1rem' }}
+      pb={{ base: 0, md: '2rem' }}
+      px={{ base: 0, md: '2rem' }}
       justify="center"
       overflow="auto"
-      height="100%"
       {...props}
     >
-      <Stack w="100%">
+      <Stack w="100%" bg="white">
         <FormBannerLogo {...formBannerLogoProps} />
         <Flex backgroundColor={backgroundColor} justifyContent="center">
           <ThankYouSvgr h="100%" pt="2.5rem" />
         </Flex>
 
-        <Box px="4rem" pt="3rem">
-          <Flex justifyContent="space-between" alignItems="center">
-            <Text textStyle="h2" color="secondary.500">
-              {endPage?.title}
-            </Text>
-            <BxsChevronUp color="secondary.500" />
-          </Flex>
-
-          <Text
-            textStyle="subhead-1"
-            color="secondary.500"
-            mt="1rem"
-            whiteSpace="pre-line"
-          >
-            {endPage?.paragraph}
-          </Text>
-
-          <Text textStyle="subhead-1" color="secondary.500" mt="2.25rem">
-            {form?.title ?? 'Form Title'}
-          </Text>
-          <Text textStyle="body-1" color="neutral.500">
-            {form?._id ?? 'Form Identification Number'}
-            <br />
-            {format(new Date(), 'dd MMM yyyy, h:m aa')}
-          </Text>
-
-          <Box mt="2.25rem">
-            <Button
-              variant="solid"
-              colorScheme={`theme-${
-                colorTheme ? colorTheme : FormColorTheme.Blue
-              }`}
-            >
-              {endPage?.buttonText}
-            </Button>
-          </Box>
+        <Box
+          py={{ base: '1.5rem', md: '3rem' }}
+          px={{ base: '1.5rem', md: '4rem' }}
+          w="100%"
+        >
+          <EndPageBlock
+            endPage={endPage ?? { title: '', buttonText: '' }}
+            submissionData={{
+              id: form?._id ?? 'Submission ID',
+              timeInEpochMs: Date.now(),
+            }}
+            colorTheme={colorTheme ?? FormColorTheme.Blue}
+          />
         </Box>
       </Stack>
     </Flex>

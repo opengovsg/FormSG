@@ -19,6 +19,7 @@ import { workspaceKeys } from './queries'
 import {
   createEmailModeForm,
   createStorageModeForm,
+  deleteAdminForm,
   dupeEmailModeForm,
   dupeStorageModeForm,
 } from './WorkspaceService'
@@ -30,7 +31,6 @@ const useCommonHooks = () => {
 
   const handleSuccess = useCallback(
     (data: Pick<FormDto, '_id'>) => {
-      queryClient.invalidateQueries(adminFormKeys.base)
       queryClient.invalidateQueries(workspaceKeys.all)
       navigate(`${ADMINFORM_ROUTE}/${data._id}`)
     },
@@ -112,4 +112,40 @@ export const useDuplicateFormMutations = () => {
     dupeEmailModeFormMutation,
     dupeStorageModeFormMutation,
   }
+}
+
+export const useDeleteFormMutation = () => {
+  const queryClient = useQueryClient()
+  const toast = useToast({ status: 'danger', isClosable: true })
+
+  const handleSuccess = useCallback(
+    (formId: string) => {
+      queryClient.invalidateQueries(adminFormKeys.id(formId))
+      queryClient.invalidateQueries(workspaceKeys.all)
+      toast({
+        status: 'success',
+        description: 'The form has been successfully deleted.',
+      })
+    },
+    [queryClient, toast],
+  )
+
+  const handleError = useCallback(
+    (error: ApiError) => {
+      toast({
+        description: error.message,
+      })
+    },
+    [toast],
+  )
+
+  const deleteFormMutation = useMutation(
+    (formId: string) => deleteAdminForm(formId),
+    {
+      onSuccess: (_, formId) => handleSuccess(formId),
+      onError: handleError,
+    },
+  )
+
+  return { deleteFormMutation }
 }

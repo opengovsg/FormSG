@@ -8,16 +8,18 @@ import { Box, BoxProps, forwardRef, Icon, Stack, Text } from '@chakra-ui/react'
 
 import { BasicField, MyInfoAttribute } from '~shared/types/field'
 
+import { useIsMobile } from '~hooks/useIsMobile'
+
 import {
   BASICFIELD_TO_DRAWER_META,
   MYINFO_FIELD_TO_DRAWER_META,
 } from '~features/admin-form/create/constants'
 
+import { useCreateTabForm } from '../../useCreateTabForm'
 import {
   updateCreateStateSelector,
-  useBuilderAndDesignStore,
-} from '../../useBuilderAndDesignStore'
-import { useCreateTabForm } from '../../useCreateTabForm'
+  useFieldBuilderStore,
+} from '../../useFieldBuilderStore'
 import {
   getFieldCreationMeta,
   getMyInfoFieldCreationMeta,
@@ -69,38 +71,42 @@ export const DraggableBasicFieldListOption = ({
   children,
   isDisabled,
   ...props
-}: DraggableBasicFieldOptionProps): JSX.Element => (
-  <Draggable
-    index={index}
-    isDragDisabled={isDisabled}
-    disableInteractiveElementBlocking
-    draggableId={fieldType}
-  >
-    {(provided, snapshot) => {
-      return (
-        <>
-          <BasicFieldOption
-            fieldType={fieldType}
-            isDisabled={isDisabled}
-            {...props}
-            {...provided.draggableProps}
-            {...provided.dragHandleProps}
-            style={getDraggableAnimationProps(provided, snapshot)}
-            ref={provided.innerRef}
-          />
-          {snapshot.isDragging && (
+}: DraggableBasicFieldOptionProps): JSX.Element => {
+  const isMobile = useIsMobile()
+
+  return (
+    <Draggable
+      index={index}
+      isDragDisabled={isDisabled || isMobile}
+      disableInteractiveElementBlocking
+      draggableId={fieldType}
+    >
+      {(provided, snapshot) => {
+        return (
+          <>
             <BasicFieldOption
               fieldType={fieldType}
-              isActive={snapshot.isDragging}
-              style={{ transform: 'none !important' }}
-              opacity={0.5}
+              isDisabled={isDisabled}
+              {...props}
+              {...provided.draggableProps}
+              {...provided.dragHandleProps}
+              style={getDraggableAnimationProps(provided, snapshot)}
+              ref={provided.innerRef}
             />
-          )}
-        </>
-      )
-    }}
-  </Draggable>
-)
+            {snapshot.isDragging && (
+              <BasicFieldOption
+                fieldType={fieldType}
+                isActive={snapshot.isDragging}
+                style={{ transform: 'none !important' }}
+                opacity={0.5}
+              />
+            )}
+          </>
+        )
+      }}
+    </Draggable>
+  )
+}
 
 export const DraggableMyInfoFieldListOption = ({
   fieldType,
@@ -155,9 +161,7 @@ export const BasicFieldOption = forwardRef<BasicFieldOptionProps, 'button'>(
       [fieldType],
     )
 
-    const updateCreateState = useBuilderAndDesignStore(
-      updateCreateStateSelector,
-    )
+    const updateCreateState = useFieldBuilderStore(updateCreateStateSelector)
 
     const handleClick = useCallback(() => {
       if (!isDisabled) {
@@ -193,9 +197,7 @@ export const MyInfoFieldOption = forwardRef<MyInfoFieldOptionProps, 'button'>(
       [fieldType],
     )
 
-    const updateCreateState = useBuilderAndDesignStore(
-      updateCreateStateSelector,
-    )
+    const updateCreateState = useFieldBuilderStore(updateCreateStateSelector)
 
     const handleClick = useCallback(() => {
       if (!isDisabled) updateCreateState(newFieldMeta, numFields)

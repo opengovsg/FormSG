@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import {
   BiDotsHorizontalRounded,
   BiHelpCircle,
@@ -7,6 +7,7 @@ import {
   BiShow,
   BiUserPlus,
 } from 'react-icons/bi'
+import { useLocation } from 'react-router-dom'
 import {
   Box,
   ButtonGroup,
@@ -17,18 +18,24 @@ import {
   Flex,
   Grid,
   GridItem,
-  TabList,
+  useBreakpointValue,
   useDisclosure,
 } from '@chakra-ui/react'
 
 import { AdminFormDto } from '~shared/types/form/form'
 
 import { FORM_GUIDE } from '~constants/links'
+import {
+  ACTIVE_ADMINFORM_BUILDER_ROUTE_REGEX,
+  ADMINFORM_BUILD_SUBROUTE,
+  ADMINFORM_RESULTS_SUBROUTE,
+  ADMINFORM_SETTINGS_SUBROUTE,
+} from '~constants/routes'
 import { useDraggable } from '~hooks/useDraggable'
 import Button, { ButtonProps } from '~components/Button'
 import IconButton from '~components/IconButton'
-import { Tab } from '~components/Tabs'
 import Tooltip from '~components/Tooltip'
+import { NavigationTab, NavigationTabList } from '~templates/NavigationTabs'
 
 import { AdminFormNavbarDetails } from './AdminFormNavbarDetails'
 
@@ -60,6 +67,21 @@ export const AdminFormNavbar = ({
 }: AdminFormNavbarProps): JSX.Element => {
   const { ref, onMouseDown } = useDraggable<HTMLDivElement>()
   const { isOpen, onClose, onOpen } = useDisclosure()
+  const { pathname } = useLocation()
+
+  const tabResponsiveVariant = useBreakpointValue({
+    base: 'line-dark',
+    xs: 'line-dark',
+    lg: 'line-light',
+  })
+
+  const checkTabActive = useCallback(
+    (to: string) => {
+      const match = pathname.match(ACTIVE_ADMINFORM_BUILDER_ROUTE_REGEX)
+      return (match?.[2] ?? '/') === `/${to}`
+    },
+    [pathname],
+  )
 
   const mobileDrawerExtraButtonProps: Partial<ButtonProps> = useMemo(
     () => ({
@@ -92,11 +114,12 @@ export const AdminFormNavbar = ({
       mb="1px"
       bg="white"
       zIndex="docked"
-      flex={1}
+      flex={0}
     >
       <GridItem
         display="flex"
-        flex={1}
+        flex="1 1 0"
+        overflow="hidden"
         alignItems="center"
         gridArea="left"
         py="0.625rem"
@@ -115,7 +138,8 @@ export const AdminFormNavbar = ({
         </Box>
         <AdminFormNavbarDetails formInfo={formInfo} />
       </GridItem>
-      <TabList
+      <NavigationTabList
+        variant={tabResponsiveVariant}
         ref={ref}
         onMouseDown={onMouseDown}
         pt={{ base: '0.625rem', lg: 0 }}
@@ -123,17 +147,30 @@ export const AdminFormNavbar = ({
         w={{ base: '100vw', lg: 'initial' }}
         gridArea="tabs"
         borderBottom="none"
-        justifyContent={{ base: 'flex-start', lg: 'center' }}
+        justifySelf={{ base: 'flex-start', lg: 'center' }}
         alignSelf="center"
       >
-        <Tab hidden={viewOnly} isDisabled={!formInfo}>
+        <NavigationTab
+          hidden={viewOnly}
+          to={ADMINFORM_BUILD_SUBROUTE}
+          isActive={checkTabActive(ADMINFORM_BUILD_SUBROUTE)}
+        >
           Create
-        </Tab>
-        <Tab hidden={viewOnly} isDisabled={!formInfo}>
+        </NavigationTab>
+        <NavigationTab
+          hidden={viewOnly}
+          to={ADMINFORM_SETTINGS_SUBROUTE}
+          isActive={checkTabActive(ADMINFORM_SETTINGS_SUBROUTE)}
+        >
           Settings
-        </Tab>
-        <Tab isDisabled={!formInfo}>Results</Tab>
-      </TabList>
+        </NavigationTab>
+        <NavigationTab
+          to={ADMINFORM_RESULTS_SUBROUTE}
+          isActive={checkTabActive(ADMINFORM_RESULTS_SUBROUTE)}
+        >
+          Results
+        </NavigationTab>
+      </NavigationTabList>
       <Flex
         py="0.625rem"
         pl="1rem"

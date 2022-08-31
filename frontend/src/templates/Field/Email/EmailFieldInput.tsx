@@ -39,6 +39,7 @@ export const EmailFieldInput = ({
       control={control}
       rules={validationRules}
       name={schema._id}
+      defaultValue={{ value: '' }}
       render={({ field: { onChange, value, ...field } }) => (
         <Input
           autoComplete="email"

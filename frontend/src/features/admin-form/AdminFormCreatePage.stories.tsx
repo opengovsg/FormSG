@@ -11,6 +11,9 @@ import {
 
 import {
   createFormBuilderMocks,
+  getAdminFormCollaborators,
+  getAdminFormSettings,
+  getAdminFormSubmissions,
   MOCK_FORM_FIELDS_WITH_MYINFO,
   MOCK_FORM_LOGICS,
 } from '~/mocks/msw/handlers/admin-form'
@@ -32,6 +35,9 @@ const buildMswRoutes = (
   delay?: number | 'infinite' | 'real',
 ) => {
   return [
+    getAdminFormSettings(),
+    getAdminFormCollaborators(),
+    getAdminFormSubmissions(),
     ...createFormBuilderMocks(
       {
         ...overrides,
@@ -44,6 +50,7 @@ const buildMswRoutes = (
       },
       delay,
     ),
+    getAdminFormSubmissions(),
     getUser({
       delay: 0,
       mockUser: { ...MOCK_USER, _id: 'adminFormTestUserId' as UserId },
@@ -121,4 +128,25 @@ AllFieldsFieldsHiddenByLogic.parameters = {
     authType: FormAuthType.MyInfo,
     responseMode: FormResponseMode.Email,
   }),
+}
+
+export const FormWithWebhook = Template.bind({})
+FormWithWebhook.parameters = {
+  msw: [
+    getAdminFormSettings({
+      overrides: {
+        webhook: {
+          url: 'some-webhook-url',
+          isRetryEnabled: false,
+        },
+      },
+    }),
+    ...buildMswRoutes(),
+  ],
+}
+
+export const FormWithWebhookMobile = Template.bind({})
+FormWithWebhookMobile.parameters = {
+  ...FormWithWebhook.parameters,
+  ...getMobileViewParameters(),
 }

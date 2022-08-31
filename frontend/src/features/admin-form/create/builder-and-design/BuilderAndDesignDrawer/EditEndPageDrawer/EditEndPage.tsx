@@ -25,24 +25,24 @@ import { useMutateFormPage } from '~features/admin-form/common/mutations'
 import { useAdminForm } from '~features/admin-form/common/queries'
 
 import {
-  setToInactiveSelector,
-  useBuilderAndDesignStore,
-} from '../../useBuilderAndDesignStore'
-import {
   resetEndPageDataSelector,
   setEndPageDataSelector,
   useEndPageBuilderStore,
 } from '../../useEndPageBuilderStore'
+import {
+  setToInactiveSelector,
+  useFieldBuilderStore,
+} from '../../useFieldBuilderStore'
 import { DrawerContentContainer } from '../EditFieldDrawer/edit-fieldtype/common/DrawerContentContainer'
 
 const buttonLinkRules: RegisterOptions<FormEndPage, 'buttonLink'> = {
   validate: (url: string) =>
     !url ||
     validator.isURL(url, {
-      protocols: ['https'],
+      protocols: ['https', 'http'],
       require_protocol: true,
     }) ||
-    'Please enter a valid URL (starting with https://)',
+    'Please enter a valid URL (starting with https:// or http://)',
 } as FieldValues
 
 interface EndPageBuilderInputProps {
@@ -55,7 +55,7 @@ export const EndPageBuilderInput = ({
   const isMobile = useIsMobile()
   const { endPageMutation } = useMutateFormPage()
 
-  const closeBuilderDrawer = useBuilderAndDesignStore(setToInactiveSelector)
+  const closeBuilderDrawer = useFieldBuilderStore(setToInactiveSelector)
   const { setEndPageBuilderState, resetEndPageBuilderState } =
     useEndPageBuilderStore((state) => ({
       setEndPageBuilderState: setEndPageDataSelector(state),
@@ -99,24 +99,33 @@ export const EndPageBuilderInput = ({
   ])
 
   const handleUpdateEndPage = handleSubmit((endPage) =>
-    endPageMutation.mutate(endPage),
+    endPageMutation.mutate(endPage, { onSuccess: closeBuilderDrawer }),
   )
 
   return (
     <DrawerContentContainer>
       <Stack gap="2rem">
-        <FormControl isInvalid={!!errors.title}>
+        <FormControl
+          isReadOnly={endPageMutation.isLoading}
+          isInvalid={!!errors.title}
+        >
           <FormLabel isRequired>Title</FormLabel>
           <Input {...register('title', { required: REQUIRED_ERROR })} />
           <FormErrorMessage>{errors.title?.message}</FormErrorMessage>
         </FormControl>
-        <FormControl isInvalid={!!errors.paragraph}>
+        <FormControl
+          isReadOnly={endPageMutation.isLoading}
+          isInvalid={!!errors.paragraph}
+        >
           <FormLabel isRequired>Follow-up instructions</FormLabel>
           <Textarea {...register('paragraph')} />
           <FormErrorMessage>{errors.paragraph?.message}</FormErrorMessage>
         </FormControl>
         <Stack direction={['column', 'row']} gap={['2rem', '1rem']}>
-          <FormControl isInvalid={!!errors.buttonText}>
+          <FormControl
+            isReadOnly={endPageMutation.isLoading}
+            isInvalid={!!errors.buttonText}
+          >
             <FormLabel isRequired>Button text</FormLabel>
             <Input
               placeholder="Submit another form"
@@ -124,7 +133,10 @@ export const EndPageBuilderInput = ({
             />
             <FormErrorMessage>{errors.buttonText?.message}</FormErrorMessage>
           </FormControl>
-          <FormControl isInvalid={!!errors.buttonLink}>
+          <FormControl
+            isReadOnly={endPageMutation.isLoading}
+            isInvalid={!!errors.buttonLink}
+          >
             <FormLabel isRequired>Button redirect link</FormLabel>
             <Input
               placeholder="Default form link"
@@ -142,10 +154,8 @@ export const EndPageBuilderInput = ({
       >
         <Button
           isFullWidth={isMobile}
-          onClick={() => {
-            handleUpdateEndPage()
-            closeBuilderDrawer()
-          }}
+          onClick={handleUpdateEndPage}
+          isLoading={endPageMutation.isLoading}
         >
           Save field
         </Button>
@@ -153,6 +163,7 @@ export const EndPageBuilderInput = ({
           isFullWidth={isMobile}
           variant="clear"
           colorScheme="secondary"
+          isDisabled={endPageMutation.isLoading}
           onClick={closeBuilderDrawer}
         >
           Cancel

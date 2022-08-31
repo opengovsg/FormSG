@@ -44,7 +44,7 @@ RUN mv /opt/formsg/dist/backend/shared /opt/formsg/
 # https://www.npmjs.com/package/puppeteer-core?activeTab=versions for corresponding versions
 
 RUN apk add --no-cache \
-    chromium=102.0.5005.167-r0 \
+    chromium=102.0.5005.173-r0 \
     nss \
     freetype \
     freetype-dev \

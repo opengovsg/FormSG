@@ -16,6 +16,7 @@ import { getUser } from '~/mocks/msw/handlers/user'
 
 import {
   ADMINFORM_RESULTS_SUBROUTE,
+  ADMINFORM_ROUTE,
   RESULTS_FEEDBACK_SUBROUTE,
 } from '~constants/routes'
 import { getMobileViewParameters, viewports } from '~utils/storybook'
@@ -51,9 +52,16 @@ const MOCK_KEYPAIR = {
 
 const Template: Story = () => {
   return (
-    <MemoryRouter initialEntries={['/12345/results']}>
+    <MemoryRouter
+      initialEntries={[
+        `${ADMINFORM_ROUTE}/61540ece3d4a6e50ac0cc6ff/${ADMINFORM_RESULTS_SUBROUTE}`,
+      ]}
+    >
       <Routes>
-        <Route path="/:formId" element={<AdminFormLayout />}>
+        <Route
+          path={`${ADMINFORM_ROUTE}/:formId`}
+          element={<AdminFormLayout />}
+        >
           <Route
             path={ADMINFORM_RESULTS_SUBROUTE}
             element={<FormResultsLayout />}
@@ -74,7 +82,6 @@ const Template: Story = () => {
 export const EmailForm = Template.bind({})
 
 export const EmailFormLoading = Template.bind({})
-EmailFormLoading.parameters = EmailForm.parameters
 EmailFormLoading.parameters = {
   msw: [
     ...createFormBuilderMocks({}, 0),
@@ -180,12 +187,21 @@ StorageFormMobile.parameters = {
 }
 
 export const StorageFormLoading = Template.bind({})
-StorageFormLoading.parameters = StorageForm.parameters
 StorageFormLoading.parameters = {
   msw: [
     ...createFormBuilderMocks({ responseMode: FormResponseMode.Encrypt }, 0),
     getAdminFormSubmissions({ delay: 'infinite' }),
     getStorageSubmissionMetadataResponse({}, 'infinite'),
+    getUser(),
+    getAdminFormCollaborators(),
+  ],
+}
+
+export const Loading = Template.bind({})
+Loading.parameters = {
+  msw: [
+    ...createFormBuilderMocks({ responseMode: undefined }, 'infinite'),
+    getAdminFormSubmissions({ delay: 'infinite' }),
     getUser(),
     getAdminFormCollaborators(),
   ],

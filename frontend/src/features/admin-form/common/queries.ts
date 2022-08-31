@@ -40,8 +40,20 @@ export const useAdminForm = (
   >,
 ): UseQueryResult<AdminFormDto, ApiError> => {
   const { formId } = useParams()
-  if (!formId) throw new Error('No formId provided')
+  if (!formId) throw new Error('No formId provided to useAdminForm')
 
+  return useAdminFormWithId(formId, props)
+}
+
+export const useAdminFormWithId = (
+  formId: string,
+  props?: UseQueryOptions<
+    AdminFormDto,
+    ApiError,
+    AdminFormDto,
+    ReturnType<typeof adminFormKeys.id>
+  >,
+): UseQueryResult<AdminFormDto, ApiError> => {
   return useQuery(
     adminFormKeys.id(formId),
     () => getAdminFormView(formId),
@@ -51,19 +63,22 @@ export const useAdminForm = (
 
 export const useFreeSmsQuota = () => {
   const { formId } = useParams()
-  if (!formId) throw new Error('No formId provided')
+  if (!formId) throw new Error('No formId provided to useFreeSmsQuota')
 
   return useQuery(adminFormKeys.freeSmsCount(formId), () =>
     getFreeSmsQuota(formId),
   )
 }
 
-export const useAdminFormCollaborators = () => {
-  const { formId } = useParams()
-  if (!formId) throw new Error('No formId provided')
-
+/**
+ * @params formId - The formId of the form to get the collaborators for.
+ * Params required as formId may come from various sources, either via url params
+ * or a context.
+ */
+export const useAdminFormCollaborators = (formId: string) => {
   const { user, isLoading: isUserLoading } = useUser()
-  const { data: form, isLoading: isAdminFormLoading } = useAdminForm()
+  const { data: form, isLoading: isAdminFormLoading } =
+    useAdminFormWithId(formId)
 
   const { data: collaborators, isLoading: isCollabLoading } = useQuery(
     adminFormKeys.collaborators(formId),

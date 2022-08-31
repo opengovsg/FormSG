@@ -18,6 +18,7 @@ import { FormColorTheme } from '~shared/types'
 import { BasicField, FormFieldDto } from '~shared/types/field'
 
 import { useIsMobile } from '~hooks/useIsMobile'
+import { useToast } from '~hooks/useToast'
 import IconButton from '~components/IconButton'
 import Tooltip from '~components/Tooltip'
 import {
@@ -49,19 +50,27 @@ import {
   augmentWithMyInfoDisplayValue,
   extractPreviewValue,
   hasExistingFieldValue,
+  isMyInfo,
 } from '~features/myinfo/utils'
 
 import { useBuilderAndDesignContext } from '../../BuilderAndDesignContext'
 import { PENDING_CREATE_FIELD_ID } from '../../constants'
 import { useDeleteFormField } from '../../mutations/useDeleteFormField'
 import { useDuplicateFormField } from '../../mutations/useDuplicateFormField'
+import { useCreateTabForm } from '../../useCreateTabForm'
 import {
-  BuildFieldState,
+  DesignState,
+  setStateSelector,
+  useDesignStore,
+} from '../../useDesignStore'
+import {
+  FieldBuilderState,
   setToInactiveSelector,
   stateDataSelector,
   updateEditStateSelector,
-  useBuilderAndDesignStore,
-} from '../../useBuilderAndDesignStore'
+  useFieldBuilderStore,
+} from '../../useFieldBuilderStore'
+import { getAttachmentSizeLimit } from '../../utils/getAttachmentSizeLimit'
 import { useDesignColorTheme } from '../../utils/useDesignColorTheme'
 
 import { SectionFieldRow } from './SectionFieldRow'
@@ -80,18 +89,22 @@ export const FieldRowContainer = ({
   isDraggingOver,
 }: FieldRowContainerProps): JSX.Element => {
   const isMobile = useIsMobile()
+  const { data: form } = useCreateTabForm()
   const numFormFieldMutations = useIsMutating(adminFormKeys.base)
-  const { stateData, setToInactive, updateEditState } =
-    useBuilderAndDesignStore(
-      useCallback(
-        (state) => ({
-          stateData: stateDataSelector(state),
-          setToInactive: setToInactiveSelector(state),
-          updateEditState: updateEditStateSelector(state),
-        }),
-        [],
-      ),
-    )
+  const { stateData, setToInactive, updateEditState } = useFieldBuilderStore(
+    useCallback(
+      (state) => ({
+        stateData: stateDataSelector(state),
+        setToInactive: setToInactiveSelector(state),
+        updateEditState: updateEditStateSelector(state),
+      }),
+      [],
+    ),
+  )
+
+  const toast = useToast({ status: 'danger', isClosable: true })
+
+  const setDesignState = useDesignStore(setStateSelector)
 
   const { handleBuilderClick } = useCreatePageSidebar()
 
@@ -99,6 +112,8 @@ export const FieldRowContainer = ({
   const { deleteFieldMutation } = useDeleteFormField()
 
   const colorTheme = useDesignColorTheme()
+
+  const isMyInfoField = useMemo(() => isMyInfo(field), [field])
 
   const defaultFieldValues = useMemo(() => {
     if (field.fieldType === BasicField.Table) {
@@ -122,9 +137,9 @@ export const FieldRowContainer = ({
   })
 
   const isActive = useMemo(() => {
-    if (stateData.state === BuildFieldState.EditingField) {
+    if (stateData.state === FieldBuilderState.EditingField) {
       return field._id === stateData.field._id
-    } else if (stateData.state === BuildFieldState.CreatingField) {
+    } else if (stateData.state === FieldBuilderState.CreatingField) {
       return field._id === PENDING_CREATE_FIELD_ID
     }
     return false
@@ -149,13 +164,21 @@ export const FieldRowContainer = ({
   const handleFieldClick = useCallback(() => {
     if (!isActive) {
       updateEditState(field)
+      setDesignState(DesignState.Inactive)
       if (!isMobile) {
         // Do not open builder if in mobile so user can view active state without
         // drawer blocking the view.
         handleBuilderClick()
       }
     }
-  }, [isActive, updateEditState, field, isMobile, handleBuilderClick])
+  }, [
+    isActive,
+    updateEditState,
+    field,
+    setDesignState,
+    isMobile,
+    handleBuilderClick,
+  ])
 
   const handleKeydown = useCallback(
     (e: React.KeyboardEvent<HTMLDivElement>) => {
@@ -174,17 +197,36 @@ export const FieldRowContainer = ({
   }, [handleBuilderClick, isMobile])
 
   const handleDuplicateClick = useCallback(() => {
-    // Duplicate button should be hidden if field
-    // is not yet created, but guard here just in case
-    if (stateData.state !== BuildFieldState.CreatingField) {
-      duplicateFieldMutation.mutate(field._id)
+    if (!form) return
+    // Duplicate button should be hidden if field is not yet created, but guard here just in case
+    if (stateData.state === FieldBuilderState.CreatingField) return
+    // Disallow duplicating attachment fields if after the dupe, the filesize exceeds the limit
+    if (field.fieldType === BasicField.Attachment) {
+      const existingAttachmentsSize = form.form_fields.reduce(
+        (sum, ff) =>
+          ff.fieldType === BasicField.Attachment
+            ? sum + Number(ff.attachmentSize)
+            : sum,
+        0,
+      )
+      const remainingAvailableSize =
+        getAttachmentSizeLimit(form.responseMode) - existingAttachmentsSize
+      const thisAttachmentSize = Number(field.attachmentSize)
+      if (thisAttachmentSize > remainingAvailableSize) {
+        toast({
+          useMarkdown: true,
+          description: `The field "${field.title}" could not be duplicated. The attachment size of **${thisAttachmentSize} MB** exceeds the form's remaining available attachment size of **${remainingAvailableSize} MB**.`,
+        })
+        return
+      }
     }
-  }, [stateData.state, duplicateFieldMutation, field._id])
+    duplicateFieldMutation.mutate(field._id)
+  }, [stateData.state, field, duplicateFieldMutation, form, toast])
 
   const handleDeleteClick = useCallback(() => {
-    if (stateData.state === BuildFieldState.CreatingField) {
+    if (stateData.state === FieldBuilderState.CreatingField) {
       setToInactive()
-    } else if (stateData.state === BuildFieldState.EditingField) {
+    } else if (stateData.state === FieldBuilderState.EditingField) {
       onDeleteModalOpen()
     }
   }, [setToInactive, stateData.state, onDeleteModalOpen])
@@ -200,7 +242,7 @@ export const FieldRowContainer = ({
       isDragDisabled={
         !isActive ||
         !!numFormFieldMutations ||
-        stateData.state === BuildFieldState.CreatingField
+        stateData.state === FieldBuilderState.CreatingField
       }
       disableInteractiveElementBlocking
       draggableId={field._id}
@@ -281,7 +323,11 @@ export const FieldRowContainer = ({
                 opacity={isActive || !isHiddenByLogic ? '100%' : '30%'}
               >
                 <FormProvider {...formMethods}>
-                  <MemoFieldRow field={field} colorTheme={colorTheme} />
+                  <MemoFieldRow
+                    field={field}
+                    colorTheme={colorTheme}
+                    showMyInfoBadge={isMyInfoField}
+                  />
                 </FormProvider>
               </Box>
               <Collapse in={isActive} style={{ width: '100%' }}>
@@ -307,7 +353,7 @@ export const FieldRowContainer = ({
                     ) : null}
                     {
                       // Fields which are not yet created cannot be duplicated
-                      stateData.state !== BuildFieldState.CreatingField && (
+                      stateData.state !== FieldBuilderState.CreatingField && (
                         <IconButton
                           aria-label="Duplicate field"
                           isDisabled={isAnyMutationLoading}
@@ -339,6 +385,7 @@ export const FieldRowContainer = ({
 type MemoFieldRowProps = {
   field: FormFieldDto
   colorTheme?: FormColorTheme
+  showMyInfoBadge?: boolean
 }
 
 const MemoFieldRow = memo(({ field, ...rest }: MemoFieldRowProps) => {

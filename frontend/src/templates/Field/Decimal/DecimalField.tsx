@@ -28,6 +28,7 @@ export const DecimalField = ({ schema }: DecimalFieldProps): JSX.Element => {
         control={control}
         rules={validationRules}
         name={schema._id}
+        defaultValue=""
         render={({ field }) => (
           <NumberInput
             inputMode="decimal"

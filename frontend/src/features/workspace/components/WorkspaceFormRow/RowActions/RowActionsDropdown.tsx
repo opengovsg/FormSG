@@ -14,7 +14,7 @@ import IconButton from '~components/IconButton'
 import Menu from '~components/Menu'
 
 import { RowActionsProps } from './RowActions'
-import { useRowActionDropdown } from './useRowActionDropdown'
+import { useRowAction } from './useRowAction'
 
 export const RowActionsDropdown = ({
   isDisabled,
@@ -25,14 +25,15 @@ export const RowActionsDropdown = ({
     handlePreviewForm,
     handleDeleteForm,
     handleDuplicateForm,
-    handleManageFormAccess,
+    handleCollaborators,
     handleShareForm,
-  } = useRowActionDropdown(formMeta)
+    isFormAdmin,
+  } = useRowAction(formMeta)
 
   return (
     <Menu
       placement="bottom-end"
-      // Prevents massize render load when there are a ton of rows
+      // Prevents massive render load when there are a ton of rows
       isLazy
     >
       {({ isOpen }) => (
@@ -75,19 +76,23 @@ export const RowActionsDropdown = ({
               Share form
             </Menu.Item>
             <Menu.Item
-              onClick={handleManageFormAccess}
+              onClick={handleCollaborators}
               icon={<BiUserPlus fontSize="1.25rem" />}
             >
-              Manage form access
+              Manage form admins
             </Menu.Item>
-            <MenuDivider />
-            <Menu.Item
-              onClick={handleDeleteForm}
-              color="danger.500"
-              icon={<BiTrash fontSize="1.25rem" />}
-            >
-              Delete
-            </Menu.Item>
+            {isFormAdmin && (
+              <>
+                <MenuDivider aria-hidden borderColor="neutral.300" />
+                <Menu.Item
+                  onClick={handleDeleteForm}
+                  color="danger.500"
+                  icon={<BiTrash fontSize="1.25rem" />}
+                >
+                  Delete
+                </Menu.Item>
+              </>
+            )}
           </Menu.List>
         </>
       )}

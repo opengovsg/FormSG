@@ -9,29 +9,39 @@ import { useToast } from '~hooks/useToast'
 
 import { adminFormKeys } from '~features/admin-form/common/queries'
 
+import { useAdminFormLogic } from '../../logic/hooks/useAdminFormLogic'
 import { duplicateSingleFormField } from '../UpdateFormFieldService'
 import {
-  BuildFieldState,
+  FieldBuilderState,
   stateDataSelector,
   updateEditStateSelector,
-  useBuilderAndDesignStore,
-} from '../useBuilderAndDesignStore'
+  useFieldBuilderStore,
+} from '../useFieldBuilderStore'
 
 export const useDuplicateFormField = () => {
   const { formId } = useParams()
   if (!formId) throw new Error('No formId provided')
 
-  const updateEditState = useBuilderAndDesignStore(updateEditStateSelector)
-  const stateData = useBuilderAndDesignStore(stateDataSelector)
+  const { stateData, updateEditState } = useFieldBuilderStore(
+    useCallback(
+      (state) => ({
+        stateData: stateDataSelector(state),
+        updateEditState: updateEditStateSelector(state),
+      }),
+      [],
+    ),
+  )
 
   const queryClient = useQueryClient()
   const toast = useToast({ status: 'success', isClosable: true })
   const adminFormKey = adminFormKeys.id(formId)
 
+  const { logicedFieldIdsSet } = useAdminFormLogic()
+
   const handleSuccess = useCallback(
-    (newField: FormFieldDto) => {
+    (newField: FormFieldDto, fieldId: string) => {
       toast.closeAll()
-      if (stateData.state !== BuildFieldState.EditingField) {
+      if (stateData.state !== FieldBuilderState.EditingField) {
         toast({
           status: 'warning',
           description:
@@ -39,9 +49,15 @@ export const useDuplicateFormField = () => {
         })
         return
       }
+
       toast({
-        description: `Field "${newField.title}" created`,
+        description: `The field "${newField.title}" was duplicated.${
+          logicedFieldIdsSet?.has(fieldId)
+            ? ' Associated logic was not duplicated.'
+            : ''
+        }`,
       })
+
       queryClient.setQueryData<AdminFormDto>(adminFormKey, (oldForm) => {
         // Should not happen, should not be able to update field if there is no
         // existing data.
@@ -52,7 +68,14 @@ export const useDuplicateFormField = () => {
       // Switch to editing new field
       updateEditState(newField)
     },
-    [adminFormKey, stateData, queryClient, updateEditState, toast],
+    [
+      toast,
+      stateData.state,
+      logicedFieldIdsSet,
+      queryClient,
+      adminFormKey,
+      updateEditState,
+    ],
   )
 
   const handleError = useCallback(

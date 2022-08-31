@@ -4,8 +4,6 @@
 import { useMemo } from 'react'
 import { useFormContext } from 'react-hook-form'
 
-import { FormFieldWithId, UenFieldBase } from '~shared/types/field'
-
 import { createUenValidationRules } from '~utils/fieldValidation'
 import Input from '~components/Input'
 
@@ -28,6 +26,7 @@ export const UenField = ({ schema }: UenFieldProps): JSX.Element => {
     <FieldContainer schema={schema}>
       <Input
         aria-label={schema.title}
+        defaultValue=""
         {...register(schema._id, validationRules)}
       />
     </FieldContainer>

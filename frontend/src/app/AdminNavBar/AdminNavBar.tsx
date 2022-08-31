@@ -21,6 +21,7 @@ import {
   EMERGENCY_CONTACT_KEY_PREFIX,
   ROLLOUT_ANNOUNCEMENT_KEY_PREFIX,
 } from '~constants/localStorage'
+import { ROOT_ROUTE } from '~constants/routes'
 import { useIsMobile } from '~hooks/useIsMobile'
 import { useLocalStorage } from '~hooks/useLocalStorage'
 import { logout } from '~services/AuthService'
@@ -151,7 +152,7 @@ export interface AdminNavBarProps {
 }
 
 export const AdminNavBar = ({ isMenuOpen }: AdminNavBarProps): JSX.Element => {
-  const { user, isLoading: isUserLoading } = useUser()
+  const { user, isLoading: isUserLoading, removeQuery } = useUser()
   const { updateLastSeenFeatureVersionMutation } = useUserMutations()
 
   const whatsNewFeatureDrawerDisclosure = useDisclosure()
@@ -162,6 +163,7 @@ export const AdminNavBar = ({ isMenuOpen }: AdminNavBarProps): JSX.Element => {
   )
   const [hasSeenAnnouncement] = useLocalStorage<boolean>(
     ROLLOUT_ANNOUNCEMENT_KEY,
+    false,
   )
 
   // Only want to show the emergency contact modal if user id exists but user has no emergency contact
@@ -174,7 +176,7 @@ export const AdminNavBar = ({ isMenuOpen }: AdminNavBarProps): JSX.Element => {
   )
 
   const [hasSeenContactModal, setHasSeenContactModal] =
-    useLocalStorage<boolean>(emergencyContactKey)
+    useLocalStorage<boolean>(emergencyContactKey, false)
 
   const {
     isOpen: isContactModalOpen,
@@ -212,24 +214,30 @@ export const AdminNavBar = ({ isMenuOpen }: AdminNavBarProps): JSX.Element => {
 
   // Emergency contact modal appears after the rollout announcement modal
   useEffect(() => {
-    if (!hasSeenContactModal && user && !user?.contact && hasSeenAnnouncement) {
+    if (
+      hasSeenContactModal === false &&
+      user &&
+      !user.contact &&
+      hasSeenAnnouncement === true
+    ) {
       onContactModalOpen()
     }
   }, [hasSeenContactModal, onContactModalOpen, user, hasSeenAnnouncement])
 
-  const handleLogout = () => {
+  const handleLogout = useCallback(() => {
     logout()
+    removeQuery()
     if (emergencyContactKey) {
       localStorage.removeItem(emergencyContactKey)
     }
-  }
+  }, [emergencyContactKey, removeQuery])
 
   return (
     <>
       <AdminNavBar.Container>
-        <Link title="Form Logo" href={window.location.origin}>
+        <ReactLink title="Form Logo" to={ROOT_ROUTE}>
           {<BrandSmallLogo w="2rem" />}
-        </Link>
+        </ReactLink>
         <HStack
           textStyle="subhead-1"
           spacing={{ base: '0.75rem', md: '1.5rem' }}
@@ -254,7 +262,7 @@ export const AdminNavBar = ({ isMenuOpen }: AdminNavBarProps): JSX.Element => {
               Emergency contact
             </Menu.Item>
             <AvatarMenuDivider />
-            <Menu.Item onClick={handleLogout}>Sign out</Menu.Item>
+            <Menu.Item onClick={handleLogout}>Log out</Menu.Item>
           </AvatarMenu>
         </HStack>
       </AdminNavBar.Container>
