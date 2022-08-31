@@ -14,6 +14,16 @@ export interface CountryRegionFieldProps extends BaseFieldProps {
   schema: CountryRegionFieldSchema
 }
 
+const countryRegionOptions = Object.values(CountryRegion)
+countryRegionOptions.sort((a, b) => {
+  if (a === CountryRegion.Singapore) {
+    return -1
+  } else if (b === CountryRegion.Singapore) {
+    return 1
+  }
+  return 0
+})
+
 export const CountryRegionField = ({
   schema,
 }: CountryRegionFieldProps): JSX.Element => {
@@ -22,7 +32,7 @@ export const CountryRegionField = ({
       schema={{
         ...schema,
         fieldType: BasicField.Dropdown,
-        fieldOptions: Object.values(CountryRegion),
+        fieldOptions: countryRegionOptions,
       }}
     />
   )
