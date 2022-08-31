@@ -60,10 +60,10 @@ export const WorkspacePage = (): JSX.Element => {
     [user],
   )
   const [hasSeenAnnouncement, setHasSeenAnnouncement] =
-    useLocalStorage<boolean>(ROLLOUT_ANNOUNCEMENT_KEY)
+    useLocalStorage<boolean>(ROLLOUT_ANNOUNCEMENT_KEY, false)
 
   const isAnnouncementModalOpen = useMemo(
-    () => !isUserLoading && !hasSeenAnnouncement,
+    () => !isUserLoading && hasSeenAnnouncement === false,
     [isUserLoading, hasSeenAnnouncement],
   )
 
