@@ -1050,7 +1050,7 @@ describe('Verification controller', () => {
 
       // Assert
       expect(mockRes.status).toHaveBeenCalledWith(400)
-      expect(mockRes.json).toBeCalledWith(expected)
+      expect(mockRes.json).toHaveBeenCalledWith(expected)
     })
 
     it('should return 400 when field type is not verifiable', async () => {

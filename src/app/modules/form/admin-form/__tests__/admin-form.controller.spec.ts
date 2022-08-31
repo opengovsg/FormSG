@@ -188,8 +188,8 @@ describe('admin-form.controller', () => {
       )
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(422)
-      expect(mockRes.json).toBeCalledWith({ message: 'User not found' })
+      expect(mockRes.status).toHaveBeenCalledWith(422)
+      expect(mockRes.json).toHaveBeenCalledWith({ message: 'User not found' })
     })
 
     it('should return 500 when database error occurs', async () => {
@@ -208,8 +208,8 @@ describe('admin-form.controller', () => {
       )
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(500)
-      expect(mockRes.json).toBeCalledWith({ message: mockErrorString })
+      expect(mockRes.status).toHaveBeenCalledWith(500)
+      expect(mockRes.json).toHaveBeenCalledWith({ message: mockErrorString })
     })
   })
 
@@ -273,8 +273,8 @@ describe('admin-form.controller', () => {
       await AdminFormController.createForm(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(409)
-      expect(mockRes.json).toBeCalledWith({ message: mockErrorString })
+      expect(mockRes.status).toHaveBeenCalledWith(409)
+      expect(mockRes.json).toHaveBeenCalledWith({ message: mockErrorString })
       expect(MockUserService.findUserById).toHaveBeenCalledWith(
         MOCK_REQ.session?.user?._id,
       )
@@ -297,8 +297,8 @@ describe('admin-form.controller', () => {
       await AdminFormController.createForm(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(413)
-      expect(mockRes.json).toBeCalledWith({ message: mockErrorString })
+      expect(mockRes.status).toHaveBeenCalledWith(413)
+      expect(mockRes.json).toHaveBeenCalledWith({ message: mockErrorString })
       expect(MockUserService.findUserById).toHaveBeenCalledWith(
         MOCK_REQ.session?.user?._id,
       )
@@ -321,8 +321,8 @@ describe('admin-form.controller', () => {
       await AdminFormController.createForm(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(422)
-      expect(mockRes.json).toBeCalledWith({ message: mockErrorString })
+      expect(mockRes.status).toHaveBeenCalledWith(422)
+      expect(mockRes.json).toHaveBeenCalledWith({ message: mockErrorString })
       expect(MockUserService.findUserById).toHaveBeenCalledWith(
         MOCK_REQ.session?.user?._id,
       )
@@ -343,8 +343,8 @@ describe('admin-form.controller', () => {
       await AdminFormController.createForm(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(422)
-      expect(mockRes.json).toBeCalledWith({ message: 'User not found' })
+      expect(mockRes.status).toHaveBeenCalledWith(422)
+      expect(mockRes.json).toHaveBeenCalledWith({ message: 'User not found' })
       expect(MockUserService.findUserById).toHaveBeenCalledWith(
         MOCK_REQ.session?.user?._id,
       )
@@ -364,8 +364,8 @@ describe('admin-form.controller', () => {
       await AdminFormController.createForm(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(500)
-      expect(mockRes.json).toBeCalledWith({ message: mockErrorString })
+      expect(mockRes.status).toHaveBeenCalledWith(500)
+      expect(mockRes.json).toHaveBeenCalledWith({ message: mockErrorString })
       expect(MockUserService.findUserById).toHaveBeenCalledWith(
         MOCK_REQ.session?.user?._id,
       )
@@ -387,8 +387,8 @@ describe('admin-form.controller', () => {
       await AdminFormController.createForm(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(500)
-      expect(mockRes.json).toBeCalledWith({ message: mockErrorString })
+      expect(mockRes.status).toHaveBeenCalledWith(500)
+      expect(mockRes.json).toHaveBeenCalledWith({ message: mockErrorString })
       expect(MockUserService.findUserById).toHaveBeenCalledWith(
         MOCK_REQ.session?.user?._id,
       )
@@ -6923,8 +6923,8 @@ describe('admin-form.controller', () => {
       )
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(409)
-      expect(mockRes.json).toBeCalledWith(expected)
+      expect(mockRes.status).toHaveBeenCalledWith(409)
+      expect(mockRes.json).toHaveBeenCalledWith(expected)
     })
 
     it('should return 410 when form to update form field for is already archived', async () => {
@@ -7230,8 +7230,8 @@ describe('admin-form.controller', () => {
       )
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(409)
-      expect(mockRes.json).toBeCalledWith(expected)
+      expect(mockRes.status).toHaveBeenCalledWith(409)
+      expect(mockRes.json).toHaveBeenCalledWith(expected)
     })
 
     it('should return 410 when attempting to create a form field for an archived form', async () => {
@@ -7619,8 +7619,8 @@ describe('admin-form.controller', () => {
       )
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(409)
-      expect(mockRes.json).toBeCalledWith(expected)
+      expect(mockRes.status).toHaveBeenCalledWith(409)
+      expect(mockRes.json).toHaveBeenCalledWith(expected)
     })
     it('should return 410 when form to duplicate form field for is already archived', async () => {
       // Arrange
@@ -9488,8 +9488,8 @@ describe('admin-form.controller', () => {
       )
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(StatusCodes.OK)
-      expect(mockRes.json).toBeCalledWith(MOCK_COLLABORATORS)
+      expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.OK)
+      expect(mockRes.json).toHaveBeenCalledWith(MOCK_COLLABORATORS)
     })
 
     it('should return 403 when the user does not have sufficient permissions to update the form', async () => {
@@ -9509,8 +9509,8 @@ describe('admin-form.controller', () => {
       )
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(StatusCodes.FORBIDDEN)
-      expect(mockRes.json).toBeCalledWith(expectedResponse)
+      expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.FORBIDDEN)
+      expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
       expect(
         MockAdminFormService.updateFormCollaborators,
       ).not.toHaveBeenCalled()
@@ -9533,8 +9533,8 @@ describe('admin-form.controller', () => {
       )
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(StatusCodes.NOT_FOUND)
-      expect(mockRes.json).toBeCalledWith(expectedResponse)
+      expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.NOT_FOUND)
+      expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
       expect(
         MockAdminFormService.updateFormCollaborators,
       ).not.toHaveBeenCalled()
@@ -9557,8 +9557,8 @@ describe('admin-form.controller', () => {
       )
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(StatusCodes.GONE)
-      expect(mockRes.json).toBeCalledWith(expectedResponse)
+      expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.GONE)
+      expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
       expect(
         MockAdminFormService.updateFormCollaborators,
       ).not.toHaveBeenCalled()
@@ -9581,8 +9581,10 @@ describe('admin-form.controller', () => {
       )
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(StatusCodes.UNPROCESSABLE_ENTITY)
-      expect(mockRes.json).toBeCalledWith(expectedResponse)
+      expect(mockRes.status).toHaveBeenCalledWith(
+        StatusCodes.UNPROCESSABLE_ENTITY,
+      )
+      expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
       expect(
         MockAdminFormService.updateFormCollaborators,
       ).not.toHaveBeenCalled()
@@ -9605,8 +9607,10 @@ describe('admin-form.controller', () => {
       )
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(StatusCodes.INTERNAL_SERVER_ERROR)
-      expect(mockRes.json).toBeCalledWith(expectedResponse)
+      expect(mockRes.status).toHaveBeenCalledWith(
+        StatusCodes.INTERNAL_SERVER_ERROR,
+      )
+      expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
       expect(
         MockAdminFormService.updateFormCollaborators,
       ).not.toHaveBeenCalled()
@@ -9721,8 +9725,8 @@ describe('admin-form.controller', () => {
       )
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(StatusCodes.OK)
-      expect(mockRes.json).toBeCalledWith(MOCK_COLLABORATORS_ONLY_READER)
+      expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.OK)
+      expect(mockRes.json).toHaveBeenCalledWith(MOCK_COLLABORATORS_ONLY_READER)
     })
 
     it('should return 200 when the current reader is removed successfully', async () => {
@@ -9741,8 +9745,8 @@ describe('admin-form.controller', () => {
       )
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(StatusCodes.OK)
-      expect(mockRes.json).toBeCalledWith(MOCK_COLLABORATORS_ONLY_WRITER)
+      expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.OK)
+      expect(mockRes.json).toHaveBeenCalledWith(MOCK_COLLABORATORS_ONLY_WRITER)
     })
 
     it('should return 403 when the user does not have sufficient permissions to update the form', async () => {
@@ -9765,8 +9769,8 @@ describe('admin-form.controller', () => {
       )
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(StatusCodes.FORBIDDEN)
-      expect(mockRes.json).toBeCalledWith(expectedResponse)
+      expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.FORBIDDEN)
+      expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
       expect(
         MockAdminFormService.updateFormCollaborators,
       ).not.toHaveBeenCalled()
@@ -9790,8 +9794,8 @@ describe('admin-form.controller', () => {
       )
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(StatusCodes.NOT_FOUND)
-      expect(mockRes.json).toBeCalledWith(expectedResponse)
+      expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.NOT_FOUND)
+      expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
       expect(
         MockAdminFormService.updateFormCollaborators,
       ).not.toHaveBeenCalled()
@@ -9815,8 +9819,8 @@ describe('admin-form.controller', () => {
       )
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(StatusCodes.GONE)
-      expect(mockRes.json).toBeCalledWith(expectedResponse)
+      expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.GONE)
+      expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
       expect(
         MockAdminFormService.updateFormCollaborators,
       ).not.toHaveBeenCalled()
@@ -9839,8 +9843,10 @@ describe('admin-form.controller', () => {
       )
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(StatusCodes.UNPROCESSABLE_ENTITY)
-      expect(mockRes.json).toBeCalledWith(expectedResponse)
+      expect(mockRes.status).toHaveBeenCalledWith(
+        StatusCodes.UNPROCESSABLE_ENTITY,
+      )
+      expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
       expect(
         MockAdminFormService.updateFormCollaborators,
       ).not.toHaveBeenCalled()
@@ -9863,8 +9869,10 @@ describe('admin-form.controller', () => {
       )
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(StatusCodes.INTERNAL_SERVER_ERROR)
-      expect(mockRes.json).toBeCalledWith(expectedResponse)
+      expect(mockRes.status).toHaveBeenCalledWith(
+        StatusCodes.INTERNAL_SERVER_ERROR,
+      )
+      expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
       expect(
         MockAdminFormService.updateFormCollaborators,
       ).not.toHaveBeenCalled()
@@ -9919,8 +9927,8 @@ describe('admin-form.controller', () => {
       )
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(StatusCodes.OK)
-      expect(mockRes.send).toBeCalledWith(MOCK_COLLABORATORS)
+      expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.OK)
+      expect(mockRes.send).toHaveBeenCalledWith(MOCK_COLLABORATORS)
     })
 
     it('should return 403 when the user does not have sufficient permissions to retrieve collaborators', async () => {
@@ -9940,8 +9948,8 @@ describe('admin-form.controller', () => {
       )
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(StatusCodes.FORBIDDEN)
-      expect(mockRes.json).toBeCalledWith(expectedResponse)
+      expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.FORBIDDEN)
+      expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
     })
 
     it('should return 404 when the form could not be found', async () => {
@@ -9961,8 +9969,8 @@ describe('admin-form.controller', () => {
       )
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(StatusCodes.NOT_FOUND)
-      expect(mockRes.json).toBeCalledWith(expectedResponse)
+      expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.NOT_FOUND)
+      expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
     })
 
     it('should return 410 when the form has been archived', async () => {
@@ -9982,8 +9990,8 @@ describe('admin-form.controller', () => {
       )
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(StatusCodes.GONE)
-      expect(mockRes.json).toBeCalledWith(expectedResponse)
+      expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.GONE)
+      expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
     })
 
     it('should return 422 when the current user could not be retrieved from the database', async () => {
@@ -10003,8 +10011,10 @@ describe('admin-form.controller', () => {
       )
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(StatusCodes.UNPROCESSABLE_ENTITY)
-      expect(mockRes.json).toBeCalledWith(expectedResponse)
+      expect(mockRes.status).toHaveBeenCalledWith(
+        StatusCodes.UNPROCESSABLE_ENTITY,
+      )
+      expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
     })
 
     it('should return 500 when a database error occurs', async () => {
@@ -10024,8 +10034,10 @@ describe('admin-form.controller', () => {
       )
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(StatusCodes.INTERNAL_SERVER_ERROR)
-      expect(mockRes.json).toBeCalledWith(expectedResponse)
+      expect(mockRes.status).toHaveBeenCalledWith(
+        StatusCodes.INTERNAL_SERVER_ERROR,
+      )
+      expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
     })
   })
 
@@ -10249,8 +10261,8 @@ describe('admin-form.controller', () => {
       )
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(200)
-      expect(mockRes.json).toBeCalledWith(expected)
+      expect(mockRes.status).toHaveBeenCalledWith(200)
+      expect(mockRes.json).toHaveBeenCalledWith(expected)
     })
 
     it('should return 404 when the form is not found in the database', async () => {
@@ -10281,8 +10293,8 @@ describe('admin-form.controller', () => {
       )
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(404)
-      expect(mockRes.json).toBeCalledWith(expected)
+      expect(mockRes.status).toHaveBeenCalledWith(404)
+      expect(mockRes.json).toHaveBeenCalledWith(expected)
     })
 
     it('should return 500 when a database error occurs during form retrieval', async () => {
@@ -10312,8 +10324,8 @@ describe('admin-form.controller', () => {
       )
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(500)
-      expect(mockRes.json).toBeCalledWith(expected)
+      expect(mockRes.status).toHaveBeenCalledWith(500)
+      expect(mockRes.json).toHaveBeenCalledWith(expected)
     })
 
     it('should return 500 when a database error occurs during count retrieval', async () => {
@@ -10343,8 +10355,8 @@ describe('admin-form.controller', () => {
       )
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(500)
-      expect(mockRes.json).toBeCalledWith(expected)
+      expect(mockRes.status).toHaveBeenCalledWith(500)
+      expect(mockRes.json).toHaveBeenCalledWith(expected)
     })
   })
 
@@ -10423,8 +10435,8 @@ describe('admin-form.controller', () => {
       )
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(200)
-      expect(mockRes.json).toBeCalledWith({
+      expect(mockRes.status).toHaveBeenCalledWith(200)
+      expect(mockRes.json).toHaveBeenCalledWith({
         message: 'Successfully updated Twilio credentials',
       })
       expect(createTwilioSpy).toHaveBeenCalledTimes(1)
@@ -10464,8 +10476,8 @@ describe('admin-form.controller', () => {
       )
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(200)
-      expect(mockRes.json).toBeCalledWith({
+      expect(mockRes.status).toHaveBeenCalledWith(200)
+      expect(mockRes.json).toHaveBeenCalledWith({
         message: 'Successfully updated Twilio credentials',
       })
       expect(updateTwilioSpy).toHaveBeenCalledTimes(1)
@@ -10583,8 +10595,8 @@ describe('admin-form.controller', () => {
       )
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(422)
-      expect(mockRes.json).toBeCalledWith(expectedResponse)
+      expect(mockRes.status).toHaveBeenCalledWith(422)
+      expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
       expect(updateTwilioSpy).not.toHaveBeenCalled()
       expect(createTwilioSpy).not.toHaveBeenCalled()
     })
@@ -10684,8 +10696,8 @@ describe('admin-form.controller', () => {
       await AdminFormController.handleDeleteTwilio(mockReq, mockRes, jest.fn())
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(200)
-      expect(mockRes.json).toBeCalledWith(expected)
+      expect(mockRes.status).toHaveBeenCalledWith(200)
+      expect(mockRes.json).toHaveBeenCalledWith(expected)
       expect(deleteTwilioSpy).toHaveBeenCalledTimes(1)
     })
 
@@ -10721,8 +10733,8 @@ describe('admin-form.controller', () => {
       await AdminFormController.handleDeleteTwilio(mockReq, mockRes, jest.fn())
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(200)
-      expect(mockRes.json).toBeCalledWith(expected)
+      expect(mockRes.status).toHaveBeenCalledWith(200)
+      expect(mockRes.json).toHaveBeenCalledWith(expected)
       expect(deleteTwilioSpy).toHaveBeenCalled()
     })
 
@@ -10819,8 +10831,8 @@ describe('admin-form.controller', () => {
       await AdminFormController.handleDeleteTwilio(mockReq, mockRes, jest.fn())
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(422)
-      expect(mockRes.json).toBeCalledWith({ message: 'User not found' })
+      expect(mockRes.status).toHaveBeenCalledWith(422)
+      expect(mockRes.json).toHaveBeenCalledWith({ message: 'User not found' })
       expect(deleteTwilioSpy).not.toHaveBeenCalled()
     })
 

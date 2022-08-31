@@ -58,7 +58,7 @@ describe('form_feedback.server.model', () => {
       ).save()
 
       // Assert
-      await expect(actualPromise).rejects.toThrowError(
+      await expect(actualPromise).rejects.toThrow(
         mongoose.Error.ValidationError,
       )
     })
@@ -70,7 +70,7 @@ describe('form_feedback.server.model', () => {
       ).save()
 
       // Assert
-      await expect(actualPromise).rejects.toThrowError(
+      await expect(actualPromise).rejects.toThrow(
         mongoose.Error.ValidationError,
       )
     })

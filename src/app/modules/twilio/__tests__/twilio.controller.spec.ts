@@ -59,7 +59,7 @@ describe('twilio.controller', () => {
       const mockRes = expressHandler.mockResponse()
       await twilioSmsUpdates(mockReq, mockRes, jest.fn())
 
-      expect(mockLogger.info).toBeCalledWith({
+      expect(mockLogger.info).toHaveBeenCalledWith({
         message: 'Sms Delivery update',
         meta: {
           action: 'twilioSmsUpdates',
@@ -67,8 +67,8 @@ describe('twilio.controller', () => {
           senderIp: '200.0.0.0',
         },
       })
-      expect(mockLogger.error).not.toBeCalled()
-      expect(mockRes.sendStatus).toBeCalledWith(200)
+      expect(mockLogger.error).not.toHaveBeenCalled()
+      expect(mockRes.sendStatus).toHaveBeenCalledWith(200)
     })
 
     it('should return 200 when failed delivered message is sent', async () => {
@@ -85,8 +85,8 @@ describe('twilio.controller', () => {
       const mockRes = expressHandler.mockResponse()
       await twilioSmsUpdates(mockReq, mockRes, jest.fn())
 
-      expect(mockLogger.info).not.toBeCalled()
-      expect(mockLogger.error).toBeCalledWith({
+      expect(mockLogger.info).not.toHaveBeenCalled()
+      expect(mockLogger.error).toHaveBeenCalledWith({
         message: 'Error occurred when attempting to send SMS on twillio',
         meta: {
           action: 'twilioSmsUpdates',
@@ -94,7 +94,7 @@ describe('twilio.controller', () => {
           senderIp: '200.0.0.0',
         },
       })
-      expect(mockRes.sendStatus).toBeCalledWith(200)
+      expect(mockRes.sendStatus).toHaveBeenCalledWith(200)
     })
   })
 })
