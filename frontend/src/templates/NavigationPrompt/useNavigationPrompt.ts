@@ -27,7 +27,7 @@ export const useNavigationPrompt = (when?: boolean) => {
   ) as NavigationContextWithBlock
 
   const [isPromptShown, setIsPromptShown] = useState(false)
-  const [currentPath, setCurrentPath] = useState('')
+  const [targetPath, setTargetPath] = useState<string>()
 
   const unblockRef = useRef<() => void>()
 
@@ -42,7 +42,7 @@ export const useNavigationPrompt = (when?: boolean) => {
   useEffect(() => {
     if (!when) return
     unblockRef.current = navigationContext.navigator.block((transaction) => {
-      setCurrentPath(transaction.location.pathname)
+      setTargetPath(transaction.location.pathname)
       handleShowModal()
       return false
     })
@@ -56,8 +56,10 @@ export const useNavigationPrompt = (when?: boolean) => {
       unblockRef.current()
     }
     setIsPromptShown(false)
-    navigationContext?.navigator.push(currentPath)
-  }, [currentPath, navigationContext?.navigator])
+    if (targetPath !== undefined) {
+      navigationContext?.navigator.push(targetPath)
+    }
+  }, [targetPath, navigationContext?.navigator])
 
   return {
     isPromptShown,
