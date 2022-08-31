@@ -179,6 +179,7 @@
     "prettier": "^2.5.1",
     "puppeteer": "^13.0.0",
     "react-scripts": "^4.0.3",
+    "resize-observer-polyfill": "^1.5.1",
     "rimraf": "^3.0.2",
     "storybook-addon-turbo-build": "^1.1.0",
     "storybook-preset-craco": "0.0.6",
