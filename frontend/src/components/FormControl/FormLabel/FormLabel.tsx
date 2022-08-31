@@ -7,13 +7,13 @@ import {
   Icon,
   Text,
   TextProps,
-  Tooltip,
   useFormControlContext,
   VisuallyHidden,
 } from '@chakra-ui/react'
 
 import { BxsHelpCircle } from '~assets/icons/BxsHelpCircle'
 import { useMdComponents } from '~hooks/useMdComponents'
+import Tooltip from '~components/Tooltip'
 
 export interface FormLabelProps extends ChakraFormLabelProps {
   /**
