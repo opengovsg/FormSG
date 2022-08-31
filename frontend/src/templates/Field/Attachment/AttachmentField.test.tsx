@@ -1,10 +1,5 @@
 import { composeStories } from '@storybook/testing-react'
-import {
-  render,
-  screen,
-  waitFor,
-  waitForElementToBeRemoved,
-} from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import JSZip from 'jszip'
 import { merge } from 'lodash'
@@ -241,8 +236,6 @@ describe('attachment validation', () => {
     // Mack mock zip file with all valid extensions.
     const testFile = await mockZip()
     await user.upload(input, testFile)
-    // Wait for element to change to attachment info.
-    await waitForElementToBeRemoved(input)
     await user.click(submitButton)
 
     // Assert
