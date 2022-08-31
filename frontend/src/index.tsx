@@ -29,15 +29,6 @@ function gtag(...args: unknown[]) {
 gtag('js', new Date())
 gtag('config', process.env.REACT_APP_GA_TRACKING_ID || '', { debug_mode: true })
 window.gtag = gtag
-console.log('react_app_ga_trackingid', process.env.REACT_APP_GA_TRACKING_ID)
-console.log('nodeenv', process.env.REACT_APP_DD_RUM_APP_ID)
-console.log('processenv', process.env)
-ReactDOM.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
-  document.getElementById('root'),
-)
 
 // Init Datadog RUM
 datadogRum.init({
@@ -59,6 +50,13 @@ datadogRum.startSessionReplayRecording()
 
 // Init dayjs
 dayjs.init()
+
+ReactDOM.render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>,
+  document.getElementById('root'),
+)
 
 // If you want your app to work offline and load faster, you can change
 // unregister() to register() below. Note this comes with some pitfalls.
