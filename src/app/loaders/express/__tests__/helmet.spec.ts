@@ -27,6 +27,8 @@ describe('helmetMiddlewares', () => {
       config.aws.imageBucketUrl,
       config.aws.logoBucketUrl,
       '*',
+      'https://*.google-analytics.com',
+      'https://*.googletagmanager.com',
     ],
     fontSrc: ["'self'", 'data:', 'https://fonts.gstatic.com/'],
     scriptSrc: [
@@ -39,6 +41,7 @@ describe('helmetMiddlewares', () => {
       'https://www.recaptcha.net/recaptcha/',
       'https://www.gstatic.com/recaptcha/',
       'https://www.gstatic.cn/',
+      'https://*.googletagmanager.com',
     ],
     connectSrc: [
       "'self'",
@@ -49,6 +52,9 @@ describe('helmetMiddlewares', () => {
       config.aws.attachmentBucketUrl,
       config.aws.imageBucketUrl,
       config.aws.logoBucketUrl,
+      'https://*.google-analytics.com',
+      'https://*.analytics.google.com',
+      'https://*.googletagmanager.com',
     ],
     frameSrc: [
       "'self'",

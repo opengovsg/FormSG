@@ -102,15 +102,13 @@ const helmetMiddlewares = () => {
   // See https://github.com/helmetjs/helmet for use of null to disable default
   if (config.isDev) cspOptionalDirectives.upgradeInsecureRequests = null
 
-  const contentSecurityPolicyMiddleware: RequestHandler = (req, res, next) => {
-    helmet.contentSecurityPolicy({
-      useDefaults: true,
-      directives: {
-        ...cspCoreDirectives,
-        ...cspOptionalDirectives,
-      },
-    })(req, res, next)
-  }
+  const contentSecurityPolicyMiddleware = helmet.contentSecurityPolicy({
+    useDefaults: true,
+    directives: {
+      ...cspCoreDirectives,
+      ...cspOptionalDirectives,
+    },
+  })
   return [
     xssFilterMiddleware,
     noSniffMiddleware,
