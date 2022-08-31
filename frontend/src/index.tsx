@@ -15,6 +15,30 @@ if (process.env.NODE_ENV === 'test') {
   import('./mocks/msw/browser').then(({ worker }) => worker.start())
 }
 
+// Init Google Analytics
+declare global {
+  // eslint-disable-next-line no-var
+  var dataLayer: unknown[]
+}
+
+window.dataLayer = window.dataLayer || []
+function gtag(...args: unknown[]) {
+  // eslint-disable-next-line prefer-rest-params
+  dataLayer.push(arguments)
+}
+gtag('js', new Date())
+gtag('config', process.env.REACT_APP_GA_TRACKING_ID || '', { debug_mode: true })
+window.gtag = gtag
+console.log('react_app_ga_trackingid', process.env.REACT_APP_GA_TRACKING_ID)
+console.log('nodeenv', process.env.REACT_APP_DD_RUM_APP_ID)
+console.log('processenv', process.env)
+ReactDOM.render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>,
+  document.getElementById('root'),
+)
+
 // Init Datadog RUM
 datadogRum.init({
   applicationId: process.env.REACT_APP_DD_RUM_APP_ID || '',
@@ -35,28 +59,6 @@ datadogRum.startSessionReplayRecording()
 
 // Init dayjs
 dayjs.init()
-
-// Init Google Analytics
-declare global {
-  // eslint-disable-next-line no-var
-  var dataLayer: unknown[]
-}
-
-window.dataLayer = window.dataLayer || []
-function gtag(...args: unknown[]) {
-  // eslint-disable-next-line prefer-rest-params
-  dataLayer.push(arguments)
-}
-gtag('js', new Date())
-gtag('config', process.env.REACT_APP_GA_TRACKING_ID || '')
-window.gtag = gtag
-
-ReactDOM.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
-  document.getElementById('root'),
-)
 
 // If you want your app to work offline and load faster, you can change
 // unregister() to register() below. Note this comes with some pitfalls.
