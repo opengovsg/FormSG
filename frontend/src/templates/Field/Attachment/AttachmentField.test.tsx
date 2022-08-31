@@ -1,6 +1,5 @@
 import { composeStories } from '@storybook/testing-react'
 import {
-  act,
   render,
   screen,
   waitFor,
@@ -16,7 +15,8 @@ import { VALID_EXTENSIONS } from '~shared/utils/file-validation'
 
 import { REQUIRED_ERROR } from '~constants/validation'
 
-import { AttachmentFieldSchema } from './AttachmentField'
+import { AttachmentFieldSchema } from '../types'
+
 import * as stories from './AttachmentField.stories'
 
 const { ValidationRequired, ValidationOptional } = composeStories(stories)
@@ -24,11 +24,12 @@ const { ValidationRequired, ValidationOptional } = composeStories(stories)
 describe('validation required', () => {
   it('renders error when field is not filled before submitting', async () => {
     // Arrange
+    const user = userEvent.setup()
     render(<ValidationRequired />)
     const submitButton = screen.getByText('Submit')
 
     // Act
-    await act(async () => userEvent.click(submitButton))
+    await user.click(submitButton)
 
     // Assert
     // Should show error message.
@@ -38,6 +39,7 @@ describe('validation required', () => {
 
   it('renders success when submitting with a valid file upload', async () => {
     // Arrange
+    const user = userEvent.setup()
     const schema = ValidationRequired.args?.schema
     render(<ValidationRequired />)
     const input = screen.getByTestId(schema!._id) as HTMLInputElement
@@ -52,8 +54,8 @@ describe('validation required', () => {
     const testFile = new File(['(⌐□_□)'], 'chucknorris.png', {
       type: 'image/png',
     })
-    await act(async () => userEvent.upload(input, testFile))
-    await act(async () => userEvent.click(submitButton))
+    await user.upload(input, testFile)
+    await user.click(submitButton)
 
     // Assert
     // Should show success message.
@@ -67,11 +69,12 @@ describe('validation required', () => {
 describe('validation optional', () => {
   it('renders success even when field is empty before submitting', async () => {
     // Arrange
+    const user = userEvent.setup()
     render(<ValidationOptional />)
     const submitButton = screen.getByText('Submit')
 
     // Act
-    await act(async () => userEvent.click(submitButton))
+    await user.click(submitButton)
 
     // Assert
     // Should show success message.
@@ -81,6 +84,7 @@ describe('validation optional', () => {
 
   it('renders success when submitting with a valid file upload', async () => {
     // Arrange
+    const user = userEvent.setup()
     const schema = ValidationOptional.args?.schema
     render(<ValidationOptional />)
     const input = screen.getByTestId(schema!._id) as HTMLInputElement
@@ -99,8 +103,8 @@ describe('validation optional', () => {
         type: 'image/png',
       },
     )
-    await act(async () => userEvent.upload(input, testFile))
-    await act(async () => userEvent.click(submitButton))
+    await user.upload(input, testFile)
+    await user.click(submitButton)
 
     // Assert
     // Should show success message.
@@ -114,6 +118,7 @@ describe('validation optional', () => {
 describe('attachment validation', () => {
   it('renders error when file with invalid extension is uploaded', async () => {
     // Arrange
+    const user = userEvent.setup({ applyAccept: false })
     const schema = ValidationOptional.args?.schema
     render(<ValidationOptional />)
     const input = screen.getByTestId(schema!._id) as HTMLInputElement
@@ -124,12 +129,12 @@ describe('attachment validation', () => {
     // Act
     // Valid file
     const testFile = new File(['Some invalid file'], `sus${invalidExtension}`)
-    await act(async () => userEvent.upload(input, testFile))
+    await user.upload(input, testFile)
     // No need to click submit, or the error message will be overridden.
 
     // Assert
     // Should show error message.
-    const error = screen.queryByText(
+    const error = screen.getByText(
       /your file's extension ending in \*.rubbish is not allowed/i,
     )
     expect(error).not.toBeNull()
@@ -137,6 +142,7 @@ describe('attachment validation', () => {
 
   it('renders error when file that exceeds schema max size is uploaded', async () => {
     // Arrange
+    const user = userEvent.setup()
     const schema: AttachmentFieldSchema = merge(
       {},
       ValidationOptional.args?.schema,
@@ -158,7 +164,7 @@ describe('attachment validation', () => {
       },
     )
     Object.defineProperty(mockLargeFile, 'size', { value: 1.001 * MB })
-    await act(async () => userEvent.upload(input, mockLargeFile))
+    await user.upload(input, mockLargeFile)
     // No need to click submit, or the error message will be overridden.
 
     // Assert
@@ -171,12 +177,9 @@ describe('attachment validation', () => {
 
   it('renders error when zip file contains invalid extensions', async () => {
     // Arrange
+    const user = userEvent.setup()
     const schema = ValidationRequired.args?.schema
-    // React-hook-form performs async validation, so we need to wrap this in an act().
-    // See https://react-hook-form.com/advanced-usage/#TestingForm.
-    await act(async () => {
-      render(<ValidationRequired />)
-    })
+    render(<ValidationRequired />)
     const input = screen.getByTestId(schema!._id) as HTMLInputElement
     const mockZip = async () => {
       const zip = new JSZip()
@@ -197,7 +200,7 @@ describe('attachment validation', () => {
     // Act
     // Mack mock zip file
     const testFile = await mockZip()
-    await act(async () => userEvent.upload(input, testFile))
+    await user.upload(input, testFile)
     // Don't need to submit, or the error message will be overridden.
 
     // Assert
@@ -212,12 +215,9 @@ describe('attachment validation', () => {
 
   it('renders success with valid zip file upload', async () => {
     // Arrange
+    const user = userEvent.setup()
     const schema = ValidationRequired.args?.schema
-    // React-hook-form performs async validation, so we need to wrap this in an act().
-    // See https://react-hook-form.com/advanced-usage/#TestingForm.
-    await act(async () => {
-      render(<ValidationRequired />)
-    })
+    render(<ValidationRequired />)
     const input = screen.getByTestId(schema!._id) as HTMLInputElement
     const submitButton = screen.getByRole('button', {
       name: /submit/i,
@@ -240,10 +240,10 @@ describe('attachment validation', () => {
     // Act
     // Mack mock zip file with all valid extensions.
     const testFile = await mockZip()
-    await act(async () => userEvent.upload(input, testFile))
+    await user.upload(input, testFile)
     // Wait for element to change to attachment info.
     await waitForElementToBeRemoved(input)
-    await act(async () => userEvent.click(submitButton))
+    await user.click(submitButton)
 
     // Assert
     // Should show success message.
