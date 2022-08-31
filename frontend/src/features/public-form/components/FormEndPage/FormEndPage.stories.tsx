@@ -31,7 +31,6 @@ Default.args = {
     id: 'mockSubmissionId',
     timeInEpochMs: 1648545566989,
   },
-  formTitle: 'Test Form',
   handleSubmitFeedback: (inputs) => console.log(inputs),
 }
 

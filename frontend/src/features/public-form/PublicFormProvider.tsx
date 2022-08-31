@@ -133,11 +133,13 @@ export const PublicFormProvider = ({
     useCommonFormProvider(formId)
 
   const showErrorToast = useCallback(
-    (form: PublicFormDto) => {
+    (error, form: PublicFormDto) => {
       toast({
         status: 'danger',
         description:
-          'An error occurred whilst processing your submission. Please refresh and try again.',
+          error instanceof Error
+            ? error.message
+            : 'An error occurred whilst processing your submission. Please refresh and try again.',
       })
       trackSubmitFormFailure(form)
     },
@@ -216,7 +218,7 @@ export const PublicFormProvider = ({
           return
         }
         trackReCaptchaOnError(form)
-        return showErrorToast(form)
+        return showErrorToast(error, form)
       }
 
       switch (form.responseMode) {
@@ -238,7 +240,7 @@ export const PublicFormProvider = ({
                 },
               )
               // Using catch since we are using mutateAsync and react-hook-form will continue bubbling this up.
-              .catch(showErrorToast)
+              .catch((error) => showErrorToast(error, form))
           )
         case FormResponseMode.Encrypt:
           // Using mutateAsync so react-hook-form goes into loading state.
@@ -263,7 +265,7 @@ export const PublicFormProvider = ({
                 },
               )
               // Using catch since we are using mutateAsync and react-hook-form will continue bubbling this up.
-              .catch(showErrorToast)
+              .catch((error) => showErrorToast(error, form))
           )
       }
     },

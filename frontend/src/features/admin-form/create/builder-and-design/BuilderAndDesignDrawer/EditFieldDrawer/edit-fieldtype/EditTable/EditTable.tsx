@@ -60,6 +60,7 @@ const transformTableFieldToEditForm = (
 
   return {
     ...pick(field, EDIT_TABLE_FIELD_KEYS),
+    addMoreRows: nextMaxRows !== '',
     maximumRows: nextMaxRows,
     minimumRows: nextMinRows,
   }

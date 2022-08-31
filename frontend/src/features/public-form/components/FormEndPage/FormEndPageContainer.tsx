@@ -65,7 +65,6 @@ export const FormEndPageContainer = ({
       <FormEndPage
         colorTheme={form.startPage.colorTheme}
         submissionData={submissionData}
-        formTitle={form.title}
         endPage={form.endPage}
         isFeedbackSubmitted={isFeedbackSubmitted}
         handleSubmitFeedback={handleSubmitFeedback}

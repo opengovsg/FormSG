@@ -37,7 +37,9 @@ export const isConditionFulfilled = (
   if (!isLogicableField(args)) return false
 
   const currentValue = getCurrentFieldValue(args.input, args.fieldType)
-  if (currentValue === undefined) return false
+  if (currentValue === '') {
+    return false
+  }
 
   switch (condition.state) {
     case LogicConditionState.Lte:

@@ -19,7 +19,10 @@ import { StoryRouter, viewports } from '~utils/storybook'
 
 import { CreatePageLogicTab } from './CreatePageLogicTab'
 
-const buildMswRoutes = (overrides?: Partial<AdminFormDto>, delay = 0) => [
+const buildMswRoutes = (
+  overrides?: Partial<AdminFormDto>,
+  delay: number | 'infinite' = 0,
+) => [
   ...createFormBuilderMocks(overrides, delay),
   createLogic(delay),
   deleteLogic(delay),
@@ -182,4 +185,9 @@ ErrorShowAllDeleted.parameters = {
 export const ErrorAllDeleted = Template.bind({})
 ErrorAllDeleted.parameters = {
   msw: buildMswRoutes({ form_logics: [if_12_show_34, if_12_preventsubmit] }),
+}
+
+export const Loading = Template.bind({})
+Loading.parameters = {
+  msw: buildMswRoutes({}, 'infinite'),
 }

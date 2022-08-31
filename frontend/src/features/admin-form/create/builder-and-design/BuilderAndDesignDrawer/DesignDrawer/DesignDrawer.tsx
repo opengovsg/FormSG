@@ -14,7 +14,6 @@ import {
   Flex,
   FormControl,
   FormLabel,
-  Stack,
   Tabs,
   Text,
   Textarea,
@@ -196,6 +195,7 @@ export const DesignInput = (): JSX.Element | null => {
   return (
     <DrawerContentContainer>
       <FormControl
+        id="logo.state"
         isReadOnly={startPageMutation.isLoading}
         isInvalid={!isEmpty(errors.attachment)}
         onFocus={setToEditingHeader}
@@ -205,18 +205,35 @@ export const DesignInput = (): JSX.Element | null => {
           defaultValue={startPageData.logo.state}
           isDisabled={startPageMutation.isLoading}
         >
-          <Radio value={FormLogoState.Default} {...register('logo.state')}>
+          <Radio
+            allowDeselect={false}
+            value={FormLogoState.Default}
+            {...register('logo.state')}
+          >
             Default
           </Radio>
-          <Radio value={FormLogoState.None} {...register('logo.state')}>
+          <Radio
+            allowDeselect={false}
+            value={FormLogoState.None}
+            {...register('logo.state')}
+          >
             None
           </Radio>
-          <Radio value={FormLogoState.Custom} {...register('logo.state')}>
+          <Radio
+            allowDeselect={false}
+            value={FormLogoState.Custom}
+            {...register('logo.state')}
+          >
             Upload custom logo (jpg, png, or gif)
           </Radio>
-        </Radio.RadioGroup>
-        <Box ml="45px" mt="0.5rem">
-          <Box hidden={startPageData.logo.state !== FormLogoState.Custom}>
+          <FormControl
+            id="attachment"
+            hidden={startPageData.logo.state !== FormLogoState.Custom}
+            isInvalid={!isEmpty(errors.attachment)}
+            ml="2.625rem"
+            mt="0.5rem"
+            w="auto"
+          >
             <Controller
               name="attachment"
               control={control}
@@ -242,8 +259,8 @@ export const DesignInput = (): JSX.Element | null => {
             <FormErrorMessage>
               {get(errors, 'attachment.message')}
             </FormErrorMessage>
-          </Box>
-        </Box>
+          </FormControl>
+        </Radio.RadioGroup>
       </FormControl>
 
       <FormControl
@@ -255,34 +272,36 @@ export const DesignInput = (): JSX.Element | null => {
         <Radio.RadioGroup
           defaultValue={startPageData.colorTheme}
           isDisabled={startPageMutation.isLoading}
+          flexDirection="row"
+          display="inline-flex"
+          flexWrap="wrap"
+          maxW="100%"
         >
-          <Stack spacing="0" direction="row" display="inline">
-            {Object.values(FormColorTheme).map((color, idx) => (
-              <Radio
-                key={idx}
-                display="inline"
-                width="1rem"
-                value={color}
-                {...register('colorTheme')}
-                // CSS for inverted radio button
-                // TODO: anti-aliasing at interface of border and ::before?
-                border="2px solid"
-                borderRadius="50%"
-                borderColor="white"
-                background={getTitleBg(color)}
-                _checked={{ borderColor: getTitleBg(color) }}
-                _before={{
-                  content: '""',
-                  display: 'inline-block',
-                  width: '20px',
-                  height: '20px',
-                  border: '2px solid',
-                  borderColor: 'white',
-                  borderRadius: '50%',
-                }}
-              />
-            ))}
-          </Stack>
+          {Object.values(FormColorTheme).map((color, idx) => (
+            <Radio
+              key={idx}
+              flex={0}
+              allowDeselect={false}
+              value={color}
+              {...register('colorTheme')}
+              // CSS for inverted radio button
+              // TODO: anti-aliasing at interface of border and ::before?
+              border="2px solid"
+              borderRadius="50%"
+              borderColor="white"
+              background={getTitleBg(color)}
+              _checked={{ borderColor: getTitleBg(color) }}
+              _before={{
+                content: '""',
+                display: 'inline-block',
+                width: '20px',
+                height: '20px',
+                border: '2px solid',
+                borderColor: 'white',
+                borderRadius: '50%',
+              }}
+            />
+          ))}
         </Radio.RadioGroup>
         <FormErrorMessage>{errors.colorTheme?.message}</FormErrorMessage>
       </FormControl>

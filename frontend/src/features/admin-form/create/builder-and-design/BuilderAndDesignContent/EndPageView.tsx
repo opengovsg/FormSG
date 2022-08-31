@@ -45,7 +45,11 @@ export const EndPageView = ({ ...props }: FlexProps): JSX.Element => {
       mb={0}
       flex={1}
       bg="neutral.200"
-      p={{ base: 0, md: '2rem' }}
+      // Using margin for margin collapse when there are inline messages above.
+      mt={{ base: 0, md: '1rem' }}
+      pt={{ base: 0, md: '1rem' }}
+      pb={{ base: 0, md: '2rem' }}
+      px={{ base: 0, md: '2rem' }}
       justify="center"
       overflow="auto"
       {...props}
@@ -62,14 +66,12 @@ export const EndPageView = ({ ...props }: FlexProps): JSX.Element => {
           w="100%"
         >
           <EndPageBlock
-            formTitle={form?.title ?? 'Form Title'}
             endPage={endPage ?? { title: '', buttonText: '' }}
             submissionData={{
               id: form?._id ?? 'Submission ID',
               timeInEpochMs: Date.now(),
             }}
             colorTheme={colorTheme ?? FormColorTheme.Blue}
-            isExpandable={false}
           />
         </Box>
       </Stack>

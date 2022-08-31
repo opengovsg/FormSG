@@ -18,6 +18,7 @@ import {
 import { getFreeSmsQuota } from '~/mocks/msw/handlers/admin-form/twilio'
 import { getUser } from '~/mocks/msw/handlers/user'
 
+import { ADMINFORM_ROUTE, ADMINFORM_SETTINGS_SUBROUTE } from '~constants/routes'
 import formsgSdk from '~utils/formSdk'
 import { viewports } from '~utils/storybook'
 
@@ -32,10 +33,17 @@ export default {
       // MemoryRouter is used so react-router-dom#Link components can work
       // (and also to force the initial tab the page renders to be the settings tab).
       return (
-        <MemoryRouter initialEntries={['/12345/settings']}>
+        <MemoryRouter
+          initialEntries={[
+            `${ADMINFORM_ROUTE}/61540ece3d4a6e50ac0cc6ff/${ADMINFORM_SETTINGS_SUBROUTE}`,
+          ]}
+        >
           <Routes>
-            <Route path={'/:formId'} element={<AdminFormLayout />}>
-              <Route path="settings" element={storyFn()} />
+            <Route
+              path={`${ADMINFORM_ROUTE}/:formId`}
+              element={<AdminFormLayout />}
+            >
+              <Route path={ADMINFORM_SETTINGS_SUBROUTE} element={storyFn()} />
             </Route>
           </Routes>
         </MemoryRouter>

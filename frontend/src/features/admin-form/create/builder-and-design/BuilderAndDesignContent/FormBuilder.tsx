@@ -3,9 +3,7 @@ import { Droppable } from 'react-beautiful-dnd'
 import { Box, Flex, FlexProps, Skeleton, Stack } from '@chakra-ui/react'
 
 import Button from '~components/Button'
-import InlineMessage from '~components/InlineMessage'
 
-import { useAdminFormSettings } from '~features/admin-form/settings/queries'
 import { getVisibleFieldIds } from '~features/logic/utils'
 import { useBgColor } from '~features/public-form/components/PublicFormWrapper'
 
@@ -35,7 +33,6 @@ export const FormBuilder = ({
   ...props
 }: FormBuilderProps): JSX.Element => {
   const { builderFields, isLoading } = useBuilderFields()
-  const { data: settings } = useAdminFormSettings()
   const { formLogics } = useAdminFormLogic()
   const { handleBuilderClick } = useCreatePageSidebar()
   const setEditEndPage = useFieldBuilderStore(setToEditEndPageSelector)
@@ -56,115 +53,98 @@ export const FormBuilder = ({
   const bg = useBgColor({ colorTheme: useDesignColorTheme() })
 
   return (
-    <Box w="100%">
-      {settings?.webhook?.url ? (
-        <InlineMessage
-          mx={{ base: 0, md: '2rem' }}
-          mt={{ base: 0, md: '2rem' }}
-          mb={{ base: 0, md: '-1rem' }}
-        >
-          Webhooks are enabled on this form. Please ensure the webhook server is
-          able to handle any field changes.
-        </InlineMessage>
-      ) : null}
-      <Flex
-        mb={0}
-        flex={1}
-        bg="neutral.200"
-        // Using margin for margin collapse when there are inline messages above.
-        mt={{ base: 0, md: '2rem' }}
-        pb={{ base: 0, md: '2rem' }}
-        px={{ base: 0, md: '2rem' }}
-        justify="center"
-        overflow="auto"
-        {...props}
+    <Flex
+      mb={0}
+      flex={1}
+      bg="neutral.200"
+      // Using margin for margin collapse when there are inline messages above.
+      mt={{ base: 0, md: '1rem' }}
+      pt={{ base: 0, md: '1rem' }}
+      pb={{ base: 0, md: '2rem' }}
+      px={{ base: 0, md: '2rem' }}
+      justify="center"
+      {...props}
+    >
+      <Stack
+        direction="column"
+        w="100%"
+        h="fit-content"
+        spacing={{ base: 0, md: '1.5rem' }}
+        bg={bg}
       >
-        <Stack
-          direction="column"
+        <StartPageView />
+        <Flex
+          flexDir="column"
+          alignSelf="center"
           w="100%"
-          h="fit-content"
-          spacing={{ base: 0, md: '1.5rem' }}
-          bg={bg}
+          px={{ base: 0, md: '1.5rem', lg: '2.5rem' }}
         >
-          <StartPageView />
-          <Flex
-            flexDir="column"
+          <Box
+            bg="white"
+            w="100%"
+            maxW="57rem"
             alignSelf="center"
-            w="100%"
-            px={{ base: 0, md: '1.5rem', lg: '2.5rem' }}
+            px={{ base: '1.5rem', md: '1.625rem' }}
+            py={{ base: '1.5rem', md: '2.5rem' }}
           >
-            <Box
-              bg="white"
-              w="100%"
-              maxW="57rem"
-              alignSelf="center"
-              px={{ base: '1.5rem', md: '1.625rem' }}
-              py={{ base: '1.5rem', md: '2.5rem' }}
-            >
-              {isLoading || !builderFields ? (
-                <FormBuilderFieldsSkeleton />
-              ) : (
-                <Droppable droppableId={FIELD_LIST_DROP_ID}>
-                  {(provided, snapshot) =>
-                    builderFields?.length ? (
-                      <Box
-                        pos="relative"
-                        ref={provided.innerRef}
-                        {...provided.droppableProps}
-                      >
-                        <BuilderFields
-                          fields={builderFields}
-                          visibleFieldIds={visibleFieldIds}
-                          isDraggingOver={snapshot.isDraggingOver}
-                        />
-                        {provided.placeholder}
-                        <BuilderAndDesignPlaceholder
-                          placeholderProps={placeholderProps}
-                          isDraggingOver={snapshot.isDraggingOver}
-                        />
-                      </Box>
-                    ) : (
-                      <EmptyFormPlaceholder
-                        ref={provided.innerRef}
-                        {...provided.droppableProps}
+            {isLoading || !builderFields ? (
+              <FormBuilderFieldsSkeleton />
+            ) : (
+              <Droppable droppableId={FIELD_LIST_DROP_ID}>
+                {(provided, snapshot) =>
+                  builderFields?.length ? (
+                    <Box
+                      pos="relative"
+                      ref={provided.innerRef}
+                      {...provided.droppableProps}
+                    >
+                      <BuilderFields
+                        fields={builderFields}
+                        visibleFieldIds={visibleFieldIds}
                         isDraggingOver={snapshot.isDraggingOver}
-                        onClick={handleBuilderClick}
                       />
-                    )
-                  }
-                </Droppable>
-              )}
-            </Box>
-          </Flex>
-          <Flex
-            justify="center"
-            w="100%"
-            pt={{ base: '1rem', md: 0 }}
-            px={{ base: '1rem', md: '1.5rem', lg: '2.5rem' }}
-          >
-            <Skeleton
-              isLoaded={!isLoading}
-              mb="1.5rem"
-              maxW="57rem"
+                      {provided.placeholder}
+                      <BuilderAndDesignPlaceholder
+                        placeholderProps={placeholderProps}
+                        isDraggingOver={snapshot.isDraggingOver}
+                      />
+                    </Box>
+                  ) : (
+                    <EmptyFormPlaceholder
+                      ref={provided.innerRef}
+                      {...provided.droppableProps}
+                      isDraggingOver={snapshot.isDraggingOver}
+                      onClick={handleBuilderClick}
+                    />
+                  )
+                }
+              </Droppable>
+            )}
+          </Box>
+        </Flex>
+        <Flex
+          justify="center"
+          w="100%"
+          pt={{ base: '1rem', md: 0 }}
+          px={{ base: '1rem', md: '1.5rem', lg: '2.5rem' }}
+        >
+          <Skeleton isLoaded={!isLoading} mb="1.5rem" maxW="57rem" width="100%">
+            <Button
+              _hover={{ bg: 'primary.200' }}
+              py="1.5rem"
               width="100%"
+              variant="outline"
+              borderColor="secondary.200"
+              colorScheme="secondary"
+              height="auto"
+              onClick={handleEditEndPageClick}
+              textStyle="subhead-2"
             >
-              <Button
-                _hover={{ bg: 'primary.200' }}
-                py="1.5rem"
-                width="100%"
-                variant="outline"
-                borderColor="secondary.200"
-                colorScheme="secondary"
-                height="auto"
-                onClick={handleEditEndPageClick}
-                textStyle="subhead-2"
-              >
-                Customise Thank you page
-              </Button>
-            </Skeleton>
-          </Flex>
-        </Stack>
-      </Flex>
-    </Box>
+              Customise Thank you page
+            </Button>
+          </Skeleton>
+        </Flex>
+      </Stack>
+    </Flex>
   )
 }

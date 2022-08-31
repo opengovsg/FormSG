@@ -48,6 +48,7 @@ export const useBlocker = (blocker: Blocker, when = true) => {
         }
 
         blocker(autoUnblockingTx)
+        return 'true'
       })
     } else {
       return noop
