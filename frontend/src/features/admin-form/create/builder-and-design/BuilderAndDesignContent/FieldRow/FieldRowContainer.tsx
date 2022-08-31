@@ -18,6 +18,7 @@ import { FormColorTheme } from '~shared/types'
 import { BasicField, FormFieldDto } from '~shared/types/field'
 
 import { useIsMobile } from '~hooks/useIsMobile'
+import { useToast } from '~hooks/useToast'
 import IconButton from '~components/IconButton'
 import Tooltip from '~components/Tooltip'
 import {
@@ -56,6 +57,7 @@ import { useBuilderAndDesignContext } from '../../BuilderAndDesignContext'
 import { PENDING_CREATE_FIELD_ID } from '../../constants'
 import { useDeleteFormField } from '../../mutations/useDeleteFormField'
 import { useDuplicateFormField } from '../../mutations/useDuplicateFormField'
+import { useCreateTabForm } from '../../useCreateTabForm'
 import {
   DesignState,
   setStateSelector,
@@ -69,6 +71,7 @@ import {
   updateEditStateSelector,
   useFieldBuilderStore,
 } from '../../useFieldBuilderStore'
+import { getAttachmentSizeLimit } from '../../utils/getAttachmentSizeLimit'
 import { useDesignColorTheme } from '../../utils/useDesignColorTheme'
 
 import { SectionFieldRow } from './SectionFieldRow'
@@ -87,6 +90,7 @@ export const FieldRowContainer = ({
   isDraggingOver,
 }: FieldRowContainerProps): JSX.Element => {
   const isMobile = useIsMobile()
+  const { data: form } = useCreateTabForm()
   const numFormFieldMutations = useIsMutating(adminFormKeys.base)
   const { stateData, setToInactive, updateEditState } = useFieldBuilderStore(
     useCallback(
@@ -100,6 +104,7 @@ export const FieldRowContainer = ({
   )
 
   const isDirty = useDirtyFieldStore(isDirtySelector)
+  const toast = useToast({ status: 'danger', isClosable: true })
 
   const setDesignState = useDesignStore(setStateSelector)
 
@@ -198,12 +203,31 @@ export const FieldRowContainer = ({
   }, [handleBuilderClick, isMobile])
 
   const handleDuplicateClick = useCallback(() => {
-    // Duplicate button should be hidden if field
-    // is not yet created, but guard here just in case
-    if (stateData.state !== FieldBuilderState.CreatingField) {
-      duplicateFieldMutation.mutate(field._id)
+    if (!form) return
+    // Duplicate button should be hidden if field is not yet created, but guard here just in case
+    if (stateData.state === FieldBuilderState.CreatingField) return
+    // Disallow duplicating attachment fields if after the dupe, the filesize exceeds the limit
+    if (field.fieldType === BasicField.Attachment) {
+      const existingAttachmentsSize = form.form_fields.reduce(
+        (sum, ff) =>
+          ff.fieldType === BasicField.Attachment
+            ? sum + Number(ff.attachmentSize)
+            : sum,
+        0,
+      )
+      const remainingAvailableSize =
+        getAttachmentSizeLimit(form.responseMode) - existingAttachmentsSize
+      const thisAttachmentSize = Number(field.attachmentSize)
+      if (thisAttachmentSize > remainingAvailableSize) {
+        toast({
+          useMarkdown: true,
+          description: `The field "${field.title}" could not be duplicated. The attachment size of **${thisAttachmentSize} MB** exceeds the form's remaining available attachment size of **${remainingAvailableSize} MB**.`,
+        })
+        return
+      }
     }
-  }, [stateData.state, duplicateFieldMutation, field._id])
+    duplicateFieldMutation.mutate(field._id)
+  }, [stateData.state, field, duplicateFieldMutation, form, toast])
 
   const handleDeleteClick = useCallback(() => {
     if (stateData.state === FieldBuilderState.CreatingField) {

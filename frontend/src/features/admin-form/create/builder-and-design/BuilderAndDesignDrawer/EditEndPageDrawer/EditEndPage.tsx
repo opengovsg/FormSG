@@ -43,10 +43,10 @@ const buttonLinkRules: RegisterOptions<FormEndPage, 'buttonLink'> = {
   validate: (url: string) =>
     !url ||
     validator.isURL(url, {
-      protocols: ['https'],
+      protocols: ['https', 'http'],
       require_protocol: true,
     }) ||
-    'Please enter a valid URL (starting with https://)',
+    'Please enter a valid URL (starting with https:// or http://)',
 } as FieldValues
 
 interface EndPageBuilderInputProps {

@@ -1,4 +1,4 @@
-import { FC, useState } from 'react'
+import { FC, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link as ReactLink } from 'react-router-dom'
 import { Box, chakra, Flex, GridItem, GridProps, Text } from '@chakra-ui/react'
@@ -9,7 +9,9 @@ import { ReactComponent as BrandLogoSvg } from '~assets/svgs/brand/brand-hort-co
 import { LOGGED_IN_KEY } from '~constants/localStorage'
 import { LANDING_ROUTE } from '~constants/routes'
 import { useLocalStorage } from '~hooks/useLocalStorage'
+import { getBannerProps } from '~utils/getBannerProps'
 import { sendLoginOtp, verifyLoginOtp } from '~services/AuthService'
+import { Banner } from '~components/Banner'
 import Link from '~components/Link'
 import { AppGrid } from '~templates/AppGrid'
 
@@ -17,6 +19,7 @@ import {
   trackAdminLogin,
   trackAdminLoginFailure,
 } from '~features/analytics/AnalyticsService'
+import { useEnv } from '~features/env/queries'
 
 import { LoginForm, LoginFormInputs } from './components/LoginForm'
 import { LoginImageSvgr } from './components/LoginImageSvgr'
@@ -93,9 +96,21 @@ const NonMobileSidebarGridArea: FC = ({ children }) => (
 )
 
 export const LoginPage = (): JSX.Element => {
+  const { data: { siteBannerContent, isLoginBanner } = {} } = useEnv()
   const [, setIsAuthenticated] = useLocalStorage<boolean>(LOGGED_IN_KEY)
   const [email, setEmail] = useState<string>()
   const { t } = useTranslation()
+
+  const bannerContent = useMemo(
+    // Use || instead of ?? so that we fall through even if previous banners are empty string.
+    () => siteBannerContent || isLoginBanner,
+    [siteBannerContent, isLoginBanner],
+  )
+
+  const bannerProps = useMemo(
+    () => getBannerProps(bannerContent),
+    [bannerContent],
+  )
 
   const handleSendOtp = async ({ email }: LoginFormInputs) => {
     const trimmedEmail = email.trim()
@@ -132,6 +147,9 @@ export const LoginPage = (): JSX.Element => {
 
   return (
     <BackgroundBox>
+      {bannerProps ? (
+        <Banner variant={bannerProps.variant}>{bannerProps.msg}</Banner>
+      ) : null}
       <BaseGridLayout flex={1}>
         <NonMobileSidebarGridArea>
           <LoginImageSvgr maxW="100%" aria-hidden />

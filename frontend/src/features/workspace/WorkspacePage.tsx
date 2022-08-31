@@ -5,7 +5,10 @@ import { AdminNavBar } from '~/app/AdminNavBar'
 
 import { ROLLOUT_ANNOUNCEMENT_KEY_PREFIX } from '~constants/localStorage'
 import { useLocalStorage } from '~hooks/useLocalStorage'
+import { getBannerProps } from '~utils/getBannerProps'
+import { Banner } from '~components/Banner'
 
+import { useEnv } from '~features/env/queries'
 // TODO #4279: Remove after React rollout is complete
 import { SwitchEnvIcon } from '~features/env/SwitchEnvIcon'
 import { RolloutAnnouncementModal } from '~features/rollout-announcement/RolloutAnnouncementModal'
@@ -35,6 +38,19 @@ const useWorkspaceForms = () => {
 }
 
 export const WorkspacePage = (): JSX.Element => {
+  const { data: { siteBannerContent, adminBannerContent } = {} } = useEnv()
+
+  const bannerContent = useMemo(
+    // Use || instead of ?? so that we fall through even if previous banners are empty string.
+    () => siteBannerContent || adminBannerContent,
+    [adminBannerContent, siteBannerContent],
+  )
+
+  const bannerProps = useMemo(
+    () => getBannerProps(bannerContent),
+    [bannerContent],
+  )
+
   const { isLoading, totalFormCount, sortedForms, createFormModalDisclosure } =
     useWorkspaceForms()
   const { user, isLoading: isUserLoading } = useUser()
@@ -44,10 +60,10 @@ export const WorkspacePage = (): JSX.Element => {
     [user],
   )
   const [hasSeenAnnouncement, setHasSeenAnnouncement] =
-    useLocalStorage<boolean>(ROLLOUT_ANNOUNCEMENT_KEY)
+    useLocalStorage<boolean>(ROLLOUT_ANNOUNCEMENT_KEY, false)
 
   const isAnnouncementModalOpen = useMemo(
-    () => !isUserLoading && !hasSeenAnnouncement,
+    () => !isUserLoading && hasSeenAnnouncement === false,
     [isUserLoading, hasSeenAnnouncement],
   )
 
@@ -58,6 +74,9 @@ export const WorkspacePage = (): JSX.Element => {
         onClose={createFormModalDisclosure.onClose}
       />
       <Flex direction="column" h="100vh">
+        {bannerProps ? (
+          <Banner variant={bannerProps.variant}>{bannerProps.msg}</Banner>
+        ) : null}
         <AdminNavBar />
         <SwitchEnvIcon />
         {totalFormCount === 0 ? (

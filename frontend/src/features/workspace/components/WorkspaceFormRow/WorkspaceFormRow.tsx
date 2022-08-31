@@ -43,7 +43,7 @@ export const WorkspaceFormRow = ({
         justifyContent="space-between"
         gridTemplateColumns={{
           base: '1fr 2.75rem',
-          md: '1fr min-content 8rem',
+          md: '1fr 4rem 8rem',
         }}
         gridTemplateRows={{ base: 'auto 2.75rem', md: 'auto' }}
         gridTemplateAreas={{

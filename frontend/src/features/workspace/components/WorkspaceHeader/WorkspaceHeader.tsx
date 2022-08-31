@@ -1,13 +1,8 @@
-import { useState } from 'react'
 import { BiPlus } from 'react-icons/bi'
 import { Skeleton, Stack, Text } from '@chakra-ui/react'
 
 import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
-
-import { SortOption } from '~features/workspace/types'
-
-import { WorkspaceSortDropdown } from './WorkspaceSortDropdown'
 
 export interface WorkspaceHeaderProps {
   /**
@@ -27,7 +22,6 @@ export const WorkspaceHeader = ({
   isLoading,
   handleOpenCreateFormModal,
 }: WorkspaceHeaderProps): JSX.Element => {
-  const [sortOption, setSortOption] = useState(SortOption.LastUpdated)
   const isMobile = useIsMobile()
 
   return (
@@ -52,11 +46,6 @@ export const WorkspaceHeader = ({
         direction={{ base: 'column', md: 'row' }}
         h="fit-content"
       >
-        <WorkspaceSortDropdown
-          value={sortOption}
-          onChange={setSortOption}
-          isDisabled={isLoading}
-        />
         <Button
           isFullWidth={isMobile}
           isDisabled={isLoading}
