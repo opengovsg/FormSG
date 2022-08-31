@@ -1,7 +1,13 @@
 import { AdminFormDto, FormStatus, PublicFormDto } from '~shared/types/form'
 
 const GA = function () {
-  return { gtag: window.gtag }
+  return {
+    gtag:
+      window.gtag ||
+      function () {
+        return
+      },
+  }
 }
 
 export const trackAdminLogin = () => {
