@@ -38,6 +38,7 @@ export const BuilderAndDesignContent = ({
 
   useEffect(() => {
     setFieldsToInactive()
+    return () => setFieldsToInactive()
   }, [setFieldsToInactive])
 
   return (
