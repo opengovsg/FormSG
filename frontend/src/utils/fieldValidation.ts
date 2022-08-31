@@ -220,7 +220,7 @@ export const createDecimalValidationRules: ValidationRuleFn<
       }
 
       // Validate leading zeros
-      if (val.match(/^0[0-9].*$/)) {
+      if (/^0[0-9]/.test(val)) {
         return 'Please enter a valid decimal without leading zeros'
       }
 
