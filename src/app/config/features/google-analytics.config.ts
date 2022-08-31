@@ -9,7 +9,7 @@ const googleAnalyticsSchema: Schema<IGoogleAnalytics> = {
     doc: 'Google Analytics tracking ID',
     format: String,
     default: null,
-    env: 'GA_TRACKING_ID',
+    env: 'REACT_APP_GA_TRACKING_ID',
   },
 }
 
