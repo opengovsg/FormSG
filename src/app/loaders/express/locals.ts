@@ -2,7 +2,7 @@ import ejs from 'ejs'
 
 import config from '../../config/config'
 import { captchaConfig } from '../../config/features/captcha.config'
-// import { googleAnalyticsConfig } from '../../config/features/google-analytics.config'
+import { googleAnalyticsConfig } from '../../config/features/google-analytics.config'
 import { sentryConfig } from '../../config/features/sentry.config'
 import { spcpMyInfoConfig } from '../../config/features/spcp-myinfo.config'
 
@@ -19,7 +19,8 @@ const frontendVars = {
   isSPMaintenance: spcpMyInfoConfig.isSPMaintenance, // Singpass maintenance message
   isCPMaintenance: spcpMyInfoConfig.isCPMaintenance, // Corppass maintenance message
   myInfoBannerContent: spcpMyInfoConfig.myInfoBannerContent, // MyInfo maintenance message
-  // GATrackingID: googleAnalyticsConfig.GATrackingID,
+  // TODO: remove after React rollout #4786
+  GATrackingID: googleAnalyticsConfig.GATrackingID,
   spcpCookieDomain: spcpMyInfoConfig.spcpCookieDomain, // Cookie domain used for removing spcp cookies
   // react migration variables
   reactMigrationRespondentCookieName:
@@ -43,6 +44,7 @@ const environment = ejs.render(
     var siteBannerContent = "<%- siteBannerContent %>"
     var adminBannerContent = "<%- adminBannerContent %>"
     // Google Analytics
+    var GATrackingID = "<%= GATrackingID%>"
     // Recaptcha
     var captchaPublicKey = "<%= captchaPublicKey %>"
     // Sentry.IO
