@@ -16,7 +16,7 @@ export type SetEnvironmentParams = {
 
 export const RESPONDENT_COOKIE_OPTIONS = {
   httpOnly: false,
-  sameSite: 'strict' as const,
+  sameSite: 'lax' as const, // Setting to 'strict' resets the cookie after redirecting from myInfo
   secure: !config.isDev,
 }
 
