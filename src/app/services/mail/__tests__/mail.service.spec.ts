@@ -71,7 +71,7 @@ describe('mail.service', () => {
         senderMail: 'notAnEmail',
       }
       // Act + Assert
-      expect(() => new MailService(invalidParams)).toThrowError(
+      expect(() => new MailService(invalidParams)).toThrow(
         `MailService constructor: senderMail: ${invalidParams.senderMail} is not a valid email`,
       )
     })

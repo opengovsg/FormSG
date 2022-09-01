@@ -441,7 +441,7 @@ describe('SpOidcClientCache', () => {
       const keyResultPromise = spOidcClient.getNdiPublicKeysFromCache()
 
       // Assert
-      await expect(keyResultPromise).rejects.toThrowError('Failure')
+      await expect(keyResultPromise).rejects.toThrow('Failure')
       expect(getNdiKeysSpy).toHaveBeenCalledOnce()
     })
   })
@@ -485,7 +485,7 @@ describe('SpOidcClientCache', () => {
       const tryGetBaseClient = spOidcClient.getBaseClientFromCache()
 
       // Assert
-      await expect(tryGetBaseClient).rejects.toThrowError('Failure')
+      await expect(tryGetBaseClient).rejects.toThrow('Failure')
       expect(getBaseClientSpy).toHaveBeenCalledOnce()
     })
   })
@@ -509,10 +509,8 @@ describe('SpOidcClientCache', () => {
       )
 
       // Assert
-      await expect(tryCreateUrl).rejects.toThrowError(
-        CreateAuthorisationUrlError,
-      )
-      await expect(tryCreateUrl).rejects.toThrowError('Empty state')
+      await expect(tryCreateUrl).rejects.toThrow(CreateAuthorisationUrlError)
+      await expect(tryCreateUrl).rejects.toThrow('Empty state')
     })
 
     it('should throw CreateAuthorisationUrlError if esrvcId parameter is empty', async () => {
@@ -533,10 +531,8 @@ describe('SpOidcClientCache', () => {
       )
 
       // Assert
-      await expect(tryCreateUrl).rejects.toThrowError(
-        CreateAuthorisationUrlError,
-      )
-      await expect(tryCreateUrl).rejects.toThrowError('Empty esrvcId')
+      await expect(tryCreateUrl).rejects.toThrow(CreateAuthorisationUrlError)
+      await expect(tryCreateUrl).rejects.toThrow('Empty esrvcId')
     })
 
     it('should reject if getBaseClientFromCache rejects', async () => {
@@ -561,7 +557,7 @@ describe('SpOidcClientCache', () => {
       )
 
       // Assert
-      await expect(tryGetAuthorisationUrl).rejects.toThrowError('Failed')
+      await expect(tryGetAuthorisationUrl).rejects.toThrow('Failed')
       expect(getBaseClientSpy).toHaveBeenCalledOnce()
     })
 
@@ -874,10 +870,8 @@ describe('SpOidcClientCache', () => {
         spOidcClient.exchangeAuthCodeAndDecodeVerifyToken(MOCK_EMPTY_AUTHCODE)
 
       // Assert
-      await expect(tryExchangeAuthCode).rejects.toThrowError(
-        ExchangeAuthTokenError,
-      )
-      await expect(tryExchangeAuthCode).rejects.toThrowError('empty authCode')
+      await expect(tryExchangeAuthCode).rejects.toThrow(ExchangeAuthTokenError)
+      await expect(tryExchangeAuthCode).rejects.toThrow('empty authCode')
       expect(refreshSpy).toHaveBeenCalledTimes(1)
     })
 
@@ -901,7 +895,7 @@ describe('SpOidcClientCache', () => {
         spOidcClient.exchangeAuthCodeAndDecodeVerifyToken(MOCK_AUTHCODE)
 
       // Assert
-      await expect(tryExchangeAuthCode).rejects.toThrowError('failed')
+      await expect(tryExchangeAuthCode).rejects.toThrow('failed')
       expect(refreshSpy).toHaveBeenCalledTimes(1)
     })
 
@@ -932,7 +926,7 @@ describe('SpOidcClientCache', () => {
         spOidcClient.exchangeAuthCodeAndDecodeVerifyToken(MOCK_AUTHCODE)
 
       // Assert
-      await expect(tryExchangeAuthCode).rejects.toThrowError('grant failed')
+      await expect(tryExchangeAuthCode).rejects.toThrow('grant failed')
       expect(refreshSpy).toHaveBeenCalledTimes(2)
     })
 
@@ -961,9 +955,7 @@ describe('SpOidcClientCache', () => {
         spOidcClient.exchangeAuthCodeAndDecodeVerifyToken(MOCK_AUTHCODE)
 
       // Assert
-      await expect(tryExchangeAuthCode).rejects.toThrowError(
-        MissingIdTokenError,
-      )
+      await expect(tryExchangeAuthCode).rejects.toThrow(MissingIdTokenError)
       expect(refreshSpy).toHaveBeenCalledTimes(2)
     })
 
@@ -992,9 +984,7 @@ describe('SpOidcClientCache', () => {
         spOidcClient.exchangeAuthCodeAndDecodeVerifyToken(MOCK_AUTHCODE)
 
       // Assert
-      await expect(tryExchangeAuthCode).rejects.toThrowError(
-        MissingIdTokenError,
-      )
+      await expect(tryExchangeAuthCode).rejects.toThrow(MissingIdTokenError)
       expect(refreshSpy).toHaveBeenCalledTimes(2)
     })
 
@@ -1066,9 +1056,7 @@ describe('SpOidcClientCache', () => {
         spOidcClient.exchangeAuthCodeAndDecodeVerifyToken(MOCK_AUTHCODE)
 
       // Assert
-      await expect(tryExchangeAuthCode).rejects.toThrowError(
-        GetDecryptionKeyError,
-      )
+      await expect(tryExchangeAuthCode).rejects.toThrow(GetDecryptionKeyError)
       expect(refreshSpy).toHaveBeenCalledTimes(2)
     })
 
@@ -1108,9 +1096,7 @@ describe('SpOidcClientCache', () => {
         spOidcClient.exchangeAuthCodeAndDecodeVerifyToken(MOCK_AUTHCODE)
 
       // Assert
-      await expect(tryExchangeAuthCode).rejects.toThrowError(
-        GetDecryptionKeyError,
-      )
+      await expect(tryExchangeAuthCode).rejects.toThrow(GetDecryptionKeyError)
       expect(refreshSpy).toHaveBeenCalledTimes(2)
     })
 
@@ -1146,9 +1132,7 @@ describe('SpOidcClientCache', () => {
         spOidcClient.exchangeAuthCodeAndDecodeVerifyToken(MOCK_AUTHCODE)
 
       // Assert
-      await expect(tryExchangeAuthCode).rejects.toThrowError(
-        ExchangeAuthTokenError,
-      )
+      await expect(tryExchangeAuthCode).rejects.toThrow(ExchangeAuthTokenError)
       expect(refreshSpy).toHaveBeenCalledTimes(2)
     })
 
@@ -1188,9 +1172,7 @@ describe('SpOidcClientCache', () => {
         spOidcClient.exchangeAuthCodeAndDecodeVerifyToken(MOCK_AUTHCODE)
 
       // Assert
-      await expect(tryExchangeAuthCode).rejects.toThrowError(
-        GetVerificationKeyError,
-      )
+      await expect(tryExchangeAuthCode).rejects.toThrow(GetVerificationKeyError)
       expect(refreshSpy).toHaveBeenCalledTimes(2)
     })
 
@@ -1230,9 +1212,7 @@ describe('SpOidcClientCache', () => {
         spOidcClient.exchangeAuthCodeAndDecodeVerifyToken(MOCK_AUTHCODE)
 
       // Assert
-      await expect(tryExchangeAuthCode).rejects.toThrowError(
-        'verify jwt failed',
-      )
+      await expect(tryExchangeAuthCode).rejects.toThrow('verify jwt failed')
       expect(refreshSpy).toHaveBeenCalledTimes(2)
     })
   })
@@ -1397,8 +1377,8 @@ describe('SpOidcClientCache', () => {
 
       // Assert
 
-      await expect(tryCreateJWT).rejects.toThrowError(CreateJwtError)
-      await expect(tryCreateJWT).rejects.toThrowError('No signing keys found')
+      await expect(tryCreateJWT).rejects.toThrow(CreateJwtError)
+      await expect(tryCreateJWT).rejects.toThrow('No signing keys found')
     })
   })
 
@@ -1434,10 +1414,8 @@ describe('SpOidcClientCache', () => {
 
       // Assert
 
-      await expect(tryVerifyJwt).rejects.toThrowError(VerificationKeyError)
-      await expect(tryVerifyJwt).rejects.toThrowError(
-        'no verification key found',
-      )
+      await expect(tryVerifyJwt).rejects.toThrow(VerificationKeyError)
+      await expect(tryVerifyJwt).rejects.toThrow('no verification key found')
     })
   })
 

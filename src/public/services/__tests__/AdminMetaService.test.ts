@@ -20,7 +20,7 @@ describe('AdminMetaService', () => {
       )
 
       // Assert
-      expect(MockAxios.get).toBeCalledWith(
+      expect(MockAxios.get).toHaveBeenCalledWith(
         `${AdminMetaService.FORM_API_PREFIX}/${MOCK_FORM_ID}/verified-sms/count/free`,
       )
       expect(actual).toBe('some data')

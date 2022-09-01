@@ -153,14 +153,14 @@ describe('FileHandlerService', () => {
 
       expect(mockAxios.post).toHaveBeenCalledTimes(2)
       // Assert retrieve presigned data call argument
-      expect(mockAxios.post).nthCalledWith(
+      expect(mockAxios.post).toHaveBeenNthCalledWith(
         1,
         mockUrl,
         expectedPresignedDataParams,
         { cancelToken: undefined },
       )
       // Assert POSTing params
-      expect(mockAxios.post).nthCalledWith(
+      expect(mockAxios.post).toHaveBeenNthCalledWith(
         2,
         mockPresignedUrl,
         expectedFormData,
