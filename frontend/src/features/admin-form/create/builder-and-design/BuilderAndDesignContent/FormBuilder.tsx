@@ -47,6 +47,11 @@ export const FormBuilder = ({
     [builderFields, formLogics],
   )
 
+  const handlePlaceholderClick = useCallback(
+    () => handleBuilderClick(),
+    [handleBuilderClick],
+  )
+
   const handleEditEndPageClick = useCallback(() => {
     setEditEndPage(isDirty)
     if (isDirty) return
@@ -118,7 +123,7 @@ export const FormBuilder = ({
                       ref={provided.innerRef}
                       {...provided.droppableProps}
                       isDraggingOver={snapshot.isDraggingOver}
-                      onClick={handleBuilderClick}
+                      onClick={handlePlaceholderClick}
                     />
                   )
                 }
