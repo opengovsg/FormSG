@@ -22,7 +22,7 @@ export const RESPONDENT_COOKIE_OPTIONS = {
 
 export const RESPONDENT_COOKIE_OPTIONS_WITH_EXPIRY = {
   ...RESPONDENT_COOKIE_OPTIONS,
-  maxAge: 31 * 2 * 24 * 60 * 60, // 2 months
+  maxAge: 31 * 12 * 24 * 60 * 60, // 12 months
 }
 
 export const ADMIN_COOKIE_OPTIONS = {
@@ -33,7 +33,7 @@ export const ADMIN_COOKIE_OPTIONS = {
 
 export const ADMIN_COOKIE_OPTIONS_WITH_EXPIRY = {
   ...ADMIN_COOKIE_OPTIONS,
-  maxAge: 31 * 2 * 24 * 60 * 60, // 2 months
+  maxAge: 31 * 12 * 24 * 60 * 60, // 12 months
 }
 
 const logger = createLoggerWithLabel(module)
