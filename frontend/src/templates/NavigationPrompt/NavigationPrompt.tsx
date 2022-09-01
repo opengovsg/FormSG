@@ -1,28 +1,16 @@
 import { memo } from 'react'
-import {
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  ModalOverlay,
-  Stack,
-} from '@chakra-ui/react'
 
-import { useIsMobile } from '~hooks/useIsMobile'
-import Button from '~components/Button'
-import { ModalCloseButton } from '~components/Modal'
-
+import { UnsavedChangesModal } from './UnsavedChangesModal'
 import { useNavigationPrompt } from './useNavigationPrompt'
 
 interface NavigationPromptProps {
   /** Whether modal should appear. */
   when: boolean
-  /** Modal header title. Defaults to `"Discard changes?"` */
+  /** Modal header title. Defaults to `"You have unsaved changes"` */
   title?: string
   /**
    * Modal body content.
-   * Defaults to `"You have unsaved changes that will be lost. Are you sure you want to discard them?"`
+   * Defaults to `"Are you sure you want to leave? Your changes will be lost."`
    */
   description?: string
   /** Text to display for the confirmation button. Defaults to `"Yes, discard changes"` */
@@ -33,51 +21,24 @@ interface NavigationPromptProps {
 export const NavigationPrompt = memo(
   ({
     when,
-    title = 'Discard changes?',
-    description = 'You have unsaved changes that will be lost. Are you sure you want to discard them?',
+    title = 'You have unsaved changes',
+    description = 'Are you sure you want to leave? Your changes will be lost.',
     confirmButtonText = 'Yes, discard changes',
     cancelButtonText = 'No, stay on page',
   }: NavigationPromptProps) => {
     const { isPromptShown, onCancel, onConfirm } = useNavigationPrompt(when)
-    const isMobile = useIsMobile()
 
     return (
-      <Modal isOpen={isPromptShown} onClose={onCancel}>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalCloseButton />
-          <ModalHeader color="secondary.700" pr="4rem">
-            {title}
-          </ModalHeader>
-          <ModalBody color="secondary.500" textStyle="body-2">
-            {description}
-          </ModalBody>
-          <ModalFooter>
-            <Stack
-              spacing="1rem"
-              w="100%"
-              direction={{ base: 'column', md: 'row-reverse' }}
-            >
-              <Button
-                isFullWidth={isMobile}
-                colorScheme="danger"
-                onClick={onConfirm}
-                autoFocus
-              >
-                {confirmButtonText}
-              </Button>
-              <Button
-                colorScheme="secondary"
-                variant="clear"
-                isFullWidth={isMobile}
-                onClick={onCancel}
-              >
-                {cancelButtonText}
-              </Button>
-            </Stack>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
+      <UnsavedChangesModal
+        onCancel={onCancel}
+        onConfirm={onConfirm}
+        isOpen={isPromptShown}
+        onClose={onCancel}
+        confirmButtonText={confirmButtonText}
+        cancelButtonText={cancelButtonText}
+        title={title}
+        description={description}
+      />
     )
   },
 )

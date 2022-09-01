@@ -5,7 +5,7 @@ import { Flex } from '@chakra-ui/react'
 import { FEATURE_TOUR_KEY_PREFIX } from '~constants/localStorage'
 import { ADMINFORM_RESULTS_SUBROUTE, ADMINFORM_ROUTE } from '~constants/routes'
 import { useLocalStorage } from '~hooks/useLocalStorage'
-import { NavigationPrompt } from '~templates/NavigationPrompt/NavigationPrompt'
+import { NavigationPrompt } from '~templates/NavigationPrompt'
 
 import { useUser } from '~features/user/queries'
 
