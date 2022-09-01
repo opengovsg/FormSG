@@ -171,6 +171,8 @@ export const DesignInput = (): JSX.Element | null => {
     [uploadLogoMutation, customLogoMeta],
   )
 
+  const handleCloseDrawer = useCallback(() => handleClose(false), [handleClose])
+
   const handleUpdateDesign = handleSubmit(
     async (startPageData: FormStartPageInput) => {
       const { logo, attachment, estTimeTaken, ...rest } = startPageData
@@ -183,7 +185,7 @@ export const DesignInput = (): JSX.Element | null => {
             estTimeTaken: estTimeTakenTransformed,
             ...rest,
           },
-          { onSuccess: () => handleClose() },
+          { onSuccess: handleCloseDrawer },
         )
       } else {
         const customLogoMeta = await handleUploadLogo(attachment)
@@ -193,7 +195,7 @@ export const DesignInput = (): JSX.Element | null => {
             estTimeTaken: estTimeTakenTransformed,
             ...rest,
           },
-          { onSuccess: () => handleClose() },
+          { onSuccess: handleCloseDrawer },
         )
       }
     },
@@ -363,7 +365,7 @@ export const DesignInput = (): JSX.Element | null => {
       <FormFieldDrawerActions
         isLoading={startPageMutation.isLoading}
         handleClick={handleClick}
-        handleCancel={handleClose}
+        handleCancel={handleCloseDrawer}
         buttonText="Save design"
       />
     </DrawerContentContainer>

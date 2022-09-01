@@ -174,7 +174,7 @@ export const FieldRowContainer = ({
     if (!isMobile) {
       // Do not open builder if in mobile so user can view active state without
       // drawer blocking the view.
-      handleBuilderClick()
+      handleBuilderClick(false)
     }
   }, [
     isDirty,
@@ -198,7 +198,7 @@ export const FieldRowContainer = ({
 
   const handleEditFieldClick = useCallback(() => {
     if (isMobile) {
-      handleBuilderClick()
+      handleBuilderClick(false)
     }
   }, [handleBuilderClick, isMobile])
 

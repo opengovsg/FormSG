@@ -48,7 +48,7 @@ export const FormBuilder = ({
   )
 
   const handlePlaceholderClick = useCallback(
-    () => handleBuilderClick(),
+    () => handleBuilderClick(false),
     [handleBuilderClick],
   )
 
@@ -56,7 +56,7 @@ export const FormBuilder = ({
     setEditEndPage(isDirty)
     if (isDirty) return
 
-    handleBuilderClick()
+    handleBuilderClick(false)
   }, [handleBuilderClick, isDirty, setEditEndPage])
 
   const bg = useBgColor({ colorTheme: useDesignColorTheme() })

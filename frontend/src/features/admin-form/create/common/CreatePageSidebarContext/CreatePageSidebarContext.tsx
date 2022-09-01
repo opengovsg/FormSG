@@ -32,10 +32,10 @@ type CreatePageSidebarContextProps = {
   pendingTab?: DrawerTabs | null
   movePendingToActiveTab: () => void
   clearPendingTab: () => void
-  handleBuilderClick: (shouldBePending?: boolean) => void
-  handleDesignClick: (shouldBePending?: boolean) => void
-  handleLogicClick: (shouldBePending?: boolean) => void
-  handleClose: (shouldBePending?: boolean) => void
+  handleBuilderClick: (shouldBePending: boolean) => void
+  handleDesignClick: (shouldBePending: boolean) => void
+  handleLogicClick: (shouldBePending: boolean) => void
+  handleClose: (shouldBePending: boolean) => void
   isDrawerOpen: boolean
   fieldListTabIndex: FieldListTabIndex
   setFieldListTabIndex: (tabIndex: FieldListTabIndex) => void
@@ -104,25 +104,25 @@ export const useCreatePageSidebarContext =
     }, [])
 
     const handleBuilderClick = useCallback(
-      (shouldBePending?: boolean) =>
+      (shouldBePending: boolean) =>
         setActiveOrPendingTab(DrawerTabs.Builder, shouldBePending),
       [setActiveOrPendingTab],
     )
 
     const handleDesignClick = useCallback(
-      (shouldBePending?: boolean) =>
+      (shouldBePending: boolean) =>
         setActiveOrPendingTab(DrawerTabs.Design, shouldBePending),
       [setActiveOrPendingTab],
     )
 
     const handleLogicClick = useCallback(
-      (shouldBePending?: boolean) =>
+      (shouldBePending: boolean) =>
         setActiveOrPendingTab(DrawerTabs.Logic, shouldBePending),
       [setActiveOrPendingTab],
     )
 
     const handleClose = useCallback(
-      (shouldBePending?: boolean) => {
+      (shouldBePending: boolean) => {
         setActiveOrPendingTab(null, shouldBePending)
       },
       [setActiveOrPendingTab],

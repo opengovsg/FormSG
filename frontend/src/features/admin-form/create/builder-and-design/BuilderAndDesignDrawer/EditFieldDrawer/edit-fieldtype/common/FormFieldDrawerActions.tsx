@@ -39,7 +39,7 @@ export const FormFieldDrawerActions = ({
         isFullWidth={isMobile}
         variant="clear"
         colorScheme="secondary"
-        onClick={() => handleCancel()}
+        onClick={handleCancel}
       >
         Cancel
       </Button>

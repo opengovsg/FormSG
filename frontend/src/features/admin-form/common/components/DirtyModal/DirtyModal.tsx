@@ -56,10 +56,10 @@ export const useDirtyModal = () => {
   const handleConfirmNavigate = useCallback(() => {
     if (builderHoldingStateData !== null) {
       builderMoveFromHolding()
-      handleBuilderClick()
+      handleBuilderClick(false)
     } else if (designHoldingState !== null) {
       designMoveFromHolding()
-      handleDesignClick()
+      handleDesignClick(false)
     } else if (pendingTab !== undefined) {
       movePendingToActiveTab()
     }

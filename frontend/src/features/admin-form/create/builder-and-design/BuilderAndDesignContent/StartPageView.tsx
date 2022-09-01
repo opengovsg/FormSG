@@ -117,17 +117,17 @@ export const StartPageView = () => {
 
     setDesignState(DesignState.EditingHeader)
     setToInactive()
-    handleDesignClick()
+    handleDesignClick(false)
   }, [handleDesignClick, isDirty, setDesignState, setToInactive])
 
   const handleInstructionsClick = useCallback(() => {
     setDesignState(DesignState.EditingInstructions)
     setToInactive()
-    if (!isMobile) handleDesignClick()
+    if (!isMobile) handleDesignClick(false)
   }, [handleDesignClick, isMobile, setDesignState, setToInactive])
 
   const handleEditInstructionsClick = useCallback(() => {
-    if (isMobile) handleDesignClick()
+    if (isMobile) handleDesignClick(false)
   }, [handleDesignClick, isMobile])
 
   const headerWrapperEditProps = useMemo(() => {
