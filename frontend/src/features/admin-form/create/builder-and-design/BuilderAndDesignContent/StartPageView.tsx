@@ -110,21 +110,41 @@ export const StartPageView = () => {
 
   const { handleDesignClick } = useCreatePageSidebar()
 
+  const isDirtyAndDesignInactive = useMemo(
+    () => isDirty && designState === DesignState.Inactive,
+    [designState, isDirty],
+  )
+
   const handleHeaderClick = useCallback(() => {
-    if (isDirty) {
+    if (isDirtyAndDesignInactive) {
       return setDesignState(DesignState.EditingHeader, true)
     }
 
     setDesignState(DesignState.EditingHeader)
     setToInactive()
     handleDesignClick(false)
-  }, [handleDesignClick, isDirty, setDesignState, setToInactive])
+  }, [
+    handleDesignClick,
+    isDirtyAndDesignInactive,
+    setDesignState,
+    setToInactive,
+  ])
 
   const handleInstructionsClick = useCallback(() => {
+    if (isDirtyAndDesignInactive) {
+      return setDesignState(DesignState.EditingInstructions, true)
+    }
+
     setDesignState(DesignState.EditingInstructions)
     setToInactive()
     if (!isMobile) handleDesignClick(false)
-  }, [handleDesignClick, isMobile, setDesignState, setToInactive])
+  }, [
+    handleDesignClick,
+    isDirtyAndDesignInactive,
+    isMobile,
+    setDesignState,
+    setToInactive,
+  ])
 
   const handleEditInstructionsClick = useCallback(() => {
     if (isMobile) handleDesignClick(false)

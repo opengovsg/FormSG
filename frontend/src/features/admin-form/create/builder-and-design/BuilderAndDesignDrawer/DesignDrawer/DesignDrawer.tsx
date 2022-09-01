@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo } from 'react'
 import {
   Controller,
   UnpackNestedValue,
@@ -137,8 +137,12 @@ export const DesignInput = (): JSX.Element | null => {
   ])
 
   // Focus on paragraph field if state is editing instructions
-  useEffect(() => {
-    if (designState === DesignState.EditingInstructions) setFocus('paragraph')
+  useLayoutEffect(() => {
+    if (designState === DesignState.EditingInstructions) {
+      // To guarantee focus is triggered even when focus is being set by
+      // something else before this effect runs.
+      setTimeout(() => setFocus('paragraph'), 80)
+    }
   }, [designState, setFocus])
 
   // Save design handlers
