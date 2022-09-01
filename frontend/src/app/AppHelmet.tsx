@@ -1,10 +1,7 @@
 import { Helmet } from 'react-helmet-async'
 
-import { useEnv } from '~features/env/queries'
-
 export const AppHelmet = (): JSX.Element => {
-  const { data: { GATrackingID } = {} } = useEnv()
-
+  const GATrackingID = process.env.REACT_APP_GA_TRACKING_ID
   return (
     <Helmet titleTemplate="%s | FormSG" defer={false}>
       {GATrackingID ? (

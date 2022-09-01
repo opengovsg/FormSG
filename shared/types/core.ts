@@ -24,7 +24,7 @@ export type ClientEnvVars = {
   isSPMaintenance: string // Singpass maintenance message
   isCPMaintenance: string // Corppass maintenance message
   myInfoBannerContent: string // MyInfo maintenance message
-  GATrackingID: string | null
+  // GATrackingID: string | null
   spcpCookieDomain: string // Cookie domain used for removing spcp cookies
   respondentRolloutEmail: number
   respondentRolloutStorage: number
