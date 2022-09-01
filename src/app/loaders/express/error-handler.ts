@@ -1,5 +1,6 @@
 import { errors, isCelebrateError } from 'celebrate'
 import { ErrorRequestHandler, RequestHandler } from 'express'
+import { HttpError, isHttpError } from 'http-errors'
 import { StatusCodes } from 'http-status-codes'
 import get from 'lodash/get'
 
@@ -7,6 +8,12 @@ import { createLoggerWithLabel } from '../../config/logger'
 
 const logger = createLoggerWithLabel(module)
 const celebrateErrorHandler = errors()
+
+const isBodyParserError = (
+  err: unknown,
+): err is HttpError & { type: string } => {
+  return isHttpError(err) && 'type' in err
+}
 
 const errorHandlerMiddlewares = (): (
   | ErrorRequestHandler
@@ -45,6 +52,29 @@ const errorHandlerMiddlewares = (): (
         return celebrateErrorHandler(err, req, res, next)
       }
 
+      if (isBodyParserError(err)) {
+        logger.error({
+          message: 'Body parser error',
+          meta: {
+            action: 'genericErrorHandlerMiddleware',
+            // formId is only present for Joi validated routes that require it
+            formId: get(req, 'form._id', null),
+            details: {
+              type: err.type,
+              message: err.message,
+            },
+          },
+          error: err,
+        })
+        if (err.expose) {
+          return res
+            .status(err.status)
+            .json({ message: err.message ?? genericErrorMessage })
+        }
+        return res.status(err.status).json({ message: genericErrorMessage })
+      }
+
+      // Unknown errors
       logger.error({
         message: 'Unknown error',
         meta: {
