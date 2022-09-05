@@ -19,7 +19,7 @@ export const getFormFeedback = async (
  * @param formId the id of the form to count feedback for
  * @returns the count of the retrieved feedback
  */
-export const countFeedback = async (formId: string): Promise<number> => {
+export const getFormFeedbackCount = async (formId: string): Promise<number> => {
   return ApiService.get<number>(
     `${ADMIN_FORM_ENDPOINT}/${formId}/feedback/count`,
   ).then(({ data }) => data)
@@ -31,19 +31,15 @@ export const countFeedback = async (formId: string): Promise<number> => {
  * @param formTitle the title of the form
  * @returns a stream of feedback
  */
-export const downloadFeedback = async (
+export const downloadFormFeedback = async (
   formId: string,
   formTitle: string,
 ): Promise<void> => {
-  const expectedNumResponses = await countFeedback(formId)
+  const expectedNumResponses = await getFormFeedbackCount(formId)
 
   return ApiService.get<FormFeedbackDto[]>(
     `${ADMIN_FORM_ENDPOINT}/${formId}/feedback/download`,
   ).then(({ data }) => {
-    if (!data) {
-      return Promise.reject(new Error('Error downloading feedback'))
-    }
-
     const csvGenerator = new FeedbackCsvGenerator(expectedNumResponses)
 
     data.forEach((feedback) => {
