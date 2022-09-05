@@ -78,6 +78,11 @@ export const isConditionFulfilled = (
         }
         return condition.value === currentValue.value
       }
+      // In angular, number equality is string=== but decimal equality is number===.
+      // Need to replicate this behavior for backward-compatibility.
+      if (fieldType === BasicField.Decimal) {
+        return Number(currentValue) === Number(condition.value)
+      }
       return String(condition.value) === currentValue
     }
   }
