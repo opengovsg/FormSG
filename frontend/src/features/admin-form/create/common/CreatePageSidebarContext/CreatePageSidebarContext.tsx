@@ -17,7 +17,9 @@ import {
   useDesignStore,
 } from '../../builder-and-design/useDesignStore'
 import {
+  FieldBuilderState,
   setToInactiveSelector,
+  stateDataSelector,
   useFieldBuilderStore,
 } from '../../builder-and-design/useFieldBuilderStore'
 
@@ -60,7 +62,15 @@ export const useCreatePageSidebarContext =
       () => activeTab !== null && activeTab !== DrawerTabs.Logic,
       [activeTab],
     )
-    const setFieldsToInactive = useFieldBuilderStore(setToInactiveSelector)
+    const { stateData, setFieldsToInactive } = useFieldBuilderStore(
+      useCallback(
+        (state) => ({
+          stateData: stateDataSelector(state),
+          setFieldsToInactive: setToInactiveSelector(state),
+        }),
+        [],
+      ),
+    )
     const setDesignState = useDesignStore(setStateSelector)
 
     const [fieldListTabIndex, setFieldListTabIndex] =
@@ -93,11 +103,14 @@ export const useCreatePageSidebarContext =
     )
 
     const handleClose = useCallback(() => {
-      if (!isMobile) {
+      // We always want to set to inactive if the state was creating (even in
+      // mobile). If the state was editing something, we only want to set to
+      // inactive if not mobile.
+      if (stateData.state === FieldBuilderState.CreatingField || !isMobile) {
         setFieldsToInactive()
       }
       setActiveTab(null)
-    }, [isMobile, setFieldsToInactive])
+    }, [isMobile, setFieldsToInactive, stateData])
 
     return {
       activeTab,

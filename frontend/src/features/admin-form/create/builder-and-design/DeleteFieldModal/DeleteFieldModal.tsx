@@ -29,21 +29,22 @@ import {
 export const DeleteFieldModal = (): JSX.Element => {
   const stateData = useFieldBuilderStore(stateDataSelector)
   const {
-    deleteFieldModalDisclosure: { isOpen, onClose },
+    deleteFieldModalDisclosure: { onClose },
   } = useBuilderAndDesignContext()
   const { mapIdToField, logicedFieldIdsSet } = useAdminFormLogic()
 
-  const { fieldIsInLogic, fieldIcon, fieldTitleWithQuestionNumber } =
-    useMemo(() => {
-      if (stateData.state !== FieldBuilderState.EditingField) return {}
-      const questionNumber = mapIdToField?.[stateData.field._id].questionNumber
-      const fieldTitle = stateData.field.title
-      return {
-        fieldIsInLogic: logicedFieldIdsSet?.has(stateData.field._id),
-        fieldIcon: BASICFIELD_TO_DRAWER_META[stateData.field.fieldType].icon,
-        fieldTitleWithQuestionNumber: `${questionNumber}. ${fieldTitle}`,
-      }
-    }, [mapIdToField, stateData, logicedFieldIdsSet])
+  const { fieldIsInLogic, fieldIcon, fieldLabel } = useMemo(() => {
+    if (stateData.state !== FieldBuilderState.EditingField) return {}
+    const questionNumber = mapIdToField?.[stateData.field._id].questionNumber
+    const fieldTitle = stateData.field.title
+    return {
+      fieldIsInLogic: logicedFieldIdsSet?.has(stateData.field._id),
+      fieldIcon: BASICFIELD_TO_DRAWER_META[stateData.field.fieldType].icon,
+      fieldLabel: questionNumber
+        ? `${questionNumber}. ${fieldTitle}`
+        : fieldTitle,
+    }
+  }, [mapIdToField, stateData, logicedFieldIdsSet])
 
   const { deleteFieldMutation } = useDeleteFormField()
 
@@ -56,7 +57,7 @@ export const DeleteFieldModal = (): JSX.Element => {
   }, [deleteFieldMutation, onClose, stateData])
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    <Modal isOpen onClose={onClose}>
       <ModalOverlay />
       <ModalContent>
         <ModalCloseButton />
@@ -84,7 +85,7 @@ export const DeleteFieldModal = (): JSX.Element => {
                 ml="-1.75rem"
                 mr="0.5rem"
               />
-              {fieldTitleWithQuestionNumber}
+              {fieldLabel}
             </ListItem>
           </UnorderedList>
         </ModalBody>

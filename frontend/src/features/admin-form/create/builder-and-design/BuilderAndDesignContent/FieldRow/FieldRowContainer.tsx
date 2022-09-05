@@ -42,6 +42,8 @@ import {
   UenField,
   YesNoField,
 } from '~templates/Field'
+import { EmailFieldInput } from '~templates/Field/Email'
+import { MobileFieldInput } from '~templates/Field/Mobile'
 import { createTableRow } from '~templates/Field/Table/utils/createRow'
 
 import { adminFormKeys } from '~features/admin-form/common/queries'
@@ -74,6 +76,7 @@ import { getAttachmentSizeLimit } from '../../utils/getAttachmentSizeLimit'
 import { useDesignColorTheme } from '../../utils/useDesignColorTheme'
 
 import { SectionFieldRow } from './SectionFieldRow'
+import { VerifiableFieldBuilderContainer } from './VerifiableFieldBuilderContainer'
 
 export interface FieldRowContainerProps {
   field: FormFieldDto
@@ -144,6 +147,14 @@ export const FieldRowContainer = ({
     }
     return false
   }, [stateData, field])
+
+  const isDragDisabled = useMemo(
+    () =>
+      !isActive ||
+      !!numFormFieldMutations ||
+      stateData.state === FieldBuilderState.CreatingField,
+    [isActive, numFormFieldMutations, stateData.state],
+  )
 
   const {
     deleteFieldModalDisclosure: { onOpen: onDeleteModalOpen },
@@ -239,11 +250,7 @@ export const FieldRowContainer = ({
   return (
     <Draggable
       index={index}
-      isDragDisabled={
-        !isActive ||
-        !!numFormFieldMutations ||
-        stateData.state === FieldBuilderState.CreatingField
-      }
+      isDragDisabled={isDragDisabled}
       disableInteractiveElementBlocking
       draggableId={field._id}
     >
@@ -302,17 +309,21 @@ export const FieldRowContainer = ({
                       : '0 0 0 2px var(--chakra-colors-neutral-500)',
                   }}
                 >
-                  <Icon
-                    transition="color 0.2s ease"
-                    _hover={{
-                      color: 'secondary.300',
-                    }}
-                    color={
-                      snapshot.isDragging ? 'secondary.300' : 'secondary.200'
-                    }
-                    as={BiGridHorizontal}
-                    fontSize="1.5rem"
-                  />
+                  {stateData.state === FieldBuilderState.EditingField ? (
+                    <Icon
+                      transition="color 0.2s ease"
+                      _hover={{
+                        color: 'secondary.300',
+                      }}
+                      color={
+                        snapshot.isDragging ? 'secondary.300' : 'secondary.200'
+                      }
+                      as={BiGridHorizontal}
+                      fontSize="1.5rem"
+                    />
+                  ) : (
+                    <Box h="1.5rem"></Box>
+                  )}
                 </chakra.button>
               </Fade>
               <Box
@@ -401,11 +412,23 @@ const MemoFieldRow = memo(({ field, ...rest }: MemoFieldRowProps) => {
     case BasicField.Checkbox:
       return <CheckboxField schema={field} {...rest} />
     case BasicField.Mobile:
-      return <MobileField schema={field} {...rest} />
+      return field.isVerifiable ? (
+        <VerifiableFieldBuilderContainer schema={field} {...rest}>
+          <MobileFieldInput schema={field} />
+        </VerifiableFieldBuilderContainer>
+      ) : (
+        <MobileField schema={field} {...rest} />
+      )
     case BasicField.HomeNo:
       return <HomeNoField schema={field} {...rest} />
     case BasicField.Email:
-      return <EmailField schema={field} {...rest} />
+      return field.isVerifiable ? (
+        <VerifiableFieldBuilderContainer schema={field} {...rest}>
+          <EmailFieldInput schema={field} />
+        </VerifiableFieldBuilderContainer>
+      ) : (
+        <EmailField schema={field} {...rest} />
+      )
     case BasicField.Nric:
       return <NricField schema={field} {...rest} />
     case BasicField.Number:
