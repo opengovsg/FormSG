@@ -372,23 +372,27 @@ export const FieldRowContainer = ({
                     {
                       // Fields which are not yet created cannot be duplicated
                       stateData.state !== FieldBuilderState.CreatingField && (
-                        <IconButton
-                          aria-label="Duplicate field"
-                          isDisabled={isAnyMutationLoading}
-                          onClick={handleDuplicateClick}
-                          isLoading={duplicateFieldMutation.isLoading}
-                          icon={<BiDuplicate fontSize="1.25rem" />}
-                        />
+                        <Tooltip label="Duplicate field">
+                          <IconButton
+                            aria-label="Duplicate field"
+                            isDisabled={isAnyMutationLoading}
+                            onClick={handleDuplicateClick}
+                            isLoading={duplicateFieldMutation.isLoading}
+                            icon={<BiDuplicate fontSize="1.25rem" />}
+                          />
+                        </Tooltip>
                       )
                     }
-                    <IconButton
-                      colorScheme="danger"
-                      aria-label="Delete field"
-                      icon={<BiTrash fontSize="1.25rem" />}
-                      onClick={handleDeleteClick}
-                      isLoading={deleteFieldMutation.isLoading}
-                      isDisabled={isAnyMutationLoading}
-                    />
+                    <Tooltip label="Delete field">
+                      <IconButton
+                        colorScheme="danger"
+                        aria-label="Delete field"
+                        icon={<BiTrash fontSize="1.25rem" />}
+                        onClick={handleDeleteClick}
+                        isLoading={deleteFieldMutation.isLoading}
+                        isDisabled={isAnyMutationLoading}
+                      />
+                    </Tooltip>
                   </ButtonGroup>
                 </Flex>
               </Collapse>
