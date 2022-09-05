@@ -2,6 +2,13 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useMutation, UseMutationOptions } from 'react-query'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
+import {
+  trackDownloadNetworkFailure,
+  trackDownloadResponseFailure,
+  trackDownloadResponseStart,
+  trackDownloadResponseSuccess,
+  trackPartialDecryptionFailure,
+} from '~features/analytics/AnalyticsService'
 
 import { downloadResponseAttachment } from './utils/downloadCsv'
 import { EncryptedResponseCsvGenerator } from './utils/EncryptedResponseCsvGenerator'
@@ -91,6 +98,9 @@ const useDecryptionWorkers = ({
       let attachmentErrorCount = 0
       let receivedRecordCount = 0
 
+      // Trigger analytics here before starting decryption worker
+      trackDownloadResponseStart(adminForm, numWorkers, NUM_OF_METADATA_ROWS)
+
       const workerPool: CleanableDecryptionWorkerApi[] = []
 
       for (let i = workerPool.length; i < numWorkers; i++) {
@@ -170,19 +180,19 @@ const useDecryptionWorkers = ({
           .catch((err) => {
             if (!downloadStartTime) {
               // No start time, means did not even start http request.
-              // TODO: Google analytics tracking for failure.
-              // GTag.downloadNetworkFailure(params, err)
+
+              trackDownloadNetworkFailure(adminForm, err)
             } else {
               const downloadFailedTime = performance.now()
               const timeDifference = downloadFailedTime - downloadStartTime
-              // TODO: Google analytics tracking for failure.
-              // GTag.downloadResponseFailure(
-              //   params,
-              //   numWorkers,
-              //   expectedNumResponses,
-              //   timeDifference,
-              //   err,
-              // )
+
+              trackDownloadResponseFailure(
+                adminForm,
+                numWorkers,
+                NUM_OF_METADATA_ROWS,
+                timeDifference,
+                err,
+              )
             }
 
             console.error(
@@ -198,16 +208,16 @@ const useDecryptionWorkers = ({
               if (errorCount + unverifiedCount === responsesCount) {
                 const failureEndTime = performance.now()
                 const timeDifference = failureEndTime - downloadStartTime
-                // TODO: Google analytics tracking for partial decrypt
-                // failure.
-                // GTag.partialDecryptionFailure(
-                //   params,
-                //   numWorkers,
-                //   csvGenerator.length(),
-                //   errorCount,
-                //   attachmentErrorCount,
-                //   timeDifference,
-                // )
+
+                trackPartialDecryptionFailure(
+                  adminForm,
+                  numWorkers,
+                  csvGenerator.length(),
+                  timeDifference,
+                  errorCount,
+                  attachmentErrorCount,
+                )
+
                 killWorkers(workerPool)
                 resolve({
                   expectedCount: responsesCount,
@@ -233,13 +243,12 @@ const useDecryptionWorkers = ({
                 const downloadEndTime = performance.now()
                 const timeDifference = downloadEndTime - downloadStartTime
 
-                // TODO: Google analytics tracking for success.
-                // GTag.downloadResponseSuccess(
-                //   params,
-                //   numWorkers,
-                //   csvGenerator.length(),
-                //   timeDifference,
-                // )
+                trackDownloadResponseSuccess(
+                  adminForm,
+                  numWorkers,
+                  NUM_OF_METADATA_ROWS,
+                  timeDifference,
+                )
 
                 resolve({
                   expectedCount: responsesCount,

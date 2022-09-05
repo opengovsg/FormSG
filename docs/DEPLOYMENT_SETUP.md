@@ -261,7 +261,7 @@ Forms can be protected with [recaptcha](https://www.google.com/recaptcha/about/)
 
 | Variable         | Description                   |
 | :--------------- | ----------------------------- |
-| `GA_TRACKING_ID` | Google Analytics tracking ID. |
+| `REACT_APP_GA_TRACKING_ID` | Google Analytics tracking ID. |
 
 #### Sentry.io
 

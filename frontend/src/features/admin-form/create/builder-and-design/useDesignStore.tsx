@@ -9,7 +9,7 @@ import { UploadedImage } from './BuilderAndDesignDrawer/EditFieldDrawer/edit-fie
 export type CustomLogoMeta = Omit<CustomFormLogo, keyof FormLogoBase>
 
 export enum DesignState {
-  EditingHeader,
+  EditingHeader = 1,
   EditingInstructions,
   Inactive,
 }
@@ -29,9 +29,12 @@ export type FormStartPageInput = Omit<
 
 export type DesignStore = {
   state: DesignState
+  holdingState: DesignState | null
+  moveFromHolding: () => void
+  clearHoldingState: () => void
   startPageData?: FormStartPageInput
   customLogoMeta?: CustomLogoMeta
-  setState: (state: DesignState) => void
+  setState: (state: DesignState, holding?: boolean) => void
   setStartPageData: (startPageInput: FormStartPageInput) => void
   setCustomLogoMeta: (customLogoMetaData: CustomLogoMeta) => void
   resetDesignStore: () => void
@@ -40,7 +43,23 @@ export type DesignStore = {
 export const useDesignStore = create<DesignStore>(
   devtools((set, get) => ({
     state: DesignState.Inactive,
-    setState: (state: DesignState) => set({ state }),
+    holdingState: null,
+    moveFromHolding: () => {
+      const holdingStateData = get().holdingState
+      if (holdingStateData === null) return
+      set({
+        state: holdingStateData,
+        holdingState: null,
+      })
+    },
+    clearHoldingState: () => set({ holdingState: null }),
+    setState: (state, holding) => {
+      if (holding) {
+        set({ holdingState: state })
+      } else {
+        set({ state })
+      }
+    },
     setStartPageData: (startPageData: FormStartPageInput) => {
       const current = get()
       if (isEqual(current.startPageData, startPageData)) return
@@ -62,6 +81,14 @@ export const useDesignStore = create<DesignStore>(
 
 export const stateSelector = (state: DesignStore): DesignStore['state'] =>
   state.state
+
+export const holdingStateSelector = (
+  state: DesignStore,
+): DesignStore['holdingState'] => state.holdingState
+
+export const moveFromHoldingSelector = (
+  state: DesignStore,
+): DesignStore['moveFromHolding'] => state.moveFromHolding
 
 export const startPageDataSelector = (
   state: DesignStore,

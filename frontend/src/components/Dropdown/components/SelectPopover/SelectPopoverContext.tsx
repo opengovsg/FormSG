@@ -1,11 +1,16 @@
-import { createContext, Dispatch, SetStateAction, useContext } from 'react'
-import type { Instance as PopperInstance } from '@popperjs/core'
+import { createContext, useContext } from 'react'
+import {
+  Strategy,
+  UseFloatingReturn,
+} from '@floating-ui/react-dom-interactions'
 
 interface SelectPopoverContextReturn {
-  popperRef: Dispatch<SetStateAction<HTMLDivElement | null>> | null
-  popperStyles: { [key: string]: React.CSSProperties }
-  popperAttributes: { [key: string]: { [key: string]: string } | undefined }
-  update: PopperInstance['update'] | null
+  floatingRef: UseFloatingReturn['floating']
+  floatingStyles: {
+    position: Strategy
+    top: number
+    left: number
+  }
 }
 
 export const SelectPopoverContext = createContext<

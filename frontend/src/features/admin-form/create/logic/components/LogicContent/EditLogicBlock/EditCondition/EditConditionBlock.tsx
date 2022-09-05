@@ -326,7 +326,7 @@ export const EditConditionBlock = ({
           <BlockLabelText id={`${name}.state-label`} htmlFor={`${name}.state`}>
             IS
           </BlockLabelText>
-          <Flex flexDir="column" flex={1} as="fieldset">
+          <Flex flexDir="column" flex={1} as="fieldset" minW={0}>
             <VisuallyHidden as="legend">Logic criteria</VisuallyHidden>
             <Stack
               direction={{ base: 'column', md: 'row' }}

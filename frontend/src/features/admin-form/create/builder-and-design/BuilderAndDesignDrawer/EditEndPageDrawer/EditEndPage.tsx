@@ -25,6 +25,10 @@ import { useMutateFormPage } from '~features/admin-form/common/mutations'
 import { useAdminForm } from '~features/admin-form/common/queries'
 
 import {
+  setIsDirtySelector,
+  useDirtyFieldStore,
+} from '../../useDirtyFieldStore'
+import {
   resetEndPageDataSelector,
   setEndPageDataSelector,
   useEndPageBuilderStore,
@@ -56,6 +60,8 @@ export const EndPageBuilderInput = ({
   const { endPageMutation } = useMutateFormPage()
 
   const closeBuilderDrawer = useFieldBuilderStore(setToInactiveSelector)
+  const setIsDirty = useDirtyFieldStore(setIsDirtySelector)
+
   const { setEndPageBuilderState, resetEndPageBuilderState } =
     useEndPageBuilderStore((state) => ({
       setEndPageBuilderState: setEndPageDataSelector(state),
@@ -70,13 +76,22 @@ export const EndPageBuilderInput = ({
 
   const {
     register,
-    formState: { errors },
+    formState: { errors, isDirty },
     control,
     handleSubmit,
   } = useForm<FormEndPage>({
     mode: 'onBlur',
     defaultValues: endPage,
   })
+
+  // Update dirty state of builder so confirmation modal can be shown
+  useEffect(() => {
+    setIsDirty(isDirty)
+
+    return () => {
+      setIsDirty(false)
+    }
+  }, [isDirty, setIsDirty])
 
   const handleEndPageBuilderChanges = useCallback(
     (endPageInputs) => {
@@ -99,7 +114,7 @@ export const EndPageBuilderInput = ({
   ])
 
   const handleUpdateEndPage = handleSubmit((endPage) =>
-    endPageMutation.mutate(endPage, { onSuccess: closeBuilderDrawer }),
+    endPageMutation.mutate(endPage, { onSuccess: () => closeBuilderDrawer() }),
   )
 
   return (
@@ -164,7 +179,7 @@ export const EndPageBuilderInput = ({
           variant="clear"
           colorScheme="secondary"
           isDisabled={endPageMutation.isLoading}
-          onClick={closeBuilderDrawer}
+          onClick={() => closeBuilderDrawer()}
         >
           Cancel
         </Button>

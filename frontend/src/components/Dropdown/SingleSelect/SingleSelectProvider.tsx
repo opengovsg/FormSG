@@ -14,7 +14,11 @@ import { useItems } from '../hooks/useItems'
 import { SelectContext, SharedSelectContextReturnProps } from '../SelectContext'
 import { ComboboxItem } from '../types'
 import { defaultFilter } from '../utils/defaultFilter'
-import { itemToLabelString, itemToValue } from '../utils/itemUtils'
+import {
+  isItemDisabled,
+  itemToLabelString,
+  itemToValue,
+} from '../utils/itemUtils'
 
 export interface SingleSelectProviderProps<
   Item extends ComboboxItem = ComboboxItem,
@@ -124,7 +128,9 @@ export const SingleSelectProvider = ({
     selectedItem: memoizedSelectedItem,
     itemToString: itemToValue,
     onSelectedItemChange: ({ selectedItem }) => {
-      onChange(itemToValue(selectedItem))
+      if (!selectedItem || !isItemDisabled(selectedItem)) {
+        onChange(itemToValue(selectedItem))
+      }
     },
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     scrollIntoView: () => {},

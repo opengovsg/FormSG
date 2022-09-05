@@ -31,11 +31,14 @@ export enum DrawerTabs {
 
 type CreatePageSidebarContextProps = {
   activeTab: DrawerTabs | null
+  pendingTab?: DrawerTabs | null
+  movePendingToActiveTab: () => void
+  clearPendingTab: () => void
+  handleBuilderClick: (shouldBePending: boolean) => void
+  handleDesignClick: (shouldBePending: boolean) => void
+  handleLogicClick: (shouldBePending: boolean) => void
+  handleClose: (shouldBePending: boolean) => void
   isDrawerOpen: boolean
-  handleBuilderClick: () => void
-  handleDesignClick: () => void
-  handleLogicClick: () => void
-  handleClose: () => void
   fieldListTabIndex: FieldListTabIndex
   setFieldListTabIndex: (tabIndex: FieldListTabIndex) => void
 }
@@ -58,6 +61,11 @@ export const useCreatePageSidebarContext =
   (): CreatePageSidebarContextProps => {
     const isMobile = useIsMobile()
     const [activeTab, setActiveTab] = useState<DrawerTabs | null>(null)
+    // Any pending tab due to unsaved changes.
+    // Pending tab can be `null` if the next tab state is to be closed.
+    const [pendingTab, setPendingTab] = useState<
+      DrawerTabs | null | undefined
+    >()
     const isDrawerOpen = useMemo(
       () => activeTab !== null && activeTab !== DrawerTabs.Logic,
       [activeTab],
@@ -87,33 +95,63 @@ export const useCreatePageSidebarContext =
       if (activeTab !== DrawerTabs.Design) setDesignState(DesignState.Inactive)
     }, [activeTab, setDesignState])
 
+    const setActiveOrPendingTab = useCallback(
+      (tab: DrawerTabs | null, shouldBePending?: boolean) => {
+        if (shouldBePending) {
+          setPendingTab(tab)
+        } else {
+          setActiveTab(tab)
+          if (tab === null && !isMobile) {
+            setFieldsToInactive()
+          }
+        }
+      },
+      [isMobile, setFieldsToInactive],
+    )
+
+    const clearPendingTab = useCallback(() => {
+      setPendingTab(undefined)
+    }, [])
+
     const handleBuilderClick = useCallback(
-      () => setActiveTab(DrawerTabs.Builder),
-      [setActiveTab],
+      (shouldBePending: boolean) =>
+        setActiveOrPendingTab(DrawerTabs.Builder, shouldBePending),
+      [setActiveOrPendingTab],
     )
 
     const handleDesignClick = useCallback(
-      () => setActiveTab(DrawerTabs.Design),
-      [setActiveTab],
+      (shouldBePending: boolean) =>
+        setActiveOrPendingTab(DrawerTabs.Design, shouldBePending),
+      [setActiveOrPendingTab],
     )
 
     const handleLogicClick = useCallback(
-      () => setActiveTab(DrawerTabs.Logic),
-      [setActiveTab],
+      (shouldBePending: boolean) =>
+        setActiveOrPendingTab(DrawerTabs.Logic, shouldBePending),
+      [setActiveOrPendingTab],
     )
 
-    const handleClose = useCallback(() => {
-      // We always want to set to inactive if the state was creating (even in
-      // mobile). If the state was editing something, we only want to set to
-      // inactive if not mobile.
-      if (stateData.state === FieldBuilderState.CreatingField || !isMobile) {
+    const handleClose = useCallback(
+      (shouldBePending: boolean) => {
+        setActiveOrPendingTab(null, shouldBePending)
+      },
+      [setActiveOrPendingTab],
+    )
+
+    const movePendingToActiveTab = useCallback(() => {
+      if (pendingTab === undefined) return
+      setActiveTab(pendingTab)
+      if (pendingTab === null && !isMobile) {
         setFieldsToInactive()
       }
-      setActiveTab(null)
-    }, [isMobile, setFieldsToInactive, stateData])
+      setPendingTab(undefined)
+    }, [isMobile, pendingTab, setFieldsToInactive])
 
     return {
       activeTab,
+      pendingTab,
+      clearPendingTab,
+      movePendingToActiveTab,
       isDrawerOpen,
       handleBuilderClick,
       handleDesignClick,

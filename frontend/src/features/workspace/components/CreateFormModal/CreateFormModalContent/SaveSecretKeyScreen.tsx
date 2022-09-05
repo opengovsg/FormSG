@@ -22,6 +22,8 @@ import Checkbox from '~components/Checkbox'
 import IconButton from '~components/IconButton'
 import Tooltip from '~components/Tooltip'
 
+import { trackClickSecretKeyMailTo } from '~features/analytics/AnalyticsService'
+
 import { useCreateFormWizard } from '../CreateFormWizardContext'
 
 /** Default hook to be used in SaveSecretKeyScreen */
@@ -43,6 +45,7 @@ const useSaveSecretKeyDefault = () => {
 
   const titleInputValue = useWatch({ control, name: 'title' })
 
+  trackClickSecretKeyMailTo(titleInputValue)
   const mailToHref = useMemo(() => {
     const subject = `Shared Secret Key for ${titleInputValue}`
     const body = dedent`

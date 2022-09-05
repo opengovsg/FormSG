@@ -65,6 +65,7 @@ import {
   setStateSelector,
   useDesignStore,
 } from '../../useDesignStore'
+import { isDirtySelector, useDirtyFieldStore } from '../../useDirtyFieldStore'
 import {
   FieldBuilderState,
   setToInactiveSelector,
@@ -105,6 +106,7 @@ export const FieldRowContainer = ({
     ),
   )
 
+  const isDirty = useDirtyFieldStore(isDirtySelector)
   const toast = useToast({ status: 'danger', isClosable: true })
 
   const setDesignState = useDesignStore(setStateSelector)
@@ -173,16 +175,20 @@ export const FieldRowContainer = ({
   }, [isActive])
 
   const handleFieldClick = useCallback(() => {
-    if (!isActive) {
-      updateEditState(field)
-      setDesignState(DesignState.Inactive)
-      if (!isMobile) {
-        // Do not open builder if in mobile so user can view active state without
-        // drawer blocking the view.
-        handleBuilderClick()
-      }
+    if (isActive) return
+
+    if (isDirty) {
+      return updateEditState(field, true)
+    }
+    updateEditState(field)
+    setDesignState(DesignState.Inactive)
+    if (!isMobile) {
+      // Do not open builder if in mobile so user can view active state without
+      // drawer blocking the view.
+      handleBuilderClick(false)
     }
   }, [
+    isDirty,
     isActive,
     updateEditState,
     field,
@@ -203,7 +209,7 @@ export const FieldRowContainer = ({
 
   const handleEditFieldClick = useCallback(() => {
     if (isMobile) {
-      handleBuilderClick()
+      handleBuilderClick(false)
     }
   }, [handleBuilderClick, isMobile])
 
@@ -246,6 +252,15 @@ export const FieldRowContainer = ({
     () => duplicateFieldMutation.isLoading || deleteFieldMutation.isLoading,
     [duplicateFieldMutation, deleteFieldMutation],
   )
+
+  const isDragDisabled = useMemo(() => {
+    return (
+      !isActive ||
+      isDirty ||
+      !!numFormFieldMutations ||
+      stateData.state === FieldBuilderState.CreatingField
+    )
+  }, [isActive, isDirty, numFormFieldMutations, stateData.state])
 
   return (
     <Draggable
