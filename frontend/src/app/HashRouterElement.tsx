@@ -1,4 +1,4 @@
-import { Navigate, useLocation } from 'react-router-dom'
+import { useLocation } from 'react-router-dom'
 
 import { ROOT_ROUTE } from '~constants/routes'
 
@@ -58,7 +58,7 @@ export const HashRouterElement = ({
       const match = location.hash.match(regex)
       if (match) {
         const redirectTo = getTarget(match as FormRegExpMatchArray)
-        return <Navigate replace to={redirectTo} state={{ from: location }} />
+        window.location.assign(redirectTo)
       }
     }
   }
