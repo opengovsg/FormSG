@@ -150,14 +150,6 @@ export const FieldRowContainer = ({
     return false
   }, [stateData, field])
 
-  const isDragDisabled = useMemo(
-    () =>
-      !isActive ||
-      !!numFormFieldMutations ||
-      stateData.state === FieldBuilderState.CreatingField,
-    [isActive, numFormFieldMutations, stateData.state],
-  )
-
   const {
     deleteFieldModalDisclosure: { onOpen: onDeleteModalOpen },
   } = useBuilderAndDesignContext()
