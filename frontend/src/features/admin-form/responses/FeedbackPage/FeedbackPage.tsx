@@ -23,7 +23,6 @@ export const FeedbackPage = (): JSX.Element => {
   const { data: { average, count, feedback } = {}, isLoading } =
     useFormFeedback()
   const { data: form } = useAdminForm()
-  const formTitle = form?.title
 
   const { formId } = useParams()
   const isMobile = useIsMobile()
@@ -85,7 +84,7 @@ export const FeedbackPage = (): JSX.Element => {
           <FeedbackDownloadButton
             isDisabled={isLoading || count === 0}
             formId={formId}
-            formTitle={formTitle}
+            formTitle={form?.title}
           />
         </Box>
       </Grid>
