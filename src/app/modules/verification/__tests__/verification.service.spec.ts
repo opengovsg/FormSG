@@ -989,7 +989,7 @@ describe('Verification service', () => {
       expect(mockLogger.error).toHaveBeenCalledWith(
         expect.objectContaining({ error: expected }),
       )
-      expect(retrievalSpy).toBeCalledWith(String(MOCK_FORM.admin._id))
+      expect(retrievalSpy).toHaveBeenCalledWith(String(MOCK_FORM.admin._id))
     })
   })
 

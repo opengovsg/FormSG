@@ -45,7 +45,7 @@ describe('auth.controller', () => {
       await AuthController._handleCheckUser(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
-      expect(mockRes.sendStatus).toBeCalledWith(200)
+      expect(mockRes.sendStatus).toHaveBeenCalledWith(200)
     })
 
     it('should return 401 when retrieving agency returns an InvalidDomainError', async () => {
@@ -60,8 +60,8 @@ describe('auth.controller', () => {
       await AuthController._handleCheckUser(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(401)
-      expect(mockRes.json).toBeCalledWith(expectedError.message)
+      expect(mockRes.status).toHaveBeenCalledWith(401)
+      expect(mockRes.json).toHaveBeenCalledWith(expectedError.message)
     })
   })
 
@@ -85,8 +85,8 @@ describe('auth.controller', () => {
       await AuthController._handleLoginSendOtp(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(200)
-      expect(mockRes.json).toBeCalledWith(`OTP sent to ${VALID_EMAIL}`)
+      expect(mockRes.status).toHaveBeenCalledWith(200)
+      expect(mockRes.json).toHaveBeenCalledWith(`OTP sent to ${VALID_EMAIL}`)
       // Services should have been invoked.
       expect(MockAuthService.createLoginOtp).toHaveBeenCalledTimes(1)
       expect(MockMailService.sendLoginOtp).toHaveBeenCalledTimes(1)
@@ -104,8 +104,10 @@ describe('auth.controller', () => {
       await AuthController._handleLoginSendOtp(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(401)
-      expect(mockRes.json).toBeCalledWith({ message: expectedError.message })
+      expect(mockRes.status).toHaveBeenCalledWith(401)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expectedError.message,
+      })
     })
 
     it('should return 500 when there is an error generating login OTP', async () => {
@@ -123,8 +125,8 @@ describe('auth.controller', () => {
       await AuthController._handleLoginSendOtp(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(500)
-      expect(mockRes.json).toBeCalledWith({
+      expect(mockRes.status).toHaveBeenCalledWith(500)
+      expect(mockRes.json).toHaveBeenCalledWith({
         message:
           'Failed to send login OTP. Please try again later and if the problem persists, contact us.',
       })
@@ -149,8 +151,8 @@ describe('auth.controller', () => {
       await AuthController._handleLoginSendOtp(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(500)
-      expect(mockRes.json).toBeCalledWith({
+      expect(mockRes.status).toHaveBeenCalledWith(500)
+      expect(mockRes.json).toHaveBeenCalledWith({
         message:
           'Failed to send login OTP. Please try again later and if the problem persists, contact us.',
       })
@@ -186,8 +188,8 @@ describe('auth.controller', () => {
       await AuthController._handleLoginVerifyOtp(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(200)
-      expect(mockRes.json).toBeCalledWith(mockUser)
+      expect(mockRes.status).toHaveBeenCalledWith(200)
+      expect(mockRes.json).toHaveBeenCalledWith(mockUser)
     })
 
     it('should return 401 when retrieving agency returns InvalidDomainError', async () => {
@@ -202,8 +204,8 @@ describe('auth.controller', () => {
       await AuthController._handleLoginVerifyOtp(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(401)
-      expect(mockRes.json).toBeCalledWith(expectedError.message)
+      expect(mockRes.status).toHaveBeenCalledWith(401)
+      expect(mockRes.json).toHaveBeenCalledWith(expectedError.message)
     })
 
     it('should return 422 when verifying login OTP returns an InvalidOtpError', async () => {
@@ -222,8 +224,8 @@ describe('auth.controller', () => {
       await AuthController._handleLoginVerifyOtp(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(422)
-      expect(mockRes.json).toBeCalledWith(expectedInvalidOtpError.message)
+      expect(mockRes.status).toHaveBeenCalledWith(422)
+      expect(mockRes.json).toHaveBeenCalledWith(expectedInvalidOtpError.message)
       // Check that the correct services have been called or not called.
       expect(MockAuthService.verifyLoginOtp).toHaveBeenCalledTimes(1)
       expect(MockUserService.retrieveUser).not.toHaveBeenCalled()
@@ -244,8 +246,8 @@ describe('auth.controller', () => {
       await AuthController._handleLoginVerifyOtp(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(500)
-      expect(mockRes.json).toBeCalledWith(
+      expect(mockRes.status).toHaveBeenCalledWith(500)
+      expect(mockRes.json).toHaveBeenCalledWith(
         expect.stringContaining('Failed to process OTP.'),
       )
       // Check that the correct services have been called or not called.
@@ -268,8 +270,8 @@ describe('auth.controller', () => {
       await AuthController._handleLoginVerifyOtp(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(500)
-      expect(mockRes.json).toBeCalledWith(
+      expect(mockRes.status).toHaveBeenCalledWith(500)
+      expect(mockRes.json).toHaveBeenCalledWith(
         // Use stringContaining here due to dynamic text and out of test scope.
         expect.stringContaining('Failed to process OTP.'),
       )
@@ -297,10 +299,12 @@ describe('auth.controller', () => {
       await AuthController.handleSignout(mockReq, mockRes, jest.fn())
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(200)
-      expect(mockRes.json).toBeCalledWith({ message: 'Sign out successful' })
-      expect(mockClearCookie).toBeCalledTimes(1)
-      expect(mockDestroy).toBeCalledTimes(1)
+      expect(mockRes.status).toHaveBeenCalledWith(200)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: 'Sign out successful',
+      })
+      expect(mockClearCookie).toHaveBeenCalledTimes(1)
+      expect(mockDestroy).toHaveBeenCalledTimes(1)
     })
 
     it('should return 400 when session does not exist in request', async () => {
@@ -316,7 +320,7 @@ describe('auth.controller', () => {
       )
 
       // Assert
-      expect(mockRes.sendStatus).toBeCalledWith(400)
+      expect(mockRes.sendStatus).toHaveBeenCalledWith(400)
     })
 
     it('should return 500 when error is returned when destroying session', async () => {
@@ -338,10 +342,10 @@ describe('auth.controller', () => {
       await AuthController.handleSignout(mockReq, mockRes, jest.fn())
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(500)
-      expect(mockRes.json).toBeCalledWith({ message: 'Sign out failed' })
-      expect(mockDestroyWithErr).toBeCalledTimes(1)
-      expect(mockClearCookie).not.toBeCalled()
+      expect(mockRes.status).toHaveBeenCalledWith(500)
+      expect(mockRes.json).toHaveBeenCalledWith({ message: 'Sign out failed' })
+      expect(mockDestroyWithErr).toHaveBeenCalledTimes(1)
+      expect(mockClearCookie).not.toHaveBeenCalled()
     })
   })
 })

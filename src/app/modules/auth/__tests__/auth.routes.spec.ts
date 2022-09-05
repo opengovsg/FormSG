@@ -132,7 +132,7 @@ describe('auth.routes', () => {
         .send({ email: validEmail })
 
       // Assert
-      expect(getAgencySpy).toBeCalled()
+      expect(getAgencySpy).toHaveBeenCalled()
       expect(response.status).toEqual(500)
       expect(response.body).toEqual(mockErrorString)
     })
@@ -244,7 +244,7 @@ describe('auth.routes', () => {
         .send({ email: VALID_EMAIL })
 
       // Assert
-      expect(getAgencySpy).toBeCalled()
+      expect(getAgencySpy).toHaveBeenCalled()
       expect(response.status).toEqual(500)
       expect(response.body).toEqual({
         message:
@@ -407,7 +407,7 @@ describe('auth.routes', () => {
         .send({ email: VALID_EMAIL, otp: MOCK_VALID_OTP })
 
       // Assert
-      expect(getAgencySpy).toBeCalled()
+      expect(getAgencySpy).toHaveBeenCalled()
       expect(response.status).toEqual(500)
       expect(response.body).toEqual('Something went wrong. Please try again.')
     })
@@ -554,7 +554,7 @@ describe('auth.routes', () => {
 
       // Assert
       // Should have reached this spy.
-      expect(upsertSpy).toBeCalled()
+      expect(upsertSpy).toHaveBeenCalled()
       expect(response.status).toEqual(500)
       expect(response.body).toEqual(
         expect.stringContaining('Failed to process OTP.'),
