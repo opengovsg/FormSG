@@ -231,6 +231,7 @@ export interface IFormDocument extends IFormSchema {
   startPage: Required<NonNullable<IFormSchema['startPage']>>
   endPage: Required<NonNullable<IFormSchema['endPage']>>
   webhook: Required<NonNullable<IFormSchema['webhook']>>
+  responseMode: NonNullable<IFormSchema['responseMode']>
 }
 
 export interface IPopulatedForm extends Omit<IFormDocument, 'toJSON'> {

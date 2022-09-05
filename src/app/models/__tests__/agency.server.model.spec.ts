@@ -5,7 +5,7 @@ import getAgencyModel from 'src/app/models/agency.server.model'
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
-import { PublicAgencyDto } from '../../../../shared/types/agency'
+import { PublicAgencyDto } from '../../../../shared/types'
 
 const Agency = getAgencyModel(mongoose)
 

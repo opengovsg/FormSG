@@ -43,22 +43,22 @@ PublicFormRouter.get(
  * through the main index, with the form ID specified as a hashbang path
  */
 PublicFormRouter.get(
-  '/:Id([a-fA-F0-9]{24})/:state(preview|template|use-template)?',
+  '/:formId([a-fA-F0-9]{24})/:state(preview|template|use-template)',
   PublicFormController.handleRedirect,
 )
 
 PublicFormRouter.get(
-  '/:Id([a-fA-F0-9]{24})/embed',
+  '/:formId([a-fA-F0-9]{24})/embed',
   PublicFormController.handleRedirect,
 )
 
 PublicFormRouter.get(
-  '/forms/:agency/:Id([a-fA-F0-9]{24})/:state(preview|template|use-template)?',
+  '/forms/:agency/:formId([a-fA-F0-9]{24})/:state(preview|template|use-template)?',
   PublicFormController.handleRedirect,
 )
 
 PublicFormRouter.get(
-  '/forms/:agency/:Id([a-fA-F0-9]{24})/embed',
+  '/forms/:agency/:formId([a-fA-F0-9]{24})/embed',
   PublicFormController.handleRedirect,
 )
 

@@ -19,8 +19,19 @@ const frontendVars = {
   isSPMaintenance: spcpMyInfoConfig.isSPMaintenance, // Singpass maintenance message
   isCPMaintenance: spcpMyInfoConfig.isCPMaintenance, // Corppass maintenance message
   myInfoBannerContent: spcpMyInfoConfig.myInfoBannerContent, // MyInfo maintenance message
+  // TODO: remove after React rollout #4786
   GATrackingID: googleAnalyticsConfig.GATrackingID,
   spcpCookieDomain: spcpMyInfoConfig.spcpCookieDomain, // Cookie domain used for removing spcp cookies
+  // react migration variables
+  reactMigrationRespondentCookieName:
+    config.reactMigration.respondentCookieName,
+  reactMigrationAdminCookieName: config.reactMigration.adminCookieName,
+  reactMigrationRespondentRolloutEmail:
+    config.reactMigration.respondentRolloutEmail,
+  reactMigrationRespondentRolloutStorage:
+    config.reactMigration.respondentRolloutStorage,
+  reactMigrationAdminRollout: config.reactMigration.adminRollout,
+  reactMigrationAngularPhaseOutDate: config.reactMigration.angularPhaseOutDate,
 }
 const environment = ejs.render(
   `
@@ -44,6 +55,13 @@ const environment = ejs.render(
     var formsgSdkMode = "<%= formsgSdkMode%>"
     // SPCP Cookie
     var spcpCookieDomain = "<%= spcpCookieDomain%>"
+    // React Migration
+    var reactMigrationRespondentCookieName = "<%= reactMigrationRespondentCookieName%>"
+    var reactMigrationAdminCookieName = "<%= reactMigrationAdminCookieName%>"
+    var reactMigrationRespondentRolloutEmail = "<%= reactMigrationRespondentRolloutEmail%>"
+    var reactMigrationRespondentRolloutStorage = "<%= reactMigrationRespondentRolloutStorage%>"
+    var reactMigrationAdminRollout = "<%= reactMigrationAdminRollout%>"
+    var reactMigrationAngularPhaseOutDate = "<%= reactMigrationAngularPhaseOutDate%>"
   `,
   frontendVars,
 )

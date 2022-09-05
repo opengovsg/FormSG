@@ -52,6 +52,17 @@ export type RateLimitConfig = {
   sendAuthOtp: number
 }
 
+export type ReactMigrationConfig = {
+  respondentRolloutEmail: number
+  respondentRolloutStorage: number
+  adminRollout: number
+  respondentCookieName: string
+  adminCookieName: string
+  qaCookieName: string
+  reactToAngularFeedbackFormId: string
+  angularPhaseOutDate: string
+}
+
 export type Config = {
   app: AppConfig
   db: DbConfig
@@ -75,6 +86,7 @@ export type Config = {
   siteBannerContent: string
   adminBannerContent: string
   rateLimitConfig: RateLimitConfig
+  reactMigration: ReactMigrationConfig
   secretEnv: string
 
   // Functions
@@ -99,6 +111,9 @@ export interface ICompulsoryVarsSchema {
     imageS3Bucket: string
     logoS3Bucket: string
     attachmentS3Bucket: string
+  }
+  reactMigration: {
+    reactToAngularFeedbackFormId: string
   }
 }
 
@@ -146,6 +161,15 @@ export interface IOptionalVarsSchema {
   rateLimit: {
     submissions: number
     sendAuthOtp: number
+  }
+  reactMigration: {
+    respondentRolloutEmail: number
+    respondentRolloutStorage: number
+    adminRollout: number
+    respondentCookieName: string
+    adminCookieName: string
+    qaCookieName: string
+    angularPhaseOutDate: string
   }
 }
 
