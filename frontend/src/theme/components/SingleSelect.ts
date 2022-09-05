@@ -33,8 +33,6 @@ const itemBaseStyle: SystemStyleFunction = (props) => {
 const listBaseStyle: SystemStyleFunction = (props) => {
   const { list: menuListStyle = {} } = Menu.baseStyle(props)
   return merge(menuListStyle, {
-    // To accomodate focus ring.
-    my: '1px',
     w: '100%',
     overflowY: 'auto',
     maxH: '12rem',
