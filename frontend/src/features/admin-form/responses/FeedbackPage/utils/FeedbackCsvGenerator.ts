@@ -29,6 +29,6 @@ export class FeedbackCsvGenerator extends CsvGenerator {
       'dd MMM yyyy hh:mm:ss a',
     ) // Format in SG timezone
 
-    this.addLine([createdAt, feedback.comment || '', feedback.rating])
+    this.addLine([createdAt, feedback.comment ?? '', feedback.rating])
   }
 }
