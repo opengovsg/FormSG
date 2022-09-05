@@ -16,17 +16,18 @@ import { BxsCheckCircle, BxsXCircle } from '~assets/icons'
 import { useIsMobile } from '~hooks/useIsMobile'
 import { useMdComponents } from '~hooks/useMdComponents'
 import Button from '~components/Button'
-import InlineMessage from '~components/InlineMessage'
 import { ModalCloseButton } from '~components/Modal'
 
 import { DownloadResult } from '../../types'
 
 interface CompleteScreenProps {
+  isWithAttachments: boolean
   onClose: () => void
   downloadMetadata?: DownloadResult
 }
 
 export const CompleteScreen = ({
+  isWithAttachments,
   onClose,
   downloadMetadata,
 }: CompleteScreenProps): JSX.Element => {
@@ -37,21 +38,27 @@ export const CompleteScreen = ({
     if (!downloadMetadata) return ''
     const { successCount, expectedCount } = downloadMetadata
     if (successCount >= expectedCount) {
-      return 'All responses and attachments have been downloaded successfully.'
+      return `All responses${
+        isWithAttachments ? ' and attachments' : ''
+      } have been downloaded successfully.`
     }
     // Success count is less than expected count.
     // This means some responses were not downloaded successfully.
     // Show the user the number of responses that were not downloaded.
     return simplur`**${successCount.toLocaleString()}** ${[
       successCount,
-    ]}response[|s] and attachment[|s] ha[s|ve] been downloaded successfully, refer to the downloaded CSV file for more details`
-  }, [downloadMetadata])
+    ]}response[|s]${
+      isWithAttachments ? ' and attachment[|s]' : ''
+    } ha[s|ve] been downloaded successfully, refer to the downloaded CSV file for more details`
+  }, [downloadMetadata, isWithAttachments])
 
   const attachmentErrorMessage = useMemo(() => {
     if (!downloadMetadata?.errorCount) return ''
 
-    return simplur`**${downloadMetadata.errorCount}** response[|s] and attachment[|s] could not be downloaded.`
-  }, [downloadMetadata])
+    return simplur`**${downloadMetadata.errorCount}** response[|s]${
+      isWithAttachments ? ' and attachment[|s]' : ''
+    } could not be downloaded.`
+  }, [downloadMetadata?.errorCount, isWithAttachments])
 
   return (
     <>

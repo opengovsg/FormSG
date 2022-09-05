@@ -84,6 +84,7 @@ export const ProgressModal = ({
           {currentStep === ProgressFlowStates.Complete &&
             !isCanceledResult(downloadMetadata) && (
               <CompleteScreen
+                isWithAttachments={false}
                 downloadMetadata={downloadMetadata}
                 onClose={onClose}
               />

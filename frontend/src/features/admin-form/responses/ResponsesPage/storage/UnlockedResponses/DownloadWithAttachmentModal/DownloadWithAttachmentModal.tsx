@@ -114,6 +114,7 @@ export const DownloadWithAttachmentModal = ({
               <CanceledScreen onClose={onClose} />
             ) : (
               <CompleteScreen
+                isWithAttachments
                 downloadMetadata={downloadMetadata}
                 onClose={onClose}
               />
