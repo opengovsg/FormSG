@@ -12,6 +12,7 @@ interface FrontendInjectedVariables {
   isSPMaintenance: string | null
   isCPMaintenance: string | null
   myInfoBannerContent: string | null
+  // TODO: remove after React rollout #4786
   GATrackingID: string | null
   spcpCookieDomain: string | null
   respondentRolloutEmail: number
@@ -37,6 +38,7 @@ export const injectedVariables: FrontendInjectedVariables = {
   isSPMaintenance: formsgWindow.isSPMaintenance ?? null,
   isCPMaintenance: formsgWindow.isCPMaintenance ?? null,
   myInfoBannerContent: formsgWindow.myInfoBannerContent ?? null,
+  // TODO: remove after React rollout #4786
   GATrackingID: formsgWindow.GATrackingID ?? null,
   spcpCookieDomain: formsgWindow.spcpCookieDomain ?? null,
   respondentRolloutEmail: formsgWindow.respondentRolloutEmail,
