@@ -69,7 +69,7 @@ describe('Bounce Model', () => {
 
     it('should not save when formId is not provided', async () => {
       const bounce = new Bounce()
-      await expect(bounce.save()).rejects.toThrowError('Form ID is required')
+      await expect(bounce.save()).rejects.toThrow('Form ID is required')
     })
   })
 

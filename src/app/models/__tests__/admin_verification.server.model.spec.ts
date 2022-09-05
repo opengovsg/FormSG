@@ -74,7 +74,7 @@ describe('AdminVerification Model', () => {
       const actualPromise = AdminVerification.create(missingAdminParams)
 
       // Assert
-      await expect(actualPromise).rejects.toThrowError(
+      await expect(actualPromise).rejects.toThrow(
         'AdminVerificationSchema must have an Admin',
       )
     })
@@ -90,7 +90,7 @@ describe('AdminVerification Model', () => {
       const actualPromise = AdminVerification.create(missingContactParams)
 
       // Assert
-      await expect(actualPromise).rejects.toThrowError(
+      await expect(actualPromise).rejects.toThrow(
         mongoose.Error.ValidationError,
       )
     })
@@ -106,7 +106,7 @@ describe('AdminVerification Model', () => {
       const actualPromise = AdminVerification.create(missingOtpParams)
 
       // Assert
-      await expect(actualPromise).rejects.toThrowError(
+      await expect(actualPromise).rejects.toThrow(
         mongoose.Error.ValidationError,
       )
     })
@@ -122,7 +122,7 @@ describe('AdminVerification Model', () => {
       const actualPromise = AdminVerification.create(missingExpireParams)
 
       // Assert
-      await expect(actualPromise).rejects.toThrowError(
+      await expect(actualPromise).rejects.toThrow(
         mongoose.Error.ValidationError,
       )
     })
@@ -209,7 +209,7 @@ describe('AdminVerification Model', () => {
         const actualPromise = AdminVerification.upsertOtp(invalidParams)
 
         // Assert
-        await expect(actualPromise).rejects.toThrowError(
+        await expect(actualPromise).rejects.toThrow(
           'AdminVerificationSchema must have an Admin',
         )
       })

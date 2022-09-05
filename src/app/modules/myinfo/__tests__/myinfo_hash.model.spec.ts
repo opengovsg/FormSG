@@ -65,7 +65,7 @@ describe('MyInfo Hash Model', () => {
       const actualPromise = myInfoHash.save()
 
       // Assert
-      await expect(actualPromise).rejects.toThrowError(
+      await expect(actualPromise).rejects.toThrow(
         mongoose.Error.ValidationError,
       )
     })
@@ -79,7 +79,7 @@ describe('MyInfo Hash Model', () => {
       const actualPromise = myInfoHash.save()
 
       // Assert
-      await expect(actualPromise).rejects.toThrowError(
+      await expect(actualPromise).rejects.toThrow(
         mongoose.Error.ValidationError,
       )
     })
@@ -93,7 +93,7 @@ describe('MyInfo Hash Model', () => {
       const actualPromise = myInfoHash.save()
 
       // Assert
-      await expect(actualPromise).rejects.toThrowError(
+      await expect(actualPromise).rejects.toThrow(
         mongoose.Error.ValidationError,
       )
     })
@@ -107,7 +107,7 @@ describe('MyInfo Hash Model', () => {
       const actualPromise = myInfoHash.save()
 
       // Assert
-      await expect(actualPromise).rejects.toThrowError(
+      await expect(actualPromise).rejects.toThrow(
         mongoose.Error.ValidationError,
       )
     })
