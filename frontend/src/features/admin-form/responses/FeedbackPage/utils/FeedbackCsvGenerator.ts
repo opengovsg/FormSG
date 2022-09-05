@@ -1,4 +1,5 @@
-import moment from 'moment-timezone'
+import { isValid, parseISO } from 'date-fns'
+import { formatInTimeZone } from 'date-fns-tz'
 
 import { FormFeedbackDto } from '~shared/types'
 
@@ -17,9 +18,16 @@ export class FeedbackCsvGenerator extends CsvGenerator {
    * Generate a string representing a form feedback CSV line record
    */
   addLineFromFeedback(feedback: FormFeedbackDto) {
-    const createdAt = moment(feedback.created)
-      .tz('Asia/Singapore')
-      .format('DD MMM YYYY hh:mm:ss A')
+    const feedbackCreatedDate =
+      feedback.created && isValid(parseISO(feedback.created))
+        ? feedback.created
+        : new Date() // If undefined or invalid, use current time
+
+    const createdAt = formatInTimeZone(
+      feedbackCreatedDate,
+      'Asia/Singapore',
+      'dd MMM yyyy hh:mm:ss a',
+    ) // Format in SG timezone
 
     this.addLine([createdAt, feedback.comment || '', feedback.rating])
   }
