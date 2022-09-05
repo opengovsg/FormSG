@@ -51,7 +51,7 @@ export const EditParagraph = ({ field }: EditParagraphProps): JSX.Element => {
         isReadOnly={isLoading}
         isInvalid={!!errors.description}
       >
-        <FormLabel>Statement</FormLabel>
+        <FormLabel>Paragraph</FormLabel>
         <Textarea
           autoFocus
           {...register('description', requiredValidationRule)}

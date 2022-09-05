@@ -23,9 +23,10 @@ export const DrawerContentContainer = ({
       spacing="2rem"
       {...props}
     >
-      {Children.map(children, (child) => (
-        <Box px="1.5rem">{child}</Box>
-      ))}
+      {Children.map(
+        children,
+        (child) => child && <Box px="1.5rem">{child}</Box>,
+      )}
     </Stack>
   )
 }
