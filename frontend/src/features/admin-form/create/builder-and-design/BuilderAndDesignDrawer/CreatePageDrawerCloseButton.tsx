@@ -3,13 +3,15 @@ import { BiX } from 'react-icons/bi'
 import { CloseButton } from '@chakra-ui/react'
 
 import { useCreatePageSidebar } from '../../common/CreatePageSidebarContext'
+import { isDirtySelector, useDirtyFieldStore } from '../useDirtyFieldStore'
 
 export const CreatePageDrawerCloseButton = (): JSX.Element => {
+  const isDirty = useDirtyFieldStore(isDirtySelector)
   const { handleClose } = useCreatePageSidebar()
 
   const handleCloseDrawer = useCallback(() => {
-    handleClose()
-  }, [handleClose])
+    handleClose(isDirty)
+  }, [handleClose, isDirty])
 
   return (
     <CloseButton

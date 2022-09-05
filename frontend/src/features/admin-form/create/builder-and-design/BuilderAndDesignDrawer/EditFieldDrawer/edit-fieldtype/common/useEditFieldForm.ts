@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 import {
   DeepPartial,
   UnpackNestedValue,
@@ -18,6 +18,10 @@ import {
 
 import { useCreateFormField } from '~features/admin-form/create/builder-and-design/mutations/useCreateFormField'
 import { useEditFormField } from '~features/admin-form/create/builder-and-design/mutations/useEditFormField'
+import {
+  setIsDirtySelector,
+  useDirtyFieldStore,
+} from '~features/admin-form/create/builder-and-design/useDirtyFieldStore'
 import {
   FieldBuilderState,
   setToInactiveSelector,
@@ -78,6 +82,8 @@ export const useEditFieldForm = <FormShape, FieldShape extends FormField>({
       ),
     )
 
+  const setIsDirty = useDirtyFieldStore(setIsDirtySelector)
+
   const { editFieldMutation } = useEditFormField()
   const { createFieldMutation } = useCreateFormField()
 
@@ -93,6 +99,16 @@ export const useEditFieldForm = <FormShape, FieldShape extends FormField>({
   const editForm = useForm<FormShape>({
     defaultValues,
   })
+
+  const { isDirty } = editForm.formState
+  // Update dirty state of builder so confirmation modal can be shown
+  useEffect(() => {
+    setIsDirty(isDirty)
+
+    return () => {
+      setIsDirty(false)
+    }
+  }, [isDirty, setIsDirty])
 
   const watchedInputs = useWatch({
     control: editForm.control,
@@ -148,6 +164,10 @@ export const useEditFieldForm = <FormShape, FieldShape extends FormField>({
     [stateData, updateCreateState, updateEditState],
   )
 
+  const handleCancel = useCallback(() => {
+    setToInactive()
+  }, [setToInactive])
+
   useDebounce(
     () => handleChange(transform.output(clonedWatchedInputs, field)),
     300,
@@ -164,7 +184,7 @@ export const useEditFieldForm = <FormShape, FieldShape extends FormField>({
     formMethods: editForm,
     buttonText,
     handleUpdateField,
-    handleCancel: setToInactive,
+    handleCancel,
     isLoading: createFieldMutation.isLoading || editFieldMutation.isLoading,
   }
 }
