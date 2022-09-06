@@ -166,6 +166,12 @@ export const ResponsesTable = () => {
               onClick={() =>
                 handleRowClick(row.values.refNo, row.values.number)
               }
+              _hover={{
+                bg: 'primary.100',
+              }}
+              _active={{
+                bg: 'primary.200',
+              }}
             >
               {row.cells.map((cell) => {
                 return (
