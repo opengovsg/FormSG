@@ -220,6 +220,7 @@ export const EditCheckbox = ({ field }: EditCheckboxProps): JSX.Element => {
       >
         <FormLabel>Options</FormLabel>
         <Textarea
+          placeholder="Enter one option per line"
           {...register('fieldOptions', {
             validate: SPLIT_TEXTAREA_VALIDATION,
           })}
