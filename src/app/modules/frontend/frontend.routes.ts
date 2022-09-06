@@ -2,6 +2,7 @@ import { Router } from 'express'
 
 import * as FrontendServerController from './frontend.controller'
 
+/** @deprecated use client router in src/app/routes/api/v3/client/client.routes.ts instead.  */
 export const FrontendRouter = Router()
 
 /**

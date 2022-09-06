@@ -3,6 +3,7 @@ import { Router } from 'express'
 
 import * as PublicFormController from './public-form.controller'
 
+/** @deprecated use PublicFormsFormRouter in src/app/routes/api/v3/forms/public-forms.form.routes.ts instead. */
 export const PublicFormRouter = Router()
 
 /**
