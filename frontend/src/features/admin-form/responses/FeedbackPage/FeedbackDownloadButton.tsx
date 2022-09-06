@@ -28,7 +28,8 @@ export const FeedbackDownloadButton = ({
 
   return (
     <Button
-      disabled={isDisabled}
+      disabled={isDisabled || downloadFormFeedbackMutation.isLoading}
+      isLoading={downloadFormFeedbackMutation.isLoading}
       onClick={handleClick}
       leftIcon={<BiDownload fontSize="1.5rem" />}
     >
