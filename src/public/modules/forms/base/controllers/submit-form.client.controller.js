@@ -38,7 +38,7 @@ function SubmitFormController(
     )
 
     if (respondentCookie === 'react') {
-      $window.location.href = `/${form._id}`
+      $window.location.assign(`/${form._id}`)
       return
     }
   }
