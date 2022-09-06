@@ -99,6 +99,7 @@ export const EditRadio = ({ field }: EditRadioProps): JSX.Element => {
       >
         <FormLabel>Options</FormLabel>
         <Textarea
+          placeholder="Enter one option per line"
           {...register('fieldOptionsString', {
             validate: SPLIT_TEXTAREA_VALIDATION,
           })}
