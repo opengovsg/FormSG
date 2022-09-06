@@ -3,7 +3,7 @@ import { BiDownload } from 'react-icons/bi'
 
 import Button from '~components/Button'
 
-import { downloadFormFeedback } from './FeedbackService'
+import { useFormFeedbackMutations } from '../../common/mutations'
 
 type FeedbackDownloadButtonProps = {
   isDisabled: boolean
@@ -16,9 +16,14 @@ export const FeedbackDownloadButton = ({
   formId,
   formTitle,
 }: FeedbackDownloadButtonProps) => {
+  const { downloadFormFeedbackMutation } = useFormFeedbackMutations(
+    formId ?? '',
+    formTitle ?? '',
+  )
+
   const handleClick = useCallback(
-    () => downloadFormFeedback(formId || '', formTitle || ''),
-    [formId, formTitle],
+    () => downloadFormFeedbackMutation.mutate(),
+    [downloadFormFeedbackMutation],
   )
 
   return (

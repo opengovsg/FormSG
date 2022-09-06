@@ -23,6 +23,7 @@ import {
   submitEmailModeFormPreview,
   submitStorageModeFormPreview,
 } from '../common/AdminViewFormService'
+import { downloadFormFeedback } from '../responses/FeedbackPage/FeedbackService'
 
 import { useCollaboratorWizard } from './components/CollaboratorModal/CollaboratorWizardContext'
 import { permissionsToRole } from './components/CollaboratorModal/utils'
@@ -387,4 +388,33 @@ export const usePreviewFormMutations = (formId: string) => {
     submitEmailModeFormMutation,
     submitStorageModeFormMutation,
   }
+}
+
+export const useFormFeedbackMutations = (formId: string, formTitle: string) => {
+  const toast = useToast({ status: 'success', isClosable: true })
+
+  const handleError = useCallback(
+    (error: Error) => {
+      toast.closeAll()
+      toast({
+        description: error.message,
+        status: 'danger',
+      })
+    },
+    [toast],
+  )
+
+  const downloadFormFeedbackMutation = useMutation(
+    () => downloadFormFeedback(formId ?? '', formTitle ?? ''),
+    {
+      onSuccess: () => {
+        toast({
+          description: 'Form feedback download started',
+        })
+      },
+      onError: handleError,
+    },
+  )
+
+  return { downloadFormFeedbackMutation }
 }
