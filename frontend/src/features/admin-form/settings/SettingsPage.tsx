@@ -9,8 +9,6 @@ import {
   TabPanel,
   TabPanels,
   Tabs,
-  useBreakpointValue,
-  UseTabsProps,
 } from '@chakra-ui/react'
 
 import { ADMINFORM_RESULTS_SUBROUTE, ADMINFORM_ROUTE } from '~constants/routes'
