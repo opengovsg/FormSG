@@ -160,7 +160,7 @@
     "ui-select": "^0.19.8",
     "uid-generator": "^2.0.0",
     "ulid": "^2.3.0",
-    "uuid": "^8.3.2",
+    "uuid": "^9.0.0",
     "validator": "^13.7.0",
     "web-streams-polyfill": "^3.2.1",
     "whatwg-fetch": "^3.6.2",
