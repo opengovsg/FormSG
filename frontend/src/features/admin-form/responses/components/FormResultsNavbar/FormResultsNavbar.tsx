@@ -29,7 +29,8 @@ export const FormResultsNavbar = (): JSX.Element => {
       position="sticky"
       top={0}
       flexDir="column"
-      boxShadow="0 1px 1px var(--chakra-colors-neutral-300)"
+      borderBottom="1px"
+      borderBottomColor="neutral.300"
       bg="white"
       zIndex="docked"
       flex={0}
