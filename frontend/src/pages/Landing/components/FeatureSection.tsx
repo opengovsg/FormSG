@@ -1,17 +1,21 @@
 import { FC } from 'react'
 import { Box, Flex, Image, Stack, StackProps } from '@chakra-ui/react'
 
+import { LottieAnimation } from '~templates/LottieAnimation'
+
 import { LandingSection } from './LandingSection'
 import { SectionTitleText } from './SectionTitleText'
 
 interface FeatureSectionProps extends StackProps {
   title: string
   imgSrc?: string
+  animationSrc?: unknown
 }
 
 export const FeatureSection: FC<FeatureSectionProps> = ({
   children,
   imgSrc,
+  animationSrc,
   title,
   direction = 'row',
   align = 'center',
@@ -33,6 +37,16 @@ export const FeatureSection: FC<FeatureSectionProps> = ({
         {imgSrc ? (
           <Box flex={1} aria-hidden>
             <Image src={imgSrc} />
+          </Box>
+        ) : null}
+        {animationSrc ? (
+          <Box flex={1} aria-hidden>
+            <LottieAnimation
+              // The link will always change in Chromatic so this should be ignored.
+              data-chromatic="ignore"
+              animationData={animationSrc}
+              preserveAspectRatio="xMidYMax slice"
+            />
           </Box>
         ) : null}
       </Stack>
