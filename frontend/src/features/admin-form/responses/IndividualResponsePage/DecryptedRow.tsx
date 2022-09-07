@@ -22,7 +22,7 @@ type DecryptedRowProps = DecryptedRowBaseProps & {
 const DecryptedQuestionLabel = ({ row }: DecryptedRowBaseProps) => {
   return (
     <FormLabel questionNumber={`${row.questionNumber}.`} isRequired>
-      {row.question}
+      {`${row.signature ? '[verified] ' : ''}${row.question}`}
     </FormLabel>
   )
 }
@@ -36,7 +36,6 @@ const DecryptedHeaderRow = ({ row }: DecryptedRowBaseProps): JSX.Element => {
       mb="0.5rem"
       _notFirst={{ mt: '2.5rem' }}
     >
-      {row.signature ? `[verified] ` : ''}
       {row.question}
     </Text>
   )
