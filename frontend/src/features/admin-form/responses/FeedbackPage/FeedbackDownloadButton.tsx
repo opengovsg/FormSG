@@ -16,19 +16,16 @@ export const FeedbackDownloadButton = ({
   formId,
   formTitle,
 }: FeedbackDownloadButtonProps) => {
-  const { downloadFormFeedbackMutation } = useFormFeedbackMutations(
-    formId ?? '',
-    formTitle ?? '',
-  )
+  const { downloadFormFeedbackMutation } = useFormFeedbackMutations()
 
-  const handleClick = useCallback(
-    () => downloadFormFeedbackMutation.mutate(),
-    [downloadFormFeedbackMutation],
-  )
+  const handleClick = useCallback(() => {
+    if (!formId || !formTitle) return
+    return downloadFormFeedbackMutation.mutate({ formId, formTitle })
+  }, [downloadFormFeedbackMutation, formId, formTitle])
 
   return (
     <Button
-      disabled={isDisabled || downloadFormFeedbackMutation.isLoading}
+      isDisabled={isDisabled || downloadFormFeedbackMutation.isLoading}
       isLoading={downloadFormFeedbackMutation.isLoading}
       onClick={handleClick}
       leftIcon={<BiDownload fontSize="1.5rem" />}

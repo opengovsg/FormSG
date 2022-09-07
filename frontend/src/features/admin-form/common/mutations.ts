@@ -45,6 +45,11 @@ export type MutateRemoveCollaboratorArgs = {
   currentPermissions: FormPermissionsDto
 }
 
+export type DownloadFormFeedbackMutationArgs = {
+  formId: string
+  formTitle: string
+}
+
 enum FormCollaboratorAction {
   UPDATE,
   ADD,
@@ -390,7 +395,7 @@ export const usePreviewFormMutations = (formId: string) => {
   }
 }
 
-export const useFormFeedbackMutations = (formId: string, formTitle: string) => {
+export const useFormFeedbackMutations = () => {
   const toast = useToast({ status: 'success', isClosable: true })
 
   const handleError = useCallback(
@@ -405,7 +410,8 @@ export const useFormFeedbackMutations = (formId: string, formTitle: string) => {
   )
 
   const downloadFormFeedbackMutation = useMutation(
-    () => downloadFormFeedback(formId ?? '', formTitle ?? ''),
+    ({ formId, formTitle }: DownloadFormFeedbackMutationArgs) =>
+      downloadFormFeedback(formId, formTitle),
     {
       onSuccess: () => {
         toast({
