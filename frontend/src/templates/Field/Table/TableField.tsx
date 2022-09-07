@@ -60,7 +60,7 @@ export const TableField = ({
     if (isMobile) return
     // Get first available error amongst all column cell errors.
     return head(
-      uniq(tableErrors?.flatMap((errs) => (errs ? Object.values(errs) : []))),
+      uniq(tableErrors?.flatMap((err = {}) => Object.values(err)))
     )
   }, [isMobile, tableErrors])
 
