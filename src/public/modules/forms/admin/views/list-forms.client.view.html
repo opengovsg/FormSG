@@ -5,7 +5,9 @@
   <div id="list-tab">
     <section data-ng-init="vm.listForms()">
       <div id="list-form" class="container" ng-if="vm.user">
-        <react-switch-banner-component></react-switch-banner-component>
+        <react-switch-banner-component
+          ng-if="vm.reactAdminRollout > 0"
+        ></react-switch-banner-component>
         <!-- When forms have already been created -->
         <div id="list-form-exist" ng-if="vm.myforms.length > 0">
           <div
