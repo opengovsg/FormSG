@@ -10,6 +10,7 @@ import { FormColorTheme, LogicDto } from '~shared/types/form'
 import InlineMessage from '~components/InlineMessage'
 import { FormFieldValues } from '~templates/Field'
 import { createTableRow } from '~templates/Field/Table/utils/createRow'
+import { useNavigationPrompt } from '~templates/NavigationPrompt/useNavigationPrompt'
 
 import {
   augmentWithMyInfo,
@@ -99,6 +100,8 @@ export const FormFields = ({
       reset(defaultFormValues)
     }
   }, [defaultFormValues, isDirty, reset])
+
+  useNavigationPrompt(isDirty)
 
   return (
     <FormProvider {...formMethods}>
