@@ -45,8 +45,8 @@ export const SettingsPage = (): JSX.Element => {
         isManual
         orientation="vertical"
         variant="line"
-        py={{ base: '3.5rem', lg: '4rem' }}
-        px={{ base: '1.75rem', lg: '2rem' }}
+        py={{ base: '2.5rem', lg: '3.125rem' }}
+        px={{ base: '1.5rem', md: '1.75rem', lg: '2rem' }}
       >
         <Flex
           h="max-content"
@@ -56,8 +56,6 @@ export const SettingsPage = (): JSX.Element => {
           onMouseDown={onMouseDown}
           position="sticky"
           zIndex={0}
-          // Height align text with start of tab panel.
-          mt={{ base: '-1rem', lg: '-0.875rem' }}
           top={{ base: '2.5rem', lg: '3.125rem' }}
           borderTopColor="neutral.300"
           w={{ base: 'auto', lg: '21rem' }}
@@ -83,7 +81,11 @@ export const SettingsPage = (): JSX.Element => {
             <SettingsTab label="Webhooks" icon={BiCodeBlock} />
           </TabList>
         </Flex>
-        <TabPanels maxW="42.5rem">
+        <TabPanels
+          maxW="42.5rem"
+          // Offset start of tabpanel text from tablist.
+          mt={{ md: '1rem' }}
+        >
           <TabPanel>
             <SettingsGeneralPage />
           </TabPanel>
