@@ -206,7 +206,7 @@ describe('billings.routes', () => {
       })
 
       // Assert
-      expect(retrieveStatsSpy).toBeCalled()
+      expect(retrieveStatsSpy).toHaveBeenCalled()
       expect(response.status).toEqual(500)
       expect(response.body).toEqual({
         message: 'Error in retrieving billing records',

@@ -95,8 +95,8 @@ export const useMutateFormSettings = () => {
         // Show toast on success.
         const isNowPublic = newData.status === FormStatus.Public
         const toastStatusMessage = isNowPublic
-          ? `Congrats! Your form is now open for submission.\n\nFor high-traffic forms, [AutoArchive your mailbox](https://go.gov.sg/form-prevent-bounce) to prevent lost responses.`
-          : 'Your form is closed for submission.'
+          ? `Your form is now open.\n\nIf you expect a large number of responses,  [AutoArchive your mailbox](https://go.gov.sg/form-prevent-bounce) to avoid losing any of them.`
+          : 'Your form is closed to new responses.'
 
         handleSuccess({ newData, toastDescription: toastStatusMessage })
       },

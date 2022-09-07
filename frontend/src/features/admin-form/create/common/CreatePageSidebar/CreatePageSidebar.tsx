@@ -12,6 +12,10 @@ import {
 } from '~features/admin-form/create/common/CreatePageSidebarContext/CreatePageSidebarContext'
 
 import {
+  isDirtySelector,
+  useDirtyFieldStore,
+} from '../../builder-and-design/useDirtyFieldStore'
+import {
   setToInactiveSelector,
   useFieldBuilderStore,
 } from '../../builder-and-design/useFieldBuilderStore'
@@ -22,6 +26,7 @@ import { DrawerTabIcon } from './DrawerTabIcon'
 export const CreatePageSidebar = (): JSX.Element | null => {
   const isMobile = useIsMobile()
   const setFieldsToInactive = useFieldBuilderStore(setToInactiveSelector)
+  const isDirty = useDirtyFieldStore(isDirtySelector)
   const { activeTab, handleBuilderClick, handleDesignClick, handleLogicClick } =
     useCreatePageSidebar()
 
@@ -30,8 +35,18 @@ export const CreatePageSidebar = (): JSX.Element | null => {
     if (isMobile) {
       setFieldsToInactive()
     }
-    handleBuilderClick()
-  }, [handleBuilderClick, isMobile, setFieldsToInactive])
+    handleBuilderClick(isDirty)
+  }, [handleBuilderClick, isDirty, isMobile, setFieldsToInactive])
+
+  const handleDrawerDesignClick = useCallback(
+    () => handleDesignClick(isDirty),
+    [handleDesignClick, isDirty],
+  )
+
+  const handleDrawerLogicClick = useCallback(
+    () => handleLogicClick(isDirty),
+    [handleLogicClick, isDirty],
+  )
 
   return (
     <Stack
@@ -55,14 +70,14 @@ export const CreatePageSidebar = (): JSX.Element | null => {
       <DrawerTabIcon
         label="Design your form"
         icon={<BxsColorFill fontSize="1.5rem" />}
-        onClick={handleDesignClick}
+        onClick={handleDrawerDesignClick}
         isActive={activeTab === DrawerTabs.Design}
         id={FEATURE_TOUR[1].id}
       />
       <DrawerTabIcon
         label="Add conditional logic"
         icon={<BiGitMerge fontSize="1.5rem" />}
-        onClick={handleLogicClick}
+        onClick={handleDrawerLogicClick}
         isActive={activeTab === DrawerTabs.Logic}
         id={FEATURE_TOUR[2].id}
       />

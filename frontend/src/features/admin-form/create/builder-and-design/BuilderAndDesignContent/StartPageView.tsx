@@ -24,6 +24,7 @@ import {
   stateSelector,
   useDesignStore,
 } from '../useDesignStore'
+import { isDirtySelector, useDirtyFieldStore } from '../useDirtyFieldStore'
 import {
   setToInactiveSelector,
   useFieldBuilderStore,
@@ -33,6 +34,8 @@ export const StartPageView = () => {
   const isMobile = useIsMobile()
   const { data: form } = useCreateTabForm()
   const setToInactive = useFieldBuilderStore(setToInactiveSelector)
+  const isDirty = useDirtyFieldStore(isDirtySelector)
+
   const { designState, startPageData, customLogoMeta, setDesignState } =
     useDesignStore(
       useCallback(
@@ -107,20 +110,44 @@ export const StartPageView = () => {
 
   const { handleDesignClick } = useCreatePageSidebar()
 
+  const isDirtyAndDesignInactive = useMemo(
+    () => isDirty && designState === DesignState.Inactive,
+    [designState, isDirty],
+  )
+
   const handleHeaderClick = useCallback(() => {
+    if (isDirtyAndDesignInactive) {
+      return setDesignState(DesignState.EditingHeader, true)
+    }
+
     setDesignState(DesignState.EditingHeader)
     setToInactive()
-    handleDesignClick()
-  }, [handleDesignClick, setDesignState, setToInactive])
+    handleDesignClick(false)
+  }, [
+    handleDesignClick,
+    isDirtyAndDesignInactive,
+    setDesignState,
+    setToInactive,
+  ])
 
   const handleInstructionsClick = useCallback(() => {
+    if (isDirtyAndDesignInactive) {
+      return setDesignState(DesignState.EditingInstructions, true)
+    }
+
     setDesignState(DesignState.EditingInstructions)
     setToInactive()
-    if (!isMobile) handleDesignClick()
-  }, [handleDesignClick, isMobile, setDesignState, setToInactive])
+    if (!isMobile) handleDesignClick(false)
+  }, [
+    handleDesignClick,
+    isDirtyAndDesignInactive,
+    isMobile,
+    setDesignState,
+    setToInactive,
+  ])
 
   const handleEditInstructionsClick = useCallback(() => {
-    if (isMobile) handleDesignClick()
+    if (isMobile) handleDesignClick(false)
   }, [handleDesignClick, isMobile])
 
   const headerWrapperEditProps = useMemo(() => {

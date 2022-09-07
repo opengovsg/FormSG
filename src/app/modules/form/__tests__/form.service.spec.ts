@@ -474,7 +474,7 @@ describe('FormService', () => {
 
       // Assert
       expect(actual._unsafeUnwrap()).toEqual(expected)
-      expect(retrieveFormSpy).toBeCalledWith(MOCK_ADMIN_ID)
+      expect(retrieveFormSpy).toHaveBeenCalledWith(MOCK_ADMIN_ID)
     })
 
     it('should propagate the error received when error occurs while querying', async () => {
@@ -492,7 +492,7 @@ describe('FormService', () => {
 
       // Assert
       expect(actual._unsafeUnwrapErr()).toBeInstanceOf(DatabaseError)
-      expect(retrieveFormSpy).toBeCalledWith(MOCK_ADMIN_ID)
+      expect(retrieveFormSpy).toHaveBeenCalledWith(MOCK_ADMIN_ID)
     })
   })
 })

@@ -16,13 +16,13 @@ export type SetEnvironmentParams = {
 
 export const RESPONDENT_COOKIE_OPTIONS = {
   httpOnly: false,
-  sameSite: 'strict' as const,
+  sameSite: 'lax' as const, // Setting to 'strict' resets the cookie after redirecting from myInfo
   secure: !config.isDev,
 }
 
 export const RESPONDENT_COOKIE_OPTIONS_WITH_EXPIRY = {
   ...RESPONDENT_COOKIE_OPTIONS,
-  maxAge: 31 * 2 * 24 * 60 * 60, // 2 months
+  maxAge: 31 * 12 * 24 * 60 * 60, // 12 months
 }
 
 export const ADMIN_COOKIE_OPTIONS = {
@@ -33,7 +33,7 @@ export const ADMIN_COOKIE_OPTIONS = {
 
 export const ADMIN_COOKIE_OPTIONS_WITH_EXPIRY = {
   ...ADMIN_COOKIE_OPTIONS,
-  maxAge: 31 * 2 * 24 * 60 * 60, // 2 months
+  maxAge: 31 * 12 * 24 * 60 * 60, // 12 months
 }
 
 const logger = createLoggerWithLabel(module)
@@ -94,23 +94,14 @@ export const serveForm: ControllerHandler<
     // Delete existing cookies to prevent infinite redirection
     if (req.cookies) {
       res.clearCookie(config.reactMigration.respondentCookieName)
-      res.clearCookie(config.reactMigration.adminCookieName)
     }
-  } else if (req.cookies) {
-    if (config.reactMigration.adminCookieName in req.cookies) {
-      // Admins are dogfooders, the choice they made for the admin environment
-      // also applies to the forms they need to fill themselves
-      showReact =
-        req.cookies[config.reactMigration.adminCookieName] ===
-        UiCookieValues.React
-    } else if (config.reactMigration.respondentCookieName in req.cookies) {
-      // Note: the respondent cookie is for the whole session, not for a specific form.
-      // That means that within a session, a respondent will see the same environment
-      // for all the forms he/she fills.
-      showReact =
-        req.cookies[config.reactMigration.respondentCookieName] ===
-        UiCookieValues.React
-    }
+  } else if (config.reactMigration.respondentCookieName in req.cookies) {
+    // Note: the respondent cookie is for the whole session, not for a specific form.
+    // That means that within a session, a respondent will see the same environment
+    // for all the forms he/she fills.
+    showReact =
+      req.cookies[config.reactMigration.respondentCookieName] ===
+      UiCookieValues.React
   }
 
   if (showReact === undefined) {

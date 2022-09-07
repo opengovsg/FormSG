@@ -74,7 +74,7 @@ describe('billing.controller', () => {
       expect(MockBillingService.getSpLoginStats).toHaveBeenCalledWith(
         ...EXPECTED_SERVICE_CALL_ARGS,
       )
-      expect(mockRes.json).toBeCalledWith({ loginStats: mockLoginStats })
+      expect(mockRes.json).toHaveBeenCalledWith({ loginStats: mockLoginStats })
     })
 
     it('should return 500 when database error occurs', async () => {
@@ -92,8 +92,8 @@ describe('billing.controller', () => {
       expect(MockBillingService.getSpLoginStats).toHaveBeenCalledWith(
         ...EXPECTED_SERVICE_CALL_ARGS,
       )
-      expect(mockRes.status).toBeCalledWith(500)
-      expect(mockRes.json).toBeCalledWith({
+      expect(mockRes.status).toHaveBeenCalledWith(500)
+      expect(mockRes.json).toHaveBeenCalledWith({
         message: 'Error in retrieving billing records',
       })
     })

@@ -13,7 +13,7 @@ describe('required field', () => {
     // Arrange
     const user = userEvent.setup()
     render(<ValidationRequired />)
-    const submitButton = screen.getByRole('button', { name: /submit/i })
+    const submitButton = screen.getByText(/submit/i)
 
     // Act
     await user.click(submitButton)
@@ -32,8 +32,10 @@ describe('required field', () => {
       ?.fieldOptions as string[]
     const expectedOption = dropdownOptions[0]
     const optionToType = expectedOption.slice(0, 6)
-    const submitButton = screen.getByRole('button', { name: /submit/i })
-    const input = screen.getByRole('textbox') as HTMLInputElement
+    const submitButton = screen.getByText(/submit/i)
+    const input = screen.getByPlaceholderText(
+      'Select an option',
+    ) as HTMLInputElement
     // Act
     // Act required due to react-hook-form usage.
     await user.type(input, `${optionToType}[enter]`)
@@ -54,8 +56,10 @@ describe('required field', () => {
     const dropdownOptions = ValidationRequired.args?.schema
       ?.fieldOptions as string[]
     const expectedOption = dropdownOptions[1]
-    const submitButton = screen.getByRole('button', { name: /submit/i })
-    const input = screen.getByRole('textbox') as HTMLInputElement
+    const submitButton = screen.getByText(/submit/i)
+    const input = screen.getByPlaceholderText(
+      'Select an option',
+    ) as HTMLInputElement
     // Act
     user.click(input)
     // Act required due to react-hook-form usage.
@@ -76,7 +80,7 @@ describe('optional field', () => {
     // Arrange
     const user = userEvent.setup()
     render(<ValidationOptional />)
-    const submitButton = screen.getByRole('button', { name: /submit/i })
+    const submitButton = screen.getByText(/submit/i)
 
     // Act
     await user.click(submitButton)
@@ -94,8 +98,10 @@ describe('optional field', () => {
     const dropdownOptions = ValidationRequired.args?.schema
       ?.fieldOptions as string[]
     const expectedOption = dropdownOptions[1]
-    const submitButton = screen.getByRole('button', { name: /submit/i })
-    const input = screen.getByRole('textbox') as HTMLInputElement
+    const submitButton = screen.getByText(/submit/i)
+    const input = screen.getByPlaceholderText(
+      'Select an option',
+    ) as HTMLInputElement
     // Act
     user.click(input)
     // Type the middle few characters of the option; dropdown should match properly,
@@ -120,20 +126,22 @@ describe('dropdown validation', () => {
 
     const dropdownOptions = ValidationRequired.args?.schema
       ?.fieldOptions as string[]
-    const submitButton = screen.getByRole('button', { name: /submit/i })
-    const inputElement = screen.getByRole('textbox') as HTMLInputElement
+    const submitButton = screen.getByText(/submit/i)
+    const input = screen.getByPlaceholderText(
+      'Select an option',
+    ) as HTMLInputElement
     const inputToType = 'this is not a valid option'
 
     expect(dropdownOptions.includes(inputToType)).toEqual(false)
 
     // Act
-    user.click(inputElement)
+    user.click(input)
     await act(() => {
-      user.type(inputElement, inputToType)
+      user.type(input, inputToType)
       return user.tab()
     })
     // Input should blur and input value should be cleared (since nothing was selected).
-    expect(inputElement.value).toEqual('')
+    expect(input.value).toEqual('')
     await userEvent.click(submitButton)
 
     // Assert

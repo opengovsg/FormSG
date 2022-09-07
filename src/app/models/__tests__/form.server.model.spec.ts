@@ -315,7 +315,7 @@ describe('Form Model', () => {
         const invalidForm = new Form(paramsWithInvalidAdmin)
 
         // Assert
-        await expect(invalidForm.save()).rejects.toThrowError(
+        await expect(invalidForm.save()).rejects.toThrow(
           'Admin for this form is not found.',
         )
       })
@@ -328,7 +328,7 @@ describe('Form Model', () => {
         const invalidForm = new Form(paramsWithoutTitle)
 
         // Assert
-        await expect(invalidForm.save()).rejects.toThrowError(
+        await expect(invalidForm.save()).rejects.toThrow(
           mongoose.Error.ValidationError,
         )
       })
@@ -341,7 +341,7 @@ describe('Form Model', () => {
         const invalidForm = new Form(paramsWithoutAdmin)
 
         // Assert
-        await expect(invalidForm.save()).rejects.toThrowError(
+        await expect(invalidForm.save()).rejects.toThrow(
           'Admin for this form is not found.',
         )
       })
@@ -358,7 +358,7 @@ describe('Form Model', () => {
         const invalidForm = new Form(malformedParams)
 
         // Assert
-        await expect(invalidForm.save()).rejects.toThrowError(
+        await expect(invalidForm.save()).rejects.toThrow(
           mongoose.Error.ValidationError,
         )
       })
@@ -377,7 +377,7 @@ describe('Form Model', () => {
         const invalidForm = new Form(malformedParams)
 
         // Assert
-        await expect(invalidForm.save()).rejects.toThrowError(
+        await expect(invalidForm.save()).rejects.toThrow(
           mongoose.Error.ValidationError,
         )
       })
@@ -393,7 +393,7 @@ describe('Form Model', () => {
         const invalidForm = new Form(paramsWithWhitespaceEsrvcId)
 
         // Assert
-        await expect(invalidForm.save()).rejects.toThrowError(
+        await expect(invalidForm.save()).rejects.toThrow(
           'Form validation failed: esrvcId: e-service ID must not contain whitespace',
         )
       })
@@ -575,7 +575,7 @@ describe('Form Model', () => {
         const invalidForm = new EncryptedForm(paramsWithoutPublicKey)
 
         // Assert
-        await expect(invalidForm.save()).rejects.toThrowError(
+        await expect(invalidForm.save()).rejects.toThrow(
           mongoose.Error.ValidationError,
         )
       })
@@ -591,7 +591,7 @@ describe('Form Model', () => {
         const invalidForm = new EncryptedForm(paramsWithInvalidAdmin)
 
         // Assert
-        await expect(invalidForm.save()).rejects.toThrowError(
+        await expect(invalidForm.save()).rejects.toThrow(
           'Admin for this form is not found.',
         )
       })
@@ -604,7 +604,7 @@ describe('Form Model', () => {
         const invalidForm = new EncryptedForm(paramsWithoutTitle)
 
         // Assert
-        await expect(invalidForm.save()).rejects.toThrowError(
+        await expect(invalidForm.save()).rejects.toThrow(
           mongoose.Error.ValidationError,
         )
       })
@@ -617,7 +617,7 @@ describe('Form Model', () => {
         const invalidForm = new EncryptedForm(paramsWithoutAdmin)
 
         // Assert
-        await expect(invalidForm.save()).rejects.toThrowError(
+        await expect(invalidForm.save()).rejects.toThrow(
           'Admin for this form is not found.',
         )
       })
@@ -634,7 +634,7 @@ describe('Form Model', () => {
         const invalidForm = new EncryptedForm(malformedParams)
 
         // Assert
-        await expect(invalidForm.save()).rejects.toThrowError(
+        await expect(invalidForm.save()).rejects.toThrow(
           mongoose.Error.ValidationError,
         )
       })
@@ -653,7 +653,7 @@ describe('Form Model', () => {
         const invalidForm = new EncryptedForm(malformedParams)
 
         // Assert
-        await expect(invalidForm.save()).rejects.toThrowError(
+        await expect(invalidForm.save()).rejects.toThrow(
           mongoose.Error.ValidationError,
         )
       })
@@ -866,7 +866,7 @@ describe('Form Model', () => {
         const invalidForm = new EmailForm(MOCK_EMAIL_FORM_PARAMS_WITH_WEBHOOK)
 
         // Assert
-        await expect(invalidForm.save()).rejects.toThrowError(
+        await expect(invalidForm.save()).rejects.toThrow(
           mongoose.Error.ValidationError,
         )
       })
@@ -879,7 +879,7 @@ describe('Form Model', () => {
         const invalidForm = new EmailForm(paramsWithoutEmailsArray)
 
         // Assert
-        await expect(invalidForm.save()).rejects.toThrowError(
+        await expect(invalidForm.save()).rejects.toThrow(
           mongoose.Error.ValidationError,
         )
       })
@@ -895,7 +895,7 @@ describe('Form Model', () => {
         const invalidForm = new EmailForm(paramsWithEmptyEmailsArray)
 
         // Assert
-        await expect(invalidForm.save()).rejects.toThrowError(
+        await expect(invalidForm.save()).rejects.toThrow(
           mongoose.Error.ValidationError,
         )
       })
@@ -911,7 +911,7 @@ describe('Form Model', () => {
         const invalidForm = new EmailForm(paramsWithInvalidAdmin)
 
         // Assert
-        await expect(invalidForm.save()).rejects.toThrowError(
+        await expect(invalidForm.save()).rejects.toThrow(
           'Admin for this form is not found.',
         )
       })
@@ -924,7 +924,7 @@ describe('Form Model', () => {
         const invalidForm = new EmailForm(paramsWithoutTitle)
 
         // Assert
-        await expect(invalidForm.save()).rejects.toThrowError(
+        await expect(invalidForm.save()).rejects.toThrow(
           mongoose.Error.ValidationError,
         )
       })
@@ -937,7 +937,7 @@ describe('Form Model', () => {
         const invalidForm = new EmailForm(paramsWithoutAdmin)
 
         // Assert
-        await expect(invalidForm.save()).rejects.toThrowError(
+        await expect(invalidForm.save()).rejects.toThrow(
           'Admin for this form is not found.',
         )
       })
@@ -954,7 +954,7 @@ describe('Form Model', () => {
         const invalidForm = new EmailForm(malformedParams)
 
         // Assert
-        await expect(invalidForm.save()).rejects.toThrowError(
+        await expect(invalidForm.save()).rejects.toThrow(
           mongoose.Error.ValidationError,
         )
       })
@@ -973,7 +973,7 @@ describe('Form Model', () => {
         const invalidForm = new EmailForm(malformedParams)
 
         // Assert
-        await expect(invalidForm.save()).rejects.toThrowError(
+        await expect(invalidForm.save()).rejects.toThrow(
           mongoose.Error.ValidationError,
         )
       })

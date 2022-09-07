@@ -70,7 +70,7 @@ describe('SpOidcClientCache', () => {
       // Assert
       expect(spOidcClientCache).toBeInstanceOf(SpOidcClientCache)
       expect(constructorSpy).toHaveBeenCalledOnce()
-      expect(constructorSpy).toBeCalledWith(spOidcClientCacheConfig)
+      expect(constructorSpy).toHaveBeenCalledWith(spOidcClientCacheConfig)
     })
 
     it('should call refresh() on instantiation', async () => {
@@ -317,7 +317,7 @@ describe('SpOidcClientCache', () => {
       const expiryTtl = spOidcClientCache._cache.getTtl('expiry') || 0
 
       // Assert
-      expect(setSpy).toBeCalledTimes(3)
+      expect(setSpy).toHaveBeenCalledTimes(3)
       expect(setSpy).toHaveBeenCalledWith('ndiPublicKeys', 'keys')
       expect(setSpy).toHaveBeenCalledWith('baseClient', 'baseClient')
       expect(setSpy).toHaveBeenLastCalledWith('expiry', 'expiry', 3600)
@@ -396,7 +396,7 @@ describe('SpOidcClientCache', () => {
       const keyResultPromise = spOidcClientCache.retrievePublicKeysFromNdi()
 
       // Assert
-      await expect(keyResultPromise).rejects.toThrowError('Failure')
+      await expect(keyResultPromise).rejects.toThrow('Failure')
       expect(axiosSpy).toHaveBeenCalledTimes(3)
     })
 
@@ -420,7 +420,7 @@ describe('SpOidcClientCache', () => {
       }
 
       // Assert
-      await expect(keyResult()).rejects.toThrowError(JwkError)
+      await expect(keyResult()).rejects.toThrow(JwkError)
       expect(axiosSpy).toHaveBeenCalledTimes(1)
     })
 
@@ -447,7 +447,7 @@ describe('SpOidcClientCache', () => {
       }
 
       // Assert
-      await expect(keyResult()).rejects.toThrowError(JwkError)
+      await expect(keyResult()).rejects.toThrow(JwkError)
       expect(axiosSpy).toHaveBeenCalledTimes(1)
     })
 
@@ -471,7 +471,7 @@ describe('SpOidcClientCache', () => {
       }
 
       // Assert
-      await expect(keyResult()).rejects.toThrowError(JwkError)
+      await expect(keyResult()).rejects.toThrow(JwkError)
       expect(axiosSpy).toHaveBeenCalledTimes(1)
     })
     it('should throw an JwkError if the NDI JWKS retrieved does not have the `x` property', async () => {
@@ -494,7 +494,7 @@ describe('SpOidcClientCache', () => {
       }
 
       // Assert
-      await expect(keyResult()).rejects.toThrowError(JwkError)
+      await expect(keyResult()).rejects.toThrow(JwkError)
       expect(axiosSpy).toHaveBeenCalledTimes(1)
     })
     it('should throw an JwkError if the NDI JWKS retrieved does not have the `y` property', async () => {
@@ -517,7 +517,7 @@ describe('SpOidcClientCache', () => {
       }
 
       // Assert
-      await expect(keyResult()).rejects.toThrowError(JwkError)
+      await expect(keyResult()).rejects.toThrow(JwkError)
       expect(axiosSpy).toHaveBeenCalledTimes(1)
     })
     it('should throw an JwkError if the NDI JWKS retrieved does not have the `kid` property', async () => {
@@ -540,7 +540,7 @@ describe('SpOidcClientCache', () => {
       }
 
       // Assert
-      await expect(keyResult()).rejects.toThrowError(JwkError)
+      await expect(keyResult()).rejects.toThrow(JwkError)
       expect(axiosSpy).toHaveBeenCalledTimes(1)
     })
     it('should throw an JwkError if the NDI JWKS retrieved does not have the `use` property', async () => {
@@ -563,7 +563,7 @@ describe('SpOidcClientCache', () => {
       }
 
       // Assert
-      await expect(keyResult()).rejects.toThrowError(JwkError)
+      await expect(keyResult()).rejects.toThrow(JwkError)
       expect(axiosSpy).toHaveBeenCalledTimes(1)
     })
 
@@ -696,7 +696,7 @@ describe('SpOidcClientCache', () => {
       }
 
       // Assert
-      await expect(clientResult).rejects.toThrowError('Failed')
+      await expect(clientResult).rejects.toThrow('Failed')
       expect(discoverySpy).toHaveBeenCalledTimes(3)
     })
   })
@@ -810,7 +810,7 @@ describe('SpOidcClientCache', () => {
       }
 
       // Assert
-      await expect(attemptRefresh()).rejects.toThrowError('failed')
+      await expect(attemptRefresh()).rejects.toThrow('failed')
       expect(refreshSpy).toHaveBeenCalledTimes(2) // once in instantiation, once in act
       expect(createRefreshSpy).toHaveBeenCalledOnce()
       expect(spOidcClientCache._refreshPromise).toBeUndefined()
@@ -866,7 +866,7 @@ describe('SpOidcClientCache', () => {
       const expiryTtl = spOidcClientCache._cache.getTtl('expiry') || 0
 
       // Assert
-      expect(setSpy).toBeCalledTimes(3)
+      expect(setSpy).toHaveBeenCalledTimes(3)
       expect(setSpy).toHaveBeenCalledWith('ndiPublicKeys', 'keys')
       expect(setSpy).toHaveBeenCalledWith('baseClient', 'baseClient')
       expect(setSpy).toHaveBeenLastCalledWith('expiry', 'expiry', 3600)

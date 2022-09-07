@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo } from 'react'
 import {
   Controller,
   UnpackNestedValue,
@@ -46,6 +46,10 @@ import {
   stateSelector,
   useDesignStore,
 } from '../../useDesignStore'
+import {
+  setIsDirtySelector,
+  useDirtyFieldStore,
+} from '../../useDirtyFieldStore'
 import { validateNumberInput } from '../../utils/validateNumberInput'
 import { CreatePageDrawerCloseButton } from '../CreatePageDrawerCloseButton'
 import { DrawerContentContainer } from '../EditFieldDrawer/edit-fieldtype/common/DrawerContentContainer'
@@ -86,6 +90,8 @@ export const DesignInput = (): JSX.Element | null => {
     ),
   )
 
+  const setIsDirty = useDirtyFieldStore(setIsDirtySelector)
+
   const setToEditingHeader = useCallback(
     () => setDesignState(DesignState.EditingHeader),
     [setDesignState],
@@ -97,7 +103,7 @@ export const DesignInput = (): JSX.Element | null => {
 
   const {
     register,
-    formState: { errors },
+    formState: { errors, isDirty },
     control,
     handleSubmit,
     clearErrors,
@@ -107,6 +113,15 @@ export const DesignInput = (): JSX.Element | null => {
     mode: 'onBlur',
     defaultValues: startPageData,
   })
+
+  // Update dirty state of builder so confirmation modal can be shown
+  useEffect(() => {
+    setIsDirty(isDirty)
+
+    return () => {
+      setIsDirty(false)
+    }
+  }, [isDirty, setIsDirty])
 
   const watchedInputs = useWatch({
     control: control,
@@ -122,8 +137,12 @@ export const DesignInput = (): JSX.Element | null => {
   ])
 
   // Focus on paragraph field if state is editing instructions
-  useEffect(() => {
-    if (designState === DesignState.EditingInstructions) setFocus('paragraph')
+  useLayoutEffect(() => {
+    if (designState === DesignState.EditingInstructions) {
+      // To guarantee focus is triggered even when focus is being set by
+      // something else before this effect runs.
+      setTimeout(() => setFocus('paragraph'), 80)
+    }
   }, [designState, setFocus])
 
   // Save design handlers
@@ -156,6 +175,8 @@ export const DesignInput = (): JSX.Element | null => {
     [uploadLogoMutation, customLogoMeta],
   )
 
+  const handleCloseDrawer = useCallback(() => handleClose(false), [handleClose])
+
   const handleUpdateDesign = handleSubmit(
     async (startPageData: FormStartPageInput) => {
       const { logo, attachment, estTimeTaken, ...rest } = startPageData
@@ -168,7 +189,7 @@ export const DesignInput = (): JSX.Element | null => {
             estTimeTaken: estTimeTakenTransformed,
             ...rest,
           },
-          { onSuccess: handleClose },
+          { onSuccess: handleCloseDrawer },
         )
       } else {
         const customLogoMeta = await handleUploadLogo(attachment)
@@ -178,7 +199,7 @@ export const DesignInput = (): JSX.Element | null => {
             estTimeTaken: estTimeTakenTransformed,
             ...rest,
           },
-          { onSuccess: handleClose },
+          { onSuccess: handleCloseDrawer },
         )
       }
     },
@@ -348,7 +369,7 @@ export const DesignInput = (): JSX.Element | null => {
       <FormFieldDrawerActions
         isLoading={startPageMutation.isLoading}
         handleClick={handleClick}
-        handleCancel={handleClose}
+        handleCancel={handleCloseDrawer}
         buttonText="Save design"
       />
     </DrawerContentContainer>

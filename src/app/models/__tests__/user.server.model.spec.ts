@@ -65,7 +65,7 @@ describe('User Model', () => {
       const user = new User(invalidParams)
 
       // Assert
-      await expect(user.save()).rejects.toThrowError(
+      await expect(user.save()).rejects.toThrow(
         `${invalidNumber} is not a valid mobile number`,
       )
     })
@@ -79,7 +79,7 @@ describe('User Model', () => {
       })
 
       // Assert
-      await expect(user.save()).rejects.toThrowError('Agency is required')
+      await expect(user.save()).rejects.toThrow('Agency is required')
     })
 
     it('should throw error when email is not a valid agency', async () => {
@@ -94,7 +94,7 @@ describe('User Model', () => {
       const user = new User(invalidParams)
 
       // Assert
-      await expect(user.save()).rejects.toThrowError(
+      await expect(user.save()).rejects.toThrow(
         'This email is not a valid agency email',
       )
     })
@@ -115,7 +115,7 @@ describe('User Model', () => {
       const duplicateUser = new User(validParams)
 
       // Assert
-      await expect(duplicateUser.save()).rejects.toThrowError(
+      await expect(duplicateUser.save()).rejects.toThrow(
         'Account already exists with this email',
       )
     })
@@ -129,7 +129,7 @@ describe('User Model', () => {
       })
 
       // Assert
-      await expect(user.save()).rejects.toThrowError('Please enter your email')
+      await expect(user.save()).rejects.toThrow('Please enter your email')
     })
 
     it('should throw error when email is invalid', async () => {
@@ -143,7 +143,7 @@ describe('User Model', () => {
       const user = new User(invalidParams)
 
       // Assert
-      await expect(user.save()).rejects.toThrowError(
+      await expect(user.save()).rejects.toThrow(
         'This email is not a valid agency email',
       )
     })
