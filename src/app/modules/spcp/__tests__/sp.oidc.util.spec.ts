@@ -70,7 +70,7 @@ describe('SpOidcUtil', () => {
       )
 
       // Assert
-      await expect(tryRetry).rejects.toThrowError('3')
+      await expect(tryRetry).rejects.toThrow('3')
     })
   })
 

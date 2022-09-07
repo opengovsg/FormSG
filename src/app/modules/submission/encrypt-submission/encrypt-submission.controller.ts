@@ -247,7 +247,7 @@ const submitEncryptModeForm: ControllerHandler<
       break
     }
     case FormAuthType.SGID: {
-      const jwtPayloadResult = await SgidService.extractSgidJwtPayload(
+      const jwtPayloadResult = SgidService.extractSgidJwtPayload(
         req.cookies.jwtSgid,
       )
       if (jwtPayloadResult.isErr()) {

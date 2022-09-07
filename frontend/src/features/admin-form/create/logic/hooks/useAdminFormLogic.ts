@@ -23,6 +23,18 @@ export const useAdminFormLogic = () => {
     return pickBy(mapIdToField, (f) => ALLOWED_LOGIC_FIELDS.has(f.fieldType))
   }, [mapIdToField])
 
+  const logicedFieldIdsSet = useMemo(
+    () =>
+      form?.form_logics.reduce((set, logic) => {
+        logic.conditions.map((cond) => cond.field).forEach((id) => set.add(id))
+        if (logic.logicType === LogicType.ShowFields) {
+          logic.show.forEach((id) => set.add(id))
+        }
+        return set
+      }, new Set()),
+    [form?.form_logics],
+  )
+
   const hasError = useMemo(() => {
     if (!mapIdToField || !form?.form_logics) return false
     return form.form_logics.some(
@@ -41,8 +53,9 @@ export const useAdminFormLogic = () => {
     isLoading,
     formLogics: form?.form_logics,
     formFields: form?.form_fields,
-    logicableFields,
     mapIdToField,
+    logicableFields,
+    logicedFieldIdsSet,
     hasError,
   }
 }

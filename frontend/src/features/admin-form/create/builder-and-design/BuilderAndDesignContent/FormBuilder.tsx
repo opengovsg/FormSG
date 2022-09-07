@@ -11,6 +11,7 @@ import { useCreatePageSidebar } from '../../common/CreatePageSidebarContext'
 import { useAdminFormLogic } from '../../logic/hooks/useAdminFormLogic'
 import { FIELD_LIST_DROP_ID } from '../constants'
 import { DndPlaceholderProps } from '../types'
+import { isDirtySelector, useDirtyFieldStore } from '../useDirtyFieldStore'
 import {
   setToEditEndPageSelector,
   useFieldBuilderStore,
@@ -36,6 +37,7 @@ export const FormBuilder = ({
   const { formLogics } = useAdminFormLogic()
   const { handleBuilderClick } = useCreatePageSidebar()
   const setEditEndPage = useFieldBuilderStore(setToEditEndPageSelector)
+  const isDirty = useDirtyFieldStore(isDirtySelector)
   const visibleFieldIds = useMemo(
     () =>
       getVisibleFieldIds(
@@ -45,10 +47,17 @@ export const FormBuilder = ({
     [builderFields, formLogics],
   )
 
+  const handlePlaceholderClick = useCallback(
+    () => handleBuilderClick(false),
+    [handleBuilderClick],
+  )
+
   const handleEditEndPageClick = useCallback(() => {
-    setEditEndPage()
-    handleBuilderClick()
-  }, [handleBuilderClick, setEditEndPage])
+    setEditEndPage(isDirty)
+    if (isDirty) return
+
+    handleBuilderClick(false)
+  }, [handleBuilderClick, isDirty, setEditEndPage])
 
   const bg = useBgColor({ colorTheme: useDesignColorTheme() })
 
@@ -63,7 +72,6 @@ export const FormBuilder = ({
       pb={{ base: 0, md: '2rem' }}
       px={{ base: 0, md: '2rem' }}
       justify="center"
-      overflow="auto"
       {...props}
     >
       <Stack
@@ -115,7 +123,7 @@ export const FormBuilder = ({
                       ref={provided.innerRef}
                       {...provided.droppableProps}
                       isDraggingOver={snapshot.isDraggingOver}
-                      onClick={handleBuilderClick}
+                      onClick={handlePlaceholderClick}
                     />
                   )
                 }

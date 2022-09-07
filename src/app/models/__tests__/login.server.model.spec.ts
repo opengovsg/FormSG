@@ -53,7 +53,7 @@ describe('login.server.model', () => {
       })
 
       // Assert
-      await expect(actualPromise).rejects.toThrowError(
+      await expect(actualPromise).rejects.toThrow(
         mongoose.Error.ValidationError,
       )
     })
@@ -66,7 +66,7 @@ describe('login.server.model', () => {
       })
 
       // Assert
-      await expect(actualPromise).rejects.toThrowError(
+      await expect(actualPromise).rejects.toThrow(
         mongoose.Error.ValidationError,
       )
     })
@@ -79,7 +79,7 @@ describe('login.server.model', () => {
       })
 
       // Assert
-      await expect(actualPromise).rejects.toThrowError(
+      await expect(actualPromise).rejects.toThrow(
         mongoose.Error.ValidationError,
       )
     })
@@ -90,7 +90,7 @@ describe('login.server.model', () => {
       const actualPromise = LoginModel.create(omit(DEFAULT_PARAMS, 'authType'))
 
       // Assert
-      await expect(actualPromise).rejects.toThrowError(
+      await expect(actualPromise).rejects.toThrow(
         mongoose.Error.ValidationError,
       )
     })
@@ -101,7 +101,7 @@ describe('login.server.model', () => {
       const actualPromise = LoginModel.create(omit(DEFAULT_PARAMS, 'esrvcId'))
 
       // Assert
-      await expect(actualPromise).rejects.toThrowError(
+      await expect(actualPromise).rejects.toThrow(
         mongoose.Error.ValidationError,
       )
     })

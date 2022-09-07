@@ -160,7 +160,7 @@ export const BuilderAndDesignTab = (): JSX.Element => {
       >
         <BuilderAndDesignDrawer />
         <BuilderAndDesignContent placeholderProps={placeholderProps} />
-        <DeleteFieldModal />
+        {deleteFieldModalDisclosure.isOpen && <DeleteFieldModal />}
       </BuilderAndDesignContext.Provider>
     </DragDropContext>
   )

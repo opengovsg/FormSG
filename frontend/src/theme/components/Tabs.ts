@@ -46,6 +46,7 @@ const variantLineColor: PartsStyleFunction<typeof parts> = () => ({
   },
   tab: {
     ...textStyles['subhead-3'],
+    display: 'inline-flex',
     position: 'relative',
     borderRadius: '0.25rem',
     _selected: {
@@ -79,6 +80,12 @@ const variantLineLight: PartsStyleFunction<typeof parts> = (props) => {
       _hover: {
         color: 'primary.500',
       },
+      _disabled: {
+        color: 'primary.300',
+        _hover: {
+          color: 'primary.300',
+        },
+      },
       _selected: {
         _before: {
           bg: 'primary.500',
@@ -108,6 +115,12 @@ const variantLineDark: PartsStyleFunction<typeof parts> = (props) => {
           bg: 'white',
         },
         color: 'white',
+      },
+      _disabled: {
+        color: 'neutral.500',
+        _hover: {
+          color: 'neutral.500',
+        },
       },
       _focusVisible: {
         boxShadow: `0 0 0 2px white`,
@@ -148,6 +161,11 @@ const variantLine: PartsStyleFunction<typeof parts> = (props) => {
       _focus: {
         boxShadow: `0 0 0 2px var(--chakra-colors-${c}-500)`,
       },
+      _disabled: {
+        _hover: {
+          color: 'secondary.500',
+        },
+      },
     },
   })
 }
@@ -172,6 +190,9 @@ export const Tabs: ComponentMultiStyleConfig<typeof parts> = {
       textStyle: 'body-1',
       _selected: {
         textStyle: 'subhead-1',
+      },
+      _disabled: {
+        cursor: 'not-allowed',
       },
     },
     tabpanel: {

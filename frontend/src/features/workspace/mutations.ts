@@ -14,6 +14,7 @@ import { ADMINFORM_ROUTE } from '~constants/routes'
 import { useToast } from '~hooks/useToast'
 
 import { adminFormKeys } from '~features/admin-form/common/queries'
+import { trackCreateFormFailed } from '~features/analytics/AnalyticsService'
 
 import { workspaceKeys } from './queries'
 import {
@@ -42,6 +43,7 @@ const useCommonHooks = () => {
       toast({
         description: error.message,
       })
+      trackCreateFormFailed()
     },
     [toast],
   )

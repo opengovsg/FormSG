@@ -1,9 +1,10 @@
-import { ReactNode } from 'react'
+import { ReactNode, useCallback } from 'react'
 import { BiLeftArrowAlt } from 'react-icons/bi'
 import { Stack, Text } from '@chakra-ui/react'
 
 import IconButton from '~components/IconButton'
 
+import { isDirtySelector, useDirtyFieldStore } from '../../useDirtyFieldStore'
 import {
   setToInactiveSelector,
   useFieldBuilderStore,
@@ -19,7 +20,12 @@ export const BuilderDrawerContainer = ({
   title,
   children,
 }: BuilderDrawerContainerProps): JSX.Element | null => {
+  const isDirty = useDirtyFieldStore(isDirtySelector)
   const setToInactive = useFieldBuilderStore(setToInactiveSelector)
+
+  const handleBack = useCallback(() => {
+    setToInactive(isDirty)
+  }, [isDirty, setToInactive])
 
   return (
     <>
@@ -40,7 +46,7 @@ export const BuilderDrawerContainer = ({
           aria-label="Back to field selection"
           variant="clear"
           colorScheme="secondary"
-          onClick={setToInactive}
+          onClick={handleBack}
           icon={<BiLeftArrowAlt />}
         />
         <Text

@@ -56,7 +56,7 @@ describe('sp.oidc.service', () => {
       // Assert
       expect(spOidcServiceClass).toBeTruthy()
       expect(MockSpOidcClient).toHaveBeenCalledOnce()
-      expect(MockSpOidcClient).toBeCalledWith({
+      expect(MockSpOidcClient).toHaveBeenCalledWith({
         spOidcRpClientId: MOCK_PARAMS.spOidcRpClientId,
         spOidcRpRedirectUrl: MOCK_PARAMS.spOidcRpRedirectUrl,
         spOidcNdiDiscoveryEndpoint: MOCK_PARAMS.spOidcNdiDiscoveryEndpoint,

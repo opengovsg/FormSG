@@ -1,5 +1,5 @@
 import { composeStories } from '@storybook/testing-react'
-import { act, render, screen } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
 import {
@@ -16,11 +16,12 @@ const { ValidationRequired, ValidationOptional, ValidationAllowedDomain } =
 describe('validation required', () => {
   it('renders error when field is not filled before submitting', async () => {
     // Arrange
+    const user = userEvent.setup()
     render(<ValidationRequired />)
     const submitButton = screen.getByRole('button', { name: /submit/i })
 
     // Act
-    await act(async () => userEvent.click(submitButton))
+    await user.click(submitButton)
 
     // Assert
     // Should show error message.
@@ -29,6 +30,7 @@ describe('validation required', () => {
 
   it('renders success when field has valid email when submitted', async () => {
     // Arrange
+    const user = userEvent.setup()
     const inputLabel = ValidationRequired.args?.schema?.title ?? ''
     expect(inputLabel).not.toEqual('')
     render(<ValidationRequired />)
@@ -42,8 +44,8 @@ describe('validation required', () => {
 
     // Act
     // Valid NRIC
-    userEvent.type(input, expectedValue)
-    await act(async () => userEvent.click(submitButton))
+    await user.type(input, expectedValue)
+    await user.click(submitButton)
 
     // Assert
     // Should show success message.
@@ -57,11 +59,12 @@ describe('validation required', () => {
 describe('validation optional', () => {
   it('renders success even when field is empty before submitting', async () => {
     // Arrange
+    const user = userEvent.setup()
     render(<ValidationOptional />)
     const submitButton = screen.getByRole('button', { name: /submit/i })
 
     // Act
-    await act(async () => userEvent.click(submitButton))
+    await user.click(submitButton)
 
     // Assert
     // Should show success message.
@@ -72,6 +75,7 @@ describe('validation optional', () => {
 
   it('renders success when field has valid email when submitted', async () => {
     // Arrange
+    const user = userEvent.setup()
     const inputLabel = ValidationOptional.args?.schema?.title ?? ''
     expect(inputLabel).not.toEqual('')
     render(<ValidationRequired />)
@@ -85,8 +89,8 @@ describe('validation optional', () => {
 
     // Act
     // Valid email
-    userEvent.type(input, expectedValue)
-    await act(async () => userEvent.click(submitButton))
+    await user.type(input, expectedValue)
+    await user.click(submitButton)
 
     // Assert
     // Should show success message.
@@ -100,11 +104,10 @@ describe('validation optional', () => {
 describe('email validation', () => {
   it('renders error when invalid email is submitted', async () => {
     // Arrange
+    const user = userEvent.setup()
     const inputLabel = ValidationOptional.args?.schema?.title ?? ''
     expect(inputLabel).not.toEqual('')
-    await act(async () => {
-      render(<ValidationOptional />)
-    })
+    render(<ValidationOptional />)
     const input = screen.getByRole('textbox', {
       name: new RegExp(inputLabel, 'i'),
     }) as HTMLInputElement
@@ -114,8 +117,8 @@ describe('email validation', () => {
 
     // Act
     // Not an email
-    userEvent.type(input, 'S0000001B')
-    await act(async () => userEvent.click(submitButton))
+    await user.type(input, 'S0000001B')
+    await user.click(submitButton)
 
     // Assert
     // Should show error message.
@@ -124,12 +127,11 @@ describe('email validation', () => {
 
   it('renders error when email with disallowed email domain is submitted', async () => {
     // Arrange
+    const user = userEvent.setup()
     const schema = ValidationAllowedDomain.args?.schema
     const inputLabel = schema?.title ?? ''
     expect(inputLabel).not.toEqual('')
-    await act(async () => {
-      render(<ValidationOptional schema={schema} />)
-    })
+    render(<ValidationOptional schema={schema} />)
     const input = screen.getByRole('textbox', {
       name: new RegExp(inputLabel, 'i'),
     }) as HTMLInputElement
@@ -140,8 +142,8 @@ describe('email validation', () => {
     const validEmailButInvalidDomain = 'only-govsg-emails@example.com'
 
     // Act
-    userEvent.type(input, validEmailButInvalidDomain)
-    await act(async () => userEvent.click(submitButton))
+    await user.type(input, validEmailButInvalidDomain)
+    await user.click(submitButton)
 
     // Assert
     // Should show error message.

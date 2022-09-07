@@ -219,6 +219,11 @@ export const createDecimalValidationRules: ValidationRuleFn<
         return 'Please enter a valid decimal'
       }
 
+      // Validate leading zeros
+      if (/^0[0-9]/.test(val)) {
+        return 'Please enter a valid decimal without leading zeros'
+      }
+
       if (!validateByValue) return true
 
       if (

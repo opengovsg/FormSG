@@ -1,9 +1,14 @@
+import { useMemo } from 'react'
 import { Outlet, useParams } from 'react-router-dom'
 import { Flex } from '@chakra-ui/react'
 import { get } from 'lodash'
 
+import { getBannerProps } from '~utils/getBannerProps'
+import { Banner } from '~components/Banner'
+
 import AdminForbiddenErrorPage from '~pages/AdminForbiddenError'
 import NotFoundErrorPage from '~pages/NotFoundError'
+import { useEnv } from '~features/env/queries'
 // TODO #4279: Remove after React rollout is complete
 import { SwitchEnvIcon } from '~features/env/SwitchEnvIcon'
 
@@ -19,6 +24,19 @@ export const AdminFormLayout = (): JSX.Element => {
   const { formId } = useParams()
   if (!formId) throw new Error('No formId provided')
 
+  const { data: { siteBannerContent, adminBannerContent } = {} } = useEnv()
+
+  const bannerContent = useMemo(
+    // Use || instead of ?? so that we fall through even if previous banners are empty string.
+    () => siteBannerContent || adminBannerContent,
+    [adminBannerContent, siteBannerContent],
+  )
+
+  const bannerProps = useMemo(
+    () => getBannerProps(bannerContent),
+    [bannerContent],
+  )
+
   const { error } = useAdminForm()
 
   if (get(error, 'code') === 404 || get(error, 'code') === 410) {
@@ -30,6 +48,9 @@ export const AdminFormLayout = (): JSX.Element => {
 
   return (
     <Flex flexDir="column" height="100vh" overflow="hidden" pos="relative">
+      {bannerProps ? (
+        <Banner variant={bannerProps.variant}>{bannerProps.msg}</Banner>
+      ) : null}
       <AdminFormNavbar />
       <SwitchEnvIcon />
       <StorageResponsesProvider>

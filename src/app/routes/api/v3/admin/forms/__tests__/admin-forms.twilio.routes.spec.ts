@@ -113,8 +113,8 @@ describe('admin-form.twilio.routes', () => {
         .send(TWILIO_CREDENTIALS)
 
       // Assert
-      expect(createSecretsSpy).toBeCalled()
-      expect(formSpy).toBeCalled()
+      expect(createSecretsSpy).toHaveBeenCalled()
+      expect(formSpy).toHaveBeenCalled()
       expect(response.status).toEqual(200)
       expect(response.body).toEqual(MOCK_SUCCESSFUL_UPDATE)
     })
@@ -318,7 +318,7 @@ describe('admin-form.twilio.routes', () => {
 
       // Assert
       expect(twilioCacheSpy).toHaveBeenCalledWith(msgSrvcName)
-      expect(formSpy).toBeCalled()
+      expect(formSpy).toHaveBeenCalled()
       expect(deleteSecretSpy).toHaveBeenCalledWith({
         SecretId: msgSrvcName,
       })

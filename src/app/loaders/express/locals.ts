@@ -19,6 +19,7 @@ const frontendVars = {
   isSPMaintenance: spcpMyInfoConfig.isSPMaintenance, // Singpass maintenance message
   isCPMaintenance: spcpMyInfoConfig.isCPMaintenance, // Corppass maintenance message
   myInfoBannerContent: spcpMyInfoConfig.myInfoBannerContent, // MyInfo maintenance message
+  // TODO: remove after React rollout #4786
   GATrackingID: googleAnalyticsConfig.GATrackingID,
   spcpCookieDomain: spcpMyInfoConfig.spcpCookieDomain, // Cookie domain used for removing spcp cookies
   // react migration variables

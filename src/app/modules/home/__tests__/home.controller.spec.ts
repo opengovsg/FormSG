@@ -11,7 +11,7 @@ describe('home.controller', () => {
 
       HomeController.home(mockReq, mockRes, mockNext)
 
-      expect(mockRes.render).toBeCalledWith('index')
+      expect(mockRes.render).toHaveBeenCalledWith('index')
       expect(mockRes.render).toHaveBeenCalledTimes(1)
       expect(mockNext).not.toHaveBeenCalled()
     })

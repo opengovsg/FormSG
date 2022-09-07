@@ -1,5 +1,10 @@
 import { memo, useCallback, useMemo } from 'react'
-import { BiChevronLeft, BiChevronRight, BiLeftArrowAlt } from 'react-icons/bi'
+import {
+  BiChevronLeft,
+  BiChevronRight,
+  BiDownload,
+  BiLeftArrowAlt,
+} from 'react-icons/bi'
 import {
   Link as ReactLink,
   useLocation,
@@ -17,8 +22,11 @@ import {
   StackDivider,
   Text,
 } from '@chakra-ui/react'
+import simplur from 'simplur'
 
+import Button from '~components/Button'
 import IconButton from '~components/IconButton'
+import Spinner from '~components/Spinner'
 
 import {
   SecretKeyVerification,
@@ -27,6 +35,7 @@ import {
 import { useUnlockedResponses } from '../ResponsesPage/storage/UnlockedResponses/UnlockedResponsesProvider'
 
 import { DecryptedRow } from './DecryptedRow'
+import { useMutateDownloadAttachments } from './mutations'
 import { useIndividualSubmission } from './queries'
 
 const LoadingDecryption = memo(() => {
@@ -132,9 +141,35 @@ export const IndividualResponsePage = (): JSX.Element => {
     return `..?${searchParams}`
   }, [lastNavPage, lastNavSubmissionId])
 
-  if (!secretKey) {
-    return <SecretKeyVerification />
-  }
+  const attachmentDownloadUrls = useMemo(() => {
+    const attachmentDownloadUrls = new Map()
+    data?.responses.forEach(({ questionNumber, downloadUrl, answer }) => {
+      if (!questionNumber || !downloadUrl || !answer) return
+      attachmentDownloadUrls.set(questionNumber, {
+        url: downloadUrl,
+        filename: answer,
+      })
+    })
+    return attachmentDownloadUrls
+  }, [data?.responses])
+
+  const { downloadAttachmentsAsZipMutation } = useMutateDownloadAttachments()
+
+  const handleDownload = useCallback(() => {
+    if (attachmentDownloadUrls.size === 0 || !secretKey) return
+    return downloadAttachmentsAsZipMutation.mutate({
+      attachmentDownloadUrls,
+      secretKey,
+      fileName: `RefNo ${submissionId}.zip`,
+    })
+  }, [
+    attachmentDownloadUrls,
+    downloadAttachmentsAsZipMutation,
+    secretKey,
+    submissionId,
+  ])
+
+  if (!secretKey) return <SecretKeyVerification />
 
   return (
     <Grid
@@ -183,18 +218,42 @@ export const IndividualResponsePage = (): JSX.Element => {
         >
           <Text display="inline-flex">
             <Text as="span" textStyle="subhead-1">
-              Reference number:
+              Response ID:
             </Text>
             &nbsp;{submissionId}
           </Text>
           <Box display="inline-flex">
             <Text as="span" textStyle="subhead-1">
-              Time:&nbsp;
+              Timestamp:
             </Text>
             <Skeleton isLoaded={!isLoading && !isError}>
-              {data?.submissionTime ?? 'Loading...'}
+              &nbsp;{data?.submissionTime ?? 'Loading...'}
             </Skeleton>
           </Box>
+          {attachmentDownloadUrls.size > 0 && (
+            <Box alignItems="center" display="inline-flex">
+              <Text as="span" textStyle="subhead-1">
+                Attachments:
+              </Text>
+              <Skeleton isLoaded={!isLoading && !isError}>
+                &nbsp;
+                <Button
+                  variant="link"
+                  isDisabled={downloadAttachmentsAsZipMutation.isLoading}
+                  onClick={handleDownload}
+                  rightIcon={
+                    downloadAttachmentsAsZipMutation.isLoading ? (
+                      <Spinner fontSize="1.5rem" />
+                    ) : (
+                      <BiDownload fontSize="1.5rem" />
+                    )
+                  }
+                >
+                  {simplur`Download ${attachmentDownloadUrls.size} attachment[|s] as .zip`}
+                </Button>
+              </Skeleton>
+            </Box>
+          )}
         </Stack>
         <Stack>
           {isLoading || isError ? (

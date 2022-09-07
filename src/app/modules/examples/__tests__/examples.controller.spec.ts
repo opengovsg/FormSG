@@ -48,8 +48,8 @@ describe('examples.controller', () => {
       expect(MockExamplesService.getExampleForms).toHaveBeenCalledWith(
         MOCK_REQ_QUERY,
       )
-      expect(mockRes.status).toBeCalledWith(200)
-      expect(mockRes.json).toBeCalledWith(mockResult)
+      expect(mockRes.status).toHaveBeenCalledWith(200)
+      expect(mockRes.json).toHaveBeenCalledWith(mockResult)
     })
 
     it('should return 500 when error occurs whilst retrieving example forms', async () => {
@@ -67,8 +67,8 @@ describe('examples.controller', () => {
       expect(MockExamplesService.getExampleForms).toHaveBeenCalledWith(
         MOCK_REQ_QUERY,
       )
-      expect(mockRes.status).toBeCalledWith(500)
-      expect(mockRes.json).toBeCalledWith({
+      expect(mockRes.status).toHaveBeenCalledWith(500)
+      expect(mockRes.json).toHaveBeenCalledWith({
         message: 'Error retrieving example forms',
       })
     })
@@ -120,8 +120,8 @@ describe('examples.controller', () => {
       expect(MockExamplesService.getSingleExampleForm).toHaveBeenCalledWith(
         MOCK_REQ_PARAMS.formId,
       )
-      expect(mockRes.status).toBeCalledWith(200)
-      expect(mockRes.json).toBeCalledWith(mockResult)
+      expect(mockRes.status).toHaveBeenCalledWith(200)
+      expect(mockRes.json).toHaveBeenCalledWith(mockResult)
     })
 
     it('should return 404 when the form with given formId does not exist in the database', async () => {
@@ -144,8 +144,8 @@ describe('examples.controller', () => {
       expect(MockExamplesService.getSingleExampleForm).toHaveBeenCalledWith(
         MOCK_REQ_PARAMS.formId,
       )
-      expect(mockRes.status).toBeCalledWith(404)
-      expect(mockRes.json).toBeCalledWith({ message: mockErrorString })
+      expect(mockRes.status).toHaveBeenCalledWith(404)
+      expect(mockRes.json).toHaveBeenCalledWith({ message: mockErrorString })
     })
 
     it('should return 500 when error occurs whilst retrieving the example', async () => {
@@ -168,8 +168,8 @@ describe('examples.controller', () => {
       expect(MockExamplesService.getSingleExampleForm).toHaveBeenCalledWith(
         MOCK_REQ_PARAMS.formId,
       )
-      expect(mockRes.status).toBeCalledWith(500)
-      expect(mockRes.json).toBeCalledWith({ message: mockErrorString })
+      expect(mockRes.status).toHaveBeenCalledWith(500)
+      expect(mockRes.json).toHaveBeenCalledWith({ message: mockErrorString })
     })
   })
 })

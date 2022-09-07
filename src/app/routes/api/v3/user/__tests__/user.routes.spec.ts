@@ -102,7 +102,7 @@ describe('user.routes', () => {
       const response = await session.get('/user')
 
       // Assert
-      expect(retrieveUserSpy).toBeCalled()
+      expect(retrieveUserSpy).toHaveBeenCalled()
       expect(response.status).toEqual(500)
       expect(response.body).toEqual({ message: mockErrorString })
     })
@@ -235,7 +235,7 @@ describe('user.routes', () => {
       })
 
       // Assert
-      expect(createOtpSpy).toBeCalled()
+      expect(createOtpSpy).toHaveBeenCalled()
       expect(response.status).toEqual(500)
       expect(response.body).toEqual(mockErrorString)
     })
@@ -485,7 +485,7 @@ describe('user.routes', () => {
       })
 
       // Assert
-      expect(incrementSpy).toBeCalled()
+      expect(incrementSpy).toHaveBeenCalled()
       expect(response.status).toEqual(500)
       expect(response.body).toEqual(mockErrorString)
     })
@@ -508,7 +508,7 @@ describe('user.routes', () => {
       })
 
       // Assert
-      expect(uodateSpy).toBeCalled()
+      expect(uodateSpy).toHaveBeenCalled()
       expect(response.status).toEqual(500)
       expect(response.body).toEqual(mockErrorString)
     })

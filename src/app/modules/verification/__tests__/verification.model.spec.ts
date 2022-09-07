@@ -98,7 +98,7 @@ describe('Verification Model', () => {
         fields: [field, field],
       })
       const verification = new VerificationModel(vfnParams)
-      await expect(verification.save()).rejects.toThrowError(
+      await expect(verification.save()).rejects.toThrow(
         'No duplicate field ids allowed for the same transaction',
       )
     })

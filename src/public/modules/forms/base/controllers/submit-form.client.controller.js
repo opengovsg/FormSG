@@ -33,18 +33,12 @@ function SubmitFormController(
 
   // React migration checker - ONLY for plain form URLs (no suffixes like /template or /preview)
   if (/^\/[0-9a-fA-F]{24}\/?$/.test($location.path())) {
-    const adminCookie = $cookies.get($window.reactMigrationAdminCookieName)
     const respondentCookie = $cookies.get(
       $window.reactMigrationRespondentCookieName,
     )
 
-    if (adminCookie) {
-      if (adminCookie === 'react') {
-        $window.location.href = `/${form._id}`
-        return
-      }
-    } else if (respondentCookie === 'react') {
-      $window.location.href = `/${form._id}`
+    if (respondentCookie === 'react') {
+      $window.location.assign(`/${form._id}`)
       return
     }
   }
