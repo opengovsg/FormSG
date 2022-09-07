@@ -45,19 +45,26 @@ export const CompleteScreen = ({
     // Success count is less than expected count.
     // This means some responses were not downloaded successfully.
     // Show the user the number of responses that were not downloaded.
+    // Not inlining conditional since simplur seems to not work with inlined conditionals.
+    if (isWithAttachments) {
+      return simplur`**${successCount.toLocaleString()}** ${[
+        successCount,
+      ]}response[|s] and attachment[|s] ha[s|ve] been downloaded successfully, refer to the downloaded CSV file for more details`
+    }
     return simplur`**${successCount.toLocaleString()}** ${[
       successCount,
-    ]}response[|s]${
-      isWithAttachments ? ' and attachment[|s]' : ''
-    } ha[s|ve] been downloaded successfully, refer to the downloaded CSV file for more details`
+    ]}response[|s] ha[s|ve] been downloaded successfully, refer to the downloaded CSV file for more details`
   }, [downloadMetadata, isWithAttachments])
 
   const attachmentErrorMessage = useMemo(() => {
     if (!downloadMetadata?.errorCount) return ''
 
-    return simplur`**${downloadMetadata.errorCount}** response[|s]${
-      isWithAttachments ? ' and attachment[|s]' : ''
-    } could not be downloaded.`
+    // Not inlining conditional since simplur seems to not work with inlined conditionals.
+    if (isWithAttachments) {
+      return simplur`**${downloadMetadata.errorCount}** response[|s] and attachment[|s] could not be downloaded.`
+    }
+
+    return simplur`**${downloadMetadata.errorCount}** response[|s]$ could not be downloaded.`
   }, [downloadMetadata?.errorCount, isWithAttachments])
 
   return (
