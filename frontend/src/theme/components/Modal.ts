@@ -18,7 +18,7 @@ const baseStyleDialog: SystemStyleFunction = (props) => {
   const { scrollBehavior } = props
   return {
     borderRadius: '0.25rem',
-    my: '8rem',
+    my: '4rem',
     maxH: scrollBehavior === 'inside' ? 'calc(100% - 16rem)' : undefined,
     boxShadow: 'md',
   }
