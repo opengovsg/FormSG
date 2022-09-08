@@ -32,14 +32,20 @@ export const EmailFormSection = ({
 
   const {
     formState: { errors },
+    reset,
   } = formMethods
 
   const { mutateFormEmails } = useMutateFormSettings()
 
-  const handleSubmitEmails = ({ emails }: { emails: string[] }) => {
-    if (isEqual(new Set(emails.filter(Boolean)), initialEmailSet)) return
-    return mutateFormEmails.mutate(emails)
-  }
+  const handleSubmitEmails = useCallback(
+    ({ emails }: { emails: string[] }) => {
+      if (isEqual(new Set(emails.filter(Boolean)), initialEmailSet)) {
+        return reset({ emails: initialEmails })
+      }
+      return mutateFormEmails.mutate(emails)
+    },
+    [initialEmailSet, initialEmails, mutateFormEmails, reset],
+  )
 
   return (
     <FormProvider {...formMethods}>
@@ -71,7 +77,7 @@ const AdminEmailRecipientsInput = ({
   const tagValidation = useMemo(() => isEmail, [])
 
   const handleBlur = useCallback(() => {
-    // Get rid of bad input before submitting.
+    // Get rid of bad tags before submitting.
     setValue(
       'emails',
       getValues('emails').filter((email) => tagValidation(email)),
