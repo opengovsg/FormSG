@@ -45,11 +45,11 @@ export const UnlockedResponses = (): JSX.Element => {
         mb="1rem"
         alignItems="end"
         color="secondary.500"
-        gridTemplateColumns={{ base: 'auto', md: 'auto 1fr' }}
-        gridGap={{ base: '0.5rem', md: '1.5rem' }}
+        gridTemplateColumns={{ base: 'auto 1fr', lg: 'auto 1fr auto' }}
+        gridGap="0.5rem"
         gridTemplateAreas={{
-          base: "'submissions' 'export'",
-          md: "'submissions export'",
+          base: "'submissions search' 'export export'",
+          lg: "'submissions search export'",
         }}
       >
         <Stack
@@ -67,19 +67,29 @@ export const UnlockedResponses = (): JSX.Element => {
             </Text>
           </Skeleton>
         </Stack>
-        <Stack direction="row" gridArea="export" justifySelf="end">
+
+        <Flex gridArea="search" justifySelf="end">
           <SubmissionSearchbar
             submissionId={submissionId}
             setSubmissionId={setSubmissionId}
             isAnyFetching={isAnyFetching}
           />
+        </Flex>
+
+        <Stack
+          direction={{ base: 'column', sm: 'row' }}
+          justifySelf={{ base: 'start', sm: 'end' }}
+          gridArea="export"
+        >
           <DateRangeInput value={dateRange} onChange={setDateRange} />
           <DownloadButton />
         </Stack>
       </Grid>
+
       <Box mb="3rem" overflow="auto" flex={1}>
         <ResponsesTable />
       </Box>
+
       <Box display={isLoading || countToUse === 0 ? 'none' : ''}>
         <Pagination
           totalCount={countToUse ?? 0}

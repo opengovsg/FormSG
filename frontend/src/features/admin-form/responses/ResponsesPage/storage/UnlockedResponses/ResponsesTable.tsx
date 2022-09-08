@@ -24,14 +24,14 @@ const RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
     maxWidth: 100, // maxWidth is only used as a limit for resizing
   },
   {
-    Header: 'Reference ID',
+    Header: 'Response ID',
     accessor: 'refNo',
     minWidth: 200,
     width: 300,
     maxWidth: 240, // maxWidth is only used as a limit for resizing
   },
   {
-    Header: 'Submission time',
+    Header: 'Timestamp',
     accessor: 'submissionTime',
     minWidth: 200,
     width: 300,
