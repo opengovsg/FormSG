@@ -154,6 +154,10 @@ export const EditConditionBlock = ({
       case BasicField.YesNo:
         return ['Yes', 'No']
       case BasicField.Radio:
+        if (mappedField.othersRadioButton)
+          // 'Others' does not show up in fieldOptions
+          return mappedField.fieldOptions.concat('Others')
+        return mappedField.fieldOptions
       case BasicField.Dropdown:
         return mappedField.fieldOptions
       case BasicField.Rating:
