@@ -10,6 +10,8 @@ import {
   ViewedEmergencyContactDecorator,
 } from '~utils/storybook'
 
+import { FEATURE_UPDATE_LIST } from '~features/whats-new/FeatureUpdateList'
+
 import { AdminNavBar, AdminNavBarProps } from './AdminNavBar'
 
 export default {
@@ -53,3 +55,43 @@ MobileExpanded.args = Expanded.args
 
 export const Tablet = Template.bind({})
 Tablet.parameters = getTabletViewParameters()
+
+export const WhatsNewFeatureNotificationShown = Template.bind({})
+WhatsNewFeatureNotificationShown.parameters = {
+  msw: [
+    getUser({
+      delay: 0,
+      mockUser: {
+        ...MOCK_USER,
+        flags: {},
+      },
+    }),
+  ],
+}
+
+export const WhatsNewFeatureNotificationNotShown = Template.bind({})
+WhatsNewFeatureNotificationNotShown.parameters = {
+  msw: [
+    getUser({
+      delay: 0,
+      mockUser: {
+        ...MOCK_USER,
+        flags: { lastSeenFeatureUpdateVersion: FEATURE_UPDATE_LIST.version },
+      },
+    }),
+  ],
+}
+
+export const WhatsNewFeatureMobileNotificationShown = Template.bind({})
+WhatsNewFeatureMobileNotificationShown.parameters = {
+  ...Mobile.parameters,
+  msw: [
+    getUser({
+      delay: 0,
+      mockUser: {
+        ...MOCK_USER,
+        flags: {},
+      },
+    }),
+  ],
+}

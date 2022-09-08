@@ -1,6 +1,12 @@
 import { useMemo } from 'react'
 import { Components } from 'react-markdown'
-import { CSSObject, ListItem, OrderedList, Text } from '@chakra-ui/react'
+import {
+  CSSObject,
+  ListItem,
+  OrderedList,
+  Text,
+  UnorderedList,
+} from '@chakra-ui/react'
 
 import Link from '~components/Link'
 
@@ -13,6 +19,10 @@ type MdComponentStyles = {
    * If exists, will be used for styling text
    */
   text?: CSSObject
+  /**
+   * If exists, will be used for styling text
+   */
+  list?: CSSObject
 }
 
 type UseMdComponentsProps = {
@@ -34,6 +44,13 @@ export const useMdComponents = ({
     [styles.link],
   )
 
+  const listStyles = useMemo(
+    () => ({
+      ...(styles?.list ? { sx: styles.list } : {}),
+    }),
+    [styles.list],
+  )
+
   const mdComponents: Components = useMemo(
     () => ({
       ol: ({ node, ordered, ...props }) => (
@@ -43,6 +60,9 @@ export const useMdComponents = ({
           {...props}
           {...textStyles}
         />
+      ),
+      ul: ({ node, ordered, ...props }) => (
+        <UnorderedList {...props} {...listStyles} />
       ),
       li: ({ node, ordered, ...props }) => (
         <ListItem {...props} {...textStyles} />
@@ -57,7 +77,7 @@ export const useMdComponents = ({
       p: ({ node, ...props }) => <Text {...props} {...textStyles} />,
       ...overrides,
     }),
-    [linkStyles, overrides, textStyles],
+    [linkStyles, overrides, textStyles, listStyles],
   )
 
   return mdComponents

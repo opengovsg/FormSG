@@ -16,6 +16,9 @@ export const UserBase = z.object({
       sgid: z.boolean().optional(),
     })
     .optional(),
+  flags: z
+    .object({ lastSeenFeatureUpdateVersion: z.number().optional() })
+    .optional(),
   created: z.date(),
   lastAccessed: z.date().optional(),
   updatedAt: z.date(),
