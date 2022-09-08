@@ -90,6 +90,7 @@ export const useFormResponses = ({
     adminFormResponsesKeys.metadata(formId, params),
     () => getFormSubmissionsMetadata(formId, params),
     {
+      staleTime: 0,
       keepPreviousData: !submissionId,
       enabled: !!secretKey && (page > 0 || !!submissionId),
     },
