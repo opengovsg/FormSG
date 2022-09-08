@@ -90,11 +90,6 @@ export const useFormResponses = ({
     adminFormResponsesKeys.metadata(formId, params),
     () => getFormSubmissionsMetadata(formId, params),
     {
-      refetchOnMount: true,
-      // Consider data stale after 10s, prevent admins from initiating too many
-      // fetches by continuously clicking out and in of the results tab to
-      // refetch data
-      staleTime: 10000,
       keepPreviousData: !submissionId,
       enabled: !!secretKey && (page > 0 || !!submissionId),
     },
