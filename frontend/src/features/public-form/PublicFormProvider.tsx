@@ -8,9 +8,8 @@ import {
 } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { SubmitHandler } from 'react-hook-form'
-import { Text, useDisclosure } from '@chakra-ui/react'
+import { useDisclosure } from '@chakra-ui/react'
 import { differenceInMilliseconds, isPast } from 'date-fns'
-import { isEqual } from 'lodash'
 import get from 'lodash/get'
 import simplur from 'simplur'
 
@@ -25,7 +24,6 @@ import { FORMID_REGEX } from '~constants/routes'
 import { useTimeout } from '~hooks/useTimeout'
 import { useToast } from '~hooks/useToast'
 import { HttpError } from '~services/ApiService'
-import Link from '~components/Link'
 import { FormFieldValues } from '~templates/Field'
 
 import NotFoundErrorPage from '~pages/NotFoundError'
@@ -147,27 +145,9 @@ export const PublicFormProvider = ({
   )
 
   useEffect(() => {
-    if (data) {
-      if (!cachedDto) {
-        trackVisitPublicForm(data.form)
-        setCachedDto(data)
-      } else if (!desyncToastIdRef.current && !isEqual(data, cachedDto)) {
-        desyncToastIdRef.current = toast({
-          status: 'warning',
-          title: (
-            <Text textStyle="subhead-1">
-              The form has been modified and your submission may fail.
-            </Text>
-          ),
-          description: (
-            <Text as="span">
-              <Link href={window.location.href}>Refresh</Link> for the latest
-              version of the form.
-            </Text>
-          ),
-          duration: null,
-        })
-      }
+    if (data && !cachedDto) {
+      trackVisitPublicForm(data.form)
+      setCachedDto(data)
     }
   }, [data, cachedDto, toast, desyncToastIdRef])
 

@@ -17,6 +17,7 @@ import {
   updateEditStateSelector,
   useFieldBuilderStore,
 } from '../useFieldBuilderStore'
+import { getMutationErrorMessage } from '../utils/getMutationErrorMessage'
 
 export const useDuplicateFormField = () => {
   const { formId } = useParams()
@@ -82,7 +83,7 @@ export const useDuplicateFormField = () => {
     (error: Error) => {
       toast.closeAll()
       toast({
-        description: error.message,
+        description: getMutationErrorMessage(error),
         status: 'danger',
       })
     },
