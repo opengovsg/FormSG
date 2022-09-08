@@ -4,7 +4,6 @@
   "homepage": ".",
   "private": true,
   "dependencies": {
-    "@builder.io/partytown": "^0.5.1",
     "@chakra-ui/react": "^1.8.6",
     "@datadog/browser-rum": "^4.14.0",
     "@emotion/react": "^11.7.0",
@@ -77,11 +76,6 @@
     "zustand": "^3.6.5"
   },
   "scriptComments": {
-    "partytown": [
-      "Package that allows running of third-party scripts in a web-worker for better app performance.",
-      "Since Partytown is using a service worker, these files must be served from the same app.",
-      "Thus, the package library needs to be bundled in the final build."
-    ],
     "clean:emotion-types": [
       "Prevents injected emotion types from conflicting with ChakraUI types, such as `css`.",
       "See https://github.com/emotion-js/emotion/issues/1800"
@@ -96,9 +90,8 @@
   },
   "scripts": {
     "gen:theme-typings": "chakra-cli tokens src/theme/index.ts || true",
-    "partytown": "partytown copylib public/~partytown",
     "clean:emotion-types": "rimraf node_modules/@emotion/core/types",
-    "postinstall": "npm run gen:theme-typings && npm run clean:emotion-types && npm run partytown && npm --prefix ../shared install",
+    "postinstall": "npm run gen:theme-typings && npm run clean:emotion-types && npm --prefix ../shared install",
     "start": "env-cmd -f .buildtime-env craco start",
     "build": "cross-env CI=false BUILD_PATH='../dist/frontend' INLINE_RUNTIME_CHUNK=false SKIP_PREFLIGHT_CHECK=true craco build",
     "test": "cross-env SKIP_PREFLIGHT_CHECK=true craco test --silent",
