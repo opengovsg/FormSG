@@ -91,8 +91,7 @@ export const TagInput = forwardRef<TagInputProps, 'input'>(
       (event: SyntheticEvent, tag: string) => {
         if (event.isDefaultPrevented()) return
         if (preventDuplicates && value.includes(tag)) return
-
-        onChange(value.concat([tag]))
+        onChange(value.concat(tag.split(',')))
       },
       [onChange, preventDuplicates, value],
     )
