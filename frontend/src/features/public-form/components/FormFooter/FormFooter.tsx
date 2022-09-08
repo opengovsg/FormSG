@@ -23,8 +23,8 @@ export const FormFooter = (): JSX.Element => {
           direction="column"
           spacing="1.5rem"
           align="center"
-          mx={{ md: '-1.5rem', lg: 0 }}
-          mb={{ md: '-1.5rem', lg: '2rem' }}
+          mx={{ lg: 0 }}
+          mb={{ lg: '2rem' }}
         >
           <Box id={captchaContainerId} />
           <Box w="100%">
@@ -32,6 +32,8 @@ export const FormFooter = (): JSX.Element => {
               variant="compact"
               containerProps={{
                 bg: bgColor,
+                px: { base: '1rem', md: 0 },
+                pb: { base: '3rem', md: '4rem', lg: 0 },
               }}
             />
           </Box>
