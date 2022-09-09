@@ -125,6 +125,8 @@ export const usePreviewForm = (
     adminFormKeys.previewForm(formId),
     () => previewForm(formId),
     {
+      // Treat preview form as static on load.
+      staleTime: Infinity,
       enabled: FORMID_REGEX.test(formId) && enabled,
     },
   )

@@ -269,9 +269,9 @@ export const useMutateFormSettings = () => {
       onSuccess: (newData, nextEnabled) => {
         handleSuccess({
           newData,
-          toastDescription: `Webhook retries toggled ${
-            nextEnabled ? 'on' : 'off'
-          }.`,
+          toastDescription: `Webhook retries have been ${
+            nextEnabled ? 'en' : 'dis'
+          }abled.`,
         })
       },
       onError: handleError,
