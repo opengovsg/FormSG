@@ -17,7 +17,6 @@ import {
   FormAuthType,
   FormResponseMode,
   PublicFormDto,
-  PublicFormViewDto,
 } from '~shared/types/form'
 
 import { FORMID_REGEX } from '~constants/routes'
@@ -124,9 +123,6 @@ export const PublicFormProvider = ({
     sitekey: data?.form.hasCaptcha ? captchaPublicKey : undefined,
   })
 
-  const [cachedDto, setCachedDto] = useState<PublicFormViewDto>()
-  const desyncToastIdRef = useRef<string | number>()
-
   const { isNotFormId, toast, vfnToastIdRef, expiryInMs, ...commonFormValues } =
     useCommonFormProvider(formId)
 
@@ -145,11 +141,8 @@ export const PublicFormProvider = ({
   )
 
   useEffect(() => {
-    if (data && !cachedDto) {
-      trackVisitPublicForm(data.form)
-      setCachedDto(data)
-    }
-  }, [data, cachedDto, toast, desyncToastIdRef])
+    if (data) trackVisitPublicForm(data.form)
+  }, [data])
 
   const isFormNotFound = useMemo(() => {
     return (
@@ -161,7 +154,7 @@ export const PublicFormProvider = ({
     if (vfnToastIdRef.current) {
       toast.close(vfnToastIdRef.current)
     }
-    const numVerifiable = cachedDto?.form.form_fields.filter((ff) =>
+    const numVerifiable = data?.form.form_fields.filter((ff) =>
       get(ff, 'isVerifiable'),
     ).length
 
@@ -177,7 +170,7 @@ export const PublicFormProvider = ({
         ]} field[|s] again.`,
       })
     }
-  }, [cachedDto?.form.form_fields, toast, vfnToastIdRef])
+  }, [data?.form.form_fields, toast, vfnToastIdRef])
 
   const { submitEmailModeFormMutation, submitStorageModeFormMutation } =
     usePublicFormMutations(formId, submissionData?.id ?? '')
@@ -186,7 +179,7 @@ export const PublicFormProvider = ({
 
   const handleSubmitForm: SubmitHandler<FormFieldValues> = useCallback(
     async (formInputs) => {
-      const { form } = cachedDto ?? {}
+      const { form } = data ?? {}
       if (!form) return
 
       let captchaResponse: string | null
@@ -250,7 +243,7 @@ export const PublicFormProvider = ({
       }
     },
     [
-      cachedDto,
+      data,
       getCaptchaResponse,
       showErrorToast,
       submitEmailModeFormMutation,
@@ -261,16 +254,16 @@ export const PublicFormProvider = ({
   useTimeout(generateVfnExpiryToast, expiryInMs)
 
   const handleLogout = useCallback(() => {
-    if (!cachedDto?.form || cachedDto.form.authType === FormAuthType.NIL) return
-    return handleLogoutMutation.mutate(cachedDto.form.authType)
-  }, [cachedDto?.form, handleLogoutMutation])
+    if (!data?.form || data.form.authType === FormAuthType.NIL) return
+    return handleLogoutMutation.mutate(data.form.authType)
+  }, [data?.form, handleLogoutMutation])
 
   const isAuthRequired = useMemo(
     () =>
-      !!cachedDto?.form &&
-      cachedDto.form.authType !== FormAuthType.NIL &&
-      !cachedDto.spcpSession,
-    [cachedDto?.form, cachedDto?.spcpSession],
+      !!data?.form &&
+      data.form.authType !== FormAuthType.NIL &&
+      !data.spcpSession,
+    [data?.form, data?.spcpSession],
   )
 
   if (isNotFormId) {
@@ -288,15 +281,13 @@ export const PublicFormProvider = ({
         isAuthRequired,
         captchaContainerId: containerId,
         expiryInMs,
-        isLoading: isLoading || (!!cachedDto?.form.hasCaptcha && !hasLoaded),
+        isLoading: isLoading || (!!data?.form.hasCaptcha && !hasLoaded),
         ...commonFormValues,
-        ...cachedDto,
+        ...data,
         ...rest,
       }}
     >
-      <Helmet
-        title={isFormNotFound ? 'Form not found' : cachedDto?.form.title}
-      />
+      <Helmet title={isFormNotFound ? 'Form not found' : data?.form.title} />
       {isFormNotFound ? <FormNotFound message={error?.message} /> : children}
     </PublicFormContext.Provider>
   )

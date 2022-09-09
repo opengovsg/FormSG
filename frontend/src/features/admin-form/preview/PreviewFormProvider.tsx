@@ -4,11 +4,7 @@ import { SubmitHandler } from 'react-hook-form'
 import get from 'lodash/get'
 import simplur from 'simplur'
 
-import {
-  FormAuthType,
-  FormResponseMode,
-  PreviewFormViewDto,
-} from '~shared/types/form'
+import { FormAuthType, FormResponseMode } from '~shared/types/form'
 
 import { usePreviewForm } from '~/features/admin-form/common/queries'
 import { FormNotFound } from '~/features/public-form/components/FormNotFound'
@@ -44,8 +40,6 @@ export const PreviewFormProvider = ({
     /* enabled= */ !submissionData,
   )
 
-  const [cachedDto, setCachedDto] = useState<PreviewFormViewDto>()
-
   const { isNotFormId, toast, vfnToastIdRef, expiryInMs, ...commonFormValues } =
     useCommonFormProvider(formId)
 
@@ -63,14 +57,6 @@ export const PreviewFormProvider = ({
   )
 
   useEffect(() => {
-    if (data) {
-      if (!cachedDto) {
-        setCachedDto(data)
-      }
-    }
-  }, [data, cachedDto])
-
-  useEffect(() => {
     return () => {
       document.title = 'FormSG'
     }
@@ -86,7 +72,7 @@ export const PreviewFormProvider = ({
     if (vfnToastIdRef.current) {
       toast.close(vfnToastIdRef.current)
     }
-    const numVerifiable = cachedDto?.form.form_fields.filter((ff) =>
+    const numVerifiable = data?.form.form_fields.filter((ff) =>
       get(ff, 'isVerifiable'),
     ).length
 
@@ -102,16 +88,16 @@ export const PreviewFormProvider = ({
         ]} field[|s] again.`,
       })
     }
-  }, [cachedDto?.form.form_fields, toast, vfnToastIdRef])
+  }, [data?.form.form_fields, toast, vfnToastIdRef])
 
   useTimeout(generateVfnExpiryToast, expiryInMs)
 
   const isAuthRequired = useMemo(
     () =>
-      !!cachedDto?.form &&
-      cachedDto.form.authType !== FormAuthType.NIL &&
-      !cachedDto.spcpSession,
-    [cachedDto?.form, cachedDto?.spcpSession],
+      !!data?.form &&
+      data.form.authType !== FormAuthType.NIL &&
+      !data.spcpSession,
+    [data?.form, data?.spcpSession],
   )
 
   const { submitEmailModeFormMutation, submitStorageModeFormMutation } =
@@ -119,7 +105,7 @@ export const PreviewFormProvider = ({
 
   const handleSubmitForm: SubmitHandler<FormFieldValues> = useCallback(
     async (formInputs) => {
-      const { form } = cachedDto ?? {}
+      const { form } = data ?? {}
       if (!form) return
 
       switch (form.responseMode) {
@@ -166,7 +152,7 @@ export const PreviewFormProvider = ({
       }
     },
     [
-      cachedDto,
+      data,
       showErrorToast,
       submitEmailModeFormMutation,
       submitStorageModeFormMutation,
@@ -188,13 +174,11 @@ export const PreviewFormProvider = ({
         expiryInMs,
         isLoading,
         ...commonFormValues,
-        ...cachedDto,
+        ...data,
         ...rest,
       }}
     >
-      <Helmet
-        title={isFormNotFound ? 'Form not found' : cachedDto?.form.title}
-      />
+      <Helmet title={isFormNotFound ? 'Form not found' : data?.form.title} />
       {isFormNotFound ? <FormNotFound message={error?.message} /> : children}
     </PublicFormContext.Provider>
   )
