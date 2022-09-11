@@ -73,7 +73,7 @@ export const WorkspacePage = (): JSX.Element => {
         isOpen={createFormModalDisclosure.isOpen}
         onClose={createFormModalDisclosure.onClose}
       />
-      <Flex direction="column" h="100vh">
+      <Flex direction="column" h="100%">
         {bannerProps ? (
           <Banner variant={bannerProps.variant}>{bannerProps.msg}</Banner>
         ) : null}

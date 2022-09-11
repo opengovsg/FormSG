@@ -22,7 +22,7 @@ export const BillingPage = (): JSX.Element => {
     setEsrvcId(esrvcId?.trim())
 
   return (
-    <Flex direction="column" h="100vh">
+    <Flex direction="column" h="100%">
       <AdminNavBar />
       <Container
         overflowY="auto"

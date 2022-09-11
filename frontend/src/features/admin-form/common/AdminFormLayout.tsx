@@ -47,7 +47,7 @@ export const AdminFormLayout = (): JSX.Element => {
   }
 
   return (
-    <Flex flexDir="column" height="100vh" overflow="hidden" pos="relative">
+    <Flex flexDir="column" height="100%" overflow="hidden" pos="relative">
       {bannerProps ? (
         <Banner variant={bannerProps.variant}>{bannerProps.msg}</Banner>
       ) : null}
