@@ -5,7 +5,7 @@ import {
   useForm,
   useFormContext,
 } from 'react-hook-form'
-import { FormControl } from '@chakra-ui/react'
+import { FormControl, useToast } from '@chakra-ui/react'
 import { get, isEmpty, isEqual } from 'lodash'
 import isEmail from 'validator/lib/isEmail'
 
@@ -51,6 +51,15 @@ export const EmailFormSection = ({
 
     return mutateFormEmails.mutate(nextEmails)
   }
+  const errorToast = useToast({ status: 'error', isClosable: true })
+
+  const onInvalid = () => {
+    reset({ emails: settings.emails })
+    if (get(errors, 'emails.type') === 'required') {
+      errorToast.closeAll()
+      errorToast({ description: get(errors, 'emails.message') })
+    }
+  }
 
   return (
     <FormProvider {...formMethods}>
@@ -62,7 +71,10 @@ export const EmailFormSection = ({
         >
           Emails where responses will be sent
         </FormLabel>
-        <AdminEmailRecipientsInput onSubmit={handleSubmitEmails} />
+        <AdminEmailRecipientsInput
+          onSubmit={handleSubmitEmails}
+          onInvalid={onInvalid}
+        />
         <FormErrorMessage>{get(errors, 'emails.message')}</FormErrorMessage>
       </FormControl>
     </FormProvider>
@@ -71,17 +83,18 @@ export const EmailFormSection = ({
 
 interface AdminEmailRecipientsInputProps {
   onSubmit: (params: { emails: string[] }) => void
+  onInvalid?: () => void
 }
 
 const AdminEmailRecipientsInput = ({
   onSubmit,
+  onInvalid,
 }: AdminEmailRecipientsInputProps): JSX.Element => {
-  const { control, handleSubmit, reset } =
-    useFormContext<{ emails: string[] }>()
+  const { control, handleSubmit } = useFormContext<{ emails: string[] }>()
 
   const handleBlur = useCallback(() => {
-    return handleSubmit(onSubmit, () => reset())()
-  }, [handleSubmit, onSubmit, reset])
+    return handleSubmit(onSubmit, onInvalid)()
+  }, [handleSubmit, onSubmit, onInvalid])
 
   return (
     <Controller
