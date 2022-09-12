@@ -8,11 +8,10 @@ import {
 } from '@chakra-ui/react'
 import { isSameDay } from 'date-fns'
 
-import { DAY_NAMES, generateClassNameForDate, MONTH_NAMES } from '../utils'
-
 import { useCalendar } from './CalendarContext'
 import { CalendarHeader } from './CalendarHeader'
 import { DayOfMonth } from './DayOfMonth'
+import { DAY_NAMES, generateClassNameForDate, MONTH_NAMES } from './utils'
 
 // eslint-disable-next-line @typescript-eslint/ban-types
 export const CalendarPanel = forwardRef<{}, 'button'>(

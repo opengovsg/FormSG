@@ -27,10 +27,9 @@ import {
 import { format, isValid, parse } from 'date-fns'
 
 import { BxCalendar } from '~assets/icons'
+import { Calendar, CalendarProps } from '~components/Calendar'
 import IconButton from '~components/IconButton'
 import Input, { InputProps } from '~components/Input'
-
-import { Calendar, CalendarProps } from './Calendar'
 
 export interface DatePickerProps
   extends CalendarProps,

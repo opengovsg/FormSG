@@ -19,7 +19,7 @@ import { useKey } from 'rooks'
 
 import { ThemeColorScheme } from '~theme/foundations/colours'
 
-import { DatePickerProps } from '../DatePicker'
+import { CalendarProps } from './Calendar'
 import {
   generateClassNameForDate,
   generateValidUuidClass,
@@ -27,7 +27,7 @@ import {
   getMonthOffsetFromToday,
   getNewDateFromKeyPress,
   getYearOptions,
-} from '../utils'
+} from './utils'
 
 const ARROW_KEY_NAMES = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight']
 
@@ -74,7 +74,7 @@ type PassthroughProps = {
 export type UseProvideCalendarProps = Pick<DayzedProps, 'monthsToDisplay'> &
   PassthroughProps
 
-interface CalendarContextProps extends DatePickerProps, PassthroughProps {
+interface CalendarContextProps extends CalendarProps, PassthroughProps {
   uuid: string
   currMonth: number
   currYear: number
