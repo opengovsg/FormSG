@@ -127,7 +127,7 @@ export const EditDate = ({ field }: EditDateProps): JSX.Element => {
     'dateValidation.customMinDate'
   > = useMemo(
     () => ({
-      // customMin is required if there is selected validation.
+      // either customMin or customMax is required if custom date range validation is selected.
       validate: {
         hasValidation: (val) => {
           const hasMaxValue =
@@ -142,6 +142,8 @@ export const EditDate = ({ field }: EditDateProps): JSX.Element => {
           const date = new Date(val)
           const maxDate = new Date(getValues('dateValidation.customMaxDate'))
           return (
+            !getValues('dateValidation.customMaxDate') || // Only min date
+            !val || // Only max date
             isEqual(date, maxDate) ||
             isBefore(date, maxDate) ||
             'Max date cannot be less than min date.'
