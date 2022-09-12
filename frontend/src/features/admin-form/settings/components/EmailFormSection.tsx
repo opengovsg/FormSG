@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 import {
   Controller,
   FormProvider,
@@ -39,13 +39,13 @@ export const EmailFormSection = ({
 
   const handleSubmitEmails = useCallback(
     ({ emails }: { emails: string[] }) => {
-      if (isEqual(new Set(emails.filter(Boolean)), initialEmailSet)) {
-        return reset({ emails: initialEmails })
-      }
+      if (isEqual(new Set(emails.filter(Boolean)), initialEmailSet)) return
       return mutateFormEmails.mutate(emails)
     },
-    [initialEmailSet, initialEmails, mutateFormEmails, reset],
+    [initialEmailSet, mutateFormEmails],
   )
+
+  useEffect(() => reset({ emails: initialEmails }), [initialEmails, reset])
 
   return (
     <FormProvider {...formMethods}>
