@@ -19,7 +19,8 @@ import { useKey } from 'rooks'
 
 import { ThemeColorScheme } from '~theme/foundations/colours'
 
-import { CalendarProps } from './Calendar'
+import { CalendarProps } from '../Calendar'
+
 import {
   generateClassNameForDate,
   generateValidUuidClass,
@@ -30,6 +31,8 @@ import {
 } from './utils'
 
 const ARROW_KEY_NAMES = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight']
+
+export type DateRangeValue = [null, null] | [Date, null] | [Date, Date]
 
 type PassthroughProps = {
   /**
@@ -52,7 +55,7 @@ type PassthroughProps = {
   /**
    * The dates that are selected.
    */
-  selectedDates?: Date | Date[]
+  selectedDates?: Date | DateRangeValue
   /**
    * Handler for when date is selected.
    */
@@ -85,7 +88,7 @@ interface CalendarContextProps extends CalendarProps, PassthroughProps {
   isDateFocusable: (d: Date) => boolean
   handleTodayClick: () => void
   dateToFocus: Date
-  selectedDates?: Date | Date[]
+  selectedDates?: Date | DateRangeValue
 }
 
 const CalendarContext = createContext<CalendarContextProps | undefined>(
@@ -249,7 +252,9 @@ const useProvideCalendar = ({
     showOutsideDays: monthsToDisplay === 1,
     offset: getMonthOffsetFromToday(today, currMonth, currYear),
     onOffsetChanged,
-    selected: selectedDates,
+    selected: !Array.isArray(selectedDates)
+      ? selectedDates
+      : (selectedDates.filter(Boolean) as Date[]),
     monthsToDisplay: monthsToDisplay,
   })
 

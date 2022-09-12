@@ -9,9 +9,9 @@ import {
 import { DATE_INPUT_THEME_KEY } from '~theme/components/DateInput'
 import { ThemeColorScheme } from '~theme/foundations/colours'
 
-import { CalendarProvider } from './CalendarContext'
-import { CalendarPanel } from './CalendarPanel'
-import { CalendarTodayButton } from './CalendarTodayButton'
+import { CalendarProvider } from './CalendarBase/CalendarContext'
+import { CalendarPanel } from './CalendarBase/CalendarPanel'
+import { CalendarTodayButton } from './CalendarBase/CalendarTodayButton'
 
 export interface CalendarProps {
   /**
