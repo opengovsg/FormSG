@@ -67,7 +67,7 @@ export const LoginForm = ({ onSubmit }: LoginFormProps): JSX.Element => {
       </FormControl>
       <Stack
         direction={{ base: 'column', lg: 'row' }}
-        spacing={{ base: '1.5rem', lg: '2.5rem' }}
+        spacing="1.5rem"
         align="center"
       >
         <Button
