@@ -41,20 +41,20 @@ export const ADMIN_EMAIL_VALIDATION_RULES: UseControllerProps['rules'] = {
     valid: (emails: string[]) => {
       return (
         emails.filter(Boolean).every((e) => validator.isEmail(e)) ||
-        'Please enter valid email(s) (e.g. me@example.com) separated by commas.'
+        'Please enter valid email(s) (e.g. me@example.com) separated by commas, as invalid emails will not be saved'
       )
     },
     duplicate: (emails: string[]) => {
       const truthyEmails = emails.filter(Boolean)
       return (
         new Set(truthyEmails).size === truthyEmails.length ||
-        'Please remove duplicate emails.'
+        'Please remove duplicate emails'
       )
     },
     maxLength: (emails: string[]) => {
       return (
         emails.filter(Boolean).length <= MAX_EMAIL_LENGTH ||
-        `Please limit number of emails to ${MAX_EMAIL_LENGTH}.`
+        `Please limit number of emails to ${MAX_EMAIL_LENGTH}`
       )
     },
   },
