@@ -7,7 +7,7 @@ import { mockDateDecorator } from '~utils/storybook'
 import { Calendar, CalendarProps } from './Calendar'
 
 export default {
-  title: 'Components/Calendar',
+  title: 'Components/Calendar/Calendar',
   component: Calendar,
   decorators: [mockDateDecorator],
   parameters: {

@@ -12,8 +12,9 @@ import { ThemeColorScheme } from '~theme/foundations/colours'
 import { CalendarProvider } from './CalendarBase/CalendarContext'
 import { CalendarPanel } from './CalendarBase/CalendarPanel'
 import { CalendarTodayButton } from './CalendarBase/CalendarTodayButton'
+import { CalendarBaseProps } from './CalendarBase/types'
 
-export interface CalendarProps {
+export interface CalendarProps extends CalendarBaseProps {
   /**
    * The current selected date.
    * If provided, the input will be a controlled input, and `onChange` must be provided.
