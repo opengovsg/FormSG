@@ -9,6 +9,7 @@ import React, {
 import ReactFocusLock from 'react-focus-lock'
 import InputMask from 'react-input-mask'
 import {
+  chakra,
   Flex,
   forwardRef,
   Popover,
@@ -22,6 +23,7 @@ import {
   Text,
   useControllableState,
   useFormControlProps,
+  useMultiStyleConfig,
 } from '@chakra-ui/react'
 import { format, isValid, parse } from 'date-fns'
 
@@ -94,7 +96,7 @@ export const DatePicker = forwardRef<DatePickerProps, 'input'>(
       closeCalendarOnChange = true,
       onBlur,
       onClick,
-      colorScheme,
+      colorScheme = 'primary',
       ...props
     },
     ref,
@@ -178,6 +180,10 @@ export const DatePicker = forwardRef<DatePickerProps, 'input'>(
       return allowManualInput ? Fragment : PopoverTrigger
     }, [allowManualInput])
 
+    const styles = useMultiStyleConfig('DateInput', {
+      colorScheme,
+    })
+
     return (
       <Flex>
         <Popover
@@ -188,9 +194,11 @@ export const DatePicker = forwardRef<DatePickerProps, 'input'>(
           {({ isOpen, onClose }) => (
             <>
               <PopoverAnchor>
-                <Flex flex={1}>
+                <Flex sx={styles.fieldwrapper}>
                   <InputTriggerOrFragment>
                     <Input
+                      variant="unstyled"
+                      sx={styles.field}
                       as={InputMask}
                       mask="99/99/9999"
                       value={inputDisplay}
