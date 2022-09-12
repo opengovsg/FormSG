@@ -87,7 +87,7 @@ export const DatePicker = forwardRef<DatePickerProps, 'input'>(
     })
 
     const [inputDisplay, setInputDisplay] = useState(
-      internalValue instanceof Date
+      internalValue && isValid(internalValue)
         ? format(internalValue, displayFormat, { locale })
         : '',
     )

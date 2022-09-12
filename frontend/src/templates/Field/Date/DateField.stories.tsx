@@ -11,7 +11,11 @@ import Button from '~components/Button'
 
 import { DateFieldSchema } from '../types'
 
-import { DateField as DateFieldComponent, DateFieldProps } from './DateField'
+import {
+  DATE_DISPLAY_FORMAT,
+  DateField as DateFieldComponent,
+  DateFieldProps,
+} from './DateField'
 
 const MOCKED_TODAY_DATE = '2021-12-13'
 
@@ -120,7 +124,7 @@ ValidationNoFuture.args = {
   },
   defaultValue: lightFormat(
     addDays(new Date(MOCKED_TODAY_DATE), 10),
-    'yyyy-MM-dd',
+    DATE_DISPLAY_FORMAT,
   ),
 }
 
@@ -137,7 +141,7 @@ ValidationNoPast.args = {
   },
   defaultValue: lightFormat(
     addDays(new Date(MOCKED_TODAY_DATE), -10),
-    'yyyy-MM-dd',
+    DATE_DISPLAY_FORMAT,
   ),
 }
 
@@ -152,5 +156,5 @@ ValidationCustomRange.args = {
       selectedDateValidation: DateSelectedValidation.Custom,
     },
   },
-  defaultValue: '2021-12-26',
+  defaultValue: '26/12/2021',
 }

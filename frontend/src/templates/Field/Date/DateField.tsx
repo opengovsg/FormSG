@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from 'react'
 import { Controller, useFormContext } from 'react-hook-form'
+import { format, parse } from 'date-fns'
 
 import { FormColorTheme } from '~shared/types'
 import { DateSelectedValidation } from '~shared/types/field'
@@ -10,10 +11,13 @@ import {
   isDateOutOfRange,
 } from '~utils/date'
 import { createDateValidationRules } from '~utils/fieldValidation'
-import DateInput from '~components/DatePicker'
+import { DatePicker } from '~components/DatePicker2'
 
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
 import { DateFieldSchema, SingleAnswerFieldInput } from '../types'
+
+export const DATE_DISPLAY_FORMAT = 'dd/MM/yyyy'
+export const DATE_PARSE_FORMAT = 'dd/MM/yyyy'
 
 export interface DateFieldProps extends BaseFieldProps {
   schema: DateFieldSchema
@@ -63,8 +67,14 @@ export const DateField = ({
         name={schema._id}
         rules={validationRules}
         defaultValue=""
-        render={({ field }) => (
-          <DateInput
+        render={({ field: { value, onChange, ...field } }) => (
+          <DatePicker
+            displayFormat={DATE_DISPLAY_FORMAT}
+            dateFormat={DATE_PARSE_FORMAT}
+            onChange={(date) => {
+              return onChange(date ? format(date, DATE_DISPLAY_FORMAT) : '')
+            }}
+            value={value ? parse(value, DATE_PARSE_FORMAT, new Date()) : null}
             colorScheme={`theme-${colorTheme}`}
             {...field}
             isDateUnavailable={isDateUnavailable}
