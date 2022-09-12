@@ -110,6 +110,7 @@ const variantOutline: PartsStyleFunction<typeof parts> = (props) => {
 
   return {
     fieldwrapper: {
+      cursor: 'text',
       flex: 1,
       zIndex: 1,
       px: '1rem',
