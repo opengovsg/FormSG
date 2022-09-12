@@ -9,7 +9,6 @@ import React, {
 import ReactFocusLock from 'react-focus-lock'
 import InputMask from 'react-input-mask'
 import {
-  chakra,
   Flex,
   forwardRef,
   Popover,
@@ -28,29 +27,14 @@ import {
 import { format, isValid, parse } from 'date-fns'
 
 import { BxCalendar } from '~assets/icons'
-import { ThemeColorScheme } from '~theme/foundations/colours'
-import DateInput from '~components/DatePicker'
 import IconButton from '~components/IconButton'
 import Input, { InputProps } from '~components/Input'
 
+import { Calendar, CalendarProps } from './Calendar'
+
 export interface DatePickerProps
-  extends Omit<
-    InputProps,
-    'value' | 'defaultValue' | 'onChange' | 'colorScheme'
-  > {
-  /**
-   * The current selected date.
-   * If provided, the input will be a controlled input, and `onChange` must be provided.
-   */
-  value?: Date | null
-  /**
-   * Callback fired when the date changes.
-   * If `value` is provided, this must be provided.
-   * @param {Date | null} date The new selected date.
-   */
-  onChange?: (date: Date | null) => void
-  /** The default selected date, used if input is uncontrolled */
-  defaultValue?: Date | null
+  extends CalendarProps,
+    Omit<InputProps, 'value' | 'defaultValue' | 'onChange' | 'colorScheme'> {
   /**
    * The `date-fns` format to display the date.
    * @defaultValue `dd/MM/yyyy`
@@ -71,10 +55,6 @@ export interface DatePickerProps
   closeCalendarOnChange?: boolean
   /** Locale of the date to be applied if provided. */
   locale?: Locale
-  /** Function to determine whether a date should be made unavailable. */
-  isDateUnavailable?: (d: Date) => boolean
-  /** Color scheme for date picker component */
-  colorScheme?: ThemeColorScheme
 }
 
 export const DatePicker = forwardRef<DatePickerProps, 'input'>(
@@ -149,11 +129,15 @@ export const DatePicker = forwardRef<DatePickerProps, 'input'>(
     }, [internalValue])
 
     const handleDateChange = useCallback(
-      (onClose: () => void) => (date: Date) => {
-        if (allowInvalidDates || isValid(date)) {
+      (onClose: () => void) => (date: Date | null) => {
+        if (allowInvalidDates || isValid(date) || !date) {
           setInternalValue(date)
         }
-        setInputDisplay(format(date, displayFormat, { locale }))
+        if (date) {
+          setInputDisplay(format(date, displayFormat, { locale }))
+        } else {
+          setInputDisplay('')
+        }
         closeCalendarOnChange && onClose()
       },
       [
@@ -251,11 +235,11 @@ export const DatePicker = forwardRef<DatePickerProps, 'input'>(
                       </Flex>
                     </PopoverHeader>
                     <PopoverBody p={0}>
-                      <DateInput.DatePicker
+                      <Calendar
                         colorScheme={colorScheme}
-                        date={internalValue ?? undefined}
+                        value={internalValue ?? undefined}
                         isDateUnavailable={isDateUnavailable}
-                        onSelectDate={handleDateChange(onClose)}
+                        onChange={handleDateChange(onClose)}
                         ref={initialFocusRef}
                       />
                     </PopoverBody>
