@@ -192,7 +192,6 @@ export const LandingPage = (): JSX.Element => {
             </Box>
           </Flex>
           <Box flex={1} aria-hidden>
-            {' '}
             <LottieAnimation
               // The link will always change in Chromatic so this should be ignored.
               data-chromatic="ignore"
@@ -320,7 +319,6 @@ export const LandingPage = (): JSX.Element => {
       <FeatureSection
         title="Help Center"
         imgSrc={helpCenterImg}
-        align="start"
         direction={{ base: 'column', lg: 'row' }}
       >
         <Box>
@@ -499,7 +497,6 @@ export const LandingPage = (): JSX.Element => {
       <FeatureSection
         title="All the government tools you need to manage your workflow"
         imgSrc={ogpSuiteImg}
-        align="start"
         direction={{ base: 'column', lg: 'row' }}
       >
         <SectionBodyText>
