@@ -1,6 +1,5 @@
 import { useCallback, useMemo } from 'react'
 import { Controller, useFormContext } from 'react-hook-form'
-import { format, parse } from 'date-fns'
 
 import { FormColorTheme } from '~shared/types'
 import { DateSelectedValidation } from '~shared/types/field'
@@ -71,10 +70,8 @@ export const DateField = ({
           <DatePicker
             displayFormat={DATE_DISPLAY_FORMAT}
             dateFormat={DATE_PARSE_FORMAT}
-            onChange={(date) => {
-              return onChange(date ? format(date, DATE_DISPLAY_FORMAT) : '')
-            }}
-            value={value ? parse(value, DATE_PARSE_FORMAT, new Date()) : null}
+            onInputValueChange={onChange}
+            inputValue={value}
             colorScheme={`theme-${colorTheme}`}
             {...field}
             isDateUnavailable={isDateUnavailable}

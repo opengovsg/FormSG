@@ -3,7 +3,7 @@
  * to the field schema.
  */
 import { RegisterOptions } from 'react-hook-form'
-import { isDate, parse } from 'date-fns'
+import { isValid, parse } from 'date-fns'
 import simplur from 'simplur'
 import validator from 'validator'
 
@@ -358,8 +358,9 @@ export const createDateValidationRules: ValidationRuleFn<DateFieldBase> = (
   return {
     ...createBaseValidationRules(schema),
     validate: {
-      validDate: (val) =>
-        !val || isDate(parseDate(val)) || 'Please enter a valid date',
+      validDate: (val) => {
+        return !val || isValid(parseDate(val)) || 'Please enter a valid date'
+      },
       noFuture: (val) => {
         if (
           !val ||

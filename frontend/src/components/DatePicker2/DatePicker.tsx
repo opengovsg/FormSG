@@ -4,7 +4,6 @@ import React, {
   useCallback,
   useMemo,
   useRef,
-  useState,
 } from 'react'
 import ReactFocusLock from 'react-focus-lock'
 import InputMask from 'react-input-mask'
@@ -54,6 +53,16 @@ export interface DatePickerProps
   closeCalendarOnChange?: boolean
   /** Locale of the date to be applied if provided. */
   locale?: Locale
+
+  /**
+   * Value to display in input, derived from the selected date.
+   * If provided, input will be controlled, and empty string denotes no date selection.
+   */
+  inputValue?: string
+  /** If provided, callback will be fired when the controlled input value changes. */
+  onInputValueChange?: (value: string) => void
+  /** Default value for uncontrolled input. */
+  defaultInputValue?: string
 }
 
 export const DatePicker = forwardRef<DatePickerProps, 'input'>(
@@ -62,6 +71,9 @@ export const DatePicker = forwardRef<DatePickerProps, 'input'>(
       value,
       defaultValue,
       onChange,
+      inputValue,
+      defaultInputValue,
+      onInputValueChange,
       displayFormat = 'dd/MM/yyyy',
       dateFormat = 'dd/MM/yyyy',
       isDisabled: isDisabledProp,
@@ -86,11 +98,19 @@ export const DatePicker = forwardRef<DatePickerProps, 'input'>(
       onChange,
     })
 
-    const [inputDisplay, setInputDisplay] = useState(
-      internalValue && isValid(internalValue)
-        ? format(internalValue, displayFormat, { locale })
-        : '',
+    const formatInputValue = useCallback(
+      (date: Date | null) => {
+        if (!date || !isValid(date)) return ''
+        return format(date, dateFormat, { locale })
+      },
+      [dateFormat, locale],
     )
+
+    const [internalInputValue, setInternalInputValue] = useControllableState({
+      defaultValue: defaultInputValue ?? formatInputValue(internalValue),
+      value: inputValue,
+      onChange: onInputValueChange,
+    })
 
     const fcProps = useFormControlProps({
       isInvalid: isInvalidProp,
@@ -102,15 +122,22 @@ export const DatePicker = forwardRef<DatePickerProps, 'input'>(
 
     const handleInputBlur: FocusEventHandler<HTMLInputElement> = useCallback(
       (e) => {
-        const date = parse(inputDisplay, dateFormat, new Date())
+        const date = parse(internalInputValue, dateFormat, new Date())
         // Clear if input is invalid on blur if invalid dates are not allowed.
         if (!allowInvalidDates && !isValid(date)) {
           setInternalValue(null)
-          setInputDisplay('')
+          setInternalInputValue('')
         }
         onBlur?.(e)
       },
-      [allowInvalidDates, dateFormat, inputDisplay, onBlur, setInternalValue],
+      [
+        allowInvalidDates,
+        dateFormat,
+        internalInputValue,
+        onBlur,
+        setInternalInputValue,
+        setInternalValue,
+      ],
     )
 
     const initialFocusRef = useRef<HTMLInputElement>(null)
@@ -133,9 +160,9 @@ export const DatePicker = forwardRef<DatePickerProps, 'input'>(
           setInternalValue(date)
         }
         if (date) {
-          setInputDisplay(format(date, displayFormat, { locale }))
+          setInternalInputValue(format(date, displayFormat, { locale }))
         } else {
-          setInputDisplay('')
+          setInternalInputValue('')
         }
         closeCalendarOnChange && onClose()
       },
@@ -144,6 +171,7 @@ export const DatePicker = forwardRef<DatePickerProps, 'input'>(
         closeCalendarOnChange,
         displayFormat,
         locale,
+        setInternalInputValue,
         setInternalValue,
       ],
     )
@@ -151,12 +179,12 @@ export const DatePicker = forwardRef<DatePickerProps, 'input'>(
     const handleInputChange = useCallback(
       (event: React.ChangeEvent<HTMLInputElement>) => {
         const date = parse(event.target.value, dateFormat, new Date())
-        setInputDisplay(event.target.value)
+        setInternalInputValue(event.target.value)
         if (isValid(date)) {
           setInternalValue(date)
         }
       },
-      [dateFormat, setInternalValue],
+      [dateFormat, setInternalInputValue, setInternalValue],
     )
 
     const InputTriggerOrFragment = useMemo(() => {
@@ -184,7 +212,7 @@ export const DatePicker = forwardRef<DatePickerProps, 'input'>(
                       sx={styles.field}
                       as={InputMask}
                       mask="99/99/9999"
-                      value={inputDisplay}
+                      value={internalInputValue}
                       onChange={handleInputChange}
                       placeholder={displayFormat.toLowerCase()}
                       maskPlaceholder={displayFormat.toLowerCase()}
