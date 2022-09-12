@@ -121,6 +121,11 @@ export const AdminFormCreatePageDecorator: DecoratorFn = (storyFn) => {
 export const mockDateDecorator: DecoratorFn = (storyFn, { parameters }) => {
   mockdate.reset()
 
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  useEffect(() => {
+    return () => mockdate.reset()
+  }, [])
+
   if (parameters.mockdate) {
     mockdate.set(parameters.mockdate)
 
