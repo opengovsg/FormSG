@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 import {
   Controller,
   FormProvider,
@@ -9,8 +9,6 @@ import { FormControl } from '@chakra-ui/react'
 import { get, isEmpty, isEqual } from 'lodash'
 import isEmail from 'validator/lib/isEmail'
 
-import { EmailFormSettings } from '~shared/types/form/form'
-
 import { GUIDE_PREVENT_EMAIL_BOUNCE } from '~constants/links'
 import { ADMIN_EMAIL_VALIDATION_RULES } from '~utils/formValidation'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
@@ -20,21 +18,16 @@ import { TagInput } from '~components/TagInput'
 import { useMutateFormSettings } from '../mutations'
 
 interface EmailFormSectionProps {
-  settings: EmailFormSettings
+  emails: string[]
 }
 
 export const EmailFormSection = ({
-  settings,
+  emails: initialEmails,
 }: EmailFormSectionProps): JSX.Element => {
-  const initialEmailSet = useMemo(
-    () => new Set(settings.emails),
-    [settings.emails],
-  )
+  const initialEmailSet = useMemo(() => new Set(initialEmails), [initialEmails])
   const formMethods = useForm({
     mode: 'onChange',
-    defaultValues: {
-      emails: settings.emails,
-    },
+    defaultValues: { emails: initialEmails },
   })
 
   const {
@@ -44,13 +37,15 @@ export const EmailFormSection = ({
 
   const { mutateFormEmails } = useMutateFormSettings()
 
-  const handleSubmitEmails = ({ emails: nextEmails }: { emails: string[] }) => {
-    if (isEqual(new Set(nextEmails.filter(Boolean)), initialEmailSet)) {
-      return reset()
-    }
+  const handleSubmitEmails = useCallback(
+    ({ emails }: { emails: string[] }) => {
+      if (isEqual(new Set(emails.filter(Boolean)), initialEmailSet)) return
+      return mutateFormEmails.mutate(emails)
+    },
+    [initialEmailSet, mutateFormEmails],
+  )
 
-    return mutateFormEmails.mutate(nextEmails)
-  }
+  useEffect(() => reset({ emails: initialEmails }), [initialEmails, reset])
 
   return (
     <FormProvider {...formMethods}>
@@ -76,12 +71,19 @@ interface AdminEmailRecipientsInputProps {
 const AdminEmailRecipientsInput = ({
   onSubmit,
 }: AdminEmailRecipientsInputProps): JSX.Element => {
-  const { control, handleSubmit, reset } =
+  const { getValues, setValue, control, handleSubmit } =
     useFormContext<{ emails: string[] }>()
 
+  const tagValidation = useMemo(() => isEmail, [])
+
   const handleBlur = useCallback(() => {
-    return handleSubmit(onSubmit, () => reset())()
-  }, [handleSubmit, onSubmit, reset])
+    // Get rid of bad tags before submitting.
+    setValue(
+      'emails',
+      getValues('emails').filter((email) => tagValidation(email)),
+    )
+    handleSubmit(onSubmit)()
+  }, [getValues, handleSubmit, onSubmit, setValue, tagValidation])
 
   return (
     <Controller
@@ -92,7 +94,7 @@ const AdminEmailRecipientsInput = ({
         <TagInput
           placeholder="Separate emails with a comma"
           {...field}
-          tagValidation={isEmail}
+          tagValidation={tagValidation}
           onBlur={handleBlur}
         />
       )}
