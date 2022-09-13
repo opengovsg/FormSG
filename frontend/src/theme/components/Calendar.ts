@@ -1,20 +1,13 @@
 import {
   anatomy,
   getColor,
-  PartsStyleFunction,
   PartsStyleObject,
   SystemStyleFunction,
 } from '@chakra-ui/theme-tools'
 
 import { ComponentMultiStyleConfig } from '~theme/types'
 
-import { Input } from './Input'
-
-export const DATE_INPUT_THEME_KEY = 'DateInput'
-
-const parts = anatomy('dateinput').parts(
-  'fieldwrapper',
-  'field',
+const parts = anatomy('calendar').parts(
   'container', // overall container
   'monthYearSelectorContainer', // container for month, year dropdowns and arrows
   'monthYearDropdownContainer', // container for month, year dropdowns
@@ -105,32 +98,7 @@ const sizes: Record<string, PartsStyleObject<typeof parts>> = {
   },
 }
 
-const variantOutline: PartsStyleFunction<typeof parts> = (props) => {
-  const inputFieldVariantOutline = Input.variants.outline(props).field
-
-  return {
-    fieldwrapper: {
-      cursor: 'text',
-      flex: 1,
-      zIndex: 1,
-      px: '1rem',
-      borderLeftRadius: '4px',
-      borderRightRadius: 0,
-      _focusWithin: inputFieldVariantOutline._focus,
-      ...inputFieldVariantOutline,
-    },
-    field: {
-      display: 'flex',
-      flex: 1,
-    },
-  }
-}
-
-const variants = {
-  outline: variantOutline,
-}
-
-export const DateInput: ComponentMultiStyleConfig<typeof parts> = {
+export const Calendar: ComponentMultiStyleConfig<typeof parts> = {
   parts: parts.keys,
   baseStyle: (props) => {
     return {
@@ -171,12 +139,8 @@ export const DateInput: ComponentMultiStyleConfig<typeof parts> = {
     }
   },
   sizes,
-  variants,
   defaultProps: {
-    variant: 'outline',
     colorScheme: 'primary',
     size: 'md',
-    focusBorderColor: Input.defaultProps.focusBorderColor,
-    errorBorderColor: Input.defaultProps.errorBorderColor,
   },
 }

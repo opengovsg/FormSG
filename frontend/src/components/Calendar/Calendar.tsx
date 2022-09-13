@@ -6,7 +6,6 @@ import {
   useMultiStyleConfig,
 } from '@chakra-ui/react'
 
-import { DATE_INPUT_THEME_KEY } from '~theme/components/DateInput'
 import { ThemeColorScheme } from '~theme/foundations/colours'
 
 import { CalendarProvider } from './CalendarBase/CalendarContext'
@@ -36,7 +35,7 @@ export interface CalendarProps extends CalendarBaseProps {
 
 export const Calendar = forwardRef<CalendarProps, 'input'>(
   ({ value, onChange, defaultValue, ...props }, initialFocusRef) => {
-    const styles = useMultiStyleConfig(DATE_INPUT_THEME_KEY, props)
+    const styles = useMultiStyleConfig('Calendar', props)
 
     const [internalValue, setInternalValue] = useControllableState({
       value,

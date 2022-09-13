@@ -286,7 +286,7 @@ const useProvideDateRangePicker = ({
     }
   }, [allowManualInput, disclosureProps])
 
-  const styles = useMultiStyleConfig('DateInput', {
+  const styles = useMultiStyleConfig('DatePicker', {
     colorScheme,
   })
 

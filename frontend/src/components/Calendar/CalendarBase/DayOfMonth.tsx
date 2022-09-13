@@ -15,8 +15,6 @@ import {
 } from 'date-fns'
 import { DateObj } from 'dayzed'
 
-import { DATE_INPUT_THEME_KEY } from '~theme/components/DateInput'
-
 import { useCalendar } from './CalendarContext'
 
 export interface DayOfMonthProps extends ButtonProps {
@@ -64,7 +62,7 @@ export const DayOfMonth = forwardRef<DayOfMonthProps, 'button'>(
       [date, onMouseEnterHighlight],
     )
 
-    const styles = useMultiStyleConfig(DATE_INPUT_THEME_KEY, {
+    const styles = useMultiStyleConfig('Calendar', {
       isSelected: selected,
       isToday: today,
       isOutsideCurrMonth,

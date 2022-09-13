@@ -8,8 +8,6 @@ import {
 } from '@chakra-ui/react'
 import { compareAsc } from 'date-fns'
 
-import { DATE_INPUT_THEME_KEY } from '~theme/components/DateInput'
-
 import { CalendarProvider } from './CalendarBase/CalendarContext'
 import { CalendarPanel } from './CalendarBase/CalendarPanel'
 import { CalendarTodayButton } from './CalendarBase/CalendarTodayButton'
@@ -35,7 +33,7 @@ export const RangeCalendar = forwardRef<RangeCalendarProps, 'input'>(
     { value, onChange, defaultValue = [null, null], ...props },
     initialFocusRef,
   ) => {
-    const styles = useMultiStyleConfig(DATE_INPUT_THEME_KEY, props)
+    const styles = useMultiStyleConfig('Calendar', props)
 
     const [hoveredDate, setHoveredDate] = useState<Date>()
 
