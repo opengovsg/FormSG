@@ -1,8 +1,9 @@
 import { Meta, Story } from '@storybook/react'
 
-import { mockDateDecorator } from '~utils/storybook'
+import { getMobileViewParameters, mockDateDecorator } from '~utils/storybook'
 
 import { DatePicker, DatePickerProps } from './DatePicker'
+import { MobileDatePicker as MobileDatePickerComponent } from './MobileDatePicker'
 
 export default {
   title: 'Components/DatePicker',
@@ -15,7 +16,6 @@ export default {
 
 const Template: Story<DatePickerProps> = (args) => <DatePicker {...args} />
 export const Default = Template.bind({})
-Default.args = {}
 
 export const DatePickerWithValue = Template.bind({})
 DatePickerWithValue.args = {
@@ -27,3 +27,8 @@ DatePickerDisallowManualInput.args = {
   allowManualInput: false,
   value: new Date('2021-09-13'),
 }
+
+export const MobileDatePicker: Story<DatePickerProps> = (args) => (
+  <MobileDatePickerComponent {...args} />
+)
+MobileDatePicker.parameters = getMobileViewParameters()
