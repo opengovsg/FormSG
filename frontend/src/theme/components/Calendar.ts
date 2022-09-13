@@ -122,15 +122,11 @@ export const Calendar: ComponentMultiStyleConfig<typeof parts> = {
         borderColor: 'neutral.300',
       },
       monthGrid: {
-        // display: 'inline-grid',
         justifyItems: 'left',
       },
       dayNamesContainer: {
         textStyle: 'subhead-2',
         color: 'secondary.700',
-        // display: 'inline-flex',
-        // alignItems: 'center',
-        // justifyContent: 'center',
       },
       dayOfMonth: baseDayOfMonthStyles(props),
       todayLinkContainer: {
