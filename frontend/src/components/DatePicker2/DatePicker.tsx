@@ -19,34 +19,12 @@ import {
 import { BxCalendar } from '~assets/icons'
 import { Calendar, CalendarProps } from '~components/Calendar'
 import IconButton from '~components/IconButton'
-import Input, { InputProps } from '~components/Input'
+import Input from '~components/Input'
 
+import { DatePickerBaseProps } from './types'
 import { useDatePicker } from './useDatePicker'
 
-export interface DatePickerProps
-  extends CalendarProps,
-    Omit<InputProps, 'value' | 'defaultValue' | 'onChange' | 'colorScheme'> {
-  /**
-   * The `date-fns` format to display the date.
-   * @defaultValue `dd/MM/yyyy`
-   */
-  displayFormat?: string
-  /**
-   * The `date-fns` format to parse manual string input.
-   * @defaultValue `dd/MM/yyyy`
-   */
-  dateFormat?: string
-  /** Whether the input allows manual date entry. */
-  allowManualInput?: boolean
-  /** If `true`, will allow invalid dates to be set for external validation.
-   * @defaultValue `true`
-   */
-  allowInvalidDates?: boolean
-  /** Whether the calendar will close once a date is selected. Defaults to `true` */
-  closeCalendarOnChange?: boolean
-  /** Locale of the date to be applied if provided. */
-  locale?: Locale
-
+export interface DatePickerProps extends DatePickerBaseProps, CalendarProps {
   /**
    * Value to display in input, derived from the selected date.
    * If provided, input will be controlled, and empty string denotes no date selection.
