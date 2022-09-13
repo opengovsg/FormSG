@@ -10,7 +10,7 @@ import {
   isDateOutOfRange,
 } from '~utils/date'
 import { createDateValidationRules } from '~utils/fieldValidation'
-import { DatePicker } from '~components/DatePicker2'
+import { DatePicker } from '~components/DatePicker'
 
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
 import { DateFieldSchema, SingleAnswerFieldInput } from '../types'

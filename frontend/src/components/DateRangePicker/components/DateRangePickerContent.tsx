@@ -1,4 +1,4 @@
-import { DatePickerContentBase } from '~components/DatePicker2/components/DatePickerContentBase'
+import { DatePickerContentBase } from '~components/DatePicker/components/DatePickerContentBase'
 
 import { useDateRangePicker } from '../DateRangePickerContext'
 

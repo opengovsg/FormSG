@@ -11,7 +11,7 @@ import {
 } from '~shared/types/field'
 
 import { createBaseValidationRules } from '~utils/fieldValidation'
-import { DatePicker } from '~components/DatePicker2'
+import { DatePicker } from '~components/DatePicker'
 import { SingleSelect } from '~components/Dropdown'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
