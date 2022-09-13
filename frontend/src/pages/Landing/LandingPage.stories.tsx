@@ -22,10 +22,7 @@ export default {
   ],
   parameters: {
     layout: 'fullscreen',
-    msw: [getLandingStats({ delay: 0 })],
-    // Pass a very short delay to avoid bug where Chromatic takes a snapshot before
-    // the story has loaded
-    chromatic: { delay: 500 },
+    msw: [getLandingStats()],
   },
 } as Meta
 
