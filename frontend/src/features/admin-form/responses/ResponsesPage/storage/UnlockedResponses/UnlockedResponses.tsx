@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { Box, Flex, Grid, Skeleton, Stack, Text } from '@chakra-ui/react'
-import { isValid } from 'date-fns'
+import { format, isValid } from 'date-fns'
 import simplur from 'simplur'
 
 import { DateString } from '~shared/types'
@@ -36,10 +36,10 @@ const transform = {
     const [start, end] = range
     const result: DateString[] = []
     if (start) {
-      result.push(start.toISOString() as DateString)
+      result.push(format(start, 'yyyy-MM-dd') as DateString)
     }
     if (end) {
-      result.push(end.toISOString() as DateString)
+      result.push(format(end, 'yyyy-MM-dd') as DateString)
     }
     return result
   },
@@ -113,6 +113,7 @@ export const UnlockedResponses = (): JSX.Element => {
           direction={{ base: 'column', sm: 'row' }}
           justifySelf={{ base: 'start', sm: 'end' }}
           gridArea="export"
+          maxW="100%"
         >
           <DateRangePicker
             value={transform.input(dateRange)}
