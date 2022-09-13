@@ -1,8 +1,8 @@
-import { useDatePicker } from '../DatePickerContext'
+import { DatePickerContentBase } from '~components/DatePicker2/components/DatePickerContentBase'
 
-import { DatePickerContentBase } from './DatePickerContentBase'
+import { useDateRangePicker } from '../DateRangePickerContext'
 
-export const DatePickerContent = ({
+export const DateRangePickerContent = ({
   children,
 }: {
   children: React.ReactNode
@@ -11,7 +11,8 @@ export const DatePickerContent = ({
     isMobile,
     disclosureProps: { isOpen, onClose },
     initialFocusRef,
-  } = useDatePicker()
+  } = useDateRangePicker()
+
   return (
     <DatePickerContentBase
       isMobile={isMobile}

@@ -18,13 +18,13 @@ export const Default = Template.bind({})
 
 export const DatePickerWithValue = Template.bind({})
 DatePickerWithValue.args = {
-  value: new Date('2001-01-01'),
+  defaultValue: new Date('2001-01-01'),
 }
 
 export const DatePickerDisallowManualInput = Template.bind({})
 DatePickerDisallowManualInput.args = {
   allowManualInput: false,
-  value: new Date('2021-09-13'),
+  defaultValue: new Date('2021-09-13'),
 }
 
 export const Mobile = Template.bind({})

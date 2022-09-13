@@ -21,6 +21,7 @@ import { ThemeColorScheme } from '~theme/foundations/colours'
 
 import { CalendarProps } from '../Calendar'
 
+import { DateRangeValue } from './types'
 import {
   generateClassNameForDate,
   generateValidUuidClass,
@@ -31,8 +32,6 @@ import {
 } from './utils'
 
 const ARROW_KEY_NAMES = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight']
-
-export type DateRangeValue = [null, null] | [Date, null] | [Date, Date]
 
 type PassthroughProps = {
   /**

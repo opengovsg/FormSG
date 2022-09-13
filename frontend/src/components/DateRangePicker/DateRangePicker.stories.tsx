@@ -17,15 +17,14 @@ const Template: Story<DateRangePickerProps> = (args) => (
   <DateRangePicker {...args} />
 )
 export const Default = Template.bind({})
-Default.args = {}
 
 export const DateRangePickerWithValue = Template.bind({})
 DateRangePickerWithValue.args = {
-  value: [new Date('2001-01-01'), null],
+  defaultValue: [new Date('2001-01-01'), null],
 }
 
 export const DateRangePickerDisallowManualInput = Template.bind({})
 DateRangePickerDisallowManualInput.args = {
   allowManualInput: false,
-  value: [new Date('2021-09-13'), null],
+  defaultValue: [new Date('2021-09-13'), null],
 }

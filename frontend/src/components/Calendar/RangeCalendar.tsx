@@ -10,13 +10,10 @@ import { compareAsc } from 'date-fns'
 
 import { DATE_INPUT_THEME_KEY } from '~theme/components/DateInput'
 
-import {
-  CalendarProvider,
-  DateRangeValue,
-} from './CalendarBase/CalendarContext'
+import { CalendarProvider } from './CalendarBase/CalendarContext'
 import { CalendarPanel } from './CalendarBase/CalendarPanel'
 import { CalendarTodayButton } from './CalendarBase/CalendarTodayButton'
-import { CalendarBaseProps } from './CalendarBase/types'
+import { CalendarBaseProps, DateRangeValue } from './CalendarBase/types'
 
 export interface RangeCalendarProps extends CalendarBaseProps {
   /**
