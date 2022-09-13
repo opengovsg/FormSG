@@ -94,11 +94,11 @@ export const LandingPage = (): JSX.Element => {
           direction={{ base: 'column', lg: 'row' }}
           align="center"
           spacing={{ base: '1.5rem', md: '3.125rem', lg: '7.5rem' }}
+          pl={{ base: '1.5rem', md: '5.5rem', lg: '9.25rem' }}
         >
           <Flex
             flexDir="column"
             flex={1}
-            pl={{ base: '1.5rem', md: '5.5rem', lg: '9.25rem' }}
             pr={{ base: '1.5rem', md: '5.5rem', lg: '0' }}
           >
             <Text
@@ -123,11 +123,8 @@ export const LandingPage = (): JSX.Element => {
               </Button>
             </Box>
           </Flex>
-          <Flex flex={1} aria-hidden pl={{ base: '1.5rem' }}>
-            <LottieAnimation
-              animationData={formsHeroAnimation}
-              preserveAspectRatio="xMidYMax slice"
-            />
+          <Flex flex={1} aria-hidden justify="right">
+            <LottieAnimation animationData={formsHeroAnimation} />
           </Flex>
         </Stack>
       </LandingSection>
