@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { Controller, RegisterOptions } from 'react-hook-form'
 import { Box, FormControl, SimpleGrid } from '@chakra-ui/react'
-import { isBefore, isDate, isEqual } from 'date-fns'
+import { isBefore, isEqual, isValid } from 'date-fns'
 import { extend, get, isEmpty, pick } from 'lodash'
 
 import {
@@ -10,10 +10,6 @@ import {
   DateValidationOptions,
 } from '~shared/types/field'
 
-import {
-  transformDateToShortIsoString,
-  transformShortIsoStringToDate,
-} from '~utils/date'
 import { createBaseValidationRules } from '~utils/fieldValidation'
 import { DatePicker } from '~components/DatePicker2'
 import { SingleSelect } from '~components/Dropdown'
@@ -38,8 +34,8 @@ type EditDateInputs = Pick<
 > & {
   dateValidation: {
     selectedDateValidation: DateSelectedValidation | ''
-    customMaxDate: string
-    customMinDate: string
+    customMaxDate: Date | null
+    customMinDate: Date | null
   }
 }
 
@@ -48,11 +44,11 @@ const transformDateFieldToEditForm = (field: DateFieldBase): EditDateInputs => {
     selectedDateValidation:
       field.dateValidation.selectedDateValidation ?? ('' as const),
     customMaxDate: field.dateValidation.selectedDateValidation
-      ? transformDateToShortIsoString(field.dateValidation.customMaxDate) ?? ''
-      : ('' as const),
+      ? field.dateValidation.customMaxDate ?? null
+      : null,
     customMinDate: field.dateValidation.selectedDateValidation
-      ? transformDateToShortIsoString(field.dateValidation.customMinDate) ?? ''
-      : ('' as const),
+      ? field.dateValidation.customMinDate ?? null
+      : null,
   }
   return {
     ...pick(field, EDIT_DATE_FIELD_KEYS),
@@ -84,12 +80,8 @@ const transformDateEditFormToField = (
     case DateSelectedValidation.Custom: {
       nextValidationOptions = {
         selectedDateValidation: inputs.dateValidation.selectedDateValidation,
-        customMinDate: transformShortIsoStringToDate(
-          inputs.dateValidation.customMinDate,
-        ),
-        customMaxDate: transformShortIsoStringToDate(
-          inputs.dateValidation.customMaxDate,
-        ),
+        customMinDate: inputs.dateValidation.customMinDate,
+        customMaxDate: inputs.dateValidation.customMaxDate,
       }
     }
   }
@@ -136,14 +128,15 @@ export const EditDate = ({ field }: EditDateProps): JSX.Element => {
             !!getValues('dateValidation.customMaxDate')
           return !!val || hasMaxValue || 'You must specify at least one date.'
         },
-        validDate: (val) =>
-          !val || isDate(new Date(val)) || 'Please enter a valid date',
+        validDate: (val) => !val || isValid(val) || 'Please enter a valid date',
         inRange: (val) => {
-          const date = new Date(val)
-          const maxDate = new Date(getValues('dateValidation.customMaxDate'))
+          const maxDate = getValues('dateValidation.customMaxDate')
+
           return (
-            isEqual(date, maxDate) ||
-            isBefore(date, maxDate) ||
+            !val ||
+            !maxDate ||
+            isEqual(val, maxDate) ||
+            isBefore(val, maxDate) ||
             'Max date cannot be less than min date.'
           )
         },
@@ -198,13 +191,7 @@ export const EditDate = ({ field }: EditDateProps): JSX.Element => {
                 control={control}
                 name="dateValidation.customMinDate"
                 rules={customMinValidationOptions}
-                render={({ field: { value, onChange } }) => (
-                  <DatePicker
-                    onInputValueChange={onChange}
-                    inputValue={value}
-                    {...field}
-                  />
-                )}
+                render={({ field }) => <DatePicker {...field} />}
               />
               <Controller
                 control={control}
@@ -212,13 +199,7 @@ export const EditDate = ({ field }: EditDateProps): JSX.Element => {
                   deps: ['dateValidation.customMinDate'],
                 }}
                 name="dateValidation.customMaxDate"
-                render={({ field: { value, onChange } }) => (
-                  <DatePicker
-                    onInputValueChange={onChange}
-                    inputValue={value}
-                    {...field}
-                  />
-                )}
+                render={({ field }) => <DatePicker {...field} />}
               />
             </>
           ) : null}

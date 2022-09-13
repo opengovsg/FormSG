@@ -1,10 +1,8 @@
 import {
   addDays,
   endOfToday,
-  format,
   isAfter,
   isBefore,
-  isDate,
   parseISO,
   startOfToday,
 } from 'date-fns'
@@ -125,18 +123,4 @@ export const mutableTransformAllIsoStringsToDate = (body: unknown) => {
 export const transformAllIsoStringsToDate = <T>(body: T): T => {
   mutableTransformAllIsoStringsToDate(body)
   return body
-}
-
-/** Transforms YYYY-MM-DD strings to date, otherwise null */
-export const transformShortIsoStringToDate = (
-  isoString: unknown,
-): Date | null => {
-  return isShortIsoDateString(isoString)
-    ? // Set to UTC time regardless.
-      parseISO(`${isoString}T00:00:00Z`)
-    : null
-}
-
-export const transformDateToShortIsoString = (date: unknown): string | null => {
-  return isDate(date) ? format(date as Date, 'yyyy-MM-dd') : null
 }
