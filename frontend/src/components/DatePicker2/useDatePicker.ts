@@ -1,12 +1,5 @@
-import React, {
-  FocusEventHandler,
-  Fragment,
-  useCallback,
-  useMemo,
-  useRef,
-} from 'react'
+import React, { FocusEventHandler, useCallback, useMemo, useRef } from 'react'
 import {
-  PopoverTrigger,
   useControllableState,
   useFormControlProps,
   useMultiStyleConfig,
@@ -141,10 +134,6 @@ export const useDatePicker = ({
     colorScheme,
   })
 
-  const InputTriggerOrFragment = useMemo(() => {
-    return allowManualInput ? Fragment : PopoverTrigger
-  }, [allowManualInput])
-
   return {
     styles,
     handleInputChange,
@@ -154,7 +143,6 @@ export const useDatePicker = ({
     initialFocusRef,
     handleInputBlur,
     fcProps,
-    InputTriggerOrFragment,
     internalInputValue,
     internalValue,
     closeCalendarOnChange,

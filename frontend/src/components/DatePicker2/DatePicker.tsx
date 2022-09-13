@@ -1,3 +1,4 @@
+import { Fragment, useMemo } from 'react'
 import ReactFocusLock from 'react-focus-lock'
 import InputMask from 'react-input-mask'
 import {
@@ -62,7 +63,6 @@ export const DatePicker = forwardRef<DatePickerProps, 'input'>((props, ref) => {
     initialFocusRef,
     inputRef,
     styles,
-    InputTriggerOrFragment,
     handleInputChange,
     handleInputBlur,
     handleDateChange,
@@ -77,6 +77,10 @@ export const DatePicker = forwardRef<DatePickerProps, 'input'>((props, ref) => {
     isDateUnavailable,
   } = useDatePicker(props)
   const mergedInputRef = useMergeRefs(inputRef, ref)
+
+  const InputTriggerOrFragment = useMemo(() => {
+    return allowManualInput ? Fragment : PopoverTrigger
+  }, [allowManualInput])
 
   return (
     <Flex>

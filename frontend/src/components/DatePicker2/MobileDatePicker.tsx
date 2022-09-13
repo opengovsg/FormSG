@@ -25,7 +25,6 @@ export const MobileDatePicker = forwardRef<DatePickerProps, 'input'>(
       initialFocusRef,
       inputRef,
       styles,
-      InputTriggerOrFragment,
       handleInputChange,
       handleInputBlur,
       handleDateChange,
@@ -45,23 +44,21 @@ export const MobileDatePicker = forwardRef<DatePickerProps, 'input'>(
     return (
       <Flex>
         <Flex sx={styles.fieldwrapper}>
-          <InputTriggerOrFragment>
-            <Input
-              variant="unstyled"
-              sx={styles.field}
-              as={InputMask}
-              mask="99/99/9999"
-              value={internalInputValue}
-              onChange={handleInputChange}
-              placeholder={displayFormat.toLowerCase()}
-              maskPlaceholder={displayFormat.toLowerCase()}
-              ref={mergedInputRef}
-              {...fcProps}
-              borderRightRadius={0}
-              onBlur={handleInputBlur}
-              isReadOnly={fcProps.isReadOnly || !allowManualInput}
-            />
-          </InputTriggerOrFragment>
+          <Input
+            variant="unstyled"
+            sx={styles.field}
+            as={InputMask}
+            mask="99/99/9999"
+            value={internalInputValue}
+            onChange={handleInputChange}
+            placeholder={displayFormat.toLowerCase()}
+            maskPlaceholder={displayFormat.toLowerCase()}
+            ref={mergedInputRef}
+            {...fcProps}
+            borderRightRadius={0}
+            onBlur={handleInputBlur}
+            isReadOnly={fcProps.isReadOnly || !allowManualInput}
+          />
         </Flex>
         <IconButton
           colorScheme={colorScheme}
