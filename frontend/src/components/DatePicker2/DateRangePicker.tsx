@@ -59,6 +59,12 @@ export interface DateRangePickerProps
   closeCalendarOnChange?: boolean
   /** Locale of the date to be applied if provided. */
   locale?: Locale
+
+  /**
+   * Separator between dates
+   * @defaultValue `"to"`
+   */
+  labelSeparator?: string
 }
 
 export const DateRangePicker = forwardRef<DateRangePickerProps, 'input'>(
@@ -67,6 +73,7 @@ export const DateRangePicker = forwardRef<DateRangePickerProps, 'input'>(
       value,
       defaultValue = [null, null],
       onChange,
+      labelSeparator = 'to',
       displayFormat = 'dd/MM/yyyy',
       dateFormat = 'dd/MM/yyyy',
       isDisabled: isDisabledProp,
@@ -156,6 +163,7 @@ export const DateRangePicker = forwardRef<DateRangePickerProps, 'input'>(
     const initialFocusRef = useRef<HTMLInputElement>(null)
     const startInputRef = useRef<HTMLInputElement>(null)
     const mergedStartInputRef = useMergeRefs(startInputRef, ref)
+    const endInputRef = useRef<HTMLInputElement>(null)
 
     const calendarButtonAria = useMemo(() => {
       let ariaLabel = 'Choose date. '
@@ -208,6 +216,18 @@ export const DateRangePicker = forwardRef<DateRangePickerProps, 'input'>(
       setInternalValue(clonedValue)
     }
 
+    const handleCalendarDateChange = useCallback(
+      (onClose: () => void) => (date: DateRangeValue) => {
+        setInternalValue(date)
+        if (date[0] && date[1] && closeCalendarOnChange) {
+          onClose()
+          // Refocus input after closing calendar.
+          setTimeout(() => endInputRef.current?.focus(), 0)
+        }
+      },
+      [closeCalendarOnChange, setInternalValue],
+    )
+
     const handleFieldContainerClick = useCallback(() => {
       startInputRef.current?.focus()
     }, [])
@@ -226,6 +246,8 @@ export const DateRangePicker = forwardRef<DateRangePickerProps, 'input'>(
           placement="bottom-start"
           isLazy
           initialFocusRef={initialFocusRef}
+          closeOnBlur={closeCalendarOnChange}
+          returnFocusOnClose={false}
         >
           {({ isOpen, onClose }) => (
             <>
@@ -249,9 +271,10 @@ export const DateRangePicker = forwardRef<DateRangePickerProps, 'input'>(
                         {...fcProps}
                         borderRightRadius={0}
                         onBlur={handleInputBlur}
+                        onClick={(e) => e.stopPropagation()}
                         isReadOnly={fcProps.isReadOnly || !allowManualInput}
                       />
-                      <Text color="secondary.400">to</Text>
+                      <Text color="secondary.400">{labelSeparator}</Text>
                       <Input
                         variant="unstyled"
                         sx={styles.field}
@@ -261,6 +284,8 @@ export const DateRangePicker = forwardRef<DateRangePickerProps, 'input'>(
                         onChange={handleEndDateChange}
                         placeholder={displayFormat.toLowerCase()}
                         maskPlaceholder={displayFormat.toLowerCase()}
+                        onClick={(e) => e.stopPropagation()}
+                        ref={endInputRef}
                         {...fcProps}
                         borderRightRadius={0}
                         onBlur={handleInputBlur}
@@ -288,7 +313,7 @@ export const DateRangePicker = forwardRef<DateRangePickerProps, 'input'>(
                   maxW="100vw"
                   bg="white"
                 >
-                  <ReactFocusLock returnFocus>
+                  <ReactFocusLock>
                     <PopoverHeader p={0}>
                       <Flex
                         h="3.5rem"
@@ -311,7 +336,7 @@ export const DateRangePicker = forwardRef<DateRangePickerProps, 'input'>(
                         colorScheme={colorScheme}
                         value={internalValue ?? undefined}
                         isDateUnavailable={isDateUnavailable}
-                        onChange={setInternalValue}
+                        onChange={handleCalendarDateChange(onClose)}
                         ref={initialFocusRef}
                       />
                     </PopoverBody>

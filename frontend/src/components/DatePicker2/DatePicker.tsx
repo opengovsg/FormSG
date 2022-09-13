@@ -21,6 +21,7 @@ import {
   Text,
   useControllableState,
   useFormControlProps,
+  useMergeRefs,
   useMultiStyleConfig,
 } from '@chakra-ui/react'
 import { format, isValid, parse } from 'date-fns'
@@ -141,6 +142,8 @@ export const DatePicker = forwardRef<DatePickerProps, 'input'>(
     )
 
     const initialFocusRef = useRef<HTMLInputElement>(null)
+    const inputRef = useRef<HTMLInputElement>(null)
+    const mergedInputRef = useMergeRefs(inputRef, ref)
 
     const calendarButtonAria = useMemo(() => {
       let ariaLabel = 'Choose date. '
@@ -165,6 +168,9 @@ export const DatePicker = forwardRef<DatePickerProps, 'input'>(
           setInternalInputValue('')
         }
         closeCalendarOnChange && onClose()
+        // Refocus input after closing calendar.
+        // Timeout is required so that the input is focused after the popover is closed.
+        setTimeout(() => inputRef.current?.focus(), 0)
       },
       [
         allowInvalidDates,
@@ -201,6 +207,8 @@ export const DatePicker = forwardRef<DatePickerProps, 'input'>(
           placement="bottom-start"
           isLazy
           initialFocusRef={initialFocusRef}
+          closeOnBlur={closeCalendarOnChange}
+          returnFocusOnClose={false}
         >
           {({ isOpen, onClose }) => (
             <>
@@ -216,7 +224,7 @@ export const DatePicker = forwardRef<DatePickerProps, 'input'>(
                       onChange={handleInputChange}
                       placeholder={displayFormat.toLowerCase()}
                       maskPlaceholder={displayFormat.toLowerCase()}
-                      ref={ref}
+                      ref={mergedInputRef}
                       {...fcProps}
                       borderRightRadius={0}
                       onBlur={handleInputBlur}
@@ -243,7 +251,7 @@ export const DatePicker = forwardRef<DatePickerProps, 'input'>(
                   maxW="100vw"
                   bg="white"
                 >
-                  <ReactFocusLock returnFocus>
+                  <ReactFocusLock>
                     <PopoverHeader p={0}>
                       <Flex
                         h="3.5rem"
