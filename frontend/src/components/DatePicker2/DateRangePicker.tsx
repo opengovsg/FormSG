@@ -280,44 +280,61 @@ export const DateRangePicker = forwardRef<DateRangePickerProps, 'input'>(
                 <Flex
                   sx={styles.fieldwrapper}
                   onClick={handleFieldContainerClick}
+                  overflowX="hidden"
                 >
-                  <InputTriggerOrFragment>
-                    <Stack direction="row" align="center">
-                      <Input
-                        variant="unstyled"
-                        sx={styles.field}
-                        as={InputMask}
-                        mask="99/99/9999"
-                        value={startInputDisplay}
-                        onChange={handleStartDateChange}
-                        placeholder={displayFormat.toLowerCase()}
-                        maskPlaceholder={displayFormat.toLowerCase()}
-                        ref={mergedStartInputRef}
-                        {...fcProps}
-                        borderRightRadius={0}
-                        onBlur={handleInputBlur}
-                        onClick={(e) => e.stopPropagation()}
-                        isReadOnly={fcProps.isReadOnly || !allowManualInput}
-                      />
-                      <Text color="secondary.400">{labelSeparator}</Text>
-                      <Input
-                        variant="unstyled"
-                        sx={styles.field}
-                        as={InputMask}
-                        mask="99/99/9999"
-                        value={endInputDisplay}
-                        onChange={handleEndDateChange}
-                        placeholder={displayFormat.toLowerCase()}
-                        maskPlaceholder={displayFormat.toLowerCase()}
-                        onClick={(e) => e.stopPropagation()}
-                        ref={endInputRef}
-                        {...fcProps}
-                        borderRightRadius={0}
-                        onBlur={handleInputBlur}
-                        isReadOnly={fcProps.isReadOnly || !allowManualInput}
-                      />
-                    </Stack>
-                  </InputTriggerOrFragment>
+                  <Flex
+                    overflowX="auto"
+                    sx={{
+                      // Hide scrollbars so dual inputs feel like a real normal input.
+                      '-ms-overflow-style': 'none',
+                      scrollbarWidth: 'none',
+                      '&::-webkit-scrollbar': {
+                        display: 'none',
+                      },
+                    }}
+                  >
+                    <InputTriggerOrFragment>
+                      <Stack direction="row" align="center">
+                        <Input
+                          variant="unstyled"
+                          aria-label="Start date of range"
+                          sx={styles.field}
+                          width="6rem"
+                          as={InputMask}
+                          mask="99/99/9999"
+                          value={startInputDisplay}
+                          onChange={handleStartDateChange}
+                          placeholder={displayFormat.toLowerCase()}
+                          maskPlaceholder={displayFormat.toLowerCase()}
+                          ref={mergedStartInputRef}
+                          {...fcProps}
+                          borderRightRadius={0}
+                          onBlur={handleInputBlur}
+                          onClick={(e) => e.stopPropagation()}
+                          isReadOnly={fcProps.isReadOnly || !allowManualInput}
+                        />
+                        <Text color="secondary.400">{labelSeparator}</Text>
+                        <Input
+                          variant="unstyled"
+                          aria-label="Start date of range"
+                          sx={styles.field}
+                          width="6rem"
+                          as={InputMask}
+                          mask="99/99/9999"
+                          value={endInputDisplay}
+                          onChange={handleEndDateChange}
+                          placeholder={displayFormat.toLowerCase()}
+                          maskPlaceholder={displayFormat.toLowerCase()}
+                          onClick={(e) => e.stopPropagation()}
+                          ref={endInputRef}
+                          {...fcProps}
+                          borderRightRadius={0}
+                          onBlur={handleInputBlur}
+                          isReadOnly={fcProps.isReadOnly || !allowManualInput}
+                        />
+                      </Stack>
+                    </InputTriggerOrFragment>
+                  </Flex>
                 </Flex>
               </PopoverAnchor>
               <PopoverTrigger>
