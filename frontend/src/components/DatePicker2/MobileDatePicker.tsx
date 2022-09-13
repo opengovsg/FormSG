@@ -6,7 +6,6 @@ import {
   Flex,
   forwardRef,
   Text,
-  useDisclosure,
   useMergeRefs,
 } from '@chakra-ui/react'
 
@@ -36,10 +35,9 @@ export const MobileDatePicker = forwardRef<DatePickerProps, 'input'>(
       allowManualInput,
       colorScheme,
       isDateUnavailable,
+      disclosureProps: { onOpen, onClose, isOpen },
     } = useDatePicker(props)
     const mergedInputRef = useMergeRefs(inputRef, ref)
-
-    const { isOpen, onClose, onOpen } = useDisclosure()
 
     return (
       <Flex>
@@ -95,7 +93,7 @@ export const MobileDatePicker = forwardRef<DatePickerProps, 'input'>(
               colorScheme={colorScheme}
               value={internalValue ?? undefined}
               isDateUnavailable={isDateUnavailable}
-              onChange={handleDateChange(onClose)}
+              onChange={handleDateChange}
               ref={initialFocusRef}
             />
           </DrawerContent>

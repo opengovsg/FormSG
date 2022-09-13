@@ -2,6 +2,7 @@ import {
   ChangeEventHandler,
   FocusEventHandler,
   Fragment,
+  MouseEventHandler,
   useCallback,
   useMemo,
   useRef,
@@ -23,6 +24,7 @@ import {
   Stack,
   Text,
   useControllableState,
+  useDisclosure,
   useFormControlProps,
   useMergeRefs,
   useMultiStyleConfig,
@@ -71,6 +73,7 @@ export const DateRangePicker = forwardRef<DateRangePickerProps, 'input'>(
     },
     ref,
   ) => {
+    const { isOpen, onOpen, onClose } = useDisclosure()
     const [internalValue, setInternalValue] = useControllableState({
       defaultValue,
       value,
@@ -155,6 +158,16 @@ export const DateRangePicker = forwardRef<DateRangePickerProps, 'input'>(
       ],
     )
 
+    const handleInputClick: MouseEventHandler = useCallback(
+      (e) => {
+        e.stopPropagation()
+        if (!allowManualInput) {
+          onOpen()
+        }
+      },
+      [allowManualInput, onOpen],
+    )
+
     const initialFocusRef = useRef<HTMLInputElement>(null)
     const startInputRef = useRef<HTMLInputElement>(null)
     const mergedStartInputRef = useMergeRefs(startInputRef, ref)
@@ -214,7 +227,7 @@ export const DateRangePicker = forwardRef<DateRangePickerProps, 'input'>(
     }
 
     const handleCalendarDateChange = useCallback(
-      (onClose: () => void) => (date: DateRangeValue) => {
+      (date: DateRangeValue) => {
         setInternalValue(date)
         const [nextStartDate, nextEndDate] = date
         setStartInputDisplay(
@@ -230,12 +243,14 @@ export const DateRangePicker = forwardRef<DateRangePickerProps, 'input'>(
           setTimeout(() => endInputRef.current?.focus(), 0)
         }
       },
-      [closeCalendarOnChange, displayFormat, locale, setInternalValue],
+      [closeCalendarOnChange, displayFormat, locale, onClose, setInternalValue],
     )
 
     const handleFieldContainerClick = useCallback(() => {
-      startInputRef.current?.focus()
-    }, [])
+      if (allowManualInput) {
+        startInputRef.current?.focus()
+      }
+    }, [allowManualInput])
 
     const InputTriggerOrFragment = useMemo(() => {
       return allowManualInput ? Fragment : PopoverTrigger
@@ -249,124 +264,123 @@ export const DateRangePicker = forwardRef<DateRangePickerProps, 'input'>(
       <Flex>
         <Popover
           placement="bottom-start"
+          isOpen={isOpen}
+          onClose={onClose}
+          onOpen={onOpen}
           isLazy
           initialFocusRef={initialFocusRef}
           closeOnBlur={closeCalendarOnChange}
           returnFocusOnClose={false}
         >
-          {({ isOpen, onClose }) => (
-            <>
-              <PopoverAnchor>
-                <Flex
-                  sx={styles.fieldwrapper}
-                  onClick={handleFieldContainerClick}
-                  overflowX="hidden"
-                >
+          <PopoverAnchor>
+            <Flex
+              sx={styles.fieldwrapper}
+              onClick={handleFieldContainerClick}
+              overflowX="hidden"
+            >
+              <Flex
+                overflowX="auto"
+                sx={{
+                  // Hide scrollbars so dual inputs feel like a real normal input.
+                  '-ms-overflow-style': 'none',
+                  scrollbarWidth: 'none',
+                  '&::-webkit-scrollbar': {
+                    display: 'none',
+                  },
+                }}
+              >
+                <InputTriggerOrFragment>
+                  <Stack direction="row" align="center">
+                    <Input
+                      variant="unstyled"
+                      aria-label="Start date of range"
+                      sx={styles.field}
+                      width="6rem"
+                      as={InputMask}
+                      mask="99/99/9999"
+                      value={startInputDisplay}
+                      onChange={handleStartDateChange}
+                      placeholder={displayFormat.toLowerCase()}
+                      maskPlaceholder={displayFormat.toLowerCase()}
+                      ref={mergedStartInputRef}
+                      {...fcProps}
+                      borderRightRadius={0}
+                      onBlur={handleInputBlur}
+                      onClick={handleInputClick}
+                      isReadOnly={fcProps.isReadOnly || !allowManualInput}
+                    />
+                    <Text color="secondary.400">{labelSeparator}</Text>
+                    <Input
+                      variant="unstyled"
+                      aria-label="Start date of range"
+                      sx={styles.field}
+                      width="6rem"
+                      as={InputMask}
+                      mask="99/99/9999"
+                      value={endInputDisplay}
+                      onChange={handleEndDateChange}
+                      placeholder={displayFormat.toLowerCase()}
+                      maskPlaceholder={displayFormat.toLowerCase()}
+                      onClick={handleInputClick}
+                      ref={endInputRef}
+                      {...fcProps}
+                      borderRightRadius={0}
+                      onBlur={handleInputBlur}
+                      isReadOnly={fcProps.isReadOnly || !allowManualInput}
+                    />
+                  </Stack>
+                </InputTriggerOrFragment>
+              </Flex>
+            </Flex>
+          </PopoverAnchor>
+          <PopoverTrigger>
+            <IconButton
+              colorScheme={colorScheme}
+              aria-label={calendarButtonAria}
+              icon={<BxCalendar />}
+              variant="inputAttached"
+              borderRadius={0}
+              isActive={isOpen}
+              isDisabled={fcProps.isDisabled || fcProps.isReadOnly}
+            />
+          </PopoverTrigger>
+          <Portal>
+            <PopoverContent
+              borderRadius="4px"
+              w="unset"
+              maxW="100vw"
+              bg="white"
+            >
+              <ReactFocusLock>
+                <PopoverHeader p={0}>
                   <Flex
-                    overflowX="auto"
-                    sx={{
-                      // Hide scrollbars so dual inputs feel like a real normal input.
-                      '-ms-overflow-style': 'none',
-                      scrollbarWidth: 'none',
-                      '&::-webkit-scrollbar': {
-                        display: 'none',
-                      },
-                    }}
+                    h="3.5rem"
+                    mx={{ base: '1rem', md: '1.5rem' }}
+                    justifyContent="space-between"
+                    alignItems="center"
                   >
-                    <InputTriggerOrFragment>
-                      <Stack direction="row" align="center">
-                        <Input
-                          variant="unstyled"
-                          aria-label="Start date of range"
-                          sx={styles.field}
-                          width="6rem"
-                          as={InputMask}
-                          mask="99/99/9999"
-                          value={startInputDisplay}
-                          onChange={handleStartDateChange}
-                          placeholder={displayFormat.toLowerCase()}
-                          maskPlaceholder={displayFormat.toLowerCase()}
-                          ref={mergedStartInputRef}
-                          {...fcProps}
-                          borderRightRadius={0}
-                          onBlur={handleInputBlur}
-                          onClick={(e) => e.stopPropagation()}
-                          isReadOnly={fcProps.isReadOnly || !allowManualInput}
-                        />
-                        <Text color="secondary.400">{labelSeparator}</Text>
-                        <Input
-                          variant="unstyled"
-                          aria-label="Start date of range"
-                          sx={styles.field}
-                          width="6rem"
-                          as={InputMask}
-                          mask="99/99/9999"
-                          value={endInputDisplay}
-                          onChange={handleEndDateChange}
-                          placeholder={displayFormat.toLowerCase()}
-                          maskPlaceholder={displayFormat.toLowerCase()}
-                          onClick={(e) => e.stopPropagation()}
-                          ref={endInputRef}
-                          {...fcProps}
-                          borderRightRadius={0}
-                          onBlur={handleInputBlur}
-                          isReadOnly={fcProps.isReadOnly || !allowManualInput}
-                        />
-                      </Stack>
-                    </InputTriggerOrFragment>
+                    <Text textStyle="subhead-2" color="secondary.500">
+                      Select a date
+                    </Text>
+                    <PopoverCloseButton
+                      position="static"
+                      variant="clear"
+                      colorScheme="secondary"
+                    />
                   </Flex>
-                </Flex>
-              </PopoverAnchor>
-              <PopoverTrigger>
-                <IconButton
-                  colorScheme={colorScheme}
-                  aria-label={calendarButtonAria}
-                  icon={<BxCalendar />}
-                  variant="inputAttached"
-                  borderRadius={0}
-                  isActive={isOpen}
-                  isDisabled={fcProps.isDisabled || fcProps.isReadOnly}
-                />
-              </PopoverTrigger>
-              <Portal>
-                <PopoverContent
-                  borderRadius="4px"
-                  w="unset"
-                  maxW="100vw"
-                  bg="white"
-                >
-                  <ReactFocusLock>
-                    <PopoverHeader p={0}>
-                      <Flex
-                        h="3.5rem"
-                        mx={{ base: '1rem', md: '1.5rem' }}
-                        justifyContent="space-between"
-                        alignItems="center"
-                      >
-                        <Text textStyle="subhead-2" color="secondary.500">
-                          Select a date
-                        </Text>
-                        <PopoverCloseButton
-                          position="static"
-                          variant="clear"
-                          colorScheme="secondary"
-                        />
-                      </Flex>
-                    </PopoverHeader>
-                    <PopoverBody p={0}>
-                      <RangeCalendar
-                        colorScheme={colorScheme}
-                        value={internalValue ?? undefined}
-                        isDateUnavailable={isDateUnavailable}
-                        onChange={handleCalendarDateChange(onClose)}
-                        ref={initialFocusRef}
-                      />
-                    </PopoverBody>
-                  </ReactFocusLock>
-                </PopoverContent>
-              </Portal>
-            </>
-          )}
+                </PopoverHeader>
+                <PopoverBody p={0}>
+                  <RangeCalendar
+                    colorScheme={colorScheme}
+                    value={internalValue ?? undefined}
+                    isDateUnavailable={isDateUnavailable}
+                    onChange={handleCalendarDateChange}
+                    ref={initialFocusRef}
+                  />
+                </PopoverBody>
+              </ReactFocusLock>
+            </PopoverContent>
+          </Portal>
         </Popover>
       </Flex>
     )

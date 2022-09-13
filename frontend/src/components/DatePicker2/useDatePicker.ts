@@ -1,6 +1,7 @@
 import React, { FocusEventHandler, useCallback, useMemo, useRef } from 'react'
 import {
   useControllableState,
+  useDisclosure,
   useFormControlProps,
   useMultiStyleConfig,
 } from '@chakra-ui/react'
@@ -31,6 +32,7 @@ export const useDatePicker = ({
   colorScheme = 'primary',
   ...props
 }: DatePickerProps) => {
+  const disclosureProps = useDisclosure()
   const [internalValue, setInternalValue] = useControllableState({
     defaultValue,
     value,
@@ -95,7 +97,7 @@ export const useDatePicker = ({
   }, [internalValue])
 
   const handleDateChange = useCallback(
-    (onClose: () => void) => (date: Date | null) => {
+    (date: Date | null) => {
       if (allowInvalidDates || isValid(date) || !date) {
         setInternalValue(date)
       }
@@ -104,7 +106,7 @@ export const useDatePicker = ({
       } else {
         setInternalInputValue('')
       }
-      closeCalendarOnChange && onClose()
+      closeCalendarOnChange && disclosureProps.onClose()
       // Refocus input after closing calendar.
       // Timeout is required so that the input is focused after the popover is closed.
       setTimeout(() => inputRef.current?.focus(), 0)
@@ -112,6 +114,7 @@ export const useDatePicker = ({
     [
       allowInvalidDates,
       closeCalendarOnChange,
+      disclosureProps,
       displayFormat,
       locale,
       setInternalInputValue,
@@ -150,5 +153,6 @@ export const useDatePicker = ({
     allowManualInput,
     colorScheme,
     isDateUnavailable,
+    disclosureProps,
   }
 }
