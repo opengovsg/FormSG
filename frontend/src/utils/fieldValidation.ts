@@ -398,11 +398,8 @@ export const createDateValidationRules: ValidationRuleFn<DateFieldBase> = (
 
         const { customMinDate, customMaxDate } = schema.dateValidation ?? {}
         return (
-          !isDateOutOfRange(
-            parse(val, DATE_PARSE_FORMAT, new Date()),
-            customMinDate,
-            customMaxDate,
-          ) || 'Selected date is not within the allowed date range'
+          !isDateOutOfRange(parseDate(val), customMinDate, customMaxDate) ||
+          'Selected date is not within the allowed date range'
         )
       },
     },
