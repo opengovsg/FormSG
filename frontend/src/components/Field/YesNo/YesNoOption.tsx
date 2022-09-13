@@ -1,19 +1,28 @@
 import { KeyboardEvent, useCallback } from 'react'
+import { IconType } from 'react-icons/lib'
 import {
   Box,
   forwardRef,
+  Icon,
   useMultiStyleConfig,
   useRadio,
   UseRadioGroupReturn,
   UseRadioProps,
-  VisuallyHidden,
 } from '@chakra-ui/react'
 
 import { YESNO_THEME_KEY } from '~theme/components/Field/YesNo'
 import { FieldColorScheme } from '~theme/foundations/colours'
 
 interface YesNoOptionProps extends UseRadioProps {
-  children: React.ReactNode
+  /**
+   * Icon to be displayed to the left of the option content.
+   */
+  leftIcon?: IconType
+
+  /**
+   * Label to be displayed as the option content.
+   */
+  label: string
 
   /**
    * Side of the option for styling to be used for styling.
@@ -37,7 +46,7 @@ interface YesNoOptionProps extends UseRadioProps {
  * Option rendering for `YesNo` component.
  */
 export const YesNoOption = forwardRef<YesNoOptionProps, 'input'>(
-  ({ children, ...props }, ref) => {
+  ({ leftIcon, label, ...props }, ref) => {
     const styles = useMultiStyleConfig(YESNO_THEME_KEY, props)
 
     const { getInputProps, getCheckboxProps } = useRadio(props)
@@ -81,12 +90,16 @@ export const YesNoOption = forwardRef<YesNoOptionProps, 'input'>(
           {...inputProps}
           onClick={handleSelect}
           onKeyDown={handleSpacebar}
+          // Override inputProps default settings for required and aria-required for a11y
+          required={false}
+          aria-required={false}
+          aria-label={label}
         />
-        <VisuallyHidden>
-          "{children}" option {props.isChecked ? 'selected' : 'unselected'}
-        </VisuallyHidden>
         <Box {...checkboxProps} __css={styles.option}>
-          {children}
+          {leftIcon ? (
+            <Icon as={leftIcon} __css={styles.icon} aria-hidden />
+          ) : null}
+          {label}
         </Box>
       </Box>
     )

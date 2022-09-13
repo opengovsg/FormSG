@@ -3,14 +3,11 @@ import { BiCheck, BiX } from 'react-icons/bi'
 import {
   forwardRef,
   HStack,
-  Icon,
   useFormControlProps,
-  useMultiStyleConfig,
   useRadioGroup,
 } from '@chakra-ui/react'
 import pick from 'lodash/pick'
 
-import { YESNO_THEME_KEY } from '~theme/components/Field/YesNo'
 import { FieldColorScheme } from '~theme/foundations/colours'
 
 import { YesNoOption } from './YesNoOption'
@@ -53,19 +50,13 @@ export interface YesNoProps {
  */
 export const YesNo = forwardRef<YesNoProps, 'input'>(
   ({ colorScheme, ...props }, ref) => {
-    const styles = useMultiStyleConfig(YESNO_THEME_KEY, props)
     const formControlProps = useFormControlProps(props)
     const { getRootProps, getRadioProps } = useRadioGroup(props)
 
     const groupProps = getRootProps()
     const [noProps, yesProps] = useMemo(() => {
       const baseProps = {
-        ...pick(formControlProps, [
-          'isDisabled',
-          'isReadOnly',
-          'isRequired',
-          'isInvalid',
-        ]),
+        ...pick(formControlProps, ['isDisabled', 'isReadOnly', 'isInvalid']),
         name: props.name,
       }
 
@@ -91,14 +82,16 @@ export const YesNo = forwardRef<YesNoProps, 'input'>(
           // Ref is set here for tracking current value, and also so any errors
           // can focus this input.
           ref={ref}
-        >
-          <Icon as={BiX} __css={styles.icon} />
-          No
-        </YesNoOption>
-        <YesNoOption side="right" colorScheme={colorScheme} {...yesProps}>
-          <Icon as={BiCheck} __css={styles.icon} />
-          Yes
-        </YesNoOption>
+          leftIcon={BiX}
+          label="No"
+        />
+        <YesNoOption
+          side="right"
+          colorScheme={colorScheme}
+          {...yesProps}
+          leftIcon={BiCheck}
+          label="Yes"
+        />
       </HStack>
     )
   },
