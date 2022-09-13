@@ -176,7 +176,7 @@ FormLabel.QuestionNumber = ({ children, ...props }: TextProps): JSX.Element => {
 FormLabel.OptionalIndicator = ({
   isRequired,
   ...props
-}: TextProps & { isRequired?: boolean }): JSX.Element | null => {
+}: TextProps & { isRequired?: boolean }): JSX.Element => {
   // useFormControlContext is a ChakraUI hook that returns props passed down
   // from a parent ChakraUI's `FormControl` component.
   // Valid hook usage since composited component is still a component.
@@ -184,7 +184,10 @@ FormLabel.OptionalIndicator = ({
   const field = useFormControlContext()
 
   // If isRequired is explicitly provided, ignore form control context value.
-  if (isRequired ?? field?.isRequired) return null
+  if (isRequired ?? field?.isRequired) {
+    // Don't display required label, but say it out loud for screen readers.
+    return <VisuallyHidden>&nbsp;(required)</VisuallyHidden>
+  }
 
   return (
     <Text
