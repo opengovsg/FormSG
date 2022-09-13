@@ -135,8 +135,7 @@ export const StorageFormUnlocked = Template.bind({})
 StorageFormUnlocked.parameters = StorageForm.parameters
 StorageFormUnlocked.play = async ({ canvasElement }) => {
   const canvas = within(canvasElement)
-  const inputName =
-    /enter or upload secret key your secret key was downloaded when you created your form/i
+  const inputName = /enter or upload secret key/i
 
   await waitFor(
     async () => {
