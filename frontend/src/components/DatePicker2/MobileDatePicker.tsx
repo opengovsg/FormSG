@@ -27,6 +27,7 @@ export const MobileDatePicker = forwardRef<DatePickerProps, 'input'>(
       handleInputChange,
       handleInputBlur,
       handleDateChange,
+      handleInputClick,
       internalValue,
       internalInputValue,
       calendarButtonAria,
@@ -49,6 +50,7 @@ export const MobileDatePicker = forwardRef<DatePickerProps, 'input'>(
             mask="99/99/9999"
             value={internalInputValue}
             onChange={handleInputChange}
+            onClick={handleInputClick}
             placeholder={displayFormat.toLowerCase()}
             maskPlaceholder={displayFormat.toLowerCase()}
             ref={mergedInputRef}

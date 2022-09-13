@@ -1,4 +1,3 @@
-import { Fragment, useMemo } from 'react'
 import ReactFocusLock from 'react-focus-lock'
 import InputMask from 'react-input-mask'
 import {
@@ -53,13 +52,10 @@ export const DatePicker = forwardRef<DatePickerProps, 'input'>((props, ref) => {
     allowManualInput,
     colorScheme,
     isDateUnavailable,
+    handleInputClick,
     disclosureProps: { onOpen, onClose, isOpen },
   } = useDatePicker(props)
   const mergedInputRef = useMergeRefs(inputRef, ref)
-
-  const InputTriggerOrFragment = useMemo(() => {
-    return allowManualInput ? Fragment : PopoverTrigger
-  }, [allowManualInput])
 
   return (
     <Flex>
@@ -75,23 +71,22 @@ export const DatePicker = forwardRef<DatePickerProps, 'input'>((props, ref) => {
       >
         <PopoverAnchor>
           <Flex sx={styles.fieldwrapper}>
-            <InputTriggerOrFragment>
-              <Input
-                variant="unstyled"
-                sx={styles.field}
-                as={InputMask}
-                mask="99/99/9999"
-                value={internalInputValue}
-                onChange={handleInputChange}
-                placeholder={displayFormat.toLowerCase()}
-                maskPlaceholder={displayFormat.toLowerCase()}
-                ref={mergedInputRef}
-                {...fcProps}
-                borderRightRadius={0}
-                onBlur={handleInputBlur}
-                isReadOnly={fcProps.isReadOnly || !allowManualInput}
-              />
-            </InputTriggerOrFragment>
+            <Input
+              variant="unstyled"
+              sx={styles.field}
+              as={InputMask}
+              mask="99/99/9999"
+              value={internalInputValue}
+              onChange={handleInputChange}
+              placeholder={displayFormat.toLowerCase()}
+              maskPlaceholder={displayFormat.toLowerCase()}
+              ref={mergedInputRef}
+              {...fcProps}
+              borderRightRadius={0}
+              onBlur={handleInputBlur}
+              onClick={handleInputClick}
+              isReadOnly={fcProps.isReadOnly || !allowManualInput}
+            />
           </Flex>
         </PopoverAnchor>
         <PopoverTrigger>

@@ -1,4 +1,10 @@
-import React, { FocusEventHandler, useCallback, useMemo, useRef } from 'react'
+import React, {
+  FocusEventHandler,
+  MouseEventHandler,
+  useCallback,
+  useMemo,
+  useRef,
+} from 'react'
 import {
   useControllableState,
   useDisclosure,
@@ -133,6 +139,17 @@ export const useDatePicker = ({
     [dateFormat, setInternalInputValue, setInternalValue],
   )
 
+  const handleInputClick: MouseEventHandler<HTMLInputElement> = useCallback(
+    (e) => {
+      if (!allowManualInput) {
+        e.stopPropagation()
+        disclosureProps.onOpen()
+      }
+      onClick?.(e)
+    },
+    [allowManualInput, disclosureProps, onClick],
+  )
+
   const styles = useMultiStyleConfig('DateInput', {
     colorScheme,
   })
@@ -140,6 +157,7 @@ export const useDatePicker = ({
   return {
     styles,
     handleInputChange,
+    handleInputClick,
     handleDateChange,
     calendarButtonAria,
     inputRef,
