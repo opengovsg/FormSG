@@ -2,8 +2,7 @@ import { Meta, Story } from '@storybook/react'
 
 import { getMobileViewParameters, mockDateDecorator } from '~utils/storybook'
 
-import { DatePickerProps } from './DatePicker'
-import { DatePickerContainer as DatePicker } from './DatePickerContainer'
+import { DatePicker, DatePickerProps } from './DatePicker'
 
 export default {
   title: 'Components/DatePicker',

@@ -1,25 +1,13 @@
-import ReactFocusLock from 'react-focus-lock'
-import InputMask from 'react-input-mask'
-import {
-  Flex,
-  forwardRef,
-  Popover,
-  PopoverAnchor,
-  PopoverBody,
-  PopoverContent,
-  PopoverHeader,
-  Portal,
-  useMergeRefs,
-} from '@chakra-ui/react'
+import { forwardRef } from '@chakra-ui/react'
 
-import { BxCalendar } from '~assets/icons'
-import { Calendar, CalendarProps } from '~components/Calendar'
-import IconButton from '~components/IconButton'
-import Input from '~components/Input'
-import { PopoverCloseButton } from '~components/Popover'
+import { CalendarProps } from '~components/Calendar'
 
+import { CalendarButton } from './components/CalendarButton'
+import { DatePickerCalendar } from './components/DatePickerCalendar'
+import { DatePickerContent } from './components/DatePickerContent'
+import { DatePickerWrapper } from './components/DatePickerWrapper'
+import { DatePickerProvider } from './DatePickerContext'
 import { DatePickerBaseProps } from './types'
-import { useDatePicker } from './useDatePicker'
 
 export interface DatePickerProps extends DatePickerBaseProps, CalendarProps {
   /**
@@ -34,97 +22,14 @@ export interface DatePickerProps extends DatePickerBaseProps, CalendarProps {
 }
 
 export const DatePicker = forwardRef<DatePickerProps, 'input'>((props, ref) => {
-  const {
-    initialFocusRef,
-    inputRef,
-    styles,
-    handleInputChange,
-    handleInputBlur,
-    handleDateChange,
-    internalValue,
-    internalInputValue,
-    calendarButtonAria,
-    fcProps,
-    closeCalendarOnChange,
-    displayFormat,
-    allowManualInput,
-    colorScheme,
-    isDateUnavailable,
-    handleInputClick,
-    disclosureProps: { onOpen, onClose, isOpen },
-  } = useDatePicker(props)
-  const mergedInputRef = useMergeRefs(inputRef, ref)
-
   return (
-    <Flex>
-      <Popover
-        placement="bottom-start"
-        isOpen={isOpen}
-        onClose={onClose}
-        onOpen={onOpen}
-        isLazy
-        initialFocusRef={initialFocusRef}
-        closeOnBlur={closeCalendarOnChange}
-        returnFocusOnClose={false}
-      >
-        <PopoverAnchor>
-          <Flex sx={styles.fieldwrapper}>
-            <Input
-              variant="unstyled"
-              sx={styles.field}
-              as={InputMask}
-              mask="99/99/9999"
-              value={internalInputValue}
-              onChange={handleInputChange}
-              placeholder={displayFormat.toLowerCase()}
-              maskPlaceholder={displayFormat.toLowerCase()}
-              ref={mergedInputRef}
-              {...fcProps}
-              borderRightRadius={0}
-              onBlur={handleInputBlur}
-              onClick={handleInputClick}
-              isReadOnly={fcProps.isReadOnly || !allowManualInput}
-            />
-          </Flex>
-        </PopoverAnchor>
-        <IconButton
-          onClick={onOpen}
-          colorScheme={colorScheme}
-          aria-label={calendarButtonAria}
-          icon={<BxCalendar />}
-          variant="inputAttached"
-          borderRadius={0}
-          isActive={isOpen}
-          isDisabled={fcProps.isDisabled || fcProps.isReadOnly}
-        />
-        <Portal>
-          <PopoverContent borderRadius="4px" w="unset" maxW="100vw" bg="white">
-            <ReactFocusLock>
-              <PopoverHeader
-                h="3.5rem"
-                display="flex"
-                px={{ base: '1rem', md: '1.5rem' }}
-                justifyContent="space-between"
-                alignItems="center"
-                textStyle="subhead-2"
-                color="secondary.500"
-              >
-                Select a date
-                <PopoverCloseButton position="initial" />
-              </PopoverHeader>
-              <PopoverBody p={0}>
-                <Calendar
-                  colorScheme={colorScheme}
-                  value={internalValue ?? undefined}
-                  isDateUnavailable={isDateUnavailable}
-                  onChange={handleDateChange}
-                  ref={initialFocusRef}
-                />
-              </PopoverBody>
-            </ReactFocusLock>
-          </PopoverContent>
-        </Portal>
-      </Popover>
-    </Flex>
+    <DatePickerProvider {...props}>
+      <DatePickerWrapper ref={ref}>
+        <CalendarButton />
+        <DatePickerContent>
+          <DatePickerCalendar />
+        </DatePickerContent>
+      </DatePickerWrapper>
+    </DatePickerProvider>
   )
 })

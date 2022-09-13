@@ -1,21 +1,75 @@
 import React, {
+  ChangeEventHandler,
+  createContext,
   FocusEventHandler,
   MouseEventHandler,
+  PropsWithChildren,
+  RefObject,
   useCallback,
+  useContext,
   useMemo,
   useRef,
 } from 'react'
 import {
+  CSSObject,
+  FormControlProps,
   useControllableState,
   useDisclosure,
+  UseDisclosureReturn,
   useFormControlProps,
   useMultiStyleConfig,
 } from '@chakra-ui/react'
 import { format, isValid, parse } from 'date-fns'
 
+import { ThemeColorScheme } from '~theme/foundations/colours'
+import { useIsMobile } from '~hooks/useIsMobile'
+
 import { DatePickerProps } from './DatePicker'
 
-export const useDatePicker = ({
+interface DatePickerContextReturn {
+  isMobile: boolean
+  styles: Record<string, CSSObject>
+  handleInputChange: ChangeEventHandler<HTMLInputElement>
+  handleInputClick: MouseEventHandler<HTMLInputElement>
+  handleDateChange: (date: Date | null) => void
+  calendarButtonAria: string
+  inputRef: RefObject<HTMLInputElement>
+  initialFocusRef: RefObject<HTMLInputElement>
+  handleInputBlur: FocusEventHandler<HTMLInputElement>
+  fcProps: FormControlProps
+  internalInputValue: string
+  internalValue: Date | null
+  closeCalendarOnChange: boolean
+  displayFormat: string
+  allowManualInput: boolean
+  colorScheme: ThemeColorScheme
+  isDateUnavailable?: (date: Date) => boolean
+  disclosureProps: UseDisclosureReturn
+}
+
+const DatePickerContext = createContext<DatePickerContextReturn | null>(null)
+
+export const DatePickerProvider = ({
+  children,
+  ...props
+}: PropsWithChildren<DatePickerProps>) => {
+  const value = useProvideDatePicker(props)
+  return (
+    <DatePickerContext.Provider value={value}>
+      {children}
+    </DatePickerContext.Provider>
+  )
+}
+
+export const useDatePicker = () => {
+  const context = useContext(DatePickerContext)
+  if (!context) {
+    throw new Error('useDatePicker must be used within a DatePickerProvider')
+  }
+  return context
+}
+
+const useProvideDatePicker = ({
   value,
   defaultValue,
   onChange,
@@ -37,7 +91,8 @@ export const useDatePicker = ({
   onClick,
   colorScheme = 'primary',
   ...props
-}: DatePickerProps) => {
+}: DatePickerProps): DatePickerContextReturn => {
+  const isMobile = useIsMobile()
   const disclosureProps = useDisclosure()
   const [internalValue, setInternalValue] = useControllableState({
     defaultValue,
@@ -155,6 +210,7 @@ export const useDatePicker = ({
   })
 
   return {
+    isMobile,
     styles,
     handleInputChange,
     handleInputClick,
