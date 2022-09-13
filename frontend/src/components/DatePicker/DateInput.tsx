@@ -1,4 +1,10 @@
-import { KeyboardEventHandler, useCallback, useMemo, useRef } from 'react'
+import {
+  ChangeEvent,
+  KeyboardEventHandler,
+  useCallback,
+  useMemo,
+  useRef,
+} from 'react'
 import FocusLock from 'react-focus-lock'
 import {
   Flex,
@@ -13,7 +19,7 @@ import {
   useFormControlProps,
 } from '@chakra-ui/react'
 import { ComponentWithAs, forwardRef } from '@chakra-ui/system'
-import { format } from 'date-fns'
+import { format, isValid, parse } from 'date-fns'
 
 import { BxCalendar } from '~assets/icons'
 import IconButton from '~components/IconButton'
@@ -65,6 +71,14 @@ export const DateInput = forwardRef<DateInputProps, 'input'>(
       [onChange],
     )
 
+    /**
+     * Disallow manual input of non-existant dates (e.g. 31 Sep 2022)
+     */
+    const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+      if (isValid(parse(e.target.value, 'yyyy-MM-dd', new Date())))
+        return onChange?.(e.target.value)
+    }
+
     const datePickerDate = useMemo(() => {
       const dateFromValue = new Date(value)
       return isNaN(dateFromValue.getTime()) ? undefined : dateFromValue
@@ -110,7 +124,7 @@ export const DateInput = forwardRef<DateInputProps, 'input'>(
                       display: 'none',
                     },
                   }}
-                  onChange={(e) => onChange?.(e.target.value)}
+                  onChange={handleInputChange}
                   ref={ref}
                   value={value}
                   {...props}

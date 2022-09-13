@@ -29,7 +29,6 @@ export interface NumberInputProps extends ChakraNumberInputProps {
    * Whether to show the increment and decrement steppers. Defaults to true.
    */
   showSteppers?: boolean
-
   /**
    * Color scheme of number input.
    */
@@ -41,6 +40,7 @@ export const NumberInput = forwardRef<NumberInputProps, 'input'>(
     {
       showSteppers = true,
       clampValueOnBlur = false,
+      focusInputOnChange = false,
       isSuccess,
       isPrefilled,
       colorScheme,
@@ -70,6 +70,7 @@ export const NumberInput = forwardRef<NumberInputProps, 'input'>(
     } = useNumberInput({
       ...controlProps,
       clampValueOnBlur,
+      focusInputOnChange,
     })
 
     const inputProps = getInputProps({ placeholder: props.placeholder })

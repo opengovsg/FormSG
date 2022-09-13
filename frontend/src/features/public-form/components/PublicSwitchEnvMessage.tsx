@@ -17,8 +17,7 @@ export const PublicSwitchEnvMessage = (): JSX.Element => {
           mt={{ base: '2rem', md: '0' }}
         >
           <Text>
-            You’re filling this form on the new FormSG. If you have trouble
-            submitting,
+            You’re using the new FormSG design. If you have trouble submitting,
             <Button variant="link" onClick={onOpen}>
               <Text as="u">switch to the original one here.</Text>
             </Button>
