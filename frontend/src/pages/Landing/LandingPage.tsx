@@ -125,8 +125,6 @@ export const LandingPage = (): JSX.Element => {
           </Flex>
           <Flex flex={1} aria-hidden pl={{ base: '1.5rem' }}>
             <LottieAnimation
-              // The link will always change in Chromatic so this should be ignored.
-              data-chromatic="ignore"
               animationData={formsHeroAnimation}
               preserveAspectRatio="xMidYMax slice"
             />
@@ -198,8 +196,6 @@ export const LandingPage = (): JSX.Element => {
           </Flex>
           <Box flex={1} aria-hidden>
             <LottieAnimation
-              // The link will always change in Chromatic so this should be ignored.
-              data-chromatic="ignore"
               animationData={enterEmailAnimation}
               preserveAspectRatio="xMidYMax slice"
             />

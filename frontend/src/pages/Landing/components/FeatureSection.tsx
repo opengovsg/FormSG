@@ -42,8 +42,6 @@ export const FeatureSection: FC<FeatureSectionProps> = ({
         {animationSrc ? (
           <Box flex={1} aria-hidden>
             <LottieAnimation
-              // The link will always change in Chromatic so this should be ignored.
-              data-chromatic="ignore"
               animationData={animationSrc}
               preserveAspectRatio="xMidYMax slice"
             />
