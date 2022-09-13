@@ -15,7 +15,7 @@ import {
   transformShortIsoStringToDate,
 } from '~utils/date'
 import { createBaseValidationRules } from '~utils/fieldValidation'
-import DateInput from '~components/DatePicker'
+import { DatePicker } from '~components/DatePicker2'
 import { SingleSelect } from '~components/Dropdown'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
@@ -198,7 +198,13 @@ export const EditDate = ({ field }: EditDateProps): JSX.Element => {
                 control={control}
                 name="dateValidation.customMinDate"
                 rules={customMinValidationOptions}
-                render={({ field }) => <DateInput {...field} />}
+                render={({ field: { value, onChange } }) => (
+                  <DatePicker
+                    onInputValueChange={onChange}
+                    inputValue={value}
+                    {...field}
+                  />
+                )}
               />
               <Controller
                 control={control}
@@ -206,7 +212,13 @@ export const EditDate = ({ field }: EditDateProps): JSX.Element => {
                   deps: ['dateValidation.customMinDate'],
                 }}
                 name="dateValidation.customMaxDate"
-                render={({ field }) => <DateInput {...field} />}
+                render={({ field: { value, onChange } }) => (
+                  <DatePicker
+                    onInputValueChange={onChange}
+                    inputValue={value}
+                    {...field}
+                  />
+                )}
               />
             </>
           ) : null}
