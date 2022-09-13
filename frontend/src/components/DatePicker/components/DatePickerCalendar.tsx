@@ -9,9 +9,11 @@ export const DatePickerCalendar = (): JSX.Element => {
     isDateUnavailable,
     handleDateChange,
     initialFocusRef,
+    monthsToDisplay,
   } = useDatePicker()
   return (
     <Calendar
+      monthsToDisplay={monthsToDisplay}
       colorScheme={colorScheme}
       value={internalValue ?? undefined}
       isDateUnavailable={isDateUnavailable}

@@ -9,10 +9,12 @@ export const DateRangePickerCalendar = (): JSX.Element => {
     isDateUnavailable,
     handleCalendarDateChange,
     initialFocusRef,
+    monthsToDisplay,
   } = useDateRangePicker()
 
   return (
     <RangeCalendar
+      monthsToDisplay={monthsToDisplay}
       colorScheme={colorScheme}
       value={internalValue ?? undefined}
       isDateUnavailable={isDateUnavailable}

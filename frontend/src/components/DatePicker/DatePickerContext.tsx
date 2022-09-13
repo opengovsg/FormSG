@@ -45,6 +45,7 @@ interface DatePickerContextReturn {
   colorScheme: ThemeColorScheme
   isDateUnavailable?: (date: Date) => boolean
   disclosureProps: UseDisclosureReturn
+  monthsToDisplay?: number
 }
 
 const DatePickerContext = createContext<DatePickerContextReturn | null>(null)
@@ -90,6 +91,7 @@ const useProvideDatePicker = ({
   onBlur,
   onClick,
   colorScheme = 'primary',
+  monthsToDisplay,
   ...props
 }: DatePickerProps): DatePickerContextReturn => {
   const isMobile = useIsMobile()
@@ -228,5 +230,6 @@ const useProvideDatePicker = ({
     colorScheme,
     isDateUnavailable,
     disclosureProps,
+    monthsToDisplay,
   }
 }

@@ -52,6 +52,7 @@ interface DateRangePickerContextReturn {
   disclosureProps: UseDisclosureReturn
   labelSeparator: string
   colorScheme: ThemeColorScheme
+  monthsToDisplay?: number
 }
 
 const DateRangePickerContext =
@@ -98,6 +99,7 @@ const useProvideDateRangePicker = ({
   onBlur,
   onClick,
   colorScheme = 'primary',
+  monthsToDisplay,
   ...props
 }: DateRangePickerProps): DateRangePickerContextReturn => {
   const isMobile = useIsMobile()
@@ -314,5 +316,6 @@ const useProvideDateRangePicker = ({
     isDateUnavailable,
     disclosureProps,
     labelSeparator,
+    monthsToDisplay,
   }
 }

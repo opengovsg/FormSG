@@ -30,7 +30,13 @@ export interface RangeCalendarProps extends CalendarBaseProps {
 
 export const RangeCalendar = forwardRef<RangeCalendarProps, 'input'>(
   (
-    { value, onChange, defaultValue = [null, null], ...props },
+    {
+      value,
+      onChange,
+      defaultValue = [null, null],
+      monthsToDisplay = 2,
+      ...props
+    },
     initialFocusRef,
   ) => {
     const styles = useMultiStyleConfig('Calendar', props)
@@ -121,7 +127,7 @@ export const RangeCalendar = forwardRef<RangeCalendarProps, 'input'>(
 
     return (
       <CalendarProvider
-        monthsToDisplay={2}
+        monthsToDisplay={monthsToDisplay}
         selectedDates={internalValue ?? undefined}
         onSelectDate={handleOnDateSelected}
         hoveredDate={hoveredDate}
