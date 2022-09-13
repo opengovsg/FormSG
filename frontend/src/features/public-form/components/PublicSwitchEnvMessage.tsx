@@ -16,6 +16,10 @@ export const PublicSwitchEnvMessage = (): JSX.Element => {
           mb="1.5rem"
           mt={{ base: '2rem', md: '0' }}
         >
+          {/* Hide the text and replicate it in the aria-label for the button instead,
+           because without it, the sentence will be read as two separate parts which
+          is confusing for those using screen readers. */}
+
           <Text>
             <span aria-hidden>
               You’re using the new FormSG design. If you have trouble
