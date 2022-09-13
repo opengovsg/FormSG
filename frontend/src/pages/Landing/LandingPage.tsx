@@ -89,13 +89,18 @@ export const LandingPage = (): JSX.Element => {
   return (
     <>
       <AppPublicHeader />
-      <LandingSection bg="primary.100" pt={{ base: '2rem', md: 0 }}>
+      <LandingSection bg="primary.100" pt={{ base: '2rem', md: 0 }} px="0">
         <Stack
           direction={{ base: 'column', lg: 'row' }}
           align="center"
           spacing={{ base: '1.5rem', md: '3.125rem', lg: '7.5rem' }}
         >
-          <Flex flexDir="column" flex={1}>
+          <Flex
+            flexDir="column"
+            flex={1}
+            pl={{ base: '1.5rem', md: '5.5rem', lg: '9.25rem' }}
+            pr={{ base: '1.5rem', md: '5.5rem', lg: '0' }}
+          >
             <Text
               as="h1"
               textStyle={{ base: 'display-1-mobile', md: 'display-1' }}
@@ -118,14 +123,14 @@ export const LandingPage = (): JSX.Element => {
               </Button>
             </Box>
           </Flex>
-          <Box flex={1} aria-hidden>
+          <Flex flex={1} aria-hidden pl={{ base: '1.5rem' }}>
             <LottieAnimation
               // The link will always change in Chromatic so this should be ignored.
               data-chromatic="ignore"
               animationData={formsHeroAnimation}
               preserveAspectRatio="xMidYMax slice"
             />
-          </Box>
+          </Flex>
         </Stack>
       </LandingSection>
       <LandingSection>
