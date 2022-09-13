@@ -72,11 +72,11 @@ const sizes: Record<string, PartsStyleObject<typeof parts>> = {
         md: 0.75,
       },
       w: {
-        base: '2rem',
+        base: '2.25rem',
         md: '3rem',
       },
       h: {
-        base: '2rem',
+        base: '2.25rem',
         md: '3rem',
       },
     },
@@ -95,7 +95,7 @@ const sizes: Record<string, PartsStyleObject<typeof parts>> = {
         md: '3.25rem',
       },
       h: {
-        base: '2rem',
+        base: '2.25rem',
         md: '3rem',
       },
     },
@@ -154,15 +154,15 @@ export const DateInput: ComponentMultiStyleConfig<typeof parts> = {
         borderColor: 'neutral.300',
       },
       monthGrid: {
-        display: 'inline-grid',
+        // display: 'inline-grid',
         justifyItems: 'left',
       },
       dayNamesContainer: {
         textStyle: 'subhead-2',
         color: 'secondary.700',
-        display: 'inline-flex',
-        alignItems: 'center',
-        justifyContent: 'center',
+        // display: 'inline-flex',
+        // alignItems: 'center',
+        // justifyContent: 'center',
       },
       dayOfMonth: baseDayOfMonthStyles(props),
       todayLinkContainer: {

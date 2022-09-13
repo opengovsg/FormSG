@@ -1,7 +1,6 @@
 import InputMask from 'react-input-mask'
 import {
   Drawer,
-  DrawerCloseButton,
   DrawerContent,
   DrawerOverlay,
   Flex,
@@ -13,6 +12,7 @@ import {
 
 import { BxCalendar } from '~assets/icons'
 import { Calendar } from '~components/Calendar'
+import { DrawerCloseButton } from '~components/Drawer'
 import IconButton from '~components/IconButton'
 import Input from '~components/Input'
 
@@ -73,10 +73,15 @@ export const MobileDatePicker = forwardRef<DatePickerProps, 'input'>(
           isDisabled={fcProps.isDisabled || fcProps.isReadOnly}
           onClick={onOpen}
         />
-        <Drawer isOpen={isOpen} placement="bottom" onClose={onClose}>
+        <Drawer
+          isOpen={isOpen}
+          placement="bottom"
+          onClose={onClose}
+          initialFocusRef={initialFocusRef}
+        >
           <DrawerOverlay />
           <DrawerContent>
-            <DrawerCloseButton />
+            <DrawerCloseButton colorScheme="secondary" />
             <Flex
               h="3.5rem"
               px={{ base: '1rem', md: '1.5rem' }}

@@ -1,8 +1,8 @@
 import { useCallback, useMemo } from 'react'
 import {
-  Box,
   ButtonProps,
   chakra,
+  Flex,
   forwardRef,
   useMultiStyleConfig,
 } from '@chakra-ui/react'
@@ -143,7 +143,12 @@ export const DayOfMonth = forwardRef<DayOfMonthProps, 'button'>(
     }, [colorScheme, date, hoveredDate, isInRange, selected])
 
     return (
-      <Box bg={buttonBoxBg} px="2px" _focusWithin={{ zIndex: 1 }}>
+      <Flex
+        justify="center"
+        bg={buttonBoxBg}
+        px="2px"
+        _focusWithin={{ zIndex: 1 }}
+      >
         <chakra.button
           onMouseEnter={handleMouseEnter}
           bg={boxBg}
@@ -158,7 +163,7 @@ export const DayOfMonth = forwardRef<DayOfMonthProps, 'button'>(
         >
           {date.getDate()}
         </chakra.button>
-      </Box>
+      </Flex>
     )
   },
 )
