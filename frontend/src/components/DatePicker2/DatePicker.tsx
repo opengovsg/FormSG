@@ -6,12 +6,9 @@ import {
   Popover,
   PopoverAnchor,
   PopoverBody,
-  PopoverCloseButton,
   PopoverContent,
   PopoverHeader,
-  PopoverTrigger,
   Portal,
-  Text,
   useMergeRefs,
 } from '@chakra-ui/react'
 
@@ -19,6 +16,7 @@ import { BxCalendar } from '~assets/icons'
 import { Calendar, CalendarProps } from '~components/Calendar'
 import IconButton from '~components/IconButton'
 import Input from '~components/Input'
+import { PopoverCloseButton } from '~components/Popover'
 
 import { DatePickerBaseProps } from './types'
 import { useDatePicker } from './useDatePicker'
@@ -89,36 +87,30 @@ export const DatePicker = forwardRef<DatePickerProps, 'input'>((props, ref) => {
             />
           </Flex>
         </PopoverAnchor>
-        <PopoverTrigger>
-          <IconButton
-            colorScheme={colorScheme}
-            aria-label={calendarButtonAria}
-            icon={<BxCalendar />}
-            variant="inputAttached"
-            borderRadius={0}
-            isActive={isOpen}
-            isDisabled={fcProps.isDisabled || fcProps.isReadOnly}
-          />
-        </PopoverTrigger>
+        <IconButton
+          onClick={onOpen}
+          colorScheme={colorScheme}
+          aria-label={calendarButtonAria}
+          icon={<BxCalendar />}
+          variant="inputAttached"
+          borderRadius={0}
+          isActive={isOpen}
+          isDisabled={fcProps.isDisabled || fcProps.isReadOnly}
+        />
         <Portal>
           <PopoverContent borderRadius="4px" w="unset" maxW="100vw" bg="white">
             <ReactFocusLock>
-              <PopoverHeader p={0}>
-                <Flex
-                  h="3.5rem"
-                  mx={{ base: '1rem', md: '1.5rem' }}
-                  justifyContent="space-between"
-                  alignItems="center"
-                >
-                  <Text textStyle="subhead-2" color="secondary.500">
-                    Select a date
-                  </Text>
-                  <PopoverCloseButton
-                    position="static"
-                    variant="clear"
-                    colorScheme="secondary"
-                  />
-                </Flex>
+              <PopoverHeader
+                h="3.5rem"
+                display="flex"
+                px={{ base: '1rem', md: '1.5rem' }}
+                justifyContent="space-between"
+                alignItems="center"
+                textStyle="subhead-2"
+                color="secondary.500"
+              >
+                Select a date
+                <PopoverCloseButton position="initial" />
               </PopoverHeader>
               <PopoverBody p={0}>
                 <Calendar
