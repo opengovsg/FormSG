@@ -3,7 +3,6 @@ import React, {
   FocusEventHandler,
   Fragment,
   useCallback,
-  useEffect,
   useMemo,
   useRef,
   useState,
@@ -110,26 +109,41 @@ export const DateRangePicker = forwardRef<DateRangePickerProps, 'input'>(
         : '',
     )
 
-    useEffect(() => {
-      if (startDate) {
-        if (isValid(startDate)) {
-          setStartInputDisplay(format(startDate, displayFormat, { locale }))
+    const handleUpdateInputs = useCallback(
+      (nextRange: DateRangeValue) => {
+        // Replace invalid dates with null
+        const sortedRange = nextRange.sort((a, b) =>
+          a && b ? a.getTime() - b.getTime() : 0,
+        )
+
+        // Replace invalid dates with null
+        const validRange = sortedRange.map((date) =>
+          isValid(date) ? date : null,
+        ) as DateRangeValue
+
+        const [nextStart, nextEnd] = sortedRange
+        if (nextStart) {
+          if (isValid(nextStart)) {
+            setStartInputDisplay(format(nextStart, displayFormat, { locale }))
+          } else if (!allowInvalidDates) {
+            setStartInputDisplay('')
+          }
         } else {
           setStartInputDisplay('')
         }
-      } else {
-        setStartInputDisplay('')
-      }
-      if (endDate) {
-        if (isValid(endDate)) {
-          setEndInputDisplay(format(endDate, displayFormat, { locale }))
+        if (nextEnd) {
+          if (isValid(nextEnd)) {
+            setEndInputDisplay(format(nextEnd, displayFormat, { locale }))
+          } else if (!allowInvalidDates) {
+            setEndInputDisplay('')
+          }
         } else {
           setEndInputDisplay('')
         }
-      } else {
-        setEndInputDisplay('')
-      }
-    }, [startDate, displayFormat, locale, endDate])
+        setInternalValue(validRange)
+      },
+      [allowInvalidDates, displayFormat, locale, setInternalValue],
+    )
 
     const fcProps = useFormControlProps({
       isInvalid: isInvalidProp,
@@ -141,22 +155,23 @@ export const DateRangePicker = forwardRef<DateRangePickerProps, 'input'>(
 
     const handleInputBlur: FocusEventHandler<HTMLInputElement> = useCallback(
       (e) => {
-        // TODO: handle invalid dates
         const startDate = parse(startInputDisplay, dateFormat, new Date())
         const endDate = parse(endInputDisplay, dateFormat, new Date())
         // Clear if input is invalid on blur if invalid dates are not allowed.
         if (!allowInvalidDates && !isValid(startDate)) {
-          // setInternalValue(null)
           setStartInputDisplay('')
         }
-        onBlur?.(e)
+        if (!allowInvalidDates && !isValid(endDate)) {
+          setEndInputDisplay('')
+        }
+        handleUpdateInputs([startDate, endDate])
       },
       [
         startInputDisplay,
         dateFormat,
         endInputDisplay,
         allowInvalidDates,
-        onBlur,
+        handleUpdateInputs,
       ],
     )
 
@@ -185,6 +200,7 @@ export const DateRangePicker = forwardRef<DateRangePickerProps, 'input'>(
       event,
     ) => {
       const date = parse(event.target.value, dateFormat, new Date())
+      setStartInputDisplay(event.target.value)
       let clonedValue = [...internalValue] as DateRangeValue
 
       if (!isValid(date)) {
@@ -202,6 +218,7 @@ export const DateRangePicker = forwardRef<DateRangePickerProps, 'input'>(
       event,
     ) => {
       const date = parse(event.target.value, dateFormat, new Date())
+      setEndInputDisplay(event.target.value)
       const [startDate, endDate] = internalValue
       let clonedValue = [...internalValue] as DateRangeValue
 
@@ -219,13 +236,21 @@ export const DateRangePicker = forwardRef<DateRangePickerProps, 'input'>(
     const handleCalendarDateChange = useCallback(
       (onClose: () => void) => (date: DateRangeValue) => {
         setInternalValue(date)
-        if (date[0] && date[1] && closeCalendarOnChange) {
+        const [nextStartDate, nextEndDate] = date
+        setStartInputDisplay(
+          nextStartDate ? format(nextStartDate, displayFormat, { locale }) : '',
+        )
+
+        setEndInputDisplay(
+          nextEndDate ? format(nextEndDate, displayFormat, { locale }) : '',
+        )
+        if (nextStartDate && nextEndDate && closeCalendarOnChange) {
           onClose()
           // Refocus input after closing calendar.
           setTimeout(() => endInputRef.current?.focus(), 0)
         }
       },
-      [closeCalendarOnChange, setInternalValue],
+      [closeCalendarOnChange, displayFormat, locale, setInternalValue],
     )
 
     const handleFieldContainerClick = useCallback(() => {
