@@ -1,10 +1,3 @@
-import React, {
-  FocusEventHandler,
-  Fragment,
-  useCallback,
-  useMemo,
-  useRef,
-} from 'react'
 import ReactFocusLock from 'react-focus-lock'
 import InputMask from 'react-input-mask'
 import {
@@ -19,17 +12,15 @@ import {
   PopoverTrigger,
   Portal,
   Text,
-  useControllableState,
-  useFormControlProps,
   useMergeRefs,
-  useMultiStyleConfig,
 } from '@chakra-ui/react'
-import { format, isValid, parse } from 'date-fns'
 
 import { BxCalendar } from '~assets/icons'
 import { Calendar, CalendarProps } from '~components/Calendar'
 import IconButton from '~components/IconButton'
 import Input, { InputProps } from '~components/Input'
+
+import { useDatePicker } from './useDatePicker'
 
 export interface DatePickerProps
   extends CalendarProps,
@@ -66,225 +57,110 @@ export interface DatePickerProps
   defaultInputValue?: string
 }
 
-export const DatePicker = forwardRef<DatePickerProps, 'input'>(
-  (
-    {
-      value,
-      defaultValue,
-      onChange,
-      inputValue,
-      defaultInputValue,
-      onInputValueChange,
-      displayFormat = 'dd/MM/yyyy',
-      dateFormat = 'dd/MM/yyyy',
-      isDisabled: isDisabledProp,
-      isReadOnly: isReadOnlyProp,
-      isRequired: isRequiredProp,
-      isInvalid: isInvalidProp,
-      locale,
-      isDateUnavailable,
-      allowManualInput = true,
-      allowInvalidDates = true,
-      closeCalendarOnChange = true,
-      onBlur,
-      onClick,
-      colorScheme = 'primary',
-      ...props
-    },
-    ref,
-  ) => {
-    const [internalValue, setInternalValue] = useControllableState({
-      defaultValue,
-      value,
-      onChange,
-    })
+export const DatePicker = forwardRef<DatePickerProps, 'input'>((props, ref) => {
+  const {
+    initialFocusRef,
+    inputRef,
+    styles,
+    InputTriggerOrFragment,
+    handleInputChange,
+    handleInputBlur,
+    handleDateChange,
+    internalValue,
+    internalInputValue,
+    calendarButtonAria,
+    fcProps,
+    closeCalendarOnChange,
+    displayFormat,
+    allowManualInput,
+    colorScheme,
+    isDateUnavailable,
+  } = useDatePicker(props)
+  const mergedInputRef = useMergeRefs(inputRef, ref)
 
-    const formatInputValue = useCallback(
-      (date: Date | null) => {
-        if (!date || !isValid(date)) return ''
-        return format(date, dateFormat, { locale })
-      },
-      [dateFormat, locale],
-    )
-
-    const [internalInputValue, setInternalInputValue] = useControllableState({
-      defaultValue: defaultInputValue ?? formatInputValue(internalValue),
-      value: inputValue,
-      onChange: onInputValueChange,
-    })
-
-    const fcProps = useFormControlProps({
-      isInvalid: isInvalidProp,
-      isDisabled: isDisabledProp,
-      isReadOnly: isReadOnlyProp,
-      isRequired: isRequiredProp,
-      ...props,
-    })
-
-    const handleInputBlur: FocusEventHandler<HTMLInputElement> = useCallback(
-      (e) => {
-        const date = parse(internalInputValue, dateFormat, new Date())
-        // Clear if input is invalid on blur if invalid dates are not allowed.
-        if (!allowInvalidDates && !isValid(date)) {
-          setInternalValue(null)
-          setInternalInputValue('')
-        }
-        onBlur?.(e)
-      },
-      [
-        allowInvalidDates,
-        dateFormat,
-        internalInputValue,
-        onBlur,
-        setInternalInputValue,
-        setInternalValue,
-      ],
-    )
-
-    const initialFocusRef = useRef<HTMLInputElement>(null)
-    const inputRef = useRef<HTMLInputElement>(null)
-    const mergedInputRef = useMergeRefs(inputRef, ref)
-
-    const calendarButtonAria = useMemo(() => {
-      let ariaLabel = 'Choose date. '
-      if (internalValue) {
-        if (isValid(internalValue)) {
-          ariaLabel += `Selected date is ${internalValue.toLocaleDateString()}.`
-        } else {
-          ariaLabel += 'The current selected date is invalid.'
-        }
-      }
-      return ariaLabel
-    }, [internalValue])
-
-    const handleDateChange = useCallback(
-      (onClose: () => void) => (date: Date | null) => {
-        if (allowInvalidDates || isValid(date) || !date) {
-          setInternalValue(date)
-        }
-        if (date) {
-          setInternalInputValue(format(date, displayFormat, { locale }))
-        } else {
-          setInternalInputValue('')
-        }
-        closeCalendarOnChange && onClose()
-        // Refocus input after closing calendar.
-        // Timeout is required so that the input is focused after the popover is closed.
-        setTimeout(() => inputRef.current?.focus(), 0)
-      },
-      [
-        allowInvalidDates,
-        closeCalendarOnChange,
-        displayFormat,
-        locale,
-        setInternalInputValue,
-        setInternalValue,
-      ],
-    )
-
-    const handleInputChange = useCallback(
-      (event: React.ChangeEvent<HTMLInputElement>) => {
-        const date = parse(event.target.value, dateFormat, new Date())
-        setInternalInputValue(event.target.value)
-        if (isValid(date)) {
-          setInternalValue(date)
-        }
-      },
-      [dateFormat, setInternalInputValue, setInternalValue],
-    )
-
-    const InputTriggerOrFragment = useMemo(() => {
-      return allowManualInput ? Fragment : PopoverTrigger
-    }, [allowManualInput])
-
-    const styles = useMultiStyleConfig('DateInput', {
-      colorScheme,
-    })
-
-    return (
-      <Flex>
-        <Popover
-          placement="bottom-start"
-          isLazy
-          initialFocusRef={initialFocusRef}
-          closeOnBlur={closeCalendarOnChange}
-          returnFocusOnClose={false}
-        >
-          {({ isOpen, onClose }) => (
-            <>
-              <PopoverAnchor>
-                <Flex sx={styles.fieldwrapper}>
-                  <InputTriggerOrFragment>
-                    <Input
-                      variant="unstyled"
-                      sx={styles.field}
-                      as={InputMask}
-                      mask="99/99/9999"
-                      value={internalInputValue}
-                      onChange={handleInputChange}
-                      placeholder={displayFormat.toLowerCase()}
-                      maskPlaceholder={displayFormat.toLowerCase()}
-                      ref={mergedInputRef}
-                      {...fcProps}
-                      borderRightRadius={0}
-                      onBlur={handleInputBlur}
-                      isReadOnly={fcProps.isReadOnly || !allowManualInput}
-                    />
-                  </InputTriggerOrFragment>
-                </Flex>
-              </PopoverAnchor>
-              <PopoverTrigger>
-                <IconButton
-                  colorScheme={colorScheme}
-                  aria-label={calendarButtonAria}
-                  icon={<BxCalendar />}
-                  variant="inputAttached"
-                  borderRadius={0}
-                  isActive={isOpen}
-                  isDisabled={fcProps.isDisabled || fcProps.isReadOnly}
-                />
-              </PopoverTrigger>
-              <Portal>
-                <PopoverContent
-                  borderRadius="4px"
-                  w="unset"
-                  maxW="100vw"
-                  bg="white"
-                >
-                  <ReactFocusLock>
-                    <PopoverHeader p={0}>
-                      <Flex
-                        h="3.5rem"
-                        mx={{ base: '1rem', md: '1.5rem' }}
-                        justifyContent="space-between"
-                        alignItems="center"
-                      >
-                        <Text textStyle="subhead-2" color="secondary.500">
-                          Select a date
-                        </Text>
-                        <PopoverCloseButton
-                          position="static"
-                          variant="clear"
-                          colorScheme="secondary"
-                        />
-                      </Flex>
-                    </PopoverHeader>
-                    <PopoverBody p={0}>
-                      <Calendar
-                        colorScheme={colorScheme}
-                        value={internalValue ?? undefined}
-                        isDateUnavailable={isDateUnavailable}
-                        onChange={handleDateChange(onClose)}
-                        ref={initialFocusRef}
+  return (
+    <Flex>
+      <Popover
+        placement="bottom-start"
+        isLazy
+        initialFocusRef={initialFocusRef}
+        closeOnBlur={closeCalendarOnChange}
+        returnFocusOnClose={false}
+      >
+        {({ isOpen, onClose }) => (
+          <>
+            <PopoverAnchor>
+              <Flex sx={styles.fieldwrapper}>
+                <InputTriggerOrFragment>
+                  <Input
+                    variant="unstyled"
+                    sx={styles.field}
+                    as={InputMask}
+                    mask="99/99/9999"
+                    value={internalInputValue}
+                    onChange={handleInputChange}
+                    placeholder={displayFormat.toLowerCase()}
+                    maskPlaceholder={displayFormat.toLowerCase()}
+                    ref={mergedInputRef}
+                    {...fcProps}
+                    borderRightRadius={0}
+                    onBlur={handleInputBlur}
+                    isReadOnly={fcProps.isReadOnly || !allowManualInput}
+                  />
+                </InputTriggerOrFragment>
+              </Flex>
+            </PopoverAnchor>
+            <PopoverTrigger>
+              <IconButton
+                colorScheme={colorScheme}
+                aria-label={calendarButtonAria}
+                icon={<BxCalendar />}
+                variant="inputAttached"
+                borderRadius={0}
+                isActive={isOpen}
+                isDisabled={fcProps.isDisabled || fcProps.isReadOnly}
+              />
+            </PopoverTrigger>
+            <Portal>
+              <PopoverContent
+                borderRadius="4px"
+                w="unset"
+                maxW="100vw"
+                bg="white"
+              >
+                <ReactFocusLock>
+                  <PopoverHeader p={0}>
+                    <Flex
+                      h="3.5rem"
+                      mx={{ base: '1rem', md: '1.5rem' }}
+                      justifyContent="space-between"
+                      alignItems="center"
+                    >
+                      <Text textStyle="subhead-2" color="secondary.500">
+                        Select a date
+                      </Text>
+                      <PopoverCloseButton
+                        position="static"
+                        variant="clear"
+                        colorScheme="secondary"
                       />
-                    </PopoverBody>
-                  </ReactFocusLock>
-                </PopoverContent>
-              </Portal>
-            </>
-          )}
-        </Popover>
-      </Flex>
-    )
-  },
-)
+                    </Flex>
+                  </PopoverHeader>
+                  <PopoverBody p={0}>
+                    <Calendar
+                      colorScheme={colorScheme}
+                      value={internalValue ?? undefined}
+                      isDateUnavailable={isDateUnavailable}
+                      onChange={handleDateChange(onClose)}
+                      ref={initialFocusRef}
+                    />
+                  </PopoverBody>
+                </ReactFocusLock>
+              </PopoverContent>
+            </Portal>
+          </>
+        )}
+      </Popover>
+    </Flex>
+  )
+})
