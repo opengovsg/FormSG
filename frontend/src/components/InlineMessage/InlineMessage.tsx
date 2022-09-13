@@ -22,13 +22,11 @@ export const InlineMessage = ({
   const mdComponents = useMdComponents({ styles })
 
   return (
-    <Flex sx={styles.messagebox} {...flexProps} role="banner">
+    <Flex sx={styles.messagebox} {...flexProps} aria-label="Infobox">
       <Icon
         as={variant !== 'error' ? BxsInfoCircle : BxsErrorCircle}
         __css={styles.icon}
-        aria-label={
-          variant !== 'error' ? 'Informational message' : 'Error message'
-        }
+        aria-label={`${variant !== 'error' ? 'Info' : 'Error'} message`}
       />
       {useMarkdown && typeof children === 'string' ? (
         <ReactMarkdown components={mdComponents}>{children}</ReactMarkdown>

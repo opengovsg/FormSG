@@ -17,8 +17,15 @@ export const PublicSwitchEnvMessage = (): JSX.Element => {
           mt={{ base: '2rem', md: '0' }}
         >
           <Text>
-            You’re using the new FormSG design. If you have trouble submitting,
-            <Button variant="link" onClick={onOpen}>
+            <span aria-hidden>
+              You’re using the new FormSG design. If you have trouble
+              submitting,
+            </span>
+            <Button
+              variant="link"
+              onClick={onOpen}
+              aria-label="You're using the new FormSG design. If you have trouble submitting, switch to the original one here."
+            >
               <Text as="u">switch to the original one here.</Text>
             </Button>
           </Text>

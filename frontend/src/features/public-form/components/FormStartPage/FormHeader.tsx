@@ -161,6 +161,7 @@ export const FormHeader = ({
         wordBreak="break-word"
         justify="center"
         bg={titleBg}
+        role="banner"
       >
         <Flex
           maxW="57rem"
