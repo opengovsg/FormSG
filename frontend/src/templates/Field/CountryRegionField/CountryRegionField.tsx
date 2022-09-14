@@ -14,10 +14,14 @@ export interface CountryRegionFieldProps extends BaseFieldProps {
   schema: CountryRegionFieldSchema
 }
 
-const SORTED_COUNTRY_OPTIONS = Object.values(CountryRegion).sort((a, b) => {
-  if (a === CountryRegion.Singapore) return 1
-  return a.localeCompare(b)
-})
+// Exported for testing
+export const SORTED_COUNTRY_OPTIONS = (() => {
+  const countryOptions = Object.values(CountryRegion)
+    .filter((country) => country !== CountryRegion.Singapore)
+    .sort((a, b) => a.localeCompare(b))
+  countryOptions.unshift(CountryRegion.Singapore)
+  return countryOptions
+})()
 
 export const CountryRegionField = ({
   schema,

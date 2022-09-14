@@ -2,10 +2,9 @@ import { composeStories } from '@storybook/testing-react'
 import { act, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
-import { CountryRegion } from '~shared/constants/countryRegion'
-
 import { REQUIRED_ERROR } from '~constants/validation'
 
+import { SORTED_COUNTRY_OPTIONS } from './CountryRegionField'
 import * as stories from './CountryRegionField.stories'
 
 const { ValidationOptional, ValidationRequired } = composeStories(stories)
@@ -29,8 +28,7 @@ describe('required field', () => {
     const user = userEvent.setup()
     render(<ValidationRequired />)
 
-    const dropdownOptions = Object.values(CountryRegion)
-    const optionToType = dropdownOptions[0]
+    const optionToType = SORTED_COUNTRY_OPTIONS[0]
     const submitButton = screen.getByRole('button', { name: /submit/i })
     const input = screen.getByRole('textbox') as HTMLInputElement
     // Act
@@ -49,8 +47,7 @@ describe('required field', () => {
     const user = userEvent.setup()
     render(<ValidationRequired />)
 
-    const dropdownOptions = Object.values(CountryRegion)
-    const expectedOption = dropdownOptions[1]
+    const expectedOption = SORTED_COUNTRY_OPTIONS[1]
     const submitButton = screen.getByRole('button', { name: /submit/i })
     const input = screen.getByRole('textbox') as HTMLInputElement
     // Act
@@ -113,7 +110,7 @@ describe('dropdown validation', () => {
     const user = userEvent.setup()
     render(<ValidationRequired />)
 
-    const dropdownOptions: string[] = Object.values(CountryRegion)
+    const dropdownOptions: string[] = SORTED_COUNTRY_OPTIONS
     const submitButton = screen.getByRole('button', { name: /submit/i })
     const inputElement = screen.getByRole('textbox') as HTMLInputElement
     const inputToType = 'this is not a valid option'
