@@ -20,10 +20,10 @@ export const PublicSwitchEnvMessage = (): JSX.Element => {
            because without it, the sentence will be read as two separate parts which
           is confusing for those using screen readers. */}
           <Text>
-            <span aria-hidden>
+            <Text aria-hidden display="inline">
               You’re using the new FormSG design. If you have trouble
               submitting,
-            </span>
+            </Text>
             <Button
               variant="link"
               onClick={onOpen}
