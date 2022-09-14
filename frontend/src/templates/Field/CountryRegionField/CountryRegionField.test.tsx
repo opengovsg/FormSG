@@ -26,6 +26,7 @@ describe('required field', () => {
 
   it('renders success when a valid option is typed', async () => {
     // Arrange
+    const user = userEvent.setup()
     render(<ValidationRequired />)
 
     const dropdownOptions = Object.values(CountryRegion)
@@ -33,9 +34,8 @@ describe('required field', () => {
     const submitButton = screen.getByRole('button', { name: /submit/i })
     const input = screen.getByRole('textbox') as HTMLInputElement
     // Act
-    userEvent.type(input, `${optionToType}{enter}`)
-    // Act required due to react-hook-form usage.
-    await act(async () => userEvent.click(submitButton))
+    await user.type(input, `${optionToType}{enter}`)
+    await user.click(submitButton)
 
     // Assert
     // Should show success message.
@@ -46,6 +46,7 @@ describe('required field', () => {
 
   it('renders success when a valid option is selected', async () => {
     // Arrange
+    const user = userEvent.setup()
     render(<ValidationRequired />)
 
     const dropdownOptions = Object.values(CountryRegion)
@@ -53,11 +54,11 @@ describe('required field', () => {
     const submitButton = screen.getByRole('button', { name: /submit/i })
     const input = screen.getByRole('textbox') as HTMLInputElement
     // Act
-    userEvent.click(input)
-    // Arrow down twice and select input
-    userEvent.type(input, '{arrowdown}{arrowdown}{enter}')
-    // Act required due to react-hook-form usage.
-    await act(async () => userEvent.click(submitButton))
+    await user.click(input)
+    // Arrow down twice and select input.
+    // Third option should be selected since first option is already highlighted on click.
+    await user.type(input, '{arrowdown}{arrowdown}{enter}')
+    await user.click(submitButton)
 
     // Assert
     // Should show success message.
@@ -70,11 +71,12 @@ describe('required field', () => {
 describe('optional field', () => {
   it('renders success even when field has no input before submitting', async () => {
     // Arrange
+    const user = userEvent.setup()
     render(<ValidationOptional />)
     const submitButton = screen.getByRole('button', { name: /submit/i })
 
     // Act
-    await act(async () => userEvent.click(submitButton))
+    await user.click(submitButton)
 
     // Assert
     // Should show success message.
@@ -83,18 +85,19 @@ describe('optional field', () => {
 
   it('renders success when a valid option is partially typed then selected', async () => {
     // Arrange
+    const user = userEvent.setup()
     render(<ValidationOptional />)
 
     const expectedOption = 'SINGAPORE'
     const submitButton = screen.getByRole('button', { name: /submit/i })
     const input = screen.getByRole('textbox') as HTMLInputElement
     // Act
-    userEvent.click(input)
+    await user.click(input)
     // Type the middle few characters of the option; dropdown should match properly,
     // then select the option.
-    userEvent.type(input, `ingapor{arrowdown}{enter}`)
+    await user.type(input, `ingapor{arrowdown}{enter}`)
     // Act required due to react-hook-form usage.
-    await act(async () => userEvent.click(submitButton))
+    await user.click(submitButton)
 
     // Assert
     // Should show success message.
@@ -107,6 +110,7 @@ describe('optional field', () => {
 describe('dropdown validation', () => {
   it('renders error when input does not match any dropdown option', async () => {
     // Arrange
+    const user = userEvent.setup()
     render(<ValidationRequired />)
 
     const dropdownOptions: string[] = Object.values(CountryRegion)
@@ -117,13 +121,13 @@ describe('dropdown validation', () => {
     expect(dropdownOptions.includes(inputToType)).toEqual(false)
 
     // Act
-    userEvent.click(inputElement)
-    userEvent.type(inputElement, inputToType)
-    userEvent.tab()
+    await user.click(inputElement)
+    await user.type(inputElement, inputToType)
+    await user.tab()
     // Input should blur and input value should be cleared (since nothing was selected).
     expect(inputElement.value).toEqual('')
     // Act required due to react-hook-form usage.
-    await act(async () => userEvent.click(submitButton))
+    await user.click(submitButton)
 
     // Assert
     expect(screen.getByText(REQUIRED_ERROR)).toBeInTheDocument()
