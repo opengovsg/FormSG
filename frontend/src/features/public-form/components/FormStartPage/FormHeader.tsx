@@ -161,6 +161,7 @@ export const FormHeader = ({
         wordBreak="break-word"
         justify="center"
         bg={titleBg}
+        role="banner"
       >
         <Flex
           maxW="57rem"
@@ -179,7 +180,12 @@ export const FormHeader = ({
           </Skeleton>
           {estTimeString && (
             <Flex align="flex-start" justify="center" mt="0.875rem">
-              <Icon as={BxsTimeFive} fontSize="1.5rem" mr="0.5rem" />
+              <Icon
+                as={BxsTimeFive}
+                fontSize="1.5rem"
+                mr="0.5rem"
+                aria-hidden
+              />
               <Text textStyle="body-2" mt="0.125rem">
                 {estTimeString}
               </Text>

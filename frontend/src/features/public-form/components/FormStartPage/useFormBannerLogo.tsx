@@ -34,7 +34,7 @@ export const useFormBannerLogo = ({
       case FormLogoState.Default:
         return agency ? `Logo for ${agency.fullName}` : undefined
       case FormLogoState.Custom:
-        return `Custom Logo`
+        return `Form logo`
     }
   }, [agency, logo])
 
