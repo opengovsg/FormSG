@@ -359,7 +359,11 @@ export const createDateValidationRules: ValidationRuleFn<DateFieldBase> = (
     ...createBaseValidationRules(schema),
     validate: {
       validDate: (val) => {
-        return !val || isValid(parseDate(val)) || 'Please enter a valid date'
+        if (!val) return true
+        if (val === DATE_PARSE_FORMAT.toLowerCase()) {
+          return REQUIRED_ERROR
+        }
+        return isValid(parseDate(val)) || 'Please enter a valid date'
       },
       noFuture: (val) => {
         if (
