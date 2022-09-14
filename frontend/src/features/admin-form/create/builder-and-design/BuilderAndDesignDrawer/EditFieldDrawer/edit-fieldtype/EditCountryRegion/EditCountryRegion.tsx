@@ -48,7 +48,6 @@ export const EditCountryRegion = ({
   const {
     register,
     formState: { errors },
-    isSaveEnabled,
     buttonText,
     handleUpdateField,
     isLoading,
@@ -83,7 +82,6 @@ export const EditCountryRegion = ({
       </FormControl>
       <FormFieldDrawerActions
         isLoading={isLoading}
-        isSaveEnabled={isSaveEnabled}
         buttonText={buttonText}
         handleClick={handleUpdateField}
         handleCancel={handleCancel}
