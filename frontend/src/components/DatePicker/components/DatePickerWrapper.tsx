@@ -13,12 +13,18 @@ export const DatePickerWrapper = forwardRef<{}, 'input'>(
       initialFocusRef,
       closeCalendarOnChange,
       isMobile,
+      fcProps: { isDisabled, isInvalid, isReadOnly },
     } = useDatePicker()
 
     if (isMobile) {
       return (
         <Flex>
-          <Flex sx={styles.fieldwrapper}>
+          <Flex
+            sx={styles.fieldwrapper}
+            aria-disabled={isDisabled}
+            aria-invalid={isInvalid}
+            aria-readonly={isReadOnly}
+          >
             <DatePickerInput ref={ref} />
           </Flex>
           {children}
@@ -37,7 +43,12 @@ export const DatePickerWrapper = forwardRef<{}, 'input'>(
           {...disclosureProps}
         >
           <PopoverAnchor>
-            <Flex sx={styles.fieldwrapper}>
+            <Flex
+              sx={styles.fieldwrapper}
+              aria-disabled={isDisabled}
+              aria-invalid={isInvalid}
+              aria-readonly={isReadOnly}
+            >
               <DatePickerInput ref={ref} />
             </Flex>
           </PopoverAnchor>

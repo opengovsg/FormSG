@@ -17,10 +17,17 @@ const variantOutline: PartsStyleFunction<typeof parts> = (props) => {
       px: '1rem',
       borderLeftRadius: '4px',
       borderRightRadius: 0,
+      transitionProperty: 'common',
+      transitionDuration: 'normal',
       _focusWithin: inputFieldVariantOutline._focus,
       ...inputFieldVariantOutline,
     },
     field: {
+      _disabled: {
+        cursor: 'not-allowed',
+      },
+      transitionProperty: 'common',
+      transitionDuration: 'normal',
       display: 'flex',
       flex: 1,
     },
