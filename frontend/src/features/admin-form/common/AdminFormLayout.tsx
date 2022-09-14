@@ -3,6 +3,7 @@ import { Outlet, useParams } from 'react-router-dom'
 import { Flex } from '@chakra-ui/react'
 import { get } from 'lodash'
 
+import { fillHeightCss } from '~utils/fillHeightCss'
 import { getBannerProps } from '~utils/getBannerProps'
 import { Banner } from '~components/Banner'
 
@@ -47,7 +48,7 @@ export const AdminFormLayout = (): JSX.Element => {
   }
 
   return (
-    <Flex flexDir="column" height="100vh" overflow="hidden" pos="relative">
+    <Flex flexDir="column" css={fillHeightCss} overflow="hidden" pos="relative">
       {bannerProps ? (
         <Banner variant={bannerProps.variant}>{bannerProps.msg}</Banner>
       ) : null}

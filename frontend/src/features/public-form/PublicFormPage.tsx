@@ -1,6 +1,8 @@
 import { useParams } from 'react-router-dom'
 import { Flex } from '@chakra-ui/react'
 
+import { fillMinHeightCss } from '~utils/fillHeightCss'
+
 import { FormBanner } from './components/FormBanner'
 import FormEndPage from './components/FormEndPage'
 import FormFields from './components/FormFields'
@@ -18,7 +20,7 @@ export const PublicFormPage = (): JSX.Element => {
   return (
     <PublicFormProvider formId={formId}>
       <FormSectionsProvider>
-        <Flex direction="column" minH="100vh">
+        <Flex direction="column" css={fillMinHeightCss}>
           <FormBanner />
           <FormStartPage />
           <PublicFormWrapper>
