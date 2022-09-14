@@ -36,9 +36,6 @@ export default {
     // Required so skeleton "animation" does not hide content.
     chromatic: { pauseAnimationAtEnd: true },
   },
-  args: {
-    field: DEFAULT_CHECKBOX_FIELD,
-  },
 } as Meta<StoryArgs>
 
 interface StoryArgs {
@@ -50,6 +47,11 @@ const Template: Story<StoryArgs> = ({ field }) => {
 }
 
 export const Default = Template.bind({})
+
+export const WithValues = Template.bind({})
+WithValues.args = {
+  field: DEFAULT_CHECKBOX_FIELD,
+}
 
 export const Placeholders = Template.bind({})
 Placeholders.args = {
