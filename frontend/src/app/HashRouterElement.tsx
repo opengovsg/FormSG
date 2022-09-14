@@ -1,6 +1,6 @@
 import { useLocation } from 'react-router-dom'
 
-import { LANDING_ROUTE, ROOT_ROUTE } from '~constants/routes'
+import { DASHBOARD_ROUTE } from '~constants/routes'
 
 import { PublicElement } from './PublicElement'
 
@@ -39,12 +39,12 @@ const hashRouteMapper = [
       `/admin/form/${m.groups.formid}/preview`,
   },
   {
-    regex: /^#!\/examples$/,
-    getTarget: (m: FormRegExpMatchArray) => `${LANDING_ROUTE}`,
+    regex: /^#!\/forms$/,
+    getTarget: (m: FormRegExpMatchArray) => `${DASHBOARD_ROUTE}`,
   },
   {
-    regex: /^#!\/forms$/,
-    getTarget: (m: FormRegExpMatchArray) => `${ROOT_ROUTE}`,
+    regex: /^#!\/examples$/,
+    getTarget: (m: FormRegExpMatchArray) => `/examples`,
   },
 ]
 
