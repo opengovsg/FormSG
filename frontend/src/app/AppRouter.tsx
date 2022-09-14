@@ -8,12 +8,12 @@ import {
   ADMINFORM_ROUTE,
   ADMINFORM_SETTINGS_SUBROUTE,
   BILLING_ROUTE,
+  DASHBOARD_ROUTE,
   LANDING_ROUTE,
   LOGIN_ROUTE,
   PRIVACY_POLICY_ROUTE,
   PUBLICFORM_ROUTE,
   RESULTS_FEEDBACK_SUBROUTE,
-  ROOT_ROUTE,
   TOU_ROUTE,
 } from '~constants/routes'
 
@@ -59,7 +59,7 @@ export const AppRouter = (): JSX.Element => {
           element={<HashRouterElement element={<LandingPage />} />}
         />
         <Route
-          path={ROOT_ROUTE}
+          path={DASHBOARD_ROUTE}
           element={<PrivateElement element={<WorkspacePage />} />}
         />
         <Route

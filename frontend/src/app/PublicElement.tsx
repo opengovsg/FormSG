@@ -2,7 +2,7 @@ import { Navigate, useLocation } from 'react-router-dom'
 import { Flex } from '@chakra-ui/react'
 
 import { useAuth } from '~contexts/AuthContext'
-import { ROOT_ROUTE } from '~constants/routes'
+import { DASHBOARD_ROUTE } from '~constants/routes'
 import GovtMasthead from '~components/GovtMasthead'
 
 interface PublicElementProps {
@@ -28,7 +28,7 @@ export const PublicElement = ({
   const { isAuthenticated } = useAuth()
 
   if (isAuthenticated && strict) {
-    return <Navigate to={state?.from.pathname ?? ROOT_ROUTE} replace />
+    return <Navigate to={state?.from.pathname ?? DASHBOARD_ROUTE} replace />
   }
 
   return (

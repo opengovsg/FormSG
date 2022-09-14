@@ -1,5 +1,5 @@
 export const LANDING_ROUTE = '/'
-export const ROOT_ROUTE = '/dashboard'
+export const DASHBOARD_ROUTE = '/dashboard'
 export const LOGIN_ROUTE = '/login'
 
 export const TOU_ROUTE = '/terms'
