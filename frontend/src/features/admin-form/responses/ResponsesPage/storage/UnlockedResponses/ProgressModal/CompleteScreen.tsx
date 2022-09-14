@@ -64,7 +64,7 @@ export const CompleteScreen = ({
       return simplur`**${downloadMetadata.errorCount}** response[|s] and attachment[|s] could not be downloaded.`
     }
 
-    return simplur`**${downloadMetadata.errorCount}** response[|s]$ could not be downloaded.`
+    return simplur`**${downloadMetadata.errorCount}** response[|s] could not be downloaded.`
   }, [downloadMetadata?.errorCount, isWithAttachments])
 
   return (
