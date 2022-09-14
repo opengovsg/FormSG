@@ -18,13 +18,15 @@ import { useIsMobile } from '~hooks/useIsMobile'
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
 import { useFormSections } from '../FormFields/FormSectionsContext'
+import { PUBLICFORM_INSTRUCTIONS_SECTIONID } from '../FormInstructions/FormInstructionsContainer'
 
 import { SidebarLink } from './SidebarLink'
 
 export const SectionSidebar = (): JSX.Element => {
-  const { sectionScrollData, activeSectionId, navigatedSectionTitle } =
+  const { sectionScrollData, activeSectionId, navigatedSectionId } =
     useFormSections()
   const {
+    form,
     miniHeaderRef,
     submissionData,
     isMobileDrawerOpen,
@@ -41,6 +43,14 @@ export const SectionSidebar = (): JSX.Element => {
     // will never change.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [miniHeaderRef?.current?.clientHeight])
+
+  const navigatedSection = useMemo(() => {
+    if (!navigatedSectionId || !form) return
+    if (navigatedSectionId === PUBLICFORM_INSTRUCTIONS_SECTIONID) {
+      return { title: 'Instructions', description: form.startPage.paragraph }
+    }
+    return form.form_fields.find((ff) => ff._id === navigatedSectionId)
+  }, [form, navigatedSectionId])
 
   if (isMobile)
     return (
@@ -87,7 +97,7 @@ export const SectionSidebar = (): JSX.Element => {
   ) : (
     <Box
       as="nav"
-      aria-label="Form sections"
+      aria-label="Jump to form section"
       flex={1}
       d={{ base: 'none', md: 'initial' }}
       minW={sectionScrollData.length > 0 ? '20%' : undefined}
@@ -100,6 +110,7 @@ export const SectionSidebar = (): JSX.Element => {
         alignItems="flex-start"
         marginInlineStart={0}
         marginEnd="1rem"
+        aria-label="List of form section links"
       >
         {sectionScrollData?.map((d) => (
           <ListItem key={d._id} listStyleType="none">
@@ -107,9 +118,12 @@ export const SectionSidebar = (): JSX.Element => {
           </ListItem>
         ))}
       </UnorderedList>
-      {navigatedSectionTitle && (
+      {navigatedSection && (
         <VisuallyHidden aria-live="assertive" aria-atomic>
-          Navigated to {navigatedSectionTitle} section
+          Navigated to section: {navigatedSection.title}
+          {navigatedSection.description
+            ? `, ${navigatedSection.description}`
+            : ''}
         </VisuallyHidden>
       )}
     </Box>
