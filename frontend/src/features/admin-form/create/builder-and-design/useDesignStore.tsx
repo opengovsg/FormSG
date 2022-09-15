@@ -40,7 +40,7 @@ export type DesignStore = {
   resetDesignStore: () => void
 }
 
-export const useDesignStore = create<DesignStore>(
+export const useDesignStore = create<DesignStore>()(
   devtools((set, get) => ({
     state: DesignState.Inactive,
     holdingState: null,

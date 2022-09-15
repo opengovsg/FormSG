@@ -6,7 +6,7 @@ export type DirtyFieldStore = {
   setIsDirty: (isDirty: boolean) => void
 }
 
-export const useDirtyFieldStore = create<DirtyFieldStore>(
+export const useDirtyFieldStore = create<DirtyFieldStore>()(
   devtools((set, _get) => ({
     isDirty: false,
     setIsDirty: (isDirty: boolean) => set({ isDirty }),

@@ -45,7 +45,7 @@ export type FieldBuilderStore = {
   moveFromHolding: () => void
 }
 
-export const useFieldBuilderStore = create<FieldBuilderStore>(
+export const useFieldBuilderStore = create<FieldBuilderStore>()(
   devtools((set, get) => ({
     stateData: { state: FieldBuilderState.Inactive },
     holdingStateData: null,
