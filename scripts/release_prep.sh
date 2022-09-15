@@ -6,6 +6,7 @@ set -x
 # - github documentation: https://github.com/cli/cli#installation
 # - github is remote 'origin'
 
+git fetch --all --tags
 git reset --hard
 git pull
 git checkout develop
@@ -17,16 +18,22 @@ temp_release_branch=temp_${short_hash}
 git chekcout -b ${temp_release_branch}
 
 release_version=$(npm --no-git-tag-version version minor | tail -n 1)
+release_branch=release_${release_version}
+may_force_push=
+
+if [[ "$1" == "--recut" ]]; then
+  git tag -d ${release_version}
+  git push --delete origin ${release_version}
+  git branch -D ${release_branch}
+  may_force_push=-f
+fi
 
 git commit -a -m "chore: bump version to ${release_version}"
 git tag ${release_version}
-
-release_branch=release_${release_version}
-
 git checkout -b ${release_branch}
 git branch -D ${temp_release_branch}
 
-git push origin HEAD:${release_branch}
+git push origin ${may_force_push} HEAD:${release_branch}
 git push -f origin HEAD:staging-alt2
 git push origin ${release_version}
 
