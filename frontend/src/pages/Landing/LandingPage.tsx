@@ -45,7 +45,7 @@ import { useMdComponents } from '~hooks/useMdComponents'
 import Button from '~components/Button'
 import Link from '~components/Link'
 import { Tab } from '~components/Tabs'
-import { LottieAnimation } from '~templates/LottieAnimation/LottieAnimation'
+import { LottieAnimation } from '~templates/LottieAnimation'
 
 import formsHeroAnimation from './assets/images/animation-hero.json'
 import howFormsWorksAnimation from './assets/images/animation-mode.json'
