@@ -151,7 +151,11 @@ export const EditLongText = ({ field }: EditLongTextProps): JSX.Element => {
         isInvalid={!isEmpty(errors.ValidationOptions)}
       >
         <FormLabel isRequired>Number of characters allowed</FormLabel>
-        <SimpleGrid mt="0.5rem" columns={2} spacing="0.5rem">
+        <SimpleGrid
+          mt="0.5rem"
+          columns={{ base: 2, md: 1, lg: 2 }}
+          spacing="0.5rem"
+        >
           <Controller
             name="ValidationOptions.selectedValidation"
             control={control}
