@@ -2,7 +2,7 @@
 
 set -x
 
-# pre-requisites: instal github CLI
+# pre-requisites: install github CLI
 # - github documentation: https://github.com/cli/cli#installation
 # - github is remote 'origin'
 
