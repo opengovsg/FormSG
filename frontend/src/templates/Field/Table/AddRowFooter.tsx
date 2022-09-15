@@ -18,9 +18,9 @@ export const AddRowFooter = ({
   return (
     <Stack
       mt="0.75rem"
-      direction={{ base: 'column', md: 'row' }}
+      direction={{ base: 'column', lg: 'row' }}
       justify="space-between"
-      align={{ base: 'start', md: 'center' }}
+      align={{ base: 'start', lg: 'center' }}
       spacing="0.75rem"
     >
       <Button
