@@ -5,7 +5,7 @@ import { Box, Flex, Stack, Text } from '@chakra-ui/react'
 import { AppFooter } from '~/app/AppFooter'
 
 import { useAuth } from '~contexts/AuthContext'
-import { ROOT_ROUTE } from '~constants/routes'
+import { DASHBOARD_ROUTE } from '~constants/routes'
 import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
 import Link from '~components/Link'
@@ -57,7 +57,7 @@ export const NotFoundErrorPage = (): JSX.Element => {
                 Back
               </Button>
               {isAuthenticated ? (
-                <Link variant="standalone" as={ReactLink} to={ROOT_ROUTE}>
+                <Link variant="standalone" as={ReactLink} to={DASHBOARD_ROUTE}>
                   Go to dashboard
                 </Link>
               ) : null}

@@ -21,7 +21,7 @@ import {
   EMERGENCY_CONTACT_KEY_PREFIX,
   ROLLOUT_ANNOUNCEMENT_KEY_PREFIX,
 } from '~constants/localStorage'
-import { ROOT_ROUTE } from '~constants/routes'
+import { DASHBOARD_ROUTE } from '~constants/routes'
 import { useIsMobile } from '~hooks/useIsMobile'
 import { useLocalStorage } from '~hooks/useLocalStorage'
 import { logout } from '~services/AuthService'
@@ -235,7 +235,7 @@ export const AdminNavBar = ({ isMenuOpen }: AdminNavBarProps): JSX.Element => {
   return (
     <>
       <AdminNavBar.Container>
-        <ReactLink title="Form Logo" to={ROOT_ROUTE}>
+        <ReactLink title="Form Logo" to={DASHBOARD_ROUTE}>
           {<BrandSmallLogo w="2rem" />}
         </ReactLink>
         <HStack

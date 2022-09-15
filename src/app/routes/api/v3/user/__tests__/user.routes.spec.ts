@@ -600,7 +600,7 @@ describe('user.routes', () => {
         .send({ version: MOCK_UPDATE_VERSION })
 
       // Assert
-      expect(retrieveUserSpy).toBeCalled()
+      expect(retrieveUserSpy).toHaveBeenCalled()
       expect(response.status).toEqual(500)
       expect(response.body).toEqual(mockErrorString)
     })
