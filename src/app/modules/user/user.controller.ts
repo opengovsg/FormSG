@@ -11,14 +11,17 @@ import { getRequestIp } from '../../utils/request'
 import { getUserIdFromSession } from '../auth/auth.utils'
 import { ControllerHandler } from '../core/core.types'
 
+import { UNAUTHORIZED_USER_MESSAGE } from './user.constant'
 import {
   validateContactOtpVerificationParams,
   validateContactSendOtpParams,
+  validateUpdateUserLastSeenFeatureUpdateVersion,
 } from './user.middleware'
 import {
   createContactOtp,
   getPopulatedUserById,
   updateUserContact,
+  updateUserLastSeenFeatureUpdateVersion,
   verifyContactOtp,
 } from './user.service'
 import { mapRouteError } from './user.utils'
@@ -37,7 +40,7 @@ export const _handleContactSendOtp: ControllerHandler<
   // Guard against user updating for a different user, or if user is not logged
   // in.
   if (!sessionUserId || sessionUserId !== userId) {
-    return res.status(StatusCodes.UNAUTHORIZED).json('User is unauthorized.')
+    return res.status(StatusCodes.UNAUTHORIZED).json(UNAUTHORIZED_USER_MESSAGE)
   }
 
   const senderIp = getRequestIp(req)
@@ -119,7 +122,7 @@ export const _handleContactVerifyOtp: ControllerHandler<
   // Guard against user updating for a different user, or if user is not logged
   // in.
   if (!sessionUserId || sessionUserId !== userId) {
-    return res.status(StatusCodes.UNAUTHORIZED).json('User is unauthorized.')
+    return res.status(StatusCodes.UNAUTHORIZED).json(UNAUTHORIZED_USER_MESSAGE)
   }
 
   const logMeta = {
@@ -180,14 +183,15 @@ export const handleContactVerifyOtp = [
  * @route GET /
  * @returns 200 with the retrieved user if session user is valid
  * @returns 401 if user is not currently logged in
- * @returns 500 when user cannot be found or database errors occurs
+ * @returns 422 when user id does not exist in the database
+ * @returns 500 database errors occurs
  */
 export const handleFetchUser: ControllerHandler = async (req, res) => {
   const sessionUserId = getUserIdFromSession(req.session)
   if (!sessionUserId) {
     return res
       .status(StatusCodes.UNAUTHORIZED)
-      .json({ message: 'User is unauthorized.' })
+      .json({ message: UNAUTHORIZED_USER_MESSAGE })
   }
 
   return getPopulatedUserById(sessionUserId)
@@ -206,3 +210,48 @@ export const handleFetchUser: ControllerHandler = async (req, res) => {
       return res.status(statusCode).json({ message: errorMessage })
     })
 }
+
+/**
+ * @route POST /flag/last-seen
+ * @returns 200 when user last seen feature update date update success
+ * @returns 401 if user is not currently logged in
+ * @returns 422 when user id does not exist in the database
+ * @returns 500 database errors occurs
+ */
+export const _handleUpdateUserLastSeenFeatureUpdateVersion: ControllerHandler<
+  unknown,
+  IPopulatedUser | string,
+  { version: number }
+> = async (req, res) => {
+  const sessionUserId = getUserIdFromSession(req.session)
+
+  if (!sessionUserId) {
+    return res.status(StatusCodes.UNAUTHORIZED).json(UNAUTHORIZED_USER_MESSAGE)
+  }
+
+  const { version } = req.body
+
+  return updateUserLastSeenFeatureUpdateVersion(sessionUserId, version)
+    .map((updatedUser) => {
+      return res.status(StatusCodes.OK).json(updatedUser)
+    })
+    .mapErr((error) => {
+      logger.error({
+        message:
+          'Error occurred while updating user last seen feature update date',
+        meta: {
+          action: 'handleUpdateUserLastSeenFeatureUpdate',
+          userId: sessionUserId,
+        },
+        error,
+      })
+
+      const { errorMessage, statusCode } = mapRouteError(error)
+      return res.status(statusCode).json(errorMessage)
+    })
+}
+
+export const handleUpdateUserLastSeenFeatureUpdateVersion = [
+  validateUpdateUserLastSeenFeatureUpdateVersion,
+  _handleUpdateUserLastSeenFeatureUpdateVersion,
+] as ControllerHandler[]

@@ -14,6 +14,8 @@ import { BasicField, FormFieldDto } from '~shared/types'
 import { FieldIdSet } from '~features/logic/types'
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
+import { PUBLICFORM_INSTRUCTIONS_SECTIONID } from '../FormInstructions/FormInstructionsContainer'
+
 export type SidebarSectionMeta = Pick<FormFieldDto, 'title' | '_id'>
 
 interface FormSectionsContextProps {
@@ -22,8 +24,8 @@ interface FormSectionsContextProps {
   setVisibleFieldIdsForScrollData: (visibleFieldIds: FieldIdSet) => void
   sectionRefs: Record<string, RefObject<HTMLDivElement>>
   activeSectionId?: string
-  navigatedSectionTitle?: string
-  setNavigatedSectionTitle: (title: string) => void
+  navigatedSectionId?: string
+  setNavigatedSectionId: (id: string) => void
 }
 
 const FormSectionsContext = createContext<FormSectionsContextProps | undefined>(
@@ -47,7 +49,7 @@ export const FormSectionsProvider = ({
     if (form.startPage.paragraph)
       sections.push({
         title: 'Instructions',
-        _id: 'instructions',
+        _id: PUBLICFORM_INSTRUCTIONS_SECTIONID,
       })
     form.form_fields.forEach((f) => {
       if (f.fieldType !== BasicField.Section || !visibleFieldIds?.has(f._id))
@@ -73,10 +75,10 @@ export const FormSectionsProvider = ({
       .filter((f) => f.fieldType === BasicField.Section)
       .map((f) => f._id)
     return form.startPage.paragraph
-      ? ['instructions'].concat(sections)
+      ? [PUBLICFORM_INSTRUCTIONS_SECTIONID].concat(sections)
       : sections
   }, [form])
-  const [navigatedSectionTitle, setNavigatedSectionTitle] = useState<string>()
+  const [navigatedSectionId, setNavigatedSectionId] = useState<string>()
 
   useEffect(() => {
     if (!form) return
@@ -105,8 +107,8 @@ export const FormSectionsProvider = ({
         setVisibleFieldIdsForScrollData: setVisibleFieldIds,
         sectionRefs,
         activeSectionId: orderedSectionFieldIds?.[activeSection] ?? undefined,
-        navigatedSectionTitle,
-        setNavigatedSectionTitle,
+        navigatedSectionId,
+        setNavigatedSectionId,
       }}
     >
       {children}

@@ -19,8 +19,6 @@ export const NewFeatureContent = (props: {
   return (
     <>
       <LottieAnimation
-        // The link will always change in Chromatic so this should be ignored.
-        data-chromatic="ignore"
         bg="primary.100"
         pt="4.5rem"
         height={{ base: '30vh', md: 'initial' }}

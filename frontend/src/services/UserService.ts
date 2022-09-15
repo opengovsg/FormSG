@@ -31,3 +31,12 @@ export const verifyUserContactOtp = (
     params,
   ).then(({ data }) => data)
 }
+
+export const updateUserLastSeenFeatureUpdateVersion = async (
+  version: number,
+): Promise<UserDto> => {
+  return ApiService.post<UserDto>(
+    `${USER_ENDPOINT}/flag/new-features-last-seen`,
+    { version },
+  ).then(({ data }) => data)
+}

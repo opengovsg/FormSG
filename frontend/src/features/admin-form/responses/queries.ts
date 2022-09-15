@@ -90,10 +90,7 @@ export const useFormResponses = ({
     adminFormResponsesKeys.metadata(formId, params),
     () => getFormSubmissionsMetadata(formId, params),
     {
-      refetchOnMount: true,
-      refetchOnWindowFocus: false,
-      // Data will never change.
-      staleTime: Infinity,
+      staleTime: 0,
       keepPreviousData: !submissionId,
       enabled: !!secretKey && (page > 0 || !!submissionId),
     },

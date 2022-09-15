@@ -23,6 +23,8 @@ import Input from '~components/Input'
 import Textarea from '~components/Textarea'
 import Toggle from '~components/Toggle'
 
+import { useCreatePageSidebar } from '~features/admin-form/create/common'
+
 import { DrawerContentContainer } from '../common/DrawerContentContainer'
 import { FormFieldDrawerActions } from '../common/FormFieldDrawerActions'
 import { EditFieldProps } from '../common/types'
@@ -31,6 +33,8 @@ import { useEditFieldForm } from '../common/useEditFieldForm'
 type EditDateProps = EditFieldProps<DateFieldBase>
 
 const EDIT_DATE_FIELD_KEYS = ['title', 'description', 'required'] as const
+
+const MIN_WIDTH_FOR_2_COL = 405
 
 type EditDateInputs = Pick<
   DateFieldBase,
@@ -127,7 +131,7 @@ export const EditDate = ({ field }: EditDateProps): JSX.Element => {
     'dateValidation.customMinDate'
   > = useMemo(
     () => ({
-      // customMin is required if there is selected validation.
+      // either customMin or customMax is required if custom date range validation is selected.
       validate: {
         hasValidation: (val) => {
           const hasMaxValue =
@@ -142,6 +146,8 @@ export const EditDate = ({ field }: EditDateProps): JSX.Element => {
           const date = new Date(val)
           const maxDate = new Date(getValues('dateValidation.customMaxDate'))
           return (
+            !getValues('dateValidation.customMaxDate') || // Only min date
+            !val || // Only max date
             isEqual(date, maxDate) ||
             isBefore(date, maxDate) ||
             'Max date cannot be less than min date.'
@@ -151,6 +157,8 @@ export const EditDate = ({ field }: EditDateProps): JSX.Element => {
     }),
     [getValues],
   )
+
+  const { drawerWidth } = useCreatePageSidebar()
 
   return (
     <DrawerContentContainer>
@@ -194,20 +202,32 @@ export const EditDate = ({ field }: EditDateProps): JSX.Element => {
           {getValues('dateValidation.selectedDateValidation') ===
           DateSelectedValidation.Custom ? (
             <>
-              <Controller
-                control={control}
-                name="dateValidation.customMinDate"
-                rules={customMinValidationOptions}
-                render={({ field }) => <DateInput {...field} />}
-              />
-              <Controller
-                control={control}
-                rules={{
-                  deps: ['dateValidation.customMinDate'],
-                }}
-                name="dateValidation.customMaxDate"
-                render={({ field }) => <DateInput {...field} />}
-              />
+              <Box
+                gridColumn={
+                  drawerWidth < MIN_WIDTH_FOR_2_COL ? '1/3' : undefined
+                }
+              >
+                <Controller
+                  control={control}
+                  name="dateValidation.customMinDate"
+                  rules={customMinValidationOptions}
+                  render={({ field }) => <DateInput {...field} />}
+                />
+              </Box>
+              <Box
+                gridColumn={
+                  drawerWidth < MIN_WIDTH_FOR_2_COL ? '1/3' : undefined
+                }
+              >
+                <Controller
+                  control={control}
+                  rules={{
+                    deps: ['dateValidation.customMinDate'],
+                  }}
+                  name="dateValidation.customMaxDate"
+                  render={({ field }) => <DateInput {...field} />}
+                />
+              </Box>
             </>
           ) : null}
         </SimpleGrid>

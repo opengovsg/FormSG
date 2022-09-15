@@ -9,8 +9,6 @@ import {
   TabPanel,
   TabPanels,
   Tabs,
-  useBreakpointValue,
-  UseTabsProps,
 } from '@chakra-ui/react'
 
 import { ADMINFORM_RESULTS_SUBROUTE, ADMINFORM_ROUTE } from '~constants/routes'
@@ -38,27 +36,16 @@ export const SettingsPage = (): JSX.Element => {
       navigate(`${ADMINFORM_ROUTE}/${formId}/${ADMINFORM_RESULTS_SUBROUTE}`)
   }, [formId, hasEditAccess, isCollabLoading, navigate])
 
-  const tabOrientation: UseTabsProps['orientation'] = useBreakpointValue({
-    base: 'horizontal',
-    xs: 'horizontal',
-    md: 'vertical',
-  })
-
   const { ref, onMouseDown } = useDraggable<HTMLDivElement>()
 
   return (
-    <Box
-      overflow="auto"
-      flex={1}
-      // Buffer for bottom navbar in mobile breakpoints.
-      mb={{ base: '4rem', md: 'initial' }}
-    >
+    <Box overflow="auto" flex={1}>
       <Tabs
         isLazy
         isManual
-        orientation={tabOrientation}
+        orientation="vertical"
         variant="line"
-        py={{ base: '2.5rem', md: '3.5rem', lg: '4rem' }}
+        py={{ base: '2.5rem', lg: '3.125rem' }}
         px={{ base: '1.5rem', md: '1.75rem', lg: '2rem' }}
       >
         <Flex
@@ -67,18 +54,11 @@ export const SettingsPage = (): JSX.Element => {
           flexShrink={0}
           ref={ref}
           onMouseDown={onMouseDown}
-          overflowX={{ base: 'auto', md: 'initial' }}
-          position={{ base: 'fixed', md: 'sticky' }}
-          zIndex={{ base: 'docked', md: 0 }}
-          bg={{ base: 'neutral.100', md: 'inherit' }}
-          // Height align text with start of tab panel.
-          mt={{ md: '-1rem', lg: '-0.875rem' }}
-          top={{ base: 'initial', md: '2.5rem', lg: '3.125rem' }}
-          bottom={{ base: 0, md: 'initial' }}
-          left={{ base: 0, md: 'initial' }}
-          borderTop={{ base: '1px solid', md: 'none' }}
+          position="sticky"
+          zIndex={0}
+          top={{ base: '2.5rem', lg: '3.125rem' }}
           borderTopColor="neutral.300"
-          w={{ base: '100vw', md: 'auto', lg: '21rem' }}
+          w={{ base: 'auto', lg: '21rem' }}
           __css={{
             scrollbarWidth: 0,
             /* Scrollbar for Chrome, Safari, Opera and Microsoft Edge */
@@ -92,7 +72,6 @@ export const SettingsPage = (): JSX.Element => {
             overflowX="initial"
             display="inline-flex"
             w="max-content"
-            ml={{ base: '1.5rem', md: 0 }}
             mr={{ base: '1.5rem', md: '4rem', lg: '2rem' }}
             mb="calc(0.5rem - 2px)"
           >
@@ -102,7 +81,11 @@ export const SettingsPage = (): JSX.Element => {
             <SettingsTab label="Webhooks" icon={BiCodeBlock} />
           </TabList>
         </Flex>
-        <TabPanels maxW="42.5rem">
+        <TabPanels
+          maxW="42.5rem"
+          // Offset start of tabpanel text from tablist.
+          mt={{ md: '1rem' }}
+        >
           <TabPanel>
             <SettingsGeneralPage />
           </TabPanel>

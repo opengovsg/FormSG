@@ -16,6 +16,7 @@ import {
   updateEditStateSelector,
   useFieldBuilderStore,
 } from '../useFieldBuilderStore'
+import { getMutationErrorMessage } from '../utils/getMutationErrorMessage'
 
 export const useCreateFormField = () => {
   const { formId } = useParams()
@@ -66,7 +67,7 @@ export const useCreateFormField = () => {
     (error: Error) => {
       toast.closeAll()
       toast({
-        description: error.message,
+        description: getMutationErrorMessage(error),
         status: 'danger',
       })
     },
