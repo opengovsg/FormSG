@@ -28,11 +28,13 @@ git branch -D ${temp_release_branch}
 
 git push origin HEAD:${release_branch}
 git push -f origin HEAD:staging-alt2
+git push origin ${release_version}
 
 # extract changelog to inject into the PR
 # TODO: group changelog into sections automatically
 pr_body_file=.pr_body_${release_version}
 awk "/#### \[${release_version}\]/{flag=1;next}/####/{flag=0}flag" CHANGELOG.md > ${pr_body_file}
+
 
 gh auth login
 gh pr create \
@@ -44,3 +46,4 @@ gh pr create \
 
 # cleanup
 rm ${pr_body_file}
+git branch -D ${release_branch}
