@@ -1,4 +1,4 @@
-import { useCallback, useLayoutEffect, useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import { DropzoneProps, useDropzone } from 'react-dropzone'
 import {
   Box,
@@ -173,7 +173,10 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
       colorScheme,
     })
 
-    const handleRemoveFile = useCallback(() => onChange(undefined), [onChange])
+    const handleRemoveFile = useCallback(() => {
+      onChange(undefined)
+      rootRef.current?.focus()
+    }, [onChange, rootRef])
 
     // Bunch of memoization to avoid unnecessary re-renders.
     const processedRootProps = useMemo(() => {
@@ -198,8 +201,6 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
         ...inputProps,
       })
     }, [getInputProps, inputProps, name])
-
-    useLayoutEffect(() => rootRef.current?.focus(), [rootRef, value])
 
     return (
       <StylesProvider value={styles}>
