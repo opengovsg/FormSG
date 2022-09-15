@@ -15,6 +15,7 @@ import {
   PopoverContent,
   PopoverHeader,
   PopoverTrigger,
+  Portal,
   Text,
   useFormControlProps,
 } from '@chakra-ui/react'
@@ -142,44 +143,46 @@ export const DateInput = forwardRef<DateInputProps, 'input'>(
                   isDisabled={fcProps.isDisabled || fcProps.isReadOnly}
                 />
               </PopoverTrigger>
-              <PopoverContent
-                borderRadius="4px"
-                w="unset"
-                maxW="100vw"
-                bg="white"
-              >
-                <FocusLock returnFocus>
-                  <PopoverHeader p={0}>
-                    <Flex
-                      h="3.5rem"
-                      mx={{ base: '1rem', md: '1.5rem' }}
-                      justifyContent="space-between"
-                      alignItems="center"
-                    >
-                      <Text textStyle="subhead-2" color="secondary.500">
-                        Select a date
-                      </Text>
-                      <PopoverCloseButton
-                        position="static"
-                        variant="clear"
-                        colorScheme="secondary"
+              <Portal>
+                <PopoverContent
+                  borderRadius="4px"
+                  w="unset"
+                  maxW="100vw"
+                  bg="white"
+                >
+                  <FocusLock returnFocus>
+                    <PopoverHeader p={0}>
+                      <Flex
+                        h="3.5rem"
+                        mx={{ base: '1rem', md: '1.5rem' }}
+                        justifyContent="space-between"
+                        alignItems="center"
+                      >
+                        <Text textStyle="subhead-2" color="secondary.500">
+                          Select a date
+                        </Text>
+                        <PopoverCloseButton
+                          position="static"
+                          variant="clear"
+                          colorScheme="secondary"
+                        />
+                      </Flex>
+                    </PopoverHeader>
+                    <PopoverBody p={0}>
+                      <DateInput.DatePicker
+                        colorScheme={colorScheme}
+                        date={datePickerDate}
+                        isDateUnavailable={isDateUnavailable}
+                        onSelectDate={(e) => {
+                          handleDatepickerSelection(e)
+                          onClose()
+                        }}
+                        ref={initialFocusRef}
                       />
-                    </Flex>
-                  </PopoverHeader>
-                  <PopoverBody p={0}>
-                    <DateInput.DatePicker
-                      colorScheme={colorScheme}
-                      date={datePickerDate}
-                      isDateUnavailable={isDateUnavailable}
-                      onSelectDate={(e) => {
-                        handleDatepickerSelection(e)
-                        onClose()
-                      }}
-                      ref={initialFocusRef}
-                    />
-                  </PopoverBody>
-                </FocusLock>
-              </PopoverContent>
+                    </PopoverBody>
+                  </FocusLock>
+                </PopoverContent>
+              </Portal>
             </>
           )}
         </Popover>
