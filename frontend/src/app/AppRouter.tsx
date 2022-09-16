@@ -16,6 +16,7 @@ import {
   RESULTS_FEEDBACK_SUBROUTE,
   TOU_ROUTE,
 } from '~constants/routes'
+import { fillHeightCss } from '~utils/fillHeightCss'
 
 import NotFoundErrorPage from '~pages/NotFoundError'
 import { AdminFormLayout } from '~features/admin-form/common/AdminFormLayout'
@@ -45,7 +46,7 @@ const TermsOfUsePage = lazy(() => import('~pages/TermsOfUse'))
 const PreviewFormPage = lazy(() => import('~features/admin-form/preview'))
 
 const WithSuspense = ({ children }: { children: React.ReactNode }) => (
-  <Suspense fallback={<Box bg="neutral.100" h="100vh" w="100vw" />}>
+  <Suspense fallback={<Box bg="neutral.100" css={fillHeightCss} w="100vw" />}>
     {children}
   </Suspense>
 )

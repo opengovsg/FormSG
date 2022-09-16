@@ -5,6 +5,7 @@ import { AdminNavBar } from '~/app/AdminNavBar'
 
 import { ROLLOUT_ANNOUNCEMENT_KEY_PREFIX } from '~constants/localStorage'
 import { useLocalStorage } from '~hooks/useLocalStorage'
+import { fillHeightCss } from '~utils/fillHeightCss'
 import { getBannerProps } from '~utils/getBannerProps'
 import { Banner } from '~components/Banner'
 
@@ -73,7 +74,7 @@ export const WorkspacePage = (): JSX.Element => {
         isOpen={createFormModalDisclosure.isOpen}
         onClose={createFormModalDisclosure.onClose}
       />
-      <Flex direction="column" h="100vh">
+      <Flex direction="column" css={fillHeightCss}>
         {bannerProps ? (
           <Banner variant={bannerProps.variant}>{bannerProps.msg}</Banner>
         ) : null}

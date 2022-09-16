@@ -18,12 +18,14 @@ import { AdminFormLayout } from '~features/admin-form/common/AdminFormLayout'
 import { BuilderAndDesignContext } from '~features/admin-form/create/builder-and-design/BuilderAndDesignContext'
 import { CreatePageSidebarProvider } from '~features/admin-form/create/common/CreatePageSidebarContext'
 
+import { fillHeightCss } from './fillHeightCss'
+
 export const centerDecorator: DecoratorFn = (storyFn) => (
   <Center>{storyFn()}</Center>
 )
 
 export const fullScreenDecorator: DecoratorFn = (storyFn) => (
-  <Box w="100vw" h="100vh">
+  <Box w="100vw" css={fillHeightCss}>
     {storyFn()}
   </Box>
 )
@@ -127,7 +129,7 @@ export const mockDateDecorator: DecoratorFn = (storyFn, { parameters }) => {
     const mockedDate = dayjs(parameters.mockdate).format('DD-MM-YYYY HH:mma')
 
     return (
-      <Box>
+      <>
         <Box
           pos="fixed"
           top={0}
@@ -141,7 +143,7 @@ export const mockDateDecorator: DecoratorFn = (storyFn, { parameters }) => {
           Mocking date: {mockedDate}
         </Box>
         {storyFn()}
-      </Box>
+      </>
     )
   }
   return storyFn()
