@@ -84,6 +84,7 @@ export const DownloadWithAttachmentModal = ({
       closeOnOverlayClick={
         currentStep !== DownloadWithAttachmentFlowStates.Progress
       }
+      closeOnEsc={currentStep !== DownloadWithAttachmentFlowStates.Progress}
     >
       <ModalOverlay />
       <ModalContent overflow="hidden">
@@ -99,7 +100,6 @@ export const DownloadWithAttachmentModal = ({
           {currentStep === DownloadWithAttachmentFlowStates.Progress && (
             <ProgressModalContent
               downloadPercentage={downloadPercentage}
-              isDownloading={isDownloading}
               onCancel={onCancel}
             >
               <Text mb="1rem">
@@ -114,6 +114,7 @@ export const DownloadWithAttachmentModal = ({
               <CanceledScreen onClose={onClose} />
             ) : (
               <CompleteScreen
+                isWithAttachments
                 downloadMetadata={downloadMetadata}
                 onClose={onClose}
               />

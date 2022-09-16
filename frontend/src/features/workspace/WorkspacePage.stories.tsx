@@ -10,7 +10,7 @@ import {
 
 import { getUser, MOCK_USER } from '~/mocks/msw/handlers/user'
 
-import { ROOT_ROUTE } from '~constants/routes'
+import { DASHBOARD_ROUTE } from '~constants/routes'
 import {
   getMobileViewParameters,
   LoggedInDecorator,
@@ -61,8 +61,8 @@ export default {
   decorators: [
     ViewedRolloutDecorator,
     StoryRouter({
-      initialEntries: [ROOT_ROUTE],
-      path: ROOT_ROUTE,
+      initialEntries: [DASHBOARD_ROUTE],
+      path: DASHBOARD_ROUTE,
     }),
     mockDateDecorator,
     LoggedInDecorator,
