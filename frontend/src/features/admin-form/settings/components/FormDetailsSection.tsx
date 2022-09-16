@@ -24,7 +24,7 @@ export const FormDetailsSection = (): JSX.Element => {
       <Stack spacing="2rem">
         {settings ? <FormTitleInput initialTitle={settings.title} /> : null}
         {settings?.responseMode === FormResponseMode.Email ? (
-          <EmailFormSection settings={settings} />
+          <EmailFormSection emails={settings.emails} />
         ) : null}
       </Stack>
     </Skeleton>

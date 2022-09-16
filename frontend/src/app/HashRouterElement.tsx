@@ -1,6 +1,6 @@
-import { Navigate, useLocation } from 'react-router-dom'
+import { useLocation } from 'react-router-dom'
 
-import { ROOT_ROUTE } from '~constants/routes'
+import { DASHBOARD_ROUTE } from '~constants/routes'
 
 import { PublicElement } from './PublicElement'
 
@@ -31,17 +31,20 @@ const hashRouteMapper = [
   },
   {
     regex: /^#!\/(?<formid>[0-9a-fA-F]{24})\/admin$/,
-    getTarget: (m: FormRegExpMatchArray) =>
-      `${ROOT_ROUTE}/admin/form/${m.groups.formid}`,
+    getTarget: (m: FormRegExpMatchArray) => `/admin/form/${m.groups.formid}`,
   },
   {
     regex: /^#!\/(?<formid>[0-9a-fA-F]{24})\/preview$/,
     getTarget: (m: FormRegExpMatchArray) =>
-      `${ROOT_ROUTE}/admin/form/${m.groups.formid}/preview`,
+      `/admin/form/${m.groups.formid}/preview`,
+  },
+  {
+    regex: /^#!\/forms$/,
+    getTarget: (m: FormRegExpMatchArray) => `${DASHBOARD_ROUTE}`,
   },
   {
     regex: /^#!\/examples$/,
-    getTarget: (m: FormRegExpMatchArray) => `${ROOT_ROUTE}/admin`,
+    getTarget: (m: FormRegExpMatchArray) => `/examples`,
   },
 ]
 
@@ -58,7 +61,7 @@ export const HashRouterElement = ({
       const match = location.hash.match(regex)
       if (match) {
         const redirectTo = getTarget(match as FormRegExpMatchArray)
-        return <Navigate replace to={redirectTo} state={{ from: location }} />
+        window.location.assign(redirectTo)
       }
     }
   }

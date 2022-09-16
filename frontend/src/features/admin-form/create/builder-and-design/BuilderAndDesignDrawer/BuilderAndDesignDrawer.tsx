@@ -22,7 +22,7 @@ import { FieldListDrawer } from './FieldListDrawer'
 
 export const BuilderAndDesignDrawer = (): JSX.Element | null => {
   const isMobile = useIsMobile()
-  const { activeTab, isDrawerOpen } = useCreatePageSidebar()
+  const { activeTab, isDrawerOpen, drawerRef } = useCreatePageSidebar()
   const createOrEditData = useFieldBuilderStore(stateDataSelector)
 
   const drawerMotionProps = useMemo(() => {
@@ -78,7 +78,7 @@ export const BuilderAndDesignDrawer = (): JSX.Element | null => {
           overflow="hidden"
           {...drawerMotionProps}
         >
-          <Flex w="100%" h="100%" flexDir="column">
+          <Flex w="100%" h="100%" flexDir="column" ref={drawerRef}>
             {renderDrawerContent}
           </Flex>
         </MotionBox>

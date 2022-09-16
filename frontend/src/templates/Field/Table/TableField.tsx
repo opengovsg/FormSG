@@ -59,7 +59,7 @@ export const TableField = ({
     // would not need to be shown in the table field itself.
     if (isMobile) return
     // Get first available error amongst all column cell errors.
-    return head(uniq(tableErrors?.flatMap(Object.values)))
+    return head(uniq(tableErrors?.flatMap((err = {}) => Object.values(err))))
   }, [isMobile, tableErrors])
 
   const { fields, append, remove } = useFieldArray<TableFieldInputs>({
@@ -67,13 +67,18 @@ export const TableField = ({
     name: schema._id,
   })
 
+  const appendTableRow = useCallback(
+    () => append(createTableRow(schema), { shouldFocus: false }),
+    [append, schema],
+  )
+
   useEffect(() => {
     // Update field array when min rows changes.
     if (hasMinRowsChanged) {
       const prevRowLength = fields.length
       if (schema.minimumRows > prevRowLength) {
         for (let i = prevRowLength; i < schema.minimumRows; i++) {
-          append(createTableRow(schema), { shouldFocus: false })
+          appendTableRow()
         }
       } else {
         // Remove rows from field array
@@ -82,15 +87,15 @@ export const TableField = ({
         }
       }
     }
-  }, [append, fields.length, hasMinRowsChanged, remove, schema])
+  }, [appendTableRow, fields.length, hasMinRowsChanged, remove, schema])
 
   const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } =
     useTable({ columns: columnsData, data: fields })
 
   const handleAddRow = useCallback(() => {
     if (!schema.maximumRows || fields.length >= schema.maximumRows) return
-    return append(createTableRow(schema))
-  }, [append, fields.length, schema])
+    return appendTableRow()
+  }, [appendTableRow, fields.length, schema])
 
   const handleRemoveRow = useCallback(
     (rowIndex: number) => {
@@ -104,7 +109,20 @@ export const TableField = ({
 
   return (
     <TableFieldContainer schema={schema}>
-      <Box d="block" w="100%" overflowX="auto">
+      <Box
+        d="block"
+        w="100%"
+        overflowX="auto"
+        sx={{
+          '&::-webkit-scrollbar': {
+            height: '7px',
+          },
+          '&::-webkit-scrollbar-thumb': {
+            background: 'rgba(0,0,0,.5)',
+            borderRadius: '4px',
+          },
+        }}
+      >
         <Table
           {...getTableProps()}
           variant="column-stripe"

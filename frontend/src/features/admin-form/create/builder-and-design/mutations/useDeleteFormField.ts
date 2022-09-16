@@ -15,6 +15,7 @@ import {
   stateDataSelector,
   useFieldBuilderStore,
 } from '../useFieldBuilderStore'
+import { getMutationErrorMessage } from '../utils/getMutationErrorMessage'
 
 export const useDeleteFormField = () => {
   const { formId } = useParams()
@@ -72,7 +73,7 @@ export const useDeleteFormField = () => {
     (error: Error) => {
       toast.closeAll()
       toast({
-        description: error.message,
+        description: getMutationErrorMessage(error),
         status: 'danger',
       })
     },

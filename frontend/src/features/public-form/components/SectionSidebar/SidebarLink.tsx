@@ -24,7 +24,7 @@ export const SidebarLink = ({
   isActive,
   sectionMeta,
 }: SidebarLinkProps): JSX.Element => {
-  const { sectionRefs, setNavigatedSectionTitle } = useFormSections()
+  const { sectionRefs, setNavigatedSectionId } = useFormSections()
   const { miniHeaderRef, onMobileDrawerClose } = usePublicFormContext()
 
   const sectionRef = useMemo(
@@ -49,13 +49,13 @@ export const SidebarLink = ({
     // Remove scrolling on focus to prevent app from jumping immediately to the
     // element without smooth scrolling.
     sectionRef.current.focus({ preventScroll: true })
-    setNavigatedSectionTitle(sectionMeta.title)
+    setNavigatedSectionId(sectionMeta._id)
   }, [
     sectionRef,
     miniHeaderRef,
     onMobileDrawerClose,
-    sectionMeta.title,
-    setNavigatedSectionTitle,
+    sectionMeta._id,
+    setNavigatedSectionId,
   ])
 
   const styles = useStyleConfig('Link', {

@@ -7,7 +7,7 @@ import { FormStatus } from '~shared/types'
 import {
   ADMINFORM_PREVIEW_ROUTE,
   ADMINFORM_ROUTE,
-  ROOT_ROUTE,
+  DASHBOARD_ROUTE,
 } from '~constants/routes'
 
 import { ShareFormModal } from '~features/admin-form/share'
@@ -26,7 +26,7 @@ const useAdminFormNavbar = () => {
   const navigate = useNavigate()
 
   const handleBackToDashboard = useCallback(
-    (): void => navigate(ROOT_ROUTE),
+    (): void => navigate(DASHBOARD_ROUTE),
     [navigate],
   )
 

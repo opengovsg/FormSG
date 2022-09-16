@@ -1,6 +1,7 @@
 import { useParams } from 'react-router-dom'
 import { Flex } from '@chakra-ui/react'
 
+import { fillHeightCss } from '~utils/fillHeightCss'
 import GovtMasthead from '~components/GovtMasthead'
 
 // TODO #4279: Remove after React rollout is complete
@@ -22,7 +23,7 @@ export const PreviewFormPage = (): JSX.Element => {
   if (!formId) throw new Error('No formId provided')
 
   return (
-    <Flex flexDir="column" height="100vh" pos="relative">
+    <Flex flexDir="column" css={fillHeightCss} pos="relative">
       <PreviewFormProvider formId={formId}>
         <GovtMasthead />
         <PreviewFormBanner />
