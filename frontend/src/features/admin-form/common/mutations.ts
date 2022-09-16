@@ -10,7 +10,7 @@ import {
   StartPageUpdateDto,
 } from '~shared/types/form/form'
 
-import { ROOT_ROUTE } from '~constants/routes'
+import { DASHBOARD_ROUTE } from '~constants/routes'
 import { useToast } from '~hooks/useToast'
 import { HttpError } from '~services/ApiService'
 
@@ -298,7 +298,7 @@ export const useMutateCollaborators = () => {
           description:
             'You have removed yourself as a collaborator from the form.',
         })
-        navigate(ROOT_ROUTE)
+        navigate(DASHBOARD_ROUTE)
         // Remove all related queries from cache.
         queryClient.removeQueries(adminFormKeys.id(formId))
       },

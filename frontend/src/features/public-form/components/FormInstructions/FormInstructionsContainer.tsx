@@ -6,6 +6,8 @@ import { useFormSections } from '../FormFields/FormSectionsContext'
 
 import { FormInstructions } from './FormInstructions'
 
+export const PUBLICFORM_INSTRUCTIONS_SECTIONID = 'instructions'
+
 export const FormInstructionsContainer = (): JSX.Element | null => {
   const { sectionRefs } = useFormSections()
   const { form, submissionData } = usePublicFormContext()
@@ -24,7 +26,13 @@ export const FormInstructionsContainer = (): JSX.Element | null => {
         px={{ base: '1rem', md: '2.5rem' }}
         mb="1.5rem"
       >
-        <Box id="instructions" ref={sectionRefs['instructions']}>
+        <Box
+          id={PUBLICFORM_INSTRUCTIONS_SECTIONID}
+          ref={sectionRefs[PUBLICFORM_INSTRUCTIONS_SECTIONID]}
+          role="heading"
+          // Allow focus on instructions when sidebar link is clicked.
+          tabIndex={-1}
+        >
           <FormInstructions
             content={form?.startPage.paragraph}
             colorTheme={form?.startPage.colorTheme}
