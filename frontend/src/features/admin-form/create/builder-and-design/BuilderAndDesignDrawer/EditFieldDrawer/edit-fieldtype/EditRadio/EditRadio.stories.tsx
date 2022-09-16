@@ -4,18 +4,13 @@ import { BasicField, RadioFieldBase } from '~shared/types'
 
 import { EditFieldDrawerDecorator, StoryRouter } from '~utils/storybook'
 
+import { getFieldCreationMeta } from '~features/admin-form/create/builder-and-design/utils/fieldCreation'
+
 import { EditRadio } from './EditRadio'
 
-const DEFAULT_RADIO_FIELD: RadioFieldBase = {
-  title: 'Storybook Radio',
-  description: 'Some description',
-  required: true,
-  disabled: false,
-  fieldType: BasicField.Radio,
-  fieldOptions: ['Option 1', 'Option 2', 'Option 3'],
-  othersRadioButton: true,
-  globalId: 'unused',
-}
+const DEFAULT_RADIO_FIELD = getFieldCreationMeta(
+  BasicField.Radio,
+) as RadioFieldBase
 
 export default {
   title: 'Features/AdminForm/EditFieldDrawer/EditRadio',
@@ -31,6 +26,9 @@ export default {
     // Required so skeleton "animation" does not hide content.
     chromatic: { pauseAnimationAtEnd: true },
   },
+  args: {
+    field: DEFAULT_RADIO_FIELD,
+  },
 } as Meta<StoryArgs>
 
 interface StoryArgs {
@@ -45,7 +43,13 @@ export const Default = Template.bind({})
 
 export const WithValues = Template.bind({})
 WithValues.args = {
-  field: DEFAULT_RADIO_FIELD,
+  field: {
+    ...DEFAULT_RADIO_FIELD,
+    title: 'Storybook Radio',
+    description: 'Some description',
+    fieldOptions: ['Option 1', 'Option 2', 'Option 3'],
+    othersRadioButton: true,
+  },
 }
 
 export const Placeholders = Template.bind({})
@@ -55,5 +59,6 @@ Placeholders.args = {
     title: '',
     description: '',
     fieldOptions: [],
+    required: false,
   },
 }
