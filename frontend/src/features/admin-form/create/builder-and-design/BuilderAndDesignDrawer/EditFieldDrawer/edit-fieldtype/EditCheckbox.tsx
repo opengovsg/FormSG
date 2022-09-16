@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from 'react'
 import { Controller, RegisterOptions } from 'react-hook-form'
-import { Box, FormControl, Stack } from '@chakra-ui/react'
+import { Box, FormControl, SimpleGrid } from '@chakra-ui/react'
 import { extend, isEmpty, pick } from 'lodash'
 
 import { CheckboxFieldBase } from '~shared/types/field'
@@ -237,7 +237,11 @@ export const EditCheckbox = ({ field }: EditCheckboxProps): JSX.Element => {
           isReadOnly={isLoading}
           isInvalid={!isEmpty(errors.ValidationOptions)}
         >
-          <Stack mt="0.5rem" direction="row" spacing="0.5rem">
+          <SimpleGrid
+            mt="0.5rem"
+            columns={{ base: 1, sm: 2, md: 1, lg: 2 }}
+            spacing="0.5rem"
+          >
             <Controller
               name="ValidationOptions.customMin"
               control={control}
@@ -270,7 +274,7 @@ export const EditCheckbox = ({ field }: EditCheckboxProps): JSX.Element => {
                 />
               )}
             />
-          </Stack>
+          </SimpleGrid>
           <FormErrorMessage>
             {errors?.ValidationOptions?.customMin?.message ??
               errors?.ValidationOptions?.customMax?.message}
