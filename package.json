@@ -164,14 +164,14 @@
     "validator": "^13.7.0",
     "web-streams-polyfill": "^3.2.1",
     "whatwg-fetch": "^3.6.2",
-    "winston": "^3.8.1",
+    "winston": "^3.8.2",
     "winston-cloudwatch": "^3.1.1",
     "zod": "^3.19.1"
   },
   "devDependencies": {
     "@babel/core": "^7.18.10",
     "@babel/plugin-transform-runtime": "^7.19.1",
-    "@babel/preset-env": "^7.18.10",
+    "@babel/preset-env": "^7.19.1",
     "@opengovsg/mockpass": "^2.9.2",
     "@types/bcrypt": "^5.0.0",
     "@types/bluebird": "^3.5.36",
