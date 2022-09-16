@@ -126,6 +126,16 @@ export const PublicFormProvider = ({
   const { isNotFormId, toast, vfnToastIdRef, expiryInMs, ...commonFormValues } =
     useCommonFormProvider(formId)
 
+  useEffect(() => {
+    if (data?.myInfoError) {
+      toast({
+        status: 'danger',
+        description:
+          'Your Myinfo details could not be retrieved. Refresh your browser and log in, or try again later.',
+      })
+    }
+  }, [data, toast])
+
   const showErrorToast = useCallback(
     (error, form: PublicFormDto) => {
       toast({
