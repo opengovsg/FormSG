@@ -129,7 +129,7 @@ export const mockDateDecorator: DecoratorFn = (storyFn, { parameters }) => {
     const mockedDate = dayjs(parameters.mockdate).format('DD-MM-YYYY HH:mma')
 
     return (
-      <Box>
+      <>
         <Box
           pos="fixed"
           top={0}
@@ -143,7 +143,7 @@ export const mockDateDecorator: DecoratorFn = (storyFn, { parameters }) => {
           Mocking date: {mockedDate}
         </Box>
         {storyFn()}
-      </Box>
+      </>
     )
   }
   return storyFn()
