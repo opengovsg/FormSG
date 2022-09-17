@@ -8,14 +8,15 @@ import {
   ADMINFORM_ROUTE,
   ADMINFORM_SETTINGS_SUBROUTE,
   BILLING_ROUTE,
+  DASHBOARD_ROUTE,
   LANDING_ROUTE,
   LOGIN_ROUTE,
   PRIVACY_POLICY_ROUTE,
   PUBLICFORM_ROUTE,
   RESULTS_FEEDBACK_SUBROUTE,
-  ROOT_ROUTE,
   TOU_ROUTE,
 } from '~constants/routes'
+import { fillHeightCss } from '~utils/fillHeightCss'
 
 import NotFoundErrorPage from '~pages/NotFoundError'
 import { AdminFormLayout } from '~features/admin-form/common/AdminFormLayout'
@@ -45,7 +46,7 @@ const TermsOfUsePage = lazy(() => import('~pages/TermsOfUse'))
 const PreviewFormPage = lazy(() => import('~features/admin-form/preview'))
 
 const WithSuspense = ({ children }: { children: React.ReactNode }) => (
-  <Suspense fallback={<Box bg="neutral.100" h="100vh" w="100vw" />}>
+  <Suspense fallback={<Box bg="neutral.100" css={fillHeightCss} w="100vw" />}>
     {children}
   </Suspense>
 )
@@ -59,7 +60,7 @@ export const AppRouter = (): JSX.Element => {
           element={<HashRouterElement element={<LandingPage />} />}
         />
         <Route
-          path={ROOT_ROUTE}
+          path={DASHBOARD_ROUTE}
           element={<PrivateElement element={<WorkspacePage />} />}
         />
         <Route

@@ -265,7 +265,6 @@ export const FieldRowContainer = ({
         <Box
           _first={{ pt: 0 }}
           _last={{ pb: 0 }}
-          py="0.375rem"
           {...provided.draggableProps}
           ref={provided.innerRef}
         >
@@ -329,13 +328,13 @@ export const FieldRowContainer = ({
                       fontSize="1.5rem"
                     />
                   ) : (
-                    <Box h="1.5rem"></Box>
+                    <Box h="1.125rem"></Box>
                   )}
                 </chakra.button>
               </Fade>
               <Box
                 px={{ base: '0.75rem', md: '1.5rem' }}
-                pb={{ base: '0.75rem', md: '1.5rem' }}
+                pb={{ base: '0.75rem', md: '1rem' }}
                 w="100%"
                 pointerEvents={isActive ? undefined : 'none'}
                 opacity={isActive || !isHiddenByLogic ? '100%' : '30%'}

@@ -94,28 +94,6 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
       [value, readableMaxSize, showFileSize],
     )
 
-    const ariaDescribedBy = useMemo(() => {
-      const describedByIds = new Set<string>()
-      // Must be in this order so the screen reader reads out something coherent.
-      // 1. Label text (if available)
-      // 2. Initial describedby text (if available)
-      // 3. Max size text (if prop is true)
-      if (inputProps.id) {
-        describedByIds.add(`${inputProps.id}-label`)
-      }
-      inputProps['aria-describedby']
-        ?.split(' ')
-        .map((id) => describedByIds.add(id))
-      if (showMaxSize) {
-        describedByIds.add(maxSizeTextId)
-      }
-
-      // Remove helptext, since label should already consist of the text
-      describedByIds.delete(`${inputProps.id}-helptext`)
-
-      return Array.from(describedByIds).filter(Boolean).join(' ').trim()
-    }, [inputProps, maxSizeTextId, showMaxSize])
-
     const handleFileDrop = useCallback<NonNullable<DropzoneProps['onDrop']>>(
       async ([acceptedFile], rejectedFiles) => {
         if (rejectedFiles.length > 0) {
@@ -204,7 +182,7 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
     const processedRootProps = useMemo(() => {
       return getRootProps({
         // Root div does not need id prop, prevents duplicate ids.
-        ...omit(inputProps, 'id'),
+        ...omit(inputProps, ['id', 'aria-describedby']),
         // Bunch of extra work to prevent field from being used when in readOnly
         // state.
         onKeyDown: (e) => {
@@ -214,9 +192,8 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
           }
         },
         tabIndex: value ? -1 : 0,
-        'aria-describedby': ariaDescribedBy,
       })
-    }, [ariaDescribedBy, getRootProps, inputProps, value])
+    }, [getRootProps, inputProps, value])
 
     const processedInputProps = useMemo(() => {
       return getInputProps({
@@ -230,8 +207,9 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
         <Box __css={styles.container}>
           <Box
             {...processedRootProps}
-            ref={mergedRefs}
-            __css={value ? undefined : styles.dropzone}
+            {...(!value
+              ? { role: 'button', ref: mergedRefs, __css: styles.dropzone }
+              : {})}
           >
             {value ? (
               <AttachmentFileInfo
@@ -242,6 +220,7 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
               <AttachmentDropzone
                 isDragActive={isDragActive}
                 inputProps={processedInputProps}
+                readableMaxSize={readableMaxSize}
               />
             )}
           </Box>
@@ -251,6 +230,7 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
               color="secondary.400"
               mt="0.5rem"
               textStyle="body-2"
+              aria-hidden
             >
               Maximum file size: {readableMaxSize}
             </Text>

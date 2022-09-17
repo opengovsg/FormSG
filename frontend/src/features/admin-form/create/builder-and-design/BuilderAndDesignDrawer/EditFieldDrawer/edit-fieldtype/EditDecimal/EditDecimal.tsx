@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { Controller, RegisterOptions } from 'react-hook-form'
-import { FormControl, SimpleGrid } from '@chakra-ui/react'
+import { Box, FormControl, SimpleGrid } from '@chakra-ui/react'
 import { extend, isEmpty, pick } from 'lodash'
 
 import { DecimalFieldBase } from '~shared/types/field'
@@ -123,7 +123,11 @@ export const EditDecimal = ({ field }: EditDecimalProps): JSX.Element => {
           label="Number validation"
         />
         {watchValidateByValue ? (
-          <SimpleGrid mt="0.5rem" columns={2} spacing="0.5rem">
+          <SimpleGrid
+            mt="0.5rem"
+            columns={{ base: 1, sm: 2, md: 1, lg: 2 }}
+            spacing="0.5rem"
+          >
             <Controller
               name="ValidationOptions.customMin"
               control={control}

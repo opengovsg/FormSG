@@ -66,7 +66,7 @@ export const OtpForm = ({
       </FormControl>
       <Stack
         direction={{ base: 'column', lg: 'row' }}
-        spacing={{ base: '1.5rem', lg: '2.5rem' }}
+        spacing="1rem"
         align="center"
       >
         <Button
