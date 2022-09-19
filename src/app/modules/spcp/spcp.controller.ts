@@ -1,12 +1,8 @@
 import { StatusCodes } from 'http-status-codes'
 
-import {
-  FormAuthType,
-  PublicFormAuthValidateEsrvcIdDto,
-} from '../../../../shared/types'
+import { FormAuthType } from '../../../../shared/types'
 import config from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
-import { createReqMeta } from '../../utils/request'
 import * as BillingService from '../billing/billing.service'
 import { ControllerHandler } from '../core/core.types'
 import * as FormService from '../form/form.service'
@@ -14,85 +10,8 @@ import * as FormService from '../form/form.service'
 import { SpOidcService } from './sp.oidc.service'
 import { SpcpService } from './spcp.service'
 import { JwtName } from './spcp.types'
-import { mapRouteError } from './spcp.util'
 
 const logger = createLoggerWithLabel(module)
-
-/**
- * Generates redirect URL to Official SingPass/CorpPass log in page
- * @param req - Express request object
- * @param res - Express response object
- */
-export const handleRedirect: ControllerHandler<
-  unknown,
-  { redirectURL: string } | { message: string },
-  unknown,
-  {
-    authType: FormAuthType.SP | FormAuthType.CP
-    target: string
-    esrvcId: string
-  }
-> = (req, res) => {
-  const { target, authType, esrvcId } = req.query
-  const logMeta = {
-    action: 'handleRedirect',
-    ...createReqMeta(req),
-    authType,
-    target,
-    esrvcId,
-  }
-  return SpcpService.createRedirectUrl(authType, target, esrvcId)
-    .map((redirectURL) => {
-      return res.status(StatusCodes.OK).json({ redirectURL })
-    })
-    .mapErr((error) => {
-      logger.error({
-        message: 'Error while creating redirect URL',
-        meta: logMeta,
-        error,
-      })
-      const { statusCode, errorMessage } = mapRouteError(error)
-      return res.status(statusCode).json({ message: errorMessage })
-    })
-}
-
-/**
- * Validates the given e-service ID.
- * @deprecated with transition to SP OIDC because NDI no longer returns error page for invalid eservice ID
- * @param req - Express request object
- * @param res - Express response object
- */
-export const handleValidate: ControllerHandler<
-  unknown,
-  PublicFormAuthValidateEsrvcIdDto | { message: string },
-  unknown,
-  {
-    authType: FormAuthType.SP | FormAuthType.CP
-    target: string
-    esrvcId: string
-  }
-> = (req, res) => {
-  const { target, authType, esrvcId } = req.query
-  return SpcpService.createRedirectUrl(authType, target, esrvcId)
-    .asyncAndThen(SpcpService.fetchLoginPage)
-    .andThen(SpcpService.validateLoginPage)
-    .map((result) => res.status(StatusCodes.OK).json(result))
-    .mapErr((error) => {
-      logger.error({
-        message: 'Error while validating e-service ID',
-        meta: {
-          action: 'handleValidate',
-          ...createReqMeta(req),
-          authType,
-          target,
-          esrvcId,
-        },
-        error,
-      })
-      const { statusCode, errorMessage } = mapRouteError(error)
-      return res.status(statusCode).json({ message: errorMessage })
-    })
-}
 
 /**
  * Higher-order function which returns an Express handler to handle Singpass
