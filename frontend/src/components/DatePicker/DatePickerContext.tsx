@@ -40,7 +40,7 @@ interface DatePickerContextReturn {
   internalInputValue: string
   internalValue: Date | null
   closeCalendarOnChange: boolean
-  displayFormat: string
+  placeholder: string
   allowManualInput: boolean
   colorScheme: ThemeColorScheme
   isDateUnavailable?: (date: Date) => boolean
@@ -211,6 +211,11 @@ const useProvideDatePicker = ({
     colorScheme,
   })
 
+  const placeholder = useMemo(
+    () => displayFormat.toLowerCase(),
+    [displayFormat],
+  )
+
   return {
     isMobile,
     styles,
@@ -225,7 +230,7 @@ const useProvideDatePicker = ({
     internalInputValue,
     internalValue,
     closeCalendarOnChange,
-    displayFormat,
+    placeholder,
     allowManualInput,
     colorScheme,
     isDateUnavailable,

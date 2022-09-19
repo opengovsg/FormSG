@@ -12,7 +12,7 @@ export const DateRangePickerInput = forwardRef<{}, 'input'>((_props, ref) => {
     styles,
     startInputDisplay,
     handleStartDateChange,
-    displayFormat,
+    placeholder,
     fcProps,
     handleInputBlur,
     handleInputClick,
@@ -47,8 +47,8 @@ export const DateRangePickerInput = forwardRef<{}, 'input'>((_props, ref) => {
           mask="99/99/9999"
           value={startInputDisplay}
           onChange={handleStartDateChange}
-          placeholder={displayFormat.toLowerCase()}
-          maskPlaceholder={displayFormat.toLowerCase()}
+          placeholder={placeholder}
+          maskPlaceholder={placeholder}
           ref={mergedStartInputRef}
           {...fcProps}
           borderRightRadius={0}
@@ -66,8 +66,8 @@ export const DateRangePickerInput = forwardRef<{}, 'input'>((_props, ref) => {
           mask="99/99/9999"
           value={endInputDisplay}
           onChange={handleEndDateChange}
-          placeholder={displayFormat.toLowerCase()}
-          maskPlaceholder={displayFormat.toLowerCase()}
+          placeholder={placeholder}
+          maskPlaceholder={placeholder}
           onClick={handleInputClick}
           ref={endInputRef}
           {...fcProps}

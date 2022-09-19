@@ -46,7 +46,7 @@ interface DateRangePickerContextReturn {
   startInputDisplay: string
   endInputDisplay: string
   closeCalendarOnChange: boolean
-  displayFormat: string
+  placeholder: string
   allowManualInput: boolean
   isDateUnavailable?: (date: Date) => boolean
   disclosureProps: UseDisclosureReturn
@@ -292,6 +292,11 @@ const useProvideDateRangePicker = ({
     colorScheme,
   })
 
+  const placeholder = useMemo(
+    () => displayFormat.toLowerCase(),
+    [displayFormat],
+  )
+
   return {
     isMobile,
     styles,
@@ -310,7 +315,7 @@ const useProvideDateRangePicker = ({
     startInputDisplay,
     endInputDisplay,
     closeCalendarOnChange,
-    displayFormat,
+    placeholder,
     allowManualInput,
     colorScheme,
     isDateUnavailable,

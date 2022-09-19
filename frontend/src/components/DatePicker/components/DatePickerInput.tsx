@@ -15,7 +15,7 @@ export const DatePickerInput = forwardRef<{}, 'input'>((_props, ref) => {
     handleInputClick,
     fcProps,
     allowManualInput,
-    displayFormat,
+    placeholder,
     inputRef,
   } = useDatePicker()
 
@@ -29,8 +29,8 @@ export const DatePickerInput = forwardRef<{}, 'input'>((_props, ref) => {
       mask="99/99/9999"
       value={internalInputValue}
       onChange={handleInputChange}
-      placeholder={displayFormat.toLowerCase()}
-      maskPlaceholder={displayFormat.toLowerCase()}
+      placeholder={placeholder}
+      maskPlaceholder={placeholder}
       ref={mergedInputRef}
       {...fcProps}
       borderRightRadius={0}
