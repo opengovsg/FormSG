@@ -68,7 +68,7 @@ echo "## Tests" >> ${pr_body_file_groupped}
 echo "" >> ${pr_body_file_groupped}
 grep -v -E -- '- [a-z]+\(deps(-dev)?\)' ${pr_body_file} | grep -v -E -- '- build: ' | while read line_item; do
   pr_id=$(echo ${line_item} | grep -o -E '\[`#\d+`\]' | grep -o -E '\d+')
-  tests=$(gh pr view ${pr_id} | awk "/## Tests/{flag=1;next}/#######/{flag=0}flag" | sed "s/\[X\]/[ ]/")
+  tests=$(gh pr view ${pr_id} | awk 'f;/## Tests/{f=1}' | sed "s/\[X\]/[ ]/")
   if [[ ${tests} =~ \S ]]; then
     echo ${line_item} | sed "s/^- /### /" >> ${pr_body_file_groupped}
     echo "${tests}" >> ${pr_body_file_groupped}
