@@ -40,8 +40,22 @@ git push origin ${release_version}
 # extract changelog to inject into the PR
 # TODO: group changelog into sections automatically
 pr_body_file=.pr_body_${release_version}
-awk "/#### \[${release_version}\]/{flag=1;next}/####/{flag=0}flag" CHANGELOG.md > ${pr_body_file}
+pr_body_file_groupped=.pr_body_${release_version}_groupped
+awk "/#### \[${release_version}\]/{flag=1;next}/####/{flag=0}flag" CHANGELOG.md | sed '/^[[:space:]]*$/d' > ${pr_body_file}
 
+echo "## New" > ${pr_body_file_groupped}
+echo "" >> ${pr_body_file_groupped}
+grep -v -E -- '- (fix|chore)\(deps'  ${pr_body_file} >> ${pr_body_file_groupped}
+
+echo "" >> ${pr_body_file_groupped}
+echo "## Dependencies" >> ${pr_body_file_groupped}
+echo "" >> ${pr_body_file_groupped}
+grep -E -- '- fix\(deps'  ${pr_body_file} >> ${pr_body_file_groupped}
+
+echo "" >> ${pr_body_file_groupped}
+echo "## Dev-Dependencies" >> ${pr_body_file_groupped}
+echo "" >> ${pr_body_file_groupped}
+grep -E -- '- chore\(deps'  ${pr_body_file} >> ${pr_body_file_groupped}
 
 gh auth login
 gh pr create \
@@ -53,4 +67,5 @@ gh pr create \
 
 # cleanup
 rm ${pr_body_file}
+rm ${pr_body_file_groupped}
 git branch -D ${release_branch}
