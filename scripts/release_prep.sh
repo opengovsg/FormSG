@@ -63,7 +63,7 @@ gh pr create \
   -H ${release_branch} \
   -B release-al2 \
   -t "build: release ${release_version}" \
-  -F ${pr_body_file}
+  -F ${pr_body_file_groupped}
 
 # cleanup
 rm ${pr_body_file}
