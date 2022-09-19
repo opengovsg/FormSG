@@ -9,6 +9,7 @@ import validator from 'validator'
 
 import {
   AttachmentFieldBase,
+  BasicField,
   CheckboxFieldBase,
   DateFieldBase,
   DateSelectedValidation,
@@ -53,8 +54,18 @@ type OmitUnusedProps<T extends FieldBase> = Omit<
   'fieldType' | 'description' | 'disabled'
 >
 
+// fieldType is only used in email and mobile field verification
+type OmitUnusedPropsEmailAndMobile<T extends FieldBase> = Omit<
+  T,
+  'description' | 'disabled'
+>
+
 type ValidationRuleFn<T extends FieldBase = FieldBase> = (
   schema: OmitUnusedProps<T>,
+) => RegisterOptions
+
+type ValidationRuleFnEmailAndMobile<T extends FieldBase = FieldBase> = (
+  schema: OmitUnusedPropsEmailAndMobile<T>,
 ) => RegisterOptions
 
 const createRequiredValidationRules = (
@@ -71,7 +82,7 @@ const createRequiredValidationRules = (
  * @param schema verifiable field schema
  * @returns base verifiable fields' validation rules
  */
-const createBaseVfnFieldValidationRules: ValidationRuleFn<
+const createBaseVfnFieldValidationRules: ValidationRuleFnEmailAndMobile<
   VerifiableFieldBase
 > = (schema) => {
   return {
@@ -86,7 +97,12 @@ const createBaseVfnFieldValidationRules: ValidationRuleFn<
         if (!!val?.signature || (!val?.value && !val?.signature)) {
           return true
         }
-        return 'Field verification is required'
+        if (schema.fieldType === BasicField.Mobile) {
+          return 'Verify your mobile number below.'
+        }
+        if (schema.fieldType === BasicField.Email) {
+          return 'Verify your email address below.'
+        }
       },
     },
   }
@@ -156,9 +172,9 @@ export const createHomeNoValidationRules: ValidationRuleFn<HomenoFieldBase> = (
   }
 }
 
-export const createMobileValidationRules: ValidationRuleFn<MobileFieldBase> = (
-  schema,
-) => {
+export const createMobileValidationRules: ValidationRuleFnEmailAndMobile<
+  MobileFieldBase
+> = (schema) => {
   return {
     validate: {
       baseValidations: (val?: VerifiableFieldValues) => {
@@ -406,9 +422,9 @@ export const createRadioValidationRules: ValidationRuleFn<RadioFieldBase> = (
   return createBaseValidationRules(schema)
 }
 
-export const createEmailValidationRules: ValidationRuleFn<EmailFieldBase> = (
-  schema,
-) => {
+export const createEmailValidationRules: ValidationRuleFnEmailAndMobile<
+  EmailFieldBase
+> = (schema) => {
   return {
     validate: {
       baseValidations: (val?: VerifiableFieldValues) => {
