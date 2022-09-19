@@ -2,6 +2,7 @@ import * as E from 'fp-ts/lib/Either'
 import { times } from 'lodash'
 import mongoose, { Query } from 'mongoose'
 
+import getAgencyModel from 'src/app/models/agency.server.model'
 import getFormModel from 'src/app/models/form.server.model'
 import getSubmissionModel from 'src/app/models/submission.server.model'
 import getUserModel from 'src/app/models/user.server.model'
@@ -12,6 +13,7 @@ import dbHandler from 'tests/unit/backend/helpers/jest-db'
 import { FormResponseMode, SubmissionType } from '../../../../../shared/types'
 import { DatabaseError } from '../../core/core.errors'
 import {
+  getAgencyCount,
   getFormCount,
   getSubmissionCount,
   getUserCount,
@@ -22,6 +24,7 @@ import { AnalyticsTestError } from './analytics.error'
 const FormModel = getFormModel(mongoose)
 const SubmissionModel = getSubmissionModel(mongoose)
 const UserModel = getUserModel(mongoose)
+const AgencyModel = getAgencyModel(mongoose)
 
 describe('analytics.service', () => {
   beforeAll(async () => await dbHandler.connect())
@@ -184,8 +187,8 @@ describe('analytics.service', () => {
         }),
       )
       await Promise.all(submissionPromises)
-      const initialUserCount = await SubmissionModel.estimatedDocumentCount()
-      expect(initialUserCount).toEqual(expectedNumSubs)
+      const initialSubCount = await SubmissionModel.estimatedDocumentCount()
+      expect(initialSubCount).toEqual(expectedNumSubs)
 
       // Act
       const actualTE = await getSubmissionCount()
@@ -207,6 +210,63 @@ describe('analytics.service', () => {
 
       // Act
       const actualTE = await getSubmissionCount()
+      const actualE = await actualTE()
+
+      // Assert
+      expect(execSpy).toHaveBeenCalledTimes(1)
+      if (E.isRight(actualE)) throw new AnalyticsTestError()
+      expect(actualE.left instanceof DatabaseError).toBe(true)
+    })
+  })
+
+  describe('getAgencyCount', () => {
+    it('should return 0 when there are no agencies in the database', async () => {
+      // Arrange
+      const initialAgencyCount = await AgencyModel.estimatedDocumentCount()
+      expect(initialAgencyCount).toEqual(0)
+
+      // Act
+      const actualTE = await getAgencyCount()
+      const actualE = await actualTE()
+
+      // Assert
+      if (E.isLeft(actualE)) throw new AnalyticsTestError()
+      expect(actualE.right).toEqual(0)
+    })
+
+    it('should return number of agencies in the database', async () => {
+      // Arrange
+      const expectedNumAgencies = 10
+      const agencyPromises = times(expectedNumAgencies, () =>
+        AgencyModel.create({
+          shortName: 'govtech',
+          fullName: 'Government Technology Agency',
+          emailDomain: 'open.gov.sg',
+          logo: 'logo',
+        }),
+      )
+      await Promise.all(agencyPromises)
+      const initialAgencyCount = await AgencyModel.estimatedDocumentCount()
+      expect(initialAgencyCount).toEqual(expectedNumAgencies)
+
+      // Act
+      const actualTE = await getAgencyCount()
+      const actualE = await actualTE()
+
+      // Assert
+      if (E.isLeft(actualE)) throw new AnalyticsTestError()
+      expect(actualE.right).toEqual(expectedNumAgencies)
+    })
+
+    it('should return DatabaseError when error occurs whilst retrieving agency count', async () => {
+      // Arrange
+      const execSpy = jest.fn().mockRejectedValueOnce(new Error('boom'))
+      jest.spyOn(AgencyModel, 'estimatedDocumentCount').mockReturnValueOnce({
+        exec: execSpy,
+      } as unknown as Query<number, any>)
+
+      // Act
+      const actualTE = await getAgencyCount()
       const actualE = await actualTE()
 
       // Assert

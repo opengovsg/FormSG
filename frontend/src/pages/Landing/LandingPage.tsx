@@ -45,10 +45,12 @@ import { useMdComponents } from '~hooks/useMdComponents'
 import Button from '~components/Button'
 import Link from '~components/Link'
 import { Tab } from '~components/Tabs'
+import { LottieAnimation } from '~templates/LottieAnimation'
 
+import formsHeroAnimation from './assets/images/animation-hero.json'
+import howFormsWorksAnimation from './assets/images/animation-mode.json'
+import enterEmailAnimation from './assets/images/animation-typing.json'
 import helpCenterImg from './assets/images/help_center.svg'
-import howFormWorksImg from './assets/images/how_form_works.svg'
-import featureA11yImg from './assets/images/icon_a11y.svg'
 import featureDndImg from './assets/images/icon_dnd.svg'
 import featureEmailImg from './assets/images/icon_email.svg'
 import featureIntegrationsImg from './assets/images/icon_integrations.svg'
@@ -87,13 +89,18 @@ export const LandingPage = (): JSX.Element => {
   return (
     <>
       <AppPublicHeader />
-      <LandingSection bg="primary.100" pt={{ base: '2rem', md: 0 }}>
+      <LandingSection bg="primary.100" pt={{ base: '2rem', md: 0 }} px="0">
         <Stack
           direction={{ base: 'column', lg: 'row' }}
           align="center"
           spacing={{ base: '1.5rem', md: '3.125rem', lg: '7.5rem' }}
+          pl={{ base: '1.5rem', md: '5.5rem', lg: '9.25rem' }}
         >
-          <Flex flexDir="column" flex={1}>
+          <Flex
+            flexDir="column"
+            flex={1}
+            pr={{ base: '1.5rem', md: '5.5rem', lg: '0' }}
+          >
             <Text
               as="h1"
               textStyle={{ base: 'display-1-mobile', md: 'display-1' }}
@@ -102,8 +109,8 @@ export const LandingPage = (): JSX.Element => {
               Build secure government forms in minutes.
             </Text>
             <SectionBodyText>
-              A free and easy-to-use form builder with rich features, enabling
-              public officers to securely collect citizen data
+              Instant, customisable forms with zero code or cost, to safely
+              collect classified and sensitive data.
             </SectionBodyText>
             <Box mt="2.5rem">
               <Button
@@ -112,13 +119,13 @@ export const LandingPage = (): JSX.Element => {
                 to={LOGIN_ROUTE}
                 rightIcon={<BiRightArrowAlt fontSize="1.5rem" />}
               >
-                Launch your form now
+                Start building your form now
               </Button>
             </Box>
           </Flex>
-          <Box flex={1} aria-hidden>
-            <Image src={howFormWorksImg} />
-          </Box>
+          <Flex flex={1} aria-hidden justify="right">
+            <LottieAnimation animationData={formsHeroAnimation} />
+          </Flex>
         </Stack>
       </LandingSection>
       <LandingSection>
@@ -134,37 +141,32 @@ export const LandingPage = (): JSX.Element => {
           <FeatureGridItem
             image={featureDndImg}
             title="Drag and drop builder"
-            description="Create and publish forms in minutes using our user-friendly drag and drop builder, with over 65 field types including attachments, dates, tables, ratings, and many more"
+            description="Launch forms in minutes with the drag-and-drop builder, and over 20 types of fields to choose from"
           />
           <FeatureGridItem
-            image={featureA11yImg}
-            title="Accessible"
-            description="All our forms are fully responsive and aim to meet Web Content Accessibility Guidelines (WCAG 2.1), which makes web content more accessible to people with disabilities"
+            image={featureIntegrationsImg}
+            title="Singpass and Myinfo"
+            description="Authenticate individuals or businesses with Singpass, and speed up form filling with pre-filled data from Myinfo"
           />
           <FeatureGridItem
             image={featureLogicImg}
             title="Conditional logic"
-            description="Create advanced logic for your forms, and show or hide fields and/or sections based on your user’s input, personalising their experience"
-          />
-          <FeatureGridItem
-            image={featureIntegrationsImg}
-            title="National Digital Identity"
-            description="Authenticate individuals and businesses with Singpass, and get MyInfo data pre-filled"
-          />
-          <FeatureGridItem
-            image={featureWebhooksImg}
-            title="Webhooks"
-            description="Get every form response sent straight to a compatible web app or URL"
-          />
-          <FeatureGridItem
-            image={featurePrefillImg}
-            title="Prefill"
-            description="Pre-fill known fields on respondents’ behalf"
+            description="Create dynamic forms that show or hide specific fields based on previous responses"
           />
           <FeatureGridItem
             image={featureEmailImg}
             title="Email confirmation"
-            description="Send confirmation emails to respondents along with a copy of their response"
+            description="Send confirmation emails to your respondents along with a copy of their responses"
+          />
+          <FeatureGridItem
+            image={featurePrefillImg}
+            title="Prefill"
+            description="Make form filling faster for respondents by pre-filling fields for them"
+          />
+          <FeatureGridItem
+            image={featureWebhooksImg}
+            title="Webhooks"
+            description="Send form responses to external applications in real time"
           />
         </SimpleGrid>
       </LandingSection>
@@ -176,12 +178,12 @@ export const LandingPage = (): JSX.Element => {
         >
           <Flex flexDir="column" flex={1}>
             <SectionTitleText>
-              No onboarding, fees nor code required
+              No onboarding, no fees, no code.
             </SectionTitleText>
             <SectionBodyText>
-              Sign in with your public service email address and start building
-              your form immediately. No training, onboarding or approval
-              required.
+              Sign in with your government email address, and start building
+              forms immediately. It’s free, and requires no onboarding or
+              approvals.
             </SectionBodyText>
             <Box mt="2.5rem">
               <Button as={ReactLink} to={LOGIN_ROUTE}>
@@ -190,16 +192,17 @@ export const LandingPage = (): JSX.Element => {
             </Box>
           </Flex>
           <Box flex={1} aria-hidden>
-            <Image src={howFormWorksImg} />
+            <LottieAnimation
+              animationData={enterEmailAnimation}
+              preserveAspectRatio="xMidYMax slice"
+            />
           </Box>
         </Stack>
       </LandingSection>
       <LandingSection>
-        <SectionTitleText>
-          Used by all Singapore government agencies
-        </SectionTitleText>
+        <SectionTitleText>Used by most government agencies</SectionTitleText>
         <Wrap shouldWrapChildren spacingX="3rem" mt="2.5rem" spacingY="2.5rem">
-          <StatsItem stat={data?.formCount} description="forms deployed" />
+          <StatsItem stat={data?.formCount} description="forms launched" />
           <StatsItem
             stat={data?.submissionCount}
             description="submissions received"
@@ -207,6 +210,10 @@ export const LandingPage = (): JSX.Element => {
           <StatsItem
             stat={data?.userCount}
             description="public officers onboard"
+          />
+          <StatsItem
+            stat={data?.agencyCount}
+            description="government agencies"
           />
         </Wrap>
         <VisuallyHidden>Examples of users of FormSG</VisuallyHidden>
@@ -254,14 +261,14 @@ export const LandingPage = (): JSX.Element => {
       </LandingSection>
       <FeatureSection
         direction={{ base: 'column', lg: 'row' }}
-        title="Secure data collection"
+        title="Secure collection of responses"
         imgSrc={storageModeImg}
       >
         <SectionBodyText>
-          All response data is either end-to-end encrypted (Storage mode) or
-          sent directly to your email inbox (Email mode). This ensures that
-          response data can only be accessed by the form admin and no other
-          third-party - not even Form’s servers.
+          All form responses are either encrypted end-to-end (Storage mode) or
+          sent directly to your email inbox (Email mode). This means third
+          parties, including FormSG, will not be able to access or view your
+          form data.
         </SectionBodyText>
         <SimpleGrid
           columns={2}
@@ -297,9 +304,8 @@ export const LandingPage = (): JSX.Element => {
         direction={{ base: 'column', lg: 'row-reverse' }}
       >
         <SectionBodyText>
-          Form is a public good project. We open sourced Form so that other
-          countries, organisations and communities could benefit from our
-          journey, and contribute even richer functionality to the codebase.
+          Our code is open source, meaning anyone can help improve it and build
+          on it, including governments of other countries.
         </SectionBodyText>
         <FeatureLink
           href={OGP_FORMSG_REPO}
@@ -311,7 +317,6 @@ export const LandingPage = (): JSX.Element => {
       <FeatureSection
         title="Help Center"
         imgSrc={helpCenterImg}
-        align="start"
         direction={{ base: 'column', lg: 'row' }}
       >
         <Box>
@@ -402,7 +407,7 @@ export const LandingPage = (): JSX.Element => {
         direction={{ base: 'column', lg: 'row' }}
         bg="primary.100"
         title="How it works"
-        imgSrc={howFormWorksImg}
+        animationSrc={howFormsWorksAnimation}
       >
         <Tabs mt="2.5rem">
           <TabList>
@@ -413,9 +418,9 @@ export const LandingPage = (): JSX.Element => {
           <TabPanels>
             <TabPanel>
               <SectionBodyText mt="1.5rem">
-                Log in to view and download responses. All response data is
-                end-to-end encrypted, meaning it can only be accessed by the
-                form admin and no other third-party - not even Form’s servers.
+                View your responses within FormSG. All data is end-to-end
+                encrypted, which means third parties, including FormSG, will not
+                be able to access or view your form data.
               </SectionBodyText>
               <OrderedList
                 spacing="1rem"
@@ -430,15 +435,19 @@ export const LandingPage = (): JSX.Element => {
                 </ListItem>
                 <ListItem textStyle="body-2">
                   <OrderedListIcon index={2} />
-                  Create a new form and choose Storage mode
+                  Create a new Storage mode form and store Secret Key safely
                 </ListItem>
                 <ListItem textStyle="body-2">
                   <OrderedListIcon index={3} />
-                  Build and publish your form
+                  Build and share form link with citizens
                 </ListItem>
                 <ListItem textStyle="body-2">
                   <OrderedListIcon index={4} />
-                  Upload secret key to download responses in CSV format
+                  Upload Secret Key and view your responses
+                </ListItem>
+                <ListItem textStyle="body-2">
+                  <OrderedListIcon index={5} />
+                  Download your responses as a CSV
                 </ListItem>
               </OrderedList>
             </TabPanel>
@@ -484,15 +493,14 @@ export const LandingPage = (): JSX.Element => {
         </Tabs>
       </FeatureSection>
       <FeatureSection
-        title="All the building blocks you need to manage your workflow"
+        title="All the government tools you need to manage your workflow"
         imgSrc={ogpSuiteImg}
-        align="start"
         direction={{ base: 'column', lg: 'row' }}
       >
         <SectionBodyText>
-          Form is part of the **Open Government Products Suite** of easy-to-use
-          tools that public officers can use to speedily digitalise their
-          workflows.
+          FormSG is part of the **Open Government Products Suite**, and as a
+          public officer you can mix and match from our set of productivity and
+          collaboration tools.
         </SectionBodyText>
         <FeatureLink
           href={OGP_ALL_PRODUCTS}
@@ -500,7 +508,7 @@ export const LandingPage = (): JSX.Element => {
             <Icon as={BiRightArrowAlt} ml="0.5rem" fontSize="1.5rem" />
           }
         >
-          Check out the OGP Suite
+          Full list of OGP products
         </FeatureLink>
       </FeatureSection>
       <LandingSection bg="secondary.700" align="center">
@@ -511,7 +519,7 @@ export const LandingPage = (): JSX.Element => {
           color="white"
           mt="2rem"
         >
-          Launch your form today.
+          Start building your form now.
         </Text>
         <Box mt="2rem">
           <Button as={ReactLink} to={LOGIN_ROUTE}>
