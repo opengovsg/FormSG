@@ -45,17 +45,17 @@ awk "/#### \[${release_version}\]/{flag=1;next}/####/{flag=0}flag" CHANGELOG.md 
 
 echo "## New" > ${pr_body_file_groupped}
 echo "" >> ${pr_body_file_groupped}
-grep -v -E -- '- (fix|chore)\(deps'  ${pr_body_file} >> ${pr_body_file_groupped}
+grep -v -E -- '- [a-z]+\(deps(-dev)?\)'  ${pr_body_file} >> ${pr_body_file_groupped}
 
 echo "" >> ${pr_body_file_groupped}
 echo "## Dependencies" >> ${pr_body_file_groupped}
 echo "" >> ${pr_body_file_groupped}
-grep -E -- '- fix\(deps'  ${pr_body_file} >> ${pr_body_file_groupped}
+grep -E -- '- [a-z]+\(deps\)'  ${pr_body_file} >> ${pr_body_file_groupped}
 
 echo "" >> ${pr_body_file_groupped}
 echo "## Dev-Dependencies" >> ${pr_body_file_groupped}
 echo "" >> ${pr_body_file_groupped}
-grep -E -- '- chore\(deps'  ${pr_body_file} >> ${pr_body_file_groupped}
+grep -E -- '- [a-z]+\(deps-dev\)'  ${pr_body_file} >> ${pr_body_file_groupped}
 
 gh auth login
 gh pr create \
