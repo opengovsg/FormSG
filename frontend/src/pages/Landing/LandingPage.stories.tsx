@@ -23,7 +23,6 @@ export default {
   parameters: {
     layout: 'fullscreen',
     msw: [getLandingStats()],
-    chromatic: { delay: 500 },
   },
 } as Meta
 
