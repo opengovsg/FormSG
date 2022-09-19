@@ -5,6 +5,7 @@ import { FormColorTheme } from '~shared/types'
 import { DateSelectedValidation } from '~shared/types/field'
 
 import {
+  fromUtcToLocalDate,
   isDateAfterToday,
   isDateBeforeToday,
   isDateOutOfRange,
@@ -48,7 +49,13 @@ export const DateField = ({
           return isDateAfterToday(date)
         case DateSelectedValidation.Custom: {
           const { customMinDate, customMaxDate } = schema.dateValidation
-          return isDateOutOfRange(date, customMinDate, customMaxDate)
+          // customMinDate and customMaxDate are in UTC from the server,
+          // need to convert to local time but with the same date as UTC.
+          return isDateOutOfRange(
+            date,
+            fromUtcToLocalDate(customMinDate),
+            fromUtcToLocalDate(customMaxDate),
+          )
         }
         default:
           return false

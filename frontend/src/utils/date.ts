@@ -1,11 +1,4 @@
-import {
-  addDays,
-  endOfToday,
-  isAfter,
-  isBefore,
-  parseISO,
-  startOfToday,
-} from 'date-fns'
+import { endOfToday, isAfter, isBefore, parseISO, startOfToday } from 'date-fns'
 
 import { JsonDate } from '~typings/core'
 
@@ -45,6 +38,12 @@ export const isDateAfterToday = (date: number | Date) => {
   return isAfter(date, endOfToday())
 }
 
+// Converts UTC time to the same date in local time, ignoring original timezone.
+export const fromUtcToLocalDate = (date?: Date | null) => {
+  if (!date) return date
+  return new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate())
+}
+
 /**
  * Checks whether given date is out of (start, end] range, inclusive start only.
  * If no start or end is given, it will be treated an unbounded range in that direction.
@@ -58,12 +57,11 @@ export const isDateOutOfRange = (
   start?: number | Date | null,
   end?: number | Date | null,
 ) => {
-  const inclusiveStart = start ? addDays(start, -1) : null
-  if (inclusiveStart && end) {
-    return isBefore(date, inclusiveStart) || isAfter(date, end)
+  if (start && end) {
+    return isBefore(date, start) || isAfter(date, end)
   }
-  if (inclusiveStart) {
-    return isBefore(date, inclusiveStart)
+  if (start) {
+    return isBefore(date, start)
   }
   if (end) {
     return isAfter(date, end)

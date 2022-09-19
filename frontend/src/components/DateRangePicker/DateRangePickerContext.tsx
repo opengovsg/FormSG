@@ -21,6 +21,7 @@ import {
   useMultiStyleConfig,
 } from '@chakra-ui/react'
 import { format, isValid, parse } from 'date-fns'
+import { zonedTimeToUtc } from 'date-fns-tz'
 
 import { ThemeColorScheme } from '~theme/foundations/colours'
 import { useIsMobile } from '~hooks/useIsMobile'
@@ -91,6 +92,7 @@ const useProvideDateRangePicker = ({
   isReadOnly: isReadOnlyProp,
   isRequired: isRequiredProp,
   isInvalid: isInvalidProp,
+  timeZone = 'UTC',
   locale,
   isDateUnavailable,
   allowManualInput = true,
@@ -115,13 +117,13 @@ const useProvideDateRangePicker = ({
   // What is rendered as a string in the start date range input according to given display format.
   const [startInputDisplay, setStartInputDisplay] = useState(
     startDate && isValid(startDate)
-      ? format(startDate, displayFormat, { locale })
+      ? format(zonedTimeToUtc(startDate, timeZone), displayFormat, { locale })
       : '',
   )
   // What is rendered as a string in the end date range input according to given display format.
   const [endInputDisplay, setEndInputDisplay] = useState(
     endDate && isValid(endDate)
-      ? format(endDate, displayFormat, { locale })
+      ? format(zonedTimeToUtc(endDate, timeZone), displayFormat, { locale })
       : '',
   )
 
@@ -137,18 +139,24 @@ const useProvideDateRangePicker = ({
       ) as DateRangeValue
 
       const [nextStart, nextEnd] = sortedRange
-      if (nextStart) {
-        if (isValid(nextStart)) {
-          setStartInputDisplay(format(nextStart, displayFormat, { locale }))
+      const zonedStartDate = nextStart
+        ? zonedTimeToUtc(nextStart, timeZone)
+        : null
+      const zonedEndDate = nextEnd ? zonedTimeToUtc(nextEnd, timeZone) : null
+      if (zonedStartDate) {
+        if (isValid(zonedStartDate)) {
+          setStartInputDisplay(
+            format(zonedStartDate, displayFormat, { locale }),
+          )
         } else if (!allowInvalidDates) {
           setStartInputDisplay('')
         }
       } else {
         setStartInputDisplay('')
       }
-      if (nextEnd) {
-        if (isValid(nextEnd)) {
-          setEndInputDisplay(format(nextEnd, displayFormat, { locale }))
+      if (zonedEndDate) {
+        if (isValid(zonedEndDate)) {
+          setEndInputDisplay(format(zonedEndDate, displayFormat, { locale }))
         } else if (!allowInvalidDates) {
           setEndInputDisplay('')
         }
@@ -157,7 +165,7 @@ const useProvideDateRangePicker = ({
       }
       setInternalValue(validRange)
     },
-    [allowInvalidDates, displayFormat, locale, setInternalValue],
+    [allowInvalidDates, displayFormat, locale, setInternalValue, timeZone],
   )
 
   const fcProps = useFormControlProps({
@@ -258,8 +266,11 @@ const useProvideDateRangePicker = ({
 
   const handleCalendarDateChange = useCallback(
     (date: DateRangeValue) => {
-      setInternalValue(date)
-      const [nextStartDate, nextEndDate] = date
+      const zonedDateRange = date.map((d) =>
+        d ? zonedTimeToUtc(d, timeZone) : null,
+      ) as DateRangeValue
+      const [nextStartDate, nextEndDate] = zonedDateRange
+      setInternalValue(zonedDateRange)
       setStartInputDisplay(
         nextStartDate ? format(nextStartDate, displayFormat, { locale }) : '',
       )
@@ -279,6 +290,7 @@ const useProvideDateRangePicker = ({
       displayFormat,
       locale,
       setInternalValue,
+      timeZone,
     ],
   )
 
