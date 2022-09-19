@@ -2,11 +2,12 @@ import { BiBulb, BiChevronRight, BiWrench } from 'react-icons/bi'
 import { Box, Flex, Icon, Text } from '@chakra-ui/react'
 import { linkTo } from '@storybook/addon-links'
 
+import { fillMinHeightCss } from '~utils/fillHeightCss'
 import Link from '~components/Link'
 
 export const Welcome = (): JSX.Element => {
   return (
-    <Flex bg="secondary.700" w="100%" minH="100vh" flexDir="column">
+    <Flex bg="secondary.700" w="100%" css={fillMinHeightCss} flexDir="column">
       <Box
         px={{ base: '1.5rem', md: '5.5rem', lg: '7.5rem' }}
         py={{ base: '1.5rem', md: '5rem', lg: '6rem' }}

@@ -109,7 +109,20 @@ export const TableField = ({
 
   return (
     <TableFieldContainer schema={schema}>
-      <Box d="block" w="100%" overflowX="auto">
+      <Box
+        d="block"
+        w="100%"
+        overflowX="auto"
+        sx={{
+          '&::-webkit-scrollbar': {
+            height: '7px',
+          },
+          '&::-webkit-scrollbar-thumb': {
+            background: 'rgba(0,0,0,.5)',
+            borderRadius: '4px',
+          },
+        }}
+      >
         <Table
           {...getTableProps()}
           variant="column-stripe"

@@ -3,6 +3,8 @@ import { Container, Flex } from '@chakra-ui/react'
 
 import { AdminNavBar } from '~/app/AdminNavBar'
 
+import { fillHeightCss } from '~utils/fillHeightCss'
+
 import { BillCharges } from './BillCharges'
 import { BillingForm, EsrvcIdFormInputs } from './BillingForm'
 import { DateRange } from './DateRange'
@@ -22,7 +24,7 @@ export const BillingPage = (): JSX.Element => {
     setEsrvcId(esrvcId?.trim())
 
   return (
-    <Flex direction="column" h="100vh">
+    <Flex direction="column" css={fillHeightCss}>
       <AdminNavBar />
       <Container
         overflowY="auto"
