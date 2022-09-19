@@ -90,8 +90,17 @@ export const TagInput = forwardRef<TagInputProps, 'input'>(
     const addTag = useCallback(
       (event: SyntheticEvent, tag: string) => {
         if (event.isDefaultPrevented()) return
-        if (preventDuplicates && value.includes(tag)) return
-        onChange(value.concat(tag.split(',')))
+        if (preventDuplicates) {
+          if (value.includes(tag)) return
+          const existingTags = new Set(value)
+          const newTags = new Set(tag.split(','))
+          const uniqueTags = [...newTags].filter(
+            (tag) => !existingTags.has(tag),
+          )
+          onChange(value.concat(uniqueTags))
+        } else {
+          onChange(value.concat(tag.split(',')))
+        }
       },
       [onChange, preventDuplicates, value],
     )
