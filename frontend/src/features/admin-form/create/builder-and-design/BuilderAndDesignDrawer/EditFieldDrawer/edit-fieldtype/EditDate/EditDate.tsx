@@ -10,6 +10,7 @@ import {
   DateValidationOptions,
 } from '~shared/types/field'
 
+import { fromUtcToLocalDate, isDateOutOfRange } from '~utils/date'
 import { createBaseValidationRules } from '~utils/fieldValidation'
 import { DatePicker } from '~components/DatePicker'
 import { SingleSelect } from '~components/Dropdown'
@@ -216,7 +217,19 @@ export const EditDate = ({ field }: EditDateProps): JSX.Element => {
                     deps: ['dateValidation.customMinDate'],
                   }}
                   name="dateValidation.customMaxDate"
-                  render={({ field }) => <DatePicker {...field} />}
+                  render={({ field }) => (
+                    <DatePicker
+                      isDateUnavailable={(d) =>
+                        isDateOutOfRange(
+                          d,
+                          fromUtcToLocalDate(
+                            getValues('dateValidation.customMinDate'),
+                          ),
+                        )
+                      }
+                      {...field}
+                    />
+                  )}
                 />
               </Box>
             </>
