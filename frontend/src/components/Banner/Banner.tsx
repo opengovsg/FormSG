@@ -50,6 +50,7 @@ export const Banner = ({
           <Flex>
             <Icon
               as={variant === 'info' ? BxsInfoCircle : BxsErrorCircle}
+              aria-label={`${variant} banner icon`}
               __css={styles.icon}
             />
             {useMarkdown ? (
