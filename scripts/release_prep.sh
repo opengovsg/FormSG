@@ -15,7 +15,7 @@ git reset --hard origin/develop
 short_hash=$(git rev-parse --short HEAD)
 temp_release_branch=temp_${short_hash}
 
-git chekcout -b ${temp_release_branch}
+git checkout -b ${temp_release_branch}
 
 release_version=$(npm --no-git-tag-version version minor | tail -n 1)
 release_branch=release_${release_version}
