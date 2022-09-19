@@ -14,11 +14,11 @@ import Toggle from '~components/Toggle'
 import {
   SPLIT_TEXTAREA_TRANSFORM,
   SPLIT_TEXTAREA_VALIDATION,
-} from './common/constants'
-import { DrawerContentContainer } from './common/DrawerContentContainer'
-import { FormFieldDrawerActions } from './common/FormFieldDrawerActions'
-import { EditFieldProps } from './common/types'
-import { useEditFieldForm } from './common/useEditFieldForm'
+} from '../common/constants'
+import { DrawerContentContainer } from '../common/DrawerContentContainer'
+import { FormFieldDrawerActions } from '../common/FormFieldDrawerActions'
+import { EditFieldProps } from '../common/types'
+import { useEditFieldForm } from '../common/useEditFieldForm'
 
 type EditRadioProps = EditFieldProps<RadioFieldBase>
 
@@ -99,6 +99,7 @@ export const EditRadio = ({ field }: EditRadioProps): JSX.Element => {
       >
         <FormLabel>Options</FormLabel>
         <Textarea
+          placeholder="Enter one option per line"
           {...register('fieldOptionsString', {
             validate: SPLIT_TEXTAREA_VALIDATION,
           })}

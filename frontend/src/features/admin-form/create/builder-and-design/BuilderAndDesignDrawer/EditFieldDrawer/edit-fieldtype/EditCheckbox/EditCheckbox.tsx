@@ -13,16 +13,16 @@ import NumberInput from '~components/NumberInput'
 import Textarea from '~components/Textarea'
 import Toggle from '~components/Toggle'
 
-import { validateNumberInput } from '../../../utils/validateNumberInput'
+import { validateNumberInput } from '~features/admin-form/create/builder-and-design/utils/validateNumberInput'
 
 import {
   SPLIT_TEXTAREA_TRANSFORM,
   SPLIT_TEXTAREA_VALIDATION,
-} from './common/constants'
-import { DrawerContentContainer } from './common/DrawerContentContainer'
-import { FormFieldDrawerActions } from './common/FormFieldDrawerActions'
-import { EditFieldProps } from './common/types'
-import { useEditFieldForm } from './common/useEditFieldForm'
+} from '../common/constants'
+import { DrawerContentContainer } from '../common/DrawerContentContainer'
+import { FormFieldDrawerActions } from '../common/FormFieldDrawerActions'
+import { EditFieldProps } from '../common/types'
+import { useEditFieldForm } from '../common/useEditFieldForm'
 
 type EditCheckboxProps = EditFieldProps<CheckboxFieldBase>
 
@@ -220,6 +220,7 @@ export const EditCheckbox = ({ field }: EditCheckboxProps): JSX.Element => {
       >
         <FormLabel>Options</FormLabel>
         <Textarea
+          placeholder="Enter one option per line"
           {...register('fieldOptions', {
             validate: SPLIT_TEXTAREA_VALIDATION,
           })}
