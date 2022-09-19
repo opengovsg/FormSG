@@ -96,6 +96,7 @@ const useProvideDatePicker = ({
 }: DatePickerProps): DatePickerContextReturn => {
   const isMobile = useIsMobile()
   const disclosureProps = useDisclosure()
+  // Date typed values of the input.
   const [internalValue, setInternalValue] = useControllableState({
     defaultValue,
     value,
@@ -105,11 +106,12 @@ const useProvideDatePicker = ({
   const formatInputValue = useCallback(
     (date: Date | null) => {
       if (!date || !isValid(date)) return ''
-      return format(date, dateFormat, { locale })
+      return format(date, displayFormat, { locale })
     },
-    [dateFormat, locale],
+    [displayFormat, locale],
   )
 
+  // What is rendered as a string in the input according to given display format.
   const [internalInputValue, setInternalInputValue] = useControllableState({
     defaultValue: defaultInputValue ?? formatInputValue(internalValue),
     value: inputValue,

@@ -104,6 +104,7 @@ const useProvideDateRangePicker = ({
 }: DateRangePickerProps): DateRangePickerContextReturn => {
   const isMobile = useIsMobile()
   const disclosureProps = useDisclosure()
+
   const [internalValue, setInternalValue] = useControllableState({
     defaultValue,
     value,
@@ -111,11 +112,13 @@ const useProvideDateRangePicker = ({
   })
   const [startDate, endDate] = internalValue
 
+  // What is rendered as a string in the start date range input according to given display format.
   const [startInputDisplay, setStartInputDisplay] = useState(
     startDate && isValid(startDate)
       ? format(startDate, displayFormat, { locale })
       : '',
   )
+  // What is rendered as a string in the end date range input according to given display format.
   const [endInputDisplay, setEndInputDisplay] = useState(
     endDate && isValid(endDate)
       ? format(endDate, displayFormat, { locale })
@@ -124,7 +127,6 @@ const useProvideDateRangePicker = ({
 
   const handleUpdateInputs = useCallback(
     (nextRange: DateRangeValue) => {
-      // Replace invalid dates with null
       const sortedRange = nextRange.sort((a, b) =>
         a && b ? a.getTime() - b.getTime() : 0,
       )
