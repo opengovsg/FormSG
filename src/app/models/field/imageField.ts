@@ -1,8 +1,8 @@
-import { escapeRegExp } from 'lodash'
 import { Schema } from 'mongoose'
+import validator from 'validator'
 
 import { IImageFieldSchema } from '../../../types'
-import { aws } from '../../config/config'
+import { isDev } from '../../config/config'
 
 const createImageFieldSchema = () => {
   return new Schema<IImageFieldSchema>({
@@ -11,7 +11,12 @@ const createImageFieldSchema = () => {
       required: true,
       validate: {
         validator: function (url: string) {
-          return url.match(`^${escapeRegExp(aws.imageBucketUrl)}/`) !== null
+          return validator.isURL(url, {
+            allow_underscores: true,
+            // Not require top level domain (i.e. com) for development
+            // environment where s3 is hosted on localhost.
+            require_tld: !isDev,
+          })
         },
         message: `Please ensure that your url is in the valid format`,
       },
