@@ -9,8 +9,11 @@ set -x
 # - ALL build and release PRs start with "build: "
 
 has_local_changes=$(git status -s | grep -E -v '^\?\?')
-if [[ ${has_local_changes} =~ \S ]]; then
+if [[ ${has_local_changes} =~ [^[:space:]] ]]; then
+  set +x
+  echo ==========
   echo "You have local modifications - script is aborted. Please stash and run again."
+  echo ==========
   exit 1
 fi
 
@@ -74,7 +77,7 @@ echo "" >> ${pr_body_file_groupped}
 grep -v -E -- '- [a-z]+\(deps(-dev)?\)' ${pr_body_file} | grep -v -E -- '- build: ' | while read line_item; do
   pr_id=$(echo ${line_item} | grep -o -E '\[`#\d+`\]' | grep -o -E '\d+')
   tests=$(gh pr view ${pr_id} | awk 'f;/^#+ Tests?/{f=1}' | sed "s/\[[Xx]\]/[ ]/")
-  if [[ ${tests} =~ \S ]]; then
+  if [[ ${tests} =~ [^[:space:]] ]]; then
     echo ${line_item} | sed "s/^- /### /" >> ${pr_body_file_groupped}
     echo "${tests}" >> ${pr_body_file_groupped}
     echo "" >> ${pr_body_file_groupped}
