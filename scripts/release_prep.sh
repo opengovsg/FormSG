@@ -40,7 +40,6 @@ git push -f origin HEAD:staging-al2
 git push origin ${release_version}
 
 # extract changelog to inject into the PR
-# TODO: group changelog into sections automatically
 pr_body_file=.pr_body_${release_version}
 pr_body_file_groupped=.pr_body_${release_version}_groupped
 
