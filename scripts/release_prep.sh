@@ -8,8 +8,8 @@ set -x
 # - PRs use test section LAST with heading "## Tests"
 # - ALL build and release PRs start with "build: "
 
-has_local_changes=$(git status -s | grep -E -v '^\?\?')
-if [[ ${has_local_changes} =~ [^[:space:]] ]]; then
+has_local_changes=$(git status --porcelain --untracked-files=no)
+if [[ ${has_local_changes} ]]; then
   set +x
   echo ==========
   echo "You have local modifications - script is aborted. Please stash and run again."
