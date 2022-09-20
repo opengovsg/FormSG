@@ -92,12 +92,7 @@ export const TagInput = forwardRef<TagInputProps, 'input'>(
         if (event.isDefaultPrevented()) return
         if (preventDuplicates) {
           if (value.includes(tag)) return
-          const existingTags = new Set(value)
-          const newTags = new Set(tag.split(','))
-          const uniqueTags = [...newTags].filter(
-            (tag) => !existingTags.has(tag),
-          )
-          onChange(value.concat(uniqueTags))
+          onChange(Array.from(new Set([...value, ...tag.split(',')])))
         } else {
           onChange(value.concat(tag.split(',')))
         }
