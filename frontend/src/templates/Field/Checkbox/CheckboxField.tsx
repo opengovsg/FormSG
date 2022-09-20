@@ -86,6 +86,7 @@ export const CheckboxField = ({
             key={idx}
             value={o}
             defaultValue=""
+            aria-label={o}
             {...register(checkboxInputName, validationRules)}
           >
             {o}
