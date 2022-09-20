@@ -8,6 +8,12 @@ set -x
 # - PRs use test section LAST with heading "## Tests"
 # - ALL build and release PRs start with "build: "
 
+has_local_changes=$(git status -s | grep -E -v '^\?\?')
+if [[ ${has_local_changes} =~ \S ]]; then
+  echo "You have local modifications - script is aborted. Please stash and run again."
+  exit 1
+fi
+
 git fetch --all --tags
 git reset --hard
 git pull
@@ -19,7 +25,7 @@ temp_release_branch=temp_${short_hash}
 
 git checkout -b ${temp_release_branch}
 
-release_version=$(npm --no-git-tag-version version minor | tail -n 1)
+release_version=$(npm --no-git-tag-version version minor | grep -E '^v\d')
 release_branch=release_${release_version}
 may_force_push=
 
@@ -67,7 +73,7 @@ echo "## Tests" >> ${pr_body_file_groupped}
 echo "" >> ${pr_body_file_groupped}
 grep -v -E -- '- [a-z]+\(deps(-dev)?\)' ${pr_body_file} | grep -v -E -- '- build: ' | while read line_item; do
   pr_id=$(echo ${line_item} | grep -o -E '\[`#\d+`\]' | grep -o -E '\d+')
-  tests=$(gh pr view ${pr_id} | awk 'f;/^#+ Tests?/{f=1}' | sed "s/\[X\]/[ ]/")
+  tests=$(gh pr view ${pr_id} | awk 'f;/^#+ Tests?/{f=1}' | sed "s/\[[Xx]\]/[ ]/")
   if [[ ${tests} =~ \S ]]; then
     echo ${line_item} | sed "s/^- /### /" >> ${pr_body_file_groupped}
     echo "${tests}" >> ${pr_body_file_groupped}
