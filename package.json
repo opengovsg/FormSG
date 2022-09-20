@@ -114,7 +114,7 @@
     "fetch-readablestream": "^0.2.0",
     "file-saver": "^2.0.5",
     "font-awesome": "4.7.0",
-    "fp-ts": "^2.12.2",
+    "fp-ts": "^2.12.3",
     "helmet": "^5.1.1",
     "hot-shots": "^9.2.0",
     "http-errors": "^2.0.0",
