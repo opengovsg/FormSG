@@ -117,7 +117,7 @@ export const MultiSelectCombobox = forwardRef<HTMLInputElement>(
         >
           <Icon
             as={isOpen ? BxsChevronUp : BxsChevronDown}
-            aria-label={`${isOpen ? 'Close' : 'Open'} dropdown options`}
+            aria-label={`${isOpen ? 'Close' : 'Open'} dropdown options icon`}
             aria-disabled={isDisabled}
           />
         </Box>

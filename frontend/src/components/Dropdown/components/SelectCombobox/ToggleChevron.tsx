@@ -16,7 +16,7 @@ export const ToggleChevron = (): JSX.Element => {
       <Icon
         sx={styles.icon}
         as={isOpen ? BxsChevronUp : BxsChevronDown}
-        aria-label={`${isOpen ? 'Close' : 'Open'} dropdown options`}
+        aria-label={`${isOpen ? 'Close' : 'Open'} dropdown options icon`}
         aria-disabled={isDisabled || isReadOnly}
       />
     </InputRightElement>
