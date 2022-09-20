@@ -8,7 +8,7 @@ set -x
 # - PRs use test section LAST with heading "## Tests"
 # - ALL build and release PRs start with "build: "
 
-has_local_changes=$(git status --porcelain --untracked-files=no)
+has_local_changes=$(git status --porcelain --untracked-files=no --ignored=no)
 if [[ ${has_local_changes} ]]; then
   set +x
   echo ==========
