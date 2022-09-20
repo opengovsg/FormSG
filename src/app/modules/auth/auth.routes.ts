@@ -5,6 +5,7 @@ import { limitRate } from '../../utils/limit-rate'
 
 import * as AuthController from './auth.controller'
 
+/** @deprecated use AuthRouter in src/app/routes/api/v3/auth/auth.routes.ts instead. */
 export const AuthRouter = Router()
 
 /**
