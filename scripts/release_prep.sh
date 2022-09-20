@@ -12,7 +12,7 @@ has_local_changes=$(git status --porcelain --untracked-files=no --ignored=no)
 if [[ ${has_local_changes} ]]; then
   set +x
   echo ==========
-  echo "You have local modifications - script is aborted. Please stash and run again."
+  echo "ABORT: You have local modifications. Please stash or commit changes and run again."
   echo ==========
   exit 1
 fi
