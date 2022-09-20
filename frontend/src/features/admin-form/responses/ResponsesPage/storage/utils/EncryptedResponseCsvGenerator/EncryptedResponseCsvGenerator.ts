@@ -133,7 +133,10 @@ export class EncryptedResponseCsvGenerator extends CsvGenerator {
   ): string {
     const fieldRecord = unprocessedRecord[fieldId]
     if (!fieldRecord) return ''
-    return fieldRecord.getAnswer(colIndex)
+    const fieldAnswer = fieldRecord.getAnswer(colIndex)
+    const asciiBELCharacter = String.fromCharCode(7)
+    const answer = asciiBELCharacter.concat(fieldAnswer)
+    return answer
   }
 
   /**
