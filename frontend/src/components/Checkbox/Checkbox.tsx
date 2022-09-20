@@ -48,6 +48,7 @@ export const Checkbox = forwardRef<CheckboxProps, 'input'>(
         colorScheme={colorScheme}
         ref={ref}
         {...props}
+        aria-label={children?.toString()}
       >
         {children}
       </ChakraCheckbox>
