@@ -149,7 +149,7 @@ export const Rating = forwardRef<RatingProps, 'input'>(
         >
           <Stack spacing={ratingLayout.spacing}>
             {options.map((row, i) => (
-              <HStack spacing={ratingLayout.spacing}>
+              <HStack spacing={ratingLayout.spacing} key={i}>
                 {row.map((value) => (
                   <RatingOption
                     name={name}
