@@ -3,7 +3,7 @@ import { useMemo } from 'react'
 import { AgencyBase, FormColorTheme } from '~shared/types'
 import { FormLogo, FormLogoState } from '~shared/types/form/form_logo'
 
-import defaultFormLogo from '~/assets/svgs/brand/brand-hort-colour.svg'
+import defaultFormLogo from '../../../../assets/svgs/brand/brand-hort-colour.svg'
 
 interface UseFormBannerLogoInputs {
   colorTheme: FormColorTheme | undefined
@@ -21,12 +21,11 @@ export const useFormBannerLogo = ({
   showDefaultLogoIfNoLogo,
 }: UseFormBannerLogoInputs) => {
   const logoImgSrc = useMemo(() => {
-    if (!logo) {
-      return showDefaultLogoIfNoLogo ? defaultFormLogo : undefined
-    }
+    if (!logo) return
+
     switch (logo.state) {
       case FormLogoState.None:
-        return ''
+        return showDefaultLogoIfNoLogo ? defaultFormLogo : undefined
       case FormLogoState.Default:
         return agency?.logo
       case FormLogoState.Custom:
@@ -35,12 +34,11 @@ export const useFormBannerLogo = ({
   }, [agency?.logo, logo, logoBucketUrl, showDefaultLogoIfNoLogo])
 
   const logoImgAlt = useMemo(() => {
-    if (!logo) {
-      return showDefaultLogoIfNoLogo ? 'Form logo' : undefined
-    }
+    if (!logo) return
+
     switch (logo.state) {
       case FormLogoState.None:
-        return undefined
+        return showDefaultLogoIfNoLogo ? 'Form logo' : undefined
       case FormLogoState.Default:
         return agency ? `Logo for ${agency.fullName}` : undefined
       case FormLogoState.Custom:
@@ -49,7 +47,7 @@ export const useFormBannerLogo = ({
   }, [agency, logo, showDefaultLogoIfNoLogo])
 
   return {
-    hasLogo: logo?.state !== FormLogoState.None || !!showDefaultLogoIfNoLogo,
+    hasLogo: !!logoImgSrc,
     logoImgSrc,
     logoImgAlt,
     colorTheme,

@@ -89,6 +89,7 @@ export const FormBannerLogo = ({
           onError={() => setFallbackType('error')}
           src={logoImgSrc}
           alt={logoImgAlt}
+          minH="1.25rem"
           maxH="4rem"
         />
       </Flex>
