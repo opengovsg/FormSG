@@ -8,10 +8,13 @@ import {
 
 import { ThemeColorScheme } from '~theme/foundations/colours'
 
-import { CalendarProvider } from './CalendarBase/CalendarContext'
-import { CalendarPanel } from './CalendarBase/CalendarPanel'
-import { CalendarTodayButton } from './CalendarBase/CalendarTodayButton'
-import { CalendarBaseProps } from './CalendarBase/types'
+import {
+  CalendarAria,
+  CalendarBaseProps,
+  CalendarPanel,
+  CalendarProvider,
+  CalendarTodayButton,
+} from './CalendarBase'
 
 export interface CalendarProps extends CalendarBaseProps {
   /**
@@ -50,7 +53,7 @@ export const Calendar = forwardRef<CalendarProps, 'input'>(
         onSelectDate={setInternalValue}
       >
         <StylesProvider value={styles}>
-          {/* Overall container */}
+          <CalendarAria />
           <Box sx={styles.container}>
             <CalendarPanel ref={initialFocusRef} />
             <CalendarTodayButton />

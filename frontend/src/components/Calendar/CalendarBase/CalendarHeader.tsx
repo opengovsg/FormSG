@@ -7,7 +7,6 @@ import {
   Text,
   useBreakpointValue,
   useStyles,
-  VisuallyHidden,
 } from '@chakra-ui/react'
 import { addMonths } from 'date-fns'
 
@@ -149,61 +148,35 @@ export const CalendarHeader = memo(
   ({ monthOffset }: CalendarHeaderProps): JSX.Element => {
     const styles = useStyles()
     const {
-      currMonth,
-      currYear,
-      monthsToDisplay,
       renderProps: { calendars, getBackProps, getForwardProps },
     } = useCalendar()
 
-    const ariaLiveText = useMemo(() => {
-      if (monthOffset !== 0) return
-      const endMonthNum = (currMonth + monthsToDisplay - 1) % 12
-      const startMonth = MONTH_NAMES[currMonth].fullName
-      const endMonth = MONTH_NAMES[endMonthNum].fullName
-      if (startMonth === endMonth) {
-        return `Currently displaying ${MONTH_NAMES[currMonth].fullName} ${currYear}`
-      }
-      if (endMonthNum < currMonth) {
-        return `Currently displaying ${startMonth} ${currYear} to ${endMonth} ${
-          currYear + 1
-        }`
-      }
-      return `Currently displaying ${startMonth} ${currYear} to ${endMonth} ${currYear}`
-    }, [currMonth, currYear, monthOffset, monthsToDisplay])
-
     return (
-      <>
-        {monthOffset === 0 && (
-          <VisuallyHidden aria-live="polite" aria-atomic>
-            {ariaLiveText}
-          </VisuallyHidden>
+      <Flex sx={styles.monthYearSelectorContainer}>
+        {monthOffset === 0 ? (
+          <SelectableMonthYear />
+        ) : (
+          <MonthYear monthOffset={monthOffset} />
         )}
-        <Flex sx={styles.monthYearSelectorContainer}>
-          {monthOffset === 0 ? (
-            <SelectableMonthYear />
-          ) : (
-            <MonthYear monthOffset={monthOffset} />
-          )}
-          {calendars.length - 1 === monthOffset ? (
-            <Flex sx={styles.monthArrowContainer}>
-              <IconButton
-                variant="clear"
-                colorScheme="secondary"
-                icon={<BxChevronLeft />}
-                aria-label="Back one month"
-                {...getBackProps({ calendars })}
-              />
-              <IconButton
-                variant="clear"
-                colorScheme="secondary"
-                icon={<BxChevronRight />}
-                aria-label="Forward one month"
-                {...getForwardProps({ calendars })}
-              />
-            </Flex>
-          ) : null}
-        </Flex>
-      </>
+        {calendars.length - 1 === monthOffset ? (
+          <Flex sx={styles.monthArrowContainer}>
+            <IconButton
+              variant="clear"
+              colorScheme="secondary"
+              icon={<BxChevronLeft />}
+              aria-label="Back one month"
+              {...getBackProps({ calendars })}
+            />
+            <IconButton
+              variant="clear"
+              colorScheme="secondary"
+              icon={<BxChevronRight />}
+              aria-label="Forward one month"
+              {...getForwardProps({ calendars })}
+            />
+          </Flex>
+        ) : null}
+      </Flex>
     )
   },
 )

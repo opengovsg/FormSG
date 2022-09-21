@@ -8,10 +8,14 @@ import {
 } from '@chakra-ui/react'
 import { compareAsc } from 'date-fns'
 
-import { CalendarProvider } from './CalendarBase/CalendarContext'
-import { CalendarPanel } from './CalendarBase/CalendarPanel'
-import { CalendarTodayButton } from './CalendarBase/CalendarTodayButton'
-import { CalendarBaseProps, DateRangeValue } from './CalendarBase/types'
+import {
+  CalendarAria,
+  CalendarBaseProps,
+  CalendarPanel,
+  CalendarProvider,
+  CalendarTodayButton,
+  DateRangeValue,
+} from './CalendarBase'
 
 export interface RangeCalendarProps extends CalendarBaseProps {
   /**
@@ -137,7 +141,7 @@ export const RangeCalendar = forwardRef<RangeCalendarProps, 'input'>(
         {...props}
       >
         <StylesProvider value={styles}>
-          {/* Overall container */}
+          <CalendarAria />
           <Box sx={styles.container}>
             <CalendarPanel ref={initialFocusRef} />
             <CalendarTodayButton />
