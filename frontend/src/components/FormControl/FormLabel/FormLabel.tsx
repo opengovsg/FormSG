@@ -8,7 +8,6 @@ import {
   Text,
   TextProps,
   useFormControlContext,
-  VisuallyHidden,
 } from '@chakra-ui/react'
 
 import { BxsHelpCircle } from '~assets/icons/BxsHelpCircle'
@@ -167,7 +166,6 @@ FormLabel.QuestionNumber = ({ children, ...props }: TextProps): JSX.Element => {
       lineHeight={0}
       {...props}
     >
-      <VisuallyHidden>Question number:</VisuallyHidden>
       {children}
     </Text>
   )

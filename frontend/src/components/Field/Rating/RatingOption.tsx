@@ -3,10 +3,8 @@ import {
   Box,
   forwardRef,
   Icon,
-  Text,
   useMultiStyleConfig,
   useRadio,
-  VisuallyHidden,
 } from '@chakra-ui/react'
 
 import { BxHeart, BxsHeart, BxsStar, BxStar } from '~assets/icons'
@@ -61,14 +59,10 @@ const NumberRating = ({
       {...radioProps}
       as="label"
       htmlFor={inputId}
-      aria-hidden={false}
       {...(isChecked ? { 'data-checked': '' } : {})}
       __css={styles.option}
     >
-      <VisuallyHidden>
-        {value} {isChecked ? 'selected' : 'unselected'}
-      </VisuallyHidden>
-      <Text aria-hidden>{value}</Text>
+      {value}
     </Box>
   )
 }
@@ -94,14 +88,15 @@ const IconRating = ({
       {...radioProps}
       as="label"
       htmlFor={inputId}
-      aria-hidden={false}
+      aria-label={`${value}`}
       {...(isChecked ? { 'data-checked': '' } : {})}
       __css={styles.option}
     >
-      <VisuallyHidden>
-        {value} {isChecked ? 'selected' : 'unselected'}
-      </VisuallyHidden>
-      <Icon as={isChecked ? fullIcon : emptyIcon} fontSize="2.5rem" />
+      <Icon
+        as={isChecked ? fullIcon : emptyIcon}
+        fontSize="2.5rem"
+        aria-hidden
+      />
     </Box>
   )
 }

@@ -107,6 +107,7 @@ const OthersCheckbox = forwardRef<CheckboxProps, 'input'>((props, ref) => {
     <Checkbox
       ref={mergedCheckboxRef}
       __css={styles.othersCheckbox}
+      aria-label="Other"
       {...props}
       onChange={handleCheckboxChange}
     >

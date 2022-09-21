@@ -86,6 +86,7 @@ export const RadioField = ({
               // Trigger validation of others input if Other radio is selected.
               if (value === RADIO_OTHERS_INPUT_VALUE) trigger(othersInputName)
             }}
+            aria-label={schema.title}
           >
             {schema.fieldOptions.map((option, idx) => (
               <Radio key={idx} value={option} {...(idx === 0 ? { ref } : {})}>
@@ -104,7 +105,7 @@ export const RadioField = ({
                   isInvalid={!!get(errors, othersInputName)}
                 >
                   <OthersInput
-                    aria-label='Enter value for "Others" option'
+                    aria-label='"Other" response'
                     {...register(othersInputName, othersValidationRules)}
                   />
                   <FormErrorMessage
