@@ -88,6 +88,7 @@ interface CalendarContextProps extends CalendarProps, PassthroughProps {
   handleTodayClick: () => void
   dateToFocus: Date
   selectedDates?: Date | DateRangeValue
+  monthsToDisplay: Required<CalendarProps>['monthsToDisplay']
 }
 
 const CalendarContext = createContext<CalendarContextProps | undefined>(
@@ -305,5 +306,6 @@ const useProvideCalendar = ({
     isDateInRange,
     hoveredDate,
     colorScheme,
+    monthsToDisplay,
   }
 }
