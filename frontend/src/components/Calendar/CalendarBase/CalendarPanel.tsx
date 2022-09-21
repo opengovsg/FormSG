@@ -3,6 +3,7 @@ import {
   forwardRef,
   Stack,
   Td,
+  Text,
   useStyles,
   VisuallyHidden,
 } from '@chakra-ui/react'
@@ -44,12 +45,9 @@ export const CalendarPanel = forwardRef<{}, 'button'>(
               <chakra.thead>
                 <chakra.tr>
                   {DAY_NAMES.map(({ fullName, shortName }, index) => (
-                    <chakra.th
-                      key={index}
-                      abbr={fullName}
-                      sx={styles.dayNamesContainer}
-                    >
-                      {shortName}
+                    <chakra.th key={index} sx={styles.dayNamesContainer}>
+                      <Text aria-hidden>{shortName}</Text>
+                      <VisuallyHidden>{fullName}</VisuallyHidden>
                     </chakra.th>
                   ))}
                 </chakra.tr>
