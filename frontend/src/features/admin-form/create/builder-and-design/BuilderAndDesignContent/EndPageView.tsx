@@ -66,6 +66,7 @@ export const EndPageView = ({ ...props }: FlexProps): JSX.Element => {
           w="100%"
         >
           <EndPageBlock
+            formTitle={form?.title}
             endPage={endPage ?? { title: '', buttonText: '' }}
             submissionData={{
               id: form?._id ?? 'Submission ID',
