@@ -124,32 +124,30 @@ export const Rating = forwardRef<RatingProps, 'input'>(
     const ratingLayout = useMemo(() => {
       switch (variant) {
         case 'number':
-          return { spacing: '-1px', rowHeight: '0.5rem' }
+          return { spacingX: '-1px', spacingY: '0.5rem' }
         default:
-          return { spacing: 0, rowHeight: 0 }
+          return { spacingX: 0, spacingY: 0 }
       }
     }, [variant])
 
     return (
       <Grid
         rowGap="0.5rem"
-        templateAreas={[
-          `'caption' 'rating'`,
-          `'caption' 'rating'`,
-          `'caption' 'rating'`,
-          `'rating' 'caption'`,
-        ]}
+        templateAreas={{
+          base: "'caption' 'rating'",
+          lg: "'rating' 'caption'",
+        }}
       >
         <Stack
           gridArea="rating"
           as="fieldset"
-          direction={['column', 'column', 'column', 'row']}
-          spacing={['0.5rem', '0.5rem', '0.5rem', '1rem']}
-          align={['flex-start', 'flex-start', 'flex-start', 'center']}
+          direction={{ base: 'column', lg: 'row' }}
+          spacing={{ base: '0.5rem', lg: '1rem' }}
+          align={{ base: 'flex-start', lg: 'center' }}
         >
-          <Stack spacing={ratingLayout.spacing}>
+          <Stack spacing={ratingLayout.spacingY}>
             {options.map((row, i) => (
-              <HStack spacing={ratingLayout.spacing} key={i}>
+              <HStack spacing={ratingLayout.spacingX} key={i}>
                 {row.map((value) => (
                   <RatingOption
                     name={name}
