@@ -7,6 +7,8 @@ import { IFieldSchema } from 'src/types'
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
+import { aws } from '../../config/config'
+
 const Form = getFormModel(mongoose)
 
 const MOCK_ADMIN_ID = new ObjectID()
@@ -112,7 +114,7 @@ const createAndReturnFormField = async (
   }
   if (formFieldParams.fieldType === 'image') {
     formFieldParams = {
-      url: 'http://example.com',
+      url: `${aws.imageBucketUrl}/test-image.jpg`,
       fileMd5Hash: 'some hash',
       name: 'test image name',
       size: 'some size',

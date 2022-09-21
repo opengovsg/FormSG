@@ -35,10 +35,8 @@ const validateSubmitFormFeedbackParams = celebrate({
  * @returns 422 if duplicate feedback with the same submissionId and formId exists
  * @returns 410 if form has been archived
  * @returns 500 if database error occurs
- *
- * TODO #3964: Rename to `submitFormFeedback` once we fully migrate feedback endpoint to /submissions/{submissionId}/feedback
  */
-const submitFormFeedbackV2: ControllerHandler<
+const submitFormFeedback: ControllerHandler<
   { formId: string; submissionId: string },
   { message: string } | ErrorDto | PrivateFormErrorDto,
   { rating: number; comment: string }
@@ -46,7 +44,7 @@ const submitFormFeedbackV2: ControllerHandler<
   const { formId, submissionId } = req.params
   const { rating, comment } = req.body
   const logMeta = {
-    action: 'submitFormFeedbackV2',
+    action: 'submitFormFeedback',
     ...createReqMeta(req),
     formId,
     submissionId,
@@ -91,5 +89,5 @@ const submitFormFeedbackV2: ControllerHandler<
 
 export const handleSubmitFormFeedback = [
   validateSubmitFormFeedbackParams,
-  submitFormFeedbackV2,
+  submitFormFeedback,
 ] as ControllerHandler[]

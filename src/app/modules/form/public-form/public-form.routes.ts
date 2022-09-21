@@ -1,8 +1,8 @@
-import { celebrate, Joi, Segments } from 'celebrate'
 import { Router } from 'express'
 
 import * as PublicFormController from './public-form.controller'
 
+/** @deprecated use PublicFormsFormRouter in src/app/routes/api/v3/forms/public-forms.form.routes.ts instead. */
 export const PublicFormRouter = Router()
 
 /**
@@ -60,29 +60,4 @@ PublicFormRouter.get(
 PublicFormRouter.get(
   '/forms/:agency/:formId([a-fA-F0-9]{24})/embed',
   PublicFormController.handleRedirect,
-)
-
-/**
- * Send feedback for a public form
- * @deprecate in favour of POST api/v3/forms/:formId/feedback
- * @route POST /:formId/feedback
- * @returns 200 if feedback was successfully saved
- * @returns 400 if form feedback was malformed and hence cannot be saved
- * @returns 404 if form with formId does not exist or is private
- * @returns 410 if form has been archived
- * @returns 500 if database error occurs
- */
-PublicFormRouter.post(
-  '/:formId([a-fA-F0-9]{24})/feedback',
-  celebrate({
-    [Segments.BODY]: Joi.object()
-      .keys({
-        rating: Joi.number().min(1).max(5).cast('string').required(),
-        comment: Joi.string().allow('').required(),
-      })
-      // Allow other keys for backwards compability as frontend might put
-      // extra keys in the body.
-      .unknown(true),
-  }),
-  PublicFormController.handleSubmitFeedback,
 )
