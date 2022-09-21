@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 import { FormProvider, SubmitHandler, useForm } from 'react-hook-form'
 import { useSearchParams } from 'react-router-dom'
 import { Box, Stack } from '@chakra-ui/react'
@@ -101,9 +101,19 @@ export const FormFields = ({
     }
   }, [defaultFormValues, isDirty, reset])
 
+  const preventSubmitOnEnter = useCallback((event: React.KeyboardEvent) => {
+    if (event.key === 'Enter') {
+      event.preventDefault()
+    }
+  }, [])
+
   return (
     <FormProvider {...formMethods}>
-      <form onSubmit={formMethods.handleSubmit(onSubmit)} noValidate>
+      <form
+        onSubmit={formMethods.handleSubmit(onSubmit)}
+        noValidate
+        onKeyDown={preventSubmitOnEnter}
+      >
         {!!formFields?.length && (
           <Box bg={'white'} py="2.5rem" px={{ base: '1rem', md: '2.5rem' }}>
             <Stack spacing="2.25rem">
