@@ -12,7 +12,7 @@ import {
   Text,
 } from '@chakra-ui/react'
 
-import { ThemeColorScheme } from '~theme/foundations/colours'
+import { FormColorTheme } from '~shared/types'
 
 import { FormLogoutButton } from './FormLogoutButton'
 
@@ -20,7 +20,7 @@ export interface FormBannerLogoProps {
   hasLogo: boolean
   logoImgSrc?: string
   logoImgAlt?: string
-  colorScheme?: ThemeColorScheme
+  colorTheme: FormColorTheme
   /**
    * id of currently logged in user.
    * If not provided, logout button will be hidden.
@@ -53,7 +53,7 @@ export const FormBannerLogo = ({
   logoImgAlt,
   loggedInId,
   onLogout,
-  colorScheme,
+  colorTheme,
 }: FormBannerLogoProps): JSX.Element | null => {
   const [fallbackType, setFallbackType] = useState<
     'loading' | 'error' | 'loaded'
@@ -93,7 +93,7 @@ export const FormBannerLogo = ({
         />
       </Flex>
       <FormLogoutButton
-        colorScheme={colorScheme}
+        colorScheme={`theme-${colorTheme}`}
         loggedInId={loggedInId}
         onLogout={onLogout}
       />

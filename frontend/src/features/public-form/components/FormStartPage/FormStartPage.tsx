@@ -1,15 +1,10 @@
 import { useMemo } from 'react'
 
-import { FormLogoState } from '~shared/types'
-
-import { useEnv } from '~features/env/queries'
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
 import { useFormSections } from '../FormFields/FormSectionsContext'
 
-import { FormBannerLogo } from './FormBannerLogo'
 import { FormHeader } from './FormHeader'
-import { useFormBannerLogo } from './useFormBannerLogo'
 import { useFormHeader } from './useFormHeader'
 
 export const FormStartPage = (): JSX.Element => {
@@ -23,10 +18,6 @@ export const FormStartPage = (): JSX.Element => {
   } = usePublicFormContext()
   const { activeSectionId } = useFormSections()
 
-  const { data: { logoBucketUrl } = {} } = useEnv(
-    form?.startPage.logo.state === FormLogoState.Custom,
-  )
-
   const showHeaderAndMiniHeader = useMemo(
     () => !submissionData,
     [submissionData],
@@ -34,36 +25,17 @@ export const FormStartPage = (): JSX.Element => {
 
   const formHeaderProps = useFormHeader({ startPage: form?.startPage })
 
-  const formBannerLogoProps = useFormBannerLogo({
-    logoBucketUrl,
-    logo: form?.startPage.logo,
-    agency: form?.admin.agency,
-    colorScheme: formHeaderProps.colorScheme,
-  })
-
-  const formBannerLoggedInId = useMemo(() => {
-    if (!submissionData || !spcpSession) return
-    return spcpSession.userName
-  }, [spcpSession, submissionData])
-
   return (
-    <>
-      <FormBannerLogo
-        {...formBannerLogoProps}
-        loggedInId={formBannerLoggedInId}
-        onLogout={handleLogout}
-      />
-      <FormHeader
-        title={form?.title}
-        showHeader={showHeaderAndMiniHeader}
-        loggedInId={spcpSession?.userName}
-        showMiniHeader={showHeaderAndMiniHeader}
-        activeSectionId={activeSectionId}
-        miniHeaderRef={miniHeaderRef}
-        onMobileDrawerOpen={onMobileDrawerOpen}
-        handleLogout={handleLogout}
-        {...formHeaderProps}
-      />
-    </>
+    <FormHeader
+      title={form?.title}
+      showHeader={showHeaderAndMiniHeader}
+      loggedInId={spcpSession?.userName}
+      showMiniHeader={showHeaderAndMiniHeader}
+      activeSectionId={activeSectionId}
+      miniHeaderRef={miniHeaderRef}
+      onMobileDrawerOpen={onMobileDrawerOpen}
+      handleLogout={handleLogout}
+      {...formHeaderProps}
+    />
   )
 }

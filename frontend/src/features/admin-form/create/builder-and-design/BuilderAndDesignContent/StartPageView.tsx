@@ -9,9 +9,11 @@ import { useIsMobile } from '~hooks/useIsMobile'
 import { PREVIEW_MOCK_UINFIN } from '~features/admin-form/preview/constants'
 import { useEnv } from '~features/env/queries'
 import { FormInstructions } from '~features/public-form/components/FormInstructions/FormInstructions'
-import { FormBannerLogo } from '~features/public-form/components/FormStartPage/FormBannerLogo'
+import {
+  FormBannerLogo,
+  useFormBannerLogo,
+} from '~features/public-form/components/FormLogo'
 import { FormHeader } from '~features/public-form/components/FormStartPage/FormHeader'
-import { useFormBannerLogo } from '~features/public-form/components/FormStartPage/useFormBannerLogo'
 import { useFormHeader } from '~features/public-form/components/FormStartPage/useFormHeader'
 
 import { useCreatePageSidebar } from '../../common/CreatePageSidebarContext'
@@ -93,6 +95,7 @@ export const StartPageView = () => {
     logoBucketUrl,
     logo: startPage?.logo,
     agency: form?.admin.agency,
+    colorTheme: form?.startPage.colorTheme,
   })
   const formHeaderProps = useFormHeader({ startPage, hover: hoverStartPage })
 
