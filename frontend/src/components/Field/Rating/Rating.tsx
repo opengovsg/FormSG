@@ -135,15 +135,15 @@ export const Rating = forwardRef<RatingProps, 'input'>(
         rowGap="0.5rem"
         templateAreas={{
           base: "'caption' 'rating'",
-          lg: "'rating' 'caption'",
+          md: "'rating' 'caption'",
         }}
       >
         <Stack
           gridArea="rating"
           as="fieldset"
-          direction={{ base: 'column', lg: 'row' }}
-          spacing={{ base: '0.5rem', lg: '1rem' }}
-          align={{ base: 'flex-start', lg: 'center' }}
+          direction={{ base: 'column', md: 'row' }}
+          spacing={{ base: '0.5rem', md: '1rem' }}
+          align={{ base: 'flex-start', md: 'center' }}
         >
           <Stack spacing={ratingLayout.spacingY}>
             {options.map((row, i) => (
