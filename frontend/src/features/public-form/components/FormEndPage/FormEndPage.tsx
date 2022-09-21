@@ -9,6 +9,7 @@ import { FeedbackBlock, FeedbackFormInput } from './components/FeedbackBlock'
 import { ThankYouSvgr } from './components/ThankYouSvgr'
 
 export interface FormEndPageProps {
+  formTitle: FormDto['title']
   endPage: FormDto['endPage']
   submissionData: SubmissionData
   handleSubmitFeedback: (inputs: FeedbackFormInput) => void
@@ -34,7 +35,11 @@ export const FormEndPage = ({
           w="100%"
           divider={<StackDivider />}
         >
-          <EndPageBlock {...endPageProps} colorTheme={colorTheme} />
+          <EndPageBlock
+            focusOnMount
+            {...endPageProps}
+            colorTheme={colorTheme}
+          />
           {isFeedbackSubmitted ? null : (
             <FeedbackBlock
               colorTheme={colorTheme}

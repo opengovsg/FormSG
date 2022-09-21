@@ -125,7 +125,10 @@ export const EndPageBuilderInput = ({
           isInvalid={!!errors.title}
         >
           <FormLabel isRequired>Title</FormLabel>
-          <Input {...register('title', { required: REQUIRED_ERROR })} />
+          <Input
+            autoFocus
+            {...register('title', { required: REQUIRED_ERROR })}
+          />
           <FormErrorMessage>{errors.title?.message}</FormErrorMessage>
         </FormControl>
         <FormControl
