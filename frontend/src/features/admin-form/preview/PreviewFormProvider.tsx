@@ -173,6 +173,7 @@ export const PreviewFormProvider = ({
         isAuthRequired,
         expiryInMs,
         isLoading,
+        handleLogout: undefined,
         ...commonFormValues,
         ...data,
         ...rest,

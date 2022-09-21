@@ -10,7 +10,7 @@ import { FormBannerLogoProps } from './FormBannerLogo'
 
 export interface FormLogoutButtonProps
   extends Pick<FormBannerLogoProps, 'loggedInId'> {
-  onLogout?: () => void
+  onLogout: (() => void) | undefined
   colorScheme: ThemeColorScheme
 }
 
@@ -36,6 +36,7 @@ export const FormLogoutButton = ({
         />
       ) : (
         <Button
+          isDisabled={!onLogout}
           colorScheme={colorScheme}
           variant="clear"
           rightIcon={<BiLogOutCircle fontSize="1.5rem" />}

@@ -26,7 +26,7 @@ export interface FormBannerLogoProps {
    * If not provided, logout button will be hidden.
    */
   loggedInId?: string
-  onLogout?: () => void
+  onLogout: (() => void) | undefined
 }
 
 export const InvalidLogo = ({ message }: { message: string }): JSX.Element => {

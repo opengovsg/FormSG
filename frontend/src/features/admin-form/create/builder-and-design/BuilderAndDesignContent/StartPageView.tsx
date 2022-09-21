@@ -177,6 +177,7 @@ export const StartPageView = () => {
         ref={headerRef}
       >
         <FormBannerLogo
+          onLogout={undefined}
           logoImgSrc={
             startPageData?.logo.state === FormLogoState.Custom
               ? startPageData.attachment.srcUrl // manual override to preview custom logo

@@ -63,6 +63,7 @@ export const EndPageView = ({ ...props }: FlexProps): JSX.Element => {
       <Stack w="100%" bg="white">
         <FormBannerLogo
           {...formBannerLogoProps}
+          onLogout={undefined}
           loggedInId={
             form && form.authType !== FormAuthType.NIL
               ? PREVIEW_MOCK_UINFIN
