@@ -11,6 +11,7 @@ export default {
   component: RangeCalendar,
   decorators: [mockDateDecorator],
   parameters: {
+    layout: 'fullscreen',
     mockdate: new Date('2021-12-25T06:22:27.219Z'),
   },
 } as Meta<RangeCalendarProps>

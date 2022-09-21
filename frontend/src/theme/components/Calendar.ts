@@ -29,7 +29,7 @@ const baseDayOfMonthStyles: SystemStyleFunction = ({
   return {
     display: 'inline-block',
     textStyle: 'body-1',
-    borderRadius: '1.5rem',
+    borderRadius: '50%',
     color: isSelected
       ? 'white'
       : isOutsideCurrMonth
@@ -64,11 +64,12 @@ const sizes: Record<string, PartsStyleObject<typeof parts>> = {
         base: 0,
         md: 0.75,
       },
+      aspectRatio: '1 / 1',
       w: {
-        base: '2.25rem',
+        base: '100%',
         md: '3rem',
       },
-      h: {
+      minW: {
         base: '2.25rem',
         md: '3rem',
       },
