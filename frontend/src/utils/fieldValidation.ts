@@ -98,10 +98,10 @@ const createBaseVfnFieldValidationRules: ValidationRuleFnEmailAndMobile<
           return true
         }
         if (schema.fieldType === BasicField.Mobile) {
-          return 'Verify your mobile number below.'
+          return 'Please verify your mobile number'
         }
         if (schema.fieldType === BasicField.Email) {
-          return 'Verify your email address below.'
+          return 'Please verify your email address'
         }
       },
     },
