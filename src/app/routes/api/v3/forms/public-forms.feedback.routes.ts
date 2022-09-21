@@ -1,17 +1,8 @@
 import { Router } from 'express'
 
 import * as FeedbackController from '../../../../modules/feedback/feedback.controller'
-import * as PublicFormController from '../../../../modules/form/public-form/public-form.controller'
 
 export const PublicFormsFeedbackRouter = Router()
-
-/**
- * @deprecated
- * TODO #3964: Remove this route once we fully migrate to /:formId/submissions/:submissionId/feedback endpoint
- */
-PublicFormsFeedbackRouter.route('/:formId([a-fA-F0-9]{24})/feedback').post(
-  PublicFormController.handleSubmitFeedback,
-)
 
 /**
  * Send feedback for a public form
