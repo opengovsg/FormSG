@@ -121,12 +121,12 @@ export const Rating = forwardRef<RatingProps, 'input'>(
       return options
     }, [isSplitRows, numberOfRatings, wrapComponentsPerRow])
 
-    const ratingLayout = useMemo(() => {
+    const optionSpacing = useMemo(() => {
       switch (variant) {
         case 'number':
-          return { spacingX: '-1px', spacingY: '0.5rem' }
+          return { column: '-1px', row: '0.5rem' }
         default:
-          return { spacingX: 0, spacingY: 0 }
+          return { column: 0, row: 0 }
       }
     }, [variant])
 
@@ -145,9 +145,9 @@ export const Rating = forwardRef<RatingProps, 'input'>(
           spacing={{ base: '0.5rem', md: '1rem' }}
           align={{ base: 'flex-start', md: 'center' }}
         >
-          <Stack spacing={ratingLayout.spacingY}>
+          <Stack spacing={optionSpacing.row}>
             {options.map((row, i) => (
-              <HStack spacing={ratingLayout.spacingX} key={i}>
+              <HStack spacing={optionSpacing.column} key={i}>
                 {row.map((value) => (
                   <RatingOption
                     name={name}
