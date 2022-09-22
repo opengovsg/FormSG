@@ -14,7 +14,7 @@ export interface SharedSelectContextReturnProps<
   isClearable?: boolean
   /** Nothing found label. Defaults to "No matching results" */
   nothingFoundLabel?: string
-  /** aria-label for clear button. Defaults to "Clear dropdown" */
+  /** aria-label for clear button. Defaults to "Clear selection" */
   clearButtonLabel?: string
   /**
    * Placeholder to show in the input field.
