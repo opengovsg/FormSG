@@ -14,6 +14,7 @@ type UnprocessedRecord = Merge<
   { record: Dictionary<Response> }
 >
 
+export const FORMULA_INJECTION_REGEXP = new RegExp('^[+=@-].*')
 export class EncryptedResponseCsvGenerator extends CsvGenerator {
   hasBeenProcessed: boolean
   hasBeenSorted: boolean
@@ -133,10 +134,18 @@ export class EncryptedResponseCsvGenerator extends CsvGenerator {
   ): string {
     const fieldRecord = unprocessedRecord[fieldId]
     if (!fieldRecord) return ''
-    const fieldAnswer = fieldRecord.getAnswer(colIndex)
-    const asciiBELCharacter = String.fromCharCode(7)
-    const answer = asciiBELCharacter.concat(fieldAnswer)
-    return answer
+    // Check if fieldRecord is a pure number
+    const isNonNumber = isNaN(Number(fieldRecord.getAnswer(colIndex)))
+    // Check if fieldRecord starts with formula characters
+    const hasFormulaChars = FORMULA_INJECTION_REGEXP.test(
+      fieldRecord.getAnswer(colIndex),
+    )
+    // if fieldRecord is not a pure number, and starts with formula characters,
+    // prefix it with a single quote to prevent formula injection
+    if (isNonNumber && hasFormulaChars) {
+      return `'${fieldRecord.getAnswer(colIndex)}`
+    }
+    return fieldRecord.getAnswer(colIndex)
   }
 
   /**
