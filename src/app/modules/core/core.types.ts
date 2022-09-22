@@ -11,5 +11,5 @@ export type ControllerHandler<
   ResBody = unknown,
   ReqBody = unknown,
   ReqQuery = unknown,
-  Locals = Record<string, any>,
+  Locals extends Record<string, any> = Record<string, unknown>,
 > = RequestHandler<P, ResBody, ReqBody, ReqQuery, Locals>
