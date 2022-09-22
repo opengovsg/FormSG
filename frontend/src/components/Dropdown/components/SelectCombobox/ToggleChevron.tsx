@@ -14,7 +14,9 @@ export const ToggleChevron = (): JSX.Element => {
       as="button"
       type="button"
       display="flex"
-      isDisabled={isDisabled || isReadOnly}
+      _disabled={{
+        cursor: 'not-allowed',
+      }}
       aria-label={`${isOpen ? 'Close' : 'Open'} dropdown options`}
       {...getToggleButtonProps({
         disabled: isDisabled || isReadOnly,
