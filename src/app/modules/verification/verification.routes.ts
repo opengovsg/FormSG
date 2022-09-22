@@ -6,6 +6,7 @@ import { limitRate } from '../../utils/limit-rate'
 
 import * as VerificationController from './verification.controller'
 
+/** @deprecated use PublicFormsVerificationRouter in src/app/routes/api/v3/forms/public-forms.verification.routes.ts instead. */
 export const VfnRouter = Router()
 
 const formatOfId = Joi.string().length(24).hex().required()
