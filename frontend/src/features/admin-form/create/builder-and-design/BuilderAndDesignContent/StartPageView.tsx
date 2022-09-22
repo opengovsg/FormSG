@@ -34,7 +34,7 @@ import {
 
 export const StartPageView = () => {
   const isMobile = useIsMobile()
-  const { data: form } = useCreateTabForm()
+  const { data: form, isLoading } = useCreateTabForm()
   const setToInactive = useFieldBuilderStore(setToInactiveSelector)
   const isDirty = useDirtyFieldStore(isDirtySelector)
 
@@ -177,6 +177,7 @@ export const StartPageView = () => {
         ref={headerRef}
       >
         <FormBannerLogo
+          isLoading={isLoading}
           onLogout={undefined}
           logoImgSrc={
             startPageData?.logo.state === FormLogoState.Custom

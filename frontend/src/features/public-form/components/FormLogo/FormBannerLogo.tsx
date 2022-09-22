@@ -27,6 +27,7 @@ export interface FormBannerLogoProps {
    */
   loggedInId?: string
   onLogout: (() => void) | undefined
+  isLoading: boolean
 }
 
 export const InvalidLogo = ({ message }: { message: string }): JSX.Element => {
@@ -54,16 +55,17 @@ export const FormBannerLogo = ({
   loggedInId,
   onLogout,
   colorTheme,
+  isLoading,
 }: FormBannerLogoProps): JSX.Element | null => {
   const [fallbackType, setFallbackType] = useState<
     'loading' | 'error' | 'loaded'
   >('loading')
   // Reset fallback type to `loading` whenever src changes.
   useEffect(() => {
-    if (logoImgSrc) {
+    if (logoImgSrc || isLoading) {
       setFallbackType('loading')
     }
-  }, [logoImgSrc])
+  }, [isLoading, logoImgSrc])
 
   const fallback = useMemo(() => {
     if (!logoImgSrc && fallbackType !== 'loading') {
@@ -77,7 +79,7 @@ export const FormBannerLogo = ({
     }
   }, [fallbackType, logoImgSrc])
 
-  if (!hasLogo) return null
+  if (!hasLogo && !isLoading) return null
 
   return (
     <Grid p="1rem" bg="white" gridTemplateColumns="1fr auto 1fr">

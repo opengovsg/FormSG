@@ -9,7 +9,7 @@ import { FormBannerLogo } from './FormBannerLogo'
 import { useFormBannerLogo } from './useFormBannerLogo'
 
 export const PublicFormLogo = (): JSX.Element => {
-  const { form, spcpSession, submissionData, handleLogout } =
+  const { form, spcpSession, submissionData, handleLogout, isLoading } =
     usePublicFormContext()
 
   const { data: { logoBucketUrl } = {} } = useEnv(
@@ -33,6 +33,7 @@ export const PublicFormLogo = (): JSX.Element => {
 
   return (
     <FormBannerLogo
+      isLoading={isLoading}
       {...formBannerLogoProps}
       loggedInId={formBannerLoggedInId}
       onLogout={handleLogout}
