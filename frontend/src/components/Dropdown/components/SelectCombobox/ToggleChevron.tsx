@@ -19,7 +19,7 @@ export const ToggleChevron = (): JSX.Element => {
       {...getToggleButtonProps({
         disabled: isDisabled || isReadOnly,
         // Allow navigation to this button with screen readers.
-        tabIndex: 1,
+        tabIndex: 0,
       })}
     >
       <Icon

@@ -102,6 +102,7 @@ export const SingleSelectProvider = ({
   )
 
   const virtualListRef = useRef<VirtuosoHandle>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
 
   const {
     toggleMenu,
@@ -268,6 +269,7 @@ export const SingleSelectProvider = ({
         setIsFocused,
         resetInputValue,
         inputAria,
+        inputRef,
         virtualListRef,
         virtualListHeight,
       }}

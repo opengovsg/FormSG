@@ -5,6 +5,7 @@ import {
   InputGroup,
   Stack,
   Text,
+  useMergeRefs,
   VisuallyHidden,
 } from '@chakra-ui/react'
 
@@ -35,7 +36,10 @@ export const SelectCombobox = forwardRef<HTMLInputElement>(
       isOpen,
       resetInputValue,
       inputAria,
+      inputRef,
     } = useSelectContext()
+
+    const mergedInputRef = useMergeRefs(inputRef, ref)
 
     const selectedItemMeta = useMemo(
       () => ({
@@ -101,7 +105,7 @@ export const SelectCombobox = forwardRef<HTMLInputElement>(
             {...getInputProps({
               onClick: handleToggleMenu,
               onBlur: () => !isOpen && resetInputValue(),
-              ref,
+              ref: mergedInputRef,
               'aria-describedby': inputAria.id,
             })}
           />
