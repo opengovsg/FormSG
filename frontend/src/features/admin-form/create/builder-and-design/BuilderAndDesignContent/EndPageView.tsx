@@ -21,7 +21,7 @@ import {
 import { useDesignColorTheme } from '../utils/useDesignColorTheme'
 
 export const EndPageView = ({ ...props }: FlexProps): JSX.Element => {
-  const { data: form } = useAdminForm()
+  const { data: form, isLoading } = useAdminForm()
   const endPageFromStore = useEndPageBuilderStore(endPageDataSelector)
 
   // When drawer is opened, store is populated. We always want the drawer settings
@@ -62,6 +62,7 @@ export const EndPageView = ({ ...props }: FlexProps): JSX.Element => {
     >
       <Stack w="100%" bg="white">
         <FormBannerLogo
+          isLoading={isLoading}
           {...formBannerLogoProps}
           onLogout={undefined}
           loggedInId={
