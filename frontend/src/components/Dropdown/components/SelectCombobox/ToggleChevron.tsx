@@ -11,12 +11,21 @@ export const ToggleChevron = (): JSX.Element => {
 
   return (
     <InputRightElement
-      {...getToggleButtonProps({ disabled: isDisabled || isReadOnly })}
+      as="button"
+      type="button"
+      display="flex"
+      isDisabled={isDisabled || isReadOnly}
+      aria-label={`${isOpen ? 'Close' : 'Open'} dropdown options`}
+      {...getToggleButtonProps({
+        disabled: isDisabled || isReadOnly,
+        // Allow navigation to this button with screen readers.
+        tabIndex: 1,
+      })}
     >
       <Icon
         sx={styles.icon}
         as={isOpen ? BxsChevronUp : BxsChevronDown}
-        aria-label={`${isOpen ? 'Close' : 'Open'} dropdown options icon`}
+        aria-hidden
         aria-disabled={isDisabled || isReadOnly}
       />
     </InputRightElement>
