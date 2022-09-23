@@ -1,14 +1,17 @@
 import { useMemo } from 'react'
 import { Box, Flex, FlexProps, Stack } from '@chakra-ui/react'
 
-import { FormColorTheme, FormLogoState } from '~shared/types'
+import { FormAuthType, FormColorTheme, FormLogoState } from '~shared/types'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
+import { PREVIEW_MOCK_UINFIN } from '~features/admin-form/preview/constants'
 import { useEnv } from '~features/env/queries'
 import { EndPageBlock } from '~features/public-form/components/FormEndPage/components/EndPageBlock'
 import { ThankYouSvgr } from '~features/public-form/components/FormEndPage/components/ThankYouSvgr'
-import { FormBannerLogo } from '~features/public-form/components/FormStartPage/FormBannerLogo'
-import { useFormBannerLogo } from '~features/public-form/components/FormStartPage/useFormBannerLogo'
+import {
+  FormBannerLogo,
+  useFormBannerLogo,
+} from '~features/public-form/components/FormLogo'
 import { useBgColor } from '~features/public-form/components/PublicFormWrapper'
 
 import {
@@ -18,7 +21,7 @@ import {
 import { useDesignColorTheme } from '../utils/useDesignColorTheme'
 
 export const EndPageView = ({ ...props }: FlexProps): JSX.Element => {
-  const { data: form } = useAdminForm()
+  const { data: form, isLoading } = useAdminForm()
   const endPageFromStore = useEndPageBuilderStore(endPageDataSelector)
 
   // When drawer is opened, store is populated. We always want the drawer settings
@@ -31,13 +34,16 @@ export const EndPageView = ({ ...props }: FlexProps): JSX.Element => {
     form?.startPage.logo.state === FormLogoState.Custom,
   )
 
+  const colorTheme = useDesignColorTheme()
+
   const formBannerLogoProps = useFormBannerLogo({
     logoBucketUrl,
     logo: form?.startPage.logo,
     agency: form?.admin.agency,
+    colorTheme: form?.startPage.colorTheme,
+    showDefaultLogoIfNoLogo: true,
   })
 
-  const colorTheme = useDesignColorTheme()
   const backgroundColor = useBgColor({ colorTheme })
 
   return (
@@ -55,7 +61,16 @@ export const EndPageView = ({ ...props }: FlexProps): JSX.Element => {
       {...props}
     >
       <Stack w="100%" bg="white">
-        <FormBannerLogo {...formBannerLogoProps} />
+        <FormBannerLogo
+          isLoading={isLoading}
+          {...formBannerLogoProps}
+          onLogout={undefined}
+          loggedInId={
+            form && form.authType !== FormAuthType.NIL
+              ? PREVIEW_MOCK_UINFIN
+              : undefined
+          }
+        />
         <Flex backgroundColor={backgroundColor} justifyContent="center">
           <ThankYouSvgr h="100%" pt="2.5rem" />
         </Flex>

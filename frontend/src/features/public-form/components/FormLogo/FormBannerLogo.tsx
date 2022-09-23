@@ -1,11 +1,33 @@
 import { useEffect, useMemo, useState } from 'react'
 import { BiImage } from 'react-icons/bi'
-import { Box, Flex, Icon, Image, Skeleton, Stack, Text } from '@chakra-ui/react'
+import {
+  Box,
+  Flex,
+  Grid,
+  Icon,
+  Image,
+  Skeleton,
+  Spacer,
+  Stack,
+  Text,
+} from '@chakra-ui/react'
 
-interface FormBannerLogoInputProps {
+import { FormColorTheme } from '~shared/types'
+
+import { FormLogoutButton } from './FormLogoutButton'
+
+export interface FormBannerLogoProps {
   hasLogo: boolean
   logoImgSrc?: string
   logoImgAlt?: string
+  colorTheme: FormColorTheme
+  /**
+   * id of currently logged in user.
+   * If not provided, logout button will be hidden.
+   */
+  loggedInId?: string
+  onLogout: (() => void) | undefined
+  isLoading: boolean
 }
 
 export const InvalidLogo = ({ message }: { message: string }): JSX.Element => {
@@ -30,16 +52,20 @@ export const FormBannerLogo = ({
   hasLogo,
   logoImgSrc,
   logoImgAlt,
-}: FormBannerLogoInputProps): JSX.Element | null => {
+  loggedInId,
+  onLogout,
+  colorTheme,
+  isLoading,
+}: FormBannerLogoProps): JSX.Element | null => {
   const [fallbackType, setFallbackType] = useState<
     'loading' | 'error' | 'loaded'
   >('loading')
   // Reset fallback type to `loading` whenever src changes.
   useEffect(() => {
-    if (logoImgSrc) {
+    if (logoImgSrc || isLoading) {
       setFallbackType('loading')
     }
-  }, [logoImgSrc])
+  }, [isLoading, logoImgSrc])
 
   const fallback = useMemo(() => {
     if (!logoImgSrc && fallbackType !== 'loading') {
@@ -53,18 +79,27 @@ export const FormBannerLogo = ({
     }
   }, [fallbackType, logoImgSrc])
 
-  if (!hasLogo) return null
+  if (!hasLogo && !isLoading) return null
 
   return (
-    <Flex justify="center" p="1rem" bg="white">
-      <Image
-        fallback={fallback}
-        onLoad={() => setFallbackType('loaded')}
-        onError={() => setFallbackType('error')}
-        src={logoImgSrc}
-        alt={logoImgAlt}
-        maxH="4rem"
+    <Grid p="1rem" bg="white" gridTemplateColumns="1fr auto 1fr">
+      <Spacer />
+      <Flex maxW="57rem">
+        <Image
+          fallback={fallback}
+          onLoad={() => setFallbackType('loaded')}
+          onError={() => setFallbackType('error')}
+          src={logoImgSrc}
+          alt={logoImgAlt}
+          minH="1.25rem"
+          maxH="4rem"
+        />
+      </Flex>
+      <FormLogoutButton
+        colorScheme={`theme-${colorTheme}`}
+        loggedInId={loggedInId}
+        onLogout={onLogout}
       />
-    </Flex>
+    </Grid>
   )
 }
