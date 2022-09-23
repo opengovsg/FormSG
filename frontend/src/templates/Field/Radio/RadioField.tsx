@@ -87,6 +87,9 @@ export const RadioField = ({
               if (value === RADIO_OTHERS_INPUT_VALUE) trigger(othersInputName)
             }}
             aria-label={schema.title}
+            aria-invalid={
+              !!get(errors, radioInputName) || !!get(errors, othersInputName)
+            }
           >
             {schema.fieldOptions.map((option, idx) => (
               <Radio key={idx} value={option} {...(idx === 0 ? { ref } : {})}>

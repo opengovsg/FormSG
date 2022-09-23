@@ -215,7 +215,11 @@ export const Radio = forwardRef<RadioProps, 'input'>(
         {...labelProps}
         __css={rootStyles}
       >
-        <input className="chakra-radio__input" {...inputProps} />
+        <input
+          className="chakra-radio__input"
+          {...inputProps}
+          aria-invalid={false}
+        />
         <chakra.span
           className="chakra-radio__control"
           {...checkboxProps}
