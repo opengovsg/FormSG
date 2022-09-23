@@ -266,7 +266,12 @@ const OthersRadio = forwardRef<RadioProps, 'input'>((props, ref) => {
   }, [isChecked, othersInputRef])
 
   return (
-    <Radio ref={mergedRadioRef} {...props} __css={styles.othersRadio}>
+    <Radio
+      ref={mergedRadioRef}
+      {...props}
+      __css={styles.othersRadio}
+      isRequired={false}
+    >
       Other
     </Radio>
   )
@@ -299,6 +304,7 @@ export const OthersInput = forwardRef<InputProps, 'input'>(
         ref={mergedInputRef}
         {...props}
         onChange={handleInputChange}
+        isRequired={othersRadioRef.current?.checked}
       />
     )
   },

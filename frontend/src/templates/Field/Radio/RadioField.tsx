@@ -90,9 +90,15 @@ export const RadioField = ({
             aria-invalid={
               !!get(errors, radioInputName) || !!get(errors, othersInputName)
             }
+            aria-required={schema.required}
           >
             {schema.fieldOptions.map((option, idx) => (
-              <Radio key={idx} value={option} {...(idx === 0 ? { ref } : {})}>
+              <Radio
+                key={idx}
+                value={option}
+                {...(idx === 0 ? { ref } : {})}
+                isRequired={false}
+              >
                 {option}
               </Radio>
             ))}
