@@ -125,6 +125,10 @@ export const stateDataSelector = (
   state: FieldBuilderStore,
 ): FieldBuilderStore['stateData'] => state.stateData
 
+export const fieldBuilderStateSelector = (
+  state: FieldBuilderStore,
+): FieldBuilderStore['stateData']['state'] => state.stateData.state
+
 export const updateCreateStateSelector = (
   state: FieldBuilderStore,
 ): FieldBuilderStore['updateCreateState'] => state.updateCreateState
