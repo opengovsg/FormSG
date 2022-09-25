@@ -1,5 +1,3 @@
-import { memo, useMemo } from 'react'
-
 import { AdminFormDto } from '~shared/types/form'
 
 import { augmentWithQuestionNo } from '~features/form/utils'
@@ -13,27 +11,23 @@ interface BuilderFieldsProps {
   isDraggingOver: boolean
 }
 
-export const BuilderFields = memo(
-  ({ fields, visibleFieldIds, isDraggingOver }: BuilderFieldsProps) => {
-    const fieldsWithQuestionNos = useMemo(
-      () => augmentWithQuestionNo(fields),
-      [fields],
-    )
-
-    return (
-      <>
-        {fieldsWithQuestionNos.map((f, i) => (
-          <FieldRow
-            index={i}
-            key={f._id}
-            field={f}
-            isHiddenByLogic={!visibleFieldIds.has(f._id)}
-            isDraggingOver={isDraggingOver}
-          />
-        ))}
-      </>
-    )
-  },
-  (prev, next) =>
-    prev.fields === next.fields && prev.isDraggingOver === next.isDraggingOver,
-)
+export const BuilderFields = ({
+  fields,
+  visibleFieldIds,
+  isDraggingOver,
+}: BuilderFieldsProps) => {
+  const fieldsWithQuestionNos = augmentWithQuestionNo(fields)
+  return (
+    <>
+      {fieldsWithQuestionNos.map((f, i) => (
+        <FieldRow
+          index={i}
+          key={f._id}
+          field={f}
+          isHiddenByLogic={!visibleFieldIds.has(f._id)}
+          isDraggingOver={isDraggingOver}
+        />
+      ))}
+    </>
+  )
+}
