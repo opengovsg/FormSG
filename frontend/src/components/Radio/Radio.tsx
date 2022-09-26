@@ -270,7 +270,7 @@ const OthersRadio = forwardRef<RadioProps, 'input'>((props, ref) => {
       ref={mergedRadioRef}
       {...props}
       __css={styles.othersRadio}
-      // This is to enhance radio a11y: https://github.com/opengovsg/FormSG/pull/4925
+      // Required should apply to radio group rather than individual radio.
       isRequired={false}
     >
       Other
@@ -305,7 +305,7 @@ export const OthersInput = forwardRef<InputProps, 'input'>(
         ref={mergedInputRef}
         {...props}
         onChange={handleInputChange}
-        // This is to enhance radio a11y: https://github.com/opengovsg/FormSG/pull/4925
+        // Required only when other radio is checked.
         isRequired={othersRadioRef.current?.checked}
       />
     )
