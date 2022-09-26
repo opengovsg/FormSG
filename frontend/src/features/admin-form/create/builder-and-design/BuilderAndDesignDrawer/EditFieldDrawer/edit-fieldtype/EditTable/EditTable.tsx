@@ -60,7 +60,7 @@ const transformTableFieldToEditForm = (
 
   return {
     ...pick(field, EDIT_TABLE_FIELD_KEYS),
-    addMoreRows: nextMaxRows !== '',
+    addMoreRows: field.addMoreRows,
     maximumRows: nextMaxRows,
     minimumRows: nextMinRows,
   }
@@ -175,7 +175,6 @@ export const EditTable = ({ field }: EditTableProps): JSX.Element => {
               name="maximumRows"
               defaultValue=""
               rules={{
-                required: REQUIRED_ERROR,
                 min: {
                   value: 1,
                   message: 'Maximum rows must be greater than 0',
