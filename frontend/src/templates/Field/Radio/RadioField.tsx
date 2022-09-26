@@ -97,6 +97,7 @@ export const RadioField = ({
                 key={idx}
                 value={option}
                 {...(idx === 0 ? { ref } : {})}
+                // This is to enhance radio a11y: https://github.com/opengovsg/FormSG/pull/4925
                 isRequired={false}
               >
                 {option}
