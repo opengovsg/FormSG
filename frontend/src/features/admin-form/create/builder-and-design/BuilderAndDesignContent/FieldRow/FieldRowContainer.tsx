@@ -56,7 +56,6 @@ import {
 } from '~features/myinfo/utils'
 
 import { useBuilderAndDesignContext } from '../../BuilderAndDesignContext'
-import { PENDING_CREATE_FIELD_ID } from '../../constants'
 import { useDeleteFormField } from '../../mutations/useDeleteFormField'
 import { useDuplicateFormField } from '../../mutations/useDuplicateFormField'
 import { useCreateTabForm } from '../../useCreateTabForm'
@@ -68,8 +67,8 @@ import {
 import { isDirtySelector, useDirtyFieldStore } from '../../useDirtyFieldStore'
 import {
   FieldBuilderState,
+  fieldBuilderStateSelector,
   setToInactiveSelector,
-  stateDataSelector,
   updateEditStateSelector,
   useFieldBuilderStore,
 } from '../../useFieldBuilderStore'
@@ -84,6 +83,7 @@ export interface FieldRowContainerProps {
   index: number
   isHiddenByLogic: boolean
   isDraggingOver: boolean
+  isActive: boolean
 }
 
 export const FieldRowContainer = ({
@@ -91,20 +91,14 @@ export const FieldRowContainer = ({
   index,
   isHiddenByLogic,
   isDraggingOver,
+  isActive,
 }: FieldRowContainerProps): JSX.Element => {
   const isMobile = useIsMobile()
   const { data: form } = useCreateTabForm()
   const numFormFieldMutations = useIsMutating(adminFormKeys.base)
-  const { stateData, setToInactive, updateEditState } = useFieldBuilderStore(
-    useCallback(
-      (state) => ({
-        stateData: stateDataSelector(state),
-        setToInactive: setToInactiveSelector(state),
-        updateEditState: updateEditStateSelector(state),
-      }),
-      [],
-    ),
-  )
+  const fieldBuilderState = useFieldBuilderStore(fieldBuilderStateSelector)
+  const setToInactive = useFieldBuilderStore(setToInactiveSelector)
+  const updateEditState = useFieldBuilderStore(updateEditStateSelector)
 
   const isDirty = useDirtyFieldStore(isDirtySelector)
   const toast = useToast({ status: 'danger', isClosable: true })
@@ -140,15 +134,6 @@ export const FieldRowContainer = ({
     mode: 'onChange',
     defaultValues: defaultFieldValues,
   })
-
-  const isActive = useMemo(() => {
-    if (stateData.state === FieldBuilderState.EditingField) {
-      return field._id === stateData.field._id
-    } else if (stateData.state === FieldBuilderState.CreatingField) {
-      return field._id === PENDING_CREATE_FIELD_ID
-    }
-    return false
-  }, [stateData, field])
 
   const {
     deleteFieldModalDisclosure: { onOpen: onDeleteModalOpen },
@@ -208,7 +193,7 @@ export const FieldRowContainer = ({
   const handleDuplicateClick = useCallback(() => {
     if (!form) return
     // Duplicate button should be hidden if field is not yet created, but guard here just in case
-    if (stateData.state === FieldBuilderState.CreatingField) return
+    if (fieldBuilderState === FieldBuilderState.CreatingField) return
     // Disallow duplicating attachment fields if after the dupe, the filesize exceeds the limit
     if (field.fieldType === BasicField.Attachment) {
       const existingAttachmentsSize = form.form_fields.reduce(
@@ -230,15 +215,15 @@ export const FieldRowContainer = ({
       }
     }
     duplicateFieldMutation.mutate(field._id)
-  }, [stateData.state, field, duplicateFieldMutation, form, toast])
+  }, [fieldBuilderState, field, duplicateFieldMutation, form, toast])
 
   const handleDeleteClick = useCallback(() => {
-    if (stateData.state === FieldBuilderState.CreatingField) {
+    if (fieldBuilderState === FieldBuilderState.CreatingField) {
       setToInactive()
-    } else if (stateData.state === FieldBuilderState.EditingField) {
+    } else if (fieldBuilderState === FieldBuilderState.EditingField) {
       onDeleteModalOpen()
     }
-  }, [setToInactive, stateData.state, onDeleteModalOpen])
+  }, [setToInactive, fieldBuilderState, onDeleteModalOpen])
 
   const isAnyMutationLoading = useMemo(
     () => duplicateFieldMutation.isLoading || deleteFieldMutation.isLoading,
@@ -250,9 +235,9 @@ export const FieldRowContainer = ({
       !isActive ||
       isDirty ||
       !!numFormFieldMutations ||
-      stateData.state === FieldBuilderState.CreatingField
+      fieldBuilderState === FieldBuilderState.CreatingField
     )
-  }, [isActive, isDirty, numFormFieldMutations, stateData.state])
+  }, [isActive, isDirty, numFormFieldMutations, fieldBuilderState])
 
   return (
     <Draggable
@@ -331,7 +316,7 @@ export const FieldRowContainer = ({
                     snapshot.isDragging ? 'secondary.300' : 'secondary.200'
                   }
                 >
-                  {stateData.state === FieldBuilderState.EditingField &&
+                  {fieldBuilderState === FieldBuilderState.EditingField &&
                   !isDragDisabled ? (
                     <Icon as={BiGridHorizontal} fontSize="1.5rem" />
                   ) : (
@@ -377,7 +362,7 @@ export const FieldRowContainer = ({
                     ) : null}
                     {
                       // Fields which are not yet created cannot be duplicated
-                      stateData.state !== FieldBuilderState.CreatingField && (
+                      fieldBuilderState !== FieldBuilderState.CreatingField && (
                         <Tooltip label="Duplicate field">
                           <IconButton
                             aria-label="Duplicate field"
