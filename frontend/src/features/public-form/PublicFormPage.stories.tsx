@@ -17,7 +17,11 @@ import {
   SHOW_FIELDS_ON_YES_LOGIC,
 } from '~/mocks/msw/handlers/public-form'
 
-import { getMobileViewParameters, StoryRouter } from '~utils/storybook'
+import {
+  getMobileViewParameters,
+  getTabletViewParameters,
+  StoryRouter,
+} from '~utils/storybook'
 import { ShortTextFieldSchema } from '~templates/Field'
 
 import PublicFormPage from './PublicFormPage'
@@ -434,6 +438,12 @@ WithPreventSubmissionLogic.play = async ({ canvasElement }) => {
 export const FormNotFound = Template.bind({})
 FormNotFound.parameters = {
   msw: [getPublicFormErrorResponse()],
+}
+
+export const FormNotFoundTablet = Template.bind({})
+FormNotFoundTablet.parameters = {
+  ...FormNotFound.parameters,
+  ...getTabletViewParameters(),
 }
 
 export const FormNotFoundMobile = Template.bind({})
