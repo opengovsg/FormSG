@@ -4,7 +4,10 @@ import { formatInTimeZone } from 'date-fns-tz'
 import { FormFeedbackDto } from '~shared/types'
 
 import { CsvGenerator } from '../../common/utils/CsvGenerator'
-import { FORMULA_INJECTION_REGEXP } from '../../ResponsesPage/storage/utils/EncryptedResponseCsvGenerator/EncryptedResponseCsvGenerator'
+import {
+  FORMULA_INJECTION_REGEXP,
+  PURE_NUMBER_REGEXP,
+} from '../../ResponsesPage/storage/utils/EncryptedResponseCsvGenerator/EncryptedResponseCsvGenerator'
 /**
  * Class to encapsulate the FeedbackCsv and its attributes
  */
@@ -28,19 +31,19 @@ export class FeedbackCsvGenerator extends CsvGenerator {
       'dd MMM yyyy hh:mm:ss a',
     ) // Format in SG timezone
 
-    let feedbackComment
-    // Check if fieldRecord is a pure number
-    const isNonNumber = isNaN(Number(feedback.comment))
-    // Check if fieldRecord starts with formula characters
-    const hasFormulaChars = FORMULA_INJECTION_REGEXP.test(
-      feedback.comment || '',
-    )
-    // if fieldRecord is not a pure number, and starts with formula characters,
-    // prefix it with a single quote to prevent formula injection
-    if (isNonNumber && hasFormulaChars) {
-      feedbackComment = `'${feedback.comment}`
-    } else feedbackComment = feedback.comment
+    let feedbackComment = ''
+    if (feedback.comment) {
+      // Check if fieldRecord is a pure number
+      const isPureNumber = PURE_NUMBER_REGEXP.test(feedback.comment)
+      // Check if fieldRecord starts with formula characters
+      const hasFormulaChars = FORMULA_INJECTION_REGEXP.test(feedback.comment)
+      // if fieldRecord is not a pure number, and starts with formula characters,
+      // prefix it with a single quote to prevent formula injection
+      if (!isPureNumber && hasFormulaChars) {
+        feedbackComment = `'${feedback.comment}`
+      } else feedbackComment = feedback.comment
+    }
 
-    this.addLine([createdAt, feedbackComment ?? '', feedback.rating])
+    this.addLine([createdAt, feedbackComment, feedback.rating])
   }
 }
