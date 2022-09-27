@@ -93,7 +93,11 @@ export const TableField = ({
     useTable({ columns: columnsData, data: fields })
 
   const handleAddRow = useCallback(() => {
-    if (!schema.maximumRows || fields.length >= schema.maximumRows) return
+    if (
+      !schema.addMoreRows ||
+      (!!schema.maximumRows && fields.length >= schema.maximumRows)
+    )
+      return
     return appendTableRow()
   }, [appendTableRow, fields.length, schema])
 
@@ -194,7 +198,7 @@ export const TableField = ({
       {schema.addMoreRows && schema.maximumRows !== undefined ? (
         <AddRowFooter
           currentRows={fields.length}
-          maxRows={schema.maximumRows === '' ? 0 : schema.maximumRows}
+          maxRows={schema.maximumRows}
           handleAddRow={handleAddRow}
         />
       ) : null}

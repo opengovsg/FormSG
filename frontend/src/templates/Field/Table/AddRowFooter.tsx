@@ -7,7 +7,7 @@ import Button from '~components/Button'
 interface AddRowFooterProps {
   handleAddRow: () => void
   currentRows: number
-  maxRows: number
+  maxRows: number | ''
 }
 
 export const AddRowFooter = ({
@@ -24,7 +24,7 @@ export const AddRowFooter = ({
       spacing="0.75rem"
     >
       <Button
-        isDisabled={currentRows >= maxRows}
+        isDisabled={!!maxRows && currentRows >= maxRows}
         leftIcon={<BiPlus fontSize="1.5rem" />}
         type="button"
         onClick={handleAddRow}
@@ -33,7 +33,9 @@ export const AddRowFooter = ({
       </Button>
 
       <Text textStyle="body-2" color="secondary.400">
-        {simplur`${currentRows} out of max ${maxRows} row[|s]`}
+        {maxRows
+          ? simplur`${currentRows} out of max ${maxRows} row[|s]`
+          : simplur`${currentRows} row[|s]`}
       </Text>
     </Stack>
   )
