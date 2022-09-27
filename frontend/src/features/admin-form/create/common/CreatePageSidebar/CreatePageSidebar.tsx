@@ -90,6 +90,7 @@ export const CreatePageSidebar = (): JSX.Element | null => {
           isRound={true}
           colorScheme="primary"
           icon={<BiQuestionMark />}
+          fontSize="1.5rem"
           aria-label="Help"
           onClick={(e) => {
             e.preventDefault()
