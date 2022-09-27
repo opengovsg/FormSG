@@ -41,7 +41,9 @@ export class FeedbackCsvGenerator extends CsvGenerator {
       // prefix it with a single quote to prevent formula injection
       if (!isPureNumber && hasFormulaChars) {
         feedbackComment = `'${feedback.comment}`
-      } else feedbackComment = feedback.comment
+      } else {
+        feedbackComment = feedback.comment
+      }
     }
 
     this.addLine([createdAt, feedbackComment, feedback.rating])
