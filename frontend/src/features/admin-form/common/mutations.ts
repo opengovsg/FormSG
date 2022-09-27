@@ -299,10 +299,12 @@ export const useMutateCollaborators = () => {
           description:
             'You have removed yourself as a collaborator from the form.',
         })
-        navigate(DASHBOARD_ROUTE)
+
         // Remove all related queries from cache.
         queryClient.removeQueries(adminFormKeys.id(formId))
         queryClient.invalidateQueries(workspaceKeys.all)
+
+        navigate(DASHBOARD_ROUTE)
       },
       onError: (error: Error) => {
         handleError(error, FormCollaboratorAction.REMOVE_SELF)
