@@ -1,11 +1,12 @@
 import { useCallback } from 'react'
 import { BiGitMerge, BiQuestionMark } from 'react-icons/bi'
-import { IconButton, Stack, Tooltip } from '@chakra-ui/react'
+import { Stack, Tooltip } from '@chakra-ui/react'
 
 import { BxsColorFill } from '~assets/icons/BxsColorFill'
 import { BxsWidget } from '~assets/icons/BxsWidget'
 import { FORM_GUIDE } from '~constants/links'
 import { useIsMobile } from '~hooks/useIsMobile'
+import IconButton from '~components/IconButton'
 
 import {
   DrawerTabs,
@@ -87,10 +88,8 @@ export const CreatePageSidebar = (): JSX.Element | null => {
       <Tooltip label="Help" placement="right">
         <IconButton
           variant="clear"
-          isRound={true}
-          colorScheme="primary"
           icon={<BiQuestionMark />}
-          fontSize="1.5rem"
+          borderRadius="full"
           aria-label="Help"
           onClick={(e) => {
             e.preventDefault()
