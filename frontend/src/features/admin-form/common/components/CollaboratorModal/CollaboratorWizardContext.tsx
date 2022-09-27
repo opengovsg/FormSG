@@ -14,6 +14,7 @@ type CollaboratorWizardContextReturn = {
   handleForwardToTransferOwnership: (emailToTransfer: string) => void
   handleForwardToRemoveSelf: () => void
   formId: string
+  onClose: () => void
 }
 
 const CollaboratorWizardContext = createContext<
@@ -25,9 +26,13 @@ const INITIAL_STEP_STATE: [CollaboratorFlowStates, number] = [
   0 | 1 | -1,
 ]
 
-const useCollaboratorWizardContext = (
-  formId: string,
-): CollaboratorWizardContextReturn => {
+const useCollaboratorWizardContext = ({
+  formId,
+  onClose,
+}: {
+  formId: string
+  onClose: () => void
+}): CollaboratorWizardContextReturn => {
   const [[currentStep, direction], setCurrentStep] =
     useState(INITIAL_STEP_STATE)
   const [emailToTransfer, setEmailToTransfer] = useState<string | null>(null)
@@ -57,17 +62,21 @@ const useCollaboratorWizardContext = (
     handleForwardToTransferOwnership,
     handleForwardToRemoveSelf,
     formId,
+    onClose,
   }
+}
+
+interface CollaboratorWizardProviderProps {
+  children: React.ReactNode
+  formId: string
+  onClose: () => void
 }
 
 export const CollaboratorWizardProvider = ({
   children,
-  formId,
-}: {
-  children: React.ReactNode
-  formId: string
-}): JSX.Element => {
-  const values = useCollaboratorWizardContext(formId)
+  ...props
+}: CollaboratorWizardProviderProps): JSX.Element => {
+  const values = useCollaboratorWizardContext(props)
   return (
     <CollaboratorWizardContext.Provider value={values}>
       {children}
