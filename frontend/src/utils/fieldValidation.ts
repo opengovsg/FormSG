@@ -49,23 +49,24 @@ import { VerifiableFieldBase } from '~features/verifiable-fields/types'
 import { isDateAfterToday, isDateBeforeToday, isDateOutOfRange } from './date'
 import { formatNumberToLocaleString } from './stringFormat'
 
-type OmitUnusedProps<T extends FieldBase> = Omit<
+// Omit unused props
+type MinimumFieldValidationProps<T extends FieldBase> = Omit<
   T,
   'fieldType' | 'description' | 'disabled'
 >
 
-// fieldType is only used in email and mobile field verification
-type OmitUnusedPropsEmailAndMobile<T extends FieldBase> = Omit<
+// fieldType is only used in email and mobile field verification, so we don't omit it
+type MinimumFieldValidationPropsEmailAndMobile<T extends FieldBase> = Omit<
   T,
   'description' | 'disabled'
 >
 
 type ValidationRuleFn<T extends FieldBase = FieldBase> = (
-  schema: OmitUnusedProps<T>,
+  schema: MinimumFieldValidationProps<T>,
 ) => RegisterOptions
 
 type ValidationRuleFnEmailAndMobile<T extends FieldBase = FieldBase> = (
-  schema: OmitUnusedPropsEmailAndMobile<T>,
+  schema: MinimumFieldValidationPropsEmailAndMobile<T>,
 ) => RegisterOptions
 
 const createRequiredValidationRules = (
@@ -440,7 +441,8 @@ export const createEmailValidationRules: ValidationRuleFnEmailAndMobile<
  * @returns error string if field is invalid, true otherwise.
  */
 export const baseEmailValidationFn =
-  (schema: OmitUnusedProps<EmailFieldBase>) => (inputValue?: string) => {
+  (schema: MinimumFieldValidationProps<EmailFieldBase>) =>
+  (inputValue?: string) => {
     if (!inputValue) {
       return true
     }
@@ -466,7 +468,8 @@ export const baseEmailValidationFn =
   }
 
 export const baseMobileValidationFn =
-  (_schema: OmitUnusedProps<MobileFieldBase>) => (inputValue?: string) => {
+  (_schema: MinimumFieldValidationProps<MobileFieldBase>) =>
+  (inputValue?: string) => {
     if (!inputValue) {
       return true
     }
