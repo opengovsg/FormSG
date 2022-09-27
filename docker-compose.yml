@@ -11,7 +11,7 @@ services:
       - ./:/opt/formsg
       - /opt/formsg/node_modules
     ports:
-      - '5000:5000'
+      - '5001:5000'
       - '4566:4566' # localstack ports
       - '5156:5156' # mockpass ports
       - '9229:9229' # Node debugger port

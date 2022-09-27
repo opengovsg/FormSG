@@ -61,7 +61,7 @@ Run the following shell command to build the Docker image from scratch. This wil
 npm run dev
 ```
 
-After the Docker image has finished building, the application can be accessed at [localhost:5000](localhost:5000).
+After the Docker image has finished building, the application can be accessed at [localhost:5001](localhost:5001).
 
 If there are no dependency changes in `package.json` or changes in the
 `src/app/server.ts` file, you can run
