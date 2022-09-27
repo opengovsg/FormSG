@@ -157,7 +157,7 @@ const useProvideDatePicker = ({
   const inputRef = useRef<HTMLInputElement>(null)
 
   const calendarButtonAria = useMemo(() => {
-    let ariaLabel = 'Choose date. '
+    let ariaLabel = 'Select from datepicker. '
     if (internalValue) {
       if (isValid(internalValue)) {
         ariaLabel += `Selected date is ${internalValue.toLocaleDateString()}.`

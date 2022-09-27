@@ -214,7 +214,7 @@ const useProvideDateRangePicker = ({
   const endInputRef = useRef<HTMLInputElement>(null)
 
   const calendarButtonAria = useMemo(() => {
-    let ariaLabel = 'Choose date. '
+    let ariaLabel = 'Select from datepicker. '
     if (!startDate && !endDate) return ariaLabel + 'No date range selected.'
     if (startDate && !endDate) {
       if (isValid(startDate)) {
