@@ -13,7 +13,7 @@ import { CollaboratorWizardProvider } from './CollaboratorWizardContext'
 interface CollaboratorModalProps {
   isOpen: boolean
   onClose: () => void
-  formId: string
+  formId?: string
 }
 
 export const CollaboratorModal = ({
@@ -35,7 +35,7 @@ export const CollaboratorModal = ({
       >
         <ModalCloseButton />
         {isOpen && (
-          <CollaboratorWizardProvider formId={formId}>
+          <CollaboratorWizardProvider formId={formId ?? ''} onClose={onClose}>
             <CollaboratorModalContent />
           </CollaboratorWizardProvider>
         )}
