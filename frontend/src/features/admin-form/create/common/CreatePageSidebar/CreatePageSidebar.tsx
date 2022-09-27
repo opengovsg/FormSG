@@ -88,6 +88,7 @@ export const CreatePageSidebar = (): JSX.Element | null => {
       <Tooltip label="Help" placement="right">
         <IconButton
           variant="clear"
+          size="lg"
           icon={<BiQuestionMark />}
           borderRadius="full"
           aria-label="Help"
