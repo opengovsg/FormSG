@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 import { BiGitMerge } from 'react-icons/bi'
-import { IconButton, Stack } from '@chakra-ui/react'
+import { IconButton, Stack, Tooltip } from '@chakra-ui/react'
 
 import { BxQuestionMark } from '~assets/icons'
 import { BxsColorFill } from '~assets/icons/BxsColorFill'
@@ -85,17 +85,19 @@ export const CreatePageSidebar = (): JSX.Element | null => {
           id={FEATURE_TOUR[2].id}
         />
       </Stack>
-      <IconButton
-        variant="clear"
-        isRound={true}
-        colorScheme="primary"
-        icon={<BxQuestionMark />}
-        aria-label="Help"
-        onClick={(e) => {
-          e.preventDefault()
-          window.open(FORM_GUIDE)
-        }}
-      />
+      <Tooltip label="Help" placement="right">
+        <IconButton
+          variant="clear"
+          isRound={true}
+          colorScheme="primary"
+          icon={<BxQuestionMark />}
+          aria-label="Help"
+          onClick={(e) => {
+            e.preventDefault()
+            window.open(FORM_GUIDE)
+          }}
+        />
+      </Tooltip>
     </Stack>
   )
 }
