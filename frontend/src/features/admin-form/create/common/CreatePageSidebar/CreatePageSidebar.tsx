@@ -1,8 +1,7 @@
 import { useCallback } from 'react'
-import { BiGitMerge } from 'react-icons/bi'
+import { BiGitMerge, BiQuestionMark } from 'react-icons/bi'
 import { IconButton, Stack, Tooltip } from '@chakra-ui/react'
 
-import { BxQuestionMark } from '~assets/icons'
 import { BxsColorFill } from '~assets/icons/BxsColorFill'
 import { BxsWidget } from '~assets/icons/BxsWidget'
 import { FORM_GUIDE } from '~constants/links'
@@ -90,7 +89,7 @@ export const CreatePageSidebar = (): JSX.Element | null => {
           variant="clear"
           isRound={true}
           colorScheme="primary"
-          icon={<BxQuestionMark />}
+          icon={<BiQuestionMark />}
           aria-label="Help"
           onClick={(e) => {
             e.preventDefault()
