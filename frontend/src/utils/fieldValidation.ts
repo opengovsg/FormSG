@@ -53,7 +53,7 @@ type OmitUnusedProps<T extends FieldBase> = Omit<
   'fieldType' | 'description' | 'disabled'
 >
 
-type ValidationRuleFn<T extends FieldBase = FieldBase> = (
+export type ValidationRuleFn<T extends FieldBase = FieldBase> = (
   schema: OmitUnusedProps<T>,
 ) => RegisterOptions
 
