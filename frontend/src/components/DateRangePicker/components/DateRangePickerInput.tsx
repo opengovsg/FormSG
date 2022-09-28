@@ -1,5 +1,13 @@
+import { useMemo } from 'react'
 import ReactInputMask from 'react-input-mask'
-import { Flex, forwardRef, Stack, Text, useMergeRefs } from '@chakra-ui/react'
+import {
+  Flex,
+  forwardRef,
+  Stack,
+  Text,
+  useMergeRefs,
+  VisuallyHidden,
+} from '@chakra-ui/react'
 
 import Input from '~components/Input'
 
@@ -21,9 +29,21 @@ export const DateRangePickerInput = forwardRef<{}, 'input'>((_props, ref) => {
     endInputDisplay,
     endInputRef,
     handleEndDateChange,
+    internalValue: [startDate, endDate],
   } = useDateRangePicker()
 
   const mergedStartInputRef = useMergeRefs(startInputRef, ref)
+
+  const selectedDatesAriaLiveText = useMemo(() => {
+    if (!startDate && !endDate) {
+      return 'No date selected'
+    }
+    if (startDate && !endDate) {
+      return `Selected date: ${startDate.toLocaleDateString()}`
+    }
+
+    return `Selected date range: ${startDate?.toLocaleDateString()} to ${endDate?.toLocaleDateString()}`
+  }, [endDate, startDate])
 
   return (
     <Flex
@@ -37,6 +57,9 @@ export const DateRangePickerInput = forwardRef<{}, 'input'>((_props, ref) => {
         },
       }}
     >
+      <VisuallyHidden aria-live="assertive">
+        {selectedDatesAriaLiveText}
+      </VisuallyHidden>
       <Stack direction="row" align="center">
         <Input
           variant="unstyled"
