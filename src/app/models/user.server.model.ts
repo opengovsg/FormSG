@@ -71,6 +71,9 @@ const compileUserModel = (db: Mongoose) => {
       betaFlags: {
         sgid: Boolean,
       },
+      flags: {
+        lastSeenFeatureUpdateVersion: Number,
+      },
     },
     {
       timestamps: {

@@ -1,0 +1,1 @@
+export { EditTable } from './EditTable'

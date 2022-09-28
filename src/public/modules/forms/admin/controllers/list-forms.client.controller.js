@@ -36,6 +36,8 @@ function ListFormsController(
 
   vm.bannerContent = $window.siteBannerContent || $window.adminBannerContent
 
+  // Admin React rollout percentage
+  vm.reactAdminRollout = $window.reactMigrationAdminRollout
   // Hidden buttons on forms that appear after clicking more
   vm.showFormBtns = []
   // Duplicated form outline on newly dup forms
