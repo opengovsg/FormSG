@@ -1,4 +1,4 @@
-const NUMBERS_ONLY_REGEXP = /^[+-.\d]+$/
+const NUMBERS_ONLY_REGEXP = /^[+.\d-]+$/
 const FORMULA_INJECTION_REGEXP = /^[+=@-]/
 
 export const processFormulaInjectionText = (input: string): string => {
