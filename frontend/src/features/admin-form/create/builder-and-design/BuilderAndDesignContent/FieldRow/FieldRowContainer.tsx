@@ -329,7 +329,7 @@ export const FieldRowContainer = ({
                       fontSize="1.5rem"
                     />
                   ) : (
-                    <Box></Box>
+                    <Box h="1.125rem"></Box>
                   )}
                 </chakra.button>
               </Fade>
