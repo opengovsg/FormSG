@@ -22,9 +22,10 @@ export const EmptyWorkspace = ({
 
   return (
     <Flex
-      justify="center"
+      justify="flex-start"
       flexDir="column"
       align="center"
+      h="100vh"
       px="2rem"
       py="1rem"
       bg="neutral.100"
@@ -40,7 +41,7 @@ export const EmptyWorkspace = ({
         color="secondary.500"
         mb={{ base: '2.5rem', md: '2rem' }}
       >
-        Get started by creating a new form.
+        Get started by creating a new form
       </Text>
       <Button
         isFullWidth={isMobile}
