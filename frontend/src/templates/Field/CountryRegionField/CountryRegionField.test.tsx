@@ -85,7 +85,7 @@ describe('optional field', () => {
     const user = userEvent.setup()
     render(<ValidationOptional />)
 
-    const expectedOption = 'SINGAPORE'
+    const expectedOption = 'Singapore'
     const submitButton = screen.getByRole('button', { name: /submit/i })
     const input = screen.getByRole('textbox') as HTMLInputElement
     // Act
