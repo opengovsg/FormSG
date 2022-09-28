@@ -1,5 +1,5 @@
-const PURE_NUMBER_REGEXP = new RegExp('^[+-][0-9]+')
-const FORMULA_INJECTION_REGEXP = new RegExp('^[+=@-].*')
+const PURE_NUMBER_REGEXP = /^[+-.\d]*$/
+const FORMULA_INJECTION_REGEXP = /^[+=@-]/
 
 export const processFormulaInjectionText = (input: string): string => {
   // Check if input is a pure number
