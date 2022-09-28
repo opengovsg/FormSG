@@ -79,7 +79,7 @@ If you are on macOS Monetery or higher, port 5000 is now used by the system. Thi
 
 ### Running Locally
 
-Run the following shell command to build the Docker image from scratch. This will usually take 10 or so minutes.
+Run the following shell command to build the Docker image from scratch. This will usually take 10 or so minutes. This command runs the backend services specified under [docker-compose.yml](docker-compose.yml) and the React frontend on the native host.
 
 ```bash
 npm run dev
@@ -96,6 +96,20 @@ docker-compose up
 
 which does **not** rebuild the Docker image from scratch. This command usually
 only takes ~15 seconds to finish starting up the image.
+
+### Adding dependencies
+
+Run `npm install` as per usual.
+
+For backend, run
+
+```
+docker-compose up --build --renew-anon-volumes
+```
+
+which will rebuild the backend Docker image and not reuse the existing node_modules volume.
+
+As frontend project is currently not using Docker, no other steps are required.
 
 ### Accessing email locally
 
