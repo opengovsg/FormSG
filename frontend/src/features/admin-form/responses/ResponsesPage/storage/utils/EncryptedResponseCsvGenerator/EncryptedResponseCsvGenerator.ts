@@ -8,14 +8,13 @@ import { CsvGenerator } from '../../../../common/utils'
 import type { DecryptedSubmissionData } from '../../types'
 import type { Response } from '../csv-response-classes'
 import { getDecryptedResponseInstance } from '../getDecryptedResponseInstance'
+import { processFormulaInjectionText } from '../processFormulaInjection'
 
 type UnprocessedRecord = Merge<
   DecryptedSubmissionData,
   { record: Dictionary<Response> }
 >
 
-export const PURE_NUMBER_REGEXP = new RegExp('^[+-][0-9]+')
-export const FORMULA_INJECTION_REGEXP = new RegExp('^[+=@-].*')
 export class EncryptedResponseCsvGenerator extends CsvGenerator {
   hasBeenProcessed: boolean
   hasBeenSorted: boolean
@@ -135,20 +134,7 @@ export class EncryptedResponseCsvGenerator extends CsvGenerator {
   ): string {
     const fieldRecord = unprocessedRecord[fieldId]
     if (!fieldRecord) return ''
-    // Check if fieldRecord is a pure number
-    const isPureNumber = PURE_NUMBER_REGEXP.test(
-      fieldRecord.getAnswer(colIndex),
-    )
-    // Check if fieldRecord starts with formula characters
-    const hasFormulaChars = FORMULA_INJECTION_REGEXP.test(
-      fieldRecord.getAnswer(colIndex),
-    )
-    // if fieldRecord is not a pure number, and starts with formula characters,
-    // prefix it with a single quote to prevent formula injection
-    if (!isPureNumber && hasFormulaChars) {
-      return `'${fieldRecord.getAnswer(colIndex)}`
-    }
-    return fieldRecord.getAnswer(colIndex)
+    return processFormulaInjectionText(fieldRecord.getAnswer(colIndex))
   }
 
   /**
