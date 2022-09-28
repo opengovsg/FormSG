@@ -87,7 +87,8 @@ export const CreatePageSidebar = (): JSX.Element | null => {
       </Stack>
       <Tooltip label="Help" placement="right">
         <IconButton
-          variant="clear"
+          variant="solid"
+          colorScheme="subtle"
           size="lg"
           icon={<BiQuestionMark />}
           borderRadius="full"
