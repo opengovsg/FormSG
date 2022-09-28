@@ -624,6 +624,40 @@ describe('EncryptedResponseCsvGenerator', () => {
           expectedSubmissionRow1,
         ])
       })
+
+      it('should handle submissions that start with +digit and contain other alphabets', () => {
+        // Arrange
+        const mockAnswer = [generateRecord(1, '+3*SUM(A1)')]
+        const mockAnswerRecord = {
+          record: mockAnswer,
+          created: mockCreatedEarly,
+          submissionId: 'mockSubmissionIdAnswer',
+        }
+        generator.addRecord(mockAnswerRecord)
+
+        // Act
+        generator.process()
+
+        // Assert
+        // Should have 1 header row and 1 submission row
+        expect(generator.records.length).toEqual(2 + BOM_LENGTH)
+        const expectedHeaderRow = stringify([
+          'Response ID',
+          'Timestamp',
+          mockAnswer[0].question,
+        ])
+        // Answer should be prefixed with a single quote
+        const expectedSubmissionRow1 = stringify([
+          mockAnswerRecord.submissionId,
+          getFormattedDate(mockAnswerRecord.created),
+          `'${mockAnswer[0].answer}`,
+        ])
+        expect(generator.records).toEqual([
+          UTF8_BYTE_ORDER_MARK,
+          expectedHeaderRow,
+          expectedSubmissionRow1,
+        ])
+      })
     })
 
     describe('submissions with answerArray key', () => {
