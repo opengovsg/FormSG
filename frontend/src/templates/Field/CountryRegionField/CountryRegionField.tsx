@@ -5,6 +5,7 @@ import {
   FormFieldWithId,
 } from '~shared/types/field'
 
+import { createCountryRegionValidationRules } from '~utils/fieldValidation'
 import DropdownField from '~templates/Field/Dropdown'
 
 import { BaseFieldProps } from '../FieldContainer'
@@ -33,6 +34,7 @@ export const CountryRegionField = ({
         fieldType: BasicField.Dropdown,
         fieldOptions: SORTED_COUNTRY_OPTIONS,
       }}
+      validationRules={createCountryRegionValidationRules}
     />
   )
 }
