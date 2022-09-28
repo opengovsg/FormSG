@@ -41,6 +41,8 @@ export const DateRangePickerInput = forwardRef<{}, 'input'>((_props, ref) => {
         <Input
           variant="unstyled"
           aria-label="Start date of range"
+          inputMode="numeric" // Nudge Android mobile keyboard to be numeric
+          pattern="\d*" // Nudge numeric keyboard on iOS Safari.
           sx={styles.field}
           width="6rem"
           as={ReactInputMask}
@@ -60,6 +62,8 @@ export const DateRangePickerInput = forwardRef<{}, 'input'>((_props, ref) => {
         <Input
           variant="unstyled"
           aria-label="Start date of range"
+          inputMode="numeric" // Nudge Android mobile keyboard to be numeric
+          pattern="\d*" // Nudge numeric keyboard on iOS Safari.
           sx={styles.field}
           width="6rem"
           as={ReactInputMask}

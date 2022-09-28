@@ -24,6 +24,8 @@ export const DatePickerInput = forwardRef<{}, 'input'>((_props, ref) => {
   return (
     <Input
       variant="unstyled"
+      inputMode="numeric" // Nudge Android mobile keyboard to be numeric
+      pattern="\d*" // Nudge numeric keyboard on iOS Safari.
       sx={styles.field}
       as={ReactInputMask}
       mask="99/99/9999"

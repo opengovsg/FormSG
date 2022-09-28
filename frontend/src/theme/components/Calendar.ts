@@ -73,6 +73,7 @@ const sizes: Record<string, PartsStyleObject<typeof parts>> = {
         base: '2.25rem',
         md: '3rem',
       },
+      maxW: '3rem',
     },
     monthYearSelectorContainer: {
       pt: '0.75rem',
