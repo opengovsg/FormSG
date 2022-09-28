@@ -21,6 +21,7 @@ const logger = createLoggerWithLabel(module)
 /**
  * Inserts given feedback to the database.
  * @param formId the formId to insert the feedback for
+ * @param submissionId the submissionId of the form submission that the feedback is for
  * @param rating the feedback rating to insert
  * @param comment the comment accompanying the feedback
  * @returns ok(true) if successfully inserted
@@ -33,7 +34,7 @@ export const insertFormFeedback = ({
   comment,
 }: {
   formId: string
-  submissionId?: string
+  submissionId: string
   rating: number
   comment?: string
 }): ResultAsync<IFormFeedbackSchema, FormNotFoundError | DatabaseError> => {
