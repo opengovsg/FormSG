@@ -11,7 +11,7 @@ import {
 } from '../../common/CreatePageSidebarContext'
 import {
   FieldBuilderState,
-  stateDataSelector,
+  fieldBuilderStateSelector,
   useFieldBuilderStore,
 } from '../useFieldBuilderStore'
 
@@ -23,7 +23,7 @@ import { FieldListDrawer } from './FieldListDrawer'
 export const BuilderAndDesignDrawer = (): JSX.Element | null => {
   const isMobile = useIsMobile()
   const { activeTab, isDrawerOpen, drawerRef } = useCreatePageSidebar()
-  const createOrEditData = useFieldBuilderStore(stateDataSelector)
+  const fieldBuilderState = useFieldBuilderStore(fieldBuilderStateSelector)
 
   const drawerMotionProps = useMemo(() => {
     return {
@@ -49,7 +49,7 @@ export const BuilderAndDesignDrawer = (): JSX.Element | null => {
   const renderDrawerContent: JSX.Element | null = useMemo(() => {
     switch (activeTab) {
       case DrawerTabs.Builder:
-        switch (createOrEditData.state) {
+        switch (fieldBuilderState) {
           case FieldBuilderState.EditingField:
           case FieldBuilderState.CreatingField:
             return <EditFieldDrawer />
@@ -65,7 +65,7 @@ export const BuilderAndDesignDrawer = (): JSX.Element | null => {
         // Logic drawer open
         return null
     }
-  }, [createOrEditData, activeTab])
+  }, [fieldBuilderState, activeTab])
 
   return (
     <AnimatePresence>
