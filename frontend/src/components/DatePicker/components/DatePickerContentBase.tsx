@@ -39,7 +39,7 @@ export const DatePickerContentBase = ({
         initialFocusRef={initialFocusRef}
       >
         <DrawerOverlay />
-        <DrawerContent overflow="auto">
+        <DrawerContent maxH="100%" overflow="auto">
           <DrawerCloseButton colorScheme="secondary" />
           <DrawerHeader
             h="3.5rem"
