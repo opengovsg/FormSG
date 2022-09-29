@@ -38,7 +38,7 @@ const InnerVerifiableEmailField = ({
     if (hasSignature) {
       return 'This input field has been successfully verified.'
     }
-    return 'This is an input field which requires verification. After you enter the email address to be verified, please click on the Verify button. A one-time password will be sent to the entered email address, which you can then enter in the verification input field.'
+    return 'This is an input field which requires verification. After entering your email address, please click on the Verify button. You will receive a one-time password, which you can enter in the verification input field.'
   }, [hasSignature])
 
   return (
