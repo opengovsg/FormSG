@@ -120,10 +120,15 @@ export const Calendar: ComponentMultiStyleConfig<typeof parts> = {
         justifyContent: 'flex-end',
       },
       calendarContainer: {
+        display: {
+          base: 'block',
+          md: 'flex',
+        },
         borderBottom: '1px solid',
         borderColor: 'neutral.300',
       },
       monthGrid: {
+        w: '100%',
         justifyItems: 'left',
       },
       dayNamesContainer: {
