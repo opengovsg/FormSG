@@ -87,7 +87,7 @@ const variantSolid: SystemStyleFunction = (props) => {
   return {
     bg,
     borderColor: bg,
-    color: color,
+    color,
     px: '15px',
     _active: {
       bg: activeBg,
