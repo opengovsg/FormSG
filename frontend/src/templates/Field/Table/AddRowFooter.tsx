@@ -1,5 +1,6 @@
+import { useMemo } from 'react'
 import { BiPlus } from 'react-icons/bi'
-import { Stack, Text } from '@chakra-ui/react'
+import { Stack, Text, VisuallyHidden } from '@chakra-ui/react'
 import simplur from 'simplur'
 
 import Button from '~components/Button'
@@ -15,6 +16,18 @@ export const AddRowFooter = ({
   maxRows,
   handleAddRow,
 }: AddRowFooterProps): JSX.Element => {
+  const maxRowDescription = useMemo(() => {
+    return maxRows
+      ? simplur`${currentRows} out of max ${maxRows} row[|s]`
+      : simplur`${currentRows} row[|s]`
+  }, [currentRows, maxRows])
+
+  const maxRowAriaDescription = useMemo(() => {
+    return maxRows
+      ? simplur`There [is|are] currently ${currentRows} out of max ${maxRows} row[|s].`
+      : simplur`There [is|are] currently ${currentRows} row[|s].`
+  }, [currentRows, maxRows])
+
   return (
     <Stack
       mt="0.75rem"
@@ -30,12 +43,14 @@ export const AddRowFooter = ({
         onClick={handleAddRow}
       >
         Add another row
+        <VisuallyHidden>
+          to the table field. {maxRowAriaDescription}
+        </VisuallyHidden>
       </Button>
 
       <Text textStyle="body-2" color="secondary.400">
-        {maxRows
-          ? simplur`${currentRows} out of max ${maxRows} row[|s]`
-          : simplur`${currentRows} row[|s]`}
+        <VisuallyHidden>The table field currently has </VisuallyHidden>
+        {maxRowDescription}
       </Text>
     </Stack>
   )

@@ -13,6 +13,7 @@ import {
   VisuallyHidden,
 } from '@chakra-ui/react'
 import { get, head, uniq } from 'lodash'
+import simplur from 'simplur'
 
 import { FormColorTheme } from '~shared/types'
 
@@ -121,7 +122,7 @@ export const TableField = ({
   )
 
   const ariaTableDescription = useMemo(() => {
-    let description = 'This is a table field.'
+    let description = simplur`This is a table field. There [is|are] ${fields.length} row[|s], excluding the header row.`
     if (schema.addMoreRows) {
       description += ` You can add more rows if you'd like by clicking the "Add another row" button below`
       if (schema.maximumRows) {
@@ -132,7 +133,7 @@ export const TableField = ({
     }
 
     return description
-  }, [schema.addMoreRows, schema.maximumRows])
+  }, [fields.length, schema.addMoreRows, schema.maximumRows])
 
   return (
     <TableFieldContainer schema={schema}>
@@ -167,6 +168,7 @@ export const TableField = ({
                 {headerGroup.headers.map((column, _idx, array) => (
                   <Th
                     {...column.getHeaderProps()}
+                    scope="col"
                     w={{ base: 'initial', md: `calc(100%/${array.length})` }}
                     minW="15rem"
                     display={{ base: 'block', md: 'table-cell' }}
