@@ -44,7 +44,7 @@ export const AdminSwitchEnvMessage = (): JSX.Element => {
             <VisuallyHidden>
               Click to switch to the original FormSG
             </VisuallyHidden>
-            <Text display="inline" aria-hidden>
+            <Text as="span" display="inline" aria-hidden>
               switch to the original one
             </Text>
           </Button>
