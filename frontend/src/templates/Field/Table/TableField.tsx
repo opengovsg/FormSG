@@ -2,7 +2,16 @@ import { useCallback, useEffect, useMemo } from 'react'
 import { useFieldArray, useFormContext, useFormState } from 'react-hook-form'
 import { BiTrash } from 'react-icons/bi'
 import { useTable } from 'react-table'
-import { Box, Table, Tbody, Td, Th, Thead, Tr } from '@chakra-ui/react'
+import {
+  Box,
+  Table,
+  Tbody,
+  Td,
+  Th,
+  Thead,
+  Tr,
+  VisuallyHidden,
+} from '@chakra-ui/react'
 import { get, head, uniq } from 'lodash'
 
 import { FormColorTheme } from '~shared/types'
@@ -111,6 +120,20 @@ export const TableField = ({
     [fields.length, remove, schema.minimumRows],
   )
 
+  const ariaTableDescription = useMemo(() => {
+    let description = 'This is a table field.'
+    if (schema.addMoreRows) {
+      description += ` You can add more rows if you'd like by clicking the "Add another row" button below`
+      if (schema.maximumRows) {
+        description += `, up to ${schema.maximumRows} rows`
+      } else {
+        description += '.'
+      }
+    }
+
+    return description
+  }, [schema.addMoreRows, schema.maximumRows])
+
   return (
     <TableFieldContainer schema={schema}>
       <Box
@@ -127,8 +150,13 @@ export const TableField = ({
           },
         }}
       >
+        <VisuallyHidden id={`table-desc-${schema._id}`}>
+          {ariaTableDescription}
+        </VisuallyHidden>
         <Table
           {...getTableProps()}
+          aria-describedby={`table-desc-${schema._id}`}
+          aria-labelledby={`${schema._id}-label`}
           variant="column-stripe"
           size="sm"
           colorScheme={`theme-${colorTheme}`}
