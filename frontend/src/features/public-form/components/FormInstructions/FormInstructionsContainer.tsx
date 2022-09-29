@@ -10,9 +10,11 @@ export const PUBLICFORM_INSTRUCTIONS_SECTIONID = 'instructions'
 
 export const FormInstructionsContainer = (): JSX.Element | null => {
   const { sectionRefs } = useFormSections()
-  const { form, submissionData } = usePublicFormContext()
+  const { form, submissionData, isAuthRequired } = usePublicFormContext()
 
-  if (submissionData || !form?.startPage.paragraph) return null
+  if (submissionData || !form?.startPage.paragraph || isAuthRequired) {
+    return null
+  }
 
   return (
     <Flex justify="center">
