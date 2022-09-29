@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { useFormContext, useFormState, useWatch } from 'react-hook-form'
-import { Stack } from '@chakra-ui/react'
+import { Stack, VisuallyHidden } from '@chakra-ui/react'
 
 import { FormField, LogicDto, MyInfoFormField } from '~shared/types'
 
@@ -50,6 +50,7 @@ export const PublicFormSubmitButton = ({
         isDisabled={!!preventSubmissionLogic}
         loadingText="Submitting"
       >
+        <VisuallyHidden>End of form.</VisuallyHidden>
         {preventSubmissionLogic ? 'Submission disabled' : 'Submit now'}
       </Button>
       {preventSubmissionLogic ? (
