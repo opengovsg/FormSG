@@ -1,6 +1,6 @@
-import { useMemo } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { BiPlus } from 'react-icons/bi'
-import { Stack, Text, VisuallyHidden } from '@chakra-ui/react'
+import { Box, Stack, Text, VisuallyHidden } from '@chakra-ui/react'
 import simplur from 'simplur'
 
 import Button from '~components/Button'
@@ -14,8 +14,10 @@ interface AddRowFooterProps {
 export const AddRowFooter = ({
   currentRows,
   maxRows,
-  handleAddRow,
+  handleAddRow: handleAddRowProp,
 }: AddRowFooterProps): JSX.Element => {
+  // State to decide whether to announce row changes to screen readers
+  const [hasAddedRows, setHasAddedRows] = useState(false)
   const maxRowDescription = useMemo(() => {
     return maxRows
       ? simplur`${currentRows} out of max ${maxRows} row[|s]`
@@ -27,6 +29,11 @@ export const AddRowFooter = ({
       ? simplur`There [is|are] currently ${currentRows} out of max ${maxRows} row[|s].`
       : simplur`There [is|are] currently ${currentRows} row[|s].`
   }, [currentRows, maxRows])
+
+  const handleAddRow = useCallback(() => {
+    handleAddRowProp()
+    setHasAddedRows(true)
+  }, [handleAddRowProp])
 
   return (
     <Stack
@@ -48,10 +55,15 @@ export const AddRowFooter = ({
         </VisuallyHidden>
       </Button>
 
-      <Text textStyle="body-2" color="secondary.400">
-        <VisuallyHidden>The table field currently has </VisuallyHidden>
-        {maxRowDescription}
-      </Text>
+      <Box>
+        <VisuallyHidden aria-live={hasAddedRows ? 'polite' : 'off'} aria-atomic>
+          The table field currently has {maxRowDescription}
+        </VisuallyHidden>
+
+        <Text aria-hidden textStyle="body-2" color="secondary.400">
+          {maxRowDescription}
+        </Text>
+      </Box>
     </Stack>
   )
 }
