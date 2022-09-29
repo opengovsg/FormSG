@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { VisuallyHidden } from '@chakra-ui/react'
+import { Box, VisuallyHidden } from '@chakra-ui/react'
 
 import { baseMobileValidationFn } from '~utils/fieldValidation'
 import { MobileFieldInput, MobileFieldProps } from '~templates/Field/Mobile'
@@ -44,17 +44,20 @@ const InnerVerifiableMobileField = ({
 
   return (
     <VerifiableFieldContainer schema={schema} {...formContainerProps}>
-      <VisuallyHidden id={`verifiable-description-${schema._id}`}>
-        {a11yLabel}
-      </VisuallyHidden>
-      <MobileFieldInput
-        schema={schema}
-        handleInputChange={handleInputChange}
-        phoneNumberInputProps={{
-          onKeyDown: handleKeyDown,
-          'aria-describedby': `verifiable-description-${schema._id}`,
-        }}
-      />
+      <Box w="100%">
+        <VisuallyHidden id={`verifiable-description-${schema._id}`}>
+          {a11yLabel}
+        </VisuallyHidden>
+        <MobileFieldInput
+          schema={schema}
+          handleInputChange={handleInputChange}
+          phoneNumberInputProps={{
+            isSuccess: hasSignature,
+            onKeyDown: handleKeyDown,
+            'aria-describedby': `verifiable-description-${schema._id}`,
+          }}
+        />
+      </Box>
     </VerifiableFieldContainer>
   )
 }

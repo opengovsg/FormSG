@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { VisuallyHidden } from '@chakra-ui/react'
+import { Box, VisuallyHidden } from '@chakra-ui/react'
 
 import { baseEmailValidationFn } from '~utils/fieldValidation'
 import { EmailFieldInput, EmailFieldProps } from '~templates/Field/Email'
@@ -43,17 +43,20 @@ const InnerVerifiableEmailField = ({
 
   return (
     <VerifiableFieldContainer schema={schema} {...formContainerProps}>
-      <VisuallyHidden id={`verifiable-description-${schema._id}`}>
-        {a11yLabel}
-      </VisuallyHidden>
-      <EmailFieldInput
-        schema={schema}
-        handleInputChange={handleInputChange}
-        inputProps={{
-          onKeyDown: handleKeyDown,
-          'aria-describedby': `verifiable-description-${schema._id}`,
-        }}
-      />
+      <Box w="100%">
+        <VisuallyHidden id={`verifiable-description-${schema._id}`}>
+          {a11yLabel}
+        </VisuallyHidden>
+        <EmailFieldInput
+          schema={schema}
+          handleInputChange={handleInputChange}
+          inputProps={{
+            isSuccess: hasSignature,
+            onKeyDown: handleKeyDown,
+            'aria-describedby': `verifiable-description-${schema._id}`,
+          }}
+        />
+      </Box>
     </VerifiableFieldContainer>
   )
 }
