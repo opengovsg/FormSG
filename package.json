@@ -53,7 +53,7 @@
     ]
   },
   "dependencies": {
-    "@aws-sdk/client-cloudwatch-logs": "^3.179.0",
+    "@aws-sdk/client-cloudwatch-logs": "^3.180.0",
     "@babel/runtime": "^7.19.0",
     "@joi/date": "^2.1.0",
     "@opengovsg/angular-daterangepicker-webpack": "^1.1.5",
@@ -195,7 +195,7 @@
     "@types/jsonfile": "^6.1.0",
     "@types/jsonwebtoken": "^8.5.9",
     "@types/jwk-to-pem": "^2.0.1",
-    "@types/lodash": "^4.14.185",
+    "@types/lodash": "^4.14.186",
     "@types/mongodb": "^3.6.20",
     "@types/mongodb-uri": "^0.9.1",
     "@types/node": "^14.18.23",
