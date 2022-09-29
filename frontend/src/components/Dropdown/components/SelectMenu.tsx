@@ -25,9 +25,12 @@ export const SelectMenu = (): JSX.Element => {
   return (
     <FloatingPortal>
       <List
-        {...getMenuProps({
-          ref: floatingRef,
-        })}
+        {...getMenuProps(
+          { ref: floatingRef },
+          // Suppressing ref error since this will be in a portal and will be conditionally rendered.
+          // See https://github.com/downshift-js/downshift/issues/1272#issuecomment-1063244446
+          { suppressRefError: true },
+        )}
         style={floatingStyles}
         zIndex="dropdown"
         sx={styles.list}
