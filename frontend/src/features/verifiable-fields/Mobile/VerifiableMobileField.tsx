@@ -1,3 +1,5 @@
+import { VisuallyHidden } from '@chakra-ui/react'
+
 import { baseMobileValidationFn } from '~utils/fieldValidation'
 import { MobileFieldInput, MobileFieldProps } from '~templates/Field/Mobile'
 import { MobileFieldSchema } from '~templates/Field/types'
@@ -32,11 +34,18 @@ const InnerVerifiableMobileField = ({
   }
   return (
     <VerifiableFieldContainer schema={schema} {...formContainerProps}>
+      <VisuallyHidden id={`verifiable-description-${schema._id}`}>
+        This is an input field which requires verification. After you enter the
+        email address to be verified, please click on the Verify button. A
+        one-time password will be sent to the entered email address, which you
+        can then enter in the verification input field.
+      </VisuallyHidden>
       <MobileFieldInput
         schema={schema}
         handleInputChange={handleInputChange}
         phoneNumberInputProps={{
           onKeyDown: handleKeyDown,
+          'aria-describedby': `verifiable-description-${schema._id}`,
         }}
       />
     </VerifiableFieldContainer>

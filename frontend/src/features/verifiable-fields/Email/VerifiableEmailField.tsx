@@ -1,3 +1,5 @@
+import { VisuallyHidden } from '@chakra-ui/react'
+
 import { baseEmailValidationFn } from '~utils/fieldValidation'
 import { EmailFieldInput, EmailFieldProps } from '~templates/Field/Email'
 import { EmailFieldSchema } from '~templates/Field/types'
@@ -31,11 +33,18 @@ const InnerVerifiableEmailField = ({
   }
   return (
     <VerifiableFieldContainer schema={schema} {...formContainerProps}>
+      <VisuallyHidden id={`verifiable-description-${schema._id}`}>
+        This is an input field which requires verification. After you enter the
+        email address to be verified, please click on the Verify button. A
+        one-time password will be sent to the entered email address, which you
+        can then enter in the verification input field.
+      </VisuallyHidden>
       <EmailFieldInput
         schema={schema}
         handleInputChange={handleInputChange}
         inputProps={{
           onKeyDown: handleKeyDown,
+          'aria-describedby': `verifiable-description-${schema._id}`,
         }}
       />
     </VerifiableFieldContainer>
