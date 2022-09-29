@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { VisuallyHidden } from '@chakra-ui/react'
 
 import { baseMobileValidationFn } from '~utils/fieldValidation'
@@ -24,7 +25,8 @@ const InnerVerifiableMobileField = ({
   schema,
   ...formContainerProps
 }: VerifiableMobileFieldProps): JSX.Element => {
-  const { handleInputChange, handleVfnButtonClick } = useVerifiableField()
+  const { handleInputChange, handleVfnButtonClick, hasSignature } =
+    useVerifiableField()
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'Enter') {
       event.preventDefault()
@@ -32,13 +34,18 @@ const InnerVerifiableMobileField = ({
       handleVfnButtonClick()
     }
   }
+
+  const a11yLabel = useMemo(() => {
+    if (hasSignature) {
+      return 'This input field has been successfully verified.'
+    }
+    return 'This is an input field which requires verification. After you enter the email address to be verified, please click on the Verify button. A one-time password will be sent to the entered email address, which you can then enter in the verification input field.'
+  }, [hasSignature])
+
   return (
     <VerifiableFieldContainer schema={schema} {...formContainerProps}>
       <VisuallyHidden id={`verifiable-description-${schema._id}`}>
-        This is an input field which requires verification. After you enter the
-        email address to be verified, please click on the Verify button. A
-        one-time password will be sent to the entered email address, which you
-        can then enter in the verification input field.
+        {a11yLabel}
       </VisuallyHidden>
       <MobileFieldInput
         schema={schema}
