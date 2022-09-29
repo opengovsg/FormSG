@@ -115,7 +115,11 @@ export const VerificationBox = ({
                 onKeyDown={handleKeyDown}
               />
 
-              <Button ml="0.5rem" onClick={onSubmitForm}>
+              <Button
+                ml="0.5rem"
+                onClick={onSubmitForm}
+                aria-label="Submit OTP for verification"
+              >
                 Submit
               </Button>
             </Flex>
