@@ -335,7 +335,7 @@ export const FieldRowContainer = ({
               </Fade>
               <Box
                 px={{ base: '0.75rem', md: '1.5rem' }}
-                py={{ base: '0.75rem', md: '1.5rem' }}
+                pb={{ base: '0.75rem', md: '1.5rem' }}
                 w="100%"
                 pointerEvents={isActive ? undefined : 'none'}
                 opacity={isActive || !isHiddenByLogic ? '100%' : '30%'}
