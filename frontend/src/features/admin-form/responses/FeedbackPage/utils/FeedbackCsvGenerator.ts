@@ -4,7 +4,7 @@ import { formatInTimeZone } from 'date-fns-tz'
 import { FormFeedbackDto } from '~shared/types'
 
 import { CsvGenerator } from '../../common/utils/CsvGenerator'
-
+import { processFormulaInjectionText } from '../../ResponsesPage/storage/utils/processFormulaInjection'
 /**
  * Class to encapsulate the FeedbackCsv and its attributes
  */
@@ -22,13 +22,16 @@ export class FeedbackCsvGenerator extends CsvGenerator {
       feedback.created && isValid(parseISO(feedback.created))
         ? feedback.created
         : new Date() // If undefined or invalid, use current time
-
     const createdAt = formatInTimeZone(
       feedbackCreatedDate,
       'Asia/Singapore',
       'dd MMM yyyy hh:mm:ss a',
     ) // Format in SG timezone
 
-    this.addLine([createdAt, feedback.comment ?? '', feedback.rating])
+    const feedbackComment = feedback.comment
+      ? processFormulaInjectionText(feedback.comment)
+      : ''
+
+    this.addLine([createdAt, feedbackComment, feedback.rating])
   }
 }

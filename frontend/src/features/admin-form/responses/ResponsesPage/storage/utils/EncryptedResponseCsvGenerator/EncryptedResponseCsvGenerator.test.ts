@@ -18,12 +18,13 @@ const BOM_LENGTH = 1
 /**
  * Generates a mock decrypted row object.
  * @param append the text to append to the back of all keys.
- * @param answerArray If given, the answer key will be changed to answerArray and this will be assigned to that key.
+ * @param customAnswer If given and if this is an array, the answer key will be changed to answerArray
+ * and this will be assigned to that key. Otherwise, this will be assigned to answer.
  * @param fieldType Used as fieldType of record if given.
  */
 const generateRecord = (
   append: string | number,
-  answerArray?: string[] | string[][],
+  customAnswer?: string | string[] | string[][],
   fieldType?: FieldType,
 ): CsvRecordData => {
   const generated: SetOptional<CsvRecordData, 'answer' | 'answerArray'> = {
@@ -32,8 +33,12 @@ const generateRecord = (
     fieldType: fieldType ?? 'textfield',
   }
 
-  if (answerArray) {
-    generated.answerArray = answerArray
+  if (customAnswer) {
+    if (Array.isArray(customAnswer)) {
+      generated.answerArray = customAnswer
+    } else {
+      generated.answer = customAnswer
+    }
   } else {
     generated.answer = `mockAnswer${append}`
   }
@@ -549,6 +554,108 @@ describe('EncryptedResponseCsvGenerator', () => {
           expectedHeaderRow,
           expectedSubmissionRow1,
           expectedSubmissionRow2,
+        ])
+      })
+
+      it('should handle submissions with entries that start with a formula character', () => {
+        // Arrange
+        const mockAnswerWithFormulaChars = [generateRecord(1, '=formula')]
+        const mockAnswerWithFormulaCharsRecord = {
+          record: mockAnswerWithFormulaChars,
+          created: mockCreatedEarly,
+          submissionId: 'mockSubmissionIdAnswer',
+        }
+        generator.addRecord(mockAnswerWithFormulaCharsRecord)
+
+        // Act
+        generator.process()
+
+        // Assert
+        // Should have 1 header row and 1 submission row
+        expect(generator.records.length).toEqual(2 + BOM_LENGTH)
+        const expectedHeaderRow = stringify([
+          'Response ID',
+          'Timestamp',
+          mockAnswerWithFormulaChars[0].question,
+        ])
+        // Answer should be prefixed with a single quote
+        const expectedSubmissionRow1 = stringify([
+          mockAnswerWithFormulaCharsRecord.submissionId,
+          getFormattedDate(mockAnswerWithFormulaCharsRecord.created),
+          `'${mockAnswerWithFormulaChars[0].answer}`,
+        ])
+        expect(generator.records).toEqual([
+          UTF8_BYTE_ORDER_MARK,
+          expectedHeaderRow,
+          expectedSubmissionRow1,
+        ])
+      })
+
+      it('should handle submissions with pure number entries prefixed with +', () => {
+        // Arrange
+        const mockAnswer = [generateRecord(1, '+5')]
+        const mockAnswerRecord = {
+          record: mockAnswer,
+          created: mockCreatedEarly,
+          submissionId: 'mockSubmissionIdAnswer',
+        }
+        generator.addRecord(mockAnswerRecord)
+
+        // Act
+        generator.process()
+
+        // Assert
+        // Should have 1 header row and 1 submission row
+        expect(generator.records.length).toEqual(2 + BOM_LENGTH)
+        const expectedHeaderRow = stringify([
+          'Response ID',
+          'Timestamp',
+          mockAnswer[0].question,
+        ])
+        // Answer should NOT be prefixed with a single quote
+        const expectedSubmissionRow1 = stringify([
+          mockAnswerRecord.submissionId,
+          getFormattedDate(mockAnswerRecord.created),
+          mockAnswer[0].answer,
+        ])
+        expect(generator.records).toEqual([
+          UTF8_BYTE_ORDER_MARK,
+          expectedHeaderRow,
+          expectedSubmissionRow1,
+        ])
+      })
+
+      it('should handle submissions that start with +digit and contain other alphabets', () => {
+        // Arrange
+        const mockAnswer = [generateRecord(1, '+3*SUM(A1)')]
+        const mockAnswerRecord = {
+          record: mockAnswer,
+          created: mockCreatedEarly,
+          submissionId: 'mockSubmissionIdAnswer',
+        }
+        generator.addRecord(mockAnswerRecord)
+
+        // Act
+        generator.process()
+
+        // Assert
+        // Should have 1 header row and 1 submission row
+        expect(generator.records.length).toEqual(2 + BOM_LENGTH)
+        const expectedHeaderRow = stringify([
+          'Response ID',
+          'Timestamp',
+          mockAnswer[0].question,
+        ])
+        // Answer should be prefixed with a single quote
+        const expectedSubmissionRow1 = stringify([
+          mockAnswerRecord.submissionId,
+          getFormattedDate(mockAnswerRecord.created),
+          `'${mockAnswer[0].answer}`,
+        ])
+        expect(generator.records).toEqual([
+          UTF8_BYTE_ORDER_MARK,
+          expectedHeaderRow,
+          expectedSubmissionRow1,
         ])
       })
     })
