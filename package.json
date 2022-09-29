@@ -172,7 +172,7 @@
   "devDependencies": {
     "@babel/core": "^7.19.1",
     "@babel/plugin-transform-runtime": "^7.19.1",
-    "@babel/preset-env": "^7.19.1",
+    "@babel/preset-env": "^7.19.3",
     "@opengovsg/mockpass": "^2.9.2",
     "@types/bcrypt": "^5.0.0",
     "@types/bluebird": "^3.5.37",
@@ -195,7 +195,7 @@
     "@types/jsonfile": "^6.1.0",
     "@types/jsonwebtoken": "^8.5.9",
     "@types/jwk-to-pem": "^2.0.1",
-    "@types/lodash": "^4.14.185",
+    "@types/lodash": "^4.14.186",
     "@types/mongodb": "^3.6.20",
     "@types/mongodb-uri": "^0.9.1",
     "@types/node": "^14.18.23",
