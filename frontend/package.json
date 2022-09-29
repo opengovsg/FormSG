@@ -182,7 +182,7 @@
     "ts-jest": "^27.1.1",
     "worker-loader": "^3.0.8"
   },
-  "proxy": "http://localhost:5000",
+  "proxy": "http://localhost:5001",
   "msw": {
     "workerDirectory": "public"
   }
