@@ -172,7 +172,7 @@
   "devDependencies": {
     "@babel/core": "^7.19.1",
     "@babel/plugin-transform-runtime": "^7.19.1",
-    "@babel/preset-env": "^7.19.1",
+    "@babel/preset-env": "^7.19.3",
     "@opengovsg/mockpass": "^2.9.2",
     "@types/bcrypt": "^5.0.0",
     "@types/bluebird": "^3.5.37",
