@@ -8,7 +8,6 @@ const {
   getBlankVersion,
   verifySubmissionDisabled,
   getFeatureState,
-  makeField,
 } = require('./helpers/util')
 
 const { verifySubmissionE2e } = require('./helpers/email-mode')
@@ -31,8 +30,6 @@ let Form
 let Agency
 let govTech
 const testSpNric = 'S9912374E' // Used for myinfo
-const testCpNric = 'S8979373D'
-const testCpUen = '123456789A'
 let captchaEnabled
 fixture('Email mode submissions')
   .before(async () => {
@@ -156,27 +153,6 @@ test.before(async (t) => {
   )
   t.ctx.endPageTitle = 'Thank you for registering your interest.'
   await verifySubmissionE2e(t, t.ctx.form, t.ctx.formData)
-})
-
-// Basic form with only one field and CP authentication
-test.before(async (t) => {
-  const formData = await getDefaultFormOptions({
-    authType: 'CP',
-    status: 'PRIVATE',
-    esrvcId: 'Test-eServiceId-Cp',
-  })
-  formData.formFields = [
-    {
-      title: 'short text',
-      fieldType: 'textfield',
-      val: 'Lorem Ipsum',
-    },
-  ].map(makeField)
-  t.ctx.formData = formData
-})('Create and submit basic form with CorpPass authentication', async (t) => {
-  let authData = { testCpNric, testCpUen }
-  t.ctx.form = await createForm(t, t.ctx.formData, Form, captchaEnabled)
-  await verifySubmissionE2e(t, t.ctx.form, t.ctx.formData, authData)
 })
 
 // Form with a mix of autofilled and non-autofilled MyInfo fields

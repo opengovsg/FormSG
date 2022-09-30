@@ -19,6 +19,15 @@ export class CreateJwtError extends ApplicationError {
 }
 
 /**
+ * Failed to get signing key
+ */
+export class GetSigningKeyError extends ApplicationError {
+  constructor(message = 'Failed to get signing key') {
+    super(message)
+  }
+}
+
+/**
  * Failed to get decryption key
  */
 export class GetDecryptionKeyError extends ApplicationError {
