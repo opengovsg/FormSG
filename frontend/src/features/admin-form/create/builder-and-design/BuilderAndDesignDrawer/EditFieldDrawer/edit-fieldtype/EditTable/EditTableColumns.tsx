@@ -8,6 +8,7 @@ import {
 import { BiPlus, BiTrash } from 'react-icons/bi'
 import {
   FormControl,
+  Grid,
   Stack,
   StackDivider,
   VisuallyHidden,
@@ -81,10 +82,11 @@ export const EditTableColumns = ({
             isReadOnly={isLoading}
             isInvalid={!!errors?.columns?.[index]?.title}
           >
-            <Stack justify="space-between" align="center" direction="row">
+            <Grid templateColumns="1fr auto">
               <FormLabel>{`Column ${index + 1}`}</FormLabel>
               {fields.length !== 1 && (
                 <IconButton
+                  mt="-0.75rem"
                   variant="clear"
                   colorScheme="danger"
                   fontSize="1.25rem"
@@ -93,7 +95,7 @@ export const EditTableColumns = ({
                   onClick={() => remove(index)}
                 />
               )}
-            </Stack>
+            </Grid>
             <Input
               {...register(`columns.${index}.title`, requiredValidationRule)}
             />
