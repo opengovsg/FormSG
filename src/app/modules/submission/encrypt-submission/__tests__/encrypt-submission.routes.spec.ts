@@ -17,8 +17,6 @@ import { EncryptSubmissionRouter } from '../encrypt-submission.routes'
 
 jest.mock('../../../sgid/sgid.service')
 
-jest.mock('@opengovsg/spcp-auth-client')
-
 const MockSgidService = mocked(SgidService, true)
 
 jest.mock('../../../spcp/spcp.oidc.client')
