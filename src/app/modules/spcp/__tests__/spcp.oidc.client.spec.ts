@@ -1331,7 +1331,7 @@ describe('SpOidcClient', () => {
     })
   })
 
-  describe('extractNricFromIdToken', () => {
+  describe('extractNricOrForeignIdFromIdToken', () => {
     it('should return InvalidIdTokenError if sub attribute is missing in payload', () => {
       // Arrange
 
@@ -1349,7 +1349,7 @@ describe('SpOidcClient', () => {
 
       const spOidcClient = new SpOidcClient(spOidcClientConfig)
 
-      const result = spOidcClient.extractNricFromIdToken(
+      const result = spOidcClient.extractNricOrForeignIdFromIdToken(
         MOCK_IDTOKEN_MISSING_SUB,
       )
 
@@ -1375,7 +1375,7 @@ describe('SpOidcClient', () => {
 
       const spOidcClient = new SpOidcClient(spOidcClientConfig)
 
-      const result = spOidcClient.extractNricFromIdToken(
+      const result = spOidcClient.extractNricOrForeignIdFromIdToken(
         MOCK_IDTOKEN_MALFORMED_SUB,
       )
 
@@ -1401,7 +1401,8 @@ describe('SpOidcClient', () => {
 
       const spOidcClient = new SpOidcClient(spOidcClientConfig)
 
-      const result = spOidcClient.extractNricFromIdToken(MOCK_IDTOKEN_NONRIC)
+      const result =
+        spOidcClient.extractNricOrForeignIdFromIdToken(MOCK_IDTOKEN_NONRIC)
 
       // Assert
 
@@ -1426,7 +1427,8 @@ describe('SpOidcClient', () => {
 
       const spOidcClient = new SpOidcClient(spOidcClientConfig)
 
-      const result = spOidcClient.extractNricFromIdToken(MOCK_ID_TOKEN)
+      const result =
+        spOidcClient.extractNricOrForeignIdFromIdToken(MOCK_ID_TOKEN)
 
       // Assert
 
@@ -1451,11 +1453,38 @@ describe('SpOidcClient', () => {
 
       const spOidcClient = new SpOidcClient(spOidcClientConfig)
 
-      const result = spOidcClient.extractNricFromIdToken(MOCK_ID_TOKEN)
+      const result =
+        spOidcClient.extractNricOrForeignIdFromIdToken(MOCK_ID_TOKEN)
 
       // Assert
 
       expect(result).toBe(FIRST_NRIC)
+    })
+
+    it('should correctly return the Foreign ID from sub when sub contains only one key value pair', () => {
+      // Arrange
+
+      jest
+        .spyOn(SpcpOidcBaseClientCache.prototype, 'refresh')
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
+
+      const MOCK_FOREIGN_ID = 'S0001234567D'
+      const MOCK_SUB = `s=${MOCK_FOREIGN_ID}`
+
+      const MOCK_ID_TOKEN = {
+        payload: { sub: MOCK_SUB },
+      } as unknown as JWTVerifyResult
+
+      // Act
+
+      const spOidcClient = new SpOidcClient(spOidcClientConfig)
+
+      const result =
+        spOidcClient.extractNricOrForeignIdFromIdToken(MOCK_ID_TOKEN)
+
+      // Assert
+
+      expect(result).toBe(MOCK_FOREIGN_ID)
     })
   })
 
@@ -2910,7 +2939,7 @@ describe('CpOidcClient', () => {
     })
   })
 
-  describe('extractNricFromIdToken', () => {
+  describe('extractNricOrForeignIdFromIdToken', () => {
     it('should return InvalidIdTokenError if sub attribute is missing in payload', () => {
       // Arrange
 
@@ -2928,7 +2957,7 @@ describe('CpOidcClient', () => {
 
       const cpOidcClient = new CpOidcClient(cpOidcClientConfig)
 
-      const result = cpOidcClient.extractNricFromIdToken(
+      const result = cpOidcClient.extractNricOrForeignIdFromIdToken(
         MOCK_IDTOKEN_MISSING_SUB,
       )
 
@@ -2954,7 +2983,7 @@ describe('CpOidcClient', () => {
 
       const cpOidcClient = new CpOidcClient(cpOidcClientConfig)
 
-      const result = cpOidcClient.extractNricFromIdToken(
+      const result = cpOidcClient.extractNricOrForeignIdFromIdToken(
         MOCK_IDTOKEN_MALFORMED_SUB,
       )
 
@@ -2980,7 +3009,8 @@ describe('CpOidcClient', () => {
 
       const cpOidcClient = new CpOidcClient(cpOidcClientConfig)
 
-      const result = cpOidcClient.extractNricFromIdToken(MOCK_IDTOKEN_NONRIC)
+      const result =
+        cpOidcClient.extractNricOrForeignIdFromIdToken(MOCK_IDTOKEN_NONRIC)
 
       // Assert
 
@@ -3005,7 +3035,8 @@ describe('CpOidcClient', () => {
 
       const cpOidcClient = new CpOidcClient(cpOidcClientConfig)
 
-      const result = cpOidcClient.extractNricFromIdToken(MOCK_ID_TOKEN)
+      const result =
+        cpOidcClient.extractNricOrForeignIdFromIdToken(MOCK_ID_TOKEN)
 
       // Assert
 
@@ -3030,7 +3061,8 @@ describe('CpOidcClient', () => {
 
       const cpOidcClient = new CpOidcClient(cpOidcClientConfig)
 
-      const result = cpOidcClient.extractNricFromIdToken(MOCK_ID_TOKEN)
+      const result =
+        cpOidcClient.extractNricOrForeignIdFromIdToken(MOCK_ID_TOKEN)
 
       // Assert
 

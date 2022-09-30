@@ -116,7 +116,9 @@ export class CpOidcServiceClass extends SpcpOidcServiceClass {
         .then((decodedVerifiedToken) => {
           return {
             userInfo:
-              this.oidcClient.extractNricFromIdToken(decodedVerifiedToken),
+              this.oidcClient.extractNricOrForeignIdFromIdToken(
+                decodedVerifiedToken,
+              ),
             userName:
               this.oidcClient.extractCPEntityIdFromIdToken(
                 decodedVerifiedToken,

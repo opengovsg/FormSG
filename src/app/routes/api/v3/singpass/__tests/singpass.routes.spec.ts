@@ -90,7 +90,9 @@ describe('singpass.oidc.router', () => {
       mockClient.exchangeAuthCodeAndDecodeVerifyToken.mockResolvedValueOnce(
         'token' as unknown as JWTVerifyResult,
       )
-      mockClient.extractNricFromIdToken.mockReturnValueOnce(MOCK_NRIC)
+      mockClient.extractNricOrForeignIdFromIdToken.mockReturnValueOnce(
+        MOCK_NRIC,
+      )
 
       // Act
       const response = await request.get(LOGIN_ROUTE).query({
@@ -147,7 +149,9 @@ describe('singpass.oidc.router', () => {
       mockClient.exchangeAuthCodeAndDecodeVerifyToken.mockResolvedValueOnce(
         'token' as unknown as JWTVerifyResult,
       )
-      mockClient.extractNricFromIdToken.mockReturnValueOnce(MOCK_NRIC)
+      mockClient.extractNricOrForeignIdFromIdToken.mockReturnValueOnce(
+        MOCK_NRIC,
+      )
 
       // Act
       const response = await request.get(LOGIN_ROUTE).query({
@@ -167,7 +171,9 @@ describe('singpass.oidc.router', () => {
       mockClient.exchangeAuthCodeAndDecodeVerifyToken.mockResolvedValueOnce(
         'token' as unknown as JWTVerifyResult,
       )
-      mockClient.extractNricFromIdToken.mockReturnValueOnce(MOCK_NRIC)
+      mockClient.extractNricOrForeignIdFromIdToken.mockReturnValueOnce(
+        MOCK_NRIC,
+      )
 
       // Act
       const response = await request.get(LOGIN_ROUTE).query({
@@ -187,7 +193,9 @@ describe('singpass.oidc.router', () => {
       mockClient.exchangeAuthCodeAndDecodeVerifyToken.mockResolvedValueOnce(
         'token' as unknown as JWTVerifyResult,
       )
-      mockClient.extractNricFromIdToken.mockReturnValueOnce(MOCK_NRIC)
+      mockClient.extractNricOrForeignIdFromIdToken.mockReturnValueOnce(
+        MOCK_NRIC,
+      )
 
       jest.spyOn(LoginModel, 'addLoginFromForm').mockRejectedValueOnce('')
 

@@ -472,7 +472,7 @@ describe('spcp.oidc.service.sp', () => {
           payload: { sub: `s=${MOCK_NRIC}` },
         } as unknown as JWTVerifyResult)
 
-      mockSpOidcClient.extractNricFromIdToken = jest
+      mockSpOidcClient.extractNricOrForeignIdFromIdToken = jest
         .fn()
         .mockReturnValueOnce(MOCK_NRIC)
 

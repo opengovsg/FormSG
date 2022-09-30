@@ -3,10 +3,6 @@ import { EC, ECPrivate } from 'jwk-to-pem'
 import promiseRetry from 'promise-retry'
 
 import { hasProp } from '../../../../shared/utils/has-prop'
-import {
-  isMFinSeriesValid,
-  isNricValid,
-} from '../../../../shared/utils/nric-validation'
 import { createLoggerWithLabel } from '../../config/logger'
 
 import { InvalidIdTokenError } from './spcp.oidc.client.errors'
@@ -159,19 +155,19 @@ export const parseSub = (sub: string): ParsedSub | InvalidIdTokenError => {
 }
 
 /**
- * Helper function to extract NRIC from a parsed sub attribute
+ * Helper function to extract NRIC or foreign ID from a parsed sub attribute
  * @param parsedSub
- * @returns NRIC if it exists
- * @returns undefined if NRIC does not exist
+ * @returns NRIC or foreign ID if it exists
+ * @returns undefined if NRIC or foreign id does not exist
  */
-export const extractNricFromParsedSub = (
+export const extractNricOrForeignIdFromParsedSub = (
   parsedSub: ParsedSub,
 ): string | undefined => {
-  const nric = parsedSub.find((keyValuePair) => {
-    const { key, value } = keyValuePair
-    return key === 's' && (isNricValid(value) || isMFinSeriesValid(value))
+  const nricOrForeignId = parsedSub.find((keyValuePair) => {
+    // We do not validate NRIC format as it could be a foreign ID and could be any format
+    return keyValuePair.key === 's'
   })
-  return nric ? nric.value : undefined
+  return nricOrForeignId ? nricOrForeignId.value : undefined
 }
 
 // Typeguards

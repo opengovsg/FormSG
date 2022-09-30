@@ -493,7 +493,7 @@ describe('spcp.oidc.service', () => {
         } as unknown as JWTVerifyResult)
 
       jest
-        .spyOn(mockCpOidcClient, 'extractNricFromIdToken')
+        .spyOn(mockCpOidcClient, 'extractNricOrForeignIdFromIdToken')
         .mockReturnValueOnce(MOCK_NRIC)
       jest
         .spyOn(mockCpOidcClient, 'extractCPEntityIdFromIdToken')

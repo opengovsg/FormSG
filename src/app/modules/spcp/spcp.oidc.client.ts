@@ -35,7 +35,7 @@ import {
   SpcpOidcClientConstructorParams,
 } from './spcp.oidc.client.types'
 import {
-  extractNricFromParsedSub,
+  extractNricOrForeignIdFromParsedSub,
   isCPJWTVerifyResult,
   isEC,
   isECPrivate,
@@ -381,12 +381,12 @@ export abstract class SpcpOidcBaseClient {
   }
 
   /**
-   * Method to extract NRIC from decrypted and verified idToken
+   * Method to extract NRIC or Foreign ID from decrypted and verified idToken
    * @param idToken decrypted and verified idToken
-   * @returns nric string
-   * @returns InvalidIdTokenError is nric not found in idToken
+   * @returns nric or foreign id string
+   * @returns InvalidIdTokenError if nric or foreign id not found in idToken
    */
-  extractNricFromIdToken(
+  extractNricOrForeignIdFromIdToken(
     idToken: JWTVerifyResult,
   ): string | InvalidIdTokenError {
     if (!idToken.payload.sub) {
@@ -399,15 +399,15 @@ export abstract class SpcpOidcBaseClient {
       return parsedSub
     }
 
-    const nric = extractNricFromParsedSub(parsedSub)
+    const nricOrForeignId = extractNricOrForeignIdFromParsedSub(parsedSub)
 
-    if (!nric) {
+    if (!nricOrForeignId) {
       return new InvalidIdTokenError(
-        'NRIC not found in idToken payload sub attribute',
+        'NRIC or Foreign Id not found in idToken payload sub attribute',
       )
     }
 
-    return nric
+    return nricOrForeignId
   }
 
   /**

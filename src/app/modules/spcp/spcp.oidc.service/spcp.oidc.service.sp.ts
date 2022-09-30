@@ -105,7 +105,9 @@ export class SpOidcServiceClass extends SpcpOidcServiceClass {
       this.oidcClient
         .exchangeAuthCodeAndDecodeVerifyToken(code)
         .then((decodedVerifiedToken) => {
-          return this.oidcClient.extractNricFromIdToken(decodedVerifiedToken)
+          return this.oidcClient.extractNricOrForeignIdFromIdToken(
+            decodedVerifiedToken,
+          )
         })
         .then((result) => {
           if (result instanceof Error) {
