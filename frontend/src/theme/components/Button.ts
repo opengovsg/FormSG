@@ -24,6 +24,7 @@ const genVariantSolidColours = (c: string) => {
     hoverBg: `${c}.600`,
     focusBoxShadow: `0 0 0 4px var(--chakra-colors-${c}-300)`,
     color: 'white',
+    disabledColor: 'white',
   }
   switch (c) {
     case 'success': {
@@ -33,6 +34,7 @@ const genVariantSolidColours = (c: string) => {
         hoverBg: `${c}.800`,
         focusBoxShadow: `0 0 0 4px var(--chakra-colors-${c}-400)`,
         color: 'white',
+        disabledColor: 'white',
       }
     }
     case 'theme-red':
@@ -49,6 +51,7 @@ const genVariantSolidColours = (c: string) => {
       return {
         ...defaultBackgrounds,
         color: `${c}.800` as const,
+        disabledColor: `${c}.700` as const,
       }
     }
     default: {
@@ -81,7 +84,7 @@ const genVariantOutlineColours = ({
 
 const variantSolid: SystemStyleFunction = (props) => {
   const { colorScheme: c } = props
-  const { bg, hoverBg, activeBg, focusBoxShadow, color } =
+  const { bg, hoverBg, activeBg, focusBoxShadow, color, disabledColor } =
     genVariantSolidColours(c)
 
   return {
@@ -105,6 +108,7 @@ const variantSolid: SystemStyleFunction = (props) => {
       bg: `${c}.300`,
       borderColor: `${c}.300`,
       opacity: 1,
+      color: disabledColor,
     },
     _hover: {
       bg: hoverBg,

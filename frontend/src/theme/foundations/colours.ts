@@ -188,7 +188,7 @@ export const colours: { [k in ThemeColorScheme]: Record<string, string> } = {
     700: '#473E34',
   },
   subtle: {
-    300: primaryColourPalette[300],
+    300: primaryColourPalette[100],
     500: primaryColourPalette[100],
     600: primaryColourPalette[200],
     700: primaryColourPalette[300],
