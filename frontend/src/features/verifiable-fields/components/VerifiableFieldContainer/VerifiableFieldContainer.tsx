@@ -1,8 +1,9 @@
+import { useMemo } from 'react'
 import { BiCheck } from 'react-icons/bi'
 import { Box, Stack } from '@chakra-ui/react'
 
 import { FormColorTheme } from '~shared/types'
-import { FormFieldWithId } from '~shared/types/field'
+import { BasicField, FormFieldWithId } from '~shared/types/field'
 
 import Button from '~components/Button'
 import { BaseFieldProps, FieldContainer } from '~templates/Field/FieldContainer'
@@ -37,6 +38,19 @@ export const VerifiableFieldContainer = ({
     isSendingOtp,
   } = useVerifiableField()
 
+  const verifyButtonAriaLabel: string = useMemo(() => {
+    switch (schema.fieldType) {
+      case BasicField.Email:
+        return hasSignature
+          ? 'Given email address is verified'
+          : 'Verify email address'
+      case BasicField.Mobile:
+        return hasSignature
+          ? 'Given mobile number is verified'
+          : 'Verify mobile number'
+    }
+  }, [hasSignature, schema.fieldType])
+
   return (
     <Box>
       <FieldContainer schema={schema}>
@@ -54,6 +68,7 @@ export const VerifiableFieldContainer = ({
               leftIcon={
                 hasSignature ? <BiCheck fontSize="1.5rem" /> : undefined
               }
+              aria-label={verifyButtonAriaLabel}
             >
               {hasSignature ? 'Verified' : 'Verify'}
             </Button>

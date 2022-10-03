@@ -1,3 +1,6 @@
+import { useMemo } from 'react'
+import { Box, VisuallyHidden } from '@chakra-ui/react'
+
 import { baseEmailValidationFn } from '~utils/fieldValidation'
 import { EmailFieldInput, EmailFieldProps } from '~templates/Field/Email'
 import { EmailFieldSchema } from '~templates/Field/types'
@@ -21,7 +24,8 @@ const InnerVerifiableEmailField = ({
   schema,
   ...formContainerProps
 }: VerifiableEmailFieldProps): JSX.Element => {
-  const { handleInputChange, handleVfnButtonClick } = useVerifiableField()
+  const { handleInputChange, handleVfnButtonClick, hasSignature } =
+    useVerifiableField()
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'Enter') {
       event.preventDefault()
@@ -29,15 +33,30 @@ const InnerVerifiableEmailField = ({
       handleVfnButtonClick()
     }
   }
+
+  const a11yLabel = useMemo(() => {
+    if (hasSignature) {
+      return 'This input field has been successfully verified.'
+    }
+    return 'This is an input field which requires verification. After entering your email address, please click on the Verify button. You will receive a one-time password, which you can enter in the verification input field.'
+  }, [hasSignature])
+
   return (
     <VerifiableFieldContainer schema={schema} {...formContainerProps}>
-      <EmailFieldInput
-        schema={schema}
-        handleInputChange={handleInputChange}
-        inputProps={{
-          onKeyDown: handleKeyDown,
-        }}
-      />
+      <Box w="100%">
+        <VisuallyHidden id={`verifiable-description-${schema._id}`}>
+          {a11yLabel}
+        </VisuallyHidden>
+        <EmailFieldInput
+          schema={schema}
+          handleInputChange={handleInputChange}
+          inputProps={{
+            isSuccess: hasSignature,
+            onKeyDown: handleKeyDown,
+            'aria-describedby': `verifiable-description-${schema._id}`,
+          }}
+        />
+      </Box>
     </VerifiableFieldContainer>
   )
 }
