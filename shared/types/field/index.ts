@@ -15,12 +15,13 @@ import { RatingFieldBase } from './ratingField'
 import { SectionFieldBase } from './sectionField'
 import { ShortTextFieldBase } from './shortTextField'
 import { StatementFieldBase } from './statementField'
-import { TableFieldBase } from './tableField'
+import { TableFieldBase, TableFieldDto } from './tableField'
 import { UenFieldBase } from './uenField'
 import { YesNoFieldBase } from './yesNoField'
+import { SetRequired } from 'type-fest'
 
-export * from './base'
 export * from './attachmentField'
+export * from './base'
 export * from './checkboxField'
 export * from './dateField'
 export * from './decimalField'
@@ -39,9 +40,8 @@ export * from './shortTextField'
 export * from './statementField'
 export * from './tableField'
 export * from './uenField'
-export * from './yesNoField'
-
 export * from './utils'
+export * from './yesNoField'
 
 export type FormField =
   | AttachmentFieldBase
@@ -65,18 +65,34 @@ export type FormField =
   | UenFieldBase
   | YesNoFieldBase
 
-export type FormFieldWithId<T extends FormField = FormField> = T & {
-  _id: string
-}
+// These types are extended through using MyInfoableFieldBase
+// And might possibly be myInfo fields if the attribute is set
+export type MyInfoField = SetRequired<
+  DateFieldBase | DropdownFieldBase | MobileFieldBase | ShortTextFieldBase,
+  'myInfo'
+>
 
-export type PossiblyPrefilledFormField = FormFieldWithId & {
-  fieldValue?: string
-}
+export type FormFieldWithId<T extends FormField = FormField> =
+  T extends TableFieldBase ? TableFieldDto<T> : T & { _id: string }
+
+// MyInfo type that's seen by the public
+// This means that the values might be pre-filled
+export type MyInfoFormField<T extends FormField = FormField> =
+  FormFieldWithId<T> & {
+    fieldValue?: string
+  }
+
+export type MyInfoPrefilledFormField = SetRequired<
+  MyInfoFormField,
+  'fieldValue'
+>
 
 /**
  * Form field POJO with id
  */
-export type FormFieldDto = PossiblyPrefilledFormField | FormFieldWithId
+export type FormFieldDto<T extends FormField = FormField> =
+  | MyInfoFormField<T>
+  | FormFieldWithId<T>
 
 export type FieldCreateDto = FormField
-export type FieldUpdateDto = FormField & { _id: string }
+export type FieldUpdateDto = FormFieldWithId

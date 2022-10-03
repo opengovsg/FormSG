@@ -19,6 +19,7 @@ describe('helmetMiddlewares', () => {
   const cspCoreDirectives = {
     imgSrc: [
       "'self'",
+      'blob:',
       'data:',
       'https://www.googletagmanager.com/',
       'https://www.google-analytics.com/',
@@ -26,6 +27,8 @@ describe('helmetMiddlewares', () => {
       config.aws.imageBucketUrl,
       config.aws.logoBucketUrl,
       '*',
+      'https://*.google-analytics.com',
+      'https://*.googletagmanager.com',
     ],
     fontSrc: ["'self'", 'data:', 'https://fonts.gstatic.com/'],
     scriptSrc: [
@@ -38,16 +41,20 @@ describe('helmetMiddlewares', () => {
       'https://www.recaptcha.net/recaptcha/',
       'https://www.gstatic.com/recaptcha/',
       'https://www.gstatic.cn/',
-      'https://www.google-analytics.com/',
+      'https://*.googletagmanager.com',
     ],
     connectSrc: [
       "'self'",
       'https://www.google-analytics.com/',
       'https://ssl.google-analytics.com/',
+      'https://*.browser-intake-datadoghq.com',
       'https://sentry.io/api/',
       config.aws.attachmentBucketUrl,
       config.aws.imageBucketUrl,
       config.aws.logoBucketUrl,
+      'https://*.google-analytics.com',
+      'https://*.analytics.google.com',
+      'https://*.googletagmanager.com',
     ],
     frameSrc: [
       "'self'",
@@ -60,8 +67,11 @@ describe('helmetMiddlewares', () => {
       'https://www.recaptcha.net/recaptcha/',
       'https://www.gstatic.com/recaptcha/',
       'https://www.gstatic.cn/',
-      // For inline styles in angular-sanitize.js
-      "'sha256-b3IrgBVvuKx/Q3tmAi79fnf6AFClibrz/0S5x1ghdGU='",
+      "'unsafe-inline'",
+    ],
+    workerSrc: [
+      "'self'",
+      'blob:', // DataDog RUM session replay - https://docs.datadoghq.com/real_user_monitoring/faq/content_security_policy/
     ],
     frameAncestors: ['*'],
   }
