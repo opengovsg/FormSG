@@ -191,7 +191,7 @@ export const TwilioDetailsInputs = (): JSX.Element => {
       </Stack>
       <Skeleton isLoaded={!isLoading} mt="2.5rem" w="fit-content">
         {hasExistingTwilioCreds ? (
-          <Button variant="link" colorScheme="danger" onClick={onOpen}>
+          <Button colorScheme="danger" onClick={onOpen}>
             Remove and re-enter credentials
           </Button>
         ) : (
