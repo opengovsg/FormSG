@@ -32,7 +32,6 @@ export const SelectMenu = (): JSX.Element => {
           { suppressRefError: true },
         )}
         style={floatingStyles}
-        zIndex="dropdown"
         sx={styles.list}
       >
         {isOpen && items.length > 0 && (
