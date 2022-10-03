@@ -44,9 +44,14 @@ export const MOCK_SERVICE_PARAMS: ISpcpMyInfo = {
   spOidcNdiJwksEndpoint: 'spOidcNdiJwksEndpoint',
   spOidcRpClientId: 'spOidcRpClientId',
   spOidcRpRedirectUrl: 'spOidcRpRedirectUrl',
-  spOidcRpJwksPublicPath: 'tests/certs/test_rp_public_jwks.json',
-  spOidcRpJwksSecretPath: 'tests/certs/test_rp_secret_jwks.json',
-  cpOidcRpJwksPublicPath: 'tests/certs/test_rp_public_jwks.json',
+  spOidcRpJwksPublicPath: 'tests/certs/test_sp_rp_public_jwks.json',
+  spOidcRpJwksSecretPath: 'tests/certs/test_sp_rp_secret_jwks.json',
+  cpOidcNdiDiscoveryEndpoint: 'cpOidcNdiDiscoveryEndpoint',
+  cpOidcNdiJwksEndpoint: 'cpOidcNdiJwksEndpoint',
+  cpOidcRpClientId: 'cpOidcRpClientId',
+  cpOidcRpRedirectUrl: 'cpOidcRpRedirectUrl',
+  cpOidcRpJwksPublicPath: 'tests/certs/test_cp_rp_public_jwks.json',
+  cpOidcRpJwksSecretPath: 'tests/certs/test_cp_rp_secret_jwks.json',
 }
 
 export const MOCK_ESRVCID = 'eServiceId'
@@ -171,3 +176,33 @@ export const MOCK_DECODED_QUERY =
   '?61a9bb48ffca22004a307915=blahblah123&61a9bb53ffca22004a307921=blahblah456'
 
 export const MOCK_SP_OIDC_AUTHORISATION_CODE = 'abcdefg'
+export const MOCK_CP_OIDC_AUTHORISATION_CODE = 'defhijk'
+export const MOCK_OIDC_STATE = `${MOCK_DESTINATION}-${MOCK_REMEMBER_ME}`
+export const MOCK_NRIC = 'S1234567C'
+export const MOCK_SP_OIDC_EXTRACTED_NDI_PAYLOAD = {
+  userName: MOCK_NRIC,
+}
+export const MOCK_UEN = 'A123456789X'
+export const MOCK_CP_OIDC_EXTRACTED_NDI_PAYLOAD = {
+  userName: MOCK_UEN,
+  userInfo: MOCK_NRIC,
+}
+export const MOCK_SP_OIDC_JWT_PAYLOAD = {
+  userName: MOCK_NRIC,
+  rememberMe: true,
+}
+export const MOCK_CP_OIDC_JWT_PAYLOAD = {
+  userName: MOCK_UEN,
+  userInfo: MOCK_NRIC,
+  rememberMe: true,
+}
+
+export const SP_OIDC_NDI_DISCOVERY_ENDPOINT = 'spOidcNdiDiscoveryEndpoint'
+export const SP_OIDC_NDI_JWKS_ENDPOINT = 'spOidcNdiJwksEndpoint'
+export const SP_OIDC_RP_CLIENT_ID = 'spOidcRpClientId'
+export const SP_OIDC_RP_REDIRECT_URL = 'spOidcRpRedirectUrl'
+
+export const CP_OIDC_NDI_DISCOVERY_ENDPOINT = 'cpOidcNdiDiscoveryEndpoint'
+export const CP_OIDC_NDI_JWKS_ENDPOINT = 'cpOidcNdiJwksEndpoint'
+export const CP_OIDC_RP_CLIENT_ID = 'cpOidcRpClientId'
+export const CP_OIDC_RP_REDIRECT_URL = 'cpOidcRpRedirectUrl'

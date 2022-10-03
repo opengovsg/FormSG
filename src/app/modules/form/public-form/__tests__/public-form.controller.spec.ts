@@ -34,13 +34,14 @@ import { MYINFO_COOKIE_NAME } from '../../../myinfo/myinfo.constants'
 import { MyInfoCookieStateError } from '../../../myinfo/myinfo.errors'
 import { MyInfoService } from '../../../myinfo/myinfo.service'
 import { SGID_COOKIE_NAME } from '../../../sgid/sgid.constants'
-import { SpOidcService } from '../../../spcp/sp.oidc.service'
 import {
   CreateRedirectUrlError,
   FetchLoginPageError,
   LoginPageValidationError,
   MissingJwtError,
 } from '../../../spcp/spcp.errors'
+import { CpOidcServiceClass } from '../../../spcp/spcp.oidc.service/spcp.oidc.service.cp'
+import { SpOidcServiceClass } from '../../../spcp/spcp.oidc.service/spcp.oidc.service.sp'
 import { SpcpService } from '../../../spcp/spcp.service'
 import { JwtName } from '../../../spcp/spcp.types'
 import {
@@ -58,14 +59,15 @@ jest.mock('../public-form.service')
 jest.mock('../../form.service')
 jest.mock('../../../auth/auth.service')
 jest.mock('../../../spcp/spcp.service')
-jest.mock('../../../spcp/sp.oidc.service')
+jest.mock('../../../spcp/spcp.oidc.service/spcp.oidc.service.sp')
+jest.mock('../../../spcp/spcp.oidc.service/spcp.oidc.service.cp')
 jest.mock('../../../myinfo/myinfo.service')
 
 const MockFormService = mocked(FormService)
 const MockPublicFormService = mocked(PublicFormService)
 const MockAuthService = mocked(AuthService)
 const MockSpcpService = mocked(SpcpService, true)
-const MockSpOidcService = mocked(SpOidcService, true)
+
 const MockMyInfoService = mocked(MyInfoService, true)
 
 describe('public-form.controller', () => {
@@ -343,9 +345,10 @@ describe('public-form.controller', () => {
         MockFormService.checkFormSubmissionLimitAndDeactivateForm.mockReturnValueOnce(
           okAsync(MOCK_SP_AUTH_FORM),
         )
-        MockSpOidcService.extractJwtPayloadFromRequest.mockReturnValueOnce(
-          okAsync(MOCK_SPCP_SESSION),
-        )
+
+        jest
+          .spyOn(SpOidcServiceClass.prototype, 'extractJwtPayloadFromRequest')
+          .mockReturnValueOnce(okAsync(MOCK_SPCP_SESSION))
 
         // Act
         await PublicFormController.handleGetPublicForm(
@@ -382,9 +385,9 @@ describe('public-form.controller', () => {
         MockFormService.checkFormSubmissionLimitAndDeactivateForm.mockReturnValueOnce(
           okAsync(MOCK_CP_AUTH_FORM),
         )
-        MockSpcpService.extractJwtPayloadFromRequest.mockReturnValueOnce(
-          okAsync(MOCK_SPCP_SESSION),
-        )
+        jest
+          .spyOn(CpOidcServiceClass.prototype, 'extractJwtPayloadFromRequest')
+          .mockReturnValueOnce(okAsync(MOCK_SPCP_SESSION))
         // Act
         await PublicFormController.handleGetPublicForm(
           MOCK_REQ,
@@ -686,9 +689,9 @@ describe('public-form.controller', () => {
         MockFormService.checkFormSubmissionLimitAndDeactivateForm.mockReturnValueOnce(
           okAsync(MOCK_SP_FORM),
         )
-        MockSpOidcService.extractJwtPayloadFromRequest.mockReturnValueOnce(
-          errAsync(new MissingJwtError()),
-        )
+        jest
+          .spyOn(SpOidcServiceClass.prototype, 'extractJwtPayloadFromRequest')
+          .mockReturnValueOnce(errAsync(new MissingJwtError()))
 
         // Act
         // 2. GET the endpoint
@@ -718,9 +721,9 @@ describe('public-form.controller', () => {
         MockFormService.checkFormSubmissionLimitAndDeactivateForm.mockReturnValueOnce(
           okAsync(MOCK_CP_FORM),
         )
-        MockSpcpService.extractJwtPayloadFromRequest.mockReturnValueOnce(
-          errAsync(new MissingJwtError()),
-        )
+        jest
+          .spyOn(CpOidcServiceClass.prototype, 'extractJwtPayloadFromRequest')
+          .mockReturnValueOnce(errAsync(new MissingJwtError()))
 
         // Act
         // 2. GET the endpoint
@@ -891,9 +894,9 @@ describe('public-form.controller', () => {
 
         const mockRes = expressHandler.mockResponse()
 
-        MockSpOidcService.extractJwtPayloadFromRequest.mockReturnValueOnce(
-          okAsync(MOCK_SPCP_SESSION),
-        )
+        jest
+          .spyOn(SpOidcServiceClass.prototype, 'extractJwtPayloadFromRequest')
+          .mockReturnValueOnce(okAsync(MOCK_SPCP_SESSION))
         MockFormService.checkIsIntranetFormAccess.mockReturnValueOnce(true)
         MockAuthService.getFormIfPublic.mockReturnValueOnce(
           okAsync(MOCK_SP_AUTH_FORM),
@@ -927,9 +930,9 @@ describe('public-form.controller', () => {
         const mockRes = expressHandler.mockResponse()
 
         MockFormService.checkIsIntranetFormAccess.mockReturnValueOnce(true)
-        MockSpcpService.extractJwtPayloadFromRequest.mockReturnValueOnce(
-          okAsync(MOCK_SPCP_SESSION),
-        )
+        jest
+          .spyOn(CpOidcServiceClass.prototype, 'extractJwtPayloadFromRequest')
+          .mockReturnValueOnce(okAsync(MOCK_SPCP_SESSION))
         MockAuthService.getFormIfPublic.mockReturnValueOnce(
           okAsync(MOCK_CP_AUTH_FORM),
         )
@@ -1023,9 +1026,9 @@ describe('public-form.controller', () => {
       MockFormService.retrieveFullFormById.mockReturnValueOnce(
         okAsync(MOCK_FORM),
       )
-      MockSpOidcService.createRedirectUrl.mockResolvedValueOnce(
-        ok(MOCK_REDIRECT_URL),
-      )
+      jest
+        .spyOn(SpOidcServiceClass.prototype, 'createRedirectUrl')
+        .mockResolvedValueOnce(ok(MOCK_REDIRECT_URL))
 
       // Act
       await PublicFormController._handleFormAuthRedirect(
@@ -1056,9 +1059,9 @@ describe('public-form.controller', () => {
       MockFormService.retrieveFullFormById.mockReturnValueOnce(
         okAsync(MOCK_FORM),
       )
-      MockSpOidcService.createRedirectUrl.mockResolvedValueOnce(
-        ok(MOCK_REDIRECT_URL),
-      )
+      jest
+        .spyOn(SpOidcServiceClass.prototype, 'createRedirectUrl')
+        .mockResolvedValueOnce(ok(MOCK_REDIRECT_URL))
 
       // Act
       await PublicFormController._handleFormAuthRedirect(
@@ -1092,9 +1095,9 @@ describe('public-form.controller', () => {
       MockFormService.retrieveFullFormById.mockReturnValueOnce(
         okAsync(MOCK_FORM),
       )
-      MockSpOidcService.createRedirectUrl.mockResolvedValueOnce(
-        ok(MOCK_REDIRECT_URL),
-      )
+      jest
+        .spyOn(SpOidcServiceClass.prototype, 'createRedirectUrl')
+        .mockResolvedValueOnce(ok(MOCK_REDIRECT_URL))
 
       // Act
       await PublicFormController._handleFormAuthRedirect(
@@ -1121,9 +1124,9 @@ describe('public-form.controller', () => {
       MockFormService.retrieveFullFormById.mockReturnValueOnce(
         okAsync(MOCK_FORM),
       )
-      MockSpcpService.createRedirectUrl.mockReturnValueOnce(
-        ok(MOCK_REDIRECT_URL),
-      )
+      jest
+        .spyOn(CpOidcServiceClass.prototype, 'createRedirectUrl')
+        .mockReturnValueOnce(okAsync(MOCK_REDIRECT_URL))
 
       // Act
       await PublicFormController._handleFormAuthRedirect(
@@ -1307,9 +1310,9 @@ describe('public-form.controller', () => {
       MockFormService.retrieveFullFormById.mockReturnValueOnce(
         okAsync(MOCK_FORM),
       )
-      MockSpOidcService.createRedirectUrl.mockResolvedValue(
-        err(new CreateRedirectUrlError()),
-      )
+      jest
+        .spyOn(SpOidcServiceClass.prototype, 'createRedirectUrl')
+        .mockResolvedValue(err(new CreateRedirectUrlError()))
 
       // Act
       await PublicFormController._handleFormAuthRedirect(
@@ -1336,9 +1339,9 @@ describe('public-form.controller', () => {
       MockFormService.retrieveFullFormById.mockReturnValueOnce(
         okAsync(MOCK_FORM),
       )
-      MockSpcpService.createRedirectUrl.mockReturnValueOnce(
-        err(new CreateRedirectUrlError()),
-      )
+      jest
+        .spyOn(CpOidcServiceClass.prototype, 'createRedirectUrl')
+        .mockReturnValueOnce(errAsync(new CreateRedirectUrlError()))
 
       // Act
       await PublicFormController._handleFormAuthRedirect(

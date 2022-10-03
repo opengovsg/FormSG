@@ -30,7 +30,7 @@ jest.mock('nodemailer', () => ({
 }))
 
 // Avoid async refresh calls
-jest.mock('src/app/modules/spcp/sp.oidc.client.ts')
+jest.mock('src/app/modules/spcp/spcp.oidc.client.ts')
 
 const UserModel = getUserModel(mongoose)
 const EncryptFormModel = getEncryptedFormModel(mongoose)

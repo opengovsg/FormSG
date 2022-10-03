@@ -28,8 +28,7 @@ import { setFormTags } from '../../datadog/datadog.utils'
 import { PermissionLevel } from '../../form/admin-form/admin-form.types'
 import * as FormService from '../../form/form.service'
 import { SgidService } from '../../sgid/sgid.service'
-import { SpOidcService } from '../../spcp/sp.oidc.service'
-import { SpcpService } from '../../spcp/spcp.service'
+import { getOidcService } from '../../spcp/spcp.oidc.service'
 import { getPopulatedUserById } from '../../user/user.service'
 import * as VerifiedContentService from '../../verified-content/verified-content.service'
 import { WebhookFactory } from '../../webhook/webhook.factory'
@@ -203,9 +202,10 @@ const submitEncryptModeForm: ControllerHandler<
       return res.status(statusCode).json({ message: errorMessage })
     }
     case FormAuthType.SP: {
-      const jwtPayloadResult = await SpOidcService.extractJwt(
-        req.cookies,
-      ).asyncAndThen((jwt) => SpOidcService.extractSingpassJwtPayload(jwt))
+      const oidcService = getOidcService(FormAuthType.SP)
+      const jwtPayloadResult = await oidcService
+        .extractJwt(req.cookies)
+        .asyncAndThen((jwt) => oidcService.extractJwtPayload(jwt))
       if (jwtPayloadResult.isErr()) {
         const { statusCode, errorMessage } = mapRouteError(
           jwtPayloadResult.error,
@@ -224,10 +224,10 @@ const submitEncryptModeForm: ControllerHandler<
       break
     }
     case FormAuthType.CP: {
-      const jwtPayloadResult = await SpcpService.extractJwt(
-        req.cookies,
-        authType,
-      ).asyncAndThen((jwt) => SpcpService.extractCorppassJwtPayload(jwt))
+      const oidcService = getOidcService(FormAuthType.CP)
+      const jwtPayloadResult = await oidcService
+        .extractJwt(req.cookies)
+        .asyncAndThen((jwt) => oidcService.extractJwtPayload(jwt))
       if (jwtPayloadResult.isErr()) {
         const { statusCode, errorMessage } = mapRouteError(
           jwtPayloadResult.error,

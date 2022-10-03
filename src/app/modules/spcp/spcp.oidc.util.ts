@@ -1,15 +1,17 @@
+import { JWTVerifyResult } from 'jose'
 import { EC, ECPrivate } from 'jwk-to-pem'
 import promiseRetry from 'promise-retry'
 
 import { hasProp } from '../../../../shared/utils/has-prop'
-import {
-  isMFinSeriesValid,
-  isNricValid,
-} from '../../../../shared/utils/nric-validation'
 import { createLoggerWithLabel } from '../../config/logger'
 
-import { InvalidIdTokenError } from './sp.oidc.client.errors'
-import { CryptoKey, ParsedSub, SigningKey } from './sp.oidc.client.types'
+import { InvalidIdTokenError } from './spcp.oidc.client.errors'
+import {
+  CPJWTVerifyResult,
+  CryptoKey,
+  ParsedSub,
+  SigningKey,
+} from './spcp.oidc.client.types'
 
 const logger = createLoggerWithLabel(module)
 /**
@@ -153,19 +155,19 @@ export const parseSub = (sub: string): ParsedSub | InvalidIdTokenError => {
 }
 
 /**
- * Helper function to extract NRIC from a parsed sub attribute
+ * Helper function to extract NRIC or foreign ID from a parsed sub attribute
  * @param parsedSub
- * @returns NRIC if it exists
- * @returns undefined if NRIC does not exist
+ * @returns NRIC or foreign ID if it exists
+ * @returns undefined if NRIC or foreign id does not exist
  */
-export const extractNricFromParsedSub = (
+export const extractNricOrForeignIdFromParsedSub = (
   parsedSub: ParsedSub,
 ): string | undefined => {
-  const nric = parsedSub.find((keyValuePair) => {
-    const { key, value } = keyValuePair
-    return key === 's' && (isNricValid(value) || isMFinSeriesValid(value))
+  const nricOrForeignId = parsedSub.find((keyValuePair) => {
+    // We do not validate NRIC format as it could be a foreign ID and could be any format
+    return keyValuePair.key === 's'
   })
-  return nric ? nric.value : undefined
+  return nricOrForeignId ? nricOrForeignId.value : undefined
 }
 
 // Typeguards
@@ -200,4 +202,16 @@ export const isECPrivate = (jwk: unknown): jwk is ECPrivate => {
 
 export const isSigningKey = (key: CryptoKey): key is SigningKey => {
   return !!key.alg && key.use === 'sig'
+}
+
+export const isCPJWTVerifyResult = (
+  jwt: JWTVerifyResult,
+): jwt is CPJWTVerifyResult => {
+  return (
+    typeof jwt === 'object' &&
+    !!jwt &&
+    hasProp(jwt, 'payload') &&
+    hasProp(jwt.payload, 'entityInfo') &&
+    hasProp(jwt.payload.entityInfo, 'CPEntID')
+  )
 }
