@@ -272,27 +272,35 @@ const submitEmailModeForm: ControllerHandler<
         )
 
         // Save submission to database
-        return EmailSubmissionService.hashSubmission(
-          emailData.formData,
-          attachments,
-        )
-          .andThen((submissionHash) =>
-            EmailSubmissionService.saveSubmissionMetadata(form, submissionHash),
+        // TODO: Remove tracer span.
+        return tracer
+          .scope()
+          .activate(tracer.startSpan('hashSubmissionAndSaveMetadata'), () =>
+            EmailSubmissionService.hashSubmission(
+              emailData.formData,
+              attachments,
+            )
+              .andThen((submissionHash) =>
+                EmailSubmissionService.saveSubmissionMetadata(
+                  form,
+                  submissionHash,
+                ),
+              )
+              .map((submission) => ({
+                form,
+                parsedResponses,
+                submission,
+                emailData,
+              }))
+              .mapErr((error) => {
+                logger.error({
+                  message: 'Error while saving metadata to database',
+                  meta: logMeta,
+                  error,
+                })
+                return error
+              }),
           )
-          .map((submission) => ({
-            form,
-            parsedResponses,
-            submission,
-            emailData,
-          }))
-          .mapErr((error) => {
-            logger.error({
-              message: 'Error while saving metadata to database',
-              meta: logMeta,
-              error,
-            })
-            return error
-          })
       })
       .andThen(({ form, parsedResponses, submission, emailData }) => {
         const logMetaWithSubmission = {
@@ -373,13 +381,16 @@ const submitEmailModeForm: ControllerHandler<
               }),
           )
           // MyInfo access token is single-use, so clear it
-          return res
-            .clearCookie(MYINFO_COOKIE_NAME, MYINFO_COOKIE_OPTIONS)
-            .json({
-              // Return the reply early to the submitter
-              message: 'Form submission successful.',
-              submissionId: submission.id,
-            })
+          // TODO: remove tracer span.
+          return tracer
+            .scope()
+            .activate(tracer.startSpan('responseClearCookie'), () =>
+              res.clearCookie(MYINFO_COOKIE_NAME, MYINFO_COOKIE_OPTIONS).json({
+                // Return the reply early to the submitter
+                message: 'Form submission successful.',
+                submissionId: submission.id,
+              }),
+            )
         },
       )
       .mapErr((error) => {
