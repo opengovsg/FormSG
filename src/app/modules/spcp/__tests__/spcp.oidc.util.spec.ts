@@ -1,10 +1,10 @@
-import { InvalidIdTokenError } from '../sp.oidc.client.errors'
+import { InvalidIdTokenError } from '../spcp.oidc.client.errors'
 import {
-  extractNricFromParsedSub,
+  extractNricOrForeignIdFromParsedSub,
   parseSub,
   retryPromiseForever,
   retryPromiseThreeAttempts,
-} from '../sp.oidc.util'
+} from '../spcp.oidc.util'
 
 const MOCK_PROMISE_NAME = 'promise'
 
@@ -172,7 +172,7 @@ describe('SpOidcUtil', () => {
     })
   })
 
-  describe('extractNricFromParsedSub', () => {
+  describe('extractNricOrForeignIdFromParsedSub', () => {
     it('should return the first nric value if it exists', () => {
       // Arrange
 
@@ -184,10 +184,27 @@ describe('SpOidcUtil', () => {
       ]
 
       // Act
-      const result = extractNricFromParsedSub(MOCK_PARSED_SUB)
+      const result = extractNricOrForeignIdFromParsedSub(MOCK_PARSED_SUB)
 
       // Assert
       expect(result).toBe(MOCK_CORRECT_NRIC)
+    })
+
+    it('should return the foreign id value if it exists', () => {
+      // Arrange
+
+      const MOCK_FOREIGN_ID = 'S0001234567D'
+      const MOCK_PARSED_SUB = [
+        { key: 'key1', value: 'value1' },
+        { key: 's', value: MOCK_FOREIGN_ID },
+        { key: 's', value: 'S9876543C' },
+      ]
+
+      // Act
+      const result = extractNricOrForeignIdFromParsedSub(MOCK_PARSED_SUB)
+
+      // Assert
+      expect(result).toBe(MOCK_FOREIGN_ID)
     })
 
     it('should return undefined if nric does not exist', () => {
@@ -198,7 +215,9 @@ describe('SpOidcUtil', () => {
       ]
 
       // Act
-      const result = extractNricFromParsedSub(MOCK_PARSED_SUB_WITHOUT_NRIC)
+      const result = extractNricOrForeignIdFromParsedSub(
+        MOCK_PARSED_SUB_WITHOUT_NRIC,
+      )
 
       // Assert
       expect(result).toBeUndefined()

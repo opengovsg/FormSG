@@ -30,7 +30,7 @@ const app = setupApp('/examples', ExamplesRouter, {
   setupWithAuth: true,
 })
 
-jest.mock('../../spcp/sp.oidc.client')
+jest.mock('../../spcp/spcp.oidc.client')
 
 describe('examples.routes', () => {
   let request: Session

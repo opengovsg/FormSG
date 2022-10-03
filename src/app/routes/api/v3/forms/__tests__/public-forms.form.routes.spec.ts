@@ -1,5 +1,4 @@
 import MyInfoClient, { IMyInfoConfig } from '@opengovsg/myinfo-gov-client'
-import SPCPAuthClient from '@opengovsg/spcp-auth-client'
 import { ObjectId } from 'bson-ext'
 import { errAsync } from 'neverthrow'
 import supertest, { Session } from 'supertest-session'
@@ -14,15 +13,18 @@ import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import { FormAuthType, FormStatus } from '../../../../../../../shared/types'
 import * as AuthService from '../../../../../modules/auth/auth.service'
-import { SpOidcClient } from '../../../../../modules/spcp/sp.oidc.client'
+import {
+  CpOidcClient,
+  SpOidcClient,
+} from '../../../../../modules/spcp/spcp.oidc.client'
 import { PublicFormsRouter } from '../public-forms.routes'
 
 import { MOCK_UINFIN } from './public-forms.routes.spec.constants'
 
-jest.mock('../../../../../modules/spcp/sp.oidc.client')
+jest.mock('../../../../../modules/spcp/spcp.oidc.client')
 
 jest.mock('@opengovsg/spcp-auth-client')
-const MockAuthClient = mocked(SPCPAuthClient, true)
+const MockCpOidcClient = mocked(CpOidcClient, true)
 
 jest.mock('@opengovsg/myinfo-gov-client', () => {
   return {
@@ -50,7 +52,7 @@ const app = setupApp('/forms', PublicFormsRouter)
 describe('public-form.form.routes', () => {
   let request: Session
 
-  const mockCpClient = mocked(MockAuthClient.mock.instances[1], true)
+  const mockCpClient = mocked(MockCpOidcClient.mock.instances[0], true)
 
   beforeAll(async () => await dbHandler.connect())
   beforeEach(async () => {
@@ -130,14 +132,13 @@ describe('public-form.form.routes', () => {
     })
     it('should return 200 with public form when form has FormAuthType.CP and valid formId', async () => {
       // Arrange
-      mockCpClient.verifyJWT.mockImplementationOnce((_jwt, cb) =>
-        cb(null, {
-          userName: MOCK_COOKIE_PAYLOAD.userName,
-          userInfo: 'MyCorpPassUEN',
-          iat: 100000000,
-          exp: 1000000000,
-        }),
-      )
+      mockCpClient.verifyJwt.mockResolvedValueOnce({
+        userName: MOCK_COOKIE_PAYLOAD.userName,
+        userInfo: 'MyCorpPassUEN',
+        iat: 100000000,
+        exp: 1000000000,
+      })
+
       const { form } = await dbHandler.insertEmailForm({
         formOptions: {
           esrvcId: 'mockEsrvcId',
@@ -153,6 +154,7 @@ describe('public-form.form.routes', () => {
         form: JSON.parse(JSON.stringify(fullForm?.getPublicView())),
         spcpSession: expect.objectContaining({
           userName: MOCK_COOKIE_PAYLOAD.userName,
+          userInfo: 'MyCorpPassUEN',
           iat: 100000000,
           exp: 1000000000,
         }),
