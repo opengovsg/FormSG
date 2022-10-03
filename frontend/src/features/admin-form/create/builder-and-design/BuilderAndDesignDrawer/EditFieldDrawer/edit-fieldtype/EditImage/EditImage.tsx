@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 import { Controller } from 'react-hook-form'
 import { useMutation } from 'react-query'
 import { useParams } from 'react-router-dom'
@@ -9,6 +9,7 @@ import { MB } from '~shared/constants/file'
 import { ImageFieldBase } from '~shared/types/field'
 
 import { useToast } from '~hooks/useToast'
+import { createBaseValidationRules } from '~utils/fieldValidation'
 import { uploadImage } from '~services/FileHandlerService'
 import {
   getByteFileSize,
@@ -137,6 +138,11 @@ export const EditImage = ({ field }: EditImageProps): JSX.Element => {
     },
   })
 
+  const requiredValidationRule = useMemo(
+    () => createBaseValidationRules({ required: true }),
+    [],
+  )
+
   // Required to override original updateField function due to possible errors
   // from the generation of presigned urls.
   const handleUpdateFieldWithCatch = useCallback(
@@ -181,8 +187,8 @@ export const EditImage = ({ field }: EditImageProps): JSX.Element => {
         isReadOnly={isLoading || isSubmitting}
         isInvalid={!!errors.description}
       >
-        <FormLabel>Description</FormLabel>
-        <Textarea {...register('description')} />
+        <FormLabel isRequired>Description</FormLabel>
+        <Textarea {...register('description', requiredValidationRule)} />
         <FormErrorMessage>{errors?.description?.message}</FormErrorMessage>
       </FormControl>
       <FormFieldDrawerActions
