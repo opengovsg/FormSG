@@ -24,7 +24,7 @@ import {
   MOCK_TARGET,
 } from './spcp.test.constants'
 
-jest.mock('../sp.oidc.client')
+jest.mock('../spcp.oidc.client')
 
 jest.mock('axios')
 jest.mock('@opengovsg/spcp-auth-client')

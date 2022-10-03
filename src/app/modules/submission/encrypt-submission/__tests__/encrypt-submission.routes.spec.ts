@@ -1,4 +1,3 @@
-import SPCPAuthClient from '@opengovsg/spcp-auth-client'
 import { err, ok } from 'neverthrow'
 import session, { Session } from 'supertest-session'
 import { mocked } from 'ts-jest/utils'
@@ -13,15 +12,16 @@ import {
   SgidMissingJwtError,
 } from '../../../sgid/sgid.errors'
 import { SgidService } from '../../../sgid/sgid.service'
-import { SpOidcClient } from '../../../spcp/sp.oidc.client'
+import { CpOidcClient, SpOidcClient } from '../../../spcp/spcp.oidc.client'
 import { EncryptSubmissionRouter } from '../encrypt-submission.routes'
 
-jest.mock('../../../spcp/sp.oidc.client')
 jest.mock('../../../sgid/sgid.service')
 
-jest.mock('@opengovsg/spcp-auth-client')
-const MockAuthClient = mocked(SPCPAuthClient, true)
 const MockSgidService = mocked(SgidService, true)
+
+jest.mock('../../../spcp/spcp.oidc.client')
+
+const MockCpOidcClient = mocked(CpOidcClient, true)
 
 const SUBMISSIONS_ENDPT_BASE = '/v2/submissions/encrypt'
 
@@ -42,7 +42,7 @@ const EncryptSubmissionsApp = setupApp(
 describe('encrypt-submission.routes', () => {
   let request: Session
 
-  const mockCpClient = mocked(MockAuthClient.mock.instances[1], true)
+  const mockCpClient = mocked(MockCpOidcClient.mock.instances[0], true)
 
   beforeAll(async () => await dbHandler.connect())
   beforeEach(() => {
@@ -193,12 +193,10 @@ describe('encrypt-submission.routes', () => {
 
     describe('CorpPass', () => {
       it('should return 200 when submission is valid', async () => {
-        mockCpClient.verifyJWT.mockImplementationOnce((_jwt, cb) =>
-          cb?.(null, {
-            userName: 'S1234567A',
-            userInfo: 'MyCorpPassUEN',
-          }),
-        )
+        mockCpClient.verifyJwt.mockResolvedValueOnce({
+          userName: 'S1234567A',
+          userInfo: 'MyCorpPassUEN',
+        })
         const { form } = await dbHandler.insertEncryptForm({
           formOptions: {
             esrvcId: 'mockEsrvcId',
@@ -272,11 +270,8 @@ describe('encrypt-submission.routes', () => {
 
       it('should return 401 when submission has invalid JWT', async () => {
         // Mock auth client to return error when decoding JWT
-        mockCpClient.verifyJWT.mockImplementationOnce((_jwt, cb) =>
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore
-          cb?.(new Error()),
-        )
+        mockCpClient.verifyJwt.mockRejectedValueOnce(new Error())
+
         const { form } = await dbHandler.insertEncryptForm({
           formOptions: {
             esrvcId: 'mockEsrvcId',
@@ -302,11 +297,9 @@ describe('encrypt-submission.routes', () => {
 
       it('should return 401 when submission has JWT with the wrong shape', async () => {
         // Mock auth client to return wrong decoded JWT shape
-        mockCpClient.verifyJWT.mockImplementationOnce((_jwt, cb) =>
-          cb?.(null, {
-            wrongKey: 'S1234567A',
-          }),
-        )
+        mockCpClient.verifyJwt.mockResolvedValueOnce({
+          wrongKey: 'S1234567A',
+        })
         const { form } = await dbHandler.insertEncryptForm({
           formOptions: {
             esrvcId: 'mockEsrvcId',

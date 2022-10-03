@@ -19,6 +19,19 @@ export type CorppassJwtPayload = {
   rememberMe: boolean
 }
 
+export type ExtractedSingpassNDIPayload = {
+  userName: string // Continue SAML convention, userName is NRIC
+}
+
+export type ExtractedCorppassNDIPayload = {
+  userName: string // Continue SAML convention, userName is UEN
+  userInfo: string // Continue SAML convention, userInfo is NRIC
+}
+
+export type ExtractedNDIPayload =
+  | ExtractedSingpassNDIPayload
+  | ExtractedCorppassNDIPayload
+
 export type SgidJwtPayload = {
   userName: string
   rememberMe: boolean
