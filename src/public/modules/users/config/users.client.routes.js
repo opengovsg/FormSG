@@ -43,7 +43,7 @@ angular.module('users').config([
         controllerAs: 'vm',
       })
       .state('billing', {
-        url: '/api/v3/billings',
+        url: '/billing',
         templateUrl: 'modules/users/views/billing.client.view.html',
         controller: 'BillingController',
         controllerAs: 'vm',
