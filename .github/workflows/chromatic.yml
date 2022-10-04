@@ -12,11 +12,8 @@ on:
   push:
     branches:
       - 'form-v2/develop'
+      - 'develop'
   pull_request:
-    branches:
-      # PR events to branches matching refs/heads/form-v2
-      - 'form-v2'
-      - 'form-v2/**'
 
 # List of jobs
 jobs:
@@ -41,6 +38,6 @@ jobs:
           # 👇 Chromatic projectToken, refer to the manage page to obtain it.
           projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
           workingDir: frontend
-          autoAcceptChanges: form-v2/develop
+          autoAcceptChanges: develop
           exitOnceUploaded: true
           onlyChanged: true
