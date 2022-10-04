@@ -1,12 +1,13 @@
 import { useCallback } from 'react'
 import { BiGitMerge, BiQuestionMark } from 'react-icons/bi'
-import { Stack, Tooltip } from '@chakra-ui/react'
+import { Stack } from '@chakra-ui/react'
 
 import { BxsColorFill } from '~assets/icons/BxsColorFill'
 import { BxsWidget } from '~assets/icons/BxsWidget'
 import { FORM_GUIDE } from '~constants/links'
 import { useIsMobile } from '~hooks/useIsMobile'
 import IconButton from '~components/IconButton'
+import Tooltip from '~components/Tooltip'
 
 import {
   DrawerTabs,
