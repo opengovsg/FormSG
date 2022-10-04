@@ -130,8 +130,7 @@ export const generateAutoreplyPdf = (
   const pathToTemplate = `${process.cwd()}/src/app/views/templates/submit-form-summary-pdf.server.view.html`
 
   // TODO: Remove tracer once issue is resolved.
-
-  return tracer.trace('generateAutoreplyPdf', () =>
+  return tracer.scope().activate(tracer.startSpan('generateAutoreplyPdf'), () =>
     safeRenderFile(pathToTemplate, renderData).andThen((summaryHtml) => {
       return ResultAsync.fromPromise(
         generateAutoreplyPdfPromise(summaryHtml),

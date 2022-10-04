@@ -309,33 +309,35 @@ const submitEmailModeForm: ControllerHandler<
         // NOTE: This should short circuit in the event of an error.
         // This is why sendSubmissionToAdmin is separated from sendEmailConfirmations in 2 blocks
         // TODO: Remove tracer span once email performance issue is identified.
-        return tracer.trace('sendSubmissionToAdmin', () =>
-          MailService.sendSubmissionToAdmin({
-            replyToEmails: EmailSubmissionService.extractEmailAnswers(
-              parsedResponses.getAllResponses(),
-            ),
-            form,
-            submission,
-            attachments,
-            dataCollationData: emailData.dataCollationData,
-            formData: emailData.formData,
-          })
-            .map(() => ({
+        return tracer
+          .scope()
+          .activate(tracer.startSpan('sendSubmissionToAdmin'), () =>
+            MailService.sendSubmissionToAdmin({
+              replyToEmails: EmailSubmissionService.extractEmailAnswers(
+                parsedResponses.getAllResponses(),
+              ),
               form,
-              parsedResponses,
               submission,
-              emailData,
-              logMetaWithSubmission,
-            }))
-            .mapErr((error) => {
-              logger.error({
-                message: 'Error sending submission to admin',
-                meta: logMetaWithSubmission,
-                error,
-              })
-              return error
-            }),
-        )
+              attachments,
+              dataCollationData: emailData.dataCollationData,
+              formData: emailData.formData,
+            })
+              .map(() => ({
+                form,
+                parsedResponses,
+                submission,
+                emailData,
+                logMetaWithSubmission,
+              }))
+              .mapErr((error) => {
+                logger.error({
+                  message: 'Error sending submission to admin',
+                  meta: logMetaWithSubmission,
+                  error,
+                })
+                return error
+              }),
+          )
       })
       .map(
         ({
