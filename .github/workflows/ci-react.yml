@@ -2,15 +2,7 @@ name: CI (React)
 
 on:
   push:
-    branches:
-      # Push events to branches matching refs/heads/form-v2
-      - 'form-v2'
-      - 'form-v2/**'
   pull_request:
-    branches:
-      # PR events to branches matching refs/heads/form-v2
-      - 'form-v2'
-      - 'form-v2/**'
     types: [opened, reopened]
 
 jobs:
