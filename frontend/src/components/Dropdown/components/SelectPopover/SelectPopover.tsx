@@ -5,6 +5,7 @@ import {
   flip,
   hide,
   offset,
+  size,
   useFloating,
 } from '@floating-ui/react-dom-interactions'
 
@@ -26,6 +27,14 @@ export const SelectPopoverProvider: FC = ({ children }): JSX.Element => {
       offset(1),
       flip(),
       hide(),
+      // Set width to be the same as the reference element.
+      size({
+        apply({ rects, elements }) {
+          Object.assign(elements.floating.style, {
+            width: `${rects.reference.width}px`,
+          })
+        },
+      }),
     ],
   })
 

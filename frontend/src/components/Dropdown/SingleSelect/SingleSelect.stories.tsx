@@ -5,6 +5,7 @@ import { FormControl } from '@chakra-ui/react'
 import { useArgs } from '@storybook/client-api'
 import { Meta, Story } from '@storybook/react'
 
+import { fixedHeightDecorator } from '~utils/storybook'
 import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
@@ -68,7 +69,7 @@ const INITIAL_COMBOBOX_ITEMS: ComboboxItem[] = [
 export default {
   title: 'Components/SingleSelect',
   component: SingleSelect,
-  decorators: [],
+  decorators: [fixedHeightDecorator('300px')],
   args: {
     items: INITIAL_COMBOBOX_ITEMS,
     value: '',
