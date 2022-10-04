@@ -371,16 +371,13 @@ const submitEmailModeForm: ControllerHandler<
               }),
           )
           // MyInfo access token is single-use, so clear it
-          // TODO: Remove tracer span once email performance issue is identified.
-          return tracer
-            .scope()
-            .activate(tracer.startSpan('responseClearCookie'), () =>
-              res.clearCookie(MYINFO_COOKIE_NAME, MYINFO_COOKIE_OPTIONS).json({
-                // Return the reply early to the submitter
-                message: 'Form submission successful.',
-                submissionId: submission.id,
-              }),
-            )
+          return res
+            .clearCookie(MYINFO_COOKIE_NAME, MYINFO_COOKIE_OPTIONS)
+            .json({
+              // Return the reply early to the submitter
+              message: 'Form submission successful.',
+              submissionId: submission.id,
+            })
         },
       )
       .mapErr((error) => {

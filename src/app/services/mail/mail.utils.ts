@@ -1,3 +1,4 @@
+import tracer from 'dd-trace'
 import dedent from 'dedent-js'
 import ejs, { Data } from 'ejs'
 import { flattenDeep } from 'lodash'
@@ -128,24 +129,28 @@ export const generateAutoreplyPdf = (
 ): ResultAsync<Buffer, MailGenerationError> => {
   const pathToTemplate = `${process.cwd()}/src/app/views/templates/submit-form-summary-pdf.server.view.html`
 
-  return safeRenderFile(pathToTemplate, renderData).andThen((summaryHtml) => {
-    return ResultAsync.fromPromise(
-      generateAutoreplyPdfPromise(summaryHtml),
-      (error) => {
-        logger.error({
-          meta: {
-            action: 'generateAutoreplyPdf',
-          },
-          message: 'Error occurred whilst generating autoreply PDF',
-          error,
-        })
+  // TODO: Remove tracer once issue is resolved.
 
-        return new MailGenerationError(
-          'Error occurred whilst generating autoreply PDF',
-        )
-      },
-    )
-  })
+  return tracer.trace('generateAutoreplyPdf', () =>
+    safeRenderFile(pathToTemplate, renderData).andThen((summaryHtml) => {
+      return ResultAsync.fromPromise(
+        generateAutoreplyPdfPromise(summaryHtml),
+        (error) => {
+          logger.error({
+            meta: {
+              action: 'generateAutoreplyPdf',
+            },
+            message: 'Error occurred whilst generating autoreply PDF',
+            error,
+          })
+
+          return new MailGenerationError(
+            'Error occurred whilst generating autoreply PDF',
+          )
+        },
+      )
+    }),
+  )
 }
 
 export const generateAutoreplyHtml = (
