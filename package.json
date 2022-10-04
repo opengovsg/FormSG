@@ -53,7 +53,7 @@
     ]
   },
   "dependencies": {
-    "@aws-sdk/client-cloudwatch-logs": "^3.181.0",
+    "@aws-sdk/client-cloudwatch-logs": "^3.183.0",
     "@babel/runtime": "^7.19.0",
     "@joi/date": "^2.1.0",
     "@opengovsg/angular-daterangepicker-webpack": "^1.1.5",
