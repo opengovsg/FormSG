@@ -29,6 +29,7 @@
     "test:backend:watch": "env-cmd -f tests/.test-env jest --watch",
     "test:frontend": "npm --prefix frontend test",
     "build": "npm run clean && npm run build:backend && npm run build:frontend && npm run build:old-frontend",
+    "test:angularjs": "jest --config=tests/unit/frontend/jest.config.js",
     "dev:angularjs": "webpack --config webpack.dev.js",
     "build:old-frontend": "webpack --config webpack.prod.js",
     "build:frontend": "npm run --prefix frontend build",
