@@ -1,10 +1,13 @@
 import { useCallback } from 'react'
-import { BiGitMerge } from 'react-icons/bi'
+import { BiGitMerge, BiQuestionMark } from 'react-icons/bi'
 import { Stack } from '@chakra-ui/react'
 
 import { BxsColorFill } from '~assets/icons/BxsColorFill'
 import { BxsWidget } from '~assets/icons/BxsWidget'
+import { FORM_GUIDE } from '~constants/links'
 import { useIsMobile } from '~hooks/useIsMobile'
+import IconButton from '~components/IconButton'
+import Tooltip from '~components/Tooltip'
 
 import {
   DrawerTabs,
@@ -51,36 +54,52 @@ export const CreatePageSidebar = (): JSX.Element | null => {
   return (
     <Stack
       bg="white"
-      spacing="0.5rem"
-      py="1rem"
-      px="0.5rem"
       pos="sticky"
       top={0}
+      px="0.5rem"
+      py="1rem"
       borderRight="1px solid"
       borderColor="neutral.300"
       direction="column"
+      justifyContent="space-between"
     >
-      <DrawerTabIcon
-        label="Build your form"
-        icon={<BxsWidget fontSize="1.5rem" />}
-        onClick={handleDrawerBuilderClick}
-        isActive={activeTab === DrawerTabs.Builder}
-        id={FEATURE_TOUR[0].id}
-      />
-      <DrawerTabIcon
-        label="Design your form"
-        icon={<BxsColorFill fontSize="1.5rem" />}
-        onClick={handleDrawerDesignClick}
-        isActive={activeTab === DrawerTabs.Design}
-        id={FEATURE_TOUR[1].id}
-      />
-      <DrawerTabIcon
-        label="Add conditional logic"
-        icon={<BiGitMerge fontSize="1.5rem" />}
-        onClick={handleDrawerLogicClick}
-        isActive={activeTab === DrawerTabs.Logic}
-        id={FEATURE_TOUR[2].id}
-      />
+      <Stack spacing="0.5rem">
+        <DrawerTabIcon
+          label="Build your form"
+          icon={<BxsWidget fontSize="1.5rem" />}
+          onClick={handleDrawerBuilderClick}
+          isActive={activeTab === DrawerTabs.Builder}
+          id={FEATURE_TOUR[0].id}
+        />
+        <DrawerTabIcon
+          label="Design your form"
+          icon={<BxsColorFill fontSize="1.5rem" />}
+          onClick={handleDrawerDesignClick}
+          isActive={activeTab === DrawerTabs.Design}
+          id={FEATURE_TOUR[1].id}
+        />
+        <DrawerTabIcon
+          label="Add conditional logic"
+          icon={<BiGitMerge fontSize="1.5rem" />}
+          onClick={handleDrawerLogicClick}
+          isActive={activeTab === DrawerTabs.Logic}
+          id={FEATURE_TOUR[2].id}
+        />
+      </Stack>
+      <Tooltip label="Help" placement="right">
+        <IconButton
+          variant="solid"
+          colorScheme="subtle"
+          size="lg"
+          icon={<BiQuestionMark />}
+          borderRadius="full"
+          aria-label="Help"
+          onClick={(e) => {
+            e.preventDefault()
+            window.open(FORM_GUIDE)
+          }}
+        />
+      </Tooltip>
     </Stack>
   )
 }
