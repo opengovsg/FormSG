@@ -103,6 +103,14 @@ export const compulsoryVarsSchema: Schema<ICompulsoryVarsSchema> = {
       env: 'SECRET_ENV',
     },
   },
+  reactMigration: {
+    reactToAngularFeedbackFormId: {
+      doc: 'Form ID of the React to Angular bug report feedback form',
+      format: String,
+      default: null,
+      env: 'REACT_TO_ANGULAR_FEEDBACK_FORM_ID',
+    },
+  },
 }
 
 // If the following environment variables are not specified, we will fall back to the defaults provided
@@ -290,6 +298,50 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
       env: 'SEND_AUTH_OTP_RATE_LIMIT',
     },
   },
+  reactMigration: {
+    respondentRolloutEmail: {
+      doc: 'Percentage threshold to serve React for respondents for Phase 1 (email mode forms)',
+      format: 'int',
+      default: 0,
+      env: 'REACT_MIGRATION_RESP_ROLLOUT_EMAIL',
+    },
+    respondentRolloutStorage: {
+      doc: 'Percentage threshold to serve React for respondents for Phase 2 (storage mode forms)',
+      format: 'int',
+      default: 0,
+      env: 'REACT_MIGRATION_RESP_ROLLOUT_STORAGE',
+    },
+    adminRollout: {
+      doc: 'Percentage threshold to serve React for admins',
+      format: 'int',
+      default: 0,
+      env: 'REACT_MIGRATION_ADMIN_ROLLOUT',
+    },
+    respondentCookieName: {
+      doc: "Name of the cookie that will store respondents' assigned environment.",
+      format: String,
+      default: 'v2-respondent-ui',
+      env: 'REACT_MIGRATION_RESP_COOKIE_NAME',
+    },
+    adminCookieName: {
+      doc: "Name of the cookie that will store admins' choice of environment.",
+      format: String,
+      default: 'v2-admin-ui',
+      env: 'REACT_MIGRATION_ADMIN_COOKIE_NAME',
+    },
+    qaCookieName: {
+      doc: 'Priority cookie to select react/angular during QA.',
+      format: String,
+      default: 'v2-qa-ui',
+      env: 'REACT_MIGRATION_QA_COOKIE_NAME',
+    },
+    angularPhaseOutDate: {
+      doc: 'Last date that AngularJS app is available',
+      format: String,
+      default: '15 September 2022',
+      env: 'REACT_MIGRATION_ANGULAR_END_DATE',
+    },
+  },
 }
 
 export const prodOnlyVarsSchema: Schema<IProdOnlyVarsSchema> = {
@@ -330,10 +382,10 @@ export const prodOnlyVarsSchema: Schema<IProdOnlyVarsSchema> = {
           database: 'formsg',
           hosts: [ { host: 'database', port: 27017 } ]
         }
-        e.g. https://form.gov.sg will be parsed into: 
-        { 
-          scheme: 'https', 
-          hosts: [ { host: 'form.gov.sg' } ] 
+        e.g. https://form.gov.sg will be parsed into:
+        {
+          scheme: 'https',
+          hosts: [ { host: 'form.gov.sg' } ]
         }
       */
       if (uriObject.scheme !== 'mongodb') {

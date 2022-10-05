@@ -92,6 +92,7 @@ There are also environment secrets for each environment (`staging`, `staging-alt
 |:---------|------------|
 |`APP_NAME`|Application name for the environment.|
 |`DEPLOY_ENV`|Deployment environment on elastic beanstalk.|
+|`REACT_APP_FORMSG_SDK_MODE`|Determines the keys used in the formsg SDK. Set either `production` or `staging`.|
 
 ## Environment Variables
 
@@ -259,9 +260,9 @@ Forms can be protected with [recaptcha](https://www.google.com/recaptcha/about/)
 
 [Google Analytics](https://analytics.google.com/analytics/web) is used to track website traffic. Examples of events include number of visits to various forms, number of successful submissions and number of submission failures.
 
-| Variable         | Description                   |
-| :--------------- | ----------------------------- |
-| `GA_TRACKING_ID` | Google Analytics tracking ID. |
+| Variable                   | Description                   |
+| :------------------------- | ----------------------------- |
+| `REACT_APP_GA_TRACKING_ID` | Google Analytics tracking ID. |
 
 #### Sentry.io
 

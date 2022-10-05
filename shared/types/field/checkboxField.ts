@@ -1,8 +1,8 @@
 import { BasicField, FieldBase } from './base'
 
 export type CheckboxValidationOptions = {
-  customMax: number | null
-  customMin: number | null
+  customMax: number | '' | null
+  customMin: number | '' | null
 }
 
 export interface CheckboxFieldBase extends FieldBase {

@@ -74,12 +74,12 @@ const insertAgency = async ({
   shortName?: string
 } = {}): Promise<AgencyDocument> => {
   const Agency = getAgencyModel(mongoose)
-  const agency = await Agency.create({
+  const agency = (await Agency.create({
     shortName,
     fullName: `Government Testing Agency (${shortName})`,
     emailDomain: [mailDomain],
     logo: `/invalid-path/test-${shortName}.jpg`,
-  })
+  })) as AgencyDocument
 
   return agency
 }
@@ -115,11 +115,13 @@ const insertFormCollectionReqs = async ({
   mailDomain = 'test.gov.sg',
   mailName = 'test',
   shortName = 'govtest',
+  flags,
 }: {
   userId?: ObjectID
   mailName?: string
   mailDomain?: string
   shortName?: string
+  flags?: { lastSeenFeatureUpdateVersion: number }
 } = {}): Promise<{
   agency: AgencyDocument
   user: IUserSchema
@@ -132,6 +134,7 @@ const insertFormCollectionReqs = async ({
     email: `${mailName}@${mailDomain}`,
     _id: userId ?? new ObjectID(),
     agency: agency._id,
+    flags: flags,
   })
 
   return { agency, user }
