@@ -46,7 +46,11 @@ AuthRouter.post(
  * @returns 422 when the OTP is invalid
  * @returns 500 when error occurred whilst verifying the OTP
  */
-AuthRouter.post('/otp/verify', AuthController.handleLoginVerifyOtp)
+AuthRouter.post(
+  '/otp/verify',
+  limitRate({ max: rateLimitConfig.sendAuthOtp }),
+  AuthController.handleLoginVerifyOtp,
+)
 
 /**
  * Sign the user out of the session by clearing the relevant session cookie
