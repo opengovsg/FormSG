@@ -66,7 +66,8 @@ describe('FeedbackCsvGenerator', () => {
       )
     })
 
-    it('should add single quote before comment if comment starts with a formula character', () => {
+    // Testing for no regression in this generator as compared to the one in React.
+    it('should not add single quote before comment if comment starts with a formula character', () => {
       // Arrange
       const feedbackCsv = new FeedbackCsvGenerator(1)
       const feedback: FormFeedbackDto = {
@@ -82,7 +83,7 @@ describe('FeedbackCsvGenerator', () => {
         .tz('Asia/Singapore')
         .format('DD MMM YYYY hh:mm:ss A')
 
-      const insertedLine = `${insertedCreatedDate},'${feedback.comment},${feedback.rating}`
+      const insertedLine = `${insertedCreatedDate},${feedback.comment},${feedback.rating}`
 
       // Act
       feedbackCsv.addLineFromFeedback(feedback)
