@@ -1,4 +1,7 @@
-import { celebrate, Joi, Segments } from 'celebrate'
+import JoiDate from '@joi/date'
+import { celebrate, Joi as BaseJoi, Segments } from 'celebrate'
+
+const Joi = BaseJoi.extend(JoiDate) as typeof BaseJoi
 
 /**
  * Celebrate validation for the contact OTP sending endpoint.
@@ -20,5 +23,11 @@ export const validateContactOtpVerificationParams = celebrate({
       .required()
       .regex(/^\d{6}$/),
     contact: Joi.string().required(),
+  }),
+})
+
+export const validateUpdateUserLastSeenFeatureUpdateVersion = celebrate({
+  [Segments.BODY]: Joi.object({
+    version: Joi.number().required(),
   }),
 })

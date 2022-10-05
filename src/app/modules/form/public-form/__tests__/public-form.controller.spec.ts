@@ -76,7 +76,7 @@ describe('public-form.controller', () => {
   describe('handleRedirect', () => {
     const MOCK_FORM_ID = new ObjectId().toHexString()
     const MOCK_REQ = expressHandler.mockRequest({
-      params: { Id: MOCK_FORM_ID },
+      params: { formId: MOCK_FORM_ID },
       others: {
         protocol: 'https',
         hostname: 'mockHostName',

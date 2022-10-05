@@ -65,5 +65,34 @@ describe('FeedbackCsvGenerator', () => {
         expect.stringContaining(todaysDate),
       )
     })
+
+    // Testing for no regression in this generator as compared to the one in React.
+    it('should not add single quote before comment if comment starts with a formula character', () => {
+      // Arrange
+      const feedbackCsv = new FeedbackCsvGenerator(1)
+      const feedback: FormFeedbackDto = {
+        rating: 3,
+        comment: '=formula',
+        formId: new ObjectId().toHexString(),
+        created: new Date('2019-11-05T13:12:14').toISOString() as DateString,
+        lastModified: new Date(
+          '2019-11-05T13:12:14',
+        ).toISOString() as DateString,
+      }
+      const insertedCreatedDate = moment(feedback.created)
+        .tz('Asia/Singapore')
+        .format('DD MMM YYYY hh:mm:ss A')
+
+      const insertedLine = `${insertedCreatedDate},${feedback.comment},${feedback.rating}`
+
+      // Act
+      feedbackCsv.addLineFromFeedback(feedback)
+
+      //Assert
+      expect(feedbackCsv.idx).toEqual(3)
+      expect(feedbackCsv.records[2]).toEqual(
+        expect.stringContaining(insertedLine),
+      )
+    })
   })
 })

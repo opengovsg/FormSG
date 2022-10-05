@@ -10,7 +10,9 @@
   - [Features](#features)
   - [Local Development (Docker)](#local-development-docker)
     - [Prerequisites](#prerequisites)
+    - [First Setup](#first-setup)
     - [Running Locally](#running-locally)
+    - [Accessing email locally](#accessing-email-locally)
     - [Environment variables](#environment-variables)
     - [Trouble-shooting](#trouble-shooting)
   - [Testing](#testing)
@@ -20,9 +22,9 @@
       - [End-to-end tests](#end-to-end-tests)
   - [Architecture](#architecture)
   - [MongoDB Scripts](#mongodb-scripts)
-  - [Maintenance Banners](#maintenance-banners)
   - [Contributing](#contributing)
   - [Support](#support)
+  - [Acknowledgements](#acknowledgements)
 
 ## Features
 
@@ -37,7 +39,7 @@ Notable features include:
 - (Singapore government agencies only) Citizen authentication with [SingPass](https://www.singpass.gov.sg/singpass/common/aboutus)
 - (Singapore government agencies only) Corporate authentication with [CorpPass](https://www.corppass.gov.sg/corppass/common/aboutus)
 - (Singapore government agencies only) Automatic prefill of verified data with [MyInfo](https://www.singpass.gov.sg/myinfo/common/aboutus)
-- Webhooks functionality via the official [FormSG JavaScript SDK](https://github.com/opengovsg/formsg-sdk) and contributor-supported [FormSG Ruby SDK] (https://github.com/opengovsg/formsg-ruby-sdk)
+- Webhooks functionality via the official [FormSG JavaScript SDK](https://github.com/opengovsg/formsg-sdk) and contributor-supported [FormSG Ruby SDK](<https://github.com/opengovsg/formsg-ruby-sdk>)
 
 The current product roadmap includes:
 
@@ -53,15 +55,37 @@ The current product roadmap includes:
 
 Install [docker and docker-compose](https://docs.docker.com/get-docker/).
 
+### First Setup
+
+Run the following shell command to install relevant npm packages.
+
+```bash
+npm install
+```
+
+If you are on Mac OS X, you may want to allow Docker to use more RAM (minimum of 4GB) by clicking on the Docker icon on the toolbar, clicking on the "Preferences" menu item, then clicking on the "Resources" link on the left.
+
+If you are on macOS Monetery or higher, port 5000 is now used by the system. This conflicts with the default port used by the backend. You could either:
+
+- Update the backend ports in these environment variables:
+  - `Dockerfile.development`
+    - Update exposed port
+  - `docker-compose.yml`
+    - Introduce a new env var `PORT`
+    - Update `APP_URL`
+  - `frontend/package.json`
+    - Update the proxy URL
+- [Disable control center](https://apple.stackexchange.com/a/431164)
+
 ### Running Locally
 
-Run the following shell command to build the Docker image from scratch. This will usually take 10 or so minutes.
+Run the following shell command to build the Docker image from scratch. This will usually take 10 or so minutes. This command runs the backend services specified under [docker-compose.yml](docker-compose.yml) and the React frontend on the native host.
 
 ```bash
 npm run dev
 ```
 
-After the Docker image has finished building, the application can be accessed at [localhost:5001](localhost:5001).
+After the Docker image has finished building, the React application can be accessed at [localhost:3000](localhost:3000). The backend API server can be accessed at [localhost:5001](localhost:5001).
 
 If there are no dependency changes in `package.json` or changes in the
 `src/app/server.ts` file, you can run
@@ -72,6 +96,20 @@ docker-compose up
 
 which does **not** rebuild the Docker image from scratch. This command usually
 only takes ~15 seconds to finish starting up the image.
+
+### Adding dependencies
+
+Run `npm install` as per usual.
+
+For backend, run
+
+```
+docker-compose up --build --renew-anon-volumes
+```
+
+which will rebuild the backend Docker image and not reuse the existing node_modules volume.
+
+As frontend project is currently not using Docker, no other steps are required.
 
 ### Accessing email locally
 

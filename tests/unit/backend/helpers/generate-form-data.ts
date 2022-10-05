@@ -160,6 +160,7 @@ export const generateDefaultField = (
 export const generateProcessedSingleAnswerResponse = (
   field: FormFieldSchema,
   answer = 'answer',
+  signature?: string,
 ): ProcessedSingleAnswerResponse => {
   if (
     [BasicField.Attachment, BasicField.Table, BasicField.Checkbox].includes(
@@ -176,12 +177,14 @@ export const generateProcessedSingleAnswerResponse = (
     answer,
     fieldType: field.fieldType,
     isVisible: true,
+    signature,
   } as ProcessedSingleAnswerResponse
 }
 
 export const generateSingleAnswerResponse = (
   field: FormFieldSchema,
   answer = field.fieldType === BasicField.Section ? '' : 'answer',
+  signature?: string,
 ): SingleAnswerFieldResponse => {
   if (
     [BasicField.Attachment, BasicField.Table, BasicField.Checkbox].includes(
@@ -196,6 +199,7 @@ export const generateSingleAnswerResponse = (
     _id: field._id,
     answer,
     fieldType: field.fieldType,
+    signature,
   } as SingleAnswerFieldResponse
 }
 

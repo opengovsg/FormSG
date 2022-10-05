@@ -19,10 +19,12 @@ const MyInfoResponseBase = z.object({
 const VerifiableResponseBase = z.object({
   signature: z.string().optional(),
 })
+export type VerifiableResponseBase = z.infer<typeof VerifiableResponseBase>
 
 const SingleAnswerResponse = ResponseBase.extend({
   answer: z.string(),
 })
+export type SingleAnswerResponse = z.infer<typeof SingleAnswerResponse>
 
 const MultiAnswerResponse = ResponseBase.extend({
   answerArray: z.array(z.string()),

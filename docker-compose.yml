@@ -1,7 +1,7 @@
 # This docker-compose file is only for local development purposes.
 version: '3'
 services:
-  formsg:
+  backend:
     build:
       context: .
       dockerfile: Dockerfile.development
@@ -40,6 +40,7 @@ services:
       - CSP_REPORT_URI=https://random@sentry.io/123456
       # This needs to be removed and replaced with a real tracking ID in a local .env file
       # in order to enable GA in a local environment
+      # TODO: remove after React rollout #4786
       - GA_TRACKING_ID=mockGATrackingId
       # Test credentials from reCAPTCHA docs
       # https://developers.google.com/recaptcha/docs/faq#id-like-to-run-automated-tests-with-recaptcha.-what-should-i-do
@@ -103,11 +104,17 @@ services:
       - SES_USER
       - OTP_LIFE_SPAN
       - AWS_REGION
-
+      # this needs to be replaced with the ID of a feedback form that you create
+      # in your local environment
+      - REACT_TO_ANGULAR_FEEDBACK_FORM_ID=62da6a569ee8e90143b5da26
+      - REACT_MIGRATION_ANGULAR_END_DATE=15 September 2022
+      - REACT_MIGRATION_RESP_ROLLOUT_EMAIL=1
+      - REACT_MIGRATION_RESP_ROLLOUT_STORAGE=1
+      - REACT_MIGRATION_ADMIN_ROLLOUT=1
   mockpass:
     build: https://github.com/opengovsg/mockpass.git
     depends_on:
-      - formsg
+      - backend
     environment:
       - CORPPASS_ASSERT_ENDPOINT=http://localhost:5000/corppass/login
       - SINGPASS_ASSERT_ENDPOINT=http://localhost:5000/singpass/login
@@ -116,33 +123,34 @@ services:
       - SHOW_LOGIN_PAGE=true
       - SINGPASS_IDP_ID=https://saml-internet.singpass.gov.sg/FIM/sps/SingpassIDPFed/saml20
       - CORPPASS_IDP_ID=https://saml.corppass.gov.sg/FIM/sps/CorpIDPFed/saml20
-    network_mode: 'service:formsg' # reuse formsg service's network stack so that it can resolve localhost:5156 to mockpass:5156
+    network_mode: 'service:backend' # reuse backend service's network stack so that it can resolve localhost:5156 to mockpass:5156
 
   database:
-    image: 'mongo:4.2'
+    image: 'bitnami/mongodb:4.4'
     container_name: 'formsg-db'
     environment:
-      - MONGO_INITDB_DATABASE=formsg
+      - MONGODB_DATABASE=formsg
+      - MONGODB_ADVERTISED_HOSTNAME=database
+      - MONGODB_REPLICA_SET_MODE=primary
+      - ALLOW_EMPTY_PASSWORD=yes
     volumes:
-      - mongodata:/data/db
+      - mongodb_data:/bitnami/mongodb
       - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
     ports:
       - '27017:27017'
-    logging:
-      driver: none
 
   localstack:
     image: localstack/localstack:0.11.5
     container_name: formsg-localstack
     depends_on:
-      - formsg
+      - backend
     environment:
       - SERVICES=s3,sqs,secretsmanager
       - DATA_DIR=/tmp/localstack/data
     volumes:
       - './.localstack:/tmp/localstack'
       - '/var/run/docker.sock:/var/run/docker.sock'
-    network_mode: 'service:formsg' # reuse formsg service's network stack so that it can resolve localhost:4566 to localstack:4566
+    network_mode: 'service:backend' # reuse backend service's network stack so that it can resolve localhost:4566 to localstack:4566
     logging:
       driver: none
 
@@ -152,4 +160,5 @@ services:
       - '1080:1080'
 
 volumes:
-  mongodata:
+  mongodb_data:
+    driver: local

@@ -9,7 +9,7 @@
     "libphonenumber-js": "^1.9.43",
     "lodash": "^4.17.21",
     "type-fest": "^2.8.0",
-    "validator": "^13.6.0",
+    "validator": "^13.7.0",
     "zod": "^3.11.6"
   },
   "devDependencies": {

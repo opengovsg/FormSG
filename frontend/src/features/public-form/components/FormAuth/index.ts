@@ -1,0 +1,1 @@
+export { FormAuth } from './FormAuth'

@@ -18,7 +18,12 @@ export const getClientEnvVars = (): ClientEnvVars => {
     isSPMaintenance: spcpMyInfoConfig.isSPMaintenance, // Singpass maintenance message
     isCPMaintenance: spcpMyInfoConfig.isCPMaintenance, // Corppass maintenance message
     myInfoBannerContent: spcpMyInfoConfig.myInfoBannerContent, // MyInfo maintenance message
+    // TODO: remove after React rollout #4786
     GATrackingID: googleAnalyticsConfig.GATrackingID,
     spcpCookieDomain: spcpMyInfoConfig.spcpCookieDomain, // Cookie domain used for removing spcp cookies
+    respondentRolloutEmail: config.reactMigration.respondentRolloutEmail,
+    respondentRolloutStorage: config.reactMigration.respondentRolloutStorage,
+    adminRollout: config.reactMigration.adminRollout,
+    angularPhaseOutDate: config.reactMigration.angularPhaseOutDate,
   }
 }
