@@ -17,6 +17,7 @@ ClientRouter.get(
 )
 
 /**
+ * @deprecated use '/env' endpoint instead.
  * Generate the templated Javascript code with environment variables for the frontend
  * @route GET /api/v3/client/environment
  * @return 200 when code generation is successful

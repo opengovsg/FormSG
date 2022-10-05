@@ -1,0 +1,1 @@
+export const PREVIEW_MOCK_UINFIN = 'S1234567A'

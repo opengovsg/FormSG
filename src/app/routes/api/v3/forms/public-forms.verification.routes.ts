@@ -42,7 +42,10 @@ PublicFormsVerificationRouter.route(
  */
 PublicFormsVerificationRouter.route(
   '/:formId([a-fA-F0-9]{24})/fieldverifications/:transactionId([a-fA-F0-9]{24})/fields/:fieldId([a-fA-F0-9]{24})/otp/verify',
-).post(VerificationController.handleOtpVerification)
+).post(
+  limitRate({ max: rateLimitConfig.sendAuthOtp }),
+  VerificationController.handleOtpVerification,
+)
 
 /**
  * Route for generating a new otp for a given field
