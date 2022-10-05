@@ -43,7 +43,6 @@ jobs:
       - run: npm run lint-ci
 
   build:
-    needs: lint
     runs-on: ubuntu-latest
     env:
       NODE_OPTIONS: '--max-old-space-size=4096'
@@ -63,7 +62,7 @@ jobs:
       - run: npm run build
 
   test-e2e:
-    needs: lint
+    needs: build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
