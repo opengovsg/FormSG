@@ -25,17 +25,3 @@ updates:
       prefix: 'fix'
       prefix-development: 'chore'
       include: 'scope'
-  - package-ecosystem: 'npm' # See documentation for possible values
-    directory: '/frontend' # Location of package manifests
-    schedule:
-      interval: 'daily'
-      time: '05:00'
-      timezone: 'Asia/Singapore'
-    commit-message:
-      prefix: 'fix'
-      prefix-development: 'chore'
-      include: 'scope'
-    labels:
-      - 'react'
-      - 'dependencies'
-    target-branch: 'form-v2/develop'
