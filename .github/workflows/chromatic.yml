@@ -56,3 +56,5 @@ jobs:
           onlyChanged: true
           # Skip running Chromatic on dependabot PRs
           skip: dependabot/**
+          # Only run when the frontend directory has changes
+          untraced: '!(frontend)/**'
