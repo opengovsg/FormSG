@@ -7,7 +7,6 @@ import { FieldCreateDto, FormFieldDto } from '~shared/types/field'
 export enum FieldBuilderState {
   CreatingField,
   EditingField,
-  EditingEndPage,
   Inactive,
 }
 
@@ -21,7 +20,6 @@ type FieldBuilderCreateEditStateData =
       state: FieldBuilderState.EditingField
       field: FormFieldDto
     }
-  | { state: FieldBuilderState.EditingEndPage }
 
 export type FieldBuilderStore = {
   updateCreateState: (
@@ -30,7 +28,6 @@ export type FieldBuilderStore = {
     holding?: boolean,
   ) => void
   updateEditState: (field: FormFieldDto, holding?: boolean) => void
-  setEditEndPage: (holding?: boolean) => void
   setToInactive: (holding?: boolean) => void
   stateData:
     | FieldBuilderCreateEditStateData
@@ -98,16 +95,6 @@ export const useFieldBuilderStore = create<FieldBuilderStore>()(
         set({ stateData })
       }
     },
-    setEditEndPage: (holding?: boolean) => {
-      const nextState: FieldBuilderCreateEditStateData = {
-        state: FieldBuilderState.EditingEndPage,
-      }
-      if (holding) {
-        set({ holdingStateData: nextState })
-      } else {
-        set({ stateData: nextState })
-      }
-    },
     setToInactive: (holding?: boolean) => {
       const nextState: FieldBuilderStore['holdingStateData'] = {
         state: FieldBuilderState.Inactive,
@@ -140,7 +127,3 @@ export const updateEditStateSelector = (
 export const setToInactiveSelector = (
   state: FieldBuilderStore,
 ): FieldBuilderStore['setToInactive'] => state.setToInactive
-
-export const setToEditEndPageSelector = (
-  state: FieldBuilderStore,
-): FieldBuilderStore['setEditEndPage'] => state.setEditEndPage

@@ -9,13 +9,13 @@ import {
   DrawerTabs,
   useCreatePageSidebar,
 } from '../../common/CreatePageSidebarContext'
+import EndPageDrawer from '../../end-page/EndPageDrawer'
 import {
   FieldBuilderState,
   fieldBuilderStateSelector,
   useFieldBuilderStore,
 } from '../useFieldBuilderStore'
 
-import { EditEndPageDrawer } from './EditEndPageDrawer/EditEndPageDrawer'
 import DesignDrawer from './DesignDrawer'
 import { EditFieldDrawer } from './EditFieldDrawer'
 import { FieldListDrawer } from './FieldListDrawer'
@@ -53,8 +53,6 @@ export const BuilderAndDesignDrawer = (): JSX.Element | null => {
           case FieldBuilderState.EditingField:
           case FieldBuilderState.CreatingField:
             return <EditFieldDrawer />
-          case FieldBuilderState.EditingEndPage:
-            return <EditEndPageDrawer />
           default:
             // Inactive state
             return <FieldListDrawer />
@@ -62,8 +60,8 @@ export const BuilderAndDesignDrawer = (): JSX.Element | null => {
       case DrawerTabs.Design:
         return <DesignDrawer />
       default:
-        // Logic drawer open
-        return null
+        // Logic or endpage drawer open
+        return <EndPageDrawer />
     }
   }, [fieldBuilderState, activeTab])
 

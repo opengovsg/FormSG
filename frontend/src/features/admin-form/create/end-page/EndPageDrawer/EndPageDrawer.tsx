@@ -7,7 +7,15 @@ import {
   useWatch,
 } from 'react-hook-form'
 import { useDebounce } from 'react-use'
-import { FormControl, Stack } from '@chakra-ui/react'
+import {
+  Box,
+  Divider,
+  Flex,
+  FormControl,
+  Stack,
+  Tabs,
+  Text,
+} from '@chakra-ui/react'
 import { cloneDeep } from 'lodash'
 import validator from 'validator'
 
@@ -24,20 +32,20 @@ import Textarea from '~components/Textarea'
 import { useMutateFormPage } from '~features/admin-form/common/mutations'
 import { useAdminForm } from '~features/admin-form/common/queries'
 
+import { CreatePageDrawerCloseButton } from '../../builder-and-design/BuilderAndDesignDrawer/CreatePageDrawerCloseButton'
+import { DrawerContentContainer } from '../../builder-and-design/BuilderAndDesignDrawer/EditFieldDrawer/edit-fieldtype/common/DrawerContentContainer'
 import {
   setIsDirtySelector,
   useDirtyFieldStore,
-} from '../../useDirtyFieldStore'
+} from '../../builder-and-design/useDirtyFieldStore'
+import { useCreatePageSidebar } from '../../common'
 import {
-  resetEndPageDataSelector,
-  setEndPageDataSelector,
-  useEndPageBuilderStore,
-} from '../../useEndPageBuilderStore'
-import {
+  dataSelector,
+  resetDataSelector,
+  setDataSelector,
   setToInactiveSelector,
-  useFieldBuilderStore,
-} from '../../useFieldBuilderStore'
-import { DrawerContentContainer } from '../EditFieldDrawer/edit-fieldtype/common/DrawerContentContainer'
+  useEndPageStore,
+} from '../useEndPageStore'
 
 const buttonLinkRules: RegisterOptions<FormEndPage, 'buttonLink'> = {
   validate: (url: string) =>
@@ -49,30 +57,24 @@ const buttonLinkRules: RegisterOptions<FormEndPage, 'buttonLink'> = {
     'Please enter a valid URL (starting with https:// or http://)',
 } as FieldValues
 
-interface EndPageBuilderInputProps {
-  endPage: FormEndPage
-}
-
-export const EndPageBuilderInput = ({
-  endPage,
-}: EndPageBuilderInputProps): JSX.Element => {
+export const EndPageInput = (): JSX.Element => {
   const isMobile = useIsMobile()
   const { endPageMutation } = useMutateFormPage()
 
-  const closeBuilderDrawer = useFieldBuilderStore(setToInactiveSelector)
   const setIsDirty = useDirtyFieldStore(setIsDirtySelector)
 
-  const { setEndPageBuilderState, resetEndPageBuilderState } =
-    useEndPageBuilderStore((state) => ({
-      setEndPageBuilderState: setEndPageDataSelector(state),
-      resetEndPageBuilderState: resetEndPageDataSelector(state),
-    }))
+  const { endPageData, setData, setToInactive } = useEndPageStore(
+    useCallback(
+      (state) => ({
+        endPageData: dataSelector(state),
+        setData: setDataSelector(state),
+        setToInactive: setToInactiveSelector(state),
+      }),
+      [],
+    ),
+  )
 
-  // Load the end page into the store when user opens customization page
-  useEffect(() => {
-    setEndPageBuilderState(endPage)
-    return () => resetEndPageBuilderState()
-  }, [endPage, setEndPageBuilderState, resetEndPageBuilderState])
+  const { handleClose } = useCreatePageSidebar()
 
   const {
     register,
@@ -81,7 +83,7 @@ export const EndPageBuilderInput = ({
     handleSubmit,
   } = useForm<FormEndPage>({
     mode: 'onBlur',
-    defaultValues: endPage,
+    defaultValues: endPageData,
   })
 
   // Update dirty state of builder so confirmation modal can be shown
@@ -95,9 +97,9 @@ export const EndPageBuilderInput = ({
 
   const handleEndPageBuilderChanges = useCallback(
     (endPageInputs) => {
-      setEndPageBuilderState({ ...(endPageInputs as FormEndPage) })
+      setData({ ...(endPageInputs as FormEndPage) })
     },
-    [setEndPageBuilderState],
+    [setData],
   )
 
   const watchedInputs = useWatch({
@@ -114,8 +116,10 @@ export const EndPageBuilderInput = ({
   ])
 
   const handleUpdateEndPage = handleSubmit((endPage) =>
-    endPageMutation.mutate(endPage, { onSuccess: () => closeBuilderDrawer() }),
+    endPageMutation.mutate(endPage, { onSuccess: () => setToInactive() }),
   )
+
+  const handleCloseDrawer = useCallback(() => handleClose(false), [handleClose])
 
   return (
     <DrawerContentContainer>
@@ -182,7 +186,7 @@ export const EndPageBuilderInput = ({
           variant="clear"
           colorScheme="secondary"
           isDisabled={endPageMutation.isLoading}
-          onClick={() => closeBuilderDrawer()}
+          onClick={() => handleCloseDrawer()}
         >
           Cancel
         </Button>
@@ -191,8 +195,39 @@ export const EndPageBuilderInput = ({
   )
 }
 
-export const EditEndPage = (): JSX.Element | null => {
+export const EndPageDrawer = (): JSX.Element | null => {
   const { data: form } = useAdminForm()
 
-  return form ? <EndPageBuilderInput endPage={form.endPage} /> : null
+  const { endPageData, setData, resetData } = useEndPageStore(
+    useCallback(
+      (state) => ({
+        endPageData: dataSelector(state),
+        setData: setDataSelector(state),
+        resetData: resetDataSelector(state),
+      }),
+      [],
+    ),
+  )
+
+  useEffect(() => {
+    setData(form?.endPage)
+    return resetData
+  }, [form?.endPage, resetData, setData])
+
+  if (!endPageData) return null
+
+  return (
+    <Tabs pos="relative" h="100%" display="flex" flexDir="column">
+      <Box pt="1rem" px="1.5rem" bg="white">
+        <Flex justify="space-between">
+          <Text textStyle="subhead-3" color="secondary.500" mb="1rem">
+            Thank you page
+          </Text>
+          <CreatePageDrawerCloseButton />
+        </Flex>
+        <Divider w="auto" mx="-1.5rem" />
+      </Box>
+      <EndPageInput />
+    </Tabs>
+  )
 }

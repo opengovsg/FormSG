@@ -14,15 +14,13 @@ import {
 } from '~features/public-form/components/FormLogo'
 import { useBgColor } from '~features/public-form/components/PublicFormWrapper'
 
-import {
-  endPageDataSelector,
-  useEndPageBuilderStore,
-} from '../useEndPageBuilderStore'
-import { useDesignColorTheme } from '../utils/useDesignColorTheme'
+import { useDesignColorTheme } from '../builder-and-design/utils/useDesignColorTheme'
 
-export const EndPageView = ({ ...props }: FlexProps): JSX.Element => {
+import { dataSelector, useEndPageStore } from './useEndPageStore'
+
+export const EndPageTab = ({ ...props }: FlexProps): JSX.Element => {
   const { data: form, isLoading } = useAdminForm()
-  const endPageFromStore = useEndPageBuilderStore(endPageDataSelector)
+  const endPageFromStore = useEndPageStore(dataSelector)
 
   // When drawer is opened, store is populated. We always want the drawer settings
   // to be previewed, so when the store is populated, prioritize that setting.
