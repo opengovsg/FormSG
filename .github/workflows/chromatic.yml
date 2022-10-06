@@ -3,6 +3,10 @@
 # Workflow name
 name: 'Chromatic'
 
+defaults:
+  run:
+    working-directory: frontend
+
 # Event for the workflow
 on: push
 
