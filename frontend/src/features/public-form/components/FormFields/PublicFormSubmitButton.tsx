@@ -1,6 +1,6 @@
-import { useMemo } from 'react'
-import { useFormContext, useFormState, useWatch } from 'react-hook-form'
-import { Stack } from '@chakra-ui/react'
+import { MouseEventHandler, useMemo } from 'react'
+import { useFormState, useWatch } from 'react-hook-form'
+import { Stack, VisuallyHidden } from '@chakra-ui/react'
 
 import { FormField, LogicDto, MyInfoFormField } from '~shared/types'
 
@@ -16,6 +16,7 @@ interface PublicFormSubmitButtonProps {
   formFields: MyInfoFormField<FormField>[]
   formLogics: LogicDto[]
   colorTheme: string
+  onSubmit: MouseEventHandler<HTMLButtonElement>
 }
 
 /**
@@ -26,6 +27,7 @@ export const PublicFormSubmitButton = ({
   formFields,
   formLogics,
   colorTheme,
+  onSubmit,
 }: PublicFormSubmitButtonProps): JSX.Element => {
   const isMobile = useIsMobile()
   const { isSubmitting } = useFormState()
@@ -45,11 +47,13 @@ export const PublicFormSubmitButton = ({
         isFullWidth={isMobile}
         w="100%"
         colorScheme={`theme-${colorTheme}` as ThemeColorScheme}
-        type="submit"
+        type="button"
         isLoading={isSubmitting}
         isDisabled={!!preventSubmissionLogic}
         loadingText="Submitting"
+        onClick={onSubmit}
       >
+        <VisuallyHidden>End of form.</VisuallyHidden>
         {preventSubmissionLogic ? 'Submission disabled' : 'Submit now'}
       </Button>
       {preventSubmissionLogic ? (

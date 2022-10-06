@@ -1,6 +1,8 @@
 import { Router } from 'express'
 
+import { rateLimitConfig } from '../../../../config/config'
 import * as UserController from '../../../../modules/user/user.controller'
+import { limitRate } from '../../../../utils/limit-rate'
 
 export const UserRouter = Router()
 
@@ -28,7 +30,11 @@ UserRouter.get('/', UserController.handleFetchUser)
  * @returns 422 on OTP creation or SMS send failure, or if the user cannot be found
  * @returns 500 on application or database errors
  */
-UserRouter.post('/contact/otp/generate', UserController.handleContactSendOtp)
+UserRouter.post(
+  '/contact/otp/generate',
+  limitRate({ max: rateLimitConfig.sendAuthOtp }),
+  UserController.handleContactSendOtp,
+)
 
 /**
  * Verify the contact verification one-time password (OTP) for the user as part
@@ -41,7 +47,11 @@ UserRouter.post('/contact/otp/generate', UserController.handleContactSendOtp)
  * @returns 422 when OTP is invalid
  * @returns 500 when OTP is malformed or for unknown errors
  */
-UserRouter.post('/contact/otp/verify', UserController.handleContactVerifyOtp)
+UserRouter.post(
+  '/contact/otp/verify',
+  limitRate({ max: rateLimitConfig.sendAuthOtp }),
+  UserController.handleContactVerifyOtp,
+)
 
 /**
  * Verify the contact verification one-time password (OTP) for the user as part

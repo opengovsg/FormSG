@@ -1,4 +1,4 @@
-import { memo, useCallback, useEffect, useMemo, useRef } from 'react'
+import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { Draggable } from 'react-beautiful-dnd'
 import { FormProvider, useForm } from 'react-hook-form'
 import { BiCog, BiDuplicate, BiGridHorizontal, BiTrash } from 'react-icons/bi'
@@ -265,6 +265,7 @@ export const FieldRowContainer = ({
         <Box
           _first={{ pt: 0 }}
           _last={{ pb: 0 }}
+          py="0.375rem"
           {...provided.draggableProps}
           ref={provided.innerRef}
         >
@@ -334,13 +335,13 @@ export const FieldRowContainer = ({
               </Fade>
               <Box
                 px={{ base: '0.75rem', md: '1.5rem' }}
-                pb={{ base: '0.75rem', md: '1rem' }}
+                pb={{ base: '0.75rem', md: '1.5rem' }}
                 w="100%"
                 pointerEvents={isActive ? undefined : 'none'}
                 opacity={isActive || !isHiddenByLogic ? '100%' : '30%'}
               >
                 <FormProvider {...formMethods}>
-                  <MemoFieldRow
+                  <FieldRow
                     field={field}
                     colorTheme={colorTheme}
                     showMyInfoBadge={isMyInfoField}
@@ -403,13 +404,13 @@ export const FieldRowContainer = ({
   )
 }
 
-type MemoFieldRowProps = {
+type FieldRowProps = {
   field: FormFieldDto
   colorTheme?: FormColorTheme
   showMyInfoBadge?: boolean
 }
 
-const MemoFieldRow = memo(({ field, ...rest }: MemoFieldRowProps) => {
+const FieldRow = ({ field, ...rest }: FieldRowProps) => {
   switch (field.fieldType) {
     case BasicField.Section:
       return <SectionFieldRow field={field} {...rest} />
@@ -464,4 +465,4 @@ const MemoFieldRow = memo(({ field, ...rest }: MemoFieldRowProps) => {
     case BasicField.Table:
       return <TableField schema={field} {...rest} />
   }
-})
+}

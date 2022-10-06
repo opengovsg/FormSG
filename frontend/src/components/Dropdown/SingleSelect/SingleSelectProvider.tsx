@@ -51,7 +51,7 @@ export const SingleSelectProvider = ({
   filter = defaultFilter,
   nothingFoundLabel = 'No matching results',
   placeholder: placeholderProp,
-  clearButtonLabel = 'Clear dropdown input',
+  clearButtonLabel = 'Clear selection',
   isClearable = true,
   isSearchable = true,
   initialIsOpen,
@@ -102,6 +102,7 @@ export const SingleSelectProvider = ({
   )
 
   const virtualListRef = useRef<VirtuosoHandle>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
 
   const {
     toggleMenu,
@@ -268,6 +269,7 @@ export const SingleSelectProvider = ({
         setIsFocused,
         resetInputValue,
         inputAria,
+        inputRef,
         virtualListRef,
         virtualListHeight,
       }}

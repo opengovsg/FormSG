@@ -43,41 +43,6 @@ export default {
 } as Meta
 
 const Template: Story = () => <FormStartPage />
-export const NoLogo = Template.bind({})
-NoLogo.parameters = {
-  msw: [
-    getPublicFormResponse({
-      overrides: {
-        form: {
-          title: 'storybook test title',
-        },
-      },
-      delay: 0,
-    }),
-  ],
-}
-
-export const CustomLogo = Template.bind({})
-CustomLogo.parameters = {
-  msw: [
-    ...envHandlers,
-    getCustomLogoResponse(),
-    getPublicFormResponse({
-      overrides: {
-        form: {
-          title: 'storybook test title',
-          startPage: {
-            logo: {
-              state: FormLogoState.Custom,
-              fileId: 'mockFormLogo',
-            },
-          },
-        },
-      },
-      delay: 0,
-    }),
-  ],
-}
 
 export const NoEstimatedTime = Template.bind({})
 NoEstimatedTime.parameters = {

@@ -1,7 +1,6 @@
 import { useCallback, useMemo } from 'react'
 import {
   BiDotsHorizontalRounded,
-  BiHelpCircle,
   BiLeftArrowAlt,
   BiShareAlt,
   BiShow,
@@ -24,7 +23,6 @@ import {
 
 import { AdminFormDto } from '~shared/types/form/form'
 
-import { FORM_GUIDE } from '~constants/links'
 import {
   ACTIVE_ADMINFORM_BUILDER_ROUTE_REGEX,
   ADMINFORM_BUILD_SUBROUTE,
@@ -188,17 +186,6 @@ export const AdminFormNavbar = ({
         />
         <Box display={{ base: 'none', md: 'flex' }}>
           <ButtonGroup spacing="0.5rem" isDisabled={!formInfo}>
-            <Tooltip label="Help">
-              <IconButton
-                aria-label="Help"
-                variant="outline"
-                onClick={(e) => {
-                  e.preventDefault()
-                  window.open(FORM_GUIDE)
-                }}
-                icon={<BiHelpCircle />}
-              />
-            </Tooltip>
             <Tooltip label="Manage collaborators">
               <IconButton
                 aria-label="Manage collaborators"

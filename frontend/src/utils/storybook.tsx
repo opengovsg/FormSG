@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
-import { Box, Center, useDisclosure } from '@chakra-ui/react'
+import { Box, BoxProps, Center, useDisclosure } from '@chakra-ui/react'
 import { DecoratorFn } from '@storybook/react'
 import dayjs from 'dayjs'
 import mockdate from 'mockdate'
@@ -23,6 +23,15 @@ import { fillHeightCss } from './fillHeightCss'
 export const centerDecorator: DecoratorFn = (storyFn) => (
   <Center>{storyFn()}</Center>
 )
+
+export const fixedHeightDecorator =
+  (height: BoxProps['h']): DecoratorFn =>
+  (Story) =>
+    (
+      <Box h={height}>
+        <Story />
+      </Box>
+    )
 
 export const fullScreenDecorator: DecoratorFn = (storyFn) => (
   <Box w="100vw" css={fillHeightCss}>

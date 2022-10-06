@@ -121,6 +121,12 @@ SolidSuccess.args = {
   colorScheme: 'success',
 }
 
+export const SolidSubtle = ButtonGroupTemplate.bind({})
+SolidSubtle.args = {
+  variant: 'solid',
+  colorScheme: 'subtle',
+}
+
 export const ReversePrimary = ButtonGroupTemplate.bind({})
 ReversePrimary.args = {
   variant: 'reverse',

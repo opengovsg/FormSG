@@ -17,11 +17,11 @@ import { useCollaboratorWizard } from '../CollaboratorWizardContext'
 export const RemoveSelfScreen = (): JSX.Element | null => {
   const isMobile = useIsMobile()
   const { mutateRemoveSelf } = useMutateCollaborators()
-  const { handleBackToList } = useCollaboratorWizard()
+  const { handleBackToList, onClose } = useCollaboratorWizard()
 
   const handleRemoveSelf = useCallback(() => {
-    return mutateRemoveSelf.mutate()
-  }, [mutateRemoveSelf])
+    return mutateRemoveSelf.mutate(undefined, { onSuccess: onClose })
+  }, [mutateRemoveSelf, onClose])
 
   return (
     <>

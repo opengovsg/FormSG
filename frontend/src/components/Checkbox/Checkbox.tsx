@@ -41,6 +41,7 @@ export const Checkbox = forwardRef<CheckboxProps, 'input'>(
           <Icon
             as={BxCheckAnimated}
             __css={iconStyles}
+            aria-label={`Checkbox icon, ${props.isChecked ? '' : 'un'}checked`}
             // This prop needs to be passed explicitly for animations
             isChecked={props.isChecked}
           />
@@ -106,6 +107,7 @@ const OthersCheckbox = forwardRef<CheckboxProps, 'input'>((props, ref) => {
     <Checkbox
       ref={mergedCheckboxRef}
       __css={styles.othersCheckbox}
+      aria-label="Other"
       {...props}
       onChange={handleCheckboxChange}
     >

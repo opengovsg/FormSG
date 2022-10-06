@@ -92,6 +92,7 @@ There are also environment secrets for each environment (`staging`, `staging-alt
 |:---------|------------|
 |`APP_NAME`|Application name for the environment.|
 |`DEPLOY_ENV`|Deployment environment on elastic beanstalk.|
+|`REACT_APP_FORMSG_SDK_MODE`|Determines the keys used in the formsg SDK. Set either `production` or `staging`.|
 
 ## Environment Variables
 
@@ -259,8 +260,8 @@ Forms can be protected with [recaptcha](https://www.google.com/recaptcha/about/)
 
 [Google Analytics](https://analytics.google.com/analytics/web) is used to track website traffic. Examples of events include number of visits to various forms, number of successful submissions and number of submission failures.
 
-| Variable         | Description                   |
-| :--------------- | ----------------------------- |
+| Variable                   | Description                   |
+| :------------------------- | ----------------------------- |
 | `REACT_APP_GA_TRACKING_ID` | Google Analytics tracking ID. |
 
 #### Sentry.io
@@ -303,11 +304,16 @@ Note that MyInfo is currently not supported for storage mode forms and enabling 
 | `SINGPASS_IDP_ID`                | Partner ID of National Digital Identity Office for SingPass authentication.                                                                                                                     |
 | `SP_OIDC_NDI_DISCOVERY_ENDPOINT` | NDI's Singpass OIDC Discovery Endpoint                                                                                                                                                          |
 | `SP_OIDC_NDI_JWKS_ENDPOINT`      | NDI's Singpass OIDC JWKS Endpoint                                                                                                                                                               |
-| `SP_OIDC_RP_CLIENT_ID`           | The Relying Party's Client ID as registered with NDI                                                                                                                                            |
-| `SP_OIDC_RP_REDIRECT_URL`        | The Relying Party's Redirect URL                                                                                                                                                                |
+| `SP_OIDC_RP_CLIENT_ID`           | The Relying Party's Singpass Client ID as registered with NDI                                                                                                                                   |
+| `SP_OIDC_RP_REDIRECT_URL`        | The Relying Party's Singpass Redirect URL                                                                                                                                                       |
 | `SP_OIDC_RP_JWKS_PUBLIC_PATH`    | Path to the Relying Party's Public Json Web Key Set used for Singpass-related communication with NDI. This will be hosted at /singpass/.well-known/jwks.json endpoint.                          |
 | `SP_OIDC_RP_JWKS_SECRET_PATH`    | Path to the Relying Party's Secret Json Web Key Set used for Singpass-related communication with NDI                                                                                            |
+| `CP_OIDC_NDI_DISCOVERY_ENDPOINT` | NDI's Corppass OIDC Discovery Endpoint                                                                                                                                                          |
+| `CP_OIDC_NDI_JWKS_ENDPOINT`      | NDI's Corppass OIDC JWKS Endpoint                                                                                                                                                               |
+| `CP_OIDC_RP_CLIENT_ID`           | The Relying Party's Corppass Client ID as registered with NDI                                                                                                                                   |
+| `CP_OIDC_RP_REDIRECT_URL`        | The Relying Party's Corppass Redirect URL                                                                                                                                                       |
 | `CP_OIDC_RP_JWKS_PUBLIC_PATH`    | Path to the Relying Party's Public Json Web Key Set used for Corppass-related communication with NDI. This will be hosted at api/v3/corppass/.well-known/jwks.json endpoint.                    |
+| `CP_OIDC_RP_JWKS_SECRET_PATH`    | Path to the Relying Party's Secret Json Web Key Set used for Corppass-related communication with NDI                                                                                            |
 | `CORPPASS_ESRVC_ID`              | e-service ID registered with National Digital Identity office for CorpPass authentication.                                                                                                      |
 | `CORPPASS_PARTNER_ENTITY_ID`     | Partner ID registered with National Digital Identity Office for CorpPass authentication.                                                                                                        |
 | `CORPPASS_IDP_LOGIN_URL`         | URL of CorpPass Login Page.                                                                                                                                                                     |

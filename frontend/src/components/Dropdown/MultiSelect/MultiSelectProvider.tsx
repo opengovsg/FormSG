@@ -67,7 +67,7 @@ export const MultiSelectProvider = ({
   filter = defaultFilter,
   nothingFoundLabel = 'No matching results',
   placeholder: placeholderProp,
-  clearButtonLabel = 'Clear dropdown',
+  clearButtonLabel = 'Clear selection',
   isSearchable = true,
   defaultIsOpen,
   isInvalid: isInvalidProp,

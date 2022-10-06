@@ -7,10 +7,7 @@ import path from 'path'
 import url from 'url'
 
 import config from '../../config/config'
-import { AnalyticsRouter } from '../../modules/analytics/analytics.routes'
 import { AuthRouter } from '../../modules/auth/auth.routes'
-import { BillingRouter } from '../../modules/billing/billing.routes'
-import { BounceRouter } from '../../modules/bounce/bounce.routes'
 import { ExamplesRouter } from '../../modules/examples/examples.routes'
 import { AdminFormsRouter } from '../../modules/form/admin-form/admin-form.routes'
 import { PublicFormRouter } from '../../modules/form/public-form/public-form.routes'
@@ -23,10 +20,8 @@ import { SgidRouter } from '../../modules/sgid/sgid.routes'
 import {
   CorppassLoginRouter,
   SingpassLoginRouter,
-  SpcpRouter,
 } from '../../modules/spcp/spcp.routes'
 import { SubmissionRouter } from '../../modules/submission/submission.routes'
-import UserRouter from '../../modules/user/user.routes'
 import { VfnRouter } from '../../modules/verification/verification.routes'
 import { ApiRouter } from '../../routes/api'
 import { SpOidcJwksRouter } from '../../routes/singpass'
@@ -119,17 +114,13 @@ const loadExpressApp = async (connection: Connection) => {
   // Log intranet usage
   app.use(IntranetMiddleware.logIntranetUsage)
 
+  // Deprecated routes
   app.use('/frontend', FrontendRouter)
   app.use('/auth', AuthRouter)
-  app.use('/user', UserRouter)
-  app.use('/emailnotifications', BounceRouter)
   app.use('/transaction', VfnRouter)
-  app.use('/billing', BillingRouter)
-  app.use('/analytics', AnalyticsRouter)
   app.use('/examples', ExamplesRouter)
   app.use('/v2/submissions', SubmissionRouter)
-  // Internal routes for Singpass/Corppass
-  app.use('/spcp', SpcpRouter)
+
   // Registered routes with the Singpass/Corppass servers
   app.use('/singpass/login', SingpassLoginRouter)
   app.use('/corppass/login', CorppassLoginRouter)
@@ -140,6 +131,7 @@ const loadExpressApp = async (connection: Connection) => {
   // Use constant for registered routes with MyInfo servers
   app.use(MYINFO_ROUTER_PREFIX, MyInfoRouter)
 
+  // Deprecated routes, must be here since API starts with form id regex prefix.
   app.use(AdminFormsRouter)
   app.use(PublicFormRouter)
 

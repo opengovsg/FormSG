@@ -11,6 +11,7 @@ import FormFields from '~features/public-form/components/FormFields'
 import { FormSectionsProvider } from '~features/public-form/components/FormFields/FormSectionsContext'
 import { FormFooter } from '~features/public-form/components/FormFooter'
 import FormInstructions from '~features/public-form/components/FormInstructions'
+import { PublicFormLogo } from '~features/public-form/components/FormLogo'
 import FormStartPage from '~features/public-form/components/FormStartPage'
 import { PublicFormWrapper } from '~features/public-form/components/PublicFormWrapper'
 
@@ -29,6 +30,7 @@ export const PreviewFormPage = (): JSX.Element => {
         <PreviewFormBanner />
         <SwitchEnvIcon />
         <FormSectionsProvider>
+          <PublicFormLogo />
           <FormStartPage />
           <PublicFormWrapper isPreview>
             <FormInstructions />

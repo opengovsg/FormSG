@@ -112,6 +112,17 @@ export const TwilioDetailsInputs = (): JSX.Element => {
     [hasExistingTwilioCreds, register],
   )
 
+  const onDelete = useCallback(
+    () =>
+      reset({
+        accountSid: '',
+        apiKey: '',
+        apiSecret: '',
+        messagingServiceSid: '',
+      }),
+    [reset],
+  )
+
   return (
     <>
       <Stack spacing="2rem">
@@ -180,7 +191,7 @@ export const TwilioDetailsInputs = (): JSX.Element => {
       </Stack>
       <Skeleton isLoaded={!isLoading} mt="2.5rem" w="fit-content">
         {hasExistingTwilioCreds ? (
-          <Button variant="link" colorScheme="danger" onClick={onOpen}>
+          <Button colorScheme="danger" onClick={onOpen}>
             Remove and re-enter credentials
           </Button>
         ) : (
@@ -192,7 +203,11 @@ export const TwilioDetailsInputs = (): JSX.Element => {
           </Button>
         )}
       </Skeleton>
-      <DeleteTwilioModal isOpen={isOpen} onClose={onClose} onDelete={reset} />
+      <DeleteTwilioModal
+        isOpen={isOpen}
+        onClose={onClose}
+        onDelete={onDelete}
+      />
     </>
   )
 }

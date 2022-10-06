@@ -2,12 +2,10 @@ import { IPersonResponse } from '@opengovsg/myinfo-gov-client'
 import { ObjectId } from 'bson-ext'
 import { Request } from 'express'
 import { merge } from 'lodash'
-import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync } from 'neverthrow'
 import querystring from 'querystring'
 import { mocked } from 'ts-jest/utils'
 
-import getFormFeedbackModel from 'src/app/models/form_feedback.server.model'
 import { DatabaseError } from 'src/app/modules/core/core.errors'
 import { MyInfoData } from 'src/app/modules/myinfo/myinfo.adapter'
 import {
@@ -36,19 +34,19 @@ import { MYINFO_COOKIE_NAME } from '../../../myinfo/myinfo.constants'
 import { MyInfoCookieStateError } from '../../../myinfo/myinfo.errors'
 import { MyInfoService } from '../../../myinfo/myinfo.service'
 import { SGID_COOKIE_NAME } from '../../../sgid/sgid.constants'
-import { SpOidcService } from '../../../spcp/sp.oidc.service'
 import {
   CreateRedirectUrlError,
   FetchLoginPageError,
   LoginPageValidationError,
   MissingJwtError,
 } from '../../../spcp/spcp.errors'
+import { CpOidcServiceClass } from '../../../spcp/spcp.oidc.service/spcp.oidc.service.cp'
+import { SpOidcServiceClass } from '../../../spcp/spcp.oidc.service/spcp.oidc.service.sp'
 import { SpcpService } from '../../../spcp/spcp.service'
 import { JwtName } from '../../../spcp/spcp.types'
 import {
   AuthTypeMismatchError,
   FormAuthNoEsrvcIdError,
-  FormDeletedError,
   FormNotFoundError,
   PrivateFormError,
 } from '../../form.errors'
@@ -61,216 +59,19 @@ jest.mock('../public-form.service')
 jest.mock('../../form.service')
 jest.mock('../../../auth/auth.service')
 jest.mock('../../../spcp/spcp.service')
-jest.mock('../../../spcp/sp.oidc.service')
+jest.mock('../../../spcp/spcp.oidc.service/spcp.oidc.service.sp')
+jest.mock('../../../spcp/spcp.oidc.service/spcp.oidc.service.cp')
 jest.mock('../../../myinfo/myinfo.service')
 
 const MockFormService = mocked(FormService)
 const MockPublicFormService = mocked(PublicFormService)
 const MockAuthService = mocked(AuthService)
 const MockSpcpService = mocked(SpcpService, true)
-const MockSpOidcService = mocked(SpOidcService, true)
-const MockMyInfoService = mocked(MyInfoService, true)
 
-const FormFeedbackModel = getFormFeedbackModel(mongoose)
+const MockMyInfoService = mocked(MyInfoService, true)
 
 describe('public-form.controller', () => {
   afterEach(() => jest.clearAllMocks())
-
-  describe('submitFormFeedback', () => {
-    const MOCK_FORM_ID = new ObjectId().toHexString()
-    const MOCK_FORM = {
-      _id: MOCK_FORM_ID,
-      title: 'mock form title',
-      inactiveMessage: 'This mock form is mock closed.',
-    } as IPopulatedForm
-    const MOCK_REQ = expressHandler.mockRequest({
-      body: {
-        rating: 4,
-        comment: 'good',
-      },
-      params: {
-        formId: MOCK_FORM_ID,
-      },
-    })
-
-    it('should return 200 when feedback is saved successfully', async () => {
-      // Arrange
-      const mockRes = expressHandler.mockResponse()
-
-      // Mock services to return success.
-      const mockFormFeedback = new FormFeedbackModel({
-        formId: new ObjectId().toHexString(),
-        rating: 5,
-        comment: 'Great test',
-      })
-      MockFormService.retrieveFullFormById.mockReturnValueOnce(
-        okAsync(MOCK_FORM as IPopulatedForm),
-      )
-      MockFormService.isFormPublic.mockReturnValueOnce(ok(true))
-      MockPublicFormService.insertFormFeedback.mockReturnValueOnce(
-        okAsync(mockFormFeedback),
-      )
-
-      // Act
-      await PublicFormController.submitFormFeedback(
-        MOCK_REQ,
-        mockRes,
-        jest.fn(),
-      )
-
-      // Assert
-      // Check args of mocked services.
-      expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
-        MOCK_FORM_ID,
-      )
-      expect(MockFormService.isFormPublic).toHaveBeenCalledWith(MOCK_FORM)
-      expect(MockPublicFormService.insertFormFeedback).toHaveBeenCalledWith({
-        formId: MOCK_REQ.params.formId,
-        rating: MOCK_REQ.body.rating,
-        comment: MOCK_REQ.body.comment,
-      })
-      expect(mockRes.status).toHaveBeenCalledWith(200)
-      expect(mockRes.json).toHaveBeenCalledWith({
-        message: 'Successfully submitted feedback',
-      })
-    })
-
-    it('should return 404 when retrieving form results in FormNotFoundError', async () => {
-      // Arrange
-      const mockRes = expressHandler.mockResponse()
-
-      // Mock retrieval of form to return failure.
-      MockFormService.retrieveFullFormById.mockReturnValueOnce(
-        errAsync(new FormNotFoundError()),
-      )
-
-      // Act
-      await PublicFormController.submitFormFeedback(
-        MOCK_REQ,
-        mockRes,
-        jest.fn(),
-      )
-
-      // Assert
-      // Check args of mocked services.
-      expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
-        MOCK_FORM_ID,
-      )
-      expect(MockFormService.isFormPublic).not.toHaveBeenCalled()
-      expect(MockPublicFormService.insertFormFeedback).not.toHaveBeenCalled()
-      expect(mockRes.status).toHaveBeenCalledWith(404)
-      expect(mockRes.json).toHaveBeenCalledWith({
-        message: 'Form not found',
-      })
-    })
-
-    it('should return 404 when checking form status results in PrivateFormError', async () => {
-      // Arrange
-      const mockRes = expressHandler.mockResponse()
-
-      // Mock services to return correct mock states.
-      MockFormService.retrieveFullFormById.mockReturnValueOnce(
-        okAsync(MOCK_FORM as IPopulatedForm),
-      )
-      // Mock return error.
-      MockFormService.isFormPublic.mockReturnValueOnce(
-        err(new PrivateFormError(MOCK_FORM.inactiveMessage, MOCK_FORM.title)),
-      )
-
-      // Act
-      await PublicFormController.submitFormFeedback(
-        MOCK_REQ,
-        mockRes,
-        jest.fn(),
-      )
-
-      // Assert
-      // Check args of mocked services.
-      expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
-        MOCK_FORM_ID,
-      )
-      expect(MockFormService.isFormPublic).toHaveBeenCalledWith(MOCK_FORM)
-      expect(MockPublicFormService.insertFormFeedback).not.toHaveBeenCalled()
-      expect(mockRes.status).toHaveBeenCalledWith(404)
-      expect(mockRes.json).toHaveBeenCalledWith({
-        message: MOCK_FORM.inactiveMessage,
-        isPageFound: true,
-        formTitle: MOCK_FORM.title,
-      })
-    })
-
-    it('should return 410 when checking form status results in FormDeletedError', async () => {
-      // Arrange
-      const mockRes = expressHandler.mockResponse()
-
-      // Mock services to return correct mock states.
-      MockFormService.retrieveFullFormById.mockReturnValueOnce(
-        okAsync(MOCK_FORM as IPopulatedForm),
-      )
-      // Mock return error.
-      MockFormService.isFormPublic.mockReturnValueOnce(
-        err(new FormDeletedError()),
-      )
-
-      // Act
-      await PublicFormController.submitFormFeedback(
-        MOCK_REQ,
-        mockRes,
-        jest.fn(),
-      )
-
-      // Assert
-      // Check args of mocked services.
-      expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
-        MOCK_FORM_ID,
-      )
-      expect(MockFormService.isFormPublic).toHaveBeenCalledWith(MOCK_FORM)
-      expect(MockPublicFormService.insertFormFeedback).not.toHaveBeenCalled()
-      expect(mockRes.status).toHaveBeenCalledWith(410)
-      expect(mockRes.json).toHaveBeenCalledWith({
-        message: 'This form is no longer active',
-      })
-    })
-
-    it('should return 500 when database errors occur', async () => {
-      // Arrange
-      const mockRes = expressHandler.mockResponse()
-      const mockErrorString = 'Form feedback could not be created'
-
-      // Mock services to return success or failure states.
-      MockFormService.retrieveFullFormById.mockReturnValueOnce(
-        okAsync(MOCK_FORM as IPopulatedForm),
-      )
-      MockFormService.isFormPublic.mockReturnValueOnce(ok(true))
-      // Mock database error.
-      MockPublicFormService.insertFormFeedback.mockReturnValueOnce(
-        errAsync(new DatabaseError(mockErrorString)),
-      )
-
-      // Act
-      await PublicFormController.submitFormFeedback(
-        MOCK_REQ,
-        mockRes,
-        jest.fn(),
-      )
-
-      // Assert
-      // Check args of mocked services.
-      expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
-        MOCK_FORM_ID,
-      )
-      expect(MockFormService.isFormPublic).toHaveBeenCalledWith(MOCK_FORM)
-      expect(MockPublicFormService.insertFormFeedback).toHaveBeenCalledWith({
-        formId: MOCK_REQ.params.formId,
-        rating: MOCK_REQ.body.rating,
-        comment: MOCK_REQ.body.comment,
-      })
-      expect(mockRes.status).toHaveBeenCalledWith(500)
-      expect(mockRes.json).toHaveBeenCalledWith({
-        message: mockErrorString,
-      })
-    })
-  })
 
   describe('handleRedirect', () => {
     const MOCK_FORM_ID = new ObjectId().toHexString()
@@ -544,9 +345,10 @@ describe('public-form.controller', () => {
         MockFormService.checkFormSubmissionLimitAndDeactivateForm.mockReturnValueOnce(
           okAsync(MOCK_SP_AUTH_FORM),
         )
-        MockSpOidcService.extractJwtPayloadFromRequest.mockReturnValueOnce(
-          okAsync(MOCK_SPCP_SESSION),
-        )
+
+        jest
+          .spyOn(SpOidcServiceClass.prototype, 'extractJwtPayloadFromRequest')
+          .mockReturnValueOnce(okAsync(MOCK_SPCP_SESSION))
 
         // Act
         await PublicFormController.handleGetPublicForm(
@@ -583,9 +385,9 @@ describe('public-form.controller', () => {
         MockFormService.checkFormSubmissionLimitAndDeactivateForm.mockReturnValueOnce(
           okAsync(MOCK_CP_AUTH_FORM),
         )
-        MockSpcpService.extractJwtPayloadFromRequest.mockReturnValueOnce(
-          okAsync(MOCK_SPCP_SESSION),
-        )
+        jest
+          .spyOn(CpOidcServiceClass.prototype, 'extractJwtPayloadFromRequest')
+          .mockReturnValueOnce(okAsync(MOCK_SPCP_SESSION))
         // Act
         await PublicFormController.handleGetPublicForm(
           MOCK_REQ,
@@ -887,9 +689,9 @@ describe('public-form.controller', () => {
         MockFormService.checkFormSubmissionLimitAndDeactivateForm.mockReturnValueOnce(
           okAsync(MOCK_SP_FORM),
         )
-        MockSpOidcService.extractJwtPayloadFromRequest.mockReturnValueOnce(
-          errAsync(new MissingJwtError()),
-        )
+        jest
+          .spyOn(SpOidcServiceClass.prototype, 'extractJwtPayloadFromRequest')
+          .mockReturnValueOnce(errAsync(new MissingJwtError()))
 
         // Act
         // 2. GET the endpoint
@@ -919,9 +721,9 @@ describe('public-form.controller', () => {
         MockFormService.checkFormSubmissionLimitAndDeactivateForm.mockReturnValueOnce(
           okAsync(MOCK_CP_FORM),
         )
-        MockSpcpService.extractJwtPayloadFromRequest.mockReturnValueOnce(
-          errAsync(new MissingJwtError()),
-        )
+        jest
+          .spyOn(CpOidcServiceClass.prototype, 'extractJwtPayloadFromRequest')
+          .mockReturnValueOnce(errAsync(new MissingJwtError()))
 
         // Act
         // 2. GET the endpoint
@@ -1092,9 +894,9 @@ describe('public-form.controller', () => {
 
         const mockRes = expressHandler.mockResponse()
 
-        MockSpOidcService.extractJwtPayloadFromRequest.mockReturnValueOnce(
-          okAsync(MOCK_SPCP_SESSION),
-        )
+        jest
+          .spyOn(SpOidcServiceClass.prototype, 'extractJwtPayloadFromRequest')
+          .mockReturnValueOnce(okAsync(MOCK_SPCP_SESSION))
         MockFormService.checkIsIntranetFormAccess.mockReturnValueOnce(true)
         MockAuthService.getFormIfPublic.mockReturnValueOnce(
           okAsync(MOCK_SP_AUTH_FORM),
@@ -1128,9 +930,9 @@ describe('public-form.controller', () => {
         const mockRes = expressHandler.mockResponse()
 
         MockFormService.checkIsIntranetFormAccess.mockReturnValueOnce(true)
-        MockSpcpService.extractJwtPayloadFromRequest.mockReturnValueOnce(
-          okAsync(MOCK_SPCP_SESSION),
-        )
+        jest
+          .spyOn(CpOidcServiceClass.prototype, 'extractJwtPayloadFromRequest')
+          .mockReturnValueOnce(okAsync(MOCK_SPCP_SESSION))
         MockAuthService.getFormIfPublic.mockReturnValueOnce(
           okAsync(MOCK_CP_AUTH_FORM),
         )
@@ -1224,9 +1026,9 @@ describe('public-form.controller', () => {
       MockFormService.retrieveFullFormById.mockReturnValueOnce(
         okAsync(MOCK_FORM),
       )
-      MockSpOidcService.createRedirectUrl.mockResolvedValueOnce(
-        ok(MOCK_REDIRECT_URL),
-      )
+      jest
+        .spyOn(SpOidcServiceClass.prototype, 'createRedirectUrl')
+        .mockResolvedValueOnce(ok(MOCK_REDIRECT_URL))
 
       // Act
       await PublicFormController._handleFormAuthRedirect(
@@ -1257,9 +1059,9 @@ describe('public-form.controller', () => {
       MockFormService.retrieveFullFormById.mockReturnValueOnce(
         okAsync(MOCK_FORM),
       )
-      MockSpOidcService.createRedirectUrl.mockResolvedValueOnce(
-        ok(MOCK_REDIRECT_URL),
-      )
+      jest
+        .spyOn(SpOidcServiceClass.prototype, 'createRedirectUrl')
+        .mockResolvedValueOnce(ok(MOCK_REDIRECT_URL))
 
       // Act
       await PublicFormController._handleFormAuthRedirect(
@@ -1293,9 +1095,9 @@ describe('public-form.controller', () => {
       MockFormService.retrieveFullFormById.mockReturnValueOnce(
         okAsync(MOCK_FORM),
       )
-      MockSpOidcService.createRedirectUrl.mockResolvedValueOnce(
-        ok(MOCK_REDIRECT_URL),
-      )
+      jest
+        .spyOn(SpOidcServiceClass.prototype, 'createRedirectUrl')
+        .mockResolvedValueOnce(ok(MOCK_REDIRECT_URL))
 
       // Act
       await PublicFormController._handleFormAuthRedirect(
@@ -1322,9 +1124,9 @@ describe('public-form.controller', () => {
       MockFormService.retrieveFullFormById.mockReturnValueOnce(
         okAsync(MOCK_FORM),
       )
-      MockSpcpService.createRedirectUrl.mockReturnValueOnce(
-        ok(MOCK_REDIRECT_URL),
-      )
+      jest
+        .spyOn(CpOidcServiceClass.prototype, 'createRedirectUrl')
+        .mockReturnValueOnce(okAsync(MOCK_REDIRECT_URL))
 
       // Act
       await PublicFormController._handleFormAuthRedirect(
@@ -1508,9 +1310,9 @@ describe('public-form.controller', () => {
       MockFormService.retrieveFullFormById.mockReturnValueOnce(
         okAsync(MOCK_FORM),
       )
-      MockSpOidcService.createRedirectUrl.mockResolvedValue(
-        err(new CreateRedirectUrlError()),
-      )
+      jest
+        .spyOn(SpOidcServiceClass.prototype, 'createRedirectUrl')
+        .mockResolvedValue(err(new CreateRedirectUrlError()))
 
       // Act
       await PublicFormController._handleFormAuthRedirect(
@@ -1537,9 +1339,9 @@ describe('public-form.controller', () => {
       MockFormService.retrieveFullFormById.mockReturnValueOnce(
         okAsync(MOCK_FORM),
       )
-      MockSpcpService.createRedirectUrl.mockReturnValueOnce(
-        err(new CreateRedirectUrlError()),
-      )
+      jest
+        .spyOn(CpOidcServiceClass.prototype, 'createRedirectUrl')
+        .mockReturnValueOnce(errAsync(new CreateRedirectUrlError()))
 
       // Act
       await PublicFormController._handleFormAuthRedirect(

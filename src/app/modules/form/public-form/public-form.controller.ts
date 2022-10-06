@@ -36,12 +36,11 @@ import {
 import { SgidInvalidJwtError, SgidVerifyJwtError } from '../../sgid/sgid.errors'
 import { SgidService } from '../../sgid/sgid.service'
 import { validateSgidForm } from '../../sgid/sgid.util'
-import { SpOidcService } from '../../spcp/sp.oidc.service'
 import { InvalidJwtError, VerifyJwtError } from '../../spcp/spcp.errors'
+import { getOidcService } from '../../spcp/spcp.oidc.service'
 import { SpcpService } from '../../spcp/spcp.service'
 import {
-  getRedirectTarget,
-  getRedirectTargetSpOidc,
+  getRedirectTargetSpcpOidc,
   validateSpcpForm,
 } from '../../spcp/spcp.util'
 import { AuthTypeMismatchError, PrivateFormError } from '../form.errors'
@@ -52,108 +51,6 @@ import { RedirectParams } from './public-form.types'
 import { mapFormAuthError, mapRouteError } from './public-form.utils'
 
 const logger = createLoggerWithLabel(module)
-
-const validateSubmitFormFeedbackParams = celebrate({
-  [Segments.BODY]: Joi.object()
-    .keys({
-      rating: Joi.number().min(1).max(5).cast('string').required(),
-      comment: Joi.string().allow('').required(),
-    })
-    // Allow other keys for backwards compability as frontend might put
-    // extra keys in the body.
-    .unknown(true),
-})
-
-/**
- * @deprecated use submitFormFeedbackV2 instead
- *
- * TODO #3964: Cleanup we fully migrate feedback endpoint to /submissions/{submissionId}/feedback
- */
-export const submitFormFeedback: ControllerHandler<
-  { formId: string },
-  { message: string } | ErrorDto | PrivateFormErrorDto,
-  { rating: number; comment: string }
-> = async (req, res) => {
-  const { formId } = req.params
-  const { rating, comment } = req.body
-
-  const formResult = await FormService.retrieveFullFormById(formId)
-
-  if (formResult.isErr()) {
-    const { error } = formResult
-    logger.error({
-      message: 'Failed to retrieve form',
-      meta: {
-        action: 'handleSubmitFeedback',
-        ...createReqMeta(req),
-        formId,
-      },
-      error,
-    })
-    const { errorMessage, statusCode } = mapRouteError(error)
-    return res.status(statusCode).json({ message: errorMessage })
-  }
-
-  const form = formResult.value
-
-  // Handle form status states.
-  const isPublicResult = FormService.isFormPublic(form)
-  if (isPublicResult.isErr()) {
-    const { error } = isPublicResult
-    logger.warn({
-      message: 'Form is not public',
-      meta: {
-        action: 'handleSubmitFeedback',
-        ...createReqMeta(req),
-        formId,
-      },
-      error,
-    })
-    const { errorMessage, statusCode } = mapRouteError(error)
-
-    // Specialized error response for PrivateFormError.
-    if (error instanceof PrivateFormError) {
-      return res.status(statusCode).json({
-        message: error.message,
-        // Flag to prevent default 404 subtext ("please check link") from
-        // showing.
-        isPageFound: true,
-        formTitle: error.formTitle,
-      })
-    }
-    return res.status(statusCode).json({ message: errorMessage })
-  }
-
-  // Form is valid, proceed to next step.
-  return PublicFormService.insertFormFeedback({
-    formId: form._id,
-    rating,
-    comment,
-  })
-    .map(() =>
-      res
-        .status(StatusCodes.OK)
-        .json({ message: 'Successfully submitted feedback' }),
-    )
-    .mapErr((error) => {
-      logger.error({
-        message: 'Error creating form feedback',
-        meta: {
-          action: 'handleSubmitFeedback',
-          ...createReqMeta(req),
-          formId,
-        },
-        error,
-      })
-      const { errorMessage, statusCode } = mapRouteError(error)
-      return res.status(statusCode).json({ message: errorMessage })
-    })
-}
-
-export const handleSubmitFeedback = [
-  validateSubmitFormFeedbackParams,
-  submitFormFeedback,
-] as ControllerHandler[]
 
 /**
  * Handler for various endpoints to redirect to their hashbanged versions.
@@ -274,7 +171,8 @@ export const handleGetPublicForm: ControllerHandler<
     case FormAuthType.NIL:
       return res.json({ form: publicForm, isIntranetUser })
     case FormAuthType.SP:
-      return SpOidcService.extractJwtPayloadFromRequest(req.cookies)
+      return getOidcService(FormAuthType.SP)
+        .extractJwtPayloadFromRequest(req.cookies)
         .map((spcpSession) => {
           return res.json({
             form: publicForm,
@@ -297,7 +195,8 @@ export const handleGetPublicForm: ControllerHandler<
           return res.json({ form: publicForm, isIntranetUser })
         })
     case FormAuthType.CP:
-      return SpcpService.extractJwtPayloadFromRequest(authType, req.cookies)
+      return getOidcService(FormAuthType.CP)
+        .extractJwtPayloadFromRequest(req.cookies)
         .map((spcpSession) => {
           return res.json({
             form: publicForm,
@@ -454,26 +353,29 @@ export const _handleFormAuthRedirect: ControllerHandler<
           )
         case FormAuthType.SP: {
           return validateSpcpForm(form).asyncAndThen((form) => {
-            const target = getRedirectTargetSpOidc(
+            const target = getRedirectTargetSpcpOidc(
               formId,
+              FormAuthType.SP,
               isPersistentLogin,
               encodedQuery,
             )
-            return SpOidcService.createRedirectUrl(target, form.esrvcId)
+            return getOidcService(FormAuthType.SP).createRedirectUrl(
+              target,
+              form.esrvcId,
+            )
           })
         }
         case FormAuthType.CP: {
           // NOTE: Persistent login is only set (and relevant) when the authType is SP.
           // If authType is not SP, assume that it was set erroneously and default it to false
-          return validateSpcpForm(form).andThen((form) => {
-            const target = getRedirectTarget(
+          return validateSpcpForm(form).asyncAndThen((form) => {
+            const target = getRedirectTargetSpcpOidc(
               formId,
-              form.authType,
+              FormAuthType.CP,
               isPersistentLogin,
               encodedQuery,
             )
-            return SpcpService.createRedirectUrl(
-              form.authType,
+            return getOidcService(FormAuthType.CP).createRedirectUrl(
               target,
               form.esrvcId,
             )

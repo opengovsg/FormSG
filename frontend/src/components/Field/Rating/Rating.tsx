@@ -1,13 +1,11 @@
-import { Fragment, useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import {
-  Box,
   forwardRef,
   Grid,
+  HStack,
   Stack,
   Text,
   useBreakpointValue,
-  Wrap,
-  WrapItem,
 } from '@chakra-ui/react'
 
 import { FieldColorScheme } from '~theme/foundations/colours'
@@ -108,70 +106,66 @@ export const Rating = forwardRef<RatingProps, 'input'>(
       md: false,
     })
 
-    // Generate options from maxRating given.
-    const options = useMemo(
-      () => Array.from({ length: numberOfRatings }, (_, i) => i + 1),
-      [numberOfRatings],
-    )
+    // Generate options from maxRating given, grouped by display row.
+    const options = useMemo(() => {
+      const options = []
+      let suboptions = []
+      for (let i = 1; i <= numberOfRatings; i++) {
+        suboptions.push(i)
+        if (isSplitRows && i % wrapComponentsPerRow === 0) {
+          options.push(suboptions)
+          suboptions = []
+        }
+      }
+      if (suboptions.length > 0) options.push(suboptions)
+      return options
+    }, [isSplitRows, numberOfRatings, wrapComponentsPerRow])
 
-    const ratingLayout = useMemo(() => {
+    const optionSpacing = useMemo(() => {
       switch (variant) {
         case 'number':
-          return { spacing: '-1px', rowHeight: '0.5rem' }
+          return { column: '-1px', row: '0.5rem' }
         default:
-          return { spacing: 0, rowHeight: 0 }
+          return { column: 0, row: 0 }
       }
     }, [variant])
 
     return (
       <Grid
         rowGap="0.5rem"
-        templateAreas={[
-          `'caption' 'rating'`,
-          `'caption' 'rating'`,
-          `'caption' 'rating'`,
-          `'rating' 'caption'`,
-        ]}
+        templateAreas={{
+          base: "'caption' 'rating'",
+          md: "'rating' 'caption'",
+        }}
       >
         <Stack
           gridArea="rating"
           as="fieldset"
-          direction={['column', 'column', 'column', 'row']}
-          spacing={['0.5rem', '0.5rem', '0.5rem', '1rem']}
-          align={['flex-start', 'flex-start', 'flex-start', 'center']}
+          direction={{ base: 'column', md: 'row' }}
+          spacing={{ base: '0.5rem', md: '1rem' }}
+          align={{ base: 'flex-start', md: 'center' }}
         >
-          <Wrap spacing={ratingLayout.spacing}>
-            {options.map((value, i) => {
-              return (
-                <Fragment key={value}>
-                  <WrapItem>
-                    <RatingOption
-                      name={name}
-                      variant={variant}
-                      colorScheme={colorScheme}
-                      value={value}
-                      onChange={handleRatingChange}
-                      selectedValue={currentValue}
-                      isDisabled={isDisabled}
-                      {...(i === 0 ? { ref } : {})}
-                    >
-                      {value}
-                    </RatingOption>
-                  </WrapItem>
-                  {
-                    // Force component to begin on a new line.
-                    value !== numberOfRatings &&
-                      value % wrapComponentsPerRow === 0 &&
-                      isSplitRows && (
-                        <WrapItem display="contents" aria-hidden>
-                          <Box flexBasis="100%" h={ratingLayout.rowHeight} />
-                        </WrapItem>
-                      )
-                  }
-                </Fragment>
-              )
-            })}
-          </Wrap>
+          <Stack spacing={optionSpacing.row}>
+            {options.map((row, i) => (
+              <HStack spacing={optionSpacing.column} key={i}>
+                {row.map((value) => (
+                  <RatingOption
+                    name={name}
+                    variant={variant}
+                    colorScheme={colorScheme}
+                    value={value}
+                    onChange={handleRatingChange}
+                    selectedValue={currentValue}
+                    isDisabled={isDisabled}
+                    key={value}
+                    {...(value === 1 ? { ref } : {})}
+                  >
+                    {value}
+                  </RatingOption>
+                ))}
+              </HStack>
+            ))}
+          </Stack>
           {currentValue && variant !== 'number' && (
             <Text color="secondary.700" textStyle="subhead-2">
               {currentValue} selected

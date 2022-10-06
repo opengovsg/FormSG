@@ -11,7 +11,7 @@ services:
       - ./:/opt/formsg
       - /opt/formsg/node_modules
     ports:
-      - '5000:5000'
+      - '5001:5000'
       - '4566:4566' # localstack ports
       - '5156:5156' # mockpass ports
       - '9229:9229' # Node debugger port
@@ -70,9 +70,14 @@ services:
       - SP_OIDC_NDI_JWKS_ENDPOINT=https://stg-id.singpass.gov.sg/.well-known/keys
       - SP_OIDC_RP_CLIENT_ID=rpClientId
       - SP_OIDC_RP_REDIRECT_URL=https://staging.form.gov.sg/api/v3/singpass/login
-      - SP_OIDC_RP_JWKS_PUBLIC_PATH=./tests/certs/test_rp_public_jwks.json
-      - SP_OIDC_RP_JWKS_SECRET_PATH=./tests/certs/test_rp_secret_jwks.json
-      - CP_OIDC_RP_JWKS_PUBLIC_PATH=./tests/certs/test_rp_public_jwks.json
+      - SP_OIDC_RP_JWKS_PUBLIC_PATH=./tests/certs/test_sp_rp_public_jwks.json
+      - SP_OIDC_RP_JWKS_SECRET_PATH=./tests/certs/test_sp_rp_secret_jwks.json
+      - CP_OIDC_NDI_DISCOVERY_ENDPOINT=https://stg-id.corppass.gov.sg/.well-known/openid-configuration
+      - CP_OIDC_NDI_JWKS_ENDPOINT=https://stg-id.corppass.gov.sg/.well-known/keys
+      - CP_OIDC_RP_CLIENT_ID=rpClientId
+      - CP_OIDC_RP_REDIRECT_URL=https://staging.form.gov.sg/api/v3/corppass/login
+      - CP_OIDC_RP_JWKS_PUBLIC_PATH=./tests/certs/test_cp_rp_public_jwks.json
+      - CP_OIDC_RP_JWKS_SECRET_PATH=./tests/certs/test_cp_rp_secret_jwks.json
       - CP_FORMSG_KEY_PATH=./node_modules/@opengovsg/mockpass/static/certs/key.pem
       - CP_FORMSG_CERT_PATH=./node_modules/@opengovsg/mockpass/static/certs/server.crt
       - CP_IDP_CERT_PATH=./node_modules/@opengovsg/mockpass/static/certs/spcp.crt

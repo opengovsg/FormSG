@@ -215,7 +215,11 @@ export const Radio = forwardRef<RadioProps, 'input'>(
         {...labelProps}
         __css={rootStyles}
       >
-        <input className="chakra-radio__input" {...inputProps} />
+        <input
+          className="chakra-radio__input"
+          {...inputProps}
+          aria-invalid={false}
+        />
         <chakra.span
           className="chakra-radio__control"
           {...checkboxProps}
@@ -262,7 +266,13 @@ const OthersRadio = forwardRef<RadioProps, 'input'>((props, ref) => {
   }, [isChecked, othersInputRef])
 
   return (
-    <Radio ref={mergedRadioRef} {...props} __css={styles.othersRadio}>
+    <Radio
+      ref={mergedRadioRef}
+      {...props}
+      __css={styles.othersRadio}
+      // Required should apply to radio group rather than individual radio.
+      isRequired={false}
+    >
       Other
     </Radio>
   )
@@ -295,6 +305,8 @@ export const OthersInput = forwardRef<InputProps, 'input'>(
         ref={mergedInputRef}
         {...props}
         onChange={handleInputChange}
+        // Required only when other radio is checked.
+        isRequired={othersRadioRef.current?.checked}
       />
     )
   },

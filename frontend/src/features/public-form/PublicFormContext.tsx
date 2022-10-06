@@ -32,7 +32,7 @@ export interface PublicFormContextProps
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   handleSubmitForm: (formInputs: any) => void
   /** Callback to be invoked to logout of authenticated form, if user is logged in.  */
-  handleLogout?: () => void
+  handleLogout: (() => void) | undefined
   /** id of container to render captcha in.
    * Captcha will be instantiated if provided
    */

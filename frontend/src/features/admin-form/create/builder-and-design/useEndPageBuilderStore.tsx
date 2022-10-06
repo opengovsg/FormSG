@@ -10,7 +10,7 @@ export type EndPageBuilderStore = {
   resetEndPageData: () => void
 }
 
-export const useEndPageBuilderStore = create<EndPageBuilderStore>(
+export const useEndPageBuilderStore = create<EndPageBuilderStore>()(
   devtools((set, get) => ({
     endPageData: {
       title: 'Thank you for your response.',

@@ -103,7 +103,7 @@ export const FormFields = ({
 
   return (
     <FormProvider {...formMethods}>
-      <form onSubmit={formMethods.handleSubmit(onSubmit)} noValidate>
+      <form noValidate>
         {!!formFields?.length && (
           <Box bg={'white'} py="2.5rem" px={{ base: '1rem', md: '2.5rem' }}>
             <Stack spacing="2.25rem">
@@ -126,6 +126,7 @@ export const FormFields = ({
           </Box>
         )}
         <PublicFormSubmitButton
+          onSubmit={formMethods.handleSubmit(onSubmit)}
           formFields={augmentedFormFields}
           formLogics={formLogics}
           colorTheme={colorTheme}

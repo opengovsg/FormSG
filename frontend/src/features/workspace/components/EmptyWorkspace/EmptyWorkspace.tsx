@@ -2,6 +2,7 @@ import { BiPlus } from 'react-icons/bi'
 import { Box, Flex, Text } from '@chakra-ui/react'
 
 import { useIsMobile } from '~hooks/useIsMobile'
+import { fillHeightCss } from '~utils/fillHeightCss'
 import Button from '~components/Button'
 
 // TODO #4279: Remove after React rollout is complete
@@ -22,12 +23,13 @@ export const EmptyWorkspace = ({
 
   return (
     <Flex
-      justify="center"
+      justify="flex-start"
       flexDir="column"
       align="center"
       px="2rem"
       py="1rem"
       bg="neutral.100"
+      css={fillHeightCss}
     >
       <Box pb="1.5rem">
         <AdminSwitchEnvMessage />
@@ -40,7 +42,7 @@ export const EmptyWorkspace = ({
         color="secondary.500"
         mb={{ base: '2.5rem', md: '2rem' }}
       >
-        Get started by creating a new form.
+        Get started by creating a new form
       </Text>
       <Button
         isFullWidth={isMobile}

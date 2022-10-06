@@ -8,7 +8,7 @@ import Link from '~components/Link'
 
 import {
   FieldBuilderState,
-  stateDataSelector,
+  fieldBuilderStateSelector,
   useFieldBuilderStore,
 } from '~features/admin-form/create/builder-and-design/useFieldBuilderStore'
 
@@ -33,7 +33,7 @@ type EditMyInfoProps = EditFieldProps<MyInfoField>
 
 export const EditMyInfo = ({ field }: EditMyInfoProps): JSX.Element => {
   const extendedField = extendWithMyInfo(field)
-  const stateData = useFieldBuilderStore(stateDataSelector)
+  const fieldBuilderState = useFieldBuilderStore(fieldBuilderStateSelector)
   const { buttonText, handleUpdateField, isLoading, handleCancel } =
     useEditFieldForm<EditMyInfoProps, MyInfoField>({
       field,
@@ -84,7 +84,7 @@ export const EditMyInfo = ({ field }: EditMyInfoProps): JSX.Element => {
         <Text textStyle="subhead-1">Field details</Text>
         <Text>{extendedField.details}</Text>
       </VStack>
-      {stateData.state === FieldBuilderState.CreatingField && (
+      {fieldBuilderState === FieldBuilderState.CreatingField && (
         <FormFieldDrawerActions
           isLoading={isLoading}
           buttonText={buttonText}

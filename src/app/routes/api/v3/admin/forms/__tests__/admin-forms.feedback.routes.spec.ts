@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { ObjectId } from 'bson-ext'
+import { ObjectID } from 'mongodb'
 import mongoose from 'mongoose'
 import supertest, { Session } from 'supertest-session'
 
@@ -27,7 +28,7 @@ import { AdminFormsRouter } from '../admin-forms.routes'
 jest.mock('src/app/utils/limit-rate')
 
 // Avoid async refresh calls
-jest.mock('src/app/modules/spcp/sp.oidc.client.ts')
+jest.mock('src/app/modules/spcp/spcp.oidc.client.ts')
 
 const UserModel = getUserModel(mongoose)
 const EncryptFormModel = getEncryptedFormModel(mongoose)
@@ -82,8 +83,18 @@ describe('admin-form.feedback.routes', () => {
     it('should return 200 with form feedback meta when feedback exists', async () => {
       // Arrange
       const formFeedbacks = [
-        { formId: formForFeedback._id, rating: 5, comment: 'nice' },
-        { formId: formForFeedback._id, rating: 2, comment: 'not nice' },
+        {
+          formId: formForFeedback._id,
+          rating: 5,
+          comment: 'nice',
+          submissionId: new ObjectID().toHexString(),
+        },
+        {
+          formId: formForFeedback._id,
+          rating: 2,
+          comment: 'not nice',
+          submissionId: new ObjectID().toHexString(),
+        },
       ]
       await insertFormFeedback(formFeedbacks[0])
       await insertFormFeedback(formFeedbacks[1])
@@ -262,8 +273,18 @@ describe('admin-form.feedback.routes', () => {
     it('should return 200 with feedback count when feedback exists', async () => {
       // Arrange
       const formFeedbacks = [
-        { formId: formForFeedback._id, rating: 5, comment: 'nice' },
-        { formId: formForFeedback._id, rating: 2, comment: 'not nice' },
+        {
+          formId: formForFeedback._id,
+          rating: 5,
+          comment: 'nice',
+          submissionId: new ObjectID().toHexString(),
+        },
+        {
+          formId: formForFeedback._id,
+          rating: 2,
+          comment: 'not nice',
+          submissionId: new ObjectID().toHexString(),
+        },
       ]
       await insertFormFeedback(formFeedbacks[0])
       await insertFormFeedback(formFeedbacks[1])
@@ -406,8 +427,18 @@ describe('admin-form.feedback.routes', () => {
     it('should return 200 with feedback stream when feedbacks exist', async () => {
       // Arrange
       const formFeedbacks = [
-        { formId: formForFeedback._id, rating: 5, comment: 'nice' },
-        { formId: formForFeedback._id, rating: 2, comment: 'not nice' },
+        {
+          formId: formForFeedback._id,
+          rating: 5,
+          comment: 'nice',
+          submissionId: new ObjectID().toHexString(),
+        },
+        {
+          formId: formForFeedback._id,
+          rating: 2,
+          comment: 'not nice',
+          submissionId: new ObjectID().toHexString(),
+        },
       ]
       await insertFormFeedback(formFeedbacks[0])
       await insertFormFeedback(formFeedbacks[1])

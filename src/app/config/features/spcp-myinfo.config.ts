@@ -35,7 +35,12 @@ type ISpcpConfig = {
   spOidcRpRedirectUrl: string
   spOidcRpJwksPublicPath: string
   spOidcRpJwksSecretPath: string
+  cpOidcNdiDiscoveryEndpoint: string
+  cpOidcNdiJwksEndpoint: string
+  cpOidcRpClientId: string
+  cpOidcRpRedirectUrl: string
   cpOidcRpJwksPublicPath: string
+  cpOidcRpJwksSecretPath: string
 }
 
 type IMyInfoConfig = {
@@ -235,13 +240,13 @@ const spcpMyInfoSchema: Schema<ISpcpMyInfo> = {
     env: 'SP_OIDC_NDI_JWKS_ENDPOINT',
   },
   spOidcRpClientId: {
-    doc: "The Relying Party's Client ID as registered with NDI",
+    doc: "The Relying Party's Singpass Client ID as registered with NDI",
     format: String,
     default: null,
     env: 'SP_OIDC_RP_CLIENT_ID',
   },
   spOidcRpRedirectUrl: {
-    doc: "The Relying Party's Redirect URL",
+    doc: "The Relying Party's Singpass Redirect URL",
     format: String,
     default: null,
     env: 'SP_OIDC_RP_REDIRECT_URL',
@@ -258,11 +263,41 @@ const spcpMyInfoSchema: Schema<ISpcpMyInfo> = {
     default: null,
     env: 'SP_OIDC_RP_JWKS_SECRET_PATH',
   },
+  cpOidcNdiDiscoveryEndpoint: {
+    doc: "NDI's Corppass OIDC Discovery Endpoint",
+    format: String,
+    default: null,
+    env: 'CP_OIDC_NDI_DISCOVERY_ENDPOINT',
+  },
+  cpOidcNdiJwksEndpoint: {
+    doc: "NDI's Corppass OIDC JWKS Endpoint",
+    format: String,
+    default: null,
+    env: 'CP_OIDC_NDI_JWKS_ENDPOINT',
+  },
+  cpOidcRpClientId: {
+    doc: "The Relying Party's Corppass Client ID as registered with NDI",
+    format: String,
+    default: null,
+    env: 'CP_OIDC_RP_CLIENT_ID',
+  },
+  cpOidcRpRedirectUrl: {
+    doc: "The Relying Party's Corppass Redirect URL",
+    format: String,
+    default: null,
+    env: 'CP_OIDC_RP_REDIRECT_URL',
+  },
   cpOidcRpJwksPublicPath: {
     doc: "Path to the Relying Party's Public Json Web Key Set used for Corppass-related communication with NDI.  This will be hosted at api/v3/corppass/.well-known/jwks.json endpoint.",
     format: String,
     default: null,
     env: 'CP_OIDC_RP_JWKS_PUBLIC_PATH',
+  },
+  cpOidcRpJwksSecretPath: {
+    doc: "Path to the Relying Party's Secret Json Web Key Set used for Cingpass-related communication with NDI",
+    format: String,
+    default: null,
+    env: 'CP_OIDC_RP_JWKS_SECRET_PATH',
   },
 }
 

@@ -54,20 +54,20 @@ export const LANDING_PAGE_EXAMPLE_FORMS = [
     label: 'Register for COVID-19 Vaccination',
   },
   {
-    href: 'https://form.gov.sg/6162b3c7ed9ee00013726baf',
-    label: 'Covid Positive Patient Details',
-  },
-  {
     href: 'https://form.gov.sg/5eb38e989bd7d80011066a02',
     label: 'Daily Reporting Health Symptoms',
   },
   {
-    href: 'https://form.gov.sg/5f085b4b3583420013af9a55',
-    label: 'Health and Travel Declaration Form',
-  },
-  {
     href: 'https://form.gov.sg/6057667b248bbc0012ceda2f',
     label: 'Gov.sg WhatsApp Subscription',
+  },
+  {
+    href: 'https://form.gov.sg/6041e9f8bd47260012395250',
+    label: 'Post-ICT Survey',
+  },
+  {
+    href: 'https://form.gov.sg/5f085b4b3583420013af9a55',
+    label: 'Health and Travel Declaration Form',
   },
   {
     href: 'https://form.gov.sg/60b81af0f7c4df001210f2b3',

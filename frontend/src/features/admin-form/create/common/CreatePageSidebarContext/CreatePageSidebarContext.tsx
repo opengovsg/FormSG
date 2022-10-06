@@ -20,8 +20,8 @@ import {
 } from '../../builder-and-design/useDesignStore'
 import {
   FieldBuilderState,
+  fieldBuilderStateSelector,
   setToInactiveSelector,
-  stateDataSelector,
   useFieldBuilderStore,
 } from '../../builder-and-design/useFieldBuilderStore'
 
@@ -74,15 +74,9 @@ export const useCreatePageSidebarContext =
       () => activeTab !== null && activeTab !== DrawerTabs.Logic,
       [activeTab],
     )
-    const { fieldState, setFieldsToInactive } = useFieldBuilderStore(
-      useCallback(
-        (state) => ({
-          fieldState: stateDataSelector(state),
-          setFieldsToInactive: setToInactiveSelector(state),
-        }),
-        [],
-      ),
-    )
+    const fieldBuilderState = useFieldBuilderStore(fieldBuilderStateSelector)
+    const setFieldsToInactive = useFieldBuilderStore(setToInactiveSelector)
+
     const setDesignState = useDesignStore(setStateSelector)
 
     const [fieldListTabIndex, setFieldListTabIndex] =
@@ -108,13 +102,13 @@ export const useCreatePageSidebarContext =
           if (
             tab === null &&
             // Always want to set to inactive if the state was creating, even in mobile
-            (fieldState.state === FieldBuilderState.CreatingField || !isMobile)
+            (fieldBuilderState === FieldBuilderState.CreatingField || !isMobile)
           ) {
             setFieldsToInactive()
           }
         }
       },
-      [fieldState.state, isMobile, setFieldsToInactive],
+      [fieldBuilderState, isMobile, setFieldsToInactive],
     )
 
     const clearPendingTab = useCallback(() => {
