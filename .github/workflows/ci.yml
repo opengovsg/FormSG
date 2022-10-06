@@ -19,9 +19,6 @@ jobs:
       - uses: dorny/paths-filter@v2
         id: filter
         with:
-          # Use context to get the branch where commits were pushed.
-          # If it's not configured, the repository default branch is used.
-          base: ${{ github.ref }}
           filters: |
             frontend:
               - shared/**
