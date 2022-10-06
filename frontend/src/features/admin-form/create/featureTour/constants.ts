@@ -24,6 +24,12 @@ export const FEATURE_TOUR: FeatureTourStepAttributes[] = [
     content:
       "Personalise your user's experience by showing fields and sections, or disabling submissions based on their input",
   },
+  {
+    id: 'feature_tour_fourth_step',
+    title: "Edit your form's Thank you page",
+    content:
+      'Modify the contents of the page seen by your users after they submit your form',
+  },
 ]
 
 export const FEATURE_STEPS: Step[] = FEATURE_TOUR.map(

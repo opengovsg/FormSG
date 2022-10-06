@@ -2,8 +2,7 @@ import { useCallback } from 'react'
 import { BiGitMerge, BiQuestionMark } from 'react-icons/bi'
 import { Stack } from '@chakra-ui/react'
 
-import { BxsColorFill } from '~assets/icons/BxsColorFill'
-import { BxsWidget } from '~assets/icons/BxsWidget'
+import { BxsColorFill, BxsWidget, PhHandsClapping } from '~assets/icons'
 import { FORM_GUIDE } from '~constants/links'
 import { useIsMobile } from '~hooks/useIsMobile'
 import IconButton from '~components/IconButton'
@@ -30,8 +29,13 @@ export const CreatePageSidebar = (): JSX.Element | null => {
   const isMobile = useIsMobile()
   const setFieldsToInactive = useFieldBuilderStore(setToInactiveSelector)
   const isDirty = useDirtyFieldStore(isDirtySelector)
-  const { activeTab, handleBuilderClick, handleDesignClick, handleLogicClick } =
-    useCreatePageSidebar()
+  const {
+    activeTab,
+    handleBuilderClick,
+    handleDesignClick,
+    handleLogicClick,
+    handleEndpageClick,
+  } = useCreatePageSidebar()
 
   const handleDrawerBuilderClick = useCallback(() => {
     // Always show create field drawer when sidebar icon is tapped on mobile.
@@ -49,6 +53,11 @@ export const CreatePageSidebar = (): JSX.Element | null => {
   const handleDrawerLogicClick = useCallback(
     () => handleLogicClick(isDirty),
     [handleLogicClick, isDirty],
+  )
+
+  const handleDrawerEndpageClick = useCallback(
+    () => handleEndpageClick(isDirty),
+    [handleEndpageClick, isDirty],
   )
 
   return (
@@ -84,6 +93,13 @@ export const CreatePageSidebar = (): JSX.Element | null => {
           onClick={handleDrawerLogicClick}
           isActive={activeTab === DrawerTabs.Logic}
           id={FEATURE_TOUR[2].id}
+        />
+        <DrawerTabIcon
+          label="Edit Thank you page"
+          icon={<PhHandsClapping fontSize="1.5rem" />}
+          onClick={handleDrawerEndpageClick}
+          isActive={activeTab === DrawerTabs.Endpage}
+          id={FEATURE_TOUR[3].id}
         />
       </Stack>
       <Tooltip label="Help" placement="right">
