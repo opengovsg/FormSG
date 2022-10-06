@@ -6,7 +6,6 @@ import {
   BiBookHeart,
   BiBriefcase,
   BiBuilding,
-  BiBuildings,
   BiCalculator,
   BiCalendarAlt,
   BiCalendarEvent,

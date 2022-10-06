@@ -17,7 +17,6 @@ import { useIsMobile } from '~hooks/useIsMobile'
 import Badge from '~components/Badge'
 import Button from '~components/Button'
 import Link from '~components/Link'
-import { ModalCloseButton } from '~components/Modal'
 import Spinner from '~components/Spinner'
 
 import { formatSmsCounts } from './utils'
