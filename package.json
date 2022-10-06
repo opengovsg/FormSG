@@ -61,7 +61,7 @@
     "postinstall:shared": "npm --prefix shared install"
   },
   "dependencies": {
-    "@aws-sdk/client-cloudwatch-logs": "^3.181.0",
+    "@aws-sdk/client-cloudwatch-logs": "^3.185.0",
     "@babel/runtime": "^7.19.0",
     "@joi/date": "^2.1.0",
     "@opengovsg/angular-daterangepicker-webpack": "^1.1.5",
@@ -117,7 +117,7 @@
     "ejs": "^3.1.8",
     "express": "^4.18.1",
     "express-rate-limit": "^6.6.0",
-    "express-request-id": "^1.4.1",
+    "express-request-id": "^3.0.0",
     "express-session": "^1.17.3",
     "express-winston": "^4.2.0",
     "fetch-readablestream": "^0.2.0",
