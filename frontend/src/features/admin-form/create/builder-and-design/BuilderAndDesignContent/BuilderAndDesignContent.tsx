@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react'
+import { useEffect } from 'react'
 import { Box, Flex } from '@chakra-ui/react'
 
 import InlineMessage from '~components/InlineMessage'
@@ -10,7 +10,6 @@ import {
   FieldBuilderState,
   fieldBuilderStateSelector,
   setToInactiveSelector,
-  stateDataSelector,
   useFieldBuilderStore,
 } from '../useFieldBuilderStore'
 

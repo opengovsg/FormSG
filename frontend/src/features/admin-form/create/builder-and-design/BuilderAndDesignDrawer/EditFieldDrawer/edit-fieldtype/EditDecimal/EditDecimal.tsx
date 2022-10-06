@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { Controller, RegisterOptions } from 'react-hook-form'
-import { Box, FormControl, SimpleGrid } from '@chakra-ui/react'
+import { FormControl, SimpleGrid } from '@chakra-ui/react'
 import { extend, isEmpty, pick } from 'lodash'
 
 import { DecimalFieldBase } from '~shared/types/field'
