@@ -61,7 +61,7 @@
     "postinstall:shared": "npm --prefix shared install"
   },
   "dependencies": {
-    "@aws-sdk/client-cloudwatch-logs": "^3.181.0",
+    "@aws-sdk/client-cloudwatch-logs": "^3.185.0",
     "@babel/runtime": "^7.19.0",
     "@joi/date": "^2.1.0",
     "@opengovsg/angular-daterangepicker-webpack": "^1.1.5",
@@ -230,7 +230,7 @@
     "concurrently": "^7.4.0",
     "copy-webpack-plugin": "^6.0.2",
     "copyfiles": "^2.4.1",
-    "core-js": "^3.25.4",
+    "core-js": "^3.25.5",
     "coveralls": "^3.1.1",
     "css-loader": "^2.1.1",
     "csv-parse": "^5.3.0",
