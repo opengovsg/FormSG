@@ -28,8 +28,6 @@ jobs:
               - frontend/**
   chromatic-deployment:
     needs: changes
-    # Only run if frontend files have changed.
-    if: ${{ needs.changes.outputs.frontend == 'true' }}
     # Operating System
     runs-on: ubuntu-latest
     # Job steps
@@ -53,5 +51,5 @@ jobs:
           autoAcceptChanges: develop
           exitOnceUploaded: true
           onlyChanged: true
-          # Skip running Chromatic on dependabot PRs
-          skip: dependabot/**
+          # Skip running Chromatic on dependabot PRs, or if no changes to output
+          skip: ${{ needs.changes.outputs.frontend == 'true' || 'dependabot/**' }}
