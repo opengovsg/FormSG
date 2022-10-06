@@ -44,7 +44,7 @@ export const EditHeader = ({ field }: EditHeaderProps): JSX.Element => {
   return (
     <DrawerContentContainer>
       <FormControl isRequired isReadOnly={isLoading} isInvalid={!!errors.title}>
-        <FormLabel>Section header</FormLabel>
+        <FormLabel>Section heading</FormLabel>
         <Input autoFocus {...register('title', requiredValidationRule)} />
         <FormErrorMessage>{errors?.title?.message}</FormErrorMessage>
       </FormControl>
