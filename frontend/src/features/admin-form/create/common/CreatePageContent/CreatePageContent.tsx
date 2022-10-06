@@ -12,7 +12,7 @@ export const CreatePageContent = (): JSX.Element => {
   switch (activeTab) {
     case DrawerTabs.Logic:
       return <CreatePageLogicTab />
-    case DrawerTabs.Endpage:
+    case DrawerTabs.EndPage:
       return <EndPageTab />
     default:
       // builder or design

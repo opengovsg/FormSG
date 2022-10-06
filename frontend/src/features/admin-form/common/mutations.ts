@@ -367,7 +367,7 @@ export const useMutateFormPage = () => {
           (oldData) => (oldData ? { ...oldData, endPage: newData } : undefined),
         )
         toast({
-          description: 'Updated Thank You page',
+          description: 'Updated Thank you page',
         })
       },
       onError: handleError,

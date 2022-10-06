@@ -29,7 +29,7 @@ export enum DrawerTabs {
   Builder,
   Design,
   Logic,
-  Endpage,
+  EndPage,
 }
 
 type CreatePageSidebarContextProps = {
@@ -137,7 +137,7 @@ export const useCreatePageSidebarContext =
 
     const handleEndpageClick = useCallback(
       (shouldBePending: boolean) =>
-        setActiveOrPendingTab(DrawerTabs.Endpage, shouldBePending),
+        setActiveOrPendingTab(DrawerTabs.EndPage, shouldBePending),
       [setActiveOrPendingTab],
     )
 

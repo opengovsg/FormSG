@@ -98,7 +98,7 @@ export const CreatePageSidebar = (): JSX.Element | null => {
           label="Edit Thank you page"
           icon={<PhHandsClapping fontSize="1.5rem" />}
           onClick={handleDrawerEndpageClick}
-          isActive={activeTab === DrawerTabs.Endpage}
+          isActive={activeTab === DrawerTabs.EndPage}
           id={FEATURE_TOUR[3].id}
         />
       </Stack>

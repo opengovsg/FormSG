@@ -37,8 +37,8 @@ import {
 import { useCreatePageSidebar } from '~features/admin-form/create/common/CreatePageSidebarContext'
 import { isMyInfo } from '~features/myinfo/utils'
 
-import { useCreateTabForm } from '../../useCreateTabForm'
-import { CreatePageDrawerCloseButton } from '../CreatePageDrawerCloseButton'
+import { useCreateTabForm } from '../../../builder-and-design/useCreateTabForm'
+import { CreatePageDrawerCloseButton } from '../../../common'
 
 import {
   DraggableBasicFieldListOption,
