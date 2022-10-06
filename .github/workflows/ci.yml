@@ -29,10 +29,15 @@ jobs:
             angularjs:
               - shared/**
               - src/shared/**
+              - package.json
+              - package-lock.json
               - src/public/**
             backend:
+              - tests/**
               - shared/**
               - src/shared/**
+              - package.json
+              - package-lock.json
               - src/app/**
 
   install:
