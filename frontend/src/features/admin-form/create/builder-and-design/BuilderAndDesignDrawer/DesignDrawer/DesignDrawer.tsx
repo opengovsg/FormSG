@@ -435,7 +435,7 @@ export const DesignDrawer = ({
       <Box pt="1rem" px="1.5rem" bg="white">
         <Flex justify="space-between">
           <Text textStyle="subhead-3" color="secondary.500" mb="1rem">
-            Design
+            Edit header and instructions
           </Text>
           <CreatePageDrawerCloseButton />
         </Flex>

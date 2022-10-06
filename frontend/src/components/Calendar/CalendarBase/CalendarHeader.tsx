@@ -7,16 +7,14 @@ import {
   Text,
   useBreakpointValue,
   useStyles,
-  VisuallyHidden,
 } from '@chakra-ui/react'
 import { addMonths } from 'date-fns'
 
 import { BxChevronLeft, BxChevronRight } from '~assets/icons'
 import IconButton from '~components/IconButton'
 
-import { MONTH_NAMES } from '../utils'
-
 import { useCalendar } from './CalendarContext'
+import { MONTH_NAMES } from './utils'
 
 interface CalendarHeaderProps {
   monthOffset: number
@@ -90,29 +88,24 @@ const SelectableMonthYear = memo(() => {
   )
 
   return (
-    <>
-      <VisuallyHidden aria-live="polite" aria-atomic>
-        Currently displaying {MONTH_NAMES[currMonth].fullName} {currYear}
-      </VisuallyHidden>
-      <HStack>
-        <MonthYearSelect
-          // Align with dates in the calendar
-          pl={{ base: '0.5rem', md: '1rem' }}
-          value={currMonth}
-          onChange={handleMonthChange}
-          aria-label="Change displayed month"
-        >
-          {memoizedMonthOptions}
-        </MonthYearSelect>
-        <MonthYearSelect
-          value={currYear}
-          onChange={handleYearChange}
-          aria-label="Change displayed year"
-        >
-          {memoizedYearOptions}
-        </MonthYearSelect>
-      </HStack>
-    </>
+    <HStack>
+      <MonthYearSelect
+        // Align with dates in the calendar
+        pl={{ base: '0.5rem', md: '1rem' }}
+        value={currMonth}
+        onChange={handleMonthChange}
+        aria-label="Change displayed month"
+      >
+        {memoizedMonthOptions}
+      </MonthYearSelect>
+      <MonthYearSelect
+        value={currYear}
+        onChange={handleYearChange}
+        aria-label="Change displayed year"
+      >
+        {memoizedYearOptions}
+      </MonthYearSelect>
+    </HStack>
   )
 })
 
@@ -172,7 +165,6 @@ export const CalendarHeader = memo(
               colorScheme="secondary"
               icon={<BxChevronLeft />}
               aria-label="Back one month"
-              // minW={{ base: '1.75rem', xs: '2.75rem', sm: '2.75rem' }}
               {...getBackProps({ calendars })}
             />
             <IconButton
@@ -180,7 +172,6 @@ export const CalendarHeader = memo(
               colorScheme="secondary"
               icon={<BxChevronRight />}
               aria-label="Forward one month"
-              // minW={{ base: '1.75rem', xs: '2.75rem', sm: '2.75rem' }}
               {...getForwardProps({ calendars })}
             />
           </Flex>

@@ -7,9 +7,10 @@ import { AvatarMenu } from './AvatarMenu'
 import { Badge } from './Badge'
 import { Banner } from './Banner'
 import { Button } from './Button'
+import { Calendar } from './Calendar'
 import { Checkbox, CHECKBOX_THEME_KEY } from './Checkbox'
 import { CloseButton } from './CloseButton'
-import { DateInput } from './DateInput'
+import { DatePicker } from './DatePicker'
 import { Divider } from './Divider'
 import { Drawer } from './Drawer'
 import { Form } from './Form'
@@ -46,8 +47,9 @@ export const components = {
   Badge,
   Banner,
   Button,
+  Calendar,
   CloseButton,
-  DateInput,
+  DatePicker,
   Drawer,
   Form,
   FormError,

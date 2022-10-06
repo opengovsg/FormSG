@@ -1,4 +1,4 @@
-import { format } from 'date-fns'
+import { format, parse } from 'date-fns'
 import { times } from 'lodash'
 
 import { BasicField, FormFieldDto } from '~shared/types/field'
@@ -14,6 +14,7 @@ import {
 import { removeAt } from '~shared/utils/immutable-array-fns'
 
 import { CHECKBOX_OTHERS_INPUT_VALUE } from '~templates/Field/Checkbox/CheckboxField'
+import { DATE_PARSE_FORMAT } from '~templates/Field/Date/DateField'
 import { RADIO_OTHERS_INPUT_VALUE } from '~templates/Field/Radio/RadioField'
 import { createTableRow } from '~templates/Field/Table/utils/createRow'
 import {
@@ -76,8 +77,10 @@ const transformToDateOutput = (
 ): SingleAnswerOutput<DateFieldSchema> => {
   return {
     ...pickBaseOutputFromSchema(schema),
-    // Convert ISO8601 "yyyy-mm-dd" format to "DD MMM YYYY" format (if input exists).
-    answer: input ? format(new Date(input), 'dd MMM yyyy') : '',
+    // Convert input format to "DD MMM YYYY" format (if input exists).
+    answer: input
+      ? format(parse(input, DATE_PARSE_FORMAT, new Date()), 'dd MMM yyyy')
+      : '',
   }
 }
 

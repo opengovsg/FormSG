@@ -6,7 +6,6 @@ import {
   BiBookHeart,
   BiBriefcase,
   BiBuilding,
-  BiBuildings,
   BiCalculator,
   BiCalendarAlt,
   BiCalendarEvent,
@@ -69,7 +68,7 @@ export const BASICFIELD_TO_DRAWER_META: {
   },
 
   [BasicField.Section]: {
-    label: 'Header',
+    label: 'Heading',
     icon: BiHeading,
     isSubmitted: false,
   },

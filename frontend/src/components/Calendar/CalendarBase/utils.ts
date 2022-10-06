@@ -1,14 +1,11 @@
 import {
   addDays,
   differenceInCalendarMonths,
-  format,
   startOfDay,
   subDays,
 } from 'date-fns'
 import range from 'lodash/range'
 import { v4 as uuidv4 } from 'uuid'
-
-import { DateString } from '~shared/types'
 
 /**
  * Full names of calendar months
@@ -124,8 +121,4 @@ export const generateValidUuidClass = (): string => {
   // Ensure className starts with alphabet and has no hyphens
   // followed by digits
   return `a${uuidv4().replaceAll('-', '_')}`
-}
-
-export const convertToDateString = (date: Date): DateString => {
-  return format(date, 'yyyy-MM-dd') as DateString
 }

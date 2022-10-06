@@ -127,31 +127,36 @@ export const useMutateCollaborators = () => {
     return defaultErrorMessage
   }
 
-  const getMappedErrorMessage = (
-    error: Error,
-    formCollaboratorAction: FormCollaboratorAction,
-    requestEmail?: string,
-  ): string => {
-    // check if error is an instance of HttpError to be able to access status code of error
-    if (error instanceof HttpError) {
-      let errorMessage
-      switch (error.code) {
-        case 422:
-          errorMessage = requestEmail
-            ? `${requestEmail} is not part of a whitelisted agency`
-            : `An unexpected error 422 happened`
-          break
-        case 400:
-          errorMessage = getMappedBadRequestErrorMessage(formCollaboratorAction)
-          break
-        default:
-          errorMessage = getMappedDefaultErrorMessage(formCollaboratorAction)
+  const getMappedErrorMessage = useCallback(
+    (
+      error: Error,
+      formCollaboratorAction: FormCollaboratorAction,
+      requestEmail?: string,
+    ): string => {
+      // check if error is an instance of HttpError to be able to access status code of error
+      if (error instanceof HttpError) {
+        let errorMessage
+        switch (error.code) {
+          case 422:
+            errorMessage = requestEmail
+              ? `${requestEmail} is not part of a whitelisted agency`
+              : `An unexpected error 422 happened`
+            break
+          case 400:
+            errorMessage = getMappedBadRequestErrorMessage(
+              formCollaboratorAction,
+            )
+            break
+          default:
+            errorMessage = getMappedDefaultErrorMessage(formCollaboratorAction)
+        }
+        return errorMessage
       }
-      return errorMessage
-    }
-    // if error is not of type HttpError return the error message encapsulated in Error object
-    return error.message
-  }
+      // if error is not of type HttpError return the error message encapsulated in Error object
+      return error.message
+    },
+    [],
+  )
 
   const handleSuccess = useCallback(
     ({
@@ -188,7 +193,7 @@ export const useMutateCollaborators = () => {
         status: 'danger',
       })
     },
-    [toast],
+    [getMappedErrorMessage, toast],
   )
 
   const mutateUpdateCollaborator = useMutation(
