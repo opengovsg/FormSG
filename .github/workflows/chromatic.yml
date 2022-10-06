@@ -54,5 +54,4 @@ jobs:
           exitOnceUploaded: true
           onlyChanged: true
           # Skip running Chromatic on dependabot PRs
-          # Should also figure out
           skip: dependabot/**
