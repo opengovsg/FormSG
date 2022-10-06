@@ -8,7 +8,6 @@ import {
 } from '@chakra-ui/react'
 import {
   compareAsc,
-  format,
   isFirstDayOfMonth,
   isLastDayOfMonth,
   isSameDay,
@@ -153,7 +152,7 @@ export const DayOfMonth = forwardRef<DayOfMonthProps, 'button'>(
           // Prevent form submission if this component is nested in a form.
           type="button"
           sx={styles.dayOfMonth}
-          aria-label={format(date, "do 'of' MMMM',' EEEE")}
+          aria-label={date.toLocaleDateString()}
           tabIndex={isFocusable ? 0 : -1}
           aria-disabled={!isAvailable}
           ref={ref}
