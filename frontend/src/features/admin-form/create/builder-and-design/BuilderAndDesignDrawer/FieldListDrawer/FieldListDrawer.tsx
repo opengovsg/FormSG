@@ -21,8 +21,8 @@ import Link from '~components/Link'
 import { Tab } from '~components/Tabs'
 
 import {
+  BASIC_FIELDS_ORDERED,
   CREATE_FIELD_DROP_ID,
-  CREATE_FIELD_FIELDS_ORDERED,
   CREATE_MYINFO_CONTACT_DROP_ID,
   CREATE_MYINFO_CONTACT_FIELDS_ORDERED,
   CREATE_MYINFO_MARRIAGE_DROP_ID,
@@ -31,8 +31,6 @@ import {
   CREATE_MYINFO_PARTICULARS_FIELDS_ORDERED,
   CREATE_MYINFO_PERSONAL_DROP_ID,
   CREATE_MYINFO_PERSONAL_FIELDS_ORDERED,
-  CREATE_PAGE_DROP_ID,
-  CREATE_PAGE_FIELDS_ORDERED,
 } from '~features/admin-form/create/builder-and-design/constants'
 import { useCreatePageSidebar } from '~features/admin-form/create/common/CreatePageSidebarContext'
 import { isMyInfo } from '~features/myinfo/utils'
@@ -88,28 +86,11 @@ const BasicFieldPanelContent = () => {
 
   return (
     <>
-      <Droppable isDropDisabled droppableId={CREATE_PAGE_DROP_ID}>
-        {(provided) => (
-          <Box ref={provided.innerRef} {...provided.droppableProps}>
-            <FieldSection label="Page">
-              {CREATE_PAGE_FIELDS_ORDERED.map((fieldType, index) => (
-                <DraggableBasicFieldListOption
-                  index={index}
-                  isDisabled={isLoading}
-                  key={index}
-                  fieldType={fieldType}
-                />
-              ))}
-            </FieldSection>
-            <Box display="none">{provided.placeholder}</Box>
-          </Box>
-        )}
-      </Droppable>
       <Droppable isDropDisabled droppableId={CREATE_FIELD_DROP_ID}>
         {(provided) => (
           <Box ref={provided.innerRef} {...provided.droppableProps}>
-            <FieldSection label="Fields">
-              {CREATE_FIELD_FIELDS_ORDERED.map((fieldType, index) => (
+            <FieldSection>
+              {BASIC_FIELDS_ORDERED.map((fieldType, index) => (
                 <DraggableBasicFieldListOption
                   index={index}
                   isDisabled={isLoading}
@@ -117,8 +98,8 @@ const BasicFieldPanelContent = () => {
                   fieldType={fieldType}
                 />
               ))}
+              <Box display="none">{provided.placeholder}</Box>
             </FieldSection>
-            <Box display="none">{provided.placeholder}</Box>
           </Box>
         )}
       </Droppable>
@@ -275,7 +256,7 @@ const FieldSection = ({
   label,
   children,
 }: {
-  label: string
+  label?: string
   children: React.ReactNode
 }) => {
   return (

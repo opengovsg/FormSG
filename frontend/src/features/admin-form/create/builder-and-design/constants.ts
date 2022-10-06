@@ -92,9 +92,6 @@ export const MYINFO_DATEFIELD_META: MyInfoFieldMeta<DateFieldBase> = {
   },
 }
 
-export const CREATE_PAGE_FIELDS_ORDERED = BASIC_FIELDS_ORDERED.slice(0, 3)
-export const CREATE_FIELD_FIELDS_ORDERED = BASIC_FIELDS_ORDERED.slice(3)
-
 export const CREATE_MYINFO_PERSONAL_FIELDS_ORDERED =
   MYINFO_FIELDS_ORDERED.slice(0, 13)
 
@@ -109,7 +106,6 @@ export const CREATE_MYINFO_PARTICULARS_FIELDS_ORDERED =
 export const CREATE_MYINFO_MARRIAGE_FIELDS_ORDERED =
   MYINFO_FIELDS_ORDERED.slice(19, 24)
 
-export const CREATE_PAGE_DROP_ID = 'create-fields-page'
 export const CREATE_FIELD_DROP_ID = 'create-fields-field'
 
 export const CREATE_MYINFO_PERSONAL_DROP_ID = 'create-myinfo-personal'
