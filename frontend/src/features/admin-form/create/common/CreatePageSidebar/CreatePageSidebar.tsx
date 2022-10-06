@@ -65,7 +65,7 @@ export const CreatePageSidebar = (): JSX.Element | null => {
     >
       <Stack spacing="0.5rem">
         <DrawerTabIcon
-          label="Build your form"
+          label="Add fields"
           icon={<BxsWidget fontSize="1.5rem" />}
           onClick={handleDrawerBuilderClick}
           isActive={activeTab === DrawerTabs.Builder}
@@ -79,7 +79,7 @@ export const CreatePageSidebar = (): JSX.Element | null => {
           id={FEATURE_TOUR[1].id}
         />
         <DrawerTabIcon
-          label="Add conditional logic"
+          label="Add logic"
           icon={<BiGitMerge fontSize="1.5rem" />}
           onClick={handleDrawerLogicClick}
           isActive={activeTab === DrawerTabs.Logic}
