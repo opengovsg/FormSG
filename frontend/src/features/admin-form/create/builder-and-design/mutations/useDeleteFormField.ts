@@ -12,7 +12,6 @@ import { deleteSingleFormField } from '../UpdateFormFieldService'
 import {
   FieldBuilderState,
   setToInactiveSelector,
-  stateDataSelector,
   useFieldBuilderStore,
 } from '../useFieldBuilderStore'
 import {
@@ -24,15 +23,7 @@ export const useDeleteFormField = () => {
   const { formId } = useParams()
   if (!formId) throw new Error('No formId provided')
 
-  const { stateData, setToInactive } = useFieldBuilderStore(
-    useCallback(
-      (state) => ({
-        stateData: stateDataSelector(state),
-        setToInactive: setToInactiveSelector(state),
-      }),
-      [],
-    ),
-  )
+  const setToInactive = useFieldBuilderStore(setToInactiveSelector)
 
   const queryClient = useQueryClient()
   const toast = useToast({ status: 'success', isClosable: true })
@@ -40,7 +31,8 @@ export const useDeleteFormField = () => {
 
   const handleSuccess = useCallback(() => {
     toast.closeAll()
-    if (stateData.state !== FieldBuilderState.EditingField) {
+    const fieldBuilderStore = useFieldBuilderStore.getState()
+    if (fieldBuilderStore.stateData.state !== FieldBuilderState.EditingField) {
       toast({
         status: 'warning',
         description:
@@ -50,29 +42,34 @@ export const useDeleteFormField = () => {
     }
     toast({
       description: `The ${getMutationToastDescriptionFieldName(
-        stateData.field,
+        fieldBuilderStore.stateData.field,
       )} was deleted.`,
     })
     queryClient.setQueryData<AdminFormDto>(adminFormKey, (oldForm) => {
       // Should not happen, should not be able to update field if there is no
       // existing data.
       if (!oldForm) throw new Error('Query should have been set')
-      const deletedFieldIndex = oldForm.form_fields.findIndex(
-        (ff) => ff._id === stateData.field._id,
-      )
-      if (deletedFieldIndex < 0) {
-        toast({
-          status: 'warning',
-          description:
-            'Something went wrong when deleting your field. Please refresh and try again.',
-        })
-      } else {
-        oldForm.form_fields.splice(deletedFieldIndex, 1)
+      if (
+        fieldBuilderStore.stateData.state === FieldBuilderState.EditingField
+      ) {
+        const deletedFieldId = fieldBuilderStore.stateData.field._id
+        const deletedFieldIndex = oldForm.form_fields.findIndex(
+          (ff) => ff._id === deletedFieldId,
+        )
+        if (deletedFieldIndex < 0) {
+          toast({
+            status: 'warning',
+            description:
+              'Something went wrong when deleting your field. Please refresh and try again.',
+          })
+        } else {
+          oldForm.form_fields.splice(deletedFieldIndex, 1)
+        }
       }
       return oldForm
     })
     setToInactive()
-  }, [adminFormKey, stateData, queryClient, setToInactive, toast])
+  }, [adminFormKey, queryClient, setToInactive, toast])
 
   const handleError = useCallback(
     (error: Error) => {
