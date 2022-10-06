@@ -102,10 +102,22 @@ const useProvideDateRangePicker = ({
   onClick,
   colorScheme = 'primary',
   monthsToDisplay,
+  refocusOnClose = true,
   ...props
 }: DateRangePickerProps): DateRangePickerContextReturn => {
+  const initialFocusRef = useRef<HTMLInputElement>(null)
+  const startInputRef = useRef<HTMLInputElement>(null)
+  const endInputRef = useRef<HTMLInputElement>(null)
+
   const isMobile = useIsMobile()
-  const disclosureProps = useDisclosure()
+
+  const disclosureProps = useDisclosure({
+    onClose: () => {
+      if (!refocusOnClose) return
+      // Refocus input after closing calendar.
+      setTimeout(() => endInputRef.current?.focus(), 0)
+    },
+  })
 
   const [internalValue, setInternalValue] = useControllableState({
     defaultValue,
@@ -209,10 +221,6 @@ const useProvideDateRangePicker = ({
     [allowManualInput, disclosureProps, onClick],
   )
 
-  const initialFocusRef = useRef<HTMLInputElement>(null)
-  const startInputRef = useRef<HTMLInputElement>(null)
-  const endInputRef = useRef<HTMLInputElement>(null)
-
   const calendarButtonAria = useMemo(() => {
     let ariaLabel = 'Select from date picker. '
     if (!startDate && !endDate) return ariaLabel + 'No date range selected.'
@@ -280,8 +288,6 @@ const useProvideDateRangePicker = ({
       )
       if (nextStartDate && nextEndDate && closeCalendarOnChange) {
         disclosureProps.onClose()
-        // Refocus input after closing calendar.
-        setTimeout(() => endInputRef.current?.focus(), 0)
       }
     },
     [

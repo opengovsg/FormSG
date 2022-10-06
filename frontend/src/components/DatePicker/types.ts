@@ -21,8 +21,16 @@ export interface DatePickerBaseProps
    * @defaultValue `true`
    */
   allowInvalidDates?: boolean
-  /** Whether the calendar will close once a date is selected. Defaults to `true` */
+  /**
+   * Whether the calendar will close once a date is selected.
+   * @defaultValue `true`
+   */
   closeCalendarOnChange?: boolean
+  /**
+   * Whether to refocus date picker when calendar is closed.
+   * @defaultValue `true`
+   */
+  refocusOnClose?: boolean
   /** date-fns's Locale of the date to be applied if provided. */
   locale?: Locale
   /**

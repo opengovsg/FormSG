@@ -94,10 +94,22 @@ const useProvideDatePicker = ({
   onClick,
   colorScheme = 'primary',
   monthsToDisplay,
+  refocusOnClose = true,
   ...props
 }: DatePickerProps): DatePickerContextReturn => {
+  const initialFocusRef = useRef<HTMLInputElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
+
   const isMobile = useIsMobile()
-  const disclosureProps = useDisclosure()
+
+  const disclosureProps = useDisclosure({
+    onClose: () => {
+      if (!refocusOnClose) return
+      // Refocus input after closing calendar.
+      setTimeout(() => inputRef.current?.focus(), 0)
+    },
+  })
+
   // Date typed values of the input.
   const [internalValue, setInternalValue] = useControllableState({
     defaultValue,
@@ -153,9 +165,6 @@ const useProvideDatePicker = ({
     ],
   )
 
-  const initialFocusRef = useRef<HTMLInputElement>(null)
-  const inputRef = useRef<HTMLInputElement>(null)
-
   const calendarButtonAria = useMemo(() => {
     let ariaLabel = 'Select from date picker. '
     if (internalValue) {
@@ -180,9 +189,6 @@ const useProvideDatePicker = ({
         setInternalInputValue('')
       }
       closeCalendarOnChange && disclosureProps.onClose()
-      // Refocus input after closing calendar.
-      // Timeout is required so that the input is focused after the popover is closed.
-      setTimeout(() => inputRef.current?.focus(), 0)
     },
     [
       allowInvalidDates,
