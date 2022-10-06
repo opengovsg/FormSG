@@ -24,7 +24,8 @@ jobs:
           base: ${{ github.ref }}
           filters: |
             frontend:
-              - 'frontend/**'
+              - shared/**
+              - frontend/**
   chromatic-deployment:
     needs: changes
     # Only run if frontend files have changed.

@@ -51,6 +51,7 @@
     "lint-style": "stylelint '*/**/*.css' --quiet --fix",
     "lint-html": "htmlhint && prettier --write './src/public/**/*.html' --ignore-path './dist/**' --loglevel silent",
     "lint": "npm run lint-code && npm run lint-style && npm run lint-html",
+    "lint:frontend": "npm run --prefix frontend lint",
     "lint-ci": "concurrently \"eslint src/ --quiet\" \"stylelint '*/**/*.css' --quiet\" \"htmlhint\" \"prettier --c './src/public/**/*.html' --ignore-path './dist/**'\"",
     "version": "auto-changelog -p && git add CHANGELOG.md",
     "prepare": "husky install",
