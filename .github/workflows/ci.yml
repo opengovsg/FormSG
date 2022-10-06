@@ -154,7 +154,7 @@ jobs:
       - run: npm ci
       - run: npm run test:angularjs
 
-    'backend+angularjs[lint]':
+    'src[lint]':
       needs: [changes, install]
       if: ${{ needs.changes.outputs.backend == 'true' || needs.changes.outputs.angularjs == 'true' }}
       runs-on: ubuntu-latest
@@ -173,7 +173,7 @@ jobs:
         - run: npm ci
         - run: npm run lint-ci
 
-    'backend+angularjs[e2e]':
+    'src[e2e]':
       needs: [changes, build]
       if: ${{ needs.changes.outputs.backend == 'true' || needs.changes.outputs.angularjs == 'true' }}
       runs-on: ubuntu-latest
