@@ -13,26 +13,25 @@ import {
 import { MyInfoFieldMeta } from '~features/myinfo/types'
 
 export const BASIC_FIELDS_ORDERED = [
-  // Page section
-  BasicField.Section,
-  BasicField.Statement,
-  BasicField.Image,
-  // Fields section
   BasicField.ShortText,
   BasicField.LongText,
   BasicField.Radio,
   BasicField.Checkbox,
-  BasicField.Mobile,
-  BasicField.Email,
-  BasicField.HomeNo,
   BasicField.Dropdown,
+  BasicField.Section,
+  BasicField.Statement,
   BasicField.YesNo,
   BasicField.Rating,
+  BasicField.Email,
+  BasicField.Mobile,
+  BasicField.HomeNo,
+  BasicField.Date,
+  BasicField.Image,
+  BasicField.Table,
+  BasicField.Attachment,
   BasicField.Number,
   BasicField.Decimal,
-  BasicField.Attachment,
   BasicField.Date,
-  BasicField.Table,
   BasicField.Nric,
   BasicField.Uen,
 ]
