@@ -7,9 +7,7 @@ import {
 
 import { ComponentMultiStyleConfig } from '~theme/types'
 
-export const DATE_INPUT_THEME_KEY = 'DateInput'
-
-const parts = anatomy('dateinput').parts(
+const parts = anatomy('calendar').parts(
   'container', // overall container
   'monthYearSelectorContainer', // container for month, year dropdowns and arrows
   'monthYearDropdownContainer', // container for month, year dropdowns
@@ -31,7 +29,7 @@ const baseDayOfMonthStyles: SystemStyleFunction = ({
   return {
     display: 'inline-block',
     textStyle: 'body-1',
-    borderRadius: '1.5rem',
+    borderRadius: '50%',
     color: isSelected
       ? 'white'
       : isOutsideCurrMonth
@@ -66,14 +64,16 @@ const sizes: Record<string, PartsStyleObject<typeof parts>> = {
         base: 0,
         md: 0.75,
       },
+      aspectRatio: '1 / 1',
       w: {
-        base: '2rem',
+        base: '100%',
         md: '3rem',
       },
-      h: {
-        base: '2rem',
+      minW: {
+        base: '2.25rem',
         md: '3rem',
       },
+      maxW: '3rem',
     },
     monthYearSelectorContainer: {
       pt: '0.75rem',
@@ -90,7 +90,7 @@ const sizes: Record<string, PartsStyleObject<typeof parts>> = {
         md: '3.25rem',
       },
       h: {
-        base: '2rem',
+        base: '2.25rem',
         md: '3rem',
       },
     },
@@ -100,7 +100,7 @@ const sizes: Record<string, PartsStyleObject<typeof parts>> = {
   },
 }
 
-export const DateInput: ComponentMultiStyleConfig<typeof parts> = {
+export const Calendar: ComponentMultiStyleConfig<typeof parts> = {
   parts: parts.keys,
   baseStyle: (props) => {
     return {
@@ -120,19 +120,20 @@ export const DateInput: ComponentMultiStyleConfig<typeof parts> = {
         justifyContent: 'flex-end',
       },
       calendarContainer: {
+        display: {
+          base: 'block',
+          md: 'flex',
+        },
         borderBottom: '1px solid',
         borderColor: 'neutral.300',
       },
       monthGrid: {
-        display: 'inline-grid',
+        w: '100%',
         justifyItems: 'left',
       },
       dayNamesContainer: {
         textStyle: 'subhead-2',
         color: 'secondary.700',
-        display: 'inline-flex',
-        alignItems: 'center',
-        justifyContent: 'center',
       },
       dayOfMonth: baseDayOfMonthStyles(props),
       todayLinkContainer: {

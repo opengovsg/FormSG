@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 import { Text } from '@chakra-ui/react'
 import { Meta, Story } from '@storybook/react'
-import { addDays, lightFormat } from 'date-fns'
+import { addDays, lightFormat, parse } from 'date-fns'
 
 import { BasicField, DateSelectedValidation } from '~shared/types/field'
 
@@ -11,9 +11,18 @@ import Button from '~components/Button'
 
 import { DateFieldSchema } from '../types'
 
-import { DateField as DateFieldComponent, DateFieldProps } from './DateField'
+import {
+  DATE_DISPLAY_FORMAT,
+  DateField as DateFieldComponent,
+  DateFieldProps,
+} from './DateField'
 
-const MOCKED_TODAY_DATE = '2021-12-13'
+const MOCKED_TODAY_DATE_STRING = '13/12/2021'
+const MOCKED_TODAY_DATE = parse(
+  MOCKED_TODAY_DATE_STRING,
+  DATE_DISPLAY_FORMAT,
+  new Date(),
+)
 
 export default {
   title: 'Templates/Field/DateField',
@@ -22,9 +31,10 @@ export default {
   parameters: {
     // Exported for testing
     test: {
+      MOCKED_TODAY_DATE_STRING,
       MOCKED_TODAY_DATE,
     },
-    mockdate: new Date(MOCKED_TODAY_DATE),
+    mockdate: MOCKED_TODAY_DATE,
     docs: {
       // Required in this story due to react-hook-form conflicting with
       // Storybook somehow.
@@ -119,8 +129,8 @@ ValidationNoFuture.args = {
     },
   },
   defaultValue: lightFormat(
-    addDays(new Date(MOCKED_TODAY_DATE), 10),
-    'yyyy-MM-dd',
+    addDays(MOCKED_TODAY_DATE, 10),
+    DATE_DISPLAY_FORMAT,
   ),
 }
 
@@ -136,8 +146,8 @@ ValidationNoPast.args = {
     },
   },
   defaultValue: lightFormat(
-    addDays(new Date(MOCKED_TODAY_DATE), -10),
-    'yyyy-MM-dd',
+    addDays(MOCKED_TODAY_DATE, -10),
+    DATE_DISPLAY_FORMAT,
   ),
 }
 
@@ -152,5 +162,5 @@ ValidationCustomRange.args = {
       selectedDateValidation: DateSelectedValidation.Custom,
     },
   },
-  defaultValue: '2021-12-26',
+  defaultValue: '26/12/2021',
 }

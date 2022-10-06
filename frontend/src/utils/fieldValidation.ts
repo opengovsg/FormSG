@@ -3,7 +3,7 @@
  * to the field schema.
  */
 import { RegisterOptions } from 'react-hook-form'
-import { isDate, parseISO } from 'date-fns'
+import { isValid, parse } from 'date-fns'
 import simplur from 'simplur'
 import validator from 'validator'
 
@@ -42,11 +42,17 @@ import {
   INVALID_EMAIL_ERROR,
   REQUIRED_ERROR,
 } from '~constants/validation'
+import { DATE_PARSE_FORMAT } from '~templates/Field/Date/DateField'
 import { VerifiableFieldValues } from '~templates/Field/types'
 
 import { VerifiableFieldBase } from '~features/verifiable-fields/types'
 
-import { isDateAfterToday, isDateBeforeToday, isDateOutOfRange } from './date'
+import {
+  fromUtcToLocalDate,
+  isDateAfterToday,
+  isDateBeforeToday,
+  isDateOutOfRange,
+} from './date'
 import { formatNumberToLocaleString } from './stringFormat'
 
 // Omit unused props
@@ -364,14 +370,23 @@ export const createCheckboxValidationRules: ValidationRuleFn<
   }
 }
 
+const parseDate = (val: string) => {
+  return parse(val, DATE_PARSE_FORMAT, new Date())
+}
+
 export const createDateValidationRules: ValidationRuleFn<DateFieldBase> = (
   schema,
 ) => {
   return {
     ...createBaseValidationRules(schema),
     validate: {
-      validDate: (val) =>
-        !val || isDate(parseISO(val)) || 'Please enter a valid date',
+      validDate: (val) => {
+        if (!val) return true
+        if (val === DATE_PARSE_FORMAT.toLowerCase()) {
+          return REQUIRED_ERROR
+        }
+        return isValid(parseDate(val)) || 'Please enter a valid date'
+      },
       noFuture: (val) => {
         if (
           !val ||
@@ -381,7 +396,7 @@ export const createDateValidationRules: ValidationRuleFn<DateFieldBase> = (
           return true
         }
         return (
-          !isDateAfterToday(parseISO(val)) ||
+          !isDateAfterToday(parseDate(val)) ||
           'Only dates today or before are allowed'
         )
       },
@@ -394,7 +409,7 @@ export const createDateValidationRules: ValidationRuleFn<DateFieldBase> = (
           return true
         }
         return (
-          !isDateBeforeToday(parseISO(val)) ||
+          !isDateBeforeToday(parseDate(val)) ||
           'Only dates today or after are allowed'
         )
       },
@@ -409,8 +424,11 @@ export const createDateValidationRules: ValidationRuleFn<DateFieldBase> = (
 
         const { customMinDate, customMaxDate } = schema.dateValidation ?? {}
         return (
-          !isDateOutOfRange(parseISO(val), customMinDate, customMaxDate) ||
-          'Selected date is not within the allowed date range'
+          !isDateOutOfRange(
+            parseDate(val),
+            fromUtcToLocalDate(customMinDate),
+            fromUtcToLocalDate(customMaxDate),
+          ) || 'Selected date is not within the allowed date range'
         )
       },
     },

@@ -56,7 +56,7 @@ export const types: MyInfoFieldBlock[] = [
     description:
       'The registered date of birth of the form-filler. This field is verified by ICA for Singaporeans/PRs & foreigners on Long-Term Visit Pass, and by MOM for Employment Pass holders.',
     fieldType: BasicField.Date,
-    previewValue: '1965-02-23',
+    previewValue: '23/02/1965',
   },
   {
     name: MyInfoAttribute.Race,
@@ -172,7 +172,7 @@ export const types: MyInfoFieldBlock[] = [
     source: 'Immigration & Checkpoints Authority',
     description: 'The passport expiry date of the form-filler.',
     fieldType: BasicField.Date,
-    previewValue: '2022-02-23',
+    previewValue: '23/02/2022',
   },
   {
     name: MyInfoAttribute.Marital,
@@ -261,7 +261,7 @@ export const types: MyInfoFieldBlock[] = [
     description:
       'The date of marriage of the form-filler. This field is treated as unverified, as data provided by MSF may be outdated in cases of marriages in a foreign country.',
     fieldType: BasicField.Date,
-    previewValue: '1999-02-02',
+    previewValue: '02/02/1999',
   },
   {
     name: MyInfoAttribute.DivorceDate,
@@ -272,7 +272,7 @@ export const types: MyInfoFieldBlock[] = [
     description:
       'The date of divorce of the form-filler. This field is treated as unverified, as data provided by MSF may be outdated in cases of marriages in a foreign country.',
     fieldType: BasicField.Date,
-    previewValue: '2007-01-10',
+    previewValue: '10/01/2007',
   },
   {
     name: MyInfoAttribute.WorkpassStatus,
@@ -293,7 +293,7 @@ export const types: MyInfoFieldBlock[] = [
     source: 'Ministry of Manpower',
     description: 'The workpass expiry date of the form-filler.',
     fieldType: BasicField.Date,
-    previewValue: '2023-01-22',
+    previewValue: '22/01/2023',
   },
   {
     name: MyInfoAttribute.MobileNo,

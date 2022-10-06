@@ -3,16 +3,16 @@ import {
   forwardRef,
   Stack,
   Td,
+  Text,
   useStyles,
   VisuallyHidden,
 } from '@chakra-ui/react'
 import { isSameDay } from 'date-fns'
 
-import { DAY_NAMES, generateClassNameForDate, MONTH_NAMES } from '../utils'
-
 import { useCalendar } from './CalendarContext'
 import { CalendarHeader } from './CalendarHeader'
 import { DayOfMonth } from './DayOfMonth'
+import { DAY_NAMES, generateClassNameForDate, MONTH_NAMES } from './utils'
 
 // eslint-disable-next-line @typescript-eslint/ban-types
 export const CalendarPanel = forwardRef<{}, 'button'>(
@@ -45,12 +45,9 @@ export const CalendarPanel = forwardRef<{}, 'button'>(
               <chakra.thead>
                 <chakra.tr>
                   {DAY_NAMES.map(({ fullName, shortName }, index) => (
-                    <chakra.th
-                      key={index}
-                      abbr={fullName}
-                      sx={styles.dayNamesContainer}
-                    >
-                      {shortName}
+                    <chakra.th key={index} sx={styles.dayNamesContainer}>
+                      <Text aria-hidden>{shortName}</Text>
+                      <VisuallyHidden>{fullName}</VisuallyHidden>
                     </chakra.th>
                   ))}
                 </chakra.tr>
