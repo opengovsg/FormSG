@@ -74,7 +74,7 @@ jobs:
       - run: npm ci
       - run: npm run build
 
-  'frontend[test]':
+  frontend_test:
     needs: [changes, install]
     if: ${{ needs.changes.outputs.frontend == 'true' }}
     runs-on: ubuntu-latest
@@ -93,7 +93,7 @@ jobs:
       - run: npm ci
       - run: npm run test:frontend
 
-  'frontend[lint]':
+  frontend_lint:
     needs: [changes, install]
     if: ${{ needs.changes.outputs.frontend == 'true' }}
     runs-on: ubuntu-latest
@@ -112,7 +112,7 @@ jobs:
       - run: npm ci
       - run: npm run lint:frontend
 
-  'backend[test]':
+  backend_test:
     needs: [changes, install]
     if: ${{ needs.changes.outputs.backend == 'true' }}
     runs-on: ubuntu-latest
@@ -135,7 +135,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
-  'angularjs[test]':
+  angularjs_test:
     needs: [changes, install]
     if: ${{ needs.changes.outputs.angularjs == 'true' }}
     runs-on: ubuntu-latest
@@ -154,7 +154,7 @@ jobs:
       - run: npm ci
       - run: npm run test:angularjs
 
-  'backend+angularjs[lint]':
+  src_lint:
     needs: [changes, install]
     if: ${{ needs.changes.outputs.backend == 'true' || needs.changes.outputs.angularjs == 'true' }}
     runs-on: ubuntu-latest
@@ -173,7 +173,7 @@ jobs:
       - run: npm ci
       - run: npm run lint-ci
 
-  'backend+angularjs[e2e]':
+  src_e2e:
     needs: [changes, build]
     if: ${{ needs.changes.outputs.backend == 'true' || needs.changes.outputs.angularjs == 'true' }}
     runs-on: ubuntu-latest
