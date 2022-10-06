@@ -3,25 +3,6 @@ pull_request_rules:
     conditions:
       - author=dependabot[bot]
       - title~=bump [^\s]+ from ([\d]+)\..+ to \1\.
-      - check-success~=build
-      - or:
-          - check-success~=angularjs_test
-          - check-neutral~=angularjs_test
-      - or:
-          - check-success~=backend_test
-          - check-neutral~=backend_test
-      - or:
-          - check-success~=frontend_test
-          - check-neutral~=frontend_test
-      - or:
-          - check-success~=src_e2e
-          - check-neutral~=src_e2e
-      - check-success~=Analyze # CodeQL / Analyze
-      - check-success~=CodeQL # CodeQL code scanning results
-      - check-success~=GitGuardian
-      - check-success~=coverage/coveralls
-      - check-success~=license/snyk
-      - check-success~=security/snyk
     actions:
       review:
         type: APPROVE
@@ -31,26 +12,6 @@ pull_request_rules:
     conditions:
       - author=snyk-bot
       - title~=\[Snyk\] Security upgrade [^\s]+ from ([\d]+)\..+ to \1\.
-      - check-success~=build
-      - or:
-          - check-success~=angularjs_test
-          - check-neutral~=angularjs_test
-      - or:
-          - check-success~=backend_test
-          - check-neutral~=backend_test
-      - or:
-          - check-success~=frontend_test
-          - check-neutral~=frontend_test
-      - or:
-          - check-success~=src_e2e
-          - check-neutral~=src_e2e
-      - check-success~=Analyze # CodeQL / Analyze
-      - check-success~=CodeQL # CodeQL code scanning results
-      - check-success~=GitGuardian
-      - check-success~=Semantic Pull Request
-      - check-success~=coverage/coveralls
-      - check-success~=license/snyk
-      - check-success~=security/snyk
     actions:
       review:
         type: APPROVE
