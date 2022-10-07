@@ -85,25 +85,23 @@ const BasicFieldPanelContent = () => {
   const { isLoading } = useCreateTabForm()
 
   return (
-    <>
-      <Droppable isDropDisabled droppableId={CREATE_FIELD_DROP_ID}>
-        {(provided) => (
-          <Box ref={provided.innerRef} {...provided.droppableProps}>
-            <FieldSection>
-              {BASIC_FIELDS_ORDERED.map((fieldType, index) => (
-                <DraggableBasicFieldListOption
-                  index={index}
-                  isDisabled={isLoading}
-                  key={index}
-                  fieldType={fieldType}
-                />
-              ))}
-              <Box display="none">{provided.placeholder}</Box>
-            </FieldSection>
-          </Box>
-        )}
-      </Droppable>
-    </>
+    <Droppable isDropDisabled droppableId={CREATE_FIELD_DROP_ID}>
+      {(provided) => (
+        <Box ref={provided.innerRef} {...provided.droppableProps}>
+          <FieldSection>
+            {BASIC_FIELDS_ORDERED.map((fieldType, index) => (
+              <DraggableBasicFieldListOption
+                index={index}
+                isDisabled={isLoading}
+                key={index}
+                fieldType={fieldType}
+              />
+            ))}
+            <Box display="none">{provided.placeholder}</Box>
+          </FieldSection>
+        </Box>
+      )}
+    </Droppable>
   )
 }
 
