@@ -273,7 +273,7 @@ const OthersRadio = forwardRef<RadioProps, 'input'>((props, ref) => {
       // Required should apply to radio group rather than individual radio.
       isRequired={false}
     >
-      Other
+      Others
     </Radio>
   )
 })
