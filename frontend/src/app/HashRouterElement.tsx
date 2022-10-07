@@ -57,6 +57,7 @@ export const HashRouterElement = ({
   const [hasMounted, hasSetMount] = useState(false)
 
   useLayoutEffect(() => {
+    let hasRedirect = false
     // Retire this custom routing after July 2024
     if (location.hash.startsWith('#!/')) {
       // angular routes that need to be mapped
@@ -64,12 +65,13 @@ export const HashRouterElement = ({
         const match = location.hash.match(regex)
         if (match) {
           const redirectTo = getTarget(match as FormRegExpMatchArray)
+          hasRedirect = true
           window.location.assign(redirectTo)
           break
         }
       }
     }
-    hasSetMount(true)
+    hasSetMount(!hasRedirect)
   }, [location.hash])
 
   if (!hasMounted) return null
