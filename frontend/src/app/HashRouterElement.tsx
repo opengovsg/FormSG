@@ -1,3 +1,4 @@
+import { useLayoutEffect, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 
 import { DASHBOARD_ROUTE } from '~constants/routes'
@@ -51,20 +52,27 @@ const hashRouteMapper = [
 export const HashRouterElement = ({
   element,
   strict = false,
-}: HashRouterElementProps): React.ReactElement => {
+}: HashRouterElementProps): React.ReactElement | null => {
   const location = useLocation()
+  const [hasMounted, hasSetMount] = useState(false)
 
-  // Retire this custom routing after July 2024
-  if (location.hash.startsWith('#!/')) {
-    // angular routes that need to be mapped
-    for (const { regex, getTarget } of hashRouteMapper) {
-      const match = location.hash.match(regex)
-      if (match) {
-        const redirectTo = getTarget(match as FormRegExpMatchArray)
-        window.location.assign(redirectTo)
+  useLayoutEffect(() => {
+    // Retire this custom routing after July 2024
+    if (location.hash.startsWith('#!/')) {
+      // angular routes that need to be mapped
+      for (const { regex, getTarget } of hashRouteMapper) {
+        const match = location.hash.match(regex)
+        if (match) {
+          const redirectTo = getTarget(match as FormRegExpMatchArray)
+          window.location.assign(redirectTo)
+          break
+        }
       }
     }
-  }
+    hasSetMount(true)
+  }, [location.hash])
+
+  if (!hasMounted) return null
 
   return <PublicElement element={element} strict={strict} />
 }
