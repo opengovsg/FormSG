@@ -30,8 +30,7 @@ export const EditParagraph = ({ field }: EditParagraphProps): JSX.Element => {
     field,
     transform: {
       input: (inputField) => ({
-        // All Paragraph (aka Statement) fields have a title of "Statement"
-        title: 'Statement',
+        title: 'Paragraph',
         description: inputField.description,
       }),
       output: (formOutput, originalField) =>

@@ -70,6 +70,7 @@ const baseStyle: PartsStyleFunction<typeof parts> = ({
     textStyle: 'body-1',
     color: 'secondary.700',
     ml: '1rem',
+    overflowWrap: 'anywhere',
   },
   // Check mark icon
   icon: {

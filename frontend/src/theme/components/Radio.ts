@@ -86,6 +86,7 @@ export const Radio: ComponentMultiStyleConfig<typeof parts> = {
       },
       textStyle: 'body-1',
       ml: '1rem',
+      overflowWrap: 'anywhere',
     },
     othersContainer: {
       _hover: {

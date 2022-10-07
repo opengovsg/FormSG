@@ -68,7 +68,7 @@ export const FormLabel = ({
       flexDir="column"
       {...labelProps}
     >
-      <Box>
+      <Box overflowWrap="anywhere">
         {questionNumber && (
           <FormLabel.QuestionNumber>{questionNumber}</FormLabel.QuestionNumber>
         )}
@@ -89,6 +89,7 @@ export const FormLabel = ({
         <FormLabel.Description
           useMarkdown={useMarkdownForDescription}
           whiteSpace="pre-line"
+          overflowWrap="anywhere"
         >
           {description}
         </FormLabel.Description>
