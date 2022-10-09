@@ -64,7 +64,7 @@ import {
   setStateSelector,
   useDesignStore,
 } from '../../useDesignStore'
-import { isDirtySelector, useDirtyFieldStore } from '../../useDirtyFieldStore'
+import { useDirtyFieldStore } from '../../useDirtyFieldStore'
 import {
   FieldBuilderState,
   fieldBuilderStateSelector,
@@ -101,7 +101,7 @@ export const FieldRowContainer = memo(
     const setToInactive = useFieldBuilderStore(setToInactiveSelector)
     const updateEditState = useFieldBuilderStore(updateEditStateSelector)
 
-    const isDirty = useDirtyFieldStore(isDirtySelector)
+    const isDirty = useDirtyFieldStore.getState().isDirty
     const toast = useToast({ status: 'danger', isClosable: true })
 
     const setDesignState = useDesignStore(setStateSelector)
@@ -233,19 +233,16 @@ export const FieldRowContainer = memo(
       [duplicateFieldMutation, deleteFieldMutation],
     )
 
-    const isDragDisabled = useMemo(() => {
-      return (
-        !isActive ||
-        isDirty ||
-        !!numFormFieldMutations ||
-        fieldBuilderState === FieldBuilderState.CreatingField
-      )
-    }, [isActive, isDirty, numFormFieldMutations, fieldBuilderState])
+    const isDragDisabled = () =>
+      !isActive ||
+      isDirty ||
+      !!numFormFieldMutations ||
+      fieldBuilderState === FieldBuilderState.CreatingField
 
     return (
       <Draggable
         index={index}
-        isDragDisabled={isDragDisabled}
+        isDragDisabled={isDragDisabled()}
         disableInteractiveElementBlocking
         draggableId={field._id}
       >
