@@ -44,8 +44,8 @@ export const theme = extendTheme({
   breakpoints,
   shadows,
   fonts: {
-    heading: `'Inter', sans-serif`,
-    body: `'Inter', sans-serif`,
+    heading: `'Inter var', sans-serif`,
+    body: `'Inter var', sans-serif`,
   },
   components,
 })
