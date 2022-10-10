@@ -1,62 +1,85 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { expect, test } from '@playwright/test'
-import mongoose from 'mongoose'
+import cuid from 'cuid'
 
-const LANDING_PAGE = 'http://localhost:5000'
+import { extractOtp } from './utils/mail'
+
+const ROOT_PAGE = 'http://localhost:5000'
 
 test.describe('login', () => {
-  test.beforeAll(async () => {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    await mongoose.connect(process.env['MONGO_URI']!)
-  })
-  test.afterAll(async () => {
-    await mongoose.disconnect()
+  test.beforeEach(async ({ page }) => {
+    await page.goto(ROOT_PAGE)
   })
 
-  test.beforeEach(async ({ page }) => {
-    await page.goto(LANDING_PAGE)
+  test('Reject emails that do not have white-listed domains', async ({
+    page,
+  }) => {
+    await page.getByRole('link', { name: /log in/i }).click()
+    await expect(page).toHaveURL(`${ROOT_PAGE}/login`)
+
+    // Enter log in email.
+    await page
+      .getByRole('textbox', { name: /log in/i })
+      .fill('user@non-white-listed-agency.com')
+
+    await page.getByRole('button', { name: /log in/i }).click()
+
+    // Ensure error message is seen
+    await expect(
+      page.getByText('This is not a whitelisted public service email domain.'),
+    ).toBeVisible()
   })
 
   test('Login success for white-listed domains', async ({ page }) => {
+    // Create legit user.
+    const legitUserEmail = `totally-legit-user${cuid()}@data.gov.sg`
+
     await page.getByRole('link', { name: 'Log in' }).click()
-    await expect(page).toHaveURL(`${LANDING_PAGE}/login`)
+    await expect(page).toHaveURL(`${ROOT_PAGE}/login`)
 
-    await page
-      .getByPlaceholder('e.g. jane@data.gov.sg')
-      .fill('test@open.gov.sg')
+    await page.getByRole('textbox', { name: /log in/i }).fill(legitUserEmail)
+    await page.getByRole('button', { name: /log in/i }).click()
 
-    // await page.getByRole('button', { name: 'Log in' }).click()
+    // Ensure OTP success message is seen
+    await expect(
+      page.getByText(`Enter OTP sent to ${legitUserEmail}`),
+    ).toBeVisible()
 
-    // await page1.goto('http://localhost:1080/')
+    // Log in with OTP
+    const otp = await extractOtp(legitUserEmail)
+    expect(otp).toBeTruthy()
 
-    // await page1.goto('http://localhost:1080/#/')
+    await page.locator('input[name="otp"]').fill(otp!)
 
-    // await page1
-    //   .getByRole('link', {
-    //     name: 'One-Time Password (OTP) for FormSG To: test@open.gov.sg 2022-10-10 16:39:51 (+0800)',
-    //   })
-    //   .click()
-    // await expect(page1).toHaveURL('http://localhost:1080/#/email/7GriKlvL')
+    await page.getByRole('button', { name: 'Sign in' }).click()
+    await expect(page).toHaveURL(`${ROOT_PAGE}/dashboard`)
+  })
 
-    // await page1.frameLocator('iframe >> nth=0').getByText('995702').dblclick()
+  test('Prevent login if OTP is incorrect', async ({ page }) => {
+    // Create legit user.
+    const legitUserEmail = `totally-legit-user${cuid()}@data.gov.sg`
 
-    // await page1
-    //   .frameLocator('iframe >> nth=0')
-    //   .getByText(
-    //     'Your OTP is 995702. Please use this to log in to your FormSG account. If your OT',
-    //   )
-    //   .press('Meta+c')
+    await page.getByRole('link', { name: 'Log in' }).click()
+    await expect(page).toHaveURL(`${ROOT_PAGE}/login`)
 
-    // await page.locator('input[name="otp"]').fill('npx pl')
+    await page.getByRole('textbox', { name: /log in/i }).fill(legitUserEmail)
+    await page.getByRole('button', { name: /log in/i }).click()
 
-    // await page.locator('input[name="otp"]').press('Meta+a')
+    // Ensure OTP success message is seen
+    await expect(
+      page.getByText(`Enter OTP sent to ${legitUserEmail}`),
+    ).toBeVisible()
 
-    // await page.locator('input[name="otp"]').fill('')
+    // Get OTP
+    const otp = await extractOtp(legitUserEmail)
+    expect(otp).toBeTruthy()
+    // Increment OTP by 1, keep to 6 digits
+    const newOtp = String(parseInt(otp!, 10) + 1).slice(0, 6)
 
-    // await page1.frameLocator('iframe >> nth=0').getByText('995702').click()
+    await page.locator('input[name="otp"]').fill(newOtp)
 
-    // await page.locator('input[name="otp"]').fill('995702')
-
-    // await page.getByRole('button', { name: 'Sign in' }).click()
-    // await expect(page).toHaveURL('http://localhost:3000/dashboard')
+    await page.getByRole('button', { name: 'Sign in' }).click()
+    // Ensure error message is seen
+    await expect(page.getByText('OTP is invalid.')).toBeVisible()
   })
 })

@@ -1,8 +1,11 @@
-import type { PlaywrightTestConfig } from '@playwright/test';
-import { devices } from '@playwright/test';
+import type { PlaywrightTestConfig } from '@playwright/test'
+import { devices } from '@playwright/test'
+import dotenv from 'dotenv'
 import path from 'path'
 
-require('dotenv').config({ path: path.resolve(__dirname, './__tests__/e2e/setup/.test-env') })
+dotenv.config({
+  path: path.resolve(__dirname, './__tests__/e2e/setup/.test-env'),
+})
 
 /**
  * See https://playwright.dev/docs/test-configuration.
@@ -100,11 +103,11 @@ const config: PlaywrightTestConfig = {
   webServer: [
     {
       command: 'npm run test:e2e',
-      url: 'http://localhost:5000',
+      url: 'http://localhost:5000/analytics/statistics',
       timeout: 120 * 1000,
       reuseExistingServer: !process.env.CI,
     },
   ],
 }
 
-export default config;
+export default config
