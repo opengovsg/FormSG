@@ -1,6 +1,8 @@
 import { Router } from 'express'
 
+import { rateLimitConfig } from '../../../../config/config'
 import * as UserController from '../../../../modules/user/user.controller'
+import { limitRate } from '../../../../utils/limit-rate'
 
 export const UserRouter = Router()
 
@@ -10,7 +12,8 @@ export const UserRouter = Router()
  * Retrieves and returns the session user from the database.
  * @route GET /
  * @returns 200 with the retrieved user if session user is valid
- * @returns 401 if user id does not exist in session
+ * @returns 401 if user is not currently logged in
+ * @returns 422 when userId does not exist in the database
  * @returns 500 when user cannot be found or database errors occurs
  */
 UserRouter.get('/', UserController.handleFetchUser)
@@ -27,7 +30,11 @@ UserRouter.get('/', UserController.handleFetchUser)
  * @returns 422 on OTP creation or SMS send failure, or if the user cannot be found
  * @returns 500 on application or database errors
  */
-UserRouter.post('/contact/otp/generate', UserController.handleContactSendOtp)
+UserRouter.post(
+  '/contact/otp/generate',
+  limitRate({ max: rateLimitConfig.sendAuthOtp }),
+  UserController.handleContactSendOtp,
+)
 
 /**
  * Verify the contact verification one-time password (OTP) for the user as part
@@ -40,6 +47,24 @@ UserRouter.post('/contact/otp/generate', UserController.handleContactSendOtp)
  * @returns 422 when OTP is invalid
  * @returns 500 when OTP is malformed or for unknown errors
  */
-UserRouter.post('/contact/otp/verify', UserController.handleContactVerifyOtp)
+UserRouter.post(
+  '/contact/otp/verify',
+  limitRate({ max: rateLimitConfig.sendAuthOtp }),
+  UserController.handleContactVerifyOtp,
+)
+
+/**
+ * Verify the contact verification one-time password (OTP) for the user as part
+ * of the contact verification process
+ * @route POST /user/flag/new-features-last-seen
+ * @returns 200 when user last seen feature update updates sucessfully
+ * @returns 401 if user is not currently logged in
+ * @returns 422 when userId does not exist in the database
+ * @returns 500 when database errors occurs
+ */
+UserRouter.post(
+  '/flag/new-features-last-seen',
+  UserController.handleUpdateUserLastSeenFeatureUpdateVersion,
+)
 
 export default UserRouter

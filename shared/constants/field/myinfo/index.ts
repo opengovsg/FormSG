@@ -1,22 +1,26 @@
-import { BasicField, MyInfoAttribute } from '../../../types/field'
+import { BasicField, MyInfoAttribute, MyInfoField } from '../../../types/field'
 import COUNTRIES from './myinfo-countries'
 import DIALECTS from './myinfo-dialects'
 import NATIONALITIES from './myinfo-nationalities'
 import OCCUPATIONS from './myinfo-occupations'
 import RACES from './myinfo-races'
 
-type MyInfoVerifiedType = 'SG' | 'PR' | 'F'
+export type MyInfoVerifiedType = 'SG' | 'PR' | 'F'
 
-type MyInfoFieldBlock = {
+export type MyInfoFieldBlock = {
   name: MyInfoAttribute
   value: string
   category: string
   verified: MyInfoVerifiedType[]
   source: string
   description: string
-  fieldType: BasicField
+  fieldType: MyInfoField['fieldType']
   fieldOptions?: string[]
   ValidationOptions?: Record<string, unknown>
+  // NOTE: This refers to the default value shown in admin form preview
+  // for MyInfo forms. The running joke is that this is the personal
+  // details of Phua Chu Kang, a famous singaporean sitcom.
+  previewValue: string
 }
 
 export const types: MyInfoFieldBlock[] = [
@@ -29,6 +33,7 @@ export const types: MyInfoFieldBlock[] = [
     description:
       'The registered name of the form-filler. This field is verified by ICA for Singaporeans/PRs & foreigners on Long-Term Visit Pass, and by MOM for Employment Pass holders.',
     fieldType: BasicField.ShortText,
+    previewValue: 'PHUA CHU KANG',
   },
   {
     name: MyInfoAttribute.Sex,
@@ -40,6 +45,7 @@ export const types: MyInfoFieldBlock[] = [
       'The gender of the form-filler. This field is verified by ICA for Singaporeans/PRs & foreigners on Long-Term Visit Pass, and by MOM for Employment Pass holders.',
     fieldType: BasicField.Dropdown,
     fieldOptions: ['FEMALE', 'MALE', 'UNKNOWN'],
+    previewValue: 'MALE',
   },
   {
     name: MyInfoAttribute.DateOfBirth,
@@ -48,8 +54,9 @@ export const types: MyInfoFieldBlock[] = [
     verified: ['SG', 'PR', 'F'],
     source: 'Immigration & Checkpoints Authority / Ministry of Manpower',
     description:
-      'The registered name of the form-filler. This field is verified by ICA for Singaporeans/PRs & foreigners on Long-Term Visit Pass, and by MOM for Employment Pass holders.',
+      'The registered date of birth of the form-filler. This field is verified by ICA for Singaporeans/PRs & foreigners on Long-Term Visit Pass, and by MOM for Employment Pass holders.',
     fieldType: BasicField.Date,
+    previewValue: '23/02/1965',
   },
   {
     name: MyInfoAttribute.Race,
@@ -61,6 +68,7 @@ export const types: MyInfoFieldBlock[] = [
       'The race of the form-filler. This field is verified by ICA for Singaporean/PRs & foreigners on Long-Term Visit Pass, and by MOM for Employment Pass holders.',
     fieldType: BasicField.Dropdown,
     fieldOptions: RACES,
+    previewValue: 'CHINESE',
   },
   {
     name: MyInfoAttribute.Nationality,
@@ -72,6 +80,7 @@ export const types: MyInfoFieldBlock[] = [
       'The nationality of the form-filler. This field is verified by ICA for Singaporeans/PRs & foreigners on Long-Term Visit Pass, and by MOM for Employment Pass holders.',
     fieldType: BasicField.Dropdown,
     fieldOptions: NATIONALITIES,
+    previewValue: 'SINGAPORE CITIZEN',
   },
   {
     name: MyInfoAttribute.BirthCountry,
@@ -83,6 +92,7 @@ export const types: MyInfoFieldBlock[] = [
       'The birth country of the form-filler. This field is verified by ICA for Singaporeans/PRs & foreigners on Long-Term Visit Pass, and by MOM for Employment Pass holders.',
     fieldType: BasicField.Dropdown,
     fieldOptions: COUNTRIES,
+    previewValue: 'SINGAPORE',
   },
   {
     name: MyInfoAttribute.ResidentialStatus,
@@ -93,6 +103,7 @@ export const types: MyInfoFieldBlock[] = [
     description: 'The residential status of the form-filler.',
     fieldType: BasicField.Dropdown,
     fieldOptions: ['ALIEN', 'CITIZEN', 'NOT APPLICABLE', 'PR', 'UNKNOWN'],
+    previewValue: 'CITIZEN',
   },
   {
     name: MyInfoAttribute.Dialect,
@@ -103,6 +114,7 @@ export const types: MyInfoFieldBlock[] = [
     description: 'The dialect group of the form-filler.',
     fieldType: BasicField.Dropdown,
     fieldOptions: DIALECTS,
+    previewValue: 'HOKKIEN',
   },
   {
     name: MyInfoAttribute.HousingType,
@@ -121,6 +133,7 @@ export const types: MyInfoFieldBlock[] = [
       'SEMI-DETACHED HOUSE',
       'TERRACE HOUSE',
     ],
+    previewValue: 'DETACHED HOUSE',
   },
   {
     name: MyInfoAttribute.HdbType,
@@ -139,6 +152,7 @@ export const types: MyInfoFieldBlock[] = [
       'EXECUTIVE FLAT (HDB)',
       'STUDIO APARTMENT (HDB)',
     ],
+    previewValue: 'EXECUTIVE FLAT (HDB)',
   },
   {
     name: MyInfoAttribute.PassportNumber,
@@ -148,6 +162,7 @@ export const types: MyInfoFieldBlock[] = [
     source: 'Immigration & Checkpoints Authority',
     description: 'The passport number of the form-filler.',
     fieldType: BasicField.ShortText,
+    previewValue: 'E1234567X',
   },
   {
     name: MyInfoAttribute.PassportExpiryDate,
@@ -157,6 +172,7 @@ export const types: MyInfoFieldBlock[] = [
     source: 'Immigration & Checkpoints Authority',
     description: 'The passport expiry date of the form-filler.',
     fieldType: BasicField.Date,
+    previewValue: '23/02/2022',
   },
   {
     name: MyInfoAttribute.Marital,
@@ -168,6 +184,7 @@ export const types: MyInfoFieldBlock[] = [
       'The marital status of the form-filler. This field is treated as unverified, as data provided by MSF may be outdated in cases of marriages in a foreign country.',
     fieldType: BasicField.Dropdown,
     fieldOptions: ['SINGLE', 'MARRIED', 'WIDOWED', 'DIVORCED'],
+    previewValue: 'MARRIED',
   },
   {
     name: MyInfoAttribute.CountryOfMarriage,
@@ -179,6 +196,7 @@ export const types: MyInfoFieldBlock[] = [
       'The country of marriage of the form-filler. This field is treated as unverified, as data provided by MSF may be outdated in cases of marriages in a foreign country.',
     fieldType: BasicField.Dropdown,
     fieldOptions: COUNTRIES,
+    previewValue: 'SINGAPORE',
   },
   {
     name: MyInfoAttribute.RegisteredAddress,
@@ -188,6 +206,7 @@ export const types: MyInfoFieldBlock[] = [
     source: 'Immigration & Checkpoints Authority',
     description: 'The registered address of the form-filler.',
     fieldType: BasicField.ShortText,
+    previewValue: '411 CHUA CHU KANG AVE 3, #12-3, SINGAPORE 238823',
   },
   {
     name: MyInfoAttribute.Occupation,
@@ -199,6 +218,7 @@ export const types: MyInfoFieldBlock[] = [
       'The occupation of the form-filler. Verified for foreigners with SingPass only.',
     fieldType: BasicField.Dropdown,
     fieldOptions: OCCUPATIONS,
+    previewValue: 'MANAGING DIRECTOR/CHIEF EXECUTIVE OFFICER',
   },
   {
     name: MyInfoAttribute.Employment,
@@ -209,6 +229,7 @@ export const types: MyInfoFieldBlock[] = [
     description:
       "The name of the form-filler's employer. Verified for foreigners with SingPass only.",
     fieldType: BasicField.ShortText,
+    previewValue: 'PCK PTE LTD',
   },
   {
     name: MyInfoAttribute.VehicleNo,
@@ -218,6 +239,7 @@ export const types: MyInfoFieldBlock[] = [
     source: 'User-provided',
     description: 'Vehicle plate number of the form-filler.',
     fieldType: BasicField.ShortText,
+    previewValue: 'SHA1234X',
   },
   {
     name: MyInfoAttribute.MarriageCertNo,
@@ -228,6 +250,7 @@ export const types: MyInfoFieldBlock[] = [
     description:
       'Marriage Certificate Number of form-filler. This field is treated as unverified, as data provided by MSF may be outdated in cases of marriages in a foreign country.',
     fieldType: BasicField.ShortText,
+    previewValue: '123456789012345',
   },
   {
     name: MyInfoAttribute.MarriageDate,
@@ -238,6 +261,7 @@ export const types: MyInfoFieldBlock[] = [
     description:
       'The date of marriage of the form-filler. This field is treated as unverified, as data provided by MSF may be outdated in cases of marriages in a foreign country.',
     fieldType: BasicField.Date,
+    previewValue: '02/02/1999',
   },
   {
     name: MyInfoAttribute.DivorceDate,
@@ -248,6 +272,7 @@ export const types: MyInfoFieldBlock[] = [
     description:
       'The date of divorce of the form-filler. This field is treated as unverified, as data provided by MSF may be outdated in cases of marriages in a foreign country.',
     fieldType: BasicField.Date,
+    previewValue: '10/01/2007',
   },
   {
     name: MyInfoAttribute.WorkpassStatus,
@@ -258,6 +283,7 @@ export const types: MyInfoFieldBlock[] = [
     description: 'Workpass application status of foreigner.',
     fieldType: BasicField.Dropdown,
     fieldOptions: ['Live', 'Approved'],
+    previewValue: 'Live',
   },
   {
     name: MyInfoAttribute.WorkpassExpiryDate,
@@ -267,6 +293,7 @@ export const types: MyInfoFieldBlock[] = [
     source: 'Ministry of Manpower',
     description: 'The workpass expiry date of the form-filler.',
     fieldType: BasicField.Date,
+    previewValue: '22/01/2023',
   },
   {
     name: MyInfoAttribute.MobileNo,
@@ -276,5 +303,6 @@ export const types: MyInfoFieldBlock[] = [
     source: 'User-provided',
     description: 'Mobile telephone number of form-filler.',
     fieldType: BasicField.Mobile,
+    previewValue: '98765432',
   },
 ]

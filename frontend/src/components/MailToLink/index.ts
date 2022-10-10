@@ -1,0 +1,1 @@
+export { MailToLink } from './MailToLink'

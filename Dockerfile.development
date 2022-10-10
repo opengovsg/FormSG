@@ -3,6 +3,9 @@ LABEL maintainer=FormSG<formsg@data.gov.sg>
 
 WORKDIR /opt/formsg
 
+RUN mkdir /mongodb_data
+RUN chown 1001:1001 /mongodb_data
+
 ENV CHROMIUM_BIN=/usr/bin/chromium-browser
 ENV NODE_ENV=development
 ENV NODE_OPTIONS=--max-old-space-size=2048
@@ -41,8 +44,10 @@ ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
 # Chinese fonts
 RUN echo @edge http://nl.alpinelinux.org/alpine/edge/testing >> /etc/apk/repositories && apk add wqy-zenhei@edge
 
-COPY . ./
+COPY package*.json ./
 RUN npm install
+
+COPY . ./
 
 EXPOSE 5000
 
@@ -50,4 +55,4 @@ EXPOSE 5000
 # e.g. chromium when launched to create a new PDF
 ENTRYPOINT [ "tini", "--" ]
 # Create local AWS resources before building the app
-CMD sh init-localstack.sh && npm run docker-dev
+CMD sh init-localstack.sh && npm run dev:backend
