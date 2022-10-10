@@ -2,7 +2,7 @@ import type { PlaywrightTestConfig } from '@playwright/test';
 import { devices } from '@playwright/test';
 import path from 'path'
 
-require('dotenv').config({ path: path.resolve(__dirname, './__tests__/e2e/.test-env') })
+require('dotenv').config({ path: path.resolve(__dirname, './__tests__/e2e/setup/.test-env') })
 
 /**
  * See https://playwright.dev/docs/test-configuration.
@@ -95,8 +95,8 @@ const config: PlaywrightTestConfig = {
   // outputDir: 'test-results/',
 
   /* Run your local dev server before starting the tests */
-  globalSetup: require.resolve('./__tests__/e2e/utils/globalSetup'),
-  globalTeardown: require.resolve('./__tests__/e2e/utils/globalTeardown'),
+  globalSetup: require.resolve('./__tests__/e2e/setup/globalSetup'),
+  globalTeardown: require.resolve('./__tests__/e2e/setup/globalTeardown'),
   webServer: [
     {
       command: 'npm run test:e2e',
