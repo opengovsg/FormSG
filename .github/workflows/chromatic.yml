@@ -8,7 +8,10 @@ defaults:
     working-directory: frontend
 
 # Event for the workflow
-on: push
+on:
+  push:
+  pull_request:
+    types: [opened, reopened]
 
 # List of jobs
 jobs:
@@ -27,6 +30,7 @@ jobs:
             frontend:
               - shared/**
               - frontend/**
+
   chromatic-deployment:
     needs: changes
     if: ${{ needs.changes.outputs.frontend == 'true' }}

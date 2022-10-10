@@ -1,3 +1,4 @@
+import tracer from 'dd-trace'
 import { ok, okAsync, ResultAsync } from 'neverthrow'
 
 import {
@@ -307,31 +308,34 @@ const submitEmailModeForm: ControllerHandler<
         // Send response to admin
         // NOTE: This should short circuit in the event of an error.
         // This is why sendSubmissionToAdmin is separated from sendEmailConfirmations in 2 blocks
-        return MailService.sendSubmissionToAdmin({
-          replyToEmails: EmailSubmissionService.extractEmailAnswers(
-            parsedResponses.getAllResponses(),
-          ),
-          form,
-          submission,
-          attachments,
-          dataCollationData: emailData.dataCollationData,
-          formData: emailData.formData,
-        })
-          .map(() => ({
+        // TODO: Remove tracer span once email performance issue is identified.
+        return tracer.trace('sendSubmissionToAdmin', () =>
+          MailService.sendSubmissionToAdmin({
+            replyToEmails: EmailSubmissionService.extractEmailAnswers(
+              parsedResponses.getAllResponses(),
+            ),
             form,
-            parsedResponses,
             submission,
-            emailData,
-            logMetaWithSubmission,
-          }))
-          .mapErr((error) => {
-            logger.error({
-              message: 'Error sending submission to admin',
-              meta: logMetaWithSubmission,
-              error,
-            })
-            return error
+            attachments,
+            dataCollationData: emailData.dataCollationData,
+            formData: emailData.formData,
           })
+            .map(() => ({
+              form,
+              parsedResponses,
+              submission,
+              emailData,
+              logMetaWithSubmission,
+            }))
+            .mapErr((error) => {
+              logger.error({
+                message: 'Error sending submission to admin',
+                meta: logMetaWithSubmission,
+                error,
+              })
+              return error
+            }),
+        )
       })
       .map(
         ({
@@ -342,25 +346,30 @@ const submitEmailModeForm: ControllerHandler<
           logMetaWithSubmission,
         }) => {
           // Send email confirmations
-          void SubmissionService.sendEmailConfirmations({
-            form,
-            submission,
-            attachments,
-            responsesData: emailData.autoReplyData,
-            recipientData: extractEmailConfirmationData(
-              parsedResponses.getAllResponses(),
-              form.form_fields,
-            ),
-          }).mapErr((error) => {
-            // NOTE: MyInfo access token is not cleared here.
-            // This is because if the reason for failure is not on the users' end,
-            // they should not be randomly signed out.
-            logger.error({
-              message: 'Error while sending email confirmations',
-              meta: logMetaWithSubmission,
-              error,
-            })
-          })
+          // TODO: Remove tracer span once email performance issue is identified.
+          tracer.trace(
+            'sendEmailConfirmations',
+            () =>
+              void SubmissionService.sendEmailConfirmations({
+                form,
+                submission,
+                attachments,
+                responsesData: emailData.autoReplyData,
+                recipientData: extractEmailConfirmationData(
+                  parsedResponses.getAllResponses(),
+                  form.form_fields,
+                ),
+              }).mapErr((error) => {
+                // NOTE: MyInfo access token is not cleared here.
+                // This is because if the reason for failure is not on the users' end,
+                // they should not be randomly signed out.
+                logger.error({
+                  message: 'Error while sending email confirmations',
+                  meta: logMetaWithSubmission,
+                  error,
+                })
+              }),
+          )
           // MyInfo access token is single-use, so clear it
           return res
             .clearCookie(MYINFO_COOKIE_NAME, MYINFO_COOKIE_OPTIONS)
