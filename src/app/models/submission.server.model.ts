@@ -1,6 +1,6 @@
 import moment from 'moment-timezone'
 import mongoose, { Mongoose, QueryCursor, Schema } from 'mongoose'
-import { FixedLengthArray } from 'type-fest'
+import type { FixedLengthArray } from 'type-fest'
 
 import {
   FormAuthType,

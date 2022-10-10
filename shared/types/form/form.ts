@@ -2,7 +2,7 @@ import { PublicUserDto, UserDto } from '../user'
 import { FormField, FormFieldDto } from '../field'
 
 import { FormLogo } from './form_logo'
-import { Merge, Opaque, PartialDeep } from 'type-fest'
+import type { Merge, Opaque, PartialDeep } from 'type-fest'
 import {
   ADMIN_FORM_META_FIELDS,
   EMAIL_FORM_SETTINGS_FIELDS,

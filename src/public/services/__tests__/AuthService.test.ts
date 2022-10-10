@@ -1,6 +1,6 @@
 import axios from 'axios'
 import { mocked } from 'ts-jest/utils'
-import { Opaque } from 'type-fest'
+import type { Opaque } from 'type-fest'
 
 import {
   AUTH_ENDPOINT,
