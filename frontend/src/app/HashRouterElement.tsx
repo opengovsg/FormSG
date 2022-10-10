@@ -54,7 +54,7 @@ export const HashRouterElement = ({
   strict = false,
 }: HashRouterElementProps): React.ReactElement | null => {
   const location = useLocation()
-  const [hasMounted, hasSetMount] = useState(false)
+  const [hasMounted, setHasMounted] = useState(false)
 
   useLayoutEffect(() => {
     let hasRedirect = false
@@ -71,7 +71,7 @@ export const HashRouterElement = ({
         }
       }
     }
-    hasSetMount(!hasRedirect)
+    setHasMounted(!hasRedirect)
   }, [location.hash])
 
   if (!hasMounted) return null
