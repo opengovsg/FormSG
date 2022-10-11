@@ -11,6 +11,7 @@ import {
 
 import { FormResponseMode } from '~shared/types/form/form'
 
+import { GUIDE_PREVENT_EMAIL_BOUNCE } from '~constants/links'
 import { FORM_TITLE_VALIDATION_RULES } from '~utils/formValidation'
 import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
@@ -99,7 +100,7 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
             <FormControl isRequired isInvalid={!!errors.emails} mb="2.25rem">
               <FormLabel
                 useMarkdownForDescription
-                description="Specify up to 30 emails. [How to guard against bounce emails](https://go.gov.sg/form-prevent-bounce)."
+                description={`Specify up to 30 emails. [How to guard against bounce emails](${GUIDE_PREVENT_EMAIL_BOUNCE}).`}
               >
                 Emails where responses will be sent
               </FormLabel>

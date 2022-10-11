@@ -10,6 +10,7 @@ import { extend, isEmpty, pick } from 'lodash'
 
 import { ShortTextFieldBase, TextSelectedValidation } from '~shared/types/field'
 
+import { GUIDE_PREFILL } from '~constants/links'
 import { createBaseValidationRules } from '~utils/fieldValidation'
 import { SingleSelect } from '~components/Dropdown'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
@@ -214,7 +215,7 @@ export const EditShortText = ({ field }: EditShortTextProps): JSX.Element => {
         <Toggle
           {...register('allowPrefill')}
           label="Enable pre-fill"
-          description="Use the Field ID to pre-populate this field for your users via an URL. [Learn how](https://go.gov.sg/form-prefill)"
+          description={`Use the Field ID to pre-populate this field for your users via an URL. [Learn how](${GUIDE_PREFILL})`}
         />
         {watchAllowPrefill ? (
           <InputGroup mt="0.5rem">
