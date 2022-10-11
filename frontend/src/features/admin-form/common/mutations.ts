@@ -355,7 +355,7 @@ export const useMutateFormPage = () => {
             oldData ? { ...oldData, startPage: newData } : undefined,
         )
         toast({
-          description: 'The form header and instructions was updated.',
+          description: 'The form header and instructions were updated.',
         })
       },
       onError: handleError,
