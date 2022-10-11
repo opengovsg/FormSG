@@ -27,7 +27,7 @@ export const FEATURE_TOUR: FeatureTourStepAttributes[] = [
     id: 'feature_tour_fourth_step',
     title: 'Edit Thank you page',
     content:
-      'Customise your thank you message and add follow up instructions for users after they submit your form.',
+      'Customise your thank you message and add follow-up instructions that users can see after they submit your form.',
   },
 ]
 
