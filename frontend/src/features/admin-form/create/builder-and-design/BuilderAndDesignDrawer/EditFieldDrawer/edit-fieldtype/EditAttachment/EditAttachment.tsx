@@ -193,9 +193,7 @@ export const EditAttachment = ({ field }: EditAttachmentProps): JSX.Element => {
         />
       </FormControl>
       <InlineMessage useMarkdown>
-        {`View our [complete list](${ACCEPTED_FILETYPES_SPREADSHEET}) of accepted
-        file types. Please also read our [FAQ on email reliability](
-        ${GUIDE_EMAIL_RELIABILITY}) relating to unaccepted file types.`}
+        {`View our [complete list](${ACCEPTED_FILETYPES_SPREADSHEET}) of accepted file types. Please also read our [FAQ on email reliability](${GUIDE_EMAIL_RELIABILITY}) relating to unaccepted file types.`}
       </InlineMessage>
       <FormFieldDrawerActions
         isLoading={isLoading}
