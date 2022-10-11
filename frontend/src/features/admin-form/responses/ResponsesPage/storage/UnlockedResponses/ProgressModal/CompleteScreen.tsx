@@ -78,7 +78,7 @@ export const CompleteScreen = ({
           </Badge>
         </Wrap>
       </ModalHeader>
-      <ModalBody whiteSpace="pre-line" color="secondary.500">
+      <ModalBody whiteSpace="pre-wrap" color="secondary.500">
         <Stack spacing="1rem">
           <Stack direction="row" spacing="0.5rem">
             <Icon

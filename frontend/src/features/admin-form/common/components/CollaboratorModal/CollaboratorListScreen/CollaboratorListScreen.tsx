@@ -15,7 +15,7 @@ export const CollaboratorListScreen = (): JSX.Element => {
       <ModalHeader color="secondary.700">
         {hasEditAccess ? 'Manage collaborators' : 'Collaborators'}
       </ModalHeader>
-      <ModalBody whiteSpace="pre-line">
+      <ModalBody whiteSpace="pre-wrap">
         <Stack spacing="2.5rem" pb="2rem">
           {hasEditAccess ? <AddCollaboratorInput /> : null}
           <CollaboratorList />

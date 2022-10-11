@@ -54,7 +54,7 @@ export const WhatsNewDrawer = ({ isOpen, onClose }: WhatsNewDrawerProps) => {
           What's new
         </DrawerHeader>
         <DrawerBody
-          whiteSpace="pre-line"
+          whiteSpace="pre-wrap"
           color="secondary.500"
           textStyle="body-2"
         >

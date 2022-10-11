@@ -183,7 +183,7 @@ export const SecretKeyActivationModal = ({
         <ModalHeader color="secondary.500">
           <Container maxW="42.5rem">Activate your form</Container>
         </ModalHeader>
-        <ModalBody whiteSpace="pre-line">
+        <ModalBody whiteSpace="pre-wrap">
           <Container maxW="42.5rem">
             <FormActivationSvg mb="2rem" />
             <form onSubmit={handleVerifyKeypair} noValidate>

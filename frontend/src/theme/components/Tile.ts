@@ -43,7 +43,7 @@ export const Tile: ComponentMultiStyleConfig<typeof parts> = {
       bg: 'white',
       border: '1px solid',
       borderColor: 'neutral.300',
-      whiteSpace: 'pre-line',
+      whiteSpace: 'pre-wrap',
       flexDir: 'column',
       alignItems: 'flex-start',
       maxWidth: 'inherit',

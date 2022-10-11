@@ -330,7 +330,7 @@ export const LandingPage = (): JSX.Element => {
             mt="1rem"
             color="secondary.500"
             allowToggle
-            whiteSpace="pre-line"
+            whiteSpace="pre-wrap"
           >
             <HelpAccordionItem title="What happens if I lose my Secret Key?">
               <MarkdownText components={mdComponents}>

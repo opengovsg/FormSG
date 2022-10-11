@@ -54,7 +54,7 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
           {modalHeader}
         </Container>
       </ModalHeader>
-      <ModalBody whiteSpace="pre-line">
+      <ModalBody whiteSpace="pre-wrap">
         <Container maxW="42.5rem" p={0}>
           <FormControl isRequired isInvalid={!!errors.title} mb="2.25rem">
             <FormLabel useMarkdownForDescription>Form name</FormLabel>

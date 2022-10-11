@@ -29,7 +29,7 @@ export const NewFeatureContent = (props: {
         <NewFeatureTag />
         <Text mt="0.625rem">{title}</Text>
       </ModalHeader>
-      <ModalBody whiteSpace="pre-line">
+      <ModalBody whiteSpace="pre-wrap">
         <Text textStyle="body-1" color="secondary.500">
           {description}
         </Text>

@@ -13,7 +13,7 @@ export const InvalidImage = ({ message }: InvalidImageProps): JSX.Element => {
         <Text
           textStyle="caption-1"
           color="secondary.400"
-          whiteSpace="pre-line"
+          whiteSpace="pre-wrap"
           textAlign="center"
         >
           {message}
