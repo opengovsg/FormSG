@@ -7,7 +7,7 @@ import gfm from 'remark-gfm'
 interface MarkdownTextProps {
   components?: Components
   /**
-   * Whether to allow sequetial new lines to generate sequential line breaks.
+   * Whether to allow sequential new lines to generate sequential line breaks.
    * Breaks markdown specs, but allows for WYSIWYG text editing.
    * @defaultValues `false`
    */
