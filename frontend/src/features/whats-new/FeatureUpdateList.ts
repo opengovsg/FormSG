@@ -32,9 +32,11 @@ export const FEATURE_UPDATE_LIST: FeatureUpdateList = {
       title: 'The new FormSG experience',
       date: new Date('12 October 2022 GMT+8'),
       description: dedent`
-      * Your forms now appear in a list so you can find your important forms faster
-      * The new drag-and-drop form builder helps you easily rearrange your form fields
-      \n Notice anything wrong? Let us know by using the feedback button at the bottom-right of the screen.
+        * Your forms now appear in a list so you can find your important forms faster
+        * The new drag-and-drop form builder helps you easily rearrange your form fields
+
+
+        Notice anything wrong? Let us know by using the feedback button at the bottom-right of the screen.
       `,
       image: {
         animationData: WhatsNewAnimationData,

@@ -31,7 +31,9 @@ export const FormInstructions = ({
         Instructions
       </Text>
       <Box mt="1rem">
-        <MarkdownText components={mdComponents}>{content}</MarkdownText>
+        <MarkdownText multilineBreaks components={mdComponents}>
+          {content}
+        </MarkdownText>
       </Box>
     </>
   )

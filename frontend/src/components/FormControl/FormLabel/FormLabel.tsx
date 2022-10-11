@@ -147,7 +147,9 @@ const FormLabelDescription = ({
   })
 
   return useMarkdown ? (
-    <MarkdownText components={mdComponents}>{children}</MarkdownText>
+    <MarkdownText multilineBreaks components={mdComponents}>
+      {children}
+    </MarkdownText>
   ) : (
     <Text {...fieldProps} {...styleProps}>
       {children}

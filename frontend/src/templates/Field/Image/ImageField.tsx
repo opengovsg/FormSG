@@ -61,7 +61,7 @@ export const ImageField = ({ schema }: ImageFieldProps): JSX.Element => {
       />
       {schema.description ? (
         <Box mt={{ base: '0.5rem', md: '1rem' }}>
-          <MarkdownText components={mdComponents}>
+          <MarkdownText multilineBreaks components={mdComponents}>
             {schema.description}
           </MarkdownText>
         </Box>

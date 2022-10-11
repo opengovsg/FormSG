@@ -66,7 +66,7 @@ export const BaseSectionField = forwardRef<
       </Text>
       {schema.description && (
         <Box mt="1rem">
-          <MarkdownText components={mdComponents}>
+          <MarkdownText multilineBreaks components={mdComponents}>
             {schema.description}
           </MarkdownText>
         </Box>

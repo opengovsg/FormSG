@@ -6,18 +6,27 @@ import gfm from 'remark-gfm'
 
 interface MarkdownTextProps {
   components?: Components
+  /**
+   * Whether to allow sequetial new lines to generate sequential line breaks.
+   * Breaks markdown specs, but allows for WYSIWYG text editing.
+   * @defaultValues `false`
+   */
+  multilineBreaks?: boolean
   children: string
 }
 
 export const MarkdownText = ({
   components,
   children,
+  multilineBreaks = false,
 }: MarkdownTextProps): JSX.Element => {
-  // Create new line nodes for every new line in raw string so new lines gets rendered.
-  const newLinedStrings = useMemo(
-    () => children.replace(/\n/gi, '&nbsp; \n'),
-    [children],
-  )
+  const processedRawString = useMemo(() => {
+    // Create new line nodes for every new line in raw string so new lines gets rendered.
+    if (multilineBreaks) {
+      return children.replace(/\n/gi, '&nbsp; \n')
+    }
+    return children
+  }, [children, multilineBreaks])
 
   return (
     <ReactMarkdown
@@ -27,7 +36,7 @@ export const MarkdownText = ({
       // Known issue, only types are breaking. See https://github.com/orgs/rehypejs/discussions/63.
       remarkPlugins={[gfm, breaks] as PluggableList}
     >
-      {newLinedStrings}
+      {processedRawString}
     </ReactMarkdown>
   )
 }
