@@ -31,7 +31,6 @@ export const BASIC_FIELDS_ORDERED = [
   BasicField.Attachment,
   BasicField.Number,
   BasicField.Decimal,
-  BasicField.Date,
   BasicField.Nric,
   BasicField.Uen,
 ]
