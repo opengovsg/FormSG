@@ -1,5 +1,6 @@
 import { ChangeEventHandler, useCallback } from 'react'
 
+import { GUIDE_WEBHOOKS } from '~constants/links'
 import Toggle from '~components/Toggle'
 
 import { useMutateFormSettings } from '../../mutations'
@@ -24,7 +25,7 @@ export const RetryToggle = (): JSX.Element | null => {
       isLoading={mutateWebhookRetries.isLoading}
       isChecked={settings.webhook.isRetryEnabled}
       label="Enable retries"
-      description={`Your system must meet certain requirements before retries can be safely enabled. [Learn more](https://go.gov.sg/form-webhook-retries)`}
+      description={`Your system must meet certain requirements before retries can be safely enabled. [Learn more](${GUIDE_WEBHOOKS})`}
       onChange={handleToggleRetry}
     />
   )

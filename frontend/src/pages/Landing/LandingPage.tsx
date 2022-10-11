@@ -28,6 +28,7 @@ import FormBrandLogo from '~/assets/svgs/brand/brand-mark-colour.svg'
 import { BxlGithub } from '~assets/icons/BxlGithub'
 import { BxsHelpCircle } from '~assets/icons/BxsHelpCircle'
 import {
+  CONTACT_US,
   FORM_GUIDE,
   GUIDE_ATTACHMENT_SIZE_LIMIT,
   GUIDE_E2EE,
@@ -344,7 +345,7 @@ export const LandingPage = (): JSX.Element => {
 
                   4. If you remember sending an email to share your secret key with collaborators, search the Sent folder in your email for the keyword 'secret key' and your form title. 
 
-                  5. If you still cannot find your secret key and would like our help to debug this further, contact us on our [help form](https://go.gov.sg/form-help). 
+                  5. If you still cannot find your secret key and would like our help to debug this further, contact us on our [help form](${CONTACT_US}). 
 
                   Without your secret key, you will not be able to access your existing response data. Additionally, it's not possible for us to recover your lost secret key or response data on your behalf. This is because Form does not retain your secret key or any other way to unlock your encrypted data - the only way to ensure response data is truly private to agencies only. This is an important security benefit, because that means even if our server were to be compromised, an attacker would never be able to unlock your encrypted responses.
                 `}

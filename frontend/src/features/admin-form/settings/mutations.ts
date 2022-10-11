@@ -14,6 +14,7 @@ import { TwilioCredentials } from '~shared/types/twilio'
 
 import { ApiError } from '~typings/core'
 
+import { GUIDE_PREVENT_EMAIL_BOUNCE } from '~constants/links'
 import { useToast } from '~hooks/useToast'
 import { formatOrdinal } from '~utils/stringFormat'
 
@@ -98,7 +99,7 @@ export const useMutateFormSettings = () => {
         const toastStatusPublicMessage =
           newData.responseMode === FormResponseMode.Encrypt
             ? `Your form is now open.\n\nStore your secret key in a safe place. If you lose your secret key, all your responses will be lost permanently.`
-            : `Your form is now open.\n\nIf you expect a large number of responses,  [AutoArchive your mailbox](https://go.gov.sg/form-prevent-bounce) to avoid losing any of them.`
+            : `Your form is now open.\n\nIf you expect a large number of responses,  [AutoArchive your mailbox](${GUIDE_PREVENT_EMAIL_BOUNCE}) to avoid losing any of them.`
         const toastStatusClosedMessage = 'Your form is closed to new responses.'
         const toastStatusMessage = isNowPublic
           ? toastStatusPublicMessage
