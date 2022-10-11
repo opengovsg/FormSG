@@ -15,7 +15,10 @@ import {
   fieldBuilderStateSelector,
   useFieldBuilderStore,
 } from '../useFieldBuilderStore'
-import { getMutationErrorMessage } from '../utils/getMutationErrorMessage'
+import {
+  getMutationErrorMessage,
+  getMutationToastDescriptionFieldName,
+} from '../utils/getMutationMessage'
 
 export const useEditFormField = () => {
   const { formId } = useParams()
@@ -39,7 +42,9 @@ export const useEditFormField = () => {
         return
       }
       toast({
-        description: `The field "${newField.title}" was updated.`,
+        description: `The ${getMutationToastDescriptionFieldName(
+          newField,
+        )} was updated.`,
       })
       queryClient.setQueryData<AdminFormDto>(adminFormKey, (oldForm) => {
         // Should not happen, should not be able to update field if there is no

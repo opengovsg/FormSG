@@ -14,7 +14,7 @@ import { useToast } from '~hooks/useToast'
 import { adminFormKeys } from '~features/admin-form/common/queries'
 
 import { reorderSingleFormField } from '../UpdateFormFieldService'
-import { getMutationErrorMessage } from '../utils/getMutationErrorMessage'
+import { getMutationErrorMessage } from '../utils/getMutationMessage'
 
 export const useReorderFormField = () => {
   const { formId } = useParams()
