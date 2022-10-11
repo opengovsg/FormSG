@@ -1,3 +1,5 @@
+import 'inter-ui/inter.css'
+
 import { create } from '@storybook/theming'
 
 import PackageInfo from '../package.json'
@@ -15,7 +17,7 @@ export const StorybookTheme = {
     appBorderColor: '#DADCE3',
     appBorderRadius: 0,
     // Typography
-    fontBase: '"Inter", san-serif',
+    fontBase: `"Inter var", san-serif`,
     // Text colours
     textColor: '#445072', // secondary.500,
     textInverseColor: '#445072', // secondary.500,
@@ -28,6 +30,6 @@ export const StorybookTheme = {
   }),
   docs: create({
     base: 'light',
-    fontBase: '"Inter", san-serif',
+    fontBase: `"Inter var", san-serif`,
   }),
 }
