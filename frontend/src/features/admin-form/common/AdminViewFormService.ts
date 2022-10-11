@@ -51,20 +51,22 @@ export const previewForm = async (
 ): Promise<PreviewFormViewDto> => {
   return ApiService.get<PreviewFormViewDto>(
     `${ADMIN_FORM_ENDPOINT}/${formId}/preview`,
-  ).then(({ data }) => {
-    // Add default mock authenticated state if previewing an authenticatable form
-    // and if server has not already sent back a mock authenticated state.
-    if (data.form.authType !== FormAuthType.NIL && !data.spcpSession) {
-      data.spcpSession = { userName: PREVIEW_MOCK_UINFIN }
-    }
+  )
+    .then(({ data }) => {
+      // Add default mock authenticated state if previewing an authenticatable form
+      // and if server has not already sent back a mock authenticated state.
+      if (data.form.authType !== FormAuthType.NIL && !data.spcpSession) {
+        data.spcpSession = { userName: PREVIEW_MOCK_UINFIN }
+      }
 
-    // Inject MyInfo preview values into form fields (if they are MyInfo fields).
-    data.form.form_fields = data.form.form_fields.map(
-      augmentWithMyInfoDisplayValue,
-    )
+      // Inject MyInfo preview values into form fields (if they are MyInfo fields).
+      data.form.form_fields = data.form.form_fields.map(
+        augmentWithMyInfoDisplayValue,
+      )
 
-    return data
-  })
+      return data
+    })
+    .then(transformAllIsoStringsToDate)
 }
 
 export const getFreeSmsQuota = async (formId: string) => {
