@@ -89,7 +89,7 @@ export const FormLabel = ({
       {description && (
         <FormLabel.Description
           useMarkdown={useMarkdownForDescription}
-          whiteSpace="pre-line"
+          whiteSpace="pre-wrap"
           overflowWrap="anywhere"
         >
           {description}

@@ -1,26 +1,8 @@
+import { useMemo } from 'react'
 import ReactMarkdown, { Components } from 'react-markdown'
-import { findAndReplace } from 'mdast-util-find-and-replace'
+import type { PluggableList } from 'react-markdown/lib/react-markdown'
+import breaks from 'remark-breaks'
 import gfm from 'remark-gfm'
-
-const breaks = () => {
-  const replace = (match: string) => {
-    return {
-      type: 'text',
-      data: {
-        hName: 'br',
-      },
-    }
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const transform = (markdownAST: any) => {
-    //@ts-expect-error magic
-    findAndReplace(markdownAST, /\n/g, replace)
-    return markdownAST
-  }
-
-  return transform
-}
 
 interface MarkdownTextProps {
   components?: Components
@@ -31,9 +13,21 @@ export const MarkdownText = ({
   components,
   children,
 }: MarkdownTextProps): JSX.Element => {
+  // Create new line nodes for every new line in raw string so new lines gets rendered.
+  const newLinedStrings = useMemo(
+    () => children.replace(/\n/gi, '&nbsp; \n'),
+    [children],
+  )
+
   return (
-    <ReactMarkdown components={components} remarkPlugins={[gfm, breaks]}>
-      {children}
+    <ReactMarkdown
+      // Prevent <br> tags from being created, remark-breaks will still create newlines which gets replaced.
+      disallowedElements={['br']}
+      components={components}
+      // Known issue, only types are breaking. See https://github.com/orgs/rehypejs/discussions/63.
+      remarkPlugins={[gfm, breaks] as PluggableList}
+    >
+      {newLinedStrings}
     </ReactMarkdown>
   )
 }
