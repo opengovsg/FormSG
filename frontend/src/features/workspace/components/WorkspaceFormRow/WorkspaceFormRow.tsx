@@ -34,6 +34,7 @@ export const WorkspaceFormRow = ({
   return (
     <Box pos="relative">
       <chakra.button
+        data-testid={`form-row-${formMeta._id}`}
         transitionProperty="common"
         transitionDuration="normal"
         onClick={handleEditForm}
