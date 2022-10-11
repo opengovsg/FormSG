@@ -1,11 +1,10 @@
 import { useMemo } from 'react'
-import ReactMarkdown from 'react-markdown'
 import { Box, forwardRef, Text } from '@chakra-ui/react'
-import gfm from 'remark-gfm'
 
 import { FormColorTheme } from '~shared/types'
 
 import { useMdComponents } from '~hooks/useMdComponents'
+import { MarkdownText } from '~components/MarkdownText'
 
 import { SectionFieldContainerProps } from './SectionFieldContainer'
 
@@ -66,11 +65,10 @@ export const BaseSectionField = forwardRef<
         {schema.title}
       </Text>
       {schema.description && (
-        // Wrap markdown with a <div white-space='pre-wrap'> to get consecutive newlines to show up
-        <Box mt="1rem" whiteSpace="pre-wrap">
-          <ReactMarkdown components={mdComponents} remarkPlugins={[gfm]}>
+        <Box mt="1rem">
+          <MarkdownText components={mdComponents}>
             {schema.description}
-          </ReactMarkdown>
+          </MarkdownText>
         </Box>
       )}
     </Box>

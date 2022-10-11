@@ -1,5 +1,4 @@
 import { useMemo } from 'react'
-import ReactMarkdown from 'react-markdown'
 import {
   Box,
   FormLabel as ChakraFormLabel,
@@ -9,10 +8,10 @@ import {
   TextProps,
   useFormControlContext,
 } from '@chakra-ui/react'
-import gfm from 'remark-gfm'
 
 import { BxsHelpCircle } from '~assets/icons/BxsHelpCircle'
 import { useMdComponents } from '~hooks/useMdComponents'
+import { MarkdownText } from '~components/MarkdownText'
 import Tooltip from '~components/Tooltip'
 
 export interface FormLabelProps extends ChakraFormLabelProps {
@@ -148,12 +147,7 @@ const FormLabelDescription = ({
   })
 
   return useMarkdown ? (
-    // Wrap markdown with a <div white-space='pre-wrap'> to get consecutive newlines to show up
-    <Box whiteSpace="pre-wrap">
-      <ReactMarkdown components={mdComponents} remarkPlugins={[gfm]}>
-        {children}
-      </ReactMarkdown>
-    </Box>
+    <MarkdownText components={mdComponents}>{children}</MarkdownText>
   ) : (
     <Text {...fieldProps} {...styleProps}>
       {children}

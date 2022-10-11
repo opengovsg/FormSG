@@ -1,10 +1,9 @@
-import ReactMarkdown from 'react-markdown'
 import { Box, Text } from '@chakra-ui/react'
-import gfm from 'remark-gfm'
 
 import { FormColorTheme } from '~shared/types'
 
 import { useMdComponents } from '~hooks/useMdComponents'
+import { MarkdownText } from '~components/MarkdownText'
 import { useSectionColor } from '~templates/Field/Section/SectionField'
 
 interface FormInstructionsProps {
@@ -31,11 +30,8 @@ export const FormInstructions = ({
       <Text textStyle="h2" color={sectionColor}>
         Instructions
       </Text>
-      {/* Wrap markdown with a <div white-space='pre-wrap'> to get consecutive newlines to show up */}
-      <Box mt="1rem" whiteSpace="pre-wrap">
-        <ReactMarkdown components={mdComponents} remarkPlugins={[gfm]}>
-          {content}
-        </ReactMarkdown>
+      <Box mt="1rem">
+        <MarkdownText components={mdComponents}>{content}</MarkdownText>
       </Box>
     </>
   )

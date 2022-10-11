@@ -1,6 +1,5 @@
 import { useMemo } from 'react'
 import { BiX } from 'react-icons/bi'
-import ReactMarkdown from 'react-markdown'
 import {
   Box,
   CloseButton,
@@ -15,6 +14,7 @@ import { BxsErrorCircle, BxsInfoCircle } from '~/assets/icons'
 
 import { BannerVariant } from '~theme/components/Banner'
 import { useMdComponents } from '~hooks/useMdComponents'
+import { MarkdownText } from '~components/MarkdownText'
 
 export interface BannerProps {
   variant?: BannerVariant
@@ -54,9 +54,7 @@ export const Banner = ({
               __css={styles.icon}
             />
             {useMarkdown ? (
-              <ReactMarkdown components={mdComponents}>
-                {children}
-              </ReactMarkdown>
+              <MarkdownText components={mdComponents}>{children}</MarkdownText>
             ) : (
               children
             )}

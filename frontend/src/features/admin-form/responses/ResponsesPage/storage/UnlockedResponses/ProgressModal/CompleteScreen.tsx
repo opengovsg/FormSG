@@ -1,5 +1,4 @@
 import { useMemo } from 'react'
-import ReactMarkdown from 'react-markdown'
 import {
   Badge,
   Icon,
@@ -16,6 +15,7 @@ import { BxsCheckCircle, BxsXCircle } from '~assets/icons'
 import { useIsMobile } from '~hooks/useIsMobile'
 import { useMdComponents } from '~hooks/useMdComponents'
 import Button from '~components/Button'
+import { MarkdownText } from '~components/MarkdownText'
 import { ModalCloseButton } from '~components/Modal'
 
 import { DownloadResult } from '../../types'
@@ -88,9 +88,9 @@ export const CompleteScreen = ({
               as={BxsCheckCircle}
               aria-hidden
             />
-            <ReactMarkdown components={mdComponents}>
+            <MarkdownText components={mdComponents}>
               {completionMessage}
-            </ReactMarkdown>
+            </MarkdownText>
           </Stack>
           {attachmentErrorMessage && (
             <Stack direction="row" spacing="0.5rem">
@@ -101,9 +101,9 @@ export const CompleteScreen = ({
                 as={BxsXCircle}
                 aria-hidden
               />
-              <ReactMarkdown components={mdComponents}>
+              <MarkdownText components={mdComponents}>
                 {attachmentErrorMessage}
-              </ReactMarkdown>
+              </MarkdownText>
             </Stack>
           )}
         </Stack>

@@ -69,6 +69,7 @@ export const FieldContainer = ({
         gridTemplateColumns={'1fr auto'}
       >
         <FormLabel
+          useMarkdownForDescription
           gridArea="formlabel"
           questionNumber={
             schema.questionNumber ? `${schema.questionNumber}.` : undefined

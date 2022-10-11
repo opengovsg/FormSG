@@ -1,12 +1,11 @@
 import { useEffect, useMemo, useRef } from 'react'
-import ReactMarkdown from 'react-markdown'
 import { Box, Flex, Stack, Text, VisuallyHidden } from '@chakra-ui/react'
-import gfm from 'remark-gfm'
 
 import { FormColorTheme, FormDto } from '~shared/types/form'
 
 import { useMdComponents } from '~hooks/useMdComponents'
 import Button from '~components/Button'
+import { MarkdownText } from '~components/MarkdownText'
 
 import { SubmissionData } from '~features/public-form/PublicFormContext'
 
@@ -60,12 +59,9 @@ export const EndPageBlock = ({
           </Text>
         </Box>
         {endPage.paragraph ? (
-          // Wrap markdown with a <div white-space='pre-wrap'> to get consecutive newlines to show up
-          <Box whiteSpace="pre-wrap">
-            <ReactMarkdown components={mdComponents} remarkPlugins={[gfm]}>
-              {endPage.paragraph}
-            </ReactMarkdown>
-          </Box>
+          <MarkdownText components={mdComponents}>
+            {endPage.paragraph}
+          </MarkdownText>
         ) : null}
         <Text textColor="secondary.300">Response ID: {submissionData.id}</Text>
       </Stack>

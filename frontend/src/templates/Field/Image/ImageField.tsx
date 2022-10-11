@@ -1,9 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
-import ReactMarkdown from 'react-markdown'
 import { Box, Image, Skeleton, useBreakpointValue } from '@chakra-ui/react'
-import gfm from 'remark-gfm'
 
 import { useMdComponents } from '~hooks/useMdComponents'
+import { MarkdownText } from '~components/MarkdownText'
 
 import { BaseFieldProps } from '../FieldContainer'
 import { ImageFieldSchema } from '../types'
@@ -61,11 +60,10 @@ export const ImageField = ({ schema }: ImageFieldProps): JSX.Element => {
         onError={() => setFallbackType('error')}
       />
       {schema.description ? (
-        // Wrap markdown with a <div white-space='pre-wrap'> to get consecutive newlines to show up
-        <Box mt={{ base: '0.5rem', md: '1rem' }} whiteSpace="pre-wrap">
-          <ReactMarkdown components={mdComponents} remarkPlugins={[gfm]}>
+        <Box mt={{ base: '0.5rem', md: '1rem' }}>
+          <MarkdownText components={mdComponents}>
             {schema.description}
-          </ReactMarkdown>
+          </MarkdownText>
         </Box>
       ) : null}
     </Box>
