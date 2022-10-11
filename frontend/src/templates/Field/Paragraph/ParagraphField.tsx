@@ -1,4 +1,6 @@
 import ReactMarkdown from 'react-markdown'
+import { Box } from '@chakra-ui/react'
+import gfm from 'remark-gfm'
 
 import { useMdComponents } from '~hooks/useMdComponents'
 
@@ -24,9 +26,13 @@ export const ParagraphField = ({
       },
     },
   })
+
   return (
-    <ReactMarkdown components={mdComponents}>
-      {schema.description}
-    </ReactMarkdown>
+    // Wrap markdown with a <div white-space='pre-wrap'> to get consecutive newlines to show up
+    <Box mt="1rem" whiteSpace="pre-wrap">
+      <ReactMarkdown components={mdComponents} remarkPlugins={[gfm]}>
+        {schema.description}
+      </ReactMarkdown>
+    </Box>
   )
 }

@@ -1,7 +1,11 @@
 import { useMemo } from 'react'
+import ReactMarkdown from 'react-markdown'
 import { Box, forwardRef, Text } from '@chakra-ui/react'
+import gfm from 'remark-gfm'
 
 import { FormColorTheme } from '~shared/types'
+
+import { useMdComponents } from '~hooks/useMdComponents'
 
 import { SectionFieldContainerProps } from './SectionFieldContainer'
 
@@ -38,6 +42,14 @@ export const BaseSectionField = forwardRef<
   'div'
 >(({ schema, colorTheme = FormColorTheme.Blue, ...rest }, ref) => {
   const sectionColor = useSectionColor(colorTheme)
+  const mdComponents = useMdComponents({
+    styles: {
+      text: {
+        textStyle: 'body-1',
+        color: 'secondary.700',
+      },
+    },
+  })
 
   return (
     // id given so app can scrolled to this section.
@@ -54,14 +66,12 @@ export const BaseSectionField = forwardRef<
         {schema.title}
       </Text>
       {schema.description && (
-        <Text
-          textStyle="body-1"
-          color="secondary.700"
-          mt="1rem"
-          whiteSpace="break-spaces"
-        >
-          {schema.description}
-        </Text>
+        // Wrap markdown with a <div white-space='pre-wrap'> to get consecutive newlines to show up
+        <Box mt="1rem" whiteSpace="pre-wrap">
+          <ReactMarkdown components={mdComponents} remarkPlugins={[gfm]}>
+            {schema.description}
+          </ReactMarkdown>
+        </Box>
       )}
     </Box>
   )

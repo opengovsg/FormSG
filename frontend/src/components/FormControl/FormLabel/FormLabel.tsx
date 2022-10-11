@@ -9,6 +9,7 @@ import {
   TextProps,
   useFormControlContext,
 } from '@chakra-ui/react'
+import gfm from 'remark-gfm'
 
 import { BxsHelpCircle } from '~assets/icons/BxsHelpCircle'
 import { useMdComponents } from '~hooks/useMdComponents'
@@ -66,6 +67,7 @@ export const FormLabel = ({
       requiredIndicator={<Box />}
       display="flex"
       flexDir="column"
+      overflowWrap="break-word"
       {...labelProps}
     >
       <Box overflowWrap="anywhere">
@@ -146,7 +148,12 @@ const FormLabelDescription = ({
   })
 
   return useMarkdown ? (
-    <ReactMarkdown components={mdComponents}>{children}</ReactMarkdown>
+    // Wrap markdown with a <div white-space='pre-wrap'> to get consecutive newlines to show up
+    <Box mt={{ base: '0.5rem', md: '1rem' }} whiteSpace="pre-wrap">
+      <ReactMarkdown components={mdComponents} remarkPlugins={[gfm]}>
+        {children}
+      </ReactMarkdown>
+    </Box>
   ) : (
     <Text {...fieldProps} {...styleProps}>
       {children}

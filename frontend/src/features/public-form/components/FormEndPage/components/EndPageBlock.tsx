@@ -1,8 +1,11 @@
 import { useEffect, useMemo, useRef } from 'react'
+import ReactMarkdown from 'react-markdown'
 import { Box, Flex, Stack, Text, VisuallyHidden } from '@chakra-ui/react'
+import gfm from 'remark-gfm'
 
 import { FormColorTheme, FormDto } from '~shared/types/form'
 
+import { useMdComponents } from '~hooks/useMdComponents'
 import Button from '~components/Button'
 
 import { SubmissionData } from '~features/public-form/PublicFormContext'
@@ -29,6 +32,15 @@ export const EndPageBlock = ({
     }
   }, [focusOnMount])
 
+  const mdComponents = useMdComponents({
+    styles: {
+      text: {
+        textStyle: 'subhead-1',
+        color: 'secondary.500',
+      },
+    },
+  })
+
   const submittedAriaText = useMemo(() => {
     if (formTitle) {
       return `You have successfully submitted your response for ${formTitle}.`
@@ -48,13 +60,12 @@ export const EndPageBlock = ({
           </Text>
         </Box>
         {endPage.paragraph ? (
-          <Text
-            color="secondary.500"
-            textStyle="subhead-1"
-            whiteSpace="pre-line"
-          >
-            {endPage.paragraph}
-          </Text>
+          // Wrap markdown with a <div white-space='pre-wrap'> to get consecutive newlines to show up
+          <Box whiteSpace="pre-wrap">
+            <ReactMarkdown components={mdComponents} remarkPlugins={[gfm]}>
+              {endPage.paragraph}
+            </ReactMarkdown>
+          </Box>
         ) : null}
         <Text textColor="secondary.300">Response ID: {submissionData.id}</Text>
       </Stack>

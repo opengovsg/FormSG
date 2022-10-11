@@ -61,7 +61,8 @@ export const ImageField = ({ schema }: ImageFieldProps): JSX.Element => {
         onError={() => setFallbackType('error')}
       />
       {schema.description ? (
-        <Box mt={{ base: '0.5rem', md: '1rem' }}>
+        // Wrap markdown with a <div white-space='pre-wrap'> to get consecutive newlines to show up
+        <Box mt={{ base: '0.5rem', md: '1rem' }} whiteSpace="pre-wrap">
           <ReactMarkdown components={mdComponents} remarkPlugins={[gfm]}>
             {schema.description}
           </ReactMarkdown>
