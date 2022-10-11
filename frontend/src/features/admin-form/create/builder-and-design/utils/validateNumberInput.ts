@@ -15,7 +15,7 @@
  * @returns void
  */
 export const validateNumberInput =
-  (onChange: (...event: any[]) => void) =>
+  (onChange: (...event: unknown[]) => void) =>
   (valStr: string, valNum: number): void => {
     if (!valStr) return onChange('')
     if (!isNaN(valNum)) onChange(valNum)

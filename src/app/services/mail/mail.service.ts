@@ -1,3 +1,4 @@
+import { tracer } from 'dd-trace'
 import { get, inRange, isEmpty } from 'lodash'
 import moment from 'moment-timezone'
 import { err, errAsync, okAsync, Result, ResultAsync } from 'neverthrow'
@@ -156,7 +157,9 @@ export class MailService {
       })
 
       try {
-        const info = await this.#transporter.sendMail(mail)
+        const info = await tracer.trace('nodemailer/sendMail', () =>
+          this.#transporter.sendMail(mail),
+        )
 
         logger.info({
           message: `Mail successfully sent on attempt ${attemptNum}`,

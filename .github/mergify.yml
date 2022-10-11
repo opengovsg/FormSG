@@ -3,17 +3,6 @@ pull_request_rules:
     conditions:
       - author=dependabot[bot]
       - title~=bump [^\s]+ from ([\d]+)\..+ to \1\.
-      - check-success~=build
-      - check-success~=test-frontend
-      - check-success~=test-backend
-      - check-success~=test-e2e
-      - check-success~=Analyze # CodeQL / Analyze
-      - check-success~=CodeQL # CodeQL code scanning results
-      - check-success~=GitGuardian
-      - check-success~=Semantic Pull Request
-      - check-success~=coverage/coveralls
-      - check-success~=license/snyk
-      - check-success~=security/snyk
     actions:
       review:
         type: APPROVE
@@ -23,17 +12,6 @@ pull_request_rules:
     conditions:
       - author=snyk-bot
       - title~=\[Snyk\] Security upgrade [^\s]+ from ([\d]+)\..+ to \1\.
-      - check-success~=build
-      - check-success~=test-frontend
-      - check-success~=test-backend
-      - check-success~=test-e2e
-      - check-success~=Analyze # CodeQL / Analyze
-      - check-success~=CodeQL # CodeQL code scanning results
-      - check-success~=GitGuardian
-      - check-success~=Semantic Pull Request
-      - check-success~=coverage/coveralls
-      - check-success~=license/snyk
-      - check-success~=security/snyk
     actions:
       review:
         type: APPROVE

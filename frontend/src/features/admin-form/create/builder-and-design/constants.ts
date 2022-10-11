@@ -13,26 +13,25 @@ import {
 import { MyInfoFieldMeta } from '~features/myinfo/types'
 
 export const BASIC_FIELDS_ORDERED = [
-  // Page section
-  BasicField.Section,
-  BasicField.Statement,
-  BasicField.Image,
-  // Fields section
   BasicField.ShortText,
   BasicField.LongText,
   BasicField.Radio,
   BasicField.Checkbox,
-  BasicField.Mobile,
-  BasicField.Email,
-  BasicField.HomeNo,
   BasicField.Dropdown,
+  BasicField.Section,
+  BasicField.Statement,
   BasicField.YesNo,
   BasicField.Rating,
+  BasicField.Email,
+  BasicField.Mobile,
+  BasicField.HomeNo,
+  BasicField.Date,
+  BasicField.Image,
+  BasicField.Table,
+  BasicField.Attachment,
   BasicField.Number,
   BasicField.Decimal,
-  BasicField.Attachment,
   BasicField.Date,
-  BasicField.Table,
   BasicField.Nric,
   BasicField.Uen,
 ]
@@ -93,9 +92,6 @@ export const MYINFO_DATEFIELD_META: MyInfoFieldMeta<DateFieldBase> = {
   },
 }
 
-export const CREATE_PAGE_FIELDS_ORDERED = BASIC_FIELDS_ORDERED.slice(0, 3)
-export const CREATE_FIELD_FIELDS_ORDERED = BASIC_FIELDS_ORDERED.slice(3)
-
 export const CREATE_MYINFO_PERSONAL_FIELDS_ORDERED =
   MYINFO_FIELDS_ORDERED.slice(0, 13)
 
@@ -110,7 +106,6 @@ export const CREATE_MYINFO_PARTICULARS_FIELDS_ORDERED =
 export const CREATE_MYINFO_MARRIAGE_FIELDS_ORDERED =
   MYINFO_FIELDS_ORDERED.slice(19, 24)
 
-export const CREATE_PAGE_DROP_ID = 'create-fields-page'
 export const CREATE_FIELD_DROP_ID = 'create-fields-field'
 
 export const CREATE_MYINFO_PERSONAL_DROP_ID = 'create-myinfo-personal'

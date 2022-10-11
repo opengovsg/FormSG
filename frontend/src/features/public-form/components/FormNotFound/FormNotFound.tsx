@@ -1,4 +1,4 @@
-import { Box, Flex, Stack, Text } from '@chakra-ui/react'
+import { Flex, Stack, Text } from '@chakra-ui/react'
 
 import { FormFooter } from '../FormFooter'
 
@@ -40,9 +40,14 @@ export const FormNotFound = ({ message }: FormNotFoundProps): JSX.Element => {
           <Text textStyle="body-1">{message}</Text>
         </Stack>
       </Flex>
-      <Box bg="primary.100">
+      <Flex
+        bg="primary.100"
+        p={{ base: 0, md: '1.5rem' }}
+        flex={0}
+        justify="center"
+      >
         <FormFooter />
-      </Box>
+      </Flex>
     </Flex>
   )
 }

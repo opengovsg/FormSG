@@ -21,8 +21,8 @@ import Link from '~components/Link'
 import { Tab } from '~components/Tabs'
 
 import {
+  BASIC_FIELDS_ORDERED,
   CREATE_FIELD_DROP_ID,
-  CREATE_FIELD_FIELDS_ORDERED,
   CREATE_MYINFO_CONTACT_DROP_ID,
   CREATE_MYINFO_CONTACT_FIELDS_ORDERED,
   CREATE_MYINFO_MARRIAGE_DROP_ID,
@@ -31,8 +31,6 @@ import {
   CREATE_MYINFO_PARTICULARS_FIELDS_ORDERED,
   CREATE_MYINFO_PERSONAL_DROP_ID,
   CREATE_MYINFO_PERSONAL_FIELDS_ORDERED,
-  CREATE_PAGE_DROP_ID,
-  CREATE_PAGE_FIELDS_ORDERED,
 } from '~features/admin-form/create/builder-and-design/constants'
 import { useCreatePageSidebar } from '~features/admin-form/create/common/CreatePageSidebarContext'
 import { isMyInfo } from '~features/myinfo/utils'
@@ -61,7 +59,7 @@ export const FieldListDrawer = (): JSX.Element => {
       <Box pt="1rem" px="1.5rem" bg="white">
         <Flex justify="space-between">
           <Text textStyle="subhead-3" color="secondary.500" mb="1rem">
-            Builder
+            Fields
           </Text>
           <CreatePageDrawerCloseButton />
         </Flex>
@@ -87,42 +85,23 @@ const BasicFieldPanelContent = () => {
   const { isLoading } = useCreateTabForm()
 
   return (
-    <>
-      <Droppable isDropDisabled droppableId={CREATE_PAGE_DROP_ID}>
-        {(provided) => (
-          <Box ref={provided.innerRef} {...provided.droppableProps}>
-            <FieldSection label="Page">
-              {CREATE_PAGE_FIELDS_ORDERED.map((fieldType, index) => (
-                <DraggableBasicFieldListOption
-                  index={index}
-                  isDisabled={isLoading}
-                  key={index}
-                  fieldType={fieldType}
-                />
-              ))}
-            </FieldSection>
+    <Droppable isDropDisabled droppableId={CREATE_FIELD_DROP_ID}>
+      {(provided) => (
+        <Box ref={provided.innerRef} {...provided.droppableProps}>
+          <FieldSection>
+            {BASIC_FIELDS_ORDERED.map((fieldType, index) => (
+              <DraggableBasicFieldListOption
+                index={index}
+                isDisabled={isLoading}
+                key={index}
+                fieldType={fieldType}
+              />
+            ))}
             <Box display="none">{provided.placeholder}</Box>
-          </Box>
-        )}
-      </Droppable>
-      <Droppable isDropDisabled droppableId={CREATE_FIELD_DROP_ID}>
-        {(provided) => (
-          <Box ref={provided.innerRef} {...provided.droppableProps}>
-            <FieldSection label="Fields">
-              {CREATE_FIELD_FIELDS_ORDERED.map((fieldType, index) => (
-                <DraggableBasicFieldListOption
-                  index={index}
-                  isDisabled={isLoading}
-                  key={index}
-                  fieldType={fieldType}
-                />
-              ))}
-            </FieldSection>
-            <Box display="none">{provided.placeholder}</Box>
-          </Box>
-        )}
-      </Droppable>
-    </>
+          </FieldSection>
+        </Box>
+      )}
+    </Droppable>
   )
 }
 
@@ -275,24 +254,26 @@ const FieldSection = ({
   label,
   children,
 }: {
-  label: string
+  label?: string
   children: React.ReactNode
 }) => {
   return (
     <Box mb="0.5rem">
-      <Text
-        px="1.5rem"
-        pt="1rem"
-        pb="0.75rem"
-        textStyle="subhead-2"
-        color="secondary.500"
-        pos="sticky"
-        top={0}
-        bg="white"
-        zIndex="docked"
-      >
-        {label}
-      </Text>
+      {label ? (
+        <Text
+          px="1.5rem"
+          pt="1rem"
+          pb="0.75rem"
+          textStyle="subhead-2"
+          color="secondary.500"
+          pos="sticky"
+          top={0}
+          bg="white"
+          zIndex="docked"
+        >
+          {label}
+        </Text>
+      ) : null}
       <Stack divider={<StackDivider />} spacing={0}>
         {children}
       </Stack>

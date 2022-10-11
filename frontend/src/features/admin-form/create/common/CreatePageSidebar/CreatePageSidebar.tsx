@@ -2,7 +2,7 @@ import { useCallback } from 'react'
 import { BiGitMerge, BiQuestionMark } from 'react-icons/bi'
 import { Stack } from '@chakra-ui/react'
 
-import { BxsColorFill } from '~assets/icons/BxsColorFill'
+import { BxsDockTop } from '~assets/icons/BxsDockTop'
 import { BxsWidget } from '~assets/icons/BxsWidget'
 import { FORM_GUIDE } from '~constants/links'
 import { useIsMobile } from '~hooks/useIsMobile'
@@ -65,21 +65,21 @@ export const CreatePageSidebar = (): JSX.Element | null => {
     >
       <Stack spacing="0.5rem">
         <DrawerTabIcon
-          label="Build your form"
+          label="Add fields"
           icon={<BxsWidget fontSize="1.5rem" />}
           onClick={handleDrawerBuilderClick}
           isActive={activeTab === DrawerTabs.Builder}
           id={FEATURE_TOUR[0].id}
         />
         <DrawerTabIcon
-          label="Design your form"
-          icon={<BxsColorFill fontSize="1.5rem" />}
+          label="Edit header and instructions"
+          icon={<BxsDockTop fontSize="1.5rem" />}
           onClick={handleDrawerDesignClick}
           isActive={activeTab === DrawerTabs.Design}
           id={FEATURE_TOUR[1].id}
         />
         <DrawerTabIcon
-          label="Add conditional logic"
+          label="Add logic"
           icon={<BiGitMerge fontSize="1.5rem" />}
           onClick={handleDrawerLogicClick}
           isActive={activeTab === DrawerTabs.Logic}
