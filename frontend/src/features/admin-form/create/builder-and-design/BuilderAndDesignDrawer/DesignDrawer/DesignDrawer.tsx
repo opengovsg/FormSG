@@ -50,8 +50,8 @@ import {
   useDirtyFieldStore,
 } from '../../../builder-and-design/useDirtyFieldStore'
 import { validateNumberInput } from '../../../builder-and-design/utils/validateNumberInput'
+import { CreatePageDrawerContentContainer } from '../../../common'
 import { CreatePageDrawerCloseButton } from '../../../common/CreatePageDrawer/CreatePageDrawerCloseButton'
-import { DrawerContentContainer } from '../EditFieldDrawer/edit-fieldtype/common/DrawerContentContainer'
 import { FormFieldDrawerActions } from '../EditFieldDrawer/edit-fieldtype/common/FormFieldDrawerActions'
 import {
   UploadedImage,
@@ -213,7 +213,7 @@ export const DesignInput = (): JSX.Element | null => {
   if (!startPageData) return null
 
   return (
-    <DrawerContentContainer>
+    <CreatePageDrawerContentContainer>
       <FormControl
         id="logo.state"
         isReadOnly={startPageMutation.isLoading}
@@ -371,7 +371,7 @@ export const DesignInput = (): JSX.Element | null => {
         handleCancel={handleCloseDrawer}
         buttonText="Save design"
       />
-    </DrawerContentContainer>
+    </CreatePageDrawerContentContainer>
   )
 }
 

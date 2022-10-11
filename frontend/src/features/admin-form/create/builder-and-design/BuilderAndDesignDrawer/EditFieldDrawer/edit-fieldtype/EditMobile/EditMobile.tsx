@@ -13,8 +13,8 @@ import Toggle from '~components/Toggle'
 
 import { useFreeSmsQuota } from '~features/admin-form/common/queries'
 
+import { CreatePageDrawerContentContainer } from '../../../../../common'
 import { useCreateTabForm } from '../../../../useCreateTabForm'
-import { DrawerContentContainer } from '../common/DrawerContentContainer'
 import { FormFieldDrawerActions } from '../common/FormFieldDrawerActions'
 import { EditFieldProps } from '../common/types'
 import { useEditFieldForm } from '../common/useEditFieldForm'
@@ -74,7 +74,7 @@ export const EditMobile = ({ field }: EditMobileProps): JSX.Element => {
 
   return (
     <>
-      <DrawerContentContainer>
+      <CreatePageDrawerContentContainer>
         <FormControl
           isRequired
           isReadOnly={isLoading}
@@ -131,7 +131,7 @@ export const EditMobile = ({ field }: EditMobileProps): JSX.Element => {
           handleClick={handleUpdateField}
           handleCancel={handleCancel}
         />
-      </DrawerContentContainer>
+      </CreatePageDrawerContentContainer>
       <SmsCountsModal
         freeSmsCount={freeSmsCount}
         isOpen={smsCountsDisclosure.isOpen}

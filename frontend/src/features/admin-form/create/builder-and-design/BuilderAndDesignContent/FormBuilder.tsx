@@ -11,7 +11,7 @@ import { useCreatePageSidebar } from '../../common/CreatePageSidebarContext'
 import {
   EndPageState,
   setToEditingEndPageSelector,
-  stateSelector,
+  stateSelector as endPageStateSelector,
   useEndPageStore,
 } from '../../end-page/useEndPageStore'
 import { useAdminFormLogic } from '../../logic/hooks/useAdminFormLogic'
@@ -47,7 +47,7 @@ export const FormBuilder = ({
   const { endPageState, setEditingEndPageState } = useEndPageStore(
     useCallback(
       (state) => ({
-        endPageState: stateSelector(state),
+        endPageState: endPageStateSelector(state),
         setEditingEndPageState: setToEditingEndPageSelector(state),
       }),
       [],

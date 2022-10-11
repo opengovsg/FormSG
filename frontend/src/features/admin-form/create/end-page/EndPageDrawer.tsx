@@ -24,12 +24,14 @@ import Textarea from '~components/Textarea'
 import { useMutateFormPage } from '~features/admin-form/common/mutations'
 import { useAdminForm } from '~features/admin-form/common/queries'
 
-import { DrawerContentContainer } from '../builder-and-design/BuilderAndDesignDrawer/EditFieldDrawer/edit-fieldtype/common/DrawerContentContainer'
 import {
   setIsDirtySelector,
   useDirtyFieldStore,
 } from '../builder-and-design/useDirtyFieldStore'
-import { useCreatePageSidebar } from '../common'
+import {
+  CreatePageDrawerContentContainer,
+  useCreatePageSidebar,
+} from '../common'
 import { CreatePageDrawerCloseButton } from '../common/CreatePageDrawer/CreatePageDrawerCloseButton'
 import { CreatePageDrawerContainer } from '../common/CreatePageDrawer/CreatePageDrawerContainer'
 
@@ -121,7 +123,7 @@ export const EndPageInput = (): JSX.Element => {
   )
 
   return (
-    <DrawerContentContainer>
+    <CreatePageDrawerContentContainer>
       <Stack gap="2rem">
         <FormControl
           isReadOnly={endPageMutation.isLoading}
@@ -190,7 +192,7 @@ export const EndPageInput = (): JSX.Element => {
           Cancel
         </Button>
       </Stack>
-    </DrawerContentContainer>
+    </CreatePageDrawerContentContainer>
   )
 }
 
