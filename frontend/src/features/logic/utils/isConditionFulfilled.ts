@@ -49,8 +49,8 @@ export const isConditionFulfilled = (
     case LogicConditionState.Either: {
       // currentValue must be in a value in condition.value
       const condValuesArray = Array.isArray(condition.value)
-        ? condition.value
-        : [condition.value]
+        ? condition.value.map(String)
+        : [String(condition.value)]
       if (isRadioFormFieldValue(currentValue, args.fieldType)) {
         if (condValuesArray.includes('Others')) {
           // If the condition value is 'Others',
@@ -61,9 +61,9 @@ export const isConditionFulfilled = (
             !!currentValue.othersInput
           if (satisfiesOthers) return true
         }
-        return condValuesArray.includes(currentValue.value)
+        return condValuesArray.includes(String(currentValue.value))
       }
-      return condValuesArray.includes(currentValue as string)
+      return condValuesArray.includes(String(currentValue))
     }
     case LogicConditionState.Equal: {
       if (isRadioFormFieldValue(currentValue, args.fieldType)) {
@@ -76,14 +76,14 @@ export const isConditionFulfilled = (
             !!currentValue.othersInput
           )
         }
-        return condition.value === currentValue.value
+        return String(condition.value) === String(currentValue.value)
       }
       // In angular, number equality is string=== but decimal equality is number===.
       // Need to replicate this behavior for backward-compatibility.
       if (fieldType === BasicField.Decimal) {
         return Number(currentValue) === Number(condition.value)
       }
-      return String(condition.value) === currentValue
+      return String(condition.value) === String(currentValue)
     }
   }
 }
