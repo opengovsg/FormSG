@@ -18,6 +18,7 @@ import {
   DateValidationOptions,
   InvalidDaysOptions,
 } from '~shared/types/field'
+import { hasAvailableDates } from '~shared/utils/date-validation'
 
 import {
   fromUtcToLocalDate,
@@ -214,6 +215,7 @@ export const EditDate = ({ field }: EditDateProps): JSX.Element => {
           )
         },
       },
+      deps: 'invalidDays',
     }),
     [getValues],
   )
@@ -282,7 +284,7 @@ export const EditDate = ({ field }: EditDateProps): JSX.Element => {
                 <Controller
                   control={control}
                   rules={{
-                    deps: ['dateValidation.customMinDate'],
+                    deps: ['dateValidation.customMinDate', 'invalidDays'],
                   }}
                   name="dateValidation.customMaxDate"
                   render={({ field }) => (
@@ -320,9 +322,32 @@ export const EditDate = ({ field }: EditDateProps): JSX.Element => {
               control={control}
               name="invalidDays"
               rules={{
+                required: 'Please select available days of the week',
                 validate: (val) => {
+                  const customMinDate = getValues(
+                    'dateValidation.customMinDate',
+                  )
+                  const customMaxDate = getValues(
+                    'dateValidation.customMaxDate',
+                  )
+                  if (
+                    !(
+                      getValues('dateValidation.selectedDateValidation') ===
+                        DateSelectedValidation.Custom &&
+                      customMinDate &&
+                      customMaxDate
+                    )
+                  ) {
+                    return true
+                  }
+
                   return (
-                    !!val.length || 'Please select available days of the week'
+                    hasAvailableDates(
+                      customMinDate,
+                      customMaxDate,
+                      transformCheckedBoxesValueToInvalidDays(val),
+                    ) ||
+                    'There are no available days based on your date selection'
                   )
                 },
               }}

@@ -1,4 +1,4 @@
-import { format } from 'date-fns'
+import { differenceInCalendarDays, format } from 'date-fns'
 import { InvalidDaysOptions } from '../types/field/dateField'
 
 const DAY_TO_NUMBER_MAP: Record<InvalidDaysOptions, number> = {
@@ -19,7 +19,7 @@ const DAY_TO_NUMBER_MAP: Record<InvalidDaysOptions, number> = {
 export const convertInvalidDaysOfTheWeekToNumberSet = (
   invalidDays: InvalidDaysOptions[],
 ): Set<number> => {
-  if (invalidDays.length === 0) {
+  if (!invalidDays.length) {
     return new Set()
   }
 
@@ -35,4 +35,27 @@ export const isDateAnInvalidDay = (
   const dayNumberFormat = parseInt(format(date, 'i'))
 
   return invalidDaySet.has(dayNumberFormat)
+}
+
+export const hasAvailableDates = (
+  start: Date,
+  end: Date,
+  invalidDays: InvalidDaysOptions[],
+): boolean => {
+  if (differenceInCalendarDays(start, end) > 5) {
+    return true
+  }
+
+  for (
+    let date = new Date(start);
+    date <= end;
+    date.setDate(date.getDate() + 1)
+  ) {
+    if (isDateAnInvalidDay(date, invalidDays)) {
+      continue
+    }
+    return true
+  }
+
+  return false
 }

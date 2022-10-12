@@ -60,10 +60,12 @@ export const DateField = ({
           const { customMinDate, customMaxDate } = schema.dateValidation
           // customMinDate and customMaxDate are in UTC from the server,
           // need to convert to local time but with the same date as UTC.
-          return isDateOutOfRange(
-            date,
-            fromUtcToLocalDate(customMinDate),
-            fromUtcToLocalDate(customMaxDate),
+          return (
+            isDateOutOfRange(
+              date,
+              fromUtcToLocalDate(customMinDate),
+              fromUtcToLocalDate(customMaxDate),
+            ) || isDateAnInvalidDay(date, schema.invalidDays || [])
           )
         }
         default:
