@@ -7,10 +7,10 @@ import {
   useMemo,
   useState,
 } from 'react'
-import { useMeasure } from 'react-use'
 import { UseMeasureRef } from 'react-use/lib/useMeasure'
 
 import { useIsMobile } from '~hooks/useIsMobile'
+import { useMeasure } from '~hooks/useMeasure'
 
 import { FieldListTabIndex } from '../../builder-and-design/constants'
 import {
