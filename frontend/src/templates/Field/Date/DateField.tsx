@@ -42,11 +42,6 @@ export const DateField = ({
       const { selectedDateValidation } = schema.dateValidation
       const selectedInvalidDays = schema.invalidDays ?? []
 
-      // All dates available.
-      if (!selectedDateValidation && selectedInvalidDays.length === 0) {
-        return false
-      }
-
       let isDateUnavailable = false
 
       switch (selectedDateValidation) {
@@ -60,14 +55,15 @@ export const DateField = ({
           const { customMinDate, customMaxDate } = schema.dateValidation
           // customMinDate and customMaxDate are in UTC from the server,
           // need to convert to local time but with the same date as UTC.
-          return (
-            isDateOutOfRange(
-              date,
-              fromUtcToLocalDate(customMinDate),
-              fromUtcToLocalDate(customMaxDate),
-            ) || isDateAnInvalidDay(date, schema.invalidDays || [])
+          isDateUnavailable = isDateOutOfRange(
+            date,
+            fromUtcToLocalDate(customMinDate),
+            fromUtcToLocalDate(customMaxDate),
           )
+          break
         }
+        default:
+          break
       }
 
       return isDateUnavailable || isDateAnInvalidDay(date, selectedInvalidDays)
