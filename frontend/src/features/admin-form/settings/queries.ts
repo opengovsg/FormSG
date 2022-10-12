@@ -22,6 +22,6 @@ export const useAdminFormSettings = (): UseQueryResult<FormSettings> => {
   return useQuery(
     adminFormSettingsKeys.id(formId),
     () => getFormSettings(formId),
-    { staleTime: 10 * 60 * 1000 },
+    { staleTime: 0 },
   )
 }
