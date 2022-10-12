@@ -1,7 +1,7 @@
 import { chain, left, right } from 'fp-ts/lib/Either'
 import { flow } from 'fp-ts/lib/function'
 
-import { Country } from '../../../../../shared/constants/countries'
+import { CountryRegion } from 'shared/constants/countryRegion'
 import { ResponseValidator } from '../../../../types/field/utils/validation'
 import { ProcessedSingleAnswerResponse } from '../../../modules/submission/submission.types'
 
@@ -9,14 +9,14 @@ import { notEmptySingleAnswerResponse } from './common'
 import { isOneOfOptions } from './options'
 
 type CountryValidator = ResponseValidator<ProcessedSingleAnswerResponse>
-type CountryValidatorConstructor = () => CountryValidator
+type CountryRegionValidatorConstructor = () => CountryValidator
 
 /**
  * Returns a validation function
- * to check if country selection is one of the options.
+ * to check if country/region selection is one of the options.
  */
-const makeCountryValidator: CountryValidatorConstructor = () => (response) => {
-  const validOptions = Object.values(Country)
+const makeCountryRegionValidator: CountryRegionValidatorConstructor = () => (response) => {
+  const validOptions = Object.values(CountryRegion)
   const { answer } = response
   return isOneOfOptions(validOptions, answer)
     ? right(response)
@@ -24,7 +24,7 @@ const makeCountryValidator: CountryValidatorConstructor = () => (response) => {
 }
 
 /**
- * Returns a validation function for a country field when called.
+ * Returns a validation function for a country/region field when called.
  */
-export const constructCountryValidator: CountryValidatorConstructor = () =>
-  flow(notEmptySingleAnswerResponse, chain(makeCountryValidator()))
+export const constructCountryRegionValidator: CountryRegionValidatorConstructor = () =>
+  flow(notEmptySingleAnswerResponse, chain(makeCountryRegionValidator()))

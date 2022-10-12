@@ -1,7 +1,7 @@
 import { BasicField, MyInfoableFieldBase } from './base'
-import { Country } from '../../constants/countries'
+import { CountryRegion } from '../../constants/countryRegion'
 
-export interface CountryFieldBase extends MyInfoableFieldBase {
-  fieldType: BasicField.Country
-  fieldOptions: Country[]
+export interface CountryRegionFieldBase extends MyInfoableFieldBase {
+  fieldType: BasicField.CountryRegion
+  fieldOptions: CountryRegion[]
 }

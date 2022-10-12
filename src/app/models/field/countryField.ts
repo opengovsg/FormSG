@@ -1,9 +1,9 @@
 import { Schema } from 'mongoose'
 
-import { ICountryFieldSchema } from '../../../types'
+import { ICountryRegionFieldSchema } from '../../../types'
 
-const createCountryFieldSchema = () => {
-  return new Schema<ICountryFieldSchema>({})
+const createCountryRegionFieldSchema = () => {
+  return new Schema<ICountryRegionFieldSchema>({})
 }
 
-export default createCountryFieldSchema
+export default createCountryRegionFieldSchema
