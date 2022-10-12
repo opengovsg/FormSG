@@ -72,7 +72,7 @@ export const EndPageBlock = ({
           variant="solid"
           colorScheme={`theme-${colorTheme}`}
         >
-          {endPage.buttonText}
+          {endPage.buttonText || 'Submit another response'}
         </Button>
       </Box>
     </Flex>
