@@ -264,7 +264,7 @@ const ThenLogicInput = ({
       isReadOnly={isLoading}
       isRequired
       isInvalid={!!errors.show}
-      overflow="hidden"
+      minW={0}
     >
       <Controller
         name="show"
