@@ -42,7 +42,13 @@ export const DropdownItemTextHighlighter = ({
   )
 
   return (
-    <Text textStyle="body-1">
+    <Text
+      textStyle="body-1"
+      minWidth={0}
+      textOverflow="ellipsis"
+      whiteSpace="nowrap"
+      overflowX="hidden"
+    >
       <Highlighter
         searchWords={regexSearchWords}
         highlightTag={({ children }) => (

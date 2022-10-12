@@ -1,5 +1,6 @@
 import { Virtuoso } from 'react-virtuoso'
 import { List, ListItem } from '@chakra-ui/react'
+import { FloatingPortal } from '@floating-ui/react-dom-interactions'
 
 import { VIRTUAL_LIST_OVERSCAN_HEIGHT } from '../constants'
 import { useSelectContext } from '../SelectContext'
@@ -22,37 +23,39 @@ export const MultiSelectMenu = (): JSX.Element => {
   const { floatingRef, floatingStyles } = useSelectPopover()
 
   return (
-    <List
-      style={floatingStyles}
-      {...getMenuProps({
-        hidden: !isOpen,
-        ref: floatingRef,
-      })}
-      zIndex="dropdown"
-      sx={styles.list}
-    >
-      {isOpen && items.length > 0 && (
-        <Virtuoso
-          ref={virtualListRef}
-          data={items}
-          overscan={VIRTUAL_LIST_OVERSCAN_HEIGHT}
-          style={{ height: virtualListHeight }}
-          itemContent={(index, item) => {
-            return (
-              <MultiDropdownItem
-                key={`${itemToValue(item)}${index}`}
-                item={item}
-                index={index}
-              />
-            )
-          }}
-        />
-      )}
-      {isOpen && items.length === 0 ? (
-        <ListItem role="option" sx={styles.emptyItem}>
-          {nothingFoundLabel}
-        </ListItem>
-      ) : null}
-    </List>
+    <FloatingPortal>
+      <List
+        style={floatingStyles}
+        {...getMenuProps({
+          hidden: !isOpen,
+          ref: floatingRef,
+        })}
+        zIndex="dropdown"
+        sx={styles.list}
+      >
+        {isOpen && items.length > 0 && (
+          <Virtuoso
+            ref={virtualListRef}
+            data={items}
+            overscan={VIRTUAL_LIST_OVERSCAN_HEIGHT}
+            style={{ height: virtualListHeight }}
+            itemContent={(index, item) => {
+              return (
+                <MultiDropdownItem
+                  key={`${itemToValue(item)}${index}`}
+                  item={item}
+                  index={index}
+                />
+              )
+            }}
+          />
+        )}
+        {isOpen && items.length === 0 ? (
+          <ListItem role="option" sx={styles.emptyItem}>
+            {nothingFoundLabel}
+          </ListItem>
+        ) : null}
+      </List>
+    </FloatingPortal>
   )
 }
