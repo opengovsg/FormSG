@@ -327,6 +327,7 @@ export const EditDate = ({ field }: EditDateProps): JSX.Element => {
                   const customMaxDate = getValues(
                     'dateValidation.customMaxDate',
                   )
+
                   if (
                     !(
                       getValues('dateValidation.selectedDateValidation') ===

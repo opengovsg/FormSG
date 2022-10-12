@@ -68,13 +68,9 @@ export const DateField = ({
             ) || isDateAnInvalidDay(date, schema.invalidDays || [])
           )
         }
-        default:
-          isDateUnavailable = false
       }
 
-      if (isDateUnavailable) return true
-
-      return isDateAnInvalidDay(date, selectedInvalidDays)
+      return isDateUnavailable || isDateAnInvalidDay(date, selectedInvalidDays)
     },
     [schema.dateValidation, schema.invalidDays],
   )
