@@ -8,6 +8,7 @@ import {
   DrawerOverlay,
   Flex,
   ListItem,
+  Spacer,
   Text,
   UnorderedList,
   VisuallyHidden,
@@ -89,11 +90,7 @@ export const SectionSidebar = (): JSX.Element => {
     )
 
   return submissionData ? (
-    <Box
-      flex={1}
-      d={{ base: 'none', md: 'initial' }}
-      minW={sectionScrollData.length > 0 ? '20%' : undefined}
-    ></Box>
+    <Spacer />
   ) : (
     <Box
       as="nav"
