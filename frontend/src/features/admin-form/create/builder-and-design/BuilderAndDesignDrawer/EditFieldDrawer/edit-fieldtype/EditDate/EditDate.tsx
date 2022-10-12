@@ -22,9 +22,8 @@ import { hasAvailableDates } from '~shared/utils/date-validation'
 
 import {
   fromUtcToLocalDate,
+  getRemainingDaysOfTheWeek,
   isDateOutOfRange,
-  transformCheckedBoxesValueToInvalidDays,
-  transformInvalidDaysToCheckedBoxesValue,
 } from '~utils/date'
 import { createBaseValidationRules } from '~utils/fieldValidation'
 import Checkbox from '~components/Checkbox'
@@ -98,7 +97,7 @@ const transformDateFieldToEditForm = (field: DateFieldBase): EditDateInputs => {
    * array into the valid days array.
    */
   const nextInvalidDayOptions = field.invalidDays
-    ? transformInvalidDaysToCheckedBoxesValue(field.invalidDays)
+    ? getRemainingDaysOfTheWeek(field.invalidDays)
     : Object.values(InvalidDaysOptions)
 
   return {
@@ -147,9 +146,7 @@ const transformDateEditFormToField = (
      * be sent over and stored on the server. Therefore the need to transform
      * the valid days array into invalid days array.
      */
-    nextInvalidDayOptions = transformCheckedBoxesValueToInvalidDays(
-      inputs.invalidDays,
-    )
+    nextInvalidDayOptions = getRemainingDaysOfTheWeek(inputs.invalidDays)
   } else {
     nextInvalidDayOptions = []
   }
@@ -345,7 +342,7 @@ export const EditDate = ({ field }: EditDateProps): JSX.Element => {
                     hasAvailableDates(
                       customMinDate,
                       customMaxDate,
-                      transformCheckedBoxesValueToInvalidDays(val),
+                      getRemainingDaysOfTheWeek(val),
                     ) ||
                     'There are no available days based on your date selection'
                   )
