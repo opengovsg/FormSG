@@ -27,7 +27,7 @@ export const RESPONDENT_COOKIE_OPTIONS_WITH_EXPIRY = {
 
 export const ADMIN_COOKIE_OPTIONS = {
   httpOnly: false,
-  sameSite: 'strict' as const,
+  sameSite: 'lax' as const,
   secure: !config.isDev,
 }
 
