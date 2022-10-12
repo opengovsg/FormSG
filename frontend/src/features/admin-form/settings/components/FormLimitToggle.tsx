@@ -88,7 +88,6 @@ const FormLimitBlock = ({
       <NumberInput
         maxW="16rem"
         ref={inputRef}
-        // min={currentResponseCount + 1}
         inputMode="numeric"
         showSteppers={false}
         clampValueOnBlur
