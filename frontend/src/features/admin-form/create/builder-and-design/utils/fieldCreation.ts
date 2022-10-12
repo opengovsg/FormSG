@@ -62,7 +62,7 @@ export const getFieldCreationMeta = (fieldType: BasicField): FieldCreateDto => {
           customMin: null,
         },
         validateByValue: false,
-        fieldOptions: ['Option 1'],
+        fieldOptions: ['Option 1', 'Option 2'],
         othersRadioButton: false,
       }
     }
@@ -107,7 +107,7 @@ export const getFieldCreationMeta = (fieldType: BasicField): FieldCreateDto => {
       return {
         fieldType,
         ...baseMeta,
-        fieldOptions: ['Option 1'],
+        fieldOptions: ['Option 1', 'Option 2'],
       }
     }
     case BasicField.Image: {
@@ -151,7 +151,7 @@ export const getFieldCreationMeta = (fieldType: BasicField): FieldCreateDto => {
       return {
         fieldType,
         ...baseMeta,
-        fieldOptions: ['Option 1'],
+        fieldOptions: ['Option 1', 'Option 2'],
         othersRadioButton: false,
       }
     }
