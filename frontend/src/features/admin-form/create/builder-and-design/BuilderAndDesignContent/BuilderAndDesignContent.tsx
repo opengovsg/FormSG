@@ -7,13 +7,10 @@ import { useAdminFormSettings } from '~features/admin-form/settings/queries'
 
 import { DndPlaceholderProps } from '../types'
 import {
-  FieldBuilderState,
-  fieldBuilderStateSelector,
   setToInactiveSelector,
   useFieldBuilderStore,
 } from '../useFieldBuilderStore'
 
-import { EndPageView } from './EndPageView'
 import { FormBuilder } from './FormBuilder'
 
 interface BuilderAndDesignContentProps {
@@ -25,7 +22,6 @@ export const BuilderAndDesignContent = ({
 }: BuilderAndDesignContentProps): JSX.Element => {
   const { data: settings } = useAdminFormSettings()
 
-  const fieldBuilderState = useFieldBuilderStore(fieldBuilderStateSelector)
   const setFieldsToInactive = useFieldBuilderStore(setToInactiveSelector)
 
   useEffect(() => {
@@ -46,23 +42,7 @@ export const BuilderAndDesignContent = ({
             is able to handle any field changes.
           </InlineMessage>
         ) : null}
-        <EndPageView
-          display={
-            // Don't conditionally render EndPageView and FormBuilder because it
-            // is expensive and takes time.
-            fieldBuilderState === FieldBuilderState.EditingEndPage
-              ? 'flex'
-              : 'none'
-          }
-        />
-        <FormBuilder
-          placeholderProps={placeholderProps}
-          display={
-            fieldBuilderState === FieldBuilderState.EditingEndPage
-              ? 'none'
-              : 'flex'
-          }
-        />
+        <FormBuilder placeholderProps={placeholderProps} display="flex" />
       </Box>
     </Flex>
   )

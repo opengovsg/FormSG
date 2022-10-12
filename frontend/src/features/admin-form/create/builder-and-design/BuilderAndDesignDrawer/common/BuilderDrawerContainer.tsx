@@ -4,12 +4,12 @@ import { Stack, Text } from '@chakra-ui/react'
 
 import IconButton from '~components/IconButton'
 
+import { CreatePageDrawerCloseButton } from '../../../common/CreatePageDrawer'
 import { isDirtySelector, useDirtyFieldStore } from '../../useDirtyFieldStore'
 import {
   setToInactiveSelector,
   useFieldBuilderStore,
 } from '../../useFieldBuilderStore'
-import { CreatePageDrawerCloseButton } from '../CreatePageDrawerCloseButton'
 
 interface BuilderDrawerContainerProps {
   title: string

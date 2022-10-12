@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { Box, Flex, FlexProps, Stack } from '@chakra-ui/react'
+import { Box, Flex, Stack } from '@chakra-ui/react'
 
 import { FormAuthType, FormColorTheme, FormLogoState } from '~shared/types'
 
@@ -14,15 +14,13 @@ import {
 } from '~features/public-form/components/FormLogo'
 import { useBgColor } from '~features/public-form/components/PublicFormWrapper'
 
-import {
-  endPageDataSelector,
-  useEndPageBuilderStore,
-} from '../useEndPageBuilderStore'
-import { useDesignColorTheme } from '../utils/useDesignColorTheme'
+import { useDesignColorTheme } from '../builder-and-design/utils/useDesignColorTheme'
 
-export const EndPageView = ({ ...props }: FlexProps): JSX.Element => {
+import { dataSelector, useEndPageStore } from './useEndPageStore'
+
+export const EndPageContent = (): JSX.Element => {
   const { data: form, isLoading } = useAdminForm()
-  const endPageFromStore = useEndPageBuilderStore(endPageDataSelector)
+  const endPageFromStore = useEndPageStore(dataSelector)
 
   // When drawer is opened, store is populated. We always want the drawer settings
   // to be previewed, so when the store is populated, prioritize that setting.
@@ -51,14 +49,11 @@ export const EndPageView = ({ ...props }: FlexProps): JSX.Element => {
       mb={0}
       flex={1}
       bg="neutral.200"
-      // Using margin for margin collapse when there are inline messages above.
-      mt={{ base: 0, md: '1rem' }}
-      pt={{ base: 0, md: '1rem' }}
+      pt={{ base: 0, md: '2rem' }}
       pb={{ base: 0, md: '2rem' }}
       px={{ base: 0, md: '2rem' }}
       justify="center"
       overflow="auto"
-      {...props}
     >
       <Stack w="100%" bg="white">
         <FormBannerLogo
