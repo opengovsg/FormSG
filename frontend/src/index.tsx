@@ -1,5 +1,5 @@
+import 'inter-ui/inter.css'
 import 'focus-visible/dist/focus-visible.min.js'
-import './assets/fonts/inter.css'
 import './i18n/i18n'
 
 import * as React from 'react'

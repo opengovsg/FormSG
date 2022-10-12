@@ -28,7 +28,7 @@ import Toggle from '~components/Toggle'
 import { useCreateTabForm } from '~features/admin-form/create/builder-and-design/useCreateTabForm'
 import { getAttachmentSizeLimit } from '~features/admin-form/create/builder-and-design/utils/getAttachmentSizeLimit'
 
-import { DrawerContentContainer } from '../common/DrawerContentContainer'
+import { CreatePageDrawerContentContainer } from '../../../../../common'
 import { FormFieldDrawerActions } from '../common/FormFieldDrawerActions'
 import { EditFieldProps } from '../common/types'
 import { useEditFieldForm } from '../common/useEditFieldForm'
@@ -149,7 +149,7 @@ export const EditAttachment = ({ field }: EditAttachmentProps): JSX.Element => {
   }, [form, validateAttachmentSize])
 
   return (
-    <DrawerContentContainer>
+    <CreatePageDrawerContentContainer>
       <FormControl isRequired isReadOnly={isLoading} isInvalid={!!errors.title}>
         <FormLabel>Question</FormLabel>
         <Input autoFocus {...register('title', requiredValidationRule)} />
@@ -193,9 +193,7 @@ export const EditAttachment = ({ field }: EditAttachmentProps): JSX.Element => {
         />
       </FormControl>
       <InlineMessage useMarkdown>
-        {`View our [complete list](${ACCEPTED_FILETYPES_SPREADSHEET}) of accepted
-        file types. Please also read our [FAQ on email reliability](
-        ${GUIDE_EMAIL_RELIABILITY}) relating to unaccepted file types.`}
+        {`View our [complete list](${ACCEPTED_FILETYPES_SPREADSHEET}) of accepted file types. Please also read our [FAQ on email reliability](${GUIDE_EMAIL_RELIABILITY}) relating to unaccepted file types.`}
       </InlineMessage>
       <FormFieldDrawerActions
         isLoading={isLoading}
@@ -203,6 +201,6 @@ export const EditAttachment = ({ field }: EditAttachmentProps): JSX.Element => {
         handleClick={handleUpdateField}
         handleCancel={handleCancel}
       />
-    </DrawerContentContainer>
+    </CreatePageDrawerContentContainer>
   )
 }

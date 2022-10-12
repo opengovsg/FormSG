@@ -9,31 +9,28 @@ export const OSS_README =
 export const SINGPASS_FAQ = 'https://www.singpass.gov.sg/main/html/faq.html'
 
 // FormSG guide links
-export const FORM_GUIDE = 'https://go.gov.sg/form-guide'
-export const GUIDE_WEBHOOKS =
-  'https://guide.form.gov.sg/AdvancedGuide.html#webhooks'
-export const GUIDE_EMAIL_MODE =
-  'https://guide.form.gov.sg/AdvancedGuide.html#email-mode'
-export const GUIDE_STORAGE_MODE = 'https://go.gov.sg/form-what-is-storage-mode'
-export const GUIDE_FORM_LOGIC =
-  'https://guide.form.gov.sg/AdvancedGuide.html#form-logic'
+export const FORM_GUIDE = 'https://go.gov.sg/formsg-guides'
+export const GUIDE_WEBHOOKS = 'https://go.gov.sg/formsg-guide-webhooks'
+export const GUIDE_EMAIL_MODE = 'https://go.gov.sg/formsg-guide-email-mode'
+export const GUIDE_STORAGE_MODE = 'https://go.gov.sg/formsg-guide-storage-mode'
+export const GUIDE_FORM_LOGIC = 'https://go.gov.sg/formsg-guide-logic'
 export const GUIDE_SPCP_ESRVCID =
-  'https://guide.form.gov.sg/AdvancedGuide.html#singpass-corppass-and-myinfo'
+  'https://go.gov.sg/formsg-guide-singpass-myinfo'
 export const GUIDE_ENABLE_SPCP =
-  'https://guide.form.gov.sg/AdvancedGuide.html#how-do-you-enable-singpass-or-corppass'
-export const GUIDE_TWILIO =
-  'https://guide.form.gov.sg/AdvancedGuide.html#how-do-i-arrange-payment-for-verified-sms'
+  'https://go.gov.sg/formsg-guide-singpass-myinfo-enable'
+export const GUIDE_TWILIO = 'https://go.gov.sg/formsg-guide-verified-smses'
 export const GUIDE_ATTACHMENT_SIZE_LIMIT =
-  'https://guide.form.gov.sg/AdvancedGuide.html#how-do-i-increase-attachment-size-limit-and-what-if-there-are-many-attachments-for-my-form'
-export const GUIDE_E2EE =
-  'https://guide.form.gov.sg/AdvancedGuide.html#how-does-end-to-end-encryption-work'
+  'https://go.gov.sg/formsg-guide-attachment-size-increase'
+export const GUIDE_E2EE = 'https://go.gov.sg/formsg-guide-e2e'
 export const GUIDE_TRANSFER_OWNERSHIP =
-  'https://guide.form.gov.sg/AdvancedGuide.html#i-am-leaving-the-organisation-or-switching-over-to-a-new-email-how-do-i-transfer-ownership-of-my-forms'
-export const GUIDE_SECRET_KEY_LOSS = 'https://go.gov.sg/secretkeyloss'
+  'https://go.gov.sg/formsg-guide-transfer-ownership'
+export const GUIDE_SECRET_KEY_LOSS =
+  'https://go.gov.sg/formsg-guide-secret-key-loss'
 export const GUIDE_PREVENT_EMAIL_BOUNCE =
-  'https://go.gov.sg/form-prevent-bounce'
+  'https://go.gov.sg/formsg-guide-email-bounce'
 export const GUIDE_EMAIL_RELIABILITY =
-  'https://go.gov.sg/form-email-reliability'
+  'https://go.gov.sg/formsg-guide-email-reliability'
+export const GUIDE_PREFILL = 'https://go.gov.sg/formsg-guide-prefills'
 
 export const ACCEPTED_FILETYPES_SPREADSHEET = 'https://go.gov.sg/formsg-cwl'
 

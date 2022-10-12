@@ -3,6 +3,9 @@ import { Box, forwardRef, Text } from '@chakra-ui/react'
 
 import { FormColorTheme } from '~shared/types'
 
+import { useMdComponents } from '~hooks/useMdComponents'
+import { MarkdownText } from '~components/MarkdownText'
+
 import { SectionFieldContainerProps } from './SectionFieldContainer'
 
 export type SectionFieldProps = SectionFieldContainerProps
@@ -38,6 +41,14 @@ export const BaseSectionField = forwardRef<
   'div'
 >(({ schema, colorTheme = FormColorTheme.Blue, ...rest }, ref) => {
   const sectionColor = useSectionColor(colorTheme)
+  const mdComponents = useMdComponents({
+    styles: {
+      text: {
+        textStyle: 'body-1',
+        color: 'secondary.700',
+      },
+    },
+  })
 
   return (
     // id given so app can scrolled to this section.
@@ -54,14 +65,11 @@ export const BaseSectionField = forwardRef<
         {schema.title}
       </Text>
       {schema.description && (
-        <Text
-          textStyle="body-1"
-          color="secondary.700"
-          mt="1rem"
-          whiteSpace="break-spaces"
-        >
-          {schema.description}
-        </Text>
+        <Box mt="1rem">
+          <MarkdownText multilineBreaks components={mdComponents}>
+            {schema.description}
+          </MarkdownText>
+        </Box>
       )}
     </Box>
   )

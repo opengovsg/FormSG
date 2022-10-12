@@ -49,7 +49,7 @@ const Template: Story<StoryModalProps> = ({ bodyContent, ...args }) => {
         <ModalContent>
           <ModalCloseButton />
           <ModalHeader>Create workspace</ModalHeader>
-          <ModalBody whiteSpace="pre-line">
+          <ModalBody whiteSpace="pre-wrap">
             {bodyContent ?? generateLorem()}
           </ModalBody>
           <ModalFooter>

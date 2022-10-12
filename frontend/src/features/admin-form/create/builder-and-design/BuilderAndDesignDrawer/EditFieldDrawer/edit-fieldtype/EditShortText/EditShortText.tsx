@@ -10,6 +10,7 @@ import { extend, isEmpty, pick } from 'lodash'
 
 import { ShortTextFieldBase, TextSelectedValidation } from '~shared/types/field'
 
+import { GUIDE_PREFILL } from '~constants/links'
 import { createBaseValidationRules } from '~utils/fieldValidation'
 import { SingleSelect } from '~components/Dropdown'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
@@ -22,7 +23,7 @@ import { CopyButton } from '~templates/CopyButton'
 
 import { validateNumberInput } from '~features/admin-form/create/builder-and-design/utils/validateNumberInput'
 
-import { DrawerContentContainer } from '../common/DrawerContentContainer'
+import { CreatePageDrawerContentContainer } from '../../../../../common'
 import { FormFieldDrawerActions } from '../common/FormFieldDrawerActions'
 import { EditFieldProps } from '../common/types'
 import { useEditFieldForm } from '../common/useEditFieldForm'
@@ -151,7 +152,7 @@ export const EditShortText = ({ field }: EditShortTextProps): JSX.Element => {
   }, [clearErrors, setValue, watchedSelectedValidation])
 
   return (
-    <DrawerContentContainer>
+    <CreatePageDrawerContentContainer>
       <FormControl isRequired isReadOnly={isLoading} isInvalid={!!errors.title}>
         <FormLabel>Question</FormLabel>
         <Input autoFocus {...register('title', requiredValidationRule)} />
@@ -214,7 +215,7 @@ export const EditShortText = ({ field }: EditShortTextProps): JSX.Element => {
         <Toggle
           {...register('allowPrefill')}
           label="Enable pre-fill"
-          description="Use the Field ID to pre-populate this field for your users via an URL. [Learn how](https://go.gov.sg/form-prefill)"
+          description={`Use the Field ID to pre-populate this field for your users via an URL. [Learn how](${GUIDE_PREFILL})`}
         />
         {watchAllowPrefill ? (
           <InputGroup mt="0.5rem">
@@ -243,6 +244,6 @@ export const EditShortText = ({ field }: EditShortTextProps): JSX.Element => {
         handleClick={handleUpdateField}
         handleCancel={handleCancel}
       />
-    </DrawerContentContainer>
+    </CreatePageDrawerContentContainer>
   )
 }

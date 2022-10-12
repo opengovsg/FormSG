@@ -126,7 +126,7 @@ export const BillCharges = ({
     >
       <Stack spacing="2rem">
         <Stack spacing="0.5rem">
-          <Text as="h2" textStyle="h2" whiteSpace="pre-line">
+          <Text as="h2" textStyle="h2" whiteSpace="pre-wrap">
             Bill charges
           </Text>
           <Text>Export monthly bill charges</Text>

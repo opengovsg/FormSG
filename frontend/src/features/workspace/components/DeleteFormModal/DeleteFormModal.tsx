@@ -63,7 +63,7 @@ export const DeleteFormModal = ({
             Delete form
           </Container>
         </ModalHeader>
-        <ModalBody whiteSpace="pre-line">
+        <ModalBody whiteSpace="pre-wrap">
           <Text color="secondary.500">
             You will lose all responses and feedback for the following form
             permanently. Are you sure you want to delete the form?

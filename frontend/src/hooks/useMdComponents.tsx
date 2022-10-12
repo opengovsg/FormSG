@@ -35,18 +35,31 @@ export const useMdComponents = ({
   overrides = {},
 }: UseMdComponentsProps = {}): Components => {
   const textStyles = useMemo(
-    () => ({ ...(styles?.text ? { sx: styles.text } : {}) }),
+    () => ({
+      sx: {
+        whiteSpace: 'pre-wrap',
+        ...(styles.text ?? {}),
+      },
+    }),
     [styles.text],
   )
 
   const linkStyles = useMemo(
-    () => ({ ...(styles.link ? { sx: styles.link } : {}) }),
+    () => ({
+      sx: {
+        whiteSpace: 'pre-wrap',
+        ...(styles.link ?? {}),
+      },
+    }),
     [styles.link],
   )
 
   const listStyles = useMemo(
     () => ({
-      ...(styles?.list ? { sx: styles.list } : {}),
+      sx: {
+        whiteSpace: 'pre-wrap',
+        ...(styles.list ?? {}),
+      },
     }),
     [styles.list],
   )

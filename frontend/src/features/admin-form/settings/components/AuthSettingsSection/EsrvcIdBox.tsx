@@ -1,6 +1,5 @@
 import { useCallback, useMemo } from 'react'
 import { useForm } from 'react-hook-form'
-import ReactMarkdown from 'react-markdown'
 import {
   Flex,
   FormControl,
@@ -17,6 +16,7 @@ import { GUIDE_ENABLE_SPCP } from '~constants/links'
 import { useMdComponents } from '~hooks/useMdComponents'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import Input from '~components/Input'
+import { MarkdownText } from '~components/MarkdownText'
 import Spinner from '~components/Spinner'
 
 import { useMutateFormSettings } from '../../mutations'
@@ -82,9 +82,9 @@ export const EsrvcIdBox = ({
   return (
     <form onSubmit={onSubmit} onBlur={handleBlur}>
       <Stack ml="2.75rem" mb="1.25rem">
-        <ReactMarkdown components={mdComponents}>
+        <MarkdownText components={mdComponents}>
           {renderedHelperText}
-        </ReactMarkdown>
+        </MarkdownText>
         <VisuallyHidden>
           <FormLabel htmlFor="esrvcId">e-service ID:</FormLabel>
         </VisuallyHidden>

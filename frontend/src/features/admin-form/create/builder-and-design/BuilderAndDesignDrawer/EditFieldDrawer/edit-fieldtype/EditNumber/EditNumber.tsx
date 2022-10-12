@@ -16,7 +16,7 @@ import Toggle from '~components/Toggle'
 
 import { validateNumberInput } from '~features/admin-form/create/builder-and-design/utils/validateNumberInput'
 
-import { DrawerContentContainer } from '../common/DrawerContentContainer'
+import { CreatePageDrawerContentContainer } from '../../../../../common'
 import { FormFieldDrawerActions } from '../common/FormFieldDrawerActions'
 import { EditFieldProps } from '../common/types'
 import { useEditFieldForm } from '../common/useEditFieldForm'
@@ -138,7 +138,7 @@ export const EditNumber = ({ field }: EditNumberProps): JSX.Element => {
   }, [clearErrors, setValue, watchedSelectedValidation])
 
   return (
-    <DrawerContentContainer>
+    <CreatePageDrawerContentContainer>
       <FormControl isRequired isReadOnly={isLoading} isInvalid={!!errors.title}>
         <FormLabel>Question</FormLabel>
         <Input autoFocus {...register('title', requiredValidationRule)} />
@@ -203,6 +203,6 @@ export const EditNumber = ({ field }: EditNumberProps): JSX.Element => {
         handleClick={handleUpdateField}
         handleCancel={handleCancel}
       />
-    </DrawerContentContainer>
+    </CreatePageDrawerContentContainer>
   )
 }

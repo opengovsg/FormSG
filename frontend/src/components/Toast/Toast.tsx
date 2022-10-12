@@ -1,6 +1,5 @@
 import { useMemo } from 'react'
 import { BiX } from 'react-icons/bi'
-import ReactMarkdown from 'react-markdown'
 import {
   Alert,
   AlertDescription,
@@ -14,6 +13,7 @@ import {
 
 import { BxsCheckCircle, BxsErrorCircle } from '~assets/icons'
 import { useMdComponents } from '~hooks/useMdComponents'
+import { MarkdownText } from '~components/MarkdownText'
 
 export type ToastStatus = 'danger' | 'success' | 'warning'
 
@@ -64,9 +64,7 @@ export const Toast = ({
     // not a string, return description as is.
     if (!description || !useMarkdown || typeof description !== 'string')
       return description
-    return (
-      <ReactMarkdown components={mdComponents}>{description}</ReactMarkdown>
-    )
+    return <MarkdownText components={mdComponents}>{description}</MarkdownText>
   }, [description, mdComponents, useMarkdown])
 
   const titleComponent = useMemo(() => {
@@ -74,7 +72,7 @@ export const Toast = ({
     // string, return title as is.
     if (!title || !useMarkdown || typeof title !== 'string') return title
 
-    return <ReactMarkdown components={mdComponents}>{title}</ReactMarkdown>
+    return <MarkdownText components={mdComponents}>{title}</MarkdownText>
   }, [title, mdComponents, useMarkdown])
 
   return (

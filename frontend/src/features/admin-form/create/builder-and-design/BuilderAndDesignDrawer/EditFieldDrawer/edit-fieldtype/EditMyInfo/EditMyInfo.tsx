@@ -12,7 +12,7 @@ import {
   useFieldBuilderStore,
 } from '~features/admin-form/create/builder-and-design/useFieldBuilderStore'
 
-import { DrawerContentContainer } from '../common/DrawerContentContainer'
+import { CreatePageDrawerContentContainer } from '../../../../../common'
 import { FormFieldDrawerActions } from '../common/FormFieldDrawerActions'
 import { EditFieldProps } from '../common/types'
 import { useEditFieldForm } from '../common/useEditFieldForm'
@@ -45,7 +45,7 @@ export const EditMyInfo = ({ field }: EditMyInfoProps): JSX.Element => {
     })
 
   return (
-    <DrawerContentContainer>
+    <CreatePageDrawerContentContainer>
       <VStack align="flex-start">
         <Text textStyle="subhead-1">Data Source</Text>
         {extendedField.dataSource.map((dataSource, idx) => (
@@ -92,6 +92,6 @@ export const EditMyInfo = ({ field }: EditMyInfoProps): JSX.Element => {
           handleCancel={handleCancel}
         />
       )}
-    </DrawerContentContainer>
+    </CreatePageDrawerContentContainer>
   )
 }

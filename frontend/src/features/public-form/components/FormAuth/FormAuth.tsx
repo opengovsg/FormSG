@@ -75,7 +75,7 @@ export const FormAuth = ({ authType }: FormAuthProps): JSX.Element => {
           textStyle="body-2"
           color="secondary.500"
           textAlign="center"
-          whiteSpace="pre-line"
+          whiteSpace="pre-wrap"
         >
           {displayedInfo.helpText}
         </Text>

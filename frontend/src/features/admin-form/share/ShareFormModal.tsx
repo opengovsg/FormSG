@@ -104,7 +104,7 @@ export const ShareFormModal = ({
       <ModalContent>
         <ModalCloseButton />
         <ModalHeader color="secondary.700">Share form</ModalHeader>
-        <ModalBody whiteSpace="pre-line">
+        <ModalBody whiteSpace="pre-wrap">
           <Stack spacing="1rem" pb="2rem">
             {isFormPrivate ? (
               <InlineMessage variant="warning">

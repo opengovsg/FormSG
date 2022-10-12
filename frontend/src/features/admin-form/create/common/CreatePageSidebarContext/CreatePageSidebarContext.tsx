@@ -7,10 +7,10 @@ import {
   useMemo,
   useState,
 } from 'react'
-import { useMeasure } from 'react-use'
 import { UseMeasureRef } from 'react-use/lib/useMeasure'
 
 import { useIsMobile } from '~hooks/useIsMobile'
+import { useMeasure } from '~hooks/useMeasure'
 
 import { FieldListTabIndex } from '../../builder-and-design/constants'
 import {
@@ -29,6 +29,7 @@ export enum DrawerTabs {
   Builder,
   Design,
   Logic,
+  EndPage,
 }
 
 type CreatePageSidebarContextProps = {
@@ -39,6 +40,7 @@ type CreatePageSidebarContextProps = {
   handleBuilderClick: (shouldBePending: boolean) => void
   handleDesignClick: (shouldBePending: boolean) => void
   handleLogicClick: (shouldBePending: boolean) => void
+  handleEndpageClick: (shouldBePending: boolean) => void
   handleClose: (shouldBePending: boolean) => void
   isDrawerOpen: boolean
   fieldListTabIndex: FieldListTabIndex
@@ -133,6 +135,12 @@ export const useCreatePageSidebarContext =
       [setActiveOrPendingTab],
     )
 
+    const handleEndpageClick = useCallback(
+      (shouldBePending: boolean) =>
+        setActiveOrPendingTab(DrawerTabs.EndPage, shouldBePending),
+      [setActiveOrPendingTab],
+    )
+
     const handleClose = useCallback(
       (shouldBePending: boolean) => {
         setActiveOrPendingTab(null, shouldBePending)
@@ -160,6 +168,7 @@ export const useCreatePageSidebarContext =
       handleBuilderClick,
       handleDesignClick,
       handleLogicClick,
+      handleEndpageClick,
       handleClose,
       fieldListTabIndex,
       setFieldListTabIndex,

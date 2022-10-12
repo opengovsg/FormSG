@@ -14,9 +14,9 @@ import Input from '~components/Input'
 import Textarea from '~components/Textarea'
 import Toggle from '~components/Toggle'
 
+import { CreatePageDrawerContentContainer } from '../../../../../common'
 import { useCreateTabForm } from '../../../../useCreateTabForm'
 import { SPLIT_TEXTAREA_TRANSFORM } from '../common/constants'
-import { DrawerContentContainer } from '../common/DrawerContentContainer'
 import { FormFieldDrawerActions } from '../common/FormFieldDrawerActions'
 import { EditFieldProps } from '../common/types'
 import { useEditFieldForm } from '../common/useEditFieldForm'
@@ -148,9 +148,14 @@ export const EditEmail = ({ field }: EditEmailProps): JSX.Element => {
     () => form?.responseMode !== FormResponseMode.Encrypt,
     [form],
   )
+  const pdfResponseToggleDescription = useMemo(() => {
+    if (!isPdfResponseEnabled) {
+      return 'For security reasons, PDF responses are not included in email confirmations for Storage mode forms'
+    }
+  }, [isPdfResponseEnabled])
 
   return (
-    <DrawerContentContainer>
+    <CreatePageDrawerContentContainer>
       <FormControl isRequired isReadOnly={isLoading} isInvalid={!!errors.title}>
         <FormLabel>Question</FormLabel>
         <Input autoFocus {...register('title', requiredValidationRule)} />
@@ -208,6 +213,7 @@ export const EditEmail = ({ field }: EditEmailProps): JSX.Element => {
         <FormControl isReadOnly={isLoading}>
           <Toggle
             {...register('autoReplyOptions.hasAutoReply')}
+            description="Customise an email acknowledgement to respondents"
             label="Email confirmation"
           />
         </FormControl>
@@ -239,6 +245,7 @@ export const EditEmail = ({ field }: EditEmailProps): JSX.Element => {
               <Toggle
                 {...register('autoReplyOptions.includeFormSummary')}
                 label="Include PDF response"
+                description={pdfResponseToggleDescription}
                 isDisabled={!isPdfResponseEnabled}
               />
             </FormControl>
@@ -251,6 +258,6 @@ export const EditEmail = ({ field }: EditEmailProps): JSX.Element => {
         handleClick={handleUpdateField}
         handleCancel={handleCancel}
       />
-    </DrawerContentContainer>
+    </CreatePageDrawerContentContainer>
   )
 }

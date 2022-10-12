@@ -3,7 +3,9 @@ import { Box, Flex, Stack, Text, VisuallyHidden } from '@chakra-ui/react'
 
 import { FormColorTheme, FormDto } from '~shared/types/form'
 
+import { useMdComponents } from '~hooks/useMdComponents'
 import Button from '~components/Button'
+import { MarkdownText } from '~components/MarkdownText'
 
 import { SubmissionData } from '~features/public-form/PublicFormContext'
 
@@ -29,6 +31,15 @@ export const EndPageBlock = ({
     }
   }, [focusOnMount])
 
+  const mdComponents = useMdComponents({
+    styles: {
+      text: {
+        textStyle: 'subhead-1',
+        color: 'secondary.500',
+      },
+    },
+  })
+
   const submittedAriaText = useMemo(() => {
     if (formTitle) {
       return `You have successfully submitted your response for ${formTitle}.`
@@ -48,13 +59,9 @@ export const EndPageBlock = ({
           </Text>
         </Box>
         {endPage.paragraph ? (
-          <Text
-            color="secondary.500"
-            textStyle="subhead-1"
-            whiteSpace="pre-line"
-          >
+          <MarkdownText components={mdComponents}>
             {endPage.paragraph}
-          </Text>
+          </MarkdownText>
         ) : null}
         <Text textColor="secondary.300">Response ID: {submissionData.id}</Text>
       </Stack>

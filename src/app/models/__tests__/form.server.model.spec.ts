@@ -74,7 +74,7 @@ const FORM_DEFAULTS = {
   },
   endPage: {
     title: 'Thank you for filling out the form.',
-    buttonText: 'Submit another form',
+    buttonText: 'Submit another response',
   },
   hasCaptcha: true,
   form_fields: [],
@@ -1589,7 +1589,7 @@ describe('Form Model', () => {
           endPage: {
             ...updatedEndPage,
             // Defaults should be populated and returned
-            buttonText: 'Submit another form',
+            buttonText: 'Submit another response',
             title: 'Thank you for filling out the form.',
           },
         })

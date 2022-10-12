@@ -120,7 +120,7 @@ export const SaveSecretKeyScreen = ({
 
   return (
     <>
-      <ModalBody whiteSpace="pre-line">
+      <ModalBody whiteSpace="pre-wrap">
         <Container maxW="42.5rem" p={0}>
           <Box
             bg="white"

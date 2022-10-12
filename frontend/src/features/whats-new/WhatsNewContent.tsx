@@ -1,10 +1,9 @@
 import { useMemo } from 'react'
-import ReactMarkdown from 'react-markdown'
 import { Box, Image, Text } from '@chakra-ui/react'
 import { format } from 'date-fns'
-import gfm from 'remark-gfm'
 
 import { useMdComponents } from '~hooks/useMdComponents'
+import { MarkdownText } from '~components/MarkdownText'
 import { LottieAnimation } from '~templates/LottieAnimation'
 
 import { FeatureUpdateImage } from './FeatureUpdateList'
@@ -64,9 +63,7 @@ export const WhatsNewContent = ({
       <Text as="h4" textStyle="h4" mb="0.5rem" mt="1rem" color="secondary.700">
         {title}
       </Text>
-      <ReactMarkdown components={mdComponents} remarkPlugins={[gfm]}>
-        {description}
-      </ReactMarkdown>
+      <MarkdownText components={mdComponents}>{description}</MarkdownText>
       <Box mt="2rem" role="presentation">
         {renderedImage}
       </Box>

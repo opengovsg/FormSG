@@ -9,20 +9,25 @@ interface FeatureTourStepAttributes {
 export const FEATURE_TOUR: FeatureTourStepAttributes[] = [
   {
     id: 'feature_tour_first_step',
-    title: 'Build your form',
-    content: 'Create forms easily by dragging and dropping fields',
+    title: 'Add fields',
+    content: 'Add fields to your form by dragging and dropping them.',
   },
   {
     id: 'feature_tour_second_step',
-    title: 'Design your form',
+    title: 'Edit header and instructions',
     content:
-      'Change your agency logo, theme colours, layout and add Instructions for your page',
+      'Change your agency logo, theme colours, layout and add instructions to your form.',
   },
   {
     id: 'feature_tour_third_step',
-    title: 'Add Logic to your form',
+    title: 'Add logic',
+    content: 'Decide what fields or sections a user sees based on their input.',
+  },
+  {
+    id: 'feature_tour_fourth_step',
+    title: 'Edit Thank you page',
     content:
-      "Personalise your user's experience by showing fields and sections, or disabling submissions based on their input",
+      'Customise your thank you message and add follow-up instructions that users can see after they submit your form.',
   },
 ]
 
