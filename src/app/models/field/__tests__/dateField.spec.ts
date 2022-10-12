@@ -121,7 +121,7 @@ describe('models.fields.dateField', () => {
         responseMode: FormResponseMode.Encrypt,
         field: mockDateField,
       }),
-    ).rejects.toThrowError(mongoose.Error.ValidationError)
+    ).rejects.toThrow(mongoose.Error.ValidationError)
   })
 
   it('should throw an error when an array with null value is assigned to invalidDays attribute array', async () => {
@@ -141,7 +141,7 @@ describe('models.fields.dateField', () => {
         responseMode: FormResponseMode.Encrypt,
         field: mockDateField,
       }),
-    ).rejects.toThrowError(mongoose.Error.ValidationError)
+    ).rejects.toThrow(mongoose.Error.ValidationError)
   })
 
   it('should throw an error when an array with null value and valid values are assigned to invalidDays attribute array', async () => {
@@ -166,6 +166,6 @@ describe('models.fields.dateField', () => {
         responseMode: FormResponseMode.Encrypt,
         field: mockDateField,
       }),
-    ).rejects.toThrowError(mongoose.Error.ValidationError)
+    ).rejects.toThrow(mongoose.Error.ValidationError)
   })
 })
