@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback } from 'react'
 import { useMutation, useQueryClient } from 'react-query'
 import { useParams } from 'react-router-dom'
 
@@ -12,7 +12,6 @@ import { adminFormKeys } from '~features/admin-form/common/queries'
 import { createSingleFormField } from '../UpdateFormFieldService'
 import {
   FieldBuilderState,
-  stateDataSelector,
   updateEditStateSelector,
   useFieldBuilderStore,
 } from '../useFieldBuilderStore'
@@ -25,15 +24,7 @@ export const useCreateFormField = () => {
   const { formId } = useParams()
   if (!formId) throw new Error('No formId provided')
 
-  const { stateData, updateEditState } = useFieldBuilderStore(
-    useCallback(
-      (state) => ({
-        stateData: stateDataSelector(state),
-        updateEditState: updateEditStateSelector(state),
-      }),
-      [],
-    ),
-  )
+  const updateEditState = useFieldBuilderStore(updateEditStateSelector)
 
   const queryClient = useQueryClient()
   const toast = useToast({ status: 'success', isClosable: true })
@@ -42,7 +33,10 @@ export const useCreateFormField = () => {
   const handleSuccess = useCallback(
     (newField: FormFieldDto) => {
       toast.closeAll()
-      if (stateData.state !== FieldBuilderState.CreatingField) {
+      const fieldBuilderStore = useFieldBuilderStore.getState()
+      if (
+        fieldBuilderStore.stateData.state !== FieldBuilderState.CreatingField
+      ) {
         toast({
           status: 'warning',
           description:
@@ -59,13 +53,21 @@ export const useCreateFormField = () => {
         // Should not happen, should not be able to update field if there is no
         // existing data.
         if (!oldForm) throw new Error('Query should have been set')
-        oldForm.form_fields.splice(stateData.insertionIndex, 0, newField)
+        if (
+          fieldBuilderStore.stateData.state === FieldBuilderState.CreatingField
+        ) {
+          oldForm.form_fields.splice(
+            fieldBuilderStore.stateData.insertionIndex,
+            0,
+            newField,
+          )
+        }
         return oldForm
       })
       // Switch from creation to editing
       updateEditState(newField)
     },
-    [adminFormKey, stateData, queryClient, updateEditState, toast],
+    [toast, queryClient, adminFormKey, updateEditState],
   )
 
   const handleError = useCallback(
@@ -79,11 +81,12 @@ export const useCreateFormField = () => {
     [toast],
   )
 
-  const insertionIndex = useMemo(() => {
-    if (stateData.state === FieldBuilderState.CreatingField) {
-      return stateData.insertionIndex
+  const getInsertionIndex = () => {
+    const fieldBuilderStore = useFieldBuilderStore.getState()
+    if (fieldBuilderStore.stateData.state === FieldBuilderState.CreatingField) {
+      return fieldBuilderStore.stateData.insertionIndex
     }
-  }, [stateData])
+  }
 
   return {
     createFieldMutation: useMutation(
@@ -91,7 +94,7 @@ export const useCreateFormField = () => {
         createSingleFormField({
           formId,
           createFieldBody,
-          insertionIndex,
+          insertionIndex: getInsertionIndex(),
         }),
       {
         onSuccess: handleSuccess,
