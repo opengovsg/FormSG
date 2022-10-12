@@ -6,7 +6,7 @@ import { Meta, Story } from '@storybook/react'
 import { get } from 'lodash'
 import difference from 'lodash/difference'
 
-import { viewports } from '~utils/storybook'
+import { fixedHeightDecorator, viewports } from '~utils/storybook'
 import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
@@ -66,7 +66,7 @@ const INITIAL_COMBOBOX_ITEMS: ComboboxItem[] = [
 export default {
   title: 'Components/MultiSelect',
   component: MultiSelect,
-  decorators: [],
+  decorators: [fixedHeightDecorator('300px')],
   args: {
     items: INITIAL_COMBOBOX_ITEMS,
     values: [],

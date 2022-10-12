@@ -50,10 +50,11 @@ export const MultiDropdownItem = ({
         index,
         disabled: isDisabled,
       })}
+      title={label}
     >
-      <Stack direction="row" spacing="1rem">
+      <Stack direction="row" spacing="1rem" overflowX="auto">
         <ItemCheckboxIcon isChecked={isSelected} />
-        <Flex flexDir="column">
+        <Flex flexDir="column" minW={0}>
           <Stack direction="row" spacing="0.5rem" align="center">
             {icon ? <Icon as={icon} sx={styles.icon} /> : null}
             <DropdownItemTextHighlighter
