@@ -84,6 +84,7 @@ const AdminNavBarLink = ({ MobileIcon, href, label }: AdminNavBarLinkProps) => {
       color="secondary.500"
       href={href}
       aria-label={label}
+      target="_blank"
     >
       {label}
     </Link>

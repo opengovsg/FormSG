@@ -55,7 +55,7 @@ export const EndPageContent = (): JSX.Element => {
       justify="center"
       overflow="auto"
     >
-      <Stack w="100%" bg="white">
+      <Stack w="100%" h="fit-content" bg="white">
         <FormBannerLogo
           isLoading={isLoading}
           {...formBannerLogoProps}
