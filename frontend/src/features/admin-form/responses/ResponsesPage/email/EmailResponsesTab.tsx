@@ -22,7 +22,7 @@ export const EmailResponsesTab = (): JSX.Element => {
       <Stack spacing="2rem">
         <EmailResponsesSvgr />
         <Skeleton isLoaded={!isFormResponsesLoading} w="fit-content">
-          <Text as="h2" textStyle="h2" whiteSpace="pre-line">
+          <Text as="h2" textStyle="h2" whiteSpace="pre-wrap">
             <Text color="primary.500" as="span">
               {responsesCount?.toLocaleString() ?? '-'}
             </Text>

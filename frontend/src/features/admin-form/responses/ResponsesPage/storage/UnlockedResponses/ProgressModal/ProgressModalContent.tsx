@@ -26,7 +26,7 @@ export const ProgressModalContent = ({
   return (
     <>
       <ModalHeader color="secondary.700">Downloading...</ModalHeader>
-      <ModalBody whiteSpace="pre-line" color="secondary.500" textStyle="body-2">
+      <ModalBody whiteSpace="pre-wrap" color="secondary.500" textStyle="body-2">
         {children}
         <Text textStyle="subhead-1" mb="0.5rem">
           {downloadPercentage}% completed

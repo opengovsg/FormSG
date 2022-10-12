@@ -131,7 +131,7 @@ export const SecretKeyVerification = (): JSX.Element => {
       <Stack spacing="2rem">
         <FormActivationSvg />
         <Skeleton isLoaded={!isLoading} w="fit-content">
-          <Text as="h2" textStyle="h2" whiteSpace="pre-line">
+          <Text as="h2" textStyle="h2" whiteSpace="pre-wrap">
             <Text color="primary.500" as="span">
               {totalResponsesCount?.toLocaleString() ?? '-'}
             </Text>

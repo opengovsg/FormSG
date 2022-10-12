@@ -42,7 +42,7 @@ export const BillingForm = ({
       <Stack spacing="2rem">
         <BillingSvg />
         <Skeleton isLoaded={true} w="fit-content">
-          <Text as="h2" textStyle="h2" whiteSpace="pre-line">
+          <Text as="h2" textStyle="h2" whiteSpace="pre-wrap">
             Bill charges
           </Text>
         </Skeleton>

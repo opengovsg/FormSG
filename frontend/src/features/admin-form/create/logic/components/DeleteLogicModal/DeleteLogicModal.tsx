@@ -59,7 +59,7 @@ export const DeleteLogicModal = ({
       <ModalContent>
         <ModalCloseButton isDisabled={deleteLogicMutation.isLoading} />
         <ModalHeader color="secondary.700">Delete logic</ModalHeader>
-        <ModalBody whiteSpace="pre-line">
+        <ModalBody whiteSpace="pre-wrap">
           <Text textStyle="body-2" color="secondary.500">
             Are you sure you want to delete this logic? This action is not
             reversible.

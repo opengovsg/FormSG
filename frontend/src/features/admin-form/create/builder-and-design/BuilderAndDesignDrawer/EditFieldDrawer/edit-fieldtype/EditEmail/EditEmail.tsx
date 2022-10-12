@@ -148,6 +148,11 @@ export const EditEmail = ({ field }: EditEmailProps): JSX.Element => {
     () => form?.responseMode !== FormResponseMode.Encrypt,
     [form],
   )
+  const pdfResponseToggleDescription = useMemo(() => {
+    if (!isPdfResponseEnabled) {
+      return 'For security reasons, PDF responses are not included in email confirmations for Storage mode forms'
+    }
+  }, [isPdfResponseEnabled])
 
   return (
     <CreatePageDrawerContentContainer>
@@ -208,6 +213,7 @@ export const EditEmail = ({ field }: EditEmailProps): JSX.Element => {
         <FormControl isReadOnly={isLoading}>
           <Toggle
             {...register('autoReplyOptions.hasAutoReply')}
+            description="Customise an email acknowledgement to respondents"
             label="Email confirmation"
           />
         </FormControl>
@@ -239,6 +245,7 @@ export const EditEmail = ({ field }: EditEmailProps): JSX.Element => {
               <Toggle
                 {...register('autoReplyOptions.includeFormSummary')}
                 label="Include PDF response"
+                description={pdfResponseToggleDescription}
                 isDisabled={!isPdfResponseEnabled}
               />
             </FormControl>

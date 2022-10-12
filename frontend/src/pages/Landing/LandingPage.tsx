@@ -1,5 +1,4 @@
 import { BiLockAlt, BiMailSend, BiRightArrowAlt } from 'react-icons/bi'
-import ReactMarkdown from 'react-markdown'
 import { Link as ReactLink } from 'react-router-dom'
 import {
   Accordion,
@@ -45,6 +44,7 @@ import { useIsMobile } from '~hooks/useIsMobile'
 import { useMdComponents } from '~hooks/useMdComponents'
 import Button from '~components/Button'
 import Link from '~components/Link'
+import { MarkdownText } from '~components/MarkdownText'
 import { Tab } from '~components/Tabs'
 import { LottieAnimation } from '~templates/LottieAnimation'
 
@@ -330,10 +330,10 @@ export const LandingPage = (): JSX.Element => {
             mt="1rem"
             color="secondary.500"
             allowToggle
-            whiteSpace="pre-line"
+            whiteSpace="pre-wrap"
           >
             <HelpAccordionItem title="What happens if I lose my Secret Key?">
-              <ReactMarkdown components={mdComponents}>
+              <MarkdownText components={mdComponents}>
                 {dedent`
                   If you have lost your secret key, take these steps immediately:
 
@@ -349,13 +349,13 @@ export const LandingPage = (): JSX.Element => {
 
                   Without your secret key, you will not be able to access your existing response data. Additionally, it's not possible for us to recover your lost secret key or response data on your behalf. This is because Form does not retain your secret key or any other way to unlock your encrypted data - the only way to ensure response data is truly private to agencies only. This is an important security benefit, because that means even if our server were to be compromised, an attacker would never be able to unlock your encrypted responses.
                 `}
-              </ReactMarkdown>
+              </MarkdownText>
               <FeatureLink mt="1rem" href={GUIDE_SECRET_KEY_LOSS}>
                 Source
               </FeatureLink>
             </HelpAccordionItem>
             <HelpAccordionItem title="How do I increase attachment size limit?">
-              <ReactMarkdown components={mdComponents}>
+              <MarkdownText components={mdComponents}>
                 {dedent`
                   The current size limit is 7 MB for email mode forms, and 20 MB for storage mode forms.
 
@@ -363,31 +363,31 @@ export const LandingPage = (): JSX.Element => {
 
                   Because the smallest unit you can attach per attachment field is 1 MB, you can have a max of 7 attachments on your form in email mode, and a max of 20 attachments in storage mode. If your user has to submit more than 7  documents in email mode (or more than 20 in storage mode), you may create just one attachment field of 7 or 20 MB in their respective modes, and advise your user to zip documents up and submit as one attachment.
                 `}
-              </ReactMarkdown>
+              </MarkdownText>
               <FeatureLink mt="1rem" href={GUIDE_ATTACHMENT_SIZE_LIMIT}>
                 Source
               </FeatureLink>
             </HelpAccordionItem>
             <HelpAccordionItem title="How does end-to-end encryption work?">
-              <ReactMarkdown components={mdComponents}>
+              <MarkdownText components={mdComponents}>
                 {dedent`
                 When a respondent submits a response, response data is encrypted in the respondent's browser before being sent to our servers for storage. This means that by the time Form's servers receive responses, they have already been scrambled and are stored in this unreadable form. Your response data remains in this encrypted state until you decrypt your responses with your secret key, transforming them into a readable format. 
 
                 The benefit of end-to-end encryption is that response data enters and remains in Form's servers in an encrypted state. This ensures that even if our servers are compromised by an attack, attackers will still not be able to decrypt and view your response data, as they do not possess your secret key.  
               `}
-              </ReactMarkdown>
+              </MarkdownText>
               <FeatureLink mt="1rem" href={GUIDE_E2EE}>
                 Source
               </FeatureLink>
             </HelpAccordionItem>
             <HelpAccordionItem title="How do I transfer ownership of my forms?">
-              <ReactMarkdown components={mdComponents}>
+              <MarkdownText components={mdComponents}>
                 {dedent`
                   You can transfer ownership on the top right hand corner of each form by clicking the Add Collaborator button. 
 
                   Note that you might not need to transfer ownership of your form. You may simply add your colleague as a collaborator. Collaborators have the same rights as form creators, except they cannot delete the form.
                 `}
-              </ReactMarkdown>
+              </MarkdownText>
               <FeatureLink mt="1rem" href={GUIDE_TRANSFER_OWNERSHIP}>
                 Source
               </FeatureLink>
