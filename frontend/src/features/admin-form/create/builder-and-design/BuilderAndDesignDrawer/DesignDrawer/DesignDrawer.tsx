@@ -14,7 +14,6 @@ import {
   Flex,
   FormControl,
   FormLabel,
-  Tabs,
   Text,
   Textarea,
 } from '@chakra-ui/react'
@@ -45,14 +44,14 @@ import {
   startPageDataSelector,
   stateSelector,
   useDesignStore,
-} from '../../useDesignStore'
+} from '../../../builder-and-design/useDesignStore'
 import {
   setIsDirtySelector,
   useDirtyFieldStore,
-} from '../../useDirtyFieldStore'
-import { validateNumberInput } from '../../utils/validateNumberInput'
-import { CreatePageDrawerCloseButton } from '../CreatePageDrawerCloseButton'
-import { DrawerContentContainer } from '../EditFieldDrawer/edit-fieldtype/common/DrawerContentContainer'
+} from '../../../builder-and-design/useDirtyFieldStore'
+import { validateNumberInput } from '../../../builder-and-design/utils/validateNumberInput'
+import { CreatePageDrawerContentContainer } from '../../../common'
+import { CreatePageDrawerCloseButton } from '../../../common/CreatePageDrawer/CreatePageDrawerCloseButton'
 import { FormFieldDrawerActions } from '../EditFieldDrawer/edit-fieldtype/common/FormFieldDrawerActions'
 import {
   UploadedImage,
@@ -214,7 +213,7 @@ export const DesignInput = (): JSX.Element | null => {
   if (!startPageData) return null
 
   return (
-    <DrawerContentContainer>
+    <CreatePageDrawerContentContainer>
       <FormControl
         id="logo.state"
         isReadOnly={startPageMutation.isLoading}
@@ -372,7 +371,7 @@ export const DesignInput = (): JSX.Element | null => {
         handleCancel={handleCloseDrawer}
         buttonText="Save design"
       />
-    </DrawerContentContainer>
+    </CreatePageDrawerContentContainer>
   )
 }
 
@@ -432,7 +431,7 @@ export const DesignDrawer = ({
   if (!startPageData) return null
 
   return (
-    <Tabs pos="relative" h="100%" display="flex" flexDir="column">
+    <Flex pos="relative" h="100%" display="flex" flexDir="column">
       <Box pt="1rem" px="1.5rem" bg="white">
         <Flex justify="space-between">
           <Text textStyle="subhead-3" color="secondary.500" mb="1rem">
@@ -443,6 +442,6 @@ export const DesignDrawer = ({
         <Divider w="auto" mx="-1.5rem" />
       </Box>
       <DesignInput />
-    </Tabs>
+    </Flex>
   )
 }

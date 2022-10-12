@@ -11,7 +11,8 @@ import Input from '~components/Input'
 import Textarea from '~components/Textarea'
 import Toggle from '~components/Toggle'
 
-import { DrawerContentContainer } from './common/DrawerContentContainer'
+import { CreatePageDrawerContentContainer } from '../../../../common'
+
 import { FormFieldDrawerActions } from './common/FormFieldDrawerActions'
 import { EditFieldProps } from './common/types'
 import { useEditFieldForm } from './common/useEditFieldForm'
@@ -47,7 +48,7 @@ export const EditYesNo = ({ field }: EditYesNoProps): JSX.Element => {
   )
 
   return (
-    <DrawerContentContainer>
+    <CreatePageDrawerContentContainer>
       <FormControl isRequired isReadOnly={isLoading} isInvalid={!!errors.title}>
         <FormLabel>Question</FormLabel>
         <Input autoFocus {...register('title', requiredValidationRule)} />
@@ -67,6 +68,6 @@ export const EditYesNo = ({ field }: EditYesNoProps): JSX.Element => {
         handleClick={handleUpdateField}
         handleCancel={handleCancel}
       />
-    </DrawerContentContainer>
+    </CreatePageDrawerContentContainer>
   )
 }

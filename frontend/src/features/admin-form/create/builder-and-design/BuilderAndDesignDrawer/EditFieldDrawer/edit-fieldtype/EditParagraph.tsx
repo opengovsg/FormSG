@@ -9,7 +9,8 @@ import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import Textarea from '~components/Textarea'
 
-import { DrawerContentContainer } from './common/DrawerContentContainer'
+import { CreatePageDrawerContentContainer } from '../../../../common'
+
 import { FormFieldDrawerActions } from './common/FormFieldDrawerActions'
 import { EditFieldProps } from './common/types'
 import { useEditFieldForm } from './common/useEditFieldForm'
@@ -45,7 +46,7 @@ export const EditParagraph = ({ field }: EditParagraphProps): JSX.Element => {
   )
 
   return (
-    <DrawerContentContainer>
+    <CreatePageDrawerContentContainer>
       <FormControl
         isRequired
         isReadOnly={isLoading}
@@ -64,6 +65,6 @@ export const EditParagraph = ({ field }: EditParagraphProps): JSX.Element => {
         handleClick={handleUpdateField}
         handleCancel={handleCancel}
       />
-    </DrawerContentContainer>
+    </CreatePageDrawerContentContainer>
   )
 }

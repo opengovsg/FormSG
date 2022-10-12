@@ -8,7 +8,7 @@ export interface DrawerContentContainerProps extends StackProps {
  * Component to provide consistent padding to rendered builder/edit field drawer
  * content. Used as some fields may have tabs that do not need this padding yet.
  */
-export const DrawerContentContainer = ({
+export const CreatePageDrawerContentContainer = ({
   children,
   ...props
 }: DrawerContentContainerProps): JSX.Element => {

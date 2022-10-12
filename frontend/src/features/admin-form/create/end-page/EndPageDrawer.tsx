@@ -7,7 +7,7 @@ import {
   useWatch,
 } from 'react-hook-form'
 import { useDebounce } from 'react-use'
-import { FormControl, Stack } from '@chakra-ui/react'
+import { Box, Divider, Flex, FormControl, Stack, Text } from '@chakra-ui/react'
 import { cloneDeep } from 'lodash'
 import validator from 'validator'
 
@@ -27,17 +27,21 @@ import { useAdminForm } from '~features/admin-form/common/queries'
 import {
   setIsDirtySelector,
   useDirtyFieldStore,
-} from '../../useDirtyFieldStore'
+} from '../builder-and-design/useDirtyFieldStore'
 import {
-  resetEndPageDataSelector,
-  setEndPageDataSelector,
-  useEndPageBuilderStore,
-} from '../../useEndPageBuilderStore'
+  CreatePageDrawerContentContainer,
+  useCreatePageSidebar,
+} from '../common'
+import { CreatePageDrawerCloseButton } from '../common/CreatePageDrawer/CreatePageDrawerCloseButton'
+import { CreatePageDrawerContainer } from '../common/CreatePageDrawer/CreatePageDrawerContainer'
+
 import {
+  dataSelector,
+  resetDataSelector,
+  setDataSelector,
   setToInactiveSelector,
-  useFieldBuilderStore,
-} from '../../useFieldBuilderStore'
-import { DrawerContentContainer } from '../EditFieldDrawer/edit-fieldtype/common/DrawerContentContainer'
+  useEndPageStore,
+} from './useEndPageStore'
 
 const buttonLinkRules: RegisterOptions<FormEndPage, 'buttonLink'> = {
   validate: (url: string) =>
@@ -49,30 +53,24 @@ const buttonLinkRules: RegisterOptions<FormEndPage, 'buttonLink'> = {
     'Please enter a valid URL (starting with https:// or http://)',
 } as FieldValues
 
-interface EndPageBuilderInputProps {
-  endPage: FormEndPage
-}
-
-export const EndPageBuilderInput = ({
-  endPage,
-}: EndPageBuilderInputProps): JSX.Element => {
+export const EndPageInput = (): JSX.Element => {
   const isMobile = useIsMobile()
   const { endPageMutation } = useMutateFormPage()
 
-  const closeBuilderDrawer = useFieldBuilderStore(setToInactiveSelector)
   const setIsDirty = useDirtyFieldStore(setIsDirtySelector)
 
-  const { setEndPageBuilderState, resetEndPageBuilderState } =
-    useEndPageBuilderStore((state) => ({
-      setEndPageBuilderState: setEndPageDataSelector(state),
-      resetEndPageBuilderState: resetEndPageDataSelector(state),
-    }))
+  const { endPageData, setData, setToInactive } = useEndPageStore(
+    useCallback(
+      (state) => ({
+        endPageData: dataSelector(state),
+        setData: setDataSelector(state),
+        setToInactive: setToInactiveSelector(state),
+      }),
+      [],
+    ),
+  )
 
-  // Load the end page into the store when user opens customization page
-  useEffect(() => {
-    setEndPageBuilderState(endPage)
-    return () => resetEndPageBuilderState()
-  }, [endPage, setEndPageBuilderState, resetEndPageBuilderState])
+  const { handleClose } = useCreatePageSidebar()
 
   const {
     register,
@@ -81,7 +79,7 @@ export const EndPageBuilderInput = ({
     handleSubmit,
   } = useForm<FormEndPage>({
     mode: 'onBlur',
-    defaultValues: endPage,
+    defaultValues: endPageData,
   })
 
   // Update dirty state of builder so confirmation modal can be shown
@@ -95,9 +93,9 @@ export const EndPageBuilderInput = ({
 
   const handleEndPageBuilderChanges = useCallback(
     (endPageInputs) => {
-      setEndPageBuilderState({ ...(endPageInputs as FormEndPage) })
+      setData({ ...(endPageInputs as FormEndPage) })
     },
-    [setEndPageBuilderState],
+    [setData],
   )
 
   const watchedInputs = useWatch({
@@ -113,12 +111,19 @@ export const EndPageBuilderInput = ({
     Object.values(clonedWatchedInputs),
   ])
 
+  const handleCloseDrawer = useCallback(() => handleClose(false), [handleClose])
+
   const handleUpdateEndPage = handleSubmit((endPage) =>
-    endPageMutation.mutate(endPage, { onSuccess: () => closeBuilderDrawer() }),
+    endPageMutation.mutate(endPage, {
+      onSuccess: () => {
+        setToInactive()
+        handleCloseDrawer()
+      },
+    }),
   )
 
   return (
-    <DrawerContentContainer>
+    <CreatePageDrawerContentContainer>
       <Stack gap="2rem">
         <FormControl
           isReadOnly={endPageMutation.isLoading}
@@ -146,7 +151,7 @@ export const EndPageBuilderInput = ({
           >
             <FormLabel isRequired>Button text</FormLabel>
             <Input
-              placeholder="Submit another form"
+              placeholder="Submit another response"
               {...register('buttonText')}
             />
             <FormErrorMessage>{errors.buttonText?.message}</FormErrorMessage>
@@ -175,24 +180,56 @@ export const EndPageBuilderInput = ({
           onClick={handleUpdateEndPage}
           isLoading={endPageMutation.isLoading}
         >
-          Save field
+          Save page
         </Button>
         <Button
           isFullWidth={isMobile}
           variant="clear"
           colorScheme="secondary"
           isDisabled={endPageMutation.isLoading}
-          onClick={() => closeBuilderDrawer()}
+          onClick={() => handleCloseDrawer()}
         >
           Cancel
         </Button>
       </Stack>
-    </DrawerContentContainer>
+    </CreatePageDrawerContentContainer>
   )
 }
 
-export const EditEndPage = (): JSX.Element | null => {
+export const EndPageDrawer = (): JSX.Element | null => {
   const { data: form } = useAdminForm()
+  const { endPageData, setData, resetData } = useEndPageStore(
+    useCallback(
+      (state) => ({
+        endPageData: dataSelector(state),
+        setData: setDataSelector(state),
+        resetData: resetDataSelector(state),
+      }),
+      [],
+    ),
+  )
 
-  return form ? <EndPageBuilderInput endPage={form.endPage} /> : null
+  useEffect(() => {
+    setData(form?.endPage)
+    return resetData
+  }, [form?.endPage, resetData, setData])
+
+  if (!endPageData) return null
+
+  return (
+    <CreatePageDrawerContainer>
+      <Flex pos="relative" h="100%" display="flex" flexDir="column">
+        <Box pt="1rem" px="1.5rem" bg="white">
+          <Flex justify="space-between">
+            <Text textStyle="subhead-3" color="secondary.500" mb="1rem">
+              Edit thank you page
+            </Text>
+            <CreatePageDrawerCloseButton />
+          </Flex>
+          <Divider w="auto" mx="-1.5rem" />
+        </Box>
+        <EndPageInput />
+      </Flex>
+    </CreatePageDrawerContainer>
+  )
 }
