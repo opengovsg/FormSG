@@ -15,6 +15,7 @@ export const BASIC_FIELDS_ORDERED = [
   BasicField.Radio,
   BasicField.Checkbox,
   BasicField.Dropdown,
+  BasicField.CountryRegion,
   BasicField.Section,
   BasicField.Statement,
   BasicField.YesNo,

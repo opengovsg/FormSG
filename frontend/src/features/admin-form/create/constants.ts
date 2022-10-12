@@ -105,9 +105,9 @@ export const BASICFIELD_TO_DRAWER_META: {
     isSubmitted: true,
   },
 
-  [BasicField.Country]: {
-    label: 'Country',
-    icon: BiGlobe,
+  [BasicField.CountryRegion]: {
+    label: 'Country/Region',
+    icon: BiFlag,
     isSubmitted: true,
   },
 

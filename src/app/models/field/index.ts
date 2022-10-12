@@ -1,7 +1,7 @@
 import createAttachmentFieldSchema from './attachmentField'
 import { BaseFieldSchema } from './baseField'
 import createCheckboxFieldSchema from './checkboxField'
-import createCountryFieldSchema from './countryField'
+import createCountryRegionFieldSchema from './countryRegionField'
 import createDateFieldSchema from './dateField'
 import createDecimalFieldSchema from './decimalField'
 import createDropdownFieldSchema from './dropdownField'
@@ -27,7 +27,7 @@ export {
   createDateFieldSchema,
   createDecimalFieldSchema,
   createDropdownFieldSchema,
-  createCountryFieldSchema,
+  createCountryRegionFieldSchema,
   createEmailFieldSchema,
   createHomenoFieldSchema,
   createImageFieldSchema,

@@ -79,8 +79,8 @@ export const types: BasicFieldBlock[] = [
     answerArray: false,
   },
   {
-    name: BasicField.Country,
-    value: 'Country',
+    name: BasicField.CountryRegion,
+    value: 'Country/Region',
     submitted: true,
     answerArray: false,
   },

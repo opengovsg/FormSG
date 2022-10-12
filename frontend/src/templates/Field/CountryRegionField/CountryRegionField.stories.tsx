@@ -8,24 +8,24 @@ import { BasicField } from '~shared/types/field'
 import Button from '~components/Button'
 
 import {
-  CountryField as CountryFieldComponent,
-  CountryFieldProps,
-  CountryFieldSchema,
-} from './CountryField'
+  CountryRegionField as CountryRegionFieldComponent,
+  CountryRegionFieldProps,
+  CountryRegionFieldSchema,
+} from './CountryRegionField'
 
-const baseSchema: CountryFieldSchema = {
-  title: 'Country',
-  description: 'Type or select your residential country',
+const baseSchema: CountryRegionFieldSchema = {
+  title: 'Country/Region',
+  description: 'Type or select your residential country/region',
   required: true,
   disabled: false,
-  fieldType: BasicField.Country,
+  fieldType: BasicField.CountryRegion,
   fieldOptions: [],
   _id: 'random-id',
 }
 
 export default {
-  title: 'Templates/Field/CountryField',
-  component: CountryFieldComponent,
+  title: 'Templates/Field/CountryRegionField',
+  component: CountryRegionFieldComponent,
   decorators: [],
   parameters: {
     docs: {
@@ -42,11 +42,14 @@ export default {
   },
 } as Meta
 
-interface StoryCountryFieldProps extends CountryFieldProps {
+interface StoryCountryRegionFieldProps extends CountryRegionFieldProps {
   defaultValue?: string
 }
 
-const Template: Story<StoryCountryFieldProps> = ({ defaultValue, ...args }) => {
+const Template: Story<StoryCountryRegionFieldProps> = ({
+  defaultValue,
+  ...args
+}) => {
   const formMethods = useForm({
     defaultValues: {
       [args.schema._id]: defaultValue,
@@ -70,7 +73,7 @@ const Template: Story<StoryCountryFieldProps> = ({ defaultValue, ...args }) => {
   return (
     <FormProvider {...formMethods}>
       <form onSubmit={formMethods.handleSubmit(onSubmit)} noValidate>
-        <CountryFieldComponent {...args} />
+        <CountryRegionFieldComponent {...args} />
         <Button
           mt="1rem"
           type="submit"

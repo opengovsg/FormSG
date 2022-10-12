@@ -24,6 +24,7 @@ import Tooltip from '~components/Tooltip'
 import {
   AttachmentField,
   CheckboxField,
+  CountryRegionField,
   DateField,
   DecimalField,
   DropdownField,
@@ -481,6 +482,8 @@ const FieldRow = ({ field, ...rest }: FieldRowProps) => {
       return <DateField schema={field} {...rest} />
     case BasicField.Dropdown:
       return <DropdownField schema={field} {...rest} />
+    case BasicField.CountryRegion:
+      return <CountryRegionField schema={field} {...rest} />
     case BasicField.ShortText:
       return <ShortTextField schema={field} {...rest} />
     case BasicField.LongText:
@@ -495,7 +498,5 @@ const FieldRow = ({ field, ...rest }: FieldRowProps) => {
       return <YesNoField schema={field} {...rest} />
     case BasicField.Table:
       return <TableField schema={field} {...rest} />
-    default:
-      return <div>TODO: Add field row for {field.fieldType}</div>
   }
 }
