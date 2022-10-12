@@ -13,7 +13,7 @@ dotenv.config({
 const config: PlaywrightTestConfig = {
   testDir: './__tests__/e2e',
   /* Maximum time one test can run for. */
-  timeout: 3 * 60 * 1000,
+  timeout: 10 * 1000,
   expect: {
     /**
      * Maximum time expect() should wait for the condition to be met.
@@ -50,20 +50,19 @@ const config: PlaywrightTestConfig = {
         ...devices['Desktop Chrome'],
       },
     },
+    {
+      name: 'firefox',
+      use: {
+        ...devices['Desktop Firefox'],
+      },
+    },
 
-    // {
-    //   name: 'firefox',
-    //   use: {
-    //     ...devices['Desktop Firefox'],
-    //   },
-    // },
-
-    // {
-    //   name: 'webkit',
-    //   use: {
-    //     ...devices['Desktop Safari'],
-    //   },
-    // },
+    {
+      name: 'webkit',
+      use: {
+        ...devices['Desktop Safari'],
+      },
+    },
 
     /* Test against mobile viewports. */
     // {
