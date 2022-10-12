@@ -19,9 +19,79 @@
 
 import { format } from 'date-fns'
 import { keyBy } from 'lodash'
-import { BasicField } from 'shared/types'
+import {
+  AttachmentFieldBase,
+  AttachmentSize,
+  BasicField,
+  CheckboxFieldBase,
+  DateFieldBase,
+  DecimalFieldBase,
+  DropdownFieldBase,
+  EmailFieldBase,
+  HomenoFieldBase,
+  LongTextFieldBase,
+  MobileFieldBase,
+  NricFieldBase,
+  RadioFieldBase,
+  RatingFieldBase,
+  RatingShape,
+  SectionFieldBase,
+  ShortTextFieldBase,
+  TableFieldBase,
+  YesNoFieldBase,
+} from 'shared/types'
 
-const allFieldInfo = [
+type E2eFieldBaseMetadata = {
+  title: string
+  required?: boolean
+  fieldType: BasicField
+}
+
+type E2eFieldBaseValue = { val: string }
+
+export type E2eFieldMetadata = E2eFieldBaseMetadata &
+  (
+    | (E2eFieldBaseValue & Pick<RatingFieldBase, 'fieldType' | 'ratingOptions'>)
+    | (E2eFieldBaseValue & Pick<EmailFieldBase, 'fieldType' | 'isVerifiable'>)
+    | (E2eFieldBaseValue &
+        Pick<DropdownFieldBase, 'fieldType' | 'fieldOptions'>)
+    | (E2eFieldBaseValue & Pick<DateFieldBase, 'fieldType' | 'dateValidation'>)
+    | ({ val: string[][] } & Pick<
+        TableFieldBase,
+        'fieldType' | 'minimumRows' | 'addMoreRows' | 'columns' | 'maximumRows'
+      >)
+    | (E2eFieldBaseValue &
+        Pick<
+          DecimalFieldBase,
+          'fieldType' | 'ValidationOptions' | 'validateByValue'
+        >)
+    | ({ val: string[] } & Pick<
+        CheckboxFieldBase,
+        'fieldType' | 'fieldOptions' | 'othersRadioButton'
+      >)
+    | (E2eFieldBaseValue &
+        Pick<
+          RadioFieldBase,
+          'fieldType' | 'fieldOptions' | 'othersRadioButton'
+        >)
+    | (E2eFieldBaseValue & {
+        path: string
+        content: string
+      } & Pick<AttachmentFieldBase, 'fieldType' | 'attachmentSize'>)
+    | (E2eFieldBaseValue & Pick<ShortTextFieldBase, 'fieldType'>)
+    | (E2eFieldBaseValue & Pick<LongTextFieldBase, 'fieldType'>)
+    | (E2eFieldBaseValue & Pick<HomenoFieldBase, 'fieldType'>)
+    | (E2eFieldBaseValue & Pick<NricFieldBase, 'fieldType'>)
+    | (E2eFieldBaseValue & Pick<YesNoFieldBase, 'fieldType'>)
+    | (E2eFieldBaseValue & Pick<MobileFieldBase, 'fieldType'>)
+    | Pick<SectionFieldBase, 'fieldType'>
+  )
+
+const allFieldInfo: E2eFieldMetadata[] = [
+  {
+    title: 'About you',
+    fieldType: BasicField.Section,
+  },
   {
     title: 'Name',
     fieldType: BasicField.ShortText,
@@ -63,13 +133,18 @@ const allFieldInfo = [
     title: 'Birthday',
     fieldType: BasicField.Date,
     val: format(17, 'dd MMM yyyy'),
+    dateValidation: {
+      customMaxDate: null,
+      customMinDate: null,
+      selectedDateValidation: null,
+    },
   },
   {
     title: 'Happiness Score',
     fieldType: BasicField.Rating,
     ratingOptions: {
       steps: 5,
-      shape: 'Heart',
+      shape: RatingShape.Heart,
     },
     val: '3',
   },
@@ -83,6 +158,10 @@ const allFieldInfo = [
         title: 'Name',
         required: true,
         columnType: BasicField.ShortText,
+        ValidationOptions: {
+          customVal: null,
+          selectedValidation: null,
+        },
       },
       {
         title: 'Gender',
@@ -128,7 +207,7 @@ const allFieldInfo = [
   {
     title: 'Attachment',
     fieldType: BasicField.Attachment,
-    attachmentSize: '1',
+    attachmentSize: AttachmentSize.OneMb,
     val: 'test-att.txt',
     path: '../files/att-folder-1/test-att.txt',
     content: 'att-folder-1',
