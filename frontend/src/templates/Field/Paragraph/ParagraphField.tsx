@@ -1,5 +1,3 @@
-import { Box } from '@chakra-ui/react'
-
 import { useMdComponents } from '~hooks/useMdComponents'
 import { MarkdownText } from '~components/MarkdownText'
 
@@ -27,10 +25,8 @@ export const ParagraphField = ({
   })
 
   return (
-    <Box mt="1rem">
-      <MarkdownText multilineBreaks components={mdComponents}>
-        {schema.description}
-      </MarkdownText>
-    </Box>
+    <MarkdownText multilineBreaks components={mdComponents}>
+      {schema.description}
+    </MarkdownText>
   )
 }
