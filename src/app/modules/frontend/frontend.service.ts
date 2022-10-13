@@ -25,5 +25,9 @@ export const getClientEnvVars = (): ClientEnvVars => {
     respondentRolloutStorage: config.reactMigration.respondentRolloutStorage,
     adminRollout: config.reactMigration.adminRollout,
     angularPhaseOutDate: config.reactMigration.angularPhaseOutDate,
+    removeAdminInfoboxThreshold:
+      config.reactMigration.removeAdminInfoboxThreshold,
+    removeRespondentsInfoboxThreshold:
+      config.reactMigration.removeRespondentsInfoboxThreshold,
   }
 }

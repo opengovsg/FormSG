@@ -341,6 +341,18 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
       default: '15 September 2022',
       env: 'REACT_MIGRATION_ANGULAR_END_DATE',
     },
+    removeAdminInfoboxThreshold: {
+      doc: 'Percentage threshold where switch-to-angular infobox for Admin will no longer be visible',
+      format: 'int',
+      default: 100,
+      env: 'REACT_MIGRATION_REMOVE_INFOBOX_THRESHOLD_ADMIN',
+    },
+    removeRespondentsInfoboxThreshold: {
+      doc: 'Percentage threshold where switch-to-angular infobox for Respondents will no longer be visible',
+      format: 'int',
+      default: 10,
+      env: 'REACT_MIGRATION_REMOVE_INFOBOX_THRESHOLD_RESPONDENTS',
+    },
   },
 }
 
