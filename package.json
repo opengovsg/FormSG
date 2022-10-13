@@ -28,7 +28,7 @@
     "test:backend": "env-cmd -f tests/.test-env jest --coverage --maxWorkers=4",
     "test:backend:watch": "env-cmd -f tests/.test-env jest --watch",
     "test:frontend": "npm --prefix frontend test",
-    "build": "npm run clean && concurrently -k \"npm:build:*\"",
+    "build": "npm run clean && concurrently \"npm:build:*\"",
     "test:angularjs": "jest --config=tests/unit/frontend/jest.config.js",
     "dev:angularjs": "webpack --config webpack.dev.js",
     "build:old-frontend": "webpack --config webpack.prod.js",
