@@ -12,7 +12,7 @@ import {
 
 import { FormAuthType, FormSettings } from '~shared/types/form'
 
-import { GUIDE_ENABLE_SPCP } from '~constants/links'
+import { GUIDE_SPCP_ESRVCID } from '~constants/links'
 import { useMdComponents } from '~hooks/useMdComponents'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import Input from '~components/Input'
@@ -71,9 +71,11 @@ export const EsrvcIdBox = ({
   const renderedHelperText = useMemo(() => {
     switch (settings.authType) {
       case FormAuthType.SP:
-        return `Find out [how to get your Singpass e-service ID](${GUIDE_ENABLE_SPCP}).`
+        return `Find out [how to get your Singpass e-service ID](${GUIDE_SPCP_ESRVCID}).`
       case FormAuthType.CP:
-        return `Corppass now uses Singpass to authenticate corporate users. You will still need a separate **Corppass e-service ID**. Find out [how to get your Corppass e-service ID](${GUIDE_ENABLE_SPCP}).`
+        return `Corppass now uses Singpass to authenticate corporate users. You will still need a separate **Corppass e-service ID**. Find out [how to get your Corppass e-service ID](${GUIDE_SPCP_ESRVCID}).`
+      case FormAuthType.MyInfo:
+        return `Find out [how to get your MyInfo e-service ID](${GUIDE_SPCP_ESRVCID}).`
       default:
         return ''
     }

@@ -25,12 +25,14 @@ export const AdminFormLayout = (): JSX.Element => {
   const { formId } = useParams()
   if (!formId) throw new Error('No formId provided')
 
-  const { data: { siteBannerContent, adminBannerContent } = {} } = useEnv()
+  // TODO (#4279): Revert back to non-react banners post-migration.
+  const { data: { siteBannerContentReact, adminBannerContentReact } = {} } =
+    useEnv()
 
   const bannerContent = useMemo(
     // Use || instead of ?? so that we fall through even if previous banners are empty string.
-    () => siteBannerContent || adminBannerContent,
-    [adminBannerContent, siteBannerContent],
+    () => siteBannerContentReact || adminBannerContentReact,
+    [adminBannerContentReact, siteBannerContentReact],
   )
 
   const bannerProps = useMemo(
@@ -50,7 +52,9 @@ export const AdminFormLayout = (): JSX.Element => {
   return (
     <Flex flexDir="column" css={fillHeightCss} overflow="hidden" pos="relative">
       {bannerProps ? (
-        <Banner variant={bannerProps.variant}>{bannerProps.msg}</Banner>
+        <Banner useMarkdown variant={bannerProps.variant}>
+          {bannerProps.msg}
+        </Banner>
       ) : null}
       <AdminFormNavbar />
       <SwitchEnvIcon />

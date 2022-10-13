@@ -39,12 +39,14 @@ const useWorkspaceForms = () => {
 }
 
 export const WorkspacePage = (): JSX.Element => {
-  const { data: { siteBannerContent, adminBannerContent } = {} } = useEnv()
+  const { data: { siteBannerContentReact, adminBannerContentReact } = {} } =
+    useEnv()
 
+  // TODO (#4279): Revert back to non-react banners post-migration.
   const bannerContent = useMemo(
     // Use || instead of ?? so that we fall through even if previous banners are empty string.
-    () => siteBannerContent || adminBannerContent,
-    [adminBannerContent, siteBannerContent],
+    () => siteBannerContentReact || adminBannerContentReact,
+    [adminBannerContentReact, siteBannerContentReact],
   )
 
   const bannerProps = useMemo(
@@ -76,7 +78,9 @@ export const WorkspacePage = (): JSX.Element => {
       />
       <Flex direction="column" css={fillHeightCss}>
         {bannerProps ? (
-          <Banner variant={bannerProps.variant}>{bannerProps.msg}</Banner>
+          <Banner useMarkdown variant={bannerProps.variant}>
+            {bannerProps.msg}
+          </Banner>
         ) : null}
         <AdminNavBar />
         <SwitchEnvIcon />

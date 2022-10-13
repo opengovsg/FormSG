@@ -17,7 +17,10 @@ import {
   updateEditStateSelector,
   useFieldBuilderStore,
 } from '../useFieldBuilderStore'
-import { getMutationErrorMessage } from '../utils/getMutationErrorMessage'
+import {
+  getMutationErrorMessage,
+  getMutationToastDescriptionFieldName,
+} from '../utils/getMutationMessage'
 
 export const useDuplicateFormField = () => {
   const { formId } = useParams()
@@ -44,7 +47,9 @@ export const useDuplicateFormField = () => {
       }
 
       toast({
-        description: `The field "${newField.title}" was duplicated.${
+        description: `The ${getMutationToastDescriptionFieldName(
+          newField,
+        )} was duplicated.${
           logicedFieldIdsSet?.has(fieldId)
             ? ' Associated logic was not duplicated.'
             : ''
