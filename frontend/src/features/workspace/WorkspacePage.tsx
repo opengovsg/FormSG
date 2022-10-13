@@ -39,12 +39,14 @@ const useWorkspaceForms = () => {
 }
 
 export const WorkspacePage = (): JSX.Element => {
-  const { data: { siteBannerContent, adminBannerContent } = {} } = useEnv()
+  const { data: { siteBannerContentReact, adminBannerContentReact } = {} } =
+    useEnv()
 
+  // TODO: Revert back to non-react banners post-migration.
   const bannerContent = useMemo(
     // Use || instead of ?? so that we fall through even if previous banners are empty string.
-    () => siteBannerContent || adminBannerContent,
-    [adminBannerContent, siteBannerContent],
+    () => siteBannerContentReact || adminBannerContentReact,
+    [adminBannerContentReact, siteBannerContentReact],
   )
 
   const bannerProps = useMemo(
