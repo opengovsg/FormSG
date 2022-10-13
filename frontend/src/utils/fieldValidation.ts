@@ -432,16 +432,12 @@ export const createDateValidationRules: ValidationRuleFn<DateFieldBase> = (
           ) || 'Selected date is not within the allowed date range'
         )
       },
-      invalidDays: (val) => {
-        if (!val || !schema.invalidDays || schema.invalidDays.length === 0) {
-          return true
-        }
-
-        return (
-          !isDateAnInvalidDay(parseDate(val), schema.invalidDays) ||
-          'This date is not allowed by the form admin'
-        )
-      },
+      invalidDays: (val) =>
+        !val ||
+        !schema.invalidDays ||
+        !schema.invalidDays.length ||
+        !isDateAnInvalidDay(parseDate(val), schema.invalidDays) ||
+        'This date is not allowed by the form admin',
     },
   }
 }

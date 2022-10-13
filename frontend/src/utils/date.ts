@@ -133,25 +133,9 @@ export const transformAllIsoStringsToDate = <T>(body: T): T => {
   return body
 }
 
-/** Transforms YYYY-MM-DD strings to date, otherwise null */
-export const transformShortIsoStringToDate = (
-  isoString: unknown,
-): Date | null => {
-  return isShortIsoDateString(isoString)
-    ? // Set to UTC time regardless.
-      parseISO(`${isoString}T00:00:00Z`)
-    : null
-}
-
-export const transformDateToShortIsoString = (date: unknown): string | null => {
-  return isDate(date) ? format(date as Date, 'yyyy-MM-dd') : null
-}
-
-const ALL_INVALID_DAYS_ARR = Object.values(InvalidDaysOptions)
-
 export const getRemainingDaysOfTheWeek = (
   days: InvalidDaysOptions[],
 ): InvalidDaysOptions[] => {
   const daysSet = new Set(days)
-  return ALL_INVALID_DAYS_ARR.filter((day) => !daysSet.has(day))
+  return Object.values(InvalidDaysOptions).filter((day) => !daysSet.has(day))
 }

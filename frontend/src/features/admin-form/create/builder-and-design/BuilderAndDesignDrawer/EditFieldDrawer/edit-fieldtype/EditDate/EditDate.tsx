@@ -72,7 +72,7 @@ type EditDateInputs = Pick<
     customMaxDate: Date | null
     customMinDate: Date | null
   }
-  addParticularDayRestriction: boolean
+  hasInvalidDays: boolean
   invalidDays: NonNullable<DateFieldBase['invalidDays']>
 }
 
@@ -88,7 +88,7 @@ const transformDateFieldToEditForm = (field: DateFieldBase): EditDateInputs => {
       : null,
   }
 
-  const nextAddParticularDayRestriction = !!field?.invalidDays?.length
+  const nextHasInvalidDaysRestriction = !!field?.invalidDays?.length
 
   /** Transformation is done because the invalid days array supplied from the server
    * to the checkbox group should be unchecked instead of checked. Hence instead of
@@ -103,7 +103,7 @@ const transformDateFieldToEditForm = (field: DateFieldBase): EditDateInputs => {
   return {
     ...pick(field, EDIT_DATE_FIELD_KEYS),
     dateValidation: nextValidationOptions,
-    addParticularDayRestriction: nextAddParticularDayRestriction,
+    hasInvalidDays: nextHasInvalidDaysRestriction,
     invalidDays: nextInvalidDayOptions,
   }
 }
@@ -140,7 +140,7 @@ const transformDateEditFormToField = (
     }
   }
 
-  if (inputs.addParticularDayRestriction) {
+  if (inputs.hasInvalidDays) {
     /** Transformation is done because the checked values in the checkbox group
      * are actually the valid days instead of the invalid days values that should
      * be sent over and stored on the server. Therefore the need to transform
@@ -175,9 +175,9 @@ export const EditDate = ({ field }: EditDateProps): JSX.Element => {
     },
   })
 
-  const watchAddParticularDayRestriction = useWatch({
+  const hasInvalidDaysRestriction = useWatch({
     control,
-    name: 'addParticularDayRestriction',
+    name: 'hasInvalidDays',
   })
 
   const requiredValidationRule = useMemo(
@@ -309,11 +309,11 @@ export const EditDate = ({ field }: EditDateProps): JSX.Element => {
       <Stack>
         <FormControl>
           <Toggle
-            {...register('addParticularDayRestriction')}
+            {...register('hasInvalidDays')}
             label="Custom availability during the week"
           />
         </FormControl>
-        {watchAddParticularDayRestriction ? (
+        {hasInvalidDaysRestriction && (
           <FormControl isRequired isInvalid={!!errors.invalidDays}>
             <Controller
               control={control}
@@ -328,18 +328,13 @@ export const EditDate = ({ field }: EditDateProps): JSX.Element => {
                     'dateValidation.customMaxDate',
                   )
 
-                  if (
+                  return (
                     !(
                       getValues('dateValidation.selectedDateValidation') ===
                         DateSelectedValidation.Custom &&
                       customMinDate &&
                       customMaxDate
-                    )
-                  ) {
-                    return true
-                  }
-
-                  return (
+                    ) ||
                     hasAvailableDates(
                       customMinDate,
                       customMaxDate,
@@ -378,7 +373,7 @@ export const EditDate = ({ field }: EditDateProps): JSX.Element => {
               {get(errors, 'invalidDays.message')}
             </FormErrorMessage>
           </FormControl>
-        ) : null}
+        )}
       </Stack>
       <FormFieldDrawerActions
         isLoading={isLoading}
