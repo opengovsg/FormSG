@@ -89,7 +89,6 @@ export const LandingPage = (): JSX.Element => {
 
   return (
     <>
-      <Text cursor="pointer">Hello</Text>
       <AppPublicHeader />
       <LandingSection bg="primary.100" pt={{ base: '2rem', md: 0 }} px="0">
         <Stack
