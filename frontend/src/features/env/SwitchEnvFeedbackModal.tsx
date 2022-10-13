@@ -173,7 +173,7 @@ export const SwitchEnvFeedbackModal = ({
                   Cancel
                 </Button>
                 <Button isFullWidth={isMobile} type="submit">
-                  Next
+                  Submit feedback
                 </Button>
               </Stack>
             </ModalFooter>
