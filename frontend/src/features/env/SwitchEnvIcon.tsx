@@ -6,17 +6,19 @@ import { Flex, Portal, useDisclosure } from '@chakra-ui/react'
 import IconButton from '~components/IconButton'
 import Tooltip from '~components/Tooltip'
 
-import { REMOVE_ADMIN_INFOBOX_THRESHOLD } from '~features/workspace/components/AdminSwitchEnvMessage'
-
 import { useEnv } from './queries'
 import { SwitchEnvFeedbackModal } from './SwitchEnvFeedbackModal'
 
 export const SwitchEnvIcon = (): JSX.Element | null => {
   const { isOpen, onOpen, onClose } = useDisclosure()
-  const { data: { adminRollout } = {} } = useEnv()
+  const { data: { adminRollout, removeAdminInfoboxThreshold } = {} } = useEnv()
+  // Remove the switch env message if the React rollout for admins is => threshold
   const showSwitchEnvMessage = useMemo(
-    () => adminRollout && adminRollout < REMOVE_ADMIN_INFOBOX_THRESHOLD,
-    [adminRollout],
+    () =>
+      adminRollout &&
+      removeAdminInfoboxThreshold &&
+      adminRollout < removeAdminInfoboxThreshold,
+    [adminRollout, removeAdminInfoboxThreshold],
   )
 
   if (!showSwitchEnvMessage) return null

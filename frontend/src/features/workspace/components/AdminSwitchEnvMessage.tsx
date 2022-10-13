@@ -1,5 +1,5 @@
 // TODO #4279: Remove after React rollout is complete
-import { KeyboardEventHandler, useCallback } from 'react'
+import { KeyboardEventHandler, useCallback, useMemo } from 'react'
 import { Text, useDisclosure, VisuallyHidden } from '@chakra-ui/react'
 
 import Button from '~components/Button'
@@ -8,13 +8,23 @@ import InlineMessage from '~components/InlineMessage'
 import { useEnv } from '~features/env/queries'
 import { SwitchEnvFeedbackModal } from '~features/env/SwitchEnvFeedbackModal'
 
-export const REMOVE_ADMIN_INFOBOX_THRESHOLD = 100
-
 export const AdminSwitchEnvMessage = (): JSX.Element => {
   const { isOpen, onOpen, onClose } = useDisclosure()
-  const { data: { angularPhaseOutDate, adminRollout } = {} } = useEnv()
-  const showSwitchEnvMessage =
-    adminRollout && adminRollout < REMOVE_ADMIN_INFOBOX_THRESHOLD
+  const {
+    data: {
+      angularPhaseOutDate,
+      adminRollout,
+      removeAdminInfoboxThreshold,
+    } = {},
+  } = useEnv()
+  // Remove the switch env message if the React rollout for admins is => threshold
+  const showSwitchEnvMessage = useMemo(
+    () =>
+      adminRollout &&
+      removeAdminInfoboxThreshold &&
+      adminRollout < removeAdminInfoboxThreshold,
+    [adminRollout, removeAdminInfoboxThreshold],
+  )
 
   const handleKeydown: KeyboardEventHandler<HTMLButtonElement> = useCallback(
     (event) => {
