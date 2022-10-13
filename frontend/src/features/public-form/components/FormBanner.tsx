@@ -12,8 +12,8 @@ import { usePublicFormContext } from '../PublicFormContext'
 export const FormBanner = (): JSX.Element | null => {
   const {
     data: {
-      siteBannerContent,
-      isGeneralMaintenance,
+      siteBannerContentReact,
+      isGeneralMaintenanceReact,
       isSPMaintenance,
       isCPMaintenance,
       myInfoBannerContent,
@@ -21,11 +21,13 @@ export const FormBanner = (): JSX.Element | null => {
   } = useEnv()
   const { form } = usePublicFormContext()
 
+  // TODO: Revert back to non-react banners post-migration.
+
   const bannerContent = useMemo(
     // Use || instead of ?? so that we fall through even if previous banners are empty string.
     () =>
-      siteBannerContent ||
-      isGeneralMaintenance ||
+      siteBannerContentReact ||
+      isGeneralMaintenanceReact ||
       (form?.authType === FormAuthType.SP && isSPMaintenance) ||
       (form?.authType === FormAuthType.CP && isCPMaintenance) ||
       (form?.authType === FormAuthType.MyInfo && myInfoBannerContent) ||
@@ -33,10 +35,10 @@ export const FormBanner = (): JSX.Element | null => {
     [
       form?.authType,
       isCPMaintenance,
-      isGeneralMaintenance,
+      isGeneralMaintenanceReact,
       isSPMaintenance,
       myInfoBannerContent,
-      siteBannerContent,
+      siteBannerContentReact,
     ],
   )
 
