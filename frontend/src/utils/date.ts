@@ -1,12 +1,4 @@
-import {
-  endOfToday,
-  format,
-  isAfter,
-  isBefore,
-  isDate,
-  parseISO,
-  startOfToday,
-} from 'date-fns'
+import { endOfToday, isAfter, isBefore, parseISO, startOfToday } from 'date-fns'
 
 import { InvalidDaysOptions } from '~shared/types'
 
