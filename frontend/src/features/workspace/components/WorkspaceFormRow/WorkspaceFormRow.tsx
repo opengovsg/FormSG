@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { Box, ButtonProps, chakra, Flex, Text } from '@chakra-ui/react'
 import dayjs from 'dayjs'
 
-import { AdminDashboardFormMetaDto } from '~shared/types/form/form'
+import { AdminDashboardFormMetaDto, FormStatus } from '~shared/types/form/form'
 
 import { useRowAction } from './RowActions/useRowAction'
 import { FormStatusLabel } from './FormStatusLabel'
@@ -67,6 +67,7 @@ export const WorkspaceFormRow = ({
           gridArea="title"
           textAlign="initial"
           overflow="auto"
+          opacity={formMeta.status !== FormStatus.Public ? '30%' : '100%'}
         >
           <Text
             noOfLines={{ base: 0, md: 1 }}
