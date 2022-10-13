@@ -40,11 +40,12 @@ export const AdminSwitchEnvMessage = (): JSX.Element => {
             onClick={onOpen}
             onKeyDown={handleKeydown}
             aria-labelledby="admin-switch-msg"
+            cursor="pointer"
           >
             <VisuallyHidden>
               Click to switch to the original FormSG
             </VisuallyHidden>
-            <Text as="span" display="inline" aria-hidden cursor="pointer">
+            <Text as="span" display="inline" aria-hidden>
               switch to the original one
             </Text>
           </Button>
