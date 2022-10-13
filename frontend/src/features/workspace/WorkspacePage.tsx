@@ -78,7 +78,9 @@ export const WorkspacePage = (): JSX.Element => {
       />
       <Flex direction="column" css={fillHeightCss}>
         {bannerProps ? (
-          <Banner variant={bannerProps.variant}>{bannerProps.msg}</Banner>
+          <Banner useMarkdown variant={bannerProps.variant}>
+            {bannerProps.msg}
+          </Banner>
         ) : null}
         <AdminNavBar />
         <SwitchEnvIcon />

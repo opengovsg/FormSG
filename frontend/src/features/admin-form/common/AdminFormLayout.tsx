@@ -52,7 +52,9 @@ export const AdminFormLayout = (): JSX.Element => {
   return (
     <Flex flexDir="column" css={fillHeightCss} overflow="hidden" pos="relative">
       {bannerProps ? (
-        <Banner variant={bannerProps.variant}>{bannerProps.msg}</Banner>
+        <Banner useMarkdown variant={bannerProps.variant}>
+          {bannerProps.msg}
+        </Banner>
       ) : null}
       <AdminFormNavbar />
       <SwitchEnvIcon />

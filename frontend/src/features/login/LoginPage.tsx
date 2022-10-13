@@ -149,7 +149,9 @@ export const LoginPage = (): JSX.Element => {
   return (
     <BackgroundBox>
       {bannerProps ? (
-        <Banner variant={bannerProps.variant}>{bannerProps.msg}</Banner>
+        <Banner useMarkdown variant={bannerProps.variant}>
+          {bannerProps.msg}
+        </Banner>
       ) : null}
       <BaseGridLayout flex={1}>
         <NonMobileSidebarGridArea>

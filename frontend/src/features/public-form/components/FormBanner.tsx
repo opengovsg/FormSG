@@ -49,5 +49,9 @@ export const FormBanner = (): JSX.Element | null => {
 
   if (!bannerProps) return null
 
-  return <Banner variant={bannerProps.variant}>{bannerProps.msg}</Banner>
+  return (
+    <Banner useMarkdown variant={bannerProps.variant}>
+      {bannerProps.msg}
+    </Banner>
+  )
 }
