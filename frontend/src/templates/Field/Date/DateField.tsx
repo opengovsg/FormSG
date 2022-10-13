@@ -41,7 +41,6 @@ export const DateField = ({
     (date: Date) => {
       const { selectedDateValidation } = schema.dateValidation
       const selectedInvalidDays = schema.invalidDays ?? []
-
       let isDateUnavailable = false
 
       switch (selectedDateValidation) {
