@@ -87,11 +87,15 @@ export const useMutateCollaborators = () => {
 
   const getMappedBadRequestErrorMessage = (
     formCollaboratorAction: FormCollaboratorAction,
+    originalErrorMessage: string,
   ): string => {
     let badRequestErrorMessage
     switch (formCollaboratorAction) {
       case FormCollaboratorAction.ADD:
         badRequestErrorMessage = `The collaborator was unable to be added or edited. Please try again or refresh the page.`
+        break
+      case FormCollaboratorAction.TRANSFER_OWNERSHIP:
+        badRequestErrorMessage = originalErrorMessage
         break
       default:
         badRequestErrorMessage = `Sorry, an error occurred. Please refresh the page and try again later.`
@@ -145,6 +149,7 @@ export const useMutateCollaborators = () => {
           case 400:
             errorMessage = getMappedBadRequestErrorMessage(
               formCollaboratorAction,
+              error.message,
             )
             break
           default:
