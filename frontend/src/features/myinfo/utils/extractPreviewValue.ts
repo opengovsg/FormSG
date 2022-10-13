@@ -6,7 +6,7 @@ import { DATE_PARSE_FORMAT } from '~templates/Field/Date/DateField'
 
 type PrefilledMyInfoValue = string | { value: string }
 
-const MYINFO_DATE_FORMAT = 'yyyy-mm-dd'
+const MYINFO_DATE_FORMAT = 'yyyy-MM-dd'
 
 export const extractPreviewValue = ({
   fieldType,
