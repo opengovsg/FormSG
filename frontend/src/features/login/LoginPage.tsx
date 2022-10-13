@@ -101,7 +101,7 @@ export const LoginPage = (): JSX.Element => {
   const [email, setEmail] = useState<string>()
   const { t } = useTranslation()
 
-  // TODO: Revert back to non-react banners post-migration.
+  // TODO (#4279): Revert back to non-react banners post-migration.
   const bannerContent = useMemo(
     // Use || instead of ?? so that we fall through even if previous banners are empty string.
     () => siteBannerContentReact || isLoginBannerReact,

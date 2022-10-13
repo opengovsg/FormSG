@@ -25,7 +25,7 @@ export const AdminFormLayout = (): JSX.Element => {
   const { formId } = useParams()
   if (!formId) throw new Error('No formId provided')
 
-  // TODO: Revert back to non-react banners post-migration.
+  // TODO (#4279): Revert back to non-react banners post-migration.
   const { data: { siteBannerContentReact, adminBannerContentReact } = {} } =
     useEnv()
 

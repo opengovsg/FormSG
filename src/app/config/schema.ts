@@ -181,7 +181,7 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
       default: '',
       env: 'ADMIN_BANNER_CONTENT',
     },
-    // TODO: Delete these when react migration is over. Revert back to original banner variables in react frontend.
+    // TODO (#4279): Delete these when react migration is over. Revert back to original banner variables in react frontend.
     isGeneralMaintenanceReact: {
       doc: 'Load env variable with General Maintenance banner text. For React only.',
       format: String,

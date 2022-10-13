@@ -86,7 +86,7 @@ export type Config = {
   siteBannerContent: string
   adminBannerContent: string
 
-  // TODO: Delete these when react migration is over. Revert back to original banner variables in react frontend.
+  // TODO (#4279): Delete these when react migration is over. Revert back to original banner variables in react frontend.
   isGeneralMaintenanceReact: string
   isLoginBannerReact: string
   siteBannerContentReact: string
@@ -149,7 +149,7 @@ export interface IOptionalVarsSchema {
     isLoginBanner: string
     siteBannerContent: string
     adminBannerContent: string
-    // TODO: Delete these when react migration is over. Revert back to original banner variables in react frontend.
+    // TODO (#4279): Delete these when react migration is over. Revert back to original banner variables in react frontend.
     isGeneralMaintenanceReact: string
     isLoginBannerReact: string
     siteBannerContentReact: string

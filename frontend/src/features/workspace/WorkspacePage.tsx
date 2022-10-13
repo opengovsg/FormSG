@@ -42,7 +42,7 @@ export const WorkspacePage = (): JSX.Element => {
   const { data: { siteBannerContentReact, adminBannerContentReact } = {} } =
     useEnv()
 
-  // TODO: Revert back to non-react banners post-migration.
+  // TODO (#4279): Revert back to non-react banners post-migration.
   const bannerContent = useMemo(
     // Use || instead of ?? so that we fall through even if previous banners are empty string.
     () => siteBannerContentReact || adminBannerContentReact,
