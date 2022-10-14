@@ -2,6 +2,7 @@ import {
   BasicField,
   FormResponseMode,
   LogicType,
+  MyInfoAttribute,
 } from '../../../../../../shared/types'
 import {
   generateDefaultField,
@@ -35,14 +36,14 @@ describe('ParsedResponsesObject', () => {
     )
     const decimalResponse = generateSingleAnswerResponse(decimalField, '3.142')
 
-    const shortTextProcessedResponse = generateProcessedSingleAnswerResponse(
-      shortTextField,
-      'the quick brown fox jumps over the lazy dog',
-    )
-    const decimalProcessedResponse = generateProcessedSingleAnswerResponse(
-      decimalField,
-      '3.142',
-    )
+    const shortTextProcessedResponse = generateProcessedSingleAnswerResponse({
+      field: shortTextField,
+      answer: 'the quick brown fox jumps over the lazy dog',
+    })
+    const decimalProcessedResponse = generateProcessedSingleAnswerResponse({
+      field: decimalField,
+      answer: '3.142',
+    })
 
     const result = ParsedResponsesObject.parseResponses(
       {
@@ -122,5 +123,48 @@ describe('ParsedResponsesObject', () => {
     expect(result._unsafeUnwrapErr()).toEqual(
       new ProcessingError('Submission prevented by form logic'),
     )
+  })
+
+  test('should inject MyInfo attribute if field is a MyInfo field', async () => {
+    // Single MyInfo field
+    const shortTextMyInfoAttr = { attr: MyInfoAttribute.Name }
+    const shortTextField = generateDefaultField(BasicField.ShortText, {
+      myInfo: shortTextMyInfoAttr,
+    })
+    const decimalField = generateDefaultField(BasicField.Decimal)
+
+    // Add answers to both mobile and email fields
+    const shortTextResponse = generateSingleAnswerResponse(
+      shortTextField,
+      'the quick brown fox jumps over the lazy dog',
+      // Note no MyInfo attribute in response, should be injected.
+    )
+    const decimalResponse = generateSingleAnswerResponse(decimalField, '3.142')
+
+    const shortTextProcessedResponse = generateProcessedSingleAnswerResponse({
+      answer: 'the quick brown fox jumps over the lazy dog',
+      field: shortTextField,
+      myInfo: shortTextMyInfoAttr,
+    })
+    const decimalProcessedResponse = generateProcessedSingleAnswerResponse({
+      field: decimalField,
+      answer: '3.142',
+    })
+
+    const result = ParsedResponsesObject.parseResponses(
+      {
+        responseMode: FormResponseMode.Email,
+        form_fields: [shortTextField, decimalField],
+      } as IFormDocument,
+      [shortTextResponse, decimalResponse],
+    )
+
+    const expectedParsed: ProcessedFieldResponse[] = [
+      { ...shortTextProcessedResponse, isVisible: true },
+      { ...decimalProcessedResponse, isVisible: true },
+    ]
+
+    expect(result.isOk()).toEqual(true)
+    expect(result._unsafeUnwrap().getAllResponses()).toEqual(expectedParsed)
   })
 })

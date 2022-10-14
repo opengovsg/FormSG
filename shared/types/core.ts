@@ -36,4 +36,6 @@ export type ClientEnvVars = {
   respondentRolloutStorage: number
   adminRollout: number
   angularPhaseOutDate: string | null
+  removeAdminInfoboxThreshold: number
+  removeRespondentsInfoboxThreshold: number
 }

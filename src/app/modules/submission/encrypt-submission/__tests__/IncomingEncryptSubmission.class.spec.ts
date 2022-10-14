@@ -131,18 +131,18 @@ describe('IncomingEncryptSubmission', () => {
       },
     })
     // Add answers to both mobile and email fields
-    const mobileProcessedResponse = generateProcessedSingleAnswerResponse(
-      mobileField,
-      '+6587654321',
-      'signature',
-    )
+    const mobileProcessedResponse = generateProcessedSingleAnswerResponse({
+      field: mobileField,
+      answer: '+6587654321',
+      signature: 'signature',
+    })
     mobileProcessedResponse.isVisible = false
 
-    const emailProcessedResponse = generateProcessedSingleAnswerResponse(
-      emailField,
-      'test@example.com',
-      'signature',
-    )
+    const emailProcessedResponse = generateProcessedSingleAnswerResponse({
+      field: emailField,
+      answer: 'test@example.com',
+      signature: 'signature',
+    })
     emailProcessedResponse.isVisible = false
 
     const responses = [mobileProcessedResponse, emailProcessedResponse]
