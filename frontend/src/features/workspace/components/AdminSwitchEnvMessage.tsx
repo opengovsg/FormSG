@@ -2,10 +2,13 @@
 import { KeyboardEventHandler, useCallback, useMemo } from 'react'
 import { Text, useDisclosure, VisuallyHidden } from '@chakra-ui/react'
 
+import { SwitchEnvFeedbackFormBodyDto } from '~shared/types'
+
 import Button from '~components/Button'
 import InlineMessage from '~components/InlineMessage'
 
-import { useEnv } from '~features/env/queries'
+import { useEnvMutations } from '~features/env/mutations'
+import { useEnv, useSwitchEnvFeedbackFormView } from '~features/env/queries'
 import { SwitchEnvFeedbackModal } from '~features/env/SwitchEnvFeedbackModal'
 
 export const AdminSwitchEnvMessage = (): JSX.Element => {
@@ -36,6 +39,19 @@ export const AdminSwitchEnvMessage = (): JSX.Element => {
     [onOpen],
   )
 
+  // get the feedback form data
+  const { data: feedbackForm } = useSwitchEnvFeedbackFormView(isOpen)
+
+  const { submitSwitchEnvFormFeedbackMutation, adminSwitchEnvMutation } =
+    useEnvMutations(feedbackForm)
+
+  const submitFeedback = useCallback(
+    (formInputs: SwitchEnvFeedbackFormBodyDto) => {
+      return submitSwitchEnvFormFeedbackMutation.mutateAsync(formInputs)
+    },
+    [submitSwitchEnvFormFeedbackMutation],
+  )
+
   return showSwitchEnvMessage ? (
     <>
       <InlineMessage id="admin-switch-msg">
@@ -62,7 +78,12 @@ export const AdminSwitchEnvMessage = (): JSX.Element => {
           , which is available until {angularPhaseOutDate}.
         </Text>
       </InlineMessage>
-      <SwitchEnvFeedbackModal isOpen={isOpen} onClose={onClose} />
+      <SwitchEnvFeedbackModal
+        onSubmitFeedback={submitFeedback}
+        onChangeEnv={adminSwitchEnvMutation.mutate}
+        isOpen={isOpen}
+        onClose={onClose}
+      />
     </>
   ) : (
     <></>
