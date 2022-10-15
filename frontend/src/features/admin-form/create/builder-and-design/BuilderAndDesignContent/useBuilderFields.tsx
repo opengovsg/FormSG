@@ -11,7 +11,7 @@ import {
 
 import { NON_RESPONSE_FIELD_SET } from '~features/form/constants'
 import { FormFieldWithQuestionNo } from '~features/form/types'
-import { augmentWithMyInfo } from '~features/myinfo/utils/augmentWithMyInfo'
+import { addMyInfo } from '~features/myinfo/utils/augmentWithMyInfo'
 
 import { PENDING_CREATE_FIELD_ID } from '../constants'
 import { useCreateTabForm } from '../useCreateTabForm'
@@ -84,8 +84,8 @@ export const useBuilderFields = () => {
     } else if (stateData.state === FieldBuilderState.CreatingField) {
       mutateFormFieldsWhileCreating(draftBuilderFields, stateData)
     }
-    draftBuilderFields.map(augmentWithMyInfo)
     addQuestionNo(draftBuilderFields)
+    addMyInfo(draftBuilderFields)
   })
 
   return {

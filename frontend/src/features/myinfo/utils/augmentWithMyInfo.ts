@@ -1,7 +1,12 @@
 import { keyBy } from 'lodash'
 
 import { types as myInfoTypeArray } from '~shared/constants/field/myinfo'
-import { BasicField, FormFieldDto, MyInfoFormField } from '~shared/types/field'
+import {
+  BasicField,
+  FormFieldDto,
+  MyInfoField,
+  MyInfoFormField,
+} from '~shared/types/field'
 
 const MAP_ATTR_TO_NAME = keyBy(myInfoTypeArray, 'name')
 
@@ -20,5 +25,22 @@ export const augmentWithMyInfo = ({
     }
     default:
       return field
+  }
+}
+
+// use immer array mutation pattern
+export const addMyInfo = (draftBuilderFields: FormFieldDto[]): void => {
+  for (let i = 0; i < draftBuilderFields.length; i++) {
+    if (
+      draftBuilderFields[i].fieldType === BasicField.Dropdown &&
+      (draftBuilderFields[i] as MyInfoField).myInfo?.attr
+    ) {
+      const myInfoBlock =
+        MAP_ATTR_TO_NAME[(draftBuilderFields[i] as MyInfoField).myInfo.attr]
+      draftBuilderFields[i] = {
+        ...draftBuilderFields[i],
+        fieldOptions: myInfoBlock.fieldOptions ?? [],
+      }
+    }
   }
 }
