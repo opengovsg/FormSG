@@ -29,6 +29,8 @@ temp_release_branch=temp_${short_hash}
 git checkout -b ${temp_release_branch}
 
 release_version=$(npm --no-git-tag-version version minor | grep -E '^v\d')
+# Also update the version in frontend directory
+npm --prefix frontend --no-git-tag-version version minor
 release_branch=release_${release_version}
 may_force_push=
 
