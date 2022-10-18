@@ -6,6 +6,8 @@ import * as React from 'react'
 import ReactDOM from 'react-dom'
 import { datadogRum } from '@datadog/browser-rum'
 
+import { ddBeforeSend } from '~utils/datadog'
+
 import { App } from './app/App'
 import * as dayjs from './utils/dayjs'
 import reportWebVitals from './reportWebVitals'
@@ -45,6 +47,7 @@ datadogRum.init({
   replaySampleRate: 100,
   trackInteractions: true,
   defaultPrivacyLevel: 'mask-user-input',
+  beforeSend: ddBeforeSend,
 })
 
 datadogRum.startSessionReplayRecording()
