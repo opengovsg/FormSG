@@ -41,7 +41,7 @@ datadogRum.init({
   service: 'formsg-react',
 
   // Specify a version number to identify the deployed version of your application in Datadog
-  // version: '1.0.0',
+  version: process.env.REACT_APP_VERSION,
   // TODO/RUM: Update these RUM percentages as we increase the rollout percentage!
   sampleRate: 50,
   replaySampleRate: 100,
