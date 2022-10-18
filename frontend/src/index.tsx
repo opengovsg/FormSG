@@ -40,7 +40,8 @@ datadogRum.init({
 
   // Specify a version number to identify the deployed version of your application in Datadog
   // version: '1.0.0',
-  sampleRate: 100,
+  // TODO/RUM: Update these RUM percentages as we increase the rollout percentage!
+  sampleRate: 50,
   replaySampleRate: 100,
   trackInteractions: true,
   defaultPrivacyLevel: 'mask-user-input',
