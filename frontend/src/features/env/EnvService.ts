@@ -24,6 +24,7 @@ const createFeedbackResponsesArray = (
     ['url', 0],
     ['feedback', 1],
     ['email', 2],
+    ['rumSessionId', 3],
   ]
   const responses: {
     _id: string
