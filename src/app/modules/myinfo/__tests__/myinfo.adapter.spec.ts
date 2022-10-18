@@ -3,7 +3,7 @@ import {
   IPersonResponse,
   MyInfoVehicleFull,
 } from '@opengovsg/myinfo-gov-client'
-import { SetRequired } from 'type-fest'
+import type { SetRequired } from 'type-fest'
 
 import { MyInfoAttribute } from '../../../../../shared/types'
 import { MyInfoData } from '../myinfo.adapter'

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { ObjectId } from 'bson-ext'
 import mongoose from 'mongoose'
-import { PartialDeep } from 'type-fest'
+import type { PartialDeep } from 'type-fest'
 
 import getFormModel from 'src/app/models/form.server.model'
 import getFormFeedbackModel from 'src/app/models/form_feedback.server.model'

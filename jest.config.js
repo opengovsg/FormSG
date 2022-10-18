@@ -5,6 +5,7 @@ module.exports = {
   testEnvironment: 'node',
   globalSetup: '<rootDir>/tests/jest-global-setup.js',
   testPathIgnorePatterns: [
+    '<rootDir>/__tests__/e2e',
     '<rootDir>/dist/',
     '<rootDir>/node_modules/',
     '<rootDir>/src/public',

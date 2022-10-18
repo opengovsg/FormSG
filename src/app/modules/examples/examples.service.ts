@@ -1,7 +1,7 @@
 import { get } from 'lodash'
 import mongoose from 'mongoose'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
-import { Except, Merge } from 'type-fest'
+import type { Except, Merge } from 'type-fest'
 
 import { createLoggerWithLabel } from '../../config/logger'
 import getFormModel from '../../models/form.server.model'
