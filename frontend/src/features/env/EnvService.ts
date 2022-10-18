@@ -2,7 +2,7 @@ import {
   BasicField,
   ErrorDto,
   PublicFormViewDto,
-  switchEnvFeedbackFormBodyDto,
+  SwitchEnvFeedbackFormBodyDto,
 } from '~shared/types'
 import { ClientEnvVars, SuccessMessageDto } from '~shared/types/core'
 
@@ -17,7 +17,7 @@ export const getClientEnvVars = async (): Promise<ClientEnvVars> => {
 
 // TODO #4279: Remove after React rollout is complete
 const createFeedbackResponsesArray = (
-  formInputs: switchEnvFeedbackFormBodyDto,
+  formInputs: SwitchEnvFeedbackFormBodyDto,
   feedbackForm: PublicFormViewDto,
 ) => {
   const feedbackFormFieldsStructure: [string, number][] = [
@@ -45,7 +45,7 @@ const createFeedbackResponsesArray = (
 }
 
 const createSwitchFeedbackSubmissionFormData = (
-  formInputs: switchEnvFeedbackFormBodyDto,
+  formInputs: SwitchEnvFeedbackFormBodyDto,
   feedbackForm: PublicFormViewDto,
 ) => {
   const responses = createFeedbackResponsesArray(formInputs, feedbackForm)
@@ -65,7 +65,7 @@ export const submitSwitchEnvFormFeedback = async ({
   formInputs,
   feedbackForm,
 }: {
-  formInputs: switchEnvFeedbackFormBodyDto
+  formInputs: SwitchEnvFeedbackFormBodyDto
   feedbackForm: PublicFormViewDto | undefined
 }): Promise<SuccessMessageDto | ErrorDto> => {
   if (!feedbackForm) return new Error('feedback form not provided')

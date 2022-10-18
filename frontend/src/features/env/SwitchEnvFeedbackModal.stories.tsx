@@ -27,9 +27,16 @@ const onClose = () => {
   return
 }
 
-const Template: Story = () => (
-  <SwitchEnvFeedbackModal onClose={onClose} isOpen={true} />
-)
+const Template: Story = () => {
+  return (
+    <SwitchEnvFeedbackModal
+      onChangeEnv={() => console.log('change env')}
+      onSubmitFeedback={async () => console.log('submit feedback')}
+      onClose={onClose}
+      isOpen={true}
+    />
+  )
+}
 
 export const NotLoggedIn = Template.bind({})
 NotLoggedIn.decorators = [LoggedOutDecorator]

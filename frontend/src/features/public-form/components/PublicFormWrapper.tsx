@@ -38,10 +38,14 @@ export const PublicFormWrapper = ({
   isPreview,
   children,
 }: PublicFormWrapperProps): JSX.Element => {
-  const REMOVE_RESPONDENTS_INFOBOX_THRESHOLD = 10
   const { form, isAuthRequired } = usePublicFormContext()
-  const { data: { respondentRolloutEmail, respondentRolloutStorage } = {} } =
-    useEnv()
+  const {
+    data: {
+      respondentRolloutEmail,
+      respondentRolloutStorage,
+      removeRespondentsInfoboxThreshold,
+    } = {},
+  } = useEnv()
 
   const bgColour = useBgColor({
     colorTheme: form?.startPage.colorTheme,
@@ -50,10 +54,16 @@ export const PublicFormWrapper = ({
   const switchEnvRolloutPercentage = isEmailForm
     ? respondentRolloutEmail
     : respondentRolloutStorage
-  // Remove the switch env message if the React rollout for public form respondents is >10%
-  const showSwitchEnvMessage = !!(
-    switchEnvRolloutPercentage &&
-    switchEnvRolloutPercentage <= REMOVE_RESPONDENTS_INFOBOX_THRESHOLD
+
+  // Remove the switch env message if the React rollout for public form respondents is => threshold
+  const showSwitchEnvMessage = useMemo(
+    () =>
+      !!(
+        switchEnvRolloutPercentage &&
+        removeRespondentsInfoboxThreshold &&
+        switchEnvRolloutPercentage < removeRespondentsInfoboxThreshold
+      ),
+    [switchEnvRolloutPercentage, removeRespondentsInfoboxThreshold],
   )
   return (
     <Flex bg={bgColour} p={{ base: 0, md: '1.5rem' }} flex={1} justify="center">

@@ -24,11 +24,18 @@ export type ClientEnvVars = {
   isSPMaintenance: string // Singpass maintenance message
   isCPMaintenance: string // Corppass maintenance message
   myInfoBannerContent: string // MyInfo maintenance message
-  // TODO: remove after React rollout #4786
+  // TODO: remove after React rollout #4786, #4279
   GATrackingID: string | null
+  isGeneralMaintenanceReact: string
+  isLoginBannerReact: string
+  siteBannerContentReact: string
+  adminBannerContentReact: string
+
   spcpCookieDomain: string // Cookie domain used for removing spcp cookies
   respondentRolloutEmail: number
   respondentRolloutStorage: number
   adminRollout: number
   angularPhaseOutDate: string | null
+  removeAdminInfoboxThreshold: number
+  removeRespondentsInfoboxThreshold: number
 }

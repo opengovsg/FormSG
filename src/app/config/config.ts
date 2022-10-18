@@ -223,6 +223,11 @@ const config: Config = {
   isLoginBanner: basicVars.banner.isLoginBanner,
   siteBannerContent: basicVars.banner.siteBannerContent,
   adminBannerContent: basicVars.banner.adminBannerContent,
+  // TODO (#4279): Delete these when react migration is over. Revert back to original banner variables in react frontend.
+  isGeneralMaintenanceReact: basicVars.banner.isGeneralMaintenanceReact,
+  isLoginBannerReact: basicVars.banner.isLoginBannerReact,
+  siteBannerContentReact: basicVars.banner.siteBannerContentReact,
+  adminBannerContentReact: basicVars.banner.adminBannerContentReact,
   rateLimitConfig: basicVars.rateLimit,
   reactMigration: basicVars.reactMigration,
   configureAws,
