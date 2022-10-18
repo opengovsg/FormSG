@@ -1,7 +1,6 @@
 import { useCallback, useMemo } from 'react'
 import {
   BiDotsHorizontalRounded,
-  BiLeftArrowAlt,
   BiShareAlt,
   BiShow,
   BiUserPlus,
@@ -10,6 +9,7 @@ import { useLocation } from 'react-router-dom'
 import {
   Box,
   ButtonGroup,
+  Divider,
   Drawer,
   DrawerBody,
   DrawerContent,
@@ -17,9 +17,12 @@ import {
   Flex,
   Grid,
   GridItem,
+  Skeleton,
+  Text,
   useBreakpointValue,
   useDisclosure,
 } from '@chakra-ui/react'
+import format from 'date-fns/format'
 
 import { AdminFormDto } from '~shared/types/form/form'
 
@@ -35,7 +38,7 @@ import IconButton from '~components/IconButton'
 import Tooltip from '~components/Tooltip'
 import { NavigationTab, NavigationTabList } from '~templates/NavigationTabs'
 
-import { AdminFormNavbarDetails } from './AdminFormNavbarDetails'
+import { AdminFormNavbarBreadcrumbs } from './AdminFormNavbarBreadcrumbs'
 
 export interface AdminFormNavbarProps {
   /**
@@ -93,6 +96,28 @@ export const AdminFormNavbar = ({
     [],
   )
 
+  const renderLastModified = useMemo(
+    () => (
+      <Skeleton isLoaded={!!formInfo}>
+        <Text
+          textStyle="legal"
+          textTransform="uppercase"
+          color="neutral.700"
+          textAlign="right"
+        >
+          {!formInfo
+            ? 'Loading...'
+            : `Saved at ${format(
+                new Date(formInfo.lastModified),
+                'h:mm a, dd LLL y',
+              )}`}
+        </Text>
+      </Skeleton>
+    ),
+
+    [formInfo],
+  )
+
   return (
     <Grid
       w="100vw"
@@ -100,12 +125,12 @@ export const AdminFormNavbar = ({
       top={0}
       flexDir="column"
       templateColumns={{
-        base: '1fr',
+        base: 'auto auto',
         lg: 'repeat(3, minmax(0, 1fr))',
       }}
       templateRows="min-content"
       templateAreas={{
-        base: `'left right' 'actions actions' 'tabs tabs'`,
+        base: `'left right' 'tabs tabs'`,
         lg: `'left tabs right'`,
       }}
       boxShadow={{ lg: '0 1px 1px var(--chakra-colors-neutral-300)' }}
@@ -124,17 +149,10 @@ export const AdminFormNavbar = ({
         pl={{ base: '1.5rem', md: '1.75rem', lg: '2rem' }}
         pr="1rem"
       >
-        <Box>
-          <IconButton
-            mr="0.5rem"
-            aria-label="Go back to dashboard"
-            variant="clear"
-            colorScheme="secondary"
-            onClick={handleBackButtonClick}
-            icon={<BiLeftArrowAlt />}
-          />
-        </Box>
-        <AdminFormNavbarDetails formInfo={formInfo} />
+        <AdminFormNavbarBreadcrumbs
+          formInfo={formInfo}
+          handleBackButtonClick={handleBackButtonClick}
+        />
       </GridItem>
       <NavigationTabList
         variant={tabResponsiveVariant}
@@ -185,6 +203,9 @@ export const AdminFormNavbar = ({
           icon={<BiDotsHorizontalRounded />}
         />
         <Box display={{ base: 'none', md: 'flex' }}>
+          <Flex pr="1rem" alignItems="center">
+            {renderLastModified}
+          </Flex>
           <ButtonGroup spacing="0.5rem" isDisabled={!formInfo}>
             <Tooltip label="Manage collaborators">
               <IconButton
@@ -212,6 +233,8 @@ export const AdminFormNavbar = ({
         <DrawerOverlay />
         <DrawerContent borderTopRadius="0.25rem">
           <DrawerBody px={0} py="0.5rem">
+            <Flex p="1rem">{renderLastModified}</Flex>
+            <Divider />
             <ButtonGroup
               flexDir="column"
               isDisabled={!formInfo}
