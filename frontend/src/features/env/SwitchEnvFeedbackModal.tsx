@@ -145,7 +145,7 @@ export const SwitchEnvFeedbackModal = ({
                     <Input
                       type="hidden"
                       {...register('rumSessionId')}
-                      value={rumSessionId}
+                      value={`https://app.datadoghq.com/rum/replay/sessions/${rumSessionId}`}
                     />
                   </FormControl>
                 ) : null}
