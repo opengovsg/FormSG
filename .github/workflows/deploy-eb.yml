@@ -33,8 +33,6 @@ jobs:
           cache: 'npm'
           cache-dependency-path: '**/package-lock.json'
       - name: Set datadog app version for branch
-        env:
-          DATADOG_API_KEY: ${{ secrets.DD_API_KEY }}
         run: |
           if [[ $GITHUB_REF == 'refs/heads/release-al2' ]]; then
               echo "RELEASE_VER_PREFIX=" >> "$GITHUB_ENV"
@@ -43,7 +41,10 @@ jobs:
           fi
       - run: npm ci
       - run: npm run build:frontend
-      - run: |
+      - name: Upload source maps
+        env:
+          DATADOG_API_KEY: ${{ secrets.DD_API_KEY }}
+        run: |
           npx @datadog/datadog-ci sourcemaps upload ./dist/frontend \
           --service=formsg-react \
           --release-version=${{env.RELEASE_VER_PREFIX}}$(jq -r .version package.json) \
