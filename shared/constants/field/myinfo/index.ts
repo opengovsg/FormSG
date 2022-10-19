@@ -96,7 +96,7 @@ export const types: MyInfoFieldBlock[] = [
   },
   {
     name: MyInfoAttribute.ResidentialStatus,
-    value: 'Residential status',
+    value: 'Residential Status',
     category: 'personal',
     verified: ['SG', 'PR'],
     source: 'Immigration and Checkpoints Authority',
@@ -156,7 +156,7 @@ export const types: MyInfoFieldBlock[] = [
   },
   {
     name: MyInfoAttribute.PassportNumber,
-    value: 'Passport Number',
+    value: 'Passport number',
     category: 'personal',
     verified: ['SG'],
     source: 'Immigration & Checkpoints Authority',
