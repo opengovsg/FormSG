@@ -49,7 +49,7 @@ export const types: MyInfoFieldBlock[] = [
   },
   {
     name: MyInfoAttribute.DateOfBirth,
-    value: 'Date of Birth',
+    value: 'Date of birth',
     category: 'personal',
     verified: ['SG', 'PR', 'F'],
     source: 'Immigration & Checkpoints Authority / Ministry of Manpower',
@@ -84,7 +84,7 @@ export const types: MyInfoFieldBlock[] = [
   },
   {
     name: MyInfoAttribute.BirthCountry,
-    value: 'Birth Country',
+    value: 'Birth country',
     category: 'personal',
     verified: ['SG', 'PR', 'F'],
     source: 'Immigration & Checkpoints Authority / Ministry of Manpower',
@@ -96,7 +96,7 @@ export const types: MyInfoFieldBlock[] = [
   },
   {
     name: MyInfoAttribute.ResidentialStatus,
-    value: 'Residential Status',
+    value: 'Residential status',
     category: 'personal',
     verified: ['SG', 'PR'],
     source: 'Immigration and Checkpoints Authority',
@@ -118,7 +118,7 @@ export const types: MyInfoFieldBlock[] = [
   },
   {
     name: MyInfoAttribute.HousingType,
-    value: 'Housing Type',
+    value: 'Housing type',
     category: 'personal',
     verified: ['SG', 'PR'],
     source: 'Housing Development Board / Urban Redevelopment Authority',
@@ -137,7 +137,7 @@ export const types: MyInfoFieldBlock[] = [
   },
   {
     name: MyInfoAttribute.HdbType,
-    value: 'HDB Type',
+    value: 'HDB type',
     category: 'personal',
     verified: ['SG', 'PR'],
     source: 'Housing Development Board',
@@ -166,7 +166,7 @@ export const types: MyInfoFieldBlock[] = [
   },
   {
     name: MyInfoAttribute.PassportExpiryDate,
-    value: 'Passport Expiry Date',
+    value: 'Passport expiry date',
     category: 'personal',
     verified: ['SG'],
     source: 'Immigration & Checkpoints Authority',
@@ -176,7 +176,7 @@ export const types: MyInfoFieldBlock[] = [
   },
   {
     name: MyInfoAttribute.Marital,
-    value: 'Marital Status',
+    value: 'Marital status',
     category: 'family',
     verified: [],
     source: 'Ministry of Social and Family Development',
@@ -188,7 +188,7 @@ export const types: MyInfoFieldBlock[] = [
   },
   {
     name: MyInfoAttribute.CountryOfMarriage,
-    value: 'Country of Marriage',
+    value: 'Country of marriage',
     category: 'family',
     verified: [],
     source: 'Ministry of Social and Family Development',
@@ -200,7 +200,7 @@ export const types: MyInfoFieldBlock[] = [
   },
   {
     name: MyInfoAttribute.RegisteredAddress,
-    value: 'Registered Address',
+    value: 'Registered address',
     category: 'contact',
     verified: ['SG', 'PR'],
     source: 'Immigration & Checkpoints Authority',
@@ -222,7 +222,7 @@ export const types: MyInfoFieldBlock[] = [
   },
   {
     name: MyInfoAttribute.Employment,
-    value: 'Name of Employer',
+    value: 'Name of employer',
     category: 'employment_education',
     verified: ['F'],
     source: 'Ministry of Manpower',
@@ -233,7 +233,7 @@ export const types: MyInfoFieldBlock[] = [
   },
   {
     name: MyInfoAttribute.VehicleNo,
-    value: 'Vehicle Number',
+    value: 'Vehicle number',
     category: 'personal',
     verified: [],
     source: 'User-provided',
@@ -243,7 +243,7 @@ export const types: MyInfoFieldBlock[] = [
   },
   {
     name: MyInfoAttribute.MarriageCertNo,
-    value: 'Marriage Certificate Number',
+    value: 'Marriage cert. no.',
     category: 'family',
     verified: [],
     source: 'Ministry of Social and Family Development',
@@ -254,7 +254,7 @@ export const types: MyInfoFieldBlock[] = [
   },
   {
     name: MyInfoAttribute.MarriageDate,
-    value: 'Marriage Date',
+    value: 'Marriage date',
     category: 'family',
     verified: [],
     source: 'Ministry of Social and Family Development',
@@ -265,7 +265,7 @@ export const types: MyInfoFieldBlock[] = [
   },
   {
     name: MyInfoAttribute.DivorceDate,
-    value: 'Divorce Date',
+    value: 'Divorce date',
     category: 'family',
     verified: [],
     source: 'Ministry of Social and Family Development',
@@ -276,7 +276,7 @@ export const types: MyInfoFieldBlock[] = [
   },
   {
     name: MyInfoAttribute.WorkpassStatus,
-    value: 'Workpass Status',
+    value: 'Workpass status',
     category: 'employment_education',
     verified: ['F'],
     source: 'Ministry of Manpower',
@@ -287,7 +287,7 @@ export const types: MyInfoFieldBlock[] = [
   },
   {
     name: MyInfoAttribute.WorkpassExpiryDate,
-    value: 'Workpass Expiry Date',
+    value: 'Workpass expiry date',
     category: 'employment_education',
     verified: ['F'],
     source: 'Ministry of Manpower',
@@ -297,7 +297,7 @@ export const types: MyInfoFieldBlock[] = [
   },
   {
     name: MyInfoAttribute.MobileNo,
-    value: 'Mobile Number',
+    value: 'Mobile number',
     category: 'contact',
     verified: [],
     source: 'User-provided',
