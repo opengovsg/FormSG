@@ -185,7 +185,6 @@
     "@babel/core": "^7.19.3",
     "@babel/plugin-transform-runtime": "^7.19.1",
     "@babel/preset-env": "^7.19.4",
-    "@datadog/datadog-ci": "^1.16.0",
     "@opengovsg/mockpass": "^2.9.3",
     "@playwright/test": "^1.27.1",
     "@types/bcrypt": "^5.0.0",

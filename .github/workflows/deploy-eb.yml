@@ -42,7 +42,7 @@ jobs:
       - run: npm ci
       - run: npm run build:frontend
       - run: |
-          datadog-ci sourcemaps upload ./dist/frontend \
+          npx @datadog/datadog-ci sourcemaps upload ./dist/frontend \
           --service=formsg-react \
           --release-version=${{env.RELEASE_VER_PREFIX}}$(jq -r .version package.json) \
           --minified-path-prefix=/static/js
