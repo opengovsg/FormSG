@@ -22,6 +22,32 @@ jobs:
       - id: set-environment
         run: echo "::set-output name=current_env::${{github.ref_name}}"
 
+  deploy_dd_sourcemaps:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 14
+          cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
+      - name: Set datadog app version for branch
+        run: |
+          if [[ $GITHUB_REF == 'refs/heads/release-al2' ]]; then
+              echo "RELEASE_VER_PREFIX=" >> "$GITHUB_ENV"
+          else
+              echo "RELEASE_VER_PREFIX=$(echo ${GITHUB_REF##*/})-$(echo ${GITHUB_SHA} | cut -c1-8)-" >> "$GITHUB_ENV"
+          fi
+      - run: npm ci
+      - run: npm run build:frontend
+      - run: |
+          datadog-ci sourcemaps upload ./dist/frontend \
+          --service=formsg-react \
+          --release-version=${{env.RELEASE_VER_PREFIX}}$(jq -r .version package.json) \
+          --minified-path-prefix=/static/js
+
   build_deploy_application:
     needs: set_environment
     environment:
