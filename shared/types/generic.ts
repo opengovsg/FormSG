@@ -1,4 +1,4 @@
-import { Opaque } from 'type-fest'
+import type { Opaque } from 'type-fest'
 import { z } from 'zod'
 import { isDate, parseISO } from 'date-fns'
 

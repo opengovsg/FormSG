@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { Opaque } from 'type-fest'
+import type { Opaque } from 'type-fest'
 
 import { DateString } from './generic'
 import { AgencyBase, AgencyDto, PublicAgencyDto } from './agency'

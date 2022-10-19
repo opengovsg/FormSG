@@ -40,7 +40,8 @@ jobs:
           REACT_APP_GA_TRACKING_ID: ${{ secrets.GA_TRACKING_ID }}
           REACT_APP_FORMSG_SDK_MODE: ${{ secrets.REACT_APP_FORMSG_SDK_MODE }}
         run: |
-          echo REACT_APP_DD_RUM_APP_ID=$REACT_APP_DD_RUM_APP_ID > frontend/.env
+          echo REACT_APP_VERSION=$(cat package.json | jq -r '.version') > frontend/.env
+          echo REACT_APP_DD_RUM_APP_ID=$REACT_APP_DD_RUM_APP_ID >> frontend/.env
           echo REACT_APP_DD_RUM_CLIENT_TOKEN=$REACT_APP_DD_RUM_CLIENT_TOKEN >> frontend/.env
           echo REACT_APP_DD_RUM_ENV=$REACT_APP_DD_RUM_ENV >> frontend/.env
           echo REACT_APP_GA_TRACKING_ID=$REACT_APP_GA_TRACKING_ID >> frontend/.env

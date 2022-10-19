@@ -7,7 +7,7 @@ import {
   Types,
   UpdateWriteOpResult,
 } from 'mongoose'
-import { Merge, SetOptional } from 'type-fest'
+import type { Merge, SetOptional } from 'type-fest'
 
 import {
   AdminDashboardFormMetaDto,

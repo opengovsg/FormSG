@@ -54,18 +54,32 @@ export const DropdownItem = ({
       <Flex flexDir="column">
         <Stack direction="row" align="center" spacing="1rem">
           {icon ? <Icon as={icon} sx={styles.icon} /> : null}
-          <DropdownItemTextHighlighter
-            inputValue={inputValue ?? ''}
-            showHoverBg={isHighlighted && !isActive}
-            textToHighlight={label}
-          />
+          <Text
+            textStyle="body-1"
+            minWidth={0}
+            textOverflow="ellipsis"
+            whiteSpace="nowrap"
+            overflowX="hidden"
+          >
+            <DropdownItemTextHighlighter
+              inputValue={inputValue ?? ''}
+              showHoverBg={isHighlighted && !isActive}
+              textToHighlight={label}
+            />
+          </Text>
         </Stack>
-        <Text
-          textStyle="body-2"
-          color={isActive ? 'secondary.500' : 'secondary.400'}
-        >
-          {description}
-        </Text>
+        {description && (
+          <Text
+            textStyle="body-2"
+            color={isActive ? 'secondary.500' : 'secondary.400'}
+          >
+            <DropdownItemTextHighlighter
+              inputValue={inputValue ?? ''}
+              showHoverBg={isHighlighted && !isActive}
+              textToHighlight={description}
+            />
+          </Text>
+        )}
       </Flex>
     </ListItem>
   )

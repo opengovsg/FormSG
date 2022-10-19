@@ -4,7 +4,7 @@ import { AuthedSessionData } from 'express-session'
 import { StatusCodes } from 'http-status-codes'
 import JSONStream from 'JSONStream'
 import mongoose from 'mongoose'
-import { SetOptional } from 'type-fest'
+import type { SetOptional } from 'type-fest'
 
 import {
   ErrorDto,
