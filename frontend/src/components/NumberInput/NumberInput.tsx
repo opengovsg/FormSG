@@ -91,6 +91,7 @@ export const NumberInput = forwardRef<NumberInputProps, 'input'>(
         <chakra.input
           {...inputProps}
           paddingInlineEnd={inputEndPadding}
+          // Prevents refresh on enter if form only has one input
           onKeyDown={(e) => {
             if (e.key === 'Enter') {
               e.preventDefault()

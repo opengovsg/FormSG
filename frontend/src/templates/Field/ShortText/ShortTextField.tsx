@@ -32,11 +32,6 @@ export const ShortTextField = ({
         isPrefilled={isPrefilled}
         aria-label={schema.title}
         defaultValue=""
-        onKeyDown={(e) => {
-          if (e.key === 'Enter') {
-            e.preventDefault()
-          }
-        }}
         {...register(schema._id, validationRules)}
       />
     </FieldContainer>
