@@ -33,6 +33,8 @@ jobs:
           cache: 'npm'
           cache-dependency-path: '**/package-lock.json'
       - name: Set datadog app version for branch
+        env:
+          DATADOG_API_KEY: ${{ secrets.DD_API_KEY }}
         run: |
           if [[ $GITHUB_REF == 'refs/heads/release-al2' ]]; then
               echo "RELEASE_VER_PREFIX=" >> "$GITHUB_ENV"
