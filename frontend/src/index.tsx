@@ -6,6 +6,8 @@ import * as React from 'react'
 import ReactDOM from 'react-dom'
 import { datadogRum } from '@datadog/browser-rum'
 
+import { ddBeforeSend } from '~utils/datadog'
+
 import { App } from './app/App'
 import * as dayjs from './utils/dayjs'
 import reportWebVitals from './reportWebVitals'
@@ -39,11 +41,13 @@ datadogRum.init({
   service: 'formsg-react',
 
   // Specify a version number to identify the deployed version of your application in Datadog
-  // version: '1.0.0',
-  sampleRate: 100,
+  version: process.env.REACT_APP_VERSION,
+  // TODO/RUM: Update these RUM percentages as we increase the rollout percentage!
+  sampleRate: 15,
   replaySampleRate: 100,
   trackInteractions: true,
   defaultPrivacyLevel: 'mask-user-input',
+  beforeSend: ddBeforeSend,
 })
 
 datadogRum.startSessionReplayRecording()

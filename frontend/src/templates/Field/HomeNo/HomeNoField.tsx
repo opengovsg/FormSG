@@ -26,7 +26,6 @@ export const HomeNoField = ({ schema }: HomeNoFieldProps): JSX.Element => {
         control={control}
         rules={validationRules}
         name={schema._id}
-        defaultValue=""
         render={({ field }) => (
           <PhoneNumberInput
             autoComplete="tel"

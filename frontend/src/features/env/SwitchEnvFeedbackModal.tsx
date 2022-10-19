@@ -14,6 +14,7 @@ import {
   Stack,
   useBreakpointValue,
 } from '@chakra-ui/react'
+import { datadogRum } from '@datadog/browser-rum'
 
 import { SwitchEnvFeedbackFormBodyDto } from '~shared/types'
 
@@ -50,6 +51,7 @@ export const SwitchEnvFeedbackModal = ({
 
   const { user } = useUser()
   const url = window.location.href
+  const rumSessionId = datadogRum.getInternalContext()?.session_id
   const [showThanksPage, setShowThanksPage] = useState<boolean>(false)
 
   const handleFormSubmit = handleSubmit((inputs) => {
@@ -135,6 +137,15 @@ export const SwitchEnvFeedbackModal = ({
                       type="hidden"
                       {...register('email')}
                       value={user.email}
+                    />
+                  </FormControl>
+                ) : null}
+                {rumSessionId ? (
+                  <FormControl>
+                    <Input
+                      type="hidden"
+                      {...register('rumSessionId')}
+                      value={`https://app.datadoghq.com/rum/replay/sessions/${rumSessionId}`}
                     />
                   </FormControl>
                 ) : null}

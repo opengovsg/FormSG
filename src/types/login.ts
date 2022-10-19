@@ -1,5 +1,5 @@
 import { Document, Model } from 'mongoose'
-import { Merge } from 'type-fest'
+import type { Merge } from 'type-fest'
 
 import {
   FormBillingStatistic as SharedFormBillingStatistic,

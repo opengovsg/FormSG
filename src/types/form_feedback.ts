@@ -1,5 +1,5 @@
 import { Document, Model, QueryCursor } from 'mongoose'
-import { Merge } from 'type-fest'
+import type { Merge } from 'type-fest'
 
 import { FormFeedbackBase } from '../../shared/types'
 

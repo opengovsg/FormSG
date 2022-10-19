@@ -29,6 +29,8 @@ temp_release_branch=temp_${short_hash}
 git checkout -b ${temp_release_branch}
 
 release_version=$(npm --no-git-tag-version version minor | grep -E '^v\d')
+# Also update the version in frontend directory
+npm --prefix frontend --no-git-tag-version version minor
 release_branch=release_${release_version}
 may_force_push=
 
@@ -39,7 +41,7 @@ if [[ "$1" == "--recut" ]]; then
   may_force_push=-f
 fi
 
-git commit -a -m "chore: bump version to ${release_version}"
+git commit -a -m  --no-verify "chore: bump version to ${release_version}"
 git tag ${release_version}
 git checkout -b ${release_branch}
 git branch -D ${temp_release_branch}

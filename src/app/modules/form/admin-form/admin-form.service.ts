@@ -8,7 +8,7 @@ import {
 import { assignIn, last, omit } from 'lodash'
 import mongoose, { ClientSession } from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
-import { Except, Merge } from 'type-fest'
+import type { Except, Merge } from 'type-fest'
 
 import {
   MAX_UPLOAD_FILE_SIZE,

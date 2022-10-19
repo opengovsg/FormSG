@@ -1,14 +1,13 @@
 SKIP_PREFLIGHT_CHECK=true
 
+REACT_APP_VERSION=$npm_package_version
+
 # This needs to be removed and replaced with a real tracking ID
-
 # in order to enable GA in a local environment
-
 REACT_APP_GA_TRACKING_ID=
 REACT_APP_DD_RUM_APP_ID=
 REACT_APP_DD_RUM_CLIENT_TOKEN=
 REACT_APP_DD_RUM_ENV=
 
 # Set `production`, `staging` or `development` for sdk mode
-
 REACT_APP_FORMSG_SDK_MODE=
