@@ -34,6 +34,11 @@ export const Input = forwardRef<InputProps, 'input'>((props, ref) => {
     return (
       <ChakraInput
         ref={ref}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault()
+          }
+        }}
         {...inputProps}
         sx={props.sx ?? inputStyles.field}
       />

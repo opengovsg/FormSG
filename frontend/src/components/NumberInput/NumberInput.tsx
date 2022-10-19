@@ -91,6 +91,11 @@ export const NumberInput = forwardRef<NumberInputProps, 'input'>(
         <chakra.input
           {...inputProps}
           paddingInlineEnd={inputEndPadding}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault()
+            }
+          }}
           // Passing in ref to the input element so that it can be focused by
           // the parent.
           // No point passing the ref to the div wrapper as the main component
