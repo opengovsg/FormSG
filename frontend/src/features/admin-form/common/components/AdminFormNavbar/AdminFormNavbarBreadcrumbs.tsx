@@ -29,6 +29,7 @@ export const AdminFormNavbarBreadcrumbs = ({
       color="secondary.500"
       noOfLines={1}
       alignItems="center"
+      separator={<Text color="secondary.300">/</Text>}
     >
       <BreadcrumbItem>
         <BreadcrumbLink color="primary.500" onClick={handleBackButtonClick}>

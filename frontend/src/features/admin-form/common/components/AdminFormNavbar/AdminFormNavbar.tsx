@@ -9,6 +9,7 @@ import { useLocation } from 'react-router-dom'
 import {
   Box,
   ButtonGroup,
+  chakra,
   Divider,
   Drawer,
   DrawerBody,
@@ -96,8 +97,9 @@ export const AdminFormNavbar = ({
     [],
   )
 
-  const renderLastModified = useMemo(
-    () => (
+  const renderLastModified = useMemo(() => {
+    const lastModified = formInfo ? new Date(formInfo.lastModified) : new Date()
+    return (
       <Skeleton isLoaded={!!formInfo}>
         <Text
           textStyle="legal"
@@ -105,18 +107,15 @@ export const AdminFormNavbar = ({
           color="neutral.700"
           textAlign="right"
         >
-          {!formInfo
-            ? 'Loading...'
-            : `Saved at ${format(
-                new Date(formInfo.lastModified),
-                'h:mm a, dd LLL y',
-              )}`}
+          {/* Use spans with nowrap to break the second half of the date as a group */}
+          <chakra.span>Saved at {format(lastModified, 'h:mm a')}, </chakra.span>
+          <chakra.span whiteSpace="nowrap">
+            {format(lastModified, 'dd LLL y')}
+          </chakra.span>
         </Text>
       </Skeleton>
-    ),
-
-    [formInfo],
-  )
+    )
+  }, [formInfo])
 
   return (
     <Grid
