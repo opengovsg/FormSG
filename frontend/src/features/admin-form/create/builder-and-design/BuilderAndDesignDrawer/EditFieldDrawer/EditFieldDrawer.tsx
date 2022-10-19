@@ -1,12 +1,12 @@
 import { memo, useMemo } from 'react'
 
+import { MYINFO_FIELD_CONSTANTS } from '~shared/constants/field/myinfo'
 import { BasicField, FieldCreateDto } from '~shared/types/field'
 
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
 import { isMyInfo } from '~features/myinfo/utils'
 
 import { useBuilderFields } from '../../BuilderAndDesignContent/useBuilderFields'
-import { MYINFO_FIELD_CONSTANTS } from '../../constants'
 import {
   FieldBuilderState,
   stateDataSelector,

@@ -1,6 +1,7 @@
 import { Schema } from 'mongoose'
 import UIDGenerator from 'uid-generator'
 
+import { MYINFO_FIELD_CONSTANTS } from '../../../../shared/constants/field/myinfo'
 import {
   BasicField,
   FormResponseMode,
@@ -82,6 +83,11 @@ BaseFieldSchema.pre<IFieldSchema>('save', function (next) {
 
 // Instance methods
 BaseFieldSchema.methods.getQuestion = function (this: IFieldSchema) {
+  if (this.myInfo?.attr) {
+    // Take MyInfo question titles directly from shared, don't rely on form definition
+    return MYINFO_FIELD_CONSTANTS[this.myInfo.attr].value
+  }
+
   // Return concatenation of all column titles as question string.
   if (isTableField(this)) {
     const columnTitles = this.columns.map((col) => col.title)

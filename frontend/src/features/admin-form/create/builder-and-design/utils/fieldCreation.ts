@@ -1,3 +1,4 @@
+import { MYINFO_FIELD_CONSTANTS } from '~shared/constants/field/myinfo'
 import {
   AttachmentSize,
   BasicField,
@@ -14,7 +15,6 @@ import {
 import {
   MYINFO_DATEFIELD_META,
   MYINFO_DROPDOWNFIELD_META,
-  MYINFO_FIELD_CONSTANTS,
   MYINFO_MOBILEFIELD_META,
   MYINFO_TEXTFIELD_META,
 } from '../constants'

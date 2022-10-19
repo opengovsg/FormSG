@@ -1,7 +1,9 @@
-import { MyInfoVerifiedType } from '~shared/constants/field/myinfo'
+import {
+  MYINFO_FIELD_CONSTANTS,
+  MyInfoVerifiedType,
+} from '~shared/constants/field/myinfo'
 import { MyInfoAttribute, MyInfoField } from '~shared/types'
 
-import { MYINFO_FIELD_CONSTANTS } from '~features/admin-form/create/builder-and-design/constants'
 import {
   MyInfoDataSource,
   MyInfoPreviewMeta,

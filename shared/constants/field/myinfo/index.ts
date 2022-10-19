@@ -4,6 +4,7 @@ import DIALECTS from './myinfo-dialects'
 import NATIONALITIES from './myinfo-nationalities'
 import OCCUPATIONS from './myinfo-occupations'
 import RACES from './myinfo-races'
+import { keyBy } from 'lodash'
 
 export type MyInfoVerifiedType = 'SG' | 'PR' | 'F'
 
@@ -306,3 +307,5 @@ export const types: MyInfoFieldBlock[] = [
     previewValue: '98765432',
   },
 ]
+
+export const MYINFO_FIELD_CONSTANTS = keyBy(types, 'name')
