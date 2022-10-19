@@ -340,7 +340,7 @@ export const EditDate = ({ field }: EditDateProps): JSX.Element => {
                       customMaxDate,
                       getRemainingDaysOfTheWeek(val),
                     ) ||
-                    'There are no available days based on your date selection'
+                    "The selected days aren't available within your custom date range"
                   )
                 },
               }}
