@@ -39,7 +39,7 @@ export const AdminFormNavbarBreadcrumbs = ({
 
       <BreadcrumbItem>
         <Skeleton isLoaded={!!formInfo}>
-          <Text>{formInfo?.title}</Text>
+          <Text>{formInfo ? formInfo.title : 'Loading...'}</Text>
         </Skeleton>
       </BreadcrumbItem>
     </Breadcrumb>
