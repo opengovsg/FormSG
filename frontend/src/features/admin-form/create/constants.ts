@@ -52,6 +52,8 @@ type BuilderSidebarFieldMeta = {
   isSubmitted: boolean
 }
 
+// !!! Do not use this to reference field titles for MyInfo fields. !!!
+// !!! Use MYINFO_FIELD_CONSTANTS in admin-form/create/builder-and-design/constants.ts instead !!!
 export const BASICFIELD_TO_DRAWER_META: {
   [key in BasicField]: BuilderSidebarFieldMeta
 } = {
