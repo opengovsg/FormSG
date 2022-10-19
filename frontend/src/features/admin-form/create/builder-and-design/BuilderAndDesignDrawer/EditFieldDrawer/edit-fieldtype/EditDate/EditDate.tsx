@@ -310,7 +310,7 @@ export const EditDate = ({ field }: EditDateProps): JSX.Element => {
         <FormControl>
           <Toggle
             {...register('hasInvalidDays')}
-            label="Custom available days"
+            label="Customise available days"
           />
         </FormControl>
         {hasInvalidDaysRestriction && (
