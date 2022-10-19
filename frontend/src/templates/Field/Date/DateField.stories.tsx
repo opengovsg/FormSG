@@ -177,5 +177,5 @@ ValidationInvalidDaysOfTheWeek.args = {
     description: 'Wednesdays and Thursdays are invalid days',
     invalidDays: [InvalidDaysOptions.Wednesday, InvalidDaysOptions.Thursday],
   },
-  defaultValue: '2022-07-27',
+  defaultValue: '27/07/2022',
 }

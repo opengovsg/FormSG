@@ -41,7 +41,7 @@ export const hasAvailableDates = (
   end: Date,
   invalidDays: InvalidDaysOptions[],
 ): boolean => {
-  if (differenceInCalendarDays(start, end) > 5) {
+  if (invalidDays.length < 7 && differenceInCalendarDays(start, end) >= 6) {
     return true
   }
 
