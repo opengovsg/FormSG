@@ -1,14 +1,8 @@
 import { BiHomeAlt } from 'react-icons/bi'
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  Icon,
-  Skeleton,
-  Text,
-} from '@chakra-ui/react'
+import { Flex, Icon, Skeleton, Text } from '@chakra-ui/react'
 
 import { useIsMobile } from '~hooks/useIsMobile'
+import Link from '~components/Link'
 
 import { AdminFormNavbarProps } from './AdminFormNavbar'
 
@@ -24,25 +18,26 @@ export const AdminFormNavbarBreadcrumbs = ({
   const isMobile = useIsMobile()
 
   return (
-    <Breadcrumb
-      textStyle="body-1"
-      color="secondary.500"
-      overflow="hidden"
-      separator={<Text color="secondary.300">/</Text>}
-    >
-      <BreadcrumbItem whiteSpace="nowrap">
-        <BreadcrumbLink color="primary.500" onClick={handleBackButtonClick}>
-          {isMobile ? <Icon as={BiHomeAlt} mb="-2px" /> : 'All forms'}
-        </BreadcrumbLink>
-      </BreadcrumbItem>
+    // One day, in a distant future, when we upgrade to Chakra v2, this could be an
+    // actual chakra Breadcrumb component. Until that day comes, I'm just doing this.
+    // Background: Breadcrumb renders a nested <nav><ol>..., and if we want long form names to
+    // have ellipses properly, we need to style the inner <ol> with display: flex, which I can't.
+    <Flex textStyle="body-1" overflow="hidden">
+      <Link
+        whiteSpace="nowrap"
+        textDecorationLine="none"
+        onClick={handleBackButtonClick}
+      >
+        {isMobile ? <Icon as={BiHomeAlt} /> : 'All forms'}
+      </Link>
 
-      <BreadcrumbItem overflow="hidden">
-        <Skeleton overflow="hidden" isLoaded={!!formInfo}>
-          <Text whiteSpace="nowrap" textOverflow="ellipsis" overflow="hidden">
-            {formInfo ? formInfo.title : 'Loading...'}
-          </Text>
-        </Skeleton>
-      </BreadcrumbItem>
-    </Breadcrumb>
+      <Text color="secondary.300">&nbsp;/&nbsp;</Text>
+
+      <Skeleton overflow="hidden" isLoaded={!!formInfo}>
+        <Text whiteSpace="nowrap" textOverflow="ellipsis" overflow="hidden">
+          {formInfo ? formInfo.title : 'Loading...'}
+        </Text>
+      </Skeleton>
+    </Flex>
   )
 }
