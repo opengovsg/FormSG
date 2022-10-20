@@ -27,19 +27,20 @@ export const AdminFormNavbarBreadcrumbs = ({
     <Breadcrumb
       textStyle="body-1"
       color="secondary.500"
-      noOfLines={1}
-      alignItems="center"
+      overflow="hidden"
       separator={<Text color="secondary.300">/</Text>}
     >
-      <BreadcrumbItem>
+      <BreadcrumbItem whiteSpace="nowrap">
         <BreadcrumbLink color="primary.500" onClick={handleBackButtonClick}>
           {isMobile ? <Icon as={BiHomeAlt} mb="-2px" /> : 'All forms'}
         </BreadcrumbLink>
       </BreadcrumbItem>
 
-      <BreadcrumbItem>
-        <Skeleton isLoaded={!!formInfo}>
-          <Text>{formInfo ? formInfo.title : 'Loading...'}</Text>
+      <BreadcrumbItem overflow="hidden">
+        <Skeleton overflow="hidden" isLoaded={!!formInfo}>
+          <Text whiteSpace="nowrap" textOverflow="ellipsis" overflow="hidden">
+            {formInfo ? formInfo.title : 'Loading...'}
+          </Text>
         </Skeleton>
       </BreadcrumbItem>
     </Breadcrumb>
