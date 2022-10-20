@@ -7,10 +7,7 @@ import {
   RatingShape,
 } from '~shared/types/field'
 
-import {
-  BASICFIELD_TO_DRAWER_META,
-  MYINFO_FIELD_TO_DRAWER_META,
-} from '../../constants'
+import { BASICFIELD_TO_DRAWER_META } from '../../constants'
 import {
   MYINFO_DATEFIELD_META,
   MYINFO_DROPDOWNFIELD_META,
@@ -196,7 +193,7 @@ export const getMyInfoFieldCreationMeta = (
   > = {
     disabled: false,
     required: true,
-    title: MYINFO_FIELD_TO_DRAWER_META[myInfoAttribute].label,
+    title: MYINFO_FIELD_CONSTANTS[myInfoAttribute].value,
     description: '',
     fieldType: MYINFO_FIELD_CONSTANTS[myInfoAttribute].fieldType,
     myInfo: {
