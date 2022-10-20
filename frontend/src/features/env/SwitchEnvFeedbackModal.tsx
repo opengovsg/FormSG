@@ -55,7 +55,8 @@ export const SwitchEnvFeedbackModal = ({
   const [showThanksPage, setShowThanksPage] = useState<boolean>(false)
 
   const handleFormSubmit = handleSubmit((inputs) => {
-    onSubmitFeedback(inputs)
+    // Only submit form if there is feedback
+    if (inputs.feedback.trim()) onSubmitFeedback(inputs)
     setShowThanksPage(true)
   })
 
