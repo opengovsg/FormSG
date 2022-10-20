@@ -53,7 +53,7 @@ type BuilderSidebarFieldMeta = {
 }
 
 // !!! Do not use this to reference field titles for MyInfo fields. !!!
-// !!! Use MYINFO_FIELD_CONSTANTS in admin-form/create/builder-and-design/constants.ts instead !!!
+// !!! Use MYINFO_ATTRIBUTE_MAP in ~/shared/constants/field/myinfo/index.ts instead !!!
 export const BASICFIELD_TO_DRAWER_META: {
   [key in BasicField]: BuilderSidebarFieldMeta
 } = {

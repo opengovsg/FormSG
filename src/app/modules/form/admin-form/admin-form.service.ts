@@ -14,6 +14,7 @@ import {
   MAX_UPLOAD_FILE_SIZE,
   VALID_UPLOAD_FILE_TYPES,
 } from '../../../../../shared/constants'
+import { MYINFO_ATTRIBUTE_MAP } from '../../../../../shared/constants/field/myinfo'
 import {
   AdminDashboardFormMetaDto,
   BasicField,
@@ -567,6 +568,12 @@ export const createFormField = (
   FormFieldSchema,
   PossibleDatabaseError | FormNotFoundError | FieldNotFoundError
 > => {
+  // If MyInfo field, override field title to stored name.
+  if (newField.myInfo?.attr) {
+    newField.title =
+      MYINFO_ATTRIBUTE_MAP[newField.myInfo.attr]?.value ?? newField.title
+  }
+
   return ResultAsync.fromPromise(
     form.insertFormField(newField, to),
     (error) => {
