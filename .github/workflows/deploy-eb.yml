@@ -34,7 +34,7 @@ jobs:
       - uses: actions/checkout@v2
       - name: Setup secrets for datadog sourcemap deployment
         run: |
-          echo "APP_VERSION=$(jq -r .version package.json)-$(echo ${GITHUB_REF##*/})-$(echo ${GITHUB_SHA} | cut -c1-8)" >> $GITHUB_EN
+          echo "APP_VERSION=$(jq -r .version package.json)-$(echo ${GITHUB_REF##*/})-$(echo ${GITHUB_SHA} | cut -c1-8)" >> $GITHUB_ENV
       - name: Inject frontend build env vars
         env:
           REACT_APP_DD_RUM_APP_ID: ${{ secrets.DD_RUM_APP_ID }}
