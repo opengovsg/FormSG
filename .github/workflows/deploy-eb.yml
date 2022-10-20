@@ -22,47 +22,6 @@ jobs:
       - id: set-environment
         run: echo "::set-output name=current_env::${{github.ref_name}}"
 
-  deploy_dd_sourcemaps:
-    needs: set_environment
-    environment:
-      name: ${{ needs.set_environment.outputs.current_env }}
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Use Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 14
-          cache: 'npm'
-          cache-dependency-path: '**/package-lock.json'
-      - name: Set datadog app version for branch
-        run: |
-          echo "APP_VERSION=$(jq -r .version package.json)-$(echo ${GITHUB_REF##*/})-$(echo ${GITHUB_SHA} | cut -c1-8)" >> "$GITHUB_ENV"
-      - name: Set runtime env vars # Should be same as what is set in EB deployment so same static files are generated!
-        env:
-          REACT_APP_DD_RUM_APP_ID: ${{ secrets.DD_RUM_APP_ID }}
-          REACT_APP_DD_RUM_CLIENT_TOKEN: ${{ secrets.DD_RUM_CLIENT_TOKEN }}
-          REACT_APP_DD_RUM_ENV: ${{ secrets.DD_ENV }}
-          REACT_APP_GA_TRACKING_ID: ${{ secrets.GA_TRACKING_ID }}
-          REACT_APP_FORMSG_SDK_MODE: ${{ secrets.REACT_APP_FORMSG_SDK_MODE }}
-        run: |
-          echo REACT_APP_VERSION=${{env.APP_VERSION}} > frontend/.env
-          echo REACT_APP_DD_RUM_APP_ID=$REACT_APP_DD_RUM_APP_ID >> frontend/.env
-          echo REACT_APP_DD_RUM_CLIENT_TOKEN=$REACT_APP_DD_RUM_CLIENT_TOKEN >> frontend/.env
-          echo REACT_APP_DD_RUM_ENV=$REACT_APP_DD_RUM_ENV >> frontend/.env
-          echo REACT_APP_GA_TRACKING_ID=$REACT_APP_GA_TRACKING_ID >> frontend/.env
-          echo REACT_APP_FORMSG_SDK_MODE=$REACT_APP_FORMSG_SDK_MODE >> frontend/.env
-      - run: npm ci
-      - run: npm run build:frontend
-      - name: Upload source maps
-        env:
-          DATADOG_API_KEY: ${{ secrets.DD_API_KEY }}
-        run: |
-          npx @datadog/datadog-ci sourcemaps upload ./dist/frontend \
-          --service=formsg-react \
-          --release-version=${{env.APP_VERSION}} \
-          --minified-path-prefix=/static/js
-
   build_deploy_application:
     needs: set_environment
     environment:
@@ -73,10 +32,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Set datadog app version for branch
-        # Should be consistent with the app version in deploy_dd_sourcemaps
+      - name: Setup secrets for datadog sourcemap deployment
         run: |
-          echo "APP_VERSION=$(jq -r .version package.json)-$(echo ${GITHUB_REF##*/})-$(echo ${GITHUB_SHA} | cut -c1-8)" >> "$GITHUB_ENV"
+          echo "APP_VERSION=$(jq -r .version package.json)-$(echo ${GITHUB_REF##*/})-$(echo ${GITHUB_SHA} | cut -c1-8)" >> $GITHUB_ENV
+          echo "DATADOG_API_KEY=${{ secrets.DD_API_KEY }}" >> $GITHUB_ENV
       - name: Build
         env:
           REACT_APP_DD_RUM_APP_ID: ${{ secrets.DD_RUM_APP_ID }}
@@ -109,7 +68,7 @@ jobs:
           DD_API_KEY: ${{ secrets.DD_API_KEY }}
           DD_ENV: ${{ secrets.DD_ENV }}
         run: |
-          docker build -f Dockerfile.production -t $ECR_REPOSITORY:$IMAGE_TAG .
+          docker build --secret id=secrets,src=$GITHUB_ENV -f Dockerfile.production -t $ECR_REPOSITORY:$IMAGE_TAG .
           docker tag $ECR_REPOSITORY:$IMAGE_TAG $ECR_REPOSITORY:$BRANCH
           docker push -a $ECR_REPOSITORY
           sed -i -e "s/@TAG/$IMAGE_TAG/g" Dockerrun.aws.json
