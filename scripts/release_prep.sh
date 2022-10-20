@@ -41,7 +41,7 @@ if [[ "$1" == "--recut" ]]; then
   may_force_push=-f
 fi
 
-git commit -a -m  --no-verify "chore: bump version to ${release_version}"
+git commit -a -n -m "chore: bump version to ${release_version}"
 git tag ${release_version}
 git checkout -b ${release_branch}
 git branch -D ${temp_release_branch}
