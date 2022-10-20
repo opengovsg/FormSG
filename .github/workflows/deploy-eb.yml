@@ -23,6 +23,9 @@ jobs:
         run: echo "::set-output name=current_env::${{github.ref_name}}"
 
   deploy_dd_sourcemaps:
+    needs: set_environment
+    environment:
+      name: ${{ needs.set_environment.outputs.current_env }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
