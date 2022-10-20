@@ -102,7 +102,7 @@ export const handleRedirect: ControllerHandler<
   }
 
   // Metatags creation successful.
-  return res.setHeader('Cache-Control', 'no-cache').render('index', {
+  return res.render('index', {
     ...createMetatagsResult.value,
     redirectPath,
   })
