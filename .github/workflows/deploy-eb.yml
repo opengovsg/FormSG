@@ -68,7 +68,7 @@ jobs:
           DD_API_KEY: ${{ secrets.DD_API_KEY }}
           DD_ENV: ${{ secrets.DD_ENV }}
         run: |
-          DOCKER_BUILDKIT=1 docker build --secret id=secrets,src=$GITHUB_ENV -f Dockerfile.production -t $ECR_REPOSITORY:$IMAGE_TAG .
+          DOCKER_BUILDKIT=1 docker build --secret id=env_secrets,src=$GITHUB_ENV -f Dockerfile.production -t $ECR_REPOSITORY:$IMAGE_TAG .
           docker tag $ECR_REPOSITORY:$IMAGE_TAG $ECR_REPOSITORY:$BRANCH
           docker push -a $ECR_REPOSITORY
           sed -i -e "s/@TAG/$IMAGE_TAG/g" Dockerrun.aws.json

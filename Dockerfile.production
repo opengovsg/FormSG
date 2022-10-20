@@ -2,6 +2,10 @@
 # Docker 1.2 allows for usage of secrets without baking them into the image.
 
 FROM node:fermium-alpine3.16 as build
+
+# TODO: Remove, this is for early failure whilst debugging
+RUN --mount=type=secret,id=env_secrets,required source /run/secrets/env_secrets
+
 # node-modules-builder stage installs/compiles the node_modules folder
 # Python version must be specified starting in alpine3.12
 RUN apk update && apk upgrade && \
@@ -26,11 +30,11 @@ RUN npm_config_mode=yes npx lockfile-lint --type npm --path package.json --valid
 RUN npm run lint-ci
 RUN npm run build
 
-# Upload datadog source maps from secret mount, id MUST be `id=secrets` in the docker build command
-# Mount creates a file inside /run/secrets/secrets, and source to load the environment variables
+# Upload datadog source maps from secret mount, id MUST be `id=env_secrets` in the docker build command
+# Mount creates a file inside /run/secrets/env_secrets, and source to load the environment variables
 # Assume secret file contains APP_VERSION and DATADOG_API_KEY environment variables for datadog sourcemap upload.
 # For the content of the mounted file is only accessible in the RUN command where it’s referred in, use && command.
-RUN --mount=type=secret,id=secrets source /run/secrets/secrets \
+RUN --mount=type=secret,id=env_secrets source /run/secrets/env_secrets \
     && npx @datadog/datadog-ci sourcemaps upload ./dist/frontend \
     --service=formsg-react \
     --release-version=${APP_VERSION} \
