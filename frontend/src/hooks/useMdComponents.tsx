@@ -48,6 +48,7 @@ export const useMdComponents = ({
     () => ({
       sx: {
         whiteSpace: 'pre-wrap',
+        display: 'initial',
         ...(styles.link ?? {}),
       },
     }),

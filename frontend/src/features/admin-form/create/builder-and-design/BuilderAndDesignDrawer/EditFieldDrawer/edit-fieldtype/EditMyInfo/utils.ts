@@ -1,7 +1,9 @@
-import { MyInfoVerifiedType } from '~shared/constants/field/myinfo'
+import {
+  MYINFO_ATTRIBUTE_MAP,
+  MyInfoVerifiedType,
+} from '~shared/constants/field/myinfo'
 import { MyInfoAttribute, MyInfoField } from '~shared/types'
 
-import { MYINFO_FIELD_CONSTANTS } from '~features/admin-form/create/builder-and-design/constants'
 import {
   MyInfoDataSource,
   MyInfoPreviewMeta,
@@ -29,7 +31,7 @@ const convertMyInfoDataSource = (source: string): MyInfoDataSource[] => {
 const extractVerifiedFor = (
   myInfoFieldType: MyInfoAttribute,
 ): VerifiedForMappings => {
-  const verificationArray = MYINFO_FIELD_CONSTANTS[myInfoFieldType]['verified']
+  const verificationArray = MYINFO_ATTRIBUTE_MAP[myInfoFieldType]['verified']
   const baseVerifiedFor = {
     [VerifiedFor.Singaporeans]: false,
     [VerifiedFor.PermanentResidents]: false,
@@ -46,9 +48,9 @@ const extractVerifiedFor = (
 export const extendWithMyInfo = (field: MyInfoField): MyInfoPreviewMeta => {
   return {
     dataSource: convertMyInfoDataSource(
-      MYINFO_FIELD_CONSTANTS[field.myInfo.attr].source,
+      MYINFO_ATTRIBUTE_MAP[field.myInfo.attr].source,
     ),
     verifiedFor: extractVerifiedFor(field.myInfo.attr),
-    details: MYINFO_FIELD_CONSTANTS[field.myInfo.attr].description,
+    details: MYINFO_ATTRIBUTE_MAP[field.myInfo.attr].description,
   }
 }

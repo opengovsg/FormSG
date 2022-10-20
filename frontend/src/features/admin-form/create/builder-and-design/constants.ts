@@ -1,6 +1,3 @@
-import { keyBy } from 'lodash'
-
-import { types as MYINFO_TYPE_CONSTANTS } from '~shared/constants/field/myinfo'
 import {
   BasicField,
   DateFieldBase,
@@ -65,8 +62,6 @@ export const MYINFO_FIELDS_ORDERED: MyInfoAttribute[] = [
   MyInfoAttribute.MarriageDate,
   MyInfoAttribute.DivorceDate,
 ]
-
-export const MYINFO_FIELD_CONSTANTS = keyBy(MYINFO_TYPE_CONSTANTS, 'name')
 
 export const MYINFO_TEXTFIELD_META: MyInfoFieldMeta<ShortTextFieldBase> = {
   ValidationOptions: {
