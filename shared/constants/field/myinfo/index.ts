@@ -1,3 +1,4 @@
+import keyBy from 'lodash/keyBy'
 import { BasicField, MyInfoAttribute, MyInfoField } from '../../../types/field'
 import COUNTRIES from './myinfo-countries'
 import DIALECTS from './myinfo-dialects'
@@ -306,3 +307,5 @@ export const types: MyInfoFieldBlock[] = [
     previewValue: '98765432',
   },
 ]
+
+export const MYINFO_ATTRIBUTE_MAP = keyBy(types, 'name')
