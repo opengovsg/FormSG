@@ -66,7 +66,7 @@ export const HashRouterElement = ({
     // Retire this custom routing after July 2024
     if (matches) {
       const path = matches[1]
-      const querystring = matches[2]
+      const querystring = matches[2] || ''
 
       // angular routes that need to be mapped
       for (const { regex, getTarget } of pathMapper) {
