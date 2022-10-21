@@ -1,19 +1,17 @@
 import { BiHomeAlt } from 'react-icons/bi'
+import { Link as ReactLink } from 'react-router-dom'
 import { Icon, Skeleton, Stack, Text } from '@chakra-ui/react'
 
+import { DASHBOARD_ROUTE } from '~constants/routes'
 import { useIsMobile } from '~hooks/useIsMobile'
 import Link from '~components/Link'
 
 import { AdminFormNavbarProps } from './AdminFormNavbar'
 
-type AdminFormNavbarDetailsProps = Pick<
-  AdminFormNavbarProps,
-  'formInfo' | 'handleBackButtonClick'
->
+type AdminFormNavbarDetailsProps = Pick<AdminFormNavbarProps, 'formInfo'>
 
 export const AdminFormNavbarBreadcrumbs = ({
   formInfo,
-  handleBackButtonClick,
 }: AdminFormNavbarDetailsProps): JSX.Element => {
   const isMobile = useIsMobile()
 
@@ -29,9 +27,10 @@ export const AdminFormNavbarBreadcrumbs = ({
       spacing="0.5rem"
     >
       <Link
+        as={ReactLink}
         whiteSpace="nowrap"
         textDecorationLine="none"
-        onClick={handleBackButtonClick}
+        to={DASHBOARD_ROUTE}
       >
         {isMobile ? <Icon as={BiHomeAlt} /> : 'All forms'}
       </Link>

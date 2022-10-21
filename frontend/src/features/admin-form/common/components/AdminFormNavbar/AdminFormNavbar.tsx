@@ -50,7 +50,6 @@ export interface AdminFormNavbarProps {
 
   viewOnly: boolean
 
-  handleBackButtonClick: () => void
   handleAddCollabButtonClick: () => void
   handlePreviewFormButtonClick: () => void
   handleShareButtonClick: () => void
@@ -63,7 +62,6 @@ export const AdminFormNavbar = ({
   formInfo,
   viewOnly,
   handleAddCollabButtonClick,
-  handleBackButtonClick,
   handlePreviewFormButtonClick,
   handleShareButtonClick,
 }: AdminFormNavbarProps): JSX.Element => {
@@ -148,10 +146,7 @@ export const AdminFormNavbar = ({
         pl={{ base: '1.5rem', md: '1.75rem', lg: '2rem' }}
         pr="1rem"
       >
-        <AdminFormNavbarBreadcrumbs
-          formInfo={formInfo}
-          handleBackButtonClick={handleBackButtonClick}
-        />
+        <AdminFormNavbarBreadcrumbs formInfo={formInfo} />
       </GridItem>
       <NavigationTabList
         variant={tabResponsiveVariant}
