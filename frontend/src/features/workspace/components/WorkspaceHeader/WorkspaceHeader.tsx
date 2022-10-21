@@ -4,13 +4,9 @@ import { Skeleton, Stack, Text } from '@chakra-ui/react'
 import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
 
+import { useWorkspaceContext } from '~features/workspace/WorkspaceContext'
+
 export interface WorkspaceHeaderProps {
-  /**
-   * Number of forms in the workspace.
-   * Defaults to '---' (to account for loading or error states)
-   */
-  totalFormCount?: number | '---'
-  isLoading: boolean
   handleOpenCreateFormModal: () => void
 }
 
@@ -18,11 +14,11 @@ export interface WorkspaceHeaderProps {
  * Header for listing number of forms, or updating the sort order of listed forms, etc.
  */
 export const WorkspaceHeader = ({
-  totalFormCount = '---',
-  isLoading,
   handleOpenCreateFormModal,
 }: WorkspaceHeaderProps): JSX.Element => {
   const isMobile = useIsMobile()
+  const { isLoading, totalFormsCount, displayedFormsCount, isFilterOn } =
+    useWorkspaceContext()
 
   return (
     <Stack
@@ -38,7 +34,24 @@ export const WorkspaceHeader = ({
         display="flex"
         color="secondary.500"
       >
-        All forms (<Skeleton isLoaded={!isLoading}>{totalFormCount}</Skeleton>)
+        {isFilterOn ? (
+          <>
+            Showing{' '}
+            <Skeleton isLoaded={!isLoading}>{displayedFormsCount}</Skeleton> of{' '}
+            <Skeleton isLoaded={!isLoading}>
+              {totalFormsCount ?? '---'}
+            </Skeleton>{' '}
+            forms
+          </>
+        ) : (
+          <>
+            All forms (
+            <Skeleton isLoaded={!isLoading}>
+              {totalFormsCount ?? '---'}
+            </Skeleton>
+            )
+          </>
+        )}
       </Text>
       <Stack
         w={{ base: '100%', md: 'auto' }}

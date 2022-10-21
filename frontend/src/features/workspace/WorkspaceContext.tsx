@@ -2,10 +2,15 @@ import { createContext, useContext } from 'react'
 
 import { AdminDashboardFormMetaDto } from '~shared/types'
 
+import { FilterOption } from './types'
+
 export interface WorkspaceContextProps {
   isLoading: boolean
-  totalFormCount?: number
-  sortedForms: AdminDashboardFormMetaDto[]
+  totalFormsCount?: number
+  displayedForms: AdminDashboardFormMetaDto[]
+  displayedFormsCount: number
+  isFilterOn: boolean
+  setFilterOption: (filterOption?: FilterOption) => void
 }
 
 export const WorkspaceContext = createContext<

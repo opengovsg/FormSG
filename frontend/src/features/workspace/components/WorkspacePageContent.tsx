@@ -26,7 +26,7 @@ export const WorkspacePageContent = ({
 }: WorkspacePageContentProps): JSX.Element => {
   const { user, isLoading: isUserLoading } = useUser()
 
-  const { isLoading, totalFormCount, sortedForms } = useWorkspaceContext()
+  const { isLoading, totalFormsCount } = useWorkspaceContext()
 
   const ROLLOUT_ANNOUNCEMENT_KEY = useMemo(
     () => ROLLOUT_ANNOUNCEMENT_KEY_PREFIX + user?._id,
@@ -40,7 +40,7 @@ export const WorkspacePageContent = ({
     [isUserLoading, hasSeenAnnouncement],
   )
 
-  return totalFormCount === 0 ? (
+  return totalFormsCount === 0 ? (
     <EmptyWorkspace
       handleOpenCreateFormModal={handleCreateFormModalOpen}
       isLoading={isLoading}
@@ -66,8 +66,6 @@ export const WorkspacePageContent = ({
         py="1rem"
       >
         <WorkspaceHeader
-          isLoading={isLoading}
-          totalFormCount={totalFormCount}
           handleOpenCreateFormModal={handleCreateFormModalOpen}
         />
       </Container>
@@ -76,7 +74,7 @@ export const WorkspacePageContent = ({
           onClose={() => setHasSeenAnnouncement(true)}
           isOpen={isAnnouncementModalOpen}
         />
-        <WorkspaceFormRows rows={sortedForms} isLoading={isLoading} />
+        <WorkspaceFormRows />
       </Box>
     </Grid>
   )
