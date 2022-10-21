@@ -1,7 +1,7 @@
 {
   "name": "FormSG",
   "description": "Form Manager for Government",
-  "version": "6.8.1",
+  "version": "6.9.0",
   "homepage": "https://form.gov.sg",
   "authors": [
     "FormSG <formsg@data.gov.sg>"
@@ -9,7 +9,7 @@
   "private": true,
   "repository": {
     "type": "git",
-    "url": "https://github.com/datagovsg/formsg.git"
+    "url": "https://github.com/opengovsg/formsg.git"
   },
   "engines": {
     "node": "~14",
@@ -62,7 +62,7 @@
     "postinstall:shared": "npm --prefix shared install"
   },
   "dependencies": {
-    "@aws-sdk/client-cloudwatch-logs": "^3.190.0",
+    "@aws-sdk/client-cloudwatch-logs": "^3.192.0",
     "@babel/runtime": "^7.19.4",
     "@joi/date": "^2.1.0",
     "@opengovsg/angular-daterangepicker-webpack": "^1.1.5",
