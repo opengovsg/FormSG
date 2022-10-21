@@ -36,22 +36,15 @@ export const WorkspaceHeader = ({
       >
         {isFilterOn ? (
           <>
-            Showing{' '}
-            <Skeleton isLoaded={!isLoading}>{displayedFormsCount}</Skeleton> of{' '}
-            <Skeleton isLoaded={!isLoading}>
-              {totalFormsCount ?? '---'}
-            </Skeleton>{' '}
-            forms
+            Showing&nbsp;
+            <Skeleton isLoaded={!isLoading}>{displayedFormsCount}</Skeleton>
+            &nbsp;of&nbsp;
           </>
         ) : (
-          <>
-            All forms (
-            <Skeleton isLoaded={!isLoading}>
-              {totalFormsCount ?? '---'}
-            </Skeleton>
-            )
-          </>
+          'All forms ('
         )}
+        <Skeleton isLoaded={!isLoading}>{totalFormsCount ?? '---'}</Skeleton>
+        {isFilterOn ? <>&nbsp;forms</> : ')'}
       </Text>
       <Stack
         w={{ base: '100%', md: 'auto' }}
