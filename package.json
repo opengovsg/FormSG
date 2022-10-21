@@ -9,7 +9,7 @@
   "private": true,
   "repository": {
     "type": "git",
-    "url": "https://github.com/datagovsg/formsg.git"
+    "url": "https://github.com/opengovsg/formsg.git"
   },
   "engines": {
     "node": "~14",
