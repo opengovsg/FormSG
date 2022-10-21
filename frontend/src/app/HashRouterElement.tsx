@@ -59,7 +59,8 @@ export const HashRouterElement = ({
   useLayoutEffect(() => {
     let hasRedirect = false
 
-    // angular links may have a query string in the hash 🤮😭🙄, so we must do our own extraction of the hash
+    // we capture angular links where the path is in the url hash. e.g. starting with #!/
+    // the angular links may have a query string in the hash too 🤮😭🙄, so we must do our own extraction of the hash
     const matches = location.hash.match(/^#!(\/[^?]*)(\?.*)?$/)
 
     // Retire this custom routing after July 2024
