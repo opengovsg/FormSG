@@ -25,26 +25,26 @@ type FormRegExpMatchArray = RegExpMatchArray & {
   }
 }
 
-const hashRouteMapper = [
+const pathMapper = [
   {
-    regex: /^#!\/(?<formid>[0-9a-fA-F]{24})$/,
+    regex: /^\/(?<formid>[0-9a-fA-F]{24})$/,
     getTarget: (m: FormRegExpMatchArray) => `/${m.groups.formid}`,
   },
   {
-    regex: /^#!\/(?<formid>[0-9a-fA-F]{24})\/admin$/,
+    regex: /^\/(?<formid>[0-9a-fA-F]{24})\/admin$/,
     getTarget: (m: FormRegExpMatchArray) => `/admin/form/${m.groups.formid}`,
   },
   {
-    regex: /^#!\/(?<formid>[0-9a-fA-F]{24})\/preview$/,
+    regex: /^\/(?<formid>[0-9a-fA-F]{24})\/preview$/,
     getTarget: (m: FormRegExpMatchArray) =>
       `/admin/form/${m.groups.formid}/preview`,
   },
   {
-    regex: /^#!\/forms$/,
+    regex: /^\/forms$/,
     getTarget: (m: FormRegExpMatchArray) => `${DASHBOARD_ROUTE}`,
   },
   {
-    regex: /^#!\/examples$/,
+    regex: /^\/examples$/,
     getTarget: (m: FormRegExpMatchArray) => `/examples`,
   },
 ]
@@ -60,17 +60,19 @@ export const HashRouterElement = ({
     let hasRedirect = false
     // Retire this custom routing after July 2024
     if (location.hash.startsWith('#!/')) {
-      // angular routes that need to be mapped
-      for (const { regex, getTarget } of hashRouteMapper) {
-        // angular links may have a query string in the hash 🤮😭🙄, so we must do our own extraction of the hash
-        const urlHash = location.hash.replace(/\?.*$/, '')
-        const hashQueryString = location.hash.replace(/^[^?]+/, '')
+      // angular links may have a query string in the hash 🤮😭🙄, so we must do our own extraction of the hash
+      const [path, querystring] = location.hash.match(/^#!([^?]+)(\?.*)?$/) || [
+        '/',
+        '',
+      ]
 
-        const match = urlHash.match(regex)
+      // angular routes that need to be mapped
+      for (const { regex, getTarget } of pathMapper) {
+        const match = path.match(regex)
         if (match) {
           const redirectTo = getTarget(match as FormRegExpMatchArray)
           hasRedirect = true
-          window.location.assign(`${redirectTo}${hashQueryString}`)
+          window.location.assign(`${redirectTo}${querystring}`)
           break
         }
       }
