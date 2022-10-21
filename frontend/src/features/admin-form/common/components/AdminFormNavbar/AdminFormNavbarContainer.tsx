@@ -1,4 +1,3 @@
-import { useCallback } from 'react'
 import { useParams } from 'react-router-dom'
 import { useDisclosure } from '@chakra-ui/react'
 
@@ -19,18 +18,10 @@ const useAdminFormNavbar = () => {
 
   const { data: form } = useAdminForm()
   const { hasEditAccess, isLoading } = useAdminFormCollaborators(formId)
-
-  const handlePreviewForm = useCallback((): void => {
-    window.open(
-      `${window.location.origin}${ADMINFORM_ROUTE}/${formId}/${ADMINFORM_PREVIEW_ROUTE}`,
-    )
-  }, [formId])
-
   const collaboratorModalDisclosure = useDisclosure()
   const shareFormModalDisclosure = useDisclosure()
 
   return {
-    handlePreviewForm,
     form,
     formId,
     collaboratorModalDisclosure,
@@ -44,7 +35,6 @@ const useAdminFormNavbar = () => {
  */
 export const AdminFormNavbarContainer = (): JSX.Element => {
   const {
-    handlePreviewForm,
     collaboratorModalDisclosure,
     shareFormModalDisclosure,
     form,
@@ -68,8 +58,8 @@ export const AdminFormNavbarContainer = (): JSX.Element => {
       <AdminFormNavbar
         formInfo={form}
         viewOnly={viewOnly}
+        previewFormLink={`${ADMINFORM_ROUTE}/${formId}/${ADMINFORM_PREVIEW_ROUTE}`}
         handleAddCollabButtonClick={collaboratorModalDisclosure.onOpen}
-        handlePreviewFormButtonClick={handlePreviewForm}
         handleShareButtonClick={shareFormModalDisclosure.onOpen}
       />
     </>
