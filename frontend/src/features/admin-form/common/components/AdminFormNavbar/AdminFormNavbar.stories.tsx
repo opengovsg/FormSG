@@ -20,6 +20,7 @@ export default {
   },
   args: {
     formInfo: MOCK_FORM,
+    previewFormLink: '/test',
   },
 } as Meta<AdminFormNavbarProps>
 
@@ -32,11 +33,13 @@ export const DefaultViewOnly = Template.bind({})
 DefaultViewOnly.args = {
   formInfo: MOCK_FORM,
   viewOnly: true,
+  previewFormLink: '/test',
 }
 
 export const Skeleton = Template.bind({})
 Skeleton.args = {
   formInfo: undefined,
+  previewFormLink: '/test',
 }
 
 export const Mobile = Template.bind({})
@@ -46,5 +49,6 @@ Mobile.args = {
     title:
       'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
   },
+  previewFormLink: '/test',
 }
 Mobile.parameters = getMobileViewParameters()
