@@ -62,11 +62,15 @@ export const HashRouterElement = ({
     if (location.hash.startsWith('#!/')) {
       // angular routes that need to be mapped
       for (const { regex, getTarget } of hashRouteMapper) {
-        const match = location.hash.match(regex)
+        // angular links may have a query string in the hash 🤮😭🙄, so we must do our own extraction of the hash
+        const urlHash = location.hash.replace(/\?.*$/, '')
+        const hashQueryString = location.hash.replace(/^[^?]+/, '')
+
+        const match = urlHash.match(regex)
         if (match) {
           const redirectTo = getTarget(match as FormRegExpMatchArray)
           hasRedirect = true
-          window.location.assign(redirectTo)
+          window.location.assign(`${redirectTo}${hashQueryString}`)
           break
         }
       }
