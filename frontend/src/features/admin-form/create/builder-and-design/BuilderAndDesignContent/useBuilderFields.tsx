@@ -1,14 +1,16 @@
-import { useMemo } from 'react'
 import cuid from 'cuid'
+import produce from 'immer'
 
 import {
   BasicField,
   FieldCreateDto,
+  FormField,
   FormFieldDto,
   TableFieldDto,
 } from '~shared/types/field'
-import { insertAt, replaceAt } from '~shared/utils/immutable-array-fns'
 
+import { NON_RESPONSE_FIELD_SET } from '~features/form/constants'
+import { FormFieldWithQuestionNo } from '~features/form/types'
 import { augmentWithMyInfo } from '~features/myinfo/utils/augmentWithMyInfo'
 
 import { PENDING_CREATE_FIELD_ID } from '../constants'
@@ -19,10 +21,10 @@ import {
   useFieldBuilderStore,
 } from '../useFieldBuilderStore'
 
-const getFormFieldsWhileCreating = (
-  formFields: FormFieldDto[],
+const mutateFormFieldsWhileCreating = (
+  draftBuilerFields: FormFieldDto[],
   fieldToCreate: { field: FieldCreateDto; insertionIndex: number },
-): FormFieldDto[] => {
+) => {
   if (fieldToCreate.field.fieldType === BasicField.Table) {
     const newField: TableFieldDto = {
       ...fieldToCreate.field,
@@ -32,45 +34,62 @@ const getFormFieldsWhileCreating = (
         _id: cuid(),
       })),
     }
-    return insertAt(formFields, fieldToCreate.insertionIndex, newField)
+    draftBuilerFields.splice(fieldToCreate.insertionIndex, 0, newField)
+  } else {
+    draftBuilerFields.splice(fieldToCreate.insertionIndex, 0, {
+      ...(fieldToCreate.field as FormFieldDto<
+        Exclude<FormField, TableFieldDto>
+      >),
+      _id: PENDING_CREATE_FIELD_ID,
+    })
   }
-  return insertAt(formFields, fieldToCreate.insertionIndex, {
-    ...fieldToCreate.field,
-    _id: PENDING_CREATE_FIELD_ID,
-  })
 }
 
-const getFormFieldsWhileEditing = (
-  formFields: FormFieldDto[],
+const mutateFormFieldsWhileEditing = (
+  draftBuilderFields: FormFieldDto[],
   editingField: FormFieldDto,
-): FormFieldDto[] => {
-  const editingFieldIndex = formFields.findIndex(
+): void => {
+  const editingFieldIndex = draftBuilderFields.findIndex(
     (ff) => ff._id === editingField._id,
   )
-  if (editingFieldIndex < 0) return formFields
-  return replaceAt(formFields, editingFieldIndex, editingField)
+  if (editingFieldIndex < 0) return
+  draftBuilderFields[editingFieldIndex] = editingField
+}
+
+const addQuestionNo = (draftBuilderFields: FormFieldWithQuestionNo[]): void => {
+  let questionNumber = 1
+  for (let i = 0; i < draftBuilderFields.length; i++) {
+    if (!NON_RESPONSE_FIELD_SET.has(draftBuilderFields[i].fieldType)) {
+      draftBuilderFields[i] = {
+        ...draftBuilderFields[i],
+        questionNumber: questionNumber++,
+      }
+    }
+  }
 }
 
 export const useBuilderFields = () => {
   const { data: formData, isLoading } = useCreateTabForm()
   const stateData = useFieldBuilderStore(stateDataSelector)
-  const builderFields = useMemo(() => {
-    let existingFields = formData?.form_fields
-    if (isLoading || !existingFields) return null
-    if (stateData.state === FieldBuilderState.EditingField) {
-      existingFields = getFormFieldsWhileEditing(
-        existingFields,
-        stateData.field,
-      )
-    } else if (stateData.state === FieldBuilderState.CreatingField) {
-      existingFields = getFormFieldsWhileCreating(existingFields, stateData)
-    }
 
-    return existingFields.map(augmentWithMyInfo)
-  }, [formData?.form_fields, isLoading, stateData])
+  const builderFields = formData?.form_fields
+  if (isLoading || !builderFields)
+    return {
+      builderFields,
+      isLoading,
+    }
+  const nextBuilderFields = produce(builderFields, (draftBuilderFields) => {
+    if (stateData.state === FieldBuilderState.EditingField) {
+      mutateFormFieldsWhileEditing(draftBuilderFields, stateData.field)
+    } else if (stateData.state === FieldBuilderState.CreatingField) {
+      mutateFormFieldsWhileCreating(draftBuilderFields, stateData)
+    }
+    draftBuilderFields.map(augmentWithMyInfo)
+    addQuestionNo(draftBuilderFields)
+  })
 
   return {
-    builderFields,
+    builderFields: nextBuilderFields,
     isLoading,
   }
 }

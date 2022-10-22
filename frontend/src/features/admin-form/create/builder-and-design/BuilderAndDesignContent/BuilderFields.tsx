@@ -1,6 +1,5 @@
 import { AdminFormDto } from '~shared/types/form'
 
-import { augmentWithQuestionNo } from '~features/form/utils'
 import { FieldIdSet } from '~features/logic/types'
 
 import { PENDING_CREATE_FIELD_ID } from '../constants'
@@ -23,12 +22,11 @@ export const BuilderFields = ({
   visibleFieldIds,
   isDraggingOver,
 }: BuilderFieldsProps) => {
-  const fieldsWithQuestionNos = augmentWithQuestionNo(fields)
   const stateData = useFieldBuilderStore(stateDataSelector)
 
   return (
     <>
-      {fieldsWithQuestionNos.map((f, i) => (
+      {fields.map((f, i) => (
         <FieldRow
           index={i}
           key={f._id}

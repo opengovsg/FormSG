@@ -175,7 +175,7 @@ export const useEditFieldForm = <FormShape, FieldShape extends FormField>({
 
   useDebounce(
     () => handleChange(transform.output(clonedWatchedInputs, field)),
-    300,
+    0,
     Object.values(clonedWatchedInputs),
   )
 
