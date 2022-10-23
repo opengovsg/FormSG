@@ -130,7 +130,7 @@
     "http-errors": "^2.0.0",
     "http-status-codes": "^2.2.0",
     "intl-tel-input": "~12.4.0",
-    "jose": "^4.10.0",
+    "jose": "^4.10.3",
     "json-stringify-safe": "^5.0.1",
     "jsonwebtoken": "^8.5.1",
     "jszip": "^3.10.1",
