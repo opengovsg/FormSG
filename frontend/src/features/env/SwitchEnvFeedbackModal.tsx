@@ -1,6 +1,7 @@
 // TODO #4279: Remove after React rollout is complete
 import { useCallback, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
+import { useParams } from 'react-router-dom'
 import {
   chakra,
   FormControl,
@@ -22,6 +23,7 @@ import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
 import FormLabel from '~components/FormControl/FormLabel'
 import { ModalCloseButton } from '~components/Modal'
+import Radio, { OthersInput } from '~components/Radio'
 import Textarea from '~components/Textarea'
 
 import { useUser } from '~features/user/queries'
@@ -32,6 +34,13 @@ export interface SwitchEnvModalProps {
   onSubmitFeedback: (formInputs: SwitchEnvFeedbackFormBodyDto) => Promise<any>
   onChangeEnv: () => void
 }
+
+export const ADMIN_RADIO_OPTIONS = [
+  'I couldn’t find a feature I needed',
+  'The new FormSG did not function properly',
+]
+export const PUBLIC_RADIO_OPTIONS = ['I couldn’t submit my form']
+export const COMMON_RADIO_OPTIONS = ['I’m not used to the new FormSG']
 
 export const SwitchEnvFeedbackModal = ({
   isOpen,
@@ -51,8 +60,10 @@ export const SwitchEnvFeedbackModal = ({
 
   const { user } = useUser()
   const url = window.location.href
+  const { formId } = useParams()
   const rumSessionId = datadogRum.getInternalContext()?.session_id
   const [showThanksPage, setShowThanksPage] = useState<boolean>(false)
+  const publicFormPath = new RegExp(`^/${formId}`)
 
   const handleFormSubmit = handleSubmit((inputs) => {
     // Only submit form if there is feedback
@@ -70,6 +81,8 @@ export const SwitchEnvFeedbackModal = ({
     onClose()
     setShowThanksPage(false)
   }, [onChangeEnv, onClose])
+
+  const isPublicFormPage = window.location.pathname.match(publicFormPath)
 
   return (
     <Modal
@@ -120,17 +133,48 @@ export const SwitchEnvFeedbackModal = ({
                 <FormControl>
                   <Input type="hidden" {...register('url')} value={url} />
                 </FormControl>
-                <FormControl>
-                  <FormLabel
-                    description={
-                      user
-                        ? ''
-                        : 'Any fields you’ve filled in your form so far will be cleared'
-                    }
-                  >
-                    Please tell us what we can improve on
+                <FormControl isRequired={true}>
+                  <FormLabel>
+                    Why are you switching to the previous FormSG?
                   </FormLabel>
-                  <Textarea {...register('feedback')} tabIndex={1} />
+                  <Radio.RadioGroup>
+                    {isPublicFormPage
+                      ? PUBLIC_RADIO_OPTIONS.map((option) => (
+                          <Radio
+                            {...register('radio')}
+                            value={option}
+                            key={option}
+                          >
+                            {option}
+                          </Radio>
+                        ))
+                      : ADMIN_RADIO_OPTIONS.map((option) => (
+                          <Radio
+                            {...register('radio')}
+                            value={option}
+                            key={option}
+                          >
+                            {option}
+                          </Radio>
+                        ))}
+                    {COMMON_RADIO_OPTIONS.map((option) => (
+                      <Radio
+                        {...register('radio')}
+                        value={'I’m not used to the new FormSG'}
+                        key={option}
+                      >
+                        {option}
+                      </Radio>
+                    ))}
+                    <Radio.OthersWrapper>
+                      <FormControl>
+                        <OthersInput
+                          aria-label='"Other" response'
+                          {...register('radio')}
+                        />
+                      </FormControl>
+                    </Radio.OthersWrapper>
+                  </Radio.RadioGroup>
                 </FormControl>
                 {user ? (
                   <FormControl>
@@ -140,7 +184,26 @@ export const SwitchEnvFeedbackModal = ({
                       value={user.email}
                     />
                   </FormControl>
-                ) : null}
+                ) : (
+                  <FormControl>
+                    <FormLabel>
+                      Email, if we need to contact you for details
+                    </FormLabel>
+                    <Input {...register('email')} tabIndex={1} />
+                  </FormControl>
+                )}
+                <FormControl>
+                  <FormLabel
+                    description={
+                      user
+                        ? ''
+                        : 'Any fields you’ve filled in your form so far will be cleared'
+                    }
+                  >
+                    Describe your problem in detail to help us improve FormSG
+                  </FormLabel>
+                  <Textarea {...register('feedback')} tabIndex={1} />
+                </FormControl>
                 {rumSessionId ? (
                   <FormControl>
                     <Input
