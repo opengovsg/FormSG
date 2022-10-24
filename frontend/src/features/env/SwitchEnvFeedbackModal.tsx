@@ -66,8 +66,7 @@ export const SwitchEnvFeedbackModal = ({
   const publicFormPath = new RegExp(`^/${formId}`)
 
   const handleFormSubmit = handleSubmit((inputs) => {
-    // Only submit form if there is feedback
-    if (inputs.feedback.trim()) onSubmitFeedback(inputs)
+    onSubmitFeedback(inputs)
     setShowThanksPage(true)
   })
 
