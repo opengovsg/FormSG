@@ -1,6 +1,5 @@
 import { useCallback } from 'react'
 import { useParams } from 'react-router-dom'
-import { useBreakpointValue } from '@chakra-ui/media-query'
 import {
   Modal,
   ModalBody,
@@ -12,6 +11,7 @@ import {
   Text,
 } from '@chakra-ui/react'
 
+import { useModalSize } from '~hooks/useModalSize'
 import Button from '~components/Button'
 import { ModalCloseButton } from '~components/Modal'
 
@@ -28,14 +28,7 @@ export const DeleteTwilioModal = ({
   onClose,
   onDelete,
 }: DeleteTwilioModalProps): JSX.Element => {
-  const modalSize = useBreakpointValue(
-    {
-      base: 'mobile',
-      xs: 'mobile',
-      md: 'md',
-    },
-    { ssr: false },
-  )
+  const modalSize = useModalSize()
 
   const { formId } = useParams()
   if (!formId) throw new Error('No form ID!')

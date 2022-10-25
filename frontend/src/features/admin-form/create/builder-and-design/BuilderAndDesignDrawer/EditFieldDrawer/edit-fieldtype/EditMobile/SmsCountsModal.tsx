@@ -1,5 +1,4 @@
 import { useParams } from 'react-router-dom'
-import { useBreakpointValue } from '@chakra-ui/media-query'
 import {
   Modal,
   ModalBody,
@@ -14,6 +13,7 @@ import { SmsCountsDto } from '~shared/types/form'
 
 import { ADMINFORM_ROUTE, ADMINFORM_SETTINGS_SUBROUTE } from '~constants/routes'
 import { useIsMobile } from '~hooks/useIsMobile'
+import { useModalSize } from '~hooks/useModalSize'
 import Badge from '~components/Badge'
 import Button from '~components/Button'
 import Link from '~components/Link'
@@ -33,14 +33,7 @@ export const SmsCountsModal = ({
 }: SmsCountsModalProps) => {
   const { formId } = useParams()
 
-  const modalSize = useBreakpointValue(
-    {
-      base: 'mobile',
-      xs: 'mobile',
-      md: 'md',
-    },
-    { ssr: false },
-  )
+  const modalSize = useModalSize()
 
   const isMobile = useIsMobile()
 

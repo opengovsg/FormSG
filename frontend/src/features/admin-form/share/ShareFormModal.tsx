@@ -1,7 +1,6 @@
 import { useCallback, useMemo } from 'react'
 import { BiLinkExternal } from 'react-icons/bi'
 import { useNavigate } from 'react-router-dom'
-import { useBreakpointValue } from '@chakra-ui/media-query'
 import {
   Box,
   FormControl,
@@ -18,6 +17,7 @@ import {
 import dedent from 'dedent'
 
 import { ADMINFORM_ROUTE, ADMINFORM_SETTINGS_SUBROUTE } from '~constants/routes'
+import { useModalSize } from '~hooks/useModalSize'
 import Button from '~components/Button'
 import FormLabel from '~components/FormControl/FormLabel'
 import IconButton from '~components/IconButton'
@@ -45,14 +45,7 @@ export const ShareFormModal = ({
   isFormPrivate,
 }: ShareFormModalProps): JSX.Element => {
   const navigate = useNavigate()
-  const modalSize = useBreakpointValue(
-    {
-      base: 'mobile',
-      xs: 'mobile',
-      md: 'md',
-    },
-    { ssr: false },
-  )
+  const modalSize = useModalSize()
 
   const shareLink = useMemo(
     () => `${window.location.origin}/${formId}`,

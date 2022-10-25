@@ -1,6 +1,5 @@
 import { useCallback } from 'react'
 import { BiFileBlank } from 'react-icons/bi'
-import { useBreakpointValue } from '@chakra-ui/media-query'
 import {
   Container,
   Icon,
@@ -20,6 +19,7 @@ import {
 import { AdminDashboardFormMetaDto } from '~shared/types'
 
 import { useIsMobile } from '~hooks/useIsMobile'
+import { useModalSize } from '~hooks/useModalSize'
 import Button from '~components/Button'
 import { ModalCloseButton } from '~components/Modal'
 
@@ -35,14 +35,7 @@ export const DeleteFormModal = ({
   onClose,
   formToDelete,
 }: DeleteFormModalProps): JSX.Element | null => {
-  const modalSize = useBreakpointValue(
-    {
-      base: 'mobile',
-      xs: 'mobile',
-      md: 'md',
-    },
-    { ssr: false },
-  )
+  const modalSize = useModalSize()
   const isMobile = useIsMobile()
 
   const { deleteFormMutation } = useDeleteFormMutation()

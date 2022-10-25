@@ -1,6 +1,6 @@
-import { useBreakpointValue } from '@chakra-ui/media-query'
 import { Modal, ModalContent, ModalOverlay } from '@chakra-ui/react'
 
+import { useModalSize } from '~hooks/useModalSize'
 import { ModalCloseButton } from '~components/Modal'
 
 import { CollaboratorModalContent } from './CollaboratorModalContent'
@@ -17,14 +17,7 @@ export const CollaboratorModal = ({
   onClose,
   formId,
 }: CollaboratorModalProps): JSX.Element => {
-  const modalSize = useBreakpointValue(
-    {
-      base: 'mobile',
-      xs: 'mobile',
-      md: 'md',
-    },
-    { ssr: false },
-  )
+  const modalSize = useModalSize()
   return (
     <Modal size={modalSize} isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />

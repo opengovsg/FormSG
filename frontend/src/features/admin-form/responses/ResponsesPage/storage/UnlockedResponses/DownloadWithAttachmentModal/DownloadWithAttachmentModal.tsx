@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useState } from 'react'
-import { useBreakpointValue } from '@chakra-ui/media-query'
 import {
   Modal,
   ModalContent,
@@ -8,6 +7,7 @@ import {
   UseDisclosureReturn,
 } from '@chakra-ui/react'
 
+import { useModalSize } from '~hooks/useModalSize'
 import { XMotionBox } from '~templates/MotionBox'
 
 import { CanceledResult, DownloadResult } from '../../types'
@@ -51,14 +51,7 @@ export const DownloadWithAttachmentModal = ({
   downloadMetadata,
   initialState = INITIAL_STEP_STATE,
 }: DownloadWithAttachmentModalProps): JSX.Element => {
-  const modalSize = useBreakpointValue(
-    {
-      base: 'mobile',
-      xs: 'mobile',
-      md: 'md',
-    },
-    { ssr: false },
-  )
+  const modalSize = useModalSize()
   const [[currentStep, direction], setCurrentStep] = useState(initialState)
 
   useEffect(() => {

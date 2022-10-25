@@ -1,7 +1,6 @@
 import { useCallback, useMemo, useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import { BiRightArrowAlt, BiUpload } from 'react-icons/bi'
-import { useBreakpointValue } from '@chakra-ui/media-query'
 import {
   Container,
   FormControl,
@@ -15,6 +14,7 @@ import {
 
 import { FormStatus } from '~shared/types/form/form'
 
+import { useModalSize } from '~hooks/useModalSize'
 import formsgSdk from '~utils/formSdk'
 import Button from '~components/Button'
 import Checkbox from '~components/Checkbox'
@@ -161,14 +161,7 @@ export const SecretKeyActivationModal = ({
     handleOnClose,
   } = useSecretKeyActivationModal({ publicKey, onClose })
 
-  const modalSize = useBreakpointValue(
-    {
-      base: 'mobile',
-      xs: 'mobile',
-      md: 'full',
-    },
-    { ssr: false },
-  )
+  const modalSize = useModalSize({ md: 'full' })
 
   return (
     <Modal isOpen={isOpen} onClose={handleOnClose} size={modalSize}>

@@ -1,6 +1,6 @@
-import { useBreakpointValue } from '@chakra-ui/media-query'
 import { Modal, ModalContent, UseDisclosureReturn } from '@chakra-ui/react'
 
+import { useModalSize } from '~hooks/useModalSize'
 import { ModalCloseButton } from '~components/Modal'
 
 import { CreateFormModalContent } from '../CreateFormModal/CreateFormModalContent'
@@ -16,14 +16,7 @@ export const DuplicateFormModal = ({
   isOpen,
   onClose,
 }: DuplicateFormModalProps): JSX.Element => {
-  const modalSize = useBreakpointValue(
-    {
-      base: 'mobile',
-      xs: 'mobile',
-      md: 'full',
-    },
-    { ssr: false },
-  )
+  const modalSize = useModalSize({ md: 'full' })
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size={modalSize}>
