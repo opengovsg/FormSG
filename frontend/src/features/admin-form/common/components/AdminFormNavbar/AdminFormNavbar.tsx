@@ -5,7 +5,7 @@ import {
   BiShow,
   BiUserPlus,
 } from 'react-icons/bi'
-import { useLocation } from 'react-router-dom'
+import { Link as ReactLink, useLocation } from 'react-router-dom'
 import {
   Box,
   ButtonGroup,
@@ -47,13 +47,10 @@ export interface AdminFormNavbarProps {
    * If not provided, the navbar will be in a loading state.
    */
   formInfo?: Pick<AdminFormDto, 'title' | 'lastModified'>
-
   viewOnly: boolean
-
-  handleBackButtonClick: () => void
   handleAddCollabButtonClick: () => void
-  handlePreviewFormButtonClick: () => void
   handleShareButtonClick: () => void
+  previewFormLink: string
 }
 
 /**
@@ -63,9 +60,8 @@ export const AdminFormNavbar = ({
   formInfo,
   viewOnly,
   handleAddCollabButtonClick,
-  handleBackButtonClick,
-  handlePreviewFormButtonClick,
   handleShareButtonClick,
+  previewFormLink,
 }: AdminFormNavbarProps): JSX.Element => {
   const { ref, onMouseDown } = useDraggable<HTMLDivElement>()
   const { isOpen, onClose, onOpen } = useDisclosure()
@@ -148,10 +144,7 @@ export const AdminFormNavbar = ({
         pl={{ base: '1.5rem', md: '1.75rem', lg: '2rem' }}
         pr="1rem"
       >
-        <AdminFormNavbarBreadcrumbs
-          formInfo={formInfo}
-          handleBackButtonClick={handleBackButtonClick}
-        />
+        <AdminFormNavbarBreadcrumbs formInfo={formInfo} />
       </GridItem>
       <NavigationTabList
         variant={tabResponsiveVariant}
@@ -216,9 +209,11 @@ export const AdminFormNavbar = ({
             </Tooltip>
             <Tooltip label="Preview form">
               <IconButton
+                as={ReactLink}
                 aria-label="Preview form"
                 variant="outline"
-                onClick={handlePreviewFormButtonClick}
+                to={previewFormLink}
+                target="_blank"
                 icon={<BiShow />}
               />
             </Tooltip>
@@ -241,7 +236,9 @@ export const AdminFormNavbar = ({
               w="100%"
             >
               <Button
-                onClick={handlePreviewFormButtonClick}
+                as={ReactLink}
+                to={previewFormLink}
+                target="_blank"
                 {...mobileDrawerExtraButtonProps}
                 leftIcon={<BiShow fontSize="1.25rem" />}
               >
