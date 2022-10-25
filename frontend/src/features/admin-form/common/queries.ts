@@ -105,7 +105,8 @@ export const useAdminFormCollaborators = (formId: string) => {
     }
     // Else use permissionList first
     return form.permissionList.some(
-      (perms) => perms.write && perms.email === user.email,
+      (perms) =>
+        perms.write && perms.email.toLowerCase() === user.email.toLowerCase(),
     )
   }, [collaborators, form, isFormAdmin, user])
 
