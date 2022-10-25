@@ -1,6 +1,6 @@
 // TODO #4279: Remove after React rollout is complete
 import { useCallback, useRef, useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { FieldError, useForm } from 'react-hook-form'
 import { useParams } from 'react-router-dom'
 import {
   chakra,
@@ -16,11 +16,13 @@ import {
   useBreakpointValue,
 } from '@chakra-ui/react'
 import { datadogRum } from '@datadog/browser-rum'
+import { get, isEmpty } from 'lodash'
 
 import { SwitchEnvFeedbackFormBodyDto } from '~shared/types'
 
 import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
+import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import { ModalCloseButton } from '~components/Modal'
 import Radio, { OthersInput } from '~components/Radio'
@@ -41,6 +43,7 @@ export const ADMIN_RADIO_OPTIONS = [
 ]
 export const PUBLIC_RADIO_OPTIONS = ['I couldn’t submit my form']
 export const COMMON_RADIO_OPTIONS = ['I’m not used to the new FormSG']
+export const FEEDBACK_OTHERS_INPUT_NAME = 'others-input'
 
 export const SwitchEnvFeedbackModal = ({
   isOpen,
@@ -55,7 +58,19 @@ export const SwitchEnvFeedbackModal = ({
   })
   const isMobile = useIsMobile()
 
-  const { register, handleSubmit } = useForm<SwitchEnvFeedbackFormBodyDto>()
+  const {
+    register,
+    handleSubmit,
+    getValues,
+    formState: { errors },
+  } = useForm<SwitchEnvFeedbackFormBodyDto>()
+
+  const othersInputError: FieldError | undefined = get(
+    errors,
+    FEEDBACK_OTHERS_INPUT_NAME,
+  )
+  const othersInputValue = '!!FORMSG_INTERNAL_CHECKBOX_OTHERS_VALUE!!'
+
   const initialRef = useRef(null)
 
   const { user } = useUser()
@@ -132,7 +147,7 @@ export const SwitchEnvFeedbackModal = ({
                 <FormControl>
                   <Input type="hidden" {...register('url')} value={url} />
                 </FormControl>
-                <FormControl isRequired={true}>
+                <FormControl isRequired={true} isInvalid={!isEmpty(errors)}>
                   <FormLabel>
                     Why are you switching to the previous FormSG?
                   </FormLabel>
@@ -140,7 +155,13 @@ export const SwitchEnvFeedbackModal = ({
                     {isPublicFormPage
                       ? PUBLIC_RADIO_OPTIONS.map((option) => (
                           <Radio
-                            {...register('radio')}
+                            {...register('radio', {
+                              required: {
+                                value: true,
+                                message: 'This field is required',
+                              },
+                              deps: [FEEDBACK_OTHERS_INPUT_NAME],
+                            })}
                             value={option}
                             key={option}
                           >
@@ -149,7 +170,13 @@ export const SwitchEnvFeedbackModal = ({
                         ))
                       : ADMIN_RADIO_OPTIONS.map((option) => (
                           <Radio
-                            {...register('radio')}
+                            {...register('radio', {
+                              required: {
+                                value: true,
+                                message: 'This field is required',
+                              },
+                              deps: [FEEDBACK_OTHERS_INPUT_NAME],
+                            })}
                             value={option}
                             key={option}
                           >
@@ -158,22 +185,52 @@ export const SwitchEnvFeedbackModal = ({
                         ))}
                     {COMMON_RADIO_OPTIONS.map((option) => (
                       <Radio
-                        {...register('radio')}
+                        {...register('radio', {
+                          required: {
+                            value: true,
+                            message: 'This field is required',
+                          },
+                          deps: [FEEDBACK_OTHERS_INPUT_NAME],
+                        })}
                         value={'I’m not used to the new FormSG'}
                         key={option}
                       >
                         {option}
                       </Radio>
                     ))}
-                    <Radio.OthersWrapper>
-                      <FormControl>
+                    <Radio.OthersWrapper
+                      {...register('radio', {
+                        required: {
+                          value: true,
+                          message: 'This field is required',
+                        },
+                        deps: [FEEDBACK_OTHERS_INPUT_NAME],
+                      })}
+                      value={othersInputValue}
+                    >
+                      <FormControl
+                        isRequired={true}
+                        isInvalid={!!othersInputError}
+                      >
                         <OthersInput
                           aria-label='"Other" response'
-                          {...register('radio')}
+                          {...register(FEEDBACK_OTHERS_INPUT_NAME, {
+                            validate: (value) => {
+                              return (
+                                getValues('radio') !== othersInputValue ||
+                                !!value ||
+                                'Please specify a value for the "Others" option'
+                              )
+                            },
+                          })}
                         />
                       </FormControl>
                     </Radio.OthersWrapper>
                   </Radio.RadioGroup>
+                  <FormErrorMessage>
+                    {errors['radio']?.message ??
+                      errors[FEEDBACK_OTHERS_INPUT_NAME]?.message}
+                  </FormErrorMessage>
                 </FormControl>
                 {user ? (
                   <FormControl>

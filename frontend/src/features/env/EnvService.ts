@@ -14,6 +14,7 @@ import { PUBLIC_FORMS_ENDPOINT } from '~features/public-form/PublicFormService'
 import {
   ADMIN_RADIO_OPTIONS,
   COMMON_RADIO_OPTIONS,
+  FEEDBACK_OTHERS_INPUT_NAME,
   PUBLIC_RADIO_OPTIONS,
 } from './SwitchEnvFeedbackModal'
 
@@ -49,7 +50,7 @@ const createFeedbackResponsesArray = (
       fieldType === BasicField.Radio &&
       !RADIO_OPTIONS_WITHOUT_OTHERS.includes(answer)
     ) {
-      answer = `Others: ${formInputs[inputKey]}`
+      answer = `Others: ${formInputs[FEEDBACK_OTHERS_INPUT_NAME]}`
     }
     return {
       _id,
