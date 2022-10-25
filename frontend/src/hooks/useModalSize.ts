@@ -16,7 +16,7 @@ export const useModalSize = ({
       md,
       ...rest,
     },
-    { ssr: false, fallback: md },
+    { ssr: false },
   )
 
   return modalSize

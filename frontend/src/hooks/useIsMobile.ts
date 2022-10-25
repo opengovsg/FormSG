@@ -7,7 +7,7 @@ export const useIsMobile = (): boolean => {
       xs: true,
       md: false,
     },
-    { ssr: false, fallback: false },
+    { ssr: false },
   )
 
   return isMobile ?? false
