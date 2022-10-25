@@ -99,12 +99,14 @@ export const useAdminFormCollaborators = (formId: string) => {
     // Collaborators is source of truth if it has already loaded.
     if (collaborators) {
       return collaborators.some(
-        (perms) => perms.write && perms.email === user.email,
+        (perms) =>
+          perms.write && perms.email.toLowerCase() === user.email.toLowerCase(),
       )
     }
     // Else use permissionList first
     return form.permissionList.some(
-      (perms) => perms.write && perms.email === user.email,
+      (perms) =>
+        perms.write && perms.email.toLowerCase() === user.email.toLowerCase(),
     )
   }, [collaborators, form, isFormAdmin, user])
 

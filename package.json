@@ -1,7 +1,7 @@
 {
   "name": "FormSG",
   "description": "Form Manager for Government",
-  "version": "6.9.0",
+  "version": "6.10.0",
   "homepage": "https://form.gov.sg",
   "authors": [
     "FormSG <formsg@data.gov.sg>"
@@ -130,7 +130,7 @@
     "http-errors": "^2.0.0",
     "http-status-codes": "^2.2.0",
     "intl-tel-input": "~12.4.0",
-    "jose": "^4.10.0",
+    "jose": "^4.10.3",
     "json-stringify-safe": "^5.0.1",
     "jsonwebtoken": "^8.5.1",
     "jszip": "^3.10.1",
@@ -182,7 +182,7 @@
     "zod": "^3.19.1"
   },
   "devDependencies": {
-    "@babel/core": "^7.19.3",
+    "@babel/core": "^7.19.6",
     "@babel/plugin-transform-runtime": "^7.19.1",
     "@babel/preset-env": "^7.19.4",
     "@opengovsg/mockpass": "^2.9.3",
@@ -229,7 +229,7 @@
     "auto-changelog": "^2.4.0",
     "axios-mock-adapter": "^1.21.2",
     "babel-loader": "^8.2.5",
-    "concurrently": "^7.4.0",
+    "concurrently": "^7.5.0",
     "copy-webpack-plugin": "^6.0.2",
     "copyfiles": "^2.4.1",
     "core-js": "^3.25.5",
