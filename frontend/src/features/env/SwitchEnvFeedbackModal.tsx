@@ -17,9 +17,11 @@ import {
 } from '@chakra-ui/react'
 import { datadogRum } from '@datadog/browser-rum'
 import { get, isEmpty } from 'lodash'
+import validator from 'validator'
 
 import { SwitchEnvFeedbackFormBodyDto } from '~shared/types'
 
+import { INVALID_EMAIL_ERROR } from '~constants/validation'
 import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
@@ -228,10 +230,13 @@ export const SwitchEnvFeedbackModal = ({
                       </FormControl>
                     </Radio.OthersWrapper>
                   </Radio.RadioGroup>
-                  <FormErrorMessage>
-                    {errors['radio']?.message ??
-                      errors[FEEDBACK_OTHERS_INPUT_NAME]?.message}
-                  </FormErrorMessage>
+                  {errors['email'] ? null : (
+                    <FormErrorMessage>
+                      {errors['radio']?.message ??
+                        errors[FEEDBACK_OTHERS_INPUT_NAME]?.message ??
+                        null}
+                    </FormErrorMessage>
+                  )}
                 </FormControl>
                 {user ? (
                   <FormControl>
@@ -242,11 +247,27 @@ export const SwitchEnvFeedbackModal = ({
                     />
                   </FormControl>
                 ) : (
-                  <FormControl>
+                  <FormControl isInvalid={!!errors['email']}>
                     <FormLabel>
                       Email, if we need to contact you for details
                     </FormLabel>
-                    <Input {...register('email')} tabIndex={1} />
+                    <Input
+                      {...register('email', {
+                        validate: (value) => {
+                          if (!value) {
+                            return true
+                          }
+                          // Valid email check
+                          if (!validator.isEmail(value)) {
+                            return INVALID_EMAIL_ERROR
+                          }
+                        },
+                      })}
+                      tabIndex={1}
+                    />
+                    <FormErrorMessage>
+                      {errors['email']?.message}
+                    </FormErrorMessage>
                   </FormControl>
                 )}
                 <FormControl>
