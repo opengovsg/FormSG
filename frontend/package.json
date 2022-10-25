@@ -106,18 +106,11 @@
     "test:a11y-dev": "cross-env USE_DEV_SERVER=true jest --config .storybook/storyshots/jest.config.js",
     "pre-commit": "lint-staged"
   },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
-  },
+  "browserslist": [
+    ">0.2%",
+    "not dead",
+    "not op_mini all"
+  ],
   "devDependencies": {
     "@chakra-ui/cli": "^1.9.0",
     "@craco/craco": "^6.4.3",
