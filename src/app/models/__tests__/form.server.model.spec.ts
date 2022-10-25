@@ -271,6 +271,13 @@ describe('Form Model', () => {
           MOCK_FORM_PARAMS,
         )
         expect(actualSavedObject).toEqual(expectedObject)
+        // Should become lowercased email.
+        const expectedPermissionList = permissionList.map((permission) => {
+          return {
+            ...permission,
+            email: permission.email.toLowerCase(),
+          }
+        })
 
         // Remove indeterministic id from actual permission list
         const actualPermissionList = saved
@@ -278,7 +285,7 @@ describe('Form Model', () => {
           .permissionList?.map((permission: FormPermission) =>
             omit(permission, '_id'),
           )
-        expect(actualPermissionList).toEqual(permissionList)
+        expect(actualPermissionList).toEqual(expectedPermissionList)
       })
 
       it('should save new admin successfully but remove new admin from permissionList', async () => {
@@ -533,12 +540,19 @@ describe('Form Model', () => {
           MOCK_ENCRYPTED_FORM_PARAMS,
         )
         expect(actualSavedObject).toEqual(expectedObject)
+        // Should become lowercased email.
+        const expectedPermissionList = permissionList.map((permission) => {
+          return {
+            ...permission,
+            email: permission.email.toLowerCase(),
+          }
+        })
 
         // Remove indeterministic id from actual permission list
         const actualPermissionList = (
           saved.toObject() as unknown as IEncryptedForm
         ).permissionList?.map((permission) => omit(permission, '_id'))
-        expect(actualPermissionList).toEqual(permissionList)
+        expect(actualPermissionList).toEqual(expectedPermissionList)
       })
 
       it('should save new admin successfully but remove new admin from permissionList', async () => {

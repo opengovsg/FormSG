@@ -319,7 +319,7 @@ export const transferFormOwnership = (
       .andThen((currentOwner) => {
         // No need to transfer form ownership if new and current owners are
         // the same.
-        if (newOwnerEmail === currentOwner.email) {
+        if (newOwnerEmail.toLowerCase() === currentOwner.email.toLowerCase()) {
           return errAsync(
             new TransferOwnershipError(
               'You are already the owner of this form',
