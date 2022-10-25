@@ -50,6 +50,7 @@ const createFeedbackResponsesArray = (
       fieldType === BasicField.Radio &&
       !RADIO_OPTIONS_WITHOUT_OTHERS.includes(answer)
     ) {
+      // format answer from Others to match form submission format
       answer = `Others: ${formInputs[FEEDBACK_OTHERS_INPUT_NAME]}`
     }
     return {

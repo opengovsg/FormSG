@@ -81,6 +81,7 @@ export const SwitchEnvFeedbackModal = ({
   const publicFormPath = new RegExp(`^/${formId}`)
 
   const handleFormSubmit = handleSubmit((inputs) => {
+    // Prevent submission if radio option 'I’m not used to the new FormSG' is selected
     if (!COMMON_RADIO_OPTIONS.includes(inputs.radio)) onSubmitFeedback(inputs)
     setShowThanksPage(true)
   })
