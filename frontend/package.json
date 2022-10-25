@@ -4,6 +4,7 @@
   "homepage": ".",
   "private": true,
   "dependencies": {
+    "@chakra-ui/media-query": "^3.2.7",
     "@chakra-ui/react": "^1.8.6",
     "@datadog/browser-rum": "^4.14.0",
     "@emotion/react": "^11.7.0",
