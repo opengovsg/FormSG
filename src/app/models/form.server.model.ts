@@ -734,7 +734,10 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     return (
       this.find()
         // List forms when either the user is an admin or collaborator.
-        .or([{ 'permissionList.email': userEmail }, { admin: userId }])
+        .or([
+          { 'permissionList.email': userEmail.toLowerCase() },
+          { admin: userId },
+        ])
         // Filter out archived forms.
         .where('status')
         .ne(FormStatus.Archived)
