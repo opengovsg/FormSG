@@ -1,11 +1,5 @@
-import {
-  As,
-  chakra,
-  Flex,
-  FlexProps,
-  HStack,
-  useBreakpointValue,
-} from '@chakra-ui/react'
+import { useBreakpointValue } from '@chakra-ui/media-query'
+import { As, chakra, Flex, FlexProps, HStack } from '@chakra-ui/react'
 
 import { ReactComponent as BrandHortSvg } from '~assets/svgs/brand/brand-hort-colour.svg'
 import { ReactComponent as BrandMarkSvg } from '~assets/svgs/brand/brand-mark-colour.svg'
@@ -71,10 +65,13 @@ export const PublicHeader = ({
   publicHeaderLinks,
   ctaElement: ctaButton,
 }: PublicHeaderProps): JSX.Element => {
-  const logoToRender = useBreakpointValue({
-    base: <BrandSmallLogo w="2.5rem" />,
-    sm: <BrandHortLogo w="7.75rem" />,
-  })
+  const logoToRender = useBreakpointValue(
+    {
+      base: <BrandSmallLogo w="2.5rem" />,
+      sm: <BrandHortLogo w="7.75rem" />,
+    },
+    { ssr: false },
+  )
 
   return (
     <PublicHeader.Container>

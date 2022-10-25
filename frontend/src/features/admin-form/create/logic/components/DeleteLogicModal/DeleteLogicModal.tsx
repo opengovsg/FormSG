@@ -1,4 +1,5 @@
 import { useCallback } from 'react'
+import { useBreakpointValue } from '@chakra-ui/media-query'
 import {
   Modal,
   ModalBody,
@@ -8,7 +9,6 @@ import {
   ModalOverlay,
   Stack,
   Text,
-  useBreakpointValue,
 } from '@chakra-ui/react'
 
 import { LogicDto } from '~shared/types/form'
@@ -35,11 +35,14 @@ export const DeleteLogicModal = ({
 }: DeleteLogicModalProps): JSX.Element => {
   const setToInactive = useAdminLogicStore(setToInactiveSelector)
   const { deleteLogicMutation } = useLogicMutations()
-  const modalSize = useBreakpointValue({
-    base: 'mobile',
-    xs: 'mobile',
-    md: 'md',
-  })
+  const modalSize = useBreakpointValue(
+    {
+      base: 'mobile',
+      xs: 'mobile',
+      md: 'md',
+    },
+    { ssr: false },
+  )
 
   const handleDelete = useCallback(() => {
     // Cannot be put in onSuccess since this component will be unmounted by then.

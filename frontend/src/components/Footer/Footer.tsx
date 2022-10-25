@@ -1,4 +1,4 @@
-import { useBreakpointValue } from '@chakra-ui/react'
+import { useBreakpointValue } from '@chakra-ui/media-query'
 
 import {
   DEFAULT_FOOTER_ICON_LINK,
@@ -16,7 +16,10 @@ export const Footer = ({
   compactMonochromeLogos,
   ...footerProps
 }: FooterProps): JSX.Element => {
-  const isDesktop = useBreakpointValue({ base: false, xs: false, lg: true })
+  const isDesktop = useBreakpointValue(
+    { base: false, xs: false, lg: true },
+    { ssr: false },
+  )
 
   if (variant === 'compact' && isDesktop) {
     return (

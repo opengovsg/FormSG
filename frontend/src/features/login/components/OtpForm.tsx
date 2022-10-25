@@ -1,7 +1,8 @@
 import { useCallback } from 'react'
 import { useForm } from 'react-hook-form'
-import { FormControl, Stack, useBreakpointValue } from '@chakra-ui/react'
+import { FormControl, Stack } from '@chakra-ui/react'
 
+import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
@@ -26,7 +27,7 @@ export const OtpForm = ({
   const { handleSubmit, register, formState, setError } =
     useForm<OtpFormInputs>()
 
-  const isMobile = useBreakpointValue({ base: true, xs: true, lg: false })
+  const isMobile = useIsMobile()
 
   const validateOtp = useCallback(
     (value: string) => value.length === 6 || 'Please enter a 6 digit OTP.',

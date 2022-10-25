@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import { BiRightArrowAlt, BiUpload } from 'react-icons/bi'
+import { useBreakpointValue } from '@chakra-ui/media-query'
 import {
   Container,
   FormControl,
@@ -9,7 +10,6 @@ import {
   ModalContent,
   ModalHeader,
   Stack,
-  useBreakpointValue,
   UseDisclosureReturn,
 } from '@chakra-ui/react'
 
@@ -161,11 +161,14 @@ export const SecretKeyActivationModal = ({
     handleOnClose,
   } = useSecretKeyActivationModal({ publicKey, onClose })
 
-  const modalSize = useBreakpointValue({
-    base: 'mobile',
-    xs: 'mobile',
-    md: 'full',
-  })
+  const modalSize = useBreakpointValue(
+    {
+      base: 'mobile',
+      xs: 'mobile',
+      md: 'full',
+    },
+    { ssr: false },
+  )
 
   return (
     <Modal isOpen={isOpen} onClose={handleOnClose} size={modalSize}>

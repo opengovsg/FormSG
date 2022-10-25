@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useState } from 'react'
+import { useBreakpointValue } from '@chakra-ui/media-query'
 import {
   Modal,
   ModalContent,
   ModalOverlay,
   Text,
-  useBreakpointValue,
   UseDisclosureReturn,
 } from '@chakra-ui/react'
 
@@ -51,11 +51,14 @@ export const DownloadWithAttachmentModal = ({
   downloadMetadata,
   initialState = INITIAL_STEP_STATE,
 }: DownloadWithAttachmentModalProps): JSX.Element => {
-  const modalSize = useBreakpointValue({
-    base: 'mobile',
-    xs: 'mobile',
-    md: 'md',
-  })
+  const modalSize = useBreakpointValue(
+    {
+      base: 'mobile',
+      xs: 'mobile',
+      md: 'md',
+    },
+    { ssr: false },
+  )
   const [[currentStep, direction], setCurrentStep] = useState(initialState)
 
   useEffect(() => {

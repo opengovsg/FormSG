@@ -1,12 +1,6 @@
 import { useCallback, useMemo, useState } from 'react'
-import {
-  forwardRef,
-  Grid,
-  HStack,
-  Stack,
-  Text,
-  useBreakpointValue,
-} from '@chakra-ui/react'
+import { useBreakpointValue } from '@chakra-ui/media-query'
+import { forwardRef, Grid, HStack, Stack, Text } from '@chakra-ui/react'
 
 import { FieldColorScheme } from '~theme/foundations/colours'
 
@@ -99,12 +93,15 @@ export const Rating = forwardRef<RatingProps, 'input'>(
      * Used to check whether a new row should be created when rendering rating
      * options.
      */
-    const isSplitRows = useBreakpointValue({
-      base: true,
-      xs: true,
-      sm: true,
-      md: false,
-    })
+    const isSplitRows = useBreakpointValue(
+      {
+        base: true,
+        xs: true,
+        sm: true,
+        md: false,
+      },
+      { ssr: false },
+    )
 
     // Generate options from maxRating given, grouped by display row.
     const options = useMemo(() => {

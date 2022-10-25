@@ -1,3 +1,4 @@
+import { useBreakpointValue } from '@chakra-ui/media-query'
 import {
   Modal,
   ModalBody,
@@ -5,7 +6,6 @@ import {
   ModalHeader,
   ModalOverlay,
   Text,
-  useBreakpointValue,
 } from '@chakra-ui/react'
 
 import { ModalCloseButton } from '~components/Modal'
@@ -21,11 +21,14 @@ export const EmergencyContactModal = ({
   isOpen,
   onClose,
 }: EmergencyContactModalProps): JSX.Element => {
-  const modalSize = useBreakpointValue({
-    base: 'mobile',
-    xs: 'mobile',
-    md: 'md',
-  })
+  const modalSize = useBreakpointValue(
+    {
+      base: 'mobile',
+      xs: 'mobile',
+      md: 'md',
+    },
+    { ssr: false },
+  )
 
   return (
     <Modal size={modalSize} isOpen={isOpen} onClose={onClose}>

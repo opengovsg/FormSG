@@ -1,11 +1,14 @@
-import { useBreakpointValue } from '@chakra-ui/react'
+import { useBreakpointValue } from '@chakra-ui/media-query'
 
 export const useIsMobile = (): boolean => {
-  const isMobile = useBreakpointValue({
-    base: true,
-    xs: true,
-    md: false,
-  })
+  const isMobile = useBreakpointValue(
+    {
+      base: true,
+      xs: true,
+      md: false,
+    },
+    { ssr: false },
+  )
 
   return isMobile ?? false
 }

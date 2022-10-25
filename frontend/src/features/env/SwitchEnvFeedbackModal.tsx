@@ -1,6 +1,7 @@
 // TODO #4279: Remove after React rollout is complete
 import { useCallback, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
+import { useBreakpointValue } from '@chakra-ui/media-query'
 import {
   chakra,
   FormControl,
@@ -12,7 +13,6 @@ import {
   ModalHeader,
   ModalOverlay,
   Stack,
-  useBreakpointValue,
 } from '@chakra-ui/react'
 import { datadogRum } from '@datadog/browser-rum'
 
@@ -39,11 +39,14 @@ export const SwitchEnvFeedbackModal = ({
   onChangeEnv,
   onSubmitFeedback,
 }: SwitchEnvModalProps): JSX.Element => {
-  const modalSize = useBreakpointValue({
-    base: 'mobile',
-    xs: 'mobile',
-    md: 'md',
-  })
+  const modalSize = useBreakpointValue(
+    {
+      base: 'mobile',
+      xs: 'mobile',
+      md: 'md',
+    },
+    { ssr: false },
+  )
   const isMobile = useIsMobile()
 
   const { register, handleSubmit } = useForm<SwitchEnvFeedbackFormBodyDto>()

@@ -1,11 +1,11 @@
 import { ChangeEvent, memo, useCallback, useMemo } from 'react'
+import { useBreakpointValue } from '@chakra-ui/media-query'
 import {
   Flex,
   HStack,
   Select,
   SelectProps,
   Text,
-  useBreakpointValue,
   useStyles,
 } from '@chakra-ui/react'
 import { addMonths } from 'date-fns'
@@ -52,11 +52,14 @@ const SelectableMonthYear = memo(() => {
   const { currMonth, setCurrMonth, currYear, setCurrYear, yearOptions } =
     useCalendar()
 
-  const shouldUseMonthFullName = useBreakpointValue({
-    base: false,
-    xs: false,
-    md: true,
-  })
+  const shouldUseMonthFullName = useBreakpointValue(
+    {
+      base: false,
+      xs: false,
+      md: true,
+    },
+    { ssr: false },
+  )
 
   const memoizedMonthOptions = useMemo(() => {
     return MONTH_NAMES.map(({ shortName, fullName }, index) => (
@@ -111,11 +114,14 @@ const SelectableMonthYear = memo(() => {
 
 const MonthYear = memo(({ monthOffset }: CalendarHeaderProps) => {
   const { currMonth, currYear } = useCalendar()
-  const shouldUseMonthFullName = useBreakpointValue({
-    base: false,
-    xs: false,
-    md: true,
-  })
+  const shouldUseMonthFullName = useBreakpointValue(
+    {
+      base: false,
+      xs: false,
+      md: true,
+    },
+    { ssr: false },
+  )
 
   const newOffsetDate = useMemo(
     () => addMonths(new Date(currYear, currMonth), monthOffset),

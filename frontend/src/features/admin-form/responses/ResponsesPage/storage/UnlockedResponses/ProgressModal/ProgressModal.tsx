@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
+import { useBreakpointValue } from '@chakra-ui/media-query'
 import {
   Modal,
   ModalContent,
   ModalOverlay,
-  useBreakpointValue,
   UseDisclosureReturn,
 } from '@chakra-ui/react'
 
@@ -41,11 +41,14 @@ export const ProgressModal = ({
   downloadMetadata,
   children,
 }: ProgressModalProps): JSX.Element => {
-  const modalSize = useBreakpointValue({
-    base: 'mobile',
-    xs: 'mobile',
-    md: 'md',
-  })
+  const modalSize = useBreakpointValue(
+    {
+      base: 'mobile',
+      xs: 'mobile',
+      md: 'md',
+    },
+    { ssr: false },
+  )
 
   const [[currentStep, direction], setCurrentStep] =
     useState(INITIAL_STEP_STATE)

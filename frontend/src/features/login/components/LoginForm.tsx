@@ -1,11 +1,12 @@
 import { useCallback } from 'react'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import { FormControl, Stack, useBreakpointValue } from '@chakra-ui/react'
+import { FormControl, Stack } from '@chakra-ui/react'
 import isEmail from 'validator/lib/isEmail'
 
 import { FORM_GUIDE } from '~constants/links'
 import { INVALID_EMAIL_ERROR } from '~constants/validation'
+import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
@@ -36,7 +37,7 @@ export const LoginForm = ({ onSubmit }: LoginFormProps): JSX.Element => {
     })
   }
 
-  const isMobile = useBreakpointValue({ base: true, xs: true, lg: false })
+  const isMobile = useIsMobile()
 
   return (
     <form onSubmit={handleSubmit(onSubmitForm)}>

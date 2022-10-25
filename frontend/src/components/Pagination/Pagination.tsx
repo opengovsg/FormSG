@@ -1,4 +1,4 @@
-import { useBreakpointValue } from '@chakra-ui/react'
+import { useBreakpointValue } from '@chakra-ui/media-query'
 
 import { PaginationDesktop } from './PaginationDesktop'
 import { PaginationMobile } from './PaginationMobile'
@@ -37,14 +37,17 @@ export interface PaginationProps {
 }
 
 export const Pagination = (props: PaginationProps): JSX.Element => {
-  const isShowMobileVariant = useBreakpointValue({
-    base: true,
-    xs: true,
-    sm: true,
-    md: false,
-    lg: false,
-    xl: false,
-  })
+  const isShowMobileVariant = useBreakpointValue(
+    {
+      base: true,
+      xs: true,
+      sm: true,
+      md: false,
+      lg: false,
+      xl: false,
+    },
+    { ssr: false },
+  )
 
   return isShowMobileVariant ? (
     <Pagination.Mobile {...props} />

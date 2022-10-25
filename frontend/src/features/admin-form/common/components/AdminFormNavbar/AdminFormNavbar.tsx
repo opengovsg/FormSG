@@ -6,6 +6,7 @@ import {
   BiUserPlus,
 } from 'react-icons/bi'
 import { Link as ReactLink, useLocation } from 'react-router-dom'
+import { useBreakpointValue } from '@chakra-ui/media-query'
 import {
   Box,
   ButtonGroup,
@@ -20,7 +21,6 @@ import {
   GridItem,
   Skeleton,
   Text,
-  useBreakpointValue,
   useDisclosure,
 } from '@chakra-ui/react'
 import format from 'date-fns/format'
@@ -67,11 +67,14 @@ export const AdminFormNavbar = ({
   const { isOpen, onClose, onOpen } = useDisclosure()
   const { pathname } = useLocation()
 
-  const tabResponsiveVariant = useBreakpointValue({
-    base: 'line-dark',
-    xs: 'line-dark',
-    lg: 'line-light',
-  })
+  const tabResponsiveVariant = useBreakpointValue(
+    {
+      base: 'line-dark',
+      xs: 'line-dark',
+      lg: 'line-light',
+    },
+    { ssr: false },
+  )
 
   const checkTabActive = useCallback(
     (to: string) => {

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Box, Image, Skeleton, useBreakpointValue } from '@chakra-ui/react'
+import { useBreakpointValue } from '@chakra-ui/media-query'
+import { Box, Image, Skeleton } from '@chakra-ui/react'
 
 import { useMdComponents } from '~hooks/useMdComponents'
 import { MarkdownText } from '~components/MarkdownText'
@@ -20,10 +21,13 @@ export const ImageField = ({ schema }: ImageFieldProps): JSX.Element => {
   const [fallbackType, setFallbackType] = useState<'loading' | 'error'>(
     'loading',
   )
-  const responsiveTextStyle = useBreakpointValue({
-    base: 'caption-2',
-    md: 'body-2',
-  })
+  const responsiveTextStyle = useBreakpointValue(
+    {
+      base: 'caption-2',
+      md: 'body-2',
+    },
+    { ssr: false },
+  )
 
   const mdComponents = useMdComponents({
     styles: {

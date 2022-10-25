@@ -1,14 +1,8 @@
 import { useForm } from 'react-hook-form'
-import {
-  Container,
-  FormControl,
-  Skeleton,
-  Stack,
-  Text,
-  useBreakpointValue,
-} from '@chakra-ui/react'
+import { Container, FormControl, Skeleton, Stack, Text } from '@chakra-ui/react'
 
 import { GUIDE_SPCP_ESRVCID } from '~constants/links'
+import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
@@ -35,7 +29,7 @@ export const BillingForm = ({
     })
   }
 
-  const isMobile = useBreakpointValue({ base: true, xs: true, lg: false })
+  const isMobile = useIsMobile()
 
   return (
     <Container p={0} maxW="42.5rem">
