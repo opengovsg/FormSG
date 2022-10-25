@@ -81,8 +81,6 @@ export const SwitchEnvFeedbackModal = ({
   const publicFormPath = new RegExp(`^/${formId}`)
 
   const handleFormSubmit = handleSubmit((inputs) => {
-    // onSubmitFeedback(inputs)
-    console.log(COMMON_RADIO_OPTIONS.includes(inputs.radio))
     if (!COMMON_RADIO_OPTIONS.includes(inputs.radio)) onSubmitFeedback(inputs)
     setShowThanksPage(true)
   })
