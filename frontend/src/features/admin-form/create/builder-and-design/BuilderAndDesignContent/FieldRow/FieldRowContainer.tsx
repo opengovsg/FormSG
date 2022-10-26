@@ -306,30 +306,36 @@ export const FieldRowContainer = ({
             >
               <Fade in={isActive}>
                 <chakra.button
+                  disabled={isDragDisabled}
                   display="flex"
                   tabIndex={isActive ? 0 : -1}
                   {...provided.dragHandleProps}
                   borderRadius="4px"
+                  _disabled={{
+                    cursor: 'not-allowed',
+                    opacity: 0.4,
+                  }}
                   _focus={{
                     boxShadow: snapshot.isDragging
                       ? undefined
                       : '0 0 0 2px var(--chakra-colors-neutral-500)',
                   }}
+                  transition="color 0.2s ease"
+                  _hover={{
+                    color: 'secondary.300',
+                    _disabled: {
+                      color: 'secondary.200',
+                    },
+                  }}
+                  color={
+                    snapshot.isDragging ? 'secondary.300' : 'secondary.200'
+                  }
                 >
-                  {stateData.state === FieldBuilderState.EditingField ? (
-                    <Icon
-                      transition="color 0.2s ease"
-                      _hover={{
-                        color: 'secondary.300',
-                      }}
-                      color={
-                        snapshot.isDragging ? 'secondary.300' : 'secondary.200'
-                      }
-                      as={BiGridHorizontal}
-                      fontSize="1.5rem"
-                    />
+                  {stateData.state === FieldBuilderState.EditingField &&
+                  !isDragDisabled ? (
+                    <Icon as={BiGridHorizontal} fontSize="1.5rem" />
                   ) : (
-                    <Box h="1.125rem"></Box>
+                    <Box h="1.5rem"></Box>
                   )}
                 </chakra.button>
               </Fade>
