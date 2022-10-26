@@ -10,7 +10,10 @@ import Tooltip from '~components/Tooltip'
 
 import { useEnvMutations } from './mutations'
 import { useEnv, useSwitchEnvFeedbackFormView } from './queries'
-import { SwitchEnvFeedbackModal } from './SwitchEnvFeedbackModal'
+import {
+  ADMIN_RADIO_OPTIONS,
+  SwitchEnvFeedbackModal,
+} from './SwitchEnvFeedbackModal'
 
 export const SwitchEnvIcon = (): JSX.Element | null => {
   const { isOpen, onOpen, onClose } = useDisclosure()
@@ -57,6 +60,7 @@ export const SwitchEnvIcon = (): JSX.Element | null => {
           onChangeEnv={adminSwitchEnvMutation.mutate}
           isOpen={isOpen}
           onClose={onClose}
+          radioOptions={ADMIN_RADIO_OPTIONS}
         />
       </Flex>
     </Portal>

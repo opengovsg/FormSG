@@ -1,7 +1,6 @@
 // TODO #4279: Remove after React rollout is complete
 import { useCallback, useRef, useState } from 'react'
 import { FieldError, useForm } from 'react-hook-form'
-import { useParams } from 'react-router-dom'
 import {
   chakra,
   FormControl,
@@ -37,6 +36,7 @@ export interface SwitchEnvModalProps {
   onClose: () => void
   onSubmitFeedback: (formInputs: SwitchEnvFeedbackFormBodyDto) => Promise<any>
   onChangeEnv: () => void
+  radioOptions: string[]
 }
 
 export const ADMIN_RADIO_OPTIONS = [
@@ -52,6 +52,7 @@ export const SwitchEnvFeedbackModal = ({
   onClose,
   onChangeEnv,
   onSubmitFeedback,
+  radioOptions,
 }: SwitchEnvModalProps): JSX.Element => {
   const modalSize = useBreakpointValue({
     base: 'mobile',
@@ -77,10 +78,8 @@ export const SwitchEnvFeedbackModal = ({
 
   const { user } = useUser()
   const url = window.location.href
-  const { formId } = useParams()
   const rumSessionId = datadogRum.getInternalContext()?.session_id
   const [showThanksPage, setShowThanksPage] = useState<boolean>(false)
-  const publicFormPath = new RegExp(`^/${formId}`)
 
   const handleFormSubmit = handleSubmit((inputs) => {
     // Prevent submission if radio option 'I’m not used to the new FormSG' is selected
@@ -98,8 +97,6 @@ export const SwitchEnvFeedbackModal = ({
     onClose()
     setShowThanksPage(false)
   }, [onChangeEnv, onClose])
-
-  const isPublicFormPage = window.location.pathname.match(publicFormPath)
 
   return (
     <Modal
@@ -158,37 +155,21 @@ export const SwitchEnvFeedbackModal = ({
                     Why are you switching to the previous FormSG?
                   </FormLabel>
                   <Radio.RadioGroup>
-                    {isPublicFormPage
-                      ? PUBLIC_RADIO_OPTIONS.map((option) => (
-                          <Radio
-                            {...register('switchReason', {
-                              required: {
-                                value: true,
-                                message: 'This field is required',
-                              },
-                              deps: [FEEDBACK_OTHERS_INPUT_NAME],
-                            })}
-                            value={option}
-                            key={option}
-                          >
-                            {option}
-                          </Radio>
-                        ))
-                      : ADMIN_RADIO_OPTIONS.map((option) => (
-                          <Radio
-                            {...register('switchReason', {
-                              required: {
-                                value: true,
-                                message: 'This field is required',
-                              },
-                              deps: [FEEDBACK_OTHERS_INPUT_NAME],
-                            })}
-                            value={option}
-                            key={option}
-                          >
-                            {option}
-                          </Radio>
-                        ))}
+                    {radioOptions.map((option) => (
+                      <Radio
+                        {...register('switchReason', {
+                          required: {
+                            value: true,
+                            message: 'This field is required',
+                          },
+                          deps: [FEEDBACK_OTHERS_INPUT_NAME],
+                        })}
+                        value={option}
+                        key={option}
+                      >
+                        {option}
+                      </Radio>
+                    ))}
                     {COMMON_RADIO_OPTIONS.map((option) => (
                       <Radio
                         {...register('switchReason', {
