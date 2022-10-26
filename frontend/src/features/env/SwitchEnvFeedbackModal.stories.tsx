@@ -1,7 +1,7 @@
 // TODO #4279: Remove after React rollout is complete
 import { Meta, Story } from '@storybook/react'
 
-import { getUser, MOCK_USER } from '~/mocks/msw/handlers/user'
+import { getUnauthedUser, getUser, MOCK_USER } from '~/mocks/msw/handlers/user'
 
 import {
   fullScreenDecorator,
@@ -57,9 +57,15 @@ const PublicRespondentTemplate: Story = () => {
 
 export const PublicRespondent = PublicRespondentTemplate.bind({})
 PublicRespondent.decorators = [LoggedOutDecorator]
+PublicRespondent.parameters = {
+  msw: [getUnauthedUser()],
+}
 
 export const MobilePublicRespondent = PublicRespondentTemplate.bind({})
-MobilePublicRespondent.parameters = getMobileViewParameters()
+MobilePublicRespondent.parameters = {
+  ...getMobileViewParameters(),
+  msw: [getUnauthedUser()],
+}
 MobilePublicRespondent.decorators = [LoggedOutDecorator]
 
 export const Admin = AdminTemplate.bind({})

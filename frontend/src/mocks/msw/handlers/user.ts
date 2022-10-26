@@ -25,6 +25,12 @@ export const MOCK_USER = {
   updatedAt: '2021-08-24T09:10:03.295Z' as DateString,
 }
 
+export const getUnauthedUser = ({ delay = 0 }: WithDelayProps = {}) => {
+  return rest.get<never, never, UserDto>('/api/v3/user', (_req, res, ctx) => {
+    return res(ctx.delay(delay), ctx.status(401))
+  })
+}
+
 export const getUser = ({
   delay,
   mockUser = MOCK_USER,
