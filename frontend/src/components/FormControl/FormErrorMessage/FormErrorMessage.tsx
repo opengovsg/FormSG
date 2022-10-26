@@ -22,7 +22,7 @@ export const FormErrorMessage = ({
 }: FormErrorMessageProps): JSX.Element => {
   return (
     <ChakraFormErrorMessage alignItems="top" {...props}>
-      <FormErrorIcon h="1.5rem" as={BxsErrorCircle} />
+      {children ? <FormErrorIcon h="1.5rem" as={BxsErrorCircle} /> : null}
       {typeof children === 'string' ? (
         // Align line base height with icon (if any)
         <Box my="0.125rem">{children}</Box>
