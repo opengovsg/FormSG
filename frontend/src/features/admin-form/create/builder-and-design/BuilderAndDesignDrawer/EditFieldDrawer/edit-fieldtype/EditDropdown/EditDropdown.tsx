@@ -62,6 +62,7 @@ export const EditDropdown = ({ field }: EditDropdownProps): JSX.Element => {
       input: transformDropdownFieldToEditForm,
       output: transformDropdownEditFormToField,
     },
+    mode: 'onBlur',
   })
 
   const requiredValidationRule = useMemo(
