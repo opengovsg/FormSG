@@ -4,6 +4,8 @@ import { UserDto } from '../../../shared/types'
 
 /** Exported for testing */
 export const STORAGE_USER_KEY = 'user'
+// For React redirect compatibility
+export const LOGGED_IN_KEY = 'is-logged-in'
 /** Exported for testing */
 export const USER_ENDPOINT = '/api/v3/user'
 
@@ -36,6 +38,7 @@ export const getUserFromLocalStorage = (): UserDto | null => {
  */
 export const saveUserToLocalStorage = (user: UserDto): void => {
   localStorage.setItem(STORAGE_USER_KEY, JSON.stringify(user))
+  localStorage.setItem(LOGGED_IN_KEY, 'true')
 }
 
 /**
@@ -44,6 +47,7 @@ export const saveUserToLocalStorage = (user: UserDto): void => {
  */
 export const clearUserFromLocalStorage = (): void => {
   localStorage.removeItem(STORAGE_USER_KEY)
+  localStorage.removeItem(LOGGED_IN_KEY)
 }
 
 /**
