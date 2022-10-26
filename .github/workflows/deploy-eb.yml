@@ -78,6 +78,8 @@ jobs:
           tags: ${{env.ECR_REPO}}:${{env.IMAGE_TAG}}
           build-args: |
             APP_VERSION=${{env.APP_VERSION}}
+            APP_URL=${{secrets.APP_URL}}
+            REPO_URL=${{github.server_url}}/${{github.repository}}
           secrets: |
             "dd_api_key=${{ secrets.DD_API_KEY }}"
 

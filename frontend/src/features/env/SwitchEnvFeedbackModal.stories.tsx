@@ -10,7 +10,11 @@ import {
   LoggedOutDecorator,
 } from '~utils/storybook'
 
-import { SwitchEnvFeedbackModal } from './SwitchEnvFeedbackModal'
+import {
+  ADMIN_RADIO_OPTIONS,
+  PUBLIC_RADIO_OPTIONS,
+  SwitchEnvFeedbackModal,
+} from './SwitchEnvFeedbackModal'
 
 export default {
   title: 'Pages/SwitchEnvFeedbackModal',
@@ -27,27 +31,40 @@ const onClose = () => {
   return
 }
 
-const Template: Story = () => {
+const AdminTemplate: Story = () => {
   return (
     <SwitchEnvFeedbackModal
       onChangeEnv={() => console.log('change env')}
       onSubmitFeedback={async () => console.log('submit feedback')}
       onClose={onClose}
       isOpen={true}
+      radioOptions={ADMIN_RADIO_OPTIONS}
     />
   )
 }
 
-export const NotLoggedIn = Template.bind({})
-NotLoggedIn.decorators = [LoggedOutDecorator]
+const PublicRespondentTemplate: Story = () => {
+  return (
+    <SwitchEnvFeedbackModal
+      onChangeEnv={() => console.log('change env')}
+      onSubmitFeedback={async () => console.log('submit feedback')}
+      onClose={onClose}
+      isOpen={true}
+      radioOptions={PUBLIC_RADIO_OPTIONS}
+    />
+  )
+}
 
-export const MobileNotLoggedIn = Template.bind({})
-MobileNotLoggedIn.parameters = getMobileViewParameters()
-MobileNotLoggedIn.decorators = [LoggedOutDecorator]
+export const PublicRespondent = PublicRespondentTemplate.bind({})
+PublicRespondent.decorators = [LoggedOutDecorator]
 
-export const LoggedIn = Template.bind({})
-LoggedIn.decorators = [LoggedInDecorator]
-LoggedIn.parameters = {
+export const MobilePublicRespondent = PublicRespondentTemplate.bind({})
+MobilePublicRespondent.parameters = getMobileViewParameters()
+MobilePublicRespondent.decorators = [LoggedOutDecorator]
+
+export const Admin = AdminTemplate.bind({})
+Admin.decorators = [LoggedInDecorator]
+Admin.parameters = {
   msw: [
     getUser({
       delay: 0,
@@ -58,8 +75,8 @@ LoggedIn.parameters = {
   ],
 }
 
-export const MobileLoggedIn = Template.bind({})
-MobileLoggedIn.parameters = {
+export const MobileAdmin = AdminTemplate.bind({})
+MobileAdmin.parameters = {
   ...getMobileViewParameters(),
   msw: [
     getUser({
@@ -70,4 +87,4 @@ MobileLoggedIn.parameters = {
     }),
   ],
 }
-MobileLoggedIn.decorators = [LoggedInDecorator]
+MobileAdmin.decorators = [LoggedInDecorator]

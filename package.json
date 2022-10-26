@@ -1,7 +1,7 @@
 {
   "name": "FormSG",
   "description": "Form Manager for Government",
-  "version": "6.10.0",
+  "version": "6.11.0",
   "homepage": "https://form.gov.sg",
   "authors": [
     "FormSG <formsg@data.gov.sg>"
@@ -270,7 +270,7 @@
     "stylelint-config-prettier": "^9.0.3",
     "stylelint-config-standard": "^22.0.0",
     "stylelint-prettier": "^1.2.0",
-    "supertest": "^6.3.0",
+    "supertest": "^6.3.1",
     "supertest-session": "^4.1.0",
     "terser-webpack-plugin": "^1.2.3",
     "testcafe": "=1.15.1",
