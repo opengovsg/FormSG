@@ -19,6 +19,7 @@ export const getUserFromLocalStorage = (): UserDto | null => {
   const userStringified = localStorage.getItem(STORAGE_USER_KEY)
 
   if (userStringified) {
+    localStorage.setItem(LOGGED_IN_KEY, 'true')
     try {
       return UserDto.parse(JSON.parse(userStringified))
     } catch (error) {
