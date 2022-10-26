@@ -20,7 +20,7 @@ export const WorkspaceProvider = ({
     [dashboardForms?.length],
   )
 
-  const [filterOption, setFilterOption] = useState<FilterOption | undefined>()
+  const [filterOption, setFilterOption] = useState<FilterOption | null>(null)
 
   const displayedForms = useMemo(() => {
     if (!dashboardForms) return []
@@ -54,7 +54,8 @@ export const WorkspaceProvider = ({
         displayedForms,
         displayedFormsCount,
         isFilterOn,
-        setFilterOption,
+        activeFilter: filterOption,
+        setActiveFilter: setFilterOption,
       }}
     >
       {children}
