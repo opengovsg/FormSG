@@ -39,7 +39,7 @@ RUN --mount=type=secret,id=dd_api_key \
     npx @datadog/datadog-ci sourcemaps upload ./dist/frontend \
     --service=formsg-react \
     --release-version=$APP_VERSION \
-    --minified-path-prefix=$APP_URL/static/js \
+    --minified-path-prefix=$APP_URL \
     --repository-url=$REPO_URL
 
 RUN npm prune --production
