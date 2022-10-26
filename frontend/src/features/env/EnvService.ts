@@ -32,7 +32,7 @@ const createFeedbackResponsesArray = (
     ['feedback', 1],
     ['email', 2],
     ['rumSessionId', 3],
-    ['radio', 4],
+    ['switchReason', 4],
   ]
   const RADIO_OPTIONS_WITHOUT_OTHERS = ADMIN_RADIO_OPTIONS.concat(
     PUBLIC_RADIO_OPTIONS,

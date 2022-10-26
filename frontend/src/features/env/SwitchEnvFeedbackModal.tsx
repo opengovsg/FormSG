@@ -45,7 +45,7 @@ export const ADMIN_RADIO_OPTIONS = [
 ]
 export const PUBLIC_RADIO_OPTIONS = ['I couldn’t submit my form']
 export const COMMON_RADIO_OPTIONS = ['I’m not used to the new FormSG']
-export const FEEDBACK_OTHERS_INPUT_NAME = 'others-input'
+export const FEEDBACK_OTHERS_INPUT_NAME = 'react-feedback-others-input'
 
 export const SwitchEnvFeedbackModal = ({
   isOpen,
@@ -150,7 +150,10 @@ export const SwitchEnvFeedbackModal = ({
                 <FormControl>
                   <Input type="hidden" {...register('url')} value={url} />
                 </FormControl>
-                <FormControl isRequired={true} isInvalid={!isEmpty(errors)}>
+                <FormControl
+                  isRequired
+                  isInvalid={!isEmpty(errors) || !!othersInputError}
+                >
                   <FormLabel>
                     Why are you switching to the previous FormSG?
                   </FormLabel>
@@ -158,7 +161,7 @@ export const SwitchEnvFeedbackModal = ({
                     {isPublicFormPage
                       ? PUBLIC_RADIO_OPTIONS.map((option) => (
                           <Radio
-                            {...register('radio', {
+                            {...register('switchReason', {
                               required: {
                                 value: true,
                                 message: 'This field is required',
@@ -173,7 +176,7 @@ export const SwitchEnvFeedbackModal = ({
                         ))
                       : ADMIN_RADIO_OPTIONS.map((option) => (
                           <Radio
-                            {...register('radio', {
+                            {...register('switchReason', {
                               required: {
                                 value: true,
                                 message: 'This field is required',
@@ -188,7 +191,7 @@ export const SwitchEnvFeedbackModal = ({
                         ))}
                     {COMMON_RADIO_OPTIONS.map((option) => (
                       <Radio
-                        {...register('radio', {
+                        {...register('switchReason', {
                           required: {
                             value: true,
                             message: 'This field is required',
@@ -202,7 +205,7 @@ export const SwitchEnvFeedbackModal = ({
                       </Radio>
                     ))}
                     <Radio.OthersWrapper
-                      {...register('radio', {
+                      {...register('switchReason', {
                         required: {
                           value: true,
                           message: 'This field is required',
@@ -211,16 +214,14 @@ export const SwitchEnvFeedbackModal = ({
                       })}
                       value={othersInputValue}
                     >
-                      <FormControl
-                        isRequired={true}
-                        isInvalid={!!othersInputError}
-                      >
+                      <FormControl>
                         <OthersInput
                           aria-label='"Other" response'
                           {...register(FEEDBACK_OTHERS_INPUT_NAME, {
                             validate: (value) => {
                               return (
-                                getValues('radio') !== othersInputValue ||
+                                getValues('switchReason') !==
+                                  othersInputValue ||
                                 !!value ||
                                 'Please specify a value for the "Others" option'
                               )
@@ -230,13 +231,10 @@ export const SwitchEnvFeedbackModal = ({
                       </FormControl>
                     </Radio.OthersWrapper>
                   </Radio.RadioGroup>
-                  {errors['email'] ? null : (
-                    <FormErrorMessage>
-                      {errors['radio']?.message ??
-                        errors[FEEDBACK_OTHERS_INPUT_NAME]?.message ??
-                        null}
-                    </FormErrorMessage>
-                  )}
+                  <FormErrorMessage>
+                    {errors['switchReason']?.message ??
+                      errors[FEEDBACK_OTHERS_INPUT_NAME]?.message}
+                  </FormErrorMessage>
                 </FormControl>
                 {user ? (
                   <FormControl>
