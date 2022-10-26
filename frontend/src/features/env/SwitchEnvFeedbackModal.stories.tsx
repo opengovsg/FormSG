@@ -59,8 +59,8 @@ export const PublicRespondent = PublicRespondentTemplate.bind({})
 PublicRespondent.decorators = [LoggedOutDecorator]
 
 export const MobilePublicRespondent = PublicRespondentTemplate.bind({})
-PublicRespondent.parameters = getMobileViewParameters()
-PublicRespondent.decorators = [LoggedOutDecorator]
+MobilePublicRespondent.parameters = getMobileViewParameters()
+MobilePublicRespondent.decorators = [LoggedOutDecorator]
 
 export const Admin = AdminTemplate.bind({})
 Admin.decorators = [LoggedInDecorator]
