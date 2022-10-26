@@ -11,6 +11,13 @@ import { ApiService } from '~services/ApiService'
 
 import { PUBLIC_FORMS_ENDPOINT } from '~features/public-form/PublicFormService'
 
+import {
+  ADMIN_RADIO_OPTIONS,
+  COMMON_RADIO_OPTIONS,
+  FEEDBACK_OTHERS_INPUT_NAME,
+  PUBLIC_RADIO_OPTIONS,
+} from './SwitchEnvFeedbackModal'
+
 export const getClientEnvVars = async (): Promise<ClientEnvVars> => {
   return ApiService.get<ClientEnvVars>('/client/env').then(({ data }) => data)
 }
@@ -25,7 +32,12 @@ const createFeedbackResponsesArray = (
     ['feedback', 1],
     ['email', 2],
     ['rumSessionId', 3],
+    ['switchReason', 4],
   ]
+  const RADIO_OPTIONS_WITHOUT_OTHERS = ADMIN_RADIO_OPTIONS.concat(
+    PUBLIC_RADIO_OPTIONS,
+    COMMON_RADIO_OPTIONS,
+  )
   const responses: {
     _id: string
     question: string
@@ -33,7 +45,14 @@ const createFeedbackResponsesArray = (
     fieldType: BasicField
   }[] = feedbackFormFieldsStructure.map(([inputKey, formFieldIndex]) => {
     const { _id, fieldType } = feedbackForm.form.form_fields[formFieldIndex]
-    const answer = formInputs[inputKey] ?? ''
+    let answer: string = formInputs[inputKey] ?? ''
+    if (
+      fieldType === BasicField.Radio &&
+      !RADIO_OPTIONS_WITHOUT_OTHERS.includes(answer)
+    ) {
+      // format answer from Others to match form submission format
+      answer = `Others: ${formInputs[FEEDBACK_OTHERS_INPUT_NAME]}`
+    }
     return {
       _id,
       question: inputKey,

@@ -1,6 +1,6 @@
 // TODO #4279: Remove after React rollout is complete
 import { useCallback, useRef, useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { FieldError, useForm } from 'react-hook-form'
 import {
   chakra,
   FormControl,
@@ -15,13 +15,18 @@ import {
   useBreakpointValue,
 } from '@chakra-ui/react'
 import { datadogRum } from '@datadog/browser-rum'
+import { get, isEmpty } from 'lodash'
+import validator from 'validator'
 
 import { SwitchEnvFeedbackFormBodyDto } from '~shared/types'
 
+import { INVALID_EMAIL_ERROR } from '~constants/validation'
 import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
+import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import { ModalCloseButton } from '~components/Modal'
+import Radio, { OthersInput } from '~components/Radio'
 import Textarea from '~components/Textarea'
 
 import { useUser } from '~features/user/queries'
@@ -31,13 +36,23 @@ export interface SwitchEnvModalProps {
   onClose: () => void
   onSubmitFeedback: (formInputs: SwitchEnvFeedbackFormBodyDto) => Promise<any>
   onChangeEnv: () => void
+  radioOptions: string[]
 }
+
+export const ADMIN_RADIO_OPTIONS = [
+  'I couldn’t find a feature I needed',
+  'The new FormSG did not function properly',
+]
+export const PUBLIC_RADIO_OPTIONS = ['I couldn’t submit my form']
+export const COMMON_RADIO_OPTIONS = ['I’m not used to the new FormSG']
+export const FEEDBACK_OTHERS_INPUT_NAME = 'react-feedback-others-input'
 
 export const SwitchEnvFeedbackModal = ({
   isOpen,
   onClose,
   onChangeEnv,
   onSubmitFeedback,
+  radioOptions,
 }: SwitchEnvModalProps): JSX.Element => {
   const modalSize = useBreakpointValue({
     base: 'mobile',
@@ -46,7 +61,19 @@ export const SwitchEnvFeedbackModal = ({
   })
   const isMobile = useIsMobile()
 
-  const { register, handleSubmit } = useForm<SwitchEnvFeedbackFormBodyDto>()
+  const {
+    register,
+    handleSubmit,
+    getValues,
+    formState: { errors },
+  } = useForm<SwitchEnvFeedbackFormBodyDto>()
+
+  const othersInputError: FieldError | undefined = get(
+    errors,
+    FEEDBACK_OTHERS_INPUT_NAME,
+  )
+  const othersInputValue = '!!FORMSG_INTERNAL_CHECKBOX_OTHERS_VALUE!!'
+
   const initialRef = useRef(null)
 
   const { user } = useUser()
@@ -55,8 +82,8 @@ export const SwitchEnvFeedbackModal = ({
   const [showThanksPage, setShowThanksPage] = useState<boolean>(false)
 
   const handleFormSubmit = handleSubmit((inputs) => {
-    // Only submit form if there is feedback
-    if (inputs.feedback.trim()) onSubmitFeedback(inputs)
+    // Prevent submission if radio option 'I’m not used to the new FormSG' is selected
+    if (!COMMON_RADIO_OPTIONS.includes(inputs.radio)) onSubmitFeedback(inputs)
     setShowThanksPage(true)
   })
 
@@ -120,17 +147,75 @@ export const SwitchEnvFeedbackModal = ({
                 <FormControl>
                   <Input type="hidden" {...register('url')} value={url} />
                 </FormControl>
-                <FormControl>
-                  <FormLabel
-                    description={
-                      user
-                        ? ''
-                        : 'Any fields you’ve filled in your form so far will be cleared'
-                    }
-                  >
-                    Please tell us what we can improve on
+                <FormControl
+                  isRequired
+                  isInvalid={!isEmpty(errors) || !!othersInputError}
+                >
+                  <FormLabel>
+                    Why are you switching to the previous FormSG?
                   </FormLabel>
-                  <Textarea {...register('feedback')} tabIndex={1} />
+                  <Radio.RadioGroup>
+                    {radioOptions.map((option) => (
+                      <Radio
+                        {...register('switchReason', {
+                          required: {
+                            value: true,
+                            message: 'This field is required',
+                          },
+                          deps: [FEEDBACK_OTHERS_INPUT_NAME],
+                        })}
+                        value={option}
+                        key={option}
+                      >
+                        {option}
+                      </Radio>
+                    ))}
+                    {COMMON_RADIO_OPTIONS.map((option) => (
+                      <Radio
+                        {...register('switchReason', {
+                          required: {
+                            value: true,
+                            message: 'This field is required',
+                          },
+                          deps: [FEEDBACK_OTHERS_INPUT_NAME],
+                        })}
+                        value={'I’m not used to the new FormSG'}
+                        key={option}
+                      >
+                        {option}
+                      </Radio>
+                    ))}
+                    <Radio.OthersWrapper
+                      {...register('switchReason', {
+                        required: {
+                          value: true,
+                          message: 'This field is required',
+                        },
+                        deps: [FEEDBACK_OTHERS_INPUT_NAME],
+                      })}
+                      value={othersInputValue}
+                    >
+                      <FormControl>
+                        <OthersInput
+                          aria-label='"Other" response'
+                          {...register(FEEDBACK_OTHERS_INPUT_NAME, {
+                            validate: (value) => {
+                              return (
+                                getValues('switchReason') !==
+                                  othersInputValue ||
+                                !!value ||
+                                'Please specify a value for the "Others" option'
+                              )
+                            },
+                          })}
+                        />
+                      </FormControl>
+                    </Radio.OthersWrapper>
+                  </Radio.RadioGroup>
+                  <FormErrorMessage>
+                    {errors['switchReason']?.message ??
+                      errors[FEEDBACK_OTHERS_INPUT_NAME]?.message}
+                  </FormErrorMessage>
                 </FormControl>
                 {user ? (
                   <FormControl>
@@ -140,7 +225,42 @@ export const SwitchEnvFeedbackModal = ({
                       value={user.email}
                     />
                   </FormControl>
-                ) : null}
+                ) : (
+                  <FormControl isInvalid={!!errors['email']}>
+                    <FormLabel>
+                      Email, if we need to contact you for details
+                    </FormLabel>
+                    <Input
+                      {...register('email', {
+                        validate: (value) => {
+                          if (!value) {
+                            return true
+                          }
+                          // Valid email check
+                          if (!validator.isEmail(value)) {
+                            return INVALID_EMAIL_ERROR
+                          }
+                        },
+                      })}
+                      tabIndex={1}
+                    />
+                    <FormErrorMessage>
+                      {errors['email']?.message}
+                    </FormErrorMessage>
+                  </FormControl>
+                )}
+                <FormControl>
+                  <FormLabel
+                    description={
+                      user
+                        ? ''
+                        : 'Any fields you’ve filled in your form so far will be cleared'
+                    }
+                  >
+                    Describe your problem in detail to help us improve FormSG
+                  </FormLabel>
+                  <Textarea {...register('feedback')} tabIndex={1} />
+                </FormControl>
                 {rumSessionId ? (
                   <FormControl>
                     <Input

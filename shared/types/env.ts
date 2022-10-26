@@ -10,4 +10,5 @@ export interface SwitchEnvFeedbackFormBodyDto {
   feedback: string
   email: string
   rumSessionId: string
+  switchReason: string
 }
