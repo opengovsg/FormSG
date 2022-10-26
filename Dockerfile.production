@@ -28,6 +28,8 @@ RUN npm run lint-ci
 RUN npm run build
 
 ARG APP_VERSION
+ARG APP_URL
+ARG REPO_URL
 
 # Upload datadog source maps from secret mount, id MUST be `id=dd_api_key` in the docker build command
 # Mount creates a file inside /run/secrets/dd_api_key, and source to load the environment variables
@@ -37,7 +39,8 @@ RUN --mount=type=secret,id=dd_api_key \
     npx @datadog/datadog-ci sourcemaps upload ./dist/frontend \
     --service=formsg-react \
     --release-version=$APP_VERSION \
-    --minified-path-prefix=/static/js
+    --minified-path-prefix=$APP_URL \
+    --repository-url=$REPO_URL
 
 RUN npm prune --production
 
