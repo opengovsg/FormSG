@@ -52,6 +52,8 @@ type UseEditFieldFormProps<
       output: FieldShape,
     ) => Promise<FieldShape> | FieldShape
   }
+} & {
+  mode?: 'onChange' | 'onBlur' | 'onSubmit' | 'onTouched' | 'all'
 }
 
 export type UseEditFieldFormReturn<U> = UseFormReturn<U> & {
@@ -65,6 +67,7 @@ export type UseEditFieldFormReturn<U> = UseFormReturn<U> & {
 export const useEditFieldForm = <FormShape, FieldShape extends FormField>({
   field,
   transform,
+  mode,
 }: UseEditFieldFormProps<
   FormShape,
   FieldShape
@@ -98,6 +101,7 @@ export const useEditFieldForm = <FormShape, FieldShape extends FormField>({
   )
   const editForm = useForm<FormShape>({
     defaultValues,
+    mode: mode,
   })
 
   const { isDirty } = editForm.formState
