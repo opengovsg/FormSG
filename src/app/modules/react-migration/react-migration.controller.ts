@@ -120,12 +120,14 @@ const servePublicFormReact: ControllerHandler<
       error: createMetatagsResult.error,
     })
     reactHtml = reactHtml
-      .replace('__OG_TITLE__', 'FormSG')
+      // there are multiple __OG_TITLE__ and we are unable to use string.replaceAll so we use regexp
+      .replace(new RegExp('__OG_TITLE__', 'g'), 'FormSG')
       .replace('__OG_DESCRIPTION__', '')
   } else {
     const { title, description } = createMetatagsResult.value
     reactHtml = reactHtml
-      .replace('__OG_TITLE__', title)
+      // there are multiple __OG_TITLE__ and we are unable to use string.replaceAll so we use regexp
+      .replace(new RegExp('__OG_TITLE__', 'g'), title)
       .replace('__OG_DESCRIPTION__', description ?? '')
       .replace('<title>FormSG</title>', `<title>${title}</title>`)
   }
