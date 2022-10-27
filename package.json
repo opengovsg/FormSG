@@ -126,7 +126,7 @@
     "font-awesome": "4.7.0",
     "fp-ts": "^2.13.1",
     "helmet": "^6.0.0",
-    "hot-shots": "^9.2.0",
+    "hot-shots": "^9.3.0",
     "http-errors": "^2.0.0",
     "http-status-codes": "^2.2.0",
     "intl-tel-input": "~12.4.0",
