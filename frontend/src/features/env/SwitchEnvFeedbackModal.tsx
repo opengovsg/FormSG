@@ -171,6 +171,7 @@ export const SwitchEnvFeedbackModal = ({
                         })}
                         value={option}
                         key={option}
+                        tabIndex={1}
                       >
                         {option}
                       </Radio>
@@ -247,7 +248,6 @@ export const SwitchEnvFeedbackModal = ({
                           }
                         },
                       })}
-                      tabIndex={1}
                     />
                     <FormErrorMessage>
                       {errors['email']?.message}
@@ -264,7 +264,7 @@ export const SwitchEnvFeedbackModal = ({
                   >
                     Describe your problem in detail to help us improve FormSG
                   </FormLabel>
-                  <Textarea {...register('feedback')} tabIndex={1} />
+                  <Textarea {...register('feedback')} />
                 </FormControl>
                 {rumSessionId ? (
                   <FormControl>
