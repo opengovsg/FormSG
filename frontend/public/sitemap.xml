@@ -6,13 +6,13 @@
     <priority>1.0</priority>
     <image:image>
        <image:loc>
-         https://form.gov.sg/public/modules/core/img/landing/restricted__build-demo.png
+         https://form.gov.sg/static/images/landing/restricted__build-demo.png
        </image:loc>
        <image:caption>Build government forms in minutes</image:caption>
     </image:image>
     <image:image>
        <image:loc>
-         https://form.gov.sg/public/modules/core/img/landing/restricted__feature3.png
+         https://form.gov.sg/static/images/landing/restricted__feature3.png
        </image:loc>
        <image:caption>Integrated with government systems</image:caption>
     </image:image>
