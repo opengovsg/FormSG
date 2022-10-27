@@ -1,5 +1,7 @@
 // TODO #4279: Remove after React rollout is complete
+import { Request } from 'express'
 import { readFileSync } from 'fs'
+import { get } from 'lodash'
 import path from 'path'
 
 import { FormResponseMode, UiCookieValues } from '../../../../shared/types'
@@ -41,24 +43,38 @@ export const ADMIN_COOKIE_OPTIONS_WITH_EXPIRY = {
 
 const logger = createLoggerWithLabel(module)
 
-const serveFormReact: ControllerHandler = (_req, res) => {
-  const reactFrontendPath = path.resolve('dist/frontend')
-  logger.info({
-    message: 'serveFormReact',
-    meta: {
-      action: 'routeReact.serveFormReact',
-      __dirname,
-      cwd: process.cwd(),
-      reactFrontendPath,
-    },
-  })
-  return (
-    res
-      // Prevent index.html from being cached by browsers.
-      .setHeader('Cache-Control', 'no-cache')
-      .sendFile(path.join(reactFrontendPath, 'index.html'))
-  )
-}
+const serveFormReact =
+  (isPublicForm: boolean): ControllerHandler =>
+  (req, res, next) => {
+    const reactFrontendPath = path.resolve('dist/frontend')
+    logger.info({
+      message: 'serveFormReact',
+      meta: {
+        action: 'routeReact.serveFormReact',
+        __dirname,
+        cwd: process.cwd(),
+        reactFrontendPath,
+      },
+    })
+    if (isPublicForm && !!get(req.params, 'formId')) {
+      return servePublicFormReact(
+        req as Request<
+          { formId: string },
+          unknown,
+          unknown,
+          Record<string, string>
+        >,
+        res,
+        next,
+      )
+    }
+    return (
+      res
+        // Prevent index.html from being cached by browsers.
+        .setHeader('Cache-Control', 'no-cache')
+        .sendFile(path.join(reactFrontendPath, 'index.html'))
+    )
+  }
 
 const serveFormAngular: ControllerHandler<
   RedirectParams,
@@ -70,7 +86,7 @@ const serveFormAngular: ControllerHandler<
 }
 
 const servePublicFormReact: ControllerHandler<
-  RedirectParams,
+  { formId: string },
   unknown,
   unknown,
   Record<string, string>
@@ -199,90 +215,7 @@ export const servePublicForm: ControllerHandler<
   })
 
   if (showReact) {
-    return servePublicFormReact(req, res, next)
-  } else {
-    return serveFormAngular(req, res, next)
-  }
-}
-
-export const serveForm: ControllerHandler<
-  RedirectParams,
-  unknown,
-  unknown,
-  Record<string, string>
-> = async (req, res, next) => {
-  const formResult = await FormService.retrieveFormKeysById(req.params.formId, [
-    'responseMode',
-  ])
-  let showReact: boolean | undefined = undefined
-  let isEmail = false
-
-  if (!formResult.isErr()) {
-    // This conditional router is not the one to do error handling
-    // If there's any error, isEmail will retain its value of false, and
-    // the handling route will handle the error later in the usual fashion
-    isEmail = formResult.value.responseMode === FormResponseMode.Email
-  }
-
-  const respThreshold = isEmail
-    ? config.reactMigration.respondentRolloutEmail
-    : config.reactMigration.respondentRolloutStorage
-
-  if (config.reactMigration.qaCookieName in req.cookies) {
-    showReact =
-      req.cookies[config.reactMigration.qaCookieName] === UiCookieValues.React
-  } else if (respThreshold <= 0) {
-    // Check the rollout value first, if it's 0, react is DISABLED
-    // And we ignore cookies entirely!
-    showReact = false
-    // Delete existing cookies to prevent infinite redirection
-    if (req.cookies) {
-      res.clearCookie(config.reactMigration.respondentCookieName)
-    }
-  } else if (config.reactMigration.respondentCookieName in req.cookies) {
-    // Note: the respondent cookie is for the whole session, not for a specific form.
-    // That means that within a session, a respondent will see the same environment
-    // for all the forms he/she fills.
-    showReact =
-      req.cookies[config.reactMigration.respondentCookieName] ===
-      UiCookieValues.React
-  }
-
-  if (showReact === undefined) {
-    const rand = Math.random() * 100
-    showReact = rand <= respThreshold
-
-    logger.info({
-      message: 'Randomly assigned UI environment for respondent',
-      meta: {
-        action: 'routeReact.random',
-        isEmail,
-        rand,
-        respThreshold,
-        showReact,
-      },
-    })
-
-    res.cookie(
-      config.reactMigration.respondentCookieName,
-      showReact ? UiCookieValues.React : UiCookieValues.Angular,
-      RESPONDENT_COOKIE_OPTIONS,
-    )
-  }
-
-  logger.info({
-    message: 'Routing evaluation done for respondent',
-    meta: {
-      action: 'routeReact',
-      isEmail,
-      respThreshold,
-      showReact,
-      cwd: process.cwd(),
-    },
-  })
-
-  if (showReact) {
-    return serveFormReact(req, res, next)
+    return serveFormReact(/* isPublic= */ true)(req, res, next)
   } else {
     return serveFormAngular(req, res, next)
   }
@@ -350,7 +283,7 @@ export const serveDefault: ControllerHandler = (req, res, next) => {
 
   if (showReact) {
     // react
-    return serveFormReact(req, res, next)
+    return serveFormReact(/* isPublic= */ false)(req, res, next)
   } else {
     // angular
     return HomeController.home(req, res, next)
