@@ -82,8 +82,15 @@ export const SwitchEnvFeedbackModal = ({
   const [showThanksPage, setShowThanksPage] = useState<boolean>(false)
 
   const handleFormSubmit = handleSubmit((inputs) => {
-    // Prevent submission if radio option 'I’m not used to the new FormSG' is selected
-    if (!COMMON_RADIO_OPTIONS.includes(inputs.radio)) onSubmitFeedback(inputs)
+    // Prevent feedback form subbmission if radio option 'I’m not used to the new FormSG' is selected AND feedback is empty
+    if (
+      !(
+        COMMON_RADIO_OPTIONS.includes(inputs.switchReason) &&
+        !inputs.feedback.trim()
+      )
+    ) {
+      onSubmitFeedback(inputs)
+    }
     setShowThanksPage(true)
   })
 
@@ -166,6 +173,7 @@ export const SwitchEnvFeedbackModal = ({
                         })}
                         value={option}
                         key={option}
+                        tabIndex={1}
                       >
                         {option}
                       </Radio>
@@ -242,7 +250,6 @@ export const SwitchEnvFeedbackModal = ({
                           }
                         },
                       })}
-                      tabIndex={1}
                     />
                     <FormErrorMessage>
                       {errors['email']?.message}
@@ -259,7 +266,7 @@ export const SwitchEnvFeedbackModal = ({
                   >
                     Describe your problem in detail to help us improve FormSG
                   </FormLabel>
-                  <Textarea {...register('feedback')} tabIndex={1} />
+                  <Textarea {...register('feedback')} />
                 </FormControl>
                 {rumSessionId ? (
                   <FormControl>
