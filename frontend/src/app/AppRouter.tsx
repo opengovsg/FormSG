@@ -17,6 +17,7 @@ import {
   TOU_ROUTE,
 } from '~constants/routes'
 import { fillHeightCss } from '~utils/fillHeightCss'
+import { lazyRetry } from '~utils/lazyRetry'
 
 import NotFoundErrorPage from '~pages/NotFoundError'
 import { AdminFormLayout } from '~features/admin-form/common/AdminFormLayout'
@@ -35,15 +36,19 @@ import { HashRouterElement } from './HashRouterElement'
 import { PrivateElement } from './PrivateElement'
 import { PublicElement } from './PublicElement'
 
-const PublicFormPage = lazy(
-  () => import('~features/public-form/PublicFormPage'),
+const PublicFormPage = lazy(() =>
+  lazyRetry(() => import('~features/public-form/PublicFormPage')),
 )
-const WorkspacePage = lazy(() => import('~features/workspace'))
-const LandingPage = lazy(() => import('~pages/Landing'))
-const LoginPage = lazy(() => import('~features/login'))
-const PrivacyPolicyPage = lazy(() => import('~pages/PrivacyPolicy'))
-const TermsOfUsePage = lazy(() => import('~pages/TermsOfUse'))
-const PreviewFormPage = lazy(() => import('~features/admin-form/preview'))
+const WorkspacePage = lazy(() => lazyRetry(() => import('~features/workspace')))
+const LandingPage = lazy(() => lazyRetry(() => import('~pages/Landing')))
+const LoginPage = lazy(() => lazyRetry(() => import('~features/login')))
+const PrivacyPolicyPage = lazy(() =>
+  lazyRetry(() => import('~pages/PrivacyPolicy')),
+)
+const TermsOfUsePage = lazy(() => lazyRetry(() => import('~pages/TermsOfUse')))
+const PreviewFormPage = lazy(() =>
+  lazyRetry(() => import('~features/admin-form/preview')),
+)
 
 const WithSuspense = ({ children }: { children: React.ReactNode }) => (
   <Suspense fallback={<Box bg="neutral.100" css={fillHeightCss} w="100vw" />}>
