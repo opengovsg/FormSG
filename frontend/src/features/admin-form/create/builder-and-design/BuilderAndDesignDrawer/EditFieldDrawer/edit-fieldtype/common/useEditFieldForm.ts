@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo } from 'react'
 import {
   DeepPartial,
+  Mode,
   UnpackNestedValue,
   useForm,
   UseFormReturn,
@@ -53,7 +54,7 @@ type UseEditFieldFormProps<
     ) => Promise<FieldShape> | FieldShape
   }
 } & {
-  mode?: 'onChange' | 'onBlur' | 'onSubmit' | 'onTouched' | 'all'
+  mode?: Mode
 }
 
 export type UseEditFieldFormReturn<U> = UseFormReturn<U> & {
