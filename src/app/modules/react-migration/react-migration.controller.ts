@@ -1,12 +1,15 @@
 // TODO #4279: Remove after React rollout is complete
+import { readFileSync } from 'fs'
 import path from 'path'
 
 import { FormResponseMode, UiCookieValues } from '../../../../shared/types'
 import config from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
+import { createReqMeta } from '../../utils/request'
 import { ControllerHandler } from '../core/core.types'
 import * as FormService from '../form/form.service'
 import * as PublicFormController from '../form/public-form/public-form.controller'
+import { createMetatags } from '../form/public-form/public-form.service'
 import { RedirectParams } from '../form/public-form/public-form.types'
 import * as HomeController from '../home/home.controller'
 
@@ -64,6 +67,142 @@ const serveFormAngular: ControllerHandler<
   Record<string, string>
 > = (req, res, next) => {
   return PublicFormController.handleRedirect(req, res, next)
+}
+
+const servePublicFormReact: ControllerHandler<
+  RedirectParams,
+  unknown,
+  unknown,
+  Record<string, string>
+> = async (req, res) => {
+  const reactFrontendPath = path.resolve('dist/frontend')
+  logger.info({
+    message: 'serveFormReact',
+    meta: {
+      action: 'routeReact.serveFormReact',
+      __dirname,
+      cwd: process.cwd(),
+      reactFrontendPath,
+    },
+  })
+  let reactHtml = readFileSync(path.join(reactFrontendPath, 'index.html'), {
+    encoding: 'utf8',
+  })
+  const formId = req.params.formId
+  const createMetatagsResult = await createMetatags({
+    formId,
+  })
+
+  // Failed to create metatags.
+  if (createMetatagsResult.isErr()) {
+    logger.error({
+      message: 'Error fetching metatags',
+      meta: {
+        action: 'handleRedirect',
+        ...createReqMeta(req),
+      },
+      error: createMetatagsResult.error,
+    })
+    reactHtml = reactHtml
+      .replace('__OG_TITLE__', 'FormSG')
+      .replace('__OG_DESCRIPTION__', '')
+  } else {
+    const { title, description } = createMetatagsResult.value
+    reactHtml = reactHtml
+      .replace('__OG_TITLE__', title)
+      .replace('__OG_DESCRIPTION__', description ?? '')
+      .replace('<title>FormSG</title>', `<title>${title}</title>`)
+  }
+
+  return (
+    res
+      // Prevent index.html from being cached by browsers.
+      .setHeader('Cache-Control', 'no-cache')
+      .send(reactHtml)
+  )
+}
+
+export const servePublicForm: ControllerHandler<
+  RedirectParams,
+  unknown,
+  unknown,
+  Record<string, string>
+> = async (req, res, next) => {
+  const formResult = await FormService.retrieveFormKeysById(req.params.formId, [
+    'responseMode',
+  ])
+  let showReact: boolean | undefined = undefined
+  let isEmail = false
+
+  if (!formResult.isErr()) {
+    // This conditional router is not the one to do error handling
+    // If there's any error, isEmail will retain its value of false, and
+    // the handling route will handle the error later in the usual fashion
+    isEmail = formResult.value.responseMode === FormResponseMode.Email
+  }
+
+  const respThreshold = isEmail
+    ? config.reactMigration.respondentRolloutEmail
+    : config.reactMigration.respondentRolloutStorage
+
+  if (config.reactMigration.qaCookieName in req.cookies) {
+    showReact =
+      req.cookies[config.reactMigration.qaCookieName] === UiCookieValues.React
+  } else if (respThreshold <= 0) {
+    // Check the rollout value first, if it's 0, react is DISABLED
+    // And we ignore cookies entirely!
+    showReact = false
+    // Delete existing cookies to prevent infinite redirection
+    if (req.cookies) {
+      res.clearCookie(config.reactMigration.respondentCookieName)
+    }
+  } else if (config.reactMigration.respondentCookieName in req.cookies) {
+    // Note: the respondent cookie is for the whole session, not for a specific form.
+    // That means that within a session, a respondent will see the same environment
+    // for all the forms he/she fills.
+    showReact =
+      req.cookies[config.reactMigration.respondentCookieName] ===
+      UiCookieValues.React
+  }
+
+  if (showReact === undefined) {
+    const rand = Math.random() * 100
+    showReact = rand <= respThreshold
+
+    logger.info({
+      message: 'Randomly assigned UI environment for respondent',
+      meta: {
+        action: 'routeReact.random',
+        isEmail,
+        rand,
+        respThreshold,
+        showReact,
+      },
+    })
+
+    res.cookie(
+      config.reactMigration.respondentCookieName,
+      showReact ? UiCookieValues.React : UiCookieValues.Angular,
+      RESPONDENT_COOKIE_OPTIONS,
+    )
+  }
+
+  logger.info({
+    message: 'Routing evaluation done for respondent',
+    meta: {
+      action: 'routeReact',
+      isEmail,
+      respThreshold,
+      showReact,
+      cwd: process.cwd(),
+    },
+  })
+
+  if (showReact) {
+    return servePublicFormReact(req, res, next)
+  } else {
+    return serveFormAngular(req, res, next)
+  }
 }
 
 export const serveForm: ControllerHandler<
