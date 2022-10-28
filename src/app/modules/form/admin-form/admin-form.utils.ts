@@ -195,7 +195,8 @@ export const assertHasReadPermissions: AssertFormFn = (user, form) => {
 
   // Check if user email is currently in form's allowed list.
   const hasReadPermissions = !!form.permissionList?.find(
-    (allowedUser) => allowedUser.email === user.email,
+    (allowedUser) =>
+      allowedUser.email.toLowerCase() === user.email.toLowerCase(),
   )
 
   return hasReadPermissions
@@ -238,7 +239,9 @@ export const assertHasWritePermissions: AssertFormFn = (user, form) => {
   // Check if user email is currently in form's allowed list, and has write
   // permissions.
   const hasWritePermissions = !!form.permissionList?.find(
-    (allowedUser) => allowedUser.email === user.email && allowedUser.write,
+    (allowedUser) =>
+      allowedUser.email.toLowerCase() === user.email.toLowerCase() &&
+      allowedUser.write,
   )
 
   return hasWritePermissions

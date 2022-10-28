@@ -1,22 +1,44 @@
 // TODO #4279: Remove after React rollout is complete
-import { useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import { BiMessage } from 'react-icons/bi'
 import { Flex, Portal, useDisclosure } from '@chakra-ui/react'
+
+import { SwitchEnvFeedbackFormBodyDto } from '~shared/types'
 
 import IconButton from '~components/IconButton'
 import Tooltip from '~components/Tooltip'
 
-import { REMOVE_ADMIN_INFOBOX_THRESHOLD } from '~features/workspace/components/AdminSwitchEnvMessage'
-
-import { useEnv } from './queries'
-import { SwitchEnvFeedbackModal } from './SwitchEnvFeedbackModal'
+import { useEnvMutations } from './mutations'
+import { useEnv, useSwitchEnvFeedbackFormView } from './queries'
+import {
+  ADMIN_RADIO_OPTIONS,
+  SwitchEnvFeedbackModal,
+} from './SwitchEnvFeedbackModal'
 
 export const SwitchEnvIcon = (): JSX.Element | null => {
   const { isOpen, onOpen, onClose } = useDisclosure()
-  const { data: { adminRollout } = {} } = useEnv()
+  const { data: { adminRollout, removeAdminInfoboxThreshold } = {} } = useEnv()
+
+  // get the feedback form data
+  const { data: feedbackForm } = useSwitchEnvFeedbackFormView(isOpen)
+
+  const { submitSwitchEnvFormFeedbackMutation, adminSwitchEnvMutation } =
+    useEnvMutations(feedbackForm)
+
+  const submitFeedback = useCallback(
+    (formInputs: SwitchEnvFeedbackFormBodyDto) => {
+      return submitSwitchEnvFormFeedbackMutation.mutateAsync(formInputs)
+    },
+    [submitSwitchEnvFormFeedbackMutation],
+  )
+
+  // Remove the switch env message if the React rollout for admins is => threshold
   const showSwitchEnvMessage = useMemo(
-    () => adminRollout && adminRollout < REMOVE_ADMIN_INFOBOX_THRESHOLD,
-    [adminRollout],
+    () =>
+      adminRollout &&
+      removeAdminInfoboxThreshold &&
+      adminRollout < removeAdminInfoboxThreshold,
+    [adminRollout, removeAdminInfoboxThreshold],
   )
 
   if (!showSwitchEnvMessage) return null
@@ -33,7 +55,13 @@ export const SwitchEnvIcon = (): JSX.Element | null => {
             onClick={onOpen}
           />
         </Tooltip>
-        <SwitchEnvFeedbackModal isOpen={isOpen} onClose={onClose} />
+        <SwitchEnvFeedbackModal
+          onSubmitFeedback={submitFeedback}
+          onChangeEnv={adminSwitchEnvMutation.mutate}
+          isOpen={isOpen}
+          onClose={onClose}
+          radioOptions={ADMIN_RADIO_OPTIONS}
+        />
       </Flex>
     </Portal>
   )

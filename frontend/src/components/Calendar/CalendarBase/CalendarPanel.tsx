@@ -19,7 +19,7 @@ export const CalendarPanel = forwardRef<{}, 'button'>(
   (_props, initialFocusRef): JSX.Element => {
     const styles = useStyles()
     const {
-      uuid,
+      classNameId,
       dateToFocus,
       onMouseLeaveCalendar,
       renderProps: { calendars, getDateProps },
@@ -77,7 +77,7 @@ export const CalendarPanel = forwardRef<{}, 'button'>(
                                 dateObj.date.getMonth() !== calendar.month
                               }
                               className={generateClassNameForDate(
-                                uuid,
+                                classNameId,
                                 dateObj.date,
                               )}
                               ref={

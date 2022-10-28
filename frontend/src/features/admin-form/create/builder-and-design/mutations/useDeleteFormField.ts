@@ -15,7 +15,10 @@ import {
   stateDataSelector,
   useFieldBuilderStore,
 } from '../useFieldBuilderStore'
-import { getMutationErrorMessage } from '../utils/getMutationErrorMessage'
+import {
+  getMutationErrorMessage,
+  getMutationToastDescriptionFieldName,
+} from '../utils/getMutationMessage'
 
 export const useDeleteFormField = () => {
   const { formId } = useParams()
@@ -46,7 +49,9 @@ export const useDeleteFormField = () => {
       return
     }
     toast({
-      description: `The field "${stateData.field.title}" was deleted.`,
+      description: `The ${getMutationToastDescriptionFieldName(
+        stateData.field,
+      )}" was deleted.`,
     })
     queryClient.setQueryData<AdminFormDto>(adminFormKey, (oldForm) => {
       // Should not happen, should not be able to update field if there is no

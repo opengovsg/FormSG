@@ -2,11 +2,13 @@ import { memo, useMemo } from 'react'
 
 import { BasicField, FieldCreateDto } from '~shared/types/field'
 
-import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
+import {
+  BASICFIELD_TO_DRAWER_META,
+  MYINFO_FIELD_TO_DRAWER_META,
+} from '~features/admin-form/create/constants'
 import { isMyInfo } from '~features/myinfo/utils'
 
 import { useBuilderFields } from '../../BuilderAndDesignContent/useBuilderFields'
-import { MYINFO_FIELD_CONSTANTS } from '../../constants'
 import {
   FieldBuilderState,
   stateDataSelector,
@@ -53,7 +55,7 @@ export const EditFieldDrawer = (): JSX.Element | null => {
   const basicFieldText = useMemo(() => {
     if (!fieldToEdit?.fieldType) return ''
     if (isMyInfo(fieldToEdit)) {
-      return MYINFO_FIELD_CONSTANTS[fieldToEdit.myInfo.attr].value
+      return MYINFO_FIELD_TO_DRAWER_META[fieldToEdit.myInfo.attr].label
     }
     return BASICFIELD_TO_DRAWER_META[fieldToEdit?.fieldType].label
   }, [fieldToEdit])

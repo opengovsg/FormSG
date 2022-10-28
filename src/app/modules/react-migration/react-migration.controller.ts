@@ -49,7 +49,12 @@ const serveFormReact: ControllerHandler = (_req, res) => {
       reactFrontendPath,
     },
   })
-  return res.sendFile(path.join(reactFrontendPath, 'index.html'))
+  return (
+    res
+      // Prevent index.html from being cached by browsers.
+      .setHeader('Cache-Control', 'no-cache')
+      .sendFile(path.join(reactFrontendPath, 'index.html'))
+  )
 }
 
 const serveFormAngular: ControllerHandler<

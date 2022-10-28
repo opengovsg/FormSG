@@ -8,10 +8,17 @@ import {
   VisuallyHidden,
 } from '@chakra-ui/react'
 
+import { SwitchEnvFeedbackFormBodyDto } from '~shared/types'
+
 import Button from '~components/Button'
 import InlineMessage from '~components/InlineMessage'
 
-import { SwitchEnvFeedbackModal } from '~features/env/SwitchEnvFeedbackModal'
+import { useEnvMutations } from '~features/env/mutations'
+import { useSwitchEnvFeedbackFormView } from '~features/env/queries'
+import {
+  PUBLIC_RADIO_OPTIONS,
+  SwitchEnvFeedbackModal,
+} from '~features/env/SwitchEnvFeedbackModal'
 
 export const PublicSwitchEnvMessage = (): JSX.Element => {
   const { isOpen, onOpen, onClose } = useDisclosure()
@@ -24,6 +31,19 @@ export const PublicSwitchEnvMessage = (): JSX.Element => {
       }
     },
     [onOpen],
+  )
+
+  // get the feedback form data
+  const { data: feedbackForm } = useSwitchEnvFeedbackFormView(isOpen)
+
+  const { submitSwitchEnvFormFeedbackMutation, publicSwitchEnvMutation } =
+    useEnvMutations(feedbackForm)
+
+  const submitFeedback = useCallback(
+    (formInputs: SwitchEnvFeedbackFormBodyDto) => {
+      return submitSwitchEnvFormFeedbackMutation.mutateAsync(formInputs)
+    },
+    [submitSwitchEnvFormFeedbackMutation],
   )
 
   return (
@@ -59,7 +79,13 @@ export const PublicSwitchEnvMessage = (): JSX.Element => {
           </Text>
         </InlineMessage>
       </Box>
-      <SwitchEnvFeedbackModal isOpen={isOpen} onClose={onClose} />
+      <SwitchEnvFeedbackModal
+        onSubmitFeedback={submitFeedback}
+        onChangeEnv={publicSwitchEnvMutation.mutate}
+        isOpen={isOpen}
+        onClose={onClose}
+        radioOptions={PUBLIC_RADIO_OPTIONS}
+      />
     </Flex>
   )
 }

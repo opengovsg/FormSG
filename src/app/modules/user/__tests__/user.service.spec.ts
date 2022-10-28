@@ -437,7 +437,8 @@ describe('user.service', () => {
       // Assert
       const expectedUser: Partial<LeanDocument<IPopulatedUser>> = {
         agency: defaultAgency.toObject(),
-        email: newUserEmail,
+        // Should be transformed to lowercased due to schema.
+        email: newUserEmail.toLowerCase(),
         lastAccessed: MOCKED_DATE,
       }
       expect(actualResult.isOk()).toBe(true)

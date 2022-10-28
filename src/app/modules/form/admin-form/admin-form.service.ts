@@ -14,6 +14,7 @@ import {
   MAX_UPLOAD_FILE_SIZE,
   VALID_UPLOAD_FILE_TYPES,
 } from '../../../../../shared/constants'
+import { MYINFO_ATTRIBUTE_MAP } from '../../../../../shared/constants/field/myinfo'
 import {
   AdminDashboardFormMetaDto,
   BasicField,
@@ -318,7 +319,7 @@ export const transferFormOwnership = (
       .andThen((currentOwner) => {
         // No need to transfer form ownership if new and current owners are
         // the same.
-        if (newOwnerEmail === currentOwner.email) {
+        if (newOwnerEmail.toLowerCase() === currentOwner.email.toLowerCase()) {
           return errAsync(
             new TransferOwnershipError(
               'You are already the owner of this form',
@@ -567,6 +568,12 @@ export const createFormField = (
   FormFieldSchema,
   PossibleDatabaseError | FormNotFoundError | FieldNotFoundError
 > => {
+  // If MyInfo field, override field title to stored name.
+  if (newField.myInfo?.attr) {
+    newField.title =
+      MYINFO_ATTRIBUTE_MAP[newField.myInfo.attr]?.value ?? newField.title
+  }
+
   return ResultAsync.fromPromise(
     form.insertFormField(newField, to),
     (error) => {

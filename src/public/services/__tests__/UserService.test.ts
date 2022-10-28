@@ -4,7 +4,7 @@ import { mocked } from 'ts-jest/utils'
 import { DateString, UserDto } from '../../../../shared/types'
 import * as UserService from '../UserService'
 
-const { STORAGE_USER_KEY, USER_ENDPOINT } = UserService
+const { STORAGE_USER_KEY, USER_ENDPOINT, LOGGED_IN_KEY } = UserService
 
 jest.mock('axios')
 
@@ -58,7 +58,11 @@ describe('UserService', () => {
       // Assert
       expect(localStorage.getItem).toHaveBeenLastCalledWith(STORAGE_USER_KEY)
       expect(actual).toEqual(null)
-      expect(localStorage.removeItem).toHaveBeenLastCalledWith(STORAGE_USER_KEY)
+      expect(localStorage.removeItem).toHaveBeenNthCalledWith(
+        1,
+        STORAGE_USER_KEY,
+      )
+      expect(localStorage.removeItem).toHaveBeenNthCalledWith(2, LOGGED_IN_KEY)
     })
 
     it('should return null and clear user from localStorage when JSON.parse throws', async () => {
@@ -71,7 +75,12 @@ describe('UserService', () => {
       // Assert
       expect(localStorage.getItem).toHaveBeenLastCalledWith(STORAGE_USER_KEY)
       expect(actual).toEqual(null)
-      expect(localStorage.removeItem).toHaveBeenLastCalledWith(STORAGE_USER_KEY)
+
+      expect(localStorage.removeItem).toHaveBeenNthCalledWith(
+        1,
+        STORAGE_USER_KEY,
+      )
+      expect(localStorage.removeItem).toHaveBeenNthCalledWith(2, LOGGED_IN_KEY)
     })
   })
 
@@ -81,10 +90,16 @@ describe('UserService', () => {
       UserService.saveUserToLocalStorage(MOCK_USER)
 
       // Assert
-      expect(localStorage.setItem).toHaveBeenLastCalledWith(
+      expect(localStorage.setItem).toHaveBeenNthCalledWith(
+        1,
         STORAGE_USER_KEY,
         // Should be stringified.
         JSON.stringify(MOCK_USER),
+      )
+      expect(localStorage.setItem).toHaveBeenNthCalledWith(
+        2,
+        LOGGED_IN_KEY,
+        'true',
       )
     })
   })
@@ -95,7 +110,11 @@ describe('UserService', () => {
       UserService.clearUserFromLocalStorage()
 
       // Assert
-      expect(localStorage.removeItem).toHaveBeenLastCalledWith(STORAGE_USER_KEY)
+      expect(localStorage.removeItem).toHaveBeenNthCalledWith(
+        1,
+        STORAGE_USER_KEY,
+      )
+      expect(localStorage.removeItem).toHaveBeenNthCalledWith(2, LOGGED_IN_KEY)
     })
   })
 

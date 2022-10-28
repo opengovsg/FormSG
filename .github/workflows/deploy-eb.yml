@@ -32,7 +32,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Build
+      - name: Setup secrets for datadog sourcemap deployment
+        run: |
+          echo "APP_VERSION=$(jq -r .version package.json)-$(echo ${GITHUB_REF##*/})-$(echo ${GITHUB_SHA} | cut -c1-8)" >> $GITHUB_ENV
+      - name: Inject frontend build env vars
         env:
           REACT_APP_DD_RUM_APP_ID: ${{ secrets.DD_RUM_APP_ID }}
           REACT_APP_DD_RUM_CLIENT_TOKEN: ${{ secrets.DD_RUM_CLIENT_TOKEN }}
@@ -40,7 +43,8 @@ jobs:
           REACT_APP_GA_TRACKING_ID: ${{ secrets.GA_TRACKING_ID }}
           REACT_APP_FORMSG_SDK_MODE: ${{ secrets.REACT_APP_FORMSG_SDK_MODE }}
         run: |
-          echo REACT_APP_DD_RUM_APP_ID=$REACT_APP_DD_RUM_APP_ID > frontend/.env
+          echo REACT_APP_VERSION=${{env.APP_VERSION}} > frontend/.env
+          echo REACT_APP_DD_RUM_APP_ID=$REACT_APP_DD_RUM_APP_ID >> frontend/.env
           echo REACT_APP_DD_RUM_CLIENT_TOKEN=$REACT_APP_DD_RUM_CLIENT_TOKEN >> frontend/.env
           echo REACT_APP_DD_RUM_ENV=$REACT_APP_DD_RUM_ENV >> frontend/.env
           echo REACT_APP_GA_TRACKING_ID=$REACT_APP_GA_TRACKING_ID >> frontend/.env
@@ -57,13 +61,34 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
-      - name: Build, tag, and push image to Amazon ECR
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Build docker image
+        uses: docker/build-push-action@v3
+        env:
+          ECR_REPO: ${{ secrets.ECR_REPO }}
+          DD_API_KEY: ${{ secrets.DD_API_KEY }}
+          DD_ENV: ${{ secrets.DD_ENV }}
+        with:
+          context: .
+          file: ./Dockerfile.production
+          push: false
+          load: true # Load image into local docker daemon so we can tag and push in later steps
+          tags: ${{env.ECR_REPO}}:${{env.IMAGE_TAG}}
+          build-args: |
+            APP_VERSION=${{env.APP_VERSION}}
+            APP_URL=${{secrets.APP_URL}}
+            REPO_URL=${{github.server_url}}/${{github.repository}}
+          secrets: |
+            "dd_api_key=${{ secrets.DD_API_KEY }}"
+
+      - name: Push image to Amazon ECR
         env:
           ECR_REPOSITORY: ${{ secrets.ECR_REPO }}
           DD_API_KEY: ${{ secrets.DD_API_KEY }}
           DD_ENV: ${{ secrets.DD_ENV }}
         run: |
-          docker build -f Dockerfile.production -t $ECR_REPOSITORY:$IMAGE_TAG .
           docker tag $ECR_REPOSITORY:$IMAGE_TAG $ECR_REPOSITORY:$BRANCH
           docker push -a $ECR_REPOSITORY
           sed -i -e "s/@TAG/$IMAGE_TAG/g" Dockerrun.aws.json
