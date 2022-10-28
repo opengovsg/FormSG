@@ -56,6 +56,14 @@ const serveFormReact =
         reactFrontendPath,
       },
     })
+    let reactHtml = readFileSync(path.join(reactFrontendPath, 'index.html'), {
+      encoding: 'utf8',
+    })
+    reactHtml = reactHtml
+      // there are multiple __OG_TITLE__ and we are unable to use string.replaceAll so we use regexp
+      .replace(new RegExp('__OG_TITLE__', 'g'), 'FormSG')
+      .replace('__OG_DESCRIPTION__', 'Form Manager for Government')
+
     if (isPublicForm && !!get(req.params, 'formId')) {
       return servePublicFormReact(
         req as Request<
@@ -72,7 +80,7 @@ const serveFormReact =
       res
         // Prevent index.html from being cached by browsers.
         .setHeader('Cache-Control', 'no-cache')
-        .sendFile(path.join(reactFrontendPath, 'index.html'))
+        .send(reactHtml)
     )
   }
 
