@@ -20,12 +20,12 @@ export const WorkspaceProvider = ({
     [dashboardForms?.length],
   )
 
-  const [filterOption, setFilterOption] = useState<FilterOption | null>(null)
+  const [activeFilter, setActiveFilter] = useState<FilterOption | null>(null)
 
   const displayedForms = useMemo(() => {
     if (!dashboardForms) return []
-    if (!filterOption) return dashboardForms
-    switch (filterOption) {
+    if (!activeFilter) return dashboardForms
+    switch (activeFilter) {
       case FilterOption.OpenForms:
         return dashboardForms.filter(
           (form) => form.status === FormStatus.Public,
@@ -37,14 +37,12 @@ export const WorkspaceProvider = ({
       default:
         return dashboardForms
     }
-  }, [dashboardForms, filterOption])
+  }, [dashboardForms, activeFilter])
 
   const displayedFormsCount = useMemo(
     () => displayedForms.length,
     [displayedForms.length],
   )
-
-  const isFilterOn = useMemo(() => !!filterOption, [filterOption])
 
   return (
     <WorkspaceContext.Provider
@@ -53,9 +51,8 @@ export const WorkspaceProvider = ({
         totalFormsCount,
         displayedForms,
         displayedFormsCount,
-        isFilterOn,
-        activeFilter: filterOption,
-        setActiveFilter: setFilterOption,
+        activeFilter,
+        setActiveFilter,
       }}
     >
       {children}

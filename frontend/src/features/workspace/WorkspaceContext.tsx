@@ -9,7 +9,6 @@ export interface WorkspaceContextProps {
   totalFormsCount?: number
   displayedForms: AdminDashboardFormMetaDto[]
   displayedFormsCount: number
-  isFilterOn: boolean
   activeFilter: FilterOption | null
   setActiveFilter: (filterOption: FilterOption | null) => void
 }

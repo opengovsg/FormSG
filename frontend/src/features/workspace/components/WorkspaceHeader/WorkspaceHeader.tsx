@@ -37,7 +37,6 @@ export const WorkspaceHeader = ({
     isLoading,
     totalFormsCount,
     displayedFormsCount,
-    isFilterOn,
     activeFilter,
     setActiveFilter,
   } = useWorkspaceContext()
@@ -80,7 +79,7 @@ export const WorkspaceHeader = ({
         color="secondary.500"
         alignSelf="center"
       >
-        {isFilterOn ? (
+        {activeFilter ? (
           <>
             Showing&nbsp;
             <Skeleton isLoaded={!isLoading}>{displayedFormsCount}</Skeleton>
@@ -90,7 +89,7 @@ export const WorkspaceHeader = ({
           'All forms ('
         )}
         <Skeleton isLoaded={!isLoading}>{totalFormsCount ?? '---'}</Skeleton>
-        {isFilterOn ? <>&nbsp;forms</> : ')'}
+        {activeFilter ? <>&nbsp;forms</> : ')'}
       </Text>
       <Box gridArea="filter">
         {isMobile ? (
@@ -114,7 +113,7 @@ export const WorkspaceHeader = ({
                   leftIcon={<BiFilter />}
                 >
                   Filter
-                  {isFilterOn ? `: ${activeFilter}` : ''}
+                  {activeFilter ? `: ${activeFilter}` : ''}
                 </MenuButton>
                 <Menu.List>
                   <Menu.Item onClick={() => setActiveFilter(null)}>
