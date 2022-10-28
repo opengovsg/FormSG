@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from 'react'
-import { BiFilter, BiPlus } from 'react-icons/bi'
+import { BiCheck, BiFilter, BiPlus } from 'react-icons/bi'
 import {
   Box,
   ButtonGroup,
@@ -10,6 +10,7 @@ import {
   Grid,
   MenuButton,
   Skeleton,
+  Stack,
   Text,
   useDisclosure,
 } from '@chakra-ui/react'
@@ -59,6 +60,23 @@ export const WorkspaceHeader = ({
       onClose()
     },
     [onClose, setActiveFilter],
+  )
+
+  const renderFilterButton = useCallback(
+    (filterOption: FilterOption | null) => {
+      return (
+        <Stack
+          direction="row"
+          justify="space-between"
+          alignItems="center"
+          w="100%"
+        >
+          <Text>{filterOption ?? 'All forms'}</Text>
+          {activeFilter === filterOption ? <BiCheck /> : null}
+        </Stack>
+      )
+    },
+    [activeFilter],
   )
 
   return (
@@ -117,11 +135,11 @@ export const WorkspaceHeader = ({
                 </MenuButton>
                 <Menu.List>
                   <Menu.Item onClick={() => setActiveFilter(null)}>
-                    All forms
+                    {renderFilterButton(null)}
                   </Menu.Item>
                   {Object.values(FilterOption).map((filterOption) => (
                     <Menu.Item onClick={() => setActiveFilter(filterOption)}>
-                      {filterOption}
+                      {renderFilterButton(filterOption)}
                     </Menu.Item>
                   ))}
                 </Menu.List>
@@ -147,17 +165,19 @@ export const WorkspaceHeader = ({
           <DrawerBody px={0} py="0.5rem">
             <ButtonGroup flexDir="column" spacing={0} w="100%">
               <Button
+                key={0}
                 {...mobileDrawerExtraButtonProps}
                 onClick={() => handleSetActiveFilterFromDrawer(null)}
               >
-                All forms
+                {renderFilterButton(null)}
               </Button>
-              {Object.values(FilterOption).map((filterOption) => (
+              {Object.values(FilterOption).map((filterOption, idx) => (
                 <Button
+                  key={idx + 1}
                   {...mobileDrawerExtraButtonProps}
                   onClick={() => handleSetActiveFilterFromDrawer(filterOption)}
                 >
-                  {filterOption}
+                  {renderFilterButton(filterOption)}
                 </Button>
               ))}
             </ButtonGroup>
