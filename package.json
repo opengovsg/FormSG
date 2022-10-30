@@ -232,7 +232,7 @@
     "concurrently": "^7.5.0",
     "copy-webpack-plugin": "^6.0.2",
     "copyfiles": "^2.4.1",
-    "core-js": "^3.25.5",
+    "core-js": "^3.26.0",
     "coveralls": "^3.1.1",
     "css-loader": "^2.1.1",
     "csv-parse": "^5.3.1",
