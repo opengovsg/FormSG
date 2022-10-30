@@ -4,6 +4,11 @@ import { Box, Container, Flex, Spacer } from '@chakra-ui/react'
 
 import IconButton from '~components/IconButton'
 
+import {
+  setIsDirtySelector,
+  useDirtyFieldStore,
+} from '~features/admin-form/create/builder-and-design/useDirtyFieldStore'
+
 import { EmptyLogic } from './components/EmptyLogic'
 import { LogicContent } from './components/LogicContent'
 import { LogicSkeleton } from './components/LogicSkeleton'
@@ -22,12 +27,23 @@ export const CreatePageLogicTab = (): JSX.Element => {
   )
   const { isLoading, formLogics } = useAdminFormLogic()
 
+  const setIsDirty = useDirtyFieldStore(setIsDirtySelector)
+
+  const isDirty = createOrEditData ? true : false
+
   const isEmptyLogic = useMemo(
     () => formLogics?.length === 0 && !createOrEditData,
     [createOrEditData, formLogics?.length],
   )
 
   useEffect(() => reset, [reset])
+  useEffect(() => {
+    setIsDirty(isDirty)
+
+    return () => {
+      setIsDirty(false)
+    }
+  }, [isDirty, setIsDirty])
 
   if (isLoading) return <LogicSkeleton />
 
