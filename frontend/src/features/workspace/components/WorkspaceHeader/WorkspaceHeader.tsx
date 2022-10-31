@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react'
 import { BiCheck, BiFilter, BiPlus } from 'react-icons/bi'
 import {
+  Avatar,
   Box,
   ButtonGroup,
   Drawer,
@@ -8,6 +9,7 @@ import {
   DrawerContent,
   DrawerOverlay,
   Grid,
+  Icon,
   MenuButton,
   Skeleton,
   Stack,
@@ -79,6 +81,11 @@ export const WorkspaceHeader = ({
     [activeFilter],
   )
 
+  const headerStyle = useMemo(
+    () => (isMobile && activeFilter != null ? 'h3' : 'h2'),
+    [activeFilter, isMobile],
+  )
+
   return (
     <Grid
       gridTemplateAreas={{
@@ -91,8 +98,8 @@ export const WorkspaceHeader = ({
       <Text
         gridArea="header"
         flex={1}
-        as="h2"
-        textStyle="h2"
+        as={headerStyle}
+        textStyle={headerStyle}
         display="flex"
         color="secondary.500"
         alignSelf="center"
@@ -111,13 +118,26 @@ export const WorkspaceHeader = ({
       </Text>
       <Box gridArea="filter">
         {isMobile ? (
-          <IconButton
-            aria-label="Filter forms"
-            variant="clear"
-            colorScheme="secondary"
-            onClick={onOpen}
-            icon={<BiFilter />}
-          />
+          <>
+            <IconButton
+              aria-label="Filter forms"
+              variant="clear"
+              colorScheme="secondary"
+              onClick={onOpen}
+              icon={<BiFilter />}
+            />
+            {activeFilter && (
+              <Icon
+                as={Avatar}
+                size="md"
+                bg="primary.500"
+                name="1"
+                textColor="white"
+                fontSize="1.2rem"
+                m="-0.6rem"
+              />
+            )}
+          </>
         ) : (
           <Menu placement="bottom-end">
             {({ isOpen }) => (
