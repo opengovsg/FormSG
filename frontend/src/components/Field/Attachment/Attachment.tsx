@@ -10,8 +10,11 @@ import {
   useMergeRefs,
   useMultiStyleConfig,
 } from '@chakra-ui/react'
+import imageCompression from 'browser-image-compression'
 import omit from 'lodash/omit'
 import simplur from 'simplur'
+
+import { MB } from '~shared/constants/file'
 
 import { ATTACHMENT_THEME_KEY } from '~theme/components/Field/Attachment'
 import { ThemeColorScheme } from '~theme/foundations/colours'
@@ -23,6 +26,8 @@ import {
   getInvalidFileExtensionsInZip,
   getReadableFileSize,
 } from './utils'
+
+const IMAGE_UPLOAD_TYPES_TO_COMPRESS = ['image/jpeg', 'image/png']
 
 export interface AttachmentProps extends UseFormControlProps<HTMLElement> {
   /**
@@ -138,14 +143,32 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
           }
         }
 
+        // Compress images that are too large.
+        if (
+          IMAGE_UPLOAD_TYPES_TO_COMPRESS.includes(acceptedFile.type) &&
+          maxSize &&
+          acceptedFile.size > maxSize
+        ) {
+          return imageCompression(acceptedFile, {
+            maxSizeMB: maxSize ? maxSize / MB : undefined,
+            maxWidthOrHeight: 1024,
+            alwaysKeepResolution: true,
+            useWebWorker: false,
+          }).then((blob) => onChange(new File([blob], acceptedFile.name)))
+        }
+
         onChange(acceptedFile)
       },
-      [accept, onChange, onError],
+      [accept, maxSize, onChange, onError],
     )
 
     const fileValidator = useCallback<NonNullable<DropzoneProps['validator']>>(
       (file) => {
-        if (maxSize && file.size > maxSize) {
+        if (
+          !IMAGE_UPLOAD_TYPES_TO_COMPRESS.includes(file.type) &&
+          maxSize &&
+          file.size > maxSize
+        ) {
           return {
             code: 'file-too-large',
             message: `You have exceeded the limit, please upload a file below ${readableMaxSize}`,
