@@ -34,6 +34,12 @@ export const Input = forwardRef<InputProps, 'input'>((props, ref) => {
     return (
       <ChakraInput
         ref={ref}
+        // Prevents refresh on enter if form only has one input
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault()
+          }
+        }}
         {...inputProps}
         sx={props.sx ?? inputStyles.field}
       />
