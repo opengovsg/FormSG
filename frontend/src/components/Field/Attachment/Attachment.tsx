@@ -154,7 +154,13 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
             maxWidthOrHeight: 1920,
             initialQuality: 0.8,
             useWebWorker: false,
-          }).then((blob) => onChange(new File([blob], acceptedFile.name)))
+          }).then((blob) =>
+            onChange(
+              new File([blob], acceptedFile.name, {
+                type: blob.type,
+              }),
+            ),
+          )
         }
 
         onChange(acceptedFile)
