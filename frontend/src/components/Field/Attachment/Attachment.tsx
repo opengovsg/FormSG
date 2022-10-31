@@ -151,7 +151,7 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
         ) {
           return imageCompression(acceptedFile, {
             maxSizeMB: maxSize ? maxSize / MB : undefined,
-            maxWidthOrHeight: 1024,
+            maxWidthOrHeight: 1920,
             alwaysKeepResolution: true,
             initialQuality: 0.8,
             useWebWorker: false,
