@@ -123,6 +123,7 @@ export const WorkspaceHeader = ({
               aria-label="Filter forms"
               variant="clear"
               colorScheme="secondary"
+              backgroundColor={activeFilter ? 'neutral.200' : undefined}
               onClick={onOpen}
               icon={<BiFilter />}
             />
