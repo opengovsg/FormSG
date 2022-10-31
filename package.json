@@ -92,7 +92,7 @@
     "angular-ui-bootstrap": "~2.5.6",
     "angular-ui-router": "~1.0.30",
     "aws-info": "^1.2.0",
-    "aws-sdk": "^2.1235.0",
+    "aws-sdk": "^2.1243.0",
     "axios": "^0.27.2",
     "bcrypt": "^5.1.0",
     "bluebird": "^3.5.2",
