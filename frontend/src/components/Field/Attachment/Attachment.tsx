@@ -153,6 +153,7 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
             maxSizeMB: maxSize ? maxSize / MB : undefined,
             maxWidthOrHeight: 1024,
             alwaysKeepResolution: true,
+            initialQuality: 0.8,
             useWebWorker: false,
           }).then((blob) => onChange(new File([blob], acceptedFile.name)))
         }
