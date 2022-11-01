@@ -1,8 +1,8 @@
 // TODO #4279: Remove after React rollout is complete
 import { Router } from 'express'
 
-import { rateLimitConfig } from 'src/app/config/config'
-import { limitRate } from 'src/app/utils/limit-rate'
+import { rateLimitConfig } from '../../config/config'
+import { limitRate } from '../../utils/limit-rate'
 
 import * as ReactMigrationController from './react-migration.controller'
 
