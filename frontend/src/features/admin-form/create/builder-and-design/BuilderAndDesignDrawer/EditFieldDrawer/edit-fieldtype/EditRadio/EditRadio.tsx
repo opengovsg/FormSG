@@ -67,6 +67,7 @@ export const EditRadio = ({ field }: EditRadioProps): JSX.Element => {
       input: transformRadioFieldToEditForm,
       output: transformRadioEditFormToField,
     },
+    mode: 'onBlur',
   })
 
   const requiredValidationRule = useMemo(
