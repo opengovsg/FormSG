@@ -80,7 +80,7 @@ const serveFormReact =
         '__OG_DESCRIPTION__',
         'Trusted form manager of the Singapore Government',
       )
-      .replace('__OG_IMAGE__', 'og-img-metatag-nonpublicform')
+      .replace('__OG_IMAGE__', 'og-img-metatag-nonpublicform.png')
     return (
       res
         // Prevent index.html from being cached by browsers.
@@ -143,7 +143,7 @@ const servePublicFormReact: ControllerHandler<
       .replace(new RegExp('__OG_TITLE__', 'g'), title)
       .replace('__OG_DESCRIPTION__', description ?? '')
       .replace('<title>FormSG</title>', `<title>${title}</title>`)
-      .replace('__OG_IMAGE__', 'og-img-metatag-publicform')
+      .replace('__OG_IMAGE__', 'og-img-metatag-publicform.png')
   }
 
   return (
