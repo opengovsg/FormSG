@@ -154,7 +154,7 @@ export const allFields: E2eFieldMetadata[] = [
       customMin: null,
       customMax: null,
     },
-    validateByValue: true,
+    validateByValue: false,
     val: '3.1415926535',
   },
   {

@@ -126,8 +126,28 @@ export const createField = async (
     case BasicField.Email:
       if (field.isVerifiable) {
         await page.locator('label:has-text("OTP verification")').click()
+        if (field.hasAllowedEmailDomains) {
+          await page.getByText('Restrict email domains').click()
+          await page
+            .getByLabel('Domains allowed')
+            .fill(field.allowedEmailDomains.join('\n'))
+        }
       }
-      // TODO: Settings for allowed email domains, autoreply options, if we want those tests.
+      if (field.autoReplyOptions.hasAutoReply) {
+        await page.getByText('Email confirmation').click()
+        await page
+          .getByLabel('Subject')
+          .fill(field.autoReplyOptions.autoReplySubject)
+        await page
+          .getByLabel('Sender name')
+          .fill(field.autoReplyOptions.autoReplySender)
+        await page
+          .getByLabel('Content')
+          .fill(field.autoReplyOptions.autoReplyMessage)
+        if (field.autoReplyOptions.includeFormSummary) {
+          await page.getByText('Include PDF response').click()
+        }
+      }
       break
     case BasicField.Image:
       await page.setInputFiles('input[type="file"]', field.path)
