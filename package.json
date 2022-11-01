@@ -201,7 +201,7 @@
     "@types/express-session": "^1.17.4",
     "@types/has-ansi": "^3.0.0",
     "@types/helmet": "4.0.0",
-    "@types/http-errors": "^1.8.2",
+    "@types/http-errors": "^2.0.1",
     "@types/ip": "^1.1.0",
     "@types/jest": "^27.4.1",
     "@types/json-stringify-safe": "^5.0.0",
