@@ -120,7 +120,7 @@ export type E2eFieldMetadata =
   | (E2ePickFieldMetadata<UenFieldBase, never> & E2eFieldSingleValue)
   | (E2ePickFieldMetadata<YesNoFieldBase, never> & E2eFieldSingleValue)
 
-const allFieldInfo: E2eFieldMetadata[] = [
+export const allFields: E2eFieldMetadata[] = [
   {
     title: 'Attachment',
     fieldType: BasicField.Attachment,
@@ -140,10 +140,10 @@ const allFieldInfo: E2eFieldMetadata[] = [
   {
     title: 'Birthday',
     fieldType: BasicField.Date,
-    val: format(17, 'dd MMM yyyy'),
+    val: format(new Date(), 'dd MMM yyyy'),
     dateValidation: {
-      customMaxDate: null,
       customMinDate: null,
+      customMaxDate: null,
       selectedDateValidation: null,
     },
   },
@@ -151,7 +151,7 @@ const allFieldInfo: E2eFieldMetadata[] = [
     title: 'Pi',
     fieldType: BasicField.Decimal,
     ValidationOptions: {
-      customMin: 3,
+      customMin: null,
       customMax: null,
     },
     validateByValue: true,
@@ -272,7 +272,7 @@ const allFieldInfo: E2eFieldMetadata[] = [
       },
       {
         title: 'Gender',
-        required: true,
+        required: false,
         fieldOptions: ['Male', 'Female', 'Prefer not to say'],
         columnType: BasicField.Dropdown,
       },
@@ -294,4 +294,4 @@ const allFieldInfo: E2eFieldMetadata[] = [
   },
 ]
 
-export const allFields = keyBy(allFieldInfo, 'fieldType')
+export const sampleField = keyBy(allFields, 'fieldType')

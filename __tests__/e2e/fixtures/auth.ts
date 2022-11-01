@@ -7,6 +7,10 @@ import { extractOtp } from '../utils/mail'
 
 export { expect } from '@playwright/test'
 
+/**
+ * Creates the logged-in state for the playwright test worker before running the
+ * tests on this worker.
+ */
 export const test = baseTest.extend({
   storageState: async ({ browser }, use, testInfo) => {
     // Override storage state, use worker index to look up logged-in info and generate it lazily.
