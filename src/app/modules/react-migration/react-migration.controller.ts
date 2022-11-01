@@ -76,7 +76,11 @@ const serveFormReact =
     reactHtml = reactHtml
       // there are multiple __OG_TITLE__ and we are unable to use string.replaceAll so we use regexp
       .replace(new RegExp('__OG_TITLE__', 'g'), 'FormSG')
-      .replace('__OG_DESCRIPTION__', 'Form Manager for Government')
+      .replace(
+        '__OG_DESCRIPTION__',
+        'Trusted form manager of the Singapore Government',
+      )
+      .replace('__OG_IMAGE__', '%PUBLIC_URL%/og-img-metatag-nonpublicform')
     return (
       res
         // Prevent index.html from being cached by browsers.
@@ -139,6 +143,7 @@ const servePublicFormReact: ControllerHandler<
       .replace(new RegExp('__OG_TITLE__', 'g'), title)
       .replace('__OG_DESCRIPTION__', description ?? '')
       .replace('<title>FormSG</title>', `<title>${title}</title>`)
+      .replace('__OG_IMAGE__', '%PUBLIC_URL%/og-img-metatag-publicform')
   }
 
   return (
