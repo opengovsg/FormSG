@@ -1,217 +1,202 @@
-// /**
-//  * Creates a field for e2e tests with default options (visible, required, not blank).
-//  * @param {Object} fieldObj Custom options of the field.
-//  * @param {string} fieldObj.title Mandatory title of field
-//  * @param {string} fieldObj.fieldType Type of field. Mandatory unless makeField is
-//  * being called to create an artificial field for verified SingPass/CorpPass data.
-//  * @param {string} fieldObj.val Mandatory answer to field
-//  */
-// function makeField(fieldObj) {
-//   return Object.assign(
-//     {
-//       required: true,
-//       isVisible: true,
-//       isLeftBlank: false,
-//     },
-//     fieldObj,
-//   )
-// }
-
+import { expect, Page } from '@playwright/test'
 import { format } from 'date-fns'
-import { keyBy } from 'lodash'
-import {
-  AttachmentFieldBase,
-  AttachmentSize,
-  BasicField,
-  CheckboxFieldBase,
-  DateFieldBase,
-  DecimalFieldBase,
-  DropdownFieldBase,
-  EmailFieldBase,
-  HomenoFieldBase,
-  LongTextFieldBase,
-  MobileFieldBase,
-  NricFieldBase,
-  RadioFieldBase,
-  RatingFieldBase,
-  RatingShape,
-  SectionFieldBase,
-  ShortTextFieldBase,
-  TableFieldBase,
-  YesNoFieldBase,
-} from 'shared/types'
+import { BASICFIELD_TO_DRAWER_META } from 'frontend/src/features/admin-form/create/constants'
+import { BasicField, DateSelectedValidation } from 'shared/types'
 
-type E2eFieldBaseMetadata = {
-  title: string
-  required?: boolean
-  fieldType: BasicField
-}
+import { allFields, E2eFieldMetadata } from '../constants/field'
+import { ADMIN_FORM_PAGE_PREFIX } from '../constants/links'
 
-type E2eFieldBaseValue = { val: string }
-
-export type E2eFieldMetadata = E2eFieldBaseMetadata &
-  (
-    | (E2eFieldBaseValue & Pick<RatingFieldBase, 'fieldType' | 'ratingOptions'>)
-    | (E2eFieldBaseValue & Pick<EmailFieldBase, 'fieldType' | 'isVerifiable'>)
-    | (E2eFieldBaseValue &
-        Pick<DropdownFieldBase, 'fieldType' | 'fieldOptions'>)
-    | (E2eFieldBaseValue & Pick<DateFieldBase, 'fieldType' | 'dateValidation'>)
-    | ({ val: string[][] } & Pick<
-        TableFieldBase,
-        'fieldType' | 'minimumRows' | 'addMoreRows' | 'columns' | 'maximumRows'
-      >)
-    | (E2eFieldBaseValue &
-        Pick<
-          DecimalFieldBase,
-          'fieldType' | 'ValidationOptions' | 'validateByValue'
-        >)
-    | ({ val: string[] } & Pick<
-        CheckboxFieldBase,
-        'fieldType' | 'fieldOptions' | 'othersRadioButton'
-      >)
-    | (E2eFieldBaseValue &
-        Pick<
-          RadioFieldBase,
-          'fieldType' | 'fieldOptions' | 'othersRadioButton'
-        >)
-    | (E2eFieldBaseValue & {
-        path: string
-        content: string
-      } & Pick<AttachmentFieldBase, 'fieldType' | 'attachmentSize'>)
-    | (E2eFieldBaseValue & Pick<ShortTextFieldBase, 'fieldType'>)
-    | (E2eFieldBaseValue & Pick<LongTextFieldBase, 'fieldType'>)
-    | (E2eFieldBaseValue & Pick<HomenoFieldBase, 'fieldType'>)
-    | (E2eFieldBaseValue & Pick<NricFieldBase, 'fieldType'>)
-    | (E2eFieldBaseValue & Pick<YesNoFieldBase, 'fieldType'>)
-    | (E2eFieldBaseValue & Pick<MobileFieldBase, 'fieldType'>)
-    | Pick<SectionFieldBase, 'fieldType'>
-  )
-
-const allFieldInfo: E2eFieldMetadata[] = [
-  {
-    title: 'About you',
-    fieldType: BasicField.Section,
-  },
-  {
-    title: 'Name',
-    fieldType: BasicField.ShortText,
-    val: 'Lorem Ipsum',
-  },
-  {
-    title: 'Your Life Story',
-    fieldType: BasicField.LongText,
-    val: 'Vestibulum sed facilisis nibh, vel semper nisl. Phasellus dictum sem et ligula vulputate malesuada. Phasellus posuere luctus sapien eu molestie. In euismod vestibulum orci ac blandit. Suspendisse est arcu, vestibulum id viverra sed, tempus in ligula. Maecenas consequat pharetra lorem, ac vulputate neque sodales non. Mauris vel lacus ipsum.',
-  },
-  {
-    title: 'Personal Email',
-    fieldType: BasicField.Email,
-    isVerifiable: false,
-    val: 'test@test.gov.sg',
-  },
-  {
-    title: 'Home Phone Number',
-    fieldType: BasicField.HomeNo,
-    val: '61234567',
-  },
-  {
-    title: 'NRIC Number',
-    fieldType: BasicField.Nric,
-    val: 'S9991334G',
-  },
-  {
-    title: 'Yes or No?',
-    fieldType: BasicField.YesNo,
-    val: 'Yes',
-  },
-  {
-    title: 'Favourite Food',
-    fieldType: BasicField.Dropdown,
-    fieldOptions: ['Rice', 'Chocolate', 'Ice-Cream'],
-    val: 'Chocolate',
-  },
-  {
-    title: 'Birthday',
-    fieldType: BasicField.Date,
-    val: format(17, 'dd MMM yyyy'),
-    dateValidation: {
-      customMaxDate: null,
-      customMinDate: null,
-      selectedDateValidation: null,
-    },
-  },
-  {
-    title: 'Happiness Score',
-    fieldType: BasicField.Rating,
-    ratingOptions: {
-      steps: 5,
-      shape: RatingShape.Heart,
-    },
-    val: '3',
-  },
-  {
-    title: 'Family Members',
-    fieldType: BasicField.Table,
-    minimumRows: 2,
-    addMoreRows: false,
-    columns: [
-      {
-        title: 'Name',
-        required: true,
-        columnType: BasicField.ShortText,
-        ValidationOptions: {
-          customVal: null,
-          selectedValidation: null,
-        },
-      },
-      {
-        title: 'Gender',
-        required: true,
-        fieldOptions: ['Male', 'Female'],
-        columnType: BasicField.Dropdown,
-      },
-    ],
-    val: [
-      ['John', 'Male'],
-      ['Lisa', 'Female'],
-    ],
-  },
-  {
-    title: 'Pi',
-    fieldType: BasicField.Decimal,
-    ValidationOptions: {
-      customMin: 3,
-      customMax: null,
-    },
-    validateByValue: true,
-    val: '3.1415926535',
-  },
-  {
-    title: 'Mobile',
-    fieldType: BasicField.Mobile,
-    val: '+6598889999',
-  },
-  {
-    title: 'How did you hear about the event?',
-    fieldType: BasicField.Checkbox,
-    fieldOptions: ['School', 'Career Fairs / Talks', 'Online and Social Media'],
-    othersRadioButton: true,
-    val: ['School', 'Mailing list'],
-  },
-  {
-    title: 'Mother Tongue Language',
-    fieldType: BasicField.Radio,
-    fieldOptions: ['Chinese', 'Malay', 'Tamil'],
-    othersRadioButton: true,
-    val: 'Klingon',
-  },
-  {
-    title: 'Attachment',
-    fieldType: BasicField.Attachment,
-    attachmentSize: AttachmentSize.OneMb,
-    val: 'test-att.txt',
-    path: '../files/att-folder-1/test-att.txt',
-    content: 'att-folder-1',
-  },
+const NON_INPUT_FIELD_TYPES = [
+  BasicField.Section,
+  BasicField.Image,
+  BasicField.Statement,
 ]
 
-export const allFields = keyBy(allFieldInfo, 'fieldType')
+export const createField = async ({
+  page,
+  metadata,
+}: {
+  page: Page
+  metadata: E2eFieldMetadata
+}): Promise<void> => {
+  const label = BASICFIELD_TO_DRAWER_META[metadata.fieldType].label
+  const isNonInput = NON_INPUT_FIELD_TYPES.includes(metadata.fieldType)
+  await page.getByRole('button', { name: label }).click()
+
+  // Enter title for input fields and Section
+  if (isNonInput) {
+    if (metadata.fieldType === BasicField.Section) {
+      await page.getByLabel('Section heading').fill(metadata.title)
+    }
+    // Images and Statements don't have titles
+  } else {
+    await page.getByLabel('Question').fill(metadata.title)
+  }
+
+  // Toggle required for input fields except Table field (required toggled for individual columns)
+  if (
+    !isNonInput &&
+    metadata.fieldType !== BasicField.Table &&
+    metadata.required === false
+  ) {
+    await page.getByText('Required').click()
+  }
+
+  // Enter field description.
+  if (metadata.description) {
+    if (metadata.fieldType === BasicField.Statement) {
+      await page.getByLabel('Paragraph').fill(metadata.description)
+    } else {
+      await page.getByLabel('Description').fill(metadata.description)
+    }
+  }
+
+  // Handle the rest of the individual fields.
+  switch (metadata.fieldType) {
+    case BasicField.Attachment:
+      await page.getByLabel('Maximum size of individual attachment').click()
+      await page
+        .getByRole('option', { name: `${metadata.attachmentSize} MB` })
+        .click()
+      break
+    case BasicField.Checkbox:
+      {
+        if (metadata.othersRadioButton) {
+          await page.getByText('Others').first().click()
+        }
+        const optionsString = metadata.fieldOptions.join('\n')
+        await page.getByLabel('Options').fill(optionsString)
+        if (metadata.validateByValue) {
+          await page.getByLabel('Selection limits').click()
+          if (metadata.ValidationOptions.customMin) {
+            await page
+              .getByPlaceholder('Minimum')
+              .fill(metadata.ValidationOptions.customMin.toString())
+          }
+          if (metadata.ValidationOptions.customMax) {
+            await page
+              .getByPlaceholder('Maximimum')
+              .fill(metadata.ValidationOptions.customMax.toString())
+          }
+        }
+      }
+      break
+    case BasicField.Date:
+      {
+        if (!metadata.dateValidation.selectedDateValidation) break
+        await page.getByRole('combobox').first().click()
+        await page
+          .getByText(metadata.dateValidation.selectedDateValidation)
+          .click()
+        if (
+          metadata.dateValidation.selectedDateValidation ===
+          DateSelectedValidation.Custom
+        ) {
+          if (metadata.dateValidation.customMinDate) {
+            await page
+              .locator('[name="dateValidation.customMinDate"]')
+              .fill(format(metadata.dateValidation.customMinDate, 'dd/MM/yyyy'))
+          }
+          if (metadata.dateValidation.customMaxDate) {
+            await page
+              .locator('[name="dateValidation.customMaxDate"]')
+              .fill(format(metadata.dateValidation.customMaxDate, 'dd/MM/yyyy'))
+          }
+        }
+      }
+      break
+    case BasicField.Dropdown:
+      {
+        const optionsString = metadata.fieldOptions.join('\n')
+        await page.getByLabel('Options').fill(optionsString)
+      }
+      break
+
+    case BasicField.Email:
+      if (metadata.isVerifiable) {
+        await page.locator('label:has-text("OTP verification")').click()
+      }
+      break
+
+    case BasicField.Image:
+      await page.setInputFiles('input[type="file"]', metadata.path)
+      break
+    case BasicField.Rating:
+      await page.getByLabel('Number of steps').click()
+      await page
+        .getByRole('option', { name: String(metadata.ratingOptions.steps) })
+        .click()
+      await page.getByLabel('Shape').click()
+      await page
+        .getByRole('option', { name: metadata.ratingOptions.shape })
+        .click()
+      break
+    case BasicField.Table:
+      await page.getByLabel('Minimum rows').fill(String(metadata.minimumRows))
+      if (metadata.addMoreRows) {
+        await page.getByText('Allow respondent to add more rows').click()
+        if (metadata.maximumRows) {
+          await page
+            .getByLabel('Maximum rows allowed')
+            .fill(String(metadata.maximumRows))
+        }
+      }
+      // First table option
+      for (let index = 0; index < metadata.columns.length; index++) {
+        const col = metadata.columns[index]
+        if (index !== 0) {
+          await page.getByRole('button', { name: 'Add column' }).click()
+        }
+        await page.getByLabel(`Column ${index + 1}`).fill(col.title)
+        await page.getByLabel('Column type').nth(index).click()
+        await page
+          .getByRole('option', {
+            name: BASICFIELD_TO_DRAWER_META[col.columnType].label,
+          })
+          .click()
+        if (!col.required) {
+          await page.getByLabel('Required').nth(index).click()
+        }
+        if (col.columnType === BasicField.Dropdown) {
+          await page
+            .locator(`[id="columns\\.${index}\\.fieldOptions"]`)
+            .fill(col.fieldOptions.join('\n'))
+        }
+      }
+      break
+    case BasicField.Decimal:
+      if (metadata.validateByValue) {
+        await page.getByText('Number validation').click()
+        if (metadata.ValidationOptions.customMin) {
+          await page
+            .getByRole('spinbutton', { name: 'Minimum value' })
+            .fill(String(metadata.ValidationOptions.customMin))
+        }
+        if (metadata.ValidationOptions.customMax) {
+          await page
+            .getByRole('spinbutton', { name: 'Maximum value' })
+            .fill(String(metadata.ValidationOptions.customMax))
+        }
+      }
+      break
+  }
+
+  await page.getByRole('button', { name: 'Create field' }).click()
+  await expect(page.getByText(/the .* was created/i).first()).toBeVisible()
+}
+
+export const addFields = async ({
+  page,
+  fieldType,
+}: {
+  page: Page
+  fieldType: BasicField
+}): Promise<void> => {
+  await expect(page).toHaveURL(new RegExp(`${ADMIN_FORM_PAGE_PREFIX}/.*`, 'i'))
+
+  await page.getByRole('button', { name: 'Add fields' }).click()
+
+  const metadata = allFields[fieldType]
+  if (!metadata) return
+  await createField({ page, metadata })
+}

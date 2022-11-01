@@ -2,6 +2,7 @@ import { expect, test as baseTest } from '@playwright/test'
 import fs from 'fs'
 import path from 'path'
 
+import { DASHBOARD_PAGE, LOGIN_PAGE } from '../constants/links'
 import { extractOtp } from '../utils/mail'
 
 export { expect } from '@playwright/test'
@@ -16,7 +17,7 @@ export const test = baseTest.extend({
     if (!fs.existsSync(fileName)) {
       // Make sure we are not using any other storage state.
       const page = await browser.newPage({ storageState: undefined })
-      await page.goto('http://localhost:5000/login')
+      await page.goto(LOGIN_PAGE)
 
       const email = `user${testInfo.workerIndex}@data.gov.sg`
 
@@ -35,7 +36,7 @@ export const test = baseTest.extend({
       await page.getByRole('button', { name: 'Sign in' }).click()
 
       // Ensure logged in before saving storage state
-      await expect(page).toHaveURL('http://localhost:5000/dashboard')
+      await expect(page).toHaveURL(DASHBOARD_PAGE)
 
       await page.context().storageState({ path: fileName })
       await page.close()

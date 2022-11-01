@@ -34,6 +34,7 @@ const getEmailsTo = (inbox: MailData[], toEmail: string) => {
 
 /**
  * Retrieves an OTP from the inbox.
+ * @param email The email the OTP was sent to.
  */
 export const extractOtp = async (
   email: string,
