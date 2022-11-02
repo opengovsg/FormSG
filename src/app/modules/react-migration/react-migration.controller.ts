@@ -48,6 +48,26 @@ const reactHtml = readFileSync(path.join(reactFrontendPath, 'index.html'), {
   encoding: 'utf8',
 })
 
+type MetaTags = {
+  title: string
+  description: string
+  image: string
+}
+const replaceWithMetaTags = ({
+  title,
+  description,
+  image,
+}: MetaTags): string => {
+  return (
+    reactHtml
+      // there are multiple __OG_TITLE__ and we are unable to use string.replaceAll so we use regexp
+      .replace(new RegExp('__OG_TITLE__', 'g'), title)
+      .replace('<title>FormSG</title>', `<title>${title}</title>`)
+      .replace('__OG_DESCRIPTION__', description)
+      .replace('__OG_IMAGE__', image)
+  )
+}
+
 const serveFormReact =
   (isPublicForm: boolean): ControllerHandler =>
   (req, res, next) => {
@@ -75,14 +95,11 @@ const serveFormReact =
       )
     }
 
-    const reactHtmlWithMetaTags = reactHtml
-      // there are multiple __OG_TITLE__ and we are unable to use string.replaceAll so we use regexp
-      .replace(new RegExp('__OG_TITLE__', 'g'), 'FormSG')
-      .replace(
-        '__OG_DESCRIPTION__',
-        'Trusted form manager of the Singapore Government',
-      )
-      .replace('__OG_IMAGE__', 'og-img-metatag-nonpublicform.png')
+    const reactHtmlWithMetaTags = replaceWithMetaTags({
+      title: 'FormSG',
+      description: 'Trusted form manager of the Singapore Government',
+      image: 'og-img-metatag-nonpublicform.png',
+    })
     return (
       res
         // Prevent index.html from being cached by browsers.
@@ -131,18 +148,18 @@ const servePublicFormReact: ControllerHandler<
       },
       error: createMetatagsResult.error,
     })
-    reactHtmlWithMetaTags = reactHtml
-      // there are multiple __OG_TITLE__ and we are unable to use string.replaceAll so we use regexp
-      .replace(new RegExp('__OG_TITLE__', 'g'), 'FormSG')
-      .replace('__OG_DESCRIPTION__', '')
+    reactHtmlWithMetaTags = replaceWithMetaTags({
+      title: 'FormSG',
+      description: '',
+      image: 'og-img-metatag-publicform.png',
+    })
   } else {
     const { title, description } = createMetatagsResult.value
-    reactHtmlWithMetaTags = reactHtml
-      // there are multiple __OG_TITLE__ and we are unable to use string.replaceAll so we use regexp
-      .replace(new RegExp('__OG_TITLE__', 'g'), title)
-      .replace('__OG_DESCRIPTION__', description ?? '')
-      .replace('<title>FormSG</title>', `<title>${title}</title>`)
-      .replace('__OG_IMAGE__', 'og-img-metatag-publicform.png')
+    reactHtmlWithMetaTags = replaceWithMetaTags({
+      title: title,
+      description: description ?? '',
+      image: 'og-img-metatag-publicform.png',
+    })
   }
 
   return (
