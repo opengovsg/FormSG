@@ -231,6 +231,11 @@ export const createField = async (
   await expect(page.getByText(/the .* was created/i).first()).toBeVisible()
 }
 
+/** Adds all prescribed fields to the form.
+ * Precondition: page must be currently on the admin builder page for the form.
+ * @param {Page} page Playwright page
+ * @param {E2eFieldMetadata[]} formFields the form fields to create
+ */
 export const addFields = async (
   page: Page,
   formFields: E2eFieldMetadata[],
@@ -242,4 +247,5 @@ export const addFields = async (
   for (const field of formFields) {
     await createField(page, field)
   }
+  await page.reload()
 }
