@@ -338,7 +338,7 @@ const isConditionFulfilled = (
     // TODO: An option that is named "Others: Something..." will also pass this test,
     // even if the field has not been configured to set othersRadioButton=true
     if (conditionValues.indexOf('Others') > -1) {
-      // TODO: This is used for angular's client. There's no need to push these magic values, as they are never seen by the server.
+      // TODO: This is used for angular's client. The server has no need for these magic values, as they are never seen by the server.
       if (field.fieldType === 'radiobutton') {
         conditionValues.push('radioButtonOthers')
       } else if (field.fieldType === 'checkbox') {
