@@ -43,6 +43,11 @@ export const ADMIN_COOKIE_OPTIONS_WITH_EXPIRY = {
 
 const logger = createLoggerWithLabel(module)
 
+const reactFrontendPath = path.resolve('dist/frontend')
+const reactHtml = readFileSync(path.join(reactFrontendPath, 'index.html'), {
+  encoding: 'utf8',
+})
+
 const serveFormReact =
   (isPublicForm: boolean): ControllerHandler =>
   (req, res, next) => {
@@ -70,10 +75,7 @@ const serveFormReact =
       )
     }
 
-    let reactHtml = readFileSync(path.join(reactFrontendPath, 'index.html'), {
-      encoding: 'utf8',
-    })
-    reactHtml = reactHtml
+    const reactHtmlWithMetaTags = reactHtml
       // there are multiple __OG_TITLE__ and we are unable to use string.replaceAll so we use regexp
       .replace(new RegExp('__OG_TITLE__', 'g'), 'FormSG')
       .replace(
@@ -85,7 +87,7 @@ const serveFormReact =
       res
         // Prevent index.html from being cached by browsers.
         .setHeader('Cache-Control', 'no-cache')
-        .send(reactHtml)
+        .send(reactHtmlWithMetaTags)
     )
   }
 
@@ -104,7 +106,6 @@ const servePublicFormReact: ControllerHandler<
   unknown,
   Record<string, string>
 > = async (req, res) => {
-  const reactFrontendPath = path.resolve('dist/frontend')
   logger.info({
     message: 'serveFormReact',
     meta: {
@@ -114,14 +115,12 @@ const servePublicFormReact: ControllerHandler<
       reactFrontendPath,
     },
   })
-  let reactHtml = readFileSync(path.join(reactFrontendPath, 'index.html'), {
-    encoding: 'utf8',
-  })
   const formId = req.params.formId
   const createMetatagsResult = await createMetatags({
     formId,
   })
 
+  let reactHtmlWithMetaTags
   // Failed to create metatags.
   if (createMetatagsResult.isErr()) {
     logger.error({
@@ -132,13 +131,13 @@ const servePublicFormReact: ControllerHandler<
       },
       error: createMetatagsResult.error,
     })
-    reactHtml = reactHtml
+    reactHtmlWithMetaTags = reactHtml
       // there are multiple __OG_TITLE__ and we are unable to use string.replaceAll so we use regexp
       .replace(new RegExp('__OG_TITLE__', 'g'), 'FormSG')
       .replace('__OG_DESCRIPTION__', '')
   } else {
     const { title, description } = createMetatagsResult.value
-    reactHtml = reactHtml
+    reactHtmlWithMetaTags = reactHtml
       // there are multiple __OG_TITLE__ and we are unable to use string.replaceAll so we use regexp
       .replace(new RegExp('__OG_TITLE__', 'g'), title)
       .replace('__OG_DESCRIPTION__', description ?? '')
@@ -150,7 +149,7 @@ const servePublicFormReact: ControllerHandler<
     res
       // Prevent index.html from being cached by browsers.
       .setHeader('Cache-Control', 'no-cache')
-      .send(reactHtml)
+      .send(reactHtmlWithMetaTags)
   )
 }
 
