@@ -173,6 +173,7 @@ export const SwitchEnvFeedbackModal = ({
                         })}
                         value={'I’m not used to the new FormSG'}
                         key={option}
+                        tabIndex={1}
                       >
                         {option}
                       </Radio>
@@ -188,7 +189,6 @@ export const SwitchEnvFeedbackModal = ({
                         })}
                         value={option}
                         key={option}
-                        tabIndex={1}
                       >
                         {option}
                       </Radio>
