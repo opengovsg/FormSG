@@ -67,16 +67,21 @@ export const isConditionFulfilled = (
     }
     case LogicConditionState.Equal: {
       if (isRadioFormFieldValue(currentValue, args.fieldType)) {
-        if (condition.value === 'Others') {
-          // If the condition value is 'Others',
-          // then the condition must be satisfied if the current value is the special input value AND
-          // if the othersInput subfield has a value.
-          return (
-            currentValue.value === RADIO_OTHERS_INPUT_VALUE &&
-            !!currentValue.othersInput
-          )
+        // It's possible that the condition.value is in a single-valued array.
+        const condValue = Array.isArray(condition.value)
+          ? condition.value[0]
+          : condition.value
+        if (
+          condValue === 'Others' &&
+          currentValue.value === RADIO_OTHERS_INPUT_VALUE
+        ) {
+          // If the condition value is 'Others', then the condition must be
+          // satisfied if the current value is the special input value.
+          // Otherwise, we still fall through in case the 'Others' was a custom
+          // value created by the user.
+          return true
         }
-        return String(condition.value) === String(currentValue.value)
+        return String(condValue) === String(currentValue.value)
       }
       // In angular, number equality is string=== but decimal equality is number===.
       // Need to replicate this behavior for backward-compatibility.

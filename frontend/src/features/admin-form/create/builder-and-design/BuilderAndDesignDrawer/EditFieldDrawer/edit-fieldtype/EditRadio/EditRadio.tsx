@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import { FormControl } from '@chakra-ui/react'
 import { extend, pick } from 'lodash'
 
@@ -13,6 +13,7 @@ import Toggle from '~components/Toggle'
 
 import { CreatePageDrawerContentContainer } from '../../../../../common'
 import {
+  DUPLICATE_OTHERS_VALIDATION,
   SPLIT_TEXTAREA_TRANSFORM,
   SPLIT_TEXTAREA_VALIDATION,
 } from '../common/constants'
@@ -61,6 +62,7 @@ export const EditRadio = ({ field }: EditRadioProps): JSX.Element => {
     handleUpdateField,
     isLoading,
     handleCancel,
+    watch,
   } = useEditFieldForm<EditRadioInputs, RadioFieldBase>({
     field,
     transform: {
@@ -73,6 +75,17 @@ export const EditRadio = ({ field }: EditRadioProps): JSX.Element => {
   const requiredValidationRule = useMemo(
     () => createBaseValidationRules({ required: true }),
     [],
+  )
+
+  const hasRadio = watch('othersRadioButton')
+  const optionsValidation = useCallback(
+    (opts: string) => {
+      const textareaValidation = SPLIT_TEXTAREA_VALIDATION.validate(opts)
+      // Explicit check for !== true, since the error strings returned by the validator will also be truthy.
+      if (textareaValidation !== true) return textareaValidation
+      return DUPLICATE_OTHERS_VALIDATION(hasRadio).validate(opts)
+    },
+    [hasRadio],
   )
 
   return (
@@ -102,7 +115,7 @@ export const EditRadio = ({ field }: EditRadioProps): JSX.Element => {
         <Textarea
           placeholder="Enter one option per line"
           {...register('fieldOptionsString', {
-            validate: SPLIT_TEXTAREA_VALIDATION,
+            validate: optionsValidation,
           })}
         />
         <FormErrorMessage>

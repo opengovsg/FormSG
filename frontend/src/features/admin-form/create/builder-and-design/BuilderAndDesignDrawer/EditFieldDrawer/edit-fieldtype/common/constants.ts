@@ -17,3 +17,13 @@ export const SPLIT_TEXTAREA_VALIDATION = {
     )
   },
 }
+
+export const DUPLICATE_OTHERS_VALIDATION = (hasOthers: boolean) => ({
+  validate: (opts: string) => {
+    if (!hasOthers) return true
+    const optsArr = SPLIT_TEXTAREA_TRANSFORM.output(opts)
+    return (
+      !optsArr.includes('Others') || "Please remove duplicate 'Others' options."
+    )
+  },
+})
