@@ -57,8 +57,7 @@ export const DropdownItem = ({
           <Text
             textStyle="body-1"
             minWidth={0}
-            textOverflow="ellipsis"
-            whiteSpace="nowrap"
+            overflowWrap="break-word"
             overflowX="hidden"
           >
             <DropdownItemTextHighlighter
