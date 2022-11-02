@@ -162,6 +162,21 @@ export const SwitchEnvFeedbackModal = ({
                     Why are you switching to the previous FormSG?
                   </FormLabel>
                   <Radio.RadioGroup>
+                    {COMMON_RADIO_OPTIONS.map((option) => (
+                      <Radio
+                        {...register('switchReason', {
+                          required: {
+                            value: true,
+                            message: 'This field is required',
+                          },
+                          deps: [FEEDBACK_OTHERS_INPUT_NAME],
+                        })}
+                        value={'I’m not used to the new FormSG'}
+                        key={option}
+                      >
+                        {option}
+                      </Radio>
+                    ))}
                     {radioOptions.map((option) => (
                       <Radio
                         {...register('switchReason', {
@@ -174,21 +189,6 @@ export const SwitchEnvFeedbackModal = ({
                         value={option}
                         key={option}
                         tabIndex={1}
-                      >
-                        {option}
-                      </Radio>
-                    ))}
-                    {COMMON_RADIO_OPTIONS.map((option) => (
-                      <Radio
-                        {...register('switchReason', {
-                          required: {
-                            value: true,
-                            message: 'This field is required',
-                          },
-                          deps: [FEEDBACK_OTHERS_INPUT_NAME],
-                        })}
-                        value={'I’m not used to the new FormSG'}
-                        key={option}
                       >
                         {option}
                       </Radio>
