@@ -81,6 +81,7 @@ export const EditRadio = ({ field }: EditRadioProps): JSX.Element => {
   const optionsValidation = useCallback(
     (opts: string) => {
       const textareaValidation = SPLIT_TEXTAREA_VALIDATION.validate(opts)
+      // Explicit check for !== true, since the error strings returned by the validator will also be truthy.
       if (textareaValidation !== true) return textareaValidation
       return DUPLICATE_OTHERS_VALIDATION(hasRadio).validate(opts)
     },
