@@ -56,14 +56,11 @@ const replaceWithMetaTags = ({
   description,
   image,
 }: MetaTags): string => {
-  return (
-    reactHtml
-      // there are multiple __OG_TITLE__ and we are unable to use string.replaceAll so we use regexp
-      .replace(new RegExp('__OG_TITLE__', 'g'), title)
-      .replace('<title>FormSG</title>', `<title>${title}</title>`)
-      .replace('__OG_DESCRIPTION__', description)
-      .replace('__OG_IMAGE__', image)
-  )
+  return reactHtml
+    .replace(/(__OG_TITLE__)/g, title)
+    .replace(/(<title>__OG_TITLE__<\/title>)/g, `<title>${title}</title>`)
+    .replace(/(__OG_DESCRIPTION__)/g, description)
+    .replace(/(__OG_IMAGE__)/g, image)
 }
 
 const serveFormReact =
