@@ -84,7 +84,7 @@ const serveFormReact =
     }
 
     if (isPublicForm && get(req.params, 'formId')) {
-      tags = await getPublicFormMetaTags(get(req.params, 'formId'))
+      tags = await getPublicFormMetaTags(get(req.params, 'formId') ?? '')
     }
 
     const reactHtmlWithMetaTags = replaceWithMetaTags(tags)
