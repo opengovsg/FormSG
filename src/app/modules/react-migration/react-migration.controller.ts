@@ -1,5 +1,4 @@
 // TODO #4279: Remove after React rollout is complete
-import { Request } from 'express'
 import { readFileSync } from 'fs'
 import { get } from 'lodash'
 import path from 'path'
@@ -7,7 +6,6 @@ import path from 'path'
 import { FormResponseMode, UiCookieValues } from '../../../../shared/types'
 import config from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
-import { createReqMeta } from '../../utils/request'
 import { ControllerHandler } from '../core/core.types'
 import * as FormService from '../form/form.service'
 import * as PublicFormController from '../form/public-form/public-form.controller'
@@ -70,7 +68,7 @@ const replaceWithMetaTags = ({
 
 const serveFormReact =
   (isPublicForm: boolean): ControllerHandler =>
-  (req, res, next) => {
+  async (req, res) => {
     const reactFrontendPath = path.resolve('dist/frontend')
     logger.info({
       message: 'serveFormReact',
@@ -82,24 +80,18 @@ const serveFormReact =
       },
     })
 
-    if (isPublicForm && !!get(req.params, 'formId')) {
-      return servePublicFormReact(
-        req as Request<
-          { formId: string },
-          unknown,
-          unknown,
-          Record<string, string>
-        >,
-        res,
-        next,
-      )
-    }
-
-    const reactHtmlWithMetaTags = replaceWithMetaTags({
+    let tags: MetaTags = {
       title: 'FormSG',
       description: 'Trusted form manager of the Singapore Government',
       image: 'og-img-metatag-nonpublicform.png',
-    })
+    }
+
+    if (isPublicForm && get(req.params, 'formId')) {
+      tags = await getPublicFormMetaTags(get(req.params, 'formId'))
+    }
+
+    const reactHtmlWithMetaTags = replaceWithMetaTags(tags)
+
     return (
       res
         // Prevent index.html from being cached by browsers.
@@ -117,57 +109,33 @@ const serveFormAngular: ControllerHandler<
   return PublicFormController.handleRedirect(req, res, next)
 }
 
-const servePublicFormReact: ControllerHandler<
-  { formId: string },
-  unknown,
-  unknown,
-  Record<string, string>
-> = async (req, res) => {
-  logger.info({
-    message: 'serveFormReact',
-    meta: {
-      action: 'routeReact.serveFormReact',
-      __dirname,
-      cwd: process.cwd(),
-      reactFrontendPath,
-    },
-  })
-  const formId = req.params.formId
+const getPublicFormMetaTags = async (formId: string): Promise<MetaTags> => {
   const createMetatagsResult = await createMetatags({
     formId,
   })
 
-  let reactHtmlWithMetaTags
-  // Failed to create metatags.
   if (createMetatagsResult.isErr()) {
     logger.error({
       message: 'Error fetching metatags',
       meta: {
-        action: 'handleRedirect',
-        ...createReqMeta(req),
+        action: 'getPublicFormMetaTags',
+        formId,
       },
       error: createMetatagsResult.error,
     })
-    reactHtmlWithMetaTags = replaceWithMetaTags({
+    return {
       title: 'FormSG',
       description: '',
       image: 'og-img-metatag-publicform.png',
-    })
+    }
   } else {
     const { title, description } = createMetatagsResult.value
-    reactHtmlWithMetaTags = replaceWithMetaTags({
+    return {
       title: title,
       description: description ?? '',
       image: 'og-img-metatag-publicform.png',
-    })
+    }
   }
-
-  return (
-    res
-      // Prevent index.html from being cached by browsers.
-      .setHeader('Cache-Control', 'no-cache')
-      .send(reactHtmlWithMetaTags)
-  )
 }
 
 export const servePublicForm: ControllerHandler<
