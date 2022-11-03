@@ -1,5 +1,6 @@
 // TODO #4279: Remove after React rollout is complete
 import { readFileSync } from 'fs'
+import { escape } from 'html-escaper'
 import { get } from 'lodash'
 import path from 'path'
 
@@ -57,9 +58,9 @@ const replaceWithMetaTags = ({
   image,
 }: MetaTags): string => {
   return reactHtml
-    .replace(/(__OG_TITLE__)/g, title)
-    .replace(/(__OG_DESCRIPTION__)/g, description)
-    .replace(/(__OG_IMAGE__)/g, image)
+    .replace(/(__OG_TITLE__)/g, escape(title))
+    .replace(/(__OG_DESCRIPTION__)/g, escape(description))
+    .replace(/(__OG_IMAGE__)/g, escape(image))
 }
 
 const serveFormReact =
