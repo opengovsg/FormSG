@@ -57,10 +57,16 @@ const replaceWithMetaTags = ({
   image,
 }: MetaTags): string => {
   return reactHtml
+<<<<<<< HEAD
     .replace(/(__OG_TITLE__)/g, title)
     .replace(/(<title>__OG_TITLE__<\/title>)/g, `<title>${title}</title>`)
     .replace(/(__OG_DESCRIPTION__)/g, description)
     .replace(/(__OG_IMAGE__)/g, image)
+=======
+    .replace(/(__OG_TITLE__)/g, DOMPurify.sanitize(title))
+    .replace(/(__OG_DESCRIPTION__)/g, DOMPurify.sanitize(description))
+    .replace(/(__OG_IMAGE__)/g, DOMPurify.sanitize(image))
+>>>>>>> a2ab79ea (fix: sanitise title)
 }
 
 const serveFormReact =
