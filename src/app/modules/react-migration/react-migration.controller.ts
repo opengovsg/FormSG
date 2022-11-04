@@ -1,4 +1,7 @@
 // TODO #4279: Remove after React rollout is complete
+import { readFileSync } from 'fs'
+import { escape } from 'html-escaper'
+import { get } from 'lodash'
 import path from 'path'
 
 import { FormResponseMode, UiCookieValues } from '../../../../shared/types'
@@ -7,6 +10,7 @@ import { createLoggerWithLabel } from '../../config/logger'
 import { ControllerHandler } from '../core/core.types'
 import * as FormService from '../form/form.service'
 import * as PublicFormController from '../form/public-form/public-form.controller'
+import { createMetatags } from '../form/public-form/public-form.service'
 import { RedirectParams } from '../form/public-form/public-form.types'
 import * as HomeController from '../home/home.controller'
 
@@ -38,24 +42,60 @@ export const ADMIN_COOKIE_OPTIONS_WITH_EXPIRY = {
 
 const logger = createLoggerWithLabel(module)
 
-const serveFormReact: ControllerHandler = (_req, res) => {
-  const reactFrontendPath = path.resolve('dist/frontend')
-  logger.info({
-    message: 'serveFormReact',
-    meta: {
-      action: 'routeReact.serveFormReact',
-      __dirname,
-      cwd: process.cwd(),
-      reactFrontendPath,
-    },
-  })
-  return (
-    res
-      // Prevent index.html from being cached by browsers.
-      .setHeader('Cache-Control', 'no-cache')
-      .sendFile(path.join(reactFrontendPath, 'index.html'))
-  )
+const reactFrontendPath = path.resolve('dist/frontend')
+const reactHtml = readFileSync(path.join(reactFrontendPath, 'index.html'), {
+  encoding: 'utf8',
+})
+
+type MetaTags = {
+  title: string
+  description: string
+  image: string
 }
+const replaceWithMetaTags = ({
+  title,
+  description,
+  image,
+}: MetaTags): string => {
+  return reactHtml
+    .replace(/(__OG_TITLE__)/g, escape(title))
+    .replace(/(__OG_DESCRIPTION__)/g, escape(description))
+    .replace(/(__OG_IMAGE__)/g, escape(image))
+}
+
+const serveFormReact =
+  (isPublicForm: boolean): ControllerHandler =>
+  async (req, res) => {
+    const reactFrontendPath = path.resolve('dist/frontend')
+    logger.info({
+      message: 'serveFormReact',
+      meta: {
+        action: 'routeReact.serveFormReact',
+        __dirname,
+        cwd: process.cwd(),
+        reactFrontendPath,
+      },
+    })
+
+    let tags: MetaTags = {
+      title: 'FormSG',
+      description: 'Trusted form manager of the Singapore Government',
+      image: 'og-img-metatag-nonpublicform.png',
+    }
+
+    if (isPublicForm && get(req.params, 'formId')) {
+      tags = await getPublicFormMetaTags(get(req.params, 'formId') ?? '')
+    }
+
+    const reactHtmlWithMetaTags = replaceWithMetaTags(tags)
+
+    return (
+      res
+        // Prevent index.html from being cached by browsers.
+        .setHeader('Cache-Control', 'no-cache')
+        .send(reactHtmlWithMetaTags)
+    )
+  }
 
 const serveFormAngular: ControllerHandler<
   RedirectParams,
@@ -66,7 +106,36 @@ const serveFormAngular: ControllerHandler<
   return PublicFormController.handleRedirect(req, res, next)
 }
 
-export const serveForm: ControllerHandler<
+const getPublicFormMetaTags = async (formId: string): Promise<MetaTags> => {
+  const createMetatagsResult = await createMetatags({
+    formId,
+  })
+
+  if (createMetatagsResult.isErr()) {
+    logger.error({
+      message: 'Error fetching metatags',
+      meta: {
+        action: 'getPublicFormMetaTags',
+        formId,
+      },
+      error: createMetatagsResult.error,
+    })
+    return {
+      title: 'FormSG',
+      description: '',
+      image: 'og-img-metatag-publicform.png',
+    }
+  } else {
+    const { title, description } = createMetatagsResult.value
+    return {
+      title: title,
+      description: description ?? '',
+      image: 'og-img-metatag-publicform.png',
+    }
+  }
+}
+
+export const servePublicForm: ControllerHandler<
   RedirectParams,
   unknown,
   unknown,
@@ -143,7 +212,7 @@ export const serveForm: ControllerHandler<
   })
 
   if (showReact) {
-    return serveFormReact(req, res, next)
+    return serveFormReact(/* isPublic= */ true)(req, res, next)
   } else {
     return serveFormAngular(req, res, next)
   }
@@ -211,7 +280,7 @@ export const serveDefault: ControllerHandler = (req, res, next) => {
 
   if (showReact) {
     // react
-    return serveFormReact(req, res, next)
+    return serveFormReact(/* isPublic= */ false)(req, res, next)
   } else {
     // angular
     return HomeController.home(req, res, next)

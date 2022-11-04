@@ -114,7 +114,7 @@ const execExamplesQueryWithTotal = (
       ...x,
       timeText: formatToRelativeString(x.lastSubmission),
     }))
-    const totalNumResults: number = get(totalCount, '[0].count', 0)
+    const totalNumResults: number = get(totalCount, '[0].count') ?? 0
     return okAsync({ forms: formattedResults, totalNumResults })
   })
 }

@@ -250,22 +250,21 @@ export const createDecimalValidationRules: ValidationRuleFn<
       if (!validateByValue) return true
 
       if (
-        customMin &&
-        customMax &&
+        customMin !== null &&
+        customMax !== null &&
         (numVal < customMin || numVal > customMax)
       ) {
         return `Please enter a decimal between ${formatNumberToLocaleString(
           customMin,
         )} and ${formatNumberToLocaleString(customMax)} (inclusive)`
       }
-
-      if (customMin && numVal < customMin) {
+      if (customMin !== null && numVal < customMin) {
         return `Please enter a decimal greater than or equal to ${formatNumberToLocaleString(
           customMin,
         )}`
       }
 
-      if (customMax && numVal > customMax) {
+      if (customMax !== null && numVal > customMax) {
         return `Please enter a decimal less than or equal to ${formatNumberToLocaleString(
           customMax,
         )}`
