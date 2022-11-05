@@ -9,10 +9,7 @@ import InlineMessage from '~components/InlineMessage'
 
 import { useEnvMutations } from '~features/env/mutations'
 import { useEnv, useSwitchEnvFeedbackFormView } from '~features/env/queries'
-import {
-  ADMIN_RADIO_OPTIONS,
-  SwitchEnvFeedbackModal,
-} from '~features/env/SwitchEnvFeedbackModal'
+import { SwitchEnvFeedbackModal } from '~features/env/SwitchEnvFeedbackModal'
 
 export const AdminSwitchEnvMessage = (): JSX.Element => {
   const { isOpen, onOpen, onClose } = useDisclosure()
@@ -86,7 +83,7 @@ export const AdminSwitchEnvMessage = (): JSX.Element => {
         onChangeEnv={adminSwitchEnvMutation.mutate}
         isOpen={isOpen}
         onClose={onClose}
-        radioOptions={ADMIN_RADIO_OPTIONS}
+        isAdminView={true}
       />
     </>
   ) : (
