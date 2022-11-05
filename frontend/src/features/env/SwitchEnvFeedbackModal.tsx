@@ -157,8 +157,10 @@ export const SwitchEnvFeedbackModal = ({
                 </FormControl>
                 {user && isAdminView ? (
                   <FormControl
-                    isRequired
-                    isInvalid={!isEmpty(errors) || !!othersInputError}
+                    isRequired={isAdminView}
+                    isInvalid={
+                      isAdminView && (!isEmpty(errors) || !!othersInputError)
+                    }
                   >
                     <FormLabel>
                       Why are you switching to the previous FormSG?
@@ -228,19 +230,33 @@ export const SwitchEnvFeedbackModal = ({
                     </FormErrorMessage>
                   </FormControl>
                 ) : null}
-                <FormControl>
+                <FormControl
+                  isRequired={!isAdminView}
+                  isInvalid={!isAdminView && !isEmpty(errors)}
+                >
                   <FormLabel
                     description={
-                      user
+                      isAdminView
                         ? ''
                         : 'Any fields you’ve filled in your form so far will be cleared'
                     }
                   >
-                    {user
+                    {isAdminView
                       ? 'Describe your problem in detail to help us improve FormSG'
                       : 'Please tell us about the issue(s) you’re facing. It’ll help us improve FormSG.'}
                   </FormLabel>
-                  <Textarea {...register('feedback')} />
+                  <Textarea
+                    {...register('feedback', {
+                      required: {
+                        value: !isAdminView,
+                        message: 'This field is required',
+                      },
+                    })}
+                  />
+                  <FormErrorMessage>
+                    {console.log(errors['feedback']?.message)}
+                    {errors['feedback']?.message}
+                  </FormErrorMessage>
                 </FormControl>
                 {user ? (
                   <FormControl>
