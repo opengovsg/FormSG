@@ -254,7 +254,6 @@ export const SwitchEnvFeedbackModal = ({
                     })}
                   />
                   <FormErrorMessage>
-                    {console.log(errors['feedback']?.message)}
                     {errors['feedback']?.message}
                   </FormErrorMessage>
                 </FormControl>
