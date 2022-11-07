@@ -17,12 +17,26 @@ COPY frontend/patches ./frontend/patches
 
 # Allow running of postinstall scripts
 RUN npm config set unsafe-perm true
-# Use --legacy-peer-deps due to...
+# --legacy-peer-deps flag
+# A breaking change in the peer dependency resolution strategy was introduced in
+# npm 7. This resulted in npm throwing an error when installing packages:
+# npm ERR! code ERESOLVE
+# npm ERR! ERESOLVE unable to resolve dependency tree
+# See also:
+# * https://stackoverflow.com/questions/66239691/what-does-npm-install-legacy-peer-deps-do-exactly-when-is-it-recommended-wh
+# NOTE: This flag is used again later in the build process when calling npm prune.
 RUN npm ci --legacy-peer-deps
 
 COPY . ./
 
-# --openssl-legacy-provider is required because...
+# --openssl-legacy-provider flag
+# A breaking change in the SSL provider was introduced in node 17. This caused 
+# webpack 4 to break. This is an interim solution; we should investigate removing
+# this flag once angular has been removed and we have upgraded to CRA5 (which uses
+# webpack 5).
+# See also:
+# * https://stackoverflow.com/questions/69692842/error-message-error0308010cdigital-envelope-routinesunsupported
+# * https://github.com/webpack/webpack/issues/14532#issuecomment-1304378535
 ENV NODE_OPTIONS="--max-old-space-size=4096 --openssl-legacy-provider"
 
 RUN npm_config_mode=yes npx lockfile-lint --type npm --path package.json --validate-https --allowed-hosts npm
@@ -44,7 +58,6 @@ RUN --mount=type=secret,id=dd_api_key \
     --minified-path-prefix=$APP_URL \
     --repository-url=$REPO_URL
 
-# Use --legacy-peer-deps due to...
 RUN npm prune --production --legacy-peer-deps
 
 # This stage builds the final container
