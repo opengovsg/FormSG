@@ -50,7 +50,18 @@ export const AdminFormLayout = (): JSX.Element => {
   }
 
   return (
-    <Flex flexDir="column" css={fillHeightCss} overflow="hidden" pos="relative">
+    <Flex
+      flexDir="column"
+      css={fillHeightCss}
+      overflow="hidden"
+      pos="relative"
+      sx={{
+        '@media print': {
+          overflow: 'visible !important',
+          display: 'block !important',
+        },
+      }}
+    >
       {bannerProps ? (
         <Banner useMarkdown variant={bannerProps.variant}>
           {bannerProps.msg}
