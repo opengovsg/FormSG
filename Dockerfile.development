@@ -1,4 +1,4 @@
-FROM node:lts-alpine3.16
+FROM node:hydrogen-alpine3.16
 LABEL maintainer=FormSG<formsg@data.gov.sg>
 
 WORKDIR /opt/formsg
@@ -46,7 +46,8 @@ ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
 RUN echo @edge http://nl.alpinelinux.org/alpine/edge/testing >> /etc/apk/repositories && apk add wqy-zenhei@edge
 
 COPY package*.json ./
-RUN npm install
+# Use --legacy-peer-deps due to...
+RUN npm install --legacy-peer-deps
 
 COPY . ./
 
