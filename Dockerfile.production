@@ -44,10 +44,11 @@ RUN --mount=type=secret,id=dd_api_key \
     --minified-path-prefix=$APP_URL \
     --repository-url=$REPO_URL
 
-RUN npm prune --production
+# Use --legacy-peer-deps due to...
+RUN npm prune --production --legacy-peer-deps
 
 # This stage builds the final container
-FROM node:fermium-alpine3.16
+FROM node:hydrogen-alpine3.16
 LABEL maintainer=FormSG<formsg@data.gov.sg>
 WORKDIR /opt/formsg
 
