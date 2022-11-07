@@ -21,7 +21,8 @@ RUN npm ci
 
 COPY . ./
 
-ENV NODE_OPTIONS=--max-old-space-size=4096
+# --openssl-legacy-provider is required because...
+ENV NODE_OPTIONS="--max-old-space-size=4096 --openssl-legacy-provider"
 
 RUN npm_config_mode=yes npx lockfile-lint --type npm --path package.json --validate-https --allowed-hosts npm
 RUN npm run lint-ci

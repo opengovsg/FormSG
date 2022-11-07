@@ -8,7 +8,8 @@ RUN chown 1001:1001 /mongodb_data
 
 ENV CHROMIUM_BIN=/usr/bin/chromium-browser
 ENV NODE_ENV=development
-ENV NODE_OPTIONS=--max-old-space-size=2048
+# --openssl-legacy-provider is required because...
+ENV NODE_OPTIONS="--max-old-space-size=2048 --openssl-legacy-provider"
 RUN apk update && apk upgrade && \
     # Build dependencies for node_modules
     apk add --virtual native-deps \
