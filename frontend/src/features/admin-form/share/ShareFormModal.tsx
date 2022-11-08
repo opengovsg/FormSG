@@ -162,6 +162,32 @@ export const ShareFormModal = ({
               </Skeleton>
             </FormControl>
             <FormControl isReadOnly>
+              <FormLabel isRequired useMarkdownForDescription>
+                Share template
+              </FormLabel>
+              <Skeleton isLoaded={!!formId}>
+                <InputGroup>
+                  <Input
+                    // The link will always change in Chromatic so this should be ignored.
+                    data-chromatic="ignore"
+                    isReadOnly
+                    isDisabled={isFormPrivate}
+                    value={`${shareLink}/use-template`}
+                  />
+                  {formId ? (
+                    <InputRightElement>
+                      <CopyButton
+                        colorScheme="secondary"
+                        stringToCopy={`${shareLink}/use-template`}
+                        aria-label="Copy use-template form link"
+                        isDisabled={isFormPrivate}
+                      />
+                    </InputRightElement>
+                  ) : null}
+                </InputGroup>
+              </Skeleton>
+            </FormControl>
+            <FormControl isReadOnly>
               <FormLabel isRequired>Embed HTML</FormLabel>
               <Skeleton isLoaded={!!formId}>
                 <InputGroup>
