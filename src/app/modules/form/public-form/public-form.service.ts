@@ -100,8 +100,8 @@ export const createMetatags = ({
   imageBaseUrl,
 }: {
   formId: string
-  appUrl: string
-  imageBaseUrl: string
+  appUrl?: string
+  imageBaseUrl?: string
 }): ResultAsync<Metatags, FormNotFoundError | DatabaseError> => {
   return ResultAsync.fromPromise(FormModel.findById(formId).exec(), (error) => {
     logger.error({
@@ -123,8 +123,10 @@ export const createMetatags = ({
       description: form.startPage?.paragraph,
       appUrl,
       images: [
-        `${imageBaseUrl}/public/modules/core/img/og/img_metatag.png`,
-        `${imageBaseUrl}/public/modules/core/img/og/logo-vertical-color.png`,
+        `${imageBaseUrl ?? '.'}/public/modules/core/img/og/img_metatag.png`,
+        `${
+          imageBaseUrl ?? '.'
+        }/public/modules/core/img/og/logo-vertical-color.png`,
       ],
       twitterImage: `${imageBaseUrl}/public/modules/core/img/og/logo-vertical-color.png`,
     }

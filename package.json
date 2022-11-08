@@ -1,7 +1,7 @@
 {
   "name": "FormSG",
   "description": "Form Manager for Government",
-  "version": "6.14.0",
+  "version": "6.15.0",
   "homepage": "https://form.gov.sg",
   "authors": [
     "FormSG <formsg@data.gov.sg>"
@@ -111,7 +111,7 @@
     "csv-string": "^4.1.1",
     "cuid": "^2.1.8",
     "date-fns": "^2.29.3",
-    "dd-trace": "^3.7.0",
+    "dd-trace": "^3.7.1",
     "dedent-js": "~1.0.1",
     "dotenv": "^16.0.3",
     "ejs": "^3.1.8",
@@ -126,6 +126,7 @@
     "fp-ts": "^2.13.1",
     "helmet": "^6.0.0",
     "hot-shots": "^9.3.0",
+    "html-escaper": "^3.0.3",
     "http-errors": "^2.0.0",
     "http-status-codes": "^2.2.0",
     "intl-tel-input": "~12.4.0",
@@ -202,6 +203,7 @@
     "@types/has-ansi": "^3.0.0",
     "@types/helmet": "4.0.0",
     "@types/http-errors": "^2.0.1",
+    "@types/html-escaper": "^3.0.0",
     "@types/ip": "^1.1.0",
     "@types/jest": "^27.4.1",
     "@types/json-stringify-safe": "^5.0.0",
@@ -228,7 +230,7 @@
     "@typescript-eslint/parser": "^4.33.0",
     "auto-changelog": "^2.4.0",
     "axios-mock-adapter": "^1.21.2",
-    "babel-loader": "^8.2.5",
+    "babel-loader": "^8.3.0",
     "concurrently": "^7.5.0",
     "copy-webpack-plugin": "^6.0.2",
     "copyfiles": "^2.4.1",

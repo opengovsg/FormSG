@@ -125,7 +125,7 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
     description: {
       doc: 'Application description in meta tag',
       format: String,
-      default: 'Form Manager for Government',
+      default: 'Trusted form manager of the Singapore Government',
       env: 'APP_DESC',
     },
     appUrl: {
