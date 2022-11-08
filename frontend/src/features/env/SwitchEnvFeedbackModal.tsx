@@ -36,14 +36,13 @@ export interface SwitchEnvModalProps {
   onClose: () => void
   onSubmitFeedback: (formInputs: SwitchEnvFeedbackFormBodyDto) => Promise<any>
   onChangeEnv: () => void
-  radioOptions: string[]
+  isAdminView: boolean
 }
 
 export const ADMIN_RADIO_OPTIONS = [
   'I couldn’t find a feature I needed',
   'The new FormSG did not function properly',
 ]
-export const PUBLIC_RADIO_OPTIONS = ['I couldn’t submit my form']
 export const COMMON_RADIO_OPTIONS = ['I’m not used to the new FormSG']
 export const FEEDBACK_OTHERS_INPUT_NAME = 'react-feedback-others-input'
 
@@ -52,7 +51,7 @@ export const SwitchEnvFeedbackModal = ({
   onClose,
   onChangeEnv,
   onSubmitFeedback,
-  radioOptions,
+  isAdminView,
 }: SwitchEnvModalProps): JSX.Element => {
   const modalSize = useBreakpointValue({
     base: 'mobile',
@@ -147,82 +146,113 @@ export const SwitchEnvFeedbackModal = ({
         ) : (
           <chakra.form noValidate onSubmit={handleFormSubmit}>
             <ModalHeader pr="48px">
-              Something not right on the new FormSG?
+              {user
+                ? 'Something not right on the new FormSG?'
+                : "Can't submit this form?"}
             </ModalHeader>
             <ModalBody mt="0" pt="0">
               <Stack spacing="1rem">
                 <FormControl>
                   <Input type="hidden" {...register('url')} value={url} />
                 </FormControl>
-                <FormControl
-                  isRequired
-                  isInvalid={!isEmpty(errors) || !!othersInputError}
-                >
-                  <FormLabel>
-                    Why are you switching to the previous FormSG?
-                  </FormLabel>
-                  <Radio.RadioGroup>
-                    {COMMON_RADIO_OPTIONS.map((option) => (
-                      <Radio
-                        {...register('switchReason', {
-                          required: {
-                            value: true,
-                            message: 'This field is required',
-                          },
-                          deps: [FEEDBACK_OTHERS_INPUT_NAME],
-                        })}
-                        value={'I’m not used to the new FormSG'}
-                        key={option}
-                        tabIndex={1}
-                      >
-                        {option}
-                      </Radio>
-                    ))}
-                    {radioOptions.map((option) => (
-                      <Radio
-                        {...register('switchReason', {
-                          required: {
-                            value: true,
-                            message: 'This field is required',
-                          },
-                          deps: [FEEDBACK_OTHERS_INPUT_NAME],
-                        })}
-                        value={option}
-                        key={option}
-                      >
-                        {option}
-                      </Radio>
-                    ))}
-                    <Radio.OthersWrapper
-                      {...register('switchReason', {
-                        required: {
-                          value: true,
-                          message: 'This field is required',
-                        },
-                        deps: [FEEDBACK_OTHERS_INPUT_NAME],
-                      })}
-                      value={othersInputValue}
-                    >
-                      <FormControl>
-                        <OthersInput
-                          aria-label='"Other" response'
-                          {...register(FEEDBACK_OTHERS_INPUT_NAME, {
-                            validate: (value) => {
-                              return (
-                                getValues('switchReason') !==
-                                  othersInputValue ||
-                                !!value ||
-                                'Please specify a value for the "Others" option'
-                              )
+                {user && isAdminView ? (
+                  <FormControl
+                    isRequired
+                    isInvalid={!isEmpty(errors) || !!othersInputError}
+                  >
+                    <FormLabel>
+                      Why are you switching to the previous FormSG?
+                    </FormLabel>
+                    <Radio.RadioGroup>
+                      {COMMON_RADIO_OPTIONS.map((option) => (
+                        <Radio
+                          {...register('switchReason', {
+                            required: {
+                              value: true,
+                              message: 'This field is required',
                             },
+                            deps: [FEEDBACK_OTHERS_INPUT_NAME],
                           })}
-                        />
-                      </FormControl>
-                    </Radio.OthersWrapper>
-                  </Radio.RadioGroup>
+                          value={option}
+                          key={option}
+                          tabIndex={1}
+                        >
+                          {option}
+                        </Radio>
+                      ))}
+                      {ADMIN_RADIO_OPTIONS.map((option) => (
+                        <Radio
+                          {...register('switchReason', {
+                            required: {
+                              value: true,
+                              message: 'This field is required',
+                            },
+                            deps: [FEEDBACK_OTHERS_INPUT_NAME],
+                          })}
+                          value={option}
+                          key={option}
+                        >
+                          {option}
+                        </Radio>
+                      ))}
+                      <Radio.OthersWrapper
+                        {...register('switchReason', {
+                          required: {
+                            value: true,
+                            message: 'This field is required',
+                          },
+                          deps: [FEEDBACK_OTHERS_INPUT_NAME],
+                        })}
+                        value={othersInputValue}
+                      >
+                        <FormControl>
+                          <OthersInput
+                            aria-label='"Other" response'
+                            {...register(FEEDBACK_OTHERS_INPUT_NAME, {
+                              validate: (value) => {
+                                return (
+                                  getValues('switchReason') !==
+                                    othersInputValue ||
+                                  !!value ||
+                                  'Please specify a value for the "Others" option'
+                                )
+                              },
+                            })}
+                          />
+                        </FormControl>
+                      </Radio.OthersWrapper>
+                    </Radio.RadioGroup>
+                    <FormErrorMessage>
+                      {errors['switchReason']?.message ??
+                        errors[FEEDBACK_OTHERS_INPUT_NAME]?.message}
+                    </FormErrorMessage>
+                  </FormControl>
+                ) : null}
+                <FormControl
+                  isRequired={!isAdminView}
+                  isInvalid={!isAdminView && !isEmpty(errors)}
+                >
+                  <FormLabel
+                    description={
+                      isAdminView
+                        ? ''
+                        : 'Any fields you’ve filled in your form so far will be cleared'
+                    }
+                  >
+                    {isAdminView
+                      ? 'Describe your problem in detail to help us improve FormSG'
+                      : 'Please tell us about the issue(s) you’re facing. It’ll help us improve FormSG.'}
+                  </FormLabel>
+                  <Textarea
+                    {...register('feedback', {
+                      required: {
+                        value: !isAdminView,
+                        message: 'This field is required',
+                      },
+                    })}
+                  />
                   <FormErrorMessage>
-                    {errors['switchReason']?.message ??
-                      errors[FEEDBACK_OTHERS_INPUT_NAME]?.message}
+                    {errors['feedback']?.message}
                   </FormErrorMessage>
                 </FormControl>
                 {user ? (
@@ -256,18 +286,6 @@ export const SwitchEnvFeedbackModal = ({
                     </FormErrorMessage>
                   </FormControl>
                 )}
-                <FormControl>
-                  <FormLabel
-                    description={
-                      user
-                        ? ''
-                        : 'Any fields you’ve filled in your form so far will be cleared'
-                    }
-                  >
-                    Describe your problem in detail to help us improve FormSG
-                  </FormLabel>
-                  <Textarea {...register('feedback')} />
-                </FormControl>
                 {rumSessionId ? (
                   <FormControl>
                     <Input
