@@ -173,7 +173,7 @@ export const SwitchEnvFeedbackModal = ({
                             },
                             deps: [FEEDBACK_OTHERS_INPUT_NAME],
                           })}
-                          value={'I’m not used to the new FormSG'}
+                          value={option}
                           key={option}
                           tabIndex={1}
                         >
