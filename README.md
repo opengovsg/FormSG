@@ -209,7 +209,7 @@ We welcome all contributions, bug reports, bug fixes, documentation improvements
 
 ## Support
 
-Please contact FormSG (formsg@tech.gov.sg) for any details.
+Please contact FormSG (support@form.gov.sg) for any details.
 
 ## Acknowledgements
 
