@@ -157,10 +157,8 @@ export const SwitchEnvFeedbackModal = ({
                 </FormControl>
                 {user && isAdminView ? (
                   <FormControl
-                    isRequired={isAdminView}
-                    isInvalid={
-                      isAdminView && (!isEmpty(errors) || !!othersInputError)
-                    }
+                    isRequired
+                    isInvalid={!isEmpty(errors) || !!othersInputError}
                   >
                     <FormLabel>
                       Why are you switching to the previous FormSG?
