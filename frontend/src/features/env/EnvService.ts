@@ -15,7 +15,6 @@ import {
   ADMIN_RADIO_OPTIONS,
   COMMON_RADIO_OPTIONS,
   FEEDBACK_OTHERS_INPUT_NAME,
-  PUBLIC_RADIO_OPTIONS,
 } from './SwitchEnvFeedbackModal'
 
 export const getClientEnvVars = async (): Promise<ClientEnvVars> => {
@@ -34,10 +33,8 @@ const createFeedbackResponsesArray = (
     ['rumSessionId', 3],
     ['switchReason', 4],
   ]
-  const RADIO_OPTIONS_WITHOUT_OTHERS = ADMIN_RADIO_OPTIONS.concat(
-    PUBLIC_RADIO_OPTIONS,
-    COMMON_RADIO_OPTIONS,
-  )
+  const RADIO_OPTIONS_WITHOUT_OTHERS =
+    ADMIN_RADIO_OPTIONS.concat(COMMON_RADIO_OPTIONS)
   const responses: {
     _id: string
     question: string

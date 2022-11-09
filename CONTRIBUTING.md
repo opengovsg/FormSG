@@ -6,11 +6,11 @@ Welcome to FormSG! The following are guidelines for contribution. Use your best 
 
 To contribute, you can start by taking a look at our open issues marked 'contribute' under GitHub's 'Issues' tab. Feel free to assign yourself to any 'contribute' issue that interests you, and comment with questions or clarifications. 
 
-Otherwise, please **first discuss the change you wish to make via GitHub issue**, [email](mailto:formsg@tech.gov.sg), or any other method with the repository owners beforehand.
+Otherwise, please **first discuss the change you wish to make via GitHub issue**, [email](mailto:support@form.gov.sg), or any other method with the repository owners beforehand.
 
 ## Security reports
 
-Please do not file an open issue for ongoing security bugs. Instead, email us directly with your findings at [formsg@tech.gov.sg](mailto:formsg@tech.gov.sg).
+Please do not file an open issue for ongoing security bugs. Instead, email us directly with your findings at [support@form.gov.sg](mailto:support@form.gov.sg).
 
 ## Bug reports and feature requests
 
@@ -52,4 +52,4 @@ You generally only need to submit a CLA once, so if you've already submitted one
 
 ## Contact us
 
-Have questions? Feel free to reach out to us at [formsg@tech.gov.sg](mailto:formsg@tech.gov.sg).
+Have questions? Feel free to reach out to us at [support@form.gov.sg](mailto:support@form.gov.sg).
