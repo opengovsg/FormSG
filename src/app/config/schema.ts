@@ -382,29 +382,29 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
 }
 
 export const prodOnlyVarsSchema: Schema<IProdOnlyVarsSchema> = {
-  port: {
+  port_us: {
     doc: 'SMTP port number',
     format: 'port',
     default: null,
-    env: 'SES_PORT',
+    env: 'SES_PORT_US',
   },
-  host: {
+  host_us: {
     doc: 'SMTP hostname',
     format: String,
     default: null,
-    env: 'SES_HOST',
+    env: 'SES_HOST_US',
   },
-  user: {
+  user_us: {
     doc: 'SMTP username',
     format: String,
     default: null,
-    env: 'SES_USER',
+    env: 'SES_USER_US',
   },
-  pass: {
+  pass_us: {
     doc: 'SMTP password',
     format: String,
     default: null,
-    env: 'SES_PASS',
+    env: 'SES_PASS_US',
     sensitive: true,
   },
   dbHost: {
@@ -435,6 +435,37 @@ export const prodOnlyVarsSchema: Schema<IProdOnlyVarsSchema> = {
     default: null,
     env: 'DB_HOST',
     sensitive: true,
+  },
+  port_sg: {
+    doc: 'SMTP port number',
+    format: 'port',
+    default: null,
+    env: 'SES_PORT_SG',
+  },
+  host_sg: {
+    doc: 'SMTP hostname',
+    format: String,
+    default: null,
+    env: 'SES_HOST_SG',
+  },
+  user_sg: {
+    doc: 'SMTP username',
+    format: String,
+    default: null,
+    env: 'SES_USER_SG',
+  },
+  pass_sg: {
+    doc: 'SMTP password',
+    format: String,
+    default: null,
+    env: 'SES_PASS_SG',
+    sensitive: true,
+  },
+  nodemailer_client_threshold_sg: {
+    doc: 'Percentage threshold to send mail from SG nodemailer client',
+    format: 'int',
+    default: 0,
+    env: 'NODEMAILER_THRESHOLD_SG',
   },
 }
 

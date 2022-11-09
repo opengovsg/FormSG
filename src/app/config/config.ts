@@ -122,7 +122,7 @@ const dbConfig: DbConfig = {
   },
 }
 
-const mailConfig: MailConfig = (function () {
+const mailConfig_us: MailConfig = (function () {
   const mailFrom = basicVars.mail.from
   const official = basicVars.mail.official
   const mailer = {
@@ -133,12 +133,12 @@ const mailConfig: MailConfig = (function () {
   let transporter: Mail
   if (!isDev) {
     const options: SMTPPool.Options = {
-      host: prodOnlyVars.host,
+      host: prodOnlyVars.host_us,
       auth: {
-        user: prodOnlyVars.user,
-        pass: prodOnlyVars.pass,
+        user: prodOnlyVars.user_us,
+        pass: prodOnlyVars.pass_us,
       },
-      port: prodOnlyVars.port,
+      port: prodOnlyVars.port_us,
       // Options as advised from https://nodemailer.com/usage/bulk-mail/
       // pool connections instead of creating fresh one for each email
       pool: true,
@@ -155,8 +155,55 @@ const mailConfig: MailConfig = (function () {
     transporter = nodemailer.createTransport(options)
   } else {
     transporter = nodemailer.createTransport({
-      port: prodOnlyVars.port,
-      host: prodOnlyVars.host,
+      port: prodOnlyVars.port_us,
+      host: prodOnlyVars.host_us,
+      ignoreTLS: true,
+    })
+  }
+
+  return {
+    mailFrom,
+    official,
+    mailer,
+    transporter,
+  }
+})()
+
+const mailConfig_sg: MailConfig = (function () {
+  const mailFrom = basicVars.mail.from
+  const official = basicVars.mail.official
+  const mailer = {
+    from: `${basicVars.appConfig.title} <${mailFrom}>`,
+  }
+
+  // Creating mail transport
+  let transporter: Mail
+  if (!isDev) {
+    const options: SMTPPool.Options = {
+      host: prodOnlyVars.host_sg,
+      auth: {
+        user: prodOnlyVars.user_sg,
+        pass: prodOnlyVars.pass_sg,
+      },
+      port: prodOnlyVars.port_sg,
+      // Options as advised from https://nodemailer.com/usage/bulk-mail/
+      // pool connections instead of creating fresh one for each email
+      pool: true,
+      maxMessages: basicVars.mail.maxMessages,
+      maxConnections: basicVars.mail.maxConnections,
+      socketTimeout: basicVars.mail.socketTimeout,
+      // If set to true then logs to console. If value is not set or is false
+      // then nothing is logged.
+      logger: basicVars.mail.logger,
+      // If set to true, then logs SMTP traffic, otherwise logs only transaction
+      // events.
+      debug: basicVars.mail.debug,
+    }
+    transporter = nodemailer.createTransport(options)
+  } else {
+    transporter = nodemailer.createTransport({
+      port: prodOnlyVars.port_sg,
+      host: prodOnlyVars.host_sg,
       ignoreTLS: true,
     })
   }
@@ -207,7 +254,9 @@ const config: Config = {
   app: basicVars.appConfig,
   db: dbConfig,
   aws: awsConfig,
-  mail: mailConfig,
+  mail_us: mailConfig_us,
+  mail_sg: mailConfig_sg,
+  nodemailer_client_threshold_sg: prodOnlyVars.nodemailer_client_threshold_sg,
   cookieSettings,
   isDev,
   nodeEnv,

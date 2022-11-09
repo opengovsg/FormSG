@@ -69,7 +69,9 @@ export type Config = {
   app: AppConfig
   db: DbConfig
   aws: AwsConfig
-  mail: MailConfig
+  mail_us: MailConfig
+  mail_sg: MailConfig
+  nodemailer_client_threshold_sg: number
 
   cookieSettings: SessionOptions['cookie']
   // Consts
@@ -104,11 +106,16 @@ export type Config = {
 
 // Interface
 export interface IProdOnlyVarsSchema {
-  port: number
-  host: string
-  user: string
-  pass: string
+  port_us: number
+  host_us: string
+  user_us: string
+  pass_us: string
   dbHost: string
+  port_sg: number
+  host_sg: string
+  user_sg: string
+  pass_sg: string
+  nodemailer_client_threshold_sg: number
 }
 
 export interface ICompulsoryVarsSchema {
