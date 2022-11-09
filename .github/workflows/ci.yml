@@ -49,22 +49,6 @@ jobs:
           cache-dependency-path: '**/package-lock.json'
       - run: npm ci
 
-  build:
-    needs: install
-    runs-on: ubuntu-latest
-    env:
-      NODE_OPTIONS: '--max-old-space-size=4096'
-    steps:
-      - uses: actions/checkout@v2
-      - name: Use Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 14
-          cache: 'npm'
-          cache-dependency-path: '**/package-lock.json'
-      - run: npm ci
-      - run: npm run build
-
   frontend_test:
     needs: [changes, install]
     if: ${{ needs.changes.outputs.frontend == 'true' }}
@@ -94,25 +78,6 @@ jobs:
           cache-dependency-path: '**/package-lock.json'
       - run: npm ci
       - run: npm run lint:frontend
-
-  backend_test:
-    needs: [changes, install]
-    if: ${{ needs.changes.outputs.backend == 'true' }}
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Use Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 14
-          cache: 'npm'
-          cache-dependency-path: '**/package-lock.json'
-      - run: npm ci
-      - run: npm run test:backend
-      - name: Coveralls
-        uses: coverallsapp/github-action@master
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
 
   angularjs_test:
     needs: [changes, install]
@@ -144,10 +109,11 @@ jobs:
       - run: npm ci
       - run: npm run lint-ci
 
-  src_e2e:
-    needs: [changes, build]
-    if: ${{ needs.changes.outputs.backend == 'true' || needs.changes.outputs.angularjs == 'true' }}
+  build_backend_and_e2e_test:
+    needs: [changes, install]
     runs-on: ubuntu-latest
+    env:
+      NODE_OPTIONS: '--max-old-space-size=4096'
     steps:
       - uses: actions/checkout@v2
       - name: Use Node.js
@@ -157,4 +123,15 @@ jobs:
           cache: 'npm'
           cache-dependency-path: '**/package-lock.json'
       - run: npm ci
-      - run: npm run test-e2e
+      - run: npm run build
+      - name: src_e2e
+        if: ${{ needs.changes.outputs.backend == 'true' || needs.changes.outputs.angularjs == 'true' }}
+        run: npm run test-e2e
+      - name: backend_test
+        if: ${{ needs.changes.outputs.backend == 'true' }}
+        run: npm run test:backend
+      - name: Coveralls
+        if: ${{ needs.changes.outputs.backend == 'true' }}
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}

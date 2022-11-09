@@ -10,11 +10,7 @@ import {
   LoggedOutDecorator,
 } from '~utils/storybook'
 
-import {
-  ADMIN_RADIO_OPTIONS,
-  PUBLIC_RADIO_OPTIONS,
-  SwitchEnvFeedbackModal,
-} from './SwitchEnvFeedbackModal'
+import { SwitchEnvFeedbackModal } from './SwitchEnvFeedbackModal'
 
 export default {
   title: 'Pages/SwitchEnvFeedbackModal',
@@ -38,7 +34,7 @@ const AdminTemplate: Story = () => {
       onSubmitFeedback={async () => console.log('submit feedback')}
       onClose={onClose}
       isOpen={true}
-      radioOptions={ADMIN_RADIO_OPTIONS}
+      isAdminView={true}
     />
   )
 }
@@ -50,7 +46,7 @@ const PublicRespondentTemplate: Story = () => {
       onSubmitFeedback={async () => console.log('submit feedback')}
       onClose={onClose}
       isOpen={true}
-      radioOptions={PUBLIC_RADIO_OPTIONS}
+      isAdminView={false}
     />
   )
 }

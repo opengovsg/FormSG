@@ -250,8 +250,8 @@ export const PrivacyPolicyPage = (): JSX.Element => {
               <SectionListItem>
                 <SectionParagraph>
                   Please contact{' '}
-                  <Link isExternal href="mailto:formsg@tech.gov.sg">
-                    formsg@tech.gov.sg
+                  <Link isExternal href="mailto:support@form.gov.sg">
+                    support@form.gov.sg
                   </Link>{' '}
                   if you:
                 </SectionParagraph>
