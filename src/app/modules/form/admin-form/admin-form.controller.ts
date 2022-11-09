@@ -1690,7 +1690,7 @@ export const handleUpdateFormField = [
           .required(),
         description: Joi.string().allow('').required(),
         required: Joi.boolean().required(),
-        title: Joi.string().required(),
+        title: Joi.string().trim().required(),
         disabled: Joi.boolean().required(),
         // Allow other field related key-values to be provided and let the model
         // layer handle the validation.
@@ -1958,7 +1958,7 @@ export const handleCreateFormField = [
       fieldType: Joi.string()
         .valid(...Object.values(BasicField))
         .required(),
-      title: Joi.string().required(),
+      title: Joi.string().trim().required(),
       description: Joi.string().allow(''),
       required: Joi.boolean(),
       disabled: Joi.boolean(),
