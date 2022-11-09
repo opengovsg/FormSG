@@ -40,6 +40,7 @@ export const NumberField = ({
             allowMouseWheel
             precision={0}
             value={value}
+            preventDefaultOnEnter
             onChange={(val) => {
               // Only allow numeric inputs
               onChange(val.replace(/\D/g, ''))
