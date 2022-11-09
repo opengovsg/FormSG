@@ -76,9 +76,13 @@ export class MailService {
    */
   #appUrl: Required<MailServiceParams>['appUrl']
   /**
-   * The transporter to be used to send mail.
+   * The transporter to be used to send mail (SES in US).
    */
-  #transporter: Required<MailServiceParams>['transporter']
+  #transporter_us: Required<MailServiceParams>['transporter_us']
+  /**
+   * The transporter to be used to send mail (SES in SG).
+   */
+  #transporter_sg: Required<MailServiceParams>['transporter_sg']
   /**
    * The email string to denote the "from" field of the email.
    */
@@ -104,9 +108,10 @@ export class MailService {
   constructor({
     appName = config.app.title,
     appUrl = config.app.appUrl,
-    transporter = config.mail.transporter,
-    senderMail = config.mail.mailFrom,
-    officialMail = config.mail.official,
+    transporter_us = config.mail_us.transporter,
+    transporter_sg = config.mail_sg.transporter,
+    senderMail = config.mail_us.mailFrom,
+    officialMail = config.mail_us.official,
     retryParams = DEFAULT_RETRY_PARAMS,
   }: MailServiceParams = {}) {
     // Email validation
@@ -127,7 +132,8 @@ export class MailService {
     this.#appUrl = appUrl
     this.#senderMail = senderMail
     this.#senderFromString = `${appName} <${senderMail}>`
-    this.#transporter = transporter
+    this.#transporter_us = transporter_us
+    this.#transporter_sg = transporter_sg
     this.#officialMail = officialMail
     this.#retryParams = retryParams
   }
@@ -157,13 +163,24 @@ export class MailService {
       })
 
       try {
+        let sendMailFromSG = false
+        const rand = Math.random() * 100
+        sendMailFromSG = rand <= config.nodemailer_client_threshold_sg
         const info = await tracer.trace('nodemailer/sendMail', () =>
-          this.#transporter.sendMail(mail),
+          sendMailFromSG
+            ? this.#transporter_sg.sendMail(mail)
+            : this.#transporter_us.sendMail(mail),
         )
 
+        const logNodemailerMeta = {
+          action: 'Nodemailer evaluation done',
+          sendMailFromSG: sendMailFromSG,
+          randAssignment: rand,
+          sendFromSGThreshold: config.nodemailer_client_threshold_sg,
+        }
         logger.info({
           message: `Mail successfully sent on attempt ${attemptNum}`,
-          meta: { ...logMeta, info },
+          meta: { ...logMeta, info, ...logNodemailerMeta },
         })
 
         return true
