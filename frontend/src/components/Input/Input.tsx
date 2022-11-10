@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import {
   forwardRef,
   Icon,
@@ -37,36 +38,33 @@ export const Input = forwardRef<InputProps, 'input'>((props, ref) => {
     'preventDefaultOnEnter',
   ])
 
+  const chakraInputProps: ChakraInputProps = useMemo(
+    () => ({
+      ref,
+      ...inputProps,
+      sx: props.sx ?? inputStyles.field,
+      // This flag should be set for form input fields, to prevent refresh on enter if form only has one input
+      onKeyDown: props.preventDefaultOnEnter
+        ? (e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault()
+            }
+          }
+        : undefined,
+    }),
+    [inputProps, inputStyles.field, props, ref],
+  )
+
   // Return normal input component if not success state.
   if (!props.isSuccess) {
-    return (
-      <ChakraInput
-        ref={ref}
-        // This flag should be set for form input fields, to prevent refresh on enter if form only has one input
-        {...(props.preventDefaultOnEnter
-          ? {
-              onKeyDown: (e) => {
-                if (e.key === 'Enter') {
-                  e.preventDefault()
-                }
-              },
-            }
-          : {})}
-        {...inputProps}
-        sx={props.sx ?? inputStyles.field}
-      />
-    )
+    return <ChakraInput {...chakraInputProps} />
   }
 
   return (
     // InputGroup is required for InputRightElement to retrieve the correct
     // style props. Will crash if not included.
     <InputGroup>
-      <ChakraInput
-        ref={ref}
-        {...inputProps}
-        sx={props.sx ?? inputStyles.field}
-      />
+      <ChakraInput {...chakraInputProps} />
       <InputRightElement sx={inputStyles.success}>
         <Icon as={BxsCheckCircle} />
       </InputRightElement>
