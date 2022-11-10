@@ -106,6 +106,7 @@ export type Config = {
 
 // Interface
 export interface IProdOnlyVarsSchema {
+  // Remove references to US SES when SES migration is over (opengovsg/formsg-private#130)
   port_us: number
   host_us: string
   user_us: string

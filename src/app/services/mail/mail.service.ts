@@ -64,6 +64,7 @@ const DEFAULT_RETRY_PARAMS: MailServiceParams['retryParams'] = {
   minTimeout: 5000,
 }
 
+// Delete references to US SES when SES migration is over (opengovsg/formsg-private#130)
 export class MailService {
   /**
    * The application name to be shown in some sent emails' fields such as mail
