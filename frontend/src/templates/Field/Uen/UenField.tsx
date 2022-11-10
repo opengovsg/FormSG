@@ -27,6 +27,7 @@ export const UenField = ({ schema }: UenFieldProps): JSX.Element => {
       <Input
         aria-label={schema.title}
         defaultValue=""
+        preventDefaultOnEnter
         {...register(schema._id, validationRules)}
       />
     </FieldContainer>

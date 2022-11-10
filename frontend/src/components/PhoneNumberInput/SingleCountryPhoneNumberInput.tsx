@@ -34,6 +34,7 @@ export const SingleCountryPhoneNumberInput = forwardRef<
         onBlur={handleInputBlur}
         value={inputValue}
         placeholder={inputPlaceholder}
+        preventDefaultOnEnter
         {...props}
         sx={styles.field}
       />

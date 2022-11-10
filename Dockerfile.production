@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-FROM node:fermium-alpine3.16 as build
+FROM node:hydrogen-alpine3.16 as build
 
 # node-modules-builder stage installs/compiles the node_modules folder
 # Python version must be specified starting in alpine3.12
@@ -17,11 +17,28 @@ COPY frontend/patches ./frontend/patches
 
 # Allow running of postinstall scripts
 RUN npm config set unsafe-perm true
-RUN npm ci
+# --legacy-peer-deps flag
+# A breaking change in the peer dependency resolution strategy was introduced in
+# npm 7. This resulted in npm throwing an error when installing packages:
+# npm ERR! code ERESOLVE
+# npm ERR! ERESOLVE unable to resolve dependency tree
+# See also:
+# * https://stackoverflow.com/questions/66239691/what-does-npm-install-legacy-peer-deps-do-exactly-when-is-it-recommended-wh
+# NOTE: This flag is used again later in the build process when calling npm prune.
+RUN npm ci --legacy-peer-deps
 
 COPY . ./
 
-ENV NODE_OPTIONS=--max-old-space-size=4096
+# --openssl-legacy-provider flag
+# A breaking change in the SSL provider was introduced in node 17. This caused 
+# webpack 4 to break. This is an interim solution; we should investigate removing
+# this flag once angular has been removed and we have upgraded to CRA5 (which uses
+# webpack 5). 
+# See also:
+# * https://stackoverflow.com/questions/69692842/error-message-error0308010cdigital-envelope-routinesunsupported
+# * https://github.com/webpack/webpack/issues/14532#issuecomment-1304378535
+# These options are only used in the build stage, not the start stage.
+ENV NODE_OPTIONS="--max-old-space-size=4096 --openssl-legacy-provider"
 
 RUN npm_config_mode=yes npx lockfile-lint --type npm --path package.json --validate-https --allowed-hosts npm
 RUN npm run lint-ci
@@ -42,10 +59,10 @@ RUN --mount=type=secret,id=dd_api_key \
     --minified-path-prefix=$APP_URL \
     --repository-url=$REPO_URL
 
-RUN npm prune --production
+RUN npm prune --production --legacy-peer-deps
 
 # This stage builds the final container
-FROM node:fermium-alpine3.16
+FROM node:hydrogen-alpine3.16
 LABEL maintainer=FormSG<formsg@data.gov.sg>
 WORKDIR /opt/formsg
 
