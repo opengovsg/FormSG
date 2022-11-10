@@ -50,6 +50,7 @@ fixture('Email mode submissions')
     await t.resizeWindow(1280, 800)
   })
   .afterEach(async (t) => {
+    console.log(t.ctx)
     await deleteDocById(User, t.ctx.formData.user._id)
     await deleteDocById(Form, t.ctx.form._id)
   })
