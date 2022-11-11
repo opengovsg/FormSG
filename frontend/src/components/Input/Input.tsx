@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import {
   forwardRef,
   Icon,
@@ -37,21 +38,27 @@ export const Input = forwardRef<InputProps, 'input'>((props, ref) => {
     'preventDefaultOnEnter',
   ])
 
+  const preventDefault = useMemo(
+    () =>
+      // This flag should be set for form input fields, to prevent refresh on enter if form only has one input
+      props.preventDefaultOnEnter
+        ? {
+            onKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => {
+              if (e.key === 'Enter') {
+                e.preventDefault()
+              }
+            },
+          }
+        : {},
+    [props.preventDefaultOnEnter],
+  )
+
   // Return normal input component if not success state.
   if (!props.isSuccess) {
     return (
       <ChakraInput
         ref={ref}
-        // This flag should be set for form input fields, to prevent refresh on enter if form only has one input
-        {...(props.preventDefaultOnEnter
-          ? {
-              onKeyDown: (e) => {
-                if (e.key === 'Enter') {
-                  e.preventDefault()
-                }
-              },
-            }
-          : {})}
+        {...preventDefault}
         {...inputProps}
         sx={props.sx ?? inputStyles.field}
       />
@@ -64,6 +71,7 @@ export const Input = forwardRef<InputProps, 'input'>((props, ref) => {
     <InputGroup>
       <ChakraInput
         ref={ref}
+        {...preventDefault}
         {...inputProps}
         sx={props.sx ?? inputStyles.field}
       />
