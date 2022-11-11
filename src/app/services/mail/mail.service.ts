@@ -164,14 +164,15 @@ export class MailService {
       })
 
       try {
-        let sendMailFromSG = false
         const rand = Math.random() * 100
-        sendMailFromSG = rand <= config.nodemailer_client_threshold_sg
-        const info = await tracer.trace('nodemailer/sendMail', () =>
-          sendMailFromSG
+        const sendMailFromSG = rand < config.nodemailer_client_threshold_sg
+        const info = await tracer.trace('nodemailer/sendMail', () => {
+          const span = tracer.scope().active()
+          if (span) span.setTag('ses.region', sendMailFromSG ? 'sg' : 'us')
+          return sendMailFromSG
             ? this.#transporter_sg.sendMail(mail)
-            : this.#transporter_us.sendMail(mail),
-        )
+            : this.#transporter_us.sendMail(mail)
+        })
 
         const logNodemailerMeta = {
           action: 'Nodemailer evaluation done',
