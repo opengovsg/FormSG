@@ -13,6 +13,7 @@ import {
   LOGIN_ROUTE,
   PRIVACY_POLICY_ROUTE,
   PUBLICFORM_ROUTE,
+  PUBLICFORM_USETEMPLATE_ROUTE,
   RESULTS_FEEDBACK_SUBROUTE,
   TOU_ROUTE,
 } from '~constants/routes'
@@ -48,6 +49,9 @@ const PrivacyPolicyPage = lazy(() =>
 const TermsOfUsePage = lazy(() => lazyRetry(() => import('~pages/TermsOfUse')))
 const PreviewFormPage = lazy(() =>
   lazyRetry(() => import('~features/admin-form/preview')),
+)
+const TemplateFormPage = lazy(() =>
+  lazyRetry(() => import('~features/admin-form/template')),
 )
 
 const WithSuspense = ({ children }: { children: React.ReactNode }) => (
@@ -87,6 +91,10 @@ export const AppRouter = (): JSX.Element => {
         <Route
           path={PUBLICFORM_ROUTE}
           element={<PublicElement element={<PublicFormPage />} />}
+        />
+        <Route
+          path={`${PUBLICFORM_ROUTE}/${PUBLICFORM_USETEMPLATE_ROUTE}`}
+          element={<PrivateElement element={<TemplateFormPage />} />}
         />
         <Route
           path={`${ADMINFORM_ROUTE}/:formId`}

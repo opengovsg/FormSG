@@ -1,29 +1,59 @@
 import { BiShow } from 'react-icons/bi'
 import { Link as ReactLink } from 'react-router-dom'
-import { Flex, Icon, Text } from '@chakra-ui/react'
+import { Flex, Icon, Stack, Text } from '@chakra-ui/react'
 
-import { ADMINFORM_ROUTE } from '~constants/routes'
+import { ADMINFORM_ROUTE, DASHBOARD_ROUTE } from '~constants/routes'
 import Button from '~components/Button'
+import Link from '~components/Link'
 
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
-export const PreviewFormBanner = (): JSX.Element => {
+interface PreviewFormBannerProps {
+  isTemplate?: boolean
+}
+
+export const PreviewFormBanner = ({
+  isTemplate,
+}: PreviewFormBannerProps): JSX.Element => {
   const { formId } = usePublicFormContext()
 
   return (
-    <Flex bg="primary.100" py="1rem" px="2rem" display="flex" width="100%">
+    <Flex
+      bg="primary.100"
+      py="1rem"
+      px="2rem"
+      display="flex"
+      width="100%"
+      // position="fixed"
+    >
       <Flex align="center" flex={1} justify="space-between" flexDir="row">
         <Flex align="center">
           <Icon aria-hidden as={BiShow} fontSize="1rem" mr="0.75rem" />
           <Text textStyle="subhead-3">Form Preview</Text>
         </Flex>
-        <Button
-          aria-label="Click to edit the form"
-          as={ReactLink}
-          to={`${ADMINFORM_ROUTE}/${formId}`}
-        >
-          Edit form
-        </Button>
+        {isTemplate ? (
+          <Stack spacing="1rem" direction="row">
+            <Link
+              variant="standalone"
+              aria-label="Click to return to the admin dashboard"
+              as={ReactLink}
+              to={DASHBOARD_ROUTE}
+            >
+              Back to FormSG
+            </Link>
+            <Button aria-label="Click to use this template">
+              Use this template
+            </Button>
+          </Stack>
+        ) : (
+          <Button
+            aria-label="Click to edit the form"
+            as={ReactLink}
+            to={`${ADMINFORM_ROUTE}/${formId}`}
+          >
+            Edit form
+          </Button>
+        )}
       </Flex>
     </Flex>
   )
