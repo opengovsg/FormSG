@@ -30,7 +30,7 @@ export const TemplateFormPage = (): JSX.Element => {
         <SwitchEnvIcon />
         <FormSectionsProvider>
           <PublicFormLogo />
-          <FormStartPage />
+          <FormStartPage isTemplate />
           <PublicFormWrapper isPreview>
             <FormInstructions />
             <FormFields />

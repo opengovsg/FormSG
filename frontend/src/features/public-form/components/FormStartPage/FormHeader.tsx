@@ -27,7 +27,7 @@ export type MiniHeaderProps = Pick<
   | 'miniHeaderRef'
   | 'onMobileDrawerOpen'
   | 'colorScheme'
-> & { isOpen: boolean }
+> & { isOpen: boolean; isTemplate?: boolean }
 
 export const MiniHeader = ({
   title,
@@ -38,6 +38,7 @@ export const MiniHeader = ({
   onMobileDrawerOpen,
   colorScheme,
   isOpen,
+  isTemplate,
 }: MiniHeaderProps): JSX.Element => (
   <Portal>
     <Slide
@@ -49,6 +50,7 @@ export const MiniHeader = ({
     >
       <Box
         bg={titleBg}
+        mt={isTemplate ? '4.75rem' : '0'}
         px={{ base: '1.5rem', md: '2rem' }}
         py={{ base: '0.5rem', md: '1rem' }}
       >
@@ -104,6 +106,7 @@ interface FormHeaderProps {
   loggedInId?: string
   showMiniHeader?: boolean
   activeSectionId?: string
+  isTemplate?: boolean
   miniHeaderRef?: RefObject<HTMLDivElement>
   onMobileDrawerOpen?: () => void
   handleLogout?: () => void
@@ -120,6 +123,7 @@ export const FormHeader = ({
   showMiniHeader,
   activeSectionId,
   miniHeaderRef,
+  isTemplate,
   onMobileDrawerOpen,
   handleLogout,
 }: FormHeaderProps): JSX.Element | null => {
@@ -152,6 +156,7 @@ export const FormHeader = ({
           miniHeaderRef={miniHeaderRef}
           onMobileDrawerOpen={onMobileDrawerOpen}
           isOpen={isOpen}
+          isTemplate={isTemplate}
         />
       ) : null}
       <Flex
