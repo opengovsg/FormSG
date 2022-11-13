@@ -53,6 +53,7 @@ ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
 RUN echo @edge http://nl.alpinelinux.org/alpine/edge/testing >> /etc/apk/repositories && apk add wqy-zenhei@edge
 
 COPY package*.json ./
+COPY shared/package*.json ./shared/
 # --legacy-peer-deps flag
 # A breaking change in the peer dependency resolution strategy was introduced in
 # npm 7. This resulted in npm throwing an error when installing packages:
