@@ -26,6 +26,7 @@ RUN npm config set unsafe-perm true
 # * https://stackoverflow.com/questions/66239691/what-does-npm-install-legacy-peer-deps-do-exactly-when-is-it-recommended-wh
 # NOTE: This flag is used again later in the build process when calling npm prune.
 RUN npm ci --legacy-peer-deps
+RUN npm run postinstall:frontend
 
 COPY . ./
 

@@ -39,7 +39,7 @@ Notable features include:
 - (Singapore government agencies only) Citizen authentication with [SingPass](https://www.singpass.gov.sg/singpass/common/aboutus)
 - (Singapore government agencies only) Corporate authentication with [CorpPass](https://www.corppass.gov.sg/corppass/common/aboutus)
 - (Singapore government agencies only) Automatic prefill of verified data with [MyInfo](https://www.singpass.gov.sg/myinfo/common/aboutus)
-- Webhooks functionality via the official [FormSG JavaScript SDK](https://github.com/opengovsg/formsg-sdk) and contributor-supported [FormSG Ruby SDK](<https://github.com/opengovsg/formsg-ruby-sdk>)
+- Webhooks functionality via the official [FormSG JavaScript SDK](https://github.com/opengovsg/formsg-sdk) and contributor-supported [FormSG Ruby SDK](https://github.com/opengovsg/formsg-ruby-sdk)
 
 The current product roadmap includes:
 
@@ -57,11 +57,7 @@ Install [docker and docker-compose](https://docs.docker.com/get-docker/).
 
 ### First Setup
 
-Run the following shell command to install relevant npm packages.
-
-```bash
-npm install
-```
+Run `npm install` in both root and frontend directory to install relevant npm packages.
 
 If you are on Mac OS X, you may want to allow Docker to use more RAM (minimum of 4GB) by clicking on the Docker icon on the toolbar, clicking on the "Preferences" menu item, then clicking on the "Resources" link on the left.
 
