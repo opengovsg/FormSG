@@ -23,7 +23,7 @@ export const useDupeFormWizardContext = (
 
   const { data: previewFormData, isLoading: isPreviewFormLoading } =
     usePreviewForm(
-      formId ?? '',
+      formId,
       // Stop querying once submissionData is present.
       /* enabled= */ !!formId,
     )
