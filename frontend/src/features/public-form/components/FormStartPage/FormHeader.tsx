@@ -5,7 +5,6 @@ import {
   Box,
   Flex,
   Icon,
-  Portal,
   Skeleton,
   Slide,
   Text,
@@ -40,7 +39,6 @@ export const MiniHeader = ({
   isOpen,
   isTemplate,
 }: MiniHeaderProps): JSX.Element => (
-  // <Portal>
   <Slide
     // Screen readers do not need to know of the existence of this component.
     aria-hidden
@@ -94,7 +92,6 @@ export const MiniHeader = ({
       </Skeleton>
     </Box>
   </Slide>
-  // </Portal>
 )
 
 interface FormHeaderProps {
