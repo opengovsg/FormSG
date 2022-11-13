@@ -1,10 +1,16 @@
-import { useCallback } from 'react'
-import { BiShow } from 'react-icons/bi'
+import { useCallback, useMemo } from 'react'
+import { BiArrowBack, BiDotsHorizontalRounded, BiShow } from 'react-icons/bi'
 import { Link as ReactLink } from 'react-router-dom'
 import { Waypoint } from 'react-waypoint'
 import {
+  Divider,
+  Drawer,
+  DrawerBody,
+  DrawerContent,
+  DrawerOverlay,
   Flex,
   Icon,
+  IconButton,
   Portal,
   Slide,
   Stack,
@@ -13,7 +19,7 @@ import {
 } from '@chakra-ui/react'
 
 import { ADMINFORM_ROUTE, DASHBOARD_ROUTE } from '~constants/routes'
-import Button from '~components/Button'
+import Button, { ButtonProps } from '~components/Button'
 import Link from '~components/Link'
 
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
@@ -38,7 +44,27 @@ export const PreviewFormBanner = ({
   isTemplate,
 }: PreviewFormBannerProps): JSX.Element => {
   const { formId } = usePublicFormContext()
-  const { isOpen, onOpen, onClose } = useDisclosure()
+  const {
+    isOpen: isModalOpen,
+    onOpen: onModalOpen,
+    onClose: onModalClose,
+  } = useDisclosure()
+  const {
+    isOpen: isDrawerOpen,
+    onOpen: onDrawerOpen,
+    onClose: onDrawerClose,
+  } = useDisclosure()
+  const mobileDrawerButtonProps: Partial<ButtonProps> = useMemo(
+    () => ({
+      isFullWidth: true,
+      iconSpacing: '1rem',
+      justifyContent: 'flex-start',
+      variant: 'clear',
+      colorScheme: 'secondary',
+      textStyle: 'body-1',
+    }),
+    [],
+  )
   return (
     <>
       <Flex bg="primary.100" py="1rem" px="2rem" display="flex" width="100%">
@@ -48,19 +74,36 @@ export const PreviewFormBanner = ({
             <Text textStyle="subhead-3">Template Preview</Text>
           </Flex>
           {isTemplate ? (
-            <Stack spacing="1rem" direction="row">
-              <Link
-                variant="standalone"
-                aria-label="Click to return to the admin dashboard"
-                as={ReactLink}
-                to={DASHBOARD_ROUTE}
+            <>
+              <Stack
+                spacing="1rem"
+                direction="row"
+                d={{ base: 'none', md: 'flex' }}
               >
-                Back to FormSG
-              </Link>
-              <Button aria-label="Click to use this template" onClick={onOpen}>
-                Use this template
-              </Button>
-            </Stack>
+                <Link
+                  variant="standalone"
+                  aria-label="Click to return to the admin dashboard"
+                  as={ReactLink}
+                  to={DASHBOARD_ROUTE}
+                >
+                  Back to FormSG
+                </Link>
+                <Button
+                  aria-label="Click to use this template"
+                  onClick={onModalOpen}
+                >
+                  Use this template
+                </Button>
+              </Stack>
+              <IconButton
+                color="primary.500"
+                variant="clear"
+                display={{ base: 'flex', md: 'none' }}
+                aria-label="Template preview actions"
+                onClick={onDrawerOpen}
+                icon={<BiDotsHorizontalRounded />}
+              />
+            </>
           ) : (
             <Button
               aria-label="Click to edit the form"
@@ -74,9 +117,36 @@ export const PreviewFormBanner = ({
         <DuplicateFormModal
           formId={formId}
           isTemplate
-          isOpen={isOpen}
-          onClose={onClose}
+          isOpen={isModalOpen}
+          onClose={onModalClose}
         />
+        <Drawer
+          placement="bottom"
+          onClose={onDrawerClose}
+          isOpen={isDrawerOpen}
+        >
+          <DrawerOverlay />
+          <DrawerContent borderTopRadius="0.25rem">
+            <DrawerBody px={0} py="0.5rem">
+              <Button
+                onClick={onModalOpen}
+                isFullWidth={true}
+                {...mobileDrawerButtonProps}
+              >
+                Use this template
+              </Button>
+              <Divider />
+              <Button
+                as={ReactLink}
+                to={DASHBOARD_ROUTE}
+                leftIcon={<BiArrowBack fontSize="1.25rem" />}
+                {...mobileDrawerButtonProps}
+              >
+                Back to FormSG
+              </Button>
+            </DrawerBody>
+          </DrawerContent>
+        </Drawer>
       </Flex>
     </>
   )
