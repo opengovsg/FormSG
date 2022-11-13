@@ -175,8 +175,9 @@ export class MailService {
           error,
         })
 
+        const respCode: number | undefined = get(error, 'responseCode')
         // Retry only on 4xx errors.
-        if (inRange(get(error, 'responseCode', 0), 400, 500)) {
+        if (!!respCode && inRange(respCode, 400, 500)) {
           return retry(error)
         }
 

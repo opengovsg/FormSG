@@ -35,7 +35,6 @@ export const GUIDE_PREFILL = 'https://go.gov.sg/formsg-guide-prefills'
 export const ACCEPTED_FILETYPES_SPREADSHEET = 'https://go.gov.sg/formsg-cwl'
 
 export const APP_FOOTER_LINKS = [
-  { label: 'Contact us', href: CONTACT_US },
   { label: 'Guide', href: FORM_GUIDE },
   { label: 'Privacy', href: PRIVACY_POLICY_ROUTE },
   { label: 'Terms of use', href: TOU_ROUTE },

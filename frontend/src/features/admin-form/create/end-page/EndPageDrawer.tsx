@@ -74,7 +74,7 @@ export const EndPageInput = (): JSX.Element => {
 
   const {
     register,
-    formState: { errors, isDirty },
+    formState: { errors, dirtyFields },
     control,
     handleSubmit,
   } = useForm<FormEndPage>({
@@ -84,12 +84,12 @@ export const EndPageInput = (): JSX.Element => {
 
   // Update dirty state of builder so confirmation modal can be shown
   useEffect(() => {
-    setIsDirty(isDirty)
+    setIsDirty(Object.keys(dirtyFields).length !== 0)
 
     return () => {
       setIsDirty(false)
     }
-  }, [isDirty, setIsDirty])
+  }, [dirtyFields, setIsDirty])
 
   const handleEndPageBuilderChanges = useCallback(
     (endPageInputs) => {
