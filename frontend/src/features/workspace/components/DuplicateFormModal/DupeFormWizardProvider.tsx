@@ -14,17 +14,18 @@ import {
   CreateFormWizardContextReturn,
 } from '../CreateFormModal/CreateFormWizardContext'
 import { useCommonFormWizardProvider } from '../CreateFormModal/CreateFormWizardProvider'
-import { useWorkspaceRowsContext } from '../WorkspaceFormRow/WorkspaceRowsContext'
 
-export const useDupeFormWizardContext = (): CreateFormWizardContextReturn => {
+export const useDupeFormWizardContext = (
+  formId: string,
+  isTemplate: boolean,
+): CreateFormWizardContextReturn => {
   const { data: dashboardForms, isLoading: isWorkspaceLoading } = useWorkspace()
-  const { activeFormMeta } = useWorkspaceRowsContext()
 
   const { data: previewFormData, isLoading: isPreviewFormLoading } =
     usePreviewForm(
-      activeFormMeta?._id ?? '',
+      formId ?? '',
       // Stop querying once submissionData is present.
-      /* enabled= */ !!activeFormMeta,
+      /* enabled= */ !!formId,
     )
 
   const containsMyInfoFields = useMemo(
@@ -53,7 +54,12 @@ export const useDupeFormWizardContext = (): CreateFormWizardContextReturn => {
       responseMode: containsMyInfoFields
         ? FormResponseMode.Email
         : FormResponseMode.Encrypt,
-      title: makeDuplicateFormTitle(previewFormData.form.title, dashboardForms),
+      title: makeDuplicateFormTitle(
+        isTemplate
+          ? `Template_${previewFormData.form.title}`
+          : previewFormData.form.title,
+        dashboardForms,
+      ),
     })
   }, [
     reset,
@@ -63,6 +69,7 @@ export const useDupeFormWizardContext = (): CreateFormWizardContextReturn => {
     isWorkspaceLoading,
     dashboardForms,
     containsMyInfoFields,
+    isTemplate,
   ])
 
   const { handleSubmit } = formMethods
@@ -72,11 +79,10 @@ export const useDupeFormWizardContext = (): CreateFormWizardContextReturn => {
 
   const handleCreateStorageModeForm = handleSubmit(
     ({ title, responseMode }) => {
-      if (responseMode !== FormResponseMode.Encrypt || !activeFormMeta?._id)
-        return
+      if (responseMode !== FormResponseMode.Encrypt || !formId) return
 
       return dupeStorageModeFormMutation.mutate({
-        formIdToDuplicate: activeFormMeta._id,
+        formIdToDuplicate: formId,
         title,
         responseMode,
         publicKey: keypair.publicKey,
@@ -85,10 +91,10 @@ export const useDupeFormWizardContext = (): CreateFormWizardContextReturn => {
   )
 
   const handleDetailsSubmit = handleSubmit((inputs) => {
-    if (!activeFormMeta?._id) return
+    if (!formId) return
     if (inputs.responseMode === FormResponseMode.Email) {
       return dupeEmailModeFormMutation.mutate({
-        formIdToDuplicate: activeFormMeta._id,
+        formIdToDuplicate: formId,
         emails: inputs.emails.filter(Boolean),
         title: inputs.title,
         responseMode: inputs.responseMode,
@@ -118,12 +124,18 @@ export const useDupeFormWizardContext = (): CreateFormWizardContextReturn => {
   }
 }
 
-export const DupeFormWizardProvider = ({
-  children,
-}: {
+interface DupeFormWizardProviderProps {
+  formId: string
+  isTemplate?: boolean
   children: React.ReactNode
-}): JSX.Element => {
-  const values = useDupeFormWizardContext()
+}
+
+export const DupeFormWizardProvider = ({
+  formId,
+  isTemplate,
+  children,
+}: DupeFormWizardProviderProps): JSX.Element => {
+  const values = useDupeFormWizardContext(formId, !!isTemplate)
   return (
     <CreateFormWizardContext.Provider value={values}>
       {children}

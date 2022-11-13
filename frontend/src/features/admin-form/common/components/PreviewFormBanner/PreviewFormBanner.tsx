@@ -1,12 +1,13 @@
 import { BiShow } from 'react-icons/bi'
 import { Link as ReactLink } from 'react-router-dom'
-import { Flex, Icon, Stack, Text } from '@chakra-ui/react'
+import { Flex, Icon, Stack, Text, useDisclosure } from '@chakra-ui/react'
 
 import { ADMINFORM_ROUTE, DASHBOARD_ROUTE } from '~constants/routes'
 import Button from '~components/Button'
 import Link from '~components/Link'
 
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
+import { DuplicateFormModal } from '~features/workspace/components/DuplicateFormModal'
 
 interface PreviewFormBannerProps {
   isTemplate?: boolean
@@ -16,7 +17,7 @@ export const PreviewFormBanner = ({
   isTemplate,
 }: PreviewFormBannerProps): JSX.Element => {
   const { formId } = usePublicFormContext()
-
+  const { isOpen, onOpen, onClose } = useDisclosure()
   return (
     <Flex
       bg="primary.100"
@@ -41,7 +42,7 @@ export const PreviewFormBanner = ({
             >
               Back to FormSG
             </Link>
-            <Button aria-label="Click to use this template">
+            <Button aria-label="Click to use this template" onClick={onOpen}>
               Use this template
             </Button>
           </Stack>
@@ -55,6 +56,12 @@ export const PreviewFormBanner = ({
           </Button>
         )}
       </Flex>
+      <DuplicateFormModal
+        formId={formId}
+        isTemplate
+        isOpen={isOpen}
+        onClose={onClose}
+      />
     </Flex>
   )
 }
