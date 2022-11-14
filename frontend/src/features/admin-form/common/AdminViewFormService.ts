@@ -69,6 +69,33 @@ export const previewForm = async (
     .then(transformAllIsoStringsToDate)
 }
 
+/**
+ * Gets the public view of a form. Used for viewing the form from the form template page.
+ * Must be an admin.
+ * @param formId formId of form in question
+ * @returns Public view of a form
+ */
+export const viewFormTemplate = async (
+  formId: string,
+): Promise<PreviewFormViewDto> => {
+  return ApiService.get<PreviewFormViewDto>(`${formId}/use-template`)
+    .then(({ data }) => {
+      // Add default mock authenticated state if previewing an authenticatable form
+      // and if server has not already sent back a mock authenticated state.
+      if (data.form.authType !== FormAuthType.NIL && !data.spcpSession) {
+        data.spcpSession = { userName: PREVIEW_MOCK_UINFIN }
+      }
+
+      // Inject MyInfo preview values into form fields (if they are MyInfo fields).
+      data.form.form_fields = data.form.form_fields.map(
+        augmentWithMyInfoDisplayValue,
+      )
+
+      return data
+    })
+    .then(transformAllIsoStringsToDate)
+}
+
 export const getFreeSmsQuota = async (formId: string) => {
   return ApiService.get<SmsCountsDto>(
     `${ADMIN_FORM_ENDPOINT}/${formId}/verified-sms/count/free`,
