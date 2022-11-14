@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+  xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+  <url>
+    <loc>https://form.gov.sg/</loc>
+    <priority>1.0</priority>
+    <image:image>
+       <image:loc>
+         https://form.gov.sg/static/images/landing/restricted__build-demo.png
+       </image:loc>
+       <image:caption>Build government forms in minutes</image:caption>
+    </image:image>
+    <image:image>
+       <image:loc>
+         https://form.gov.sg/static/images/landing/restricted__feature3.png
+       </image:loc>
+       <image:caption>Integrated with government systems</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://go.gov.sg/form-guide</loc>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://form.gov.sg/login</loc>
+    <priority>1.0</priority>
+  </url>
+</urlset>

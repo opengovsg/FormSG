@@ -1,16 +1,31 @@
-import { BiPlus } from 'react-icons/bi'
-import { Skeleton, Stack, Text } from '@chakra-ui/react'
+import { useCallback, useMemo } from 'react'
+import { BiCheck, BiFilter, BiPlus } from 'react-icons/bi'
+import {
+  Avatar,
+  Box,
+  ButtonGroup,
+  Drawer,
+  DrawerBody,
+  DrawerContent,
+  DrawerOverlay,
+  Grid,
+  Icon,
+  MenuButton,
+  Skeleton,
+  Stack,
+  Text,
+  useDisclosure,
+} from '@chakra-ui/react'
 
 import { useIsMobile } from '~hooks/useIsMobile'
-import Button from '~components/Button'
+import Button, { ButtonProps } from '~components/Button'
+import IconButton from '~components/IconButton'
+import Menu from '~components/Menu'
+
+import { FilterOption } from '~features/workspace/types'
+import { useWorkspaceContext } from '~features/workspace/WorkspaceContext'
 
 export interface WorkspaceHeaderProps {
-  /**
-   * Number of forms in the workspace.
-   * Defaults to '---' (to account for loading or error states)
-   */
-  totalFormCount?: number | '---'
-  isLoading: boolean
   handleOpenCreateFormModal: () => void
 }
 
@@ -18,43 +33,178 @@ export interface WorkspaceHeaderProps {
  * Header for listing number of forms, or updating the sort order of listed forms, etc.
  */
 export const WorkspaceHeader = ({
-  totalFormCount = '---',
-  isLoading,
   handleOpenCreateFormModal,
 }: WorkspaceHeaderProps): JSX.Element => {
   const isMobile = useIsMobile()
+  const {
+    isLoading,
+    totalFormsCount,
+    displayedFormsCount,
+    activeFilter,
+    setActiveFilter,
+  } = useWorkspaceContext()
+  const { isOpen, onClose, onOpen } = useDisclosure()
+
+  const mobileDrawerExtraButtonProps: Partial<ButtonProps> = useMemo(
+    () => ({
+      isFullWidth: true,
+      justifyContent: 'flex-start',
+      variant: 'clear',
+      colorScheme: 'secondary',
+      textStyle: 'body-1',
+    }),
+    [],
+  )
+
+  const handleSetActiveFilterFromDrawer = useCallback(
+    (filterOption: FilterOption | null) => {
+      setActiveFilter(filterOption)
+      onClose()
+    },
+    [onClose, setActiveFilter],
+  )
+
+  const renderFilterButton = useCallback(
+    (filterOption: FilterOption | null) => {
+      return (
+        <Stack
+          direction="row"
+          justify="space-between"
+          alignItems="center"
+          w="100%"
+        >
+          <Text>{filterOption ?? 'All forms'}</Text>
+          {activeFilter === filterOption ? <BiCheck /> : null}
+        </Stack>
+      )
+    },
+    [activeFilter],
+  )
+
+  const headerStyle = useMemo(
+    () => (isMobile && activeFilter != null ? 'h3' : 'h2'),
+    [activeFilter, isMobile],
+  )
 
   return (
-    <Stack
-      justify="space-between"
-      direction={{ base: 'column', md: 'row' }}
-      align={{ base: 'flex-start', md: 'center' }}
-      spacing="1rem"
+    <Grid
+      gridTemplateAreas={{
+        base: "'header filter' 'create create'",
+        md: "'header filter create'",
+      }}
+      gridTemplateColumns={{ base: '1fr auto', md: '1fr auto auto' }}
+      gap="1rem"
     >
       <Text
+        gridArea="header"
         flex={1}
-        as="h2"
-        textStyle="h2"
+        as={headerStyle}
+        textStyle={headerStyle}
         display="flex"
         color="secondary.500"
+        alignSelf="center"
       >
-        All forms (<Skeleton isLoaded={!isLoading}>{totalFormCount}</Skeleton>)
+        {activeFilter ? (
+          <>
+            Showing&nbsp;
+            <Skeleton isLoaded={!isLoading}>{displayedFormsCount}</Skeleton>
+            &nbsp;of&nbsp;
+          </>
+        ) : (
+          'All forms ('
+        )}
+        <Skeleton isLoaded={!isLoading}>{totalFormsCount ?? '---'}</Skeleton>
+        {activeFilter ? <>&nbsp;forms</> : ')'}
       </Text>
-      <Stack
-        w={{ base: '100%', md: 'auto' }}
-        spacing="1rem"
-        direction={{ base: 'column', md: 'row' }}
-        h="fit-content"
+      <Box gridArea="filter">
+        {isMobile ? (
+          <>
+            <IconButton
+              aria-label="Filter forms"
+              variant="clear"
+              colorScheme="secondary"
+              backgroundColor={activeFilter ? 'neutral.200' : undefined}
+              onClick={onOpen}
+              icon={<BiFilter />}
+            />
+            {activeFilter && (
+              <Icon
+                as={Avatar}
+                size="md"
+                bg="primary.500"
+                name="1"
+                textColor="white"
+                fontSize="1.2rem"
+                m="-0.6rem"
+              />
+            )}
+          </>
+        ) : (
+          <Menu placement="bottom-end">
+            {({ isOpen }) => (
+              <>
+                <MenuButton
+                  as={Button}
+                  variant="clear"
+                  colorScheme="secondary"
+                  isActive={isOpen}
+                  aria-label="Filter forms"
+                  leftIcon={<BiFilter />}
+                >
+                  Filter
+                  {activeFilter ? `: ${activeFilter}` : ''}
+                </MenuButton>
+                <Menu.List>
+                  <Menu.Item onClick={() => setActiveFilter(null)}>
+                    {renderFilterButton(null)}
+                  </Menu.Item>
+                  {Object.values(FilterOption).map((filterOption) => (
+                    <Menu.Item onClick={() => setActiveFilter(filterOption)}>
+                      {renderFilterButton(filterOption)}
+                    </Menu.Item>
+                  ))}
+                </Menu.List>
+              </>
+            )}
+          </Menu>
+        )}
+      </Box>
+
+      <Button
+        gridArea="create"
+        isFullWidth={isMobile}
+        isDisabled={isLoading}
+        onClick={handleOpenCreateFormModal}
+        leftIcon={<BiPlus fontSize="1.5rem" />}
       >
-        <Button
-          isFullWidth={isMobile}
-          isDisabled={isLoading}
-          onClick={handleOpenCreateFormModal}
-          leftIcon={<BiPlus fontSize="1.5rem" />}
-        >
-          Create form
-        </Button>
-      </Stack>
-    </Stack>
+        Create form
+      </Button>
+
+      <Drawer placement="bottom" onClose={onClose} isOpen={isOpen}>
+        <DrawerOverlay />
+        <DrawerContent borderTopRadius="0.25rem">
+          <DrawerBody px={0} py="0.5rem">
+            <ButtonGroup flexDir="column" spacing={0} w="100%">
+              <Button
+                key={0}
+                {...mobileDrawerExtraButtonProps}
+                onClick={() => handleSetActiveFilterFromDrawer(null)}
+              >
+                {renderFilterButton(null)}
+              </Button>
+              {Object.values(FilterOption).map((filterOption, idx) => (
+                <Button
+                  key={idx + 1}
+                  {...mobileDrawerExtraButtonProps}
+                  onClick={() => handleSetActiveFilterFromDrawer(filterOption)}
+                >
+                  {renderFilterButton(filterOption)}
+                </Button>
+              ))}
+            </ButtonGroup>
+          </DrawerBody>
+        </DrawerContent>
+      </Drawer>
+    </Grid>
   )
 }

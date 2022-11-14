@@ -67,7 +67,7 @@ const transformToSingleAnswerOutput = <F extends FormFieldDto>(
 ): SingleAnswerOutput<F> => {
   return {
     ...pickBaseOutputFromSchema(schema),
-    answer: input ?? '',
+    answer: input?.trim() ?? '',
   }
 }
 
@@ -105,7 +105,9 @@ const transformToTableOutput = (
   const orderedColumnIds = schema.columns.map((col) => col._id)
   const answerArray = populatedInput.map(
     (rowResponse) =>
-      orderedColumnIds.map((colId) => rowResponse[colId] ?? '') as TableRow,
+      orderedColumnIds.map(
+        (colId) => rowResponse[colId]?.trim() ?? '',
+      ) as TableRow,
   )
   return {
     ...pickBaseOutputFromSchema(schema),

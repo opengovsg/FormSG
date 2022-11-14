@@ -50,6 +50,7 @@ export const EmailFieldInput = ({
               ? handleInputChange(onChange)(value)
               : onChange({ value })
           }}
+          preventDefaultOnEnter
           {...field}
           {...inputProps}
         />

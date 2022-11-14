@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import {
   forwardRef,
   Icon,
@@ -20,6 +21,10 @@ export interface InputProps extends ChakraInputProps {
    * Whether the input is in a success state.
    */
   isSuccess?: boolean
+  /**
+   * Whether to prevent default on user pressing the 'Enter' key.
+   */
+  preventDefaultOnEnter?: boolean
 }
 
 export const Input = forwardRef<InputProps, 'input'>((props, ref) => {
@@ -27,13 +32,33 @@ export const Input = forwardRef<InputProps, 'input'>((props, ref) => {
 
   // Omit extra props so they will not be passed into the DOM and trigger
   // React warnings.
-  const inputProps = omit(props, ['isSuccess', 'isPrefilled'])
+  const inputProps = omit(props, [
+    'isSuccess',
+    'isPrefilled',
+    'preventDefaultOnEnter',
+  ])
+
+  const preventDefault = useMemo(
+    () =>
+      // This flag should be set for form input fields, to prevent refresh on enter if form only has one input
+      props.preventDefaultOnEnter
+        ? {
+            onKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => {
+              if (e.key === 'Enter') {
+                e.preventDefault()
+              }
+            },
+          }
+        : {},
+    [props.preventDefaultOnEnter],
+  )
 
   // Return normal input component if not success state.
   if (!props.isSuccess) {
     return (
       <ChakraInput
         ref={ref}
+        {...preventDefault}
         {...inputProps}
         sx={props.sx ?? inputStyles.field}
       />
@@ -46,6 +71,7 @@ export const Input = forwardRef<InputProps, 'input'>((props, ref) => {
     <InputGroup>
       <ChakraInput
         ref={ref}
+        {...preventDefault}
         {...inputProps}
         sx={props.sx ?? inputStyles.field}
       />

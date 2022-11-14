@@ -5,8 +5,9 @@ import pickBy from 'lodash/pickBy'
 import { LogicType } from '~shared/types'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
-import { augmentWithQuestionNo } from '~features/form/utils/augmentWithQuestionNo'
+import { augmentWithQuestionNo } from '~features/form/utils'
 import { ALLOWED_LOGIC_FIELDS } from '~features/logic/constants'
+import { augmentWithMyInfo } from '~features/myinfo/utils'
 
 export const useAdminFormLogic = () => {
   const { data: form, isLoading } = useAdminForm()
@@ -14,7 +15,9 @@ export const useAdminFormLogic = () => {
   const mapIdToField = useMemo(() => {
     if (!form) return null
 
-    const augmentedFormFields = augmentWithQuestionNo(form.form_fields)
+    const augmentedFormFields = augmentWithQuestionNo(
+      form.form_fields.map(augmentWithMyInfo),
+    )
     return keyBy(augmentedFormFields, '_id')
   }, [form])
 

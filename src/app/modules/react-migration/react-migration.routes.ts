@@ -7,7 +7,7 @@ export const ReactMigrationRouter = Router()
 
 ReactMigrationRouter.get(
   '/:formId([a-fA-F0-9]{24})',
-  ReactMigrationController.serveForm,
+  ReactMigrationController.servePublicForm,
 )
 
 ReactMigrationRouter.get('/#!/:formId([a-fA-F0-9]{24})', (req, res) => {

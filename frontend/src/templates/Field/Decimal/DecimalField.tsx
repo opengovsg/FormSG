@@ -34,6 +34,7 @@ export const DecimalField = ({ schema }: DecimalFieldProps): JSX.Element => {
             inputMode="decimal"
             aria-label={schema.title}
             allowMouseWheel
+            preventDefaultOnEnter
             {...field}
           />
         )}
