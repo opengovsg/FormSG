@@ -25,4 +25,7 @@ class MemoryDatabaseServer {
   }
 }
 
-module.exports = new MemoryDatabaseServer()
+const db = new MemoryDatabaseServer()
+db.start()
+
+module.exports = db
