@@ -466,7 +466,7 @@ export const prodOnlyVarsSchema: Schema<IProdOnlyVarsSchema> = {
   // Remove this when SES migration is over (opengovsg/formsg-private#130)
   nodemailer_sg_warmup_start_date: {
     doc: 'Date where SG nodemailer client will start sending emails',
-    format: 'string',
+    format: String,
     default: '',
     env: 'NODEMAILER_SG_WARMUP_START_DATE',
   },
