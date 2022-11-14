@@ -24,7 +24,7 @@
     ]
   },
   "scripts": {
-    "postinstall": "npm run postinstall:shared",
+    "postinstall": "npm run postinstall:frontend && npm run postinstall:shared",
     "test:backend": "env-cmd -f tests/.test-env jest --coverage --maxWorkers=4",
     "test:backend:watch": "env-cmd -f tests/.test-env jest --watch",
     "test:frontend": "npm --prefix frontend test",
