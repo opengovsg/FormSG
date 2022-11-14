@@ -71,7 +71,9 @@ export const PreviewFormBanner = ({
         <Flex align="center" flex={1} justify="space-between" flexDir="row">
           <Flex align="center">
             <Icon aria-hidden as={BiShow} fontSize="1rem" mr="0.75rem" />
-            <Text textStyle="subhead-3">Template Preview</Text>
+            <Text textStyle="subhead-3">
+              {isTemplate ? 'Template Preview' : 'Form Preview'}
+            </Text>
           </Flex>
           {isTemplate ? (
             <>

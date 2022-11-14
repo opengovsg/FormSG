@@ -17,7 +17,11 @@ import {
 } from '@chakra-ui/react'
 import dedent from 'dedent'
 
-import { ADMINFORM_ROUTE, ADMINFORM_SETTINGS_SUBROUTE } from '~constants/routes'
+import {
+  ADMINFORM_ROUTE,
+  ADMINFORM_SETTINGS_SUBROUTE,
+  PUBLICFORM_USETEMPLATE_ROUTE,
+} from '~constants/routes'
 import Button from '~components/Button'
 import FormLabel from '~components/FormControl/FormLabel'
 import IconButton from '~components/IconButton'
@@ -162,9 +166,7 @@ export const ShareFormModal = ({
               </Skeleton>
             </FormControl>
             <FormControl isReadOnly>
-              <FormLabel isRequired useMarkdownForDescription>
-                Share template
-              </FormLabel>
+              <FormLabel isRequired>Share template</FormLabel>
               <Skeleton isLoaded={!!formId}>
                 <InputGroup>
                   <Input
@@ -178,8 +180,8 @@ export const ShareFormModal = ({
                     <InputRightElement>
                       <CopyButton
                         colorScheme="secondary"
-                        stringToCopy={`${shareLink}/use-template`}
-                        aria-label="Copy use-template form link"
+                        stringToCopy={`${shareLink}/${PUBLICFORM_USETEMPLATE_ROUTE}`}
+                        aria-label="Copy link to use this form as a template"
                         isDisabled={isFormPrivate}
                       />
                     </InputRightElement>
