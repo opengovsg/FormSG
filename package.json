@@ -1,7 +1,7 @@
 {
   "name": "FormSG",
   "description": "Form Manager for Government",
-  "version": "6.16.0",
+  "version": "6.17.0",
   "homepage": "https://form.gov.sg",
   "authors": [
     "FormSG <formsg@data.gov.sg>"
@@ -62,7 +62,7 @@
     "postinstall:shared": "npm --prefix shared install"
   },
   "dependencies": {
-    "@aws-sdk/client-cloudwatch-logs": "^3.204.0",
+    "@aws-sdk/client-cloudwatch-logs": "^3.209.0",
     "@babel/runtime": "^7.20.1",
     "@joi/date": "^2.1.0",
     "@opengovsg/angular-daterangepicker-webpack": "^1.1.5",
@@ -91,7 +91,7 @@
     "angular-ui-bootstrap": "~2.5.6",
     "angular-ui-router": "~1.0.30",
     "aws-info": "^1.2.0",
-    "aws-sdk": "^2.1249.0",
+    "aws-sdk": "^2.1251.0",
     "axios": "^0.27.2",
     "bcrypt": "^5.1.0",
     "bluebird": "^3.5.2",
@@ -152,7 +152,7 @@
     "nocache": "^3.0.4",
     "node-cache": "^5.1.2",
     "nodemailer": "^6.8.0",
-    "openid-client": "^5.2.1",
+    "openid-client": "^5.3.0",
     "opossum": "^7.0.0",
     "p-queue": "^6.6.2",
     "promise-retry": "^2.0.1",

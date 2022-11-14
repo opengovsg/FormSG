@@ -52,7 +52,12 @@ ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
 # Chinese fonts
 RUN echo @edge http://nl.alpinelinux.org/alpine/edge/testing >> /etc/apk/repositories && apk add wqy-zenhei@edge
 
-COPY package*.json ./
+# Avoid using globs as there seems to be some inconsistency in the way dockerfile handles globs
+# * https://github.com/moby/moby/issues/15858 
+COPY package.json package-lock.json ./
+COPY shared/package.json shared/package-lock.json ./shared/
+COPY frontend/package.json frontend/package-lock.json ./frontend/
+
 # --legacy-peer-deps flag
 # A breaking change in the peer dependency resolution strategy was introduced in
 # npm 7. This resulted in npm throwing an error when installing packages:
