@@ -258,7 +258,7 @@ const config: Config = {
   aws: awsConfig,
   mail_us: mailConfig_us,
   mail_sg: mailConfig_sg,
-  nodemailer_client_threshold_sg: prodOnlyVars.nodemailer_client_threshold_sg,
+  nodemailer_sg_warmup_start_date: prodOnlyVars.nodemailer_sg_warmup_start_date,
   cookieSettings,
   isDev,
   nodeEnv,

@@ -65,6 +65,9 @@ const DEFAULT_RETRY_PARAMS: MailServiceParams['retryParams'] = {
 }
 
 // Delete references to US SES when SES migration is over (opengovsg/formsg-private#130)
+const START_TS = new Date(config.nodemailer_sg_warmup_start_date).getTime()
+const WARM_UP_DURATION = 6 * 7 * 24 * 60 * 60 * 1000 // 6 weeks
+
 export class MailService {
   /**
    * The application name to be shown in some sent emails' fields such as mail
@@ -164,8 +167,18 @@ export class MailService {
       })
 
       try {
-        const rand = Math.random() * 100
-        const sendMailFromSG = rand < config.nodemailer_client_threshold_sg
+        const getThreshold = () => {
+          const now = Date.now()
+          const elapsed = Math.max(
+            0,
+            Math.min(now - START_TS, WARM_UP_DURATION),
+          )
+          const linear = elapsed / WARM_UP_DURATION
+          return linear * linear
+        }
+        const rand = Math.random()
+        const threshold = getThreshold()
+        const sendMailFromSG = rand < threshold
         const info = await tracer.trace('nodemailer/sendMail', () => {
           const span = tracer.scope().active()
           if (span) span.setTag('ses.region', sendMailFromSG ? 'sg' : 'us')
@@ -177,8 +190,9 @@ export class MailService {
         const logNodemailerMeta = {
           action: 'Nodemailer evaluation done',
           sendMailFromSG: sendMailFromSG,
-          randAssignment: rand,
-          sendFromSGThreshold: config.nodemailer_client_threshold_sg,
+          mathRandom: rand,
+          threshold: threshold,
+          sendFromSGStartDate: START_TS,
         }
         logger.info({
           message: `Mail successfully sent on attempt ${attemptNum}`,

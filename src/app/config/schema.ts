@@ -464,11 +464,11 @@ export const prodOnlyVarsSchema: Schema<IProdOnlyVarsSchema> = {
     sensitive: true,
   },
   // Remove this when SES migration is over (opengovsg/formsg-private#130)
-  nodemailer_client_threshold_sg: {
-    doc: 'Percentage threshold to send mail from SG nodemailer client',
-    format: 'int',
-    default: 0,
-    env: 'NODEMAILER_THRESHOLD_SG',
+  nodemailer_sg_warmup_start_date: {
+    doc: 'Date where SG nodemailer client will start sending emails',
+    format: 'string',
+    default: '',
+    env: 'NODEMAILER_SG_WARMUP_START_DATE',
   },
 }
 
