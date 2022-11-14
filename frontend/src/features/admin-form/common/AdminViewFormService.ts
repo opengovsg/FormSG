@@ -78,7 +78,9 @@ export const previewForm = async (
 export const viewFormTemplate = async (
   formId: string,
 ): Promise<PreviewFormViewDto> => {
-  return ApiService.get<PreviewFormViewDto>(`${formId}/use-template`)
+  return ApiService.get<PreviewFormViewDto>(
+    `${ADMIN_FORM_ENDPOINT}/${formId}/use-template`,
+  )
     .then(({ data }) => {
       // Add default mock authenticated state if previewing an authenticatable form
       // and if server has not already sent back a mock authenticated state.
