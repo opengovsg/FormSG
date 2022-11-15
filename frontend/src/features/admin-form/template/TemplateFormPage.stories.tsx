@@ -1,9 +1,9 @@
 import { Meta, Story } from '@storybook/react'
 
 import {
-  getPreviewFormErrorResponse,
-  getPreviewFormResponse,
-} from '~/mocks/msw/handlers/admin-form/preview-form'
+  getTemplateFormErrorResponse,
+  getTemplateFormResponse,
+} from '~/mocks/msw/handlers/admin-form/template-form'
 import { envHandlers } from '~/mocks/msw/handlers/env'
 import {
   postGenerateVfnOtpResponse,
@@ -11,14 +11,14 @@ import {
   postVfnTransactionResponse,
 } from '~/mocks/msw/handlers/public-form'
 
-import { ADMINFORM_PREVIEW_ROUTE } from '~constants/routes'
+import { PUBLICFORM_USETEMPLATE_ROUTE } from '~constants/routes'
 import { getMobileViewParameters, StoryRouter } from '~utils/storybook'
 
 import TemplateFormPage from './TemplateFormPage'
 
 const DEFAULT_MSW_HANDLERS = [
   ...envHandlers,
-  getPreviewFormResponse(),
+  getTemplateFormResponse(),
   postVfnTransactionResponse(),
   postGenerateVfnOtpResponse(),
   postVerifyVfnOtpResponse(),
@@ -29,8 +29,8 @@ export default {
   component: TemplateFormPage,
   decorators: [
     StoryRouter({
-      initialEntries: ['/61540ece3d4a6e50ac0cc6ff/preview'],
-      path: `/:formId/${ADMINFORM_PREVIEW_ROUTE}`,
+      initialEntries: ['/61540ece3d4a6e50ac0cc6ff/use-template'],
+      path: `/:formId/${PUBLICFORM_USETEMPLATE_ROUTE}`,
     }),
   ],
   parameters: {
@@ -49,7 +49,7 @@ Mobile.parameters = getMobileViewParameters()
 
 export const FormNotFound = Template.bind({})
 FormNotFound.parameters = {
-  msw: [getPreviewFormErrorResponse()],
+  msw: [getTemplateFormErrorResponse()],
 }
 
 export const FormNotFoundMobile = Template.bind({})
