@@ -18,7 +18,6 @@ import { useTimeout } from '~hooks/useTimeout'
 import { HttpError } from '~services/ApiService'
 import { FormFieldValues } from '~templates/Field'
 
-import AdminForbiddenErrorPage from '~pages/AdminForbiddenError'
 import NotFoundErrorPage from '~pages/NotFoundError'
 
 import { usePreviewFormMutations } from '../common/mutations'
