@@ -29,6 +29,7 @@ const {
 const { types } = require('../../../dist/backend/shared/constants/field/basic')
 
 const { SPCPFieldTitle } = require('../../../dist/backend/src/types/field')
+const { MongoNetworkError } = require('mongodb')
 
 const NON_SUBMITTED_FIELDS = types
   .filter((field) => !field.submitted)
@@ -217,10 +218,27 @@ function spec(path) {
  * Connects to mongo-memory-server instance.
  */
 async function makeMongooseFixtures() {
-  const connection = await mongoose.createConnection(dbUri, {
-    reconnectTries: 5,
-    useNewUrlParser: true,
-  })
+  // Add console logging in order to track issue better. Tests tend to be flaky
+  // because connection to the local DB doesn't work sometimes, because the DB
+  // takes time to spin up.
+  let attempt = 0
+  let connection
+  console.warn('[makeMongooseFixtures] Connecting to local server DB...')
+  while (!connection) {
+    try {
+      connection = await mongoose.createConnection(dbUri, {
+        reconnectTries: 10,
+        useNewUrlParser: true,
+      })
+    } catch (e) {
+      if (e instanceof MongoNetworkError) {
+        console.warn(`[makeMongooseFixtures] Retrying: attempt ${attempt++}...`)
+      } else {
+        throw e
+      }
+    }
+  }
+  console.warn('[makeMongooseFixtures] Connected.')
   return connection
 }
 
