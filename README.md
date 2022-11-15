@@ -57,7 +57,7 @@ Install [docker and docker-compose](https://docs.docker.com/get-docker/).
 
 ### First Setup
 
-Run `npm install` in both root and frontend directory to install relevant npm packages.
+Run `npm install` in root directory to install relevant npm packages.
 
 If you are on Mac OS X, you may want to allow Docker to use more RAM (minimum of 4GB) by clicking on the Docker icon on the toolbar, clicking on the "Preferences" menu item, then clicking on the "Resources" link on the left.
 
@@ -144,8 +144,8 @@ The team uses macOS for development.
 
 Make you sure have the following node version & package manager on your machine:
 
-- `"node": ">=14.17.0"`
-- `"npm": ">=6.0.0"`
+- `"node": ">=18.12.1"`
+- `"npm": ">=8.19.2"`
 - `"mongo": ">=4.0.0"`
 
 Run
