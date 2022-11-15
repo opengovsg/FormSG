@@ -67,10 +67,21 @@ export const PreviewFormBanner = ({
   )
   return (
     <>
-      <Flex bg="primary.100" py="1rem" px="2rem" display="flex" width="100%">
+      <Flex
+        bg="primary.100"
+        py="1rem"
+        px={{ base: '1.5rem', md: '2rem' }}
+        display="flex"
+        width="100%"
+      >
         <Flex align="center" flex={1} justify="space-between" flexDir="row">
           <Flex align="center">
-            <Icon aria-hidden as={BiShow} fontSize="1rem" mr="0.75rem" />
+            <Icon
+              aria-hidden
+              as={BiShow}
+              fontSize="1.5rem"
+              mr={{ base: '0.5rem', md: '1rem' }}
+            />
             <Text textStyle="subhead-3">
               {isTemplate ? 'Template Preview' : 'Form Preview'}
             </Text>
@@ -150,6 +161,7 @@ export const PreviewFormBanner = ({
           </DrawerContent>
         </Drawer>
       </Flex>
+      <Divider />
     </>
   )
 }

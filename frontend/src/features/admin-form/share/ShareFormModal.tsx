@@ -122,7 +122,7 @@ export const ShareFormModal = ({
                   >
                     Settings
                   </Button>{' '}
-                  to allow new responses.
+                  to allow new responses or to share it as a template.
                 </Box>
               </InlineMessage>
             ) : null}
