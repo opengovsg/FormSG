@@ -382,7 +382,7 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
 }
 
 export const prodOnlyVarsSchema: Schema<IProdOnlyVarsSchema> = {
-  // Delete these env vars when SES migration is over (opengovsg/formsg-private#130)
+  // TODO #130 Delete these env vars when SES migration is over (opengovsg/formsg-private#130)
   port_us: {
     doc: 'SMTP port number',
     format: 'port',
@@ -437,7 +437,7 @@ export const prodOnlyVarsSchema: Schema<IProdOnlyVarsSchema> = {
     env: 'DB_HOST',
     sensitive: true,
   },
-  // Rename these env vars to without the _sg suffix when SES migration is over (opengovsg/formsg-private#130)
+  // TODO #130 Rename these env vars to without the _sg suffix when SES migration is over (opengovsg/formsg-private#130)
   port_sg: {
     doc: 'SMTP port number',
     format: 'port',
@@ -463,7 +463,7 @@ export const prodOnlyVarsSchema: Schema<IProdOnlyVarsSchema> = {
     env: 'SES_PASS_SG',
     sensitive: true,
   },
-  // Remove this when SES migration is over (opengovsg/formsg-private#130)
+  // TODO #130 Remove this when SES migration is over (opengovsg/formsg-private#130)
   nodemailer_sg_warmup_start_date: {
     doc: 'Date where SG nodemailer client will start sending emails',
     format: String,

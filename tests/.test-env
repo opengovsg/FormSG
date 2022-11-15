@@ -67,7 +67,7 @@ SESSION_SECRET=sandcrawler-138577
 SES_PORT=1025 
 SES_HOST=0.0.0.0
 
-# Remove these when SES migration is over (opengovsg/formsg-private#130)
+# TODO #130 Remove these when SES migration is over (opengovsg/formsg-private#130)
 SES_PORT_US=1025
 SES_HOST_US=0.0.0.0
 SES_PORT_SG=1025

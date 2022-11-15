@@ -69,7 +69,7 @@ describe('mail.service', () => {
     it('should throw error when invalid senderMail param is passed', () => {
       // Arrange
       const invalidParams = {
-        // Remove references to US when SES migration is over (opengovsg/formsg-private#130)
+        // TODO #130 Remove references to US when SES migration is over (opengovsg/formsg-private#130)
         transporter_us: mockTransporter,
         transporter_sg: mockTransporter,
         senderMail: 'notAnEmail',

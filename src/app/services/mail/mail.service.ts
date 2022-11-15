@@ -64,9 +64,20 @@ const DEFAULT_RETRY_PARAMS: MailServiceParams['retryParams'] = {
   minTimeout: 5000,
 }
 
-// Delete references to US SES when SES migration is over (opengovsg/formsg-private#130)
+// TODO #130 Delete references to US SES when SES migration is over (opengovsg/formsg-private#130)
 const START_TS = new Date(config.nodemailer_sg_warmup_start_date).getTime()
 const WARM_UP_DURATION = 6 * 7 * 24 * 60 * 60 * 1000 // 6 weeks
+
+const getWarmUpThreshold = () => {
+  // if START_TS is an empty string, set threshold to 0
+  if (isNaN(START_TS)) {
+    return 0
+  }
+  const now = Date.now()
+  const elapsed = Math.max(0, Math.min(now - START_TS, WARM_UP_DURATION))
+  const linear = elapsed / WARM_UP_DURATION
+  return linear * linear
+}
 
 export class MailService {
   /**
@@ -167,17 +178,8 @@ export class MailService {
       })
 
       try {
-        const getThreshold = () => {
-          const now = Date.now()
-          const elapsed = Math.max(
-            0,
-            Math.min(now - START_TS, WARM_UP_DURATION),
-          )
-          const linear = elapsed / WARM_UP_DURATION
-          return linear * linear
-        }
         const rand = Math.random()
-        const threshold = getThreshold()
+        const threshold = getWarmUpThreshold()
         const sendMailFromSG = rand < threshold
         const info = await tracer.trace('nodemailer/sendMail', () => {
           const span = tracer.scope().active()

@@ -69,7 +69,7 @@ export type Config = {
   app: AppConfig
   db: DbConfig
   aws: AwsConfig
-  // Remove references to US SES when SES migration is over (opengovsg/formsg-private#130)
+  // TODO #130 Remove references to US SES when SES migration is over (opengovsg/formsg-private#130)
   mail_us: MailConfig
   mail_sg: MailConfig
   nodemailer_sg_warmup_start_date: string
@@ -107,7 +107,7 @@ export type Config = {
 
 // Interface
 export interface IProdOnlyVarsSchema {
-  // Remove references to US SES when SES migration is over (opengovsg/formsg-private#130)
+  // TODO #130 Remove references to US SES when SES migration is over (opengovsg/formsg-private#130)
   port_us: number
   host_us: string
   user_us: string

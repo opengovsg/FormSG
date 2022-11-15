@@ -122,7 +122,7 @@ const dbConfig: DbConfig = {
   },
 }
 
-// Delete this mail config once SES migration is over (opengovsg/formsg-private#130)
+// TODO #130 Delete this mail config once SES migration is over (opengovsg/formsg-private#130)
 const mailConfig_us: MailConfig = (function () {
   const mailFrom = basicVars.mail.from
   const official = basicVars.mail.official
@@ -170,7 +170,7 @@ const mailConfig_us: MailConfig = (function () {
   }
 })()
 
-// Use this mail config when SES migration is over, after renaming env vars back to without _sg suffix (opengovsg/formsg-private#130)
+// TODO #130 Use this mail config when SES migration is over, after renaming env vars back to without _sg suffix (opengovsg/formsg-private#130)
 const mailConfig_sg: MailConfig = (function () {
   const mailFrom = basicVars.mail.from
   const official = basicVars.mail.official
