@@ -69,7 +69,7 @@ const START_TS = new Date(config.nodemailer_sg_warmup_start_date).getTime()
 const WARM_UP_DURATION = 6 * 7 * 24 * 60 * 60 * 1000 // 6 weeks
 
 const getWarmUpThreshold = () => {
-  // if START_TS is an empty string, set threshold to 0
+  // if START_TS is an empty string or unparseable input, set threshold to 0
   if (isNaN(START_TS)) {
     return 0
   }
