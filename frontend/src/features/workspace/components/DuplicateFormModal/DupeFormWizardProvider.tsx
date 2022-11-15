@@ -2,7 +2,10 @@ import { useEffect, useMemo } from 'react'
 
 import { FormResponseMode } from '~shared/types'
 
-import { usePreviewForm } from '~features/admin-form/common/queries'
+import {
+  useFormTemplate,
+  usePreviewForm,
+} from '~features/admin-form/common/queries'
 import { isMyInfo } from '~features/myinfo/utils'
 import { useDuplicateFormMutations } from '~features/workspace/mutations'
 import { useWorkspace } from '~features/workspace/queries'
@@ -24,13 +27,23 @@ export const useDupeFormWizardContext = (
   const { data: previewFormData, isLoading: isPreviewFormLoading } =
     usePreviewForm(
       formId,
-      // Stop querying once submissionData is present.
-      /* enabled= */ !!formId,
+      // Stop querying if formId does not exist or if it's in view template mode
+      /* enabled= */ !!formId || !isTemplate,
     )
 
+  const { data: templateFormData, isLoading: isTemplateFormLoading } =
+    useFormTemplate(
+      formId,
+      // Stop querying if formId does not exist or if it's not in preview mode
+      /* enabled= */ !!formId || isTemplate,
+    )
+
+  const data = templateFormData || previewFormData
+  const isLoading = isTemplateFormLoading || isPreviewFormLoading
+
   const containsMyInfoFields = useMemo(
-    () => !!previewFormData?.form.form_fields.find((ff) => isMyInfo(ff)),
-    [previewFormData?.form.form_fields],
+    () => !!data?.form.form_fields.find((ff) => isMyInfo(ff)),
+    [data?.form.form_fields],
   )
 
   const { formMethods, currentStep, direction, keypair, setCurrentStep } =
@@ -40,12 +53,7 @@ export const useDupeFormWizardContext = (
 
   // Async set defaultValues onto modal inputs.
   useEffect(() => {
-    if (
-      isPreviewFormLoading ||
-      isWorkspaceLoading ||
-      !previewFormData ||
-      !dashboardForms
-    ) {
+    if (isLoading || isWorkspaceLoading || !data?.form || !dashboardForms) {
       return
     }
 
@@ -55,17 +63,15 @@ export const useDupeFormWizardContext = (
         ? FormResponseMode.Email
         : FormResponseMode.Encrypt,
       title: makeDuplicateFormTitle(
-        isTemplate
-          ? `Template_${previewFormData.form.title}`
-          : previewFormData.form.title,
+        isTemplate ? `Template_${data?.form.title}` : data?.form.title,
         dashboardForms,
       ),
     })
   }, [
     reset,
     getValues,
-    previewFormData,
-    isPreviewFormLoading,
+    data,
+    isLoading,
     isWorkspaceLoading,
     dashboardForms,
     containsMyInfoFields,
