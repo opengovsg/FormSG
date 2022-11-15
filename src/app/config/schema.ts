@@ -467,7 +467,7 @@ export const prodOnlyVarsSchema: Schema<IProdOnlyVarsSchema> = {
   nodemailer_sg_warmup_start_date: {
     doc: 'Date where SG nodemailer client will start sending emails',
     format: String,
-    default: '',
+    default: '2099-01-01T23:59:59+08:00',
     env: 'NODEMAILER_SG_WARMUP_START_DATE',
   },
 }
