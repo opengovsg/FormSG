@@ -65,7 +65,8 @@ export const TemplateFormProvider = ({
 
   const isFormNotFound = useMemo(() => {
     return (
-      error instanceof HttpError && (error.code === 404 || error.code === 410)
+      error instanceof HttpError &&
+      (error.code === 404 || error.code === 410 || error.code === 403)
     )
   }, [error])
 
@@ -162,10 +163,6 @@ export const TemplateFormProvider = ({
 
   if (isNotFormId) {
     return <NotFoundErrorPage />
-  }
-
-  if (get(error, 'code') === 403) {
-    return <AdminForbiddenErrorPage message={error?.message} />
   }
 
   return (
