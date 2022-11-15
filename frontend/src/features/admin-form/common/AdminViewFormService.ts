@@ -9,7 +9,7 @@ import {
   SmsCountsDto,
 } from '~shared/types/form/form'
 
-import { PUBLICFORM_USETEMPLATE_ROUTE } from '~constants/routes'
+import { ADMINFORM_USETEMPLATE_ROUTE } from '~constants/routes'
 import { transformAllIsoStringsToDate } from '~utils/date'
 import { ApiService } from '~services/ApiService'
 
@@ -80,7 +80,7 @@ export const viewFormTemplate = async (
   formId: string,
 ): Promise<PreviewFormViewDto> => {
   return ApiService.get<PreviewFormViewDto>(
-    `${ADMIN_FORM_ENDPOINT}/${formId}/${PUBLICFORM_USETEMPLATE_ROUTE}`,
+    `${ADMIN_FORM_ENDPOINT}/${formId}/${ADMINFORM_USETEMPLATE_ROUTE}`,
   )
     .then(({ data }) => {
       // Add default mock authenticated state if previewing an authenticatable form

@@ -11,7 +11,7 @@ import {
   postVfnTransactionResponse,
 } from '~/mocks/msw/handlers/public-form'
 
-import { PUBLICFORM_USETEMPLATE_ROUTE } from '~constants/routes'
+import { ADMINFORM_USETEMPLATE_ROUTE } from '~constants/routes'
 import { getMobileViewParameters, StoryRouter } from '~utils/storybook'
 
 import TemplateFormPage from './TemplateFormPage'
@@ -30,7 +30,7 @@ export default {
   decorators: [
     StoryRouter({
       initialEntries: ['/61540ece3d4a6e50ac0cc6ff/use-template'],
-      path: `/:formId/${PUBLICFORM_USETEMPLATE_ROUTE}`,
+      path: `/:formId/${ADMINFORM_USETEMPLATE_ROUTE}`,
     }),
   ],
   parameters: {

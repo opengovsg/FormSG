@@ -20,7 +20,7 @@ import dedent from 'dedent'
 import {
   ADMINFORM_ROUTE,
   ADMINFORM_SETTINGS_SUBROUTE,
-  PUBLICFORM_USETEMPLATE_ROUTE,
+  ADMINFORM_USETEMPLATE_ROUTE,
 } from '~constants/routes'
 import Button from '~components/Button'
 import FormLabel from '~components/FormControl/FormLabel'
@@ -57,6 +57,12 @@ export const ShareFormModal = ({
 
   const shareLink = useMemo(
     () => `${window.location.origin}/${formId}`,
+    [formId],
+  )
+
+  const templateLink = useMemo(
+    () =>
+      `${window.location.origin}${ADMINFORM_ROUTE}/${formId}/${ADMINFORM_USETEMPLATE_ROUTE}`,
     [formId],
   )
 
@@ -174,13 +180,13 @@ export const ShareFormModal = ({
                     data-chromatic="ignore"
                     isReadOnly
                     isDisabled={isFormPrivate}
-                    value={`${shareLink}/use-template`}
+                    value={`${templateLink}`}
                   />
                   {formId ? (
                     <InputRightElement>
                       <CopyButton
                         colorScheme="secondary"
-                        stringToCopy={`${shareLink}/${PUBLICFORM_USETEMPLATE_ROUTE}`}
+                        stringToCopy={`${templateLink}`}
                         aria-label="Copy link to use this form as a template"
                         isDisabled={isFormPrivate}
                       />

@@ -1,10 +1,7 @@
 import { useLayoutEffect, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 
-import {
-  DASHBOARD_ROUTE,
-  PUBLICFORM_USETEMPLATE_ROUTE,
-} from '~constants/routes'
+import { ADMINFORM_USETEMPLATE_ROUTE, DASHBOARD_ROUTE } from '~constants/routes'
 
 import { PublicElement } from './PublicElement'
 
@@ -45,7 +42,7 @@ const pathMapper = [
   {
     regex: /^\/(?<formid>[0-9a-fA-F]{24})\/use-template$/,
     getTarget: (m: FormRegExpMatchArray) =>
-      `/${m.groups.formid}/${PUBLICFORM_USETEMPLATE_ROUTE}`,
+      `/admin/form/${m.groups.formid}/${ADMINFORM_USETEMPLATE_ROUTE}`,
   },
   {
     regex: /^\/forms$/,

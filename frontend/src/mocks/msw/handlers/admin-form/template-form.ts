@@ -4,7 +4,7 @@ import { PartialDeep } from 'type-fest'
 
 import { FormId, PreviewFormViewDto } from '~shared/types/form/form'
 
-import { PUBLICFORM_USETEMPLATE_ROUTE } from '~constants/routes'
+import { ADMINFORM_USETEMPLATE_ROUTE } from '~constants/routes'
 
 import { BASE_FORM } from '../public-form'
 
@@ -16,7 +16,7 @@ export const getTemplateFormResponse = ({
   overrides?: PartialDeep<PreviewFormViewDto>
 } = {}) => {
   return rest.get<PreviewFormViewDto>(
-    `/api/v3/admin/forms/:formId/${PUBLICFORM_USETEMPLATE_ROUTE}`,
+    `/api/v3/admin/forms/:formId/${ADMINFORM_USETEMPLATE_ROUTE}`,
     (req, res, ctx) => {
       const formId = req.params.formId ?? '61540ece3d4a6e50ac0cc6ff'
 
@@ -50,7 +50,7 @@ export const getTemplateFormErrorResponse = ({
   message?: string
 } = {}) => {
   return rest.get<PreviewFormViewDto>(
-    `/api/v3/admin/forms/:formId/${PUBLICFORM_USETEMPLATE_ROUTE}`,
+    `/api/v3/admin/forms/:formId/${ADMINFORM_USETEMPLATE_ROUTE}`,
     (req, res, ctx) => {
       return res(ctx.delay(delay), ctx.status(status), ctx.json({ message }))
     },
