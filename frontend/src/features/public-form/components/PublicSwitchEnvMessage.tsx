@@ -13,7 +13,7 @@ import { SwitchEnvFeedbackFormBodyDto } from '~shared/types'
 import Button from '~components/Button'
 import InlineMessage from '~components/InlineMessage'
 
-import { useEnvMutations } from '~features/env/mutations'
+import { useEnvMutations, useFeedbackMutation } from '~features/env/mutations'
 import { useSwitchEnvFeedbackFormView } from '~features/env/queries'
 import { SwitchEnvFeedbackModal } from '~features/env/SwitchEnvFeedbackModal'
 
@@ -33,8 +33,8 @@ export const PublicSwitchEnvMessage = (): JSX.Element => {
   // get the feedback form data
   const { data: feedbackForm } = useSwitchEnvFeedbackFormView(isOpen)
 
-  const { submitSwitchEnvFormFeedbackMutation, publicSwitchEnvMutation } =
-    useEnvMutations(feedbackForm)
+  const { publicSwitchEnvMutation } = useEnvMutations()
+  const submitSwitchEnvFormFeedbackMutation = useFeedbackMutation(feedbackForm)
 
   const submitFeedback = useCallback(
     (formInputs: SwitchEnvFeedbackFormBodyDto) => {

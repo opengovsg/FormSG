@@ -1,6 +1,6 @@
 // TODO #4279: Remove after React rollout is complete
 import { useCallback, useRef, useState } from 'react'
-import { FieldError, useForm } from 'react-hook-form'
+import { Controller, useForm } from 'react-hook-form'
 import {
   chakra,
   FormControl,
@@ -15,18 +15,19 @@ import {
   useBreakpointValue,
 } from '@chakra-ui/react'
 import { datadogRum } from '@datadog/browser-rum'
-import { get, isEmpty } from 'lodash'
+import { isEmpty } from 'lodash'
 import validator from 'validator'
 
 import { SwitchEnvFeedbackFormBodyDto } from '~shared/types'
 
 import { INVALID_EMAIL_ERROR } from '~constants/validation'
 import { useIsMobile } from '~hooks/useIsMobile'
+import { useToast } from '~hooks/useToast'
 import Button from '~components/Button'
+import Rating from '~components/Field/Rating'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import { ModalCloseButton } from '~components/Modal'
-import Radio, { OthersInput } from '~components/Radio'
 import Textarea from '~components/Textarea'
 
 import { useUser } from '~features/user/queries'
@@ -35,7 +36,7 @@ export interface SwitchEnvModalProps {
   isOpen: boolean
   onClose: () => void
   onSubmitFeedback: (formInputs: SwitchEnvFeedbackFormBodyDto) => Promise<any>
-  onChangeEnv: () => void
+  onChangeEnv?: () => void
   isAdminView: boolean
 }
 
@@ -59,19 +60,14 @@ export const SwitchEnvFeedbackModal = ({
     md: 'md',
   })
   const isMobile = useIsMobile()
+  const toast = useToast({ status: 'success', isClosable: true })
 
   const {
     register,
     handleSubmit,
-    getValues,
+    control,
     formState: { errors },
   } = useForm<SwitchEnvFeedbackFormBodyDto>()
-
-  const othersInputError: FieldError | undefined = get(
-    errors,
-    FEEDBACK_OTHERS_INPUT_NAME,
-  )
-  const othersInputValue = '!!FORMSG_INTERNAL_CHECKBOX_OTHERS_VALUE!!'
 
   const initialRef = useRef(null)
 
@@ -90,7 +86,13 @@ export const SwitchEnvFeedbackModal = ({
     ) {
       onSubmitFeedback(inputs)
     }
-    setShowThanksPage(true)
+    // Only allow public users to switch back. For admins, just close the modal.
+    if (isAdminView) {
+      toast({ description: 'Your feedback has been submitted.' })
+      onClose()
+    } else {
+      setShowThanksPage(true)
+    }
   })
 
   const handleClose = () => {
@@ -99,7 +101,7 @@ export const SwitchEnvFeedbackModal = ({
   }
 
   const handleChangeEnv = useCallback(() => {
-    onChangeEnv()
+    if (onChangeEnv) onChangeEnv()
     onClose()
     setShowThanksPage(false)
   }, [onChangeEnv, onClose])
@@ -156,75 +158,25 @@ export const SwitchEnvFeedbackModal = ({
                   <Input type="hidden" {...register('url')} value={url} />
                 </FormControl>
                 {user && isAdminView ? (
-                  <FormControl
-                    isRequired
-                    isInvalid={!isEmpty(errors) || !!othersInputError}
-                  >
-                    <FormLabel>
-                      Why are you switching to the previous FormSG?
-                    </FormLabel>
-                    <Radio.RadioGroup>
-                      {COMMON_RADIO_OPTIONS.map((option) => (
-                        <Radio
-                          {...register('switchReason', {
-                            required: {
-                              value: true,
-                              message: 'This field is required',
-                            },
-                            deps: [FEEDBACK_OTHERS_INPUT_NAME],
-                          })}
-                          value={option}
-                          key={option}
-                          tabIndex={1}
-                        >
-                          {option}
-                        </Radio>
-                      ))}
-                      {ADMIN_RADIO_OPTIONS.map((option) => (
-                        <Radio
-                          {...register('switchReason', {
-                            required: {
-                              value: true,
-                              message: 'This field is required',
-                            },
-                            deps: [FEEDBACK_OTHERS_INPUT_NAME],
-                          })}
-                          value={option}
-                          key={option}
-                        >
-                          {option}
-                        </Radio>
-                      ))}
-                      <Radio.OthersWrapper
-                        {...register('switchReason', {
-                          required: {
-                            value: true,
-                            message: 'This field is required',
-                          },
-                          deps: [FEEDBACK_OTHERS_INPUT_NAME],
-                        })}
-                        value={othersInputValue}
-                      >
-                        <FormControl>
-                          <OthersInput
-                            aria-label='"Other" response'
-                            {...register(FEEDBACK_OTHERS_INPUT_NAME, {
-                              validate: (value) => {
-                                return (
-                                  getValues('switchReason') !==
-                                    othersInputValue ||
-                                  !!value ||
-                                  'Please specify a value for the "Others" option'
-                                )
-                              },
-                            })}
-                          />
-                        </FormControl>
-                      </Radio.OthersWrapper>
-                    </Radio.RadioGroup>
+                  <FormControl isRequired isInvalid={!isEmpty(errors)}>
+                    <FormLabel>How was your experience using FormSG?</FormLabel>
+                    <Controller
+                      rules={{ required: 'This field is required' }}
+                      control={control}
+                      name={'rating'}
+                      render={({ field: { value, onChange, ...rest } }) => (
+                        <Rating
+                          numberOfRatings={5}
+                          variant={'star'}
+                          helperText={'1: Poor, 5: Excellent'}
+                          value={Number(value)}
+                          onChange={(val) => onChange(val?.toString())}
+                          {...rest}
+                        />
+                      )}
+                    />
                     <FormErrorMessage>
-                      {errors['switchReason']?.message ??
-                        errors[FEEDBACK_OTHERS_INPUT_NAME]?.message}
+                      {errors['rating']?.message}
                     </FormErrorMessage>
                   </FormControl>
                 ) : null}
@@ -240,7 +192,7 @@ export const SwitchEnvFeedbackModal = ({
                     }
                   >
                     {isAdminView
-                      ? 'Describe your problem in detail to help us improve FormSG'
+                      ? 'Do you have any other feedback for us?'
                       : 'Please tell us about the issue(s) you’re facing. It’ll help us improve FormSG.'}
                   </FormLabel>
                   <Textarea
@@ -312,7 +264,7 @@ export const SwitchEnvFeedbackModal = ({
                   Cancel
                 </Button>
                 <Button isFullWidth={isMobile} type="submit">
-                  Next
+                  {isAdminView ? 'Submit feedback' : 'Next'}
                 </Button>
               </Stack>
             </ModalFooter>

@@ -32,6 +32,7 @@ const createFeedbackResponsesArray = (
     ['email', 2],
     ['rumSessionId', 3],
     ['switchReason', 4],
+    ['rating', 5],
   ]
   const RADIO_OPTIONS_WITHOUT_OTHERS =
     ADMIN_RADIO_OPTIONS.concat(COMMON_RADIO_OPTIONS)

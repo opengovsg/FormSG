@@ -8,7 +8,7 @@ import { SwitchEnvFeedbackFormBodyDto } from '~shared/types'
 import IconButton from '~components/IconButton'
 import Tooltip from '~components/Tooltip'
 
-import { useEnvMutations } from './mutations'
+import { useFeedbackMutation } from './mutations'
 import { useEnv, useSwitchEnvFeedbackFormView } from './queries'
 import { SwitchEnvFeedbackModal } from './SwitchEnvFeedbackModal'
 
@@ -19,8 +19,7 @@ export const SwitchEnvIcon = (): JSX.Element | null => {
   // get the feedback form data
   const { data: feedbackForm } = useSwitchEnvFeedbackFormView(isOpen)
 
-  const { submitSwitchEnvFormFeedbackMutation, adminSwitchEnvMutation } =
-    useEnvMutations(feedbackForm)
+  const submitSwitchEnvFormFeedbackMutation = useFeedbackMutation(feedbackForm)
 
   const submitFeedback = useCallback(
     (formInputs: SwitchEnvFeedbackFormBodyDto) => {
@@ -54,7 +53,6 @@ export const SwitchEnvIcon = (): JSX.Element | null => {
         </Tooltip>
         <SwitchEnvFeedbackModal
           onSubmitFeedback={submitFeedback}
-          onChangeEnv={adminSwitchEnvMutation.mutate}
           isOpen={isOpen}
           onClose={onClose}
           isAdminView={true}
