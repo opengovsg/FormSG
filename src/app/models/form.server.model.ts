@@ -58,7 +58,11 @@ import {
 } from '../../types'
 import { IPopulatedUser, IUserSchema } from '../../types/user'
 import { OverrideProps } from '../modules/form/admin-form/admin-form.types'
-import { getFormFieldById, transformEmails } from '../modules/form/form.utils'
+import {
+  getFormFieldById,
+  transformEmails,
+  UNICODE_ESCAPED_REGEX,
+} from '../modules/form/form.utils'
 import { validateWebhookUrl } from '../modules/webhook/webhook.validation'
 
 import getAgencyModel from './agency.server.model'
@@ -163,10 +167,13 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     {
       title: {
         type: String,
-        validate: [
-          /^[a-zA-Z0-9_\-./() &`;'"]*$/,
-          'Form name cannot contain special characters',
-        ],
+        validate: {
+          // validation fails if regex pattern exists in the title
+          validator: function (v: string) {
+            return !UNICODE_ESCAPED_REGEX.test(v)
+          },
+          message: 'Form name cannot contain improperly encoded characters',
+        },
         required: 'Form name cannot be blank',
         minlength: [4, 'Form name must be at least 4 characters'],
         maxlength: [200, 'Form name can have a maximum of 200 characters'],
