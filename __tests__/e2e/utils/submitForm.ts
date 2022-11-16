@@ -75,7 +75,10 @@ export const fillFields = async (
       }
       case BasicField.Checkbox:
       case BasicField.Radio: {
-        const vals = typeof field.val === 'string' ? [field.val] : field.val
+        if (!field.val || (field.val instanceof Array && !field.val.length)) {
+          break
+        }
+        const vals = field.val instanceof Array ? field.val : [field.val]
         const options = page.locator('label', {
           has: page.locator(`[name="${field._id}.value"]`),
         })
@@ -96,6 +99,7 @@ export const fillFields = async (
         break
       }
       case BasicField.Dropdown: {
+        if (!field.val) break
         await input.fill(field.val)
         const menuId = await input.getAttribute('aria-controls')
         const menu = page.locator(`id=${menuId}`)
@@ -105,6 +109,7 @@ export const fillFields = async (
         break
       }
       case BasicField.YesNo: {
+        if (!field.val) break
         await page
           .locator(
             `data-testid=${field._id}-${
@@ -115,10 +120,12 @@ export const fillFields = async (
         break
       }
       case BasicField.Rating: {
+        if (!field.val) break
         await page.locator(`id=${field._id}-${field.val}`).locator('..').click()
         break
       }
       case BasicField.Email: {
+        if (!field.val) break
         await input.fill(field.val)
         if (field.isVerifiable) {
           const verifyButtonLocator = page.locator(
@@ -137,6 +144,7 @@ export const fillFields = async (
         break
       }
       case BasicField.Mobile: {
+        if (!field.val) break
         let val: string
         if (field.allowIntlNumbers) {
           const phoneNumber = parsePhoneNumber(field.val)
@@ -152,23 +160,22 @@ export const fillFields = async (
         break
       }
       case BasicField.Attachment: {
+        if (!field.path || !field.val) break
         await input.setInputFiles(field.path)
         break
       }
       case BasicField.Table: {
-        for (let i = 0; i < field.val.length; i++) {
-          for (let j = 0; j < field.columns.length; j++) {
-            // A little bit gross, but needed to get the column id.
-            const formfield = form.form_fields?.find(
-              (ff) => ff._id === field._id,
-            )
-            if (formfield?.fieldType !== BasicField.Table) {
-              throw Error('Unexpected field type from form definition')
-            }
-            const column = formfield.columns[j]
+        // A little bit gross, but needed to get the column id.
+        const formfield = form.form_fields?.find((ff) => ff._id === field._id)
+        if (formfield?.fieldType !== BasicField.Table) {
+          throw Error('Unexpected field type from form definition')
+        }
+        for (let j = 0; j < field.columns.length; j++) {
+          const column = formfield.columns[j]
+          for (let i = 0; i < field.val.length; i++) {
             const val = field.val[i][j]
+            if (!val) continue
             const cell = page.locator(`id=${field._id}.${i}.${column._id}`)
-
             switch (column.columnType) {
               case BasicField.ShortText: {
                 await cell.fill(val)

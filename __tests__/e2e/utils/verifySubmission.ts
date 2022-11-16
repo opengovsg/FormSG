@@ -84,7 +84,7 @@ const getResponseTitle = (
  * @param {E2eFieldMetadata} field field used to create and fill form
  * @param {boolean} isVisible if the field is visible
  * @param {FormResponseMode} formMode form response mode
- * @returns {string[] | null} string array of responses, or null if the field is a non-response field
+ * @returns {string[] | null} string array of responses, or null if the field is a non-response field and should not be represented
  */
 const getResponseArray = (
   field: E2eFieldMetadata,
@@ -108,8 +108,11 @@ const getResponseArray = (
     }
     case BasicField.Radio:
     case BasicField.Checkbox: {
+      if (!field.val || (field.val instanceof Array && !field.val.length)) {
+        return ['']
+      }
       return [
-        (typeof field.val === 'string' ? [field.val] : field.val)
+        (field.val instanceof Array ? field.val : [field.val])
           .map((selected) => {
             return field.fieldOptions.includes(selected)
               ? selected
@@ -121,10 +124,12 @@ const getResponseArray = (
     case BasicField.Date: {
       // Need to re-parse, because input is in dd/mm/yyyy format whereas response is in dd MMM yyyy format.
       return [
-        format(
-          parse(field.val, DATE_INPUT_FORMAT, new Date()),
-          DATE_RESPONSE_FORMAT,
-        ),
+        field.val
+          ? format(
+              parse(field.val, DATE_INPUT_FORMAT, new Date()),
+              DATE_RESPONSE_FORMAT,
+            )
+          : '',
       ]
     }
     default: {

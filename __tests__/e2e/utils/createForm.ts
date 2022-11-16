@@ -261,24 +261,24 @@ export const addField = async (
         }
       }
       // First table option
-      for (let index = 0; index < field.columns.length; index++) {
-        const col = field.columns[index]
-        if (index !== 0) {
+      for (let i = 0; i < field.columns.length; i++) {
+        const col = field.columns[i]
+        if (i !== 0) {
           await page.getByRole('button', { name: 'Add column' }).click()
         }
-        await page.getByLabel(`Column ${index + 1}`).fill(col.title)
-        await page.getByLabel('Column type').nth(index).click()
+        await page.getByLabel(`Column ${i + 1}`).fill(col.title)
+        await page.getByLabel('Column type').nth(i).click()
         await page
           .getByRole('option', {
             name: BASICFIELD_TO_DRAWER_META[col.columnType].label,
           })
           .click()
         if (!col.required) {
-          await page.getByText('Required').nth(index).click()
+          await page.getByText('Required').nth(i).click()
         }
         if (col.columnType === BasicField.Dropdown) {
           await page
-            .locator(`[id="columns\\.${index}\\.fieldOptions"]`)
+            .locator(`[id="columns\\.${i}\\.fieldOptions"]`)
             .fill(col.fieldOptions.join('\n'))
         }
       }

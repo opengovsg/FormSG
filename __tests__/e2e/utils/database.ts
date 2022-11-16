@@ -1,4 +1,4 @@
-import mongoose from 'mongoose'
+import mongoose, { Model } from 'mongoose'
 
 const dbUri = 'mongodb://127.0.0.1:3000/formsg'
 
@@ -49,4 +49,17 @@ export const makeModel = (
   } catch (e) {
     return spec(`dist/backend/src/app/models/${modelFilename}`).default(db)
   }
+}
+
+/**
+ * Clears a collection of a document with the given id.
+ * Usually used in 'after' hooks in tests.
+ * @param {Model} collection MongoDB collection
+ * @param {string} id document's ID as given by its _id field.
+ */
+export const deleteDocById = async (
+  collection: Model<any>,
+  id: string,
+): Promise<void> => {
+  await collection.deleteOne({ _id: id })
 }

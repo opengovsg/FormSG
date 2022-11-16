@@ -1,22 +1,3 @@
-// /**
-//  * Creates a field for e2e tests with default options (visible, required, not blank).
-//  * @param {Object} fieldObj Custom options of the field.
-//  * @param {string} fieldObj.title Mandatory title of field
-//  * @param {string} fieldObj.fieldType Type of field. Mandatory unless makeField is
-//  * being called to create an artificial field for verified SingPass/CorpPass data.
-//  * @param {string} fieldObj.val Mandatory answer to field
-//  */
-// function makeField(fieldObj) {
-//   return Object.assign(
-//     {
-//       required: true,
-//       isVisible: true,
-//       isLeftBlank: false,
-//     },
-//     fieldObj,
-//   )
-// }
-
 import { format } from 'date-fns'
 import { keyBy } from 'lodash'
 import {
@@ -278,7 +259,7 @@ export const allFields: E2eFieldMetadata[] = [
       },
       {
         title: 'Gender',
-        required: false,
+        required: true,
         fieldOptions: ['Male', 'Female', 'Prefer not to say'],
         columnType: BasicField.Dropdown,
       },

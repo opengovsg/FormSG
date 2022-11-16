@@ -20,7 +20,7 @@ type MailData = {
   subject: string
   time: number
   html: string
-  attachments: MailAttachment[]
+  attachments: MailAttachment[] | null
 }
 
 type EmailSubmission = {
@@ -121,6 +121,7 @@ export const getSubmission = async (
 const getSubmissionAttachments = async (
   email: MailData,
 ): Promise<EmailSubmission['attachments']> => {
+  if (!email.attachments) return {}
   const atts: Record<string, string> = {}
   for (const att of email.attachments) {
     const response = await MAIL_CLIENT.getAttachment(
