@@ -1,4 +1,4 @@
-import { expect, Locator, Page } from '@playwright/test'
+import { expect, Page } from '@playwright/test'
 import { parsePhoneNumber } from 'libphonenumber-js'
 import { BasicField } from 'shared/types'
 
@@ -55,12 +55,11 @@ export const fillFields = async (
   })
 
   // Fill form fields
-  let input: Locator
   for (const field of fieldMetasWithIds) {
     // Ignore fields that are non-input.
     if (NON_INPUT_FIELD_TYPES.includes(field.fieldType)) continue
 
-    input = page.locator(`id=${field._id}`)
+    const input = page.locator(`id=${field._id}`)
 
     switch (field.fieldType) {
       case BasicField.ShortText:
@@ -80,7 +79,8 @@ export const fillFields = async (
         const options = page.locator('label', {
           has: page.locator(`[name="${field._id}.value"]`),
         })
-        const optionLabels = await options.allInnerTexts()
+        const optionLabelsRaw = await options.allInnerTexts()
+        const optionLabels = optionLabelsRaw.map((v) => v.trim())
         const optionNums = vals.map((val) => optionLabels.indexOf(val))
         for (let i = 0; i < vals.length; i++) {
           if (optionNums[i] === -1) {
@@ -97,7 +97,11 @@ export const fillFields = async (
       }
       case BasicField.Dropdown: {
         await input.fill(field.val)
-        await page.getByRole('option', { name: field.val }).click()
+        const menuId = await input.getAttribute('aria-controls')
+        const menu = page.locator(`id=${menuId}`)
+        // Scroll menu into view to avoid flakiness.
+        await menu.scrollIntoViewIfNeeded()
+        await menu.getByRole('option', { name: field.val }).click()
         break
       }
       case BasicField.YesNo: {
@@ -163,15 +167,20 @@ export const fillFields = async (
             }
             const column = formfield.columns[j]
             const val = field.val[i][j]
-            input = page.locator(`id=${field._id}.${i}.${column._id}`)
+            const cell = page.locator(`id=${field._id}.${i}.${column._id}`)
+
             switch (column.columnType) {
               case BasicField.ShortText: {
-                await input.fill(val)
+                await cell.fill(val)
                 break
               }
               case BasicField.Dropdown: {
-                await input.fill(val)
-                await page.getByRole('option', { name: val }).click()
+                await cell.fill(val)
+                const menuId = await cell.getAttribute('aria-controls')
+                const menu = page.locator(`id=${menuId}`)
+                // Scroll menu into view to avoid flakiness.
+                await menu.scrollIntoViewIfNeeded()
+                await menu.getByRole('option', { name: val }).click()
                 break
               }
             }
@@ -185,16 +194,17 @@ export const fillFields = async (
 
 /**
  * Click the submit button, and verify that the end page is shown.
+ * Requires current page to be the open form page.
  * @param {Page} page Playwright page
  * @returns {string} the responseId
  */
 export const clickSubmitBtn = async (page: Page): Promise<string> => {
   await page.locator('button:has-text("Submit now")').click()
 
-  // Verify end page.
+  // Verify end page with timeout of 10s.
   await expect(
     page.getByText(/thank you for filling out the form./i),
-  ).toBeVisible()
+  ).toBeVisible({ timeout: 10000 })
 
   const responseIdLocator = page.getByText(/response id:/i)
 
