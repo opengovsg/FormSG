@@ -78,4 +78,34 @@ test.describe('Email form submission', () => {
     const responseId = await submitForm(page, { form, fieldMetas })
     await verifySubmission(page, { form, fieldMetas, responseId })
   })
+
+  test('Create and submit email mode form with optional and required attachments', async ({
+    page,
+  }) => {
+    // Define form
+    const baseField = sampleField[BasicField.Attachment]
+    const fieldMetas = [
+      {
+        ...baseField,
+        title: 'Attachment 0',
+        path: '__tests__/e2e/files/att-folder-0/test-att.txt',
+        val: '1-test-att.txt',
+      } as E2eFieldMetadata,
+      {
+        ...getBlankVersion(getOptionalVersion(baseField)),
+        title: 'Attachment 1',
+      } as E2eFieldMetadata,
+      {
+        ...baseField,
+        title: 'Attachment 2',
+        path: '__tests__/e2e/files/att-folder-2/test-att.txt',
+        val: 'test-att.txt',
+      } as E2eFieldMetadata,
+    ]
+
+    // Test
+    const form = await createForm(page, Form, { fieldMetas })
+    const responseId = await submitForm(page, { form, fieldMetas })
+    await verifySubmission(page, { form, fieldMetas, responseId })
+  })
 })
