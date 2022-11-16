@@ -64,6 +64,21 @@ const DEFAULT_RETRY_PARAMS: MailServiceParams['retryParams'] = {
   minTimeout: 5000,
 }
 
+// TODO #130 Delete references to US SES when SES migration is over (opengovsg/formsg-private#130)
+const START_TS = new Date(config.nodemailer_sg_warmup_start_date).getTime()
+const WARM_UP_DURATION = 6 * 7 * 24 * 60 * 60 * 1000 // 6 weeks
+
+const getWarmUpThreshold = () => {
+  // if START_TS is an empty string or unparseable input, set threshold to 0
+  if (isNaN(START_TS)) {
+    return 0
+  }
+  const now = Date.now()
+  const elapsed = Math.max(0, Math.min(now - START_TS, WARM_UP_DURATION))
+  const linear = elapsed / WARM_UP_DURATION
+  return linear * linear
+}
+
 export class MailService {
   /**
    * The application name to be shown in some sent emails' fields such as mail
@@ -76,9 +91,13 @@ export class MailService {
    */
   #appUrl: Required<MailServiceParams>['appUrl']
   /**
-   * The transporter to be used to send mail.
+   * The transporter to be used to send mail (SES in US).
    */
-  #transporter: Required<MailServiceParams>['transporter']
+  #transporter_us: Required<MailServiceParams>['transporter_us']
+  /**
+   * The transporter to be used to send mail (SES in SG).
+   */
+  #transporter_sg: Required<MailServiceParams>['transporter_sg']
   /**
    * The email string to denote the "from" field of the email.
    */
@@ -104,9 +123,10 @@ export class MailService {
   constructor({
     appName = config.app.title,
     appUrl = config.app.appUrl,
-    transporter = config.mail.transporter,
-    senderMail = config.mail.mailFrom,
-    officialMail = config.mail.official,
+    transporter_us = config.mail_us.transporter,
+    transporter_sg = config.mail_sg.transporter,
+    senderMail = config.mail_us.mailFrom,
+    officialMail = config.mail_us.official,
     retryParams = DEFAULT_RETRY_PARAMS,
   }: MailServiceParams = {}) {
     // Email validation
@@ -127,7 +147,8 @@ export class MailService {
     this.#appUrl = appUrl
     this.#senderMail = senderMail
     this.#senderFromString = `${appName} <${senderMail}>`
-    this.#transporter = transporter
+    this.#transporter_us = transporter_us
+    this.#transporter_sg = transporter_sg
     this.#officialMail = officialMail
     this.#retryParams = retryParams
   }
@@ -157,13 +178,27 @@ export class MailService {
       })
 
       try {
-        const info = await tracer.trace('nodemailer/sendMail', () =>
-          this.#transporter.sendMail(mail),
-        )
+        const rand = Math.random()
+        const threshold = getWarmUpThreshold()
+        const sendMailFromSG = rand < threshold
+        const info = await tracer.trace('nodemailer/sendMail', () => {
+          const span = tracer.scope().active()
+          if (span) span.setTag('ses.region', sendMailFromSG ? 'sg' : 'us')
+          return sendMailFromSG
+            ? this.#transporter_sg.sendMail(mail)
+            : this.#transporter_us.sendMail(mail)
+        })
 
+        const logNodemailerMeta = {
+          action: 'Nodemailer evaluation done',
+          sendMailFromSG: sendMailFromSG,
+          mathRandom: rand,
+          threshold: threshold,
+          sendFromSGStartDate: START_TS,
+        }
         logger.info({
           message: `Mail successfully sent on attempt ${attemptNum}`,
-          meta: { ...logMeta, info },
+          meta: { ...logMeta, info, ...logNodemailerMeta },
         })
 
         return true

@@ -196,7 +196,7 @@ export const createNumberValidationRules: ValidationRuleFn<NumberFieldBase> = (
       validNumber: (val?: string) => {
         if (!val || !customVal) return true
 
-        const currLen = val.length
+        const currLen = val.trim().length
 
         switch (selectedValidation) {
           case NumberSelectedValidation.Exact:
@@ -281,7 +281,7 @@ export const createTextValidationRules: ValidationRuleFn<
       validText: (val?: string) => {
         if (!val || !customVal) return true
 
-        const currLen = val.length
+        const currLen = val.trim().length
 
         switch (selectedValidation) {
           case TextSelectedValidation.Exact:
