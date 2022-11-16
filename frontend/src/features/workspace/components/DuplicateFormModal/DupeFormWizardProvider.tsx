@@ -63,7 +63,7 @@ export const useDupeFormWizardContext = (
         ? FormResponseMode.Email
         : FormResponseMode.Encrypt,
       title: makeDuplicateFormTitle(
-        isTemplate ? `Template_${data?.form.title}` : data?.form.title,
+        isTemplate ? `[Template] ${data?.form.title}` : data?.form.title,
         dashboardForms,
       ),
     })
