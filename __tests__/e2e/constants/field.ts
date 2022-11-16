@@ -112,7 +112,7 @@ export const allFields: E2eFieldMetadata[] = [
     title: 'Attachment',
     fieldType: BasicField.Attachment,
     attachmentSize: AttachmentSize.OneMb,
-    path: '__tests__/e2e/files/att-folder-1/test-att.txt',
+    path: '__tests__/e2e/files/att-folder-0/test-att.txt',
     val: 'test-att.txt',
   },
   {

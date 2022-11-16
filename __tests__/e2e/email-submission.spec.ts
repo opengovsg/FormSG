@@ -1,8 +1,9 @@
 import mongoose from 'mongoose'
+import { BasicField } from 'shared/types'
 
 import { IAgencyModel, IAgencySchema, IFormModel, IUserModel } from 'src/types'
 
-import { allFields } from './constants/field'
+import { allFields, E2eFieldMetadata, sampleField } from './constants/field'
 import { test } from './fixtures/auth'
 import { createForm } from './utils/createForm'
 import { makeModel, makeMongooseFixtures } from './utils/database'
@@ -49,6 +50,27 @@ test.describe('Email form submission', () => {
     // Define form
     const fieldMetas = allFields.map((ff) =>
       getBlankVersion(getOptionalVersion(ff)),
+    )
+
+    // Test
+    const form = await createForm(page, Form, { fieldMetas })
+    const responseId = await submitForm(page, { form, fieldMetas })
+    await verifySubmission(page, { form, fieldMetas, responseId })
+  })
+
+  test('Create and submit email mode form with identical attachment names', async ({
+    page,
+  }) => {
+    // Define form
+    const baseField = sampleField[BasicField.Attachment]
+    const fieldMetas = new Array(3).fill('').map(
+      (_, i) =>
+        ({
+          ...baseField,
+          title: `Attachment ${i}`,
+          path: `__tests__/e2e/files/att-folder-${i}/test-att.txt`,
+          val: `${i === 2 ? '' : `${2 - i}-`}test-att.txt`,
+        } as E2eFieldMetadata),
     )
 
     // Test

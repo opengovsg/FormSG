@@ -160,7 +160,7 @@ export const fillFields = async (
         break
       }
       case BasicField.Attachment: {
-        if (!field.path || !field.val) break
+        if (!field.path) break
         await input.setInputFiles(field.path)
         break
       }
