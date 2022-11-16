@@ -7,7 +7,6 @@ import { BxsChevronDown } from '~assets/icons/BxsChevronDown'
 import { BxsChevronUp } from '~assets/icons/BxsChevronUp'
 import { useTimeout } from '~hooks/useTimeout'
 import { useToast } from '~hooks/useToast'
-import Badge from '~components/Badge'
 import Button from '~components/Button'
 import Menu from '~components/Menu'
 import { NavigationPrompt } from '~templates/NavigationPrompt'
@@ -203,9 +202,6 @@ export const DownloadButton = (): JSX.Element => {
                 </Menu.Item>
                 <Menu.Item onClick={onDownloadModalOpen}>
                   CSV with attachments
-                  <Badge ml="0.5rem" colorScheme="success">
-                    beta
-                  </Badge>
                 </Menu.Item>
               </Menu.List>
             </>
