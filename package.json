@@ -288,5 +288,14 @@
     "webpack-cli": "^3.3.12",
     "webpack-merge": "^4.1.3",
     "worker-loader": "^2.0.0"
+  },
+  "config": {
+    "//" : [
+      "This is required for the mongodb binary to be downloaded on M1 macs",
+      "to run the test suite, since mongo does not have an arm image."
+    ],
+    "mongodbMemoryServer": {
+      "arch": "x64"
+    }
   }
 }

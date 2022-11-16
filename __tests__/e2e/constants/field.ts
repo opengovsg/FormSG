@@ -46,6 +46,15 @@ import {
   YesNoFieldBase,
 } from 'shared/types'
 
+export const DATE_INPUT_FORMAT = 'dd/MM/yyyy'
+export const DATE_RESPONSE_FORMAT = 'dd MMM yyyy'
+
+export const NON_INPUT_FIELD_TYPES = [
+  BasicField.Section,
+  BasicField.Image,
+  BasicField.Statement,
+]
+
 type E2eFieldSingleValue = { val: string }
 type E2eFieldMultiValue = { val: string[] }
 type E2eFieldTableValue = { val: string[][] }
@@ -90,10 +99,7 @@ export type E2eFieldMetadata =
   | (E2ePickFieldMetadata<ImageFieldBase, never> & E2eFieldFilepath)
   | (E2ePickFieldMetadata<LongTextFieldBase, 'ValidationOptions'> &
       E2eFieldSingleValue)
-  | (E2ePickFieldMetadata<
-      MobileFieldBase,
-      'isVerifiable' | 'allowIntlNumbers'
-    > &
+  | (E2ePickFieldMetadata<MobileFieldBase, 'allowIntlNumbers'> & // Omit 'isVerfiable', since we can't test that.
       E2eFieldSingleValue)
   | (E2ePickFieldMetadata<NricFieldBase, never> & E2eFieldSingleValue)
   | (E2ePickFieldMetadata<NumberFieldBase, 'ValidationOptions'> &
@@ -125,8 +131,8 @@ export const allFields: E2eFieldMetadata[] = [
     title: 'Attachment',
     fieldType: BasicField.Attachment,
     attachmentSize: AttachmentSize.OneMb,
+    path: '__tests__/e2e/files/att-folder-1/test-att.txt',
     val: 'test-att.txt',
-    path: '../files/att-folder-1/test-att.txt',
   },
   {
     title: 'How did you hear about the event?',
@@ -140,7 +146,7 @@ export const allFields: E2eFieldMetadata[] = [
   {
     title: 'Birthday',
     fieldType: BasicField.Date,
-    val: format(new Date(), 'dd MMM yyyy'),
+    val: format(new Date(), DATE_INPUT_FORMAT),
     dateValidation: {
       customMinDate: null,
       customMaxDate: null,
@@ -166,7 +172,7 @@ export const allFields: E2eFieldMetadata[] = [
   {
     title: 'Personal Email',
     fieldType: BasicField.Email,
-    isVerifiable: false,
+    isVerifiable: true,
     autoReplyOptions: {
       hasAutoReply: false,
       autoReplyMessage: '',
@@ -202,8 +208,8 @@ export const allFields: E2eFieldMetadata[] = [
   {
     title: 'Mobile',
     fieldType: BasicField.Mobile,
-    isVerifiable: false,
-    allowIntlNumbers: false,
+    allowIntlNumbers: true,
+    // Number should start with +(country code), if allowIntlNumbers. Otherwise, just the 8 digit input.
     val: '+6598889999',
   },
   {

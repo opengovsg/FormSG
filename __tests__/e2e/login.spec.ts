@@ -71,7 +71,7 @@ test.describe('login', () => {
 
     // Get OTP
     const otp = await extractOtp(legitUserEmail)
-    expect(otp).toBeTruthy()
+
     // Increment OTP by 1, keep to 6 digits
     const newOtp = String(parseInt(otp!, 10) + 1).slice(0, 6)
 

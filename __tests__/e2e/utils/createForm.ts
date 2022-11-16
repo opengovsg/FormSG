@@ -1,18 +1,80 @@
-import { expect, Page } from '@playwright/test'
+import { Page } from '@playwright/test'
+import cuid from 'cuid'
 import { format } from 'date-fns'
 import { BASICFIELD_TO_DRAWER_META } from 'frontend/src/features/admin-form/create/constants'
 import { BasicField, DateSelectedValidation } from 'shared/types'
 
-import { E2eFieldMetadata } from '../constants/field'
-import { ADMIN_FORM_PAGE_PREFIX } from '../constants/links'
+import { IFormModel, IFormSchema } from 'src/types'
 
-const NON_INPUT_FIELD_TYPES = [
-  BasicField.Section,
-  BasicField.Image,
-  BasicField.Statement,
-]
+import { E2eFieldMetadata, NON_INPUT_FIELD_TYPES } from '../constants/field'
+import { ADMIN_FORM_PAGE_PREFIX, DASHBOARD_PAGE } from '../constants/links'
+import { expect } from '../fixtures/auth'
 
-export const createField = async (
+/**
+ * Navigates to the dashboard and creates a new form. Ends on the admin builder page.
+ * @param {Page} page Playwright page
+ * @returns {string} the created form url
+ */
+const addForm = async (page: Page): Promise<string> => {
+  await page.goto(DASHBOARD_PAGE)
+
+  // Press escape 5 times to get rid of any banners
+  await page.keyboard.press('Escape')
+  await page.keyboard.press('Escape')
+  await page.keyboard.press('Escape')
+  await page.keyboard.press('Escape')
+  await page.keyboard.press('Escape')
+
+  await page.getByRole('button', { name: 'Create form' }).click()
+
+  await page.getByLabel('Form name').fill(`e2e-test-${cuid()}`)
+
+  await page.getByText('Email Mode').click()
+  await page.getByRole('button', { name: 'Next step' }).click()
+  await expect(page).toHaveURL(new RegExp(`${ADMIN_FORM_PAGE_PREFIX}/.*`, 'i'))
+
+  const l = ADMIN_FORM_PAGE_PREFIX.length + 1
+  const formId =
+    page
+      .url()
+      .match(new RegExp(`${ADMIN_FORM_PAGE_PREFIX}/[a-fA-F0-9]{24}`))?.[0]
+      .slice(l, l + 24) ?? ''
+
+  // Clear any banners
+  await page.getByRole('button', { name: 'Next' }).press('Escape')
+
+  return formId
+}
+
+/** Goes to settings page and adds settings, and toggle form to be open.
+ * Precondition: must be on the admin builder page with no dirty fields.
+ * @param {Page} page Playwright page
+ * @param {string} formId the formId
+ */
+const addSettings = async (page: Page, formId: string): Promise<void> => {
+  await page.getByText('Settings').click()
+  await expect(page).toHaveURL(`${ADMIN_FORM_PAGE_PREFIX}/${formId}/settings`)
+
+  await expect(
+    page.getByText(/your form is closed to new responses/i),
+  ).toBeVisible()
+
+  // Toggle form to be open
+  await page
+    .locator('label', {
+      has: page.locator('[aria-label="Toggle form status"]'),
+    })
+    .click()
+
+  // Turn off captcha, since we can't test for that
+  await page
+    .locator('label', {
+      has: page.locator('[aria-label="Enable reCAPTCHA"]'),
+    })
+    .click()
+}
+
+export const addField = async (
   page: Page,
   field: E2eFieldMetadata,
 ): Promise<void> => {
@@ -177,10 +239,6 @@ export const createField = async (
       if (field.allowIntlNumbers) {
         await page.getByText('Allow international numbers').click()
       }
-      if (field.isVerifiable) {
-        await page.getByText('OTP verification').first().click()
-        await page.getByRole('button', { name: 'Yes, I understand' }).click()
-      }
       break
     case BasicField.Rating:
       await page.getByLabel('Number of steps').click()
@@ -238,14 +296,35 @@ export const createField = async (
  */
 export const addFields = async (
   page: Page,
-  formFields: E2eFieldMetadata[],
+  fieldMetas: E2eFieldMetadata[],
 ): Promise<void> => {
   await expect(page).toHaveURL(new RegExp(`${ADMIN_FORM_PAGE_PREFIX}/.*`, 'i'))
 
   await page.getByRole('button', { name: 'Add fields' }).click()
 
-  for (const field of formFields) {
-    await createField(page, field)
+  for (const field of fieldMetas) {
+    await addField(page, field)
   }
   await page.reload()
+}
+
+/**
+ * Navigates to the dashboard and creates a new form with all the associated form settings.
+ * @param {Page} page Playwright page
+ * @returns {IFormSchema} the created form
+ */
+export const createForm = async (
+  page: Page,
+  Form: IFormModel,
+  { fieldMetas }: { fieldMetas: E2eFieldMetadata[] },
+): Promise<IFormSchema> => {
+  const formId = await addForm(page)
+  await addFields(page, fieldMetas)
+  await addSettings(page, formId)
+
+  const form = await Form.findById(formId)
+
+  if (!form) throw Error('Form not found in db')
+
+  return form
 }
