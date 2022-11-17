@@ -5,20 +5,21 @@ export type IPaymentSchema = Payment
 
 export type IPaymentModel = Model<IPaymentSchema>
 
-export interface IStripeWebhookBody {
-  Id: string
-  ApiVersion: string
-  Data: {
-    Object: Record<string, any>
-    PreviousAttributes: Record<string, any>
+export interface IStripeEventWebhookBody {
+  id: string
+  api_version: string
+  data: {
+    object: Record<string, any>
+    previous_attributes: Record<string, any>
   }
-  Request: {
-    Id: string
-    IdempotencyKey: string
+  request: {
+    id: string
+    idempotency_key: string
   }
-  Type: string
-  Account: string
-  Created: Date
-  Livemode: boolean
-  PendingWebhooks: number
+  type: string
+  object: string
+  account: string
+  created: number
+  livemode: boolean
+  pending_webhooks: number
 }
