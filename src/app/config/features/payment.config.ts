@@ -10,7 +10,7 @@ const paymentFeature: Schema<IStripe> = {
   defaultCurrency: {
     doc: 'Default currency for all ',
     format: String,
-    default: 'sgp',
+    default: 'sgd',
     env: 'PAYMENT_DEFAULT_CURRENCY',
   },
   stripeSecretKey: {
