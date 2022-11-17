@@ -68,6 +68,13 @@ export enum FormResponseMode {
   Email = 'email',
 }
 
+export type FormPayments = {
+  enabled: boolean
+  target_account_id: string
+  // amount is string because it is a number with two decimal places
+  amount: string
+}
+
 export interface FormBase {
   title: string
   admin: UserDto['_id']
@@ -95,6 +102,8 @@ export interface FormBase {
   webhook: FormWebhook
 
   responseMode: FormResponseMode
+
+  payments?: FormPayments
 }
 
 export interface EmailFormBase extends FormBase {

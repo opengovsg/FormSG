@@ -86,6 +86,10 @@ const FORM_DEFAULTS = {
   },
   status: 'PRIVATE',
   submissionLimit: null,
+  payments: {
+    enabled: false,
+    target_account_id: '',
+  },
 }
 
 describe('Form Model', () => {
@@ -402,6 +406,218 @@ describe('Form Model', () => {
         // Assert
         await expect(invalidForm.save()).rejects.toThrow(
           'Form validation failed: esrvcId: e-service ID must not contain whitespace',
+        )
+      })
+
+      it('should save with default payments settings', async () => {
+        // Arrange + Act
+        const validForm = new Form(MOCK_FORM_PARAMS)
+        const saved = await validForm.save()
+
+        // Assert
+        // Retrieve object and compare to params, remove indeterministic keys
+        const actualSavedObject = omit(saved.toObject(), [
+          '_id',
+          'created',
+          'lastModified',
+          '__v',
+        ])
+        const expectedObject = merge({}, FORM_DEFAULTS, MOCK_FORM_PARAMS)
+        expect(actualSavedObject).toEqual(expectedObject)
+      })
+
+      it('should create and save successfully with valid payments settings for amount with two decimal', async () => {
+        // Arrange
+        const validFormParams = merge({}, MOCK_FORM_PARAMS, {
+          payments: {
+            enabled: true,
+            target_account_id: 'someId',
+            amount: '5.22',
+          },
+        })
+
+        // Act
+        const validForm = new Form(validFormParams)
+        const saved = await validForm.save()
+
+        // Assert
+        // All fields should exist
+        // Object Id should be defined when successfully saved to MongoDB.
+        expect(saved._id).toBeDefined()
+        expect(saved.created).toBeInstanceOf(Date)
+        expect(saved.lastModified).toBeInstanceOf(Date)
+        // Retrieve object and compare to params, remove indeterministic keys
+        const actualSavedObject = omit(saved.toObject(), [
+          '_id',
+          'created',
+          'lastModified',
+          '__v',
+        ])
+        const expectedObject = merge({}, FORM_DEFAULTS, validFormParams)
+        expect(actualSavedObject).toEqual(expectedObject)
+      })
+
+      it('should create and save successfully with valid payments settings for zero dollar amount with two decimal', async () => {
+        // Arrange
+        const validFormParams = merge({}, MOCK_FORM_PARAMS, {
+          payments: {
+            enabled: true,
+            target_account_id: 'someId',
+            amount: '0.22',
+          },
+        })
+
+        // Act
+        const validForm = new Form(validFormParams)
+        const saved = await validForm.save()
+
+        // Assert
+        // All fields should exist
+        // Object Id should be defined when successfully saved to MongoDB.
+        expect(saved._id).toBeDefined()
+        expect(saved.created).toBeInstanceOf(Date)
+        expect(saved.lastModified).toBeInstanceOf(Date)
+        // Retrieve object and compare to params, remove indeterministic keys
+        const actualSavedObject = omit(saved.toObject(), [
+          '_id',
+          'created',
+          'lastModified',
+          '__v',
+        ])
+        const expectedObject = merge({}, FORM_DEFAULTS, validFormParams)
+        expect(actualSavedObject).toEqual(expectedObject)
+      })
+
+      it('should reject when target account id has whitespace', async () => {
+        // Arrange
+        const invalidFormParams = merge({}, MOCK_FORM_PARAMS, {
+          payments: {
+            enabled: true,
+            target_account_id: 'some Id',
+            amount: '5',
+          },
+        })
+
+        // Act
+        const invalidForm = new Form(invalidFormParams)
+
+        // Assert
+        await expect(invalidForm.save()).rejects.toThrow(
+          'Target_account_id must not contain whitespace.',
+        )
+      })
+
+      it('should reject when amount is not a number', async () => {
+        // Arrange
+        const invalidFormParams = merge({}, MOCK_FORM_PARAMS, {
+          payments: {
+            enabled: true,
+            target_account_id: 'someId',
+            amount: 'XX',
+          },
+        })
+
+        // Act
+        const invalidForm = new Form(invalidFormParams)
+
+        // Assert
+        await expect(invalidForm.save()).rejects.toThrow(
+          'Please enter a valid payment amount with two decimals (e.g. 5.00)',
+        )
+      })
+
+      it('should reject when amount is negative', async () => {
+        // Arrange
+        const invalidFormParams = merge({}, MOCK_FORM_PARAMS, {
+          payments: {
+            enabled: true,
+            target_account_id: 'someId',
+            amount: '-5.22',
+          },
+        })
+
+        // Act
+        const invalidForm = new Form(invalidFormParams)
+
+        // Assert
+        await expect(invalidForm.save()).rejects.toThrow(
+          'Please enter a valid payment amount with two decimals (e.g. 5.00)',
+        )
+      })
+
+      it('should reject when amount has leading zeroes', async () => {
+        // Arrange
+        const invalidFormParams = merge({}, MOCK_FORM_PARAMS, {
+          payments: {
+            enabled: true,
+            target_account_id: 'someId',
+            amount: '07.12',
+          },
+        })
+
+        // Act
+        const invalidForm = new Form(invalidFormParams)
+
+        // Assert
+        await expect(invalidForm.save()).rejects.toThrow(
+          'Please enter a valid payment amount with two decimals (e.g. 5.00)',
+        )
+      })
+
+      it('should reject when amount has no decimals', async () => {
+        // Arrange
+        const invalidFormParams = merge({}, MOCK_FORM_PARAMS, {
+          payments: {
+            enabled: true,
+            target_account_id: 'someId',
+            amount: '5',
+          },
+        })
+
+        // Act
+        const invalidForm = new Form(invalidFormParams)
+
+        // Assert
+        await expect(invalidForm.save()).rejects.toThrow(
+          'Please enter a valid payment amount with two decimals (e.g. 5.00)',
+        )
+      })
+
+      it('should reject when amount has decimal point but no decimals', async () => {
+        // Arrange
+        const invalidFormParams = merge({}, MOCK_FORM_PARAMS, {
+          payments: {
+            enabled: true,
+            target_account_id: 'someId',
+            amount: '5.',
+          },
+        })
+
+        // Act
+        const invalidForm = new Form(invalidFormParams)
+
+        // Assert
+        await expect(invalidForm.save()).rejects.toThrow(
+          'Please enter a valid payment amount with two decimals (e.g. 5.00)',
+        )
+      })
+
+      it('should reject when amount has one decimal', async () => {
+        // Arrange
+        const invalidFormParams = merge({}, MOCK_FORM_PARAMS, {
+          payments: {
+            enabled: true,
+            target_account_id: 'someId',
+            amount: '6.1',
+          },
+        })
+
+        // Act
+        const invalidForm = new Form(invalidFormParams)
+
+        // Assert
+        await expect(invalidForm.save()).rejects.toThrow(
+          'Please enter a valid payment amount with two decimals (e.g. 5.00)',
         )
       })
     })

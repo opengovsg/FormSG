@@ -427,6 +427,51 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         default: null,
         min: 1,
       },
+      payments: {
+        enabled: {
+          type: Boolean,
+          default: false,
+        },
+        target_account_id: {
+          type: String,
+          default: '',
+          validate: [
+            /^\S*$/i,
+            'Target_account_id must not contain whitespace.',
+          ],
+        },
+        amount: {
+          type: String,
+          validate: {
+            validator: (amount: string) => {
+              const numVal = Number(amount)
+              if (isNaN(numVal)) {
+                return false
+              }
+
+              // Validate positive payment
+              if (numVal <= 0) {
+                return false
+              }
+
+              // Validate no leading zeros
+              if (/^0[0-9]\./.test(amount)) {
+                return false
+              }
+
+              // Validate exactly two decimal places
+              if (!/^[0-9]+\.[0-9]{2}$/.test(amount)) {
+                return false
+              }
+
+              return true
+            },
+            message:
+              'Please enter a valid payment amount with two decimals (e.g. 5.00).',
+          },
+        },
+        required: false,
+      },
     },
     formSchemaOptions,
   )
