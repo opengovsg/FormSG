@@ -6,7 +6,7 @@ import { FormFieldDto, MyInfoAttribute } from './field'
 import { FormAuthType } from './form/form'
 import { DateString } from './generic'
 import { EmailResponse, FieldResponse, MobileResponse } from './response'
-
+import { Payment } from './payment'
 export type SubmissionId = Opaque<string, 'SubmissionId'>
 export const SubmissionId = z.string() as unknown as z.Schema<SubmissionId>
 
@@ -21,8 +21,8 @@ export const SubmissionBase = z.object({
   myInfoFields: z.array(z.nativeEnum(MyInfoAttribute)).optional(),
   submissionType: z.nativeEnum(SubmissionType),
   paymentPending: z.boolean().optional(),
-  // TODO: include after Payment model has been created
-  // paymentId: PaymentBase.shape._id.optional(),
+  // TODO: change to object if string doesn't work
+  paymentId: z.string(),
 })
 export type SubmissionBase = z.infer<typeof SubmissionBase>
 
