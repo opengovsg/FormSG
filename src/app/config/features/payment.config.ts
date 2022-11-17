@@ -1,11 +1,18 @@
 import convict, { Schema } from 'convict'
 
 export interface IStripe {
-  stripeSecretKey: string
-  stripeClientID: string
+    defaultCurrency: string,
+    stripeSecretKey: string,
+  stripeClientID: string,
 }
 
 const paymentFeature: Schema<IStripe> = {
+  defaultCurrency: {
+    doc: 'Default currency for all ',
+    format: 'string',
+    default: 'sgp',
+    env: 'PAYMENT_DEFAULT_CURRENCY',
+  },
   stripeSecretKey: {
     doc: 'Stripe Account Secret Key',
     format: 'string',

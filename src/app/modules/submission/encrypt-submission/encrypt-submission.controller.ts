@@ -17,6 +17,7 @@ import {
 } from '../../../../../shared/types'
 import { EncryptSubmissionDto } from '../../../../types/api'
 import { createLoggerWithLabel } from '../../../config/logger'
+import { paymentConfig } from '../../../config/features/payment.config'
 import { getEncryptSubmissionModel } from '../../../models/submission.server.model'
 import * as CaptchaMiddleware from '../../../services/captcha/captcha.middleware'
 import * as CaptchaService from '../../../services/captcha/captcha.service'
@@ -377,13 +378,23 @@ const submitEncryptModeForm: ControllerHandler<
     )
   }
 
-  const paymentIntent: Stripe.PaymentIntent = await stripe.paymentIntents.create({
-    amount: 2000,
-    currency: 'sgd',
-    payment_method_types: ['card'],
-  });
+  if (form.payment.enabled) {
+    // assumes stripe for now
+    const paymentIntent: Stripe.PaymentIntent = await stripe.paymentIntents.create({
+      amount: form.payment.amount,
+      currency: paymentConfig.defaultCurrency,
+      payment_method_types: ['card'],
+      description: form.payment.description,
+      application_fee_amount: 0,
+      on_behalf_of: form.payment.target_account_id,
+      metadata: {
+        formId: form._id,
+        submissionId: savedSubmission._id,
+      },
+    });
 
-  // TODO Add entry in payments collection
+    // TODO add entry in payments collection
+  }
 
   // Send Email Confirmations
   res.json({
