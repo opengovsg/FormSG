@@ -1,5 +1,7 @@
 import { Router } from 'express'
 
+import { StripeRouter } from './stripe'
+
 export const PaymentsRouter = Router()
 
-PaymentsRouter.get('/', (req, res) => res.json('ok'))
+PaymentsRouter.use('/stripe', StripeRouter)
