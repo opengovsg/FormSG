@@ -57,6 +57,14 @@ const SubmissionSchema = new Schema<ISubmissionSchema, ISubmissionModel>(
       enum: Object.values(SubmissionType),
       required: true,
     },
+    paymentPending: {
+      type: Boolean,
+    },
+    paymentId: {
+      type: Schema.Types.ObjectId,
+      // TODO: include after Payment model has been created
+      // ref: 'Payment'
+    },
   },
   {
     timestamps: {

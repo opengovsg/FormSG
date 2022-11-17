@@ -20,6 +20,9 @@ export const SubmissionBase = z.object({
   authType: z.nativeEnum(FormAuthType),
   myInfoFields: z.array(z.nativeEnum(MyInfoAttribute)).optional(),
   submissionType: z.nativeEnum(SubmissionType),
+  paymentPending: z.boolean().optional(),
+  // TODO: include after Payment model has been created
+  // paymentId: PaymentBase.shape._id.optional(),
 })
 export type SubmissionBase = z.infer<typeof SubmissionBase>
 
