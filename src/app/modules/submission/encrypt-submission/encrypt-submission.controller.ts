@@ -35,6 +35,9 @@ import { WebhookFactory } from '../../webhook/webhook.factory'
 import * as EncryptSubmissionMiddleware from '../encrypt-submission/encrypt-submission.middleware'
 import { sendEmailConfirmations } from '../submission.service'
 import { extractEmailConfirmationDataFromIncomingSubmission } from '../submission.utils'
+import Stripe from 'stripe'
+import { stripe } from '../../../loaders/stripe'
+
 
 import {
   checkFormIsEncryptMode,
@@ -373,6 +376,14 @@ const submitEncryptModeForm: ControllerHandler<
       !!form.webhook?.isRetryEnabled,
     )
   }
+
+  const paymentIntent: Stripe.PaymentIntent = await stripe.paymentIntents.create({
+    amount: 2000,
+    currency: 'sgd',
+    payment_method_types: ['card'],
+  });
+
+  // TODO Add entry in payments collection
 
   // Send Email Confirmations
   res.json({
