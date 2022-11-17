@@ -6,15 +6,19 @@ export type IPaymentSchema = Payment
 export type IPaymentModel = Model<IPaymentSchema>
 
 export interface IStripeWebhookBody {
-  SmsSid: string
-  SmsStatus: string
-  MessageStatus: string
-  To: string
-  MessageSid: string
-  AccountSid: string
-  MessagingServiceSid: string
-  From: string
+  Id: string
   ApiVersion: string
-  ErrorCode?: number // Only filled when it is 'failed' or 'undelivered'
-  ErrorMessage?: string // Only filled when it is 'failed' or 'undelivered'
+  Data: {
+    Object: Record<string, any>
+    PreviousAttributes: Record<string, any>
+  }
+  Request: {
+    Id: string
+    IdempotencyKey: string
+  }
+  Type: string
+  Account: string
+  Created: Date
+  Livemode: boolean
+  PendingWebhooks: number
 }
