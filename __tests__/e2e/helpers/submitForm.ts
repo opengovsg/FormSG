@@ -7,8 +7,7 @@ import { IFormSchema } from 'src/types'
 import { E2eFieldMetadata, NON_INPUT_FIELD_TYPES } from '../constants/field'
 import { PUBLIC_FORM_PAGE_PREFIX } from '../constants/links'
 import { E2eSettingsOptions } from '../constants/settings'
-
-import { extractOtp } from './mail'
+import { extractOtp } from '../utils/mail'
 
 /**
  * Navigates to the public form page and ensures that the title of the form is correct.

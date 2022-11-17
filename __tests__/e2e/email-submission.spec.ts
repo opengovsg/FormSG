@@ -1,16 +1,22 @@
+import { Page } from '@playwright/test'
 import mongoose from 'mongoose'
 import { BasicField, FormAuthType } from 'shared/types'
 
 import { IFormModel } from 'src/types'
 
 import { allFields, E2eFieldMetadata, sampleField } from './constants/field'
+import { E2eForm } from './constants/form'
 import { test } from './fixtures/auth'
-import { createForm } from './utils/createForm'
-import { makeModel, makeMongooseFixtures } from './utils/database'
+import { createForm } from './helpers/createForm'
+import { submitForm } from './helpers/submitForm'
+import { verifySubmission } from './helpers/verifySubmission'
+import {
+  deleteDocById,
+  makeModel,
+  makeMongooseFixtures,
+} from './utils/database'
 import { getBlankVersion, getOptionalVersion } from './utils/field'
 import { getSettings } from './utils/settings'
-import { submitForm } from './utils/submitForm'
-import { verifySubmission } from './utils/verifySubmission'
 
 let db: mongoose.Connection
 //let User: IUserModel
@@ -36,43 +42,31 @@ test.describe('Email form submission', () => {
   test('Create and submit email mode form with all fields', async ({
     page,
   }) => {
-    // Define form
+    // Define
     const formFields = allFields
     const formSettings = getSettings()
 
     // Test
-    const form = await createForm(page, Form, { formFields, formSettings })
-    const responseId = await submitForm(page, {
-      form,
-      formFields,
-      formSettings,
-    })
-    await verifySubmission(page, { form, formFields, responseId })
+    await runTest(page, { formFields, formSettings })
   })
 
   test('Create and submit email mode form with all fields optional', async ({
     page,
   }) => {
-    // Define form
+    // Define
     const formFields = allFields.map((ff) =>
       getBlankVersion(getOptionalVersion(ff)),
     )
     const formSettings = getSettings()
 
     // Test
-    const form = await createForm(page, Form, { formFields, formSettings })
-    const responseId = await submitForm(page, {
-      form,
-      formFields,
-      formSettings,
-    })
-    await verifySubmission(page, { form, formFields, responseId })
+    await runTest(page, { formFields, formSettings })
   })
 
   test('Create and submit email mode form with identical attachment names', async ({
     page,
   }) => {
-    // Define form
+    // Define
     const baseField = sampleField[BasicField.Attachment]
     const formFields = new Array(3).fill('').map(
       (_, i) =>
@@ -86,19 +80,13 @@ test.describe('Email form submission', () => {
     const formSettings = getSettings()
 
     // Test
-    const form = await createForm(page, Form, { formFields, formSettings })
-    const responseId = await submitForm(page, {
-      form,
-      formFields,
-      formSettings,
-    })
-    await verifySubmission(page, { form, formFields, responseId })
+    await runTest(page, { formFields, formSettings })
   })
 
   test('Create and submit email mode form with optional and required attachments', async ({
     page,
   }) => {
-    // Define form
+    // Define
     const baseField = sampleField[BasicField.Attachment]
     const formFields = [
       {
@@ -121,19 +109,27 @@ test.describe('Email form submission', () => {
     const formSettings = getSettings()
 
     // Test
-    const form = await createForm(page, Form, { formFields, formSettings })
-    const responseId = await submitForm(page, {
-      form,
-      formFields,
-      formSettings,
+    await runTest(page, { formFields, formSettings })
+  })
+
+  test('Create and submit email mode form with Singpass authentication', async ({
+    page,
+  }) => {
+    // Define
+    const formFields = allFields
+    const formSettings = getSettings({
+      authType: FormAuthType.SP,
+      esrvcId: process.env.SINGPASS_ESRVC_ID,
     })
-    await verifySubmission(page, { form, formFields, responseId })
+
+    // Test
+    await runTest(page, { formFields, formSettings })
   })
 
   test('Create and submit email mode form with Corppass authentication', async ({
     page,
   }) => {
-    // Define form
+    // Define
     const formFields = allFields
     const formSettings = getSettings({
       authType: FormAuthType.CP,
@@ -141,12 +137,20 @@ test.describe('Email form submission', () => {
     })
 
     // Test
-    const form = await createForm(page, Form, { formFields, formSettings })
-    const responseId = await submitForm(page, {
-      form,
-      formFields,
-      formSettings,
-    })
-    await verifySubmission(page, { form, formFields, responseId })
+    await runTest(page, { formFields, formSettings })
   })
 })
+
+const runTest = async (
+  page: Page,
+  { formFields, formSettings }: E2eForm,
+): Promise<void> => {
+  const form = await createForm(page, Form, { formFields, formSettings })
+  const responseId = await submitForm(page, {
+    form,
+    formFields,
+    formSettings,
+  })
+  await verifySubmission(page, { form, formFields, responseId })
+  await deleteDocById(Form, form._id)
+}

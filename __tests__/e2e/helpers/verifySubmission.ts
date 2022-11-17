@@ -10,8 +10,7 @@ import {
   DATE_RESPONSE_FORMAT,
   E2eFieldMetadata,
 } from '../constants/field'
-
-import { getSubmission } from './mail'
+import { getSubmission } from '../utils/mail'
 
 export type VerifySubmissionProps = {
   form: IFormSchema
