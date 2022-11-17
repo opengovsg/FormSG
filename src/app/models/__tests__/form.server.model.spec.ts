@@ -89,6 +89,7 @@ const FORM_DEFAULTS = {
   payments: {
     enabled: false,
     target_account_id: '',
+    description: '',
   },
 }
 
@@ -433,6 +434,7 @@ describe('Form Model', () => {
             enabled: true,
             target_account_id: 'someId',
             amount: '5.22',
+            description: 'some payment',
           },
         })
 
@@ -464,6 +466,7 @@ describe('Form Model', () => {
             enabled: true,
             target_account_id: 'someId',
             amount: '0.22',
+            description: 'some payment',
           },
         })
 
@@ -494,7 +497,8 @@ describe('Form Model', () => {
           payments: {
             enabled: true,
             target_account_id: 'some Id',
-            amount: '5',
+            amount: '5.11',
+            description: 'some payment',
           },
         })
 
@@ -514,6 +518,7 @@ describe('Form Model', () => {
             enabled: true,
             target_account_id: 'someId',
             amount: 'XX',
+            description: 'some payment',
           },
         })
 
@@ -533,6 +538,7 @@ describe('Form Model', () => {
             enabled: true,
             target_account_id: 'someId',
             amount: '-5.22',
+            description: 'some payment',
           },
         })
 
@@ -552,6 +558,7 @@ describe('Form Model', () => {
             enabled: true,
             target_account_id: 'someId',
             amount: '07.12',
+            description: 'some payment',
           },
         })
 
@@ -571,6 +578,7 @@ describe('Form Model', () => {
             enabled: true,
             target_account_id: 'someId',
             amount: '5',
+            description: 'some payment',
           },
         })
 
@@ -590,6 +598,7 @@ describe('Form Model', () => {
             enabled: true,
             target_account_id: 'someId',
             amount: '5.',
+            description: 'some payment',
           },
         })
 
@@ -609,6 +618,7 @@ describe('Form Model', () => {
             enabled: true,
             target_account_id: 'someId',
             amount: '6.1',
+            description: 'some payment',
           },
         })
 

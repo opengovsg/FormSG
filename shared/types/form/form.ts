@@ -73,6 +73,7 @@ export type FormPayments = {
   target_account_id: string
   // amount is string because it is a number with two decimal places
   amount: string
+  description: string
 }
 
 export interface FormBase {

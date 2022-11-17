@@ -440,6 +440,10 @@ const compileFormModel = (db: Mongoose): IFormModel => {
             'Target_account_id must not contain whitespace.',
           ],
         },
+        description: {
+          type: String,
+          default: '',
+        },
         amount: {
           type: String,
           validate: {
