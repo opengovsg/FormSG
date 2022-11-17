@@ -1,26 +1,59 @@
 import { expect, Page } from '@playwright/test'
 import { parsePhoneNumber } from 'libphonenumber-js'
-import { BasicField } from 'shared/types'
+import { BasicField, FormAuthType } from 'shared/types'
 
 import { IFormSchema } from 'src/types'
 
 import { E2eFieldMetadata, NON_INPUT_FIELD_TYPES } from '../constants/field'
 import { PUBLIC_FORM_PAGE_PREFIX } from '../constants/links'
+import { E2eSettingsOptions } from '../constants/settings'
 
 import { extractOtp } from './mail'
 
 /**
  * Navigates to the public form page and ensures that the title of the form is correct.
  * @param {Page} page Playwright page
- * @param {string} formId the created formId
- * @param {string} title the form title
+ * @param {IFormSchema} form the created form from the db
  */
 export const accessForm = async (
   page: Page,
-  { formId, title }: { formId: string; title: string },
+  { form }: { form: IFormSchema },
 ): Promise<void> => {
-  await page.goto(`${PUBLIC_FORM_PAGE_PREFIX}/${formId}`)
-  await expect(page.getByRole('heading', { name: title })).toBeVisible()
+  await page.goto(`${PUBLIC_FORM_PAGE_PREFIX}/${form._id}`)
+  await expect(page.getByRole('heading', { name: form.title })).toBeVisible()
+}
+
+/**
+ * Navigates to the public form page and ensures that the title of the form is correct.
+ * @param {Page} page Playwright page
+ * @param {E2eSettingsOptions} formSettings the settings used to create the form
+ */
+export const authForm = async (
+  page: Page,
+  { formSettings }: { formSettings: E2eSettingsOptions },
+): Promise<void> => {
+  if (formSettings.authType === FormAuthType.NIL) return
+
+  // Check that the submit button is not visible.
+  await expect(
+    page.locator(
+      'button:text-matches("(submit now)|(submission disabled)", "gi")',
+    ),
+  ).toBeHidden()
+
+  await page
+    .getByRole('button', {
+      name: `Log in with Singpass${
+        formSettings.authType === FormAuthType.CP
+          ? ' (Corporate)'
+          : formSettings.authType === FormAuthType.SGID
+          ? ' App-only Login'
+          : ''
+      }`,
+    })
+    .click()
+
+  // TODO: Actually login! Can't do yet because no mockpass?
 }
 
 /**
@@ -30,7 +63,13 @@ export const accessForm = async (
  */
 export const fillFields = async (
   page: Page,
-  { form, formFields }: SubmitFormProps,
+  {
+    form,
+    formFields,
+  }: {
+    form: IFormSchema
+    formFields: E2eFieldMetadata[]
+  },
 ): Promise<void> => {
   // Check that the submit button is visible.
   await expect(
@@ -229,6 +268,7 @@ export const clickSubmitBtn = async (page: Page): Promise<string> => {
 export type SubmitFormProps = {
   form: IFormSchema
   formFields: E2eFieldMetadata[]
+  formSettings: E2eSettingsOptions
 }
 
 /**
@@ -236,14 +276,15 @@ export type SubmitFormProps = {
  * @param {Page} page Playwright page
  * @param {IFormSchema} form the form returned from the db
  * @param {E2eFieldMetadata[]} formFields the fields used to create the form
+ * @param {E2eSettingsOptions} formSettings the settings used to create the form
  * @returns {string} the responseId
  */
 export const submitForm = async (
   page: Page,
-  { form, formFields }: SubmitFormProps,
+  { form, formFields, formSettings }: SubmitFormProps,
 ): Promise<string> => {
-  await accessForm(page, { formId: form._id, title: form.title })
-  // TODO: if authed, do checks and log in.
+  await accessForm(page, { form })
+  await authForm(page, { formSettings })
   await fillFields(page, { form, formFields })
   const responseId = await clickSubmitBtn(page)
   return responseId

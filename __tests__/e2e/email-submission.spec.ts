@@ -1,7 +1,7 @@
 import mongoose from 'mongoose'
-import { BasicField } from 'shared/types'
+import { BasicField, FormAuthType } from 'shared/types'
 
-import { IAgencyModel, IAgencySchema, IFormModel, IUserModel } from 'src/types'
+import { IFormModel } from 'src/types'
 
 import { allFields, E2eFieldMetadata, sampleField } from './constants/field'
 import { test } from './fixtures/auth'
@@ -13,19 +13,19 @@ import { submitForm } from './utils/submitForm'
 import { verifySubmission } from './utils/verifySubmission'
 
 let db: mongoose.Connection
-let User: IUserModel
+//let User: IUserModel
 let Form: IFormModel
-let Agency: IAgencyModel
-let govTech: IAgencySchema | null
+//let Agency: IAgencyModel
+//let govTech: IAgencySchema | null
 
 test.describe('Email form submission', () => {
   test.beforeAll(async () => {
     // Create models
     db = await makeMongooseFixtures()
-    Agency = makeModel(db, 'agency.server.model', 'Agency')
-    User = makeModel(db, 'user.server.model', 'User')
+    //Agency = makeModel(db, 'agency.server.model', 'Agency')
+    //User = makeModel(db, 'user.server.model', 'User')
     Form = makeModel(db, 'form.server.model', 'Form')
-    govTech = await Agency.findOne({ shortName: 'govtech' }).exec()
+    //govTech = await Agency.findOne({ shortName: 'govtech' }).exec()
   })
   test.afterAll(async () => {
     // Clean up db
@@ -42,7 +42,11 @@ test.describe('Email form submission', () => {
 
     // Test
     const form = await createForm(page, Form, { formFields, formSettings })
-    const responseId = await submitForm(page, { form, formFields })
+    const responseId = await submitForm(page, {
+      form,
+      formFields,
+      formSettings,
+    })
     await verifySubmission(page, { form, formFields, responseId })
   })
 
@@ -57,7 +61,11 @@ test.describe('Email form submission', () => {
 
     // Test
     const form = await createForm(page, Form, { formFields, formSettings })
-    const responseId = await submitForm(page, { form, formFields })
+    const responseId = await submitForm(page, {
+      form,
+      formFields,
+      formSettings,
+    })
     await verifySubmission(page, { form, formFields, responseId })
   })
 
@@ -79,7 +87,11 @@ test.describe('Email form submission', () => {
 
     // Test
     const form = await createForm(page, Form, { formFields, formSettings })
-    const responseId = await submitForm(page, { form, formFields })
+    const responseId = await submitForm(page, {
+      form,
+      formFields,
+      formSettings,
+    })
     await verifySubmission(page, { form, formFields, responseId })
   })
 
@@ -110,7 +122,31 @@ test.describe('Email form submission', () => {
 
     // Test
     const form = await createForm(page, Form, { formFields, formSettings })
-    const responseId = await submitForm(page, { form, formFields })
+    const responseId = await submitForm(page, {
+      form,
+      formFields,
+      formSettings,
+    })
+    await verifySubmission(page, { form, formFields, responseId })
+  })
+
+  test('Create and submit email mode form with Corppass authentication', async ({
+    page,
+  }) => {
+    // Define form
+    const formFields = allFields
+    const formSettings = getSettings({
+      authType: FormAuthType.CP,
+      esrvcId: process.env.CORPPASS_ESRVC_ID,
+    })
+
+    // Test
+    const form = await createForm(page, Form, { formFields, formSettings })
+    const responseId = await submitForm(page, {
+      form,
+      formFields,
+      formSettings,
+    })
     await verifySubmission(page, { form, formFields, responseId })
   })
 })

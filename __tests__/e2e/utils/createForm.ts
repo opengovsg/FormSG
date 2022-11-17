@@ -61,7 +61,7 @@ const addGeneralSettings = async (
   page: Page,
   formSettings: E2eSettingsOptions,
 ): Promise<void> => {
-  await page.getByRole('button', { name: 'General' })
+  await page.getByRole('tab', { name: 'General' })
 
   // Ensure that we are on the general settings page
   await expect(
@@ -136,38 +136,51 @@ const addGeneralSettings = async (
  * @param {Page} page Playwright page
  * @param {E2eSettingsOptions} formSettings the form settings to update
  */
-const addSingpassSettings = async (
+const addAuthSettings = async (
   page: Page,
   formSettings: E2eSettingsOptions,
 ): Promise<void> => {
-  await page.getByRole('button', { name: 'Singpass' })
+  if (formSettings.authType === FormAuthType.NIL) return
+
+  await page.getByRole('tab', { name: 'Singpass' }).click()
 
   // Ensure that we are on the auth page
   await expect(
     page.getByRole('heading', { name: 'Enable Singpass authentication' }),
   ).toBeVisible()
 
+  const name = `Singpass${
+    formSettings.authType === FormAuthType.SP
+      ? ''
+      : formSettings.authType === FormAuthType.SGID
+      ? ' App-only Login (Free)'
+      : formSettings.authType === FormAuthType.MyInfo
+      ? ' with MyInfo'
+      : ' (Corporate)'
+  }`
+
   await page
-    .locator('label', {
-      has: page.locator(`[name="${formSettings.authType}"]`),
-    })
+    .locator('label', { has: page.getByRole('radio', { name }) })
     .click()
 
   await expect(
-    page.getByText(/form authentication successfully updated {2}/i),
+    page.getByText(/form authentication successfully updated/i),
   ).toBeVisible()
 
-  switch (formSettings.authType) {
-    case FormAuthType.SP:
-    case FormAuthType.CP:
-    case FormAuthType.MyInfo:
-      await page.locator(`id=esrvcId`).fill(formSettings.esrvcId ?? '')
-      await expect(
-        page.getByText(/e-service id successfully updated/i),
-      ).toBeVisible()
-      break
-    default:
-      break
+  if (formSettings.esrvcId) {
+    switch (formSettings.authType) {
+      case FormAuthType.SP:
+      case FormAuthType.CP:
+      case FormAuthType.MyInfo:
+        await page.locator(`id=esrvcId`).fill(formSettings.esrvcId)
+        await page.keyboard.press('Enter')
+        await expect(
+          page.getByText(/e-service id successfully updated/i),
+        ).toBeVisible()
+        break
+      default:
+        break
+    }
   }
 }
 
@@ -179,6 +192,8 @@ const addCollaborators = async (
   page: Page,
   formSettings: E2eSettingsOptions,
 ): Promise<void> => {
+  if (formSettings.collaborators.length === 0) return
+
   await page.getByRole('button', { name: 'Manage collaborators' }).click()
 
   for (const collaborator of formSettings.collaborators) {
@@ -220,17 +235,13 @@ const addSettings = async (
   await expect(page).toHaveURL(`${ADMIN_FORM_PAGE_PREFIX}/${formId}/settings`)
 
   await addGeneralSettings(page, formSettings)
-
-  if (formSettings.authType !== FormAuthType.NIL) {
-    await addSingpassSettings(page, formSettings)
-  }
-
+  await addAuthSettings(page, formSettings)
   await addCollaborators(page, formSettings)
 
   // Open the form as the last thing to do!
   if (formSettings.status === FormStatus.Public) {
     // Go back to general settings, to open the form if necessary!
-    await page.getByRole('button', { name: 'General' })
+    await page.getByRole('tab', { name: 'General' }).click()
 
     // Ensure that we are on the general settings page
     await expect(
