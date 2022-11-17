@@ -4,6 +4,7 @@ import { AuthedSessionData } from 'express-session'
 import { StatusCodes } from 'http-status-codes'
 import JSONStream from 'JSONStream'
 import mongoose from 'mongoose'
+import Stripe from 'stripe'
 import type { SetOptional } from 'type-fest'
 
 import {
@@ -16,8 +17,9 @@ import {
   SubmissionResponseDto,
 } from '../../../../../shared/types'
 import { EncryptSubmissionDto } from '../../../../types/api'
-import { createLoggerWithLabel } from '../../../config/logger'
 import { paymentConfig } from '../../../config/features/payment.config'
+import { createLoggerWithLabel } from '../../../config/logger'
+import { stripe } from '../../../loaders/stripe'
 import { getEncryptSubmissionModel } from '../../../models/submission.server.model'
 import * as CaptchaMiddleware from '../../../services/captcha/captcha.middleware'
 import * as CaptchaService from '../../../services/captcha/captcha.service'
@@ -36,9 +38,6 @@ import { WebhookFactory } from '../../webhook/webhook.factory'
 import * as EncryptSubmissionMiddleware from '../encrypt-submission/encrypt-submission.middleware'
 import { sendEmailConfirmations } from '../submission.service'
 import { extractEmailConfirmationDataFromIncomingSubmission } from '../submission.utils'
-import Stripe from 'stripe'
-import { stripe } from '../../../loaders/stripe'
-
 
 import {
   checkFormIsEncryptMode,
@@ -378,29 +377,46 @@ const submitEncryptModeForm: ControllerHandler<
     )
   }
 
-  if (form.payment.enabled) {
+  // Client secret for stripe payments if payments are enabled
+  let payment_client_secret
+  if (form.payments?.enabled) {
     // assumes stripe for now
-    const paymentIntent: Stripe.PaymentIntent = await stripe.paymentIntents.create({
-      amount: form.payment.amount,
-      currency: paymentConfig.defaultCurrency,
-      payment_method_types: ['card'],
-      description: form.payment.description,
-      application_fee_amount: 0,
-      on_behalf_of: form.payment.target_account_id,
-      metadata: {
-        formId: form._id,
-        submissionId: savedSubmission._id,
-      },
-    });
+    const paymentIntent: Stripe.PaymentIntent =
+      await stripe.paymentIntents.create({
+        amount: Number(form.payments.amount),
+        currency: paymentConfig.defaultCurrency,
+        payment_method_types: ['card'],
+        description: form.payments.description,
+        application_fee_amount: 0,
+        on_behalf_of: form.payments.target_account_id,
+        metadata: {
+          formId: form._id,
+          submissionId: savedSubmission._id,
+        },
+      })
 
     // TODO add entry in payments collection
+
+    // extract payment_client_secret from paymentIntent
+    payment_client_secret = paymentIntent.client_secret
+
+    // if payment_client_secret is null, respond with error
+    if (!payment_client_secret) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        message: 'There was a problem preparing the payment. Please try again.',
+      })
+    }
   }
 
-  // Send Email Confirmations
+  // Send success back to client
   res.json({
     message: 'Form submission successful.',
     submissionId: submission.id,
+    // Attach payment_client_secret if it is defined
+    ...(payment_client_secret ? { payment_client_secret } : {}),
   })
+
+  // Send Email Confirmations
 
   return sendEmailConfirmations({
     form,
