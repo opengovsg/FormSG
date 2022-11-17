@@ -15,7 +15,7 @@ import { getSubmission } from './mail'
 
 export type VerifySubmissionProps = {
   form: IFormSchema
-  fieldMetas: E2eFieldMetadata[]
+  formFields: E2eFieldMetadata[]
   responseId: string
 }
 
@@ -176,12 +176,12 @@ const expectAttachment = (
  * match what is submitted.
  * @param {Page} page the Playwright page
  * @param {IFormSchema} form the form from the database
- * @param {E2eFieldMetadata[]} fieldMetas the field metadata used to create and fill the form
+ * @param {E2eFieldMetadata[]} formFields the field metadata used to create and fill the form
  * @param {string} responseId the response id of the submission to be verified
  */
 export const verifySubmission = async (
   page: Page,
-  { form, fieldMetas, responseId }: VerifySubmissionProps,
+  { form, formFields, responseId }: VerifySubmissionProps,
 ): Promise<void> => {
   const submission = await getSubmission(form.title, responseId)
 
@@ -196,7 +196,7 @@ export const verifySubmission = async (
   // Subject need not be verified, since we got the email via the subject.
 
   // Verify form responses in email
-  for (const field of fieldMetas) {
+  for (const field of formFields) {
     const isVisible = true // TODO: Change this when we include tests with logic
     const responseArray = getResponseArray(
       field,

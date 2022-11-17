@@ -2,12 +2,18 @@ import { Page } from '@playwright/test'
 import cuid from 'cuid'
 import { format } from 'date-fns'
 import { BASICFIELD_TO_DRAWER_META } from 'frontend/src/features/admin-form/create/constants'
-import { BasicField, DateSelectedValidation } from 'shared/types'
+import {
+  BasicField,
+  DateSelectedValidation,
+  FormAuthType,
+  FormStatus,
+} from 'shared/types'
 
 import { IFormModel, IFormSchema } from 'src/types'
 
 import { E2eFieldMetadata, NON_INPUT_FIELD_TYPES } from '../constants/field'
 import { ADMIN_FORM_PAGE_PREFIX, DASHBOARD_PAGE } from '../constants/links'
+import { E2eSettingsOptions } from '../constants/settings'
 import { expect } from '../fixtures/auth'
 
 /**
@@ -46,25 +52,25 @@ const addForm = async (page: Page): Promise<string> => {
   return formId
 }
 
-/** Goes to settings page and adds settings, and toggle form to be open.
- * Precondition: must be on the admin builder page with no dirty fields.
+/** Goes to general settings page and adds general settings.
+ * Precondition: must be on the admin form settings page.
  * @param {Page} page Playwright page
- * @param {string} formId the formId
+ * @param {E2eSettingsOptions} formSettings the form settings to update
  */
-const addSettings = async (page: Page, formId: string): Promise<void> => {
-  await page.getByText('Settings').click()
-  await expect(page).toHaveURL(`${ADMIN_FORM_PAGE_PREFIX}/${formId}/settings`)
+const addGeneralSettings = async (
+  page: Page,
+  formSettings: E2eSettingsOptions,
+): Promise<void> => {
+  await page.getByRole('button', { name: 'General' })
+
+  // Ensure that we are on the general settings page
+  await expect(
+    page.getByRole('heading', { name: 'General settings' }),
+  ).toBeVisible()
 
   await expect(
     page.getByText(/your form is closed to new responses/i),
   ).toBeVisible()
-
-  // Toggle form to be open
-  await page
-    .locator('label', {
-      has: page.locator('[aria-label="Toggle form status"]'),
-    })
-    .click()
 
   // Turn off captcha, since we can't test for that
   await page
@@ -72,6 +78,180 @@ const addSettings = async (page: Page, formId: string): Promise<void> => {
       has: page.locator('[aria-label="Enable reCAPTCHA"]'),
     })
     .click()
+
+  // Check toast
+  await expect(
+    page.getByText(/recaptcha is now disabled on your form/i),
+  ).toBeVisible()
+
+  if (formSettings.responseLimit) {
+    await page
+      .locator('label', {
+        has: page.locator('[aria-label="Set a response limit"]'),
+      })
+      .click()
+
+    // Check toast
+    await expect(
+      page.getByText(
+        /your form will now automatically close on the .* submission/i,
+      ),
+    ).toBeVisible()
+
+    await page
+      .getByLabel('Maximum number of responses allowed')
+      .fill(String(formSettings.responseLimit))
+
+    await page.keyboard.down('Enter')
+
+    // Check toast
+    await expect(
+      page.getByText(
+        /your form will now automatically close on the .* submission/i,
+      ),
+    ).toBeVisible()
+  }
+
+  if (formSettings.closedFormMessage) {
+    await page
+      .getByLabel('Set message for closed form')
+      .fill(formSettings.closedFormMessage)
+  }
+
+  if (formSettings.emails) {
+    const emailInput = page.getByLabel('Emails where responses will be sent')
+    await emailInput.focus()
+
+    // Clear the current admin email
+    await page.keyboard.press('Backspace')
+
+    await emailInput.fill(formSettings.emails.join(', '))
+
+    await expect(page.getByText(/emails successfully updated/i)).toBeVisible()
+  }
+}
+
+/** Goes to Singpass settings frame and adds auth settings.
+ * Precondition: must be on the admin form settings page.
+ * @param {Page} page Playwright page
+ * @param {E2eSettingsOptions} formSettings the form settings to update
+ */
+const addSingpassSettings = async (
+  page: Page,
+  formSettings: E2eSettingsOptions,
+): Promise<void> => {
+  await page.getByRole('button', { name: 'Singpass' })
+
+  // Ensure that we are on the auth page
+  await expect(
+    page.getByRole('heading', { name: 'Enable Singpass authentication' }),
+  ).toBeVisible()
+
+  await page
+    .locator('label', {
+      has: page.locator(`[name="${formSettings.authType}"]`),
+    })
+    .click()
+
+  await expect(
+    page.getByText(/form authentication successfully updated {2}/i),
+  ).toBeVisible()
+
+  switch (formSettings.authType) {
+    case FormAuthType.SP:
+    case FormAuthType.CP:
+    case FormAuthType.MyInfo:
+      await page.locator(`id=esrvcId`).fill(formSettings.esrvcId ?? '')
+      await expect(
+        page.getByText(/e-service id successfully updated/i),
+      ).toBeVisible()
+      break
+    default:
+      break
+  }
+}
+
+/** Opens the collaborator modal and adds the collaborators, then closes it.
+ * @param {Page} page Playwright page
+ * @param {E2eSettingsOptions} formSettings the form settings to update
+ */
+const addCollaborators = async (
+  page: Page,
+  formSettings: E2eSettingsOptions,
+): Promise<void> => {
+  await page.getByRole('button', { name: 'Manage collaborators' }).click()
+
+  for (const collaborator of formSettings.collaborators) {
+    await page.locator('button[name="email"]').fill(collaborator.email)
+
+    if (!collaborator.write) {
+      const dropdown = page.locator('button[name="Editor"]')
+      const menuId = await dropdown.getAttribute('aria-controls')
+      await dropdown.click()
+      const menu = page.locator(`id=${menuId}`)
+      await menu.getByText('Viewer').click()
+    }
+
+    await page.locator('button[name="Add collaborator"').click()
+
+    // Check toast
+    await expect(
+      page.getByText(`${collaborator.email} has been added as a Editor`),
+    ).toBeVisible()
+  }
+
+  await page.getByRole('button', { name: 'Close' }).click()
+}
+
+/** Goes to settings page and adds settings, and toggle form to be open.
+ * Precondition: must be on the admin builder page with no dirty fields.
+ * @param {Page} page Playwright page
+ * @param {string} formId the formId
+ * @param {E2eSettingsOptions} formSettings the form settings to update
+ */
+const addSettings = async (
+  page: Page,
+  {
+    formId,
+    formSettings,
+  }: { formId: string; formSettings: E2eSettingsOptions },
+): Promise<void> => {
+  await page.getByText('Settings').click()
+  await expect(page).toHaveURL(`${ADMIN_FORM_PAGE_PREFIX}/${formId}/settings`)
+
+  await addGeneralSettings(page, formSettings)
+
+  if (formSettings.authType !== FormAuthType.NIL) {
+    await addSingpassSettings(page, formSettings)
+  }
+
+  await addCollaborators(page, formSettings)
+
+  // Open the form as the last thing to do!
+  if (formSettings.status === FormStatus.Public) {
+    // Go back to general settings, to open the form if necessary!
+    await page.getByRole('button', { name: 'General' })
+
+    // Ensure that we are on the general settings page
+    await expect(
+      page.getByRole('heading', { name: 'General settings' }),
+    ).toBeVisible()
+
+    // Toggle form to be open
+    await page
+      .locator('label', {
+        has: page.locator('[aria-label="Toggle form status"]'),
+      })
+      .click()
+
+    // Check toast
+    await expect(page.getByText(/your form is now open/i)).toBeVisible()
+
+    // Check new label
+    await expect(
+      page.getByText(/your form is open to new responses/i),
+    ).toBeVisible()
+  }
 }
 
 export const addField = async (
@@ -296,16 +476,21 @@ export const addField = async (
  */
 export const addFields = async (
   page: Page,
-  fieldMetas: E2eFieldMetadata[],
+  formFields: E2eFieldMetadata[],
 ): Promise<void> => {
   await expect(page).toHaveURL(new RegExp(`${ADMIN_FORM_PAGE_PREFIX}/.*`, 'i'))
 
   await page.getByRole('button', { name: 'Add fields' }).click()
 
-  for (const field of fieldMetas) {
+  for (const field of formFields) {
     await addField(page, field)
   }
   await page.reload()
+}
+
+type CreateFormProps = {
+  formFields: E2eFieldMetadata[]
+  formSettings: E2eSettingsOptions
 }
 
 /**
@@ -316,11 +501,11 @@ export const addFields = async (
 export const createForm = async (
   page: Page,
   Form: IFormModel,
-  { fieldMetas }: { fieldMetas: E2eFieldMetadata[] },
+  { formFields, formSettings }: CreateFormProps,
 ): Promise<IFormSchema> => {
   const formId = await addForm(page)
-  await addFields(page, fieldMetas)
-  await addSettings(page, formId)
+  await addFields(page, formFields)
+  await addSettings(page, { formId, formSettings })
 
   const form = await Form.findById(formId)
 

@@ -30,7 +30,7 @@ export const accessForm = async (
  */
 export const fillFields = async (
   page: Page,
-  { form, fieldMetas }: SubmitFormProps,
+  { form, formFields }: SubmitFormProps,
 ): Promise<void> => {
   // Check that the submit button is visible.
   await expect(
@@ -40,7 +40,7 @@ export const fillFields = async (
   ).toBeVisible()
 
   // Inject field ids into the metadata in order to ensure they are locatable.
-  const fieldMetasWithIds = fieldMetas.map((ff, i) => {
+  const fieldMetasWithIds = formFields.map((ff, i) => {
     const field = form.form_fields?.[i]
     // Since both are ordered arrays, the order should match!
     if (!field || field.fieldType !== ff.fieldType) {
@@ -228,16 +228,23 @@ export const clickSubmitBtn = async (page: Page): Promise<string> => {
 
 export type SubmitFormProps = {
   form: IFormSchema
-  fieldMetas: E2eFieldMetadata[]
+  formFields: E2eFieldMetadata[]
 }
 
+/**
+ * Navigate to the public form page, fill the form fields and submit the form.
+ * @param {Page} page Playwright page
+ * @param {IFormSchema} form the form returned from the db
+ * @param {E2eFieldMetadata[]} formFields the fields used to create the form
+ * @returns {string} the responseId
+ */
 export const submitForm = async (
   page: Page,
-  { form, fieldMetas }: SubmitFormProps,
+  { form, formFields }: SubmitFormProps,
 ): Promise<string> => {
   await accessForm(page, { formId: form._id, title: form.title })
   // TODO: if authed, do checks and log in.
-  await fillFields(page, { form, fieldMetas })
+  await fillFields(page, { form, formFields })
   const responseId = await clickSubmitBtn(page)
   return responseId
 }

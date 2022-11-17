@@ -8,6 +8,7 @@ import { test } from './fixtures/auth'
 import { createForm } from './utils/createForm'
 import { makeModel, makeMongooseFixtures } from './utils/database'
 import { getBlankVersion, getOptionalVersion } from './utils/field'
+import { getSettings } from './utils/settings'
 import { submitForm } from './utils/submitForm'
 import { verifySubmission } from './utils/verifySubmission'
 
@@ -36,26 +37,28 @@ test.describe('Email form submission', () => {
     page,
   }) => {
     // Define form
-    const fieldMetas = allFields
+    const formFields = allFields
+    const formSettings = getSettings()
 
     // Test
-    const form = await createForm(page, Form, { fieldMetas })
-    const responseId = await submitForm(page, { form, fieldMetas })
-    await verifySubmission(page, { form, fieldMetas, responseId })
+    const form = await createForm(page, Form, { formFields, formSettings })
+    const responseId = await submitForm(page, { form, formFields })
+    await verifySubmission(page, { form, formFields, responseId })
   })
 
   test('Create and submit email mode form with all fields optional', async ({
     page,
   }) => {
     // Define form
-    const fieldMetas = allFields.map((ff) =>
+    const formFields = allFields.map((ff) =>
       getBlankVersion(getOptionalVersion(ff)),
     )
+    const formSettings = getSettings()
 
     // Test
-    const form = await createForm(page, Form, { fieldMetas })
-    const responseId = await submitForm(page, { form, fieldMetas })
-    await verifySubmission(page, { form, fieldMetas, responseId })
+    const form = await createForm(page, Form, { formFields, formSettings })
+    const responseId = await submitForm(page, { form, formFields })
+    await verifySubmission(page, { form, formFields, responseId })
   })
 
   test('Create and submit email mode form with identical attachment names', async ({
@@ -63,7 +66,7 @@ test.describe('Email form submission', () => {
   }) => {
     // Define form
     const baseField = sampleField[BasicField.Attachment]
-    const fieldMetas = new Array(3).fill('').map(
+    const formFields = new Array(3).fill('').map(
       (_, i) =>
         ({
           ...baseField,
@@ -72,11 +75,12 @@ test.describe('Email form submission', () => {
           val: `${i === 2 ? '' : `${2 - i}-`}test-att.txt`,
         } as E2eFieldMetadata),
     )
+    const formSettings = getSettings()
 
     // Test
-    const form = await createForm(page, Form, { fieldMetas })
-    const responseId = await submitForm(page, { form, fieldMetas })
-    await verifySubmission(page, { form, fieldMetas, responseId })
+    const form = await createForm(page, Form, { formFields, formSettings })
+    const responseId = await submitForm(page, { form, formFields })
+    await verifySubmission(page, { form, formFields, responseId })
   })
 
   test('Create and submit email mode form with optional and required attachments', async ({
@@ -84,7 +88,7 @@ test.describe('Email form submission', () => {
   }) => {
     // Define form
     const baseField = sampleField[BasicField.Attachment]
-    const fieldMetas = [
+    const formFields = [
       {
         ...baseField,
         title: 'Attachment 0',
@@ -102,10 +106,11 @@ test.describe('Email form submission', () => {
         val: 'test-att.txt',
       } as E2eFieldMetadata,
     ]
+    const formSettings = getSettings()
 
     // Test
-    const form = await createForm(page, Form, { fieldMetas })
-    const responseId = await submitForm(page, { form, fieldMetas })
-    await verifySubmission(page, { form, fieldMetas, responseId })
+    const form = await createForm(page, Form, { formFields, formSettings })
+    const responseId = await submitForm(page, { form, formFields })
+    await verifySubmission(page, { form, formFields, responseId })
   })
 })
