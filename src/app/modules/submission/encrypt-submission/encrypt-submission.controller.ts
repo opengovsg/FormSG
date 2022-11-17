@@ -381,9 +381,12 @@ const submitEncryptModeForm: ControllerHandler<
   let payment_client_secret
   if (form.payments?.enabled) {
     // assumes stripe for now
+
+    // Stripe requires the amount to be an integer in the smallest currency unit (i.e. cents)
+    const amountCents = Number(form.payments.amount) * 100
     const paymentIntent: Stripe.PaymentIntent =
       await stripe.paymentIntents.create({
-        amount: Number(form.payments.amount),
+        amount: amountCents,
         currency: paymentConfig.defaultCurrency,
         payment_method_types: ['card'],
         description: form.payments.description,
