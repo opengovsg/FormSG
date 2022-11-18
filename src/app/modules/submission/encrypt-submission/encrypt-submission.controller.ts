@@ -383,7 +383,7 @@ const submitEncryptModeForm: ControllerHandler<
   }
 
   // Client secret for stripe payments if payments are enabled
-  let payment_client_secret
+  let paymentClientSecret
   if (form.payments?.enabled) {
     // assumes stripe for now
 
@@ -406,10 +406,10 @@ const submitEncryptModeForm: ControllerHandler<
     // TODO add entry in payments collection
 
     // extract payment_client_secret from paymentIntent
-    payment_client_secret = paymentIntent.client_secret
+    paymentClientSecret = paymentIntent.client_secret
 
-    // if payment_client_secret is null, respond with error
-    if (!payment_client_secret) {
+    // if paymentClientSecret is null, respond with error
+    if (!paymentClientSecret) {
       logger.error({
         message: 'Error when creating payment intent, client secret is null',
         meta: {
@@ -455,8 +455,8 @@ const submitEncryptModeForm: ControllerHandler<
   res.json({
     message: 'Form submission successful.',
     submissionId: submission.id,
-    // Attach payment_client_secret if it is defined
-    ...(payment_client_secret ? { payment_client_secret } : {}),
+    // Attach paymentClientSecret if it is defined
+    ...(paymentClientSecret ? { paymentClientSecret } : {}),
   })
 
   // Send Email Confirmations

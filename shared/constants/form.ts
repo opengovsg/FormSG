@@ -11,6 +11,7 @@ const PUBLIC_FORM_FIELDS = <const>[
   'title',
   '_id',
   'responseMode',
+  'payments',
 ]
 
 export const EMAIL_PUBLIC_FORM_FIELDS = PUBLIC_FORM_FIELDS
