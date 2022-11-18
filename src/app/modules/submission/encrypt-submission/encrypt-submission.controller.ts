@@ -392,8 +392,8 @@ const submitEncryptModeForm: ControllerHandler<
       application_fee_amount: 0,
       on_behalf_of: form.payments.target_account_id,
       metadata: {
-        formId: form._id,
-        submissionId: savedSubmission._id,
+        formId: String(form._id),
+        submissionId: String(savedSubmission._id),
       },
     }
     const paymentIntent: Stripe.PaymentIntent =
