@@ -1,7 +1,7 @@
 import { Mongoose, Schema } from 'mongoose'
-import { PaymentStatus } from 'shared/types/payment'
 
-import { IPaymentModel, IPaymentSchema } from 'src/types'
+import { PaymentStatus } from '../../../shared/types'
+import { IPaymentModel, IPaymentSchema } from '../../types'
 
 export const PAYMENT_SCHEMA_ID = 'Payment'
 
@@ -21,12 +21,17 @@ const compilePaymentModel = (db: Mongoose): IPaymentModel => {
         enum: Object.values(PaymentStatus),
         required: true,
       },
-      webhookLog: {
-        type: [String],
-        required: true,
-      },
       paymentIntentId: {
         type: String,
+        required: true,
+      },
+      webhookLog: {
+        type: [
+          {
+            type: String,
+          },
+        ],
+        default: [],
       },
       payoutId: {
         type: String,

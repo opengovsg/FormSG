@@ -11,6 +11,7 @@ import {
   ErrorDto,
   FormAuthType,
   FormSubmissionMetadataQueryDto,
+  PaymentStatus,
   StorageModeSubmissionDto,
   StorageModeSubmissionMetadataList,
   SubmissionErrorDto,
@@ -20,6 +21,7 @@ import { EncryptSubmissionDto } from '../../../../types/api'
 import { paymentConfig } from '../../../config/features/payment.config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { stripe } from '../../../loaders/stripe'
+import getPaymentModel from '../../../models/payment.server.model'
 import { getEncryptSubmissionModel } from '../../../models/submission.server.model'
 import * as CaptchaMiddleware from '../../../services/captcha/captcha.middleware'
 import * as CaptchaService from '../../../services/captcha/captcha.service'
@@ -57,6 +59,7 @@ import IncomingEncryptSubmission from './IncomingEncryptSubmission.class'
 
 const logger = createLoggerWithLabel(module)
 const EncryptSubmission = getEncryptSubmissionModel(mongoose)
+const Payment = getPaymentModel(mongoose)
 
 // NOTE: Refer to this for documentation: https://github.com/sideway/joi-date/blob/master/API.md
 const Joi = BaseJoi.extend(JoiDate)
@@ -357,11 +360,13 @@ const submitEncryptModeForm: ControllerHandler<
     })
   }
 
+  const submissionId = String(savedSubmission._id)
   logger.info({
     message: 'Saved submission to MongoDB',
     meta: {
       ...logMeta,
-      submissionId: savedSubmission._id,
+      submissionId,
+      formId,
     },
   })
 
@@ -391,8 +396,8 @@ const submitEncryptModeForm: ControllerHandler<
       application_fee_amount: 0,
       on_behalf_of: form.payments.target_account_id,
       metadata: {
-        formId: String(form._id),
-        submissionId: String(savedSubmission._id),
+        formId,
+        submissionId,
       },
     }
     const paymentIntent: Stripe.PaymentIntent =
@@ -405,16 +410,43 @@ const submitEncryptModeForm: ControllerHandler<
 
     // if payment_client_secret is null, respond with error
     if (!payment_client_secret) {
-      logger.warn({
+      logger.error({
         message: 'Error when creating payment intent, client secret is null',
         meta: {
           createPaymentIntentOptions: createPaymentIntentParams,
+          submissionId,
           ...logMeta,
         },
       })
 
       return res.status(StatusCodes.BAD_REQUEST).json({
         message: 'There was a problem preparing the payment. Please try again.',
+      })
+    }
+
+    // Save payment to DB
+    const payment = new Payment({
+      submissionId,
+      amount: form.payments.amount_cents,
+      status: PaymentStatus.Pending,
+      paymentIntentId: paymentIntent.id,
+    })
+
+    try {
+      await payment.save()
+    } catch (err) {
+      logger.error({
+        message: 'Payment save error',
+        meta: {
+          paymentIntentId: paymentIntent.id,
+          submissionId,
+          ...logMeta,
+        },
+        error: err,
+      })
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        message: 'There was a problem preparing the payment. Please try again.',
+        submissionId,
       })
     }
   }
