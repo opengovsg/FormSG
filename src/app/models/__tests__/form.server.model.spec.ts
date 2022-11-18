@@ -427,45 +427,13 @@ describe('Form Model', () => {
         expect(actualSavedObject).toEqual(expectedObject)
       })
 
-      it('should create and save successfully with valid payments settings for amount with two decimal', async () => {
+      it('should create and save successfully with valid payments settings', async () => {
         // Arrange
         const validFormParams = merge({}, MOCK_FORM_PARAMS, {
           payments: {
             enabled: true,
             target_account_id: 'someId',
-            amount: '5.22',
-            description: 'some payment',
-          },
-        })
-
-        // Act
-        const validForm = new Form(validFormParams)
-        const saved = await validForm.save()
-
-        // Assert
-        // All fields should exist
-        // Object Id should be defined when successfully saved to MongoDB.
-        expect(saved._id).toBeDefined()
-        expect(saved.created).toBeInstanceOf(Date)
-        expect(saved.lastModified).toBeInstanceOf(Date)
-        // Retrieve object and compare to params, remove indeterministic keys
-        const actualSavedObject = omit(saved.toObject(), [
-          '_id',
-          'created',
-          'lastModified',
-          '__v',
-        ])
-        const expectedObject = merge({}, FORM_DEFAULTS, validFormParams)
-        expect(actualSavedObject).toEqual(expectedObject)
-      })
-
-      it('should create and save successfully with valid payments settings for zero dollar amount with two decimal', async () => {
-        // Arrange
-        const validFormParams = merge({}, MOCK_FORM_PARAMS, {
-          payments: {
-            enabled: true,
-            target_account_id: 'someId',
-            amount: '0.22',
+            amount_cents: 5,
             description: 'some payment',
           },
         })
@@ -497,7 +465,7 @@ describe('Form Model', () => {
           payments: {
             enabled: true,
             target_account_id: 'some Id',
-            amount: '5.11',
+            amount_cents: 5,
             description: 'some payment',
           },
         })
@@ -511,33 +479,13 @@ describe('Form Model', () => {
         )
       })
 
-      it('should reject when amount is not a number', async () => {
-        // Arrange
-        const invalidFormParams = merge({}, MOCK_FORM_PARAMS, {
-          payments: {
-            enabled: true,
-            target_account_id: 'someId',
-            amount: 'XX',
-            description: 'some payment',
-          },
-        })
-
-        // Act
-        const invalidForm = new Form(invalidFormParams)
-
-        // Assert
-        await expect(invalidForm.save()).rejects.toThrow(
-          'Please enter a valid payment amount with two decimals (e.g. 5.00)',
-        )
-      })
-
       it('should reject when amount is negative', async () => {
         // Arrange
         const invalidFormParams = merge({}, MOCK_FORM_PARAMS, {
           payments: {
             enabled: true,
             target_account_id: 'someId',
-            amount: '-5.22',
+            amount_cents: -5,
             description: 'some payment',
           },
         })
@@ -547,17 +495,17 @@ describe('Form Model', () => {
 
         // Assert
         await expect(invalidForm.save()).rejects.toThrow(
-          'Please enter a valid payment amount with two decimals (e.g. 5.00)',
+          'Payment amount must be positive and an integer.',
         )
       })
 
-      it('should reject when amount has leading zeroes', async () => {
+      it('should reject when amount has decimals', async () => {
         // Arrange
         const invalidFormParams = merge({}, MOCK_FORM_PARAMS, {
           payments: {
             enabled: true,
             target_account_id: 'someId',
-            amount: '07.12',
+            amount_cents: 5.22,
             description: 'some payment',
           },
         })
@@ -567,67 +515,7 @@ describe('Form Model', () => {
 
         // Assert
         await expect(invalidForm.save()).rejects.toThrow(
-          'Please enter a valid payment amount with two decimals (e.g. 5.00)',
-        )
-      })
-
-      it('should reject when amount has no decimals', async () => {
-        // Arrange
-        const invalidFormParams = merge({}, MOCK_FORM_PARAMS, {
-          payments: {
-            enabled: true,
-            target_account_id: 'someId',
-            amount: '5',
-            description: 'some payment',
-          },
-        })
-
-        // Act
-        const invalidForm = new Form(invalidFormParams)
-
-        // Assert
-        await expect(invalidForm.save()).rejects.toThrow(
-          'Please enter a valid payment amount with two decimals (e.g. 5.00)',
-        )
-      })
-
-      it('should reject when amount has decimal point but no decimals', async () => {
-        // Arrange
-        const invalidFormParams = merge({}, MOCK_FORM_PARAMS, {
-          payments: {
-            enabled: true,
-            target_account_id: 'someId',
-            amount: '5.',
-            description: 'some payment',
-          },
-        })
-
-        // Act
-        const invalidForm = new Form(invalidFormParams)
-
-        // Assert
-        await expect(invalidForm.save()).rejects.toThrow(
-          'Please enter a valid payment amount with two decimals (e.g. 5.00)',
-        )
-      })
-
-      it('should reject when amount has one decimal', async () => {
-        // Arrange
-        const invalidFormParams = merge({}, MOCK_FORM_PARAMS, {
-          payments: {
-            enabled: true,
-            target_account_id: 'someId',
-            amount: '6.1',
-            description: 'some payment',
-          },
-        })
-
-        // Act
-        const invalidForm = new Form(invalidFormParams)
-
-        // Assert
-        await expect(invalidForm.save()).rejects.toThrow(
-          'Please enter a valid payment amount with two decimals (e.g. 5.00)',
+          'Payment amount must be positive and an integer.',
         )
       })
     })

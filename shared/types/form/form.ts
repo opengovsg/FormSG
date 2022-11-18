@@ -71,8 +71,7 @@ export enum FormResponseMode {
 export type FormPayments = {
   enabled: boolean
   target_account_id: string
-  // amount is string because it is a number with two decimal places
-  amount: string
+  amount_cents: number
   description: string
 }
 

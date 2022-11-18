@@ -444,34 +444,19 @@ const compileFormModel = (db: Mongoose): IFormModel => {
           type: String,
           default: '',
         },
-        amount: {
-          type: String,
+        amount_cents: {
+          type: Number,
           validate: {
-            validator: (amount: string) => {
-              const numVal = Number(amount)
-              if (isNaN(numVal)) {
+            validator: (amount_cents: number) => {
+              if (amount_cents < 0) {
                 return false
               }
-
-              // Validate positive payment
-              if (numVal <= 0) {
+              if (!Number.isInteger(amount_cents)) {
                 return false
               }
-
-              // Validate no leading zeros
-              if (/^0[0-9]\./.test(amount)) {
-                return false
-              }
-
-              // Validate exactly two decimal places
-              if (!/^[0-9]+\.[0-9]{2}$/.test(amount)) {
-                return false
-              }
-
               return true
             },
-            message:
-              'Please enter a valid payment amount with two decimals (e.g. 5.00).',
+            message: 'Payment amount must be positive and an integer.',
           },
         },
         required: false,
