@@ -76,6 +76,8 @@
     "@sentry/browser": "^7.17.3",
     "@sentry/integrations": "^6.19.7",
     "@stablelib/base64": "^1.0.1",
+    "@stripe/react-stripe-js": "^1.15.0",
+    "@stripe/stripe-js": "^1.44.1",
     "abortcontroller-polyfill": "^1.7.5",
     "angular": "~1.8.3",
     "angular-animate": "^1.8.3",
