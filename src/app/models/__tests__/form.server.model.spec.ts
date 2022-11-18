@@ -433,7 +433,7 @@ describe('Form Model', () => {
           payments: {
             enabled: true,
             target_account_id: 'someId',
-            amount_cents: 5,
+            amount_cents: 50,
             description: 'some payment',
           },
         })
@@ -465,7 +465,7 @@ describe('Form Model', () => {
           payments: {
             enabled: true,
             target_account_id: 'some Id',
-            amount_cents: 5,
+            amount_cents: 50,
             description: 'some payment',
           },
         })
@@ -485,7 +485,7 @@ describe('Form Model', () => {
           payments: {
             enabled: true,
             target_account_id: 'someId',
-            amount_cents: -5,
+            amount_cents: -50,
             description: 'some payment',
           },
         })
@@ -495,7 +495,7 @@ describe('Form Model', () => {
 
         // Assert
         await expect(invalidForm.save()).rejects.toThrow(
-          'Payment amount must be positive and an integer.',
+          'Payment amount must be at least 50 cents and an integer.',
         )
       })
 
@@ -505,7 +505,7 @@ describe('Form Model', () => {
           payments: {
             enabled: true,
             target_account_id: 'someId',
-            amount_cents: 5.22,
+            amount_cents: 54.22,
             description: 'some payment',
           },
         })
@@ -515,7 +515,27 @@ describe('Form Model', () => {
 
         // Assert
         await expect(invalidForm.save()).rejects.toThrow(
-          'Payment amount must be positive and an integer.',
+          'Payment amount must be at least 50 cents and an integer.',
+        )
+      })
+
+      it('should reject when amount is less than 50', async () => {
+        // Arrange
+        const invalidFormParams = merge({}, MOCK_FORM_PARAMS, {
+          payments: {
+            enabled: true,
+            target_account_id: 'someId',
+            amount_cents: 49,
+            description: 'some payment',
+          },
+        })
+
+        // Act
+        const invalidForm = new Form(invalidFormParams)
+
+        // Assert
+        await expect(invalidForm.save()).rejects.toThrow(
+          'Payment amount must be at least 50 cents and an integer.',
         )
       })
     })

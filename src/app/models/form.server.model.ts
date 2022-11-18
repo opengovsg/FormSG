@@ -448,7 +448,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
           type: Number,
           validate: {
             validator: (amount_cents: number) => {
-              if (amount_cents < 0) {
+              if (amount_cents < 50) {
                 return false
               }
               if (!Number.isInteger(amount_cents)) {
@@ -456,7 +456,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
               }
               return true
             },
-            message: 'Payment amount must be positive and an integer.',
+            message: 'Payment amount must be at least 50 cents and an integer.',
           },
         },
         required: false,
