@@ -384,19 +384,20 @@ const submitEncryptModeForm: ControllerHandler<
 
     // Stripe requires the amount to be an integer in the smallest currency unit (i.e. cents)
     const amountCents = Number(form.payments.amount) * 100
+    const createPaymentIntentParams: Stripe.PaymentIntentCreateParams = {
+      amount: amountCents,
+      currency: paymentConfig.defaultCurrency,
+      payment_method_types: ['card'],
+      description: form.payments.description,
+      application_fee_amount: 0,
+      on_behalf_of: form.payments.target_account_id,
+      metadata: {
+        formId: form._id,
+        submissionId: savedSubmission._id,
+      },
+    }
     const paymentIntent: Stripe.PaymentIntent =
-      await stripe.paymentIntents.create({
-        amount: amountCents,
-        currency: paymentConfig.defaultCurrency,
-        payment_method_types: ['card'],
-        description: form.payments.description,
-        application_fee_amount: 0,
-        on_behalf_of: form.payments.target_account_id,
-        metadata: {
-          formId: form._id,
-          submissionId: savedSubmission._id,
-        },
-      })
+      await stripe.paymentIntents.create(createPaymentIntentParams)
 
     // TODO add entry in payments collection
 
@@ -405,6 +406,14 @@ const submitEncryptModeForm: ControllerHandler<
 
     // if payment_client_secret is null, respond with error
     if (!payment_client_secret) {
+      logger.warn({
+        message: 'Error when creating payment intent, client secret is null',
+        meta: {
+          createPaymentIntentOptions: createPaymentIntentParams,
+          ...logMeta,
+        },
+      })
+
       return res.status(StatusCodes.BAD_REQUEST).json({
         message: 'There was a problem preparing the payment. Please try again.',
       })
