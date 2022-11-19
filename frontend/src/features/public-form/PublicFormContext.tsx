@@ -54,7 +54,6 @@ export const PublicFormContext = createContext<
 
 export const usePublicFormContext = (): PublicFormContextProps => {
   const context = useContext(PublicFormContext)
-  console.log('context:', context)
   if (!context) {
     throw new Error(
       `usePublicFormContext must be used within a PublicFormProvider component`,
