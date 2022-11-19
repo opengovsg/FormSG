@@ -43,8 +43,7 @@ const paymentFeature: Schema<IStripe> = {
   stripeWebhookSecretKey: {
     doc: 'Stripe webhook secret key',
     format: String,
-    default:
-      'whsec_ab7313f9397f4f1fcef14c9432b7ba100305e1a20f4b79a5f9978854820307dd',
+    default: '',
     env: 'PAYMENT_STRIPE_WEBHOOK_SECRET_KEY',
   },
 }
