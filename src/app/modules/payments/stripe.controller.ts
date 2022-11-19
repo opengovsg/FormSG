@@ -1,52 +1,143 @@
+// Use 'stripe-event-types' for better type discrimination.
+/// <reference types="stripe-event-types" />
+
 import { celebrate, Joi, Segments } from 'celebrate'
 import { StatusCodes } from 'http-status-codes'
+import { Payment } from 'shared/types'
+import Stripe from 'stripe'
 
-import { IStripeEventWebhookBody } from 'src/types'
+import { paymentConfig } from 'src/app/config/features/payment.config'
+import { createLoggerWithLabel } from 'src/app/config/logger'
 
 import { ControllerHandler } from '../core/core.types'
 
+import * as PaymentService from './payments.service'
+
+const stripe = new Stripe(paymentConfig.stripeWebhookApiKey, {
+  apiVersion: '2022-11-15',
+})
+const logger = createLoggerWithLabel(module)
+
 /**
- * Middleware which validates that a request came from Twilio Webhook
- * by checking the presence of X-Twilio-Sgnature in request header and
- * sms delivery status request body parameters
+ * Middleware which validates that a request came from Stripe webhook
+ * by checking the presence of Stripe-Signature in request header
  */
 const validateStripeEvent = celebrate({
   [Segments.HEADERS]: Joi.object({
-    'Stripe-Signature': Joi.string().required(),
+    'stripe-signature': Joi.string().required(),
   }).unknown(),
-  [Segments.BODY]: Joi.object()
-    .keys({
-      id: Joi.string().required(),
-      api_version: Joi.string().required(),
-      data: Joi.object()
-        .keys({
-          object: Joi.object().required(),
-          previous_attributes: Joi.object().required(),
-        })
-        .required(),
-      request: Joi.object()
-        .keys({
-          id: Joi.string().required(),
-          idempotency_key: Joi.string().required(),
-        })
-        .required(),
-      type: Joi.string().required(),
-      object: Joi.string().required(),
-      account: Joi.string().required(),
-      created: Joi.number().integer().min(0).required(),
-      livemode: Joi.boolean().required(),
-      pending_webhooks: Joi.number().min(0).required(),
-    })
-    .unknown(),
 })
+
+const findPaymentAndUpdate = async (
+  metadata: Stripe.Metadata | null,
+  update: Partial<Payment>,
+  event: Stripe.Event,
+): Promise<void> => {
+  const submissionId = metadata?.['submissionId']
+  if (!submissionId) {
+    logger.warn({
+      message: 'Stripe event metadata does not contain submissionId',
+      meta: {
+        action: 'handleStripeEventUpdates',
+        event,
+      },
+    })
+    return
+  }
+
+  await PaymentService.findBySubmissionIdAndUpdate(submissionId, {
+    $set: update,
+    $push: { webhookLog: event },
+  })
+}
 
 export const _handleStripeEventUpdates: ControllerHandler<
   unknown,
   never,
-  IStripeEventWebhookBody
+  string
 > = async (req, res) => {
-  req.body
-  return res.sendStatus(StatusCodes.OK)
+  // Verify the payload and ensure that it is indeed sent from Stripe.
+  // See https://stripe.com/docs/webhooks/signatures
+  const sig = req.headers['stripe-signature']
+  if (!sig) return res.status(StatusCodes.BAD_REQUEST).send()
+
+  let event
+  try {
+    event = stripe.webhooks.constructEvent(
+      req.body,
+      sig,
+      paymentConfig.stripeWebhookSecretKey,
+    ) as Stripe.DiscriminatedEvent
+  } catch {
+    // Throws Stripe.errors.StripeSignatureVerificationError
+    return res.status(StatusCodes.BAD_REQUEST).send()
+  }
+
+  logger.info({
+    message: 'Received Stripe event from webhook',
+    meta: {
+      action: 'handleStripeEventUpdates',
+      event,
+    },
+  })
+
+  switch (event.type) {
+    case 'charge.captured':
+    case 'charge.expired':
+    case 'charge.failed':
+    case 'charge.pending':
+    case 'charge.refunded':
+    case 'charge.succeeded':
+    case 'charge.updated':
+      await findPaymentAndUpdate(
+        event.data.object.metadata,
+        {
+          chargeIdLatest: event.data.object.id,
+          status: event.data.object.status,
+        },
+        event,
+      )
+      break
+    case 'charge.dispute.closed':
+    case 'charge.dispute.created':
+    case 'charge.dispute.funds_reinstated':
+    case 'charge.dispute.funds_withdrawn':
+    case 'charge.dispute.updated':
+      await findPaymentAndUpdate(event.data.object.metadata, {}, event)
+      break
+    case 'charge.refund.updated':
+      // We should actually handle this case, need to implement based on get by charge Id though, not doing for hackathon.
+      break
+    case 'payment_intent.amount_capturable_updated':
+    case 'payment_intent.canceled':
+    case 'payment_intent.created':
+    case 'payment_intent.partially_funded':
+    case 'payment_intent.payment_failed':
+    case 'payment_intent.processing':
+    case 'payment_intent.requires_action':
+    case 'payment_intent.succeeded':
+      await findPaymentAndUpdate(event.data.object.metadata, {}, event)
+      break
+    case 'payout.canceled':
+    case 'payout.created':
+    case 'payout.failed':
+    case 'payout.paid':
+    case 'payout.updated':
+      await findPaymentAndUpdate(
+        event.data.object.metadata,
+        {
+          payoutId: event.data.object.id,
+          payoutDate: new Date(event.data.object.arrival_date),
+        },
+        event,
+      )
+      break
+    default:
+      // Ignore all other events
+      break
+  }
+
+  return res.status(StatusCodes.OK).send()
 }
 
 export const handleStripeEventUpdates = [

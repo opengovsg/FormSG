@@ -1,15 +1,12 @@
-export enum PaymentStatus {
-  Pending = 'pending',
-  Completed = 'Completed',
-  Cancelled = 'Cancelled',
-}
+import Stripe from 'stripe'
 
 export type Payment = {
   submissionId: string
   amount: number
-  status: PaymentStatus
-  webhookLog: Record<string, any>[]
+  status: Stripe.Charge.Status
+  webhookLog: Stripe.Event[]
   paymentIntentId: string
+  chargeIdLatest: string
   payoutId: string
-  payoutDate: string
+  payoutDate: Date
 }

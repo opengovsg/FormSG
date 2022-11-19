@@ -5,11 +5,13 @@ export interface IStripe {
   stripePublishableKey: string
   stripeSecretKey: string
   stripeClientID: string
+  stripeWebhookApiKey: string
+  stripeWebhookSecretKey: string
 }
 
 const paymentFeature: Schema<IStripe> = {
   defaultCurrency: {
-    doc: 'Default currency for all ',
+    doc: 'Default currency for all payments',
     format: String,
     default: 'sgd',
     env: 'PAYMENT_DEFAULT_CURRENCY',
@@ -21,16 +23,28 @@ const paymentFeature: Schema<IStripe> = {
     env: 'PAYMENT_STRIPE_PUBLISHABLE_KEY',
   },
   stripeSecretKey: {
-    doc: 'Stripe Account Secret Key',
+    doc: 'Stripe account Secret Key',
     format: String,
     default: '',
     env: 'PAYMENT_STRIPE_SECRET_KEY',
   },
   stripeClientID: {
-    doc: 'Stripe Client ID',
+    doc: 'Stripe client ID',
     format: String,
     default: '',
     env: 'PAYMENT_STRIPE_CLIENT_ID',
+  },
+  stripeWebhookApiKey: {
+    doc: 'Stripe webhook API key',
+    format: String,
+    default: '',
+    env: 'PAYMENT_STRIPE_WEBHOOK_API_KEY',
+  },
+  stripeWebhookSecretKey: {
+    doc: 'Stripe webhook secret key',
+    format: String,
+    default: '',
+    env: 'PAYMENT_STRIPE_WEBHOOK_SECRET_KEY',
   },
 }
 
