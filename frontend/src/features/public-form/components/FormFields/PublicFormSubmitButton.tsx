@@ -1,4 +1,4 @@
-import { MouseEventHandler, useMemo } from 'react'
+import { MouseEventHandler, useContext, useMemo } from 'react'
 import { useFormState, useWatch } from 'react-hook-form'
 import { Stack, VisuallyHidden } from '@chakra-ui/react'
 
@@ -11,6 +11,8 @@ import InlineMessage from '~components/InlineMessage'
 import { FormFieldValues } from '~templates/Field'
 
 import { getLogicUnitPreventingSubmit } from '~features/logic/utils'
+
+import { usePublicFormContext } from '../../PublicFormContext'
 
 interface PublicFormSubmitButtonProps {
   formFields: MyInfoFormField<FormField>[]
@@ -32,6 +34,7 @@ export const PublicFormSubmitButton = ({
   const isMobile = useIsMobile()
   const { isSubmitting } = useFormState()
   const formInputs = useWatch<FormFieldValues>({})
+  const { form } = usePublicFormContext()
 
   const preventSubmissionLogic = useMemo(() => {
     return getLogicUnitPreventingSubmit({
@@ -54,7 +57,11 @@ export const PublicFormSubmitButton = ({
         onClick={onSubmit}
       >
         <VisuallyHidden>End of form.</VisuallyHidden>
-        {preventSubmissionLogic ? 'Submission disabled' : 'Submit now'}
+        {preventSubmissionLogic
+          ? 'Submission disabled'
+          : form?.payments?.enabled
+          ? 'Submit and pay'
+          : 'Submit now'}
       </Button>
       {preventSubmissionLogic ? (
         <InlineMessage variant="warning">
