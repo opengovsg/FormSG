@@ -391,7 +391,7 @@ const submitEncryptModeForm: ControllerHandler<
     const createPaymentIntentParams: Stripe.PaymentIntentCreateParams = {
       amount: form.payments.amount_cents,
       currency: paymentConfig.defaultCurrency,
-      payment_method_types: ['card'],
+      payment_method_types: ['card', 'grabpay', 'paynow'],
       description: form.payments.description,
       application_fee_amount: 0,
       on_behalf_of: form.payments.target_account_id,
@@ -402,8 +402,6 @@ const submitEncryptModeForm: ControllerHandler<
     }
     const paymentIntent: Stripe.PaymentIntent =
       await stripe.paymentIntents.create(createPaymentIntentParams)
-
-    // TODO add entry in payments collection
 
     // extract payment_client_secret from paymentIntent
     paymentClientSecret = paymentIntent.client_secret
