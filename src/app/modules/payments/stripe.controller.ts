@@ -12,6 +12,7 @@ import { createLoggerWithLabel } from 'src/app/config/logger'
 import { ControllerHandler } from '../core/core.types'
 
 import * as PaymentService from './payments.service'
+import * as StripeService from './stripe.service'
 
 const stripe = new Stripe(paymentConfig.stripeWebhookApiKey, {
   apiVersion: '2022-11-15',
@@ -144,3 +145,27 @@ export const handleStripeEventUpdates = [
   validateStripeEvent,
   _handleStripeEventUpdates,
 ]
+
+export const getPaymentReceipt: ControllerHandler<{
+  formId: string
+  submissionId: string
+}> = (req, res) => {
+  const { formId, submissionId } = req.params
+
+  return StripeService.getReceiptURL(formId, submissionId)
+    .map((receiptUrl) => {
+      res.status(StatusCodes.OK).send(receiptUrl)
+    })
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error retrieving receipt URL',
+        meta: {
+          action: 'getPaymentReceipt',
+          formId: formId,
+          submissionId: submissionId,
+        },
+        error,
+      })
+      return res.status(StatusCodes.NOT_FOUND).json({ message: error })
+    })
+}

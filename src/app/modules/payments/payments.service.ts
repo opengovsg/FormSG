@@ -23,7 +23,7 @@ export class PaymentNotFoundError extends ApplicationError {
  * @param submissionId the submissionId of the payment to be retrieved
  * @param update mongoose update to perform
  * @returns ok(payment) if payment exists
- * @returns err(PaymentNotFoundError) if the form or form admin does not exist
+ * @returns err(PaymentNotFoundError) if the payment does not exist
  * @returns err(DatabaseError) if error occurs whilst querying the database
  */
 export const findBySubmissionIdAndUpdate = (
@@ -48,5 +48,36 @@ export const findBySubmissionIdAndUpdate = (
   ).andThen((result) => {
     if (!result) return errAsync(new PaymentNotFoundError())
     return okAsync(result)
+  })
+}
+
+/**
+ * Retrieves payment document of the given submissionId.
+ * @param submissionId the submissionId of the payment to be retrieved
+ * @returns ok(payment) if payment exists
+ * @returns err(PaymentNotFoundError) if the payment does not exist
+ * @returns err(DatabaseError) if error occurs whilst querying the database
+ */
+export const findPaymentBySubmissionId = (
+  submissionId: string,
+): ResultAsync<IPaymentSchema, PaymentNotFoundError | DatabaseError> => {
+  return ResultAsync.fromPromise(
+    PaymentModel.findOne({ submissionId }).exec(),
+    (error) => {
+      logger.error({
+        message: 'Database find payment submissionId error',
+        meta: {
+          action: 'findPaymentBySubmissionId',
+          submissionId,
+        },
+        error,
+      })
+      return new DatabaseError(getMongoErrorMessage(error))
+    },
+  ).andThen((payment) => {
+    if (!payment) {
+      return errAsync(new PaymentNotFoundError())
+    }
+    return okAsync(payment)
   })
 }
