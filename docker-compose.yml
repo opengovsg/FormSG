@@ -116,6 +116,7 @@ services:
       # env vars for stripe payment integration
       - PAYMENT_STRIPE_SECRET_KEY=secretKey
       - PAYMENT_STRIPE_CLIENT_ID=clientId
+      - PAYMENT_STRIPE_PUBLISHABLE_KEY=publishableKey
   mockpass:
     build: https://github.com/opengovsg/mockpass.git
     depends_on:
