@@ -1,6 +1,9 @@
 import { KeyboardEvent, useCallback, useRef, useState } from 'react'
-import { BiSearch, BiX } from 'react-icons/bi'
+import { BiCheck, BiFilter, BiSearch, BiX } from 'react-icons/bi'
 import {
+  Button,
+  Divider,
+  Flex,
   forwardRef,
   Icon,
   Input,
@@ -8,11 +11,17 @@ import {
   InputLeftElement,
   InputProps,
   InputRightElement,
+  MenuButton,
+  Stack,
+  Text,
   useMergeRefs,
   useMultiStyleConfig,
 } from '@chakra-ui/react'
 
 import { SEARCHBAR_THEME_KEY } from '~/theme/components/Searchbar'
+
+import { useIsMobile } from '~hooks/useIsMobile'
+import Menu from '~components/Menu'
 
 import IconButton from '../IconButton'
 
@@ -66,6 +75,25 @@ export interface SearchbarProps extends Omit<InputProps, 'onChange'> {
    * @param newValue value of the search input
    */
   onChange?: (newValue: string) => void
+
+  /**
+   * Optional. If provided, adds a filter button to the searchbar. The initial
+   * (default) value of the filter, which is most likely the option for "No filter".
+   */
+  filterValue?: string
+
+  /**
+   * Optional. The remainder of the filter options, not including the default
+   * filterValue. Will be ignored unless filterValue has been provided.
+   */
+  filterOptions?: string[]
+
+  /**
+   * Optional. Function to be invoked when a filter option has been selected.
+   * Will be ignored unless filterValue has been provided.
+   * @param filterValue the option that was selected
+   */
+  onFilter?: (filterValue: string) => void
 }
 
 export const Searchbar = forwardRef<SearchbarProps, 'input'>(
@@ -79,15 +107,20 @@ export const Searchbar = forwardRef<SearchbarProps, 'input'>(
       value: valueProp,
       onChange: onChangeProp,
       isDisabled,
+      filterValue = '',
+      filterOptions = [],
+      onFilter,
       ...props
     }: SearchbarProps,
     ref,
   ) => {
-    const [value, setValue] = useState<string | undefined>(valueProp)
+    const isMobile = useIsMobile()
 
+    const [value, setValue] = useState<string | undefined>(valueProp)
     const [isExpanded, setIsExpanded] = useState(
       !isExpandable || isExpandedProp,
     )
+    const [filter, setFilter] = useState<string>(filterValue)
 
     const styles = useMultiStyleConfig(SEARCHBAR_THEME_KEY, {
       isExpanded,
@@ -165,17 +198,55 @@ export const Searchbar = forwardRef<SearchbarProps, 'input'>(
           isDisabled={isDisabled}
           {...props}
         />
-        {isExpandable && isExpanded && (
+        {(filterValue || (isExpandable && isExpanded)) && (
           <InputRightElement>
-            <IconButton
-              aria-label="Collapse searchbar"
-              isDisabled={isDisabled}
-              size="sm"
-              variant="clear"
-              colorScheme="secondary"
-              icon={<BiX fontSize="1.25rem" />}
-              onClick={onCollapseIconClick}
-            />
+            {filterValue && (
+              <Flex height="1.25rem" alignItems="center">
+                <Divider orientation="vertical" />
+                <Menu size="sm" placement="bottom-end">
+                  {({ isOpen }) => (
+                    <>
+                      <MenuButton
+                        as={Button}
+                        variant="clear"
+                        colorScheme="secondary"
+                        isActive={isOpen}
+                        aria-label="Filter forms"
+                        leftIcon={<BiFilter />}
+                      >
+                        {filter === filterValue ? 'Filter' : filter}
+                      </MenuButton>
+                      <Menu.List>
+                        {[filterValue, ...filterOptions].map((option) => (
+                          <Menu.Item onClick={() => setFilter(option)}>
+                            <Stack
+                              direction="row"
+                              justify="space-between"
+                              alignItems="center"
+                              w="100%"
+                            >
+                              <Text>{option}</Text>
+                              {filter === option ? <BiCheck /> : null}
+                            </Stack>
+                          </Menu.Item>
+                        ))}
+                      </Menu.List>
+                    </>
+                  )}
+                </Menu>
+              </Flex>
+            )}
+            {isExpandable && isExpanded && (
+              <IconButton
+                aria-label="Collapse searchbar"
+                isDisabled={isDisabled}
+                size="sm"
+                variant="clear"
+                colorScheme="secondary"
+                icon={<BiX fontSize="1.25rem" />}
+                onClick={onCollapseIconClick}
+              />
+            )}
           </InputRightElement>
         )}
       </InputGroup>

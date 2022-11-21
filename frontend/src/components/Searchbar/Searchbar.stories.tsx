@@ -67,6 +67,17 @@ ExpandableOpen.args = {
 }
 ExpandableOpen.storyName = 'Expandable/Open'
 
+export const WithFilter: Story<SearchbarProps> = (args) => (
+  <Searchbar {...args} />
+)
+WithFilter.args = {
+  onSearch: (query) => console.log(query),
+  isExpandable: false,
+  filterValue: 'No filter',
+  filterOptions: ['Filter option 1', 'Filter option 2'],
+  onFilter: (option) => alert(`set filter to ${option}`),
+}
+
 export const Unexpandable: Story<SearchbarProps> = ({
   isExpandable,
   isExpanded: isInitiallyExpanded,
