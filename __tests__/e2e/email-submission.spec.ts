@@ -2,7 +2,7 @@ import { Page } from '@playwright/test'
 import mongoose from 'mongoose'
 import { BasicField, LogicConditionState, LogicType } from 'shared/types'
 
-import { IFormModel } from 'src/types'
+import { IFormModel, IUserModel } from 'src/types'
 
 import { ALL_FIELDS, E2eFieldMetadata, SAMPLE_FIELD } from './constants/field'
 import { E2eForm } from './constants/form'
@@ -20,19 +20,15 @@ import { getBlankVersion, getOptionalVersion } from './utils/field'
 import { getSettings } from './utils/settings'
 
 let db: mongoose.Connection
-//let User: IUserModel
+let User: IUserModel
 let Form: IFormModel
-//let Agency: IAgencyModel
-//let govTech: IAgencySchema | null
 
 test.describe('Email form submission', () => {
   test.beforeAll(async () => {
     // Create models
     db = await makeMongooseFixtures()
-    //Agency = makeModel(db, 'agency.server.model', 'Agency')
-    //User = makeModel(db, 'user.server.model', 'User')
+    User = makeModel(db, 'user.server.model', 'User')
     Form = makeModel(db, 'form.server.model', 'Form')
-    //govTech = await Agency.findOne({ shortName: 'govtech' }).exec()
   })
   test.afterAll(async () => {
     // Clean up db
@@ -314,6 +310,8 @@ test.describe('Email form submission', () => {
       page.locator('button:has-text("Submission disabled")'),
     ).toBeDisabled()
     await expect(page.getByText(preventSubmitMessage)).toBeVisible()
+
+    await deleteDocById(Form, form._id)
   })
 })
 
@@ -323,6 +321,6 @@ const runTest = async (page: Page, formDef: E2eForm): Promise<void> => {
     form,
     ...formDef,
   })
-  await verifySubmission(page, { form, responseId, ...formDef })
+  await verifySubmission(page, User, { form, responseId, ...formDef })
   await deleteDocById(Form, form._id)
 }

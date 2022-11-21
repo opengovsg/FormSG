@@ -68,16 +68,17 @@ const addForm = async (page: Page): Promise<string> => {
   await expect(page).toHaveURL(new RegExp(`${ADMIN_FORM_PAGE_PREFIX}/.*`, 'i'))
 
   const l = ADMIN_FORM_PAGE_PREFIX.length + 1
-  const formId =
-    page
-      .url()
-      .match(new RegExp(`${ADMIN_FORM_PAGE_PREFIX}/[a-fA-F0-9]{24}`))?.[0]
-      .slice(l, l + 24) ?? ''
+  const formId = page
+    .url()
+    .match(new RegExp(`${ADMIN_FORM_PAGE_PREFIX}/[a-fA-F0-9]{24}`))?.[0]
+    .slice(l, l + 24)
+
+  expect(formId).toBeTruthy()
 
   // Clear any banners
   await page.getByRole('button', { name: 'Next' }).press('Escape')
 
-  return formId
+  return formId!
 }
 
 /** Adds all prescribed fields to the form.
