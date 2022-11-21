@@ -2,6 +2,7 @@ import { KeyboardEvent, useCallback, useRef, useState } from 'react'
 import { BiSearch, BiX } from 'react-icons/bi'
 import {
   forwardRef,
+  Icon,
   Input,
   InputGroup,
   InputLeftElement,
@@ -17,11 +18,12 @@ import IconButton from '../IconButton'
 
 export interface SearchbarProps extends Omit<InputProps, 'onChange'> {
   /**
-   * Function to be invoked when user presses enter (to search) or clicks the
-   * 'search' icon.
+   * Optional. Function to be invoked when user presses enter (to search) or
+   * clicks the 'search' icon. Note: at least one of onSearch and onChange must
+   * be provided for the searchbar to work properly!
    * @param searchValue value of the search input
    */
-  onSearch: (searchValue: string) => void
+  onSearch?: (searchValue: string) => void
 
   /**
    * Whether the searchbar is expandable and collapsable.
@@ -58,8 +60,10 @@ export interface SearchbarProps extends Omit<InputProps, 'onChange'> {
   value?: string
 
   /**
-   * Function to be invoked when the value in the searchbar input changes (but
-   * the search button has not been clicked).
+   * Optional. Function to be invoked when the value in the searchbar input
+   * changes (but the search button has not been clicked). Note: at least one of
+   * onSearch and onChange must be provided for the searchbar to work properly!
+   * @param newValue value of the search input
    */
   onChange?: (newValue: string) => void
 }
@@ -69,7 +73,7 @@ export const Searchbar = forwardRef<SearchbarProps, 'input'>(
     {
       onSearch,
       isExpandable = true,
-      isExpanded = false,
+      isExpanded: isExpandedProp = false,
       onExpandIconClick: onExpandIconClickProp,
       onCollapseIconClick: onCollapseIconClickProp,
       value: valueProp,
@@ -81,12 +85,12 @@ export const Searchbar = forwardRef<SearchbarProps, 'input'>(
   ) => {
     const [value, setValue] = useState<string | undefined>(valueProp)
 
-    const [innerIsExpanded, setInnerIsExpanded] = useState<boolean>(
-      isExpandable ? isExpanded : true,
+    const [isExpanded, setIsExpanded] = useState(
+      !isExpandable || isExpandedProp,
     )
 
     const styles = useMultiStyleConfig(SEARCHBAR_THEME_KEY, {
-      isExpanded: innerIsExpanded,
+      isExpanded,
       isDisabled,
       ...props,
     })
@@ -96,13 +100,13 @@ export const Searchbar = forwardRef<SearchbarProps, 'input'>(
 
     const onExpandIconClick = () => {
       if (onExpandIconClickProp) onExpandIconClickProp()
-      setInnerIsExpanded(true)
+      setIsExpanded(true)
     }
 
     const onCollapseIconClick = () => {
       if (onCollapseIconClickProp) onCollapseIconClickProp()
       setValue('')
-      setInnerIsExpanded(false)
+      setIsExpanded(false)
     }
 
     const onChange = (newValue: string) => {
@@ -111,29 +115,35 @@ export const Searchbar = forwardRef<SearchbarProps, 'input'>(
     }
 
     const handleClickSearch = useCallback(
-      () => (value !== undefined ? onSearch(value) : null),
+      () => (value !== undefined && onSearch ? onSearch(value) : null),
       [onSearch, value],
     )
 
     const handleEnterKeySearch = useCallback(
       (e: KeyboardEvent<HTMLInputElement>) =>
-        e.key === 'Enter' && value !== undefined ? onSearch(value) : null,
+        e.key === 'Enter' && value !== undefined && onSearch
+          ? onSearch(value)
+          : null,
       [onSearch, value],
     )
 
     return (
-      <InputGroup flex={innerIsExpanded ? 1 : 0}>
-        {innerIsExpanded ? (
+      <InputGroup flex={isExpanded ? 1 : 0}>
+        {isExpanded ? (
           <InputLeftElement>
-            <IconButton
-              aria-label="Search"
-              isDisabled={isDisabled}
-              size="sm"
-              variant="clear"
-              colorScheme="secondary"
-              icon={<BiSearch fontSize="1.25rem" />}
-              onClick={handleClickSearch}
-            />
+            {onSearch ? (
+              <IconButton
+                aria-label="Search"
+                isDisabled={isDisabled}
+                size="sm"
+                variant="clear"
+                colorScheme="secondary"
+                icon={<BiSearch fontSize="1.25rem" />}
+                onClick={handleClickSearch}
+              />
+            ) : (
+              <Icon as={BiSearch} fontSize="1.25rem" />
+            )}
           </InputLeftElement>
         ) : (
           <IconButton
@@ -155,7 +165,7 @@ export const Searchbar = forwardRef<SearchbarProps, 'input'>(
           isDisabled={isDisabled}
           {...props}
         />
-        {isExpandable && innerIsExpanded && (
+        {isExpandable && isExpanded && (
           <InputRightElement>
             <IconButton
               aria-label="Collapse searchbar"
