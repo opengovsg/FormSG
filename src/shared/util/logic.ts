@@ -321,6 +321,7 @@ const isConditionFulfilled = (
     const conditionValues = ([] as unknown[])
       .concat(condition.value)
       .map(String)
+      .map((opt) => opt.trim())
     currentValue = String(currentValue)
     /*
     Handling 'Others' for radiobutton
