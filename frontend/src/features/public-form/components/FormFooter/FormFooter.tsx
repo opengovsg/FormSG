@@ -26,7 +26,14 @@ export const FormFooter = (): JSX.Element => {
           mx={{ lg: 0 }}
           mb={{ lg: '2rem' }}
         >
-          <Box id={captchaContainerId} />
+          <Box
+            id={captchaContainerId}
+            sx={{
+              '@media print': {
+                display: 'none !important',
+              },
+            }}
+          />
           <Box w="100%">
             <AppFooter
               variant="compact"
