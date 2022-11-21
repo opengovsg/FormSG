@@ -3,7 +3,6 @@ import { BiCheck, BiFilter, BiSearch, BiX } from 'react-icons/bi'
 import {
   Button,
   Divider,
-  Flex,
   forwardRef,
   Icon,
   Input,
@@ -20,7 +19,6 @@ import {
 
 import { SEARCHBAR_THEME_KEY } from '~/theme/components/Searchbar'
 
-import { useIsMobile } from '~hooks/useIsMobile'
 import Menu from '~components/Menu'
 
 import IconButton from '../IconButton'
@@ -114,8 +112,6 @@ export const Searchbar = forwardRef<SearchbarProps, 'input'>(
     }: SearchbarProps,
     ref,
   ) => {
-    const isMobile = useIsMobile()
-
     const [value, setValue] = useState<string | undefined>(valueProp)
     const [isExpanded, setIsExpanded] = useState(
       !isExpandable || isExpandedProp,
@@ -163,8 +159,8 @@ export const Searchbar = forwardRef<SearchbarProps, 'input'>(
     return (
       <InputGroup flex={isExpanded ? 1 : 0}>
         {isExpanded ? (
-          <InputLeftElement>
-            {onSearch ? (
+          onSearch ? (
+            <InputLeftElement>
               <IconButton
                 aria-label="Search"
                 isDisabled={isDisabled}
@@ -174,10 +170,13 @@ export const Searchbar = forwardRef<SearchbarProps, 'input'>(
                 icon={<BiSearch fontSize="1.25rem" />}
                 onClick={handleClickSearch}
               />
-            ) : (
-              <Icon as={BiSearch} fontSize="1.25rem" />
-            )}
-          </InputLeftElement>
+            </InputLeftElement>
+          ) : (
+            <InputLeftElement
+              pointerEvents="none"
+              children={<Icon as={BiSearch} fontSize="1.25rem" />}
+            />
+          )
         ) : (
           <IconButton
             aria-label="Expand searchbar"
@@ -201,13 +200,14 @@ export const Searchbar = forwardRef<SearchbarProps, 'input'>(
         {(filterValue || (isExpandable && isExpanded)) && (
           <InputRightElement>
             {filterValue && (
-              <Flex height="1.25rem" alignItems="center">
+              <Stack height="1.25rem" alignItems="center" direction="row">
                 <Divider orientation="vertical" />
-                <Menu size="sm" placement="bottom-end">
+                <Menu placement="bottom-end">
                   {({ isOpen }) => (
                     <>
                       <MenuButton
                         as={Button}
+                        size="sm"
                         variant="clear"
                         colorScheme="secondary"
                         isActive={isOpen}
@@ -234,7 +234,7 @@ export const Searchbar = forwardRef<SearchbarProps, 'input'>(
                     </>
                   )}
                 </Menu>
-              </Flex>
+              </Stack>
             )}
             {isExpandable && isExpanded && (
               <IconButton
