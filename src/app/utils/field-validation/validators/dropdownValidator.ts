@@ -28,7 +28,8 @@ const makeDropdownValidator: DropdownValidatorConstructor =
     // client strips out MyInfo data to keep each form submission lightweight
     const validOptions = myInfo?.attr
       ? getMyInfoFieldOptions(myInfo.attr)
-      : fieldOptions
+      : // TODO #4279: Revisit decision to trim in backend after React rollout is complete
+        fieldOptions.map((opt) => opt.trim())
     const { answer } = response
     return isOneOfOptions(validOptions, answer)
       ? right(response)
