@@ -136,7 +136,23 @@ const createFormValidator = celebrate({
       })
       .required()
       // Allow other form schema keys to be passed for form creation.
-      .unknown(true),
+      .unknown(true)
+      .custom((value, helpers) => {
+        // If there are invalid utf-8 encoded unicode-escaped characters,
+        // node 14 treats the sequence of characters as a string e.g. \udbbb is treated as a 6-character string instead of an escaped unicode sequence
+        // If this is saved into the db, an error is thrown when the driver attempts to read the db document as the driver interprets this as an escaped unicode sequence.
+        // Since valid unicode-escaped characters will be processed correctly (e.g. \u00ae is processed as ®), they will not trigger an error
+        // Also note that if the user intends to input a 6-character string of the same form e.g. \udbbb, the backslash will be escaped (i.e. double backslash) and hence this will also not trigger an error
+
+        const valueStr = JSON.stringify(value)
+
+        if (UNICODE_ESCAPED_REGEX.test(valueStr)) {
+          return helpers.message({
+            custom: 'There are invalid characters in your input',
+          })
+        }
+        return value
+      }),
   },
 })
 
@@ -1697,9 +1713,9 @@ export const handleUpdateFormField = [
       })
         .unknown(true)
         .custom((value, helpers) => {
-          // If there are unicode-escaped characters are not valid utf-8 encoded,
+          // If there are invalid utf-8 encoded unicode-escaped characters,
           // node 14 treats the sequence of characters as a string e.g. \udbbb is treated as a 6-character string instead of an escaped unicode sequence
-          // If this is saved into the db, an error is thrown when the driver attempts to read the db document as the driver interprets this as an escaped unicode character
+          // If this is saved into the db, an error is thrown when the driver attempts to read the db document as the driver interprets this as an escaped unicode sequence.
           // Since valid unicode-escaped characters will be processed correctly (e.g. \u00ae is processed as ®), they will not trigger an error
           // Also note that if the user intends to input a 6-character string of the same form e.g. \udbbb, the backslash will be escaped (i.e. double backslash) and hence this will also not trigger an error
 
@@ -1707,8 +1723,7 @@ export const handleUpdateFormField = [
 
           if (UNICODE_ESCAPED_REGEX.test(valueStr)) {
             return helpers.message({
-              custom:
-                'Please check that there are no improperly encoded characters in your input',
+              custom: 'There are invalid characters in your input',
             })
           }
           return value
@@ -1967,9 +1982,9 @@ export const handleCreateFormField = [
     })
       .unknown(true)
       .custom((value, helpers) => {
-        // If there are unicode-escaped characters are not valid utf-8 encoded,
+        // If there are invalid utf-8 encoded unicode-escaped characters,
         // node 14 treats the sequence of characters as a string e.g. \udbbb is treated as a 6-character string instead of an escaped unicode sequence
-        // If this is saved into the db, an error is thrown when the driver attempts to read the db document as the driver interprets this as an escaped unicode sequence
+        // If this is saved into the db, an error is thrown when the driver attempts to read the db document as the driver interprets this as an escaped unicode sequence.
         // Since valid unicode-escaped characters will be processed correctly (e.g. \u00ae is processed as ®), they will not trigger an error
         // Also note that if the user intends to input a 6-character string of the same form e.g. \udbbb, the backslash will be escaped (i.e. double backslash) and hence this will also not trigger an error
 
@@ -1977,8 +1992,7 @@ export const handleCreateFormField = [
 
         if (UNICODE_ESCAPED_REGEX.test(valueStr)) {
           return helpers.message({
-            custom:
-              'Please check that there are no improperly encoded characters in your input',
+            custom: 'There are invalid characters in your input',
           })
         }
         return value
