@@ -51,6 +51,11 @@ export const MiniHeader = ({
         bg={titleBg}
         px={{ base: '1.5rem', md: '2rem' }}
         py={{ base: '0.5rem', md: '1rem' }}
+        sx={{
+          '@media print': {
+            display: 'none !important',
+          },
+        }}
       >
         <Skeleton isLoaded={!!title}>
           <Flex
@@ -162,6 +167,11 @@ export const FormHeader = ({
         justify="center"
         bg={titleBg}
         role="banner"
+        sx={{
+          '@media print': {
+            py: '0',
+          },
+        }}
       >
         <Flex
           maxW="57rem"
