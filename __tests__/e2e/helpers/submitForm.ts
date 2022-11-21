@@ -7,14 +7,54 @@ import { IFormSchema } from 'src/types'
 import { E2eFieldMetadata, NON_INPUT_FIELD_TYPES } from '../constants/field'
 import { PUBLIC_FORM_PAGE_PREFIX } from '../constants/links'
 import { E2eSettingsOptions } from '../constants/settings'
+import { fillDropdown } from '../utils/field'
 import { extractOtp } from '../utils/mail'
+
+export type SubmitFormProps = {
+  form: IFormSchema
+  formFields: E2eFieldMetadata[]
+  formSettings: E2eSettingsOptions
+}
+
+/**
+ * Navigate to the public form page, fill the form fields and submit the form.
+ * @param {Page} page Playwright page
+ * @param {IFormSchema} form the form returned from the db
+ * @param {E2eFieldMetadata[]} formFields the fields used to create the form
+ * @param {E2eSettingsOptions} formSettings the settings used to create the form
+ * @returns {string} the responseId
+ */
+export const submitForm = async (
+  page: Page,
+  { form, formFields, formSettings }: SubmitFormProps,
+): Promise<string> => {
+  await fillForm(page, { form, formFields, formSettings })
+  return await clickSubmitBtn(page)
+}
+
+/**
+ * Navigate to the public form page and fill the form fields.
+ * @param {Page} page Playwright page
+ * @param {IFormSchema} form the form returned from the db
+ * @param {E2eFieldMetadata[]} formFields the fields used to create the form
+ * @param {E2eSettingsOptions} formSettings the settings used to create the form
+ * @returns {string} the responseId
+ */
+export const fillForm = async (
+  page: Page,
+  { form, formFields, formSettings }: SubmitFormProps,
+): Promise<void> => {
+  await accessForm(page, { form })
+  await authForm(page, { formSettings })
+  await fillFields(page, { form, formFields })
+}
 
 /**
  * Navigates to the public form page and ensures that the title of the form is correct.
  * @param {Page} page Playwright page
  * @param {IFormSchema} form the created form from the db
  */
-export const accessForm = async (
+const accessForm = async (
   page: Page,
   { form }: { form: IFormSchema },
 ): Promise<void> => {
@@ -27,7 +67,7 @@ export const accessForm = async (
  * @param {Page} page Playwright page
  * @param {E2eSettingsOptions} formSettings the settings used to create the form
  */
-export const authForm = async (
+const authForm = async (
   page: Page,
   { formSettings }: { formSettings: E2eSettingsOptions },
 ): Promise<void> => {
@@ -52,7 +92,7 @@ export const authForm = async (
     })
     .click()
 
-  // TODO: Actually login! Can't do yet because no mockpass?
+  // TODO: Actually login! Can't do yet because no mockpass.
 }
 
 /**
@@ -60,7 +100,7 @@ export const authForm = async (
  * @param {Page} page Playwright page
  * @param {E2eFieldMetadata[]} formFields the form fields to be filled
  */
-export const fillFields = async (
+const fillFields = async (
   page: Page,
   {
     form,
@@ -108,6 +148,7 @@ export const fillFields = async (
       case BasicField.Decimal:
       case BasicField.HomeNo:
       case BasicField.Date: {
+        if (!field.val) break
         await input.fill(field.val)
         break
       }
@@ -138,12 +179,7 @@ export const fillFields = async (
       }
       case BasicField.Dropdown: {
         if (!field.val) break
-        await input.fill(field.val)
-        const menuId = await input.getAttribute('aria-controls')
-        const menu = page.locator(`id=${menuId}`)
-        // Scroll menu into view to avoid flakiness.
-        await menu.scrollIntoViewIfNeeded()
-        await menu.getByRole('option', { name: field.val }).click()
+        await fillDropdown(page, input, field.val)
         break
       }
       case BasicField.YesNo: {
@@ -243,7 +279,7 @@ export const fillFields = async (
  * @param {Page} page Playwright page
  * @returns {string} the responseId
  */
-export const clickSubmitBtn = async (page: Page): Promise<string> => {
+const clickSubmitBtn = async (page: Page): Promise<string> => {
   await page.locator('button:has-text("Submit now")').click()
 
   // Verify end page with timeout of 10s.
@@ -262,29 +298,4 @@ export const clickSubmitBtn = async (page: Page): Promise<string> => {
   }
 
   return responseIdMatches[0]
-}
-
-export type SubmitFormProps = {
-  form: IFormSchema
-  formFields: E2eFieldMetadata[]
-  formSettings: E2eSettingsOptions
-}
-
-/**
- * Navigate to the public form page, fill the form fields and submit the form.
- * @param {Page} page Playwright page
- * @param {IFormSchema} form the form returned from the db
- * @param {E2eFieldMetadata[]} formFields the fields used to create the form
- * @param {E2eSettingsOptions} formSettings the settings used to create the form
- * @returns {string} the responseId
- */
-export const submitForm = async (
-  page: Page,
-  { form, formFields, formSettings }: SubmitFormProps,
-): Promise<string> => {
-  await accessForm(page, { form })
-  await authForm(page, { formSettings })
-  await fillFields(page, { form, formFields })
-  const responseId = await clickSubmitBtn(page)
-  return responseId
 }

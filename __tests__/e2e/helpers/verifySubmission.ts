@@ -18,6 +18,48 @@ export type VerifySubmissionProps = {
   responseId: string
 }
 
+/**
+ * Get the submission email from maildev, and ensure that the contents and attachments
+ * match what is submitted.
+ * @param {Page} page the Playwright page
+ * @param {IFormSchema} form the form from the database
+ * @param {E2eFieldMetadata[]} formFields the field metadata used to create and fill the form
+ * @param {string} responseId the response id of the submission to be verified
+ */
+export const verifySubmission = async (
+  page: Page,
+  { form, formFields, responseId }: VerifySubmissionProps,
+): Promise<void> => {
+  const submission = await getSubmission(form.title, responseId)
+
+  // Verify email metadata
+  expect(submission.from).toContain('donotreply@mail.form.gov.sg')
+  // TODO: this should be an option we test, a little jank now to get types to work.
+  if (form.emails) {
+    const emails = form.emails instanceof Array ? form.emails : [form.emails]
+    for (const email of emails) expect(submission.to).toContain(email)
+  }
+
+  // Subject need not be verified, since we got the email via the subject.
+
+  // Verify form responses in email
+  for (const field of formFields) {
+    const isVisible = true // TODO: Change this when we include tests with logic
+    const responseArray = getResponseArray(
+      field,
+      isVisible,
+      FormResponseMode.Email,
+    )
+    if (!responseArray) continue
+    const contained = [
+      getResponseTitle(field, false, FormResponseMode.Email),
+      ...responseArray,
+    ]
+    expectContains(submission.html, contained)
+    expectAttachment(field, isVisible, submission.attachments)
+  }
+}
+
 // Utility for getting responses for tables
 const TABLE_HANDLER = {
   getName: (field: E2eFieldMetadata, formMode: FormResponseMode): string => {
@@ -168,46 +210,4 @@ const expectAttachment = (
 
   // Check that contents match
   expect(content).toEqual(readFileSync(field.path).toString())
-}
-
-/**
- * Get the submission email from maildev, and ensure that the contents and attachments
- * match what is submitted.
- * @param {Page} page the Playwright page
- * @param {IFormSchema} form the form from the database
- * @param {E2eFieldMetadata[]} formFields the field metadata used to create and fill the form
- * @param {string} responseId the response id of the submission to be verified
- */
-export const verifySubmission = async (
-  page: Page,
-  { form, formFields, responseId }: VerifySubmissionProps,
-): Promise<void> => {
-  const submission = await getSubmission(form.title, responseId)
-
-  // Verify email metadata
-  expect(submission.from).toContain('donotreply@mail.form.gov.sg')
-  // TODO: this should be an option we test, a little jank now to get types to work.
-  if (form.emails) {
-    const emails = form.emails instanceof Array ? form.emails : [form.emails]
-    for (const email of emails) expect(submission.to).toContain(email)
-  }
-
-  // Subject need not be verified, since we got the email via the subject.
-
-  // Verify form responses in email
-  for (const field of formFields) {
-    const isVisible = true // TODO: Change this when we include tests with logic
-    const responseArray = getResponseArray(
-      field,
-      isVisible,
-      FormResponseMode.Email,
-    )
-    if (!responseArray) continue
-    const contained = [
-      getResponseTitle(field, false, FormResponseMode.Email),
-      ...responseArray,
-    ]
-    expectContains(submission.html, contained)
-    expectAttachment(field, isVisible, submission.attachments)
-  }
 }

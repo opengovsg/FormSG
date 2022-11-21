@@ -107,7 +107,7 @@ export type E2eFieldMetadata =
   | (E2ePickFieldMetadata<UenFieldBase, never> & E2eFieldSingleValue)
   | (E2ePickFieldMetadata<YesNoFieldBase, never> & E2eFieldSingleValue)
 
-export const allFields: E2eFieldMetadata[] = [
+export const ALL_FIELDS: E2eFieldMetadata[] = [
   {
     title: 'Attachment',
     fieldType: BasicField.Attachment,
@@ -170,7 +170,7 @@ export const allFields: E2eFieldMetadata[] = [
     fieldType: BasicField.HomeNo,
     val: '61234567',
   },
-  // Hide for now, because it doesn't work unless we spin up aws local.
+  // Hide for now, because it doesn't work unless we spin up localstack.
   // {
   //   title: 'Image',
   //   fieldType: BasicField.Image,
@@ -237,7 +237,7 @@ export const allFields: E2eFieldMetadata[] = [
     val: 'Lorem Ipsum',
   },
   {
-    title: 'Paragraph',
+    title: 'Statement',
     fieldType: BasicField.Statement,
     description:
       'This is a paragraph with **markdown** and a url to https://open.gov.sg/.\n\n* Please type your answers here.\n* Please press submit once you are done.\n\nThank you!',
@@ -281,4 +281,4 @@ export const allFields: E2eFieldMetadata[] = [
   },
 ]
 
-export const sampleField = keyBy(allFields, 'fieldType')
+export const SAMPLE_FIELD = keyBy(ALL_FIELDS, 'fieldType')
