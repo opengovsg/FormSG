@@ -25,6 +25,12 @@ export const FormInstructionsContainer = (): JSX.Element | null => {
         py="2.5rem"
         px={{ base: '1rem', md: '2.5rem' }}
         mb="1.5rem"
+        sx={{
+          '@media print': {
+            py: '0',
+            my: '0',
+          },
+        }}
       >
         <Box
           id={PUBLICFORM_INSTRUCTIONS_SECTIONID}
