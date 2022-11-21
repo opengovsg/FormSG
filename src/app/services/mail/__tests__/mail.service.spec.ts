@@ -54,7 +54,9 @@ describe('mail.service', () => {
   beforeEach(() => sendMailSpy.mockReset())
 
   const mailService = new MailService({
-    transporter: mockTransporter,
+    // Remove references to US when SES migration is over (opengovsg/formsg-private#130)
+    transporter_us: mockTransporter,
+    transporter_sg: mockTransporter,
     senderMail: MOCK_SENDER_EMAIL,
     officialMail: MOCK_SENDER_EMAIL,
     appName: MOCK_APP_NAME,
@@ -67,7 +69,9 @@ describe('mail.service', () => {
     it('should throw error when invalid senderMail param is passed', () => {
       // Arrange
       const invalidParams = {
-        transporter: mockTransporter,
+        // TODO #130 Remove references to US when SES migration is over (opengovsg/formsg-private#130)
+        transporter_us: mockTransporter,
+        transporter_sg: mockTransporter,
         senderMail: 'notAnEmail',
       }
       // Act + Assert
