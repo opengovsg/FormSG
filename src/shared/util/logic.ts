@@ -321,6 +321,7 @@ const isConditionFulfilled = (
     const conditionValues = ([] as unknown[])
       .concat(condition.value)
       .map(String)
+      // TODO #4279: Revisit decision to trim in backend after React rollout is complete
       .map((opt) => opt.trim())
     currentValue = String(currentValue)
     /*
