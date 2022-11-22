@@ -16,3 +16,7 @@ export type Payment = {
   payoutId: string
   payoutDate: Date
 }
+
+export type PaymentReceiptDto = {
+  receipt: string
+}
