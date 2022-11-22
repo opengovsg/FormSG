@@ -11,6 +11,7 @@ import {
   ErrorDto,
   FormAuthType,
   FormSubmissionMetadataQueryDto,
+  PaymentStatus,
   StorageModeSubmissionDto,
   StorageModeSubmissionMetadataList,
   SubmissionErrorDto,
@@ -425,7 +426,7 @@ const submitEncryptModeForm: ControllerHandler<
     const payment = new Payment({
       submissionId,
       amount: form.payments.amount_cents,
-      status: 'pending',
+      status: PaymentStatus.Pending,
       paymentIntentId: paymentIntent.id,
     })
 
