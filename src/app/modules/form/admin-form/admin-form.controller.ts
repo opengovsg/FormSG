@@ -914,9 +914,10 @@ export const handleDuplicateAdminForm = [
 
 /**
  * Handler for GET /:formId/adminform/template
+ * Handler for GET /api/v3/admin/forms/:formId/use-template
  * @security session
  *
- * @returns 200 with target form's public view
+ * @returns 200 with target form's template view
  * @returns 403 when the target form is private
  * @returns 404 when form cannot be found
  * @returns 410 when form is archived
