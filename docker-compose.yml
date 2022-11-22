@@ -117,9 +117,10 @@ services:
       - REACT_MIGRATION_REMOVE_INFOBOX_THRESHOLD_ADMIN=100
       - REACT_MIGRATION_REMOVE_INFOBOX_THRESHOLD_RESPONDENT=10
       # env vars for stripe payment integration
+      - PAYMENT_STRIPE_PUBLISHABLE_KEY=publishableKey
       - PAYMENT_STRIPE_SECRET_KEY=secretKey
       - PAYMENT_STRIPE_CLIENT_ID=clientId
-      - PAYMENT_STRIPE_PUBLISHABLE_KEY=publishableKey
+      - PAYMENT_STRIPE_WEBHOOK_SECRET=webhookSecret
   mockpass:
     build: https://github.com/opengovsg/mockpass.git
     depends_on:
