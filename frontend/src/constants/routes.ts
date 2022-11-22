@@ -18,6 +18,7 @@ export const ADMINFORM_BUILD_SUBROUTE = ''
 export const ADMINFORM_SETTINGS_SUBROUTE = 'settings'
 export const ADMINFORM_RESULTS_SUBROUTE = 'results'
 export const ADMINFORM_PREVIEW_ROUTE = 'preview'
+export const ADMINFORM_USETEMPLATE_ROUTE = 'use-template'
 
 /**
  * Regex for active path matching on adminform builder routes/subroutes.
