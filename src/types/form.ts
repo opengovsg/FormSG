@@ -200,6 +200,12 @@ export interface IFormSchema extends IForm, Document, PublicView<PublicForm> {
   ): Promise<T & DeepRequired<Pick<IFormSchema, 'payments'>>>
 
   /**
+   * Remove payment account ID from the form.
+   * @returns updated form
+   */
+  removePaymentAccount<T = IFormSchema>(): Promise<T>
+
+  /**
    * Return essential form creation parameters with the given properties.
    * @param overrideProps the props to override on the duplicated form
    * @returns params required to create a new duplicated form object

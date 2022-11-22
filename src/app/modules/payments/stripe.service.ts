@@ -1,5 +1,6 @@
 import mongoose from 'mongoose'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
+import Stripe from 'stripe'
 
 import { IPopulatedForm } from '../../../types'
 import config from '../../config/config'
@@ -15,6 +16,7 @@ import {
   ChargeReceiptNotFoundError,
   PaymentIntentLatestChargeNotFoundError,
   StripeAccountError,
+  StripeAccountNotFoundError,
   StripeFetchError,
   SubmissionAndFormMismatchError,
 } from './stripe.errors'
@@ -42,6 +44,7 @@ export const linkStripeAccountToForm = (form: IPopulatedForm) => {
           meta: {
             action: 'linkStripeAccountToForm',
             accountId: id,
+            formId: form._id,
           },
           error,
         })
@@ -49,6 +52,25 @@ export const linkStripeAccountToForm = (form: IPopulatedForm) => {
       }),
     )
     .map((updatedForm) => updatedForm.payments.target_account_id)
+}
+
+export const unlinkStripeAccountFromForm = (form: IPopulatedForm) => {
+  if (!form.payments?.target_account_id) {
+    return okAsync(true)
+  }
+
+  return ResultAsync.fromPromise(form.removePaymentAccount(), (error) => {
+    const errMsg = 'Failed to remove payment account from form'
+    logger.error({
+      message: errMsg,
+      meta: {
+        action: 'unlinkStripeAccountFromForm',
+        formId: form._id,
+      },
+      error,
+    })
+    return new DatabaseError(errMsg)
+  })
 }
 
 export const createAccountLink = (
@@ -77,9 +99,14 @@ export const createAccountLink = (
   )
 }
 
-export const validateAccount = (accountId?: string) => {
+export const validateAccount = (
+  accountId?: string,
+): ResultAsync<
+  Stripe.Response<Stripe.Account>,
+  StripeAccountError | StripeAccountNotFoundError
+> => {
   if (!accountId) {
-    return errAsync(new StripeAccountError('No account id provided'))
+    return errAsync(new StripeAccountNotFoundError('No account id provided'))
   }
   return ResultAsync.fromPromise(
     stripe.accounts.retrieve(accountId),

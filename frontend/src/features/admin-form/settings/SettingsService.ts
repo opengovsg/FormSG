@@ -142,6 +142,10 @@ export const createStripeAccount = async (formId: string) => {
   ).then(({ data }) => data)
 }
 
+export const unlinkStripeAccount = async (formId: string) => {
+  return ApiService.delete<void>(`${ADMIN_FORM_ENDPOINT}/${formId}/stripe`)
+}
+
 export const validateStripeAccount = async (formId: string) => {
   return ApiService.get(
     `${ADMIN_FORM_ENDPOINT}/${formId}/stripe/validate`,

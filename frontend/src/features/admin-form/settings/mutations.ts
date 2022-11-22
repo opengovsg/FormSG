@@ -24,6 +24,7 @@ import { adminFormSettingsKeys } from './queries'
 import {
   createStripeAccount,
   deleteTwilioCredentials,
+  unlinkStripeAccount,
   updateFormAuthType,
   updateFormCaptcha,
   updateFormEmails,
@@ -360,5 +361,23 @@ export const useMutateStripeAccount = () => {
   const { formId } = useParams()
   if (!formId) throw new Error('No formId provided')
 
-  return useMutation(() => createStripeAccount(formId))
+  const queryClient = useQueryClient()
+
+  const createStripeAccountMutation = useMutation(() =>
+    createStripeAccount(formId),
+  )
+
+  const unlinkStripeAccountMutation = useMutation(
+    () => unlinkStripeAccount(formId),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(adminFormSettingsKeys.id(formId))
+      },
+    },
+  )
+
+  return {
+    createStripeAccountMutation,
+    unlinkStripeAccountMutation,
+  }
 }

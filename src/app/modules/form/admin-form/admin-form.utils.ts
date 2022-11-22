@@ -30,7 +30,10 @@ import {
   TwilioCacheError,
 } from '../../core/core.errors'
 import { ErrorResponseData } from '../../core/core.types'
-import { StripeAccountError } from '../../payments/stripe.errors'
+import {
+  StripeAccountError,
+  StripeAccountNotFoundError,
+} from '../../payments/stripe.errors'
 import { MissingUserError } from '../../user/user.errors'
 import { SmsLimitExceededError } from '../../verification/verification.errors'
 import {
@@ -153,6 +156,12 @@ export const mapRouteError = (
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         errorMessage: coreErrorMessage ?? error.message,
       }
+    case StripeAccountNotFoundError:
+      return {
+        statusCode: StatusCodes.NOT_FOUND,
+        errorMessage: coreErrorMessage ?? error.message,
+      }
+    // TODO: Decide on status code
     case StripeAccountError:
       return {
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,

@@ -46,3 +46,9 @@ export class StripeAccountError extends ApplicationError {
     super(message)
   }
 }
+
+export class StripeAccountNotFoundError extends ApplicationError {
+  constructor(message = 'Stripe account not found') {
+    super(message)
+  }
+}
