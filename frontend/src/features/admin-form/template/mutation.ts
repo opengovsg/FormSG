@@ -15,10 +15,11 @@ import { useToast } from '~hooks/useToast'
 
 import { trackCreateFormFailed } from '~features/analytics/AnalyticsService'
 import { workspaceKeys } from '~features/workspace/queries'
+
 import {
-  dupeEmailModeForm,
-  dupeStorageModeForm,
-} from '~features/workspace/WorkspaceService'
+  dupeEmailModeTemplateForm,
+  dupeStorageModeTemplateForm,
+} from './TemplateFormService'
 
 const useCommonHooks = () => {
   const navigate = useNavigate()
@@ -58,7 +59,7 @@ export const useDuplicateFormTemplateMutations = () => {
     CreateEmailFormBodyDto & { formIdToDuplicate: string }
   >(
     ({ formIdToDuplicate, ...params }) =>
-      dupeEmailModeForm(formIdToDuplicate, params),
+      dupeEmailModeTemplateForm(formIdToDuplicate, params),
     {
       onSuccess: handleSuccess,
       onError: handleError,
@@ -71,7 +72,7 @@ export const useDuplicateFormTemplateMutations = () => {
     CreateStorageFormBodyDto & { formIdToDuplicate: string }
   >(
     ({ formIdToDuplicate, ...params }) =>
-      dupeStorageModeForm(formIdToDuplicate, params),
+      dupeStorageModeTemplateForm(formIdToDuplicate, params),
     {
       onSuccess: handleSuccess,
       onError: handleError,
