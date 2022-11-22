@@ -1,12 +1,5 @@
 import { useEffect } from 'react'
-import {
-  BiCodeBlock,
-  BiCog,
-  BiCreditCard,
-  BiDollar,
-  BiKey,
-  BiMessage,
-} from 'react-icons/bi'
+import { BiCodeBlock, BiCog, BiDollar, BiKey, BiMessage } from 'react-icons/bi'
 import { useNavigate, useParams } from 'react-router-dom'
 import {
   Box,
