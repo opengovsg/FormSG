@@ -1,6 +1,6 @@
 import { Mongoose, Schema } from 'mongoose'
-import { PaymentStatus } from 'shared/types'
 
+import { PaymentStatus } from '../../../shared/types'
 import { IPaymentModel, IPaymentSchema } from '../../types'
 
 export const PAYMENT_SCHEMA_ID = 'Payment'

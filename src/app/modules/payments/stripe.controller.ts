@@ -3,13 +3,12 @@
 
 import { celebrate, Joi, Segments } from 'celebrate'
 import { StatusCodes } from 'http-status-codes'
-import { Payment, PaymentStatus } from 'shared/types'
 import Stripe from 'stripe'
 
-import { paymentConfig } from 'src/app/config/features/payment.config'
-import { createLoggerWithLabel } from 'src/app/config/logger'
-import { stripe } from 'src/app/loaders/stripe'
-
+import { Payment, PaymentStatus } from '../../../../shared/types'
+import { paymentConfig } from '../../config/features/payment.config'
+import { createLoggerWithLabel } from '../../config/logger'
+import { stripe } from '../../loaders/stripe'
 import { ControllerHandler } from '../core/core.types'
 
 import * as PaymentService from './payments.service'
