@@ -18,6 +18,8 @@ import {
   usePublicFormContext,
 } from '~features/public-form/PublicFormContext'
 
+import { STRIPE_SUBMISSION_ID_KEY } from '../../../constants'
+
 // Make sure to call `loadStripe` outside of a component’s render to avoid
 // recreating the `Stripe` object on every render.
 
@@ -41,9 +43,10 @@ const StripeCheckoutForm = ({
   const stripe = useStripe()
   const elements = useElements()
 
-  // Upon complete payment, redirect to <formId>?paymentSubmissionId=<submissionId>
-  const return_url =
-    window.location.href + '?paymentSubmissionId=' + submissionId
+  // Upon complete payment, redirect to <formId>?stripeSubmissionId=<submissionId>
+  const return_url = `${
+    window.location.href.split('?')[0]
+  }?${STRIPE_SUBMISSION_ID_KEY}=${submissionId}`
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     // We don't want to let default form submission happen here,
