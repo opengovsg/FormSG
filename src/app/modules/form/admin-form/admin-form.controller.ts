@@ -2789,9 +2789,36 @@ export const handleUpdatePayments = [
   celebrate({
     [Segments.BODY]: {
       enabled: Joi.boolean().required(),
-      amount_cents: Joi.number().integer().positive(),
-      target_account_id: Joi.string(),
-      description: Joi.string().allow(''),
+      amount_cents: Joi.alternatives().conditional('enabled', [
+        {
+          is: true,
+          then: Joi.number().integer().positive(),
+        },
+        {
+          is: false,
+          then: Joi.forbidden(),
+        },
+      ]),
+      target_account_id: Joi.alternatives().conditional('enabled', [
+        {
+          is: true,
+          then: Joi.string(),
+        },
+        {
+          is: false,
+          then: Joi.forbidden(),
+        },
+      ]),
+      description: Joi.alternatives().conditional('enabled', [
+        {
+          is: true,
+          then: Joi.string().allow(''),
+        },
+        {
+          is: false,
+          then: Joi.forbidden(),
+        },
+      ]),
     },
   }),
   _handleUpdatePayments,

@@ -70,9 +70,9 @@ export enum FormResponseMode {
 
 export type FormPayments = {
   enabled: boolean
-  target_account_id: string
-  amount_cents: number
-  description: string
+  target_account_id?: string
+  amount_cents?: number
+  description?: string
 }
 
 export interface FormBase {

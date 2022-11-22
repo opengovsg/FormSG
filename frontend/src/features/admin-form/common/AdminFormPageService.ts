@@ -1,6 +1,5 @@
 import {
   EndPageUpdateDto,
-  Payment,
   PaymentsUpdateDto,
   StartPageUpdateDto,
 } from '~shared/types'

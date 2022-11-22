@@ -126,7 +126,7 @@ export const PaymentInput = (): JSX.Element => {
     )
 
   const handleUpdatePayments = handleSubmit((payments) =>
-    paymentsMutation.mutate(payments, {
+    paymentsMutation.mutate(payments.enabled ? payments : { enabled: false }, {
       onSuccess: () => {
         setToInactive()
         handleCloseDrawer()
