@@ -1,5 +1,4 @@
-import { stripe } from 'src/app/loaders/stripe'
-
+import { stripe } from '../../../loaders/stripe'
 import { ControllerHandler } from '../../core/core.types'
 
 export const handleConnectAccount: ControllerHandler<{
@@ -13,5 +12,6 @@ export const handleConnectAccount: ControllerHandler<{
     return_url: `https://form.gov.sg/admin/form/${formId}/settings`,
     type: 'account_onboarding',
   })
+
   return res.json({ accountLink })
 }

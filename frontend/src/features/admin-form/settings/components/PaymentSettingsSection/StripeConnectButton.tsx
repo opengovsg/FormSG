@@ -18,7 +18,7 @@ export const StripeConnectButton = (): JSX.Element => {
           window.location.assign(accountLink)
         },
       }),
-    [],
+    [mutateStripeAccount],
   )
 
   if (form?.payments?.target_account_id) {
