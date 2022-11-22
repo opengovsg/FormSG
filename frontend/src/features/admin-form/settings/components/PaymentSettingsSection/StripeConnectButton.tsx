@@ -25,5 +25,5 @@ export const StripeConnectButton = (): JSX.Element => {
     return <Button isDisabled>You are already connected</Button>
   }
 
-  return <Button onClick={onClick} />
+  return <Button onClick={onClick}>Connect my Stripe account to FormSG</Button>
 }

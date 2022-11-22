@@ -4,7 +4,7 @@ import { PaymentSettingsSection } from './components/PaymentSettingsSection'
 export const SettingsPaymentsPage = (): JSX.Element => {
   return (
     <>
-      <CategoryHeader>Enable Singpass authentication</CategoryHeader>
+      <CategoryHeader>Payments</CategoryHeader>
       <PaymentSettingsSection />
     </>
   )

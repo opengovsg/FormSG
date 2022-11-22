@@ -3,6 +3,7 @@ import {
   BiCodeBlock,
   BiCog,
   BiCreditCard,
+  BiDollar,
   BiKey,
   BiMessage,
 } from 'react-icons/bi'
@@ -86,7 +87,7 @@ export const SettingsPage = (): JSX.Element => {
             <SettingsTab label="Singpass" icon={BiKey} />
             <SettingsTab label="Twilio credentials" icon={BiMessage} />
             <SettingsTab label="Webhooks" icon={BiCodeBlock} />
-            <SettingsTab label="Payments" icon={BiCreditCard} />
+            <SettingsTab label="Payments" icon={BiDollar} />
           </TabList>
         </Flex>
         <TabPanels

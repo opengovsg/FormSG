@@ -5,7 +5,9 @@ import { StripeConnectButton } from './StripeConnectButton'
 export const PaymentSettingsSection = (): JSX.Element => {
   return (
     <>
-      <Text mb="1rem">Yo some instructions about Stripe</Text>
+      <Text mb="1rem">
+        Link your form to a Stripe account to start collecting payments.
+      </Text>
       <StripeConnectButton />
     </>
   )
