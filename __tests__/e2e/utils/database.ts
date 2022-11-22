@@ -42,13 +42,7 @@ export const makeModel = (
     }
   }
 
-  // Need this try catch block as some schemas may have been converted to
-  // TypeScript and use default exports instead.
-  try {
-    return spec(`dist/backend/src/app/models/${modelFilename}`)(db)
-  } catch (e) {
-    return spec(`dist/backend/src/app/models/${modelFilename}`).default(db)
-  }
+  return spec(`dist/backend/src/app/models/${modelFilename}`).default(db)
 }
 
 /**
