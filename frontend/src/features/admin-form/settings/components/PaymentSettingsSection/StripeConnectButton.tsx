@@ -1,13 +1,13 @@
 import { useCallback } from 'react'
+import { Skeleton } from '@chakra-ui/react'
 
 import Button from '~components/Button'
 
-import { useAdminForm } from '~features/admin-form/common/queries'
-
 import { useMutateStripeAccount } from '../../mutations'
+import { useAdminFormSettings } from '../../queries'
 
 export const StripeConnectButton = (): JSX.Element => {
-  const { data: form } = useAdminForm()
+  const { data: settings, isLoading } = useAdminFormSettings()
 
   const mutateStripeAccount = useMutateStripeAccount()
 
@@ -21,13 +21,15 @@ export const StripeConnectButton = (): JSX.Element => {
     [mutateStripeAccount],
   )
 
-  if (form?.payments?.target_account_id) {
-    return <Button isDisabled>You are already connected</Button>
+  if (settings?.payments?.enabled && settings?.payments?.target_account_id) {
+    return <Button colorScheme="danger">Disconnect Stripe</Button>
   }
 
   return (
-    <Button isLoading={mutateStripeAccount.isLoading} onClick={onClick}>
-      Connect my Stripe account to FormSG
-    </Button>
+    <Skeleton isLoaded={!isLoading} w="fit-content">
+      <Button isLoading={mutateStripeAccount.isLoading} onClick={onClick}>
+        Connect my Stripe account to FormSG
+      </Button>
+    </Skeleton>
   )
 }
