@@ -25,8 +25,7 @@ export interface FormFieldsProps {
   formFields: FormFieldDto[]
   formLogics: LogicDto[]
   colorTheme: FormColorTheme
-  onSubmit: SubmitHandler<FormFieldValues>
-  isTemplate?: boolean
+  onSubmit: SubmitHandler<FormFieldValues> | undefined
 }
 
 export const FormFields = ({
@@ -34,7 +33,6 @@ export const FormFields = ({
   formLogics,
   colorTheme,
   onSubmit,
-  isTemplate,
 }: FormFieldsProps): JSX.Element => {
   useFetchPrefillQuery()
   const [searchParams] = useSearchParams()
@@ -128,11 +126,10 @@ export const FormFields = ({
           </Box>
         )}
         <PublicFormSubmitButton
-          onSubmit={formMethods.handleSubmit(onSubmit)}
+          onSubmit={onSubmit ? formMethods.handleSubmit(onSubmit) : undefined}
           formFields={augmentedFormFields}
           formLogics={formLogics}
           colorTheme={colorTheme}
-          isTemplate={isTemplate}
         />
       </form>
     </FormProvider>

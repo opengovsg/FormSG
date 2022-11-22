@@ -1,10 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
-import { SubmitHandler } from 'react-hook-form'
 import get from 'lodash/get'
 import simplur from 'simplur'
 
-import { FormAuthType, FormResponseMode } from '~shared/types/form'
+import { FormAuthType } from '~shared/types/form'
 
 import { useFormTemplate } from '~/features/admin-form/common/queries'
 import { FormNotFound } from '~/features/public-form/components/FormNotFound'
@@ -16,11 +15,8 @@ import { useCommonFormProvider } from '~/features/public-form/PublicFormProvider
 
 import { useTimeout } from '~hooks/useTimeout'
 import { HttpError } from '~services/ApiService'
-import { FormFieldValues } from '~templates/Field'
 
 import NotFoundErrorPage from '~pages/NotFoundError'
-
-import { usePreviewFormMutations } from '../common/mutations'
 
 interface PreviewFormProviderProps {
   formId: string
@@ -32,7 +28,7 @@ export const TemplateFormProvider = ({
   children,
 }: PreviewFormProviderProps): JSX.Element => {
   // Once form has been submitted, submission data will be set here.
-  const [submissionData, setSubmissionData] = useState<SubmissionData>()
+  const [submissionData] = useState<SubmissionData>()
 
   const { data, isLoading, error, ...rest } = useFormTemplate(
     formId,
@@ -42,19 +38,6 @@ export const TemplateFormProvider = ({
 
   const { isNotFormId, toast, vfnToastIdRef, expiryInMs, ...commonFormValues } =
     useCommonFormProvider(formId)
-
-  const showErrorToast = useCallback(
-    (error) => {
-      toast({
-        status: 'danger',
-        description:
-          error instanceof Error
-            ? error.message
-            : 'An error occurred whilst processing your submission. Please refresh and try again.',
-      })
-    },
-    [toast],
-  )
 
   useEffect(() => {
     return () => {
@@ -101,16 +84,6 @@ export const TemplateFormProvider = ({
     [data?.form, data?.spcpSession],
   )
 
-  // Forms are not submitted in template mode,
-  // hence this SubmitHandler does not contain submitEmailModeFormMutation and submitStorageModeFormMutation
-  const handleSubmitForm: SubmitHandler<FormFieldValues> = useCallback(
-    async (formInputs) => {
-      const { form } = data ?? {}
-      if (!form) return
-    },
-    [data],
-  )
-
   if (isNotFormId) {
     return <NotFoundErrorPage />
   }
@@ -118,7 +91,7 @@ export const TemplateFormProvider = ({
   return (
     <PublicFormContext.Provider
       value={{
-        handleSubmitForm,
+        handleSubmitForm: undefined,
         formId,
         error,
         submissionData,

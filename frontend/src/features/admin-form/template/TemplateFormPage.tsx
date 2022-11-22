@@ -34,7 +34,7 @@ export const TemplateFormPage = (): JSX.Element => {
           <FormStartPage isTemplate />
           <PublicFormWrapper isPreview>
             <FormInstructions />
-            <FormFields isTemplate />
+            <FormFields />
             <FormEndPage isPreview />
             <FormFooter />
           </PublicFormWrapper>

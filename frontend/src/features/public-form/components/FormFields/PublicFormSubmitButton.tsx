@@ -16,8 +16,7 @@ interface PublicFormSubmitButtonProps {
   formFields: MyInfoFormField<FormField>[]
   formLogics: LogicDto[]
   colorTheme: string
-  onSubmit: MouseEventHandler<HTMLButtonElement>
-  isTemplate?: boolean
+  onSubmit: MouseEventHandler<HTMLButtonElement> | undefined
 }
 
 /**
@@ -29,7 +28,6 @@ export const PublicFormSubmitButton = ({
   formLogics,
   colorTheme,
   onSubmit,
-  isTemplate,
 }: PublicFormSubmitButtonProps): JSX.Element => {
   const isMobile = useIsMobile()
   const { isSubmitting } = useFormState()
@@ -51,7 +49,7 @@ export const PublicFormSubmitButton = ({
         colorScheme={`theme-${colorTheme}` as ThemeColorScheme}
         type="button"
         isLoading={isSubmitting}
-        isDisabled={!!preventSubmissionLogic || !!isTemplate}
+        isDisabled={!!preventSubmissionLogic || !onSubmit}
         loadingText="Submitting"
         onClick={onSubmit}
       >
