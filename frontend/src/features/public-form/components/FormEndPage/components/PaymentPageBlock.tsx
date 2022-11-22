@@ -14,9 +14,8 @@ import Button from '~components/Button'
 
 import { useEnv } from '~features/env/queries'
 
-import { FormPaymentPageProps } from '../FormPaymentPage'
-
 import { STRIPE_SUBMISSION_ID_KEY } from '../../../constants'
+import { FormPaymentPageProps } from '../FormPaymentPage'
 
 // Make sure to call `loadStripe` outside of a component’s render to avoid
 // recreating the `Stripe` object on every render.
