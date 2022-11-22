@@ -10,7 +10,7 @@ import {
   NON_INPUT_FIELD_TYPES,
   PUBLIC_FORM_PAGE_PREFIX,
 } from '../constants'
-import { extractOtp, fillDropdown } from '../utils'
+import { extractOtp, fillDropdown, getTitleWithQuestionNumber } from '../utils'
 
 export type SubmitFormProps = {
   form: IFormSchema
@@ -135,9 +135,17 @@ const fillFields = async (
   })
 
   // Fill form fields
-  for (const field of fieldMetasWithIds) {
+  for (let i = 0; i < fieldMetasWithIds.length; i++) {
+    const field = fieldMetasWithIds[i]
     // Ignore fields that are non-input.
-    if (NON_INPUT_FIELD_TYPES.includes(field.fieldType)) continue
+    if (NON_INPUT_FIELD_TYPES.includes(field.fieldType)) {
+      // TODO: Check if the field exists.
+      continue
+    }
+
+    await expect(
+      page.getByText(getTitleWithQuestionNumber(formFields, i)),
+    ).toBeVisible()
 
     const input = page.locator(`id=${field._id}`)
 

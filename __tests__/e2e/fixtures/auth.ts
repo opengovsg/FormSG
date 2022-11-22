@@ -2,6 +2,7 @@ import { expect, test as baseTest } from '@playwright/test'
 import fs from 'fs'
 import path from 'path'
 
+import { ADMIN_EMAIL } from '../constants'
 import { DASHBOARD_PAGE, LOGIN_PAGE } from '../constants/links'
 import { extractOtp } from '../utils/mail'
 
@@ -23,16 +24,16 @@ export const test = baseTest.extend({
       const page = await browser.newPage({ storageState: undefined })
       await page.goto(LOGIN_PAGE)
 
-      const email = `user${testInfo.workerIndex}@data.gov.sg`
-
-      await page.getByRole('textbox', { name: /log in/i }).fill(email)
+      await page.getByRole('textbox', { name: /log in/i }).fill(ADMIN_EMAIL)
       await page.getByRole('button', { name: /log in/i }).click()
 
       // Ensure OTP success message is seen
-      await expect(page.getByText(`Enter OTP sent to ${email}`)).toBeVisible()
+      await expect(
+        page.getByText(`Enter OTP sent to ${ADMIN_EMAIL}`),
+      ).toBeVisible()
 
       // Log in with OTP
-      const otp = await extractOtp(email)
+      const otp = await extractOtp(ADMIN_EMAIL)
       expect(otp).toBeTruthy()
 
       await page.locator('input[name="otp"]').fill(otp!)

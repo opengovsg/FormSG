@@ -3,9 +3,10 @@ import { format, parse } from 'date-fns'
 import { readFileSync } from 'fs'
 import { BasicField, FormResponseMode } from 'shared/types'
 
-import { IFormSchema, IUserModel } from 'src/types'
+import { IFormSchema } from 'src/types'
 
 import {
+  ADMIN_EMAIL,
   DATE_INPUT_FORMAT,
   DATE_RESPONSE_FORMAT,
   E2eFieldMetadata,
@@ -24,24 +25,22 @@ export type VerifySubmissionProps = {
  * Get the submission email from maildev, and ensure that the contents and attachments
  * match what is submitted.
  * @param {Page} page the Playwright page
- * @param {IUserMode} User the User model
  * @param {IFormSchema} form the form from the database
  * @param {E2eFieldMetadata[]} formFields the field metadata used to create and fill the form
  * @param {string} responseId the response id of the submission to be verified
  */
 export const verifySubmission = async (
   page: Page,
-  User: IUserModel,
   { form, formFields, formSettings, responseId }: VerifySubmissionProps,
 ): Promise<void> => {
+  // Get the submission from the email, via the subject.
   const submission = await getSubmission(form.title, responseId)
 
   // Verify email metadata
   expect(submission.from).toContain('donotreply@mail.form.gov.sg')
 
   const emails = formSettings.emails ?? []
-  const admin = await User.findById(form.admin)
-  if (admin) emails.unshift(admin.email)
+  emails.unshift(ADMIN_EMAIL)
 
   for (const email of emails) {
     expect(submission.to).toContain(email)

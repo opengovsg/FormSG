@@ -2,7 +2,7 @@ import { Page } from '@playwright/test'
 import mongoose from 'mongoose'
 import { BasicField, LogicConditionState, LogicType } from 'shared/types'
 
-import { IFormModel, IUserModel } from 'src/types'
+import { IFormModel } from 'src/types'
 
 import { expect, test } from './fixtures/auth'
 import {
@@ -24,14 +24,12 @@ import {
 } from './utils'
 
 let db: mongoose.Connection
-let User: IUserModel
 let Form: IFormModel
 
 test.describe('Email form submission', () => {
   test.beforeAll(async () => {
     // Create models
     db = await makeMongooseFixtures()
-    User = makeModel(db, 'user.server.model', 'User')
     Form = makeModel(db, 'form.server.model', 'Form')
   })
   test.afterAll(async () => {
@@ -325,6 +323,6 @@ const runTest = async (page: Page, formDef: E2eForm): Promise<void> => {
     form,
     ...formDef,
   })
-  await verifySubmission(page, User, { form, responseId, ...formDef })
+  await verifySubmission(page, { form, responseId, ...formDef })
   await deleteDocById(Form, form._id)
 }

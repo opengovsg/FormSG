@@ -50,7 +50,7 @@ export const createForm = async (
 /**
  * Navigates to the dashboard and creates a new form. Ends on the admin builder page.
  * @param {Page} page Playwright page
- * @returns {string} the created form url
+ * @returns {string} the created form id
  */
 const addForm = async (page: Page): Promise<string> => {
   await page.goto(DASHBOARD_PAGE)
