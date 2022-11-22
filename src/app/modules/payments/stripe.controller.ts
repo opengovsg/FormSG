@@ -3,6 +3,7 @@
 
 import { celebrate, Joi, Segments } from 'celebrate'
 import { StatusCodes } from 'http-status-codes'
+import get from 'lodash/get'
 import Stripe from 'stripe'
 
 import { Payment, PaymentStatus } from '../../../../shared/types'
@@ -72,20 +73,25 @@ export const _handleStripeEventUpdates: ControllerHandler<
   const sig = req.headers['stripe-signature']
   if (!sig) return res.status(StatusCodes.BAD_REQUEST).send()
 
+  // Needed to obtain the raw body from the request. This is set in the parser, see
+  // parserMiddlewares.saveStripeWebhookRawBody in src/app/loaders/express/parser.ts.
+  const rawBody = get(req, 'rawBody') as unknown as string
+
   let event
   try {
     event = stripe.webhooks.constructEvent(
-      req.body,
+      rawBody,
       sig,
       paymentConfig.stripeWebhookSecret,
     ) as Stripe.DiscriminatedEvent
-  } catch {
+  } catch (e) {
     // Throws Stripe.errors.StripeSignatureVerificationError
     logger.info({
       message: 'Received invalid request from Stripe webhook endpoint',
       meta: {
         action: 'handleStripeEventUpdates',
         req: req.body,
+        error: e,
       },
     })
     return res.status(StatusCodes.BAD_REQUEST).send()
