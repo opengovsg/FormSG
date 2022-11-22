@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 import { Helmet } from 'react-helmet-async'
 import get from 'lodash/get'
 import simplur from 'simplur'
@@ -7,10 +7,7 @@ import { FormAuthType } from '~shared/types/form'
 
 import { useFormTemplate } from '~/features/admin-form/common/queries'
 import { FormNotFound } from '~/features/public-form/components/FormNotFound'
-import {
-  PublicFormContext,
-  SubmissionData,
-} from '~/features/public-form/PublicFormContext'
+import { PublicFormContext } from '~/features/public-form/PublicFormContext'
 import { useCommonFormProvider } from '~/features/public-form/PublicFormProvider'
 
 import { useTimeout } from '~hooks/useTimeout'
@@ -27,14 +24,7 @@ export const TemplateFormProvider = ({
   formId,
   children,
 }: PreviewFormProviderProps): JSX.Element => {
-  // Once form has been submitted, submission data will be set here.
-  const [submissionData] = useState<SubmissionData>()
-
-  const { data, isLoading, error, ...rest } = useFormTemplate(
-    formId,
-    // Stop querying once submissionData is present.
-    /* enabled= */ !submissionData,
-  )
+  const { data, isLoading, error, ...rest } = useFormTemplate(formId)
 
   const { isNotFormId, toast, vfnToastIdRef, expiryInMs, ...commonFormValues } =
     useCommonFormProvider(formId)
@@ -94,7 +84,6 @@ export const TemplateFormProvider = ({
         handleSubmitForm: undefined,
         formId,
         error,
-        submissionData,
         isAuthRequired,
         expiryInMs,
         isLoading,
