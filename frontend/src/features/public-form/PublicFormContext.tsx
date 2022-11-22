@@ -45,6 +45,7 @@ export interface PublicFormContextProps
    */
   onMobileDrawerOpen: () => void
   onMobileDrawerClose: () => void
+  isTemplate?: boolean
 }
 
 export const PublicFormContext = createContext<

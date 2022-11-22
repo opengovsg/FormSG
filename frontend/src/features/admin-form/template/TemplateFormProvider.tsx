@@ -101,63 +101,14 @@ export const TemplateFormProvider = ({
     [data?.form, data?.spcpSession],
   )
 
-  const { submitEmailModeFormMutation, submitStorageModeFormMutation } =
-    usePreviewFormMutations(formId)
-
+  // Forms are not submitted in template mode,
+  // hence this SubmitHandler does not contain submitEmailModeFormMutation and submitStorageModeFormMutation
   const handleSubmitForm: SubmitHandler<FormFieldValues> = useCallback(
     async (formInputs) => {
       const { form } = data ?? {}
       if (!form) return
-
-      switch (form.responseMode) {
-        case FormResponseMode.Email:
-          // Using mutateAsync so react-hook-form goes into loading state.
-          return (
-            submitEmailModeFormMutation
-              .mutateAsync(
-                { formFields: form.form_fields, formInputs },
-                {
-                  onSuccess: ({ submissionId }) =>
-                    setSubmissionData({
-                      id: submissionId,
-                      // TODO: Server should return server time so browser time is not used.
-                      timeInEpochMs: Date.now(),
-                    }),
-                },
-              )
-              // Using catch since we are using mutateAsync and react-hook-form will continue bubbling this up.
-              .catch(showErrorToast)
-          )
-        case FormResponseMode.Encrypt:
-          // Using mutateAsync so react-hook-form goes into loading state.
-          return (
-            submitStorageModeFormMutation
-              .mutateAsync(
-                {
-                  formFields: form.form_fields,
-                  formInputs,
-                  publicKey: form.publicKey,
-                },
-                {
-                  onSuccess: ({ submissionId }) =>
-                    setSubmissionData({
-                      id: submissionId,
-                      // TODO: Server should return server time so browser time is not used.
-                      timeInEpochMs: Date.now(),
-                    }),
-                },
-              )
-              // Using catch since we are using mutateAsync and react-hook-form will continue bubbling this up.
-              .catch(showErrorToast)
-          )
-      }
     },
-    [
-      data,
-      showErrorToast,
-      submitEmailModeFormMutation,
-      submitStorageModeFormMutation,
-    ],
+    [data],
   )
 
   if (isNotFormId) {

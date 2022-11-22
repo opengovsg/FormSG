@@ -26,6 +26,7 @@ export interface FormFieldsProps {
   formLogics: LogicDto[]
   colorTheme: FormColorTheme
   onSubmit: SubmitHandler<FormFieldValues>
+  isTemplate?: boolean
 }
 
 export const FormFields = ({
@@ -33,6 +34,7 @@ export const FormFields = ({
   formLogics,
   colorTheme,
   onSubmit,
+  isTemplate,
 }: FormFieldsProps): JSX.Element => {
   useFetchPrefillQuery()
   const [searchParams] = useSearchParams()
@@ -130,6 +132,7 @@ export const FormFields = ({
           formFields={augmentedFormFields}
           formLogics={formLogics}
           colorTheme={colorTheme}
+          isTemplate={isTemplate}
         />
       </form>
     </FormProvider>

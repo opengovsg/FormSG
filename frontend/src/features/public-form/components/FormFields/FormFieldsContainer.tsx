@@ -10,7 +10,11 @@ import { FormAuth } from '../FormAuth'
 import { FormFields } from './FormFields'
 import { FormFieldsSkeleton } from './FormFieldsSkeleton'
 
-export const FormFieldsContainer = (): JSX.Element | null => {
+export const FormFieldsContainer = ({
+  isTemplate,
+}: {
+  isTemplate?: boolean
+}): JSX.Element | null => {
   const { form, isAuthRequired, isLoading, handleSubmitForm, submissionData } =
     usePublicFormContext()
 
@@ -36,9 +40,10 @@ export const FormFieldsContainer = (): JSX.Element | null => {
         formLogics={form.form_logics}
         colorTheme={form.startPage.colorTheme}
         onSubmit={handleSubmitForm}
+        isTemplate={isTemplate}
       />
     )
-  }, [form, handleSubmitForm, isAuthRequired, isLoading])
+  }, [form, handleSubmitForm, isAuthRequired, isLoading, isTemplate])
 
   if (submissionData) return null
 
