@@ -7,6 +7,7 @@ import { ControllerHandler } from '../../core/core.types'
 import {
   createAccountLink,
   linkStripeAccountToForm,
+  validateAccount,
 } from '../../payments/stripe.service'
 import { getPopulatedUserById } from '../../user/user.service'
 
@@ -43,6 +44,43 @@ export const handleConnectAccount: ControllerHandler<{
         message: 'Error connecting admin form payment account',
         meta: {
           action: 'handleConnectAccount',
+          ...createReqMeta(req),
+        },
+        error,
+      })
+
+      const { statusCode, errorMessage } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
+}
+
+export const handleValidatePaymentAccount: ControllerHandler<{
+  formId: string
+}> = async (req, res) => {
+  const { formId } = req.params
+  const sessionUserId = (req.session as AuthedSessionData).user._id
+
+  // Step 1: Retrieve currently logged in user.
+  return getPopulatedUserById(sessionUserId)
+    .andThen((user) =>
+      // Step 2: Retrieve form with write permission check.
+      getFormAfterPermissionChecks({
+        user,
+        formId,
+        level: PermissionLevel.Write,
+      }),
+    )
+    .andThen((form) => validateAccount(form.payments?.target_account_id))
+    .map((account) => {
+      return res.json({
+        account,
+      })
+    })
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error validating account',
+        meta: {
+          action: 'handleValidatePaymentAccount',
           ...createReqMeta(req),
         },
         error,

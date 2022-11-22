@@ -141,3 +141,9 @@ export const createStripeAccount = async (formId: string) => {
     `${ADMIN_FORM_ENDPOINT}/${formId}/stripe`,
   ).then(({ data }) => data)
 }
+
+export const validateStripeAccount = async (formId: string) => {
+  return ApiService.get(
+    `${ADMIN_FORM_ENDPOINT}/${formId}/stripe/validate`,
+  ).then(({ data }) => data)
+}

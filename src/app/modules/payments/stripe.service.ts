@@ -77,6 +77,16 @@ export const createAccountLink = (
   )
 }
 
+export const validateAccount = (accountId?: string) => {
+  if (!accountId) {
+    return errAsync(new StripeAccountError('No account id provided'))
+  }
+  return ResultAsync.fromPromise(
+    stripe.accounts.retrieve(accountId),
+    (error) => new StripeAccountError(String(error)),
+  )
+}
+
 export const getReceiptURL = (
   formId: string,
   submissionId: string,
