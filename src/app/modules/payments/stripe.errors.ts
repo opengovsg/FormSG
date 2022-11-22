@@ -40,3 +40,9 @@ export class StripeFetchError extends ApplicationError {
     super(message)
   }
 }
+
+export class StripeAccountError extends ApplicationError {
+  constructor(message = 'Error when processing Stripe account') {
+    super(message)
+  }
+}

@@ -626,6 +626,16 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     }
   }
 
+  FormDocumentSchema.methods.addPaymentAccountId = async function (
+    accountId: FormPayments['target_account_id'],
+  ) {
+    this.payments = {
+      target_account_id: accountId,
+      enabled: true,
+    }
+    return this.save()
+  }
+
   // Transfer ownership of the form to another user
   FormDocumentSchema.methods.transferOwner = async function (
     currentOwner: IUserSchema,

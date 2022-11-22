@@ -1,8 +1,11 @@
 import mongoose from 'mongoose'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 
+import { IPopulatedForm } from '../../../types'
+import config from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { stripe } from '../../loaders/stripe'
+import { DatabaseError } from '../core/core.errors'
 import { FormNotFoundError } from '../form/form.errors'
 import { SubmissionNotFoundError } from '../submission/submission.errors'
 import * as SubmissionService from '../submission/submission.service'
@@ -11,11 +14,68 @@ import * as PaymentService from './payments.service'
 import {
   ChargeReceiptNotFoundError,
   PaymentIntentLatestChargeNotFoundError,
+  StripeAccountError,
   StripeFetchError,
   SubmissionAndFormMismatchError,
 } from './stripe.errors'
 
 const logger = createLoggerWithLabel(module)
+
+export const linkStripeAccountToForm = (form: IPopulatedForm) => {
+  // Check if form already has account id
+  if (form.payments?.target_account_id) {
+    return okAsync(form.payments.target_account_id)
+  }
+
+  // No account id, create and inject into form
+  return ResultAsync.fromPromise(
+    stripe.accounts.create({ type: 'standard' }),
+    (error) => {
+      return new StripeAccountError(String(error))
+    },
+  )
+    .andThen(({ id }) =>
+      ResultAsync.fromPromise(form.addPaymentAccountId(id), (error) => {
+        const errMsg = 'Failed to update payment account id'
+        logger.error({
+          message: errMsg,
+          meta: {
+            action: 'linkStripeAccountToForm',
+            accountId: id,
+          },
+          error,
+        })
+        return new DatabaseError(errMsg)
+      }),
+    )
+    .map((updatedForm) => updatedForm.payments.target_account_id)
+}
+
+export const createAccountLink = (
+  accountId: string,
+  redirectFormId: string,
+) => {
+  return ResultAsync.fromPromise(
+    stripe.accountLinks.create({
+      account: accountId,
+      refresh_url: `${config.app.appUrl}/admin/form/${redirectFormId}/settings`,
+      return_url: `${config.app.appUrl}/admin/form/${redirectFormId}/settings`,
+      type: 'account_onboarding',
+    }),
+    (error) => {
+      logger.error({
+        message: 'Failed to create account link',
+        meta: {
+          action: 'createAccountLink',
+          accountId,
+          formId: redirectFormId,
+        },
+        error,
+      })
+      return new StripeAccountError(String(error))
+    },
+  )
+}
 
 export const getReceiptURL = (
   formId: string,

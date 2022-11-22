@@ -1,4 +1,4 @@
-import { Box, Flex, Icon, Skeleton, Text } from '@chakra-ui/react'
+import { Flex, Icon, Skeleton, Text } from '@chakra-ui/react'
 
 import { BxsCheckCircle } from '~assets/icons'
 
