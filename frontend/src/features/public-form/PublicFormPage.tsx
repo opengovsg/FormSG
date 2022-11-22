@@ -45,9 +45,9 @@ export const PublicFormPage = (): JSX.Element => {
                 <FormInstructions />
                 <FormFields />
                 <FormEndPage />
-                <FormFooter />
               </>
             )}
+            <FormFooter />
           </PublicFormWrapper>
         </Flex>
       </FormSectionsProvider>
