@@ -1,8 +1,7 @@
 import mongoose from 'mongoose'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 
-import { stripe } from 'src/app/loaders/stripe'
-
+import { stripe } from '../../loaders/stripe'
 import { FormNotFoundError } from '../form/form.errors'
 import { SubmissionNotFoundError } from '../submission/submission.errors'
 import * as SubmissionService from '../submission/submission.service'
