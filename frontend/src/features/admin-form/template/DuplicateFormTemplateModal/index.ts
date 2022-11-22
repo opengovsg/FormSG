@@ -1,0 +1,1 @@
+export { DuplicateFormTemplateModal } from './DuplicateFormTemplateModal'
