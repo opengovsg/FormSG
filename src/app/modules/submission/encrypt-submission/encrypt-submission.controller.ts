@@ -387,6 +387,21 @@ const submitEncryptModeForm: ControllerHandler<
   if (form.payments?.enabled) {
     // assumes stripe for now
 
+    if (!form.payments.amount_cents) {
+      logger.error({
+        message:
+          'Error when creating payment intent, amount is not a positive integer',
+        meta: {
+          submissionId,
+          ...logMeta,
+        },
+      })
+      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        message:
+          "The form's payment settings are invalid. Please contact the admin of the form to rectify the issue.",
+      })
+    }
+
     // Stripe requires the amount to be an integer in the smallest currency unit (i.e. cents)
     const createPaymentIntentParams: Stripe.PaymentIntentCreateParams = {
       amount: form.payments.amount_cents,
