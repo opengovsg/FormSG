@@ -4,20 +4,24 @@ import { BasicField, LogicConditionState, LogicType } from 'shared/types'
 
 import { IFormModel, IUserModel } from 'src/types'
 
-import { ALL_FIELDS, E2eFieldMetadata, SAMPLE_FIELD } from './constants/field'
-import { E2eForm } from './constants/form'
-import { E2eLogic, NO_LOGIC } from './constants/logic'
 import { expect, test } from './fixtures/auth'
-import { createForm } from './helpers/createForm'
-import { fillForm, submitForm } from './helpers/submitForm'
-import { verifySubmission } from './helpers/verifySubmission'
+import {
+  ALL_FIELDS,
+  E2eFieldMetadata,
+  E2eForm,
+  E2eLogic,
+  NO_LOGIC,
+  SAMPLE_FIELD,
+} from './constants'
+import { createForm, fillForm, submitForm, verifySubmission } from './helpers'
 import {
   deleteDocById,
+  getBlankVersion,
+  getOptionalVersion,
+  getSettings,
   makeModel,
   makeMongooseFixtures,
-} from './utils/database'
-import { getBlankVersion, getOptionalVersion } from './utils/field'
-import { getSettings } from './utils/settings'
+} from './utils'
 
 let db: mongoose.Connection
 let User: IUserModel

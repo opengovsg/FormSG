@@ -13,14 +13,17 @@ import {
 
 import { IFormModel, IFormSchema } from 'src/types'
 
-import { E2eFieldMetadata, NON_INPUT_FIELD_TYPES } from '../constants/field'
-import { E2eForm } from '../constants/form'
-import { ADMIN_FORM_PAGE_PREFIX, DASHBOARD_PAGE } from '../constants/links'
-import { E2eLogic } from '../constants/logic'
-import { E2eSettingsOptions } from '../constants/settings'
+import {
+  ADMIN_FORM_PAGE_PREFIX,
+  DASHBOARD_PAGE,
+  E2eFieldMetadata,
+  E2eForm,
+  E2eLogic,
+  E2eSettingsOptions,
+  NON_INPUT_FIELD_TYPES,
+} from '../constants'
 import { expect } from '../fixtures/auth'
-import { fillDropdown, getTitleWithQuestionNumber } from '../utils/field'
-import { expectToast } from '../utils/toast'
+import { expectToast, fillDropdown, getTitleWithQuestionNumber } from '../utils'
 
 /**
  * Navigates to the dashboard and creates a new form with all the associated form settings.

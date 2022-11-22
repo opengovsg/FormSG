@@ -2,8 +2,8 @@
 import { expect, test } from '@playwright/test'
 import cuid from 'cuid'
 
-import { ROOT_PAGE } from './constants/links'
-import { extractOtp } from './utils/mail'
+import { ROOT_PAGE } from './constants'
+import { extractOtp } from './utils'
 
 test.describe('login', () => {
   test.beforeEach(async ({ page }) => {

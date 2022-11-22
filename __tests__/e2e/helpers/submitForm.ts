@@ -4,11 +4,13 @@ import { BasicField, FormAuthType } from 'shared/types'
 
 import { IFormSchema } from 'src/types'
 
-import { E2eFieldMetadata, NON_INPUT_FIELD_TYPES } from '../constants/field'
-import { PUBLIC_FORM_PAGE_PREFIX } from '../constants/links'
-import { E2eSettingsOptions } from '../constants/settings'
-import { fillDropdown } from '../utils/field'
-import { extractOtp } from '../utils/mail'
+import {
+  E2eFieldMetadata,
+  E2eSettingsOptions,
+  NON_INPUT_FIELD_TYPES,
+  PUBLIC_FORM_PAGE_PREFIX,
+} from '../constants'
+import { extractOtp, fillDropdown } from '../utils'
 
 export type SubmitFormProps = {
   form: IFormSchema
