@@ -1,26 +1,19 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 import { Helmet } from 'react-helmet-async'
-import { SubmitHandler } from 'react-hook-form'
 import get from 'lodash/get'
 import simplur from 'simplur'
 
-import { FormAuthType, FormResponseMode } from '~shared/types/form'
+import { FormAuthType } from '~shared/types/form'
 
 import { useFormTemplate } from '~/features/admin-form/common/queries'
 import { FormNotFound } from '~/features/public-form/components/FormNotFound'
-import {
-  PublicFormContext,
-  SubmissionData,
-} from '~/features/public-form/PublicFormContext'
+import { PublicFormContext } from '~/features/public-form/PublicFormContext'
 import { useCommonFormProvider } from '~/features/public-form/PublicFormProvider'
 
 import { useTimeout } from '~hooks/useTimeout'
 import { HttpError } from '~services/ApiService'
-import { FormFieldValues } from '~templates/Field'
 
 import NotFoundErrorPage from '~pages/NotFoundError'
-
-import { usePreviewFormMutations } from '../common/mutations'
 
 interface PreviewFormProviderProps {
   formId: string
@@ -31,30 +24,10 @@ export const TemplateFormProvider = ({
   formId,
   children,
 }: PreviewFormProviderProps): JSX.Element => {
-  // Once form has been submitted, submission data will be set here.
-  const [submissionData, setSubmissionData] = useState<SubmissionData>()
-
-  const { data, isLoading, error, ...rest } = useFormTemplate(
-    formId,
-    // Stop querying once submissionData is present.
-    /* enabled= */ !submissionData,
-  )
+  const { data, isLoading, error, ...rest } = useFormTemplate(formId)
 
   const { isNotFormId, toast, vfnToastIdRef, expiryInMs, ...commonFormValues } =
     useCommonFormProvider(formId)
-
-  const showErrorToast = useCallback(
-    (error) => {
-      toast({
-        status: 'danger',
-        description:
-          error instanceof Error
-            ? error.message
-            : 'An error occurred whilst processing your submission. Please refresh and try again.',
-      })
-    },
-    [toast],
-  )
 
   useEffect(() => {
     return () => {
@@ -101,65 +74,6 @@ export const TemplateFormProvider = ({
     [data?.form, data?.spcpSession],
   )
 
-  const { submitEmailModeFormMutation, submitStorageModeFormMutation } =
-    usePreviewFormMutations(formId)
-
-  const handleSubmitForm: SubmitHandler<FormFieldValues> = useCallback(
-    async (formInputs) => {
-      const { form } = data ?? {}
-      if (!form) return
-
-      switch (form.responseMode) {
-        case FormResponseMode.Email:
-          // Using mutateAsync so react-hook-form goes into loading state.
-          return (
-            submitEmailModeFormMutation
-              .mutateAsync(
-                { formFields: form.form_fields, formInputs },
-                {
-                  onSuccess: ({ submissionId }) =>
-                    setSubmissionData({
-                      id: submissionId,
-                      // TODO: Server should return server time so browser time is not used.
-                      timeInEpochMs: Date.now(),
-                    }),
-                },
-              )
-              // Using catch since we are using mutateAsync and react-hook-form will continue bubbling this up.
-              .catch(showErrorToast)
-          )
-        case FormResponseMode.Encrypt:
-          // Using mutateAsync so react-hook-form goes into loading state.
-          return (
-            submitStorageModeFormMutation
-              .mutateAsync(
-                {
-                  formFields: form.form_fields,
-                  formInputs,
-                  publicKey: form.publicKey,
-                },
-                {
-                  onSuccess: ({ submissionId }) =>
-                    setSubmissionData({
-                      id: submissionId,
-                      // TODO: Server should return server time so browser time is not used.
-                      timeInEpochMs: Date.now(),
-                    }),
-                },
-              )
-              // Using catch since we are using mutateAsync and react-hook-form will continue bubbling this up.
-              .catch(showErrorToast)
-          )
-      }
-    },
-    [
-      data,
-      showErrorToast,
-      submitEmailModeFormMutation,
-      submitStorageModeFormMutation,
-    ],
-  )
-
   if (isNotFormId) {
     return <NotFoundErrorPage />
   }
@@ -167,10 +81,9 @@ export const TemplateFormProvider = ({
   return (
     <PublicFormContext.Provider
       value={{
-        handleSubmitForm,
+        handleSubmitForm: undefined,
         formId,
         error,
-        submissionData,
         isAuthRequired,
         expiryInMs,
         isLoading,
