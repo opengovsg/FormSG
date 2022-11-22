@@ -32,6 +32,7 @@ import {
   LogicDto,
   LogicIfValue,
   LogicType,
+  PaymentsUpdateDto,
   PermissionsUpdateDto,
   PreviewFormViewDto,
   PrivateFormErrorDto,
@@ -2724,4 +2725,74 @@ export const handleDeleteTwilio: ControllerHandler<{ formId: string }> = (
 export const handleUpdateTwilio = [
   validateTwilioCredentials,
   updateTwilioCredentials,
+] as ControllerHandler[]
+
+/**
+ * NOTE: Exported for testing.
+ * Private handler for PUT /forms/:formId/payment
+ * @precondition Must be preceded by request validation
+ * @security session
+ *
+ * @returns 200 with updated payments
+ * @returns 403 when current user does not have permissions to update the payments
+ * @returns 404 when form cannot be found
+ * @returns 410 when updating the payments for an archived form
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when database error occurs
+ */
+export const _handleUpdatePayments: ControllerHandler<
+  { formId: string },
+  IFormDocument['payments'] | ErrorDto,
+  PaymentsUpdateDto
+> = (req, res) => {
+  const { formId } = req.params
+  const sessionUserId = (req.session as AuthedSessionData).user._id
+
+  // Step 1: Retrieve currently logged in user.
+  return (
+    UserService.getPopulatedUserById(sessionUserId)
+      .andThen((user) =>
+        // Step 2: Retrieve form with write permission check.
+        AuthService.getFormAfterPermissionChecks({
+          user,
+          formId,
+          level: PermissionLevel.Write,
+        }),
+      )
+      // Step 3: User has permissions, proceed to allow updating of start page
+      .andThen(() => AdminFormService.updatePayments(formId, req.body))
+      .map((updatedPayments) =>
+        res.status(StatusCodes.OK).json(updatedPayments),
+      )
+      .mapErr((error) => {
+        logger.error({
+          message: 'Error occurred when updating payments',
+          meta: {
+            action: '_handleUpdatePayments',
+            ...createReqMeta(req),
+            userId: sessionUserId,
+            formId,
+            body: req.body,
+          },
+          error,
+        })
+        const { errorMessage, statusCode } = mapRouteError(error)
+        return res.status(statusCode).json({ message: errorMessage })
+      })
+  )
+}
+
+/**
+ * Handler for PUT /forms/:formId/payment
+ */
+export const handleUpdatePayments = [
+  celebrate({
+    [Segments.BODY]: {
+      enabled: Joi.boolean().required(),
+      amount_cents: Joi.number().integer().positive(),
+      target_account_id: Joi.string(),
+      description: Joi.string().allow(''),
+    },
+  }),
+  _handleUpdatePayments,
 ] as ControllerHandler[]

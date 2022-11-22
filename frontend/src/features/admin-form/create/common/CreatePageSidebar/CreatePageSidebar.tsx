@@ -1,5 +1,5 @@
 import { useCallback } from 'react'
-import { BiGitMerge, BiQuestionMark } from 'react-icons/bi'
+import { BiCreditCard, BiGitMerge, BiQuestionMark } from 'react-icons/bi'
 import { Stack } from '@chakra-ui/react'
 
 import { PhHandsClapping } from '~assets/icons'
@@ -36,6 +36,7 @@ export const CreatePageSidebar = (): JSX.Element | null => {
     handleBuilderClick,
     handleDesignClick,
     handleLogicClick,
+    handlePaymentClick,
     handleEndpageClick,
   } = useCreatePageSidebar()
 
@@ -55,6 +56,11 @@ export const CreatePageSidebar = (): JSX.Element | null => {
   const handleDrawerLogicClick = useCallback(
     () => handleLogicClick(isDirty),
     [handleLogicClick, isDirty],
+  )
+
+  const handleDrawerPaymentClick = useCallback(
+    () => handlePaymentClick(isDirty),
+    [handlePaymentClick, isDirty],
   )
 
   const handleDrawerEndpageClick = useCallback(
@@ -95,6 +101,12 @@ export const CreatePageSidebar = (): JSX.Element | null => {
           onClick={handleDrawerLogicClick}
           isActive={activeTab === DrawerTabs.Logic}
           id={FEATURE_TOUR[2].id}
+        />
+        <DrawerTabIcon
+          label="Add payment"
+          icon={<BiCreditCard fontSize="1.5rem" />}
+          onClick={handleDrawerPaymentClick}
+          isActive={activeTab === DrawerTabs.Payment}
         />
         <DrawerTabIcon
           label="Edit Thank you page"

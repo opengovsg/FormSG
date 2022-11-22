@@ -28,6 +28,7 @@ import {
   FormSettings,
   LogicDto,
   MobileFieldBase,
+  PaymentsUpdateDto,
   SettingsUpdateDto,
   StartPageUpdateDto,
 } from '../../../../../shared/types'
@@ -1504,4 +1505,41 @@ const deleteTwilioTransaction = async (
     })
     throw new SecretsManagerError(awsError.message)
   }
+}
+
+/**
+ * Update the payments of the given form
+ * @param formId the id of the form to update the end page for
+ * @param newStartPage the new start page object to replace the current one
+ * @returns ok(updated start page object) when update is successful
+ * @returns err(FormNotFoundError) if form cannot be found
+ * @returns err(PossibleDatabaseError) if start page update fails
+ */
+export const updatePayments = (
+  formId: string,
+  newPayments: PaymentsUpdateDto,
+): ResultAsync<
+  IFormDocument['payments'],
+  PossibleDatabaseError | FormNotFoundError
+> => {
+  return ResultAsync.fromPromise(
+    FormModel.updatePaymentsById(formId, newPayments),
+    (error) => {
+      logger.error({
+        message: 'Error occurred when updating form payments',
+        meta: {
+          action: 'updatePayments',
+          formId,
+          newPayments,
+        },
+        error,
+      })
+      return transformMongoError(error)
+    },
+  ).andThen((updatedForm) => {
+    if (!updatedForm) {
+      return errAsync(new FormNotFoundError())
+    }
+    return okAsync(updatedForm.payments)
+  })
 }

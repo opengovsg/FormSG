@@ -69,6 +69,7 @@ export const FormEndPageContainer = ({
           submissionData={submissionData}
           formTitle={form.title}
           endPage={form.endPage}
+          formPayments={form.payments}
           paymentClientSecret={submissionData.paymentClientSecret}
         />
       ) : (

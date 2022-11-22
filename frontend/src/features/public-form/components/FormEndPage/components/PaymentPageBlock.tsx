@@ -13,20 +13,14 @@ import { FormColorTheme } from '~shared/types/form'
 import Button from '~components/Button'
 
 import { useEnv } from '~features/env/queries'
-import {
-  SubmissionData,
-  usePublicFormContext,
-} from '~features/public-form/PublicFormContext'
+
+import { FormPaymentPageProps } from '../FormPaymentPage'
 
 // Make sure to call `loadStripe` outside of a component’s render to avoid
 // recreating the `Stripe` object on every render.
 
-export type PaymentPageBlockProps = {
-  formTitle: string
-  submissionData: SubmissionData
-  colorTheme?: FormColorTheme
+export interface PaymentPageBlockProps extends FormPaymentPageProps {
   focusOnMount?: boolean
-  paymentClientSecret?: string
 }
 
 type StripeCheckoutFormProps = {
@@ -96,10 +90,10 @@ export const PaymentPageBlock = ({
   submissionData,
   colorTheme = FormColorTheme.Blue,
   focusOnMount,
+  formPayments,
   paymentClientSecret,
 }: PaymentPageBlockProps): JSX.Element => {
-  const { form } = usePublicFormContext()
-  const amountCents = form?.payments?.amount_cents || 0
+  const amountCents = formPayments?.amount_cents || 0
 
   const stripePublishableKey = useEnv().data?.stripePublishableKey || ''
 
@@ -143,18 +137,22 @@ export const PaymentPageBlock = ({
           </Text>
         </Text>
 
-        <Elements
-          stripe={stripePromise}
-          options={{
-            // passing the client secret obtained from the server
-            clientSecret: paymentClientSecret,
-          }}
-        >
-          <StripeCheckoutForm
-            colorTheme={colorTheme}
-            submissionId={submissionData.id || ''}
-          />
-        </Elements>
+        {paymentClientSecret ? (
+          <Elements
+            stripe={stripePromise}
+            options={{
+              // passing the client secret obtained from the server
+              clientSecret: paymentClientSecret,
+            }}
+          >
+            <StripeCheckoutForm
+              colorTheme={colorTheme}
+              submissionId={submissionData.id || ''}
+            />
+          </Elements>
+        ) : (
+          <>TODO: Mock for preview / skeleton state?</>
+        )}
 
         <Text textColor="secondary.300">Response ID: {submissionData.id}</Text>
       </Stack>

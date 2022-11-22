@@ -1,6 +1,6 @@
 import { Container, Flex, Stack, StackDivider } from '@chakra-ui/react'
 
-import { FormColorTheme, FormDto } from '~shared/types/form'
+import { FormColorTheme, FormDto, FormPayments } from '~shared/types/form'
 
 import { SubmissionData } from '~features/public-form/PublicFormContext'
 
@@ -11,14 +11,11 @@ export interface FormPaymentPageProps {
   endPage: FormDto['endPage']
   submissionData: SubmissionData
   colorTheme: FormColorTheme
+  formPayments?: FormPayments
   paymentClientSecret?: string
 }
 
-export const FormPaymentPage = ({
-  colorTheme,
-  paymentClientSecret,
-  ...endPageProps
-}: FormPaymentPageProps): JSX.Element => {
+export const FormPaymentPage = (props: FormPaymentPageProps): JSX.Element => {
   return (
     <Container w="42.5rem" maxW="100%" p={0}>
       <Flex flexDir="column" align="center">
@@ -30,12 +27,7 @@ export const FormPaymentPage = ({
           w="100%"
           divider={<StackDivider />}
         >
-          <PaymentPageBlock
-            focusOnMount
-            {...endPageProps}
-            colorTheme={colorTheme}
-            paymentClientSecret={paymentClientSecret}
-          />
+          <PaymentPageBlock focusOnMount {...props} />
         </Stack>
       </Flex>
     </Container>

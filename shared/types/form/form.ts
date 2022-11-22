@@ -239,3 +239,4 @@ export type StartPageUpdateDto = FormStartPage
 export type EndPageUpdateDto = FormEndPage
 export type FormPermissionsDto = FormPermission[]
 export type PermissionsUpdateDto = FormPermission[]
+export type PaymentsUpdateDto = FormPayments

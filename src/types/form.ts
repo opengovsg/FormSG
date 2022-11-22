@@ -15,6 +15,7 @@ import {
   FormEndPage,
   FormField,
   FormFieldDto,
+  FormPayments,
   FormPermission,
   FormSettings,
   FormStartPage,
@@ -328,6 +329,17 @@ export interface IFormModel extends Model<IFormSchema> {
   updateStartPageById(
     formId: string,
     newStartPage: FormStartPage,
+  ): Promise<IFormDocument | null>
+
+  /**
+   * Update the payments of form with given payments object.
+   * @param formId the id of the form to update
+   * @param newPayments the new Payments object to replace with
+   * @returns the updated form document if form exists, null otherwise
+   */
+  updatePaymentsById(
+    formId: string,
+    newPayments: FormPayments,
   ): Promise<IFormDocument | null>
 
   updateFormLogic(

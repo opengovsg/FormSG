@@ -28,6 +28,7 @@ import {
   FormField,
   FormFieldDto,
   FormLogoState,
+  FormPayments,
   FormPermission,
   FormResponseMode,
   FormSettings,
@@ -871,6 +872,17 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     return this.findByIdAndUpdate(
       formId,
       { startPage: newStartPage },
+      { new: true, runValidators: true },
+    ).exec()
+  }
+
+  FormSchema.statics.updatePaymentsById = async function (
+    formId: string,
+    newPayments: FormPayments,
+  ) {
+    return this.findByIdAndUpdate(
+      formId,
+      { payments: newPayments },
       { new: true, runValidators: true },
     ).exec()
   }
