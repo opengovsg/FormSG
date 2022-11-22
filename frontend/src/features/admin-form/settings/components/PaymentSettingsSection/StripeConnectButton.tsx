@@ -13,9 +13,9 @@ export const StripeConnectButton = (): JSX.Element => {
 
   const onClick = useCallback(
     () =>
-      mutateStripeAccount.mutate(undefined, {
-        onSuccess: (accountLink) => {
-          window.location.assign(accountLink)
+      mutateStripeAccount.mutateAsync(undefined, {
+        onSuccess: ({ accountUrl }) => {
+          window.location.assign(accountUrl)
         },
       }),
     [mutateStripeAccount],
@@ -25,5 +25,9 @@ export const StripeConnectButton = (): JSX.Element => {
     return <Button isDisabled>You are already connected</Button>
   }
 
-  return <Button onClick={onClick}>Connect my Stripe account to FormSG</Button>
+  return (
+    <Button isLoading={mutateStripeAccount.isLoading} onClick={onClick}>
+      Connect my Stripe account to FormSG
+    </Button>
+  )
 }

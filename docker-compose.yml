@@ -19,7 +19,7 @@ services:
       - NODE_ENV=development
       - DB_HOST=mongodb://database:27017/formsg
       - APP_NAME=FormSG
-      - APP_URL=http://localhost:5000
+      - APP_URL=http://localhost:3000
       - ATTACHMENT_S3_BUCKET=local-attachment-bucket
       - IMAGE_S3_BUCKET=local-image-bucket
       - LOGO_S3_BUCKET=local-logo-bucket
