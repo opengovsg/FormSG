@@ -72,6 +72,7 @@ const helmetMiddlewares = () => {
       "'self'",
       'https://www.google.com/recaptcha/',
       'https://www.recaptcha.net/recaptcha/',
+      'https://js.stripe.com/',
     ],
     styleSrc: [
       "'self'",
