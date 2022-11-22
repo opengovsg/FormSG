@@ -86,6 +86,7 @@ FORMSG_SDK_MODE=
 # MYINFO_CERT_PATH=./node_modules/@opengovsg/mockpass/static/certs/spcp.crt
 # MYINFO_CLIENT_ID=
 # MYINFO_CLIENT_SECRET=
+# MYINFO_JWT_SECRET=
 
 # SP_FORMSG_KEY_PATH=./node_modules/@opengovsg/mockpass/static/certs/key.pem
 # SP_FORMSG_CERT_PATH=./node_modules/@opengovsg/mockpass/static/certs/server.crt

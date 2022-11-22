@@ -49,6 +49,7 @@ type IMyInfoConfig = {
   myInfoCertPath: string
   myInfoClientId: string
   myInfoClientSecret: string
+  myInfoJwtSecret: string
 }
 
 // Config of MyInfo is coupled to that of Singpass
@@ -226,6 +227,12 @@ const spcpMyInfoSchema: Schema<ISpcpMyInfo> = {
     format: String,
     default: null,
     env: 'MYINFO_CLIENT_SECRET',
+  },
+  myInfoJwtSecret: {
+    doc: 'Secret for signing MyInfo JWT.',
+    format: String,
+    default: null,
+    env: 'MYINFO_JWT_SECRET',
   },
   spOidcNdiDiscoveryEndpoint: {
     doc: "NDI's Singpass OIDC Discovery Endpoint",

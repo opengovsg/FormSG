@@ -97,6 +97,7 @@ services:
       - MYINFO_CERT_PATH=./node_modules/@opengovsg/mockpass/static/certs/spcp.crt
       - MYINFO_CLIENT_ID=mockClientId
       - MYINFO_CLIENT_SECRET=mockClientSecret
+      - MYINFO_JWT_SECRET=mockJwtSecret
       - SGID_ENDPOINT=http://localhost:5156/sgid/v1/oauth
       - SGID_CLIENT_ID=sgidclientid
       - SGID_CLIENT_SECRET=sgidclientsecret
