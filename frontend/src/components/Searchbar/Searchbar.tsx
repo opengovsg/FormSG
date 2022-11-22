@@ -3,13 +3,10 @@ import { BiCheck, BiFilter, BiSearch, BiX } from 'react-icons/bi'
 import {
   Button,
   Divider,
+  Flex,
   forwardRef,
   Icon,
-  Input,
-  InputGroup,
-  InputLeftElement,
   InputProps,
-  InputRightElement,
   MenuButton,
   Stack,
   Text,
@@ -19,6 +16,7 @@ import {
 
 import { SEARCHBAR_THEME_KEY } from '~/theme/components/Searchbar'
 
+import Input from '~components/Input'
 import Menu from '~components/Menu'
 
 import IconButton from '../IconButton'
@@ -117,6 +115,7 @@ export const Searchbar = forwardRef<SearchbarProps, 'input'>(
       !isExpandable || isExpandedProp,
     )
     const [filter, setFilter] = useState<string>(filterValue)
+    const [focus, setFocus] = useState<boolean>(false)
 
     const styles = useMultiStyleConfig(SEARCHBAR_THEME_KEY, {
       isExpanded,
@@ -156,100 +155,110 @@ export const Searchbar = forwardRef<SearchbarProps, 'input'>(
       [onSearch, value],
     )
 
+    if (!isExpanded) {
+      return (
+        <IconButton
+          aria-label="Expand searchbar"
+          icon={<BiSearch fontSize="1.25rem" />}
+          variant="clear"
+          colorScheme="secondary"
+          onClick={onExpandIconClick}
+          sx={styles.icon}
+        />
+      )
+    }
+
     return (
-      <InputGroup flex={isExpanded ? 1 : 0}>
-        {isExpanded ? (
-          onSearch ? (
-            <InputLeftElement>
-              <IconButton
-                aria-label="Search"
-                isDisabled={isDisabled}
-                size="sm"
-                variant="clear"
-                colorScheme="secondary"
-                icon={<BiSearch fontSize="1.25rem" />}
-                onClick={handleClickSearch}
-              />
-            </InputLeftElement>
-          ) : (
-            <InputLeftElement
-              pointerEvents="none"
-              children={<Icon as={BiSearch} fontSize="1.25rem" />}
+      <Flex
+        border={focus ? '2px' : '1px'}
+        borderStyle="solid"
+        borderRadius="0.25rem"
+        borderColor={focus ? 'primary.500' : 'neutral.400'}
+        transition="0.2s ease"
+        align="center"
+      >
+        <Flex px="0.75rem">
+          {onSearch ? (
+            <IconButton
+              aria-label="Search"
+              isDisabled={isDisabled}
+              size="sm"
+              variant="clear"
+              colorScheme="secondary"
+              icon={<BiSearch fontSize="1.25rem" />}
+              onClick={handleClickSearch}
             />
-          )
-        ) : (
-          <IconButton
-            aria-label="Expand searchbar"
-            icon={<BiSearch fontSize="1.25rem" />}
-            variant="clear"
-            colorScheme="secondary"
-            onClick={onExpandIconClick}
-            sx={styles.icon}
-          />
-        )}
+          ) : (
+            <Icon as={BiSearch} px="0.75rem" fontSize="1.25rem" />
+          )}
+        </Flex>
         <Input
           aria-label="Press enter to search"
           ref={inputRef}
-          sx={styles.field}
+          sx={{
+            ...styles.field,
+            paddingInlineStart: 'none',
+            border: 'none',
+            _focus: undefined,
+          }}
           onKeyDown={handleEnterKeySearch}
           value={value}
           onChange={(e) => onChange(e.target.value)}
           isDisabled={isDisabled}
-          {...props}
+          onBlur={() => setFocus(false)}
+          onFocus={() => setFocus(true)}
         />
-        {(filterValue || (isExpandable && isExpanded)) && (
-          <InputRightElement>
-            {filterValue && (
-              <Stack height="1.25rem" alignItems="center" direction="row">
-                <Divider orientation="vertical" />
-                <Menu placement="bottom-end">
-                  {({ isOpen }) => (
-                    <>
-                      <MenuButton
-                        as={Button}
-                        size="sm"
-                        variant="clear"
-                        colorScheme="secondary"
-                        isActive={isOpen}
-                        aria-label="Filter forms"
-                        leftIcon={<BiFilter />}
-                      >
-                        {filter === filterValue ? 'Filter' : filter}
-                      </MenuButton>
-                      <Menu.List>
-                        {[filterValue, ...filterOptions].map((option) => (
-                          <Menu.Item onClick={() => setFilter(option)}>
-                            <Stack
-                              direction="row"
-                              justify="space-between"
-                              alignItems="center"
-                              w="100%"
-                            >
-                              <Text>{option}</Text>
-                              {filter === option ? <BiCheck /> : null}
-                            </Stack>
-                          </Menu.Item>
-                        ))}
-                      </Menu.List>
-                    </>
-                  )}
-                </Menu>
-              </Stack>
-            )}
-            {isExpandable && isExpanded && (
-              <IconButton
-                aria-label="Collapse searchbar"
-                isDisabled={isDisabled}
-                size="sm"
-                variant="clear"
-                colorScheme="secondary"
-                icon={<BiX fontSize="1.25rem" />}
-                onClick={onCollapseIconClick}
-              />
-            )}
-          </InputRightElement>
+        {filterValue && (
+          <Stack height="1.25rem" alignItems="center" direction="row">
+            <Divider orientation="vertical" />
+            <Menu placement="bottom-end">
+              {({ isOpen }) => (
+                <>
+                  <MenuButton
+                    as={Button}
+                    size="sm"
+                    variant="clear"
+                    colorScheme="secondary"
+                    isActive={isOpen}
+                    aria-label="Filter forms"
+                    leftIcon={<BiFilter />}
+                  >
+                    {filter === filterValue ? 'Filter' : filter}
+                  </MenuButton>
+                  <Menu.List>
+                    {[filterValue, ...filterOptions].map((option) => (
+                      <Menu.Item onClick={() => setFilter(option)}>
+                        <Stack
+                          direction="row"
+                          justify="space-between"
+                          alignItems="center"
+                          w="100%"
+                        >
+                          <Text>{option}</Text>
+                          {filter === option ? <BiCheck /> : null}
+                        </Stack>
+                      </Menu.Item>
+                    ))}
+                  </Menu.List>
+                </>
+              )}
+            </Menu>
+          </Stack>
         )}
-      </InputGroup>
+        {isExpandable && (
+          <Flex px="0.75rem">
+            <IconButton
+              aria-label="Collapse searchbar"
+              isDisabled={isDisabled}
+              size="sm"
+              variant="clear"
+              colorScheme="secondary"
+              icon={<BiX fontSize="1.25rem" />}
+              onClick={onCollapseIconClick}
+            />
+          </Flex>
+        )}
+      </Flex>
     )
   },
 )
