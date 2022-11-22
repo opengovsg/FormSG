@@ -1,12 +1,11 @@
 import mongoose from 'mongoose'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
-import { Payment } from 'shared/types'
 
-import { createLoggerWithLabel } from 'src/app/config/logger'
-import getPaymentModel from 'src/app/models/payment.server.model'
-import { getMongoErrorMessage } from 'src/app/utils/handle-mongo-error'
-import { IPaymentSchema } from 'src/types'
-
+import { Payment } from '../../../../shared/types'
+import { IPaymentSchema } from '../../../types'
+import { createLoggerWithLabel } from '../../config/logger'
+import getPaymentModel from '../../models/payment.server.model'
+import { getMongoErrorMessage } from '../../utils/handle-mongo-error'
 import { ApplicationError, DatabaseError } from '../core/core.errors'
 
 const logger = createLoggerWithLabel(module)
