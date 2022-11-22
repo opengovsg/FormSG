@@ -174,10 +174,25 @@ export const getPaymentReceipt: ControllerHandler<{
   submissionId: string
 }> = (req, res) => {
   const { formId, submissionId } = req.params
+  logger.info({
+    message: 'getPaymentReceipt endpoint called',
+    meta: {
+      action: 'getPaymentReceipt',
+      formId: formId,
+      submissionId: submissionId,
+    },
+  })
 
   return StripeService.getReceiptURL(formId, submissionId)
     .map((receiptUrl) => {
-      res.status(StatusCodes.OK).send(receiptUrl)
+      logger.info({
+        message: 'Received receipt url from Stripe webhook',
+        meta: {
+          action: 'getPaymentReceipt',
+          receiptUrl,
+        },
+      })
+      res.status(StatusCodes.OK).send({ receipt: receiptUrl })
     })
     .mapErr((error) => {
       logger.error({
