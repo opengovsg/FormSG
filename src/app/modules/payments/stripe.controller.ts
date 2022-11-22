@@ -3,20 +3,18 @@
 
 import { celebrate, Joi, Segments } from 'celebrate'
 import { StatusCodes } from 'http-status-codes'
-import { Payment } from 'shared/types'
+import { Payment, PaymentStatus } from 'shared/types'
 import Stripe from 'stripe'
 
 import { paymentConfig } from 'src/app/config/features/payment.config'
 import { createLoggerWithLabel } from 'src/app/config/logger'
+import { stripe } from 'src/app/loaders/stripe'
 
 import { ControllerHandler } from '../core/core.types'
 
 import * as PaymentService from './payments.service'
 import * as StripeService from './stripe.service'
 
-const stripe = new Stripe(paymentConfig.stripeWebhookApiKey, {
-  apiVersion: '2022-11-15',
-})
 const logger = createLoggerWithLabel(module)
 
 /**
@@ -52,6 +50,19 @@ const findPaymentAndUpdate = async (
   })
 }
 
+const stripeChargeStatusToPaymentStatus = (
+  status: Stripe.Charge.Status,
+): PaymentStatus => {
+  switch (status) {
+    case 'failed':
+      return PaymentStatus.Failed
+    case 'pending':
+      return PaymentStatus.Pending
+    case 'succeeded':
+      return PaymentStatus.Succeeded
+  }
+}
+
 export const _handleStripeEventUpdates: ControllerHandler<
   unknown,
   never,
@@ -67,10 +78,17 @@ export const _handleStripeEventUpdates: ControllerHandler<
     event = stripe.webhooks.constructEvent(
       req.body,
       sig,
-      paymentConfig.stripeWebhookSecretKey,
+      paymentConfig.stripeWebhookSecret,
     ) as Stripe.DiscriminatedEvent
   } catch {
     // Throws Stripe.errors.StripeSignatureVerificationError
+    logger.info({
+      message: 'Received invalid request from Stripe webhook endpoint',
+      meta: {
+        action: 'handleStripeEventUpdates',
+        req: req.body,
+      },
+    })
     return res.status(StatusCodes.BAD_REQUEST).send()
   }
 
@@ -94,7 +112,7 @@ export const _handleStripeEventUpdates: ControllerHandler<
         event.data.object.metadata,
         {
           chargeIdLatest: event.data.object.id,
-          status: event.data.object.status,
+          status: stripeChargeStatusToPaymentStatus(event.data.object.status),
         },
         event,
       )

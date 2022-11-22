@@ -5,8 +5,7 @@ export interface IStripe {
   stripePublishableKey: string
   stripeSecretKey: string
   stripeClientID: string
-  stripeWebhookApiKey: string
-  stripeWebhookSecretKey: string
+  stripeWebhookSecret: string
 }
 
 const paymentFeature: Schema<IStripe> = {
@@ -34,17 +33,11 @@ const paymentFeature: Schema<IStripe> = {
     default: '',
     env: 'PAYMENT_STRIPE_CLIENT_ID',
   },
-  stripeWebhookApiKey: {
-    doc: 'Stripe webhook API key',
+  stripeWebhookSecret: {
+    doc: 'Stripe webhook secret',
     format: String,
     default: '',
-    env: 'PAYMENT_STRIPE_WEBHOOK_API_KEY',
-  },
-  stripeWebhookSecretKey: {
-    doc: 'Stripe webhook secret key',
-    format: String,
-    default: '',
-    env: 'PAYMENT_STRIPE_WEBHOOK_SECRET_KEY',
+    env: 'PAYMENT_STRIPE_WEBHOOK_SECRET',
   },
 }
 
