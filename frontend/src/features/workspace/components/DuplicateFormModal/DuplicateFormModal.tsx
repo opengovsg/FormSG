@@ -31,7 +31,7 @@ export const DuplicateFormModal = ({
     <Modal isOpen={isOpen} onClose={onClose} size={modalSize}>
       <ModalContent py={{ base: 'initial', md: '4.5rem' }}>
         <ModalCloseButton />
-        <DupeFormWizardProvider formId={formId} isTemplate={isTemplate}>
+        <DupeFormWizardProvider>
           <CreateFormModalContent />
         </DupeFormWizardProvider>
       </ModalContent>

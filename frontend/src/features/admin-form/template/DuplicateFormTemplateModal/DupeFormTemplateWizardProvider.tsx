@@ -2,10 +2,7 @@ import { useEffect, useMemo } from 'react'
 
 import { FormResponseMode } from '~shared/types'
 
-import {
-  useFormTemplate,
-  usePreviewForm,
-} from '~features/admin-form/common/queries'
+import { useFormTemplate } from '~features/admin-form/common/queries'
 import { isMyInfo } from '~features/myinfo/utils'
 import {
   CreateFormFlowStates,
@@ -13,37 +10,22 @@ import {
   CreateFormWizardContextReturn,
 } from '~features/workspace/components/CreateFormModal/CreateFormWizardContext'
 import { useCommonFormWizardProvider } from '~features/workspace/components/CreateFormModal/CreateFormWizardProvider'
-import { useWorkspace } from '~features/workspace/queries'
-import { makeDuplicateFormTitle } from '~features/workspace/utils/createDuplicateFormTitle'
 
 import { useDuplicateFormTemplateMutations } from '../mutation'
 
-export const useDupeFormWizardContext = (
+export const useDupeFormTemplateWizardContext = (
   formId: string,
-  isTemplate: boolean,
 ): CreateFormWizardContextReturn => {
-  const { data: dashboardForms, isLoading: isWorkspaceLoading } = useWorkspace()
-
-  const { data: previewFormData, isLoading: isPreviewFormLoading } =
-    usePreviewForm(
-      formId,
-      // Stop querying if formId does not exist or if it's in view template mode
-      /* enabled= */ !!formId || !isTemplate,
-    )
-
   const { data: templateFormData, isLoading: isTemplateFormLoading } =
     useFormTemplate(
       formId,
       // Stop querying if formId does not exist or if it's not in preview mode
-      /* enabled= */ !!formId || isTemplate,
+      /* enabled= */ !!formId,
     )
 
-  const data = templateFormData || previewFormData
-  const isLoading = isTemplateFormLoading || isPreviewFormLoading
-
   const containsMyInfoFields = useMemo(
-    () => !!data?.form.form_fields.find((ff) => isMyInfo(ff)),
-    [data?.form.form_fields],
+    () => !!templateFormData?.form.form_fields.find((ff) => isMyInfo(ff)),
+    [templateFormData?.form.form_fields],
   )
 
   const { formMethods, currentStep, direction, keypair, setCurrentStep } =
@@ -53,7 +35,7 @@ export const useDupeFormWizardContext = (
 
   // Async set defaultValues onto modal inputs.
   useEffect(() => {
-    if (isLoading || isWorkspaceLoading || !data?.form || !dashboardForms) {
+    if (isTemplateFormLoading) {
       return
     }
 
@@ -62,20 +44,14 @@ export const useDupeFormWizardContext = (
       responseMode: containsMyInfoFields
         ? FormResponseMode.Email
         : FormResponseMode.Encrypt,
-      title: makeDuplicateFormTitle(
-        isTemplate ? `[Template] ${data?.form.title}` : data?.form.title,
-        dashboardForms,
-      ),
+      title: `[Template] ${templateFormData?.form.title}`,
     })
   }, [
     reset,
     getValues,
-    data,
-    isLoading,
-    isWorkspaceLoading,
-    dashboardForms,
     containsMyInfoFields,
-    isTemplate,
+    isTemplateFormLoading,
+    templateFormData?.form.title,
   ])
 
   const { handleSubmit } = formMethods
@@ -116,7 +92,7 @@ export const useDupeFormWizardContext = (
   }
 
   return {
-    isFetching: isWorkspaceLoading || isPreviewFormLoading,
+    isFetching: isTemplateFormLoading,
     isLoading:
       dupeEmailModeFormTemplateMutation.isLoading ||
       dupeStorageModeFormTemplateMutation.isLoading,
@@ -132,18 +108,16 @@ export const useDupeFormWizardContext = (
   }
 }
 
-interface DupeFormWizardProviderProps {
+interface DupeFormTemplateWizardProviderProps {
   formId: string
-  isTemplate?: boolean
   children: React.ReactNode
 }
 
 export const DupeFormTemplateWizardProvider = ({
   formId,
-  isTemplate,
   children,
-}: DupeFormWizardProviderProps): JSX.Element => {
-  const values = useDupeFormWizardContext(formId, !!isTemplate)
+}: DupeFormTemplateWizardProviderProps): JSX.Element => {
+  const values = useDupeFormTemplateWizardContext(formId)
   return (
     <CreateFormWizardContext.Provider value={values}>
       {children}
