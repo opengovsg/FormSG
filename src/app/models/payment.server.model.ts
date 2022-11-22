@@ -1,4 +1,5 @@
 import { Mongoose, Schema } from 'mongoose'
+import { PaymentStatus } from 'shared/types'
 
 import { IPaymentModel, IPaymentSchema } from '../../types'
 
@@ -17,6 +18,7 @@ const compilePaymentModel = (db: Mongoose): IPaymentModel => {
       },
       status: {
         type: String,
+        enum: Object.values(PaymentStatus),
         required: true,
       },
       webhookLog: {
