@@ -102,8 +102,6 @@
     "build-storybook": "build-storybook",
     "lint": "eslint ./ --ignore-path .gitignore && prettier . -c",
     "lint:fix": "eslint ./ --ignore-path .gitignore --fix && prettier . -c --write",
-    "test:a11y": "npm run build-storybook && jest --config .storybook/storyshots/jest.config.js",
-    "test:a11y-dev": "cross-env USE_DEV_SERVER=true jest --config .storybook/storyshots/jest.config.js",
     "pre-commit": "lint-staged"
   },
   "browserslist": {
@@ -126,8 +124,6 @@
     "@storybook/addon-essentials": "^6.5.13",
     "@storybook/addon-interactions": "^6.5.13",
     "@storybook/addon-links": "^6.5.13",
-    "@storybook/addon-storyshots": "^6.5.13",
-    "@storybook/addon-storyshots-puppeteer": "^6.5.13",
     "@storybook/builder-webpack5": "^6.5.13",
     "@storybook/jest": "0.0.10",
     "@storybook/manager-webpack5": "^6.5.13",
