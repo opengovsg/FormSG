@@ -37,26 +37,24 @@ import {
 } from './myinfo.constants'
 import {
   MyInfoCircuitBreakerError,
-  MyInfoCookieAccessError,
   MyInfoCookieStateError,
   MyInfoFetchError,
   MyInfoHashDidNotMatchError,
   MyInfoHashingError,
   MyInfoInvalidAccessTokenError,
-  MyInfoMissingAccessTokenError,
   MyInfoMissingHashError,
   MyInfoParseRelayStateError,
 } from './myinfo.errors'
 import {
   IMyInfoRedirectURLArgs,
   IMyInfoServiceConfig,
+  MyInfoAuthCodeCookiePayload,
   MyInfoRelayState,
 } from './myinfo.types'
 import {
-  assertMyInfoCookieUnused,
+  assertAuthCodeCookieSuccessState,
   compareHashedValues,
   createRelayState,
-  extractAndAssertMyInfoCookieValidity,
   hashFieldValues,
   isMyInfoRelayState,
   validateMyInfoForm,
@@ -494,24 +492,24 @@ export class MyInfoServiceClass {
    */
   getMyInfoDataForForm(
     form: IPopulatedForm,
-    cookies: Record<string, unknown>,
+    authCodeCookie: MyInfoAuthCodeCookiePayload,
   ): ResultAsync<
     MyInfoData,
-    | MyInfoMissingAccessTokenError
     | MyInfoCookieStateError
     | FormAuthNoEsrvcIdError
     | AuthTypeMismatchError
     | MyInfoCircuitBreakerError
     | MyInfoFetchError
-    | MyInfoCookieAccessError
   > {
     const requestedAttributes = form.getUniqueMyInfoAttrs()
-    return extractAndAssertMyInfoCookieValidity(cookies)
-      .andThen((myInfoCookie) => assertMyInfoCookieUnused(myInfoCookie))
-      .asyncAndThen((cookiePayload) =>
+    return assertAuthCodeCookieSuccessState(authCodeCookie)
+      .asyncAndThen((successCookie) =>
+        this.retrieveAccessToken(successCookie.authCode),
+      )
+      .andThen((accessToken) =>
         validateMyInfoForm(form).asyncAndThen((form) =>
           this.#fetchMyInfoPersonData(
-            cookiePayload.accessToken,
+            accessToken,
             requestedAttributes,
             form.esrvcId,
           ),

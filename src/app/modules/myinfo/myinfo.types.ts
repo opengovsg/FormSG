@@ -28,6 +28,10 @@ export type VisibleMyInfoResponse = ProcessedFieldResponse & {
 
 export type MyInfoComparePromises = Map<string, Promise<boolean>>
 
+export type MyInfoLoginCookiePayload = {
+  uinFin: string
+}
+
 export enum MyInfoAuthCodeCookieState {
   Success = 'success',
   Error = 'error',
