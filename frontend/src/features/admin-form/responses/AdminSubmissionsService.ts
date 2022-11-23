@@ -108,7 +108,7 @@ export const getDecryptedSubmissionById = async ({
  * @param arg.submissionId The id of the submission
  * @returns The data of the submission
  */
-export const getPaymentSubmissionById = async ({
+export const getPaymentSubmissionBySubmissionId = async ({
   formId,
   submissionId,
 }: {

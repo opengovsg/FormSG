@@ -5,7 +5,7 @@ import { useToast } from '~hooks/useToast'
 
 import {
   getDecryptedSubmissionById,
-  getPaymentSubmissionById,
+  getPaymentSubmissionBySubmissionId,
 } from '../AdminSubmissionsService'
 import { adminFormResponsesKeys } from '../queries'
 import { useStorageResponsesContext } from '../ResponsesPage/storage'
@@ -58,7 +58,7 @@ export const useIndividualPaymentSubmission = () => {
 
   return useQuery(
     adminFormResponsesKeys.payment(formId, submissionId),
-    () => getPaymentSubmissionById({ formId, submissionId }),
+    () => getPaymentSubmissionBySubmissionId({ formId, submissionId }),
     {
       // Will never update once fetched.
       staleTime: Infinity,
