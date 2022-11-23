@@ -1,5 +1,12 @@
-import { useEffect, useMemo, useRef } from 'react'
-import { Box, Flex, Stack, Text, VisuallyHidden } from '@chakra-ui/react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import {
+  Box,
+  Flex,
+  FormControl,
+  Stack,
+  Text,
+  VisuallyHidden,
+} from '@chakra-ui/react'
 import {
   Elements,
   PaymentElement,
@@ -14,6 +21,7 @@ import Button from '~components/Button'
 
 import { useEnv } from '~features/env/queries'
 
+import FormErrorMessage from '../../../../../components/FormControl/FormErrorMessage'
 import { STRIPE_SUBMISSION_ID_KEY } from '../../../constants'
 import { FormPaymentPageProps } from '../FormPaymentPage'
 
@@ -36,6 +44,9 @@ const StripeCheckoutForm = ({
   const stripe = useStripe()
   const elements = useElements()
 
+  const [stripeMessage, setStripeMessage] = useState('')
+  const [isStripeProcessing, setIsStripeProcessing] = useState(false)
+
   // Upon complete payment, redirect to <formId>?stripeSubmissionId=<submissionId>
   const return_url = `${
     window.location.href.split('?')[0]
@@ -45,6 +56,7 @@ const StripeCheckoutForm = ({
     // We don't want to let default form submission happen here,
     // which would refresh the page.
     event.preventDefault()
+    setIsStripeProcessing(true)
 
     if (!stripe || !elements) {
       return null
@@ -60,29 +72,41 @@ const StripeCheckoutForm = ({
       },
     })
 
-    if (result.error) {
+    if (result.error && result.error.message) {
       // Show error to your customer (for example, payment details incomplete)
       console.log(result.error.message)
+      setStripeMessage(result.error.message)
     } else {
+      setStripeMessage('')
       // Your customer will be redirected to your `return_url`. For some payment
       // methods like iDEAL, your customer will be redirected to an intermediate
       // site first to authorize the payment, then redirected to the `return_url`.
     }
+    setIsStripeProcessing(false)
   }
 
   return (
     <form onSubmit={handleSubmit}>
-      <PaymentElement />
-      <Button
-        isFullWidth
-        variant="solid"
-        colorScheme={`theme-${colorTheme}`}
-        type="submit"
-        disabled={!stripe}
-        mt="2.5rem"
-      >
-        Pay now
-      </Button>
+      <FormControl isInvalid={stripeMessage !== ''}>
+        <PaymentElement />
+        {stripeMessage !== '' ? (
+          <FormErrorMessage>
+            {`${stripeMessage} No payment has been taken. Please try again.`}
+          </FormErrorMessage>
+        ) : null}
+
+        <Button
+          isFullWidth
+          variant="solid"
+          colorScheme={`theme-${colorTheme}`}
+          type="submit"
+          disabled={!stripe || isStripeProcessing}
+          isLoading={isStripeProcessing}
+          mt="2.5rem"
+        >
+          Pay now
+        </Button>
+      </FormControl>
     </form>
   )
 }
