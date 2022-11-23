@@ -1,13 +1,13 @@
 import { Flex, Icon, Skeleton, Text } from '@chakra-ui/react'
 
-import { BxsCheckCircle, BxsError } from '~assets/icons'
+import { BxsCheckCircle, BxsError, BxsInfoCircle } from '~assets/icons'
 
 import { useAdminFormPayments, useAdminFormSettings } from '../../queries'
 
 import { StripeConnectButton } from './StripeConnectButton'
 
 const PaymentsAccountValidation = () => {
-  const { isLoading, isError } = useAdminFormPayments()
+  const { hasOnboarded, isLoading, isError } = useAdminFormPayments()
 
   if (isError) {
     return (
@@ -30,23 +30,39 @@ const PaymentsAccountValidation = () => {
     )
   }
 
-  // TODO: Add validation for connected stripe account, depending on a variety of factors.
-  // Factors can be whether the account is connected, whether the account is verified, whether the account is in test mode, etc.
-  // Factors can be found here: https://stripe.com/docs/api/accounts/object#account_object-requirements
+  if (hasOnboarded) {
+    return (
+      <Skeleton isLoaded={!isLoading}>
+        <Flex mb="2.5rem">
+          <Icon
+            aria-hidden
+            marginEnd="0.5em"
+            color="success.500"
+            fontSize="1rem"
+            h="1.5rem"
+            as={BxsCheckCircle}
+            mr={2}
+          />
+          <Text>Your Stripe account is linked to FormSG</Text>
+        </Flex>
+      </Skeleton>
+    )
+  }
 
+  // Not onboarded yet, pending state.
   return (
     <Skeleton isLoaded={!isLoading}>
       <Flex mb="2.5rem">
         <Icon
           aria-hidden
           marginEnd="0.5em"
-          color="success.500"
+          color="warning.500"
           fontSize="1rem"
           h="1.5rem"
-          as={BxsCheckCircle}
+          as={BxsInfoCircle}
           mr={2}
         />
-        <Text>Your Stripe account is linked to FormSG</Text>
+        <Text>Onboarding is in progress.</Text>
       </Flex>
     </Skeleton>
   )

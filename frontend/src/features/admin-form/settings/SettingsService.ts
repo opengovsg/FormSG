@@ -1,3 +1,5 @@
+import Stripe from 'stripe'
+
 import {
   EmailFormSettings,
   FormSettings,
@@ -147,7 +149,7 @@ export const unlinkStripeAccount = async (formId: string) => {
 }
 
 export const validateStripeAccount = async (formId: string) => {
-  return ApiService.get(
+  return ApiService.get<{ account: Stripe.Response<Stripe.Account> | null }>(
     `${ADMIN_FORM_ENDPOINT}/${formId}/stripe/validate`,
   ).then(({ data }) => data)
 }

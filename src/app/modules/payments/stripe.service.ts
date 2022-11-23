@@ -102,11 +102,11 @@ export const createAccountLink = (
 export const validateAccount = (
   accountId?: string,
 ): ResultAsync<
-  Stripe.Response<Stripe.Account>,
+  Stripe.Response<Stripe.Account> | null,
   StripeAccountError | StripeAccountNotFoundError
 > => {
   if (!accountId) {
-    return errAsync(new StripeAccountNotFoundError('No account id provided'))
+    return okAsync(null)
   }
   return ResultAsync.fromPromise(
     stripe.accounts.retrieve(accountId),

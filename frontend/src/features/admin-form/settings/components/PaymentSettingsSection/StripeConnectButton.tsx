@@ -4,10 +4,10 @@ import { Skeleton } from '@chakra-ui/react'
 import Button from '~components/Button'
 
 import { useMutateStripeAccount } from '../../mutations'
-import { useAdminFormSettings } from '../../queries'
+import { useAdminFormPayments, useAdminFormSettings } from '../../queries'
 
 export const StripeConnectButton = (): JSX.Element => {
-  const { data: settings, isLoading } = useAdminFormSettings()
+  const { data: account, isLoading, hasOnboarded } = useAdminFormPayments()
 
   const { createStripeAccountMutation, unlinkStripeAccountMutation } =
     useMutateStripeAccount()
@@ -27,7 +27,20 @@ export const StripeConnectButton = (): JSX.Element => {
     [unlinkStripeAccountMutation],
   )
 
-  if (settings?.payments?.enabled && settings?.payments?.target_account_id) {
+  if (!account) {
+    return (
+      <Skeleton isLoaded={!isLoading} w="fit-content">
+        <Button
+          isLoading={createStripeAccountMutation.isLoading}
+          onClick={onLinkAccountClick}
+        >
+          Connect my Stripe account to FormSG
+        </Button>
+      </Skeleton>
+    )
+  }
+
+  if (hasOnboarded) {
     return (
       <Button
         colorScheme="danger"
@@ -39,13 +52,14 @@ export const StripeConnectButton = (): JSX.Element => {
     )
   }
 
+  // Not onboarded yet, pending state.
   return (
     <Skeleton isLoaded={!isLoading} w="fit-content">
       <Button
         isLoading={createStripeAccountMutation.isLoading}
         onClick={onLinkAccountClick}
       >
-        Connect my Stripe account to FormSG
+        Continue onboarding
       </Button>
     </Skeleton>
   )
