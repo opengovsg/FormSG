@@ -155,3 +155,5 @@ export type StorageModeSubmissionContentDto = {
   attachments?: StorageModeAttachmentsMap
   version: number
 }
+
+export type StorageModePaymentSubmissionDto = Payment

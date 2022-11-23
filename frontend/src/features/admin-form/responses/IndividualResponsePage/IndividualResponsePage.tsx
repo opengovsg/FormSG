@@ -14,6 +14,8 @@ import simplur from 'simplur'
 import Button from '~components/Button'
 import Spinner from '~components/Spinner'
 
+import { useAdminForm } from '~features/admin-form/common/queries'
+
 import {
   SecretKeyVerification,
   useStorageResponsesContext,
@@ -22,7 +24,10 @@ import {
 import { DecryptedRow } from './DecryptedRow'
 import { IndividualResponseNavbar } from './IndividualResponseNavbar'
 import { useMutateDownloadAttachments } from './mutations'
-import { useIndividualSubmission } from './queries'
+import {
+  useIndividualPaymentSubmission,
+  useIndividualSubmission,
+} from './queries'
 
 const LoadingDecryption = memo(() => {
   return (
@@ -51,6 +56,12 @@ export const IndividualResponsePage = (): JSX.Element => {
 
   const { secretKey } = useStorageResponsesContext()
   const { data, isLoading, isError } = useIndividualSubmission()
+  const {
+    data: paymentData,
+    isLoading: isPaymentLoading,
+    isError: isPaymentError,
+  } = useIndividualPaymentSubmission()
+  const { data: form } = useAdminForm()
 
   const attachmentDownloadUrls = useMemo(() => {
     const attachmentDownloadUrls = new Map()
@@ -161,6 +172,48 @@ export const IndividualResponsePage = (): JSX.Element => {
             </Stack>
           )}
         </Stack>
+
+        {form?.payments?.enabled ? (
+          <Stack>
+            <Text
+              textStyle="h2"
+              as="h2"
+              color="primary.500"
+              mb="0.5rem"
+              _notFirst={{ mt: '2.5rem' }}
+            >
+              Payment
+            </Text>
+            {isPaymentLoading || isPaymentError ? (
+              <Text>Payment was not enabled when this form was submitted</Text>
+            ) : (
+              <>
+                <Stack>
+                  <Stack direction={{ base: 'column', md: 'row' }}>
+                    <Text textStyle="subhead-1">Payment amount:</Text>
+                    <Text>{paymentData?.amount}</Text>
+                  </Stack>
+                  <Stack direction={{ base: 'column', md: 'row' }}>
+                    <Text textStyle="subhead-1">Payment status:</Text>
+                    <Text>{paymentData?.status}</Text>
+                  </Stack>
+                  <Stack direction={{ base: 'column', md: 'row' }}>
+                    <Text textStyle="subhead-1">Payment date:</Text>
+                    <Text>TODO: FILL THIS IN</Text>
+                  </Stack>
+                  <Stack direction={{ base: 'column', md: 'row' }}>
+                    <Text textStyle="subhead-1">Payment intent ID:</Text>
+                    <Text>{paymentData?.paymentIntentId}</Text>
+                  </Stack>
+                  <Stack direction={{ base: 'column', md: 'row' }}>
+                    <Text textStyle="subhead-1">Transaction fee:</Text>
+                    <Text>TODO: FILL THIS IN</Text>
+                  </Stack>
+                </Stack>
+              </>
+            )}
+          </Stack>
+        ) : null}
       </Stack>
     </Flex>
   )

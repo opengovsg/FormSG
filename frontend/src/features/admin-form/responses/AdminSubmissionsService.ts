@@ -1,5 +1,6 @@
 import {
   FormSubmissionMetadataQueryDto,
+  StorageModePaymentSubmissionDto,
   StorageModeSubmissionDto,
   StorageModeSubmissionMetadataList,
   SubmissionCountQueryDto,
@@ -93,9 +94,28 @@ export const getDecryptedSubmissionById = async ({
     processDecryptedContent(decryptedContent),
     attachmentMetadata,
   )
+  console.log(processedContent)
   // Add metadata for display.
   return {
     ...rest,
     responses: processedContent,
   }
+}
+
+/**
+ * Returns the data of the payment of a single submission of a given storage mode form
+ * @param arg.formId The id of the form to query
+ * @param arg.submissionId The id of the submission
+ * @returns The data of the submission
+ */
+export const getPaymentSubmissionById = async ({
+  formId,
+  submissionId,
+}: {
+  formId: string
+  submissionId: string
+}): Promise<StorageModePaymentSubmissionDto> => {
+  return ApiService.get<StorageModePaymentSubmissionDto>(
+    `${ADMIN_FORM_ENDPOINT}/${formId}/submissions/${submissionId}/payment`,
+  ).then(({ data }) => data)
 }
