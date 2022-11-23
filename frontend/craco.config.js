@@ -1,5 +1,5 @@
 /* eslint-env node */
-const CracoAlias = require('craco-alias')
+const { CracoAliasPlugin } = require('react-app-alias-ex')
 const merge = require('lodash/merge')
 const path = require('path')
 
@@ -14,16 +14,8 @@ module.exports = {
   },
   plugins: [
     {
-      plugin: CracoAlias,
-      options: {
-        source: 'tsconfig',
-        // baseUrl SHOULD be specified
-        // plugin does not take it from tsconfig
-        baseUrl: '.',
-        // tsConfigPath should point to the file where "baseUrl" and "paths" are specified
-        tsConfigPath: './tsconfig.paths.json',
-        unsafeAllowModulesOutsideOfSrc: true,
-      },
+      plugin: CracoAliasPlugin,
+      options: {},
     },
     {
       plugin: {
