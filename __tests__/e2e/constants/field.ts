@@ -41,6 +41,8 @@ type E2eFieldMultiValue = { val: string[] }
 type E2eFieldTableValue = { val: string[][] }
 type E2eFieldFilepath = { path: string }
 
+type E2eFieldHidden = { hidden?: boolean }
+
 type E2ePickFieldMetadata<T extends FieldBase, K extends keyof T> = Pick<
   T,
   'title' | 'fieldType' | K
@@ -50,7 +52,8 @@ type E2ePickFieldMetadata<T extends FieldBase, K extends keyof T> = Pick<
 export type E2eFieldMetadata =
   | (E2ePickFieldMetadata<AttachmentFieldBase, 'attachmentSize'> &
       E2eFieldSingleValue &
-      E2eFieldFilepath)
+      E2eFieldFilepath &
+      E2eFieldHidden)
   | (E2ePickFieldMetadata<
       CheckboxFieldBase,
       | 'fieldOptions'
@@ -58,16 +61,20 @@ export type E2eFieldMetadata =
       | 'ValidationOptions'
       | 'validateByValue'
     > &
-      E2eFieldMultiValue)
+      E2eFieldMultiValue &
+      E2eFieldHidden)
   | (E2ePickFieldMetadata<DateFieldBase, 'dateValidation'> &
-      E2eFieldSingleValue)
+      E2eFieldSingleValue &
+      E2eFieldHidden)
   | (E2ePickFieldMetadata<
       DecimalFieldBase,
       'ValidationOptions' | 'validateByValue'
     > &
-      E2eFieldSingleValue)
+      E2eFieldSingleValue &
+      E2eFieldHidden)
   | (E2ePickFieldMetadata<DropdownFieldBase, 'fieldOptions'> &
-      E2eFieldSingleValue)
+      E2eFieldSingleValue &
+      E2eFieldHidden)
   | (E2ePickFieldMetadata<
       EmailFieldBase,
       | 'isVerifiable'
@@ -75,37 +82,55 @@ export type E2eFieldMetadata =
       | 'hasAllowedEmailDomains'
       | 'allowedEmailDomains'
     > &
-      E2eFieldSingleValue)
-  | (E2ePickFieldMetadata<HomenoFieldBase, 'fieldType'> & E2eFieldSingleValue)
-  | (E2ePickFieldMetadata<ImageFieldBase, never> & E2eFieldFilepath)
+      E2eFieldSingleValue &
+      E2eFieldHidden)
+  | (E2ePickFieldMetadata<HomenoFieldBase, 'fieldType'> &
+      E2eFieldSingleValue &
+      E2eFieldHidden)
+  | (E2ePickFieldMetadata<ImageFieldBase, never> &
+      E2eFieldFilepath &
+      E2eFieldHidden)
   | (E2ePickFieldMetadata<LongTextFieldBase, 'ValidationOptions'> &
-      E2eFieldSingleValue)
+      E2eFieldSingleValue &
+      E2eFieldHidden)
   | (E2ePickFieldMetadata<MobileFieldBase, 'allowIntlNumbers'> & // Omit 'isVerfiable', since we can't test that.
-      E2eFieldSingleValue)
-  | (E2ePickFieldMetadata<NricFieldBase, never> & E2eFieldSingleValue)
+      E2eFieldSingleValue &
+      E2eFieldHidden)
+  | (E2ePickFieldMetadata<NricFieldBase, never> &
+      E2eFieldSingleValue &
+      E2eFieldHidden)
   | (E2ePickFieldMetadata<NumberFieldBase, 'ValidationOptions'> &
-      E2eFieldSingleValue)
+      E2eFieldSingleValue &
+      E2eFieldHidden)
   | (E2ePickFieldMetadata<
       RadioFieldBase,
       'fieldOptions' | 'othersRadioButton'
     > &
-      E2eFieldSingleValue)
+      E2eFieldSingleValue &
+      E2eFieldHidden)
   | (E2ePickFieldMetadata<RatingFieldBase, 'ratingOptions'> &
-      E2eFieldSingleValue)
-  | E2ePickFieldMetadata<SectionFieldBase, never>
+      E2eFieldSingleValue &
+      E2eFieldHidden)
+  | (E2ePickFieldMetadata<SectionFieldBase, never> & E2eFieldHidden)
   | (E2ePickFieldMetadata<
       ShortTextFieldBase,
       'ValidationOptions' | 'allowPrefill'
     > &
-      E2eFieldSingleValue)
-  | E2ePickFieldMetadata<StatementFieldBase, never>
+      E2eFieldSingleValue &
+      E2eFieldHidden)
+  | (E2ePickFieldMetadata<StatementFieldBase, never> & E2eFieldHidden)
   | (E2ePickFieldMetadata<
       TableFieldBase,
       'minimumRows' | 'addMoreRows' | 'columns' | 'maximumRows'
     > &
-      E2eFieldTableValue)
-  | (E2ePickFieldMetadata<UenFieldBase, never> & E2eFieldSingleValue)
-  | (E2ePickFieldMetadata<YesNoFieldBase, never> & E2eFieldSingleValue)
+      E2eFieldTableValue &
+      E2eFieldHidden)
+  | (E2ePickFieldMetadata<UenFieldBase, never> &
+      E2eFieldSingleValue &
+      E2eFieldHidden)
+  | (E2ePickFieldMetadata<YesNoFieldBase, never> &
+      E2eFieldSingleValue &
+      E2eFieldHidden)
 
 export const ALL_FIELDS: E2eFieldMetadata[] = [
   {

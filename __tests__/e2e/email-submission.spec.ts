@@ -213,6 +213,7 @@ test.describe('Email form submission', () => {
           customVal: null,
         },
         val: '',
+        hidden: true,
       },
     ]
     const formLogics: E2eLogic[] = [
