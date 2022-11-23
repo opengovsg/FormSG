@@ -44,6 +44,7 @@ import {
   MyInfoHashingError,
   MyInfoInvalidAccessTokenError,
   MyInfoMissingHashError,
+  MyInfoMissingLoginCookieError,
   MyInfoParseRelayStateError,
 } from './myinfo.errors'
 import {
@@ -56,6 +57,8 @@ import {
   assertAuthCodeCookieSuccessState,
   compareHashedValues,
   createRelayState,
+  extractAndAssertOldMyInfoCookieValidity,
+  extractMyInfoLoginJwt,
   hashFieldValues,
   isMyInfoLoginCookie,
   isMyInfoRelayState,
@@ -522,6 +525,53 @@ export class MyInfoServiceClass {
           ),
         ),
       )
+  }
+
+  // TODO(#5452): Stop accepting old cookie
+  extractUinFromOldAndNewLoginCookie(
+    cookies: Record<string, unknown>,
+  ): Result<
+    string,
+    MyInfoInvalidAccessTokenError | MyInfoMissingLoginCookieError
+  > {
+    // Look for new cookie first
+    const newCookieResult = extractMyInfoLoginJwt(cookies).andThen(
+      MyInfoService.extractUinFin,
+    )
+    if (newCookieResult.isOk()) {
+      logger.info({
+        message: 'Decrypted new MyInfo cookie successfully',
+        meta: {
+          action: 'extractUinFromOldAndNewLoginCookie',
+        },
+      })
+      return newCookieResult
+    }
+
+    // Look for old cookie first
+    return extractAndAssertOldMyInfoCookieValidity(cookies).andThen((payload) =>
+      Result.fromThrowable(
+        () => this.#myInfoGovClient.extractUinFin(payload.accessToken),
+        (error) => {
+          logger.error({
+            message: 'Error while extracting uinFin from MyInfo access token',
+            meta: {
+              action: 'extractUinFromOldAndNewLoginCookie',
+            },
+            error,
+          })
+          return new MyInfoInvalidAccessTokenError()
+        },
+      )().andThen((uinFin) => {
+        logger.info({
+          message: 'Decrypted old MyInfo cookie successfully',
+          meta: {
+            action: 'extractUinFromOldAndNewLoginCookie',
+          },
+        })
+        return ok(uinFin)
+      }),
+    )
   }
 }
 
