@@ -139,7 +139,7 @@ export const PaymentPageBlock = ({
           </Text>
         </Text>
 
-        {paymentClientSecret ? (
+        {paymentClientSecret && (
           <Elements
             stripe={stripePromise}
             options={{
@@ -152,8 +152,6 @@ export const PaymentPageBlock = ({
               submissionId={submissionData.id || ''}
             />
           </Elements>
-        ) : (
-          <>TODO: Mock for preview / skeleton state?</>
         )}
 
         <Text textColor="secondary.300">Response ID: {submissionData.id}</Text>
