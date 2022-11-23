@@ -143,8 +143,9 @@ const fillFields = async (
       continue
     }
 
+    // Expect that the question title can be seen with the correct question number.
     await expect(
-      page.getByText(getTitleWithQuestionNumber(formFields, i)),
+      page.getByLabel(getTitleWithQuestionNumber(formFields, i)),
     ).toBeVisible()
 
     const input = page.locator(`id=${field._id}`)
