@@ -1,12 +1,12 @@
 import { useMemo } from 'react'
-import { Box, Container, Flex, Stack } from '@chakra-ui/react'
+import { Box, Container, Flex, Image, Stack, Text } from '@chakra-ui/react'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
-import { PaymentPageBlock } from '~features/public-form/components/FormEndPage/components/PaymentPageBlock'
 import { useBgColor } from '~features/public-form/components/PublicFormWrapper'
 
 import { useDesignColorTheme } from '../builder-and-design/utils/useDesignColorTheme'
 
+import mock from './PaymentMock.png'
 import { dataSelector, usePaymentStore } from './usePaymentStore'
 
 export const PaymentContent = (): JSX.Element => {
@@ -54,22 +54,35 @@ export const PaymentContent = (): JSX.Element => {
                   bg="white"
                   w="100%"
                 >
-                  <PaymentPageBlock
-                    colorTheme={form.startPage.colorTheme}
-                    submissionData={{
-                      // Mock some submission data
-                      id: '6f8b9862ae12b34f7e9c7c83',
-                      timeInEpochMs: 1669105535756,
-                    }}
-                    formPayments={payments}
-                    formTitle={form.title}
-                    endPage={form.endPage}
-                  />
+                  <Flex flexDir="column">
+                    <Stack spacing="1rem">
+                      <Box>
+                        <Text textStyle="h3" textColor="primary.500">
+                          Payment
+                        </Text>
+                        <Text textStyle="body-2" textColor="secondary.500">
+                          This amount is inclusive of GST
+                        </Text>
+                      </Box>
+                      <Text textStyle="body-1" textColor="secondary.700">
+                        Your credit card will be charged:{' '}
+                        <Text as="span" fontWeight="bold">
+                          S${((payments?.amount_cents ?? 0) / 100).toFixed(2)}
+                        </Text>
+                      </Text>
+
+                      <Image src={mock} alt="Mock payment element" />
+
+                      <Text textColor="secondary.300">
+                        Response ID: MOCK_SUBMISSION_ID
+                      </Text>
+                    </Stack>
+                  </Flex>
                 </Stack>
               </Flex>
             </Container>
           ) : (
-            <>TODO</>
+            <></>
           )}
         </Box>
       </Stack>
