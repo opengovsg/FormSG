@@ -203,7 +203,7 @@ const submitEmailModeForm: ControllerHandler<
               })
           }
           case FormAuthType.MyInfo:
-            return MyInfoUtil.extractMyInfoLoginCookie(req.cookies)
+            return MyInfoUtil.extractMyInfoLoginJwt(req.cookies)
               .andThen(MyInfoUtil.extractAccessTokenFromCookie)
               .andThen((accessToken) =>
                 MyInfoService.extractUinFin(accessToken),

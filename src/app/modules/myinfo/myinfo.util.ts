@@ -374,7 +374,7 @@ export const isMyInfoAuthCodeCookie = (
  * its shape.
  * @param cookies Cookies in a request
  */
-export const extractMyInfoLoginCookie = (
+export const extractMyInfoLoginJwt = (
   cookies: Record<string, unknown>,
 ): Result<MyInfoCookiePayload, MyInfoMissingAccessTokenError> => {
   const cookie = cookies[MYINFO_LOGIN_COOKIE_NAME]
