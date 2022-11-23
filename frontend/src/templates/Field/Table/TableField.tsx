@@ -69,7 +69,7 @@ export const TableField = ({
     // would not need to be shown in the table field itself.
     if (isMobile) return
     // Get first available error amongst all column cell errors.
-    return head(uniq(tableErrors?.flatMap((err = {}) => Object.values(err))))
+    return head(uniq(tableErrors?.flatMap?.((err = {}) => Object.values(err))))
   }, [isMobile, tableErrors])
 
   const { fields, append, remove } = useFieldArray<TableFieldInputs>({

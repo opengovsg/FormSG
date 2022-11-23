@@ -106,7 +106,9 @@ export const FormSectionsProvider = ({
         sectionScrollData,
         setVisibleFieldIdsForScrollData: setVisibleFieldIds,
         sectionRefs,
-        activeSectionId: orderedSectionFieldIds?.[activeSection] ?? undefined,
+        activeSectionId: activeSection
+          ? orderedSectionFieldIds?.[activeSection] ?? undefined
+          : undefined,
         navigatedSectionId,
         setNavigatedSectionId,
       }}

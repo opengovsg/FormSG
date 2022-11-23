@@ -107,9 +107,7 @@ export const Playground: Story<AttachmentProps> = ({
           }}
           control={control}
         />
-        <FormErrorMessage>
-          {errors[args.name] && errors[args.name].message}
-        </FormErrorMessage>
+        <FormErrorMessage>{errors[args.name]?.message}</FormErrorMessage>
       </FormControl>
       <Button type="submit">Submit</Button>
     </form>

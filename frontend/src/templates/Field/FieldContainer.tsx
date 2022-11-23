@@ -4,7 +4,7 @@
  * component as this component relies on methods the FormProvider component
  * provides.
  */
-import { FieldError, useFormState } from 'react-hook-form'
+import { useFormState } from 'react-hook-form'
 import { Box, FormControl, Grid } from '@chakra-ui/react'
 import { get } from 'lodash'
 
@@ -54,7 +54,7 @@ export const FieldContainer = ({
 }: FieldContainerProps): JSX.Element => {
   const { errors, isSubmitting, isValid } = useFormState({ name: schema._id })
 
-  const error: FieldError | undefined = get(errors, errorKey ?? schema._id)
+  const error = get(errors, errorKey ?? schema._id)
 
   return (
     <FormControl

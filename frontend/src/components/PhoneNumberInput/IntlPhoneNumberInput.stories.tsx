@@ -99,9 +99,7 @@ export const Playground: Story = ({
           render={({ field }) => <PhoneNumberInput {...args} {...field} />}
         />
 
-        <FormErrorMessage>
-          {errors[name] && errors[name].message}
-        </FormErrorMessage>
+        <FormErrorMessage>{errors[name]?.message}</FormErrorMessage>
       </FormControl>
       <Button variant="solid" type="submit">
         Submit
