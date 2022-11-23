@@ -266,7 +266,7 @@ export const _handleGenerateOtp: ControllerHandler<
                 return error
               })
           case FormAuthType.MyInfo:
-            return MyInfoUtil.extractMyInfoCookie(req.cookies)
+            return MyInfoUtil.extractMyInfoLoginCookie(req.cookies)
               .andThen(MyInfoUtil.extractAccessTokenFromCookie)
               .map(() => form)
               .mapErr((error) => {

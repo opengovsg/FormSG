@@ -32,12 +32,12 @@ export const MYINFO_AUTH_CODE_COOKIE_AGE_MS = 3 * 60 * 1000
  * Name of cookie which contains state of MyInfo login, and access
  * token if login was successful.
  */
-export const MYINFO_COOKIE_NAME = 'MyInfoCookie'
+export const MYINFO_LOGIN_COOKIE_NAME = 'MyInfoCookie'
 
 /**
  * Settings for the MyInfo cookie which contains the access token
  */
-export const MYINFO_COOKIE_OPTIONS = {
+export const MYINFO_LOGIN_COOKIE_OPTIONS = {
   // Important for security - access token cannot be read by client-side JS
   httpOnly: true,
   sameSite: 'lax' as const, // Setting to 'strict' prevents Singpass login on Safari, Firefox

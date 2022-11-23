@@ -685,7 +685,7 @@ describe('Verification controller', () => {
       expect(mockCpOidcServiceClass.extractJwtPayload).not.toHaveBeenCalled()
 
       expect(MockSgidService.extractSgidJwtPayload).not.toHaveBeenCalled()
-      expect(MockMyInfoUtil.extractMyInfoCookie).not.toHaveBeenCalled()
+      expect(MockMyInfoUtil.extractMyInfoLoginCookie).not.toHaveBeenCalled()
       expect(MockMyInfoUtil.extractAccessTokenFromCookie).not.toHaveBeenCalled()
       expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
       expect(MockVerificationService.sendNewOtp).toHaveBeenCalledWith(
@@ -862,7 +862,7 @@ describe('Verification controller', () => {
       MockFormService.retrieveFullFormById.mockReturnValueOnce(
         okAsync(MOCK_MYINFO_FORM),
       )
-      MockMyInfoUtil.extractMyInfoCookie.mockReturnValueOnce(
+      MockMyInfoUtil.extractMyInfoLoginCookie.mockReturnValueOnce(
         ok(MOCK_SUCCESSFUL_COOKIE),
       )
       MockMyInfoUtil.extractAccessTokenFromCookie.mockReturnValueOnce(
@@ -883,7 +883,7 @@ describe('Verification controller', () => {
       expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
         MOCK_FORM_ID,
       )
-      expect(MockMyInfoUtil.extractMyInfoCookie).toHaveBeenCalledWith(
+      expect(MockMyInfoUtil.extractMyInfoLoginCookie).toHaveBeenCalledWith(
         MOCK_REQ.cookies,
       )
       expect(MockMyInfoUtil.extractAccessTokenFromCookie).toHaveBeenCalled()
@@ -1321,7 +1321,7 @@ describe('Verification controller', () => {
       MockFormService.retrieveFullFormById.mockReturnValueOnce(
         okAsync(MOCK_MYINFO_FORM),
       )
-      MockMyInfoUtil.extractMyInfoCookie.mockReturnValueOnce(
+      MockMyInfoUtil.extractMyInfoLoginCookie.mockReturnValueOnce(
         err(new MyInfoMissingAccessTokenError()),
       )
       const expectedResponse = {
@@ -1339,7 +1339,7 @@ describe('Verification controller', () => {
       expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
         MOCK_FORM_ID,
       )
-      expect(MockMyInfoUtil.extractMyInfoCookie).toHaveBeenCalledWith(
+      expect(MockMyInfoUtil.extractMyInfoLoginCookie).toHaveBeenCalledWith(
         MOCK_REQ.cookies,
       )
       expect(MockMyInfoUtil.extractAccessTokenFromCookie).not.toHaveBeenCalled()
@@ -1354,7 +1354,7 @@ describe('Verification controller', () => {
       MockFormService.retrieveFullFormById.mockReturnValueOnce(
         okAsync(MOCK_MYINFO_FORM),
       )
-      MockMyInfoUtil.extractMyInfoCookie.mockReturnValueOnce(
+      MockMyInfoUtil.extractMyInfoLoginCookie.mockReturnValueOnce(
         ok(MOCK_SUCCESSFUL_COOKIE),
       )
       MockMyInfoUtil.extractAccessTokenFromCookie.mockReturnValueOnce(
@@ -1375,7 +1375,7 @@ describe('Verification controller', () => {
       expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
         MOCK_FORM_ID,
       )
-      expect(MockMyInfoUtil.extractMyInfoCookie).toHaveBeenCalledWith(
+      expect(MockMyInfoUtil.extractMyInfoLoginCookie).toHaveBeenCalledWith(
         MOCK_REQ.cookies,
       )
       expect(MockMyInfoUtil.extractAccessTokenFromCookie).toHaveBeenCalledWith(

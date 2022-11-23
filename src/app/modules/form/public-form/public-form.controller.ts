@@ -21,8 +21,8 @@ import { createReqMeta, getRequestIp } from '../../../utils/request'
 import { getFormIfPublic } from '../../auth/auth.service'
 import { ControllerHandler } from '../../core/core.types'
 import {
-  MYINFO_COOKIE_NAME,
-  MYINFO_COOKIE_OPTIONS,
+  MYINFO_LOGIN_COOKIE_NAME,
+  MYINFO_LOGIN_COOKIE_OPTIONS,
 } from '../../myinfo/myinfo.constants'
 import {
   MyInfoCookieAccessError,
@@ -250,9 +250,9 @@ export const handleGetPublicForm: ControllerHandler<
             // Set the updated cookie accordingly and return the form back to the user
             return res
               .cookie(
-                MYINFO_COOKIE_NAME,
+                MYINFO_LOGIN_COOKIE_NAME,
                 updatedMyInfoCookie,
-                MYINFO_COOKIE_OPTIONS,
+                MYINFO_LOGIN_COOKIE_OPTIONS,
               )
               .json({
                 spcpSession,
@@ -274,7 +274,10 @@ export const handleGetPublicForm: ControllerHandler<
             // No need for cookie if data could not be retrieved
             // NOTE: If the user does not have any cookie, clearing the cookie still has the same result
             return res
-              .clearCookie(MYINFO_COOKIE_NAME, MYINFO_COOKIE_OPTIONS)
+              .clearCookie(
+                MYINFO_LOGIN_COOKIE_NAME,
+                MYINFO_LOGIN_COOKIE_OPTIONS,
+              )
               .json({
                 form: publicForm,
                 // Setting to undefined ensures that the frontend does not get myInfoError if it is false

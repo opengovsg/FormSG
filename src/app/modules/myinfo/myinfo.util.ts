@@ -29,7 +29,7 @@ import {
 } from '../spcp/spcp.errors'
 import { ProcessedFieldResponse } from '../submission/submission.types'
 
-import { MYINFO_COOKIE_NAME } from './myinfo.constants'
+import { MYINFO_LOGIN_COOKIE_NAME } from './myinfo.constants'
 import {
   MyInfoCookieAccessError,
   MyInfoCookieStateError,
@@ -309,7 +309,7 @@ const isMyInfoFormWithEsrvcId = <F extends IFormSchema>(
  * Type guard for MyInfo cookie.
  * @param cookie Unknown object
  */
-export const isMyInfoCookie = (
+export const isMyInfoLoginCookie = (
   cookie: unknown,
 ): cookie is MyInfoCookiePayload => {
   if (cookie && typeof cookie === 'object' && hasProp(cookie, 'state')) {
@@ -337,11 +337,11 @@ export const isMyInfoCookie = (
  * its shape.
  * @param cookies Cookies in a request
  */
-export const extractMyInfoCookie = (
+export const extractMyInfoLoginCookie = (
   cookies: Record<string, unknown>,
 ): Result<MyInfoCookiePayload, MyInfoMissingAccessTokenError> => {
-  const cookie = cookies[MYINFO_COOKIE_NAME]
-  if (isMyInfoCookie(cookie)) {
+  const cookie = cookies[MYINFO_LOGIN_COOKIE_NAME]
+  if (isMyInfoLoginCookie(cookie)) {
     return ok(cookie)
   }
   return err(new MyInfoMissingAccessTokenError())
@@ -377,7 +377,7 @@ export const extractAndAssertMyInfoCookieValidity = (
   | MyInfoMissingAccessTokenError
   | MyInfoCookieAccessError
 > =>
-  extractMyInfoCookie(cookies)
+  extractMyInfoLoginCookie(cookies)
     .andThen((cookiePayload) => assertMyInfoCookieSuccessState(cookiePayload))
     .andThen((cookiePayload) => assertMyInfoCookieUnused(cookiePayload))
 
