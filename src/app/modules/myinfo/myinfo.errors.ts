@@ -59,7 +59,7 @@ export class MyInfoParseRelayStateError extends ApplicationError {
 /**
  * Submission on MyInfo form missing access token.
  */
-export class MyInfoMissingAccessTokenError extends ApplicationError {
+export class MyInfoMissingLoginCookieError extends ApplicationError {
   constructor(message = 'Access token not present on MyInfo submission') {
     super(message)
   }

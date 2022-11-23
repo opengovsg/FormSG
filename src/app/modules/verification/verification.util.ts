@@ -32,7 +32,7 @@ import {
 import { FormNotFoundError } from '../form/form.errors'
 import {
   MyInfoCookieStateError,
-  MyInfoMissingAccessTokenError,
+  MyInfoMissingLoginCookieError,
 } from '../myinfo/myinfo.errors'
 import {
   SgidInvalidJwtError,
@@ -207,7 +207,7 @@ export const mapRouteError: MapRouteError = (
     case SgidVerifyJwtError:
     case SgidInvalidJwtError:
     case SgidMissingJwtError:
-    case MyInfoMissingAccessTokenError:
+    case MyInfoMissingLoginCookieError:
     case MyInfoCookieStateError:
       return {
         errorMessage: coreErrorMsg,

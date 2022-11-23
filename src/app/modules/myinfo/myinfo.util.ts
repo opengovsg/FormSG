@@ -39,8 +39,8 @@ import {
   MyInfoCookieStateError,
   MyInfoHashDidNotMatchError,
   MyInfoHashingError,
-  MyInfoMissingAccessTokenError,
   MyInfoMissingHashError,
+  MyInfoMissingLoginCookieError,
 } from './myinfo.errors'
 import {
   MyInfoAuthCodeCookiePayload,
@@ -376,12 +376,12 @@ export const isMyInfoAuthCodeCookie = (
  */
 export const extractMyInfoLoginJwt = (
   cookies: Record<string, unknown>,
-): Result<MyInfoCookiePayload, MyInfoMissingAccessTokenError> => {
+): Result<MyInfoCookiePayload, MyInfoMissingLoginCookieError> => {
   const cookie = cookies[MYINFO_LOGIN_COOKIE_NAME]
   if (isMyInfoLoginCookie(cookie)) {
     return ok(cookie)
   }
-  return err(new MyInfoMissingAccessTokenError())
+  return err(new MyInfoMissingLoginCookieError())
 }
 
 /**

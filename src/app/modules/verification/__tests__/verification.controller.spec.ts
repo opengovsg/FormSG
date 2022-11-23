@@ -29,7 +29,7 @@ import {
 } from '../../myinfo/__tests__/myinfo.test.constants'
 import {
   MyInfoCookieStateError,
-  MyInfoMissingAccessTokenError,
+  MyInfoMissingLoginCookieError,
 } from '../../myinfo/myinfo.errors'
 import {
   SgidInvalidJwtError,
@@ -1322,7 +1322,7 @@ describe('Verification controller', () => {
         okAsync(MOCK_MYINFO_FORM),
       )
       MockMyInfoUtil.extractMyInfoLoginCookie.mockReturnValueOnce(
-        err(new MyInfoMissingAccessTokenError()),
+        err(new MyInfoMissingLoginCookieError()),
       )
       const expectedResponse = {
         message: 'Sorry, something went wrong. Please refresh and try again.',
