@@ -5,6 +5,7 @@ import {
 } from '@opengovsg/myinfo-gov-client'
 import Bluebird from 'bluebird'
 import fs from 'fs'
+import jwt from 'jsonwebtoken'
 import { cloneDeep } from 'lodash'
 import mongoose, { LeanDocument } from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
@@ -56,6 +57,7 @@ import {
   compareHashedValues,
   createRelayState,
   hashFieldValues,
+  isMyInfoLoginCookie,
   isMyInfoRelayState,
   validateMyInfoForm,
 } from './myinfo.util'
@@ -457,13 +459,13 @@ export class MyInfoServiceClass {
   /**
    * Decodes and verifies a JWT from MyInfo containing the user's
    * UIN/FIN.
-   * @param accessToken Access token JWT
+   * @param loginJwt Login JWT
    */
   extractUinFin(
-    accessToken: string,
+    loginJwt: string,
   ): Result<string, MyInfoInvalidAccessTokenError> {
     return Result.fromThrowable(
-      () => this.#myInfoGovClient.extractUinFin(accessToken),
+      () => jwt.verify(loginJwt, spcpMyInfoConfig.myInfoJwtSecret),
       (error) => {
         logger.error({
           message: 'Error while extracting uinFin from MyInfo access token',
@@ -474,7 +476,12 @@ export class MyInfoServiceClass {
         })
         return new MyInfoInvalidAccessTokenError()
       },
-    )()
+    )().andThen((decoded) => {
+      if (isMyInfoLoginCookie(decoded)) {
+        return ok(decoded.uinFin)
+      }
+      return err(new MyInfoInvalidAccessTokenError())
+    })
   }
 
   /**

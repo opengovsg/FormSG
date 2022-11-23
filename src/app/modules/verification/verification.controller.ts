@@ -10,6 +10,7 @@ import { createReqMeta, getRequestIp } from '../../utils/request'
 import { ControllerHandler } from '../core/core.types'
 import { setFormTags } from '../datadog/datadog.utils'
 import * as FormService from '../form/form.service'
+import { MyInfoService } from '../myinfo/myinfo.service'
 import * as MyInfoUtil from '../myinfo/myinfo.util'
 import { SgidService } from '../sgid/sgid.service'
 import { getOidcService } from '../spcp/spcp.oidc.service'
@@ -267,7 +268,7 @@ export const _handleGenerateOtp: ControllerHandler<
               })
           case FormAuthType.MyInfo:
             return MyInfoUtil.extractMyInfoLoginJwt(req.cookies)
-              .andThen(MyInfoUtil.extractAccessTokenFromCookie)
+              .andThen(MyInfoService.extractUinFin)
               .map(() => form)
               .mapErr((error) => {
                 logger.error({

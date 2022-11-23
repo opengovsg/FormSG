@@ -47,8 +47,6 @@ import {
   MyInfoAuthCodeCookieState,
   MyInfoAuthCodeSuccessPayload,
   MyInfoComparePromises,
-  MyInfoCookiePayload,
-  MyInfoCookieState,
   MyInfoForm,
   MyInfoHashPromises,
   MyInfoLoginCookiePayload,
@@ -318,23 +316,14 @@ const isMyInfoFormWithEsrvcId = <F extends IFormSchema>(
  */
 export const isMyInfoLoginCookie = (
   cookie: unknown,
-): cookie is MyInfoCookiePayload => {
-  if (cookie && typeof cookie === 'object' && hasProp(cookie, 'state')) {
-    // Test for success state
-    if (
-      cookie.state === MyInfoCookieState.Success &&
-      hasProp(cookie, 'accessToken') &&
-      typeof cookie.accessToken === 'string' &&
-      hasProp(cookie, 'usedCount') &&
-      typeof cookie.usedCount === 'number'
-    ) {
-      return true
-    } else if (
-      // Test for any other valid state
-      Object.values<string>(MyInfoCookieState).includes(String(cookie.state))
-    ) {
-      return true
-    }
+): cookie is MyInfoLoginCookiePayload => {
+  if (
+    cookie &&
+    typeof cookie === 'object' &&
+    hasProp(cookie, 'uinFin') &&
+    typeof cookie.uinFin === 'string'
+  ) {
+    return true
   }
   return false
 }
@@ -376,10 +365,10 @@ export const isMyInfoAuthCodeCookie = (
  */
 export const extractMyInfoLoginJwt = (
   cookies: Record<string, unknown>,
-): Result<MyInfoCookiePayload, MyInfoMissingLoginCookieError> => {
-  const cookie = cookies[MYINFO_LOGIN_COOKIE_NAME]
-  if (isMyInfoLoginCookie(cookie)) {
-    return ok(cookie)
+): Result<string, MyInfoMissingLoginCookieError> => {
+  const jwt = cookies[MYINFO_LOGIN_COOKIE_NAME]
+  if (typeof jwt === 'string') {
+    return ok(jwt)
   }
   return err(new MyInfoMissingLoginCookieError())
 }
@@ -414,19 +403,6 @@ export const createMyInfoLoginCookie = (uinFin: string): string => {
     // this arg must be supplied in seconds
     expiresIn: spcpMyInfoConfig.spCookieMaxAge / 1000,
   })
-}
-
-/**
- * Extracts access token from a MyInfo cookie
- * @param cookie Cookie from which access token should be extracted
- */
-export const extractAccessTokenFromCookie = (
-  cookie: MyInfoCookiePayload,
-): Result<string, MyInfoCookieStateError> => {
-  if (cookie.state !== MyInfoCookieState.Success) {
-    return err(new MyInfoCookieStateError())
-  }
-  return ok(cookie.accessToken)
 }
 
 export const isMyInfoRelayState = (obj: unknown): obj is MyInfoRelayState =>

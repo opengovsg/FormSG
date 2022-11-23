@@ -204,10 +204,7 @@ const submitEmailModeForm: ControllerHandler<
           }
           case FormAuthType.MyInfo:
             return MyInfoUtil.extractMyInfoLoginJwt(req.cookies)
-              .andThen(MyInfoUtil.extractAccessTokenFromCookie)
-              .andThen((accessToken) =>
-                MyInfoService.extractUinFin(accessToken),
-              )
+              .andThen(MyInfoService.extractUinFin)
               .asyncAndThen((uinFin) =>
                 MyInfoService.fetchMyInfoHashes(uinFin, formId)
                   .andThen((hashes) =>
