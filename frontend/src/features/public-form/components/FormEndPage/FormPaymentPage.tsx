@@ -1,9 +1,10 @@
-import { Container, Flex, Stack, StackDivider } from '@chakra-ui/react'
+import { Box, Container, Flex, Stack, StackDivider } from '@chakra-ui/react'
 
 import { FormColorTheme, FormDto, FormPayments } from '~shared/types/form'
 
 import { SubmissionData } from '~features/public-form/PublicFormContext'
 
+import { CreatePaymentIntentFailureBlock } from './components/CreatePaymentIntentFailureBlock'
 import { PaymentPageBlock } from './components/PaymentPageBlock'
 
 export interface FormPaymentPageProps {
@@ -27,7 +28,11 @@ export const FormPaymentPage = (props: FormPaymentPageProps): JSX.Element => {
           w="100%"
           divider={<StackDivider />}
         >
-          <PaymentPageBlock focusOnMount {...props} />
+          {props.paymentClientSecret ? (
+            <PaymentPageBlock focusOnMount {...props} />
+          ) : (
+            <CreatePaymentIntentFailureBlock focusOnMount {...props} />
+          )}
         </Stack>
       </Flex>
     </Container>
