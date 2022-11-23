@@ -7,7 +7,7 @@ import { useAdminFormPayments, useAdminFormSettings } from '../../queries'
 import { StripeConnectButton } from './StripeConnectButton'
 
 const PaymentsAccountValidation = () => {
-  const { hasOnboarded, isLoading, isError } = useAdminFormPayments()
+  const { hasPaymentCapabilities, isLoading, isError } = useAdminFormPayments()
 
   if (isError) {
     return (
@@ -30,7 +30,7 @@ const PaymentsAccountValidation = () => {
     )
   }
 
-  if (hasOnboarded) {
+  if (hasPaymentCapabilities) {
     return (
       <Skeleton isLoaded={!isLoading}>
         <Flex mb="2.5rem">
@@ -49,7 +49,7 @@ const PaymentsAccountValidation = () => {
     )
   }
 
-  // Not onboarded yet, pending state.
+  // Linked account has no payment capabilities.
   return (
     <Skeleton isLoaded={!isLoading}>
       <Flex mb="2.5rem">
@@ -62,7 +62,9 @@ const PaymentsAccountValidation = () => {
           as={BxsInfoCircle}
           mr={2}
         />
-        <Text>Onboarding is in progress.</Text>
+        <Text>
+          The connected account does not have the ability to process payments.
+        </Text>
       </Flex>
     </Skeleton>
   )

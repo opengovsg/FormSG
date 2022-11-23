@@ -33,7 +33,7 @@ export const useAdminFormPayments = () => {
   const { formId } = useParams()
   if (!formId) throw new Error('No formId provided')
 
-  const [hasOnboarded, setHasOnboarded] = useState(false)
+  const [hasPaymentCapabilities, setHasPaymentCapabilities] = useState(false)
 
   const { data, ...rest } = useQuery(
     adminFormSettingsKeys.payment(formId),
@@ -43,13 +43,13 @@ export const useAdminFormPayments = () => {
         // TODO: Add validation for connected stripe account, depending on a variety of factors.
         // Factors can be whether the account is connected, whether the account is verified, whether the account is in test mode, etc.
         // Factors can be found here: https://stripe.com/docs/api/accounts/object#account_object-requirements
-        setHasOnboarded(!!account && account.charges_enabled)
+        setHasPaymentCapabilities(!!account && account.charges_enabled)
       },
     },
   )
 
   return {
-    hasOnboarded,
+    hasPaymentCapabilities,
     data,
     ...rest,
   }

@@ -7,7 +7,7 @@ import { useMutateStripeAccount } from '../../mutations'
 import { useAdminFormPayments } from '../../queries'
 
 export const StripeConnectButton = (): JSX.Element => {
-  const { data: account, isLoading, hasOnboarded } = useAdminFormPayments()
+  const { data, isLoading } = useAdminFormPayments()
 
   const { linkStripeAccountMutation, unlinkStripeAccountMutation } =
     useMutateStripeAccount()
@@ -27,7 +27,7 @@ export const StripeConnectButton = (): JSX.Element => {
     [unlinkStripeAccountMutation],
   )
 
-  if (!account) {
+  if (!data?.account) {
     return (
       <Skeleton isLoaded={!isLoading} w="fit-content">
         <Button
@@ -40,27 +40,13 @@ export const StripeConnectButton = (): JSX.Element => {
     )
   }
 
-  if (hasOnboarded) {
-    return (
-      <Button
-        colorScheme="danger"
-        onClick={onUnlinkAccountClick}
-        isLoading={unlinkStripeAccountMutation.isLoading}
-      >
-        Disconnect Stripe
-      </Button>
-    )
-  }
-
-  // Not onboarded yet, pending state.
   return (
-    <Skeleton isLoaded={!isLoading} w="fit-content">
-      <Button
-        isLoading={linkStripeAccountMutation.isLoading}
-        onClick={onLinkAccountClick}
-      >
-        Continue onboarding
-      </Button>
-    </Skeleton>
+    <Button
+      colorScheme="danger"
+      onClick={onUnlinkAccountClick}
+      isLoading={unlinkStripeAccountMutation.isLoading}
+    >
+      Disconnect Stripe
+    </Button>
   )
 }
