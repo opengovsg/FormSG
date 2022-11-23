@@ -6,8 +6,7 @@ import { createReqMeta } from '../../../utils/request'
 import { getFormAfterPermissionChecks } from '../../auth/auth.service'
 import { ControllerHandler } from '../../core/core.types'
 import {
-  createAccountLink,
-  linkStripeAccountToForm,
+  getStripeOauthUrl,
   unlinkStripeAccountFromForm,
   validateAccount,
 } from '../../payments/stripe.service'
@@ -34,11 +33,11 @@ export const handleConnectAccount: ControllerHandler<{
         level: PermissionLevel.Write,
       }),
     )
-    .andThen((form) => linkStripeAccountToForm(form))
-    .andThen((accountId) => createAccountLink(accountId, formId))
-    .map((accountLink) => {
+    .andThen((form) => getStripeOauthUrl(form))
+    .map(({ authUrl, state }) => {
+      res.cookie('stripeState', state, { signed: true })
       return res.json({
-        accountUrl: accountLink.url,
+        authUrl,
       })
     })
     .mapErr((error) => {

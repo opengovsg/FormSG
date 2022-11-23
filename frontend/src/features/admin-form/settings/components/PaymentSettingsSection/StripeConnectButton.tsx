@@ -9,17 +9,17 @@ import { useAdminFormPayments } from '../../queries'
 export const StripeConnectButton = (): JSX.Element => {
   const { data: account, isLoading, hasOnboarded } = useAdminFormPayments()
 
-  const { createStripeAccountMutation, unlinkStripeAccountMutation } =
+  const { linkStripeAccountMutation, unlinkStripeAccountMutation } =
     useMutateStripeAccount()
 
   const onLinkAccountClick = useCallback(
     () =>
-      createStripeAccountMutation.mutateAsync(undefined, {
-        onSuccess: ({ accountUrl }) => {
-          window.location.assign(accountUrl)
+      linkStripeAccountMutation.mutateAsync(undefined, {
+        onSuccess: ({ authUrl }) => {
+          window.location.assign(authUrl)
         },
       }),
-    [createStripeAccountMutation],
+    [linkStripeAccountMutation],
   )
 
   const onUnlinkAccountClick = useCallback(
@@ -31,7 +31,7 @@ export const StripeConnectButton = (): JSX.Element => {
     return (
       <Skeleton isLoaded={!isLoading} w="fit-content">
         <Button
-          isLoading={createStripeAccountMutation.isLoading}
+          isLoading={linkStripeAccountMutation.isLoading}
           onClick={onLinkAccountClick}
         >
           Connect my Stripe account to FormSG
@@ -56,7 +56,7 @@ export const StripeConnectButton = (): JSX.Element => {
   return (
     <Skeleton isLoaded={!isLoading} w="fit-content">
       <Button
-        isLoading={createStripeAccountMutation.isLoading}
+        isLoading={linkStripeAccountMutation.isLoading}
         onClick={onLinkAccountClick}
       >
         Continue onboarding

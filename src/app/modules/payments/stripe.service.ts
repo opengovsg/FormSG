@@ -1,9 +1,12 @@
+import cuid from 'cuid'
 import mongoose from 'mongoose'
-import { errAsync, okAsync, ResultAsync } from 'neverthrow'
+import { errAsync, ok, okAsync, ResultAsync } from 'neverthrow'
 import Stripe from 'stripe'
+import { MarkRequired } from 'ts-essentials'
 
 import { IPopulatedForm } from '../../../types'
 import config from '../../config/config'
+import { paymentConfig } from '../../config/features/payment.config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { stripe } from '../../loaders/stripe'
 import { DatabaseError } from '../core/core.errors'
@@ -12,6 +15,7 @@ import { SubmissionNotFoundError } from '../submission/submission.errors'
 import * as SubmissionService from '../submission/submission.service'
 
 import * as PaymentService from './payments.service'
+import { getRedirectUri } from './payments.utils'
 import {
   ChargeReceiptNotFoundError,
   PaymentIntentLatestChargeNotFoundError,
@@ -23,7 +27,54 @@ import {
 
 const logger = createLoggerWithLabel(module)
 
-export const linkStripeAccountToForm = (form: IPopulatedForm) => {
+export const getStripeOauthUrl = (form: IPopulatedForm) => {
+  const state = `${form._id}.${cuid()}`
+
+  return ok({
+    authUrl: stripe.oauth.authorizeUrl({
+      client_id: paymentConfig.stripeClientID,
+      response_type: 'code',
+      scope: 'read_write',
+      state,
+      redirect_uri: getRedirectUri(),
+    }),
+    state,
+  })
+}
+
+export const exchangeCodeForAccessToken = (
+  code: string,
+): ResultAsync<
+  MarkRequired<Stripe.OAuthToken, 'stripe_user_id'>,
+  StripeAccountError | StripeFetchError
+> => {
+  return ResultAsync.fromPromise(
+    stripe.oauth.token({
+      grant_type: 'authorization_code',
+      code,
+    }),
+    (error) => {
+      logger.error({
+        message: 'Error exchanging Stripe code for access token',
+        meta: {
+          action: 'exchangeCodeForAccessToken',
+        },
+        error,
+      })
+      return new StripeFetchError(String(error))
+    },
+  ).andThen((token) => {
+    if (!token.stripe_user_id) {
+      return errAsync(new StripeAccountError('Stripe account ID is missing'))
+    }
+    return okAsync(token as MarkRequired<Stripe.OAuthToken, 'stripe_user_id'>)
+  })
+}
+
+export const linkStripeAccountToForm = (
+  form: IPopulatedForm,
+  stripeUserId: string,
+): ResultAsync<string, DatabaseError> => {
   // Check if form already has account id
   if (form.payments?.target_account_id) {
     return okAsync(form.payments.target_account_id)
@@ -31,27 +82,21 @@ export const linkStripeAccountToForm = (form: IPopulatedForm) => {
 
   // No account id, create and inject into form
   return ResultAsync.fromPromise(
-    stripe.accounts.create({ type: 'standard' }),
+    form.addPaymentAccountId(stripeUserId),
     (error) => {
-      return new StripeAccountError(String(error))
+      const errMsg = 'Failed to update payment account id'
+      logger.error({
+        message: errMsg,
+        meta: {
+          action: 'linkStripeAccountToForm',
+          stripeUserId,
+          formId: form._id,
+        },
+        error,
+      })
+      return new DatabaseError(errMsg)
     },
-  )
-    .andThen(({ id }) =>
-      ResultAsync.fromPromise(form.addPaymentAccountId(id), (error) => {
-        const errMsg = 'Failed to update payment account id'
-        logger.error({
-          message: errMsg,
-          meta: {
-            action: 'linkStripeAccountToForm',
-            accountId: id,
-            formId: form._id,
-          },
-          error,
-        })
-        return new DatabaseError(errMsg)
-      }),
-    )
-    .map((updatedForm) => updatedForm.payments.target_account_id)
+  ).map((updatedForm) => updatedForm.payments.target_account_id)
 }
 
 export const unlinkStripeAccountFromForm = (form: IPopulatedForm) => {

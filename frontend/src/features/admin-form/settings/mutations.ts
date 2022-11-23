@@ -363,7 +363,7 @@ export const useMutateStripeAccount = () => {
 
   const queryClient = useQueryClient()
 
-  const createStripeAccountMutation = useMutation(() =>
+  const linkStripeAccountMutation = useMutation(() =>
     createStripeAccount(formId),
   )
 
@@ -377,7 +377,7 @@ export const useMutateStripeAccount = () => {
   )
 
   return {
-    createStripeAccountMutation,
+    linkStripeAccountMutation,
     unlinkStripeAccountMutation,
   }
 }

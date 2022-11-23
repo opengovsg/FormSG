@@ -139,7 +139,7 @@ export const deleteTwilioCredentials = async (formId: string) => {
 }
 
 export const createStripeAccount = async (formId: string) => {
-  return ApiService.post<{ accountUrl: string }>(
+  return ApiService.post<{ authUrl: string }>(
     `${ADMIN_FORM_ENDPOINT}/${formId}/stripe`,
   ).then(({ data }) => data)
 }

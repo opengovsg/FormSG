@@ -15,3 +15,7 @@ PaymentsRouter.get('/stripe')
 PaymentsRouter.route(
   '/receipt/:formId([a-fA-F0-9]{24})/:submissionId([a-fA-F0-9]{24})',
 ).get(StripeController.getPaymentReceipt)
+
+PaymentsRouter.route('/stripe/callback').get(
+  StripeController.handleConnectOauthCallback,
+)
