@@ -1,25 +1,21 @@
 import { useEffect, useMemo, useRef } from 'react'
 import { Box, Flex, Stack, Text, VisuallyHidden } from '@chakra-ui/react'
 
-import { FormColorTheme } from '~shared/types/form'
-
 import { FormPaymentPageProps } from '../FormPaymentPage'
 
 // Make sure to call `loadStripe` outside of a component’s render to avoid
 // recreating the `Stripe` object on every render.
 
-export interface CreatePaymentIntentFailureBlock extends FormPaymentPageProps {
+export interface CreatePaymentIntentFailureBlockProps
+  extends FormPaymentPageProps {
   focusOnMount?: boolean
 }
 
 export const CreatePaymentIntentFailureBlock = ({
   formTitle,
   submissionData,
-  colorTheme = FormColorTheme.Blue,
   focusOnMount,
-  formPayments,
-  paymentClientSecret,
-}: CreatePaymentIntentFailureBlock): JSX.Element => {
+}: CreatePaymentIntentFailureBlockProps): JSX.Element => {
   const focusRef = useRef<HTMLDivElement>(null)
   useEffect(() => {
     if (focusOnMount) {
@@ -32,7 +28,7 @@ export const CreatePaymentIntentFailureBlock = ({
       return `Error preparing payment for ${formTitle}. Please contact the form creator for assistance and provide them the Response ID: ${submissionData.id}.`
     }
     return `Error preparing payment. Please contact the form creator for assistance and provide them the Response ID: ${submissionData.id}.`
-  }, [formTitle])
+  }, [formTitle, submissionData.id])
 
   return (
     <Flex flexDir="column">

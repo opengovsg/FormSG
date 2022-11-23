@@ -1,11 +1,9 @@
-import { BiDownload } from 'react-icons/bi'
-import { Box, Container, Flex, Skeleton, Stack, Text } from '@chakra-ui/react'
-
-import Button from '~components/Button'
+import { Box, Container, Flex, Skeleton } from '@chakra-ui/react'
 
 import { usePublicFormContext } from '../../PublicFormContext'
 import { useGetPaymentReceipt } from '../../queries'
 
+import { DownloadReceiptBlock } from './components/DownloadReceiptBlock'
 import { PaymentSuccessSvgr } from './components/PaymentSuccessSvgr'
 
 type FormPaymentRedirectPageProps = {
@@ -31,32 +29,11 @@ export const FormPaymentRedirectPage = ({
             w="100%"
           >
             <Skeleton isLoaded={!isLoading}>
-              <Stack tabIndex={-1} spacing="1rem">
-                <Text textStyle="h2" textColor="secondary.500">
-                  {data?.receipt
-                    ? 'Your payment has been made successfully.'
-                    : 'There was an error with your payment'}
-                </Text>
-                <Text textStyle="subhead-1" textColor="secondary.500">
-                  {data?.receipt
-                    ? 'Your form has been submitted and payment has been made.'
-                    : 'Please resubmit the form or contact the agency which gave you this form link for further assistance.'}
-                </Text>
-              </Stack>
-              <Text textColor="secondary.300" mt="2rem">
-                Response ID: {stripeSubmissionId}
-              </Text>
               {data?.receipt ? (
-                <Button
-                  mt="2.25rem"
-                  leftIcon={<BiDownload fontSize="1.5rem" />}
-                  as="a"
-                  download
-                  href={data.receipt}
-                  target="_blank"
-                >
-                  Save payment receipt
-                </Button>
+                <DownloadReceiptBlock
+                  receiptUrl={data.receipt}
+                  stripeSubmissionId={stripeSubmissionId}
+                />
               ) : null}
             </Skeleton>
           </Box>
