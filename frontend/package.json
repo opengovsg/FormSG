@@ -92,8 +92,7 @@
   },
   "scripts": {
     "gen:theme-typings": "chakra-cli tokens src/theme/index.ts || true",
-    "clean:emotion-types": "rimraf node_modules/@emotion/core/types",
-    "postinstall": "patch-package && npm run gen:theme-typings && npm run clean:emotion-types && npm --prefix ../shared install",
+    "postinstall": "patch-package && npm run gen:theme-typings && npm --prefix ../shared install",
     "start": "env-cmd -f .buildtime-env craco start",
     "build": "cross-env CI=false BUILD_PATH='../dist/frontend' INLINE_RUNTIME_CHUNK=false SKIP_PREFLIGHT_CHECK=true craco build",
     "test": "cross-env SKIP_PREFLIGHT_CHECK=true craco test --silent",
@@ -147,7 +146,6 @@
     "@types/react-csv": "^1.1.2",
     "@types/react-dom": "^17.0.11",
     "@types/react-input-mask": "^3.0.1",
-    "@types/react-router-dom": "^5.3.2",
     "@types/react-table": "^7.7.9",
     "@types/spark-md5": "^3.0.2",
     "@types/storybook-react-router": "^1.0.2",
