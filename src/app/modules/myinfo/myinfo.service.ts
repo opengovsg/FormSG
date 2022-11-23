@@ -50,7 +50,7 @@ import {
 import {
   IMyInfoRedirectURLArgs,
   IMyInfoServiceConfig,
-  MyInfoParsedRelayState,
+  MyInfoRelayState,
 } from './myinfo.types'
 import {
   assertMyInfoCookieUnused,
@@ -221,7 +221,7 @@ export class MyInfoServiceClass {
    */
   parseMyInfoRelayState(
     relayState: string,
-  ): Result<MyInfoParsedRelayState, MyInfoParseRelayStateError> {
+  ): Result<MyInfoRelayState, MyInfoParseRelayStateError> {
     const safeJSONParse = Result.fromThrowable(
       () => JSON.parse(relayState) as unknown,
       (error) => {
@@ -243,9 +243,6 @@ export class MyInfoServiceClass {
           uuid: parsed.uuid,
           formId: parsed.formId,
           encodedQuery: parsed.encodedQuery,
-          // Cookie duration is currently not derived from the relay state
-          // but may be in future, e.g. if rememberMe is implemented
-          cookieDuration: this.#spCookieMaxAge,
         })
       }
       logger.error({

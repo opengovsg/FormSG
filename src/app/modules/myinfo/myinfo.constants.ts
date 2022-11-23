@@ -16,6 +16,19 @@ export const MYINFO_ROUTER_PREFIX = '/myinfo'
 export const MYINFO_REDIRECT_PATH = '/login'
 
 /**
+ * Name of cookie which passes the OAuth authorisation code
+ * from the /myinfo/login endpoint to the public form endpoint.
+ */
+export const MYINFO_AUTH_CODE_COOKIE_NAME = 'MyInfoAuthCode'
+
+/**
+ * Lifetime in ms of cookie containing auth code, which is used
+ * to pass the auth code from the /myinfo/login endpoint to the
+ * public form endpoint.
+ */
+export const MYINFO_AUTH_CODE_COOKIE_AGE_MS = 3 * 60 * 1000
+
+/**
  * Name of cookie which contains state of MyInfo login, and access
  * token if login was successful.
  */
@@ -29,6 +42,16 @@ export const MYINFO_COOKIE_OPTIONS = {
   httpOnly: true,
   sameSite: 'lax' as const, // Setting to 'strict' prevents Singpass login on Safari, Firefox
   secure: !config.isDev,
+}
+
+/**
+ * Settings for the MyInfo auth code cookie
+ */
+export const MYINFO_AUTH_CODE_COOKIE_OPTIONS = {
+  // Important for security - access token cannot be read by client-side JS
+  httpOnly: true,
+  secure: !config.isDev,
+  maxAge: MYINFO_AUTH_CODE_COOKIE_AGE_MS,
 }
 
 /**
