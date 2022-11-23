@@ -4,7 +4,7 @@ import { Skeleton } from '@chakra-ui/react'
 import Button from '~components/Button'
 
 import { useMutateStripeAccount } from '../../mutations'
-import { useAdminFormPayments, useAdminFormSettings } from '../../queries'
+import { useAdminFormPayments } from '../../queries'
 
 export const StripeConnectButton = (): JSX.Element => {
   const { data: account, isLoading, hasOnboarded } = useAdminFormPayments()
