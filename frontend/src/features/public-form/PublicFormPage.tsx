@@ -6,6 +6,7 @@ import { fillMinHeightCss } from '~utils/fillHeightCss'
 
 import { FormBanner } from './components/FormBanner'
 import FormEndPage from './components/FormEndPage'
+import { FormPaymentPage } from './components/FormEndPage/FormPaymentPage'
 import FormFields from './components/FormFields'
 import { FormSectionsProvider } from './components/FormFields/FormSectionsContext'
 import { FormFooter } from './components/FormFooter'
@@ -14,7 +15,11 @@ import { PublicFormLogo } from './components/FormLogo'
 import { FormPaymentRedirectPage } from './components/FormPaymentRedirectPage/FormPaymentRedirectPage'
 import FormStartPage from './components/FormStartPage'
 import { PublicFormWrapper } from './components/PublicFormWrapper'
-import { STRIPE_SUBMISSION_ID_KEY } from './constants'
+import {
+  RETRY_PAYMENT_KEY,
+  STRIPE_PAYMENT_SECRET_KEY,
+  STRIPE_SUBMISSION_ID_KEY,
+} from './constants'
 import { PublicFormProvider } from './PublicFormProvider'
 
 export const PublicFormPage = (): JSX.Element => {
@@ -23,10 +28,13 @@ export const PublicFormPage = (): JSX.Element => {
   if (!formId) throw new Error('No formId provided')
 
   const [searchParams] = useSearchParams()
-  const stripeSubmissionId = useMemo(
-    () => searchParams.get(STRIPE_SUBMISSION_ID_KEY),
-    [searchParams],
-  )
+  const { stripeSubmissionId, retryPayment, clientSecret } = useMemo(() => {
+    return {
+      stripeSubmissionId: searchParams.get(STRIPE_SUBMISSION_ID_KEY),
+      retryPayment: searchParams.get(RETRY_PAYMENT_KEY) === 'true',
+      clientSecret: searchParams.get(STRIPE_PAYMENT_SECRET_KEY),
+    }
+  }, [searchParams])
 
   return (
     <PublicFormProvider formId={formId}>
@@ -36,7 +44,13 @@ export const PublicFormPage = (): JSX.Element => {
           <PublicFormLogo />
           <FormStartPage />
           <PublicFormWrapper>
-            {stripeSubmissionId ? (
+            {retryPayment && stripeSubmissionId && clientSecret ? (
+              <FormPaymentPage
+                isRetry={true}
+                submissionId={stripeSubmissionId}
+                paymentClientSecret={clientSecret}
+              />
+            ) : stripeSubmissionId ? (
               <FormPaymentRedirectPage
                 stripeSubmissionId={stripeSubmissionId}
               />

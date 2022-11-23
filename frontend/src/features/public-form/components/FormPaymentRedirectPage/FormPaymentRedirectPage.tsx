@@ -1,3 +1,5 @@
+import { useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Box, Container, Flex, Skeleton } from '@chakra-ui/react'
 
 import { usePublicFormContext } from '../../PublicFormContext'
@@ -16,6 +18,17 @@ export const FormPaymentRedirectPage = ({
   const { formId } = usePublicFormContext()
 
   const { data, isLoading } = useGetPaymentReceipt(formId, stripeSubmissionId)
+
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    if (!isLoading && !data?.receipt) {
+      const currentUrl = new URL(window.location.href)
+      currentUrl.searchParams.set('retryPayment', 'true')
+      const urlPathAndSearch = currentUrl.pathname + currentUrl.search
+      navigate(urlPathAndSearch)
+    }
+  }, [data, isLoading, navigate])
 
   return (
     <Box py={{ base: '1.5rem', md: '2.5rem' }} w="100%">

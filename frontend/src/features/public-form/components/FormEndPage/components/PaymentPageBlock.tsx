@@ -23,6 +23,7 @@ import { useEnv } from '~features/env/queries'
 
 import FormErrorMessage from '../../../../../components/FormControl/FormErrorMessage'
 import { STRIPE_SUBMISSION_ID_KEY } from '../../../constants'
+import { usePublicFormContext } from '../../../PublicFormContext'
 import { FormPaymentPageProps } from '../FormPaymentPage'
 
 // Make sure to call `loadStripe` outside of a component’s render to avoid
@@ -32,20 +33,29 @@ export interface PaymentPageBlockProps extends FormPaymentPageProps {
   focusOnMount?: boolean
 }
 
-type StripeCheckoutFormProps = {
+type StripeCheckoutFormProps = Pick<
+  PaymentPageBlockProps,
+  'submissionId' | 'isRetry'
+> & {
   colorTheme: FormColorTheme
-  submissionId: string
 }
 
 const StripeCheckoutForm = ({
   colorTheme,
   submissionId,
+  isRetry,
 }: StripeCheckoutFormProps) => {
   const stripe = useStripe()
   const elements = useElements()
 
   const [stripeMessage, setStripeMessage] = useState('')
   const [isStripeProcessing, setIsStripeProcessing] = useState(false)
+
+  useEffect(() => {
+    if (isRetry) {
+      setStripeMessage('Your payment attempt failed.')
+    }
+  }, [isRetry])
 
   // Upon complete payment, redirect to <formId>?stripeSubmissionId=<submissionId>
   const return_url = `${
@@ -74,7 +84,6 @@ const StripeCheckoutForm = ({
 
     if (result.error && result.error.message) {
       // Show error to your customer (for example, payment details incomplete)
-      console.log(result.error.message)
       setStripeMessage(result.error.message)
     } else {
       setStripeMessage('')
@@ -112,14 +121,17 @@ const StripeCheckoutForm = ({
 }
 
 export const PaymentPageBlock = ({
-  formTitle,
-  submissionData,
-  colorTheme = FormColorTheme.Blue,
-  focusOnMount,
-  formPayments,
+  submissionId,
   paymentClientSecret,
+  focusOnMount,
+  isRetry,
 }: PaymentPageBlockProps): JSX.Element => {
-  const amountCents = formPayments?.amount_cents || 0
+  const { form } = usePublicFormContext()
+
+  const formTitle = form?.title
+  const colorTheme = form?.startPage.colorTheme || FormColorTheme.Blue
+
+  const amountCents = form?.payments?.amount_cents || 0
 
   const stripePublishableKey = useEnv().data?.stripePublishableKey || ''
 
@@ -173,12 +185,13 @@ export const PaymentPageBlock = ({
           >
             <StripeCheckoutForm
               colorTheme={colorTheme}
-              submissionId={submissionData.id || ''}
+              submissionId={submissionId}
+              isRetry={isRetry}
             />
           </Elements>
         )}
 
-        <Text textColor="secondary.300">Response ID: {submissionData.id}</Text>
+        <Text textColor="secondary.300">Response ID: {submissionId}</Text>
       </Stack>
     </Flex>
   )

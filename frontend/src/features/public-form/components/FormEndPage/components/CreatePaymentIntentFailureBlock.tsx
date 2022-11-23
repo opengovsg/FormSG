@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef } from 'react'
 import { Box, Flex, Stack, Text, VisuallyHidden } from '@chakra-ui/react'
 
+import { usePublicFormContext } from '../../../PublicFormContext'
 import { FormPaymentPageProps } from '../FormPaymentPage'
 
 // Make sure to call `loadStripe` outside of a component’s render to avoid
@@ -12,10 +13,11 @@ export interface CreatePaymentIntentFailureBlockProps
 }
 
 export const CreatePaymentIntentFailureBlock = ({
-  formTitle,
-  submissionData,
+  submissionId,
   focusOnMount,
 }: CreatePaymentIntentFailureBlockProps): JSX.Element => {
+  const { form } = usePublicFormContext()
+  const formTitle = form?.title
   const focusRef = useRef<HTMLDivElement>(null)
   useEffect(() => {
     if (focusOnMount) {
@@ -28,7 +30,7 @@ export const CreatePaymentIntentFailureBlock = ({
       return `Error preparing payment for ${formTitle}. Please contact the form creator for assistance and provide them the Response ID: ${submissionData.id}.`
     }
     return `Error preparing payment. Please contact the form creator for assistance and provide them the Response ID: ${submissionData.id}.`
-  }, [formTitle, submissionData.id])
+  }, [formTitle])
 
   return (
     <Flex flexDir="column">
@@ -49,7 +51,7 @@ export const CreatePaymentIntentFailureBlock = ({
           No payment has been made for this form.
         </Text>
 
-        <Text textColor="secondary.300">Response ID: {submissionData.id}</Text>
+        <Text textColor="secondary.300">Response ID: {submissionId}</Text>
       </Stack>
     </Flex>
   )

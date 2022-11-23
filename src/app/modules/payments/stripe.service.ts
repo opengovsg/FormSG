@@ -99,7 +99,8 @@ export const getReceiptURL = (
     )
     .andThen((charge) => {
       // Step 6: Retrieve receipt url
-      if (!charge) {
+      // Note that for paynow expired payments in test mode, stripe returns receipt_url with 'null' string
+      if (!charge || !charge.receipt_url || charge.receipt_url === 'null') {
         return errAsync(new ChargeReceiptNotFoundError())
       }
       logger.info({

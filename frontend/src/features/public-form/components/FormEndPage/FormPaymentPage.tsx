@@ -1,19 +1,12 @@
-import { Box, Container, Flex, Stack, StackDivider } from '@chakra-ui/react'
-
-import { FormColorTheme, FormDto, FormPayments } from '~shared/types/form'
-
-import { SubmissionData } from '~features/public-form/PublicFormContext'
+import { Container, Flex, Stack, StackDivider } from '@chakra-ui/react'
 
 import { CreatePaymentIntentFailureBlock } from './components/CreatePaymentIntentFailureBlock'
 import { PaymentPageBlock } from './components/PaymentPageBlock'
 
 export interface FormPaymentPageProps {
-  formTitle: FormDto['title']
-  endPage: FormDto['endPage']
-  submissionData: SubmissionData
-  colorTheme: FormColorTheme
-  formPayments?: FormPayments
-  paymentClientSecret?: string
+  submissionId: string
+  paymentClientSecret: string
+  isRetry?: boolean
 }
 
 export const FormPaymentPage = (props: FormPaymentPageProps): JSX.Element => {

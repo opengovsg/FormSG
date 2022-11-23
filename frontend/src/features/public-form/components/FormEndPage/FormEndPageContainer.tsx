@@ -66,12 +66,8 @@ export const FormEndPageContainer = ({
     <Box py={{ base: '1.5rem', md: '2.5rem' }} w="100%">
       {form?.payments?.enabled ? (
         <FormPaymentPage
-          colorTheme={form.startPage.colorTheme}
-          submissionData={submissionData}
-          formTitle={form.title}
-          endPage={form.endPage}
-          formPayments={form.payments}
-          paymentClientSecret={submissionData.paymentClientSecret}
+          submissionId={submissionData.id || ''}
+          paymentClientSecret={submissionData.paymentClientSecret || ''}
         />
       ) : (
         <FormEndPage
