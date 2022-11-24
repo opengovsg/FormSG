@@ -133,7 +133,7 @@ export const Searchbar = forwardRef<SearchbarProps, 'input'>(
 
     const onCollapseIconClick = () => {
       if (onCollapseIconClickProp) onCollapseIconClickProp()
-      setValue('')
+      setValue(undefined)
       setIsExpanded(false)
     }
 
@@ -143,13 +143,13 @@ export const Searchbar = forwardRef<SearchbarProps, 'input'>(
     }
 
     const handleClickSearch = useCallback(
-      () => (value !== undefined && onSearch ? onSearch(value) : null),
+      () => (onSearch && value !== undefined ? onSearch(value) : null),
       [onSearch, value],
     )
 
     const handleEnterKeySearch = useCallback(
       (e: KeyboardEvent<HTMLInputElement>) =>
-        e.key === 'Enter' && value !== undefined && onSearch
+        e.key === 'Enter' && onSearch && value !== undefined
           ? onSearch(value)
           : null,
       [onSearch, value],
@@ -193,24 +193,35 @@ export const Searchbar = forwardRef<SearchbarProps, 'input'>(
           )}
         </Flex>
         <Input
-          aria-label="Press enter to search"
+          aria-label={
+            onSearch ? 'Press enter to search' : 'Type something to search'
+          }
           ref={inputRef}
           sx={{
             ...styles.field,
             paddingInlineStart: 'none',
+            paddingInlineEnd: isExpandable && !filterValue ? 'none' : undefined,
             border: 'none',
             _focus: undefined,
           }}
-          onKeyDown={handleEnterKeySearch}
           value={value}
-          onChange={(e) => onChange(e.target.value)}
+          flex={1}
+          minWidth={0}
           isDisabled={isDisabled}
+          onKeyDown={handleEnterKeySearch}
+          onChange={(e) => onChange(e.target.value)}
           onBlur={() => setFocus(false)}
           onFocus={() => setFocus(true)}
         />
         {filterValue && (
-          <Stack height="1.25rem" alignItems="center" direction="row">
-            <Divider orientation="vertical" />
+          <Flex
+            height="1.25rem"
+            alignItems="center"
+            justifyContent="flex-end"
+            direction="row"
+            pr={isExpandable ? undefined : '0.5rem'}
+          >
+            <Divider orientation="vertical" mr="0.5rem" />
             <Menu placement="bottom-end">
               {({ isOpen }) => (
                 <>
@@ -222,6 +233,7 @@ export const Searchbar = forwardRef<SearchbarProps, 'input'>(
                     isActive={isOpen}
                     aria-label="Filter forms"
                     leftIcon={<BiFilter />}
+                    px="9px"
                   >
                     {filter === filterValue ? 'Filter' : filter}
                   </MenuButton>
@@ -243,7 +255,7 @@ export const Searchbar = forwardRef<SearchbarProps, 'input'>(
                 </>
               )}
             </Menu>
-          </Stack>
+          </Flex>
         )}
         {isExpandable && (
           <Flex px="0.75rem">
