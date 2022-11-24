@@ -42,7 +42,7 @@ import {
   MyInfoFetchError,
   MyInfoHashDidNotMatchError,
   MyInfoHashingError,
-  MyInfoInvalidAccessTokenError,
+  MyInfoInvalidLoginCookieError,
   MyInfoMissingHashError,
   MyInfoMissingLoginCookieError,
   MyInfoParseRelayStateError,
@@ -466,7 +466,7 @@ export class MyInfoServiceClass {
    */
   extractUinFin(
     loginJwt: string,
-  ): Result<string, MyInfoInvalidAccessTokenError> {
+  ): Result<string, MyInfoInvalidLoginCookieError> {
     return Result.fromThrowable(
       () => jwt.verify(loginJwt, spcpMyInfoConfig.myInfoJwtSecret),
       (error) => {
@@ -477,13 +477,13 @@ export class MyInfoServiceClass {
           },
           error,
         })
-        return new MyInfoInvalidAccessTokenError()
+        return new MyInfoInvalidLoginCookieError()
       },
     )().andThen((decoded) => {
       if (isMyInfoLoginCookie(decoded)) {
         return ok(decoded.uinFin)
       }
-      return err(new MyInfoInvalidAccessTokenError())
+      return err(new MyInfoInvalidLoginCookieError())
     })
   }
 
@@ -532,7 +532,7 @@ export class MyInfoServiceClass {
     cookies: Record<string, unknown>,
   ): Result<
     string,
-    MyInfoInvalidAccessTokenError | MyInfoMissingLoginCookieError
+    MyInfoInvalidLoginCookieError | MyInfoMissingLoginCookieError
   > {
     // Look for new cookie first
     const newCookieResult = extractMyInfoLoginJwt(cookies).andThen(
@@ -562,7 +562,7 @@ export class MyInfoServiceClass {
             },
             error,
           })
-          return new MyInfoInvalidAccessTokenError()
+          return new MyInfoInvalidLoginCookieError()
         },
       )(),
     )

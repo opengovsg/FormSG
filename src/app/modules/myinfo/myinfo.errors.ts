@@ -77,8 +77,8 @@ export class MyInfoMissingLoginCookieError extends ApplicationError {
 /**
  * Access token on submission for MyInfo form is invalid.
  */
-export class MyInfoInvalidAccessTokenError extends ApplicationError {
-  constructor(message = 'Access token could not be verified') {
+export class MyInfoInvalidLoginCookieError extends ApplicationError {
+  constructor(message = 'Login cookie could not be verified') {
     super(message)
   }
 }

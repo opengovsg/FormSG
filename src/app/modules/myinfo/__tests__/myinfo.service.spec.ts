@@ -26,7 +26,7 @@ import { MYINFO_CONSENT_PAGE_PURPOSE } from '../myinfo.constants'
 import {
   MyInfoCircuitBreakerError,
   MyInfoFetchError,
-  MyInfoInvalidAccessTokenError,
+  MyInfoInvalidLoginCookieError,
   MyInfoMissingAccessTokenError,
   MyInfoParseRelayStateError,
 } from '../myinfo.errors'
@@ -378,7 +378,7 @@ describe('MyInfoServiceClass', () => {
 
       expect(mockExtractUinFin).toHaveBeenCalledWith(MOCK_ACCESS_TOKEN)
       expect(result._unsafeUnwrapErr()).toEqual(
-        new MyInfoInvalidAccessTokenError(),
+        new MyInfoInvalidLoginCookieError(),
       )
     })
   })

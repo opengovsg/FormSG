@@ -47,7 +47,7 @@ import {
   MyInfoCookieStateError,
   MyInfoHashDidNotMatchError,
   MyInfoHashingError,
-  MyInfoInvalidAccessTokenError,
+  MyInfoInvalidLoginCookieError,
   MyInfoMissingHashError,
   MyInfoMissingLoginCookieError,
 } from '../../myinfo/myinfo.errors'
@@ -433,7 +433,7 @@ export const mapRouteError: MapRouteError = (error) => {
     case InvalidJwtError:
     case MyInfoMissingLoginCookieError:
     case MyInfoCookieStateError:
-    case MyInfoInvalidAccessTokenError:
+    case MyInfoInvalidLoginCookieError:
       return {
         statusCode: StatusCodes.UNAUTHORIZED,
         errorMessage:
