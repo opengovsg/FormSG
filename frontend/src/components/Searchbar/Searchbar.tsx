@@ -242,7 +242,9 @@ export const Searchbar = forwardRef<SearchbarProps, 'input'>(
               onClick={handleClickSearch}
             />
           ) : (
-            <Icon as={BiSearch} px="0.75rem" fontSize="1.25rem" />
+            <Flex>
+              <BiSearch fontSize="1.25rem" />
+            </Flex>
           )}
         </Flex>
         <Input
@@ -291,9 +293,9 @@ export const Searchbar = forwardRef<SearchbarProps, 'input'>(
                     as={Circle}
                     bg="primary.500"
                     fontSize="0.4rem"
-                    ml="-0.6rem"
-                    mr="0.2rem"
-                    mt="-0.5rem"
+                    ml="-0.5rem"
+                    mr="0.1rem"
+                    mb="0.6rem"
                     zIndex={0}
                   />
                 )}

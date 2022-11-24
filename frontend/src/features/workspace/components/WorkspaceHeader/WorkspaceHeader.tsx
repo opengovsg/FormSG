@@ -1,16 +1,15 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { BiCheck, BiFilter, BiPlus } from 'react-icons/bi'
 import {
-  Avatar,
   Box,
   ButtonGroup,
+  Circle,
   Drawer,
   DrawerBody,
   DrawerContent,
   DrawerOverlay,
   Grid,
   Icon,
-  MenuButton,
   Skeleton,
   Stack,
   Text,
@@ -20,7 +19,7 @@ import {
 import { useIsMobile } from '~hooks/useIsMobile'
 import Button, { ButtonProps } from '~components/Button'
 import IconButton from '~components/IconButton'
-import Menu from '~components/Menu'
+import Searchbar from '~components/Searchbar'
 
 import { FilterOption } from '~features/workspace/types'
 import { useWorkspaceContext } from '~features/workspace/WorkspaceContext'
@@ -40,9 +39,13 @@ export const WorkspaceHeader = ({
     isLoading,
     totalFormsCount,
     displayedFormsCount,
+    defaultFilterOption,
     activeFilter,
     setActiveFilter,
+    setSearchTerm,
   } = useWorkspaceContext()
+
+  const [searchExpanded, setSearchExpanded] = useState<boolean>(false)
   const { isOpen, onClose, onOpen } = useDisclosure()
 
   const mobileDrawerExtraButtonProps: Partial<ButtonProps> = useMemo(
@@ -54,6 +57,14 @@ export const WorkspaceHeader = ({
       textStyle: 'body-1',
     }),
     [],
+  )
+
+  const handleFilter = useCallback(
+    (opt: string) =>
+      setActiveFilter(
+        opt === defaultFilterOption ? null : (opt as FilterOption),
+      ),
+    [defaultFilterOption, setActiveFilter],
   )
 
   const handleSetActiveFilterFromDrawer = useCallback(
@@ -73,12 +84,12 @@ export const WorkspaceHeader = ({
           alignItems="center"
           w="100%"
         >
-          <Text>{filterOption ?? 'All forms'}</Text>
+          <Text>{filterOption ?? defaultFilterOption}</Text>
           {activeFilter === filterOption ? <BiCheck /> : null}
         </Stack>
       )
     },
-    [activeFilter],
+    [activeFilter, defaultFilterOption],
   )
 
   const headerStyle = useMemo(
@@ -89,10 +100,19 @@ export const WorkspaceHeader = ({
   return (
     <Grid
       gridTemplateAreas={{
-        base: "'header filter' 'create create'",
-        md: "'header filter create'",
+        base: searchExpanded
+          ? "'header filter' 'search search' 'create create'"
+          : "'header search filter' 'create create create'",
+        md: searchExpanded
+          ? "'header filter create' 'search search search'"
+          : "'header search filter create'",
+        lg: "'header searchfilter create'",
       }}
-      gridTemplateColumns={{ base: '1fr auto', md: '1fr auto auto' }}
+      gridTemplateColumns={{
+        base: searchExpanded ? '1fr auto' : '1fr auto auto',
+        md: searchExpanded ? '1fr auto auto' : '1fr auto auto auto',
+        lg: '1fr auto auto',
+      }}
       gap="1rem"
     >
       <Text
@@ -116,58 +136,52 @@ export const WorkspaceHeader = ({
         <Skeleton isLoaded={!isLoading}>{totalFormsCount ?? '---'}</Skeleton>
         {activeFilter ? <>&nbsp;forms</> : ')'}
       </Text>
-      <Box gridArea="filter">
-        {isMobile ? (
-          <>
-            <IconButton
-              aria-label="Filter forms"
-              variant="clear"
-              colorScheme="secondary"
-              backgroundColor={activeFilter ? 'neutral.200' : undefined}
-              onClick={onOpen}
-              icon={<BiFilter />}
-            />
-            {activeFilter && (
-              <Icon
-                as={Avatar}
-                size="md"
-                bg="primary.500"
-                name="1"
-                textColor="white"
-                fontSize="1.2rem"
-                m="-0.6rem"
-              />
-            )}
-          </>
-        ) : (
-          <Menu placement="bottom-end">
-            {({ isOpen }) => (
-              <>
-                <MenuButton
-                  as={Button}
-                  variant="clear"
-                  colorScheme="secondary"
-                  isActive={isOpen}
-                  aria-label="Filter forms"
-                  leftIcon={<BiFilter />}
-                >
-                  Filter
-                  {activeFilter ? `: ${activeFilter}` : ''}
-                </MenuButton>
-                <Menu.List>
-                  <Menu.Item onClick={() => setActiveFilter(null)}>
-                    {renderFilterButton(null)}
-                  </Menu.Item>
-                  {Object.values(FilterOption).map((filterOption) => (
-                    <Menu.Item onClick={() => setActiveFilter(filterOption)}>
-                      {renderFilterButton(filterOption)}
-                    </Menu.Item>
-                  ))}
-                </Menu.List>
-              </>
-            )}
-          </Menu>
+
+      {/* 'search' and 'filter' only used in mobile & tablet mode. */}
+      <Box gridArea="search" display={{ lg: 'none' }}>
+        <Searchbar
+          onExpandIconClick={() => setSearchExpanded(true)}
+          onCollapseIconClick={() => setSearchExpanded(false)}
+          onChange={setSearchTerm}
+          placeholder="Search by title"
+        />
+      </Box>
+
+      <Box gridArea="filter" display={{ lg: 'none' }}>
+        <IconButton
+          aria-label="Filter forms"
+          variant="clear"
+          colorScheme="secondary"
+          backgroundColor={activeFilter ? 'neutral.200' : undefined}
+          onClick={onOpen}
+          icon={<BiFilter />}
+        />
+        {activeFilter && (
+          <Icon
+            as={Circle}
+            bg="primary.500"
+            fontSize="0.4rem"
+            ml="-1rem"
+            mr="0.6em"
+            mb="0.4rem"
+            position="relative"
+            zIndex={0}
+          />
         )}
+      </Box>
+
+      {/* Combination box used in desktop mode. */}
+      <Box gridArea="searchfilter" display={{ base: 'none', lg: 'flex' }}>
+        <Searchbar
+          onExpandIconClick={() => setSearchExpanded(true)}
+          onCollapseIconClick={() => setSearchExpanded(false)}
+          onChange={setSearchTerm}
+          placeholder="Search by title"
+          isExpandable={false}
+          filterValue={defaultFilterOption}
+          filterOptions={Object.values(FilterOption)}
+          onFilter={handleFilter}
+        />
       </Box>
 
       <Button

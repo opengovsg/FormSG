@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import fuzzysort from 'fuzzysort'
 
 import { FormStatus } from '~shared/types'
 
@@ -21,28 +22,46 @@ export const WorkspaceProvider = ({
   )
 
   const [activeFilter, setActiveFilter] = useState<FilterOption | null>(null)
+  const [searchTerm, setSearchTerm] = useState<string>('')
 
   const displayedForms = useMemo(() => {
     if (!dashboardForms) return []
-    if (!activeFilter) return dashboardForms
+
+    let displayedForms = dashboardForms
+
+    // Filter first
     switch (activeFilter) {
       case FilterOption.OpenForms:
-        return dashboardForms.filter(
+        displayedForms = displayedForms.filter(
           (form) => form.status === FormStatus.Public,
         )
+        break
       case FilterOption.ClosedForms:
-        return dashboardForms.filter(
+        displayedForms = displayedForms.filter(
           (form) => form.status === FormStatus.Private,
         )
+        break
       default:
-        return dashboardForms
+        break
     }
-  }, [dashboardForms, activeFilter])
+
+    // Then fuzzy search
+    displayedForms = fuzzysort
+      .go(searchTerm, displayedForms, {
+        all: true,
+        key: 'title',
+      })
+      .map((res) => res.obj)
+
+    return displayedForms
+  }, [dashboardForms, activeFilter, searchTerm])
 
   const displayedFormsCount = useMemo(
     () => displayedForms.length,
     [displayedForms.length],
   )
+
+  const defaultFilterOption = useMemo(() => 'All forms', [])
 
   return (
     <WorkspaceContext.Provider
@@ -51,8 +70,11 @@ export const WorkspaceProvider = ({
         totalFormsCount,
         displayedForms,
         displayedFormsCount,
+        defaultFilterOption,
         activeFilter,
         setActiveFilter,
+        searchTerm,
+        setSearchTerm,
       }}
     >
       {children}
