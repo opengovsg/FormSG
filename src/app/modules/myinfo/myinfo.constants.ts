@@ -1,4 +1,5 @@
 import config from '../../config/config'
+import { spcpMyInfoConfig } from '../../config/features/spcp-myinfo.config'
 
 /**
  * Top-level router prefix to be used for MyInfo routes.
@@ -42,6 +43,7 @@ export const MYINFO_LOGIN_COOKIE_OPTIONS = {
   httpOnly: true,
   sameSite: 'lax' as const, // Setting to 'strict' prevents Singpass login on Safari, Firefox
   secure: !config.isDev,
+  maxAge: spcpMyInfoConfig.spCookieMaxAge,
 }
 
 /**
