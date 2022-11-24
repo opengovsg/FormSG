@@ -19,7 +19,7 @@ services:
       - NODE_ENV=development
       - DB_HOST=mongodb://database:27017/formsg
       - APP_NAME=FormSG
-      - APP_URL=http://localhost:5000
+      - APP_URL=http://localhost:5001
       - ATTACHMENT_S3_BUCKET=local-attachment-bucket
       - IMAGE_S3_BUCKET=local-image-bucket
       - LOGO_S3_BUCKET=local-logo-bucket
@@ -67,7 +67,7 @@ services:
       - SINGPASS_IDP_LOGIN_URL=http://localhost:5156/singpass/logininitial
       - SINGPASS_IDP_ENDPOINT=http://localhost:5156/singpass/soap
       - SINGPASS_ESRVC_ID=spEsrvcId
-      - SINGPASS_PARTNER_ENTITY_ID=https://localhost:5000/singpass
+      - SINGPASS_PARTNER_ENTITY_ID=https://localhost:5001/singpass
       - SINGPASS_IDP_ID=https://saml-internet.singpass.gov.sg/FIM/sps/SingpassIDPFed/saml20
       - SP_OIDC_NDI_DISCOVERY_ENDPOINT=https://stg-id.singpass.gov.sg/.well-known/openid-configuration
       - SP_OIDC_NDI_JWKS_ENDPOINT=https://stg-id.singpass.gov.sg/.well-known/keys
@@ -86,7 +86,7 @@ services:
       - CP_IDP_CERT_PATH=./node_modules/@opengovsg/mockpass/static/certs/spcp.crt
       - CORPPASS_IDP_LOGIN_URL=http://localhost:5156/corppass/logininitial
       - CORPPASS_IDP_ENDPOINT=http://localhost:5156/corppass/soap
-      - CORPPASS_PARTNER_ENTITY_ID=https://localhost:5000/corppass
+      - CORPPASS_PARTNER_ENTITY_ID=https://localhost:5001/corppass
       - CORPPASS_ESRVC_ID=cpEsrvcId
       - CORPPASS_IDP_ID=https://saml.corppass.gov.sg/FIM/sps/CorpIDPFed/saml20
       - IS_SP_MAINTENANCE
@@ -100,7 +100,7 @@ services:
       - SGID_ENDPOINT=http://localhost:5156/sgid/v1/oauth
       - SGID_CLIENT_ID=sgidclientid
       - SGID_CLIENT_SECRET=sgidclientsecret
-      - SGID_REDIRECT_URI=http://localhost:5000/sgid/login
+      - SGID_REDIRECT_URI=http://localhost:5001/sgid/login
       - SGID_PRIVATE_KEY=./node_modules/@opengovsg/mockpass/static/certs/key.pem
       - SGID_PUBLIC_KEY=./node_modules/@opengovsg/mockpass/static/certs/server.crt
       - SES_PASS
@@ -121,8 +121,8 @@ services:
     depends_on:
       - backend
     environment:
-      - CORPPASS_ASSERT_ENDPOINT=http://localhost:5000/corppass/login
-      - SINGPASS_ASSERT_ENDPOINT=http://localhost:5000/singpass/login
+      - CORPPASS_ASSERT_ENDPOINT=http://localhost:5001/corppass/login
+      - SINGPASS_ASSERT_ENDPOINT=http://localhost:5001/singpass/login
       - MOCKPASS_NRIC=S6005038D
       - MOCKPASS_UEN=123456789A
       - SHOW_LOGIN_PAGE=true
