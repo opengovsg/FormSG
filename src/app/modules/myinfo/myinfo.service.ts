@@ -548,8 +548,10 @@ export class MyInfoServiceClass {
       return newCookieResult
     }
 
-    // Look for old cookie first
-    return extractAndAssertOldMyInfoCookieValidity(cookies).andThen((payload) =>
+    // If new cookie not present, look for old cookie
+    const oldCookieResult = extractAndAssertOldMyInfoCookieValidity(
+      cookies,
+    ).andThen((payload) =>
       Result.fromThrowable(
         () => this.#myInfoGovClient.extractUinFin(payload.accessToken),
         (error) => {
@@ -562,16 +564,22 @@ export class MyInfoServiceClass {
           })
           return new MyInfoInvalidAccessTokenError()
         },
-      )().andThen((uinFin) => {
-        logger.info({
-          message: 'Decrypted old MyInfo cookie successfully',
-          meta: {
-            action: 'extractUinFromOldAndNewLoginCookie',
-          },
-        })
-        return ok(uinFin)
-      }),
+      )(),
     )
+
+    if (oldCookieResult.isOk()) {
+      logger.info({
+        message: 'Decrypted old MyInfo cookie successfully',
+        meta: {
+          action: 'extractUinFromOldAndNewLoginCookie',
+        },
+      })
+      return oldCookieResult
+    }
+
+    // If both cookies are not present, return new cookie result so error
+    // logging reflects absence of new cookie
+    return newCookieResult
   }
 }
 
