@@ -1,8 +1,13 @@
-import { KeyboardEvent, useCallback, useRef, useState } from 'react'
+import { KeyboardEvent, useCallback, useMemo, useRef, useState } from 'react'
 import { BiCheck, BiFilter, BiSearch, BiX } from 'react-icons/bi'
 import {
-  Button,
+  Avatar,
+  ButtonGroup,
   Divider,
+  Drawer,
+  DrawerBody,
+  DrawerContent,
+  DrawerOverlay,
   Flex,
   forwardRef,
   Icon,
@@ -10,12 +15,15 @@ import {
   MenuButton,
   Stack,
   Text,
+  useDisclosure,
   useMergeRefs,
   useMultiStyleConfig,
 } from '@chakra-ui/react'
 
 import { SEARCHBAR_THEME_KEY } from '~/theme/components/Searchbar'
 
+import { useIsMobile } from '~hooks/useIsMobile'
+import Button, { ButtonProps } from '~components/Button'
 import Input from '~components/Input'
 import Menu from '~components/Menu'
 
@@ -33,7 +41,8 @@ export interface SearchbarProps extends Omit<InputProps, 'onChange'> {
   /**
    * Whether the searchbar is expandable and collapsable.
    * If this is `false`, the searchbar will be permanently expanded,
-   * regardless of the value passed for isExpanded.
+   * regardless of the value passed for isExpanded. Note that any search input
+   * and filters will be cleared when the searchbar is collapsed.
    * @defaultValue `true`
    */
   isExpandable?: boolean
@@ -54,8 +63,7 @@ export interface SearchbarProps extends Omit<InputProps, 'onChange'> {
 
   /**
    * Optional. Function to be invoked when the 'collapse' X icon is clicked.
-   * Ignored if `isExpandable` is set to `false`. Note that this clears any
-   * value from the searchbar input but *does not* call `onValueChange`.
+   * Ignored if `isExpandable` is set to `false`.
    */
   onCollapseIconClick?: () => void
 
@@ -110,6 +118,7 @@ export const Searchbar = forwardRef<SearchbarProps, 'input'>(
     }: SearchbarProps,
     ref,
   ) => {
+    const isMobile = useIsMobile()
     const [value, setValue] = useState<string | undefined>(valueProp)
     const [isExpanded, setIsExpanded] = useState(
       !isExpandable || isExpandedProp,
@@ -117,11 +126,46 @@ export const Searchbar = forwardRef<SearchbarProps, 'input'>(
     const [filter, setFilter] = useState<string>(filterValue)
     const [focus, setFocus] = useState<boolean>(false)
 
+    const { isOpen, onClose, onOpen } = useDisclosure()
+
     const styles = useMultiStyleConfig(SEARCHBAR_THEME_KEY, {
       isExpanded,
       isDisabled,
       ...props,
     })
+
+    const mobileDrawerExtraButtonProps: Partial<ButtonProps> = useMemo(
+      () => ({
+        isFullWidth: true,
+        justifyContent: 'flex-start',
+        variant: 'clear',
+        colorScheme: 'secondary',
+        textStyle: 'body-1',
+      }),
+      [],
+    )
+
+    const filterActive = useMemo(
+      () => filter !== filterValue,
+      [filter, filterValue],
+    )
+
+    const renderFilterButton = useCallback(
+      (option: string): JSX.Element => {
+        return (
+          <Stack
+            direction="row"
+            justify="space-between"
+            alignItems="center"
+            w="100%"
+          >
+            <Text>{option}</Text>
+            {filter === option ? <BiCheck /> : null}
+          </Stack>
+        )
+      },
+      [filter],
+    )
 
     const innerRef = useRef<HTMLInputElement>(null)
     const inputRef = useMergeRefs(innerRef, ref)
@@ -134,6 +178,7 @@ export const Searchbar = forwardRef<SearchbarProps, 'input'>(
     const onCollapseIconClick = () => {
       if (onCollapseIconClickProp) onCollapseIconClickProp()
       setValue(undefined)
+      setFilter(filterValue)
       setIsExpanded(false)
     }
 
@@ -153,6 +198,14 @@ export const Searchbar = forwardRef<SearchbarProps, 'input'>(
           ? onSearch(value)
           : null,
       [onSearch, value],
+    )
+
+    const onFilterSelect = useCallback(
+      (option: string) => {
+        if (onFilter) onFilter(option)
+        setFilter(option)
+      },
+      [onFilter],
     )
 
     if (!isExpanded) {
@@ -222,39 +275,61 @@ export const Searchbar = forwardRef<SearchbarProps, 'input'>(
             pr={isExpandable ? undefined : '0.5rem'}
           >
             <Divider orientation="vertical" mr="0.5rem" />
-            <Menu placement="bottom-end">
-              {({ isOpen }) => (
-                <>
-                  <MenuButton
-                    as={Button}
-                    size="sm"
-                    variant="clear"
-                    colorScheme="secondary"
-                    isActive={isOpen}
-                    aria-label="Filter forms"
-                    leftIcon={<BiFilter />}
-                    px="9px"
-                  >
-                    {filter === filterValue ? 'Filter' : filter}
-                  </MenuButton>
-                  <Menu.List>
-                    {[filterValue, ...filterOptions].map((option) => (
-                      <Menu.Item onClick={() => setFilter(option)}>
-                        <Stack
-                          direction="row"
-                          justify="space-between"
-                          alignItems="center"
-                          w="100%"
+            {isMobile ? (
+              <>
+                <IconButton
+                  aria-label="Filter forms"
+                  variant="clear"
+                  colorScheme="secondary"
+                  size="sm"
+                  backgroundColor={filterActive ? 'neutral.200' : undefined}
+                  onClick={onOpen}
+                  icon={<BiFilter />}
+                />
+                {filterActive && (
+                  <Icon
+                    as={Avatar}
+                    size="md"
+                    bg="primary.500"
+                    name="1"
+                    textColor="white"
+                    fontSize="1.2rem"
+                    m="-0.6rem"
+                    mt="-1.75rem"
+                  />
+                )}
+              </>
+            ) : (
+              <Menu placement="bottom-end">
+                {({ isOpen }) => (
+                  <>
+                    <MenuButton
+                      as={Button}
+                      size="sm"
+                      variant="clear"
+                      colorScheme="secondary"
+                      backgroundColor={filterActive ? 'neutral.200' : undefined}
+                      isActive={isOpen}
+                      aria-label="Filter forms"
+                      leftIcon={<BiFilter />}
+                      px="9px"
+                    >
+                      {filterActive ? filter : 'Filter'}
+                    </MenuButton>
+                    <Menu.List>
+                      {[filterValue, ...filterOptions].map((option, i) => (
+                        <Menu.Item
+                          key={i}
+                          onClick={() => onFilterSelect(option)}
                         >
-                          <Text>{option}</Text>
-                          {filter === option ? <BiCheck /> : null}
-                        </Stack>
-                      </Menu.Item>
-                    ))}
-                  </Menu.List>
-                </>
-              )}
-            </Menu>
+                          {renderFilterButton(option)}
+                        </Menu.Item>
+                      ))}
+                    </Menu.List>
+                  </>
+                )}
+              </Menu>
+            )}
           </Flex>
         )}
         {isExpandable && (
@@ -270,6 +345,29 @@ export const Searchbar = forwardRef<SearchbarProps, 'input'>(
             />
           </Flex>
         )}
+
+        {/* Drawer for filter in mobile */}
+        <Drawer placement="bottom" onClose={onClose} isOpen={isOpen}>
+          <DrawerOverlay />
+          <DrawerContent borderTopRadius="0.25rem">
+            <DrawerBody px={0} py="0.5rem">
+              <ButtonGroup flexDir="column" spacing={0} w="100%">
+                {[filterValue, ...filterOptions].map((option, i) => (
+                  <Button
+                    key={i}
+                    {...mobileDrawerExtraButtonProps}
+                    onClick={() => {
+                      onFilterSelect(option)
+                      onClose()
+                    }}
+                  >
+                    {renderFilterButton(option)}
+                  </Button>
+                ))}
+              </ButtonGroup>
+            </DrawerBody>
+          </DrawerContent>
+        </Drawer>
       </Flex>
     )
   },
