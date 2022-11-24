@@ -21,6 +21,7 @@ import { createReqMeta, getRequestIp } from '../../../utils/request'
 import { getFormIfPublic } from '../../auth/auth.service'
 import { ControllerHandler } from '../../core/core.types'
 import {
+  MYINFO_AUTH_CODE_COOKIE_NAME,
   MYINFO_LOGIN_COOKIE_NAME,
   MYINFO_LOGIN_COOKIE_OPTIONS,
 } from '../../myinfo/myinfo.constants'
@@ -228,6 +229,10 @@ export const handleGetPublicForm: ControllerHandler<
           isIntranetUser,
         })
       }
+
+      // Clear auth code cookie once found, as it can't be reused
+      res.clearCookie(MYINFO_AUTH_CODE_COOKIE_NAME)
+
       // Step 1. Fetch required data and fill the form based off data retrieved
       return MyInfoService.getMyInfoDataForForm(form, authCodeCookie)
         .andThen((myInfoData) => {
