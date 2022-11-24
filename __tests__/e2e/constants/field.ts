@@ -36,18 +36,20 @@ export const NON_INPUT_FIELD_TYPES = [
   BasicField.Statement,
 ]
 
-type E2eFieldSingleValue = { val: string }
-type E2eFieldMultiValue = { val: string[] }
-type E2eFieldTableValue = { val: string[][] }
-type E2eFieldFilepath = { path: string }
-
-type E2eFieldHidden = { hidden?: boolean }
-
+// Field creation data
 type E2ePickFieldMetadata<T extends FieldBase, K extends keyof T> = Pick<
   T,
   'title' | 'fieldType' | K
 > &
   Partial<Pick<T, 'description' | 'required'>>
+
+// Field filling data
+type E2eFieldSingleValue = { val: string }
+type E2eFieldMultiValue = { val: string[] }
+type E2eFieldTableValue = { val: string[][] }
+type E2eFieldFilepath = { path: string } // Exception: this is used for image field creation too.
+
+type E2eFieldHidden = { hidden?: boolean } // Flags the field to be hidden in the public form, so the submission util knows to ignore it.
 
 export type E2eFieldMetadata =
   | (E2ePickFieldMetadata<AttachmentFieldBase, 'attachmentSize'> &
