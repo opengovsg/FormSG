@@ -1,8 +1,8 @@
 import { KeyboardEvent, useCallback, useMemo, useRef, useState } from 'react'
 import { BiCheck, BiFilter, BiSearch, BiX } from 'react-icons/bi'
 import {
-  Avatar,
   ButtonGroup,
+  Circle,
   Divider,
   Drawer,
   DrawerBody,
@@ -288,14 +288,13 @@ export const Searchbar = forwardRef<SearchbarProps, 'input'>(
                 />
                 {filterActive && (
                   <Icon
-                    as={Avatar}
-                    size="md"
+                    as={Circle}
                     bg="primary.500"
-                    name="1"
-                    textColor="white"
-                    fontSize="1.2rem"
-                    m="-0.6rem"
-                    mt="-1.75rem"
+                    fontSize="0.4rem"
+                    ml="-0.6rem"
+                    mr="0.2rem"
+                    mt="-0.5rem"
+                    zIndex={0}
                   />
                 )}
               </>
