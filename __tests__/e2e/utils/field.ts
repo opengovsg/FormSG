@@ -53,6 +53,13 @@ export const getBlankVersion = (field: E2eFieldMetadata): E2eFieldMetadata => {
   }
 }
 
+/**
+ * Given a dropdown input field, fills the dropdown by picking the correct option
+ * from the popover
+ * @param {Page} page the Playwright page
+ * @param {Locator} input the Playwright locator pointing to the dropdown input
+ * @param {string} value the value to fill in the dropdown
+ */
 export const fillDropdown = async (
   page: Page,
   input: Locator,
@@ -66,6 +73,29 @@ export const fillDropdown = async (
   await menu.getByRole('option', { name: value }).click()
 }
 
+/**
+ * Given a multiselect dropdown field, fills the dropdown by picking all the
+ * correct options from the popover
+ * @param {Page} page the Playwright page
+ * @param {Locator} input the Playwright locator pointing to the dropdown input
+ * @param {string} value the values to fill in the dropdown
+ */
+export const fillMultiDropdown = async (
+  page: Page,
+  input: Locator,
+  values: string[],
+): Promise<void> => {
+  for (const value of values) await fillDropdown(page, input, value)
+  // Multiselect dropdown, click the input again to close the popover
+  await input.click()
+}
+
+/**
+ * Gets the title with correct input question number prepended, if it is an input field.
+ * @param {E2eFieldMetadata[]} formFields the form fields used to create the form
+ * @param {number} i the field index into form fields to get the title for
+ * @returns {string} the title of the field prepended with the question number
+ */
 export const getTitleWithQuestionNumber = (
   formFields: E2eFieldMetadata[],
   i: number,

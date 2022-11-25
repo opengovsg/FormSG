@@ -23,7 +23,12 @@ import {
   NON_INPUT_FIELD_TYPES,
 } from '../constants'
 import { expect } from '../fixtures/auth'
-import { expectToast, fillDropdown, getTitleWithQuestionNumber } from '../utils'
+import {
+  expectToast,
+  fillDropdown,
+  fillMultiDropdown,
+  getTitleWithQuestionNumber,
+} from '../utils'
 
 /**
  * Navigates to the dashboard and creates a new form with all the associated form settings.
@@ -354,7 +359,7 @@ const addLogics = async (
       const valueInput = page.locator(`id=conditions.${i}.value`)
       switch (state) {
         case LogicConditionState.Either:
-          for (const v of value) await fillDropdown(page, valueInput, v)
+          await fillMultiDropdown(page, valueInput, value)
           break
         default:
           switch (formFields[field].fieldType) {
@@ -376,13 +381,11 @@ const addLogics = async (
     switch (logic.logicType) {
       case LogicType.ShowFields:
         await fillDropdown(page, logicTypeInput, 'Show field(s)')
-        for (const n of logic.show) {
-          await fillDropdown(
-            page,
-            page.locator('id=show'),
-            getTitleWithQuestionNumber(formFields, n),
-          )
-        }
+        await fillMultiDropdown(
+          page,
+          page.locator('id=show'),
+          logic.show.map((n) => getTitleWithQuestionNumber(formFields, n)),
+        )
         break
       case LogicType.PreventSubmit:
         await fillDropdown(page, logicTypeInput, 'Disable submission')
