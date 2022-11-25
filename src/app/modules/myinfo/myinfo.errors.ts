@@ -57,6 +57,7 @@ export class MyInfoParseRelayStateError extends ApplicationError {
 }
 
 /**
+ * TODO(#5452): Delete this error
  * Submission on MyInfo form missing access token.
  */
 export class MyInfoMissingAccessTokenError extends ApplicationError {
