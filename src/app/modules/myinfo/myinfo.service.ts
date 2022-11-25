@@ -11,7 +11,6 @@ import mongoose, { LeanDocument } from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import CircuitBreaker from 'opossum'
 
-import { MyInfoAttribute } from '../../../../shared/types'
 import {
   Environment,
   IFieldSchema,
@@ -50,11 +49,9 @@ import {
 import {
   IMyInfoRedirectURLArgs,
   IMyInfoServiceConfig,
-  MyInfoAuthCodeCookiePayload,
   MyInfoRelayState,
 } from './myinfo.types'
 import {
-  assertAuthCodeCookieSuccessState,
   compareHashedValues,
   createRelayState,
   extractAndAssertOldMyInfoCookieValidity,
@@ -106,12 +103,6 @@ export class MyInfoServiceClass {
    */
   #spCookieMaxAge: number
 
-  #fetchMyInfoPersonData: (
-    accessToken: string,
-    requestedAttributes: MyInfoAttribute[],
-    singpassEserviceId: string,
-  ) => ResultAsync<MyInfoData, MyInfoCircuitBreakerError | MyInfoFetchError>
-
   /**
    *
    * @param myInfoConfig Environment variables including myInfoClientMode and myInfoKeyPath
@@ -144,54 +135,6 @@ export class MyInfoServiceClass {
         this.#myInfoGovClient.getPerson(accessToken, attributes, eSrvcId),
       BREAKER_PARAMS,
     )
-
-    /**
-     * Fetches MyInfo person detail with given params.
-     * This function has circuit breaking built into it, and will throw an error
-     * if any recent usages of this function returned an error.
-     * @param params The params required to retrieve the data.
-     * @param params.uinFin The uin/fin of the person's data to retrieve.
-     * @param params.requestedAttributes The requested attributes to fetch.
-     * @param params.singpassEserviceId The eservice id of the form requesting the data.
-     * @returns the person object retrieved.
-     * @throws an error on fetch failure or if circuit breaker is in the opened state. Use {@link CircuitBreaker#isOurError} to determine if a rejection was a result of the circuit breaker or the action.
-     */
-    this.#fetchMyInfoPersonData = function (
-      accessToken: string,
-      requestedAttributes: MyInfoAttribute[],
-      singpassEserviceId: string,
-    ): ResultAsync<MyInfoData, MyInfoCircuitBreakerError | MyInfoFetchError> {
-      return ResultAsync.fromPromise(
-        this.#myInfoPersonBreaker
-          .fire(
-            accessToken,
-            internalAttrListToScopes(requestedAttributes),
-            singpassEserviceId,
-          )
-          .then((response) => new MyInfoData(response)),
-        (error) => {
-          const logMeta = {
-            action: 'fetchMyInfoPersonData',
-            requestedAttributes,
-          }
-          if (CircuitBreaker.isOurError(error)) {
-            logger.error({
-              message: 'Circuit breaker tripped',
-              meta: logMeta,
-              error,
-            })
-            return new MyInfoCircuitBreakerError()
-          } else {
-            logger.error({
-              message: 'Error retrieving data from MyInfo',
-              meta: logMeta,
-              error,
-            })
-            return new MyInfoFetchError()
-          }
-        },
-      )
-    }
   }
 
   /**
@@ -502,7 +445,7 @@ export class MyInfoServiceClass {
    */
   getMyInfoDataForForm(
     form: IPopulatedForm,
-    authCodeCookie: MyInfoAuthCodeCookiePayload,
+    accessToken: string,
   ): ResultAsync<
     MyInfoData,
     | MyInfoCookieStateError
@@ -512,19 +455,38 @@ export class MyInfoServiceClass {
     | MyInfoFetchError
   > {
     const requestedAttributes = form.getUniqueMyInfoAttrs()
-    return assertAuthCodeCookieSuccessState(authCodeCookie)
-      .asyncAndThen((successCookie) =>
-        this.retrieveAccessToken(successCookie.authCode),
-      )
-      .andThen((accessToken) =>
-        validateMyInfoForm(form).asyncAndThen((form) =>
-          this.#fetchMyInfoPersonData(
+    return validateMyInfoForm(form).asyncAndThen((form) =>
+      ResultAsync.fromPromise(
+        this.#myInfoPersonBreaker
+          .fire(
             accessToken,
-            requestedAttributes,
+            internalAttrListToScopes(requestedAttributes),
             form.esrvcId,
-          ),
-        ),
-      )
+          )
+          .then((response) => new MyInfoData(response)),
+        (error) => {
+          const logMeta = {
+            action: 'getMyInfoDataForForm',
+            requestedAttributes,
+          }
+          if (CircuitBreaker.isOurError(error)) {
+            logger.error({
+              message: 'Circuit breaker tripped',
+              meta: logMeta,
+              error,
+            })
+            return new MyInfoCircuitBreakerError()
+          } else {
+            logger.error({
+              message: 'Error retrieving data from MyInfo',
+              meta: logMeta,
+              error,
+            })
+            return new MyInfoFetchError()
+          }
+        },
+      ),
+    )
   }
 
   // TODO(#5452): Stop accepting old cookie

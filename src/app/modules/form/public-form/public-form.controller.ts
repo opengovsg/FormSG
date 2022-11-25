@@ -28,6 +28,7 @@ import {
 } from '../../myinfo/myinfo.constants'
 import { MyInfoService } from '../../myinfo/myinfo.service'
 import {
+  assertAuthCodeCookieSuccessState,
   createMyInfoLoginCookie,
   getValidMyInfoAuthCodeCookie,
   validateMyInfoForm,
@@ -235,7 +236,13 @@ export const handleGetPublicForm: ControllerHandler<
       res.clearCookie(MYINFO_AUTH_CODE_COOKIE_NAME)
 
       // Step 1. Fetch required data and fill the form based off data retrieved
-      return MyInfoService.getMyInfoDataForForm(form, authCodeCookie)
+      return assertAuthCodeCookieSuccessState(authCodeCookie)
+        .asyncAndThen((successCookie) =>
+          MyInfoService.retrieveAccessToken(successCookie.authCode),
+        )
+        .andThen((accessToken) =>
+          MyInfoService.getMyInfoDataForForm(form, accessToken),
+        )
         .andThen((myInfoData) =>
           BillingService.recordLoginByForm(form).map(() => myInfoData),
         )
