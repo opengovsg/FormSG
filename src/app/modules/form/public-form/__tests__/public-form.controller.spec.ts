@@ -12,7 +12,10 @@ import {
   MOCK_AUTH_CODE,
 } from 'src/app/modules/myinfo/__tests__/myinfo.test.constants'
 import { MyInfoData } from 'src/app/modules/myinfo/myinfo.adapter'
-import { MyInfoFetchError } from 'src/app/modules/myinfo/myinfo.errors'
+import {
+  MyInfoCircuitBreakerError,
+  MyInfoFetchError,
+} from 'src/app/modules/myinfo/myinfo.errors'
 import {
   MyInfoAuthCodeCookieState,
   MyInfoForm,
@@ -476,7 +479,7 @@ describe('public-form.controller', () => {
       } as unknown as IPopulatedForm
 
       // Setup because this gets invoked at the start of the controller to decide which branch to take
-      beforeAll(() => {
+      beforeEach(() => {
         MockAuthService.getFormIfPublic.mockReturnValue(
           okAsync(MOCK_MYINFO_FORM),
         )
@@ -530,6 +533,42 @@ describe('public-form.controller', () => {
           others: {
             cookies: {
               [MYINFO_AUTH_CODE_COOKIE_NAME]: 'nonsense',
+            },
+          },
+        })
+
+        // Act
+        await PublicFormController.handleGetPublicForm(
+          mockReq,
+          mockRes,
+          jest.fn(),
+        )
+
+        // Assert
+        expect(mockRes.clearCookie).toHaveBeenCalled()
+        expect(mockRes.json).toHaveBeenCalledWith({
+          form: MOCK_MYINFO_FORM.getPublicView(),
+          isIntranetUser: false,
+          myInfoError: true,
+        })
+      })
+
+      it('should return 200 but the response should have cookies cleared and myInfoError when the access token cannot be retrieved', async () => {
+        // Arrange
+        // 1. Mock the response and calls
+        MockMyInfoService.retrieveAccessToken.mockReturnValueOnce(
+          errAsync(new MyInfoCircuitBreakerError()),
+        )
+        const mockRes = expressHandler.mockResponse({
+          clearCookie: jest.fn().mockReturnThis(),
+        })
+        const mockReq = expressHandler.mockRequest({
+          params: {
+            formId: MOCK_FORM_ID,
+          },
+          others: {
+            cookies: {
+              [MYINFO_AUTH_CODE_COOKIE_NAME]: MOCK_MYINFO_AUTH_CODE_COOKIE,
             },
           },
         })
@@ -977,8 +1016,14 @@ describe('public-form.controller', () => {
           okAsync(MOCK_MYINFO_AUTH_FORM),
         )
         MockFormService.checkIsIntranetFormAccess.mockReturnValueOnce(true)
+        MockMyInfoService.retrieveAccessToken.mockReturnValueOnce(
+          okAsync(MOCK_ACCESS_TOKEN),
+        )
         MockMyInfoService.getMyInfoDataForForm.mockReturnValueOnce(
           okAsync(MOCK_MYINFO_DATA),
+        )
+        MockBillingService.recordLoginByForm.mockReturnValueOnce(
+          okAsync(MOCK_LOGIN_DOC),
         )
         MockMyInfoService.prefillAndSaveMyInfoFields.mockReturnValueOnce(
           okAsync([]),
