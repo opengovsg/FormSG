@@ -177,8 +177,8 @@ type MyInfoLoginQueryParams =
     }
 
 /**
- * Logs a user in to MyInfo by retrieving their access token and
- * redirecting them to the correct form.
+ * Logs a user in to MyInfo by storing the authorisation code
+ * in a cookie and redirecting them to the correct form.
  * @param req Express request
  * @param res Express response
  */

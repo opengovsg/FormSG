@@ -37,7 +37,6 @@ import {
 } from './myinfo.constants'
 import {
   MyInfoCircuitBreakerError,
-  MyInfoCookieStateError,
   MyInfoFetchError,
   MyInfoHashDidNotMatchError,
   MyInfoHashingError,
@@ -236,7 +235,8 @@ export class MyInfoServiceClass {
 
   /**
    * Prefill given current form fields with given MyInfo data.
-   * Saves the has of the prefilled fields as well because the two operations are atomic and should not be separated
+   * Saves the hash of the prefilled fields as well because the two operations are atomic and should not be separated
+   * @param formId
    * @param myInfoData
    * @param currFormFields
    * @returns currFormFields with the MyInfo fields prefilled with data from myInfoData
@@ -403,7 +403,7 @@ export class MyInfoServiceClass {
   }
 
   /**
-   * Decodes and verifies a JWT from MyInfo containing the user's
+   * Decodes and verifies FormSG's JWT containing the user's
    * UIN/FIN.
    * @param loginJwt Login JWT
    */
@@ -431,13 +431,10 @@ export class MyInfoServiceClass {
   }
 
   /**
-   * Gets myInfo data using the provided form and the cookies of the request
+   * Gets myInfo data using the provided form and the MyInfo access token
    * @param form the form to validate
-   * @param cookies cookies of the request
+   * @param accessToken MyInfo access token
    * @returns ok(MyInfoData) if the form has been validated successfully
-   * @returns err(MyInfoMissingAccessTokenError) if no myInfoCookie was found on the request
-   * @returns err(MyInfoCookieStateError) if cookie was not successful
-   * @returns err(MyInfoCookieAccessError) if the cookie has already been used before
    * @returns err(FormAuthNoEsrvcIdError) if form has no eserviceId
    * @returns err(AuthTypeMismatchError) if the client was not authenticated using MyInfo
    * @returns err(MyInfoCircuitBreakerError) if circuit breaker was active
@@ -448,7 +445,6 @@ export class MyInfoServiceClass {
     accessToken: string,
   ): ResultAsync<
     MyInfoData,
-    | MyInfoCookieStateError
     | FormAuthNoEsrvcIdError
     | AuthTypeMismatchError
     | MyInfoCircuitBreakerError

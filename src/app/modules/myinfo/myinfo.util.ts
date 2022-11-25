@@ -312,7 +312,7 @@ const isMyInfoFormWithEsrvcId = <F extends IFormSchema>(
 }
 
 /**
- * Type guard for MyInfo cookie.
+ * Type guard for MyInfo login cookie.
  * @param cookie Unknown object
  */
 export const isMyInfoLoginCookie = (
@@ -359,7 +359,7 @@ export const isMyInfoOldCookie = (
 }
 
 /**
- * Type guard for MyInfo cookie.
+ * Type guard for MyInfo auth code cookie.
  * @param cookie Unknown object
  */
 export const isMyInfoAuthCodeCookie = (
@@ -448,8 +448,7 @@ export const extractAccessTokenFromOldCookie = (
 }
 
 /**
- * Extracts a MyInfo cookie from a request's cookies, and validates
- * its shape.
+ * Extracts a MyInfo login cookie from a request's cookies
  * @param cookies Cookies in a request
  */
 export const extractMyInfoLoginJwt = (
@@ -482,6 +481,11 @@ export const extractAuthCode = (
   return ok(cookie.authCode)
 }
 
+/**
+ * Creates a MyInfo login cookie signed by FormSG
+ * @param uinFin UIN/FIN to be signed
+ * @returns JWT signed by FormSG
+ */
 export const createMyInfoLoginCookie = (uinFin: string): string => {
   const payload: MyInfoLoginCookiePayload = {
     uinFin,
