@@ -10,6 +10,7 @@ import {
   DrawerOverlay,
   Grid,
   Icon,
+  MenuButton,
   Skeleton,
   Stack,
   Text,
@@ -19,6 +20,7 @@ import {
 import { useIsMobile } from '~hooks/useIsMobile'
 import Button, { ButtonProps } from '~components/Button'
 import IconButton from '~components/IconButton'
+import Menu from '~components/Menu'
 import Searchbar from '~components/Searchbar'
 
 import { FilterOption } from '~features/workspace/types'
@@ -59,7 +61,16 @@ export const WorkspaceHeader = ({
     [],
   )
 
-  const handleFilter = useCallback(
+  const handleExpandSearchbar = useCallback(() => {
+    setSearchExpanded(true)
+  }, [])
+
+  const handleCollapseSearchbar = useCallback(() => {
+    setSearchExpanded(false)
+    setSearchTerm('')
+  }, [setSearchTerm])
+
+  const handleSelectFilter = useCallback(
     (opt: string) =>
       setActiveFilter(
         opt === defaultFilterOption ? null : (opt as FilterOption),
@@ -67,7 +78,7 @@ export const WorkspaceHeader = ({
     [defaultFilterOption, setActiveFilter],
   )
 
-  const handleSetActiveFilterFromDrawer = useCallback(
+  const handleSelectFilterFromDrawer = useCallback(
     (filterOption: FilterOption | null) => {
       setActiveFilter(filterOption)
       onClose()
@@ -76,6 +87,34 @@ export const WorkspaceHeader = ({
   )
 
   const renderFilterButton = useCallback(
+    (isActive: boolean) => (
+      <>
+        <IconButton
+          aria-label="Filter forms"
+          variant="clear"
+          colorScheme="secondary"
+          backgroundColor={isActive || activeFilter ? 'neutral.200' : undefined}
+          onClick={onOpen}
+          icon={<BiFilter />}
+        />
+        {activeFilter && (
+          <Icon
+            as={Circle}
+            bg="primary.500"
+            fontSize="0.4rem"
+            ml="-1rem"
+            mr="0.6em"
+            mb="0.4rem"
+            position="relative"
+            zIndex={0}
+          />
+        )}
+      </>
+    ),
+    [activeFilter, onOpen],
+  )
+
+  const renderFilterOption = useCallback(
     (filterOption: FilterOption | null) => {
       return (
         <Stack
@@ -140,47 +179,45 @@ export const WorkspaceHeader = ({
       {/* 'search' and 'filter' only used in mobile & tablet mode. */}
       <Box gridArea="search" display={{ lg: 'none' }}>
         <Searchbar
-          onExpandIconClick={() => setSearchExpanded(true)}
-          onCollapseIconClick={() => setSearchExpanded(false)}
+          onExpandIconClick={handleExpandSearchbar}
+          onCollapseIconClick={handleCollapseSearchbar}
           onChange={setSearchTerm}
           placeholder="Search by title"
         />
       </Box>
 
       <Box gridArea="filter" display={{ lg: 'none' }}>
-        <IconButton
-          aria-label="Filter forms"
-          variant="clear"
-          colorScheme="secondary"
-          backgroundColor={activeFilter ? 'neutral.200' : undefined}
-          onClick={onOpen}
-          icon={<BiFilter />}
-        />
-        {activeFilter && (
-          <Icon
-            as={Circle}
-            bg="primary.500"
-            fontSize="0.4rem"
-            ml="-1rem"
-            mr="0.6em"
-            mb="0.4rem"
-            position="relative"
-            zIndex={0}
-          />
+        {isMobile ? (
+          renderFilterButton(isOpen)
+        ) : (
+          <Menu placement="bottom-end">
+            {({ isOpen }) => (
+              <>
+                <MenuButton>{renderFilterButton(isOpen)}</MenuButton>
+                <Menu.List>
+                  {[null, ...Object.values(FilterOption)].map((option, i) => (
+                    <Menu.Item key={i} onClick={() => setActiveFilter(option)}>
+                      {renderFilterOption(option)}
+                    </Menu.Item>
+                  ))}
+                </Menu.List>
+              </>
+            )}
+          </Menu>
         )}
       </Box>
 
       {/* Combination box used in desktop mode. */}
       <Box gridArea="searchfilter" display={{ base: 'none', lg: 'flex' }}>
         <Searchbar
-          onExpandIconClick={() => setSearchExpanded(true)}
-          onCollapseIconClick={() => setSearchExpanded(false)}
+          onExpandIconClick={handleExpandSearchbar}
+          onCollapseIconClick={handleCollapseSearchbar}
           onChange={setSearchTerm}
           placeholder="Search by title"
           isExpandable={false}
           filterValue={defaultFilterOption}
           filterOptions={Object.values(FilterOption)}
-          onFilter={handleFilter}
+          onFilter={handleSelectFilter}
         />
       </Box>
 
@@ -199,22 +236,17 @@ export const WorkspaceHeader = ({
         <DrawerContent borderTopRadius="0.25rem">
           <DrawerBody px={0} py="0.5rem">
             <ButtonGroup flexDir="column" spacing={0} w="100%">
-              <Button
-                key={0}
-                {...mobileDrawerExtraButtonProps}
-                onClick={() => handleSetActiveFilterFromDrawer(null)}
-              >
-                {renderFilterButton(null)}
-              </Button>
-              {Object.values(FilterOption).map((filterOption, idx) => (
-                <Button
-                  key={idx + 1}
-                  {...mobileDrawerExtraButtonProps}
-                  onClick={() => handleSetActiveFilterFromDrawer(filterOption)}
-                >
-                  {renderFilterButton(filterOption)}
-                </Button>
-              ))}
+              {[null, ...Object.values(FilterOption)].map(
+                (filterOption, idx) => (
+                  <Button
+                    key={idx}
+                    {...mobileDrawerExtraButtonProps}
+                    onClick={() => handleSelectFilterFromDrawer(filterOption)}
+                  >
+                    {renderFilterOption(filterOption)}
+                  </Button>
+                ),
+              )}
             </ButtonGroup>
           </DrawerBody>
         </DrawerContent>
