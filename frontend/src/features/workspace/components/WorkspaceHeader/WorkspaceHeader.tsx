@@ -19,7 +19,7 @@ import {
 
 import { useIsMobile } from '~hooks/useIsMobile'
 import Button, { ButtonProps } from '~components/Button'
-import IconButton from '~components/IconButton'
+import IconButton, { IconButtonProps } from '~components/IconButton'
 import Menu from '~components/Menu'
 import Searchbar from '~components/Searchbar'
 
@@ -88,31 +88,37 @@ export const WorkspaceHeader = ({
   )
 
   const renderFilterButton = useCallback(
-    (isActive: boolean) => (
-      <>
-        <IconButton
-          aria-label="Filter forms"
-          variant="clear"
-          colorScheme="secondary"
-          backgroundColor={isActive || activeFilter ? 'neutral.200' : undefined}
-          onClick={onOpen}
-          icon={<BiFilter />}
-        />
-        {activeFilter && (
-          <Icon
-            as={Circle}
-            bg="primary.500"
-            fontSize="0.4rem"
-            ml="-1rem"
-            mr="0.6em"
-            mb="0.4rem"
-            position="relative"
-            zIndex={0}
-          />
-        )}
-      </>
-    ),
-    [activeFilter, onOpen],
+    (isActive: boolean) => {
+      const buttonProps: IconButtonProps = {
+        'aria-label': 'Filter forms',
+        variant: 'clear',
+        colorScheme: 'secondary',
+        backgroundColor: isActive || activeFilter ? 'neutral.200' : undefined,
+        icon: <BiFilter />,
+      }
+      return (
+        <>
+          {isMobile ? (
+            <IconButton onClick={onOpen} icon={<BiFilter />} {...buttonProps} />
+          ) : (
+            <MenuButton as={IconButton} {...buttonProps} isActive />
+          )}
+          {activeFilter && (
+            <Icon
+              as={Circle}
+              bg="primary.500"
+              fontSize="0.4rem"
+              ml="-1rem"
+              mr="0.6rem"
+              mb="0.4rem"
+              position="relative"
+              zIndex={0}
+            />
+          )}
+        </>
+      )
+    },
+    [activeFilter, isMobile, onOpen],
   )
 
   const renderFilterOption = useCallback(
@@ -194,7 +200,7 @@ export const WorkspaceHeader = ({
           <Menu placement="bottom-end">
             {({ isOpen }) => (
               <>
-                <MenuButton>{renderFilterButton(isOpen)}</MenuButton>
+                {renderFilterButton(isOpen)}
                 <Menu.List>
                   {[null, ...Object.values(FilterOption)].map((option, i) => (
                     <Menu.Item key={i} onClick={() => setActiveFilter(option)}>
