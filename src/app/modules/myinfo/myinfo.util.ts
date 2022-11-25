@@ -31,15 +31,13 @@ import {
 } from '../spcp/spcp.errors'
 import { ProcessedFieldResponse } from '../submission/submission.types'
 
-import {
-  MYINFO_AUTH_CODE_COOKIE_NAME,
-  MYINFO_LOGIN_COOKIE_NAME,
-} from './myinfo.constants'
+import { MYINFO_LOGIN_COOKIE_NAME } from './myinfo.constants'
 import {
   MyInfoCookieAccessError,
   MyInfoCookieStateError,
   MyInfoHashDidNotMatchError,
   MyInfoHashingError,
+  MyInfoInvalidAuthCodeCookieError,
   MyInfoMissingAccessTokenError,
   MyInfoMissingHashError,
   MyInfoMissingLoginCookieError,
@@ -47,7 +45,6 @@ import {
 import {
   MyInfoAuthCodeCookiePayload,
   MyInfoAuthCodeCookieState,
-  MyInfoAuthCodeSuccessPayload,
   MyInfoComparePromises,
   MyInfoForm,
   MyInfoHashPromises,
@@ -473,22 +470,20 @@ export const extractMyInfoLoginJwt = (
  * its shape.
  * @param cookies Cookies in a request
  */
-export const getValidMyInfoAuthCodeCookie = (
-  cookies: Record<string, unknown>,
-): MyInfoAuthCodeCookiePayload | null => {
-  const cookie = cookies[MYINFO_AUTH_CODE_COOKIE_NAME]
-  if (isMyInfoAuthCodeCookie(cookie)) {
-    return cookie
+export const extractAuthCode = (
+  cookie: unknown,
+): Result<
+  string,
+  MyInfoInvalidAuthCodeCookieError | MyInfoCookieStateError
+> => {
+  if (!isMyInfoAuthCodeCookie(cookie)) {
+    return err(new MyInfoInvalidAuthCodeCookieError(cookie))
   }
-  return null
+  if (cookie.state !== MyInfoAuthCodeCookieState.Success) {
+    return err(new MyInfoCookieStateError())
+  }
+  return ok(cookie.authCode)
 }
-
-export const assertAuthCodeCookieSuccessState = (
-  cookie: MyInfoAuthCodeCookiePayload,
-): Result<MyInfoAuthCodeSuccessPayload, MyInfoCookieStateError> =>
-  cookie.state === MyInfoAuthCodeCookieState.Success
-    ? ok(cookie)
-    : err(new MyInfoCookieStateError())
 
 export const createMyInfoLoginCookie = (uinFin: string): string => {
   const payload: MyInfoLoginCookiePayload = {

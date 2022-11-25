@@ -85,6 +85,15 @@ export class MyInfoInvalidLoginCookieError extends ApplicationError {
 }
 
 /**
+ * Cookie containing auth code is malformed.
+ */
+export class MyInfoInvalidAuthCodeCookieError extends ApplicationError {
+  constructor(cookie: unknown, message = 'Auth code cookie is malformed') {
+    super(`${message}: ${cookie}`)
+  }
+}
+
+/**
  * MyInfo cookie on submission is in error state.
  */
 export class MyInfoCookieStateError extends ApplicationError {

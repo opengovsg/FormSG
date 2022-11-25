@@ -28,9 +28,8 @@ import {
 } from '../../myinfo/myinfo.constants'
 import { MyInfoService } from '../../myinfo/myinfo.service'
 import {
-  assertAuthCodeCookieSuccessState,
   createMyInfoLoginCookie,
-  getValidMyInfoAuthCodeCookie,
+  extractAuthCode,
   validateMyInfoForm,
 } from '../../myinfo/myinfo.util'
 import { SgidInvalidJwtError, SgidVerifyJwtError } from '../../sgid/sgid.errors'
@@ -222,10 +221,10 @@ export const handleGetPublicForm: ControllerHandler<
       // We always want to clear existing login cookies because we no longer
       // have the prefilled data
       res.clearCookie(MYINFO_LOGIN_COOKIE_NAME)
-      const authCodeCookie = getValidMyInfoAuthCodeCookie(req.cookies)
+      const authCodeCookie: unknown = req.cookies[MYINFO_AUTH_CODE_COOKIE_NAME]
       // No auth code cookie because user is accessing the form before logging
       // in
-      if (authCodeCookie === null) {
+      if (authCodeCookie === null || authCodeCookie === undefined) {
         return res.json({
           form: publicForm,
           isIntranetUser,
@@ -236,10 +235,8 @@ export const handleGetPublicForm: ControllerHandler<
       res.clearCookie(MYINFO_AUTH_CODE_COOKIE_NAME)
 
       // Step 1. Fetch required data and fill the form based off data retrieved
-      return assertAuthCodeCookieSuccessState(authCodeCookie)
-        .asyncAndThen((successCookie) =>
-          MyInfoService.retrieveAccessToken(successCookie.authCode),
-        )
+      return extractAuthCode(authCodeCookie)
+        .asyncAndThen((authCode) => MyInfoService.retrieveAccessToken(authCode))
         .andThen((accessToken) =>
           MyInfoService.getMyInfoDataForForm(form, accessToken),
         )
