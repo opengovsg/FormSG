@@ -19,6 +19,7 @@ import { createLoggerWithLabel } from '../../../config/logger'
 import { isMongoError } from '../../../utils/handle-mongo-error'
 import { createReqMeta, getRequestIp } from '../../../utils/request'
 import { getFormIfPublic } from '../../auth/auth.service'
+import * as BillingService from '../../billing/billing.service'
 import { ControllerHandler } from '../../core/core.types'
 import {
   MYINFO_AUTH_CODE_COOKIE_NAME,
@@ -235,6 +236,9 @@ export const handleGetPublicForm: ControllerHandler<
 
       // Step 1. Fetch required data and fill the form based off data retrieved
       return MyInfoService.getMyInfoDataForForm(form, authCodeCookie)
+        .andThen((myInfoData) =>
+          BillingService.recordLoginByForm(form).map(() => myInfoData),
+        )
         .andThen((myInfoData) => {
           return MyInfoService.prefillAndSaveMyInfoFields(
             form._id,
