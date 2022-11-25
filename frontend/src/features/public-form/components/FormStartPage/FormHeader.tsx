@@ -14,6 +14,7 @@ import {
 import { BxMenuAltLeft } from '~assets/icons/BxMenuAltLeft'
 import { BxsTimeFive } from '~assets/icons/BxsTimeFive'
 import { ThemeColorScheme } from '~theme/foundations/colours'
+import { noPrintCss } from '~utils/noPrintCss'
 import Button from '~components/Button'
 import IconButton from '~components/IconButton'
 
@@ -52,11 +53,7 @@ export const MiniHeader = ({
       mt={isTemplate ? '4.75rem' : '0'}
       px={{ base: '1.5rem', md: '2rem' }}
       py={{ base: '0.5rem', md: '1rem' }}
-      sx={{
-        '@media print': {
-          display: 'none !important',
-        },
-      }}
+      sx={noPrintCss}
     >
       <Skeleton isLoaded={!!title}>
         <Flex
