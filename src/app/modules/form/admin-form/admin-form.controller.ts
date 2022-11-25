@@ -81,7 +81,6 @@ import {
 import * as UserService from '../../user/user.service'
 import { PrivateFormError } from '../form.errors'
 import * as FormService from '../form.service'
-import { UNICODE_ESCAPED_REGEX } from '../form.utils'
 
 import { TwilioCredentials } from './../../../services/sms/sms.types'
 import {
@@ -93,7 +92,7 @@ import { EditFieldError } from './admin-form.errors'
 import { updateSettingsValidator } from './admin-form.middlewares'
 import * as AdminFormService from './admin-form.service'
 import { PermissionLevel } from './admin-form.types'
-import { mapRouteError } from './admin-form.utils'
+import { mapRouteError, verifyValidUnicodeString } from './admin-form.utils'
 
 // NOTE: Refer to this for documentation: https://github.com/sideway/joi-date/blob/master/API.md
 const Joi = BaseJoi.extend(JoiDate) as typeof BaseJoi
@@ -137,22 +136,7 @@ const createFormValidator = celebrate({
       .required()
       // Allow other form schema keys to be passed for form creation.
       .unknown(true)
-      .custom((value, helpers) => {
-        // If there are invalid utf-8 encoded unicode-escaped characters,
-        // nodejs treats the sequence of characters as a string e.g. \udbbb is treated as a 6-character string instead of an escaped unicode sequence
-        // If this is saved into the db, an error is thrown when the driver attempts to read the db document as the driver interprets this as an escaped unicode sequence.
-        // Since valid unicode-escaped characters will be processed correctly (e.g. \u00ae is processed as ®), they will not trigger an error
-        // Also note that if the user intends to input a 6-character string of the same form e.g. \udbbb, the backslash will be escaped (i.e. double backslash) and hence this will also not trigger an error
-
-        const valueStr = JSON.stringify(value)
-
-        if (UNICODE_ESCAPED_REGEX.test(valueStr)) {
-          return helpers.message({
-            custom: 'There are invalid characters in your input',
-          })
-        }
-        return value
-      }),
+      .custom((value, helpers) => verifyValidUnicodeString(value, helpers)),
   },
 })
 
@@ -1713,22 +1697,7 @@ export const handleUpdateFormField = [
         // layer handle the validation.
       })
         .unknown(true)
-        .custom((value, helpers) => {
-          // If there are invalid utf-8 encoded unicode-escaped characters,
-          // nodejs treats the sequence of characters as a string e.g. \udbbb is treated as a 6-character string instead of an escaped unicode sequence
-          // If this is saved into the db, an error is thrown when the driver attempts to read the db document as the driver interprets this as an escaped unicode sequence.
-          // Since valid unicode-escaped characters will be processed correctly (e.g. \u00ae is processed as ®), they will not trigger an error
-          // Also note that if the user intends to input a 6-character string of the same form e.g. \udbbb, the backslash will be escaped (i.e. double backslash) and hence this will also not trigger an error
-
-          const valueStr = JSON.stringify(value)
-
-          if (UNICODE_ESCAPED_REGEX.test(valueStr)) {
-            return helpers.message({
-              custom: 'There are invalid characters in your input',
-            })
-          }
-          return value
-        }),
+        .custom((value, helpers) => verifyValidUnicodeString(value, helpers)),
     },
     undefined,
     // Required so req.body can be validated against values in req.params.
@@ -1982,22 +1951,7 @@ export const handleCreateFormField = [
       // layer handle the validation.
     })
       .unknown(true)
-      .custom((value, helpers) => {
-        // If there are invalid utf-8 encoded unicode-escaped characters,
-        // nodejs treats the sequence of characters as a string e.g. \udbbb is treated as a 6-character string instead of an escaped unicode sequence
-        // If this is saved into the db, an error is thrown when the driver attempts to read the db document as the driver interprets this as an escaped unicode sequence.
-        // Since valid unicode-escaped characters will be processed correctly (e.g. \u00ae is processed as ®), they will not trigger an error
-        // Also note that if the user intends to input a 6-character string of the same form e.g. \udbbb, the backslash will be escaped (i.e. double backslash) and hence this will also not trigger an error
-
-        const valueStr = JSON.stringify(value)
-
-        if (UNICODE_ESCAPED_REGEX.test(valueStr)) {
-          return helpers.message({
-            custom: 'There are invalid characters in your input',
-          })
-        }
-        return value
-      }),
+      .custom((value, helpers) => verifyValidUnicodeString(value, helpers)),
     [Segments.QUERY]: {
       // Optional index to insert the field at.
       to: Joi.number().min(0),
