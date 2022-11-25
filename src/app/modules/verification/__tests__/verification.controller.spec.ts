@@ -7,6 +7,7 @@ import { FormAuthType } from 'shared/types'
 import { WAIT_FOR_OTP_SECONDS } from 'shared/utils/verification'
 import { mocked } from 'ts-jest/utils'
 
+import { MyInfoService } from 'src/app/modules/myinfo/myinfo.service'
 import * as MyInfoUtils from 'src/app/modules/myinfo/myinfo.util'
 import { MailSendError } from 'src/app/services/mail/mail.errors'
 import {
@@ -24,11 +25,11 @@ import { DatabaseError, MalformedParametersError } from '../../core/core.errors'
 import { FormNotFoundError } from '../../form/form.errors'
 import * as FormService from '../../form/form.service'
 import {
-  MOCK_ACCESS_TOKEN,
-  MOCK_SUCCESSFUL_COOKIE,
+  MOCK_MYINFO_JWT,
+  MOCK_UINFIN,
 } from '../../myinfo/__tests__/myinfo.test.constants'
 import {
-  MyInfoCookieStateError,
+  MyInfoInvalidLoginCookieError,
   MyInfoMissingLoginCookieError,
 } from '../../myinfo/myinfo.errors'
 import {
@@ -79,6 +80,8 @@ jest.mock('../../spcp/spcp.oidc.service/spcp.oidc.service.cp')
 const MockCpOidcServiceClass = mocked(CpOidcServiceClass, true)
 jest.mock('../../myinfo/myinfo.util')
 const MockMyInfoUtil = mocked(MyInfoUtils, true)
+jest.mock('../../myinfo/myinfo.service')
+const MockMyInfoService = mocked(MyInfoService, true)
 jest.mock('../../sgid/sgid.service')
 const MockSgidService = mocked(SgidService, true)
 
@@ -685,8 +688,8 @@ describe('Verification controller', () => {
       expect(mockCpOidcServiceClass.extractJwtPayload).not.toHaveBeenCalled()
 
       expect(MockSgidService.extractSgidJwtPayload).not.toHaveBeenCalled()
-      expect(MockMyInfoUtil.extractMyInfoLoginCookie).not.toHaveBeenCalled()
-      expect(MockMyInfoUtil.extractAccessTokenFromCookie).not.toHaveBeenCalled()
+      expect(MockMyInfoUtil.extractMyInfoLoginJwt).not.toHaveBeenCalled()
+      expect(MockMyInfoService.extractUinFin).not.toHaveBeenCalled()
       expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
       expect(MockVerificationService.sendNewOtp).toHaveBeenCalledWith(
         EXPECTED_PARAMS_FOR_SENDING_OTP,
@@ -862,12 +865,10 @@ describe('Verification controller', () => {
       MockFormService.retrieveFullFormById.mockReturnValueOnce(
         okAsync(MOCK_MYINFO_FORM),
       )
-      MockMyInfoUtil.extractMyInfoLoginCookie.mockReturnValueOnce(
-        ok(MOCK_SUCCESSFUL_COOKIE),
+      MockMyInfoUtil.extractMyInfoLoginJwt.mockReturnValueOnce(
+        ok(MOCK_MYINFO_JWT),
       )
-      MockMyInfoUtil.extractAccessTokenFromCookie.mockReturnValueOnce(
-        ok(MOCK_ACCESS_TOKEN),
-      )
+      MockMyInfoService.extractUinFin.mockReturnValueOnce(ok(MOCK_UINFIN))
       MockVerificationService.disableVerifiedFieldsIfRequired.mockReturnValueOnce(
         okAsync(true),
       )
@@ -883,10 +884,12 @@ describe('Verification controller', () => {
       expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
         MOCK_FORM_ID,
       )
-      expect(MockMyInfoUtil.extractMyInfoLoginCookie).toHaveBeenCalledWith(
+      expect(MockMyInfoUtil.extractMyInfoLoginJwt).toHaveBeenCalledWith(
         MOCK_REQ.cookies,
       )
-      expect(MockMyInfoUtil.extractAccessTokenFromCookie).toHaveBeenCalled()
+      expect(MockMyInfoService.extractUinFin).toHaveBeenCalledWith(
+        MOCK_MYINFO_JWT,
+      )
       expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
       expect(MockVerificationService.sendNewOtp).toHaveBeenCalledWith(
         EXPECTED_PARAMS_FOR_SENDING_OTP,
@@ -1321,7 +1324,7 @@ describe('Verification controller', () => {
       MockFormService.retrieveFullFormById.mockReturnValueOnce(
         okAsync(MOCK_MYINFO_FORM),
       )
-      MockMyInfoUtil.extractMyInfoLoginCookie.mockReturnValueOnce(
+      MockMyInfoUtil.extractMyInfoLoginJwt.mockReturnValueOnce(
         err(new MyInfoMissingLoginCookieError()),
       )
       const expectedResponse = {
@@ -1339,26 +1342,26 @@ describe('Verification controller', () => {
       expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
         MOCK_FORM_ID,
       )
-      expect(MockMyInfoUtil.extractMyInfoLoginCookie).toHaveBeenCalledWith(
+      expect(MockMyInfoUtil.extractMyInfoLoginJwt).toHaveBeenCalledWith(
         MOCK_REQ.cookies,
       )
-      expect(MockMyInfoUtil.extractAccessTokenFromCookie).not.toHaveBeenCalled()
+      expect(MockMyInfoService.extractUinFin).not.toHaveBeenCalled()
       expect(MockOtpUtils.generateOtpWithHash).not.toHaveBeenCalled()
       expect(MockVerificationService.sendNewOtp).not.toHaveBeenCalled()
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
       expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
     })
 
-    it('should return 400 when MyInfo authentication is enabled but MyInfo cookie has incorrect state', async () => {
+    it('should return 400 when MyInfo authentication is enabled but MyInfo cookie is malformed', async () => {
       // Arrange
       MockFormService.retrieveFullFormById.mockReturnValueOnce(
         okAsync(MOCK_MYINFO_FORM),
       )
-      MockMyInfoUtil.extractMyInfoLoginCookie.mockReturnValueOnce(
-        ok(MOCK_SUCCESSFUL_COOKIE),
+      MockMyInfoUtil.extractMyInfoLoginJwt.mockReturnValueOnce(
+        ok(MOCK_MYINFO_JWT),
       )
-      MockMyInfoUtil.extractAccessTokenFromCookie.mockReturnValueOnce(
-        err(new MyInfoCookieStateError()),
+      MockMyInfoService.extractUinFin.mockReturnValueOnce(
+        err(new MyInfoInvalidLoginCookieError()),
       )
       const expectedResponse = {
         message: 'Sorry, something went wrong. Please refresh and try again.',
@@ -1375,11 +1378,11 @@ describe('Verification controller', () => {
       expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
         MOCK_FORM_ID,
       )
-      expect(MockMyInfoUtil.extractMyInfoLoginCookie).toHaveBeenCalledWith(
+      expect(MockMyInfoUtil.extractMyInfoLoginJwt).toHaveBeenCalledWith(
         MOCK_REQ.cookies,
       )
-      expect(MockMyInfoUtil.extractAccessTokenFromCookie).toHaveBeenCalledWith(
-        MOCK_SUCCESSFUL_COOKIE,
+      expect(MockMyInfoService.extractUinFin).toHaveBeenCalledWith(
+        MOCK_MYINFO_JWT,
       )
       expect(MockOtpUtils.generateOtpWithHash).not.toHaveBeenCalled()
       expect(MockVerificationService.sendNewOtp).not.toHaveBeenCalled()
