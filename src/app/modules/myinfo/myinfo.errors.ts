@@ -101,12 +101,3 @@ export class MyInfoCookieStateError extends ApplicationError {
     super(message)
   }
 }
-
-/**
- * MyInfo cookie has been used more than once
- */
-export class MyInfoCookieAccessError extends ApplicationError {
-  constructor(message = 'MyInfo cookie has already been used') {
-    super(message)
-  }
-}

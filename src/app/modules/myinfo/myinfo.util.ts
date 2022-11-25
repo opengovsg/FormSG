@@ -33,7 +33,6 @@ import { ProcessedFieldResponse } from '../submission/submission.types'
 
 import { MYINFO_LOGIN_COOKIE_NAME } from './myinfo.constants'
 import {
-  MyInfoCookieAccessError,
   MyInfoCookieStateError,
   MyInfoHashDidNotMatchError,
   MyInfoHashingError,
@@ -428,9 +427,7 @@ export const extractAndAssertOldMyInfoCookieValidity = (
   cookies: Record<string, unknown>,
 ): Result<
   MyInfoSuccessfulOldCookiePayload,
-  | MyInfoCookieStateError
-  | MyInfoMissingAccessTokenError
-  | MyInfoCookieAccessError
+  MyInfoCookieStateError | MyInfoMissingAccessTokenError
 > =>
   extractOldMyInfoCookie(cookies).andThen((cookiePayload) =>
     assertOldMyInfoCookieSuccessState(cookiePayload),
