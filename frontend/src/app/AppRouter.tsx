@@ -7,6 +7,7 @@ import {
   ADMINFORM_RESULTS_SUBROUTE,
   ADMINFORM_ROUTE,
   ADMINFORM_SETTINGS_SUBROUTE,
+  ADMINFORM_USETEMPLATE_ROUTE,
   BILLING_ROUTE,
   DASHBOARD_ROUTE,
   LANDING_ROUTE,
@@ -48,6 +49,9 @@ const PrivacyPolicyPage = lazy(() =>
 const TermsOfUsePage = lazy(() => lazyRetry(() => import('~pages/TermsOfUse')))
 const PreviewFormPage = lazy(() =>
   lazyRetry(() => import('~features/admin-form/preview')),
+)
+const TemplateFormPage = lazy(() =>
+  lazyRetry(() => import('~features/admin-form/template')),
 )
 
 const WithSuspense = ({ children }: { children: React.ReactNode }) => (
@@ -117,6 +121,10 @@ export const AppRouter = (): JSX.Element => {
         <Route
           path={`${ADMINFORM_ROUTE}/:formId/${ADMINFORM_PREVIEW_ROUTE}`}
           element={<PrivateElement element={<PreviewFormPage />} />}
+        />
+        <Route
+          path={`${ADMINFORM_ROUTE}/:formId/${ADMINFORM_USETEMPLATE_ROUTE}`}
+          element={<PrivateElement element={<TemplateFormPage />} />}
         />
         <Route path="*" element={<NotFoundErrorPage />} />
       </Routes>

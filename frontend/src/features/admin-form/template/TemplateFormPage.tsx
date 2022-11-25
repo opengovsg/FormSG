@@ -17,21 +17,21 @@ import { PublicFormWrapper } from '~features/public-form/components/PublicFormWr
 
 import { PreviewFormBannerContainer } from '../common/components/PreviewFormBanner'
 
-import { PreviewFormProvider } from './PreviewFormProvider'
+import { TemplateFormProvider } from './TemplateFormProvider'
 
-export const PreviewFormPage = (): JSX.Element => {
+export const TemplateFormPage = (): JSX.Element => {
   const { formId } = useParams()
   if (!formId) throw new Error('No formId provided')
 
   return (
     <Flex flexDir="column" css={fillHeightCss} pos="relative">
-      <PreviewFormProvider formId={formId}>
+      <TemplateFormProvider formId={formId}>
         <GovtMasthead />
-        <PreviewFormBannerContainer />
+        <PreviewFormBannerContainer isTemplate />
         <SwitchEnvIcon />
         <FormSectionsProvider>
           <PublicFormLogo />
-          <FormStartPage />
+          <FormStartPage isTemplate />
           <PublicFormWrapper isPreview>
             <FormInstructions />
             <FormFields />
@@ -39,9 +39,9 @@ export const PreviewFormPage = (): JSX.Element => {
             <FormFooter />
           </PublicFormWrapper>
         </FormSectionsProvider>
-      </PreviewFormProvider>
+      </TemplateFormProvider>
     </Flex>
   )
 }
 
-export default PreviewFormPage
+export default TemplateFormPage
