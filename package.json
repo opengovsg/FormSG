@@ -28,6 +28,8 @@
     "test:backend": "env-cmd -f tests/.test-env jest --coverage --maxWorkers=4",
     "test:backend:watch": "env-cmd -f tests/.test-env jest --watch",
     "test:frontend": "npm --prefix frontend test",
+    "test:e2e-v2": "npm run build && npx playwright test",
+    "test:e2e-v2:server": "env-cmd -f ./__tests__/e2e/setup/.test-env npm run test-e2e-server",
     "build": "npm run clean && concurrently \"npm:build:*\"",
     "test:angularjs": "jest --config=tests/unit/frontend/jest.config.js",
     "dev:angularjs": "webpack --config webpack.dev.js",
@@ -46,7 +48,6 @@
     "test-e2e-build": "npm run build:backend && npm run dev:angularjs",
     "test-e2e-ci": "env-cmd -f tests/.test-env --use-shell \"npm run download-binary && npm run testcafe-command\"",
     "testcafe-command": "testcafe --skip-js-errors -c 2 chrome:headless ./tests/end-to-end --app \"npm run test-e2e-server\" --app-init-delay 10000",
-    "test:e2e": "env-cmd -f ./__tests__/e2e/setup/.test-env concurrently --success last --kill-others \"mockpass\" \"maildev\" \"node dist/backend/src/app/server.js\" \"node ./tests/mock-webhook-server.js\"",
     "test-e2e-server": "concurrently --success last --kill-others \"mockpass\" \"maildev\" \"node dist/backend/src/app/server.js\" \"node ./tests/mock-webhook-server.js\"",
     "lint-code": "eslint src/ --quiet --fix",
     "lint-style": "stylelint '*/**/*.css' --quiet --fix",
@@ -287,5 +288,14 @@
     "webpack-cli": "^3.3.12",
     "webpack-merge": "^4.1.3",
     "worker-loader": "^2.0.0"
+  },
+  "config": {
+    "//" : [
+      "This is required for the mongodb binary to be downloaded on M1 macs",
+      "to run the test suite, since mongo does not have an arm image."
+    ],
+    "mongodbMemoryServer": {
+      "arch": "x64"
+    }
   }
 }
