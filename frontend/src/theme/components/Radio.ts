@@ -24,6 +24,9 @@ export const Radio: ComponentMultiStyleConfig<typeof parts> = {
   parts: parts.keys,
   baseStyle: ({ colorScheme: c, theme }) => ({
     control: {
+      '@media print': {
+        borderColor: `neutral.400`,
+      },
       bg: 'white',
       cursor: 'pointer',
       border: '2px solid',

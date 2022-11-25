@@ -24,6 +24,9 @@ const baseStyle: PartsStyleFunction<typeof parts> = ({
 }) => ({
   // Control is the box containing the check icon
   control: {
+    '@media print': {
+      borderColor: `neutral.400`,
+    },
     bg: 'white',
     borderRadius: '0.25rem',
     border: '0.125rem solid',
