@@ -44,7 +44,8 @@ export const WorkspaceHeader = ({
     defaultFilterOption,
     activeFilter,
     setActiveFilter,
-    setSearchTerm,
+    activeSearch,
+    setActiveSearch,
   } = useWorkspaceContext()
 
   const [searchExpanded, setSearchExpanded] = useState<boolean>(false)
@@ -67,8 +68,8 @@ export const WorkspaceHeader = ({
 
   const handleCollapseSearchbar = useCallback(() => {
     setSearchExpanded(false)
-    setSearchTerm('')
-  }, [setSearchTerm])
+    setActiveSearch('')
+  }, [setActiveSearch])
 
   const handleSelectFilter = useCallback(
     (opt: string) =>
@@ -163,7 +164,7 @@ export const WorkspaceHeader = ({
         color="secondary.500"
         alignSelf="center"
       >
-        {activeFilter ? (
+        {activeSearch || activeFilter ? (
           <>
             Showing&nbsp;
             <Skeleton isLoaded={!isLoading}>{displayedFormsCount}</Skeleton>
@@ -173,7 +174,7 @@ export const WorkspaceHeader = ({
           'All forms ('
         )}
         <Skeleton isLoaded={!isLoading}>{totalFormsCount ?? '---'}</Skeleton>
-        {activeFilter ? <>&nbsp;forms</> : ')'}
+        {activeSearch || activeFilter ? <>&nbsp;forms</> : ')'}
       </Text>
 
       {/* 'search' and 'filter' only used in mobile & tablet mode. */}
@@ -181,7 +182,7 @@ export const WorkspaceHeader = ({
         <Searchbar
           onExpandIconClick={handleExpandSearchbar}
           onCollapseIconClick={handleCollapseSearchbar}
-          onChange={setSearchTerm}
+          onChange={setActiveSearch}
           placeholder="Search by title"
         />
       </Box>
@@ -212,7 +213,7 @@ export const WorkspaceHeader = ({
         <Searchbar
           onExpandIconClick={handleExpandSearchbar}
           onCollapseIconClick={handleCollapseSearchbar}
-          onChange={setSearchTerm}
+          onChange={setActiveSearch}
           placeholder="Search by title"
           isExpandable={false}
           filterValue={defaultFilterOption}

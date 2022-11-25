@@ -9,11 +9,11 @@ export interface WorkspaceContextProps {
   totalFormsCount?: number
   displayedForms: AdminDashboardFormMetaDto[]
   displayedFormsCount: number
+  activeSearch: string
+  setActiveSearch: (searchTerm: string) => void
   defaultFilterOption: string
   activeFilter: FilterOption | null
   setActiveFilter: (filterOption: FilterOption | null) => void
-  searchTerm: string
-  setSearchTerm: (searchTerm: string) => void
 }
 
 export const WorkspaceContext = createContext<

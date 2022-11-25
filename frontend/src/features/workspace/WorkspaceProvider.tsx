@@ -22,7 +22,7 @@ export const WorkspaceProvider = ({
   )
 
   const [activeFilter, setActiveFilter] = useState<FilterOption | null>(null)
-  const [searchTerm, setSearchTerm] = useState<string>('')
+  const [activeSearch, setActiveSearch] = useState<string>('')
 
   const displayedForms = useMemo(() => {
     if (!dashboardForms) return []
@@ -47,14 +47,14 @@ export const WorkspaceProvider = ({
 
     // Then fuzzy search
     displayedForms = fuzzysort
-      .go(searchTerm, displayedForms, {
+      .go(activeSearch, displayedForms, {
         all: true,
         key: 'title',
       })
       .map((res) => res.obj)
 
     return displayedForms
-  }, [dashboardForms, activeFilter, searchTerm])
+  }, [dashboardForms, activeFilter, activeSearch])
 
   const displayedFormsCount = useMemo(
     () => displayedForms.length,
@@ -73,8 +73,8 @@ export const WorkspaceProvider = ({
         defaultFilterOption,
         activeFilter,
         setActiveFilter,
-        searchTerm,
-        setSearchTerm,
+        activeSearch,
+        setActiveSearch,
       }}
     >
       {children}
