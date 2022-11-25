@@ -1,7 +1,7 @@
 {
   "name": "FormSG",
   "description": "Form Manager for Government",
-  "version": "6.18.0",
+  "version": "6.18.2",
   "homepage": "https://form.gov.sg",
   "authors": [
     "FormSG <formsg@data.gov.sg>"
@@ -28,6 +28,8 @@
     "test:backend": "env-cmd -f tests/.test-env jest --coverage --maxWorkers=4",
     "test:backend:watch": "env-cmd -f tests/.test-env jest --watch",
     "test:frontend": "npm --prefix frontend test",
+    "test:e2e-v2": "npm run build && npx playwright test",
+    "test:e2e-v2:server": "env-cmd -f ./__tests__/e2e/setup/.test-env npm run test-e2e-server",
     "build": "npm run clean && concurrently \"npm:build:*\"",
     "test:angularjs": "jest --config=tests/unit/frontend/jest.config.js",
     "dev:angularjs": "webpack --config webpack.dev.js",
@@ -46,7 +48,6 @@
     "test-e2e-build": "npm run build:backend && npm run dev:angularjs",
     "test-e2e-ci": "env-cmd -f tests/.test-env --use-shell \"npm run download-binary && npm run testcafe-command\"",
     "testcafe-command": "testcafe --skip-js-errors -c 2 chrome:headless ./tests/end-to-end --app \"npm run test-e2e-server\" --app-init-delay 10000",
-    "test:e2e": "env-cmd -f ./__tests__/e2e/setup/.test-env concurrently --success last --kill-others \"mockpass\" \"maildev\" \"node dist/backend/src/app/server.js\" \"node ./tests/mock-webhook-server.js\"",
     "test-e2e-server": "concurrently --success last --kill-others \"mockpass\" \"maildev\" \"node dist/backend/src/app/server.js\" \"node ./tests/mock-webhook-server.js\"",
     "lint-code": "eslint src/ --quiet --fix",
     "lint-style": "stylelint '*/**/*.css' --quiet --fix",
@@ -73,7 +74,7 @@
     "@opengovsg/ng-file-upload": "^12.2.15",
     "@opengovsg/sgid-client": "1.0.4",
     "@opengovsg/spcp-auth-client": "^1.4.20",
-    "@sentry/browser": "^7.17.3",
+    "@sentry/browser": "^7.20.1",
     "@sentry/integrations": "^6.19.7",
     "@stablelib/base64": "^1.0.1",
     "abortcontroller-polyfill": "^1.7.5",
@@ -226,12 +227,12 @@
     "@types/uid-generator": "^2.0.3",
     "@types/uuid": "^8.3.4",
     "@types/validator": "^13.7.10",
-    "@typescript-eslint/eslint-plugin": "^5.42.1",
+    "@typescript-eslint/eslint-plugin": "^5.44.0",
     "@typescript-eslint/parser": "^5.42.1",
     "auto-changelog": "^2.4.0",
     "axios-mock-adapter": "^1.21.2",
     "babel-loader": "^8.3.0",
-    "concurrently": "^7.5.0",
+    "concurrently": "^7.6.0",
     "copy-webpack-plugin": "^6.0.2",
     "copyfiles": "^2.4.1",
     "core-js": "^3.26.0",
@@ -253,7 +254,7 @@
     "google-fonts-plugin": "4.1.0",
     "html-loader": "~0.5.5",
     "htmlhint": "^1.1.4",
-    "husky": "^8.0.1",
+    "husky": "^8.0.2",
     "jest": "^26.6.3",
     "jest-extended": "^1.2.1",
     "jest-localstorage-mock": "^2.4.22",
@@ -287,5 +288,14 @@
     "webpack-cli": "^3.3.12",
     "webpack-merge": "^4.1.3",
     "worker-loader": "^2.0.0"
+  },
+  "config": {
+    "//" : [
+      "This is required for the mongodb binary to be downloaded on M1 macs",
+      "to run the test suite, since mongo does not have an arm image."
+    ],
+    "mongodbMemoryServer": {
+      "arch": "x64"
+    }
   }
 }

@@ -5,7 +5,6 @@ import {
   Box,
   Flex,
   Icon,
-  Portal,
   Skeleton,
   Slide,
   Text,
@@ -27,7 +26,7 @@ export type MiniHeaderProps = Pick<
   | 'miniHeaderRef'
   | 'onMobileDrawerOpen'
   | 'colorScheme'
-> & { isOpen: boolean }
+> & { isOpen: boolean; isTemplate?: boolean }
 
 export const MiniHeader = ({
   title,
@@ -38,65 +37,66 @@ export const MiniHeader = ({
   onMobileDrawerOpen,
   colorScheme,
   isOpen,
+  isTemplate,
 }: MiniHeaderProps): JSX.Element => (
-  <Portal>
-    <Slide
-      // Screen readers do not need to know of the existence of this component.
-      aria-hidden
-      ref={miniHeaderRef}
-      direction="top"
-      in={isOpen}
+  <Slide
+    // Screen readers do not need to know of the existence of this component.
+    aria-hidden
+    ref={miniHeaderRef}
+    direction="top"
+    in={isOpen}
+    style={{ zIndex: 1000 }}
+  >
+    <Box
+      bg={titleBg}
+      mt={isTemplate ? '4.75rem' : '0'}
+      px={{ base: '1.5rem', md: '2rem' }}
+      py={{ base: '0.5rem', md: '1rem' }}
+      sx={{
+        '@media print': {
+          display: 'none !important',
+        },
+      }}
     >
-      <Box
-        bg={titleBg}
-        px={{ base: '1.5rem', md: '2rem' }}
-        py={{ base: '0.5rem', md: '1rem' }}
-        sx={{
-          '@media print': {
-            display: 'none !important',
-          },
-        }}
-      >
-        <Skeleton isLoaded={!!title}>
+      <Skeleton isLoaded={!!title}>
+        <Flex
+          align="center"
+          flex={1}
+          gap="0.5rem"
+          justify="space-between"
+          flexDir="row"
+        >
           <Flex
-            align="center"
-            flex={1}
-            gap="0.5rem"
-            justify="space-between"
-            flexDir="row"
+            alignItems="center"
+            minH={{ base: '4rem', md: '0' }}
+            flex="1 1 0"
+            w="100%"
+            overflow="hidden"
           >
-            <Flex
-              alignItems="center"
-              minH={{ base: '4rem', md: '0' }}
-              flex="1 1 0"
-              w="100%"
-              overflow="hidden"
+            <Text
+              textStyle={{ base: 'h4', md: 'h2' }}
+              textAlign="start"
+              color={titleColor}
+              noOfLines={2}
             >
-              <Text
-                textStyle={{ base: 'h4', md: 'h2' }}
-                textAlign="start"
-                color={titleColor}
-                noOfLines={2}
-              >
-                {title ?? 'Loading title'}
-              </Text>
-            </Flex>
-            {activeSectionId ? (
-              // Section sidebar icon should only show up if sections exist
-              <IconButton
-                colorScheme={colorScheme}
-                aria-label="Mobile section sidebar"
-                fontSize="1.5rem"
-                icon={<BxMenuAltLeft />}
-                d={{ base: 'flex', md: 'none' }}
-                onClick={onMobileDrawerOpen}
-              />
-            ) : null}
+              {title ?? 'Loading title'}
+            </Text>
           </Flex>
-        </Skeleton>
-      </Box>
-    </Slide>
-  </Portal>
+          {activeSectionId ? (
+            // Section sidebar icon should only show up if sections exist
+            <IconButton
+              colorScheme={colorScheme}
+              aria-label="Mobile section sidebar"
+              fontSize="1.5rem"
+              icon={<BxMenuAltLeft />}
+              d={{ base: 'flex', md: 'none' }}
+              onClick={onMobileDrawerOpen}
+            />
+          ) : null}
+        </Flex>
+      </Skeleton>
+    </Box>
+  </Slide>
 )
 
 interface FormHeaderProps {
@@ -109,6 +109,7 @@ interface FormHeaderProps {
   loggedInId?: string
   showMiniHeader?: boolean
   activeSectionId?: string
+  isTemplate?: boolean
   miniHeaderRef?: RefObject<HTMLDivElement>
   onMobileDrawerOpen?: () => void
   handleLogout?: () => void
@@ -125,6 +126,7 @@ export const FormHeader = ({
   showMiniHeader,
   activeSectionId,
   miniHeaderRef,
+  isTemplate,
   onMobileDrawerOpen,
   handleLogout,
 }: FormHeaderProps): JSX.Element | null => {
@@ -157,6 +159,7 @@ export const FormHeader = ({
           miniHeaderRef={miniHeaderRef}
           onMobileDrawerOpen={onMobileDrawerOpen}
           isOpen={isOpen}
+          isTemplate={isTemplate}
         />
       ) : null}
       <Flex
