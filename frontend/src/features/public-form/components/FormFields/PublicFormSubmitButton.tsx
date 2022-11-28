@@ -31,7 +31,7 @@ export const PublicFormSubmitButton = ({
 }: PublicFormSubmitButtonProps): JSX.Element => {
   const isMobile = useIsMobile()
   const { isSubmitting } = useFormState()
-  const formInputs = useWatch<FormFieldValues>({})
+  const formInputs = useWatch<FormFieldValues>({}) as FormFieldValues
 
   const preventSubmissionLogic = useMemo(() => {
     return getLogicUnitPreventingSubmit({

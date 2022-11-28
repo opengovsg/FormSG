@@ -31,7 +31,8 @@ const makeDropdownValidator: DropdownValidatorConstructor =
       : // TODO #4279: Revisit decision to trim in backend after React rollout is complete
         fieldOptions.map((opt) => opt.trim())
     const { answer } = response
-    return isOneOfOptions(validOptions, answer)
+    const trimmedAnswer = answer.trim()
+    return isOneOfOptions(validOptions, trimmedAnswer)
       ? right(response)
       : left(`DropdownValidator:\t answer is not a valid dropdown option`)
   }
