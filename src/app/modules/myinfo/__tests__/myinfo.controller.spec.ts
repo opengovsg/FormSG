@@ -9,7 +9,6 @@ import expressHandler from 'tests/unit/backend/helpers/jest-express'
 import { DatabaseError } from '../../core/core.errors'
 import { FormNotFoundError } from '../../form/form.errors'
 import * as FormService from '../../form/form.service'
-import { SpcpService } from '../../spcp/spcp.service'
 import {
   MYINFO_AUTH_CODE_COOKIE_NAME,
   MYINFO_AUTH_CODE_COOKIE_OPTIONS,
