@@ -8,7 +8,7 @@ import { getVisibleFieldIds } from '~features/logic/utils'
 
 export const filterHiddenInputs = ({
   formFields,
-  formInputs,
+  formInputs = {},
   formLogics,
 }: {
   formFields: FormFieldDto[]
