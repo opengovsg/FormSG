@@ -130,7 +130,7 @@ export const createDropdownValidationRules: ValidationRuleFn<
   // TODO(#3360): Handle MyInfo dropdown validation
   return {
     validate: {
-      ...requiredSingleAnswerValidationFn(schema),
+      required: requiredSingleAnswerValidationFn(schema),
       validOptions: (value: string) => {
         if (!value) return
         return (
@@ -163,7 +163,7 @@ export const createHomeNoValidationRules: ValidationRuleFn<HomenoFieldBase> = (
 ): RegisterOptions => {
   return {
     validate: {
-      ...requiredSingleAnswerValidationFn(schema),
+      required: requiredSingleAnswerValidationFn(schema),
       validHomeNo: (val?: string) => {
         if (!val) return true
         return isHomePhoneNumber(val) || 'Please enter a valid landline number'
@@ -192,7 +192,7 @@ export const createNumberValidationRules: ValidationRuleFn<NumberFieldBase> = (
 
   return {
     validate: {
-      ...requiredSingleAnswerValidationFn(schema),
+      required: requiredSingleAnswerValidationFn(schema),
       validNumber: (val?: string) => {
         if (!val || !customVal) return true
 
@@ -225,7 +225,7 @@ export const createDecimalValidationRules: ValidationRuleFn<
 > = (schema): RegisterOptions => {
   return {
     validate: {
-      ...requiredSingleAnswerValidationFn(schema),
+      required: requiredSingleAnswerValidationFn(schema),
       validDecimal: (val: string) => {
         const {
           ValidationOptions: { customMax, customMin },
@@ -277,7 +277,7 @@ export const createTextValidationRules: ValidationRuleFn<
   const { selectedValidation, customVal } = schema.ValidationOptions
   return {
     validate: {
-      ...requiredSingleAnswerValidationFn(schema),
+      required: requiredSingleAnswerValidationFn(schema),
       validText: (val?: string) => {
         if (!val || !customVal) return true
 
@@ -310,7 +310,7 @@ export const createUenValidationRules: ValidationRuleFn<UenFieldBase> = (
 ): RegisterOptions => {
   return {
     validate: {
-      ...requiredSingleAnswerValidationFn(schema),
+      required: requiredSingleAnswerValidationFn(schema),
       validUen: (val?: string) => {
         if (!val) return true
         return isUenValid(val) || 'Please enter a valid UEN'
@@ -324,7 +324,7 @@ export const createNricValidationRules: ValidationRuleFn<NricFieldBase> = (
 ): RegisterOptions => {
   return {
     validate: {
-      ...requiredSingleAnswerValidationFn(schema),
+      required: requiredSingleAnswerValidationFn(schema),
       validNric: (val?: string) => {
         if (!val) return true
         return (
@@ -386,7 +386,7 @@ export const createDateValidationRules: ValidationRuleFn<DateFieldBase> = (
 ): RegisterOptions => {
   return {
     validate: {
-      ...requiredSingleAnswerValidationFn(schema),
+      required: requiredSingleAnswerValidationFn(schema),
       validDate: (val) => {
         if (!val) return true
         if (val === DATE_PARSE_FORMAT.toLowerCase()) {
