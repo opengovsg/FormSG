@@ -29,7 +29,6 @@ import { MOCK_UINFIN } from './public-forms.routes.spec.constants'
 
 jest.mock('../../../../../modules/spcp/spcp.oidc.client')
 
-jest.mock('@opengovsg/spcp-auth-client')
 const MockCpOidcClient = mocked(CpOidcClient, true)
 
 jest.mock('jsonwebtoken')

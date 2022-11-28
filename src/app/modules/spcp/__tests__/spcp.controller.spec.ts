@@ -20,7 +20,6 @@ import {
 } from '../spcp.errors'
 import { CpOidcServiceClass } from '../spcp.oidc.service/spcp.oidc.service.cp'
 import { SpOidcServiceClass } from '../spcp.oidc.service/spcp.oidc.service.sp'
-import { SpcpService } from '../spcp.service'
 import { JwtName } from '../spcp.types'
 
 import {
@@ -43,8 +42,6 @@ import {
 
 jest.mock('../spcp.oidc.client')
 
-jest.mock('../spcp.service')
-const MockSpcpService = mocked(SpcpService, true)
 jest.mock('../spcp.oidc.service/spcp.oidc.service.sp')
 const MockSpOidcServiceClass = mocked(SpOidcServiceClass, true)
 jest.mock('../spcp.oidc.service/spcp.oidc.service.cp')
@@ -260,7 +257,7 @@ describe('spcp.controller', () => {
         expect(mockSpOidcServiceClass.createJWTPayload).not.toHaveBeenCalled()
         expect(mockSpOidcServiceClass.createJWT).not.toHaveBeenCalled()
         expect(MockBillingService.recordLoginByForm).not.toHaveBeenCalled()
-        expect(MockSpcpService.getCookieSettings).not.toHaveBeenCalled()
+        expect(mockSpOidcServiceClass.getCookieSettings).not.toHaveBeenCalled()
       })
 
       it('should set isLoginError cookie and redirect when createJWTPayload errors', async () => {
@@ -292,7 +289,7 @@ describe('spcp.controller', () => {
         expect(MOCK_RESPONSE.redirect).toHaveBeenCalledWith(MOCK_DESTINATION)
         expect(mockSpOidcServiceClass.createJWT).not.toHaveBeenCalled()
         expect(MockBillingService.recordLoginByForm).not.toHaveBeenCalled()
-        expect(MockSpcpService.getCookieSettings).not.toHaveBeenCalled()
+        expect(mockSpOidcServiceClass.getCookieSettings).not.toHaveBeenCalled()
       })
 
       it('should set isLoginError cookie and redirect when createJWT errors', async () => {
@@ -328,7 +325,7 @@ describe('spcp.controller', () => {
         expect(MOCK_RESPONSE.redirect).toHaveBeenCalledWith(MOCK_DESTINATION)
 
         expect(MockBillingService.recordLoginByForm).not.toHaveBeenCalled()
-        expect(MockSpcpService.getCookieSettings).not.toHaveBeenCalled()
+        expect(mockSpOidcServiceClass.getCookieSettings).not.toHaveBeenCalled()
       })
 
       it('should set isLoginError cookie and redirect when recordLoginByForm errors', async () => {
@@ -366,7 +363,7 @@ describe('spcp.controller', () => {
         expect(MockBillingService.recordLoginByForm).toHaveBeenCalledWith(
           MOCK_SP_FORM,
         )
-        expect(MockSpcpService.getCookieSettings).not.toHaveBeenCalled()
+        expect(mockSpOidcServiceClass.getCookieSettings).not.toHaveBeenCalled()
       })
     })
     describe('(Corppass)', () => {
@@ -559,7 +556,7 @@ describe('spcp.controller', () => {
         expect(mockCpOidcServiceClass.createJWTPayload).not.toHaveBeenCalled()
         expect(mockCpOidcServiceClass.createJWT).not.toHaveBeenCalled()
         expect(MockBillingService.recordLoginByForm).not.toHaveBeenCalled()
-        expect(MockSpcpService.getCookieSettings).not.toHaveBeenCalled()
+        expect(mockCpOidcServiceClass.getCookieSettings).not.toHaveBeenCalled()
       })
 
       it('should set isLoginError cookie and redirect when createJWTPayload errors', async () => {
@@ -591,7 +588,7 @@ describe('spcp.controller', () => {
         expect(MOCK_RESPONSE.redirect).toHaveBeenCalledWith(MOCK_DESTINATION)
         expect(mockCpOidcServiceClass.createJWT).not.toHaveBeenCalled()
         expect(MockBillingService.recordLoginByForm).not.toHaveBeenCalled()
-        expect(MockSpcpService.getCookieSettings).not.toHaveBeenCalled()
+        expect(mockCpOidcServiceClass.getCookieSettings).not.toHaveBeenCalled()
       })
 
       it('should set isLoginError cookie and redirect when createJWT errors', async () => {
@@ -627,7 +624,7 @@ describe('spcp.controller', () => {
         expect(MOCK_RESPONSE.redirect).toHaveBeenCalledWith(MOCK_DESTINATION)
 
         expect(MockBillingService.recordLoginByForm).not.toHaveBeenCalled()
-        expect(MockSpcpService.getCookieSettings).not.toHaveBeenCalled()
+        expect(mockCpOidcServiceClass.getCookieSettings).not.toHaveBeenCalled()
       })
 
       it('should set isLoginError cookie and redirect when recordLoginByForm errors', async () => {
@@ -665,7 +662,7 @@ describe('spcp.controller', () => {
         expect(MockBillingService.recordLoginByForm).toHaveBeenCalledWith(
           MOCK_CP_FORM,
         )
-        expect(MockSpcpService.getCookieSettings).not.toHaveBeenCalled()
+        expect(mockCpOidcServiceClass.getCookieSettings).not.toHaveBeenCalled()
       })
     })
   })

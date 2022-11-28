@@ -61,7 +61,6 @@ import { Metatags } from '../public-form.types'
 jest.mock('../public-form.service')
 jest.mock('../../form.service')
 jest.mock('../../../auth/auth.service')
-jest.mock('../../../spcp/spcp.service')
 jest.mock('../../../spcp/spcp.oidc.service/spcp.oidc.service.sp')
 jest.mock('../../../spcp/spcp.oidc.service/spcp.oidc.service.cp')
 jest.mock('../../../myinfo/myinfo.service')

@@ -1,5 +1,3 @@
-import SPCPAuthClient from '@opengovsg/spcp-auth-client'
-import crypto from 'crypto'
 import { StatusCodes } from 'http-status-codes'
 import { err, ok, Result } from 'neverthrow'
 
@@ -33,42 +31,6 @@ const logger = createLoggerWithLabel(module)
 // Matches the MongoDB ObjectID hex format exactly (24 hex characters)
 const DESTINATION_REGEX = /^\/([a-fA-F0-9]{24})\/?$/
 
-// Checks the format of a SAML artifact
-const isArtifactValid = function (
-  idpPartnerEntityId: string,
-  samlArt: string,
-): boolean {
-  // Artifact should be 44 bytes long, of type 0x0004 and
-  // source id should be SHA-1 hash of the issuer's entityID
-  const hexEncodedArtifact = Buffer.from(samlArt, 'base64').toString('hex')
-  const artifactHexLength = hexEncodedArtifact.length
-  const typeCode = parseInt(hexEncodedArtifact.substr(0, 4))
-  const sourceId = hexEncodedArtifact.substr(8, 40)
-  const hashedEntityId = crypto
-    .createHash('sha1')
-    .update(idpPartnerEntityId, 'utf8')
-    .digest('hex')
-
-  return (
-    artifactHexLength === 88 && typeCode === 4 && sourceId === hashedEntityId
-  )
-}
-
-/**
- * Returns true if the SAML artifact and destination have the correct format,
- * false otherwise.
- * @param samlArt SAML artifact
- * @param destination Redirect destination
- * @param idpPartnerEntityId Entity ID of SP/CP server
- */
-export const isValidAuthenticationQuery = (
-  samlArt: string,
-  destination: string,
-  idpPartnerEntityId: string,
-): boolean => {
-  return !!destination && isArtifactValid(idpPartnerEntityId, samlArt)
-}
-
 /**
  * Extracts the form ID from a redirect destination
  * @param destination Redirect destination
@@ -79,27 +41,6 @@ export const extractFormId = (destination: string): string | null => {
     return null
   }
   return regexSplit[1]
-}
-
-/**
- * Wraps the auth client's getAttributes method in a Promise
- * @param authClient Auth client whose .getAttributes method should be wrapped
- * @param samlArt SAML artifact
- * @param destination Redirect destination
- */
-export const getAttributesPromise = (
-  authClient: SPCPAuthClient,
-  samlArt: string,
-  destination: string,
-): Promise<Record<string, unknown>> => {
-  return new Promise((resolve, reject) => {
-    authClient.getAttributes(samlArt, destination, (err, data) => {
-      if (err || !data || !data.attributes) {
-        return reject('Auth client could not retrieve attributes')
-      }
-      return resolve(data.attributes)
-    })
-  })
 }
 
 /**
@@ -120,25 +61,6 @@ export const getSubstringBetween = (
     const end = text.indexOf(markerEnd, start)
     return end === -1 ? null : text.substring(start + markerStart.length, end)
   }
-}
-
-/**
- * Wraps the auth client's .verifyJWT method in a Promise
- * @param authClient Auth client whose .verifyJWT method should be wrapped
- * @param jwt
- */
-export const verifyJwtPromise = (
-  authClient: SPCPAuthClient,
-  jwt: string,
-): Promise<unknown> => {
-  return new Promise<unknown>((resolve, reject) => {
-    authClient.verifyJWT<unknown>(jwt, (error, data) => {
-      if (error) {
-        return reject(error)
-      }
-      return resolve(data)
-    })
-  })
 }
 
 /**

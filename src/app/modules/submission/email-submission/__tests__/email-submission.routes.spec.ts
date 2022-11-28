@@ -25,7 +25,6 @@ import {
 } from '../../../sgid/sgid.errors'
 import { SgidService } from '../../../sgid/sgid.service'
 import { CpOidcClient, SpOidcClient } from '../../../spcp/spcp.oidc.client'
-import * as SpcpUtils from '../../../spcp/spcp.util'
 // Import last so mocks are imported correctly
 // eslint-disable-next-line import/first
 import { EmailSubmissionRouter } from '../email-submission.routes'
@@ -725,37 +724,6 @@ describe('email-submission.routes', () => {
           userName: 'S1234567A',
           userInfo: 'MyCorpPassUEN',
         })
-        const { form } = await dbHandler.insertEmailForm({
-          formOptions: {
-            esrvcId: 'mockEsrvcId',
-            authType: FormAuthType.CP,
-            hasCaptcha: false,
-            status: FormStatus.Public,
-          },
-        })
-
-        const response = await request
-          .post(`${SUBMISSIONS_ENDPT_BASE}/${form._id}`)
-          .field('body', JSON.stringify(MOCK_NO_RESPONSES_BODY))
-          .query({ captchaResponse: 'null' })
-          .set('Cookie', ['jwtCp=mockJwt'])
-
-        expect(response.status).toBe(200)
-        expect(response.body).toEqual({
-          message: 'Form submission successful.',
-          submissionId: expect.any(String),
-        })
-      })
-
-      // TODO(#4496): Remove backward compatible code to allow jwt signed with saml keys
-      it('should return 200 when client has jwt signed with SAML keys', async () => {
-        mockCpClient.verifyJwt.mockRejectedValueOnce(new Error())
-
-        jest.spyOn(SpcpUtils, 'verifyJwtPromise').mockResolvedValueOnce({
-          userName: 'S1234567A',
-          userInfo: 'MyCorpPassUEN',
-        })
-
         const { form } = await dbHandler.insertEmailForm({
           formOptions: {
             esrvcId: 'mockEsrvcId',
