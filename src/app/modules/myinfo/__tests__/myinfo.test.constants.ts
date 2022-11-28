@@ -162,6 +162,6 @@ export const MOCK_MYINFO_FORM = {
   form_fields: [],
 } as unknown as IFormSchema
 
-export const MOCK_LOGIN_COOKIE: MyInfoLoginCookiePayload = {
+export const MOCK_MYINFO_LOGIN_COOKIE: MyInfoLoginCookiePayload = {
   uinFin: MOCK_UINFIN,
 }

@@ -268,7 +268,7 @@ export const _handleGenerateOtp: ControllerHandler<
               })
           case FormAuthType.MyInfo:
             return MyInfoUtil.extractMyInfoLoginJwt(req.cookies)
-              .andThen(MyInfoService.extractUinFin)
+              .andThen(MyInfoService.verifyLoginJwt)
               .map(() => form)
               .mapErr((error) => {
                 logger.error({

@@ -48,6 +48,7 @@ import {
 import {
   IMyInfoRedirectURLArgs,
   IMyInfoServiceConfig,
+  MyInfoLoginCookiePayload,
   MyInfoRelayState,
 } from './myinfo.types'
 import {
@@ -407,16 +408,16 @@ export class MyInfoServiceClass {
    * UIN/FIN.
    * @param loginJwt Login JWT
    */
-  extractUinFin(
+  verifyLoginJwt(
     loginJwt: string,
-  ): Result<string, MyInfoInvalidLoginCookieError> {
+  ): Result<MyInfoLoginCookiePayload, MyInfoInvalidLoginCookieError> {
     return Result.fromThrowable(
       () => jwt.verify(loginJwt, spcpMyInfoConfig.myInfoJwtSecret),
       (error) => {
         logger.error({
           message: 'Error while extracting uinFin from MyInfo access token',
           meta: {
-            action: 'extractUinFin',
+            action: 'verifyLoginJwt',
           },
           error,
         })
@@ -424,7 +425,7 @@ export class MyInfoServiceClass {
       },
     )().andThen((decoded) => {
       if (isMyInfoLoginCookie(decoded)) {
-        return ok(decoded.uinFin)
+        return ok(decoded)
       }
       return err(new MyInfoInvalidLoginCookieError())
     })
@@ -493,9 +494,9 @@ export class MyInfoServiceClass {
     MyInfoInvalidLoginCookieError | MyInfoMissingLoginCookieError
   > {
     // Look for new cookie first
-    const newCookieResult = extractMyInfoLoginJwt(cookies).andThen(
-      MyInfoService.extractUinFin,
-    )
+    const newCookieResult = extractMyInfoLoginJwt(cookies)
+      .andThen(this.verifyLoginJwt)
+      .map((payload) => payload.uinFin)
     if (newCookieResult.isOk()) {
       logger.info({
         message: 'Decrypted new MyInfo cookie successfully',

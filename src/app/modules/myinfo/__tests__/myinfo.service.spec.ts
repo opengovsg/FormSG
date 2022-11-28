@@ -42,10 +42,10 @@ import {
   MOCK_FORM_ID,
   MOCK_HASHED_FIELD_IDS,
   MOCK_HASHES,
-  MOCK_LOGIN_COOKIE,
   MOCK_MYINFO_DATA,
   MOCK_MYINFO_FORM,
   MOCK_MYINFO_JWT_SECRET,
+  MOCK_MYINFO_LOGIN_COOKIE,
   MOCK_POPULATED_FORM_FIELDS,
   MOCK_REDIRECT_URL,
   MOCK_REQUESTED_ATTRS,
@@ -365,19 +365,19 @@ describe('MyInfoServiceClass', () => {
     })
   })
 
-  describe('extractUinFin', () => {
+  describe('verifyLoginJwt', () => {
     it('should return the UIN/FIN when token is valid', async () => {
       // ignore type error because verify has multiple overloads
       // @ts-ignore
-      MockJwtLibrary.verify.mockReturnValueOnce(MOCK_LOGIN_COOKIE)
+      MockJwtLibrary.verify.mockReturnValueOnce(MOCK_MYINFO_LOGIN_COOKIE)
 
-      const result = myInfoService.extractUinFin(MOCK_ACCESS_TOKEN)
+      const result = myInfoService.verifyLoginJwt(MOCK_ACCESS_TOKEN)
 
       expect(MockJwtLibrary.verify).toHaveBeenCalledWith(
         MOCK_ACCESS_TOKEN,
         MOCK_MYINFO_JWT_SECRET,
       )
-      expect(result._unsafeUnwrap()).toBe(MOCK_UINFIN)
+      expect(result._unsafeUnwrap()).toEqual(MOCK_MYINFO_LOGIN_COOKIE)
     })
 
     it('should return MyInfoInvalidLoginCookieError when token is invalid', async () => {
@@ -385,7 +385,7 @@ describe('MyInfoServiceClass', () => {
         throw new Error()
       })
 
-      const result = myInfoService.extractUinFin(MOCK_ACCESS_TOKEN)
+      const result = myInfoService.verifyLoginJwt(MOCK_ACCESS_TOKEN)
 
       expect(MockJwtLibrary.verify).toHaveBeenCalledWith(
         MOCK_ACCESS_TOKEN,

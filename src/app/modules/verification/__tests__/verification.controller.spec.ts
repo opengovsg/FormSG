@@ -26,7 +26,7 @@ import { FormNotFoundError } from '../../form/form.errors'
 import * as FormService from '../../form/form.service'
 import {
   MOCK_MYINFO_JWT,
-  MOCK_UINFIN,
+  MOCK_MYINFO_LOGIN_COOKIE,
 } from '../../myinfo/__tests__/myinfo.test.constants'
 import {
   MyInfoInvalidLoginCookieError,
@@ -689,7 +689,7 @@ describe('Verification controller', () => {
 
       expect(MockSgidService.extractSgidJwtPayload).not.toHaveBeenCalled()
       expect(MockMyInfoUtil.extractMyInfoLoginJwt).not.toHaveBeenCalled()
-      expect(MockMyInfoService.extractUinFin).not.toHaveBeenCalled()
+      expect(MockMyInfoService.verifyLoginJwt).not.toHaveBeenCalled()
       expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
       expect(MockVerificationService.sendNewOtp).toHaveBeenCalledWith(
         EXPECTED_PARAMS_FOR_SENDING_OTP,
@@ -868,7 +868,9 @@ describe('Verification controller', () => {
       MockMyInfoUtil.extractMyInfoLoginJwt.mockReturnValueOnce(
         ok(MOCK_MYINFO_JWT),
       )
-      MockMyInfoService.extractUinFin.mockReturnValueOnce(ok(MOCK_UINFIN))
+      MockMyInfoService.verifyLoginJwt.mockReturnValueOnce(
+        ok(MOCK_MYINFO_LOGIN_COOKIE),
+      )
       MockVerificationService.disableVerifiedFieldsIfRequired.mockReturnValueOnce(
         okAsync(true),
       )
@@ -887,7 +889,7 @@ describe('Verification controller', () => {
       expect(MockMyInfoUtil.extractMyInfoLoginJwt).toHaveBeenCalledWith(
         MOCK_REQ.cookies,
       )
-      expect(MockMyInfoService.extractUinFin).toHaveBeenCalledWith(
+      expect(MockMyInfoService.verifyLoginJwt).toHaveBeenCalledWith(
         MOCK_MYINFO_JWT,
       )
       expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
@@ -1345,7 +1347,7 @@ describe('Verification controller', () => {
       expect(MockMyInfoUtil.extractMyInfoLoginJwt).toHaveBeenCalledWith(
         MOCK_REQ.cookies,
       )
-      expect(MockMyInfoService.extractUinFin).not.toHaveBeenCalled()
+      expect(MockMyInfoService.verifyLoginJwt).not.toHaveBeenCalled()
       expect(MockOtpUtils.generateOtpWithHash).not.toHaveBeenCalled()
       expect(MockVerificationService.sendNewOtp).not.toHaveBeenCalled()
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
@@ -1360,7 +1362,7 @@ describe('Verification controller', () => {
       MockMyInfoUtil.extractMyInfoLoginJwt.mockReturnValueOnce(
         ok(MOCK_MYINFO_JWT),
       )
-      MockMyInfoService.extractUinFin.mockReturnValueOnce(
+      MockMyInfoService.verifyLoginJwt.mockReturnValueOnce(
         err(new MyInfoInvalidLoginCookieError()),
       )
       const expectedResponse = {
@@ -1381,7 +1383,7 @@ describe('Verification controller', () => {
       expect(MockMyInfoUtil.extractMyInfoLoginJwt).toHaveBeenCalledWith(
         MOCK_REQ.cookies,
       )
-      expect(MockMyInfoService.extractUinFin).toHaveBeenCalledWith(
+      expect(MockMyInfoService.verifyLoginJwt).toHaveBeenCalledWith(
         MOCK_MYINFO_JWT,
       )
       expect(MockOtpUtils.generateOtpWithHash).not.toHaveBeenCalled()
