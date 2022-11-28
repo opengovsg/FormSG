@@ -114,7 +114,11 @@ export const PreviewFormProvider = ({
           return (
             submitEmailModeFormMutation
               .mutateAsync(
-                { formFields: form.form_fields, formInputs },
+                {
+                  formFields: form.form_fields,
+                  formLogics: form.form_logics,
+                  formInputs,
+                },
                 {
                   onSuccess: ({ submissionId }) =>
                     setSubmissionData({
@@ -134,6 +138,7 @@ export const PreviewFormProvider = ({
               .mutateAsync(
                 {
                   formFields: form.form_fields,
+                  formLogics: form.form_logics,
                   formInputs,
                   publicKey: form.publicKey,
                 },
