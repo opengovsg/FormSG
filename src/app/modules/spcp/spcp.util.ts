@@ -15,9 +15,7 @@ import { ProcessedSingleAnswerResponse } from '../submission/submission.types'
 
 import {
   CreateRedirectUrlError,
-  FetchLoginPageError,
   InvalidJwtError,
-  LoginPageValidationError,
   MissingJwtError,
   VerifyJwtError,
 } from './spcp.errors'
@@ -259,16 +257,6 @@ export const mapRouteError: MapRouteError = (
       return {
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         errorMessage: coreErrorMessage,
-      }
-    case FetchLoginPageError:
-      return {
-        statusCode: StatusCodes.SERVICE_UNAVAILABLE,
-        errorMessage: 'Failed to contact SingPass. Please try again.',
-      }
-    case LoginPageValidationError:
-      return {
-        statusCode: StatusCodes.BAD_GATEWAY,
-        errorMessage: 'Error while contacting SingPass. Please try again.',
       }
     case MissingJwtError:
     case VerifyJwtError:

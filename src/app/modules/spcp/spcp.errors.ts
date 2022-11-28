@@ -10,24 +10,6 @@ export class CreateRedirectUrlError extends ApplicationError {
 }
 
 /**
- * Error while fetching SP/CP login page.
- */
-export class FetchLoginPageError extends ApplicationError {
-  constructor(message = 'Error while fetching SP/CP login page') {
-    super(message)
-  }
-}
-
-/**
- * Invalid SP/CP login page.
- */
-export class LoginPageValidationError extends ApplicationError {
-  constructor(message = 'Invalid SP/CP login page') {
-    super(message)
-  }
-}
-
-/**
  * JWT could not be decoded.
  */
 export class VerifyJwtError extends ApplicationError {

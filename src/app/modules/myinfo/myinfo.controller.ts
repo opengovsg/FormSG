@@ -1,15 +1,10 @@
 import { celebrate, Joi, Segments } from 'celebrate'
 import { StatusCodes } from 'http-status-codes'
 
-import {
-  FormAuthType,
-  PublicFormAuthValidateEsrvcIdDto,
-} from '../../../../shared/types'
 import { createLoggerWithLabel } from '../../config/logger'
 import { createReqMeta } from '../../utils/request'
 import { ControllerHandler } from '../core/core.types'
 import * as FormService from '../form/form.service'
-import { SpcpService } from '../spcp/spcp.service'
 
 import {
   MYINFO_AUTH_CODE_COOKIE_NAME,
@@ -21,11 +16,7 @@ import {
   MyInfoAuthCodeCookieState,
   MyInfoAuthCodeSuccessPayload,
 } from './myinfo.types'
-import {
-  mapEServiceIdCheckError,
-  mapRedirectURLError,
-  validateMyInfoForm,
-} from './myinfo.util'
+import { mapRedirectURLError, validateMyInfoForm } from './myinfo.util'
 
 const logger = createLoggerWithLabel(module)
 
@@ -86,61 +77,6 @@ export const respondWithRedirectURL: ControllerHandler<
 export const handleRedirectURLRequest = [
   validateRedirectURLRequest,
   respondWithRedirectURL,
-] as ControllerHandler[]
-
-/**
- * Validation middleware for requests to check that an
- * e-service ID on a MyInfo form is valid.
- */
-const validateEServiceIdCheck = celebrate({
-  [Segments.QUERY]: {
-    formId: Joi.string()
-      .regex(/^[0-9a-fA-F]{24}$/)
-      .required(),
-  },
-})
-
-/**
- * Checks that a form's e-service ID is valid.
- * @param req Express request
- * @param res Express response
- */
-export const checkMyInfoEServiceId: ControllerHandler<
-  unknown,
-  PublicFormAuthValidateEsrvcIdDto | { message: string },
-  unknown,
-  { formId: string }
-> = async (req, res) => {
-  const { formId } = req.query
-  return FormService.retrieveFormById(formId)
-    .andThen((form) => validateMyInfoForm(form))
-    .andThen((form) =>
-      SpcpService.createRedirectUrl(FormAuthType.SP, formId, form.esrvcId),
-    )
-    .andThen(SpcpService.fetchLoginPage)
-    .andThen(SpcpService.validateLoginPage)
-    .map((result) => res.status(StatusCodes.OK).json(result))
-    .mapErr((error) => {
-      logger.error({
-        message: 'Error while validating MyInfo e-service ID',
-        meta: {
-          action: 'checkMyInfoEServiceId',
-          ...createReqMeta(req),
-          formId,
-        },
-        error,
-      })
-      const { statusCode, errorMessage } = mapEServiceIdCheckError(error)
-      return res.status(statusCode).json({ message: errorMessage })
-    })
-}
-
-/**
- * Handles requests to validate e-service ID for a MyInfo form.
- */
-export const handleEServiceIdCheck = [
-  validateEServiceIdCheck,
-  checkMyInfoEServiceId,
 ] as ControllerHandler[]
 
 /**

@@ -1,13 +1,8 @@
 import SPCPAuthClient from '@opengovsg/spcp-auth-client'
-import axios from 'axios'
 import fs from 'fs'
-import { StatusCodes } from 'http-status-codes'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
-import {
-  FormAuthType,
-  PublicFormAuthValidateEsrvcIdDto,
-} from '../../../../shared/types'
+import { FormAuthType } from '../../../../shared/types'
 import {
   ISpcpMyInfo,
   spcpMyInfoConfig,
@@ -17,10 +12,8 @@ import { ApplicationError } from '../core/core.errors'
 
 import {
   CreateRedirectUrlError,
-  FetchLoginPageError,
   InvalidJwtError,
   InvalidOOBParamsError,
-  LoginPageValidationError,
   MissingAttributesError,
   MissingJwtError,
   RetrieveAttributesError,
@@ -41,7 +34,6 @@ import {
 import {
   extractFormId,
   getAttributesPromise,
-  getSubstringBetween,
   isCorppassJwtPayload,
   isSingpassJwtPayload,
   isValidAuthenticationQuery,
@@ -49,10 +41,6 @@ import {
 } from './spcp.util'
 
 const logger = createLoggerWithLabel(module)
-
-const LOGIN_PAGE_HEADERS =
-  'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3'
-const LOGIN_PAGE_TIMEOUT = 10000 // 10 seconds
 
 /**
  * Class for executing Singpass/Corppass-related services.
@@ -129,79 +117,6 @@ export class SpcpServiceClass {
         error: result,
       })
       return err(new CreateRedirectUrlError())
-    }
-  }
-
-  /**
-   * Fetches the HTML of the given URL.
-   * @param redirectUrl URL from which to obtain the HTML
-   */
-  fetchLoginPage(
-    redirectUrl: string,
-  ): ResultAsync<string, FetchLoginPageError> {
-    return ResultAsync.fromPromise(
-      axios
-        .get<string>(redirectUrl, {
-          headers: {
-            Accept: LOGIN_PAGE_HEADERS,
-          },
-          timeout: LOGIN_PAGE_TIMEOUT,
-          // Throw error if not status 200.
-          validateStatus: (status) => status === StatusCodes.OK,
-        })
-        .then((response) => response.data),
-      (error) => {
-        logger.error({
-          message: 'Error while fetching SP/CP login page',
-          meta: {
-            action: 'fetchLoginPage',
-            redirectUrl,
-          },
-          error,
-        })
-        return new FetchLoginPageError()
-      },
-    )
-  }
-
-  /**
-   * Validates that the login page does not have an error.
-   * @param loginHtml The HTML of the page to validate
-   */
-  validateLoginPage(
-    loginHtml: string,
-  ): Result<PublicFormAuthValidateEsrvcIdDto, LoginPageValidationError> {
-    // The successful login page should have the title 'SingPass Login'
-    // The error page should have the title 'SingPass - System Error Page'
-    const title = getSubstringBetween(loginHtml, '<title>', '</title>')
-    // Check for non-existence of title. Empty string is ok.
-    if (title === null) {
-      logger.error({
-        message: 'Could not find SP/CP login page title',
-        meta: {
-          action: 'validateLoginPage',
-          loginHtml,
-        },
-      })
-      return err(new LoginPageValidationError())
-    }
-    if (title.toLowerCase().indexOf('error') === -1) {
-      return ok({ isValid: true })
-    } else {
-      // The error page should have text like 'System Code:&nbsp<b>138</b>'
-      const errorCode = getSubstringBetween(
-        loginHtml.toLowerCase(),
-        'system code:&nbsp;<b>',
-        '</b>',
-      )
-      logger.warn({
-        message: 'Received error page from SP/CP',
-        meta: {
-          action: 'validateLoginPage',
-          errorCode,
-        },
-      })
-      return ok({ isValid: false, errorCode })
     }
   }
 
