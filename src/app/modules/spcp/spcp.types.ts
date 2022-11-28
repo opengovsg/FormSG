@@ -56,17 +56,6 @@ export type JwtPayloadFromCookie =
   | CorppassJwtPayloadFromCookie
   | SgidJwtPayloadFromCookie
 
-export interface SingpassAttributes {
-  UserName?: string
-}
-
-export interface CorppassAttributes {
-  UserInfo?: {
-    CPEntID?: string
-    CPUID?: string
-  }
-}
-
 export type SpcpDomainSettings =
   | { domain: string; path: string }
   | { [k: string]: never }

@@ -1,10 +1,8 @@
-import { StatusCodes } from 'http-status-codes'
 import { err, ok, Result } from 'neverthrow'
 
 import { BasicField, FormAuthType } from '../../../../shared/types'
 import { hasProp } from '../../../../shared/utils/has-prop'
-import { IFormSchema, MapRouteError, SPCPFieldTitle } from '../../../types'
-import { createLoggerWithLabel } from '../../config/logger'
+import { IFormSchema, SPCPFieldTitle } from '../../../types'
 import {
   AuthTypeMismatchError,
   FormAuthNoEsrvcIdError,
@@ -12,20 +10,12 @@ import {
 import { ProcessedSingleAnswerResponse } from '../submission/submission.types'
 
 import {
-  CreateRedirectUrlError,
-  InvalidJwtError,
-  MissingJwtError,
-  VerifyJwtError,
-} from './spcp.errors'
-import {
   CorppassJwtPayloadFromCookie,
   ExtractedCorppassNDIPayload,
   RedirectTargetSpcpOidc,
   SingpassJwtPayloadFromCookie,
   SpcpForm,
 } from './spcp.types'
-
-const logger = createLoggerWithLabel(module)
 
 // Matches the MongoDB ObjectID hex format exactly (24 hex characters)
 const DESTINATION_REGEX = /^\/([a-fA-F0-9]{24})\/?$/
@@ -40,26 +30,6 @@ export const extractFormId = (destination: string): string | null => {
     return null
   }
   return regexSplit[1]
-}
-
-/**
- * Retrieves a substring in between two markers of the main text
- * @param text Full text
- * @param markerStart Starting string
- * @param markerEnd Ending string
- */
-export const getSubstringBetween = (
-  text: string,
-  markerStart: string,
-  markerEnd: string,
-): string | null => {
-  const start = text.indexOf(markerStart)
-  if (start === -1) {
-    return null
-  } else {
-    const end = text.indexOf(markerEnd, start)
-    return end === -1 ? null : text.substring(start + markerStart.length, end)
-  }
 }
 
 /**
@@ -163,43 +133,6 @@ const isSpcpForm = <F extends IFormSchema>(form: F): form is SpcpForm<F> => {
     [FormAuthType.SP, FormAuthType.CP].includes(form.authType) &&
     !!form.esrvcId
   )
-}
-
-/**
- * Maps errors to status codes and error messages to return to frontend.
- * @param error
- */
-export const mapRouteError: MapRouteError = (
-  error,
-  coreErrorMessage = 'Sorry, something went wrong. Please try again.',
-) => {
-  switch (error.constructor) {
-    case CreateRedirectUrlError:
-      return {
-        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
-        errorMessage: coreErrorMessage,
-      }
-    case MissingJwtError:
-    case VerifyJwtError:
-    case InvalidJwtError:
-      return {
-        statusCode: StatusCodes.UNAUTHORIZED,
-        errorMessage:
-          'Something went wrong with your login. Please try logging in and submitting again.',
-      }
-    default:
-      logger.error({
-        message: 'Unknown route error observed',
-        meta: {
-          action: 'mapRouteError',
-        },
-        error,
-      })
-      return {
-        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
-        errorMessage: 'Sorry, something went wrong. Please try again.',
-      }
-  }
 }
 
 /**

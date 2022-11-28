@@ -19,24 +19,6 @@ export class VerifyJwtError extends ApplicationError {
 }
 
 /**
- * Invalid OOB params passed to login endpoint.
- */
-export class InvalidOOBParamsError extends ApplicationError {
-  constructor(message = 'Invalid OOB params passed to login endpoint') {
-    super(message)
-  }
-}
-
-/**
- * Error while attempting to retrieve SPCP attributes from SPCP server
- */
-export class RetrieveAttributesError extends ApplicationError {
-  constructor(message = 'Failed to retrieve attributes from SPCP') {
-    super(message)
-  }
-}
-
-/**
  * Attributes given by SP/CP did not contain NRIC or entity ID/UID.
  */
 export class MissingAttributesError extends ApplicationError {
