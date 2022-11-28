@@ -415,7 +415,7 @@ export class MyInfoServiceClass {
       () => jwt.verify(loginJwt, spcpMyInfoConfig.myInfoJwtSecret),
       (error) => {
         logger.error({
-          message: 'Error while extracting uinFin from MyInfo access token',
+          message: 'Error while verifying MyInfo login cookie',
           meta: {
             action: 'verifyLoginJwt',
           },
