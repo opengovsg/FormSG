@@ -20,8 +20,7 @@ import {
 import {
   CorppassJwtPayloadFromCookie,
   ExtractedCorppassNDIPayload,
-  RedirectTarget,
-  RedirectTargetSpOidc,
+  RedirectTargetSpcpOidc,
   SingpassJwtPayloadFromCookie,
   SpcpForm,
 } from './spcp.types'
@@ -203,23 +202,6 @@ export const mapRouteError: MapRouteError = (
   }
 }
 
-// Generates the target to redirect to for the given form id
-export const getRedirectTarget = (
-  formId: string,
-  authType: FormAuthType.SP | FormAuthType.CP,
-  isPersistentLogin?: boolean,
-  encodedQuery?: string,
-): RedirectTarget => {
-  // Need to cast to boolean because undefined is allowed as a valid value
-  // We are not following corppass's official spec for
-  // the target parameter
-  const persistentLogin =
-    authType === FormAuthType.SP ? !!isPersistentLogin : false
-  return encodedQuery
-    ? `/${formId},${persistentLogin},${encodedQuery}`
-    : `/${formId},${persistentLogin}`
-}
-
 /**
  * Generates the redirect target for the form
  * Differs from SAML implementation in using hyphen separation because NDI OIDC does not allow comma in state
@@ -233,7 +215,7 @@ export const getRedirectTargetSpcpOidc = (
   authType: FormAuthType.SP | FormAuthType.CP,
   isPersistentLogin?: boolean,
   encodedQuery?: string,
-): RedirectTargetSpOidc => {
+): RedirectTargetSpcpOidc => {
   // Need to cast to boolean because undefined is allowed as a valid value
   const persistentLogin =
     authType === FormAuthType.SP ? !!isPersistentLogin : false

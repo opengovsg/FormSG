@@ -83,13 +83,8 @@ export type SpcpForm<T extends IFormSchema> = T & {
   esrvcId: string
 }
 
-// either <formId>,boolean or <formId>,boolean,encodedQuery
-export type RedirectTarget =
-  | `${string},${boolean}`
-  | `${string},${boolean},${string}`
-
 // either <formId>-boolean or <formId>-boolean-encodedQuery
 // NDI OIDC does not allow comma separated values in state
-export type RedirectTargetSpOidc =
+export type RedirectTargetSpcpOidc =
   | `${string}-${boolean}`
   | `${string}-${boolean}-${string}`
