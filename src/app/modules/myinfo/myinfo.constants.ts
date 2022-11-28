@@ -50,7 +50,7 @@ export const MYINFO_LOGIN_COOKIE_OPTIONS = {
  * Settings for the MyInfo auth code cookie
  */
 export const MYINFO_AUTH_CODE_COOKIE_OPTIONS = {
-  // Important for security - access token cannot be read by client-side JS
+  // Important for security - auth code cannot be read by client-side JS
   httpOnly: true,
   secure: !config.isDev,
   maxAge: MYINFO_AUTH_CODE_COOKIE_AGE_MS,
