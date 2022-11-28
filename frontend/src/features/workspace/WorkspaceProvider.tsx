@@ -21,8 +21,8 @@ export const WorkspaceProvider = ({
     [dashboardForms?.length],
   )
 
-  const [activeFilter, setActiveFilter] = useState<FilterOption | null>(null)
   const [activeSearch, setActiveSearch] = useState<string>('')
+  const [activeFilter, setActiveFilter] = useState<FilterOption | null>(null)
 
   const displayedForms = useMemo(() => {
     if (!dashboardForms) return []

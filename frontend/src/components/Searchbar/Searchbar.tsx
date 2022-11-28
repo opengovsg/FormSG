@@ -119,7 +119,7 @@ export const Searchbar = forwardRef<SearchbarProps, 'input'>(
     ref,
   ) => {
     const isMobile = useIsMobile()
-    const [value, setValue] = useState<string | undefined>(valueProp)
+    const [value, setValue] = useState<string>(valueProp ?? '')
     const [isExpanded, setIsExpanded] = useState(
       !isExpandable || isExpandedProp,
     )
@@ -177,7 +177,7 @@ export const Searchbar = forwardRef<SearchbarProps, 'input'>(
 
     const onCollapseIconClick = () => {
       if (onCollapseIconClickProp) onCollapseIconClickProp()
-      setValue(undefined)
+      setValue('')
       setFilter(filterValue)
       setIsExpanded(false)
     }
@@ -224,6 +224,7 @@ export const Searchbar = forwardRef<SearchbarProps, 'input'>(
     return (
       <Flex
         border={focus ? '2px' : '1px'}
+        my={focus ? '-2px' : '-1px'}
         borderStyle="solid"
         borderRadius="0.25rem"
         borderColor={focus ? 'primary.500' : 'neutral.400'}

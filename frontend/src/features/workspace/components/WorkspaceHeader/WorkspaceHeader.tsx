@@ -8,6 +8,7 @@ import {
   DrawerBody,
   DrawerContent,
   DrawerOverlay,
+  Flex,
   Grid,
   Icon,
   MenuButton,
@@ -16,6 +17,7 @@ import {
   Text,
   useDisclosure,
 } from '@chakra-ui/react'
+import simplur from 'simplur'
 
 import { useIsMobile } from '~hooks/useIsMobile'
 import Button, { ButtonProps } from '~components/Button'
@@ -42,10 +44,10 @@ export const WorkspaceHeader = ({
     totalFormsCount,
     displayedFormsCount,
     defaultFilterOption,
-    activeFilter,
-    setActiveFilter,
     activeSearch,
     setActiveSearch,
+    activeFilter,
+    setActiveFilter,
   } = useWorkspaceContext()
 
   const [searchExpanded, setSearchExpanded] = useState<boolean>(false)
@@ -69,7 +71,8 @@ export const WorkspaceHeader = ({
   const handleCollapseSearchbar = useCallback(() => {
     setSearchExpanded(false)
     setActiveSearch('')
-  }, [setActiveSearch])
+    setActiveFilter(null)
+  }, [setActiveFilter, setActiveSearch])
 
   const handleSelectFilter = useCallback(
     (opt: string) =>
@@ -138,9 +141,12 @@ export const WorkspaceHeader = ({
     [activeFilter, defaultFilterOption],
   )
 
-  const headerStyle = useMemo(
-    () => (isMobile && activeFilter != null ? 'h3' : 'h2'),
-    [activeFilter, isMobile],
+  const headerText = useMemo(
+    () =>
+      activeSearch || activeFilter
+        ? simplur`Showing ${displayedFormsCount} of ${totalFormsCount} form[|s]`
+        : `All forms (${totalFormsCount})`,
+    [activeFilter, activeSearch, displayedFormsCount, totalFormsCount],
   )
 
   return (
@@ -161,27 +167,25 @@ export const WorkspaceHeader = ({
       }}
       gap="1rem"
     >
-      <Text
+      <Flex
         gridArea="header"
         flex={1}
-        as={headerStyle}
-        textStyle={headerStyle}
         display="flex"
         color="secondary.500"
         alignSelf="center"
       >
-        {activeSearch || activeFilter ? (
-          <>
-            Showing&nbsp;
-            <Skeleton isLoaded={!isLoading}>{displayedFormsCount}</Skeleton>
-            &nbsp;of&nbsp;
-          </>
-        ) : (
-          'All forms ('
-        )}
-        <Skeleton isLoaded={!isLoading}>{totalFormsCount ?? '---'}</Skeleton>
-        {activeSearch || activeFilter ? <>&nbsp;forms</> : ')'}
-      </Text>
+        <Skeleton isLoaded={!isLoading}>
+          <Text
+            textStyle={
+              isMobile && (activeFilter !== null || activeSearch !== '')
+                ? 'subhead-1'
+                : 'h2'
+            }
+          >
+            {headerText}
+          </Text>
+        </Skeleton>
+      </Flex>
 
       {/* 'search' and 'filter' only used in mobile & tablet mode. */}
       <Box gridArea="search" display={{ lg: 'none' }}>
