@@ -343,6 +343,7 @@ export const createCheckboxValidationRules: ValidationRuleFn<
   return {
     validate: {
       required: (val?: CheckboxFieldValues['value']) => {
+        if (!schema.required) return true
         if (!val) return REQUIRED_ERROR
         // Trim strings before checking for emptiness
         return val.map((v) => v.trim()).some(identity) || REQUIRED_ERROR
