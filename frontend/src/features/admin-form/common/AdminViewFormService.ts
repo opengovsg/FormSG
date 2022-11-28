@@ -21,6 +21,7 @@ import {
   createEmailSubmissionFormData,
   createEncryptedSubmissionData,
 } from '~features/public-form/utils'
+import { filterHiddenInputs } from '~features/public-form/utils/filterHiddenInputs'
 
 import { PREVIEW_MOCK_UINFIN } from '../preview/constants'
 
@@ -122,10 +123,16 @@ export const removeSelfFromFormCollaborators = async (
  */
 export const submitEmailModeFormPreview = async ({
   formFields,
+  formLogics,
   formInputs,
   formId,
 }: SubmitEmailFormArgs): Promise<SubmissionResponseDto> => {
-  const formData = createEmailSubmissionFormData(formFields, formInputs)
+  const filteredInputs = filterHiddenInputs({
+    formFields,
+    formInputs,
+    formLogics,
+  })
+  const formData = createEmailSubmissionFormData(formFields, filteredInputs)
 
   return ApiService.post<SubmissionResponseDto>(
     `${ADMIN_FORM_ENDPOINT}/${formId}/preview/submissions/email`,
@@ -138,13 +145,19 @@ export const submitEmailModeFormPreview = async ({
  */
 export const submitStorageModeFormPreview = async ({
   formFields,
+  formLogics,
   formInputs,
   formId,
   publicKey,
 }: SubmitStorageFormArgs) => {
-  const submissionContent = await createEncryptedSubmissionData(
+  const filteredInputs = filterHiddenInputs({
     formFields,
     formInputs,
+    formLogics,
+  })
+  const submissionContent = await createEncryptedSubmissionData(
+    formFields,
+    filteredInputs,
     publicKey,
   )
 
