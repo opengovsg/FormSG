@@ -20,8 +20,8 @@ import {
 import {
   createEmailSubmissionFormData,
   createEncryptedSubmissionData,
+  filterHiddenInputs,
 } from '~features/public-form/utils'
-import { filterHiddenInputs } from '~features/public-form/utils/filterHiddenInputs'
 
 import { PREVIEW_MOCK_UINFIN } from '../preview/constants'
 

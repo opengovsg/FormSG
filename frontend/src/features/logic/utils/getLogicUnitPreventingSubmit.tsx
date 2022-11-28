@@ -4,7 +4,7 @@ import { FormCondition, FormDto, PreventSubmitLogicDto } from '~shared/types'
 
 import { FormFieldValues } from '~templates/Field'
 
-import { filterHiddenInputs } from '~features/public-form/utils/filterHiddenInputs'
+import { filterHiddenInputs } from '~features/public-form/utils'
 
 import { FieldIdToType } from '../types'
 
