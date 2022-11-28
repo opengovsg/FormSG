@@ -210,7 +210,12 @@ export const PublicFormProvider = ({
           return (
             submitEmailModeFormMutation
               .mutateAsync(
-                { formFields: form.form_fields, formInputs, captchaResponse },
+                {
+                  formFields: form.form_fields,
+                  formLogics: form.form_logics,
+                  formInputs,
+                  captchaResponse,
+                },
                 {
                   onSuccess: ({ submissionId }) => {
                     setSubmissionData({
@@ -232,6 +237,7 @@ export const PublicFormProvider = ({
               .mutateAsync(
                 {
                   formFields: form.form_fields,
+                  formLogics: form.form_logics,
                   formInputs,
                   publicKey: form.publicKey,
                   captchaResponse,

@@ -34,7 +34,9 @@ function dropdownFieldComponentController() {
   vm.dropdownFilter = function (searchString) {
     let dropdownOptions = getFieldOptions()
     vm.filteredDropdownOptions = dropdownOptions.filter((option) => {
-      return option.toLowerCase().indexOf(searchString.toLowerCase()) > -1
+      return (
+        option.trim().toLowerCase().indexOf(searchString.toLowerCase()) > -1
+      )
     })
   }
 
