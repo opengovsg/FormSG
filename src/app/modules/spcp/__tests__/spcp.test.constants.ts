@@ -1,6 +1,5 @@
 import { MyInfoMode } from '@opengovsg/myinfo-gov-client'
 import { ObjectId } from 'bson'
-import crypto from 'crypto'
 import fs from 'fs'
 import _ from 'lodash'
 
@@ -22,25 +21,7 @@ export const MOCK_SERVICE_PARAMS: ISpcpMyInfo = {
   spCookieMaxAgePreserved: 2,
   spcpCookieDomain: 'spcpCookieDomain',
   cpCookieMaxAge: 3,
-  // spIdpId and cpIdpId need to match the injected environment values
-  // in order for query parameter validation on the /singpass/login
-  // and /corppass/login routes to pass
-  spIdpId: String(process.env.SINGPASS_IDP_ID),
-  cpIdpId: String(process.env.CORPPASS_IDP_ID),
-  spPartnerEntityId: 'spPartnerEntityId',
-  cpPartnerEntityId: 'cpPartnerEntityId',
-  spIdpLoginUrl: 'spIdpLoginUrl',
-  cpIdpLoginUrl: 'cpIdpLoginUrl',
-  spIdpEndpoint: 'spIdpEndpoint',
-  cpIdpEndpoint: 'cpIdpEndpoint',
-  spEsrvcId: 'spEsrvcId',
-  cpEsrvcId: 'cpEsrvcId',
-  spFormSgKeyPath: 'spFormSgKeyPath',
-  cpFormSgKeyPath: 'cpFormSgKeyPath',
-  spFormSgCertPath: 'spFormSgCertPath',
-  cpFormSgCertPath: 'cpFormSgCertPath',
-  spIdpCertPath: 'spIdpCertPath',
-  cpIdpCertPath: 'cpIdpCertPath',
+  spEsrvcId: 'spEsrvcId', // Needed for MyInfo
   myInfoClientMode: MyInfoMode.Dev,
   myInfoKeyPath: 'myInfoKeyPath',
   myInfoCertPath: 'myInfoCertPath',
@@ -75,49 +56,6 @@ export const MOCK_SP_JWT_PAYLOAD = { userName: 'mockUserName' }
 export const MOCK_CP_JWT_PAYLOAD = {
   userName: 'mockUserName',
   userInfo: 'mockUserInfo',
-}
-const spPartnerHash = crypto
-  .createHash('sha1')
-  .update(MOCK_SERVICE_PARAMS.spIdpId, 'utf8')
-  .digest('hex')
-const cpPartnerHash = crypto
-  .createHash('sha1')
-  .update(MOCK_SERVICE_PARAMS.cpIdpId, 'utf8')
-  .digest('hex')
-const spSamlHex = `0004${'a'.repeat(4)}${spPartnerHash}${'a'.repeat(40)}`
-const cpSamlHex = `0004${'a'.repeat(4)}${cpPartnerHash}${'a'.repeat(40)}`
-export const MOCK_SP_SAML = Buffer.from(spSamlHex, 'hex').toString('base64')
-export const MOCK_CP_SAML = Buffer.from(cpSamlHex, 'hex').toString('base64')
-// Set typecode to 5 instead of 4
-export const MOCK_SP_SAML_WRONG_TYPECODE = Buffer.from(
-  `0005${'a'.repeat(4)}${spPartnerHash}${'a'.repeat(40)}`,
-  'hex',
-).toString('base64')
-export const MOCK_CP_SAML_WRONG_TYPECODE = Buffer.from(
-  `0005${'a'.repeat(4)}${cpPartnerHash}${'a'.repeat(40)}`,
-  'hex',
-).toString('base64')
-// Set hash to nonsense
-export const MOCK_SP_SAML_WRONG_HASH = Buffer.from(
-  `0004${'a'.repeat(84)}`,
-  'hex',
-).toString('base64')
-export const MOCK_CP_SAML_WRONG_HASH = Buffer.from(
-  `0004${'a'.repeat(84)}`,
-  'hex',
-).toString('base64')
-
-export const MOCK_ATTRIBUTES = {
-  UserName: 'username',
-  UserInfo: {
-    CPEntID: 'CPEntID',
-    CPUID: 'CPUID',
-  },
-}
-
-export const MOCK_GET_ATTRIBUTES_RETURN_VALUE = {
-  relayState: 'relayState',
-  attributes: MOCK_ATTRIBUTES,
 }
 
 export const MOCK_JWT_PAYLOAD = {
