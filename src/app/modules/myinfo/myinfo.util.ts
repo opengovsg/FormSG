@@ -318,15 +318,12 @@ const isMyInfoFormWithEsrvcId = <F extends IFormSchema>(
 export const isMyInfoLoginCookie = (
   cookie: unknown,
 ): cookie is MyInfoLoginCookiePayload => {
-  if (
-    cookie &&
+  return (
+    !!cookie &&
     typeof cookie === 'object' &&
     hasProp(cookie, 'uinFin') &&
     typeof cookie.uinFin === 'string'
-  ) {
-    return true
-  }
-  return false
+  )
 }
 
 // TODO(#5452): Delete this function
@@ -455,7 +452,7 @@ export const extractMyInfoLoginJwt = (
   cookies: Record<string, unknown>,
 ): Result<string, MyInfoMissingLoginCookieError> => {
   const jwt = cookies[MYINFO_LOGIN_COOKIE_NAME]
-  if (typeof jwt === 'string') {
+  if (typeof jwt === 'string' && !!jwt) {
     return ok(jwt)
   }
   return err(new MyInfoMissingLoginCookieError())

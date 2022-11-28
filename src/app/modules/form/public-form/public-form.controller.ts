@@ -23,6 +23,7 @@ import * as BillingService from '../../billing/billing.service'
 import { ControllerHandler } from '../../core/core.types'
 import {
   MYINFO_AUTH_CODE_COOKIE_NAME,
+  MYINFO_AUTH_CODE_COOKIE_OPTIONS,
   MYINFO_LOGIN_COOKIE_NAME,
   MYINFO_LOGIN_COOKIE_OPTIONS,
 } from '../../myinfo/myinfo.constants'
@@ -220,11 +221,11 @@ export const handleGetPublicForm: ControllerHandler<
     case FormAuthType.MyInfo: {
       // We always want to clear existing login cookies because we no longer
       // have the prefilled data
-      res.clearCookie(MYINFO_LOGIN_COOKIE_NAME)
+      res.clearCookie(MYINFO_LOGIN_COOKIE_NAME, MYINFO_LOGIN_COOKIE_OPTIONS)
       const authCodeCookie: unknown = req.cookies[MYINFO_AUTH_CODE_COOKIE_NAME]
       // No auth code cookie because user is accessing the form before logging
       // in
-      if (authCodeCookie === null || authCodeCookie === undefined) {
+      if (!authCodeCookie) {
         return res.json({
           form: publicForm,
           isIntranetUser,
@@ -232,7 +233,10 @@ export const handleGetPublicForm: ControllerHandler<
       }
 
       // Clear auth code cookie once found, as it can't be reused
-      res.clearCookie(MYINFO_AUTH_CODE_COOKIE_NAME)
+      res.clearCookie(
+        MYINFO_AUTH_CODE_COOKIE_NAME,
+        MYINFO_AUTH_CODE_COOKIE_OPTIONS,
+      )
 
       // Step 1. Fetch required data and fill the form based off data retrieved
       return extractAuthCode(authCodeCookie)
@@ -279,13 +283,11 @@ export const handleGetPublicForm: ControllerHandler<
           })
           // No need for cookie if data could not be retrieved
           // NOTE: If the user does not have any cookie, clearing the cookie still has the same result
-          return res
-            .clearCookie(MYINFO_LOGIN_COOKIE_NAME, MYINFO_LOGIN_COOKIE_OPTIONS)
-            .json({
-              form: publicForm,
-              myInfoError: true,
-              isIntranetUser,
-            })
+          return res.json({
+            form: publicForm,
+            myInfoError: true,
+            isIntranetUser,
+          })
         })
     }
     case FormAuthType.SGID:
