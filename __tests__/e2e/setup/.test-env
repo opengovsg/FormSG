@@ -28,6 +28,7 @@ MYINFO_FORMSG_KEY_PATH=./node_modules/@opengovsg/mockpass/static/certs/key.pem
 MYINFO_CERT_PATH=./node_modules/@opengovsg/mockpass/static/certs/spcp.crt
 MYINFO_CLIENT_ID=mockClientId
 MYINFO_CLIENT_SECRET=mockClientSecret
+MYINFO_JWT_SECRET=mockJwtSecret
 
 CP_FORMSG_KEY_PATH=./node_modules/@opengovsg/mockpass/static/certs/key.pem
 CP_FORMSG_CERT_PATH=./node_modules/@opengovsg/mockpass/static/certs/server.crt

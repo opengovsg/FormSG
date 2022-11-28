@@ -11,11 +11,7 @@ import { ISpcpMyInfo } from 'src/app/config/features/spcp-myinfo.config'
 import { Environment, IFormSchema } from 'src/types'
 
 import { FormAuthType, MyInfoAttribute } from '../../../../../shared/types'
-import {
-  IMyInfoServiceConfig,
-  MyInfoCookieState,
-  MyInfoSuccessfulCookiePayload,
-} from '../myinfo.types'
+import { IMyInfoServiceConfig, MyInfoLoginCookiePayload } from '../myinfo.types'
 
 export const MOCK_MYINFO_DATA = {
   name: {
@@ -130,6 +126,8 @@ export const MOCK_APP_URL = 'mockAppUrl'
 export const MOCK_ACCESS_TOKEN = 'mockAccessToken'
 export const MOCK_REDIRECT_URL = 'mockRedirectURL'
 export const MOCK_AUTH_CODE = 'mockAuthCode'
+export const MOCK_MYINFO_JWT_SECRET = 'mockMyInfoJwtSecret'
+export const MOCK_MYINFO_JWT = 'mockMyInfoJwt'
 
 export const MOCK_SERVICE_PARAMS: IMyInfoServiceConfig = {
   appUrl: 'http://localhost:5000',
@@ -164,8 +162,6 @@ export const MOCK_MYINFO_FORM = {
   form_fields: [],
 } as unknown as IFormSchema
 
-export const MOCK_SUCCESSFUL_COOKIE: MyInfoSuccessfulCookiePayload = {
-  accessToken: MOCK_ACCESS_TOKEN,
-  usedCount: 0,
-  state: MyInfoCookieState.Success,
+export const MOCK_MYINFO_LOGIN_COOKIE: MyInfoLoginCookiePayload = {
+  uinFin: MOCK_UINFIN,
 }

@@ -47,9 +47,9 @@ import {
   MyInfoCookieStateError,
   MyInfoHashDidNotMatchError,
   MyInfoHashingError,
-  MyInfoInvalidAccessTokenError,
-  MyInfoMissingAccessTokenError,
+  MyInfoInvalidLoginCookieError,
   MyInfoMissingHashError,
+  MyInfoMissingLoginCookieError,
 } from '../../myinfo/myinfo.errors'
 import {
   SgidInvalidJwtError,
@@ -431,9 +431,9 @@ export const mapRouteError: MapRouteError = (error) => {
     case MissingJwtError:
     case VerifyJwtError:
     case InvalidJwtError:
-    case MyInfoMissingAccessTokenError:
+    case MyInfoMissingLoginCookieError:
     case MyInfoCookieStateError:
-    case MyInfoInvalidAccessTokenError:
+    case MyInfoInvalidLoginCookieError:
       return {
         statusCode: StatusCodes.UNAUTHORIZED,
         errorMessage:

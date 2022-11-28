@@ -2,10 +2,12 @@
 import { MyInfoGovClient } from '@opengovsg/myinfo-gov-client'
 import bcrypt from 'bcrypt'
 import { ObjectId } from 'bson-ext'
+import jwt from 'jsonwebtoken'
 import mongoose from 'mongoose'
 import { mocked } from 'ts-jest/utils'
 import { v4 as uuidv4 } from 'uuid'
 
+import { spcpMyInfoConfig } from 'src/app/config/features/spcp-myinfo.config'
 import { MyInfoServiceClass } from 'src/app/modules/myinfo/myinfo.service'
 import getMyInfoHashModel from 'src/app/modules/myinfo/myinfo_hash.model'
 import { ProcessedFieldResponse } from 'src/app/modules/submission/submission.types'
@@ -26,8 +28,7 @@ import { MYINFO_CONSENT_PAGE_PURPOSE } from '../myinfo.constants'
 import {
   MyInfoCircuitBreakerError,
   MyInfoFetchError,
-  MyInfoInvalidAccessTokenError,
-  MyInfoMissingAccessTokenError,
+  MyInfoInvalidLoginCookieError,
   MyInfoParseRelayStateError,
 } from '../myinfo.errors'
 import { MyInfoRelayState } from '../myinfo.types'
@@ -43,12 +44,13 @@ import {
   MOCK_HASHES,
   MOCK_MYINFO_DATA,
   MOCK_MYINFO_FORM,
+  MOCK_MYINFO_JWT_SECRET,
+  MOCK_MYINFO_LOGIN_COOKIE,
   MOCK_POPULATED_FORM_FIELDS,
   MOCK_REDIRECT_URL,
   MOCK_REQUESTED_ATTRS,
   MOCK_RESPONSES,
   MOCK_SERVICE_PARAMS,
-  MOCK_SUCCESSFUL_COOKIE,
   MOCK_UINFIN,
 } from './myinfo.test.constants'
 
@@ -59,6 +61,12 @@ const MockMyInfoGovClient = mocked(MyInfoGovClient, true)
 
 jest.mock('bcrypt')
 const MockBcrypt = mocked(bcrypt, true)
+
+jest.mock('jsonwebtoken')
+const MockJwtLibrary = mocked(jwt, true)
+
+jest.mock('../../../config/features/spcp-myinfo.config')
+const MockSpcpConfig = mocked(spcpMyInfoConfig, true)
 
 describe('MyInfoServiceClass', () => {
   let myInfoService: MyInfoServiceClass = new MyInfoServiceClass(
@@ -82,6 +90,7 @@ describe('MyInfoServiceClass', () => {
         } as unknown as MyInfoGovClient),
     )
     myInfoService = new MyInfoServiceClass(MOCK_SERVICE_PARAMS)
+    MockSpcpConfig.myInfoJwtSecret = MOCK_MYINFO_JWT_SECRET
   })
   afterEach(async () => await dbHandler.clearDatabase())
   afterAll(async () => await dbHandler.closeDatabase())
@@ -125,9 +134,6 @@ describe('MyInfoServiceClass', () => {
 
       expect(result.uuid).toBe(validState.uuid)
       expect(result.formId).toBe(validState.formId)
-      expect(result.cookieDuration).toBe(
-        MOCK_SERVICE_PARAMS.spcpMyInfoConfig.spCookieMaxAge,
-      )
     })
 
     it('should return MyInfoParseRelayStateError when relay state cannot be parsed', () => {
@@ -359,26 +365,34 @@ describe('MyInfoServiceClass', () => {
     })
   })
 
-  describe('extractUinFin', () => {
-    it('should call MyInfoGovClient.extractUinFin and return the UIN/FIN when token is valid', async () => {
-      mockExtractUinFin.mockReturnValueOnce(MOCK_UINFIN)
+  describe('verifyLoginJwt', () => {
+    it('should return the UIN/FIN when token is valid', async () => {
+      // ignore type error because verify has multiple overloads
+      // @ts-ignore
+      MockJwtLibrary.verify.mockReturnValueOnce(MOCK_MYINFO_LOGIN_COOKIE)
 
-      const result = myInfoService.extractUinFin(MOCK_ACCESS_TOKEN)
+      const result = myInfoService.verifyLoginJwt(MOCK_ACCESS_TOKEN)
 
-      expect(mockExtractUinFin).toHaveBeenCalledWith(MOCK_ACCESS_TOKEN)
-      expect(result._unsafeUnwrap()).toBe(MOCK_UINFIN)
+      expect(MockJwtLibrary.verify).toHaveBeenCalledWith(
+        MOCK_ACCESS_TOKEN,
+        MOCK_MYINFO_JWT_SECRET,
+      )
+      expect(result._unsafeUnwrap()).toEqual(MOCK_MYINFO_LOGIN_COOKIE)
     })
 
-    it('should return MyInfoInvalidAccessTokenError when token is invalid', async () => {
-      mockExtractUinFin.mockImplementationOnce(() => {
+    it('should return MyInfoInvalidLoginCookieError when token is invalid', async () => {
+      MockJwtLibrary.verify.mockImplementationOnce(() => {
         throw new Error()
       })
 
-      const result = myInfoService.extractUinFin(MOCK_ACCESS_TOKEN)
+      const result = myInfoService.verifyLoginJwt(MOCK_ACCESS_TOKEN)
 
-      expect(mockExtractUinFin).toHaveBeenCalledWith(MOCK_ACCESS_TOKEN)
+      expect(MockJwtLibrary.verify).toHaveBeenCalledWith(
+        MOCK_ACCESS_TOKEN,
+        MOCK_MYINFO_JWT_SECRET,
+      )
       expect(result._unsafeUnwrapErr()).toEqual(
-        new MyInfoInvalidAccessTokenError(),
+        new MyInfoInvalidLoginCookieError(),
       )
     })
   })
@@ -401,7 +415,7 @@ describe('MyInfoServiceClass', () => {
       // Act
       const result = await myInfoService.getMyInfoDataForForm(
         MOCK_MYINFO_FORM as IPopulatedForm,
-        { MyInfoCookie: MOCK_SUCCESSFUL_COOKIE },
+        MOCK_ACCESS_TOKEN,
       )
 
       // Assert
@@ -419,7 +433,7 @@ describe('MyInfoServiceClass', () => {
       // Act
       const result = await myInfoService.getMyInfoDataForForm(
         MOCK_MYINFO_FORM as IPopulatedForm,
-        { MyInfoCookie: MOCK_SUCCESSFUL_COOKIE },
+        MOCK_ACCESS_TOKEN,
       )
 
       // Assert
@@ -438,7 +452,7 @@ describe('MyInfoServiceClass', () => {
       // Act
       const result = await myInfoService.getMyInfoDataForForm(
         MOCK_MYINFO_FORM as IPopulatedForm,
-        { MyInfoCookie: MOCK_SUCCESSFUL_COOKIE },
+        MOCK_ACCESS_TOKEN,
       )
 
       // Assert
@@ -456,33 +470,20 @@ describe('MyInfoServiceClass', () => {
       for (let i = 0; i < 5; i++) {
         await myInfoService.getMyInfoDataForForm(
           MOCK_MYINFO_FORM as IPopulatedForm,
-          { MyInfoCookie: MOCK_SUCCESSFUL_COOKIE },
+          MOCK_ACCESS_TOKEN,
         )
       }
 
       // Act
       const result = await myInfoService.getMyInfoDataForForm(
         MOCK_MYINFO_FORM as IPopulatedForm,
-        { MyInfoCookie: MOCK_SUCCESSFUL_COOKIE },
+        MOCK_ACCESS_TOKEN,
       )
 
       // Assert
       // Last function call doesn't count as breaker is open, so expect 5 calls
       expect(mockGetPerson).toHaveBeenCalledTimes(5)
       expect(result._unsafeUnwrapErr()).toEqual(new MyInfoCircuitBreakerError())
-    })
-    it('should not validate the form if the cookie does not exist', async () => {
-      // Arrange
-      const expected = new MyInfoMissingAccessTokenError()
-
-      // Act
-      const result = await myInfoService.getMyInfoDataForForm(
-        MOCK_MYINFO_FORM as IPopulatedForm,
-        {},
-      )
-
-      // Assert
-      expect(result._unsafeUnwrapErr()).toEqual(expected)
     })
   })
 })
