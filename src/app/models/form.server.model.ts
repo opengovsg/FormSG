@@ -163,10 +163,6 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     {
       title: {
         type: String,
-        validate: [
-          /^[a-zA-Z0-9_\-./()[\] &`;'"]*$/,
-          'Form name cannot contain special characters',
-        ],
         required: 'Form name cannot be blank',
         minlength: [4, 'Form name must be at least 4 characters'],
         maxlength: [200, 'Form name can have a maximum of 200 characters'],
