@@ -372,7 +372,8 @@ export const isMyInfoAuthCodeCookie = (
     if (
       cookie.state === MyInfoAuthCodeCookieState.Success &&
       hasProp(cookie, 'authCode') &&
-      typeof cookie.authCode === 'string'
+      typeof cookie.authCode === 'string' &&
+      cookie.authCode.length
     ) {
       return true
     } else if (
