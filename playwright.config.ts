@@ -13,7 +13,7 @@ dotenv.config({
 const config: PlaywrightTestConfig = {
   testDir: './__tests__/e2e',
   /* Maximum time one test can run for. */
-  timeout: 10 * 1000,
+  timeout: 120 * 1000,
   expect: {
     /**
      * Maximum time expect() should wait for the condition to be met.
@@ -101,7 +101,7 @@ const config: PlaywrightTestConfig = {
   globalTeardown: require.resolve('./__tests__/e2e/setup/globalTeardown'),
   webServer: [
     {
-      command: 'npm run test:e2e',
+      command: 'npm run test:e2e-v2:server',
       url: 'http://localhost:5000/analytics/statistics',
       timeout: 120 * 1000,
       reuseExistingServer: !process.env.CI,
