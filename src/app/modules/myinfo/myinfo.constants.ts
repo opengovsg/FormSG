@@ -27,7 +27,7 @@ export const MYINFO_AUTH_CODE_COOKIE_NAME = 'MyInfoAuthCode'
  * to pass the auth code from the /myinfo/login endpoint to the
  * public form endpoint.
  */
-export const MYINFO_AUTH_CODE_COOKIE_AGE_MS = 3 * 60 * 1000
+export const MYINFO_AUTH_CODE_COOKIE_AGE_MS = 2 * 60 * 1000
 
 /**
  * Name of cookie which contains state of MyInfo login, and access
