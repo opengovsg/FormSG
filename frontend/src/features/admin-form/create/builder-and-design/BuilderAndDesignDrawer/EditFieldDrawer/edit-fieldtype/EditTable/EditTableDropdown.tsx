@@ -20,7 +20,7 @@ export const EditTableDropdown = ({
   const { errors } = useFormState<EditTableInputs>()
 
   return (
-    <FormControl isRequired isInvalid={get(errors, inputName)}>
+    <FormControl id={inputName} isRequired isInvalid={get(errors, inputName)}>
       <FormLabel>Options</FormLabel>
       <Controller
         name={inputName}

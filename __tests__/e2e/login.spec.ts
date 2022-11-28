@@ -2,9 +2,8 @@
 import { expect, test } from '@playwright/test'
 import cuid from 'cuid'
 
-import { extractOtp } from './utils/mail'
-
-const ROOT_PAGE = 'http://localhost:5000'
+import { ROOT_PAGE } from './constants'
+import { extractOtp } from './utils'
 
 test.describe('login', () => {
   test.beforeEach(async ({ page }) => {
@@ -72,7 +71,7 @@ test.describe('login', () => {
 
     // Get OTP
     const otp = await extractOtp(legitUserEmail)
-    expect(otp).toBeTruthy()
+
     // Increment OTP by 1, keep to 6 digits
     const newOtp = String(parseInt(otp!, 10) + 1).slice(0, 6)
 

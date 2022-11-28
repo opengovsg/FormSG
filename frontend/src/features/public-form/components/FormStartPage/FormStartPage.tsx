@@ -7,7 +7,12 @@ import { useFormSections } from '../FormFields/FormSectionsContext'
 import { FormHeader } from './FormHeader'
 import { useFormHeader } from './useFormHeader'
 
-export const FormStartPage = (): JSX.Element => {
+interface FormStartPageProps {
+  isTemplate?: boolean
+}
+export const FormStartPage = ({
+  isTemplate,
+}: FormStartPageProps): JSX.Element => {
   const {
     form,
     spcpSession,
@@ -35,6 +40,7 @@ export const FormStartPage = (): JSX.Element => {
       miniHeaderRef={miniHeaderRef}
       onMobileDrawerOpen={onMobileDrawerOpen}
       handleLogout={handleLogout}
+      isTemplate={isTemplate}
       {...formHeaderProps}
     />
   )

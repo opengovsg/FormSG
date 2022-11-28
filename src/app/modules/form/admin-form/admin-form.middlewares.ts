@@ -6,6 +6,8 @@ import {
   SettingsUpdateDto,
 } from '../../../../../shared/types'
 
+import { verifyValidUnicodeString } from './admin-form.utils'
+
 /**
  * Joi validator for PATCH /forms/:formId/settings route.
  */
@@ -26,5 +28,7 @@ export const updateSettingsValidator = celebrate({
       url: Joi.string().uri().allow(''),
       isRetryEnabled: Joi.boolean(),
     }).min(1),
-  }).min(1),
+  })
+    .min(1)
+    .custom((value, helpers) => verifyValidUnicodeString(value, helpers)),
 })
