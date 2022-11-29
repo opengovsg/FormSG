@@ -224,7 +224,7 @@ export const Searchbar = forwardRef<SearchbarProps, 'input'>(
     return (
       <Flex
         border={focus ? '2px' : '1px'}
-        my={focus ? '-2px' : '-1px'}
+        margin={focus ? '-2px' : '-1px'}
         borderStyle="solid"
         borderRadius="0.25rem"
         borderColor={focus ? 'primary.500' : 'neutral.400'}

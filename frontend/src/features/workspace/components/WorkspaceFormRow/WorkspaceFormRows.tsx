@@ -1,7 +1,4 @@
-import { useCallback } from 'react'
 import { Box, Divider, Flex, Stack, Text } from '@chakra-ui/react'
-
-import Link from '~components/Link'
 
 import { useWorkspaceContext } from '~features/workspace/WorkspaceContext'
 import { CONTAINER_MAXW } from '~features/workspace/WorkspacePage'
@@ -23,23 +20,13 @@ const WorkspaceFormRowsSkeleton = () => {
 }
 
 const WorkspaceFormRowsFilterNone = (): JSX.Element => {
-  const { setActiveFilter, setActiveSearch } = useWorkspaceContext()
-
-  const handleReset = useCallback(() => {
-    setActiveFilter(null)
-    setActiveSearch('')
-  }, [setActiveFilter, setActiveSearch])
-
   return (
     <Box mt="2rem">
       <Stack w="100%" spacing="1rem">
         <Text textStyle="h2" align="center" color="primary.500">
           No forms found
         </Text>
-        <Text align="center">
-          Try another search or remove filters.{' '}
-          <Link onClick={handleReset}>Reset</Link>
-        </Text>
+        <Text align="center">Try another search or remove filters</Text>
         <Flex justifyContent="center">
           <WorkspaceFormRowsFilterNoneSvg />
         </Flex>
