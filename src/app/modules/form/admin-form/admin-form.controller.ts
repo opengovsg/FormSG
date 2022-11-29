@@ -953,13 +953,13 @@ export const handleGetTemplateForm: ControllerHandler<
 }
 
 /**
- * Handler for POST /:formId/adminform/copy
+ * Handler for POST /:formId/adminform/use-template
  * Duplicates the form corresponding to the formId. The form must be public to
  * be copied.
  * @note The current user will be the admin of the new duplicated form
  * @security session
  *
- * @returns 200 with the duplicate form dashboard view
+ * @returns 200 with the new form dashboard view
  * @returns 403 when form is private
  * @returns 404 when form cannot be found
  * @returns 410 when form is archived
@@ -987,7 +987,7 @@ export const handleCopyTemplateForm: ControllerHandler<
             .map((duplicatedForm) => duplicatedForm.getDashboardView(user)),
         ),
       )
-      // Success; return duplicated form's dashboard view.
+      // Success; return new form's dashboard view.
       .map((dupedDashView) => res.json(dupedDashView))
       // Error; some error occurred in the chain.
       .mapErr((error) => {

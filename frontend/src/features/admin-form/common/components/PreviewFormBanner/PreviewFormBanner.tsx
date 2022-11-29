@@ -22,6 +22,7 @@ import { ADMINFORM_ROUTE, DASHBOARD_ROUTE } from '~constants/routes'
 import Button, { ButtonProps } from '~components/Button'
 import Link from '~components/Link'
 
+import { UseTemplateModal } from '~features/admin-form/template/UseTemplateModal'
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 import { DuplicateFormModal } from '~features/workspace/components/DuplicateFormModal'
 
@@ -127,12 +128,15 @@ export const PreviewFormBanner = ({
             </Button>
           )}
         </Flex>
-        <DuplicateFormModal
-          formId={formId}
-          isTemplate
-          isOpen={isModalOpen}
-          onClose={onModalClose}
-        />
+        {isTemplate ? (
+          <UseTemplateModal
+            formId={formId}
+            isOpen={isModalOpen}
+            onClose={onModalClose}
+          />
+        ) : (
+          <DuplicateFormModal isOpen={isModalOpen} onClose={onModalClose} />
+        )}
         <Drawer
           placement="bottom"
           onClose={onDrawerClose}
