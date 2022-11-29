@@ -8,7 +8,7 @@ import Tooltip from '~components/Tooltip'
 
 import { AdminFeedbackModal } from './AdminFeedbackModal'
 
-export const AdminFeedbackIcon = (): JSX.Element | null => {
+export const AdminFeedbackIcon = (): JSX.Element => {
   const { isOpen, onOpen, onClose } = useDisclosure()
 
   return (
