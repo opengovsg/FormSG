@@ -1,7 +1,7 @@
 {
   "name": "FormSG",
   "description": "Form Manager for Government",
-  "version": "6.18.5",
+  "version": "6.19.0",
   "homepage": "https://form.gov.sg",
   "authors": [
     "FormSG <formsg@data.gov.sg>"
@@ -290,7 +290,7 @@
     "worker-loader": "^2.0.0"
   },
   "config": {
-    "//" : [
+    "//": [
       "This is required for the mongodb binary to be downloaded on M1 macs",
       "to run the test suite, since mongo does not have an arm image."
     ],
