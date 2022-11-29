@@ -17,8 +17,8 @@ import { trackCreateFormFailed } from '~features/analytics/AnalyticsService'
 import { workspaceKeys } from '~features/workspace/queries'
 
 import {
-  dupeEmailModeTemplateForm,
-  dupeStorageModeTemplateForm,
+  createEmailModeTemplateForm,
+  createStorageModeTemplateForm,
 } from './TemplateFormService'
 
 const useCommonHooks = () => {
@@ -59,7 +59,7 @@ export const useUseTemplateMutations = () => {
     CreateEmailFormBodyDto & { formIdToDuplicate: string }
   >(
     ({ formIdToDuplicate, ...params }) =>
-      dupeEmailModeTemplateForm(formIdToDuplicate, params),
+      createEmailModeTemplateForm(formIdToDuplicate, params),
     {
       onSuccess: handleSuccess,
       onError: handleError,
@@ -72,7 +72,7 @@ export const useUseTemplateMutations = () => {
     CreateStorageFormBodyDto & { formIdToDuplicate: string }
   >(
     ({ formIdToDuplicate, ...params }) =>
-      dupeStorageModeTemplateForm(formIdToDuplicate, params),
+      createStorageModeTemplateForm(formIdToDuplicate, params),
     {
       onSuccess: handleSuccess,
       onError: handleError,

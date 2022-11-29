@@ -8,7 +8,7 @@ import { ApiService } from '~services/ApiService'
 
 import { ADMIN_FORM_ENDPOINT } from '../common/AdminViewFormService'
 
-export const dupeEmailModeTemplateForm = async (
+export const createEmailModeTemplateForm = async (
   formId: string,
   body: CreateEmailFormBodyDto,
 ): Promise<FormDto> => {
@@ -18,7 +18,7 @@ export const dupeEmailModeTemplateForm = async (
   ).then(({ data }) => data)
 }
 
-export const dupeStorageModeTemplateForm = async (
+export const createStorageModeTemplateForm = async (
   formId: string,
   body: CreateStorageFormBodyDto,
 ): Promise<FormDto> => {
