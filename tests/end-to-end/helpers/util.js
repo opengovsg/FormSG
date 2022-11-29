@@ -6,7 +6,7 @@ mongoose.Promise = global.Promise
 const fs = require('fs')
 
 const appUrl = 'http://localhost:5000'
-const mailUrl = 'http://localhost:1080'
+const mailUrl = 'http://0.0.0.0:1080'
 const dbUri = 'mongodb://127.0.0.1:3000/formsg'
 const DATE = 17
 

@@ -5,12 +5,12 @@ import {
 } from '@opengovsg/myinfo-gov-client'
 import Bluebird from 'bluebird'
 import fs from 'fs'
+import jwt from 'jsonwebtoken'
 import { cloneDeep } from 'lodash'
 import mongoose, { LeanDocument } from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import CircuitBreaker from 'opossum'
 
-import { MyInfoAttribute } from '../../../../shared/types'
 import {
   Environment,
   IFieldSchema,
@@ -37,27 +37,27 @@ import {
 } from './myinfo.constants'
 import {
   MyInfoCircuitBreakerError,
-  MyInfoCookieAccessError,
-  MyInfoCookieStateError,
   MyInfoFetchError,
   MyInfoHashDidNotMatchError,
   MyInfoHashingError,
-  MyInfoInvalidAccessTokenError,
-  MyInfoMissingAccessTokenError,
+  MyInfoInvalidLoginCookieError,
   MyInfoMissingHashError,
+  MyInfoMissingLoginCookieError,
   MyInfoParseRelayStateError,
 } from './myinfo.errors'
 import {
   IMyInfoRedirectURLArgs,
   IMyInfoServiceConfig,
-  MyInfoParsedRelayState,
+  MyInfoLoginCookiePayload,
+  MyInfoRelayState,
 } from './myinfo.types'
 import {
-  assertMyInfoCookieUnused,
   compareHashedValues,
   createRelayState,
-  extractAndAssertMyInfoCookieValidity,
+  extractAndAssertOldMyInfoCookieValidity,
+  extractMyInfoLoginJwt,
   hashFieldValues,
+  isMyInfoLoginCookie,
   isMyInfoRelayState,
   validateMyInfoForm,
 } from './myinfo.util'
@@ -103,12 +103,6 @@ export class MyInfoServiceClass {
    */
   #spCookieMaxAge: number
 
-  #fetchMyInfoPersonData: (
-    accessToken: string,
-    requestedAttributes: MyInfoAttribute[],
-    singpassEserviceId: string,
-  ) => ResultAsync<MyInfoData, MyInfoCircuitBreakerError | MyInfoFetchError>
-
   /**
    *
    * @param myInfoConfig Environment variables including myInfoClientMode and myInfoKeyPath
@@ -141,54 +135,6 @@ export class MyInfoServiceClass {
         this.#myInfoGovClient.getPerson(accessToken, attributes, eSrvcId),
       BREAKER_PARAMS,
     )
-
-    /**
-     * Fetches MyInfo person detail with given params.
-     * This function has circuit breaking built into it, and will throw an error
-     * if any recent usages of this function returned an error.
-     * @param params The params required to retrieve the data.
-     * @param params.uinFin The uin/fin of the person's data to retrieve.
-     * @param params.requestedAttributes The requested attributes to fetch.
-     * @param params.singpassEserviceId The eservice id of the form requesting the data.
-     * @returns the person object retrieved.
-     * @throws an error on fetch failure or if circuit breaker is in the opened state. Use {@link CircuitBreaker#isOurError} to determine if a rejection was a result of the circuit breaker or the action.
-     */
-    this.#fetchMyInfoPersonData = function (
-      accessToken: string,
-      requestedAttributes: MyInfoAttribute[],
-      singpassEserviceId: string,
-    ): ResultAsync<MyInfoData, MyInfoCircuitBreakerError | MyInfoFetchError> {
-      return ResultAsync.fromPromise(
-        this.#myInfoPersonBreaker
-          .fire(
-            accessToken,
-            internalAttrListToScopes(requestedAttributes),
-            singpassEserviceId,
-          )
-          .then((response) => new MyInfoData(response)),
-        (error) => {
-          const logMeta = {
-            action: 'fetchMyInfoPersonData',
-            requestedAttributes,
-          }
-          if (CircuitBreaker.isOurError(error)) {
-            logger.error({
-              message: 'Circuit breaker tripped',
-              meta: logMeta,
-              error,
-            })
-            return new MyInfoCircuitBreakerError()
-          } else {
-            logger.error({
-              message: 'Error retrieving data from MyInfo',
-              meta: logMeta,
-              error,
-            })
-            return new MyInfoFetchError()
-          }
-        },
-      )
-    }
   }
 
   /**
@@ -221,7 +167,7 @@ export class MyInfoServiceClass {
    */
   parseMyInfoRelayState(
     relayState: string,
-  ): Result<MyInfoParsedRelayState, MyInfoParseRelayStateError> {
+  ): Result<MyInfoRelayState, MyInfoParseRelayStateError> {
     const safeJSONParse = Result.fromThrowable(
       () => JSON.parse(relayState) as unknown,
       (error) => {
@@ -243,9 +189,6 @@ export class MyInfoServiceClass {
           uuid: parsed.uuid,
           formId: parsed.formId,
           encodedQuery: parsed.encodedQuery,
-          // Cookie duration is currently not derived from the relay state
-          // but may be in future, e.g. if rememberMe is implemented
-          cookieDuration: this.#spCookieMaxAge,
         })
       }
       logger.error({
@@ -293,7 +236,8 @@ export class MyInfoServiceClass {
 
   /**
    * Prefill given current form fields with given MyInfo data.
-   * Saves the has of the prefilled fields as well because the two operations are atomic and should not be separated
+   * Saves the hash of the prefilled fields as well because the two operations are atomic and should not be separated
+   * @param formId
    * @param myInfoData
    * @param currFormFields
    * @returns currFormFields with the MyInfo fields prefilled with data from myInfoData
@@ -460,36 +404,38 @@ export class MyInfoServiceClass {
   }
 
   /**
-   * Decodes and verifies a JWT from MyInfo containing the user's
+   * Decodes and verifies FormSG's JWT containing the user's
    * UIN/FIN.
-   * @param accessToken Access token JWT
+   * @param loginJwt Login JWT
    */
-  extractUinFin(
-    accessToken: string,
-  ): Result<string, MyInfoInvalidAccessTokenError> {
+  verifyLoginJwt(
+    loginJwt: string,
+  ): Result<MyInfoLoginCookiePayload, MyInfoInvalidLoginCookieError> {
     return Result.fromThrowable(
-      () => this.#myInfoGovClient.extractUinFin(accessToken),
+      () => jwt.verify(loginJwt, spcpMyInfoConfig.myInfoJwtSecret),
       (error) => {
         logger.error({
-          message: 'Error while extracting uinFin from MyInfo access token',
+          message: 'Error while verifying MyInfo login cookie',
           meta: {
-            action: 'extractUinFin',
+            action: 'verifyLoginJwt',
           },
           error,
         })
-        return new MyInfoInvalidAccessTokenError()
+        return new MyInfoInvalidLoginCookieError()
       },
-    )()
+    )().andThen((decoded) => {
+      if (isMyInfoLoginCookie(decoded)) {
+        return ok(decoded)
+      }
+      return err(new MyInfoInvalidLoginCookieError())
+    })
   }
 
   /**
-   * Gets myInfo data using the provided form and the cookies of the request
+   * Gets myInfo data using the provided form and the MyInfo access token
    * @param form the form to validate
-   * @param cookies cookies of the request
+   * @param accessToken MyInfo access token
    * @returns ok(MyInfoData) if the form has been validated successfully
-   * @returns err(MyInfoMissingAccessTokenError) if no myInfoCookie was found on the request
-   * @returns err(MyInfoCookieStateError) if cookie was not successful
-   * @returns err(MyInfoCookieAccessError) if the cookie has already been used before
    * @returns err(FormAuthNoEsrvcIdError) if form has no eserviceId
    * @returns err(AuthTypeMismatchError) if the client was not authenticated using MyInfo
    * @returns err(MyInfoCircuitBreakerError) if circuit breaker was active
@@ -497,29 +443,102 @@ export class MyInfoServiceClass {
    */
   getMyInfoDataForForm(
     form: IPopulatedForm,
-    cookies: Record<string, unknown>,
+    accessToken: string,
   ): ResultAsync<
     MyInfoData,
-    | MyInfoMissingAccessTokenError
-    | MyInfoCookieStateError
     | FormAuthNoEsrvcIdError
     | AuthTypeMismatchError
     | MyInfoCircuitBreakerError
     | MyInfoFetchError
-    | MyInfoCookieAccessError
   > {
     const requestedAttributes = form.getUniqueMyInfoAttrs()
-    return extractAndAssertMyInfoCookieValidity(cookies)
-      .andThen((myInfoCookie) => assertMyInfoCookieUnused(myInfoCookie))
-      .asyncAndThen((cookiePayload) =>
-        validateMyInfoForm(form).asyncAndThen((form) =>
-          this.#fetchMyInfoPersonData(
-            cookiePayload.accessToken,
-            requestedAttributes,
+    return validateMyInfoForm(form).asyncAndThen((form) =>
+      ResultAsync.fromPromise(
+        this.#myInfoPersonBreaker
+          .fire(
+            accessToken,
+            internalAttrListToScopes(requestedAttributes),
             form.esrvcId,
-          ),
-        ),
-      )
+          )
+          .then((response) => new MyInfoData(response)),
+        (error) => {
+          const logMeta = {
+            action: 'getMyInfoDataForForm',
+            requestedAttributes,
+          }
+          if (CircuitBreaker.isOurError(error)) {
+            logger.error({
+              message: 'Circuit breaker tripped',
+              meta: logMeta,
+              error,
+            })
+            return new MyInfoCircuitBreakerError()
+          } else {
+            logger.error({
+              message: 'Error retrieving data from MyInfo',
+              meta: logMeta,
+              error,
+            })
+            return new MyInfoFetchError()
+          }
+        },
+      ),
+    )
+  }
+
+  // TODO(#5452): Stop accepting old cookie
+  extractUinFromOldAndNewLoginCookie(
+    cookies: Record<string, unknown>,
+  ): Result<
+    string,
+    MyInfoInvalidLoginCookieError | MyInfoMissingLoginCookieError
+  > {
+    // Look for new cookie first
+    const newCookieResult = extractMyInfoLoginJwt(cookies)
+      .andThen(this.verifyLoginJwt)
+      .map((payload) => payload.uinFin)
+    if (newCookieResult.isOk()) {
+      logger.info({
+        message: 'Decrypted new MyInfo cookie successfully',
+        meta: {
+          action: 'extractUinFromOldAndNewLoginCookie',
+        },
+      })
+      return newCookieResult
+    }
+
+    // If new cookie not present, look for old cookie
+    const oldCookieResult = extractAndAssertOldMyInfoCookieValidity(
+      cookies,
+    ).andThen((payload) =>
+      Result.fromThrowable(
+        () => this.#myInfoGovClient.extractUinFin(payload.accessToken),
+        (error) => {
+          logger.error({
+            message: 'Error while extracting uinFin from MyInfo access token',
+            meta: {
+              action: 'extractUinFromOldAndNewLoginCookie',
+            },
+            error,
+          })
+          return new MyInfoInvalidLoginCookieError()
+        },
+      )(),
+    )
+
+    if (oldCookieResult.isOk()) {
+      logger.info({
+        message: 'Decrypted old MyInfo cookie successfully',
+        meta: {
+          action: 'extractUinFromOldAndNewLoginCookie',
+        },
+      })
+      return oldCookieResult
+    }
+
+    // If both cookies are not present, return new cookie result so error
+    // logging reflects absence of new cookie
+    return newCookieResult
   }
 }
 

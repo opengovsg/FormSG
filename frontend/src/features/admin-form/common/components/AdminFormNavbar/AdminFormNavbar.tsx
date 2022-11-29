@@ -34,6 +34,7 @@ import {
   ADMINFORM_SETTINGS_SUBROUTE,
 } from '~constants/routes'
 import { useDraggable } from '~hooks/useDraggable'
+import { noPrintCss } from '~utils/noPrintCss'
 import Button, { ButtonProps } from '~components/Button'
 import IconButton from '~components/IconButton'
 import Tooltip from '~components/Tooltip'
@@ -115,6 +116,7 @@ export const AdminFormNavbar = ({
 
   return (
     <Grid
+      sx={noPrintCss}
       w="100vw"
       position="sticky"
       top={0}

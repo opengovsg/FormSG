@@ -1,12 +1,9 @@
-import MyInfoClient, { IMyInfoConfig } from '@opengovsg/myinfo-gov-client'
+import jwt from 'jsonwebtoken'
 import { omit } from 'lodash'
 import mongoose from 'mongoose'
-import supertest, { Session } from 'supertest-session'
+import session, { Session } from 'supertest-session'
 import { mocked } from 'ts-jest/utils'
 
-import { MYINFO_COOKIE_NAME } from 'src/app/modules/myinfo/myinfo.constants'
-import { MyInfoCookieState } from 'src/app/modules/myinfo/myinfo.types'
-import getMyInfoHashModel from 'src/app/modules/myinfo/myinfo_hash.model'
 import { FormFieldSchema } from 'src/types'
 
 import { setupApp } from 'tests/integration/helpers/express-setup'
@@ -14,9 +11,18 @@ import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import { FormAuthType, FormStatus } from '../../../../../../../shared/types'
 import {
+  MOCK_COOKIE_AGE,
+  MOCK_MYINFO_JWT,
+  MOCK_UINFIN,
+} from '../../../../../modules/myinfo/__tests__/myinfo.test.constants'
+import { MYINFO_LOGIN_COOKIE_NAME } from '../../../../../modules/myinfo/myinfo.constants'
+import getMyInfoHashModel from '../../../../../modules/myinfo/myinfo_hash.model'
+import {
   CpOidcClient,
   SpOidcClient,
 } from '../../../../../modules/spcp/spcp.oidc.client'
+// Import last so mocks are imported correctly
+// eslint-disable-next-line import/first
 import { PublicFormsRouter } from '../public-forms.routes'
 
 import {
@@ -24,7 +30,6 @@ import {
   MOCK_ATTACHMENT_RESPONSE,
   MOCK_CHECKBOX_FIELD,
   MOCK_CHECKBOX_RESPONSE,
-  MOCK_COOKIE_AGE,
   MOCK_NO_RESPONSES_BODY,
   MOCK_OPTIONAL_VERIFIED_FIELD,
   MOCK_OPTIONAL_VERIFIED_RESPONSE,
@@ -32,13 +37,13 @@ import {
   MOCK_SECTION_RESPONSE,
   MOCK_TEXT_FIELD,
   MOCK_TEXTFIELD_RESPONSE,
-  MOCK_UINFIN,
 } from './public-forms.routes.spec.constants'
 
 const MyInfoHashModel = getMyInfoHashModel(mongoose)
 
-jest.mock('../../../../../modules/spcp/spcp.oidc.client')
 const MockCpOidcClient = mocked(CpOidcClient, true)
+
+jest.mock('../../../../../modules/spcp/spcp.oidc.client')
 
 jest.mock('nodemailer', () => ({
   createTransport: jest.fn().mockReturnValue({
@@ -46,26 +51,17 @@ jest.mock('nodemailer', () => ({
   }),
 }))
 
-jest.mock('@opengovsg/myinfo-gov-client', () => {
-  return {
-    MyInfoGovClient: jest.fn().mockReturnValue({
-      extractUinFin: jest.fn(),
-      getPerson: jest.fn(),
-    }),
-    MyInfoMode: jest.requireActual('@opengovsg/myinfo-gov-client').MyInfoMode,
-    MyInfoSource: jest.requireActual('@opengovsg/myinfo-gov-client')
-      .MyInfoSource,
-    MyInfoAddressType: jest.requireActual('@opengovsg/myinfo-gov-client')
-      .MyInfoAddressType,
-    MyInfoAttribute: jest.requireActual('@opengovsg/myinfo-gov-client')
-      .MyInfoAttribute,
-  }
-})
-
-const MockMyInfoGovClient = mocked(
-  new MyInfoClient.MyInfoGovClient({} as IMyInfoConfig),
-  true,
-)
+jest.mock('@opengovsg/myinfo-gov-client', () => ({
+  MyInfoGovClient: jest.fn().mockReturnValue({
+    extractUinFin: jest.fn(),
+  }),
+  MyInfoMode: jest.requireActual('@opengovsg/myinfo-gov-client').MyInfoMode,
+  MyInfoSource: jest.requireActual('@opengovsg/myinfo-gov-client').MyInfoSource,
+  MyInfoAddressType: jest.requireActual('@opengovsg/myinfo-gov-client')
+    .MyInfoAddressType,
+  MyInfoAttribute: jest.requireActual('@opengovsg/myinfo-gov-client')
+    .MyInfoAttribute,
+}))
 
 const app = setupApp('/forms', PublicFormsRouter)
 
@@ -76,7 +72,7 @@ describe('public-form.submissions.routes', () => {
 
   beforeAll(async () => await dbHandler.connect())
   beforeEach(async () => {
-    request = supertest(app)
+    request = session(app)
   })
   afterEach(async () => {
     await dbHandler.clearDatabase()
@@ -626,9 +622,14 @@ describe('public-form.submissions.routes', () => {
       })
 
       describe('MyInfo', () => {
+        afterEach(() => jest.restoreAllMocks())
+
         it('should return 200 when submission is valid', async () => {
           // Arrange
-          MockMyInfoGovClient.extractUinFin.mockReturnValueOnce(MOCK_UINFIN)
+          // Ignore TS errors as .verify has multiple overloads
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
+          jest.spyOn(jwt, 'verify').mockReturnValueOnce({ uinFin: MOCK_UINFIN })
           const { form } = await dbHandler.insertEmailForm({
             formOptions: {
               esrvcId: 'mockEsrvcId',
@@ -636,11 +637,6 @@ describe('public-form.submissions.routes', () => {
               hasCaptcha: false,
               status: FormStatus.Public,
             },
-          })
-          const cookie = JSON.stringify({
-            accessToken: 'mockAccessToken',
-            usedCount: 0,
-            state: MyInfoCookieState.Success,
           })
           await MyInfoHashModel.updateHashes(
             MOCK_UINFIN,
@@ -656,7 +652,9 @@ describe('public-form.submissions.routes', () => {
             .query({ captchaResponse: 'null' })
             .set('Cookie', [
               // The j: indicates that the cookie is in JSON
-              `${MYINFO_COOKIE_NAME}=j:${encodeURIComponent(cookie)}`,
+              `${MYINFO_LOGIN_COOKIE_NAME}=j:${encodeURIComponent(
+                MOCK_MYINFO_JWT,
+              )}`,
             ])
 
           // Assert
@@ -725,7 +723,7 @@ describe('public-form.submissions.routes', () => {
         it('should return 401 when submission has invalid cookie', async () => {
           // Arrange
           // Mock MyInfoGovClient to return error when decoding JWT
-          MockMyInfoGovClient.extractUinFin.mockImplementationOnce(() => {
+          jest.spyOn(jwt, 'verify').mockImplementationOnce(() => {
             throw new Error()
           })
           const { form } = await dbHandler.insertEmailForm({
@@ -736,21 +734,13 @@ describe('public-form.submissions.routes', () => {
               status: FormStatus.Public,
             },
           })
-          const cookie = JSON.stringify({
-            accessToken: 'mockAccessToken',
-            usedCount: 0,
-            state: MyInfoCookieState.Success,
-          })
 
           // Act
           const response = await request
             .post(`/forms/${form._id}/submissions/email`)
             .field('body', JSON.stringify(MOCK_NO_RESPONSES_BODY))
             .query({ captchaResponse: 'null' })
-            .set('Cookie', [
-              // The j: indicates that the cookie is in JSON
-              `${MYINFO_COOKIE_NAME}=j:${encodeURIComponent(cookie)}`,
-            ])
+            .set('Cookie', [`${MYINFO_LOGIN_COOKIE_NAME}=${MOCK_MYINFO_JWT}`])
 
           // Assert
           expect(response.status).toBe(401)
@@ -763,19 +753,18 @@ describe('public-form.submissions.routes', () => {
 
         it('should return 401 when submission has cookie with the wrong shape', async () => {
           // Arrange
+          jest
+            .spyOn(jwt, 'verify')
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            .mockReturnValueOnce({ someKey: 'someValue' })
           const { form } = await dbHandler.insertEmailForm({
             formOptions: {
               esrvcId: 'mockEsrvcId',
-              authType: FormAuthType.SP,
+              authType: FormAuthType.MyInfo,
               hasCaptcha: false,
               status: FormStatus.Public,
             },
-          })
-          const cookie = JSON.stringify({
-            accessToken: 'mockAccessToken',
-            usedCount: 0,
-            // Note that state is set to Error instead of Success
-            state: MyInfoCookieState.Error,
           })
 
           // Act
@@ -785,7 +774,7 @@ describe('public-form.submissions.routes', () => {
             .query({ captchaResponse: 'null' })
             .set('Cookie', [
               // The j: indicates that the cookie is in JSON
-              `${MYINFO_COOKIE_NAME}=j:${encodeURIComponent(cookie)}`,
+              `${MYINFO_LOGIN_COOKIE_NAME}=j:${MOCK_MYINFO_JWT}`,
             ])
 
           // Assert

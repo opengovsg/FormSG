@@ -15,7 +15,7 @@ import { PublicFormLogo } from '~features/public-form/components/FormLogo'
 import FormStartPage from '~features/public-form/components/FormStartPage'
 import { PublicFormWrapper } from '~features/public-form/components/PublicFormWrapper'
 
-import { PreviewFormBanner } from '../common/components/PreviewFormBanner'
+import { PreviewFormBannerContainer } from '../common/components/PreviewFormBanner'
 
 import { PreviewFormProvider } from './PreviewFormProvider'
 
@@ -27,7 +27,7 @@ export const PreviewFormPage = (): JSX.Element => {
     <Flex flexDir="column" css={fillHeightCss} pos="relative">
       <PreviewFormProvider formId={formId}>
         <GovtMasthead />
-        <PreviewFormBanner />
+        <PreviewFormBannerContainer />
         <SwitchEnvIcon />
         <FormSectionsProvider>
           <PublicFormLogo />

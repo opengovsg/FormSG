@@ -1,5 +1,6 @@
 import bcrypt from 'bcrypt'
 import { StatusCodes } from 'http-status-codes'
+import jwt from 'jsonwebtoken'
 import moment from 'moment'
 import mongoose from 'mongoose'
 import { err, ok, Result } from 'neverthrow'
@@ -15,6 +16,7 @@ import {
   MapRouteError,
   PossiblyPrefilledField,
 } from '../../../types'
+import { spcpMyInfoConfig } from '../../config/features/spcp-myinfo.config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { DatabaseError } from '../core/core.errors'
 import {
@@ -29,23 +31,27 @@ import {
 } from '../spcp/spcp.errors'
 import { ProcessedFieldResponse } from '../submission/submission.types'
 
-import { MYINFO_COOKIE_NAME } from './myinfo.constants'
+import { MYINFO_LOGIN_COOKIE_NAME } from './myinfo.constants'
 import {
-  MyInfoCookieAccessError,
   MyInfoCookieStateError,
   MyInfoHashDidNotMatchError,
   MyInfoHashingError,
+  MyInfoInvalidAuthCodeCookieError,
   MyInfoMissingAccessTokenError,
   MyInfoMissingHashError,
+  MyInfoMissingLoginCookieError,
 } from './myinfo.errors'
 import {
+  MyInfoAuthCodeCookiePayload,
+  MyInfoAuthCodeCookieState,
   MyInfoComparePromises,
-  MyInfoCookiePayload,
-  MyInfoCookieState,
   MyInfoForm,
   MyInfoHashPromises,
+  MyInfoLoginCookiePayload,
+  MyInfoOldCookiePayload,
+  MyInfoOldCookieState,
   MyInfoRelayState,
-  MyInfoSuccessfulCookiePayload,
+  MyInfoSuccessfulOldCookiePayload,
   VisibleMyInfoResponse,
 } from './myinfo.types'
 
@@ -306,16 +312,33 @@ const isMyInfoFormWithEsrvcId = <F extends IFormSchema>(
 }
 
 /**
- * Type guard for MyInfo cookie.
+ * Type guard for MyInfo login cookie.
  * @param cookie Unknown object
  */
-export const isMyInfoCookie = (
+export const isMyInfoLoginCookie = (
   cookie: unknown,
-): cookie is MyInfoCookiePayload => {
-  if (cookie && typeof cookie === 'object' && hasProp(cookie, 'state')) {
+): cookie is MyInfoLoginCookiePayload => {
+  return (
+    !!cookie &&
+    typeof cookie === 'object' &&
+    hasProp(cookie, 'uinFin') &&
+    typeof cookie.uinFin === 'string'
+  )
+}
+
+// TODO(#5452): Delete this function
+export const isMyInfoOldCookie = (
+  cookie: unknown,
+): cookie is MyInfoOldCookiePayload => {
+  if (
+    cookie &&
+    typeof cookie === 'object' &&
+    hasProp(cookie, 'state') &&
+    typeof cookie.state === 'string'
+  ) {
     // Test for success state
     if (
-      cookie.state === MyInfoCookieState.Success &&
+      cookie.state === MyInfoOldCookieState.Success &&
       hasProp(cookie, 'accessToken') &&
       typeof cookie.accessToken === 'string' &&
       hasProp(cookie, 'usedCount') &&
@@ -324,7 +347,7 @@ export const isMyInfoCookie = (
       return true
     } else if (
       // Test for any other valid state
-      Object.values<string>(MyInfoCookieState).includes(String(cookie.state))
+      Object.values<string>(MyInfoAuthCodeCookieState).includes(cookie.state)
     ) {
       return true
     }
@@ -333,78 +356,142 @@ export const isMyInfoCookie = (
 }
 
 /**
- * Extracts a MyInfo cookie from a request's cookies, and validates
- * its shape.
- * @param cookies Cookies in a request
+ * Type guard for MyInfo auth code cookie.
+ * @param cookie Unknown object
  */
-export const extractMyInfoCookie = (
+export const isMyInfoAuthCodeCookie = (
+  cookie: unknown,
+): cookie is MyInfoAuthCodeCookiePayload => {
+  if (
+    cookie &&
+    typeof cookie === 'object' &&
+    hasProp(cookie, 'state') &&
+    typeof cookie.state === 'string'
+  ) {
+    // Test for success state
+    if (
+      cookie.state === MyInfoAuthCodeCookieState.Success &&
+      hasProp(cookie, 'authCode') &&
+      typeof cookie.authCode === 'string' &&
+      cookie.authCode.length
+    ) {
+      return true
+    } else if (
+      // Test for any other valid state
+      Object.values<string>(MyInfoAuthCodeCookieState).includes(cookie.state)
+    ) {
+      return true
+    }
+  }
+  return false
+}
+
+// TODO(#5452): Delete this function
+export const extractOldMyInfoCookie = (
   cookies: Record<string, unknown>,
-): Result<MyInfoCookiePayload, MyInfoMissingAccessTokenError> => {
-  const cookie = cookies[MYINFO_COOKIE_NAME]
-  if (isMyInfoCookie(cookie)) {
+): Result<MyInfoOldCookiePayload, MyInfoMissingAccessTokenError> => {
+  const cookie = cookies[MYINFO_LOGIN_COOKIE_NAME]
+  if (isMyInfoOldCookie(cookie)) {
     return ok(cookie)
   }
   return err(new MyInfoMissingAccessTokenError())
 }
 
 /**
+ * TODO(#5452): Delete this function
  * Asserts that myInfoCookie is in success state
  * This function acts as a discriminator so that the type of the cookie is encoded in its type
  * @param cookie the cookie to
  * @returns ok(cookie) the successful myInfoCookie
  * @returns err(cookie) the errored cookie
  */
-export const assertMyInfoCookieSuccessState = (
-  cookie: MyInfoCookiePayload,
-): Result<MyInfoSuccessfulCookiePayload, MyInfoCookieStateError> =>
-  cookie.state === MyInfoCookieState.Success
+export const assertOldMyInfoCookieSuccessState = (
+  cookie: MyInfoOldCookiePayload,
+): Result<MyInfoSuccessfulOldCookiePayload, MyInfoCookieStateError> =>
+  cookie.state === MyInfoOldCookieState.Success
     ? ok(cookie)
     : err(new MyInfoCookieStateError())
 
 /**
+ * TODO(#5452): Delete this function
  * Extracts and asserts a successful myInfoCookie from a request's cookies
- * @param cookies Cookies in a request
+   @param cookies Cookies in a request
  * @return ok(cookie) the successful myInfoCookie
  * @return err(MyInfoMissingAccessTokenError) if myInfoCookie is not present on the request
  * @return err(MyInfoCookieStateError) if the extracted myInfoCookie was in an error state
  * @return err(MyInfoCookieAccessError) if the cookie has been accessed before
- */
-export const extractAndAssertMyInfoCookieValidity = (
+  */
+export const extractAndAssertOldMyInfoCookieValidity = (
   cookies: Record<string, unknown>,
 ): Result<
-  MyInfoSuccessfulCookiePayload,
-  | MyInfoCookieStateError
-  | MyInfoMissingAccessTokenError
-  | MyInfoCookieAccessError
+  MyInfoSuccessfulOldCookiePayload,
+  MyInfoCookieStateError | MyInfoMissingAccessTokenError
 > =>
-  extractMyInfoCookie(cookies)
-    .andThen((cookiePayload) => assertMyInfoCookieSuccessState(cookiePayload))
-    .andThen((cookiePayload) => assertMyInfoCookieUnused(cookiePayload))
+  extractOldMyInfoCookie(cookies).andThen((cookiePayload) =>
+    assertOldMyInfoCookieSuccessState(cookiePayload),
+  )
 
 /**
- * Asserts that the myInfoCookie has not been used before
- * @param myInfoCookie
- * @returns ok(myInfoCookie) if the cookie has not been used before
- * @returns err(MyInfoCookieAccessError) if the cookie has been used before
- */
-export const assertMyInfoCookieUnused = (
-  myInfoCookie: MyInfoSuccessfulCookiePayload,
-): Result<MyInfoSuccessfulCookiePayload, MyInfoCookieAccessError> =>
-  myInfoCookie.usedCount <= 0
-    ? ok(myInfoCookie)
-    : err(new MyInfoCookieAccessError())
-
-/**
+ * TODO(#5452): Delete this function
  * Extracts access token from a MyInfo cookie
  * @param cookie Cookie from which access token should be extracted
  */
-export const extractAccessTokenFromCookie = (
-  cookie: MyInfoCookiePayload,
+export const extractAccessTokenFromOldCookie = (
+  cookie: MyInfoOldCookiePayload,
 ): Result<string, MyInfoCookieStateError> => {
-  if (cookie.state !== MyInfoCookieState.Success) {
+  if (cookie.state !== MyInfoOldCookieState.Success) {
     return err(new MyInfoCookieStateError())
   }
   return ok(cookie.accessToken)
+}
+
+/**
+ * Extracts a MyInfo login cookie from a request's cookies
+ * @param cookies Cookies in a request
+ */
+export const extractMyInfoLoginJwt = (
+  cookies: Record<string, unknown>,
+): Result<string, MyInfoMissingLoginCookieError> => {
+  const jwt = cookies[MYINFO_LOGIN_COOKIE_NAME]
+  if (typeof jwt === 'string' && !!jwt) {
+    return ok(jwt)
+  }
+  return err(new MyInfoMissingLoginCookieError())
+}
+
+/**
+ * Extracts a MyInfo auth code cookie from a request's cookies, and validates
+ * its shape.
+ * @param cookies Cookies in a request
+ */
+export const extractAuthCode = (
+  cookie: unknown,
+): Result<
+  string,
+  MyInfoInvalidAuthCodeCookieError | MyInfoCookieStateError
+> => {
+  if (!isMyInfoAuthCodeCookie(cookie)) {
+    return err(new MyInfoInvalidAuthCodeCookieError(cookie))
+  }
+  if (cookie.state !== MyInfoAuthCodeCookieState.Success) {
+    return err(new MyInfoCookieStateError())
+  }
+  return ok(cookie.authCode)
+}
+
+/**
+ * Creates a MyInfo login cookie signed by FormSG
+ * @param uinFin UIN/FIN to be signed
+ * @returns JWT signed by FormSG
+ */
+export const createMyInfoLoginCookie = (uinFin: string): string => {
+  const payload: MyInfoLoginCookiePayload = {
+    uinFin,
+  }
+  return jwt.sign(payload, spcpMyInfoConfig.myInfoJwtSecret, {
+    // this arg must be supplied in seconds
+    expiresIn: spcpMyInfoConfig.spCookieMaxAge / 1000,
+  })
 }
 
 export const isMyInfoRelayState = (obj: unknown): obj is MyInfoRelayState =>

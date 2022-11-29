@@ -28,20 +28,46 @@ export type VisibleMyInfoResponse = ProcessedFieldResponse & {
 
 export type MyInfoComparePromises = Map<string, Promise<boolean>>
 
-export enum MyInfoCookieState {
+export type MyInfoLoginCookiePayload = {
+  uinFin: string
+}
+
+// TODO(#5452): Delete this enum
+export enum MyInfoOldCookieState {
   Success = 'success',
   Error = 'error',
 }
 
-export type MyInfoSuccessfulCookiePayload = {
+// TODO(#5452): Delete this type
+export type MyInfoSuccessfulOldCookiePayload = {
   accessToken: string
   usedCount: number
-  state: MyInfoCookieState.Success
+  state: MyInfoOldCookieState.Success
 }
 
-export type MyInfoCookiePayload =
-  | MyInfoSuccessfulCookiePayload
-  | { state: Exclude<MyInfoCookieState, MyInfoCookieState.Success> }
+// TODO(#5452): Delete this type
+export type MyInfoOldCookiePayload =
+  | MyInfoSuccessfulOldCookiePayload
+  | { state: Exclude<MyInfoOldCookieState, MyInfoOldCookieState.Success> }
+
+export enum MyInfoAuthCodeCookieState {
+  Success = 'success',
+  Error = 'error',
+}
+
+export type MyInfoAuthCodeSuccessPayload = {
+  authCode: string
+  state: MyInfoAuthCodeCookieState.Success
+}
+
+export type MyInfoAuthCodeCookiePayload =
+  | MyInfoAuthCodeSuccessPayload
+  | {
+      state: Exclude<
+        MyInfoAuthCodeCookieState,
+        MyInfoAuthCodeCookieState.Success
+      >
+    }
 
 /**
  * The stringified properties included in the state sent to MyInfo.
@@ -50,13 +76,6 @@ export type MyInfoRelayState = {
   uuid: string
   formId: string
   encodedQuery?: string
-}
-
-/**
- * RelayState with additional properties derived from parsing it.
- */
-export type MyInfoParsedRelayState = MyInfoRelayState & {
-  cookieDuration: number
 }
 
 export type MyInfoForm<T extends IFormSchema> = T & {
