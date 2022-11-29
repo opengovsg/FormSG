@@ -1,6 +1,5 @@
 import {
   AdminFeedbackFormDto,
-  BasicField,
   ErrorDto,
   PublicFeedbackFormDto,
   PublicFormViewDto,
@@ -18,26 +17,11 @@ export const getClientEnvVars = async (): Promise<ClientEnvVars> => {
 
 // TODO #4279: Remove after React rollout is complete
 const createFeedbackResponsesArray = (
+  feedbackFormFieldsStructure: string[],
   formInputs: AdminFeedbackFormDto | PublicFeedbackFormDto,
   feedbackForm: PublicFormViewDto,
 ) => {
-  // Public does not have rating, but admin does
-  const feedbackFormFieldsStructure = [
-    'url',
-    'feedback',
-    'email',
-    'rumSessionId',
-  ]
-  if (Object.keys(formInputs).includes('rating')) {
-    feedbackFormFieldsStructure.push('rating')
-  }
-
-  const responses: {
-    _id: string
-    question: string
-    answer: string
-    fieldType: BasicField
-  }[] = feedbackFormFieldsStructure.map((question, i) => {
+  return feedbackFormFieldsStructure.map((question, i) => {
     const { _id, fieldType } = feedbackForm.form.form_fields[i]
     const answer: string = formInputs[question] ?? ''
     return {
@@ -47,15 +31,18 @@ const createFeedbackResponsesArray = (
       fieldType,
     }
   })
-
-  return responses
 }
 
 const createSwitchFeedbackSubmissionFormData = (
+  feedbackFormFieldsStructure: string[],
   formInputs: AdminFeedbackFormDto | PublicFeedbackFormDto,
   feedbackForm: PublicFormViewDto,
 ) => {
-  const responses = createFeedbackResponsesArray(formInputs, feedbackForm)
+  const responses = createFeedbackResponsesArray(
+    feedbackFormFieldsStructure,
+    formInputs,
+    feedbackForm,
+  )
   // convert content to FormData object
   const formData = new FormData()
   formData.append('body', JSON.stringify({ responses }))
@@ -76,40 +63,39 @@ export const submitSwitchEnvFormFeedback = async ({
   feedbackForm?: PublicFormViewDto
 }): Promise<SuccessMessageDto | ErrorDto> => {
   if (!feedbackForm) return new Error('Feedback form not provided')
+
+  const isAdmin = Object.keys(formInputs).includes('rating')
+  const formFields = ['url', 'feedback', 'email', 'rumSessionId']
+
+  if (isAdmin) formFields.push('rating')
+
   const formData = createSwitchFeedbackSubmissionFormData(
+    formFields,
     formInputs,
     feedbackForm,
   )
+
   return ApiService.post<SuccessMessageDto>(
-    `${PUBLIC_FORMS_ENDPOINT}/submissions/email/switchenvfeedback?captchaResponse=null`,
+    `${PUBLIC_FORMS_ENDPOINT}/submissions/email/switchenvfeedback?captchaResponse=null&view=${
+      isAdmin ? 'admin' : 'public'
+    }`,
     formData,
   ).then(({ data }) => data)
 }
-
-/**
- * Gets public view of the admin switch environment feedback form, along with any
- * identify information obtained from Singpass/Corppass/MyInfo.
- * @returns Public view of form, with additional identify information
- */
-export const getAdminFeedbackFormView =
-  async (): Promise<PublicFormViewDto> => {
-    return ApiService.get<PublicFormViewDto>(
-      `${PUBLIC_FORMS_ENDPOINT}/switchenvfeedback/admin`,
-    )
-      .then(({ data }) => data)
-      .then(transformAllIsoStringsToDate)
-  }
 
 /**
  * Gets public view of the public switch environment feedback form, along with any
  * identify information obtained from Singpass/Corppass/MyInfo.
  * @returns Public view of form, with additional identify information
  */
-export const getPublicFeedbackFormView =
-  async (): Promise<PublicFormViewDto> => {
-    return ApiService.get<PublicFormViewDto>(
-      `${PUBLIC_FORMS_ENDPOINT}/switchenvfeedback`,
-    )
-      .then(({ data }) => data)
-      .then(transformAllIsoStringsToDate)
-  }
+export const getFeedbackFormView = async (
+  admin?: boolean,
+): Promise<PublicFormViewDto> => {
+  return ApiService.get<PublicFormViewDto>(
+    `${PUBLIC_FORMS_ENDPOINT}/switchenvfeedback?view=${
+      admin ? 'admin' : 'public'
+    }`,
+  )
+    .then(({ data }) => data)
+    .then(transformAllIsoStringsToDate)
+}

@@ -5,11 +5,7 @@ import { ClientEnvVars } from '~shared/types/core'
 
 import { ApiError } from '~typings/core'
 
-import {
-  getAdminFeedbackFormView,
-  getClientEnvVars,
-  getPublicFeedbackFormView,
-} from './EnvService'
+import { getClientEnvVars, getFeedbackFormView } from './EnvService'
 
 const envKeys = {
   base: ['env'],
@@ -32,7 +28,7 @@ export const useAdminFeedbackFormView = (
 ): UseQueryResult<PublicFormViewDto, ApiError> => {
   return useQuery<PublicFormViewDto, ApiError>(
     envKeys.adminFeedbackForm,
-    () => getAdminFeedbackFormView(),
+    () => getFeedbackFormView(/* admin = */ true),
     { enabled },
   )
 }
@@ -43,7 +39,7 @@ export const usePublicFeedbackFormView = (
 ): UseQueryResult<PublicFormViewDto, ApiError> => {
   return useQuery<PublicFormViewDto, ApiError>(
     envKeys.publicFeedbackForm,
-    () => getPublicFeedbackFormView(),
+    () => getFeedbackFormView(/* admin = */ false),
     { enabled },
   )
 }
