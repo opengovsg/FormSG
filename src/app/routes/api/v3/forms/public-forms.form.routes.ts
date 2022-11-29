@@ -1,7 +1,10 @@
 import { Router } from 'express'
 
 import * as PublicFormController from '../../../../modules/form/public-form/public-form.controller'
-import { injectFeedbackFormUrl } from '../../../../modules/form/public-form/public-form.middlewares'
+import {
+  injectAdminFeedbackFormUrl,
+  injectPublicFeedbackFormUrl,
+} from '../../../../modules/form/public-form/public-form.middlewares'
 import * as ReactMigrationController from '../../../../modules/react-migration/react-migration.controller'
 
 export const PublicFormsFormRouter = Router()
@@ -24,6 +27,19 @@ PublicFormsFormRouter.route('/:formId([a-fA-F0-9]{24})').get(
   PublicFormController.handleGetPublicForm,
 )
 
+/**
+ * Returns the React to Angular switch feedback form to the user
+ * @route GET /switchenvfeedback/admin
+ * @returns 200 with form when form exists and is public
+ * @returns 404 when form is private or form with given ID does not exist
+ * @returns 410 when form is archived
+ * @returns 500 when database error occurs
+ */
+PublicFormsFormRouter.route(`/switchenvfeedback/admin`).get(
+  injectAdminFeedbackFormUrl,
+  PublicFormController.handleGetPublicForm,
+)
+
 // TODO #4279: Remove after React rollout is complete
 /**
  * Returns the React to Angular switch feedback form to the user
@@ -34,7 +50,7 @@ PublicFormsFormRouter.route('/:formId([a-fA-F0-9]{24})').get(
  * @returns 500 when database error occurs
  */
 PublicFormsFormRouter.route(`/switchenvfeedback`).get(
-  injectFeedbackFormUrl,
+  injectPublicFeedbackFormUrl,
   PublicFormController.handleGetPublicForm,
 )
 

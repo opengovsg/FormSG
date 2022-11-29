@@ -8,7 +8,7 @@ import InlineMessage from '~components/InlineMessage'
 import { useEnvMutations } from '~features/env/mutations'
 import { useEnv } from '~features/env/queries'
 
-export const AdminSwitchEnvMessage = (): JSX.Element => {
+export const AdminSwitchEnvMessage = (): JSX.Element | null => {
   const {
     data: {
       angularPhaseOutDate,
@@ -68,7 +68,5 @@ export const AdminSwitchEnvMessage = (): JSX.Element => {
         </Text>
       </InlineMessage>
     </>
-  ) : (
-    <></>
-  )
+  ) : null
 }

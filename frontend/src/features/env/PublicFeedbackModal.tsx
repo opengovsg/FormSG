@@ -1,6 +1,6 @@
 // TODO #4279: Remove after React rollout is complete
 import { useCallback, useRef, useState } from 'react'
-import { Controller, useForm } from 'react-hook-form'
+import { useForm } from 'react-hook-form'
 import {
   chakra,
   FormControl,
@@ -15,59 +15,43 @@ import {
   useBreakpointValue,
 } from '@chakra-ui/react'
 import { datadogRum } from '@datadog/browser-rum'
-import { isEmpty } from 'lodash'
 import validator from 'validator'
 
-import { SwitchEnvFeedbackFormBodyDto } from '~shared/types'
+import { PublicFeedbackFormDto } from '~shared/types'
 
 import { INVALID_EMAIL_ERROR } from '~constants/validation'
 import { useIsMobile } from '~hooks/useIsMobile'
-import { useToast } from '~hooks/useToast'
 import Button from '~components/Button'
-import Rating from '~components/Field/Rating'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import { ModalCloseButton } from '~components/Modal'
 import Textarea from '~components/Textarea'
 
+import {
+  useEnvMutations,
+  usePublicFeedbackMutation,
+} from '~features/env/mutations'
 import { useUser } from '~features/user/queries'
 
-export interface SwitchEnvModalProps {
-  isOpen: boolean
-  onClose: () => void
-  onSubmitFeedback: (formInputs: SwitchEnvFeedbackFormBodyDto) => Promise<any>
-  onChangeEnv?: () => void
-  isAdminView: boolean
-}
-
-export const ADMIN_RADIO_OPTIONS = [
-  'I couldn’t find a feature I needed',
-  'The new FormSG did not function properly',
-]
-export const COMMON_RADIO_OPTIONS = ['I’m not used to the new FormSG']
-export const FEEDBACK_OTHERS_INPUT_NAME = 'react-feedback-others-input'
-
-export const SwitchEnvFeedbackModal = ({
+export const PublicFeedbackModal = ({
   isOpen,
   onClose,
-  onChangeEnv,
-  onSubmitFeedback,
-  isAdminView,
-}: SwitchEnvModalProps): JSX.Element => {
+}: {
+  isOpen: boolean
+  onClose: () => void
+}): JSX.Element => {
   const modalSize = useBreakpointValue({
     base: 'mobile',
     xs: 'mobile',
     md: 'md',
   })
   const isMobile = useIsMobile()
-  const toast = useToast({ status: 'success', isClosable: true })
 
   const {
     register,
     handleSubmit,
-    control,
     formState: { errors },
-  } = useForm<SwitchEnvFeedbackFormBodyDto>()
+  } = useForm<PublicFeedbackFormDto>()
 
   const initialRef = useRef(null)
 
@@ -76,35 +60,22 @@ export const SwitchEnvFeedbackModal = ({
   const rumSessionId = datadogRum.getInternalContext()?.session_id
   const [showThanksPage, setShowThanksPage] = useState<boolean>(false)
 
-  const handleFormSubmit = handleSubmit((inputs) => {
-    // Prevent feedback form subbmission if radio option 'I’m not used to the new FormSG' is selected AND feedback is empty
-    if (
-      !(
-        COMMON_RADIO_OPTIONS.includes(inputs.switchReason) &&
-        !inputs.feedback.trim()
-      )
-    ) {
-      onSubmitFeedback(inputs)
-    }
-    // Only allow public users to switch back. For admins, just close the modal.
-    if (isAdminView) {
-      toast({ description: 'Your feedback has been submitted.' })
-      onClose()
-    } else {
-      setShowThanksPage(true)
-    }
+  const { publicSwitchEnvMutation } = useEnvMutations()
+  const publicFeedbackMutation = usePublicFeedbackMutation()
+
+  const handleSubmitForm = handleSubmit((inputs: PublicFeedbackFormDto) => {
+    publicFeedbackMutation.mutateAsync(inputs)
+    setShowThanksPage(true)
   })
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     onClose()
     setShowThanksPage(false)
-  }
+  }, [onClose])
 
   const handleChangeEnv = useCallback(() => {
-    if (onChangeEnv) onChangeEnv()
-    onClose()
-    setShowThanksPage(false)
-  }, [onChangeEnv, onClose])
+    publicSwitchEnvMutation.mutate()
+  }, [publicSwitchEnvMutation])
 
   return (
     <Modal
@@ -132,12 +103,9 @@ export const SwitchEnvFeedbackModal = ({
                 <Button
                   isFullWidth={isMobile}
                   variant="clear"
-                  onClick={() => {
-                    onClose()
-                    setShowThanksPage(false)
-                  }}
+                  onClick={handleClose}
                 >
-                  No, don’t switch
+                  No, don't switch
                 </Button>
                 <Button isFullWidth={isMobile} onClick={handleChangeEnv}>
                   Yes, please
@@ -146,57 +114,23 @@ export const SwitchEnvFeedbackModal = ({
             </ModalFooter>
           </>
         ) : (
-          <chakra.form noValidate onSubmit={handleFormSubmit}>
-            <ModalHeader pr="48px">
-              {user ? 'Share your feedback' : "Can't submit this form?"}
-            </ModalHeader>
+          <chakra.form noValidate onSubmit={handleSubmitForm}>
+            <ModalHeader pr="48px">Can't submit this form?</ModalHeader>
             <ModalBody mt="0" pt="0">
               <Stack spacing="1rem">
                 <FormControl>
                   <Input type="hidden" {...register('url')} value={url} />
                 </FormControl>
-                {user && isAdminView ? (
-                  <FormControl isRequired isInvalid={!isEmpty(errors)}>
-                    <FormLabel>How was your experience using FormSG?</FormLabel>
-                    <Controller
-                      rules={{ required: 'This field is required' }}
-                      control={control}
-                      name={'rating'}
-                      render={({ field: { value, onChange, ...rest } }) => (
-                        <Rating
-                          numberOfRatings={5}
-                          variant={'star'}
-                          helperText={'1: Poor, 5: Excellent'}
-                          value={Number(value)}
-                          onChange={(val) => onChange(val?.toString())}
-                          {...rest}
-                        />
-                      )}
-                    />
-                    <FormErrorMessage>
-                      {errors['rating']?.message}
-                    </FormErrorMessage>
-                  </FormControl>
-                ) : null}
-                <FormControl
-                  isRequired={!isAdminView}
-                  isInvalid={!isAdminView && !isEmpty(errors)}
-                >
-                  <FormLabel
-                    description={
-                      isAdminView
-                        ? ''
-                        : 'Any fields you’ve filled in your form so far will be cleared'
-                    }
-                  >
-                    {isAdminView
-                      ? 'Do you have any other feedback for us?'
-                      : 'Please tell us about the issue(s) you’re facing. It’ll help us improve FormSG.'}
+
+                <FormControl isRequired isInvalid={!!errors['feedback']}>
+                  <FormLabel description="Any fields you've filled in your form so far will be cleared">
+                    Please tell us about the issue(s) you're facing. It'll help
+                    us improve FormSG.
                   </FormLabel>
                   <Textarea
                     {...register('feedback', {
                       required: {
-                        value: !isAdminView,
+                        value: true,
                         message: 'This field is required',
                       },
                     })}
@@ -205,6 +139,7 @@ export const SwitchEnvFeedbackModal = ({
                     {errors['feedback']?.message}
                   </FormErrorMessage>
                 </FormControl>
+
                 {user ? (
                   <FormControl>
                     <Input
@@ -236,6 +171,7 @@ export const SwitchEnvFeedbackModal = ({
                     </FormErrorMessage>
                   </FormControl>
                 )}
+
                 {rumSessionId ? (
                   <FormControl>
                     <Input
@@ -262,7 +198,7 @@ export const SwitchEnvFeedbackModal = ({
                   Cancel
                 </Button>
                 <Button isFullWidth={isMobile} type="submit">
-                  {isAdminView ? 'Submit feedback' : 'Next'}
+                  Next
                 </Button>
               </Stack>
             </ModalFooter>

@@ -5,11 +5,16 @@ import { ClientEnvVars } from '~shared/types/core'
 
 import { ApiError } from '~typings/core'
 
-import { getClientEnvVars, getSwitchEnvFormView } from './EnvService'
+import {
+  getAdminFeedbackFormView,
+  getClientEnvVars,
+  getPublicFeedbackFormView,
+} from './EnvService'
 
 const envKeys = {
   base: ['env'],
-  viewSwitchEnvForm: ['viewSwitchEnvForm'] as const,
+  adminFeedbackForm: ['adminFeedbackForm'] as const,
+  publicFeedbackForm: ['publicFeedbackForm'] as const,
 }
 
 export const useEnv = (
@@ -21,13 +26,24 @@ export const useEnv = (
 }
 
 // TODO #4279: Remove after React rollout is complete
-export const useSwitchEnvFeedbackFormView = (
+export const useAdminFeedbackFormView = (
   /** Extra override to determine whether query is enabled */
   enabled = true,
 ): UseQueryResult<PublicFormViewDto, ApiError> => {
   return useQuery<PublicFormViewDto, ApiError>(
-    envKeys.viewSwitchEnvForm,
-    () => getSwitchEnvFormView(),
+    envKeys.adminFeedbackForm,
+    () => getAdminFeedbackFormView(),
+    { enabled },
+  )
+}
+
+export const usePublicFeedbackFormView = (
+  /** Extra override to determine whether query is enabled */
+  enabled = true,
+): UseQueryResult<PublicFormViewDto, ApiError> => {
+  return useQuery<PublicFormViewDto, ApiError>(
+    envKeys.publicFeedbackForm,
+    () => getPublicFeedbackFormView(),
     { enabled },
   )
 }

@@ -1,32 +1,17 @@
 // TODO #4279: Remove after React rollout is complete
-import { useCallback, useMemo } from 'react'
+import { useMemo } from 'react'
 import { BiMessage } from 'react-icons/bi'
 import { Flex, Portal, useDisclosure } from '@chakra-ui/react'
-
-import { SwitchEnvFeedbackFormBodyDto } from '~shared/types'
 
 import IconButton from '~components/IconButton'
 import Tooltip from '~components/Tooltip'
 
-import { useFeedbackMutation } from './mutations'
-import { useEnv, useSwitchEnvFeedbackFormView } from './queries'
-import { SwitchEnvFeedbackModal } from './SwitchEnvFeedbackModal'
+import { AdminFeedbackModal } from './AdminFeedbackModal'
+import { useEnv } from './queries'
 
 export const SwitchEnvIcon = (): JSX.Element | null => {
   const { isOpen, onOpen, onClose } = useDisclosure()
   const { data: { adminRollout, removeAdminInfoboxThreshold } = {} } = useEnv()
-
-  // get the feedback form data
-  const { data: feedbackForm } = useSwitchEnvFeedbackFormView(isOpen)
-
-  const submitSwitchEnvFormFeedbackMutation = useFeedbackMutation(feedbackForm)
-
-  const submitFeedback = useCallback(
-    (formInputs: SwitchEnvFeedbackFormBodyDto) => {
-      return submitSwitchEnvFormFeedbackMutation.mutateAsync(formInputs)
-    },
-    [submitSwitchEnvFormFeedbackMutation],
-  )
 
   // Remove the switch env message if the React rollout for admins is => threshold
   const showSwitchEnvMessage = useMemo(
@@ -51,12 +36,7 @@ export const SwitchEnvIcon = (): JSX.Element | null => {
             onClick={onOpen}
           />
         </Tooltip>
-        <SwitchEnvFeedbackModal
-          onSubmitFeedback={submitFeedback}
-          isOpen={isOpen}
-          onClose={onClose}
-          isAdminView={true}
-        />
+        <AdminFeedbackModal isOpen={isOpen} onClose={onClose} />
       </Flex>
     </Portal>
   )

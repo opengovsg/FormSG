@@ -1,8 +1,9 @@
 import {
+  AdminFeedbackFormDto,
   BasicField,
   ErrorDto,
+  PublicFeedbackFormDto,
   PublicFormViewDto,
-  SwitchEnvFeedbackFormBodyDto,
 } from '~shared/types'
 import { ClientEnvVars, SuccessMessageDto } from '~shared/types/core'
 
@@ -11,49 +12,37 @@ import { ApiService } from '~services/ApiService'
 
 import { PUBLIC_FORMS_ENDPOINT } from '~features/public-form/PublicFormService'
 
-import {
-  ADMIN_RADIO_OPTIONS,
-  COMMON_RADIO_OPTIONS,
-  FEEDBACK_OTHERS_INPUT_NAME,
-} from './SwitchEnvFeedbackModal'
-
 export const getClientEnvVars = async (): Promise<ClientEnvVars> => {
   return ApiService.get<ClientEnvVars>('/client/env').then(({ data }) => data)
 }
 
 // TODO #4279: Remove after React rollout is complete
 const createFeedbackResponsesArray = (
-  formInputs: SwitchEnvFeedbackFormBodyDto,
+  formInputs: AdminFeedbackFormDto | PublicFeedbackFormDto,
   feedbackForm: PublicFormViewDto,
 ) => {
-  const feedbackFormFieldsStructure: [string, number][] = [
-    ['url', 0],
-    ['feedback', 1],
-    ['email', 2],
-    ['rumSessionId', 3],
-    ['switchReason', 4],
-    ['rating', 5],
+  // Public does not have rating, but admin does
+  const feedbackFormFieldsStructure = [
+    'url',
+    'feedback',
+    'email',
+    'rumSessionId',
   ]
-  const RADIO_OPTIONS_WITHOUT_OTHERS =
-    ADMIN_RADIO_OPTIONS.concat(COMMON_RADIO_OPTIONS)
+  if (Object.keys(formInputs).includes('rating')) {
+    feedbackFormFieldsStructure.push('rating')
+  }
+
   const responses: {
     _id: string
     question: string
     answer: string
     fieldType: BasicField
-  }[] = feedbackFormFieldsStructure.map(([inputKey, formFieldIndex]) => {
-    const { _id, fieldType } = feedbackForm.form.form_fields[formFieldIndex]
-    let answer: string = formInputs[inputKey] ?? ''
-    if (
-      fieldType === BasicField.Radio &&
-      !RADIO_OPTIONS_WITHOUT_OTHERS.includes(answer)
-    ) {
-      // format answer from Others to match form submission format
-      answer = `Others: ${formInputs[FEEDBACK_OTHERS_INPUT_NAME]}`
-    }
+  }[] = feedbackFormFieldsStructure.map((question, i) => {
+    const { _id, fieldType } = feedbackForm.form.form_fields[i]
+    const answer: string = formInputs[question] ?? ''
     return {
       _id,
-      question: inputKey,
+      question,
       answer,
       fieldType,
     }
@@ -63,7 +52,7 @@ const createFeedbackResponsesArray = (
 }
 
 const createSwitchFeedbackSubmissionFormData = (
-  formInputs: SwitchEnvFeedbackFormBodyDto,
+  formInputs: AdminFeedbackFormDto | PublicFeedbackFormDto,
   feedbackForm: PublicFormViewDto,
 ) => {
   const responses = createFeedbackResponsesArray(formInputs, feedbackForm)
@@ -83,10 +72,10 @@ export const submitSwitchEnvFormFeedback = async ({
   formInputs,
   feedbackForm,
 }: {
-  formInputs: SwitchEnvFeedbackFormBodyDto
-  feedbackForm: PublicFormViewDto | undefined
+  formInputs: AdminFeedbackFormDto | PublicFeedbackFormDto
+  feedbackForm?: PublicFormViewDto
 }): Promise<SuccessMessageDto | ErrorDto> => {
-  if (!feedbackForm) return new Error('feedback form not provided')
+  if (!feedbackForm) return new Error('Feedback form not provided')
   const formData = createSwitchFeedbackSubmissionFormData(
     formInputs,
     feedbackForm,
@@ -98,14 +87,29 @@ export const submitSwitchEnvFormFeedback = async ({
 }
 
 /**
- * Gets public view of the switch environment feedback form, along with any
+ * Gets public view of the admin switch environment feedback form, along with any
  * identify information obtained from Singpass/Corppass/MyInfo.
  * @returns Public view of form, with additional identify information
  */
-export const getSwitchEnvFormView = async (): Promise<PublicFormViewDto> => {
-  return ApiService.get<PublicFormViewDto>(
-    `${PUBLIC_FORMS_ENDPOINT}/switchenvfeedback`,
-  )
-    .then(({ data }) => data)
-    .then(transformAllIsoStringsToDate)
-}
+export const getAdminFeedbackFormView =
+  async (): Promise<PublicFormViewDto> => {
+    return ApiService.get<PublicFormViewDto>(
+      `${PUBLIC_FORMS_ENDPOINT}/switchenvfeedback/admin`,
+    )
+      .then(({ data }) => data)
+      .then(transformAllIsoStringsToDate)
+  }
+
+/**
+ * Gets public view of the public switch environment feedback form, along with any
+ * identify information obtained from Singpass/Corppass/MyInfo.
+ * @returns Public view of form, with additional identify information
+ */
+export const getPublicFeedbackFormView =
+  async (): Promise<PublicFormViewDto> => {
+    return ApiService.get<PublicFormViewDto>(
+      `${PUBLIC_FORMS_ENDPOINT}/switchenvfeedback`,
+    )
+      .then(({ data }) => data)
+      .then(transformAllIsoStringsToDate)
+  }

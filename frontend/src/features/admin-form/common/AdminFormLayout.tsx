@@ -9,9 +9,9 @@ import { Banner } from '~components/Banner'
 
 import AdminForbiddenErrorPage from '~pages/AdminForbiddenError'
 import NotFoundErrorPage from '~pages/NotFoundError'
-import { useEnv } from '~features/env/queries'
 // TODO #4279: Remove after React rollout is complete
-import { SwitchEnvIcon } from '~features/env/SwitchEnvIcon'
+import { SwitchEnvIcon } from '~features/env/AdminSwitchEnvIcon'
+import { useEnv } from '~features/env/queries'
 
 import { StorageResponsesProvider } from '../responses/ResponsesPage/storage/StorageResponsesProvider'
 

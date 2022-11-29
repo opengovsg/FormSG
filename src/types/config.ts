@@ -59,7 +59,8 @@ export type ReactMigrationConfig = {
   respondentCookieName: string
   adminCookieName: string
   qaCookieName: string
-  reactToAngularFeedbackFormId: string
+  adminSwitchEnvFeedbackFormId: string
+  publicSwitchEnvFeedbackFormId: string
   angularPhaseOutDate: string
   removeAdminInfoboxThreshold: number
   removeRespondentsInfoboxThreshold: number
@@ -131,7 +132,8 @@ export interface ICompulsoryVarsSchema {
     attachmentS3Bucket: string
   }
   reactMigration: {
-    reactToAngularFeedbackFormId: string
+    adminSwitchEnvFeedbackFormId: string
+    publicSwitchEnvFeedbackFormId: string
   }
 }
 

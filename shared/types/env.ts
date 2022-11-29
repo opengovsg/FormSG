@@ -4,12 +4,19 @@ export enum UiCookieValues {
 }
 
 // TODO #4279: Remove after React rollout is complete
-export interface SwitchEnvFeedbackFormBodyDto {
+export interface PublicFeedbackFormDto {
   [key: string]: string
   url: string
   feedback: string
   email: string
   rumSessionId: string
-  switchReason: string
+}
+
+export interface AdminFeedbackFormDto {
+  [key: string]: string
+  url: string
+  feedback: string
+  email: string
+  rumSessionId: string
   rating: string
 }
