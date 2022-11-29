@@ -10,7 +10,7 @@ import Tooltip from '~components/Tooltip'
 import { AdminFeedbackModal } from './AdminFeedbackModal'
 import { useEnv } from './queries'
 
-export const SwitchEnvIcon = (): JSX.Element | null => {
+export const AdminFeedbackIcon = (): JSX.Element | null => {
   const { isOpen, onOpen, onClose } = useDisclosure()
   const { data: { adminRollout, removeAdminInfoboxThreshold } = {} } = useEnv()
 
