@@ -237,6 +237,8 @@ const variantInputAttached: SystemStyleFunction = (props) => {
 
 export const Button = {
   baseStyle: {
+    // Keep bg when printing.
+    WebkitPrintColorAdjust: 'exact',
     ...textStyles['subhead-1'],
     whiteSpace: 'pre-wrap',
     borderRadius: '0.25rem',
