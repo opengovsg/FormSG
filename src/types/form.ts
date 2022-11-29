@@ -7,6 +7,7 @@ import {
   Types,
   UpdateWriteOpResult,
 } from 'mongoose'
+import { DeepRequired } from 'ts-essentials'
 import type { Merge, SetOptional } from 'type-fest'
 
 import {
@@ -188,6 +189,22 @@ export interface IFormSchema extends IForm, Document, PublicView<PublicForm> {
     currentOwner: IUserSchema,
     newOwner: IUserSchema,
   ): Promise<T>
+
+  /**
+   * Add payment account ID to the form.
+   * @param accountId the payment account ID to add
+   * @returns updated form
+   */
+  addPaymentAccountId<T = IFormSchema>(
+    accountId: FormPayments['target_account_id'],
+  ): Promise<T & DeepRequired<Pick<IFormSchema, 'payments'>>>
+
+  /**
+   * Remove payment account ID from the form.
+   * @returns updated form
+   */
+  removePaymentAccount<T = IFormSchema>(): Promise<T>
+
   /**
    * Return essential form creation parameters with the given properties.
    * @param overrideProps the props to override on the duplicated form

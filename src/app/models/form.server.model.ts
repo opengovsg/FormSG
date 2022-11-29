@@ -1,5 +1,5 @@
 import BSON, { ObjectId } from 'bson-ext'
-import { compact, omit, pick, uniq } from 'lodash'
+import { compact, merge, omit, pick, uniq } from 'lodash'
 import mongoose, {
   ClientSession,
   Mongoose,
@@ -624,6 +624,25 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       ...basePublicView,
       admin: (this.admin as IUserSchema).getPublicView(),
     }
+  }
+
+  FormDocumentSchema.methods.addPaymentAccountId = async function (
+    accountId: FormPayments['target_account_id'],
+  ) {
+    this.payments = merge(this.payments, {
+      target_account_id: accountId,
+      enabled: true,
+    })
+    return this.save()
+  }
+
+  FormDocumentSchema.methods.removePaymentAccount = async function () {
+    if (this.payments?.target_account_id) {
+      this.payments.target_account_id = undefined
+      this.payments.enabled = false
+    }
+
+    return this.save()
   }
 
   // Transfer ownership of the form to another user

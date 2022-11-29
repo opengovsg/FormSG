@@ -7,10 +7,13 @@ import get from 'lodash/get'
 import Stripe from 'stripe'
 
 import { Payment, PaymentStatus } from '../../../../shared/types'
+import config from '../../config/config'
 import { paymentConfig } from '../../config/features/payment.config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { stripe } from '../../loaders/stripe'
+import { createReqMeta } from '../../utils/request'
 import { ControllerHandler } from '../core/core.types'
+import { retrieveFullFormById } from '../form/form.service'
 
 import * as PaymentService from './payments.service'
 import * as StripeService from './stripe.service'
@@ -207,3 +210,66 @@ export const getPaymentReceipt: ControllerHandler<{
       return res.status(StatusCodes.NOT_FOUND).json({ message: error })
     })
 }
+
+const _handleConnectOauthCallback: ControllerHandler<
+  unknown,
+  unknown,
+  unknown,
+  { code: string; state: string }
+> = async (req, res) => {
+  const { code, state } = req.query
+
+  //Extracting state parameter previously signed and stored in cookies
+  const { stripeState } = req.signedCookies
+
+  //Comparing state parameters
+  if (state !== stripeState) {
+    //throwing unprocessable entity error
+    return res.status(StatusCodes.UNPROCESSABLE_ENTITY).json({
+      message: 'Invalid state parameter',
+    })
+  }
+
+  // Step 1: Retrieve formId from state.
+  const formId = state.split('.')[0]
+  const redirectUrl = `${config.app.appUrl}/admin/form/${formId}/settings`
+  // Step 2: Retrieve currently logged in user.
+  return (
+    retrieveFullFormById(formId)
+      .andThen((form) =>
+        StripeService.exchangeCodeForAccessToken(code).andThen((token) => {
+          // Step 4: Store access token in form.
+          return StripeService.linkStripeAccountToForm(
+            form,
+            token.stripe_user_id,
+          )
+        }),
+      )
+      .map(() => {
+        // Step 5: Redirect back to settings page.
+        return res.redirect(redirectUrl)
+      })
+      // Also redirect back to settings page if there is an error.
+      .mapErr((error) => {
+        logger.error({
+          message: 'Error handling stripe oauth callback',
+          meta: {
+            action: 'handleConnectOauthCallback',
+            ...createReqMeta(req),
+          },
+          error,
+        })
+        return res.redirect(redirectUrl)
+      })
+  )
+}
+
+export const handleConnectOauthCallback = [
+  celebrate({
+    [Segments.QUERY]: Joi.object({
+      code: Joi.string().required(),
+      state: Joi.string().required(),
+    }).unknown(true),
+  }),
+  _handleConnectOauthCallback,
+] as ControllerHandler[]

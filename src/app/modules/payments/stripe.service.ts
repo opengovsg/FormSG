@@ -1,21 +1,163 @@
+import cuid from 'cuid'
 import mongoose from 'mongoose'
-import { errAsync, okAsync, ResultAsync } from 'neverthrow'
+import { errAsync, ok, okAsync, ResultAsync } from 'neverthrow'
+import Stripe from 'stripe'
+import { MarkRequired } from 'ts-essentials'
 
+import { IPopulatedForm } from '../../../types'
+import config from '../../config/config'
+import { paymentConfig } from '../../config/features/payment.config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { stripe } from '../../loaders/stripe'
+import { DatabaseError } from '../core/core.errors'
 import { FormNotFoundError } from '../form/form.errors'
 import { SubmissionNotFoundError } from '../submission/submission.errors'
 import * as SubmissionService from '../submission/submission.service'
 
 import * as PaymentService from './payments.service'
+import { getRedirectUri } from './payments.utils'
 import {
   ChargeReceiptNotFoundError,
   PaymentIntentLatestChargeNotFoundError,
+  StripeAccountError,
+  StripeAccountNotFoundError,
   StripeFetchError,
   SubmissionAndFormMismatchError,
 } from './stripe.errors'
 
 const logger = createLoggerWithLabel(module)
+
+export const getStripeOauthUrl = (form: IPopulatedForm) => {
+  const state = `${form._id}.${cuid()}`
+
+  return ok({
+    authUrl: stripe.oauth.authorizeUrl({
+      client_id: paymentConfig.stripeClientID,
+      response_type: 'code',
+      scope: 'read_write',
+      state,
+      redirect_uri: getRedirectUri(),
+    }),
+    state,
+  })
+}
+
+export const exchangeCodeForAccessToken = (
+  code: string,
+): ResultAsync<
+  MarkRequired<Stripe.OAuthToken, 'stripe_user_id'>,
+  StripeAccountError | StripeFetchError
+> => {
+  return ResultAsync.fromPromise(
+    stripe.oauth.token({
+      grant_type: 'authorization_code',
+      code,
+    }),
+    (error) => {
+      logger.error({
+        message: 'Error exchanging Stripe code for access token',
+        meta: {
+          action: 'exchangeCodeForAccessToken',
+        },
+        error,
+      })
+      return new StripeFetchError(String(error))
+    },
+  ).andThen((token) => {
+    if (!token.stripe_user_id) {
+      return errAsync(new StripeAccountError('Stripe account ID is missing'))
+    }
+    return okAsync(token as MarkRequired<Stripe.OAuthToken, 'stripe_user_id'>)
+  })
+}
+
+export const linkStripeAccountToForm = (
+  form: IPopulatedForm,
+  stripeUserId: string,
+): ResultAsync<string, DatabaseError> => {
+  // Check if form already has account id
+  if (form.payments?.target_account_id) {
+    return okAsync(form.payments.target_account_id)
+  }
+
+  // No account id, create and inject into form
+  return ResultAsync.fromPromise(
+    form.addPaymentAccountId(stripeUserId),
+    (error) => {
+      const errMsg = 'Failed to update payment account id'
+      logger.error({
+        message: errMsg,
+        meta: {
+          action: 'linkStripeAccountToForm',
+          stripeUserId,
+          formId: form._id,
+        },
+        error,
+      })
+      return new DatabaseError(errMsg)
+    },
+  ).map((updatedForm) => updatedForm.payments.target_account_id)
+}
+
+export const unlinkStripeAccountFromForm = (form: IPopulatedForm) => {
+  if (!form.payments?.target_account_id) {
+    return okAsync(true)
+  }
+
+  return ResultAsync.fromPromise(form.removePaymentAccount(), (error) => {
+    const errMsg = 'Failed to remove payment account from form'
+    logger.error({
+      message: errMsg,
+      meta: {
+        action: 'unlinkStripeAccountFromForm',
+        formId: form._id,
+      },
+      error,
+    })
+    return new DatabaseError(errMsg)
+  })
+}
+
+export const createAccountLink = (
+  accountId: string,
+  redirectFormId: string,
+) => {
+  return ResultAsync.fromPromise(
+    stripe.accountLinks.create({
+      account: accountId,
+      refresh_url: `${config.app.appUrl}/admin/form/${redirectFormId}/settings`,
+      return_url: `${config.app.appUrl}/admin/form/${redirectFormId}/settings`,
+      type: 'account_onboarding',
+    }),
+    (error) => {
+      logger.error({
+        message: 'Failed to create account link',
+        meta: {
+          action: 'createAccountLink',
+          accountId,
+          formId: redirectFormId,
+        },
+        error,
+      })
+      return new StripeAccountError(String(error))
+    },
+  )
+}
+
+export const validateAccount = (
+  accountId?: string,
+): ResultAsync<
+  Stripe.Response<Stripe.Account> | null,
+  StripeAccountError | StripeAccountNotFoundError
+> => {
+  if (!accountId) {
+    return okAsync(null)
+  }
+  return ResultAsync.fromPromise(
+    stripe.accounts.retrieve(accountId),
+    (error) => new StripeAccountError(String(error)),
+  )
+}
 
 export const getReceiptURL = (
   formId: string,
