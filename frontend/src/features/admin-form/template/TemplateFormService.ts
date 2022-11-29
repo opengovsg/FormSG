@@ -13,7 +13,7 @@ export const dupeEmailModeTemplateForm = async (
   body: CreateEmailFormBodyDto,
 ): Promise<FormDto> => {
   return ApiService.post<FormDto>(
-    `${ADMIN_FORM_ENDPOINT}/${formId}/use-template/duplicate`,
+    `${ADMIN_FORM_ENDPOINT}/${formId}/use-template`,
     body,
   ).then(({ data }) => data)
 }
@@ -23,7 +23,7 @@ export const dupeStorageModeTemplateForm = async (
   body: CreateStorageFormBodyDto,
 ): Promise<FormDto> => {
   return ApiService.post<FormDto>(
-    `${ADMIN_FORM_ENDPOINT}/${formId}/use-template/duplicate`,
+    `${ADMIN_FORM_ENDPOINT}/${formId}/use-template`,
     body,
   ).then(({ data }) => data)
 }

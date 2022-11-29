@@ -78,10 +78,10 @@ AdminFormsFormRouter.post(
 )
 
 /**
- * Duplicate the specified form.
+ * Create a new form using the specified form as a template
  * @security session
  *
- * @returns 200 with the duplicate form dashboard view
+ * @returns 200 with the new form dashboard view
  * @returns 400 when Joi validation fails
  * @returns 401 when user does not exist in session
  * @returns 403 when form is private
@@ -91,7 +91,7 @@ AdminFormsFormRouter.post(
  * @returns 500 when database error occurs
  */
 AdminFormsFormRouter.post(
-  '/:formId([a-fA-F0-9]{24})/use-template/duplicate',
+  '/:formId([a-fA-F0-9]{24})/use-template',
   AdminFormController.handleCopyTemplateForm,
 )
 
