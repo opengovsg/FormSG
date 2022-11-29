@@ -87,10 +87,6 @@ export const useUseTemplateWizardContext = (
     setCurrentStep([CreateFormFlowStates.Landing, 1])
   })
 
-  const handleBackToDetails = () => {
-    setCurrentStep([CreateFormFlowStates.Details, -1])
-  }
-
   return {
     isFetching: isTemplateFormLoading,
     isLoading:
@@ -102,7 +98,6 @@ export const useUseTemplateWizardContext = (
     formMethods,
     handleDetailsSubmit,
     handleCreateStorageModeForm,
-    handleBackToDetails,
     containsMyInfoFields,
     modalHeader: 'Duplicate form',
   }

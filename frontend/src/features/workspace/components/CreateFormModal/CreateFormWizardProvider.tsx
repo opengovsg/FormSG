@@ -84,10 +84,6 @@ const useCreateFormWizardContext = (): CreateFormWizardContextReturn => {
     setCurrentStep([CreateFormFlowStates.Landing, 1])
   })
 
-  const handleBackToDetails = () => {
-    setCurrentStep([CreateFormFlowStates.Details, -1])
-  }
-
   return {
     isFetching: false,
     isLoading:
@@ -99,7 +95,6 @@ const useCreateFormWizardContext = (): CreateFormWizardContextReturn => {
     formMethods,
     handleDetailsSubmit,
     handleCreateStorageModeForm,
-    handleBackToDetails,
     modalHeader: 'Set up your form',
     // Creation will never contain any fields.
     containsMyInfoFields: false,

@@ -96,10 +96,6 @@ export const useDupeFormWizardContext = (): CreateFormWizardContextReturn => {
     setCurrentStep([CreateFormFlowStates.Landing, 1])
   })
 
-  const handleBackToDetails = () => {
-    setCurrentStep([CreateFormFlowStates.Details, -1])
-  }
-
   return {
     isFetching: isWorkspaceLoading || isPreviewFormLoading,
     isLoading:
@@ -111,7 +107,6 @@ export const useDupeFormWizardContext = (): CreateFormWizardContextReturn => {
     formMethods,
     handleDetailsSubmit,
     handleCreateStorageModeForm,
-    handleBackToDetails,
     containsMyInfoFields,
     modalHeader: 'Duplicate form',
   }
