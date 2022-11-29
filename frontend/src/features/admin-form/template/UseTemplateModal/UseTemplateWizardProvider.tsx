@@ -11,9 +11,9 @@ import {
 } from '~features/workspace/components/CreateFormModal/CreateFormWizardContext'
 import { useCommonFormWizardProvider } from '~features/workspace/components/CreateFormModal/CreateFormWizardProvider'
 
-import { useDuplicateFormTemplateMutations } from '../mutation'
+import { useUseTemplateMutations } from '../mutation'
 
-export const useDupeFormTemplateWizardContext = (
+export const useUseTemplateWizardContext = (
   formId: string,
 ): CreateFormWizardContextReturn => {
   const { data: templateFormData, isLoading: isTemplateFormLoading } =
@@ -57,15 +57,15 @@ export const useDupeFormTemplateWizardContext = (
   const { handleSubmit } = formMethods
 
   const {
-    dupeEmailModeFormTemplateMutation,
-    dupeStorageModeFormTemplateMutation,
-  } = useDuplicateFormTemplateMutations()
+    useEmailModeFormTemplateMutation,
+    useStorageModeFormTemplateMutation,
+  } = useUseTemplateMutations()
 
   const handleCreateStorageModeForm = handleSubmit(
     ({ title, responseMode }) => {
       if (responseMode !== FormResponseMode.Encrypt || !formId) return
 
-      return dupeStorageModeFormTemplateMutation.mutate({
+      return useStorageModeFormTemplateMutation.mutate({
         formIdToDuplicate: formId,
         title,
         responseMode,
@@ -77,7 +77,7 @@ export const useDupeFormTemplateWizardContext = (
   const handleDetailsSubmit = handleSubmit((inputs) => {
     if (!formId) return
     if (inputs.responseMode === FormResponseMode.Email) {
-      return dupeEmailModeFormTemplateMutation.mutate({
+      return useEmailModeFormTemplateMutation.mutate({
         formIdToDuplicate: formId,
         emails: inputs.emails.filter(Boolean),
         title: inputs.title,
@@ -94,8 +94,8 @@ export const useDupeFormTemplateWizardContext = (
   return {
     isFetching: isTemplateFormLoading,
     isLoading:
-      dupeEmailModeFormTemplateMutation.isLoading ||
-      dupeStorageModeFormTemplateMutation.isLoading,
+      useEmailModeFormTemplateMutation.isLoading ||
+      useStorageModeFormTemplateMutation.isLoading,
     keypair,
     currentStep,
     direction,
@@ -108,16 +108,16 @@ export const useDupeFormTemplateWizardContext = (
   }
 }
 
-interface DupeFormTemplateWizardProviderProps {
+interface UseTemplateWizardProviderProps {
   formId: string
   children: React.ReactNode
 }
 
-export const DupeFormTemplateWizardProvider = ({
+export const UseTemplateWizardProvider = ({
   formId,
   children,
-}: DupeFormTemplateWizardProviderProps): JSX.Element => {
-  const values = useDupeFormTemplateWizardContext(formId)
+}: UseTemplateWizardProviderProps): JSX.Element => {
+  const values = useUseTemplateWizardContext(formId)
   return (
     <CreateFormWizardContext.Provider value={values}>
       {children}

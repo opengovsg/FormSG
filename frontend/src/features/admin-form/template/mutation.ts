@@ -50,10 +50,10 @@ const useCommonHooks = () => {
   }
 }
 
-export const useDuplicateFormTemplateMutations = () => {
+export const useUseTemplateMutations = () => {
   const { handleSuccess, handleError } = useCommonHooks()
 
-  const dupeEmailModeFormTemplateMutation = useMutation<
+  const useEmailModeFormTemplateMutation = useMutation<
     FormDto,
     ApiError,
     CreateEmailFormBodyDto & { formIdToDuplicate: string }
@@ -66,7 +66,7 @@ export const useDuplicateFormTemplateMutations = () => {
     },
   )
 
-  const dupeStorageModeFormTemplateMutation = useMutation<
+  const useStorageModeFormTemplateMutation = useMutation<
     FormDto,
     ApiError,
     CreateStorageFormBodyDto & { formIdToDuplicate: string }
@@ -80,7 +80,7 @@ export const useDuplicateFormTemplateMutations = () => {
   )
 
   return {
-    dupeEmailModeFormTemplateMutation,
-    dupeStorageModeFormTemplateMutation,
+    useEmailModeFormTemplateMutation,
+    useStorageModeFormTemplateMutation,
   }
 }
