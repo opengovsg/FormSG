@@ -10,6 +10,7 @@ export const BILLING_ROUTE = '/billing'
 // Cannot use regex match in react-router@6, which means we need to validate
 // the regex in PublicFormPage.
 export const PUBLICFORM_ROUTE = '/:formId'
+export const USE_TEMPLATE_REDIRECT_SUBROUTE = 'use-template'
 export const FORMID_REGEX = /^([a-fA-F0-9]{24})$/
 
 export const ADMINFORM_ROUTE = '/admin/form'
@@ -18,6 +19,7 @@ export const ADMINFORM_BUILD_SUBROUTE = ''
 export const ADMINFORM_SETTINGS_SUBROUTE = 'settings'
 export const ADMINFORM_RESULTS_SUBROUTE = 'results'
 export const ADMINFORM_PREVIEW_ROUTE = 'preview'
+export const ADMINFORM_USETEMPLATE_ROUTE = 'use-template'
 
 /**
  * Regex for active path matching on adminform builder routes/subroutes.

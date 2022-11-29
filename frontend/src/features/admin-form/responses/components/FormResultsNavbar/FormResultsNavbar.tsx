@@ -8,6 +8,7 @@ import {
   RESULTS_RESPONSES_SUBROUTE,
 } from '~constants/routes'
 import { useDraggable } from '~hooks/useDraggable'
+import { noPrintCss } from '~utils/noPrintCss'
 import { NavigationTab, NavigationTabList } from '~templates/NavigationTabs'
 
 export const FormResultsNavbar = (): JSX.Element => {
@@ -25,6 +26,7 @@ export const FormResultsNavbar = (): JSX.Element => {
 
   return (
     <Flex
+      sx={noPrintCss}
       w="100vw"
       position="sticky"
       top={0}

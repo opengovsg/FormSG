@@ -19,7 +19,7 @@ services:
       - NODE_ENV=development
       - DB_HOST=mongodb://database:27017/formsg
       - APP_NAME=FormSG
-      - APP_URL=http://localhost:5000
+      - APP_URL=http://localhost:5001
       - ATTACHMENT_S3_BUCKET=local-attachment-bucket
       - IMAGE_S3_BUCKET=local-image-bucket
       - LOGO_S3_BUCKET=local-logo-bucket
@@ -32,8 +32,11 @@ services:
       - SECRET_ENV=development
       - SUBMISSIONS_RATE_LIMIT=200
       - SEND_AUTH_OTP_RATE_LIMIT=60
-      - SES_PORT=1025
-      - SES_HOST=maildev
+      # TODO(opengovsg/formsg-private#130) Retain only SG env vars when SES migration is over
+      - SES_PORT_US=1025
+      - SES_HOST_US=maildev
+      - SES_PORT_SG=1025
+      - SES_HOST_SG=maildev
       - WEBHOOK_SQS_URL=http://localhost:4566/000000000000/local-webhooks-sqs-main
       - INTRANET_IP_LIST_PATH
       - SENTRY_CONFIG_URL=https://random@sentry.io/123456
@@ -64,7 +67,7 @@ services:
       - SINGPASS_IDP_LOGIN_URL=http://localhost:5156/singpass/logininitial
       - SINGPASS_IDP_ENDPOINT=http://localhost:5156/singpass/soap
       - SINGPASS_ESRVC_ID=spEsrvcId
-      - SINGPASS_PARTNER_ENTITY_ID=https://localhost:5000/singpass
+      - SINGPASS_PARTNER_ENTITY_ID=https://localhost:5001/singpass
       - SINGPASS_IDP_ID=https://saml-internet.singpass.gov.sg/FIM/sps/SingpassIDPFed/saml20
       - SP_OIDC_NDI_DISCOVERY_ENDPOINT=https://stg-id.singpass.gov.sg/.well-known/openid-configuration
       - SP_OIDC_NDI_JWKS_ENDPOINT=https://stg-id.singpass.gov.sg/.well-known/keys
@@ -83,7 +86,7 @@ services:
       - CP_IDP_CERT_PATH=./node_modules/@opengovsg/mockpass/static/certs/spcp.crt
       - CORPPASS_IDP_LOGIN_URL=http://localhost:5156/corppass/logininitial
       - CORPPASS_IDP_ENDPOINT=http://localhost:5156/corppass/soap
-      - CORPPASS_PARTNER_ENTITY_ID=https://localhost:5000/corppass
+      - CORPPASS_PARTNER_ENTITY_ID=https://localhost:5001/corppass
       - CORPPASS_ESRVC_ID=cpEsrvcId
       - CORPPASS_IDP_ID=https://saml.corppass.gov.sg/FIM/sps/CorpIDPFed/saml20
       - IS_SP_MAINTENANCE
@@ -94,10 +97,11 @@ services:
       - MYINFO_CERT_PATH=./node_modules/@opengovsg/mockpass/static/certs/spcp.crt
       - MYINFO_CLIENT_ID=mockClientId
       - MYINFO_CLIENT_SECRET=mockClientSecret
+      - MYINFO_JWT_SECRET=mockJwtSecret
       - SGID_ENDPOINT=http://localhost:5156/sgid/v1/oauth
       - SGID_CLIENT_ID=sgidclientid
       - SGID_CLIENT_SECRET=sgidclientsecret
-      - SGID_REDIRECT_URI=http://localhost:5000/sgid/login
+      - SGID_REDIRECT_URI=http://localhost:5001/sgid/login
       - SGID_PRIVATE_KEY=./node_modules/@opengovsg/mockpass/static/certs/key.pem
       - SGID_PUBLIC_KEY=./node_modules/@opengovsg/mockpass/static/certs/server.crt
       - SES_PASS
@@ -118,8 +122,8 @@ services:
     depends_on:
       - backend
     environment:
-      - CORPPASS_ASSERT_ENDPOINT=http://localhost:5000/corppass/login
-      - SINGPASS_ASSERT_ENDPOINT=http://localhost:5000/singpass/login
+      - CORPPASS_ASSERT_ENDPOINT=http://localhost:5001/corppass/login
+      - SINGPASS_ASSERT_ENDPOINT=http://localhost:5001/singpass/login
       - MOCKPASS_NRIC=S6005038D
       - MOCKPASS_UEN=123456789A
       - SHOW_LOGIN_PAGE=true

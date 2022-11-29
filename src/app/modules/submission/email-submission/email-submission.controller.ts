@@ -17,11 +17,10 @@ import { ControllerHandler } from '../../core/core.types'
 import { setFormTags } from '../../datadog/datadog.utils'
 import * as FormService from '../../form/form.service'
 import {
-  MYINFO_COOKIE_NAME,
-  MYINFO_COOKIE_OPTIONS,
+  MYINFO_LOGIN_COOKIE_NAME,
+  MYINFO_LOGIN_COOKIE_OPTIONS,
 } from '../../myinfo/myinfo.constants'
 import { MyInfoService } from '../../myinfo/myinfo.service'
-import * as MyInfoUtil from '../../myinfo/myinfo.util'
 import { SgidService } from '../../sgid/sgid.service'
 import { getOidcService } from '../../spcp/spcp.oidc.service'
 import * as EmailSubmissionMiddleware from '../email-submission/email-submission.middleware'
@@ -203,11 +202,7 @@ const submitEmailModeForm: ControllerHandler<
               })
           }
           case FormAuthType.MyInfo:
-            return MyInfoUtil.extractMyInfoCookie(req.cookies)
-              .andThen(MyInfoUtil.extractAccessTokenFromCookie)
-              .andThen((accessToken) =>
-                MyInfoService.extractUinFin(accessToken),
-              )
+            return MyInfoService.extractUinFromOldAndNewLoginCookie(req.cookies)
               .asyncAndThen((uinFin) =>
                 MyInfoService.fetchMyInfoHashes(uinFin, formId)
                   .andThen((hashes) =>
@@ -372,7 +367,7 @@ const submitEmailModeForm: ControllerHandler<
           )
           // MyInfo access token is single-use, so clear it
           return res
-            .clearCookie(MYINFO_COOKIE_NAME, MYINFO_COOKIE_OPTIONS)
+            .clearCookie(MYINFO_LOGIN_COOKIE_NAME, MYINFO_LOGIN_COOKIE_OPTIONS)
             .json({
               // Return the reply early to the submitter
               message: 'Form submission successful.',

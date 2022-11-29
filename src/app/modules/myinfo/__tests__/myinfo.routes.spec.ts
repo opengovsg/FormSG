@@ -12,7 +12,7 @@ import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import { FormAuthType } from '../../../../../shared/types'
 import { MOCK_ERROR_CODE } from '../../spcp/__tests__/spcp.test.constants'
-import { MyInfoCookieState } from '../myinfo.types'
+import { MyInfoAuthCodeCookieState } from '../myinfo.types'
 
 import {
   MOCK_ACCESS_TOKEN,
@@ -206,12 +206,11 @@ describe('myinfo.routes', () => {
       uuid: uuidv4(),
     }
     const expectedSuccessCookie = {
-      accessToken: MOCK_ACCESS_TOKEN,
-      usedCount: 0,
-      state: MyInfoCookieState.Success,
+      authCode: MOCK_AUTH_CODE,
+      state: MyInfoAuthCodeCookieState.Success,
     }
     const expectedErrorCookie = {
-      state: MyInfoCookieState.Error,
+      state: MyInfoAuthCodeCookieState.Error,
     }
     let request: Session
 
@@ -282,51 +281,17 @@ describe('myinfo.routes', () => {
       expect(response.headers['location']).toEqual(`/${MOCK_FORM_ID}`)
     })
 
-    it('should redirect to home when form ID does not exist', async () => {
+    it('should return 400 when form ID is not a valid object ID', async () => {
       const invalidFormIdState = {
         ...mockState,
-        formId: new ObjectId().toHexString(),
+        formId: 'abc',
       }
       const response = await request.get(ROUTE).query({
         state: JSON.stringify(invalidFormIdState),
         code: MOCK_AUTH_CODE,
       })
 
-      expect(response.status).toBe(302)
-      expect(response.headers['location']).toEqual(`/`)
-    })
-
-    it('should redirect to form with error cookie when form auth type is not MyInfo', async () => {
-      const singpassFormId = new ObjectId()
-      await dbHandler.insertEmailForm({
-        formId: singpassFormId,
-        // Set custom mail domain so as to not conflict with mock MyInfo form
-        // inserted in the beforeEach block
-        mailDomain: 'test2.gov.sg',
-        formOptions: {
-          authType: FormAuthType.SP,
-          esrvcId: MOCK_ESRVC_ID,
-        },
-      })
-      const state = JSON.stringify({
-        ...mockState,
-        formId: singpassFormId.toHexString(),
-      })
-
-      const response = await request.get(ROUTE).query({
-        state,
-        code: MOCK_AUTH_CODE,
-      })
-
-      expect(response.status).toBe(302)
-      expect(response.headers['set-cookie']).toEqual([
-        expect.stringContaining(
-          encodeURIComponent(JSON.stringify(expectedErrorCookie)),
-        ),
-      ])
-      expect(response.headers['location']).toEqual(
-        `/${singpassFormId.toHexString()}`,
-      )
+      expect(response.status).toBe(400)
     })
 
     it('should redirect to form with error cookie when consent flow is unsuccessful', async () => {
@@ -335,24 +300,6 @@ describe('myinfo.routes', () => {
         error: 'error',
         'error-description': 'error-description',
       })
-
-      expect(response.status).toBe(302)
-      expect(response.headers['set-cookie']).toEqual([
-        expect.stringContaining(
-          encodeURIComponent(JSON.stringify(expectedErrorCookie)),
-        ),
-      ])
-      expect(response.headers['location']).toEqual(`/${MOCK_FORM_ID}`)
-    })
-
-    it('should redirect to form with error cookie when access token cannot be retrieved', async () => {
-      // Clear default mock implementation from beforeEach
-      MockMyInfoGovClient.getAccessToken.mockReset()
-      MockMyInfoGovClient.getAccessToken.mockRejectedValueOnce('rejected')
-
-      const response = await request
-        .get(ROUTE)
-        .query({ state: JSON.stringify(mockState), code: MOCK_AUTH_CODE })
 
       expect(response.status).toBe(302)
       expect(response.headers['set-cookie']).toEqual([

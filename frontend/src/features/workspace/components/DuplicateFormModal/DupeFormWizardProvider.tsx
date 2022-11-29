@@ -19,7 +19,6 @@ import { useWorkspaceRowsContext } from '../WorkspaceFormRow/WorkspaceRowsContex
 export const useDupeFormWizardContext = (): CreateFormWizardContextReturn => {
   const { data: dashboardForms, isLoading: isWorkspaceLoading } = useWorkspace()
   const { activeFormMeta } = useWorkspaceRowsContext()
-
   const { data: previewFormData, isLoading: isPreviewFormLoading } =
     usePreviewForm(
       activeFormMeta?._id ?? '',
@@ -97,10 +96,6 @@ export const useDupeFormWizardContext = (): CreateFormWizardContextReturn => {
     setCurrentStep([CreateFormFlowStates.Landing, 1])
   })
 
-  const handleBackToDetails = () => {
-    setCurrentStep([CreateFormFlowStates.Details, -1])
-  }
-
   return {
     isFetching: isWorkspaceLoading || isPreviewFormLoading,
     isLoading:
@@ -112,7 +107,6 @@ export const useDupeFormWizardContext = (): CreateFormWizardContextReturn => {
     formMethods,
     handleDetailsSubmit,
     handleCreateStorageModeForm,
-    handleBackToDetails,
     containsMyInfoFields,
     modalHeader: 'Duplicate form',
   }
