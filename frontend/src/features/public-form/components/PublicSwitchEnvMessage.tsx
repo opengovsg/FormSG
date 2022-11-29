@@ -8,6 +8,7 @@ import {
   VisuallyHidden,
 } from '@chakra-ui/react'
 
+import { noPrintCss } from '~utils/noPrintCss'
 import Button from '~components/Button'
 import InlineMessage from '~components/InlineMessage'
 
@@ -27,7 +28,7 @@ export const PublicSwitchEnvMessage = (): JSX.Element => {
   )
 
   return (
-    <Flex justify="center">
+    <Flex justify="center" sx={noPrintCss}>
       <Box w="100%" minW={0} h="fit-content" maxW="57rem">
         <InlineMessage
           variant="warning"

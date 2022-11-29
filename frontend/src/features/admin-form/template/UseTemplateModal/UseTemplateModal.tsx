@@ -7,19 +7,20 @@ import {
 
 import { ModalCloseButton } from '~components/Modal'
 
-import { CreateFormModalContent } from '../CreateFormModal/CreateFormModalContent'
+import { CreateFormModalContent } from '~features/workspace/components/CreateFormModal/CreateFormModalContent'
 
-import { DupeFormWizardProvider } from './DupeFormWizardProvider'
+import { UseTemplateWizardProvider } from './UseTemplateWizardProvider'
 
-export type DuplicateFormModalProps = Pick<
+export type UseTemplateModalProps = Pick<
   UseDisclosureReturn,
   'onClose' | 'isOpen'
->
+> & { formId: string }
 
-export const DuplicateFormModal = ({
+export const UseTemplateModal = ({
+  formId,
   isOpen,
   onClose,
-}: DuplicateFormModalProps): JSX.Element => {
+}: UseTemplateModalProps): JSX.Element => {
   const modalSize = useBreakpointValue({
     base: 'mobile',
     xs: 'mobile',
@@ -29,9 +30,9 @@ export const DuplicateFormModal = ({
     <Modal isOpen={isOpen} onClose={onClose} size={modalSize}>
       <ModalContent py={{ base: 'initial', md: '4.5rem' }}>
         <ModalCloseButton />
-        <DupeFormWizardProvider>
+        <UseTemplateWizardProvider formId={formId}>
           <CreateFormModalContent />
-        </DupeFormWizardProvider>
+        </UseTemplateWizardProvider>
       </ModalContent>
     </Modal>
   )
