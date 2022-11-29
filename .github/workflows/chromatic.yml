@@ -9,9 +9,8 @@ defaults:
 
 # Event for the workflow
 on:
-  push:
   pull_request:
-    types: [opened, reopened]
+    types: [opened, reopened, synchronize]
 
 # List of jobs
 jobs:
