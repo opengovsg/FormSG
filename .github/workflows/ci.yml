@@ -109,7 +109,7 @@ jobs:
       - run: npm ci
       - run: npm run lint-ci
 
-  build_backend_and_e2e_test:
+  build_backend_test:
     needs: [changes, install]
     runs-on: ubuntu-latest
     env:
@@ -135,3 +135,22 @@ jobs:
         uses: coverallsapp/github-action@master
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
+
+  build_e2e_test:
+      needs: [changes, install]
+      runs-on: ubuntu-latest
+      env:
+        NODE_OPTIONS: '--max-old-space-size=4096'
+      steps:
+        - uses: actions/checkout@v2
+        - name: Use Node.js
+          uses: actions/setup-node@v3
+          with:
+            node-version: 14
+            cache: 'npm'
+            cache-dependency-path: '**/package-lock.json'
+        - run: npm ci
+        - run: npm run build
+        - name: src_e2e
+          if: ${{ needs.changes.outputs.backend == 'true' || needs.changes.outputs.angularjs == 'true' }}
+          run: npm run test-e2e
