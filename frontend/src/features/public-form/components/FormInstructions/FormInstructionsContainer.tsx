@@ -27,8 +27,7 @@ export const FormInstructionsContainer = (): JSX.Element | null => {
         mb="1.5rem"
         sx={{
           '@media print': {
-            py: '0',
-            my: '0',
+            pb: '0',
           },
         }}
       >

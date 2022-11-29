@@ -87,6 +87,12 @@ const outlineContainerStyle: SystemStyleFunction = (props) => {
 
 export const YesNoField: ComponentMultiStyleConfig<typeof parts> = {
   parts: parts.keys,
+  baseStyle: {
+    option: {
+      // Keep bg when printing.
+      WebkitPrintColorAdjust: 'exact',
+    },
+  },
   variants: {
     outline: (props) => {
       return {
