@@ -10,6 +10,6 @@ export const injectFeedbackFormUrl: ControllerHandler = (req, res, next) => {
       ? reactMigration.adminSwitchEnvFeedbackFormId
       : reactMigration.respondentSwitchEnvFeedbackFormId
   req.params = { formId: formId }
-  req.query = omit(req.query, 'view')
+  req.query = omit(req.query as object, 'view')
   return next()
 }
