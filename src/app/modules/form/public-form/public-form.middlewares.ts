@@ -1,5 +1,5 @@
 // TODO #4279: Remove after React rollout is complete
-import { get } from 'lodash'
+import { get, omit } from 'lodash'
 
 import { reactMigration } from '../../../config/config'
 import { ControllerHandler } from '../../core/core.types'
@@ -10,5 +10,6 @@ export const injectFeedbackFormUrl: ControllerHandler = (req, res, next) => {
       ? reactMigration.adminSwitchEnvFeedbackFormId
       : reactMigration.publicSwitchEnvFeedbackFormId
   req.params = { formId: formId }
+  req.query = omit(req.query, 'view')
   return next()
 }
