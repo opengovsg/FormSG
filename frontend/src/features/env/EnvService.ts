@@ -77,7 +77,7 @@ export const submitSwitchEnvFormFeedback = async ({
 
   return ApiService.post<SuccessMessageDto>(
     `${PUBLIC_FORMS_ENDPOINT}/submissions/email/switchenvfeedback?captchaResponse=null&view=${
-      isAdmin ? 'admin' : 'public'
+      isAdmin ? 'admin' : 'respondent'
     }`,
     formData,
   ).then(({ data }) => data)
@@ -93,7 +93,7 @@ export const getFeedbackFormView = async (
 ): Promise<PublicFormViewDto> => {
   return ApiService.get<PublicFormViewDto>(
     `${PUBLIC_FORMS_ENDPOINT}/switchenvfeedback?view=${
-      admin ? 'admin' : 'public'
+      admin ? 'admin' : 'respondent'
     }`,
   )
     .then(({ data }) => data)
