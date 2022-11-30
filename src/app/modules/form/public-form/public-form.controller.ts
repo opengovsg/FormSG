@@ -11,7 +11,6 @@ import {
   PrivateFormErrorDto,
   PublicFormAuthLogoutDto,
   PublicFormAuthRedirectDto,
-  PublicFormAuthValidateEsrvcIdDto,
   PublicFormDto,
   PublicFormViewDto,
 } from '../../../../../shared/types'
@@ -38,7 +37,6 @@ import { SgidService } from '../../sgid/sgid.service'
 import { validateSgidForm } from '../../sgid/sgid.util'
 import { InvalidJwtError, VerifyJwtError } from '../../spcp/spcp.errors'
 import { getOidcService } from '../../spcp/spcp.oidc.service'
-import { SpcpService } from '../../spcp/spcp.service'
 import {
   getRedirectTargetSpcpOidc,
   validateSpcpForm,
@@ -485,63 +483,3 @@ export const handlePublicAuthLogout = [
   }),
   _handlePublicAuthLogout,
 ] as ControllerHandler[]
-
-/**
- * Handler for validating the eServiceId of a given form
- * @deprecated with transition to SP OIDC because NDI no longer returns error page for invalid eservice ID
- *
- * @returns 200 with eserviceId validation result
- * @returns 400 when there is an error on the authType of the form
- * @returns 400 when the eServiceId of the form does not exist
- * @returns 404 when form with given ID does not exist
- * @returns 500 when the title of the fetched login page does not exist
- * @returns 500 when database error occurs
- * @returns 500 when the url for the login page of the form could not be generated
- * @returns 502 when the login page for singpass could not be fetched
- */
-export const handleValidateFormEsrvcId: ControllerHandler<
-  { formId: string },
-  PublicFormAuthValidateEsrvcIdDto | ErrorDto
-> = (req, res) => {
-  const { formId } = req.params
-  return FormService.retrieveFormById(formId)
-    .andThen((form) => {
-      // NOTE: Because the check is based on parsing the html of the returned webpage,
-      // And because MyInfo login is beyond our control, we coerce MyInfo to SP.
-      // This is valid because a valid MyInfo eserviceId is also a valid SP eserviceId
-      switch (form.authType) {
-        case FormAuthType.MyInfo:
-          return validateMyInfoForm(form).andThen((form) =>
-            SpcpService.createRedirectUrl(
-              FormAuthType.SP,
-              formId,
-              form.esrvcId,
-            ),
-          )
-        case FormAuthType.SP:
-          return validateSpcpForm(form).andThen((form) =>
-            SpcpService.createRedirectUrl(form.authType, formId, form.esrvcId),
-          )
-        default:
-          return err<never, AuthTypeMismatchError>(
-            new AuthTypeMismatchError(FormAuthType.SP, form.authType),
-          )
-      }
-    })
-    .andThen(SpcpService.fetchLoginPage)
-    .andThen(SpcpService.validateLoginPage)
-    .map((result) => res.status(StatusCodes.OK).json(result))
-    .mapErr((error) => {
-      logger.error({
-        message: 'Error while validating e-service ID',
-        meta: {
-          action: 'handleValidateFormEsrvcId',
-          ...createReqMeta(req),
-          formId,
-        },
-        error,
-      })
-      const { statusCode, errorMessage } = mapFormAuthError(error)
-      return res.status(statusCode).json({ message: errorMessage })
-    })
-}

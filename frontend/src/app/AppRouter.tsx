@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react'
-import { Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes } from 'react-router-dom'
 import { Box } from '@chakra-ui/react'
 
 import {
@@ -16,6 +16,7 @@ import {
   PUBLICFORM_ROUTE,
   RESULTS_FEEDBACK_SUBROUTE,
   TOU_ROUTE,
+  USE_TEMPLATE_REDIRECT_SUBROUTE,
 } from '~constants/routes'
 import { fillHeightCss } from '~utils/fillHeightCss'
 import { lazyRetry } from '~utils/lazyRetry'
@@ -37,6 +38,7 @@ import { HashRouterElement } from './HashRouterElement'
 import { PrivateElement } from './PrivateElement'
 import { PublicElement } from './PublicElement'
 
+const UseTemplateRedirectPage = lazy(() => import('~pages/UseTemplateRedirect'))
 const PublicFormPage = lazy(() =>
   lazyRetry(() => import('~features/public-form/PublicFormPage')),
 )
@@ -88,10 +90,16 @@ export const AppRouter = (): JSX.Element => {
           path={BILLING_ROUTE}
           element={<PrivateElement element={<BillingPage />} />}
         />
-        <Route
-          path={PUBLICFORM_ROUTE}
-          element={<PublicElement element={<PublicFormPage />} />}
-        />
+        <Route path={PUBLICFORM_ROUTE}>
+          <Route
+            index
+            element={<PublicElement element={<PublicFormPage />} />}
+          />
+          <Route
+            path={USE_TEMPLATE_REDIRECT_SUBROUTE}
+            element={<PublicElement element={<UseTemplateRedirectPage />} />}
+          />
+        </Route>
         <Route
           path={`${ADMINFORM_ROUTE}/:formId`}
           element={<PrivateElement element={<AdminFormLayout />} />}
