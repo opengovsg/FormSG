@@ -6,19 +6,9 @@ import { IFormSchema } from 'src/types'
 
 import expressHandler from 'tests/unit/backend/helpers/jest-express'
 
-import { FormAuthType } from '../../../../../shared/types'
 import { DatabaseError } from '../../core/core.errors'
 import { FormNotFoundError } from '../../form/form.errors'
 import * as FormService from '../../form/form.service'
-import {
-  MOCK_ERROR_CODE,
-  MOCK_LOGIN_HTML,
-} from '../../spcp/__tests__/spcp.test.constants'
-import {
-  FetchLoginPageError,
-  LoginPageValidationError,
-} from '../../spcp/spcp.errors'
-import { SpcpService } from '../../spcp/spcp.service'
 import {
   MYINFO_AUTH_CODE_COOKIE_NAME,
   MYINFO_AUTH_CODE_COOKIE_OPTIONS,
@@ -40,9 +30,6 @@ const MockMyInfoService = mocked(MyInfoService, true)
 
 jest.mock('../../form/form.service')
 const MockFormService = mocked(FormService, true)
-
-jest.mock('../../spcp/spcp.service')
-const MockSpcpService = mocked(SpcpService, true)
 
 describe('MyInfoController', () => {
   afterEach(() => jest.clearAllMocks())
@@ -129,141 +116,6 @@ describe('MyInfoController', () => {
       expect(mockRes.status).toHaveBeenCalledWith(
         StatusCodes.INTERNAL_SERVER_ERROR,
       )
-    })
-  })
-
-  describe('checkMyInfoEServiceId', () => {
-    const mockReq = expressHandler.mockRequest({
-      query: {
-        formId: MOCK_FORM_ID,
-      },
-    })
-    const mockRes = expressHandler.mockResponse()
-
-    beforeEach(() => {
-      MockFormService.retrieveFormById.mockReturnValueOnce(
-        okAsync(MOCK_MYINFO_FORM),
-      )
-    })
-
-    it('should return 200 with isValid true if validation passes', async () => {
-      MockSpcpService.createRedirectUrl.mockReturnValueOnce(
-        ok(MOCK_REDIRECT_URL),
-      )
-      MockSpcpService.fetchLoginPage.mockReturnValueOnce(
-        okAsync(MOCK_LOGIN_HTML),
-      )
-      MockSpcpService.validateLoginPage.mockReturnValueOnce(
-        ok({ isValid: true }),
-      )
-
-      await MyInfoController.checkMyInfoEServiceId(mockReq, mockRes, jest.fn())
-
-      expect(MockSpcpService.createRedirectUrl).toHaveBeenCalledWith(
-        FormAuthType.SP,
-        MOCK_MYINFO_FORM._id,
-        MOCK_MYINFO_FORM.esrvcId,
-      )
-      expect(MockSpcpService.fetchLoginPage).toHaveBeenCalledWith(
-        MOCK_REDIRECT_URL,
-      )
-      expect(MockSpcpService.validateLoginPage).toHaveBeenCalledWith(
-        MOCK_LOGIN_HTML,
-      )
-      expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.OK)
-      expect(mockRes.json).toHaveBeenCalledWith({
-        isValid: true,
-      })
-    })
-
-    it('should return 200 with isValid false if validation fails', async () => {
-      MockSpcpService.createRedirectUrl.mockReturnValueOnce(
-        ok(MOCK_REDIRECT_URL),
-      )
-      MockSpcpService.fetchLoginPage.mockReturnValueOnce(
-        okAsync(MOCK_LOGIN_HTML),
-      )
-      MockSpcpService.validateLoginPage.mockReturnValueOnce(
-        ok({ isValid: false, errorCode: MOCK_ERROR_CODE }),
-      )
-
-      await MyInfoController.checkMyInfoEServiceId(mockReq, mockRes, jest.fn())
-
-      expect(MockSpcpService.createRedirectUrl).toHaveBeenCalledWith(
-        FormAuthType.SP,
-        MOCK_MYINFO_FORM._id,
-        MOCK_MYINFO_FORM.esrvcId,
-      )
-      expect(MockSpcpService.fetchLoginPage).toHaveBeenCalledWith(
-        MOCK_REDIRECT_URL,
-      )
-      expect(MockSpcpService.validateLoginPage).toHaveBeenCalledWith(
-        MOCK_LOGIN_HTML,
-      )
-      expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.OK)
-      expect(mockRes.json).toHaveBeenCalledWith({
-        isValid: false,
-        errorCode: MOCK_ERROR_CODE,
-      })
-    })
-
-    it('should return 503 when FetchLoginPageError occurs', async () => {
-      MockSpcpService.createRedirectUrl.mockReturnValueOnce(
-        ok(MOCK_REDIRECT_URL),
-      )
-      MockSpcpService.fetchLoginPage.mockReturnValueOnce(
-        errAsync(new FetchLoginPageError()),
-      )
-
-      await MyInfoController.checkMyInfoEServiceId(mockReq, mockRes, jest.fn())
-
-      expect(MockSpcpService.createRedirectUrl).toHaveBeenCalledWith(
-        FormAuthType.SP,
-        MOCK_MYINFO_FORM._id,
-        MOCK_MYINFO_FORM.esrvcId,
-      )
-      expect(MockSpcpService.fetchLoginPage).toHaveBeenCalledWith(
-        MOCK_REDIRECT_URL,
-      )
-      expect(MockSpcpService.validateLoginPage).not.toHaveBeenCalled()
-      expect(mockRes.status).toHaveBeenCalledWith(
-        StatusCodes.SERVICE_UNAVAILABLE,
-      )
-      expect(mockRes.json).toHaveBeenCalledWith({
-        message: 'Failed to contact SingPass. Please try again.',
-      })
-    })
-
-    it('should return 503 when LoginPageValidationError occurs', async () => {
-      MockSpcpService.createRedirectUrl.mockReturnValueOnce(
-        ok(MOCK_REDIRECT_URL),
-      )
-      MockSpcpService.fetchLoginPage.mockReturnValueOnce(
-        okAsync(MOCK_LOGIN_HTML),
-      )
-      MockSpcpService.validateLoginPage.mockReturnValueOnce(
-        err(new LoginPageValidationError()),
-      )
-
-      await MyInfoController.checkMyInfoEServiceId(mockReq, mockRes, jest.fn())
-
-      expect(MockSpcpService.createRedirectUrl).toHaveBeenCalledWith(
-        FormAuthType.SP,
-        MOCK_MYINFO_FORM._id,
-        MOCK_MYINFO_FORM.esrvcId,
-      )
-      expect(MockSpcpService.fetchLoginPage).toHaveBeenCalledWith(
-        MOCK_REDIRECT_URL,
-      )
-      expect(MockSpcpService.validateLoginPage).toHaveBeenCalledWith(
-        MOCK_LOGIN_HTML,
-      )
-      expect(mockRes.status).toHaveBeenCalledWith(
-        StatusCodes.SERVICE_UNAVAILABLE,
-      )
-      expect(mockRes.json).toHaveBeenCalledWith({
-        message: 'Failed to contact SingPass. Please try again.',
-      })
     })
   })
 

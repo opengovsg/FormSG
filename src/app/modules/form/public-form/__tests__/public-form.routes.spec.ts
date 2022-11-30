@@ -47,7 +47,6 @@ jest.mock('../../../spcp/spcp.oidc.client')
 jest.mock('jsonwebtoken')
 const MockJwtLib = mocked(jwt, true)
 
-jest.mock('@opengovsg/spcp-auth-client')
 const MockCpOidcClient = mocked(CpOidcClient, true)
 
 const app = setupApp('/', PublicFormRouter, {

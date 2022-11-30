@@ -1,7 +1,7 @@
 {
   "name": "FormSG",
   "description": "Form Manager for Government",
-  "version": "6.19.0",
+  "version": "6.20.0",
   "homepage": "https://form.gov.sg",
   "authors": [
     "FormSG <formsg@data.gov.sg>"
@@ -73,7 +73,6 @@
     "@opengovsg/myinfo-gov-client": "^4.0.1",
     "@opengovsg/ng-file-upload": "^12.2.15",
     "@opengovsg/sgid-client": "1.0.4",
-    "@opengovsg/spcp-auth-client": "^1.4.20",
     "@sentry/browser": "^7.20.1",
     "@sentry/integrations": "^6.19.7",
     "@stablelib/base64": "^1.0.1",

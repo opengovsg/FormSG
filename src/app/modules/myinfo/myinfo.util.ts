@@ -24,11 +24,6 @@ import {
   FormAuthNoEsrvcIdError,
   FormNotFoundError,
 } from '../form/form.errors'
-import {
-  CreateRedirectUrlError,
-  FetchLoginPageError,
-  LoginPageValidationError,
-} from '../spcp/spcp.errors'
 import { ProcessedFieldResponse } from '../submission/submission.types'
 
 import { MYINFO_LOGIN_COOKIE_NAME } from './myinfo.constants'
@@ -188,61 +183,6 @@ export const mapRedirectURLError: MapRouteError = (
           'This form does not have MyInfo enabled. Please refresh and try again.',
       }
     case DatabaseError:
-      return {
-        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
-        errorMessage: coreErrorMessage,
-      }
-    default:
-      logger.error({
-        message: 'Unknown route error observed',
-        meta: {
-          action: 'mapRedirectURLError',
-        },
-        error,
-      })
-      return {
-        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
-        errorMessage: coreErrorMessage,
-      }
-  }
-}
-
-/**
- * Maps errors while validating e-service ID to status codes and messages.
- * @param error Error to be mapped
- * @param coreErrorMessage Default error message
- */
-export const mapEServiceIdCheckError: MapRouteError = (
-  error,
-  coreErrorMessage = 'Something went wrong. Please refresh and try again.',
-) => {
-  switch (error.constructor) {
-    case FormNotFoundError:
-      return {
-        statusCode: StatusCodes.NOT_FOUND,
-        errorMessage:
-          'Could not find the form requested. Please refresh and try again.',
-      }
-    case AuthTypeMismatchError:
-      return {
-        statusCode: StatusCodes.BAD_REQUEST,
-        errorMessage:
-          'This form does not have MyInfo enabled. Please refresh and try again.',
-      }
-    case FormAuthNoEsrvcIdError:
-      return {
-        statusCode: StatusCodes.FORBIDDEN,
-        errorMessage:
-          'This form does not have valid MyInfo credentials. Please contact the form administrator.',
-      }
-    case FetchLoginPageError:
-    case LoginPageValidationError:
-      return {
-        statusCode: StatusCodes.SERVICE_UNAVAILABLE,
-        errorMessage: 'Failed to contact SingPass. Please try again.',
-      }
-    case DatabaseError:
-    case CreateRedirectUrlError:
       return {
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         errorMessage: coreErrorMessage,

@@ -1,9 +1,7 @@
-import axios from 'axios'
 import { ObjectId } from 'bson-ext'
 import { StatusCodes } from 'http-status-codes'
 import { err, errAsync } from 'neverthrow'
 import supertest, { Session } from 'supertest-session'
-import { mocked } from 'ts-jest/utils'
 
 import { DatabaseError } from 'src/app/modules/core/core.errors'
 import { getRedirectTargetSpcpOidc } from 'src/app/modules/spcp/spcp.util'
@@ -15,21 +13,13 @@ import { jsonParseStringify } from 'tests/unit/backend/helpers/serialize-data'
 
 import { FormAuthType, FormStatus } from '../../../../../../../shared/types'
 import * as FormService from '../../../../../modules/form/form.service'
-import {
-  CreateRedirectUrlError,
-  FetchLoginPageError,
-} from '../../../../../modules/spcp/spcp.errors'
+import { CreateRedirectUrlError } from '../../../../../modules/spcp/spcp.errors'
 import {
   CpOidcClient,
   SpOidcClient,
 } from '../../../../../modules/spcp/spcp.oidc.client'
 import { SpOidcServiceClass } from '../../../../../modules/spcp/spcp.oidc.service/spcp.oidc.service.sp'
 import { PublicFormsRouter } from '../public-forms.routes'
-
-// NOTE: Mocking axios here because there is a network call to an external service
-// to validate the result of eserviceId.
-jest.mock('axios')
-const MockAxios = mocked(axios, true)
 
 jest.mock('../../../../../modules/spcp/spcp.oidc.client')
 
@@ -280,206 +270,6 @@ describe('public-form.auth.routes', () => {
 
       // Assert
       expect(response.status).toEqual(StatusCodes.INTERNAL_SERVER_ERROR)
-      expect(response.body).toEqual(expectedResponse)
-    })
-  })
-
-  describe('GET /forms/:formId/auth/validate', () => {
-    it('should return 200 with isValid set to true when the form has valid eSrvcId', async () => {
-      // Arrange
-      const { form } = await dbHandler.insertEmailForm({
-        formOptions: {
-          authType: FormAuthType.SP,
-          esrvcId: new ObjectId().toHexString(),
-          status: FormStatus.Public,
-        },
-      })
-      MockAxios.get.mockResolvedValueOnce({ data: '<title> </title>' })
-      const expectedResponse = jsonParseStringify({ isValid: true })
-
-      // Act
-      const response = await request.get(`/forms/${form._id}/auth/validate`)
-
-      // Assert
-      expect(response.status).toEqual(200)
-      expect(response.body).toEqual(expectedResponse)
-    })
-
-    it('should return 200 with isValid set to false when the form has an invalid eSrvcId', async () => {
-      // Arrange
-      const { form } = await dbHandler.insertEmailForm({
-        formOptions: {
-          authType: FormAuthType.SP,
-          esrvcId: new ObjectId().toHexString(),
-          status: FormStatus.Public,
-        },
-      })
-      MockAxios.get.mockResolvedValueOnce({
-        data: '<title> error system code:&nbsp;<b>138</b>  </title>',
-      })
-      const expectedResponse = jsonParseStringify({
-        isValid: false,
-        errorCode: '138',
-      })
-
-      // Act
-      const response = await request.get(`/forms/${form._id}/auth/validate`)
-
-      // Assert
-      expect(response.status).toEqual(200)
-      expect(response.body).toEqual(expectedResponse)
-    })
-
-    it('should return 400 when the form has FormAuthType.NIL', async () => {
-      // Arrange
-      const { form } = await dbHandler.insertEmailForm({
-        formOptions: {
-          authType: FormAuthType.NIL,
-          esrvcId: new ObjectId().toHexString(),
-          status: FormStatus.Public,
-        },
-      })
-      const expectedResponse = jsonParseStringify({
-        message:
-          'Please ensure that the form has authentication enabled. Please refresh and try again.',
-      })
-
-      // Act
-      const response = await request.get(`/forms/${form._id}/auth/validate`)
-
-      // Assert
-      expect(response.status).toEqual(400)
-      expect(response.body).toEqual(expectedResponse)
-    })
-
-    it('should return 400 when the form has FormAuthType.CP', async () => {
-      // Arrange
-      const { form } = await dbHandler.insertEmailForm({
-        formOptions: {
-          authType: FormAuthType.CP,
-          esrvcId: new ObjectId().toHexString(),
-          status: FormStatus.Public,
-        },
-      })
-      const expectedResponse = jsonParseStringify({
-        message:
-          'Please ensure that the form has authentication enabled. Please refresh and try again.',
-      })
-
-      // Act
-      const response = await request.get(`/forms/${form._id}/auth/validate`)
-
-      // Assert
-      expect(response.status).toEqual(400)
-      expect(response.body).toEqual(expectedResponse)
-    })
-
-    it('should return 400 when the form does not have an eSrvcId', async () => {
-      // Arrange
-      const { form } = await dbHandler.insertEmailForm({
-        formOptions: {
-          authType: FormAuthType.SP,
-          status: FormStatus.Public,
-        },
-      })
-      const expectedResponse = jsonParseStringify({
-        message:
-          'This form does not have a valid eServiceId. Please refresh and try again.',
-      })
-
-      // Act
-      const response = await request.get(`/forms/${form._id}/auth/validate`)
-
-      // Assert
-      expect(response.status).toEqual(400)
-      expect(response.body).toEqual(expectedResponse)
-    })
-
-    it('should return 404 when the form does not exist', async () => {
-      // Arrange
-      const expectedResponse = jsonParseStringify({
-        message:
-          'Could not find the form requested. Please refresh and try again.',
-      })
-
-      // Act
-      const response = await request.get(
-        `/forms/${new ObjectId().toHexString()}/auth/validate`,
-      )
-
-      // Assert
-      expect(response.status).toEqual(404)
-      expect(response.body).toEqual(expectedResponse)
-    })
-
-    it('should return 502 when the fetched login page has no title', async () => {
-      // Arrange
-      const { form } = await dbHandler.insertEmailForm({
-        formOptions: {
-          authType: FormAuthType.SP,
-          esrvcId: new ObjectId().toHexString(),
-          status: FormStatus.Public,
-        },
-      })
-      MockAxios.get.mockResolvedValueOnce({
-        data: '',
-      })
-      const expectedResponse = jsonParseStringify({
-        message: 'Error while contacting SingPass. Please try again.',
-      })
-
-      // Act
-      const response = await request.get(`/forms/${form._id}/auth/validate`)
-
-      // Assert
-      expect(response.status).toEqual(502)
-      expect(response.body).toEqual(expectedResponse)
-    })
-
-    it('should return 500 when a database error occurs', async () => {
-      // Arrange
-      const { form } = await dbHandler.insertEmailForm({
-        formOptions: {
-          authType: FormAuthType.SP,
-          esrvcId: new ObjectId().toHexString(),
-          status: FormStatus.Public,
-        },
-      })
-      jest
-        .spyOn(FormService, 'retrieveFormById')
-        .mockReturnValueOnce(errAsync(new DatabaseError()))
-
-      const expectedResponse = jsonParseStringify({
-        message: 'Sorry, something went wrong. Please try again.',
-      })
-
-      // Act
-      const response = await request.get(`/forms/${form._id}/auth/validate`)
-
-      // Assert
-      expect(response.status).toEqual(500)
-      expect(response.body).toEqual(expectedResponse)
-    })
-
-    it('should return 503 when the singpass login page could not be fetched', async () => {
-      // Arrange
-      const { form } = await dbHandler.insertEmailForm({
-        formOptions: {
-          authType: FormAuthType.SP,
-          esrvcId: new ObjectId().toHexString(),
-          status: FormStatus.Public,
-        },
-      })
-      MockAxios.get.mockRejectedValueOnce(new FetchLoginPageError())
-      const expectedResponse = jsonParseStringify({
-        message: 'Failed to contact SingPass. Please try again.',
-      })
-
-      // Act
-      const response = await request.get(`/forms/${form._id}/auth/validate`)
-
-      // Assert
-      expect(response.status).toEqual(503)
       expect(response.body).toEqual(expectedResponse)
     })
   })
