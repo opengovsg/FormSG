@@ -1,6 +1,4 @@
 import MyInfoClient, { IMyInfoConfig } from '@opengovsg/myinfo-gov-client'
-import SPCPAuthClient from '@opengovsg/spcp-auth-client'
-import axios from 'axios'
 import { ObjectId } from 'bson'
 import session, { Session } from 'supertest-session'
 import { mocked } from 'ts-jest/utils'
@@ -11,7 +9,6 @@ import { buildCelebrateError } from 'tests/unit/backend/helpers/celebrate'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import { FormAuthType } from '../../../../../shared/types'
-import { MOCK_ERROR_CODE } from '../../spcp/__tests__/spcp.test.constants'
 import { MyInfoAuthCodeCookieState } from '../myinfo.types'
 
 import {
@@ -21,12 +18,6 @@ import {
   MOCK_FORM_ID,
   MOCK_REDIRECT_URL,
 } from './myinfo.test.constants'
-
-jest.mock('axios')
-const MockAxios = mocked(axios, true)
-
-jest.mock('@opengovsg/spcp-auth-client')
-const MockAuthClient = mocked(SPCPAuthClient, true)
 
 // Avoid async refresh calls
 jest.mock('src/app/modules/spcp/spcp.oidc.client.ts')
@@ -115,86 +106,6 @@ describe('myinfo.routes', () => {
       expect(response.status).toBe(200)
       expect(response.body).toEqual({
         redirectURL: MOCK_REDIRECT_URL,
-      })
-    })
-  })
-
-  describe('GET /myinfo/validate', () => {
-    const ROUTE = '/myinfo/validate'
-    let request: Session
-    const mockSpClient = mocked(MockAuthClient.mock.instances[0], true)
-
-    beforeAll(() => {
-      mockSpClient.createRedirectURL.mockReturnValue(MOCK_REDIRECT_URL)
-    })
-
-    beforeEach(async () => {
-      request = session(myInfoApp)
-      await dbHandler.insertEmailForm({
-        formId: new ObjectId(MOCK_FORM_ID),
-        formOptions: {
-          authType: FormAuthType.MyInfo,
-          esrvcId: MOCK_ESRVC_ID,
-        },
-      })
-    })
-
-    it('should return 400 when formId is not provided as a query param', async () => {
-      const response = await request.get(ROUTE)
-
-      expect(response.status).toBe(400)
-      expect(response.body).toEqual(
-        buildCelebrateError({ query: { key: 'formId' } }),
-      )
-    })
-
-    it('should return 400 when formId is malformed', async () => {
-      const malformedFormId = 'malformed'
-      const response = await request.get(ROUTE).query({
-        formId: malformedFormId,
-      })
-
-      expect(response.status).toBe(400)
-      expect(response.body).toEqual(
-        buildCelebrateError({
-          query: {
-            key: 'formId',
-            message: `"formId" with value "${malformedFormId}" fails to match the required pattern: /^[0-9a-fA-F]{24}$/`,
-          },
-        }),
-      )
-    })
-
-    it('should return 200 with isValid true when e-service ID is valid', async () => {
-      MockAxios.get.mockResolvedValueOnce({ data: '<title>Title</title>' })
-      const response = await request.get(ROUTE).query({ formId: MOCK_FORM_ID })
-
-      expect(response.status).toBe(200)
-      expect(response.body).toEqual({
-        isValid: true,
-      })
-    })
-
-    it('should return 200 with isValid false and errorCode when e-service ID is invalid', async () => {
-      MockAxios.get.mockResolvedValueOnce({
-        data: `<title>Error</title>System Code:&nbsp;<b>${MOCK_ERROR_CODE}</b>`,
-      })
-      const response = await request.get(ROUTE).query({ formId: MOCK_FORM_ID })
-
-      expect(response.status).toBe(200)
-      expect(response.body).toEqual({
-        isValid: false,
-        errorCode: MOCK_ERROR_CODE,
-      })
-    })
-
-    it('should return 503 with error message when Singpass server request errors', async () => {
-      MockAxios.get.mockRejectedValueOnce('')
-      const response = await request.get(ROUTE).query({ formId: MOCK_FORM_ID })
-
-      expect(response.status).toBe(503)
-      expect(response.body).toEqual({
-        message: 'Failed to contact SingPass. Please try again.',
       })
     })
   })
