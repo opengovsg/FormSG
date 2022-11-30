@@ -32,7 +32,7 @@ import Textarea from '~components/Textarea'
 
 import { useUser } from '~features/user/queries'
 
-import { useAdminFeedbackMutation } from './mutations'
+import { useFeedbackMutation } from './mutations'
 import { useAdminFeedbackFormView } from './queries'
 
 export const AdminFeedbackModal = ({
@@ -64,11 +64,11 @@ export const AdminFeedbackModal = ({
   const rumSessionId = datadogRum.getInternalContext()?.session_id
 
   const { data: feedbackForm, isLoading } = useAdminFeedbackFormView()
-  const adminFeedbackMutation = useAdminFeedbackMutation()
+  const feedbackMutation = useFeedbackMutation()
 
   const handleSubmitForm = handleSubmit((formInputs: AdminFeedbackFormDto) => {
     if (!feedbackForm) return
-    adminFeedbackMutation.mutateAsync({
+    feedbackMutation.mutateAsync({
       formInputs,
       feedbackForm,
     })

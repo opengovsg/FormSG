@@ -60,13 +60,11 @@ export const submitSwitchEnvFormFeedback = async ({
   feedbackForm,
 }: {
   formInputs: AdminFeedbackFormDto | PublicFeedbackFormDto
-  feedbackForm?: PublicFormViewDto
+  feedbackForm: PublicFormViewDto
 }): Promise<SuccessMessageDto | ErrorDto> => {
-  if (!feedbackForm) return new Error('Feedback form not provided')
-
   const isAdmin = Object.keys(formInputs).includes('rating')
-  const formFields = ['url', 'feedback', 'email', 'rumSessionId']
 
+  const formFields = ['url', 'feedback', 'email', 'rumSessionId']
   if (isAdmin) formFields.push('rating')
 
   const formData = createSwitchFeedbackSubmissionFormData(

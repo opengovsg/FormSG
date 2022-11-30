@@ -28,10 +28,7 @@ import FormLabel from '~components/FormControl/FormLabel'
 import { ModalCloseButton } from '~components/Modal'
 import Textarea from '~components/Textarea'
 
-import {
-  useEnvMutations,
-  usePublicFeedbackMutation,
-} from '~features/env/mutations'
+import { useEnvMutations, useFeedbackMutation } from '~features/env/mutations'
 import { useUser } from '~features/user/queries'
 
 import { usePublicFeedbackFormView } from './queries'
@@ -65,11 +62,11 @@ export const PublicFeedbackModal = ({
 
   const { publicSwitchEnvMutation } = useEnvMutations()
   const { data: feedbackForm, isLoading } = usePublicFeedbackFormView()
-  const publicFeedbackMutation = usePublicFeedbackMutation()
+  const feedbackMutation = useFeedbackMutation()
 
   const handleSubmitForm = handleSubmit((formInputs: PublicFeedbackFormDto) => {
     if (!feedbackForm) return
-    publicFeedbackMutation.mutateAsync({ formInputs, feedbackForm })
+    feedbackMutation.mutateAsync({ formInputs, feedbackForm })
     setShowThanksPage(true)
   })
 
