@@ -11,6 +11,7 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
+  Skeleton,
   Stack,
   useBreakpointValue,
 } from '@chakra-ui/react'
@@ -19,7 +20,7 @@ import validator from 'validator'
 
 import { PublicFeedbackFormDto } from '~shared/types'
 
-import { INVALID_EMAIL_ERROR } from '~constants/validation'
+import { INVALID_EMAIL_ERROR, REQUIRED_ERROR } from '~constants/validation'
 import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
@@ -32,6 +33,8 @@ import {
   usePublicFeedbackMutation,
 } from '~features/env/mutations'
 import { useUser } from '~features/user/queries'
+
+import { usePublicFeedbackFormView } from './queries'
 
 export const PublicFeedbackModal = ({
   isOpen,
@@ -61,10 +64,12 @@ export const PublicFeedbackModal = ({
   const [showThanksPage, setShowThanksPage] = useState<boolean>(false)
 
   const { publicSwitchEnvMutation } = useEnvMutations()
+  const { data: feedbackForm, isLoading } = usePublicFeedbackFormView()
   const publicFeedbackMutation = usePublicFeedbackMutation()
 
-  const handleSubmitForm = handleSubmit((inputs: PublicFeedbackFormDto) => {
-    publicFeedbackMutation.mutateAsync(inputs)
+  const handleSubmitForm = handleSubmit((formInputs: PublicFeedbackFormDto) => {
+    if (!feedbackForm) return
+    publicFeedbackMutation.mutateAsync({ formInputs, feedbackForm })
     setShowThanksPage(true)
   })
 
@@ -115,73 +120,69 @@ export const PublicFeedbackModal = ({
           </>
         ) : (
           <chakra.form noValidate onSubmit={handleSubmitForm}>
-            <ModalHeader pr="48px">Can't submit this form?</ModalHeader>
+            <ModalHeader pr="3rem">Can't submit this form?</ModalHeader>
             <ModalBody mt="0" pt="0">
-              <Stack spacing="1rem">
-                <FormControl>
+              <Skeleton isLoaded={!isLoading}>
+                <Stack spacing="1rem">
                   <Input type="hidden" {...register('url')} value={url} />
-                </FormControl>
 
-                <FormControl isRequired isInvalid={!!errors['feedback']}>
-                  <FormLabel description="Any fields you've filled in your form so far will be cleared">
-                    Please tell us about the issue(s) you're facing. It'll help
-                    us improve FormSG.
-                  </FormLabel>
-                  <Textarea
-                    {...register('feedback', {
-                      required: {
-                        value: true,
-                        message: 'This field is required',
-                      },
-                    })}
-                  />
-                  <FormErrorMessage>
-                    {errors['feedback']?.message}
-                  </FormErrorMessage>
-                </FormControl>
+                  <FormControl isRequired isInvalid={!!errors['feedback']}>
+                    <FormLabel description="Any fields you've filled in your form so far will be cleared">
+                      Please tell us about the issue(s) you're facing. It'll
+                      help us improve FormSG.
+                    </FormLabel>
+                    <Textarea
+                      {...register('feedback', {
+                        required: {
+                          value: true,
+                          message: REQUIRED_ERROR,
+                        },
+                      })}
+                    />
+                    <FormErrorMessage>
+                      {errors['feedback']?.message}
+                    </FormErrorMessage>
+                  </FormControl>
 
-                {user ? (
-                  <FormControl>
+                  {user ? (
                     <Input
                       type="hidden"
                       {...register('email')}
                       value={user.email}
                     />
-                  </FormControl>
-                ) : (
-                  <FormControl isInvalid={!!errors['email']}>
-                    <FormLabel>
-                      Email, if we need to contact you for details
-                    </FormLabel>
-                    <Input
-                      {...register('email', {
-                        validate: (value) => {
-                          if (!value) {
-                            return true
-                          }
-                          // Valid email check
-                          if (!validator.isEmail(value)) {
-                            return INVALID_EMAIL_ERROR
-                          }
-                        },
-                      })}
-                    />
-                    <FormErrorMessage>
-                      {errors['email']?.message}
-                    </FormErrorMessage>
-                  </FormControl>
-                )}
+                  ) : (
+                    <FormControl isInvalid={!!errors['email']}>
+                      <FormLabel>
+                        Email, if we need to contact you for details
+                      </FormLabel>
+                      <Input
+                        {...register('email', {
+                          validate: (value) => {
+                            if (!value) {
+                              return true
+                            }
+                            // Valid email check
+                            if (!validator.isEmail(value)) {
+                              return INVALID_EMAIL_ERROR
+                            }
+                          },
+                        })}
+                      />
+                      <FormErrorMessage>
+                        {errors['email']?.message}
+                      </FormErrorMessage>
+                    </FormControl>
+                  )}
 
-                {rumSessionId ? (
-                  <FormControl>
+                  {rumSessionId ? (
                     <Input
                       type="hidden"
                       {...register('rumSessionId')}
                       value={`https://app.datadoghq.com/rum/replay/sessions/${rumSessionId}`}
                     />
-                  </FormControl>
-                ) : null}
-              </Stack>
+                  ) : null}
+                </Stack>
+              </Skeleton>
             </ModalBody>
             <ModalFooter mt={{ base: '2.5rem', md: '0' }}>
               <Stack
@@ -197,7 +198,11 @@ export const PublicFeedbackModal = ({
                 >
                   Cancel
                 </Button>
-                <Button isFullWidth={isMobile} type="submit">
+                <Button
+                  isFullWidth={isMobile}
+                  type="submit"
+                  isDisabled={isLoading}
+                >
                   Next
                 </Button>
               </Stack>

@@ -29,11 +29,11 @@ const onClose = () => {
 }
 
 const AdminTemplate: Story = () => {
-  return <AdminFeedbackModal onClose={onClose} isOpen={true} />
+  return <AdminFeedbackModal onClose={onClose} isOpen />
 }
 
 const PublicRespondentTemplate: Story = () => {
-  return <PublicFeedbackModal onClose={onClose} isOpen={true} />
+  return <PublicFeedbackModal onClose={onClose} isOpen />
 }
 
 export const PublicRespondent = PublicRespondentTemplate.bind({})

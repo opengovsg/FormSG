@@ -76,10 +76,14 @@ export const submitSwitchEnvFormFeedback = async ({
   )
 
   return ApiService.post<SuccessMessageDto>(
-    `${PUBLIC_FORMS_ENDPOINT}/submissions/email/switchenvfeedback?captchaResponse=null&view=${
-      isAdmin ? 'admin' : 'respondent'
-    }`,
+    `${PUBLIC_FORMS_ENDPOINT}/submissions/email/switchenvfeedback`,
     formData,
+    {
+      params: {
+        captchaResponse: 'null',
+        view: isAdmin ? 'admin' : undefined,
+      },
+    },
   ).then(({ data }) => data)
 }
 
@@ -89,12 +93,15 @@ export const submitSwitchEnvFormFeedback = async ({
  * @returns Public view of form, with additional identify information
  */
 export const getFeedbackFormView = async (
-  admin?: boolean,
+  isAdmin?: boolean,
 ): Promise<PublicFormViewDto> => {
   return ApiService.get<PublicFormViewDto>(
-    `${PUBLIC_FORMS_ENDPOINT}/switchenvfeedback?view=${
-      admin ? 'admin' : 'respondent'
-    }`,
+    `${PUBLIC_FORMS_ENDPOINT}/switchenvfeedback`,
+    {
+      params: {
+        view: isAdmin ? 'admin' : undefined,
+      },
+    },
   )
     .then(({ data }) => data)
     .then(transformAllIsoStringsToDate)

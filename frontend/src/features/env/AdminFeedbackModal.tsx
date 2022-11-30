@@ -11,6 +11,7 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
+  Skeleton,
   Stack,
   useBreakpointValue,
 } from '@chakra-ui/react'
@@ -19,6 +20,7 @@ import { isEmpty } from 'lodash'
 
 import { AdminFeedbackFormDto } from '~shared/types'
 
+import { REQUIRED_ERROR } from '~constants/validation'
 import { useIsMobile } from '~hooks/useIsMobile'
 import { useToast } from '~hooks/useToast'
 import Button from '~components/Button'
@@ -31,6 +33,7 @@ import Textarea from '~components/Textarea'
 import { useUser } from '~features/user/queries'
 
 import { useAdminFeedbackMutation } from './mutations'
+import { useAdminFeedbackFormView } from './queries'
 
 export const AdminFeedbackModal = ({
   isOpen,
@@ -60,10 +63,15 @@ export const AdminFeedbackModal = ({
   const url = window.location.href
   const rumSessionId = datadogRum.getInternalContext()?.session_id
 
+  const { data: feedbackForm, isLoading } = useAdminFeedbackFormView()
   const adminFeedbackMutation = useAdminFeedbackMutation()
 
-  const handleSubmitForm = handleSubmit((inputs: AdminFeedbackFormDto) => {
-    adminFeedbackMutation.mutateAsync(inputs)
+  const handleSubmitForm = handleSubmit((formInputs: AdminFeedbackFormDto) => {
+    if (!feedbackForm) return
+    adminFeedbackMutation.mutateAsync({
+      formInputs,
+      feedbackForm,
+    })
     toast({ description: 'Your feedback has been submitted.' })
     onClose()
   })
@@ -83,61 +91,59 @@ export const AdminFeedbackModal = ({
       <ModalContent>
         <ModalCloseButton />
         <chakra.form noValidate onSubmit={handleSubmitForm}>
-          <ModalHeader pr="48px">Share your feedback</ModalHeader>
+          <ModalHeader pr="3rem">Share your feedback</ModalHeader>
           <ModalBody mt="0" pt="0">
-            <Stack spacing="1rem">
-              <FormControl>
+            <Skeleton isLoaded={!isLoading}>
+              <Stack spacing="1rem">
                 <Input type="hidden" {...register('url')} value={url} />
-              </FormControl>
 
-              <FormControl isRequired isInvalid={!isEmpty(errors)}>
-                <FormLabel>How was your experience using FormSG?</FormLabel>
-                <Controller
-                  rules={{ required: 'This field is required' }}
-                  control={control}
-                  name={'rating'}
-                  render={({ field: { value, onChange, ...rest } }) => (
-                    <Rating
-                      numberOfRatings={5}
-                      variant={'star'}
-                      helperText={'1: Poor, 5: Excellent'}
-                      value={Number(value)}
-                      onChange={(val) => onChange(val?.toString())}
-                      {...rest}
-                    />
-                  )}
-                />
-                <FormErrorMessage>{errors['rating']?.message}</FormErrorMessage>
-              </FormControl>
+                <FormControl isRequired isInvalid={!isEmpty(errors)}>
+                  <FormLabel>How was your experience using FormSG?</FormLabel>
+                  <Controller
+                    rules={{ required: REQUIRED_ERROR }}
+                    control={control}
+                    name="rating"
+                    render={({ field: { value, onChange, ...rest } }) => (
+                      <Rating
+                        numberOfRatings={5}
+                        variant="star"
+                        helperText={'1: Poor, 5: Excellent'}
+                        value={Number(value)}
+                        onChange={(val) => onChange(val?.toString())}
+                        {...rest}
+                      />
+                    )}
+                  />
+                  <FormErrorMessage>
+                    {errors['rating']?.message}
+                  </FormErrorMessage>
+                </FormControl>
 
-              <FormControl>
-                <FormLabel>Do you have any other feedback for us?</FormLabel>
-                <Textarea {...register('feedback')} />
-                <FormErrorMessage>
-                  {errors['feedback']?.message}
-                </FormErrorMessage>
-              </FormControl>
-
-              {user ? (
                 <FormControl>
+                  <FormLabel>Do you have any other feedback for us?</FormLabel>
+                  <Textarea {...register('feedback')} />
+                  <FormErrorMessage>
+                    {errors['feedback']?.message}
+                  </FormErrorMessage>
+                </FormControl>
+
+                {user ? (
                   <Input
                     type="hidden"
                     {...register('email')}
                     value={user.email}
                   />
-                </FormControl>
-              ) : null}
+                ) : null}
 
-              {rumSessionId ? (
-                <FormControl>
+                {rumSessionId ? (
                   <Input
                     type="hidden"
                     {...register('rumSessionId')}
                     value={`https://app.datadoghq.com/rum/replay/sessions/${rumSessionId}`}
                   />
-                </FormControl>
-              ) : null}
-            </Stack>
+                ) : null}
+              </Stack>
+            </Skeleton>
           </ModalBody>
           <ModalFooter mt={{ base: '2.5rem', md: '0' }}>
             <Stack
@@ -149,7 +155,11 @@ export const AdminFeedbackModal = ({
               <Button isFullWidth={isMobile} variant="clear" onClick={onClose}>
                 Cancel
               </Button>
-              <Button isFullWidth={isMobile} type="submit">
+              <Button
+                isFullWidth={isMobile}
+                type="submit"
+                isDisabled={isLoading}
+              >
                 Submit feedback
               </Button>
             </Stack>
