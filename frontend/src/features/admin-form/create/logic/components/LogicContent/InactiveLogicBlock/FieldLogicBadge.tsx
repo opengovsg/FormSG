@@ -7,6 +7,8 @@ import Tooltip from '~components/Tooltip'
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
 import { FormFieldWithQuestionNo } from '~features/form/types'
 
+import { getLogicFieldLabel } from '../utils/getLogicFieldLabel'
+
 import { LogicBadge } from './LogicBadge'
 
 interface FieldLogicBadgeProps {
@@ -64,8 +66,7 @@ export const FieldLogicBadge = ({
         </Tooltip>
         {field ? (
           <>
-            {field.questionNumber ? <Text>{field.questionNumber}.</Text> : null}
-            <Text noOfLines={1}>{field.title}</Text>
+            <Text noOfLines={1}>{getLogicFieldLabel(field)}</Text>
           </>
         ) : (
           <Text textColor={textColor} noOfLines={1}>
