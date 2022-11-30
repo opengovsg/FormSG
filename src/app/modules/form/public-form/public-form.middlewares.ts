@@ -8,7 +8,7 @@ export const injectFeedbackFormUrl: ControllerHandler = (req, res, next) => {
   const formId =
     get(req.query, 'view') === 'admin'
       ? reactMigration.adminSwitchEnvFeedbackFormId
-      : reactMigration.publicSwitchEnvFeedbackFormId
+      : reactMigration.respondentSwitchEnvFeedbackFormId
   req.params = { formId: formId }
   req.query = omit(req.query, 'view')
   return next()

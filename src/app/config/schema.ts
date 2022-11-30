@@ -110,11 +110,11 @@ export const compulsoryVarsSchema: Schema<ICompulsoryVarsSchema> = {
       default: null,
       env: 'REACT_SWITCH_ENV_FEEDBACK_FORM_ID_ADMIN',
     },
-    publicSwitchEnvFeedbackFormId: {
+    respondentSwitchEnvFeedbackFormId: {
       doc: 'Form ID of the React to Angular bug report feedback form for respondents',
       format: String,
       default: null,
-      env: 'REACT_SWITCH_ENV_FEEDBACK_FORM_ID_PUBLIC',
+      env: 'REACT_SWITCH_ENV_FEEDBACK_FORM_ID_RESPONDENT',
     },
   },
 }
