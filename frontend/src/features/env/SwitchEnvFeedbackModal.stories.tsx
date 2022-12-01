@@ -10,7 +10,8 @@ import {
   LoggedOutDecorator,
 } from '~utils/storybook'
 
-import { SwitchEnvFeedbackModal } from './SwitchEnvFeedbackModal'
+import { AdminFeedbackModal } from './AdminFeedbackModal'
+import { PublicFeedbackModal } from './PublicFeedbackModal'
 
 export default {
   title: 'Pages/SwitchEnvFeedbackModal',
@@ -28,27 +29,11 @@ const onClose = () => {
 }
 
 const AdminTemplate: Story = () => {
-  return (
-    <SwitchEnvFeedbackModal
-      onChangeEnv={() => console.log('change env')}
-      onSubmitFeedback={async () => console.log('submit feedback')}
-      onClose={onClose}
-      isOpen={true}
-      isAdminView={true}
-    />
-  )
+  return <AdminFeedbackModal onClose={onClose} isOpen />
 }
 
 const PublicRespondentTemplate: Story = () => {
-  return (
-    <SwitchEnvFeedbackModal
-      onChangeEnv={() => console.log('change env')}
-      onSubmitFeedback={async () => console.log('submit feedback')}
-      onClose={onClose}
-      isOpen={true}
-      isAdminView={false}
-    />
-  )
+  return <PublicFeedbackModal onClose={onClose} isOpen />
 }
 
 export const PublicRespondent = PublicRespondentTemplate.bind({})

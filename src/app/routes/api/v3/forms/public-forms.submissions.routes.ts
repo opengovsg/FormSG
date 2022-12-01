@@ -52,7 +52,7 @@ PublicFormsSubmissionsRouter.route(
 
 // TODO #4279: Remove after React rollout is complete
 /**
- * Submit the bug report feedback form for React to Angular switch
+ * Submit the bug report feedback form for React to Angular switch (public)
  */
 PublicFormsSubmissionsRouter.route('/submissions/email/switchenvfeedback').post(
   limitRate({ max: rateLimitConfig.submissions }),
