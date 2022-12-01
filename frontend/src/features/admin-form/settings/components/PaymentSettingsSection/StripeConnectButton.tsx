@@ -1,10 +1,17 @@
 import { useCallback } from 'react'
-import { Skeleton } from '@chakra-ui/react'
+import { Box, Icon, Image, Skeleton, VisuallyHidden } from '@chakra-ui/react'
 
+import { FaStripe } from '~assets/icons/FaStripe'
 import Button from '~components/Button'
 
 import { useMutateStripeAccount } from '../../mutations'
 import { useAdminFormPayments } from '../../queries'
+
+const StripeIcon = () => {
+  return (
+    <Icon as={FaStripe} top="1px" ml="-2px" pos="relative" fontSize="2.5rem" />
+  )
+}
 
 export const StripeConnectButton = (): JSX.Element => {
   const { data, isLoading } = useAdminFormPayments()
@@ -33,8 +40,15 @@ export const StripeConnectButton = (): JSX.Element => {
         <Button
           isLoading={linkStripeAccountMutation.isLoading}
           onClick={onLinkAccountClick}
+          title="Connect with Stripe"
+          bg="#635bff"
+          _hover={{
+            bg: '#7a73ff',
+          }}
+          rightIcon={<StripeIcon />}
         >
-          Connect my Stripe account to FormSG
+          Connect with
+          <VisuallyHidden>Stripe</VisuallyHidden>
         </Button>
       </Skeleton>
     )
@@ -45,8 +59,10 @@ export const StripeConnectButton = (): JSX.Element => {
       colorScheme="danger"
       onClick={onUnlinkAccountClick}
       isLoading={unlinkStripeAccountMutation.isLoading}
+      rightIcon={<StripeIcon />}
     >
-      Disconnect Stripe
+      Disconnect
+      <VisuallyHidden>Stripe</VisuallyHidden>
     </Button>
   )
 }
