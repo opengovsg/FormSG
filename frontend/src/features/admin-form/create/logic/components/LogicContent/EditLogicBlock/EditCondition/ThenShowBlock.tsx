@@ -276,7 +276,7 @@ const ThenLogicInput = ({
             placeholder={null}
             items={thenValueItems}
             values={value ?? []}
-            isValueFullWidth
+            isSelectedItemFullWidth
             {...rest}
           />
         )}

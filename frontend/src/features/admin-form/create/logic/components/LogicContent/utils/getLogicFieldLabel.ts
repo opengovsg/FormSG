@@ -7,7 +7,8 @@ export const getLogicFieldLabel = (field: FormFieldWithQuestionNo) => {
   let title = field.title
   switch (field.fieldType) {
     case BasicField.Statement:
-      title = field.description
+      // Replaces all continuous whitespace with a single space for display on a single line.
+      title = field.description.replace(/\s+/, ' ')
       break
     case BasicField.Image:
       title = field.name

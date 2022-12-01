@@ -103,10 +103,12 @@ export const getTitleWithQuestionNumber = (
   const field = formFields[i]
   switch (field.fieldType) {
     case BasicField.Section:
-    case BasicField.Image:
-    case BasicField.Statement: {
       return field.title
-    }
+    case BasicField.Image:
+      return field.name
+    case BasicField.Statement:
+      // Replacement strategy for viewing in single line.
+      return field.description?.replace(/\s+/, ' ') ?? ''
     default: {
       const countNonInput = formFields
         .slice(0, i)
