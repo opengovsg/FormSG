@@ -44,10 +44,10 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 14
+          node-version: 18
           cache: 'npm'
           cache-dependency-path: '**/package-lock.json'
-      - run: npm ci
+      - run: npm ci --legacy-peer-deps
 
   frontend_test:
     needs: [changes, install]
@@ -58,10 +58,10 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 14
+          node-version: 18
           cache: 'npm'
           cache-dependency-path: '**/package-lock.json'
-      - run: npm ci
+      - run: npm ci --legacy-peer-deps
       - run: npm run test:frontend
 
   frontend_lint:
@@ -73,10 +73,10 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 14
+          node-version: 18
           cache: 'npm'
           cache-dependency-path: '**/package-lock.json'
-      - run: npm ci
+      - run: npm ci --legacy-peer-deps
       - run: npm run lint:frontend
 
   angularjs_test:
@@ -88,10 +88,10 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 14
+          node-version: 18
           cache: 'npm'
           cache-dependency-path: '**/package-lock.json'
-      - run: npm ci
+      - run: npm ci --legacy-peer-deps
       - run: npm run test:angularjs
 
   src_lint:
@@ -103,26 +103,26 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 14
+          node-version: 18
           cache: 'npm'
           cache-dependency-path: '**/package-lock.json'
-      - run: npm ci
+      - run: npm ci --legacy-peer-deps
       - run: npm run lint-ci
 
   build_backend_and_e2e_test:
     needs: [changes, install]
     runs-on: ubuntu-latest
     env:
-      NODE_OPTIONS: '--max-old-space-size=4096'
+      NODE_OPTIONS: '--max-old-space-size=4096 --openssl-legacy-provider'
     steps:
       - uses: actions/checkout@v2
       - name: Use Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 14
+          node-version: 18
           cache: 'npm'
           cache-dependency-path: '**/package-lock.json'
-      - run: npm ci
+      - run: npm ci --legacy-peer-deps
       - run: npm run build
       - name: src_e2e
         if: ${{ needs.changes.outputs.backend == 'true' || needs.changes.outputs.angularjs == 'true' }}
