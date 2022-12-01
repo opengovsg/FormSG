@@ -19,6 +19,7 @@ import {
   useMergeRefs,
   useMultiStyleConfig,
 } from '@chakra-ui/react'
+import type { RequireAtLeastOne } from 'type-fest'
 
 import { SEARCHBAR_THEME_KEY } from '~/theme/components/Searchbar'
 
@@ -29,7 +30,7 @@ import Menu from '~components/Menu'
 
 import IconButton from '../IconButton'
 
-export interface SearchbarProps extends Omit<InputProps, 'onChange'> {
+interface _SearchbarProps extends Omit<InputProps, 'onChange'> {
   /**
    * Optional. Function to be invoked when user presses enter (to search) or
    * clicks the 'search' icon. Note: at least one of onSearch and onChange must
@@ -81,24 +82,30 @@ export interface SearchbarProps extends Omit<InputProps, 'onChange'> {
   onChange?: (newValue: string) => void
 
   /**
-   * Optional. If provided, adds a filter button to the searchbar. The initial
-   * (default) value of the filter, which is most likely the option for "No filter".
+   * Optional. The initial (default) value of the filter. Will typically be the
+   * option for "No filter". If omitted, the filter will default to the first
+   * value of `filterOptions`.
    */
   filterValue?: string
 
   /**
-   * Optional. The remainder of the filter options, not including the default
-   * filterValue. Will be ignored unless filterValue has been provided.
+   * Optional. The filter options. An array of length at least 1 is required for
+   * the filter button to be shown, along with `onFilter`.
    */
   filterOptions?: string[]
 
   /**
    * Optional. Function to be invoked when a filter option has been selected.
-   * Will be ignored unless filterValue has been provided.
+   * Required for the filter button to be shown, along with `filterOptions`
    * @param filterValue the option that was selected
    */
   onFilter?: (filterValue: string) => void
 }
+
+export type SearchbarProps = RequireAtLeastOne<
+  _SearchbarProps,
+  'onSearch' | 'onChange'
+>
 
 export const Searchbar = forwardRef<SearchbarProps, 'input'>(
   (
@@ -111,7 +118,7 @@ export const Searchbar = forwardRef<SearchbarProps, 'input'>(
       value: valueProp,
       onChange: onChangeProp,
       isDisabled,
-      filterValue = '',
+      filterValue: filterValueProp,
       filterOptions = [],
       onFilter,
       ...props
@@ -119,6 +126,12 @@ export const Searchbar = forwardRef<SearchbarProps, 'input'>(
     ref,
   ) => {
     const isMobile = useIsMobile()
+
+    const filterValue = useMemo(
+      () => filterValueProp ?? filterOptions[0] ?? '',
+      [filterOptions, filterValueProp],
+    )
+
     const [value, setValue] = useState<string>(valueProp ?? '')
     const [isExpanded, setIsExpanded] = useState(
       !isExpandable || isExpandedProp,
@@ -145,7 +158,12 @@ export const Searchbar = forwardRef<SearchbarProps, 'input'>(
       [],
     )
 
-    const filterActive = useMemo(
+    const isFilterButtonShown = useMemo(
+      () => filterOptions.length !== 0 && onFilter,
+      [filterOptions.length, onFilter],
+    )
+
+    const isFilterActive = useMemo(
       () => filter !== filterValue,
       [filter, filterValue],
     )
@@ -256,7 +274,8 @@ export const Searchbar = forwardRef<SearchbarProps, 'input'>(
           sx={{
             ...styles.field,
             paddingInlineStart: 'none',
-            paddingInlineEnd: isExpandable && !filterValue ? 'none' : undefined,
+            paddingInlineEnd:
+              isExpandable && !isFilterButtonShown ? 'none' : undefined,
             border: 'none',
             _focus: undefined,
           }}
@@ -269,7 +288,7 @@ export const Searchbar = forwardRef<SearchbarProps, 'input'>(
           onBlur={() => setFocus(false)}
           onFocus={() => setFocus(true)}
         />
-        {filterValue && (
+        {isFilterButtonShown && (
           <Flex
             height="1.25rem"
             alignItems="center"
@@ -285,11 +304,11 @@ export const Searchbar = forwardRef<SearchbarProps, 'input'>(
                   variant="clear"
                   colorScheme="secondary"
                   size="sm"
-                  backgroundColor={filterActive ? 'neutral.200' : undefined}
+                  backgroundColor={isFilterActive ? 'neutral.200' : undefined}
                   onClick={onOpen}
                   icon={<BiFilter />}
                 />
-                {filterActive && (
+                {isFilterActive && (
                   <Icon
                     as={Circle}
                     bg="primary.500"
@@ -310,16 +329,18 @@ export const Searchbar = forwardRef<SearchbarProps, 'input'>(
                       size="sm"
                       variant="clear"
                       colorScheme="secondary"
-                      backgroundColor={filterActive ? 'neutral.200' : undefined}
+                      backgroundColor={
+                        isFilterActive ? 'neutral.200' : undefined
+                      }
                       isActive={isOpen}
                       aria-label="Filter forms"
                       leftIcon={<BiFilter />}
                       px="9px"
                     >
-                      {filterActive ? filter : 'Filter'}
+                      {isFilterActive ? filter : 'Filter'}
                     </MenuButton>
                     <Menu.List>
-                      {[filterValue, ...filterOptions].map((option, i) => (
+                      {filterOptions.map((option, i) => (
                         <Menu.Item
                           key={i}
                           onClick={() => onFilterSelect(option)}
@@ -349,27 +370,29 @@ export const Searchbar = forwardRef<SearchbarProps, 'input'>(
         )}
 
         {/* Drawer for filter in mobile */}
-        <Drawer placement="bottom" onClose={onClose} isOpen={isOpen}>
-          <DrawerOverlay />
-          <DrawerContent borderTopRadius="0.25rem">
-            <DrawerBody px={0} py="0.5rem">
-              <ButtonGroup flexDir="column" spacing={0} w="100%">
-                {[filterValue, ...filterOptions].map((option, i) => (
-                  <Button
-                    key={i}
-                    {...mobileDrawerExtraButtonProps}
-                    onClick={() => {
-                      onFilterSelect(option)
-                      onClose()
-                    }}
-                  >
-                    {renderFilterButton(option)}
-                  </Button>
-                ))}
-              </ButtonGroup>
-            </DrawerBody>
-          </DrawerContent>
-        </Drawer>
+        {isFilterButtonShown && isMobile && (
+          <Drawer placement="bottom" onClose={onClose} isOpen={isOpen}>
+            <DrawerOverlay />
+            <DrawerContent borderTopRadius="0.25rem">
+              <DrawerBody px={0} py="0.5rem">
+                <ButtonGroup flexDir="column" spacing={0} w="100%">
+                  {filterOptions.map((option, i) => (
+                    <Button
+                      key={i}
+                      {...mobileDrawerExtraButtonProps}
+                      onClick={() => {
+                        onFilterSelect(option)
+                        onClose()
+                      }}
+                    >
+                      {renderFilterButton(option)}
+                    </Button>
+                  ))}
+                </ButtonGroup>
+              </DrawerBody>
+            </DrawerContent>
+          </Drawer>
+        )}
       </Flex>
     )
   },

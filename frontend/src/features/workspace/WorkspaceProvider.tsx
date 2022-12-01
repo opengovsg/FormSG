@@ -62,6 +62,10 @@ export const WorkspaceProvider = ({
   )
 
   const defaultFilterOption = useMemo(() => 'All forms', [])
+  const filterOptions = useMemo(
+    () => [defaultFilterOption, ...Object.values(FilterOption)],
+    [defaultFilterOption],
+  )
 
   return (
     <WorkspaceContext.Provider
@@ -71,6 +75,7 @@ export const WorkspaceProvider = ({
         displayedForms,
         displayedFormsCount,
         defaultFilterOption,
+        filterOptions,
         activeFilter,
         setActiveFilter,
         activeSearch,

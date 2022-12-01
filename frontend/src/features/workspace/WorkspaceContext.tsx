@@ -12,6 +12,7 @@ export interface WorkspaceContextProps {
   activeSearch: string
   setActiveSearch: (searchTerm: string) => void
   defaultFilterOption: string
+  filterOptions: string[]
   activeFilter: FilterOption | null
   setActiveFilter: (filterOption: FilterOption | null) => void
 }

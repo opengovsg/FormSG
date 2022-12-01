@@ -44,6 +44,7 @@ export const WorkspaceHeader = ({
     totalFormsCount,
     displayedFormsCount,
     defaultFilterOption,
+    filterOptions,
     activeSearch,
     setActiveSearch,
     activeFilter,
@@ -227,7 +228,7 @@ export const WorkspaceHeader = ({
           placeholder="Search by title"
           isExpandable={false}
           filterValue={defaultFilterOption}
-          filterOptions={Object.values(FilterOption)}
+          filterOptions={filterOptions}
           onFilter={handleSelectFilter}
         />
       </Box>
