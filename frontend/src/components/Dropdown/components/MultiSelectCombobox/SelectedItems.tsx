@@ -28,7 +28,8 @@ const ShowMoreItemBlock = ({ amountToShow }: { amountToShow: number }) => {
 }
 
 export const SelectedItems = (): JSX.Element => {
-  const { selectedItems, maxItems, isValueFullWidth } = useMultiSelectContext()
+  const { selectedItems, maxItems, isSelectedItemFullWidth } =
+    useMultiSelectContext()
   const { isFocused } = useSelectContext()
 
   const items = useMemo(() => {
@@ -43,7 +44,7 @@ export const SelectedItems = (): JSX.Element => {
             item={item}
             index={i}
             key={i}
-            w={isValueFullWidth ? '100%' : undefined}
+            w={isSelectedItemFullWidth ? '100%' : undefined}
           />,
         )
       } else {
@@ -57,7 +58,7 @@ export const SelectedItems = (): JSX.Element => {
       }
     }
     return itemsToRender
-  }, [isFocused, isValueFullWidth, maxItems, selectedItems])
+  }, [isFocused, isSelectedItemFullWidth, maxItems, selectedItems])
 
   return <>{items}</>
 }

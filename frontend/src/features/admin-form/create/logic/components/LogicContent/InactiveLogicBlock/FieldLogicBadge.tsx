@@ -65,9 +65,7 @@ export const FieldLogicBadge = ({
           </Box>
         </Tooltip>
         {field ? (
-          <>
-            <Text noOfLines={1}>{getLogicFieldLabel(field)}</Text>
-          </>
+          <Text noOfLines={1}>{getLogicFieldLabel(field)}</Text>
         ) : (
           <Text textColor={textColor} noOfLines={1}>
             {defaults.message}

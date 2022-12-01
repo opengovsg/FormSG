@@ -47,7 +47,7 @@ export interface MultiSelectProviderProps<
   /**
    * If enabled, extends the length of each selected item to be full width in the input box.
    */
-  isValueFullWidth?: boolean
+  isSelectedItemFullWidth?: boolean
   /** aria-describedby to be attached to the combobox input, if any. */
   inputAria?: {
     id: string
@@ -80,7 +80,7 @@ export const MultiSelectProvider = ({
   isDisabled: isDisabledProp,
   isRequired: isRequiredProp,
   maxItems = 4,
-  isValueFullWidth,
+  isSelectedItemFullWidth,
   downshiftComboboxProps = {},
   downshiftMultiSelectProps = {},
   inputAria: inputAriaProp,
@@ -339,7 +339,7 @@ export const MultiSelectProvider = ({
           removeSelectedItem,
           reset,
           maxItems,
-          isValueFullWidth,
+          isSelectedItemFullWidth,
           activeIndex,
           setActiveIndex,
         }}
