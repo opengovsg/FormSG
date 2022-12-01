@@ -64,11 +64,14 @@ jobs:
           cache-dependency-path: '**/package-lock.json'
       - run: npm ci
       - run: npm run build
-      - uses: actions/upload-artifact@v3
+      - name: Upload build files
+        uses: actions/upload-artifact@v2
         if: always()
         with:
           name: build-output
-          path: build-output/
+          path: |
+            package*.json
+            dist/
           retention-days: 2
 
   frontend_test:
