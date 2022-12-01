@@ -438,8 +438,13 @@ const compileFormModel = (db: Mongoose): IFormModel => {
           default: '',
           validate: [
             /^\S*$/i,
-            'Target_account_id must not contain whitespace.',
+            'target_account_id must not contain whitespace.',
           ],
+        },
+        publishable_key: {
+          type: String,
+          default: '',
+          validate: [/^\S*$/i, 'publishable_key must not contain whitespace.'],
         },
         description: {
           type: String,
@@ -626,11 +631,16 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     }
   }
 
-  FormDocumentSchema.methods.addPaymentAccountId = async function (
-    accountId: FormPayments['target_account_id'],
-  ) {
+  FormDocumentSchema.methods.addPaymentAccountId = async function ({
+    accountId,
+    publishableKey,
+  }: {
+    accountId: FormPayments['target_account_id']
+    publishableKey: FormPayments['publishable_key']
+  }) {
     this.payments = merge(this.payments, {
       target_account_id: accountId,
+      publishable_key: publishableKey,
       enabled: true,
     })
     return this.save()

@@ -6,6 +6,7 @@ import { PaymentPageBlock } from './components/PaymentPageBlock'
 export interface FormPaymentPageProps {
   submissionId: string
   paymentClientSecret: string
+  publishableKey: string
   isRetry?: boolean
 }
 

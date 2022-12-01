@@ -1,5 +1,4 @@
 import { useCallback, useState } from 'react'
-import { useParams } from 'react-router-dom'
 import { Box } from '@chakra-ui/react'
 
 import { useToast } from '~hooks/useToast'
@@ -68,6 +67,7 @@ export const FormEndPageContainer = ({
         <FormPaymentPage
           submissionId={submissionData.id || ''}
           paymentClientSecret={submissionData.paymentClientSecret || ''}
+          publishableKey={submissionData.paymentPublishableKey || ''}
         />
       ) : (
         <FormEndPage

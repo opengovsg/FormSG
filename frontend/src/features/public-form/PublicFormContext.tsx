@@ -10,6 +10,7 @@ export type SubmissionData = {
   /** Submission time (on browser)  */
   timeInEpochMs: number
   paymentClientSecret?: string
+  paymentPublishableKey?: string
 }
 export interface PublicFormContextProps
   extends Partial<PublicFormViewDto>,

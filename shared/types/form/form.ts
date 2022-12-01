@@ -71,6 +71,7 @@ export enum FormResponseMode {
 export type FormPayments = {
   enabled: boolean
   target_account_id?: string
+  publishable_key?: string
   amount_cents?: number
   description?: string
 }

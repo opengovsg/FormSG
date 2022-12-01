@@ -1,5 +1,5 @@
 import { useCallback } from 'react'
-import { Box, Icon, Image, Skeleton, VisuallyHidden } from '@chakra-ui/react'
+import { Icon, Skeleton, VisuallyHidden } from '@chakra-ui/react'
 
 import { FaStripe } from '~assets/icons/FaStripe'
 import Button from '~components/Button'

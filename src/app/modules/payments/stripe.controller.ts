@@ -239,10 +239,10 @@ const _handleConnectOauthCallback: ControllerHandler<
       .andThen((form) =>
         StripeService.exchangeCodeForAccessToken(code).andThen((token) => {
           // Step 4: Store access token in form.
-          return StripeService.linkStripeAccountToForm(
-            form,
-            token.stripe_user_id,
-          )
+          return StripeService.linkStripeAccountToForm(form, {
+            accountId: token.stripe_user_id,
+            publishableKey: token.stripe_publishable_key,
+          })
         }),
       )
       .map(() => {

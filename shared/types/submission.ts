@@ -104,6 +104,7 @@ export type SubmissionResponseDto = {
   message: string
   submissionId: string
   paymentClientSecret?: string
+  paymentPublishableKey?: string
 }
 
 export type SubmissionErrorDto = ErrorDto & { spcpSubmissionFailure?: true }

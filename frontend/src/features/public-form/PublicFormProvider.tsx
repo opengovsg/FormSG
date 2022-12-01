@@ -237,12 +237,17 @@ export const PublicFormProvider = ({
                   captchaResponse,
                 },
                 {
-                  onSuccess: ({ submissionId, paymentClientSecret }) => {
+                  onSuccess: ({
+                    submissionId,
+                    paymentClientSecret,
+                    paymentPublishableKey,
+                  }) => {
                     setSubmissionData({
                       id: submissionId,
                       // TODO: Server should return server time so browser time is not used.
                       timeInEpochMs: Date.now(),
                       paymentClientSecret,
+                      paymentPublishableKey,
                     })
                     trackSubmitForm(form)
                   },

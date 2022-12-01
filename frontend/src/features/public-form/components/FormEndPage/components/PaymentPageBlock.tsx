@@ -19,8 +19,6 @@ import { FormColorTheme } from '~shared/types/form'
 
 import Button from '~components/Button'
 
-import { useEnv } from '~features/env/queries'
-
 import FormErrorMessage from '../../../../../components/FormControl/FormErrorMessage'
 import { STRIPE_SUBMISSION_ID_KEY } from '../../../constants'
 import { usePublicFormContext } from '../../../PublicFormContext'
@@ -123,6 +121,7 @@ const StripeCheckoutForm = ({
 export const PaymentPageBlock = ({
   submissionId,
   paymentClientSecret,
+  publishableKey,
   focusOnMount,
   isRetry,
 }: PaymentPageBlockProps): JSX.Element => {
@@ -133,11 +132,9 @@ export const PaymentPageBlock = ({
 
   const amountCents = form?.payments?.amount_cents || 0
 
-  const stripePublishableKey = useEnv().data?.stripePublishableKey || ''
-
   const stripePromise = useMemo(
-    () => loadStripe(stripePublishableKey),
-    [stripePublishableKey],
+    () => loadStripe(publishableKey),
+    [publishableKey],
   )
 
   const focusRef = useRef<HTMLDivElement>(null)

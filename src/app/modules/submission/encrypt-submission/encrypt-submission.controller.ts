@@ -410,7 +410,7 @@ const submitEncryptModeForm: ControllerHandler<
       currency: paymentConfig.defaultCurrency,
       payment_method_types: ['card', 'grabpay', 'paynow'],
       description: form.payments.description,
-      on_behalf_of: form.payments.target_account_id,
+      // on_behalf_of: form.payments.target_account_id,
       metadata: {
         formId,
         submissionId,
@@ -427,6 +427,7 @@ const submitEncryptModeForm: ControllerHandler<
     try {
       paymentIntent = await stripe.paymentIntents.create(
         createPaymentIntentParams,
+        { stripeAccount: form.payments.target_account_id },
       )
     } catch (err) {
       logger.error({
@@ -491,7 +492,12 @@ const submitEncryptModeForm: ControllerHandler<
     message: 'Form submission successful.',
     submissionId: submission.id,
     // Attach paymentClientSecret if it is defined and non-null. Otherwise, client will display error message.
-    ...(paymentClientSecret ? { paymentClientSecret } : {}),
+    ...(paymentClientSecret
+      ? {
+          paymentClientSecret,
+          paymentPublishableKey: form.payments?.publishable_key,
+        }
+      : {}),
   })
 
   // Send Email Confirmations

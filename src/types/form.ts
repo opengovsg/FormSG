@@ -195,9 +195,13 @@ export interface IFormSchema extends IForm, Document, PublicView<PublicForm> {
    * @param accountId the payment account ID to add
    * @returns updated form
    */
-  addPaymentAccountId<T = IFormSchema>(
-    accountId: FormPayments['target_account_id'],
-  ): Promise<T & DeepRequired<Pick<IFormSchema, 'payments'>>>
+  addPaymentAccountId<T = IFormSchema>({
+    accountId,
+    publishableKey,
+  }: {
+    accountId: FormPayments['target_account_id']
+    publishableKey: FormPayments['publishable_key']
+  }): Promise<T & DeepRequired<Pick<IFormSchema, 'payments'>>>
 
   /**
    * Remove payment account ID from the form.

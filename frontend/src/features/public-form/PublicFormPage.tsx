@@ -46,9 +46,11 @@ export const PublicFormPage = (): JSX.Element => {
           <PublicFormWrapper>
             {retryPayment && stripeSubmissionId && clientSecret ? (
               <FormPaymentPage
-                isRetry={true}
+                isRetry
                 submissionId={stripeSubmissionId}
                 paymentClientSecret={clientSecret}
+                // TODO: Fix for retry payment
+                publishableKey=""
               />
             ) : stripeSubmissionId ? (
               <FormPaymentRedirectPage
