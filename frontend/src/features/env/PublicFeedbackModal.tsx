@@ -192,6 +192,7 @@ export const PublicFeedbackModal = ({
                   isFullWidth={isMobile}
                   variant="clear"
                   onClick={onClose}
+                  isDisabled={feedbackMutation.isLoading}
                 >
                   Cancel
                 </Button>
@@ -199,6 +200,7 @@ export const PublicFeedbackModal = ({
                   isFullWidth={isMobile}
                   type="submit"
                   isDisabled={isLoading}
+                  isLoading={feedbackMutation.isLoading}
                 >
                   Next
                 </Button>
