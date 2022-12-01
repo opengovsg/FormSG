@@ -27,10 +27,10 @@ export const CreatePaymentIntentFailureBlock = ({
 
   const submittedAriaText = useMemo(() => {
     if (formTitle) {
-      return `Error preparing payment for ${formTitle}. Please contact the form creator for assistance and provide them the Response ID: ${submissionData.id}.`
+      return `Error preparing payment for ${formTitle}. Please contact the form creator for assistance and provide them the Response ID: ${submissionId}.`
     }
-    return `Error preparing payment. Please contact the form creator for assistance and provide them the Response ID: ${submissionData.id}.`
-  }, [formTitle])
+    return `Error preparing payment. Please contact the form creator for assistance and provide them the Response ID: ${submissionId}.`
+  }, [formTitle, submissionId])
 
   return (
     <Flex flexDir="column">
