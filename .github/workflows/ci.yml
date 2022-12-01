@@ -70,7 +70,6 @@ jobs:
         with:
           name: build-output
           path: |
-            package*.json
             dist/
           retention-days: 2
 
@@ -114,7 +113,6 @@ jobs:
         if: always()
         with:
           name: build-output
-          path: build-output/
       - name: Use Node.js
         uses: actions/setup-node@v3
         with:
@@ -168,7 +166,6 @@ jobs:
         if: always()
         with:
           name: build-output
-          path: build-output/
       - name: Use Node.js
         uses: actions/setup-node@v3
         with:
