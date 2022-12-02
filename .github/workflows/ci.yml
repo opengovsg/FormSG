@@ -70,6 +70,7 @@ jobs:
         with:
           name: build-output
           path: |
+            package*.json
             dist/
           retention-days: 2
 
