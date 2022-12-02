@@ -106,7 +106,7 @@ jobs:
 
   backend_test:
     needs: [changes, install, build]
-    # if: ${{ needs.changes.outputs.backend == 'true' }}
+    if: ${{ needs.changes.outputs.backend == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -159,7 +159,7 @@ jobs:
 
   src_e2e:
     needs: [changes, build]
-    # if: ${{ needs.changes.outputs.backend == 'true' || needs.changes.outputs.angularjs == 'true' }}
+    if: ${{ needs.changes.outputs.backend == 'true' || needs.changes.outputs.angularjs == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
