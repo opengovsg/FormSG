@@ -37,10 +37,10 @@ export const NumberField = ({
             inputMode="numeric"
             colorScheme={`theme-${colorTheme}`}
             aria-label={schema.title}
-            allowMouseWheel
             precision={0}
             value={value}
             preventDefaultOnEnter
+            showSteppers={false}
             onChange={(val) => {
               // Only allow numeric inputs
               onChange(val.replace(/\D/g, ''))
