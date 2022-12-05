@@ -1,8 +1,18 @@
 import { useMemo, useState } from 'react'
 import { BiPlus } from 'react-icons/bi'
-import { Box, Flex, Grid, Skeleton, Text } from '@chakra-ui/react'
+import {
+  Box,
+  Flex,
+  Grid,
+  Skeleton,
+  Text,
+  useDisclosure,
+  useMediaQuery,
+} from '@chakra-ui/react'
+import { useMediaMatch } from 'rooks'
 import simplur from 'simplur'
 
+import { BREAKPOINT_VALS } from '~theme/foundations/breakpoints'
 import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
 
@@ -22,6 +32,8 @@ export const WorkspaceHeader = ({
   handleOpenCreateFormModal,
 }: WorkspaceHeaderProps): JSX.Element => {
   const isMobile = useIsMobile()
+  const isDesktop = useMediaMatch(`(min-width: ${BREAKPOINT_VALS.lg})`)
+
   const {
     isLoading,
     totalFormsCount,
@@ -32,7 +44,8 @@ export const WorkspaceHeader = ({
     setActiveFilter,
   } = useWorkspaceContext()
 
-  const [searchExpanded, setSearchExpanded] = useState<boolean>(false)
+  const { isOpen: isSearchExpanded, onToggle: onToggleSearchExpansion } =
+    useDisclosure()
 
   const headerText = useMemo(
     () =>
@@ -45,17 +58,17 @@ export const WorkspaceHeader = ({
   return (
     <Grid
       gridTemplateAreas={{
-        base: searchExpanded
-          ? "'header filter' 'search search' 'create create'"
-          : "'header search filter' 'create create create'",
-        md: searchExpanded
-          ? "'header filter create' 'search search search'"
-          : "'header search filter create'",
+        base: isSearchExpanded
+          ? "'header searchicon filter' 'search search search' 'create create create'"
+          : "'header searchicon filter' 'create create create'",
+        md: isSearchExpanded
+          ? "'header searchicon filter create' 'search search search search'"
+          : "'header searchicon filter create'",
         lg: "'header searchfilter create'",
       }}
       gridTemplateColumns={{
-        base: searchExpanded ? '1fr auto' : '1fr auto auto',
-        md: searchExpanded ? '1fr auto auto' : '1fr auto auto auto',
+        base: isSearchExpanded ? '1fr auto' : '1fr auto auto',
+        md: isSearchExpanded ? '1fr auto auto' : '1fr auto auto auto',
         lg: '1fr auto auto',
       }}
       gap="1rem"
@@ -81,7 +94,7 @@ export const WorkspaceHeader = ({
       </Flex>
 
       {/* Combination box used in desktop mode. */}
-      {!isMobile ? (
+      {isDesktop ? (
         <Box gridArea="searchfilter">
           <WorkspaceSearchbar
             onChange={setActiveSearch}
@@ -89,13 +102,15 @@ export const WorkspaceHeader = ({
             onFilter={setActiveFilter}
           />
         </Box>
-      ) : null}
-
-      <MobileWorkspaceSearchbar
-        onChange={setActiveSearch}
-        placeholder="Search by title"
-        onFilter={setActiveFilter}
-      />
+      ) : (
+        <MobileWorkspaceSearchbar
+          isExpanded={isSearchExpanded}
+          onToggleExpansion={onToggleSearchExpansion}
+          onChange={setActiveSearch}
+          placeholder="Search by title"
+          onFilter={setActiveFilter}
+        />
+      )}
 
       <Button
         gridArea="create"

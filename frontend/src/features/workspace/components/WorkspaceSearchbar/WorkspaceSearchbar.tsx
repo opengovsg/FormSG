@@ -9,6 +9,7 @@ import {
   InputRightElement,
   MenuItemOption,
   MenuOptionGroup,
+  Portal,
   useControllableState,
 } from '@chakra-ui/react'
 
@@ -68,14 +69,32 @@ export const useWorkspaceSearchbar = ({
 }
 
 export const WorkspaceSearchbar = forwardRef<WorkspaceSearchbarProps, 'input'>(
-  (props, ref): JSX.Element => {
+  (
+    {
+      defaultValue,
+      value,
+      onChange,
+      defaultFilterValue,
+      filterValue,
+      onFilter,
+      placeholder,
+    },
+    ref,
+  ): JSX.Element => {
     const {
       filterButtonLabel,
       internalFilter,
       internalValue,
       setInternalFilter,
       setInternalValue,
-    } = useWorkspaceSearchbar(props)
+    } = useWorkspaceSearchbar({
+      defaultValue,
+      value,
+      onChange,
+      defaultFilterValue,
+      filterValue,
+      onFilter,
+    })
 
     const filterRef = useRef<HTMLDivElement>(null)
 
@@ -104,6 +123,7 @@ export const WorkspaceSearchbar = forwardRef<WorkspaceSearchbarProps, 'input'>(
         <Input
           ref={ref}
           value={internalValue}
+          placeholder={placeholder}
           onChange={(e) => setInternalValue(e.target.value)}
           pr={filterElemWidth}
         />
@@ -125,19 +145,21 @@ export const WorkspaceSearchbar = forwardRef<WorkspaceSearchbarProps, 'input'>(
             >
               {filterButtonLabel}
             </Menu.Button>
-            <Menu.List>
-              <MenuOptionGroup
-                type="radio"
-                value={internalFilter}
-                onChange={(val) => setInternalFilter(val as FilterOption)}
-              >
-                {FILTER_OPTIONS.map((value, i) => (
-                  <MenuItemOption key={i} iconSpacing="1.5rem" value={value}>
-                    {value}
-                  </MenuItemOption>
-                ))}
-              </MenuOptionGroup>
-            </Menu.List>
+            <Portal>
+              <Menu.List>
+                <MenuOptionGroup
+                  type="radio"
+                  value={internalFilter}
+                  onChange={(val) => setInternalFilter(val as FilterOption)}
+                >
+                  {FILTER_OPTIONS.map((value, i) => (
+                    <MenuItemOption key={i} iconSpacing="1.5rem" value={value}>
+                      {value}
+                    </MenuItemOption>
+                  ))}
+                </MenuOptionGroup>
+              </Menu.List>
+            </Portal>
           </Menu>
         </InputRightElement>
       </InputGroup>
