@@ -16,16 +16,15 @@ import Input from '~components/Input'
 import Menu from '~components/Menu'
 
 import { FilterOption } from '~features/workspace/types'
-
-type WorkspaceFilterValue = 'all' | 'closed' | 'open'
+import { FILTER_OPTIONS } from '~features/workspace/utils/dashboardFilter'
 
 export interface WorkspaceSearchbarProps {
   /** Filter selection input will be controlled if provided. */
-  filterValue?: WorkspaceFilterValue
+  filterValue?: FilterOption
   /** Callback when filter value changes. */
-  onFilter?: (filter: WorkspaceFilterValue) => void
+  onFilter?: (filter: FilterOption) => void
   /** Value to assign to uncontrolled filter selection input. */
-  defaultFilterValue?: WorkspaceFilterValue
+  defaultFilterValue?: FilterOption
 
   /** Search input will be controlled if provided. */
   value?: string
@@ -33,12 +32,6 @@ export interface WorkspaceSearchbarProps {
   onChange?: (query: string) => void
   /** Value to assign to uncontrolled search input. */
   defaultValue?: string
-}
-
-const FILTER_OPTIONS: Record<WorkspaceFilterValue, string> = {
-  all: 'All forms',
-  closed: FilterOption.ClosedForms,
-  open: FilterOption.OpenForms,
 }
 
 export const WorkspaceSearchbar = forwardRef<WorkspaceSearchbarProps, 'input'>(
@@ -53,15 +46,15 @@ export const WorkspaceSearchbar = forwardRef<WorkspaceSearchbarProps, 'input'>(
     })
     const [internalFilter, setInternalFilter] = useControllableState({
       value: filterValue,
-      defaultValue: 'all',
+      defaultValue: FilterOption.AllForms,
       onChange: onFilter,
     })
 
     const filterRef = useRef<HTMLDivElement>(null)
 
     const filterButtonLabel = useMemo(() => {
-      if (internalFilter === 'all') return 'Filter'
-      return FILTER_OPTIONS[internalFilter]
+      if (internalFilter === FilterOption.AllForms) return 'Filter'
+      return internalFilter
     }, [internalFilter])
 
     const [filterElemWidth, setFilterElemWidth] = useState<number>()
@@ -114,13 +107,11 @@ export const WorkspaceSearchbar = forwardRef<WorkspaceSearchbarProps, 'input'>(
               <MenuOptionGroup
                 type="radio"
                 value={internalFilter}
-                onChange={(val) =>
-                  setInternalFilter(val as WorkspaceFilterValue)
-                }
+                onChange={(val) => setInternalFilter(val as FilterOption)}
               >
-                {Object.entries(FILTER_OPTIONS).map(([value, label], i) => (
-                  <MenuItemOption iconSpacing="1.5rem" value={value}>
-                    {label}
+                {FILTER_OPTIONS.map((value, i) => (
+                  <MenuItemOption key={i} iconSpacing="1.5rem" value={value}>
+                    {value}
                   </MenuItemOption>
                 ))}
               </MenuOptionGroup>

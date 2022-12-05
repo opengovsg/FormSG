@@ -1,32 +1,14 @@
-import { useCallback, useMemo, useState } from 'react'
-import { BiCheck, BiFilter, BiPlus } from 'react-icons/bi'
-import {
-  Box,
-  ButtonGroup,
-  Circle,
-  Drawer,
-  DrawerBody,
-  DrawerContent,
-  DrawerOverlay,
-  Flex,
-  Grid,
-  Icon,
-  MenuButton,
-  Skeleton,
-  Stack,
-  Text,
-  useDisclosure,
-} from '@chakra-ui/react'
+import { useMemo, useState } from 'react'
+import { BiPlus } from 'react-icons/bi'
+import { Box, Flex, Grid, Skeleton, Text } from '@chakra-ui/react'
 import simplur from 'simplur'
 
 import { useIsMobile } from '~hooks/useIsMobile'
-import Button, { ButtonProps } from '~components/Button'
-import IconButton, { IconButtonProps } from '~components/IconButton'
-import Menu from '~components/Menu'
-import Searchbar from '~components/Searchbar'
+import Button from '~components/Button'
 
-import { FilterOption } from '~features/workspace/types'
 import { useWorkspaceContext } from '~features/workspace/WorkspaceContext'
+
+import { WorkspaceSearchbar } from '../WorkspaceSearchbar/WorkspaceSearchbar'
 
 export interface WorkspaceHeaderProps {
   handleOpenCreateFormModal: () => void
@@ -43,8 +25,6 @@ export const WorkspaceHeader = ({
     isLoading,
     totalFormsCount,
     displayedFormsCount,
-    defaultFilterOption,
-    filterOptions,
     activeSearch,
     setActiveSearch,
     activeFilter,
@@ -52,95 +32,6 @@ export const WorkspaceHeader = ({
   } = useWorkspaceContext()
 
   const [searchExpanded, setSearchExpanded] = useState<boolean>(false)
-  const { isOpen, onClose, onOpen } = useDisclosure()
-
-  const mobileDrawerExtraButtonProps: Partial<ButtonProps> = useMemo(
-    () => ({
-      isFullWidth: true,
-      justifyContent: 'flex-start',
-      variant: 'clear',
-      colorScheme: 'secondary',
-      textStyle: 'body-1',
-    }),
-    [],
-  )
-
-  const handleExpandSearchbar = useCallback(() => {
-    setSearchExpanded(true)
-  }, [])
-
-  const handleCollapseSearchbar = useCallback(() => {
-    setSearchExpanded(false)
-    setActiveSearch('')
-    setActiveFilter(null)
-  }, [setActiveFilter, setActiveSearch])
-
-  const handleSelectFilter = useCallback(
-    (opt: string) =>
-      setActiveFilter(
-        opt === defaultFilterOption ? null : (opt as FilterOption),
-      ),
-    [defaultFilterOption, setActiveFilter],
-  )
-
-  const handleSelectFilterFromDrawer = useCallback(
-    (filterOption: FilterOption | null) => {
-      setActiveFilter(filterOption)
-      onClose()
-    },
-    [onClose, setActiveFilter],
-  )
-
-  const renderFilterButton = useCallback(
-    (isActive: boolean) => {
-      const buttonProps: IconButtonProps = {
-        'aria-label': 'Filter forms',
-        variant: 'clear',
-        colorScheme: 'secondary',
-        backgroundColor: isActive || activeFilter ? 'neutral.200' : undefined,
-        icon: <BiFilter />,
-      }
-      return (
-        <>
-          {isMobile ? (
-            <IconButton onClick={onOpen} icon={<BiFilter />} {...buttonProps} />
-          ) : (
-            <MenuButton as={IconButton} {...buttonProps} isActive />
-          )}
-          {activeFilter && (
-            <Icon
-              as={Circle}
-              bg="primary.500"
-              fontSize="0.4rem"
-              ml="-1rem"
-              mr="0.6rem"
-              mb="0.4rem"
-              position="relative"
-              zIndex={0}
-            />
-          )}
-        </>
-      )
-    },
-    [activeFilter, isMobile, onOpen],
-  )
-
-  const renderFilterOption = useCallback(
-    (filterOption: FilterOption | null) => {
-      return (
-        <Stack
-          direction="row"
-          justify="space-between"
-          alignItems="center"
-          w="100%"
-        >
-          <Text>{filterOption ?? defaultFilterOption}</Text>
-          {activeFilter === filterOption ? <BiCheck /> : null}
-        </Stack>
-      )
-    },
-    [activeFilter, defaultFilterOption],
-  )
 
   const headerText = useMemo(
     () =>
@@ -188,50 +79,16 @@ export const WorkspaceHeader = ({
         </Skeleton>
       </Flex>
 
-      {/* 'search' and 'filter' only used in mobile & tablet mode. */}
-      <Box gridArea="search" display={{ lg: 'none' }}>
-        <Searchbar
-          onExpandIconClick={handleExpandSearchbar}
-          onCollapseIconClick={handleCollapseSearchbar}
-          onChange={setActiveSearch}
-          placeholder="Search by title"
-        />
-      </Box>
-
-      <Box gridArea="filter" display={{ lg: 'none' }}>
-        {isMobile ? (
-          renderFilterButton(isOpen)
-        ) : (
-          <Menu placement="bottom-end">
-            {({ isOpen }) => (
-              <>
-                {renderFilterButton(isOpen)}
-                <Menu.List>
-                  {[null, ...Object.values(FilterOption)].map((option, i) => (
-                    <Menu.Item key={i} onClick={() => setActiveFilter(option)}>
-                      {renderFilterOption(option)}
-                    </Menu.Item>
-                  ))}
-                </Menu.List>
-              </>
-            )}
-          </Menu>
-        )}
-      </Box>
-
       {/* Combination box used in desktop mode. */}
-      <Box gridArea="searchfilter" display={{ base: 'none', lg: 'flex' }}>
-        <Searchbar
-          onExpandIconClick={handleExpandSearchbar}
-          onCollapseIconClick={handleCollapseSearchbar}
-          onChange={setActiveSearch}
-          placeholder="Search by title"
-          isExpandable={false}
-          filterValue={defaultFilterOption}
-          filterOptions={filterOptions}
-          onFilter={handleSelectFilter}
-        />
-      </Box>
+      {!isMobile ? (
+        <Box gridArea="searchfilter">
+          <WorkspaceSearchbar
+            onChange={setActiveSearch}
+            placeholder="Search by title"
+            onFilter={setActiveFilter}
+          />
+        </Box>
+      ) : null}
 
       <Button
         gridArea="create"
@@ -242,27 +99,6 @@ export const WorkspaceHeader = ({
       >
         Create form
       </Button>
-
-      <Drawer placement="bottom" onClose={onClose} isOpen={isOpen}>
-        <DrawerOverlay />
-        <DrawerContent borderTopRadius="0.25rem">
-          <DrawerBody px={0} py="0.5rem">
-            <ButtonGroup flexDir="column" spacing={0} w="100%">
-              {[null, ...Object.values(FilterOption)].map(
-                (filterOption, idx) => (
-                  <Button
-                    key={idx}
-                    {...mobileDrawerExtraButtonProps}
-                    onClick={() => handleSelectFilterFromDrawer(filterOption)}
-                  >
-                    {renderFilterOption(filterOption)}
-                  </Button>
-                ),
-              )}
-            </ButtonGroup>
-          </DrawerBody>
-        </DrawerContent>
-      </Drawer>
     </Grid>
   )
 }
