@@ -11,8 +11,8 @@ export interface WorkspaceContextProps {
   displayedFormsCount: number
   activeSearch: string
   setActiveSearch: (searchTerm: string) => void
-  activeFilter: FilterOption | null
-  setActiveFilter: (filterOption: FilterOption | null) => void
+  activeFilter: FilterOption
+  setActiveFilter: (filterOption: FilterOption) => void
 }
 
 export const WorkspaceContext = createContext<

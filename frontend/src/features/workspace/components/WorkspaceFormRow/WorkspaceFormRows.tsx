@@ -1,5 +1,7 @@
 import { Box, Divider, Flex, Stack, Text } from '@chakra-ui/react'
 
+import Button from '~components/Button'
+
 import { useWorkspaceContext } from '~features/workspace/WorkspaceContext'
 import { CONTAINER_MAXW } from '~features/workspace/WorkspacePage'
 
@@ -19,14 +21,23 @@ const WorkspaceFormRowsSkeleton = () => {
   )
 }
 
-const WorkspaceFormRowsFilterNone = (): JSX.Element => {
+const WorkspaceFormRowsFilterNone = ({
+  reset,
+}: {
+  reset: () => void
+}): JSX.Element => {
   return (
     <Box mt="2rem">
       <Stack w="100%" spacing="1rem">
         <Text textStyle="h2" align="center" color="primary.500">
           No forms found
         </Text>
-        <Text align="center">Try another search or remove filters</Text>
+        <Flex justify="center" align="center">
+          <Text align="center">Try another search or remove filters.</Text>
+          <Button onClick={reset} variant="link">
+            Reset
+          </Button>
+        </Flex>
         <Flex justifyContent="center">
           <WorkspaceFormRowsFilterNoneSvg />
         </Flex>
@@ -36,7 +47,7 @@ const WorkspaceFormRowsFilterNone = (): JSX.Element => {
 }
 
 export const WorkspaceFormRows = (): JSX.Element => {
-  const { isLoading, displayedForms, displayedFormsCount } =
+  const { isLoading, displayedForms, displayedFormsCount, setActiveSearch } =
     useWorkspaceContext()
 
   if (isLoading) {
@@ -44,7 +55,7 @@ export const WorkspaceFormRows = (): JSX.Element => {
   }
 
   if (displayedFormsCount === 0) {
-    return <WorkspaceFormRowsFilterNone />
+    return <WorkspaceFormRowsFilterNone reset={() => setActiveSearch('')} />
   }
 
   return (

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { BiPlus } from 'react-icons/bi'
 import {
   Box,
@@ -7,7 +7,6 @@ import {
   Skeleton,
   Text,
   useDisclosure,
-  useMediaQuery,
 } from '@chakra-ui/react'
 import { useMediaMatch } from 'rooks'
 import simplur from 'simplur'
@@ -97,8 +96,10 @@ export const WorkspaceHeader = ({
       {isDesktop ? (
         <Box gridArea="searchfilter">
           <WorkspaceSearchbar
+            value={activeSearch}
             onChange={setActiveSearch}
             placeholder="Search by title"
+            filterValue={activeFilter}
             onFilter={setActiveFilter}
           />
         </Box>
@@ -107,7 +108,9 @@ export const WorkspaceHeader = ({
           isExpanded={isSearchExpanded}
           onToggleExpansion={onToggleSearchExpansion}
           onChange={setActiveSearch}
+          value={activeSearch}
           placeholder="Search by title"
+          filterValue={activeFilter}
           onFilter={setActiveFilter}
         />
       )}
