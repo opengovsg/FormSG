@@ -81,16 +81,8 @@ export const AuthSettingsSection = ({
 
   const isDisabled = useCallback(
     (authType: FormAuthType) =>
-      isFormPublic ||
-      containsMyInfoFields ||
-      mutateFormAuthType.isLoading ||
-      (authType === FormAuthType.SGID && !user?.betaFlags?.sgid),
-    [
-      isFormPublic,
-      containsMyInfoFields,
-      mutateFormAuthType.isLoading,
-      user?.betaFlags?.sgid,
-    ],
+      isFormPublic || containsMyInfoFields || mutateFormAuthType.isLoading,
+    [isFormPublic, containsMyInfoFields, mutateFormAuthType.isLoading],
   )
 
   const isEsrvcIdBoxDisabled = useMemo(
