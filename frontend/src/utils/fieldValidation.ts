@@ -163,8 +163,8 @@ export const createDropdownValidationRulesWithCustomErrorMessage: (
   (errorMessage) =>
   (schema): RegisterOptions => {
     return {
-      ...createBaseValidationRules(schema),
       validate: {
+        required: requiredSingleAnswerValidationFn(schema),
         validOptions: (value: string) => {
           if (!value) return
           return schema.fieldOptions.includes(value) || errorMessage
