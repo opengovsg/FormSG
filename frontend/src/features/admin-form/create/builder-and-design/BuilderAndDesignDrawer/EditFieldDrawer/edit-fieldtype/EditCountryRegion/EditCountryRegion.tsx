@@ -11,7 +11,8 @@ import Input from '~components/Input'
 import Textarea from '~components/Textarea'
 import Toggle from '~components/Toggle'
 
-import { DrawerContentContainer } from '../common/DrawerContentContainer'
+import { CreatePageDrawerContentContainer } from '~features/admin-form/create/common'
+
 import { FormFieldDrawerActions } from '../common/FormFieldDrawerActions'
 import { EditFieldProps } from '../common/types'
 import { useEditFieldForm } from '../common/useEditFieldForm'
@@ -66,7 +67,7 @@ export const EditCountryRegion = ({
   )
 
   return (
-    <DrawerContentContainer>
+    <CreatePageDrawerContentContainer>
       <FormControl isRequired isReadOnly={isLoading} isInvalid={!!errors.title}>
         <FormLabel>Question</FormLabel>
         <Input autoFocus {...register('title', requiredValidationRule)} />
@@ -86,6 +87,6 @@ export const EditCountryRegion = ({
         handleClick={handleUpdateField}
         handleCancel={handleCancel}
       />
-    </DrawerContentContainer>
+    </CreatePageDrawerContentContainer>
   )
 }
