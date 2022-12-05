@@ -8,6 +8,7 @@ import Button from '~components/Button'
 
 import { useWorkspaceContext } from '~features/workspace/WorkspaceContext'
 
+import { MobileWorkspaceSearchbar } from '../WorkspaceSearchbar/MobileWorkspaceSearchbar'
 import { WorkspaceSearchbar } from '../WorkspaceSearchbar/WorkspaceSearchbar'
 
 export interface WorkspaceHeaderProps {
@@ -89,6 +90,12 @@ export const WorkspaceHeader = ({
           />
         </Box>
       ) : null}
+
+      <MobileWorkspaceSearchbar
+        onChange={setActiveSearch}
+        placeholder="Search by title"
+        onFilter={setActiveFilter}
+      />
 
       <Button
         gridArea="create"

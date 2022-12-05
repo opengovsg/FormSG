@@ -34,28 +34,50 @@ export interface WorkspaceSearchbarProps {
   defaultValue?: string
 }
 
+export const useWorkspaceSearchbar = ({
+  value,
+  defaultValue,
+  onChange,
+  filterValue,
+  onFilter,
+  defaultFilterValue = FilterOption.AllForms,
+}: WorkspaceSearchbarProps) => {
+  const [internalValue, setInternalValue] = useControllableState({
+    value,
+    defaultValue,
+    onChange,
+  })
+  const [internalFilter, setInternalFilter] = useControllableState({
+    value: filterValue,
+    defaultValue: defaultFilterValue,
+    onChange: onFilter,
+  })
+
+  const filterButtonLabel = useMemo(() => {
+    if (internalFilter === FilterOption.AllForms) return 'Filter'
+    return internalFilter
+  }, [internalFilter])
+
+  return {
+    internalValue,
+    setInternalValue,
+    internalFilter,
+    setInternalFilter,
+    filterButtonLabel,
+  }
+}
+
 export const WorkspaceSearchbar = forwardRef<WorkspaceSearchbarProps, 'input'>(
-  (
-    { filterValue, onFilter, value, onChange, defaultValue },
-    ref,
-  ): JSX.Element => {
-    const [internalValue, setInternalValue] = useControllableState({
-      value,
-      defaultValue,
-      onChange,
-    })
-    const [internalFilter, setInternalFilter] = useControllableState({
-      value: filterValue,
-      defaultValue: FilterOption.AllForms,
-      onChange: onFilter,
-    })
+  (props, ref): JSX.Element => {
+    const {
+      filterButtonLabel,
+      internalFilter,
+      internalValue,
+      setInternalFilter,
+      setInternalValue,
+    } = useWorkspaceSearchbar(props)
 
     const filterRef = useRef<HTMLDivElement>(null)
-
-    const filterButtonLabel = useMemo(() => {
-      if (internalFilter === FilterOption.AllForms) return 'Filter'
-      return internalFilter
-    }, [internalFilter])
 
     const [filterElemWidth, setFilterElemWidth] = useState<number>()
 
