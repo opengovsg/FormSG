@@ -13,7 +13,6 @@ export const UserBase = z.object({
   agency: AgencyBase.shape._id,
   betaFlags: z
     .object({
-      sgid: z.boolean().optional(),
     })
     .optional(),
   flags: z
