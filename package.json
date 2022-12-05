@@ -187,7 +187,7 @@
     "@babel/plugin-transform-runtime": "^7.19.6",
     "@babel/preset-env": "^7.20.2",
     "@opengovsg/mockpass": "^3.0.3",
-    "@playwright/test": "^1.27.1",
+    "@playwright/test": "^1.28.1",
     "@types/bcrypt": "^5.0.0",
     "@types/bluebird": "^3.5.37",
     "@types/busboy": "^1.5.0",
