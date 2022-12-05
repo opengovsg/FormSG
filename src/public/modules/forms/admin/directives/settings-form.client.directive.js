@@ -143,7 +143,7 @@ function settingsFormDirective(
           )
         }
 
-        $scope.isDisableAuthType = () => {
+        $scope.isDisable = () => {
           return (
             $scope.isFormPublic() ||
             ($scope.isFormPrivate() && $scope.myInfoSPWarning())

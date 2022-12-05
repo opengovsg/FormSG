@@ -237,11 +237,11 @@
             <div
               ng-repeat="type in authTypes"
               class="row"
-              ng-class="isDisableAuthType(type) ? 'authType-disabled' : ''"
+              ng-class="isDisable() ? 'authType-disabled' : ''"
             >
               <div
                 class="radio-option col-xs-12"
-                ng-class="isDisableAuthType(type) ? 'radio-disabled' : ''"
+                ng-class="isDisable() ? 'radio-disabled' : ''"
                 ng-if="!isFormEncrypt() || type.isEnabledInStorageMode"
               >
                 <label for="auth-type-{{type.val}}" class="col-xs-12">
@@ -251,7 +251,7 @@
                     ng-model="tempForm.authType"
                     value="{{ type.val }}"
                     ng-click="updateSettingsByPath('authType', $event.target.value)"
-                    ng-disabled="isDisableAuthType(type)"
+                    ng-disabled="isDisable()"
                   />
                   {{ type.name }}
                   <span
@@ -275,14 +275,6 @@
                     tooltip-trigger="'click mouseenter'"
                     ng-if="type.val === 'SGID'"
                   ></i>
-                  <a
-                    target="_blank"
-                    class="sgid-formsg-contact"
-                    href="https://go.gov.sg/sgid-formsg"
-                    ng-if="type.val === 'SGID'"
-                  >
-                    Contact us to find out more
-                  </a>
                 </label>
               </div>
               <div
