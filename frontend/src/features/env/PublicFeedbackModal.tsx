@@ -32,6 +32,7 @@ import { useEnvMutations, useFeedbackMutation } from '~features/env/mutations'
 import { useUser } from '~features/user/queries'
 
 import { usePublicFeedbackFormView } from './queries'
+import { isUsableFeedback } from './utils'
 
 export const PublicFeedbackModal = ({
   isOpen,
@@ -66,7 +67,9 @@ export const PublicFeedbackModal = ({
 
   const handleSubmitForm = handleSubmit((formInputs: PublicFeedbackFormDto) => {
     if (!feedbackForm) return
-    feedbackMutation.mutateAsync({ formInputs, feedbackForm })
+    if (isUsableFeedback(formInputs.feedback)) {
+      feedbackMutation.mutateAsync({ formInputs, feedbackForm })
+    }
     setShowThanksPage(true)
   })
 
