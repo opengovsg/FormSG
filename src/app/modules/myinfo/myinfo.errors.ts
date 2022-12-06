@@ -57,16 +57,6 @@ export class MyInfoParseRelayStateError extends ApplicationError {
 }
 
 /**
- * TODO(#5452): Delete this error
- * Submission on MyInfo form missing access token.
- */
-export class MyInfoMissingAccessTokenError extends ApplicationError {
-  constructor(message = 'Access token not present on MyInfo submission') {
-    super(message)
-  }
-}
-
-/**
  * Submission on MyInfo form missing access token.
  */
 export class MyInfoMissingLoginCookieError extends ApplicationError {
