@@ -195,11 +195,13 @@ export const IndividualResponsePage = (): JSX.Element => {
                   </Stack>
                   <Stack direction={{ base: 'column', md: 'row' }}>
                     <Text textStyle="subhead-1">Payment status:</Text>
-                    <Text>{paymentData?.status}</Text>
+                    {/* TODO: Change this to actual status */}
+                    <Text>Success</Text>
                   </Stack>
                   <Stack direction={{ base: 'column', md: 'row' }}>
                     <Text textStyle="subhead-1">Payment date:</Text>
-                    <Text>TODO: FILL THIS IN</Text>
+                    {/* TODO: Change this to date of submission */}
+                    <Text>{new Date().toLocaleDateString('en-sg')}</Text>
                   </Stack>
                   <Stack direction={{ base: 'column', md: 'row' }}>
                     <Text textStyle="subhead-1">Payment intent ID:</Text>
@@ -207,7 +209,8 @@ export const IndividualResponsePage = (): JSX.Element => {
                   </Stack>
                   <Stack direction={{ base: 'column', md: 'row' }}>
                     <Text textStyle="subhead-1">Transaction fee:</Text>
-                    <Text>TODO: FILL THIS IN</Text>
+                    {/* TODO: Change this to actual transaction fee */}
+                    <Text>$0.06</Text>
                   </Stack>
                 </Stack>
               </>
