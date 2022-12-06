@@ -68,7 +68,7 @@ export const PublicFeedbackModal = ({
   const handleSubmitForm = handleSubmit((formInputs: PublicFeedbackFormDto) => {
     if (!feedbackForm) return
     if (isUsableFeedback(formInputs.feedback)) {
-      feedbackMutation.mutateAsync({ formInputs, feedbackForm })
+      feedbackMutation.mutate({ formInputs, feedbackForm })
     }
     setShowThanksPage(true)
   })

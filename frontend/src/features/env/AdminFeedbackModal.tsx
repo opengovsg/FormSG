@@ -70,7 +70,7 @@ export const AdminFeedbackModal = ({
   const handleSubmitForm = handleSubmit((formInputs: AdminFeedbackFormDto) => {
     if (!feedbackForm) return
     if (isUsableFeedback(formInputs.feedback)) {
-      feedbackMutation.mutateAsync({
+      feedbackMutation.mutate({
         formInputs,
         feedbackForm,
       })
