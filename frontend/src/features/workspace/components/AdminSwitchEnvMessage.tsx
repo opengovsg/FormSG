@@ -1,18 +1,14 @@
 // TODO #4279: Remove after React rollout is complete
 import { KeyboardEventHandler, useCallback, useMemo } from 'react'
-import { Text, useDisclosure, VisuallyHidden } from '@chakra-ui/react'
-
-import { SwitchEnvFeedbackFormBodyDto } from '~shared/types'
+import { Text, VisuallyHidden } from '@chakra-ui/react'
 
 import Button from '~components/Button'
 import InlineMessage from '~components/InlineMessage'
 
 import { useEnvMutations } from '~features/env/mutations'
-import { useEnv, useSwitchEnvFeedbackFormView } from '~features/env/queries'
-import { SwitchEnvFeedbackModal } from '~features/env/SwitchEnvFeedbackModal'
+import { useEnv } from '~features/env/queries'
 
-export const AdminSwitchEnvMessage = (): JSX.Element => {
-  const { isOpen, onOpen, onClose } = useDisclosure()
+export const AdminSwitchEnvMessage = (): JSX.Element | null => {
   const {
     data: {
       angularPhaseOutDate,
@@ -32,24 +28,17 @@ export const AdminSwitchEnvMessage = (): JSX.Element => {
   const handleKeydown: KeyboardEventHandler<HTMLButtonElement> = useCallback(
     (event) => {
       if (event.key === 'Enter') {
-        onOpen()
         event.preventDefault()
       }
     },
-    [onOpen],
+    [],
   )
 
-  // get the feedback form data
-  const { data: feedbackForm } = useSwitchEnvFeedbackFormView(isOpen)
+  const { adminSwitchEnvMutation } = useEnvMutations()
 
-  const { submitSwitchEnvFormFeedbackMutation, adminSwitchEnvMutation } =
-    useEnvMutations(feedbackForm)
-
-  const submitFeedback = useCallback(
-    (formInputs: SwitchEnvFeedbackFormBodyDto) => {
-      return submitSwitchEnvFormFeedbackMutation.mutateAsync(formInputs)
-    },
-    [submitSwitchEnvFormFeedbackMutation],
+  const handleClick = useCallback(
+    () => adminSwitchEnvMutation.mutate(),
+    [adminSwitchEnvMutation],
   )
 
   return showSwitchEnvMessage ? (
@@ -63,7 +52,7 @@ export const AdminSwitchEnvMessage = (): JSX.Element => {
             as="u"
             variant="link"
             display="inline"
-            onClick={onOpen}
+            onClick={handleClick}
             onKeyDown={handleKeydown}
             aria-labelledby="admin-switch-msg"
             cursor="pointer"
@@ -78,15 +67,6 @@ export const AdminSwitchEnvMessage = (): JSX.Element => {
           , which is available until {angularPhaseOutDate}.
         </Text>
       </InlineMessage>
-      <SwitchEnvFeedbackModal
-        onSubmitFeedback={submitFeedback}
-        onChangeEnv={adminSwitchEnvMutation.mutate}
-        isOpen={isOpen}
-        onClose={onClose}
-        isAdminView={true}
-      />
     </>
-  ) : (
-    <></>
-  )
+  ) : null
 }

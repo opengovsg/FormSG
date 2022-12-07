@@ -113,6 +113,7 @@ export const useRecaptcha = ({
       executionPromise.current.resolve(response)
       executionPromise.current = {}
     }
+    setIsVfnInProgress(false)
   }, [])
 
   const handleError = useCallback(() => {
@@ -120,11 +121,15 @@ export const useRecaptcha = ({
       executionPromise.current.reject()
       executionPromise.current = {}
     }
+    setIsVfnInProgress(false)
+    setHasDisplayed(false)
   }, [])
 
   const handleExpiry = useCallback(() => {
     grecaptcha?.reset(widgetId)
     handleChange(null)
+    setIsVfnInProgress(false)
+    setHasDisplayed(false)
   }, [grecaptcha, handleChange, widgetId])
 
   // Poll to check if recaptcha window has closed and display error accordingly.
@@ -145,10 +150,9 @@ export const useRecaptcha = ({
       }
       if (isVfnInProgress && recaptchaVisibility === 'hidden' && hasDisplayed) {
         executionPromise.current.reject?.(new RecaptchaClosedError())
+        setIsVfnInProgress(false)
+        setHasDisplayed(false)
       }
-
-      setIsVfnInProgress(false)
-      setHasDisplayed(false)
     },
     /* intervalDurationMs= */ 100,
     /* when= */ isVfnInProgress,
