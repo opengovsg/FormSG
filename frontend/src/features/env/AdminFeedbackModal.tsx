@@ -34,6 +34,7 @@ import { useUser } from '~features/user/queries'
 
 import { useFeedbackMutation } from './mutations'
 import { useAdminFeedbackFormView } from './queries'
+import { isUsableFeedback } from './utils'
 
 export const AdminFeedbackModal = ({
   isOpen,
@@ -68,10 +69,12 @@ export const AdminFeedbackModal = ({
 
   const handleSubmitForm = handleSubmit((formInputs: AdminFeedbackFormDto) => {
     if (!feedbackForm) return
-    feedbackMutation.mutateAsync({
-      formInputs,
-      feedbackForm,
-    })
+    if (isUsableFeedback(formInputs.feedback)) {
+      feedbackMutation.mutate({
+        formInputs,
+        feedbackForm,
+      })
+    }
     toast({ description: 'Your feedback has been submitted.' })
     onClose()
   })
