@@ -99,25 +99,7 @@ export const MobileWorkspaceSearchbar = forwardRef<
     return (
       // Note: gridArea labels are coupled with the gridTemplateAreas definition in WorkspaceHeader.
       <>
-        <Box gridArea="searchIcon">
-          <IconButton
-            aria-label={
-              isExpanded ? 'Close and reset search bar' : 'Expand search bar'
-            }
-            colorScheme="secondary"
-            variant="clear"
-            onClick={handleToggle}
-            icon={
-              isExpanded ? (
-                <BiX fontSize="1.25rem" />
-              ) : (
-                <BiSearch fontSize="1.25rem" />
-              )
-            }
-          />
-        </Box>
-
-        {isExpanded && (
+        {isExpanded ? (
           <InputGroup gridArea="search">
             <InputLeftElement>
               <Icon as={BiSearch} color="secondary.500" fontSize="1.25rem" />
@@ -130,17 +112,27 @@ export const MobileWorkspaceSearchbar = forwardRef<
             />
             <InputRightElement right="1px">
               <IconButton
-                aria-label="Clear search"
+                aria-label="Close and reset search bar"
                 icon={<BiX />}
-                onClick={() => setInternalValue('')}
+                onClick={handleToggle}
                 fontSize="1.25rem"
                 variant="clear"
+                size="sm"
                 colorScheme="secondary"
-                height="calc(100% - 2px)"
                 minH="auto"
               />
             </InputRightElement>
           </InputGroup>
+        ) : (
+          <Box gridArea="searchIcon">
+            <IconButton
+              aria-label="Expand search bar"
+              colorScheme="secondary"
+              variant="clear"
+              onClick={handleToggle}
+              icon={<BiSearch fontSize="1.25rem" />}
+            />
+          </Box>
         )}
 
         <Box gridArea="filter">

@@ -13,6 +13,7 @@ import simplur from 'simplur'
 import { useIsDesktop, useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
 
+import { FilterOption } from '~features/workspace/types'
 import { useWorkspaceContext } from '~features/workspace/WorkspaceContext'
 
 import { MobileWorkspaceSearchbar } from '../WorkspaceSearchbar/MobileWorkspaceSearchbar'
@@ -46,7 +47,7 @@ export const WorkspaceHeader = ({
 
   const headerText = useMemo(
     () =>
-      activeSearch || activeFilter
+      activeSearch || activeFilter !== FilterOption.AllForms
         ? simplur`Showing ${displayedFormsCount} of ${totalFormsCount} form[|s]`
         : `All forms (${totalFormsCount})`,
     [activeFilter, activeSearch, displayedFormsCount, totalFormsCount],
@@ -57,16 +58,16 @@ export const WorkspaceHeader = ({
       gridTemplateAreas={{
         // Note: these gridTemplateAreas labels are used also in MobileWorkspaceSearchbar.
         base: isSearchExpanded
-          ? "'header searchIcon filter' 'search search search' 'create create create'"
+          ? "'header filter' 'search search' 'create create'"
           : "'header searchIcon filter' 'create create create'",
         md: isSearchExpanded
-          ? "'header searchIcon filter create' 'search search search search'"
+          ? "'header filter create' 'search search search'"
           : "'header searchIcon filter create'",
         lg: "'header searchFilter create'",
       }}
       gridTemplateColumns={{
-        base: '1fr auto auto',
-        md: '1fr auto auto auto',
+        base: isSearchExpanded ? '1fr auto' : '1fr auto auto',
+        md: isSearchExpanded ? '1fr auto auto' : '1fr auto auto auto',
         lg: '1fr auto auto',
       }}
       gap="1rem"
