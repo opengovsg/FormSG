@@ -127,7 +127,7 @@ export const Searchbar = forwardRef<SearchbarProps, 'input'>(
   ) => {
     const isMobile = useIsMobile()
 
-    const filterValue = useMemo(
+    const initialFilterValue = useMemo(
       () => filterValueProp ?? filterOptions[0] ?? '',
       [filterOptions, filterValueProp],
     )
@@ -136,7 +136,7 @@ export const Searchbar = forwardRef<SearchbarProps, 'input'>(
     const [isExpanded, setIsExpanded] = useState(
       !isExpandable || isExpandedProp,
     )
-    const [filter, setFilter] = useState<string>(filterValue)
+    const [filterValue, setFilterValue] = useState<string>(initialFilterValue)
     const [focus, setFocus] = useState<boolean>(false)
 
     const { isOpen, onClose, onOpen } = useDisclosure()
@@ -164,8 +164,8 @@ export const Searchbar = forwardRef<SearchbarProps, 'input'>(
     )
 
     const isFilterActive = useMemo(
-      () => filter !== filterValue,
-      [filter, filterValue],
+      () => filterValue !== initialFilterValue,
+      [filterValue, initialFilterValue],
     )
 
     const renderFilterButton = useCallback(
@@ -178,11 +178,11 @@ export const Searchbar = forwardRef<SearchbarProps, 'input'>(
             w="100%"
           >
             <Text>{option}</Text>
-            {filter === option ? <BiCheck /> : null}
+            {filterValue === option ? <BiCheck /> : null}
           </Stack>
         )
       },
-      [filter],
+      [filterValue],
     )
 
     const innerRef = useRef<HTMLInputElement>(null)
@@ -196,7 +196,7 @@ export const Searchbar = forwardRef<SearchbarProps, 'input'>(
     const onCollapseIconClick = () => {
       if (onCollapseIconClickProp) onCollapseIconClickProp()
       setValue('')
-      setFilter(filterValue)
+      setFilterValue(initialFilterValue)
       setIsExpanded(false)
     }
 
@@ -221,7 +221,7 @@ export const Searchbar = forwardRef<SearchbarProps, 'input'>(
     const onFilterSelect = useCallback(
       (option: string) => {
         if (onFilter) onFilter(option)
-        setFilter(option)
+        setFilterValue(option)
       },
       [onFilter],
     )
@@ -337,7 +337,7 @@ export const Searchbar = forwardRef<SearchbarProps, 'input'>(
                       leftIcon={<BiFilter />}
                       px="9px"
                     >
-                      {isFilterActive ? filter : 'Filter'}
+                      {isFilterActive ? filterValue : 'Filter'}
                     </MenuButton>
                     <Menu.List>
                       {filterOptions.map((option, i) => (
