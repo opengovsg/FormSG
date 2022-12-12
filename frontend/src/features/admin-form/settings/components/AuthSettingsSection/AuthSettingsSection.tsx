@@ -12,13 +12,11 @@ import { FormAuthType, FormSettings, FormStatus } from '~shared/types/form'
 
 import { BxsHelpCircle } from '~assets/icons/BxsHelpCircle'
 import InlineMessage from '~components/InlineMessage'
-import Link from '~components/Link'
 import Radio from '~components/Radio'
 import Tooltip from '~components/Tooltip'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
 import { isMyInfo } from '~features/myinfo/utils'
-import { useUser } from '~features/user/queries'
 
 import { useMutateFormSettings } from '../../mutations'
 
@@ -63,7 +61,6 @@ export const AuthSettingsSection = ({
   settings,
 }: AuthSettingsSectionProps): JSX.Element => {
   const { mutateFormAuthType } = useMutateFormSettings()
-  const { user } = useUser()
   const { data: form } = useAdminForm()
 
   const containsMyInfoFields = useMemo(
