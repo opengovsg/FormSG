@@ -55,17 +55,18 @@ export const WorkspaceHeader = ({
   return (
     <Grid
       gridTemplateAreas={{
+        // Note: these gridTemplateAreas labels are used also in MobileWorkspaceSearchbar.
         base: isSearchExpanded
-          ? "'header searchicon filter' 'search search search' 'create create create'"
-          : "'header searchicon filter' 'create create create'",
+          ? "'header searchIcon filter' 'search search search' 'create create create'"
+          : "'header searchIcon filter' 'create create create'",
         md: isSearchExpanded
-          ? "'header searchicon filter create' 'search search search search'"
-          : "'header searchicon filter create'",
-        lg: "'header searchfilter create'",
+          ? "'header searchIcon filter create' 'search search search search'"
+          : "'header searchIcon filter create'",
+        lg: "'header searchFilter create'",
       }}
       gridTemplateColumns={{
-        base: isSearchExpanded ? '1fr auto' : '1fr auto auto',
-        md: isSearchExpanded ? '1fr auto auto' : '1fr auto auto auto',
+        base: '1fr auto auto',
+        md: '1fr auto auto auto',
         lg: '1fr auto auto',
       }}
       gap="1rem"
@@ -90,9 +91,9 @@ export const WorkspaceHeader = ({
         </Skeleton>
       </Flex>
 
-      {/* Combination box used in desktop mode. */}
       {isDesktop ? (
-        <Box gridArea="searchfilter">
+        // Combination box used in desktop mode.
+        <Box gridArea="searchFilter">
           <WorkspaceSearchbar
             value={activeSearch}
             onChange={setActiveSearch}

@@ -87,8 +87,9 @@ export const MobileWorkspaceSearchbar = forwardRef<
     }, [isExpanded, onToggleExpansion, setInternalValue])
 
     return (
+      // Note: gridArea labels are coupled with the gridTemplateAreas definition in WorkspaceHeader.
       <>
-        <Box gridArea="searchicon">
+        <Box gridArea="searchIcon">
           <IconButton
             aria-label={
               isExpanded ? 'Close and reset search bar' : 'Expand search bar'
