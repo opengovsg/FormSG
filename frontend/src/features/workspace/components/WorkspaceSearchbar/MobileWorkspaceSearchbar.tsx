@@ -1,7 +1,12 @@
-import { useCallback, useMemo } from 'react'
-import { BiFilter, BiSearch, BiX } from 'react-icons/bi'
+import { useCallback } from 'react'
+import { BiCheck, BiFilter, BiSearch, BiX } from 'react-icons/bi'
 import {
   Box,
+  ButtonGroup,
+  Drawer,
+  DrawerBody,
+  DrawerContent,
+  DrawerOverlay,
   Flex,
   forwardRef,
   Icon,
@@ -13,8 +18,13 @@ import {
   MenuItemOption,
   MenuOptionGroup,
   Portal,
+  Stack,
+  Text,
+  useDisclosure,
 } from '@chakra-ui/react'
 
+import { useIsMobile } from '~hooks/useIsMobile'
+import Button from '~components/Button'
 import IconButton from '~components/IconButton'
 import Menu from '~components/Menu'
 
@@ -72,12 +82,12 @@ export const MobileWorkspaceSearchbar = forwardRef<
       internalValue,
       setInternalFilter,
       setInternalValue,
+      hasFilter,
     } = useWorkspaceSearchbar(props)
 
-    const hasFilter = useMemo(
-      () => internalFilter !== FilterOption.AllForms,
-      [internalFilter],
-    )
+    const isMobile = useIsMobile()
+
+    const { isOpen, onClose, onOpen } = useDisclosure()
 
     const handleToggle = useCallback(() => {
       if (isExpanded) {
@@ -106,35 +116,7 @@ export const MobileWorkspaceSearchbar = forwardRef<
             }
           />
         </Box>
-        <Box gridArea="filter">
-          <Menu placement="bottom-end">
-            <MenuButton
-              pos="relative"
-              width="min-content"
-              as={IconButton}
-              colorScheme="secondary"
-              variant="clear"
-              aria-label="Filter"
-              icon={<SelectedFilterAffordance show={hasFilter} />}
-              rightIcon={undefined}
-            />
-            <Portal>
-              <Menu.List>
-                <MenuOptionGroup
-                  type="radio"
-                  value={internalFilter}
-                  onChange={(val) => setInternalFilter(val as FilterOption)}
-                >
-                  {FILTER_OPTIONS.map((value, i) => (
-                    <MenuItemOption key={i} iconSpacing="1.5rem" value={value}>
-                      {value}
-                    </MenuItemOption>
-                  ))}
-                </MenuOptionGroup>
-              </Menu.List>
-            </Portal>
-          </Menu>
-        </Box>
+
         {isExpanded && (
           <InputGroup gridArea="search">
             <InputLeftElement>
@@ -159,6 +141,85 @@ export const MobileWorkspaceSearchbar = forwardRef<
               />
             </InputRightElement>
           </InputGroup>
+        )}
+
+        <Box gridArea="filter">
+          <Menu placement="bottom-end">
+            <MenuButton
+              pos="relative"
+              width="min-content"
+              as={IconButton}
+              colorScheme="secondary"
+              variant="clear"
+              aria-label="Filter forms"
+              icon={<SelectedFilterAffordance show={hasFilter} />}
+              rightIcon={undefined}
+              backgroundColor={hasFilter ? 'neutral.200' : undefined}
+              onClick={onOpen}
+            />
+            {isMobile || (
+              <Portal>
+                <Menu.List>
+                  <MenuOptionGroup
+                    type="radio"
+                    value={internalFilter}
+                    onChange={(val) => setInternalFilter(val as FilterOption)}
+                  >
+                    {FILTER_OPTIONS.map((value, i) => (
+                      <MenuItemOption
+                        key={i}
+                        iconSpacing="1.5rem"
+                        value={value}
+                      >
+                        {value}
+                      </MenuItemOption>
+                    ))}
+                  </MenuOptionGroup>
+                </Menu.List>
+              </Portal>
+            )}
+          </Menu>
+        </Box>
+
+        {/* Drawer for filter in mobile */}
+        {isMobile && (
+          <Drawer placement="bottom" onClose={onClose} isOpen={isOpen}>
+            <DrawerOverlay />
+            <DrawerContent borderTopRadius="0.25rem">
+              <DrawerBody px={0} py="0.5rem">
+                <ButtonGroup flexDir="column" spacing={0} w="100%">
+                  {FILTER_OPTIONS.map((option, i) => (
+                    <Button
+                      key={i}
+                      isFullWidth={true}
+                      justifyContent="flex-start"
+                      variant="clear"
+                      colorScheme="secondary"
+                      textStyle="body-1"
+                      onClick={() => {
+                        setInternalFilter(option)
+                        onClose()
+                      }}
+                    >
+                      <Stack
+                        direction="row"
+                        justify="flex-start"
+                        alignItems="center"
+                        w="100%"
+                      >
+                        {internalFilter === option ? (
+                          <BiCheck fontSize="1.25rem" />
+                        ) : (
+                          <Box w="1.25rem"> </Box>
+                        )}
+                        <Text>{option}</Text>
+                      </Stack>
+                    </Button>
+                  ))}
+                </ButtonGroup>
+              </DrawerBody>
+            </DrawerContent>
+          </Drawer>
         )}
       </>
     )

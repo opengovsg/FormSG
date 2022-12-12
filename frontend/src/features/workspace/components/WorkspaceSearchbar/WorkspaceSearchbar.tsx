@@ -7,12 +7,14 @@ import {
   InputGroup,
   InputLeftElement,
   InputRightElement,
+  MenuButton,
   MenuItemOption,
   MenuOptionGroup,
   Portal,
   useControllableState,
 } from '@chakra-ui/react'
 
+import Button from '~components/Button'
 import Input from '~components/Input'
 import Menu from '~components/Menu'
 
@@ -59,12 +61,18 @@ export const useWorkspaceSearchbar = ({
     return internalFilter
   }, [internalFilter])
 
+  const hasFilter = useMemo(
+    () => internalFilter !== FilterOption.AllForms,
+    [internalFilter],
+  )
+
   return {
     internalValue,
     setInternalValue,
     internalFilter,
     setInternalFilter,
     filterButtonLabel,
+    hasFilter,
   }
 }
 
@@ -87,6 +95,7 @@ export const WorkspaceSearchbar = forwardRef<WorkspaceSearchbarProps, 'input'>(
       internalValue,
       setInternalFilter,
       setInternalValue,
+      hasFilter,
     } = useWorkspaceSearchbar({
       defaultValue,
       value,
@@ -128,23 +137,22 @@ export const WorkspaceSearchbar = forwardRef<WorkspaceSearchbarProps, 'input'>(
           pr={filterElemWidth}
         />
         <InputRightElement width="auto" ref={filterRef}>
-          <Divider
-            height="calc(100% - 1.5rem)"
-            orientation="vertical"
-            mr="0.25rem"
-          />
+          <Divider height="calc(100% - 1.5rem)" orientation="vertical" />
           <Menu placement="bottom-end">
-            <Menu.Button
-              px="1.25rem"
-              colorScheme="secondary"
+            <MenuButton
+              as={Button}
+              size="sm"
               variant="clear"
-              aria-label="Filter"
-              iconSpacing="0.5rem"
+              colorScheme="secondary"
+              backgroundColor={hasFilter ? 'neutral.200' : undefined}
+              aria-label="Filter forms"
               leftIcon={<BiFilter fontSize="1.25rem" />}
-              rightIcon={undefined}
+              px="0.5rem"
+              mx="0.25rem"
+              fontSize="initial"
             >
               {filterButtonLabel}
-            </Menu.Button>
+            </MenuButton>
             <Portal>
               <Menu.List>
                 <MenuOptionGroup
