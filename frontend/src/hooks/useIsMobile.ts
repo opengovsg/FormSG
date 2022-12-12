@@ -7,3 +7,7 @@ export const useIsMobile = (): boolean => {
 
   return !isLargerThanMd
 }
+
+export const useIsDesktop = (): boolean => {
+  return useMediaMatch(`(min-width: ${BREAKPOINT_VALS.lg})`)
+}

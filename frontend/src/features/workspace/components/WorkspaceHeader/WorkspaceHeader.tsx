@@ -8,11 +8,9 @@ import {
   Text,
   useDisclosure,
 } from '@chakra-ui/react'
-import { useMediaMatch } from 'rooks'
 import simplur from 'simplur'
 
-import { BREAKPOINT_VALS } from '~theme/foundations/breakpoints'
-import { useIsMobile } from '~hooks/useIsMobile'
+import { useIsDesktop, useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
 
 import { useWorkspaceContext } from '~features/workspace/WorkspaceContext'
@@ -31,7 +29,7 @@ export const WorkspaceHeader = ({
   handleOpenCreateFormModal,
 }: WorkspaceHeaderProps): JSX.Element => {
   const isMobile = useIsMobile()
-  const isDesktop = useMediaMatch(`(min-width: ${BREAKPOINT_VALS.lg})`)
+  const isDesktop = useIsDesktop()
 
   const {
     isLoading,
