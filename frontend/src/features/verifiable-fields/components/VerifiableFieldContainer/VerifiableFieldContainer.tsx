@@ -61,6 +61,7 @@ export const VerifiableFieldContainer = ({
               // Bad a11y to disable buttons since screen readers act as if buttons
               // are removed from DOM if the button is disabled.
               // Instead, we allow users to click the button to trigger verification
+              name={`${schema._id}-verify`}
               isDisabled={isVfnBoxOpen || hasSignature}
               isLoading={isSendingOtp}
               onClick={handleVfnButtonClick}

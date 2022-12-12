@@ -60,15 +60,6 @@ services:
       - TWILIO_API_KEY=mockTwilioApiKey
       - TWILIO_API_SECRET=mockTwilioApiSecret
       - TWILIO_MESSAGING_SERVICE_SID=mockTwilioMsgSrvcSid
-      # Use mockpass key pairs and endpoints
-      - SP_FORMSG_KEY_PATH=./node_modules/@opengovsg/mockpass/static/certs/key.pem
-      - SP_FORMSG_CERT_PATH=./node_modules/@opengovsg/mockpass/static/certs/server.crt
-      - SP_IDP_CERT_PATH=./node_modules/@opengovsg/mockpass/static/certs/spcp.crt
-      - SINGPASS_IDP_LOGIN_URL=http://localhost:5156/singpass/logininitial
-      - SINGPASS_IDP_ENDPOINT=http://localhost:5156/singpass/soap
-      - SINGPASS_ESRVC_ID=spEsrvcId
-      - SINGPASS_PARTNER_ENTITY_ID=https://localhost:5001/singpass
-      - SINGPASS_IDP_ID=https://saml-internet.singpass.gov.sg/FIM/sps/SingpassIDPFed/saml20
       - SP_OIDC_NDI_DISCOVERY_ENDPOINT=https://stg-id.singpass.gov.sg/.well-known/openid-configuration
       - SP_OIDC_NDI_JWKS_ENDPOINT=https://stg-id.singpass.gov.sg/.well-known/keys
       - SP_OIDC_RP_CLIENT_ID=rpClientId
@@ -81,22 +72,17 @@ services:
       - CP_OIDC_RP_REDIRECT_URL=https://staging.form.gov.sg/api/v3/corppass/login
       - CP_OIDC_RP_JWKS_PUBLIC_PATH=./tests/certs/test_cp_rp_public_jwks.json
       - CP_OIDC_RP_JWKS_SECRET_PATH=./tests/certs/test_cp_rp_secret_jwks.json
-      - CP_FORMSG_KEY_PATH=./node_modules/@opengovsg/mockpass/static/certs/key.pem
-      - CP_FORMSG_CERT_PATH=./node_modules/@opengovsg/mockpass/static/certs/server.crt
-      - CP_IDP_CERT_PATH=./node_modules/@opengovsg/mockpass/static/certs/spcp.crt
-      - CORPPASS_IDP_LOGIN_URL=http://localhost:5156/corppass/logininitial
-      - CORPPASS_IDP_ENDPOINT=http://localhost:5156/corppass/soap
-      - CORPPASS_PARTNER_ENTITY_ID=https://localhost:5001/corppass
-      - CORPPASS_ESRVC_ID=cpEsrvcId
-      - CORPPASS_IDP_ID=https://saml.corppass.gov.sg/FIM/sps/CorpIDPFed/saml20
       - IS_SP_MAINTENANCE
       - IS_CP_MAINTENANCE
+      - SINGPASS_ESRVC_ID=spEsrvcId #Needed for MyInfo
       - MYINFO_BANNER_CONTENT
       - MYINFO_CLIENT_CONFIG=dev
+      # Use mockpass key pairs and endpoints
       - MYINFO_FORMSG_KEY_PATH=./node_modules/@opengovsg/mockpass/static/certs/key.pem
       - MYINFO_CERT_PATH=./node_modules/@opengovsg/mockpass/static/certs/spcp.crt
       - MYINFO_CLIENT_ID=mockClientId
       - MYINFO_CLIENT_SECRET=mockClientSecret
+      - MYINFO_JWT_SECRET=mockJwtSecret
       - SGID_ENDPOINT=http://localhost:5156/sgid/v1/oauth
       - SGID_CLIENT_ID=sgidclientid
       - SGID_CLIENT_SECRET=sgidclientsecret
@@ -109,13 +95,14 @@ services:
       - AWS_REGION
       # this needs to be replaced with the ID of a feedback form that you create
       # in your local environment
-      - REACT_TO_ANGULAR_FEEDBACK_FORM_ID=62da6a569ee8e90143b5da26
+      - REACT_SWITCH_ENV_FEEDBACK_FORM_ID_ADMIN=6386ecc0bdf691005457c67e
+      - REACT_SWITCH_ENV_FEEDBACK_FORM_ID_RESPONDENT=6386e4ba847f280069797a54
       - REACT_MIGRATION_ANGULAR_END_DATE=15 September 2022
-      - REACT_MIGRATION_RESP_ROLLOUT_EMAIL=1
-      - REACT_MIGRATION_RESP_ROLLOUT_STORAGE=1
-      - REACT_MIGRATION_ADMIN_ROLLOUT=1
-      - REACT_MIGRATION_REMOVE_INFOBOX_THRESHOLD_ADMIN=100
-      - REACT_MIGRATION_REMOVE_INFOBOX_THRESHOLD_RESPONDENT=10
+      - REACT_MIGRATION_RESP_ROLLOUT_EMAIL=100
+      - REACT_MIGRATION_RESP_ROLLOUT_STORAGE=100
+      - REACT_MIGRATION_ADMIN_ROLLOUT=100
+      - REACT_MIGRATION_REMOVE_INFOBOX_THRESHOLD_ADMIN=101
+      - REACT_MIGRATION_REMOVE_INFOBOX_THRESHOLD_RESPONDENT=101
   mockpass:
     build: https://github.com/opengovsg/mockpass.git
     depends_on:

@@ -28,20 +28,28 @@ export type VisibleMyInfoResponse = ProcessedFieldResponse & {
 
 export type MyInfoComparePromises = Map<string, Promise<boolean>>
 
-export enum MyInfoCookieState {
+export type MyInfoLoginCookiePayload = {
+  uinFin: string
+}
+
+export enum MyInfoAuthCodeCookieState {
   Success = 'success',
   Error = 'error',
 }
 
-export type MyInfoSuccessfulCookiePayload = {
-  accessToken: string
-  usedCount: number
-  state: MyInfoCookieState.Success
+export type MyInfoAuthCodeSuccessPayload = {
+  authCode: string
+  state: MyInfoAuthCodeCookieState.Success
 }
 
-export type MyInfoCookiePayload =
-  | MyInfoSuccessfulCookiePayload
-  | { state: Exclude<MyInfoCookieState, MyInfoCookieState.Success> }
+export type MyInfoAuthCodeCookiePayload =
+  | MyInfoAuthCodeSuccessPayload
+  | {
+      state: Exclude<
+        MyInfoAuthCodeCookieState,
+        MyInfoAuthCodeCookieState.Success
+      >
+    }
 
 /**
  * The stringified properties included in the state sent to MyInfo.
@@ -50,13 +58,6 @@ export type MyInfoRelayState = {
   uuid: string
   formId: string
   encodedQuery?: string
-}
-
-/**
- * RelayState with additional properties derived from parsing it.
- */
-export type MyInfoParsedRelayState = MyInfoRelayState & {
-  cookieDuration: number
 }
 
 export type MyInfoForm<T extends IFormSchema> = T & {

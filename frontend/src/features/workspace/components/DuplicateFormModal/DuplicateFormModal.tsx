@@ -14,11 +14,9 @@ import { DupeFormWizardProvider } from './DupeFormWizardProvider'
 export type DuplicateFormModalProps = Pick<
   UseDisclosureReturn,
   'onClose' | 'isOpen'
-> & { formId: string; isTemplate?: boolean }
+>
 
 export const DuplicateFormModal = ({
-  formId,
-  isTemplate,
   isOpen,
   onClose,
 }: DuplicateFormModalProps): JSX.Element => {
@@ -31,7 +29,7 @@ export const DuplicateFormModal = ({
     <Modal isOpen={isOpen} onClose={onClose} size={modalSize}>
       <ModalContent py={{ base: 'initial', md: '4.5rem' }}>
         <ModalCloseButton />
-        <DupeFormWizardProvider formId={formId} isTemplate={isTemplate}>
+        <DupeFormWizardProvider>
           <CreateFormModalContent />
         </DupeFormWizardProvider>
       </ModalContent>

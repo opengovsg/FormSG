@@ -11,7 +11,6 @@ import {
   PrivateFormErrorDto,
   PublicFormAuthLogoutDto,
   PublicFormAuthRedirectDto,
-  PublicFormAuthValidateEsrvcIdDto,
   PublicFormDto,
   PublicFormViewDto,
 } from '../../../../../shared/types'
@@ -19,18 +18,18 @@ import { createLoggerWithLabel } from '../../../config/logger'
 import { isMongoError } from '../../../utils/handle-mongo-error'
 import { createReqMeta, getRequestIp } from '../../../utils/request'
 import { getFormIfPublic } from '../../auth/auth.service'
+import * as BillingService from '../../billing/billing.service'
 import { ControllerHandler } from '../../core/core.types'
 import {
-  MYINFO_COOKIE_NAME,
-  MYINFO_COOKIE_OPTIONS,
+  MYINFO_AUTH_CODE_COOKIE_NAME,
+  MYINFO_AUTH_CODE_COOKIE_OPTIONS,
+  MYINFO_LOGIN_COOKIE_NAME,
+  MYINFO_LOGIN_COOKIE_OPTIONS,
 } from '../../myinfo/myinfo.constants'
-import {
-  MyInfoCookieAccessError,
-  MyInfoMissingAccessTokenError,
-} from '../../myinfo/myinfo.errors'
 import { MyInfoService } from '../../myinfo/myinfo.service'
 import {
-  extractAndAssertMyInfoCookieValidity,
+  createMyInfoLoginCookie,
+  extractAuthCode,
   validateMyInfoForm,
 } from '../../myinfo/myinfo.util'
 import { SgidInvalidJwtError, SgidVerifyJwtError } from '../../sgid/sgid.errors'
@@ -38,7 +37,6 @@ import { SgidService } from '../../sgid/sgid.service'
 import { validateSgidForm } from '../../sgid/sgid.util'
 import { InvalidJwtError, VerifyJwtError } from '../../spcp/spcp.errors'
 import { getOidcService } from '../../spcp/spcp.oidc.service'
-import { SpcpService } from '../../spcp/spcp.service'
 import {
   getRedirectTargetSpcpOidc,
   validateSpcpForm,
@@ -219,70 +217,76 @@ export const handleGetPublicForm: ControllerHandler<
           return res.json({ form: publicForm, isIntranetUser })
         })
     case FormAuthType.MyInfo: {
-      // Step 1. Fetch required data and fill the form based off data retrieved
-      return (
-        MyInfoService.getMyInfoDataForForm(form, req.cookies)
-          .andThen((myInfoData) => {
-            return MyInfoService.prefillAndSaveMyInfoFields(
-              form._id,
-              myInfoData,
-              form.toJSON().form_fields,
-            ).map((prefilledFields) => ({
-              prefilledFields,
-              spcpSession: { userName: myInfoData.getUinFin() },
-            }))
-          })
-          // Check if the user is signed in
-          .andThen(({ prefilledFields, spcpSession }) => {
-            return extractAndAssertMyInfoCookieValidity(req.cookies).map(
-              (myInfoCookie) => ({
-                prefilledFields,
-                spcpSession,
-                myInfoCookie,
-              }),
-            )
-          })
-          .map(({ myInfoCookie, prefilledFields, spcpSession }) => {
-            const updatedMyInfoCookie = {
-              ...myInfoCookie,
-              usedCount: myInfoCookie.usedCount + 1,
-            }
-            // Set the updated cookie accordingly and return the form back to the user
-            return res
-              .cookie(
-                MYINFO_COOKIE_NAME,
-                updatedMyInfoCookie,
-                MYINFO_COOKIE_OPTIONS,
-              )
-              .json({
-                spcpSession,
-                form: {
-                  ...publicForm,
-                  form_fields: prefilledFields as FormFieldDto[],
-                },
-                isIntranetUser,
-              })
-          })
-          .mapErr((error) => {
-            // NOTE: If the user is not signed in or if the user refreshes the page while logged in, it is not an error.
-            // myInfoError is set to true only when the authentication provider rejects the user's attempt at auth
-            // or when there is a network or database error during the process of retrieval
-            const isMyInfoError = !(
-              error instanceof MyInfoCookieAccessError ||
-              error instanceof MyInfoMissingAccessTokenError
-            )
-            // No need for cookie if data could not be retrieved
-            // NOTE: If the user does not have any cookie, clearing the cookie still has the same result
-            return res
-              .clearCookie(MYINFO_COOKIE_NAME, MYINFO_COOKIE_OPTIONS)
-              .json({
-                form: publicForm,
-                // Setting to undefined ensures that the frontend does not get myInfoError if it is false
-                myInfoError: isMyInfoError || undefined,
-                isIntranetUser,
-              })
-          })
+      // We always want to clear existing login cookies because we no longer
+      // have the prefilled data
+      res.clearCookie(MYINFO_LOGIN_COOKIE_NAME, MYINFO_LOGIN_COOKIE_OPTIONS)
+      const authCodeCookie: unknown = req.cookies[MYINFO_AUTH_CODE_COOKIE_NAME]
+      // No auth code cookie because user is accessing the form before logging
+      // in
+      if (!authCodeCookie) {
+        return res.json({
+          form: publicForm,
+          isIntranetUser,
+        })
+      }
+
+      // Clear auth code cookie once found, as it can't be reused
+      res.clearCookie(
+        MYINFO_AUTH_CODE_COOKIE_NAME,
+        MYINFO_AUTH_CODE_COOKIE_OPTIONS,
       )
+
+      // Step 1. Fetch required data and fill the form based off data retrieved
+      return extractAuthCode(authCodeCookie)
+        .asyncAndThen((authCode) => MyInfoService.retrieveAccessToken(authCode))
+        .andThen((accessToken) =>
+          MyInfoService.getMyInfoDataForForm(form, accessToken),
+        )
+        .andThen((myInfoData) =>
+          BillingService.recordLoginByForm(form).map(() => myInfoData),
+        )
+        .andThen((myInfoData) => {
+          return MyInfoService.prefillAndSaveMyInfoFields(
+            form._id,
+            myInfoData,
+            form.toJSON().form_fields,
+          ).map((prefilledFields) => ({
+            prefilledFields,
+            spcpSession: { userName: myInfoData.getUinFin() },
+            myInfoLoginCookie: createMyInfoLoginCookie(myInfoData.getUinFin()),
+          }))
+        })
+        .map(({ myInfoLoginCookie, prefilledFields, spcpSession }) => {
+          // Set the updated cookie accordingly and return the form back to the user
+          return res
+            .cookie(
+              MYINFO_LOGIN_COOKIE_NAME,
+              myInfoLoginCookie,
+              MYINFO_LOGIN_COOKIE_OPTIONS,
+            )
+            .json({
+              spcpSession,
+              form: {
+                ...publicForm,
+                form_fields: prefilledFields as FormFieldDto[],
+              },
+              isIntranetUser,
+            })
+        })
+        .mapErr((error) => {
+          logger.error({
+            message: 'MyInfo login error',
+            meta: logMeta,
+            error,
+          })
+          // No need for cookie if data could not be retrieved
+          // NOTE: If the user does not have any cookie, clearing the cookie still has the same result
+          return res.json({
+            form: publicForm,
+            myInfoError: true,
+            isIntranetUser,
+          })
+        })
     }
     case FormAuthType.SGID:
       return SgidService.extractSgidJwtPayload(req.cookies.jwtSgid)
@@ -479,63 +483,3 @@ export const handlePublicAuthLogout = [
   }),
   _handlePublicAuthLogout,
 ] as ControllerHandler[]
-
-/**
- * Handler for validating the eServiceId of a given form
- * @deprecated with transition to SP OIDC because NDI no longer returns error page for invalid eservice ID
- *
- * @returns 200 with eserviceId validation result
- * @returns 400 when there is an error on the authType of the form
- * @returns 400 when the eServiceId of the form does not exist
- * @returns 404 when form with given ID does not exist
- * @returns 500 when the title of the fetched login page does not exist
- * @returns 500 when database error occurs
- * @returns 500 when the url for the login page of the form could not be generated
- * @returns 502 when the login page for singpass could not be fetched
- */
-export const handleValidateFormEsrvcId: ControllerHandler<
-  { formId: string },
-  PublicFormAuthValidateEsrvcIdDto | ErrorDto
-> = (req, res) => {
-  const { formId } = req.params
-  return FormService.retrieveFormById(formId)
-    .andThen((form) => {
-      // NOTE: Because the check is based on parsing the html of the returned webpage,
-      // And because MyInfo login is beyond our control, we coerce MyInfo to SP.
-      // This is valid because a valid MyInfo eserviceId is also a valid SP eserviceId
-      switch (form.authType) {
-        case FormAuthType.MyInfo:
-          return validateMyInfoForm(form).andThen((form) =>
-            SpcpService.createRedirectUrl(
-              FormAuthType.SP,
-              formId,
-              form.esrvcId,
-            ),
-          )
-        case FormAuthType.SP:
-          return validateSpcpForm(form).andThen((form) =>
-            SpcpService.createRedirectUrl(form.authType, formId, form.esrvcId),
-          )
-        default:
-          return err<never, AuthTypeMismatchError>(
-            new AuthTypeMismatchError(FormAuthType.SP, form.authType),
-          )
-      }
-    })
-    .andThen(SpcpService.fetchLoginPage)
-    .andThen(SpcpService.validateLoginPage)
-    .map((result) => res.status(StatusCodes.OK).json(result))
-    .mapErr((error) => {
-      logger.error({
-        message: 'Error while validating e-service ID',
-        meta: {
-          action: 'handleValidateFormEsrvcId',
-          ...createReqMeta(req),
-          formId,
-        },
-        error,
-      })
-      const { statusCode, errorMessage } = mapFormAuthError(error)
-      return res.status(statusCode).json({ message: errorMessage })
-    })
-}

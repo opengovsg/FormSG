@@ -24,6 +24,8 @@ const baseStyle: PartsStyleFunction<typeof parts> = ({
 }) => ({
   // Control is the box containing the check icon
   control: {
+    // Keep bg when printing.
+    WebkitPrintColorAdjust: 'exact',
     bg: 'white',
     borderRadius: '0.25rem',
     border: '0.125rem solid',

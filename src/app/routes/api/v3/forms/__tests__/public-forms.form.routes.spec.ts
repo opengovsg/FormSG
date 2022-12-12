@@ -1,12 +1,18 @@
 import MyInfoClient, { IMyInfoConfig } from '@opengovsg/myinfo-gov-client'
 import { ObjectId } from 'bson-ext'
+import jwt from 'jsonwebtoken'
 import { errAsync } from 'neverthrow'
 import supertest, { Session } from 'supertest-session'
 import { mocked } from 'ts-jest/utils'
 
 import { DatabaseError } from 'src/app/modules/core/core.errors'
-import { MYINFO_COOKIE_NAME } from 'src/app/modules/myinfo/myinfo.constants'
-import { MyInfoCookieState } from 'src/app/modules/myinfo/myinfo.types'
+import {
+  MOCK_ACCESS_TOKEN,
+  MOCK_AUTH_CODE,
+  MOCK_MYINFO_JWT,
+} from 'src/app/modules/myinfo/__tests__/myinfo.test.constants'
+import { MYINFO_AUTH_CODE_COOKIE_NAME } from 'src/app/modules/myinfo/myinfo.constants'
+import { MyInfoAuthCodeCookieState } from 'src/app/modules/myinfo/myinfo.types'
 
 import { setupApp } from 'tests/integration/helpers/express-setup'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
@@ -23,14 +29,17 @@ import { MOCK_UINFIN } from './public-forms.routes.spec.constants'
 
 jest.mock('../../../../../modules/spcp/spcp.oidc.client')
 
-jest.mock('@opengovsg/spcp-auth-client')
 const MockCpOidcClient = mocked(CpOidcClient, true)
+
+jest.mock('jsonwebtoken')
+const MockJwtLib = mocked(jwt, true)
 
 jest.mock('@opengovsg/myinfo-gov-client', () => {
   return {
     MyInfoGovClient: jest.fn().mockReturnValue({
       extractUinFin: jest.fn(),
       getPerson: jest.fn(),
+      getAccessToken: jest.fn(),
     }),
     MyInfoMode: jest.requireActual('@opengovsg/myinfo-gov-client').MyInfoMode,
     MyInfoSource: jest.requireActual('@opengovsg/myinfo-gov-client')
@@ -173,10 +182,18 @@ describe('public-form.form.routes', () => {
     })
     it('should return 200 with public form when form has FormAuthType.MyInfo and valid formId', async () => {
       // Arrange
+      MockMyInfoGovClient.getAccessToken.mockResolvedValueOnce(
+        MOCK_ACCESS_TOKEN,
+      )
       MockMyInfoGovClient.getPerson.mockResolvedValueOnce({
         uinFin: MOCK_UINFIN,
         data: {},
       })
+      // Ignore TS error because .sign has multiple overloads
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      MockJwtLib.sign.mockReturnValue(MOCK_MYINFO_JWT)
+
       const { form } = await dbHandler.insertEmailForm({
         formOptions: {
           esrvcId: 'mockEsrvcId',
@@ -195,10 +212,9 @@ describe('public-form.form.routes', () => {
           isIntranetUser: false,
         }),
       )
-      const cookie = JSON.stringify({
-        accessToken: 'mockAccessToken',
-        usedCount: 0,
-        state: MyInfoCookieState.Success,
+      const authCodeCookie = JSON.stringify({
+        authCode: MOCK_AUTH_CODE,
+        state: MyInfoAuthCodeCookieState.Success,
       })
 
       // Act
@@ -206,7 +222,9 @@ describe('public-form.form.routes', () => {
         .get(`/forms/${form._id}`)
         .set('Cookie', [
           // The j: indicates that the cookie is in JSON
-          `${MYINFO_COOKIE_NAME}=j:${encodeURIComponent(cookie)}`,
+          `${MYINFO_AUTH_CODE_COOKIE_NAME}=j:${encodeURIComponent(
+            authCodeCookie,
+          )}`,
         ])
 
       // Assert
@@ -217,9 +235,8 @@ describe('public-form.form.routes', () => {
     it('should return 404 if the form does not exist', async () => {
       // Arrange
       const cookie = JSON.stringify({
-        accessToken: 'mockAccessToken',
-        usedCount: 0,
-        state: MyInfoCookieState.Success,
+        authCode: MOCK_AUTH_CODE,
+        state: MyInfoAuthCodeCookieState.Success,
       })
       const MOCK_FORM_ID = new ObjectId().toHexString()
       const expectedResponseBody = JSON.parse(
@@ -233,7 +250,7 @@ describe('public-form.form.routes', () => {
         .get(`/forms/${MOCK_FORM_ID}`)
         .set('Cookie', [
           // The j: indicates that the cookie is in JSON
-          `${MYINFO_COOKIE_NAME}=j:${encodeURIComponent(cookie)}`,
+          `${MYINFO_AUTH_CODE_COOKIE_NAME}=j:${encodeURIComponent(cookie)}`,
         ])
 
       // Assert

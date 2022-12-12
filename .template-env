@@ -86,15 +86,9 @@ FORMSG_SDK_MODE=
 # MYINFO_CERT_PATH=./node_modules/@opengovsg/mockpass/static/certs/spcp.crt
 # MYINFO_CLIENT_ID=
 # MYINFO_CLIENT_SECRET=
+# MYINFO_JWT_SECRET=
+# SINGPASS_ESRVC_ID=GOVTECH-FORMSG-SP #Needed for MyInfo
 
-# SP_FORMSG_KEY_PATH=./node_modules/@opengovsg/mockpass/static/certs/key.pem
-# SP_FORMSG_CERT_PATH=./node_modules/@opengovsg/mockpass/static/certs/server.crt
-# SP_IDP_CERT_PATH=./node_modules/@opengovsg/mockpass/static/certs/spcp.crt
-# SINGPASS_IDP_LOGIN_URL=http://localhost:5156/singpass/logininitial
-# SINGPASS_IDP_ENDPOINT=http://localhost:5156/singpass/soap
-# SINGPASS_ESRVC_ID=GOVTECH-FORMSG-SP
-# SINGPASS_PARTNER_ENTITY_ID=http://staging-dsd.form.sg/forms/soap
-# SINGPASS_IDP_ID=https://saml-internet.singpass.gov.sg/FIM/sps/SingpassIDPFed/saml20
 # SP_OIDC_NDI_DISCOVERY_ENDPOINT=https://stg-id.singpass.gov.sg/.well-known/openid-configuration
 # SP_OIDC_NDI_JWKS_ENDPOINT=https://stg-id.singpass.gov.sg/.well-known/keys
 # SP_OIDC_RP_CLIENT_ID=
@@ -107,17 +101,6 @@ FORMSG_SDK_MODE=
 # CP_OIDC_RP_REDIRECT_URL=
 # CP_OIDC_RP_JWKS_PUBLIC_PATH=
 # CP_OIDC_RP_JWKS_SECRET_PATH=
-
-
-
-# CP_FORMSG_KEY_PATH=./node_modules/@opengovsg/mockpass/static/certs/key.pem
-# CP_FORMSG_CERT_PATH=./node_modules/@opengovsg/mockpass/static/certs/server.crt
-# CP_IDP_CERT_PATH=./node_modules/@opengovsg/mockpass/static/certs/spcp.crt
-# CORPPASS_IDP_LOGIN_URL=http://localhost:5156/corppass/logininitial
-# CORPPASS_IDP_ENDPOINT=http://localhost:5156/corppass/soap
-# CORPPASS_PARTNER_ENTITY_ID=https://staging.form.gov.sg/corppass
-# CORPPASS_ESRVC_ID=FORMSG-CP-TEST
-# CORPPASS_IDP_ID=https://saml.corppass.gov.sg/FIM/sps/CorpIDPFed/saml20
 
 # IS_SP_MAINTENANCE=
 # IS_CP_MAINTENANCE=

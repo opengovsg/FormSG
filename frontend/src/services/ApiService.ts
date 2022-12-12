@@ -24,21 +24,27 @@ export const transformAxiosError = (e: Error): ApiError => {
     if (e.response) {
       const statusCode = e.response.status
       if (statusCode === StatusCodes.TOO_MANY_REQUESTS) {
-        return new HttpError('Please try again later.', statusCode)
+        return new HttpError('Error [001]: Please try again later.', statusCode)
       }
       if (typeof e.response.data === 'string') {
-        return new HttpError(e.response.data, statusCode)
+        return new HttpError(`Error [002]: ${e.response.data}`, statusCode)
       }
       if (e.response.data?.message) {
-        return new HttpError(e.response.data.message, statusCode)
+        return new HttpError(
+          `Error [003]: ${e.response.data.message}`,
+          statusCode,
+        )
       }
       if (e.response.statusText) {
-        return new HttpError(e.response.statusText, statusCode)
+        return new HttpError(
+          `Error [004]: ${e.response.statusText}`,
+          statusCode,
+        )
       }
-      return new HttpError(`Http ${statusCode} error`, statusCode)
+      return new HttpError(`Error [005]: ${statusCode} error`, statusCode)
     } else if (e.request) {
       return new Error(
-        'There was a problem with your internet connection. Please check your network and try again.',
+        `There was a problem with your internet connection. Please check your network and try again. Error [006]: ${e.message}`,
       )
     }
   }
