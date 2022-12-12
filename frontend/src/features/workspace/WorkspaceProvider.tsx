@@ -31,7 +31,7 @@ export const WorkspaceProvider = ({
 
     let displayedForms = dashboardForms
 
-    // Filter first
+    // Filter first...
     switch (activeFilter) {
       case FilterOption.OpenForms:
         displayedForms = displayedForms.filter(
@@ -47,7 +47,7 @@ export const WorkspaceProvider = ({
         break
     }
 
-    // Then fuzzy search
+    // ... then fuzzy search
     displayedForms = fuzzysort
       .go(activeSearch, displayedForms, {
         all: true,
