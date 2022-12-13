@@ -479,7 +479,7 @@ export const baseEmailValidationFn =
       ? new Set(schema.allowedEmailDomains)
       : new Set()
     if (allowedDomains.size !== 0) {
-      const domainInValue = inputValue.split('@')[1]
+      const domainInValue = inputValue.split('@')[1].toLowerCase()
       if (domainInValue && !allowedDomains.has(`@${domainInValue}`)) {
         return INVALID_EMAIL_DOMAIN_ERROR
       }
