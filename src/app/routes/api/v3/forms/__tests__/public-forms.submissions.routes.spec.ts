@@ -2,7 +2,6 @@ import jwt from 'jsonwebtoken'
 import { omit } from 'lodash'
 import mongoose from 'mongoose'
 import session, { Session } from 'supertest-session'
-import { mocked } from 'ts-jest/utils'
 
 import { FormFieldSchema } from 'src/types'
 
@@ -41,7 +40,7 @@ import {
 
 const MyInfoHashModel = getMyInfoHashModel(mongoose)
 
-const MockCpOidcClient = mocked(CpOidcClient, true)
+const MockCpOidcClient = jest.mocked(CpOidcClient)
 
 jest.mock('../../../../../modules/spcp/spcp.oidc.client')
 
@@ -68,7 +67,7 @@ const app = setupApp('/forms', PublicFormsRouter)
 describe('public-form.submissions.routes', () => {
   let request: Session
 
-  const mockCpClient = mocked(MockCpOidcClient.mock.instances[0], true)
+  const mockCpClient = jest.mocked(MockCpOidcClient.mock.instances[0])
 
   beforeAll(async () => await dbHandler.connect())
   beforeEach(async () => {

@@ -1,10 +1,9 @@
 import RateLimit from 'express-rate-limit'
-import { mocked } from 'ts-jest/utils'
 
 import expressHandler from 'tests/unit/backend/helpers/jest-express'
 
 jest.mock('express-rate-limit')
-const MockRateLimit = mocked(RateLimit, true)
+const MockRateLimit = jest.mocked(RateLimit)
 
 // eslint-disable-next-line import/first
 import { limitRate } from 'src/app/utils/limit-rate'
@@ -35,7 +34,7 @@ describe('limitRate', () => {
     const handler = MockRateLimit.mock.calls[0][0]!.handler!
     const mockNext = jest.fn()
     const mockRes = expressHandler.mockResponse()
-    handler(expressHandler.mockRequest(), mockRes, mockNext)
+    handler(expressHandler.mockRequest(), mockRes, mockNext, {})
     expect(mockNext).not.toHaveBeenCalled()
     expect(mockRes.status).toHaveBeenCalledWith(429)
     expect(mockRes.json).toHaveBeenCalledWith({

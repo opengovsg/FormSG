@@ -3,7 +3,6 @@ import fs from 'fs'
 import { JWTVerifyResult } from 'jose'
 import mongoose from 'mongoose'
 import session, { Session } from 'supertest-session'
-import { mocked } from 'ts-jest/utils'
 
 import { setupApp } from 'tests/integration/helpers/express-setup'
 
@@ -29,7 +28,7 @@ const LoginModel = getLoginModel(mongoose)
 
 jest.mock('../../../../../modules/spcp/spcp.oidc.client')
 
-const MockCpOidcClient = mocked(CpOidcClient, true)
+const MockCpOidcClient = jest.mocked(CpOidcClient)
 
 describe('corppass.oidc.router', () => {
   beforeAll(async () => await dbHandler.connect())
@@ -61,7 +60,7 @@ describe('corppass.oidc.router', () => {
 
   describe('GET /corppass/login', () => {
     const LOGIN_ROUTE = '/corppass/login'
-    const mockClient = mocked(MockCpOidcClient.mock.instances[0], true)
+    const mockClient = jest.mocked(MockCpOidcClient.mock.instances[0])
     beforeEach(async () => {
       mockClient.createJWT.mockResolvedValue(MOCK_JWT)
       jest.restoreAllMocks()

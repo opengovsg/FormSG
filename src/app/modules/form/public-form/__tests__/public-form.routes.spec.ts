@@ -3,7 +3,6 @@ import { ObjectId } from 'bson-ext'
 import jwt from 'jsonwebtoken'
 import { errAsync } from 'neverthrow'
 import supertest, { Session } from 'supertest-session'
-import { mocked } from 'ts-jest/utils'
 
 import { DatabaseError } from 'src/app/modules/core/core.errors'
 import {
@@ -37,17 +36,16 @@ jest.mock('@opengovsg/myinfo-gov-client', () => ({
     .MyInfoAttribute,
 }))
 
-const MockMyInfoGovClient = mocked(
+const MockMyInfoGovClient = jest.mocked(
   new MyInfoClient.MyInfoGovClient({} as IMyInfoConfig),
-  true,
 )
 
 jest.mock('../../../spcp/spcp.oidc.client')
 
 jest.mock('jsonwebtoken')
-const MockJwtLib = mocked(jwt, true)
+const MockJwtLib = jest.mocked(jwt)
 
-const MockCpOidcClient = mocked(CpOidcClient, true)
+const MockCpOidcClient = jest.mocked(CpOidcClient)
 
 const app = setupApp('/', PublicFormRouter, {
   setupWithAuth: false,
@@ -56,7 +54,7 @@ const app = setupApp('/', PublicFormRouter, {
 describe('public-form.routes', () => {
   let request: Session
 
-  const mockCpClient = mocked(MockCpOidcClient.mock.instances[0], true)
+  const mockCpClient = jest.mocked(MockCpOidcClient.mock.instances[0])
 
   beforeAll(async () => await dbHandler.connect())
   beforeEach(async () => {

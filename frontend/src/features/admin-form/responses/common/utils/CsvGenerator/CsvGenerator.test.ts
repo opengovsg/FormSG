@@ -1,13 +1,12 @@
 import { stringify } from 'csv-string'
 import FileSaver from 'file-saver'
-import { mocked } from 'ts-jest/utils'
 
 import { CsvGenerator } from './CsvGenerator'
 
 const UTF8_BYTE_ORDER_MARK = '\uFEFF'
 
 jest.mock('file-saver')
-const MockFileSaver = mocked(FileSaver)
+const MockFileSaver = jest.mocked(FileSaver)
 
 describe('CsvGenerator', () => {
   afterAll(() => {

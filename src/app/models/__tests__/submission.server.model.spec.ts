@@ -2,7 +2,6 @@ import { ObjectId } from 'bson'
 import { promises as dns } from 'dns'
 import { times } from 'lodash'
 import mongoose from 'mongoose'
-import { mocked } from 'ts-jest/utils'
 
 import getSubmissionModel, {
   getEmailSubmissionModel,
@@ -23,7 +22,7 @@ jest.mock('dns', () => ({
     resolve: jest.fn(),
   },
 }))
-const MockDns = mocked(dns, true)
+const MockDns = jest.mocked(dns)
 
 const Submission = getSubmissionModel(mongoose)
 const EncryptedSubmission = getEncryptSubmissionModel(mongoose)
