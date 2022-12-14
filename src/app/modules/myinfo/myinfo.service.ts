@@ -42,7 +42,6 @@ import {
   MyInfoHashingError,
   MyInfoInvalidLoginCookieError,
   MyInfoMissingHashError,
-  MyInfoMissingLoginCookieError,
   MyInfoParseRelayStateError,
 } from './myinfo.errors'
 import {
@@ -54,8 +53,6 @@ import {
 import {
   compareHashedValues,
   createRelayState,
-  extractAndAssertOldMyInfoCookieValidity,
-  extractMyInfoLoginJwt,
   hashFieldValues,
   isMyInfoLoginCookie,
   isMyInfoRelayState,
@@ -484,61 +481,6 @@ export class MyInfoServiceClass {
         },
       ),
     )
-  }
-
-  // TODO(#5452): Stop accepting old cookie
-  extractUinFromOldAndNewLoginCookie(
-    cookies: Record<string, unknown>,
-  ): Result<
-    string,
-    MyInfoInvalidLoginCookieError | MyInfoMissingLoginCookieError
-  > {
-    // Look for new cookie first
-    const newCookieResult = extractMyInfoLoginJwt(cookies)
-      .andThen(this.verifyLoginJwt)
-      .map((payload) => payload.uinFin)
-    if (newCookieResult.isOk()) {
-      logger.info({
-        message: 'Decrypted new MyInfo cookie successfully',
-        meta: {
-          action: 'extractUinFromOldAndNewLoginCookie',
-        },
-      })
-      return newCookieResult
-    }
-
-    // If new cookie not present, look for old cookie
-    const oldCookieResult = extractAndAssertOldMyInfoCookieValidity(
-      cookies,
-    ).andThen((payload) =>
-      Result.fromThrowable(
-        () => this.#myInfoGovClient.extractUinFin(payload.accessToken),
-        (error) => {
-          logger.error({
-            message: 'Error while extracting uinFin from MyInfo access token',
-            meta: {
-              action: 'extractUinFromOldAndNewLoginCookie',
-            },
-            error,
-          })
-          return new MyInfoInvalidLoginCookieError()
-        },
-      )(),
-    )
-
-    if (oldCookieResult.isOk()) {
-      logger.info({
-        message: 'Decrypted old MyInfo cookie successfully',
-        meta: {
-          action: 'extractUinFromOldAndNewLoginCookie',
-        },
-      })
-      return oldCookieResult
-    }
-
-    // If both cookies are not present, return new cookie result so error
-    // logging reflects absence of new cookie
-    return newCookieResult
   }
 }
 

@@ -32,24 +32,6 @@ export type MyInfoLoginCookiePayload = {
   uinFin: string
 }
 
-// TODO(#5452): Delete this enum
-export enum MyInfoOldCookieState {
-  Success = 'success',
-  Error = 'error',
-}
-
-// TODO(#5452): Delete this type
-export type MyInfoSuccessfulOldCookiePayload = {
-  accessToken: string
-  usedCount: number
-  state: MyInfoOldCookieState.Success
-}
-
-// TODO(#5452): Delete this type
-export type MyInfoOldCookiePayload =
-  | MyInfoSuccessfulOldCookiePayload
-  | { state: Exclude<MyInfoOldCookieState, MyInfoOldCookieState.Success> }
-
 export enum MyInfoAuthCodeCookieState {
   Success = 'success',
   Error = 'error',

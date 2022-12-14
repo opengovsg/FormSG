@@ -19,7 +19,6 @@ import Tooltip from '~components/Tooltip'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
 import { isMyInfo } from '~features/myinfo/utils'
-import { useUser } from '~features/user/queries'
 
 import { useMutateFormSettings } from '../../mutations'
 
@@ -64,7 +63,6 @@ export const AuthSettingsSection = ({
   settings,
 }: AuthSettingsSectionProps): JSX.Element => {
   const { mutateFormAuthType } = useMutateFormSettings()
-  const { user } = useUser()
   const { data: form } = useAdminForm()
 
   const containsMyInfoFields = useMemo(
@@ -81,16 +79,8 @@ export const AuthSettingsSection = ({
 
   const isDisabled = useCallback(
     (authType: FormAuthType) =>
-      isFormPublic ||
-      containsMyInfoFields ||
-      mutateFormAuthType.isLoading ||
-      (authType === FormAuthType.SGID && !user?.betaFlags?.sgid),
-    [
-      isFormPublic,
-      containsMyInfoFields,
-      mutateFormAuthType.isLoading,
-      user?.betaFlags?.sgid,
-    ],
+      isFormPublic || containsMyInfoFields || mutateFormAuthType.isLoading,
+    [isFormPublic, containsMyInfoFields, mutateFormAuthType.isLoading],
   )
 
   const isEsrvcIdBoxDisabled = useMemo(
