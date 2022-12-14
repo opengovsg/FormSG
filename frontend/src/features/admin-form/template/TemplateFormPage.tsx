@@ -32,9 +32,9 @@ export const TemplateFormPage = (): JSX.Element => {
         <FormSectionsProvider>
           <PublicFormLogo />
           <FormStartPage isTemplate />
-          <PublicFormWrapper isPreview>
+          <PublicFormWrapper>
             <FormInstructions />
-            <FormFields />
+            <FormFields isPreview />
             <FormEndPage isPreview />
             <FormFooter />
           </PublicFormWrapper>
