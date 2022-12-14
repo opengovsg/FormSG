@@ -13,6 +13,7 @@ export interface WorkspaceContextProps {
   setActiveSearch: (searchTerm: string) => void
   activeFilter: FilterOption
   setActiveFilter: (filterOption: FilterOption) => void
+  hasActiveSearchOrFilter: boolean
 }
 
 export const WorkspaceContext = createContext<
