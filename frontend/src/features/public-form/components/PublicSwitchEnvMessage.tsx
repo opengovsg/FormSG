@@ -1,5 +1,5 @@
 // TODO #4279: Remove after React rollout is complete
-import { KeyboardEventHandler, useCallback } from 'react'
+import { KeyboardEventHandler, useCallback, useMemo } from 'react'
 import {
   Box,
   Flex,
@@ -8,14 +8,52 @@ import {
   VisuallyHidden,
 } from '@chakra-ui/react'
 
+import { FormResponseMode } from '~shared/types'
+
 import { noPrintCss } from '~utils/noPrintCss'
 import Button from '~components/Button'
 import InlineMessage from '~components/InlineMessage'
 
 import { PublicFeedbackModal } from '~features/env/PublicFeedbackModal'
+import { useEnv } from '~features/env/queries'
 
-export const PublicSwitchEnvMessage = (): JSX.Element => {
+type PublicSwitchEnvMessageProps = {
+  responseMode?: FormResponseMode
+  isAuthRequired: boolean
+}
+
+export const PublicSwitchEnvMessage = ({
+  responseMode,
+  isAuthRequired,
+}: PublicSwitchEnvMessageProps): JSX.Element | null => {
   const { isOpen, onOpen, onClose } = useDisclosure()
+
+  const {
+    data: {
+      respondentRolloutEmail,
+      respondentRolloutStorage,
+      removeRespondentsInfoboxThreshold,
+    } = {},
+  } = useEnv()
+
+  const switchEnvRolloutPercentage = useMemo(
+    () =>
+      responseMode === FormResponseMode.Email
+        ? respondentRolloutEmail
+        : respondentRolloutStorage,
+    [responseMode, respondentRolloutEmail, respondentRolloutStorage],
+  )
+
+  // Remove the switch env message if the React rollout for public form respondents is => threshold
+  const showSwitchEnvMessage = useMemo(
+    () =>
+      !!(
+        switchEnvRolloutPercentage &&
+        removeRespondentsInfoboxThreshold &&
+        switchEnvRolloutPercentage < removeRespondentsInfoboxThreshold
+      ),
+    [switchEnvRolloutPercentage, removeRespondentsInfoboxThreshold],
+  )
 
   const handleKeydown: KeyboardEventHandler<HTMLButtonElement> = useCallback(
     (event) => {
@@ -27,8 +65,14 @@ export const PublicSwitchEnvMessage = (): JSX.Element => {
     [onOpen],
   )
 
+  if (!showSwitchEnvMessage) return null
+
   return (
-    <Flex justify="center" sx={noPrintCss}>
+    <Flex
+      mt={isAuthRequired ? undefined : '-2.5rem'}
+      justify="center"
+      sx={noPrintCss}
+    >
       <Box w="100%" minW={0} h="fit-content" maxW="57rem">
         <InlineMessage
           variant="warning"

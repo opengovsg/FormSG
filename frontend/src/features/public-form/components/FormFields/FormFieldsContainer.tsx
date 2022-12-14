@@ -1,10 +1,8 @@
 import { useMemo } from 'react'
 import { Box } from '@chakra-ui/react'
 
-import { FormResponseMode } from '~shared/types'
 import { FormAuthType } from '~shared/types/form/form'
 
-import { useEnv } from '~features/env/queries'
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
 import { FormAuth } from '../FormAuth'
@@ -50,41 +48,18 @@ export const FormFieldsContainer = ({
     )
   }, [form, handleSubmitForm, isAuthRequired, isLoading])
 
-  // TODO #4279: Computes whether to show the switch env message, remove after React rollout is complete
-  const {
-    data: {
-      respondentRolloutEmail,
-      respondentRolloutStorage,
-      removeRespondentsInfoboxThreshold,
-    } = {},
-  } = useEnv()
-
-  const switchEnvRolloutPercentage = useMemo(
-    () =>
-      form?.responseMode === FormResponseMode.Email
-        ? respondentRolloutEmail
-        : respondentRolloutStorage,
-    [form?.responseMode, respondentRolloutEmail, respondentRolloutStorage],
-  )
-
-  // Remove the switch env message if the React rollout for public form respondents is => threshold
-  const showSwitchEnvMessage = useMemo(
-    () =>
-      !!(
-        switchEnvRolloutPercentage &&
-        removeRespondentsInfoboxThreshold &&
-        switchEnvRolloutPercentage < removeRespondentsInfoboxThreshold
-      ),
-    [switchEnvRolloutPercentage, removeRespondentsInfoboxThreshold],
-  )
-
   if (submissionData) return null
 
   return (
     <Box w="100%" minW={0} h="fit-content" maxW="57rem">
       {renderFields}
       {/* TODO(#4279): Remove switch env message on full rollout */}
-      {!isPreview && showSwitchEnvMessage && <PublicSwitchEnvMessage />}
+      {!isPreview && (
+        <PublicSwitchEnvMessage
+          responseMode={form?.responseMode}
+          isAuthRequired={isAuthRequired}
+        />
+      )}
     </Box>
   )
 }

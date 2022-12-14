@@ -42,7 +42,7 @@ export const PublicFormSubmitButton = ({
   }, [formInputs, formFields, formLogics])
 
   return (
-    <Stack px={{ base: '1rem', md: 0 }} pt="2.5rem" pb="1.5rem">
+    <Stack px={{ base: '1rem', md: 0 }} pt="2.5rem" pb="4rem">
       <Button
         isFullWidth={isMobile}
         w="100%"
