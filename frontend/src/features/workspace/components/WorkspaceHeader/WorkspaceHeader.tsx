@@ -13,7 +13,6 @@ import simplur from 'simplur'
 import { useIsDesktop, useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
 
-import { FilterOption } from '~features/workspace/types'
 import { useWorkspaceContext } from '~features/workspace/WorkspaceContext'
 
 import { MobileWorkspaceSearchbar } from '../WorkspaceSearchbar/MobileWorkspaceSearchbar'
@@ -40,6 +39,7 @@ export const WorkspaceHeader = ({
     setActiveSearch,
     activeFilter,
     setActiveFilter,
+    hasActiveSearchOrFilter,
   } = useWorkspaceContext()
 
   const { isOpen: isSearchExpanded, onToggle: onToggleSearchExpansion } =
@@ -47,10 +47,10 @@ export const WorkspaceHeader = ({
 
   const headerText = useMemo(
     () =>
-      activeSearch || activeFilter !== FilterOption.AllForms
+      hasActiveSearchOrFilter
         ? simplur`Showing ${displayedFormsCount} of ${totalFormsCount} form[|s]`
         : `All forms (${totalFormsCount})`,
-    [activeFilter, activeSearch, displayedFormsCount, totalFormsCount],
+    [displayedFormsCount, hasActiveSearchOrFilter, totalFormsCount],
   )
 
   return (
@@ -81,11 +81,7 @@ export const WorkspaceHeader = ({
       >
         <Skeleton isLoaded={!isLoading}>
           <Text
-            textStyle={
-              isMobile && (activeFilter !== null || activeSearch !== '')
-                ? 'subhead-1'
-                : 'h2'
-            }
+            textStyle={isMobile && hasActiveSearchOrFilter ? 'subhead-1' : 'h2'}
           >
             {headerText}
           </Text>
@@ -96,9 +92,9 @@ export const WorkspaceHeader = ({
         // Combination box used in desktop mode.
         <Box gridArea="searchFilter">
           <WorkspaceSearchbar
+            placeholder="Search by title"
             value={activeSearch}
             onChange={setActiveSearch}
-            placeholder="Search by title"
             filterValue={activeFilter}
             onFilter={setActiveFilter}
           />
@@ -107,9 +103,9 @@ export const WorkspaceHeader = ({
         <MobileWorkspaceSearchbar
           isExpanded={isSearchExpanded}
           onToggleExpansion={onToggleSearchExpansion}
-          onChange={setActiveSearch}
-          value={activeSearch}
           placeholder="Search by title"
+          value={activeSearch}
+          onChange={setActiveSearch}
           filterValue={activeFilter}
           onFilter={setActiveFilter}
         />
