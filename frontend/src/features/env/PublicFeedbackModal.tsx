@@ -29,7 +29,6 @@ import { ModalCloseButton } from '~components/Modal'
 import Textarea from '~components/Textarea'
 
 import { useEnvMutations, useFeedbackMutation } from '~features/env/mutations'
-import { useUser } from '~features/user/queries'
 
 import { usePublicFeedbackFormView } from './queries'
 import { isUsableFeedback } from './utils'
@@ -56,7 +55,6 @@ export const PublicFeedbackModal = ({
 
   const initialRef = useRef(null)
 
-  const { user } = useUser()
   const url = window.location.href
   const rumSessionId = datadogRum.getInternalContext()?.session_id
   const [showThanksPage, setShowThanksPage] = useState<boolean>(false)
@@ -143,36 +141,27 @@ export const PublicFeedbackModal = ({
                       {errors['feedback']?.message}
                     </FormErrorMessage>
                   </FormControl>
-
-                  {user ? (
+                  <FormControl isInvalid={!!errors['email']}>
+                    <FormLabel>
+                      Email, if we need to contact you for details
+                    </FormLabel>
                     <Input
-                      type="hidden"
-                      {...register('email')}
-                      value={user.email}
+                      {...register('email', {
+                        validate: (value) => {
+                          if (!value) {
+                            return true
+                          }
+                          // Valid email check
+                          if (!validator.isEmail(value)) {
+                            return INVALID_EMAIL_ERROR
+                          }
+                        },
+                      })}
                     />
-                  ) : (
-                    <FormControl isInvalid={!!errors['email']}>
-                      <FormLabel>
-                        Email, if we need to contact you for details
-                      </FormLabel>
-                      <Input
-                        {...register('email', {
-                          validate: (value) => {
-                            if (!value) {
-                              return true
-                            }
-                            // Valid email check
-                            if (!validator.isEmail(value)) {
-                              return INVALID_EMAIL_ERROR
-                            }
-                          },
-                        })}
-                      />
-                      <FormErrorMessage>
-                        {errors['email']?.message}
-                      </FormErrorMessage>
-                    </FormControl>
-                  )}
+                    <FormErrorMessage>
+                      {errors['email']?.message}
+                    </FormErrorMessage>
+                  </FormControl>
 
                   {rumSessionId ? (
                     <Input
