@@ -92,6 +92,7 @@ export const PublicSwitchEnvMessage = ({
               onClick={onOpen}
               onKeyDown={handleKeydown}
               aria-labelledby="switch-env-msg"
+              cursor="pointer"
             >
               <VisuallyHidden>
                 Click to switch to the original FormSG
