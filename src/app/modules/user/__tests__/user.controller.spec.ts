@@ -1,6 +1,5 @@
 import { StatusCodes } from 'http-status-codes'
 import { errAsync, okAsync } from 'neverthrow'
-import { mocked } from 'ts-jest/utils'
 
 import * as UserController from 'src/app/modules/user/user.controller'
 import {
@@ -20,8 +19,8 @@ import { UNAUTHORIZED_USER_MESSAGE } from '../user.constant'
 
 jest.mock('src/app/modules/user/user.service')
 jest.mock('src/app/services/sms/sms.factory')
-const MockUserService = mocked(UserService)
-const MockSmsFactory = mocked(SmsFactory)
+const MockUserService = jest.mocked(UserService)
+const MockSmsFactory = jest.mocked(SmsFactory)
 
 describe('user.controller', () => {
   afterEach(() => {
