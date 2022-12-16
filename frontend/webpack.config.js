@@ -1,9 +1,12 @@
 /* eslint-disable */
 // Webpack config to bundle datadog chunk to be loaded before rest of the react app
 const path = require('path')
+const HtmlWebpackPlugin = require('html-webpack-plugin')
 
 module.exports = {
-  entry: './datadog-chunk.ts',
+  entry: {
+    index_head: './datadog-chunk.ts', // _head suffix tells HtmlWebpackPlugin to inject this chunk into the head of index.html
+  },
   module: {
     rules: [
       {
@@ -24,7 +27,17 @@ module.exports = {
     extensions: ['.tsx', '.ts', '.js'],
   },
   output: {
-    filename: 'datadog-chunk.js',
-    path: path.resolve('../dist/frontend/static/js'),
+    filename: 'datadog-chunk.[contenthash].js',
+    path: path.resolve('static/js'),
   },
+  // inject the datadog chunk filename into the head of the existing index.html and overwrites index.html
+  plugins: [
+    new HtmlWebpackPlugin({
+      filename: path.resolve('public/index.html'),
+      template: path.resolve('public/index.html'),
+      inject: 'head',
+      minify: false, // Retain non-minified html formatting for readability
+      chunks: ['index_head'],
+    }),
+  ],
 }
