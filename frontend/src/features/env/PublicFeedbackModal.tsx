@@ -170,6 +170,11 @@ export const PublicFeedbackModal = ({
                       value={`https://app.datadoghq.com/rum/replay/sessions/${rumSessionId}`}
                     />
                   ) : null}
+                  <Input
+                    type="hidden"
+                    {...register('userAgent')}
+                    value={`${window.navigator.userAgent}`}
+                  />
                 </Stack>
               </Skeleton>
             </ModalBody>

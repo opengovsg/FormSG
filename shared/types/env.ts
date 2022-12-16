@@ -10,6 +10,7 @@ export interface PublicFeedbackFormDto {
   feedback: string
   email: string
   rumSessionId: string
+  userAgent: string
 }
 
 export interface AdminFeedbackFormDto {
