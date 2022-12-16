@@ -30,7 +30,7 @@ export const ddBeforeSend: RumInitConfiguration['beforeSend'] = (event) => {
 }
 
 // Init Datadog RUM
-// Values for REACT_APP_DD_RUM_APP_ID, REACT_APP_DD_RUM_CLIENT_TOKEN, REACT_APP_DD_RUM_ENV will be injected at build time
+// Values for REACT_APP_DD_RUM_APP_ID, REACT_APP_DD_RUM_CLIENT_TOKEN, REACT_APP_DD_RUM_ENV, REACT_APP_VERSION, REACT_APP_DD_SAMPLE_RATE will be injected at build time
 datadogRum.init({
   applicationId: '@REACT_APP_DD_RUM_APP_ID',
   clientToken: '@REACT_APP_DD_RUM_CLIENT_TOKEN',
@@ -39,10 +39,9 @@ datadogRum.init({
   service: 'formsg-react',
 
   // Specify a version number to identify the deployed version of your application in Datadog
-  // Values for REACT_APP_VERSION will be injected at build time
   version: '@REACT_APP_VERSION',
   // TODO/RUM: Update these RUM percentages as we increase the rollout percentage!
-  sampleRate: 5,
+  sampleRate: Number('@REACT_APP_DD_SAMPLE_RATE'),
   replaySampleRate: 100,
   trackInteractions: true,
   defaultPrivacyLevel: 'mask-user-input',
