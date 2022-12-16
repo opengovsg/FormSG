@@ -18,7 +18,11 @@ import {
 import { datadogRum } from '@datadog/browser-rum'
 import validator from 'validator'
 
-import { PublicFeedbackFormDto } from '~shared/types'
+import {
+  FormAuthType,
+  FormResponseMode,
+  PublicFeedbackFormDto,
+} from '~shared/types'
 
 import { INVALID_EMAIL_ERROR, REQUIRED_ERROR } from '~constants/validation'
 import { useIsMobile } from '~hooks/useIsMobile'
@@ -36,9 +40,13 @@ import { isUsableFeedback } from './utils'
 export const PublicFeedbackModal = ({
   isOpen,
   onClose,
+  responseMode,
+  authType,
 }: {
   isOpen: boolean
   onClose: () => void
+  responseMode?: FormResponseMode
+  authType?: FormAuthType
 }): JSX.Element => {
   const modalSize = useBreakpointValue({
     base: 'mobile',
@@ -141,6 +149,12 @@ export const PublicFeedbackModal = ({
                       {errors['feedback']?.message}
                     </FormErrorMessage>
                   </FormControl>
+                  <FormControl>
+                    <FormLabel>
+                      Attachment type(s) of attachment(s) you uploaded
+                    </FormLabel>
+                    <Input {...register('attachmentType')} />
+                  </FormControl>
                   <FormControl isInvalid={!!errors['email']}>
                     <FormLabel>
                       Email, if we need to contact you for details
@@ -174,6 +188,16 @@ export const PublicFeedbackModal = ({
                     type="hidden"
                     {...register('userAgent')}
                     value={`${window.navigator.userAgent}`}
+                  />
+                  <Input
+                    type="hidden"
+                    {...register('responseMode')}
+                    value={responseMode}
+                  />
+                  <Input
+                    type="hidden"
+                    {...register('authType')}
+                    value={authType}
                   />
                 </Stack>
               </Skeleton>
