@@ -1,7 +1,6 @@
 import { ObjectId } from 'bson'
 import mongoose from 'mongoose'
 import { errAsync, ok, okAsync } from 'neverthrow'
-import { mocked } from 'ts-jest/utils'
 
 import getFormModel from 'src/app/models/form.server.model'
 import { handleSns } from 'src/app/modules/bounce/bounce.controller'
@@ -27,8 +26,8 @@ const FormModel = getFormModel(mongoose)
 
 jest.mock('src/app/modules/bounce/bounce.service')
 jest.mock('src/app/modules/form/form.service')
-const MockBounceService = mocked(BounceService, true)
-const MockFormService = mocked(FormService, true)
+const MockFormService = jest.mocked(FormService)
+const MockBounceService = jest.mocked(BounceService)
 
 class MockVersionError extends Error {
   constructor(msg?: string) {

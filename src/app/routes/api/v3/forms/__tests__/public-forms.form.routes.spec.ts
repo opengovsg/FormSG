@@ -3,7 +3,6 @@ import { ObjectId } from 'bson-ext'
 import jwt from 'jsonwebtoken'
 import { errAsync } from 'neverthrow'
 import supertest, { Session } from 'supertest-session'
-import { mocked } from 'ts-jest/utils'
 
 import { DatabaseError } from 'src/app/modules/core/core.errors'
 import {
@@ -29,10 +28,10 @@ import { MOCK_UINFIN } from './public-forms.routes.spec.constants'
 
 jest.mock('../../../../../modules/spcp/spcp.oidc.client')
 
-const MockCpOidcClient = mocked(CpOidcClient, true)
+const MockCpOidcClient = jest.mocked(CpOidcClient)
 
 jest.mock('jsonwebtoken')
-const MockJwtLib = mocked(jwt, true)
+const MockJwtLib = jest.mocked(jwt)
 
 jest.mock('@opengovsg/myinfo-gov-client', () => {
   return {
@@ -51,9 +50,8 @@ jest.mock('@opengovsg/myinfo-gov-client', () => {
   }
 })
 
-const MockMyInfoGovClient = mocked(
+const MockMyInfoGovClient = jest.mocked(
   new MyInfoClient.MyInfoGovClient({} as IMyInfoConfig),
-  true,
 )
 
 const app = setupApp('/forms', PublicFormsRouter)
@@ -61,7 +59,7 @@ const app = setupApp('/forms', PublicFormsRouter)
 describe('public-form.form.routes', () => {
   let request: Session
 
-  const mockCpClient = mocked(MockCpOidcClient.mock.instances[0], true)
+  const mockCpClient = jest.mocked(MockCpOidcClient.mock.instances[0])
 
   beforeAll(async () => await dbHandler.connect())
   beforeEach(async () => {

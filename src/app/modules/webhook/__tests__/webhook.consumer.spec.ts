@@ -3,7 +3,6 @@ import { ObjectId } from 'bson'
 import { addHours } from 'date-fns'
 import mongoose from 'mongoose'
 import { errAsync, okAsync } from 'neverthrow'
-import { mocked } from 'ts-jest/utils'
 
 import { getEncryptSubmissionModel } from 'src/app/models/submission.server.model'
 import { SubmissionWebhookInfo } from 'src/types'
@@ -18,7 +17,7 @@ import * as WebhookService from '../webhook.service'
 import { WebhookQueueMessageObject } from '../webhook.types'
 
 jest.mock('../webhook.service')
-const MockWebhookService = mocked(WebhookService, true)
+const MockWebhookService = jest.mocked(WebhookService)
 
 const EncryptSubmissionModel = getEncryptSubmissionModel(mongoose)
 

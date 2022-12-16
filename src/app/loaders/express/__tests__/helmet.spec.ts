@@ -1,5 +1,4 @@
 import helmet from 'helmet'
-import { mocked } from 'ts-jest/utils'
 
 import config from 'src/app/config/config'
 import { sentryConfig } from 'src/app/config/features/sentry.config'
@@ -10,11 +9,11 @@ import helmetMiddlewares from '../helmet'
 
 describe('helmetMiddlewares', () => {
   jest.mock('helmet')
-  const mockHelmet = mocked(helmet, true)
+  const mockHelmet = jest.mocked(helmet)
   jest.mock('src/app/config/config')
-  const mockConfig = mocked(config, true)
+  const mockConfig = jest.mocked(config)
   jest.mock('src/app/config/features/sentry.config')
-  const mockSentryConfig = mocked(sentryConfig, true)
+  const mockSentryConfig = jest.mocked(sentryConfig)
 
   const cspCoreDirectives = {
     imgSrc: [

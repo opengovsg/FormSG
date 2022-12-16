@@ -5,7 +5,6 @@ import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync } from 'neverthrow'
 import { FormAuthType } from 'shared/types'
 import { WAIT_FOR_OTP_SECONDS } from 'shared/utils/verification'
-import { mocked } from 'ts-jest/utils'
 
 import { MyInfoService } from 'src/app/modules/myinfo/myinfo.service'
 import * as MyInfoUtils from 'src/app/modules/myinfo/myinfo.util'
@@ -69,29 +68,27 @@ import {
 const VerificationModel = getVerificationModel(mongoose)
 
 jest.mock('../verification.service')
-const MockVerificationService = mocked(VerificationService, true)
+const MockVerificationService = jest.mocked(VerificationService)
 jest.mock('src/app/utils/otp')
-const MockOtpUtils = mocked(OtpUtils, true)
+const MockOtpUtils = jest.mocked(OtpUtils)
 jest.mock('../../form/form.service')
-const MockFormService = mocked(FormService, true)
+const MockFormService = jest.mocked(FormService)
 jest.mock('../../spcp/spcp.oidc.service/spcp.oidc.service.sp')
-const MockSpOidcServiceClass = mocked(SpOidcServiceClass, true)
+const MockSpOidcServiceClass = jest.mocked(SpOidcServiceClass)
 jest.mock('../../spcp/spcp.oidc.service/spcp.oidc.service.cp')
-const MockCpOidcServiceClass = mocked(CpOidcServiceClass, true)
+const MockCpOidcServiceClass = jest.mocked(CpOidcServiceClass)
 jest.mock('../../myinfo/myinfo.util')
-const MockMyInfoUtil = mocked(MyInfoUtils, true)
+const MockMyInfoUtil = jest.mocked(MyInfoUtils)
 jest.mock('../../myinfo/myinfo.service')
-const MockMyInfoService = mocked(MyInfoService, true)
+const MockMyInfoService = jest.mocked(MyInfoService)
 jest.mock('../../sgid/sgid.service')
-const MockSgidService = mocked(SgidService, true)
+const MockSgidService = jest.mocked(SgidService)
 
-const mockSpOidcServiceClass = mocked(
+const mockSpOidcServiceClass = jest.mocked(
   MockSpOidcServiceClass.mock.instances[0],
-  true,
 )
-const mockCpOidcServiceClass = mocked(
+const mockCpOidcServiceClass = jest.mocked(
   MockCpOidcServiceClass.mock.instances[0],
-  true,
 )
 
 describe('Verification controller', () => {
