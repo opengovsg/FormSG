@@ -41,7 +41,7 @@ datadogRum.init({
   // Specify a version number to identify the deployed version of your application in Datadog
   version: '@REACT_APP_VERSION',
   // TODO/RUM: Update these RUM percentages as we increase the rollout percentage!
-  sampleRate: Number('@REACT_APP_DD_SAMPLE_RATE'),
+  sampleRate: Number('@REACT_APP_DD_SAMPLE_RATE') || 5,
   replaySampleRate: 100,
   trackInteractions: true,
   defaultPrivacyLevel: 'mask-user-input',
