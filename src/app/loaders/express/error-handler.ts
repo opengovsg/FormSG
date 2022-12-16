@@ -22,6 +22,14 @@ const isHTTPLikeError = (
   return types.isNativeError(err) && 'statusCode' in err
 }
 
+// 404 since no middleware responded
+export const catchNonExistentRoutesMiddleware: RequestHandler = function (
+  _req,
+  res,
+) {
+  res.sendStatus(StatusCodes.NOT_FOUND)
+}
+
 const errorHandlerMiddlewares = (): (
   | ErrorRequestHandler
   | RequestHandler
@@ -113,14 +121,6 @@ const errorHandlerMiddlewares = (): (
         .status(StatusCodes.INTERNAL_SERVER_ERROR)
         .json({ message: genericErrorMessage })
     }
-  }
-
-  // Assume 404 since no middleware responded
-  const catchNonExistentRoutesMiddleware: RequestHandler = function (
-    _req,
-    res,
-  ) {
-    res.sendStatus(StatusCodes.NOT_FOUND)
   }
 
   return [genericErrorHandlerMiddleware, catchNonExistentRoutesMiddleware]

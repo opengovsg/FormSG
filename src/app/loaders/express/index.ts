@@ -23,7 +23,9 @@ import { ApiRouter } from '../../routes/api'
 import { SpOidcJwksRouter } from '../../routes/singpass'
 import * as IntranetMiddleware from '../../services/intranet/intranet.middleware'
 
-import errorHandlerMiddlewares from './error-handler'
+import errorHandlerMiddlewares, {
+  catchNonExistentRoutesMiddleware,
+} from './error-handler'
 import helmetMiddlewares from './helmet'
 import appLocals from './locals'
 import loggingMiddleware from './logging'
@@ -131,10 +133,16 @@ const loadExpressApp = async (connection: Connection) => {
   // New routes in preparation for API refactor.
   app.use('/api', ApiRouter)
 
+  // serve static assets
   app.use(express.static(path.resolve('dist/frontend'), { index: false }))
   app.use('/public', express.static(path.resolve('dist/angularjs')))
-  app.get('/old/', HomeController.home)
 
+  // Requests for known static asset patterns which were not served by
+  // the static handlers above should return 404s
+  app.get(/^\/(public|static)\//, catchNonExistentRoutesMiddleware)
+  app.get(/^\/[^/]+\.[a-z]{2,}$/, catchNonExistentRoutesMiddleware)
+
+  app.get('/old/', HomeController.home)
   app.use('/', ReactMigrationRouter)
 
   app.use(sentryMiddlewares())
