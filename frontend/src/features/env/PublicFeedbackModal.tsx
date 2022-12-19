@@ -151,8 +151,8 @@ export const PublicFeedbackModal = ({
                   </FormControl>
                   <FormControl>
                     <FormLabel>
-                      (If applicable) File type(s) of attachment(s) uploaded
-                      e.g. jpeg, zip
+                      File type(s) of attachment(s) uploaded, if any (e.g. jpeg,
+                      zip)
                     </FormLabel>
                     <Input {...register('attachmentType')} />
                   </FormControl>
