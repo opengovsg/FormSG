@@ -87,12 +87,6 @@ export const compulsoryVarsSchema: Schema<ICompulsoryVarsSchema> = {
       default: null,
       env: 'ATTACHMENT_S3_BUCKET',
     },
-    staticAssetsS3Bucket: {
-      doc: 'S3 Bucket containing static assets',
-      format: String,
-      default: null,
-      env: 'STATIC_ASSETS_S3_BUCKET',
-    },
   },
   core: {
     sessionSecret: {
@@ -515,12 +509,6 @@ export const loadS3BucketUrlSchema = ({
       doc: 'Url of images S3 bucket derived from S3 endpoint and bucket name',
       format: (val) =>
         validateS3BucketUrl(val, { isDev, hasTrailingSlash: false, region }),
-      default: null,
-    },
-    staticAssetsBucketUrl: {
-      doc: 'Url of static assets S3 bucket.',
-      format: (val) =>
-        validateS3BucketUrl(val, { isDev, hasTrailingSlash: true, region }),
       default: null,
     },
   }

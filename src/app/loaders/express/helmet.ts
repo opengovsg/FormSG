@@ -37,20 +37,11 @@ const helmetMiddlewares = () => {
       `https://s3-${config.aws.region}.amazonaws.com/agency.form.sg/`, // Agency logos
       config.aws.imageBucketUrl, // Image field
       config.aws.logoBucketUrl, // Form logo
-      config.aws.staticAssetsBucketUrl, // Static assets and scripts
       '*', // TODO: Remove when we host our own images for Image field and Form Logo
       'https://*.google-analytics.com', // GA4 https://developers.google.com/tag-platform/tag-manager/web/csp
       'https://*.googletagmanager.com',
     ],
-    fontSrc: [
-      "'self'",
-      'data:',
-      'https://fonts.gstatic.com/',
-      config.aws.staticAssetsBucketUrl, // Static assets and scripts
-    ],
-    manifestSrc: [
-      config.aws.staticAssetsBucketUrl, // Static assets and scripts
-    ],
+    fontSrc: ["'self'", 'data:', 'https://fonts.gstatic.com/'],
     scriptSrc: [
       "'self'",
       'https://www.googletagmanager.com/',
@@ -62,7 +53,6 @@ const helmetMiddlewares = () => {
       'https://www.gstatic.com/recaptcha/',
       'https://www.gstatic.cn/',
       'https://*.googletagmanager.com', // GA4 https://developers.google.com/tag-platform/tag-manager/web/csp
-      config.aws.staticAssetsBucketUrl, // Static assets and scripts
     ],
     connectSrc: [
       "'self'",
@@ -76,7 +66,6 @@ const helmetMiddlewares = () => {
       'https://*.google-analytics.com', // GA4 https://developers.google.com/tag-platform/tag-manager/web/csp
       'https://*.analytics.google.com',
       'https://*.googletagmanager.com',
-      config.aws.staticAssetsBucketUrl, // Static assets and scripts
     ],
     frameSrc: [
       "'self'",
@@ -90,12 +79,10 @@ const helmetMiddlewares = () => {
       'https://www.gstatic.com/recaptcha/',
       'https://www.gstatic.cn/',
       "'unsafe-inline'",
-      config.aws.staticAssetsBucketUrl, // Static assets and scripts
     ],
     workerSrc: [
       "'self'",
-      'blob:', // DataDog RUM session replay - https://docs.datadoghq.com/real_user_monitoring/faq/content_security_policy/,
-      config.aws.staticAssetsBucketUrl, // Static assets and scripts
+      'blob:', // DataDog RUM session replay - https://docs.datadoghq.com/real_user_monitoring/faq/content_security_policy/
     ],
     frameAncestors: ['*'],
   }
