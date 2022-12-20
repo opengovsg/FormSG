@@ -4,7 +4,7 @@ import express, { Express, Router } from 'express'
 import session from 'express-session'
 import nocache from 'nocache'
 
-import errorHandlerMiddlewares from 'src/app/loaders/express/error-handler'
+import { errorHandlerMiddlewares } from 'src/app/loaders/express/error-handler'
 import helmetMiddlewares from 'src/app/loaders/express/helmet'
 import loggingMiddleware from 'src/app/loaders/express/logging'
 import parserMiddlewares from 'src/app/loaders/express/parser'
