@@ -255,6 +255,7 @@ const fillFields = async (
         break
       }
       case BasicField.Table: {
+        // TODO: Does not currently handle adding more rows! Add functionality if needed.
         // A little bit gross, but needed to get the column id.
         const formfield = form.form_fields?.find((ff) => ff._id === field._id)
         if (formfield?.fieldType !== BasicField.Table) {
@@ -272,12 +273,7 @@ const fillFields = async (
                 break
               }
               case BasicField.Dropdown: {
-                await cell.fill(val)
-                const menuId = await cell.getAttribute('aria-controls')
-                const menu = page.locator(`id=${menuId}`)
-                // Scroll menu into view to avoid flakiness.
-                await menu.scrollIntoViewIfNeeded()
-                await menu.getByRole('option', { name: val }).click()
+                await fillDropdown(page, cell, val)
                 break
               }
             }
