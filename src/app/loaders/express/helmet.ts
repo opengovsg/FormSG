@@ -48,6 +48,9 @@ const helmetMiddlewares = () => {
       'https://fonts.gstatic.com/',
       config.aws.staticAssetsBucketUrl, // Static assets and scripts
     ],
+    manifestSrc: [
+      config.aws.staticAssetsBucketUrl, // Static assets and scripts
+    ],
     scriptSrc: [
       "'self'",
       'https://www.googletagmanager.com/',

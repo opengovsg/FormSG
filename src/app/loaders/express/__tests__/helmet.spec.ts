@@ -36,6 +36,7 @@ describe('helmetMiddlewares', () => {
       'https://fonts.gstatic.com/',
       config.aws.staticAssetsBucketUrl,
     ],
+    manifestSrc: [config.aws.staticAssetsBucketUrl],
     scriptSrc: [
       "'self'",
       'https://www.googletagmanager.com/',
