@@ -45,7 +45,7 @@ jobs:
           REACT_APP_DD_RUM_ENV: ${{ secrets.DD_ENV }}
           REACT_APP_GA_TRACKING_ID: ${{ secrets.GA_TRACKING_ID }}
           REACT_APP_FORMSG_SDK_MODE: ${{ secrets.REACT_APP_FORMSG_SDK_MODE }}
-          PUBLIC_URL: ${{ secrets.STATIC_ASSET_URL }}
+          PUBLIC_URL: https://s3.${{ secrets.AWS_DEFAULT_REGION }}.amazonaws.com/${{ secrets.S3_STATIC_ASSETS_BUCKET_NAME }}
         run: |
           echo REACT_APP_VERSION=${{env.APP_VERSION}} > frontend/.env
           echo REACT_APP_DD_RUM_APP_ID=$REACT_APP_DD_RUM_APP_ID >> frontend/.env
