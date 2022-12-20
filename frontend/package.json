@@ -105,6 +105,9 @@
     "test:a11y-dev": "cross-env USE_DEV_SERVER=true jest --config .storybook/storyshots/jest.config.js",
     "pre-commit": "lint-staged"
   },
+  "overrides": {
+    "react-error-overlay": "6.0.9"
+  },
   "browserslist": {
     "production": [
       ">0.2%",
