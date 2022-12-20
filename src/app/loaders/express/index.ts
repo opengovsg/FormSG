@@ -140,6 +140,9 @@ const loadExpressApp = async (connection: Connection) => {
   // Requests for known static asset patterns which were not served by
   // the static handlers above should return 404s
   app.get(/^\/(public|static)\//, catchNonExistentRoutesMiddleware)
+
+  // Requests for root files (e.g. /robots.txt or /favicon.ico) that were
+  // not served statically above will also return 404
   app.get(/^\/[^/]+\.[a-z]{2,}$/, catchNonExistentRoutesMiddleware)
 
   app.get('/old/', HomeController.home)
