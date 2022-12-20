@@ -520,7 +520,7 @@ export const loadS3BucketUrlSchema = ({
     staticAssetsBucketUrl: {
       doc: 'Url of static assets S3 bucket.',
       format: (val) =>
-        validateS3BucketUrl(val, { isDev, hasTrailingSlash: false, region }),
+        validateS3BucketUrl(val, { isDev, hasTrailingSlash: true, region }),
       default: null,
     },
   }
