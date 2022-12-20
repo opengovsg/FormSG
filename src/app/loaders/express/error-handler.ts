@@ -29,14 +29,15 @@ export const catchNonExistentStaticRoutesMiddleware: RequestHandler = async (
   req,
   res,
 ) => {
-  const { data } = await axios.get(
-    `${config.aws.staticAssetsBucketUrl}/${req.originalUrl}`,
+  // Attempt to fetch from s3 bucket
+  const { data, status } = await axios.get(
+    `${config.aws.staticAssetsBucketUrl}${req.originalUrl}`,
     {
       responseType: 'stream',
     },
   )
-  // If we get response code 200, pipe the data back
-  if (data.status === StatusCodes.OK) {
+  // If we get status code 200, pipe the data back
+  if (status === StatusCodes.OK) {
     data.pipe(res)
   }
 
