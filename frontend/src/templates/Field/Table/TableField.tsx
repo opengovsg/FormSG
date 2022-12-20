@@ -135,6 +135,11 @@ export const TableField = ({
     return description
   }, [fields.length, schema.addMoreRows, schema.maximumRows])
 
+  // If a table is the last field, Chrome and MS Edge sometimes truncate the table in print mode.
+  // We set the height of the table explicitly (depending on the number of cols and rows)
+  // for use in the media query so that the browser is able to render the full table in print mode
+  const printTableHeight = schema.columns.length * rows.length * 7.25
+
   return (
     <TableFieldContainer schema={schema}>
       <Box
@@ -150,10 +155,7 @@ export const TableField = ({
             borderRadius: '4px',
           },
           '@media print': {
-            mb: '20px',
-            'break-inside': 'avoid',
-            // 'break-before': 'always',
-            'break-after': 'always',
+            h: `${printTableHeight}rem`,
             display: 'block !important',
             overflow: 'visible !important',
           },
@@ -163,13 +165,6 @@ export const TableField = ({
           {ariaTableDescription}
         </VisuallyHidden>
         <Table
-          sx={{
-            '@media print': {
-              'break-inside': 'avoid',
-              'break-after': 'always',
-              display: 'block !important',
-            },
-          }}
           {...getTableProps()}
           aria-describedby={`table-desc-${schema._id}`}
           aria-labelledby={`${schema._id}-label`}
@@ -194,41 +189,14 @@ export const TableField = ({
               </Tr>
             ))}
           </Thead>
-          <Tbody
-            {...getTableBodyProps()}
-            verticalAlign="baseline"
-            sx={{
-              '@media print': {
-                'break-inside': 'avoid',
-                'break-after': 'always',
-                display: 'block !important',
-              },
-            }}
-          >
+          <Tbody {...getTableBodyProps()} verticalAlign="baseline">
             {rows.map((row, rowIndex) => {
               prepareRow(row)
               return (
                 // The `key` prop is required for useFieldArray to remove the correct row.
-                <Tr
-                  {...row.getRowProps()}
-                  key={row.original.id}
-                  sx={{
-                    '@media print': {
-                      'break-inside': 'avoid',
-                      'break-after': 'always',
-                      display: 'block !important',
-                    },
-                  }}
-                >
+                <Tr {...row.getRowProps()} key={row.original.id}>
                   {row.cells.map((cell, j) => (
                     <Td
-                      sx={{
-                        '@media print': {
-                          'break-inside': 'avoid',
-                          'break-after': 'always',
-                          display: 'block !important',
-                        },
-                      }}
                       {...cell.getCellProps()}
                       display={{ base: 'block', md: 'table-cell' }}
                     >

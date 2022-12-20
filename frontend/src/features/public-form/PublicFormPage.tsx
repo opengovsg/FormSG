@@ -21,16 +21,7 @@ export const PublicFormPage = (): JSX.Element => {
   return (
     <PublicFormProvider formId={formId}>
       <FormSectionsProvider>
-        <Flex
-          direction="column"
-          css={fillMinHeightCss}
-          sx={{
-            '@media print': {
-              display: 'block !important',
-              overflow: 'visible !important',
-            },
-          }}
-        >
+        <Flex direction="column" css={fillMinHeightCss}>
           <FormBanner />
           <PublicFormLogo />
           <FormStartPage />

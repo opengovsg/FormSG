@@ -39,30 +39,9 @@ export const PublicFormWrapper = ({
   })
 
   return (
-    <Flex
-      bg={bgColour}
-      p={{ base: 0, md: '1.5rem' }}
-      flex={1}
-      justify="center"
-      sx={{
-        '@media print': {
-          display: 'block !important',
-          overflow: 'visible !important',
-        },
-      }}
-    >
+    <Flex bg={bgColour} p={{ base: 0, md: '1.5rem' }} flex={1} justify="center">
       {isAuthRequired ? null : <SectionSidebar />}
-      <Flex
-        flexDir="column"
-        maxW="57rem"
-        w="100%"
-        sx={{
-          '@media print': {
-            display: 'block !important',
-            overflow: 'visible !important',
-          },
-        }}
-      >
+      <Flex flexDir="column" maxW="57rem" w="100%">
         {children}
       </Flex>
       {isAuthRequired ? null : <Spacer />}

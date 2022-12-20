@@ -51,18 +51,7 @@ export const FormFieldsContainer = ({
   if (submissionData) return null
 
   return (
-    <Box
-      w="100%"
-      minW={0}
-      h="fit-content"
-      maxW="57rem"
-      sx={{
-        '@media print': {
-          display: 'block !important',
-          overflow: 'visible !important',
-        },
-      }}
-    >
+    <Box w="100%" minW={0} h="fit-content" maxW="57rem">
       {renderFields}
       {/* TODO(#4279): Remove switch env message on full rollout */}
       {!isPreview && (
