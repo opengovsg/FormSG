@@ -6,6 +6,7 @@ import { StatusCodes } from 'http-status-codes'
 import get from 'lodash/get'
 import { types } from 'util'
 
+import config from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
 
 const logger = createLoggerWithLabel(module)
@@ -28,9 +29,12 @@ export const catchNonExistentStaticRoutesMiddleware: RequestHandler = async (
   req,
   res,
 ) => {
-  const { data } = await axios.get(`${env.STATIC_ORIGIN}${req.originalUrl}`, {
-    responseType: 'stream',
-  })
+  const { data } = await axios.get(
+    `${config.aws.staticAssetsBucketUrl}/${req.originalUrl}`,
+    {
+      responseType: 'stream',
+    },
+  )
   // If we get response code 200, pipe the data back
   if (data.status === StatusCodes.OK) {
     data.pipe(res)
