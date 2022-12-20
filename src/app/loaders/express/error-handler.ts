@@ -30,19 +30,33 @@ export const catchNonExistentStaticRoutesMiddleware: RequestHandler = async (
   res,
 ) => {
   // Attempt to fetch from s3 bucket
-  const { data, status } = await axios.get(
-    `${config.aws.staticAssetsBucketUrl}${req.originalUrl}`,
-    {
-      responseType: 'stream',
-    },
-  )
-  // If we get status code 200, pipe the data back
-  if (status === StatusCodes.OK) {
-    data.pipe(res)
-  }
 
-  // else return 404
-  else {
+  try {
+    const { data } = await axios.get(
+      `${config.aws.staticAssetsBucketUrl}${req.originalUrl}`,
+      {
+        responseType: 'stream',
+      },
+    )
+    // If get request succeeds pipe the data back
+    logger.info({
+      message: 'Serving static asset from S3',
+      meta: {
+        action: 'catchNonExistentStaticRoutesMiddleware',
+        url: req.originalUrl,
+      },
+    })
+    data.pipe(res)
+  } catch (err) {
+    // Else return 404
+    logger.error({
+      message: 'Static asset not found in S3',
+      meta: {
+        action: 'catchNonExistentStaticRoutesMiddleware',
+        url: req.originalUrl,
+      },
+      error: err,
+    })
     res.sendStatus(StatusCodes.NOT_FOUND)
   }
 }
