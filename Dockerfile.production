@@ -47,6 +47,7 @@ RUN npm run build
 ARG APP_VERSION
 ARG APP_URL
 ARG REPO_URL
+ARG PUBLIC_URL
 
 # Upload datadog source maps from secret mount, id MUST be `id=dd_api_key` in the docker build command
 # Mount creates a file inside /run/secrets/dd_api_key, and source to load the environment variables

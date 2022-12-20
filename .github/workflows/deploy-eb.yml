@@ -72,6 +72,7 @@ jobs:
           ECR_REPO: ${{ secrets.ECR_REPO }}
           DD_API_KEY: ${{ secrets.DD_API_KEY }}
           DD_ENV: ${{ secrets.DD_ENV }}
+          STATIC_ASSET_URL: ${{ secrets.STATIC_ASSET_URL }}
         with:
           context: .
           file: ./Dockerfile.production
@@ -79,6 +80,7 @@ jobs:
           load: true # Load image into local docker daemon so we can tag and push in later steps
           tags: ${{env.ECR_REPO}}:${{env.IMAGE_TAG}}
           build-args: |
+            PUBLIC_URL=$STATIC_ASSET_URL
             APP_VERSION=${{env.APP_VERSION}}
             APP_URL=${{secrets.APP_URL}}
             REPO_URL=${{github.server_url}}/${{github.repository}}
