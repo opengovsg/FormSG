@@ -81,6 +81,7 @@ describe('helmetMiddlewares', () => {
     workerSrc: [
       "'self'",
       'blob:', // DataDog RUM session replay - https://docs.datadoghq.com/real_user_monitoring/faq/content_security_policy/
+      config.aws.staticAssetsBucketUrl, // Static assets and scripts
     ],
     frameAncestors: ['*'],
   }
