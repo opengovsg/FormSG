@@ -106,7 +106,8 @@ const addFields = async (
     const label = BASICFIELD_TO_DRAWER_META[field.fieldType].label
     const isNonInput = NON_INPUT_FIELD_TYPES.includes(field.fieldType)
 
-    await page.getByRole('button', { name: label }).click()
+    // Get button with exact fieldtype label text
+    await page.getByRole('button').locator(`text="${label}"`).click()
 
     // Enter title for input fields and Section
     if (isNonInput) {
@@ -139,10 +140,13 @@ const addFields = async (
     // Handle the rest of the individual fields.
     switch (field.fieldType) {
       case BasicField.Attachment:
-        await page.getByLabel('Maximum size of individual attachment').click()
-        await page
-          .getByRole('option', { name: `${field.attachmentSize} MB` })
-          .click()
+        await fillDropdown(
+          page,
+          page.getByRole('textbox', {
+            name: 'Maximum size of individual attachment',
+          }),
+          `${field.attachmentSize} MB`,
+        )
         break
       case BasicField.Checkbox:
         if (field.validateByValue) {
