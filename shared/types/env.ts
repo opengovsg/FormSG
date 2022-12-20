@@ -1,4 +1,4 @@
-import { FormResponseMode, FormAuthType } from "./form"
+import { FormResponseMode, FormAuthType } from './form'
 
 export enum UiCookieValues {
   React = 'react',
@@ -7,16 +7,15 @@ export enum UiCookieValues {
 
 // TODO #4279: Remove after React rollout is complete
 export interface PublicFeedbackFormDto {
-  [key: string]: string
+  [key: string]: string | string[]
   url: string
   feedback: string
   email: string
   rumSessionId: string
   userAgent: string
-  attachmentType: string
+  attachmentType: string[]
   responseType: FormResponseMode
   authType: FormAuthType
-  
 }
 
 export interface AdminFeedbackFormDto {

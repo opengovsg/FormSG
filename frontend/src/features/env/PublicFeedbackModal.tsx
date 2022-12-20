@@ -1,6 +1,6 @@
 // TODO #4279: Remove after React rollout is complete
-import { useCallback, useRef, useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { useCallback, useMemo, useRef, useState } from 'react'
+import { get, useForm } from 'react-hook-form'
 import {
   chakra,
   FormControl,
@@ -27,6 +27,7 @@ import {
 import { INVALID_EMAIL_ERROR, REQUIRED_ERROR } from '~constants/validation'
 import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
+import Checkbox from '~components/Checkbox'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import { ModalCloseButton } from '~components/Modal'
@@ -37,6 +38,7 @@ import { useEnvMutations, useFeedbackMutation } from '~features/env/mutations'
 import { usePublicFeedbackFormView } from './queries'
 import { isUsableFeedback } from './utils'
 
+export const othersInputName = 'others-input'
 export const PublicFeedbackModal = ({
   isOpen,
   onClose,
@@ -59,6 +61,7 @@ export const PublicFeedbackModal = ({
     register,
     handleSubmit,
     formState: { errors },
+    getValues,
   } = useForm<PublicFeedbackFormDto>()
 
   const initialRef = useRef(null)
@@ -88,6 +91,28 @@ export const PublicFeedbackModal = ({
     publicSwitchEnvMutation.mutate()
   }, [publicSwitchEnvMutation])
 
+  const checkboxInputName = 'attachmentType'
+
+  const CHECKBOX_OTHERS_INPUT_VALUE =
+    '!!FORMSG_INTERNAL_CHECKBOX_OTHERS_VALUE!!'
+  const ATTACHMENT_TYPE_OPTIONS = ['PDF', 'JPEG', 'PNG', 'ZIP']
+
+  const othersValidationRules = useMemo(
+    () => ({
+      validate: (value?: string | string[]) => {
+        const currCheckedVals = getValues(checkboxInputName)
+        return (
+          !(
+            Array.isArray(currCheckedVals) &&
+            currCheckedVals.includes(CHECKBOX_OTHERS_INPUT_VALUE)
+          ) ||
+          !!value ||
+          'Please specify a value for the "others" option'
+        )
+      },
+    }),
+    [checkboxInputName, getValues],
+  )
   return (
     <Modal
       isOpen={isOpen}
@@ -151,10 +176,32 @@ export const PublicFeedbackModal = ({
                   </FormControl>
                   <FormControl>
                     <FormLabel>
-                      File type(s) of attachment(s) uploaded, if any (e.g. jpeg,
-                      zip)
+                      File type(s) of attachment(s) uploaded, if any
                     </FormLabel>
-                    <Input {...register('attachmentType')} />
+                    {ATTACHMENT_TYPE_OPTIONS.map((option) => (
+                      <Checkbox
+                        {...register(checkboxInputName)}
+                        value={option}
+                        key={option}
+                      >
+                        {option}
+                      </Checkbox>
+                    ))}
+                    <Checkbox.OthersWrapper>
+                      <FormControl isInvalid={!!get(errors, othersInputName)}>
+                        <Checkbox.OthersCheckbox
+                          value={CHECKBOX_OTHERS_INPUT_VALUE}
+                          isInvalid={!!get(errors, checkboxInputName)}
+                          {...register(checkboxInputName)}
+                        />
+                        <Checkbox.OthersInput
+                          {...register(othersInputName, othersValidationRules)}
+                        />
+                        <FormErrorMessage>
+                          {get(errors, `${othersInputName}.message`)}
+                        </FormErrorMessage>
+                      </FormControl>
+                    </Checkbox.OthersWrapper>
                   </FormControl>
                   <FormControl isInvalid={!!errors['email']}>
                     <FormLabel>

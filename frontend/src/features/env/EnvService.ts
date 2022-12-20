@@ -1,5 +1,6 @@
 import {
   AdminFeedbackFormDto,
+  BasicField,
   ErrorDto,
   PublicFeedbackFormDto,
   PublicFormViewDto,
@@ -10,6 +11,8 @@ import { transformAllIsoStringsToDate } from '~utils/date'
 import { ApiService } from '~services/ApiService'
 
 import { PUBLIC_FORMS_ENDPOINT } from '~features/public-form/PublicFormService'
+
+import { othersInputName } from './PublicFeedbackModal'
 
 export const getClientEnvVars = async (): Promise<ClientEnvVars> => {
   return ApiService.get<ClientEnvVars>('/client/env').then(({ data }) => data)
@@ -23,7 +26,25 @@ const createFeedbackResponsesArray = (
 ) => {
   return feedbackFormFieldsStructure.map((question, i) => {
     const { _id, fieldType } = feedbackForm.form.form_fields[i]
-    const answer: string = formInputs[question] ?? ''
+    if (fieldType === BasicField.Checkbox) {
+      const answerArray: string | string[] = formInputs[question] ?? []
+      if (formInputs[othersInputName] && Array.isArray(answerArray)) {
+        if (formInputs[question] === '[""]') {
+          // Remove case where non-Others checkbox is selected
+          answerArray.pop()
+        }
+        // remove '!!FORMSG_INTERNAL_CHECKBOX_OTHERS_VALUE!!' from array
+        answerArray.pop()
+        answerArray.push(`Others: ${formInputs[othersInputName]}`)
+      }
+      return {
+        _id,
+        question,
+        answerArray,
+        fieldType,
+      }
+    }
+    const answer: string | string[] = formInputs[question] ?? ''
     return {
       _id,
       question,
