@@ -23,8 +23,9 @@ import { ApiRouter } from '../../routes/api'
 import { SpOidcJwksRouter } from '../../routes/singpass'
 import * as IntranetMiddleware from '../../services/intranet/intranet.middleware'
 
-import errorHandlerMiddlewares, {
+import {
   catchNonExistentRoutesMiddleware,
+  errorHandlerMiddlewares,
 } from './error-handler'
 import helmetMiddlewares from './helmet'
 import appLocals from './locals'
