@@ -270,14 +270,16 @@ const addFields = async (
         }
         break
       case BasicField.Rating:
-        await page.getByLabel('Number of steps').click()
-        await page
-          .getByRole('option', { name: String(field.ratingOptions.steps) })
-          .click()
-        await page.getByLabel('Shape').click()
-        await page
-          .getByRole('option', { name: field.ratingOptions.shape })
-          .click()
+        await fillDropdown(
+          page,
+          page.getByRole('textbox', { name: 'Number of steps' }),
+          String(field.ratingOptions.steps),
+        )
+        await fillDropdown(
+          page,
+          page.getByRole('textbox', { name: 'Shape' }),
+          field.ratingOptions.shape,
+        )
         break
       case BasicField.Table:
         await page.getByLabel('Minimum rows').fill(String(field.minimumRows))
