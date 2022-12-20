@@ -1,3 +1,4 @@
+import axios from 'axios'
 import { errors, isCelebrateError } from 'celebrate'
 import { ErrorRequestHandler, RequestHandler } from 'express'
 import { HttpError, isHttpError } from 'http-errors'
@@ -22,9 +23,23 @@ const isHTTPLikeError = (
   return types.isNativeError(err) && 'statusCode' in err
 }
 
-// 404 since no middleware responded
-export const catchNonExistentRoutesMiddleware: RequestHandler = (_req, res) => {
-  res.sendStatus(StatusCodes.NOT_FOUND)
+// If static no middleware responded
+export const catchNonExistentStaticRoutesMiddleware: RequestHandler = async (
+  req,
+  res,
+) => {
+  const { data } = await axios.get(`${env.STATIC_ORIGIN}${req.originalUrl}`, {
+    responseType: 'stream',
+  })
+  // If we get response code 200, pipe the data back
+  if (data.status === StatusCodes.OK) {
+    data.pipe(res)
+  }
+
+  // else return 404
+  else {
+    res.sendStatus(StatusCodes.NOT_FOUND)
+  }
 }
 
 export const genericErrorHandlerMiddleware: ErrorRequestHandler = (
@@ -118,4 +133,4 @@ export const genericErrorHandlerMiddleware: ErrorRequestHandler = (
 export const errorHandlerMiddlewares = (): (
   | ErrorRequestHandler
   | RequestHandler
-)[] => [genericErrorHandlerMiddleware, catchNonExistentRoutesMiddleware]
+)[] => [genericErrorHandlerMiddleware, catchNonExistentStaticRoutesMiddleware]
