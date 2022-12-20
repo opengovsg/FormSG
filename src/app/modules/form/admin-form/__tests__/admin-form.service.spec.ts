@@ -4,7 +4,6 @@ import { ObjectId } from 'bson-ext'
 import { assignIn, cloneDeep, merge, omit, pick } from 'lodash'
 import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync } from 'neverthrow'
-import { mocked } from 'ts-jest/utils'
 
 import config, { aws } from 'src/app/config/config'
 import getFormModel, {
@@ -81,10 +80,10 @@ const EmailFormModel = getEmailFormModel(mongoose)
 const EncryptFormModel = getEncryptedFormModel(mongoose)
 
 jest.mock('src/app/modules/user/user.service')
-const MockUserService = mocked(UserService)
+const MockUserService = jest.mocked(UserService)
 
 jest.mock('../../../../services/sms/sms.service')
-const MockSmsService = mocked(SmsService)
+const MockSmsService = jest.mocked(SmsService)
 
 describe('admin-form.service', () => {
   beforeEach(async () => {
@@ -939,7 +938,7 @@ describe('admin-form.service', () => {
       ],
     } as unknown as IPopulatedForm
 
-    const MOCK_INTIAL_FORM = mocked({
+    const MOCK_INTIAL_FORM = jest.mocked({
       _id: MOCK_UPDATED_FORM._id,
       admin: MOCK_UPDATED_FORM.admin,
       form_fields: [
@@ -1042,7 +1041,7 @@ describe('admin-form.service', () => {
       ],
     } as unknown as IPopulatedForm
 
-    const MOCK_INITIAL_FORM = mocked({
+    const MOCK_INITIAL_FORM = jest.mocked({
       _id: MOCK_UPDATED_FORM._id,
       admin: MOCK_UPDATED_FORM.admin,
       status: FormStatus.Public,
@@ -1122,12 +1121,12 @@ describe('admin-form.service', () => {
       getSettings: jest.fn().mockReturnValue(MOCK_UPDATED_SETTINGS),
     } as unknown as IFormDocument
 
-    const MOCK_EMAIL_FORM = mocked({
+    const MOCK_EMAIL_FORM = jest.mocked({
       _id: new ObjectId(),
       status: FormStatus.Public,
       responseMode: FormResponseMode.Email,
     } as unknown as IPopulatedForm)
-    const MOCK_ENCRYPT_FORM = mocked({
+    const MOCK_ENCRYPT_FORM = jest.mocked({
       _id: new ObjectId(),
       status: FormStatus.Public,
       responseMode: FormResponseMode.Encrypt,

@@ -2,7 +2,6 @@ import { ObjectId } from 'bson'
 import { times } from 'lodash'
 import mongoose from 'mongoose'
 import { ok } from 'neverthrow'
-import { mocked } from 'ts-jest/utils'
 
 import getSubmissionModel from 'src/app/models/submission.server.model'
 import {
@@ -35,7 +34,7 @@ import { SendEmailConfirmationError } from '../../submission.errors'
 import { extractEmailConfirmationData } from '../../submission.utils'
 
 jest.mock('src/app/services/mail/mail.service')
-const MockMailService = mocked(MailService, true)
+const MockMailService = jest.mocked(MailService)
 
 const Submission = getSubmissionModel(mongoose)
 

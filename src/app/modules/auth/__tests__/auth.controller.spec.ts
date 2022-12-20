@@ -1,5 +1,4 @@
 import { errAsync, okAsync } from 'neverthrow'
-import { mocked } from 'ts-jest/utils'
 
 import MailService from 'src/app/services/mail/mail.service'
 import { HashingError } from 'src/app/utils/hash'
@@ -20,9 +19,9 @@ const VALID_EMAIL = 'test@example.com'
 jest.mock('../auth.service')
 jest.mock('../../user/user.service')
 jest.mock('src/app/services/mail/mail.service')
-const MockAuthService = mocked(AuthService)
-const MockMailService = mocked(MailService)
-const MockUserService = mocked(UserService)
+const MockAuthService = jest.mocked(AuthService)
+const MockMailService = jest.mocked(MailService)
+const MockUserService = jest.mocked(UserService)
 
 describe('auth.controller', () => {
   afterEach(() => {

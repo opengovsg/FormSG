@@ -1,6 +1,6 @@
 {
   "name": "form-frontend",
-  "version": "6.21.0",
+  "version": "6.23.0",
   "homepage": ".",
   "private": true,
   "dependencies": {
@@ -9,9 +9,9 @@
     "@emotion/react": "^11.7.0",
     "@emotion/styled": "^11.6.0",
     "@floating-ui/react-dom-interactions": "^0.9.3",
-    "@opengovsg/formsg-sdk": "^0.9.0",
+    "@opengovsg/formsg-sdk": "^0.10.0",
     "@stablelib/base64": "^1.0.1",
-    "axios": "^0.24.0",
+    "axios": "^1.2.1",
     "broadcast-channel": "^4.13.0",
     "browser-image-compression": "^2.0.0",
     "comlink": "^4.3.1",
@@ -105,6 +105,9 @@
     "test:a11y-dev": "cross-env USE_DEV_SERVER=true jest --config .storybook/storyshots/jest.config.js",
     "pre-commit": "lint-staged"
   },
+  "overrides": {
+    "react-error-overlay": "6.0.9"
+  },
   "browserslist": {
     "production": [
       ">0.2%",
@@ -141,7 +144,7 @@
     "@types/dedent": "^0.7.0",
     "@types/file-saver": "^2.0.3",
     "@types/gtag.js": "0.0.10",
-    "@types/jest": "^27.0.3",
+    "@types/jest": "^29.2.4",
     "@types/node": "^16.11.12",
     "@types/react": "^17.0.37",
     "@types/react-beautiful-dnd": "^13.1.2",

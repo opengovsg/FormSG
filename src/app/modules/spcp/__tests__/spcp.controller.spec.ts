@@ -1,5 +1,4 @@
 import { err, errAsync, ok, okAsync } from 'neverthrow'
-import { mocked } from 'ts-jest/utils'
 
 import config from 'src/app/config/config'
 import * as FormService from 'src/app/modules/form/form.service'
@@ -43,15 +42,15 @@ import {
 jest.mock('../spcp.oidc.client')
 
 jest.mock('../spcp.oidc.service/spcp.oidc.service.sp')
-const MockSpOidcServiceClass = mocked(SpOidcServiceClass, true)
+const MockSpOidcServiceClass = jest.mocked(SpOidcServiceClass)
 jest.mock('../spcp.oidc.service/spcp.oidc.service.cp')
-const MockCpOidcServiceClass = mocked(CpOidcServiceClass, true)
+const MockCpOidcServiceClass = jest.mocked(CpOidcServiceClass)
 jest.mock('../../billing/billing.service')
-const MockBillingService = mocked(BillingService, true)
+const MockBillingService = jest.mocked(BillingService)
 jest.mock('src/app/modules/form/form.service')
-const MockFormService = mocked(FormService, true)
+const MockFormService = jest.mocked(FormService)
 jest.mock('src/app/config/config')
-const MockConfig = mocked(config, true)
+const MockConfig = jest.mocked(config)
 MockConfig.isDev = false
 
 const MOCK_RESPONSE = expressHandler.mockResponse()
@@ -70,9 +69,8 @@ describe('spcp.controller', () => {
     describe('(Singpass)', () => {
       const loginHandler = SpcpController.handleSpcpOidcLogin(FormAuthType.SP)
 
-      const mockSpOidcServiceClass = mocked(
+      const mockSpOidcServiceClass = jest.mocked(
         MockSpOidcServiceClass.mock.instances[0],
-        true,
       )
 
       beforeEach(() => {
@@ -369,9 +367,8 @@ describe('spcp.controller', () => {
     describe('(Corppass)', () => {
       const loginHandler = SpcpController.handleSpcpOidcLogin(FormAuthType.CP)
 
-      const mockCpOidcServiceClass = mocked(
+      const mockCpOidcServiceClass = jest.mocked(
         MockCpOidcServiceClass.mock.instances[0],
-        true,
       )
 
       beforeEach(() => {

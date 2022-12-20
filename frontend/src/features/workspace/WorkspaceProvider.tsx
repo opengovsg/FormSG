@@ -63,6 +63,11 @@ export const WorkspaceProvider = ({
     [displayedForms.length],
   )
 
+  const hasActiveSearchOrFilter = useMemo(
+    () => !!activeSearch || activeFilter !== FilterOption.AllForms,
+    [activeFilter, activeSearch],
+  )
+
   return (
     <WorkspaceContext.Provider
       value={{
@@ -74,6 +79,7 @@ export const WorkspaceProvider = ({
         setActiveFilter,
         activeSearch,
         setActiveSearch,
+        hasActiveSearchOrFilter,
       }}
     >
       {children}

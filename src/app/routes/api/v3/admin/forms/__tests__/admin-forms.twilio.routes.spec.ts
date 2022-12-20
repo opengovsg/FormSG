@@ -2,7 +2,6 @@ import { ObjectId } from 'bson-ext'
 import mongoose from 'mongoose'
 import { errAsync } from 'neverthrow'
 import supertest, { Session } from 'supertest-session'
-import { mocked } from 'ts-jest/utils'
 
 import config from 'src/app/config/config'
 import getFormModel from 'src/app/models/form.server.model'
@@ -31,7 +30,7 @@ jest.mock('src/app/utils/limit-rate')
 // Avoid async refresh calls
 jest.mock('src/app/modules/spcp/spcp.oidc.client.ts')
 
-const MockAdminFormService = mocked(AdminFormService)
+const MockAdminFormService = jest.mocked(AdminFormService)
 
 const app = setupApp('/admin/forms', AdminFormsRouter, {
   setupWithAuth: true,

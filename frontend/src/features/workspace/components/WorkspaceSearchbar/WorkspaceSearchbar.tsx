@@ -95,7 +95,6 @@ export const WorkspaceSearchbar = forwardRef<WorkspaceSearchbarProps, 'input'>(
       internalValue,
       setInternalFilter,
       setInternalValue,
-      hasFilter,
     } = useWorkspaceSearchbar({
       defaultValue,
       value,
@@ -144,7 +143,6 @@ export const WorkspaceSearchbar = forwardRef<WorkspaceSearchbarProps, 'input'>(
               size="sm"
               variant="clear"
               colorScheme="secondary"
-              backgroundColor={hasFilter ? 'neutral.200' : undefined}
               aria-label="Filter forms"
               leftIcon={<BiFilter fontSize="1.25rem" />}
               px="0.5rem"
