@@ -145,7 +145,7 @@ const loadExpressApp = async (connection: Connection) => {
 
   // Requests for root files (e.g. /robots.txt or /favicon.ico) that were
   // not served statically above will also return 404
-  app.get(/^\/[^/]+\.[a-z]{2,}$/, catchNonExistentRoutesMiddleware)
+  app.get(/^\/[^/]+\.[a-z]+$/, catchNonExistentRoutesMiddleware)
 
   app.get('/old/', HomeController.home)
   app.use('/', ReactMigrationRouter)
