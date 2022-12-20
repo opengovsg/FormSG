@@ -199,6 +199,11 @@ export const TableField = ({
                     <Td
                       {...cell.getCellProps()}
                       display={{ base: 'block', md: 'table-cell' }}
+                      sx={{
+                        '@media print': {
+                          breakInside: 'avoid',
+                        },
+                      }}
                     >
                       {cell.render('Cell', {
                         schemaId: schema._id,
