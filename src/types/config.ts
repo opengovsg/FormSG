@@ -120,9 +120,6 @@ export interface IProdOnlyVarsSchema {
   user_sg: string
   pass_sg: string
   nodemailer_sg_warmup_start_date: string
-  awsConfig: {
-    staticAssetS3Bucket: string
-  }
 }
 
 export interface ICompulsoryVarsSchema {
