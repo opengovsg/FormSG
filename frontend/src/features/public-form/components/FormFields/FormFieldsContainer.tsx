@@ -43,7 +43,18 @@ export const FormFieldsContainer = (): JSX.Element | null => {
   if (submissionData) return null
 
   return (
-    <Box w="100%" minW={0} h="fit-content" maxW="57rem">
+    <Box
+      w="100%"
+      minW={0}
+      h="fit-content"
+      maxW="57rem"
+      sx={{
+        '@media print': {
+          display: 'block !important',
+          overflow: 'visible !important',
+        },
+      }}
+    >
       {renderFields}
     </Box>
   )

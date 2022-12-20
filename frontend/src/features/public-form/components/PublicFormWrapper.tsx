@@ -66,9 +66,30 @@ export const PublicFormWrapper = ({
     [switchEnvRolloutPercentage, removeRespondentsInfoboxThreshold],
   )
   return (
-    <Flex bg={bgColour} p={{ base: 0, md: '1.5rem' }} flex={1} justify="center">
+    <Flex
+      bg={bgColour}
+      p={{ base: 0, md: '1.5rem' }}
+      flex={1}
+      justify="center"
+      sx={{
+        '@media print': {
+          display: 'block !important',
+          overflow: 'visible !important',
+        },
+      }}
+    >
       {isAuthRequired ? null : <SectionSidebar />}
-      <Flex flexDir="column" maxW="57rem" w="100%">
+      <Flex
+        flexDir="column"
+        maxW="57rem"
+        w="100%"
+        sx={{
+          '@media print': {
+            display: 'block !important',
+            overflow: 'visible !important',
+          },
+        }}
+      >
         {/* TODO(#4279): Remove switch env message on full rollout */}
         {!isPreview && showSwitchEnvMessage && <PublicSwitchEnvMessage />}
         {children}

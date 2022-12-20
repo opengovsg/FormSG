@@ -104,7 +104,21 @@ export const FormFields = ({
     <FormProvider {...formMethods}>
       <form noValidate>
         {!!formFields?.length && (
-          <Box bg={'white'} py="2.5rem" px={{ base: '1rem', md: '2.5rem' }}>
+          <Box
+            bg={'white'}
+            py="2.5rem"
+            px={{ base: '1rem', md: '2.5rem' }}
+            sx={{
+              '@media print': {
+                // mb: '50px',
+                // 'break-inside': 'avoid',
+                // 'break-before': 'always',
+                // 'break-after': 'always',
+                display: 'block !important',
+                overflow: 'visible !important',
+              },
+            }}
+          >
             <Stack spacing="2.25rem">
               {!isEmpty(fieldPrefillMap) && (
                 <InlineMessage variant="warning">

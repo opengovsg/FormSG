@@ -149,12 +149,27 @@ export const TableField = ({
             background: 'rgba(0,0,0,.5)',
             borderRadius: '4px',
           },
+          '@media print': {
+            mb: '20px',
+            'break-inside': 'avoid',
+            // 'break-before': 'always',
+            'break-after': 'always',
+            display: 'block !important',
+            overflow: 'visible !important',
+          },
         }}
       >
         <VisuallyHidden id={`table-desc-${schema._id}`}>
           {ariaTableDescription}
         </VisuallyHidden>
         <Table
+          sx={{
+            '@media print': {
+              'break-inside': 'avoid',
+              'break-after': 'always',
+              display: 'block !important',
+            },
+          }}
           {...getTableProps()}
           aria-describedby={`table-desc-${schema._id}`}
           aria-labelledby={`${schema._id}-label`}
@@ -179,14 +194,41 @@ export const TableField = ({
               </Tr>
             ))}
           </Thead>
-          <Tbody {...getTableBodyProps()} verticalAlign="baseline">
+          <Tbody
+            {...getTableBodyProps()}
+            verticalAlign="baseline"
+            sx={{
+              '@media print': {
+                'break-inside': 'avoid',
+                'break-after': 'always',
+                display: 'block !important',
+              },
+            }}
+          >
             {rows.map((row, rowIndex) => {
               prepareRow(row)
               return (
                 // The `key` prop is required for useFieldArray to remove the correct row.
-                <Tr {...row.getRowProps()} key={row.original.id}>
+                <Tr
+                  {...row.getRowProps()}
+                  key={row.original.id}
+                  sx={{
+                    '@media print': {
+                      'break-inside': 'avoid',
+                      'break-after': 'always',
+                      display: 'block !important',
+                    },
+                  }}
+                >
                   {row.cells.map((cell, j) => (
                     <Td
+                      sx={{
+                        '@media print': {
+                          'break-inside': 'avoid',
+                          'break-after': 'always',
+                          display: 'block !important',
+                        },
+                      }}
                       {...cell.getCellProps()}
                       display={{ base: 'block', md: 'table-cell' }}
                     >
