@@ -25,11 +25,17 @@ describe('helmetMiddlewares', () => {
       `https://s3-${config.aws.region}.amazonaws.com/agency.form.sg/`,
       config.aws.imageBucketUrl,
       config.aws.logoBucketUrl,
+      config.aws.staticAssetsBucketUrl,
       '*',
       'https://*.google-analytics.com',
       'https://*.googletagmanager.com',
     ],
-    fontSrc: ["'self'", 'data:', 'https://fonts.gstatic.com/'],
+    fontSrc: [
+      "'self'",
+      'data:',
+      'https://fonts.gstatic.com/',
+      config.aws.staticAssetsBucketUrl,
+    ],
     scriptSrc: [
       "'self'",
       'https://www.googletagmanager.com/',
@@ -41,6 +47,7 @@ describe('helmetMiddlewares', () => {
       'https://www.gstatic.com/recaptcha/',
       'https://www.gstatic.cn/',
       'https://*.googletagmanager.com',
+      config.aws.staticAssetsBucketUrl,
     ],
     connectSrc: [
       "'self'",
@@ -54,6 +61,7 @@ describe('helmetMiddlewares', () => {
       'https://*.google-analytics.com',
       'https://*.analytics.google.com',
       'https://*.googletagmanager.com',
+      config.aws.staticAssetsBucketUrl,
     ],
     frameSrc: [
       "'self'",
@@ -67,6 +75,7 @@ describe('helmetMiddlewares', () => {
       'https://www.gstatic.com/recaptcha/',
       'https://www.gstatic.cn/',
       "'unsafe-inline'",
+      config.aws.staticAssetsBucketUrl,
     ],
     workerSrc: [
       "'self'",

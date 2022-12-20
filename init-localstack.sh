@@ -25,5 +25,6 @@ awslocal sqs create-queue --queue-name ${WEBHOOK_SQS_URL##*/} --attributes '{
 awslocal s3 mb s3://$IMAGE_S3_BUCKET
 awslocal s3 mb s3://$LOGO_S3_BUCKET
 awslocal s3 mb s3://$ATTACHMENT_S3_BUCKET
+awslocal s3 mb s3://$STATIC_ASSETS_S3_BUCKET
 
 set +x
