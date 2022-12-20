@@ -21,7 +21,7 @@ type EmailValidatorConstructor = (
  */
 const emailFormatValidator: EmailValidator = (response) => {
   const { answer } = response
-  return isEmail(answer)
+  return isEmail(answer.trim())
     ? right(response)
     : left(`EmailValidator:\t answer is not a valid email`)
 }
@@ -35,7 +35,7 @@ const makeEmailDomainValidator: EmailValidatorConstructor =
     const { isVerifiable, hasAllowedEmailDomains, allowedEmailDomains } =
       emailField
     const { answer } = response
-    const emailAddress = String(answer)
+    const emailAddress = String(answer).trim()
     if (!(isVerifiable && hasAllowedEmailDomains && allowedEmailDomains.length))
       return right(response)
     const emailDomain = ('@' + emailAddress.split('@').pop()).toLowerCase()

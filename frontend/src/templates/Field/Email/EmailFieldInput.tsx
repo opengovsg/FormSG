@@ -45,7 +45,7 @@ export const EmailFieldInput = ({
           autoComplete="email"
           value={value?.value ?? ''}
           onChange={(event) => {
-            const value = event.target.value
+            const value = event.target.value.trim()
             return handleInputChange
               ? handleInputChange(onChange)(value)
               : onChange({ value })
