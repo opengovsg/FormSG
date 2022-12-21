@@ -1,6 +1,5 @@
 import { ObjectId } from 'bson'
 import { okAsync } from 'neverthrow'
-import { mocked } from 'ts-jest/utils'
 import Twilio from 'twilio'
 
 import { ISms } from 'src/app/config/features/sms.config'
@@ -17,7 +16,7 @@ jest.mock('twilio', () =>
 )
 
 jest.mock('../sms.service')
-const MockSmsService = mocked(SmsService, true)
+const MockSmsService = jest.mocked(SmsService)
 
 const MOCKED_TWILIO = {
   mocked: 'this is mocked',

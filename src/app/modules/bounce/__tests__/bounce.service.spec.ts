@@ -4,7 +4,6 @@ import { cloneDeep, omit, pick } from 'lodash'
 import mongoose from 'mongoose'
 import { errAsync, okAsync } from 'neverthrow'
 import SNSMessageValidator from 'sns-validator'
-import { mocked } from 'ts-jest/utils'
 
 import * as LoggerModule from 'src/app/config/logger'
 import getFormModel from 'src/app/models/form.server.model'
@@ -28,21 +27,21 @@ import { UserWithContactNumber } from '../../user/user.types'
 import { makeBounceNotification, MOCK_SNS_BODY } from './bounce-test-helpers'
 
 jest.mock('sns-validator')
-const MockedSNSMessageValidator = mocked(SNSMessageValidator)
+const MockedSNSMessageValidator = jest.mocked(SNSMessageValidator)
 
 jest.mock('src/app/config/logger')
-const MockLoggerModule = mocked(LoggerModule, true)
+const MockLoggerModule = jest.mocked(LoggerModule)
 jest.mock('src/app/services/mail/mail.service')
-const MockMailService = mocked(MailService, true)
+const MockMailService = jest.mocked(MailService)
 jest.mock('src/app/services/sms/sms.factory', () => ({
   SmsFactory: {
     sendFormDeactivatedSms: jest.fn(),
     sendBouncedSubmissionSms: jest.fn(),
   },
 }))
-const MockSmsFactory = mocked(SmsFactory, true)
+const MockSmsFactory = jest.mocked(SmsFactory)
 jest.mock('src/app/modules/user/user.service')
-const MockUserService = mocked(UserService, true)
+const MockUserService = jest.mocked(UserService)
 
 const mockShortTermLogger = getMockLogger()
 const mockLogger = getMockLogger()

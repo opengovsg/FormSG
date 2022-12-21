@@ -9,8 +9,6 @@ import { okAsync } from 'neverthrow'
 import nodemailer from 'nodemailer'
 import Mail from 'nodemailer/lib/mailer'
 import session, { Session } from 'supertest-session'
-import { MockedObjectDeep } from 'ts-jest/dist/utils/testing'
-import { mocked } from 'ts-jest/utils'
 
 import getFormModel from 'src/app/models/form.server.model'
 import {
@@ -66,11 +64,11 @@ describe('public-forms.verification.routes', () => {
   const MOCK_MOBILE_NUMBER = '+6582990039'
   const MOCK_VALID_EMAIL_DOMAIN = 'example.com'
   const MOCK_EMAIL = `mock@${MOCK_VALID_EMAIL_DOMAIN}`
-  let MockTransport: MockedObjectDeep<Mail>
+  let MockTransport: jest.Mocked<Mail>
 
   beforeAll(async () => {
     await dbHandler.connect()
-    MockTransport = mocked(nodemailer.createTransport(), true)
+    MockTransport = jest.mocked(nodemailer.createTransport())
   })
 
   beforeEach(async () => {

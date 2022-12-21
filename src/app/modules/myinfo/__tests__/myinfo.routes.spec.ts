@@ -1,7 +1,6 @@
 import MyInfoClient, { IMyInfoConfig } from '@opengovsg/myinfo-gov-client'
 import { ObjectId } from 'bson'
 import session, { Session } from 'supertest-session'
-import { mocked } from 'ts-jest/utils'
 import { v4 as uuidv4 } from 'uuid'
 
 import { setupApp } from 'tests/integration/helpers/express-setup'
@@ -34,9 +33,8 @@ jest.mock('@opengovsg/myinfo-gov-client', () => ({
   MyInfoAttribute: jest.requireActual('@opengovsg/myinfo-gov-client')
     .MyInfoAttribute,
 }))
-const MockMyInfoGovClient = mocked(
+const MockMyInfoGovClient = jest.mocked(
   new MyInfoClient.MyInfoGovClient({} as IMyInfoConfig),
-  true,
 )
 
 // Import last so that mocks are imported correctly

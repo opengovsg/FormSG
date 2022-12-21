@@ -1,7 +1,6 @@
 import { decode } from '@stablelib/base64'
 import axios from 'axios'
 import JSZip from 'jszip'
-import { mocked } from 'ts-jest/utils'
 
 import {
   DateString,
@@ -13,14 +12,14 @@ import * as formsSdk from '../FormSgSdkService'
 import { ADMIN_FORM_ENDPOINT } from '../UpdateFormService'
 
 jest.mock('axios')
-const MockAxios = mocked(axios, true)
+const MockAxios = jest.mocked(axios)
 
 jest.mock('../FormSgSdkService')
 
-const mockFormSgSdk = mocked(formsSdk.FormSgSdk, true)
+const mockFormSgSdk = jest.mocked(formsSdk.FormSgSdk)
 
 jest.mock('@stablelib/base64')
-const mockDecodeBase64 = mocked(decode)
+const mockDecodeBase64 = jest.mocked(decode)
 
 describe('AdminSubmissionsService', () => {
   describe('countFormSubmissions', () => {

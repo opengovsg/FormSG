@@ -34,6 +34,7 @@ export type AwsConfig = {
   logoBucketUrl: string
   imageBucketUrl: string
   attachmentBucketUrl: string
+  staticAssetsBucketUrl: string
   s3: aws.S3
   endPoint: string
 }
@@ -128,6 +129,7 @@ export interface ICompulsoryVarsSchema {
   }
   awsConfig: {
     imageS3Bucket: string
+    staticAssetsS3Bucket: string
     logoS3Bucket: string
     attachmentS3Bucket: string
   }
@@ -204,5 +206,6 @@ export interface IBucketUrlSchema {
   attachmentBucketUrl: string
   logoBucketUrl: string
   imageBucketUrl: string
+  staticAssetsBucketUrl: string
   endPoint: string
 }

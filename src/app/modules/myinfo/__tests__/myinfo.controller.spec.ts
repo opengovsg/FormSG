@@ -1,6 +1,5 @@
 import { StatusCodes } from 'http-status-codes'
 import { err, errAsync, ok, okAsync } from 'neverthrow'
-import { mocked } from 'ts-jest/utils'
 
 import { IFormSchema } from 'src/types'
 
@@ -26,10 +25,10 @@ import {
 } from './myinfo.test.constants'
 
 jest.mock('../myinfo.service')
-const MockMyInfoService = mocked(MyInfoService, true)
+const MockMyInfoService = jest.mocked(MyInfoService)
 
 jest.mock('../../form/form.service')
-const MockFormService = mocked(FormService, true)
+const MockFormService = jest.mocked(FormService)
 
 describe('MyInfoController', () => {
   afterEach(() => jest.clearAllMocks())

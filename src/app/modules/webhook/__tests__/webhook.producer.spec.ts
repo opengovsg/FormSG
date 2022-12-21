@@ -1,7 +1,6 @@
 import { ObjectId } from 'bson'
 import { addHours, addMinutes, subMinutes } from 'date-fns'
 import { Producer } from 'sqs-producer'
-import { mocked } from 'ts-jest/utils'
 
 import { MAX_DELAY_SECONDS } from '../webhook.constants'
 import { WebhookPushToQueueError } from '../webhook.errors'
@@ -9,7 +8,7 @@ import { WebhookQueueMessage } from '../webhook.message'
 import { WebhookProducer } from '../webhook.producer'
 
 jest.mock('sqs-producer')
-const MockSqsProducer = mocked(Producer, true)
+const MockSqsProducer = jest.mocked(Producer)
 
 describe('WebhookProducer', () => {
   let webhookProducer: WebhookProducer

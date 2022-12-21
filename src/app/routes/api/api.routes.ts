@@ -1,6 +1,6 @@
 import { Router } from 'express'
 
-import errorHandlerMiddlewares from '../../loaders/express/error-handler'
+import { errorHandlerMiddlewares } from '../../loaders/express/error-handler'
 
 import { V3Router } from './v3'
 
