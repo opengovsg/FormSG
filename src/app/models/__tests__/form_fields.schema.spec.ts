@@ -48,7 +48,7 @@ describe('Form Field Schema', () => {
           // Act
           const fieldTitle = `test ${fieldType} field title`
           const field = await createAndReturnFormField({
-            fieldType: fieldType,
+            fieldType,
             title: fieldTitle,
           })
 
