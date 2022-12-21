@@ -42,19 +42,21 @@ describe('Form Field Schema', () => {
         // Arrange
         // Get all field types
         const fieldTypes = Object.values(BasicField)
+        const makeFieldTitle = (type: BasicField) => `test ${type} field title`
+        const formFieldPromises = fieldTypes
+          .filter((type) => type !== BasicField.Table)
+          .map((type) =>
+            createAndReturnFormField({
+              fieldType: type,
+              title: makeFieldTitle(type),
+            }),
+          )
+        const formFields = await Promise.all(formFieldPromises)
 
         // Asserts
-        fieldTypes.forEach(async (type) => {
-          // Skip table field.
-          if (type === BasicField.Table) return
-          const fieldTitle = `test ${type} field title`
-          const field = await createAndReturnFormField({
-            fieldType: type,
-            title: fieldTitle,
-          })
-
-          // Assert
-          expect(field.getQuestion()).toEqual(fieldTitle)
+        formFields.forEach((field) => {
+          const expectedTitle = makeFieldTitle(field.fieldType)
+          expect(field.getQuestion()).toEqual(expectedTitle)
         })
       })
 
