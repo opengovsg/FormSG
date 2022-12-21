@@ -7,14 +7,15 @@ export enum UiCookieValues {
 
 // TODO #4279: Remove after React rollout is complete
 export interface PublicFeedbackFormDto {
-  [key: string]: string | string[]
+  [key: string]: any
   url: string
   feedback: string
   email: string
   rumSessionId: string
   userAgent: string
   attachmentType: string[]
-  responseType: FormResponseMode
+  othersInput: string
+  responseMode: FormResponseMode
   authType: FormAuthType
 }
 

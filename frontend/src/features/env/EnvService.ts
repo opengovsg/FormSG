@@ -26,15 +26,16 @@ const createFeedbackResponsesArray = (
 ) => {
   return feedbackFormFieldsStructure.map((question, i) => {
     const { _id, fieldType } = feedbackForm.form.form_fields[i]
+    // Checkbox answers have to be in an answerArray
     if (fieldType === BasicField.Checkbox) {
-      const answerArray: string | string[] = formInputs[question] ?? []
-      if (formInputs[othersInputName] && Array.isArray(answerArray)) {
-        if (formInputs[question] === '[""]') {
-          // Remove case where non-Others checkbox is selected
-          answerArray.pop()
-        }
-        // remove '!!FORMSG_INTERNAL_CHECKBOX_OTHERS_VALUE!!' from array
-        answerArray.pop()
+      // if no checkbox is selected, return an empty array
+      const answerArray: string[] = formInputs[question] || []
+
+      // if Others is selected, remove '!!FORMSG_INTERNAL_CHECKBOX_OTHERS_VALUE!!'
+      // which is the last value in the array when 'Others' is selected,
+      // and replace it with the value entered in the Others Input field
+      if (formInputs[othersInputName]) {
+        answerArray.pop() // remove '!!FORMSG_INTERNAL_CHECKBOX_OTHERS_VALUE!!' from array
         answerArray.push(`Others: ${formInputs[othersInputName]}`)
       }
       return {
@@ -44,7 +45,7 @@ const createFeedbackResponsesArray = (
         fieldType,
       }
     }
-    const answer: string | string[] = formInputs[question] ?? ''
+    const answer: string = formInputs[question] ?? ''
     return {
       _id,
       question,

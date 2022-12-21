@@ -38,7 +38,7 @@ import { useEnvMutations, useFeedbackMutation } from '~features/env/mutations'
 import { usePublicFeedbackFormView } from './queries'
 import { isUsableFeedback } from './utils'
 
-export const othersInputName = 'others-input'
+export const othersInputName = 'othersInput'
 export const PublicFeedbackModal = ({
   isOpen,
   onClose,
@@ -99,14 +99,14 @@ export const PublicFeedbackModal = ({
 
   const othersValidationRules = useMemo(
     () => ({
-      validate: (value?: string | string[]) => {
+      validate: (value?: string) => {
         const currCheckedVals = getValues(checkboxInputName)
         return (
           !(
             Array.isArray(currCheckedVals) &&
             currCheckedVals.includes(CHECKBOX_OTHERS_INPUT_VALUE)
           ) ||
-          !!value ||
+          !!value?.trim() ||
           'Please specify a value for the "others" option'
         )
       },
@@ -180,9 +180,10 @@ export const PublicFeedbackModal = ({
                     </FormLabel>
                     {ATTACHMENT_TYPE_OPTIONS.map((option) => (
                       <Checkbox
-                        {...register(checkboxInputName)}
-                        value={option}
                         key={option}
+                        value={option}
+                        defaultValue=""
+                        {...register(checkboxInputName)}
                       >
                         {option}
                       </Checkbox>
