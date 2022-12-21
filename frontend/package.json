@@ -9,7 +9,7 @@
     "@emotion/react": "^11.7.0",
     "@emotion/styled": "^11.6.0",
     "@floating-ui/react-dom-interactions": "^0.9.3",
-    "@opengovsg/formsg-sdk": "^0.9.0",
+    "@opengovsg/formsg-sdk": "^0.10.0",
     "@stablelib/base64": "^1.0.1",
     "axios": "^1.2.1",
     "broadcast-channel": "^4.13.0",
@@ -104,6 +104,9 @@
     "test:a11y": "npm run build-storybook && jest --config .storybook/storyshots/jest.config.js",
     "test:a11y-dev": "cross-env USE_DEV_SERVER=true jest --config .storybook/storyshots/jest.config.js",
     "pre-commit": "lint-staged"
+  },
+  "overrides": {
+    "react-error-overlay": "6.0.9"
   },
   "browserslist": {
     "production": [
