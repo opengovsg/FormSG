@@ -1,3 +1,4 @@
+import axios from 'axios'
 import { errors, isCelebrateError } from 'celebrate'
 import { ErrorRequestHandler, RequestHandler } from 'express'
 import { HttpError, isHttpError } from 'http-errors'
@@ -5,6 +6,7 @@ import { StatusCodes } from 'http-status-codes'
 import get from 'lodash/get'
 import { types } from 'util'
 
+import config from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
 
 const logger = createLoggerWithLabel(module)
@@ -22,9 +24,42 @@ const isHTTPLikeError = (
   return types.isNativeError(err) && 'statusCode' in err
 }
 
-// 404 since no middleware responded
-export const catchNonExistentRoutesMiddleware: RequestHandler = (_req, res) => {
-  res.sendStatus(StatusCodes.NOT_FOUND)
+// If static no middleware responded
+export const catchNonExistentStaticRoutesMiddleware: RequestHandler = async (
+  req,
+  res,
+) => {
+  // Attempt to fetch from s3 bucket
+
+  try {
+    const { data } = await axios.get(
+      `${config.aws.staticAssetsBucketUrl}${req.originalUrl}`,
+      {
+        responseType: 'stream',
+      },
+    )
+    // If get request succeeds pipe the data back
+    logger.info({
+      message: 'Serving static asset from S3',
+      meta: {
+        action: 'catchNonExistentStaticRoutesMiddleware',
+        url: req.originalUrl,
+      },
+    })
+    data.pipe(res)
+  } catch (err) {
+    // Else return 404
+    logger.error({
+      message: 'Static asset not found in S3',
+      meta: {
+        action: 'catchNonExistentStaticRoutesMiddleware',
+        url: req.originalUrl,
+      },
+      // Log original error returned from s3
+      error: err,
+    })
+    res.sendStatus(StatusCodes.NOT_FOUND)
+  }
 }
 
 export const genericErrorHandlerMiddleware: ErrorRequestHandler = (
@@ -118,4 +153,4 @@ export const genericErrorHandlerMiddleware: ErrorRequestHandler = (
 export const errorHandlerMiddlewares = (): (
   | ErrorRequestHandler
   | RequestHandler
-)[] => [genericErrorHandlerMiddleware, catchNonExistentRoutesMiddleware]
+)[] => [genericErrorHandlerMiddleware, catchNonExistentStaticRoutesMiddleware]

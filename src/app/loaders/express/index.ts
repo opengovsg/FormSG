@@ -24,7 +24,7 @@ import { SpOidcJwksRouter } from '../../routes/singpass'
 import * as IntranetMiddleware from '../../services/intranet/intranet.middleware'
 
 import {
-  catchNonExistentRoutesMiddleware,
+  catchNonExistentStaticRoutesMiddleware,
   errorHandlerMiddlewares,
 } from './error-handler'
 import helmetMiddlewares from './helmet'
@@ -139,13 +139,13 @@ const loadExpressApp = async (connection: Connection) => {
   app.use(express.static(path.resolve('dist/frontend'), { index: false }))
   app.use('/public', express.static(path.resolve('dist/angularjs')))
 
-  // Requests for known static asset patterns which were not served by
-  // the static handlers above should return 404s
-  app.get(/^\/(public|static)\//, catchNonExistentRoutesMiddleware)
+  // If requests for known static asset patterns were not served by
+  // the static handlers above, middleware should try to fetch from s3 static bucket or else return 404s
+  app.get(/^\/(public|static)\//, catchNonExistentStaticRoutesMiddleware)
 
   // Requests for root files (e.g. /robots.txt or /favicon.ico) that were
   // not served statically above will also return 404
-  app.get(/^\/[^/]+\.[a-z]+$/, catchNonExistentRoutesMiddleware)
+  app.get(/^\/[^/]+\.[a-z]+$/, catchNonExistentStaticRoutesMiddleware)
 
   app.get('/old/', HomeController.home)
   app.use('/', ReactMigrationRouter)
