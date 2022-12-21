@@ -55,6 +55,7 @@ export const catchNonExistentStaticRoutesMiddleware: RequestHandler = async (
         action: 'catchNonExistentStaticRoutesMiddleware',
         url: req.originalUrl,
       },
+      // Log original error returned from s3
       error: err,
     })
     res.sendStatus(StatusCodes.NOT_FOUND)
