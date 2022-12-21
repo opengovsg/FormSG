@@ -42,22 +42,19 @@ describe('Form Field Schema', () => {
         // Arrange
         // Get all field types
         const fieldTypes = Object.values(BasicField)
-        const makeFieldTitle = (type: BasicField) => `test ${type} field title`
-        const formFieldPromises = fieldTypes
-          .filter((type) => type !== BasicField.Table)
-          .map((type) =>
-            createAndReturnFormField({
-              fieldType: type,
-              title: makeFieldTitle(type),
-            }),
-          )
-        const formFields = await Promise.all(formFieldPromises)
+        for (const fieldType of fieldTypes) {
+          if (fieldType === BasicField.Table) return
 
-        // Asserts
-        formFields.forEach((field) => {
-          const expectedTitle = makeFieldTitle(field.fieldType)
-          expect(field.getQuestion()).toEqual(expectedTitle)
-        })
+          // Act
+          const fieldTitle = `test ${fieldType} field title`
+          const field = await createAndReturnFormField({
+            fieldType: fieldType,
+            title: fieldTitle,
+          })
+
+          // Assert
+          expect(field.getQuestion()).toEqual(fieldTitle)
+        }
       })
 
       it('should return table title concatenated with all column titles when field type is a table field', async () => {
