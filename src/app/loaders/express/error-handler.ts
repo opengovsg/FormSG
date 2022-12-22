@@ -32,7 +32,7 @@ export const catchNonExistentStaticRoutesMiddleware: RequestHandler = async (
   // Attempt to fetch from s3 bucket
 
   try {
-    const { data } = await axios.get(
+    const { data, status, headers } = await axios.get(
       `${config.aws.staticAssetsBucketUrl}${req.originalUrl}`,
       {
         responseType: 'stream',
@@ -46,6 +46,8 @@ export const catchNonExistentStaticRoutesMiddleware: RequestHandler = async (
         url: req.originalUrl,
       },
     })
+    res.status(status)
+    res.set(headers)
     data.pipe(res)
   } catch (err) {
     // Else return 404
