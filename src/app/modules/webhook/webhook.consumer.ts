@@ -1,6 +1,8 @@
+import aws from 'aws-sdk'
+import https from 'https'
 import mongoose from 'mongoose'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
-import { Consumer, ConsumerOptions } from 'sqs-consumer'
+import { Consumer } from 'sqs-consumer'
 
 import { SubmissionWebhookInfo } from '../../../types'
 import config from '../../config/config'
@@ -35,6 +37,20 @@ export const startWebhookConsumer = (
     queueUrl,
     region: config.aws.region,
     handleMessage: createWebhookQueueHandler(producer),
+    // By default, the default Node.js HTTP/HTTPS SQS agent
+    // creates a new TCP connection for every new request.
+    // In production, pass an SQS instance to avoid the cost
+    // of establishing new connections.
+    sqs: config.isDev
+      ? undefined
+      : new aws.SQS({
+          region: config.aws.region,
+          httpOptions: {
+            agent: new https.Agent({
+              keepAlive: true,
+            }),
+          },
+        }),
   })
 
   app.on('error', (error, message) => {
@@ -73,8 +89,8 @@ export const startWebhookConsumer = (
  * @returns Handler for consumption of queue messages
  */
 export const createWebhookQueueHandler =
-  (producer: WebhookProducer): ConsumerOptions['handleMessage'] =>
-  async (sqsMessage) => {
+  (producer: WebhookProducer) =>
+  async (sqsMessage: aws.SQS.Message): Promise<void> => {
     const { Body, MessageId } = sqsMessage
     let logMeta: CustomLoggerParams['meta'] = {
       action: 'createWebhookQueueHandler',
