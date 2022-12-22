@@ -1,5 +1,4 @@
 import axios from 'axios'
-import { mocked } from 'ts-jest/utils'
 
 import { GOOGLE_RECAPTCHA_URL } from '../captcha.constants'
 import {
@@ -13,7 +12,7 @@ const MOCK_PRIVATE_KEY = process.env.GOOGLE_CAPTCHA
 const MOCK_RESPONSE = 'captchaResponse'
 const MOCK_REMOTE_IP = 'remoteIp'
 jest.mock('axios')
-const MockAxios = mocked(axios, true)
+const MockAxios = jest.mocked(axios)
 
 describe('captcha.service', () => {
   describe('verifyCaptchaResponse', () => {

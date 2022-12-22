@@ -3,7 +3,6 @@ import { ObjectId } from 'bson'
 import { addHours, subHours, subMinutes, subSeconds } from 'date-fns'
 import mongoose from 'mongoose'
 import { errAsync, okAsync } from 'neverthrow'
-import { mocked } from 'ts-jest/utils'
 
 // These need to be mocked first before the rest of the test
 import * as LoggerModule from 'src/app/config/logger'
@@ -12,7 +11,7 @@ import getMockLogger from 'tests/unit/backend/helpers/jest-logger'
 
 const mockLogger = getMockLogger()
 jest.mock('src/app/config/logger')
-const MockLoggerModule = mocked(LoggerModule, true)
+const MockLoggerModule = jest.mocked(LoggerModule)
 MockLoggerModule.createLoggerWithLabel.mockReturnValue(mockLogger)
 
 import { smsConfig } from 'src/app/config/features/sms.config'
@@ -75,15 +74,15 @@ const VerificationModel = getVerificationModel(mongoose)
 
 // Set up mocks
 jest.mock('src/app/config/formsg-sdk')
-const MockFormsgSdk = mocked(formsgSdk, true)
+const MockFormsgSdk = jest.mocked(formsgSdk)
 jest.mock('src/app/services/sms/sms.factory')
-const MockSmsFactory = mocked(SmsFactory, true)
+const MockSmsFactory = jest.mocked(SmsFactory)
 jest.mock('src/app/services/mail/mail.service')
-const MockMailService = mocked(MailService, true)
+const MockMailService = jest.mocked(MailService)
 jest.mock('src/app/modules/form/form.service')
-const MockFormService = mocked(FormService, true)
+const MockFormService = jest.mocked(FormService)
 jest.mock('src/app/utils/hash')
-const MockHashUtils = mocked(HashUtils, true)
+const MockHashUtils = jest.mocked(HashUtils)
 
 describe('Verification service', () => {
   const mockFieldIdObj = new ObjectId()

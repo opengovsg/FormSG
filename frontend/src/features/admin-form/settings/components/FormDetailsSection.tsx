@@ -54,7 +54,10 @@ const FormTitleInput = ({ initialTitle }: FormTitleInputProps): JSX.Element => {
       ({ title }) => {
         if (title === initialTitle) return
 
-        return mutateFormTitle.mutate(title, { onError: () => reset() })
+        return mutateFormTitle.mutate(title, {
+          onError: () => reset(),
+          onSuccess: () => reset({ title }),
+        })
       },
       () => reset(),
     )()

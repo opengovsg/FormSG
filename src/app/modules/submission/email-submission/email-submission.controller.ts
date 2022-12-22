@@ -21,6 +21,7 @@ import {
   MYINFO_LOGIN_COOKIE_OPTIONS,
 } from '../../myinfo/myinfo.constants'
 import { MyInfoService } from '../../myinfo/myinfo.service'
+import { extractMyInfoLoginJwt } from '../../myinfo/myinfo.util'
 import { SgidService } from '../../sgid/sgid.service'
 import { getOidcService } from '../../spcp/spcp.oidc.service'
 import * as EmailSubmissionMiddleware from '../email-submission/email-submission.middleware'
@@ -202,8 +203,9 @@ const submitEmailModeForm: ControllerHandler<
               })
           }
           case FormAuthType.MyInfo:
-            return MyInfoService.extractUinFromOldAndNewLoginCookie(req.cookies)
-              .asyncAndThen((uinFin) =>
+            return extractMyInfoLoginJwt(req.cookies)
+              .andThen(MyInfoService.verifyLoginJwt)
+              .asyncAndThen(({ uinFin }) =>
                 MyInfoService.fetchMyInfoHashes(uinFin, formId)
                   .andThen((hashes) =>
                     MyInfoService.checkMyInfoHashes(

@@ -1,12 +1,10 @@
 /* eslint-disable import/first */
-import { mocked } from 'ts-jest/utils'
-
 import * as LoggerModule from 'src/app/config/logger'
 
 import expressHandler from 'tests/unit/backend/helpers/jest-express'
 import getMockLogger from 'tests/unit/backend/helpers/jest-logger'
 
-const MockLoggerModule = mocked(LoggerModule, true)
+const MockLoggerModule = jest.mocked(LoggerModule)
 const mockLogger = getMockLogger()
 
 jest.mock('src/app/config/logger')

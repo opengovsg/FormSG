@@ -5,7 +5,7 @@ import { fillHeightCss } from '~utils/fillHeightCss'
 import GovtMasthead from '~components/GovtMasthead'
 
 // TODO #4279: Remove after React rollout is complete
-import { SwitchEnvIcon } from '~features/env/SwitchEnvIcon'
+import { AdminFeedbackIcon } from '~features/env/AdminFeedbackIcon'
 import FormEndPage from '~features/public-form/components/FormEndPage'
 import FormFields from '~features/public-form/components/FormFields'
 import { FormSectionsProvider } from '~features/public-form/components/FormFields/FormSectionsContext'
@@ -28,13 +28,13 @@ export const TemplateFormPage = (): JSX.Element => {
       <TemplateFormProvider formId={formId}>
         <GovtMasthead />
         <PreviewFormBannerContainer isTemplate />
-        <SwitchEnvIcon />
+        <AdminFeedbackIcon />
         <FormSectionsProvider>
           <PublicFormLogo />
           <FormStartPage isTemplate />
-          <PublicFormWrapper isPreview>
+          <PublicFormWrapper>
             <FormInstructions />
-            <FormFields />
+            <FormFields isPreview />
             <FormEndPage isPreview />
             <FormFooter />
           </PublicFormWrapper>

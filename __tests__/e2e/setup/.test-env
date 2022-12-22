@@ -1,14 +1,6 @@
-SP_FORMSG_KEY_PATH=./node_modules/@opengovsg/mockpass/static/certs/key.pem
-SP_FORMSG_CERT_PATH=./node_modules/@opengovsg/mockpass/static/certs/server.crt
-SP_IDP_CERT_PATH=./node_modules/@opengovsg/mockpass/static/certs/spcp.crt
-
-SINGPASS_ASSERT_ENDPOINT=http://localhost:5000/singpass/login
-SINGPASS_IDP_LOGIN_URL=http://localhost:5156/singpass/logininitial
-SINGPASS_IDP_ENDPOINT=http://localhost:5156/singpass/soap
-SINGPASS_PARTNER_ENTITY_ID=http://staging-dsd.form.sg/forms/soap
-SINGPASS_IDP_ID=https://saml-internet.singpass.gov.sg/FIM/sps/SingpassIDPFed/saml20
 MOCKPASS_PORT=5156
-SINGPASS_ESRVC_ID=Test-eServiceId-Sp
+#Needed for MyInfo
+SINGPASS_ESRVC_ID=Test-eServiceId-Sp 
 
 SP_OIDC_NDI_DISCOVERY_ENDPOINT=https://stg-id.singpass.gov.sg/.well-known/openid-configuration
 SP_OIDC_NDI_JWKS_ENDPOINT=https://stg-id.singpass.gov.sg/.well-known/keys
@@ -79,6 +71,7 @@ SERVICES=s3
 IMAGE_S3_BUCKET=local-image-bucket
 LOGO_S3_BUCKET=local-logo-bucket
 ATTACHMENT_S3_BUCKET=local-attachment-bucket
+STATIC_ASSETS_S3_BUCKET=local-static-assets-bucket
 NODE_ENV=test
 FORMSG_SDK_MODE=test
 
@@ -101,11 +94,10 @@ AWS_ENDPOINT=http://localhost:4566
 APP_URL=http://localhost:5000
 
 SECRET_ENV=development
-REACT_TO_ANGULAR_FEEDBACK_FORM_ID=62da6a569ee8e90143b5da26
-
 INTRANET_IP_LIST_PATH=tests/mock-intranet-ips.txt
 
-REACT_TO_ANGULAR_FEEDBACK_FORM_ID=62da6a569ee8e90143b5da26
+REACT_SWITCH_ENV_FEEDBACK_FORM_ID_ADMIN=62da6a569ee8e90143b5da26
+REACT_SWITCH_ENV_FEEDBACK_FORM_ID_RESPONDENT=62da6a569ee8e90143b5da26
 REACT_MIGRATION_ANGULAR_END_DATE=15 September 2022
 REACT_MIGRATION_RESP_ROLLOUT_EMAIL=100
 REACT_MIGRATION_RESP_ROLLOUT_STORAGE=100

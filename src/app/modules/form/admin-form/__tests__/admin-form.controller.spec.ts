@@ -5,8 +5,6 @@ import { StatusCodes } from 'http-status-codes'
 import { assignIn, cloneDeep, merge, pick } from 'lodash'
 import { err, errAsync, ok, okAsync, Result } from 'neverthrow'
 import { PassThrough } from 'stream'
-import { MockedObject } from 'ts-jest/dist/utils/testing'
-import { mocked } from 'ts-jest/utils'
 
 import * as AuthService from 'src/app/modules/auth/auth.service'
 import {
@@ -105,22 +103,22 @@ import * as AdminFormService from '../admin-form.service'
 import { PermissionLevel } from '../admin-form.types'
 
 jest.mock('src/app/modules/auth/auth.service')
-const MockAuthService = mocked(AuthService)
+const MockAuthService = jest.mocked(AuthService)
 jest.mock('src/app/modules/feedback/feedback.service')
-const MockFeedbackService = mocked(FeedbackService)
+const MockFeedbackService = jest.mocked(FeedbackService)
 jest.mock('src/app/modules/submission/submission.service')
-const MockSubmissionService = mocked(SubmissionService)
+const MockSubmissionService = jest.mocked(SubmissionService)
 jest.mock(
   'src/app/modules/submission/encrypt-submission/encrypt-submission.service',
 )
-const MockEncryptSubmissionService = mocked(EncryptSubmissionService)
+const MockEncryptSubmissionService = jest.mocked(EncryptSubmissionService)
 jest.mock(
   'src/app/modules/submission/email-submission/email-submission.service',
 )
 jest.mock(
   'src/app/modules/submission/encrypt-submission/IncomingEncryptSubmission.class',
 )
-const MockIncomingEncryptSubmission = mocked(IncomingEncryptSubmission)
+const MockIncomingEncryptSubmission = jest.mocked(IncomingEncryptSubmission)
 jest.mock(
   'src/app/modules/submission/encrypt-submission/encrypt-submission.utils',
   () => ({
@@ -129,21 +127,21 @@ jest.mock(
     ),
   }),
 )
-const MockEmailSubmissionService = mocked(EmailSubmissionService)
+const MockEmailSubmissionService = jest.mocked(EmailSubmissionService)
 jest.mock('src/app/modules/submission/submission.utils')
-const MockSubmissionUtils = mocked(SubmissionUtils)
+const MockSubmissionUtils = jest.mocked(SubmissionUtils)
 jest.mock('../admin-form.service')
-const MockAdminFormService = mocked(AdminFormService)
+const MockAdminFormService = jest.mocked(AdminFormService)
 jest.mock('../../../submission/email-submission/ParsedResponsesObject.class')
-const MockParsedResponsesObject = mocked(ParsedResponsesObject)
+const MockParsedResponsesObject = jest.mocked(ParsedResponsesObject)
 jest.mock('../../form.service')
-const MockFormService = mocked(FormService)
+const MockFormService = jest.mocked(FormService)
 jest.mock('../../../user/user.service')
-const MockUserService = mocked(UserService)
+const MockUserService = jest.mocked(UserService)
 jest.mock('src/app/services/mail/mail.service')
-const MockMailService = mocked(MailService)
+const MockMailService = jest.mocked(MailService)
 jest.mock('../../../../services/sms/sms.service')
-const MockSmsService = mocked(SmsService)
+const MockSmsService = jest.mocked(SmsService)
 
 describe('admin-form.controller', () => {
   beforeEach(() => jest.clearAllMocks())
@@ -653,12 +651,12 @@ describe('admin-form.controller', () => {
       admin: { _id: MOCK_USER_ID },
     } as unknown as PublicForm
 
-    const MOCK_FORM = mocked({
+    const MOCK_FORM = jest.mocked({
       admin: MOCK_USER,
       _id: MOCK_FORM_ID,
       title: MOCK_SCRUBBED_FORM.title,
       getPublicView: jest.fn().mockResolvedValue(MOCK_SCRUBBED_FORM),
-    }) as unknown as MockedObject<IPopulatedForm>
+    }) as unknown as jest.Mocked<IPopulatedForm>
 
     const MOCK_REQ = expressHandler.mockRequest({
       params: {
@@ -3298,12 +3296,12 @@ describe('admin-form.controller', () => {
       admin: { _id: MOCK_USER_ID },
     } as unknown as PublicForm
 
-    const MOCK_FORM = mocked({
+    const MOCK_FORM = jest.mocked({
       admin: MOCK_USER,
       _id: MOCK_FORM_ID,
       title: MOCK_SCRUBBED_FORM.title,
       getPublicView: jest.fn().mockResolvedValue(MOCK_SCRUBBED_FORM),
-    }) as unknown as MockedObject<IPopulatedForm>
+    }) as unknown as jest.Mocked<IPopulatedForm>
 
     const MOCK_REQ = expressHandler.mockRequest({
       params: {

@@ -24,11 +24,6 @@ import {
   FormAuthNoEsrvcIdError,
   FormNotFoundError,
 } from '../form/form.errors'
-import {
-  CreateRedirectUrlError,
-  FetchLoginPageError,
-  LoginPageValidationError,
-} from '../spcp/spcp.errors'
 import { ProcessedFieldResponse } from '../submission/submission.types'
 
 import { MYINFO_LOGIN_COOKIE_NAME } from './myinfo.constants'
@@ -37,7 +32,6 @@ import {
   MyInfoHashDidNotMatchError,
   MyInfoHashingError,
   MyInfoInvalidAuthCodeCookieError,
-  MyInfoMissingAccessTokenError,
   MyInfoMissingHashError,
   MyInfoMissingLoginCookieError,
 } from './myinfo.errors'
@@ -48,10 +42,7 @@ import {
   MyInfoForm,
   MyInfoHashPromises,
   MyInfoLoginCookiePayload,
-  MyInfoOldCookiePayload,
-  MyInfoOldCookieState,
   MyInfoRelayState,
-  MyInfoSuccessfulOldCookiePayload,
   VisibleMyInfoResponse,
 } from './myinfo.types'
 
@@ -208,61 +199,6 @@ export const mapRedirectURLError: MapRouteError = (
 }
 
 /**
- * Maps errors while validating e-service ID to status codes and messages.
- * @param error Error to be mapped
- * @param coreErrorMessage Default error message
- */
-export const mapEServiceIdCheckError: MapRouteError = (
-  error,
-  coreErrorMessage = 'Something went wrong. Please refresh and try again.',
-) => {
-  switch (error.constructor) {
-    case FormNotFoundError:
-      return {
-        statusCode: StatusCodes.NOT_FOUND,
-        errorMessage:
-          'Could not find the form requested. Please refresh and try again.',
-      }
-    case AuthTypeMismatchError:
-      return {
-        statusCode: StatusCodes.BAD_REQUEST,
-        errorMessage:
-          'This form does not have MyInfo enabled. Please refresh and try again.',
-      }
-    case FormAuthNoEsrvcIdError:
-      return {
-        statusCode: StatusCodes.FORBIDDEN,
-        errorMessage:
-          'This form does not have valid MyInfo credentials. Please contact the form administrator.',
-      }
-    case FetchLoginPageError:
-    case LoginPageValidationError:
-      return {
-        statusCode: StatusCodes.SERVICE_UNAVAILABLE,
-        errorMessage: 'Failed to contact SingPass. Please try again.',
-      }
-    case DatabaseError:
-    case CreateRedirectUrlError:
-      return {
-        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
-        errorMessage: coreErrorMessage,
-      }
-    default:
-      logger.error({
-        message: 'Unknown route error observed',
-        meta: {
-          action: 'mapRedirectURLError',
-        },
-        error,
-      })
-      return {
-        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
-        errorMessage: coreErrorMessage,
-      }
-  }
-}
-
-/**
  * Retrieves the field options which should be provided with a MyInfo
  * dropdown field.
  * @param myInfoAttr MyInfo attribute
@@ -326,35 +262,6 @@ export const isMyInfoLoginCookie = (
   )
 }
 
-// TODO(#5452): Delete this function
-export const isMyInfoOldCookie = (
-  cookie: unknown,
-): cookie is MyInfoOldCookiePayload => {
-  if (
-    cookie &&
-    typeof cookie === 'object' &&
-    hasProp(cookie, 'state') &&
-    typeof cookie.state === 'string'
-  ) {
-    // Test for success state
-    if (
-      cookie.state === MyInfoOldCookieState.Success &&
-      hasProp(cookie, 'accessToken') &&
-      typeof cookie.accessToken === 'string' &&
-      hasProp(cookie, 'usedCount') &&
-      typeof cookie.usedCount === 'number'
-    ) {
-      return true
-    } else if (
-      // Test for any other valid state
-      Object.values<string>(MyInfoAuthCodeCookieState).includes(cookie.state)
-    ) {
-      return true
-    }
-  }
-  return false
-}
-
 /**
  * Type guard for MyInfo auth code cookie.
  * @param cookie Unknown object
@@ -384,65 +291,6 @@ export const isMyInfoAuthCodeCookie = (
     }
   }
   return false
-}
-
-// TODO(#5452): Delete this function
-export const extractOldMyInfoCookie = (
-  cookies: Record<string, unknown>,
-): Result<MyInfoOldCookiePayload, MyInfoMissingAccessTokenError> => {
-  const cookie = cookies[MYINFO_LOGIN_COOKIE_NAME]
-  if (isMyInfoOldCookie(cookie)) {
-    return ok(cookie)
-  }
-  return err(new MyInfoMissingAccessTokenError())
-}
-
-/**
- * TODO(#5452): Delete this function
- * Asserts that myInfoCookie is in success state
- * This function acts as a discriminator so that the type of the cookie is encoded in its type
- * @param cookie the cookie to
- * @returns ok(cookie) the successful myInfoCookie
- * @returns err(cookie) the errored cookie
- */
-export const assertOldMyInfoCookieSuccessState = (
-  cookie: MyInfoOldCookiePayload,
-): Result<MyInfoSuccessfulOldCookiePayload, MyInfoCookieStateError> =>
-  cookie.state === MyInfoOldCookieState.Success
-    ? ok(cookie)
-    : err(new MyInfoCookieStateError())
-
-/**
- * TODO(#5452): Delete this function
- * Extracts and asserts a successful myInfoCookie from a request's cookies
-   @param cookies Cookies in a request
- * @return ok(cookie) the successful myInfoCookie
- * @return err(MyInfoMissingAccessTokenError) if myInfoCookie is not present on the request
- * @return err(MyInfoCookieStateError) if the extracted myInfoCookie was in an error state
- * @return err(MyInfoCookieAccessError) if the cookie has been accessed before
-  */
-export const extractAndAssertOldMyInfoCookieValidity = (
-  cookies: Record<string, unknown>,
-): Result<
-  MyInfoSuccessfulOldCookiePayload,
-  MyInfoCookieStateError | MyInfoMissingAccessTokenError
-> =>
-  extractOldMyInfoCookie(cookies).andThen((cookiePayload) =>
-    assertOldMyInfoCookieSuccessState(cookiePayload),
-  )
-
-/**
- * TODO(#5452): Delete this function
- * Extracts access token from a MyInfo cookie
- * @param cookie Cookie from which access token should be extracted
- */
-export const extractAccessTokenFromOldCookie = (
-  cookie: MyInfoOldCookiePayload,
-): Result<string, MyInfoCookieStateError> => {
-  if (cookie.state !== MyInfoOldCookieState.Success) {
-    return err(new MyInfoCookieStateError())
-  }
-  return ok(cookie.accessToken)
 }
 
 /**

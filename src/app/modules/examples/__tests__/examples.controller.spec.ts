@@ -1,5 +1,4 @@
 import { errAsync, okAsync } from 'neverthrow'
-import { mocked } from 'ts-jest/utils'
 
 import expressHandler from 'tests/unit/backend/helpers/jest-express'
 
@@ -11,7 +10,7 @@ import * as ExamplesService from '../examples.service'
 import { ExamplesQueryParams, SingleFormResult } from '../examples.types'
 
 jest.mock('../examples.service')
-const MockExamplesService = mocked(ExamplesService)
+const MockExamplesService = jest.mocked(ExamplesService)
 
 describe('examples.controller', () => {
   beforeEach(() => jest.clearAllMocks())

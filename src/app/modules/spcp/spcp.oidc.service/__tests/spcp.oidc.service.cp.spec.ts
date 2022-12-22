@@ -5,8 +5,8 @@ import { MOCK_COOKIE_AGE } from 'src/app/modules/myinfo/__tests__/myinfo.test.co
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
-import { cpOidcClientConfig } from '../../__tests__/spcp.oidc.test.constants'
 import {
+  cpOidcClientConfig,
   MOCK_COOKIES,
   MOCK_CP_JWT_PAYLOAD,
   MOCK_CP_OIDC_AUTHORISATION_CODE,
@@ -33,7 +33,6 @@ import { CpOidcClient } from '../../spcp.oidc.client'
 import { SpcpOidcBaseClientCache } from '../../spcp.oidc.client.cache'
 import { Refresh } from '../../spcp.oidc.client.types'
 import { ExtractedCorppassNDIPayload, JwtName } from '../../spcp.types'
-import * as SpcpUtils from '../../spcp.util'
 import { CpOidcServiceClass } from '../spcp.oidc.service.cp'
 import { CpOidcProps } from '../spcp.oidc.service.types'
 
@@ -199,28 +198,6 @@ describe('spcp.oidc.service', () => {
       )
       jest
         .spyOn(mockCpOidcClient, 'verifyJwt')
-        .mockResolvedValueOnce(MOCK_CP_JWT_PAYLOAD)
-
-      // Act
-      const result = await cpOidcServiceClass.extractJwtPayload(MOCK_JWT)
-
-      // Assert
-      expect(result._unsafeUnwrap()).toEqual(MOCK_CP_JWT_PAYLOAD)
-    })
-
-    // TODO(#4496): Remove backward compatible code to allow jwt signed with saml keys
-    it('should return the correct payload for Corppass when a valid JWT is present signed with SAML keys', async () => {
-      // Arrange
-      const cpOidcServiceClass = new CpOidcServiceClass(
-        mockCpOidcClient,
-        MOCK_PARAMS_CP,
-      )
-      jest
-        .spyOn(mockCpOidcClient, 'verifyJwt')
-        .mockRejectedValueOnce(new Error())
-
-      jest
-        .spyOn(SpcpUtils, 'verifyJwtPromise')
         .mockResolvedValueOnce(MOCK_CP_JWT_PAYLOAD)
 
       // Act

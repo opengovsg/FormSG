@@ -89,7 +89,7 @@ export type E2eFieldMetadata =
   | (E2ePickFieldMetadata<HomenoFieldBase, 'fieldType'> &
       E2eFieldSingleValue &
       E2eFieldHidden)
-  | (E2ePickFieldMetadata<ImageFieldBase, never> &
+  | (E2ePickFieldMetadata<ImageFieldBase, 'name'> &
       E2eFieldFilepath &
       E2eFieldHidden)
   | (E2ePickFieldMetadata<LongTextFieldBase, 'ValidationOptions'> &
@@ -203,6 +203,7 @@ export const ALL_FIELDS: E2eFieldMetadata[] = [
   //   fieldType: BasicField.Image,
   //   path: '__tests__/e2e/files/logo.jpg',
   //   description: 'Logo for an organization.',
+  //   name: 'logo.jpg',
   // },
   {
     title: 'Your Life Story',
@@ -266,8 +267,7 @@ export const ALL_FIELDS: E2eFieldMetadata[] = [
   {
     title: 'Statement',
     fieldType: BasicField.Statement,
-    description:
-      'This is a paragraph with **markdown** and a url to https://open.gov.sg/.\n\n* Please type your answers here.\n* Please press submit once you are done.\n\nThank you!',
+    description: 'This is a statement. Read me!',
   },
   {
     title: 'Family Members',
@@ -285,15 +285,15 @@ export const ALL_FIELDS: E2eFieldMetadata[] = [
         },
       },
       {
-        title: 'Gender',
+        title: 'Relationship',
         required: true,
-        fieldOptions: ['Male', 'Female', 'Prefer not to say'],
+        fieldOptions: ['Father', 'Mother', 'Sibling', 'Child', 'Other'],
         columnType: BasicField.Dropdown,
       },
     ],
     val: [
-      ['John', 'Male'],
-      ['Lisa', 'Female'],
+      ['John', 'Father'],
+      ['Lisa', 'Mother'],
     ],
   },
   {

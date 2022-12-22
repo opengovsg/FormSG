@@ -34,6 +34,7 @@ export type AwsConfig = {
   logoBucketUrl: string
   imageBucketUrl: string
   attachmentBucketUrl: string
+  staticAssetsBucketUrl: string
   s3: aws.S3
   endPoint: string
 }
@@ -59,7 +60,8 @@ export type ReactMigrationConfig = {
   respondentCookieName: string
   adminCookieName: string
   qaCookieName: string
-  reactToAngularFeedbackFormId: string
+  adminSwitchEnvFeedbackFormId: string
+  respondentSwitchEnvFeedbackFormId: string
   angularPhaseOutDate: string
   removeAdminInfoboxThreshold: number
   removeRespondentsInfoboxThreshold: number
@@ -127,11 +129,13 @@ export interface ICompulsoryVarsSchema {
   }
   awsConfig: {
     imageS3Bucket: string
+    staticAssetsS3Bucket: string
     logoS3Bucket: string
     attachmentS3Bucket: string
   }
   reactMigration: {
-    reactToAngularFeedbackFormId: string
+    adminSwitchEnvFeedbackFormId: string
+    respondentSwitchEnvFeedbackFormId: string
   }
 }
 
@@ -202,5 +206,6 @@ export interface IBucketUrlSchema {
   attachmentBucketUrl: string
   logoBucketUrl: string
   imageBucketUrl: string
+  staticAssetsBucketUrl: string
   endPoint: string
 }
