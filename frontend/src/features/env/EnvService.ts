@@ -31,6 +31,8 @@ const createFeedbackResponsesArray = (
       // if no checkbox is selected, return an empty array
       const answerArray: string[] = formInputs[question] || []
 
+      // Note: This code assumes that there is only 1 checkbox field with 'Others'
+      // and might break if we have multiple checkboxes with 'Others'
       // if Others is selected, remove '!!FORMSG_INTERNAL_CHECKBOX_OTHERS_VALUE!!'
       // which is the last value in the array when 'Others' is selected,
       // and replace it with the value entered in the Others Input field
