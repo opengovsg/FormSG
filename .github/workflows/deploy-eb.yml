@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - id: set-environment
-        run: echo "::set-output name=current_env::${{github.ref_name}}"
+        run: echo "current_env=${{github.ref_name}}" >> $GITHUB_OUTPUT
 
   build_deploy_application:
     needs: set_environment
