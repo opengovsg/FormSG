@@ -58,6 +58,7 @@ export const FormFieldsContainer = ({
         <PublicSwitchEnvMessage
           responseMode={form?.responseMode}
           isAuthRequired={isAuthRequired}
+          authType={form?.authType}
         />
       )}
     </Box>
