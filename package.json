@@ -1,7 +1,7 @@
 {
   "name": "FormSG",
   "description": "Form Manager for Government",
-  "version": "6.23.1",
+  "version": "6.24.0",
   "homepage": "https://form.gov.sg",
   "authors": [
     "FormSG <formsg@data.gov.sg>"
@@ -73,7 +73,7 @@
     "@opengovsg/myinfo-gov-client": "^4.0.1",
     "@opengovsg/ng-file-upload": "^12.2.15",
     "@opengovsg/sgid-client": "1.0.4",
-    "@sentry/browser": "^7.20.1",
+    "@sentry/browser": "^7.28.0",
     "@sentry/integrations": "^6.19.7",
     "@stablelib/base64": "^1.0.1",
     "abortcontroller-polyfill": "^1.7.5",
@@ -214,7 +214,7 @@
     "@types/mongodb": "^3.6.20",
     "@types/mongodb-uri": "^0.9.1",
     "@types/node": "^14.18.23",
-    "@types/nodemailer": "^6.4.6",
+    "@types/nodemailer": "^6.4.7",
     "@types/opossum": "^6.2.2",
     "@types/promise-retry": "^1.1.3",
     "@types/promise-timeout": "^1.3.0",
@@ -267,7 +267,7 @@
     "optimize-css-assets-webpack-plugin": "^5.0.8",
     "prettier": "^2.7.1",
     "proxyquire": "^2.1.3",
-    "regenerator": "^0.14.9",
+    "regenerator": "^0.14.10",
     "rimraf": "^3.0.2",
     "stylelint": "^13.13.1",
     "stylelint-config-prettier": "^9.0.4",
