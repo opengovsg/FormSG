@@ -4,7 +4,6 @@ import bcrypt from 'bcrypt'
 import { ObjectId } from 'bson-ext'
 import jwt from 'jsonwebtoken'
 import mongoose from 'mongoose'
-import { mocked } from 'ts-jest/utils'
 import { v4 as uuidv4 } from 'uuid'
 
 import { spcpMyInfoConfig } from 'src/app/config/features/spcp-myinfo.config'
@@ -57,16 +56,16 @@ import {
 const MyInfoHash = getMyInfoHashModel(mongoose)
 
 jest.mock('@opengovsg/myinfo-gov-client')
-const MockMyInfoGovClient = mocked(MyInfoGovClient, true)
+const MockMyInfoGovClient = jest.mocked(MyInfoGovClient)
 
 jest.mock('bcrypt')
-const MockBcrypt = mocked(bcrypt, true)
+const MockBcrypt = jest.mocked(bcrypt)
 
 jest.mock('jsonwebtoken')
-const MockJwtLibrary = mocked(jwt, true)
+const MockJwtLibrary = jest.mocked(jwt)
 
 jest.mock('../../../config/features/spcp-myinfo.config')
-const MockSpcpConfig = mocked(spcpMyInfoConfig, true)
+const MockSpcpConfig = jest.mocked(spcpMyInfoConfig)
 
 describe('MyInfoServiceClass', () => {
   let myInfoService: MyInfoServiceClass = new MyInfoServiceClass(

@@ -1,5 +1,4 @@
 import axios from 'axios'
-import { mocked } from 'ts-jest/utils'
 
 import { DateString, UserDto } from '../../../../shared/types'
 import * as UserService from '../UserService'
@@ -8,7 +7,7 @@ const { STORAGE_USER_KEY, USER_ENDPOINT, LOGGED_IN_KEY } = UserService
 
 jest.mock('axios')
 
-const MockAxios = mocked(axios, true)
+const MockAxios = jest.mocked(axios)
 
 describe('UserService', () => {
   const MOCK_USER: UserDto = {
