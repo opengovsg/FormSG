@@ -8,7 +8,7 @@ import {
   VisuallyHidden,
 } from '@chakra-ui/react'
 
-import { FormResponseMode } from '~shared/types'
+import { FormAuthType, FormResponseMode } from '~shared/types'
 
 import { noPrintCss } from '~utils/noPrintCss'
 import Button from '~components/Button'
@@ -20,11 +20,13 @@ import { useEnv } from '~features/env/queries'
 type PublicSwitchEnvMessageProps = {
   responseMode?: FormResponseMode
   isAuthRequired: boolean
+  authType?: FormAuthType
 }
 
 export const PublicSwitchEnvMessage = ({
   responseMode,
   isAuthRequired,
+  authType,
 }: PublicSwitchEnvMessageProps): JSX.Element | null => {
   const { isOpen, onOpen, onClose } = useDisclosure()
 
@@ -105,7 +107,12 @@ export const PublicSwitchEnvMessage = ({
           </Text>
         </InlineMessage>
       </Box>
-      <PublicFeedbackModal isOpen={isOpen} onClose={onClose} />
+      <PublicFeedbackModal
+        isOpen={isOpen}
+        onClose={onClose}
+        responseMode={responseMode}
+        authType={authType}
+      />
     </Flex>
   )
 }
