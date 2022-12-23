@@ -155,6 +155,7 @@ jobs:
           cache-dependency-path: '**/package-lock.json'
       - run: npm ci
       - run: npm run lint-ci
+      - run: npm_config_mode=yes npx lockfile-lint --type npm --path package.json --validate-https --allowed-hosts npm
 
   src_e2e:
     needs: [changes, build]
