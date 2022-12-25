@@ -273,7 +273,7 @@
     "stylelint-config-prettier": "^9.0.4",
     "stylelint-config-standard": "^22.0.0",
     "stylelint-prettier": "^1.2.0",
-    "supertest": "^6.3.1",
+    "supertest": "^6.3.3",
     "supertest-session": "^4.1.0",
     "terser-webpack-plugin": "^1.2.3",
     "testcafe": "=1.15.1",
