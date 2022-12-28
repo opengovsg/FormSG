@@ -25,9 +25,8 @@ const frontendVars = {
   // react migration variables
   reactMigrationRespondentCookieName:
     config.reactMigration.respondentCookieName,
+  reactMigrationAdminCookieNameOld: config.reactMigration.adminCookieNameOld,
   reactMigrationAdminCookieName: config.reactMigration.adminCookieName,
-  reactMigrationAdminCookieNameJan2023:
-    config.reactMigration.adminCookieNameJan2023,
   reactMigrationRespondentRolloutEmail:
     config.reactMigration.respondentRolloutEmail,
   reactMigrationRespondentRolloutStorage:
