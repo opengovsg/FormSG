@@ -25,6 +25,7 @@ const frontendVars = {
   // react migration variables
   reactMigrationRespondentCookieName:
     config.reactMigration.respondentCookieName,
+  reactMigrationAdminCookieNameOld: config.reactMigration.adminCookieNameOld,
   reactMigrationAdminCookieName: config.reactMigration.adminCookieName,
   reactMigrationRespondentRolloutEmail:
     config.reactMigration.respondentRolloutEmail,
@@ -57,6 +58,7 @@ const environment = ejs.render(
     var spcpCookieDomain = "<%= spcpCookieDomain%>"
     // React Migration
     var reactMigrationRespondentCookieName = "<%= reactMigrationRespondentCookieName%>"
+    var reactMigrationAdminCookieNameOld = "<%= reactMigrationAdminCookieNameOld%>"
     var reactMigrationAdminCookieName = "<%= reactMigrationAdminCookieName%>"
     var reactMigrationRespondentRolloutEmail = "<%= reactMigrationRespondentRolloutEmail%>"
     var reactMigrationRespondentRolloutStorage = "<%= reactMigrationRespondentRolloutStorage%>"
