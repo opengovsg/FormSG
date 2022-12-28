@@ -185,6 +185,8 @@ const encryptAttachment = async (
     console.error(`Information about attachment ${id}`)
     console.error(typeof attachment)
     console.error(attachment)
-    return { id, encryptedFile: undefined }
+
+    // Rethrow to maintain behaviour
+    throw error
   }
 }

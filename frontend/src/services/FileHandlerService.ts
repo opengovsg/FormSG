@@ -48,7 +48,6 @@ const computeChecksumMd5 = (file: File): Promise<string> => {
     fileReader.onload = (e) => {
       const arrayBuffer = e.target?.result
       if (!(arrayBuffer instanceof ArrayBuffer)) {
-        console.error('Empty array buffer - error reading the file')
         return reject('Empty array buffer - error reading the file')
       }
       spark.append(arrayBuffer) // Accumulate chunk to md5 computation
