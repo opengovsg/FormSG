@@ -135,7 +135,8 @@ export const TableField = ({
     return description
   }, [fields.length, schema.addMoreRows, schema.maximumRows])
 
-  // If a table is the last field, Chrome and MS Edge sometimes truncate the table in print mode.
+  // If a table field with >1 column is present in a form, Chrome and MS Edge sometimes truncate the form in print mode.
+  // as it erroneously computes the number of pages to print.
   // We set the height of the table explicitly (based on the number of cols and rows)
   // for use in the media query so that the browser is able to render the full table in print mode
   // calculation = the amount of space taken by each table cell and table cell heading + additional margins for each row
