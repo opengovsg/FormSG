@@ -207,6 +207,12 @@ export const PublicFormProvider = ({
 
       switch (form.responseMode) {
         case FormResponseMode.Email:
+          datadogLogs.logger.warn('handleSubmitFormTest', {
+            meta: {
+              formInputs: formInputs,
+              responseMode: 'email',
+            },
+          })
           // Using mutateAsync so react-hook-form goes into loading state.
           return (
             submitEmailModeFormMutation
@@ -242,6 +248,12 @@ export const PublicFormProvider = ({
               })
           )
         case FormResponseMode.Encrypt:
+          datadogLogs.logger.warn('handleSubmitFormTest', {
+            meta: {
+              formInputs: formInputs,
+              responseMode: 'storage',
+            },
+          })
           // Using mutateAsync so react-hook-form goes into loading state.
           return (
             submitStorageModeFormMutation
