@@ -141,7 +141,7 @@ export const ColumnCell = ({
     >
       <FormLabel
         // display column header in print and mobile modes
-        as={isPrint ? undefined : isMobile ? undefined : VisuallyHidden}
+        as={isPrint || isMobile ? undefined : VisuallyHidden}
         color="secondary.700"
       >
         {columnSchema.title}
