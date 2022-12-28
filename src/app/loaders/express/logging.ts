@@ -19,8 +19,8 @@ type LogMeta = {
     respRolloutStorage: number
     adminRollout: number
     qaCookie: string | undefined
+    adminCookieOld: string | undefined
     adminCookie: string | undefined
-    adminCookieOverride: string | undefined
     respCookie: string | undefined
   }
 }
@@ -73,8 +73,8 @@ const loggingMiddleware = () => {
 
       // Temporary: cookies are blacklisted, but we to track the state of the rollout for this particular request
       if (
+        req.cookies?.[config.reactMigration.adminCookieNameOld] ||
         req.cookies?.[config.reactMigration.adminCookieName] ||
-        req.cookies?.[config.reactMigration.adminCookieNameJan2023] ||
         req.cookies?.[config.reactMigration.respondentCookieName] ||
         req.cookies?.[config.reactMigration.qaCookieName]
       ) {
@@ -83,9 +83,9 @@ const loggingMiddleware = () => {
           respRolloutStorage: config.reactMigration.respondentRolloutStorage,
           adminRollout: config.reactMigration.adminRollout,
           qaCookie: req.cookies?.[config.reactMigration.qaCookieName],
+          adminCookieOld:
+            req.cookies?.[config.reactMigration.adminCookieNameOld],
           adminCookie: req.cookies?.[config.reactMigration.adminCookieName],
-          adminCookieOverride:
-            req.cookies?.[config.reactMigration.adminCookieNameJan2023],
           respCookie: req.cookies?.[config.reactMigration.respondentCookieName],
         }
       }

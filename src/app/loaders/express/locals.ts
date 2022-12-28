@@ -59,8 +59,8 @@ const environment = ejs.render(
     var spcpCookieDomain = "<%= spcpCookieDomain%>"
     // React Migration
     var reactMigrationRespondentCookieName = "<%= reactMigrationRespondentCookieName%>"
+    var reactMigrationAdminCookieNameOld = "<%= reactMigrationAdminCookieNameOld%>"
     var reactMigrationAdminCookieName = "<%= reactMigrationAdminCookieName%>"
-    var reactMigrationAdminCookieNameJan2023 = "<%= reactMigrationAdminCookieNameJan2023%>"
     var reactMigrationRespondentRolloutEmail = "<%= reactMigrationRespondentRolloutEmail%>"
     var reactMigrationRespondentRolloutStorage = "<%= reactMigrationRespondentRolloutStorage%>"
     var reactMigrationAdminRollout = "<%= reactMigrationAdminRollout%>"
