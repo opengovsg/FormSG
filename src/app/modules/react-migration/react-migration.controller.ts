@@ -225,6 +225,11 @@ export const servePublicForm: ControllerHandler<
 }
 
 export const serveDefault: ControllerHandler = (req, res, next) => {
+  // Delete the deprecated cookie.
+  if (req.cookies) {
+    res.clearCookie(config.reactMigration.adminCookieName)
+  }
+
   // Admins assigned react, or who choose react will stay on react until they opt out
   // Admins assigned angular will stay on it for that session
   let showReact: boolean | undefined = undefined
@@ -240,13 +245,13 @@ export const serveDefault: ControllerHandler = (req, res, next) => {
     showReact = false
     // Delete existing cookie to prevent infinite redirection
     if (req.cookies) {
-      res.clearCookie(config.reactMigration.adminCookieName)
+      res.clearCookie(config.reactMigration.adminCookieNameJan2023)
     }
   } else if (req.cookies) {
-    if (config.reactMigration.adminCookieName in req.cookies) {
+    if (config.reactMigration.adminCookieNameJan2023 in req.cookies) {
       // Check if admin had already chosen react previously
       showReact =
-        req.cookies[config.reactMigration.adminCookieName] ===
+        req.cookies[config.reactMigration.adminCookieNameJan2023] ===
         UiCookieValues.React
     }
   }
@@ -266,7 +271,7 @@ export const serveDefault: ControllerHandler = (req, res, next) => {
     })
 
     res.cookie(
-      config.reactMigration.adminCookieName,
+      config.reactMigration.adminCookieNameJan2023,
       showReact ? UiCookieValues.React : UiCookieValues.Angular,
       // If assigned react, admins will stay on it unless they opt out.
       // If assigned angular, the admin cookie is for a single session
@@ -305,7 +310,7 @@ export const adminChooseEnvironment: ControllerHandler<
       ? UiCookieValues.React
       : UiCookieValues.Angular
   res.cookie(
-    config.reactMigration.adminCookieName,
+    config.reactMigration.adminCookieNameJan2023,
     ui,
     // When admin chooses to switch environments, we want them to stay on their
     // chosen environment until the alternative is stable.
@@ -348,7 +353,7 @@ export const redirectAdminEnvironment: ControllerHandler<
       ? UiCookieValues.React
       : UiCookieValues.Angular
   res.cookie(
-    config.reactMigration.adminCookieName,
+    config.reactMigration.adminCookieNameJan2023,
     ui,
     // When admin chooses to switch environments, we want them to stay on their
     // chosen environment until the alternative is stable.

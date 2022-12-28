@@ -26,6 +26,8 @@ const frontendVars = {
   reactMigrationRespondentCookieName:
     config.reactMigration.respondentCookieName,
   reactMigrationAdminCookieName: config.reactMigration.adminCookieName,
+  reactMigrationAdminCookieNameJan2023:
+    config.reactMigration.adminCookieNameJan2023,
   reactMigrationRespondentRolloutEmail:
     config.reactMigration.respondentRolloutEmail,
   reactMigrationRespondentRolloutStorage:
@@ -58,6 +60,7 @@ const environment = ejs.render(
     // React Migration
     var reactMigrationRespondentCookieName = "<%= reactMigrationRespondentCookieName%>"
     var reactMigrationAdminCookieName = "<%= reactMigrationAdminCookieName%>"
+    var reactMigrationAdminCookieNameJan2023 = "<%= reactMigrationAdminCookieNameJan2023%>"
     var reactMigrationRespondentRolloutEmail = "<%= reactMigrationRespondentRolloutEmail%>"
     var reactMigrationRespondentRolloutStorage = "<%= reactMigrationRespondentRolloutStorage%>"
     var reactMigrationAdminRollout = "<%= reactMigrationAdminRollout%>"

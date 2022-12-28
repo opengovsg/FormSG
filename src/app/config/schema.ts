@@ -361,10 +361,16 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
       env: 'REACT_MIGRATION_RESP_COOKIE_NAME',
     },
     adminCookieName: {
-      doc: "Name of the cookie that will store admins' choice of environment.",
+      doc: "Name of the cookie that will store admins' choice of environment. (Deprecated)",
       format: String,
       default: 'v2-admin-ui',
       env: 'REACT_MIGRATION_ADMIN_COOKIE_NAME',
+    },
+    adminCookieNameJan2023: {
+      doc: "Name of the cookie that will store admins' choice of environment.",
+      format: String,
+      default: 'v2-admin-ui-Jan-2023',
+      env: 'REACT_MIGRATION_ADMIN_COOKIE_NAME_JAN_2023',
     },
     qaCookieName: {
       doc: 'Priority cookie to select react/angular during QA.',

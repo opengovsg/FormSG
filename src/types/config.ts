@@ -59,6 +59,7 @@ export type ReactMigrationConfig = {
   adminRollout: number
   respondentCookieName: string
   adminCookieName: string
+  adminCookieNameJan2023: string
   qaCookieName: string
   adminSwitchEnvFeedbackFormId: string
   respondentSwitchEnvFeedbackFormId: string
@@ -195,6 +196,7 @@ export interface IOptionalVarsSchema {
     adminRollout: number
     respondentCookieName: string
     adminCookieName: string
+    adminCookieNameJan2023: string
     qaCookieName: string
     angularPhaseOutDate: string
     removeAdminInfoboxThreshold: number
