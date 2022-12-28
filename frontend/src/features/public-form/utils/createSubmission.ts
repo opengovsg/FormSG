@@ -180,7 +180,11 @@ const encryptAttachment = async (
     }
     return { id, encryptedFile: encodedEncryptedAttachment }
   } catch (error) {
+    // TODO: remove error logging when error about arrayBuffer not being a function is resolved
     console.error(error)
+    console.error(`Information about attachment ${id}`)
+    console.error(typeof attachment)
+    console.error(attachment)
     return { id, encryptedFile: undefined }
   }
 }
