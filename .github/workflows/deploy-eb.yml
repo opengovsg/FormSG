@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - id: set-environment
-        run: echo "::set-output name=current_env::${{github.ref_name}}"
+        run: echo "current_env=${{github.ref_name}}" >> $GITHUB_OUTPUT
 
   build_deploy_application:
     needs: set_environment
@@ -53,7 +53,7 @@ jobs:
           echo REACT_APP_FORMSG_SDK_MODE=$REACT_APP_FORMSG_SDK_MODE >> frontend/.env
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
+        uses: aws-actions/configure-aws-credentials@v1.7.0
         with:
           role-to-assume: ${{ secrets.AWS_CI_ROLE_TO_ASSUME }}
           aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
