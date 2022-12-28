@@ -9,6 +9,7 @@ import {
 import { Helmet } from 'react-helmet-async'
 import { SubmitHandler } from 'react-hook-form'
 import { useDisclosure } from '@chakra-ui/react'
+import { datadogLogs } from '@datadog/browser-logs'
 import { differenceInMilliseconds, isPast } from 'date-fns'
 import get from 'lodash/get'
 import simplur from 'simplur'
@@ -231,6 +232,12 @@ export const PublicFormProvider = ({
               .catch((error) => {
                 // TODO: Remove when we have resolved the Network Error and t.arrayBuffer issues.
                 console.warn(formInputs)
+                datadogLogs.logger.warn('handleSubmitForm', {
+                  meta: {
+                    formInputs: formInputs,
+                    responseMode: 'email',
+                  },
+                })
                 showErrorToast(error, form)
               })
           )
@@ -261,6 +268,12 @@ export const PublicFormProvider = ({
               .catch((error) => {
                 // TODO: Remove when we have resolved the Network Error and t.arrayBuffer issues.
                 console.warn(formInputs)
+                datadogLogs.logger.warn('handleSubmitForm', {
+                  meta: {
+                    formInputs: formInputs,
+                    responseMode: 'storage',
+                  },
+                })
                 showErrorToast(error, form)
               })
           )

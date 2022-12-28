@@ -1,3 +1,4 @@
+import { datadogLogs } from '@datadog/browser-logs'
 import axios, { AxiosError } from 'axios'
 import { StatusCodes } from 'http-status-codes'
 
@@ -46,6 +47,11 @@ export const transformAxiosError = (e: Error): ApiError => {
       // TODO: Remove this console logging once Network Error sources have been identified.
       console.error(e)
       console.error(JSON.stringify(e))
+      datadogLogs.logger.warn('Unknown error', {
+        meta: {
+          error: e,
+        },
+      })
       return new Error(
         `There was a problem with your internet connection. Please check your network and try again. Error [006]: ${e.message}`,
       )

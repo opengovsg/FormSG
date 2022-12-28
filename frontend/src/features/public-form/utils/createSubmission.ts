@@ -1,3 +1,4 @@
+import { datadogLogs } from '@datadog/browser-logs'
 import { encode as encodeBase64 } from '@stablelib/base64'
 import { chain, forOwn, isEmpty, keyBy, omit, pick } from 'lodash'
 
@@ -18,6 +19,8 @@ import { AttachmentFieldSchema, FormFieldValues } from '~templates/Field'
 
 import { transformInputsToOutputs } from './inputTransformation'
 import { validateResponses } from './validateResponses'
+
+datadogLogs.createLogger('createSubmissionLogger')
 
 // The current encrypt version to assign to the encrypted submission.
 // This is needed if we ever break backwards compatibility with
@@ -185,7 +188,14 @@ const encryptAttachment = async (
     console.error(`Information about attachment ${id}`)
     console.error(typeof attachment)
     console.error(attachment)
-
+    datadogLogs.logger.error('encryptAttachment', {
+      meta: {
+        error: error,
+        attachmentId: id,
+        attachmentType: typeof attachment,
+        attachment: attachment,
+      },
+    })
     // Rethrow to maintain behaviour
     throw error
   }
