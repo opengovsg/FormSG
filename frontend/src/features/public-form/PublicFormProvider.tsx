@@ -228,7 +228,11 @@ export const PublicFormProvider = ({
                 },
               )
               // Using catch since we are using mutateAsync and react-hook-form will continue bubbling this up.
-              .catch((error) => showErrorToast(error, form))
+              .catch((error) => {
+                // TODO: Remove when we have resolved the Network Error and t.arrayBuffer issues.
+                console.warn(formInputs)
+                showErrorToast(error, form)
+              })
           )
         case FormResponseMode.Encrypt:
           // Using mutateAsync so react-hook-form goes into loading state.
@@ -254,7 +258,11 @@ export const PublicFormProvider = ({
                 },
               )
               // Using catch since we are using mutateAsync and react-hook-form will continue bubbling this up.
-              .catch((error) => showErrorToast(error, form))
+              .catch((error) => {
+                // TODO: Remove when we have resolved the Network Error and t.arrayBuffer issues.
+                console.warn(formInputs)
+                showErrorToast(error, form)
+              })
           )
       }
     },
