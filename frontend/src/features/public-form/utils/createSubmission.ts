@@ -166,17 +166,27 @@ const encryptAttachment = async (
   attachment: File,
   { id, publicKey }: { id: string; publicKey: string },
 ): Promise<StorageModeAttachment & { id: string }> => {
-  const fileArrayBuffer = await attachment.arrayBuffer()
-  const fileContentsView = new Uint8Array(fileArrayBuffer)
+  try {
+    const fileArrayBuffer = await attachment.arrayBuffer()
+    const fileContentsView = new Uint8Array(fileArrayBuffer)
 
-  const encryptedAttachment = await formsgSdk.crypto.encryptFile(
-    fileContentsView,
-    publicKey,
-  )
-  const encodedEncryptedAttachment = {
-    ...encryptedAttachment,
-    binary: encodeBase64(encryptedAttachment.binary),
+    const encryptedAttachment = await formsgSdk.crypto.encryptFile(
+      fileContentsView,
+      publicKey,
+    )
+    const encodedEncryptedAttachment = {
+      ...encryptedAttachment,
+      binary: encodeBase64(encryptedAttachment.binary),
+    }
+    return { id, encryptedFile: encodedEncryptedAttachment }
+  } catch (error) {
+    // TODO: remove error logging when error about arrayBuffer not being a function is resolved
+    console.error(error)
+    console.error(`Information about attachment ${id}`)
+    console.error(typeof attachment)
+    console.error(attachment)
+
+    // Rethrow to maintain behaviour
+    throw error
   }
-
-  return { id, encryptedFile: encodedEncryptedAttachment }
 }
