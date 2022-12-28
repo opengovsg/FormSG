@@ -3,6 +3,7 @@
  * This ensures that datadog is initialised before the react app
  */
 
+import { datadogLogs } from '@datadog/browser-logs'
 import { datadogRum, RumInitConfiguration } from '@datadog/browser-rum'
 
 // Discard benign RUM errors.
@@ -49,3 +50,15 @@ datadogRum.init({
 })
 
 datadogRum.startSessionReplayRecording()
+
+// Init Datadog browser logs
+datadogLogs.init({
+  clientToken: '@REACT_APP_DD_RUM_CLIENT_TOKEN',
+  env: '@REACT_APP_DD_RUM_ENV',
+  site: 'datadoghq.com',
+  service: 'formsg-react',
+  // Specify a version number to identify the deployed version of your application in Datadog
+  version: '@REACT_APP_VERSION',
+  forwardErrorsToLogs: true,
+  sampleRate: 100,
+})
