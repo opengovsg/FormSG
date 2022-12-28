@@ -1,6 +1,6 @@
 // TODO #4279: Remove after React rollout is complete
-import { useCallback, useRef, useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { useCallback, useMemo, useRef, useState } from 'react'
+import { get, useForm } from 'react-hook-form'
 import {
   chakra,
   FormControl,
@@ -18,11 +18,16 @@ import {
 import { datadogRum } from '@datadog/browser-rum'
 import validator from 'validator'
 
-import { PublicFeedbackFormDto } from '~shared/types'
+import {
+  FormAuthType,
+  FormResponseMode,
+  PublicFeedbackFormDto,
+} from '~shared/types'
 
 import { INVALID_EMAIL_ERROR, REQUIRED_ERROR } from '~constants/validation'
 import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
+import Checkbox from '~components/Checkbox'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import { ModalCloseButton } from '~components/Modal'
@@ -33,12 +38,17 @@ import { useEnvMutations, useFeedbackMutation } from '~features/env/mutations'
 import { usePublicFeedbackFormView } from './queries'
 import { isUsableFeedback } from './utils'
 
+export const othersInputName = 'othersInput'
 export const PublicFeedbackModal = ({
   isOpen,
   onClose,
+  responseMode,
+  authType,
 }: {
   isOpen: boolean
   onClose: () => void
+  responseMode?: FormResponseMode
+  authType?: FormAuthType
 }): JSX.Element => {
   const modalSize = useBreakpointValue({
     base: 'mobile',
@@ -51,6 +61,7 @@ export const PublicFeedbackModal = ({
     register,
     handleSubmit,
     formState: { errors },
+    getValues,
   } = useForm<PublicFeedbackFormDto>()
 
   const initialRef = useRef(null)
@@ -80,6 +91,28 @@ export const PublicFeedbackModal = ({
     publicSwitchEnvMutation.mutate()
   }, [publicSwitchEnvMutation])
 
+  const checkboxInputName = 'attachmentType'
+
+  const CHECKBOX_OTHERS_INPUT_VALUE =
+    '!!FORMSG_INTERNAL_CHECKBOX_OTHERS_VALUE!!'
+  const ATTACHMENT_TYPE_OPTIONS = ['PDF', 'JPEG', 'PNG', 'ZIP']
+
+  const othersValidationRules = useMemo(
+    () => ({
+      validate: (value?: string) => {
+        const currCheckedVals = getValues(checkboxInputName)
+        return (
+          !(
+            Array.isArray(currCheckedVals) &&
+            currCheckedVals.includes(CHECKBOX_OTHERS_INPUT_VALUE)
+          ) ||
+          !!value?.trim() ||
+          'Please specify a value for the "others" option'
+        )
+      },
+    }),
+    [checkboxInputName, getValues],
+  )
   return (
     <Modal
       isOpen={isOpen}
@@ -141,6 +174,36 @@ export const PublicFeedbackModal = ({
                       {errors['feedback']?.message}
                     </FormErrorMessage>
                   </FormControl>
+                  <FormControl>
+                    <FormLabel>
+                      File type(s) of attachment(s) uploaded, if any
+                    </FormLabel>
+                    {ATTACHMENT_TYPE_OPTIONS.map((option) => (
+                      <Checkbox
+                        key={option}
+                        value={option}
+                        defaultValue=""
+                        {...register(checkboxInputName)}
+                      >
+                        {option}
+                      </Checkbox>
+                    ))}
+                    <Checkbox.OthersWrapper>
+                      <FormControl isInvalid={!!get(errors, othersInputName)}>
+                        <Checkbox.OthersCheckbox
+                          value={CHECKBOX_OTHERS_INPUT_VALUE}
+                          isInvalid={!!get(errors, checkboxInputName)}
+                          {...register(checkboxInputName)}
+                        />
+                        <Checkbox.OthersInput
+                          {...register(othersInputName, othersValidationRules)}
+                        />
+                        <FormErrorMessage>
+                          {get(errors, `${othersInputName}.message`)}
+                        </FormErrorMessage>
+                      </FormControl>
+                    </Checkbox.OthersWrapper>
+                  </FormControl>
                   <FormControl isInvalid={!!errors['email']}>
                     <FormLabel>
                       Email, if we need to contact you for details
@@ -170,6 +233,21 @@ export const PublicFeedbackModal = ({
                       value={`https://app.datadoghq.com/rum/replay/sessions/${rumSessionId}`}
                     />
                   ) : null}
+                  <Input
+                    type="hidden"
+                    {...register('userAgent')}
+                    value={`${window.navigator.userAgent}`}
+                  />
+                  <Input
+                    type="hidden"
+                    {...register('responseMode')}
+                    value={responseMode}
+                  />
+                  <Input
+                    type="hidden"
+                    {...register('authType')}
+                    value={authType}
+                  />
                 </Stack>
               </Skeleton>
             </ModalBody>

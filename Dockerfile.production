@@ -40,8 +40,6 @@ COPY . ./
 # These options are only used in the build stage, not the start stage.
 ENV NODE_OPTIONS="--max-old-space-size=4096 --openssl-legacy-provider"
 
-RUN npm_config_mode=yes npx lockfile-lint --type npm --path package.json --validate-https --allowed-hosts npm
-RUN npm run lint-ci
 RUN npm run build
 
 ARG APP_VERSION

@@ -1,6 +1,6 @@
 {
   "name": "form-frontend",
-  "version": "6.23.0",
+  "version": "6.24.0",
   "homepage": ".",
   "private": true,
   "dependencies": {
@@ -94,7 +94,8 @@
     "clean:emotion-types": "rimraf node_modules/@emotion/core/types",
     "postinstall": "patch-package && npm run gen:theme-typings && npm run clean:emotion-types && npm --prefix ../shared install",
     "start": "env-cmd -f .buildtime-env craco --openssl-legacy-provider start",
-    "build": "cross-env CI=false BUILD_PATH='../dist/frontend' INLINE_RUNTIME_CHUNK=false SKIP_PREFLIGHT_CHECK=true craco build",
+    "build": "npm run build:dd-chunk && cross-env CI=false BUILD_PATH='../dist/frontend' INLINE_RUNTIME_CHUNK=false SKIP_PREFLIGHT_CHECK=true craco build && cd ../ && cp -rf frontend/static/js dist/frontend/static",
+    "build:dd-chunk": "webpack --config webpack.dd.config.js",
     "test": "cross-env SKIP_PREFLIGHT_CHECK=true craco test --silent",
     "eject": "react-scripts eject",
     "storybook": "start-storybook -p 6006",
@@ -169,6 +170,7 @@
     "eslint-plugin-simple-import-sort": "^7.0.0",
     "eslint-plugin-storybook": "^0.5.12",
     "eslint-plugin-testing-library": "^5.0.1",
+    "html-webpack-plugin": "^4.5.2",
     "lint-staged": "^12.1.2",
     "mockdate": "^3.0.5",
     "msw": "^0.36.3",
