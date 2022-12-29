@@ -374,7 +374,7 @@ const submitEmailModeForm: ControllerHandler<
               // Return the reply early to the submitter
               message: 'Form submission successful.',
               submissionId: submission.id,
-              timestamp: (submission.created || new Date()).toISOString(),
+              timestamp: (submission.created || new Date()).getTime(),
             })
         },
       )

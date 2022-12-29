@@ -378,7 +378,7 @@ const submitEncryptModeForm: ControllerHandler<
   res.json({
     message: 'Form submission successful.',
     submissionId: submission.id,
-    timestamp: (submission.created || new Date()).toISOString(),
+    timestamp: (submission.created || new Date()).getTime(),
   })
 
   return sendEmailConfirmations({

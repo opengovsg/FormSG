@@ -115,6 +115,7 @@ describe('email-submission.routes', () => {
       expect(response.body).toEqual({
         message: 'Form submission successful.',
         submissionId: expect.any(String),
+        timestamp: expect.any(Number),
       })
     })
 
@@ -143,6 +144,7 @@ describe('email-submission.routes', () => {
       expect(response.body).toEqual({
         message: 'Form submission successful.',
         submissionId: expect.any(String),
+        timestamp: expect.any(Number),
       })
     })
 
@@ -174,6 +176,7 @@ describe('email-submission.routes', () => {
       expect(response.body).toEqual({
         message: 'Form submission successful.',
         submissionId: expect.any(String),
+        timestamp: expect.any(Number),
       })
     })
 
@@ -200,6 +203,7 @@ describe('email-submission.routes', () => {
       expect(response.body).toEqual({
         message: 'Form submission successful.',
         submissionId: expect.any(String),
+        timestamp: expect.any(Number),
       })
     })
 
@@ -226,6 +230,7 @@ describe('email-submission.routes', () => {
       expect(response.body).toEqual({
         message: 'Form submission successful.',
         submissionId: expect.any(String),
+        timestamp: expect.any(Number),
       })
     })
 
@@ -252,6 +257,7 @@ describe('email-submission.routes', () => {
       expect(response.body).toEqual({
         message: 'Form submission successful.',
         submissionId: expect.any(String),
+        timestamp: expect.any(Number),
       })
     })
 
@@ -456,6 +462,7 @@ describe('email-submission.routes', () => {
         expect(response.body).toEqual({
           message: 'Form submission successful.',
           submissionId: expect.any(String),
+          timestamp: expect.any(Number),
         })
       })
 
@@ -604,6 +611,7 @@ describe('email-submission.routes', () => {
         expect(response.body).toEqual({
           message: 'Form submission successful.',
           submissionId: expect.any(String),
+          timestamp: expect.any(Number),
         })
       })
 
@@ -742,6 +750,7 @@ describe('email-submission.routes', () => {
         expect(response.body).toEqual({
           message: 'Form submission successful.',
           submissionId: expect.any(String),
+          timestamp: expect.any(Number),
         })
       })
 
@@ -876,6 +885,7 @@ describe('email-submission.routes', () => {
         expect(response.body).toEqual({
           message: 'Form submission successful.',
           submissionId: expect.any(String),
+          timestamp: expect.any(Number),
         })
       })
 

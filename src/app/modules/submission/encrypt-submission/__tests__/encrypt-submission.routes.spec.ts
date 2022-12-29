@@ -79,6 +79,7 @@ describe('encrypt-submission.routes', () => {
         expect(response.body).toEqual({
           message: 'Form submission successful.',
           submissionId: expect.any(String),
+          timestamp: expect.any(Number),
         })
       })
 
@@ -215,6 +216,7 @@ describe('encrypt-submission.routes', () => {
         expect(response.body).toEqual({
           message: 'Form submission successful.',
           submissionId: expect.any(String),
+          timestamp: expect.any(Number),
         })
       })
 
@@ -353,6 +355,7 @@ describe('encrypt-submission.routes', () => {
         expect(response.body).toEqual({
           message: 'Form submission successful.',
           submissionId: expect.any(String),
+          timestamp: expect.any(Number),
         })
       })
 

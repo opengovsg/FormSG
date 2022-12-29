@@ -100,7 +100,8 @@ export type StorageModeSubmissionMetadataList = {
 export type SubmissionResponseDto = {
   message: string
   submissionId: string
-  timestamp: string
+  // Timestamp is given as ms from epoch
+  timestamp: number
 }
 
 export type SubmissionErrorDto = ErrorDto & { spcpSubmissionFailure?: true }
