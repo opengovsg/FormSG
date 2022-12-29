@@ -100,6 +100,7 @@ export type StorageModeSubmissionMetadataList = {
 export type SubmissionResponseDto = {
   message: string
   submissionId: string
+  timestamp: string
 }
 
 export type SubmissionErrorDto = ErrorDto & { spcpSubmissionFailure?: true }

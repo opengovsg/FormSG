@@ -217,11 +217,10 @@ export const PublicFormProvider = ({
                   captchaResponse,
                 },
                 {
-                  onSuccess: ({ submissionId }) => {
+                  onSuccess: ({ submissionId, timestamp }) => {
                     setSubmissionData({
                       id: submissionId,
-                      // TODO: Server should return server time so browser time is not used.
-                      timeInEpochMs: Date.now(),
+                      timestamp: new Date(timestamp),
                     })
                     trackSubmitForm(form)
                   },
@@ -247,11 +246,10 @@ export const PublicFormProvider = ({
                   captchaResponse,
                 },
                 {
-                  onSuccess: ({ submissionId }) => {
+                  onSuccess: ({ submissionId, timestamp }) => {
                     setSubmissionData({
                       id: submissionId,
-                      // TODO: Server should return server time so browser time is not used.
-                      timeInEpochMs: Date.now(),
+                      timestamp: new Date(timestamp),
                     })
                     trackSubmitForm(form)
                   },

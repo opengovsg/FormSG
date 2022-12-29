@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef } from 'react'
 import { Box, Flex, Stack, Text, VisuallyHidden } from '@chakra-ui/react'
+import { format } from 'date-fns'
 
 import { FormColorTheme, FormDto } from '~shared/types/form'
 
@@ -40,6 +41,11 @@ export const EndPageBlock = ({
     },
   })
 
+  const submissionTimestamp = useMemo(
+    () => format(new Date(submissionData.timestamp), 'dd MMM yyyy, HH:mm:ss z'),
+    [submissionData.timestamp],
+  )
+
   const submittedAriaText = useMemo(() => {
     if (formTitle) {
       return `You have successfully submitted your response for ${formTitle}.`
@@ -63,7 +69,14 @@ export const EndPageBlock = ({
             {endPage.paragraph}
           </MarkdownText>
         ) : null}
-        <Text textColor="secondary.300">Response ID: {submissionData.id}</Text>
+        <Box>
+          <Text textColor="secondary.300" textStyle="caption-2">
+            Response ID: {submissionData.id}
+          </Text>
+          <Text mt={'0.25rem'} textColor="secondary.300" textStyle="caption-2">
+            {submissionTimestamp}
+          </Text>
+        </Box>
       </Stack>
       <Box mt="2.25rem">
         <Button
