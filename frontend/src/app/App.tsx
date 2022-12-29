@@ -30,12 +30,12 @@ const queryClient = new QueryClient({
 
 // Init Datadog browser logs
 datadogLogs.init({
-  clientToken: 'pub30d7ad4705b1bbb6d6bb60b4ac23f789',
-  env: 'staging',
+  clientToken: process.env.REACT_APP_DD_RUM_CLIENT_TOKEN || '',
+  env: process.env.REACT_APP_DD_RUM_ENV,
   site: 'datadoghq.com',
   service: 'formsg-react',
   // Specify a version number to identify the deployed version of your application in Datadog
-  version: '1',
+  version: process.env.REACT_APP_VERSION,
   forwardErrorsToLogs: true,
   sampleRate: 100,
 })
