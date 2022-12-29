@@ -209,7 +209,8 @@ export const PublicFormProvider = ({
         case FormResponseMode.Email:
           datadogLogs.logger.warn('handleSubmitFormTest', {
             meta: {
-              formInputs: formInputs,
+              formFields: form.form_fields,
+              formInputs: JSON.stringify(formInputs),
               responseMode: 'email',
             },
           })
@@ -250,7 +251,8 @@ export const PublicFormProvider = ({
         case FormResponseMode.Encrypt:
           datadogLogs.logger.warn('handleSubmitFormTest', {
             meta: {
-              formInputs: formInputs,
+              formInputsRaw: formInputs,
+              formInputs: JSON.stringify(formInputs),
               responseMode: 'storage',
             },
           })
