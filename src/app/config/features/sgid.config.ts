@@ -58,10 +58,10 @@ export const sgidVarsSchema: Schema<ISgidVarsSchema> = {
     env: 'SGID_COOKIE_DOMAIN',
   },
   hostname: {
-    doc: 'The sgID authorization endpoint.',
+    doc: 'The sgID authorization hostname.',
     format: String,
     default: '',
-    env: 'SGID_ENDPOINT',
+    env: 'SGID_HOSTNAME',
   },
 }
 
