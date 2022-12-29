@@ -40,10 +40,13 @@ export class SgidServiceClass {
     cookieMaxAgePreserved,
     privateKeyPath,
     publicKeyPath,
+    hostname,
     ...sgidOptions
   }: ISgidVarsSchema) {
     this.privateKey = fs.readFileSync(privateKeyPath, { encoding: 'utf8' })
     this.client = new SgidClient({
+      // If hostname is empty, use the default provided by sgid-client.
+      hostname: hostname || undefined,
       ...sgidOptions,
       privateKey: this.privateKey,
     })
