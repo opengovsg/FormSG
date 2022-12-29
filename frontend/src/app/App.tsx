@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from 'react-query'
 import { ReactQueryDevtools } from 'react-query/devtools'
 import { BrowserRouter } from 'react-router-dom'
 import { ChakraProvider } from '@chakra-ui/react'
+import { datadogLogs } from '@datadog/browser-logs'
 
 import { theme } from '~theme/index'
 import { AuthProvider } from '~contexts/AuthContext'
@@ -25,6 +26,18 @@ const queryClient = new QueryClient({
       },
     },
   },
+})
+
+// Init Datadog browser logs
+datadogLogs.init({
+  clientToken: 'pub30d7ad4705b1bbb6d6bb60b4ac23f789',
+  env: 'staging',
+  site: 'datadoghq.com',
+  service: 'formsg-react',
+  // Specify a version number to identify the deployed version of your application in Datadog
+  version: '1',
+  forwardErrorsToLogs: true,
+  sampleRate: 100,
 })
 
 export const App = (): JSX.Element => (
