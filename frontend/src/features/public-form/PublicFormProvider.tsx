@@ -220,7 +220,7 @@ export const PublicFormProvider = ({
                   onSuccess: ({ submissionId, timestamp }) => {
                     setSubmissionData({
                       id: submissionId,
-                      timestamp: new Date(timestamp),
+                      timestamp,
                     })
                     trackSubmitForm(form)
                   },
@@ -249,7 +249,7 @@ export const PublicFormProvider = ({
                   onSuccess: ({ submissionId, timestamp }) => {
                     setSubmissionData({
                       id: submissionId,
-                      timestamp: new Date(timestamp),
+                      timestamp,
                     })
                     trackSubmitForm(form)
                   },

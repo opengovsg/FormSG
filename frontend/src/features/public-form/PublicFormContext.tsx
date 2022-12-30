@@ -7,8 +7,8 @@ import { PublicFormViewDto } from '~shared/types/form'
 export type SubmissionData = {
   /** Submission id */
   id: string | undefined
-  /** Submission time  */
-  timestamp: Date
+  /** Submission time in ms from epoch  */
+  timestamp: number
 }
 
 export interface PublicFormContextProps
