@@ -233,6 +233,7 @@ export const PublicFormProvider = ({
                 // TODO: Remove when we have resolved the Network Error and t.arrayBuffer issues.
                 datadogLogs.logger.warn('handleSubmitForm', {
                   meta: {
+                    action: 'handleSubmitForm',
                     formInputs: formInputs,
                     responseMode: 'email',
                   },
@@ -268,6 +269,7 @@ export const PublicFormProvider = ({
                 // TODO: Remove when we have resolved the Network Error and t.arrayBuffer issues.
                 datadogLogs.logger.warn('handleSubmitForm', {
                   meta: {
+                    action: 'handleSubmitForm',
                     formInputs: formInputs,
                     responseMode: 'storage',
                   },

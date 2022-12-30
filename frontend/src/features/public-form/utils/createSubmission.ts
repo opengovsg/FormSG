@@ -186,6 +186,7 @@ const encryptAttachment = async (
     // TODO: remove error logging when error about arrayBuffer not being a function is resolved
     datadogLogs.logger.error('encryptAttachment', {
       meta: {
+        action: 'encryptAttachment',
         error: error,
         attachmentId: id,
         attachmentType: typeof attachment,

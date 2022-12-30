@@ -47,6 +47,7 @@ export const transformAxiosError = (e: Error): ApiError => {
       // TODO: Remove this logging once Network Error sources have been identified.
       datadogLogs.logger.warn('Unknown error', {
         meta: {
+          action: 'transformAxiosError',
           errorRaw: e,
           error: JSON.stringify(e),
         },
