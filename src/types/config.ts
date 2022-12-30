@@ -149,6 +149,7 @@ export interface ISgidVarsSchema {
   cookieMaxAge: number
   cookieMaxAgePreserved: number
   cookieDomain: string
+  hostname: string
 }
 
 export interface IOptionalVarsSchema {
