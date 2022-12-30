@@ -33,7 +33,7 @@ datadogLogs.init({
   clientToken: process.env.REACT_APP_DD_RUM_CLIENT_TOKEN || '',
   env: process.env.REACT_APP_DD_RUM_ENV,
   site: 'datadoghq.com',
-  service: 'formsg-react',
+  service: 'formsg',
   // Specify a version number to identify the deployed version of your application in Datadog
   version: process.env.REACT_APP_VERSION,
   forwardErrorsToLogs: true,
