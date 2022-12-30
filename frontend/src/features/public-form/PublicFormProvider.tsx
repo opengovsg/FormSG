@@ -207,13 +207,6 @@ export const PublicFormProvider = ({
 
       switch (form.responseMode) {
         case FormResponseMode.Email:
-          datadogLogs.logger.warn('handleSubmitFormTest', {
-            meta: {
-              formFields: form.form_fields,
-              formInputs: JSON.stringify(formInputs),
-              responseMode: 'email',
-            },
-          })
           // Using mutateAsync so react-hook-form goes into loading state.
           return (
             submitEmailModeFormMutation
@@ -238,7 +231,6 @@ export const PublicFormProvider = ({
               // Using catch since we are using mutateAsync and react-hook-form will continue bubbling this up.
               .catch((error) => {
                 // TODO: Remove when we have resolved the Network Error and t.arrayBuffer issues.
-                console.warn(formInputs)
                 datadogLogs.logger.warn('handleSubmitForm', {
                   meta: {
                     formInputs: formInputs,
@@ -249,13 +241,6 @@ export const PublicFormProvider = ({
               })
           )
         case FormResponseMode.Encrypt:
-          datadogLogs.logger.warn('handleSubmitFormTest', {
-            meta: {
-              formInputsRaw: formInputs,
-              formInputs: JSON.stringify(formInputs),
-              responseMode: 'storage',
-            },
-          })
           // Using mutateAsync so react-hook-form goes into loading state.
           return (
             submitStorageModeFormMutation
@@ -281,7 +266,6 @@ export const PublicFormProvider = ({
               // Using catch since we are using mutateAsync and react-hook-form will continue bubbling this up.
               .catch((error) => {
                 // TODO: Remove when we have resolved the Network Error and t.arrayBuffer issues.
-                console.warn(formInputs)
                 datadogLogs.logger.warn('handleSubmitForm', {
                   meta: {
                     formInputs: formInputs,
