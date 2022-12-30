@@ -29,7 +29,7 @@ Default.args = {
   },
   submissionData: {
     id: 'mockSubmissionId',
-    timestamp: new Date(1648545566989),
+    timestamp: 1648545566989,
   },
   handleSubmitFeedback: (inputs) => console.log(inputs),
 }
