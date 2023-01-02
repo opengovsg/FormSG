@@ -243,7 +243,7 @@
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-angular": "^4.1.0",
     "eslint-plugin-import": "^2.26.0",
-    "eslint-plugin-jest": "^27.1.7",
+    "eslint-plugin-jest": "^27.2.0",
     "eslint-plugin-playwright": "^0.11.2",
     "eslint-plugin-prettier": "^4.2.1",
     "eslint-plugin-simple-import-sort": "^8.0.0",
