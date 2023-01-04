@@ -211,6 +211,7 @@ export const PublicFormProvider = ({
             meta: {
               action: 'handleSubmitForm',
               formInputs: formInputs,
+              formInputsString: JSON.stringify(formInputs),
               responseMode: 'email',
             },
           })
@@ -253,6 +254,7 @@ export const PublicFormProvider = ({
             meta: {
               action: 'handleSubmitForm',
               formInputs: formInputs,
+              formInputsString: JSON.stringify(formInputs),
               responseMode: 'storage',
             },
           })

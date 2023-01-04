@@ -47,6 +47,16 @@ datadogLogs.init({
         /"([a-zA-Z0-9+._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)"/,
         'email=REDACTED',
       )
+      .replace(/^\+\d+/, '"number=REDACTED"')
+      .replace(
+        /(^[a-zA-Z0-9+._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)/,
+        'email=REDACTED',
+      )
+      .replace(/\+\d+/, '"number=REDACTED"')
+      .replace(
+        /([a-zA-Z0-9+._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)/,
+        'email=REDACTED',
+      )
   },
 })
 
