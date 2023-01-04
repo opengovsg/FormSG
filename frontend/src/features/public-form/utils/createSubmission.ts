@@ -20,8 +20,6 @@ import { AttachmentFieldSchema, FormFieldValues } from '~templates/Field'
 import { transformInputsToOutputs } from './inputTransformation'
 import { validateResponses } from './validateResponses'
 
-datadogLogs.createLogger('createSubmissionLogger')
-
 // The current encrypt version to assign to the encrypted submission.
 // This is needed if we ever break backwards compatibility with
 // end-to-end encryption
