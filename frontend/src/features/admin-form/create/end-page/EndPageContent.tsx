@@ -80,7 +80,7 @@ export const EndPageContent = (): JSX.Element => {
             endPage={endPage ?? { title: '', buttonText: '' }}
             submissionData={{
               id: form?._id ?? 'Submission ID',
-              timeInEpochMs: Date.now(),
+              timestamp: Date.now(),
             }}
             colorTheme={colorTheme ?? FormColorTheme.Blue}
           />
