@@ -101,6 +101,17 @@ export const PublicFormProvider = ({
   formId,
   children,
 }: PublicFormProviderProps): JSX.Element => {
+  // Scrub phone numbers and email addresses from browser logs.
+  // Phone numbers will always start with +
+  const removePIIData = (_key: string, value: string) => {
+    return JSON.stringify(value)
+      .replace(
+        /([a-zA-Z0-9+._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)/g,
+        'email=REDACTED',
+      )
+      .replace(/\+\d+/g, 'number=REDACTED')
+  }
+
   // Once form has been submitted, submission data will be set here.
   const [submissionData, setSubmissionData] = useState<SubmissionData>()
 
@@ -207,11 +218,14 @@ export const PublicFormProvider = ({
 
       switch (form.responseMode) {
         case FormResponseMode.Email:
+          console.log(
+            'removePIIdata_email:',
+            JSON.stringify(formInputs, removePIIData),
+          )
           datadogLogs.logger.warn('handleSubmitFormTest', {
             meta: {
               action: 'handleSubmitForm',
-              formInputs: formInputs,
-              formInputsString: JSON.stringify(formInputs),
+              formInputs: JSON.stringify(formInputs, removePIIData),
               responseMode: 'email',
             },
           })
@@ -242,7 +256,7 @@ export const PublicFormProvider = ({
                 datadogLogs.logger.warn('handleSubmitForm', {
                   meta: {
                     action: 'handleSubmitForm',
-                    formInputs: formInputs,
+                    formInputs: JSON.stringify(formInputs, removePIIData),
                     responseMode: 'email',
                   },
                 })
@@ -250,11 +264,14 @@ export const PublicFormProvider = ({
               })
           )
         case FormResponseMode.Encrypt:
+          console.log(
+            'removePIIdata_storage:',
+            JSON.stringify(formInputs, removePIIData),
+          )
           datadogLogs.logger.warn('handleSubmitFormTest', {
             meta: {
               action: 'handleSubmitForm',
-              formInputs: formInputs,
-              formInputsString: JSON.stringify(formInputs),
+              formInputs: JSON.stringify(formInputs, removePIIData),
               responseMode: 'storage',
             },
           })
@@ -286,7 +303,7 @@ export const PublicFormProvider = ({
                 datadogLogs.logger.warn('handleSubmitForm', {
                   meta: {
                     action: 'handleSubmitForm',
-                    formInputs: formInputs,
+                    formInputs: JSON.stringify(formInputs, removePIIData),
                     responseMode: 'storage',
                   },
                 })

@@ -38,26 +38,6 @@ datadogLogs.init({
   version: process.env.REACT_APP_VERSION,
   forwardErrorsToLogs: true,
   sampleRate: 100,
-  // Scrub phone numbers and email addresses from browser logs.
-  // Phone numbers will always start with +
-  beforeSend: (log) => {
-    log.message = log.message
-      .replace(/"\+\d+"/, '"number=REDACTED"')
-      .replace(
-        /"([a-zA-Z0-9+._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)"/,
-        'email=REDACTED',
-      )
-      .replace(/^\+\d+/, '"number=REDACTED"')
-      .replace(
-        /(^[a-zA-Z0-9+._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)/,
-        'email=REDACTED',
-      )
-      .replace(/\+\d+/, '"number=REDACTED"')
-      .replace(
-        /([a-zA-Z0-9+._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)/,
-        'email=REDACTED',
-      )
-  },
 })
 
 export const App = (): JSX.Element => (
