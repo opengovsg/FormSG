@@ -7,9 +7,10 @@ import { PublicFormViewDto } from '~shared/types/form'
 export type SubmissionData = {
   /** Submission id */
   id: string | undefined
-  /** Submission time (on browser)  */
-  timeInEpochMs: number
+  /** Submission time in ms from epoch  */
+  timestamp: number
 }
+
 export interface PublicFormContextProps
   extends Partial<PublicFormViewDto>,
     Omit<UseQueryResult<PublicFormViewDto>, 'data'> {

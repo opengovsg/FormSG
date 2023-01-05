@@ -1,7 +1,7 @@
 {
   "name": "FormSG",
   "description": "Form Manager for Government",
-  "version": "6.26.0",
+  "version": "6.27.0",
   "homepage": "https://form.gov.sg",
   "authors": [
     "FormSG <formsg@data.gov.sg>"
@@ -63,7 +63,7 @@
     "postinstall:shared": "npm --prefix shared install"
   },
   "dependencies": {
-    "@aws-sdk/client-cloudwatch-logs": "^3.234.0",
+    "@aws-sdk/client-cloudwatch-logs": "^3.241.0",
     "@babel/runtime": "^7.20.7",
     "@joi/date": "^2.1.0",
     "@opengovsg/angular-daterangepicker-webpack": "^1.1.5",
@@ -180,13 +180,13 @@
     "whatwg-fetch": "^3.6.2",
     "winston": "^3.8.2",
     "winston-cloudwatch": "^6.1.1",
-    "zod": "^3.19.1"
+    "zod": "^3.20.2"
   },
   "devDependencies": {
     "@babel/core": "^7.20.7",
     "@babel/plugin-transform-runtime": "^7.19.6",
     "@babel/preset-env": "^7.20.2",
-    "@opengovsg/mockpass": "^3.0.4",
+    "@opengovsg/mockpass": "^3.1.0",
     "@playwright/test": "^1.29.1",
     "@types/bcrypt": "^5.0.0",
     "@types/bluebird": "^3.5.38",
@@ -239,11 +239,11 @@
     "css-loader": "^2.1.1",
     "csv-parse": "^5.3.3",
     "env-cmd": "^10.1.0",
-    "eslint": "^8.27.0",
+    "eslint": "^8.30.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-angular": "^4.1.0",
     "eslint-plugin-import": "^2.26.0",
-    "eslint-plugin-jest": "^27.1.7",
+    "eslint-plugin-jest": "^27.2.0",
     "eslint-plugin-playwright": "^0.11.2",
     "eslint-plugin-prettier": "^4.2.1",
     "eslint-plugin-simple-import-sort": "^8.0.0",

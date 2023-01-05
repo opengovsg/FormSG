@@ -2,6 +2,7 @@
 const cloneDeep = require('lodash/cloneDeep')
 const get = require('lodash/get')
 const cuid = require('cuid')
+const { default: format } = require('date-fns/format')
 
 const FieldVerificationService = require('../../../../services/FieldVerificationService')
 const PublicFormAuthService = require('../../../../services/PublicFormAuthService')
@@ -416,6 +417,10 @@ function submitFormDirective(
        */
       const handleSubmitSuccess = (response) => {
         scope.submissionId = response.submissionId
+        scope.timestamp = format(
+          new Date(response.timestamp),
+          'dd MMM yyyy, HH:mm:ss z',
+        )
         setFormState(FORM_STATES.SUBMITTED)
         GTag.submitFormSuccess(scope.form, startDate, Date.now())
         if (shouldTrackPersistentLoginUse()) {

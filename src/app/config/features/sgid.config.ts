@@ -57,6 +57,12 @@ export const sgidVarsSchema: Schema<ISgidVarsSchema> = {
     default: '',
     env: 'SGID_COOKIE_DOMAIN',
   },
+  hostname: {
+    doc: 'The sgID authorization hostname.',
+    format: String,
+    default: '',
+    env: 'SGID_HOSTNAME',
+  },
 }
 
 // Load and validate sgid configuration values
