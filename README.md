@@ -61,9 +61,17 @@ Install [docker and docker-compose](https://docs.docker.com/get-docker/).
 
 ### First Setup
 
-Run `npm install --legacy-peer-deps` in root directory to install relevant npm packages.
+To install the relevant npm packages, run the following in the root direcory:
 
-Call `export NODE_OPTIONS= --openssl-legacy-provider` to enable --openssl-legacy-provider flag that prevents breaking changes to webpack4 introduced in node 17 and above.
+```bash
+npm install --legacy-peer-deps
+```
+
+To prevent breaking changes to webpack4 introduced in node 17 and above, enable the `--openssl-legacy-provider` flag:
+
+```bash
+export NODE_OPTIONS= --openssl-legacy-provider
+```
 
 If you are on Mac OS X, you may want to allow Docker to use more RAM (minimum of 4GB) by clicking on the Docker icon on the toolbar, clicking on the "Preferences" menu item, then clicking on the "Resources" link on the left.
 
