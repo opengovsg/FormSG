@@ -65,9 +65,10 @@ If you are on Mac OS X, you may want to allow Docker to use more RAM (minimum of
 
 ### Running Locally
 
-Run the following shell command to build the Docker image from scratch. This will usually take 10 or so minutes. This command runs the backend services specified under [docker-compose.yml](docker-compose.yml) and the React frontend on the native host.
+Run the following shell commands to build the Docker image from scratch. This will usually take 10 or so minutes. These commands runs the backend services specified under [docker-compose.yml](docker-compose.yml) and the React frontend on the native host.
 
 ```bash
+npm run build:frontend
 npm run dev
 ```
 
