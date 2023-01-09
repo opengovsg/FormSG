@@ -1,4 +1,6 @@
-# FormSG
+<p align="left">
+  <a href="https://form.gov.sg"><img src="https://file.go.gov.sg/form-halflogo.jpg"></a>
+</p>
 
 [![Build Status](https://github.com/opengovsg/FormSG/actions/workflows/deploy-eb.yml)](https://github.com/opengovsg/FormSG/actions/workflows/deploy-eb.yml)
 [![Coverage Status](https://coveralls.io/repos/github/opengovsg/FormSG/badge.svg?branch=develop)](https://coveralls.io/github/opengovsg/FormSG?branch=develop)
