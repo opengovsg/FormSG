@@ -218,17 +218,6 @@ export const PublicFormProvider = ({
 
       switch (form.responseMode) {
         case FormResponseMode.Email:
-          console.log(
-            'removePIIdata_email:',
-            JSON.stringify(formInputs, removePIIData),
-          )
-          datadogLogs.logger.warn('handleSubmitFormTest', {
-            meta: {
-              action: 'handleSubmitForm',
-              formInputs: JSON.stringify(formInputs, removePIIData),
-              responseMode: 'email',
-            },
-          })
           // Using mutateAsync so react-hook-form goes into loading state.
           return (
             submitEmailModeFormMutation
@@ -264,17 +253,6 @@ export const PublicFormProvider = ({
               })
           )
         case FormResponseMode.Encrypt:
-          console.log(
-            'removePIIdata_storage:',
-            JSON.stringify(formInputs, removePIIData),
-          )
-          datadogLogs.logger.warn('handleSubmitFormTest', {
-            meta: {
-              action: 'handleSubmitForm',
-              formInputs: JSON.stringify(formInputs, removePIIData),
-              responseMode: 'storage',
-            },
-          })
           // Using mutateAsync so react-hook-form goes into loading state.
           return (
             submitStorageModeFormMutation
