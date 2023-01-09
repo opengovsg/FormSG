@@ -1,5 +1,5 @@
 <p align="left">
-  <a href="https://form.gov.sg"><img src="https://file.go.gov.sg/form-halflogo.jpg"></a>
+  <a href="https://form.gov.sg"><img src="https://file.go.gov.sg/form-logo-background-rmved.png"></a>
 </p>
 
 ---
