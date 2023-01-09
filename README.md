@@ -57,21 +57,11 @@ Install [docker and docker-compose](https://docs.docker.com/get-docker/).
 
 ### First Setup
 
-Run `npm install` in root directory to install relevant npm packages.
+Run `npm install --legacy-peer-deps` in root directory to install relevant npm packages.
+
+Call `export NODE_OPTIONS= --openssl-legacy-provider` to enable --openssl-legacy-provider flag that prevents breaking changes to webpack4 introduced in node 17 and above.
 
 If you are on Mac OS X, you may want to allow Docker to use more RAM (minimum of 4GB) by clicking on the Docker icon on the toolbar, clicking on the "Preferences" menu item, then clicking on the "Resources" link on the left.
-
-If you are on macOS Monetery or higher, port 5000 is now used by the system. This conflicts with the default port used by the backend. You could either:
-
-- Update the backend ports in these environment variables:
-  - `Dockerfile.development`
-    - Update exposed port
-  - `docker-compose.yml`
-    - Introduce a new env var `PORT`
-    - Update `APP_URL`
-  - `frontend/package.json`
-    - Update the proxy URL
-- [Disable control center](https://apple.stackexchange.com/a/431164)
 
 ### Running Locally
 
