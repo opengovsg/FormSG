@@ -1,6 +1,10 @@
-# FormSG
+<p align="left">
+  <a href="https://form.gov.sg"><img src="https://file.go.gov.sg/form-logo-background-rmved.png"></a>
+</p>
 
-[![Build Status](https://github.com/opengovsg/FormSG/actions/workflows/deploy-eb.yml)](https://github.com/opengovsg/FormSG/actions/workflows/deploy-eb.yml)
+---
+
+[![Build Status](https://github.com/opengovsg/FormSG/actions/workflows/deploy-eb.yml/badge.svg)](https://github.com/opengovsg/FormSG/actions/workflows/deploy-eb.yml)
 [![Coverage Status](https://coveralls.io/repos/github/opengovsg/FormSG/badge.svg?branch=develop)](https://coveralls.io/github/opengovsg/FormSG?branch=develop)
 
 ## Table of Contents
@@ -37,6 +41,7 @@ Notable features include:
 - Automatic emailing of submissions for forms built with Email Mode
 - End-to-end encryption for forms built with Storage Mode
 - (Singapore government agencies only) Citizen authentication with [SingPass](https://www.singpass.gov.sg/singpass/common/aboutus)
+- (Singapore government agencies only) Citizen authentication with [sgID](https://www.id.gov.sg/)
 - (Singapore government agencies only) Corporate authentication with [CorpPass](https://www.corppass.gov.sg/corppass/common/aboutus)
 - (Singapore government agencies only) Automatic prefill of verified data with [MyInfo](https://www.singpass.gov.sg/myinfo/common/aboutus)
 - Webhooks functionality via the official [FormSG JavaScript SDK](https://github.com/opengovsg/formsg-sdk) and contributor-supported [FormSG Ruby SDK](https://github.com/opengovsg/formsg-ruby-sdk)
@@ -57,27 +62,26 @@ Install [docker and docker-compose](https://docs.docker.com/get-docker/).
 
 ### First Setup
 
-Run `npm install` in root directory to install relevant npm packages.
+To install the relevant npm packages, run the following in the root direcory:
+
+```bash
+npm install --legacy-peer-deps
+```
+
+To prevent breaking changes to webpack4 introduced in node 17 and above, enable the `--openssl-legacy-provider` flag:
+
+```bash
+export NODE_OPTIONS= --openssl-legacy-provider
+```
 
 If you are on Mac OS X, you may want to allow Docker to use more RAM (minimum of 4GB) by clicking on the Docker icon on the toolbar, clicking on the "Preferences" menu item, then clicking on the "Resources" link on the left.
 
-If you are on macOS Monetery or higher, port 5000 is now used by the system. This conflicts with the default port used by the backend. You could either:
-
-- Update the backend ports in these environment variables:
-  - `Dockerfile.development`
-    - Update exposed port
-  - `docker-compose.yml`
-    - Introduce a new env var `PORT`
-    - Update `APP_URL`
-  - `frontend/package.json`
-    - Update the proxy URL
-- [Disable control center](https://apple.stackexchange.com/a/431164)
-
 ### Running Locally
 
-Run the following shell command to build the Docker image from scratch. This will usually take 10 or so minutes. This command runs the backend services specified under [docker-compose.yml](docker-compose.yml) and the React frontend on the native host.
+Run the following shell commands to build the Docker image from scratch. This will usually take 10 or so minutes. These commands runs the backend services specified under [docker-compose.yml](docker-compose.yml) and the React frontend on the native host.
 
 ```bash
+npm run build:frontend
 npm run dev
 ```
 
@@ -95,7 +99,7 @@ only takes ~15 seconds to finish starting up the image.
 
 ### Adding dependencies
 
-Run `npm install` as per usual.
+Run `npm install --legacy-peer-deps` as per usual.
 
 For backend, run
 
