@@ -11,6 +11,7 @@ import { SubmitHandler } from 'react-hook-form'
 import { useDisclosure } from '@chakra-ui/react'
 import { datadogLogs } from '@datadog/browser-logs'
 import { differenceInMilliseconds, isPast } from 'date-fns'
+import { cloneDeepWith } from 'lodash'
 import get from 'lodash/get'
 import simplur from 'simplur'
 
@@ -103,13 +104,15 @@ export const PublicFormProvider = ({
 }: PublicFormProviderProps): JSX.Element => {
   // Scrub phone numbers and email addresses from browser logs.
   // Phone numbers will always start with +
-  const removePIIData = (_key: string, value: string) => {
-    return JSON.stringify(value)
-      .replace(
-        /([a-zA-Z0-9+._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)/g,
-        'email=REDACTED',
-      )
-      .replace(/\+\d+/g, 'number=REDACTED')
+  const redactPIIData = (value: string) => {
+    if (typeof value === 'string') {
+      return value
+        .replace(
+          /([a-zA-Z0-9+._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)/g,
+          'email=REDACTED',
+        )
+        .replace(/\+\d+/g, 'number=REDACTED')
+    }
   }
 
   // Once form has been submitted, submission data will be set here.
@@ -216,6 +219,8 @@ export const PublicFormProvider = ({
         return showErrorToast(error, form)
       }
 
+      const formInputsRedacted = cloneDeepWith(formInputs, redactPIIData)
+
       switch (form.responseMode) {
         case FormResponseMode.Email:
           // Using mutateAsync so react-hook-form goes into loading state.
@@ -245,7 +250,7 @@ export const PublicFormProvider = ({
                 datadogLogs.logger.warn('handleSubmitForm', {
                   meta: {
                     action: 'handleSubmitForm',
-                    formInputs: JSON.stringify(formInputs, removePIIData),
+                    formInputs: formInputsRedacted,
                     responseMode: 'email',
                   },
                 })
@@ -281,7 +286,7 @@ export const PublicFormProvider = ({
                 datadogLogs.logger.warn('handleSubmitForm', {
                   meta: {
                     action: 'handleSubmitForm',
-                    formInputs: JSON.stringify(formInputs, removePIIData),
+                    formInputs: formInputsRedacted,
                     responseMode: 'storage',
                   },
                 })
