@@ -4,7 +4,7 @@
 
 ---
 
-[![Build Status](https://github.com/opengovsg/FormSG/actions/workflows/deploy-eb.yml)](https://github.com/opengovsg/FormSG/actions/workflows/deploy-eb.yml)
+[![Build Status](https://github.com/opengovsg/FormSG/actions/workflows/deploy-eb.yml/badge.svg)](https://github.com/opengovsg/FormSG/actions/workflows/deploy-eb.yml)
 [![Coverage Status](https://coveralls.io/repos/github/opengovsg/FormSG/badge.svg?branch=develop)](https://coveralls.io/github/opengovsg/FormSG?branch=develop)
 
 ## Table of Contents
