@@ -98,23 +98,23 @@ export function useCommonFormProvider(formId: string) {
   }
 }
 
+// Scrub phone numbers and email addresses from browser logs.
+// Phone numbers will always start with +
+const redactPIIData = (value: string) => {
+  if (typeof value === 'string') {
+    return value
+      .replace(
+        /([a-zA-Z0-9+._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)/g,
+        'email=REDACTED',
+      )
+      .replace(/\+\d+/g, 'number=REDACTED')
+  }
+}
+
 export const PublicFormProvider = ({
   formId,
   children,
 }: PublicFormProviderProps): JSX.Element => {
-  // Scrub phone numbers and email addresses from browser logs.
-  // Phone numbers will always start with +
-  const redactPIIData = (value: string) => {
-    if (typeof value === 'string') {
-      return value
-        .replace(
-          /([a-zA-Z0-9+._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)/g,
-          'email=REDACTED',
-        )
-        .replace(/\+\d+/g, 'number=REDACTED')
-    }
-  }
-
   // Once form has been submitted, submission data will be set here.
   const [submissionData, setSubmissionData] = useState<SubmissionData>()
 
@@ -219,8 +219,6 @@ export const PublicFormProvider = ({
         return showErrorToast(error, form)
       }
 
-      const formInputsRedacted = cloneDeepWith(formInputs, redactPIIData)
-
       switch (form.responseMode) {
         case FormResponseMode.Email:
           // Using mutateAsync so react-hook-form goes into loading state.
@@ -250,7 +248,7 @@ export const PublicFormProvider = ({
                 datadogLogs.logger.warn('handleSubmitForm', {
                   meta: {
                     action: 'handleSubmitForm',
-                    formInputs: formInputsRedacted,
+                    formInputs: cloneDeepWith(formInputs, redactPIIData),
                     responseMode: 'email',
                   },
                 })
@@ -286,7 +284,7 @@ export const PublicFormProvider = ({
                 datadogLogs.logger.warn('handleSubmitForm', {
                   meta: {
                     action: 'handleSubmitForm',
-                    formInputs: formInputsRedacted,
+                    formInputs: cloneDeepWith(formInputs, redactPIIData),
                     responseMode: 'storage',
                   },
                 })
