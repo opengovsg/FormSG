@@ -190,7 +190,6 @@ const encryptAttachment = async (
         attachmentType: typeof attachment,
         attachmentName: attachment.name,
         attachmentSize: attachment.size,
-        attachment: attachment,
       },
     })
     // Rethrow to maintain behaviour
