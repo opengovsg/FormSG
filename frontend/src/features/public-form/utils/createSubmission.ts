@@ -188,7 +188,7 @@ const encryptAttachment = async (
         error: error,
         attachmentId: id,
         attachmentType: typeof attachment,
-        attachmentName: attachment.name,
+        attachmentExtension: attachment.name?.split('.').pop(),
         attachmentSize: attachment.size,
       },
     })
