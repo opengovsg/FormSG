@@ -9,7 +9,9 @@ import {
 import { Helmet } from 'react-helmet-async'
 import { SubmitHandler } from 'react-hook-form'
 import { useDisclosure } from '@chakra-ui/react'
+import { datadogLogs } from '@datadog/browser-logs'
 import { differenceInMilliseconds, isPast } from 'date-fns'
+import { cloneDeepWith } from 'lodash'
 import get from 'lodash/get'
 import simplur from 'simplur'
 
@@ -93,6 +95,19 @@ export function useCommonFormProvider(formId: string) {
     isMobileDrawerOpen,
     onMobileDrawerOpen,
     onMobileDrawerClose,
+  }
+}
+
+// Scrub phone numbers and email addresses from browser logs.
+// Phone numbers will always start with +
+const redactPIIData = (value: string) => {
+  if (typeof value === 'string') {
+    return value
+      .replace(
+        /([a-zA-Z0-9+._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)/g,
+        'email=REDACTED',
+      )
+      .replace(/\+\d+/g, 'number=REDACTED')
   }
 }
 
@@ -229,7 +244,13 @@ export const PublicFormProvider = ({
               // Using catch since we are using mutateAsync and react-hook-form will continue bubbling this up.
               .catch((error) => {
                 // TODO: Remove when we have resolved the Network Error and t.arrayBuffer issues.
-                console.warn(formInputs)
+                datadogLogs.logger.warn('handleSubmitForm', {
+                  meta: {
+                    action: 'handleSubmitForm',
+                    formInputs: cloneDeepWith(formInputs, redactPIIData),
+                    responseMode: 'email',
+                  },
+                })
                 showErrorToast(error, form)
               })
           )
@@ -258,7 +279,13 @@ export const PublicFormProvider = ({
               // Using catch since we are using mutateAsync and react-hook-form will continue bubbling this up.
               .catch((error) => {
                 // TODO: Remove when we have resolved the Network Error and t.arrayBuffer issues.
-                console.warn(formInputs)
+                datadogLogs.logger.warn('handleSubmitForm', {
+                  meta: {
+                    action: 'handleSubmitForm',
+                    formInputs: cloneDeepWith(formInputs, redactPIIData),
+                    responseMode: 'storage',
+                  },
+                })
                 showErrorToast(error, form)
               })
           )

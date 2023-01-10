@@ -1,3 +1,4 @@
+import { datadogLogs } from '@datadog/browser-logs'
 import { encode as encodeBase64 } from '@stablelib/base64'
 import { chain, forOwn, isEmpty, keyBy, omit, pick } from 'lodash'
 
@@ -181,11 +182,16 @@ const encryptAttachment = async (
     return { id, encryptedFile: encodedEncryptedAttachment }
   } catch (error) {
     // TODO: remove error logging when error about arrayBuffer not being a function is resolved
-    console.error(error)
-    console.error(`Information about attachment ${id}`)
-    console.error(typeof attachment)
-    console.error(attachment)
-
+    datadogLogs.logger.error('encryptAttachment', {
+      meta: {
+        action: 'encryptAttachment',
+        error: error,
+        attachmentId: id,
+        attachmentType: typeof attachment,
+        attachmentName: attachment.name,
+        attachmentSize: attachment.size,
+      },
+    })
     // Rethrow to maintain behaviour
     throw error
   }
