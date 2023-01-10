@@ -104,7 +104,7 @@
     "compression": "~1.7.2",
     "connect-datadog": "0.0.9",
     "connect-mongo": "^4.4.1",
-    "convict": "^6.2.3",
+    "convict": "^6.2.4",
     "convict-format-with-validator": "^6.2.0",
     "cookie-parser": "~1.4.6",
     "css-toggle-switch": "^4.1.0",
