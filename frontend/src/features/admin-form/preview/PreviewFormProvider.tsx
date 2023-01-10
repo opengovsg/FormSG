@@ -123,8 +123,7 @@ export const PreviewFormProvider = ({
                   onSuccess: ({ submissionId }) =>
                     setSubmissionData({
                       id: submissionId,
-                      // TODO: Server should return server time so browser time is not used.
-                      timeInEpochMs: Date.now(),
+                      timestamp: Date.now(),
                     }),
                 },
               )
@@ -146,8 +145,7 @@ export const PreviewFormProvider = ({
                   onSuccess: ({ submissionId }) =>
                     setSubmissionData({
                       id: submissionId,
-                      // TODO: Server should return server time so browser time is not used.
-                      timeInEpochMs: Date.now(),
+                      timestamp: Date.now(),
                     }),
                 },
               )
