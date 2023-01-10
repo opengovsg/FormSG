@@ -11,7 +11,6 @@ import { SubmitHandler } from 'react-hook-form'
 import { useDisclosure } from '@chakra-ui/react'
 import { datadogLogs } from '@datadog/browser-logs'
 import { differenceInMilliseconds, isPast } from 'date-fns'
-import { cloneDeepWith } from 'lodash'
 import get from 'lodash/get'
 import simplur from 'simplur'
 
@@ -95,19 +94,6 @@ export function useCommonFormProvider(formId: string) {
     isMobileDrawerOpen,
     onMobileDrawerOpen,
     onMobileDrawerClose,
-  }
-}
-
-// Scrub phone numbers and email addresses from browser logs.
-// Phone numbers will always start with +
-const redactPIIData = (value: string) => {
-  if (typeof value === 'string') {
-    return value
-      .replace(
-        /([a-zA-Z0-9+._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)/g,
-        'email=REDACTED',
-      )
-      .replace(/\+\d+/g, 'number=REDACTED')
   }
 }
 
@@ -247,8 +233,9 @@ export const PublicFormProvider = ({
                 datadogLogs.logger.warn('handleSubmitForm', {
                   meta: {
                     action: 'handleSubmitForm',
-                    formInputs: cloneDeepWith(formInputs, redactPIIData),
                     responseMode: 'email',
+                    error: error,
+                    message: error.message,
                   },
                 })
                 showErrorToast(error, form)
@@ -282,8 +269,9 @@ export const PublicFormProvider = ({
                 datadogLogs.logger.warn('handleSubmitForm', {
                   meta: {
                     action: 'handleSubmitForm',
-                    formInputs: cloneDeepWith(formInputs, redactPIIData),
                     responseMode: 'storage',
+                    error: error,
+                    message: error.message,
                   },
                 })
                 showErrorToast(error, form)
