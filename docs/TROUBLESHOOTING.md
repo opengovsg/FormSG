@@ -40,3 +40,32 @@ conf = rs.config()
 conf.members[0].host = 'database:27017'
 rs.reconfig(conf, {force:true})
 ```
+
+## `TypeError: Cannot read property 'tap' of undefined`
+
+If you are using a machine with an M1 chip, you may be facing this issue due to your `node` installation, as an inappropriate version of `node` would cause more updated versions of `webpack` to be installed and thus introduces breaking changes in the code.
+
+To overcome this, use Rosetta to install `node` in -x86_64 architecture as described in the "Macs with M1 chip" section [here](https://github.com/nvm-sh/nvm#macos-troubleshooting).
+
+Be sure to check that the correct `node` is installed with:
+
+```bash
+$ node -p process.arch
+x64
+```
+
+## `npm` not found
+
+Make sure `nvm` is loaded to the environment in `~/.bash_profile`. To do so, the `~/.bash_profile` should include the following lines:
+
+```bash
+export NVM_DIR=~/.nvm
+source $(brew --prefix nvm)/nvm.sh
+```
+
+Ensure that on startup, `brew` is added to the environment variables and `~/.bash_profile` is run. To do so, `~/.zshrc` should have the following lines:
+
+```bash
+export PATH=/opt/homebrew/bin:$PATH
+source ~/.bash_profile
+```
