@@ -45,7 +45,7 @@ export const transformAxiosError = (e: Error): ApiError => {
       return new HttpError(`Error [005]: ${statusCode} error`, statusCode)
     } else if (e.request) {
       // TODO: Remove this logging once Network Error sources have been identified.
-      datadogLogs.logger.warn('Unknown error', {
+      datadogLogs.logger.warn(`Unknown error: ${e.message}`, {
         meta: {
           action: 'transformAxiosError',
           errorRaw: e,
