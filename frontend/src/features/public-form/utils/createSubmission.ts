@@ -167,29 +167,44 @@ const encryptAttachment = async (
   attachment: File,
   { id, publicKey }: { id: string; publicKey: string },
 ): Promise<StorageModeAttachment & { id: string }> => {
+  let marker = 1
+
   try {
     const fileArrayBuffer = await attachment.arrayBuffer()
     const fileContentsView = new Uint8Array(fileArrayBuffer)
+
+    marker = 2
 
     const encryptedAttachment = await formsgSdk.crypto.encryptFile(
       fileContentsView,
       publicKey,
     )
+
+    marker = 3
+
     const encodedEncryptedAttachment = {
       ...encryptedAttachment,
       binary: encodeBase64(encryptedAttachment.binary),
     }
+
+    marker = 4
+
     return { id, encryptedFile: encodedEncryptedAttachment }
   } catch (error) {
     // TODO: remove error logging when error about arrayBuffer not being a function is resolved
     datadogLogs.logger.error('encryptAttachment', {
       meta: {
         action: 'encryptAttachment',
-        error: error,
-        attachmentId: id,
-        attachmentType: typeof attachment,
-        attachmentExtension: attachment.name?.split('.').pop(),
-        attachmentSize: attachment.size,
+        error,
+        message: error?.message,
+        marker,
+        attachment: {
+          id,
+          type: typeof attachment,
+          extension: attachment.name?.split('.').pop(),
+          size: attachment.size,
+          arrayBuffer: typeof attachment.arrayBuffer,
+        },
       },
     })
     // Rethrow to maintain behaviour
