@@ -101,19 +101,17 @@ const getEncryptedAttachmentsMap = async (
 ): Promise<StorageModeAttachmentsMap> => {
   const attachmentsMap = getAttachmentsMap(formFields, formInputs)
 
-  const attachmentPromises = Object.keys(attachmentsMap).map((id) =>
-    encryptAttachment(attachmentsMap[id], { id, publicKey }),
+  const attachmentPromises = Object.entries(attachmentsMap).map(
+    ([id, attachment]) => encryptAttachment(attachment, { id, publicKey }),
   )
 
-  return Promise.all(attachmentPromises).then((encryptedAttachmentsMeta) => {
-    return (
-      chain(encryptedAttachmentsMeta)
-        .keyBy('id')
-        // Remove id from object.
-        .mapValues((v) => omit(v, 'id'))
-        .value()
-    )
-  })
+  return Promise.all(attachmentPromises).then((encryptedAttachmentsMeta) =>
+    chain(encryptedAttachmentsMeta)
+      .keyBy('id')
+      // Remove id from object.
+      .mapValues((v) => omit(v, 'id'))
+      .value(),
+  )
 }
 
 const getAttachmentsMap = (
