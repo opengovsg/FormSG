@@ -165,49 +165,43 @@ const encryptAttachment = async (
   attachment: File,
   { id, publicKey }: { id: string; publicKey: string },
 ): Promise<StorageModeAttachment & { id: string }> => {
-  let marker = 1
+  let label
 
   try {
+    label = 'Read file content'
     const fileArrayBuffer = await attachment.arrayBuffer()
     const fileContentsView = new Uint8Array(fileArrayBuffer)
 
-    marker = 2
-
+    label = 'Encrypt content'
     const encryptedAttachment = await formsgSdk.crypto.encryptFile(
       fileContentsView,
       publicKey,
     )
 
-    marker = 3
-
+    label = 'Base64-encode encrypted content'
     const encodedEncryptedAttachment = {
       ...encryptedAttachment,
       binary: encodeBase64(encryptedAttachment.binary),
     }
 
-    marker = 4
-
     return { id, encryptedFile: encodedEncryptedAttachment }
   } catch (error) {
     // TODO: remove error logging when error about arrayBuffer not being a function is resolved
-    datadogLogs.logger.error(
-      `encryptAttachment error [${marker}]: ${error?.message}`,
-      {
-        meta: {
-          action: 'encryptAttachment',
-          error,
-          attachment: {
-            id,
-            type: typeof attachment,
-            extension: attachment.name?.split('.').pop(),
-            size: attachment.size,
-            isBlob: attachment instanceof Blob,
-            isFile: attachment instanceof File,
-            arrayBuffer: typeof attachment.arrayBuffer,
-          },
+    datadogLogs.logger.error(`encryptAttachment: ${label}: ${error?.message}`, {
+      meta: {
+        action: 'encryptAttachment',
+        error,
+        attachment: {
+          id,
+          type: typeof attachment,
+          extension: attachment.name?.split('.').pop(),
+          size: attachment.size,
+          isBlob: attachment instanceof Blob,
+          isFile: attachment instanceof File,
+          arrayBuffer: typeof attachment.arrayBuffer,
         },
       },
-    )
+    })
     // Rethrow to maintain behaviour
     throw error
   }
