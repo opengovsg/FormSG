@@ -46,8 +46,13 @@ export const transformAxiosError = (error: Error): ApiError => {
     } else if (error.request) {
       // TODO: Remove this logging once Network Error sources have been identified.
       datadogLogs.logger.warn(`Unknown error: ${error.message}`, {
-        action: 'transformAxiosError',
-        error,
+        meta: {
+          action: 'transformAxiosError',
+          error: {
+            message: error?.message,
+            stack: error?.stack,
+          },
+        },
       })
       return new Error(
         `There was a problem with your internet connection. Please check your network and try again. Error [006]: ${error.message}`,

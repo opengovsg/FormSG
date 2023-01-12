@@ -231,9 +231,14 @@ export const PublicFormProvider = ({
               .catch((error) => {
                 // TODO: Remove when we have resolved the Network Error and t.arrayBuffer issues.
                 datadogLogs.logger.warn(`handleSubmitForm: ${error.message}`, {
-                  action: 'handleSubmitForm',
-                  responseMode: 'email',
-                  error,
+                  meta: {
+                    action: 'handleSubmitForm',
+                    responseMode: 'email',
+                    error: {
+                      message: error.message,
+                      stack: error.stack,
+                    },
+                  },
                 })
                 showErrorToast(error, form)
               })
@@ -264,9 +269,14 @@ export const PublicFormProvider = ({
               .catch((error) => {
                 // TODO: Remove when we have resolved the Network Error and t.arrayBuffer issues.
                 datadogLogs.logger.warn(`handleSubmitForm: ${error.message}`, {
-                  action: 'handleSubmitForm',
-                  responseMode: 'storage',
-                  error,
+                  meta: {
+                    action: 'handleSubmitForm',
+                    responseMode: 'storage',
+                    error: {
+                      message: error.message,
+                      stack: error.stack,
+                    },
+                  },
                 })
                 showErrorToast(error, form)
               })
