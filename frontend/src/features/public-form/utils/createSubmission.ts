@@ -188,18 +188,15 @@ const encryptAttachment = async (
   } catch (error) {
     // TODO: remove error logging when error about arrayBuffer not being a function is resolved
     datadogLogs.logger.error(`encryptAttachment: ${label}: ${error?.message}`, {
-      meta: {
-        action: 'encryptAttachment',
-        error,
-        attachment: {
-          id,
-          type: typeof attachment,
-          extension: attachment.name?.split('.').pop(),
-          size: attachment.size,
-          isBlob: attachment instanceof Blob,
-          isFile: attachment instanceof File,
-          arrayBuffer: typeof attachment.arrayBuffer,
-        },
+      error,
+      attachment: {
+        id,
+        type: typeof attachment,
+        extension: attachment.name?.split('.').pop(),
+        size: attachment.size,
+        isBlob: attachment instanceof Blob,
+        isFile: attachment instanceof File,
+        arrayBuffer: typeof attachment.arrayBuffer,
       },
     })
     // Rethrow to maintain behaviour

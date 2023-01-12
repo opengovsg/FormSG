@@ -20,44 +20,41 @@ export class HttpError extends Error {
  *
  * @returns HttpError if AxiosError, else original error
  */
-export const transformAxiosError = (e: Error): ApiError => {
-  if (axios.isAxiosError(e)) {
-    if (e.response) {
-      const statusCode = e.response.status
+export const transformAxiosError = (error: Error): ApiError => {
+  if (axios.isAxiosError(error)) {
+    if (error.response) {
+      const statusCode = error.response.status
       if (statusCode === StatusCodes.TOO_MANY_REQUESTS) {
         return new HttpError('Error [001]: Please try again later.', statusCode)
       }
-      if (typeof e.response.data === 'string') {
-        return new HttpError(`Error [002]: ${e.response.data}`, statusCode)
+      if (typeof error.response.data === 'string') {
+        return new HttpError(`Error [002]: ${error.response.data}`, statusCode)
       }
-      if (e.response.data?.message) {
+      if (error.response.data?.message) {
         return new HttpError(
-          `Error [003]: ${e.response.data.message}`,
+          `Error [003]: ${error.response.data.message}`,
           statusCode,
         )
       }
-      if (e.response.statusText) {
+      if (error.response.statusText) {
         return new HttpError(
-          `Error [004]: ${e.response.statusText}`,
+          `Error [004]: ${error.response.statusText}`,
           statusCode,
         )
       }
       return new HttpError(`Error [005]: ${statusCode} error`, statusCode)
-    } else if (e.request) {
+    } else if (error.request) {
       // TODO: Remove this logging once Network Error sources have been identified.
-      datadogLogs.logger.warn(`Unknown error: ${e.message}`, {
-        meta: {
-          action: 'transformAxiosError',
-          errorRaw: e,
-          error: JSON.stringify(e),
-        },
+      datadogLogs.logger.warn(`Unknown error: ${error.message}`, {
+        action: 'transformAxiosError',
+        error,
       })
       return new Error(
-        `There was a problem with your internet connection. Please check your network and try again. Error [006]: ${e.message}`,
+        `There was a problem with your internet connection. Please check your network and try again. Error [006]: ${error.message}`,
       )
     }
   }
-  return e
+  return error
 }
 
 // Create own axios instance with defaults.
