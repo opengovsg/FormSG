@@ -230,12 +230,14 @@ export const PublicFormProvider = ({
               // Using catch since we are using mutateAsync and react-hook-form will continue bubbling this up.
               .catch((error) => {
                 // TODO: Remove when we have resolved the Network Error and t.arrayBuffer issues.
-                datadogLogs.logger.warn('handleSubmitForm', {
+                datadogLogs.logger.warn(`handleSubmitForm: ${error.message}`, {
                   meta: {
                     action: 'handleSubmitForm',
                     responseMode: 'email',
-                    error: error,
-                    message: error.message,
+                    error: {
+                      message: error.message,
+                      stack: error.stack,
+                    },
                   },
                 })
                 showErrorToast(error, form)
@@ -266,12 +268,14 @@ export const PublicFormProvider = ({
               // Using catch since we are using mutateAsync and react-hook-form will continue bubbling this up.
               .catch((error) => {
                 // TODO: Remove when we have resolved the Network Error and t.arrayBuffer issues.
-                datadogLogs.logger.warn('handleSubmitForm', {
+                datadogLogs.logger.warn(`handleSubmitForm: ${error.message}`, {
                   meta: {
                     action: 'handleSubmitForm',
                     responseMode: 'storage',
-                    error: error,
-                    message: error.message,
+                    error: {
+                      message: error.message,
+                      stack: error.stack,
+                    },
                   },
                 })
                 showErrorToast(error, form)
