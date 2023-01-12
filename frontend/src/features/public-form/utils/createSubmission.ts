@@ -101,19 +101,17 @@ const getEncryptedAttachmentsMap = async (
 ): Promise<StorageModeAttachmentsMap> => {
   const attachmentsMap = getAttachmentsMap(formFields, formInputs)
 
-  const attachmentPromises = Object.keys(attachmentsMap).map((id) =>
-    encryptAttachment(attachmentsMap[id], { id, publicKey }),
+  const attachmentPromises = Object.entries(attachmentsMap).map(
+    ([id, attachment]) => encryptAttachment(attachment, { id, publicKey }),
   )
 
-  return Promise.all(attachmentPromises).then((encryptedAttachmentsMeta) => {
-    return (
-      chain(encryptedAttachmentsMeta)
-        .keyBy('id')
-        // Remove id from object.
-        .mapValues((v) => omit(v, 'id'))
-        .value()
-    )
-  })
+  return Promise.all(attachmentPromises).then((encryptedAttachmentsMeta) =>
+    chain(encryptedAttachmentsMeta)
+      .keyBy('id')
+      // Remove id from object.
+      .mapValues((v) => omit(v, 'id'))
+      .value(),
+  )
 }
 
 const getAttachmentsMap = (
@@ -167,29 +165,43 @@ const encryptAttachment = async (
   attachment: File,
   { id, publicKey }: { id: string; publicKey: string },
 ): Promise<StorageModeAttachment & { id: string }> => {
+  let label
+
   try {
+    label = 'Read file content'
     const fileArrayBuffer = await attachment.arrayBuffer()
     const fileContentsView = new Uint8Array(fileArrayBuffer)
 
+    label = 'Encrypt content'
     const encryptedAttachment = await formsgSdk.crypto.encryptFile(
       fileContentsView,
       publicKey,
     )
+
+    label = 'Base64-encode encrypted content'
     const encodedEncryptedAttachment = {
       ...encryptedAttachment,
       binary: encodeBase64(encryptedAttachment.binary),
     }
+
     return { id, encryptedFile: encodedEncryptedAttachment }
   } catch (error) {
     // TODO: remove error logging when error about arrayBuffer not being a function is resolved
-    datadogLogs.logger.error('encryptAttachment', {
+    datadogLogs.logger.error(`encryptAttachment: ${label}: ${error?.message}`, {
       meta: {
-        action: 'encryptAttachment',
-        error: error,
-        attachmentId: id,
-        attachmentType: typeof attachment,
-        attachmentExtension: attachment.name?.split('.').pop(),
-        attachmentSize: attachment.size,
+        error: {
+          message: error?.message,
+          stack: error?.stack,
+        },
+        attachment: {
+          id,
+          type: typeof attachment,
+          extension: attachment.name?.split('.').pop(),
+          size: attachment.size,
+          isBlob: attachment instanceof Blob,
+          isFile: attachment instanceof File,
+          arrayBuffer: typeof attachment.arrayBuffer,
+        },
       },
     })
     // Rethrow to maintain behaviour
