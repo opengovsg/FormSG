@@ -61,6 +61,17 @@ const transformToVerifiableOutput = <
   }
 }
 
+const transformToCountryRegionOutput = <F extends FormFieldDto>(
+  schema: F,
+  input?: string,
+): SingleAnswerOutput<F> => {
+  const singleAnswerOutput = transformToSingleAnswerOutput(schema, input)
+  return {
+    ...singleAnswerOutput,
+    answer: singleAnswerOutput.answer.toUpperCase(),
+  }
+}
+
 const transformToSingleAnswerOutput = <F extends FormFieldDto>(
   schema: F,
   input?: string,
@@ -231,13 +242,17 @@ export const transformInputsToOutputs = (
         field,
         input as FormFieldValue<typeof field.fieldType>,
       )
+    case BasicField.CountryRegion:
+      return transformToCountryRegionOutput(
+        field,
+        input as FormFieldValue<typeof field.fieldType>,
+      )
     case BasicField.Number:
     case BasicField.Decimal:
     case BasicField.ShortText:
     case BasicField.LongText:
     case BasicField.HomeNo:
     case BasicField.Dropdown:
-    case BasicField.CountryRegion:
     case BasicField.Rating:
     case BasicField.Nric:
     case BasicField.Uen:
