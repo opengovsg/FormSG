@@ -18,6 +18,7 @@ import {
   hasExistingFieldValue,
 } from '~features/myinfo/utils'
 import { useFetchPrefillQuery } from '~features/public-form/hooks/useFetchPrefillQuery'
+import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
 import { PublicFormSubmitButton } from './PublicFormSubmitButton'
 import { VisibleFormFields } from './VisibleFormFields'
@@ -35,6 +36,8 @@ export const FormFields = ({
   colorTheme,
   onSubmit,
 }: FormFieldsProps): JSX.Element => {
+  const { blockNavigation, setBlockNavigation } = usePublicFormContext()
+
   useFetchPrefillQuery()
   const [searchParams] = useSearchParams()
 
@@ -101,7 +104,11 @@ export const FormFields = ({
     }
   }, [defaultFormValues, isDirty, reset])
 
-  useNavigationPrompt(isDirty)
+  useEffect(() => {
+    if (isDirty) setBlockNavigation(true)
+  }, [isDirty, setBlockNavigation])
+
+  useNavigationPrompt(blockNavigation)
 
   return (
     <FormProvider {...formMethods}>

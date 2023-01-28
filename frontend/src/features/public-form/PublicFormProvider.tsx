@@ -103,6 +103,7 @@ export const PublicFormProvider = ({
 }: PublicFormProviderProps): JSX.Element => {
   // Once form has been submitted, submission data will be set here.
   const [submissionData, setSubmissionData] = useState<SubmissionData>()
+  const [blockNavigation, setBlockNavigation] = useState(false)
 
   const { data, isLoading, error, ...rest } = usePublicFormView(
     formId,
@@ -323,6 +324,8 @@ export const PublicFormProvider = ({
         captchaContainerId: containerId,
         expiryInMs,
         isLoading: isLoading || (!!data?.form.hasCaptcha && !hasLoaded),
+        blockNavigation,
+        setBlockNavigation,
         ...commonFormValues,
         ...data,
         ...rest,

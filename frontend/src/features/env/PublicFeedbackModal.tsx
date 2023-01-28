@@ -34,6 +34,7 @@ import { ModalCloseButton } from '~components/Modal'
 import Textarea from '~components/Textarea'
 
 import { useEnvMutations, useFeedbackMutation } from '~features/env/mutations'
+import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
 import { usePublicFeedbackFormView } from './queries'
 import { isUsableFeedback } from './utils'
@@ -50,6 +51,7 @@ export const PublicFeedbackModal = ({
   responseMode?: FormResponseMode
   authType?: FormAuthType
 }): JSX.Element => {
+  const { setBlockNavigation } = usePublicFormContext()
   const modalSize = useBreakpointValue({
     base: 'mobile',
     xs: 'mobile',
@@ -68,7 +70,7 @@ export const PublicFeedbackModal = ({
 
   const url = window.location.href
   const rumSessionId = datadogRum.getInternalContext()?.session_id
-  const [showThanksPage, setShowThanksPage] = useState<boolean>(false)
+  const [showThanksPage, setShowThanksPage] = useState<boolean>(true)
 
   const { publicSwitchEnvMutation } = useEnvMutations()
   const { data: feedbackForm, isLoading } = usePublicFeedbackFormView()
@@ -88,8 +90,9 @@ export const PublicFeedbackModal = ({
   }, [onClose])
 
   const handleChangeEnv = useCallback(() => {
+    setBlockNavigation(false)
     publicSwitchEnvMutation.mutate()
-  }, [publicSwitchEnvMutation])
+  }, [publicSwitchEnvMutation, setBlockNavigation])
 
   const checkboxInputName = 'attachmentType'
 

@@ -46,6 +46,8 @@ export interface PublicFormContextProps
    */
   onMobileDrawerOpen: () => void
   onMobileDrawerClose: () => void
+  blockNavigation: boolean
+  setBlockNavigation: (val: boolean) => void
 }
 
 export const PublicFormContext = createContext<
