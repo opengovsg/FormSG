@@ -7,6 +7,7 @@ import { isEmpty, times } from 'lodash'
 import { BasicField, FormFieldDto } from '~shared/types/field'
 import { FormColorTheme, LogicDto } from '~shared/types/form'
 
+import { useNativeBlocker } from '~hooks/useNativeBlocker'
 import InlineMessage from '~components/InlineMessage'
 import { FormFieldValues } from '~templates/Field'
 import { createTableRow } from '~templates/Field/Table/utils/createRow'
@@ -108,7 +109,8 @@ export const FormFields = ({
     if (isDirty) setBlockNavigation(true)
   }, [isDirty, setBlockNavigation])
 
-  useNavigationPrompt(blockNavigation)
+  // useNavigationPrompt(blockNavigation)
+  useNativeBlocker(blockNavigation)
 
   return (
     <FormProvider {...formMethods}>
