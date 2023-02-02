@@ -40,12 +40,16 @@ import { DeletePaymentModal } from './DeletePaymentModal'
 import { DndPlaceholderProps } from './types'
 import { useCreateTabForm } from './useCreateTabForm'
 import {
+  FieldBuilderState,
   updateCreateStateSelector,
   useFieldBuilderStore,
 } from './useFieldBuilderStore'
 
 export const BuilderAndDesignTab = (): JSX.Element => {
-  const setToCreating = useFieldBuilderStore(updateCreateStateSelector)
+  const { setToCreating, updateFieldIndex } = useFieldBuilderStore((state) => ({
+    setToCreating: updateCreateStateSelector(state),
+    updateFieldIndex: state.updateFieldIndex,
+  }))
   const { data } = useCreateTabForm()
 
   const { reorderFieldMutation } = useReorderFormField()
@@ -137,6 +141,12 @@ export const BuilderAndDesignTab = (): JSX.Element => {
           if (destination.index === source.index) {
             return
           }
+          if (
+            useFieldBuilderStore.getState().stateData.state ===
+            FieldBuilderState.CreatingField
+          ) {
+            return updateFieldIndex(destination.index)
+          }
           return reorderFieldMutation.mutate({
             fields: data.form_fields,
             from: source.index,
@@ -145,7 +155,13 @@ export const BuilderAndDesignTab = (): JSX.Element => {
         }
       }
     },
-    [data, reorderFieldMutation, setToCreating, setPlaceholderProps],
+    [
+      data,
+      reorderFieldMutation,
+      setToCreating,
+      setPlaceholderProps,
+      updateFieldIndex,
+    ],
   )
 
   const deleteFieldModalDisclosure = useDisclosure()

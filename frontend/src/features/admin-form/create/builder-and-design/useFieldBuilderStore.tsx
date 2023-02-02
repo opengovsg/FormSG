@@ -28,6 +28,7 @@ export type FieldBuilderStore = {
     holding?: boolean,
   ) => void
   updateEditState: (field: FormFieldDto, holding?: boolean) => void
+  updateFieldIndex: (insertionIndex: number) => void
   setToInactive: (holding?: boolean) => void
   stateData:
     | FieldBuilderCreateEditStateData
@@ -94,6 +95,13 @@ export const useFieldBuilderStore = create<FieldBuilderStore>()(
       } else {
         set({ stateData })
       }
+    },
+    updateFieldIndex: (insertionIndex: number) => {
+      const stateData = {
+        ...get().stateData,
+        insertionIndex,
+      }
+      set({ stateData })
     },
     setToInactive: (holding?: boolean) => {
       const nextState: FieldBuilderStore['holdingStateData'] = {
