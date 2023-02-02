@@ -188,8 +188,8 @@ const FieldRowContainer = ({
   )
 
   const isDragDisabled = useMemo(() => {
-    return isDirty || !!numFormFieldMutations
-  }, [isDirty, numFormFieldMutations])
+    return !!numFormFieldMutations
+  }, [numFormFieldMutations])
 
   const [isHover, setIsHover] = useState(false)
 
