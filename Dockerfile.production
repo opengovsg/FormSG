@@ -16,7 +16,7 @@ COPY frontend/package.json frontend/package-lock.json ./frontend/
 COPY frontend/patches ./frontend/patches
 
 # Allow running of postinstall scripts
-RUN npm config set unsafe-perm true
+# RUN npm config set unsafe-perm true
 # --legacy-peer-deps flag
 # A breaking change in the peer dependency resolution strategy was introduced in
 # npm 7. This resulted in npm throwing an error when installing packages:
