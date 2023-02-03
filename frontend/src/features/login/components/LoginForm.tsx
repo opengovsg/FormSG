@@ -18,9 +18,15 @@ export type LoginFormInputs = {
 
 interface LoginFormProps {
   onSubmit: (inputs: LoginFormInputs) => Promise<void>
+  onOauthLogin: () => void
+  isLoadingOauth: boolean
 }
 
-export const LoginForm = ({ onSubmit }: LoginFormProps): JSX.Element => {
+export const LoginForm = ({
+  onSubmit,
+  onOauthLogin,
+  isLoadingOauth,
+}: LoginFormProps): JSX.Element => {
   const { t } = useTranslation()
 
   const { handleSubmit, register, formState, setError } =
@@ -73,9 +79,20 @@ export const LoginForm = ({ onSubmit }: LoginFormProps): JSX.Element => {
         <Button
           isFullWidth={isMobile}
           isLoading={formState.isSubmitting}
+          isDisabled={isLoadingOauth}
           type="submit"
         >
           {t('features.login.components.LoginForm.login')}
+        </Button>
+        <Button
+          colorScheme="secondary"
+          isFullWidth={isMobile}
+          isDisabled={formState.isSubmitting}
+          isLoading={isLoadingOauth}
+          type="button"
+          onClick={onOauthLogin}
+        >
+          Log in with GovLogin
         </Button>
         <Link isExternal variant="standalone" href={FORM_GUIDE}>
           {t('features.login.components.LoginForm.haveAQuestion')}

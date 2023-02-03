@@ -152,6 +152,11 @@ export interface ISgidVarsSchema {
   hostname: string
 }
 
+export type IGovLoginVarsSchema = Pick<
+  ISgidVarsSchema,
+  'clientId' | 'clientSecret' | 'redirectUri' | 'hostname'
+>
+
 export interface IOptionalVarsSchema {
   appConfig: AppConfig
   formsgSdkMode: PackageMode

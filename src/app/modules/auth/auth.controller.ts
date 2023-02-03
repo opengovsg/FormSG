@@ -1,3 +1,4 @@
+import { celebrate, Joi, Segments } from 'celebrate'
 import { StatusCodes } from 'http-status-codes'
 import { isEmpty } from 'lodash'
 
@@ -6,6 +7,7 @@ import { createLoggerWithLabel } from '../../config/logger'
 import MailService from '../../services/mail/mail.service'
 import { createReqMeta, getRequestIp } from '../../utils/request'
 import { ControllerHandler } from '../core/core.types'
+import { GovLoginService } from '../govlogin/govlogin.service'
 import * as UserService from '../user/user.service'
 
 import {
@@ -18,6 +20,99 @@ import { SessionUser } from './auth.types'
 import { mapRouteError } from './auth.utils'
 
 const logger = createLoggerWithLabel(module)
+
+export const handleOauthRedirect: ControllerHandler = (req, res) => {
+  return GovLoginService.createRedirectUrl()
+    .map((redirectUrl) => {
+      logger.info({
+        message: 'Redirecting user to govlogin page',
+        meta: {
+          action: 'handleOauthRedirect',
+          redirectUrl,
+        },
+      })
+      return res.json({ redirectUrl })
+    })
+    .mapErr((error) => {
+      logger.error({
+        meta: {
+          action: 'handleOauthRedirect',
+        },
+        message: 'Error while creating oauth redirect URL',
+        error,
+      })
+      const { statusCode, errorMessage } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
+}
+
+const _handleOauthCallback: ControllerHandler<
+  unknown,
+  unknown,
+  unknown,
+  { code: string; iss: string }
+> = (req, res) => {
+  const { code } = req.query
+
+  const logMeta = {
+    action: '_handleOauthCallback',
+    ...createReqMeta(req),
+  }
+
+  return GovLoginService.retrieveAccessToken(code)
+    .andThen(({ sub: email }) =>
+      AuthService.validateEmailDomain(email).andThen((agency) =>
+        UserService.retrieveUser(email, agency._id),
+      ),
+    )
+    .map((user) => {
+      if (!req.session) {
+        logger.error({
+          message: 'Error logging in user; req.session is undefined',
+          meta: logMeta,
+        })
+
+        return res
+          .status(StatusCodes.INTERNAL_SERVER_ERROR)
+          .json('Error logging in user; req.session is undefined')
+      }
+
+      // Add user info to session.
+      const { _id } = user.toObject() as SessionUser
+      req.session.user = { _id }
+      logger.info({
+        message: `Successfully logged in user ${user._id}`,
+        meta: logMeta,
+      })
+
+      return res.redirect('/login?oauth=success')
+    })
+    .mapErr((error) => {
+      logger.error({
+        meta: {
+          action: '_handleOauthCallback',
+        },
+        message: 'Error while exchanging access token',
+        error,
+      })
+
+      const redirectUrl = `/login?oauth=error&message=${encodeURIComponent(
+        error.message,
+      )}`
+
+      return res.redirect(redirectUrl)
+    })
+}
+
+export const handleOauthCallback = [
+  celebrate({
+    [Segments.QUERY]: Joi.object().keys({
+      code: Joi.string().required(),
+      iss: Joi.string().uri().required(),
+    }),
+  }),
+  _handleOauthCallback,
+] as ControllerHandler[]
 
 export const _handleCheckUser: ControllerHandler<
   unknown,

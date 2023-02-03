@@ -88,6 +88,9 @@ services:
       - SGID_CLIENT_ID=sgidclientid
       - SGID_CLIENT_SECRET=sgidclientsecret
       - SGID_REDIRECT_URI=http://localhost:5001/sgid/login
+      - GOVLOGIN_CLIENT_ID
+      - GOVLOGIN_CLIENT_SECRET
+      - GOVLOGIN_REDIRECT_URI
       - SGID_PRIVATE_KEY=./node_modules/@opengovsg/mockpass/static/certs/key.pem
       - SGID_PUBLIC_KEY=./node_modules/@opengovsg/mockpass/static/certs/server.crt
       - SES_PASS

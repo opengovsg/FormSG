@@ -1,6 +1,7 @@
-import { FC, useMemo, useState } from 'react'
+import { FC, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link as ReactLink } from 'react-router-dom'
+import { useMutation } from 'react-query'
+import { Link as ReactLink, useSearchParams } from 'react-router-dom'
 import { Box, chakra, Flex, GridItem, GridProps, Text } from '@chakra-ui/react'
 
 import { AppFooter } from '~/app/AppFooter'
@@ -9,8 +10,13 @@ import { ReactComponent as BrandLogoSvg } from '~assets/svgs/brand/brand-hort-co
 import { LOGGED_IN_KEY } from '~constants/localStorage'
 import { LANDING_ROUTE } from '~constants/routes'
 import { useLocalStorage } from '~hooks/useLocalStorage'
+import { useToast } from '~hooks/useToast'
 import { getBannerProps } from '~utils/getBannerProps'
-import { sendLoginOtp, verifyLoginOtp } from '~services/AuthService'
+import {
+  getOauthRedirectUrl,
+  sendLoginOtp,
+  verifyLoginOtp,
+} from '~services/AuthService'
 import { Banner } from '~components/Banner'
 import Link from '~components/Link'
 import { AppGrid } from '~templates/AppGrid'
@@ -96,10 +102,36 @@ const NonMobileSidebarGridArea: FC = ({ children }) => (
 )
 
 export const LoginPage = (): JSX.Element => {
+  const [search] = useSearchParams()
+  const oauthState = search.get('oauth')
+  const oauthMessage = search.get('message')
+
+  const toast = useToast({
+    id: 'oauth-toast',
+    isClosable: true,
+  })
+
   const { data: { siteBannerContentReact, isLoginBannerReact } = {} } = useEnv()
   const [, setIsAuthenticated] = useLocalStorage<boolean>(LOGGED_IN_KEY)
   const [email, setEmail] = useState<string>()
   const { t } = useTranslation()
+
+  useEffect(() => {
+    if (!oauthState) return
+    if (oauthState === 'success') {
+      trackAdminLogin()
+      return setIsAuthenticated(true)
+    }
+    if (oauthState === 'error') {
+      if (toast.isActive('oauth-toast')) return
+      toast({
+        status: 'warning',
+        description:
+          oauthMessage ??
+          'An error occurred while logging in. Please try again.',
+      })
+    }
+  }, [oauthMessage, oauthState, setIsAuthenticated, toast])
 
   // TODO (#4279): Revert back to non-react banners post-migration.
   const bannerContent = useMemo(
@@ -118,6 +150,15 @@ export const LoginPage = (): JSX.Element => {
     await sendLoginOtp(trimmedEmail)
     return setEmail(trimmedEmail)
   }
+
+  const { mutate: getOauthRedirectUrlMutate, isLoading } = useMutation(
+    () => getOauthRedirectUrl(),
+    {
+      onSuccess: (redirectUrl) => {
+        window.location.href = redirectUrl
+      },
+    },
+  )
 
   const handleVerifyOtp = async ({ otp }: OtpFormInputs) => {
     // Should not happen, since OtpForm component is only shown when there is
@@ -182,7 +223,11 @@ export const LoginPage = (): JSX.Element => {
               </Box>
             </Flex>
             {!email ? (
-              <LoginForm onSubmit={handleSendOtp} />
+              <LoginForm
+                onSubmit={handleSendOtp}
+                onOauthLogin={getOauthRedirectUrlMutate}
+                isLoadingOauth={isLoading}
+              />
             ) : (
               <OtpForm
                 email={email}

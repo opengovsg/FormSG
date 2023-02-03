@@ -5,6 +5,11 @@ import * as AuthController from '../../../../modules/auth/auth.controller'
 import { limitRate } from '../../../../utils/limit-rate'
 
 export const AuthRouter = Router()
+
+AuthRouter.post('/oauth/redirect', AuthController.handleOauthRedirect)
+
+AuthRouter.get('/oauth/callback', AuthController.handleOauthCallback)
+
 /**
  * Check if email domain is a valid agency
  * @route POST /auth/email/validate

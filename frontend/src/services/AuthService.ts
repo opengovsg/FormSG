@@ -7,6 +7,16 @@ import { ApiService } from './ApiService'
 const AUTH_ENDPOINT = '/auth'
 
 /**
+ * Request for OAuth redirect URL
+ * @returns OAuth redirect URL
+ */
+export const getOauthRedirectUrl = async (): Promise<string> => {
+  return ApiService.post<{ redirectUrl: string }>(
+    `${AUTH_ENDPOINT}/oauth/redirect`,
+  ).then(({ data }) => data.redirectUrl)
+}
+
+/**
  * Sends login OTP to given email
  * @param email email to send login OTP to
  * @returns success string if login OTP is sent successfully
