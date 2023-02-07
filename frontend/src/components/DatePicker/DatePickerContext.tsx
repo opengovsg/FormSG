@@ -84,7 +84,7 @@ const useProvideDatePicker = ({
   isReadOnly: isReadOnlyProp,
   isRequired: isRequiredProp,
   isInvalid: isInvalidProp,
-  timeZone = 'UTC',
+  timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone,
   locale,
   isDateUnavailable,
   allowManualInput = true,
