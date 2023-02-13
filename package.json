@@ -140,6 +140,7 @@
     "libphonenumber-js": "^1.10.15",
     "lodash": "^4.17.21",
     "moment-timezone": "0.5.40",
+    "mongodb": "^4.1.0",
     "mongodb-memory-server-core": "^6.9.6",
     "mongodb-uri": "^0.9.7",
     "mongoose": "^5.13.15",
