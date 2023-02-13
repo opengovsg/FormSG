@@ -71,7 +71,7 @@ npm install --legacy-peer-deps
 To prevent breaking changes to webpack4 introduced in node 17 and above, enable the `--openssl-legacy-provider` flag:
 
 ```bash
-export NODE_OPTIONS= --openssl-legacy-provider
+export NODE_OPTIONS=--openssl-legacy-provider
 ```
 
 If you are on Mac OS X, you may want to allow Docker to use more RAM (minimum of 4GB) by clicking on the Docker icon on the toolbar, clicking on the "Preferences" menu item, then clicking on the "Resources" link on the left.
