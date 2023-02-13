@@ -8,6 +8,7 @@ import { types } from 'util'
 
 import config from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
+import { createReqMeta } from '../../utils/request'
 
 const logger = createLoggerWithLabel(module)
 const celebrateErrorHandler = errors()
@@ -43,7 +44,7 @@ export const catchNonExistentStaticRoutesMiddleware: RequestHandler = async (
       message: 'Serving static asset from S3',
       meta: {
         action: 'catchNonExistentStaticRoutesMiddleware',
-        url: req.originalUrl,
+        ...createReqMeta(req),
       },
     })
     res.status(status)
@@ -55,7 +56,7 @@ export const catchNonExistentStaticRoutesMiddleware: RequestHandler = async (
       message: 'Static asset not found in S3',
       meta: {
         action: 'catchNonExistentStaticRoutesMiddleware',
-        url: req.originalUrl,
+        ...createReqMeta(req),
       },
       // Log original error returned from s3
       error: err,
@@ -86,6 +87,7 @@ export const genericErrorHandlerMiddleware: ErrorRequestHandler = (
       action: 'genericErrorHandlerMiddleware',
       // formId is only present for Joi validated routes that require it
       formId: get(req, 'form._id', null),
+      ...createReqMeta(req),
     }
 
     // Error page
