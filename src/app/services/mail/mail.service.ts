@@ -156,7 +156,7 @@ export class MailService {
       })
 
       try {
-        const info = this.#transporter.sendMail(mail)
+        const info = await this.#transporter.sendMail(mail)
         logger.info({
           message: `Mail successfully sent on attempt ${attemptNum}`,
           meta: { ...logMeta, info },
