@@ -195,6 +195,9 @@ If you do not need to rebuild the frontend and backend, you can run
 npm run test-e2e-ci
 ```
 
+#### Cross-browser testing
+This project is tested with [BrowserStack](https://www.browserstack.com/open-source).
+
 ## Architecture
 
 The architecture overview is [here](docs/ARCHITECTURE.md).
