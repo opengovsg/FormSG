@@ -53,7 +53,6 @@ const helmetMiddlewares = () => {
       'https://www.gstatic.com/recaptcha/',
       'https://www.gstatic.cn/',
       'https://*.googletagmanager.com', // GA4 https://developers.google.com/tag-platform/tag-manager/web/csp,
-      'https://polyfill.io/',
     ],
     connectSrc: [
       "'self'",
