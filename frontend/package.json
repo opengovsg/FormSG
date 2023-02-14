@@ -13,6 +13,7 @@
     "@opengovsg/formsg-sdk": "^0.10.0",
     "@stablelib/base64": "^1.0.1",
     "axios": "^1.2.1",
+    "blob-polyfill": "^7.0.20220408",
     "broadcast-channel": "^4.13.0",
     "browser-image-compression": "^2.0.0",
     "comlink": "^4.3.1",
