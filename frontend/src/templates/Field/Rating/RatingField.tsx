@@ -58,6 +58,8 @@ export const RatingField = ({
             numberOfRatings={schema.ratingOptions.steps}
             variant={ratingVariant}
             value={transform.toNumber(value)}
+            isRequired={schema.required}
+            fieldTitle={schema.title}
             onChange={(val) => onChange(transform.toString(val))}
             {...rest}
           />

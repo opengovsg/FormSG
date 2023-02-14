@@ -54,6 +54,16 @@ export interface RatingProps {
    * Whether the rating field is disabled.
    */
   isDisabled?: boolean
+
+  /**
+   * Whether the rating field is required.
+   */
+  isRequired: boolean
+
+  /**
+   * Title of the rating field to label the rating group
+   */
+  fieldTitle: string
 }
 
 export const Rating = forwardRef<RatingProps, 'input'>(
@@ -68,6 +78,8 @@ export const Rating = forwardRef<RatingProps, 'input'>(
       wrapComponentsPerRow = 5,
       helperText,
       isDisabled,
+      isRequired,
+      fieldTitle,
     },
     ref,
   ) => {
@@ -140,6 +152,9 @@ export const Rating = forwardRef<RatingProps, 'input'>(
       >
         <Stack
           gridArea="rating"
+          aria-label={fieldTitle}
+          aria-required={isRequired}
+          role="radiogroup"
           as="fieldset"
           direction={{ base: 'column', md: 'row' }}
           spacing={{ base: '0.5rem', md: '1rem' }}
