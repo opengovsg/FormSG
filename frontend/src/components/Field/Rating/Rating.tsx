@@ -61,6 +61,11 @@ export interface RatingProps {
   isRequired: boolean
 
   /**
+   * Whether the current response is invalid.
+   */
+  isInvalid?: boolean
+
+  /**
    * Title of the rating field to label the rating group
    */
   fieldTitle: string
@@ -79,6 +84,7 @@ export const Rating = forwardRef<RatingProps, 'input'>(
       helperText,
       isDisabled,
       isRequired,
+      isInvalid,
       fieldTitle,
     },
     ref,
@@ -154,6 +160,7 @@ export const Rating = forwardRef<RatingProps, 'input'>(
           gridArea="rating"
           aria-label={fieldTitle}
           aria-required={isRequired}
+          aria-invalid={isInvalid}
           role="radiogroup"
           as="fieldset"
           direction={{ base: 'column', md: 'row' }}
