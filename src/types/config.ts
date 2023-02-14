@@ -72,10 +72,7 @@ export type Config = {
   app: AppConfig
   db: DbConfig
   aws: AwsConfig
-  // TODO #130 Remove references to US SES when SES migration is over (opengovsg/formsg-private#130)
-  mail_us: MailConfig
-  mail_sg: MailConfig
-  nodemailer_sg_warmup_start_date: string
+  mail: MailConfig
 
   cookieSettings: SessionOptions['cookie']
   // Consts
@@ -110,17 +107,11 @@ export type Config = {
 
 // Interface
 export interface IProdOnlyVarsSchema {
-  // TODO #130 Remove references to US SES when SES migration is over (opengovsg/formsg-private#130)
-  port_us: number
-  host_us: string
-  user_us: string
-  pass_us: string
+  port: number
+  host: string
+  user: string
+  pass: string
   dbHost: string
-  port_sg: number
-  host_sg: string
-  user_sg: string
-  pass_sg: string
-  nodemailer_sg_warmup_start_date: string
 }
 
 export interface ICompulsoryVarsSchema {
