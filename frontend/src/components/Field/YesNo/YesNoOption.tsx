@@ -87,7 +87,7 @@ export const YesNoOption = forwardRef<YesNoOptionProps, 'input'>(
         data-testid={`${props.name}-${props.side}`}
         role="button"
         ref={ref}
-        aria-label={`${label} option, ${
+        aria-label={`${props.title} ${label} option, ${
           props.isChecked ? 'selected' : 'unselected'
         }`}
       >
