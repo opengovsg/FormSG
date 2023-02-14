@@ -204,6 +204,7 @@ export const RatingOption = forwardRef<RatingOptionProps, 'input'>(
         <input
           type="radio"
           aria-checked={selectedValue === value}
+          aria-label={`${value} ${variant}${value === 1 ? '' : 's'}`}
           {...inputProps}
           data-testid={inputProps.id}
           onChange={handleSelect}
