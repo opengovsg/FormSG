@@ -172,6 +172,8 @@ export const RatingOption = forwardRef<RatingOptionProps, 'input'>(
       onChange: handleSelect,
       value,
       isDisabled,
+      // Required should apply to rating field rather than individual rating.
+      isRequired: false,
     })
 
     const inputProps = getInputProps()
