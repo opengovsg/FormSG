@@ -270,7 +270,7 @@
     "regenerator": "^0.14.10",
     "rimraf": "^3.0.2",
     "stylelint": "^13.13.1",
-    "stylelint-config-prettier": "^9.0.4",
+    "stylelint-config-prettier": "^9.0.5",
     "stylelint-config-standard": "^22.0.0",
     "stylelint-prettier": "^1.2.0",
     "supertest": "^6.3.3",
