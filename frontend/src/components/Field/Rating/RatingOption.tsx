@@ -1,7 +1,6 @@
 import { HTMLProps, KeyboardEvent, useCallback, useMemo } from 'react'
 import {
   Box,
-  chakra,
   forwardRef,
   Icon,
   useMultiStyleConfig,
@@ -205,26 +204,20 @@ export const RatingOption = forwardRef<RatingOptionProps, 'input'>(
     }, [radioProps, colorScheme, inputProps.id, selectedValue, value, variant])
 
     return (
-      <chakra.label
-        className="chakra-radio"
-        // This is the adapted line of code which applies the internal label styles
-        // to the whole container
-        {...(isChecked ? { 'data-checked': '' } : {})}
-      >
-        <Box _active={{ zIndex: 1 }} _focusWithin={{ zIndex: 1 }}>
-          <input
-            type="radio"
-            aria-checked={isChecked}
-            aria-label={simplur`${value} ${variant}${[value]}[|s]`}
-            {...inputProps}
-            data-testid={inputProps.id}
-            onChange={handleSelect}
-            onKeyDown={handleSpacebar}
-            ref={ref}
-          />
-          {componentToRender}
-        </Box>
-      </chakra.label>
+      <Box _active={{ zIndex: 1 }} _focusWithin={{ zIndex: 1 }}>
+        <input
+          type="radio"
+          aria-checked={isChecked}
+          aria-label={simplur`${value} ${variant}${[value]}[|s]`}
+          {...(isChecked ? { 'data-checked': '' } : {})}
+          {...inputProps}
+          data-testid={inputProps.id}
+          onChange={handleSelect}
+          onKeyDown={handleSpacebar}
+          ref={ref}
+        />
+        {componentToRender}
+      </Box>
     )
   },
 )
