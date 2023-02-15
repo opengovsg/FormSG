@@ -6,6 +6,7 @@ import {
   useMultiStyleConfig,
   useRadio,
 } from '@chakra-ui/react'
+import simplur from 'simplur'
 
 import { BxHeart, BxsHeart, BxsStar, BxStar } from '~assets/icons'
 import { RATING_THEME_KEY } from '~theme/components/Field/Rating'
@@ -205,7 +206,7 @@ export const RatingOption = forwardRef<RatingOptionProps, 'input'>(
         <input
           type="radio"
           aria-checked={selectedValue === value}
-          aria-label={`${value} ${variant}${value === 1 ? '' : 's'}`}
+          aria-label={simplur`${value} ${variant}${[value]}[|s]`}
           {...inputProps}
           data-testid={inputProps.id}
           onChange={handleSelect}
