@@ -25,24 +25,18 @@ export const transformAxiosError = (error: Error): ApiError => {
     if (error.response) {
       const statusCode = error.response.status
       if (statusCode === StatusCodes.TOO_MANY_REQUESTS) {
-        return new HttpError('Error [001]: Please try again later.', statusCode)
+        return new HttpError('Please try again later.', statusCode)
       }
       if (typeof error.response.data === 'string') {
-        return new HttpError(`Error [002]: ${error.response.data}`, statusCode)
+        return new HttpError(error.response.data, statusCode)
       }
       if (error.response.data?.message) {
-        return new HttpError(
-          `Error [003]: ${error.response.data.message}`,
-          statusCode,
-        )
+        return new HttpError(error.response.data.message, statusCode)
       }
       if (error.response.statusText) {
-        return new HttpError(
-          `Error [004]: ${error.response.statusText}`,
-          statusCode,
-        )
+        return new HttpError(error.response.statusText, statusCode)
       }
-      return new HttpError(`Error [005]: ${statusCode} error`, statusCode)
+      return new HttpError(`Error: ${statusCode}`, statusCode)
     } else if (error.request) {
       // TODO: Remove this logging once Network Error sources have been identified.
       datadogLogs.logger.warn(`Unknown error: ${error.message}`, {
@@ -55,7 +49,7 @@ export const transformAxiosError = (error: Error): ApiError => {
         },
       })
       return new Error(
-        `There was a problem with your internet connection. Please check your network and try again. Error [006]: ${error.message}`,
+        `There was a problem with your internet connection. Please check your network and try again. ${error.message}`,
       )
     }
   }

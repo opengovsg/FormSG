@@ -171,7 +171,6 @@ export const generateAutoreplyPdf = (
     },
   })
 
-  // TODO: Remove tracer once issue is resolved.
   return tracer.trace('generateAutoreplyPdf', () =>
     safeRenderFile(pathToTemplate, renderData).andThen((summaryHtml) => {
       return ResultAsync.fromPromise(
