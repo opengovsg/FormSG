@@ -291,31 +291,17 @@ EncryptSubmissionSchema.statics.findAllMetadataByFormId = function (
   const numToSkip = (page - 1) * pageSize
 
   // return documents within the page
-  const pageResults = this.aggregate<MetadataAggregateResult>([
+  const pageResults: Promise<MetadataAggregateResult[]> = this.find(
     {
-      $match: {
-        form: mongoose.Types.ObjectId(formId),
-        submissionType: SubmissionType.Encrypt,
-      },
+      form: mongoose.Types.ObjectId(formId),
+      submissionType: SubmissionType.Encrypt,
     },
-    {
-      $sort: {
-        created: -1,
-      },
-    },
-    {
-      $skip: numToSkip,
-    },
-    {
-      $limit: pageSize,
-    },
-    {
-      $project: {
-        _id: 1,
-        created: 1,
-      },
-    },
-  ])
+    { _id: 1, created: 1 },
+  )
+    .sort({ created: -1 })
+    .skip(numToSkip)
+    .limit(pageSize)
+    .exec()
 
   const count =
     this.countDocuments({
