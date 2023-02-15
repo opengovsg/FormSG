@@ -1,6 +1,5 @@
 import { datadogLogs } from '@datadog/browser-logs'
 import { encode as encodeBase64 } from '@stablelib/base64'
-import { File } from 'blob-polyfill'
 import { chain, forOwn, isEmpty, keyBy, omit, pick } from 'lodash'
 
 import { BasicField, FormFieldDto } from '~shared/types/field'
@@ -168,9 +167,27 @@ const encryptAttachment = async (
 ): Promise<StorageModeAttachment & { id: string }> => {
   let label
 
+  function promisifyFile(obj: any): Promise<ArrayBuffer> {
+    return new Promise(function (resolve, reject) {
+      obj.onload = obj.onerror = function (evt: any) {
+        obj.onload = obj.onerror = null
+        console.log(obj.result)
+        evt.type === 'load'
+          ? resolve(obj.result)
+          : reject(new Error('Failed to read the blob/file'))
+      }
+    })
+  }
   try {
     label = 'Read file content'
-    const fileArrayBuffer = await attachment.arrayBuffer()
+    let fileArrayBuffer: any
+    if (!attachment.arrayBuffer) {
+      const fr = new FileReader()
+      fr.readAsArrayBuffer(attachment)
+      fileArrayBuffer = await promisifyFile(fr)
+    } else {
+      fileArrayBuffer = await attachment.arrayBuffer()
+    }
     const fileContentsView = new Uint8Array(fileArrayBuffer)
 
     label = 'Encrypt content'
