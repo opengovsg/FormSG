@@ -181,6 +181,8 @@ export const RatingOption = forwardRef<RatingOptionProps, 'input'>(
     const inputProps = getInputProps()
     const radioProps = getCheckboxProps()
 
+    const isChecked = value === selectedValue
+
     const componentToRender = useMemo(() => {
       const props = {
         radioProps,
@@ -205,8 +207,9 @@ export const RatingOption = forwardRef<RatingOptionProps, 'input'>(
       <Box _active={{ zIndex: 1 }} _focusWithin={{ zIndex: 1 }}>
         <input
           type="radio"
-          aria-checked={selectedValue === value}
+          aria-checked={isChecked}
           aria-label={simplur`${value} ${variant}${[value]}[|s]`}
+          {...(isChecked ? { 'data-checked': '' } : {})}
           {...inputProps}
           data-testid={inputProps.id}
           onChange={handleSelect}
