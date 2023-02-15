@@ -1,6 +1,6 @@
 import { datadogLogs } from '@datadog/browser-logs'
 import { encode as encodeBase64 } from '@stablelib/base64'
-// import { File } from 'blob-polyfill'
+import { File } from 'blob-polyfill'
 import { chain, forOwn, isEmpty, keyBy, omit, pick } from 'lodash'
 
 import { BasicField, FormFieldDto } from '~shared/types/field'
@@ -14,8 +14,6 @@ import {
   StorageModeAttachmentsMap,
   StorageModeSubmissionContentDto,
 } from '~shared/types/submission'
-
-import { File } from '~typings/core'
 
 import formsgSdk from '~utils/formSdk'
 import { AttachmentFieldSchema, FormFieldValues } from '~templates/Field'
