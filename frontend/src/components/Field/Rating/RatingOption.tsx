@@ -6,6 +6,7 @@ import {
   useMultiStyleConfig,
   useRadio,
 } from '@chakra-ui/react'
+import simplur from 'simplur'
 
 import { BxHeart, BxsHeart, BxsStar, BxStar } from '~assets/icons'
 import { RATING_THEME_KEY } from '~theme/components/Field/Rating'
@@ -172,10 +173,15 @@ export const RatingOption = forwardRef<RatingOptionProps, 'input'>(
       onChange: handleSelect,
       value,
       isDisabled,
+      // Required & invalid should apply to rating field rather than individual rating.
+      isRequired: false,
+      isInvalid: false,
     })
 
     const inputProps = getInputProps()
     const radioProps = getCheckboxProps()
+
+    const isChecked = value === selectedValue
 
     const componentToRender = useMemo(() => {
       const props = {
@@ -201,7 +207,9 @@ export const RatingOption = forwardRef<RatingOptionProps, 'input'>(
       <Box _active={{ zIndex: 1 }} _focusWithin={{ zIndex: 1 }}>
         <input
           type="radio"
-          aria-checked={selectedValue === value}
+          aria-checked={isChecked}
+          aria-label={simplur`${value} ${variant}${[value]}[|s]`}
+          {...(isChecked ? { 'data-checked': '' } : {})}
           {...inputProps}
           data-testid={inputProps.id}
           onChange={handleSelect}
