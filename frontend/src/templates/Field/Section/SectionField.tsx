@@ -60,9 +60,9 @@ export const BaseSectionField = forwardRef<
       }}
       {...rest}
     >
-      <Text textStyle="h2" color={sectionColor}>
+      <Box as="h2" textStyle="h2" color={sectionColor}>
         {schema.title}
-      </Text>
+      </Box>
       {schema.description && (
         <Box mt="1rem">
           <MarkdownText multilineBreaks components={mdComponents}>
