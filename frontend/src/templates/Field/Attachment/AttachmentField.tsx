@@ -58,6 +58,7 @@ export const AttachmentField = ({
               onChange(file)
             }}
             onError={setErrorMessage}
+            title={schema.title}
           />
         )}
         name={fieldName}

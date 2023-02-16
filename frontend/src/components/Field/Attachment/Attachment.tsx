@@ -80,6 +80,7 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
       value,
       name,
       colorScheme,
+      title,
       ...props
     },
     ref,
@@ -250,6 +251,7 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
                 isDragActive={isDragActive}
                 inputProps={processedInputProps}
                 readableMaxSize={readableMaxSize}
+                question={title}
               />
             )}
           </Box>
