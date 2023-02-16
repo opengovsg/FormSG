@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { Box, forwardRef, Text } from '@chakra-ui/react'
+import { Box, forwardRef } from '@chakra-ui/react'
 
 import { FormColorTheme } from '~shared/types'
 
