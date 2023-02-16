@@ -29,7 +29,9 @@ describe('validation required', () => {
     const user = userEvent.setup()
     const schema = ValidationRequired.args?.schema
     render(<ValidationRequired />)
-    const input = screen.getByLabelText(schema!.title) as HTMLInputElement
+    const input = screen.getByLabelText(
+      `${schema!.questionNumber}. ${schema!.title}`,
+    ) as HTMLInputElement
     const submitButton = screen.getByText('Submit')
 
     expect(input.value).toBe('')
@@ -69,7 +71,9 @@ describe('validation optional', () => {
     const user = userEvent.setup()
     const schema = ValidationOptional.args?.schema
     render(<ValidationOptional />)
-    const input = screen.getByLabelText(schema!.title) as HTMLInputElement
+    const input = screen.getByLabelText(
+      `${schema!.questionNumber}. ${schema!.title}`,
+    ) as HTMLInputElement
     const submitButton = screen.getByText('Submit')
 
     expect(input.value).toBe('')
@@ -93,7 +97,9 @@ describe('uen validation', () => {
     const user = userEvent.setup()
     const schema = ValidationOptional.args?.schema
     render(<ValidationOptional />)
-    const input = screen.getByLabelText(schema!.title) as HTMLInputElement
+    const input = screen.getByLabelText(
+      `${schema!.questionNumber}. ${schema!.title}`,
+    ) as HTMLInputElement
     const submitButton = screen.getByText('Submit')
 
     expect(input.value).toBe('')
