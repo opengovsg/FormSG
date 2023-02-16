@@ -54,7 +54,6 @@ export const BaseSectionField = forwardRef<
     // id given so app can scrolled to this section.
     <Box
       id={schema._id}
-      role="heading"
       ref={ref}
       _focus={{
         boxShadow: `0 0 0 2px var(--chakra-colors-theme-${colorTheme}-500)`,
