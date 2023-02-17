@@ -34,7 +34,6 @@ export const FormInstructionsContainer = (): JSX.Element | null => {
         <Box
           id={PUBLICFORM_INSTRUCTIONS_SECTIONID}
           ref={sectionRefs[PUBLICFORM_INSTRUCTIONS_SECTIONID]}
-          role="heading"
           // Allow focus on instructions when sidebar link is clicked.
           tabIndex={-1}
         >
