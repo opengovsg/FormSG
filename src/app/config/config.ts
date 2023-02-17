@@ -69,6 +69,7 @@ const s3BucketUrlVars = convict(s3BucketUrlSchema)
   .load({
     logoBucketUrl: `${awsEndpoint}/${basicVars.awsConfig.logoS3Bucket}`,
     imageBucketUrl: `${awsEndpoint}/${basicVars.awsConfig.imageS3Bucket}`,
+    staticAssetsBucketUrl: `${awsEndpoint}/${basicVars.awsConfig.staticAssetsS3Bucket}`,
     // NOTE THE TRAILING / AT THE END OF THIS URL! This is only for attachments!
     attachmentBucketUrl: `${awsEndpoint}/${basicVars.awsConfig.attachmentS3Bucket}/`,
   })
