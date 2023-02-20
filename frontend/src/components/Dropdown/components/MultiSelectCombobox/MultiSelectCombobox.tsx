@@ -18,7 +18,8 @@ const MultiItemsContainer: FC = ({ children }) => {
       // Margin difference for selected items.
       my="-3px"
       // Padding for dropdown toggle.
-      maxW="calc(100% - 2.5rem)"
+      flexBasis="calc(100% - 2.5rem)"
+      minW="0px"
     >
       {children}
     </Box>
