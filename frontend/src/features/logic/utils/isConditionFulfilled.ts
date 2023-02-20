@@ -27,11 +27,34 @@ const getCurrentFieldValue = (
   }
 }
 
+/**
+ * Utility function to trim condition.value strings
+ * Trim logic condition for backward compability as some logic conditions have trailing whitespac
+ * Similar to current implementation in `src/shared/util/logic.ts` for backend
+ * TODO #4279: Revisit decision to trim after React rollout is complete
+ */
+const trimConditionValue = (condition: FormCondition) => {
+  if (Array.isArray(condition.value)) {
+    return {
+      ...condition,
+      value: condition.value.map((value) =>
+        typeof value === 'string' ? value.trim() : value,
+      ),
+    }
+  } else if (typeof condition.value === 'string') {
+    return { ...condition, value: condition.value.trim() }
+  } else {
+    return condition
+  }
+}
+
 export const isConditionFulfilled = (
   input: DeepPartial<FormFieldValue>,
   condition: FormCondition,
   fieldType: BasicField,
 ): boolean => {
+  const conditionTrimmed = trimConditionValue(condition)
+
   // Not logic field, early return.
   const args = { fieldType, input }
   if (!isLogicableField(args)) return false
@@ -41,16 +64,16 @@ export const isConditionFulfilled = (
     return false
   }
 
-  switch (condition.state) {
+  switch (conditionTrimmed.state) {
     case LogicConditionState.Lte:
-      return Number(currentValue) <= Number(condition.value)
+      return Number(currentValue) <= Number(conditionTrimmed.value)
     case LogicConditionState.Gte:
-      return Number(currentValue) >= Number(condition.value)
+      return Number(currentValue) >= Number(conditionTrimmed.value)
     case LogicConditionState.Either: {
       // currentValue must be in a value in condition.value
-      const condValuesArray = Array.isArray(condition.value)
-        ? condition.value.map(String)
-        : [String(condition.value)]
+      const condValuesArray = Array.isArray(conditionTrimmed.value)
+        ? conditionTrimmed.value.map(String)
+        : [String(conditionTrimmed.value)]
       if (isRadioFormFieldValue(currentValue, args.fieldType)) {
         if (condValuesArray.includes('Others')) {
           // If the condition value is 'Others',
@@ -68,9 +91,9 @@ export const isConditionFulfilled = (
     case LogicConditionState.Equal: {
       if (isRadioFormFieldValue(currentValue, args.fieldType)) {
         // It's possible that the condition.value is in a single-valued array.
-        const condValue = Array.isArray(condition.value)
-          ? condition.value[0]
-          : condition.value
+        const condValue = Array.isArray(conditionTrimmed.value)
+          ? conditionTrimmed.value[0]
+          : conditionTrimmed.value
         if (
           condValue === 'Others' &&
           currentValue.value === RADIO_OTHERS_INPUT_VALUE
@@ -86,9 +109,9 @@ export const isConditionFulfilled = (
       // In angular, number equality is string=== but decimal equality is number===.
       // Need to replicate this behavior for backward-compatibility.
       if (fieldType === BasicField.Decimal) {
-        return Number(currentValue) === Number(condition.value)
+        return Number(currentValue) === Number(conditionTrimmed.value)
       }
-      return String(condition.value) === String(currentValue)
+      return String(conditionTrimmed.value) === String(currentValue)
     }
   }
 }
