@@ -180,6 +180,16 @@ export const EditConditionBlock = ({
     }
   }, [currentSelectedField])
 
+  const logicValueWrapperWidth = useMemo(() => {
+    if (!ifValueTypeValue) return 'auto'
+    switch (ifValueTypeValue) {
+      case LogicIfValue.MultiSelect:
+        return '0px'
+      default:
+        return 'auto'
+    }
+  }, [ifValueTypeValue])
+
   const validateValueInputComponent = useCallback(
     (val) => {
       switch (ifValueTypeValue) {
@@ -367,6 +377,7 @@ export const EditConditionBlock = ({
                 isRequired
                 isReadOnly={isLoading}
                 isInvalid={!!get(errors, `${name}.value`)}
+                minW={{ md: logicValueWrapperWidth }}
               >
                 <VisuallyHidden
                   as="label"
