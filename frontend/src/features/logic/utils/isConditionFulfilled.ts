@@ -10,7 +10,11 @@ import {
 import { FormFieldValue } from '~templates/Field'
 import { RADIO_OTHERS_INPUT_VALUE } from '~templates/Field/Radio/RadioField'
 
-import { isLogicableField, isRadioFormFieldValue } from './typeguards'
+import {
+  isLogicableField,
+  isRadioFormFieldValue,
+  isValueStringArray,
+} from './typeguards'
 
 const getCurrentFieldValue = (
   input: DeepPartial<FormFieldValue<LogicableField>>,
@@ -34,15 +38,16 @@ const getCurrentFieldValue = (
  * TODO #4279: Revisit decision to trim after React rollout is complete
  */
 const trimConditionValue = (condition: FormCondition) => {
-  if (Array.isArray(condition.value)) {
+  if (isValueStringArray(condition.value)) {
     return {
       ...condition,
-      value: condition.value.map((value) =>
-        typeof value === 'string' ? value.trim() : value,
-      ),
+      value: condition.value.map((value) => value.trim()),
     }
   } else if (typeof condition.value === 'string') {
-    return { ...condition, value: condition.value.trim() }
+    return {
+      ...condition,
+      value: condition.value.trim(),
+    }
   } else {
     return condition
   }
