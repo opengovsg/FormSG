@@ -3,7 +3,6 @@ import { omit } from 'lodash'
 import mongoose from 'mongoose'
 import { err, ok } from 'neverthrow'
 import session, { Session } from 'supertest-session'
-import { mocked } from 'ts-jest/utils'
 
 import { FormFieldSchema } from 'src/types'
 
@@ -46,8 +45,8 @@ import {
 const MyInfoHashModel = getMyInfoHashModel(mongoose)
 jest.mock('../../../sgid/sgid.service')
 
-const MockSgidService = mocked(SgidService, true)
-const MockCpOidcClient = mocked(CpOidcClient, true)
+const MockSgidService = jest.mocked(SgidService)
+const MockCpOidcClient = jest.mocked(CpOidcClient)
 
 jest.mock('../../../spcp/spcp.oidc.client')
 
@@ -79,7 +78,7 @@ const EmailSubmissionsApp = setupApp(
 describe('email-submission.routes', () => {
   let request: Session
 
-  const mockCpClient = mocked(MockCpOidcClient.mock.instances[0], true)
+  const mockCpClient = jest.mocked(MockCpOidcClient.mock.instances[0])
 
   beforeAll(async () => await dbHandler.connect())
   beforeEach(() => {
@@ -116,6 +115,7 @@ describe('email-submission.routes', () => {
       expect(response.body).toEqual({
         message: 'Form submission successful.',
         submissionId: expect.any(String),
+        timestamp: expect.any(Number),
       })
     })
 
@@ -144,6 +144,7 @@ describe('email-submission.routes', () => {
       expect(response.body).toEqual({
         message: 'Form submission successful.',
         submissionId: expect.any(String),
+        timestamp: expect.any(Number),
       })
     })
 
@@ -175,6 +176,7 @@ describe('email-submission.routes', () => {
       expect(response.body).toEqual({
         message: 'Form submission successful.',
         submissionId: expect.any(String),
+        timestamp: expect.any(Number),
       })
     })
 
@@ -201,6 +203,7 @@ describe('email-submission.routes', () => {
       expect(response.body).toEqual({
         message: 'Form submission successful.',
         submissionId: expect.any(String),
+        timestamp: expect.any(Number),
       })
     })
 
@@ -227,6 +230,7 @@ describe('email-submission.routes', () => {
       expect(response.body).toEqual({
         message: 'Form submission successful.',
         submissionId: expect.any(String),
+        timestamp: expect.any(Number),
       })
     })
 
@@ -253,6 +257,7 @@ describe('email-submission.routes', () => {
       expect(response.body).toEqual({
         message: 'Form submission successful.',
         submissionId: expect.any(String),
+        timestamp: expect.any(Number),
       })
     })
 
@@ -457,6 +462,7 @@ describe('email-submission.routes', () => {
         expect(response.body).toEqual({
           message: 'Form submission successful.',
           submissionId: expect.any(String),
+          timestamp: expect.any(Number),
         })
       })
 
@@ -605,6 +611,7 @@ describe('email-submission.routes', () => {
         expect(response.body).toEqual({
           message: 'Form submission successful.',
           submissionId: expect.any(String),
+          timestamp: expect.any(Number),
         })
       })
 
@@ -743,6 +750,7 @@ describe('email-submission.routes', () => {
         expect(response.body).toEqual({
           message: 'Form submission successful.',
           submissionId: expect.any(String),
+          timestamp: expect.any(Number),
         })
       })
 
@@ -877,6 +885,7 @@ describe('email-submission.routes', () => {
         expect(response.body).toEqual({
           message: 'Form submission successful.',
           submissionId: expect.any(String),
+          timestamp: expect.any(Number),
         })
       })
 

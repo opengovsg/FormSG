@@ -1,3 +1,4 @@
+import { datadogLogs } from '@datadog/browser-logs'
 import { encode as encodeBase64 } from '@stablelib/base64'
 import { chain, forOwn, isEmpty, keyBy, omit, pick } from 'lodash'
 
@@ -100,19 +101,17 @@ const getEncryptedAttachmentsMap = async (
 ): Promise<StorageModeAttachmentsMap> => {
   const attachmentsMap = getAttachmentsMap(formFields, formInputs)
 
-  const attachmentPromises = Object.keys(attachmentsMap).map((id) =>
-    encryptAttachment(attachmentsMap[id], { id, publicKey }),
+  const attachmentPromises = Object.entries(attachmentsMap).map(
+    ([id, attachment]) => encryptAttachment(attachment, { id, publicKey }),
   )
 
-  return Promise.all(attachmentPromises).then((encryptedAttachmentsMeta) => {
-    return (
-      chain(encryptedAttachmentsMeta)
-        .keyBy('id')
-        // Remove id from object.
-        .mapValues((v) => omit(v, 'id'))
-        .value()
-    )
-  })
+  return Promise.all(attachmentPromises).then((encryptedAttachmentsMeta) =>
+    chain(encryptedAttachmentsMeta)
+      .keyBy('id')
+      // Remove id from object.
+      .mapValues((v) => omit(v, 'id'))
+      .value(),
+  )
 }
 
 const getAttachmentsMap = (
@@ -166,17 +165,68 @@ const encryptAttachment = async (
   attachment: File,
   { id, publicKey }: { id: string; publicKey: string },
 ): Promise<StorageModeAttachment & { id: string }> => {
-  const fileArrayBuffer = await attachment.arrayBuffer()
-  const fileContentsView = new Uint8Array(fileArrayBuffer)
+  let label
 
-  const encryptedAttachment = await formsgSdk.crypto.encryptFile(
-    fileContentsView,
-    publicKey,
-  )
-  const encodedEncryptedAttachment = {
-    ...encryptedAttachment,
-    binary: encodeBase64(encryptedAttachment.binary),
+  function promisifyFile(obj: FileReader): Promise<ArrayBuffer> {
+    return new Promise(function (resolve, reject) {
+      obj.onload = obj.onerror = function (evt) {
+        obj.onload = obj.onerror = null
+        console.log(obj.result)
+        evt.type === 'load' && obj.result
+          ? resolve(obj.result as ArrayBuffer)
+          : reject(new Error('Failed to read the blob/file'))
+      }
+    })
   }
 
-  return { id, encryptedFile: encodedEncryptedAttachment }
+  try {
+    label = 'Read file content'
+    let fileArrayBuffer
+
+    // arrayBuffer is only compatible with Safari 14 onwards
+    // for older browsers, use readAsArrayBuffer
+    if (!attachment.arrayBuffer) {
+      const fr = new FileReader()
+      fr.readAsArrayBuffer(attachment)
+      fileArrayBuffer = await promisifyFile(fr)
+    } else {
+      fileArrayBuffer = await attachment.arrayBuffer()
+    }
+    const fileContentsView = new Uint8Array(fileArrayBuffer)
+
+    label = 'Encrypt content'
+    const encryptedAttachment = await formsgSdk.crypto.encryptFile(
+      fileContentsView,
+      publicKey,
+    )
+
+    label = 'Base64-encode encrypted content'
+    const encodedEncryptedAttachment = {
+      ...encryptedAttachment,
+      binary: encodeBase64(encryptedAttachment.binary),
+    }
+
+    return { id, encryptedFile: encodedEncryptedAttachment }
+  } catch (error) {
+    // TODO: remove error logging when error about arrayBuffer not being a function is resolved
+    datadogLogs.logger.error(`encryptAttachment: ${label}: ${error?.message}`, {
+      meta: {
+        error: {
+          message: error?.message,
+          stack: error?.stack,
+        },
+        attachment: {
+          id,
+          type: typeof attachment,
+          extension: attachment.name?.split('.').pop(),
+          size: attachment.size,
+          isBlob: attachment instanceof Blob,
+          isFile: attachment instanceof File,
+          arrayBuffer: typeof attachment.arrayBuffer,
+        },
+      },
+    })
+    // Rethrow to maintain behaviour
+    throw error
+  }
 }

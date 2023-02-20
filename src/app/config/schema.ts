@@ -87,6 +87,12 @@ export const compulsoryVarsSchema: Schema<ICompulsoryVarsSchema> = {
       default: null,
       env: 'ATTACHMENT_S3_BUCKET',
     },
+    staticAssetsS3Bucket: {
+      doc: 'S3 Bucket containing static assets',
+      format: String,
+      default: null,
+      env: 'STATIC_ASSETS_S3_BUCKET',
+    },
   },
   core: {
     sessionSecret: {
@@ -354,10 +360,16 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
       default: 'v2-respondent-ui',
       env: 'REACT_MIGRATION_RESP_COOKIE_NAME',
     },
+    adminCookieNameOld: {
+      doc: "Name of the old cookie that will store admins' choice of environment.",
+      format: String,
+      default: 'v2-admin-ui',
+      env: 'REACT_MIGRATION_ADMIN_COOKIE_NAME_OLD',
+    },
     adminCookieName: {
       doc: "Name of the cookie that will store admins' choice of environment.",
       format: String,
-      default: 'v2-admin-ui',
+      default: 'v2-admin-ui-Jan-2023',
       env: 'REACT_MIGRATION_ADMIN_COOKIE_NAME',
     },
     qaCookieName: {
@@ -388,30 +400,29 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
 }
 
 export const prodOnlyVarsSchema: Schema<IProdOnlyVarsSchema> = {
-  // TODO #130 Delete these env vars when SES migration is over (opengovsg/formsg-private#130)
-  port_us: {
+  port: {
     doc: 'SMTP port number',
     format: 'port',
     default: null,
-    env: 'SES_PORT_US',
+    env: 'SES_PORT',
   },
-  host_us: {
+  host: {
     doc: 'SMTP hostname',
     format: String,
     default: null,
-    env: 'SES_HOST_US',
+    env: 'SES_HOST',
   },
-  user_us: {
+  user: {
     doc: 'SMTP username',
     format: String,
     default: null,
-    env: 'SES_USER_US',
+    env: 'SES_USER',
   },
-  pass_us: {
+  pass: {
     doc: 'SMTP password',
     format: String,
     default: null,
-    env: 'SES_PASS_US',
+    env: 'SES_PASS',
     sensitive: true,
   },
   dbHost: {
@@ -442,39 +453,6 @@ export const prodOnlyVarsSchema: Schema<IProdOnlyVarsSchema> = {
     default: null,
     env: 'DB_HOST',
     sensitive: true,
-  },
-  // TODO #130 Rename these env vars to without the _sg suffix when SES migration is over (opengovsg/formsg-private#130)
-  port_sg: {
-    doc: 'SMTP port number',
-    format: 'port',
-    default: null,
-    env: 'SES_PORT_SG',
-  },
-  host_sg: {
-    doc: 'SMTP hostname',
-    format: String,
-    default: null,
-    env: 'SES_HOST_SG',
-  },
-  user_sg: {
-    doc: 'SMTP username',
-    format: String,
-    default: null,
-    env: 'SES_USER_SG',
-  },
-  pass_sg: {
-    doc: 'SMTP password',
-    format: String,
-    default: null,
-    env: 'SES_PASS_SG',
-    sensitive: true,
-  },
-  // TODO #130 Remove this when SES migration is over (opengovsg/formsg-private#130)
-  nodemailer_sg_warmup_start_date: {
-    doc: 'Date where SG nodemailer client will start sending emails',
-    format: String,
-    default: '2099-01-01T23:59:59+08:00',
-    env: 'NODEMAILER_SG_WARMUP_START_DATE',
   },
 }
 
@@ -507,6 +485,12 @@ export const loadS3BucketUrlSchema = ({
     },
     imageBucketUrl: {
       doc: 'Url of images S3 bucket derived from S3 endpoint and bucket name',
+      format: (val) =>
+        validateS3BucketUrl(val, { isDev, hasTrailingSlash: false, region }),
+      default: null,
+    },
+    staticAssetsBucketUrl: {
+      doc: 'Url of static assets S3 bucket.',
       format: (val) =>
         validateS3BucketUrl(val, { isDev, hasTrailingSlash: false, region }),
       default: null,

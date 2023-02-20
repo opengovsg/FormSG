@@ -1,4 +1,3 @@
-import tracer from 'dd-trace'
 import { ok, okAsync, ResultAsync } from 'neverthrow'
 
 import {
@@ -21,6 +20,7 @@ import {
   MYINFO_LOGIN_COOKIE_OPTIONS,
 } from '../../myinfo/myinfo.constants'
 import { MyInfoService } from '../../myinfo/myinfo.service'
+import { extractMyInfoLoginJwt } from '../../myinfo/myinfo.util'
 import { SgidService } from '../../sgid/sgid.service'
 import { getOidcService } from '../../spcp/spcp.oidc.service'
 import * as EmailSubmissionMiddleware from '../email-submission/email-submission.middleware'
@@ -202,8 +202,9 @@ const submitEmailModeForm: ControllerHandler<
               })
           }
           case FormAuthType.MyInfo:
-            return MyInfoService.extractUinFromOldAndNewLoginCookie(req.cookies)
-              .asyncAndThen((uinFin) =>
+            return extractMyInfoLoginJwt(req.cookies)
+              .andThen(MyInfoService.verifyLoginJwt)
+              .asyncAndThen(({ uinFin }) =>
                 MyInfoService.fetchMyInfoHashes(uinFin, formId)
                   .andThen((hashes) =>
                     MyInfoService.checkMyInfoHashes(
@@ -303,34 +304,31 @@ const submitEmailModeForm: ControllerHandler<
         // Send response to admin
         // NOTE: This should short circuit in the event of an error.
         // This is why sendSubmissionToAdmin is separated from sendEmailConfirmations in 2 blocks
-        // TODO: Remove tracer span once email performance issue is identified.
-        return tracer.trace('sendSubmissionToAdmin', () =>
-          MailService.sendSubmissionToAdmin({
-            replyToEmails: EmailSubmissionService.extractEmailAnswers(
-              parsedResponses.getAllResponses(),
-            ),
+        return MailService.sendSubmissionToAdmin({
+          replyToEmails: EmailSubmissionService.extractEmailAnswers(
+            parsedResponses.getAllResponses(),
+          ),
+          form,
+          submission,
+          attachments,
+          dataCollationData: emailData.dataCollationData,
+          formData: emailData.formData,
+        })
+          .map(() => ({
             form,
+            parsedResponses,
             submission,
-            attachments,
-            dataCollationData: emailData.dataCollationData,
-            formData: emailData.formData,
+            emailData,
+            logMetaWithSubmission,
+          }))
+          .mapErr((error) => {
+            logger.error({
+              message: 'Error sending submission to admin',
+              meta: logMetaWithSubmission,
+              error,
+            })
+            return error
           })
-            .map(() => ({
-              form,
-              parsedResponses,
-              submission,
-              emailData,
-              logMetaWithSubmission,
-            }))
-            .mapErr((error) => {
-              logger.error({
-                message: 'Error sending submission to admin',
-                meta: logMetaWithSubmission,
-                error,
-              })
-              return error
-            }),
-        )
       })
       .map(
         ({
@@ -341,30 +339,25 @@ const submitEmailModeForm: ControllerHandler<
           logMetaWithSubmission,
         }) => {
           // Send email confirmations
-          // TODO: Remove tracer span once email performance issue is identified.
-          tracer.trace(
-            'sendEmailConfirmations',
-            () =>
-              void SubmissionService.sendEmailConfirmations({
-                form,
-                submission,
-                attachments,
-                responsesData: emailData.autoReplyData,
-                recipientData: extractEmailConfirmationData(
-                  parsedResponses.getAllResponses(),
-                  form.form_fields,
-                ),
-              }).mapErr((error) => {
-                // NOTE: MyInfo access token is not cleared here.
-                // This is because if the reason for failure is not on the users' end,
-                // they should not be randomly signed out.
-                logger.error({
-                  message: 'Error while sending email confirmations',
-                  meta: logMetaWithSubmission,
-                  error,
-                })
-              }),
-          )
+          void SubmissionService.sendEmailConfirmations({
+            form,
+            submission,
+            attachments,
+            responsesData: emailData.autoReplyData,
+            recipientData: extractEmailConfirmationData(
+              parsedResponses.getAllResponses(),
+              form.form_fields,
+            ),
+          }).mapErr((error) => {
+            // NOTE: MyInfo access token is not cleared here.
+            // This is because if the reason for failure is not on the users' end,
+            // they should not be randomly signed out.
+            logger.error({
+              message: 'Error while sending email confirmations',
+              meta: logMetaWithSubmission,
+              error,
+            })
+          })
           // MyInfo access token is single-use, so clear it
           return res
             .clearCookie(MYINFO_LOGIN_COOKIE_NAME, MYINFO_LOGIN_COOKIE_OPTIONS)
@@ -372,6 +365,7 @@ const submitEmailModeForm: ControllerHandler<
               // Return the reply early to the submitter
               message: 'Form submission successful.',
               submissionId: submission.id,
+              timestamp: (submission.created || new Date()).getTime(),
             })
         },
       )

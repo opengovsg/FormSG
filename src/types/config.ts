@@ -34,6 +34,7 @@ export type AwsConfig = {
   logoBucketUrl: string
   imageBucketUrl: string
   attachmentBucketUrl: string
+  staticAssetsBucketUrl: string
   s3: aws.S3
   endPoint: string
 }
@@ -57,6 +58,7 @@ export type ReactMigrationConfig = {
   respondentRolloutStorage: number
   adminRollout: number
   respondentCookieName: string
+  adminCookieNameOld: string
   adminCookieName: string
   qaCookieName: string
   adminSwitchEnvFeedbackFormId: string
@@ -70,10 +72,7 @@ export type Config = {
   app: AppConfig
   db: DbConfig
   aws: AwsConfig
-  // TODO #130 Remove references to US SES when SES migration is over (opengovsg/formsg-private#130)
-  mail_us: MailConfig
-  mail_sg: MailConfig
-  nodemailer_sg_warmup_start_date: string
+  mail: MailConfig
 
   cookieSettings: SessionOptions['cookie']
   // Consts
@@ -108,17 +107,11 @@ export type Config = {
 
 // Interface
 export interface IProdOnlyVarsSchema {
-  // TODO #130 Remove references to US SES when SES migration is over (opengovsg/formsg-private#130)
-  port_us: number
-  host_us: string
-  user_us: string
-  pass_us: string
+  port: number
+  host: string
+  user: string
+  pass: string
   dbHost: string
-  port_sg: number
-  host_sg: string
-  user_sg: string
-  pass_sg: string
-  nodemailer_sg_warmup_start_date: string
 }
 
 export interface ICompulsoryVarsSchema {
@@ -128,6 +121,7 @@ export interface ICompulsoryVarsSchema {
   }
   awsConfig: {
     imageS3Bucket: string
+    staticAssetsS3Bucket: string
     logoS3Bucket: string
     attachmentS3Bucket: string
   }
@@ -146,6 +140,7 @@ export interface ISgidVarsSchema {
   cookieMaxAge: number
   cookieMaxAgePreserved: number
   cookieDomain: string
+  hostname: string
 }
 
 export interface IOptionalVarsSchema {
@@ -192,6 +187,7 @@ export interface IOptionalVarsSchema {
     respondentRolloutStorage: number
     adminRollout: number
     respondentCookieName: string
+    adminCookieNameOld: string
     adminCookieName: string
     qaCookieName: string
     angularPhaseOutDate: string
@@ -204,5 +200,6 @@ export interface IBucketUrlSchema {
   attachmentBucketUrl: string
   logoBucketUrl: string
   imageBucketUrl: string
+  staticAssetsBucketUrl: string
   endPoint: string
 }

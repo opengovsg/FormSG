@@ -3,7 +3,6 @@ import FormData from 'form-data'
 import { createReadStream, readFileSync } from 'fs'
 import { IncomingHttpHeaders } from 'http'
 import { omit, pick } from 'lodash'
-import { mocked } from 'ts-jest/utils'
 
 import {
   generateNewAttachmentResponse,
@@ -19,7 +18,7 @@ import {
 import * as EmailSubmissionReceiver from '../email-submission.receiver'
 
 jest.mock('busboy')
-const MockBusboy = mocked(Busboy, true)
+const MockBusboy = jest.mocked(Busboy)
 const RealBusboy = jest.requireActual('busboy') as typeof Busboy
 
 const MOCK_HEADERS: IncomingHttpHeaders = {

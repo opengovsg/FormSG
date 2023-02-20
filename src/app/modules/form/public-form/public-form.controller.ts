@@ -342,9 +342,12 @@ export const _handleFormAuthRedirect: ControllerHandler<
     ...createReqMeta(req),
     formId,
   }
+
+  let formAuthType: FormAuthType
   // NOTE: Using retrieveFullForm instead of retrieveForm to ensure authType always exists
   return FormService.retrieveFullFormById(formId)
     .andThen((form) => {
+      formAuthType = form.authType
       switch (form.authType) {
         case FormAuthType.MyInfo:
           return validateMyInfoForm(form).andThen((form) =>
@@ -404,6 +407,7 @@ export const _handleFormAuthRedirect: ControllerHandler<
         message: 'Redirecting user to login page',
         meta: {
           redirectURL,
+          formAuthType,
           ...logMeta,
         },
       })
@@ -412,7 +416,10 @@ export const _handleFormAuthRedirect: ControllerHandler<
     .mapErr((error) => {
       logger.error({
         message: 'Error while creating redirect URL',
-        meta: logMeta,
+        meta: {
+          formAuthType,
+          ...logMeta,
+        },
         error,
       })
       const { statusCode, errorMessage } = mapFormAuthError(error)

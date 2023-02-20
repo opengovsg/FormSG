@@ -60,17 +60,12 @@ SESSION_SECRET=sandcrawler-138577
 SES_PORT=1025 
 SES_HOST=0.0.0.0
 
-# TODO #130 Remove these when SES migration is over (opengovsg/formsg-private#130)
-SES_PORT_US=1025
-SES_HOST_US=0.0.0.0
-SES_PORT_SG=1025
-SES_HOST_SG=0.0.0.0
-
 SERVICES=s3
 
 IMAGE_S3_BUCKET=local-image-bucket
 LOGO_S3_BUCKET=local-logo-bucket
 ATTACHMENT_S3_BUCKET=local-attachment-bucket
+STATIC_ASSETS_S3_BUCKET=local-static-assets-bucket
 NODE_ENV=test
 FORMSG_SDK_MODE=test
 

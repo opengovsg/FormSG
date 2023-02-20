@@ -4,7 +4,6 @@ import { Request } from 'express'
 import { merge } from 'lodash'
 import { err, errAsync, ok, okAsync } from 'neverthrow'
 import querystring from 'querystring'
-import { mocked } from 'ts-jest/utils'
 
 import { DatabaseError } from 'src/app/modules/core/core.errors'
 import {
@@ -66,12 +65,12 @@ jest.mock('../../../spcp/spcp.oidc.service/spcp.oidc.service.cp')
 jest.mock('../../../myinfo/myinfo.service')
 jest.mock('../../../billing/billing.service')
 
-const MockFormService = mocked(FormService)
-const MockPublicFormService = mocked(PublicFormService)
-const MockAuthService = mocked(AuthService)
+const MockFormService = jest.mocked(FormService)
+const MockPublicFormService = jest.mocked(PublicFormService)
+const MockAuthService = jest.mocked(AuthService)
 
-const MockMyInfoService = mocked(MyInfoService, true)
-const MockBillingService = mocked(BillingService, true)
+const MockMyInfoService = jest.mocked(MyInfoService)
+const MockBillingService = jest.mocked(BillingService)
 
 describe('public-form.controller', () => {
   afterEach(() => jest.clearAllMocks())

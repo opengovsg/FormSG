@@ -1,5 +1,6 @@
 import {
   AdminFeedbackFormDto,
+  BasicField,
   ErrorDto,
   PublicFeedbackFormDto,
   PublicFormViewDto,
@@ -10,6 +11,8 @@ import { transformAllIsoStringsToDate } from '~utils/date'
 import { ApiService } from '~services/ApiService'
 
 import { PUBLIC_FORMS_ENDPOINT } from '~features/public-form/PublicFormService'
+
+import { othersInputName } from './PublicFeedbackModal'
 
 export const getClientEnvVars = async (): Promise<ClientEnvVars> => {
   return ApiService.get<ClientEnvVars>('/client/env').then(({ data }) => data)
@@ -23,6 +26,27 @@ const createFeedbackResponsesArray = (
 ) => {
   return feedbackFormFieldsStructure.map((question, i) => {
     const { _id, fieldType } = feedbackForm.form.form_fields[i]
+    // Checkbox answers have to be in an answerArray
+    if (fieldType === BasicField.Checkbox) {
+      // if no checkbox is selected, return an empty array
+      const answerArray: string[] = formInputs[question] || []
+
+      // Note: This code assumes that there is only 1 checkbox field with 'Others'
+      // and might break if we have multiple checkboxes with 'Others'
+      // if Others is selected, remove '!!FORMSG_INTERNAL_CHECKBOX_OTHERS_VALUE!!'
+      // which is the last value in the array when 'Others' is selected,
+      // and replace it with the value entered in the Others Input field
+      if (formInputs[othersInputName]) {
+        answerArray.pop() // remove '!!FORMSG_INTERNAL_CHECKBOX_OTHERS_VALUE!!' from array
+        answerArray.push(`Others: ${formInputs[othersInputName]}`)
+      }
+      return {
+        _id,
+        question,
+        answerArray,
+        fieldType,
+      }
+    }
     const answer: string = formInputs[question] ?? ''
     return {
       _id,
@@ -64,7 +88,16 @@ export const submitSwitchEnvFormFeedback = async ({
 }): Promise<SuccessMessageDto | ErrorDto> => {
   const isAdmin = Object.keys(formInputs).includes('rating')
 
-  const formFields = ['url', 'feedback', 'email', 'rumSessionId']
+  const formFields = [
+    'url',
+    'feedback',
+    'email',
+    'rumSessionId',
+    'attachmentType',
+    'userAgent',
+    'responseMode',
+    'authType',
+  ]
   if (isAdmin) formFields.push('rating')
 
   const formData = createSwitchFeedbackSubmissionFormData(

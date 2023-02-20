@@ -27,3 +27,6 @@ build-storybook.log
 
 # Lint cache
 .eslintcache
+
+#Datadog chunk files
+datadog-chunk.*.js

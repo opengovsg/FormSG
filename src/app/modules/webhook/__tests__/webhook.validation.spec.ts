@@ -1,5 +1,4 @@
 import { promises as dns } from 'dns'
-import { mocked } from 'ts-jest/utils'
 
 import config from 'src/app/config/config'
 import { WebhookValidationError } from 'src/app/modules/webhook/webhook.errors'
@@ -10,13 +9,13 @@ jest.mock('dns', () => ({
     resolve: jest.fn(),
   },
 }))
-const MockDns = mocked(dns, true)
+const MockDns = jest.mocked(dns)
 
 const MOCK_APP_URL = 'https://example.com'
 const MOCK_APP_SUBDOMAIN_URL = 'https://mock.example.com'
 const MOCK_APP_SIMILAR_URL = 'https://mockexample.com'
 jest.mock('src/app/config/config')
-const MockConfig = mocked(config, true)
+const MockConfig = jest.mocked(config)
 MockConfig.app.appUrl = MOCK_APP_URL
 
 const MOCK_WEBHOOK_URL = 'https://mock.webhook.url'

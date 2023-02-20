@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - id: set-environment
-        run: echo "::set-output name=current_env::${{github.ref_name}}"
+        run: echo "current_env=${{github.ref_name}}" >> $GITHUB_OUTPUT
 
   build_deploy_application:
     needs: set_environment
@@ -43,18 +43,19 @@ jobs:
           REACT_APP_DD_RUM_APP_ID: ${{ secrets.DD_RUM_APP_ID }}
           REACT_APP_DD_RUM_CLIENT_TOKEN: ${{ secrets.DD_RUM_CLIENT_TOKEN }}
           REACT_APP_DD_RUM_ENV: ${{ secrets.DD_ENV }}
+          REACT_APP_DD_SAMPLE_RATE: ${{ secrets.DD_SAMPLE_RATE }}
           REACT_APP_GA_TRACKING_ID: ${{ secrets.GA_TRACKING_ID }}
           REACT_APP_FORMSG_SDK_MODE: ${{ secrets.REACT_APP_FORMSG_SDK_MODE }}
         run: |
+          sed -i -e "s/@REACT_APP_DD_RUM_APP_ID/$REACT_APP_DD_RUM_APP_ID/g" -e "s/@REACT_APP_DD_RUM_CLIENT_TOKEN/$REACT_APP_DD_RUM_CLIENT_TOKEN/g" -e "s/@REACT_APP_DD_RUM_ENV/$REACT_APP_DD_RUM_ENV/g" -e "s/@REACT_APP_VERSION/${{env.APP_VERSION}}/g" -e "s/@REACT_APP_DD_SAMPLE_RATE/$REACT_APP_DD_SAMPLE_RATE/g" frontend/datadog-chunk.ts
           echo REACT_APP_VERSION=${{env.APP_VERSION}} > frontend/.env
-          echo REACT_APP_DD_RUM_APP_ID=$REACT_APP_DD_RUM_APP_ID >> frontend/.env
-          echo REACT_APP_DD_RUM_CLIENT_TOKEN=$REACT_APP_DD_RUM_CLIENT_TOKEN >> frontend/.env
-          echo REACT_APP_DD_RUM_ENV=$REACT_APP_DD_RUM_ENV >> frontend/.env
           echo REACT_APP_GA_TRACKING_ID=$REACT_APP_GA_TRACKING_ID >> frontend/.env
           echo REACT_APP_FORMSG_SDK_MODE=$REACT_APP_FORMSG_SDK_MODE >> frontend/.env
+          echo REACT_APP_DD_RUM_CLIENT_TOKEN=$REACT_APP_DD_RUM_CLIENT_TOKEN >> frontend/.env
+          echo REACT_APP_DD_RUM_ENV=$REACT_APP_DD_RUM_ENV >> frontend/.env
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
+        uses: aws-actions/configure-aws-credentials@v1.7.0
         with:
           role-to-assume: ${{ secrets.AWS_CI_ROLE_TO_ASSUME }}
           aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
@@ -97,11 +98,21 @@ jobs:
           sed -i -e "s/@DD_API_KEY/$DD_API_KEY/g" -e "s/@DD_ENV/$DD_ENV/g" .ebextensions/99datadog-amazon-linux-2.config
           zip -r "$IMAGE_TAG.zip" .ebextensions Dockerrun.aws.json
 
-      - name: Copy to S3
+      - name: Copy Image to S3
         env:
           BUCKET_NAME: ${{ secrets.BUCKET_NAME }}
         run: |
           aws s3 cp $IMAGE_TAG.zip s3://$BUCKET_NAME/$IMAGE_TAG.zip
+
+      - name: Copy Static Assets from Docker Image and Push to S3
+        env:
+          S3_STATIC_ASSETS_BUCKET_NAME: ${{ secrets.S3_STATIC_ASSETS_BUCKET_NAME }}
+          ECR_REPOSITORY: ${{ secrets.ECR_REPO }}
+        run: |
+          mkdir -p /tmp/s3static
+          chmod 777 /tmp/s3static
+          docker run --rm -v /tmp/s3static:/tmp/s3static $ECR_REPOSITORY:$IMAGE_TAG cp -r ./dist/frontend/. /tmp/s3static
+          aws s3 sync /tmp/s3static s3://$S3_STATIC_ASSETS_BUCKET_NAME
 
       - name: Create application version
         env:

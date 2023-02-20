@@ -9,6 +9,7 @@ import {
 import { Helmet } from 'react-helmet-async'
 import { SubmitHandler } from 'react-hook-form'
 import { useDisclosure } from '@chakra-ui/react'
+import { datadogLogs } from '@datadog/browser-logs'
 import { differenceInMilliseconds, isPast } from 'date-fns'
 import get from 'lodash/get'
 import simplur from 'simplur'
@@ -217,18 +218,30 @@ export const PublicFormProvider = ({
                   captchaResponse,
                 },
                 {
-                  onSuccess: ({ submissionId }) => {
+                  onSuccess: ({ submissionId, timestamp }) => {
                     setSubmissionData({
                       id: submissionId,
-                      // TODO: Server should return server time so browser time is not used.
-                      timeInEpochMs: Date.now(),
+                      timestamp,
                     })
                     trackSubmitForm(form)
                   },
                 },
               )
               // Using catch since we are using mutateAsync and react-hook-form will continue bubbling this up.
-              .catch((error) => showErrorToast(error, form))
+              .catch((error) => {
+                // TODO: Remove when we have resolved the Network Error and t.arrayBuffer issues.
+                datadogLogs.logger.warn(`handleSubmitForm: ${error.message}`, {
+                  meta: {
+                    action: 'handleSubmitForm',
+                    responseMode: 'email',
+                    error: {
+                      message: error.message,
+                      stack: error.stack,
+                    },
+                  },
+                })
+                showErrorToast(error, form)
+              })
           )
         case FormResponseMode.Encrypt:
           // Using mutateAsync so react-hook-form goes into loading state.
@@ -243,18 +256,30 @@ export const PublicFormProvider = ({
                   captchaResponse,
                 },
                 {
-                  onSuccess: ({ submissionId }) => {
+                  onSuccess: ({ submissionId, timestamp }) => {
                     setSubmissionData({
                       id: submissionId,
-                      // TODO: Server should return server time so browser time is not used.
-                      timeInEpochMs: Date.now(),
+                      timestamp,
                     })
                     trackSubmitForm(form)
                   },
                 },
               )
               // Using catch since we are using mutateAsync and react-hook-form will continue bubbling this up.
-              .catch((error) => showErrorToast(error, form))
+              .catch((error) => {
+                // TODO: Remove when we have resolved the Network Error and t.arrayBuffer issues.
+                datadogLogs.logger.warn(`handleSubmitForm: ${error.message}`, {
+                  meta: {
+                    action: 'handleSubmitForm',
+                    responseMode: 'storage',
+                    error: {
+                      message: error.message,
+                      stack: error.stack,
+                    },
+                  },
+                })
+                showErrorToast(error, form)
+              })
           )
       }
     },

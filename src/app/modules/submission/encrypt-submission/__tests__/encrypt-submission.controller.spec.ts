@@ -1,6 +1,5 @@
 import { ObjectId } from 'bson-ext'
 import { err, errAsync, ok, okAsync } from 'neverthrow'
-import { mocked } from 'ts-jest/utils'
 
 import * as AuthService from 'src/app/modules/auth/auth.service'
 import { DatabaseError } from 'src/app/modules/core/core.errors'
@@ -42,9 +41,9 @@ import * as EncryptSubmissionService from '../encrypt-submission.service'
 jest.mock('../encrypt-submission.service')
 jest.mock('src/app/modules/user/user.service')
 jest.mock('src/app/modules/auth/auth.service')
-const MockEncryptSubService = mocked(EncryptSubmissionService)
-const MockUserService = mocked(UserService)
-const MockAuthService = mocked(AuthService)
+const MockEncryptSubService = jest.mocked(EncryptSubmissionService)
+const MockUserService = jest.mocked(UserService)
+const MockAuthService = jest.mocked(AuthService)
 
 describe('encrypt-submission.controller', () => {
   beforeEach(() => jest.clearAllMocks())

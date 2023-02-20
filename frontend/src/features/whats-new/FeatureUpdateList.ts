@@ -1,7 +1,8 @@
 import dedent from 'dedent'
 import { JsonObject, RequireExactlyOne } from 'type-fest'
 
-import WhatsNewAnimationData from './assets/1-dnd.json'
+import Animation1 from './assets/1-dnd.json'
+import Animation2 from './assets/2-search-and-filter.json'
 
 export type FeatureUpdateImage = RequireExactlyOne<
   {
@@ -26,8 +27,20 @@ export interface FeatureUpdateList {
 // New features should be added at the top of the list.
 export const FEATURE_UPDATE_LIST: FeatureUpdateList = {
   // Update version whenever a new feature is added.
-  version: 1,
+  version: 2,
   features: [
+    {
+      title: 'Find your forms quickly by',
+      date: new Date('14 December 2022 GMT+8'),
+      description: dedent`
+        * Searching keywords to find what you need
+        * Applying filters to narrow down results
+      `,
+      image: {
+        animationData: Animation2,
+        alt: 'Search and filter your forms',
+      },
+    },
     {
       title: 'The new FormSG experience',
       date: new Date('12 October 2022 GMT+8'),
@@ -39,7 +52,7 @@ export const FEATURE_UPDATE_LIST: FeatureUpdateList = {
         Notice anything wrong? Let us know by using the feedback button at the bottom-right of the screen.
       `,
       image: {
-        animationData: WhatsNewAnimationData,
+        animationData: Animation1,
         alt: 'The new FormSG experience',
       },
     },

@@ -106,7 +106,8 @@ const addFields = async (
     const label = BASICFIELD_TO_DRAWER_META[field.fieldType].label
     const isNonInput = NON_INPUT_FIELD_TYPES.includes(field.fieldType)
 
-    await page.getByRole('button', { name: label }).click()
+    // Get button with exact fieldtype label text
+    await page.getByRole('button').locator(`text="${label}"`).click()
 
     // Enter title for input fields and Section
     if (isNonInput) {
@@ -139,10 +140,13 @@ const addFields = async (
     // Handle the rest of the individual fields.
     switch (field.fieldType) {
       case BasicField.Attachment:
-        await page.getByLabel('Maximum size of individual attachment').click()
-        await page
-          .getByRole('option', { name: `${field.attachmentSize} MB` })
-          .click()
+        await fillDropdown(
+          page,
+          page.getByRole('textbox', {
+            name: 'Maximum size of individual attachment',
+          }),
+          `${field.attachmentSize} MB`,
+        )
         break
       case BasicField.Checkbox:
         if (field.validateByValue) {
@@ -266,14 +270,16 @@ const addFields = async (
         }
         break
       case BasicField.Rating:
-        await page.getByLabel('Number of steps').click()
-        await page
-          .getByRole('option', { name: String(field.ratingOptions.steps) })
-          .click()
-        await page.getByLabel('Shape').click()
-        await page
-          .getByRole('option', { name: field.ratingOptions.shape })
-          .click()
+        await fillDropdown(
+          page,
+          page.getByRole('textbox', { name: 'Number of steps' }),
+          String(field.ratingOptions.steps),
+        )
+        await fillDropdown(
+          page,
+          page.getByRole('textbox', { name: 'Shape' }),
+          field.ratingOptions.shape,
+        )
         break
       case BasicField.Table:
         await page.getByLabel('Minimum rows').fill(String(field.minimumRows))

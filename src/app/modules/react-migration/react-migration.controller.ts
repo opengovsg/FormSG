@@ -225,6 +225,11 @@ export const servePublicForm: ControllerHandler<
 }
 
 export const serveDefault: ControllerHandler = (req, res, next) => {
+  // Delete the deprecated cookie.
+  if (req.cookies[config.reactMigration.adminCookieNameOld]) {
+    res.clearCookie(config.reactMigration.adminCookieNameOld)
+  }
+
   // Admins assigned react, or who choose react will stay on react until they opt out
   // Admins assigned angular will stay on it for that session
   let showReact: boolean | undefined = undefined

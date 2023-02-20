@@ -1,3 +1,4 @@
+import { datadogLogs } from '@datadog/browser-logs'
 import axios, { AxiosError } from 'axios'
 import { StatusCodes } from 'http-status-codes'
 
@@ -19,36 +20,40 @@ export class HttpError extends Error {
  *
  * @returns HttpError if AxiosError, else original error
  */
-export const transformAxiosError = (e: Error): ApiError => {
-  if (axios.isAxiosError(e)) {
-    if (e.response) {
-      const statusCode = e.response.status
+export const transformAxiosError = (error: Error): ApiError => {
+  if (axios.isAxiosError(error)) {
+    if (error.response) {
+      const statusCode = error.response.status
       if (statusCode === StatusCodes.TOO_MANY_REQUESTS) {
-        return new HttpError('Error [001]: Please try again later.', statusCode)
+        return new HttpError('Please try again later.', statusCode)
       }
-      if (typeof e.response.data === 'string') {
-        return new HttpError(`Error [002]: ${e.response.data}`, statusCode)
+      if (typeof error.response.data === 'string') {
+        return new HttpError(error.response.data, statusCode)
       }
-      if (e.response.data?.message) {
-        return new HttpError(
-          `Error [003]: ${e.response.data.message}`,
-          statusCode,
-        )
+      if (error.response.data?.message) {
+        return new HttpError(error.response.data.message, statusCode)
       }
-      if (e.response.statusText) {
-        return new HttpError(
-          `Error [004]: ${e.response.statusText}`,
-          statusCode,
-        )
+      if (error.response.statusText) {
+        return new HttpError(error.response.statusText, statusCode)
       }
-      return new HttpError(`Error [005]: ${statusCode} error`, statusCode)
-    } else if (e.request) {
+      return new HttpError(`Error: ${statusCode}`, statusCode)
+    } else if (error.request) {
+      // TODO: Remove this logging once Network Error sources have been identified.
+      datadogLogs.logger.warn(`Unknown error: ${error.message}`, {
+        meta: {
+          action: 'transformAxiosError',
+          error: {
+            message: error?.message,
+            stack: error?.stack,
+          },
+        },
+      })
       return new Error(
-        `There was a problem with your internet connection. Please check your network and try again. Error [006]: ${e.message}`,
+        `There was a problem with your internet connection. Please check your network and try again. ${error.message}`,
       )
     }
   }
-  return e
+  return error
 }
 
 // Create own axios instance with defaults.

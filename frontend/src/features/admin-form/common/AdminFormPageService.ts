@@ -2,7 +2,7 @@ import { EndPageUpdateDto, StartPageUpdateDto } from '~shared/types'
 
 import { ApiService } from '~services/ApiService'
 
-const ADMIN_FORM_ENDPOINT = 'admin/forms'
+const ADMIN_FORM_ENDPOINT = '/admin/forms'
 
 /**
  * Updates the start page for the given form referenced by its id

@@ -37,8 +37,7 @@ export type SendAutoReplyEmailsArgs = {
 export type MailServiceParams = {
   appName?: string
   appUrl?: string
-  transporter_us?: Mail
-  transporter_sg?: Mail
+  transporter?: Mail
   senderMail?: string
   officialMail?: string
   retryParams?: Partial<OperationOptions>

@@ -19,19 +19,23 @@ const WorkspaceFormRowsSkeleton = () => {
   )
 }
 
-const WorkspaceFormRowsFilterNone = () => (
-  <Box mt="2rem">
-    <Stack w="100%" spacing="1rem">
-      <Text textStyle="h2" align="center" color="primary.500">
-        No forms found
-      </Text>
-      <Text align="center">Try removing your filters </Text>
-      <Flex justifyContent="center">
-        <WorkspaceFormRowsFilterNoneSvg />
-      </Flex>
-    </Stack>
-  </Box>
-)
+const WorkspaceFormRowsFilterNone = (): JSX.Element => {
+  return (
+    <Box mt="2rem">
+      <Stack w="100%" spacing="1rem">
+        <Text textStyle="h2" align="center" color="primary.500">
+          No forms found
+        </Text>
+        <Flex justify="center" align="center">
+          <Text align="center">Try another search or remove filters</Text>
+        </Flex>
+        <Flex justifyContent="center">
+          <WorkspaceFormRowsFilterNoneSvg />
+        </Flex>
+      </Stack>
+    </Box>
+  )
+}
 
 export const WorkspaceFormRows = (): JSX.Element => {
   const { isLoading, displayedForms, displayedFormsCount } =

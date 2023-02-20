@@ -1,7 +1,6 @@
 import { ObjectId } from 'bson-ext'
 import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync } from 'neverthrow'
-import { mocked } from 'ts-jest/utils'
 
 import getTokenModel from 'src/app/models/token.server.model'
 import { AgencyDocument, IPopulatedForm, IPopulatedUser } from 'src/types'
@@ -23,9 +22,9 @@ import { InvalidDomainError, InvalidOtpError } from '../auth.errors'
 import * as AuthService from '../auth.service'
 
 jest.mock('../../form/form.service')
-const MockFormService = mocked(FormService)
+const MockFormService = jest.mocked(FormService)
 jest.mock('../../form/admin-form/admin-form.utils')
-const MockAdminFormUtils = mocked(AdminFormUtils)
+const MockAdminFormUtils = jest.mocked(AdminFormUtils)
 
 const TokenModel = getTokenModel(mongoose)
 

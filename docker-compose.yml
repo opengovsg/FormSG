@@ -23,6 +23,7 @@ services:
       - ATTACHMENT_S3_BUCKET=local-attachment-bucket
       - IMAGE_S3_BUCKET=local-image-bucket
       - LOGO_S3_BUCKET=local-logo-bucket
+      - STATIC_ASSETS_S3_BUCKET=local-static-assets-bucket
       - FORMSG_SDK_MODE=development
       - BOUNCE_LIFE_SPAN=86400000
       - AWS_ACCESS_KEY_ID=fakeKey
@@ -32,11 +33,8 @@ services:
       - SECRET_ENV=development
       - SUBMISSIONS_RATE_LIMIT=200
       - SEND_AUTH_OTP_RATE_LIMIT=60
-      # TODO(opengovsg/formsg-private#130) Retain only SG env vars when SES migration is over
-      - SES_PORT_US=1025
-      - SES_HOST_US=maildev
-      - SES_PORT_SG=1025
-      - SES_HOST_SG=maildev
+      - SES_PORT=1025
+      - SES_HOST=maildev
       - WEBHOOK_SQS_URL=http://localhost:4566/000000000000/local-webhooks-sqs-main
       - INTRANET_IP_LIST_PATH
       - SENTRY_CONFIG_URL=https://random@sentry.io/123456
@@ -60,16 +58,16 @@ services:
       - TWILIO_API_KEY=mockTwilioApiKey
       - TWILIO_API_SECRET=mockTwilioApiSecret
       - TWILIO_MESSAGING_SERVICE_SID=mockTwilioMsgSrvcSid
-      - SP_OIDC_NDI_DISCOVERY_ENDPOINT=https://stg-id.singpass.gov.sg/.well-known/openid-configuration
-      - SP_OIDC_NDI_JWKS_ENDPOINT=https://stg-id.singpass.gov.sg/.well-known/keys
+      - SP_OIDC_NDI_DISCOVERY_ENDPOINT=http://localhost:5156/singpass/v2/.well-known/openid-configuration
+      - SP_OIDC_NDI_JWKS_ENDPOINT=http://localhost:5156/singpass/v2/.well-known/keys
       - SP_OIDC_RP_CLIENT_ID=rpClientId
-      - SP_OIDC_RP_REDIRECT_URL=https://staging.form.gov.sg/api/v3/singpass/login
+      - SP_OIDC_RP_REDIRECT_URL=http://localhost:5001/api/v3/singpass/login
       - SP_OIDC_RP_JWKS_PUBLIC_PATH=./tests/certs/test_sp_rp_public_jwks.json
       - SP_OIDC_RP_JWKS_SECRET_PATH=./tests/certs/test_sp_rp_secret_jwks.json
-      - CP_OIDC_NDI_DISCOVERY_ENDPOINT=https://stg-id.corppass.gov.sg/.well-known/openid-configuration
-      - CP_OIDC_NDI_JWKS_ENDPOINT=https://stg-id.corppass.gov.sg/.well-known/keys
+      - CP_OIDC_NDI_DISCOVERY_ENDPOINT=http://localhost:5156/corppass/v2/.well-known/openid-configuration
+      - CP_OIDC_NDI_JWKS_ENDPOINT=http://localhost:5156/corppass/v2/.well-known/keys
       - CP_OIDC_RP_CLIENT_ID=rpClientId
-      - CP_OIDC_RP_REDIRECT_URL=https://staging.form.gov.sg/api/v3/corppass/login
+      - CP_OIDC_RP_REDIRECT_URL=http://localhost:5001/api/v3/corppass/login
       - CP_OIDC_RP_JWKS_PUBLIC_PATH=./tests/certs/test_cp_rp_public_jwks.json
       - CP_OIDC_RP_JWKS_SECRET_PATH=./tests/certs/test_cp_rp_secret_jwks.json
       - IS_SP_MAINTENANCE
@@ -83,7 +81,7 @@ services:
       - MYINFO_CLIENT_ID=mockClientId
       - MYINFO_CLIENT_SECRET=mockClientSecret
       - MYINFO_JWT_SECRET=mockJwtSecret
-      - SGID_ENDPOINT=http://localhost:5156/sgid/v1/oauth
+      - SGID_HOSTNAME=http://localhost:5156/sgid
       - SGID_CLIENT_ID=sgidclientid
       - SGID_CLIENT_SECRET=sgidclientsecret
       - SGID_REDIRECT_URI=http://localhost:5001/sgid/login
@@ -103,18 +101,17 @@ services:
       - REACT_MIGRATION_ADMIN_ROLLOUT=100
       - REACT_MIGRATION_REMOVE_INFOBOX_THRESHOLD_ADMIN=101
       - REACT_MIGRATION_REMOVE_INFOBOX_THRESHOLD_RESPONDENT=101
+
   mockpass:
     build: https://github.com/opengovsg/mockpass.git
     depends_on:
       - backend
     environment:
-      - CORPPASS_ASSERT_ENDPOINT=http://localhost:5001/corppass/login
-      - SINGPASS_ASSERT_ENDPOINT=http://localhost:5001/singpass/login
       - MOCKPASS_NRIC=S6005038D
       - MOCKPASS_UEN=123456789A
       - SHOW_LOGIN_PAGE=true
-      - SINGPASS_IDP_ID=https://saml-internet.singpass.gov.sg/FIM/sps/SingpassIDPFed/saml20
-      - CORPPASS_IDP_ID=https://saml.corppass.gov.sg/FIM/sps/CorpIDPFed/saml20
+      - SP_RP_JWKS_ENDPOINT=http://localhost:5000/singpass/.well-known/jwks.json
+      - CP_RP_JWKS_ENDPOINT=http://localhost:5000/api/v3/corppass/.well-known/jwks.json
     network_mode: 'service:backend' # reuse backend service's network stack so that it can resolve localhost:5156 to mockpass:5156
 
   database:

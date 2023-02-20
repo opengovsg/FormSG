@@ -285,15 +285,15 @@ export const ALL_FIELDS: E2eFieldMetadata[] = [
         },
       },
       {
-        title: 'Gender',
+        title: 'Relationship',
         required: true,
-        fieldOptions: ['Male', 'Female', 'Prefer not to say'],
+        fieldOptions: ['Father', 'Mother', 'Sibling', 'Child', 'Other'],
         columnType: BasicField.Dropdown,
       },
     ],
     val: [
-      ['John', 'Male'],
-      ['Lisa', 'Female'],
+      ['John', 'Father'],
+      ['Lisa', 'Mother'],
     ],
   },
   {
