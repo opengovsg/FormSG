@@ -155,7 +155,7 @@ Make you sure have the following node version & package manager on your machine:
 Run
 
 ```bash
-nvm install 14
+nvm install 18
 npm install
 pip install "localstack[full]"
 ```
@@ -196,6 +196,7 @@ npm run test-e2e-ci
 ```
 
 #### Cross-browser testing
+
 This project is tested with [BrowserStack](https://www.browserstack.com/open-source).
 
 ## Architecture
