@@ -6,7 +6,7 @@ import path from 'path'
 
 import {
   FormResponseMode,
-  // FormStatus,
+  FormStatus,
   UiCookieValues,
 } from '../../../../shared/types'
 import config from '../../config/config'
@@ -216,7 +216,11 @@ export const servePublicForm: ControllerHandler<
   })
 
   if (showReact) {
-    return serveFormReact(/* isPublic= */ true)(req, res, next)
+    const isPublicForm = Boolean(
+      !formResult.isErr() && formResult.value.status === FormStatus.Public,
+    )
+    return serveFormReact(/* isPublic= */ isPublicForm)(req, res, next)
+    // return serveFormReact(/* isPublic= */ true)(req, res, next)
     // return serveFormReact(!formResult.isErr() && formResult.value.status === FormStatus.Public,)(req, res, next)
   } else {
     return serveFormAngular(req, res, next)
