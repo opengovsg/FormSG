@@ -148,11 +148,13 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
           maxSize &&
           acceptedFile.size > maxSize
         ) {
-          // retainexif will be released in compressorjs 1.1.2
           return new imageCompressor(acceptedFile, {
             quality: 0.8,
             maxWidth: 1440,
             maxHeight: 1440,
+            // checkOrientation requires more compute and isn't reliable
+            checkOrientation: false,
+            retainExif: true,
             success(blob) {
               onChange(
                 new File([blob], acceptedFile.name, {
