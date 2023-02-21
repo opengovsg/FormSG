@@ -163,14 +163,16 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
               )
             },
             error(err) {
-              console.log(err.message)
+              onError?.(
+                `The image compressor was unable to compress your file, please upload a file below ${readableMaxSize}`,
+              )
             },
           })
         }
 
         onChange(acceptedFile)
       },
-      [accept, maxSize, onChange, onError],
+      [accept, maxSize, onChange, onError, readableMaxSize],
     )
 
     const fileValidator = useCallback<NonNullable<DropzoneProps['validator']>>(
