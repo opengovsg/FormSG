@@ -152,17 +152,23 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
             quality: 0.8,
             maxWidth: 1440,
             maxHeight: 1440,
-            // checkOrientation requires more compute and isn't reliable
             checkOrientation: false,
             retainExif: true,
             success(blob) {
-              onChange(
-                new File([blob], acceptedFile.name, {
-                  type: blob.type,
-                }),
-              )
+              if (blob.size > maxSize) {
+                onError?.(
+                  `The image is too large to compress, please upload a file below ${readableMaxSize}`,
+                )
+              } else {
+                onChange(
+                  new File([blob], acceptedFile.name, {
+                    type: blob.type,
+                  }),
+                )
+              }
             },
             error(err) {
+              console.log(err)
               onError?.(
                 `The image compressor was unable to compress your file, please upload a file below ${readableMaxSize}`,
               )
