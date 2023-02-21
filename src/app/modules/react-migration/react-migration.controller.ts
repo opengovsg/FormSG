@@ -217,10 +217,10 @@ export const servePublicForm: ControllerHandler<
   })
 
   if (showReact) {
-    const isPublicForm = Boolean(
-      !formResult.isErr() && formResult.value.status === FormStatus.Public,
-    )
-    return serveFormReact(/* isPublic= */ isPublicForm)(req, res, next)
+    const isPublicForm =
+      !formResult.isErr() && formResult.value.status === FormStatus.Public
+
+    return serveFormReact(isPublicForm)(req, res, next)
   } else {
     return serveFormAngular(req, res, next)
   }
