@@ -346,10 +346,12 @@ export class MailService {
   sendLoginOtp = ({
     recipient,
     otp,
+    otpPrefix,
     ipAddress,
   }: {
     recipient: string
     otp: string
+    otpPrefix: string
     ipAddress: string
   }): ResultAsync<true, MailSendError> => {
     return generateLoginOtpHtml({
@@ -357,6 +359,7 @@ export class MailService {
       appUrl: this.#appUrl,
       ipAddress: ipAddress,
       otp,
+      otpPrefix,
     }).andThen((loginHtml) => {
       const mail: MailOptions = {
         to: recipient,
