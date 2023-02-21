@@ -1,7 +1,10 @@
 import { useMemo } from 'react'
 import { Controller, useFormContext } from 'react-hook-form'
 
-import { CountryRegion } from '~shared/constants/countryRegion'
+import {
+  CountryRegion,
+  CountryRegionTitleCase,
+} from '~shared/constants/countryRegion'
 import { FormColorTheme } from '~shared/types'
 import { CountryRegionFieldBase, FormFieldWithId } from '~shared/types/field'
 
@@ -22,6 +25,14 @@ export const SORTED_COUNTRY_OPTIONS = (() => {
     .filter((country) => country !== CountryRegion.Singapore)
     .sort((a, b) => a.localeCompare(b))
   countryOptions.unshift(CountryRegion.Singapore)
+  return countryOptions
+})()
+
+const SORTED_COUNTRY_OPTIONS_TO_RENDER = (() => {
+  const countryOptions = Object.values(CountryRegionTitleCase)
+    .filter((country) => country !== CountryRegionTitleCase.Singapore)
+    .sort((a, b) => a.localeCompare(b))
+  countryOptions.unshift(CountryRegionTitleCase.Singapore)
   return countryOptions
 })()
 
@@ -53,7 +64,7 @@ export const CountryRegionField = ({
         render={({ field }) => (
           <SingleSelect
             colorScheme={`theme-${colorTheme}`}
-            items={schemaWithFieldOptions.fieldOptions}
+            items={SORTED_COUNTRY_OPTIONS_TO_RENDER}
             {...field}
           />
         )}
