@@ -10,11 +10,9 @@ import {
   useMergeRefs,
   useMultiStyleConfig,
 } from '@chakra-ui/react'
-import imageCompression from 'browser-image-compression'
+import imageCompressor from 'compressorjs'
 import omit from 'lodash/omit'
 import simplur from 'simplur'
-
-import { MB } from '~shared/constants/file'
 
 import { ATTACHMENT_THEME_KEY } from '~theme/components/Field/Attachment'
 import { ThemeColorScheme } from '~theme/foundations/colours'
@@ -150,18 +148,22 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
           maxSize &&
           acceptedFile.size > maxSize
         ) {
-          return imageCompression(acceptedFile, {
-            maxSizeMB: maxSize ? maxSize / MB : undefined,
-            maxWidthOrHeight: 1440,
-            initialQuality: 0.8,
-            useWebWorker: false,
-          }).then((blob) =>
-            onChange(
-              new File([blob], acceptedFile.name, {
-                type: blob.type,
-              }),
-            ),
-          )
+          // retainexif will be released in compressorjs 1.1.2
+          return new imageCompressor(acceptedFile, {
+            quality: 0.8,
+            maxWidth: 1440,
+            maxHeight: 1440,
+            success(blob) {
+              onChange(
+                new File([blob], acceptedFile.name, {
+                  type: blob.type,
+                }),
+              )
+            },
+            error(err) {
+              console.log(err.message)
+            },
+          })
         }
 
         onChange(acceptedFile)
