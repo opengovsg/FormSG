@@ -147,6 +147,7 @@ export const servePublicForm: ControllerHandler<
 > = async (req, res, next) => {
   const formResult = await FormService.retrieveFormKeysById(req.params.formId, [
     'responseMode',
+    'status',
   ])
   let showReact: boolean | undefined = undefined
   let isEmail = false
@@ -216,9 +217,10 @@ export const servePublicForm: ControllerHandler<
   })
 
   if (showReact) {
-    return serveFormReact(
-      !formResult.isErr() && formResult.value.status === FormStatus.Public,
-    )(req, res, next)
+    const isPublicForm =
+      !formResult.isErr() && formResult.value.status === FormStatus.Public
+
+    return serveFormReact(isPublicForm)(req, res, next)
   } else {
     return serveFormAngular(req, res, next)
   }
