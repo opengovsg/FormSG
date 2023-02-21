@@ -141,6 +141,7 @@ describe('auth.routes', () => {
     const VALID_DOMAIN = 'example.com'
     const VALID_EMAIL = `test@${VALID_DOMAIN}`
     const INVALID_DOMAIN = 'example.org'
+    const MOCK_OTP_PREFIX = 'ABC'
 
     beforeEach(async () => dbHandler.insertAgency({ mailDomain: VALID_DOMAIN }))
 
@@ -256,6 +257,7 @@ describe('auth.routes', () => {
       const sendLoginOtpSpy = jest
         .spyOn(MailService, 'sendLoginOtp')
         .mockReturnValueOnce(okAsync(true))
+      jest.spyOn(OtpUtils, 'generateOtpPrefix').mockReturnValue(MOCK_OTP_PREFIX)
 
       // Act
       const response = await request
@@ -265,7 +267,10 @@ describe('auth.routes', () => {
       // Assert
       expect(sendLoginOtpSpy).toHaveBeenCalled()
       expect(response.status).toEqual(200)
-      expect(response.body).toEqual(`OTP sent to ${VALID_EMAIL}`)
+      expect(response.body).toEqual({
+        message: `OTP sent to ${VALID_EMAIL}`,
+        otpPrefix: MOCK_OTP_PREFIX,
+      })
     })
 
     it('should return 200 when otp is sent successfully and email is non-lowercase', async () => {
@@ -273,6 +278,7 @@ describe('auth.routes', () => {
       const sendLoginOtpSpy = jest
         .spyOn(MailService, 'sendLoginOtp')
         .mockReturnValueOnce(okAsync(true))
+      jest.spyOn(OtpUtils, 'generateOtpPrefix').mockReturnValue(MOCK_OTP_PREFIX)
 
       // Act
       const response = await request
@@ -282,7 +288,10 @@ describe('auth.routes', () => {
       // Assert
       expect(sendLoginOtpSpy).toHaveBeenCalled()
       expect(response.status).toEqual(200)
-      expect(response.body).toEqual(`OTP sent to ${VALID_EMAIL}`)
+      expect(response.body).toEqual({
+        message: `OTP sent to ${VALID_EMAIL}`,
+        otpPrefix: MOCK_OTP_PREFIX,
+      })
     })
   })
 
@@ -603,11 +612,16 @@ describe('auth.routes', () => {
 
   // Helper functions
   const requestForOtp = async (email: string) => {
+    const MOCK_OTP_PREFIX = 'ABC'
     // Set that so no real mail is sent.
     jest.spyOn(MailService, 'sendLoginOtp').mockReturnValue(okAsync(true))
+    jest.spyOn(OtpUtils, 'generateOtpPrefix').mockReturnValue(MOCK_OTP_PREFIX)
 
     const response = await request.post('/auth/otp/generate').send({ email })
-    expect(response.body).toEqual(`OTP sent to ${email}`)
+    expect(response.body).toEqual({
+      message: `OTP sent to ${email}`,
+      otpPrefix: MOCK_OTP_PREFIX,
+    })
   }
 
   const signInUser = async (email: string, otp: string) => {
