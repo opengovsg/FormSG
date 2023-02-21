@@ -220,23 +220,7 @@ export const servePublicForm: ControllerHandler<
     const isPublicForm = Boolean(
       !formResult.isErr() && formResult.value.status === FormStatus.Public,
     )
-    const formStatus = !formResult.isErr()
-      ? `${formResult.value.status}`
-      : 'formresulterr'
-    logger.info({
-      message: 'metatags test',
-      meta: {
-        action: 'metatags test',
-        formResult: formResult,
-        isFormResultErr: formResult.isErr(),
-        formStatus: formStatus,
-        formStatusRaw: formResult.isErr() ? null : formResult.value.status,
-        isPublicForm: isPublicForm,
-      },
-    })
     return serveFormReact(/* isPublic= */ isPublicForm)(req, res, next)
-    // return serveFormReact(/* isPublic= */ true)(req, res, next)
-    // return serveFormReact(!formResult.isErr() && formResult.value.status === FormStatus.Public,)(req, res, next)
   } else {
     return serveFormAngular(req, res, next)
   }
