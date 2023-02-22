@@ -13,7 +13,7 @@ import {
 import { getPopulatedUserById } from '../../user/user.service'
 
 import { PermissionLevel } from './admin-form.types'
-import { mapRouteError } from './admin-form.utils'
+import { mapRouteError, verifyUserBetaflag } from './admin-form.utils'
 
 const logger = createLoggerWithLabel(module)
 
@@ -24,35 +24,39 @@ export const handleConnectAccount: ControllerHandler<{
   const sessionUserId = (req.session as AuthedSessionData).user._id
 
   // Step 1: Retrieve currently logged in user.
-  return getPopulatedUserById(sessionUserId)
-    .andThen((user) =>
-      // Step 2: Retrieve form with write permission check.
-      getFormAfterPermissionChecks({
-        user,
-        formId,
-        level: PermissionLevel.Write,
-      }),
-    )
-    .andThen((form) => getStripeOauthUrl(form))
-    .map(({ authUrl, state }) => {
-      res.cookie('stripeState', state, { signed: true })
-      return res.json({
-        authUrl,
+  return (
+    getPopulatedUserById(sessionUserId)
+      // Step 2: Check if user has 'payment' betaflag
+      .andThen((user) => verifyUserBetaflag(user, 'payment'))
+      .andThen((user) =>
+        // Step 3: Retrieve form with write permission check.
+        getFormAfterPermissionChecks({
+          user,
+          formId,
+          level: PermissionLevel.Write,
+        }),
+      )
+      .andThen((form) => getStripeOauthUrl(form))
+      .map(({ authUrl, state }) => {
+        res.cookie('stripeState', state, { signed: true })
+        return res.json({
+          authUrl,
+        })
       })
-    })
-    .mapErr((error) => {
-      logger.error({
-        message: 'Error connecting admin form payment account',
-        meta: {
-          action: 'handleConnectAccount',
-          ...createReqMeta(req),
-        },
-        error,
-      })
+      .mapErr((error) => {
+        logger.error({
+          message: 'Error connecting admin form payment account',
+          meta: {
+            action: 'handleConnectAccount',
+            ...createReqMeta(req),
+          },
+          error,
+        })
 
-      const { statusCode, errorMessage } = mapRouteError(error)
-      return res.status(statusCode).json({ message: errorMessage })
-    })
+        const { statusCode, errorMessage } = mapRouteError(error)
+        return res.status(statusCode).json({ message: errorMessage })
+      })
+  )
 }
 
 export const handleUnlinkAccount: ControllerHandler<{
