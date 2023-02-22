@@ -133,7 +133,7 @@ describe('auth.controller', () => {
       expect(mockRes.status).toHaveBeenCalledWith(500)
       expect(mockRes.json).toHaveBeenCalledWith({
         message:
-          'Failed to send login OTP. Please try again later and if the problem persists, contact us.',
+          'Failed to create login OTP. Please try again later and if the problem persists, contact us.',
       })
       // Sending login OTP should not have been called.
       expect(MockAuthService.createLoginOtp).toHaveBeenCalledTimes(1)

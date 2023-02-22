@@ -208,7 +208,7 @@ describe('auth.routes', () => {
       expect(response.status).toEqual(500)
       expect(response.body).toEqual({
         message:
-          'Failed to send login OTP. Please try again later and if the problem persists, contact us.',
+          'Failed to create login OTP. Please try again later and if the problem persists, contact us.',
       })
     })
 
@@ -248,7 +248,7 @@ describe('auth.routes', () => {
       expect(response.status).toEqual(500)
       expect(response.body).toEqual({
         message:
-          'Failed to send login OTP. Please try again later and if the problem persists, contact us.',
+          'Failed to create login OTP. Please try again later and if the problem persists, contact us.',
       })
     })
 
