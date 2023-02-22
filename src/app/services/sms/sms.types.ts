@@ -142,7 +142,7 @@ export class TwilioCredentialsData {
 }
 
 export type TwilioConfig = {
-  client: Twilio
+  client: InstanceType<typeof Twilio>
   msgSrvcSid: string
 }
 
