@@ -70,7 +70,9 @@ const compileUserModel = (db: Mongoose) => {
         type: Date,
         default: () => Date.now(),
       },
-      betaFlags: {},
+      betaFlags: {
+        payments: Boolean,
+      },
       flags: {
         lastSeenFeatureUpdateVersion: Number,
       },
