@@ -33,11 +33,8 @@ services:
       - SECRET_ENV=development
       - SUBMISSIONS_RATE_LIMIT=200
       - SEND_AUTH_OTP_RATE_LIMIT=60
-      # TODO(opengovsg/formsg-private#130) Retain only SG env vars when SES migration is over
-      - SES_PORT_US=1025
-      - SES_HOST_US=maildev
-      - SES_PORT_SG=1025
-      - SES_HOST_SG=maildev
+      - SES_PORT=1025
+      - SES_HOST=maildev
       - WEBHOOK_SQS_URL=http://localhost:4566/000000000000/local-webhooks-sqs-main
       - INTRANET_IP_LIST_PATH
       - SENTRY_CONFIG_URL=https://random@sentry.io/123456
