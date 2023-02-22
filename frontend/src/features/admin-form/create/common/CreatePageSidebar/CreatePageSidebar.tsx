@@ -14,6 +14,7 @@ import {
   DrawerTabs,
   useCreatePageSidebar,
 } from '~features/admin-form/create/common/CreatePageSidebarContext/CreatePageSidebarContext'
+import { useUser } from '~features/user/queries'
 
 import {
   isDirtySelector,
@@ -31,6 +32,7 @@ export const CreatePageSidebar = (): JSX.Element | null => {
   const isMobile = useIsMobile()
   const setFieldsToInactive = useFieldBuilderStore(setToInactiveSelector)
   const isDirty = useDirtyFieldStore(isDirtySelector)
+  const { user } = useUser()
   const {
     activeTab,
     handleBuilderClick,
@@ -102,12 +104,15 @@ export const CreatePageSidebar = (): JSX.Element | null => {
           isActive={activeTab === DrawerTabs.Logic}
           id={FEATURE_TOUR[2].id}
         />
-        <DrawerTabIcon
-          label="Add payment"
-          icon={<BiCreditCard fontSize="1.5rem" />}
-          onClick={handleDrawerPaymentClick}
-          isActive={activeTab === DrawerTabs.Payment}
-        />
+        {user?.betaFlags?.payment && (
+          <DrawerTabIcon
+            label="Add payment"
+            icon={<BiCreditCard fontSize="1.5rem" />}
+            onClick={handleDrawerPaymentClick}
+            isActive={activeTab === DrawerTabs.Payment}
+          />
+        )}
+
         <DrawerTabIcon
           label="Edit Thank you page"
           icon={<PhHandsClapping fontSize="1.5rem" />}
