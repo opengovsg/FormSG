@@ -59,8 +59,8 @@ export class MyInfoParseRelayStateError extends ApplicationError {
 /**
  * Submission on MyInfo form missing access token.
  */
-export class MyInfoMissingAccessTokenError extends ApplicationError {
-  constructor(message = 'Access token not present on MyInfo submission') {
+export class MyInfoMissingLoginCookieError extends ApplicationError {
+  constructor(message = 'Login cookie not present on MyInfo submission') {
     super(message)
   }
 }
@@ -68,9 +68,18 @@ export class MyInfoMissingAccessTokenError extends ApplicationError {
 /**
  * Access token on submission for MyInfo form is invalid.
  */
-export class MyInfoInvalidAccessTokenError extends ApplicationError {
-  constructor(message = 'Access token could not be verified') {
+export class MyInfoInvalidLoginCookieError extends ApplicationError {
+  constructor(message = 'Login cookie could not be verified') {
     super(message)
+  }
+}
+
+/**
+ * Cookie containing auth code is malformed.
+ */
+export class MyInfoInvalidAuthCodeCookieError extends ApplicationError {
+  constructor(cookie: unknown, message = 'Auth code cookie is malformed') {
+    super(`${message}: ${cookie}`)
   }
 }
 
@@ -79,15 +88,6 @@ export class MyInfoInvalidAccessTokenError extends ApplicationError {
  */
 export class MyInfoCookieStateError extends ApplicationError {
   constructor(message = 'MyInfo cookie is in error state') {
-    super(message)
-  }
-}
-
-/**
- * MyInfo cookie has been used more than once
- */
-export class MyInfoCookieAccessError extends ApplicationError {
-  constructor(message = 'MyInfo cookie has already been used') {
     super(message)
   }
 }

@@ -18,7 +18,7 @@ interface PublicFormSubmitButtonProps {
   formFields: MyInfoFormField<FormField>[]
   formLogics: LogicDto[]
   colorTheme: string
-  onSubmit: MouseEventHandler<HTMLButtonElement>
+  onSubmit: MouseEventHandler<HTMLButtonElement> | undefined
 }
 
 /**
@@ -33,7 +33,7 @@ export const PublicFormSubmitButton = ({
 }: PublicFormSubmitButtonProps): JSX.Element => {
   const isMobile = useIsMobile()
   const { isSubmitting } = useFormState()
-  const formInputs = useWatch<FormFieldValues>({})
+  const formInputs = useWatch<FormFieldValues>({}) as FormFieldValues
   const { form } = usePublicFormContext()
 
   const preventSubmissionLogic = useMemo(() => {
@@ -52,7 +52,7 @@ export const PublicFormSubmitButton = ({
         colorScheme={`theme-${colorTheme}` as ThemeColorScheme}
         type="button"
         isLoading={isSubmitting}
-        isDisabled={!!preventSubmissionLogic}
+        isDisabled={!!preventSubmissionLogic || !onSubmit}
         loadingText="Submitting"
         onClick={onSubmit}
       >

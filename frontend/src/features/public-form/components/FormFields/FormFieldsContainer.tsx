@@ -6,11 +6,19 @@ import { FormAuthType } from '~shared/types/form/form'
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
 import { FormAuth } from '../FormAuth'
+// TODO #4279: Remove after React rollout is complete
+import { PublicSwitchEnvMessage } from '../PublicSwitchEnvMessage'
 
 import { FormFields } from './FormFields'
 import { FormFieldsSkeleton } from './FormFieldsSkeleton'
 
-export const FormFieldsContainer = (): JSX.Element | null => {
+interface FormFieldsContainerProps {
+  isPreview?: boolean
+}
+
+export const FormFieldsContainer = ({
+  isPreview,
+}: FormFieldsContainerProps): JSX.Element | null => {
   const { form, isAuthRequired, isLoading, handleSubmitForm, submissionData } =
     usePublicFormContext()
 
@@ -45,6 +53,14 @@ export const FormFieldsContainer = (): JSX.Element | null => {
   return (
     <Box w="100%" minW={0} h="fit-content" maxW="57rem">
       {renderFields}
+      {/* TODO(#4279): Remove switch env message on full rollout */}
+      {!isPreview && (
+        <PublicSwitchEnvMessage
+          responseMode={form?.responseMode}
+          isAuthRequired={isAuthRequired}
+          authType={form?.authType}
+        />
+      )}
     </Box>
   )
 }

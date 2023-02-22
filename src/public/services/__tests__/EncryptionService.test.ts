@@ -1,10 +1,8 @@
-import { mocked } from 'ts-jest/utils'
-
 import * as EncryptionService from '../EncryptionService'
 import { FormSgSdk } from '../FormSgSdkService'
 
 jest.mock('../FormSgSdkService')
-const MockFormSgSdk = mocked(FormSgSdk, true)
+const MockFormSgSdk = jest.mocked(FormSgSdk)
 
 describe('EncryptionService', () => {
   describe('encryptSubmissionResponses', () => {

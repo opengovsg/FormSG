@@ -2,6 +2,8 @@ import { Box, Flex, Stack } from '@chakra-ui/react'
 
 import { AppFooter } from '~/app/AppFooter'
 
+import { noPrintCss } from '~utils/noPrintCss'
+
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
 import { useBgColor } from '../PublicFormWrapper'
@@ -26,7 +28,7 @@ export const FormFooter = (): JSX.Element => {
           mx={{ lg: 0 }}
           mb={{ lg: '2rem' }}
         >
-          <Box id={captchaContainerId} />
+          <Box id={captchaContainerId} sx={noPrintCss} />
           <Box w="100%">
             <AppFooter
               variant="compact"

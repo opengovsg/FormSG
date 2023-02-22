@@ -80,6 +80,7 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
       value,
       name,
       colorScheme,
+      title,
       ...props
     },
     ref,
@@ -151,7 +152,7 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
         ) {
           return imageCompression(acceptedFile, {
             maxSizeMB: maxSize ? maxSize / MB : undefined,
-            maxWidthOrHeight: 1024,
+            maxWidthOrHeight: 1440,
             initialQuality: 0.8,
             useWebWorker: false,
           }).then((blob) =>
@@ -250,6 +251,7 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
                 isDragActive={isDragActive}
                 inputProps={processedInputProps}
                 readableMaxSize={readableMaxSize}
+                question={title}
               />
             )}
           </Box>

@@ -5,7 +5,11 @@ import {
   PublicFormAuthRedirectDto,
   SubmitFormFeedbackBodyDto,
 } from '~shared/types/form'
-import { FormAuthType, PublicFormViewDto } from '~shared/types/form/form'
+import {
+  FormAuthType,
+  FormDto,
+  PublicFormViewDto,
+} from '~shared/types/form/form'
 import { SubmissionResponseDto } from '~shared/types/submission'
 
 import { transformAllIsoStringsToDate } from '~utils/date'
@@ -16,6 +20,7 @@ import {
   createEmailSubmissionFormData,
   createEncryptedSubmissionData,
 } from './utils/createSubmission'
+import { filterHiddenInputs } from './utils/filterHiddenInputs'
 
 export const PUBLIC_FORMS_ENDPOINT = '/forms'
 
@@ -67,6 +72,7 @@ export type SubmitEmailFormArgs = {
   formId: string
   captchaResponse?: string | null
   formFields: FormFieldDto[]
+  formLogics: FormDto['form_logics']
   formInputs: FormFieldValues
 }
 
@@ -74,11 +80,17 @@ export type SubmitStorageFormArgs = SubmitEmailFormArgs & { publicKey: string }
 
 export const submitEmailModeForm = async ({
   formFields,
+  formLogics,
   formInputs,
   formId,
   captchaResponse = null,
 }: SubmitEmailFormArgs): Promise<SubmissionResponseDto> => {
-  const formData = createEmailSubmissionFormData(formFields, formInputs)
+  const filteredInputs = filterHiddenInputs({
+    formFields,
+    formInputs,
+    formLogics,
+  })
+  const formData = createEmailSubmissionFormData(formFields, filteredInputs)
 
   return ApiService.post<SubmissionResponseDto>(
     `${PUBLIC_FORMS_ENDPOINT}/${formId}/submissions/email`,
@@ -93,14 +105,20 @@ export const submitEmailModeForm = async ({
 
 export const submitStorageModeForm = async ({
   formFields,
+  formLogics,
   formInputs,
   formId,
   publicKey,
   captchaResponse = null,
 }: SubmitStorageFormArgs) => {
-  const submissionContent = await createEncryptedSubmissionData(
+  const filteredInputs = filterHiddenInputs({
     formFields,
     formInputs,
+    formLogics,
+  })
+  const submissionContent = await createEncryptedSubmissionData(
+    formFields,
+    filteredInputs,
     publicKey,
   )
 

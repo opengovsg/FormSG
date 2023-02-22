@@ -25,11 +25,15 @@ export const FormInstructionsContainer = (): JSX.Element | null => {
         py="2.5rem"
         px={{ base: '1rem', md: '2.5rem' }}
         mb="1.5rem"
+        sx={{
+          '@media print': {
+            pb: '0',
+          },
+        }}
       >
         <Box
           id={PUBLICFORM_INSTRUCTIONS_SECTIONID}
           ref={sectionRefs[PUBLICFORM_INSTRUCTIONS_SECTIONID]}
-          role="heading"
           // Allow focus on instructions when sidebar link is clicked.
           tabIndex={-1}
         >

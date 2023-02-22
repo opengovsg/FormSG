@@ -1,5 +1,5 @@
 // TODO #4279: Remove after React rollout is complete
-import { KeyboardEventHandler, useCallback } from 'react'
+import { KeyboardEventHandler, useCallback, useMemo } from 'react'
 import {
   Box,
   Flex,
@@ -8,17 +8,54 @@ import {
   VisuallyHidden,
 } from '@chakra-ui/react'
 
-import { SwitchEnvFeedbackFormBodyDto } from '~shared/types'
+import { FormAuthType, FormResponseMode } from '~shared/types'
 
+import { noPrintCss } from '~utils/noPrintCss'
 import Button from '~components/Button'
 import InlineMessage from '~components/InlineMessage'
 
-import { useEnvMutations } from '~features/env/mutations'
-import { useSwitchEnvFeedbackFormView } from '~features/env/queries'
-import { SwitchEnvFeedbackModal } from '~features/env/SwitchEnvFeedbackModal'
+import { PublicFeedbackModal } from '~features/env/PublicFeedbackModal'
+import { useEnv } from '~features/env/queries'
 
-export const PublicSwitchEnvMessage = (): JSX.Element => {
+type PublicSwitchEnvMessageProps = {
+  responseMode?: FormResponseMode
+  isAuthRequired: boolean
+  authType?: FormAuthType
+}
+
+export const PublicSwitchEnvMessage = ({
+  responseMode,
+  isAuthRequired,
+  authType,
+}: PublicSwitchEnvMessageProps): JSX.Element | null => {
   const { isOpen, onOpen, onClose } = useDisclosure()
+
+  const {
+    data: {
+      respondentRolloutEmail,
+      respondentRolloutStorage,
+      removeRespondentsInfoboxThreshold,
+    } = {},
+  } = useEnv()
+
+  const switchEnvRolloutPercentage = useMemo(
+    () =>
+      responseMode === FormResponseMode.Email
+        ? respondentRolloutEmail
+        : respondentRolloutStorage,
+    [responseMode, respondentRolloutEmail, respondentRolloutStorage],
+  )
+
+  // Remove the switch env message if the React rollout for public form respondents is => threshold
+  const showSwitchEnvMessage = useMemo(
+    () =>
+      !!(
+        switchEnvRolloutPercentage &&
+        removeRespondentsInfoboxThreshold &&
+        switchEnvRolloutPercentage < removeRespondentsInfoboxThreshold
+      ),
+    [switchEnvRolloutPercentage, removeRespondentsInfoboxThreshold],
+  )
 
   const handleKeydown: KeyboardEventHandler<HTMLButtonElement> = useCallback(
     (event) => {
@@ -30,21 +67,14 @@ export const PublicSwitchEnvMessage = (): JSX.Element => {
     [onOpen],
   )
 
-  // get the feedback form data
-  const { data: feedbackForm } = useSwitchEnvFeedbackFormView(isOpen)
-
-  const { submitSwitchEnvFormFeedbackMutation, publicSwitchEnvMutation } =
-    useEnvMutations(feedbackForm)
-
-  const submitFeedback = useCallback(
-    (formInputs: SwitchEnvFeedbackFormBodyDto) => {
-      return submitSwitchEnvFormFeedbackMutation.mutateAsync(formInputs)
-    },
-    [submitSwitchEnvFormFeedbackMutation],
-  )
+  if (!showSwitchEnvMessage) return null
 
   return (
-    <Flex justify="center">
+    <Flex
+      mt={isAuthRequired ? undefined : '-2.5rem'}
+      justify="center"
+      sx={noPrintCss}
+    >
       <Box w="100%" minW={0} h="fit-content" maxW="57rem">
         <InlineMessage
           variant="warning"
@@ -64,6 +94,7 @@ export const PublicSwitchEnvMessage = (): JSX.Element => {
               onClick={onOpen}
               onKeyDown={handleKeydown}
               aria-labelledby="switch-env-msg"
+              cursor="pointer"
             >
               <VisuallyHidden>
                 Click to switch to the original FormSG
@@ -76,12 +107,11 @@ export const PublicSwitchEnvMessage = (): JSX.Element => {
           </Text>
         </InlineMessage>
       </Box>
-      <SwitchEnvFeedbackModal
-        onSubmitFeedback={submitFeedback}
-        onChangeEnv={publicSwitchEnvMutation.mutate}
+      <PublicFeedbackModal
         isOpen={isOpen}
         onClose={onClose}
-        isAdminView={false}
+        responseMode={responseMode}
+        authType={authType}
       />
     </Flex>
   )

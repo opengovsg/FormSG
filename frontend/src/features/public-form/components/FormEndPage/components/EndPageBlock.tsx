@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef } from 'react'
-import { Box, Flex, Stack, Text, VisuallyHidden } from '@chakra-ui/react'
+import { Box, Flex, Text, VisuallyHidden } from '@chakra-ui/react'
+import { format } from 'date-fns'
 
 import { FormColorTheme, FormDto } from '~shared/types/form'
 
@@ -40,6 +41,11 @@ export const EndPageBlock = ({
     },
   })
 
+  const submissionTimestamp = useMemo(
+    () => format(new Date(submissionData.timestamp), 'dd MMM yyyy, HH:mm:ss z'),
+    [submissionData.timestamp],
+  )
+
   const submittedAriaText = useMemo(() => {
     if (formTitle) {
       return `You have successfully submitted your response for ${formTitle}.`
@@ -49,22 +55,29 @@ export const EndPageBlock = ({
 
   return (
     <Flex flexDir="column">
-      <Stack tabIndex={-1} ref={focusRef} spacing="1rem">
-        <Box>
-          <VisuallyHidden aria-live="assertive">
-            {submittedAriaText}
-          </VisuallyHidden>
-          <Text as="h2" textStyle="h2" textColor="secondary.700">
-            {endPage.title}
-          </Text>
-        </Box>
+      <Box ref={focusRef}>
+        <VisuallyHidden aria-live="assertive">
+          {submittedAriaText}
+        </VisuallyHidden>
+        <Text as="h2" textStyle="h2" textColor="secondary.500">
+          {endPage.title}
+        </Text>
         {endPage.paragraph ? (
-          <MarkdownText components={mdComponents}>
-            {endPage.paragraph}
-          </MarkdownText>
+          <Box mt="0.75rem">
+            <MarkdownText components={mdComponents}>
+              {endPage.paragraph}
+            </MarkdownText>
+          </Box>
         ) : null}
-        <Text textColor="secondary.300">Response ID: {submissionData.id}</Text>
-      </Stack>
+      </Box>
+      <Box mt="2rem">
+        <Text textColor="secondary.300" textStyle="caption-2">
+          Response ID: {submissionData.id}
+        </Text>
+        <Text mt="0.25rem" textColor="secondary.300" textStyle="caption-2">
+          {submissionTimestamp}
+        </Text>
+      </Box>
       <Box mt="2.25rem">
         <Button
           as="a"

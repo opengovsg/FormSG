@@ -4,6 +4,7 @@
  */
 import { RegisterOptions } from 'react-hook-form'
 import { isValid, parse } from 'date-fns'
+import { identity } from 'lodash'
 import simplur from 'simplur'
 import validator from 'validator'
 
@@ -43,7 +44,11 @@ import {
   REQUIRED_ERROR,
 } from '~constants/validation'
 import { DATE_PARSE_FORMAT } from '~templates/Field/Date/DateField'
-import { VerifiableFieldValues } from '~templates/Field/types'
+import {
+  CheckboxFieldValues,
+  SingleAnswerValue,
+  VerifiableFieldValues,
+} from '~templates/Field/types'
 
 import { VerifiableFieldBase } from '~features/verifiable-fields/types'
 
@@ -75,21 +80,11 @@ type ValidationRuleFnEmailAndMobile<T extends FieldBase = FieldBase> = (
   schema: MinimumFieldValidationPropsEmailAndMobile<T>,
 ) => RegisterOptions
 
-const requiredValidationFn =
-  (schema: Pick<FieldBase, 'required'>) => (value: unknown) => {
+const requiredSingleAnswerValidationFn =
+  (schema: Pick<FieldBase, 'required'>) => (value?: SingleAnswerValue) => {
     if (!schema.required) return true
-    // Trim strings before checking for emptiness
-    const trimmedValue = typeof value === 'string' ? value.trim() : value
-    return !!trimmedValue || REQUIRED_ERROR
+    return !!value?.trim() || REQUIRED_ERROR
   }
-
-const createRequiredInValidationRules = (
-  schema: Pick<FieldBase, 'required'>,
-): RegisterOptions['validate'] => {
-  return {
-    required: requiredValidationFn(schema),
-  }
-}
 
 /**
  * Validation rules for verifiable fields.
@@ -102,7 +97,7 @@ const createBaseVfnFieldValidationRules: ValidationRuleFnEmailAndMobile<
   return {
     validate: {
       required: (value?: VerifiableFieldValues) => {
-        return requiredValidationFn(schema)(value?.value)
+        return requiredSingleAnswerValidationFn(schema)(value?.value)
       },
       hasSignature: (val?: VerifiableFieldValues) => {
         if (!schema.isVerifiable) return true
@@ -125,7 +120,7 @@ export const createBaseValidationRules = (
   schema: Pick<FieldBase, 'required'>,
 ): RegisterOptions => {
   return {
-    validate: createRequiredInValidationRules(schema),
+    validate: requiredSingleAnswerValidationFn(schema),
   }
 }
 
@@ -135,7 +130,7 @@ export const createDropdownValidationRules: ValidationRuleFn<
   // TODO(#3360): Handle MyInfo dropdown validation
   return {
     validate: {
-      ...createRequiredInValidationRules(schema),
+      required: requiredSingleAnswerValidationFn(schema),
       validOptions: (value: string) => {
         if (!value) return
         return (
@@ -155,7 +150,12 @@ export const createRatingValidationRules: ValidationRuleFn<RatingFieldBase> = (
 export const createAttachmentValidationRules: ValidationRuleFn<
   AttachmentFieldBase
 > = (schema): RegisterOptions => {
-  return createBaseValidationRules(schema)
+  return {
+    validate: (value?: File) => {
+      if (!schema.required) return true
+      return !!value || REQUIRED_ERROR
+    },
+  }
 }
 
 export const createHomeNoValidationRules: ValidationRuleFn<HomenoFieldBase> = (
@@ -163,7 +163,7 @@ export const createHomeNoValidationRules: ValidationRuleFn<HomenoFieldBase> = (
 ): RegisterOptions => {
   return {
     validate: {
-      ...createRequiredInValidationRules(schema),
+      required: requiredSingleAnswerValidationFn(schema),
       validHomeNo: (val?: string) => {
         if (!val) return true
         return isHomePhoneNumber(val) || 'Please enter a valid landline number'
@@ -192,7 +192,7 @@ export const createNumberValidationRules: ValidationRuleFn<NumberFieldBase> = (
 
   return {
     validate: {
-      ...createRequiredInValidationRules(schema),
+      required: requiredSingleAnswerValidationFn(schema),
       validNumber: (val?: string) => {
         if (!val || !customVal) return true
 
@@ -225,7 +225,7 @@ export const createDecimalValidationRules: ValidationRuleFn<
 > = (schema): RegisterOptions => {
   return {
     validate: {
-      ...createRequiredInValidationRules(schema),
+      required: requiredSingleAnswerValidationFn(schema),
       validDecimal: (val: string) => {
         const {
           ValidationOptions: { customMax, customMin },
@@ -277,7 +277,7 @@ export const createTextValidationRules: ValidationRuleFn<
   const { selectedValidation, customVal } = schema.ValidationOptions
   return {
     validate: {
-      ...createRequiredInValidationRules(schema),
+      required: requiredSingleAnswerValidationFn(schema),
       validText: (val?: string) => {
         if (!val || !customVal) return true
 
@@ -310,7 +310,7 @@ export const createUenValidationRules: ValidationRuleFn<UenFieldBase> = (
 ): RegisterOptions => {
   return {
     validate: {
-      ...createRequiredInValidationRules(schema),
+      required: requiredSingleAnswerValidationFn(schema),
       validUen: (val?: string) => {
         if (!val) return true
         return isUenValid(val) || 'Please enter a valid UEN'
@@ -324,7 +324,7 @@ export const createNricValidationRules: ValidationRuleFn<NricFieldBase> = (
 ): RegisterOptions => {
   return {
     validate: {
-      ...createRequiredInValidationRules(schema),
+      required: requiredSingleAnswerValidationFn(schema),
       validNric: (val?: string) => {
         if (!val) return true
         return (
@@ -342,8 +342,13 @@ export const createCheckboxValidationRules: ValidationRuleFn<
 > = (schema): RegisterOptions => {
   return {
     validate: {
-      ...createRequiredInValidationRules(schema),
-      validOptions: (val?: string[]) => {
+      required: (val?: CheckboxFieldValues['value']) => {
+        if (!schema.required) return true
+        if (!val) return REQUIRED_ERROR
+        // Trim strings before checking for emptiness
+        return val.map((v) => v.trim()).some(identity) || REQUIRED_ERROR
+      },
+      validOptions: (val?: CheckboxFieldValues['value']) => {
         const {
           ValidationOptions: { customMin, customMax },
           validateByValue,
@@ -382,7 +387,7 @@ export const createDateValidationRules: ValidationRuleFn<DateFieldBase> = (
 ): RegisterOptions => {
   return {
     validate: {
-      ...createRequiredInValidationRules(schema),
+      required: requiredSingleAnswerValidationFn(schema),
       validDate: (val) => {
         if (!val) return true
         if (val === DATE_PARSE_FORMAT.toLowerCase()) {
@@ -466,15 +471,17 @@ export const baseEmailValidationFn =
   (inputValue?: string) => {
     if (!inputValue) return true
 
+    const trimmedInputValue = inputValue.trim()
+
     // Valid email check
-    if (!validator.isEmail(inputValue)) return INVALID_EMAIL_ERROR
+    if (!validator.isEmail(trimmedInputValue)) return INVALID_EMAIL_ERROR
 
     // Valid domain check
     const allowedDomains = schema.isVerifiable
       ? new Set(schema.allowedEmailDomains)
       : new Set()
     if (allowedDomains.size !== 0) {
-      const domainInValue = inputValue.split('@')[1]
+      const domainInValue = trimmedInputValue.split('@')[1].toLowerCase()
       if (domainInValue && !allowedDomains.has(`@${domainInValue}`)) {
         return INVALID_EMAIL_DOMAIN_ERROR
       }

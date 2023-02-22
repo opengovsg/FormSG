@@ -1,19 +1,20 @@
 {
   "name": "form-frontend",
-  "version": "6.18.0",
+  "version": "6.31.0",
   "homepage": ".",
   "private": true,
   "dependencies": {
     "@chakra-ui/react": "^1.8.6",
+    "@datadog/browser-logs": "^4.28.1",
     "@datadog/browser-rum": "^4.14.0",
     "@emotion/react": "^11.7.0",
     "@emotion/styled": "^11.6.0",
     "@floating-ui/react-dom-interactions": "^0.9.3",
-    "@opengovsg/formsg-sdk": "^0.9.0",
+    "@opengovsg/formsg-sdk": "^0.10.0",
     "@stablelib/base64": "^1.0.1",
     "@stripe/react-stripe-js": "^1.15.0",
     "@stripe/stripe-js": "^1.44.1",
-    "axios": "^0.24.0",
+    "axios": "^1.2.1",
     "broadcast-channel": "^4.13.0",
     "browser-image-compression": "^2.0.0",
     "comlink": "^4.3.1",
@@ -97,7 +98,8 @@
     "clean:emotion-types": "rimraf node_modules/@emotion/core/types",
     "postinstall": "patch-package && npm run gen:theme-typings && npm run clean:emotion-types && npm --prefix ../shared install",
     "start": "env-cmd -f .buildtime-env craco --openssl-legacy-provider start",
-    "build": "cross-env CI=false BUILD_PATH='../dist/frontend' INLINE_RUNTIME_CHUNK=false SKIP_PREFLIGHT_CHECK=true craco build",
+    "build": "npm run build:dd-chunk && cross-env CI=false BUILD_PATH='../dist/frontend' INLINE_RUNTIME_CHUNK=false SKIP_PREFLIGHT_CHECK=true craco build && cd ../ && cp -rf frontend/static/js dist/frontend/static",
+    "build:dd-chunk": "webpack --config webpack.dd.config.js",
     "test": "cross-env SKIP_PREFLIGHT_CHECK=true craco test --silent",
     "eject": "react-scripts eject",
     "storybook": "start-storybook -p 6006",
@@ -107,6 +109,9 @@
     "test:a11y": "npm run build-storybook && jest --config .storybook/storyshots/jest.config.js",
     "test:a11y-dev": "cross-env USE_DEV_SERVER=true jest --config .storybook/storyshots/jest.config.js",
     "pre-commit": "lint-staged"
+  },
+  "overrides": {
+    "react-error-overlay": "6.0.9"
   },
   "browserslist": {
     "production": [
@@ -144,7 +149,7 @@
     "@types/dedent": "^0.7.0",
     "@types/file-saver": "^2.0.3",
     "@types/gtag.js": "0.0.10",
-    "@types/jest": "^27.0.3",
+    "@types/jest": "^29.2.4",
     "@types/node": "^16.11.12",
     "@types/react": "^17.0.37",
     "@types/react-beautiful-dnd": "^13.1.2",
@@ -169,6 +174,7 @@
     "eslint-plugin-simple-import-sort": "^7.0.0",
     "eslint-plugin-storybook": "^0.5.12",
     "eslint-plugin-testing-library": "^5.0.1",
+    "html-webpack-plugin": "^4.5.2",
     "lint-staged": "^12.1.2",
     "mockdate": "^3.0.5",
     "msw": "^0.36.3",

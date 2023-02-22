@@ -1,5 +1,4 @@
 import { ok } from 'neverthrow'
-import { mocked } from 'ts-jest/utils'
 
 import formsgSdk from 'src/app/config/formsg-sdk'
 
@@ -27,7 +26,7 @@ import {
 import IncomingEncryptSubmission from '../IncomingEncryptSubmission.class'
 
 jest.mock('../../../../utils/encryption')
-const mockCheckIsEncryptedEncoding = mocked(checkIsEncryptedEncoding)
+const mockCheckIsEncryptedEncoding = jest.mocked(checkIsEncryptedEncoding)
 
 type VerificationMock = {
   authenticate: () => boolean

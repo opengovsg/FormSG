@@ -9,6 +9,7 @@ import {
   SmsCountsDto,
 } from '~shared/types/form/form'
 
+import { ADMINFORM_USETEMPLATE_ROUTE } from '~constants/routes'
 import { transformAllIsoStringsToDate } from '~utils/date'
 import { ApiService } from '~services/ApiService'
 
@@ -20,6 +21,7 @@ import {
 import {
   createEmailSubmissionFormData,
   createEncryptedSubmissionData,
+  filterHiddenInputs,
 } from '~features/public-form/utils'
 
 import { PREVIEW_MOCK_UINFIN } from '../preview/constants'
@@ -51,6 +53,35 @@ export const previewForm = async (
 ): Promise<PreviewFormViewDto> => {
   return ApiService.get<PreviewFormViewDto>(
     `${ADMIN_FORM_ENDPOINT}/${formId}/preview`,
+  )
+    .then(({ data }) => {
+      // Add default mock authenticated state if previewing an authenticatable form
+      // and if server has not already sent back a mock authenticated state.
+      if (data.form.authType !== FormAuthType.NIL && !data.spcpSession) {
+        data.spcpSession = { userName: PREVIEW_MOCK_UINFIN }
+      }
+
+      // Inject MyInfo preview values into form fields (if they are MyInfo fields).
+      data.form.form_fields = data.form.form_fields.map(
+        augmentWithMyInfoDisplayValue,
+      )
+
+      return data
+    })
+    .then(transformAllIsoStringsToDate)
+}
+
+/**
+ * Gets the public view of a form. Used for viewing the form from the form template page.
+ * Must be an admin.
+ * @param formId formId of form in question
+ * @returns Public view of a form
+ */
+export const viewFormTemplate = async (
+  formId: string,
+): Promise<PreviewFormViewDto> => {
+  return ApiService.get<PreviewFormViewDto>(
+    `${ADMIN_FORM_ENDPOINT}/${formId}/${ADMINFORM_USETEMPLATE_ROUTE}`,
   )
     .then(({ data }) => {
       // Add default mock authenticated state if previewing an authenticatable form
@@ -122,10 +153,16 @@ export const removeSelfFromFormCollaborators = async (
  */
 export const submitEmailModeFormPreview = async ({
   formFields,
+  formLogics,
   formInputs,
   formId,
 }: SubmitEmailFormArgs): Promise<SubmissionResponseDto> => {
-  const formData = createEmailSubmissionFormData(formFields, formInputs)
+  const filteredInputs = filterHiddenInputs({
+    formFields,
+    formInputs,
+    formLogics,
+  })
+  const formData = createEmailSubmissionFormData(formFields, filteredInputs)
 
   return ApiService.post<SubmissionResponseDto>(
     `${ADMIN_FORM_ENDPOINT}/${formId}/preview/submissions/email`,
@@ -138,13 +175,19 @@ export const submitEmailModeFormPreview = async ({
  */
 export const submitStorageModeFormPreview = async ({
   formFields,
+  formLogics,
   formInputs,
   formId,
   publicKey,
 }: SubmitStorageFormArgs) => {
-  const submissionContent = await createEncryptedSubmissionData(
+  const filteredInputs = filterHiddenInputs({
     formFields,
     formInputs,
+    formLogics,
+  })
+  const submissionContent = await createEncryptedSubmissionData(
+    formFields,
+    filteredInputs,
     publicKey,
   )
 

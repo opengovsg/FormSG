@@ -25,7 +25,7 @@ export interface FormFieldsProps {
   formFields: FormFieldDto[]
   formLogics: LogicDto[]
   colorTheme: FormColorTheme
-  onSubmit: SubmitHandler<FormFieldValues>
+  onSubmit: SubmitHandler<FormFieldValues> | undefined
 }
 
 export const FormFields = ({
@@ -86,7 +86,6 @@ export const FormFields = ({
   const formMethods = useForm<FormFieldValues>({
     defaultValues: defaultFormValues,
     mode: 'onTouched',
-    shouldUnregister: true,
   })
 
   const {
@@ -126,7 +125,7 @@ export const FormFields = ({
           </Box>
         )}
         <PublicFormSubmitButton
-          onSubmit={formMethods.handleSubmit(onSubmit)}
+          onSubmit={onSubmit ? formMethods.handleSubmit(onSubmit) : undefined}
           formFields={augmentedFormFields}
           formLogics={formLogics}
           colorTheme={colorTheme}

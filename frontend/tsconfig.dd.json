@@ -1,0 +1,15 @@
+// Config file for ts-loader in webpack.dd.config.js
+{
+    "compilerOptions": {
+      "outDir": "../../dist/frontend/static/js/",
+      "noImplicitAny": true,
+      "module": "es6",
+      "target": "es2015",
+      "jsx": "react",
+      "allowJs": true,
+      "moduleResolution": "node"
+    },
+    "include": [
+      "datadog-chunk.ts"
+    ]
+}

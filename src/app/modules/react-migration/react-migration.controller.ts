@@ -4,7 +4,11 @@ import { escape } from 'html-escaper'
 import { get } from 'lodash'
 import path from 'path'
 
-import { FormResponseMode, UiCookieValues } from '../../../../shared/types'
+import {
+  FormResponseMode,
+  FormStatus,
+  UiCookieValues,
+} from '../../../../shared/types'
 import config from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { ControllerHandler } from '../core/core.types'
@@ -212,13 +216,20 @@ export const servePublicForm: ControllerHandler<
   })
 
   if (showReact) {
-    return serveFormReact(/* isPublic= */ true)(req, res, next)
+    return serveFormReact(
+      !formResult.isErr() && formResult.value.status === FormStatus.Public,
+    )(req, res, next)
   } else {
     return serveFormAngular(req, res, next)
   }
 }
 
 export const serveDefault: ControllerHandler = (req, res, next) => {
+  // Delete the deprecated cookie.
+  if (req.cookies[config.reactMigration.adminCookieNameOld]) {
+    res.clearCookie(config.reactMigration.adminCookieNameOld)
+  }
+
   // Admins assigned react, or who choose react will stay on react until they opt out
   // Admins assigned angular will stay on it for that session
   let showReact: boolean | undefined = undefined

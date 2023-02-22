@@ -58,9 +58,11 @@ export type ReactMigrationConfig = {
   respondentRolloutStorage: number
   adminRollout: number
   respondentCookieName: string
+  adminCookieNameOld: string
   adminCookieName: string
   qaCookieName: string
-  reactToAngularFeedbackFormId: string
+  adminSwitchEnvFeedbackFormId: string
+  respondentSwitchEnvFeedbackFormId: string
   angularPhaseOutDate: string
   removeAdminInfoboxThreshold: number
   removeRespondentsInfoboxThreshold: number
@@ -123,7 +125,8 @@ export interface ICompulsoryVarsSchema {
     attachmentS3Bucket: string
   }
   reactMigration: {
-    reactToAngularFeedbackFormId: string
+    adminSwitchEnvFeedbackFormId: string
+    respondentSwitchEnvFeedbackFormId: string
   }
 }
 
@@ -136,6 +139,7 @@ export interface ISgidVarsSchema {
   cookieMaxAge: number
   cookieMaxAgePreserved: number
   cookieDomain: string
+  hostname: string
 }
 
 export interface IOptionalVarsSchema {
@@ -182,6 +186,7 @@ export interface IOptionalVarsSchema {
     respondentRolloutStorage: number
     adminRollout: number
     respondentCookieName: string
+    adminCookieNameOld: string
     adminCookieName: string
     qaCookieName: string
     angularPhaseOutDate: string

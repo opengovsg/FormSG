@@ -8,6 +8,7 @@ import { types } from 'util'
 
 import config from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
+import { createReqMeta } from '../../utils/request'
 
 const logger = createLoggerWithLabel(module)
 const celebrateErrorHandler = errors()
@@ -30,8 +31,9 @@ export const catchNonExistentStaticRoutesMiddleware: RequestHandler = async (
   res,
 ) => {
   // Attempt to fetch from s3 bucket
+
   try {
-    const { data } = await axios.get(
+    const { data, status, headers } = await axios.get(
       `${config.aws.staticAssetsBucketUrl}${req.originalUrl}`,
       {
         responseType: 'stream',
@@ -42,9 +44,11 @@ export const catchNonExistentStaticRoutesMiddleware: RequestHandler = async (
       message: 'Serving static asset from S3',
       meta: {
         action: 'catchNonExistentStaticRoutesMiddleware',
-        url: req.originalUrl,
+        ...createReqMeta(req),
       },
     })
+    res.status(status)
+    res.set(headers)
     data.pipe(res)
   } catch (err) {
     // Else return 404
@@ -52,7 +56,7 @@ export const catchNonExistentStaticRoutesMiddleware: RequestHandler = async (
       message: 'Static asset not found in S3',
       meta: {
         action: 'catchNonExistentStaticRoutesMiddleware',
-        url: req.originalUrl,
+        ...createReqMeta(req),
       },
       // Log original error returned from s3
       error: err,
@@ -61,13 +65,12 @@ export const catchNonExistentStaticRoutesMiddleware: RequestHandler = async (
   }
 }
 
-// Assume 'not found' in the error msgs is a 404. this is somewhat silly, but valid, you can do whatever you like, set properties, use instanceof etc.
-const genericErrorHandlerMiddleware: ErrorRequestHandler = function (
+export const genericErrorHandlerMiddleware: ErrorRequestHandler = (
   err,
   req,
   res,
   next,
-) {
+) => {
   // If headers have already been sent, don't send again
   if (res.headersSent) {
     return
@@ -84,6 +87,7 @@ const genericErrorHandlerMiddleware: ErrorRequestHandler = function (
       action: 'genericErrorHandlerMiddleware',
       // formId is only present for Joi validated routes that require it
       formId: get(req, 'form._id', null),
+      ...createReqMeta(req),
     }
 
     // Error page

@@ -1,5 +1,5 @@
 import { MouseEvent, useCallback, useMemo } from 'react'
-import { Icon, TagLabel } from '@chakra-ui/react'
+import { Flex, Icon, Stack, TagLabel } from '@chakra-ui/react'
 
 import { useMultiSelectContext } from '~components/Dropdown/MultiSelectContext'
 import { useSelectContext } from '~components/Dropdown/SelectContext'
@@ -8,11 +8,10 @@ import {
   itemToIcon,
   itemToLabelString,
 } from '~components/Dropdown/utils/itemUtils'
-import { Tag, TagCloseButton } from '~components/Tag'
+import { Tag, TagCloseButton, TagProps } from '~components/Tag'
 
-export interface MultiSelectItemProps<
-  Item extends ComboboxItem = ComboboxItem,
-> {
+export interface MultiSelectItemProps<Item extends ComboboxItem = ComboboxItem>
+  extends TagProps {
   item: Item
   index: number
 }
@@ -20,6 +19,7 @@ export interface MultiSelectItemProps<
 export const MultiSelectItem = ({
   item,
   index,
+  ...props
 }: MultiSelectItemProps): JSX.Element => {
   const { isDisabled, isReadOnly, setIsFocused, closeMenu, isOpen, styles } =
     useSelectContext()
@@ -81,24 +81,33 @@ export const MultiSelectItem = ({
         },
         onClick: handleTagClick,
       })}
+      {...props}
     >
-      {itemMeta.icon ? (
-        <Icon
+      <Stack
+        direction="row"
+        justifyContent="space-between"
+        alignItems="center"
+        w="100%"
+      >
+        <Flex alignItems="center" overflow="hidden">
+          {itemMeta.icon ? (
+            <Icon
+              aria-hidden
+              sx={styles.icon}
+              mr="0.25rem"
+              as={itemMeta.icon}
+              aria-disabled={isDisabled}
+            />
+          ) : null}
+          <TagLabel>{itemMeta.label}</TagLabel>
+        </Flex>
+        <TagCloseButton
+          tabIndex={-1}
           aria-hidden
-          sx={styles.icon}
-          ml="-0.25rem"
-          mr="0.25rem"
-          as={itemMeta.icon}
-          aria-disabled={isDisabled}
+          isDisabled={isDisabled}
+          onClick={handleRemoveItem}
         />
-      ) : null}
-      <TagLabel>{itemMeta.label}</TagLabel>
-      <TagCloseButton
-        tabIndex={-1}
-        aria-hidden
-        isDisabled={isDisabled}
-        onClick={handleRemoveItem}
-      />
+      </Stack>
     </Tag>
   )
 }

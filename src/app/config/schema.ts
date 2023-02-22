@@ -110,11 +110,17 @@ export const compulsoryVarsSchema: Schema<ICompulsoryVarsSchema> = {
     },
   },
   reactMigration: {
-    reactToAngularFeedbackFormId: {
-      doc: 'Form ID of the React to Angular bug report feedback form',
+    adminSwitchEnvFeedbackFormId: {
+      doc: 'Form ID of the React to Angular bug report feedback form for admins',
       format: String,
       default: null,
-      env: 'REACT_TO_ANGULAR_FEEDBACK_FORM_ID',
+      env: 'REACT_SWITCH_ENV_FEEDBACK_FORM_ID_ADMIN',
+    },
+    respondentSwitchEnvFeedbackFormId: {
+      doc: 'Form ID of the React to Angular bug report feedback form for respondents',
+      format: String,
+      default: null,
+      env: 'REACT_SWITCH_ENV_FEEDBACK_FORM_ID_RESPONDENT',
     },
   },
 }
@@ -354,10 +360,16 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
       default: 'v2-respondent-ui',
       env: 'REACT_MIGRATION_RESP_COOKIE_NAME',
     },
+    adminCookieNameOld: {
+      doc: "Name of the old cookie that will store admins' choice of environment.",
+      format: String,
+      default: 'v2-admin-ui',
+      env: 'REACT_MIGRATION_ADMIN_COOKIE_NAME_OLD',
+    },
     adminCookieName: {
       doc: "Name of the cookie that will store admins' choice of environment.",
       format: String,
-      default: 'v2-admin-ui',
+      default: 'v2-admin-ui-Jan-2023',
       env: 'REACT_MIGRATION_ADMIN_COOKIE_NAME',
     },
     qaCookieName: {

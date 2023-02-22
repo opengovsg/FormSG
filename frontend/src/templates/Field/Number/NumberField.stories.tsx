@@ -41,6 +41,7 @@ const baseSchema: NumberFieldSchema = {
     selectedValidation: null,
   },
   _id: '611b94dfbb9e300012f702a7',
+  questionNumber: 1,
 }
 
 interface StoryNumberFieldProps extends NumberFieldProps {

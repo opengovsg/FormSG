@@ -2,7 +2,6 @@ import { ObjectId } from 'bson-ext'
 import { JWTVerifyResult } from 'jose'
 import mongoose from 'mongoose'
 import session, { Session } from 'supertest-session'
-import { mocked } from 'ts-jest/utils'
 
 import { setupApp } from 'tests/integration/helpers/express-setup'
 
@@ -25,7 +24,7 @@ import { SingpassOidcRouter } from '../singpass.routes'
 jest.mock('../../../../../modules/spcp/spcp.oidc.client')
 const LoginModel = getLoginModel(mongoose)
 
-const MockSpOidcClient = mocked(SpOidcClient, true)
+const MockSpOidcClient = jest.mocked(SpOidcClient)
 
 describe('singpass.oidc.router', () => {
   beforeAll(async () => await dbHandler.connect())
@@ -41,7 +40,7 @@ describe('singpass.oidc.router', () => {
 
   describe('GET /singpass/login', () => {
     const LOGIN_ROUTE = '/singpass/login'
-    const mockClient = mocked(MockSpOidcClient.mock.instances[0], true)
+    const mockClient = jest.mocked(MockSpOidcClient.mock.instances[0])
     beforeEach(async () => {
       mockClient.createJWT.mockResolvedValue(MOCK_JWT)
       jest.restoreAllMocks()

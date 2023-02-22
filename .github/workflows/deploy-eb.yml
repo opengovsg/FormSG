@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - id: set-environment
-        run: echo "::set-output name=current_env::${{github.ref_name}}"
+        run: echo "current_env=${{github.ref_name}}" >> $GITHUB_OUTPUT
 
   build_deploy_application:
     needs: set_environment
@@ -43,18 +43,19 @@ jobs:
           REACT_APP_DD_RUM_APP_ID: ${{ secrets.DD_RUM_APP_ID }}
           REACT_APP_DD_RUM_CLIENT_TOKEN: ${{ secrets.DD_RUM_CLIENT_TOKEN }}
           REACT_APP_DD_RUM_ENV: ${{ secrets.DD_ENV }}
+          REACT_APP_DD_SAMPLE_RATE: ${{ secrets.DD_SAMPLE_RATE }}
           REACT_APP_GA_TRACKING_ID: ${{ secrets.GA_TRACKING_ID }}
           REACT_APP_FORMSG_SDK_MODE: ${{ secrets.REACT_APP_FORMSG_SDK_MODE }}
         run: |
+          sed -i -e "s/@REACT_APP_DD_RUM_APP_ID/$REACT_APP_DD_RUM_APP_ID/g" -e "s/@REACT_APP_DD_RUM_CLIENT_TOKEN/$REACT_APP_DD_RUM_CLIENT_TOKEN/g" -e "s/@REACT_APP_DD_RUM_ENV/$REACT_APP_DD_RUM_ENV/g" -e "s/@REACT_APP_VERSION/${{env.APP_VERSION}}/g" -e "s/@REACT_APP_DD_SAMPLE_RATE/$REACT_APP_DD_SAMPLE_RATE/g" frontend/datadog-chunk.ts
           echo REACT_APP_VERSION=${{env.APP_VERSION}} > frontend/.env
-          echo REACT_APP_DD_RUM_APP_ID=$REACT_APP_DD_RUM_APP_ID >> frontend/.env
-          echo REACT_APP_DD_RUM_CLIENT_TOKEN=$REACT_APP_DD_RUM_CLIENT_TOKEN >> frontend/.env
-          echo REACT_APP_DD_RUM_ENV=$REACT_APP_DD_RUM_ENV >> frontend/.env
           echo REACT_APP_GA_TRACKING_ID=$REACT_APP_GA_TRACKING_ID >> frontend/.env
           echo REACT_APP_FORMSG_SDK_MODE=$REACT_APP_FORMSG_SDK_MODE >> frontend/.env
+          echo REACT_APP_DD_RUM_CLIENT_TOKEN=$REACT_APP_DD_RUM_CLIENT_TOKEN >> frontend/.env
+          echo REACT_APP_DD_RUM_ENV=$REACT_APP_DD_RUM_ENV >> frontend/.env
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
+        uses: aws-actions/configure-aws-credentials@v1.7.0
         with:
           role-to-assume: ${{ secrets.AWS_CI_ROLE_TO_ASSUME }}
           aws-region: ${{ secrets.AWS_DEFAULT_REGION }}

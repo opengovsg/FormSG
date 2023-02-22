@@ -10,7 +10,6 @@ import {
   VerifyJwtError,
 } from '../spcp.errors'
 import { CpOidcClient } from '../spcp.oidc.client'
-import { SpcpService } from '../spcp.service'
 import {
   CorppassJwtPayloadFromCookie,
   ExtractedCorppassNDIPayload,
@@ -21,7 +20,6 @@ import {
 import {
   isCorppassJwtPayload,
   isExtractedCorppassNDIPayload,
-  verifyJwtPromise,
 } from '../spcp.util'
 
 import { SpcpOidcServiceClass } from './spcp.oidc.service.base'
@@ -62,11 +60,7 @@ export class CpOidcServiceClass extends SpcpOidcServiceClass {
     }
 
     const result = ResultAsync.fromPromise(
-      this.oidcClient.verifyJwt(jwt).catch(() => {
-        // TODO(#4496): Remove backward compatible code to allow jwt signed with saml keys
-        const samlCpAuthClient = SpcpService.getAuthClient(FormAuthType.CP)
-        return verifyJwtPromise(samlCpAuthClient, jwt)
-      }),
+      this.oidcClient.verifyJwt(jwt),
       (error) => {
         logger.error({
           message: 'Failed to verify JWT with auth client',

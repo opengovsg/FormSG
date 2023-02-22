@@ -17,10 +17,6 @@ import { MYINFO_ROUTER_PREFIX } from '../../modules/myinfo/myinfo.constants'
 import { MyInfoRouter } from '../../modules/myinfo/myinfo.routes'
 import { ReactMigrationRouter } from '../../modules/react-migration/react-migration.routes'
 import { SgidRouter } from '../../modules/sgid/sgid.routes'
-import {
-  CorppassLoginRouter,
-  SingpassLoginRouter,
-} from '../../modules/spcp/spcp.routes'
 import { SubmissionRouter } from '../../modules/submission/submission.routes'
 import { VfnRouter } from '../../modules/verification/verification.routes'
 import { ApiRouter } from '../../routes/api'
@@ -124,9 +120,6 @@ const loadExpressApp = async (connection: Connection) => {
   app.use('/examples', ExamplesRouter)
   app.use('/v2/submissions', SubmissionRouter)
 
-  // Registered routes with the Singpass/Corppass servers
-  app.use('/singpass/login', SingpassLoginRouter)
-  app.use('/corppass/login', CorppassLoginRouter)
   // jwks endpoint for SP OIDC
   app.use('/singpass/.well-known/jwks.json', SpOidcJwksRouter)
   // Registered routes with sgID
@@ -141,6 +134,8 @@ const loadExpressApp = async (connection: Connection) => {
   // New routes in preparation for API refactor.
   app.use('/api', ApiRouter)
 
+  // serve static assets. `dist/frontend` contains the root files as well as a `/static` folder
+  // express.static calls next() if the file is not found
   app.use(express.static(path.resolve('dist/frontend'), { index: false }))
   app.use('/public', express.static(path.resolve('dist/angularjs')))
 
@@ -153,7 +148,6 @@ const loadExpressApp = async (connection: Connection) => {
   app.get(/^\/[^/]+\.[a-z]+$/, catchNonExistentStaticRoutesMiddleware)
 
   app.get('/old/', HomeController.home)
-
   app.use('/', ReactMigrationRouter)
 
   app.use(sentryMiddlewares())

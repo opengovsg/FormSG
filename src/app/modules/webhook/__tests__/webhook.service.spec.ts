@@ -2,7 +2,6 @@ import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios'
 import { ObjectId } from 'bson'
 import mongoose from 'mongoose'
 import { ok, okAsync } from 'neverthrow'
-import { mocked } from 'ts-jest/utils'
 
 import formsgSdk from 'src/app/config/formsg-sdk'
 import { getEncryptSubmissionModel } from 'src/app/models/submission.server.model'
@@ -21,16 +20,16 @@ import * as WebhookService from '../webhook.service'
 
 // define suite-wide mocks
 jest.mock('axios')
-const MockAxios = mocked(axios, true)
+const MockAxios = jest.mocked(axios)
 
 jest.mock('src/app/modules/webhook/webhook.validation')
-const MockWebhookValidationModule = mocked(WebhookValidationModule, true)
+const MockWebhookValidationModule = jest.mocked(WebhookValidationModule)
 
 jest.mock('src/app/config/formsg-sdk')
-const MockFormSgSdk = mocked(formsgSdk, true)
+const MockFormSgSdk = jest.mocked(formsgSdk)
 
 jest.mock('../webhook.message.ts')
-const MockWebhookQueueMessage = mocked(WebhookQueueMessage, true)
+const MockWebhookQueueMessage = jest.mocked(WebhookQueueMessage)
 
 const EncryptSubmissionModel = getEncryptSubmissionModel(mongoose)
 

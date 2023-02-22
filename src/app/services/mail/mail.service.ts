@@ -1,4 +1,4 @@
-import { tracer } from 'dd-trace'
+import tracer from 'dd-trace'
 import { get, inRange, isEmpty } from 'lodash'
 import moment from 'moment-timezone'
 import { err, errAsync, okAsync, Result, ResultAsync } from 'neverthrow'
@@ -76,7 +76,7 @@ export class MailService {
    */
   #appUrl: Required<MailServiceParams>['appUrl']
   /**
-   * The transporter to be used to send mail.
+   * The transporter to be used to send mail (SES in SG).
    */
   #transporter: Required<MailServiceParams>['transporter']
   /**

@@ -491,6 +491,7 @@ const submitEncryptModeForm: ControllerHandler<
   res.json({
     message: 'Form submission successful.',
     submissionId: submission.id,
+    timestamp: (submission.created || new Date()).getTime(),
     // Attach paymentClientSecret if it is defined and non-null. Otherwise, client will display error message.
     ...(paymentClientSecret
       ? {

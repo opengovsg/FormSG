@@ -1,7 +1,10 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
+import { useQuery, useQueryClient } from 'react-query'
 import { BroadcastChannel } from 'broadcast-channel'
 
 import { useHasChanged } from '~hooks/useHasChanged'
+
+import { adminFormResponsesKeys } from '../../queries'
 
 const SECRETKEY_BROADCAST_KEY = 'formsg_private_key_sharing'
 
@@ -17,7 +20,21 @@ type SecretKeyBroadcastMessage =
     }
 
 export const useSecretKey = (formId: string) => {
-  const [secretKey, setSecretKey] = useState<string>()
+  const { data: secretKey } = useQuery({
+    queryKey: adminFormResponsesKeys.secretKey(formId),
+    initialData: '',
+  })
+
+  const queryClient = useQueryClient()
+  const setSecretKey = useCallback(
+    (secretKey: string) =>
+      queryClient.setQueryData(
+        adminFormResponsesKeys.secretKey(formId),
+        secretKey,
+      ),
+    [formId, queryClient],
+  )
+
   const hasSecretKeyChanged = useHasChanged(secretKey)
 
   // BroadcastChannel will only broadcast the message to scripts from the same origin
@@ -80,7 +97,7 @@ export const useSecretKey = (formId: string) => {
         }
       }
     }
-  }, [secretKey, formId])
+  }, [secretKey, formId, setSecretKey])
 
   return [secretKey, setSecretKey] as const
 }

@@ -7,11 +7,12 @@ import { PublicFormViewDto } from '~shared/types/form'
 export type SubmissionData = {
   /** Submission id */
   id: string | undefined
-  /** Submission time (on browser)  */
-  timeInEpochMs: number
+  /** Submission time in ms from epoch  */
+  timestamp: number
   paymentClientSecret?: string
   paymentPublishableKey?: string
 }
+
 export interface PublicFormContextProps
   extends Partial<PublicFormViewDto>,
     Omit<UseQueryResult<PublicFormViewDto>, 'data'> {
@@ -32,7 +33,7 @@ export interface PublicFormContextProps
   submissionData?: SubmissionData
   /** Callback to be invoked when user submits public form. */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  handleSubmitForm: (formInputs: any) => void
+  handleSubmitForm: ((formInputs: any) => void) | undefined
   /** Callback to be invoked to logout of authenticated form, if user is logged in.  */
   handleLogout: (() => void) | undefined
   /** id of container to render captcha in.
