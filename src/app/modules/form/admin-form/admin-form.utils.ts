@@ -12,7 +12,7 @@ import {
   replaceAt,
 } from '../../../../../shared/utils/immutable-array-fns'
 import { EditFieldActions } from '../../../../shared/constants'
-import { FormFieldSchema, IPopulatedForm } from '../../../../types'
+import { FormFieldSchema, IPopulatedForm, IUserSchema } from '../../../../types'
 import { EditFormFieldParams } from '../../../../types/api'
 import config from '../../../config/config'
 import { createLoggerWithLabel } from '../../../config/logger'
@@ -483,4 +483,24 @@ export const verifyValidUnicodeString = (value: any, helpers: any) => {
     })
   }
   return value
+}
+
+/**
+ * Checks if the user has the specified beta flag enabled
+ * @param user
+ * @param flag which is the string representation of the beta flag
+ * @returns ok(user) if the user has the beta flag enabled
+ * @returns err(ForbiddenFormUser) to deny user access to the beta feature
+ */
+export const verifyUserBetaflag = (
+  user: IUserSchema,
+  betaFlag: keyof Exclude<IUserSchema['betaFlags'], undefined>,
+) => {
+  return user?.betaFlags?.[betaFlag]
+    ? ok(user)
+    : err(
+        new ForbiddenFormError(
+          `User ${user.email} is not authorized to access ${betaFlag} beta features`,
+        ),
+      )
 }
