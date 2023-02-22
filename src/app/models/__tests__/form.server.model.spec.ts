@@ -89,6 +89,7 @@ const FORM_DEFAULTS = {
   payments: {
     enabled: false,
     target_account_id: '',
+    publishable_key: '',
     description: '',
   },
 }
@@ -475,7 +476,7 @@ describe('Form Model', () => {
 
         // Assert
         await expect(invalidForm.save()).rejects.toThrow(
-          'Target_account_id must not contain whitespace.',
+          'target_account_id must not contain whitespace.',
         )
       })
 
