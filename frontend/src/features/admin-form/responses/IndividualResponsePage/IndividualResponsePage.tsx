@@ -184,18 +184,24 @@ export const IndividualResponsePage = (): JSX.Element => {
             >
               Payment
             </Text>
-            {isPaymentLoading || isPaymentError ? (
+            {isPaymentLoading || isPaymentError || !paymentData ? (
               <Text>Payment was not enabled when this form was submitted</Text>
             ) : (
               <>
                 <Stack>
                   <Stack direction={{ base: 'column', md: 'row' }}>
                     <Text textStyle="subhead-1">Payment amount:</Text>
-                    <Text>{paymentData?.amount}</Text>
+                    <Text>
+                      S$
+                      {(paymentData.amount / 100).toLocaleString('en-IN', {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })}
+                    </Text>
                   </Stack>
                   <Stack direction={{ base: 'column', md: 'row' }}>
                     <Text textStyle="subhead-1">Payment status:</Text>
-                    <Text>{paymentData?.status}</Text>
+                    <Text>{paymentData.status}</Text>
                   </Stack>
                   <Stack direction={{ base: 'column', md: 'row' }}>
                     <Text textStyle="subhead-1">Payment date:</Text>
@@ -204,7 +210,7 @@ export const IndividualResponsePage = (): JSX.Element => {
                   </Stack>
                   <Stack direction={{ base: 'column', md: 'row' }}>
                     <Text textStyle="subhead-1">Payment intent ID:</Text>
-                    <Text>{paymentData?.paymentIntentId}</Text>
+                    <Text>{paymentData.paymentIntentId}</Text>
                   </Stack>
                   <Stack direction={{ base: 'column', md: 'row' }}>
                     <Text textStyle="subhead-1">Transaction fee:</Text>
