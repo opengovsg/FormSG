@@ -30,7 +30,7 @@ export const ShortTextField = ({
     <FieldContainer schema={schema} {...fieldContainerProps}>
       <Input
         isPrefilled={isPrefilled}
-        aria-label={schema.title}
+        aria-label={`${schema.questionNumber}. ${schema.title}`}
         defaultValue=""
         preventDefaultOnEnter
         {...register(schema._id, validationRules)}

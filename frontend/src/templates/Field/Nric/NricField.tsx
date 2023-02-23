@@ -25,7 +25,7 @@ export const NricField = ({ schema }: NricFieldProps): JSX.Element => {
   return (
     <FieldContainer schema={schema}>
       <Input
-        aria-label={schema.title}
+        aria-label={`${schema.questionNumber}. ${schema.title}`}
         defaultValue=""
         preventDefaultOnEnter
         {...register(schema._id, validationRules)}

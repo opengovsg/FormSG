@@ -37,7 +37,7 @@ export const YesNoField = ({
         render={({ field }) => (
           <YesNo
             colorScheme={`theme-${colorTheme}`}
-            title={schema.title}
+            title={`${schema.questionNumber}. ${schema.title}`}
             {...field}
           />
         )}
