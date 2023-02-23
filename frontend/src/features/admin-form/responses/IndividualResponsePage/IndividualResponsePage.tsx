@@ -9,6 +9,7 @@ import {
   StackDivider,
   Text,
 } from '@chakra-ui/react'
+import moment from 'moment-timezone'
 import simplur from 'simplur'
 
 import Button from '~components/Button'
@@ -206,7 +207,11 @@ export const IndividualResponsePage = (): JSX.Element => {
                   <Stack direction={{ base: 'column', md: 'row' }}>
                     <Text textStyle="subhead-1">Payment date:</Text>
                     {/* TODO: Change this to date of submission */}
-                    <Text>{new Date().toLocaleDateString('en-sg')}</Text>
+                    <Text>
+                      {moment(paymentData.created)
+                        .tz('Asia/Singapore')
+                        .format('DD MMM YYYY')}
+                    </Text>
                   </Stack>
                   <Stack direction={{ base: 'column', md: 'row' }}>
                     <Text textStyle="subhead-1">Payment intent ID:</Text>
