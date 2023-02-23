@@ -22,11 +22,7 @@ const compilePaymentModel = (db: Mongoose): IPaymentModel => {
         required: true,
       },
       webhookLog: {
-        type: [
-          {
-            type: String,
-          },
-        ],
+        type: [],
         default: [],
       },
       paymentIntentId: {
