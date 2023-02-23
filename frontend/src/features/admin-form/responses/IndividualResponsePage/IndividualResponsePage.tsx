@@ -195,8 +195,7 @@ export const IndividualResponsePage = (): JSX.Element => {
                   </Stack>
                   <Stack direction={{ base: 'column', md: 'row' }}>
                     <Text textStyle="subhead-1">Payment status:</Text>
-                    {/* TODO: Change this to actual status */}
-                    <Text>Success</Text>
+                    <Text>{paymentData?.status}</Text>
                   </Stack>
                   <Stack direction={{ base: 'column', md: 'row' }}>
                     <Text textStyle="subhead-1">Payment date:</Text>
