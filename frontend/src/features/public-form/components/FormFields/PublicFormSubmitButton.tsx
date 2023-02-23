@@ -1,6 +1,6 @@
 import { MouseEventHandler, useContext, useMemo } from 'react'
 import { useFormState, useWatch } from 'react-hook-form'
-import { Stack, VisuallyHidden } from '@chakra-ui/react'
+import { Stack, useDisclosure, VisuallyHidden } from '@chakra-ui/react'
 
 import { FormField, LogicDto, MyInfoFormField } from '~shared/types'
 
@@ -13,6 +13,7 @@ import { FormFieldValues } from '~templates/Field'
 import { getLogicUnitPreventingSubmit } from '~features/logic/utils'
 
 import { usePublicFormContext } from '../../PublicFormContext'
+import { FormPaymentModal } from '../FormPaymentModal/FormPaymentModal'
 
 interface PublicFormSubmitButtonProps {
   formFields: MyInfoFormField<FormField>[]
@@ -44,8 +45,18 @@ export const PublicFormSubmitButton = ({
     })
   }, [formInputs, formFields, formLogics])
 
+  // For payments submit and pay modal
+  const { isOpen, onOpen, onClose } = useDisclosure({ defaultIsOpen: false })
+
   return (
     <Stack px={{ base: '1rem', md: 0 }} pt="2.5rem" pb="4rem">
+      {isOpen ? (
+        <FormPaymentModal
+          onSubmit={onSubmit}
+          onClose={onClose}
+          isSubmitting={isSubmitting}
+        />
+      ) : null}
       <Button
         isFullWidth={isMobile}
         w="100%"
@@ -54,7 +65,7 @@ export const PublicFormSubmitButton = ({
         isLoading={isSubmitting}
         isDisabled={!!preventSubmissionLogic || !onSubmit}
         loadingText="Submitting"
-        onClick={onSubmit}
+        onClick={form?.payments?.enabled ? onOpen : onSubmit}
       >
         <VisuallyHidden>End of form.</VisuallyHidden>
         {preventSubmissionLogic
