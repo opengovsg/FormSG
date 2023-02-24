@@ -6,6 +6,7 @@ import { useToast } from '~hooks/useToast'
 
 import { useStorePrefillQuery } from './hooks/useStorePrefillQuery'
 import {
+  downloadPaymentReceipt,
   getPublicFormAuthRedirectUrl,
   logoutPublicForm,
   SubmitEmailFormArgs,
@@ -83,9 +84,24 @@ export const usePublicFormMutations = (
     },
   )
 
+  const downloadPaymentReceiptMutation = useMutation(
+    () => downloadPaymentReceipt(formId, submissionId),
+    {
+      onSuccess: () => {
+        toast({
+          description: 'Receipt download started',
+        })
+      },
+      onError: (error: Error) => {
+        toast({ status: 'danger', description: error.message })
+      },
+    },
+  )
+
   return {
     submitEmailModeFormMutation,
     submitStorageModeFormMutation,
     submitFormFeedbackMutation,
+    downloadPaymentReceiptMutation,
   }
 }

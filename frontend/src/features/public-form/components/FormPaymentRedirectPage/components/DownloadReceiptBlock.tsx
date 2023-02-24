@@ -1,8 +1,9 @@
+import { useCallback } from 'react'
 import { BiDownload } from 'react-icons/bi'
 import { Box, Stack, Text } from '@chakra-ui/react'
 
 import Button from '../../../../../components/Button'
-import { downloadPaymentReceipt } from '../../../PublicFormService'
+import { usePublicFormMutations } from '../../../mutations'
 
 type DownloadReceiptBlockProps = {
   formId: string
@@ -13,6 +14,15 @@ export const DownloadReceiptBlock = ({
   formId,
   stripeSubmissionId,
 }: DownloadReceiptBlockProps) => {
+  const { downloadPaymentReceiptMutation } = usePublicFormMutations(
+    formId,
+    stripeSubmissionId,
+  )
+
+  const handleClick = useCallback(() => {
+    return downloadPaymentReceiptMutation.mutate()
+  }, [downloadPaymentReceiptMutation])
+
   return (
     <Box>
       <Stack tabIndex={-1} spacing="1rem">
@@ -30,7 +40,9 @@ export const DownloadReceiptBlock = ({
       <Button
         mt="2.25rem"
         leftIcon={<BiDownload fontSize="1.5rem" />}
-        onClick={() => downloadPaymentReceipt(formId, stripeSubmissionId)}
+        isDisabled={downloadPaymentReceiptMutation.isLoading}
+        isLoading={downloadPaymentReceiptMutation.isLoading}
+        onClick={handleClick}
       >
         Save payment receipt
       </Button>
