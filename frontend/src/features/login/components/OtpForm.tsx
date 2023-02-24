@@ -61,7 +61,7 @@ export const OtpForm = ({
             },
             validate: validateOtp,
           })}
-          prefix={`${otpPrefix} -`}
+          prefix={otpPrefix === undefined ? undefined : `${otpPrefix} -`}
         />
         {formState.errors.otp && (
           <FormErrorMessage>{formState.errors.otp.message}</FormErrorMessage>
