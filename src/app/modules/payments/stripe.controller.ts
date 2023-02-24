@@ -1,6 +1,7 @@
 // Use 'stripe-event-types' for better type discrimination.
 /// <reference types="stripe-event-types" />
 
+import axios from 'axios'
 import { celebrate, Joi, Segments } from 'celebrate'
 import { StatusCodes } from 'http-status-codes'
 import get from 'lodash/get'
@@ -11,6 +12,7 @@ import config from '../../config/config'
 import { paymentConfig } from '../../config/features/payment.config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { stripe } from '../../loaders/stripe'
+import { generatePdfFromHtml } from '../../utils/convert-html-to-pdf'
 import { createReqMeta } from '../../utils/request'
 import { ControllerHandler } from '../core/core.types'
 import { retrieveFullFormById } from '../form/form.service'
@@ -212,15 +214,15 @@ export const checkPaymentReceiptStatus: ControllerHandler<{
     })
 }
 
-export const getPaymentReceipt: ControllerHandler<{
+export const downloadPaymentReceipt: ControllerHandler<{
   formId: string
   submissionId: string
 }> = (req, res) => {
   const { formId, submissionId } = req.params
   logger.info({
-    message: 'getPaymentReceipt endpoint called',
+    message: 'downloadPaymentReceipt endpoint called',
     meta: {
-      action: 'getPaymentReceipt',
+      action: 'downloadPaymentReceipt',
       formId: formId,
       submissionId: submissionId,
     },
@@ -231,17 +233,30 @@ export const getPaymentReceipt: ControllerHandler<{
       logger.info({
         message: 'Received receipt url from Stripe webhook',
         meta: {
-          action: 'getPaymentReceipt',
+          action: 'downloadPaymentReceipt',
           receiptUrl,
         },
       })
-      res.status(StatusCodes.OK).send({ receipt: receiptUrl })
+      // retrieve receiptURL as html
+      return (
+        axios
+          .get<string>(receiptUrl)
+          // convert to pdf and return
+          .then((receiptUrlResponse) => {
+            const html = receiptUrlResponse.data
+            const pdfBufferPromise = generatePdfFromHtml(html)
+            return pdfBufferPromise
+          })
+          .then((pdfBuffer) => {
+            return res.status(StatusCodes.OK).json({ pdfBuffer })
+          })
+      )
     })
     .mapErr((error) => {
       logger.error({
-        message: 'Error retrieving receipt URL',
+        message: 'Error retrieving receipt',
         meta: {
-          action: 'getPaymentReceipt',
+          action: 'downloadPaymentReceipt',
           formId: formId,
           submissionId: submissionId,
         },

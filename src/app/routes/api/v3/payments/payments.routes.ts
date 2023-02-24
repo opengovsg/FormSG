@@ -25,7 +25,7 @@ PaymentsRouter.route(
  */
 PaymentsRouter.route(
   '/receipt/:formId([a-fA-F0-9]{24})/:submissionId([a-fA-F0-9]{24})/download',
-).get(StripeController.getPaymentReceipt)
+).get(StripeController.downloadPaymentReceipt)
 
 PaymentsRouter.route('/stripe/callback').get(
   StripeController.handleConnectOauthCallback,
