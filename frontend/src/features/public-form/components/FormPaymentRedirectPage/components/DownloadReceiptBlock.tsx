@@ -2,14 +2,15 @@ import { BiDownload } from 'react-icons/bi'
 import { Box, Stack, Text } from '@chakra-ui/react'
 
 import Button from '../../../../../components/Button'
+import { API_BASE_URL } from '../../../../../services/ApiService'
 
 type DownloadReceiptBlockProps = {
-  receiptUrl: string
+  formId: string
   stripeSubmissionId: string
 }
 
 export const DownloadReceiptBlock = ({
-  receiptUrl,
+  formId,
   stripeSubmissionId,
 }: DownloadReceiptBlockProps) => {
   return (
@@ -31,7 +32,7 @@ export const DownloadReceiptBlock = ({
         leftIcon={<BiDownload fontSize="1.5rem" />}
         as="a"
         download
-        href={receiptUrl}
+        href={`${API_BASE_URL}/payments/receipt/${formId}/${stripeSubmissionId}`}
         target="_blank"
       >
         Save payment receipt

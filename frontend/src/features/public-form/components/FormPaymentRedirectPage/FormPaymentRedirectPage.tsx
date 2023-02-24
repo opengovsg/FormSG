@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Box, Container, Flex, Skeleton } from '@chakra-ui/react'
 
 import { usePublicFormContext } from '../../PublicFormContext'
-import { useGetPaymentReceipt } from '../../queries'
+import { useGetPaymentReceiptStatus } from '../../queries'
 
 import { DownloadReceiptBlock } from './components/DownloadReceiptBlock'
 import { PaymentSuccessSvgr } from './components/PaymentSuccessSvgr'
@@ -17,18 +17,21 @@ export const FormPaymentRedirectPage = ({
 }: FormPaymentRedirectPageProps) => {
   const { formId } = usePublicFormContext()
 
-  const { data, isLoading } = useGetPaymentReceipt(formId, stripeSubmissionId)
+  const { data, isLoading, error } = useGetPaymentReceiptStatus(
+    formId,
+    stripeSubmissionId,
+  )
 
   const navigate = useNavigate()
 
   useEffect(() => {
-    if (!isLoading && !data?.receipt) {
+    if (!isLoading && error) {
       const currentUrl = new URL(window.location.href)
       currentUrl.searchParams.set('retryPayment', 'true')
       const urlPathAndSearch = currentUrl.pathname + currentUrl.search
       navigate(urlPathAndSearch)
     }
-  }, [data, isLoading, navigate])
+  }, [error, isLoading, navigate])
 
   return (
     <Box py={{ base: '1.5rem', md: '2.5rem' }} w="100%">
@@ -42,9 +45,9 @@ export const FormPaymentRedirectPage = ({
             w="100%"
           >
             <Skeleton isLoaded={!isLoading}>
-              {data?.receipt ? (
+              {data?.isReady ? (
                 <DownloadReceiptBlock
-                  receiptUrl={data.receipt}
+                  formId={formId}
                   stripeSubmissionId={stripeSubmissionId}
                 />
               ) : null}

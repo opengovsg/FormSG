@@ -1,4 +1,4 @@
-import { PaymentReceiptDto, SuccessMessageDto } from '~shared/types'
+import { PaymentReceiptStatusDto, SuccessMessageDto } from '~shared/types'
 import { FormFieldDto } from '~shared/types/field'
 import {
   PublicFormAuthLogoutDto,
@@ -152,16 +152,16 @@ export const submitFormFeedback = async (
 }
 
 /**
- * Obtain payment receipt for a given submission.
+ * Obtain payment receipt status for a given submission.
  * @param formId the id of the form
  * @param submissionId the id of the form submission
- * @returns success message
+ * @returns PaymentReceiptStatusDto on success
  */
-export const getPaymentReceipt = async (
+export const getPaymentReceiptStatus = async (
   formId: string,
   submissionId: string,
-): Promise<PaymentReceiptDto> => {
-  return ApiService.get<PaymentReceiptDto>(
-    `payments/receipt/${formId}/${submissionId}`,
+): Promise<PaymentReceiptStatusDto> => {
+  return ApiService.get<PaymentReceiptStatusDto>(
+    `payments/receipt/${formId}/${submissionId}/status`,
   ).then(({ data }) => data)
 }

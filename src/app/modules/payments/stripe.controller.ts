@@ -172,6 +172,46 @@ export const handleStripeEventUpdates = [
   _handleStripeEventUpdates,
 ]
 
+export const checkPaymentReceiptStatus: ControllerHandler<{
+  formId: string
+  submissionId: string
+}> = async (req, res) => {
+  const { formId, submissionId } = req.params
+  logger.info({
+    message: 'getPaymentStatus endpoint called',
+    meta: {
+      action: 'getPaymentStatus',
+      formId: formId,
+      submissionId: submissionId,
+    },
+  })
+
+  return StripeService.getReceiptURL(formId, submissionId)
+    .map((receiptUrl) => {
+      logger.info({
+        message: 'Received receipt url from Stripe webhook',
+        meta: {
+          action: 'checkPaymentReceiptStatus',
+          receiptUrl,
+        },
+      })
+
+      return res.status(StatusCodes.OK).json({ isReady: true })
+    })
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error retrieving receipt URL',
+        meta: {
+          action: 'checkPaymentReceiptStatus',
+          formId: formId,
+          submissionId: submissionId,
+        },
+        error,
+      })
+      return res.status(StatusCodes.NOT_FOUND).json({ message: error })
+    })
+}
+
 export const getPaymentReceipt: ControllerHandler<{
   formId: string
   submissionId: string
