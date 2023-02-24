@@ -97,7 +97,10 @@ export const validateEmailDomain = (
  */
 export const createLoginOtp = (
   email: string,
-): ResultAsync<string, HashingError | DatabaseError | InvalidDomainError> => {
+): ResultAsync<
+  { otp: string; otpPrefix: string },
+  HashingError | DatabaseError | InvalidDomainError
+> => {
   if (!validator.isEmail(email)) {
     return errAsync(new InvalidDomainError())
   }
@@ -106,10 +109,12 @@ export const createLoginOtp = (
     // Step 1: Generate and hash OTP.
     generateOtpWithHash({ email })
       // Step 2: Upsert otp hash into database.
-      .andThen(({ otp, hashedOtp }) =>
+      .andThen(({ otp, hashedOtp, otpPrefix }) =>
         upsertOtp(email, hashedOtp)
           // Step 3: Return generated OTP.
-          .map(() => otp),
+          .map(() => {
+            return { otp, otpPrefix }
+          }),
       )
   )
 }

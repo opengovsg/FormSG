@@ -5,6 +5,7 @@ import MailService from 'src/app/services/mail/mail.service'
 import * as OtpUtils from 'src/app/utils/otp'
 
 const MOCK_VALID_OTP = '123456'
+const MOCK_OTP_PREFIX = 'ABC'
 
 /**
  * Integration test helper to create an authenticated session where the user
@@ -32,10 +33,14 @@ export const createAuthedSession = async (
   const otpSpy = jest
     .spyOn(OtpUtils, 'generateOtp')
     .mockReturnValueOnce(MOCK_VALID_OTP)
+  jest.spyOn(OtpUtils, 'generateOtpPrefix').mockReturnValue(MOCK_OTP_PREFIX)
 
   const sendOtpResponse = await request.post('/auth/sendotp').send({ email })
   expect(sendOtpResponse.status).toEqual(200)
-  expect(sendOtpResponse.body).toEqual(`OTP sent to ${email.toLowerCase()}`)
+  expect(sendOtpResponse.body).toEqual({
+    message: `OTP sent to ${email.toLowerCase()}`,
+    otpPrefix: MOCK_OTP_PREFIX,
+  })
 
   // Act
   await request.post('/auth/verifyotp').send({ email, otp: MOCK_VALID_OTP })

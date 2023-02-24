@@ -71,6 +71,7 @@ const generateAutoreplyPdfPromise = async (
 }
 
 export const generateLoginOtpHtml = (htmlData: {
+  otpPrefix: string
   otp: string
   appName: string
   appUrl: string
