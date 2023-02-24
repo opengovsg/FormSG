@@ -111,7 +111,7 @@ export const _handleLoginSendOtp: ControllerHandler<
         })
     )
   } else {
-    // Step 4b: Error occurred whilst creating otp.
+    // Step 3b: Error occurred whilst creating otp.
     const error = loginOtpResult.error
     logger.error({
       message: 'Error creating login OTP',
