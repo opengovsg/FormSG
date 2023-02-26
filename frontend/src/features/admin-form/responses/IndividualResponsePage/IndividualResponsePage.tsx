@@ -185,9 +185,9 @@ export const IndividualResponsePage = (): JSX.Element => {
             >
               Payment
             </Text>
-            {isPaymentLoading || isPaymentError || !paymentData ? (
+            {isPaymentLoading || isPaymentError ? (
               <Text>Payment was not enabled when this form was submitted</Text>
-            ) : (
+            ) : paymentData ? (
               <>
                 <Stack>
                   <Stack direction={{ base: 'column', md: 'row' }}>
@@ -219,11 +219,13 @@ export const IndividualResponsePage = (): JSX.Element => {
                   </Stack>
                   <Stack direction={{ base: 'column', md: 'row' }}>
                     <Text textStyle="subhead-1">Transaction fee:</Text>
-                    {/* TODO: Change this to actual transaction fee */}
+                    {/* TODO: Change this to actual transaction fee once application fee object has been added */}
                     <Text>$0.06</Text>
                   </Stack>
                 </Stack>
               </>
+            ) : (
+              <Text>Payment data not found</Text>
             )}
           </Stack>
         ) : null}
