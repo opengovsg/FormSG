@@ -72,9 +72,13 @@ const PaymentsAccountValidation = () => {
   )
 }
 
-const PaymentsAccountInformation = () => {
-  const { data: settings, isLoading } = useAdminFormSettings()
-
+const PaymentsAccountInformation = ({
+  account_id,
+  isLoading,
+}: {
+  account_id: string
+  isLoading: boolean
+}) => {
   return (
     <FormControl mb="2.5rem">
       <FormLabel
@@ -84,10 +88,7 @@ const PaymentsAccountInformation = () => {
         Target Account ID
       </FormLabel>
       <Skeleton isLoaded={!isLoading}>
-        <Input
-          isDisabled={true}
-          value={settings?.payments?.target_account_id}
-        ></Input>
+        <Input isDisabled={true} value={account_id}></Input>
       </Skeleton>
     </FormControl>
   )
@@ -100,7 +101,10 @@ const PaymentsSectionText = () => {
     return (
       <>
         <PaymentsAccountValidation />
-        <PaymentsAccountInformation />
+        <PaymentsAccountInformation
+          account_id={settings.payments.target_account_id}
+          isLoading={isLoading}
+        />
       </>
     )
   }
