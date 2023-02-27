@@ -1,6 +1,7 @@
 import cuid from 'cuid'
 import mongoose from 'mongoose'
 import { errAsync, ok, okAsync, ResultAsync } from 'neverthrow'
+import { Payment } from 'shared/types'
 import Stripe from 'stripe'
 import { MarkRequired } from 'ts-essentials'
 
@@ -27,6 +28,29 @@ import {
 } from './stripe.errors'
 
 const logger = createLoggerWithLabel(module)
+
+export const updateWebhookBySubmissionId = async (
+  metadata: Stripe.Metadata | null,
+  update: Partial<Payment>,
+  event: Stripe.Event,
+): Promise<void> => {
+  const submissionId = metadata?.['submissionId']
+  if (!submissionId) {
+    logger.warn({
+      message: 'Stripe event metadata does not contain submissionId',
+      meta: {
+        action: 'handleStripeEventUpdates',
+        event,
+      },
+    })
+    return
+  }
+
+  await PaymentService.findBySubmissionIdAndUpdate(submissionId, {
+    $set: update,
+    $push: { webhookLog: { $each: [event], $sort: { created: 1 } } },
+  })
+}
 
 export const getStripeOauthUrl = (form: IPopulatedForm) => {
   const state = `${form._id}.${cuid()}`
