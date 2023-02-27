@@ -15,7 +15,7 @@ export type Payment = {
   paymentIntentId: string
   chargeIdLatest: string
   payoutId: string
-  payoutDate: Date
+  payoutDate: DateString
   created: DateString
 }
 
