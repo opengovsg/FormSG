@@ -93,7 +93,11 @@ import { EditFieldError } from './admin-form.errors'
 import { updateSettingsValidator } from './admin-form.middlewares'
 import * as AdminFormService from './admin-form.service'
 import { PermissionLevel } from './admin-form.types'
-import { mapRouteError, verifyValidUnicodeString } from './admin-form.utils'
+import {
+  mapRouteError,
+  verifyUserBetaflag,
+  verifyValidUnicodeString,
+} from './admin-form.utils'
 
 // NOTE: Refer to this for documentation: https://github.com/sideway/joi-date/blob/master/API.md
 const Joi = BaseJoi.extend(JoiDate) as typeof BaseJoi
@@ -2720,6 +2724,8 @@ export const _handleUpdatePayments: ControllerHandler<
   // Step 1: Retrieve currently logged in user.
   return (
     UserService.getPopulatedUserById(sessionUserId)
+      // Step 2: Check if user has 'payment' betaflag
+      .andThen((user) => verifyUserBetaflag(user, 'payment'))
       .andThen((user) =>
         // Step 2: Retrieve form with write permission check.
         AuthService.getFormAfterPermissionChecks({

@@ -14,6 +14,8 @@ import {
 import { ADMINFORM_RESULTS_SUBROUTE, ADMINFORM_ROUTE } from '~constants/routes'
 import { useDraggable } from '~hooks/useDraggable'
 
+import { useUser } from '~features/user/queries'
+
 import { useAdminFormCollaborators } from '../common/queries'
 
 import { SettingsTab } from './components/SettingsTab'
@@ -25,6 +27,8 @@ import { SettingsWebhooksPage } from './SettingsWebhooksPage'
 
 export const SettingsPage = (): JSX.Element => {
   const { formId } = useParams()
+  const { user } = useUser()
+
   if (!formId) throw new Error('No formId provided')
 
   const { hasEditAccess, isLoading: isCollabLoading } =
@@ -80,7 +84,9 @@ export const SettingsPage = (): JSX.Element => {
             <SettingsTab label="Singpass" icon={BiKey} />
             <SettingsTab label="Twilio credentials" icon={BiMessage} />
             <SettingsTab label="Webhooks" icon={BiCodeBlock} />
-            <SettingsTab label="Payments" icon={BiDollar} />
+            {user?.betaFlags?.payment && (
+              <SettingsTab label="Payments" icon={BiDollar} />
+            )}
           </TabList>
         </Flex>
         <TabPanels
@@ -100,9 +106,11 @@ export const SettingsPage = (): JSX.Element => {
           <TabPanel>
             <SettingsWebhooksPage />
           </TabPanel>
-          <TabPanel>
-            <SettingsPaymentsPage />
-          </TabPanel>
+          {user?.betaFlags?.payment && (
+            <TabPanel>
+              <SettingsPaymentsPage />
+            </TabPanel>
+          )}
         </TabPanels>
         <Spacer />
       </Tabs>
