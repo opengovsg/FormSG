@@ -37,7 +37,7 @@ datadogRum.init({
   env: '@REACT_APP_DD_RUM_ENV',
   site: 'datadoghq.com',
   service: 'formsg-react',
-  allowedTracingUrls: ['https://form.gov.sg'],
+  allowedTracingUrls: ['@REACT_APP_URL'],
 
   // Specify a version number to identify the deployed version of your application in Datadog
   version: '@REACT_APP_VERSION',
