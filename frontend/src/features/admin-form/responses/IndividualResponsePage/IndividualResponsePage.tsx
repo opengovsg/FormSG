@@ -186,34 +186,50 @@ export const IndividualResponsePage = (): JSX.Element => {
             </Text>
             {isPaymentLoading || isPaymentError ? (
               <Text>Payment was not enabled when this form was submitted</Text>
-            ) : (
+            ) : paymentData ? (
               <>
                 <Stack>
                   <Stack direction={{ base: 'column', md: 'row' }}>
                     <Text textStyle="subhead-1">Payment amount:</Text>
-                    <Text>{paymentData?.amount}</Text>
+                    <Text>
+                      S$
+                      {(paymentData.amount / 100).toLocaleString('en-GB', {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })}
+                    </Text>
                   </Stack>
                   <Stack direction={{ base: 'column', md: 'row' }}>
                     <Text textStyle="subhead-1">Payment status:</Text>
-                    {/* TODO: Change this to actual status */}
-                    <Text>Success</Text>
+                    <Text>{paymentData.status.toUpperCase()}</Text>
                   </Stack>
                   <Stack direction={{ base: 'column', md: 'row' }}>
                     <Text textStyle="subhead-1">Payment date:</Text>
-                    {/* TODO: Change this to date of submission */}
-                    <Text>{new Date().toLocaleDateString('en-sg')}</Text>
+                    <Text>
+                      {new Intl.DateTimeFormat('en-GB', {
+                        year: 'numeric',
+                        month: 'numeric',
+                        day: 'numeric',
+                        hour: 'numeric',
+                        minute: 'numeric',
+                        second: 'numeric',
+                        timeZoneName: 'shortOffset',
+                      }).format(new Date(paymentData.created))}
+                    </Text>
                   </Stack>
                   <Stack direction={{ base: 'column', md: 'row' }}>
                     <Text textStyle="subhead-1">Payment intent ID:</Text>
-                    <Text>{paymentData?.paymentIntentId}</Text>
+                    <Text>{paymentData.paymentIntentId}</Text>
                   </Stack>
                   <Stack direction={{ base: 'column', md: 'row' }}>
                     <Text textStyle="subhead-1">Transaction fee:</Text>
-                    {/* TODO: Change this to actual transaction fee */}
+                    {/* TODO: Change this to actual transaction fee once application fee object has been added */}
                     <Text>$0.06</Text>
                   </Stack>
                 </Stack>
               </>
+            ) : (
+              <Text>Payment data not found</Text>
             )}
           </Stack>
         ) : null}
