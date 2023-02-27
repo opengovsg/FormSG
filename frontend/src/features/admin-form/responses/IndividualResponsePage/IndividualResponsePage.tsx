@@ -201,7 +201,7 @@ export const IndividualResponsePage = (): JSX.Element => {
                   </Stack>
                   <Stack direction={{ base: 'column', md: 'row' }}>
                     <Text textStyle="subhead-1">Payment status:</Text>
-                    <Text>{paymentData.status}</Text>
+                    <Text>{paymentData.status.toUpperCase()}</Text>
                   </Stack>
                   <Stack direction={{ base: 'column', md: 'row' }}>
                     <Text textStyle="subhead-1">Payment date:</Text>
