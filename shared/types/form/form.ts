@@ -240,4 +240,5 @@ export type StartPageUpdateDto = FormStartPage
 export type EndPageUpdateDto = FormEndPage
 export type FormPermissionsDto = FormPermission[]
 export type PermissionsUpdateDto = FormPermission[]
+// target account id should only be changed through Stripe's OAuth Callback
 export type PaymentsUpdateDto = Omit<FormPayments, 'target_account_id'>
