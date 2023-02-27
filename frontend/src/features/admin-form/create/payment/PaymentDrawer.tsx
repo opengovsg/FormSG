@@ -27,7 +27,6 @@ import {
   setIsDirtySelector,
   useDirtyFieldStore,
 } from '../builder-and-design/useDirtyFieldStore'
-import { validateNumberInput } from '../builder-and-design/utils/validateNumberInput'
 import {
   CreatePageDrawerContentContainer,
   useCreatePageSidebar,
@@ -42,6 +41,7 @@ import {
   setToInactiveSelector,
   usePaymentStore,
 } from './usePaymentStore'
+import { validateMoneyInput } from './validateMoneyInput'
 
 export const PaymentInput = (): JSX.Element => {
   const isMobile = useIsMobile()
@@ -69,7 +69,13 @@ export const PaymentInput = (): JSX.Element => {
     handleSubmit,
   } = useForm<FormPayments>({
     mode: 'onBlur',
-    defaultValues: paymentsData,
+    defaultValues: {
+      ...paymentsData,
+      // Change payment_amount value to 2 decimal places temporarily for the form
+      payment_amount: paymentsData?.payment_amount
+        ? paymentsData?.payment_amount / 100
+        : 0,
+    },
   })
 
   // Update dirty state of payment so confirmation modal can be shown
@@ -108,7 +114,7 @@ export const PaymentInput = (): JSX.Element => {
 
   const handleCloseDrawer = useCallback(() => handleClose(false), [handleClose])
 
-  const amountValidation: RegisterOptions<FormPayments, 'amount_cents'> =
+  const amountValidation: RegisterOptions<FormPayments, 'payment_amount'> =
     useMemo(
       () => ({
         validate: {
@@ -118,21 +124,32 @@ export const PaymentInput = (): JSX.Element => {
           },
         },
         min: {
-          value: 1,
+          value: 0.01,
           message: 'Please enter a positive number',
         },
       }),
       [],
     )
 
-  const handleUpdatePayments = handleSubmit((payments) =>
-    paymentsMutation.mutate(payments.enabled ? payments : { enabled: false }, {
-      onSuccess: () => {
-        setToInactive()
-        handleCloseDrawer()
+  const handleUpdatePayments = handleSubmit((payments) => {
+    return paymentsMutation.mutate(
+      payments.enabled
+        ? {
+            ...payments,
+            // Change payment_amount value back to integer for value to be saved in cents
+            payment_amount: payments.payment_amount
+              ? payments.payment_amount * 100
+              : 0,
+          }
+        : { enabled: false },
+      {
+        onSuccess: () => {
+          setToInactive()
+          handleCloseDrawer()
+        },
       },
-    }),
-  )
+    )
+  })
 
   return (
     <CreatePageDrawerContentContainer>
@@ -145,26 +162,27 @@ export const PaymentInput = (): JSX.Element => {
           <>
             <FormControl
               isReadOnly={paymentsMutation.isLoading}
-              isInvalid={!!errors.amount_cents}
+              isInvalid={!!errors.payment_amount}
             >
-              <FormLabel isRequired>Amount in cents</FormLabel>
+              <FormLabel isRequired>Payment Amount</FormLabel>
               <Controller
-                name="amount_cents"
+                name="payment_amount"
                 control={control}
                 rules={amountValidation}
                 render={({ field: { onChange, ...rest } }) => (
                   <NumberInput
                     flex={1}
-                    inputMode="numeric"
+                    inputMode="decimal"
                     showSteppers={false}
-                    placeholder="Number of characters"
-                    onChange={validateNumberInput(onChange)}
+                    placeholder="0.00"
+                    onChange={validateMoneyInput(onChange)}
+                    prefix="SGD"
                     {...rest}
                   />
                 )}
               />
               <FormErrorMessage>
-                {errors.amount_cents?.message}
+                {errors.payment_amount?.message}
               </FormErrorMessage>
             </FormControl>
 

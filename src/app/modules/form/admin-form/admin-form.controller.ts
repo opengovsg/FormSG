@@ -2764,7 +2764,7 @@ export const handleUpdatePayments = [
   celebrate({
     [Segments.BODY]: {
       enabled: Joi.boolean().required(),
-      amount_cents: Joi.alternatives().conditional('enabled', [
+      payment_amount: Joi.alternatives().conditional('enabled', [
         {
           is: true,
           then: Joi.number().integer().positive(),

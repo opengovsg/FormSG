@@ -130,7 +130,7 @@ export const PaymentPageBlock = ({
   const formTitle = form?.title
   const colorTheme = form?.startPage.colorTheme || FormColorTheme.Blue
 
-  const amountCents = form?.payments?.amount_cents || 0
+  const paymentAmount = form?.payments?.payment_amount || 0
 
   const stripePromise = useMemo(
     () => loadStripe(publishableKey),
@@ -168,7 +168,7 @@ export const PaymentPageBlock = ({
         <Text textStyle="body-1" textColor="secondary.700">
           Your credit card will be charged:{' '}
           <Text as="span" fontWeight="bold">
-            S${(amountCents / 100).toFixed(2)}
+            S${(paymentAmount / 100).toFixed(2)}
           </Text>
         </Text>
 

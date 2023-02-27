@@ -446,14 +446,14 @@ const compileFormModel = (db: Mongoose): IFormModel => {
           type: String,
           default: '',
         },
-        amount_cents: {
+        payment_amount: {
           type: Number,
           validate: {
-            validator: (amount_cents: number) => {
-              if (amount_cents < 50) {
+            validator: (payment_amount: number) => {
+              if (payment_amount < 50) {
                 return false
               }
-              if (!Number.isInteger(amount_cents)) {
+              if (!Number.isInteger(payment_amount)) {
                 return false
               }
               return true

@@ -5,6 +5,8 @@ import {
   chakra,
   Divider,
   forwardRef,
+  InputGroup,
+  InputLeftAddon,
   NumberInputProps as ChakraNumberInputProps,
   useFormControlProps,
   useMergeRefs,
@@ -88,31 +90,42 @@ export const NumberInput = forwardRef<NumberInputProps, 'input'>(
       ? stepperWrapperRef.current?.offsetWidth
       : undefined
 
+    const inputBox = (
+      <chakra.input
+        {...inputProps}
+        paddingInlineEnd={inputEndPadding}
+        // This flag should be set for form input fields, to prevent refresh on enter if form only has one input
+        {...(preventDefaultOnEnter
+          ? {
+              onKeyDown: (e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault()
+                }
+              },
+            }
+          : {})}
+        // Passing in ref to the input element so that it can be focused by
+        // the parent.
+        // No point passing the ref to the div wrapper as the main component
+        // is this input.
+        ref={inputRef}
+        __css={styles.field}
+      />
+    )
+
     return (
       <Box {...htmlProps} __css={styles.root}>
         {/* Using base input wrapper instead of `Input` component as the Input 
         component strips out some props such as `aria-invalid`, resulting in
         incorrect styling */}
-        <chakra.input
-          {...inputProps}
-          paddingInlineEnd={inputEndPadding}
-          // This flag should be set for form input fields, to prevent refresh on enter if form only has one input
-          {...(preventDefaultOnEnter
-            ? {
-                onKeyDown: (e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault()
-                  }
-                },
-              }
-            : {})}
-          // Passing in ref to the input element so that it can be focused by
-          // the parent.
-          // No point passing the ref to the div wrapper as the main component
-          // is this input.
-          ref={inputRef}
-          __css={styles.field}
-        />
+        {props.prefix ? (
+          <InputGroup>
+            <InputLeftAddon pointerEvents="none" children="SGD" />
+            {inputBox}
+          </InputGroup>
+        ) : (
+          inputBox
+        )}
         {showSteppers && (
           <Box __css={styles.stepperWrapper} ref={stepperWrapperRef}>
             <IconButton

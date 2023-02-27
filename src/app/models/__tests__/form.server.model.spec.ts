@@ -434,7 +434,7 @@ describe('Form Model', () => {
           payments: {
             enabled: true,
             target_account_id: 'someId',
-            amount_cents: 50,
+            payment_amount: 50,
             description: 'some payment',
           },
         })
@@ -466,7 +466,7 @@ describe('Form Model', () => {
           payments: {
             enabled: true,
             target_account_id: 'some Id',
-            amount_cents: 50,
+            payment_amount: 50,
             description: 'some payment',
           },
         })
@@ -486,7 +486,7 @@ describe('Form Model', () => {
           payments: {
             enabled: true,
             target_account_id: 'someId',
-            amount_cents: -50,
+            payment_amount: -50,
             description: 'some payment',
           },
         })
@@ -506,7 +506,7 @@ describe('Form Model', () => {
           payments: {
             enabled: true,
             target_account_id: 'someId',
-            amount_cents: 54.22,
+            payment_amount: 54.22,
             description: 'some payment',
           },
         })
@@ -526,7 +526,7 @@ describe('Form Model', () => {
           payments: {
             enabled: true,
             target_account_id: 'someId',
-            amount_cents: 49,
+            payment_amount: 49,
             description: 'some payment',
           },
         })
