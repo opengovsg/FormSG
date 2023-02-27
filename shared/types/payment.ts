@@ -1,4 +1,5 @@
 import Stripe from 'stripe'
+import { DateString } from './generic'
 
 export enum PaymentStatus {
   Failed = 'failed',
@@ -15,6 +16,7 @@ export type Payment = {
   chargeIdLatest: string
   payoutId: string
   payoutDate: Date
+  created: DateString
 }
 
 export type PaymentReceiptStatusDto = {
