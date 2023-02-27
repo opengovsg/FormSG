@@ -76,20 +76,20 @@ const PaymentsAccountInformation = () => {
   const { data: settings, isLoading } = useAdminFormSettings()
 
   return (
-    <Skeleton isLoaded={!isLoading}>
-      <FormControl mb="2.5rem">
-        <FormLabel mb="0.75rem" isRequired>
-          <Text textStyle="subhead-1">Target Account ID</Text>
-          <Text textStyle="body-2" textColor="secondary.400">
-            This is the account ID connected to this form.
-          </Text>
-        </FormLabel>
+    <FormControl mb="2.5rem">
+      <FormLabel
+        description="This is the account ID connected to this form."
+        isRequired
+      >
+        Target Account ID
+      </FormLabel>
+      <Skeleton isLoaded={!isLoading}>
         <Input
           isDisabled={true}
           value={settings?.payments?.target_account_id}
         ></Input>
-      </FormControl>
-    </Skeleton>
+      </Skeleton>
+    </FormControl>
   )
 }
 
