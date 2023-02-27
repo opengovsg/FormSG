@@ -224,6 +224,11 @@ export const PublicFormProvider = ({
                       timestamp,
                     })
                     trackSubmitForm(form)
+                    datadogLogs.logger.warn('Test dd traces', {
+                      meta: {
+                        action: 'dd traces',
+                      },
+                    })
                   },
                 },
               )
@@ -262,6 +267,11 @@ export const PublicFormProvider = ({
                       timestamp,
                     })
                     trackSubmitForm(form)
+                    datadogLogs.logger.warn('Test dd traces', {
+                      meta: {
+                        action: 'dd traces',
+                      },
+                    })
                   },
                 },
               )
