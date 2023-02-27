@@ -117,22 +117,41 @@ export const _handleStripeEventUpdates: ControllerHandler<
     case 'charge.dispute.funds_reinstated':
     case 'charge.dispute.funds_withdrawn':
     case 'charge.dispute.updated': {
-      event = await stripe.events.retrieve(event.id, {
-        expand: ['data.object.charge'],
-      })
-      // These are known since the 'charge' property was expanded
-      const dispute = event.data.object as Stripe.Dispute
-      const charge = dispute.charge as Stripe.Charge
+      // Retrieve the charge object to get the corresponding submissionId
+      const charge =
+        typeof event.data.object.charge === 'string'
+          ? await stripe.charges.retrieve(event.data.object.charge)
+          : event.data.object.charge
       await StripeService.updateWebhookBySubmissionId(
         charge.metadata,
-        {},
+        {}, // TODO
         event,
       )
       break
     }
-    case 'charge.refund.updated':
-      // We should actually handle this case, need to implement based on get by charge Id though, not doing for hackathon.
+    case 'charge.refund.updated': {
+      // Retrieve the charge object to get the corresponding submissionId
+      const charge =
+        typeof event.data.object.charge === 'string'
+          ? await stripe.charges.retrieve(event.data.object.charge)
+          : event.data.object.charge
+      if (charge === null) {
+        logger.warn({
+          message: 'Received Stripe event charge.refund.updated with no charge',
+          meta: {
+            action: 'handleStripeEventUpdates',
+            event,
+          },
+        })
+        break
+      }
+      await StripeService.updateWebhookBySubmissionId(
+        charge.metadata,
+        {}, // TODO
+        event,
+      )
       break
+    }
     case 'payment_intent.amount_capturable_updated':
     case 'payment_intent.canceled':
     case 'payment_intent.created':
