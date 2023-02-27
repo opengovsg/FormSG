@@ -194,7 +194,7 @@ export const IndividualResponsePage = (): JSX.Element => {
                     <Text textStyle="subhead-1">Payment amount:</Text>
                     <Text>
                       S$
-                      {(paymentData.amount / 100).toLocaleString('en-IN', {
+                      {(paymentData.amount / 100).toLocaleString('en-GB', {
                         minimumFractionDigits: 2,
                         maximumFractionDigits: 2,
                       })}
