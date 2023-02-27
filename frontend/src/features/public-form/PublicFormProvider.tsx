@@ -227,6 +227,7 @@ export const PublicFormProvider = ({
                     datadogLogs.logger.warn('Test dd traces', {
                       meta: {
                         action: 'dd traces',
+                        allowedTracingUrl: process.env.REACT_APP_URL,
                       },
                     })
                   },
@@ -270,6 +271,7 @@ export const PublicFormProvider = ({
                     datadogLogs.logger.warn('Test dd traces', {
                       meta: {
                         action: 'dd traces',
+                        allowedTracingUrl: 'process.env.REACT_APP_URL',
                       },
                     })
                   },
