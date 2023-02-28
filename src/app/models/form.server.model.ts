@@ -37,6 +37,7 @@ import {
   LogicConditionState,
   LogicDto,
   LogicType,
+  PaymentsUpdateDto,
   StorageFormSettings,
 } from '../../../shared/types'
 import { reorder } from '../../../shared/utils/immutable-array-fns'
@@ -903,7 +904,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
 
   FormSchema.statics.updatePaymentsById = async function (
     formId: string,
-    newPayments: FormPayments,
+    newPayments: PaymentsUpdateDto,
   ) {
     return this.findByIdAndUpdate(
       formId,

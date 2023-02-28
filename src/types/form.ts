@@ -22,6 +22,7 @@ import {
   FormStartPage,
   LogicDto,
   MyInfoAttribute,
+  PaymentsUpdateDto,
   PublicFormDto,
 } from '../../shared/types'
 import { OverrideProps } from '../app/modules/form/admin-form/admin-form.types'
@@ -360,7 +361,7 @@ export interface IFormModel extends Model<IFormSchema> {
    */
   updatePaymentsById(
     formId: string,
-    newPayments: FormPayments,
+    newPayments: PaymentsUpdateDto,
   ): Promise<IFormDocument | null>
 
   updateFormLogic(
