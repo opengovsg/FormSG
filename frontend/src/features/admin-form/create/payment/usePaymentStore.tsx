@@ -2,7 +2,7 @@ import { isEqual } from 'lodash'
 import create from 'zustand'
 import { devtools } from 'zustand/middleware'
 
-import { FormPayments } from '~shared/types'
+import { PaymentsUpdateDto } from '~shared/types'
 
 export enum PaymentState {
   EditingPayment,
@@ -12,9 +12,9 @@ export enum PaymentState {
 export type PaymentStore = {
   state: PaymentState
   holdingState: PaymentState | null
-  data?: FormPayments
+  data?: PaymentsUpdateDto
   setToEditingPayment: (holding?: boolean) => void
-  setData: (payment?: FormPayments) => void
+  setData: (payment?: PaymentsUpdateDto) => void
   resetData: () => void
   setToInactive: (holding?: boolean) => void
   clearHoldingState: () => void
