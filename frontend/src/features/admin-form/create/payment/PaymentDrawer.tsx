@@ -10,7 +10,7 @@ import { useDebounce } from 'react-use'
 import { Box, Divider, Flex, FormControl, Stack, Text } from '@chakra-ui/react'
 import { cloneDeep } from 'lodash'
 
-import { FormPayments } from '~shared/types'
+import { PaymentsUpdateDto } from '~shared/types'
 
 import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
@@ -67,7 +67,7 @@ export const PaymentInput = (): JSX.Element => {
     formState: { errors, dirtyFields },
     control,
     handleSubmit,
-  } = useForm<FormPayments>({
+  } = useForm<PaymentsUpdateDto>({
     mode: 'onBlur',
     defaultValues: paymentsData,
   })
@@ -83,14 +83,14 @@ export const PaymentInput = (): JSX.Element => {
 
   const handlePaymentsChanges = useCallback(
     (paymentsInputs) => {
-      setData({ ...(paymentsInputs as FormPayments) })
+      setData({ ...(paymentsInputs as PaymentsUpdateDto) })
     },
     [setData],
   )
 
   const watchedInputs = useWatch({
     control: control,
-  }) as UnpackNestedValue<FormPayments>
+  }) as UnpackNestedValue<PaymentsUpdateDto>
 
   const clonedWatchedInputs = useMemo(
     () => cloneDeep(watchedInputs),
@@ -108,7 +108,7 @@ export const PaymentInput = (): JSX.Element => {
 
   const handleCloseDrawer = useCallback(() => handleClose(false), [handleClose])
 
-  const amountValidation: RegisterOptions<FormPayments, 'amount_cents'> =
+  const amountValidation: RegisterOptions<PaymentsUpdateDto, 'amount_cents'> =
     useMemo(
       () => ({
         validate: {
