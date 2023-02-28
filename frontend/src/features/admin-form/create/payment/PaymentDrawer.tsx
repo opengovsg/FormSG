@@ -138,7 +138,7 @@ export const PaymentInput = (): JSX.Element => {
             ...payments,
             // Change payment_amount value back to integer for value to be saved in cents
             payment_amount: payments.payment_amount
-              ? payments.payment_amount * 100
+              ? Math.round(payments.payment_amount * 100)
               : 0,
           }
         : { enabled: false },
