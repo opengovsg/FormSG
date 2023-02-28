@@ -94,7 +94,7 @@ export const NumberInput = forwardRef<NumberInputProps, 'input'>(
       ? stepperWrapperRef.current?.offsetWidth
       : undefined
 
-    const inputBox = (
+    const inputBox = (hasPrefix: boolean) => (
       <chakra.input
         {...inputProps}
         paddingInlineEnd={inputEndPadding}
@@ -114,7 +114,7 @@ export const NumberInput = forwardRef<NumberInputProps, 'input'>(
         // is this input.
         ref={inputRef}
         __css={styles.field}
-        borderLeftRadius="0"
+        borderLeftRadius={hasPrefix ? 0 : undefined}
       />
     )
 
@@ -148,10 +148,10 @@ export const NumberInput = forwardRef<NumberInputProps, 'input'>(
                 <Text>SGD</Text>
               </HStack>
             </InputLeftAddon>
-            {inputBox}
+            {inputBox(true)}
           </InputGroup>
         ) : (
-          inputBox
+          inputBox(false)
         )}
         {showSteppers && (
           <Box __css={styles.stepperWrapper} ref={stepperWrapperRef}>
