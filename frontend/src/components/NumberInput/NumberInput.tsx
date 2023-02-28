@@ -5,14 +5,18 @@ import {
   chakra,
   Divider,
   forwardRef,
+  HStack,
+  Icon,
   InputGroup,
   InputLeftAddon,
   NumberInputProps as ChakraNumberInputProps,
+  Text,
   useFormControlProps,
   useMergeRefs,
   useMultiStyleConfig,
   useNumberInput,
 } from '@chakra-ui/react'
+import Flags from 'country-flag-icons/react/3x2'
 
 import { ThemeColorScheme } from '~theme/foundations/colours'
 
@@ -110,8 +114,12 @@ export const NumberInput = forwardRef<NumberInputProps, 'input'>(
         // is this input.
         ref={inputRef}
         __css={styles.field}
+        borderLeftRadius="0"
       />
     )
+
+    // TODO: replace with dynamic country loading if/when more currencies are added
+    const country = 'SG'
 
     return (
       <Box {...htmlProps} __css={styles.root}>
@@ -120,7 +128,26 @@ export const NumberInput = forwardRef<NumberInputProps, 'input'>(
         incorrect styling */}
         {props.prefix ? (
           <InputGroup>
-            <InputLeftAddon pointerEvents="none" children="SGD" />
+            <InputLeftAddon
+              aria-disabled={inputProps.disabled}
+              as="label"
+              sx={styles.country}
+              background="transparent"
+              borderColor="neutral.400"
+            >
+              <HStack align="center" spacing={2}>
+                <Icon
+                  // Show Flags if available. If value does not exist for any reason,
+                  // a default fallback icon will be used by ChakraUI.
+                  // See https://chakra-ui.com/docs/media-and-icons/icon#fallback-icon.
+                  as={Flags[country]}
+                  role="img"
+                  aria-label={`Only ${country} numbers are allowed`}
+                  __css={styles.icon}
+                />
+                <Text>SGD</Text>
+              </HStack>
+            </InputLeftAddon>
             {inputBox}
           </InputGroup>
         ) : (
