@@ -229,3 +229,20 @@ AdminFormsFormRouter.get(
   '/:formId([a-fA-F0-9]{24})/verified-sms/count/free',
   AdminFormController.handleGetFreeSmsCountForFormAdmin,
 )
+
+/**
+ * Replaces the payments data of the given form with what is given in the request
+ * @precondition Must be preceded by request validation
+ * @security session
+ *
+ * @returns 200 with updated payments
+ * @returns 403 when current user does not have permissions to update the payments
+ * @returns 404 when form cannot be found
+ * @returns 410 when updating the payments for an archived form
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when database error occurs
+ */
+AdminFormsFormRouter.put(
+  '/:formId([a-fA-F0-9]{24})/payments',
+  AdminFormController.handleUpdatePayments,
+)

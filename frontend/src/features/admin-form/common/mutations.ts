@@ -7,6 +7,7 @@ import {
   EndPageUpdateDto,
   FormPermission,
   FormPermissionsDto,
+  PaymentsUpdateDto,
   StartPageUpdateDto,
 } from '~shared/types/form/form'
 
@@ -28,7 +29,11 @@ import { downloadFormFeedback } from '../responses/FeedbackPage/FeedbackService'
 
 import { useCollaboratorWizard } from './components/CollaboratorModal/CollaboratorWizardContext'
 import { permissionsToRole } from './components/CollaboratorModal/utils'
-import { updateFormEndPage, updateFormStartPage } from './AdminFormPageService'
+import {
+  updateFormEndPage,
+  updateFormPayments,
+  updateFormStartPage,
+} from './AdminFormPageService'
 import {
   removeSelfFromFormCollaborators,
   transferFormOwner,
@@ -384,9 +389,28 @@ export const useMutateFormPage = () => {
     },
   )
 
+  const paymentsMutation = useMutation(
+    (payments: PaymentsUpdateDto) => updateFormPayments(formId, payments),
+    {
+      onSuccess: (newData) => {
+        toast.closeAll()
+        queryClient.setQueryData<AdminFormDto | undefined>(
+          adminFormKeys.id(formId),
+          (oldData) =>
+            oldData ? { ...oldData, payments: newData } : undefined,
+        )
+        toast({
+          description: 'The payment was updated.',
+        })
+      },
+      onError: handleError,
+    },
+  )
+
   return {
     startPageMutation,
     endPageMutation,
+    paymentsMutation,
   }
 }
 

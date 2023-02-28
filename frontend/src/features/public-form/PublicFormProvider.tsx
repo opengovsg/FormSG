@@ -256,10 +256,17 @@ export const PublicFormProvider = ({
                   captchaResponse,
                 },
                 {
-                  onSuccess: ({ submissionId, timestamp }) => {
+                  onSuccess: ({
+                    submissionId,
+                    timestamp,
+                    paymentClientSecret,
+                    paymentPublishableKey,
+                  }) => {
                     setSubmissionData({
                       id: submissionId,
                       timestamp,
+                      paymentClientSecret,
+                      paymentPublishableKey,
                     })
                     trackSubmitForm(form)
                   },
