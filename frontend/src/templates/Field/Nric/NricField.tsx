@@ -1,7 +1,7 @@
 /**
  * @precondition Must have a parent `react-hook-form#FormProvider` component.
  */
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useFormContext } from 'react-hook-form'
 
 import { createNricValidationRules } from '~utils/fieldValidation'
@@ -20,6 +20,7 @@ export const NricField = ({ schema }: NricFieldProps): JSX.Element => {
     [schema],
   )
 
+  const [value, setValue] = useState<string>('')
   const { register } = useFormContext<SingleAnswerFieldInput>()
 
   return (
@@ -28,7 +29,12 @@ export const NricField = ({ schema }: NricFieldProps): JSX.Element => {
         aria-label={`${schema.questionNumber}. ${schema.title}`}
         defaultValue=""
         preventDefaultOnEnter
-        {...register(schema._id, validationRules)}
+        value={value}
+        {...register(schema._id, {
+          ...validationRules,
+          onChange: (event: React.ChangeEvent<HTMLInputElement>) =>
+            setValue(event.target.value.trim()),
+        })}
       />
     </FieldContainer>
   )
