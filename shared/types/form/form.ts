@@ -68,13 +68,18 @@ export enum FormResponseMode {
   Email = 'email',
 }
 
-export type FormPayments = {
+type FormPaymentsAccount = {
+  target_account_id: string
+  publishable_key: string
+}
+
+type FormPaymentsField = {
   enabled: boolean
-  target_account_id?: string
-  publishable_key?: string
   amount_cents?: number
   description?: string
 }
+
+export type FormPayments = Partial<FormPaymentsAccount> & FormPaymentsField
 
 export interface FormBase {
   title: string
@@ -240,5 +245,4 @@ export type StartPageUpdateDto = FormStartPage
 export type EndPageUpdateDto = FormEndPage
 export type FormPermissionsDto = FormPermission[]
 export type PermissionsUpdateDto = FormPermission[]
-// target account id should only be changed through Stripe's OAuth Callback
-export type PaymentsUpdateDto = Omit<FormPayments, 'target_account_id'>
+export type PaymentsUpdateDto = FormPaymentsField
