@@ -6,7 +6,6 @@ import { StatusCodes } from 'http-status-codes'
 import get from 'lodash/get'
 import Stripe from 'stripe'
 
-import { PaymentStatus } from '../../../../shared/types'
 import config from '../../config/config'
 import { paymentConfig } from '../../config/features/payment.config'
 import { createLoggerWithLabel } from '../../config/logger'
@@ -29,19 +28,6 @@ const validateStripeEvent = celebrate({
     'stripe-signature': Joi.string().required(),
   }).unknown(),
 })
-
-const stripeChargeStatusToPaymentStatus = (
-  status: Stripe.Charge.Status,
-): PaymentStatus => {
-  switch (status) {
-    case 'failed':
-      return PaymentStatus.Failed
-    case 'pending':
-      return PaymentStatus.Pending
-    case 'succeeded':
-      return PaymentStatus.Succeeded
-  }
-}
 
 /**
  * Handler for GET /api/v3/notifications/stripe
@@ -103,12 +89,8 @@ export const _handleStripeEventUpdates: ControllerHandler<
     case 'charge.refunded':
     case 'charge.succeeded':
     case 'charge.updated':
-      await StripeService.updateWebhookBySubmissionId(
+      await StripeService.updateEventLogBySubmissionId(
         event.data.object.metadata,
-        {
-          chargeIdLatest: event.data.object.id,
-          status: stripeChargeStatusToPaymentStatus(event.data.object.status),
-        },
         event,
       )
       break
@@ -122,11 +104,7 @@ export const _handleStripeEventUpdates: ControllerHandler<
         typeof event.data.object.charge === 'string'
           ? await stripe.charges.retrieve(event.data.object.charge)
           : event.data.object.charge
-      await StripeService.updateWebhookBySubmissionId(
-        charge.metadata,
-        {}, // TODO
-        event,
-      )
+      await StripeService.updateEventLogBySubmissionId(charge.metadata, event)
       break
     }
     case 'charge.refund.updated': {
@@ -145,11 +123,7 @@ export const _handleStripeEventUpdates: ControllerHandler<
         })
         break
       }
-      await StripeService.updateWebhookBySubmissionId(
-        charge.metadata,
-        {}, // TODO
-        event,
-      )
+      await StripeService.updateEventLogBySubmissionId(charge.metadata, event)
       break
     }
     case 'payment_intent.amount_capturable_updated':
@@ -160,9 +134,8 @@ export const _handleStripeEventUpdates: ControllerHandler<
     case 'payment_intent.processing':
     case 'payment_intent.requires_action':
     case 'payment_intent.succeeded':
-      await StripeService.updateWebhookBySubmissionId(
+      await StripeService.updateEventLogBySubmissionId(
         event.data.object.metadata,
-        {},
         event,
       )
       break
@@ -172,13 +145,13 @@ export const _handleStripeEventUpdates: ControllerHandler<
     case 'payout.paid':
     case 'payout.updated':
       // This is most definitely wrong but need to test when payouts come in
-      await StripeService.updateWebhookBySubmissionId(
+      await StripeService.updateEventLogBySubmissionId(
         event.data.object.metadata,
+        event,
         {
           payoutId: event.data.object.id,
           payoutDate: new Date(event.data.object.arrival_date),
         },
-        event,
       )
       break
     default:

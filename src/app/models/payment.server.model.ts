@@ -21,7 +21,7 @@ const compilePaymentModel = (db: Mongoose): IPaymentModel => {
         enum: Object.values(PaymentStatus),
         required: true,
       },
-      webhookLog: {
+      eventLog: {
         type: [],
         default: [],
       },
@@ -47,6 +47,12 @@ const compilePaymentModel = (db: Mongoose): IPaymentModel => {
       read: 'secondary',
     },
   )
+
+  PaymentSchema.statics.findBySubmissionId = async function (
+    submissionId: string,
+  ) {
+    return this.findOne({ submissionId }).exec()
+  }
 
   const PaymentModel = db.model<IPaymentSchema, IPaymentModel>(
     PAYMENT_SCHEMA_ID,

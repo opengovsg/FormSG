@@ -1,17 +1,5 @@
 import { ApplicationError } from '../core/core.errors'
 
-export class SubmissionNotFoundError extends ApplicationError {
-  constructor(message = 'Payment submission not found') {
-    super(message)
-  }
-}
-
-export class PaymentNotFoundError extends ApplicationError {
-  constructor(message = 'Payment not found') {
-    super(message)
-  }
-}
-
 export class SubmissionAndFormMismatchError extends ApplicationError {
   constructor(
     message = 'Submission id provided does not match the one linked to the form id',
@@ -49,6 +37,18 @@ export class StripeAccountError extends ApplicationError {
 
 export class StripeAccountNotFoundError extends ApplicationError {
   constructor(message = 'Stripe account not found') {
+    super(message)
+  }
+}
+
+export class EventMetadataSubmissionIdNotFoundError extends ApplicationError {
+  constructor(message = 'Submission id not found in event metadata') {
+    super(message)
+  }
+}
+
+export class EventMetadataSubmissionIdInvalidError extends ApplicationError {
+  constructor(message = 'Invalid submission id found in event metadata') {
     super(message)
   }
 }
