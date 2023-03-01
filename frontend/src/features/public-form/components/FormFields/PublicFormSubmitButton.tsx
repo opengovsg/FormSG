@@ -1,6 +1,6 @@
-import { MouseEventHandler, useContext, useMemo } from 'react'
+import { MouseEventHandler, useMemo } from 'react'
 import { useFormState, useWatch } from 'react-hook-form'
-import { Stack, useDisclosure, VisuallyHidden } from '@chakra-ui/react'
+import { Stack, VisuallyHidden } from '@chakra-ui/react'
 
 import { FormField, LogicDto, MyInfoFormField } from '~shared/types'
 
@@ -11,9 +11,6 @@ import InlineMessage from '~components/InlineMessage'
 import { FormFieldValues } from '~templates/Field'
 
 import { getLogicUnitPreventingSubmit } from '~features/logic/utils'
-
-import { usePublicFormContext } from '../../PublicFormContext'
-import { FormPaymentModal } from '../FormPaymentModal/FormPaymentModal'
 
 interface PublicFormSubmitButtonProps {
   formFields: MyInfoFormField<FormField>[]
@@ -35,7 +32,6 @@ export const PublicFormSubmitButton = ({
   const isMobile = useIsMobile()
   const { isSubmitting } = useFormState()
   const formInputs = useWatch<FormFieldValues>({}) as FormFieldValues
-  const { form } = usePublicFormContext()
 
   const preventSubmissionLogic = useMemo(() => {
     return getLogicUnitPreventingSubmit({
@@ -45,18 +41,8 @@ export const PublicFormSubmitButton = ({
     })
   }, [formInputs, formFields, formLogics])
 
-  // For payments submit and pay modal
-  const { isOpen, onOpen, onClose } = useDisclosure({ defaultIsOpen: false })
-
   return (
     <Stack px={{ base: '1rem', md: 0 }} pt="2.5rem" pb="4rem">
-      {isOpen ? (
-        <FormPaymentModal
-          onSubmit={onSubmit}
-          onClose={onClose}
-          isSubmitting={isSubmitting}
-        />
-      ) : null}
       <Button
         isFullWidth={isMobile}
         w="100%"
@@ -65,14 +51,10 @@ export const PublicFormSubmitButton = ({
         isLoading={isSubmitting}
         isDisabled={!!preventSubmissionLogic || !onSubmit}
         loadingText="Submitting"
-        onClick={form?.payments?.enabled ? onOpen : onSubmit}
+        onClick={onSubmit}
       >
         <VisuallyHidden>End of form.</VisuallyHidden>
-        {preventSubmissionLogic
-          ? 'Submission disabled'
-          : form?.payments?.enabled
-          ? 'Submit and pay'
-          : 'Submit now'}
+        {preventSubmissionLogic ? 'Submission disabled' : 'Submit now'}
       </Button>
       {preventSubmissionLogic ? (
         <InlineMessage variant="warning">

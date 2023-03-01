@@ -2,7 +2,6 @@ import { ClientEnvVars } from '../../../../shared/types/core'
 import config from '../../config/config'
 import { captchaConfig } from '../../config/features/captcha.config'
 import { googleAnalyticsConfig } from '../../config/features/google-analytics.config'
-import { paymentConfig } from '../../config/features/payment.config'
 import { sentryConfig } from '../../config/features/sentry.config'
 import { spcpMyInfoConfig } from '../../config/features/spcp-myinfo.config'
 
@@ -35,6 +34,5 @@ export const getClientEnvVars = (): ClientEnvVars => {
       config.reactMigration.removeAdminInfoboxThreshold,
     removeRespondentsInfoboxThreshold:
       config.reactMigration.removeRespondentsInfoboxThreshold,
-    stripePublishableKey: paymentConfig.stripePublishableKey,
   }
 }

@@ -68,14 +68,6 @@ export enum FormResponseMode {
   Email = 'email',
 }
 
-export type FormPayments = {
-  enabled: boolean
-  target_account_id?: string
-  publishable_key?: string
-  amount_cents?: number
-  description?: string
-}
-
 export interface FormBase {
   title: string
   admin: UserDto['_id']
@@ -103,8 +95,6 @@ export interface FormBase {
   webhook: FormWebhook
 
   responseMode: FormResponseMode
-
-  payments?: FormPayments
 }
 
 export interface EmailFormBase extends FormBase {
@@ -240,4 +230,3 @@ export type StartPageUpdateDto = FormStartPage
 export type EndPageUpdateDto = FormEndPage
 export type FormPermissionsDto = FormPermission[]
 export type PermissionsUpdateDto = FormPermission[]
-export type PaymentsUpdateDto = FormPayments

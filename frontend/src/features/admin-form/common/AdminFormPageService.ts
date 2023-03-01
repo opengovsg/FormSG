@@ -1,8 +1,4 @@
-import {
-  EndPageUpdateDto,
-  PaymentsUpdateDto,
-  StartPageUpdateDto,
-} from '~shared/types'
+import { EndPageUpdateDto, StartPageUpdateDto } from '~shared/types'
 
 import { ApiService } from '~services/ApiService'
 
@@ -39,22 +35,5 @@ export const updateFormEndPage = async (
   return ApiService.put<EndPageUpdateDto>(
     `${ADMIN_FORM_ENDPOINT}/${formId}/end-page`,
     newEndPage,
-  ).then(({ data }) => data)
-}
-
-/**
- * Updates the payments for the given form referenced by its id
- *
- * @param formId the id of the form to update payments for
- * @param newPayments the new payment to replace with
- * @returns the updated payment on success
- */
-export const updateFormPayments = async (
-  formId: string,
-  newPayments: PaymentsUpdateDto,
-): Promise<PaymentsUpdateDto> => {
-  return ApiService.put<PaymentsUpdateDto>(
-    `${ADMIN_FORM_ENDPOINT}/${formId}/payments`,
-    newPayments,
   ).then(({ data }) => data)
 }

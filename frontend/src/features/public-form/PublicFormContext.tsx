@@ -9,8 +9,6 @@ export type SubmissionData = {
   id: string | undefined
   /** Submission time in ms from epoch  */
   timestamp: number
-  paymentClientSecret?: string
-  paymentPublishableKey?: string
 }
 
 export interface PublicFormContextProps

@@ -24,8 +24,8 @@ export const FormStartPage = ({
   const { activeSectionId } = useFormSections()
 
   const showHeaderAndMiniHeader = useMemo(
-    () => !submissionData || form?.payments?.enabled,
-    [submissionData, form?.payments?.enabled],
+    () => !submissionData,
+    [submissionData],
   )
 
   const formHeaderProps = useFormHeader({ startPage: form?.startPage })
