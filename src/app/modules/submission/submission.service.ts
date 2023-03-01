@@ -16,10 +16,7 @@ import { getMongoErrorMessage } from '../../utils/handle-mongo-error'
 import { DatabaseError, MalformedParametersError } from '../core/core.errors'
 import { InvalidSubmissionIdError } from '../feedback/feedback.errors'
 
-import {
-  SendEmailConfirmationError,
-  SubmissionNotFoundError,
-} from './submission.errors'
+import { SendEmailConfirmationError } from './submission.errors'
 
 const logger = createLoggerWithLabel(module)
 const SubmissionModel = getSubmissionModel(mongoose)
@@ -172,34 +169,3 @@ export const doesSubmissionIdExist = (
     }
     return okAsync(true as const)
   })
-
-/**
- * @param formId the form id to find amongst all the form submissions
- *
- * @returns ok(submission document) if retrieval is successful
- * @returns err(SubmissionNotFoundError) if submission does not exist in the database
- * @returns err(DatabaseError) if database errors occurs whilst retrieving user
- */
-export const findSubmissionById = (
-  submissionId: string,
-): ResultAsync<ISubmissionSchema, DatabaseError | SubmissionNotFoundError> => {
-  return ResultAsync.fromPromise(
-    SubmissionModel.findById(submissionId).exec(),
-    (error) => {
-      logger.error({
-        message: 'Database find submission error',
-        meta: {
-          action: 'findSubmissionById',
-          submissionId,
-        },
-        error,
-      })
-      return new DatabaseError(getMongoErrorMessage(error))
-    },
-  ).andThen((submission) => {
-    if (!submission) {
-      return errAsync(new SubmissionNotFoundError())
-    }
-    return okAsync(submission)
-  })
-}

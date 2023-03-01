@@ -22,9 +22,7 @@ import { adminFormKeys } from '../common/queries'
 
 import { adminFormSettingsKeys } from './queries'
 import {
-  createStripeAccount,
   deleteTwilioCredentials,
-  unlinkStripeAccount,
   updateFormAuthType,
   updateFormCaptcha,
   updateFormEmails,
@@ -354,30 +352,5 @@ export const useMutateTwilioCreds = () => {
   return {
     mutateFormTwilioDeletion,
     mutateFormTwilioDetails,
-  }
-}
-
-export const useMutateStripeAccount = () => {
-  const { formId } = useParams()
-  if (!formId) throw new Error('No formId provided')
-
-  const queryClient = useQueryClient()
-
-  const linkStripeAccountMutation = useMutation(() =>
-    createStripeAccount(formId),
-  )
-
-  const unlinkStripeAccountMutation = useMutation(
-    () => unlinkStripeAccount(formId),
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries(adminFormSettingsKeys.id(formId))
-      },
-    },
-  )
-
-  return {
-    linkStripeAccountMutation,
-    unlinkStripeAccountMutation,
   }
 }

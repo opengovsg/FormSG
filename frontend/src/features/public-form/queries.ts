@@ -6,9 +6,7 @@ import { ApiError } from '~typings/core'
 
 import { FORMID_REGEX } from '~constants/routes'
 
-import { PaymentReceiptDto } from '../../../../shared/types'
-
-import { getPaymentReceipt, getPublicFormView } from './PublicFormService'
+import { getPublicFormView } from './PublicFormService'
 
 export const publicFormKeys = {
   // All keys map to either an array or function returning an array for
@@ -30,14 +28,5 @@ export const usePublicFormView = (
       staleTime: Infinity,
       enabled: FORMID_REGEX.test(formId) && enabled,
     },
-  )
-}
-
-export const useGetPaymentReceipt = (
-  formId: string,
-  submissionId: string,
-): UseQueryResult<PaymentReceiptDto, ApiError> => {
-  return useQuery<PaymentReceiptDto, ApiError>([formId, submissionId], () =>
-    getPaymentReceipt(formId, submissionId),
   )
 }

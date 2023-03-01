@@ -73,6 +73,7 @@ export type Config = {
   db: DbConfig
   aws: AwsConfig
   mail: MailConfig
+
   cookieSettings: SessionOptions['cookie']
   // Consts
   isDev: boolean
