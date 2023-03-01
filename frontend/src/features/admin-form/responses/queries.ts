@@ -35,6 +35,8 @@ export const adminFormResponsesKeys = {
   },
   individual: (id: string, submissionId: string) =>
     [...adminFormResponsesKeys.id(id), 'individual', submissionId] as const,
+  payment: (id: string, submissionId: string) =>
+    [...adminFormResponsesKeys.id(id), 'payment', submissionId] as const,
   secretKey: (id: string) => [...adminFormResponsesKeys.id(id), 'secretKey'],
 }
 

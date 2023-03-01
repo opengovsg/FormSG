@@ -7,6 +7,7 @@ import {
   Types,
   UpdateWriteOpResult,
 } from 'mongoose'
+import { DeepRequired } from 'ts-essentials'
 import type { Merge, SetOptional } from 'type-fest'
 
 import {
@@ -15,6 +16,7 @@ import {
   FormEndPage,
   FormField,
   FormFieldDto,
+  FormPayments,
   FormPermission,
   FormSettings,
   FormStartPage,
@@ -187,6 +189,26 @@ export interface IFormSchema extends IForm, Document, PublicView<PublicForm> {
     currentOwner: IUserSchema,
     newOwner: IUserSchema,
   ): Promise<T>
+
+  /**
+   * Add payment account ID to the form.
+   * @param accountId the payment account ID to add
+   * @returns updated form
+   */
+  addPaymentAccountId<T = IFormSchema>({
+    accountId,
+    publishableKey,
+  }: {
+    accountId: FormPayments['target_account_id']
+    publishableKey: FormPayments['publishable_key']
+  }): Promise<T & DeepRequired<Pick<IFormSchema, 'payments'>>>
+
+  /**
+   * Remove payment account ID from the form.
+   * @returns updated form
+   */
+  removePaymentAccount<T = IFormSchema>(): Promise<T>
+
   /**
    * Return essential form creation parameters with the given properties.
    * @param overrideProps the props to override on the duplicated form
@@ -328,6 +350,17 @@ export interface IFormModel extends Model<IFormSchema> {
   updateStartPageById(
     formId: string,
     newStartPage: FormStartPage,
+  ): Promise<IFormDocument | null>
+
+  /**
+   * Update the payments of form with given payments object.
+   * @param formId the id of the form to update
+   * @param newPayments the new Payments object to replace with
+   * @returns the updated form document if form exists, null otherwise
+   */
+  updatePaymentsById(
+    formId: string,
+    newPayments: FormPayments,
   ): Promise<IFormDocument | null>
 
   updateFormLogic(

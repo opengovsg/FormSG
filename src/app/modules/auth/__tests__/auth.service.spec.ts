@@ -31,6 +31,7 @@ const TokenModel = getTokenModel(mongoose)
 const VALID_EMAIL_DOMAIN = 'test.gov.sg'
 const VALID_EMAIL = `valid@${VALID_EMAIL_DOMAIN}`
 const MOCK_OTP = '123456'
+const MOCK_OTP_PREFIX = 'ABC'
 
 describe('auth.service', () => {
   let defaultAgency: AgencyDocument
@@ -93,13 +94,19 @@ describe('auth.service', () => {
       // Should have no documents prior to this.
       await expect(TokenModel.countDocuments()).resolves.toEqual(0)
       jest.spyOn(OtpUtils, 'generateOtp').mockReturnValueOnce(MOCK_OTP)
+      jest
+        .spyOn(OtpUtils, 'generateOtpPrefix')
+        .mockReturnValueOnce(MOCK_OTP_PREFIX)
 
       // Act
       const actualResult = await AuthService.createLoginOtp(VALID_EMAIL)
 
       // Assert
       expect(actualResult.isOk()).toBe(true)
-      expect(actualResult._unsafeUnwrap()).toEqual(MOCK_OTP)
+      expect(actualResult._unsafeUnwrap()).toEqual({
+        otp: MOCK_OTP,
+        otpPrefix: MOCK_OTP_PREFIX,
+      })
       // Should have new token document inserted.
       await expect(TokenModel.countDocuments()).resolves.toEqual(1)
     })

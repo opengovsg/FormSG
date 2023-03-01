@@ -1,5 +1,5 @@
 import BSON, { ObjectId } from 'bson-ext'
-import { compact, omit, pick, uniq } from 'lodash'
+import { compact, merge, omit, pick, uniq } from 'lodash'
 import mongoose, {
   ClientSession,
   Mongoose,
@@ -28,6 +28,7 @@ import {
   FormField,
   FormFieldDto,
   FormLogoState,
+  FormPayments,
   FormPermission,
   FormResponseMode,
   FormSettings,
@@ -423,6 +424,45 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         default: null,
         min: 1,
       },
+      payments: {
+        enabled: {
+          type: Boolean,
+          default: false,
+        },
+        target_account_id: {
+          type: String,
+          default: '',
+          validate: [
+            /^\S*$/i,
+            'target_account_id must not contain whitespace.',
+          ],
+        },
+        publishable_key: {
+          type: String,
+          default: '',
+          validate: [/^\S*$/i, 'publishable_key must not contain whitespace.'],
+        },
+        description: {
+          type: String,
+          default: '',
+        },
+        amount_cents: {
+          type: Number,
+          validate: {
+            validator: (amount_cents: number) => {
+              if (amount_cents < 50) {
+                return false
+              }
+              if (!Number.isInteger(amount_cents)) {
+                return false
+              }
+              return true
+            },
+            message: 'Payment amount must be at least 50 cents and an integer.',
+          },
+        },
+        required: false,
+      },
     },
     formSchemaOptions,
   )
@@ -585,6 +625,30 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       ...basePublicView,
       admin: (this.admin as IUserSchema).getPublicView(),
     }
+  }
+
+  FormDocumentSchema.methods.addPaymentAccountId = async function ({
+    accountId,
+    publishableKey,
+  }: {
+    accountId: FormPayments['target_account_id']
+    publishableKey: FormPayments['publishable_key']
+  }) {
+    this.payments = merge(this.payments, {
+      target_account_id: accountId,
+      publishable_key: publishableKey,
+      enabled: true,
+    })
+    return this.save()
+  }
+
+  FormDocumentSchema.methods.removePaymentAccount = async function () {
+    if (this.payments?.target_account_id) {
+      this.payments.target_account_id = undefined
+      this.payments.enabled = false
+    }
+
+    return this.save()
   }
 
   // Transfer ownership of the form to another user
@@ -833,6 +897,17 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     return this.findByIdAndUpdate(
       formId,
       { startPage: newStartPage },
+      { new: true, runValidators: true },
+    ).exec()
+  }
+
+  FormSchema.statics.updatePaymentsById = async function (
+    formId: string,
+    newPayments: FormPayments,
+  ) {
+    return this.findByIdAndUpdate(
+      formId,
+      { payments: newPayments },
       { new: true, runValidators: true },
     ).exec()
   }
