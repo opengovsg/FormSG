@@ -20,7 +20,7 @@ const sessionMiddlewares = (connection: Connection): RequestHandler[] => {
   })
 
   return [
-    cookieParser(config.sessionSecret), // CookieParser should be above session
+    cookieParser(), // CookieParser should be above session
     expressSession,
   ]
 }

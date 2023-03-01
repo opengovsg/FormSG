@@ -33,6 +33,7 @@ export type SendAutoReplyEmailsArgs = {
   autoReplyMailDatas: AutoReplyMailData[]
 }
 
+// TODO #130 Remove references to US SES when SES migration is over (opengovsg/formsg-private#130)
 export type MailServiceParams = {
   appName?: string
   appUrl?: string

@@ -15,7 +15,7 @@ import { useMeasure } from '~hooks/useMeasure'
 import { FieldListTabIndex } from '../../builder-and-design/constants'
 import {
   DesignState,
-  setStateSelector as setDesignStateSelector,
+  setStateSelector,
   useDesignStore,
 } from '../../builder-and-design/useDesignStore'
 import {
@@ -24,16 +24,11 @@ import {
   setToInactiveSelector,
   useFieldBuilderStore,
 } from '../../builder-and-design/useFieldBuilderStore'
-import {
-  setToInactiveSelector as setPaymentToInactiveSelector,
-  usePaymentStore,
-} from '../../payment/usePaymentStore'
 
 export enum DrawerTabs {
   Builder,
   Design,
   Logic,
-  Payment,
   EndPage,
 }
 
@@ -45,7 +40,6 @@ type CreatePageSidebarContextProps = {
   handleBuilderClick: (shouldBePending: boolean) => void
   handleDesignClick: (shouldBePending: boolean) => void
   handleLogicClick: (shouldBePending: boolean) => void
-  handlePaymentClick: (shouldBePending: boolean) => void
   handleEndpageClick: (shouldBePending: boolean) => void
   handleClose: (shouldBePending: boolean) => void
   isDrawerOpen: boolean
@@ -85,8 +79,7 @@ export const useCreatePageSidebarContext =
     const fieldBuilderState = useFieldBuilderStore(fieldBuilderStateSelector)
     const setFieldsToInactive = useFieldBuilderStore(setToInactiveSelector)
 
-    const setDesignState = useDesignStore(setDesignStateSelector)
-    const setPaymentToInactive = usePaymentStore(setPaymentToInactiveSelector)
+    const setDesignState = useDesignStore(setStateSelector)
 
     const [fieldListTabIndex, setFieldListTabIndex] =
       useState<FieldListTabIndex>(FieldListTabIndex.Basic)
@@ -101,10 +94,6 @@ export const useCreatePageSidebarContext =
     useEffect(() => {
       if (activeTab !== DrawerTabs.Design) setDesignState(DesignState.Inactive)
     }, [activeTab, setDesignState])
-
-    useEffect(() => {
-      if (activeTab !== DrawerTabs.Payment) setPaymentToInactive()
-    }, [activeTab, setPaymentToInactive])
 
     const setActiveOrPendingTab = useCallback(
       (tab: DrawerTabs | null, shouldBePending?: boolean) => {
@@ -146,12 +135,6 @@ export const useCreatePageSidebarContext =
       [setActiveOrPendingTab],
     )
 
-    const handlePaymentClick = useCallback(
-      (shouldBePending: boolean) =>
-        setActiveOrPendingTab(DrawerTabs.Payment, shouldBePending),
-      [setActiveOrPendingTab],
-    )
-
     const handleEndpageClick = useCallback(
       (shouldBePending: boolean) =>
         setActiveOrPendingTab(DrawerTabs.EndPage, shouldBePending),
@@ -184,7 +167,6 @@ export const useCreatePageSidebarContext =
       isDrawerOpen,
       handleBuilderClick,
       handleDesignClick,
-      handlePaymentClick,
       handleLogicClick,
       handleEndpageClick,
       handleClose,

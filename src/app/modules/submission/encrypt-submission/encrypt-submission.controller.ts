@@ -4,25 +4,19 @@ import { AuthedSessionData } from 'express-session'
 import { StatusCodes } from 'http-status-codes'
 import JSONStream from 'JSONStream'
 import mongoose from 'mongoose'
-import Stripe from 'stripe'
 import type { SetOptional } from 'type-fest'
 
 import {
   ErrorDto,
   FormAuthType,
   FormSubmissionMetadataQueryDto,
-  Payment,
-  PaymentStatus,
   StorageModeSubmissionDto,
   StorageModeSubmissionMetadataList,
   SubmissionErrorDto,
   SubmissionResponseDto,
 } from '../../../../../shared/types'
 import { EncryptSubmissionDto } from '../../../../types/api'
-import { paymentConfig } from '../../../config/features/payment.config'
 import { createLoggerWithLabel } from '../../../config/logger'
-import { stripe } from '../../../loaders/stripe'
-import getPaymentModel from '../../../models/payment.server.model'
 import { getEncryptSubmissionModel } from '../../../models/submission.server.model'
 import * as CaptchaMiddleware from '../../../services/captcha/captcha.middleware'
 import * as CaptchaService from '../../../services/captcha/captcha.service'
@@ -33,7 +27,6 @@ import { ControllerHandler } from '../../core/core.types'
 import { setFormTags } from '../../datadog/datadog.utils'
 import { PermissionLevel } from '../../form/admin-form/admin-form.types'
 import * as FormService from '../../form/form.service'
-import { findPaymentBySubmissionId } from '../../payments/payments.service'
 import { SgidService } from '../../sgid/sgid.service'
 import { getOidcService } from '../../spcp/spcp.oidc.service'
 import { getPopulatedUserById } from '../../user/user.service'
@@ -61,7 +54,6 @@ import IncomingEncryptSubmission from './IncomingEncryptSubmission.class'
 
 const logger = createLoggerWithLabel(module)
 const EncryptSubmission = getEncryptSubmissionModel(mongoose)
-const Payment = getPaymentModel(mongoose)
 
 // NOTE: Refer to this for documentation: https://github.com/sideway/joi-date/blob/master/API.md
 const Joi = BaseJoi.extend(JoiDate)
@@ -362,13 +354,11 @@ const submitEncryptModeForm: ControllerHandler<
     })
   }
 
-  const submissionId = String(savedSubmission._id)
   logger.info({
     message: 'Saved submission to MongoDB',
     meta: {
       ...logMeta,
-      submissionId,
-      formId,
+      submissionId: savedSubmission._id,
     },
   })
 
@@ -384,124 +374,12 @@ const submitEncryptModeForm: ControllerHandler<
     )
   }
 
-  // Client secret for stripe payments if payments are enabled
-  let paymentClientSecret
-  if (form.payments?.enabled) {
-    // assumes stripe for now
-
-    if (!form.payments.amount_cents) {
-      logger.error({
-        message:
-          'Error when creating payment intent, amount is not a positive integer',
-        meta: {
-          submissionId,
-          ...logMeta,
-        },
-      })
-      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-        message:
-          "The form's payment settings are invalid. Please contact the admin of the form to rectify the issue.",
-      })
-    }
-
-    // Stripe requires the amount to be an integer in the smallest currency unit (i.e. cents)
-    const createPaymentIntentParams: Stripe.PaymentIntentCreateParams = {
-      amount: form.payments.amount_cents,
-      currency: paymentConfig.defaultCurrency,
-      payment_method_types: ['card', 'grabpay', 'paynow'],
-      description: form.payments.description,
-      // on_behalf_of: form.payments.target_account_id,
-      metadata: {
-        formId,
-        submissionId,
-      },
-    }
-
-    // The business logic for payments is as follows.
-    // 1) If payment intent is created successfully, successfully saved to DB and paymentClientSecret is successfully extracted from payment intent, then paymentClientSecret will be returned in 200 to client
-    // 2) If payment intent creation fails, then 200 will be returned to client without paymentClientSecret. This is because failed creation of payment intent indicates possible incorrect admin payment setting. In that case, the submission is already saved, and we provide the submissionID to client and ask them to contact form admin for assistance to complete payment.
-    // 3) If payment intent is created successfully, but saving to DB fails, we return 500 to client. This allows client to resubmit the form / allows us to try to create a new payment intent and save to DB.
-    // 4) if payment intent is created successfully, successfully saved to DB but we fail to extract paymentClientSecret from payment intent, this indicates an error with stripe. A 200 will be returned to client without paymentClientSecret. In that case, the submission is already saved, and we provide the submissionID to client and ask them to contact form admin for assistance to complete payment.
-    let paymentIntent
-
-    try {
-      paymentIntent = await stripe.paymentIntents.create(
-        createPaymentIntentParams,
-        { stripeAccount: form.payments.target_account_id },
-      )
-    } catch (err) {
-      logger.error({
-        message: 'Error when creating payment intent.',
-        meta: {
-          submissionId,
-          ...logMeta,
-        },
-        error: err,
-      })
-    }
-
-    if (paymentIntent) {
-      // Save payment to DB
-      const payment = new Payment({
-        submissionId,
-        amount: form.payments.amount_cents,
-        status: PaymentStatus.Pending,
-        paymentIntentId: paymentIntent.id,
-      })
-
-      try {
-        await payment.save()
-      } catch (err) {
-        logger.error({
-          message: 'Payment save error',
-          meta: {
-            paymentIntentId: paymentIntent.id,
-            submissionId,
-            ...logMeta,
-          },
-          error: err,
-        })
-
-        // Block the submission so that user can try to resubmit and create a new payment intent,
-        // because paymentIntent creation successful but this was a DB error.
-        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-          message:
-            'There was a problem preparing the payment. Please try again.',
-        })
-      }
-    }
-
-    // extract payment_client_secret from paymentIntent
-    paymentClientSecret = paymentIntent?.client_secret
-
-    // if paymentClientSecret is null or undefined, log error
-    if (!paymentClientSecret) {
-      logger.error({
-        message: `Client secret is ${paymentClientSecret}`,
-        meta: {
-          createPaymentIntentOptions: createPaymentIntentParams,
-          submissionId,
-          ...logMeta,
-        },
-      })
-    }
-  }
-
-  // Send success back to client
+  // Send Email Confirmations
   res.json({
     message: 'Form submission successful.',
     submissionId: submission.id,
     timestamp: (submission.created || new Date()).getTime(),
-    // Attach paymentClientSecret if it is defined and non-null. Otherwise, client will display error message.
-    ...(paymentClientSecret
-      ? {
-          paymentClientSecret,
-          paymentPublishableKey: form.payments?.publishable_key,
-        }
-      : {}),
   })
-
-  // Send Email Confirmations
 
   return sendEmailConfirmations({
     form,
@@ -955,74 +833,3 @@ export const handleGetMetadata = [
   }),
   getMetadata,
 ] as ControllerHandler[]
-
-/**
- * Handler for GET /:formId/submissions/:submissionId
- * @security session
- *
- * @returns 200 with encrypted submission data response
- * @returns 400 when form is not an encrypt mode form
- * @returns 403 when user does not have read permissions for form
- * @returns 404 when submissionId cannot be found in the database
- * @returns 404 when form cannot be found
- * @returns 410 when form is archived
- * @returns 422 when user in session cannot be retrieved from the database
- * @returns 500 when any errors occurs in database query or generating signed URL
- */
-export const handleGetPaymentResponse: ControllerHandler<
-  { formId: string; submissionId: string },
-  Payment | ErrorDto
-> = async (req, res) => {
-  const sessionUserId = (req.session as AuthedSessionData).user._id
-  const { formId, submissionId } = req.params
-
-  const logMeta = {
-    action: 'handleGetPaymentResponse',
-    submissionId,
-    formId,
-    sessionUserId,
-    ...createReqMeta(req),
-  }
-
-  logger.info({
-    message: 'Get payment response using submissionId start',
-    meta: logMeta,
-  })
-
-  return (
-    // Step 1: Retrieve logged in user.
-    getPopulatedUserById(sessionUserId)
-      // Step 2: Check whether user has read permissions to form.
-      .andThen((user) =>
-        getFormAfterPermissionChecks({
-          user,
-          formId,
-          level: PermissionLevel.Read,
-        }),
-      )
-      // Step 3: Check whether form is encrypt mode.
-      .andThen(checkFormIsEncryptMode)
-      // Step 4: Is encrypt mode form, retrieve submission data.
-      .andThen(() => findPaymentBySubmissionId(submissionId))
-      // Step 5: Retrieve presigned URLs for attachments.
-      .map((paymentData) => {
-        logger.info({
-          message: 'Get payment submission using submissionId success',
-          meta: logMeta,
-        })
-        return res.json(paymentData)
-      })
-      .mapErr((error) => {
-        logger.error({
-          message: 'Failure retrieving payment submission response',
-          meta: logMeta,
-          error,
-        })
-
-        const { statusCode, errorMessage } = mapRouteError(error)
-        return res.status(statusCode).json({
-          message: errorMessage,
-        })
-      })
-  )
-}

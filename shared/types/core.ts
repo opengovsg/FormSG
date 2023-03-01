@@ -38,5 +38,4 @@ export type ClientEnvVars = {
   angularPhaseOutDate: string | null
   removeAdminInfoboxThreshold: number
   removeRespondentsInfoboxThreshold: number
-  stripePublishableKey: string
 }

@@ -6,7 +6,7 @@ import { FormFieldDto, MyInfoAttribute } from './field'
 import { FormAuthType } from './form/form'
 import { DateString } from './generic'
 import { EmailResponse, FieldResponse, MobileResponse } from './response'
-import { Payment } from './payment'
+
 export type SubmissionId = Opaque<string, 'SubmissionId'>
 export const SubmissionId = z.string() as unknown as z.Schema<SubmissionId>
 
@@ -20,9 +20,6 @@ export const SubmissionBase = z.object({
   authType: z.nativeEnum(FormAuthType),
   myInfoFields: z.array(z.nativeEnum(MyInfoAttribute)).optional(),
   submissionType: z.nativeEnum(SubmissionType),
-  paymentPending: z.boolean().optional(),
-  // TODO: change to object if string doesn't work
-  paymentId: z.string(),
 })
 export type SubmissionBase = z.infer<typeof SubmissionBase>
 
@@ -105,8 +102,6 @@ export type SubmissionResponseDto = {
   submissionId: string
   // Timestamp is given as ms from epoch
   timestamp: number
-  paymentClientSecret?: string
-  paymentPublishableKey?: string
 }
 
 export type SubmissionErrorDto = ErrorDto & { spcpSubmissionFailure?: true }
@@ -158,5 +153,3 @@ export type StorageModeSubmissionContentDto = {
   attachments?: StorageModeAttachmentsMap
   version: number
 }
-
-export type StorageModePaymentSubmissionDto = Payment
