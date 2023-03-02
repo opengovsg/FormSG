@@ -5,18 +5,12 @@ import {
   chakra,
   Divider,
   forwardRef,
-  HStack,
-  Icon,
-  InputGroup,
-  InputLeftAddon,
   NumberInputProps as ChakraNumberInputProps,
-  Text,
   useFormControlProps,
   useMergeRefs,
   useMultiStyleConfig,
   useNumberInput,
 } from '@chakra-ui/react'
-import Flags from 'country-flag-icons/react/3x2'
 
 import { ThemeColorScheme } from '~theme/foundations/colours'
 
@@ -94,65 +88,31 @@ export const NumberInput = forwardRef<NumberInputProps, 'input'>(
       ? stepperWrapperRef.current?.offsetWidth
       : undefined
 
-    const inputBox = (hasPrefix: boolean) => (
-      <chakra.input
-        {...inputProps}
-        paddingInlineEnd={inputEndPadding}
-        // This flag should be set for form input fields, to prevent refresh on enter if form only has one input
-        {...(preventDefaultOnEnter
-          ? {
-              onKeyDown: (e) => {
-                if (e.key === 'Enter') {
-                  e.preventDefault()
-                }
-              },
-            }
-          : {})}
-        // Passing in ref to the input element so that it can be focused by
-        // the parent.
-        // No point passing the ref to the div wrapper as the main component
-        // is this input.
-        ref={inputRef}
-        __css={styles.field}
-        borderLeftRadius={hasPrefix ? 0 : undefined}
-      />
-    )
-
-    // TODO: replace with dynamic country loading if/when more currencies are added
-    const country = 'SG'
-
     return (
       <Box {...htmlProps} __css={styles.root}>
         {/* Using base input wrapper instead of `Input` component as the Input 
         component strips out some props such as `aria-invalid`, resulting in
         incorrect styling */}
-        {props.prefix ? (
-          <InputGroup>
-            <InputLeftAddon
-              aria-disabled={inputProps.disabled}
-              as="label"
-              sx={styles.country}
-              background="transparent"
-              borderColor="neutral.400"
-            >
-              <HStack align="center" spacing={2}>
-                <Icon
-                  // Show Flags if available. If value does not exist for any reason,
-                  // a default fallback icon will be used by ChakraUI.
-                  // See https://chakra-ui.com/docs/media-and-icons/icon#fallback-icon.
-                  as={Flags[country]}
-                  role="img"
-                  aria-label={`Only ${country} numbers are allowed`}
-                  __css={styles.icon}
-                />
-                <Text>SGD</Text>
-              </HStack>
-            </InputLeftAddon>
-            {inputBox(true)}
-          </InputGroup>
-        ) : (
-          inputBox(false)
-        )}
+        <chakra.input
+          {...inputProps}
+          paddingInlineEnd={inputEndPadding}
+          // This flag should be set for form input fields, to prevent refresh on enter if form only has one input
+          {...(preventDefaultOnEnter
+            ? {
+                onKeyDown: (e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault()
+                  }
+                },
+              }
+            : {})}
+          // Passing in ref to the input element so that it can be focused by
+          // the parent.
+          // No point passing the ref to the div wrapper as the main component
+          // is this input.
+          ref={inputRef}
+          __css={styles.field}
+        />
         {showSteppers && (
           <Box __css={styles.stepperWrapper} ref={stepperWrapperRef}>
             <IconButton

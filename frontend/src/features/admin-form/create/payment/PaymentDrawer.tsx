@@ -16,7 +16,7 @@ import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
-import NumberInput from '~components/NumberInput'
+import MoneyInput from '~components/MoneyInput'
 import Textarea from '~components/Textarea'
 import Toggle from '~components/Toggle'
 
@@ -170,13 +170,11 @@ export const PaymentInput = (): JSX.Element => {
                 control={control}
                 rules={amountValidation}
                 render={({ field: { onChange, ...rest } }) => (
-                  <NumberInput
+                  <MoneyInput
                     flex={1}
                     inputMode="decimal"
-                    showSteppers={false}
                     placeholder="0.00"
                     onChange={validateMoneyInput(onChange)}
-                    prefix="SGD"
                     {...rest}
                   />
                 )}
