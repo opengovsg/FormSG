@@ -835,6 +835,7 @@ describe('public-forms.verification.routes', () => {
       )
       .send({ answer })
     expect(response.status).toBe(StatusCodes.CREATED)
+    expect(response.body).toContainKey('otpPrefix')
   }
 
   const requestForSmsOtp = async (fieldId: string, answer: string) => {
@@ -849,5 +850,6 @@ describe('public-forms.verification.routes', () => {
       )
       .send({ answer })
     expect(response.status).toBe(StatusCodes.CREATED)
+    expect(response.body).toContainKey('otpPrefix')
   }
 })
