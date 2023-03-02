@@ -152,22 +152,20 @@ export const IndividualResponsePage = (): JSX.Element => {
             </Stack>
           )}
         </Stack>
-
-        <Stack>
-          {isLoading || isError ? (
-            <LoadingDecryption />
-          ) : (
+        {isLoading || isError ? (
+          <LoadingDecryption />
+        ) : (
+          <Stack>
             <Stack spacing="1.5rem" divider={<StackDivider />}>
               {data?.responses.map((r, idx) => (
                 <DecryptedRow row={r} secretKey={secretKey} key={idx} />
               ))}
               <Box />
             </Stack>
-          )}
-        </Stack>
-
-        {form?.payments?.enabled && (
-          <IndividualPaymentResponse submissionId={submissionId} />
+            {form?.payments?.enabled && (
+              <IndividualPaymentResponse submissionId={submissionId} />
+            )}
+          </Stack>
         )}
       </Stack>
     </Flex>

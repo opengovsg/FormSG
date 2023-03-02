@@ -7,11 +7,8 @@ export const IndividualPaymentResponse = (submissionId: {
 }): JSX.Element => {
   if (!submissionId) throw new Error('Missing submissionId')
 
-  const {
-    data: paymentData,
-    isLoading: isPaymentLoading,
-    isError: isPaymentError,
-  } = useIndividualPaymentSubmission()
+  // TODO: get paymentData from IndividualResponsePage through submission endpoint
+  const { data: paymentData } = useIndividualPaymentSubmission()
 
   return (
     <Stack>
@@ -24,9 +21,7 @@ export const IndividualPaymentResponse = (submissionId: {
       >
         Payment
       </Text>
-      {isPaymentLoading || isPaymentError ? (
-        <Text>Payment was not enabled when this form was submitted</Text>
-      ) : paymentData ? (
+      {paymentData ? (
         <>
           <Stack>
             <Stack direction={{ base: 'column', md: 'row' }}>
