@@ -514,6 +514,7 @@ export const verifyOtp = (
  * @param field
  * @param recipient
  * @param otp
+ * @param otpPrefix
  * @param senderIp
  */
 const sendOtpForField = (
@@ -555,7 +556,7 @@ const sendOtpForField = (
         : errAsync(new MalformedParametersError('Field id not present'))
     case BasicField.Email:
       // call email - it should validate the recipient
-      return MailService.sendVerificationOtp(recipient, otp)
+      return MailService.sendVerificationOtp(recipient, otp, otpPrefix)
     default:
       return errAsync(new NonVerifiedFieldTypeError(fieldType))
   }

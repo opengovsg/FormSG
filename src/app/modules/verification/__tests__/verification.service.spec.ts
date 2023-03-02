@@ -515,6 +515,7 @@ describe('Verification service', () => {
       expect(MockMailService.sendVerificationOtp).toHaveBeenCalledWith(
         MOCK_LOCAL_RECIPIENT,
         MOCK_OTP,
+        MOCK_OTP_PREFIX,
       )
       expect(
         MockFormsgSdk.verification.generateSignature,
