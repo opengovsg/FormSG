@@ -295,6 +295,7 @@ export const sendNewOtp = ({
   recipient,
   otp,
   hashedOtp,
+  otpPrefix,
   senderIp,
 }: SendOtpParams): ResultAsync<
   IVerificationSchema,
@@ -341,6 +342,7 @@ export const sendNewOtp = ({
           field,
           recipient,
           otp,
+          otpPrefix,
           senderIp,
         )
       })
@@ -519,6 +521,7 @@ const sendOtpForField = (
   field: IVerificationFieldSchema,
   recipient: string,
   otp: string,
+  otpPrefix: string,
   senderIp: string,
 ): ResultAsync<
   true,
@@ -541,7 +544,13 @@ const sendOtpForField = (
             )
             // call sms - it should validate the recipient
             .andThen(() =>
-              SmsFactory.sendVerificationOtp(recipient, otp, formId, senderIp),
+              SmsFactory.sendVerificationOtp(
+                recipient,
+                otp,
+                otpPrefix,
+                formId,
+                senderIp,
+              ),
             )
         : errAsync(new MalformedParametersError('Field id not present'))
     case BasicField.Email:

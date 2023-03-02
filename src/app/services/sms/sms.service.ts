@@ -303,6 +303,7 @@ const sendSms = (
 export const sendVerificationOtp = (
   recipient: string,
   otp: string,
+  otpPrefix: string,
   formId: string,
   senderIp: string,
   defaultConfig: TwilioConfig,
@@ -348,6 +349,7 @@ export const sendVerificationOtp = (
     >(getTwilio(otpData.msgSrvcName, defaultConfig)).andThen((twilioConfig) => {
       const message = renderVerificationSms(
         otp,
+        otpPrefix,
         new URL(config.app.appUrl).host,
       )
 
