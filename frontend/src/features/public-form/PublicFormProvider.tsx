@@ -224,12 +224,6 @@ export const PublicFormProvider = ({
                       timestamp,
                     })
                     trackSubmitForm(form)
-                    datadogLogs.logger.warn('Test dd traces', {
-                      meta: {
-                        action: 'dd traces',
-                        allowedTracingUrl: process.env.REACT_APP_URL,
-                      },
-                    })
                   },
                 },
               )
@@ -268,12 +262,6 @@ export const PublicFormProvider = ({
                       timestamp,
                     })
                     trackSubmitForm(form)
-                    datadogLogs.logger.warn('Test dd traces', {
-                      meta: {
-                        action: 'dd traces',
-                        allowedTracingUrl: 'process.env.REACT_APP_URL',
-                      },
-                    })
                   },
                 },
               )
