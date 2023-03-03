@@ -29,65 +29,21 @@ Prefilled.args = {
   isPrefilled: true,
 }
 
-export const ErrorNegative = Template.bind({})
-ErrorNegative.args = {
+export const Error = Template.bind({})
+Error.args = {
   isInvalid: true,
-  defaultValue: '-1',
-}
-
-export const ErrorInvalid = Template.bind({})
-ErrorInvalid.args = {
-  isInvalid: true,
-  defaultValue: '1+23',
 }
 
 // TODO: add error cases when e is involved (e.g. 2+e3489), once these cases are handled
 
-export const SuccessInteger = Template.bind({})
-SuccessInteger.args = {
+export const Success = Template.bind({})
+Success.args = {
   isInvalid: false,
   isSuccess: true,
-  defaultValue: '1337',
-}
-
-export const SuccessEndWith1Dot = Template.bind({})
-SuccessEndWith1Dot.args = {
-  isInvalid: false,
-  isSuccess: true,
-  defaultValue: '439.',
-}
-
-export const SuccessFloatOneDp = Template.bind({})
-SuccessFloatOneDp.args = {
-  isInvalid: false,
-  isSuccess: true,
-  defaultValue: '42.3',
-}
-
-export const SuccessFloatTwoDp = Template.bind({})
-SuccessFloatTwoDp.args = {
-  isInvalid: false,
-  isSuccess: true,
-  defaultValue: '1.42',
-}
-
-export const SuccessFloatThreeDp = Template.bind({})
-SuccessFloatThreeDp.args = {
-  isInvalid: false,
-  isSuccess: true,
-  defaultValue: '923.498',
-}
-
-export const SuccessMultipleDots = Template.bind({})
-SuccessMultipleDots.args = {
-  isInvalid: false,
-  isSuccess: true,
-  defaultValue: '39.482.38',
 }
 
 export const Disabled = Template.bind({})
 Disabled.args = {
-  defaultValue: '0',
   isDisabled: true,
 }
 

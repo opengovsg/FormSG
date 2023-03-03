@@ -74,6 +74,11 @@ export const MoneyInput = forwardRef<MoneyInputProps, 'input'>(
     // TODO: replace with dynamic country loading if/when more currencies are added
     const country = 'SG'
 
+    // TODO: refactor list into a separate file with all currencies if/when more currencies are added
+    const currency = {
+      SG: 'SGD',
+    }
+
     return (
       <Box {...htmlProps} __css={styles.root}>
         {/* Using base input wrapper instead of `Input` component as the Input 
@@ -94,10 +99,9 @@ export const MoneyInput = forwardRef<MoneyInputProps, 'input'>(
                 // See https://chakra-ui.com/docs/media-and-icons/icon#fallback-icon.
                 as={Flags[country]}
                 role="img"
-                aria-label={`Only ${country} numbers are allowed`}
                 __css={styles.icon}
               />
-              <Text>SGD</Text>
+              <Text>{currency[country]}</Text>
             </HStack>
           </InputLeftAddon>
           <chakra.input
