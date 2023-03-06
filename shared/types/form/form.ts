@@ -72,7 +72,7 @@ export type FormPayments = {
   enabled: boolean
   target_account_id?: string
   publishable_key?: string
-  payment_amount?: number
+  amount_cents?: number
   description?: string
 }
 

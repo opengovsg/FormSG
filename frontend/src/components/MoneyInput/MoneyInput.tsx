@@ -106,7 +106,6 @@ export const MoneyInput = forwardRef<MoneyInputProps, 'input'>(
           </InputLeftAddon>
           <chakra.input
             {...inputProps}
-            // paddingInlineEnd={inputEndPadding}
             // This flag should be set for form input fields, to prevent refresh on enter if form only has one input
             {...(preventDefaultOnEnter
               ? {

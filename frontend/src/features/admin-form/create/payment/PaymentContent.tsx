@@ -67,11 +67,7 @@ export const PaymentContent = (): JSX.Element => {
                       <Text textStyle="body-1" textColor="secondary.700">
                         Your credit card will be charged:{' '}
                         <Text as="span" fontWeight="bold">
-                          S$
-                          {(payments?.payment_amount === undefined
-                            ? 0
-                            : Number(payments.payment_amount)
-                          ).toFixed(2)}
+                          S${((payments?.amount_cents ?? 0) / 100).toFixed(2)}
                         </Text>
                       </Text>
 

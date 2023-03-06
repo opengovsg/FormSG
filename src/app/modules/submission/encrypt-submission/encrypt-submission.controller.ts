@@ -389,7 +389,7 @@ const submitEncryptModeForm: ControllerHandler<
   if (form.payments?.enabled) {
     // assumes stripe for now
 
-    if (!form.payments.payment_amount) {
+    if (!form.payments.amount_cents) {
       logger.error({
         message:
           'Error when creating payment intent, amount is not a positive integer',
@@ -406,7 +406,7 @@ const submitEncryptModeForm: ControllerHandler<
 
     // Stripe requires the amount to be an integer in the smallest currency unit (i.e. cents)
     const createPaymentIntentParams: Stripe.PaymentIntentCreateParams = {
-      amount: form.payments.payment_amount,
+      amount: form.payments.amount_cents,
       currency: paymentConfig.defaultCurrency,
       payment_method_types: ['card', 'grabpay', 'paynow'],
       description: form.payments.description,
@@ -444,7 +444,7 @@ const submitEncryptModeForm: ControllerHandler<
       // Save payment to DB
       const payment = new Payment({
         submissionId,
-        amount: form.payments.payment_amount,
+        amount: form.payments.amount_cents,
         status: PaymentStatus.Pending,
         paymentIntentId: paymentIntent.id,
       })

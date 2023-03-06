@@ -34,6 +34,7 @@ import {
 import { CreatePageDrawerCloseButton } from '../common/CreatePageDrawer/CreatePageDrawerCloseButton'
 import { CreatePageDrawerContainer } from '../common/CreatePageDrawer/CreatePageDrawerContainer'
 
+import { FormPaymentsDisplay } from './types'
 import {
   dataSelector,
   resetDataSelector,
@@ -41,7 +42,6 @@ import {
   setToInactiveSelector,
   usePaymentStore,
 } from './usePaymentStore'
-import { validateMoneyInput } from './validateMoneyInput'
 
 export const PaymentInput = (): JSX.Element => {
   const isMobile = useIsMobile()
@@ -67,13 +67,16 @@ export const PaymentInput = (): JSX.Element => {
     formState: { errors, dirtyFields },
     control,
     handleSubmit,
-  } = useForm<FormPayments>({
-    mode: 'onBlur',
+  } = useForm<FormPaymentsDisplay>({
+    mode: 'onChange',
     defaultValues: {
-      ...paymentsData,
-      // Change payment_amount value to 2 decimal places temporarily for the form
-      payment_amount: paymentsData?.payment_amount
-        ? paymentsData?.payment_amount / 100
+      enabled: paymentsData ? paymentsData.enabled : false,
+      target_account_id: paymentsData?.target_account_id,
+      description: paymentsData?.description,
+      publishable_key: paymentsData?.publishable_key,
+      // Change calculate display_amount value from amount_cents
+      display_amount: paymentsData?.amount_cents
+        ? paymentsData?.amount_cents / 100
         : 0,
     },
   })
@@ -88,15 +91,25 @@ export const PaymentInput = (): JSX.Element => {
   }, [dirtyFields, setIsDirty])
 
   const handlePaymentsChanges = useCallback(
-    (paymentsInputs) => {
-      setData({ ...(paymentsInputs as FormPayments) })
+    (paymentsInputs: FormPaymentsDisplay) => {
+      setData({
+        enabled: paymentsInputs.enabled,
+        target_account_id: paymentsInputs.target_account_id,
+        publishable_key: paymentsInputs.publishable_key,
+        description: paymentsInputs.description,
+        amount_cents: Math.round(
+          paymentsInputs.display_amount
+            ? paymentsInputs.display_amount * 100
+            : 0,
+        ),
+      } as FormPayments)
     },
     [setData],
   )
 
   const watchedInputs = useWatch({
     control: control,
-  }) as UnpackNestedValue<FormPayments>
+  }) as UnpackNestedValue<FormPaymentsDisplay>
 
   const clonedWatchedInputs = useMemo(
     () => cloneDeep(watchedInputs),
@@ -114,31 +127,64 @@ export const PaymentInput = (): JSX.Element => {
 
   const handleCloseDrawer = useCallback(() => handleClose(false), [handleClose])
 
-  const amountValidation: RegisterOptions<FormPayments, 'payment_amount'> =
-    useMemo(
-      () => ({
-        validate: {
-          validNumber: (val) => {
-            // Check whether input is a valid number, avoid e
-            return !isNaN(Number(val)) || 'Please enter a valid number'
-          },
+  const maxPaymentAmount = 1000 // due to IRAS requirements and agency financial institutions are expected to be in SG
+  const currencyFormatter = new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'SGD',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })
+
+  const amountValidation: RegisterOptions<
+    FormPaymentsDisplay,
+    'display_amount'
+  > = useMemo(
+    () => ({
+      validate: {
+        validDecimal: (val) => {
+          // Check whether input in a valid decimal, avoid mulitple dots
+          return (
+            (val ?? 0).toString().split('.').length <= 2 ||
+            'Please enter a valid decimal'
+          )
         },
-        min: {
-          value: 0.01,
-          message: 'Please enter a positive number',
+        twoDecimalPoints: (val) => {
+          // Check that the number of decimal places is within 2dp
+          const separatedByDots = (val ?? 0).toString().split('.')
+          return (
+            (separatedByDots[1] ? separatedByDots[1].length : 0) <= 2 ||
+            'Please keep your payment amount to 2 decimal places'
+          )
         },
-      }),
-      [],
-    )
+        validNumber: (val) => {
+          // Check whether input is a valid number, avoid e
+          return !isNaN(Number(val)) || 'Please enter a valid number'
+        },
+      },
+      min: {
+        value: 0.01,
+        message: 'Please enter a positive number',
+      },
+      max: {
+        value: maxPaymentAmount,
+        message: `Please keep payment amount under ${currencyFormatter.format(
+          maxPaymentAmount,
+        )}`,
+      },
+    }),
+    [],
+  )
 
   const handleUpdatePayments = handleSubmit((payments) => {
     return paymentsMutation.mutate(
       payments.enabled
         ? {
-            ...payments,
-            // Change payment_amount value back to integer for value to be saved in cents
-            payment_amount: payments.payment_amount
-              ? Math.round(payments.payment_amount * 100)
+            enabled: payments.enabled,
+            target_account_id: payments.target_account_id,
+            publishable_key: payments.publishable_key,
+            description: payments.description,
+            amount_cents: payments.display_amount
+              ? Math.round(payments.display_amount * 100)
               : 0,
           }
         : { enabled: false },
@@ -162,25 +208,24 @@ export const PaymentInput = (): JSX.Element => {
           <>
             <FormControl
               isReadOnly={paymentsMutation.isLoading}
-              isInvalid={!!errors.payment_amount}
+              isInvalid={!!errors.display_amount}
             >
               <FormLabel isRequired>Payment Amount</FormLabel>
               <Controller
-                name="payment_amount"
+                name="display_amount"
                 control={control}
                 rules={amountValidation}
-                render={({ field: { onChange, ...rest } }) => (
+                render={({ field: { ...rest } }) => (
                   <MoneyInput
                     flex={1}
                     inputMode="decimal"
                     placeholder="0.00"
-                    onChange={validateMoneyInput(onChange)}
                     {...rest}
                   />
                 )}
               />
               <FormErrorMessage>
-                {errors.payment_amount?.message}
+                {errors.display_amount?.message}
               </FormErrorMessage>
             </FormControl>
 
