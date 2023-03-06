@@ -926,6 +926,22 @@ export class MailService {
       )
     )
   }
+
+  sendLocalDevMail = (
+    smsMessage: string,
+  ): ResultAsync<true, MailGenerationError | MailSendError> => {
+    const mailOptions: MailOptions = {
+      to: this.#officialMail,
+      from: this.#senderFromString,
+      html: smsMessage,
+      subject: '[mocktwilio] SMS OTP Verification',
+      replyTo: this.#officialMail,
+      bcc: this.#senderMail,
+    }
+    return this.#sendNodeMail(mailOptions, {
+      mailId: 'sendWarningMailForAdmin',
+    })
+  }
 }
 
 export default new MailService()

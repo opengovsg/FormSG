@@ -1,5 +1,7 @@
 import { RequestClient } from 'twilio'
 
+import MailService from '../mail/mail.service'
+
 export class PrismClient extends RequestClient {
   prismUrl: string
   requestClient: InstanceType<typeof RequestClient>
@@ -12,12 +14,15 @@ export class PrismClient extends RequestClient {
     this.requestClient = requestClient
   }
 
+  #sendInternalMail = async (msg: string): Promise<void> => {
+    await MailService.sendLocalDevMail(msg)
+  }
+
   request<TData>(opts: any) {
     opts.uri = opts.uri.replace(/^https:\/\/.*?\.twilio\.com/, this.prismUrl)
     const resp = this.requestClient.request<TData>(opts)
-    resp
-      .then((d) => console.log(JSON.stringify(d, null, 2)))
-      .catch(console.error)
+
+    this.#sendInternalMail(opts.data.Body).catch(console.error)
     return resp
   }
 }
