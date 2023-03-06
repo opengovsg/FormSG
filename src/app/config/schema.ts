@@ -326,6 +326,12 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
       default: Environment.Prod,
       env: 'NODE_ENV',
     },
+    localDev: {
+      doc: 'Local development environment',
+      format: 'Boolean',
+      default: false,
+      env: 'LOCAL_DEV',
+    },
   },
   rateLimit: {
     submissions: {

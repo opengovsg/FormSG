@@ -110,3 +110,7 @@ FORMSG_SDK_MODE=
 ## Per-minute, per-IP request limits applied to specific endpoints
 # SUBMISSIONS_RATE_LIMIT=
 # SEND_AUTH_OTP_RATE_LIMIT=
+
+# Used to check if BE Server is currently running on local development environment
+# One of boolean: "true" | "false"
+# LOCAL_DEV=
