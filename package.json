@@ -76,6 +76,7 @@
     "@sentry/browser": "^7.28.1",
     "@sentry/integrations": "^6.19.7",
     "@stablelib/base64": "^1.0.1",
+    "@stoplight/prism-cli": "^4.10.6",
     "abortcontroller-polyfill": "^1.7.5",
     "angular": "~1.8.3",
     "angular-animate": "^1.8.3",
