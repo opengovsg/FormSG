@@ -49,7 +49,11 @@ export const PaymentInput = (): JSX.Element => {
 
   const setIsDirty = useDirtyFieldStore(setIsDirtySelector)
 
-  const { paymentsData, setData, setToInactive } = usePaymentStore(
+  const {
+    paymentsData: { amount_cents: paymentAmountCents, ...paymentCommon },
+    setData,
+    setToInactive,
+  } = usePaymentStore(
     useCallback(
       (state) => ({
         paymentsData: dataSelector(state),
@@ -70,14 +74,9 @@ export const PaymentInput = (): JSX.Element => {
   } = useForm<FormPaymentsDisplay>({
     mode: 'onChange',
     defaultValues: {
-      enabled: paymentsData ? paymentsData.enabled : false,
-      target_account_id: paymentsData?.target_account_id,
-      description: paymentsData?.description,
-      publishable_key: paymentsData?.publishable_key,
       // Change calculate display_amount value from amount_cents
-      display_amount: paymentsData?.amount_cents
-        ? paymentsData?.amount_cents / 100
-        : 0,
+      display_amount: (paymentAmountCents ?? 0) / 100,
+      ...paymentCommon,
     },
   })
 
@@ -92,16 +91,10 @@ export const PaymentInput = (): JSX.Element => {
 
   const handlePaymentsChanges = useCallback(
     (paymentsInputs: FormPaymentsDisplay) => {
+      const { display_amount, ...rest } = paymentsInputs
       setData({
-        enabled: paymentsInputs.enabled,
-        target_account_id: paymentsInputs.target_account_id,
-        publishable_key: paymentsInputs.publishable_key,
-        description: paymentsInputs.description,
-        amount_cents: Math.round(
-          paymentsInputs.display_amount
-            ? paymentsInputs.display_amount * 100
-            : 0,
-        ),
+        amount_cents: Math.round((display_amount ?? 0) * 100),
+        ...rest,
       } as FormPayments)
     },
     [setData],
@@ -176,16 +169,12 @@ export const PaymentInput = (): JSX.Element => {
   )
 
   const handleUpdatePayments = handleSubmit((payments) => {
+    const { display_amount, ...rest } = payments
     return paymentsMutation.mutate(
       payments.enabled
         ? {
-            enabled: payments.enabled,
-            target_account_id: payments.target_account_id,
-            publishable_key: payments.publishable_key,
-            description: payments.description,
-            amount_cents: payments.display_amount
-              ? Math.round(payments.display_amount * 100)
-              : 0,
+            amount_cents: Math.round((display_amount ?? 0) * 100),
+            ...rest,
           }
         : { enabled: false },
       {

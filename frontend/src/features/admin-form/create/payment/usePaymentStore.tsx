@@ -12,7 +12,7 @@ export enum PaymentState {
 export type PaymentStore = {
   state: PaymentState
   holdingState: PaymentState | null
-  data?: FormPayments
+  data: FormPayments
   setToEditingPayment: (holding?: boolean) => void
   setData: (payment?: FormPayments) => void
   resetData: () => void
@@ -25,6 +25,7 @@ export const usePaymentStore = create<PaymentStore>()(
   devtools((set, get) => ({
     state: PaymentState.Inactive,
     holdingState: null,
+    data: { enabled: false } as FormPayments,
     moveFromHolding: () => {
       const currentHoldingState = get().holdingState
       if (!currentHoldingState) return
