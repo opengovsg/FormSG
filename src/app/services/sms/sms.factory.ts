@@ -1,6 +1,6 @@
 import Twilio, { RequestClient } from 'twilio'
 
-import { isDev } from '../../config/config'
+import { isLocalDev } from '../../config/config'
 import { ISms, smsConfig } from '../../config/features/sms.config'
 
 import { PrismClient } from './sms.dev.prismclient'
@@ -63,7 +63,7 @@ export const createSmsFactory = (smsConfig: ISms): ISmsFactory => {
 
   const twilioClient = Twilio(twilioApiKey, twilioApiSecret, {
     accountSid: twilioAccountSid,
-    httpClient: isDev
+    httpClient: isLocalDev
       ? new PrismClient('http://127.0.0.1:4010', new RequestClient())
       : undefined,
   })
