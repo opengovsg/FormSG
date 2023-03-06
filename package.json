@@ -102,7 +102,7 @@
     "busboy": "^1.6.0",
     "celebrate": "^15.0.1",
     "compression": "~1.7.2",
-    "compressorjs": "git://github.com/fengyuanchen/compressorjs.git",
+    "compressorjs": "1.2.1",
     "connect-datadog": "0.0.9",
     "connect-mongo": "^4.4.1",
     "convict": "^6.2.4",
