@@ -100,13 +100,19 @@ export const FormSectionsProvider = ({
     offsetPx: -100,
   })
 
+  const activeSectionId =
+    // Explicit undefined check because 0 is also falsy.
+    activeSection === undefined
+      ? undefined
+      : orderedSectionFieldIds?.[activeSection]
+
   return (
     <FormSectionsContext.Provider
       value={{
         sectionScrollData,
         setVisibleFieldIdsForScrollData: setVisibleFieldIds,
         sectionRefs,
-        activeSectionId: orderedSectionFieldIds?.[activeSection] ?? undefined,
+        activeSectionId,
         navigatedSectionId,
         setNavigatedSectionId,
       }}

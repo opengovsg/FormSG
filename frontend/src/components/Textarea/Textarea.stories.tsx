@@ -82,9 +82,7 @@ export const Playground: Story = ({
               : false,
           })}
         />
-        <FormErrorMessage>
-          {errors[name] && errors[name].message}
-        </FormErrorMessage>
+        <FormErrorMessage>{errors[name]?.message}</FormErrorMessage>
       </FormControl>
       <Button variant="solid" type="submit">
         Submit

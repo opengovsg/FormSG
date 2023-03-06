@@ -1,9 +1,6 @@
 import { expose } from 'comlink'
 import { formatInTimeZone } from 'date-fns-tz'
-// Some webpack pipelines (Chromatic for ours) fails with the default export, but works with /dist export.
-// Due to not recognizing export from the package's package.json.
-// See https://github.com/sindresorhus/p-queue/issues/145
-import PQueue from 'p-queue/dist'
+import PQueue from 'p-queue'
 
 import formsgSdk from '~utils/formSdk'
 
@@ -85,7 +82,6 @@ async function decryptIntoCsv(data: LineData): Promise<MaterializedCsvRecord> {
 
   let csvRecord: CsvRecord
   const attachmentDownloadUrls: AttachmentsDownloadMap = new Map()
-  let downloadBlob: Blob
 
   try {
     // Validate that the submission is of a valid shape.
@@ -132,17 +128,18 @@ async function decryptIntoCsv(data: LineData): Promise<MaterializedCsvRecord> {
         })
 
         try {
-          downloadBlob = await queue.add(() =>
+          const downloadResult = await queue.add(() =>
             downloadAndDecryptAttachmentsAsZip(
               attachmentDownloadUrls,
               secretKey,
             ),
           )
+          if (!downloadResult) throw new Error('Invalid decryption')
           csvRecord.setStatus(
             CsvRecordStatus.Ok,
             'Success (with Downloaded Attachment)',
           )
-          csvRecord.setDownloadBlob(downloadBlob)
+          csvRecord.setDownloadBlob(downloadResult)
         } catch (error) {
           csvRecord.setStatus(
             CsvRecordStatus.AttachmentError,

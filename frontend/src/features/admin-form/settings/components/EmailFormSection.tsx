@@ -21,11 +21,15 @@ interface EmailFormSectionProps {
   emails: string[]
 }
 
+interface EmailFormSectionInputs {
+  emails: string[]
+}
+
 export const EmailFormSection = ({
   emails: initialEmails,
 }: EmailFormSectionProps): JSX.Element => {
   const initialEmailSet = useMemo(() => new Set(initialEmails), [initialEmails])
-  const formMethods = useForm({
+  const formMethods = useForm<EmailFormSectionInputs>({
     mode: 'onChange',
     defaultValues: { emails: initialEmails },
   })
@@ -38,7 +42,7 @@ export const EmailFormSection = ({
   const { mutateFormEmails } = useMutateFormSettings()
 
   const handleSubmitEmails = useCallback(
-    ({ emails }: { emails: string[] }) => {
+    ({ emails }: EmailFormSectionInputs) => {
       if (isEqual(new Set(emails.filter(Boolean)), initialEmailSet)) return
       return mutateFormEmails.mutate(emails)
     },
@@ -65,14 +69,14 @@ export const EmailFormSection = ({
 }
 
 interface AdminEmailRecipientsInputProps {
-  onSubmit: (params: { emails: string[] }) => void
+  onSubmit: (params: EmailFormSectionInputs) => void
 }
 
 const AdminEmailRecipientsInput = ({
   onSubmit,
 }: AdminEmailRecipientsInputProps): JSX.Element => {
   const { getValues, setValue, control, handleSubmit } =
-    useFormContext<{ emails: string[] }>()
+    useFormContext<EmailFormSectionInputs>()
 
   const tagValidation = useMemo(() => isEmail, [])
 

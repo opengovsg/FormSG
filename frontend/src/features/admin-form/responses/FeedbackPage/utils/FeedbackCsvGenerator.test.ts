@@ -41,10 +41,12 @@ describe('FeedbackCsvGenerator', () => {
       const feedbackCsv = new FeedbackCsvGenerator(expectedNumberOfRecords)
       const MOCK_FEEDBACK_COMMENT = 'great!'
       const MOCK_FEEDBACK_RATING = 5
+      const MOCK_SUBMISSION_ID = 'id'
       const lineToAdd: FormFeedbackDto = {
         rating: MOCK_FEEDBACK_RATING,
         comment: MOCK_FEEDBACK_COMMENT,
         formId: 'formId' as FormId,
+        submissionId: MOCK_SUBMISSION_ID,
       }
 
       const MOCK_CREATED_TIME = moment().toISOString()
@@ -75,6 +77,7 @@ describe('FeedbackCsvGenerator', () => {
       const feedbackCsv = new FeedbackCsvGenerator(expectedNumberOfRecords)
       const MOCK_FEEDBACK_COMMENT = 'great!'
       const MOCK_FEEDBACK_RATING = 5
+      const MOCK_SUBMISSION_ID = 'id'
       const MOCK_CREATED_TIME = moment().toISOString()
       const MOCK_CREATED_TIME_SG_STRING = moment(MOCK_CREATED_TIME)
         .tz('Asia/Singapore')
@@ -84,6 +87,7 @@ describe('FeedbackCsvGenerator', () => {
         comment: MOCK_FEEDBACK_COMMENT,
         formId: 'formId' as FormId,
         created: MOCK_CREATED_TIME as DateString,
+        submissionId: MOCK_SUBMISSION_ID,
       }
       const expectedLineAdded = stringify([
         MOCK_CREATED_TIME_SG_STRING,
@@ -108,6 +112,7 @@ describe('FeedbackCsvGenerator', () => {
       const feedbackCsv = new FeedbackCsvGenerator(expectedNumberOfRecords)
       const MOCK_FEEDBACK_COMMENT = 'great!'
       const MOCK_FEEDBACK_RATING = 5
+      const MOCK_SUBMISSION_ID = 'id'
       const MOCK_CREATED_TIME = moment().toISOString()
       const MOCK_CREATED_TIME_SG_STRING = moment(MOCK_CREATED_TIME)
         .tz('Asia/Singapore')
@@ -119,6 +124,7 @@ describe('FeedbackCsvGenerator', () => {
         formId: 'formId' as FormId,
         created: MOCK_CREATED_TIME as DateString,
         lastModified: MOCK_MODIFIED_TIME as DateString,
+        submissionId: MOCK_SUBMISSION_ID,
       }
       const expectedLineAdded = stringify([
         MOCK_CREATED_TIME_SG_STRING,

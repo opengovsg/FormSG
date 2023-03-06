@@ -4,6 +4,7 @@ import {
   Grid,
   HStack,
   Stack,
+  StackProps,
   Text,
   useBreakpointValue,
 } from '@chakra-ui/react'
@@ -12,29 +13,34 @@ import { FieldColorScheme } from '~theme/foundations/colours'
 
 import { RatingOption } from './RatingOption'
 
-export interface RatingProps {
+export interface RatingProps extends Omit<StackProps, 'onChange'> {
   /**
    * The `name` attribute forwarded to each rating `radio` element
    */
   name: string
+
   /**
    * Number of rating options to render.
    */
   numberOfRatings: number
+
   /**
    * Color scheme of the component to render. Defaults to `primary`.
    */
   colorScheme?: FieldColorScheme
+
   /**
    * Function called once a rating is selected.
    * @param newRating the value of the checked radio
    */
   onChange?: (newRating: number | undefined) => void
+
   /**
    * Number of rating components to show per row when unable to display all
    * components on a single line. Defaults to `5`.
    */
   wrapComponentsPerRow?: number
+
   /**
    * The value of the rating to be `checked` initially.
    */
@@ -58,17 +64,12 @@ export interface RatingProps {
   /**
    * Whether the rating field is required.
    */
-  isRequired: boolean
+  isRequired?: boolean
 
   /**
    * Whether the current response is invalid.
    */
   isInvalid?: boolean
-
-  /**
-   * Title of the rating field to label the rating group
-   */
-  fieldTitle: string
 }
 
 export const Rating = forwardRef<RatingProps, 'input'>(
@@ -85,7 +86,7 @@ export const Rating = forwardRef<RatingProps, 'input'>(
       isDisabled,
       isRequired,
       isInvalid,
-      fieldTitle,
+      ...props
     },
     ref,
   ) => {
@@ -158,7 +159,6 @@ export const Rating = forwardRef<RatingProps, 'input'>(
       >
         <Stack
           gridArea="rating"
-          aria-label={fieldTitle}
           aria-required={isRequired}
           aria-invalid={isInvalid}
           role="radiogroup"
@@ -166,6 +166,7 @@ export const Rating = forwardRef<RatingProps, 'input'>(
           direction={{ base: 'column', md: 'row' }}
           spacing={{ base: '0.5rem', md: '1rem' }}
           align={{ base: 'flex-start', md: 'center' }}
+          {...props}
         >
           <Stack spacing={optionSpacing.row}>
             {options.map((row, i) => (

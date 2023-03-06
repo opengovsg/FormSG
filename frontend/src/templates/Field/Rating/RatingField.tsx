@@ -62,7 +62,7 @@ export const RatingField = ({
             value={transform.toNumber(value)}
             isRequired={schema.required}
             isInvalid={!!get(errors, schema._id)}
-            fieldTitle={`${schema.questionNumber}. ${schema.title}`}
+            aria-label={`${schema.questionNumber}. ${schema.title}`}
             onChange={(val) => onChange(transform.toString(val))}
             {...rest}
           />

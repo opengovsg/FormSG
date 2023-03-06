@@ -17,7 +17,7 @@ const {
 } = composeStories(stories)
 
 const { MOCKED_TODAY_DATE_STRING, MOCKED_TODAY_DATE } =
-  stories.default.parameters?.test
+  stories.default.parameters?.test ?? {}
 
 describe('required field', () => {
   it('renders error when field is empty before submitting', async () => {

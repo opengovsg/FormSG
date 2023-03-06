@@ -61,6 +61,8 @@ export const useEditLogicBlock = ({
 
   const handleAddCondition = useCallback(
     () =>
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
       append({
         // Cannot be undefined or the default value will be used.
         // This may cause old values to be shown when appending.

@@ -70,6 +70,11 @@ module.exports = {
             },
           })
 
+          // polyfill node built-in for csv-string dependency
+          webpackConfig.resolve.fallback = {
+            stream: require.resolve('stream-browserify'),
+          }
+
           return webpackConfig
         },
       },
