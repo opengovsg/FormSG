@@ -43,6 +43,13 @@ import {
   usePaymentStore,
 } from './usePaymentStore'
 
+const formatCurrency = new Intl.NumberFormat('en-SG', {
+  style: 'currency',
+  currency: 'SGD',
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+}).format
+
 export const PaymentInput = (): JSX.Element => {
   const isMobile = useIsMobile()
   const { paymentsMutation } = useMutateFormPage()
@@ -138,12 +145,6 @@ export const PaymentInput = (): JSX.Element => {
 
   const minPaymentAmount = 0.5 // stipulated by Stripe
   const maxPaymentAmount = 1000 // due to IRAS requirements and agency financial institutions are expected to be in SG
-  const currencyFormatter = new Intl.NumberFormat('en-SG', {
-    style: 'currency',
-    currency: 'SGD',
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })
 
   const amountValidation: RegisterOptions<
     FormPaymentsDisplay,
@@ -166,7 +167,7 @@ export const PaymentInput = (): JSX.Element => {
         validateMin: (val) => {
           return (
             Number(val?.trim()) >= minPaymentAmount ||
-            `Please enter a payment amount above ${currencyFormatter.format(
+            `Please enter a payment amount above ${formatCurrency(
               minPaymentAmount,
             )}`
           )
@@ -174,7 +175,7 @@ export const PaymentInput = (): JSX.Element => {
         validateMax: (val) => {
           return (
             Number(val?.trim()) <= maxPaymentAmount ||
-            `Please keep payment amount under ${currencyFormatter.format(
+            `Please keep payment amount under ${formatCurrency(
               maxPaymentAmount,
             )}`
           )
