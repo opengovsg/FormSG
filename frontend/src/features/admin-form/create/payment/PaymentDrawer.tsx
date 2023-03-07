@@ -82,9 +82,9 @@ export const PaymentInput = (): JSX.Element => {
   } = useForm<FormPaymentsDisplay>({
     mode: 'onChange',
     defaultValues: {
+      ...paymentCommon,
       // Change calculate display_amount value from amount_cents
       display_amount: centsToDollars(paymentAmountCents ?? 0),
-      ...paymentCommon,
     },
   })
 
@@ -101,8 +101,8 @@ export const PaymentInput = (): JSX.Element => {
     (paymentsInputs: FormPaymentsDisplay) => {
       const { display_amount, ...rest } = paymentsInputs
       setData({
-        amount_cents: dollarsToCents(display_amount ?? '0'),
         ...rest,
+        amount_cents: dollarsToCents(display_amount ?? '0'),
       } as FormPayments)
     },
     [setData],
@@ -172,7 +172,7 @@ export const PaymentInput = (): JSX.Element => {
 
   const handleUpdatePayments = handleSubmit(() => {
     return paymentsMutation.mutate(
-      { amount_cents: paymentAmountCents, ...paymentCommon },
+      { ...paymentCommon, amount_cents: paymentAmountCents },
       {
         onSuccess: () => {
           setToInactive()
@@ -200,12 +200,12 @@ export const PaymentInput = (): JSX.Element => {
                 name="display_amount"
                 control={control}
                 rules={amountValidation}
-                render={({ field: { ...rest } }) => (
+                render={({ field }) => (
                   <MoneyInput
                     flex={1}
                     inputMode="decimal"
                     placeholder="0.00"
-                    {...rest}
+                    {...field}
                   />
                 )}
               />
