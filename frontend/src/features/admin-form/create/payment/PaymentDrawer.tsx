@@ -13,6 +13,7 @@ import { cloneDeep } from 'lodash'
 import { FormPayments } from '~shared/types'
 
 import { useIsMobile } from '~hooks/useIsMobile'
+import { centsToDollars, dollarsToCents } from '~utils/payments'
 import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
@@ -73,16 +74,6 @@ export const PaymentInput = (): JSX.Element => {
 
   const { handleClose } = useCreatePageSidebar()
 
-  const centsToDollars = (amountCents: number) => {
-    const decimalPlaces = 2
-    const amountCentsStr = amountCents
-      .toString()
-      .padStart(decimalPlaces + 1, '0')
-    return `${amountCentsStr.slice(0, -decimalPlaces)}.${amountCentsStr.slice(
-      -decimalPlaces,
-    )}`
-  }
-
   const {
     register,
     formState: { errors, dirtyFields },
@@ -105,12 +96,6 @@ export const PaymentInput = (): JSX.Element => {
       setIsDirty(false)
     }
   }, [dirtyFields, setIsDirty])
-
-  const dollarsToCents = (dollarStr: string) => {
-    // Only works with the validation rules applied
-    const tokens = dollarStr.trim().split('.')
-    return Number(`${tokens[0]}${(tokens[1] ?? '').padEnd(2, '0')}`)
-  }
 
   const handlePaymentsChanges = useCallback(
     (paymentsInputs: FormPaymentsDisplay) => {

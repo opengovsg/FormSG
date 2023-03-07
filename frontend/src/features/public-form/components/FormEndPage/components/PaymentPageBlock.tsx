@@ -17,6 +17,7 @@ import { loadStripe } from '@stripe/stripe-js'
 
 import { FormColorTheme } from '~shared/types/form'
 
+import { centsToDollars } from '~utils/payments'
 import Button from '~components/Button'
 
 import FormErrorMessage from '../../../../../components/FormControl/FormErrorMessage'
@@ -130,7 +131,7 @@ export const PaymentPageBlock = ({
   const formTitle = form?.title
   const colorTheme = form?.startPage.colorTheme || FormColorTheme.Blue
 
-  const paymentAmount = form?.payments?.amount_cents || 0
+  const amountCents = form?.payments?.amount_cents || 0
 
   const stripePromise = useMemo(
     () => loadStripe(publishableKey),
@@ -168,7 +169,7 @@ export const PaymentPageBlock = ({
         <Text textStyle="body-1" textColor="secondary.700">
           Your credit card will be charged:{' '}
           <Text as="span" fontWeight="bold">
-            S${(paymentAmount / 100).toFixed(2)}
+            S${centsToDollars(amountCents)}
           </Text>
         </Text>
 
