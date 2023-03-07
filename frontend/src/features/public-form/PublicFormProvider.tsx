@@ -241,16 +241,17 @@ export const PublicFormProvider = ({
                   },
                 })
                 showErrorToast(error, form)
-                const env = await fetch(
-                  `${process.env.REACT_APP_URL}/api/v3/client/env`,
-                )
-                datadogLogs.logger.warn(`handleSubmitForm: fetch env vars`, {
-                  meta: {
-                    action: 'handleSubmitForm',
-                    envFetchSuccess: !!env,
-                    env: await env.json(),
-                  },
-                })
+                if (error.message.match(/Network Error/)) {
+                  const env = await fetch(
+                    `${process.env.REACT_APP_URL}/api/v3/client/env`,
+                  )
+                  datadogLogs.logger.warn(`handleSubmitForm: fetch env vars`, {
+                    meta: {
+                      action: 'handleSubmitForm',
+                      envFetchSuccess: env.ok, // returns true if the response returned successfully
+                    },
+                  })
+                }
               })
           )
         case FormResponseMode.Encrypt:
@@ -289,16 +290,17 @@ export const PublicFormProvider = ({
                   },
                 })
                 showErrorToast(error, form)
-                const env = await fetch(
-                  `${process.env.REACT_APP_URL}/api/v3/client/env`,
-                )
-                datadogLogs.logger.warn(`handleSubmitForm: fetch env vars`, {
-                  meta: {
-                    action: 'handleSubmitForm',
-                    envFetchSuccess: !!env,
-                    env: await env.json(),
-                  },
-                })
+                if (error.message.match(/Network Error/)) {
+                  const env = await fetch(
+                    `${process.env.REACT_APP_URL}/api/v3/client/env`,
+                  )
+                  datadogLogs.logger.warn(`handleSubmitForm: fetch env vars`, {
+                    meta: {
+                      action: 'handleSubmitForm',
+                      envFetchSuccess: env.ok, // returns true if the response returned successfully
+                    },
+                  })
+                }
               })
           )
       }
