@@ -13,10 +13,11 @@ import { cloneDeep } from 'lodash'
 import { FormPayments } from '~shared/types'
 
 import { useIsMobile } from '~hooks/useIsMobile'
+import { centsToDollars, dollarsToCents } from '~utils/payments'
 import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
-import NumberInput from '~components/NumberInput'
+import MoneyInput from '~components/MoneyInput'
 import Textarea from '~components/Textarea'
 import Toggle from '~components/Toggle'
 
@@ -27,7 +28,6 @@ import {
   setIsDirtySelector,
   useDirtyFieldStore,
 } from '../builder-and-design/useDirtyFieldStore'
-import { validateNumberInput } from '../builder-and-design/utils/validateNumberInput'
 import {
   CreatePageDrawerContentContainer,
   useCreatePageSidebar,
@@ -35,6 +35,7 @@ import {
 import { CreatePageDrawerCloseButton } from '../common/CreatePageDrawer/CreatePageDrawerCloseButton'
 import { CreatePageDrawerContainer } from '../common/CreatePageDrawer/CreatePageDrawerContainer'
 
+import { FormPaymentsDisplay } from './types'
 import {
   dataSelector,
   resetDataSelector,
@@ -43,13 +44,24 @@ import {
   usePaymentStore,
 } from './usePaymentStore'
 
+const formatCurrency = new Intl.NumberFormat('en-SG', {
+  style: 'currency',
+  currency: 'SGD',
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+}).format
+
 export const PaymentInput = (): JSX.Element => {
   const isMobile = useIsMobile()
   const { paymentsMutation } = useMutateFormPage()
 
   const setIsDirty = useDirtyFieldStore(setIsDirtySelector)
 
-  const { paymentsData, setData, setToInactive } = usePaymentStore(
+  const {
+    paymentsData: { amount_cents: paymentAmountCents, ...paymentCommon },
+    setData,
+    setToInactive,
+  } = usePaymentStore(
     useCallback(
       (state) => ({
         paymentsData: dataSelector(state),
@@ -67,9 +79,13 @@ export const PaymentInput = (): JSX.Element => {
     formState: { errors, dirtyFields },
     control,
     handleSubmit,
-  } = useForm<FormPayments>({
-    mode: 'onBlur',
-    defaultValues: paymentsData,
+  } = useForm<FormPaymentsDisplay>({
+    mode: 'onChange',
+    defaultValues: {
+      ...paymentCommon,
+      // Change calculate display_amount value from amount_cents
+      display_amount: centsToDollars(paymentAmountCents ?? 0),
+    },
   })
 
   // Update dirty state of payment so confirmation modal can be shown
@@ -82,15 +98,19 @@ export const PaymentInput = (): JSX.Element => {
   }, [dirtyFields, setIsDirty])
 
   const handlePaymentsChanges = useCallback(
-    (paymentsInputs) => {
-      setData({ ...(paymentsInputs as FormPayments) })
+    (paymentsInputs: FormPaymentsDisplay) => {
+      const { display_amount, ...rest } = paymentsInputs
+      setData({
+        ...rest,
+        amount_cents: dollarsToCents(display_amount ?? '0'),
+      } as FormPayments)
     },
     [setData],
   )
 
   const watchedInputs = useWatch({
     control: control,
-  }) as UnpackNestedValue<FormPayments>
+  }) as UnpackNestedValue<FormPaymentsDisplay>
 
   const clonedWatchedInputs = useMemo(
     () => cloneDeep(watchedInputs),
@@ -108,31 +128,59 @@ export const PaymentInput = (): JSX.Element => {
 
   const handleCloseDrawer = useCallback(() => handleClose(false), [handleClose])
 
-  const amountValidation: RegisterOptions<FormPayments, 'amount_cents'> =
-    useMemo(
-      () => ({
-        validate: {
-          validNumber: (val) => {
-            // Check whether input is a valid number, avoid e
-            return !isNaN(Number(val)) || 'Please enter a valid number'
-          },
-        },
-        min: {
-          value: 1,
-          message: 'Please enter a positive number',
-        },
-      }),
-      [],
-    )
+  const minPaymentAmount = 0.5 // stipulated by Stripe
+  const maxPaymentAmount = 1000 // due to IRAS requirements and agency financial institutions are expected to be in SG
 
-  const handleUpdatePayments = handleSubmit((payments) =>
-    paymentsMutation.mutate(payments.enabled ? payments : { enabled: false }, {
-      onSuccess: () => {
-        setToInactive()
-        handleCloseDrawer()
+  const amountValidation: RegisterOptions<
+    FormPaymentsDisplay,
+    'display_amount'
+  > = useMemo(
+    () => ({
+      validate: {
+        validateMoney: (val) => {
+          return (
+            /* Regex allows: 
+               - leading and trailing spaces
+               - max 2dp
+               - strictly positive (>0)
+            */
+            /^\s*0*([1-9]\d*(\.\d{0,2})?|0\.(0[1-9]|[1-9]\d?))\s*$/.test(
+              val ?? '',
+            ) || 'Please enter a valid payment amount'
+          )
+        },
+        validateMin: (val) => {
+          return (
+            Number(val?.trim()) >= minPaymentAmount ||
+            `Please enter a payment amount above ${formatCurrency(
+              minPaymentAmount,
+            )}`
+          )
+        },
+        validateMax: (val) => {
+          return (
+            Number(val?.trim()) <= maxPaymentAmount ||
+            `Please keep payment amount under ${formatCurrency(
+              maxPaymentAmount,
+            )}`
+          )
+        },
       },
     }),
+    [],
   )
+
+  const handleUpdatePayments = handleSubmit(() => {
+    return paymentsMutation.mutate(
+      { ...paymentCommon, amount_cents: paymentAmountCents },
+      {
+        onSuccess: () => {
+          setToInactive()
+          handleCloseDrawer()
+        },
+      },
+    )
+  })
 
   return (
     <CreatePageDrawerContentContainer>
@@ -145,26 +193,24 @@ export const PaymentInput = (): JSX.Element => {
           <>
             <FormControl
               isReadOnly={paymentsMutation.isLoading}
-              isInvalid={!!errors.amount_cents}
+              isInvalid={!!errors.display_amount}
             >
-              <FormLabel isRequired>Amount in cents</FormLabel>
+              <FormLabel isRequired>Payment Amount</FormLabel>
               <Controller
-                name="amount_cents"
+                name="display_amount"
                 control={control}
                 rules={amountValidation}
-                render={({ field: { onChange, ...rest } }) => (
-                  <NumberInput
+                render={({ field }) => (
+                  <MoneyInput
                     flex={1}
-                    inputMode="numeric"
-                    showSteppers={false}
-                    placeholder="Number of characters"
-                    onChange={validateNumberInput(onChange)}
-                    {...rest}
+                    inputMode="decimal"
+                    placeholder="0.00"
+                    {...field}
                   />
                 )}
               />
               <FormErrorMessage>
-                {errors.amount_cents?.message}
+                {errors.display_amount?.message}
               </FormErrorMessage>
             </FormControl>
 
