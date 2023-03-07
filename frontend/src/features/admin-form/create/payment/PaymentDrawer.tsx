@@ -66,6 +66,16 @@ export const PaymentInput = (): JSX.Element => {
 
   const { handleClose } = useCreatePageSidebar()
 
+  const centsToDollars = (amountCents: number) => {
+    const decimalPlaces = 2
+    const amountCentsStr = amountCents
+      .toString()
+      .padStart(decimalPlaces + 1, '0')
+    return `${amountCentsStr.slice(0, -decimalPlaces)}.${amountCentsStr.slice(
+      -decimalPlaces,
+    )}`
+  }
+
   const {
     register,
     formState: { errors, dirtyFields },
@@ -75,7 +85,7 @@ export const PaymentInput = (): JSX.Element => {
     mode: 'onChange',
     defaultValues: {
       // Change calculate display_amount value from amount_cents
-      display_amount: (paymentAmountCents ?? 0) / 100,
+      display_amount: centsToDollars(paymentAmountCents ?? 0),
       ...paymentCommon,
     },
   })
@@ -89,11 +99,17 @@ export const PaymentInput = (): JSX.Element => {
     }
   }, [dirtyFields, setIsDirty])
 
+  const dollarsToCents = (dollarStr: string) => {
+    // Only works with the validation rules applied
+    const tokens = dollarStr.trim().split('.')
+    return Number(`${tokens[0]}${(tokens[1] ?? '').padEnd(2, '0')}`)
+  }
+
   const handlePaymentsChanges = useCallback(
     (paymentsInputs: FormPaymentsDisplay) => {
       const { display_amount, ...rest } = paymentsInputs
       setData({
-        amount_cents: Math.round((display_amount ?? 0) * 100),
+        amount_cents: dollarsToCents(display_amount ?? '0'),
         ...rest,
       } as FormPayments)
     },
@@ -120,8 +136,9 @@ export const PaymentInput = (): JSX.Element => {
 
   const handleCloseDrawer = useCallback(() => handleClose(false), [handleClose])
 
+  const minPaymentAmount = 0.5 // stipulated by Stripe
   const maxPaymentAmount = 1000 // due to IRAS requirements and agency financial institutions are expected to be in SG
-  const currencyFormatter = new Intl.NumberFormat('en-IN', {
+  const currencyFormatter = new Intl.NumberFormat('en-SG', {
     style: 'currency',
     currency: 'SGD',
     minimumFractionDigits: 2,
@@ -134,49 +151,42 @@ export const PaymentInput = (): JSX.Element => {
   > = useMemo(
     () => ({
       validate: {
-        validDecimal: (val) => {
-          // Check whether input in a valid decimal, avoid mulitple dots
+        validateMoney: (val) => {
           return (
-            (val ?? 0).toString().split('.').length <= 2 ||
-            'Please enter a valid decimal'
+            /* Regex allows: 
+               - leading and trailing spaces
+               - max 2dp
+               - strictly positive (>0)
+            */
+            /^\s*0*([1-9]\d*(\.\d{0,2})?|0\.(0[1-9]|[1-9]\d?))\s*$/.test(
+              val ?? '',
+            ) || 'Please enter a valid payment amount'
           )
         },
-        twoDecimalPoints: (val) => {
-          // Check that the number of decimal places is within 2dp
-          const separatedByDots = (val ?? 0).toString().split('.')
+        validateMin: (val) => {
           return (
-            (separatedByDots[1] ? separatedByDots[1].length : 0) <= 2 ||
-            'Please keep your payment amount to 2 decimal places'
+            Number(val?.trim()) >= minPaymentAmount ||
+            `Please enter a payment amount above ${currencyFormatter.format(
+              minPaymentAmount,
+            )}`
           )
         },
-        validNumber: (val) => {
-          // Check whether input is a valid number, avoid e
-          return !isNaN(Number(val)) || 'Please enter a valid number'
+        validateMax: (val) => {
+          return (
+            Number(val?.trim()) <= maxPaymentAmount ||
+            `Please keep payment amount under ${currencyFormatter.format(
+              maxPaymentAmount,
+            )}`
+          )
         },
-      },
-      min: {
-        value: 0.01,
-        message: 'Please enter a positive number',
-      },
-      max: {
-        value: maxPaymentAmount,
-        message: `Please keep payment amount under ${currencyFormatter.format(
-          maxPaymentAmount,
-        )}`,
       },
     }),
     [],
   )
 
-  const handleUpdatePayments = handleSubmit((payments) => {
-    const { display_amount, ...rest } = payments
+  const handleUpdatePayments = handleSubmit(() => {
     return paymentsMutation.mutate(
-      payments.enabled
-        ? {
-            amount_cents: Math.round((display_amount ?? 0) * 100),
-            ...rest,
-          }
-        : { enabled: false },
+      { amount_cents: paymentAmountCents, ...paymentCommon },
       {
         onSuccess: () => {
           setToInactive()
