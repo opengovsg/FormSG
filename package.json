@@ -12,8 +12,8 @@
     "url": "https://github.com/opengovsg/formsg.git"
   },
   "engines": {
-    "node": "18",
-    "npm": "8"
+    "node": ">=18",
+    "npm": ">=8"
   },
   "scriptComments": {
     "clean": "remove all current build artifacts",
