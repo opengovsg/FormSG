@@ -4,6 +4,7 @@
 import { useMemo } from 'react'
 import { useFormContext } from 'react-hook-form'
 
+import { useDraftThruSearchParams } from '~hooks/useDraftThruSearchParams'
 import { createUenValidationRules } from '~utils/fieldValidation'
 import Input from '~components/Input'
 
@@ -22,13 +23,19 @@ export const UenField = ({ schema }: UenFieldProps): JSX.Element => {
 
   const { register } = useFormContext<SingleAnswerFieldInput>()
 
+  const [defaultVal, updateSearchParam] = useDraftThruSearchParams(
+    schema.globalId,
+  )
   return (
     <FieldContainer schema={schema}>
       <Input
         aria-label={`${schema.questionNumber}. ${schema.title}`}
-        defaultValue=""
+        defaultValue={defaultVal}
         preventDefaultOnEnter
-        {...register(schema._id, validationRules)}
+        {...register(schema._id, {
+          ...validationRules,
+          onChange: (ev) => updateSearchParam(ev.target.value),
+        })}
       />
     </FieldContainer>
   )

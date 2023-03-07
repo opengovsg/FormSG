@@ -4,6 +4,7 @@
 import { useMemo } from 'react'
 import { useFormContext } from 'react-hook-form'
 
+import { useDraftThruSearchParams } from '~hooks/useDraftThruSearchParams'
 import { createTextValidationRules } from '~utils/fieldValidation'
 import Textarea from '~components/Textarea'
 
@@ -22,12 +23,18 @@ export const LongTextField = ({ schema }: LongTextFieldProps): JSX.Element => {
 
   const { register } = useFormContext<SingleAnswerFieldInput>()
 
+  const [defaultVal, updateSearchParam] = useDraftThruSearchParams(
+    schema.globalId,
+  )
   return (
     <FieldContainer schema={schema}>
       <Textarea
         aria-label={`${schema.questionNumber}. ${schema.title}`}
-        defaultValue=""
-        {...register(schema._id, validationRules)}
+        defaultValue={defaultVal}
+        {...register(schema._id, {
+          ...validationRules,
+          onChange: (ev) => updateSearchParam(ev.target.value),
+        })}
       />
     </FieldContainer>
   )
