@@ -99,7 +99,7 @@ only takes ~15 seconds to finish starting up the image.
 
 ### Adding dependencies
 
-Run `npm install --legacy-peer-deps` as per usual.
+Run `npm install` as per usual.
 
 For backend, run
 
