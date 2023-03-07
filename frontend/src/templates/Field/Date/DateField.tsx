@@ -4,6 +4,7 @@ import { Controller, useFormContext } from 'react-hook-form'
 import { FormColorTheme } from '~shared/types'
 import { DateSelectedValidation } from '~shared/types/field'
 
+import { useDraftThruSearchParams } from '~hooks/useDraftThruSearchParams'
 import {
   fromUtcToLocalDate,
   isDateAfterToday,
@@ -66,18 +67,24 @@ export const DateField = ({
 
   const { control } = useFormContext<SingleAnswerFieldInput>()
 
+  const [defaultVal, updateSearchParam] = useDraftThruSearchParams(
+    schema.globalId,
+  )
   return (
     <FieldContainer schema={schema} {...fieldContainerProps}>
       <Controller
         control={control}
         name={schema._id}
         rules={validationRules}
-        defaultValue=""
+        defaultValue={defaultVal}
         render={({ field: { value, onChange, ...field } }) => (
           <DatePicker
             displayFormat={DATE_DISPLAY_FORMAT}
             dateFormat={DATE_PARSE_FORMAT}
-            onInputValueChange={onChange}
+            onInputValueChange={(v) => {
+              onChange(v)
+              updateSearchParam(v)
+            }}
             inputValue={value}
             colorScheme={`theme-${colorTheme}`}
             {...field}

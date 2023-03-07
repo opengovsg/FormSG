@@ -3,6 +3,7 @@ import { Controller, useFormContext } from 'react-hook-form'
 
 import { FormColorTheme } from '~shared/types'
 
+import { useDraftThruSearchParams } from '~hooks/useDraftThruSearchParams'
 import { createNumberValidationRules } from '~utils/fieldValidation'
 import NumberInput from '~components/NumberInput'
 
@@ -22,6 +23,10 @@ export const NumberField = ({
     [schema],
   )
 
+  const [defaultVal, updateSearchParam] = useDraftThruSearchParams(
+    schema.globalId,
+  )
+
   const { control } = useFormContext<SingleAnswerFieldInput>()
 
   return (
@@ -30,7 +35,7 @@ export const NumberField = ({
         control={control}
         rules={validationRules}
         name={schema._id}
-        defaultValue=""
+        defaultValue={defaultVal}
         render={({ field: { value, onChange, ...rest } }) => (
           <NumberInput
             min={0}
@@ -43,7 +48,9 @@ export const NumberField = ({
             preventDefaultOnEnter
             onChange={(val) => {
               // Only allow numeric inputs
-              onChange(val.replace(/\D/g, ''))
+              const val2 = val.replace(/\D/g, '')
+              onChange(val2)
+              updateSearchParam(val2)
             }}
             {...rest}
           />
