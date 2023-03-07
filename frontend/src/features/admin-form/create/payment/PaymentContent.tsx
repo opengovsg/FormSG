@@ -1,6 +1,8 @@
 import { useMemo } from 'react'
 import { Box, Container, Flex, Image, Stack, Text } from '@chakra-ui/react'
 
+import { centsToDollars } from '~utils/payments'
+
 import { useAdminForm } from '~features/admin-form/common/queries'
 import { useBgColor } from '~features/public-form/components/PublicFormWrapper'
 
@@ -67,7 +69,7 @@ export const PaymentContent = (): JSX.Element => {
                       <Text textStyle="body-1" textColor="secondary.700">
                         Your credit card will be charged:{' '}
                         <Text as="span" fontWeight="bold">
-                          S${((payments?.amount_cents ?? 0) / 100).toFixed(2)}
+                          S${centsToDollars(payments.amount_cents ?? 0)}
                         </Text>
                       </Text>
 
