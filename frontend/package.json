@@ -177,7 +177,7 @@
     "msw-storybook-addon": "^1.7.0",
     "patch-package": "^6.4.7",
     "postcss": "^8.4.21",
-    "prettier": "^2.8.1",
+    "prettier": "2.8.1",
     "puppeteer": "^13.0.0",
     "react-scripts": "^5.0.1",
     "resize-observer-polyfill": "^1.5.1",

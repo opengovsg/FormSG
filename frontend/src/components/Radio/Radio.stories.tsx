@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { FieldError, useForm } from 'react-hook-form'
+import { useForm } from 'react-hook-form'
 import { FormControl, VStack } from '@chakra-ui/react'
 import { Meta, Story } from '@storybook/react'
 import { get, isEmpty } from 'lodash'
