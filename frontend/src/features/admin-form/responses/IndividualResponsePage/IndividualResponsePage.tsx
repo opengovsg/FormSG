@@ -22,12 +22,10 @@ import {
 } from '../ResponsesPage/storage'
 
 import { DecryptedRow } from './DecryptedRow'
+import { IndividualPaymentResponse } from './IndividualPaymentResponse'
 import { IndividualResponseNavbar } from './IndividualResponseNavbar'
 import { useMutateDownloadAttachments } from './mutations'
-import {
-  useIndividualPaymentSubmission,
-  useIndividualSubmission,
-} from './queries'
+import { useIndividualSubmission } from './queries'
 
 const LoadingDecryption = memo(() => {
   return (
@@ -56,11 +54,6 @@ export const IndividualResponsePage = (): JSX.Element => {
 
   const { secretKey } = useStorageResponsesContext()
   const { data, isLoading, isError } = useIndividualSubmission()
-  const {
-    data: paymentData,
-    isLoading: isPaymentLoading,
-    isError: isPaymentError,
-  } = useIndividualPaymentSubmission()
   const { data: form } = useAdminForm()
 
   const attachmentDownloadUrls = useMemo(() => {
@@ -159,80 +152,21 @@ export const IndividualResponsePage = (): JSX.Element => {
             </Stack>
           )}
         </Stack>
-
-        <Stack>
-          {isLoading || isError ? (
-            <LoadingDecryption />
-          ) : (
+        {isLoading || isError ? (
+          <LoadingDecryption />
+        ) : (
+          <Stack>
             <Stack spacing="1.5rem" divider={<StackDivider />}>
               {data?.responses.map((r, idx) => (
                 <DecryptedRow row={r} secretKey={secretKey} key={idx} />
               ))}
               <Box />
             </Stack>
-          )}
-        </Stack>
-
-        {form?.payments?.enabled ? (
-          <Stack>
-            <Text
-              textStyle="h2"
-              as="h2"
-              color="primary.500"
-              mb="0.5rem"
-              _notFirst={{ mt: '2.5rem' }}
-            >
-              Payment
-            </Text>
-            {isPaymentLoading || isPaymentError ? (
-              <Text>Payment was not enabled when this form was submitted</Text>
-            ) : paymentData ? (
-              <>
-                <Stack>
-                  <Stack direction={{ base: 'column', md: 'row' }}>
-                    <Text textStyle="subhead-1">Payment amount:</Text>
-                    <Text>
-                      S$
-                      {(paymentData.amount / 100).toLocaleString('en-GB', {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2,
-                      })}
-                    </Text>
-                  </Stack>
-                  <Stack direction={{ base: 'column', md: 'row' }}>
-                    <Text textStyle="subhead-1">Payment status:</Text>
-                    <Text>{paymentData.status.toUpperCase()}</Text>
-                  </Stack>
-                  <Stack direction={{ base: 'column', md: 'row' }}>
-                    <Text textStyle="subhead-1">Payment date:</Text>
-                    <Text>
-                      {new Intl.DateTimeFormat('en-GB', {
-                        year: 'numeric',
-                        month: 'numeric',
-                        day: 'numeric',
-                        hour: 'numeric',
-                        minute: 'numeric',
-                        second: 'numeric',
-                        timeZoneName: 'shortOffset',
-                      }).format(new Date(paymentData.created))}
-                    </Text>
-                  </Stack>
-                  <Stack direction={{ base: 'column', md: 'row' }}>
-                    <Text textStyle="subhead-1">Payment intent ID:</Text>
-                    <Text>{paymentData.paymentIntentId}</Text>
-                  </Stack>
-                  <Stack direction={{ base: 'column', md: 'row' }}>
-                    <Text textStyle="subhead-1">Transaction fee:</Text>
-                    {/* TODO: Change this to actual transaction fee once application fee object has been added */}
-                    <Text>$0.06</Text>
-                  </Stack>
-                </Stack>
-              </>
-            ) : (
-              <Text>Payment data not found</Text>
+            {form?.payments?.enabled && (
+              <IndividualPaymentResponse submissionId={submissionId} />
             )}
           </Stack>
-        ) : null}
+        )}
       </Stack>
     </Flex>
   )
