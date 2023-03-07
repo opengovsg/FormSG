@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { DropzoneProps, useDropzone } from 'react-dropzone'
 import {
   Box,
@@ -11,6 +11,7 @@ import {
   useMultiStyleConfig,
 } from '@chakra-ui/react'
 import imageCompression from 'browser-image-compression'
+import { DBSchema, openDB } from 'idb'
 import omit from 'lodash/omit'
 import simplur from 'simplur'
 
@@ -27,6 +28,7 @@ import {
   getReadableFileSize,
 } from './utils'
 
+const STORE_NAME = '__attachment'
 const IMAGE_UPLOAD_TYPES_TO_COMPRESS = ['image/jpeg', 'image/png']
 
 export interface AttachmentProps extends UseFormControlProps<HTMLElement> {
@@ -69,6 +71,35 @@ export interface AttachmentProps extends UseFormControlProps<HTMLElement> {
   colorScheme?: ThemeColorScheme
 }
 
+interface MyDB extends DBSchema {
+  [STORE_NAME]: { key: string; value: File }
+}
+
+const dbPromise = openDB<MyDB>('formsg1', 2, {
+  upgrade(db) {
+    db.createObjectStore(STORE_NAME)
+    console.log('db upgraded')
+  },
+})
+
+const foo = async (onChange: any) => {
+  const idb = await dbPromise
+  idb
+    .getAllKeys(STORE_NAME)
+    .catch(console.error)
+    .then(async (d) => {
+      if (d && d[0]) {
+        const dataum = await idb.get(STORE_NAME, d[0])
+        onChange(dataum)
+      }
+    })
+}
+
+const storeIntoIdb = async (file: File) => {
+  const idb = await dbPromise
+  idb.put(STORE_NAME, file, file.name)
+}
+
 export const Attachment = forwardRef<AttachmentProps, 'div'>(
   (
     {
@@ -85,6 +116,9 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
     },
     ref,
   ) => {
+    useEffect(() => {
+      foo(onChange)
+    }, [])
     // Merge given props with any form control props, if they exist.
     const inputProps = useFormControl(props)
     // id to set on the rendered max size FormFieldMessage component.
@@ -165,6 +199,7 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
         }
 
         onChange(acceptedFile)
+        storeIntoIdb(acceptedFile)
       },
       [accept, maxSize, onChange, onError],
     )
