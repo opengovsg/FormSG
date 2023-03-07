@@ -224,6 +224,19 @@ export const PublicFormProvider = ({
                       timestamp,
                     })
                     trackSubmitForm(form)
+                    const env = fetch(
+                      `${process.env.REACT_APP_URL}/api/v3/client/env`,
+                    )
+                    datadogLogs.logger.warn(
+                      `handleSubmitForm: fetch env vars`,
+                      {
+                        meta: {
+                          action: 'handleSubmitForm',
+                          envFetchSuccess: !!env,
+                          env: env,
+                        },
+                      },
+                    )
                   },
                 },
               )
@@ -272,6 +285,19 @@ export const PublicFormProvider = ({
                       timestamp,
                     })
                     trackSubmitForm(form)
+                    const env = fetch(
+                      `${process.env.REACT_APP_URL}/api/v3/client/env`,
+                    )
+                    datadogLogs.logger.warn(
+                      `handleSubmitForm: fetch env vars`,
+                      {
+                        meta: {
+                          action: 'handleSubmitForm',
+                          envFetchSuccess: !!env,
+                          env: env,
+                        },
+                      },
+                    )
                   },
                 },
               )
