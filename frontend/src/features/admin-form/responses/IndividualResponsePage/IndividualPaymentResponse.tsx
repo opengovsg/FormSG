@@ -1,4 +1,4 @@
-import { Stack, Text } from '@chakra-ui/react'
+import { Skeleton, Stack, Text } from '@chakra-ui/react'
 
 import { useIndividualPaymentSubmission } from './queries'
 
@@ -7,8 +7,12 @@ export const IndividualPaymentResponse = (submissionId: {
 }): JSX.Element => {
   if (!submissionId) throw new Error('Missing submissionId')
 
-  // TODO: get paymentData from IndividualResponsePage through submission endpoint
-  const { data: paymentData } = useIndividualPaymentSubmission()
+  // TODO: get paymentData from IndividualResponsePage through submission endpoint when we refactor the endpoints
+  const {
+    data: paymentData,
+    isError,
+    isLoading,
+  } = useIndividualPaymentSubmission()
 
   return (
     <Stack>
@@ -21,7 +25,10 @@ export const IndividualPaymentResponse = (submissionId: {
       >
         Payment
       </Text>
-      {paymentData ? (
+      {isError || isLoading ? (
+        //TODO: check with design for skeleton layout
+        <Skeleton height="1.5rem" />
+      ) : paymentData ? (
         <>
           <Stack>
             <Stack direction={{ base: 'column', md: 'row' }}>
@@ -64,6 +71,7 @@ export const IndividualPaymentResponse = (submissionId: {
           </Stack>
         </>
       ) : (
+        //TODO: check with design for exact copy
         <Text>Payment data not found</Text>
       )}
     </Stack>
