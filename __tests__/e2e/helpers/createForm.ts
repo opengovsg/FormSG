@@ -235,9 +235,10 @@ const addFields = async (
           await page
             .getByLabel('Content')
             .fill(field.autoReplyOptions.autoReplyMessage)
-          if (field.autoReplyOptions.includeFormSummary) {
-            await page.getByText('Include PDF response').click()
-          }
+          // TODO: Print to pdf doesn't work.
+          // if (field.autoReplyOptions.includeFormSummary) {
+          //   await page.getByText('Include PDF response').click()
+          // }
         }
         break
       case BasicField.Image:

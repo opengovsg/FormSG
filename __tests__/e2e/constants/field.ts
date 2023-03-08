@@ -182,10 +182,12 @@ export const ALL_FIELDS: E2eFieldMetadata[] = [
     fieldType: BasicField.Email,
     isVerifiable: true,
     autoReplyOptions: {
-      hasAutoReply: false,
-      autoReplyMessage: '',
-      autoReplySender: '',
-      autoReplySubject: '',
+      hasAutoReply: true,
+      autoReplyMessage:
+        'Thank you for your submission. We will reach out to you in 3 working days.',
+      autoReplySender: 'GovTech Singapore',
+      autoReplySubject: 'Thanks for submitting',
+      // TODO: Save to pdf doesn't work.
       includeFormSummary: false,
     },
     hasAllowedEmailDomains: false,

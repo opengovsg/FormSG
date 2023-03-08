@@ -12,7 +12,9 @@ import {
   E2eFieldMetadata,
   E2eSettingsOptions,
 } from '../constants'
-import { getSubmission } from '../utils'
+import { getAutoreplyEmails, getSubmission } from '../utils'
+
+const MAIL_FROM = 'donotreply@mail.form.gov.sg'
 
 export type VerifySubmissionProps = {
   form: IFormSchema
@@ -31,13 +33,60 @@ export type VerifySubmissionProps = {
  */
 export const verifySubmission = async (
   page: Page,
+  verifySubmissionProps: VerifySubmissionProps,
+): Promise<void> => {
+  const { form, formFields, responseId } = verifySubmissionProps
+
+  // Verify the submission content
+  switch (form.responseMode) {
+    case FormResponseMode.Email:
+      await verifyEmailSubmission(page, verifySubmissionProps)
+      break
+    case FormResponseMode.Encrypt:
+      // TODO: add verifier for Encrypt submissions
+      break
+  }
+
+  // Verify that post-submission actions were taken
+
+  // Email autoresponses should be sent
+  for (const field of formFields) {
+    if (field.fieldType !== BasicField.Email) continue
+    if (field.autoReplyOptions.hasAutoReply) {
+      const { autoReplySender, autoReplySubject, autoReplyMessage } =
+        field.autoReplyOptions
+
+      const emails = await getAutoreplyEmails(responseId)
+      const email = emails.find(
+        (email) =>
+          email.subject === autoReplySubject &&
+          email.from[0].name === autoReplySender &&
+          email.from[0].address === MAIL_FROM &&
+          email.html.includes(autoReplyMessage),
+        // TODO: Check for form summary pdf in email.attachments, when it's fixed.
+      )
+      expect(email).toBeTruthy()
+    }
+  }
+}
+
+/**
+ * Get the submission email from maildev, and ensure that the contents and attachments
+ * match what is submitted.
+ * @param {Page} page the Playwright page
+ * @param {IFormSchema} form the form from the database
+ * @param {E2eFieldMetadata[]} formFields the field metadata used to create and fill the form
+ * @param {string} responseId the response id of the submission to be verified
+ */
+export const verifyEmailSubmission = async (
+  page: Page,
   { form, formFields, formSettings, responseId }: VerifySubmissionProps,
 ): Promise<void> => {
   // Get the submission from the email, via the subject.
   const submission = await getSubmission(form.title, responseId)
 
   // Verify email metadata
-  expect(submission.from).toContain('donotreply@mail.form.gov.sg')
+  expect(submission.from).toContain(MAIL_FROM)
 
   const emails = formSettings.emails ?? []
   emails.unshift(ADMIN_EMAIL)
