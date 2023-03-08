@@ -241,7 +241,7 @@ export const PublicFormProvider = ({
                   },
                 })
                 showErrorToast(error, form)
-                if (error.message.match(/Network Error/)) {
+                if (error.message.match(/Network Error/i) && fetch) {
                   const env = await fetch(
                     `${process.env.REACT_APP_URL}/api/v3/client/env`,
                   )
@@ -290,7 +290,7 @@ export const PublicFormProvider = ({
                   },
                 })
                 showErrorToast(error, form)
-                if (error.message.match(/Network Error/)) {
+                if (error.message.match(/Network Error/i) && fetch) {
                   const env = await fetch(
                     `${process.env.REACT_APP_URL}/api/v3/client/env`,
                   )
