@@ -12,7 +12,7 @@ import {
   E2eFieldMetadata,
   E2eSettingsOptions,
 } from '../constants'
-import { getAutoreplyEmails, getSubmission } from '../utils'
+import { getAutoreplyEmail, getSubmission } from '../utils'
 
 const MAIL_FROM = 'donotreply@mail.form.gov.sg'
 
@@ -49,23 +49,19 @@ export const verifySubmission = async (
 
   // Verify that post-submission actions were taken
 
-  // Email autoresponses should be sent
+  // Email autoreplies should be sent
   for (const field of formFields) {
     if (field.fieldType !== BasicField.Email) continue
-    if (field.autoReplyOptions.hasAutoReply) {
+    if (field.val && field.autoReplyOptions.hasAutoReply) {
       const { autoReplySender, autoReplySubject, autoReplyMessage } =
         field.autoReplyOptions
 
-      const emails = await getAutoreplyEmails(responseId)
-      const email = emails.find(
-        (email) =>
-          email.subject === autoReplySubject &&
-          email.from[0].name === autoReplySender &&
-          email.from[0].address === MAIL_FROM &&
-          email.html.includes(autoReplyMessage),
-        // TODO: Check for form summary pdf in email.attachments, when it's fixed.
-      )
-      expect(email).toBeTruthy()
+      const email = await getAutoreplyEmail(responseId, field.val)
+
+      // Check content of autoreply emails
+      expect(email.subject === autoReplySubject).toBeTruthy()
+      expect(email.from[0].name === autoReplySender).toBeTruthy()
+      expect(email.html.includes(autoReplyMessage)).toBeTruthy()
     }
   }
 }

@@ -59,21 +59,15 @@ const getEmailsBy = async (
   return inbox.filter(filter).sort((a, b) => (a.time > b.time ? -1 : 1))
 }
 
-const getEmailsByRecipient = (recipient: string): Promise<MailData[]> =>
-  getEmailsBy((e) => e.to[0].address === recipient)
-
-const getEmailsBySubject = (subject: string): Promise<MailData[]> =>
-  getEmailsBy((e) => e.subject === subject)
-
 /**
  * Retrieves an OTP from the inbox.
- * @param email The email the OTP was sent to.
+ * @param recipient The email the OTP was sent to.
  */
-export const extractOtp = async (email: string): Promise<string> => {
-  const emails = await getEmailsByRecipient(email)
+export const extractOtp = async (recipient: string): Promise<string> => {
+  const emails = await getEmailsBy((e) => e.to[0].address === recipient)
 
   const lastEmail = emails.pop()
-  if (!lastEmail) throw Error(`mailbox for ${email} is empty`)
+  if (!lastEmail) throw Error(`mailbox for ${recipient} is empty`)
 
   const otp = lastEmail.html.match(/\d{6}/)?.[0]
   if (!otp) throw Error('otp was not found in email')
@@ -95,7 +89,7 @@ export const getSubmission = async (
 ): Promise<EmailSubmission> => {
   const subject = `formsg-auto: ${formName} (#${responseId})`
 
-  const emails = await getEmailsBySubject(subject)
+  const emails = await getEmailsBy((e) => e.subject === subject)
 
   const lastEmail = emails.pop()
   if (!lastEmail) throw Error(`mailbox does not contain subject "${subject}"`)
@@ -131,11 +125,29 @@ const getSubmissionAttachments = async (
 }
 
 /**
- * Retrieves autoreply emails sent by FormSG.
+ * Retrieves an autoreply email sent by FormSG.
  * @param {string} responseId response ID of the submission
- * @returns {object} subject, sender, recipient and html content of email
+ * @param {string} recipient email address of the form filler
+ * @returns {MailData} email for the autoreply sent to the recipient
  */
-export const getAutoreplyEmails = async (
+export const getAutoreplyEmail = async (
   responseId: string,
-): Promise<MailData[]> =>
-  getEmailsBy((email) => email.html.includes(`Response ID: ${responseId}`))
+  recipient: string,
+): Promise<MailData> => {
+  const emails = await getEmailsBy(
+    (email) =>
+      email.to[0].address === recipient &&
+      email.html.includes(`Response ID: ${responseId}`),
+  )
+
+  const lastEmail = emails.pop()
+  if (!lastEmail) {
+    throw Error(
+      `mailbox does not contain autoreply email for response ID ${responseId}`,
+    )
+  }
+
+  await MAIL_CLIENT.deleteById(lastEmail.id)
+
+  return lastEmail
+}
