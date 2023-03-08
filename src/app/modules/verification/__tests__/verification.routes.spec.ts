@@ -44,6 +44,8 @@ jest.mock('twilio', () => () => ({
   },
 }))
 
+jest.mock('src/app/services/sms/sms.dev.prismclient', () => () => ({}))
+
 describe('verification.routes', () => {
   let mockTransaction: IVerificationSchema
   let mockTransactionId: string
