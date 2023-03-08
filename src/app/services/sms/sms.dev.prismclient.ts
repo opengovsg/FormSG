@@ -15,7 +15,7 @@ export class PrismClient extends RequestClient {
   }
 
   #sendInternalMail = async (msg: string): Promise<void> => {
-    await MailService.sendLocalDevMail(msg)
+    await MailService.sendLocalDevMail('[mocktwilio] Captured SMS', msg)
   }
 
   request<TData>(opts: any) {

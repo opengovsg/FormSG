@@ -927,14 +927,17 @@ export class MailService {
     )
   }
 
+  // Utility method to send a mail during local dev (to maildev)
+  // The sender and receipent are both form's internal mailing address
   sendLocalDevMail = (
-    smsMessage: string,
+    subject: string,
+    mailHtml: string,
   ): ResultAsync<true, MailGenerationError | MailSendError> => {
     const mailOptions: MailOptions = {
       to: this.#officialMail,
       from: this.#senderFromString,
-      html: smsMessage,
-      subject: '[mocktwilio] SMS OTP Verification',
+      html: mailHtml,
+      subject: subject,
       replyTo: this.#officialMail,
       bcc: this.#senderMail,
     }
