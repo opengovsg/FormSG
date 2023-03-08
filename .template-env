@@ -113,4 +113,4 @@ FORMSG_SDK_MODE=
 
 # Used to check if BE Server is currently running on local development environment
 # One of boolean: "true" | "false"
-# LOCAL_DEV=
+# USE_MOCK_TWILIO=

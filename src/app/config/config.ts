@@ -40,7 +40,7 @@ const isDev =
   basicVars.core.nodeEnv === Environment.Dev ||
   basicVars.core.nodeEnv === Environment.Test
 const nodeEnv = isDev ? basicVars.core.nodeEnv : Environment.Prod
-const isLocalDev = basicVars.core.localDev
+const useMockTwilio = basicVars.core.useMockTwilio
 
 // Load and validate configuration values which are compulsory only in production
 // If environment variables are not present, an error will be thrown
@@ -212,7 +212,7 @@ const config: Config = {
   mail: mailConfig,
   cookieSettings,
   isDev,
-  isLocalDev,
+  useMockTwilio,
   nodeEnv,
   formsgSdkMode: basicVars.formsgSdkMode,
   customCloudWatchGroup: basicVars.awsConfig.customCloudWatchGroup,
