@@ -12,7 +12,7 @@ export const useDraftThruSearchParams = (
 
   const updateSearchParam = (val: string) => {
     if (globalId) params.set(globalId, val)
-    setSearchParams(params)
+    setSearchParams(params, { replace: true })
   }
 
   return [extractedDefaultValue, updateSearchParam]
