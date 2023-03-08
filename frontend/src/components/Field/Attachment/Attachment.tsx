@@ -75,14 +75,14 @@ interface MyDB extends DBSchema {
   [STORE_NAME]: { key: string; value: File }
 }
 
+// to be moved over to an independent setup phase
 const dbPromise = openDB<MyDB>('formsg1', 2, {
   upgrade(db) {
     db.createObjectStore(STORE_NAME)
-    console.log('db upgraded')
   },
 })
 
-const foo = async (onChange: any) => {
+const restoreFromIdb = async (onChange: any) => {
   const idb = await dbPromise
   idb
     .getAllKeys(STORE_NAME)
@@ -117,7 +117,7 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
     ref,
   ) => {
     useEffect(() => {
-      foo(onChange)
+      restoreFromIdb(onChange)
     }, [])
     // Merge given props with any form control props, if they exist.
     const inputProps = useFormControl(props)
