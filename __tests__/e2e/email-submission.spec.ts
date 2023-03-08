@@ -5,6 +5,7 @@ import {
   FormAuthType,
   LogicConditionState,
   LogicType,
+  MyInfoAttribute,
 } from 'shared/types'
 
 import { IFormModel } from 'src/types'
@@ -163,7 +164,32 @@ test.describe('Email form submission', () => {
     await runTest(page, { formFields, formLogics, formSettings })
   })
 
-  // TODO: Add test for MyInfo when mockpass has been fixed.
+  test('Create and submit email mode form with MyInfo fields', async ({
+    page,
+  }) => {
+    // Define
+    const formFields = [
+      // Short answer
+      createMyInfoField(MyInfoAttribute.Name, 'LIM YONG XIANG', true),
+      // Dropdown
+      createMyInfoField(MyInfoAttribute.Sex, 'MALE', true),
+      // Date
+      createMyInfoField(MyInfoAttribute.DateOfBirth, '06/10/1980', true),
+      // Mobile
+      createMyInfoField(MyInfoAttribute.MobileNo, '97399245', false),
+      // Unverified
+      createMyInfoField(MyInfoAttribute.WorkpassStatus, 'Live', false),
+    ]
+    const formLogics = NO_LOGIC
+    const formSettings = getSettings({
+      authType: FormAuthType.MyInfo,
+      esrvcId: 'test_esrvcid_SP',
+      nric: process.env.MOCKPASS_NRIC,
+    })
+
+    // Test
+    await runTest(page, { formFields, formLogics, formSettings })
+  })
 
   test('Create and submit email mode form with all fields shown by logic', async ({
     page,
