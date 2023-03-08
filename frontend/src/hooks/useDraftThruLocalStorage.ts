@@ -1,14 +1,14 @@
 import { useLocalStorage } from './useLocalStorage'
 
-type UseSearchParamsDraftReturnType = [string, (newVal: string) => void]
+type UseLocalStorageDraftReturnType = [string, (newVal: string) => void]
 
 export const useDraftThruLocalStorage = (
   globalId: string | undefined,
-): UseSearchParamsDraftReturnType => {
+): UseLocalStorageDraftReturnType => {
   // useLocalStorage
   const extractedDefaultValue = 'magic powder'
-  const updateSearchParam = () => {
+  const updateLocalStorage = () => {
     /* sprinkle some magic */
   }
-  return [extractedDefaultValue, updateSearchParam]
+  return [extractedDefaultValue, updateLocalStorage]
 }
