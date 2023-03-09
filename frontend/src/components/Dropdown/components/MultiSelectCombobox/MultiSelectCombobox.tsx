@@ -96,6 +96,8 @@ export const MultiSelectCombobox = forwardRef<HTMLInputElement>(
         <Box
           as="button"
           type="button"
+          pt="0.25rem"
+          px="0.5rem"
           _disabled={{
             cursor: 'not-allowed',
           }}
