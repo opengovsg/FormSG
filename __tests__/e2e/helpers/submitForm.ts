@@ -75,6 +75,8 @@ const authForm = async (
 ): Promise<void> => {
   if (formSettings.authType === FormAuthType.NIL) return
 
+  if (!formSettings.nric) throw new Error('No nric provided!')
+
   // Check that the submit button is not visible.
   await expect(
     page.locator(
@@ -88,13 +90,57 @@ const authForm = async (
         formSettings.authType === FormAuthType.CP
           ? ' (Corporate)'
           : formSettings.authType === FormAuthType.SGID
-          ? ' App-only Login'
+          ? ' app'
           : ''
       }`,
     })
     .click()
 
-  // TODO: Actually login! Can't do yet because no mockpass.
+  // Redirected to mockpass - perform the login on the mockpass page.
+  await page.getByRole('button', { name: 'Login' }).click()
+
+  // let uin = formSettings.nric
+  // switch (formSettings.authType) {
+  //   case FormAuthType.CP:
+  //   case FormAuthType.SP:
+  //     await page.getByLabel('NRIC').fill(formSettings.nric)
+  //     if (formSettings.authType === FormAuthType.CP) {
+  //       if (!formSettings.uen) throw new Error('No uen provided!')
+  //       uin = formSettings.uen
+  //       await page.getByLabel('UEN').fill(formSettings.uen)
+  //     }
+  //     await page
+  //       .locator('#sectionA')
+  //       .getByRole('button', { name: 'Login' })
+  //       .click()
+  //     break
+  //   case FormAuthType.SGID:
+  //   case FormAuthType.MyInfo:
+  //     await page.getByRole('button', { name: 'Select username' }).click()
+  //     await page
+  //       .getByRole('link', { name: `${formSettings.nric} [MyInfo]` })
+  //       .click()
+  //     break
+  // }
+
+  let uin = formSettings.nric
+  if (formSettings.authType === FormAuthType.CP) {
+    if (!formSettings.uen) throw new Error('No uen provided!')
+    uin = formSettings.uen
+    await page.getByLabel('UEN').fill(formSettings.uen)
+  }
+
+  await page.getByRole('button', { name: 'Select username' }).click()
+  await page.getByRole('link', { name: uin }).click()
+  if (formSettings.authType === FormAuthType.MyInfo) {
+    // Click acceptance button on MyInfo consent page
+    await page.getByRole('button', { name: 'Submit' }).click()
+  }
+
+  // Redirected to the form fields page. Verify that the log out button is
+  // visible, to verify that we have been logged in correctly.
+  const logoutButton = page.getByRole('button', { name: 'Log out' })
+  await expect(logoutButton).toContainText(uin)
 }
 
 /**
@@ -112,7 +158,8 @@ const fillFields = async (
     formFields: E2eFieldMetadata[]
   },
 ): Promise<void> => {
-  // Check that the submit button is visible.
+  // Check that the submit button is visible - this guarantees that we are on
+  // the form fields page.
   await expect(
     page.locator(
       'button:text-matches("(submit now)|(submission disabled)", "gi")',

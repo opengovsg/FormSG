@@ -553,7 +553,7 @@ const addAuthSettings = async (
     formSettings.authType === FormAuthType.SP
       ? ''
       : formSettings.authType === FormAuthType.SGID
-      ? ' App-only Login (Free)'
+      ? ' App-only Login'
       : formSettings.authType === FormAuthType.MyInfo
       ? ' with MyInfo'
       : ' (Corporate)'
@@ -561,22 +561,22 @@ const addAuthSettings = async (
 
   await page
     .locator('label', { has: page.getByRole('radio', { name }) })
-    .click()
+    .first() // Since 'Singpass' will match all radio options, pick the first matching one.
+    .click({ position: { x: 1, y: 1 } }) // Clicking the center of the sgid button launches the sgid contact form, put this here until we get rid of the link
 
   await expectToast(page, /form authentication successfully updated/i)
 
-  if (formSettings.esrvcId) {
-    switch (formSettings.authType) {
-      case FormAuthType.SP:
-      case FormAuthType.CP:
-      case FormAuthType.MyInfo:
-        await page.locator(`id=esrvcId`).fill(formSettings.esrvcId)
-        await page.keyboard.press('Enter')
-        await expectToast(page, /e-service id successfully updated/i)
-        break
-      default:
-        break
-    }
+  switch (formSettings.authType) {
+    case FormAuthType.SP:
+    case FormAuthType.CP:
+    case FormAuthType.MyInfo:
+      if (!formSettings.esrvcId) throw new Error('No esrvcid provided!')
+      await page.locator(`id=esrvcId`).fill(formSettings.esrvcId)
+      await page.keyboard.press('Enter')
+      await expectToast(page, /e-service id successfully updated/i)
+      break
+    default:
+      break
   }
 }
 

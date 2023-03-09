@@ -1,9 +1,9 @@
 import { expect, Page } from '@playwright/test'
 import { format, parse } from 'date-fns'
 import { readFileSync } from 'fs'
-import { BasicField, FormResponseMode } from 'shared/types'
+import { BasicField, FormAuthType, FormResponseMode } from 'shared/types'
 
-import { IFormSchema } from 'src/types'
+import { IFormSchema, SgidFieldTitle, SPCPFieldTitle } from 'src/types'
 
 import {
   ADMIN_EMAIL,
@@ -48,16 +48,36 @@ export const verifySubmission = async (
 
   // Subject need not be verified, since we got the email via the subject.
 
+  const expectSubmissionContains = expectContains(submission.html)
+
   // Verify form responses in email
   for (const field of formFields) {
     const responseArray = getResponseArray(field, FormResponseMode.Email)
     if (!responseArray) continue
-    const contained = [
+    expectSubmissionContains([
       getResponseTitle(field, false, FormResponseMode.Email),
       ...responseArray,
-    ]
-    expectContains(submission.html, contained)
+    ])
     expectAttachment(field, submission.attachments)
+  }
+
+  if (formSettings.authType !== FormAuthType.NIL) {
+    // Verify that form auth correctly returned NRIC (SPCP/SGID) and UEN (CP)
+    if (!formSettings.nric) throw new Error('No nric provided!')
+    switch (formSettings.authType) {
+      case FormAuthType.SP:
+      case FormAuthType.MyInfo:
+        expectSubmissionContains([SPCPFieldTitle.SpNric, formSettings.nric])
+        break
+      case FormAuthType.CP:
+        expectSubmissionContains([SPCPFieldTitle.CpUid, formSettings.nric])
+        if (!formSettings.uen) throw new Error('No uen provided!')
+        expectSubmissionContains([SPCPFieldTitle.CpUen, formSettings.uen])
+        break
+      case FormAuthType.SGID:
+        expectSubmissionContains([SgidFieldTitle.SgidNric, formSettings.nric])
+        break
+    }
   }
 }
 
@@ -181,7 +201,7 @@ const getResponseArray = (
  * @param {string} container string in which to search
  * @param {string[]} containedArray Array of values to search for
  */
-const expectContains = (container: string, containedArray: string[]) => {
+const expectContains = (container: string) => (containedArray: string[]) => {
   for (const contained of containedArray) {
     expect(container).toContain(contained)
   }
