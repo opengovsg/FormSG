@@ -1,6 +1,8 @@
-import { Flex, Icon, Skeleton, Text } from '@chakra-ui/react'
+import { Flex, FormControl, Icon, Skeleton, Text } from '@chakra-ui/react'
 
 import { BxsCheckCircle, BxsError, BxsInfoCircle } from '~assets/icons'
+import FormLabel from '~components/FormControl/FormLabel'
+import Input from '~components/Input'
 
 import { useAdminFormPayments, useAdminFormSettings } from '../../queries'
 
@@ -70,11 +72,41 @@ const PaymentsAccountValidation = () => {
   )
 }
 
+const PaymentsAccountInformation = ({
+  account_id,
+  isLoading,
+}: {
+  account_id: string
+  isLoading: boolean
+}) => {
+  return (
+    <FormControl mb="2.5rem">
+      <FormLabel
+        description="This is the account ID connected to this form."
+        isRequired
+      >
+        Target Account ID
+      </FormLabel>
+      <Skeleton isLoaded={!isLoading}>
+        <Input isDisabled={true} value={account_id}></Input>
+      </Skeleton>
+    </FormControl>
+  )
+}
+
 const PaymentsSectionText = () => {
   const { data: settings, isLoading } = useAdminFormSettings()
 
   if (settings?.payments?.enabled && settings?.payments?.target_account_id) {
-    return <PaymentsAccountValidation />
+    return (
+      <>
+        <PaymentsAccountValidation />
+        <PaymentsAccountInformation
+          account_id={settings.payments.target_account_id}
+          isLoading={isLoading}
+        />
+      </>
+    )
   }
 
   return (
