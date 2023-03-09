@@ -1,3 +1,4 @@
+import { isAxiosError } from 'axios'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
 import { FormAuthType } from '../../../../../shared/types'
@@ -121,6 +122,12 @@ export class SpOidcServiceClass extends SpcpOidcServiceClass {
           meta: logMeta,
           error,
         })
+        if (isAxiosError(error))
+          return new ExchangeAuthTokenError(
+            `${JSON.stringify(error.toJSON())} ${JSON.stringify(
+              error.response?.data,
+            )}`,
+          )
         return new ExchangeAuthTokenError()
       },
     )

@@ -96,39 +96,7 @@ const authForm = async (
     })
     .click()
 
-  // Redirected to mockpass - perform the login on the mockpass page.
-  await page.getByRole('button', { name: 'Login' }).click()
-
-  // let uin = formSettings.nric
-  // switch (formSettings.authType) {
-  //   case FormAuthType.CP:
-  //   case FormAuthType.SP:
-  //     await page.getByLabel('NRIC').fill(formSettings.nric)
-  //     if (formSettings.authType === FormAuthType.CP) {
-  //       if (!formSettings.uen) throw new Error('No uen provided!')
-  //       uin = formSettings.uen
-  //       await page.getByLabel('UEN').fill(formSettings.uen)
-  //     }
-  //     await page
-  //       .locator('#sectionA')
-  //       .getByRole('button', { name: 'Login' })
-  //       .click()
-  //     break
-  //   case FormAuthType.SGID:
-  //   case FormAuthType.MyInfo:
-  //     await page.getByRole('button', { name: 'Select username' }).click()
-  //     await page
-  //       .getByRole('link', { name: `${formSettings.nric} [MyInfo]` })
-  //       .click()
-  //     break
-  // }
-
-  await page.getByRole('button', { name: 'Select username' }).click()
-  await page.getByRole('link', { name: formSettings.nric }).click()
-  if (formSettings.authType === FormAuthType.MyInfo) {
-    // Click acceptance button on MyInfo consent page
-    await page.getByRole('button', { name: 'Submit' }).click()
-  }
+  // Mockpass talks to FormSG to login here.
 
   // Redirected to the form fields page. Verify log out button is visible with
   // the correct uin, to verify that we have been logged in correctly.

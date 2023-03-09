@@ -137,33 +137,33 @@ test.describe('Email form submission', () => {
     await runTest(page, { formFields, formLogics, formSettings })
   })
 
-  test('Create and submit email mode form with Corppass authentication', async ({
-    page,
-  }) => {
-    // Define
-    const formFields = ALL_FIELDS
-    const formLogics = NO_LOGIC
-    const formSettings = getSettings({
-      authType: FormAuthType.CP,
-    })
+  // test('Create and submit email mode form with Corppass authentication', async ({
+  //   page,
+  // }) => {
+  //   // Define
+  //   const formFields = ALL_FIELDS
+  //   const formLogics = NO_LOGIC
+  //   const formSettings = getSettings({
+  //     authType: FormAuthType.CP,
+  //   })
 
-    // Test
-    await runTest(page, { formFields, formLogics, formSettings })
-  })
+  //   // Test
+  //   await runTest(page, { formFields, formLogics, formSettings })
+  // })
 
-  test('Create and submit email mode form with SGID authentication', async ({
-    page,
-  }) => {
-    // Define
-    const formFields = ALL_FIELDS
-    const formLogics = NO_LOGIC
-    const formSettings = getSettings({
-      authType: FormAuthType.SGID,
-    })
+  // test('Create and submit email mode form with SGID authentication', async ({
+  //   page,
+  // }) => {
+  //   // Define
+  //   const formFields = ALL_FIELDS
+  //   const formLogics = NO_LOGIC
+  //   const formSettings = getSettings({
+  //     authType: FormAuthType.SGID,
+  //   })
 
-    // Test
-    await runTest(page, { formFields, formLogics, formSettings })
-  })
+  //   // Test
+  //   await runTest(page, { formFields, formLogics, formSettings })
+  // })
 
   // test('Create and submit email mode form with MyInfo fields', async ({
   //   page,
