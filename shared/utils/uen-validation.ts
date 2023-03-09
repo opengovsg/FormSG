@@ -2,7 +2,7 @@
  * Validate entity-type indicators, as per
  * https://www.uen.gov.sg/ueninternet/faces/pages/admin/aboutUEN.jspx
  */
-const VALID_ENTITY_TYPE_INDICATORS = new Set([
+const VALID_ENTITY_TYPE_INDICATORS = [
   'LP',
   'LL',
   'FC',
@@ -41,6 +41,15 @@ const VALID_ENTITY_TYPE_INDICATORS = new Set([
   'SS',
   'MC',
   'SM',
+]
+
+const UNLISTED_AGENCY_ISSUED_ENTITY_TYPE_INDICATORS = [
+  'EC', // issued by MOE
+]
+
+const ENTITY_TYPE_INDICATORS = new Set([
+  ...VALID_ENTITY_TYPE_INDICATORS,
+  ...UNLISTED_AGENCY_ISSUED_ENTITY_TYPE_INDICATORS,
 ])
 
 /**
@@ -119,7 +128,7 @@ export const isUenValid = (uen: string): boolean => {
 
   // check entity-type indicator
   const entityTypeIndicator = uen.slice(3, 5)
-  if (!VALID_ENTITY_TYPE_INDICATORS.has(entityTypeIndicator)) {
+  if (!ENTITY_TYPE_INDICATORS.has(entityTypeIndicator)) {
     return false
   }
 
