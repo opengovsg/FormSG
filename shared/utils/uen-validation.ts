@@ -1,26 +1,45 @@
 /**
  * Validate entity-type indicators, as per
- * https://www.uen.gov.sg/ueninternet/faces/pages/admin/aboutUEN.jspx
+ * https://www.uen.gov.sg/ueninternet/faces/pages/admin/aboutUEN.jspx and additional input
  */
-const VALID_ENTITY_TYPE_INDICATORS = [
+const VALID_ENTITY_TYPE_INDICATORS = new Set([
+  // ACRA
+  'BN',
   'LP',
   'LL',
+  'LC',
   'FC',
   'PF',
+  'VC',
+
+  // ESG
   'RF',
+
+  // Muis
   'MQ',
   'MM',
+
+  // MCI
   'NB',
+
+  // MCCY
   'CC',
   'CS',
   'MB',
+
+  // Mindef
   'FM',
+
+  // MOE
   'GS',
-  'GA',
-  'GB',
+  'EC',
+
+  // MFA
   'DP',
   'CP',
   'NR',
+
+  // MOH
   'CM',
   'CD',
   'MD',
@@ -31,25 +50,36 @@ const VALID_ENTITY_TYPE_INDICATORS = [
   'CL',
   'XL',
   'CX',
+  'HC',
+
+  // MLAW
   'RP',
+
+  // MOM
   'TU',
+
+  // MND
   'TC',
+
+  // MAS
   'FB',
   'FN',
+  'FS',
+
+  // PA
   'PA',
   'PB',
+
+  // ROS
   'SS',
+
+  // SLA
   'MC',
   'SM',
-]
 
-const UNLISTED_AGENCY_ISSUED_ENTITY_TYPE_INDICATORS = [
-  'EC', // issued by MOE
-]
-
-const ENTITY_TYPE_INDICATORS = new Set([
-  ...VALID_ENTITY_TYPE_INDICATORS,
-  ...UNLISTED_AGENCY_ISSUED_ENTITY_TYPE_INDICATORS,
+  // SNDGO
+  'GA',
+  'GB',
 ])
 
 /**
@@ -128,7 +158,7 @@ export const isUenValid = (uen: string): boolean => {
 
   // check entity-type indicator
   const entityTypeIndicator = uen.slice(3, 5)
-  if (!ENTITY_TYPE_INDICATORS.has(entityTypeIndicator)) {
+  if (!VALID_ENTITY_TYPE_INDICATORS.has(entityTypeIndicator)) {
     return false
   }
 
