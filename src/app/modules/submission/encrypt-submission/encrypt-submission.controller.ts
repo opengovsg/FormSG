@@ -413,6 +413,7 @@ const submitEncryptModeForm: ControllerHandler<
         /* 'grabpay', 'paynow'*/
       ],
       description: form.payments.description,
+      receipt_email: 'form+receipt@open.gov.sg',
       // on_behalf_of: form.payments.target_account_id,
       metadata: {
         formId,
