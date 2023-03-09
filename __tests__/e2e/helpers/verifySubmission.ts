@@ -12,7 +12,12 @@ import {
   E2eFieldMetadata,
   E2eSettingsOptions,
 } from '../constants'
-import { getAutoreplyEmail, getSubmission } from '../utils'
+import {
+  getAutoreplyEmail,
+  getSubmission,
+  isMyInfoableFieldType,
+  isVerifiableFieldType,
+} from '../utils'
 
 const MAIL_FROM = 'donotreply@mail.form.gov.sg'
 
@@ -100,7 +105,7 @@ export const verifyEmailSubmission = async (
     const responseArray = getResponseArray(field, FormResponseMode.Email)
     if (!responseArray) continue
     expectSubmissionContains([
-      getResponseTitle(field, false, FormResponseMode.Email),
+      getResponseTitle(field, FormResponseMode.Email),
       ...responseArray,
     ])
     expectAttachment(field, submission.attachments)
@@ -156,33 +161,33 @@ const TABLE_HANDLER = {
 /**
  * Gets the title of a field as it is displayed in a response.
  * @param {E2eFieldMetadata} field field used to create and fill form
- * @param {boolean} isInJson Whether the title is within the JSON data for email submissions
  * @param {FormResponseMode} formMode form response mode
  * @returns {string} the field title displayed in the response.
  */
 const getResponseTitle = (
   field: E2eFieldMetadata,
-  isInJson: boolean,
   formMode: FormResponseMode,
 ): string => {
-  if (field.fieldType === 'table') {
-    return TABLE_HANDLER.getName(field, formMode)
-  } else if (field.fieldType === 'attachment') {
-    let title = field.title
-    if (formMode === 'email') {
-      title = `[attachment] ${title}`
-    }
-    return title
-  } else {
-    if (isInJson) {
-      if (field.title.startsWith('[verified] ')) {
-        return field.title.substring(11)
-      } else if (field.title.startsWith('[MyInfo] ')) {
-        return field.title.substring(9)
-      }
-    }
+  // MyInfo fields
+  if (isMyInfoableFieldType(field) && field.myInfo) {
+    if (field.myInfo.verified) return `[MyInfo] ${field.title}`
     return field.title
   }
+
+  // Basic fields
+  if (field.fieldType === BasicField.Table) {
+    return TABLE_HANDLER.getName(field, formMode)
+  } else if (field.fieldType === BasicField.Attachment) {
+    switch (formMode) {
+      case FormResponseMode.Email:
+        return `[attachment] ${field.title}`
+      case FormResponseMode.Encrypt:
+        return field.title
+    }
+  } else if (isVerifiableFieldType(field)) {
+    if (field.isVerifiable && field.val) return `[verified] ${field.title}`
+  }
+  return field.title
 }
 
 /**

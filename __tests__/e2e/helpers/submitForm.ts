@@ -10,7 +10,7 @@ import {
   NON_INPUT_FIELD_TYPES,
   PUBLIC_FORM_PAGE_PREFIX,
 } from '../constants'
-import { extractOtp, fillDropdown } from '../utils'
+import { extractOtp, fillDropdown, isMyInfoableFieldType } from '../utils'
 
 export type SubmitFormProps = {
   form: IFormSchema
@@ -181,8 +181,7 @@ const fillFields = async (
   })
 
   // Fill form fields
-  for (let i = 0; i < fieldMetasWithIds.length; i++) {
-    const field = fieldMetasWithIds[i]
+  for (const field of fieldMetasWithIds) {
     // Ignore fields that are non-input.
     if (NON_INPUT_FIELD_TYPES.includes(field.fieldType)) continue
 
@@ -200,6 +199,20 @@ const fillFields = async (
     await expect(titleLocator).toBeVisible()
 
     const input = page.locator(`id=${field._id}`)
+
+    if (isMyInfoableFieldType(field) && field.myInfo) {
+      // If the field is MyInfo, and the input is disabled or already contains
+      // a value, skip filling it. The value will be checked in the submission.
+      const inputIsDisabled = await input.isDisabled()
+      if (inputIsDisabled !== field.myInfo.verified) {
+        // input should be disabled iff myInfo field data is verified
+        throw new Error(
+          'MyInfo field verified status does not match field definition.',
+        )
+      }
+      const inputValue = await input.inputValue()
+      if (inputIsDisabled || inputValue) continue
+    }
 
     switch (field.fieldType) {
       case BasicField.ShortText:

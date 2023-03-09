@@ -20,9 +20,10 @@ import {
 } from './constants'
 import { createForm, fillForm, submitForm, verifySubmission } from './helpers'
 import {
+  createBlankVersion,
+  createMyInfoField,
+  createOptionalVersion,
   deleteDocById,
-  getBlankVersion,
-  getOptionalVersion,
   getSettings,
   makeModel,
   makeMongooseFixtures,
@@ -60,7 +61,7 @@ test.describe('Email form submission', () => {
   }) => {
     // Define
     const formFields = ALL_FIELDS.map((ff) =>
-      getBlankVersion(getOptionalVersion(ff)),
+      createBlankVersion(createOptionalVersion(ff)),
     )
     const formLogics = NO_LOGIC
     const formSettings = getSettings()
@@ -103,7 +104,7 @@ test.describe('Email form submission', () => {
         val: '1-test-att.txt',
       } as E2eFieldMetadata,
       {
-        ...getBlankVersion(getOptionalVersion(baseField)),
+        ...createBlankVersion(createOptionalVersion(baseField)),
         title: 'Attachment 1',
       } as E2eFieldMetadata,
       {
