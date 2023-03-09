@@ -408,7 +408,10 @@ const submitEncryptModeForm: ControllerHandler<
     const createPaymentIntentParams: Stripe.PaymentIntentCreateParams = {
       amount: form.payments.amount_cents,
       currency: paymentConfig.defaultCurrency,
-      payment_method_types: ['card', 'grabpay', 'paynow'],
+      payment_method_types: [
+        'card',
+        /* 'grabpay', 'paynow'*/
+      ],
       description: form.payments.description,
       // on_behalf_of: form.payments.target_account_id,
       metadata: {
