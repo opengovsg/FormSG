@@ -26,6 +26,7 @@ import {
 } from './utils'
 
 const IMAGE_UPLOAD_TYPES_TO_COMPRESS = ['image/jpeg', 'image/png']
+const MAX_SIZE_MULTIPLE_TO_CONVERT_PNG = 2 // multiple of maxSize
 
 export interface AttachmentProps extends UseFormControlProps<HTMLElement> {
   /**
@@ -154,10 +155,12 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
             maxHeight: 1440,
             checkOrientation: false,
             retainExif: true,
+            // convertSize is originally defaulted to 5MB
+            convertSize: maxSize * MAX_SIZE_MULTIPLE_TO_CONVERT_PNG,
             success(blob) {
               if (blob.size > maxSize) {
                 onError?.(
-                  `The image is too large to compress, please upload a file below ${readableMaxSize}`,
+                  `The image is too large to compress ${blob.size}, please upload a file below ${readableMaxSize}`,
                 )
               } else {
                 onChange(
