@@ -123,22 +123,21 @@ const authForm = async (
   //     break
   // }
 
-  let uin = formSettings.nric
-  if (formSettings.authType === FormAuthType.CP) {
-    if (!formSettings.uen) throw new Error('No uen provided!')
-    uin = formSettings.uen
-    await page.getByLabel('UEN').fill(formSettings.uen)
-  }
-
   await page.getByRole('button', { name: 'Select username' }).click()
-  await page.getByRole('link', { name: uin }).click()
+  await page.getByRole('link', { name: formSettings.nric }).click()
   if (formSettings.authType === FormAuthType.MyInfo) {
     // Click acceptance button on MyInfo consent page
     await page.getByRole('button', { name: 'Submit' }).click()
   }
 
-  // Redirected to the form fields page. Verify that the log out button is
-  // visible, to verify that we have been logged in correctly.
+  // Redirected to the form fields page. Verify log out button is visible with
+  // the correct uin, to verify that we have been logged in correctly.
+  let uin = formSettings.nric
+  if (formSettings.authType === FormAuthType.CP) {
+    if (!formSettings.uen) throw new Error('No uen provided!')
+    uin = formSettings.uen
+  }
+
   const logoutButton = page.getByRole('button', { name: 'Log out' })
   await expect(logoutButton).toContainText(uin)
 }

@@ -1,6 +1,11 @@
 import { Page } from '@playwright/test'
 import mongoose from 'mongoose'
-import { BasicField, LogicConditionState, LogicType } from 'shared/types'
+import {
+  BasicField,
+  FormAuthType,
+  LogicConditionState,
+  LogicType,
+} from 'shared/types'
 
 import { IFormModel } from 'src/types'
 
@@ -115,50 +120,47 @@ test.describe('Email form submission', () => {
     await runTest(page, { formFields, formLogics, formSettings })
   })
 
-  // TODO: Uncomment these tests when mockpass has been fixed.
-  // test('Create and submit email mode form with Singpass authentication', async ({
-  //   page,
-  // }) => {
-  //   // Define
-  //   const formFields = ALL_FIELDS
-  //   const formLogics = NO_LOGIC
-  //   const formSettings = getSettings({
-  //     authType: FormAuthType.SP,
-  //     esrvcId: process.env.SINGPASS_ESRVC_ID,
-  //   })
+  test('Create and submit email mode form with Singpass authentication', async ({
+    page,
+  }) => {
+    // Define
+    const formFields = ALL_FIELDS
+    const formLogics = NO_LOGIC
+    const formSettings = getSettings({
+      authType: FormAuthType.SP,
+    })
 
-  //   // Test
-  //   await runTest(page, { formFields, formLogics, formSettings })
-  // })
+    // Test
+    await runTest(page, { formFields, formLogics, formSettings })
+  })
 
-  // test('Create and submit email mode form with Corppass authentication', async ({
-  //   page,
-  // }) => {
-  //   // Define
-  //   const formFields = ALL_FIELDS
-  //   const formLogics = NO_LOGIC
-  //   const formSettings = getSettings({
-  //     authType: FormAuthType.CP,
-  //     esrvcId: process.env.CORPPASS_ESRVC_ID,
-  //   })
+  test('Create and submit email mode form with Corppass authentication', async ({
+    page,
+  }) => {
+    // Define
+    const formFields = ALL_FIELDS
+    const formLogics = NO_LOGIC
+    const formSettings = getSettings({
+      authType: FormAuthType.CP,
+    })
 
-  //   // Test
-  //   await runTest(page, { formFields, formLogics, formSettings })
-  // })
+    // Test
+    await runTest(page, { formFields, formLogics, formSettings })
+  })
 
-  // test('Create and submit email mode form with SGID authentication', async ({
-  //   page,
-  // }) => {
-  //   // Define
-  //   const formFields = ALL_FIELDS
-  //   const formLogics = NO_LOGIC
-  //   const formSettings = getSettings({
-  //     authType: FormAuthType.SGID,
-  //   })
+  test('Create and submit email mode form with SGID authentication', async ({
+    page,
+  }) => {
+    // Define
+    const formFields = ALL_FIELDS
+    const formLogics = NO_LOGIC
+    const formSettings = getSettings({
+      authType: FormAuthType.SGID,
+    })
 
-  //   // Test
-  //   await runTest(page, { formFields, formLogics, formSettings })
-  // })
+    // Test
+    await runTest(page, { formFields, formLogics, formSettings })
+  })
 
   // TODO: Add test for MyInfo when mockpass has been fixed.
 
