@@ -42,7 +42,7 @@ export const handleSpcpOidcLogin: (
       meta: logMeta,
       error: result.error,
     })
-    return res.sendStatus(StatusCodes.BAD_REQUEST)
+    return res.sendStatus(StatusCodes.IM_A_TEAPOT)
   }
 
   const parseResult = oidcService.parseState(state)
@@ -52,7 +52,7 @@ export const handleSpcpOidcLogin: (
       meta: logMeta,
       error: parseResult.error,
     })
-    return res.sendStatus(StatusCodes.BAD_REQUEST)
+    return res.sendStatus(StatusCodes.PAYMENT_REQUIRED)
   }
   const { formId, destination, rememberMe, cookieDuration } = parseResult.value
   const formResult = await FormService.retrieveFullFormById(formId)
