@@ -156,6 +156,7 @@ export type StorageModeSubmissionContentDto = {
   >[]
   encryptedContent: string
   attachments?: StorageModeAttachmentsMap
+  paymentReceiptEmail?: string
   version: number
 }
 

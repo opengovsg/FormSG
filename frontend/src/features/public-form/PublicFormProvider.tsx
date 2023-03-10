@@ -188,8 +188,10 @@ export const PublicFormProvider = ({
 
   const { handleLogoutMutation } = usePublicAuthMutations(formId)
 
-  const handleSubmitForm: SubmitHandler<FormFieldValues> = useCallback(
-    async (formInputs) => {
+  const handleSubmitForm: SubmitHandler<
+    FormFieldValues & { payment_receipt_email_field?: { value: string } }
+  > = useCallback(
+    async ({ payment_receipt_email_field, ...formInputs }) => {
       const { form } = data ?? {}
       if (!form) return
 
@@ -254,6 +256,7 @@ export const PublicFormProvider = ({
                   formInputs,
                   publicKey: form.publicKey,
                   captchaResponse,
+                  paymentReceiptEmail: payment_receipt_email_field?.value,
                 },
                 {
                   onSuccess: ({

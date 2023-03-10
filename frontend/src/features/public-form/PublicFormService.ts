@@ -74,6 +74,7 @@ export type SubmitEmailFormArgs = {
   formFields: FormFieldDto[]
   formLogics: FormDto['form_logics']
   formInputs: FormFieldValues
+  paymentReceiptEmail?: string
 }
 
 export type SubmitStorageFormArgs = SubmitEmailFormArgs & { publicKey: string }
@@ -110,6 +111,7 @@ export const submitStorageModeForm = async ({
   formId,
   publicKey,
   captchaResponse = null,
+  paymentReceiptEmail = undefined,
 }: SubmitStorageFormArgs) => {
   const filteredInputs = filterHiddenInputs({
     formFields,
@@ -120,6 +122,7 @@ export const submitStorageModeForm = async ({
     formFields,
     filteredInputs,
     publicKey,
+    paymentReceiptEmail,
   )
 
   return ApiService.post<SubmissionResponseDto>(
