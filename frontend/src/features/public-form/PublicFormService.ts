@@ -178,7 +178,9 @@ export const downloadPaymentReceipt = async (
   formId: string,
   submissionId: string,
 ): Promise<void> => {
-  return ApiService.get(`payments/receipt/${formId}/${submissionId}/download`)
+  return ApiService.get(
+    `payments/receipt/${formId}/${submissionId}/download`,
+  ).then(({ data }) => data)
   // .then(({ data }) => {
   //   const buffer = Buffer.from(data.pdfBuffer.data)
 
