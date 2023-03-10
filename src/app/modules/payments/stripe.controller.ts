@@ -250,7 +250,11 @@ export const downloadPaymentReceipt: ControllerHandler<{
             })
           })
           .then((pdfBuffer) => {
-            return res.status(StatusCodes.OK).json({ pdfBuffer })
+            res.set({
+              'Content-Type': 'application/pdf',
+              'Content-Disposition': 'attachment',
+            })
+            return res.status(StatusCodes.OK).send(pdfBuffer)
           })
       )
     })
