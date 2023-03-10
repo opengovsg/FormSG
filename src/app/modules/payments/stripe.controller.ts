@@ -252,7 +252,7 @@ export const downloadPaymentReceipt: ControllerHandler<{
           .then((pdfBuffer) => {
             res.set({
               'Content-Type': 'application/pdf',
-              'Content-Disposition': 'attachment',
+              'Content-Disposition': `attachment; filename=${submissionId}-receipt.pdf`,
             })
             return res.status(StatusCodes.OK).send(pdfBuffer)
           })
