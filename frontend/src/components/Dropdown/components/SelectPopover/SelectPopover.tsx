@@ -1,4 +1,4 @@
-import { FC, useLayoutEffect, useMemo, useRef } from 'react'
+import { PropsWithChildren, useLayoutEffect, useMemo, useRef } from 'react'
 import { Box, useMergeRefs, useOutsideClick } from '@chakra-ui/react'
 import {
   autoUpdate,
@@ -13,7 +13,9 @@ import { useSelectContext } from '~components/Dropdown/SelectContext'
 
 import { SelectPopoverContext } from './SelectPopoverContext'
 
-export const SelectPopoverProvider: FC = ({ children }): JSX.Element => {
+export const SelectPopoverProvider = ({
+  children,
+}: PropsWithChildren): JSX.Element => {
   const { styles, setIsFocused, isOpen } = useSelectContext()
 
   const wrapperRef = useRef<HTMLDivElement | null>(null)

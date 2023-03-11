@@ -1,4 +1,4 @@
-import { FC, useMemo } from 'react'
+import { PropsWithChildren, useMemo } from 'react'
 import {
   Box,
   Container,
@@ -22,10 +22,10 @@ interface listItemMarkerProps {
   isNumericMarker?: boolean
 }
 
-const SectionListItem: FC<ListItemProps> = ({
+const SectionListItem = ({
   children,
   listStyleType = 'decimal',
-}) => (
+}: PropsWithChildren<ListItemProps>) => (
   <ListItem
     fontWeight={600}
     textStyle="h3"
@@ -36,10 +36,10 @@ const SectionListItem: FC<ListItemProps> = ({
   </ListItem>
 )
 
-export const SubSectionOrderedList: FC<ListProps> = ({
+export const SubSectionOrderedList = ({
   children,
   ...props
-}) => (
+}: PropsWithChildren<ListProps>) => (
   <OrderedList
     spacing="1.5rem"
     marginInlineStart={0}
@@ -50,21 +50,21 @@ export const SubSectionOrderedList: FC<ListProps> = ({
   </OrderedList>
 )
 
-export const SubSubSectionOrderedList: FC<ListProps> = ({
+export const SubSubSectionOrderedList = ({
   children,
   ...props
-}) => (
+}: PropsWithChildren<ListProps>) => (
   <SubSectionOrderedList marginInlineStart={0} {...props}>
     {children}
   </SubSectionOrderedList>
 )
 
-export const SubSectionListItem: FC<ListItemProps & listItemMarkerProps> = ({
+export const SubSectionListItem = ({
   children,
   prependSequenceMarker,
   isNumericMarker,
   ...props
-}) => {
+}: PropsWithChildren<ListItemProps & listItemMarkerProps>) => {
   const sequenceMarker = useMemo(() => {
     return `"${
       prependSequenceMarker ? prependSequenceMarker : '('
@@ -99,7 +99,9 @@ export const SubSectionListItem: FC<ListItemProps & listItemMarkerProps> = ({
   )
 }
 
-const SectionTitle: FC = ({ children }) => <Text mb="1.5rem">{children}</Text>
+const SectionTitle = ({ children }: PropsWithChildren) => (
+  <Text mb="1.5rem">{children}</Text>
+)
 
 export const TermsOfUsePage = (): JSX.Element => {
   return (

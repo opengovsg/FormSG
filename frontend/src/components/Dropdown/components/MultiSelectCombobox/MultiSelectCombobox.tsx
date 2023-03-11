@@ -1,4 +1,4 @@
-import { FC, forwardRef, useCallback } from 'react'
+import { forwardRef, PropsWithChildren, useCallback } from 'react'
 import {
   Box,
   chakra,
@@ -16,7 +16,7 @@ import { useSelectContext } from '../../SelectContext'
 
 import { SelectedItems } from './SelectedItems'
 
-const MultiItemsContainer: FC = ({ children }) => {
+const MultiItemsContainer = ({ children }: PropsWithChildren) => {
   return (
     <Box
       display="inline-flex"

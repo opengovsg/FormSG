@@ -1,4 +1,4 @@
-import { FC, useCallback } from 'react'
+import { useCallback } from 'react'
 import {
   Box,
   Container,
@@ -12,7 +12,7 @@ import {
   WrapItem,
 } from '@chakra-ui/react'
 
-export const Typography: FC = () => {
+export const Typography = (): JSX.Element => {
   const theme = useTheme()
 
   const prettyPrint = useCallback((theme: Record<string, string>) => {

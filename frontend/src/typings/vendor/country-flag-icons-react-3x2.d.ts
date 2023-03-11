@@ -1,258 +1,258 @@
-declare module 'country-flag-icons/react/3x2' {
-  import { FC } from 'react'
+import { SVGProps } from 'react'
 
+declare module 'country-flag-icons/react/3x2' {
   type FlagTypes = {
-    AC: FC<React.SVGProps<SVGSVGElement>>
-    AD: FC<React.SVGProps<SVGSVGElement>>
-    AE: FC<React.SVGProps<SVGSVGElement>>
-    AF: FC<React.SVGProps<SVGSVGElement>>
-    AG: FC<React.SVGProps<SVGSVGElement>>
-    AI: FC<React.SVGProps<SVGSVGElement>>
-    AL: FC<React.SVGProps<SVGSVGElement>>
-    AM: FC<React.SVGProps<SVGSVGElement>>
-    AO: FC<React.SVGProps<SVGSVGElement>>
-    AQ: FC<React.SVGProps<SVGSVGElement>>
-    AR: FC<React.SVGProps<SVGSVGElement>>
-    AS: FC<React.SVGProps<SVGSVGElement>>
-    AT: FC<React.SVGProps<SVGSVGElement>>
-    AU: FC<React.SVGProps<SVGSVGElement>>
-    AW: FC<React.SVGProps<SVGSVGElement>>
-    AX: FC<React.SVGProps<SVGSVGElement>>
-    AZ: FC<React.SVGProps<SVGSVGElement>>
-    BA: FC<React.SVGProps<SVGSVGElement>>
-    BB: FC<React.SVGProps<SVGSVGElement>>
-    BD: FC<React.SVGProps<SVGSVGElement>>
-    BE: FC<React.SVGProps<SVGSVGElement>>
-    BF: FC<React.SVGProps<SVGSVGElement>>
-    BG: FC<React.SVGProps<SVGSVGElement>>
-    BH: FC<React.SVGProps<SVGSVGElement>>
-    BI: FC<React.SVGProps<SVGSVGElement>>
-    BJ: FC<React.SVGProps<SVGSVGElement>>
-    BL: FC<React.SVGProps<SVGSVGElement>>
-    BM: FC<React.SVGProps<SVGSVGElement>>
-    BN: FC<React.SVGProps<SVGSVGElement>>
-    BO: FC<React.SVGProps<SVGSVGElement>>
-    BQ: FC<React.SVGProps<SVGSVGElement>>
-    BR: FC<React.SVGProps<SVGSVGElement>>
-    BS: FC<React.SVGProps<SVGSVGElement>>
-    BT: FC<React.SVGProps<SVGSVGElement>>
-    BV: FC<React.SVGProps<SVGSVGElement>>
-    BW: FC<React.SVGProps<SVGSVGElement>>
-    BY: FC<React.SVGProps<SVGSVGElement>>
-    BZ: FC<React.SVGProps<SVGSVGElement>>
-    CA: FC<React.SVGProps<SVGSVGElement>>
-    CC: FC<React.SVGProps<SVGSVGElement>>
-    CD: FC<React.SVGProps<SVGSVGElement>>
-    CF: FC<React.SVGProps<SVGSVGElement>>
-    CG: FC<React.SVGProps<SVGSVGElement>>
-    CH: FC<React.SVGProps<SVGSVGElement>>
-    CI: FC<React.SVGProps<SVGSVGElement>>
-    CK: FC<React.SVGProps<SVGSVGElement>>
-    CL: FC<React.SVGProps<SVGSVGElement>>
-    CM: FC<React.SVGProps<SVGSVGElement>>
-    CN: FC<React.SVGProps<SVGSVGElement>>
-    CO: FC<React.SVGProps<SVGSVGElement>>
-    CR: FC<React.SVGProps<SVGSVGElement>>
-    CU: FC<React.SVGProps<SVGSVGElement>>
-    CV: FC<React.SVGProps<SVGSVGElement>>
-    CW: FC<React.SVGProps<SVGSVGElement>>
-    CX: FC<React.SVGProps<SVGSVGElement>>
-    CY: FC<React.SVGProps<SVGSVGElement>>
-    CZ: FC<React.SVGProps<SVGSVGElement>>
-    DE: FC<React.SVGProps<SVGSVGElement>>
-    DJ: FC<React.SVGProps<SVGSVGElement>>
-    DK: FC<React.SVGProps<SVGSVGElement>>
-    DM: FC<React.SVGProps<SVGSVGElement>>
-    DO: FC<React.SVGProps<SVGSVGElement>>
-    DZ: FC<React.SVGProps<SVGSVGElement>>
-    EC: FC<React.SVGProps<SVGSVGElement>>
-    EE: FC<React.SVGProps<SVGSVGElement>>
-    EG: FC<React.SVGProps<SVGSVGElement>>
-    EH: FC<React.SVGProps<SVGSVGElement>>
-    ER: FC<React.SVGProps<SVGSVGElement>>
-    ES: FC<React.SVGProps<SVGSVGElement>>
-    ET: FC<React.SVGProps<SVGSVGElement>>
-    FI: FC<React.SVGProps<SVGSVGElement>>
-    FJ: FC<React.SVGProps<SVGSVGElement>>
-    FK: FC<React.SVGProps<SVGSVGElement>>
-    FM: FC<React.SVGProps<SVGSVGElement>>
-    FO: FC<React.SVGProps<SVGSVGElement>>
-    FR: FC<React.SVGProps<SVGSVGElement>>
-    GA: FC<React.SVGProps<SVGSVGElement>>
-    GB: FC<React.SVGProps<SVGSVGElement>>
-    GD: FC<React.SVGProps<SVGSVGElement>>
-    GE: FC<React.SVGProps<SVGSVGElement>>
-    GF: FC<React.SVGProps<SVGSVGElement>>
-    GG: FC<React.SVGProps<SVGSVGElement>>
-    GH: FC<React.SVGProps<SVGSVGElement>>
-    GI: FC<React.SVGProps<SVGSVGElement>>
-    GL: FC<React.SVGProps<SVGSVGElement>>
-    GM: FC<React.SVGProps<SVGSVGElement>>
-    GN: FC<React.SVGProps<SVGSVGElement>>
-    GP: FC<React.SVGProps<SVGSVGElement>>
-    GQ: FC<React.SVGProps<SVGSVGElement>>
-    GR: FC<React.SVGProps<SVGSVGElement>>
-    GS: FC<React.SVGProps<SVGSVGElement>>
-    GT: FC<React.SVGProps<SVGSVGElement>>
-    GU: FC<React.SVGProps<SVGSVGElement>>
-    GW: FC<React.SVGProps<SVGSVGElement>>
-    GY: FC<React.SVGProps<SVGSVGElement>>
-    HK: FC<React.SVGProps<SVGSVGElement>>
-    HM: FC<React.SVGProps<SVGSVGElement>>
-    HN: FC<React.SVGProps<SVGSVGElement>>
-    HR: FC<React.SVGProps<SVGSVGElement>>
-    HT: FC<React.SVGProps<SVGSVGElement>>
-    HU: FC<React.SVGProps<SVGSVGElement>>
-    ID: FC<React.SVGProps<SVGSVGElement>>
-    IE: FC<React.SVGProps<SVGSVGElement>>
-    IL: FC<React.SVGProps<SVGSVGElement>>
-    IM: FC<React.SVGProps<SVGSVGElement>>
-    IN: FC<React.SVGProps<SVGSVGElement>>
-    IO: FC<React.SVGProps<SVGSVGElement>>
-    IQ: FC<React.SVGProps<SVGSVGElement>>
-    IR: FC<React.SVGProps<SVGSVGElement>>
-    IS: FC<React.SVGProps<SVGSVGElement>>
-    IT: FC<React.SVGProps<SVGSVGElement>>
-    JE: FC<React.SVGProps<SVGSVGElement>>
-    JM: FC<React.SVGProps<SVGSVGElement>>
-    JO: FC<React.SVGProps<SVGSVGElement>>
-    JP: FC<React.SVGProps<SVGSVGElement>>
-    KE: FC<React.SVGProps<SVGSVGElement>>
-    KG: FC<React.SVGProps<SVGSVGElement>>
-    KH: FC<React.SVGProps<SVGSVGElement>>
-    KI: FC<React.SVGProps<SVGSVGElement>>
-    KM: FC<React.SVGProps<SVGSVGElement>>
-    KN: FC<React.SVGProps<SVGSVGElement>>
-    KP: FC<React.SVGProps<SVGSVGElement>>
-    KR: FC<React.SVGProps<SVGSVGElement>>
-    KW: FC<React.SVGProps<SVGSVGElement>>
-    KY: FC<React.SVGProps<SVGSVGElement>>
-    KZ: FC<React.SVGProps<SVGSVGElement>>
-    LA: FC<React.SVGProps<SVGSVGElement>>
-    LB: FC<React.SVGProps<SVGSVGElement>>
-    LC: FC<React.SVGProps<SVGSVGElement>>
-    LI: FC<React.SVGProps<SVGSVGElement>>
-    LK: FC<React.SVGProps<SVGSVGElement>>
-    LR: FC<React.SVGProps<SVGSVGElement>>
-    LS: FC<React.SVGProps<SVGSVGElement>>
-    LT: FC<React.SVGProps<SVGSVGElement>>
-    LU: FC<React.SVGProps<SVGSVGElement>>
-    LV: FC<React.SVGProps<SVGSVGElement>>
-    LY: FC<React.SVGProps<SVGSVGElement>>
-    MA: FC<React.SVGProps<SVGSVGElement>>
-    MC: FC<React.SVGProps<SVGSVGElement>>
-    MD: FC<React.SVGProps<SVGSVGElement>>
-    ME: FC<React.SVGProps<SVGSVGElement>>
-    MF: FC<React.SVGProps<SVGSVGElement>>
-    MG: FC<React.SVGProps<SVGSVGElement>>
-    MH: FC<React.SVGProps<SVGSVGElement>>
-    MK: FC<React.SVGProps<SVGSVGElement>>
-    ML: FC<React.SVGProps<SVGSVGElement>>
-    MM: FC<React.SVGProps<SVGSVGElement>>
-    MN: FC<React.SVGProps<SVGSVGElement>>
-    MO: FC<React.SVGProps<SVGSVGElement>>
-    MP: FC<React.SVGProps<SVGSVGElement>>
-    MQ: FC<React.SVGProps<SVGSVGElement>>
-    MR: FC<React.SVGProps<SVGSVGElement>>
-    MS: FC<React.SVGProps<SVGSVGElement>>
-    MT: FC<React.SVGProps<SVGSVGElement>>
-    MU: FC<React.SVGProps<SVGSVGElement>>
-    MV: FC<React.SVGProps<SVGSVGElement>>
-    MW: FC<React.SVGProps<SVGSVGElement>>
-    MX: FC<React.SVGProps<SVGSVGElement>>
-    MY: FC<React.SVGProps<SVGSVGElement>>
-    MZ: FC<React.SVGProps<SVGSVGElement>>
-    NA: FC<React.SVGProps<SVGSVGElement>>
-    NC: FC<React.SVGProps<SVGSVGElement>>
-    NE: FC<React.SVGProps<SVGSVGElement>>
-    NF: FC<React.SVGProps<SVGSVGElement>>
-    NG: FC<React.SVGProps<SVGSVGElement>>
-    NI: FC<React.SVGProps<SVGSVGElement>>
-    NL: FC<React.SVGProps<SVGSVGElement>>
-    NO: FC<React.SVGProps<SVGSVGElement>>
-    NP: FC<React.SVGProps<SVGSVGElement>>
-    NR: FC<React.SVGProps<SVGSVGElement>>
-    NU: FC<React.SVGProps<SVGSVGElement>>
-    NZ: FC<React.SVGProps<SVGSVGElement>>
-    OM: FC<React.SVGProps<SVGSVGElement>>
-    PA: FC<React.SVGProps<SVGSVGElement>>
-    PE: FC<React.SVGProps<SVGSVGElement>>
-    PF: FC<React.SVGProps<SVGSVGElement>>
-    PG: FC<React.SVGProps<SVGSVGElement>>
-    PH: FC<React.SVGProps<SVGSVGElement>>
-    PK: FC<React.SVGProps<SVGSVGElement>>
-    PL: FC<React.SVGProps<SVGSVGElement>>
-    PM: FC<React.SVGProps<SVGSVGElement>>
-    PN: FC<React.SVGProps<SVGSVGElement>>
-    PR: FC<React.SVGProps<SVGSVGElement>>
-    PS: FC<React.SVGProps<SVGSVGElement>>
-    PT: FC<React.SVGProps<SVGSVGElement>>
-    PW: FC<React.SVGProps<SVGSVGElement>>
-    PY: FC<React.SVGProps<SVGSVGElement>>
-    QA: FC<React.SVGProps<SVGSVGElement>>
-    RE: FC<React.SVGProps<SVGSVGElement>>
-    RO: FC<React.SVGProps<SVGSVGElement>>
-    RS: FC<React.SVGProps<SVGSVGElement>>
-    RU: FC<React.SVGProps<SVGSVGElement>>
-    RW: FC<React.SVGProps<SVGSVGElement>>
-    SA: FC<React.SVGProps<SVGSVGElement>>
-    SB: FC<React.SVGProps<SVGSVGElement>>
-    SC: FC<React.SVGProps<SVGSVGElement>>
-    SD: FC<React.SVGProps<SVGSVGElement>>
-    SE: FC<React.SVGProps<SVGSVGElement>>
-    SG: FC<React.SVGProps<SVGSVGElement>>
-    SH: FC<React.SVGProps<SVGSVGElement>>
-    SI: FC<React.SVGProps<SVGSVGElement>>
-    SJ: FC<React.SVGProps<SVGSVGElement>>
-    SK: FC<React.SVGProps<SVGSVGElement>>
-    SL: FC<React.SVGProps<SVGSVGElement>>
-    SM: FC<React.SVGProps<SVGSVGElement>>
-    SN: FC<React.SVGProps<SVGSVGElement>>
-    SO: FC<React.SVGProps<SVGSVGElement>>
-    SR: FC<React.SVGProps<SVGSVGElement>>
-    SS: FC<React.SVGProps<SVGSVGElement>>
-    ST: FC<React.SVGProps<SVGSVGElement>>
-    SV: FC<React.SVGProps<SVGSVGElement>>
-    SX: FC<React.SVGProps<SVGSVGElement>>
-    SY: FC<React.SVGProps<SVGSVGElement>>
-    SZ: FC<React.SVGProps<SVGSVGElement>>
-    TA: FC<React.SVGProps<SVGSVGElement>>
-    TC: FC<React.SVGProps<SVGSVGElement>>
-    TD: FC<React.SVGProps<SVGSVGElement>>
-    TF: FC<React.SVGProps<SVGSVGElement>>
-    TG: FC<React.SVGProps<SVGSVGElement>>
-    TH: FC<React.SVGProps<SVGSVGElement>>
-    TJ: FC<React.SVGProps<SVGSVGElement>>
-    TK: FC<React.SVGProps<SVGSVGElement>>
-    TL: FC<React.SVGProps<SVGSVGElement>>
-    TM: FC<React.SVGProps<SVGSVGElement>>
-    TN: FC<React.SVGProps<SVGSVGElement>>
-    TO: FC<React.SVGProps<SVGSVGElement>>
-    TR: FC<React.SVGProps<SVGSVGElement>>
-    TT: FC<React.SVGProps<SVGSVGElement>>
-    TV: FC<React.SVGProps<SVGSVGElement>>
-    TW: FC<React.SVGProps<SVGSVGElement>>
-    TZ: FC<React.SVGProps<SVGSVGElement>>
-    UA: FC<React.SVGProps<SVGSVGElement>>
-    UG: FC<React.SVGProps<SVGSVGElement>>
-    US: FC<React.SVGProps<SVGSVGElement>>
-    UY: FC<React.SVGProps<SVGSVGElement>>
-    UZ: FC<React.SVGProps<SVGSVGElement>>
-    VA: FC<React.SVGProps<SVGSVGElement>>
-    VC: FC<React.SVGProps<SVGSVGElement>>
-    VE: FC<React.SVGProps<SVGSVGElement>>
-    VG: FC<React.SVGProps<SVGSVGElement>>
-    VI: FC<React.SVGProps<SVGSVGElement>>
-    VN: FC<React.SVGProps<SVGSVGElement>>
-    VU: FC<React.SVGProps<SVGSVGElement>>
-    WF: FC<React.SVGProps<SVGSVGElement>>
-    WS: FC<React.SVGProps<SVGSVGElement>>
-    XK: FC<React.SVGProps<SVGSVGElement>>
-    YE: FC<React.SVGProps<SVGSVGElement>>
-    YT: FC<React.SVGProps<SVGSVGElement>>
-    ZA: FC<React.SVGProps<SVGSVGElement>>
-    ZM: FC<React.SVGProps<SVGSVGElement>>
-    ZW: FC<React.SVGProps<SVGSVGElement>>
+    AC: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    AD: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    AE: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    AF: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    AG: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    AI: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    AL: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    AM: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    AO: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    AQ: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    AR: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    AS: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    AT: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    AU: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    AW: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    AX: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    AZ: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    BA: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    BB: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    BD: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    BE: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    BF: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    BG: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    BH: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    BI: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    BJ: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    BL: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    BM: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    BN: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    BO: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    BQ: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    BR: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    BS: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    BT: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    BV: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    BW: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    BY: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    BZ: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    CA: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    CC: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    CD: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    CF: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    CG: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    CH: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    CI: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    CK: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    CL: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    CM: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    CN: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    CO: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    CR: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    CU: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    CV: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    CW: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    CX: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    CY: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    CZ: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    DE: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    DJ: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    DK: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    DM: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    DO: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    DZ: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    EC: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    EE: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    EG: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    EH: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    ER: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    ES: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    ET: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    FI: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    FJ: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    FK: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    FM: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    FO: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    FR: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    GA: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    GB: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    GD: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    GE: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    GF: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    GG: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    GH: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    GI: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    GL: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    GM: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    GN: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    GP: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    GQ: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    GR: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    GS: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    GT: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    GU: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    GW: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    GY: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    HK: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    HM: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    HN: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    HR: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    HT: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    HU: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    ID: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    IE: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    IL: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    IM: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    IN: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    IO: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    IQ: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    IR: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    IS: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    IT: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    JE: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    JM: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    JO: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    JP: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    KE: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    KG: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    KH: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    KI: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    KM: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    KN: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    KP: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    KR: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    KW: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    KY: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    KZ: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    LA: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    LB: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    LC: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    LI: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    LK: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    LR: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    LS: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    LT: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    LU: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    LV: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    LY: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    MA: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    MC: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    MD: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    ME: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    MF: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    MG: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    MH: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    MK: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    ML: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    MM: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    MN: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    MO: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    MP: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    MQ: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    MR: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    MS: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    MT: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    MU: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    MV: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    MW: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    MX: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    MY: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    MZ: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    NA: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    NC: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    NE: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    NF: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    NG: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    NI: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    NL: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    NO: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    NP: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    NR: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    NU: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    NZ: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    OM: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    PA: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    PE: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    PF: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    PG: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    PH: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    PK: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    PL: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    PM: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    PN: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    PR: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    PS: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    PT: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    PW: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    PY: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    QA: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    RE: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    RO: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    RS: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    RU: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    RW: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    SA: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    SB: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    SC: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    SD: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    SE: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    SG: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    SH: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    SI: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    SJ: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    SK: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    SL: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    SM: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    SN: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    SO: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    SR: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    SS: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    ST: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    SV: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    SX: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    SY: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    SZ: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    TA: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    TC: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    TD: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    TF: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    TG: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    TH: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    TJ: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    TK: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    TL: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    TM: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    TN: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    TO: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    TR: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    TT: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    TV: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    TW: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    TZ: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    UA: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    UG: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    US: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    UY: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    UZ: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    VA: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    VC: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    VE: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    VG: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    VI: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    VN: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    VU: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    WF: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    WS: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    XK: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    YE: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    YT: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    ZA: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    ZM: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    ZW: (props: SVGProps<SVGSVGElement>) => JSX.Element
   }
 
   const Flags: FlagTypes

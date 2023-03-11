@@ -1,4 +1,4 @@
-import { FC, useMemo, useState } from 'react'
+import { PropsWithChildren, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link as ReactLink } from 'react-router-dom'
 import { Box, chakra, Flex, GridItem, GridProps, Text } from '@chakra-ui/react'
@@ -36,7 +36,7 @@ const BrandLogo = chakra(BrandLogoSvg, {
 })
 
 // Component for the split blue/white background.
-const BackgroundBox: FC = ({ children }) => (
+const BackgroundBox = ({ children }: PropsWithChildren) => (
   <Flex
     flex={1}
     overflow={{ lg: 'auto' }}
@@ -56,7 +56,7 @@ const BaseGridLayout = (props: GridProps) => (
 )
 
 // Grid area styling for the login form.
-const LoginGridArea: FC = ({ children }) => (
+const LoginGridArea = ({ children }: PropsWithChildren) => (
   <GridItem
     gridColumn={{ base: '1 / 5', md: '2 / 12', lg: '7 / 12' }}
     py="4rem"
@@ -68,7 +68,7 @@ const LoginGridArea: FC = ({ children }) => (
 )
 
 // Grid area styling for the footer.
-const FooterGridArea: FC = ({ children }) => (
+const FooterGridArea = ({ children }: PropsWithChildren) => (
   <GridItem
     alignSelf="end"
     gridColumn={{ base: '1 / 5', md: '2 / 12' }}
@@ -79,7 +79,7 @@ const FooterGridArea: FC = ({ children }) => (
 )
 
 // Grid area styling for the left sidebar that only displays on tablet and desktop breakpoints.
-const NonMobileSidebarGridArea: FC = ({ children }) => (
+const NonMobileSidebarGridArea = ({ children }: PropsWithChildren) => (
   <GridItem
     d={{ base: 'none', md: 'flex' }}
     gridColumn={{ md: '1 / 13', lg: '2 / 6' }}

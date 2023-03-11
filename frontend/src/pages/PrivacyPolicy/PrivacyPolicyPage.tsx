@@ -1,4 +1,4 @@
-import { FC } from 'react'
+import { PropsWithChildren } from 'react'
 import {
   Box,
   Container,
@@ -21,16 +21,16 @@ import {
   SubSubSectionOrderedList,
 } from '../TermsOfUse/TermsOfUsePage'
 
-const SectionListItem: FC<ListItemProps> = ({
+const SectionListItem = ({
   children,
   listStyleType = 'decimal',
-}) => (
+}: PropsWithChildren<ListItemProps>) => (
   <ListItem textStyle="body-1" listStyleType={listStyleType} pl="1rem">
     {children}
   </ListItem>
 )
 
-const SectionParagraph: FC = ({ children }) => (
+const SectionParagraph = ({ children }: PropsWithChildren) => (
   <Text mb="1.5rem">{children}</Text>
 )
 

@@ -4,7 +4,7 @@
  * https://www.npmjs.com/package/react-headless-phone-input but adapted for the
  * application's needs.
  */
-import { ChangeEvent, FC, useCallback, useMemo } from 'react'
+import { ChangeEvent, useCallback, useMemo } from 'react'
 import { BiChevronDown } from 'react-icons/bi'
 import {
   chakra,
@@ -72,7 +72,7 @@ interface CountrySelectProps {
   isReadOnly?: boolean
 }
 
-const CountrySelect: FC<CountrySelectProps> = (props) => {
+const CountrySelect = (props: CountrySelectProps): JSX.Element => {
   const { country, handleCountryChange } = usePhoneNumberInput()
   const styles = useMultiStyleConfig('PhoneNumberInput', props)
 

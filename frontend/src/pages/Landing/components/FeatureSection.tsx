@@ -1,4 +1,3 @@
-import { FC } from 'react'
 import { Box, Flex, Image, Stack, StackProps } from '@chakra-ui/react'
 
 import { LottieAnimation } from '~templates/LottieAnimation'
@@ -12,7 +11,7 @@ interface FeatureSectionProps extends StackProps {
   animationSrc?: unknown
 }
 
-export const FeatureSection: FC<FeatureSectionProps> = ({
+export const FeatureSection = ({
   children,
   imgSrc,
   animationSrc,
@@ -21,7 +20,7 @@ export const FeatureSection: FC<FeatureSectionProps> = ({
   align = 'center',
   bg,
   ...wrapProps
-}) => {
+}: FeatureSectionProps) => {
   return (
     <LandingSection bg={bg}>
       <Stack
