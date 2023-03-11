@@ -24,7 +24,7 @@ type EditDropdownProps = EditFieldProps<DropdownFieldBase>
 
 const EDIT_DROPDOWN_FIELD_KEYS = ['title', 'description', 'required'] as const
 
-type EditDropdownKeys = typeof EDIT_DROPDOWN_FIELD_KEYS[number]
+type EditDropdownKeys = (typeof EDIT_DROPDOWN_FIELD_KEYS)[number]
 
 type EditDropdownInputs = Pick<DropdownFieldBase, EditDropdownKeys> & {
   fieldOptionsString: string // Differs from fieldOptions in DropdownFieldBase because input is a string. Will be converted to array using SPLIT_TEXTAREA_TRANSFORM

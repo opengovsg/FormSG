@@ -629,7 +629,7 @@ export const createFormBuilderMocks = (
 ) => {
   const { form } = createMockForm(props)
 
-  const getAdminFormResponse = (): ReturnType<typeof rest['get']> => {
+  const getAdminFormResponse = (): ReturnType<(typeof rest)['get']> => {
     return rest.get<AdminFormViewDto>(
       '/api/v3/admin/forms/:formId',
       (req, res, ctx) => {

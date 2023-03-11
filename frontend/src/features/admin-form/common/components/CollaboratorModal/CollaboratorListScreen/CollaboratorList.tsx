@@ -66,7 +66,7 @@ export const CollaboratorList = (): JSX.Element => {
   }, [collaborators])
 
   const handleUpdateRole = useCallback(
-    (row: typeof list[number]) => (newRole: DropdownRole) => {
+    (row: (typeof list)[number]) => (newRole: DropdownRole) => {
       // Should not happen since this function cannot be invoked without the
       // collaborators being loaded, but guarding just in case.
       // Or when role to update is already the current role.
@@ -94,7 +94,7 @@ export const CollaboratorList = (): JSX.Element => {
   )
 
   const handleRemoveCollaborator = useCallback(
-    (row: typeof list[number]) => () => {
+    (row: (typeof list)[number]) => () => {
       if (!collaborators || areMutationsLoading) return
 
       if (row.email === user?.email) {

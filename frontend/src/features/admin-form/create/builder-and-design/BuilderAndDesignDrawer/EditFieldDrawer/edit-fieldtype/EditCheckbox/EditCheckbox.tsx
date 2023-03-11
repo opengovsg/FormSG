@@ -35,7 +35,7 @@ const EDIT_CHECKBOX_FIELD_KEYS = [
   'validateByValue',
 ] as const
 
-type EditCheckboxKeys = typeof EDIT_CHECKBOX_FIELD_KEYS[number]
+type EditCheckboxKeys = (typeof EDIT_CHECKBOX_FIELD_KEYS)[number]
 
 type EditCheckboxInputs = Pick<CheckboxFieldBase, EditCheckboxKeys> & {
   fieldOptions: string

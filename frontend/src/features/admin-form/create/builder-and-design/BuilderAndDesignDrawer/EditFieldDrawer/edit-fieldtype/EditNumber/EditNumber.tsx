@@ -27,7 +27,7 @@ const EDIT_NUMBER_FIELD_KEYS = ['title', 'description', 'required'] as const
 
 type EditNumberInputs = Pick<
   NumberFieldBase,
-  typeof EDIT_NUMBER_FIELD_KEYS[number]
+  (typeof EDIT_NUMBER_FIELD_KEYS)[number]
 > & {
   ValidationOptions: {
     selectedValidation: NumberSelectedValidation | ''

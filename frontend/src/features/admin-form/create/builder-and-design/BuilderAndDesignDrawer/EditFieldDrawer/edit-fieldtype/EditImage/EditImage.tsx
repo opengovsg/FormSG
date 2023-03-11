@@ -32,7 +32,7 @@ const EDIT_IMAGE_KEYS = ['title', 'description'] as const
 
 export type EditImageInputs = Pick<
   ImageFieldBase,
-  typeof EDIT_IMAGE_KEYS[number]
+  (typeof EDIT_IMAGE_KEYS)[number]
 > & {
   attachment?: UploadedImage
 }

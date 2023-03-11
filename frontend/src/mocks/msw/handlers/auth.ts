@@ -2,7 +2,7 @@ import { rest } from 'msw'
 
 export const otpGenerationResponse = ({
   isInvalid = false,
-}: { isInvalid?: boolean } = {}): ReturnType<typeof rest['post']> => {
+}: { isInvalid?: boolean } = {}): ReturnType<(typeof rest)['post']> => {
   return rest.post<{ email: string }, never, string>(
     '/api/v3/auth/otp/generate',
     (req, res, ctx) => {

@@ -25,7 +25,7 @@ const EDIT_HOMENO_KEYS = [
 
 type EditHomenoProps = EditFieldProps<HomenoFieldBase>
 
-type EditHomenoInputs = Pick<HomenoFieldBase, typeof EDIT_HOMENO_KEYS[number]>
+type EditHomenoInputs = Pick<HomenoFieldBase, (typeof EDIT_HOMENO_KEYS)[number]>
 
 export const EditHomeno = ({ field }: EditHomenoProps): JSX.Element => {
   const {

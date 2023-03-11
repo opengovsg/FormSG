@@ -29,7 +29,7 @@ const EDIT_RATING_FIELD_KEYS = [
 
 type EditRatingInputs = Pick<
   RatingFieldBase,
-  typeof EDIT_RATING_FIELD_KEYS[number]
+  (typeof EDIT_RATING_FIELD_KEYS)[number]
 >
 
 const EDIT_RATING_OPTIONS = {

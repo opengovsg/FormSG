@@ -44,7 +44,7 @@ const EDIT_ATTACHMENT_FIELD_KEYS = [
   'attachmentSize',
 ] as const
 
-type EditAttachmentKeys = typeof EDIT_ATTACHMENT_FIELD_KEYS[number]
+type EditAttachmentKeys = (typeof EDIT_ATTACHMENT_FIELD_KEYS)[number]
 
 type EditAttachmentInputs = Pick<AttachmentFieldBase, EditAttachmentKeys>
 
