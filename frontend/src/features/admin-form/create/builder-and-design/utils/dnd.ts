@@ -1,4 +1,4 @@
-import { DragStart, DragUpdate } from 'react-beautiful-dnd'
+import { DragStart, DragUpdate } from '@hello-pangea/dnd'
 
 import { FIELD_LIST_DROP_ID } from '~features/admin-form/create/builder-and-design/constants'
 

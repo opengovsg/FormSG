@@ -1,5 +1,4 @@
 import { useMemo } from 'react'
-import { Droppable } from 'react-beautiful-dnd'
 import {
   Box,
   Divider,
@@ -12,6 +11,7 @@ import {
   Tabs,
   Text,
 } from '@chakra-ui/react'
+import { Droppable } from '@hello-pangea/dnd'
 
 import { AdminFormDto, FormAuthType, FormResponseMode } from '~shared/types'
 

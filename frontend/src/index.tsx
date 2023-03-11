@@ -3,7 +3,7 @@ import 'focus-visible/dist/focus-visible.min.js'
 import './i18n/i18n'
 
 import * as React from 'react'
-import ReactDOM from 'react-dom'
+import { createRoot } from 'react-dom/client'
 
 import { App } from './app/App'
 import * as dayjs from './utils/dayjs'
@@ -32,12 +32,15 @@ window.gtag = gtag
 // Init dayjs
 dayjs.init()
 
-ReactDOM.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
-  document.getElementById('root'),
-)
+const container = document.getElementById('root')
+if (container) {
+  const root = createRoot(container)
+  root.render(
+    <React.StrictMode>
+      <App />
+    </React.StrictMode>,
+  )
+}
 
 // If you want your app to work offline and load faster, you can change
 // unregister() to register() below. Note this comes with some pitfalls.
