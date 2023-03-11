@@ -1,8 +1,8 @@
 import { useCallback, useMemo } from 'react'
 import { Controller } from 'react-hook-form'
-import { useMutation } from 'react-query'
 import { useParams } from 'react-router-dom'
 import { FormControl } from '@chakra-ui/react'
+import { useMutation } from '@tanstack/react-query'
 import { extend, get, isEmpty, pick } from 'lodash'
 
 import { MB } from '~shared/constants/file'

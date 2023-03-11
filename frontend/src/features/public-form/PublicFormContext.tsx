@@ -1,6 +1,6 @@
 // Contains all the shared props that will probably be passed down.
 import { createContext, RefObject, useContext } from 'react'
-import { UseQueryResult } from 'react-query'
+import { UseQueryResult } from '@tanstack/react-query'
 
 import { PublicFormViewDto } from '~shared/types/form'
 

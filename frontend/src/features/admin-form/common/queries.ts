@@ -1,6 +1,10 @@
 import { useMemo } from 'react'
-import { useQuery, UseQueryOptions, UseQueryResult } from 'react-query'
 import { useParams } from 'react-router-dom'
+import {
+  useQuery,
+  UseQueryOptions,
+  UseQueryResult,
+} from '@tanstack/react-query'
 
 import { AdminFormDto, PreviewFormViewDto } from '~shared/types/form/form'
 

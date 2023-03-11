@@ -1,4 +1,4 @@
-import { MutateOptions } from 'react-query'
+import { MutateOptions } from '@tanstack/react-query'
 
 import { FieldBase, FieldCreateDto, FormFieldDto } from '~shared/types/field'
 

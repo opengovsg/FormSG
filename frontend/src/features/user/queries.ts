@@ -1,4 +1,4 @@
-import { useQuery } from 'react-query'
+import { useQuery } from '@tanstack/react-query'
 import { StatusCodes } from 'http-status-codes'
 
 import { UserDto } from '~shared/types/user'

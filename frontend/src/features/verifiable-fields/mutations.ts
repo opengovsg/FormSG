@@ -1,5 +1,5 @@
 import { useCallback } from 'react'
-import { useMutation } from 'react-query'
+import { useMutation } from '@tanstack/react-query'
 
 import { FormFieldWithId } from '~shared/types/field'
 

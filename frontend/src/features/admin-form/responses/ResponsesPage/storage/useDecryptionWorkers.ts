@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { useMutation, UseMutationOptions } from 'react-query'
+import { useMutation, UseMutationOptions } from '@tanstack/react-query'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
 import {

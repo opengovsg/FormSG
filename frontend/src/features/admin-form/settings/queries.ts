@@ -1,5 +1,5 @@
-import { useQuery, UseQueryResult } from 'react-query'
 import { useParams } from 'react-router-dom'
+import { useQuery, UseQueryResult } from '@tanstack/react-query'
 
 import { FormSettings } from '~shared/types/form/form'
 

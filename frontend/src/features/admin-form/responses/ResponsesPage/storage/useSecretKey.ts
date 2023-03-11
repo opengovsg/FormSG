@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef } from 'react'
-import { useQuery, useQueryClient } from 'react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { BroadcastChannel } from 'broadcast-channel'
 
 import { useHasChanged } from '~hooks/useHasChanged'

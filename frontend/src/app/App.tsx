@@ -1,9 +1,9 @@
 import { HelmetProvider } from 'react-helmet-async'
-import { QueryClient, QueryClientProvider } from 'react-query'
-import { ReactQueryDevtools } from 'react-query/devtools'
 import { BrowserRouter } from 'react-router-dom'
 import { ChakraProvider } from '@chakra-ui/react'
 import { datadogLogs } from '@datadog/browser-logs'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 
 import { theme } from '~theme/index'
 import { AuthProvider } from '~contexts/AuthContext'

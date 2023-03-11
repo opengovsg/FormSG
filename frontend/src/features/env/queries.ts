@@ -1,4 +1,4 @@
-import { useQuery, UseQueryResult } from 'react-query'
+import { useQuery, UseQueryResult } from '@tanstack/react-query'
 
 import { PublicFormViewDto } from '~shared/types'
 import { ClientEnvVars } from '~shared/types/core'

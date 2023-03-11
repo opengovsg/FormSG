@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
-import { useMutation, useQueryClient } from 'react-query'
 import { useNavigate } from 'react-router-dom'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 import {
   CreateEmailFormBodyDto,

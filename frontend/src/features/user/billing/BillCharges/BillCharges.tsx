@@ -1,6 +1,6 @@
 import { Dispatch, SetStateAction, useEffect, useMemo, useState } from 'react'
-import { useQuery } from 'react-query'
 import { Box, Container, Flex, Grid, Stack, Text } from '@chakra-ui/react'
+import { useQuery } from '@tanstack/react-query'
 import simplur from 'simplur'
 
 import Pagination from '~/components/Pagination'

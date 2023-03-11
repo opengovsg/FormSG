@@ -134,7 +134,6 @@ export const MobileWorkspaceSearchbar = forwardRef<
             />
           </Box>
         )}
-
         <Box gridArea="filter">
           <Menu placement="bottom-end">
             <MenuButton
@@ -172,7 +171,6 @@ export const MobileWorkspaceSearchbar = forwardRef<
             )}
           </Menu>
         </Box>
-
         {/* Drawer for filter in mobile */}
         {isMobile && (
           <Drawer placement="bottom" onClose={onClose} isOpen={isOpen}>

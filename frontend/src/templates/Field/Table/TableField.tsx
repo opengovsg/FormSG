@@ -215,7 +215,6 @@ export const TableField = ({
                       })}
                     </Td>
                   ))}
-
                   {schema.addMoreRows ? (
                     <Td
                       verticalAlign="top"

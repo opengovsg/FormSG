@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
-import { useMutation, useQueryClient } from 'react-query'
 import { useParams } from 'react-router-dom'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 import { FormFieldDto } from '~shared/types/field'
 import { AdminFormDto } from '~shared/types/form'

@@ -5,7 +5,6 @@ import {
   useForm,
   useWatch,
 } from 'react-hook-form'
-import { useMutation } from 'react-query'
 import { useParams } from 'react-router-dom'
 import { useDebounce } from 'react-use'
 import {
@@ -17,6 +16,7 @@ import {
   Text,
   Textarea,
 } from '@chakra-ui/react'
+import { useMutation } from '@tanstack/react-query'
 import { cloneDeep, get, isEmpty } from 'lodash'
 
 import { FormColorTheme, FormLogoState, FormStartPage } from '~shared/types'

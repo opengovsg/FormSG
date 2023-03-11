@@ -87,7 +87,6 @@ export const WorkspaceHeader = ({
           </Text>
         </Skeleton>
       </Flex>
-
       {isDesktop ? (
         // Combination box used in desktop mode.
         <Box gridArea="searchFilter">
@@ -110,7 +109,6 @@ export const WorkspaceHeader = ({
           onFilter={setActiveFilter}
         />
       )}
-
       <Button
         gridArea="create"
         width={isMobile ? 'full' : undefined}

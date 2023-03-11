@@ -1,6 +1,6 @@
 // TODO #4279: Remove after React rollout is complete
-import { useMutation } from 'react-query'
 import { useParams } from 'react-router-dom'
+import { useMutation } from '@tanstack/react-query'
 
 import {
   adminChooseEnvironment,
