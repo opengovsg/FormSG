@@ -27,7 +27,7 @@ export const FormFieldDrawerActions = ({
       spacing={{ base: '0.5rem', md: '1rem' }}
     >
       <Button
-        isFullWidth={isMobile}
+        width={isMobile ? 'full' : undefined}
         isDisabled={isLoading}
         isLoading={isLoading}
         onClick={handleClick}
@@ -36,7 +36,7 @@ export const FormFieldDrawerActions = ({
       </Button>
       <Button
         isDisabled={isLoading}
-        isFullWidth={isMobile}
+        width={isMobile ? 'full' : undefined}
         variant="clear"
         colorScheme="secondary"
         onClick={handleCancel}

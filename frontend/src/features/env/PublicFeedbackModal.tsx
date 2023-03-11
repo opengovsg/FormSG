@@ -137,13 +137,16 @@ export const PublicFeedbackModal = ({
                 direction={{ base: 'column-reverse', md: 'row' }}
               >
                 <Button
-                  isFullWidth={isMobile}
+                  width={isMobile ? 'full' : undefined}
                   variant="clear"
                   onClick={handleClose}
                 >
                   No, don't switch
                 </Button>
-                <Button isFullWidth={isMobile} onClick={handleChangeEnv}>
+                <Button
+                  width={isMobile ? 'full' : undefined}
+                  onClick={handleChangeEnv}
+                >
                   Yes, please
                 </Button>
               </Stack>
@@ -259,7 +262,7 @@ export const PublicFeedbackModal = ({
                 direction={{ base: 'column-reverse', md: 'row' }}
               >
                 <Button
-                  isFullWidth={isMobile}
+                  width={isMobile ? 'full' : undefined}
                   variant="clear"
                   onClick={onClose}
                   isDisabled={feedbackMutation.isLoading}
@@ -267,7 +270,7 @@ export const PublicFeedbackModal = ({
                   Cancel
                 </Button>
                 <Button
-                  isFullWidth={isMobile}
+                  width={isMobile ? 'full' : undefined}
                   type="submit"
                   isDisabled={isLoading}
                   isLoading={feedbackMutation.isLoading}

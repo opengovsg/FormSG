@@ -109,7 +109,7 @@ export const CompleteScreen = ({
         </Stack>
       </ModalBody>
       <ModalFooter>
-        <Button isFullWidth={isMobile} onClick={onClose}>
+        <Button width={isMobile ? 'full' : undefined} onClick={onClose}>
           Back to responses
         </Button>
       </ModalFooter>

@@ -73,7 +73,10 @@ export const AdminForbiddenErrorPage = ({
               w="100%"
               justify="center"
             >
-              <Button isFullWidth={isMobile} onClick={() => navigate(-1)}>
+              <Button
+                width={isMobile ? 'full' : undefined}
+                onClick={() => navigate(-1)}
+              >
                 Back
               </Button>
 

@@ -94,7 +94,7 @@ export const DeleteFormModal = ({
           >
             <Button
               colorScheme="danger"
-              isFullWidth={isMobile}
+              width={isMobile ? 'full' : undefined}
               isDisabled={!formToDelete}
               isLoading={deleteFormMutation.isLoading}
               onClick={handleDeleteForm}
@@ -102,7 +102,7 @@ export const DeleteFormModal = ({
               Yes, delete form
             </Button>
             <Button
-              isFullWidth={isMobile}
+              width={isMobile ? 'full' : undefined}
               variant="clear"
               colorScheme="secondary"
               onClick={onClose}

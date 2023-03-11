@@ -64,7 +64,7 @@ export const FormAuth = ({ authType }: FormAuthProps): JSX.Element => {
         <AuthImageSvgr />
         <Button
           colorScheme={buttonColorScheme}
-          isFullWidth={isMobile}
+          width={isMobile ? 'full' : undefined}
           rightIcon={isMobile ? undefined : <BiLogInCircle fontSize="1.5rem" />}
           onClick={() => handleLoginMutation.mutate()}
           isLoading={handleLoginMutation.isLoading}

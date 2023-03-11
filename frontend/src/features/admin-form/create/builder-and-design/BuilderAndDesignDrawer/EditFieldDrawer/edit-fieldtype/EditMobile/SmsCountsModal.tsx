@@ -86,7 +86,7 @@ export const SmsCountsModal = ({
           )}
         </ModalBody>
         <ModalFooter>
-          <Button isFullWidth={isMobile} onClick={onClose}>
+          <Button width={isMobile ? 'full' : undefined} onClick={onClose}>
             Yes, I understand
           </Button>
         </ModalFooter>

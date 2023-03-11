@@ -72,14 +72,14 @@ export const DeleteTwilioModal = ({
             <Button
               variant="clear"
               colorScheme="secondary"
-              isFullWidth={modalSize === 'mobile'}
+              width={modalSize === 'mobile' ? 'full' : undefined}
               onClick={onClose}
             >
               No, don't remove
             </Button>
             <Button
               colorScheme="danger"
-              isFullWidth={modalSize === 'mobile'}
+              width={modalSize === 'mobile' ? 'full' : undefined}
               isLoading={mutateFormTwilioDeletion.isLoading}
               onClick={handleConfirmDeleteCreds}
             >

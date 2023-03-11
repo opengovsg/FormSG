@@ -216,7 +216,7 @@ export const SaveSecretKeyScreen = ({
             type="submit"
             isLoading={isLoading}
             onClick={handleCreateStorageModeForm}
-            isFullWidth
+            width="full"
           >
             <Text lineHeight="1.5rem">I have saved my Secret Key safely</Text>
           </Button>

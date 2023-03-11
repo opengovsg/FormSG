@@ -106,7 +106,7 @@ const useAddCollaboratorInput = () => {
     isTransferOwnershipSelected,
     isFormAdmin,
     formMethods,
-    isFullWidth: isMobile,
+    width: isMobile ? 'full' : undefined,
     validationRules,
     handleInputSubmission,
   }
@@ -119,7 +119,7 @@ export const AddCollaboratorInput = (): JSX.Element => {
       register,
       formState: { errors },
     },
-    isFullWidth,
+    width,
     isQueryLoading,
     isTransferOwnershipSelected,
     isFormAdmin,
@@ -167,7 +167,7 @@ export const AddCollaboratorInput = (): JSX.Element => {
         colorScheme={isTransferOwnershipSelected ? 'danger' : 'primary'}
         isDisabled={isQueryLoading}
         isLoading={isMutationLoading}
-        isFullWidth={isFullWidth}
+        width={width}
         mt="1rem"
         type="submit"
       >

@@ -83,14 +83,17 @@ export const RolloutAnnouncementModal = ({
               )}
 
               {isLastAnnouncement ? (
-                <Button onClick={handleNextClick} isFullWidth={isMobile}>
+                <Button
+                  onClick={handleNextClick}
+                  width={isMobile ? 'full' : undefined}
+                >
                   Done
                 </Button>
               ) : (
                 <Button
                   rightIcon={<BiRightArrowAlt size="1.5rem" />}
                   onClick={handleNextClick}
-                  isFullWidth={isMobile}
+                  width={isMobile ? 'full' : undefined}
                 >
                   Next
                 </Button>

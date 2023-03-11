@@ -176,14 +176,14 @@ export const EndPageInput = (): JSX.Element => {
         spacing="1rem"
       >
         <Button
-          isFullWidth={isMobile}
+          width={isMobile ? 'full' : undefined}
           onClick={handleUpdateEndPage}
           isLoading={endPageMutation.isLoading}
         >
           Save page
         </Button>
         <Button
-          isFullWidth={isMobile}
+          width={isMobile ? 'full' : undefined}
           variant="clear"
           colorScheme="secondary"
           isDisabled={endPageMutation.isLoading}

@@ -34,7 +34,11 @@ export const ProgressModalContent = ({
         <Progress size="xl" value={downloadPercentage} hasStripe isAnimated />
       </ModalBody>
       <ModalFooter>
-        <Button colorScheme="danger" onClick={onCancel} isFullWidth={isMobile}>
+        <Button
+          colorScheme="danger"
+          onClick={onCancel}
+          width={isMobile ? 'full' : undefined}
+        >
           Stop download
         </Button>
       </ModalFooter>

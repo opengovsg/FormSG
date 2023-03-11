@@ -35,7 +35,7 @@ export const CanceledScreen = ({
         Your responses and attachments have not been downloaded successfully.
       </ModalBody>
       <ModalFooter>
-        <Button isFullWidth={isMobile} onClick={onClose}>
+        <Button width={isMobile ? 'full' : undefined} onClick={onClose}>
           Back to responses
         </Button>
       </ModalFooter>

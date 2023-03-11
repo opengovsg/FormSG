@@ -102,7 +102,7 @@ export const ConfirmationScreen = ({
           justify="end"
         >
           <Button
-            isFullWidth={isMobile}
+            width={isMobile ? 'full' : undefined}
             onClick={onDownload}
             isLoading={isDownloading}
             isDisabled={responsesCount === 0}
@@ -110,7 +110,7 @@ export const ConfirmationScreen = ({
             Start download
           </Button>
           <Button
-            isFullWidth={isMobile}
+            width={isMobile ? 'full' : undefined}
             variant="clear"
             colorScheme="secondary"
             onClick={onCancel}

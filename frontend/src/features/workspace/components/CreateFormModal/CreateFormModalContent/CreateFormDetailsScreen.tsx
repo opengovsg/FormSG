@@ -113,7 +113,7 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
             isLoading={isLoading}
             isDisabled={isFetching}
             onClick={handleDetailsSubmit}
-            isFullWidth
+            width="full"
           >
             <Text lineHeight="1.5rem">Next step</Text>
           </Button>

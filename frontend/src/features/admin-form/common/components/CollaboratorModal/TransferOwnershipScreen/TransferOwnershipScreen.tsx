@@ -48,7 +48,7 @@ export const TransferOwnershipScreen = (): JSX.Element | null => {
           direction={{ base: 'column', md: 'row-reverse' }}
         >
           <Button
-            isFullWidth={isMobile}
+            width={isMobile ? 'full' : undefined}
             isLoading={mutateTransferFormOwnership.isLoading}
             colorScheme="danger"
             onClick={handleTransferOwnership}
@@ -56,7 +56,7 @@ export const TransferOwnershipScreen = (): JSX.Element | null => {
             Yes, transfer form
           </Button>
           <Button
-            isFullWidth={isMobile}
+            width={isMobile ? 'full' : undefined}
             isDisabled={mutateTransferFormOwnership.isLoading}
             variant="clear"
             colorScheme="secondary"

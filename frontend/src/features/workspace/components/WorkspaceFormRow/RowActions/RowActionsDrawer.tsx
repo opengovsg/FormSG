@@ -46,7 +46,7 @@ export const RowActionsDrawer = ({
 
   const buttonProps: Partial<ButtonProps> = useMemo(
     () => ({
-      isFullWidth: true,
+      width: 'full',
       iconSpacing: '1rem',
       justifyContent: 'flex-start',
       textStyle: 'body-1',

@@ -115,7 +115,7 @@ export const LandingPage = (): JSX.Element => {
             </SectionBodyText>
             <Box mt="2.5rem">
               <Button
-                isFullWidth={isMobile}
+                width={isMobile ? 'full' : undefined}
                 as={ReactLink}
                 to={LOGIN_ROUTE}
                 rightIcon={<BiRightArrowAlt fontSize="1.5rem" />}

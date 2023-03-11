@@ -99,7 +99,7 @@ FullWidth.args = {
   variant: 'solid',
   children: 'Button',
   colorScheme: 'primary',
-  isFullWidth: true,
+  width: 'full',
   textStyle: 'subhead-1',
 }
 

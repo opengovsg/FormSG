@@ -41,7 +41,7 @@ export const RemoveSelfScreen = (): JSX.Element | null => {
           direction={{ base: 'column', md: 'row-reverse' }}
         >
           <Button
-            isFullWidth={isMobile}
+            width={isMobile ? 'full' : undefined}
             isLoading={mutateRemoveSelf.isLoading}
             colorScheme="danger"
             onClick={handleRemoveSelf}
@@ -49,7 +49,7 @@ export const RemoveSelfScreen = (): JSX.Element | null => {
             Yes, remove myself
           </Button>
           <Button
-            isFullWidth={isMobile}
+            width={isMobile ? 'full' : undefined}
             isDisabled={mutateRemoveSelf.isLoading}
             variant="clear"
             colorScheme="secondary"

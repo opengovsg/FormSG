@@ -156,7 +156,7 @@ export const AdminFeedbackModal = ({
               direction={{ base: 'column-reverse', md: 'row' }}
             >
               <Button
-                isFullWidth={isMobile}
+                width={isMobile ? 'full' : undefined}
                 variant="clear"
                 onClick={onClose}
                 isDisabled={feedbackMutation.isLoading}
@@ -164,7 +164,7 @@ export const AdminFeedbackModal = ({
                 Cancel
               </Button>
               <Button
-                isFullWidth={isMobile}
+                width={isMobile ? 'full' : undefined}
                 type="submit"
                 isDisabled={isLoading}
                 isLoading={feedbackMutation.isLoading}

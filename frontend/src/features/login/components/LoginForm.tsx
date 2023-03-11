@@ -71,7 +71,7 @@ export const LoginForm = ({ onSubmit }: LoginFormProps): JSX.Element => {
         align="center"
       >
         <Button
-          isFullWidth={isMobile}
+          width={isMobile ? 'full' : undefined}
           isLoading={formState.isSubmitting}
           type="submit"
         >

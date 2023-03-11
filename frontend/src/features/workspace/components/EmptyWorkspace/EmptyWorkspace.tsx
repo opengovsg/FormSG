@@ -45,7 +45,7 @@ export const EmptyWorkspace = ({
         Get started by creating a new form
       </Text>
       <Button
-        isFullWidth={isMobile}
+        width={isMobile ? 'full' : undefined}
         isDisabled={isLoading}
         onClick={handleOpenCreateFormModal}
         leftIcon={<BiPlus fontSize="1.5rem" />}

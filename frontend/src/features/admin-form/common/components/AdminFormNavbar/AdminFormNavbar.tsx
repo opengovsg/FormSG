@@ -84,7 +84,7 @@ export const AdminFormNavbar = ({
 
   const mobileDrawerExtraButtonProps: Partial<ButtonProps> = useMemo(
     () => ({
-      isFullWidth: true,
+      width: 'full',
       iconSpacing: '1rem',
       justifyContent: 'flex-start',
       variant: 'clear',

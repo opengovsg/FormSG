@@ -230,7 +230,7 @@ export const SecretKeyActivationModal = ({
               <Button
                 rightIcon={<BiRightArrowAlt fontSize="1.5rem" />}
                 type="submit"
-                isFullWidth
+                width="full"
                 hidden={secretKeyNotUploaded}
                 isDisabled={activateDisabled}
                 isLoading={isLoading}

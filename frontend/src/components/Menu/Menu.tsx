@@ -16,7 +16,7 @@ import { BxsChevronUp } from '~/assets/icons/BxsChevronUp'
 import { MenuVariant } from '~theme/components/Menu'
 import Button, { ButtonProps } from '~components/Button'
 
-export interface MenuButtonProps extends Omit<ButtonProps, 'isFullWidth'> {
+export interface MenuButtonProps extends ButtonProps {
   variant?: MenuVariant
   isStretch?: boolean
   isOpen?: boolean

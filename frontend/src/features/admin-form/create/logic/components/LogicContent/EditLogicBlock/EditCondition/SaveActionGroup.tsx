@@ -51,7 +51,7 @@ export const SaveActionGroup = ({
         <Button
           isLoading={isLoading}
           onClick={handleSubmit}
-          isFullWidth={isMobile}
+          width={isMobile ? 'full' : undefined}
         >
           {submitButtonLabel}
         </Button>
@@ -60,7 +60,7 @@ export const SaveActionGroup = ({
           colorScheme="secondary"
           isDisabled={isLoading}
           onClick={handleCancel}
-          isFullWidth={isMobile}
+          width={isMobile ? 'full' : undefined}
         >
           Cancel
         </Button>

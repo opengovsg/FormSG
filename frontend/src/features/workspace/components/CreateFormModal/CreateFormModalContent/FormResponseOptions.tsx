@@ -39,7 +39,7 @@ export const FormResponseOptions = forwardRef<
         isActive={value === FormResponseMode.Encrypt}
         isDisabled={containsMyInfoFields}
         onClick={() => onChange(FormResponseMode.Encrypt)}
-        isFullWidth
+        width="full"
         flex={1}
       >
         <Tile.Title>Storage Mode</Tile.Title>
@@ -58,7 +58,7 @@ export const FormResponseOptions = forwardRef<
         icon={BiMailSend}
         isActive={value === FormResponseMode.Email}
         onClick={() => onChange(FormResponseMode.Email)}
-        isFullWidth
+        width="full"
         flex={1}
       >
         <Tile.Title>Email Mode</Tile.Title>

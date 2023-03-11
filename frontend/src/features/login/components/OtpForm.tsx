@@ -73,7 +73,7 @@ export const OtpForm = ({
         align="center"
       >
         <Button
-          isFullWidth={isMobile}
+          width={isMobile ? 'full' : undefined}
           isLoading={formState.isSubmitting}
           type="submit"
         >

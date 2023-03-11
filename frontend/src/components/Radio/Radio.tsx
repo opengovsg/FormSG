@@ -120,7 +120,7 @@ export const Radio = forwardRef<RadioProps, 'input'>(
     const {
       spacing = '0.5rem',
       children,
-      isFullWidth,
+      width,
       ...rest
     } = omitThemingProps(props)
 
@@ -184,7 +184,7 @@ export const Radio = forwardRef<RadioProps, 'input'>(
     }, [getLabelProps, handleSelect, handleSpacebar])
 
     const rootStyles = {
-      width: isFullWidth ? 'full' : undefined,
+      width,
       display: 'inline-flex',
       alignItems: 'center',
       verticalAlign: 'top',

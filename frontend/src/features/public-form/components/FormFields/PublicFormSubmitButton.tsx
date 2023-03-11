@@ -44,7 +44,7 @@ export const PublicFormSubmitButton = ({
   return (
     <Stack px={{ base: '1rem', md: 0 }} pt="2.5rem" pb="4rem">
       <Button
-        isFullWidth={isMobile}
+        width={isMobile ? 'full' : undefined}
         w="100%"
         colorScheme={`theme-${colorTheme}` as ThemeColorScheme}
         type="button"

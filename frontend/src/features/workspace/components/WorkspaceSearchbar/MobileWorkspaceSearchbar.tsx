@@ -183,7 +183,7 @@ export const MobileWorkspaceSearchbar = forwardRef<
                   {FILTER_OPTIONS.map((option, i) => (
                     <Button
                       key={i}
-                      isFullWidth={true}
+                      width="full"
                       justifyContent="flex-start"
                       variant="clear"
                       colorScheme="secondary"

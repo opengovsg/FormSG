@@ -177,7 +177,11 @@ export const SecretKeyVerification = (): JSX.Element => {
             direction={{ base: 'column', md: 'row' }}
             mt="2rem"
           >
-            <Button isFullWidth={isMobile} isDisabled={isLoading} type="submit">
+            <Button
+              width={isMobile ? 'full' : undefined}
+              isDisabled={isLoading}
+              type="submit"
+            >
               Unlock responses
             </Button>
             <Link variant="standalone" isExternal href={GUIDE_SECRET_KEY_LOSS}>

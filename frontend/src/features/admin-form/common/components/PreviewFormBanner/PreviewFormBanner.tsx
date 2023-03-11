@@ -57,7 +57,7 @@ export const PreviewFormBanner = ({
   } = useDisclosure()
   const mobileDrawerButtonProps: Partial<ButtonProps> = useMemo(
     () => ({
-      isFullWidth: true,
+      width: 'full',
       iconSpacing: '1rem',
       justifyContent: 'flex-start',
       variant: 'clear',
@@ -147,7 +147,7 @@ export const PreviewFormBanner = ({
             <DrawerBody px={0} py="0.5rem">
               <Button
                 onClick={onModalOpen}
-                isFullWidth={true}
+                width="full"
                 {...mobileDrawerButtonProps}
               >
                 Use this template
