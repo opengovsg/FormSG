@@ -174,7 +174,7 @@
     "eslint-plugin-simple-import-sort": "^7.0.0",
     "eslint-plugin-storybook": "^0.6.11",
     "eslint-plugin-testing-library": "^5.0.1",
-    "html-webpack-plugin": "^4.5.2",
+    "html-webpack-plugin": "^5.5.0",
     "lint-staged": "^12.1.2",
     "mockdate": "^3.0.5",
     "msw": "^0.36.3",
@@ -191,6 +191,7 @@
     "storybook-react-i18next": "^1.1.2",
     "ts-jest": "^27.1.1",
     "webpack": "^5.76.1",
+    "webpack-cli": "^5.0.1",
     "worker-loader": "^3.0.8"
   },
   "proxy": "http://localhost:5001",
