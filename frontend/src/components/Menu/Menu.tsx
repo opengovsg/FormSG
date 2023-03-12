@@ -91,7 +91,7 @@ const MenuDivider = ChakraMenuDivider
  * Used to wrap MenuButton, MenuItem and MenuList components
  */
 export const Menu = (props: MenuProps): JSX.Element => {
-  return <ChakraMenu matchWidth={true} gutter={4} {...props} />
+  return <ChakraMenu gutter={4} {...props} />
 }
 
 Menu.Button = MenuButton
