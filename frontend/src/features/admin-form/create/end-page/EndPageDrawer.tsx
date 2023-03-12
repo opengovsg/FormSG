@@ -92,8 +92,8 @@ export const EndPageInput = (): JSX.Element => {
   }, [dirtyFields, setIsDirty])
 
   const handleEndPageBuilderChanges = useCallback(
-    (endPageInputs) => {
-      setData({ ...(endPageInputs as FormEndPage) })
+    (endPageInputs: FormEndPage) => {
+      setData({ ...endPageInputs })
     },
     [setData],
   )

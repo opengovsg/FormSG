@@ -44,7 +44,7 @@ export const PreviewFormProvider = ({
     useCommonFormProvider(formId)
 
   const showErrorToast = useCallback(
-    (error) => {
+    (error: Error) => {
       toast({
         status: 'danger',
         description:

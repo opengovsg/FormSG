@@ -10,7 +10,7 @@ import pick from 'lodash/pick'
 
 import { FieldColorScheme } from '~theme/foundations/colours'
 
-import { YesNoOption } from './YesNoOption'
+import { YesNoOption, YesNoOptionProps } from './YesNoOption'
 
 export type YesNoOptionValue = 'Yes' | 'No'
 
@@ -49,7 +49,7 @@ export interface YesNoProps {
  * YesNo field component.
  */
 export const YesNo = forwardRef<YesNoProps, 'input'>(
-  ({ colorScheme, ...props }, ref) => {
+  ({ colorScheme, onChange, ...props }, ref) => {
     const formControlProps = useFormControlProps(props)
     const { getRootProps, getRadioProps } = useRadioGroup(props)
 
@@ -81,9 +81,9 @@ export const YesNo = forwardRef<YesNoProps, 'input'>(
       // -1px so borders collapse.
       <HStack spacing="-1px" {...groupProps}>
         <YesNoOption
-          side="left"
           colorScheme={colorScheme}
-          {...noProps}
+          {...(noProps as YesNoOptionProps)}
+          side="left"
           leftIcon={BiX}
           label="No"
           // Ref is set here for tracking current value, and also so any errors
@@ -92,9 +92,9 @@ export const YesNo = forwardRef<YesNoProps, 'input'>(
           title={props.title}
         />
         <YesNoOption
-          side="right"
           colorScheme={colorScheme}
-          {...yesProps}
+          {...(yesProps as YesNoOptionProps)}
+          side="right"
           leftIcon={BiCheck}
           label="Yes"
           title={props.title}

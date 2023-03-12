@@ -103,9 +103,11 @@ export const AvatarMenu = ({
             </Avatar>
           </AvatarMenuButton>
           <Menu.List role="menu" marginTop="0.375rem" {...menuListProps}>
-            <AvatarMenuUsername>{menuUsername}</AvatarMenuUsername>
-            <AvatarMenuDivider />
-            {children}
+            <>
+              <AvatarMenuUsername>{menuUsername}</AvatarMenuUsername>
+              <AvatarMenuDivider />
+              {children}
+            </>
           </Menu.List>
         </>
       )}

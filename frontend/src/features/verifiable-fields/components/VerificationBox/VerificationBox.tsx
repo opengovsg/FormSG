@@ -92,7 +92,7 @@ export const VerificationBox = ({
       align="flex-start"
       mt="0.5rem"
     >
-      <Box d={{ base: 'none', md: 'initial' }} mr="1.5rem">
+      <Box display={{ base: 'none', md: 'initial' }} mr="1.5rem">
         <Logo />
       </Box>
       <Box>

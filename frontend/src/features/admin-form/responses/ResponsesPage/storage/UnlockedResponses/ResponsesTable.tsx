@@ -92,7 +92,7 @@ export const ResponsesTable = () => {
   }, [currentPage, gotoPage])
 
   const handleRowClick = useCallback(
-    (submissionId: string, respondentNumber) => {
+    (submissionId: string, respondentNumber: number) => {
       onRowClick()
       return navigate(submissionId, {
         state: {

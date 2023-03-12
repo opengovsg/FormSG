@@ -58,7 +58,7 @@ export interface RatingProps {
   /**
    * Whether the rating field is required.
    */
-  isRequired: boolean
+  isRequired?: boolean
 
   /**
    * Whether the current response is invalid.
@@ -68,7 +68,7 @@ export interface RatingProps {
   /**
    * Title of the rating field to label the rating group
    */
-  fieldTitle: string
+  fieldTitle?: string
 }
 
 export const Rating = forwardRef<RatingProps, 'input'>(

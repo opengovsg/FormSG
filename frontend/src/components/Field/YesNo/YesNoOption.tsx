@@ -13,7 +13,7 @@ import {
 import { YESNO_THEME_KEY } from '~theme/components/Field/YesNo'
 import { FieldColorScheme } from '~theme/foundations/colours'
 
-interface YesNoOptionProps extends UseRadioProps {
+export interface YesNoOptionProps extends UseRadioProps {
   /**
    * Icon to be displayed to the left of the option content.
    */

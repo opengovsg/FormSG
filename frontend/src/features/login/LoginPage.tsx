@@ -60,7 +60,7 @@ const LoginGridArea = ({ children }: PropsWithChildren) => (
   <GridItem
     gridColumn={{ base: '1 / 5', md: '2 / 12', lg: '7 / 12' }}
     py="4rem"
-    d="flex"
+    display="flex"
     alignItems={{ base: 'initial', lg: 'center' }}
     justifyContent="center"
     children={children}
@@ -81,7 +81,7 @@ const FooterGridArea = ({ children }: PropsWithChildren) => (
 // Grid area styling for the left sidebar that only displays on tablet and desktop breakpoints.
 const NonMobileSidebarGridArea = ({ children }: PropsWithChildren) => (
   <GridItem
-    d={{ base: 'none', md: 'flex' }}
+    display={{ base: 'none', md: 'flex' }}
     gridColumn={{ md: '1 / 13', lg: '2 / 6' }}
     // colSpan={{ md: 12, lg: 5 }}
     // pl={{ base: '1.5rem', lg: '8%' }}

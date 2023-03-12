@@ -12,7 +12,7 @@ interface FeatureTourProps {
 
 export const FeatureTour = ({ onClose }: FeatureTourProps): JSX.Element => {
   const [stepIndex, setStepIndex] = useState<number>(0)
-  const arrowColor: string = useToken('colors', ['primary.100'])
+  const arrowColor: string = useToken('colors', ['primary.100'])[0]
   const [isPaginationClicked, setIsPaginationClicked] = useState<boolean>(false)
 
   const handleJoyrideCallback = ({
