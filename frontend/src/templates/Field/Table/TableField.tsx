@@ -100,6 +100,10 @@ export const TableField = ({
   }, [appendTableRow, fields.length, hasMinRowsChanged, remove, schema])
 
   const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } =
+    // typescript error with react 18 type defintions, but ok when react 17 types are installed
+    // may be related to FunctionComponent changes
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
     useTable({ columns: columnsData, data: fields })
 
   const handleAddRow = useCallback(() => {
