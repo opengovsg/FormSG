@@ -14,7 +14,6 @@ export type ThemeColorScheme =
   | 'theme-orange'
   | 'theme-red'
   | 'theme-brown'
-  | 'white'
   | 'subtle'
 
 /**
@@ -47,17 +46,6 @@ const primaryColourPalette = {
 }
 
 export const colours: { [k in ThemeColorScheme]: Record<string, string> } = {
-  white: {
-    100: '#FFFFFF',
-    200: '#FFFFFF',
-    300: '#FFFFFF',
-    400: '#FFFFFF',
-    500: '#FFFFFF',
-    600: '#FFFFFF',
-    700: '#FFFFFF',
-    800: '#FFFFFF',
-    900: '#FFFFFF',
-  },
   primary: primaryColourPalette,
   secondary: {
     100: '#F5F6F8',
