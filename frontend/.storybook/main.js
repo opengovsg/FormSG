@@ -12,10 +12,10 @@ module.exports = {
     '../src/**/*.stories.@(js|jsx|ts|tsx)',
   ],
   addons: [
+    '@storybook/preset-create-react-app',
     '@storybook/addon-links',
     '@storybook/addon-essentials',
     '@storybook/addon-a11y',
-    'storybook-preset-craco',
     'storybook-react-i18next',
     {
       name: 'storybook-addon-turbo-build',

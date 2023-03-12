@@ -6,9 +6,9 @@ import 'inter-ui/inter.css'
 import 'focus-visible/dist/focus-visible.min.js'
 
 import { HelmetProvider } from 'react-helmet-async'
-import { QueryClient, QueryClientProvider } from 'react-query'
 import { ChakraProvider } from '@chakra-ui/react'
 import { DecoratorFn } from '@storybook/react'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { initialize, mswDecorator } from 'msw-storybook-addon'
 
 import { AuthProvider } from '~contexts/AuthContext'
