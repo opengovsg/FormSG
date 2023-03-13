@@ -600,7 +600,9 @@ const addLogics = async (
     for (let i = 0; i < logic.conditions.length; i++) {
       const { field, state, value } = logic.conditions[i]
 
-      if (i) await page.getByRole('button', { name: 'Add condition' }).click()
+      if (i > 0) {
+        await page.getByRole('button', { name: 'Add condition' }).click()
+      }
 
       await fillDropdown(
         page,

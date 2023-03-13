@@ -53,10 +53,10 @@ const MAIL_CLIENT = {
 }
 
 const getEmailsBy = async (
-  filter: (email: MailData) => boolean,
+  filterFn: (email: MailData) => boolean,
 ): Promise<MailData[]> => {
   const inbox = await MAIL_CLIENT.getAll()
-  return inbox.filter(filter).sort((a, b) => (a.time > b.time ? -1 : 1))
+  return inbox.filter(filterFn).sort((a, b) => (a.time > b.time ? -1 : 1))
 }
 
 /**

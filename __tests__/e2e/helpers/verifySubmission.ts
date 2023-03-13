@@ -176,15 +176,18 @@ const getResponseTitle = (
 
   // Basic fields
   if (field.fieldType === BasicField.Table) {
+    // Delegate the work to the table handler
     return TABLE_HANDLER.getName(field, formMode)
-  } else if (field.fieldType === BasicField.Attachment) {
+  }
+  if (field.fieldType === BasicField.Attachment) {
     switch (formMode) {
       case FormResponseMode.Email:
         return `[attachment] ${field.title}`
       case FormResponseMode.Encrypt:
         return field.title
     }
-  } else if (isVerifiableFieldType(field)) {
+  }
+  if (isVerifiableFieldType(field)) {
     if (field.isVerifiable && field.val) return `[verified] ${field.title}`
   }
   return field.title
