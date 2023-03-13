@@ -13,9 +13,12 @@ export const getSettings = (
     }
     // All auth types have an NRIC
     if (!custom.nric) {
-      custom.nric = process.env.MOCKPASS_NRIC
+      custom.nric =
+        custom.authType === FormAuthType.CP
+          ? process.env.MOCKPASS_UID
+          : process.env.MOCKPASS_NRIC
     }
-    // Only CP has UEN
+    // Only CP has UEN and a special associated UID
     if (custom.authType === FormAuthType.CP && !custom.uen) {
       custom.uen = process.env.MOCKPASS_UEN
     }

@@ -97,6 +97,10 @@ const authForm = async (
     .click()
 
   // Mockpass talks to FormSG to login here.
+  if (formSettings.authType === FormAuthType.MyInfo) {
+    // Click the consent button to share info with FormSG
+    await page.getByRole('button', { name: 'Submit' }).click()
+  }
 
   // Redirected to the form fields page. Verify log out button is visible with
   // the correct uin, to verify that we have been logged in correctly.

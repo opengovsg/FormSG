@@ -183,8 +183,6 @@ test.describe('Email form submission', () => {
     const formLogics = NO_LOGIC
     const formSettings = getSettings({
       authType: FormAuthType.MyInfo,
-      esrvcId: 'test_esrvcid_SP',
-      nric: process.env.MOCKPASS_NRIC,
     })
 
     // Test
