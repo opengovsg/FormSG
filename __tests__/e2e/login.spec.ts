@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { expect, test } from '@playwright/test'
 import cuid from 'cuid'
 
