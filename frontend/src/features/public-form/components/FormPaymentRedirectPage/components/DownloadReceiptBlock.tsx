@@ -3,6 +3,7 @@ import { BiDownload } from 'react-icons/bi'
 import { Box, Stack, Text } from '@chakra-ui/react'
 
 import Button from '../../../../../components/Button'
+// import { API_BASE_URL } from '../../../../../services/ApiService'
 import { usePublicFormMutations } from '../../../mutations'
 
 type DownloadReceiptBlockProps = {
@@ -43,6 +44,10 @@ export const DownloadReceiptBlock = ({
         isDisabled={downloadPaymentReceiptMutation.isLoading}
         isLoading={downloadPaymentReceiptMutation.isLoading}
         onClick={handleClick}
+        // as="a"
+        // download
+        // href={`${API_BASE_URL}/payments/receipt/${formId}/${stripeSubmissionId}`}
+        // target="_blank"
       >
         Save payment receipt
       </Button>
