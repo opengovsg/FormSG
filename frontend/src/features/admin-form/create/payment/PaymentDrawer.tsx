@@ -216,12 +216,15 @@ export const PaymentInput = (): JSX.Element => {
             <FormControl
               isReadOnly={paymentsMutation.isLoading}
               isInvalid={!!errors.description}
+              isRequired
             >
               <FormLabel>Description</FormLabel>
-              <Textarea {...register('description')} />
-              <FormErrorMessage>
-                {errors?.description?.message}
-              </FormErrorMessage>
+              <Textarea
+                {...register('description', {
+                  required: 'Please enter a payment message',
+                })}
+              />
+              <FormErrorMessage>{errors.description?.message}</FormErrorMessage>
             </FormControl>
           </>
         )}
