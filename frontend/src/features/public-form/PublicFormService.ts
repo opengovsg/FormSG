@@ -111,7 +111,7 @@ export const submitStorageModeForm = async ({
   formId,
   publicKey,
   captchaResponse = null,
-  paymentReceiptEmail = undefined,
+  paymentReceiptEmail,
 }: SubmitStorageFormArgs) => {
   const filteredInputs = filterHiddenInputs({
     formFields,

@@ -57,7 +57,7 @@ export const FormPaymentPreview = ({
             letterSpacing="-0.019em"
           >{`${centsToDollars(paymentDetails.amount_cents ?? 0)} SGD`}</Box>
         </Box>
-        <EmailField schema={emailFieldSchema}></EmailField>
+        <EmailField schema={emailFieldSchema} />
       </Box>
     </Stack>
   )
