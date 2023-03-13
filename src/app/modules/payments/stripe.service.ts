@@ -95,8 +95,8 @@ const updateEventLogBySubmissionIdTransaction = async (
 /**
  * Retrieves and updates payment document of the given submissionId with the event
  * @param metadata the metadata associated with the payment, from the Stripe Event
- * @param update list of fields to update
  * @param event the new Stripe Event causing the update operation to occur
+ * @param update list of fields to update
  * @returns ok(payment) if payment exists
  * @returns err(PaymentNotFoundError) if the payment does not exist
  * @returns err(DatabaseError) if error occurs whilst querying the database
@@ -114,7 +114,9 @@ export const updateEventLogBySubmissionId = (
 > => {
   const logMeta = {
     action: 'updateEventLogBySubmissionId',
+    metadata,
     event,
+    update,
   }
 
   const submissionId = get(metadata, 'submissionId')

@@ -46,10 +46,9 @@ export const _handleStripeEventUpdates: ControllerHandler<
   // Step 1: Verify the payload and ensure that it is indeed sent from Stripe.
   // See https://stripe.com/docs/webhooks/signatures
   const sig = req.headers['stripe-signature']
-  if (!sig) return res.status(StatusCodes.BAD_REQUEST).send()
+  if (!sig) return res.sendStatus(StatusCodes.BAD_REQUEST)
 
-  // Needed to obtain the raw body from the request. This is set in the parser, see
-  // parserMiddlewares.saveStripeWebhookRawBody in src/app/loaders/express/parser.ts.
+  // Needed to obtain the raw body from the request. Set in the parser middlewares
   const rawBody = get(req, 'rawBody') as unknown as string
 
   let event
@@ -61,7 +60,7 @@ export const _handleStripeEventUpdates: ControllerHandler<
     ) as Stripe.DiscriminatedEvent
   } catch (e) {
     // Throws Stripe.errors.StripeSignatureVerificationError
-    logger.warn({
+    logger.error({
       message: 'Received invalid request from Stripe webhook endpoint',
       meta: {
         action: 'handleStripeEventUpdates',
@@ -69,16 +68,18 @@ export const _handleStripeEventUpdates: ControllerHandler<
         error: e,
       },
     })
-    return res.status(StatusCodes.BAD_REQUEST).send()
+    return res.sendStatus(StatusCodes.BAD_REQUEST)
+  }
+
+  const logMeta = {
+    action: 'handleStripeEventUpdates',
+    event,
   }
 
   // Step 2: Received event, proceed to process it.
   logger.info({
     message: 'Received Stripe event from webhook',
-    meta: {
-      action: 'handleStripeEventUpdates',
-      event,
-    },
+    meta: logMeta,
   })
 
   switch (event.type) {
@@ -116,10 +117,7 @@ export const _handleStripeEventUpdates: ControllerHandler<
       if (charge === null) {
         logger.warn({
           message: 'Received Stripe event charge.refund.updated with no charge',
-          meta: {
-            action: 'handleStripeEventUpdates',
-            event,
-          },
+          meta: logMeta,
         })
         break
       }
