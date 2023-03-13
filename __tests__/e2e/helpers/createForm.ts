@@ -1,7 +1,10 @@
 import { Page } from '@playwright/test'
 import cuid from 'cuid'
 import { format } from 'date-fns'
-import { BASICFIELD_TO_DRAWER_META } from 'frontend/src/features/admin-form/create/constants'
+import {
+  BASICFIELD_TO_DRAWER_META,
+  MYINFO_FIELD_TO_DRAWER_META,
+} from 'frontend/src/features/admin-form/create/constants'
 import {
   BasicField,
   DateSelectedValidation,
@@ -9,6 +12,7 @@ import {
   FormStatus,
   LogicConditionState,
   LogicType,
+  MyInfoAttribute,
 } from 'shared/types'
 
 import { IFormModel, IFormSchema } from 'src/types'
@@ -27,6 +31,7 @@ import {
   expectToast,
   fillDropdown,
   fillMultiDropdown,
+  getMyInfoAttribute,
   getTitleWithQuestionNumber,
 } from '../utils'
 
@@ -41,9 +46,8 @@ export const createForm = async (
   { formFields, formLogics, formSettings }: E2eForm,
 ): Promise<IFormSchema> => {
   const formId = await addForm(page)
-  await addFields(page, formFields)
-  await addLogics(page, { formFields, formLogics })
   await addSettings(page, { formId, formSettings })
+  await addFieldsAndLogic(page, formFields, formLogics)
 
   const form = await Form.findById(formId)
 
@@ -89,328 +93,7 @@ const addForm = async (page: Page): Promise<string> => {
   return formId!
 }
 
-/** Adds all prescribed fields to the form.
- * Precondition: page must be currently on the admin builder page for the form.
- * @param {Page} page Playwright page
- * @param {E2eFieldMetadata[]} formFields the form fields to create
- */
-const addFields = async (
-  page: Page,
-  formFields: E2eFieldMetadata[],
-): Promise<void> => {
-  await expect(page).toHaveURL(new RegExp(`${ADMIN_FORM_PAGE_PREFIX}/.*`, 'i'))
-
-  await page.getByRole('button', { name: 'Add fields' }).click()
-
-  for (const field of formFields) {
-    const label = BASICFIELD_TO_DRAWER_META[field.fieldType].label
-    const isNonInput = NON_INPUT_FIELD_TYPES.includes(field.fieldType)
-
-    // Get button with exact fieldtype label text
-    await page.getByRole('button').locator(`text="${label}"`).click()
-
-    // Enter title for input fields and Section
-    if (isNonInput) {
-      if (field.fieldType === BasicField.Section) {
-        await page.getByLabel('Section heading').fill(field.title)
-      }
-      // Images and Statements don't have titles
-    } else {
-      await page.getByLabel('Question').fill(field.title)
-    }
-
-    // Toggle required for input fields except Table field (required toggled for individual columns)
-    if (
-      !isNonInput &&
-      field.fieldType !== BasicField.Table &&
-      field.required === false
-    ) {
-      await page.getByText('Required').click()
-    }
-
-    // Enter field description.
-    if (field.description) {
-      if (field.fieldType === BasicField.Statement) {
-        await page.getByLabel('Paragraph').fill(field.description)
-      } else {
-        await page.getByLabel('Description').fill(field.description)
-      }
-    }
-
-    // Handle the rest of the individual fields.
-    switch (field.fieldType) {
-      case BasicField.Attachment:
-        await fillDropdown(
-          page,
-          page.getByRole('textbox', {
-            name: 'Maximum size of individual attachment',
-          }),
-          `${field.attachmentSize} MB`,
-        )
-        break
-      case BasicField.Checkbox:
-        if (field.validateByValue) {
-          await page.getByLabel('Selection limits').click()
-          if (field.ValidationOptions.customMin) {
-            await page
-              .getByPlaceholder('Minimum')
-              .nth(1)
-              .fill(field.ValidationOptions.customMin.toString())
-          }
-          if (field.ValidationOptions.customMax) {
-            await page
-              .getByPlaceholder('Maximimum')
-              .nth(1)
-              .fill(field.ValidationOptions.customMax.toString())
-          }
-        }
-      // Fall through to set "Others" and "Options".
-      case BasicField.Radio:
-        if (field.othersRadioButton) {
-          await page.getByText('Others').first().click()
-        }
-      // Fall through to set "Options".
-      case BasicField.Dropdown:
-        await page.getByLabel('Options').fill(field.fieldOptions.join('\n'))
-        break
-      case BasicField.Date:
-        {
-          if (!field.dateValidation.selectedDateValidation) break
-          await page.getByRole('combobox').first().click()
-          await page
-            .getByText(field.dateValidation.selectedDateValidation)
-            .click()
-          if (
-            field.dateValidation.selectedDateValidation ===
-            DateSelectedValidation.Custom
-          ) {
-            if (field.dateValidation.customMinDate) {
-              await page
-                .locator('[name="dateValidation.customMinDate"]')
-                .fill(format(field.dateValidation.customMinDate, 'dd/MM/yyyy'))
-            }
-            if (field.dateValidation.customMaxDate) {
-              await page
-                .locator('[name="dateValidation.customMaxDate"]')
-                .fill(format(field.dateValidation.customMaxDate, 'dd/MM/yyyy'))
-            }
-          }
-        }
-        break
-      case BasicField.Decimal:
-        if (field.validateByValue) {
-          await page.getByText('Number validation').click()
-          if (field.ValidationOptions.customMin) {
-            await page
-              .getByPlaceholder('Minimum value')
-              .nth(1)
-              .fill(field.ValidationOptions.customMin.toString())
-          }
-          if (field.ValidationOptions.customMax) {
-            await page
-              .getByPlaceholder('Maximum value')
-              .nth(1)
-              .fill(field.ValidationOptions.customMax.toString())
-          }
-        }
-        break
-      case BasicField.Email:
-        if (field.isVerifiable) {
-          await page.locator('label:has-text("OTP verification")').click()
-          if (field.hasAllowedEmailDomains) {
-            await page.getByText('Restrict email domains').click()
-            await page
-              .getByLabel('Domains allowed')
-              .fill(field.allowedEmailDomains.join('\n'))
-          }
-        }
-        if (field.autoReplyOptions.hasAutoReply) {
-          await page.getByText('Email confirmation').click()
-          await page
-            .getByLabel('Subject')
-            .fill(field.autoReplyOptions.autoReplySubject)
-          await page
-            .getByLabel('Sender name')
-            .fill(field.autoReplyOptions.autoReplySender)
-          await page
-            .getByLabel('Content')
-            .fill(field.autoReplyOptions.autoReplyMessage)
-          if (field.autoReplyOptions.includeFormSummary) {
-            await page.getByText('Include PDF response').click()
-          }
-        }
-        break
-      case BasicField.Image:
-        await page.setInputFiles('input[type="file"]', field.path)
-        break
-      case BasicField.LongText:
-      case BasicField.Number:
-      case BasicField.ShortText:
-        if (field.ValidationOptions.selectedValidation) {
-          // Select from dropdown
-          await page
-            .locator(`[id="ValidationOptions.selectedValidation"]`)
-            .fill(field.ValidationOptions.selectedValidation)
-          await page
-            .getByRole('option', {
-              name: field.ValidationOptions.selectedValidation,
-            })
-            .click()
-          if (field.ValidationOptions.customVal) {
-            await page
-              .getByPlaceholder('Number of characters')
-              .nth(1)
-              .fill(field.ValidationOptions.customVal.toString())
-          }
-        }
-        break
-      case BasicField.Mobile:
-        if (field.allowIntlNumbers) {
-          await page.getByText('Allow international numbers').click()
-        }
-        break
-      case BasicField.Rating:
-        await fillDropdown(
-          page,
-          page.getByRole('textbox', { name: 'Number of steps' }),
-          String(field.ratingOptions.steps),
-        )
-        await fillDropdown(
-          page,
-          page.getByRole('textbox', { name: 'Shape' }),
-          field.ratingOptions.shape,
-        )
-        break
-      case BasicField.Table:
-        await page.getByLabel('Minimum rows').fill(String(field.minimumRows))
-        if (field.addMoreRows) {
-          await page.getByText('Allow respondent to add more rows').click()
-          if (field.maximumRows) {
-            await page
-              .getByLabel('Maximum rows allowed')
-              .fill(String(field.maximumRows))
-          }
-        }
-        // First table option
-        for (let i = 0; i < field.columns.length; i++) {
-          const col = field.columns[i]
-          if (i !== 0) {
-            await page.getByRole('button', { name: 'Add column' }).click()
-          }
-          await page.getByLabel(`Column ${i + 1}`).fill(col.title)
-          await page.getByLabel('Column type').nth(i).click()
-          await page
-            .getByRole('option', {
-              name: BASICFIELD_TO_DRAWER_META[col.columnType].label,
-            })
-            .click()
-          if (!col.required) {
-            await page.getByText('Required').nth(i).click()
-          }
-          if (col.columnType === BasicField.Dropdown) {
-            await page
-              .locator(`[id="columns\\.${i}\\.fieldOptions"]`)
-              .fill(col.fieldOptions.join('\n'))
-          }
-        }
-        break
-    }
-
-    await page.getByRole('button', { name: 'Create field' }).click()
-    await expectToast(page, /the .* was created/i)
-  }
-
-  await page.reload()
-}
-
 /** Goes to settings page and adds settings, and toggle form to be open.
- * Precondition: must be on the admin builder page with no dirty fields.
- * @param {Page} page Playwright page
- * @param {E2eFieldMetadata[]} formFields the form fields used to create the form
- * @param {E2eLogic[]} formLogics the form logic to create
- */
-const addLogics = async (
-  page: Page,
-  {
-    formFields,
-    formLogics,
-  }: { formFields: E2eFieldMetadata[]; formLogics: E2eLogic[] },
-) => {
-  if (formLogics.length === 0) return
-
-  // Navigate to the logic tab.
-  await page.getByRole('button', { name: 'Add logic' }).click()
-
-  for (const logic of formLogics) {
-    // The 0th button called 'Add logic' is the sidebar tab nav button
-    await page.getByRole('button', { name: 'Add logic' }).nth(1).click()
-
-    // Add logic conditions
-    for (let i = 0; i < logic.conditions.length; i++) {
-      const { field, state, value } = logic.conditions[i]
-
-      if (i) await page.getByRole('button', { name: 'Add condition' }).click()
-
-      await fillDropdown(
-        page,
-        page.locator(`id=conditions.${i}.field`),
-        getTitleWithQuestionNumber(formFields, field),
-      )
-      await fillDropdown(
-        page,
-        page.locator(`id=conditions.${i}.state`),
-        // Frontend removes leading 'is' from the condition name for rendering, so replicate that behavior.
-        state.replace(/^is\s/i, ''),
-      )
-      const valueInput = page.locator(`id=conditions.${i}.value`)
-      switch (state) {
-        case LogicConditionState.Either:
-          await fillMultiDropdown(page, valueInput, value)
-          break
-        default:
-          switch (formFields[field].fieldType) {
-            case BasicField.Dropdown:
-            case BasicField.Radio:
-            case BasicField.Rating:
-            case BasicField.YesNo:
-              await fillDropdown(page, valueInput, value)
-              break
-            default:
-              await valueInput.fill(value)
-              break
-          }
-          break
-      }
-    }
-
-    const logicTypeInput = page.locator('id=logicType')
-    switch (logic.logicType) {
-      case LogicType.ShowFields:
-        await fillDropdown(page, logicTypeInput, 'Show field(s)')
-        await fillMultiDropdown(
-          page,
-          page.locator('id=show'),
-          logic.show.map((n) => getTitleWithQuestionNumber(formFields, n)),
-        )
-        break
-      case LogicType.PreventSubmit:
-        await fillDropdown(page, logicTypeInput, 'Disable submission')
-        await page.locator('id=preventSubmitMessage').fill(logic.message)
-        break
-    }
-
-    // Save
-    await page.getByText('Add logic').click()
-
-    // Check toast
-    await expectToast(page, /the logic was successfully created/i)
-  }
-
-  await page.reload()
-}
-
-/** Goes to settings page and adds settings, and toggle form to be open.
- * Precondition: must be on the admin builder page with no dirty fields.
  * @param {Page} page Playwright page
  * @param {string} formId the formId
  * @param {E2eSettingsOptions} formSettings the form settings to update
@@ -422,9 +105,6 @@ const addSettings = async (
     formSettings,
   }: { formId: string; formSettings: E2eSettingsOptions },
 ): Promise<void> => {
-  // Check precondition
-  await expect(page).toHaveURL(`${ADMIN_FORM_PAGE_PREFIX}/${formId}`)
-
   await page.getByText('Settings').click()
   await expect(page).toHaveURL(`${ADMIN_FORM_PAGE_PREFIX}/${formId}/settings`)
 
@@ -553,7 +233,7 @@ const addAuthSettings = async (
     formSettings.authType === FormAuthType.SP
       ? ''
       : formSettings.authType === FormAuthType.SGID
-      ? ' App-only Login (Free)'
+      ? ' App-only Login'
       : formSettings.authType === FormAuthType.MyInfo
       ? ' with MyInfo'
       : ' (Corporate)'
@@ -561,22 +241,22 @@ const addAuthSettings = async (
 
   await page
     .locator('label', { has: page.getByRole('radio', { name }) })
-    .click()
+    .first() // Since 'Singpass' will match all radio options, pick the first matching one.
+    .click({ position: { x: 1, y: 1 } }) // Clicking the center of the sgid button launches the sgid contact form, put this here until we get rid of the link
 
   await expectToast(page, /form authentication successfully updated/i)
 
-  if (formSettings.esrvcId) {
-    switch (formSettings.authType) {
-      case FormAuthType.SP:
-      case FormAuthType.CP:
-      case FormAuthType.MyInfo:
-        await page.locator(`id=esrvcId`).fill(formSettings.esrvcId)
-        await page.keyboard.press('Enter')
-        await expectToast(page, /e-service id successfully updated/i)
-        break
-      default:
-        break
-    }
+  switch (formSettings.authType) {
+    case FormAuthType.SP:
+    case FormAuthType.CP:
+    case FormAuthType.MyInfo:
+      if (!formSettings.esrvcId) throw new Error('No esrvcid provided!')
+      await page.locator(`id=esrvcId`).fill(formSettings.esrvcId)
+      await page.keyboard.press('Enter')
+      await expectToast(page, /e-service id successfully updated/i)
+      break
+    default:
+      break
   }
 }
 
@@ -613,4 +293,371 @@ const addCollaborators = async (
   }
 
   await page.getByRole('button', { name: 'Close' }).click()
+}
+
+const addFieldsAndLogic = async (
+  page: Page,
+  formFields: E2eFieldMetadata[],
+  formLogics: E2eLogic[],
+) => {
+  await page.getByText('Create').click()
+  await expect(page).toHaveURL(new RegExp(`${ADMIN_FORM_PAGE_PREFIX}/.*`, 'i'))
+
+  await addFields(page, formFields)
+  await addLogics(page, formFields, formLogics)
+}
+
+/** Adds all prescribed fields to the form.
+ * Precondition: is already on the Create page.
+ * @param {Page} page Playwright page
+ * @param {E2eFieldMetadata[]} formFields the form fields to create
+ */
+const addFields = async (
+  page: Page,
+  formFields: E2eFieldMetadata[],
+): Promise<void> => {
+  // Navigate to the fields tab.
+  await page.getByRole('button', { name: 'Add fields' }).click()
+
+  for (const field of formFields) {
+    const myInfoAttr = getMyInfoAttribute(field)
+
+    myInfoAttr
+      ? await addMyInfoField(page, field, myInfoAttr)
+      : await addBasicField(page, field)
+
+    await page.getByRole('button', { name: 'Create field' }).click()
+    await expectToast(page, /the .* was created/i)
+  }
+
+  await page.reload()
+}
+
+/** Adds all prescribed basic fields to the form.
+ * Precondition: page must be currently on the admin builder page for the form.
+ * @param {Page} page Playwright page
+ * @param {E2eFieldMetadata} field the form field to create
+ */
+const addBasicField = async (
+  page: Page,
+  field: E2eFieldMetadata,
+): Promise<void> => {
+  await page.getByRole('tab', { name: 'Basic' }).click()
+
+  const label = BASICFIELD_TO_DRAWER_META[field.fieldType].label
+  const isNonInput = NON_INPUT_FIELD_TYPES.includes(field.fieldType)
+
+  // Get button with exact fieldtype label text
+  await page.getByRole('button', { name: label, exact: true }).click()
+
+  // Enter title for input fields and Section
+  if (isNonInput) {
+    if (field.fieldType === BasicField.Section) {
+      await page.getByLabel('Section heading').fill(field.title)
+    }
+    // Images and Statements don't have titles
+  } else {
+    await page.getByLabel('Question').fill(field.title)
+  }
+
+  // Toggle required for input fields except Table field (required toggled for individual columns)
+  if (
+    !isNonInput &&
+    field.fieldType !== BasicField.Table &&
+    field.required === false
+  ) {
+    await page.getByText('Required').click()
+  }
+
+  // Enter field description.
+  if (field.description) {
+    if (field.fieldType === BasicField.Statement) {
+      await page.getByLabel('Paragraph').fill(field.description)
+    } else {
+      await page.getByLabel('Description').fill(field.description)
+    }
+  }
+
+  // Handle the rest of the individual fields.
+  switch (field.fieldType) {
+    case BasicField.Attachment:
+      await fillDropdown(
+        page,
+        page.getByRole('textbox', {
+          name: 'Maximum size of individual attachment',
+        }),
+        `${field.attachmentSize} MB`,
+      )
+      break
+    case BasicField.Checkbox:
+      if (field.validateByValue) {
+        await page.getByLabel('Selection limits').click()
+        if (field.ValidationOptions.customMin) {
+          await page
+            .getByPlaceholder('Minimum')
+            .nth(1)
+            .fill(field.ValidationOptions.customMin.toString())
+        }
+        if (field.ValidationOptions.customMax) {
+          await page
+            .getByPlaceholder('Maximimum')
+            .nth(1)
+            .fill(field.ValidationOptions.customMax.toString())
+        }
+      }
+    // Fall through to set "Others" and "Options".
+    case BasicField.Radio:
+      if (field.othersRadioButton) {
+        await page.getByText('Others').first().click()
+      }
+    // Fall through to set "Options".
+    case BasicField.Dropdown:
+      await page.getByLabel('Options').fill(field.fieldOptions.join('\n'))
+      break
+    case BasicField.Date:
+      {
+        if (!field.dateValidation.selectedDateValidation) break
+        await page.getByRole('combobox').first().click()
+        await page
+          .getByText(field.dateValidation.selectedDateValidation)
+          .click()
+        if (
+          field.dateValidation.selectedDateValidation ===
+          DateSelectedValidation.Custom
+        ) {
+          if (field.dateValidation.customMinDate) {
+            await page
+              .locator('[name="dateValidation.customMinDate"]')
+              .fill(format(field.dateValidation.customMinDate, 'dd/MM/yyyy'))
+          }
+          if (field.dateValidation.customMaxDate) {
+            await page
+              .locator('[name="dateValidation.customMaxDate"]')
+              .fill(format(field.dateValidation.customMaxDate, 'dd/MM/yyyy'))
+          }
+        }
+      }
+      break
+    case BasicField.Decimal:
+      if (field.validateByValue) {
+        await page.getByText('Number validation').click()
+        if (field.ValidationOptions.customMin) {
+          await page
+            .getByPlaceholder('Minimum value')
+            .nth(1)
+            .fill(field.ValidationOptions.customMin.toString())
+        }
+        if (field.ValidationOptions.customMax) {
+          await page
+            .getByPlaceholder('Maximum value')
+            .nth(1)
+            .fill(field.ValidationOptions.customMax.toString())
+        }
+      }
+      break
+    case BasicField.Email:
+      if (field.isVerifiable) {
+        await page.locator('label:has-text("OTP verification")').click()
+        if (field.hasAllowedEmailDomains) {
+          await page.getByText('Restrict email domains').click()
+          await page
+            .getByLabel('Domains allowed')
+            .fill(field.allowedEmailDomains.join('\n'))
+        }
+      }
+      if (field.autoReplyOptions.hasAutoReply) {
+        await page.getByText('Email confirmation').click()
+        await page
+          .getByLabel('Subject')
+          .fill(field.autoReplyOptions.autoReplySubject)
+        await page
+          .getByLabel('Sender name')
+          .fill(field.autoReplyOptions.autoReplySender)
+        await page
+          .getByLabel('Content')
+          .fill(field.autoReplyOptions.autoReplyMessage)
+        // TODO: Print to pdf doesn't work.
+        // if (field.autoReplyOptions.includeFormSummary) {
+        //   await page.getByText('Include PDF response').click()
+        // }
+      }
+      break
+    case BasicField.Image:
+      await page.setInputFiles('input[type="file"]', field.path)
+      break
+    case BasicField.LongText:
+    case BasicField.Number:
+    case BasicField.ShortText:
+      if (field.ValidationOptions.selectedValidation) {
+        // Select from dropdown
+        await page
+          .locator(`[id="ValidationOptions.selectedValidation"]`)
+          .fill(field.ValidationOptions.selectedValidation)
+        await page
+          .getByRole('option', {
+            name: field.ValidationOptions.selectedValidation,
+          })
+          .click()
+        if (field.ValidationOptions.customVal) {
+          await page
+            .getByPlaceholder('Number of characters')
+            .nth(1)
+            .fill(field.ValidationOptions.customVal.toString())
+        }
+      }
+      break
+    case BasicField.Mobile:
+      if (field.allowIntlNumbers) {
+        await page.getByText('Allow international numbers').click()
+      }
+      break
+    case BasicField.Rating:
+      await fillDropdown(
+        page,
+        page.getByRole('textbox', { name: 'Number of steps' }),
+        String(field.ratingOptions.steps),
+      )
+      await fillDropdown(
+        page,
+        page.getByRole('textbox', { name: 'Shape' }),
+        field.ratingOptions.shape,
+      )
+      break
+    case BasicField.Table:
+      await page.getByLabel('Minimum rows').fill(String(field.minimumRows))
+      if (field.addMoreRows) {
+        await page.getByText('Allow respondent to add more rows').click()
+        if (field.maximumRows) {
+          await page
+            .getByLabel('Maximum rows allowed')
+            .fill(String(field.maximumRows))
+        }
+      }
+      // First table option
+      for (let i = 0; i < field.columns.length; i++) {
+        const col = field.columns[i]
+        if (i !== 0) {
+          await page.getByRole('button', { name: 'Add column' }).click()
+        }
+        await page.getByLabel(`Column ${i + 1}`).fill(col.title)
+        await page.getByLabel('Column type').nth(i).click()
+        await page
+          .getByRole('option', {
+            name: BASICFIELD_TO_DRAWER_META[col.columnType].label,
+          })
+          .click()
+        if (!col.required) {
+          await page.getByText('Required').nth(i).click()
+        }
+        if (col.columnType === BasicField.Dropdown) {
+          await page
+            .locator(`[id="columns\\.${i}\\.fieldOptions"]`)
+            .fill(col.fieldOptions.join('\n'))
+        }
+      }
+      break
+  }
+}
+
+/** Adds all prescribed MyInfo fields to the form.
+ * Precondition: page must be currently on the admin builder page for the form.
+ * @param {Page} page Playwright page
+ * @param {E2eFieldMetadata} field the form field to create
+ * @param {MyInfoAttribute} attr the MyInfo attribute to be added
+ */
+const addMyInfoField = async (
+  page: Page,
+  field: E2eFieldMetadata,
+  attr: MyInfoAttribute,
+): Promise<void> => {
+  const label = MYINFO_FIELD_TO_DRAWER_META[attr].label
+
+  await page.getByRole('tab', { name: 'MyInfo' }).click()
+  await page.getByRole('button', { name: label, exact: true }).click()
+}
+
+/** Goes to settings page and adds settings, and toggle form to be open.
+ * Precondition: is already on the Create page.
+ * @param {Page} page Playwright page
+ * @param {E2eFieldMetadata[]} formFields the form fields used to create the form
+ * @param {E2eLogic[]} formLogics the form logic to create
+ */
+const addLogics = async (
+  page: Page,
+  formFields: E2eFieldMetadata[],
+  formLogics: E2eLogic[],
+) => {
+  if (formLogics.length === 0) return
+
+  // Navigate to the logic tab.
+  await page.getByRole('button', { name: 'Add logic' }).click()
+
+  for (const logic of formLogics) {
+    // The 0th button called 'Add logic' is the sidebar tab nav button
+    await page.getByRole('button', { name: 'Add logic' }).nth(1).click()
+
+    // Add logic conditions
+    for (let i = 0; i < logic.conditions.length; i++) {
+      const { field, state, value } = logic.conditions[i]
+
+      if (i > 0) {
+        await page.getByRole('button', { name: 'Add condition' }).click()
+      }
+
+      await fillDropdown(
+        page,
+        page.locator(`id=conditions.${i}.field`),
+        getTitleWithQuestionNumber(formFields, field),
+      )
+      await fillDropdown(
+        page,
+        page.locator(`id=conditions.${i}.state`),
+        // Frontend removes leading 'is' from the condition name for rendering, so replicate that behavior.
+        state.replace(/^is\s/i, ''),
+      )
+      const valueInput = page.locator(`id=conditions.${i}.value`)
+      switch (state) {
+        case LogicConditionState.Either:
+          await fillMultiDropdown(page, valueInput, value)
+          break
+        default:
+          switch (formFields[field].fieldType) {
+            case BasicField.Dropdown:
+            case BasicField.Radio:
+            case BasicField.Rating:
+            case BasicField.YesNo:
+              await fillDropdown(page, valueInput, value)
+              break
+            default:
+              await valueInput.fill(value)
+              break
+          }
+          break
+      }
+    }
+
+    const logicTypeInput = page.locator('id=logicType')
+    switch (logic.logicType) {
+      case LogicType.ShowFields:
+        await fillDropdown(page, logicTypeInput, 'Show field(s)')
+        await fillMultiDropdown(
+          page,
+          page.locator('id=show'),
+          logic.show.map((n) => getTitleWithQuestionNumber(formFields, n)),
+        )
+        break
+      case LogicType.PreventSubmit:
+        await fillDropdown(page, logicTypeInput, 'Disable submission')
+        await page.locator('id=preventSubmitMessage').fill(logic.message)
+        break
+    }
+
+    // Save
+    await page.getByText('Add logic').click()
+
+    // Check toast
+    await expectToast(page, /the logic was successfully created/i)
+  }
+
+  await page.reload()
 }

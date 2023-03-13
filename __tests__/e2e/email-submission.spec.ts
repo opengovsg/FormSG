@@ -1,6 +1,12 @@
 import { Page } from '@playwright/test'
 import mongoose from 'mongoose'
-import { BasicField, LogicConditionState, LogicType } from 'shared/types'
+import {
+  BasicField,
+  FormAuthType,
+  LogicConditionState,
+  LogicType,
+  MyInfoAttribute,
+} from 'shared/types'
 
 import { IFormModel } from 'src/types'
 
@@ -15,9 +21,10 @@ import {
 } from './constants'
 import { createForm, fillForm, submitForm, verifySubmission } from './helpers'
 import {
+  createBlankVersion,
+  createMyInfoField,
+  createOptionalVersion,
   deleteDocById,
-  getBlankVersion,
-  getOptionalVersion,
   getSettings,
   makeModel,
   makeMongooseFixtures,
@@ -55,7 +62,7 @@ test.describe('Email form submission', () => {
   }) => {
     // Define
     const formFields = ALL_FIELDS.map((ff) =>
-      getBlankVersion(getOptionalVersion(ff)),
+      createBlankVersion(createOptionalVersion(ff)),
     )
     const formLogics = NO_LOGIC
     const formSettings = getSettings()
@@ -98,7 +105,7 @@ test.describe('Email form submission', () => {
         val: '1-test-att.txt',
       } as E2eFieldMetadata,
       {
-        ...getBlankVersion(getOptionalVersion(baseField)),
+        ...createBlankVersion(createOptionalVersion(baseField)),
         title: 'Attachment 1',
       } as E2eFieldMetadata,
       {
@@ -115,52 +122,72 @@ test.describe('Email form submission', () => {
     await runTest(page, { formFields, formLogics, formSettings })
   })
 
-  // TODO: Uncomment these tests when mockpass has been fixed.
-  // test('Create and submit email mode form with Singpass authentication', async ({
-  //   page,
-  // }) => {
-  //   // Define
-  //   const formFields = ALL_FIELDS
-  //   const formLogics = NO_LOGIC
-  //   const formSettings = getSettings({
-  //     authType: FormAuthType.SP,
-  //     esrvcId: process.env.SINGPASS_ESRVC_ID,
-  //   })
+  test('Create and submit email mode form with Singpass authentication', async ({
+    page,
+  }) => {
+    // Define
+    const formFields = ALL_FIELDS
+    const formLogics = NO_LOGIC
+    const formSettings = getSettings({
+      authType: FormAuthType.SP,
+    })
 
-  //   // Test
-  //   await runTest(page, { formFields, formLogics, formSettings })
-  // })
+    // Test
+    await runTest(page, { formFields, formLogics, formSettings })
+  })
 
-  // test('Create and submit email mode form with Corppass authentication', async ({
-  //   page,
-  // }) => {
-  //   // Define
-  //   const formFields = ALL_FIELDS
-  //   const formLogics = NO_LOGIC
-  //   const formSettings = getSettings({
-  //     authType: FormAuthType.CP,
-  //     esrvcId: process.env.CORPPASS_ESRVC_ID,
-  //   })
+  test('Create and submit email mode form with Corppass authentication', async ({
+    page,
+  }) => {
+    // Define
+    const formFields = ALL_FIELDS
+    const formLogics = NO_LOGIC
+    const formSettings = getSettings({
+      authType: FormAuthType.CP,
+    })
 
-  //   // Test
-  //   await runTest(page, { formFields, formLogics, formSettings })
-  // })
+    // Test
+    await runTest(page, { formFields, formLogics, formSettings })
+  })
 
-  // test('Create and submit email mode form with SGID authentication', async ({
-  //   page,
-  // }) => {
-  //   // Define
-  //   const formFields = ALL_FIELDS
-  //   const formLogics = NO_LOGIC
-  //   const formSettings = getSettings({
-  //     authType: FormAuthType.SGID,
-  //   })
+  test('Create and submit email mode form with SGID authentication', async ({
+    page,
+  }) => {
+    // Define
+    const formFields = ALL_FIELDS
+    const formLogics = NO_LOGIC
+    const formSettings = getSettings({
+      authType: FormAuthType.SGID,
+    })
 
-  //   // Test
-  //   await runTest(page, { formFields, formLogics, formSettings })
-  // })
+    // Test
+    await runTest(page, { formFields, formLogics, formSettings })
+  })
 
-  // TODO: Add test for MyInfo when mockpass has been fixed.
+  test('Create and submit email mode form with MyInfo fields', async ({
+    page,
+  }) => {
+    // Define
+    const formFields = [
+      // Short answer
+      createMyInfoField(MyInfoAttribute.Name, 'LIM YONG XIANG', true),
+      // Dropdown
+      createMyInfoField(MyInfoAttribute.Sex, 'MALE', true),
+      // Date
+      createMyInfoField(MyInfoAttribute.DateOfBirth, '06/10/1980', true),
+      // Mobile
+      createMyInfoField(MyInfoAttribute.MobileNo, '97399245', false),
+      // Unverified
+      createMyInfoField(MyInfoAttribute.WorkpassStatus, 'Live', false),
+    ]
+    const formLogics = NO_LOGIC
+    const formSettings = getSettings({
+      authType: FormAuthType.MyInfo,
+    })
+
+    // Test
+    await runTest(page, { formFields, formLogics, formSettings })
+  })
 
   test('Create and submit email mode form with all fields shown by logic', async ({
     page,
