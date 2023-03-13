@@ -1,5 +1,3 @@
-// import FileSaver from 'file-saver'
-
 import { PaymentReceiptStatusDto, SuccessMessageDto } from '~shared/types'
 import { FormFieldDto } from '~shared/types/field'
 import {
@@ -166,26 +164,4 @@ export const getPaymentReceiptStatus = async (
   return ApiService.get<PaymentReceiptStatusDto>(
     `payments/receipt/${formId}/${submissionId}/status`,
   ).then(({ data }) => data)
-}
-
-/**
- * Downloads payment receipt and save to disk in pdf form
- * @param formId the id of the form
- * @param submissionId the id of the form submission
- * @returns void
- */
-export const downloadPaymentReceipt = async (
-  formId: string,
-  submissionId: string,
-): Promise<void> => {
-  return ApiService.get(
-    `payments/receipt/${formId}/${submissionId}/download`,
-  ).then(({ data }) => data)
-  // .then(({ data }) => {
-  //   const buffer = Buffer.from(data.pdfBuffer.data)
-
-  //   const blob = new Blob([buffer], { type: 'application/pdf' })
-  //   FileSaver.saveAs(blob, `${submissionId}-receipt.pdf`)
-  //   return
-  // })
 }
