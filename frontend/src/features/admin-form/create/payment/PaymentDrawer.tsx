@@ -201,6 +201,7 @@ export const PaymentInput = (): JSX.Element => {
                 render={({ field }) => (
                   <MoneyInput
                     flex={1}
+                    step={0}
                     inputMode="decimal"
                     placeholder="0.00"
                     {...field}
