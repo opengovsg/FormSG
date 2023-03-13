@@ -7,6 +7,11 @@ export enum PaymentStatus {
   Succeeded = 'succeeded',
 }
 
+export enum PaymentChannel {
+  Stripe = 'stripe',
+  // for extensibility to future payment options
+}
+
 export type Payment = {
   submissionId: string
   amount: number
