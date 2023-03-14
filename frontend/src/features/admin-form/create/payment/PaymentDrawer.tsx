@@ -142,11 +142,9 @@ export const PaymentInput = (): JSX.Element => {
             /* Regex allows: 
                - leading and trailing spaces
                - max 2dp
-               - strictly positive (>0)
             */
-            /^\s*0*([1-9]\d*(\.\d{0,2})?|0\.(0[1-9]|[1-9]\d?))\s*$/.test(
-              val ?? '',
-            ) || 'Please enter a valid payment amount'
+            /^\s*(\d+)(\.\d{0,2})?\s*$/.test(val ?? '') ||
+            'Please enter a valid payment amount'
           )
         },
         validateMin: (val) => {
@@ -203,6 +201,7 @@ export const PaymentInput = (): JSX.Element => {
                 render={({ field }) => (
                   <MoneyInput
                     flex={1}
+                    step={0}
                     inputMode="decimal"
                     placeholder="0.00"
                     {...field}
