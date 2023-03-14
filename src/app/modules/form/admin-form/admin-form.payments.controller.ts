@@ -108,7 +108,9 @@ export const handleValidatePaymentAccount: ControllerHandler<{
         level: PermissionLevel.Write,
       }),
     )
-    .andThen((form) => validateAccount(form.payments?.target_account_id))
+    .andThen((form) =>
+      validateAccount(form.payments_channel?.target_account_id),
+    )
     .map((account) => {
       return res.json({
         account,
