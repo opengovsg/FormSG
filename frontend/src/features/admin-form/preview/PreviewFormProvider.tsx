@@ -130,28 +130,60 @@ export const PreviewFormProvider = ({
               // Using catch since we are using mutateAsync and react-hook-form will continue bubbling this up.
               .catch(showErrorToast)
           )
-        case FormResponseMode.Encrypt:
+        case FormResponseMode.Encrypt: {
           // Using mutateAsync so react-hook-form goes into loading state.
-          return (
-            submitStorageModeFormMutation
-              .mutateAsync(
-                {
-                  formFields: form.form_fields,
-                  formLogics: form.form_logics,
-                  formInputs,
-                  publicKey: form.publicKey,
-                },
-                {
-                  onSuccess: ({ submissionId }) =>
-                    setSubmissionData({
-                      id: submissionId,
-                      timestamp: Date.now(),
-                    }),
-                },
-              )
-              // Using catch since we are using mutateAsync and react-hook-form will continue bubbling this up.
-              .catch(showErrorToast)
-          )
+          const submitStorageModeFormMutationWithAxiosStrategy = () => {
+            return submitStorageModeFormMutation.mutateAsync(
+              {
+                formFields: form.form_fields,
+                formLogics: form.form_logics,
+                formInputs,
+                publicKey: form.publicKey,
+              },
+              {
+                onSuccess: ({ submissionId }) =>
+                  setSubmissionData({
+                    id: submissionId,
+                    timestamp: Date.now(),
+                  }),
+              },
+            )
+          }
+          const submitStorageModeFormMutationWithFetchStrategy = () => {
+            return submitStorageModeFormMutation.mutateAsync(
+              {
+                formFields: form.form_fields,
+                formLogics: form.form_logics,
+                formInputs,
+                publicKey: form.publicKey,
+              },
+              {
+                onSuccess: ({ submissionId }) =>
+                  setSubmissionData({
+                    id: submissionId,
+                    timestamp: Date.now(),
+                  }),
+              },
+            )
+          }
+          const submissionStrategies = [
+            submitStorageModeFormMutationWithAxiosStrategy,
+            submitStorageModeFormMutationWithFetchStrategy,
+          ]
+          let lastError
+          // iterate through all submission strategies until one passes
+          for (const strategy of submissionStrategies) {
+            try {
+              await strategy()
+              return
+            } catch (error) {
+              lastError = error
+            }
+          }
+          if (lastError) {
+            showErrorToast(lastError)
+          }
+        }
       }
     },
     [
