@@ -14,6 +14,7 @@ interface ISmsFactory {
   sendVerificationOtp: (
     recipient: string,
     otp: string,
+    otpPrefix: string,
     formId: string,
     senderIp: string,
   ) => ReturnType<typeof sendVerificationOtp>
@@ -67,8 +68,15 @@ export const createSmsFactory = (smsConfig: ISms): ISmsFactory => {
   }
 
   return {
-    sendVerificationOtp: (recipient, otp, formId, senderIp) =>
-      sendVerificationOtp(recipient, otp, formId, senderIp, twilioConfig),
+    sendVerificationOtp: (recipient, otp, otpPrefix, formId, senderIp) =>
+      sendVerificationOtp(
+        recipient,
+        otp,
+        otpPrefix,
+        formId,
+        senderIp,
+        twilioConfig,
+      ),
     sendAdminContactOtp: (recipient, otp, userId, senderIp) =>
       sendAdminContactOtp(recipient, otp, userId, senderIp, twilioConfig),
     sendFormDeactivatedSms: (params) =>
