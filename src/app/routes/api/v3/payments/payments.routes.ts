@@ -7,14 +7,26 @@ export const PaymentsRouter = Router()
 PaymentsRouter.get('/stripe')
 
 /**
- * Returns the receipt URL to the user
- * @route GET /receipt/:formId/:submissionId
+ * Checks if the payment receipt is ready
+ * @route GET /payments/receipt/:formId/:submissionId/status
+ *
+ * @returns 200 if receipt URL exists
+ * @returns 404 if receipt URL does not exist
+ */
+PaymentsRouter.route(
+  '/receipt/:formId([a-fA-F0-9]{24})/:submissionId([a-fA-F0-9]{24})/status',
+).get(StripeController.checkPaymentReceiptStatus)
+
+/**
+ * Downloads the receipt pdf
+ * @route GET /receipt/:formId/:submissionId/download
  *
  * @returns 200 with receipt URL exists
  */
+// TODO: consider rate limiting this endpoint #5924
 PaymentsRouter.route(
-  '/receipt/:formId([a-fA-F0-9]{24})/:submissionId([a-fA-F0-9]{24})',
-).get(StripeController.getPaymentReceipt)
+  '/receipt/:formId([a-fA-F0-9]{24})/:submissionId([a-fA-F0-9]{24})/download',
+).get(StripeController.downloadPaymentReceipt)
 
 PaymentsRouter.route('/stripe/callback').get(
   StripeController.handleConnectOauthCallback,
