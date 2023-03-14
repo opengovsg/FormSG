@@ -143,7 +143,7 @@ export const PaymentInput = (): JSX.Element => {
                - leading and trailing spaces
                - max 2dp
             */
-            /^\s*\d*\.?\d{0,2}\s*$/.test(val ?? '') ||
+            /^\s*(\d+)(\.\d{0,2})?\s*$/.test(val ?? '') ||
             'Please enter a valid payment amount'
           )
         },
