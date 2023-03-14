@@ -10,7 +10,7 @@ import { useDebounce } from 'react-use'
 import { Box, Divider, Flex, FormControl, Stack, Text } from '@chakra-ui/react'
 import { cloneDeep } from 'lodash'
 
-import { FormPayments } from '~shared/types'
+import { FormPaymentsField } from '~shared/types'
 
 import { useIsMobile } from '~hooks/useIsMobile'
 import { centsToDollars, dollarsToCents } from '~utils/payments'
@@ -103,7 +103,7 @@ export const PaymentInput = (): JSX.Element => {
       setData({
         ...rest,
         amount_cents: dollarsToCents(display_amount ?? '0'),
-      } as FormPayments)
+      } as FormPaymentsField)
     },
     [setData],
   )
@@ -268,9 +268,9 @@ export const PaymentDrawer = (): JSX.Element | null => {
   )
 
   useEffect(() => {
-    setData(form?.payments)
+    setData(form?.payments_field)
     return resetData
-  }, [form?.payments, resetData, setData])
+  }, [form?.payments_field, resetData, setData])
 
   if (!paymentData) return null
 

@@ -97,12 +97,15 @@ const PaymentsAccountInformation = ({
 const PaymentsSectionText = () => {
   const { data: settings, isLoading } = useAdminFormSettings()
 
-  if (settings?.payments?.enabled && settings?.payments?.target_account_id) {
+  if (
+    settings?.payments_field?.enabled &&
+    settings?.payments_channel?.target_account_id
+  ) {
     return (
       <>
         <PaymentsAccountValidation />
         <PaymentsAccountInformation
-          account_id={settings.payments.target_account_id}
+          account_id={settings.payments_channel.target_account_id}
           isLoading={isLoading}
         />
       </>

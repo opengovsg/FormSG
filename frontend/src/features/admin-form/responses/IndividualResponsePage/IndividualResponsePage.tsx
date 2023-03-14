@@ -162,7 +162,7 @@ export const IndividualResponsePage = (): JSX.Element => {
               ))}
               <Box />
             </Stack>
-            {form?.payments?.enabled && (
+            {form?.payments_field?.enabled && (
               <IndividualPaymentResponse submissionId={submissionId} />
             )}
           </Stack>

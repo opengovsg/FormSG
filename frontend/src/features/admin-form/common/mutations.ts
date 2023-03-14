@@ -390,14 +390,15 @@ export const useMutateFormPage = () => {
   )
 
   const paymentsMutation = useMutation(
-    (payments: PaymentsUpdateDto) => updateFormPayments(formId, payments),
+    (payments_field: PaymentsUpdateDto) =>
+      updateFormPayments(formId, payments_field),
     {
       onSuccess: (newData) => {
         toast.closeAll()
         queryClient.setQueryData<AdminFormDto | undefined>(
           adminFormKeys.id(formId),
           (oldData) =>
-            oldData ? { ...oldData, payments: newData } : undefined,
+            oldData ? { ...oldData, payments_field: newData } : undefined,
         )
         toast({
           description: 'The payment was updated.',

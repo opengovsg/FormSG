@@ -18,8 +18,8 @@ export const PaymentContent = (): JSX.Element => {
   // When drawer is opened, store is populated. We always want the drawer settings
   // to be previewed, so when the store is populated, prioritize that setting.
   const payments = useMemo(
-    () => (paymentsFromStore ? paymentsFromStore : form?.payments),
-    [paymentsFromStore, form?.payments],
+    () => (paymentsFromStore ? paymentsFromStore : form?.payments_field),
+    [paymentsFromStore, form?.payments_field],
   )
   const colorTheme = useDesignColorTheme()
 
