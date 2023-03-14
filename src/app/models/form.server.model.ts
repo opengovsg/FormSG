@@ -28,7 +28,8 @@ import {
   FormField,
   FormFieldDto,
   FormLogoState,
-  FormPayments,
+  FormPaymentsChannel,
+  FormPaymentsField,
   FormPermission,
   FormResponseMode,
   FormSettings,
@@ -37,6 +38,7 @@ import {
   LogicConditionState,
   LogicDto,
   LogicType,
+  PaymentChannel,
   StorageFormSettings,
 } from '../../../shared/types'
 import { reorder } from '../../../shared/utils/immutable-array-fns'
@@ -424,10 +426,12 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         default: null,
         min: 1,
       },
-      payments: {
-        enabled: {
-          type: Boolean,
-          default: false,
+
+      payments_channel: {
+        channel: {
+          type: String,
+          enum: Object.values(PaymentChannel),
+          default: PaymentChannel.Stripe,
         },
         target_account_id: {
           type: String,
@@ -441,6 +445,14 @@ const compileFormModel = (db: Mongoose): IFormModel => {
           type: String,
           default: '',
           validate: [/^\S*$/i, 'publishable_key must not contain whitespace.'],
+        },
+        required: false,
+      },
+
+      payments_field: {
+        enabled: {
+          type: Boolean,
+          default: false,
         },
         description: {
           type: String,
@@ -631,10 +643,10 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     accountId,
     publishableKey,
   }: {
-    accountId: FormPayments['target_account_id']
-    publishableKey: FormPayments['publishable_key']
+    accountId: FormPaymentsChannel['target_account_id']
+    publishableKey: FormPaymentsChannel['publishable_key']
   }) {
-    this.payments = merge(this.payments, {
+    this.payments_channel = merge(this.payments_channel, {
       target_account_id: accountId,
       publishable_key: publishableKey,
       enabled: true,
@@ -643,9 +655,11 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   }
 
   FormDocumentSchema.methods.removePaymentAccount = async function () {
-    if (this.payments?.target_account_id) {
-      this.payments.target_account_id = undefined
-      this.payments.enabled = false
+    if (this.payments_channel?.target_account_id) {
+      this.payments_channel.target_account_id = undefined
+      if (this.payments_field) {
+        this.payments_field.enabled = false
+      }
     }
 
     return this.save()
@@ -903,11 +917,11 @@ const compileFormModel = (db: Mongoose): IFormModel => {
 
   FormSchema.statics.updatePaymentsById = async function (
     formId: string,
-    newPayments: FormPayments,
+    newPayments: FormPaymentsField,
   ) {
     return this.findByIdAndUpdate(
       formId,
-      { payments: newPayments },
+      { payments_field: newPayments },
       { new: true, runValidators: true },
     ).exec()
   }
