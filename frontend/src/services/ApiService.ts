@@ -43,8 +43,10 @@ export const transformAxiosError = (error: Error): ApiError => {
         meta: {
           action: 'transformAxiosError',
           error: {
+            code: error?.code,
             message: error?.message,
             stack: error?.stack,
+            dump: error?.toJSON(),
           },
         },
       })
