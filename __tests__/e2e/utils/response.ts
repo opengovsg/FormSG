@@ -101,15 +101,13 @@ export const getResponseArray = (
   }
 
   switch (field.fieldType) {
-    case BasicField.Section: {
+    case BasicField.Section:
       return isCsv ? null : ['']
-    }
     case BasicField.Image:
-    case BasicField.Statement: {
+    case BasicField.Statement:
       return null
-    }
     case BasicField.Radio:
-    case BasicField.Checkbox: {
+    case BasicField.Checkbox:
       if (!field.val || (field.val instanceof Array && !field.val.length)) {
         return ['']
       }
@@ -122,8 +120,7 @@ export const getResponseArray = (
           })
           .join(isCsv ? ';' : ', '),
       ]
-    }
-    case BasicField.Date: {
+    case BasicField.Date:
       // Need to re-parse, because input is in dd/mm/yyyy format whereas response is in dd MMM yyyy format.
       return [
         field.val
@@ -133,13 +130,10 @@ export const getResponseArray = (
             )
           : '',
       ]
-    }
-    case BasicField.HomeNo: {
-      return [`+65${field.val}`]
-    }
-    default: {
+    case BasicField.HomeNo:
+      return [field.val && `+65${field.val}`]
+    default:
       return [field.val]
-    }
   }
 }
 
