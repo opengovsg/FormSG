@@ -7,8 +7,8 @@ import {
   DATE_INPUT_FORMAT,
   DATE_RESPONSE_FORMAT,
   E2eFieldMetadata,
+  FormResponseView,
 } from '../constants'
-import { FormResponseView } from '../constants/response'
 
 import { isMyInfoableFieldType, isVerifiableFieldType } from './field'
 

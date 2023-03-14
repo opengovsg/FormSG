@@ -141,12 +141,12 @@ const addForm = async (
     .match(new RegExp(`${ADMIN_FORM_PAGE_PREFIX}/[a-fA-F0-9]{24}`))?.[0]
     .slice(l, l + 24)
 
-  expect(formId).toBeTruthy()
+  if (!formId) throw new Error('FormId not found in page url')
 
   // Clear any banners
   await page.getByRole('button', { name: 'Next' }).press('Escape')
 
-  return { formId: formId!, formResponseMode }
+  return { formId, formResponseMode }
 }
 
 /** Goes to settings page and adds settings, and toggle form to be open.
