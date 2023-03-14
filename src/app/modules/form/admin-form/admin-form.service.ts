@@ -1519,7 +1519,7 @@ export const updatePayments = (
   formId: string,
   newPayments: PaymentsUpdateDto,
 ): ResultAsync<
-  IFormDocument['payments'],
+  IFormDocument['payments_field'],
   PossibleDatabaseError | FormNotFoundError
 > => {
   return ResultAsync.fromPromise(
@@ -1540,6 +1540,6 @@ export const updatePayments = (
     if (!updatedForm) {
       return errAsync(new FormNotFoundError())
     }
-    return okAsync(updatedForm.payments)
+    return okAsync(updatedForm.payments_field)
   })
 }

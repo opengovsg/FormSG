@@ -16,7 +16,8 @@ import {
   FormEndPage,
   FormField,
   FormFieldDto,
-  FormPayments,
+  FormPaymentsChannel,
+  FormPaymentsField,
   FormPermission,
   FormSettings,
   FormStartPage,
@@ -199,9 +200,9 @@ export interface IFormSchema extends IForm, Document, PublicView<PublicForm> {
     accountId,
     publishableKey,
   }: {
-    accountId: FormPayments['target_account_id']
-    publishableKey: FormPayments['publishable_key']
-  }): Promise<T & DeepRequired<Pick<IFormSchema, 'payments'>>>
+    accountId: FormPaymentsChannel['target_account_id']
+    publishableKey: FormPaymentsChannel['publishable_key']
+  }): Promise<T & DeepRequired<Pick<IFormSchema, 'payments_channel'>>>
 
   /**
    * Remove payment account ID from the form.
@@ -360,7 +361,7 @@ export interface IFormModel extends Model<IFormSchema> {
    */
   updatePaymentsById(
     formId: string,
-    newPayments: FormPayments,
+    newPayments: FormPaymentsField,
   ): Promise<IFormDocument | null>
 
   updateFormLogic(

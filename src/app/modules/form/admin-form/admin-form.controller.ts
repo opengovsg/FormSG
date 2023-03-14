@@ -2715,7 +2715,7 @@ export const handleUpdateTwilio = [
  */
 export const _handleUpdatePayments: ControllerHandler<
   { formId: string },
-  IFormDocument['payments'] | ErrorDto,
+  IFormDocument['payments_field'] | ErrorDto,
   PaymentsUpdateDto
 > = (req, res) => {
   const { formId } = req.params

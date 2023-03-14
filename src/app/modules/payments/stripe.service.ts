@@ -88,8 +88,8 @@ export const linkStripeAccountToForm = (
   },
 ): ResultAsync<string, DatabaseError> => {
   // Check if form already has account id
-  if (form.payments?.target_account_id) {
-    return okAsync(form.payments.target_account_id)
+  if (form.payments_channel?.target_account_id) {
+    return okAsync(form.payments_channel.target_account_id)
   }
 
   // No account id, create and inject into form
@@ -109,11 +109,11 @@ export const linkStripeAccountToForm = (
       })
       return new DatabaseError(errMsg)
     },
-  ).map((updatedForm) => updatedForm.payments.target_account_id)
+  ).map((updatedForm) => updatedForm.payments_channel.target_account_id)
 }
 
 export const unlinkStripeAccountFromForm = (form: IPopulatedForm) => {
-  if (!form.payments?.target_account_id) {
+  if (!form.payments_channel?.target_account_id) {
     return okAsync(true)
   }
 
@@ -219,7 +219,7 @@ export const getReceiptURL = (
           ResultAsync.fromPromise(
             // Step 4: Retrieve paymentIntent object
             stripe.paymentIntents.retrieve(payment.paymentIntentId, undefined, {
-              stripeAccount: form.payments?.target_account_id,
+              stripeAccount: form.payments_channel?.target_account_id,
             }),
             (error) => {
               return new StripeFetchError(String(error))
@@ -248,7 +248,7 @@ export const getReceiptURL = (
             })
             .map((paymentIntent) => ({
               paymentIntent,
-              stripeAccount: form.payments?.target_account_id,
+              stripeAccount: form.payments_channel?.target_account_id,
             })),
         )
         .andThen(({ paymentIntent, stripeAccount }) =>
