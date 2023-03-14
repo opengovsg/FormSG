@@ -3,6 +3,7 @@ import mongoose from 'mongoose'
 import {
   BasicField,
   FormAuthType,
+  FormResponseMode,
   LogicConditionState,
   LogicType,
   MyInfoAttribute,
@@ -329,7 +330,7 @@ test.describe('Email form submission', () => {
     const formSettings = getSettings()
 
     // Test
-    const form = await createForm(page, Form, {
+    const { form } = await createForm(page, Form, FormResponseMode.Email, {
       formFields,
       formLogics,
       formSettings,
@@ -346,11 +347,21 @@ test.describe('Email form submission', () => {
 })
 
 const runTest = async (page: Page, formDef: E2eForm): Promise<void> => {
-  const form = await createForm(page, Form, formDef)
+  const { form, formResponseMode } = await createForm(
+    page,
+    Form,
+    FormResponseMode.Email,
+    formDef,
+  )
   const responseId = await submitForm(page, {
     form,
     ...formDef,
   })
-  await verifySubmission(page, { form, responseId, ...formDef })
+  await verifySubmission(page, {
+    form,
+    formResponseMode,
+    responseId,
+    ...formDef,
+  })
   await deleteDocById(Form, form._id)
 }

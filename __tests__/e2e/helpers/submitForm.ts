@@ -8,7 +8,7 @@ import {
   E2eFieldMetadata,
   E2eSettingsOptions,
   NON_INPUT_FIELD_TYPES,
-  PUBLIC_FORM_PAGE_PREFIX,
+  PUBLIC_FORM_PAGE,
 } from '../constants'
 import { extractOtp, fillDropdown, isMyInfoableFieldType } from '../utils'
 
@@ -60,7 +60,7 @@ const accessForm = async (
   page: Page,
   { form }: { form: IFormSchema },
 ): Promise<void> => {
-  await page.goto(`${PUBLIC_FORM_PAGE_PREFIX}/${form._id}`)
+  await page.goto(PUBLIC_FORM_PAGE(form._id))
   await expect(page.getByRole('heading', { name: form.title })).toBeVisible()
 }
 

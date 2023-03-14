@@ -166,7 +166,7 @@ export const ALL_FIELDS: E2eFieldMetadata[] = [
   {
     title: 'Birthday',
     fieldType: BasicField.Date,
-    val: format(new Date(), DATE_INPUT_FORMAT),
+    val: format(new Date(952970366), DATE_INPUT_FORMAT),
     dateValidation: {
       customMinDate: null,
       customMaxDate: null,
@@ -174,7 +174,7 @@ export const ALL_FIELDS: E2eFieldMetadata[] = [
     },
   },
   {
-    title: 'Pi',
+    title: 'What is the value of pi?',
     fieldType: BasicField.Decimal,
     ValidationOptions: {
       customMin: null,
@@ -211,7 +211,7 @@ export const ALL_FIELDS: E2eFieldMetadata[] = [
     fieldType: BasicField.HomeNo,
     val: '61234567',
   },
-  // Hide for now, because it doesn't work unless we spin up localstack.
+  // TODO: Images don't work unless we spin up localstack.
   // {
   //   title: 'Image',
   //   fieldType: BasicField.Image,
@@ -271,7 +271,7 @@ export const ALL_FIELDS: E2eFieldMetadata[] = [
     fieldType: BasicField.Section,
   },
   {
-    title: 'Name',
+    title: 'Your name',
     fieldType: BasicField.ShortText,
     ValidationOptions: {
       selectedValidation: null,
