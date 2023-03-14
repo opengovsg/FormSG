@@ -83,7 +83,7 @@ test.describe('Storage form submission', () => {
     })
   })
 
-  test('Create and submit email mode form with all fields shown by logic', async ({
+  test('Create and submit storage mode form with all fields shown by logic', async ({
     page,
   }) => {
     // Define
@@ -98,7 +98,7 @@ test.describe('Storage form submission', () => {
     })
   })
 
-  test('Create and submit email mode form with a field hidden by logic', async ({
+  test('Create and submit storage mode form with a field hidden by logic', async ({
     page,
   }) => {
     // Define
@@ -113,7 +113,7 @@ test.describe('Storage form submission', () => {
     })
   })
 
-  test('Create email mode form with submission disabled by chained logic', async ({
+  test('Create storage mode form with submission disabled by chained logic', async ({
     page,
   }) => {
     // Define

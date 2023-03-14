@@ -8,14 +8,17 @@ type E2eTestFormDefinition = {
   formLogics: E2eLogic[]
 }
 
-// Test where all fields are shown based on a single field logic
+/**
+ * Test where all fields are shown based on a single field logic
+ */
 const TEST_ALL_FIELDS_SHOWN_BY_LOGIC_FORMFIELDS: E2eFieldMetadata[] = [
   {
-    title: 'Do you want to show the fields?',
+    title: 'Do you want to hide the fields?',
     fieldType: BasicField.YesNo,
-    val: 'Yes',
+    val: 'No',
   },
-  ...ALL_FIELDS,
+  // TODO: Attachment fields don't work on storage mode unless we spin up localstack.
+  ...ALL_FIELDS.filter((field) => field.fieldType !== BasicField.Attachment),
 ]
 export const TEST_ALL_FIELDS_SHOWN_BY_LOGIC: E2eTestFormDefinition = {
   formFields: TEST_ALL_FIELDS_SHOWN_BY_LOGIC_FORMFIELDS,
@@ -26,7 +29,7 @@ export const TEST_ALL_FIELDS_SHOWN_BY_LOGIC: E2eTestFormDefinition = {
         {
           field: 0,
           state: LogicConditionState.Equal,
-          value: 'Yes',
+          value: 'No',
         },
       ],
       logicType: LogicType.ShowFields,
@@ -38,7 +41,9 @@ export const TEST_ALL_FIELDS_SHOWN_BY_LOGIC: E2eTestFormDefinition = {
   ],
 }
 
-// Test where a field is hidden based on a single field logic
+/**
+ * Test where a field is hidden based on a single field logic
+ */
 const TEST_FIELD_HIDDEN_BY_LOGIC_FORMFIELDS: E2eFieldMetadata[] = [
   {
     title: 'Do you want to show the fields?',
@@ -77,7 +82,9 @@ export const TEST_FIELD_HIDDEN_BY_LOGIC: E2eTestFormDefinition = {
   ],
 }
 
-// Test where submission is disabled via chained logic
+/**
+ * Test where submission is disabled via chained logic
+ */
 const TEST_SUBMISSION_DISABLED_BY_CHAINED_LOGIC_MESSAGE = 'You shall not pass!'
 const TEST_SUBMISSION_DISABLED_BY_CHAINED_LOGIC_FORMFIELDS: E2eFieldMetadata[] =
   [
