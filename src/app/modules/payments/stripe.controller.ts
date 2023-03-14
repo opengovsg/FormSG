@@ -2,7 +2,6 @@
 /// <reference types="stripe-event-types" />
 import axios from 'axios'
 import { celebrate, Joi, Segments } from 'celebrate'
-import tracer from 'dd-trace'
 import { StatusCodes } from 'http-status-codes'
 import get from 'lodash/get'
 import Stripe from 'stripe'
@@ -244,10 +243,8 @@ export const downloadPaymentReceipt: ControllerHandler<{
           // convert to pdf and return
           .then((receiptUrlResponse) => {
             const html = receiptUrlResponse.data
-            return tracer.trace('generatePdfFromHtml', () => {
-              const pdfBufferPromise = generatePdfFromHtml(html)
-              return pdfBufferPromise
-            })
+            const pdfBufferPromise = generatePdfFromHtml(html)
+            return pdfBufferPromise
           })
           .then((pdfBuffer) => {
             res.set({
