@@ -26,7 +26,7 @@ type VfnFieldValues = {
 
 export interface VerificationBoxProps {
   fieldType: VerifiableFieldType
-  otpPrefix: string | null
+  otpPrefix: string
   handleVerifyOtp: (otp: string) => Promise<string>
   handleResendOtp: () => Promise<void>
 }
