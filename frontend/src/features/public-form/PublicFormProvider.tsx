@@ -47,6 +47,7 @@ import { FormNotFound } from './components/FormNotFound'
 import { usePublicAuthMutations, usePublicFormMutations } from './mutations'
 import { PublicFormContext, SubmissionData } from './PublicFormContext'
 import { usePublicFormView } from './queries'
+import { axiosDebugFlow } from './utils'
 
 interface PublicFormProviderProps {
   formId: string
@@ -241,17 +242,7 @@ export const PublicFormProvider = ({
                   },
                 })
                 showErrorToast(error, form)
-                if (error.message.match(/Network Error/i) && fetch) {
-                  const env = await fetch(
-                    `${process.env.REACT_APP_URL}/api/v3/client/env`,
-                  )
-                  datadogLogs.logger.warn(`handleSubmitForm: fetch env vars`, {
-                    meta: {
-                      action: 'handleSubmitForm',
-                      envFetchSuccess: env.ok, // returns true if the response returned successfully
-                    },
-                  })
-                }
+                axiosDebugFlow(error)
               })
           )
         case FormResponseMode.Encrypt:
@@ -290,17 +281,7 @@ export const PublicFormProvider = ({
                   },
                 })
                 showErrorToast(error, form)
-                if (error.message.match(/Network Error/i) && fetch) {
-                  const env = await fetch(
-                    `${process.env.REACT_APP_URL}/api/v3/client/env`,
-                  )
-                  datadogLogs.logger.warn(`handleSubmitForm: fetch env vars`, {
-                    meta: {
-                      action: 'handleSubmitForm',
-                      envFetchSuccess: env.ok, // returns true if the response returned successfully
-                    },
-                  })
-                }
+                axiosDebugFlow(error)
               })
           )
       }
