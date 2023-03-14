@@ -23,6 +23,7 @@ PaymentsRouter.route(
  *
  * @returns 200 with receipt URL exists
  */
+// TODO: consider rate limiting this endpoint #5924
 PaymentsRouter.route(
   '/receipt/:formId([a-fA-F0-9]{24})/:submissionId([a-fA-F0-9]{24})/download',
 ).get(StripeController.downloadPaymentReceipt)
