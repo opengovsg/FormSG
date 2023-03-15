@@ -3,14 +3,14 @@ import { DateString } from './generic'
 
 // Stripe Charge status
 export enum PaymentStatus {
-  Pending = 'pending',
-  Failed = 'failed',
-  Succeeded = 'succeeded',
-  PartiallyRefunded = 'partially_refunded',
-  FullyRefunded = 'fully_refunded',
-  Disputed = 'disputed',
-  DisputeClosed = 'dispute_closed',
-  Unknown = 'unknown',
+  Pending = 'Pending',
+  Failed = 'Failed',
+  Succeeded = 'Succeeded',
+  PartiallyRefunded = 'Partially refunded',
+  FullyRefunded = 'Fully refunded',
+  Disputed = 'Disputed',
+  DisputeClosed = 'Dispute closed',
+  Unknown = 'Unknown',
 }
 
 export enum PaymentChannel {
