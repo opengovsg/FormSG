@@ -2774,26 +2774,6 @@ export const handleUpdatePayments = [
           then: Joi.forbidden(),
         },
       ]),
-      target_account_id: Joi.alternatives().conditional('enabled', [
-        {
-          is: true,
-          then: Joi.string(),
-        },
-        {
-          is: false,
-          then: Joi.forbidden(),
-        },
-      ]),
-      publishable_key: Joi.alternatives().conditional('enabled', [
-        {
-          is: true,
-          then: Joi.string(),
-        },
-        {
-          is: false,
-          then: Joi.forbidden(),
-        },
-      ]),
       description: Joi.alternatives().conditional('enabled', [
         {
           is: true,
