@@ -90,10 +90,15 @@ export const _handleStripeEventUpdates: ControllerHandler<
     case 'charge.refunded':
     case 'charge.succeeded':
     case 'charge.updated':
-      await StripeService.updateEventLogBySubmissionId(
-        event.data.object.metadata,
-        event,
-      )
+      {
+        await StripeService.updateEventLogBySubmissionId(
+          event.data.object.metadata,
+          event,
+          event.data.object.receipt_url
+            ? { receiptUrl: event.data.object.receipt_url }
+            : {},
+        )
+      }
       break
     case 'charge.dispute.closed':
     case 'charge.dispute.created':

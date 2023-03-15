@@ -24,6 +24,7 @@ export type Payment = {
   payoutDate?: Date
   created: DateString
   lastModified: DateString
+  receiptUrl: string
 }
 
 export type PaymentReceiptStatusDto = {

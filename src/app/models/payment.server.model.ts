@@ -38,6 +38,10 @@ const compilePaymentModel = (db: Mongoose): IPaymentModel => {
       payoutDate: {
         type: Date,
       },
+      receiptUrl: {
+        type: String,
+        required: false,
+      },
     },
     {
       timestamps: {
