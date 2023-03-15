@@ -30,7 +30,8 @@ import { FORM_SCHEMA_ID } from './form.server.model'
 
 export const SUBMISSION_SCHEMA_ID = 'Submission'
 
-const SubmissionSchema = new Schema<ISubmissionSchema, ISubmissionModel>(
+// Exported for use in pending submissions model
+export const SubmissionSchema = new Schema<ISubmissionSchema, ISubmissionModel>(
   {
     form: {
       type: Schema.Types.ObjectId,
@@ -55,13 +56,6 @@ const SubmissionSchema = new Schema<ISubmissionSchema, ISubmissionModel>(
       type: String,
       enum: Object.values(SubmissionType),
       required: true,
-    },
-    paymentPending: {
-      type: Boolean,
-    },
-    paymentId: {
-      type: Schema.Types.ObjectId,
-      ref: 'Payment',
     },
   },
   {
@@ -101,7 +95,8 @@ SubmissionSchema.statics.findFormsWithSubsAbove = function (
   ]).exec()
 }
 
-const EmailSubmissionSchema = new Schema<IEmailSubmissionSchema>({
+// Exported for use in pending submissions model
+export const EmailSubmissionSchema = new Schema<IEmailSubmissionSchema>({
   recipientEmails: {
     type: [
       {
@@ -161,7 +156,8 @@ const webhookResponseSchema = new Schema<IWebhookResponseSchema>(
   },
 )
 
-const EncryptSubmissionSchema = new Schema<
+// Exported for use in pending submissions model
+export const EncryptSubmissionSchema = new Schema<
   IEncryptedSubmissionSchema,
   IEncryptSubmissionModel
 >({
@@ -181,6 +177,10 @@ const EncryptSubmissionSchema = new Schema<
   version: {
     type: Number,
     required: true,
+  },
+  paymentId: {
+    type: Schema.Types.ObjectId,
+    ref: 'Payment',
   },
   webhookResponses: [webhookResponseSchema],
 })
@@ -389,7 +389,7 @@ EncryptSubmissionSchema.statics.findEncryptedSubmissionById = function (
 
 const compileSubmissionModel = (db: Mongoose): ISubmissionModel => {
   const Submission = db.model<ISubmissionSchema, ISubmissionModel>(
-    'Submission',
+    SUBMISSION_SCHEMA_ID,
     SubmissionSchema,
   )
   Submission.discriminator(SubmissionType.Email, EmailSubmissionSchema)

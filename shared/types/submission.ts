@@ -20,9 +20,6 @@ export const SubmissionBase = z.object({
   authType: z.nativeEnum(FormAuthType),
   myInfoFields: z.array(z.nativeEnum(MyInfoAttribute)).optional(),
   submissionType: z.nativeEnum(SubmissionType),
-  paymentPending: z.boolean().optional(),
-  // TODO: change to object if string doesn't work
-  paymentId: z.string(),
 })
 export type SubmissionBase = z.infer<typeof SubmissionBase>
 
@@ -60,6 +57,7 @@ export const StorageModeSubmissionBase = SubmissionBase.extend({
   attachmentMetadata: z.map(z.string(), z.string()).optional(),
   version: z.number(),
   webhookResponses: z.array(WebhookResponse).optional(),
+  paymentId: z.string().optional(),
 })
 export type StorageModeSubmissionBase = z.infer<
   typeof StorageModeSubmissionBase
