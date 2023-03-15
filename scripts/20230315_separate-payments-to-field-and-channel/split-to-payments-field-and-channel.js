@@ -33,7 +33,7 @@ db.getCollection("forms").updateMany(
     },
     {
         $set: {payments_channel: {
-            channel: "stripe",
+            channel: "Stripe",
             target_account_id: "$payments.target_account_id",
             publishable_key: "$payments.publishable_key",
             }

@@ -8,7 +8,7 @@ export enum PaymentStatus {
 }
 
 export enum PaymentChannel {
-  Stripe = 'stripe',
+  Stripe = 'Stripe',
   // for extensibility to future payment options
 }
 
