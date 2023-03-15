@@ -18,6 +18,7 @@ export type Payment = {
   payoutDate: Date
   created: DateString
   stripeTransactionFee: number
+  receiptUrl: string
 }
 
 export type PaymentReceiptStatusDto = {

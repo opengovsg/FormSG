@@ -45,6 +45,9 @@ const compilePaymentModel = (db: Mongoose): IPaymentModel => {
       stripeTransactionFee: {
         type: Number,
       },
+      receiptUrl: {
+        type: String,
+      },
     },
     {
       timestamps: {
