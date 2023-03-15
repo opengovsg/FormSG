@@ -20,6 +20,7 @@ import {
   FormStatus,
   LogicDto,
   LogicType,
+  PaymentChannel,
 } from 'shared/types'
 
 import getFormModel, {
@@ -86,10 +87,13 @@ const FORM_DEFAULTS = {
   },
   status: 'PRIVATE',
   submissionLimit: null,
-  payments: {
-    enabled: false,
+  payments_channel: {
+    channel: PaymentChannel.Stripe,
     target_account_id: '',
     publishable_key: '',
+  },
+  payments_field: {
+    enabled: false,
     description: '',
   },
 }
@@ -428,12 +432,11 @@ describe('Form Model', () => {
         expect(actualSavedObject).toEqual(expectedObject)
       })
 
-      it('should create and save successfully with valid payments settings', async () => {
+      it('should create and save successfully with valid payments_field settings', async () => {
         // Arrange
         const validFormParams = merge({}, MOCK_FORM_PARAMS, {
-          payments: {
+          payments_field: {
             enabled: true,
-            target_account_id: 'someId',
             amount_cents: 50,
             description: 'some payment',
           },
@@ -463,11 +466,8 @@ describe('Form Model', () => {
       it('should reject when target account id has whitespace', async () => {
         // Arrange
         const invalidFormParams = merge({}, MOCK_FORM_PARAMS, {
-          payments: {
-            enabled: true,
+          payments_channel: {
             target_account_id: 'some Id',
-            amount_cents: 50,
-            description: 'some payment',
           },
         })
 
@@ -483,9 +483,8 @@ describe('Form Model', () => {
       it('should reject when amount is negative', async () => {
         // Arrange
         const invalidFormParams = merge({}, MOCK_FORM_PARAMS, {
-          payments: {
+          payments_field: {
             enabled: true,
-            target_account_id: 'someId',
             amount_cents: -50,
             description: 'some payment',
           },
@@ -503,9 +502,8 @@ describe('Form Model', () => {
       it('should reject when amount has decimals', async () => {
         // Arrange
         const invalidFormParams = merge({}, MOCK_FORM_PARAMS, {
-          payments: {
+          payments_field: {
             enabled: true,
-            target_account_id: 'someId',
             amount_cents: 54.22,
             description: 'some payment',
           },
@@ -523,9 +521,8 @@ describe('Form Model', () => {
       it('should reject when amount is less than 50', async () => {
         // Arrange
         const invalidFormParams = merge({}, MOCK_FORM_PARAMS, {
-          payments: {
+          payments_field: {
             enabled: true,
-            target_account_id: 'someId',
             amount_cents: 49,
             description: 'some payment',
           },
