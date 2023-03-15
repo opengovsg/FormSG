@@ -131,7 +131,7 @@ export const PaymentPageBlock = ({
   const formTitle = form?.title
   const colorTheme = form?.startPage.colorTheme || FormColorTheme.Blue
 
-  const amountCents = form?.payments?.amount_cents || 0
+  const amountCents = form?.payments_field?.amount_cents || 0
 
   const stripePromise = useMemo(
     () => loadStripe(publishableKey),

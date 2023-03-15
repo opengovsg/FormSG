@@ -63,7 +63,7 @@ export const FormEndPageContainer = ({
 
   return (
     <Box py={{ base: '1.5rem', md: '2.5rem' }} w="100%">
-      {form?.payments?.enabled ? (
+      {form?.payments_field?.enabled ? (
         <FormPaymentPage
           submissionId={submissionData.id || ''}
           paymentClientSecret={submissionData.paymentClientSecret || ''}

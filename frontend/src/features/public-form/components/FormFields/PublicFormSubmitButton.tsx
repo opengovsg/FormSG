@@ -1,4 +1,4 @@
-import { MouseEventHandler, useContext, useMemo } from 'react'
+import { MouseEventHandler, useMemo } from 'react'
 import { useFormState, useWatch } from 'react-hook-form'
 import { Stack, useDisclosure, VisuallyHidden } from '@chakra-ui/react'
 
@@ -65,12 +65,12 @@ export const PublicFormSubmitButton = ({
         isLoading={isSubmitting}
         isDisabled={!!preventSubmissionLogic || !onSubmit}
         loadingText="Submitting"
-        onClick={form?.payments?.enabled ? onOpen : onSubmit}
+        onClick={form?.payments_field?.enabled ? onOpen : onSubmit}
       >
         <VisuallyHidden>End of form.</VisuallyHidden>
         {preventSubmissionLogic
           ? 'Submission disabled'
-          : form?.payments?.enabled
+          : form?.payments_field?.enabled
           ? 'Submit and pay'
           : 'Submit now'}
       </Button>
