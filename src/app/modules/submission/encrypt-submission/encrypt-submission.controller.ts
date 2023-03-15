@@ -451,6 +451,7 @@ const submitEncryptModeForm: ControllerHandler<
         amount: form.payments.amount_cents,
         status: PaymentStatus.Pending,
         paymentIntentId: paymentIntent.id,
+        email: req.body.paymentReceiptEmail,
       })
 
       try {
