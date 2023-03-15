@@ -16,6 +16,7 @@ import get from 'lodash/get'
 import simplur from 'simplur'
 
 import { PAYMENT_CONTACT_FIELD_ID } from '~shared/constants'
+import { BasicField } from '~shared/types'
 import {
   FormAuthType,
   FormResponseMode,
@@ -241,6 +242,25 @@ export const PublicFormProvider = ({
         },
       }
 
+      const countryRegionFieldIds = new Set(
+        form.form_fields
+          .filter((field) => field.fieldType == BasicField.CountryRegion)
+          .map((field) => field._id),
+      )
+      const formInputsWithCountryRegionInUpperCase = Object.keys(
+        formInputs,
+      ).reduce((newFormInputs: any, fieldId) => {
+        if (
+          countryRegionFieldIds.has(fieldId) &&
+          (formInputs[fieldId] as string)
+        ) {
+          newFormInputs[fieldId] = formInputs[fieldId].toString().toUpperCase()
+        } else {
+          newFormInputs[fieldId] = formInputs[fieldId]
+        }
+        return newFormInputs
+      }, {})
+
       const logMeta = {
         action: 'handleSubmitForm',
         useFetchForSubmissions,
@@ -274,7 +294,10 @@ export const PublicFormProvider = ({
             })
 
             return submitEmailModeFormFetchMutation
-              .mutateAsync(formData, { onSuccess })
+              .mutateAsync({
+                ...formData,
+                formInputs: formInputsWithCountryRegionInUpperCase,
+              }, { onSuccess })
               .catch(async (error) => {
                 datadogLogs.logger.warn(`handleSubmitForm: ${error.message}`, {
                   meta: {
@@ -350,6 +373,7 @@ export const PublicFormProvider = ({
               .mutateAsync(
                 {
                   ...formData,
+                  formInputs: formInputsWithCountryRegionInUpperCase,
                   publicKey: form.publicKey,
                   captchaResponse,
                   paymentReceiptEmail: paymentReceiptEmailField?.value,
