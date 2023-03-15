@@ -14,6 +14,7 @@ import {
   PublicFormDto,
   PublicFormViewDto,
 } from '../../../../../shared/types'
+import config from '../../../config/config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { isMongoError } from '../../../utils/handle-mongo-error'
 import { createReqMeta, getRequestIp } from '../../../utils/request'
@@ -159,6 +160,14 @@ export const handleGetPublicForm: ControllerHandler<
 
   const form = formResult.value
   const publicForm = form.getPublicView() as PublicFormDto
+
+  // If payments is enabled on the form, clear the angular cookie
+  // TODO(#4279): Remove once react rollout complete
+  if (form.payments?.enabled) {
+    const angularCookie = config.reactMigration.respondentCookieName
+    res.clearCookie(angularCookie)
+  }
+
   const { authType } = form
   const isIntranetUser = FormService.checkIsIntranetFormAccess(
     getRequestIp(req),
