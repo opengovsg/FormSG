@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { generatePath, resolvePath, useParams } from 'react-router-dom'
 import {
   Box,
   Flex,
@@ -17,6 +18,9 @@ import { loadStripe } from '@stripe/stripe-js'
 
 import { FormColorTheme } from '~shared/types/form'
 
+import { PAYMENT_COMPLETE_SUBROUTE } from '~/app/AppRouter'
+
+import { PUBLICFORM_ROUTE } from '~constants/routes'
 import { centsToDollars } from '~utils/payments'
 import Button from '~components/Button'
 
@@ -56,10 +60,20 @@ const StripeCheckoutForm = ({
     }
   }, [isRetry])
 
+  // TODO:L put into local store
   // Upon complete payment, redirect to <formId>?stripeSubmissionId=<submissionId>
-  const return_url = `${
-    window.location.href.split('?')[0]
-  }?${STRIPE_SUBMISSION_ID_KEY}=${submissionId}`
+  const { formId } = useParams()
+
+  const returnUrl = resolvePath(
+    generatePath([PUBLICFORM_ROUTE, PAYMENT_COMPLETE_SUBROUTE].join('/'), {
+      formId,
+      stripeSubmissionId: submissionId,
+    }),
+  )
+  console.log({ returnUrl })
+  // const return_url = `${
+  //   window.location.href.split('?')[0]
+  // }?${STRIPE_SUBMISSION_ID_KEY}=${submissionId}`
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     // We don't want to let default form submission happen here,
@@ -77,7 +91,7 @@ const StripeCheckoutForm = ({
       //`Elements` instance that was used to create the Payment Element
       elements,
       confirmParams: {
-        return_url,
+        return_url: window.location.origin + returnUrl.pathname,
       },
     })
 
