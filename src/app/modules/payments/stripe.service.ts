@@ -337,7 +337,7 @@ export const getReceiptUrl = (
   formId: string,
   submissionId: string,
 ): ResultAsync<
-  { data: { receipt_url: string } }, // TODO: convert to type
+  string,
   FormNotFoundError | SubmissionNotFoundError | PaymentNotFoundError
 > => {
   if (!mongoose.Types.ObjectId.isValid(formId)) {
@@ -371,11 +371,7 @@ export const getReceiptUrl = (
             submissionId,
           },
         })
-        return okAsync({
-          data: {
-            receipt_url: payment.receiptUrl,
-          },
-        })
+        return okAsync(payment.receiptUrl)
       }
     // TODO: refine into better type
     return errAsync(new PaymentNotFoundError())
