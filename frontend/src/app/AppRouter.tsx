@@ -32,6 +32,8 @@ import {
   ResponsesPage,
 } from '~features/admin-form/responses'
 import { SettingsPage } from '~features/admin-form/settings/SettingsPage'
+// TODO: move to /payment feature folder
+import { FormPaymentRedirectPage } from '~features/public-form/components/FormPaymentRedirectPage/FormPaymentRedirectPage'
 import { BillingPage } from '~features/user/billing'
 
 import { HashRouterElement } from './HashRouterElement'
@@ -61,7 +63,8 @@ const WithSuspense = ({ children }: { children: React.ReactNode }) => (
     {children}
   </Suspense>
 )
-
+// TODO: move to some const
+export const PAYMENT_COMPLETE_SUBROUTE = 'pay-success/:stripeSubmissionId'
 export const AppRouter = (): JSX.Element => {
   return (
     <WithSuspense>
@@ -98,6 +101,10 @@ export const AppRouter = (): JSX.Element => {
           <Route
             path={USE_TEMPLATE_REDIRECT_SUBROUTE}
             element={<PublicElement element={<UseTemplateRedirectPage />} />}
+          />
+          <Route
+            path={PAYMENT_COMPLETE_SUBROUTE}
+            element={<PublicElement element={<FormPaymentRedirectPage />} />}
           />
         </Route>
         <Route

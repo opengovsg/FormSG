@@ -1,25 +1,33 @@
-import { useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
 import { Box, Container, Flex, Skeleton } from '@chakra-ui/react'
 
-import { usePublicFormContext } from '../../PublicFormContext'
+import { fillMinHeightCss } from '~utils/fillHeightCss'
+
+import { PublicFormProvider } from '~features/public-form/PublicFormProvider'
+
 import { useGetPaymentReceiptStatus } from '../../queries'
+import { FormBanner } from '../FormBanner'
+import { FormSectionsProvider } from '../FormFields/FormSectionsContext'
+import { FormFooter } from '../FormFooter'
+import { PublicFormLogo } from '../FormLogo'
+import FormStartPage from '../FormStartPage'
+import { PublicFormWrapper } from '../PublicFormWrapper'
 
 import { DownloadReceiptBlock } from './components/DownloadReceiptBlock'
 import { PaymentSuccessSvgr } from './components/PaymentSuccessSvgr'
 
-type FormPaymentRedirectPageProps = {
-  stripeSubmissionId: string
-}
+export const FormPaymentRedirectPage = () => {
+  const { formId, stripeSubmissionId } = useParams()
 
-export const FormPaymentRedirectPage = ({
-  stripeSubmissionId,
-}: FormPaymentRedirectPageProps) => {
-  const { formId } = usePublicFormContext()
+  if (!formId) throw new Error('No formId provided')
+  if (!stripeSubmissionId) throw new Error('No stripeSubmissionId provided')
 
+  const [isReceiptReady, setIsReceiptReady] = useState(false)
   const { data, isLoading, error } = useGetPaymentReceiptStatus(
     formId,
     stripeSubmissionId,
+    isReceiptReady,
   )
 
   const navigate = useNavigate()
@@ -34,27 +42,39 @@ export const FormPaymentRedirectPage = ({
   }, [error, isLoading, navigate])
 
   return (
-    <Box py={{ base: '1.5rem', md: '2.5rem' }} w="100%">
-      <Container w="42.5rem" maxW="100%" p={0}>
-        <Flex flexDir="column" align="center">
-          <PaymentSuccessSvgr maxW="100%" />
-          <Box
-            py={{ base: '1.5rem', md: '3rem' }}
-            px={{ base: '1.5rem', md: '4rem' }}
-            bg="white"
-            w="100%"
-          >
-            <Skeleton isLoaded={!isLoading}>
-              {data?.isReady ? (
-                <DownloadReceiptBlock
-                  formId={formId}
-                  stripeSubmissionId={stripeSubmissionId}
-                />
-              ) : null}
-            </Skeleton>
-          </Box>
+    <PublicFormProvider formId={formId}>
+      <FormSectionsProvider>
+        <Flex direction="column" css={fillMinHeightCss}>
+          <FormBanner />
+          <PublicFormLogo />
+          <FormStartPage />
+          <PublicFormWrapper>
+            <Box py={{ base: '1.5rem', md: '2.5rem' }} w="100%">
+              <Container w="42.5rem" maxW="100%" p={0}>
+                <Flex flexDir="column" align="center">
+                  <PaymentSuccessSvgr maxW="100%" />
+                  <Box
+                    py={{ base: '1.5rem', md: '3rem' }}
+                    px={{ base: '1.5rem', md: '4rem' }}
+                    bg="white"
+                    w="100%"
+                  >
+                    <Skeleton isLoaded={!isLoading}>
+                      {data?.isReady ? (
+                        <DownloadReceiptBlock
+                          formId={formId}
+                          stripeSubmissionId={stripeSubmissionId}
+                        />
+                      ) : null}
+                    </Skeleton>
+                  </Box>
+                </Flex>
+              </Container>
+            </Box>
+            <FormFooter />
+          </PublicFormWrapper>
         </Flex>
-      </Container>
-    </Box>
+      </FormSectionsProvider>
+    </PublicFormProvider>
   )
 }
