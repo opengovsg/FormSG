@@ -27,6 +27,7 @@ import {
 import { createQueryWithDateParam } from '../utils/date'
 
 import { FORM_SCHEMA_ID } from './form.server.model'
+import { PAYMENT_SCHEMA_ID } from './payment.server.model'
 
 export const SUBMISSION_SCHEMA_ID = 'Submission'
 
@@ -180,7 +181,7 @@ export const EncryptSubmissionSchema = new Schema<
   },
   paymentId: {
     type: Schema.Types.ObjectId,
-    ref: 'Payment',
+    ref: PAYMENT_SCHEMA_ID,
   },
   webhookResponses: [webhookResponseSchema],
 })
