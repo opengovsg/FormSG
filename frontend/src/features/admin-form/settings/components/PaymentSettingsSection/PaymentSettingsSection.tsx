@@ -1,5 +1,7 @@
 import { Flex, FormControl, Icon, Skeleton, Text } from '@chakra-ui/react'
 
+import { FormResponseMode } from '~shared/types'
+
 import { BxsCheckCircle, BxsError, BxsInfoCircle } from '~assets/icons'
 import FormLabel from '~components/FormControl/FormLabel'
 import Input from '~components/Input'
@@ -98,6 +100,7 @@ const PaymentsSectionText = () => {
   const { data: settings, isLoading } = useAdminFormSettings()
 
   if (
+    settings?.responseMode === FormResponseMode.Encrypt &&
     settings?.payments_field?.enabled &&
     settings?.payments_channel?.target_account_id
   ) {
