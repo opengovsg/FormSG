@@ -44,7 +44,7 @@ export const useGetPaymentReceiptStatus = (
       retry: !hasReceipt, // indefinite
       retryDelay: (failureCount) => {
         // Delay count scales from 3, 6, 9, 9, ...
-        return Math.max(failureCount, 3) * 5
+        return Math.max(failureCount, 3) * 3 * 1000
       },
     },
   )
