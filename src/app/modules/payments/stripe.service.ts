@@ -333,7 +333,56 @@ export const validateAccount = (
   )
 }
 
-export const getReceiptURL = (
+export const getReceiptUrl = (
+  formId: string,
+  submissionId: string,
+): ResultAsync<
+  { data: { receipt_url: string } }, // TODO: convert to type
+  FormNotFoundError | SubmissionNotFoundError | PaymentNotFoundError
+> => {
+  if (!mongoose.Types.ObjectId.isValid(formId)) {
+    return errAsync(new FormNotFoundError())
+  }
+
+  if (!mongoose.Types.ObjectId.isValid(submissionId)) {
+    return errAsync(new SubmissionNotFoundError())
+  }
+
+  // Step 1: verify form submission exists
+  const paymentPromise = PaymentModel.findBySubmissionId(submissionId)
+  return ResultAsync.fromPromise(paymentPromise, (error) => {
+    logger.error({
+      message:
+        'Error while finding submissionId from payment collection in database',
+      meta: { action: 'getReceiptUrl', formId, submissionId },
+      error,
+    })
+    return new PaymentNotFoundError()
+  }).andThen((payment) => {
+    if (payment)
+      if (payment.receiptUrl) {
+        // Step 2: Verify submission id linked to the form is the same
+        // as the submission id provided in the payment params
+        logger.info({
+          message: 'Verified payment and receipt_url exists',
+          meta: {
+            action: 'getReceiptURL',
+            formId,
+            submissionId,
+          },
+        })
+        return okAsync({
+          data: {
+            receipt_url: payment.receiptUrl,
+          },
+        })
+      }
+    // TODO: refine into better type
+    return errAsync(new PaymentNotFoundError())
+  })
+}
+
+export const __getReceiptURL = (
   formId: string,
   submissionId: string,
 ): ResultAsync<
