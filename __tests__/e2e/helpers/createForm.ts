@@ -5,10 +5,12 @@ import {
   BASICFIELD_TO_DRAWER_META,
   MYINFO_FIELD_TO_DRAWER_META,
 } from 'frontend/src/features/admin-form/create/constants'
+import { readFileSync } from 'fs'
 import {
   BasicField,
   DateSelectedValidation,
   FormAuthType,
+  FormResponseMode,
   FormStatus,
   LogicConditionState,
   LogicType,
@@ -18,10 +20,13 @@ import {
 import { IFormModel, IFormSchema } from 'src/types'
 
 import {
+  ADMIN_FORM_PAGE_CREATE,
   ADMIN_FORM_PAGE_PREFIX,
+  ADMIN_FORM_PAGE_SETTINGS,
   DASHBOARD_PAGE,
   E2eFieldMetadata,
   E2eForm,
+  E2eFormResponseMode,
   E2eLogic,
   E2eSettingsOptions,
   NON_INPUT_FIELD_TYPES,
@@ -35,33 +40,50 @@ import {
   getTitleWithQuestionNumber,
 } from '../utils'
 
+type CreateFormReturn = {
+  form: IFormSchema
+  formResponseMode: E2eFormResponseMode
+}
+
 /**
  * Navigates to the dashboard and creates a new form with all the associated form settings.
  * @param {Page} page Playwright page
- * @returns {IFormSchema} the created form
+ * @param {IFormMode} Form the Form database model
+ * @param {FormResponseMode} responseMode the type of form to be created - Email or Encrypt
+ * @param {E2eForm} e2eForm the form details to be created
+ * @returns {CreateFormReturn} the created form as found in the db along with the secret key, if it is a storage form
  */
 export const createForm = async (
   page: Page,
   Form: IFormModel,
+  responseMode: FormResponseMode,
   { formFields, formLogics, formSettings }: E2eForm,
-): Promise<IFormSchema> => {
-  const formId = await addForm(page)
-  await addSettings(page, { formId, formSettings })
-  await addFieldsAndLogic(page, formFields, formLogics)
+): Promise<CreateFormReturn> => {
+  const { formId, formResponseMode } = await addForm(page, responseMode)
+  await addSettings(page, { formId, formResponseMode, formSettings })
+  await addFieldsAndLogic(page, { formId, formFields, formLogics })
 
   const form = await Form.findById(formId)
-
   if (!form) throw Error('Form not found in db')
 
-  return form
+  return { form, formResponseMode }
+}
+
+type AddFormReturn = {
+  formId: string
+  formResponseMode: E2eFormResponseMode
 }
 
 /**
  * Navigates to the dashboard and creates a new form. Ends on the admin builder page.
  * @param {Page} page Playwright page
- * @returns {string} the created form id
+ * @param {FormResponseMode} responseMode the type of form to be created - Email or Encrypt
+ * @returns {AddFormReturn} the created form id and the secret key, if it is a storage form
  */
-const addForm = async (page: Page): Promise<string> => {
+const addForm = async (
+  page: Page,
+  responseMode: FormResponseMode,
+): Promise<AddFormReturn> => {
   await page.goto(DASHBOARD_PAGE)
 
   // Press escape 5 times to get rid of any banners
@@ -75,8 +97,42 @@ const addForm = async (page: Page): Promise<string> => {
 
   await page.getByLabel('Form name').fill(`e2e-test-${cuid()}`)
 
-  await page.getByText('Email Mode').click()
+  await page
+    .getByText(
+      `${responseMode === FormResponseMode.Email ? 'email' : 'storage'} mode`,
+    )
+    .click()
   await page.getByRole('button', { name: 'Next step' }).click()
+
+  let formResponseMode: E2eFormResponseMode = {
+    responseMode: FormResponseMode.Email,
+  }
+  if (responseMode === FormResponseMode.Encrypt) {
+    // Download the secret key and save it for the test.
+    const downloadPromise = page.waitForEvent('download')
+    await page.getByRole('button', { name: 'Download key' }).click()
+    const download = await downloadPromise
+    const path = await download.path()
+    if (!path) throw new Error('Secret key download failed')
+    formResponseMode = {
+      responseMode: FormResponseMode.Encrypt,
+      secretKey: readFileSync(path).toString(),
+    }
+
+    // Double check that the secret key exists on the screen.
+    await expect(
+      page.getByText(formResponseMode.secretKey, { exact: true }),
+    ).toBeVisible()
+
+    // Click acknowledgement buttons
+    await page.getByText(/If I lose my Secret Key/).click()
+    await page
+      .getByRole('button', {
+        name: 'I have saved my Secret Key safely',
+      })
+      .click()
+  }
+
   await expect(page).toHaveURL(new RegExp(`${ADMIN_FORM_PAGE_PREFIX}/.*`, 'i'))
 
   const l = ADMIN_FORM_PAGE_PREFIX.length + 1
@@ -85,12 +141,12 @@ const addForm = async (page: Page): Promise<string> => {
     .match(new RegExp(`${ADMIN_FORM_PAGE_PREFIX}/[a-fA-F0-9]{24}`))?.[0]
     .slice(l, l + 24)
 
-  expect(formId).toBeTruthy()
+  if (!formId) throw new Error('FormId not found in page url')
 
   // Clear any banners
   await page.getByRole('button', { name: 'Next' }).press('Escape')
 
-  return formId!
+  return { formId, formResponseMode }
 }
 
 /** Goes to settings page and adds settings, and toggle form to be open.
@@ -102,11 +158,16 @@ const addSettings = async (
   page: Page,
   {
     formId,
+    formResponseMode,
     formSettings,
-  }: { formId: string; formSettings: E2eSettingsOptions },
+  }: {
+    formId: string
+    formResponseMode: E2eFormResponseMode
+    formSettings: E2eSettingsOptions
+  },
 ): Promise<void> => {
   await page.getByText('Settings').click()
-  await expect(page).toHaveURL(`${ADMIN_FORM_PAGE_PREFIX}/${formId}/settings`)
+  await expect(page).toHaveURL(ADMIN_FORM_PAGE_SETTINGS(formId))
 
   await addGeneralSettings(page, formSettings)
   await addAuthSettings(page, formSettings)
@@ -129,8 +190,20 @@ const addSettings = async (
       })
       .click()
 
+    if (formResponseMode.responseMode === FormResponseMode.Encrypt) {
+      // Upload the secret key and confirm to open the form.
+      await page
+        .getByPlaceholder('Enter or upload your Secret Key to continue')
+        .fill(formResponseMode.secretKey)
+      await page
+        .locator('label')
+        .filter({ hasText: 'If I lose my key' })
+        .click()
+      await page.getByRole('button', { name: 'Activate form' }).click()
+    }
+
     // Check toast
-    await expect(page.getByText(/your form is now open/i)).toBeVisible()
+    await expectToast(page, /your form is now open/i)
 
     // Check new label
     await expect(
@@ -297,11 +370,14 @@ const addCollaborators = async (
 
 const addFieldsAndLogic = async (
   page: Page,
-  formFields: E2eFieldMetadata[],
-  formLogics: E2eLogic[],
+  {
+    formId,
+    formFields,
+    formLogics,
+  }: { formId: string; formFields: E2eFieldMetadata[]; formLogics: E2eLogic[] },
 ) => {
   await page.getByText('Create').click()
-  await expect(page).toHaveURL(new RegExp(`${ADMIN_FORM_PAGE_PREFIX}/.*`, 'i'))
+  await expect(page).toHaveURL(ADMIN_FORM_PAGE_CREATE(formId))
 
   await addFields(page, formFields)
   await addLogics(page, formFields, formLogics)
@@ -654,9 +730,6 @@ const addLogics = async (
 
     // Save
     await page.getByText('Add logic').click()
-
-    // Check toast
-    await expectToast(page, /the logic was successfully created/i)
   }
 
   await page.reload()

@@ -8,7 +8,7 @@ import {
   E2eFieldMetadata,
   E2eSettingsOptions,
   NON_INPUT_FIELD_TYPES,
-  PUBLIC_FORM_PAGE_PREFIX,
+  PUBLIC_FORM_PAGE,
 } from '../constants'
 import { extractOtp, fillDropdown, isMyInfoableFieldType } from '../utils'
 
@@ -35,6 +35,27 @@ export const submitForm = async (
 }
 
 /**
+ * Navigate to the public form page, fill the form fields and verify that the submission has been disabled.
+ * @param {Page} page Playwright page
+ * @param {IFormSchema} form the form returned from the db
+ * @param {E2eFieldMetadata[]} formFields the fields used to create the form
+ * @param {E2eSettingsOptions} formSettings the settings used to create the form
+ * @param {string} preventSubmitMessage the message shown when submission is disabled
+ */
+export const verifySubmissionDisabled = async (
+  page: Page,
+  { form, formFields, formSettings }: SubmitFormProps,
+  preventSubmitMessage: string,
+): Promise<void> => {
+  await fillForm(page, { form, formFields, formSettings })
+
+  await expect(
+    page.locator('button:has-text("Submission disabled")'),
+  ).toBeDisabled()
+  await expect(page.getByText(preventSubmitMessage)).toBeVisible()
+}
+
+/**
  * Navigate to the public form page and fill the form fields.
  * @param {Page} page Playwright page
  * @param {IFormSchema} form the form returned from the db
@@ -42,7 +63,7 @@ export const submitForm = async (
  * @param {E2eSettingsOptions} formSettings the settings used to create the form
  * @returns {string} the responseId
  */
-export const fillForm = async (
+const fillForm = async (
   page: Page,
   { form, formFields, formSettings }: SubmitFormProps,
 ): Promise<void> => {
@@ -60,7 +81,7 @@ const accessForm = async (
   page: Page,
   { form }: { form: IFormSchema },
 ): Promise<void> => {
-  await page.goto(`${PUBLIC_FORM_PAGE_PREFIX}/${form._id}`)
+  await page.goto(PUBLIC_FORM_PAGE(form._id))
   await expect(page.getByRole('heading', { name: form.title })).toBeVisible()
 }
 
