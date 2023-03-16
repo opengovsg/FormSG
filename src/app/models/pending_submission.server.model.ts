@@ -16,8 +16,8 @@ import {
 } from './submission.server.model'
 
 export const PENDING_SUBMISSION_SCHEMA_ID = 'PendingSubmission'
-const EMAIL_PENDING_SUBMISSION_SCHEMA_ID = 'emailPendingSubmission'
-const ENCRYPT_PENDING_SUBMISSION_SCHEMA_ID = 'encryptPendingSubmission'
+const EMAIL_PENDING_SUBMISSION_SCHEMA_ID = 'EmailPendingSubmission'
+const ENCRYPT_PENDING_SUBMISSION_SCHEMA_ID = 'EncryptPendingSubmission'
 
 const compilePendingSubmissionModel = (db: Mongoose): ISubmissionModel => {
   const PendingSubmission = db.model<ISubmissionSchema, ISubmissionModel>(
