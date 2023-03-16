@@ -1,19 +1,17 @@
 MOCKPASS_PORT=5156
-#Needed for MyInfo
-SINGPASS_ESRVC_ID=Test-eServiceId-Sp 
 
-SP_OIDC_NDI_DISCOVERY_ENDPOINT=https://stg-id.singpass.gov.sg/.well-known/openid-configuration
-SP_OIDC_NDI_JWKS_ENDPOINT=https://stg-id.singpass.gov.sg/.well-known/keys
+SP_OIDC_NDI_DISCOVERY_ENDPOINT=http://localhost:5156/singpass/v2/.well-known/openid-configuration
+SP_OIDC_NDI_JWKS_ENDPOINT=http://localhost:5156/singpass/v2/.well-known/keys
 SP_OIDC_RP_CLIENT_ID=rpClientId
-SP_OIDC_RP_REDIRECT_URL=https://staging.form.gov.sg/api/v3/singpass/login
-SP_OIDC_RP_JWKS_PUBLIC_PATH=./tests/certs/test_sp_rp_public_jwks.json
-SP_OIDC_RP_JWKS_SECRET_PATH=./tests/certs/test_sp_rp_secret_jwks.json
-CP_OIDC_NDI_DISCOVERY_ENDPOINT=https://stg-id.corppass.gov.sg/.well-known/openid-configuration
-CP_OIDC_NDI_JWKS_ENDPOINT=https://stg-id.corppass.gov.sg/.well-known/keys
+SP_OIDC_RP_REDIRECT_URL=http://localhost:5000/api/v3/singpass/login
+SP_OIDC_RP_JWKS_PUBLIC_PATH=./__tests__/e2e/setup/certs/test_sp_rp_public_jwks.json
+SP_OIDC_RP_JWKS_SECRET_PATH=./__tests__/e2e/setup/certs/test_sp_rp_secret_jwks.json
+CP_OIDC_NDI_DISCOVERY_ENDPOINT=http://localhost:5156/corppass/v2/.well-known/openid-configuration
+CP_OIDC_NDI_JWKS_ENDPOINT=http://localhost:5156/corppass/v2/.well-known/keys
 CP_OIDC_RP_CLIENT_ID=rpClientId
-CP_OIDC_RP_REDIRECT_URL=https://staging.form.gov.sg/api/v3/corppass/login
-CP_OIDC_RP_JWKS_PUBLIC_PATH=./tests/certs/test_cp_rp_public_jwks.json
-CP_OIDC_RP_JWKS_SECRET_PATH=./tests/certs/test_cp_rp_secret_jwks.json
+CP_OIDC_RP_REDIRECT_URL=http://localhost:5000/api/v3/corppass/login
+CP_OIDC_RP_JWKS_PUBLIC_PATH=./__tests__/e2e/setup/certs/test_cp_rp_public_jwks.json
+CP_OIDC_RP_JWKS_SECRET_PATH=./__tests__/e2e/setup/certs/test_cp_rp_secret_jwks.json
 
 MYINFO_CLIENT_CONFIG=dev
 MYINFO_FORMSG_KEY_PATH=./node_modules/@opengovsg/mockpass/static/certs/key.pem
@@ -21,24 +19,17 @@ MYINFO_CERT_PATH=./node_modules/@opengovsg/mockpass/static/certs/spcp.crt
 MYINFO_CLIENT_ID=mockClientId
 MYINFO_CLIENT_SECRET=mockClientSecret
 MYINFO_JWT_SECRET=mockJwtSecret
+SINGPASS_ESRVC_ID=Test-eServiceId-Sp # Needed for MyInfo
 
-CP_FORMSG_KEY_PATH=./node_modules/@opengovsg/mockpass/static/certs/key.pem
-CP_FORMSG_CERT_PATH=./node_modules/@opengovsg/mockpass/static/certs/server.crt
-CP_IDP_CERT_PATH=./node_modules/@opengovsg/mockpass/static/certs/spcp.crt
+SGID_HOSTNAME=http://localhost:5156/sgid
+SGID_CLIENT_ID=sgidclientid
+SGID_CLIENT_SECRET=sgidclientsecret
+SGID_REDIRECT_URI=http://localhost:5000/sgid/login
+SGID_PRIVATE_KEY=./node_modules/@opengovsg/mockpass/static/certs/key.pem
+SGID_PUBLIC_KEY=./node_modules/@opengovsg/mockpass/static/certs/server.crt
 
-CORPPASS_ASSERT_ENDPOINT=http://localhost:5000/corppass/login
-CORPPASS_IDP_LOGIN_URL=http://localhost:5156/corppass/logininitial
-CORPPASS_IDP_ENDPOINT=http://localhost:5156/corppass/soap
-CORPPASS_PARTNER_ENTITY_ID=https://staging.form.gov.sg/corppass
-CORPPASS_ESRVC_ID=FORMSG-CP-TEST
-CORPPASS_IDP_ID=https://saml.corppass.gov.sg/FIM/sps/CorpIDPFed/saml20
-
-SHOW_LOGIN_PAGE=true
 IS_SP_MAINTENANCE=Date/Time-SP
 IS_CP_MAINTENANCE=Date/Time-CP
-
-MOCKPASS_NRIC=S6005038D
-MOCKPASS_UEN=123456789A
 
 GOOGLE_CAPTCHA=123456789
 GOOGLE_CAPTCHA_PUBLIC=987654321
@@ -73,13 +64,6 @@ MONGO_BINARY_VERSION=4.0.22
 MOCK_WEBHOOK_CONFIG_FILE=webhook-server-config.csv
 MOCK_WEBHOOK_PORT=4000
 
-SGID_ENDPOINT=http://localhost:5156/sgid/v1/oauth
-SGID_CLIENT_ID=sgidclientid
-SGID_CLIENT_SECRET=sgidclientsecret
-SGID_REDIRECT_URI=http://localhost:5000/sgid/login
-SGID_PRIVATE_KEY=./node_modules/@opengovsg/mockpass/static/certs/key.pem
-SGID_PUBLIC_KEY=./node_modules/@opengovsg/mockpass/static/certs/server.crt
-
 AWS_ACCESS_KEY_ID=fakeAccessKeyId
 AWS_SECRET_ACCESS_KEY=fakeSecretAccessKey
 
@@ -96,3 +80,10 @@ REACT_MIGRATION_ANGULAR_END_DATE=15 September 2022
 REACT_MIGRATION_RESP_ROLLOUT_EMAIL=100
 REACT_MIGRATION_RESP_ROLLOUT_STORAGE=100
 REACT_MIGRATION_ADMIN_ROLLOUT=100
+
+# Mockpass env vars
+MOCKPASS_NRIC=S9812379B
+MOCKPASS_UID=S8979373D # Not used by mockpass but keep in sync with MOCKPASS_UEN for Corppass tests
+MOCKPASS_UEN=123456789A
+SP_RP_JWKS_ENDPOINT=http://localhost:5000/singpass/.well-known/jwks.json
+CP_RP_JWKS_ENDPOINT=http://localhost:5000/api/v3/corppass/.well-known/jwks.json

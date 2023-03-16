@@ -14,6 +14,7 @@ import {
   ImageFieldBase,
   LongTextFieldBase,
   MobileFieldBase,
+  MyInfoAttribute,
   NricFieldBase,
   NumberFieldBase,
   RadioFieldBase,
@@ -43,6 +44,10 @@ type E2ePickFieldMetadata<T extends FieldBase, K extends keyof T> = Pick<
 > &
   Partial<Pick<T, 'description' | 'required'>>
 
+type E2eFieldMyInfoable = {
+  myInfo?: { attr: MyInfoAttribute; verified: boolean }
+}
+
 // Field filling data
 type E2eFieldSingleValue = { val: string }
 type E2eFieldMultiValue = { val: string[] }
@@ -67,7 +72,8 @@ export type E2eFieldMetadata =
       E2eFieldHidden)
   | (E2ePickFieldMetadata<DateFieldBase, 'dateValidation'> &
       E2eFieldSingleValue &
-      E2eFieldHidden)
+      E2eFieldHidden &
+      E2eFieldMyInfoable)
   | (E2ePickFieldMetadata<
       DecimalFieldBase,
       'ValidationOptions' | 'validateByValue'
@@ -76,7 +82,8 @@ export type E2eFieldMetadata =
       E2eFieldHidden)
   | (E2ePickFieldMetadata<DropdownFieldBase, 'fieldOptions'> &
       E2eFieldSingleValue &
-      E2eFieldHidden)
+      E2eFieldHidden &
+      E2eFieldMyInfoable)
   | (E2ePickFieldMetadata<
       EmailFieldBase,
       | 'isVerifiable'
@@ -95,9 +102,13 @@ export type E2eFieldMetadata =
   | (E2ePickFieldMetadata<LongTextFieldBase, 'ValidationOptions'> &
       E2eFieldSingleValue &
       E2eFieldHidden)
-  | (E2ePickFieldMetadata<MobileFieldBase, 'allowIntlNumbers'> & // Omit 'isVerfiable', since we can't test that.
+  | (E2ePickFieldMetadata<
+      MobileFieldBase,
+      'allowIntlNumbers' | 'isVerifiable'
+    > &
       E2eFieldSingleValue &
-      E2eFieldHidden)
+      E2eFieldHidden &
+      E2eFieldMyInfoable)
   | (E2ePickFieldMetadata<NricFieldBase, never> &
       E2eFieldSingleValue &
       E2eFieldHidden)
@@ -119,7 +130,8 @@ export type E2eFieldMetadata =
       'ValidationOptions' | 'allowPrefill'
     > &
       E2eFieldSingleValue &
-      E2eFieldHidden)
+      E2eFieldHidden &
+      E2eFieldMyInfoable)
   | (E2ePickFieldMetadata<StatementFieldBase, never> & E2eFieldHidden)
   | (E2ePickFieldMetadata<
       TableFieldBase,
@@ -154,7 +166,7 @@ export const ALL_FIELDS: E2eFieldMetadata[] = [
   {
     title: 'Birthday',
     fieldType: BasicField.Date,
-    val: format(new Date(), DATE_INPUT_FORMAT),
+    val: format(new Date(952970366), DATE_INPUT_FORMAT),
     dateValidation: {
       customMinDate: null,
       customMaxDate: null,
@@ -162,7 +174,7 @@ export const ALL_FIELDS: E2eFieldMetadata[] = [
     },
   },
   {
-    title: 'Pi',
+    title: 'What is the value of pi?',
     fieldType: BasicField.Decimal,
     ValidationOptions: {
       customMin: null,
@@ -182,10 +194,12 @@ export const ALL_FIELDS: E2eFieldMetadata[] = [
     fieldType: BasicField.Email,
     isVerifiable: true,
     autoReplyOptions: {
-      hasAutoReply: false,
-      autoReplyMessage: '',
-      autoReplySender: '',
-      autoReplySubject: '',
+      hasAutoReply: true,
+      autoReplyMessage:
+        'Thank you for your submission. We will reach out to you in 3 working days.',
+      autoReplySender: 'GovTech Singapore',
+      autoReplySubject: 'Thanks for submitting',
+      // TODO: Save to pdf doesn't work.
       includeFormSummary: false,
     },
     hasAllowedEmailDomains: false,
@@ -197,7 +211,7 @@ export const ALL_FIELDS: E2eFieldMetadata[] = [
     fieldType: BasicField.HomeNo,
     val: '61234567',
   },
-  // Hide for now, because it doesn't work unless we spin up localstack.
+  // TODO: Images don't work unless we spin up localstack.
   // {
   //   title: 'Image',
   //   fieldType: BasicField.Image,
@@ -217,6 +231,7 @@ export const ALL_FIELDS: E2eFieldMetadata[] = [
   {
     title: 'Mobile',
     fieldType: BasicField.Mobile,
+    isVerifiable: false, // Always has to be false, since we can't really test for mobile verification.
     allowIntlNumbers: true,
     // Number should start with +(country code), if allowIntlNumbers. Otherwise, just the 8 digit input.
     val: '+6598889999',
@@ -256,7 +271,7 @@ export const ALL_FIELDS: E2eFieldMetadata[] = [
     fieldType: BasicField.Section,
   },
   {
-    title: 'Name',
+    title: 'Your name',
     fieldType: BasicField.ShortText,
     ValidationOptions: {
       selectedValidation: null,

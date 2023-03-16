@@ -2,7 +2,11 @@ import { celebrate, Joi, Segments } from 'celebrate'
 import { StatusCodes } from 'http-status-codes'
 import { ok } from 'neverthrow'
 
-import { ErrorDto, FormAuthType } from '../../../../shared/types'
+import {
+  ErrorDto,
+  FormAuthType,
+  SendFormOtpResponseDto,
+} from '../../../../shared/types'
 import { SALT_ROUNDS } from '../../../../shared/utils/verification'
 import { createLoggerWithLabel } from '../../config/logger'
 import { generateOtpWithHash } from '../../utils/otp'
@@ -158,11 +162,12 @@ export const handleGetOtp: ControllerHandler<
     ...createReqMeta(req),
   }
   return generateOtpWithHash(logMeta, SALT_ROUNDS)
-    .andThen(({ otp, hashedOtp }) =>
+    .andThen(({ otp, hashedOtp, otpPrefix }) =>
       VerificationService.sendNewOtp({
         fieldId,
         hashedOtp,
         otp,
+        otpPrefix,
         recipient: answer,
         transactionId,
         senderIp,
@@ -203,8 +208,8 @@ export const handleGetOtp: ControllerHandler<
  * @returns 500 when there is a database error
  */
 export const _handleGenerateOtp: ControllerHandler<
-  { transactionId: string; formId: string; fieldId: string },
-  ErrorDto,
+  { transactionId: string; formId: string; fieldId: string; otpPrefix: string },
+  SendFormOtpResponseDto | ErrorDto,
   { answer: string }
 > = async (req, res) => {
   const { transactionId, formId, fieldId } = req.params
@@ -283,23 +288,27 @@ export const _handleGenerateOtp: ControllerHandler<
         }
       })
       .andThen((form) =>
-        generateOtpWithHash(logMeta, SALT_ROUNDS)
-          .andThen(({ otp, hashedOtp }) =>
-            // Step 3: Send otp
+        generateOtpWithHash(logMeta, SALT_ROUNDS).andThen(
+          ({ otp, hashedOtp, otpPrefix }) =>
+            // Step 3: Send Otp
             VerificationService.sendNewOtp({
               fieldId,
               hashedOtp,
               otp,
+              otpPrefix,
               recipient: answer,
               transactionId,
               senderIp,
-            }),
-          )
-          // Return the required data for next steps.
-          .map((updatedTransaction) => ({ updatedTransaction, form })),
+            }) // Return the required data for next steps.
+              .map((updatedTransaction) => ({
+                updatedTransaction,
+                form,
+                otpPrefix,
+              })),
+        ),
       )
-      .map(({ updatedTransaction, form }) => {
-        res.sendStatus(StatusCodes.CREATED)
+      .map(({ updatedTransaction, form, otpPrefix }) => {
+        res.status(StatusCodes.CREATED).json({ otpPrefix })
         // NOTE: This is returned because tests require this to avoid async mocks interfering with each other.
         // However, this is not an issue in reality because express does not require awaiting on the sendStatus call.
         return VerificationService.disableVerifiedFieldsIfRequired(

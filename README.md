@@ -65,7 +65,7 @@ Install [docker and docker-compose](https://docs.docker.com/get-docker/).
 To install the relevant npm packages, run the following in the root direcory:
 
 ```bash
-npm install --legacy-peer-deps
+npm install
 ```
 
 To prevent breaking changes to webpack4 introduced in node 17 and above, enable the `--openssl-legacy-provider` flag:
@@ -99,7 +99,7 @@ only takes ~15 seconds to finish starting up the image.
 
 ### Adding dependencies
 
-Run `npm install --legacy-peer-deps` as per usual.
+Run `npm install` as per usual.
 
 For backend, run
 
