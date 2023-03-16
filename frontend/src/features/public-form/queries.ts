@@ -35,9 +35,17 @@ export const usePublicFormView = (
 export const useGetPaymentReceiptStatus = (
   formId: string,
   submissionId: string,
+  hasReceipt: boolean,
 ): UseQueryResult<PaymentReceiptStatusDto, ApiError> => {
   return useQuery<PaymentReceiptStatusDto, ApiError>(
     [formId, submissionId],
     () => getPaymentReceiptStatus(formId, submissionId),
+    {
+      retry: !hasReceipt, // indefinite
+      retryDelay: (failureCount) => {
+        // Delay count scales from 3, 6, 9, 9, ...
+        return Math.max(failureCount, 3) * 5
+      },
+    },
   )
 }
