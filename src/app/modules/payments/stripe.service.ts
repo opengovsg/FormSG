@@ -20,7 +20,10 @@ import { retrieveFormById } from '../form/form.service'
 import { SubmissionNotFoundError } from '../submission/submission.errors'
 import * as SubmissionService from '../submission/submission.service'
 
-import { PaymentNotFoundError } from './payments.errors'
+import {
+  PaymentNotFoundError,
+  PaymentReceiptNotAvailableYet,
+} from './payments.errors'
 import { findPaymentBySubmissionId } from './payments.service'
 import {
   ChargeReceiptNotFoundError,
@@ -338,7 +341,10 @@ export const getReceiptUrl = (
   submissionId: string,
 ): ResultAsync<
   string,
-  FormNotFoundError | SubmissionNotFoundError | PaymentNotFoundError
+  | FormNotFoundError
+  | SubmissionNotFoundError
+  | PaymentNotFoundError
+  | PaymentReceiptNotAvailableYet
 > => {
   if (!mongoose.Types.ObjectId.isValid(formId)) {
     return errAsync(new FormNotFoundError())
@@ -359,7 +365,7 @@ export const getReceiptUrl = (
     })
     return new PaymentNotFoundError()
   }).andThen((payment) => {
-    if (payment)
+    if (payment) {
       if (payment.receiptUrl) {
         // Step 2: Verify submission id linked to the form is the same
         // as the submission id provided in the payment params
@@ -373,6 +379,16 @@ export const getReceiptUrl = (
         })
         return okAsync(payment.receiptUrl)
       }
+      logger.info({
+        message: 'No receipt yet, but payment exist',
+        meta: {
+          action: 'getReceiptURL',
+          formId,
+          submissionId,
+        },
+      })
+      return errAsync(new PaymentReceiptNotAvailableYet())
+    }
     // TODO: refine into better type
     return errAsync(new PaymentNotFoundError())
   })

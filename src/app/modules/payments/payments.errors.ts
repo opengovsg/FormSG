@@ -5,3 +5,8 @@ export class PaymentNotFoundError extends ApplicationError {
     super(message)
   }
 }
+export class PaymentReceiptNotAvailableYet extends ApplicationError {
+  constructor(message = 'Payment receipt not available yet') {
+    super(message)
+  }
+}
