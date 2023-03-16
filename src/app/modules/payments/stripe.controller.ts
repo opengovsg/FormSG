@@ -184,7 +184,7 @@ export const checkPaymentReceiptStatus: ControllerHandler<{
     },
   })
 
-  return StripeService.getReceiptURL(formId, submissionId)
+  return StripeService.getReceiptUrl(formId, submissionId)
     .map((receiptUrl) => {
       logger.info({
         message: 'Received receipt url from Stripe webhook',
@@ -224,7 +224,7 @@ export const downloadPaymentReceipt: ControllerHandler<{
     },
   })
 
-  return StripeService.getReceiptURL(formId, submissionId)
+  return StripeService.getReceiptUrl(formId, submissionId)
     .map((receiptUrl) => {
       logger.info({
         message: 'Received receipt url from Stripe webhook',
