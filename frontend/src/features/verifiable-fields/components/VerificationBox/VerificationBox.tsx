@@ -1,6 +1,12 @@
 import { useCallback, useMemo } from 'react'
 import { useForm } from 'react-hook-form'
-import { Box, Flex, FormControl } from '@chakra-ui/react'
+import {
+  Box,
+  Flex,
+  FormControl,
+  InputGroup,
+  InputLeftAddon,
+} from '@chakra-ui/react'
 
 import ResendOtpButton from '~/templates/ResendOtpButton'
 
@@ -20,6 +26,7 @@ type VfnFieldValues = {
 
 export interface VerificationBoxProps {
   fieldType: VerifiableFieldType
+  otpPrefix: string
   handleVerifyOtp: (otp: string) => Promise<string>
   handleResendOtp: () => Promise<void>
 }
@@ -57,6 +64,7 @@ const useVerificationBox = ({ handleVerifyOtp }: UseVerificationBoxProps) => {
 
 export const VerificationBox = ({
   fieldType,
+  otpPrefix,
   handleResendOtp,
   handleVerifyOtp,
 }: VerificationBoxProps): JSX.Element => {
@@ -97,23 +105,31 @@ export const VerificationBox = ({
           >
             <FormLabel description={subheader}>{header}</FormLabel>
             <Flex>
-              <Input
-                type="text"
-                maxLength={6}
-                inputMode="numeric"
-                autoComplete="one-time-code"
-                autoFocus
-                {...register('otp', {
-                  required: 'OTP is required.',
-                  pattern: {
-                    value: /^\d+$/,
-                    message: 'Only numbers are allowed.',
-                  },
-                  validate: (value) =>
-                    value.length === 6 || 'Please enter a 6 digit OTP.',
-                })}
-                onKeyDown={handleKeyDown}
-              />
+              <InputGroup>
+                {otpPrefix ? (
+                  <InputLeftAddon
+                    pointerEvents="none"
+                    children={`${otpPrefix}-`}
+                  />
+                ) : null}
+                <Input
+                  type="text"
+                  maxLength={6}
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  autoFocus
+                  {...register('otp', {
+                    required: 'OTP is required.',
+                    pattern: {
+                      value: /^\d+$/,
+                      message: 'Only numbers are allowed.',
+                    },
+                    validate: (value) =>
+                      value.length === 6 || 'Please enter a 6 digit OTP.',
+                  })}
+                  onKeyDown={handleKeyDown}
+                />
+              </InputGroup>
 
               <Button
                 ml="0.5rem"

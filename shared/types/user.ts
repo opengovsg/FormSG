@@ -53,3 +53,8 @@ export type VerifyUserContactOtpDto = {
   otp: string
   contact: string
 }
+
+export type SendOtpResponseDto = {
+  message: string
+  otpPrefix: string
+}

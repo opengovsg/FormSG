@@ -99,6 +99,7 @@ export const LoginPage = (): JSX.Element => {
   const { data: { siteBannerContentReact, isLoginBannerReact } = {} } = useEnv()
   const [, setIsAuthenticated] = useLocalStorage<boolean>(LOGGED_IN_KEY)
   const [email, setEmail] = useState<string>()
+  const [otpPrefix, setOtpPrefix] = useState<string>('')
   const { t } = useTranslation()
 
   // TODO (#4279): Revert back to non-react banners post-migration.
@@ -115,8 +116,10 @@ export const LoginPage = (): JSX.Element => {
 
   const handleSendOtp = async ({ email }: LoginFormInputs) => {
     const trimmedEmail = email.trim()
-    await sendLoginOtp(trimmedEmail)
-    return setEmail(trimmedEmail)
+    await sendLoginOtp(trimmedEmail).then(({ otpPrefix }) => {
+      setOtpPrefix(otpPrefix)
+      setEmail(trimmedEmail)
+    })
   }
 
   const handleVerifyOtp = async ({ otp }: OtpFormInputs) => {
@@ -143,7 +146,7 @@ export const LoginPage = (): JSX.Element => {
     if (!email) {
       throw new Error('Something went wrong')
     }
-    await sendLoginOtp(email)
+    await sendLoginOtp(email).then(({ otpPrefix }) => setOtpPrefix(otpPrefix))
   }
 
   return (
@@ -186,6 +189,7 @@ export const LoginPage = (): JSX.Element => {
             ) : (
               <OtpForm
                 email={email}
+                otpPrefix={otpPrefix}
                 onSubmit={handleVerifyOtp}
                 onResendOtp={handleResendOtp}
               />

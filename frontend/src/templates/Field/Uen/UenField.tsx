@@ -20,7 +20,7 @@ export const UenField = ({ schema }: UenFieldProps): JSX.Element => {
     [schema],
   )
 
-  const { register } = useFormContext<SingleAnswerFieldInput>()
+  const { register, setValue } = useFormContext<SingleAnswerFieldInput>()
 
   return (
     <FieldContainer schema={schema}>
@@ -28,7 +28,11 @@ export const UenField = ({ schema }: UenFieldProps): JSX.Element => {
         aria-label={`${schema.questionNumber}. ${schema.title}`}
         defaultValue=""
         preventDefaultOnEnter
-        {...register(schema._id, validationRules)}
+        {...register(schema._id, {
+          ...validationRules,
+          onChange: (event: React.ChangeEvent<HTMLInputElement>) =>
+            setValue(schema._id, event.target.value.trim()),
+        })}
       />
     </FieldContainer>
   )

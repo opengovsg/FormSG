@@ -34,9 +34,9 @@ export const test = baseTest.extend({
 
       // Log in with OTP
       const otp = await extractOtp(ADMIN_EMAIL)
-      expect(otp).toBeTruthy()
+      if (!otp) throw new Error('OTP not found in email')
 
-      await page.locator('input[name="otp"]').fill(otp!)
+      await page.locator('input[name="otp"]').fill(otp)
 
       await page.getByRole('button', { name: 'Sign in' }).click()
 

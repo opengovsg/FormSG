@@ -46,9 +46,11 @@ jobs:
           REACT_APP_DD_SAMPLE_RATE: ${{ secrets.DD_SAMPLE_RATE }}
           REACT_APP_GA_TRACKING_ID: ${{ secrets.GA_TRACKING_ID }}
           REACT_APP_FORMSG_SDK_MODE: ${{ secrets.REACT_APP_FORMSG_SDK_MODE }}
+          REACT_APP_URL: ${{ secrets.APP_URL }}
         run: |
-          sed -i -e "s/@REACT_APP_DD_RUM_APP_ID/$REACT_APP_DD_RUM_APP_ID/g" -e "s/@REACT_APP_DD_RUM_CLIENT_TOKEN/$REACT_APP_DD_RUM_CLIENT_TOKEN/g" -e "s/@REACT_APP_DD_RUM_ENV/$REACT_APP_DD_RUM_ENV/g" -e "s/@REACT_APP_VERSION/${{env.APP_VERSION}}/g" -e "s/@REACT_APP_DD_SAMPLE_RATE/$REACT_APP_DD_SAMPLE_RATE/g" frontend/datadog-chunk.ts
+          sed -i -e "s|@REACT_APP_URL|${{secrets.APP_URL}}|g" -e "s/@REACT_APP_DD_RUM_APP_ID/$REACT_APP_DD_RUM_APP_ID/g" -e "s/@REACT_APP_DD_RUM_CLIENT_TOKEN/$REACT_APP_DD_RUM_CLIENT_TOKEN/g" -e "s/@REACT_APP_DD_RUM_ENV/$REACT_APP_DD_RUM_ENV/g" -e "s/@REACT_APP_VERSION/${{env.APP_VERSION}}/g" -e "s/@REACT_APP_DD_SAMPLE_RATE/$REACT_APP_DD_SAMPLE_RATE/g" frontend/datadog-chunk.ts
           echo REACT_APP_VERSION=${{env.APP_VERSION}} > frontend/.env
+          echo REACT_APP_URL=$REACT_APP_URL > frontend/.env
           echo REACT_APP_GA_TRACKING_ID=$REACT_APP_GA_TRACKING_ID >> frontend/.env
           echo REACT_APP_FORMSG_SDK_MODE=$REACT_APP_FORMSG_SDK_MODE >> frontend/.env
           echo REACT_APP_DD_RUM_CLIENT_TOKEN=$REACT_APP_DD_RUM_CLIENT_TOKEN >> frontend/.env
