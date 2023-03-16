@@ -11,12 +11,12 @@ const PUBLIC_FORM_FIELDS = <const>[
   'title',
   '_id',
   'responseMode',
-  'payments_field',
 ]
 
 export const EMAIL_PUBLIC_FORM_FIELDS = PUBLIC_FORM_FIELDS
 export const STORAGE_PUBLIC_FORM_FIELDS = <const>[
   ...PUBLIC_FORM_FIELDS,
+  'payments_field',
   'publicKey',
 ]
 

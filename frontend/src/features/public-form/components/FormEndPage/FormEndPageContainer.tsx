@@ -1,6 +1,8 @@
 import { useCallback, useState } from 'react'
 import { Box } from '@chakra-ui/react'
 
+import { FormResponseMode } from '~shared/types'
+
 import { useToast } from '~hooks/useToast'
 
 import { usePublicFormMutations } from '~features/public-form/mutations'
@@ -63,7 +65,8 @@ export const FormEndPageContainer = ({
 
   return (
     <Box py={{ base: '1.5rem', md: '2.5rem' }} w="100%">
-      {form?.payments_field?.enabled ? (
+      {form?.responseMode === FormResponseMode.Encrypt &&
+      form?.payments_field?.enabled ? (
         <FormPaymentPage
           submissionId={submissionData.id || ''}
           paymentClientSecret={submissionData.paymentClientSecret || ''}

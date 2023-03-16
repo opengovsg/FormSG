@@ -15,7 +15,7 @@ import {
 } from '@stripe/react-stripe-js'
 import { loadStripe } from '@stripe/stripe-js'
 
-import { FormColorTheme } from '~shared/types/form'
+import { FormColorTheme, FormResponseMode } from '~shared/types/form'
 
 import { centsToDollars } from '~utils/payments'
 import Button from '~components/Button'
@@ -131,8 +131,6 @@ export const PaymentPageBlock = ({
   const formTitle = form?.title
   const colorTheme = form?.startPage.colorTheme || FormColorTheme.Blue
 
-  const amountCents = form?.payments_field?.amount_cents || 0
-
   const stripePromise = useMemo(
     () => loadStripe(publishableKey),
     [publishableKey],
@@ -152,7 +150,7 @@ export const PaymentPageBlock = ({
     return 'Please make payment.'
   }, [formTitle])
 
-  return (
+  return form?.responseMode === FormResponseMode.Encrypt ? (
     <Flex flexDir="column">
       <Stack tabIndex={-1} ref={focusRef} spacing="1rem">
         <Box>
@@ -169,7 +167,7 @@ export const PaymentPageBlock = ({
         <Text textStyle="body-1" textColor="secondary.700">
           Your credit card will be charged:{' '}
           <Text as="span" fontWeight="bold">
-            S${centsToDollars(amountCents)}
+            S${centsToDollars(form?.payments_field?.amount_cents || 0)}
           </Text>
         </Text>
 
@@ -192,5 +190,7 @@ export const PaymentPageBlock = ({
         <Text textColor="secondary.300">Response ID: {submissionId}</Text>
       </Stack>
     </Flex>
+  ) : (
+    <></>
   )
 }
