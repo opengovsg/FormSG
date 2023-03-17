@@ -64,7 +64,7 @@ async function getStats(db) {
         for (const value of values) {
           if (field.fieldOptions.includes(value)) continue; // the logic value matches field values - all good!
           if (field.trimmedFieldOptions.includes(value)) {
-            // this is bug we are after - the logic value matches a field value after trim - not good T_T
+            // this is the bug we are after - the logic value only matches a field value if trimmed - not good T_T
             formsWhereWhiteSpaceAffectsLogic[id] = {
               form: item,
               condition: flc,
@@ -104,7 +104,7 @@ async function getStats(db) {
 
   const submissionCollection = db.collection('submissions')
 
-  for (const [id, data] of Object.entries(formsWhereWhiteSpaceAffectsLogic)) {
+  for (const id of Object.keys(formsWhereWhiteSpaceAffectsLogic)) {
     const numSubmissions = await submissionCollection.countDocuments({
       form: new ObjectId(id),
       created: {
@@ -121,8 +121,14 @@ async function getStats(db) {
 
   console.log('Number of forms where whitespace affects logic with submissions in the past 3 weeks:');
   console.log(Object.keys(formsWhereWhiteSpaceAffectsLogicWithSubmissions).length);
+
+  const sortedForms = Object.values(formsWhereWhiteSpaceAffectsLogicWithSubmissions).sort((f1, f2) => f2.numSubmissions - f1.numSubmissions)
+
+  console.log('Total number of potentially affected submissions:');
+  console.log(sortedForms.reduce((acc, f) => acc += f.numSubmissions, 0));
+
   console.log('-----')
-  console.log(Object.entries(formsWhereWhiteSpaceAffectsLogicWithSubmissions).map((id, data) => `${id}: ${data.form.title}`).join('\n'));
+  console.log(sortedForms.map((data) => `${data.form._id} (${data.numSubmissions}): ${data.form.title} `).join('\n'));
 }
 
 ;(async function main() {
