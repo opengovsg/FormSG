@@ -224,6 +224,14 @@ export const updateEventLogById = (
     return errAsync(new EventMetadataPaymentIdNotFoundError())
   }
 
+  logger.info({
+    message: 'Checking paymentId valid object id',
+    meta: {
+      paymentId,
+      ...logMeta,
+    },
+  })
+
   if (!mongoose.isValidObjectId(paymentId)) {
     logger.warn({
       message: 'Stripe event metadata contains invalid paymentId',
@@ -234,6 +242,14 @@ export const updateEventLogById = (
     })
     return errAsync(new EventMetadataPaymentIdInvalidError())
   }
+
+  logger.info({
+    message: 'Starting mongoose session to update payment via webhook',
+    meta: {
+      paymentId,
+      ...logMeta,
+    },
+  })
 
   return ResultAsync.fromPromise(mongoose.startSession(), (error) => {
     logger.error({
@@ -249,10 +265,27 @@ export const updateEventLogById = (
       writeConcern: { w: 'majority' },
       readPreference: 'primary',
     })
+
+    logger.info({
+      message: 'Started transaction to update payment',
+      meta: {
+        paymentId,
+        ...logMeta,
+      },
+    })
+
     return updateEventLogByPaymentIdTransaction(session, paymentId, event)
-      .andThen(() =>
+      .andThen(() => {
         // Commit if successful
-        ResultAsync.fromPromise(session.commitTransaction(), (error) => {
+        logger.error({
+          message: 'Committing transaction to update payment',
+          meta: {
+            paymentId,
+            ...logMeta,
+          },
+        })
+
+        return ResultAsync.fromPromise(session.commitTransaction(), (error) => {
           logger.error({
             message: 'Error encountered while committing transaction',
             meta: logMeta,
@@ -262,11 +295,20 @@ export const updateEventLogById = (
         }).andThen(() => {
           session.endSession()
           return okAsync(undefined)
-        }),
-      )
-      .orElse((error) =>
+        })
+      })
+      .orElse((error) => {
         // Abort otherwise
-        ResultAsync.fromPromise(session.abortTransaction(), (error) => {
+        logger.error({
+          message: 'Aborting transaction to update payment',
+          meta: {
+            paymentId,
+            error,
+            ...logMeta,
+          },
+        })
+
+        return ResultAsync.fromPromise(session.abortTransaction(), (error) => {
           logger.error({
             message: 'Error encountered while aborting transaction',
             meta: logMeta,
@@ -279,8 +321,8 @@ export const updateEventLogById = (
           // error, so we intercept it
           if (error instanceof DuplicateEventError) return okAsync(undefined)
           return errAsync(error)
-        }),
-      )
+        })
+      })
   })
 }
 
