@@ -23,6 +23,7 @@ async function getStats(db) {
 
     const formsWithInvalidWhiteSpace = {};
     const formsWhereWhiteSpaceAffectsLogic = {};
+    const formsWhereWhiteSpaceAffectsLogicWithSubmissions = {};
 
   await cursor.forEach((item) => {
     const id = item._id.toString()
@@ -65,7 +66,7 @@ async function getStats(db) {
           if (field.trimmedFieldOptions.includes(value)) {
             // this is bug we are after - the logic value matches a field value after trim - not good T_T
             formsWhereWhiteSpaceAffectsLogic[id] = {
-              item,
+              form: item,
               condition: flc,
               value,
             };
@@ -82,7 +83,7 @@ async function getStats(db) {
           id: ff._id.toString(),
           title: ff.title,
           values: ff.fieldOptions,
-          bad_values: ff.fieldOptions.map(o => `"${o}"`).join(',')
+          bad_values: ff.fieldOptions.filter(fo => fo.trim() != fo).map(o => `"${o}"`).join(',')
         })),
         logic: {
           condition: formsWhereWhiteSpaceAffectsLogic[id].condition,
@@ -100,6 +101,28 @@ async function getStats(db) {
   console.log(Object.keys(formsWhereWhiteSpaceAffectsLogic).length);
 
   // TODO query submission to chedk how many forms of those forms had submissions in the past 3 weeks.
+
+  const submissionCollection = db.collection('submissions')
+
+  for (const [id, data] of Object.entries(formsWhereWhiteSpaceAffectsLogic)) {
+    const numSubmissions = await submissionCollection.countDocuments({
+      form: new ObjectId(id),
+      created: {
+        $gte: new Date('2023-02-20T00:00:00.000+0800'),
+        $lt: new Date('2023-03-17T21:00:00.000+0800')
+      }
+    })
+
+    if (numSubmissions > 0) {
+      formsWhereWhiteSpaceAffectsLogicWithSubmissions[id] = formsWhereWhiteSpaceAffectsLogic[id];
+      formsWhereWhiteSpaceAffectsLogicWithSubmissions[id].numSubmissions = numSubmissions
+    }
+  }
+
+  console.log('Number of forms where whitespace affects logic with submissions in the past 3 weeks:');
+  console.log(Object.keys(formsWhereWhiteSpaceAffectsLogicWithSubmissions).length);
+  console.log('-----')
+  console.log(Object.entries(formsWhereWhiteSpaceAffectsLogicWithSubmissions).map((id, data) => `${id}: ${data.form.title}`).join('\n'));
 }
 
 ;(async function main() {
