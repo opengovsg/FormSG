@@ -224,10 +224,13 @@ export const updateEventLogById = (
     return errAsync(new EventMetadataPaymentIdNotFoundError())
   }
 
-  if (!mongoose.Types.ObjectId.isValid(paymentId)) {
+  if (!mongoose.isValidObjectId(paymentId)) {
     logger.warn({
       message: 'Stripe event metadata contains invalid paymentId',
-      meta: logMeta,
+      meta: {
+        paymentId,
+        ...logMeta,
+      },
     })
     return errAsync(new EventMetadataPaymentIdInvalidError())
   }
