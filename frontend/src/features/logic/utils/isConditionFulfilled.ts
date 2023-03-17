@@ -67,7 +67,7 @@ export const isConditionFulfilled = (
   // TODO #4279: Revisit decision to trim after React rollout is complete
   let currentValueTrimmed
   const currentValue = getCurrentFieldValue(args.input, args.fieldType)
-  if (currentValueTrimmed === '') {
+  if (currentValue === '') {
     return false
   }
   if (typeof currentValue === 'string') {
