@@ -26,6 +26,7 @@ const compilePendingSubmissionModel = (db: Mongoose): ISubmissionModel => {
     PENDING_SUBMISSION_SCHEMA_ID,
     SubmissionSchema,
   )
+  // TODO: Something is wrong with the submissionType discriminator here
   PendingSubmission.discriminator(
     EMAIL_PENDING_SUBMISSION_SCHEMA_ID,
     EmailSubmissionSchema,

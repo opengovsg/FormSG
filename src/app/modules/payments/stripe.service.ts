@@ -1,6 +1,7 @@
 import cuid from 'cuid'
 import get from 'lodash/get'
 import merge from 'lodash/merge'
+import omit from 'lodash/omit'
 import mongoose, { ClientSession } from 'mongoose'
 import { errAsync, ok, okAsync, ResultAsync } from 'neverthrow'
 import Stripe from 'stripe'
@@ -12,8 +13,8 @@ import { paymentConfig } from '../../config/features/payment.config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { stripe } from '../../loaders/stripe'
 import getPaymentModel from '../../models/payment.server.model'
-import getPendingSubmissionModel from '../../models/pending_submission.server.model'
-import getSubmissionModel from '../../models/submission.server.model'
+import { getEncryptPendingSubmissionModel } from '../../models/pending_submission.server.model'
+import { getEncryptSubmissionModel } from '../../models/submission.server.model'
 import { getMongoErrorMessage } from '../../utils/handle-mongo-error'
 import { ApplicationError, DatabaseError } from '../core/core.errors'
 import { FormNotFoundError } from '../form/form.errors'
@@ -46,9 +47,9 @@ import {
 } from './stripe.utils'
 
 const logger = createLoggerWithLabel(module)
-const PaymentModel = getPaymentModel(mongoose)
-const PendingSubmissionModel = getPendingSubmissionModel(mongoose)
-const SubmissionModel = getSubmissionModel(mongoose)
+const Payment = getPaymentModel(mongoose)
+const EncryptPendingSubmission = getEncryptPendingSubmissionModel(mongoose)
+const EncryptSubmission = getEncryptSubmissionModel(mongoose)
 
 // Not exported, only used to pass exceptional control from the transaction
 // function back to the caller which is responsible for aborting the transaction.
@@ -80,7 +81,7 @@ const updateEventLogByPaymentIdTransaction = (
     ResultAsync.fromPromise(
       // Step 1: Get the payment. If the submission does not exist or the event
       // has been processed before, ignore the event.
-      PaymentModel.findById(paymentId, { session }),
+      Payment.findById(paymentId, { session }),
       (error) => {
         logger.error({
           message: 'Error encountered while finding payment by id',
@@ -132,7 +133,7 @@ const updateEventLogByPaymentIdTransaction = (
           !payment.submissionId
         ) {
           return ResultAsync.fromPromise(
-            PendingSubmissionModel.findById(payment.pendingSubmissionId, {
+            EncryptPendingSubmission.findById(payment.pendingSubmissionId, {
               session,
             }).exec(),
             (error) => {
@@ -150,8 +151,9 @@ const updateEventLogByPaymentIdTransaction = (
                 return errAsync(new PendingSubmissionNotFoundError())
               }
 
-              // TODO: Does this copy over the ID and other metadata too?
-              const submission = new SubmissionModel(pendingSubmission)
+              const submission = new EncryptSubmission(
+                omit(pendingSubmission, ['_id', 'created', 'lastModified']),
+              )
 
               return ResultAsync.fromPromise(
                 submission.save({ session }),
@@ -224,14 +226,6 @@ export const updateEventLogById = (
     return errAsync(new EventMetadataPaymentIdNotFoundError())
   }
 
-  logger.info({
-    message: 'Checking paymentId valid object id',
-    meta: {
-      paymentId,
-      ...logMeta,
-    },
-  })
-
   if (!mongoose.isValidObjectId(paymentId)) {
     logger.warn({
       message: 'Stripe event metadata contains invalid paymentId',
@@ -244,7 +238,7 @@ export const updateEventLogById = (
   }
 
   logger.info({
-    message: 'Starting mongoose session to update payment via webhook',
+    message: 'Starting mongoose transaction to update payment via webhook',
     meta: {
       paymentId,
       ...logMeta,
@@ -264,14 +258,6 @@ export const updateEventLogById = (
       readConcern: { level: 'snapshot' },
       writeConcern: { w: 'majority' },
       readPreference: 'primary',
-    })
-
-    logger.info({
-      message: 'Started transaction to update payment',
-      meta: {
-        paymentId,
-        ...logMeta,
-      },
     })
 
     return updateEventLogByPaymentIdTransaction(session, paymentId, event)
