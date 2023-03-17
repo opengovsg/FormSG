@@ -64,44 +64,56 @@ export const isConditionFulfilled = (
   const args = { fieldType, input }
   if (!isLogicableField(args)) return false
 
+  // TODO #4279: Revisit decision to trim after React rollout is complete
+  let currentValueTrimmed
   const currentValue = getCurrentFieldValue(args.input, args.fieldType)
   if (currentValue === '') {
     return false
   }
+  if (typeof currentValue === 'string') {
+    currentValueTrimmed = currentValue.trim()
+  } else if (typeof currentValue.value === 'string') {
+    currentValueTrimmed = {
+      ...currentValue,
+      value: currentValue.value.trim(),
+    }
+  } else {
+    currentValueTrimmed = currentValue
+  }
 
   switch (conditionTrimmed.state) {
     case LogicConditionState.Lte:
-      return Number(currentValue) <= Number(conditionTrimmed.value)
+      return Number(currentValueTrimmed) <= Number(conditionTrimmed.value)
     case LogicConditionState.Gte:
-      return Number(currentValue) >= Number(conditionTrimmed.value)
+      return Number(currentValueTrimmed) >= Number(conditionTrimmed.value)
     case LogicConditionState.Either: {
       // currentValue must be in a value in condition.value
       const condValuesArray = Array.isArray(conditionTrimmed.value)
         ? conditionTrimmed.value.map(String)
         : [String(conditionTrimmed.value)]
-      if (isRadioFormFieldValue(currentValue, args.fieldType)) {
+      if (isRadioFormFieldValue(currentValueTrimmed, args.fieldType)) {
         if (condValuesArray.includes('Others')) {
           // If the condition value is 'Others',
           // then the condition must be satisfied if the current value is the special input value AND
           // if the othersInput subfield has a value.
           const satisfiesOthers =
-            currentValue.value === RADIO_OTHERS_INPUT_VALUE &&
-            !!currentValue.othersInput
+            currentValueTrimmed.value === RADIO_OTHERS_INPUT_VALUE &&
+            !!currentValueTrimmed.othersInput
           if (satisfiesOthers) return true
         }
-        return condValuesArray.includes(String(currentValue.value))
+        return condValuesArray.includes(String(currentValueTrimmed.value))
       }
-      return condValuesArray.includes(String(currentValue))
+      return condValuesArray.includes(String(currentValueTrimmed))
     }
     case LogicConditionState.Equal: {
-      if (isRadioFormFieldValue(currentValue, args.fieldType)) {
+      if (isRadioFormFieldValue(currentValueTrimmed, args.fieldType)) {
         // It's possible that the condition.value is in a single-valued array.
         const condValue = Array.isArray(conditionTrimmed.value)
           ? conditionTrimmed.value[0]
           : conditionTrimmed.value
         if (
           condValue === 'Others' &&
-          currentValue.value === RADIO_OTHERS_INPUT_VALUE
+          currentValueTrimmed.value === RADIO_OTHERS_INPUT_VALUE
         ) {
           // If the condition value is 'Others', then the condition must be
           // satisfied if the current value is the special input value.
@@ -109,14 +121,14 @@ export const isConditionFulfilled = (
           // value created by the user.
           return true
         }
-        return String(condValue) === String(currentValue.value)
+        return String(condValue) === String(currentValueTrimmed.value)
       }
       // In angular, number equality is string=== but decimal equality is number===.
       // Need to replicate this behavior for backward-compatibility.
       if (fieldType === BasicField.Decimal) {
-        return Number(currentValue) === Number(conditionTrimmed.value)
+        return Number(currentValueTrimmed) === Number(conditionTrimmed.value)
       }
-      return String(conditionTrimmed.value) === String(currentValue)
+      return String(conditionTrimmed.value) === String(currentValueTrimmed)
     }
   }
 }
