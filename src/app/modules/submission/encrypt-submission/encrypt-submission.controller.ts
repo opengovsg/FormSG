@@ -7,8 +7,6 @@ import mongoose from 'mongoose'
 import Stripe from 'stripe'
 import type { SetOptional } from 'type-fest'
 
-import { getEncryptPendingSubmissionModel } from 'src/app/models/pending_submission.server.model'
-
 import {
   ErrorDto,
   FormAuthType,
@@ -26,6 +24,7 @@ import { paymentConfig } from '../../../config/features/payment.config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { stripe } from '../../../loaders/stripe'
 import getPaymentModel from '../../../models/payment.server.model'
+import { getEncryptPendingSubmissionModel } from '../../../models/pending_submission.server.model'
 import { getEncryptSubmissionModel } from '../../../models/submission.server.model'
 import * as CaptchaMiddleware from '../../../services/captcha/captcha.middleware'
 import * as CaptchaService from '../../../services/captcha/captcha.service'
