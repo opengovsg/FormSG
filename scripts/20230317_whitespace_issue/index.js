@@ -21,29 +21,89 @@ async function getStats(db) {
       created: 1,
     })
 
+    const formsWithInvalidWhiteSpace = {};
+    const formsWhereWhiteSpaceAffectsLogic = {};
+
   await cursor.forEach((item) => {
     const id = item._id.toString()
 
-    const dropDownFieldsWithInvalidSpaces = item.form_fields
-      .filter(ff => ff.fieldType === 'dropdown')
+    const fieldsWithInvalidWhiteSpaces = item.form_fields
+      .filter(ff => ['dropdown', 'radiobutton', 'checkbox'].includes(ff.fieldType))
       .filter(ff => ff.fieldOptions.some(fo => fo.trim() != fo))
 
-    if (dropDownFieldsWithInvalidSpaces.length <= 0) return;
+    if (fieldsWithInvalidWhiteSpaces.length <= 0) return;
 
-    console.log(id)
-    console.error({
-      formid: id,
-      formFields: dropDownFieldsWithInvalidSpaces.map(ff => (
-        {
+    formsWithInvalidWhiteSpace[id] = item;
+
+    const fields = fieldsWithInvalidWhiteSpaces.reduce((acc, ff) => {
+      acc[ff._id.toString()] = ff;
+      ff.trimmedFieldOptions = ff.fieldOptions.map(v => v.trim())
+      return acc
+    },
+    {});
+
+    // now check if any of the conditions reference one of the invalid field AND if the condition has a whitespace mismatch
+    all_logic:
+    for (const fl of item.form_logics) {
+      for (const flc of fl.conditions) {
+        const field = fields[flc.field.toString()]
+
+        if (!field) continue; // not a target we care about
+
+        let values;
+        try {
+          values = Array.isArray(flc.value) ? flc.value.map(v => v.trim()) : [`${flc.value}`.trim()]; // trim to repro logic from Feb 23rd fix
+        }
+        catch(err) {
+          console.error(flc);
+          console.error(field);
+          throw err;
+        }
+
+        for (const value of values) {
+          if (field.fieldOptions.includes(value)) continue; // the logic value matches field values - all good!
+          if (field.trimmedFieldOptions.includes(value)) {
+            // this is bug we are after - the logic value matches a field value after trim - not good T_T
+            formsWhereWhiteSpaceAffectsLogic[id] = {
+              item,
+              condition: flc,
+              value,
+            };
+            break all_logic;
+          }
+        }
+      }
+    }
+
+    if (formsWhereWhiteSpaceAffectsLogic[id]) {
+      console.log({
+        formid: id,
+        field_with_invalid_whitespaces: fieldsWithInvalidWhiteSpaces.map(ff => ({
+          id: ff._id.toString(),
           title: ff.title,
-          options: ff.fieldOptions.map(o => `"${o}"`).join(','),
-          badoptions: ff.fieldOptions.filter(fo => fo.trim() != fo).map(o => `"${o}"`).join(',')
-        }))
-    })
+          values: ff.fieldOptions,
+          bad_values: ff.fieldOptions.map(o => `"${o}"`).join(',')
+        })),
+        logic: {
+          condition: formsWhereWhiteSpaceAffectsLogic[id].condition,
+          value: formsWhereWhiteSpaceAffectsLogic[id].value
+        }
+      });
+    }
+
   })
+
+  console.log('')
+  console.log('Number of forms with field with invalid whitespace')
+  console.log(Object.keys(formsWithInvalidWhiteSpace).length);
+  console.log('Number of forms where whitespace affects logic:')
+  console.log(Object.keys(formsWhereWhiteSpaceAffectsLogic).length);
+
+  // TODO query submission to chedk how many forms of those forms had submissions in the past 3 weeks.
 }
 
 ;(async function main() {
+
   const client = new MongoClient(process.env.DB_URI)
 
   await client.connect()
