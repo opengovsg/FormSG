@@ -340,7 +340,7 @@ export const getPaymentFromLatestSuccessfulCharge = (
                 if (!stripeTransactionFee) {
                   return errAsync(new StripeTransactionFeeNotFoundError())
                 }
-                return PaymentService.updateReceiptUrl(
+                return PaymentService.updateReceiptUrlAndTransactionFee(
                   paymentId,
                   charge.receipt_url,
                   stripeTransactionFee,

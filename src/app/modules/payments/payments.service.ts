@@ -81,7 +81,7 @@ export const findPaymentBySubmissionId = (
   })
 }
 
-export const updateReceiptUrl = (
+export const updateReceiptUrlAndTransactionFee = (
   paymentId: IPaymentSchema['_id'],
   receiptUrl: string,
   stripeTransactionFee: number,
