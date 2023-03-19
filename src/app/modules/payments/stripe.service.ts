@@ -18,12 +18,16 @@ import * as SubmissionService from '../submission/submission.service'
 import * as PaymentService from './payments.service'
 import { getRedirectUri } from './payments.utils'
 import {
+  ChargeBalanceTransactionNotFoundError,
   ChargeReceiptNotFoundError,
   PaymentIntentLatestChargeNotFoundError,
+  PaymentNotFoundError,
   StripeAccountError,
   StripeAccountNotFoundError,
   StripeFetchError,
+  StripeTransactionFeeNotFoundError,
   SubmissionAndFormMismatchError,
+  SuccessfulChargeNotFoundError,
 } from './stripe.errors'
 
 const logger = createLoggerWithLabel(module)
@@ -222,6 +226,13 @@ export const getReceiptURL = (
               stripeAccount: form.payments?.target_account_id,
             }),
             (error) => {
+              logger.error({
+                message: 'Error retrieving paymentIntent object',
+                meta: {
+                  action: 'getReceiptURL',
+                },
+                error,
+              })
               return new StripeFetchError(String(error))
             },
           )
@@ -252,7 +263,7 @@ export const getReceiptURL = (
             })),
         )
         .andThen(({ paymentIntent, stripeAccount }) =>
-          // Step 5: Retrieve charge object
+          // Step 5: Retrieve latest charge object
           ResultAsync.fromPromise(
             stripe.charges.retrieve(
               String(paymentIntent.latest_charge),
@@ -260,24 +271,87 @@ export const getReceiptURL = (
               { stripeAccount },
             ),
             (error) => {
+              logger.error({
+                message: 'Error retrieving latest charge object',
+                meta: {
+                  action: 'getReceiptURL',
+                },
+                error,
+              })
               return new StripeFetchError(String(error))
             },
-          ),
+          ).map((charge) => ({
+            charge,
+            paymentId: payment._id,
+            stripeAccount,
+          })),
         )
-        .andThen((charge) => {
-          // Step 6: Retrieve receipt url
+        .andThen(({ charge, paymentId, stripeAccount }) => {
+          if (!charge || charge.status !== 'succeeded') {
+            return errAsync(new SuccessfulChargeNotFoundError())
+          }
           // Note that for paynow expired payments in test mode, stripe returns receipt_url with 'null' string
-          if (!charge || !charge.receipt_url || charge.receipt_url === 'null') {
+          if (!charge.receipt_url || charge.receipt_url === 'null') {
             return errAsync(new ChargeReceiptNotFoundError())
           }
+          if (!charge.balance_transaction) {
+            return errAsync(new ChargeBalanceTransactionNotFoundError())
+          }
           logger.info({
-            message: 'Retrieved charge object from Stripe',
+            message: 'Retrieved successful charge object from Stripe',
             meta: {
               action: 'getReceiptURL',
               charge,
             },
           })
-          return okAsync(String(charge.receipt_url))
+          // Step 6: Retrieve balance transaction object
+          return (
+            ResultAsync.fromPromise(
+              stripe.balanceTransactions.retrieve(
+                String(charge.balance_transaction),
+                undefined,
+                { stripeAccount },
+              ),
+              (error) => {
+                logger.error({
+                  message: 'Error retrieving balance transaction object',
+                  meta: {
+                    action: 'getReceiptURL',
+                  },
+                  error,
+                })
+                return new StripeFetchError(String(error))
+              },
+            )
+              // Step 7: Retrieve transaction fee associated with balance transaction object
+              // TODO: check how many elements in fee_details array
+              .andThen((balanceTransaction) => {
+                if (balanceTransaction.fee_details[0].type === 'stripe_fee') {
+                  return okAsync(balanceTransaction.fee_details[0].amount)
+                }
+                return errAsync(new PaymentIntentLatestChargeNotFoundError())
+              })
+              // Step 8: Update payment object with receipt url and transaction fee
+              .andThen((stripeTransactionFee) => {
+                if (!charge.receipt_url || charge.receipt_url === 'null') {
+                  return errAsync(new ChargeReceiptNotFoundError())
+                }
+                if (!stripeTransactionFee) {
+                  return errAsync(new StripeTransactionFeeNotFoundError())
+                }
+                return PaymentService.updateReceiptUrl(
+                  paymentId,
+                  charge.receipt_url,
+                  stripeTransactionFee,
+                )
+              })
+              .andThen((payment) => {
+                if (!payment) {
+                  return errAsync(new PaymentNotFoundError())
+                }
+                return okAsync(String(payment.receiptUrl))
+              })
+          )
         }),
     )
 }
