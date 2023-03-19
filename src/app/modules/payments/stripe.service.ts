@@ -177,7 +177,7 @@ export const validateAccount = (
   )
 }
 
-export const getReceiptURL = (
+export const getPaymentFromLatestSuccessfulCharge = (
   formId: string,
   submissionId: string,
 ): ResultAsync<
@@ -206,7 +206,7 @@ export const getReceiptURL = (
         logger.info({
           message: 'Verified form submission exists',
           meta: {
-            action: 'getReceiptURL',
+            action: 'getPaymentFromLatestSuccessfulCharge',
             submission,
           },
         })
@@ -230,7 +230,7 @@ export const getReceiptURL = (
               logger.error({
                 message: 'Error retrieving paymentIntent object',
                 meta: {
-                  action: 'getReceiptURL',
+                  action: 'getPaymentFromLatestSuccessfulCharge',
                 },
                 error,
               })
@@ -241,7 +241,7 @@ export const getReceiptURL = (
               logger.info({
                 message: 'Retrieved payment intent object from Stripe',
                 meta: {
-                  action: 'getReceiptURL',
+                  action: 'getPaymentFromLatestSuccessfulCharge',
                   paymentIntent,
                 },
               })
@@ -250,7 +250,7 @@ export const getReceiptURL = (
                   message:
                     "Successfully retrieved payment intent's latest charge from Stripe",
                   meta: {
-                    action: 'getReceiptURL',
+                    action: 'getPaymentFromLatestSuccessfulCharge',
                     paymentIntent,
                   },
                 })
@@ -275,7 +275,7 @@ export const getReceiptURL = (
               logger.error({
                 message: 'Error retrieving latest charge object',
                 meta: {
-                  action: 'getReceiptURL',
+                  action: 'getPaymentFromLatestSuccessfulCharge',
                 },
                 error,
               })
@@ -301,7 +301,7 @@ export const getReceiptURL = (
           logger.info({
             message: 'Retrieved successful charge object from Stripe',
             meta: {
-              action: 'getReceiptURL',
+              action: 'getPaymentFromLatestSuccessfulCharge',
               charge,
             },
           })
@@ -317,7 +317,7 @@ export const getReceiptURL = (
                 logger.error({
                   message: 'Error retrieving balance transaction object',
                   meta: {
-                    action: 'getReceiptURL',
+                    action: 'getPaymentFromLatestSuccessfulCharge',
                   },
                   error,
                 })
