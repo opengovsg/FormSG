@@ -65,8 +65,16 @@ export const IndividualPaymentResponse = (submissionId: {
             </Stack>
             <Stack direction={{ base: 'column', md: 'row' }}>
               <Text textStyle="subhead-1">Transaction fee:</Text>
-              {/* TODO: Change this to actual transaction fee once application fee object has been added */}
-              <Text>$0.06</Text>
+              <Text>
+                S$
+                {(paymentData.stripeTransactionFee / 100).toLocaleString(
+                  'en-GB',
+                  {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  },
+                )}
+              </Text>
             </Stack>
           </Stack>
         </>
