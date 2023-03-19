@@ -1,6 +1,7 @@
 import cuid from 'cuid'
 import mongoose from 'mongoose'
 import { errAsync, ok, okAsync, ResultAsync } from 'neverthrow'
+import { Payment } from 'shared/types'
 import Stripe from 'stripe'
 import { MarkRequired } from 'ts-essentials'
 
@@ -180,7 +181,7 @@ export const getReceiptURL = (
   formId: string,
   submissionId: string,
 ): ResultAsync<
-  string,
+  Payment,
   | FormNotFoundError
   | SubmissionNotFoundError
   | SubmissionAndFormMismatchError
@@ -349,7 +350,7 @@ export const getReceiptURL = (
                 if (!payment) {
                   return errAsync(new PaymentNotFoundError())
                 }
-                return okAsync(String(payment.receiptUrl))
+                return okAsync(payment)
               })
           )
         }),
