@@ -1,6 +1,7 @@
 const MongoClient = require('mongodb').MongoClient,
-  ObjectId = require('mongodb').ObjectId,
-  _ = require('lodash')
+  ObjectId = require('mongodb').ObjectId
+
+const fs = require('fs')
 
 async function getStats(db) {
   console.log('Getting forms and checking languages')
@@ -110,7 +111,7 @@ async function getStats(db) {
   const submissionCollection = db.collection('submissions')
 
   for (const id of Object.keys(formsWhereWhiteSpaceAffectsLogic)) {
-    const numSubmissions = await submissionCollection.countDocuments({
+    const affectedSubmissions = await submissionCollection.find({
       form: new ObjectId(id),
       created: {
         $gte: new Date('2023-02-20T00:00:00.000+0800'),
@@ -118,11 +119,18 @@ async function getStats(db) {
       },
     })
 
+    const numSubmissions = await affectedSubmissions.count()
+
     if (numSubmissions > 0) {
       formsWhereWhiteSpaceAffectsLogicWithSubmissions[id] =
         formsWhereWhiteSpaceAffectsLogic[id]
       formsWhereWhiteSpaceAffectsLogicWithSubmissions[id].numSubmissions =
         numSubmissions
+      formsWhereWhiteSpaceAffectsLogicWithSubmissions[id].affectedSubmissions =
+        await affectedSubmissions
+          .project({ _id: 1 })
+          .map((s) => s._id.toString())
+          .toArray()
     }
   }
 
@@ -141,14 +149,27 @@ async function getStats(db) {
   console.log(sortedForms.reduce((acc, f) => (acc += f.numSubmissions), 0))
 
   console.log('-----')
-  console.log(
-    sortedForms
-      .map(
-        (data) =>
-          `${data.form._id} (${data.numSubmissions}): ${data.form.title} `,
-      )
-      .join('\n'),
-  )
+
+  const logOutput = sortedForms
+    .map(
+      (data) => `${data.form._id} (${data.numSubmissions}): ${data.form.title}`,
+    )
+    .join('\n')
+
+  console.log(logOutput)
+
+  // write output to csv
+  // TODO: Align csv to postman format
+  const csvOutput = sortedForms
+    .map(
+      (data) =>
+        `${data.form._id} (${data.numSubmissions}): ${
+          data.form.title
+        }. Affected Submissions: ${data.affectedSubmissions.join(', ')} `,
+    )
+    .join('\n')
+
+  fs.writeFileSync('output.csv', csvOutput)
 }
 
 ;(async function main() {
