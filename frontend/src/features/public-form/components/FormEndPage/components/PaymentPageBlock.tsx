@@ -112,7 +112,7 @@ const StripeCheckoutForm = ({
           isLoading={isStripeProcessing}
           mt="2.5rem"
         >
-          Pay now
+          Submit payment
         </Button>
       </FormControl>
     </form>

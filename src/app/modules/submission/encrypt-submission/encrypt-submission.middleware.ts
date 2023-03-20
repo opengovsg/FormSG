@@ -47,6 +47,7 @@ export const validateEncryptSubmissionParams = celebrate({
         }),
       )
       .optional(),
+    paymentReceiptEmail: Joi.string(),
     /**
      * @deprecated unused key, but frontend may still send it.
      */

@@ -28,7 +28,7 @@ export const FormPaymentModal = ({
         <ModalOverlay />
         <ModalContent>
           <ModalCloseButton />
-          <ModalHeader>Submit form and proceed to pay</ModalHeader>
+          <ModalHeader>You are about to make payment</ModalHeader>
           <ModalBody whiteSpace="pre-line">
             {
               'Please ensure that your form information is accurate. You will not be able to edit your form after you proceed.'
@@ -44,7 +44,7 @@ export const FormPaymentModal = ({
                 loadingText="Submitting"
                 onClick={onSubmit}
               >
-                Submit form and proceed to pay
+                Proceed to pay
               </Button>
             </ButtonGroup>
           </ModalFooter>

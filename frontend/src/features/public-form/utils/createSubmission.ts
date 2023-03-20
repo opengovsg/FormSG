@@ -33,6 +33,7 @@ export const createEncryptedSubmissionData = async (
   formFields: FormFieldDto[],
   formInputs: FormFieldValues,
   publicKey: string,
+  paymentReceiptEmail?: string,
 ): Promise<StorageModeSubmissionContentDto> => {
   const responses = createResponsesArray(formFields, formInputs)
   const encryptedContent = formsgSdk.crypto.encrypt(responses, publicKey)
@@ -53,6 +54,7 @@ export const createEncryptedSubmissionData = async (
     attachments,
     responses: filteredResponses,
     encryptedContent,
+    paymentReceiptEmail,
     version: ENCRYPT_VERSION,
   }
 }
