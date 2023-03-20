@@ -3,6 +3,9 @@ const MongoClient = require('mongodb').MongoClient,
 
 const fs = require('fs')
 
+const END_DATE_TIME = '2023-03-17T20:00:00.000+0800'
+const START_DATE_TIME = '2023-02-23T11:50:00.000+0800'
+
 async function getStats(db) {
   console.log('Getting forms and checking languages')
   const collection = db.collection('forms')
@@ -115,8 +118,8 @@ async function getStats(db) {
     const affectedSubmissions = await submissionCollection.find({
       form: new ObjectId(id),
       created: {
-        $gte: new Date('2023-02-23T11:50:00.000+0800'),
-        $lt: new Date('2023-03-17T20:00:00.000+0800'),
+        $gte: new Date(START_DATE_TIME),
+        $lt: new Date(END_DATE_TIME),
       },
     })
 
@@ -148,6 +151,28 @@ async function getStats(db) {
 
   console.log('Total number of potentially affected submissions:')
   console.log(sortedForms.reduce((acc, f) => (acc += f.numSubmissions), 0))
+
+  console.log('-----')
+
+  console.log('Total number of submissions during that timeframe:')
+  const allSubmissions = await submissionCollection
+    .find({
+      created: {
+        $gte: new Date(START_DATE_TIME),
+        $lt: new Date(END_DATE_TIME),
+      },
+    })
+    .project({ _id: 1, form: 1 })
+    .toArray()
+
+  console.log(allSubmissions.length)
+
+  console.log('-----')
+  console.log(
+    'Total number of forms which received submissions during that timeframe:',
+  )
+  const allForms = new Set(allSubmissions.map((s) => s.form.toString()))
+  console.log(allForms.size)
 
   console.log('-----')
 
