@@ -481,7 +481,7 @@ describe('admin-form.form.routes', () => {
           emails: defaultUser.email,
           responseMode: 'email',
           title: 'email mode form test should fail',
-          permissionList: [{ email: 'invalidEmailDomain@example.com' }],
+          permissionList: [{ email: 'not a valid email' }],
         },
       }
 
