@@ -4,6 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 
 import {
   AdminFormDto,
+  AdminStorageFormDto,
   EndPageUpdateDto,
   FormPermission,
   FormPermissionsDto,
@@ -395,7 +396,7 @@ export const useMutateFormPage = () => {
     {
       onSuccess: (newData) => {
         toast.closeAll()
-        queryClient.setQueryData<AdminFormDto | undefined>(
+        queryClient.setQueryData<AdminStorageFormDto | undefined>(
           adminFormKeys.id(formId),
           (oldData) =>
             oldData ? { ...oldData, payments_field: newData } : undefined,
