@@ -108,10 +108,6 @@ export interface FormBase {
   webhook: FormWebhook
 
   responseMode: FormResponseMode
-
-  payments_channel?: FormPaymentsChannel
-
-  payments_field?: FormPaymentsField
 }
 
 export interface EmailFormBase extends FormBase {
@@ -122,6 +118,8 @@ export interface EmailFormBase extends FormBase {
 export interface StorageFormBase extends FormBase {
   responseMode: FormResponseMode.Encrypt
   publicKey: string
+  payments_channel?: FormPaymentsChannel
+  payments_field?: FormPaymentsField
 }
 
 /**

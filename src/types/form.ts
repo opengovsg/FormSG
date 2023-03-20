@@ -196,19 +196,19 @@ export interface IFormSchema extends IForm, Document, PublicView<PublicForm> {
    * @param accountId the payment account ID to add
    * @returns updated form
    */
-  addPaymentAccountId<T = IFormSchema>({
+  addPaymentAccountId<T = IEncryptedFormSchema>({
     accountId,
     publishableKey,
   }: {
     accountId: FormPaymentsChannel['target_account_id']
     publishableKey: FormPaymentsChannel['publishable_key']
-  }): Promise<T & DeepRequired<Pick<IFormSchema, 'payments_channel'>>>
+  }): Promise<T & DeepRequired<Pick<IEncryptedFormSchema, 'payments_channel'>>>
 
   /**
    * Remove payment account ID from the form.
    * @returns updated form
    */
-  removePaymentAccount<T = IFormSchema>(): Promise<T>
+  removePaymentAccount<T = IEncryptedFormSchema>(): Promise<T>
 
   /**
    * Return essential form creation parameters with the given properties.
@@ -257,6 +257,25 @@ export interface IFormDocument extends IFormSchema {
   responseMode: NonNullable<IFormSchema['responseMode']>
 }
 
+export interface IEncryptedFormDocument extends IEncryptedFormSchema {
+  form_fields: NonNullable<IEncryptedFormSchema['form_fields']>
+  form_logics: NonNullable<IEncryptedFormSchema['form_logics']>
+  permissionList: NonNullable<IEncryptedFormSchema['permissionList']>
+  hasCaptcha: NonNullable<IEncryptedFormSchema['hasCaptcha']>
+  authType: NonNullable<IEncryptedFormSchema['authType']>
+  status: NonNullable<IEncryptedFormSchema['status']>
+  inactiveMessage: NonNullable<IEncryptedFormSchema['inactiveMessage']>
+  // NOTE: Due to the way creating a form works, creating a form without specifying submissionLimit will throw an error.
+  // Hence, using Exclude here over NonNullable.
+  submissionLimit: Exclude<IEncryptedFormSchema['submissionLimit'], undefined>
+  isListed: NonNullable<IEncryptedFormSchema['isListed']>
+  startPage: Required<NonNullable<IEncryptedFormSchema['startPage']>>
+  endPage: Required<NonNullable<IEncryptedFormSchema['endPage']>>
+  webhook: Required<NonNullable<IEncryptedFormSchema['webhook']>>
+  responseMode: NonNullable<IEncryptedFormSchema['responseMode']>
+  publickey: NonNullable<IEncryptedFormSchema['publicKey']>
+}
+
 export interface IPopulatedForm extends Omit<IFormDocument, 'toJSON'> {
   admin: IPopulatedUser
   // Override types.
@@ -265,6 +284,8 @@ export interface IPopulatedForm extends Omit<IFormDocument, 'toJSON'> {
 
 export interface IEncryptedForm extends IForm {
   publicKey: string
+  payments_channel?: FormPaymentsChannel
+  payments_field?: FormPaymentsField
   emails?: never
 }
 
@@ -357,12 +378,12 @@ export interface IFormModel extends Model<IFormSchema> {
    * Update the payments of form with given payments object.
    * @param formId the id of the form to update
    * @param newPayments the new Payments object to replace with
-   * @returns the updated form document if form exists, null otherwise
+   * @returns the updated encrypted form document if form exists, null otherwise
    */
   updatePaymentsById(
     formId: string,
     newPayments: FormPaymentsField,
-  ): Promise<IFormDocument | null>
+  ): Promise<IEncryptedFormDocument | null>
 
   updateFormLogic(
     formId: string,
@@ -371,7 +392,8 @@ export interface IFormModel extends Model<IFormSchema> {
   ): Promise<IFormSchema | null>
 }
 
-export type IEncryptedFormModel = IFormModel & Model<IEncryptedFormSchema>
+export type IEncryptedFormModel = Model<IEncryptedFormSchema> & IFormModel
+
 export type IEmailFormModel = IFormModel & Model<IEmailFormSchema>
 
 export type IOnboardedForm<T extends IForm> = T & {
