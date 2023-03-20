@@ -22,7 +22,6 @@ import Textarea from '~components/Textarea'
 import Toggle from '~components/Toggle'
 
 import { useMutateFormPage } from '~features/admin-form/common/mutations'
-import { useAdminForm } from '~features/admin-form/common/queries'
 
 import {
   setIsDirtySelector,
@@ -254,8 +253,11 @@ export const PaymentInput = (): JSX.Element => {
   )
 }
 
-export const PaymentDrawer = (): JSX.Element | null => {
-  const { data: form } = useAdminForm()
+export const PaymentDrawer = ({
+  paymentsField,
+}: {
+  paymentsField: FormPaymentsField
+}): JSX.Element | null => {
   const { paymentData, setData, resetData } = usePaymentStore(
     useCallback(
       (state) => ({
@@ -268,9 +270,9 @@ export const PaymentDrawer = (): JSX.Element | null => {
   )
 
   useEffect(() => {
-    setData(form?.payments_field)
+    setData(paymentsField)
     return resetData
-  }, [form?.payments_field, resetData, setData])
+  }, [paymentsField, resetData, setData])
 
   if (!paymentData) return null
 
