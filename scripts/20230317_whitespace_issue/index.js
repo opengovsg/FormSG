@@ -163,26 +163,52 @@ async function getStats(db) {
 
   let output = [`RecipientEmail, Content`]
 
+  const outputObj = {}
+
   for (const data of sortedForms) {
     // Add admin emails
-    const adminEmail = await db
+    const adminEmailArr = await db
       .collection('users')
       .find({ _id: data.form.admin })
       .project({ email: 1, _id: 1 })
       .map((item) => item.email)
       .toArray()
 
-    output.push(
-      `${adminEmail[0]}, Admin, FormID: ${data.form._id}, Number of Potentially Affected Submission: ${data.numSubmissions}, Form Title: ${data.form.title}`,
+    //  Append email to output object
+    const adminEmail = adminEmailArr[0]
+
+    if (!outputObj[adminEmail]) {
+      outputObj[adminEmail] = []
+    }
+
+    outputObj[adminEmail].push(
+      `${outputObj[adminEmail].length + 1}. FormID: ${
+        data.form._id
+      }, Number of Potentially Affected Submission: ${
+        data.numSubmissions
+      }, Form Title: ${data.form.title}`,
     )
 
     // Add collaboarator emails
     for (const collaborator of data.form.permissionList) {
       const collaboratorEmail = collaborator.email
-      output.push(
-        `${collaboratorEmail}, Collaborator, FormID: ${data.form._id}, Number of Potentially Affected Submission: ${data.numSubmissions}, Form Title: ${data.form.title}`,
+      if (!outputObj[collaboratorEmail]) {
+        outputObj[collaboratorEmail] = []
+      }
+
+      outputObj[collaboratorEmail].push(
+        `${outputObj[collaboratorEmail].length + 1}. FormID: ${
+          data.form._id
+        }, Number of Potentially Affected Submission: ${
+          data.numSubmissions
+        }, Form Title: ${data.form.title}`,
       )
     }
+  }
+
+  // Convert outputObj to csv
+  for (const email in outputObj) {
+    output.push(`${email}, ${outputObj[email].join('<br>')}`)
   }
 
   const csvOutput = output.join('\n')
