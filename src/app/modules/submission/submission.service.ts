@@ -1,3 +1,4 @@
+import omit from 'lodash/omit'
 import mongoose from 'mongoose'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 
@@ -8,6 +9,7 @@ import {
   ISubmissionSchema,
 } from '../../../types'
 import { createLoggerWithLabel } from '../../config/logger'
+import getPendingSubmissionModel from '../../models/pending_submission.server.model'
 import getSubmissionModel from '../../models/submission.server.model'
 import MailService from '../../services/mail/mail.service'
 import { AutoReplyMailData } from '../../services/mail/mail.types'
@@ -17,12 +19,14 @@ import { DatabaseError, MalformedParametersError } from '../core/core.errors'
 import { InvalidSubmissionIdError } from '../feedback/feedback.errors'
 
 import {
+  PendingSubmissionNotFoundError,
   SendEmailConfirmationError,
   SubmissionNotFoundError,
 } from './submission.errors'
 
 const logger = createLoggerWithLabel(module)
 const SubmissionModel = getSubmissionModel(mongoose)
+const PendingSubmissionModel = getPendingSubmissionModel(mongoose)
 
 /**
  * Returns number of form submissions of given form id in the given date range.
@@ -174,7 +178,7 @@ export const doesSubmissionIdExist = (
   })
 
 /**
- * @param formId the form id to find amongst all the form submissions
+ * @param submissionId the submission id to find amongst all the form submissions
  *
  * @returns ok(submission document) if retrieval is successful
  * @returns err(SubmissionNotFoundError) if submission does not exist in the database
@@ -202,4 +206,55 @@ export const findSubmissionById = (
     }
     return okAsync(submission)
   })
+}
+
+/**
+ * @param pendingSubmissionId the id of the pending submission to confirm
+ *
+ * @returns ok(submission document) if a submission document is successfully created
+ * @returns err(PendingSubmissionNotFoundError) if pending submission does not exist in the database
+ * @returns err(DatabaseError) if database errors occurs while copying the document over
+ */
+export const confirmPendingSubmission = (
+  pendingSubmissionId: string,
+): ResultAsync<
+  ISubmissionSchema,
+  DatabaseError | PendingSubmissionNotFoundError
+> => {
+  const logMeta = {
+    action: 'confirmPendingSubmission',
+    pendingSubmissionId,
+  }
+
+  return ResultAsync.fromPromise(
+    PendingSubmissionModel.findById(pendingSubmissionId).exec(),
+    (error) => {
+      logger.error({
+        message: 'Database find pending submission error',
+        meta: logMeta,
+        error,
+      })
+      return new DatabaseError(getMongoErrorMessage(error))
+    },
+  )
+    .andThen((submission) => {
+      if (!submission) {
+        return errAsync(new PendingSubmissionNotFoundError())
+      }
+      return okAsync(submission)
+    })
+    .andThen((pendingSubmission) => {
+      const submission = new SubmissionModel(
+        omit(pendingSubmission, ['_id', 'created', 'lastModified']),
+      )
+
+      return ResultAsync.fromPromise(submission.save(), (error) => {
+        logger.error({
+          message: 'Database save submission error',
+          meta: logMeta,
+          error,
+        })
+        return new DatabaseError(getMongoErrorMessage(error))
+      })
+    })
 }
