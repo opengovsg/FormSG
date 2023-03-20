@@ -221,7 +221,7 @@ export const PaymentInput = (): JSX.Element => {
               <FormLabel>Description</FormLabel>
               <Textarea
                 {...register('description', {
-                  required: 'Please enter a payment message',
+                  required: 'Please enter a payment description',
                 })}
               />
               <FormErrorMessage>{errors.description?.message}</FormErrorMessage>
