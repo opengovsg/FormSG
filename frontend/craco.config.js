@@ -1,5 +1,6 @@
 /* eslint-env node */
 const CracoAlias = require('craco-alias')
+const HtmlWebpackPlugin = require('html-webpack-plugin')
 const merge = require('lodash/merge')
 const path = require('path')
 
@@ -69,6 +70,15 @@ module.exports = {
               },
             },
           })
+
+          // use pre-processed temp/index.html that has datadog script added to it
+          const htmlWebpackPluginInstance = webpackConfig.plugins.find(
+            (webpackPlugin) => webpackPlugin instanceof HtmlWebpackPlugin,
+          )
+          if (htmlWebpackPluginInstance) {
+            htmlWebpackPluginInstance.userOptions.template =
+              path.resolve('temp/index.html')
+          }
 
           return webpackConfig
         },

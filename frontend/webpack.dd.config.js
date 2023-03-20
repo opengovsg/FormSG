@@ -33,7 +33,7 @@ module.exports = {
   // inject the datadog chunk filename into the head of the existing index.html and overwrites index.html
   plugins: [
     new HtmlWebpackPlugin({
-      filename: path.resolve('public/index.html'),
+      filename: path.resolve('temp/index.html'),
       template: path.resolve('public/index.html'),
       inject: 'head',
       minify: false, // Retain non-minified html formatting for readability

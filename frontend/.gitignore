@@ -30,3 +30,6 @@ build-storybook.log
 
 #Datadog chunk files
 datadog-chunk.*.js
+
+# temp directory for modified index.htm;
+/temp
