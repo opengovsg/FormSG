@@ -114,8 +114,8 @@ async function getStats(db) {
     const affectedSubmissions = await submissionCollection.find({
       form: new ObjectId(id),
       created: {
-        $gte: new Date('2023-02-20T00:00:00.000+0800'),
-        $lt: new Date('2023-03-17T21:00:00.000+0800'),
+        $gte: new Date('2023-02-23T11:50:00.000+0800'),
+        $lt: new Date('2023-03-17T20:00:00.000+0800'),
       },
     })
 
