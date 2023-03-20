@@ -20,6 +20,7 @@ async function getStats(db) {
       title: 1,
       admin: 1,
       created: 1,
+      permissionList: 1,
     })
 
   const formsWithInvalidWhiteSpace = {}
@@ -159,15 +160,32 @@ async function getStats(db) {
   console.log(logOutput)
 
   // write output to csv
-  // TODO: Align csv to postman format
-  const csvOutput = sortedForms
-    .map(
-      (data) =>
-        `${data.form._id} (${data.numSubmissions}): ${
-          data.form.title
-        }. Affected Submissions: ${data.affectedSubmissions.join(', ')} `,
+
+  let output = [`RecipientEmail, Content`]
+
+  for (const data of sortedForms) {
+    // Add admin emails
+    const adminEmail = await db
+      .collection('users')
+      .find({ _id: data.form.admin })
+      .project({ email: 1, _id: 1 })
+      .map((item) => item.email)
+      .toArray()
+
+    output.push(
+      `${adminEmail[0]}, Admin, FormID: ${data.form._id}, Number of Potentially Affected Submission: ${data.numSubmissions}, Form Title: ${data.form.title}`,
     )
-    .join('\n')
+
+    // Add collaboarator emails
+    for (const collaborator of data.form.permissionList) {
+      const collaboratorEmail = collaborator.email
+      output.push(
+        `${collaboratorEmail}, Collaborator, FormID: ${data.form._id}, Number of Potentially Affected Submission: ${data.numSubmissions}, Form Title: ${data.form.title}`,
+      )
+    }
+  }
+
+  const csvOutput = output.join('\n')
 
   fs.writeFileSync('output.csv', csvOutput)
 }
