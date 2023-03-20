@@ -42,7 +42,12 @@ import {
   StartPageUpdateDto,
   SubmissionCountQueryDto,
 } from '../../../../../shared/types'
-import { IForm, IFormDocument, IPopulatedForm } from '../../../../types'
+import {
+  IEncryptedFormDocument,
+  IForm,
+  IFormDocument,
+  IPopulatedForm,
+} from '../../../../types'
 import {
   EncryptSubmissionDto,
   FormUpdateParams,
@@ -2715,7 +2720,7 @@ export const handleUpdateTwilio = [
  */
 export const _handleUpdatePayments: ControllerHandler<
   { formId: string },
-  IFormDocument['payments_field'] | ErrorDto,
+  IEncryptedFormDocument['payments_field'] | ErrorDto,
   PaymentsUpdateDto
 > = (req, res) => {
   const { formId } = req.params
