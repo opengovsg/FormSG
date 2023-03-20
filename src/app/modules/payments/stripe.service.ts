@@ -325,7 +325,9 @@ export const getPaymentFromLatestSuccessfulCharge = (
               },
             )
               // Step 7: Retrieve transaction fee associated with balance transaction object
-              // TODO: check how many elements in fee_details array
+              // Assumption: Stripe fee is the only transaction fee for the MVP, so
+              // we use the first element of the array. (others are application_fee or tax)
+              // TODO: confirm with Girish how many elements there are in fee_details array
               .andThen((balanceTransaction) => {
                 if (balanceTransaction.fee_details[0].type === 'stripe_fee') {
                   return okAsync(balanceTransaction.fee_details[0].amount)
