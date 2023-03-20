@@ -14,6 +14,7 @@ import { stripe } from '../../loaders/stripe'
 import { createReqMeta } from '../../utils/request'
 import { ControllerHandler } from '../core/core.types'
 import { retrieveFullFormById } from '../form/form.service'
+import { checkFormIsEncryptMode } from '../submission/encrypt-submission/encrypt-submission.service'
 
 import * as PaymentService from './payments.service'
 import * as StripeService from './stripe.service'
@@ -236,6 +237,7 @@ const _handleConnectOauthCallback: ControllerHandler<
   // Step 2: Retrieve currently logged in user.
   return (
     retrieveFullFormById(formId)
+      .andThen(checkFormIsEncryptMode)
       .andThen((form) =>
         StripeService.exchangeCodeForAccessToken(code).andThen((token) => {
           // Step 4: Store access token in form.
