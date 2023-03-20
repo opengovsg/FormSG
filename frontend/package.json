@@ -96,7 +96,7 @@
     "postinstall": "patch-package && npm run gen:theme-typings && npm run clean:emotion-types && npm --prefix ../shared install",
     "start": "env-cmd -f .buildtime-env craco --openssl-legacy-provider start",
     "build": "npm run build:dd-chunk && cross-env CI=false BUILD_PATH='../dist/frontend' INLINE_RUNTIME_CHUNK=false SKIP_PREFLIGHT_CHECK=true craco build && cd ../ && cp -rf frontend/static/js dist/frontend/static",
-    "build:dd-chunk": "webpack --config webpack.dd.config.js",
+    "build:dd-chunk": "webpack --config webpack.dd.config.js && git checkout -- public/index.html",
     "test": "cross-env SKIP_PREFLIGHT_CHECK=true craco test --silent",
     "eject": "react-scripts eject",
     "storybook": "start-storybook -p 6006",
