@@ -40,22 +40,12 @@ export const FormPaymentPreview = ({
           p="0.7rem"
           mb="2rem"
         >
-          <Text
-            textStyle="body-1"
-            fontSize="16px"
-            fontWeight="400"
-            letterSpacing="-0.011em"
-            mb="0.5rem"
-          >
+          <Text textStyle="body-1" mb="0.5rem">
             {paymentDetails.description}
           </Text>
-          <Box
-            as="h2"
-            fontSize="24px"
-            lineHeight="32px"
-            fontWeight="600"
-            letterSpacing="-0.019em"
-          >{`${centsToDollars(paymentDetails.amount_cents ?? 0)} SGD`}</Box>
+          <Box as="h2" textStyle="h2">{`${centsToDollars(
+            paymentDetails.amount_cents ?? 0,
+          )} SGD`}</Box>
         </Box>
         <EmailField schema={emailFieldSchema} />
       </Box>
