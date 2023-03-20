@@ -11,6 +11,8 @@ import {
 } from '@chakra-ui/react'
 import simplur from 'simplur'
 
+import { FormResponseMode } from '~shared/types'
+
 import Button from '~components/Button'
 import Spinner from '~components/Spinner'
 
@@ -162,9 +164,10 @@ export const IndividualResponsePage = (): JSX.Element => {
               ))}
               <Box />
             </Stack>
-            {form?.payments_field?.enabled && (
-              <IndividualPaymentResponse submissionId={submissionId} />
-            )}
+            {form?.responseMode === FormResponseMode.Encrypt &&
+              form?.payments_field?.enabled && (
+                <IndividualPaymentResponse submissionId={submissionId} />
+              )}
           </Stack>
         )}
       </Stack>
