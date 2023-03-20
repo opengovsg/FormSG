@@ -23,3 +23,9 @@ export class FieldNotFoundError extends ApplicationError {
     super(message)
   }
 }
+
+export class InvalidCollaboratorError extends ApplicationError {
+  constructor(message: string) {
+    super(message)
+  }
+}

@@ -6,6 +6,7 @@ import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync } from 'neverthrow'
 
 import config, { aws } from 'src/app/config/config'
+import getAgencyModel from 'src/app/models/agency.server.model'
 import getFormModel, {
   getEmailFormModel,
   getEncryptedFormModel,
@@ -67,6 +68,7 @@ import {
   CreatePresignedUrlError,
   EditFieldError,
   FieldNotFoundError,
+  InvalidCollaboratorError,
   InvalidFileTypeError,
 } from '../admin-form.errors'
 import * as AdminFormService from '../admin-form.service'
@@ -78,6 +80,7 @@ import { secretsManager } from './../admin-form.service'
 const FormModel = getFormModel(mongoose)
 const EmailFormModel = getEmailFormModel(mongoose)
 const EncryptFormModel = getEncryptedFormModel(mongoose)
+const AgencyModel = getAgencyModel(mongoose)
 
 jest.mock('src/app/modules/user/user.service')
 const MockUserService = jest.mocked(UserService)
@@ -1708,6 +1711,11 @@ describe('admin-form.service', () => {
   describe('updateFormCollaborators', () => {
     it('should return the list of collaborators when update is successful', async () => {
       // Arrange
+      const findAgencySpy = jest.spyOn(AgencyModel, 'findOne')
+      // Return a truthy value to ensure that the find is successful
+      //@ts-ignore
+      findAgencySpy.mockResolvedValueOnce({})
+
       const newCollaborators = [
         {
           email: `fakeuser@gov.sg`,
@@ -1716,6 +1724,7 @@ describe('admin-form.service', () => {
       ]
       const mockForm = {
         title: 'some mock form',
+        permissionList: [],
         updateFormCollaborators: jest
           .fn()
           .mockResolvedValue({ permissionList: newCollaborators }),
@@ -1736,6 +1745,11 @@ describe('admin-form.service', () => {
 
     it('should return an application error when updating the form model fails', async () => {
       // Arrange
+      const findAgencySpy = jest.spyOn(AgencyModel, 'findOne')
+      // Return a truthy value to ensure that the find is successful
+      //@ts-ignore
+      findAgencySpy.mockResolvedValueOnce({})
+
       const newCollaborators = [
         {
           email: `fakeuser@gov.sg`,
@@ -1744,6 +1758,7 @@ describe('admin-form.service', () => {
       ]
       const mockForm = {
         title: 'some mock form',
+        permissionList: [],
         updateFormCollaborators: jest
           .fn()
           .mockRejectedValue(new DatabaseError()),
@@ -1760,6 +1775,37 @@ describe('admin-form.service', () => {
         newCollaborators,
       )
       expect(actual._unsafeUnwrapErr()).toBeInstanceOf(ApplicationError)
+    })
+
+    it('should return InvalidCollaboratorError when the new collaborator has a non-whitelisted email', async () => {
+      // Arrange
+      const findAgencySpy = jest.spyOn(AgencyModel, 'findOne')
+      findAgencySpy.mockResolvedValueOnce(null)
+
+      const newCollaborators = [
+        {
+          email: `fakeuser@gov.sg`,
+          write: false,
+        },
+      ]
+      const mockForm = {
+        title: 'some mock form',
+        permissionList: [],
+        updateFormCollaborators: jest
+          .fn()
+          .mockResolvedValue({ permissionList: newCollaborators }),
+      } as unknown as IPopulatedForm
+
+      // Act
+      const actual = await AdminFormService.updateFormCollaborators(
+        mockForm,
+        newCollaborators,
+      )
+
+      // Assert
+      expect(findAgencySpy).toHaveBeenCalledOnce()
+      expect(mockForm.updateFormCollaborators).not.toHaveBeenCalled()
+      expect(actual._unsafeUnwrapErr()).toBeInstanceOf(InvalidCollaboratorError)
     })
   })
 
