@@ -500,6 +500,9 @@ export const PublicFormProvider = ({
       showErrorToast,
       submitEmailModeFormMutation,
       submitStorageModeFormMutation,
+      submitEmailModeFormFetchMutation,
+      submitStorageModeFormFetchMutation,
+      useFetchForSubmissions,
     ],
   )
 

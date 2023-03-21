@@ -1,5 +1,4 @@
 import { datadogLogs } from '@datadog/browser-logs'
-import { AxiosError } from 'axios'
 
 import { ApiService } from '~services/ApiService'
 

@@ -402,6 +402,9 @@ export const PreviewFormProvider = ({
       showErrorToast,
       submitEmailModeFormMutation,
       submitStorageModeFormMutation,
+      submitEmailModeFormFetchMutation,
+      submitStorageModeFormFetchMutation,
+      useFetchForSubmissions,
     ],
   )
 
