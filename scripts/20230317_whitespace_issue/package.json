@@ -1,0 +1,16 @@
+{
+  "name": "202202117_multi-language-forms-stats",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "get_data": "source .env.production && node index.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bson": "^5.1.0",
+    "lodash": "^4.17.21",
+    "mongodb": "^5.1.0"
+  }
+}
