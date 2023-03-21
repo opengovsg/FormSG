@@ -231,26 +231,31 @@ export const updateEventLogById = (
     },
   })
 
-  return ResultAsync.fromPromise(mongoose.startSession(), (error) => {
-    logger.error({
-      message: 'Error encountered while starting mongoose session',
-      meta: logMeta,
-      error,
-    })
-    return new DatabaseError(getMongoErrorMessage(error))
-  }).andThen((session) => {
+  return ResultAsync.fromPromise(
+    mongoose.startSession({
+      defaultTransactionOptions: {
+        readConcern: { level: 'snapshot' },
+        writeConcern: { w: 'majority' },
+        readPreference: 'primary',
+      },
+    }),
+    (error) => {
+      logger.error({
+        message: 'Error encountered while starting mongoose session',
+        meta: logMeta,
+        error,
+      })
+      return new DatabaseError(getMongoErrorMessage(error))
+    },
+  ).andThen((session) => {
     // Start the transaction
-    session.startTransaction({
-      readConcern: { level: 'snapshot' },
-      writeConcern: { w: 'majority' },
-      readPreference: 'primary',
-    })
+    session.startTransaction()
 
     return updateEventLogByPaymentIdTransaction(session, paymentId, event)
       .andThen(() => {
         // Commit if successful
         logger.error({
-          message: 'Committing transaction to update payment',
+          message: 'Committing update payment via webhook transaction',
           meta: {
             paymentId,
             ...logMeta,
@@ -272,7 +277,7 @@ export const updateEventLogById = (
       .orElse((error) => {
         // Abort otherwise
         logger.error({
-          message: 'Aborting transaction to update payment',
+          message: 'Aborting update payment via webhook transaction',
           meta: {
             paymentId,
             error,
