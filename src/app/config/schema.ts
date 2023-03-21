@@ -401,7 +401,7 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
       doc: 'Toggle to use fetch for submissions instead of axios',
       format: Boolean,
       default: false,
-      env: 'REACT_USE_FETCH_FOR_SUBMISSIONS',
+      env: 'REACT_MIGRATION_USE_FETCH_FOR_SUBMISSIONS',
     },
   },
 }
