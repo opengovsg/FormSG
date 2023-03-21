@@ -13,7 +13,7 @@ import {
 import { SubmissionResponseDto } from '~shared/types/submission'
 
 import { transformAllIsoStringsToDate } from '~utils/date'
-import { ApiService } from '~services/ApiService'
+import { API_BASE_URL, ApiService } from '~services/ApiService'
 import { FormFieldValues } from '~templates/Field'
 
 import {
@@ -154,7 +154,7 @@ export const submitEmailModeFormWithFetch = async ({
   }).toString()
 
   const response = await fetch(
-    `${PUBLIC_FORMS_ENDPOINT}/${formId}/submissions/email?${queryString}`,
+    `${API_BASE_URL}/${PUBLIC_FORMS_ENDPOINT}/${formId}/submissions/email?${queryString}`,
     {
       method: 'POST',
       body: formData,
@@ -190,7 +190,7 @@ export const submitStorageModeFormWithFetch = async ({
   }).toString()
 
   const response = await fetch(
-    `${PUBLIC_FORMS_ENDPOINT}/${formId}/submissions/encrypt?${queryString}`,
+    `${API_BASE_URL}/${PUBLIC_FORMS_ENDPOINT}/${formId}/submissions/encrypt?${queryString}`,
     {
       method: 'POST',
       body: JSON.stringify(submissionContent),

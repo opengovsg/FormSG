@@ -11,7 +11,7 @@ import {
 
 import { ADMINFORM_USETEMPLATE_ROUTE } from '~constants/routes'
 import { transformAllIsoStringsToDate } from '~utils/date'
-import { ApiService } from '~services/ApiService'
+import { API_BASE_URL, ApiService } from '~services/ApiService'
 
 import { augmentWithMyInfoDisplayValue } from '~features/myinfo/utils'
 import {
@@ -215,7 +215,7 @@ export const submitEmailModeFormPreviewWithFetch = async ({
   const formData = createEmailSubmissionFormData(formFields, filteredInputs)
 
   const response = await fetch(
-    `${ADMIN_FORM_ENDPOINT}/${formId}/preview/submissions/email`,
+    `${API_BASE_URL}/${ADMIN_FORM_ENDPOINT}/${formId}/preview/submissions/email`,
     {
       method: 'POST',
       body: formData,
@@ -247,7 +247,7 @@ export const submitStorageModeFormPreviewWithFetch = async ({
   )
 
   const response = await fetch(
-    `${ADMIN_FORM_ENDPOINT}/${formId}/preview/submissions/encrypt`,
+    `${API_BASE_URL}/${ADMIN_FORM_ENDPOINT}/${formId}/preview/submissions/encrypt`,
     {
       method: 'POST',
       body: JSON.stringify(submissionContent),
