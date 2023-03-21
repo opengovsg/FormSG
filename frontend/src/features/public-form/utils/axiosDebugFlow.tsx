@@ -3,27 +3,53 @@ import { AxiosError } from 'axios'
 
 import { ApiService } from '~services/ApiService'
 
+import { ClientEnvVars } from '../../../../../shared/types'
+
 const getClientEnvWithFetch = async () => {
-  const env = await fetch(`${process.env.REACT_APP_URL}/api/v3/client/env2`)
-  datadogLogs.logger.warn(`handleSubmitForm: fetch env vars`, {
-    meta: {
-      action: 'handleSubmitForm',
-      envFetchSuccess: env.ok, // returns true if the response returned successfully
-    },
-  })
+  const response = await fetch(`${process.env.REACT_APP_URL}/api/v3/client/env`)
+  if (response.ok) {
+    const env = await response.json()
+    datadogLogs.logger.info(`handleSubmitForm: fetch env vars successful`, {
+      meta: {
+        action: 'handleSubmitForm',
+        method: 'fetch',
+        env,
+      },
+    })
+  } else {
+    datadogLogs.logger.error(`handleSubmitForm: fetch env vars failed`, {
+      meta: {
+        action: 'handleSubmitForm',
+        method: 'fetch',
+      },
+    })
+  }
 }
 
 const getClientEnvWithAxios = async () => {
-  const env = await ApiService.get<{ ok: string }>(
-    `${process.env.REACT_APP_URL}/api/v3/client/env1`,
-  ).then(({ data }) => data)
-  datadogLogs.logger.warn(`handleSubmitForm: fetch env vars`, {
-    meta: {
-      action: 'handleSubmitForm',
-      envAxiosFetchSuccess: env.ok, // returns true if the response returned successfully
-    },
-  })
+  try {
+    const env = await ApiService.get<ClientEnvVars>(
+      `${process.env.REACT_APP_URL}/api/v3/client/env`,
+    ).then(({ data }) => data)
+
+    datadogLogs.logger.info(`handleSubmitForm: axios env vars successful`, {
+      meta: {
+        action: 'handleSubmitForm',
+        method: 'axios',
+        env,
+      },
+    })
+  } catch (error) {
+    datadogLogs.logger.error(`handleSubmitForm: axios env vars failed`, {
+      meta: {
+        action: 'handleSubmitForm',
+        method: 'axios',
+      },
+      error,
+    })
+  }
 }
+
 export const axiosDebugFlow = async (error: AxiosError) => {
   if (error.message.match(/Network Error/i)) {
     getClientEnvWithFetch()
