@@ -100,8 +100,13 @@ export const PreviewFormProvider = ({
     [data?.form, data?.spcpSession],
   )
 
-  const { submitEmailModeFormMutation, submitStorageModeFormMutation } =
-    usePreviewFormMutations(formId)
+  const {
+    submitEmailModeFormMutation,
+    submitStorageModeFormMutation,
+    // TODO (#5826): Fallback mutation using Fetch. Remove once network error is resolved
+    submitEmailModeFormFetchMutation,
+    submitStorageModeFormFetchMutation,
+  } = usePreviewFormMutations(formId)
 
   const handleSubmitForm: SubmitHandler<FormFieldValues> = useCallback(
     async (formInputs) => {
@@ -128,62 +133,76 @@ export const PreviewFormProvider = ({
                 },
               )
               // Using catch since we are using mutateAsync and react-hook-form will continue bubbling this up.
+              .catch((error) => {
+                // TODO (#5826): Fallback mutation using Fetch. Remove once network error is resolved
+                if (error.message.match(/Network Error/i)) {
+                  return submitEmailModeFormFetchMutation.mutateAsync(
+                    {
+                      formFields: form.form_fields,
+                      formLogics: form.form_logics,
+                      formInputs,
+                    },
+                    {
+                      onSuccess: ({ submissionId }) =>
+                        setSubmissionData({
+                          id: submissionId,
+                          timestamp: Date.now(),
+                        }),
+                    },
+                  )
+                } else {
+                  // Show error toast from axios mutation if not network error
+                  showErrorToast(error)
+                }
+              })
+              // Now show error toast from fetch mutation
               .catch(showErrorToast)
           )
-        case FormResponseMode.Encrypt: {
+        case FormResponseMode.Encrypt:
           // Using mutateAsync so react-hook-form goes into loading state.
-          const submitStorageModeFormMutationWithAxiosStrategy = () => {
-            return submitStorageModeFormMutation.mutateAsync(
-              {
-                formFields: form.form_fields,
-                formLogics: form.form_logics,
-                formInputs,
-                publicKey: form.publicKey,
-              },
-              {
-                onSuccess: ({ submissionId }) =>
-                  setSubmissionData({
-                    id: submissionId,
-                    timestamp: Date.now(),
-                  }),
-              },
-            )
-          }
-          const submitStorageModeFormMutationWithFetchStrategy = () => {
-            return submitStorageModeFormMutation.mutateAsync(
-              {
-                formFields: form.form_fields,
-                formLogics: form.form_logics,
-                formInputs,
-                publicKey: form.publicKey,
-              },
-              {
-                onSuccess: ({ submissionId }) =>
-                  setSubmissionData({
-                    id: submissionId,
-                    timestamp: Date.now(),
-                  }),
-              },
-            )
-          }
-          const submissionStrategies = [
-            submitStorageModeFormMutationWithAxiosStrategy,
-            submitStorageModeFormMutationWithFetchStrategy,
-          ]
-          let lastError
-          // iterate through all submission strategies until one passes
-          for (const strategy of submissionStrategies) {
-            try {
-              await strategy()
-              return
-            } catch (error) {
-              lastError = error
-            }
-          }
-          if (lastError) {
-            showErrorToast(lastError)
-          }
-        }
+          return (
+            submitStorageModeFormMutation
+              .mutateAsync(
+                {
+                  formFields: form.form_fields,
+                  formLogics: form.form_logics,
+                  formInputs,
+                  publicKey: form.publicKey,
+                },
+                {
+                  onSuccess: ({ submissionId }) =>
+                    setSubmissionData({
+                      id: submissionId,
+                      timestamp: Date.now(),
+                    }),
+                },
+              )
+              // Using catch since we are using mutateAsync and react-hook-form will continue bubbling this up.
+              .catch((error) => {
+                if (error.message.match(/Network Error/i)) {
+                  return submitStorageModeFormFetchMutation.mutateAsync(
+                    {
+                      formFields: form.form_fields,
+                      formLogics: form.form_logics,
+                      formInputs,
+                      publicKey: form.publicKey,
+                    },
+                    {
+                      onSuccess: ({ submissionId }) =>
+                        setSubmissionData({
+                          id: submissionId,
+                          timestamp: Date.now(),
+                        }),
+                    },
+                  )
+                } else {
+                  // Show error toast from axios mutation if not network error
+                  showErrorToast(error)
+                }
+              })
+              // Now show error toast from fetch mutation
+              .catch(showErrorToast)
+          )
       }
     },
     [

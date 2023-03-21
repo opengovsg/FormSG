@@ -196,3 +196,65 @@ export const submitStorageModeFormPreview = async ({
     submissionContent,
   ).then(({ data }) => data)
 }
+
+/**
+ * Submit an email mode form in preview mode using fetch
+ * TODO(#5826): Fallback using Fetch. Remove once network error is resolved
+ */
+export const submitEmailModeFormPreviewWithFetch = async ({
+  formFields,
+  formLogics,
+  formInputs,
+  formId,
+}: SubmitEmailFormArgs): Promise<SubmissionResponseDto> => {
+  const filteredInputs = filterHiddenInputs({
+    formFields,
+    formInputs,
+    formLogics,
+  })
+  const formData = createEmailSubmissionFormData(formFields, filteredInputs)
+
+  const response = await fetch(
+    `${ADMIN_FORM_ENDPOINT}/${formId}/preview/submissions/email`,
+    {
+      method: 'POST',
+      body: formData,
+    },
+  )
+  return response.json()
+}
+
+/**
+ * Submit a storage mode form in preview mode using fetch
+ * TODO(#5826): Fallback using Fetch. Remove once network error is resolved
+ */
+export const submitStorageModeFormPreviewWithFetch = async ({
+  formFields,
+  formLogics,
+  formInputs,
+  formId,
+  publicKey,
+}: SubmitStorageFormArgs): Promise<SubmissionResponseDto> => {
+  const filteredInputs = filterHiddenInputs({
+    formFields,
+    formInputs,
+    formLogics,
+  })
+  const submissionContent = await createEncryptedSubmissionData(
+    formFields,
+    filteredInputs,
+    publicKey,
+  )
+
+  const response = await fetch(
+    `${ADMIN_FORM_ENDPOINT}/${formId}/preview/submissions/encrypt`,
+    {
+      method: 'POST',
+      body: JSON.stringify(submissionContent),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    },
+  )
+  return response.json()
+}
