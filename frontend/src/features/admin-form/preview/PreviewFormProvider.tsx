@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { SubmitHandler } from 'react-hook-form'
+import { datadogLogs } from '@datadog/browser-logs'
 import get from 'lodash/get'
 import simplur from 'simplur'
 
@@ -135,7 +136,31 @@ export const PreviewFormProvider = ({
               // Using catch since we are using mutateAsync and react-hook-form will continue bubbling this up.
               .catch((error) => {
                 // TODO (#5826): Fallback mutation using Fetch. Remove once network error is resolved
+                datadogLogs.logger.warn(`handleSubmitForm: ${error.message}`, {
+                  meta: {
+                    action: 'handleSubmitForm',
+                    responseMode: 'email',
+                    method: 'axios',
+                    isPreview: true,
+                    error: {
+                      message: error.message,
+                      stack: error.stack,
+                    },
+                  },
+                })
                 if (error.message.match(/Network Error/i)) {
+                  datadogLogs.logger.info(
+                    `handleSubmitForm: submitting via fetch`,
+                    {
+                      meta: {
+                        action: 'handleSubmitForm',
+                        responseMode: 'email',
+                        method: 'fetch',
+                        isPreview: true,
+                      },
+                    },
+                  )
+
                   return submitEmailModeFormFetchMutation.mutateAsync(
                     {
                       formFields: form.form_fields,
@@ -156,7 +181,22 @@ export const PreviewFormProvider = ({
                 }
               })
               // Now show error toast from fetch mutation
-              .catch(showErrorToast)
+              .catch((error) => {
+                datadogLogs.logger.warn(`handleSubmitForm: ${error.message}`, {
+                  meta: {
+                    action: 'handleSubmitForm',
+                    responseMode: 'email',
+                    method: 'fetch',
+                    isPreview: true,
+                    error: {
+                      message: error.message,
+                      stack: error.stack,
+                    },
+                  },
+                })
+
+                showErrorToast(error)
+              })
           )
         case FormResponseMode.Encrypt:
           // Using mutateAsync so react-hook-form goes into loading state.
@@ -179,7 +219,32 @@ export const PreviewFormProvider = ({
               )
               // Using catch since we are using mutateAsync and react-hook-form will continue bubbling this up.
               .catch((error) => {
+                // TODO (#5826): Fallback mutation using Fetch. Remove once network error is resolved
+                datadogLogs.logger.warn(`handleSubmitForm: ${error.message}`, {
+                  meta: {
+                    action: 'handleSubmitForm',
+                    responseMode: 'storage',
+                    method: 'axios',
+                    isPreview: true,
+                    error: {
+                      message: error.message,
+                      stack: error.stack,
+                    },
+                  },
+                })
                 if (error.message.match(/Network Error/i)) {
+                  datadogLogs.logger.info(
+                    `handleSubmitForm: submitting via fetch`,
+                    {
+                      meta: {
+                        action: 'handleSubmitForm',
+                        responseMode: 'storage',
+                        method: 'fetch',
+                        isPreview: true,
+                      },
+                    },
+                  )
+
                   return submitStorageModeFormFetchMutation.mutateAsync(
                     {
                       formFields: form.form_fields,
@@ -201,7 +266,21 @@ export const PreviewFormProvider = ({
                 }
               })
               // Now show error toast from fetch mutation
-              .catch(showErrorToast)
+              .catch((error) => {
+                datadogLogs.logger.warn(`handleSubmitForm: ${error.message}`, {
+                  meta: {
+                    action: 'handleSubmitForm',
+                    responseMode: 'storage',
+                    method: 'fetch',
+                    isPreview: true,
+                    error: {
+                      message: error.message,
+                      stack: error.stack,
+                    },
+                  },
+                })
+                showErrorToast(error)
+              })
           )
       }
     },
