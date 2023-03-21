@@ -850,7 +850,7 @@ describe('submission.service', () => {
       findSpy.mockImplementationOnce(
         () =>
           ({
-            exec: () => Promise.reject(new Error('boom')),
+            session: () => Promise.reject(new Error('boom')),
           } as unknown as mongoose.Query<any, any>),
       )
 

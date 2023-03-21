@@ -210,6 +210,7 @@ export const findSubmissionById = (
 
 /**
  * @param pendingSubmissionId the id of the pending submission to confirm
+ * @param session (optional) the mongoose transaction session to be used, if any
  *
  * @returns ok(submission document) if a submission document is successfully created
  * @returns err(PendingSubmissionNotFoundError) if pending submission does not exist in the database
@@ -217,6 +218,7 @@ export const findSubmissionById = (
  */
 export const confirmPendingSubmission = (
   pendingSubmissionId: string,
+  session?: mongoose.ClientSession,
 ): ResultAsync<
   ISubmissionSchema,
   DatabaseError | PendingSubmissionNotFoundError
@@ -227,7 +229,9 @@ export const confirmPendingSubmission = (
   }
 
   return ResultAsync.fromPromise(
-    PendingSubmissionModel.findById(pendingSubmissionId).exec(),
+    PendingSubmissionModel.findById(pendingSubmissionId).session(
+      session ?? null,
+    ),
     (error) => {
       logger.error({
         message: 'Database find pending submission error',
@@ -248,7 +252,7 @@ export const confirmPendingSubmission = (
         omit(pendingSubmission, ['_id', 'created', 'lastModified']),
       )
 
-      return ResultAsync.fromPromise(submission.save(), (error) => {
+      return ResultAsync.fromPromise(submission.save({ session }), (error) => {
         logger.error({
           message: 'Database save submission error',
           meta: logMeta,
