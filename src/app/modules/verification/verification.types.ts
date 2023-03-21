@@ -13,5 +13,6 @@ export type SendOtpParams = {
   recipient: string
   otp: string
   hashedOtp: string
+  otpPrefix: string
   senderIp: string
 }

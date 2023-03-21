@@ -188,8 +188,10 @@ export const PublicFormProvider = ({
 
   const { handleLogoutMutation } = usePublicAuthMutations(formId)
 
-  const handleSubmitForm: SubmitHandler<FormFieldValues> = useCallback(
-    async (formInputs) => {
+  const handleSubmitForm: SubmitHandler<
+    FormFieldValues & { payment_receipt_email_field?: { value: string } }
+  > = useCallback(
+    async ({ payment_receipt_email_field, ...formInputs }) => {
       const { form } = data ?? {}
       if (!form) return
 
@@ -228,7 +230,7 @@ export const PublicFormProvider = ({
                 },
               )
               // Using catch since we are using mutateAsync and react-hook-form will continue bubbling this up.
-              .catch((error) => {
+              .catch(async (error) => {
                 // TODO: Remove when we have resolved the Network Error and t.arrayBuffer issues.
                 datadogLogs.logger.warn(`handleSubmitForm: ${error.message}`, {
                   meta: {
@@ -241,6 +243,17 @@ export const PublicFormProvider = ({
                   },
                 })
                 showErrorToast(error, form)
+                if (error.message.match(/Network Error/i) && fetch) {
+                  const env = await fetch(
+                    `${process.env.REACT_APP_URL}/api/v3/client/env`,
+                  )
+                  datadogLogs.logger.warn(`handleSubmitForm: fetch env vars`, {
+                    meta: {
+                      action: 'handleSubmitForm',
+                      envFetchSuccess: env.ok, // returns true if the response returned successfully
+                    },
+                  })
+                }
               })
           )
         case FormResponseMode.Encrypt:
@@ -254,6 +267,7 @@ export const PublicFormProvider = ({
                   formInputs,
                   publicKey: form.publicKey,
                   captchaResponse,
+                  paymentReceiptEmail: payment_receipt_email_field?.value,
                 },
                 {
                   onSuccess: ({
@@ -273,7 +287,7 @@ export const PublicFormProvider = ({
                 },
               )
               // Using catch since we are using mutateAsync and react-hook-form will continue bubbling this up.
-              .catch((error) => {
+              .catch(async (error) => {
                 // TODO: Remove when we have resolved the Network Error and t.arrayBuffer issues.
                 datadogLogs.logger.warn(`handleSubmitForm: ${error.message}`, {
                   meta: {
@@ -286,6 +300,17 @@ export const PublicFormProvider = ({
                   },
                 })
                 showErrorToast(error, form)
+                if (error.message.match(/Network Error/i) && fetch) {
+                  const env = await fetch(
+                    `${process.env.REACT_APP_URL}/api/v3/client/env`,
+                  )
+                  datadogLogs.logger.warn(`handleSubmitForm: fetch env vars`, {
+                    meta: {
+                      action: 'handleSubmitForm',
+                      envFetchSuccess: env.ok, // returns true if the response returned successfully
+                    },
+                  })
+                }
               })
           )
       }

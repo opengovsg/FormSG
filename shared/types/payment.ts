@@ -23,6 +23,7 @@ export type Payment = {
   created: DateString
   stripeTransactionFee: number
   receiptUrl: string
+  email: string
 }
 
 export type PaymentReceiptStatusDto = {

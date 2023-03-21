@@ -62,6 +62,8 @@ import * as VerificationService from '../verification.service'
 import {
   generateFieldParams,
   MOCK_HASHED_OTP,
+  MOCK_OTP,
+  MOCK_OTP_PREFIX,
   MOCK_SIGNED_DATA,
 } from './verification.test.helpers'
 
@@ -96,7 +98,6 @@ describe('Verification controller', () => {
   const MOCK_TRANSACTION_ID = new ObjectId().toHexString()
   const MOCK_FIELD_ID = new ObjectId().toHexString()
   const MOCK_ANSWER = 'answer'
-  const MOCK_OTP = 'otp'
   let mockTransaction: IVerificationSchema
   let mockRes: Response
   const EXPECTED_PARAMS_FOR_SENDING_OTP = {
@@ -106,6 +107,7 @@ describe('Verification controller', () => {
     hashedOtp: MOCK_HASHED_OTP,
     recipient: MOCK_ANSWER,
     senderIp: 'MOCK_IP',
+    otpPrefix: MOCK_OTP_PREFIX,
   }
 
   beforeAll(async () => {
@@ -423,6 +425,7 @@ describe('Verification controller', () => {
         okAsync({
           otp: MOCK_OTP,
           hashedOtp: MOCK_HASHED_OTP,
+          otpPrefix: MOCK_OTP_PREFIX,
         }),
       )
       MockVerificationService.sendNewOtp.mockReturnValue(
@@ -617,6 +620,7 @@ describe('Verification controller', () => {
         formId: MOCK_FORM_ID,
         transactionId: MOCK_TRANSACTION_ID,
         fieldId: MOCK_FIELD_ID,
+        otpPrefix: MOCK_OTP_PREFIX,
       },
     })
     const MOCK_FORM = {
@@ -652,6 +656,7 @@ describe('Verification controller', () => {
         okAsync({
           otp: MOCK_OTP,
           hashedOtp: MOCK_HASHED_OTP,
+          otpPrefix: MOCK_OTP_PREFIX,
         }),
       )
       MockVerificationService.sendNewOtp.mockReturnValue(
@@ -698,7 +703,7 @@ describe('Verification controller', () => {
         mockTransaction,
         MOCK_REQ.params.fieldId,
       )
-      expect(mockRes.sendStatus).toHaveBeenCalledWith(StatusCodes.CREATED)
+      expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.CREATED)
     })
 
     it('should return 201 when Singpass authentication is enabled and jwt token is valid', async () => {
@@ -750,7 +755,7 @@ describe('Verification controller', () => {
         mockTransaction,
         MOCK_REQ.params.fieldId,
       )
-      expect(mockRes.sendStatus).toHaveBeenCalledWith(StatusCodes.CREATED)
+      expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.CREATED)
     })
 
     it('should return 201 when Corpass authentication is enabled and jwt token is valid', async () => {
@@ -803,7 +808,7 @@ describe('Verification controller', () => {
         mockTransaction,
         MOCK_REQ.params.fieldId,
       )
-      expect(mockRes.sendStatus).toHaveBeenCalledWith(StatusCodes.CREATED)
+      expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.CREATED)
     })
 
     it('should return 201 when SGID authentication is enabled and sgid jwt token is valid', async () => {
@@ -815,6 +820,7 @@ describe('Verification controller', () => {
           formId: MOCK_FORM_ID,
           transactionId: MOCK_TRANSACTION_ID,
           fieldId: MOCK_FIELD_ID,
+          otpPrefix: MOCK_OTP_PREFIX,
         },
       })
       MOCK_SGID_REQ.cookies = { jwtSgid: {} }
@@ -854,7 +860,7 @@ describe('Verification controller', () => {
         mockTransaction,
         MOCK_REQ.params.fieldId,
       )
-      expect(mockRes.sendStatus).toHaveBeenCalledWith(StatusCodes.CREATED)
+      expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.CREATED)
     })
 
     it('should return 201 when MyInfo authentication is enabled and MyInfo cookie is valid', async () => {
@@ -900,7 +906,7 @@ describe('Verification controller', () => {
         mockTransaction,
         MOCK_REQ.params.fieldId,
       )
-      expect(mockRes.sendStatus).toHaveBeenCalledWith(StatusCodes.CREATED)
+      expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.CREATED)
     })
 
     it('should return 400 when form SMS parameters are malformed', async () => {
@@ -1244,6 +1250,7 @@ describe('Verification controller', () => {
           formId: MOCK_FORM_ID,
           transactionId: MOCK_TRANSACTION_ID,
           fieldId: MOCK_FIELD_ID,
+          otpPrefix: MOCK_OTP_PREFIX,
         },
       })
       MOCK_SGID_REQ.cookies = {}
@@ -1285,6 +1292,7 @@ describe('Verification controller', () => {
           formId: MOCK_FORM_ID,
           transactionId: MOCK_TRANSACTION_ID,
           fieldId: MOCK_FIELD_ID,
+          otpPrefix: MOCK_OTP_PREFIX,
         },
       })
       MOCK_SGID_REQ.cookies = {}

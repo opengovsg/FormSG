@@ -39,6 +39,7 @@ export const VerifiableFieldProvider = ({
   validateInputForVfn,
 }: VerifiableFieldProviderProps): JSX.Element => {
   const [isVfnBoxOpen, setIsVfnBoxOpen] = useState(false)
+  const [otpPrefix, setOtpPrefix] = useState('')
 
   const { control, setError, getValues, setValue, setFocus } =
     useFormContext<VerifiableFieldInput>()
@@ -106,7 +107,9 @@ export const VerifiableFieldProvider = ({
     // Should not happen, but guarding against this just in case.
     if (!currentInputValue) return
 
-    return triggerResendOtpMutation.mutateAsync(currentInputValue)
+    return triggerResendOtpMutation.mutate(currentInputValue, {
+      onSuccess: ({ otpPrefix }) => setOtpPrefix(otpPrefix),
+    })
   }, [getValues, schema._id, triggerResendOtpMutation])
 
   const handleVfnButtonClick = useCallback(() => {
@@ -126,7 +129,10 @@ export const VerifiableFieldProvider = ({
     const validateResult = validateInputForVfn(currentInputValue)
     if (validateResult === true) {
       return triggerSendOtpMutation.mutate(currentInputValue, {
-        onSuccess: () => setIsVfnBoxOpen(true),
+        onSuccess: ({ otpPrefix }) => {
+          setIsVfnBoxOpen(true)
+          setOtpPrefix(otpPrefix)
+        },
       })
     }
 
@@ -179,6 +185,7 @@ export const VerifiableFieldProvider = ({
     <VerifiableFieldContext.Provider
       value={{
         isVfnBoxOpen,
+        otpPrefix,
         handleInputChange,
         handleVfnButtonClick,
         handleResendOtp,

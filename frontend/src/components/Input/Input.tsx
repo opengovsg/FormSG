@@ -4,6 +4,7 @@ import {
   Icon,
   Input as ChakraInput,
   InputGroup,
+  InputLeftAddon,
   InputProps as ChakraInputProps,
   InputRightElement,
   useMultiStyleConfig,
@@ -55,14 +56,28 @@ export const Input = forwardRef<InputProps, 'input'>((props, ref) => {
 
   // Return normal input component if not success state.
   if (!props.isSuccess) {
-    return (
-      <ChakraInput
-        ref={ref}
-        {...preventDefault}
-        {...inputProps}
-        sx={props.sx ?? inputStyles.field}
-      />
-    )
+    if (props.prefix) {
+      return (
+        <InputGroup>
+          <InputLeftAddon pointerEvents="none" children={props.prefix} />
+          <ChakraInput
+            ref={ref}
+            {...preventDefault}
+            {...inputProps}
+            sx={props.sx ?? inputStyles.field}
+          />
+        </InputGroup>
+      )
+    } else {
+      return (
+        <ChakraInput
+          ref={ref}
+          {...preventDefault}
+          {...inputProps}
+          sx={props.sx ?? inputStyles.field}
+        />
+      )
+    }
   }
 
   return (

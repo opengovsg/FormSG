@@ -1,26 +1,45 @@
 /**
  * Validate entity-type indicators, as per
- * https://www.uen.gov.sg/ueninternet/faces/pages/admin/aboutUEN.jspx
+ * https://www.uen.gov.sg/ueninternet/faces/pages/admin/aboutUEN.jspx and additional input
  */
 const VALID_ENTITY_TYPE_INDICATORS = new Set([
+  // ACRA
+  'BN',
   'LP',
   'LL',
+  'LC',
   'FC',
   'PF',
+  'VC',
+
+  // ESG
   'RF',
+
+  // Muis
   'MQ',
   'MM',
+
+  // MCI
   'NB',
+
+  // MCCY
   'CC',
   'CS',
   'MB',
+
+  // Mindef
   'FM',
+
+  // MOE
   'GS',
-  'GA',
-  'GB',
+  'EC',
+
+  // MFA
   'DP',
   'CP',
   'NR',
+
+  // MOH
   'CM',
   'CD',
   'MD',
@@ -31,16 +50,36 @@ const VALID_ENTITY_TYPE_INDICATORS = new Set([
   'CL',
   'XL',
   'CX',
+  'HC',
+
+  // MLAW
   'RP',
+
+  // MOM
   'TU',
+
+  // MND
   'TC',
+
+  // MAS
   'FB',
   'FN',
+  'FS',
+
+  // PA
   'PA',
   'PB',
+
+  // ROS
   'SS',
+
+  // SLA
   'MC',
   'SM',
+
+  // SNDGO
+  'GA',
+  'GB',
 ])
 
 /**
