@@ -1,12 +1,12 @@
 {
   "name": "form-frontend",
-  "version": "6.31.0",
+  "version": "6.36.0",
   "homepage": ".",
   "private": true,
   "dependencies": {
     "@chakra-ui/react": "^1.8.6",
     "@datadog/browser-logs": "^4.28.1",
-    "@datadog/browser-rum": "^4.14.0",
+    "@datadog/browser-rum": "^4.34.1",
     "@emotion/react": "^11.7.0",
     "@emotion/styled": "^11.6.0",
     "@floating-ui/react-dom-interactions": "^0.9.3",
@@ -175,6 +175,7 @@
     "eslint-plugin-storybook": "^0.5.12",
     "eslint-plugin-testing-library": "^5.0.1",
     "html-webpack-plugin": "^4.5.2",
+    "http-proxy-middleware": "^2.0.6",
     "lint-staged": "^12.1.2",
     "mockdate": "^3.0.5",
     "msw": "^0.36.3",

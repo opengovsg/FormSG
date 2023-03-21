@@ -8,9 +8,9 @@ import {
   E2eFieldMetadata,
   E2eSettingsOptions,
   NON_INPUT_FIELD_TYPES,
-  PUBLIC_FORM_PAGE_PREFIX,
+  PUBLIC_FORM_PAGE,
 } from '../constants'
-import { extractOtp, fillDropdown } from '../utils'
+import { extractOtp, fillDropdown, isMyInfoableFieldType } from '../utils'
 
 export type SubmitFormProps = {
   form: IFormSchema
@@ -35,6 +35,27 @@ export const submitForm = async (
 }
 
 /**
+ * Navigate to the public form page, fill the form fields and verify that the submission has been disabled.
+ * @param {Page} page Playwright page
+ * @param {IFormSchema} form the form returned from the db
+ * @param {E2eFieldMetadata[]} formFields the fields used to create the form
+ * @param {E2eSettingsOptions} formSettings the settings used to create the form
+ * @param {string} preventSubmitMessage the message shown when submission is disabled
+ */
+export const verifySubmissionDisabled = async (
+  page: Page,
+  { form, formFields, formSettings }: SubmitFormProps,
+  preventSubmitMessage: string,
+): Promise<void> => {
+  await fillForm(page, { form, formFields, formSettings })
+
+  await expect(
+    page.locator('button:has-text("Submission disabled")'),
+  ).toBeDisabled()
+  await expect(page.getByText(preventSubmitMessage)).toBeVisible()
+}
+
+/**
  * Navigate to the public form page and fill the form fields.
  * @param {Page} page Playwright page
  * @param {IFormSchema} form the form returned from the db
@@ -42,7 +63,7 @@ export const submitForm = async (
  * @param {E2eSettingsOptions} formSettings the settings used to create the form
  * @returns {string} the responseId
  */
-export const fillForm = async (
+const fillForm = async (
   page: Page,
   { form, formFields, formSettings }: SubmitFormProps,
 ): Promise<void> => {
@@ -60,7 +81,7 @@ const accessForm = async (
   page: Page,
   { form }: { form: IFormSchema },
 ): Promise<void> => {
-  await page.goto(`${PUBLIC_FORM_PAGE_PREFIX}/${form._id}`)
+  await page.goto(PUBLIC_FORM_PAGE(form._id))
   await expect(page.getByRole('heading', { name: form.title })).toBeVisible()
 }
 
@@ -75,6 +96,8 @@ const authForm = async (
 ): Promise<void> => {
   if (formSettings.authType === FormAuthType.NIL) return
 
+  if (!formSettings.nric) throw new Error('No nric provided!')
+
   // Check that the submit button is not visible.
   await expect(
     page.locator(
@@ -88,13 +111,28 @@ const authForm = async (
         formSettings.authType === FormAuthType.CP
           ? ' (Corporate)'
           : formSettings.authType === FormAuthType.SGID
-          ? ' App-only Login'
+          ? ' app'
           : ''
       }`,
     })
     .click()
 
-  // TODO: Actually login! Can't do yet because no mockpass.
+  // Mockpass talks to FormSG to login here.
+  if (formSettings.authType === FormAuthType.MyInfo) {
+    // Click the consent button to share info with FormSG
+    await page.getByRole('button', { name: 'Submit' }).click()
+  }
+
+  // Redirected to the form fields page. Verify log out button is visible with
+  // the correct uin, to verify that we have been logged in correctly.
+  let uin = formSettings.nric
+  if (formSettings.authType === FormAuthType.CP) {
+    if (!formSettings.uen) throw new Error('No uen provided!')
+    uin = formSettings.uen
+  }
+
+  const logoutButton = page.getByRole('button', { name: 'Log out' })
+  await expect(logoutButton).toContainText(uin)
 }
 
 /**
@@ -112,7 +150,8 @@ const fillFields = async (
     formFields: E2eFieldMetadata[]
   },
 ): Promise<void> => {
-  // Check that the submit button is visible.
+  // Check that the submit button is visible - this guarantees that we are on
+  // the form fields page.
   await expect(
     page.locator(
       'button:text-matches("(submit now)|(submission disabled)", "gi")',
@@ -135,8 +174,7 @@ const fillFields = async (
   })
 
   // Fill form fields
-  for (let i = 0; i < fieldMetasWithIds.length; i++) {
-    const field = fieldMetasWithIds[i]
+  for (const field of fieldMetasWithIds) {
     // Ignore fields that are non-input.
     if (NON_INPUT_FIELD_TYPES.includes(field.fieldType)) continue
 
@@ -154,6 +192,20 @@ const fillFields = async (
     await expect(titleLocator).toBeVisible()
 
     const input = page.locator(`id=${field._id}`)
+
+    if (isMyInfoableFieldType(field) && field.myInfo) {
+      // If the field is MyInfo, and the input is disabled or already contains
+      // a value, skip filling it. The value will be checked in the submission.
+      const inputIsDisabled = await input.isDisabled()
+      if (inputIsDisabled !== field.myInfo.verified) {
+        // input should be disabled iff myInfo field data is verified
+        throw new Error(
+          'MyInfo field verified status does not match field definition.',
+        )
+      }
+      const inputValue = await input.inputValue()
+      if (inputIsDisabled || inputValue) continue
+    }
 
     switch (field.fieldType) {
       case BasicField.ShortText:

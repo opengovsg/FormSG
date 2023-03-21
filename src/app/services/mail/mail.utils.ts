@@ -1,14 +1,12 @@
-import tracer from 'dd-trace'
 import dedent from 'dedent-js'
 import ejs, { Data } from 'ejs'
 import { flattenDeep } from 'lodash'
 import { ResultAsync } from 'neverthrow'
-import puppeteer from 'puppeteer-core'
 import validator from 'validator'
 
 import { BounceType } from '../../../types'
-import config from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
+import { generatePdfFromHtml } from '../../utils/convert-html-to-pdf'
 
 import { MailGenerationError, MailSendError } from './mail.errors'
 import {
@@ -46,31 +44,8 @@ const safeRenderFile = (
   )
 }
 
-const generateAutoreplyPdfPromise = async (
-  summaryHtml: string,
-): Promise<Buffer> => {
-  const browser = await puppeteer.launch({
-    args: ['--no-sandbox'],
-    headless: true,
-    executablePath: config.chromiumBin,
-  })
-  const page = await browser.newPage()
-  await page.setContent(summaryHtml, {
-    waitUntil: 'networkidle0',
-  })
-  const pdfBuffer = await page.pdf({
-    format: 'A4',
-    printBackground: true,
-    margin: {
-      top: '20px',
-      bottom: '40px',
-    },
-  })
-  await browser.close()
-  return pdfBuffer
-}
-
 export const generateLoginOtpHtml = (htmlData: {
+  otpPrefix: string
   otp: string
   appName: string
   appUrl: string
@@ -93,17 +68,19 @@ export const generateLoginOtpHtml = (htmlData: {
 
 export const generateVerificationOtpHtml = ({
   otp,
+  otpPrefix,
   appName,
   minutesToExpiry,
 }: {
   otp: string
+  otpPrefix: string
   appName: string
   minutesToExpiry: number
 }): string => {
   return dedent`
     <p>You are currently submitting a form on ${appName}.</p>
     <p>
-      Your OTP is <b>${otp}</b>. It will expire in ${minutesToExpiry} minutes.
+      Your OTP is ${otpPrefix}-<b>${otp}</b>. It will expire in ${minutesToExpiry} minutes.
       Please use this to verify your submission.
     </p>
     <p>If your OTP does not work, please request for a new OTP.</p>
@@ -171,26 +148,24 @@ export const generateAutoreplyPdf = (
     },
   })
 
-  return tracer.trace('generateAutoreplyPdf', () =>
-    safeRenderFile(pathToTemplate, renderData).andThen((summaryHtml) => {
-      return ResultAsync.fromPromise(
-        generateAutoreplyPdfPromise(summaryHtml),
-        (error) => {
-          logger.error({
-            meta: {
-              action: 'generateAutoreplyPdf',
-            },
-            message: 'Error occurred whilst generating autoreply PDF',
-            error,
-          })
+  return safeRenderFile(pathToTemplate, renderData).andThen((summaryHtml) => {
+    return ResultAsync.fromPromise(
+      generatePdfFromHtml(summaryHtml),
+      (error) => {
+        logger.error({
+          meta: {
+            action: 'generateAutoreplyPdf',
+          },
+          message: 'Error occurred whilst generating autoreply PDF',
+          error,
+        })
 
-          return new MailGenerationError(
-            'Error occurred whilst generating autoreply PDF',
-          )
-        },
-      )
-    }),
-  )
+        return new MailGenerationError(
+          'Error occurred whilst generating autoreply PDF',
+        )
+      },
+    )
+  })
 }
 
 export const generateAutoreplyHtml = (

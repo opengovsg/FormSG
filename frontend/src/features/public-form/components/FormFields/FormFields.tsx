@@ -17,6 +17,9 @@ import {
   hasExistingFieldValue,
 } from '~features/myinfo/utils'
 import { useFetchPrefillQuery } from '~features/public-form/hooks/useFetchPrefillQuery'
+import { usePublicFormContext } from '~features/public-form/PublicFormContext'
+
+import { FormPaymentPreview } from '../FormPaymentPreview/FormPaymentPreview'
 
 import { PublicFormSubmitButton } from './PublicFormSubmitButton'
 import { VisibleFormFields } from './VisibleFormFields'
@@ -100,6 +103,8 @@ export const FormFields = ({
     }
   }, [defaultFormValues, isDirty, reset])
 
+  const { form } = usePublicFormContext()
+
   return (
     <FormProvider {...formMethods}>
       <form noValidate>
@@ -123,6 +128,12 @@ export const FormFields = ({
               />
             </Stack>
           </Box>
+        )}
+        {form?.payments?.enabled && (
+          <FormPaymentPreview
+            colorTheme={colorTheme}
+            paymentDetails={form.payments}
+          />
         )}
         <PublicFormSubmitButton
           onSubmit={onSubmit ? formMethods.handleSubmit(onSubmit) : undefined}

@@ -52,31 +52,22 @@ const MAIL_CLIENT = {
     axios.get<string>(`${MAIL_URL}/email/${id}/attachment/${filename}`),
 }
 
-const getEmailsByRecipient = (
-  inbox: MailData[],
-  toEmail: string,
-): MailData[] => {
-  return inbox
-    .filter((e) => e.to[0].address === toEmail)
-    .sort((a, b) => (a.time > b.time ? -1 : 1))
-}
-
-const getEmailsBySubject = (inbox: MailData[], subject: string): MailData[] => {
-  return inbox
-    .filter((e) => e.subject === subject)
-    .sort((a, b) => (a.time > b.time ? -1 : 1))
+const getEmailsBy = async (
+  filterFn: (email: MailData) => boolean,
+): Promise<MailData[]> => {
+  const inbox = await MAIL_CLIENT.getAll()
+  return inbox.filter(filterFn).sort((a, b) => (a.time > b.time ? -1 : 1))
 }
 
 /**
  * Retrieves an OTP from the inbox.
- * @param email The email the OTP was sent to.
+ * @param recipient The email the OTP was sent to.
  */
-export const extractOtp = async (email: string): Promise<string> => {
-  const inbox = await MAIL_CLIENT.getAll()
-  const emails = getEmailsByRecipient(inbox, email)
+export const extractOtp = async (recipient: string): Promise<string> => {
+  const emails = await getEmailsBy((e) => e.to[0].address === recipient)
 
   const lastEmail = emails.pop()
-  if (!lastEmail) throw Error(`mailbox for ${email} is empty`)
+  if (!lastEmail) throw Error(`mailbox for ${recipient} is empty`)
 
   const otp = lastEmail.html.match(/\d{6}/)?.[0]
   if (!otp) throw Error('otp was not found in email')
@@ -88,7 +79,8 @@ export const extractOtp = async (email: string): Promise<string> => {
 
 /**
  * Retrieves an email sent by FormSG.
- * @param {string} formName Title of form
+ * @param {string} formName title of form
+ * @param {string} responseId response ID of the submission
  * @returns {object} subject, sender, recipient and html content of email
  */
 export const getSubmission = async (
@@ -97,8 +89,7 @@ export const getSubmission = async (
 ): Promise<EmailSubmission> => {
   const subject = `formsg-auto: ${formName} (#${responseId})`
 
-  const inbox = await MAIL_CLIENT.getAll()
-  const emails = getEmailsBySubject(inbox, subject)
+  const emails = await getEmailsBy((e) => e.subject === subject)
 
   const lastEmail = emails.pop()
   if (!lastEmail) throw Error(`mailbox does not contain subject "${subject}"`)
@@ -131,4 +122,32 @@ const getSubmissionAttachments = async (
     atts[att.fileName] = response.data
   }
   return atts
+}
+
+/**
+ * Retrieves an autoreply email sent by FormSG.
+ * @param {string} responseId response ID of the submission
+ * @param {string} recipient email address of the form filler
+ * @returns {MailData} email for the autoreply sent to the recipient
+ */
+export const getAutoreplyEmail = async (
+  responseId: string,
+  recipient: string,
+): Promise<MailData> => {
+  const emails = await getEmailsBy(
+    (email) =>
+      email.to[0].address === recipient &&
+      email.html.includes(`Response ID: ${responseId}`),
+  )
+
+  const lastEmail = emails.pop()
+  if (!lastEmail) {
+    throw Error(
+      `mailbox does not contain autoreply email for response ID ${responseId}`,
+    )
+  }
+
+  await MAIL_CLIENT.deleteById(lastEmail.id)
+
+  return lastEmail
 }

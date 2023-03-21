@@ -246,3 +246,7 @@ export type EndPageUpdateDto = FormEndPage
 export type FormPermissionsDto = FormPermission[]
 export type PermissionsUpdateDto = FormPermission[]
 export type PaymentsUpdateDto = FormPaymentsField
+
+export type SendFormOtpResponseDto = {
+  otpPrefix: string
+}

@@ -2,7 +2,7 @@
 import bcrypt from 'bcrypt'
 import { ObjectId } from 'bson-ext'
 import { subMinutes, subYears } from 'date-fns'
-import { getReasonPhrase, StatusCodes } from 'http-status-codes'
+import { StatusCodes } from 'http-status-codes'
 import _ from 'lodash'
 import mongoose from 'mongoose'
 import { okAsync } from 'neverthrow'
@@ -277,7 +277,7 @@ describe('public-forms.verification.routes', () => {
 
       // Assert
       expect(response.status).toBe(StatusCodes.CREATED)
-      expect(response.text).toBe(getReasonPhrase(StatusCodes.CREATED))
+      expect(response.body).toContainKey('otpPrefix')
     })
 
     it('should return 201 when parameters for mobile field are valid', async () => {
@@ -292,7 +292,7 @@ describe('public-forms.verification.routes', () => {
 
       // Assert
       expect(response.status).toBe(StatusCodes.CREATED)
-      expect(response.text).toBe(getReasonPhrase(StatusCodes.CREATED))
+      expect(response.body).toContainKey('otpPrefix')
     })
 
     it('should return 400 when fieldType is email but the provided email is not valid', async () => {
@@ -835,6 +835,7 @@ describe('public-forms.verification.routes', () => {
       )
       .send({ answer })
     expect(response.status).toBe(StatusCodes.CREATED)
+    expect(response.body).toContainKey('otpPrefix')
   }
 
   const requestForSmsOtp = async (fieldId: string, answer: string) => {
@@ -849,5 +850,6 @@ describe('public-forms.verification.routes', () => {
       )
       .send({ answer })
     expect(response.status).toBe(StatusCodes.CREATED)
+    expect(response.body).toContainKey('otpPrefix')
   }
 })

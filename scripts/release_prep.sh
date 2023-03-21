@@ -96,4 +96,5 @@ gh pr create \
 # cleanup
 rm ${pr_body_file}
 rm ${pr_body_file_groupped}
+git checkout develop
 git branch -D ${release_branch}

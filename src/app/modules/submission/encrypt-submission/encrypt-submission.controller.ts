@@ -415,6 +415,7 @@ const submitEncryptModeForm: ControllerHandler<
         /* 'grabpay', 'paynow'*/
       ],
       description: form.payments_field.description,
+      receipt_email: req.body.paymentReceiptEmail,
       // on_behalf_of: form.payments.target_account_id,
       metadata: {
         formId,
@@ -452,6 +453,7 @@ const submitEncryptModeForm: ControllerHandler<
         amount: form.payments_field.amount_cents,
         status: PaymentStatus.Pending,
         paymentIntentId: paymentIntent.id,
+        email: req.body.paymentReceiptEmail,
       })
 
       try {

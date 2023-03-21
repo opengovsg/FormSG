@@ -22,8 +22,9 @@ export type Payment = {
   payoutId: string
   payoutDate: Date
   created: DateString
+  email: string
 }
 
-export type PaymentReceiptDto = {
-  receipt: string
+export type PaymentReceiptStatusDto = {
+  isReady: boolean
 }
