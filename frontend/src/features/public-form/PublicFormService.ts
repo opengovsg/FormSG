@@ -133,6 +133,76 @@ export const submitStorageModeForm = async ({
   ).then(({ data }) => data)
 }
 
+// TODO (#5826): Fallback mutation using Fetch. Remove once network error is resolved
+export const submitEmailModeFormWithFetch = async ({
+  formFields,
+  formLogics,
+  formInputs,
+  formId,
+  captchaResponse = null,
+}: SubmitEmailFormArgs): Promise<SubmissionResponseDto> => {
+  const filteredInputs = filterHiddenInputs({
+    formFields,
+    formInputs,
+    formLogics,
+  })
+  const formData = createEmailSubmissionFormData(formFields, filteredInputs)
+
+  // Add captcha response to query string
+  const queryString = new URLSearchParams({
+    captchaResponse: String(captchaResponse),
+  }).toString()
+
+  const response = await fetch(
+    `${PUBLIC_FORMS_ENDPOINT}/${formId}/submissions/email?${queryString}`,
+    {
+      method: 'POST',
+      body: formData,
+    },
+  )
+
+  return response.json()
+}
+
+// TODO (#5826): Fallback mutation using Fetch. Remove once network error is resolved
+export const submitStorageModeFormWithFetch = async ({
+  formFields,
+  formLogics,
+  formInputs,
+  formId,
+  publicKey,
+  captchaResponse = null,
+}: SubmitStorageFormArgs) => {
+  const filteredInputs = filterHiddenInputs({
+    formFields,
+    formInputs,
+    formLogics,
+  })
+  const submissionContent = await createEncryptedSubmissionData(
+    formFields,
+    filteredInputs,
+    publicKey,
+  )
+
+  // Add captcha response to query string
+  const queryString = new URLSearchParams({
+    captchaResponse: String(captchaResponse),
+  }).toString()
+
+  const response = await fetch(
+    `${PUBLIC_FORMS_ENDPOINT}/${formId}/submissions/encrypt?${queryString}`,
+    {
+      method: 'POST',
+      body: JSON.stringify(submissionContent),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    },
+  )
+
+  return response.json()
+}
+
 /**
  * Post feedback for a given form.
  * @param formId the id of the form to post feedback for

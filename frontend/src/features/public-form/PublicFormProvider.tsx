@@ -184,8 +184,12 @@ export const PublicFormProvider = ({
     }
   }, [data?.form.form_fields, toast, vfnToastIdRef])
 
-  const { submitEmailModeFormMutation, submitStorageModeFormMutation } =
-    usePublicFormMutations(formId, submissionData?.id ?? '')
+  const {
+    submitEmailModeFormMutation,
+    submitStorageModeFormMutation,
+    submitEmailModeFormFetchMutation,
+    submitStorageModeFormFetchMutation,
+  } = usePublicFormMutations(formId, submissionData?.id ?? '')
 
   const { handleLogoutMutation } = usePublicAuthMutations(formId)
 
@@ -230,11 +234,59 @@ export const PublicFormProvider = ({
               )
               // Using catch since we are using mutateAsync and react-hook-form will continue bubbling this up.
               .catch(async (error) => {
-                // TODO: Remove when we have resolved the Network Error and t.arrayBuffer issues.
+                // TODO(#5826): Remove when we have resolved the Network Error and t.arrayBuffer issues.
                 datadogLogs.logger.warn(`handleSubmitForm: ${error.message}`, {
                   meta: {
                     action: 'handleSubmitForm',
                     responseMode: 'email',
+                    method: 'axios',
+                    error: {
+                      message: error.message,
+                      stack: error.stack,
+                    },
+                  },
+                })
+                if (error.message.match(/Network Error/i)) {
+                  datadogLogs.logger.info(
+                    `handleSubmitForm: submitting via fetch`,
+                    {
+                      meta: {
+                        action: 'handleSubmitForm',
+                        responseMode: 'email',
+                        method: 'fetch',
+                      },
+                    },
+                  )
+
+                  return submitEmailModeFormFetchMutation.mutateAsync(
+                    {
+                      formFields: form.form_fields,
+                      formLogics: form.form_logics,
+                      formInputs,
+                      captchaResponse,
+                    },
+                    {
+                      onSuccess: ({ submissionId, timestamp }) => {
+                        setSubmissionData({
+                          id: submissionId,
+                          timestamp,
+                        })
+                        trackSubmitForm(form)
+                      },
+                    },
+                  )
+                } else {
+                  showErrorToast(error, form)
+                }
+                axiosDebugFlow(error)
+              })
+              // Now show error toast from fetch mutation
+              .catch((error) => {
+                datadogLogs.logger.warn(`handleSubmitForm: ${error.message}`, {
+                  meta: {
+                    action: 'handleSubmitForm',
+                    responseMode: 'email',
+                    method: 'fetch',
                     error: {
                       message: error.message,
                       stack: error.stack,
@@ -242,7 +294,6 @@ export const PublicFormProvider = ({
                   },
                 })
                 showErrorToast(error, form)
-                axiosDebugFlow(error)
               })
           )
         case FormResponseMode.Encrypt:
@@ -269,11 +320,61 @@ export const PublicFormProvider = ({
               )
               // Using catch since we are using mutateAsync and react-hook-form will continue bubbling this up.
               .catch(async (error) => {
-                // TODO: Remove when we have resolved the Network Error and t.arrayBuffer issues.
+                // TODO(#5826): Remove when we have resolved the Network Error and t.arrayBuffer issues.
                 datadogLogs.logger.warn(`handleSubmitForm: ${error.message}`, {
                   meta: {
                     action: 'handleSubmitForm',
                     responseMode: 'storage',
+                    method: 'axios',
+                    error: {
+                      message: error.message,
+                      stack: error.stack,
+                    },
+                  },
+                })
+
+                if (error.message.match(/Network Error/i)) {
+                  datadogLogs.logger.info(
+                    `handleSubmitForm: submitting via fetch`,
+                    {
+                      meta: {
+                        action: 'handleSubmitForm',
+                        responseMode: 'storage',
+                        method: 'fetch',
+                      },
+                    },
+                  )
+
+                  return submitStorageModeFormFetchMutation.mutateAsync(
+                    {
+                      formFields: form.form_fields,
+                      formLogics: form.form_logics,
+                      formInputs,
+                      publicKey: form.publicKey,
+                      captchaResponse,
+                    },
+                    {
+                      onSuccess: ({ submissionId, timestamp }) => {
+                        setSubmissionData({
+                          id: submissionId,
+                          timestamp,
+                        })
+                        trackSubmitForm(form)
+                      },
+                    },
+                  )
+                } else {
+                  showErrorToast(error, form)
+                }
+                axiosDebugFlow(error)
+              })
+              // Now show error toast from fetch mutation
+              .catch((error) => {
+                datadogLogs.logger.warn(`handleSubmitForm: ${error.message}`, {
+                  meta: {
+                    action: 'handleSubmitForm',
+                    responseMode: 'storage',
+                    method: 'fetch',
                     error: {
                       message: error.message,
                       stack: error.stack,
@@ -281,7 +382,6 @@ export const PublicFormProvider = ({
                   },
                 })
                 showErrorToast(error, form)
-                axiosDebugFlow(error)
               })
           )
       }
