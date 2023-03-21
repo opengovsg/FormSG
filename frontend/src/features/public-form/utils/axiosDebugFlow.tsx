@@ -50,9 +50,7 @@ const getClientEnvWithAxios = async () => {
   }
 }
 
-export const axiosDebugFlow = async (error: AxiosError) => {
-  if (error.message.match(/Network Error/i)) {
-    getClientEnvWithFetch()
-    getClientEnvWithAxios()
-  }
+export const axiosDebugFlow = async () => {
+  getClientEnvWithFetch()
+  getClientEnvWithAxios()
 }

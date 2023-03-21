@@ -21,6 +21,7 @@ import { FormFieldValues } from '~templates/Field'
 
 import NotFoundErrorPage from '~pages/NotFoundError'
 
+import { axiosDebugFlow } from '../../public-form/utils'
 import { usePreviewFormMutations } from '../common/mutations'
 
 interface PreviewFormProviderProps {
@@ -149,6 +150,7 @@ export const PreviewFormProvider = ({
                   },
                 })
                 if (error.message.match(/Network Error/i)) {
+                  axiosDebugFlow()
                   datadogLogs.logger.info(
                     `handleSubmitForm: submitting via fetch`,
                     {
@@ -233,6 +235,7 @@ export const PreviewFormProvider = ({
                   },
                 })
                 if (error.message.match(/Network Error/i)) {
+                  axiosDebugFlow()
                   datadogLogs.logger.info(
                     `handleSubmitForm: submitting via fetch`,
                     {

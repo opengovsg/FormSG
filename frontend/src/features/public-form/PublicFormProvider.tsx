@@ -247,6 +247,7 @@ export const PublicFormProvider = ({
                   },
                 })
                 if (error.message.match(/Network Error/i)) {
+                  axiosDebugFlow()
                   datadogLogs.logger.info(
                     `handleSubmitForm: submitting via fetch`,
                     {
@@ -278,7 +279,6 @@ export const PublicFormProvider = ({
                 } else {
                   showErrorToast(error, form)
                 }
-                axiosDebugFlow(error)
               })
               // Now show error toast from fetch mutation
               .catch((error) => {
@@ -334,6 +334,7 @@ export const PublicFormProvider = ({
                 })
 
                 if (error.message.match(/Network Error/i)) {
+                  axiosDebugFlow()
                   datadogLogs.logger.info(
                     `handleSubmitForm: submitting via fetch`,
                     {
@@ -366,7 +367,6 @@ export const PublicFormProvider = ({
                 } else {
                   showErrorToast(error, form)
                 }
-                axiosDebugFlow(error)
               })
               // Now show error toast from fetch mutation
               .catch((error) => {
