@@ -231,25 +231,20 @@ export const updateEventLogById = (
     },
   })
 
-  return ResultAsync.fromPromise(
-    mongoose.startSession({
-      defaultTransactionOptions: {
-        readConcern: { level: 'snapshot' },
-        writeConcern: { w: 'majority' },
-        readPreference: 'primary',
-      },
-    }),
-    (error) => {
-      logger.error({
-        message: 'Error encountered while starting mongoose session',
-        meta: logMeta,
-        error,
-      })
-      return new DatabaseError(getMongoErrorMessage(error))
-    },
-  ).andThen((session) => {
+  return ResultAsync.fromPromise(mongoose.startSession(), (error) => {
+    logger.error({
+      message: 'Error encountered while starting mongoose session',
+      meta: logMeta,
+      error,
+    })
+    return new DatabaseError(getMongoErrorMessage(error))
+  }).andThen((session) => {
     // Start the transaction
-    session.startTransaction()
+    session.startTransaction({
+      readConcern: { level: 'snapshot' },
+      writeConcern: { w: 'majority' },
+      readPreference: 'primary',
+    })
 
     return updateEventLogByPaymentIdTransaction(session, paymentId, event)
       .andThen(() => {
