@@ -131,7 +131,7 @@ export const PaymentInput = (): JSX.Element => {
 
   const handleCloseDrawer = useCallback(() => handleClose(false), [handleClose])
 
-  const minPaymentAmount = 0.5 // stipulated by Stripe
+  const MIN_PAYMENT_AMOUNT = 0.5 // stipulated by Stripe
 
   const amountValidation: RegisterOptions<
     FormPaymentsDisplay,
@@ -151,9 +151,9 @@ export const PaymentInput = (): JSX.Element => {
         },
         validateMin: (val) => {
           return (
-            Number(val?.trim()) >= minPaymentAmount ||
+            Number(val?.trim()) >= MIN_PAYMENT_AMOUNT ||
             `Please enter a payment amount above ${formatCurrency(
-              minPaymentAmount,
+              MIN_PAYMENT_AMOUNT,
             )}`
           )
         },
