@@ -5,3 +5,9 @@ export class PaymentNotFoundError extends ApplicationError {
     super(message)
   }
 }
+
+export class InvalidPaymentAmountError extends ApplicationError {
+  constructor(message = 'Invalid payment amount') {
+    super(message)
+  }
+}

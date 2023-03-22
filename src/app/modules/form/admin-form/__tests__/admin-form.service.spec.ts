@@ -2712,7 +2712,7 @@ describe('admin-form.service', () => {
       // Arrange
       const putSpy = jest
         .spyOn(FormModel, 'updatePaymentsById')
-        .mockResolvedValueOnce()
+        .mockResolvedValueOnce(null)
 
       // Act
       const actualResult = await AdminFormService.updatePayments(
