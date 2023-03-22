@@ -6,16 +6,12 @@ import { IPaymentSchema } from '../../../types'
 import { createLoggerWithLabel } from '../../config/logger'
 import getPaymentModel from '../../models/payment.server.model'
 import { getMongoErrorMessage } from '../../utils/handle-mongo-error'
-import { ApplicationError, DatabaseError } from '../core/core.errors'
+import { DatabaseError } from '../core/core.errors'
+
+import { PaymentNotFoundError } from './payment.errors'
 
 const logger = createLoggerWithLabel(module)
 const PaymentModel = getPaymentModel(mongoose)
-
-export class PaymentNotFoundError extends ApplicationError {
-  constructor(message = 'Payment not found') {
-    super(message)
-  }
-}
 
 /**
  * Retrieves submission document of the given SubmissionId.
