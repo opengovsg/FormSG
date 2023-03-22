@@ -1525,10 +1525,10 @@ export const updatePayments = (
   IFormDocument['payments'],
   PossibleDatabaseError | FormNotFoundError | InvalidPaymentAmountError
 > => {
-  // Check if payment amount exceeds maxPaymentAmount
+  // Check if payment amount exceeds maxPaymentAmountCents
   const { amount_cents } = newPayments
 
-  if (amount_cents && amount_cents / 100 > paymentConfig.maxPaymentAmount) {
+  if (amount_cents && amount_cents > paymentConfig.maxPaymentAmountCents) {
     return errAsync(new InvalidPaymentAmountError())
   }
 

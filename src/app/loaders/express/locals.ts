@@ -35,7 +35,7 @@ const frontendVars = {
   reactMigrationAdminRollout: config.reactMigration.adminRollout,
   reactMigrationAngularPhaseOutDate: config.reactMigration.angularPhaseOutDate,
   // payment variables
-  maxPaymentAmount: paymentConfig.maxPaymentAmount,
+  maxPaymentAmountCents: paymentConfig.maxPaymentAmountCents,
 }
 const environment = ejs.render(
   `
@@ -68,7 +68,7 @@ const environment = ejs.render(
     var reactMigrationAdminRollout = "<%= reactMigrationAdminRollout%>"
     var reactMigrationAngularPhaseOutDate = "<%= reactMigrationAngularPhaseOutDate%>"
     // Payment
-    var maxPaymentAmount = "<%= maxPaymentAmount%>"
+    var maxPaymentAmountCents = "<%= maxPaymentAmountCents%>"
   `,
   frontendVars,
 )

@@ -2647,7 +2647,7 @@ describe('admin-form.service', () => {
       payments: updatedPaymentSettings,
     }
 
-    it('return InvalidPaymentAmountError if payment amount exceeds maxPaymentAmount', async () => {
+    it('return InvalidPaymentAmountError if payment amount exceeds maxPaymentAmountCents', async () => {
       // Arrange
 
       const updatedPaymentSettingsExceeded = {

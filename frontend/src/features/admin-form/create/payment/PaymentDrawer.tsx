@@ -56,7 +56,7 @@ export const PaymentInput = (): JSX.Element => {
   const isMobile = useIsMobile()
   const { paymentsMutation } = useMutateFormPage()
 
-  const { data: { maxPaymentAmount } = {} } = useEnv()
+  const { data: { maxPaymentAmountCents } = {} } = useEnv()
 
   const setIsDirty = useDirtyFieldStore(setIsDirtySelector)
 
@@ -158,17 +158,17 @@ export const PaymentInput = (): JSX.Element => {
           )
         },
         validateMax: (val) => {
-          if (maxPaymentAmount === undefined) return true
+          if (maxPaymentAmountCents === undefined) return true
           return (
-            Number(val?.trim()) <= maxPaymentAmount ||
+            Number(val?.trim()) <= maxPaymentAmountCents ||
             `Please keep payment amount under ${formatCurrency(
-              maxPaymentAmount,
+              maxPaymentAmountCents,
             )}`
           )
         },
       },
     }),
-    [maxPaymentAmount],
+    [maxPaymentAmountCents],
   )
 
   const handleUpdatePayments = handleSubmit(() => {
