@@ -2651,11 +2651,8 @@ describe('admin-form.service', () => {
       // Arrange
 
       const updatedPaymentSettingsExceeded = {
-        enabled: true,
-        target_account_id: 'someId',
-        publishable_key: 'somekey',
+        ...updatedPaymentSettings,
         amount_cents: 500000,
-        description: 'some description',
       } as PaymentsUpdateDto
 
       // Act
@@ -2675,11 +2672,8 @@ describe('admin-form.service', () => {
       // Arrange
 
       const updatedPaymentSettingsBelow = {
-        enabled: true,
-        target_account_id: 'someId',
-        publishable_key: 'somekey',
+        ...updatedPaymentSettings,
         amount_cents: 49,
-        description: 'some description',
       } as PaymentsUpdateDto
 
       // Act
@@ -2696,6 +2690,7 @@ describe('admin-form.service', () => {
     })
 
     it('should successfuly call updatePaymentsById with formId and newPayments and return the updated payment settings', async () => {
+      // Arrange
       const putSpy = jest
         .spyOn(FormModel, 'updatePaymentsById')
         .mockResolvedValueOnce(mockUpdatedForm as unknown as IFormDocument)
