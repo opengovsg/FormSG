@@ -1,23 +1,19 @@
 import cuid from 'cuid'
 import mongoose from 'mongoose'
-import { err, errAsync, ok, okAsync, ResultAsync } from 'neverthrow'
+import { errAsync, ok, okAsync, ResultAsync } from 'neverthrow'
 import Stripe from 'stripe'
 import { MarkRequired } from 'ts-essentials'
 
-import { FormResponseMode } from '../../../../shared/types'
-import { IPopulatedEncryptedForm } from '../../../types'
+import { IPopulatedEncryptedForm } from 'src/types'
+
 import config from '../../config/config'
 import { paymentConfig } from '../../config/features/payment.config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { stripe } from '../../loaders/stripe'
 import { DatabaseError } from '../core/core.errors'
 import { FormNotFoundError } from '../form/form.errors'
-import { retrieveFormById } from '../form/form.service'
-import { isFormEncryptMode } from '../form/form.utils'
-import {
-  ResponseModeError,
-  SubmissionNotFoundError,
-} from '../submission/submission.errors'
+import { retrieveFullFormById } from '../form/form.service'
+import { checkFormIsEncryptMode } from '../submission/encrypt-submission/encrypt-submission.service'
 import * as SubmissionService from '../submission/submission.service'
 
 import * as PaymentService from './payments.service'
@@ -29,6 +25,7 @@ import {
   StripeAccountNotFoundError,
   StripeFetchError,
   SubmissionAndFormMismatchError,
+  SubmissionNotFoundError,
 } from './stripe.errors'
 
 const logger = createLoggerWithLabel(module)
@@ -219,17 +216,8 @@ export const getReceiptURL = (
       return PaymentService.findPaymentBySubmissionId(submission._id)
     })
     .andThen((payment) =>
-      retrieveFormById(formId)
-        .andThen((form) => {
-          return isFormEncryptMode(form)
-            ? ok(form)
-            : err(
-                new ResponseModeError(
-                  FormResponseMode.Encrypt,
-                  form.responseMode,
-                ),
-              )
-        })
+      retrieveFullFormById(formId)
+        .andThen(checkFormIsEncryptMode)
         .andThen((form) =>
           ResultAsync.fromPromise(
             // Step 4: Retrieve paymentIntent object
