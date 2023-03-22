@@ -9,6 +9,7 @@ import mongoose, {
   Types,
 } from 'mongoose'
 import validator from 'validator'
+import isEmail from 'validator/lib/isEmail'
 
 import {
   ADMIN_FORM_META_FIELDS,
@@ -61,7 +62,6 @@ import { OverrideProps } from '../modules/form/admin-form/admin-form.types'
 import { getFormFieldById, transformEmails } from '../modules/form/form.utils'
 import { validateWebhookUrl } from '../modules/webhook/webhook.validation'
 
-import getAgencyModel from './agency.server.model'
 import {
   BaseFieldSchema,
   createAttachmentFieldSchema,
@@ -155,7 +155,6 @@ const EmailFormSchema = new Schema<IEmailFormSchema, IEmailFormModel>({
 })
 
 const compileFormModel = (db: Mongoose): IFormModel => {
-  const Agency = getAgencyModel(db)
   const User = getUserModel(db)
 
   // Schema
@@ -275,25 +274,8 @@ const compileFormModel = (db: Mongoose): IFormModel => {
           },
         ],
         validate: {
-          validator: async (users: FormPermission[]) => {
-            // Retrieve count of users that exist in the Agency collection.
-            // Map is used instead of for...of loop so that this runs in
-            // parallel.
-            const areUsersExist = await Promise.all(
-              users.map(async (user) => {
-                const userEmail = user.email
-                if (!userEmail) {
-                  return false
-                }
-                const emailDomain = userEmail.split('@').pop()
-                const result = await Agency.findOne({ emailDomain })
-                return !!result
-              }),
-            )
-
-            // Check if number of truthy values equal initial array length.
-            return areUsersExist.filter(Boolean).length === users.length
-          },
+          validator: (users: FormPermission[]) =>
+            users.every((user) => !!user.email && isEmail(user.email)),
           message: 'Failed to update collaborators list.',
         },
       },

@@ -46,6 +46,7 @@ import {
   CreatePresignedUrlError,
   EditFieldError,
   FieldNotFoundError,
+  InvalidCollaboratorError,
   InvalidFileTypeError,
 } from './admin-form.errors'
 import {
@@ -104,6 +105,7 @@ export const mapRouteError = (
     case EditFieldError:
     case DatabaseValidationError:
     case MissingUserError:
+    case InvalidCollaboratorError:
       return {
         statusCode: StatusCodes.UNPROCESSABLE_ENTITY,
         errorMessage: error.message,
