@@ -43,6 +43,7 @@ import {
 } from '../../../../types'
 import { EditFormFieldParams, FormUpdateParams } from '../../../../types/api'
 import config, { aws as AwsConfig } from '../../../config/config'
+import { paymentConfig } from '../../../config/features/payment.config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import getFormModel from '../../../models/form.server.model'
 import * as SmsService from '../../../services/sms/sms.service'
@@ -63,6 +64,7 @@ import {
   SecretsManagerNotFoundError,
   TwilioCacheError,
 } from '../../core/core.errors'
+import { InvalidPaymentAmountError } from '../../payments/payment.errors'
 import { MissingUserError } from '../../user/user.errors'
 import * as UserService from '../../user/user.service'
 import { SmsLimitExceededError } from '../../verification/verification.errors'
@@ -1514,14 +1516,22 @@ const deleteTwilioTransaction = async (
  * @returns ok(updated start page object) when update is successful
  * @returns err(FormNotFoundError) if form cannot be found
  * @returns err(PossibleDatabaseError) if start page update fails
+ * @returns err(InvalidPaymentAmountError) if payment amount exceeds MAX_PAYMENT_AMOUNT
  */
 export const updatePayments = (
   formId: string,
   newPayments: PaymentsUpdateDto,
 ): ResultAsync<
   IFormDocument['payments'],
-  PossibleDatabaseError | FormNotFoundError
+  PossibleDatabaseError | FormNotFoundError | InvalidPaymentAmountError
 > => {
+  // Check if payment amount exceeds maxPaymentAmount
+  const { amount_cents } = newPayments
+
+  if (amount_cents && amount_cents / 100 > paymentConfig.maxPaymentAmount) {
+    return errAsync(new InvalidPaymentAmountError())
+  }
+
   return ResultAsync.fromPromise(
     FormModel.updatePaymentsById(formId, newPayments),
     (error) => {

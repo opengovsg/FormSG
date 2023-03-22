@@ -54,10 +54,12 @@ import {
   FormStatus,
   LogicDto,
   LogicType,
+  PaymentsUpdateDto,
   SettingsUpdateDto,
 } from '../../../../../../shared/types'
 import { smsConfig } from '../../../../config/features/sms.config'
 import * as SmsService from '../../../../services/sms/sms.service'
+import { InvalidPaymentAmountError } from '../../../payments/payment.errors'
 import {
   FormNotFoundError,
   LogicNotFoundError,
@@ -2626,6 +2628,102 @@ describe('admin-form.service', () => {
       expect(actualResult._unsafeUnwrap()).toEqual(1)
 
       expect(twilioCacheSpy).toHaveBeenCalledWith(MSG_SRVC_NAME)
+    })
+  })
+
+  describe('updatePayments', () => {
+    // Arrange
+    const mockFormId = new ObjectId().toString()
+    const updatedPaymentSettings = {
+      enabled: true,
+      target_account_id: 'someId',
+      publishable_key: 'somekey',
+      amount_cents: 5000,
+      description: 'some description',
+    } as PaymentsUpdateDto
+
+    const mockUpdatedForm = {
+      _id: mockFormId,
+      payments: updatedPaymentSettings,
+    }
+
+    it('return InvalidPaymentAmountError if payment amount exceeds maxPaymentAmount', async () => {
+      // Arrange
+
+      const updatedPaymentSettingsExceeded = {
+        enabled: true,
+        target_account_id: 'someId',
+        publishable_key: 'somekey',
+        amount_cents: 500000,
+        description: 'some description',
+      } as PaymentsUpdateDto
+
+      // Act
+      const actualResult = await AdminFormService.updatePayments(
+        mockFormId,
+        updatedPaymentSettingsExceeded,
+      )
+
+      // Assert
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(
+        InvalidPaymentAmountError,
+      )
+    })
+
+    it('should successfuly call updatePaymentsById with formId and newPayments and return the updated payment settings', async () => {
+      const putSpy = jest
+        .spyOn(FormModel, 'updatePaymentsById')
+        .mockResolvedValueOnce(mockUpdatedForm as unknown as IFormDocument)
+
+      // Act
+      const actualResult = await AdminFormService.updatePayments(
+        mockFormId,
+        updatedPaymentSettings,
+      )
+
+      // Assert
+      expect(putSpy).toHaveBeenCalledWith(mockFormId, updatedPaymentSettings)
+
+      expect(actualResult.isOk()).toEqual(true)
+      // Should equal updatedPaymentSettings obj
+      expect(actualResult._unsafeUnwrap()).toEqual(updatedPaymentSettings)
+    })
+
+    it('should return PossibleDatabaseError if db update fails', async () => {
+      // Arrange
+      const putSpy = jest
+        .spyOn(FormModel, 'updatePaymentsById')
+        .mockRejectedValueOnce(new DatabaseError())
+
+      // Act
+      const actualResult = await AdminFormService.updatePayments(
+        mockFormId,
+        updatedPaymentSettings,
+      )
+
+      // Assert
+      expect(putSpy).toHaveBeenCalledWith(mockFormId, updatedPaymentSettings)
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(DatabaseError)
+    })
+
+    it('should return FormNotFoundError if no form is returned after updating db', async () => {
+      // Arrange
+      const putSpy = jest
+        .spyOn(FormModel, 'updatePaymentsById')
+        .mockResolvedValueOnce()
+
+      // Act
+      const actualResult = await AdminFormService.updatePayments(
+        mockFormId,
+        updatedPaymentSettings,
+      )
+
+      // Assert
+      expect(putSpy).toHaveBeenCalledWith(mockFormId, updatedPaymentSettings)
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(FormNotFoundError)
     })
   })
 })
