@@ -56,7 +56,7 @@ export const PaymentInput = (): JSX.Element => {
   const isMobile = useIsMobile()
   const { paymentsMutation } = useMutateFormPage()
 
-  const { data: { paymentMaxLimit } = {} } = useEnv()
+  const { data: { maxPaymentAmount } = {} } = useEnv()
 
   const setIsDirty = useDirtyFieldStore(setIsDirtySelector)
 
@@ -132,7 +132,6 @@ export const PaymentInput = (): JSX.Element => {
   const handleCloseDrawer = useCallback(() => handleClose(false), [handleClose])
 
   const minPaymentAmount = 0.5 // stipulated by Stripe
-  const maxPaymentAmount = 1000 // due to IRAS requirements and agency financial institutions are expected to be in SG
 
   const amountValidation: RegisterOptions<
     FormPaymentsDisplay,
@@ -159,17 +158,17 @@ export const PaymentInput = (): JSX.Element => {
           )
         },
         validateMax: (val) => {
-          if (paymentMaxLimit === undefined) return true
+          if (maxPaymentAmount === undefined) return true
           return (
-            Number(val?.trim()) <= paymentMaxLimit ||
+            Number(val?.trim()) <= maxPaymentAmount ||
             `Please keep payment amount under ${formatCurrency(
-              paymentMaxLimit,
+              maxPaymentAmount,
             )}`
           )
         },
       },
     }),
-    [],
+    [maxPaymentAmount],
   )
 
   const handleUpdatePayments = handleSubmit(() => {
