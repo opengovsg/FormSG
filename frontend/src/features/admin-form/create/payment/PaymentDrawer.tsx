@@ -24,6 +24,7 @@ import Toggle from '~components/Toggle'
 import { useMutateFormPage } from '~features/admin-form/common/mutations'
 import { useAdminForm } from '~features/admin-form/common/queries'
 
+import { useEnv } from '../../../env/queries'
 import {
   setIsDirtySelector,
   useDirtyFieldStore,
@@ -54,6 +55,8 @@ const formatCurrency = new Intl.NumberFormat('en-SG', {
 export const PaymentInput = (): JSX.Element => {
   const isMobile = useIsMobile()
   const { paymentsMutation } = useMutateFormPage()
+
+  const { data: { paymentMaxLimit } = {} } = useEnv()
 
   const setIsDirty = useDirtyFieldStore(setIsDirtySelector)
 
@@ -156,10 +159,11 @@ export const PaymentInput = (): JSX.Element => {
           )
         },
         validateMax: (val) => {
+          if (paymentMaxLimit === undefined) return true
           return (
-            Number(val?.trim()) <= maxPaymentAmount ||
+            Number(val?.trim()) <= paymentMaxLimit ||
             `Please keep payment amount under ${formatCurrency(
-              maxPaymentAmount,
+              paymentMaxLimit,
             )}`
           )
         },

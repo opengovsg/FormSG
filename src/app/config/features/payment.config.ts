@@ -43,7 +43,7 @@ const paymentFeature: Schema<IStripe> = {
   paymentMaxLimit: {
     doc: 'Maximum amount that can be paid for a form',
     format: Number,
-    default: 10000,
+    default: 1000,
     env: 'PAYMENT_MAX_LIMIT',
   },
 }
