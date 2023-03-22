@@ -6,6 +6,7 @@ export interface IStripe {
   stripeSecretKey: string
   stripeClientID: string
   stripeWebhookSecret: string
+  paymentMaxLimit: number
 }
 
 const paymentFeature: Schema<IStripe> = {
@@ -38,6 +39,12 @@ const paymentFeature: Schema<IStripe> = {
     format: String,
     default: '',
     env: 'PAYMENT_STRIPE_WEBHOOK_SECRET',
+  },
+  paymentMaxLimit: {
+    doc: 'Maximum amount that can be paid for a form',
+    format: Number,
+    default: 10000,
+    env: 'PAYMENT_MAX_LIMIT',
   },
 }
 

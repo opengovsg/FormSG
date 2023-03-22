@@ -3,6 +3,7 @@ import ejs from 'ejs'
 import config from '../../config/config'
 import { captchaConfig } from '../../config/features/captcha.config'
 import { googleAnalyticsConfig } from '../../config/features/google-analytics.config'
+import { paymentConfig } from '../../config/features/payment.config'
 import { sentryConfig } from '../../config/features/sentry.config'
 import { spcpMyInfoConfig } from '../../config/features/spcp-myinfo.config'
 
@@ -33,6 +34,8 @@ const frontendVars = {
     config.reactMigration.respondentRolloutStorage,
   reactMigrationAdminRollout: config.reactMigration.adminRollout,
   reactMigrationAngularPhaseOutDate: config.reactMigration.angularPhaseOutDate,
+  // payment variables
+  paymentMaxLimit: paymentConfig.paymentMaxLimit,
 }
 const environment = ejs.render(
   `
@@ -64,6 +67,8 @@ const environment = ejs.render(
     var reactMigrationRespondentRolloutStorage = "<%= reactMigrationRespondentRolloutStorage%>"
     var reactMigrationAdminRollout = "<%= reactMigrationAdminRollout%>"
     var reactMigrationAngularPhaseOutDate = "<%= reactMigrationAngularPhaseOutDate%>"
+    // Payment
+    var paymentMaxLimit = "<%= paymentMaxLimit%>"
   `,
   frontendVars,
 )
