@@ -1527,14 +1527,14 @@ export const updatePayments = (
 > => {
   const { amount_cents } = newPayments
 
-  // Check if payment amount exceeds maxPaymentAmountCents
-  if (amount_cents && amount_cents > paymentConfig.maxPaymentAmountCents) {
-    return errAsync(new InvalidPaymentAmountError())
-  }
-
-  // Check if payment amount is below minPaymentAmountCents
-  if (amount_cents && amount_cents < paymentConfig.minPaymentAmountCents) {
-    return errAsync(new InvalidPaymentAmountError())
+  // Check if payment amount exceeds maxPaymentAmountCents or below minPaymentAmountCents
+  if (amount_cents) {
+    if (
+      amount_cents > paymentConfig.maxPaymentAmountCents ||
+      amount_cents < paymentConfig.minPaymentAmountCents
+    ) {
+      return errAsync(new InvalidPaymentAmountError())
+    }
   }
 
   return ResultAsync.fromPromise(
