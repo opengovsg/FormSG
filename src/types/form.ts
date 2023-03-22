@@ -239,42 +239,30 @@ export interface IFormSchema extends IForm, Document, PublicView<PublicForm> {
 /**
  * Schema type with defaults populated and thus set to be defined.
  */
-export interface IFormDocument extends IFormSchema {
-  form_fields: NonNullable<IFormSchema['form_fields']>
-  form_logics: NonNullable<IFormSchema['form_logics']>
-  permissionList: NonNullable<IFormSchema['permissionList']>
-  hasCaptcha: NonNullable<IFormSchema['hasCaptcha']>
-  authType: NonNullable<IFormSchema['authType']>
-  status: NonNullable<IFormSchema['status']>
-  inactiveMessage: NonNullable<IFormSchema['inactiveMessage']>
+interface IFormBaseDocument<T extends IFormSchema> {
+  form_fields: NonNullable<T['form_fields']>
+  form_logics: NonNullable<T['form_logics']>
+  permissionList: NonNullable<T['permissionList']>
+  hasCaptcha: NonNullable<T['hasCaptcha']>
+  authType: NonNullable<T['authType']>
+  status: NonNullable<T['status']>
+  inactiveMessage: NonNullable<T['inactiveMessage']>
   // NOTE: Due to the way creating a form works, creating a form without specifying submissionLimit will throw an error.
   // Hence, using Exclude here over NonNullable.
-  submissionLimit: Exclude<IFormSchema['submissionLimit'], undefined>
-  isListed: NonNullable<IFormSchema['isListed']>
-  startPage: Required<NonNullable<IFormSchema['startPage']>>
-  endPage: Required<NonNullable<IFormSchema['endPage']>>
-  webhook: Required<NonNullable<IFormSchema['webhook']>>
-  responseMode: NonNullable<IFormSchema['responseMode']>
+  submissionLimit: Exclude<T['submissionLimit'], undefined>
+  isListed: NonNullable<T['isListed']>
+  startPage: Required<NonNullable<T['startPage']>>
+  endPage: Required<NonNullable<T['endPage']>>
+  webhook: Required<NonNullable<T['webhook']>>
+  responseMode: NonNullable<T['responseMode']>
 }
 
-export interface IEncryptedFormDocument extends IEncryptedFormSchema {
-  form_fields: NonNullable<IEncryptedFormSchema['form_fields']>
-  form_logics: NonNullable<IEncryptedFormSchema['form_logics']>
-  permissionList: NonNullable<IEncryptedFormSchema['permissionList']>
-  hasCaptcha: NonNullable<IEncryptedFormSchema['hasCaptcha']>
-  authType: NonNullable<IEncryptedFormSchema['authType']>
-  status: NonNullable<IEncryptedFormSchema['status']>
-  inactiveMessage: NonNullable<IEncryptedFormSchema['inactiveMessage']>
-  // NOTE: Due to the way creating a form works, creating a form without specifying submissionLimit will throw an error.
-  // Hence, using Exclude here over NonNullable.
-  submissionLimit: Exclude<IEncryptedFormSchema['submissionLimit'], undefined>
-  isListed: NonNullable<IEncryptedFormSchema['isListed']>
-  startPage: Required<NonNullable<IEncryptedFormSchema['startPage']>>
-  endPage: Required<NonNullable<IEncryptedFormSchema['endPage']>>
-  webhook: Required<NonNullable<IEncryptedFormSchema['webhook']>>
-  responseMode: NonNullable<IEncryptedFormSchema['responseMode']>
-  publickey: NonNullable<IEncryptedFormSchema['publicKey']>
-}
+export type IFormDocument = IFormBaseDocument<IFormSchema> & IFormSchema
+
+export type IEncryptedFormDocument = IFormBaseDocument<IEncryptedFormSchema> &
+  IEncryptedFormSchema & {
+    publickey: NonNullable<IEncryptedFormSchema['publicKey']>
+  }
 
 export interface IPopulatedForm extends Omit<IFormDocument, 'toJSON'> {
   admin: IPopulatedUser
