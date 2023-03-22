@@ -40,4 +40,5 @@ export type ClientEnvVars = {
   removeRespondentsInfoboxThreshold: number
   stripePublishableKey: string
   maxPaymentAmountCents: number
+  minPaymentAmountCents: number
 }

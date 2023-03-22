@@ -37,5 +37,6 @@ export const getClientEnvVars = (): ClientEnvVars => {
       config.reactMigration.removeRespondentsInfoboxThreshold,
     stripePublishableKey: paymentConfig.stripePublishableKey,
     maxPaymentAmountCents: paymentConfig.maxPaymentAmountCents,
+    minPaymentAmountCents: paymentConfig.minPaymentAmountCents,
   }
 }

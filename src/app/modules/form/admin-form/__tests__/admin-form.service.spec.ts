@@ -2647,7 +2647,7 @@ describe('admin-form.service', () => {
       payments: updatedPaymentSettings,
     }
 
-    it('return InvalidPaymentAmountError if payment amount exceeds maxPaymentAmountCents', async () => {
+    it('should return InvalidPaymentAmountError if payment amount exceeds maxPaymentAmountCents', async () => {
       // Arrange
 
       const updatedPaymentSettingsExceeded = {
@@ -2662,6 +2662,30 @@ describe('admin-form.service', () => {
       const actualResult = await AdminFormService.updatePayments(
         mockFormId,
         updatedPaymentSettingsExceeded,
+      )
+
+      // Assert
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(
+        InvalidPaymentAmountError,
+      )
+    })
+
+    it('should return InvalidPaymentAmountError if payment amount is below minPaymentAmountCents', async () => {
+      // Arrange
+
+      const updatedPaymentSettingsBelow = {
+        enabled: true,
+        target_account_id: 'someId',
+        publishable_key: 'somekey',
+        amount_cents: 49,
+        description: 'some description',
+      } as PaymentsUpdateDto
+
+      // Act
+      const actualResult = await AdminFormService.updatePayments(
+        mockFormId,
+        updatedPaymentSettingsBelow,
       )
 
       // Assert

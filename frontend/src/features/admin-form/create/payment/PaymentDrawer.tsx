@@ -56,7 +56,8 @@ export const PaymentInput = (): JSX.Element => {
   const isMobile = useIsMobile()
   const { paymentsMutation } = useMutateFormPage()
 
-  const { data: { maxPaymentAmountCents } = {} } = useEnv()
+  const { data: { maxPaymentAmountCents, minPaymentAmountCents } = {} } =
+    useEnv()
 
   const setIsDirty = useDirtyFieldStore(setIsDirtySelector)
 
@@ -131,8 +132,6 @@ export const PaymentInput = (): JSX.Element => {
 
   const handleCloseDrawer = useCallback(() => handleClose(false), [handleClose])
 
-  const MIN_PAYMENT_AMOUNT = 0.5 // stipulated by Stripe
-
   const amountValidation: RegisterOptions<
     FormPaymentsDisplay,
     'display_amount'
@@ -150,10 +149,12 @@ export const PaymentInput = (): JSX.Element => {
           )
         },
         validateMin: (val) => {
+          if (minPaymentAmountCents === undefined) return true
           return (
-            Number(val?.trim()) >= MIN_PAYMENT_AMOUNT ||
+            // val is in dollars
+            Number(val?.trim()) >= minPaymentAmountCents / 100 ||
             `Please enter a payment amount above ${formatCurrency(
-              MIN_PAYMENT_AMOUNT,
+              minPaymentAmountCents / 100,
             )}`
           )
         },
@@ -169,7 +170,7 @@ export const PaymentInput = (): JSX.Element => {
         },
       },
     }),
-    [maxPaymentAmountCents],
+    [maxPaymentAmountCents, minPaymentAmountCents],
   )
 
   const handleUpdatePayments = handleSubmit(() => {

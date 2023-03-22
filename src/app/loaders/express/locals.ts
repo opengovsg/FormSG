@@ -36,6 +36,7 @@ const frontendVars = {
   reactMigrationAngularPhaseOutDate: config.reactMigration.angularPhaseOutDate,
   // payment variables
   maxPaymentAmountCents: paymentConfig.maxPaymentAmountCents,
+  minPaymentAmountCents: paymentConfig.minPaymentAmountCents,
 }
 const environment = ejs.render(
   `
@@ -69,6 +70,7 @@ const environment = ejs.render(
     var reactMigrationAngularPhaseOutDate = "<%= reactMigrationAngularPhaseOutDate%>"
     // Payment
     var maxPaymentAmountCents = "<%= maxPaymentAmountCents%>"
+    var minPaymentAmountCents = "<%= minPaymentAmountCents%>"
   `,
   frontendVars,
 )
