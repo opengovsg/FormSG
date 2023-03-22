@@ -768,20 +768,21 @@ export const updateFormCollaborators = (
     formId: form._id,
   }
 
-  // Get the newly-added collaborator emails.
-  const newCollaboratorEmails = updatedCollaborators
+  // Get the updated (added or modified) collaborator emails (i.e. they are not
+  // in the original collaborator list).
+  const updatedCollaboratorEmails = updatedCollaborators
     .filter(
-      ({ email: newEmail }) =>
+      (c1) =>
         !form.permissionList.some(
-          ({ email: oldEmail }) => oldEmail === newEmail,
+          (c2) => c1.email === c2.email && c1.write === c2.write,
         ),
     )
     .map((collaborator) => collaborator.email)
 
   return ResultAsync.fromPromise(
-    // Check that all new collaborator domains exist in the Agency collection.
+    // Check that all updated collaborator domains exist in the Agency collection.
     Promise.all(
-      newCollaboratorEmails.map(async (email) => {
+      updatedCollaboratorEmails.map(async (email) => {
         const emailDomain = email.split('@').pop()
         const result = await AgencyModel.findOne({ emailDomain })
         return !!result
@@ -801,7 +802,7 @@ export const updateFormCollaborators = (
       return falseIdx < 0
         ? okAsync(undefined)
         : errAsync(
-            new InvalidCollaboratorError(newCollaboratorEmails[falseIdx]),
+            new InvalidCollaboratorError(updatedCollaboratorEmails[falseIdx]),
           )
     })
     .andThen(() =>
