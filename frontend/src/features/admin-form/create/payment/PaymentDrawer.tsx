@@ -160,9 +160,10 @@ export const PaymentInput = (): JSX.Element => {
         validateMax: (val) => {
           if (maxPaymentAmountCents === undefined) return true
           return (
-            Number(val?.trim()) <= maxPaymentAmountCents ||
+            // val is in dollars
+            Number(val?.trim()) <= maxPaymentAmountCents / 100 ||
             `Please keep payment amount under ${formatCurrency(
-              maxPaymentAmountCents,
+              maxPaymentAmountCents / 100,
             )}`
           )
         },
