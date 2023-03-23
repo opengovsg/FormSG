@@ -4,15 +4,16 @@ import { errAsync, ok, okAsync, ResultAsync } from 'neverthrow'
 import Stripe from 'stripe'
 import { MarkRequired } from 'ts-essentials'
 
-import { IPopulatedForm } from '../../../types'
+import { IPopulatedEncryptedForm } from 'src/types'
+
 import config from '../../config/config'
 import { paymentConfig } from '../../config/features/payment.config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { stripe } from '../../loaders/stripe'
 import { DatabaseError } from '../core/core.errors'
 import { FormNotFoundError } from '../form/form.errors'
-import { retrieveFormById } from '../form/form.service'
-import { SubmissionNotFoundError } from '../submission/submission.errors'
+import { retrieveFullFormById } from '../form/form.service'
+import { checkFormIsEncryptMode } from '../submission/encrypt-submission/encrypt-submission.service'
 import * as SubmissionService from '../submission/submission.service'
 
 import * as PaymentService from './payments.service'
@@ -24,11 +25,12 @@ import {
   StripeAccountNotFoundError,
   StripeFetchError,
   SubmissionAndFormMismatchError,
+  SubmissionNotFoundError,
 } from './stripe.errors'
 
 const logger = createLoggerWithLabel(module)
 
-export const getStripeOauthUrl = (form: IPopulatedForm) => {
+export const getStripeOauthUrl = (form: IPopulatedEncryptedForm) => {
   const state = `${form._id}.${cuid()}`
 
   return ok({
@@ -78,7 +80,7 @@ export const exchangeCodeForAccessToken = (
 }
 
 export const linkStripeAccountToForm = (
-  form: IPopulatedForm,
+  form: IPopulatedEncryptedForm,
   {
     accountId,
     publishableKey,
@@ -88,8 +90,8 @@ export const linkStripeAccountToForm = (
   },
 ): ResultAsync<string, DatabaseError> => {
   // Check if form already has account id
-  if (form.payments?.target_account_id) {
-    return okAsync(form.payments.target_account_id)
+  if (form.payments_channel?.target_account_id) {
+    return okAsync(form.payments_channel.target_account_id)
   }
 
   // No account id, create and inject into form
@@ -109,11 +111,11 @@ export const linkStripeAccountToForm = (
       })
       return new DatabaseError(errMsg)
     },
-  ).map((updatedForm) => updatedForm.payments.target_account_id)
+  ).map((updatedForm) => updatedForm.payments_channel.target_account_id)
 }
 
-export const unlinkStripeAccountFromForm = (form: IPopulatedForm) => {
-  if (!form.payments?.target_account_id) {
+export const unlinkStripeAccountFromForm = (form: IPopulatedEncryptedForm) => {
+  if (!form.payments_channel?.target_account_id) {
     return okAsync(true)
   }
 
@@ -214,12 +216,13 @@ export const getReceiptURL = (
       return PaymentService.findPaymentBySubmissionId(submission._id)
     })
     .andThen((payment) =>
-      retrieveFormById(formId)
+      retrieveFullFormById(formId)
+        .andThen(checkFormIsEncryptMode)
         .andThen((form) =>
           ResultAsync.fromPromise(
             // Step 4: Retrieve paymentIntent object
             stripe.paymentIntents.retrieve(payment.paymentIntentId, undefined, {
-              stripeAccount: form.payments?.target_account_id,
+              stripeAccount: form.payments_channel?.target_account_id,
             }),
             (error) => {
               return new StripeFetchError(String(error))
@@ -248,7 +251,7 @@ export const getReceiptURL = (
             })
             .map((paymentIntent) => ({
               paymentIntent,
-              stripeAccount: form.payments?.target_account_id,
+              stripeAccount: form.payments_channel?.target_account_id,
             })),
         )
         .andThen(({ paymentIntent, stripeAccount }) =>

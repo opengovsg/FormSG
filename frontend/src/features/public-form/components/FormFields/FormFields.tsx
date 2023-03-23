@@ -5,7 +5,7 @@ import { Box, Stack } from '@chakra-ui/react'
 import { isEmpty, times } from 'lodash'
 
 import { BasicField, FormFieldDto } from '~shared/types/field'
-import { FormColorTheme, LogicDto } from '~shared/types/form'
+import { FormColorTheme, FormResponseMode, LogicDto } from '~shared/types/form'
 
 import InlineMessage from '~components/InlineMessage'
 import { FormFieldValues } from '~templates/Field'
@@ -129,12 +129,13 @@ export const FormFields = ({
             </Stack>
           </Box>
         )}
-        {form?.payments?.enabled && (
-          <FormPaymentPreview
-            colorTheme={colorTheme}
-            paymentDetails={form.payments}
-          />
-        )}
+        {form?.responseMode === FormResponseMode.Encrypt &&
+          form?.payments_field?.enabled && (
+            <FormPaymentPreview
+              colorTheme={colorTheme}
+              paymentDetails={form.payments_field}
+            />
+          )}
         <PublicFormSubmitButton
           onSubmit={onSubmit ? formMethods.handleSubmit(onSubmit) : undefined}
           formFields={augmentedFormFields}

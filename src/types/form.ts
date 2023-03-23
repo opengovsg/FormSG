@@ -16,7 +16,8 @@ import {
   FormEndPage,
   FormField,
   FormFieldDto,
-  FormPayments,
+  FormPaymentsChannel,
+  FormPaymentsField,
   FormPermission,
   FormSettings,
   FormStartPage,
@@ -195,19 +196,19 @@ export interface IFormSchema extends IForm, Document, PublicView<PublicForm> {
    * @param accountId the payment account ID to add
    * @returns updated form
    */
-  addPaymentAccountId<T = IFormSchema>({
+  addPaymentAccountId<T = IEncryptedFormSchema>({
     accountId,
     publishableKey,
   }: {
-    accountId: FormPayments['target_account_id']
-    publishableKey: FormPayments['publishable_key']
-  }): Promise<T & DeepRequired<Pick<IFormSchema, 'payments'>>>
+    accountId: FormPaymentsChannel['target_account_id']
+    publishableKey: FormPaymentsChannel['publishable_key']
+  }): Promise<T & DeepRequired<Pick<IEncryptedFormSchema, 'payments_channel'>>>
 
   /**
    * Remove payment account ID from the form.
    * @returns updated form
    */
-  removePaymentAccount<T = IFormSchema>(): Promise<T>
+  removePaymentAccount<T = IEncryptedFormSchema>(): Promise<T>
 
   /**
    * Return essential form creation parameters with the given properties.
@@ -238,23 +239,30 @@ export interface IFormSchema extends IForm, Document, PublicView<PublicForm> {
 /**
  * Schema type with defaults populated and thus set to be defined.
  */
-export interface IFormDocument extends IFormSchema {
-  form_fields: NonNullable<IFormSchema['form_fields']>
-  form_logics: NonNullable<IFormSchema['form_logics']>
-  permissionList: NonNullable<IFormSchema['permissionList']>
-  hasCaptcha: NonNullable<IFormSchema['hasCaptcha']>
-  authType: NonNullable<IFormSchema['authType']>
-  status: NonNullable<IFormSchema['status']>
-  inactiveMessage: NonNullable<IFormSchema['inactiveMessage']>
+interface IFormBaseDocument<T extends IFormSchema> {
+  form_fields: NonNullable<T['form_fields']>
+  form_logics: NonNullable<T['form_logics']>
+  permissionList: NonNullable<T['permissionList']>
+  hasCaptcha: NonNullable<T['hasCaptcha']>
+  authType: NonNullable<T['authType']>
+  status: NonNullable<T['status']>
+  inactiveMessage: NonNullable<T['inactiveMessage']>
   // NOTE: Due to the way creating a form works, creating a form without specifying submissionLimit will throw an error.
   // Hence, using Exclude here over NonNullable.
-  submissionLimit: Exclude<IFormSchema['submissionLimit'], undefined>
-  isListed: NonNullable<IFormSchema['isListed']>
-  startPage: Required<NonNullable<IFormSchema['startPage']>>
-  endPage: Required<NonNullable<IFormSchema['endPage']>>
-  webhook: Required<NonNullable<IFormSchema['webhook']>>
-  responseMode: NonNullable<IFormSchema['responseMode']>
+  submissionLimit: Exclude<T['submissionLimit'], undefined>
+  isListed: NonNullable<T['isListed']>
+  startPage: Required<NonNullable<T['startPage']>>
+  endPage: Required<NonNullable<T['endPage']>>
+  webhook: Required<NonNullable<T['webhook']>>
+  responseMode: NonNullable<T['responseMode']>
 }
+
+export type IFormDocument = IFormBaseDocument<IFormSchema> & IFormSchema
+
+export type IEncryptedFormDocument = IFormBaseDocument<IEncryptedFormSchema> &
+  IEncryptedFormSchema & {
+    publickey: NonNullable<IEncryptedFormSchema['publicKey']>
+  }
 
 export interface IPopulatedForm extends Omit<IFormDocument, 'toJSON'> {
   admin: IPopulatedUser
@@ -264,6 +272,8 @@ export interface IPopulatedForm extends Omit<IFormDocument, 'toJSON'> {
 
 export interface IEncryptedForm extends IForm {
   publicKey: string
+  payments_channel?: FormPaymentsChannel
+  payments_field?: FormPaymentsField
   emails?: never
 }
 
@@ -356,12 +366,12 @@ export interface IFormModel extends Model<IFormSchema> {
    * Update the payments of form with given payments object.
    * @param formId the id of the form to update
    * @param newPayments the new Payments object to replace with
-   * @returns the updated form document if form exists, null otherwise
+   * @returns the updated encrypted form document if form exists, null otherwise
    */
   updatePaymentsById(
     formId: string,
-    newPayments: FormPayments,
-  ): Promise<IFormDocument | null>
+    newPayments: FormPaymentsField,
+  ): Promise<IEncryptedFormDocument | null>
 
   updateFormLogic(
     formId: string,
@@ -370,7 +380,8 @@ export interface IFormModel extends Model<IFormSchema> {
   ): Promise<IFormSchema | null>
 }
 
-export type IEncryptedFormModel = IFormModel & Model<IEncryptedFormSchema>
+export type IEncryptedFormModel = Model<IEncryptedFormSchema> & IFormModel
+
 export type IEmailFormModel = IFormModel & Model<IEmailFormSchema>
 
 export type IOnboardedForm<T extends IForm> = T & {

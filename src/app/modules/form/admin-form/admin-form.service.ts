@@ -36,6 +36,7 @@ import { EditFieldActions } from '../../../../shared/constants'
 import {
   FormFieldSchema,
   FormLogicSchema,
+  IEncryptedFormDocument,
   IForm,
   IFormDocument,
   IFormSchema,
@@ -45,7 +46,9 @@ import { EditFormFieldParams, FormUpdateParams } from '../../../../types/api'
 import config, { aws as AwsConfig } from '../../../config/config'
 import { paymentConfig } from '../../../config/features/payment.config'
 import { createLoggerWithLabel } from '../../../config/logger'
-import getFormModel from '../../../models/form.server.model'
+import getFormModel, {
+  getEncryptedFormModel,
+} from '../../../models/form.server.model'
 import * as SmsService from '../../../services/sms/sms.service'
 import { twilioClientCache } from '../../../services/sms/sms.service'
 import { dotifyObject } from '../../../utils/dotify-object'
@@ -97,6 +100,7 @@ import {
 
 const logger = createLoggerWithLabel(module)
 const FormModel = getFormModel(mongoose)
+const EncryptedFormModel = getEncryptedFormModel(mongoose)
 
 export const secretsManager = new SecretsManager({
   region: config.aws.region,
@@ -1522,7 +1526,7 @@ export const updatePayments = (
   formId: string,
   newPayments: PaymentsUpdateDto,
 ): ResultAsync<
-  IFormDocument['payments'],
+  IEncryptedFormDocument['payments_field'],
   PossibleDatabaseError | FormNotFoundError | InvalidPaymentAmountError
 > => {
   const { amount_cents } = newPayments
@@ -1538,7 +1542,7 @@ export const updatePayments = (
   }
 
   return ResultAsync.fromPromise(
-    FormModel.updatePaymentsById(formId, newPayments),
+    EncryptedFormModel.updatePaymentsById(formId, newPayments),
     (error) => {
       logger.error({
         message: 'Error occurred when updating form payments',
@@ -1555,6 +1559,6 @@ export const updatePayments = (
     if (!updatedForm) {
       return errAsync(new FormNotFoundError())
     }
-    return okAsync(updatedForm.payments)
+    return okAsync(updatedForm.payments_field)
   })
 }

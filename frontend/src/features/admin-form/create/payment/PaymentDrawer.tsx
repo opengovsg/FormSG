@@ -10,7 +10,7 @@ import { useDebounce } from 'react-use'
 import { Box, Divider, Flex, FormControl, Stack, Text } from '@chakra-ui/react'
 import { cloneDeep } from 'lodash'
 
-import { FormPayments } from '~shared/types'
+import { FormPaymentsField } from '~shared/types'
 
 import { useIsMobile } from '~hooks/useIsMobile'
 import { centsToDollars, dollarsToCents } from '~utils/payments'
@@ -22,7 +22,6 @@ import Textarea from '~components/Textarea'
 import Toggle from '~components/Toggle'
 
 import { useMutateFormPage } from '~features/admin-form/common/mutations'
-import { useAdminForm } from '~features/admin-form/common/queries'
 
 import { useEnv } from '../../../env/queries'
 import {
@@ -107,7 +106,7 @@ export const PaymentInput = (): JSX.Element => {
       setData({
         ...rest,
         amount_cents: dollarsToCents(display_amount ?? '0'),
-      } as FormPayments)
+      } as FormPaymentsField)
     },
     [setData],
   )
@@ -261,8 +260,11 @@ export const PaymentInput = (): JSX.Element => {
   )
 }
 
-export const PaymentDrawer = (): JSX.Element | null => {
-  const { data: form } = useAdminForm()
+export const PaymentDrawer = ({
+  paymentsField,
+}: {
+  paymentsField: FormPaymentsField
+}): JSX.Element | null => {
   const { paymentData, setData, resetData } = usePaymentStore(
     useCallback(
       (state) => ({
@@ -275,9 +277,9 @@ export const PaymentDrawer = (): JSX.Element | null => {
   )
 
   useEffect(() => {
-    setData(form?.payments)
+    setData(paymentsField)
     return resetData
-  }, [form?.payments, resetData, setData])
+  }, [paymentsField, resetData, setData])
 
   if (!paymentData) return null
 
