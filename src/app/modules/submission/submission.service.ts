@@ -209,7 +209,7 @@ export const findSubmissionById = (
 }
 
 /**
- * Moves a pending submission by ID to the submission collection. For correctness,
+ * Copies a pending submission by ID to the submission collection. For correctness,
  * this should always be done within a transaction, thus a session must be provided.
  *
  * @param pendingSubmissionId the id of the pending submission to confirm
@@ -219,7 +219,7 @@ export const findSubmissionById = (
  * @returns err(PendingSubmissionNotFoundError) if pending submission does not exist in the database
  * @returns err(DatabaseError) if database errors occurs while copying the document over
  */
-export const movePendingSubmissionToSubmissions = (
+export const copyPendingSubmissionToSubmissions = (
   pendingSubmissionId: string,
   session: mongoose.ClientSession,
 ): ResultAsync<

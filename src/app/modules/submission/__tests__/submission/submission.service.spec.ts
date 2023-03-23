@@ -791,7 +791,7 @@ describe('submission.service', () => {
     })
   })
 
-  describe('movePendingSubmissionToSubmissions', () => {
+  describe('copyPendingSubmissionToSubmissions', () => {
     const MOCK_PENDING_SUBMISSION_ID = MOCK_SUBMISSION._id
 
     beforeEach(async () => {
@@ -811,7 +811,7 @@ describe('submission.service', () => {
       })
 
       const session = await mongoose.startSession()
-      const result = await SubmissionService.movePendingSubmissionToSubmissions(
+      const result = await SubmissionService.copyPendingSubmissionToSubmissions(
         MOCK_PENDING_SUBMISSION_ID,
         session,
       )
@@ -839,7 +839,7 @@ describe('submission.service', () => {
       })
 
       const session = await mongoose.startSession()
-      const result = await SubmissionService.movePendingSubmissionToSubmissions(
+      const result = await SubmissionService.copyPendingSubmissionToSubmissions(
         new ObjectId().toHexString(),
         session,
       )
@@ -861,7 +861,7 @@ describe('submission.service', () => {
       )
 
       const session = await mongoose.startSession()
-      const result = await SubmissionService.movePendingSubmissionToSubmissions(
+      const result = await SubmissionService.copyPendingSubmissionToSubmissions(
         MOCK_PENDING_SUBMISSION_ID,
         session,
       )
