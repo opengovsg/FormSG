@@ -84,17 +84,17 @@ export const _handleStripeEventUpdates: ControllerHandler<
   })
 
   switch (event.type) {
-    case 'charge.captured':
-    case 'charge.expired':
+    // Ignore these two charge event types as they are only for capture flow.
+    // case 'charge.captured':
+    // case 'charge.expired':
+    // Ignore this charge event type as it is for when descriptions or metadata
+    // are updated (which we will not support).
+    // case 'charge.updated':
     case 'charge.failed':
     case 'charge.pending':
     case 'charge.refunded':
     case 'charge.succeeded':
-    case 'charge.updated':
-      await StripeService.updateEventLogBySubmissionId(
-        event.data.object.metadata,
-        event,
-      )
+      await StripeService.updateEventLogById(event.data.object.metadata, event)
       break
     case 'charge.dispute.closed':
     case 'charge.dispute.created':
@@ -106,7 +106,7 @@ export const _handleStripeEventUpdates: ControllerHandler<
         typeof event.data.object.charge === 'string'
           ? await stripe.charges.retrieve(event.data.object.charge)
           : event.data.object.charge
-      await StripeService.updateEventLogBySubmissionId(charge.metadata, event)
+      await StripeService.updateEventLogById(charge.metadata, event)
       break
     }
     case 'charge.refund.updated': {
@@ -122,7 +122,7 @@ export const _handleStripeEventUpdates: ControllerHandler<
         })
         break
       }
-      await StripeService.updateEventLogBySubmissionId(charge.metadata, event)
+      await StripeService.updateEventLogById(charge.metadata, event)
       break
     }
     case 'payment_intent.amount_capturable_updated':
@@ -133,10 +133,7 @@ export const _handleStripeEventUpdates: ControllerHandler<
     case 'payment_intent.processing':
     case 'payment_intent.requires_action':
     case 'payment_intent.succeeded':
-      await StripeService.updateEventLogBySubmissionId(
-        event.data.object.metadata,
-        event,
-      )
+      await StripeService.updateEventLogById(event.data.object.metadata, event)
       break
     case 'payout.canceled':
     case 'payout.created':
@@ -144,15 +141,15 @@ export const _handleStripeEventUpdates: ControllerHandler<
     case 'payout.paid':
     case 'payout.updated':
       // This is most definitely wrong but need to test when payouts come in
-      await StripeService.updateEventLogBySubmissionId(
+      await StripeService.updateEventLogById(
         event.data.object.metadata,
         event,
-        {
-          payout: {
-            payoutId: event.data.object.id,
-            payoutDate: new Date(event.data.object.arrival_date),
-          },
-        },
+        // {
+        //   payout: {
+        //     payoutId: event.data.object.id,
+        //     payoutDate: new Date(event.data.object.arrival_date),
+        //   },
+        // },
       )
       break
     default:

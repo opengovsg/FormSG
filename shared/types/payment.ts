@@ -3,14 +3,13 @@ import { DateString } from './generic'
 
 // Stripe Charge status
 export enum PaymentStatus {
-  Pending = 'Pending',
-  Failed = 'Failed',
-  Succeeded = 'Succeeded',
-  PartiallyRefunded = 'Partially refunded',
-  FullyRefunded = 'Fully refunded',
-  Disputed = 'Disputed',
-  DisputeClosed = 'Dispute closed',
-  Unknown = 'Unknown',
+  Pending = 'pending',
+  Failed = 'failed',
+  Succeeded = 'succeeded',
+  PartiallyRefunded = 'partially_refunded',
+  FullyRefunded = 'fully_refunded',
+  Disputed = 'disputed',
+  DisputeClosed = 'dispute_closed',
 }
 
 export enum PaymentChannel {
@@ -18,6 +17,7 @@ export enum PaymentChannel {
   // for extensibility to future payment options
 }
 
+<<<<<<< HEAD
 export type CompletedPaymentMeta = {
   paymentDate: Date
   submissionId: string
@@ -52,11 +52,24 @@ export type Payment = {
   created: DateString
 =======
   status: PaymentStatus
-  eventLog: Stripe.Event[]
+=======
+export type Payment = {
   paymentIntentId: string
+  amount: number
+
+  pendingSubmissionId: string
+  submissionId?: string
+
+>>>>>>> c36d0812 (feat: add state machine to compute status and move pending submissions to submissions)
+  eventLog: Stripe.Event[]
+  status: PaymentStatus
   chargeIdLatest?: string
+  transactionFee?: number
+  receiptUrl?: string
+
   payoutId?: string
   payoutDate?: Date
+
   created: DateString
   email: string
   lastModified: DateString

@@ -3,12 +3,13 @@ import get from 'lodash/get'
 import merge from 'lodash/merge'
 import mongoose, { ClientSession } from 'mongoose'
 import { errAsync, ok, okAsync, ResultAsync } from 'neverthrow'
-import { Payment } from 'shared/types'
 import Stripe from 'stripe'
 import { MarkRequired } from 'ts-essentials'
 
-import { IPaymentSchema, IPopulatedEncryptedForm } from 'src/types'
+import getPendingSubmissionModel from 'src/app/models/pending_submission.server.model'
+import getSubmissionModel from 'src/app/models/submission.server.model'
 
+import { IPaymentSchema, IPopulatedEncryptedForm } from '../../../types'
 import config from '../../config/config'
 import { paymentConfig } from '../../config/features/payment.config'
 import { createLoggerWithLabel } from '../../config/logger'
@@ -26,9 +27,11 @@ import * as PaymentService from './payments.service'
 import {
   ChargeBalanceTransactionNotFoundError,
   ChargeReceiptNotFoundError,
-  EventMetadataSubmissionIdInvalidError,
-  EventMetadataSubmissionIdNotFoundError,
+  ComputePaymentStateError,
+  EventMetadataPaymentIdInvalidError,
+  EventMetadataPaymentIdNotFoundError,
   PaymentIntentLatestChargeNotFoundError,
+  PendingSubmissionNotFoundError,
   StripeAccountError,
   StripeAccountNotFoundError,
   StripeFetchError,
@@ -37,10 +40,16 @@ import {
   SubmissionNotFoundError,
   SuccessfulChargeNotFoundError,
 } from './stripe.errors'
-import { computePaymentState, getRedirectUri } from './stripe.utils'
+import {
+  computePaymentState,
+  getRedirectUri,
+  isPaymentStatusPostSuccess,
+} from './stripe.utils'
 
 const logger = createLoggerWithLabel(module)
 const PaymentModel = getPaymentModel(mongoose)
+const PendingSubmissionModel = getPendingSubmissionModel(mongoose)
+const SubmissionModel = getSubmissionModel(mongoose)
 
 // Not exported, only used to pass exceptional control from the transaction
 // function back to the caller which is responsible for aborting the transaction.
@@ -50,51 +59,129 @@ class DuplicateEventError extends ApplicationError {
   }
 }
 
-const updateEventLogBySubmissionIdTransaction = async (
+const updateEventLogByPaymentIdTransaction = (
   session: ClientSession,
-  submissionId: string,
+  paymentId: string,
   event: Stripe.Event,
-  update?: Partial<Payment>,
-): Promise<void> => {
-  // Step 1: Get the payment. If the submission does not exist or the event
-  // has been processed before, ignore the event.
-  let payment = await PaymentModel.findOne({ submissionId }, { session })
-  if (!payment) {
-    throw new PaymentNotFoundError()
+): ResultAsync<
+  void,
+  | DatabaseError
+  | PaymentNotFoundError
+  | DuplicateEventError
+  | ComputePaymentStateError
+  | PendingSubmissionNotFoundError
+> => {
+  const logMeta = {
+    action: 'updateEventLogByPaymentId',
+    paymentId,
+    event,
   }
 
-  if (payment.webhookLog.some((e) => e.id === event.id)) {
-    throw new DuplicateEventError()
-  }
+  return ResultAsync.fromPromise(
+    // Step 1: Get the payment. If the submission does not exist or the event
+    // has been processed before, ignore the event.
+    PaymentModel.findById(paymentId, { session }),
+    (error) => {
+      logger.error({
+        message: 'Error encountered while finding payment by id',
+        meta: logMeta,
+        error,
+      })
+      return new DatabaseError(getMongoErrorMessage(error))
+    },
+  )
+    .andThen((payment) => {
+      if (!payment) {
+        return errAsync(new PaymentNotFoundError())
+      }
 
-  // Step 2: Update the payment
-  if (update) {
-    payment = merge(payment, update)
-  }
+      if (payment.eventLog.some((e) => e.id === event.id)) {
+        return errAsync(new DuplicateEventError())
+      }
 
-  // Inject the event into the correct position into the array. Order by
-  // event creation time first, then the object creation time (if it exists).
-  // We expect webhook arrays to be small (~10 entries max), so push and
-  // sort is fine.
-  payment.webhookLog.push(event)
-  payment.webhookLog.sort((e1, e2) => {
-    const e1ObjectCreated = get(e1.data.object, 'created')
-    const e2ObjectCreated = get(e2.data.object, 'created')
-    if (
-      e1.created === e2.created &&
-      typeof e1ObjectCreated === 'number' &&
-      typeof e2ObjectCreated === 'number'
-    ) {
-      return e1ObjectCreated - e2ObjectCreated
-    }
-    return e1.created - e2.created
-  })
+      // Step 2: Inject the event into the correct position into the array.
+      // We expect webhook arrays to be small (~10 entries max), so push and sort is ok.
+      payment.eventLog.push(event)
+      payment.eventLog.sort((e1, e2) => {
+        // Order by event creation time first, then object creation time (if it exists).
+        const e1ObjectCreated = get(e1.data.object, 'created')
+        const e2ObjectCreated = get(e2.data.object, 'created')
+        if (
+          e1.created === e2.created &&
+          typeof e1ObjectCreated === 'number' &&
+          typeof e2ObjectCreated === 'number'
+        ) {
+          return e1ObjectCreated - e2ObjectCreated
+        }
+        return e1.created - e2.created
+      })
 
-  // Step 3: Recompute the payment state based on the event log.
-  const state = computePaymentState(payment.webhookLog)
-  payment = merge(payment, state)
+      // Step 3: Recompute the payment state based on the event log.
+      return computePaymentState(payment.eventLog).asyncAndThen((state) => {
+        // Step 4: Update the payment state.
+        payment = merge(payment, state)
+        return okAsync(payment)
+      })
+    })
+    .andThen((payment) => {
+      // Step 5: If the state is post-success (i.e. not pending or failed),
+      // check if there is already an associated submission. If not, copy the
+      // pending submission to submission.
+      if (
+        isPaymentStatusPostSuccess(payment.status) &&
+        !payment.completedPayment
+      ) {
+        return ResultAsync.fromPromise(
+          PendingSubmissionModel.findById(payment.pendingSubmissionId, {
+            session,
+          }).exec(),
+          (error) => {
+            logger.error({
+              message: 'Error encountered while retrieving pending submission',
+              meta: logMeta,
+              error,
+            })
+            return new DatabaseError(getMongoErrorMessage(error))
+          },
+        )
+          .andThen((pendingSubmission) => {
+            if (!pendingSubmission) {
+              return errAsync(new PendingSubmissionNotFoundError())
+            }
 
-  await payment.save({ session })
+            const submission = new SubmissionModel(pendingSubmission)
+
+            return ResultAsync.fromPromise(
+              submission.save({ session }),
+              (error) => {
+                logger.error({
+                  message: 'Error encountered while saving submission',
+                  meta: logMeta,
+                  error,
+                })
+                return new DatabaseError(getMongoErrorMessage(error))
+              },
+            )
+          })
+          .andThen((submission) => {
+            payment.completedPayment.submissionId = submission.id
+            return okAsync(payment)
+          })
+      }
+      return okAsync(payment)
+    })
+    .andThen((payment) =>
+      // Step 6: Save the payment object.
+      ResultAsync.fromPromise(payment.save({ session }), (error) => {
+        logger.error({
+          message: 'Error encountered while updating payment',
+          meta: logMeta,
+          error,
+        })
+        return new DatabaseError(getMongoErrorMessage(error))
+      }),
+    )
+    .andThen(() => okAsync(undefined))
 }
 
 /**
@@ -106,91 +193,87 @@ const updateEventLogBySubmissionIdTransaction = async (
  * @returns err(PaymentNotFoundError) if the payment does not exist
  * @returns err(DatabaseError) if error occurs whilst querying the database
  */
-export const updateEventLogBySubmissionId = (
+export const updateEventLogById = (
   metadata: Stripe.Metadata | null,
   event: Stripe.Event,
-  update?: Partial<Payment>,
 ): ResultAsync<
   void,
-  | EventMetadataSubmissionIdNotFoundError
-  | EventMetadataSubmissionIdInvalidError
-  | PaymentNotFoundError
+  | EventMetadataPaymentIdNotFoundError
+  | EventMetadataPaymentIdInvalidError
   | DatabaseError
+  | PaymentNotFoundError
+  | ComputePaymentStateError
+  | PendingSubmissionNotFoundError
 > => {
   const logMeta = {
-    action: 'updateEventLogBySubmissionId',
+    action: 'updateEventLogById',
     metadata,
     event,
-    update,
   }
 
-  const submissionId = get(metadata, 'submissionId')
-  if (!submissionId) {
+  const paymentId = get(metadata, 'paymentId')
+  if (!paymentId) {
     logger.warn({
-      message: 'Stripe event metadata does not contain submissionId',
+      message: 'Stripe event metadata does not contain paymentId',
       meta: logMeta,
     })
-    return errAsync(new EventMetadataSubmissionIdNotFoundError())
+    return errAsync(new EventMetadataPaymentIdNotFoundError())
   }
 
-  if (!mongoose.Types.ObjectId.isValid(submissionId)) {
+  if (!mongoose.Types.ObjectId.isValid(paymentId)) {
     logger.warn({
-      message: 'Stripe event metadata contains invalid submissionId',
+      message: 'Stripe event metadata contains invalid paymentId',
       meta: logMeta,
     })
-    return errAsync(new EventMetadataSubmissionIdInvalidError())
+    return errAsync(new EventMetadataPaymentIdInvalidError())
   }
 
-  return ResultAsync.fromSafePromise(
-    PaymentModel.startSession().then(async (session) => {
-      let error
-      try {
-        session.startTransaction({
-          readConcern: { level: 'snapshot' },
-          writeConcern: { w: 'majority' },
-          readPreference: 'primary',
-        })
-        await updateEventLogBySubmissionIdTransaction(
-          session,
-          submissionId,
-          event,
-          update,
-        )
-        await session.commitTransaction()
-      } catch (e) {
-        error = e
-        await session.abortTransaction()
-      } finally {
-        session.endSession()
-      }
-      return error
-    }),
-  ).andThen((error) => {
-    // If no error, transaction was ok. If duplicate event, also ok.
-    if (!error) return okAsync(undefined)
-    if (error instanceof DuplicateEventError) return okAsync(undefined)
-
-    // Handle actual error cases.
-    if (error instanceof PaymentNotFoundError) {
-      logger.error({
-        message: 'Payment not found in database',
-        meta: {
-          submissionId,
-          ...logMeta,
-        },
-        error,
-      })
-      return errAsync(new PaymentNotFoundError())
-    }
+  return ResultAsync.fromPromise(mongoose.startSession(), (error) => {
     logger.error({
-      message: 'Error updating payment in database',
-      meta: {
-        submissionId,
-        ...logMeta,
-      },
+      message: 'Error encountered while starting mongoose session',
+      meta: logMeta,
       error,
     })
-    return errAsync(new DatabaseError(getMongoErrorMessage(error)))
+    return new DatabaseError(getMongoErrorMessage(error))
+  }).andThen((session) => {
+    // Start the transaction
+    session.startTransaction({
+      readConcern: { level: 'snapshot' },
+      writeConcern: { w: 'majority' },
+      readPreference: 'primary',
+    })
+    return updateEventLogByPaymentIdTransaction(session, paymentId, event)
+      .andThen(() =>
+        // Commit if successful
+        ResultAsync.fromPromise(session.commitTransaction(), (error) => {
+          logger.error({
+            message: 'Error encountered while committing transaction',
+            meta: logMeta,
+            error,
+          })
+          return new DatabaseError(getMongoErrorMessage(error))
+        }).andThen(() => {
+          session.endSession()
+          return okAsync(undefined)
+        }),
+      )
+      .orElse((error) =>
+        // Abort otherwise
+        ResultAsync.fromPromise(session.abortTransaction(), (error) => {
+          logger.error({
+            message: 'Error encountered while aborting transaction',
+            meta: logMeta,
+            error,
+          })
+          return new DatabaseError(getMongoErrorMessage(error))
+        }).andThen(() => {
+          session.endSession()
+          // A duplicate events should abort the transaction but it's not a real
+          // error, so we intercept it
+          if (error instanceof DuplicateEventError) return okAsync(undefined)
+          return errAsync(error)
+        }),
+      )
   })
 }
 

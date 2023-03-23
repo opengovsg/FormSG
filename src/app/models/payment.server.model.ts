@@ -102,7 +102,7 @@ const compilePaymentModel = (db: Mongoose): IPaymentModel => {
 
 const getPaymentModel = (db: Mongoose): IPaymentModel => {
   try {
-    return db.model(PAYMENT_SCHEMA_ID) as IPaymentModel
+    return db.model<IPaymentSchema, IPaymentModel>(PAYMENT_SCHEMA_ID)
   } catch {
     return compilePaymentModel(db)
   }

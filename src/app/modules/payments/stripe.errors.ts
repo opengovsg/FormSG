@@ -66,14 +66,26 @@ export class StripeAccountNotFoundError extends ApplicationError {
   }
 }
 
-export class EventMetadataSubmissionIdNotFoundError extends ApplicationError {
-  constructor(message = 'Submission id not found in event metadata') {
+export class EventMetadataPaymentIdNotFoundError extends ApplicationError {
+  constructor(message = 'Payment id not found in event metadata') {
     super(message)
   }
 }
 
-export class EventMetadataSubmissionIdInvalidError extends ApplicationError {
-  constructor(message = 'Invalid submission id found in event metadata') {
+export class EventMetadataPaymentIdInvalidError extends ApplicationError {
+  constructor(message = 'Invalid payment id found in event metadata') {
+    super(message)
+  }
+}
+
+export class ComputePaymentStateError extends ApplicationError {
+  constructor(message = 'Error while computing payment state') {
+    super(message)
+  }
+}
+
+export class PendingSubmissionNotFoundError extends ApplicationError {
+  constructor(message = 'Pending submission associated to payment not found') {
     super(message)
   }
 }
