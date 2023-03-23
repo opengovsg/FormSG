@@ -160,7 +160,7 @@ export const confirmPaymentPendingSubmission = (
     return (
       // Step 1: Retrieve the payment by payment id and check that the payment
       // has not already been confirmed.
-      findPaymentById(paymentId)
+      findPaymentById(paymentId, session)
         .andThen((payment) =>
           payment.completedPayment
             ? errAsync(new PaymentAlreadyConfirmedError())
