@@ -20,9 +20,30 @@ export class SubmissionAndFormMismatchError extends ApplicationError {
   }
 }
 
+export class SuccessfulChargeNotFoundError extends ApplicationError {
+  constructor(message = 'Successful charge not found from Stripe API') {
+    super(message)
+  }
+}
 export class ChargeReceiptNotFoundError extends ApplicationError {
   constructor(
     message = "Charge object's receipt url not found from Stripe API",
+  ) {
+    super(message)
+  }
+}
+
+export class StripeTransactionFeeNotFoundError extends ApplicationError {
+  constructor(
+    message = "Charge object's receipt url not found from Stripe API",
+  ) {
+    super(message)
+  }
+}
+
+export class ChargeBalanceTransactionNotFoundError extends ApplicationError {
+  constructor(
+    message = "Charge object's balance transaction not found from Stripe API",
   ) {
     super(message)
   }

@@ -80,3 +80,42 @@ export const findPaymentBySubmissionId = (
     return okAsync(payment)
   })
 }
+
+export const updateReceiptUrlAndTransactionFee = (
+  paymentId: IPaymentSchema['_id'],
+  receiptUrl: string,
+  stripeTransactionFee: number,
+): ResultAsync<IPaymentSchema, PaymentNotFoundError | DatabaseError> => {
+  // Retrieve payment object from database and
+  // Update payment's receipt url
+  return ResultAsync.fromPromise(
+    PaymentModel.findByIdAndUpdate(
+      paymentId,
+      {
+        $set: {
+          receiptUrl,
+          stripeTransactionFee,
+        },
+      },
+      { new: true },
+    ).exec(),
+    (error) => {
+      logger.error({
+        message:
+          'Database error when updating payment with receipt url and transaction fee',
+        meta: {
+          action: 'updateReceiptUrl',
+          paymentId,
+        },
+        error,
+      })
+
+      return new DatabaseError()
+    },
+  ).andThen((payment) => {
+    if (!payment) {
+      return errAsync(new PaymentNotFoundError())
+    }
+    return okAsync(payment as IPaymentSchema)
+  })
+}
