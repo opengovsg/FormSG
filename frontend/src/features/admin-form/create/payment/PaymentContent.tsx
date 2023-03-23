@@ -1,6 +1,8 @@
 import { useMemo } from 'react'
 import { Box, Container, Flex, Image, Stack, Text } from '@chakra-ui/react'
 
+import { FormPaymentsField } from '~shared/types'
+
 import { centsToDollars } from '~utils/payments'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
@@ -11,15 +13,19 @@ import { useDesignColorTheme } from '../builder-and-design/utils/useDesignColorT
 import mock from './PaymentMock.png'
 import { dataSelector, usePaymentStore } from './usePaymentStore'
 
-export const PaymentContent = (): JSX.Element => {
+export const PaymentContent = ({
+  paymentsField,
+}: {
+  paymentsField: FormPaymentsField
+}): JSX.Element => {
   const { data: form } = useAdminForm()
   const paymentsFromStore = usePaymentStore(dataSelector)
 
   // When drawer is opened, store is populated. We always want the drawer settings
   // to be previewed, so when the store is populated, prioritize that setting.
   const payments = useMemo(
-    () => (paymentsFromStore ? paymentsFromStore : form?.payments),
-    [paymentsFromStore, form?.payments],
+    () => (paymentsFromStore ? paymentsFromStore : paymentsField),
+    [paymentsFromStore, paymentsField],
   )
   const colorTheme = useDesignColorTheme()
 

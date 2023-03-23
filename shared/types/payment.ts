@@ -9,6 +9,10 @@ export enum PaymentStatus {
 }
 
 export type PaymentId = Opaque<string, 'PaymentId'>
+export enum PaymentChannel {
+  Stripe = 'Stripe',
+  // for extensibility to future payment options
+}
 
 export type Payment = {
   _id: PaymentId

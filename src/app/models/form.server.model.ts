@@ -28,7 +28,8 @@ import {
   FormField,
   FormFieldDto,
   FormLogoState,
-  FormPayments,
+  FormPaymentsChannel,
+  FormPaymentsField,
   FormPermission,
   FormResponseMode,
   FormSettings,
@@ -37,6 +38,7 @@ import {
   LogicConditionState,
   LogicDto,
   LogicType,
+  PaymentChannel,
   StorageFormSettings,
 } from '../../../shared/types'
 import { reorder } from '../../../shared/utils/immutable-array-fns'
@@ -46,6 +48,7 @@ import {
   FormOtpData,
   IEmailFormModel,
   IEmailFormSchema,
+  IEncryptedFormDocument,
   IEncryptedFormModel,
   IEncryptedFormSchema,
   IFieldSchema,
@@ -130,7 +133,75 @@ const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
     type: String,
     required: true,
   },
+  payments_channel: {
+    channel: {
+      type: String,
+      enum: Object.values(PaymentChannel),
+      default: PaymentChannel.Stripe,
+    },
+    target_account_id: {
+      type: String,
+      default: '',
+      validate: [/^\S*$/i, 'target_account_id must not contain whitespace.'],
+    },
+    publishable_key: {
+      type: String,
+      default: '',
+      validate: [/^\S*$/i, 'publishable_key must not contain whitespace.'],
+    },
+    required: false,
+  },
+
+  payments_field: {
+    enabled: {
+      type: Boolean,
+      default: false,
+    },
+    description: {
+      type: String,
+      default: '',
+    },
+    amount_cents: {
+      type: Number,
+      validate: {
+        validator: (amount_cents: number) => {
+          return amount_cents >= 50 && Number.isInteger(amount_cents)
+        },
+        message: 'Payment amount must be at least 50 cents and an integer.',
+      },
+    },
+    required: false,
+  },
 })
+
+const EncryptedFormDocumentSchema =
+  EncryptedFormSchema as unknown as Schema<IEncryptedFormDocument>
+
+EncryptedFormDocumentSchema.methods.addPaymentAccountId = async function ({
+  accountId,
+  publishableKey,
+}: {
+  accountId: FormPaymentsChannel['target_account_id']
+  publishableKey: FormPaymentsChannel['publishable_key']
+}) {
+  this.payments_channel = merge(this.payments_channel, {
+    target_account_id: accountId,
+    publishable_key: publishableKey,
+    enabled: true,
+  })
+  return this.save()
+}
+
+EncryptedFormDocumentSchema.methods.removePaymentAccount = async function () {
+  if (this.payments_channel?.target_account_id) {
+    this.payments_channel.target_account_id = undefined
+    if (this.payments_field) {
+      this.payments_field.enabled = false
+    }
+  }
+
+  return this.save()
+}
 
 const EmailFormSchema = new Schema<IEmailFormSchema, IEmailFormModel>({
   emails: {
@@ -424,45 +495,6 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         default: null,
         min: 1,
       },
-      payments: {
-        enabled: {
-          type: Boolean,
-          default: false,
-        },
-        target_account_id: {
-          type: String,
-          default: '',
-          validate: [
-            /^\S*$/i,
-            'target_account_id must not contain whitespace.',
-          ],
-        },
-        publishable_key: {
-          type: String,
-          default: '',
-          validate: [/^\S*$/i, 'publishable_key must not contain whitespace.'],
-        },
-        description: {
-          type: String,
-          default: '',
-        },
-        amount_cents: {
-          type: Number,
-          validate: {
-            validator: (amount_cents: number) => {
-              if (amount_cents < 50) {
-                return false
-              }
-              if (!Number.isInteger(amount_cents)) {
-                return false
-              }
-              return true
-            },
-            message: 'Payment amount must be at least 50 cents and an integer.',
-          },
-        },
-        required: false,
-      },
     },
     formSchemaOptions,
   )
@@ -625,30 +657,6 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       ...basePublicView,
       admin: (this.admin as IUserSchema).getPublicView(),
     }
-  }
-
-  FormDocumentSchema.methods.addPaymentAccountId = async function ({
-    accountId,
-    publishableKey,
-  }: {
-    accountId: FormPayments['target_account_id']
-    publishableKey: FormPayments['publishable_key']
-  }) {
-    this.payments = merge(this.payments, {
-      target_account_id: accountId,
-      publishable_key: publishableKey,
-      enabled: true,
-    })
-    return this.save()
-  }
-
-  FormDocumentSchema.methods.removePaymentAccount = async function () {
-    if (this.payments?.target_account_id) {
-      this.payments.target_account_id = undefined
-      this.payments.enabled = false
-    }
-
-    return this.save()
   }
 
   // Transfer ownership of the form to another user
@@ -903,11 +911,11 @@ const compileFormModel = (db: Mongoose): IFormModel => {
 
   FormSchema.statics.updatePaymentsById = async function (
     formId: string,
-    newPayments: FormPayments,
+    newPayments: FormPaymentsField,
   ) {
     return this.findByIdAndUpdate(
       formId,
-      { payments: newPayments },
+      { payments_field: newPayments },
       { new: true, runValidators: true },
     ).exec()
   }

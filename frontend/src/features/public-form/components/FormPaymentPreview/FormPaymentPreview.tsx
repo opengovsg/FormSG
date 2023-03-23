@@ -4,7 +4,7 @@ import {
   BasicField,
   EmailFieldBase,
   FormColorTheme,
-  FormPayments,
+  FormPaymentsField,
 } from '~shared/types'
 
 import { centsToDollars } from '~utils/payments'
@@ -19,7 +19,7 @@ export const FormPaymentPreview = ({
   paymentDetails,
 }: {
   colorTheme: FormColorTheme
-  paymentDetails: FormPayments
+  paymentDetails: FormPaymentsField
 }): JSX.Element => {
   const sectionColor = useSectionColor(colorTheme)
   const emailFieldSchema: EmailFieldSchema = {
