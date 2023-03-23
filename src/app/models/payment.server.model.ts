@@ -3,6 +3,9 @@ import { Mongoose, Schema } from 'mongoose'
 import { PaymentStatus } from '../../../shared/types'
 import { IPaymentModel, IPaymentSchema } from '../../types'
 
+import { PENDING_SUBMISSION_SCHEMA_ID } from './pending_submission.server.model'
+import { SUBMISSION_SCHEMA_ID } from './submission.server.model'
+
 export const PAYMENT_SCHEMA_ID = 'Payment'
 
 const compilePaymentModel = (db: Mongoose): IPaymentModel => {
@@ -10,6 +13,7 @@ const compilePaymentModel = (db: Mongoose): IPaymentModel => {
     {
       pendingSubmissionId: {
         type: Schema.Types.ObjectId,
+        ref: PENDING_SUBMISSION_SCHEMA_ID,
         required: true,
       },
       email: {
@@ -50,6 +54,7 @@ const compilePaymentModel = (db: Mongoose): IPaymentModel => {
           },
           submissionId: {
             type: Schema.Types.ObjectId,
+            ref: SUBMISSION_SCHEMA_ID,
             required: true,
           },
           transactionFee: {
