@@ -12,6 +12,7 @@ import {
   DASHBOARD_ROUTE,
   LANDING_ROUTE,
   LOGIN_ROUTE,
+  PAYMENT_PAGE_SUBROUTE,
   PRIVACY_POLICY_ROUTE,
   PUBLICFORM_ROUTE,
   RESULTS_FEEDBACK_SUBROUTE,
@@ -32,6 +33,7 @@ import {
   ResponsesPage,
 } from '~features/admin-form/responses'
 import { SettingsPage } from '~features/admin-form/settings/SettingsPage'
+import { FormPaymentPage } from '~features/payment/FormPaymentPage'
 import { BillingPage } from '~features/user/billing'
 
 import { HashRouterElement } from './HashRouterElement'
@@ -98,6 +100,10 @@ export const AppRouter = (): JSX.Element => {
           <Route
             path={USE_TEMPLATE_REDIRECT_SUBROUTE}
             element={<PublicElement element={<UseTemplateRedirectPage />} />}
+          />
+          <Route
+            path={PAYMENT_PAGE_SUBROUTE}
+            element={<PublicElement element={<FormPaymentPage />} />}
           />
         </Route>
         <Route

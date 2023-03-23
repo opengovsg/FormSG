@@ -8,6 +8,7 @@ import mongoose from 'mongoose'
 import { ok, Result } from 'neverthrow'
 import Stripe from 'stripe'
 
+import { ErrorDto, GetPaymentInfoDto } from '../../../../shared/types'
 import config from '../../config/config'
 import { paymentConfig } from '../../config/features/payment.config'
 import { createLoggerWithLabel } from '../../config/logger'
@@ -388,3 +389,54 @@ export const handleConnectOauthCallback = [
   }),
   _handleConnectOauthCallback,
 ] as ControllerHandler[]
+
+export const getPaymentInfo: ControllerHandler<
+  {
+    paymentIntentId: string
+  },
+  GetPaymentInfoDto | ErrorDto
+> = async (req, res) => {
+  const { paymentIntentId } = req.params
+  logger.info({
+    message: 'getPaymentInfo endpoint called',
+    meta: {
+      action: 'getPaymentInfo',
+      paymentIntentId,
+    },
+  })
+
+  let stripeFullIntentObj
+  try {
+    stripeFullIntentObj = await stripe.paymentIntents.retrieve(paymentIntentId)
+  } catch (error) {
+    logger.error({
+      message: 'getPaymentInfo endpoint called',
+      meta: {
+        action: 'getPaymentInfo',
+        paymentIntentId,
+        error,
+      },
+    })
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ message: 'Stripe retreival error' })
+  }
+
+  if (!stripeFullIntentObj?.client_secret) {
+    logger.error({
+      message: 'Error occurred when reading client_secret',
+      meta: {
+        action: 'getPaymentInfo',
+        paymentIntentId,
+      },
+    })
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ message: 'Missing client secret' })
+  }
+
+  return res.status(StatusCodes.OK).json({
+    client_secret: stripeFullIntentObj.client_secret,
+    publishableKey: paymentConfig.stripePublishableKey,
+  })
+}

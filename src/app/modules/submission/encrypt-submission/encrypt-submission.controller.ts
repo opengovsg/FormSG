@@ -533,6 +533,7 @@ const submitEncryptModeForm: ControllerHandler<
         ? {
             paymentClientSecret,
             paymentPublishableKey: form.payments_channel.publishable_key,
+            paymentIntentId: paymentIntent?.id,
           }
         : {}),
     })

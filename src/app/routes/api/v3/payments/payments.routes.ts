@@ -16,18 +16,19 @@ PaymentsRouter.get('/stripe')
  * @returns 404 if receipt URL does not exist
  */
 PaymentsRouter.route(
-  '/receipt/:formId([a-fA-F0-9]{24})/:submissionId([a-fA-F0-9]{24})/status',
+  '/receipt/:formId([a-fA-F0-9]{24})/:paymentIntentId([a-fA-F0-9]{24}/status',
 ).get(StripeController.checkPaymentReceiptStatus)
 
 /**
  * Downloads the receipt pdf
- * @route GET /receipt/:formId/:submissionId/download
+ * @route GET /payments/receipt/:formId/:submissionId/download
  *
  * @returns 200 with receipt URL exists
  */
-// TODO: consider rate limiting this endpoint #5924
 PaymentsRouter.route(
-  '/receipt/:formId([a-fA-F0-9]{24})/:submissionId([a-fA-F0-9]{24})/download',
+  // '/receipt/:formId([a-fA-F0-9]{24})/:submissionId([a-fA-F0-9]{24})/download',
+  // TODO: change to paymentIntentId in child funcs
+  '/receipt/:formId([a-fA-F0-9]{24})/:paymentIntentId([a-fA-F0-9]{24})/download',
 ).get(
   limitRate({ max: rateLimitConfig.downloadPaymentReceipt }),
   StripeController.downloadPaymentReceipt,
@@ -35,4 +36,12 @@ PaymentsRouter.route(
 
 PaymentsRouter.route('/stripe/callback').get(
   StripeController.handleConnectOauthCallback,
+)
+
+/**
+ * returns clientSecret and publishableKey from paymentIntentId
+ * @route /payments/:paymentIntentId/getInfo
+ */
+PaymentsRouter.route('/:paymentIntentId([a-fA-F0-9]{24}/getInfo').get(
+  StripeController.getPaymentInfo,
 )
