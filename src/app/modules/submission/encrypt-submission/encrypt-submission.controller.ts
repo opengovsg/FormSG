@@ -351,6 +351,7 @@ const submitEncryptModeForm: ControllerHandler<
     form.payments_field?.enabled &&
     form.payments_channel?.channel === PaymentChannel.Stripe
   ) {
+    // Step 1: Create pending submission without payment id.
     const pendingSubmission = new EncryptPendingSubmission(submissionContent)
 
     let savedPendingSubmission
@@ -367,14 +368,14 @@ const submitEncryptModeForm: ControllerHandler<
       })
       return res.status(StatusCodes.BAD_REQUEST).json({
         message:
-          'Could not send pending submission. For assistance, please contact the person who asked you to fill in this form.',
+          'Could not save pending submission. For assistance, please contact the person who asked you to fill in this form.',
         submissionId: pendingSubmission._id,
       })
     }
 
     const pendingSubmissionId = savedPendingSubmission.id
     logger.info({
-      message: 'Saved pending submission to MongoDB',
+      message: 'Created pending submission in DB',
       meta: {
         ...logMeta,
         pendingSubmissionId,
@@ -382,8 +383,7 @@ const submitEncryptModeForm: ControllerHandler<
       },
     })
 
-    // Save payment to DB
-
+    // Step 2: Create payment without payment intent id.
     if (!form.payments_field.amount_cents) {
       logger.error({
         message:
@@ -403,7 +403,7 @@ const submitEncryptModeForm: ControllerHandler<
       pendingSubmissionId,
       amount: form.payments_field.amount_cents,
       status: PaymentStatus.Pending,
-      paymentIntentId: '', // !! Placeholder, this must be overwritten later !!
+      paymentIntentId: 'payment_intent_creation_pending_placeholder', // !! Placeholder, this must be overwritten later !!
       email: req.body.paymentReceiptEmail,
     })
 
@@ -419,7 +419,6 @@ const submitEncryptModeForm: ControllerHandler<
         },
         error: err,
       })
-      // Block the submission so that user can try to resubmit
       return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
         message:
           'There was a problem preparing the payment document. Please try again.',
@@ -427,9 +426,47 @@ const submitEncryptModeForm: ControllerHandler<
     }
 
     const paymentId = savedPayment.id
+    logger.info({
+      message: 'Created payment document in DB',
+      meta: {
+        paymentId,
+        pendingSubmissionId,
+        ...logMeta,
+      },
+    })
+
+    // Step 3: Update pending submission with the payment id.
+    savedPendingSubmission.paymentId = paymentId
+    try {
+      await savedPendingSubmission.save()
+    } catch (err) {
+      logger.error({
+        message: 'Error updating pending submission with payment id',
+        meta: {
+          paymentId,
+          pendingSubmissionId,
+          ...logMeta,
+        },
+        error: err,
+      })
+      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        message:
+          'There was a problem updating the submission. Please try again.',
+      })
+    }
+
+    logger.info({
+      message: 'Updated pending submission in DB',
+      meta: {
+        paymentId,
+        pendingSubmissionId,
+        ...logMeta,
+      },
+    })
 
     // Assumes stripe for now
 
+    // Step 4: Create the payment intent via API call to stripe.
     // Stripe requires the amount to be an integer in the smallest currency unit (i.e. cents)
     const createPaymentIntentParams: Stripe.PaymentIntentCreateParams = {
       amount: form.payments_field.amount_cents,
@@ -464,6 +501,7 @@ const submitEncryptModeForm: ControllerHandler<
         message: 'Error when creating payment intent.',
         meta: {
           paymentId,
+          pendingSubmissionId,
           ...logMeta,
         },
         error: err,
@@ -478,19 +516,19 @@ const submitEncryptModeForm: ControllerHandler<
           ...logMeta,
         },
       })
-      // Block the submission so that user can try to resubmit
       return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
         message:
           'There was a problem preparing the payment intent. Please try again.',
       })
     }
 
-    payment.paymentIntentId = paymentIntent.id
+    // Step 5: Update payment document with payment intent id.
+    savedPayment.paymentIntentId = paymentIntent.id
     try {
-      await payment.save()
+      await savedPayment.save()
     } catch (err) {
       logger.error({
-        message: 'Error updating Payment document with payment intent id',
+        message: 'Error updating payment document with payment intent id',
         meta: {
           paymentId,
           pendingSubmissionId,
@@ -505,7 +543,16 @@ const submitEncryptModeForm: ControllerHandler<
       })
     }
 
-    // extract payment_client_secret from paymentIntent
+    logger.info({
+      message: 'Saved payment intent id to payment document',
+      meta: {
+        paymentId,
+        pendingSubmissionId,
+        ...logMeta,
+      },
+    })
+
+    // Step 6: Extract payment_client_secret from paymentIntent and return to client.
     const paymentClientSecret = paymentIntent.client_secret
 
     // if paymentClientSecret is null or undefined, log error
@@ -519,7 +566,6 @@ const submitEncryptModeForm: ControllerHandler<
       })
     }
 
-    // Send success back to client
     return res.json({
       message: 'Form submission successful',
       submissionId: pendingSubmissionId,
