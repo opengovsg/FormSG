@@ -83,9 +83,3 @@ export class ComputePaymentStateError extends ApplicationError {
     super(message)
   }
 }
-
-export class PendingSubmissionNotFoundError extends ApplicationError {
-  constructor(message = 'Pending submission associated to payment not found') {
-    super(message)
-  }
-}

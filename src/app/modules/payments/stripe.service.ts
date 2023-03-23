@@ -1,7 +1,6 @@
 import cuid from 'cuid'
 import get from 'lodash/get'
 import merge from 'lodash/merge'
-import omit from 'lodash/omit'
 import mongoose, { ClientSession } from 'mongoose'
 import { errAsync, ok, okAsync, ResultAsync } from 'neverthrow'
 import Stripe from 'stripe'
@@ -14,12 +13,15 @@ import { createLoggerWithLabel } from '../../config/logger'
 import { stripe } from '../../loaders/stripe'
 import getPaymentModel from '../../models/payment.server.model'
 import { getEncryptPendingSubmissionModel } from '../../models/pending_submission.server.model'
-import { getEncryptSubmissionModel } from '../../models/submission.server.model'
 import { getMongoErrorMessage } from '../../utils/handle-mongo-error'
 import { ApplicationError, DatabaseError } from '../core/core.errors'
 import { FormNotFoundError } from '../form/form.errors'
 import { retrieveFullFormById } from '../form/form.service'
 import { checkFormIsEncryptMode } from '../submission/encrypt-submission/encrypt-submission.service'
+import {
+  PendingSubmissionNotFoundError,
+  SubmissionNotFoundError,
+} from '../submission/submission.errors'
 import * as SubmissionService from '../submission/submission.service'
 
 import { PaymentNotFoundError } from './payments.errors'
@@ -31,13 +33,11 @@ import {
   EventMetadataPaymentIdInvalidError,
   EventMetadataPaymentIdNotFoundError,
   PaymentIntentLatestChargeNotFoundError,
-  PendingSubmissionNotFoundError,
   StripeAccountError,
   StripeAccountNotFoundError,
   StripeFetchError,
   StripeTransactionFeeNotFoundError,
   SubmissionAndFormMismatchError,
-  SubmissionNotFoundError,
   SuccessfulChargeNotFoundError,
 } from './stripe.errors'
 import {
@@ -49,7 +49,6 @@ import {
 const logger = createLoggerWithLabel(module)
 const Payment = getPaymentModel(mongoose)
 const EncryptPendingSubmission = getEncryptPendingSubmissionModel(mongoose)
-const EncryptSubmission = getEncryptSubmissionModel(mongoose)
 
 // Not exported, only used to pass exceptional control from the transaction
 // function back to the caller which is responsible for aborting the transaction.
@@ -81,7 +80,7 @@ const updateEventLogByPaymentIdTransaction = (
     ResultAsync.fromPromise(
       // Step 1: Get the payment. If the submission does not exist or the event
       // has been processed before, ignore the event.
-      Payment.findById(paymentId, { session }),
+      Payment.findById(paymentId).session(session),
       (error) => {
         logger.error({
           message: 'Error encountered while finding payment by id',
@@ -150,21 +149,8 @@ const updateEventLogByPaymentIdTransaction = (
               if (!pendingSubmission) {
                 return errAsync(new PendingSubmissionNotFoundError())
               }
-
-              const submission = new EncryptSubmission(
-                omit(pendingSubmission, ['_id', 'created', 'lastModified']),
-              )
-
-              return ResultAsync.fromPromise(
-                submission.save({ session }),
-                (error) => {
-                  logger.error({
-                    message: 'Error encountered while saving submission',
-                    meta: logMeta,
-                    error,
-                  })
-                  return new DatabaseError(getMongoErrorMessage(error))
-                },
+              return SubmissionService.copyPendingSubmissionToSubmissions(
+                pendingSubmission._id,
               )
             })
             .andThen((submission) => {
