@@ -1,7 +1,6 @@
 import mongoose from 'mongoose'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 
-import { Payment } from '../../../../shared/types'
 import { IPaymentSchema } from '../../../types'
 import { createLoggerWithLabel } from '../../config/logger'
 import getPaymentModel from '../../models/payment.server.model'
@@ -57,7 +56,7 @@ export const findBySubmissionIdAndUpdate = (
   submissionId: string,
   update?:
     | mongoose.UpdateWithAggregationPipeline
-    | mongoose.UpdateQuery<Payment>,
+    | mongoose.UpdateQuery<IPaymentSchema>,
 ): ResultAsync<IPaymentSchema, PaymentNotFoundError | DatabaseError> => {
   return ResultAsync.fromPromise(
     PaymentModel.findOneAndUpdate({ submissionId }, update).exec(),
@@ -89,7 +88,7 @@ export const findPaymentBySubmissionId = (
   submissionId: string,
 ): ResultAsync<IPaymentSchema, PaymentNotFoundError | DatabaseError> => {
   return ResultAsync.fromPromise(
-    PaymentModel.findOne({ submissionId }).exec(),
+    PaymentModel.findBySubmissionId(submissionId),
     (error) => {
       logger.error({
         message: 'Database find payment submissionId error',

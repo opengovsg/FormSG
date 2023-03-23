@@ -28,9 +28,7 @@ export class ChargeReceiptNotFoundError extends ApplicationError {
 }
 
 export class StripeTransactionFeeNotFoundError extends ApplicationError {
-  constructor(
-    message = "Charge object's receipt url not found from Stripe API",
-  ) {
+  constructor(message = 'Transaction fee not found from Stripe API') {
     super(message)
   }
 }
@@ -64,6 +62,18 @@ export class StripeAccountError extends ApplicationError {
 
 export class StripeAccountNotFoundError extends ApplicationError {
   constructor(message = 'Stripe account not found') {
+    super(message)
+  }
+}
+
+export class EventMetadataSubmissionIdNotFoundError extends ApplicationError {
+  constructor(message = 'Submission id not found in event metadata') {
+    super(message)
+  }
+}
+
+export class EventMetadataSubmissionIdInvalidError extends ApplicationError {
+  constructor(message = 'Invalid submission id found in event metadata') {
     super(message)
   }
 }

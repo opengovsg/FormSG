@@ -86,6 +86,12 @@ const compilePaymentModel = (db: Mongoose): IPaymentModel => {
     },
   )
 
+  PaymentSchema.statics.findBySubmissionId = async function (
+    submissionId: string,
+  ) {
+    return this.findOne({ submissionId }).exec()
+  }
+
   const PaymentModel = db.model<IPaymentSchema, IPaymentModel>(
     PAYMENT_SCHEMA_ID,
     PaymentSchema,

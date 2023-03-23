@@ -1,10 +1,16 @@
 import Stripe from 'stripe'
 import { DateString } from './generic'
 
+// Stripe Charge status
 export enum PaymentStatus {
-  Failed = 'failed',
   Pending = 'pending',
+  Failed = 'failed',
   Succeeded = 'succeeded',
+  PartiallyRefunded = 'partially_refunded',
+  FullyRefunded = 'fully_refunded',
+  Disputed = 'disputed',
+  DisputeClosed = 'dispute_closed',
+  Unknown = 'unknown',
 }
 
 export enum PaymentChannel {
@@ -29,6 +35,7 @@ export type Payment = {
   pendingSubmissionId: string
   email: string
   amount: number
+<<<<<<< HEAD
   paymentIntentId: string
 
   // Payment status tracking
@@ -43,6 +50,17 @@ export type Payment = {
   payout?: PayoutMeta
 
   created: DateString
+=======
+  status: PaymentStatus
+  eventLog: Stripe.Event[]
+  paymentIntentId: string
+  chargeIdLatest?: string
+  payoutId?: string
+  payoutDate?: Date
+  created: DateString
+  email: string
+  lastModified: DateString
+>>>>>>> 3485f6e4 (feat: add state machine to recompute state on each received event)
 }
 
 export type PaymentReceiptStatusDto = {
