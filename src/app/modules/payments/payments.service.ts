@@ -10,7 +10,10 @@ import { DatabaseError } from '../core/core.errors'
 import { PendingSubmissionNotFoundError } from '../submission/submission.errors'
 import * as SubmissionService from '../submission/submission.service'
 
-import { PaymentNotFoundError } from './payments.errors'
+import {
+  PaymentAlreadyConfirmedError,
+  PaymentNotFoundError,
+} from './payments.errors'
 
 const logger = createLoggerWithLabel(module)
 const PaymentModel = getPaymentModel(mongoose)
@@ -129,7 +132,10 @@ export const confirmPaymentPendingSubmission = (
   transactionFee: number,
 ): ResultAsync<
   IPaymentSchema,
-  PaymentNotFoundError | PendingSubmissionNotFoundError | DatabaseError
+  | PaymentNotFoundError
+  | PendingSubmissionNotFoundError
+  | PaymentAlreadyConfirmedError
+  | DatabaseError
 > => {
   const logMeta = {
     action: 'confirmPaymentPendingSubmission',
@@ -152,7 +158,14 @@ export const confirmPaymentPendingSubmission = (
     })
 
     return (
+      // Step 1: Retrieve the payment by payment id and check that the payment
+      // has not already been confirmed.
       findPaymentById(paymentId)
+        .andThen((payment) =>
+          payment.completedPayment
+            ? errAsync(new PaymentAlreadyConfirmedError())
+            : okAsync(payment),
+        )
         .andThen((payment) =>
           // Step 2: Copy the pending submission to the submissions collection
           SubmissionService.copyPendingSubmissionToSubmissions(
