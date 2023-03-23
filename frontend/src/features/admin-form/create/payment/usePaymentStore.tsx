@@ -2,7 +2,7 @@ import { isEqual } from 'lodash'
 import create from 'zustand'
 import { devtools } from 'zustand/middleware'
 
-import { FormPayments } from '~shared/types'
+import { FormPaymentsField } from '~shared/types'
 
 export enum PaymentState {
   EditingPayment,
@@ -12,9 +12,9 @@ export enum PaymentState {
 export type PaymentStore = {
   state: PaymentState
   holdingState: PaymentState | null
-  data: FormPayments
+  data: FormPaymentsField
   setToEditingPayment: (holding?: boolean) => void
-  setData: (payment?: FormPayments) => void
+  setData: (payment_field?: FormPaymentsField) => void
   resetData: () => void
   setToInactive: (holding?: boolean) => void
   clearHoldingState: () => void
@@ -25,7 +25,7 @@ export const usePaymentStore = create<PaymentStore>()(
   devtools((set, get) => ({
     state: PaymentState.Inactive,
     holdingState: null,
-    data: { enabled: false } as FormPayments,
+    data: { enabled: false } as FormPaymentsField,
     moveFromHolding: () => {
       const currentHoldingState = get().holdingState
       if (!currentHoldingState) return
@@ -42,12 +42,12 @@ export const usePaymentStore = create<PaymentStore>()(
         set({ state: PaymentState.EditingPayment })
       }
     },
-    setData: (payment) => {
+    setData: (payment_field) => {
       const current = get()
-      if (isEqual(current.data, payment)) {
+      if (isEqual(current.data, payment_field)) {
         return
       }
-      set({ data: payment })
+      set({ data: payment_field })
     },
     resetData: () => {
       set({

@@ -11,17 +11,16 @@ const PUBLIC_FORM_FIELDS = <const>[
   'title',
   '_id',
   'responseMode',
-  'payments',
 ]
 
 export const EMAIL_PUBLIC_FORM_FIELDS = PUBLIC_FORM_FIELDS
 export const STORAGE_PUBLIC_FORM_FIELDS = <const>[
   ...PUBLIC_FORM_FIELDS,
+  'payments_field',
   'publicKey',
 ]
 
 const FORM_SETTINGS_FIELDS = <const>[
-  'payments',
   'responseMode',
   'authType',
   'esrvcId',
@@ -39,6 +38,8 @@ export const EMAIL_FORM_SETTINGS_FIELDS = <const>[
 ]
 export const STORAGE_FORM_SETTINGS_FIELDS = <const>[
   ...FORM_SETTINGS_FIELDS,
+  'payments_channel',
+  'payments_field',
   'publicKey',
 ]
 

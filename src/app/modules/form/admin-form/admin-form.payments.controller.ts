@@ -10,6 +10,7 @@ import {
   unlinkStripeAccountFromForm,
   validateAccount,
 } from '../../payments/stripe.service'
+import { checkFormIsEncryptMode } from '../../submission/encrypt-submission/encrypt-submission.service'
 import { getPopulatedUserById } from '../../user/user.service'
 
 import { PermissionLevel } from './admin-form.types'
@@ -36,6 +37,7 @@ export const handleConnectAccount: ControllerHandler<{
           level: PermissionLevel.Write,
         }),
       )
+      .andThen(checkFormIsEncryptMode)
       .andThen((form) => getStripeOauthUrl(form))
       .map(({ authUrl, state }) => {
         res.cookie('stripeState', state, { signed: true })
@@ -75,6 +77,7 @@ export const handleUnlinkAccount: ControllerHandler<{
         level: PermissionLevel.Write,
       }),
     )
+    .andThen(checkFormIsEncryptMode)
     .andThen((form) => unlinkStripeAccountFromForm(form))
     .map(() => res.status(StatusCodes.OK).json({ message: 'Success' }))
     .mapErr((error) => {
@@ -108,7 +111,10 @@ export const handleValidatePaymentAccount: ControllerHandler<{
         level: PermissionLevel.Write,
       }),
     )
-    .andThen((form) => validateAccount(form.payments?.target_account_id))
+    .andThen(checkFormIsEncryptMode)
+    .andThen((form) =>
+      validateAccount(form.payments_channel?.target_account_id),
+    )
     .map((account) => {
       return res.json({
         account,

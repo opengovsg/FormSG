@@ -12,6 +12,7 @@ import {
   FormAuthType,
   FormSubmissionMetadataQueryDto,
   Payment,
+  PaymentChannel,
   PaymentStatus,
   StorageModeSubmissionDto,
   StorageModeSubmissionMetadataList,
@@ -386,10 +387,11 @@ const submitEncryptModeForm: ControllerHandler<
 
   // Client secret for stripe payments if payments are enabled
   let paymentClientSecret
-  if (form.payments?.enabled) {
-    // assumes stripe for now
-
-    if (!form.payments.amount_cents) {
+  if (
+    form.payments_field?.enabled &&
+    form.payments_channel?.channel === PaymentChannel.Stripe
+  ) {
+    if (!form.payments_field.amount_cents) {
       logger.error({
         message:
           'Error when creating payment intent, amount is not a positive integer',
@@ -406,13 +408,13 @@ const submitEncryptModeForm: ControllerHandler<
 
     // Stripe requires the amount to be an integer in the smallest currency unit (i.e. cents)
     const createPaymentIntentParams: Stripe.PaymentIntentCreateParams = {
-      amount: form.payments.amount_cents,
+      amount: form.payments_field.amount_cents,
       currency: paymentConfig.defaultCurrency,
       payment_method_types: [
         'card',
         /* 'grabpay', 'paynow'*/
       ],
-      description: form.payments.description,
+      description: form.payments_field.description,
       receipt_email: req.body.paymentReceiptEmail,
       // on_behalf_of: form.payments.target_account_id,
       metadata: {
@@ -431,7 +433,7 @@ const submitEncryptModeForm: ControllerHandler<
     try {
       paymentIntent = await stripe.paymentIntents.create(
         createPaymentIntentParams,
-        { stripeAccount: form.payments.target_account_id },
+        { stripeAccount: form.payments_channel.target_account_id },
       )
     } catch (err) {
       logger.error({
@@ -448,7 +450,7 @@ const submitEncryptModeForm: ControllerHandler<
       // Save payment to DB
       const payment = new Payment({
         submissionId,
-        amount: form.payments.amount_cents,
+        amount: form.payments_field.amount_cents,
         status: PaymentStatus.Pending,
         paymentIntentId: paymentIntent.id,
         email: req.body.paymentReceiptEmail,
@@ -501,7 +503,7 @@ const submitEncryptModeForm: ControllerHandler<
     ...(paymentClientSecret
       ? {
           paymentClientSecret,
-          paymentPublishableKey: form.payments?.publishable_key,
+          paymentPublishableKey: form.payments_channel?.publishable_key,
         }
       : {}),
   })

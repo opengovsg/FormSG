@@ -20,6 +20,7 @@ import {
   FormStatus,
   LogicDto,
   LogicType,
+  PaymentChannel,
 } from 'shared/types'
 
 import getFormModel, {
@@ -86,10 +87,16 @@ const FORM_DEFAULTS = {
   },
   status: 'PRIVATE',
   submissionLimit: null,
-  payments: {
-    enabled: false,
+}
+
+const PAYMENTS_DEFAULTS = {
+  payments_channel: {
+    channel: PaymentChannel.Stripe,
     target_account_id: '',
     publishable_key: '',
+  },
+  payments_field: {
+    enabled: false,
     description: '',
   },
 }
@@ -410,141 +417,13 @@ describe('Form Model', () => {
           'Form validation failed: esrvcId: e-service ID must not contain whitespace',
         )
       })
-
-      it('should save with default payments settings', async () => {
-        // Arrange + Act
-        const validForm = new Form(MOCK_FORM_PARAMS)
-        const saved = await validForm.save()
-
-        // Assert
-        // Retrieve object and compare to params, remove indeterministic keys
-        const actualSavedObject = omit(saved.toObject(), [
-          '_id',
-          'created',
-          'lastModified',
-          '__v',
-        ])
-        const expectedObject = merge({}, FORM_DEFAULTS, MOCK_FORM_PARAMS)
-        expect(actualSavedObject).toEqual(expectedObject)
-      })
-
-      it('should create and save successfully with valid payments settings', async () => {
-        // Arrange
-        const validFormParams = merge({}, MOCK_FORM_PARAMS, {
-          payments: {
-            enabled: true,
-            target_account_id: 'someId',
-            amount_cents: 50,
-            description: 'some payment',
-          },
-        })
-
-        // Act
-        const validForm = new Form(validFormParams)
-        const saved = await validForm.save()
-
-        // Assert
-        // All fields should exist
-        // Object Id should be defined when successfully saved to MongoDB.
-        expect(saved._id).toBeDefined()
-        expect(saved.created).toBeInstanceOf(Date)
-        expect(saved.lastModified).toBeInstanceOf(Date)
-        // Retrieve object and compare to params, remove indeterministic keys
-        const actualSavedObject = omit(saved.toObject(), [
-          '_id',
-          'created',
-          'lastModified',
-          '__v',
-        ])
-        const expectedObject = merge({}, FORM_DEFAULTS, validFormParams)
-        expect(actualSavedObject).toEqual(expectedObject)
-      })
-
-      it('should reject when target account id has whitespace', async () => {
-        // Arrange
-        const invalidFormParams = merge({}, MOCK_FORM_PARAMS, {
-          payments: {
-            enabled: true,
-            target_account_id: 'some Id',
-            amount_cents: 50,
-            description: 'some payment',
-          },
-        })
-
-        // Act
-        const invalidForm = new Form(invalidFormParams)
-
-        // Assert
-        await expect(invalidForm.save()).rejects.toThrow(
-          'target_account_id must not contain whitespace.',
-        )
-      })
-
-      it('should reject when amount is negative', async () => {
-        // Arrange
-        const invalidFormParams = merge({}, MOCK_FORM_PARAMS, {
-          payments: {
-            enabled: true,
-            target_account_id: 'someId',
-            amount_cents: -50,
-            description: 'some payment',
-          },
-        })
-
-        // Act
-        const invalidForm = new Form(invalidFormParams)
-
-        // Assert
-        await expect(invalidForm.save()).rejects.toThrow(
-          'Payment amount must be at least 50 cents and an integer.',
-        )
-      })
-
-      it('should reject when amount has decimals', async () => {
-        // Arrange
-        const invalidFormParams = merge({}, MOCK_FORM_PARAMS, {
-          payments: {
-            enabled: true,
-            target_account_id: 'someId',
-            amount_cents: 54.22,
-            description: 'some payment',
-          },
-        })
-
-        // Act
-        const invalidForm = new Form(invalidFormParams)
-
-        // Assert
-        await expect(invalidForm.save()).rejects.toThrow(
-          'Payment amount must be at least 50 cents and an integer.',
-        )
-      })
-
-      it('should reject when amount is less than 50', async () => {
-        // Arrange
-        const invalidFormParams = merge({}, MOCK_FORM_PARAMS, {
-          payments: {
-            enabled: true,
-            target_account_id: 'someId',
-            amount_cents: 49,
-            description: 'some payment',
-          },
-        })
-
-        // Act
-        const invalidForm = new Form(invalidFormParams)
-
-        // Assert
-        await expect(invalidForm.save()).rejects.toThrow(
-          'Payment amount must be at least 50 cents and an integer.',
-        )
-      })
     })
 
     describe('Encrypted form schema', () => {
       const ENCRYPT_FORM_DEFAULTS = merge(
         { responseMode: 'encrypt' },
         FORM_DEFAULTS,
+        PAYMENTS_DEFAULTS,
       )
 
       it('should create and save successfully', async () => {
@@ -832,6 +711,132 @@ describe('Form Model', () => {
 
         // Assert
         await expect(sgidForm.authType).toBe(FormAuthType.SGID)
+      })
+
+      it('should save with default payments settings', async () => {
+        // Arrange + Act
+        const validForm = new Form(MOCK_ENCRYPTED_FORM_PARAMS)
+        const saved = await validForm.save()
+
+        // Assert
+        // Retrieve object and compare to params, remove indeterministic keys
+        const actualSavedObject = omit(saved.toObject(), [
+          '_id',
+          'created',
+          'lastModified',
+          '__v',
+        ])
+        const expectedObject = merge(
+          {},
+          ENCRYPT_FORM_DEFAULTS,
+          MOCK_ENCRYPTED_FORM_PARAMS,
+        )
+        expect(actualSavedObject).toEqual(expectedObject)
+      })
+
+      it('should create and save successfully with valid payments_field settings', async () => {
+        // Arrange
+        const validFormParams = merge({}, MOCK_ENCRYPTED_FORM_PARAMS, {
+          payments_field: {
+            enabled: true,
+            amount_cents: 50,
+            description: 'some payment',
+          },
+        })
+
+        // Act
+        const validForm = new Form(validFormParams)
+        const saved = await validForm.save()
+
+        // Assert
+        // All fields should exist
+        // Object Id should be defined when successfully saved to MongoDB.
+        expect(saved._id).toBeDefined()
+        expect(saved.created).toBeInstanceOf(Date)
+        expect(saved.lastModified).toBeInstanceOf(Date)
+        // Retrieve object and compare to params, remove indeterministic keys
+        const actualSavedObject = omit(saved.toObject(), [
+          '_id',
+          'created',
+          'lastModified',
+          '__v',
+        ])
+        const expectedObject = merge({}, ENCRYPT_FORM_DEFAULTS, validFormParams)
+        expect(actualSavedObject).toEqual(expectedObject)
+      })
+
+      it('should reject when target account id has whitespace', async () => {
+        // Arrange
+        const invalidFormParams = merge({}, MOCK_ENCRYPTED_FORM_PARAMS, {
+          payments_channel: {
+            target_account_id: 'some Id',
+          },
+        })
+
+        // Act
+        const invalidForm = new Form(invalidFormParams)
+
+        // Assert
+        await expect(invalidForm.save()).rejects.toThrow(
+          'target_account_id must not contain whitespace.',
+        )
+      })
+
+      it('should reject when amount is negative', async () => {
+        // Arrange
+        const invalidFormParams = merge({}, MOCK_ENCRYPTED_FORM_PARAMS, {
+          payments_field: {
+            enabled: true,
+            amount_cents: -50,
+            description: 'some payment',
+          },
+        })
+
+        // Act
+        const invalidForm = new Form(invalidFormParams)
+
+        // Assert
+        await expect(invalidForm.save()).rejects.toThrow(
+          'Payment amount must be at least 50 cents and an integer.',
+        )
+      })
+
+      it('should reject when amount has decimals', async () => {
+        // Arrange
+        const invalidFormParams = merge({}, MOCK_ENCRYPTED_FORM_PARAMS, {
+          payments_field: {
+            enabled: true,
+            amount_cents: 54.22,
+            description: 'some payment',
+          },
+        })
+
+        // Act
+        const invalidForm = new Form(invalidFormParams)
+
+        // Assert
+        await expect(invalidForm.save()).rejects.toThrow(
+          'Payment amount must be at least 50 cents and an integer.',
+        )
+      })
+
+      it('should reject when amount is less than 50', async () => {
+        // Arrange
+        const invalidFormParams = merge({}, MOCK_ENCRYPTED_FORM_PARAMS, {
+          payments_field: {
+            enabled: true,
+            amount_cents: 49,
+            description: 'some payment',
+          },
+        })
+
+        // Act
+        const invalidForm = new Form(invalidFormParams)
+
+        // Assert
+        await expect(invalidForm.save()).rejects.toThrow(
+          'Payment amount must be at least 50 cents and an integer.',
+        )
       })
     })
 
