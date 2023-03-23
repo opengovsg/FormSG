@@ -1,6 +1,8 @@
 import { Router } from 'express'
 
+import { rateLimitConfig } from '../../../../config/config'
 import * as StripeController from '../../../../modules/payments/stripe.controller'
+import { limitRate } from '../../../../utils/limit-rate'
 
 export const PaymentsRouter = Router()
 
@@ -26,7 +28,10 @@ PaymentsRouter.route(
 // TODO: consider rate limiting this endpoint #5924
 PaymentsRouter.route(
   '/receipt/:formId([a-fA-F0-9]{24})/:submissionId([a-fA-F0-9]{24})/download',
-).get(StripeController.downloadPaymentReceipt)
+).get(
+  limitRate({ max: rateLimitConfig.downloadPaymentReceipt }),
+  StripeController.downloadPaymentReceipt,
+)
 
 PaymentsRouter.route('/stripe/callback').get(
   StripeController.handleConnectOauthCallback,
