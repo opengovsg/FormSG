@@ -1,6 +1,5 @@
 import Stripe from 'stripe'
 import { DateString } from './generic'
-import type { Opaque } from 'type-fest'
 
 export enum PaymentStatus {
   Failed = 'failed',
@@ -8,14 +7,12 @@ export enum PaymentStatus {
   Succeeded = 'succeeded',
 }
 
-export type PaymentId = Opaque<string, 'PaymentId'>
 export enum PaymentChannel {
   Stripe = 'Stripe',
   // for extensibility to future payment options
 }
 
 export type Payment = {
-  _id: PaymentId
   submissionId: string
   amount: number
   status: PaymentStatus
