@@ -44,6 +44,7 @@ import {
 } from '../../spcp/spcp.util'
 import { AuthTypeMismatchError, PrivateFormError } from '../form.errors'
 import * as FormService from '../form.service'
+import { isFormEncryptMode } from '../form.utils'
 
 import * as PublicFormService from './public-form.service'
 import { RedirectParams } from './public-form.types'
@@ -163,7 +164,7 @@ export const handleGetPublicForm: ControllerHandler<
 
   // If payments is enabled on the form, clear the angular cookie
   // TODO(#4279): Remove once react rollout complete
-  if (form.payments?.enabled) {
+  if (isFormEncryptMode(form) && form.payments_field?.enabled) {
     const angularCookie = config.reactMigration.respondentCookieName
     res.clearCookie(angularCookie)
   }
