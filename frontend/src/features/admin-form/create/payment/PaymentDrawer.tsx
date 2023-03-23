@@ -152,8 +152,7 @@ export const PaymentInput = (): JSX.Element => {
           if (minPaymentAmountCents === undefined) return true
           return (
             // val is in dollars
-            Number(val?.trim()) >=
-              Number(centsToDollars(minPaymentAmountCents)) ||
+            (val && dollarsToCents(val) >= minPaymentAmountCents) ||
             `Please enter a payment amount above ${formatCurrency(
               Number(centsToDollars(minPaymentAmountCents)),
             )}`
@@ -163,9 +162,8 @@ export const PaymentInput = (): JSX.Element => {
           if (maxPaymentAmountCents === undefined) return true
           return (
             // val is in dollars
-            Number(val?.trim()) <=
-              Number(centsToDollars(maxPaymentAmountCents)) ||
-            `Please keep payment amount under ${formatCurrency(
+            (val && dollarsToCents(val) <= maxPaymentAmountCents) ||
+            `Please enter a payment amount below ${formatCurrency(
               Number(centsToDollars(maxPaymentAmountCents)),
             )}`
           )
