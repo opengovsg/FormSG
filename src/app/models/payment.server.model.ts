@@ -8,19 +8,23 @@ export const PAYMENT_SCHEMA_ID = 'Payment'
 const compilePaymentModel = (db: Mongoose): IPaymentModel => {
   const PaymentSchema = new Schema<IPaymentSchema, IPaymentModel>(
     {
-      submissionId: {
+      pendingSubmissionId: {
         type: Schema.Types.ObjectId,
+        required: true,
+      },
+      email: {
+        type: String,
         required: true,
       },
       amount: {
         type: Number,
         required: true,
       },
-      status: {
+      paymentIntentId: {
         type: String,
-        enum: Object.values(PaymentStatus),
         required: true,
       },
+
       webhookLog: {
         type: [
           {
@@ -29,28 +33,47 @@ const compilePaymentModel = (db: Mongoose): IPaymentModel => {
         ],
         default: [],
       },
-      paymentIntentId: {
+      status: {
         type: String,
+        enum: Object.values(PaymentStatus),
         required: true,
       },
       chargeIdLatest: {
         type: String,
       },
-      payoutId: {
-        type: String,
+
+      completedPayment: {
+        type: {
+          paymentDate: {
+            type: Date,
+            required: true,
+          },
+          submissionId: {
+            type: Schema.Types.ObjectId,
+            required: true,
+          },
+          transactionFee: {
+            type: Number,
+            required: true,
+          },
+          receiptUrl: {
+            type: String,
+            required: true,
+          },
+        },
       },
-      payoutDate: {
-        type: Date,
-      },
-      transactionFee: {
-        type: Number,
-      },
-      receiptUrl: {
-        type: String,
-      },
-      email: {
-        type: String,
-        required: true,
+
+      payout: {
+        type: {
+          payoutId: {
+            type: String,
+            required: true,
+          },
+          payoutDate: {
+            type: Date,
+            required: true,
+          },
+        },
       },
     },
     {

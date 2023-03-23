@@ -6,12 +6,6 @@ export class SubmissionNotFoundError extends ApplicationError {
   }
 }
 
-export class PaymentNotFoundError extends ApplicationError {
-  constructor(message = 'Payment not found') {
-    super(message)
-  }
-}
-
 export class SubmissionAndFormMismatchError extends ApplicationError {
   constructor(
     message = 'Submission id provided does not match the one linked to the form id',
