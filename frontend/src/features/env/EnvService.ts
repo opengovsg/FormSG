@@ -89,9 +89,15 @@ export const submitSwitchEnvFormFeedback = async ({
   const isAdmin = Object.keys(formInputs).includes('rating')
 
   const formFields = ['url', 'feedback', 'email', 'rumSessionId']
-  if (isAdmin) formFields.push('rating')
-  if (!isAdmin)
-    formFields.push('attachmentType', 'userAgent', 'responseMode', 'authType')
+  const adminFormFields = ['rating']
+  const publicFormFields = [
+    'attachmentType',
+    'userAgent',
+    'responseMode',
+    'authType',
+  ]
+  if (isAdmin) formFields.push(...adminFormFields)
+  else formFields.push(...publicFormFields)
 
   const formData = createSwitchFeedbackSubmissionFormData(
     formFields,
