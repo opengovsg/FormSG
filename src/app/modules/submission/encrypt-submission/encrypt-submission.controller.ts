@@ -7,6 +7,8 @@ import mongoose from 'mongoose'
 import Stripe from 'stripe'
 import type { SetOptional } from 'type-fest'
 
+import { getEncryptPendingSubmissionModel } from 'src/app/models/pending_submission.server.model'
+
 import {
   ErrorDto,
   FormAuthType,
@@ -62,6 +64,7 @@ import IncomingEncryptSubmission from './IncomingEncryptSubmission.class'
 
 const logger = createLoggerWithLabel(module)
 const EncryptSubmission = getEncryptSubmissionModel(mongoose)
+const EncryptPendingSubmission = getEncryptPendingSubmissionModel(mongoose)
 const Payment = getPaymentModel(mongoose)
 
 // NOTE: Refer to this for documentation: https://github.com/sideway/joi-date/blob/master/API.md
@@ -334,7 +337,7 @@ const submitEncryptModeForm: ControllerHandler<
     }
   }
 
-  const submission = new EncryptSubmission({
+  const submissionContent = {
     form: form._id,
     authType: form.authType,
     myInfoFields: form.getUniqueMyInfoAttrs(),
@@ -342,7 +345,198 @@ const submitEncryptModeForm: ControllerHandler<
     verifiedContent: verified,
     attachmentMetadata,
     version: req.body.version,
-  })
+  }
+
+  // Client secret for stripe payments if payments are enabled
+  if (
+    form.payments_field?.enabled &&
+    form.payments_channel?.channel === PaymentChannel.Stripe
+  ) {
+    const pendingSubmission = new EncryptPendingSubmission(submissionContent)
+
+    let savedPendingSubmission
+    try {
+      savedPendingSubmission = await pendingSubmission.save()
+    } catch (err) {
+      logger.error({
+        message: 'Encrypt pending submission save error',
+        meta: {
+          action: 'onEncryptSubmissionFailure',
+          ...createReqMeta(req),
+        },
+        error: err,
+      })
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        message:
+          'Could not send pending submission. For assistance, please contact the person who asked you to fill in this form.',
+        submissionId: pendingSubmission._id,
+      })
+    }
+
+    const pendingSubmissionId = savedPendingSubmission.id
+    logger.info({
+      message: 'Saved pending submission to MongoDB',
+      meta: {
+        ...logMeta,
+        pendingSubmissionId,
+        formId,
+      },
+    })
+
+    // Save payment to DB
+
+    if (!form.payments_field.amount_cents) {
+      logger.error({
+        message:
+          'Error when creating payment, amount is not a positive integer',
+        meta: {
+          pendingSubmissionId,
+          ...logMeta,
+        },
+      })
+      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        message:
+          "The form's payment settings are invalid. Please contact the admin of the form to rectify the issue.",
+      })
+    }
+
+    const payment = new Payment({
+      pendingSubmissionId,
+      amount: form.payments_field.amount_cents,
+      status: PaymentStatus.Pending,
+      paymentIntentId: '', // !! Placeholder, this must be overwritten later !!
+      email: req.body.paymentReceiptEmail,
+    })
+
+    let savedPayment
+    try {
+      savedPayment = await payment.save()
+    } catch (err) {
+      logger.error({
+        message: 'Error creating new Payment document',
+        meta: {
+          pendingSubmissionId,
+          ...logMeta,
+        },
+        error: err,
+      })
+      // Block the submission so that user can try to resubmit
+      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        message:
+          'There was a problem preparing the payment document. Please try again.',
+      })
+    }
+
+    const paymentId = savedPayment.id
+
+    // Assumes stripe for now
+
+    // Stripe requires the amount to be an integer in the smallest currency unit (i.e. cents)
+    const createPaymentIntentParams: Stripe.PaymentIntentCreateParams = {
+      amount: form.payments_field.amount_cents,
+      currency: paymentConfig.defaultCurrency,
+      payment_method_types: [
+        'card',
+        /* 'grabpay', 'paynow'*/
+      ],
+      description: form.payments_field.description,
+      receipt_email: req.body.paymentReceiptEmail,
+      // on_behalf_of: form.payments.target_account_id,
+      metadata: {
+        formId,
+        paymentId,
+      },
+    }
+
+    // The business logic for payments is as follows.
+    // 1) If payment intent is created successfully, successfully saved to DB and paymentClientSecret is successfully extracted from payment intent, then paymentClientSecret will be returned in 200 to client
+    // 2) If payment intent creation fails, then 200 will be returned to client without paymentClientSecret. This is because failed creation of payment intent indicates possible incorrect admin payment setting. In that case, the submission is already saved, and we provide the submissionID to client and ask them to contact form admin for assistance to complete payment.
+    // 3) If payment intent is created successfully, but saving to DB fails, we return 500 to client. This allows client to resubmit the form / allows us to try to create a new payment intent and save to DB.
+    // 4) if payment intent is created successfully, successfully saved to DB but we fail to extract paymentClientSecret from payment intent, this indicates an error with stripe. A 200 will be returned to client without paymentClientSecret. In that case, the submission is already saved, and we provide the submissionID to client and ask them to contact form admin for assistance to complete payment.
+    let paymentIntent
+    try {
+      paymentIntent = await stripe.paymentIntents.create(
+        createPaymentIntentParams,
+        // TODO: Throw error here if payments channel is undefined
+        { stripeAccount: form.payments_channel?.target_account_id },
+      )
+    } catch (err) {
+      logger.error({
+        message: 'Error when creating payment intent.',
+        meta: {
+          paymentId,
+          ...logMeta,
+        },
+        error: err,
+      })
+    }
+
+    if (!paymentIntent) {
+      logger.error({
+        message: `Failed to create payment intent`,
+        meta: {
+          createPaymentIntentOptions: createPaymentIntentParams,
+          ...logMeta,
+        },
+      })
+      // Block the submission so that user can try to resubmit
+      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        message:
+          'There was a problem preparing the payment intent. Please try again.',
+      })
+    }
+
+    payment.paymentIntentId = paymentIntent.id
+    try {
+      await payment.save()
+    } catch (err) {
+      logger.error({
+        message: 'Error updating Payment document with payment intent id',
+        meta: {
+          paymentId,
+          pendingSubmissionId,
+          ...logMeta,
+        },
+        error: err,
+      })
+      // Block the submission so that user can try to resubmit
+      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        message:
+          'There was a problem updating the payment document. Please try again.',
+      })
+    }
+
+    // extract payment_client_secret from paymentIntent
+    const paymentClientSecret = paymentIntent.client_secret
+
+    // if paymentClientSecret is null or undefined, log error
+    if (!paymentClientSecret) {
+      logger.error({
+        message: `No client secret provided with Stripe payment intent`,
+        meta: {
+          createPaymentIntentOptions: createPaymentIntentParams,
+          ...logMeta,
+        },
+      })
+    }
+
+    // Send success back to client
+    return res.json({
+      message: 'Form submission successful',
+      submissionId: pendingSubmissionId,
+      timestamp: (pendingSubmission.created || new Date()).getTime(),
+      // Attach paymentClientSecret if it is defined and non-null. Otherwise, client will display error message.
+      ...(paymentClientSecret
+        ? {
+            paymentClientSecret,
+            // TODO: Same as above - throw error
+            paymentPublishableKey: form.payments_channel?.publishable_key,
+          }
+        : {}),
+    })
+  }
+
+  const submission = new EncryptSubmission(submissionContent)
 
   let savedSubmission
   try {
@@ -385,131 +579,14 @@ const submitEncryptModeForm: ControllerHandler<
     )
   }
 
-  // Client secret for stripe payments if payments are enabled
-  let paymentClientSecret
-  if (
-    form.payments_field?.enabled &&
-    form.payments_channel?.channel === PaymentChannel.Stripe
-  ) {
-    if (!form.payments_field.amount_cents) {
-      logger.error({
-        message:
-          'Error when creating payment intent, amount is not a positive integer',
-        meta: {
-          submissionId,
-          ...logMeta,
-        },
-      })
-      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-        message:
-          "The form's payment settings are invalid. Please contact the admin of the form to rectify the issue.",
-      })
-    }
-
-    // Stripe requires the amount to be an integer in the smallest currency unit (i.e. cents)
-    const createPaymentIntentParams: Stripe.PaymentIntentCreateParams = {
-      amount: form.payments_field.amount_cents,
-      currency: paymentConfig.defaultCurrency,
-      payment_method_types: [
-        'card',
-        /* 'grabpay', 'paynow'*/
-      ],
-      description: form.payments_field.description,
-      receipt_email: req.body.paymentReceiptEmail,
-      // on_behalf_of: form.payments.target_account_id,
-      metadata: {
-        formId,
-        submissionId,
-      },
-    }
-
-    // The business logic for payments is as follows.
-    // 1) If payment intent is created successfully, successfully saved to DB and paymentClientSecret is successfully extracted from payment intent, then paymentClientSecret will be returned in 200 to client
-    // 2) If payment intent creation fails, then 200 will be returned to client without paymentClientSecret. This is because failed creation of payment intent indicates possible incorrect admin payment setting. In that case, the submission is already saved, and we provide the submissionID to client and ask them to contact form admin for assistance to complete payment.
-    // 3) If payment intent is created successfully, but saving to DB fails, we return 500 to client. This allows client to resubmit the form / allows us to try to create a new payment intent and save to DB.
-    // 4) if payment intent is created successfully, successfully saved to DB but we fail to extract paymentClientSecret from payment intent, this indicates an error with stripe. A 200 will be returned to client without paymentClientSecret. In that case, the submission is already saved, and we provide the submissionID to client and ask them to contact form admin for assistance to complete payment.
-    let paymentIntent
-
-    try {
-      paymentIntent = await stripe.paymentIntents.create(
-        createPaymentIntentParams,
-        { stripeAccount: form.payments_channel.target_account_id },
-      )
-    } catch (err) {
-      logger.error({
-        message: 'Error when creating payment intent.',
-        meta: {
-          submissionId,
-          ...logMeta,
-        },
-        error: err,
-      })
-    }
-
-    if (paymentIntent) {
-      // Save payment to DB
-      const payment = new Payment({
-        submissionId,
-        amount: form.payments_field.amount_cents,
-        status: PaymentStatus.Pending,
-        paymentIntentId: paymentIntent.id,
-        email: req.body.paymentReceiptEmail,
-      })
-
-      try {
-        await payment.save()
-      } catch (err) {
-        logger.error({
-          message: 'Payment save error',
-          meta: {
-            paymentIntentId: paymentIntent.id,
-            submissionId,
-            ...logMeta,
-          },
-          error: err,
-        })
-
-        // Block the submission so that user can try to resubmit and create a new payment intent,
-        // because paymentIntent creation successful but this was a DB error.
-        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-          message:
-            'There was a problem preparing the payment. Please try again.',
-        })
-      }
-    }
-
-    // extract payment_client_secret from paymentIntent
-    paymentClientSecret = paymentIntent?.client_secret
-
-    // if paymentClientSecret is null or undefined, log error
-    if (!paymentClientSecret) {
-      logger.error({
-        message: `Client secret is ${paymentClientSecret}`,
-        meta: {
-          createPaymentIntentOptions: createPaymentIntentParams,
-          submissionId,
-          ...logMeta,
-        },
-      })
-    }
-  }
-
   // Send success back to client
   res.json({
     message: 'Form submission successful.',
-    submissionId: submission.id,
+    submissionId,
     timestamp: (submission.created || new Date()).getTime(),
-    // Attach paymentClientSecret if it is defined and non-null. Otherwise, client will display error message.
-    ...(paymentClientSecret
-      ? {
-          paymentClientSecret,
-          paymentPublishableKey: form.payments_channel?.publishable_key,
-        }
-      : {}),
   })
 
   // Send Email Confirmations
-
   return sendEmailConfirmations({
     form,
     submission: savedSubmission,

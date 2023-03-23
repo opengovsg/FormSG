@@ -4,10 +4,9 @@
 import { err, ok, Result } from 'neverthrow'
 import Stripe from 'stripe'
 
-import { createLoggerWithLabel } from 'src/app/config/logger'
-
 import { Payment, PaymentStatus } from '../../../../shared/types'
 import config from '../../config/config'
+import { createLoggerWithLabel } from '../../config/logger'
 
 import { ComputePaymentStateError } from './stripe.errors'
 
