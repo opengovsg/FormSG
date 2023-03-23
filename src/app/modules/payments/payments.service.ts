@@ -95,7 +95,6 @@ export const updateReceiptUrlAndTransactionFee = (
         $set: {
           receiptUrl,
           stripeTransactionFee,
-          updatedAt: new Date(),
         },
       },
       { new: true },

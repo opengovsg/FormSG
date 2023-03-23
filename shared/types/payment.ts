@@ -21,7 +21,7 @@ export type Payment = {
   payoutId: string
   payoutDate: Date
   created: DateString
-  stripeTransactionFee: number
+  transactionFee: number
   receiptUrl: string
   email: string
 }
