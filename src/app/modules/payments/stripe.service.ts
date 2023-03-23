@@ -77,111 +77,116 @@ const updateEventLogByPaymentIdTransaction = (
     event,
   }
 
-  return ResultAsync.fromPromise(
-    // Step 1: Get the payment. If the submission does not exist or the event
-    // has been processed before, ignore the event.
-    PaymentModel.findById(paymentId, { session }),
-    (error) => {
-      logger.error({
-        message: 'Error encountered while finding payment by id',
-        meta: logMeta,
-        error,
-      })
-      return new DatabaseError(getMongoErrorMessage(error))
-    },
-  )
-    .andThen((payment) => {
-      if (!payment) {
-        return errAsync(new PaymentNotFoundError())
-      }
-
-      if (payment.eventLog.some((e) => e.id === event.id)) {
-        return errAsync(new DuplicateEventError())
-      }
-
-      // Step 2: Inject the event into the correct position into the array.
-      // We expect webhook arrays to be small (~10 entries max), so push and sort is ok.
-      payment.eventLog.push(event)
-      payment.eventLog.sort((e1, e2) => {
-        // Order by event creation time first, then object creation time (if it exists).
-        const e1ObjectCreated = get(e1.data.object, 'created')
-        const e2ObjectCreated = get(e2.data.object, 'created')
-        if (
-          e1.created === e2.created &&
-          typeof e1ObjectCreated === 'number' &&
-          typeof e2ObjectCreated === 'number'
-        ) {
-          return e1ObjectCreated - e2ObjectCreated
-        }
-        return e1.created - e2.created
-      })
-
-      // Step 3: Recompute the payment state based on the event log.
-      return computePaymentState(payment.eventLog).asyncAndThen((state) => {
-        // Step 4: Update the payment state.
-        payment = merge(payment, state)
-        return okAsync(payment)
-      })
-    })
-    .andThen((payment) => {
-      // Step 5: If the state is post-success (i.e. not pending or failed),
-      // check if there is already an associated submission. If not, copy the
-      // pending submission to submission.
-      if (
-        isPaymentStatusPostSuccess(payment.status) &&
-        !payment.completedPayment
-      ) {
-        return ResultAsync.fromPromise(
-          PendingSubmissionModel.findById(payment.pendingSubmissionId, {
-            session,
-          }).exec(),
-          (error) => {
-            logger.error({
-              message: 'Error encountered while retrieving pending submission',
-              meta: logMeta,
-              error,
-            })
-            return new DatabaseError(getMongoErrorMessage(error))
-          },
-        )
-          .andThen((pendingSubmission) => {
-            if (!pendingSubmission) {
-              return errAsync(new PendingSubmissionNotFoundError())
-            }
-
-            const submission = new SubmissionModel(pendingSubmission)
-
-            return ResultAsync.fromPromise(
-              submission.save({ session }),
-              (error) => {
-                logger.error({
-                  message: 'Error encountered while saving submission',
-                  meta: logMeta,
-                  error,
-                })
-                return new DatabaseError(getMongoErrorMessage(error))
-              },
-            )
-          })
-          .andThen((submission) => {
-            payment.completedPayment.submissionId = submission.id
-            return okAsync(payment)
-          })
-      }
-      return okAsync(payment)
-    })
-    .andThen((payment) =>
-      // Step 6: Save the payment object.
-      ResultAsync.fromPromise(payment.save({ session }), (error) => {
+  return (
+    ResultAsync.fromPromise(
+      // Step 1: Get the payment. If the submission does not exist or the event
+      // has been processed before, ignore the event.
+      PaymentModel.findById(paymentId, { session }),
+      (error) => {
         logger.error({
-          message: 'Error encountered while updating payment',
+          message: 'Error encountered while finding payment by id',
           meta: logMeta,
           error,
         })
         return new DatabaseError(getMongoErrorMessage(error))
-      }),
+      },
     )
-    .andThen(() => okAsync(undefined))
+      .andThen((payment) => {
+        if (!payment) {
+          return errAsync(new PaymentNotFoundError())
+        }
+
+        if (payment.eventLog.some((e) => e.id === event.id)) {
+          return errAsync(new DuplicateEventError())
+        }
+
+        // Step 2: Inject the event into the correct position into the array.
+        // We expect webhook arrays to be small (~10 entries max), so push and sort is ok.
+        payment.eventLog.push(event)
+        payment.eventLog.sort((e1, e2) => {
+          // Order by event creation time first, then object creation time (if it exists).
+          const e1ObjectCreated = get(e1.data.object, 'created')
+          const e2ObjectCreated = get(e2.data.object, 'created')
+          if (
+            e1.created === e2.created &&
+            typeof e1ObjectCreated === 'number' &&
+            typeof e2ObjectCreated === 'number'
+          ) {
+            return e1ObjectCreated - e2ObjectCreated
+          }
+          return e1.created - e2.created
+        })
+
+        // Step 3: Recompute the payment state based on the event log.
+        return computePaymentState(payment.eventLog).asyncAndThen((state) => {
+          // Step 4: Update the payment state.
+          payment = merge(payment, state)
+          return okAsync(payment)
+        })
+      })
+      .andThen((payment) => {
+        // Step 5: If the state is post-success (i.e. not pending or failed),
+        // check if there is already an associated submission. If not, copy the
+        // pending submission to submission.
+        if (
+          isPaymentStatusPostSuccess(payment.status) &&
+          !payment.submissionId
+        ) {
+          return ResultAsync.fromPromise(
+            PendingSubmissionModel.findById(payment.pendingSubmissionId, {
+              session,
+            }).exec(),
+            (error) => {
+              logger.error({
+                message:
+                  'Error encountered while retrieving pending submission',
+                meta: logMeta,
+                error,
+              })
+              return new DatabaseError(getMongoErrorMessage(error))
+            },
+          )
+            .andThen((pendingSubmission) => {
+              if (!pendingSubmission) {
+                return errAsync(new PendingSubmissionNotFoundError())
+              }
+
+              // TODO: Does this copy over the ID and other metadata too?
+              const submission = new SubmissionModel(pendingSubmission)
+
+              return ResultAsync.fromPromise(
+                submission.save({ session }),
+                (error) => {
+                  logger.error({
+                    message: 'Error encountered while saving submission',
+                    meta: logMeta,
+                    error,
+                  })
+                  return new DatabaseError(getMongoErrorMessage(error))
+                },
+              )
+            })
+            .andThen((submission) => {
+              payment.submissionId = submission.id
+              return okAsync(payment)
+            })
+        }
+        return okAsync(payment)
+      })
+      // TODO: Update transaction fee and receipt url?
+      .andThen((payment) =>
+        // Step 6: Save the payment object.
+        ResultAsync.fromPromise(payment.save({ session }), (error) => {
+          logger.error({
+            message: 'Error encountered while updating payment',
+            meta: logMeta,
+            error,
+          })
+          return new DatabaseError(getMongoErrorMessage(error))
+        }),
+      )
+      .andThen(() => okAsync(undefined))
+  )
 }
 
 /**

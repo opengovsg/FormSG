@@ -140,7 +140,7 @@ export const _handleStripeEventUpdates: ControllerHandler<
     case 'payout.failed':
     case 'payout.paid':
     case 'payout.updated':
-      // This is most definitely wrong but need to test when payouts come in
+      // TODO: This is most definitely wrong but need to test when payouts come in
       await StripeService.updateEventLogById(
         event.data.object.metadata,
         event,
