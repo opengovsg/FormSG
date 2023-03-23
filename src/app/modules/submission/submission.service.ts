@@ -209,16 +209,19 @@ export const findSubmissionById = (
 }
 
 /**
+ * Moves a pending submission by ID to the submission collection. For correctness,
+ * this should always be done within a transaction, thus a session must be provided.
+ *
  * @param pendingSubmissionId the id of the pending submission to confirm
- * @param session (optional) the mongoose transaction session to be used, if any
+ * @param session the mongoose transaction session to be used, if any
  *
  * @returns ok(submission document) if a submission document is successfully created
  * @returns err(PendingSubmissionNotFoundError) if pending submission does not exist in the database
  * @returns err(DatabaseError) if database errors occurs while copying the document over
  */
-export const confirmPendingSubmission = (
+export const movePendingSubmissionToSubmissions = (
   pendingSubmissionId: string,
-  session?: mongoose.ClientSession,
+  session: mongoose.ClientSession,
 ): ResultAsync<
   ISubmissionSchema,
   DatabaseError | PendingSubmissionNotFoundError
@@ -229,9 +232,7 @@ export const confirmPendingSubmission = (
   }
 
   return ResultAsync.fromPromise(
-    PendingSubmissionModel.findById(pendingSubmissionId).session(
-      session ?? null,
-    ),
+    PendingSubmissionModel.findById(pendingSubmissionId).session(session),
     (error) => {
       logger.error({
         message: 'Database find pending submission error',

@@ -791,7 +791,7 @@ describe('submission.service', () => {
     })
   })
 
-  describe('confirmPendingSubmission', () => {
+  describe('movePendingSubmissionToSubmissions', () => {
     const MOCK_PENDING_SUBMISSION_ID = MOCK_SUBMISSION._id
 
     beforeEach(async () => {
@@ -810,9 +810,12 @@ describe('submission.service', () => {
         responseSalt: 'salt',
       })
 
-      const result = await SubmissionService.confirmPendingSubmission(
+      const session = await mongoose.startSession()
+      const result = await SubmissionService.movePendingSubmissionToSubmissions(
         MOCK_PENDING_SUBMISSION_ID,
+        session,
       )
+      session.endSession()
 
       expect(result.isOk()).toEqual(true)
 
@@ -835,12 +838,15 @@ describe('submission.service', () => {
         responseSalt: 'salt',
       })
 
-      const actualResult = await SubmissionService.confirmPendingSubmission(
+      const session = await mongoose.startSession()
+      const result = await SubmissionService.movePendingSubmissionToSubmissions(
         new ObjectId().toHexString(),
+        session,
       )
+      session.endSession()
 
-      expect(actualResult.isErr()).toEqual(true)
-      expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(
+      expect(result.isErr()).toEqual(true)
+      expect(result._unsafeUnwrapErr()).toBeInstanceOf(
         PendingSubmissionNotFoundError,
       )
     })
@@ -854,13 +860,16 @@ describe('submission.service', () => {
           } as unknown as mongoose.Query<any, any>),
       )
 
-      const actualResult = await SubmissionService.confirmPendingSubmission(
+      const session = await mongoose.startSession()
+      const result = await SubmissionService.movePendingSubmissionToSubmissions(
         MOCK_PENDING_SUBMISSION_ID,
+        session,
       )
+      session.endSession()
 
       expect(findSpy).toHaveBeenCalledWith(MOCK_PENDING_SUBMISSION_ID)
-      expect(actualResult.isErr()).toEqual(true)
-      expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(DatabaseError)
+      expect(result.isErr()).toEqual(true)
+      expect(result._unsafeUnwrapErr()).toBeInstanceOf(DatabaseError)
     })
   })
 })
