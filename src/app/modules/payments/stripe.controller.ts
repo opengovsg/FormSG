@@ -6,7 +6,7 @@ import { StatusCodes } from 'http-status-codes'
 import get from 'lodash/get'
 import Stripe from 'stripe'
 
-import { Payment, PaymentStatus } from '../../../../shared/types'
+import { PaymentStatus } from '../../../../shared/types'
 import config from '../../config/config'
 import { paymentConfig } from '../../config/features/payment.config'
 import { createLoggerWithLabel } from '../../config/logger'
@@ -17,43 +17,19 @@ import { ControllerHandler } from '../core/core.types'
 import { retrieveFullFormById } from '../form/form.service'
 import { checkFormIsEncryptMode } from '../submission/encrypt-submission/encrypt-submission.service'
 
-import * as PaymentService from './payments.service'
 import * as StripeService from './stripe.service'
 
 const logger = createLoggerWithLabel(module)
 
 /**
- * Middleware which validates that a request came from Stripe webhook
- * by checking the presence of Stripe-Signature in request header
+ * Middleware which validates that a request came from Stripe webhook by
+ * checking the presence of Stripe-Signature in request header
  */
 const validateStripeEvent = celebrate({
   [Segments.HEADERS]: Joi.object({
     'stripe-signature': Joi.string().required(),
   }).unknown(),
 })
-
-const findPaymentAndUpdate = async (
-  metadata: Stripe.Metadata | null,
-  update: Partial<Payment>,
-  event: Stripe.Event,
-): Promise<void> => {
-  const submissionId = metadata?.['submissionId']
-  if (!submissionId) {
-    logger.warn({
-      message: 'Stripe event metadata does not contain submissionId',
-      meta: {
-        action: 'handleStripeEventUpdates',
-        event,
-      },
-    })
-    return
-  }
-
-  await PaymentService.findBySubmissionIdAndUpdate(submissionId, {
-    $set: update,
-    $push: { webhookLog: event },
-  })
-}
 
 const stripeChargeStatusToPaymentStatus = (
   status: Stripe.Charge.Status,
@@ -68,12 +44,21 @@ const stripeChargeStatusToPaymentStatus = (
   }
 }
 
+/**
+ * Handler for GET /api/v3/notifications/stripe
+ * NOTE: This is exported solely for testing
+ * Receives Stripe webhooks and updates the database with transaction details.
+ *
+ * @returns 200 if webhook is successfully processed
+ * @returns 400 if the Stripe-Signature header is missing or invalid
+ * @returns 500 if any errors occurs in processing the webhook or saving payment to DB
+ */
 export const _handleStripeEventUpdates: ControllerHandler<
   unknown,
   never,
   string
 > = async (req, res) => {
-  // Verify the payload and ensure that it is indeed sent from Stripe.
+  // Step 1: Verify the payload and ensure that it is indeed sent from Stripe.
   // See https://stripe.com/docs/webhooks/signatures
   const sig = req.headers['stripe-signature']
   if (!sig) return res.status(StatusCodes.BAD_REQUEST).send()
@@ -91,7 +76,7 @@ export const _handleStripeEventUpdates: ControllerHandler<
     ) as Stripe.DiscriminatedEvent
   } catch (e) {
     // Throws Stripe.errors.StripeSignatureVerificationError
-    logger.info({
+    logger.warn({
       message: 'Received invalid request from Stripe webhook endpoint',
       meta: {
         action: 'handleStripeEventUpdates',
@@ -102,6 +87,7 @@ export const _handleStripeEventUpdates: ControllerHandler<
     return res.status(StatusCodes.BAD_REQUEST).send()
   }
 
+  // Step 2: Received event, proceed to process it.
   logger.info({
     message: 'Received Stripe event from webhook',
     meta: {
@@ -118,7 +104,7 @@ export const _handleStripeEventUpdates: ControllerHandler<
     case 'charge.refunded':
     case 'charge.succeeded':
     case 'charge.updated':
-      await findPaymentAndUpdate(
+      await StripeService.updateWebhookBySubmissionId(
         event.data.object.metadata,
         {
           chargeIdLatest: event.data.object.id,
@@ -131,9 +117,20 @@ export const _handleStripeEventUpdates: ControllerHandler<
     case 'charge.dispute.created':
     case 'charge.dispute.funds_reinstated':
     case 'charge.dispute.funds_withdrawn':
-    case 'charge.dispute.updated':
-      await findPaymentAndUpdate(event.data.object.metadata, {}, event)
+    case 'charge.dispute.updated': {
+      event = await stripe.events.retrieve(event.id, {
+        expand: ['data.object.charge'],
+      })
+      // These are known since the 'charge' property was expanded
+      const dispute = event.data.object as Stripe.Dispute
+      const charge = dispute.charge as Stripe.Charge
+      await StripeService.updateWebhookBySubmissionId(
+        charge.metadata,
+        {},
+        event,
+      )
       break
+    }
     case 'charge.refund.updated':
       // We should actually handle this case, need to implement based on get by charge Id though, not doing for hackathon.
       break
@@ -145,14 +142,19 @@ export const _handleStripeEventUpdates: ControllerHandler<
     case 'payment_intent.processing':
     case 'payment_intent.requires_action':
     case 'payment_intent.succeeded':
-      await findPaymentAndUpdate(event.data.object.metadata, {}, event)
+      await StripeService.updateWebhookBySubmissionId(
+        event.data.object.metadata,
+        {},
+        event,
+      )
       break
     case 'payout.canceled':
     case 'payout.created':
     case 'payout.failed':
     case 'payout.paid':
     case 'payout.updated':
-      await findPaymentAndUpdate(
+      // This is most definitely wrong but need to test when payouts come in
+      await StripeService.updateWebhookBySubmissionId(
         event.data.object.metadata,
         {
           payout: {
