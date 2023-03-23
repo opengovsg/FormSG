@@ -188,13 +188,16 @@ export const checkPaymentReceiptStatus: ControllerHandler<{
     },
   })
 
-  return StripeService.getReceiptURL(formId, submissionId)
-    .map((receiptUrl) => {
+  return StripeService.getPaymentFromLatestSuccessfulCharge(
+    formId,
+    submissionId,
+  )
+    .map((payment) => {
       logger.info({
-        message: 'Received receipt url from Stripe webhook',
+        message: 'Received payment object with receipt url from Stripe webhook',
         meta: {
           action: 'checkPaymentReceiptStatus',
-          receiptUrl,
+          payment,
         },
       })
 
@@ -228,19 +231,22 @@ export const downloadPaymentReceipt: ControllerHandler<{
     },
   })
 
-  return StripeService.getReceiptURL(formId, submissionId)
-    .map((receiptUrl) => {
+  return StripeService.getPaymentFromLatestSuccessfulCharge(
+    formId,
+    submissionId,
+  )
+    .map((payment) => {
       logger.info({
         message: 'Received receipt url from Stripe webhook',
         meta: {
           action: 'downloadPaymentReceipt',
-          receiptUrl,
+          payment,
         },
       })
       // retrieve receiptURL as html
       return (
         axios
-          .get<string>(receiptUrl)
+          .get<string>(payment.receiptUrl)
           // convert to pdf and return
           .then((receiptUrlResponse) => {
             const html = receiptUrlResponse.data
