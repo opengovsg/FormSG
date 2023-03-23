@@ -69,8 +69,8 @@ const environment = ejs.render(
     var reactMigrationAdminRollout = "<%= reactMigrationAdminRollout%>"
     var reactMigrationAngularPhaseOutDate = "<%= reactMigrationAngularPhaseOutDate%>"
     // Payment
-    var maxPaymentAmountCents = "<%= maxPaymentAmountCents%>"
-    var minPaymentAmountCents = "<%= minPaymentAmountCents%>"
+    var maxPaymentAmountCents = <%= maxPaymentAmountCents%>
+    var minPaymentAmountCents = <%= minPaymentAmountCents%>
   `,
   frontendVars,
 )
