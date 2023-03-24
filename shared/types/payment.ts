@@ -1,6 +1,5 @@
 import Stripe from 'stripe'
 import { DateString } from './generic'
-import type { Opaque } from 'type-fest'
 
 export enum PaymentStatus {
   Failed = 'failed',
@@ -8,26 +7,42 @@ export enum PaymentStatus {
   Succeeded = 'succeeded',
 }
 
-export type PaymentId = Opaque<string, 'PaymentId'>
 export enum PaymentChannel {
   Stripe = 'Stripe',
   // for extensibility to future payment options
 }
 
-export type Payment = {
-  _id: PaymentId
+export type CompletedPaymentMeta = {
+  paymentDate: Date
   submissionId: string
-  amount: number
-  status: PaymentStatus
-  webhookLog: Stripe.Event[]
-  paymentIntentId: string
-  chargeIdLatest: string
-  payoutId: string
-  payoutDate: Date
-  created: DateString
   transactionFee: number
   receiptUrl: string
+}
+
+export type PayoutMeta = {
+  payoutId?: string
+  payoutDate?: Date
+}
+
+export type Payment = {
+  // Pre-payment metadata
+  pendingSubmissionId: string
   email: string
+  amount: number
+  paymentIntentId: string
+
+  // Payment status tracking
+  webhookLog: Stripe.Event[]
+  status: PaymentStatus
+  chargeIdLatest?: string
+
+  // Completed payment metadata
+  completedPayment?: CompletedPaymentMeta
+
+  // Payout metadata
+  payout?: PayoutMeta
+
+  created: DateString
 }
 
 export type PaymentReceiptStatusDto = {

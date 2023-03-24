@@ -155,8 +155,10 @@ export const _handleStripeEventUpdates: ControllerHandler<
       await findPaymentAndUpdate(
         event.data.object.metadata,
         {
-          payoutId: event.data.object.id,
-          payoutDate: new Date(event.data.object.arrival_date),
+          payout: {
+            payoutId: event.data.object.id,
+            payoutDate: new Date(event.data.object.arrival_date),
+          },
         },
         event,
       )
@@ -174,6 +176,7 @@ export const handleStripeEventUpdates = [
   _handleStripeEventUpdates,
 ]
 
+// TODO: Refactor for use in static payment url implementation
 export const checkPaymentReceiptStatus: ControllerHandler<{
   formId: string
   submissionId: string
@@ -217,6 +220,7 @@ export const checkPaymentReceiptStatus: ControllerHandler<{
     })
 }
 
+// TODO: Refactor for use in static payment url implementation
 export const downloadPaymentReceipt: ControllerHandler<{
   formId: string
   submissionId: string
@@ -246,7 +250,7 @@ export const downloadPaymentReceipt: ControllerHandler<{
       // retrieve receiptURL as html
       return (
         axios
-          .get<string>(payment.receiptUrl)
+          .get<string>(payment.completedPayment?.receiptUrl ?? '')
           // convert to pdf and return
           .then((receiptUrlResponse) => {
             const html = receiptUrlResponse.data

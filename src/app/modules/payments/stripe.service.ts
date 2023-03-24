@@ -1,11 +1,10 @@
 import cuid from 'cuid'
 import mongoose from 'mongoose'
 import { errAsync, ok, okAsync, ResultAsync } from 'neverthrow'
-import { Payment } from 'shared/types'
 import Stripe from 'stripe'
 import { MarkRequired } from 'ts-essentials'
 
-import { IPopulatedEncryptedForm } from 'src/types'
+import { IPaymentSchema, IPopulatedEncryptedForm } from 'src/types'
 
 import config from '../../config/config'
 import { paymentConfig } from '../../config/features/payment.config'
@@ -17,13 +16,13 @@ import { retrieveFullFormById } from '../form/form.service'
 import { checkFormIsEncryptMode } from '../submission/encrypt-submission/encrypt-submission.service'
 import * as SubmissionService from '../submission/submission.service'
 
+import { PaymentNotFoundError } from './payments.errors'
 import * as PaymentService from './payments.service'
 import { getRedirectUri } from './payments.utils'
 import {
   ChargeBalanceTransactionNotFoundError,
   ChargeReceiptNotFoundError,
   PaymentIntentLatestChargeNotFoundError,
-  PaymentNotFoundError,
   StripeAccountError,
   StripeAccountNotFoundError,
   StripeFetchError,
@@ -179,11 +178,12 @@ export const validateAccount = (
   )
 }
 
+// TODO: Refactor for use in webhook implementation
 export const getPaymentFromLatestSuccessfulCharge = (
   formId: string,
   submissionId: string,
 ): ResultAsync<
-  Payment,
+  IPaymentSchema,
   | FormNotFoundError
   | SubmissionNotFoundError
   | SubmissionAndFormMismatchError
@@ -345,8 +345,9 @@ export const getPaymentFromLatestSuccessfulCharge = (
                 if (!stripeTransactionFee) {
                   return errAsync(new StripeTransactionFeeNotFoundError())
                 }
-                return PaymentService.updateReceiptUrlAndTransactionFee(
+                return PaymentService.confirmPaymentPendingSubmission(
                   paymentId,
+                  new Date(charge.created),
                   charge.receipt_url,
                   stripeTransactionFee,
                 )
