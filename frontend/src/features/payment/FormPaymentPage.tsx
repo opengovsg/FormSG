@@ -8,12 +8,12 @@ import { FormBanner } from '~features/public-form/components/FormBanner'
 import { FormSectionsProvider } from '~features/public-form/components/FormFields/FormSectionsContext'
 import { FormFooter } from '~features/public-form/components/FormFooter'
 import { PublicFormLogo } from '~features/public-form/components/FormLogo'
-import { DownloadReceiptBlock } from '~features/public-form/components/FormPaymentRedirectPage/components/DownloadReceiptBlock'
-import { PaymentSuccessSvgr } from '~features/public-form/components/FormPaymentRedirectPage/components/PaymentSuccessSvgr'
 import FormStartPage from '~features/public-form/components/FormStartPage'
 import { PublicFormWrapper } from '~features/public-form/components/PublicFormWrapper'
 import { PublicFormProvider } from '~features/public-form/PublicFormProvider'
 
+import { DownloadReceiptBlock } from './FormPaymentRedirectPage/components/DownloadReceiptBlock'
+import { PaymentSuccessSvgr } from './FormPaymentRedirectPage/components/PaymentSuccessSvgr'
 import { useGetPaymentInfo, useGetPaymentReceiptStatus } from './queries'
 
 export const FormPaymentPage = () => {

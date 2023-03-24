@@ -2,8 +2,9 @@ import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Box, Container, Flex, Skeleton } from '@chakra-ui/react'
 
-import { usePublicFormContext } from '../../PublicFormContext'
-import { useGetPaymentReceiptStatus } from '../../queries'
+import { usePublicFormContext } from '~features/public-form/PublicFormContext'
+
+import { useGetPaymentReceiptStatus } from '../queries'
 
 import { DownloadReceiptBlock } from './components/DownloadReceiptBlock'
 import { PaymentSuccessSvgr } from './components/PaymentSuccessSvgr'
@@ -12,6 +13,7 @@ type FormPaymentRedirectPageProps = {
   stripeSubmissionId: string
 }
 
+// TODO: this file should be replaced by FormPaymentPage
 export const FormPaymentRedirectPage = ({
   stripeSubmissionId,
 }: FormPaymentRedirectPageProps) => {

@@ -2,9 +2,8 @@ import { BiDownload } from 'react-icons/bi'
 import { Box, Stack, Text } from '@chakra-ui/react'
 
 import { useToast } from '~hooks/useToast'
-
-import Button from '../../../../../components/Button'
-import { API_BASE_URL } from '../../../../../services/ApiService'
+import { API_BASE_URL } from '~services/ApiService'
+import Button from '~components/Button'
 
 type DownloadReceiptBlockProps = {
   formId: string

@@ -4,6 +4,8 @@ import { Flex } from '@chakra-ui/react'
 
 import { fillMinHeightCss } from '~utils/fillHeightCss'
 
+import { FormPaymentRedirectPage } from '~features/payment/FormPaymentRedirectPage/FormPaymentRedirectPage'
+
 import { FormBanner } from './components/FormBanner'
 import FormEndPage from './components/FormEndPage'
 import { FormPaymentPage } from './components/FormEndPage/FormPaymentPage'
@@ -12,7 +14,6 @@ import { FormSectionsProvider } from './components/FormFields/FormSectionsContex
 import { FormFooter } from './components/FormFooter'
 import FormInstructions from './components/FormInstructions'
 import { PublicFormLogo } from './components/FormLogo'
-import { FormPaymentRedirectPage } from './components/FormPaymentRedirectPage/FormPaymentRedirectPage'
 import FormStartPage from './components/FormStartPage'
 import { PublicFormWrapper } from './components/PublicFormWrapper'
 import {

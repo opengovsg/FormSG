@@ -265,3 +265,29 @@ export const findPaymentByPaymentIntentId = (
     return okAsync(payment)
   })
 }
+
+// export const findSubmissionByPaymentIntentId = (paymentIntentId: string) => {
+//   return ResultAsync.fromPromise(
+//     findPaymentByPaymentIntentId(paymentIntentId)
+//       .andThen((payment) => {
+//         if (!payment) {
+//           return errAsync(new PaymentNotFoundError())
+//         }
+//         return okAsync(payment.submissionId)
+//       })
+//       .andThen((submissionId) =>
+//         SubmissionService.findSubmissionById(submissionId),
+//       ),
+//     (error) => {
+//       logger.error({
+//         message: 'Database find submission by paymentIntentId error',
+//         meta: {
+//           action: 'findSubmissionByPaymentIntentId',
+//           paymentIntentId,
+//         },
+//         error,
+//       })
+//       return new DatabaseError(getMongoErrorMessage(error))
+//     },
+//   )
+// }

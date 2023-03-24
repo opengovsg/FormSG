@@ -5,7 +5,7 @@ import { celebrate, Joi, Segments } from 'celebrate'
 import { StatusCodes } from 'http-status-codes'
 import get from 'lodash/get'
 import mongoose from 'mongoose'
-import { ok, Result } from 'neverthrow'
+import { ok, Result, ResultAsync } from 'neverthrow'
 import Stripe from 'stripe'
 
 import { ErrorDto, GetPaymentInfoDto } from '../../../../shared/types'
@@ -19,6 +19,7 @@ import { createReqMeta } from '../../utils/request'
 import { ControllerHandler } from '../core/core.types'
 import { retrieveFullFormById } from '../form/form.service'
 import { checkFormIsEncryptMode } from '../submission/encrypt-submission/encrypt-submission.service'
+import * as SubmissionService from '../submission/submission.service'
 
 import * as PaymentService from './payments.service'
 import * as StripeService from './stripe.service'
@@ -390,6 +391,7 @@ export const handleConnectOauthCallback = [
   _handleConnectOauthCallback,
 ] as ControllerHandler[]
 
+// #TODO: think about where to place this payment fetcher, should it be strongly tied to stripe?
 export const getPaymentInfo: ControllerHandler<
   {
     paymentIntentId: string
@@ -405,38 +407,41 @@ export const getPaymentInfo: ControllerHandler<
     },
   })
 
-  let stripeFullIntentObj
-  try {
-    stripeFullIntentObj = await stripe.paymentIntents.retrieve(paymentIntentId)
-  } catch (error) {
-    logger.error({
-      message: 'getPaymentInfo endpoint called',
-      meta: {
-        action: 'getPaymentInfo',
-        paymentIntentId,
-        error,
-      },
+  return PaymentService.findPaymentByPaymentIntentId(paymentIntentId)
+    .andThen((payment) =>
+      SubmissionService.findSubmissionById(payment.submissionId),
+    )
+    .andThen((submission) =>
+      ResultAsync.fromPromise(
+        stripe.paymentIntents.retrieve(paymentIntentId, {
+          stripeAccount: submission.form.payments_channel.target_account_id,
+        }),
+        (error) => {
+          logger.error({
+            message: 'stripe.paymentIntents.retrieve called',
+            meta: {
+              action: 'getPaymentInfo',
+              paymentIntentId,
+              error,
+            },
+          })
+          return res
+            .status(StatusCodes.INTERNAL_SERVER_ERROR)
+            .json({ message: 'Stripe retreival error' })
+        },
+      ),
+    )
+    .map((stripeFullIntentObj) => {
+      console.log({ stripeFullIntentObj })
+      return res.status(StatusCodes.OK).json({
+        client_secret: stripeFullIntentObj.client_secret,
+        publishableKey: paymentConfig.stripePublishableKey,
+      })
     })
-    return res
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ message: 'Stripe retreival error' })
-  }
-
-  if (!stripeFullIntentObj?.client_secret) {
-    logger.error({
-      message: 'Error occurred when reading client_secret',
-      meta: {
-        action: 'getPaymentInfo',
-        paymentIntentId,
-      },
+    .mapErr((e) => {
+      console.error(e)
+      return res
+        .status(StatusCodes.INTERNAL_SERVER_ERROR)
+        .json({ message: 'Missing client secret' })
     })
-    return res
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ message: 'Missing client secret' })
-  }
-
-  return res.status(StatusCodes.OK).json({
-    client_secret: stripeFullIntentObj.client_secret,
-    publishableKey: paymentConfig.stripePublishableKey,
-  })
 }

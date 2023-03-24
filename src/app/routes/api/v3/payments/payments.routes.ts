@@ -16,7 +16,7 @@ PaymentsRouter.get('/stripe')
  * @returns 404 if receipt URL does not exist
  */
 PaymentsRouter.route(
-  '/receipt/:formId([a-fA-F0-9]{24})/:paymentIntentId([a-fA-F0-9]{24}/status',
+  '/receipt/:formId([a-fA-F0-9]{24})/:paymentIntentId([a-fA-F0-9]{24})/status',
 ).get(StripeController.checkPaymentReceiptStatus)
 
 /**
@@ -42,6 +42,6 @@ PaymentsRouter.route('/stripe/callback').get(
  * returns clientSecret and publishableKey from paymentIntentId
  * @route /payments/:paymentIntentId/getInfo
  */
-PaymentsRouter.route('/:paymentIntentId([a-fA-F0-9]{24}/getInfo').get(
+PaymentsRouter.route('/:paymentIntentId/getInfo').get(
   StripeController.getPaymentInfo,
 )
