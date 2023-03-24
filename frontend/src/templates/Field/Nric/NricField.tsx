@@ -1,7 +1,7 @@
 /**
  * @precondition Must have a parent `react-hook-form#FormProvider` component.
  */
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { useFormContext } from 'react-hook-form'
 
 import { createNricValidationRules } from '~utils/fieldValidation'

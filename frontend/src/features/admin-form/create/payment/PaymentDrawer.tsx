@@ -23,6 +23,7 @@ import Toggle from '~components/Toggle'
 
 import { useMutateFormPage } from '~features/admin-form/common/mutations'
 
+import { useEnv } from '../../../env/queries'
 import {
   setIsDirtySelector,
   useDirtyFieldStore,
@@ -53,6 +54,9 @@ const formatCurrency = new Intl.NumberFormat('en-SG', {
 export const PaymentInput = (): JSX.Element => {
   const isMobile = useIsMobile()
   const { paymentsMutation } = useMutateFormPage()
+
+  const { data: { maxPaymentAmountCents, minPaymentAmountCents } = {} } =
+    useEnv()
 
   const setIsDirty = useDirtyFieldStore(setIsDirtySelector)
 
@@ -127,9 +131,6 @@ export const PaymentInput = (): JSX.Element => {
 
   const handleCloseDrawer = useCallback(() => handleClose(false), [handleClose])
 
-  const minPaymentAmount = 0.5 // stipulated by Stripe
-  const maxPaymentAmount = 1000 // due to IRAS requirements and agency financial institutions are expected to be in SG
-
   const amountValidation: RegisterOptions<
     FormPaymentsDisplay,
     'display_amount'
@@ -147,24 +148,28 @@ export const PaymentInput = (): JSX.Element => {
           )
         },
         validateMin: (val) => {
+          if (minPaymentAmountCents === undefined) return true
           return (
-            Number(val?.trim()) >= minPaymentAmount ||
+            // val is in dollars
+            (val && dollarsToCents(val) >= minPaymentAmountCents) ||
             `Please enter a payment amount above ${formatCurrency(
-              minPaymentAmount,
+              Number(centsToDollars(minPaymentAmountCents)),
             )}`
           )
         },
         validateMax: (val) => {
+          if (maxPaymentAmountCents === undefined) return true
           return (
-            Number(val?.trim()) <= maxPaymentAmount ||
-            `Please keep payment amount under ${formatCurrency(
-              maxPaymentAmount,
+            // val is in dollars
+            (val && dollarsToCents(val) <= maxPaymentAmountCents) ||
+            `Please enter a payment amount below ${formatCurrency(
+              Number(centsToDollars(maxPaymentAmountCents)),
             )}`
           )
         },
       },
     }),
-    [],
+    [maxPaymentAmountCents, minPaymentAmountCents],
   )
 
   const handleUpdatePayments = handleSubmit(() => {

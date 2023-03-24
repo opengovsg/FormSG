@@ -6,6 +6,8 @@ export interface IStripe {
   stripeSecretKey: string
   stripeClientID: string
   stripeWebhookSecret: string
+  maxPaymentAmountCents: number
+  minPaymentAmountCents: number
 }
 
 const paymentFeature: Schema<IStripe> = {
@@ -38,6 +40,18 @@ const paymentFeature: Schema<IStripe> = {
     format: String,
     default: '',
     env: 'PAYMENT_STRIPE_WEBHOOK_SECRET',
+  },
+  maxPaymentAmountCents: {
+    doc: 'Maximum amount that can be paid for a form',
+    format: Number,
+    default: 100000, // $1000, due to IRAS limit for invoice
+    env: 'PAYMENT_MAX_PAYMENT_AMOUNT_CENTS',
+  },
+  minPaymentAmountCents: {
+    doc: 'Minimum that can be paid for a form',
+    format: Number,
+    default: 50, // $0.50, as specified by stripe
+    env: 'PAYMENT_MIN_PAYMENT_AMOUNT_CENTS',
   },
 }
 
