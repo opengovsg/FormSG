@@ -181,7 +181,8 @@ export const EncryptSubmissionSchema = new Schema<
   },
   paymentId: {
     type: Schema.Types.ObjectId,
-    ref: PAYMENT_SCHEMA_ID,
+    // Defer loading of the ref due to circular dependency on schema IDs.
+    ref: () => PAYMENT_SCHEMA_ID,
   },
   webhookResponses: [webhookResponseSchema],
 })

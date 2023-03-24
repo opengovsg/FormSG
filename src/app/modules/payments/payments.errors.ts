@@ -5,3 +5,9 @@ export class PaymentNotFoundError extends ApplicationError {
     super(message)
   }
 }
+
+export class PaymentAlreadyConfirmedError extends ApplicationError {
+  constructor(message = 'Payment has already been confirmed') {
+    super(message)
+  }
+}

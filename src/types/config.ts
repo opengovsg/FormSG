@@ -51,6 +51,7 @@ export type MailConfig = {
 export type RateLimitConfig = {
   submissions: number
   sendAuthOtp: number
+  downloadPaymentReceipt: number
 }
 
 export type ReactMigrationConfig = {
@@ -180,6 +181,7 @@ export interface IOptionalVarsSchema {
   rateLimit: {
     submissions: number
     sendAuthOtp: number
+    downloadPaymentReceipt: number
   }
   reactMigration: {
     respondentRolloutEmail: number
