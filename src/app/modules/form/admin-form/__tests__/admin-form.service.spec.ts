@@ -26,6 +26,7 @@ import { EditFieldActions } from 'src/shared/constants'
 import {
   FormLogicSchema,
   IEmailFormSchema,
+  IEncryptedFormDocument,
   IFormDocument,
   IFormSchema,
   IPopulatedForm,
@@ -2644,7 +2645,7 @@ describe('admin-form.service', () => {
 
     const mockUpdatedForm = {
       _id: mockFormId,
-      payments: updatedPaymentSettings,
+      payments_field: updatedPaymentSettings,
     }
 
     it('should return InvalidPaymentAmountError if payment amount exceeds maxPaymentAmountCents', async () => {
@@ -2692,8 +2693,10 @@ describe('admin-form.service', () => {
     it('should successfuly call updatePaymentsById with formId and newPayments and return the updated payment settings', async () => {
       // Arrange
       const putSpy = jest
-        .spyOn(FormModel, 'updatePaymentsById')
-        .mockResolvedValueOnce(mockUpdatedForm as unknown as IFormDocument)
+        .spyOn(EncryptFormModel, 'updatePaymentsById')
+        .mockResolvedValueOnce(
+          mockUpdatedForm as unknown as IEncryptedFormDocument,
+        )
 
       // Act
       const actualResult = await AdminFormService.updatePayments(
@@ -2712,7 +2715,7 @@ describe('admin-form.service', () => {
     it('should return PossibleDatabaseError if db update fails', async () => {
       // Arrange
       const putSpy = jest
-        .spyOn(FormModel, 'updatePaymentsById')
+        .spyOn(EncryptFormModel, 'updatePaymentsById')
         .mockRejectedValueOnce(new DatabaseError())
 
       // Act
@@ -2730,7 +2733,7 @@ describe('admin-form.service', () => {
     it('should return FormNotFoundError if no form is returned after updating db', async () => {
       // Arrange
       const putSpy = jest
-        .spyOn(FormModel, 'updatePaymentsById')
+        .spyOn(EncryptFormModel, 'updatePaymentsById')
         .mockResolvedValueOnce(null)
 
       // Act
