@@ -12,7 +12,8 @@ const PaymentSchema = new Schema<IPaymentSchema, IPaymentModel>(
   {
     pendingSubmissionId: {
       type: Schema.Types.ObjectId,
-      ref: PENDING_SUBMISSION_SCHEMA_ID,
+      // Defer loading of the ref due to circular dependency on schema IDs.
+      ref: () => PENDING_SUBMISSION_SCHEMA_ID,
       required: true,
     },
     email: {
@@ -53,7 +54,8 @@ const PaymentSchema = new Schema<IPaymentSchema, IPaymentModel>(
         },
         submissionId: {
           type: Schema.Types.ObjectId,
-          ref: SUBMISSION_SCHEMA_ID,
+          // Defer loading of the ref due to circular dependency on schema IDs.
+          ref: () => SUBMISSION_SCHEMA_ID,
           required: true,
         },
         transactionFee: {
