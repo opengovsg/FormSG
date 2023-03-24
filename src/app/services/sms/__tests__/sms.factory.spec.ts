@@ -73,9 +73,10 @@ describe('sms.factory', () => {
     // Arrange
     MockSmsService.sendVerificationOtp.mockReturnValue(okAsync(true))
 
-    const mockArguments: Parameters<typeof SmsFactory.sendAdminContactOtp> = [
+    const mockArguments: Parameters<typeof SmsFactory.sendVerificationOtp> = [
       'mockRecipient',
       'mockOtp',
+      'mockOtpPrefix',
       'mockUserId',
       'mockSenderIp',
     ]

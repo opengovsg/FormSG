@@ -311,11 +311,13 @@ export class MailService {
    * Sends a verification otp to a valid email
    * @param recipient the recipient email address
    * @param otp the otp to send
+   * @param otpPrefix the otpPrefix to identify
    * @throws error if mail fails, to be handled by the caller
    */
   sendVerificationOtp = (
     recipient: string,
     otp: string,
+    otpPrefix: string,
   ): ResultAsync<true, MailSendError> => {
     const minutesToExpiry = Math.floor(HASH_EXPIRE_AFTER_SECONDS / 60)
 
@@ -327,6 +329,7 @@ export class MailService {
         appName: this.#appName,
         minutesToExpiry,
         otp,
+        otpPrefix,
       }),
       headers: {
         [EMAIL_HEADERS.emailType]: EmailType.VerificationOtp,

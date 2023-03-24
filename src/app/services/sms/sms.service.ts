@@ -297,12 +297,14 @@ const sendSms = (
  * Gets the correct twilio client for the form and sends an otp to a valid phonenumber
  * @param recipient The phone number to send to
  * @param otp The OTP to send
+ * @param otpPrefix The OTP Prefix to send
  * @param formId Form id for retrieving otp data.
  * @param senderIp The ip address of the person triggering the SMS
  */
 export const sendVerificationOtp = (
   recipient: string,
   otp: string,
+  otpPrefix: string,
   formId: string,
   senderIp: string,
   defaultConfig: TwilioConfig,
@@ -348,6 +350,7 @@ export const sendVerificationOtp = (
     >(getTwilio(otpData.msgSrvcName, defaultConfig)).andThen((twilioConfig) => {
       const message = renderVerificationSms(
         otp,
+        otpPrefix,
         new URL(config.app.appUrl).host,
       )
 

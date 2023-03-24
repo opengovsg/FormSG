@@ -11,6 +11,7 @@
 
 - [FormSG](#formsg)
   - [Table of Contents](#table-of-contents)
+  - [Contributing](#contributing)
   - [Features](#features)
   - [Local Development (Docker)](#local-development-docker)
     - [Prerequisites](#prerequisites)
@@ -26,9 +27,15 @@
       - [End-to-end tests](#end-to-end-tests)
   - [Architecture](#architecture)
   - [MongoDB Scripts](#mongodb-scripts)
-  - [Contributing](#contributing)
   - [Support](#support)
   - [Acknowledgements](#acknowledgements)
+
+## Contributing
+
+We welcome all contributions, bug reports, bug fixes, documentation improvements, enhancements, and ideas to code open sourced by the Government Technology Agency of Singapore. Contributors will also be asked to sign a Contributor License Agreement (CLA) to ensure that everybody is free to use their contributions.
+
+#### IMPORTANT NOTE TO ALL CONTRIBUTORS
+Before contributing, please read [CONTRIBUTING.md](CONTRIBUTING.md). In particular, we strongly encourage contributors to please **first discuss the change you wish to make via GitHub issue**, [email](mailto:contribute@form.gov.sg), or any other method with the repository owners beforehand. Otherwise, we may not be able to review or accept your PR.
 
 ## Features
 
@@ -65,7 +72,7 @@ Install [docker and docker-compose](https://docs.docker.com/get-docker/).
 To install the relevant npm packages, run the following in the root direcory:
 
 ```bash
-npm install --legacy-peer-deps
+npm install
 ```
 
 To prevent breaking changes to webpack4 introduced in node 17 and above, enable the `--openssl-legacy-provider` flag:
@@ -99,7 +106,7 @@ only takes ~15 seconds to finish starting up the image.
 
 ### Adding dependencies
 
-Run `npm install --legacy-peer-deps` as per usual.
+Run `npm install` as per usual.
 
 For backend, run
 
@@ -206,10 +213,6 @@ The architecture overview is [here](docs/ARCHITECTURE.md).
 ## MongoDB Scripts
 
 Scripts for common tasks in MongoDB can be found [here](docs/MONGODB.md).
-
-## Contributing
-
-We welcome all contributions, bug reports, bug fixes, documentation improvements, enhancements, and ideas to code open sourced by the Government Technology Agency of Singapore. Contributors should read [CONTRIBUTING.md](CONTRIBUTING.md) and will also be asked to sign a Contributor License Agreement (CLA) to ensure that everybody is free to use their contributions.
 
 ## Support
 

@@ -31,6 +31,7 @@ export const VerifiableFieldContainer = ({
 }: VerifiableFieldContainerProps): JSX.Element => {
   const {
     isVfnBoxOpen,
+    otpPrefix,
     handleVfnButtonClick,
     hasSignature,
     handleVerifyOtp,
@@ -81,6 +82,7 @@ export const VerifiableFieldContainer = ({
           handleVerifyOtp={handleVerifyOtp}
           handleResendOtp={handleResendOtp}
           fieldType={schema.fieldType}
+          otpPrefix={otpPrefix}
         />
       )}
     </Box>

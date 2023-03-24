@@ -94,17 +94,19 @@ export const generateLoginOtpHtml = (htmlData: {
 
 export const generateVerificationOtpHtml = ({
   otp,
+  otpPrefix,
   appName,
   minutesToExpiry,
 }: {
   otp: string
+  otpPrefix: string
   appName: string
   minutesToExpiry: number
 }): string => {
   return dedent`
     <p>You are currently submitting a form on ${appName}.</p>
     <p>
-      Your OTP is <b>${otp}</b>. It will expire in ${minutesToExpiry} minutes.
+      Your OTP is ${otpPrefix}-<b>${otp}</b>. It will expire in ${minutesToExpiry} minutes.
       Please use this to verify your submission.
     </p>
     <p>If your OTP does not work, please request for a new OTP.</p>

@@ -43,6 +43,7 @@ import {
 import { EditFormFieldParams, FormUpdateParams } from '../../../../types/api'
 import config, { aws as AwsConfig } from '../../../config/config'
 import { createLoggerWithLabel } from '../../../config/logger'
+import getAgencyModel from '../../../models/agency.server.model'
 import getFormModel from '../../../models/form.server.model'
 import * as SmsService from '../../../services/sms/sms.service'
 import { twilioClientCache } from '../../../services/sms/sms.service'
@@ -83,6 +84,7 @@ import {
   CreatePresignedUrlError,
   EditFieldError,
   FieldNotFoundError,
+  InvalidCollaboratorError,
   InvalidFileTypeError,
 } from './admin-form.errors'
 import {
@@ -94,6 +96,7 @@ import {
 
 const logger = createLoggerWithLabel(module)
 const FormModel = getFormModel(mongoose)
+const AgencyModel = getAgencyModel(mongoose)
 
 export const secretsManager = new SecretsManager({
   region: config.aws.region,
@@ -751,26 +754,71 @@ export const updateForm = (
  *
  * @returns ok(collaborators) if form updates successfully
  * @returns err(PossibleDatabaseError) if any database errors occurs
+ * @returns err(InvalidCollaboratorError) if a newly-added collaborator email is not whitelisted
  */
 export const updateFormCollaborators = (
   form: IPopulatedForm,
   updatedCollaborators: FormPermission[],
-): ResultAsync<FormPermission[], PossibleDatabaseError> => {
+): ResultAsync<
+  FormPermission[],
+  PossibleDatabaseError | InvalidCollaboratorError
+> => {
+  const logMeta = {
+    action: 'updateFormCollaborators',
+    formId: form._id,
+  }
+
+  // Get the updated (added or modified) collaborator emails (i.e. they are not
+  // in the original collaborator list).
+  const updatedCollaboratorEmails = updatedCollaborators
+    .filter(
+      (c1) =>
+        !form.permissionList.some(
+          (c2) => c1.email === c2.email && c1.write === c2.write,
+        ),
+    )
+    .map((collaborator) => collaborator.email)
+
   return ResultAsync.fromPromise(
-    form.updateFormCollaborators(updatedCollaborators),
+    // Check that all updated collaborator domains exist in the Agency collection.
+    Promise.all(
+      updatedCollaboratorEmails.map(async (email) => {
+        const emailDomain = email.split('@').pop()
+        const result = await AgencyModel.findOne({ emailDomain })
+        return !!result
+      }),
+    ),
     (error) => {
       logger.error({
-        message: 'Error encountered while updating form collaborators',
-        meta: {
-          action: 'updateFormCollaborators',
-          formId: form._id,
-        },
+        message: 'Error encountered while validating new form collaborators',
+        meta: logMeta,
         error,
       })
-
       return transformMongoError(error)
     },
-  ).andThen(({ permissionList }) => okAsync(permissionList))
+  )
+    .andThen((doNewCollaboratorsExist) => {
+      const falseIdx = doNewCollaboratorsExist.findIndex((exists) => !exists)
+      return falseIdx < 0
+        ? okAsync(undefined)
+        : errAsync(
+            new InvalidCollaboratorError(updatedCollaboratorEmails[falseIdx]),
+          )
+    })
+    .andThen(() =>
+      ResultAsync.fromPromise(
+        form.updateFormCollaborators(updatedCollaborators),
+        (error) => {
+          logger.error({
+            message: 'Error encountered while updating form collaborators',
+            meta: logMeta,
+            error,
+          })
+          return transformMongoError(error)
+        },
+      ),
+    )
+    .andThen(({ permissionList }) => okAsync(permissionList))
 }
 
 /**

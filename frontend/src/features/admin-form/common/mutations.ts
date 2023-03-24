@@ -229,8 +229,12 @@ export const useMutateCollaborators = () => {
         } has been updated to the ${permissionsToRole(permissionToUpdate)} role`
         handleSuccess({ newData, toastDescription })
       },
-      onError: (error: Error) => {
-        handleError(error, FormCollaboratorAction.UPDATE)
+      onError: (error: Error, { permissionToUpdate }) => {
+        handleError(
+          error,
+          FormCollaboratorAction.UPDATE,
+          permissionToUpdate.email,
+        )
       },
     },
   )
