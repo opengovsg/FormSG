@@ -3,64 +3,95 @@ import { Mongoose, Schema } from 'mongoose'
 import { PaymentStatus } from '../../../shared/types'
 import { IPaymentModel, IPaymentSchema } from '../../types'
 
+import { PENDING_SUBMISSION_SCHEMA_ID } from './pending_submission.server.model'
+import { SUBMISSION_SCHEMA_ID } from './submission.server.model'
+
 export const PAYMENT_SCHEMA_ID = 'Payment'
 
-const compilePaymentModel = (db: Mongoose): IPaymentModel => {
-  const PaymentSchema = new Schema<IPaymentSchema, IPaymentModel>(
-    {
-      submissionId: {
-        type: Schema.Types.ObjectId,
-        required: true,
-      },
-      amount: {
-        type: Number,
-        required: true,
-      },
-      status: {
-        type: String,
-        enum: Object.values(PaymentStatus),
-        required: true,
-      },
-      webhookLog: {
-        type: [
-          {
-            type: String,
-          },
-        ],
-        default: [],
-      },
-      paymentIntentId: {
-        type: String,
-        required: true,
-      },
-      chargeIdLatest: {
-        type: String,
-      },
-      payoutId: {
-        type: String,
-      },
-      payoutDate: {
-        type: Date,
-      },
-      stripeTransactionFee: {
-        type: Number,
-      },
-      receiptUrl: {
-        type: String,
-      },
-      email: {
-        type: String,
-      },
+const PaymentSchema = new Schema<IPaymentSchema, IPaymentModel>(
+  {
+    pendingSubmissionId: {
+      type: Schema.Types.ObjectId,
+      // Defer loading of the ref due to circular dependency on schema IDs.
+      ref: () => PENDING_SUBMISSION_SCHEMA_ID,
+      required: true,
     },
-    {
-      timestamps: {
-        createdAt: 'created',
-        updatedAt: 'lastModified',
-      },
-      read: 'secondary',
+    email: {
+      type: String,
+      required: true,
     },
-  )
+    amount: {
+      type: Number,
+      required: true,
+    },
+    paymentIntentId: {
+      type: String,
+      required: true,
+    },
 
+    webhookLog: {
+      type: [
+        {
+          type: String,
+        },
+      ],
+      default: [],
+    },
+    status: {
+      type: String,
+      enum: Object.values(PaymentStatus),
+      required: true,
+    },
+    chargeIdLatest: {
+      type: String,
+    },
+
+    completedPayment: {
+      type: {
+        paymentDate: {
+          type: Date,
+          required: true,
+        },
+        submissionId: {
+          type: Schema.Types.ObjectId,
+          // Defer loading of the ref due to circular dependency on schema IDs.
+          ref: () => SUBMISSION_SCHEMA_ID,
+          required: true,
+        },
+        transactionFee: {
+          type: Number,
+          required: true,
+        },
+        receiptUrl: {
+          type: String,
+          required: true,
+        },
+      },
+    },
+
+    payout: {
+      type: {
+        payoutId: {
+          type: String,
+          required: true,
+        },
+        payoutDate: {
+          type: Date,
+          required: true,
+        },
+      },
+    },
+  },
+  {
+    timestamps: {
+      createdAt: 'created',
+      updatedAt: 'lastModified',
+    },
+    read: 'secondary',
+  },
+)
+
+const compilePaymentModel = (db: Mongoose): IPaymentModel => {
   const PaymentModel = db.model<IPaymentSchema, IPaymentModel>(
     PAYMENT_SCHEMA_ID,
     PaymentSchema,

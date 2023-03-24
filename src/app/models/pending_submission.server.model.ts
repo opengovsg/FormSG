@@ -9,6 +9,8 @@ import {
   ISubmissionSchema,
 } from 'src/types'
 
+import { SubmissionType } from '../../../shared/types'
+
 import {
   EmailSubmissionSchema,
   EncryptSubmissionSchema,
@@ -27,10 +29,12 @@ const compilePendingSubmissionModel = (db: Mongoose): ISubmissionModel => {
   PendingSubmission.discriminator(
     EMAIL_PENDING_SUBMISSION_SCHEMA_ID,
     EmailSubmissionSchema,
+    SubmissionType.Email,
   )
   PendingSubmission.discriminator(
     ENCRYPT_PENDING_SUBMISSION_SCHEMA_ID,
     EncryptSubmissionSchema,
+    SubmissionType.Encrypt,
   )
   return PendingSubmission
 }
