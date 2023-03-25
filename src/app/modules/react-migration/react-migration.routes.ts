@@ -10,6 +10,17 @@ ReactMigrationRouter.get(
   ReactMigrationController.servePublicForm,
 )
 
+ReactMigrationRouter.get('/:formId([a-fA-F0-9]{24})/embed', (req, res) => {
+  res.redirect(`/${req.params.formId}`)
+})
+
+ReactMigrationRouter.get(
+  '/forms/:agency/:formId([a-fA-F0-9]{24})/embed',
+  (req, res) => {
+    res.redirect(`/${req.params.formId}`)
+  },
+)
+
 ReactMigrationRouter.get('/#!/:formId([a-fA-F0-9]{24})', (req, res) => {
   res.redirect(`/${req.params.formId}`)
 })

@@ -48,16 +48,6 @@ PublicFormRouter.get(
 )
 
 PublicFormRouter.get(
-  '/:formId([a-fA-F0-9]{24})/embed',
-  PublicFormController.handleRedirect,
-)
-
-PublicFormRouter.get(
   '/forms/:agency/:formId([a-fA-F0-9]{24})/:state(preview|template|use-template)?',
-  PublicFormController.handleRedirect,
-)
-
-PublicFormRouter.get(
-  '/forms/:agency/:formId([a-fA-F0-9]{24})/embed',
   PublicFormController.handleRedirect,
 )
