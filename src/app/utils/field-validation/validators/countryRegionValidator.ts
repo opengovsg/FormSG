@@ -14,12 +14,17 @@ type CountryRegionValidatorConstructor = () => CountryRegionValidator
 /**
  * Returns a validation function
  * to check if country/region selection is one of the options.
+ * We need to validate the response against options in upper-case because PublicFormProvider.handleSubmitForm transform the response into upper-case.
+ * We want users to see the options in title-case but we also want to the data in the backend to remain in upper-case.
  */
 const makeCountryRegionValidator: CountryRegionValidatorConstructor =
   () => (response) => {
     const validOptions = Object.values(CountryRegion)
+    const validOptionsInUpperCase = validOptions.map((option) =>
+      option.toUpperCase(),
+    )
     const { answer } = response
-    return isOneOfOptions(validOptions, answer)
+    return isOneOfOptions(validOptionsInUpperCase, answer)
       ? right(response)
       : left(
           `CountryRegionValidator:\t answer is not a valid country/region option`,
