@@ -247,8 +247,8 @@ export const PublicFormProvider = ({
           .filter((field) => field.fieldType == BasicField.CountryRegion)
           .map((field) => field._id),
       )
-      // We want users to see the options in title-case but we also want to the data in the backend to remain in upper-case.
-      // Data in the backend needs to be in upper-case so that country/region data remains consistent with myinfo-countries.
+      // We want users to see the country/region options in title-case but we also need the data in the backend to remain in upper-case.
+      // Country/region data in the backend needs to remain in upper-case so that they remain consistent with myinfo-countries.
       const formInputsWithCountryRegionInUpperCase = Object.keys(
         formInputs,
       ).reduce((newFormInputs: typeof formInputs, fieldId) => {

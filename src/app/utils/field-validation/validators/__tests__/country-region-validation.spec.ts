@@ -9,11 +9,17 @@ import {
 import { CountryRegion } from '../../../../../../shared/constants/countryRegion'
 import { BasicField } from '../../../../../../shared/types'
 
+// We want users to see the country/region options in title-case but we also need the data in the backend to remain in upper-case.
+// As such, in handleSubmitForm, which runs before validation, we change the title-case country/region value into upper-case.
+const simulateTransformationsHandleSubmitForm = (
+  countryRegion: CountryRegion,
+) => (countryRegion as string).toUpperCase()
+
 describe('Country/region validation', () => {
   it('should allow valid option', () => {
     const formField = generateDefaultField(BasicField.CountryRegion, {})
     const response = generateNewSingleAnswerResponse(BasicField.CountryRegion, {
-      answer: CountryRegion.Singapore,
+      answer: simulateTransformationsHandleSubmitForm(CountryRegion.Singapore),
     })
 
     const validateResult = validateField('formId', formField, response)
@@ -84,8 +90,8 @@ describe('Country/region validation', () => {
     const formField = generateDefaultField(BasicField.CountryRegion, {})
     const response = generateNewSingleAnswerResponse(BasicField.CountryRegion, {
       answer: [
-        CountryRegion.Singapore,
-        CountryRegion.Slovak_Republic,
+        simulateTransformationsHandleSubmitForm(CountryRegion.Singapore),
+        simulateTransformationsHandleSubmitForm(CountryRegion.Slovak_Republic),
       ] as unknown as string,
     })
     const validateResult = validateField('formId', formField, response)
@@ -97,7 +103,7 @@ describe('Country/region validation', () => {
   it('should disallow responses submitted for hidden fields', () => {
     const formField = generateDefaultField(BasicField.CountryRegion, {})
     const response = generateNewSingleAnswerResponse(BasicField.CountryRegion, {
-      answer: CountryRegion.Singapore,
+      answer: simulateTransformationsHandleSubmitForm(CountryRegion.Singapore),
       isVisible: false,
     })
     const validateResult = validateField('formId', formField, response)
