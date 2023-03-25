@@ -252,13 +252,14 @@ export const PublicFormProvider = ({
       const formInputsWithCountryRegionInUpperCase = Object.keys(
         formInputs,
       ).reduce((newFormInputs: typeof formInputs, fieldId) => {
+        const currentInput = formInputs[fieldId]
         if (
           countryRegionFieldIds.has(fieldId) &&
-          (formInputs[fieldId] as string)
+          typeof currentInput === 'string'
         ) {
-          newFormInputs[fieldId] = (formInputs[fieldId] as string).toUpperCase()
+          newFormInputs[fieldId] = currentInput.toUpperCase()
         } else {
-          newFormInputs[fieldId] = formInputs[fieldId]
+          newFormInputs[fieldId] = currentInput
         }
         return newFormInputs
       }, {})
