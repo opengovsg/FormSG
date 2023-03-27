@@ -55,6 +55,6 @@ export type PaymentReceiptStatusDto = {
 }
 
 export type GetPaymentInfoDto = {
-  client_secret: string | null
+  client_secret: string
   publishableKey: string
 }
