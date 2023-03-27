@@ -5,7 +5,7 @@ import { celebrate, Joi, Segments } from 'celebrate'
 import { StatusCodes } from 'http-status-codes'
 import get from 'lodash/get'
 import mongoose from 'mongoose'
-import { ok, Result, ResultAsync } from 'neverthrow'
+import { errAsync, ok, Result, ResultAsync } from 'neverthrow'
 import Stripe from 'stripe'
 
 import { ErrorDto, GetPaymentInfoDto } from '../../../../shared/types'
@@ -17,11 +17,13 @@ import getPaymentModel from '../../models/payment.server.model'
 import { generatePdfFromHtml } from '../../utils/convert-html-to-pdf'
 import { createReqMeta } from '../../utils/request'
 import { ControllerHandler } from '../core/core.types'
-import { retrieveFullFormById } from '../form/form.service'
+import * as FormService from '../form/form.service'
+import { isFormEncryptMode } from '../form/form.utils'
 import { checkFormIsEncryptMode } from '../submission/encrypt-submission/encrypt-submission.service'
 import * as SubmissionService from '../submission/submission.service'
 
 import * as PaymentService from './payments.service'
+import { StripeFetchError } from './stripe.errors'
 import * as StripeService from './stripe.service'
 import {
   getChargeIdFromNestedCharge,
@@ -351,7 +353,7 @@ const _handleConnectOauthCallback: ControllerHandler<
   const redirectUrl = `${config.app.appUrl}/admin/form/${formId}/settings`
   // Step 2: Retrieve currently logged in user.
   return (
-    retrieveFullFormById(formId)
+    FormService.retrieveFullFormById(formId)
       .andThen(checkFormIsEncryptMode)
       .andThen((form) =>
         StripeService.exchangeCodeForAccessToken(code).andThen((token) => {
@@ -409,12 +411,43 @@ export const getPaymentInfo: ControllerHandler<
 
   return PaymentService.findPaymentByPaymentIntentId(paymentIntentId)
     .andThen((payment) =>
-      SubmissionService.findSubmissionById(payment.submissionId),
+      // TODO: swap to pending submission service
+      SubmissionService.findSubmissionById(payment.pendingSubmissionId),
     )
-    .andThen((submission) =>
-      ResultAsync.fromPromise(
+    .andThen((submission) => {
+      return FormService.retrieveFormById(submission.form)
+    })
+    .andThen((form) => {
+      // Payment forms are encrypted
+      if (!isFormEncryptMode(form)) {
+        logger.warn({
+          message:
+            'Requested for payment information for possibly non-payment form',
+          meta: {
+            action: 'getPaymentInfo',
+            paymentIntentId,
+          },
+        })
+        // TODO: change to error object
+        return errAsync(new Error('Is not a payment form'))
+      }
+      const stripeAccount = form.payments_channel?.target_account_id
+      // Early termination to prevent consumption of QPS to stripe
+      if (!stripeAccount) {
+        logger.warn({
+          message: 'Missing payments_channel on this form',
+          meta: {
+            action: 'getPaymentInfo',
+            paymentIntentId,
+          },
+        })
+        // TODO: change to error object
+        return errAsync(new Error('Is not a payment form'))
+      }
+
+      return ResultAsync.fromPromise(
         stripe.paymentIntents.retrieve(paymentIntentId, {
-          stripeAccount: submission.form.payments_channel.target_account_id,
+          stripeAccount,
         }),
         (error) => {
           logger.error({
@@ -425,23 +458,25 @@ export const getPaymentInfo: ControllerHandler<
               error,
             },
           })
-          return res
-            .status(StatusCodes.INTERNAL_SERVER_ERROR)
-            .json({ message: 'Stripe retreival error' })
+          return new StripeFetchError(String(error))
         },
-      ),
-    )
-    .map((stripeFullIntentObj) => {
+      ).map((stripeFullIntentObj) => ({
+        stripeFullIntentObj,
+        // TODO: check publiashable key seemed to be tied to payment intent?
+        publishableKey: form.payments_channel?.publishable_key || '',
+      }))
+    })
+    .map(({ stripeFullIntentObj, publishableKey }) => {
       console.log({ stripeFullIntentObj })
       return res.status(StatusCodes.OK).json({
-        client_secret: stripeFullIntentObj.client_secret,
-        publishableKey: paymentConfig.stripePublishableKey,
+        client_secret: stripeFullIntentObj.client_secret || '',
+        publishableKey,
       })
     })
     .mapErr((e) => {
       console.error(e)
       return res
         .status(StatusCodes.INTERNAL_SERVER_ERROR)
-        .json({ message: 'Missing client secret' })
+        .json({ message: e.message })
     })
 }

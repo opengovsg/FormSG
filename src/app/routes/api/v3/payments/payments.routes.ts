@@ -42,6 +42,6 @@ PaymentsRouter.route('/stripe/callback').get(
  * returns clientSecret and publishableKey from paymentIntentId
  * @route /payments/:paymentIntentId/getInfo
  */
-PaymentsRouter.route('/:paymentIntentId/getInfo').get(
+PaymentsRouter.route('/:paymentIntentId/getinfo').get(
   StripeController.getPaymentInfo,
 )
