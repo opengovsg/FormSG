@@ -6,6 +6,7 @@ import { loadStripe, Stripe } from '@stripe/stripe-js'
 
 import { GetPaymentInfoDto } from '~shared/types'
 
+import { DownloadReceiptBlock } from '../FormPaymentRedirectPage/components/DownloadReceiptBlock'
 import { PaymentSuccessSvgr } from '../FormPaymentRedirectPage/components/PaymentSuccessSvgr'
 import {
   useGetPaymentInfo,
@@ -37,7 +38,11 @@ const StripePaymentWrapper = ({ paymentPageId }: { paymentPageId: string }) => {
       }}
     >
       <Flex flexDir="column" align="center">
-        <Code>{JSON.stringify(paymentInfoData, null, 2)}</Code>
+        <Box position={'fixed'} w={'50%'} top={0} left={0}>
+          <pre>
+            <Code>{JSON.stringify(paymentInfoData, null, 2)}</Code>
+          </pre>
+        </Box>
         <Suspense fallback={<span>Loading Stripe Payment</span>}>
           <StripeWrapper paymentInfoData={paymentInfoData} />
         </Suspense>
@@ -103,11 +108,12 @@ const StripePaymentContainer = ({
       )
       break
     case 'receipt':
-      paymentViewElementElement = <span>{viewType}</span>
-      //   <DownloadReceiptBlock
-      //               formId={formId}
-      //               stripeSubmissionId={stripeSubmissionId}
-      //             />
+      paymentViewElementElement = (
+        <DownloadReceiptBlock
+          formId={formId}
+          stripeSubmissionId={paymentPageId}
+        />
+      )
       break
   }
   return (
