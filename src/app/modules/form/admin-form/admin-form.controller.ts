@@ -174,12 +174,9 @@ const transferFormOwnershipValidator = celebrate({
   [Segments.BODY]: {
     email: Joi.string()
       .required()
-      .email({
-        minDomainSegments: 2, // Number of segments required for the domain
-        tlds: { allow: true }, // TLD (top level domain) validation
-        multiple: false, // Disallow multiple emails
-      })
-      .message('Please enter a valid email'),
+      .email()
+      .message('Please enter a valid email')
+      .lowercase(),
   },
 })
 
@@ -2354,7 +2351,8 @@ export const handleUpdateCollaborators = [
         email: Joi.string()
           .required()
           .email()
-          .message('Please enter a valid email'),
+          .message('Please enter a valid email')
+          .lowercase(),
         write: Joi.bool().optional(),
         _id: Joi.string().optional(),
       }),
