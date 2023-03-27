@@ -19,13 +19,6 @@ export class SuccessfulChargeNotFoundError extends ApplicationError {
     super(message)
   }
 }
-export class ChargeReceiptNotFoundError extends ApplicationError {
-  constructor(
-    message = "Charge object's receipt url not found from Stripe API",
-  ) {
-    super(message)
-  }
-}
 
 export class StripeTransactionFeeNotFoundError extends ApplicationError {
   constructor(message = 'Transaction fee not found from Stripe API') {
@@ -33,17 +26,8 @@ export class StripeTransactionFeeNotFoundError extends ApplicationError {
   }
 }
 
-export class ChargeBalanceTransactionNotFoundError extends ApplicationError {
-  constructor(
-    message = "Charge object's balance transaction not found from Stripe API",
-  ) {
-    super(message)
-  }
-}
-export class PaymentIntentLatestChargeNotFoundError extends ApplicationError {
-  constructor(
-    message = "Payment intent's latest charge not found from Stripe API",
-  ) {
+export class MalformedStripeChargeObjectError extends ApplicationError {
+  constructor(message = 'Data missing from charge object') {
     super(message)
   }
 }
@@ -66,14 +50,14 @@ export class StripeAccountNotFoundError extends ApplicationError {
   }
 }
 
-export class EventMetadataPaymentIdNotFoundError extends ApplicationError {
-  constructor(message = 'Payment id not found in event metadata') {
+export class StripeMetadataPaymentIdNotFoundError extends ApplicationError {
+  constructor(message = 'Payment id not found in Stripe metadata') {
     super(message)
   }
 }
 
-export class EventMetadataPaymentIdInvalidError extends ApplicationError {
-  constructor(message = 'Invalid payment id found in event metadata') {
+export class StripeMetadataPaymentIdInvalidError extends ApplicationError {
+  constructor(message = 'Invalid payment id found in Stripe metadata') {
     super(message)
   }
 }

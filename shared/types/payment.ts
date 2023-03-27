@@ -9,7 +9,6 @@ export enum PaymentStatus {
   PartiallyRefunded = 'partially_refunded',
   FullyRefunded = 'fully_refunded',
   Disputed = 'disputed',
-  DisputeClosed = 'dispute_closed',
 }
 
 export enum PaymentChannel {
@@ -31,6 +30,7 @@ export type PayoutMeta = {
 
 export type Payment = {
   // Pre-payment metadata
+  target_account_id: string
   pendingSubmissionId: string
   email: string
   amount: number

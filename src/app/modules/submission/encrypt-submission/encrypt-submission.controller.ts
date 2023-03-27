@@ -400,6 +400,7 @@ const submitEncryptModeForm: ControllerHandler<
     }
 
     const payment = new Payment({
+      target_account_id: form.payments_channel.target_account_id,
       pendingSubmissionId,
       amount: form.payments_field.amount_cents,
       status: PaymentStatus.Pending,
@@ -575,7 +576,7 @@ const submitEncryptModeForm: ControllerHandler<
         ? {
             paymentClientSecret,
             // TODO: Same as above - throw error
-            paymentPublishableKey: form.payments_channel?.publishable_key,
+            paymentPublishableKey: form.payments_channel.publishable_key,
           }
         : {}),
     })

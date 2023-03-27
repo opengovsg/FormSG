@@ -58,7 +58,7 @@ export const computePaymentState = (
 
   // Step 1: State machine for computing the current value of the payment state.
   // A "null" status represents an unknown state, and should be recovered from later.
-  let status: PaymentStatus | null = PaymentStatus.Pending
+  let status: Payment['status'] | null = PaymentStatus.Pending
   let chargeIdLatest: Payment['chargeIdLatest']
 
   for (const event of chargeEvents) {
@@ -100,24 +100,10 @@ export const computePaymentState = (
         break
       case PaymentStatus.Disputed:
         if (
-          event.type === 'charge.dispute.closed' &&
-          getChargeId(event.data.object.charge) === chargeIdLatest
-        ) {
-          status = PaymentStatus.DisputeClosed
-        } else if (
           (event.type === 'charge.dispute.funds_withdrawn' ||
-            event.type === 'charge.dispute.updated') &&
-          getChargeId(event.data.object.charge) === chargeIdLatest
-        ) {
-          // Do nothing to retain identical state here - in the future, we can
-          // add more detailed tracking if necessary
-        } else {
-          status = null
-        }
-        break
-      case PaymentStatus.DisputeClosed:
-        if (
-          event.type === 'charge.dispute.funds_reinstated' &&
+            event.type === 'charge.dispute.updated' ||
+            event.type === 'charge.dispute.closed' ||
+            event.type === 'charge.dispute.funds_reinstated') &&
           getChargeId(event.data.object.charge) === chargeIdLatest
         ) {
           // Do nothing to retain identical state here - in the future, we can
@@ -130,8 +116,8 @@ export const computePaymentState = (
         // If we recieve any more charge events, the status is unknown.
         status = null
         break
-      default: // state.status is null
-        // Do nothing - null is a sink state
+      default:
+        // status is null, so do nothing - null is a sink state
         break
     }
   }
@@ -154,6 +140,7 @@ export const computePaymentState = (
     })
     return err(new ComputePaymentStateError())
   }
+
   const lastEvent = chargeEvents[chargeEvents.length - 1]
   switch (lastEvent.type) {
     case 'charge.failed':
@@ -183,14 +170,10 @@ export const computePaymentState = (
     case 'charge.dispute.created':
     case 'charge.dispute.updated':
     case 'charge.dispute.funds_withdrawn':
-      return ok({
-        status: PaymentStatus.Disputed,
-        chargeIdLatest: getChargeId(lastEvent.data.object.charge),
-      })
     case 'charge.dispute.funds_reinstated':
     case 'charge.dispute.closed':
       return ok({
-        status: PaymentStatus.DisputeClosed,
+        status: PaymentStatus.Disputed,
         chargeIdLatest: getChargeId(lastEvent.data.object.charge),
       })
     default:
@@ -202,10 +185,3 @@ export const computePaymentState = (
       return err(new ComputePaymentStateError())
   }
 }
-
-export const isPaymentStatusPostSuccess = (status: PaymentStatus) =>
-  status === PaymentStatus.Succeeded ||
-  status === PaymentStatus.PartiallyRefunded ||
-  status === PaymentStatus.FullyRefunded ||
-  status === PaymentStatus.Disputed ||
-  status === PaymentStatus.DisputeClosed
