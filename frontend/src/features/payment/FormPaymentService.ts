@@ -26,6 +26,6 @@ export const getPaymentReceiptStatus = async (
  */
 export const getPaymentInfo = async (paymentId: string) => {
   return ApiService.get<GetPaymentInfoDto>(
-    `payments/${paymentId}/getInfo`,
+    `payments/${paymentId}/getinfo`,
   ).then(({ data }) => data)
 }

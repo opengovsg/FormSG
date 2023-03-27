@@ -522,20 +522,23 @@ const submitEncryptModeForm: ControllerHandler<
       })
     }
 
+    // Attach required payment configs if client secret is present. Otherwise,
+    // client will display error message. We still return 200 OK because the
+    // state is recoverable.
+    const paymentData = paymentClientSecret
+      ? {
+          paymentClientSecret,
+          paymentPublishableKey: form.payments_channel?.publishable_key,
+          paymentIntentId: paymentIntent?.id,
+        }
+      : {}
+
     return res.json({
       message: 'Form submission successful',
       submissionId: pendingSubmissionId,
       timestamp: (pendingSubmission.created || new Date()).getTime(),
-      // Attach required payment configs if client secret is present. Otherwise,
-      // client will display error message. We still return 200 OK because the
-      // state is recoverable.
-      ...(paymentClientSecret
-        ? {
-            paymentClientSecret,
-            paymentPublishableKey: form.payments_channel.publishable_key,
-            paymentIntentId: paymentIntent?.id,
-          }
-        : {}),
+      // hide paymentData obj in response if it is a payment form
+      ...(paymentData ? { paymentData } : {}),
     })
   }
 
