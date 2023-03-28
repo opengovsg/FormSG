@@ -138,6 +138,8 @@ export const PreviewFormProvider = ({
 
       switch (form.responseMode) {
         case FormResponseMode.Email: {
+          // Using mutateAsync so react-hook-form goes into loading state.
+
           const submitEmailFormWithFetch = function () {
             datadogLogs.logger.info(`handleSubmitForm: submitting via fetch`, {
               meta: {
@@ -148,9 +150,7 @@ export const PreviewFormProvider = ({
             })
 
             return submitEmailModeFormFetchMutation
-              .mutateAsync(formData, {
-                onSuccess,
-              })
+              .mutateAsync(formData, { onSuccess })
               .catch(async (error) => {
                 datadogLogs.logger.warn(`handleSubmitForm: ${error.message}`, {
                   meta: {
@@ -168,17 +168,13 @@ export const PreviewFormProvider = ({
               })
           }
 
-          // Using mutateAsync so react-hook-form goes into loading state.
-
           // TODO (#5826): Toggle to use fetch for submissions instead of axios. If enabled, this is used for testing and to use fetch instead of axios by default if testing shows fetch is more  stable. Remove once network error is resolved
           if (useFetchForSubmissions) {
             return submitEmailFormWithFetch()
           } else {
             return (
               submitEmailModeFormMutation
-                .mutateAsync(formData, {
-                  onSuccess,
-                })
+                .mutateAsync(formData, { onSuccess })
                 // Using catch since we are using mutateAsync and react-hook-form will continue bubbling this up.
                 .catch((error) => {
                   // TODO (#5826): Fallback mutation using Fetch. Remove once network error is resolved
@@ -208,6 +204,8 @@ export const PreviewFormProvider = ({
           }
         }
         case FormResponseMode.Encrypt: {
+          // Using mutateAsync so react-hook-form goes into loading state.
+
           const submitStorageFormWithFetch = function () {
             datadogLogs.logger.info(`handleSubmitForm: submitting via fetch`, {
               meta: {
@@ -244,11 +242,9 @@ export const PreviewFormProvider = ({
               })
           }
 
-          // Using mutateAsync so react-hook-form goes into loading state.
-
           // TODO (#5826): Toggle to use fetch for submissions instead of axios. If enabled, this is used for testing and to use fetch instead of axios by default if testing shows fetch is more  stable. Remove once network error is resolved
           if (useFetchForSubmissions) {
-            submitStorageFormWithFetch()
+            return submitStorageFormWithFetch()
           } else {
             return (
               submitStorageModeFormMutation

@@ -250,9 +250,7 @@ export const PublicFormProvider = ({
             })
 
             return submitEmailModeFormFetchMutation
-              .mutateAsync(formData, {
-                onSuccess,
-              })
+              .mutateAsync(formData, { onSuccess })
               .catch(async (error) => {
                 datadogLogs.logger.warn(`handleSubmitForm: ${error.message}`, {
                   meta: {
@@ -276,12 +274,10 @@ export const PublicFormProvider = ({
           } else {
             return (
               submitEmailModeFormMutation
-                .mutateAsync(formData, {
-                  onSuccess,
-                })
+                .mutateAsync(formData, { onSuccess })
                 // Using catch since we are using mutateAsync and react-hook-form will continue bubbling this up.
                 .catch(async (error) => {
-                  // TODO(#5826): Remove when we have resolved the Network Error and t.arrayBuffer issues.
+                  // TODO(#5826): Remove when we have resolved the Network Error
                   datadogLogs.logger.warn(
                     `handleSubmitForm: ${error.message}`,
                     {
@@ -362,7 +358,7 @@ export const PublicFormProvider = ({
                 )
                 // Using catch since we are using mutateAsync and react-hook-form will continue bubbling this up.
                 .catch(async (error) => {
-                  // TODO(#5826): Remove when we have resolved the Network Error and t.arrayBuffer issues.
+                  // TODO(#5826): Remove when we have resolved the Network Error
                   datadogLogs.logger.warn(
                     `handleSubmitForm: ${error.message}`,
                     {
