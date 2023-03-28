@@ -1,6 +1,7 @@
 import { ObjectId } from 'bson'
 import { keyBy } from 'lodash'
-import mongoose, { ClientSession } from 'mongoose'
+import mongoose from 'mongoose'
+import { ResultAsync } from 'neverthrow'
 import { PaymentStatus, SubmissionType } from 'shared/types'
 import Stripe from 'stripe'
 
@@ -14,11 +15,7 @@ import { IPaymentSchema } from 'src/types'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import { PaymentNotFoundError } from '../payments.errors'
-import {
-  ComputePaymentStateError,
-  StripeMetadataPaymentIdInvalidError,
-  StripeMetadataPaymentIdNotFoundError,
-} from '../stripe.errors'
+import * as PaymentsService from '../payments.service'
 import * as StripeService from '../stripe.service'
 
 const Payment = getPaymentModel(mongoose)
@@ -180,7 +177,7 @@ describe('stripe.service', () => {
   afterAll(async () => await dbHandler.closeDatabase())
   beforeEach(() => jest.clearAllMocks())
 
-  describe('processStripeEventTxn', () => {
+  describe('processStripeEvent', () => {
     let payment: IPaymentSchema
 
     beforeEach(async () => {
@@ -225,10 +222,9 @@ describe('stripe.service', () => {
       // Act
       const eventChargeFailed = MOCK_STRIPE_EVENTS_MAP['evt_CHARGE_FAILED']
       const chargeFailed = eventChargeFailed.data.object as Stripe.Charge
-      const result = await StripeService.processStripeEventTxn(
+      const result = await StripeService.processStripeEvent(
         String(payment._id),
         eventChargeFailed,
-        undefined as unknown as ClientSession,
       )
 
       // Assert
@@ -245,6 +241,7 @@ describe('stripe.service', () => {
 
     it('should update the charge status from Pending to Succeeded when a charge.succeeded event is received, move the pending submission to submissions', async () => {
       // Arrange
+      // Mock Stripe API
       const transactionFee = 10
       const balanceTransactionApiSpy = jest.spyOn(
         stripe.balanceTransactions,
@@ -255,6 +252,17 @@ describe('stripe.service', () => {
           id,
           fee_details: [{ type: 'stripe_fee', amount: transactionFee }],
         } as unknown as Stripe.Response<Stripe.BalanceTransaction>),
+      )
+
+      // Mock confirmation service
+      const confirmSpy = jest.spyOn(
+        PaymentsService,
+        'confirmPaymentPendingSubmission',
+      )
+      confirmSpy.mockImplementationOnce((paymentId) =>
+        ResultAsync.fromSafePromise(
+          Payment.findById(paymentId) as mongoose.Query<IPaymentSchema, any>,
+        ),
       )
 
       // Inject the expected webhook logs and state into the payment object.
@@ -269,15 +277,15 @@ describe('stripe.service', () => {
       const eventChargeSucceeded =
         MOCK_STRIPE_EVENTS_MAP['evt_CHARGE_SUCCEEDED']
       const chargeSucceeded = eventChargeSucceeded.data.object as Stripe.Charge
-      const result = await StripeService.processStripeEventTxn(
+      const result = await StripeService.processStripeEvent(
         String(payment._id),
         eventChargeSucceeded,
-        undefined as unknown as ClientSession,
       )
 
       // Assert
       expect(result.isOk()).toEqual(true)
       expect(balanceTransactionApiSpy).toHaveBeenCalledOnce()
+      expect(confirmSpy).toHaveBeenCalledOnce()
 
       const updatedPayment = await Payment.findOne({
         paymentIntentId: 'pi_MOCK_PAYMENT_INTENT',
@@ -286,17 +294,6 @@ describe('stripe.service', () => {
 
       expect(updatedPayment.status).toEqual(PaymentStatus.Succeeded)
       expect(updatedPayment.chargeIdLatest).toEqual(chargeSucceeded.id)
-
-      expect(updatedPayment.completedPayment).toBeTruthy()
-      expect(updatedPayment.completedPayment?.transactionFee).toEqual(
-        transactionFee,
-      )
-      // Expect submission to exist
-      expect(updatedPayment.completedPayment?.submissionId).toBeTruthy()
-      const submission = await Submission.findById(
-        updatedPayment.completedPayment?.submissionId,
-      )
-      expect(submission).toBeTruthy()
     })
 
     it('should update the charge status from Succeeded to Partially Refunded when a charge.refunded event is received for a partial refund', async () => {
@@ -326,10 +323,9 @@ describe('stripe.service', () => {
         MOCK_STRIPE_EVENTS_MAP['evt_CHARGE_PARTIALLY_REFUNDED']
       const chargePartiallyRefunded = eventChargePartiallyRefunded.data
         .object as Stripe.Charge
-      const result = await StripeService.processStripeEventTxn(
+      const result = await StripeService.processStripeEvent(
         String(payment._id),
         eventChargePartiallyRefunded,
-        undefined as unknown as ClientSession,
       )
 
       // Assert
@@ -372,10 +368,9 @@ describe('stripe.service', () => {
         MOCK_STRIPE_EVENTS_MAP['evt_CHARGE_FULLY_REFUNDED']
       const chargeFullyRefunded = eventChargeFullyRefunded.data
         .object as Stripe.Charge
-      const result = await StripeService.processStripeEventTxn(
+      const result = await StripeService.processStripeEvent(
         String(payment._id),
         eventChargeFullyRefunded,
-        undefined as unknown as ClientSession,
       )
 
       // Assert
@@ -416,10 +411,9 @@ describe('stripe.service', () => {
       // Act
       const eventDispute = MOCK_STRIPE_EVENTS_MAP['evt_CHARGE_DISPUTE_CREATED']
       const dispute = eventDispute.data.object as Stripe.Dispute
-      const result = await StripeService.processStripeEventTxn(
+      const result = await StripeService.processStripeEvent(
         String(payment._id),
         eventDispute,
-        undefined as unknown as ClientSession,
       )
 
       // Assert
@@ -438,113 +432,35 @@ describe('stripe.service', () => {
     it('should return PaymentNotFoundError when the payment cannot be found', async () => {
       // Arrange
       const findSpy = jest.spyOn(Payment, 'findById')
-      findSpy.mockImplementationOnce(
-        () =>
-          ({
-            session: jest.fn().mockResolvedValueOnce(null),
-          } as unknown as mongoose.Query<any, any>),
-      )
+      findSpy.mockImplementationOnce(jest.fn().mockResolvedValueOnce(null))
 
       // Act
-      const result = await StripeService.processStripeEventTxn(
+      const result = await StripeService.processStripeEvent(
         String(payment._id),
         MOCK_STRIPE_EVENTS_MAP['evt_PAYMENT_INTENT_CREATED'],
-        undefined as unknown as ClientSession,
       )
 
       // Assert
+      expect(findSpy).toHaveBeenCalledOnce()
       expect(result.isErr()).toEqual(true)
       expect(result._unsafeUnwrapErr()).toBeInstanceOf(PaymentNotFoundError)
     })
 
-    it('should return DuplicateEventError when it is called twice with two events with identical ids', async () => {
+    it('should return DatabaseError when error occurs while querying database', async () => {
       // Arrange
-      // Inject the expected webhook logs and state into the payment object.
-      await Payment.updateOne(
-        { paymentIntentId: 'pi_MOCK_PAYMENT_INTENT' },
-        {
-          webhookLog: [MOCK_STRIPE_EVENTS_MAP['evt_PAYMENT_INTENT_CREATED']],
-        },
-      ).exec()
-
-      // Act
-      const result = await StripeService.processStripeEventTxn(
-        String(payment._id),
-        MOCK_STRIPE_EVENTS_MAP['evt_PAYMENT_INTENT_CREATED'],
-        undefined as unknown as ClientSession,
-      )
-
-      // Assert
-      expect(result.isErr()).toEqual(true)
-      expect(result._unsafeUnwrapErr()).toBeInstanceOf(
-        StripeService.DuplicateEventError,
-      )
-    })
-
-    it('should return ComputePaymentStateError if there is an error while computing the payment state from webhooks', async () => {
-      // Act
-      const result = await StripeService.processStripeEventTxn(
-        String(payment._id),
-        {
-          created: 1,
-          type: 'charge.dispute.invalid_type',
-        } as unknown as Stripe.Event,
-        undefined as unknown as ClientSession,
-      )
-
-      // Assert
-      expect(result.isErr()).toEqual(true)
-      expect(result._unsafeUnwrapErr()).toBeInstanceOf(ComputePaymentStateError)
-    })
-  })
-
-  // Note: We only test cases outside of the mongoose session here, which are all
-  // error cases. Branches within the session (which include all the success cases)
-  // are tested above, by directly testing processStripeEventTxn.
-  describe('processStripeEvent', () => {
-    it('should return StripeMetadataPaymentIdNotFoundError when the payment id is missing from the input metadata', async () => {
-      // Act
-      const result = await StripeService.processStripeEvent(
-        { formId: MOCK_FORM_ID },
-        MOCK_STRIPE_EVENTS_MAP['evt_PAYMENT_INTENT_CREATED'],
-      )
-
-      // Assert
-      expect(result.isErr()).toEqual(true)
-      expect(result._unsafeUnwrapErr()).toBeInstanceOf(
-        StripeMetadataPaymentIdNotFoundError,
-      )
-    })
-
-    it('should return StripeMetadataPaymentIdInvalidError when the payment id is missing from the input metadata', async () => {
-      // Act
-      const result = await StripeService.processStripeEvent(
-        { paymentId: 'some invalid objectid', formId: MOCK_FORM_ID },
-        MOCK_STRIPE_EVENTS_MAP['evt_PAYMENT_INTENT_CREATED'],
-      )
-
-      // Assert
-      expect(result.isErr()).toEqual(true)
-      expect(result._unsafeUnwrapErr()).toBeInstanceOf(
-        StripeMetadataPaymentIdInvalidError,
-      )
-    })
-
-    it('should return DatabaseError when error occurs whilst starting database session', async () => {
-      // Arrange
-      const startSessionSpy = jest.spyOn(mongoose, 'startSession')
-      startSessionSpy.mockImplementationOnce(
+      const findSpy = jest.spyOn(Payment, 'findById')
+      findSpy.mockImplementationOnce(
         jest.fn().mockRejectedValueOnce(new Error('boom')),
       )
 
       // Act
       const result = await StripeService.processStripeEvent(
-        MOCK_STRIPE_METADATA,
+        payment._id,
         MOCK_STRIPE_EVENTS_MAP['evt_PAYMENT_INTENT_CREATED'],
       )
 
       // Assert
-      expect(startSessionSpy).toHaveBeenCalledOnce()
+      expect(findSpy).toHaveBeenCalledOnce()
       expect(result.isErr()).toEqual(true)
       expect(result._unsafeUnwrapErr()).toBeInstanceOf(DatabaseError)
     })

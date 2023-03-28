@@ -50,12 +50,6 @@ export class StripeAccountNotFoundError extends ApplicationError {
   }
 }
 
-export class StripeMetadataPaymentIdInvalidError extends ApplicationError {
-  constructor(message = 'Failed to find valid payment id in Stripe metadata') {
-    super(message)
-  }
-}
-
 export class ComputePaymentStateError extends ApplicationError {
   constructor(message = 'Error while computing payment state') {
     super(message)

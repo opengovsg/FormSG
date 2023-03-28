@@ -4,12 +4,14 @@ import axios from 'axios'
 import { celebrate, Joi, Segments } from 'celebrate'
 import { StatusCodes } from 'http-status-codes'
 import get from 'lodash/get'
+import mongoose from 'mongoose'
 import Stripe from 'stripe'
 
 import config from '../../config/config'
 import { paymentConfig } from '../../config/features/payment.config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { stripe } from '../../loaders/stripe'
+import getPaymentModel from '../../models/payment.server.model'
 import { generatePdfFromHtml } from '../../utils/convert-html-to-pdf'
 import { createReqMeta } from '../../utils/request'
 import { ControllerHandler } from '../core/core.types'
@@ -20,6 +22,7 @@ import * as PaymentService from './payments.service'
 import * as StripeService from './stripe.service'
 
 const logger = createLoggerWithLabel(module)
+const PaymentModel = getPaymentModel(mongoose)
 
 /**
  * Middleware which validates that a request came from Stripe webhook by
@@ -83,6 +86,8 @@ const _handleStripeEventUpdates: ControllerHandler<
     meta: logMeta,
   })
 
+  // Step 3: Get the relevant payment Id
+
   switch (event.type) {
     // Ignore these two charge event types as they are only for capture flow.
     // case 'charge.captured':
@@ -90,41 +95,6 @@ const _handleStripeEventUpdates: ControllerHandler<
     // Ignore this charge event type as it is for when descriptions or metadata
     // are updated (which we will not support).
     // case 'charge.updated':
-    case 'charge.failed':
-    case 'charge.pending':
-    case 'charge.refunded':
-    case 'charge.succeeded':
-      await StripeService.processStripeEvent(event.data.object.metadata, event)
-      break
-    case 'charge.dispute.closed':
-    case 'charge.dispute.created':
-    case 'charge.dispute.funds_reinstated':
-    case 'charge.dispute.funds_withdrawn':
-    case 'charge.dispute.updated': {
-      // Retrieve the charge object to get the corresponding submissionId
-      const charge =
-        typeof event.data.object.charge === 'string'
-          ? await stripe.charges.retrieve(event.data.object.charge)
-          : event.data.object.charge
-      await StripeService.processStripeEvent(charge.metadata, event)
-      break
-    }
-    case 'charge.refund.updated': {
-      // Retrieve the charge object to get the corresponding submissionId
-      const charge =
-        typeof event.data.object.charge === 'string'
-          ? await stripe.charges.retrieve(event.data.object.charge)
-          : event.data.object.charge
-      if (!charge) {
-        logger.warn({
-          message: 'Received Stripe event charge.refund.updated with no charge',
-          meta: logMeta,
-        })
-        break
-      }
-      await StripeService.processStripeEvent(charge.metadata, event)
-      break
-    }
     case 'payment_intent.amount_capturable_updated':
     case 'payment_intent.canceled':
     case 'payment_intent.created':
@@ -133,8 +103,74 @@ const _handleStripeEventUpdates: ControllerHandler<
     case 'payment_intent.processing':
     case 'payment_intent.requires_action':
     case 'payment_intent.succeeded':
-      await StripeService.processStripeEvent(event.data.object.metadata, event)
+    case 'charge.failed':
+    case 'charge.pending':
+    case 'charge.refunded':
+    case 'charge.succeeded': {
+      const paymentId = get(event.data.object.metadata, 'paymentId') // TODO: Extract this value to a constant?
+      if (!paymentId || !mongoose.Types.ObjectId.isValid(paymentId)) {
+        logger.warn({
+          message:
+            'Received payment intent or charge event with invalid paymentId',
+          meta: logMeta,
+        })
+        return res.sendStatus(StatusCodes.BAD_REQUEST)
+      }
+
+      await StripeService.processStripeEvent(paymentId, event)
       break
+    }
+    case 'charge.dispute.closed':
+    case 'charge.dispute.created':
+    case 'charge.dispute.funds_reinstated':
+    case 'charge.dispute.funds_withdrawn':
+    case 'charge.dispute.updated': {
+      // Retrieve the charge object to get the corresponding submissionId
+      const chargeIdLatest =
+        typeof event.data.object.charge === 'string'
+          ? event.data.object.charge
+          : event.data.object.charge.id
+
+      const payment = await PaymentModel.findOne({ chargeIdLatest })
+      if (!payment) {
+        logger.warn({
+          message: 'Received dispute event with unknown latest charge id',
+          meta: logMeta,
+        })
+        return res.sendStatus(StatusCodes.BAD_REQUEST)
+      }
+
+      await StripeService.processStripeEvent(payment.id, event)
+      break
+    }
+    case 'charge.refund.updated': {
+      // Retrieve the charge object to get the corresponding submissionId
+      const chargeIdLatest =
+        typeof event.data.object.charge === 'string'
+          ? event.data.object.charge
+          : event.data.object.charge?.id
+
+      if (!chargeIdLatest) {
+        logger.warn({
+          message: 'Received Stripe event charge.refund.updated with no charge',
+          meta: logMeta,
+        })
+        return res.sendStatus(StatusCodes.BAD_REQUEST)
+      }
+
+      const payment = await PaymentModel.findOne({ chargeIdLatest })
+      if (!payment) {
+        logger.warn({
+          message:
+            'Received refund updated event with unknown latest charge id',
+          meta: logMeta,
+        })
+        return res.sendStatus(StatusCodes.BAD_REQUEST)
+      }
+
+      await StripeService.processStripeEvent(payment.id, event)
+      break
+    }
     case 'payout.canceled':
     case 'payout.created':
     case 'payout.failed':
@@ -142,7 +178,7 @@ const _handleStripeEventUpdates: ControllerHandler<
     case 'payout.updated':
       // TODO: This is most definitely wrong but need to test when payouts come in
       await StripeService.processStripeEvent(
-        event.data.object.metadata,
+        'paymentId',
         event,
         // {
         //   payout: {

@@ -1,7 +1,6 @@
 // Use 'stripe-event-types' for better type discrimination.
 /// <reference types="stripe-event-types" />
 import cuid from 'cuid'
-import get from 'lodash/get'
 import mongoose from 'mongoose'
 import { errAsync, ok, okAsync, ResultAsync } from 'neverthrow'
 import Stripe from 'stripe'
@@ -29,7 +28,6 @@ import {
   StripeAccountError,
   StripeAccountNotFoundError,
   StripeFetchError,
-  StripeMetadataPaymentIdInvalidError,
 } from './stripe.errors'
 import { computePaymentState, getRedirectUri } from './stripe.utils'
 
@@ -157,11 +155,10 @@ const confirmStripePaymentPendingSubmission = (
  * @returns err(DatabaseError) if error occurs whilst querying the database
  */
 export const processStripeEvent = (
-  metadata: Stripe.Metadata | null,
+  paymentId: string,
   event: Stripe.Event,
 ): ResultAsync<
   void,
-  | StripeMetadataPaymentIdInvalidError
   | MalformedStripeChargeObjectError
   | PaymentNotFoundError
   | PendingSubmissionNotFoundError
@@ -172,25 +169,8 @@ export const processStripeEvent = (
 > => {
   const logMeta = {
     action: 'updateEventLogById',
-    metadata,
+    paymentId,
     event,
-  }
-
-  const paymentId = get(metadata, 'paymentId') // TODO: Extract this value to a constant
-  if (!paymentId) {
-    logger.warn({
-      message: 'Stripe event metadata does not contain paymentId',
-      meta: logMeta,
-    })
-    return errAsync(new StripeMetadataPaymentIdInvalidError())
-  }
-
-  if (!mongoose.Types.ObjectId.isValid(paymentId)) {
-    logger.warn({
-      message: 'Stripe metadata contains invalid paymentId',
-      meta: { ...logMeta, paymentId },
-    })
-    return errAsync(new StripeMetadataPaymentIdInvalidError())
   }
 
   return ResultAsync.fromPromise(
