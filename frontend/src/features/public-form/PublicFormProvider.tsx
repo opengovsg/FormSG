@@ -292,7 +292,7 @@ export const PublicFormProvider = ({
                       },
                     },
                   )
-                  if (error.message.match(/Network Error/i)) {
+                  if (/Network Error/i.test(error.message)) {
                     axiosDebugFlow()
                     return submitEmailFormWithFetch()
                   } else {
@@ -373,7 +373,7 @@ export const PublicFormProvider = ({
                     },
                   )
 
-                  if (error.message.match(/Network Error/i)) {
+                  if (/Network Error/i.test(error.message)) {
                     axiosDebugFlow()
                     return submitStorageFormWithFetch()
                   } else {

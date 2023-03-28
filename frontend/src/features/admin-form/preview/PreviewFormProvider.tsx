@@ -192,7 +192,7 @@ export const PreviewFormProvider = ({
                       },
                     },
                   )
-                  if (error.message.match(/Network Error/i)) {
+                  if (/Network Error/i.test(error.message)) {
                     axiosDebugFlow()
                     return submitEmailFormWithFetch()
                   } else {
@@ -274,7 +274,7 @@ export const PreviewFormProvider = ({
                       },
                     },
                   )
-                  if (error.message.match(/Network Error/i)) {
+                  if (/Network Error/i.test(error.message)) {
                     axiosDebugFlow()
                     return submitStorageFormWithFetch()
                   } else {
