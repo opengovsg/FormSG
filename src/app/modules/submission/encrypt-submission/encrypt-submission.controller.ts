@@ -352,7 +352,11 @@ const submitEncryptModeForm: ControllerHandler<
   ) {
     const amount = form.payments_field.amount_cents
     // Step 1: Create payment without payment intent id and pending submission id.
-    if (!amount || amount <= 0) {
+    if (
+      !amount ||
+      amount < paymentConfig.minPaymentAmountCents ||
+      amount > paymentConfig.maxPaymentAmountCents
+    ) {
       logger.error({
         message:
           'Error when creating payment: amount is not a positive integer',
