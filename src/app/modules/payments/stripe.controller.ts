@@ -1,5 +1,6 @@
 // Use 'stripe-event-types' for better type discrimination.
 /// <reference types="stripe-event-types" />
+import axios from 'axios'
 import { celebrate, Joi, Segments } from 'celebrate'
 import { StatusCodes } from 'http-status-codes'
 import get from 'lodash/get'
@@ -9,11 +10,13 @@ import config from '../../config/config'
 import { paymentConfig } from '../../config/features/payment.config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { stripe } from '../../loaders/stripe'
+import { generatePdfFromHtml } from '../../utils/convert-html-to-pdf'
 import { createReqMeta } from '../../utils/request'
 import { ControllerHandler } from '../core/core.types'
 import { retrieveFullFormById } from '../form/form.service'
 import { checkFormIsEncryptMode } from '../submission/encrypt-submission/encrypt-submission.service'
 
+import * as PaymentService from './payments.service'
 import * as StripeService from './stripe.service'
 
 const logger = createLoggerWithLabel(module)
@@ -161,6 +164,104 @@ export const handleStripeEventUpdates = [
   validateStripeEvent,
   _handleStripeEventUpdates,
 ]
+
+// TODO: Refactor for use in static payment url implementation
+export const checkPaymentReceiptStatus: ControllerHandler<{
+  formId: string
+  submissionId: string
+}> = async (req, res) => {
+  const { formId, submissionId } = req.params
+  logger.info({
+    message: 'getPaymentStatus endpoint called',
+    meta: {
+      action: 'getPaymentStatus',
+      formId: formId,
+      submissionId: submissionId,
+    },
+  })
+
+  return PaymentService.findPaymentBySubmissionId(submissionId)
+    .map((payment) => {
+      logger.info({
+        message: 'Received payment object with receipt url from Stripe webhook',
+        meta: {
+          action: 'checkPaymentReceiptStatus',
+          payment,
+        },
+      })
+
+      return res.status(StatusCodes.OK).json({ isReady: true })
+    })
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error retrieving receipt URL',
+        meta: {
+          action: 'checkPaymentReceiptStatus',
+          formId: formId,
+          submissionId: submissionId,
+        },
+        error,
+      })
+      return res.status(StatusCodes.NOT_FOUND).json({ message: error })
+    })
+}
+
+// TODO: Refactor for use in static payment url implementation
+export const downloadPaymentReceipt: ControllerHandler<{
+  formId: string
+  submissionId: string
+}> = (req, res) => {
+  const { formId, submissionId } = req.params
+  logger.info({
+    message: 'downloadPaymentReceipt endpoint called',
+    meta: {
+      action: 'downloadPaymentReceipt',
+      formId: formId,
+      submissionId: submissionId,
+    },
+  })
+
+  return PaymentService.findPaymentBySubmissionId(submissionId)
+    .map((payment) => {
+      logger.info({
+        message: 'Received receipt url from Stripe webhook',
+        meta: {
+          action: 'downloadPaymentReceipt',
+          payment,
+        },
+      })
+      // retrieve receiptURL as html
+      return (
+        axios
+          .get<string>(payment.completedPayment?.receiptUrl ?? '')
+          // convert to pdf and return
+          .then((receiptUrlResponse) => {
+            const html = receiptUrlResponse.data
+            const pdfBufferPromise = generatePdfFromHtml(html)
+            return pdfBufferPromise
+          })
+          .then((pdfBuffer) => {
+            res.set({
+              'Content-Type': 'application/pdf',
+              'Content-Disposition': `attachment; filename=${submissionId}-receipt.pdf`,
+            })
+            return res.status(StatusCodes.OK).send(pdfBuffer)
+          })
+      )
+    })
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error retrieving receipt',
+        meta: {
+          action: 'downloadPaymentReceipt',
+          formId: formId,
+          submissionId: submissionId,
+        },
+        error,
+      })
+      return res.status(StatusCodes.NOT_FOUND).json({ message: error })
+    })
+}
 
 const _handleConnectOauthCallback: ControllerHandler<
   unknown,

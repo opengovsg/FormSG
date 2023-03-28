@@ -86,7 +86,7 @@ export const findPaymentBySubmissionId = (
   submissionId: string,
 ): ResultAsync<IPaymentSchema, PaymentNotFoundError | DatabaseError> => {
   return ResultAsync.fromPromise(
-    PaymentModel.findBySubmissionId(submissionId),
+    PaymentModel.findOne({ submissionId }),
     (error) => {
       logger.error({
         message: 'Database find payment submissionId error',

@@ -140,9 +140,7 @@ export const processStripeEventTxn = (
               (error) => {
                 logger.error({
                   message: 'Error retrieving balance transaction object',
-                  meta: {
-                    action: 'getPaymentFromLatestSuccessfulCharge',
-                  },
+                  meta: logMeta,
                   error,
                 })
                 return new StripeFetchError()
