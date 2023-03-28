@@ -99,8 +99,9 @@ export const processStripeEventTxn = (
       }
 
       if (payment.webhookLog.some((e) => e.id === event.id)) {
-        // stop processing if we encounter a duplicate event (which may have
-        // occurred due to us timing out on Stripe, so Stripe retried the webhook)
+        // Stop processing if we encounter a duplicate event. This may have
+        // occurred due to various reasons (e.g. us timing out on Stripe, so
+        // Stripe retried the webhook).
         return errAsync(new DuplicateEventError())
       }
 
@@ -175,19 +176,7 @@ export const processStripeEventTxn = (
       // We expect webhook arrays to be small (~10 entries max), so push and
       // sort is ok.
       payment.webhookLog.push(event)
-      payment.webhookLog.sort((e1, e2) => {
-        // Order by event creation time first, then object creation time (if it exists).
-        const e1ObjectCreated = get(e1.data.object, 'created')
-        const e2ObjectCreated = get(e2.data.object, 'created')
-        if (
-          e1.created === e2.created &&
-          typeof e1ObjectCreated === 'number' &&
-          typeof e2ObjectCreated === 'number'
-        ) {
-          return e1ObjectCreated - e2ObjectCreated
-        }
-        return e1.created - e2.created
-      })
+      payment.webhookLog.sort((e1, e2) => e1.created - e2.created)
 
       // Step 4: Recompute the payment state based on the event log.
       return computePaymentState(payment.webhookLog).asyncAndThen(

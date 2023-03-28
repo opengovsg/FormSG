@@ -21,8 +21,8 @@ export const getRedirectUri = () =>
  * State machine that computes the state of the payment, given the list of
  * Stripe events received via webhooks for this submission.
  * @param events the list of Stripe events for state to be computed on
- * @returns neverthrow ok() status and latest charge id based on the list of events
- * @returns neverthrow err(ComputePaymentStateError) if there is an error in computing the state
+ * @returns ok() status and latest charge id based on the list of events
+ * @returns err(ComputePaymentStateError) if there is an error in computing the state
  */
 export const computePaymentState = (
   events: Stripe.Event[],

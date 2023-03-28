@@ -30,14 +30,13 @@ const validateStripeEvent = celebrate({
 
 /**
  * Handler for GET /api/v3/notifications/stripe
- * NOTE: This is exported solely for testing
  * Receives Stripe webhooks and updates the database with transaction details.
  *
  * @returns 200 if webhook is successfully processed
  * @returns 400 if the Stripe-Signature header is missing or invalid
  * @returns 500 if any errors occurs in processing the webhook or saving payment to DB
  */
-export const _handleStripeEventUpdates: ControllerHandler<
+const _handleStripeEventUpdates: ControllerHandler<
   unknown,
   never,
   string
@@ -113,7 +112,7 @@ export const _handleStripeEventUpdates: ControllerHandler<
         typeof event.data.object.charge === 'string'
           ? await stripe.charges.retrieve(event.data.object.charge)
           : event.data.object.charge
-      if (charge === null) {
+      if (!charge) {
         logger.warn({
           message: 'Received Stripe event charge.refund.updated with no charge',
           meta: logMeta,
