@@ -208,30 +208,6 @@ export const PaymentInput = (): JSX.Element => {
           <>
             <FormControl
               isReadOnly={paymentsMutation.isLoading}
-              isInvalid={!!errors.display_amount}
-            >
-              <FormLabel isRequired>Payment Amount</FormLabel>
-              <Controller
-                name="display_amount"
-                control={control}
-                rules={amountValidation}
-                render={({ field }) => (
-                  <MoneyInput
-                    flex={1}
-                    step={0}
-                    inputMode="decimal"
-                    placeholder="0.00"
-                    {...field}
-                  />
-                )}
-              />
-              <FormErrorMessage>
-                {errors.display_amount?.message}
-              </FormErrorMessage>
-            </FormControl>
-
-            <FormControl
-              isReadOnly={paymentsMutation.isLoading}
               isInvalid={!!errors.description}
               isRequired
             >
@@ -252,6 +228,30 @@ export const PaymentInput = (): JSX.Element => {
                 })}
               />
               <FormErrorMessage>{errors.description?.message}</FormErrorMessage>
+            </FormControl>
+            <Divider />
+            <FormControl
+              isReadOnly={paymentsMutation.isLoading}
+              isInvalid={!!errors.display_amount}
+            >
+              <FormLabel isRequired>Payment Amount</FormLabel>
+              <Controller
+                name="display_amount"
+                control={control}
+                rules={amountValidation}
+                render={({ field }) => (
+                  <MoneyInput
+                    flex={1}
+                    step={0}
+                    inputMode="decimal"
+                    placeholder="0.00"
+                    {...field}
+                  />
+                )}
+              />
+              <FormErrorMessage>
+                {errors.display_amount?.message}
+              </FormErrorMessage>
             </FormControl>
           </>
         )}
