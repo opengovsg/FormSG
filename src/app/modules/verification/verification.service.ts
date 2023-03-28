@@ -1,6 +1,7 @@
 import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
+// import { PAYMENT_CONTACT_FIELD_ID } from 'shared/constants'
 import { PAYMENT_CONTACT_FIELD_ID } from '../../../../shared/constants'
 import { BasicField } from '../../../../shared/types'
 import { startsWithSgPrefix } from '../../../../shared/utils/phone-num-validation'
@@ -52,7 +53,11 @@ import {
   WrongOtpError,
 } from './verification.errors'
 import getVerificationModel from './verification.model'
-import { SendFormOtpParams, SendPaymentOtpParams } from './verification.types'
+import {
+  SendFormOtpParams,
+  SendOtpWithTransactionParams,
+  SendPaymentOtpParams,
+} from './verification.types'
 import {
   hasAdminExceededFreeSmsLimit,
   isOtpExpired,
@@ -343,75 +348,19 @@ export const sendNewFormOtp = ({
   | OtpRequestError
 > => {
   return getValidTransaction(transactionId).andThen((transaction) => {
-    const logMeta = {
-      action: 'sendNewFormOtp',
-      transactionId,
-      fieldId,
-      formId: transaction.formId,
-    }
-    return getFieldFromTransaction(transaction, fieldId)
-      .asyncAndThen((field) => {
-        if (!isOtpWaitTimeElapsed(field.hashCreatedAt)) {
-          logger.warn({
-            message: 'OTP requested before waiting time elapsed',
-            meta: logMeta,
-          })
-          return errAsync(new WaitForOtpError())
-        }
-
-        if (isOtpRequestCountExceeded(field.otpRequests)) {
-          logger.warn({
-            message: 'Max OTP request count exceeded',
-            meta: logMeta,
-          })
-          return errAsync(new OtpRequestCountExceededError())
-        }
-
-        return sendOtpForField(
-          transaction.formId,
+    return getFieldFromTransaction(transaction, fieldId).asyncAndThen(
+      (field) => {
+        return sendOtpWithTransaction({
           field,
+          transaction,
           recipient,
           otp,
+          hashedOtp,
           otpPrefix,
           senderIp,
-        )
-      })
-      .andThen(() => {
-        const signedData = formsgSdk.verification.generateSignature({
-          transactionId: transaction._id,
-          formId: transaction.formId,
-          fieldId,
-          answer: recipient,
         })
-        return ResultAsync.fromPromise(
-          VerificationModel.updateHashForFormField({
-            fieldId,
-            hashedOtp,
-            signedData,
-            transactionId: transaction._id,
-          }),
-          (error) => {
-            logger.error({
-              message:
-                'Error while updating transaction data after sending OTP',
-              meta: logMeta,
-              error,
-            })
-            return transformMongoError(error)
-          },
-        )
-      })
-      .andThen((newTransaction) => {
-        // Transaction deleted before update could be applied
-        if (!newTransaction) {
-          logger.warn({
-            message: 'Transaction with given ID not found',
-            meta: logMeta,
-          })
-          return errAsync(new TransactionNotFoundError())
-        }
-        return okAsync(newTransaction)
-      })
+      },
+    )
   })
 }
 
@@ -459,74 +408,117 @@ export const sendNewPaymentOtp = ({
   | OtpRequestError
 > => {
   return getValidTransaction(transactionId).andThen((transaction) => {
-    const logMeta = {
-      action: 'sendNewPaymentOtp',
-      transactionId,
-      formId: transaction.formId,
-    }
-    return getPaymentContactFieldFromTransaction(transaction)
-      .asyncAndThen((field) => {
-        if (!isOtpWaitTimeElapsed(field.hashCreatedAt)) {
-          logger.warn({
-            message: 'OTP requested before waiting time elapsed',
-            meta: logMeta,
-          })
-          return errAsync(new WaitForOtpError())
-        }
-
-        if (isOtpRequestCountExceeded(field.otpRequests)) {
-          logger.warn({
-            message: 'Max OTP request count exceeded',
-            meta: logMeta,
-          })
-          return errAsync(new OtpRequestCountExceededError())
-        }
-
-        return sendOtpForField(
-          transaction.formId,
+    return getPaymentContactFieldFromTransaction(transaction).asyncAndThen(
+      (field) => {
+        return sendOtpWithTransaction({
           field,
+          transaction,
           recipient,
           otp,
+          hashedOtp,
           otpPrefix,
           senderIp,
-        )
-      })
-      .andThen(() => {
-        const signedData = formsgSdk.verification.generateSignature({
-          transactionId: transaction._id,
-          formId: transaction.formId,
-          fieldId: PAYMENT_CONTACT_FIELD_ID,
-          answer: recipient,
         })
-        return ResultAsync.fromPromise(
-          VerificationModel.updateHashForPaymentField({
-            hashedOtp,
-            signedData,
-            transactionId: transaction._id,
-          }),
-          (error) => {
-            logger.error({
-              message:
-                'Error while updating transaction data after sending OTP',
-              meta: logMeta,
-              error,
-            })
-            return transformMongoError(error)
-          },
-        )
-      })
-      .andThen((newTransaction) => {
-        // Transaction deleted before update could be applied
-        if (!newTransaction) {
-          logger.warn({
-            message: 'Transaction with given ID not found',
-            meta: logMeta,
-          })
-          return errAsync(new TransactionNotFoundError())
-        }
-        return okAsync(newTransaction)
-      })
+      },
+    )
   })
+}
+
+const sendOtpWithTransaction = ({
+  field,
+  transaction,
+  recipient,
+  otp,
+  hashedOtp,
+  otpPrefix,
+  senderIp,
+}: SendOtpWithTransactionParams): ResultAsync<
+  IVerificationSchema,
+  | TransactionNotFoundError
+  | PossibleDatabaseError
+  | FieldNotFoundInTransactionError
+  | TransactionExpiredError
+  | WaitForOtpError
+  | OtpRequestCountExceededError
+  | MalformedParametersError
+  | SmsSendError
+  | InvalidNumberError
+  | MailSendError
+  | NonVerifiedFieldTypeError
+  | OtpRequestError
+> => {
+  const logMeta = {
+    action: 'sendOtpWithTransaction',
+    transactionId: transaction._id,
+    formId: transaction.formId,
+    fieldId: field._id,
+  }
+  if (!isOtpWaitTimeElapsed(field.hashCreatedAt)) {
+    logger.warn({
+      message: 'OTP requested before waiting time elapsed',
+      meta: logMeta,
+    })
+    return errAsync(new WaitForOtpError())
+  }
+
+  if (isOtpRequestCountExceeded(field.otpRequests)) {
+    logger.warn({
+      message: 'Max OTP request count exceeded',
+      meta: logMeta,
+    })
+    return errAsync(new OtpRequestCountExceededError())
+  }
+
+  return sendOtpForField(
+    transaction.formId,
+    field,
+    recipient,
+    otp,
+    otpPrefix,
+    senderIp,
+  )
+    .andThen(() => {
+      const signedData = formsgSdk.verification.generateSignature({
+        transactionId: transaction._id,
+        formId: transaction.formId,
+        fieldId: field._id ?? '',
+        answer: recipient,
+      })
+
+      const updateHashFx =
+        field._id == PAYMENT_CONTACT_FIELD_ID
+          ? VerificationModel.updateHashForPaymentField({
+              hashedOtp,
+              signedData,
+              transactionId: transaction._id,
+            })
+          : VerificationModel.updateHashForFormField({
+              hashedOtp,
+              signedData,
+              transactionId: transaction._id,
+              fieldId: field._id ?? '',
+            })
+
+      return ResultAsync.fromPromise(updateHashFx, (error) => {
+        logger.error({
+          message: 'Error while updating transaction data after sending OTP',
+          meta: logMeta,
+          error,
+        })
+        return transformMongoError(error)
+      })
+    })
+    .andThen((newTransaction) => {
+      // Transaction deleted before update could be applied
+      if (!newTransaction) {
+        logger.warn({
+          message: 'Transaction with given ID not found',
+          meta: logMeta,
+        })
+        return errAsync(new TransactionNotFoundError())
+      }
+      return okAsync(newTransaction)
+    })
 }
 
 export const disableVerifiedFieldsIfRequired = (
