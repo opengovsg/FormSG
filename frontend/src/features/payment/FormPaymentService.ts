@@ -5,15 +5,15 @@ import { ApiService } from '~services/ApiService'
 /**
  * Obtain payment receipt status for a given submission.
  * @param formId the id of the form
- * @param submissionId the id of the form submission
+ * @param paymentId the id of the payment submission
  * @returns PaymentReceiptStatusDto on success
  */
 export const getPaymentReceiptStatus = async (
   formId: string,
-  submissionId: string,
+  paymentId: string,
 ): Promise<PaymentReceiptStatusDto> => {
   return ApiService.get<PaymentReceiptStatusDto>(
-    `payments/receipt/${formId}/${submissionId}/status`,
+    `payments/receipt/${formId}/${paymentId}/status`,
   ).then(({ data }) => data)
 }
 
@@ -21,7 +21,7 @@ export const getPaymentReceiptStatus = async (
  * Obtain payment information neccessary to do a subsequent
  * for a given paymentId.
  * @param formId the id of the form
- * @param submissionId the id of the form submission
+ * @param submissionId the id of the payment submission
  * @returns PaymentReceiptStatusDto on success
  */
 export const getPaymentInfo = async (paymentId: string) => {

@@ -1,5 +1,4 @@
 import { useQuery, UseQueryResult } from 'react-query'
-import { PaymentIntentResult, Stripe } from '@stripe/stripe-js'
 
 import { GetPaymentInfoDto, PaymentReceiptStatusDto } from '~shared/types'
 
@@ -9,27 +8,10 @@ import { getPaymentInfo, getPaymentReceiptStatus } from './FormPaymentService'
 
 export const useGetPaymentReceiptStatus = (
   formId: string,
-  submissionId: string,
+  paymentId: string,
 ): UseQueryResult<PaymentReceiptStatusDto, ApiError> => {
-  return useQuery<PaymentReceiptStatusDto, ApiError>(
-    [formId, submissionId],
-    () => getPaymentReceiptStatus(formId, submissionId),
-  )
-}
-
-export const useGetPaymentReceiptStatusFromStripe = ({
-  clientSecret,
-  stripe,
-  refetchKey, // a nonce which triggers refetch if changed
-}: {
-  clientSecret: string
-  stripe: Stripe
-  refetchKey: number
-}) => {
-  return useQuery<PaymentIntentResult, ApiError>(
-    [clientSecret, refetchKey],
-    () => stripe.retrievePaymentIntent(clientSecret),
-    { suspense: true },
+  return useQuery<PaymentReceiptStatusDto, ApiError>([formId, paymentId], () =>
+    getPaymentReceiptStatus(formId, paymentId),
   )
 }
 

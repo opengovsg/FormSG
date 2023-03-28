@@ -7,13 +7,21 @@ import Button from '~components/Button'
 
 type DownloadReceiptBlockProps = {
   formId: string
-  stripeSubmissionId: string
+  paymentPageId: string
 }
 
-export const LoadingReceiptBlock = ({
+export const DownloadReceiptBlock = ({
   formId,
-  stripeSubmissionId,
+  paymentPageId,
 }: DownloadReceiptBlockProps) => {
+  const toast = useToast({ status: 'success', isClosable: true })
+
+  const handleClick = () => {
+    toast({
+      description: 'Receipt download started',
+    })
+    window.location.href = `${API_BASE_URL}/payments/receipt/${formId}/${paymentPageId}/download`
+  }
   return (
     <Box>
       <Stack tabIndex={-1} spacing="1rem">
@@ -21,12 +29,20 @@ export const LoadingReceiptBlock = ({
           Your payment has been made successfully.
         </Text>
         <Text textStyle="subhead-1" textColor="secondary.500">
-          We're confirming your payment with Stripe
+          Your form has been submitted and payment has been made.
         </Text>
       </Stack>
       <Text textColor="secondary.300" mt="2rem">
-        Response ID: {stripeSubmissionId}
+        Response ID: {paymentPageId}
       </Text>
+
+      <Button
+        mt="2.25rem"
+        leftIcon={<BiDownload fontSize="1.5rem" />}
+        onClick={handleClick}
+      >
+        Save payment receipt
+      </Button>
     </Box>
   )
 }

@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
+import { ReactElement } from 'react-markdown/lib/react-markdown'
 import { useParams } from 'react-router-dom'
 import { Box, Code, Flex } from '@chakra-ui/react'
 import { Elements, useStripe } from '@stripe/react-stripe-js'
@@ -8,14 +9,12 @@ import { GetPaymentInfoDto } from '~shared/types'
 
 import { CreatePaymentIntentFailureBlock } from '~features/payment/components/CreatePaymentIntentFailureBlock'
 
-import { DownloadReceiptBlock } from '../components/DownloadReceiptBlock'
 import { PaymentSuccessSvgr } from '../components/PaymentSuccessSvgr'
-import {
-  useGetPaymentInfo,
-  useGetPaymentReceiptStatusFromStripe,
-} from '../queries'
+import { useGetPaymentInfo } from '../queries'
 
-import { StripePaymentModal } from './StripePaymentModal'
+import { StripePaymentBlock } from './components/StripePaymentBlock'
+import { useGetPaymentStatusFromStripe } from './stripeQueries'
+import { StripeReceiptContainer } from './StripeReceiptContainer'
 import { getPaymentViewType } from './utils'
 
 const StripeElementWrapper = ({ paymentPageId }: { paymentPageId: string }) => {
@@ -78,6 +77,16 @@ const StripeHookWrapper = ({
   )
 }
 
+const PaymentBox = ({ children }: { children: React.ReactNode }) => (
+  <Box
+    py={{ base: '1.5rem', md: '3rem' }}
+    px={{ base: '1.5rem', md: '4rem' }}
+    bg="white"
+    w="100%"
+  >
+    {children}
+  </Box>
+)
 /**
  * Handles decision to render StripePaymentModal or StripeReceiptModal
  * @returns
@@ -96,12 +105,11 @@ const StripePaymentContainer = ({
   if (!paymentPageId) throw new Error('No paymentPageId provided')
 
   const [refetchKey, setRefetchKey] = useState<number>(0)
-  const { data, isLoading, error } = useGetPaymentReceiptStatusFromStripe({
+  const { data, isLoading, error } = useGetPaymentStatusFromStripe({
     clientSecret: paymentInfoData.client_secret,
     stripe,
     refetchKey,
   })
-  console.log({ isLoading, error, data })
 
   const viewType = getPaymentViewType(data?.paymentIntent?.status)
   useEffect(() => {
@@ -114,56 +122,50 @@ const StripePaymentContainer = ({
     )
   }, [setDebugText, viewType, data])
 
-  let paymentViewElementElement
   switch (viewType) {
     case 'invalid':
-      paymentViewElementElement = (
-        <CreatePaymentIntentFailureBlock
-          submissionId={paymentPageId}
-          paymentClientSecret={paymentInfoData.client_secret}
-          publishableKey={paymentInfoData.publishableKey}
-        />
+      return (
+        <PaymentBox>
+          <CreatePaymentIntentFailureBlock
+            submissionId={paymentPageId}
+            paymentClientSecret={paymentInfoData.client_secret}
+            publishableKey={paymentInfoData.publishableKey}
+          />
+        </PaymentBox>
       )
-      break
     case 'canceled':
-      paymentViewElementElement = <span>{viewType}</span>
+      return (
+        <PaymentBox>
+          <span>{viewType}</span>
+        </PaymentBox>
+      )
       break
     case 'payment':
-      paymentViewElementElement = (
-        <StripePaymentModal
-          submissionId={paymentPageId}
-          paymentClientSecret={paymentInfoData.client_secret}
-          publishableKey={paymentInfoData.publishableKey}
-          triggerPaymentStatusRefetch={() => setRefetchKey(Date.now())}
-        />
-      )
-      break
-    case 'receipt':
-      paymentViewElementElement = (
-        <>
-          <DownloadReceiptBlock
-            formId={formId}
-            stripeSubmissionId={paymentPageId}
+      return (
+        <PaymentBox>
+          <StripePaymentBlock
+            submissionId={paymentPageId}
+            paymentClientSecret={paymentInfoData.client_secret}
+            publishableKey={paymentInfoData.publishableKey}
+            triggerPaymentStatusRefetch={() => setRefetchKey(Date.now())}
           />
+        </PaymentBox>
+      )
+    case 'receipt':
+      return (
+        <>
+          <PaymentSuccessSvgr maxW="100%" />
+          <PaymentBox>
+            <StripeReceiptContainer
+              formId={formId}
+              paymentPageId={paymentPageId}
+            />
+          </PaymentBox>
         </>
       )
-      break
     default:
       throw new Error(`Undefined view type: ${viewType}`)
   }
-  return (
-    <>
-      {viewType === 'receipt' ? <PaymentSuccessSvgr maxW="100%" /> : null}
-      <Box
-        py={{ base: '1.5rem', md: '3rem' }}
-        px={{ base: '1.5rem', md: '4rem' }}
-        bg="white"
-        w="100%"
-      >
-        {paymentViewElementElement}
-      </Box>
-    </>
-  )
 }
 
 export default StripeElementWrapper
