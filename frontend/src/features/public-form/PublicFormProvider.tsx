@@ -328,7 +328,7 @@ export const PublicFormProvider = ({
                 datadogLogs.logger.warn(`handleSubmitForm: ${error.message}`, {
                   meta: {
                     ...logMeta,
-                    responseMode: 'email',
+                    responseMode: 'storage',
                     method: 'fetch',
                     error: {
                       message: error.message,
@@ -364,6 +364,7 @@ export const PublicFormProvider = ({
                     {
                       meta: {
                         ...logMeta,
+                        responseMode: 'storage',
                         method: 'axios',
                         error: {
                           message: error.message,
