@@ -4,10 +4,9 @@ import { Box, Container, Flex, Skeleton } from '@chakra-ui/react'
 
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
+import { DownloadReceiptBlock } from '../components/DownloadReceiptBlock'
+import { PaymentSuccessSvgr } from '../components/PaymentSuccessSvgr'
 import { useGetPaymentReceiptStatus } from '../queries'
-
-import { DownloadReceiptBlock } from './components/DownloadReceiptBlock'
-import { PaymentSuccessSvgr } from './components/PaymentSuccessSvgr'
 
 type FormPaymentRedirectPageProps = {
   stripeSubmissionId: string
