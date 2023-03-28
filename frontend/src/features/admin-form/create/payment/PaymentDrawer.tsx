@@ -62,7 +62,12 @@ const formatCurrency = new Intl.NumberFormat('en-SG', {
   maximumFractionDigits: 2,
 }).format
 
-const DESCRIPTION_TOOLTIP = 'Description will be reflected on payment receipt'
+/**
+ * Description in payment field will be rendered as 'Name' in the Frontend, but kept as description in the backend
+ * This is for design purpose as 'Name' conveys clearer information to the users,
+ * Whilst description will still be used in the backend for consistency with Stripe's API
+ */
+const NAME_TOOLTIP = 'Name will be reflected on payment receipt'
 
 export const PaymentInput = (): JSX.Element => {
   const isMobile = useIsMobile()
@@ -212,10 +217,10 @@ export const PaymentInput = (): JSX.Element => {
               isRequired
             >
               <Flex>
-                <FormLabel>Description</FormLabel>
+                <FormLabel>Name</FormLabel>
                 <Spacer />
                 <Tooltip
-                  label={DESCRIPTION_TOOLTIP}
+                  label={NAME_TOOLTIP}
                   placement="top"
                   textAlign="center"
                 >
