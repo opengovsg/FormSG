@@ -272,6 +272,14 @@ export const PublicFormProvider = ({
           if (useFetchForSubmissions) {
             return submitEmailFormWithFetch()
           } else {
+            datadogLogs.logger.info(`handleSubmitForm: submitting via axios`, {
+              meta: {
+                ...logMeta,
+                responseMode: 'email',
+                method: 'axios',
+              },
+            })
+
             return (
               submitEmailModeFormMutation
                 .mutateAsync(formData, { onSuccess })
@@ -345,6 +353,14 @@ export const PublicFormProvider = ({
           if (useFetchForSubmissions) {
             return submitStorageFormWithFetch()
           } else {
+            datadogLogs.logger.info(`handleSubmitForm: submitting via axios`, {
+              meta: {
+                ...logMeta,
+                responseMode: 'storage',
+                method: 'axios',
+              },
+            })
+
             return (
               submitStorageModeFormMutation
                 .mutateAsync(
