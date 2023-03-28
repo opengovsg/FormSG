@@ -19,8 +19,8 @@ import { createReqMeta } from '../../utils/request'
 import { ControllerHandler } from '../core/core.types'
 import * as FormService from '../form/form.service'
 import { isFormEncryptMode } from '../form/form.utils'
+import * as PendingSubmissionModel from '../pending-submission/pending-submission.service'
 import { checkFormIsEncryptMode } from '../submission/encrypt-submission/encrypt-submission.service'
-import * as SubmissionService from '../submission/submission.service'
 
 import * as PaymentService from './payments.service'
 import { StripeFetchError } from './stripe.errors'
@@ -231,40 +231,41 @@ export const handleStripeEventUpdates = [
   _handleStripeEventUpdates,
 ]
 
-// TODO: Refactor for use in static payment url implementation
 export const checkPaymentReceiptStatus: ControllerHandler<{
   formId: string
-  submissionId: string
+  paymentId: string
 }> = async (req, res) => {
-  const { formId, submissionId } = req.params
+  const { formId, paymentId } = req.params
   logger.info({
     message: 'getPaymentStatus endpoint called',
     meta: {
       action: 'getPaymentStatus',
-      formId: formId,
-      submissionId: submissionId,
+      formId,
+      paymentId,
     },
   })
 
-  return PaymentService.findPaymentBySubmissionId(submissionId)
+  return PaymentService.findPaymentByPaymentIntentId(paymentId)
     .map((payment) => {
       logger.info({
-        message: 'Received payment object with receipt url from Stripe webhook',
+        message: 'Found paymentId in payment document',
         meta: {
           action: 'checkPaymentReceiptStatus',
           payment,
         },
       })
-
+      if (!payment.completedPayment?.receiptUrl) {
+        return res.status(StatusCodes.NOT_FOUND).json({ isReady: false })
+      }
       return res.status(StatusCodes.OK).json({ isReady: true })
     })
     .mapErr((error) => {
       logger.error({
-        message: 'Error retrieving receipt URL',
+        message: 'Error retrieving receipt',
         meta: {
           action: 'checkPaymentReceiptStatus',
-          formId: formId,
-          submissionId: submissionId,
+          formId,
+          paymentId,
         },
         error,
       })
@@ -275,22 +276,22 @@ export const checkPaymentReceiptStatus: ControllerHandler<{
 // TODO: Refactor for use in static payment url implementation
 export const downloadPaymentReceipt: ControllerHandler<{
   formId: string
-  submissionId: string
+  paymentId: string
 }> = (req, res) => {
-  const { formId, submissionId } = req.params
+  const { formId, paymentId } = req.params
   logger.info({
     message: 'downloadPaymentReceipt endpoint called',
     meta: {
       action: 'downloadPaymentReceipt',
-      formId: formId,
-      submissionId: submissionId,
+      formId,
+      paymentId,
     },
   })
 
-  return PaymentService.findPaymentBySubmissionId(submissionId)
+  return PaymentService.findPaymentByPaymentIntentId(paymentId)
     .map((payment) => {
       logger.info({
-        message: 'Received receipt url from Stripe webhook',
+        message: 'Found paymentId in payment document',
         meta: {
           action: 'downloadPaymentReceipt',
           payment,
@@ -309,7 +310,7 @@ export const downloadPaymentReceipt: ControllerHandler<{
           .then((pdfBuffer) => {
             res.set({
               'Content-Type': 'application/pdf',
-              'Content-Disposition': `attachment; filename=${submissionId}-receipt.pdf`,
+              'Content-Disposition': `attachment; filename=${paymentId}-receipt.pdf`,
             })
             return res.status(StatusCodes.OK).send(pdfBuffer)
           })
@@ -320,8 +321,8 @@ export const downloadPaymentReceipt: ControllerHandler<{
         message: 'Error retrieving receipt',
         meta: {
           action: 'downloadPaymentReceipt',
-          formId: formId,
-          submissionId: submissionId,
+          formId,
+          paymentId,
         },
         error,
       })
@@ -396,23 +397,28 @@ export const handleConnectOauthCallback = [
 // #TODO: think about where to place this payment fetcher, should it be strongly tied to stripe?
 export const getPaymentInfo: ControllerHandler<
   {
-    paymentIntentId: string
+    paymentId: string
   },
   GetPaymentInfoDto | ErrorDto
 > = async (req, res) => {
-  const { paymentIntentId } = req.params
+  const { paymentId } = req.params
   logger.info({
     message: 'getPaymentInfo endpoint called',
     meta: {
       action: 'getPaymentInfo',
-      paymentIntentId,
+      paymentId,
     },
   })
 
-  return PaymentService.findPaymentByPaymentIntentId(paymentIntentId)
+  return PaymentService.findPaymentByPaymentIntentId(paymentId)
     .andThen((payment) =>
       // TODO: swap to pending submission service
-      SubmissionService.findSubmissionById(payment.pendingSubmissionId),
+      // SubmissionService.findSubmissionById(payment.pendingSubmissionId),
+      {
+        return PendingSubmissionModel.findPendingSubmissionById(
+          payment.pendingSubmissionId,
+        )
+      },
     )
     .andThen((submission) => {
       return FormService.retrieveFormById(submission.form)
@@ -425,7 +431,7 @@ export const getPaymentInfo: ControllerHandler<
             'Requested for payment information for possibly non-payment form',
           meta: {
             action: 'getPaymentInfo',
-            paymentIntentId,
+            paymentId,
           },
         })
         // TODO: change to error object
@@ -438,7 +444,7 @@ export const getPaymentInfo: ControllerHandler<
           message: 'Missing payments_channel on this form',
           meta: {
             action: 'getPaymentInfo',
-            paymentIntentId,
+            paymentId,
           },
         })
         // TODO: change to error object
@@ -446,7 +452,7 @@ export const getPaymentInfo: ControllerHandler<
       }
 
       return ResultAsync.fromPromise(
-        stripe.paymentIntents.retrieve(paymentIntentId, {
+        stripe.paymentIntents.retrieve(paymentId, {
           stripeAccount,
         }),
         (error) => {
@@ -454,7 +460,7 @@ export const getPaymentInfo: ControllerHandler<
             message: 'stripe.paymentIntents.retrieve called',
             meta: {
               action: 'getPaymentInfo',
-              paymentIntentId,
+              paymentId,
               error,
             },
           })
@@ -467,14 +473,12 @@ export const getPaymentInfo: ControllerHandler<
       }))
     })
     .map(({ stripeFullIntentObj, publishableKey }) => {
-      console.log({ stripeFullIntentObj })
       return res.status(StatusCodes.OK).json({
         client_secret: stripeFullIntentObj.client_secret || '',
         publishableKey,
       })
     })
     .mapErr((e) => {
-      console.error(e)
       return res
         .status(StatusCodes.INTERNAL_SERVER_ERROR)
         .json({ message: e.message })

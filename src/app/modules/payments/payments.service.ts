@@ -29,7 +29,12 @@ export const findPaymentById = (
   session?: mongoose.ClientSession,
 ): ResultAsync<IPaymentSchema, PaymentNotFoundError | DatabaseError> => {
   return ResultAsync.fromPromise(
-    PaymentModel.findById(paymentId).session(session ?? null),
+    PaymentModel.findById(
+      paymentId,
+      null,
+      // readPreference from transaction isn't respected, thus we are setting it on operation
+      session ? { readPreference: 'primary' } : null,
+    ).session(session ? session : null),
     (error) => {
       logger.error({
         message: 'Database error while finding payment by id',
@@ -246,7 +251,9 @@ export const findPaymentByPaymentIntentId = (
 ): ResultAsync<IPaymentSchema, PaymentNotFoundError | DatabaseError> => {
   return ResultAsync.fromPromise(
     // TODO: what happens if we have multiple matches?
-    PaymentModel.findOne({ paymentIntentId }).exec(),
+    PaymentModel.findOne({ paymentIntentId }, null, {
+      readPreference: 'primary',
+    }).exec(),
     (error) => {
       logger.error({
         message: 'Database find payment by paymentIntentId error',
@@ -265,29 +272,3 @@ export const findPaymentByPaymentIntentId = (
     return okAsync(payment)
   })
 }
-
-// export const findSubmissionByPaymentIntentId = (paymentIntentId: string) => {
-//   return ResultAsync.fromPromise(
-//     findPaymentByPaymentIntentId(paymentIntentId)
-//       .andThen((payment) => {
-//         if (!payment) {
-//           return errAsync(new PaymentNotFoundError())
-//         }
-//         return okAsync(payment.submissionId)
-//       })
-//       .andThen((submissionId) =>
-//         SubmissionService.findSubmissionById(submissionId),
-//       ),
-//     (error) => {
-//       logger.error({
-//         message: 'Database find submission by paymentIntentId error',
-//         meta: {
-//           action: 'findSubmissionByPaymentIntentId',
-//           paymentIntentId,
-//         },
-//         error,
-//       })
-//       return new DatabaseError(getMongoErrorMessage(error))
-//     },
-//   )
-// }

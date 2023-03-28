@@ -50,6 +50,8 @@ export interface ISubmissionSchema extends SubmissionBase, Document {
   created?: Date
 }
 
+export type IPendingSubmissionSchema = ISubmissionSchema
+
 export interface ISubmissionModel extends Model<ISubmissionSchema> {
   findFormsWithSubsAbove(
     minSubCount: number,
