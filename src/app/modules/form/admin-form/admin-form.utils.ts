@@ -30,6 +30,7 @@ import {
   TwilioCacheError,
 } from '../../core/core.errors'
 import { ErrorResponseData } from '../../core/core.types'
+import { InvalidPaymentAmountError } from '../../payments/payment.errors'
 import {
   StripeAccountError,
   StripeAccountNotFoundError,
@@ -167,6 +168,11 @@ export const mapRouteError = (
       return {
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         errorMessage: coreErrorMessage ?? error.message,
+      }
+    case InvalidPaymentAmountError:
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage: error.message,
       }
     default:
       logger.error({

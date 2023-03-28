@@ -106,6 +106,9 @@ services:
       - PAYMENT_STRIPE_SECRET_KEY=secretKey
       - PAYMENT_STRIPE_CLIENT_ID=clientId
       - PAYMENT_STRIPE_WEBHOOK_SECRET=webhookSecret
+      - PAYMENT_MAX_PAYMENT_AMOUNT_CENTS=100000
+      - PAYMENT_MIN_PAYMENT_AMOUNT_CENTS=50
+
   mockpass:
     build: https://github.com/opengovsg/mockpass.git
     depends_on:
