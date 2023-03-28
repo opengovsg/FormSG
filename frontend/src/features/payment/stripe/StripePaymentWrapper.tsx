@@ -99,10 +99,12 @@ const StripePaymentContainer = ({
   if (!formId) throw new Error('No formId provided')
   if (!paymentPageId) throw new Error('No paymentPageId provided')
 
-  const { data, isLoading, error } = useGetPaymentReceiptStatusFromStripe(
-    paymentInfoData.client_secret,
+  const [refetchKey, setRefetchKey] = useState<number>(0)
+  const { data, isLoading, error } = useGetPaymentReceiptStatusFromStripe({
+    clientSecret: paymentInfoData.client_secret,
     stripe,
-  )
+    refetchKey,
+  })
   console.log({ isLoading, error, data })
 
   const viewType = getPaymentViewType(data?.paymentIntent?.status)
@@ -129,6 +131,7 @@ const StripePaymentContainer = ({
           submissionId={paymentPageId}
           paymentClientSecret={paymentInfoData.client_secret}
           publishableKey={paymentInfoData.publishableKey}
+          triggerPaymentStatusRefetch={() => setRefetchKey(Date.now())}
         />
       )
       break

@@ -17,12 +17,17 @@ export const useGetPaymentReceiptStatus = (
   )
 }
 
-export const useGetPaymentReceiptStatusFromStripe = (
-  clientSecret: string,
-  stripe: Stripe,
-) => {
+export const useGetPaymentReceiptStatusFromStripe = ({
+  clientSecret,
+  stripe,
+  refetchKey, // a nonce which triggers refetch if changed
+}: {
+  clientSecret: string
+  stripe: Stripe
+  refetchKey: number
+}) => {
   return useQuery<PaymentIntentResult, ApiError>(
-    clientSecret,
+    [clientSecret, refetchKey],
     () => stripe.retrievePaymentIntent(clientSecret),
     { suspense: true },
   )

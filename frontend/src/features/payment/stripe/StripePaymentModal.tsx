@@ -21,14 +21,17 @@ import { FormColorTheme, FormResponseMode } from '~shared/types/form'
 import { centsToDollars } from '~utils/payments'
 import Button from '~components/Button'
 
-import { FormPaymentPageProps } from '~features/public-form/components/FormEndPage/FormPaymentPage'
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
+
+import { FormPaymentPageProps } from '../FormPaymentPage'
 
 // Make sure to call `loadStripe` outside of a component’s render to avoid
 // recreating the `Stripe` object on every render.
 
 export interface PaymentPageBlockProps extends FormPaymentPageProps {
   focusOnMount?: boolean
+  // TODO: want to refactor FormPaymentPageProps into payment
+  triggerPaymentStatusRefetch: () => void
 }
 
 type StripeCheckoutFormProps = Pick<
@@ -36,12 +39,13 @@ type StripeCheckoutFormProps = Pick<
   'submissionId' | 'isRetry'
 > & {
   colorTheme: FormColorTheme
+  triggerPaymentStatusRefetch: () => void
 }
 
 const StripeCheckoutForm = ({
   colorTheme,
-  submissionId,
   isRetry,
+  triggerPaymentStatusRefetch,
 }: StripeCheckoutFormProps) => {
   const stripe = useStripe()
   const elements = useElements()
@@ -76,6 +80,7 @@ const StripeCheckoutForm = ({
       confirmParams: {
         return_url,
       },
+      redirect: 'if_required',
     })
 
     if (result.error && result.error.message) {
@@ -86,6 +91,9 @@ const StripeCheckoutForm = ({
       // Your customer will be redirected to your `return_url`. For some payment
       // methods like iDEAL, your customer will be redirected to an intermediate
       // site first to authorize the payment, then redirected to the `return_url`.
+
+      // in the event that customer is not redirected, we will trigger a payment status refetch
+      triggerPaymentStatusRefetch()
     }
     setIsStripeProcessing(false)
   }
@@ -122,6 +130,7 @@ export const StripePaymentModal = ({
   publishableKey,
   focusOnMount,
   isRetry,
+  triggerPaymentStatusRefetch,
 }: PaymentPageBlockProps): JSX.Element => {
   const { form } = usePublicFormContext()
 
@@ -180,6 +189,7 @@ export const StripePaymentModal = ({
               colorTheme={colorTheme}
               submissionId={submissionId}
               isRetry={isRetry}
+              triggerPaymentStatusRefetch={triggerPaymentStatusRefetch}
             />
           </Elements>
         )}
