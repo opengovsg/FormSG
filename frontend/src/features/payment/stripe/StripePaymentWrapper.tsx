@@ -36,7 +36,6 @@ const StripePaymentWrapper = ({ paymentPageId }: { paymentPageId: string }) => {
     <Elements
       stripe={stripePromise}
       options={{
-        // passing the client secret obtained from the server
         clientSecret: paymentInfoData.client_secret,
       }}
     >
@@ -95,7 +94,6 @@ const StripePaymentContainer = ({
   setDebugText: (text: string) => void
 }) => {
   const { formId, paymentPageId } = useParams()
-  // if (!stripe) throw new Error('Stripe is not ready')
   if (!formId) throw new Error('No formId provided')
   if (!paymentPageId) throw new Error('No paymentPageId provided')
 
@@ -143,6 +141,8 @@ const StripePaymentContainer = ({
         />
       )
       break
+    default:
+      throw new Error(`Undefined view type: ${viewType}`)
   }
   return (
     <>
