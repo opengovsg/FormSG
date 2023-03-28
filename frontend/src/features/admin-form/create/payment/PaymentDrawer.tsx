@@ -27,8 +27,8 @@ import { centsToDollars, dollarsToCents } from '~utils/payments'
 import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
+import Input from '~components/Input'
 import MoneyInput from '~components/MoneyInput'
-import Textarea from '~components/Textarea'
 import Toggle from '~components/Toggle'
 import Tooltip from '~components/Tooltip'
 
@@ -222,7 +222,7 @@ export const PaymentInput = (): JSX.Element => {
                   <Icon as={BxsHelpCircle} aria-hidden ml="0.5rem" />
                 </Tooltip>
               </Flex>
-              <Textarea
+              <Input
                 {...register('description', {
                   required: 'Please enter a payment description',
                 })}
