@@ -7,11 +7,21 @@ import {
   useWatch,
 } from 'react-hook-form'
 import { useDebounce } from 'react-use'
-import { Box, Divider, Flex, FormControl, Stack, Text } from '@chakra-ui/react'
+import {
+  Box,
+  Divider,
+  Flex,
+  FormControl,
+  Icon,
+  Spacer,
+  Stack,
+  Text,
+} from '@chakra-ui/react'
 import { cloneDeep } from 'lodash'
 
 import { FormPaymentsField } from '~shared/types'
 
+import { BxsHelpCircle } from '~assets/icons/BxsHelpCircle'
 import { useIsMobile } from '~hooks/useIsMobile'
 import { centsToDollars, dollarsToCents } from '~utils/payments'
 import Button from '~components/Button'
@@ -20,6 +30,7 @@ import FormLabel from '~components/FormControl/FormLabel'
 import MoneyInput from '~components/MoneyInput'
 import Textarea from '~components/Textarea'
 import Toggle from '~components/Toggle'
+import Tooltip from '~components/Tooltip'
 
 import { useMutateFormPage } from '~features/admin-form/common/mutations'
 
@@ -50,6 +61,8 @@ const formatCurrency = new Intl.NumberFormat('en-SG', {
   minimumFractionDigits: 2,
   maximumFractionDigits: 2,
 }).format
+
+const DESCRIPTION_TOOLTIP = 'Description will be reflected on payment receipt'
 
 export const PaymentInput = (): JSX.Element => {
   const isMobile = useIsMobile()
@@ -222,7 +235,17 @@ export const PaymentInput = (): JSX.Element => {
               isInvalid={!!errors.description}
               isRequired
             >
-              <FormLabel>Description</FormLabel>
+              <Flex>
+                <FormLabel>Description</FormLabel>
+                <Spacer />
+                <Tooltip
+                  label={DESCRIPTION_TOOLTIP}
+                  placement="top"
+                  textAlign="center"
+                >
+                  <Icon as={BxsHelpCircle} aria-hidden ml="0.5rem" />
+                </Tooltip>
+              </Flex>
               <Textarea
                 {...register('description', {
                   required: 'Please enter a payment description',
