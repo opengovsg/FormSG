@@ -66,7 +66,7 @@ const environment = ejs.render(
     var reactMigrationRespondentRolloutStorage = "<%= reactMigrationRespondentRolloutStorage%>"
     var reactMigrationAdminRollout = "<%= reactMigrationAdminRollout%>"
     var reactMigrationAngularPhaseOutDate = "<%= reactMigrationAngularPhaseOutDate%>"
-    var reactMigrationUseFetchForSubmissions = "<%= reactMigrationUseFetchForSubmissions%>"
+    var reactMigrationUseFetchForSubmissions = <%= reactMigrationUseFetchForSubmissions%>
   `,
   frontendVars,
 )
