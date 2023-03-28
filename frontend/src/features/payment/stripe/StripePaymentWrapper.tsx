@@ -1,4 +1,4 @@
-import { Suspense, useMemo } from 'react'
+import { Suspense, useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { Box, Code, Flex, Skeleton } from '@chakra-ui/react'
 import { Elements, useStripe } from '@stripe/react-stripe-js'
@@ -6,8 +6,10 @@ import { loadStripe, Stripe } from '@stripe/stripe-js'
 
 import { GetPaymentInfoDto } from '~shared/types'
 
-import { DownloadReceiptBlock } from '../FormPaymentRedirectPage/components/DownloadReceiptBlock'
-import { PaymentSuccessSvgr } from '../FormPaymentRedirectPage/components/PaymentSuccessSvgr'
+import { CreatePaymentIntentFailureBlock } from '~features/payment/components/CreatePaymentIntentFailureBlock'
+
+import { DownloadReceiptBlock } from '../components/DownloadReceiptBlock'
+import { PaymentSuccessSvgr } from '../components/PaymentSuccessSvgr'
 import {
   useGetPaymentInfo,
   useGetPaymentReceiptStatusFromStripe,
@@ -20,6 +22,7 @@ const StripePaymentWrapper = ({ paymentPageId }: { paymentPageId: string }) => {
   const { data: paymentInfoData, error: paymentInfoError } =
     useGetPaymentInfo(paymentPageId)
 
+  const [debugText, setDebugText] = useState<string>('')
   console.log({ paymentInfoData, paymentInfoError })
 
   if (!paymentInfoData) {
@@ -40,11 +43,18 @@ const StripePaymentWrapper = ({ paymentPageId }: { paymentPageId: string }) => {
       <Flex flexDir="column" align="center">
         <Box position={'fixed'} w={'50%'} top={0} left={0}>
           <pre>
-            <Code>{JSON.stringify(paymentInfoData, null, 2)}</Code>
+            <Code>
+              {JSON.stringify(paymentInfoData, null, 2)}
+              <br />
+              {debugText}
+            </Code>
           </pre>
         </Box>
         <Suspense fallback={<span>Loading Stripe Payment</span>}>
-          <StripeWrapper paymentInfoData={paymentInfoData} />
+          <StripeWrapper
+            paymentInfoData={paymentInfoData}
+            setDebugText={setDebugText}
+          />
         </Suspense>
       </Flex>
     </Elements>
@@ -53,15 +63,21 @@ const StripePaymentWrapper = ({ paymentPageId }: { paymentPageId: string }) => {
 
 const StripeWrapper = ({
   paymentInfoData,
+  setDebugText,
 }: {
   paymentInfoData: GetPaymentInfoDto
+  setDebugText: (text: string) => void
 }) => {
   const stripe = useStripe()
   if (!stripe) {
     return <span>loading stripe</span>
   }
   return (
-    <StripePaymentContainer paymentInfoData={paymentInfoData} stripe={stripe} />
+    <StripePaymentContainer
+      paymentInfoData={paymentInfoData}
+      stripe={stripe}
+      setDebugText={setDebugText}
+    />
   )
 }
 
@@ -72,13 +88,13 @@ const StripeWrapper = ({
 const StripePaymentContainer = ({
   paymentInfoData,
   stripe,
+  setDebugText,
 }: {
   paymentInfoData: GetPaymentInfoDto
   stripe: Stripe
+  setDebugText: (text: string) => void
 }) => {
   const { formId, paymentPageId } = useParams()
-
-  console.log('asd')
   // if (!stripe) throw new Error('Stripe is not ready')
   if (!formId) throw new Error('No formId provided')
   if (!paymentPageId) throw new Error('No paymentPageId provided')
@@ -90,10 +106,19 @@ const StripePaymentContainer = ({
   console.log({ isLoading, error, data })
 
   const viewType = getPaymentViewType(data?.paymentIntent?.status)
+  setDebugText(
+    JSON.stringify({ viewType, status: data?.paymentIntent?.status }, null, 2),
+  )
   let paymentViewElementElement
   switch (viewType) {
     case 'invalid':
-      paymentViewElementElement = null
+      paymentViewElementElement = (
+        <CreatePaymentIntentFailureBlock
+          submissionId={paymentPageId}
+          paymentClientSecret={paymentInfoData.client_secret}
+          publishableKey={paymentInfoData.publishableKey}
+        />
+      )
       break
     case 'canceled':
       paymentViewElementElement = <span>{viewType}</span>
@@ -125,9 +150,7 @@ const StripePaymentContainer = ({
         bg="white"
         w="100%"
       >
-        <Skeleton isLoaded={!isLoading || viewType === 'invalid'}>
-          {paymentViewElementElement}
-        </Skeleton>
+        <Skeleton isLoaded={!isLoading}>{paymentViewElementElement}</Skeleton>
       </Box>
     </>
   )

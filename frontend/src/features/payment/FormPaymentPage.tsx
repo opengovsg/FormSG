@@ -14,6 +14,13 @@ import { PublicFormProvider } from '~features/public-form/PublicFormProvider'
 
 import StripePaymentWrapper from './stripe/StripePaymentWrapper'
 
+export interface FormPaymentPageProps {
+  submissionId: string
+  paymentClientSecret: string
+  publishableKey: string
+  isRetry?: boolean
+}
+
 export const FormPaymentPage = () => {
   const { formId, paymentPageId } = useParams()
 
