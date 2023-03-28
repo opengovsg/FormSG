@@ -26,13 +26,17 @@ export interface IVerification {
   formId: IFormSchema['_id']
   expireAt: Date
   fields: IVerificationFieldSchema[]
+  paymentField: IVerificationFieldSchema
 }
 
-export type UpdateFieldData = {
+export type UpdatePaymentFieldData = {
   transactionId: string
-  fieldId: string
   hashedOtp: string
   signedData: string
+}
+
+export type UpdateFormFieldData = UpdatePaymentFieldData & {
+  fieldId: string
 }
 
 export interface IVerificationSchema
@@ -48,6 +52,10 @@ export interface IVerificationSchema
    * Extracts non-sensitive fields from a transaction
    */
   getPublicView(): PublicTransaction
+  /**
+   * Retrieves payment contact field in a transaction, or undefined if not found
+   */
+  getPaymentContactField(): IVerificationFieldSchema | undefined
 }
 
 // Keep in sync with VERIFICATION_PUBLIC_FIELDS
@@ -90,7 +98,14 @@ export interface IVerificationModel extends Model<IVerificationSchema> {
    * Updates the hash records for a single field
    * @param updateData Data with which to update field
    */
-  updateHashForField(
-    updateData: UpdateFieldData,
+  updateHashForFormField(
+    updateData: UpdateFormFieldData,
+  ): Promise<IVerificationSchema | null>
+  /**
+   * Updates the hash records for a payment contact field
+   * @param updateData Data with which to update field
+   */
+  updateHashForPaymentField(
+    updateData: UpdatePaymentFieldData,
   ): Promise<IVerificationSchema | null>
 }

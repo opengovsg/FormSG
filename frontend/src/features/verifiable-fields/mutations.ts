@@ -8,7 +8,8 @@ import { useToast } from '~hooks/useToast'
 import { VerifiableFieldBase, VerifiableFieldSchema } from './types'
 import {
   createTransactionForForm,
-  triggerSendOtp,
+  triggerSendFormOtp,
+  triggerSendPaymentOtp,
   verifyOtp,
 } from './VerifiableFieldService'
 
@@ -46,12 +47,12 @@ export const useVerifiableFieldMutations = ({
     [toast],
   )
 
-  const handleSendOtp = useCallback(
+  const handleSendFormOtp = useCallback(
     async (answer: string) => {
       const transactionId = await getTransactionId()
       if (!transactionId) throw new Error('No transactionId generated')
 
-      return triggerSendOtp({
+      return triggerSendFormOtp({
         formId,
         transactionId,
         fieldId: schema._id,
@@ -61,24 +62,43 @@ export const useVerifiableFieldMutations = ({
     [formId, getTransactionId, schema._id],
   )
 
-  const triggerSendOtpMutation = useMutation(handleSendOtp, {
+  const triggerSendFormOtpMutation = useMutation(handleSendFormOtp, {
+    onError: handleError,
+  })
+
+  const handleSendPaymentOtp = useCallback(
+    async (answer: string) => {
+      const transactionId = await getTransactionId()
+      if (!transactionId) throw new Error('No transactionId generated')
+
+      return triggerSendPaymentOtp({
+        formId,
+        transactionId,
+        answer,
+      })
+    },
+    [formId, getTransactionId],
+  )
+
+  const triggerSendPaymentOtpMutation = useMutation(handleSendPaymentOtp, {
     onError: handleError,
   })
 
   // Exactly the same as sendOtp, but different mutation for different loading indicators
-  const triggerResendOtpMutation = useMutation(handleSendOtp, {
+  const triggerResendFormOtpMutation = useMutation(handleSendFormOtp, {
     onError: handleError,
   })
 
-  const verifyOtpMutation = useMutation(async (otp: string) => {
+  const verifyFormOtpMutation = useMutation(async (otp: string) => {
     const transactionId = await getTransactionId()
     if (!transactionId) throw new Error('No transactionId generated')
     return verifyOtp({ fieldId: schema._id, otp, formId, transactionId })
   })
 
   return {
-    triggerSendOtpMutation,
-    triggerResendOtpMutation,
-    verifyOtpMutation,
+    triggerSendFormOtpMutation,
+    triggerResendFormOtpMutation,
+    verifyFormOtpMutation,
+    triggerSendPaymentOtpMutation,
   }
 }

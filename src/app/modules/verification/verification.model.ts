@@ -1,6 +1,7 @@
 import { pick } from 'lodash'
 import { Mongoose, Schema } from 'mongoose'
 
+import { PAYMENT_CONTACT_FIELD_ID } from '../../../../shared/constants'
 import { BasicField } from '../../../../shared/types'
 import { TRANSACTION_EXPIRE_AFTER_SECONDS } from '../../../../shared/utils/verification'
 import {
@@ -9,7 +10,8 @@ import {
   IVerificationModel,
   IVerificationSchema,
   PublicTransaction,
-  UpdateFieldData,
+  UpdateFormFieldData,
+  UpdatePaymentFieldData,
 } from '../../../types'
 import { FORM_SCHEMA_ID } from '../../models/form.server.model'
 
@@ -54,6 +56,9 @@ const compileVerificationModel = (db: Mongoose): IVerificationModel => {
       type: [VerificationFieldSchema],
       default: [],
     },
+    paymentField: {
+      type: VerificationFieldSchema,
+    },
   })
 
   // Index
@@ -83,6 +88,12 @@ const compileVerificationModel = (db: Mongoose): IVerificationModel => {
     return this.fields.find((field) => field._id === fieldId)
   }
 
+  VerificationSchema.methods.getPaymentContactField = function ():
+    | IVerificationFieldSchema
+    | undefined {
+    return this.paymentField
+  }
+
   // Static methods
   // Method to return non-sensitive fields
   VerificationSchema.statics.getPublicViewById = async function (
@@ -96,13 +107,23 @@ const compileVerificationModel = (db: Mongoose): IVerificationModel => {
   VerificationSchema.statics.createTransactionFromForm = async function (
     form: IFormSchema,
   ): Promise<IVerificationSchema | null> {
-    const { form_fields } = form
-    if (!form_fields) return null
-    const fields = extractTransactionFields(form_fields)
-    if (fields.length === 0) return null
+    const { form_fields, payments_field } = form
+    if (
+      !form_fields &&
+      (payments_field == undefined || !payments_field.enabled)
+    )
+      return null
+    let fields, paymentField
+    if (form_fields) {
+      fields = extractTransactionFields(form_fields)
+    }
+    if (payments_field?.enabled) {
+      paymentField = { _id: PAYMENT_CONTACT_FIELD_ID, fieldType: 'email' }
+    }
     return this.create({
       formId: form._id,
       fields,
+      paymentField,
     })
   }
 
@@ -153,8 +174,8 @@ const compileVerificationModel = (db: Mongoose): IVerificationModel => {
     ).exec()
   }
 
-  VerificationSchema.statics.updateHashForField = async function (
-    updateData: UpdateFieldData,
+  VerificationSchema.statics.updateHashForFormField = async function (
+    updateData: UpdateFormFieldData,
   ): Promise<IVerificationSchema | null> {
     return this.findOneAndUpdate(
       {
@@ -170,6 +191,32 @@ const compileVerificationModel = (db: Mongoose): IVerificationModel => {
         },
         $inc: {
           'fields.$.otpRequests': 1,
+        },
+      },
+      {
+        new: true,
+        runValidators: true,
+        setDefaultsOnInsert: true,
+      },
+    ).exec()
+  }
+
+  VerificationSchema.statics.updateHashForPaymentField = async function (
+    updateData: UpdatePaymentFieldData,
+  ): Promise<IVerificationSchema | null> {
+    return this.findOneAndUpdate(
+      {
+        _id: updateData.transactionId,
+      },
+      {
+        $set: {
+          'paymentField.hashCreatedAt': new Date(),
+          'paymentField.hashedOtp': updateData.hashedOtp,
+          'paymentField.signedData': updateData.signedData,
+          'paymentField.hashRetries': 0,
+        },
+        $inc: {
+          'paymentField.otpRequests': 1,
         },
       },
       {

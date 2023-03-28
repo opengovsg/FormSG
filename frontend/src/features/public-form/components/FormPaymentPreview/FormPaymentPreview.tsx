@@ -1,5 +1,6 @@
 import { Box, Stack, Text } from '@chakra-ui/react'
 
+import { PAYMENT_CONTACT_FIELD_ID } from '~shared/constants'
 import {
   BasicField,
   EmailFieldBase,
@@ -8,11 +9,13 @@ import {
 } from '~shared/types'
 
 import { centsToDollars } from '~utils/payments'
-import { EmailFieldSchema } from '~templates/Field'
-import EmailField from '~templates/Field/Email'
 import { useSectionColor } from '~templates/Field/Section/SectionField'
 
 import { getFieldCreationMeta } from '~features/admin-form/create/builder-and-design/utils/fieldCreation'
+import {
+  VerifiableEmailField,
+  VerifiableEmailFieldSchema,
+} from '~features/verifiable-fields/Email'
 
 export const FormPaymentPreview = ({
   colorTheme = FormColorTheme.Blue,
@@ -22,9 +25,10 @@ export const FormPaymentPreview = ({
   paymentDetails: FormPaymentsField
 }): JSX.Element => {
   const sectionColor = useSectionColor(colorTheme)
-  const emailFieldSchema: EmailFieldSchema = {
-    _id: 'payment_receipt_email_field',
+  const emailFieldSchema: VerifiableEmailFieldSchema = {
     ...(getFieldCreationMeta(BasicField.Email) as EmailFieldBase),
+    _id: PAYMENT_CONTACT_FIELD_ID,
+    isVerifiable: true,
   }
   return (
     <Stack px={{ base: '1rem', md: 0 }} pt="2.5rem">
@@ -47,7 +51,7 @@ export const FormPaymentPreview = ({
             paymentDetails.amount_cents ?? 0,
           )} SGD`}</Box>
         </Box>
-        <EmailField schema={emailFieldSchema} />
+        <VerifiableEmailField schema={emailFieldSchema} />
       </Box>
     </Stack>
   )

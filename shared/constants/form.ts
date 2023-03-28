@@ -51,3 +51,5 @@ export const ADMIN_FORM_META_FIELDS = <const>[
   '_id',
   'responseMode',
 ]
+
+export const PAYMENT_CONTACT_FIELD_ID = 'payment_contact_field'

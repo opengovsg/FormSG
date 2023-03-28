@@ -7,12 +7,17 @@ export type Transaction =
     }
   | Record<string, never>
 
-export type SendOtpParams = {
+type SharedSendOtpParams = {
   transactionId: string
-  fieldId: string
   recipient: string
   otp: string
   hashedOtp: string
   otpPrefix: string
   senderIp: string
 }
+
+export type SendFormOtpParams = SharedSendOtpParams & {
+  fieldId: string
+}
+
+export type SendPaymentOtpParams = SharedSendOtpParams

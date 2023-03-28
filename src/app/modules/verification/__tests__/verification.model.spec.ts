@@ -2,7 +2,7 @@ import { ObjectId } from 'bson'
 import { merge, omit, pick } from 'lodash'
 import mongoose from 'mongoose'
 
-import { UpdateFieldData } from 'src/types'
+import { UpdateFormFieldData } from 'src/types'
 
 import { generateDefaultField } from 'tests/unit/backend/helpers/generate-form-data'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
@@ -464,14 +464,16 @@ describe('Verification Model', () => {
           ...VFN_PARAMS,
           fields: [field],
         })
-        const updateParams: UpdateFieldData = {
+        const updateParams: UpdateFormFieldData = {
           fieldId: field._id,
           transactionId: transaction._id,
           hashedOtp: 'updatedHashedOtp',
           signedData: 'updatedSignedData',
         }
 
-        const result = await VerificationModel.updateHashForField(updateParams)
+        const result = await VerificationModel.updateHashForFormField(
+          updateParams,
+        )
 
         expect(result!.fields[0].hashRetries).toEqual(0)
         expect(result!.fields[0].hashCreatedAt).toBeInstanceOf(Date)
@@ -505,14 +507,16 @@ describe('Verification Model', () => {
           ...VFN_PARAMS,
           fields: [field1, field2],
         })
-        const updateParams: UpdateFieldData = {
+        const updateParams: UpdateFormFieldData = {
           fieldId: field1._id,
           transactionId: transaction._id,
           hashedOtp: 'updatedHashedOtp',
           signedData: 'updatedSignedData',
         }
 
-        const result = await VerificationModel.updateHashForField(updateParams)
+        const result = await VerificationModel.updateHashForFormField(
+          updateParams,
+        )
 
         expect(result!.fields[0].hashRetries).toEqual(0)
         expect(result!.fields[0].hashCreatedAt).toBeInstanceOf(Date)
@@ -535,7 +539,7 @@ describe('Verification Model', () => {
       })
 
       it('should return null when the transaction ID is not found', async () => {
-        const result = await VerificationModel.updateHashForField({
+        const result = await VerificationModel.updateHashForFormField({
           fieldId: new ObjectId().toHexString(),
           transactionId: new ObjectId().toHexString(),
           hashedOtp: 'mockHashedOtp',

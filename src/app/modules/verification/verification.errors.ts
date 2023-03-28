@@ -19,6 +19,15 @@ export class FieldNotFoundInTransactionError extends ApplicationError {
 }
 
 /**
+ * Payment contact field with given ID not found in the transaction.
+ */
+export class PaymentContactFieldNotFoundInTransactionError extends ApplicationError {
+  constructor(message = 'Payment contact field not found in the transaction') {
+    super(message)
+  }
+}
+
+/**
  * Transaction is expired
  */
 export class TransactionExpiredError extends ApplicationError {

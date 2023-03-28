@@ -34,7 +34,7 @@ export const createTransactionForForm = async (
 }
 
 /**
- * Sends an OTP to given answer.
+ * Sends a form field OTP to given answer.
  * @param args
  * @param args.formId The id of the form to generate the otp for
  * @param args.transactionId The generated transaction id for the form
@@ -42,7 +42,7 @@ export const createTransactionForForm = async (
  * @param args.answer The value of the verification field to verify. Usually an email or phone number
  * @returns 201 Created status if successfully sent
  */
-export const triggerSendOtp = async ({
+export const triggerSendFormOtp = async ({
   formId,
   transactionId,
   fieldId,
@@ -59,6 +59,35 @@ export const triggerSendOtp = async ({
 }): Promise<SendFormOtpResponseDto> => {
   return ApiService.post(
     `${FORM_API_PREFIX}/${formId}/${VERIFICATION_ENDPOINT}/${transactionId}/fields/${fieldId}/otp/generate`,
+    {
+      answer,
+    },
+  ).then(({ data }) => data)
+}
+
+/**
+ * Sends a payment contact field OTP to given answer.
+ * @param args
+ * @param args.formId The id of the form to generate the otp for
+ * @param args.transactionId The generated transaction id for the form
+ * @param args.fieldId The id of the verification field
+ * @param args.answer The value of the verification field to verify. Usually an email or phone number
+ * @returns 201 Created status if successfully sent
+ */
+export const triggerSendPaymentOtp = async ({
+  formId,
+  transactionId,
+  answer,
+}: {
+  /** The id of the form to generate the otp for */
+  formId: string
+  /** The generated transaction id for the form */
+  transactionId: string
+  /** The value of the verification field to verify. Usually an email or phone number */
+  answer: string
+}): Promise<SendFormOtpResponseDto> => {
+  return ApiService.post(
+    `${FORM_API_PREFIX}/${formId}/${VERIFICATION_ENDPOINT}/${transactionId}/payment/otp/generate`,
     {
       answer,
     },

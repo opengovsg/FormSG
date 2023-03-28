@@ -35,7 +35,7 @@ import {
   IPopulatedForm,
   IVerificationSchema,
   PublicTransaction,
-  UpdateFieldData,
+  UpdateFormFieldData,
 } from 'src/types'
 
 import { generateDefaultField } from 'tests/unit/backend/helpers/generate-form-data'
@@ -291,10 +291,10 @@ describe('Verification service', () => {
     })
   })
 
-  describe('sendNewOtp', () => {
+  describe('sendNewFormOtp', () => {
     let updateHashSpy: jest.SpyInstance<
       Promise<IVerificationSchema | null>,
-      [updateData: UpdateFieldData]
+      [updateData: UpdateFormFieldData]
     >
 
     const mockForm = {
@@ -311,7 +311,7 @@ describe('Verification service', () => {
 
     beforeEach(() => {
       updateHashSpy = jest
-        .spyOn(VerificationModel, 'updateHashForField')
+        .spyOn(VerificationModel, 'updateHashForFormField')
         .mockResolvedValue(mockTransaction)
       MockSmsFactory.sendVerificationOtp.mockReturnValue(okAsync(true))
       MockMailService.sendVerificationOtp.mockReturnValue(okAsync(true))
@@ -323,7 +323,7 @@ describe('Verification service', () => {
     it('should send OTP and update hashes when parameters are valid', async () => {
       MockFormService.retrieveFormById.mockReturnValue(okAsync(mockForm))
 
-      const result = await VerificationService.sendNewOtp({
+      const result = await VerificationService.sendNewFormOtp({
         transactionId: mockTransactionId,
         fieldId: mockFieldId,
         hashedOtp: MOCK_HASHED_OTP,
@@ -359,7 +359,7 @@ describe('Verification service', () => {
     })
 
     it('should return TransactionNotFoundError when transaction ID does not exist', async () => {
-      const result = await VerificationService.sendNewOtp({
+      const result = await VerificationService.sendNewFormOtp({
         // non-existent transaction ID
         transactionId: new ObjectId().toHexString(),
         fieldId: mockFieldId,
@@ -386,7 +386,7 @@ describe('Verification service', () => {
         expireAt: subHours(new Date(), 25),
       })
 
-      const result = await VerificationService.sendNewOtp({
+      const result = await VerificationService.sendNewFormOtp({
         transactionId: expiredTransaction._id,
         fieldId: mockFieldId,
         hashedOtp: MOCK_HASHED_OTP,
@@ -406,7 +406,7 @@ describe('Verification service', () => {
     })
 
     it('should return FieldNotFoundInTransactionError when field ID does not exist', async () => {
-      const result = await VerificationService.sendNewOtp({
+      const result = await VerificationService.sendNewFormOtp({
         transactionId: mockTransactionId,
         // ObjectId which does not exist in mockTransaction
         fieldId: new ObjectId().toHexString(),
@@ -440,7 +440,7 @@ describe('Verification service', () => {
         fields: [expiredOtpField],
       })
 
-      const result = await VerificationService.sendNewOtp({
+      const result = await VerificationService.sendNewFormOtp({
         transactionId: expiredOtpTransaction._id,
         fieldId: expiredOtpField._id,
         hashedOtp: MOCK_HASHED_OTP,
@@ -470,7 +470,7 @@ describe('Verification service', () => {
         fields: [maxExceededOtpField],
       })
 
-      const result = await VerificationService.sendNewOtp({
+      const result = await VerificationService.sendNewFormOtp({
         transactionId: maxExceededOtpTransaction._id,
         fieldId: maxExceededOtpField._id,
         hashedOtp: MOCK_HASHED_OTP,
@@ -502,7 +502,7 @@ describe('Verification service', () => {
         fields: [field],
       })
 
-      const result = await VerificationService.sendNewOtp({
+      const result = await VerificationService.sendNewFormOtp({
         transactionId: transaction._id,
         fieldId: field._id,
         hashedOtp: MOCK_HASHED_OTP,
@@ -539,7 +539,7 @@ describe('Verification service', () => {
         fields: [field],
       })
 
-      const result = await VerificationService.sendNewOtp({
+      const result = await VerificationService.sendNewFormOtp({
         transactionId: transaction._id,
         fieldId: mockFieldId,
         hashedOtp: MOCK_HASHED_OTP,
@@ -568,7 +568,7 @@ describe('Verification service', () => {
 
       updateHashSpy.mockResolvedValueOnce(null)
 
-      const result = await VerificationService.sendNewOtp({
+      const result = await VerificationService.sendNewFormOtp({
         transactionId: mockTransactionId,
         fieldId: mockFieldId,
         hashedOtp: MOCK_HASHED_OTP,

@@ -428,7 +428,7 @@ describe('Verification controller', () => {
           otpPrefix: MOCK_OTP_PREFIX,
         }),
       )
-      MockVerificationService.sendNewOtp.mockReturnValue(
+      MockVerificationService.sendNewFormOtp.mockReturnValue(
         okAsync(mockTransaction),
       )
     })
@@ -437,21 +437,21 @@ describe('Verification controller', () => {
       await VerificationController.handleGetOtp(MOCK_REQ, mockRes, jest.fn())
 
       expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
-      expect(MockVerificationService.sendNewOtp).toHaveBeenCalledWith(
+      expect(MockVerificationService.sendNewFormOtp).toHaveBeenCalledWith(
         EXPECTED_PARAMS_FOR_SENDING_OTP,
       )
       expect(mockRes.sendStatus).toHaveBeenCalledWith(StatusCodes.CREATED)
     })
 
     it('should return 404 when transaction is not found', async () => {
-      MockVerificationService.sendNewOtp.mockReturnValueOnce(
+      MockVerificationService.sendNewFormOtp.mockReturnValueOnce(
         errAsync(new TransactionNotFoundError()),
       )
 
       await VerificationController.handleGetOtp(MOCK_REQ, mockRes, jest.fn())
 
       expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
-      expect(MockVerificationService.sendNewOtp).toHaveBeenCalledWith(
+      expect(MockVerificationService.sendNewFormOtp).toHaveBeenCalledWith(
         EXPECTED_PARAMS_FOR_SENDING_OTP,
       )
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.NOT_FOUND)
@@ -459,14 +459,14 @@ describe('Verification controller', () => {
     })
 
     it('should return 400 when transaction has expired', async () => {
-      MockVerificationService.sendNewOtp.mockReturnValueOnce(
+      MockVerificationService.sendNewFormOtp.mockReturnValueOnce(
         errAsync(new TransactionExpiredError()),
       )
 
       await VerificationController.handleGetOtp(MOCK_REQ, mockRes, jest.fn())
 
       expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
-      expect(MockVerificationService.sendNewOtp).toHaveBeenCalledWith(
+      expect(MockVerificationService.sendNewFormOtp).toHaveBeenCalledWith(
         EXPECTED_PARAMS_FOR_SENDING_OTP,
       )
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
@@ -474,14 +474,14 @@ describe('Verification controller', () => {
     })
 
     it('should return 404 when field ID is not found', async () => {
-      MockVerificationService.sendNewOtp.mockReturnValueOnce(
+      MockVerificationService.sendNewFormOtp.mockReturnValueOnce(
         errAsync(new FieldNotFoundInTransactionError()),
       )
 
       await VerificationController.handleGetOtp(MOCK_REQ, mockRes, jest.fn())
 
       expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
-      expect(MockVerificationService.sendNewOtp).toHaveBeenCalledWith(
+      expect(MockVerificationService.sendNewFormOtp).toHaveBeenCalledWith(
         EXPECTED_PARAMS_FOR_SENDING_OTP,
       )
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.NOT_FOUND)
@@ -496,7 +496,7 @@ describe('Verification controller', () => {
       await VerificationController.handleGetOtp(MOCK_REQ, mockRes, jest.fn())
 
       expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
-      expect(MockVerificationService.sendNewOtp).not.toHaveBeenCalled()
+      expect(MockVerificationService.sendNewFormOtp).not.toHaveBeenCalled()
       expect(mockRes.status).toHaveBeenCalledWith(
         StatusCodes.INTERNAL_SERVER_ERROR,
       )
@@ -504,14 +504,14 @@ describe('Verification controller', () => {
     })
 
     it('should return 422 when OTP waiting time has not elapsed', async () => {
-      MockVerificationService.sendNewOtp.mockReturnValueOnce(
+      MockVerificationService.sendNewFormOtp.mockReturnValueOnce(
         errAsync(new WaitForOtpError()),
       )
 
       await VerificationController.handleGetOtp(MOCK_REQ, mockRes, jest.fn())
 
       expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
-      expect(MockVerificationService.sendNewOtp).toHaveBeenCalledWith(
+      expect(MockVerificationService.sendNewFormOtp).toHaveBeenCalledWith(
         EXPECTED_PARAMS_FOR_SENDING_OTP,
       )
       expect(mockRes.status).toHaveBeenCalledWith(
@@ -521,14 +521,14 @@ describe('Verification controller', () => {
     })
 
     it('should return 400 when form SMS parameters are malformed', async () => {
-      MockVerificationService.sendNewOtp.mockReturnValueOnce(
+      MockVerificationService.sendNewFormOtp.mockReturnValueOnce(
         errAsync(new MalformedParametersError('')),
       )
 
       await VerificationController.handleGetOtp(MOCK_REQ, mockRes, jest.fn())
 
       expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
-      expect(MockVerificationService.sendNewOtp).toHaveBeenCalledWith(
+      expect(MockVerificationService.sendNewFormOtp).toHaveBeenCalledWith(
         EXPECTED_PARAMS_FOR_SENDING_OTP,
       )
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
@@ -536,14 +536,14 @@ describe('Verification controller', () => {
     })
 
     it('should return 400 when SMS sending errors', async () => {
-      MockVerificationService.sendNewOtp.mockReturnValueOnce(
+      MockVerificationService.sendNewFormOtp.mockReturnValueOnce(
         errAsync(new SmsSendError()),
       )
 
       await VerificationController.handleGetOtp(MOCK_REQ, mockRes, jest.fn())
 
       expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
-      expect(MockVerificationService.sendNewOtp).toHaveBeenCalledWith(
+      expect(MockVerificationService.sendNewFormOtp).toHaveBeenCalledWith(
         EXPECTED_PARAMS_FOR_SENDING_OTP,
       )
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
@@ -551,14 +551,14 @@ describe('Verification controller', () => {
     })
 
     it('should return 400 when phone number is invalid', async () => {
-      MockVerificationService.sendNewOtp.mockReturnValueOnce(
+      MockVerificationService.sendNewFormOtp.mockReturnValueOnce(
         errAsync(new InvalidNumberError()),
       )
 
       await VerificationController.handleGetOtp(MOCK_REQ, mockRes, jest.fn())
 
       expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
-      expect(MockVerificationService.sendNewOtp).toHaveBeenCalledWith(
+      expect(MockVerificationService.sendNewFormOtp).toHaveBeenCalledWith(
         EXPECTED_PARAMS_FOR_SENDING_OTP,
       )
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
@@ -566,14 +566,14 @@ describe('Verification controller', () => {
     })
 
     it('should return 400 when email sending errors', async () => {
-      MockVerificationService.sendNewOtp.mockReturnValueOnce(
+      MockVerificationService.sendNewFormOtp.mockReturnValueOnce(
         errAsync(new MailSendError()),
       )
 
       await VerificationController.handleGetOtp(MOCK_REQ, mockRes, jest.fn())
 
       expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
-      expect(MockVerificationService.sendNewOtp).toHaveBeenCalledWith(
+      expect(MockVerificationService.sendNewFormOtp).toHaveBeenCalledWith(
         EXPECTED_PARAMS_FOR_SENDING_OTP,
       )
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
@@ -581,14 +581,14 @@ describe('Verification controller', () => {
     })
 
     it('should return 400 when field type is not verifiable', async () => {
-      MockVerificationService.sendNewOtp.mockReturnValueOnce(
+      MockVerificationService.sendNewFormOtp.mockReturnValueOnce(
         errAsync(new NonVerifiedFieldTypeError('')),
       )
 
       await VerificationController.handleGetOtp(MOCK_REQ, mockRes, jest.fn())
 
       expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
-      expect(MockVerificationService.sendNewOtp).toHaveBeenCalledWith(
+      expect(MockVerificationService.sendNewFormOtp).toHaveBeenCalledWith(
         EXPECTED_PARAMS_FOR_SENDING_OTP,
       )
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
@@ -596,14 +596,14 @@ describe('Verification controller', () => {
     })
 
     it('should return 500 when database error occurs', async () => {
-      MockVerificationService.sendNewOtp.mockReturnValueOnce(
+      MockVerificationService.sendNewFormOtp.mockReturnValueOnce(
         errAsync(new DatabaseError()),
       )
 
       await VerificationController.handleGetOtp(MOCK_REQ, mockRes, jest.fn())
 
       expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
-      expect(MockVerificationService.sendNewOtp).toHaveBeenCalledWith(
+      expect(MockVerificationService.sendNewFormOtp).toHaveBeenCalledWith(
         EXPECTED_PARAMS_FOR_SENDING_OTP,
       )
       expect(mockRes.status).toHaveBeenCalledWith(
@@ -613,7 +613,7 @@ describe('Verification controller', () => {
     })
   })
 
-  describe('_handleGenerateOtp', () => {
+  describe('_handleGenerateFormOtp', () => {
     const MOCK_REQ = expressHandler.mockRequest({
       body: { answer: MOCK_ANSWER },
       params: {
@@ -659,7 +659,7 @@ describe('Verification controller', () => {
           otpPrefix: MOCK_OTP_PREFIX,
         }),
       )
-      MockVerificationService.sendNewOtp.mockReturnValue(
+      MockVerificationService.sendNewFormOtp.mockReturnValue(
         okAsync(mockTransaction),
       )
       MockVerificationService.shouldGenerateMobileOtp.mockReturnValue(
@@ -674,7 +674,7 @@ describe('Verification controller', () => {
       )
 
       // Act
-      await VerificationController._handleGenerateOtp(
+      await VerificationController._handleGenerateFormOtp(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -693,7 +693,7 @@ describe('Verification controller', () => {
       expect(MockMyInfoUtil.extractMyInfoLoginJwt).not.toHaveBeenCalled()
       expect(MockMyInfoService.verifyLoginJwt).not.toHaveBeenCalled()
       expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
-      expect(MockVerificationService.sendNewOtp).toHaveBeenCalledWith(
+      expect(MockVerificationService.sendNewFormOtp).toHaveBeenCalledWith(
         EXPECTED_PARAMS_FOR_SENDING_OTP,
       )
       expect(
@@ -728,7 +728,7 @@ describe('Verification controller', () => {
       )
 
       // Act
-      await VerificationController._handleGenerateOtp(
+      await VerificationController._handleGenerateFormOtp(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -745,7 +745,7 @@ describe('Verification controller', () => {
         MOCK_JWT,
       )
       expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
-      expect(MockVerificationService.sendNewOtp).toHaveBeenCalledWith(
+      expect(MockVerificationService.sendNewFormOtp).toHaveBeenCalledWith(
         EXPECTED_PARAMS_FOR_SENDING_OTP,
       )
       expect(
@@ -781,7 +781,7 @@ describe('Verification controller', () => {
       )
 
       // Act
-      await VerificationController._handleGenerateOtp(
+      await VerificationController._handleGenerateFormOtp(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -798,7 +798,7 @@ describe('Verification controller', () => {
         MOCK_JWT,
       )
       expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
-      expect(MockVerificationService.sendNewOtp).toHaveBeenCalledWith(
+      expect(MockVerificationService.sendNewFormOtp).toHaveBeenCalledWith(
         EXPECTED_PARAMS_FOR_SENDING_OTP,
       )
       expect(
@@ -836,7 +836,7 @@ describe('Verification controller', () => {
       )
 
       // Act
-      await VerificationController._handleGenerateOtp(
+      await VerificationController._handleGenerateFormOtp(
         MOCK_SGID_REQ,
         mockRes,
         jest.fn(),
@@ -850,7 +850,7 @@ describe('Verification controller', () => {
         MOCK_SGID_REQ.cookies.jwtSgid,
       )
       expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
-      expect(MockVerificationService.sendNewOtp).toHaveBeenCalledWith(
+      expect(MockVerificationService.sendNewFormOtp).toHaveBeenCalledWith(
         EXPECTED_PARAMS_FOR_SENDING_OTP,
       )
       expect(
@@ -879,7 +879,7 @@ describe('Verification controller', () => {
       )
 
       // Act
-      await VerificationController._handleGenerateOtp(
+      await VerificationController._handleGenerateFormOtp(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -896,7 +896,7 @@ describe('Verification controller', () => {
         MOCK_MYINFO_JWT,
       )
       expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
-      expect(MockVerificationService.sendNewOtp).toHaveBeenCalledWith(
+      expect(MockVerificationService.sendNewFormOtp).toHaveBeenCalledWith(
         EXPECTED_PARAMS_FOR_SENDING_OTP,
       )
       expect(
@@ -911,7 +911,7 @@ describe('Verification controller', () => {
 
     it('should return 400 when form SMS parameters are malformed', async () => {
       // Arrange
-      MockVerificationService.sendNewOtp.mockReturnValueOnce(
+      MockVerificationService.sendNewFormOtp.mockReturnValueOnce(
         errAsync(new MalformedParametersError('')),
       )
       const expectedResponse = {
@@ -919,7 +919,7 @@ describe('Verification controller', () => {
       }
 
       // Act
-      await VerificationController._handleGenerateOtp(
+      await VerificationController._handleGenerateFormOtp(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -930,7 +930,7 @@ describe('Verification controller', () => {
         MOCK_FORM_ID,
       )
       expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
-      expect(MockVerificationService.sendNewOtp).toHaveBeenCalledWith(
+      expect(MockVerificationService.sendNewFormOtp).toHaveBeenCalledWith(
         EXPECTED_PARAMS_FOR_SENDING_OTP,
       )
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
@@ -939,7 +939,7 @@ describe('Verification controller', () => {
 
     it('should return 400 when transaction has expired', async () => {
       // Arrange
-      MockVerificationService.sendNewOtp.mockReturnValueOnce(
+      MockVerificationService.sendNewFormOtp.mockReturnValueOnce(
         errAsync(new TransactionExpiredError("don't eat expired food")),
       )
       const expectedResponse = {
@@ -947,7 +947,7 @@ describe('Verification controller', () => {
       }
 
       // Act
-      await VerificationController._handleGenerateOtp(
+      await VerificationController._handleGenerateFormOtp(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -958,7 +958,7 @@ describe('Verification controller', () => {
         MOCK_FORM_ID,
       )
       expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
-      expect(MockVerificationService.sendNewOtp).toHaveBeenCalledWith(
+      expect(MockVerificationService.sendNewFormOtp).toHaveBeenCalledWith(
         EXPECTED_PARAMS_FOR_SENDING_OTP,
       )
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
@@ -967,7 +967,7 @@ describe('Verification controller', () => {
 
     it('should return 400 when SMS sending errors', async () => {
       // Arrange
-      MockVerificationService.sendNewOtp.mockReturnValueOnce(
+      MockVerificationService.sendNewFormOtp.mockReturnValueOnce(
         errAsync(new SmsSendError()),
       )
       const expectedResponse = {
@@ -975,7 +975,7 @@ describe('Verification controller', () => {
       }
 
       // Act
-      await VerificationController._handleGenerateOtp(
+      await VerificationController._handleGenerateFormOtp(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -986,7 +986,7 @@ describe('Verification controller', () => {
         MOCK_FORM_ID,
       )
       expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
-      expect(MockVerificationService.sendNewOtp).toHaveBeenCalledWith(
+      expect(MockVerificationService.sendNewFormOtp).toHaveBeenCalledWith(
         EXPECTED_PARAMS_FOR_SENDING_OTP,
       )
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
@@ -995,7 +995,7 @@ describe('Verification controller', () => {
 
     it('should return 400 when email sending errors', async () => {
       // Arrange
-      MockVerificationService.sendNewOtp.mockReturnValueOnce(
+      MockVerificationService.sendNewFormOtp.mockReturnValueOnce(
         errAsync(new MailSendError()),
       )
       const expectedResponse = {
@@ -1004,7 +1004,7 @@ describe('Verification controller', () => {
       }
 
       // Act
-      await VerificationController._handleGenerateOtp(
+      await VerificationController._handleGenerateFormOtp(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -1015,7 +1015,7 @@ describe('Verification controller', () => {
         MOCK_FORM_ID,
       )
       expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
-      expect(MockVerificationService.sendNewOtp).toHaveBeenCalledWith(
+      expect(MockVerificationService.sendNewFormOtp).toHaveBeenCalledWith(
         EXPECTED_PARAMS_FOR_SENDING_OTP,
       )
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
@@ -1024,7 +1024,7 @@ describe('Verification controller', () => {
 
     it('should return 400 when phone number is invalid', async () => {
       // Arrange
-      MockVerificationService.sendNewOtp.mockReturnValueOnce(
+      MockVerificationService.sendNewFormOtp.mockReturnValueOnce(
         errAsync(new InvalidNumberError()),
       )
       const expectedResponse = {
@@ -1033,7 +1033,7 @@ describe('Verification controller', () => {
       }
 
       // Act
-      await VerificationController._handleGenerateOtp(
+      await VerificationController._handleGenerateFormOtp(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -1044,7 +1044,7 @@ describe('Verification controller', () => {
         MOCK_FORM_ID,
       )
       expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
-      expect(MockVerificationService.sendNewOtp).toHaveBeenCalledWith(
+      expect(MockVerificationService.sendNewFormOtp).toHaveBeenCalledWith(
         EXPECTED_PARAMS_FOR_SENDING_OTP,
       )
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
@@ -1053,7 +1053,7 @@ describe('Verification controller', () => {
 
     it('should return 400 when sms limit has been exceeded and the form is not onboarded', async () => {
       // Arrange
-      MockVerificationService.sendNewOtp.mockReturnValueOnce(
+      MockVerificationService.sendNewFormOtp.mockReturnValueOnce(
         errAsync(new SmsLimitExceededError()),
       )
       const expected = {
@@ -1062,7 +1062,7 @@ describe('Verification controller', () => {
       }
 
       // Act
-      await VerificationController._handleGenerateOtp(
+      await VerificationController._handleGenerateFormOtp(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -1075,7 +1075,7 @@ describe('Verification controller', () => {
 
     it('should return 400 when field type is not verifiable', async () => {
       // Arrange
-      MockVerificationService.sendNewOtp.mockReturnValueOnce(
+      MockVerificationService.sendNewFormOtp.mockReturnValueOnce(
         errAsync(new NonVerifiedFieldTypeError('')),
       )
       const expectedResponse = {
@@ -1083,7 +1083,7 @@ describe('Verification controller', () => {
       }
 
       // Act
-      await VerificationController._handleGenerateOtp(
+      await VerificationController._handleGenerateFormOtp(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -1094,7 +1094,7 @@ describe('Verification controller', () => {
         MOCK_FORM_ID,
       )
       expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
-      expect(MockVerificationService.sendNewOtp).toHaveBeenCalledWith(
+      expect(MockVerificationService.sendNewFormOtp).toHaveBeenCalledWith(
         EXPECTED_PARAMS_FOR_SENDING_OTP,
       )
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
@@ -1115,7 +1115,7 @@ describe('Verification controller', () => {
       }
 
       // Act
-      await VerificationController._handleGenerateOtp(
+      await VerificationController._handleGenerateFormOtp(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -1130,7 +1130,7 @@ describe('Verification controller', () => {
       )
       expect(mockSpOidcServiceClass.extractJwtPayload).not.toHaveBeenCalled()
       expect(MockOtpUtils.generateOtpWithHash).not.toHaveBeenCalled()
-      expect(MockVerificationService.sendNewOtp).not.toHaveBeenCalled()
+      expect(MockVerificationService.sendNewFormOtp).not.toHaveBeenCalled()
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
       expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
     })
@@ -1150,7 +1150,7 @@ describe('Verification controller', () => {
       }
 
       // Act
-      await VerificationController._handleGenerateOtp(
+      await VerificationController._handleGenerateFormOtp(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -1167,7 +1167,7 @@ describe('Verification controller', () => {
         MOCK_JWT,
       )
       expect(MockOtpUtils.generateOtpWithHash).not.toHaveBeenCalled()
-      expect(MockVerificationService.sendNewOtp).not.toHaveBeenCalled()
+      expect(MockVerificationService.sendNewFormOtp).not.toHaveBeenCalled()
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
       expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
     })
@@ -1186,7 +1186,7 @@ describe('Verification controller', () => {
       }
 
       // Act
-      await VerificationController._handleGenerateOtp(
+      await VerificationController._handleGenerateFormOtp(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -1200,7 +1200,7 @@ describe('Verification controller', () => {
         MOCK_REQ.cookies,
       )
       expect(MockOtpUtils.generateOtpWithHash).not.toHaveBeenCalled()
-      expect(MockVerificationService.sendNewOtp).not.toHaveBeenCalled()
+      expect(MockVerificationService.sendNewFormOtp).not.toHaveBeenCalled()
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
       expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
     })
@@ -1220,7 +1220,7 @@ describe('Verification controller', () => {
       }
 
       // Act
-      await VerificationController._handleGenerateOtp(
+      await VerificationController._handleGenerateFormOtp(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -1237,7 +1237,7 @@ describe('Verification controller', () => {
         MOCK_JWT,
       )
       expect(MockOtpUtils.generateOtpWithHash).not.toHaveBeenCalled()
-      expect(MockVerificationService.sendNewOtp).not.toHaveBeenCalled()
+      expect(MockVerificationService.sendNewFormOtp).not.toHaveBeenCalled()
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
       expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
     })
@@ -1265,7 +1265,7 @@ describe('Verification controller', () => {
       }
 
       // Act
-      await VerificationController._handleGenerateOtp(
+      await VerificationController._handleGenerateFormOtp(
         MOCK_SGID_REQ,
         mockRes,
         jest.fn(),
@@ -1279,7 +1279,7 @@ describe('Verification controller', () => {
         MOCK_SGID_REQ.cookies.jwtSgid,
       )
       expect(MockOtpUtils.generateOtpWithHash).not.toHaveBeenCalled()
-      expect(MockVerificationService.sendNewOtp).not.toHaveBeenCalled()
+      expect(MockVerificationService.sendNewFormOtp).not.toHaveBeenCalled()
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
       expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
     })
@@ -1307,7 +1307,7 @@ describe('Verification controller', () => {
       }
 
       // Act
-      await VerificationController._handleGenerateOtp(
+      await VerificationController._handleGenerateFormOtp(
         MOCK_SGID_REQ,
         mockRes,
         jest.fn(),
@@ -1321,7 +1321,7 @@ describe('Verification controller', () => {
         MOCK_SGID_REQ.cookies.jwt,
       )
       expect(MockOtpUtils.generateOtpWithHash).not.toHaveBeenCalled()
-      expect(MockVerificationService.sendNewOtp).not.toHaveBeenCalled()
+      expect(MockVerificationService.sendNewFormOtp).not.toHaveBeenCalled()
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
       expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
     })
@@ -1339,7 +1339,7 @@ describe('Verification controller', () => {
       }
 
       // Act
-      await VerificationController._handleGenerateOtp(
+      await VerificationController._handleGenerateFormOtp(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -1354,7 +1354,7 @@ describe('Verification controller', () => {
       )
       expect(MockMyInfoService.verifyLoginJwt).not.toHaveBeenCalled()
       expect(MockOtpUtils.generateOtpWithHash).not.toHaveBeenCalled()
-      expect(MockVerificationService.sendNewOtp).not.toHaveBeenCalled()
+      expect(MockVerificationService.sendNewFormOtp).not.toHaveBeenCalled()
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
       expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
     })
@@ -1375,7 +1375,7 @@ describe('Verification controller', () => {
       }
 
       // Act
-      await VerificationController._handleGenerateOtp(
+      await VerificationController._handleGenerateFormOtp(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -1392,7 +1392,7 @@ describe('Verification controller', () => {
         MOCK_MYINFO_JWT,
       )
       expect(MockOtpUtils.generateOtpWithHash).not.toHaveBeenCalled()
-      expect(MockVerificationService.sendNewOtp).not.toHaveBeenCalled()
+      expect(MockVerificationService.sendNewFormOtp).not.toHaveBeenCalled()
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
       expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
     })
@@ -1407,7 +1407,7 @@ describe('Verification controller', () => {
       }
 
       // Act
-      await VerificationController._handleGenerateOtp(
+      await VerificationController._handleGenerateFormOtp(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -1418,14 +1418,14 @@ describe('Verification controller', () => {
         MOCK_FORM_ID,
       )
       expect(MockOtpUtils.generateOtpWithHash).not.toHaveBeenCalled()
-      expect(MockVerificationService.sendNewOtp).not.toHaveBeenCalled()
+      expect(MockVerificationService.sendNewFormOtp).not.toHaveBeenCalled()
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.NOT_FOUND)
       expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
     })
 
     it('should return 404 when transaction is not found', async () => {
       // Arrange
-      MockVerificationService.sendNewOtp.mockReturnValueOnce(
+      MockVerificationService.sendNewFormOtp.mockReturnValueOnce(
         errAsync(new TransactionNotFoundError('wad')),
       )
       const expectedResponse = {
@@ -1433,7 +1433,7 @@ describe('Verification controller', () => {
       }
 
       // Act
-      await VerificationController._handleGenerateOtp(
+      await VerificationController._handleGenerateFormOtp(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -1444,7 +1444,7 @@ describe('Verification controller', () => {
         MOCK_FORM_ID,
       )
       expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
-      expect(MockVerificationService.sendNewOtp).toHaveBeenCalledWith(
+      expect(MockVerificationService.sendNewFormOtp).toHaveBeenCalledWith(
         EXPECTED_PARAMS_FOR_SENDING_OTP,
       )
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.NOT_FOUND)
@@ -1453,7 +1453,7 @@ describe('Verification controller', () => {
 
     it('should return 404 when field ID is not found', async () => {
       // Arrange
-      MockVerificationService.sendNewOtp.mockReturnValueOnce(
+      MockVerificationService.sendNewFormOtp.mockReturnValueOnce(
         errAsync(new FieldNotFoundInTransactionError()),
       )
       const expectedResponse = {
@@ -1461,7 +1461,7 @@ describe('Verification controller', () => {
       }
 
       // Act
-      await VerificationController._handleGenerateOtp(
+      await VerificationController._handleGenerateFormOtp(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -1472,7 +1472,7 @@ describe('Verification controller', () => {
         MOCK_FORM_ID,
       )
       expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
-      expect(MockVerificationService.sendNewOtp).toHaveBeenCalledWith(
+      expect(MockVerificationService.sendNewFormOtp).toHaveBeenCalledWith(
         EXPECTED_PARAMS_FOR_SENDING_OTP,
       )
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.NOT_FOUND)
@@ -1481,7 +1481,7 @@ describe('Verification controller', () => {
 
     it('should return 422 when OTP waiting time has not elapsed', async () => {
       // Arrange
-      MockVerificationService.sendNewOtp.mockReturnValueOnce(
+      MockVerificationService.sendNewFormOtp.mockReturnValueOnce(
         errAsync(new WaitForOtpError()),
       )
       const expectedResponse = {
@@ -1489,7 +1489,7 @@ describe('Verification controller', () => {
       }
 
       // Act
-      await VerificationController._handleGenerateOtp(
+      await VerificationController._handleGenerateFormOtp(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -1500,7 +1500,7 @@ describe('Verification controller', () => {
         MOCK_FORM_ID,
       )
       expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
-      expect(MockVerificationService.sendNewOtp).toHaveBeenCalledWith(
+      expect(MockVerificationService.sendNewFormOtp).toHaveBeenCalledWith(
         EXPECTED_PARAMS_FOR_SENDING_OTP,
       )
       expect(mockRes.status).toHaveBeenCalledWith(
@@ -1516,7 +1516,7 @@ describe('Verification controller', () => {
       )
 
       // Act
-      await VerificationController._handleGenerateOtp(
+      await VerificationController._handleGenerateFormOtp(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -1527,7 +1527,7 @@ describe('Verification controller', () => {
         MOCK_FORM_ID,
       )
       expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
-      expect(MockVerificationService.sendNewOtp).not.toHaveBeenCalled()
+      expect(MockVerificationService.sendNewFormOtp).not.toHaveBeenCalled()
       expect(mockRes.status).toHaveBeenCalledWith(
         StatusCodes.INTERNAL_SERVER_ERROR,
       )
@@ -1536,7 +1536,7 @@ describe('Verification controller', () => {
 
     it('should return 500 when database error occurs', async () => {
       // Arrange
-      MockVerificationService.sendNewOtp.mockReturnValueOnce(
+      MockVerificationService.sendNewFormOtp.mockReturnValueOnce(
         errAsync(new DatabaseError()),
       )
       const expectedResponse = {
@@ -1544,7 +1544,7 @@ describe('Verification controller', () => {
       }
 
       // Act
-      await VerificationController._handleGenerateOtp(
+      await VerificationController._handleGenerateFormOtp(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -1555,7 +1555,7 @@ describe('Verification controller', () => {
         MOCK_FORM_ID,
       )
       expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
-      expect(MockVerificationService.sendNewOtp).toHaveBeenCalledWith(
+      expect(MockVerificationService.sendNewFormOtp).toHaveBeenCalledWith(
         EXPECTED_PARAMS_FOR_SENDING_OTP,
       )
       expect(mockRes.status).toHaveBeenCalledWith(
