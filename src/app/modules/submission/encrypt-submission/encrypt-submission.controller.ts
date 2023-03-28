@@ -428,8 +428,7 @@ const submitEncryptModeForm: ControllerHandler<
     try {
       paymentIntent = await stripe.paymentIntents.create(
         createPaymentIntentParams,
-        // TODO: Throw error here if payments channel is undefined
-        { stripeAccount: form.payments_channel?.target_account_id },
+        { stripeAccount: form.payments_channel.target_account_id },
       )
     } catch (err) {
       logger.error({
