@@ -112,7 +112,7 @@ const _handleStripeEventUpdates: ControllerHandler<
         logger.warn({
           message:
             'Received payment intent or charge event with invalid paymentId',
-          meta: logMeta,
+          meta: { ...logMeta, paymentId },
         })
         return res.sendStatus(StatusCodes.BAD_REQUEST)
       }
@@ -135,7 +135,7 @@ const _handleStripeEventUpdates: ControllerHandler<
       if (!payment) {
         logger.warn({
           message: 'Received dispute event with unknown latest charge id',
-          meta: logMeta,
+          meta: { ...logMeta, chargeIdLatest },
         })
         return res.sendStatus(StatusCodes.BAD_REQUEST)
       }
@@ -153,7 +153,7 @@ const _handleStripeEventUpdates: ControllerHandler<
       if (!chargeIdLatest) {
         logger.warn({
           message: 'Received Stripe event charge.refund.updated with no charge',
-          meta: logMeta,
+          meta: { ...logMeta, chargeIdLatest },
         })
         return res.sendStatus(StatusCodes.BAD_REQUEST)
       }
@@ -163,7 +163,7 @@ const _handleStripeEventUpdates: ControllerHandler<
         logger.warn({
           message:
             'Received refund updated event with unknown latest charge id',
-          meta: logMeta,
+          meta: { ...logMeta, chargeIdLatest },
         })
         return res.sendStatus(StatusCodes.BAD_REQUEST)
       }
