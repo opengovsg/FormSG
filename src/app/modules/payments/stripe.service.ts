@@ -2,24 +2,27 @@
 /// <reference types="stripe-event-types" />
 import cuid from 'cuid'
 import get from 'lodash/get'
-import mongoose, { ClientSession } from 'mongoose'
+import mongoose from 'mongoose'
 import { errAsync, ok, okAsync, ResultAsync } from 'neverthrow'
 import Stripe from 'stripe'
 import { MarkRequired } from 'ts-essentials'
 import isURL from 'validator/lib/isURL'
 
-import { IPopulatedEncryptedForm } from '../../../types'
+import { IPaymentSchema, IPopulatedEncryptedForm } from '../../../types'
 import config from '../../config/config'
 import { paymentConfig } from '../../config/features/payment.config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { stripe } from '../../loaders/stripe'
 import getPaymentModel from '../../models/payment.server.model'
 import { getMongoErrorMessage } from '../../utils/handle-mongo-error'
-import { ApplicationError, DatabaseError } from '../core/core.errors'
+import { DatabaseError } from '../core/core.errors'
 import { PendingSubmissionNotFoundError } from '../submission/submission.errors'
-import * as SubmissionService from '../submission/submission.service'
 
-import { PaymentNotFoundError } from './payments.errors'
+import {
+  PaymentAlreadyConfirmedError,
+  PaymentNotFoundError,
+} from './payments.errors'
+import * as PaymentsService from './payments.service'
 import {
   ComputePaymentStateError,
   MalformedStripeChargeObjectError,
@@ -27,7 +30,6 @@ import {
   StripeAccountNotFoundError,
   StripeFetchError,
   StripeMetadataPaymentIdInvalidError,
-  StripeMetadataPaymentIdNotFoundError,
 } from './stripe.errors'
 import { computePaymentState, getRedirectUri } from './stripe.utils'
 
@@ -35,182 +37,122 @@ const logger = createLoggerWithLabel(module)
 const Payment = getPaymentModel(mongoose)
 
 /**
- * Only used to pass exceptional control from the transaction function back to
- * the caller which is responsible for aborting the transaction.
- * NOTE: Exported only for testing
- */
-export class DuplicateEventError extends ApplicationError {
-  constructor(message = 'Duplicate event processed') {
-    super(message)
-  }
-}
-
-/**
- * Retrieves and updates payment document of the given submissionId with the event
- * NOTE: Exported only for testing
- * @param paymentId the id of the payment document to be updated
- * @param event the new Stripe Event causing the update operation to occur
- * @param session the mongoose session this transaction is to be run within
- * @returns ok() if payment exists
- * @returns err(PaymentNotFoundError) if the payment does not exist
- * @returns err(DuplicateEventError) if a duplicate event is found to be processed
+ * Helper function that confirms a pending submission for a Stripe payment form
+ * if necessary (i.e. if a charge.succeeded event is received and the pending
+ * submission is not yet confirmed).
+ *
+ * @param {Stripe.Event} event the new Stripe Event causing the operation to occur
+ * @param {IPaymentSchema} payment the payment to be confirmed
+ *
+ * @returns ok(payment) if payment exists
+ * @returns err(MalformedStripeChargeObjectError) if the shape of the charge object returned by Stripe does not have expected fields
+ * @returns err(PaymentNotFoundError) if the payment document does not exist
  * @returns err(PendingSubmissionNotFoundError) if the pending submission being referenced by the payment document does not exist
- * @returns err(ComputePaymentStateError) if there was an error while recomputing the payment state
- * @returns err(MalformedStripeChargeObjectError) if the receipt URL or balance transaction was not found in the charge object
- * @returns err(StripeFetchError) if there was an error fetching data from Stripe
+ * @returns err(PaymentAlreadyConfirmedError) if the payment document already has an associated completed payment
+ * @returns err(StripeFetchError) if there was an error while calling Stripe API
  * @returns err(DatabaseError) if error occurs whilst querying the database
  */
-export const processStripeEventTxn = (
-  paymentId: string,
+const confirmStripePaymentPendingSubmission = (
   event: Stripe.Event,
-  session: ClientSession,
+  payment: IPaymentSchema,
 ): ResultAsync<
-  void,
-  | DatabaseError
-  | PaymentNotFoundError
-  | DuplicateEventError
-  | PendingSubmissionNotFoundError
+  IPaymentSchema,
   | MalformedStripeChargeObjectError
+  | PaymentNotFoundError
+  | PendingSubmissionNotFoundError
+  | PaymentAlreadyConfirmedError
   | StripeFetchError
-  | ComputePaymentStateError
+  | DatabaseError
 > => {
   const logMeta = {
-    action: 'updateEventLogByPaymentId',
-    paymentId,
+    action: 'confirmStripePaymentPendingSubmission',
     event,
+    paymentId: payment.id,
   }
 
-  return ResultAsync.fromPromise(
-    // Step 1: Get the payment. If the submission does not exist or the event
-    // has been processed before, ignore the event.
-    Payment.findById(paymentId).session(session),
-    (error) => {
+  // If the event type is charge.succeeded, and there is not already completed
+  // payment metadata, we need to confirm the payment on our end.
+  if (event.type === 'charge.succeeded' && !payment.completedPayment) {
+    // Step 1. Obtain the metadata (i.e. receipt url from charge,
+    // transaction fee from balance transaction)
+    const charge = event.data.object as Stripe.Charge
+    const receiptUrl = charge.receipt_url
+
+    // Note that for paynow expired payments in test mode, Stripe returns
+    // receipt_url with 'null' string
+    if (!receiptUrl || !isURL(receiptUrl)) {
       logger.error({
-        message: 'Error encountered while finding payment by id',
-        meta: logMeta,
-        error,
+        message: 'Failed to find valid receipt URL in Stripe charge object',
+        meta: { ...logMeta, charge },
       })
-      return new DatabaseError(getMongoErrorMessage(error))
-    },
-  )
-    .andThen((payment) => {
-      if (!payment) {
-        return errAsync(new PaymentNotFoundError())
-      }
+      return errAsync(new MalformedStripeChargeObjectError())
+    }
 
-      if (payment.webhookLog.some((e) => e.id === event.id)) {
-        // Stop processing if we encounter a duplicate event. This may have
-        // occurred due to various reasons (e.g. us timing out on Stripe, so
-        // Stripe retried the webhook).
-        return errAsync(new DuplicateEventError())
-      }
+    if (!charge.balance_transaction) {
+      logger.error({
+        message:
+          'Failed to find valid balance transaction id in Stripe charge object',
+        meta: { ...logMeta, charge },
+      })
+      return errAsync(new MalformedStripeChargeObjectError())
+    }
 
-      // Step 2: If the event type is charge.succeeded, and there is not already
-      // completed payment metadata, we need to confirm the payment on our end.
-      if (event.type === 'charge.succeeded' && !payment.completedPayment) {
-        // Step 2a. Copy the pending submission to submissions collection.
-        return SubmissionService.copyPendingSubmissionToSubmissions(
-          payment.pendingSubmissionId,
-          session,
-        ).andThen((submission) => {
-          // Step 2b. Obtain the other data (i.e. receipt url from charge,
-          // transaction fee from balance transaction)
-          const charge = event.data.object as Stripe.Charge
-          const receiptUrl = charge.receipt_url
-
-          // Note that for paynow expired payments in test mode, stripe returns receipt_url with 'null' string
-          if (!receiptUrl || !isURL(receiptUrl)) {
-            return errAsync(new MalformedStripeChargeObjectError())
-          }
-
-          if (!charge.balance_transaction) {
-            return errAsync(new MalformedStripeChargeObjectError())
-          }
-
-          return (
-            ResultAsync.fromPromise(
-              // Step 2c: Retrieve transaction fee associated with balance transaction object
-              typeof charge.balance_transaction === 'string'
-                ? stripe.balanceTransactions.retrieve(
-                    charge.balance_transaction,
-                    undefined,
-                    { stripeAccount: payment.target_account_id },
-                  )
-                : Promise.resolve(charge.balance_transaction),
-              (error) => {
-                logger.error({
-                  message: 'Error retrieving balance transaction object',
-                  meta: logMeta,
-                  error,
-                })
-                return new StripeFetchError()
-              },
+    return (
+      ResultAsync.fromPromise(
+        typeof charge.balance_transaction === 'string'
+          ? stripe.balanceTransactions.retrieve(
+              charge.balance_transaction,
+              undefined,
+              { stripeAccount: payment.target_account_id },
             )
-              .andThen((balanceTransaction) =>
-                okAsync(
-                  balanceTransaction.fee_details
-                    .filter((feeDetail) => feeDetail.type === 'stripe_fee')
-                    .map((feeDetail) => feeDetail.amount)
-                    .reduce((a, b) => a + b),
-                ),
-              )
-              // Step 2c: Update the payment object with the new completed payment metadata
-              .andThen((transactionFee) => {
-                payment.completedPayment = {
-                  submissionId: submission._id,
-                  paymentDate: new Date(event.created),
-                  transactionFee,
-                  receiptUrl,
-                }
-                return okAsync(payment)
-              })
-          )
-        })
-      }
-      return okAsync(payment)
-    })
-    .andThen((payment) => {
-      // Step 3: Inject the event into the correct position into the array.
-      // We expect webhook arrays to be small (~10 entries max), so push and
-      // sort is ok.
-      payment.webhookLog.push(event)
-      payment.webhookLog.sort((e1, e2) => e1.created - e2.created)
-
-      // Step 4: Recompute the payment state based on the event log.
-      return computePaymentState(payment.webhookLog).asyncAndThen(
-        ({ status, chargeIdLatest }) => {
-          // Step 5: Update the payment state.
-          payment.status = status
-          payment.chargeIdLatest = chargeIdLatest
-          return okAsync(payment)
+          : Promise.resolve(charge.balance_transaction),
+        (error) => {
+          logger.error({
+            message: 'Error retrieving balance transaction object',
+            meta: logMeta,
+            error,
+          })
+          return new StripeFetchError()
         },
       )
-    })
-    .andThen((payment) =>
-      // Step 6: Save the payment object.
-      ResultAsync.fromPromise(payment.save({ session }), (error) => {
-        logger.error({
-          message: 'Error encountered while updating payment',
-          meta: logMeta,
-          error,
-        })
-        return new DatabaseError(getMongoErrorMessage(error))
-      }),
+        .andThen((balanceTransaction) =>
+          okAsync(
+            balanceTransaction.fee_details
+              .filter((feeDetail) => feeDetail.type === 'stripe_fee')
+              .map((feeDetail) => feeDetail.amount)
+              .reduce((a, b) => a + b),
+          ),
+        )
+        // Step 2: Update the payment object with the new completed payment metadata
+        .andThen((transactionFee) =>
+          PaymentsService.confirmPaymentPendingSubmission(
+            payment.id,
+            new Date(event.created),
+            receiptUrl,
+            transactionFee,
+          ),
+        )
     )
-    .andThen(() => okAsync(undefined))
+  }
+
+  return okAsync(payment)
 }
 
 /**
  * Retrieves and updates payment document of the given paymentId with the event.
  * This is done within a single transaction, so that the information in the
  * document is always consistent.
- * @param metadata the metadata associated with the payment, from the Stripe Event
- * @param event the new Stripe Event causing the update operation to occur
+ *
+ * @param {Stripe.Metadata | null} metadata the metadata associated with the payment, from the Stripe Event
+ * @param {Stripe.Event} event the new Stripe Event causing the update operation to occur
+ *
  * @returns ok(payment) if payment exists
- * @returns err(EventMetadataPaymentIdNotFoundError) if the payment id does not exist in the metadata
- * @returns err(EventMetadataPaymentIdInvalidError) if the payment id found in the event metadata is an invalid BSON object id
- * @returns err(PaymentNotFoundError) if the payment does not exist
+ * @returns err(EventMetadataPaymentIdInvalidError) if the payment id is not found in the event metadata or is found but an invalid BSON object id
+ * @returns err(MalformedStripeChargeObjectError) if the shape of the charge object returned by Stripe does not have expected fields
+ * @returns err(PaymentNotFoundError) if the payment document does not exist
  * @returns err(PendingSubmissionNotFoundError) if the pending submission being referenced by the payment document does not exist
+ * @returns err(PaymentAlreadyConfirmedError) if the payment document already has an associated completed payment
+ * @returns err(StripeFetchError) if there was an error while calling Stripe API
  * @returns err(ComputePaymentStateError) if there was an error while recomputing the payment state
  * @returns err(DatabaseError) if error occurs whilst querying the database
  */
@@ -219,11 +161,13 @@ export const processStripeEvent = (
   event: Stripe.Event,
 ): ResultAsync<
   void,
-  | StripeMetadataPaymentIdNotFoundError
   | StripeMetadataPaymentIdInvalidError
+  | MalformedStripeChargeObjectError
   | PaymentNotFoundError
-  | ComputePaymentStateError
   | PendingSubmissionNotFoundError
+  | PaymentAlreadyConfirmedError
+  | StripeFetchError
+  | ComputePaymentStateError
   | DatabaseError
 > => {
   const logMeta = {
@@ -238,97 +182,79 @@ export const processStripeEvent = (
       message: 'Stripe event metadata does not contain paymentId',
       meta: logMeta,
     })
-    return errAsync(new StripeMetadataPaymentIdNotFoundError())
+    return errAsync(new StripeMetadataPaymentIdInvalidError())
   }
 
   if (!mongoose.Types.ObjectId.isValid(paymentId)) {
     logger.warn({
       message: 'Stripe metadata contains invalid paymentId',
-      meta: {
-        paymentId,
-        ...logMeta,
-      },
+      meta: { ...logMeta, paymentId },
     })
     return errAsync(new StripeMetadataPaymentIdInvalidError())
   }
 
-  logger.info({
-    message: 'Starting mongoose transaction to update payment via webhook',
-    meta: {
-      paymentId,
-      ...logMeta,
-    },
-  })
-
   return ResultAsync.fromPromise(
-    mongoose.startSession({
-      defaultTransactionOptions: {
-        readConcern: { level: 'snapshot' },
-        writeConcern: { w: 'majority' },
-        readPreference: 'primary',
-      },
-    }),
+    // Step 1: Get the payment. If the submission does not exist or the event
+    // has been processed before, ignore the event.
+    Payment.findById(paymentId),
     (error) => {
       logger.error({
-        message: 'Error encountered while starting mongoose session',
-        meta: logMeta,
+        message: 'Error encountered while finding payment by id',
+        meta: { ...logMeta, paymentId },
         error,
       })
       return new DatabaseError(getMongoErrorMessage(error))
     },
-  ).andThen((session) => {
-    // Start the transaction
-    session.startTransaction()
+  ).andThen((payment) => {
+    if (!payment) {
+      logger.error({
+        message: 'Payment not found for paymentId received in Stripe metadata',
+        meta: { ...logMeta, paymentId },
+      })
+      return errAsync(new PaymentNotFoundError())
+    }
 
-    return processStripeEventTxn(paymentId, event, session)
-      .andThen(() => {
-        // Commit if successful
-        logger.error({
-          message: 'Committing update payment via webhook transaction',
-          meta: {
-            paymentId,
-            ...logMeta,
+    if (payment.webhookLog.some((e) => e.id === event.id)) {
+      // Stop processing if we encounter a duplicate event. This may have
+      // occurred due to various reasons (e.g. us timing out on Stripe, so
+      // Stripe retried the webhook).
+      logger.warn({
+        message: 'Duplicate event received from Stripe webhook endpoint',
+        meta: { ...logMeta, paymentId },
+      })
+      return okAsync(undefined)
+    }
+
+    // Step 2: Confirm the pending submission awaiting payment from Stripe
+    return confirmStripePaymentPendingSubmission(event, payment)
+      .andThen((payment) => {
+        // Step 3: Process the event by injecting it into the webhook log and
+        // recomputing the state based on the log.
+
+        // We expect webhook arrays to be small (~10 entries max), so push and
+        // sort is ok.
+        payment.webhookLog.push(event)
+        payment.webhookLog.sort((e1, e2) => e1.created - e2.created)
+
+        return computePaymentState(payment.webhookLog).asyncAndThen(
+          ({ status, chargeIdLatest }) => {
+            payment.status = status
+            payment.chargeIdLatest = chargeIdLatest
+            return okAsync(payment)
           },
-        })
-
-        return ResultAsync.fromPromise(session.commitTransaction(), (error) => {
+        )
+      })
+      .andThen((payment) =>
+        ResultAsync.fromPromise(payment.save(), (error) => {
           logger.error({
-            message: 'Error encountered while committing transaction',
+            message: 'Error encountered while updating payment',
             meta: logMeta,
             error,
           })
           return new DatabaseError(getMongoErrorMessage(error))
-        }).andThen(() => {
-          session.endSession()
-          return okAsync(undefined)
-        })
-      })
-      .orElse((error) => {
-        // Abort otherwise
-        logger.error({
-          message: 'Aborting update payment via webhook transaction',
-          meta: {
-            paymentId,
-            error,
-            ...logMeta,
-          },
-        })
-
-        return ResultAsync.fromPromise(session.abortTransaction(), (error) => {
-          logger.error({
-            message: 'Error encountered while aborting transaction',
-            meta: logMeta,
-            error,
-          })
-          return new DatabaseError(getMongoErrorMessage(error))
-        }).andThen(() => {
-          session.endSession()
-          // A duplicate event should abort the transaction but it's not a real
-          // error, so we intercept it
-          if (error instanceof DuplicateEventError) return okAsync(undefined)
-          return errAsync(error)
-        })
-      })
+        }),
+      )
+      .andThen(() => okAsync(undefined))
   })
 }
 
