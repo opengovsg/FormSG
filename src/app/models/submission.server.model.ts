@@ -65,7 +65,8 @@ export const SubmissionSchema = new Schema<ISubmissionSchema, ISubmissionModel>(
       updatedAt: 'lastModified',
     },
     discriminatorKey: 'submissionType',
-    read: 'secondary',
+    // TODO: Uncomment later
+    // read: 'secondary',
   },
 )
 
