@@ -118,45 +118,45 @@ export const PreviewFormProvider = ({
       const { form } = data ?? {}
       if (!form) return
 
-      switch (form.responseMode) {
-        case FormResponseMode.Email:
-          // Using mutateAsync so react-hook-form goes into loading state.
+      const formData = {
+        formFields: form.form_fields,
+        formLogics: form.form_logics,
+        formInputs,
+      }
 
-          // TODO (#5826): Toggle to use fetch for submissions instead of axios. If enabled, this is used for testing and to use fetch instead of axios by default if testing shows fetch is more  stable. Remove once network error is resolved
-          if (useFetchForSubmissions) {
+      const logMeta = {
+        action: 'handleSubmitForm',
+        isPreview: true,
+        useFetchForSubmissions,
+      }
+
+      const onSuccess = ({ submissionId }: { submissionId: string }) =>
+        setSubmissionData({
+          id: submissionId,
+          timestamp: Date.now(),
+        })
+
+      switch (form.responseMode) {
+        case FormResponseMode.Email: {
+          const submitEmailFormWithFetch = function () {
             datadogLogs.logger.info(`handleSubmitForm: submitting via fetch`, {
               meta: {
-                action: 'handleSubmitForm',
+                ...logMeta,
                 responseMode: 'email',
                 method: 'fetch',
-                isPreview: true,
-                useFetchForSubmissions,
               },
             })
 
             return submitEmailModeFormFetchMutation
-              .mutateAsync(
-                {
-                  formFields: form.form_fields,
-                  formLogics: form.form_logics,
-                  formInputs,
-                },
-                {
-                  onSuccess: ({ submissionId }) =>
-                    setSubmissionData({
-                      id: submissionId,
-                      timestamp: Date.now(),
-                    }),
-                },
-              )
+              .mutateAsync(formData, {
+                onSuccess,
+              })
               .catch(async (error) => {
                 datadogLogs.logger.warn(`handleSubmitForm: ${error.message}`, {
                   meta: {
-                    action: 'handleSubmitForm',
+                    ...logMeta,
                     responseMode: 'email',
                     method: 'fetch',
-                    isPreview: true,
-                    useFetchForSubmissions,
                     error: {
                       message: error.message,
                       name: error.name,
@@ -166,23 +166,19 @@ export const PreviewFormProvider = ({
                 })
                 showErrorToast(error)
               })
+          }
+
+          // Using mutateAsync so react-hook-form goes into loading state.
+
+          // TODO (#5826): Toggle to use fetch for submissions instead of axios. If enabled, this is used for testing and to use fetch instead of axios by default if testing shows fetch is more  stable. Remove once network error is resolved
+          if (useFetchForSubmissions) {
+            return submitEmailFormWithFetch()
           } else {
             return (
               submitEmailModeFormMutation
-                .mutateAsync(
-                  {
-                    formFields: form.form_fields,
-                    formLogics: form.form_logics,
-                    formInputs,
-                  },
-                  {
-                    onSuccess: ({ submissionId }) =>
-                      setSubmissionData({
-                        id: submissionId,
-                        timestamp: Date.now(),
-                      }),
-                  },
-                )
+                .mutateAsync(formData, {
+                  onSuccess,
+                })
                 // Using catch since we are using mutateAsync and react-hook-form will continue bubbling this up.
                 .catch((error) => {
                   // TODO (#5826): Fallback mutation using Fetch. Remove once network error is resolved
@@ -190,10 +186,9 @@ export const PreviewFormProvider = ({
                     `handleSubmitForm: ${error.message}`,
                     {
                       meta: {
-                        action: 'handleSubmitForm',
+                        ...logMeta,
                         responseMode: 'email',
                         method: 'axios',
-                        isPreview: true,
                         error: {
                           message: error.message,
                           stack: error.stack,
@@ -203,98 +198,41 @@ export const PreviewFormProvider = ({
                   )
                   if (error.message.match(/Network Error/i)) {
                     axiosDebugFlow()
-                    datadogLogs.logger.info(
-                      `handleSubmitForm: submitting via fetch`,
-                      {
-                        meta: {
-                          action: 'handleSubmitForm',
-                          responseMode: 'email',
-                          method: 'fetch',
-                          isPreview: true,
-                        },
-                      },
-                    )
-
-                    return submitEmailModeFormFetchMutation.mutateAsync(
-                      {
-                        formFields: form.form_fields,
-                        formLogics: form.form_logics,
-                        formInputs,
-                      },
-                      {
-                        onSuccess: ({ submissionId }) =>
-                          setSubmissionData({
-                            id: submissionId,
-                            timestamp: Date.now(),
-                          }),
-                      },
-                    )
+                    return submitEmailFormWithFetch()
                   } else {
                     // Show error toast from axios mutation if not network error
                     showErrorToast(error)
                   }
                 })
-                // Now show error toast from fetch mutation
-                .catch((error) => {
-                  datadogLogs.logger.warn(
-                    `handleSubmitForm: ${error.message}`,
-                    {
-                      meta: {
-                        action: 'handleSubmitForm',
-                        responseMode: 'email',
-                        method: 'fetch',
-                        isPreview: true,
-                        error: {
-                          message: error.message,
-                          stack: error.stack,
-                        },
-                      },
-                    },
-                  )
-
-                  showErrorToast(error)
-                })
             )
           }
-        case FormResponseMode.Encrypt:
-          // Using mutateAsync so react-hook-form goes into loading state.
-
-          // TODO (#5826): Toggle to use fetch for submissions instead of axios. If enabled, this is used for testing and to use fetch instead of axios by default if testing shows fetch is more  stable. Remove once network error is resolved
-          if (useFetchForSubmissions) {
+        }
+        case FormResponseMode.Encrypt: {
+          const submitStorageFormWithFetch = function () {
             datadogLogs.logger.info(`handleSubmitForm: submitting via fetch`, {
               meta: {
-                action: 'handleSubmitForm',
+                ...logMeta,
                 responseMode: 'storage',
                 method: 'fetch',
-                isPreview: true,
-                useFetchForSubmissions,
               },
             })
 
             return submitStorageModeFormFetchMutation
               .mutateAsync(
                 {
-                  formFields: form.form_fields,
-                  formLogics: form.form_logics,
-                  formInputs,
+                  ...formData,
                   publicKey: form.publicKey,
                 },
                 {
-                  onSuccess: ({ submissionId }) =>
-                    setSubmissionData({
-                      id: submissionId,
-                      timestamp: Date.now(),
-                    }),
+                  onSuccess,
                 },
               )
               .catch(async (error) => {
                 datadogLogs.logger.warn(`handleSubmitForm: ${error.message}`, {
                   meta: {
-                    action: 'handleSubmitForm',
+                    ...logMeta,
                     responseMode: 'storage',
                     method: 'fetch',
-                    isPreview: true,
-                    useFetchForSubmissions,
                     error: {
                       message: error.message,
                       name: error.name,
@@ -304,22 +242,23 @@ export const PreviewFormProvider = ({
                 })
                 showErrorToast(error)
               })
+          }
+
+          // Using mutateAsync so react-hook-form goes into loading state.
+
+          // TODO (#5826): Toggle to use fetch for submissions instead of axios. If enabled, this is used for testing and to use fetch instead of axios by default if testing shows fetch is more  stable. Remove once network error is resolved
+          if (useFetchForSubmissions) {
+            submitStorageFormWithFetch()
           } else {
             return (
               submitStorageModeFormMutation
                 .mutateAsync(
                   {
-                    formFields: form.form_fields,
-                    formLogics: form.form_logics,
-                    formInputs,
+                    ...formData,
                     publicKey: form.publicKey,
                   },
                   {
-                    onSuccess: ({ submissionId }) =>
-                      setSubmissionData({
-                        id: submissionId,
-                        timestamp: Date.now(),
-                      }),
+                    onSuccess,
                   },
                 )
                 // Using catch since we are using mutateAsync and react-hook-form will continue bubbling this up.
@@ -329,10 +268,9 @@ export const PreviewFormProvider = ({
                     `handleSubmitForm: ${error.message}`,
                     {
                       meta: {
-                        action: 'handleSubmitForm',
+                        ...logMeta,
                         responseMode: 'storage',
                         method: 'axios',
-                        isPreview: true,
                         error: {
                           message: error.message,
                           stack: error.stack,
@@ -342,59 +280,15 @@ export const PreviewFormProvider = ({
                   )
                   if (error.message.match(/Network Error/i)) {
                     axiosDebugFlow()
-                    datadogLogs.logger.info(
-                      `handleSubmitForm: submitting via fetch`,
-                      {
-                        meta: {
-                          action: 'handleSubmitForm',
-                          responseMode: 'storage',
-                          method: 'fetch',
-                          isPreview: true,
-                        },
-                      },
-                    )
-
-                    return submitStorageModeFormFetchMutation.mutateAsync(
-                      {
-                        formFields: form.form_fields,
-                        formLogics: form.form_logics,
-                        formInputs,
-                        publicKey: form.publicKey,
-                      },
-                      {
-                        onSuccess: ({ submissionId }) =>
-                          setSubmissionData({
-                            id: submissionId,
-                            timestamp: Date.now(),
-                          }),
-                      },
-                    )
+                    return submitStorageFormWithFetch()
                   } else {
                     // Show error toast from axios mutation if not network error
                     showErrorToast(error)
                   }
                 })
-                // Now show error toast from fetch mutation
-                .catch((error) => {
-                  datadogLogs.logger.warn(
-                    `handleSubmitForm: ${error.message}`,
-                    {
-                      meta: {
-                        action: 'handleSubmitForm',
-                        responseMode: 'storage',
-                        method: 'fetch',
-                        isPreview: true,
-                        error: {
-                          message: error.message,
-                          stack: error.stack,
-                        },
-                      },
-                    },
-                  )
-                  showErrorToast(error)
-                })
             )
           }
+        }
       }
     },
     [
