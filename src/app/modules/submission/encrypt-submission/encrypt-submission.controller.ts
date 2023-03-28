@@ -531,7 +531,7 @@ const submitEncryptModeForm: ControllerHandler<
           paymentPublishableKey: form.payments_channel?.publishable_key,
           paymentIntentId: paymentIntent?.id,
         }
-      : {}
+      : null
 
     return res.json({
       message: 'Form submission successful',

@@ -1,6 +1,6 @@
-import { Suspense, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
-import { Box, Code, Flex, Skeleton } from '@chakra-ui/react'
+import { Box, Code, Flex } from '@chakra-ui/react'
 import { Elements, useStripe } from '@stripe/react-stripe-js'
 import { loadStripe, Stripe } from '@stripe/stripe-js'
 
@@ -18,7 +18,7 @@ import {
 import { StripePaymentModal } from './StripePaymentModal'
 import { getPaymentViewType } from './utils'
 
-const StripePaymentWrapper = ({ paymentPageId }: { paymentPageId: string }) => {
+const StripeElementWrapper = ({ paymentPageId }: { paymentPageId: string }) => {
   const { data: paymentInfoData, error: paymentInfoError } =
     useGetPaymentInfo(paymentPageId)
 
@@ -49,18 +49,16 @@ const StripePaymentWrapper = ({ paymentPageId }: { paymentPageId: string }) => {
             </Code>
           </pre>
         </Box>
-        <Suspense fallback={<span>Loading Stripe Payment</span>}>
-          <StripeWrapper
-            paymentInfoData={paymentInfoData}
-            setDebugText={setDebugText}
-          />
-        </Suspense>
+        <StripeHookWrapper
+          paymentInfoData={paymentInfoData}
+          setDebugText={setDebugText}
+        />
       </Flex>
     </Elements>
   )
 }
 
-const StripeWrapper = ({
+const StripeHookWrapper = ({
   paymentInfoData,
   setDebugText,
 }: {
@@ -69,7 +67,7 @@ const StripeWrapper = ({
 }) => {
   const stripe = useStripe()
   if (!stripe) {
-    return <span>loading stripe</span>
+    throw Promise.reject('Stripe is not ready')
   }
   return (
     <StripePaymentContainer
@@ -106,9 +104,16 @@ const StripePaymentContainer = ({
   console.log({ isLoading, error, data })
 
   const viewType = getPaymentViewType(data?.paymentIntent?.status)
-  setDebugText(
-    JSON.stringify({ viewType, status: data?.paymentIntent?.status }, null, 2),
-  )
+  useEffect(() => {
+    setDebugText(
+      JSON.stringify(
+        { viewType, status: data?.paymentIntent?.status },
+        null,
+        2,
+      ),
+    )
+  }, [setDebugText, viewType, data])
+
   let paymentViewElementElement
   switch (viewType) {
     case 'invalid':
@@ -135,10 +140,12 @@ const StripePaymentContainer = ({
       break
     case 'receipt':
       paymentViewElementElement = (
-        <DownloadReceiptBlock
-          formId={formId}
-          stripeSubmissionId={paymentPageId}
-        />
+        <>
+          <DownloadReceiptBlock
+            formId={formId}
+            stripeSubmissionId={paymentPageId}
+          />
+        </>
       )
       break
     default:
@@ -146,17 +153,17 @@ const StripePaymentContainer = ({
   }
   return (
     <>
-      <PaymentSuccessSvgr maxW="100%" />
+      {viewType === 'receipt' ? <PaymentSuccessSvgr maxW="100%" /> : null}
       <Box
         py={{ base: '1.5rem', md: '3rem' }}
         px={{ base: '1.5rem', md: '4rem' }}
         bg="white"
         w="100%"
       >
-        <Skeleton isLoaded={!isLoading}>{paymentViewElementElement}</Skeleton>
+        {paymentViewElementElement}
       </Box>
     </>
   )
 }
 
-export default StripePaymentWrapper
+export default StripeElementWrapper

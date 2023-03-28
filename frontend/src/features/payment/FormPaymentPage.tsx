@@ -1,6 +1,6 @@
 import { Suspense } from 'react'
 import { useParams } from 'react-router-dom'
-import { Box, Container, Flex } from '@chakra-ui/react'
+import { Box, Container, Flex, Skeleton, Text } from '@chakra-ui/react'
 
 import { fillMinHeightCss } from '~utils/fillHeightCss'
 
@@ -12,7 +12,7 @@ import FormStartPage from '~features/public-form/components/FormStartPage'
 import { PublicFormWrapper } from '~features/public-form/components/PublicFormWrapper'
 import { PublicFormProvider } from '~features/public-form/PublicFormProvider'
 
-import StripePaymentWrapper from './stripe/StripePaymentWrapper'
+import StripeElementWrapper from './stripe/StripeElementWrapper'
 
 export interface FormPaymentPageProps {
   submissionId: string
@@ -37,8 +37,16 @@ export const FormPaymentPage = () => {
           <PublicFormWrapper>
             <Box py={{ base: '1.5rem', md: '2.5rem' }} w="100%">
               <Container w="42.5rem" maxW="100%" p={0}>
-                <Suspense fallback={<span>still loading</span>}>
-                  <StripePaymentWrapper paymentPageId={paymentPageId} />
+                <Suspense
+                  fallback={
+                    <Skeleton w={'100%'} h={'350px'}>
+                      <Text w={'100%'} textStyle="h3" textColor="primary.500">
+                        Loading Payment Information
+                      </Text>
+                    </Skeleton>
+                  }
+                >
+                  <StripeElementWrapper paymentPageId={paymentPageId} />
                 </Suspense>
               </Container>
             </Box>
