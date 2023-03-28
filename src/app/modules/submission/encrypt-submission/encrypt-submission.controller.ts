@@ -358,8 +358,7 @@ const submitEncryptModeForm: ControllerHandler<
       amount > paymentConfig.maxPaymentAmountCents
     ) {
       logger.error({
-        message:
-          'Error when creating payment: amount is not a positive integer',
+        message: 'Error when creating payment: amount is not within bounds',
         meta: logMeta,
       })
       return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
@@ -434,7 +433,7 @@ const submitEncryptModeForm: ControllerHandler<
       )
     } catch (err) {
       logger.error({
-        message: 'Error when creating payment intent.',
+        message: 'Error when creating payment intent',
         meta: {
           ...logMeta,
           pendingSubmissionId,
