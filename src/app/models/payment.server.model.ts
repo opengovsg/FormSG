@@ -40,6 +40,7 @@ const PaymentSchema = new Schema<IPaymentSchema, IPaymentModel>(
     status: {
       type: String,
       enum: Object.values(PaymentStatus),
+      default: PaymentStatus.Pending,
       required: true,
     },
     chargeIdLatest: {
