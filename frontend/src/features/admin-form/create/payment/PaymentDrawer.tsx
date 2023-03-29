@@ -17,6 +17,7 @@ import { centsToDollars, dollarsToCents } from '~utils/payments'
 import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
+import InlineMessage from '~components/InlineMessage'
 import MoneyInput from '~components/MoneyInput'
 import Textarea from '~components/Textarea'
 import Toggle from '~components/Toggle'
@@ -51,7 +52,11 @@ const formatCurrency = new Intl.NumberFormat('en-SG', {
   maximumFractionDigits: 2,
 }).format
 
-export const PaymentInput = (): JSX.Element => {
+export const PaymentInput = ({
+  isDisabled,
+}: {
+  isDisabled: boolean
+}): JSX.Element => {
   const isMobile = useIsMobile()
   const { paymentsMutation } = useMutateFormPage()
 
@@ -187,7 +192,10 @@ export const PaymentInput = (): JSX.Element => {
   return (
     <CreatePageDrawerContentContainer>
       <Stack gap="2rem">
-        <FormControl isReadOnly={paymentsMutation.isLoading}>
+        <FormControl
+          isReadOnly={paymentsMutation.isLoading}
+          isDisabled={isDisabled}
+        >
           <Toggle {...register('enabled')} label="Enable payment" />
         </FormControl>
 
@@ -196,6 +204,7 @@ export const PaymentInput = (): JSX.Element => {
             <FormControl
               isReadOnly={paymentsMutation.isLoading}
               isInvalid={!!errors.display_amount}
+              isDisabled={isDisabled}
             >
               <FormLabel isRequired>Payment Amount</FormLabel>
               <Controller
@@ -221,6 +230,7 @@ export const PaymentInput = (): JSX.Element => {
               isReadOnly={paymentsMutation.isLoading}
               isInvalid={!!errors.description}
               isRequired
+              isDisabled={isDisabled}
             >
               <FormLabel>Description</FormLabel>
               <Textarea
@@ -243,6 +253,7 @@ export const PaymentInput = (): JSX.Element => {
           isFullWidth={isMobile}
           onClick={handleUpdatePayments}
           isLoading={paymentsMutation.isLoading}
+          isDisabled={isDisabled}
         >
           Save payment settings
         </Button>
@@ -260,11 +271,37 @@ export const PaymentInput = (): JSX.Element => {
   )
 }
 
-export const PaymentDrawer = ({
-  paymentsField,
+const PaymentDisabledMessage = ({
+  isEncryptMode,
+  isStripeConnected,
 }: {
-  paymentsField: FormPaymentsField
+  isEncryptMode: boolean
+  isStripeConnected: boolean
 }): JSX.Element | null => {
+  return !(isEncryptMode && isStripeConnected) ? (
+    <Box px="1.5rem" pt="2rem" pb="1.5rem">
+      <InlineMessage variant={'info'}>
+        {!isEncryptMode ? (
+          <Text>Payments are not available in email mode forms.</Text>
+        ) : (
+          <Text>Connect your Stripe account in Settings.</Text>
+        )}
+      </InlineMessage>
+    </Box>
+  ) : null
+}
+
+type PaymentDrawerProps = {
+  isEncryptMode: boolean
+  isStripeConnected: boolean
+  paymentsField?: FormPaymentsField
+}
+
+export const PaymentDrawer = ({
+  isEncryptMode,
+  isStripeConnected,
+  paymentsField,
+}: PaymentDrawerProps): JSX.Element | null => {
   const { paymentData, setData, resetData } = usePaymentStore(
     useCallback(
       (state) => ({
@@ -285,6 +322,10 @@ export const PaymentDrawer = ({
 
   return (
     <CreatePageDrawerContainer>
+      <PaymentDisabledMessage
+        isEncryptMode={isEncryptMode}
+        isStripeConnected={isStripeConnected}
+      />
       <Flex pos="relative" h="100%" display="flex" flexDir="column">
         <Box pt="1rem" px="1.5rem" bg="white">
           <Flex justify="space-between">
@@ -295,7 +336,7 @@ export const PaymentDrawer = ({
           </Flex>
           <Divider w="auto" mx="-1.5rem" />
         </Box>
-        <PaymentInput />
+        <PaymentInput isDisabled={!(isEncryptMode && isStripeConnected)} />
       </Flex>
     </CreatePageDrawerContainer>
   )
