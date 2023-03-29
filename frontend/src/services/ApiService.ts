@@ -46,7 +46,7 @@ export const transformAxiosError = (error: Error): ApiError => {
             code: error?.code,
             message: error?.message,
             stack: error?.stack,
-            dump: error?.toJSON(),
+            dump: error?.toJSON ? error.toJSON() : undefined,
           },
         },
       })
