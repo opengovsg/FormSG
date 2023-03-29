@@ -44,14 +44,13 @@ import {
   OtpRequestCountExceededError,
   OtpRequestError,
   OtpRetryExceededError,
-  PaymentContactFieldNotFoundInTransactionError,
   TransactionExpiredError,
   TransactionNotFoundError,
   WaitForOtpError,
   WrongOtpError,
 } from './verification.errors'
 import getVerificationModel from './verification.model'
-import { SendOtpParams } from './verification.types'
+import { SendOtpParams, VerifyOtpParams } from './verification.types'
 import {
   hasAdminExceededFreeSmsLimit,
   isOtpExpired,
@@ -183,32 +182,6 @@ const getValidTransaction = (
     }
     return okAsync(transaction)
   })
-}
-
-/**
- *
- * @param transaction Transaction document
- * @returns ok(paymentField)
- */
-const getPaymentContactFieldFromTransaction = (
-  transaction: IVerificationSchema,
-): Result<
-  IVerificationFieldSchema,
-  PaymentContactFieldNotFoundInTransactionError
-> => {
-  const paymentContactField = transaction.getPaymentContactField()
-  if (!paymentContactField) {
-    logger.warn({
-      message: 'Payment contact field not found for transaction',
-      meta: {
-        action: 'getPaymentContactFieldFromTransaction',
-        transactionId: transaction._id,
-        formId: transaction.formId,
-      },
-    })
-    return err(new PaymentContactFieldNotFoundInTransactionError())
-  }
-  return ok(paymentContactField)
 }
 
 /**
@@ -463,11 +436,13 @@ export const disableVerifiedFieldsIfRequired = (
  * @returns err(HashingError) when error occurs while hashing input OTP for comparison
  * @returns err(PossibleDatabaseError) when database read/write errors
  */
-export const verifyFormOtp = (
-  transactionId: string,
-  fieldId: string,
-  inputOtp: string,
-): ResultAsync<
+export const verifyOtp = ({
+  transactionId,
+  fieldId,
+  inputOtp,
+  getFieldFromTransactionFx,
+  incrementFieldRetriesFx,
+}: VerifyOtpParams): ResultAsync<
   string,
   | TransactionNotFoundError
   | PossibleDatabaseError
@@ -480,9 +455,9 @@ export const verifyFormOtp = (
   | HashingError
 > => {
   return getValidTransaction(transactionId).andThen((transaction) =>
-    getFieldFromTransaction(transaction, fieldId).asyncAndThen((field) => {
+    getFieldFromTransactionFx(transaction, fieldId).asyncAndThen((field) => {
       const logMeta = {
-        action: 'verifyFormOtp',
+        action: 'verifyOtp',
         transactionId,
         fieldId,
         formId: transaction.formId,
@@ -514,99 +489,7 @@ export const verifyFormOtp = (
 
       // Important: increment retries before comparing hash
       return ResultAsync.fromPromise(
-        VerificationModel.incrementFormFieldRetries(transactionId, fieldId),
-        (error) => {
-          // We know field exists, so if error occurs then it must be
-          // database error
-          logger.error({
-            message: 'Error while incrementing hash retries for verified field',
-            meta: logMeta,
-            error,
-          })
-          return transformMongoError(error)
-        },
-      )
-        .andThen(() => compareHash(inputOtp, hashedOtp))
-        .andThen((doesHashMatch) => {
-          if (!doesHashMatch) {
-            logger.warn({
-              message: 'Wrong OTP',
-              meta: logMeta,
-            })
-            return errAsync(new WrongOtpError())
-          }
-          return okAsync(signedData)
-        })
-    }),
-  )
-}
-
-/**
- * Compares the given payment otp. If correct, returns signedData, else returns an error
- * @param transactionId
- * @param fieldId
- * @param inputOtp
- * @returns ok(signedData of field) when OTP is correct
- * @returns err(TransactionNotFoundError) when transaction ID does not exist
- * @returns err(TransactionExpiredError) when transaction is expired
- * @returns err(FieldNotFoundInTransactionError) when field does not exist
- * @returns err(MissingHashDataError) when field exists but data on hash is missing
- * @returns err(OtpExpiredError) when OTP has expired
- * @returns err(OtpRetryExceededError) when OTP has been retried too many times
- * @returns err(WrongOtpError) when OTP is wrong
- * @returns err(HashingError) when error occurs while hashing input OTP for comparison
- * @returns err(PossibleDatabaseError) when database read/write errors
- */
-export const verifyPaymentOtp = (
-  transactionId: string,
-  inputOtp: string,
-): ResultAsync<
-  string,
-  | TransactionNotFoundError
-  | PossibleDatabaseError
-  | FieldNotFoundInTransactionError
-  | TransactionExpiredError
-  | MissingHashDataError
-  | OtpExpiredError
-  | OtpRetryExceededError
-  | WrongOtpError
-  | HashingError
-> => {
-  return getValidTransaction(transactionId).andThen((transaction) =>
-    getPaymentContactFieldFromTransaction(transaction).asyncAndThen((field) => {
-      const logMeta = {
-        action: 'verifyPaymentOtp',
-        transactionId,
-        formId: transaction.formId,
-      }
-      const { hashedOtp, hashCreatedAt, signedData, hashRetries } = field
-      if (!hashedOtp || !hashCreatedAt || !signedData) {
-        logger.warn({
-          message: 'OTP cannot be verified as hash information is missing',
-          meta: logMeta,
-        })
-        return errAsync(new MissingHashDataError())
-      }
-
-      if (isOtpExpired(hashCreatedAt)) {
-        logger.warn({
-          message: 'OTP expired',
-          meta: logMeta,
-        })
-        return errAsync(new OtpExpiredError())
-      }
-
-      if (hashRetries >= NUM_OTP_RETRIES) {
-        logger.warn({
-          message: 'OTP retries exceeded',
-          meta: logMeta,
-        })
-        return errAsync(new OtpRetryExceededError())
-      }
-
-      // Important: increment retries before comparing hash
-      return ResultAsync.fromPromise(
-        VerificationModel.incrementPaymentFieldRetries(transactionId),
+        incrementFieldRetriesFx(transactionId, fieldId),
         (error) => {
           // We know field exists, so if error occurs then it must be
           // database error

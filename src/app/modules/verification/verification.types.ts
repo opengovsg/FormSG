@@ -27,3 +27,15 @@ export type SendOtpParams = {
     | IVerificationModel['updateHashForFormField']
     | IVerificationModel['updateHashForPaymentField']
 }
+
+export type VerifyOtpParams = {
+  transactionId: string
+  fieldId: string
+  inputOtp: string
+  getFieldFromTransactionFx:
+    | typeof getFieldFromTransaction
+    | typeof getPaymentContactFieldFromTransaction
+  incrementFieldRetriesFx:
+    | IVerificationModel['incrementFormFieldRetries']
+    | IVerificationModel['incrementPaymentFieldRetries']
+}

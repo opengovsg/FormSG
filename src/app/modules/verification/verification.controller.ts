@@ -535,7 +535,14 @@ export const handleVerifyOtp: ControllerHandler<
     fieldId,
     ...createReqMeta(req),
   }
-  return VerificationService.verifyFormOtp(transactionId, fieldId, otp)
+  return VerificationService.verifyOtp({
+    transactionId,
+    inputOtp: otp,
+    fieldId,
+    getFieldFromTransactionFx: getFieldFromTransaction,
+    incrementFieldRetriesFx: (transactionId: string, fieldId: string) =>
+      VerificationModel.incrementFormFieldRetries(transactionId, fieldId),
+  })
     .map((signedData) => res.status(StatusCodes.OK).json(signedData))
     .mapErr((error) => {
       logger.error({
@@ -586,7 +593,14 @@ export const _handleFormOtpVerification: ControllerHandler<
     FormService.retrieveFormById(formId)
       // Step 2: Verify the otp sent over by the client
       .andThen(() =>
-        VerificationService.verifyFormOtp(transactionId, fieldId, otp),
+        VerificationService.verifyOtp({
+          transactionId,
+          inputOtp: otp,
+          fieldId,
+          getFieldFromTransactionFx: getFieldFromTransaction,
+          incrementFieldRetriesFx: (transactionId: string, fieldId: string) =>
+            VerificationModel.incrementFormFieldRetries(transactionId, fieldId),
+        }),
       )
       .map((signedData) => res.status(StatusCodes.OK).json(signedData))
       .mapErr((error) => {
@@ -653,7 +667,16 @@ export const _handlePaymentOtpVerification: ControllerHandler<
   return (
     FormService.retrieveFormById(formId)
       // Step 2: Verify the otp sent over by the client
-      .andThen(() => VerificationService.verifyPaymentOtp(transactionId, otp))
+      .andThen(() =>
+        VerificationService.verifyOtp({
+          transactionId,
+          inputOtp: otp,
+          fieldId: PAYMENT_CONTACT_FIELD_ID,
+          getFieldFromTransactionFx: getPaymentContactFieldFromTransaction,
+          incrementFieldRetriesFx: (transactionId: string) =>
+            VerificationModel.incrementPaymentFieldRetries(transactionId),
+        }),
+      )
       .map((signedData) => res.status(StatusCodes.OK).json(signedData))
       .mapErr((error) => {
         logger.error({
