@@ -10,7 +10,8 @@ import {
   createTransactionForForm,
   triggerSendFormOtp,
   triggerSendPaymentOtp,
-  verifyOtp,
+  verifyFormOtp,
+  verifyPaymentOtp,
 } from './VerifiableFieldService'
 
 export const useTransactionMutations = (formId: string) => {
@@ -92,7 +93,13 @@ export const useVerifiableFieldMutations = ({
   const verifyFormOtpMutation = useMutation(async (otp: string) => {
     const transactionId = await getTransactionId()
     if (!transactionId) throw new Error('No transactionId generated')
-    return verifyOtp({ fieldId: schema._id, otp, formId, transactionId })
+    return verifyFormOtp({ fieldId: schema._id, otp, formId, transactionId })
+  })
+
+  const verifyPaymentOtpMutation = useMutation(async (otp: string) => {
+    const transactionId = await getTransactionId()
+    if (!transactionId) throw new Error('No transactionId generated')
+    return verifyPaymentOtp({ otp, formId, transactionId })
   })
 
   return {
@@ -100,5 +107,6 @@ export const useVerifiableFieldMutations = ({
     triggerResendFormOtpMutation,
     verifyFormOtpMutation,
     triggerSendPaymentOtpMutation,
+    verifyPaymentOtpMutation,
   }
 }

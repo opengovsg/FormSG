@@ -102,7 +102,7 @@ export const triggerSendPaymentOtp = async ({
  * @param otp The user-entered OTP value to verify against
  * @returns The verified signature on success
  */
-export const verifyOtp = async ({
+export const verifyFormOtp = async ({
   formId,
   transactionId,
   fieldId,
@@ -115,6 +115,31 @@ export const verifyOtp = async ({
 }): Promise<VerifiedFieldSignature> => {
   return ApiService.post<VerifiedFieldSignature>(
     `${FORM_API_PREFIX}/${formId}/${VERIFICATION_ENDPOINT}/${transactionId}/fields/${fieldId}/otp/verify`,
+    {
+      otp,
+    },
+  ).then(({ data }) => data)
+}
+
+/**
+ * Verifies given OTP for given fieldId
+ * @param formId The id of the form
+ * @param transactionId The generated transaction id for the form
+ * @param fieldId The id of the verification field
+ * @param otp The user-entered OTP value to verify against
+ * @returns The verified signature on success
+ */
+export const verifyPaymentOtp = async ({
+  formId,
+  transactionId,
+  otp,
+}: {
+  formId: string
+  transactionId: string
+  otp: string
+}): Promise<VerifiedFieldSignature> => {
+  return ApiService.post<VerifiedFieldSignature>(
+    `${FORM_API_PREFIX}/${formId}/${VERIFICATION_ENDPOINT}/${transactionId}/payment/otp/verify`,
     {
       otp,
     },

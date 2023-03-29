@@ -44,11 +44,32 @@ PublicFormsVerificationRouter.route(
   '/:formId([a-fA-F0-9]{24})/fieldverifications/:transactionId([a-fA-F0-9]{24})/fields/:fieldId([a-fA-F0-9]{24})/otp/verify',
 ).post(
   limitRate({ max: rateLimitConfig.sendAuthOtp }),
-  VerificationController.handleOtpVerification,
+  VerificationController.handleFormOtpVerification,
 )
 
 /**
- * Route for generating a new otp for a given field
+ * Route for verifying the otp for payment
+ * @returns 200 when the otp is correct and the parameters are valid
+ * @returns 400 when TransactionExpiredError occurs
+ * @returns 400 when MissingHashDataError occurs
+ * @returns 404 when FormNotFoundError occurs
+ * @returns 404 when TransactionNotFoundError occurs
+ * @returns 404 when FieldNotFoundInTransactionError occurs
+ * @returns 422 when OtpExpiredError occurs
+ * @returns 422 when OtpRetryExceededError occurs
+ * @returns 422 when WrongOtpError occurs
+ * @returns 500 when HashingError occurs
+ * @returns 500 when DatabaseError occurs
+ */
+PublicFormsVerificationRouter.route(
+  '/:formId([a-fA-F0-9]{24})/fieldverifications/:transactionId([a-fA-F0-9]{24})/payment/otp/verify',
+).post(
+  limitRate({ max: rateLimitConfig.sendAuthOtp }),
+  VerificationController.handlePaymentOtpVerification,
+)
+
+/**
+ * Route for generating a new otp for a given form field
  * @returns 201 when otp generated successfully
  * @returns 400 when joi validation fails
  * @returns 400 when the parameters could not be parsed

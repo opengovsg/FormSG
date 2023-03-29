@@ -1576,7 +1576,7 @@ describe('Verification controller', () => {
     let otpFieldId: string
 
     beforeEach(async () => {
-      MockVerificationService.verifyOtp.mockReturnValue(
+      MockVerificationService.verifyFormOtp.mockReturnValue(
         okAsync(MOCK_SIGNED_DATA),
       )
       verifyOtpTransaction = await VerificationModel.create({
@@ -1601,7 +1601,7 @@ describe('Verification controller', () => {
     it('should call service correctly when params are valid', async () => {
       await VerificationController.handleVerifyOtp(mockReq, mockRes, jest.fn())
 
-      expect(MockVerificationService.verifyOtp).toHaveBeenCalledWith(
+      expect(MockVerificationService.verifyFormOtp).toHaveBeenCalledWith(
         verifyOtpTransactionId,
         otpFieldId,
         MOCK_OTP,
@@ -1611,13 +1611,13 @@ describe('Verification controller', () => {
     })
 
     it('should return 404 when transaction is not found', async () => {
-      MockVerificationService.verifyOtp.mockReturnValueOnce(
+      MockVerificationService.verifyFormOtp.mockReturnValueOnce(
         errAsync(new TransactionNotFoundError()),
       )
 
       await VerificationController.handleVerifyOtp(mockReq, mockRes, jest.fn())
 
-      expect(MockVerificationService.verifyOtp).toHaveBeenCalledWith(
+      expect(MockVerificationService.verifyFormOtp).toHaveBeenCalledWith(
         verifyOtpTransactionId,
         otpFieldId,
         MOCK_OTP,
@@ -1627,13 +1627,13 @@ describe('Verification controller', () => {
     })
 
     it('should return 400 when transaction is expired', async () => {
-      MockVerificationService.verifyOtp.mockReturnValueOnce(
+      MockVerificationService.verifyFormOtp.mockReturnValueOnce(
         errAsync(new TransactionExpiredError()),
       )
 
       await VerificationController.handleVerifyOtp(mockReq, mockRes, jest.fn())
 
-      expect(MockVerificationService.verifyOtp).toHaveBeenCalledWith(
+      expect(MockVerificationService.verifyFormOtp).toHaveBeenCalledWith(
         verifyOtpTransactionId,
         otpFieldId,
         MOCK_OTP,
@@ -1643,13 +1643,13 @@ describe('Verification controller', () => {
     })
 
     it('should return 404 when field is not found in transaction', async () => {
-      MockVerificationService.verifyOtp.mockReturnValueOnce(
+      MockVerificationService.verifyFormOtp.mockReturnValueOnce(
         errAsync(new FieldNotFoundInTransactionError()),
       )
 
       await VerificationController.handleVerifyOtp(mockReq, mockRes, jest.fn())
 
-      expect(MockVerificationService.verifyOtp).toHaveBeenCalledWith(
+      expect(MockVerificationService.verifyFormOtp).toHaveBeenCalledWith(
         verifyOtpTransactionId,
         otpFieldId,
         MOCK_OTP,
@@ -1659,13 +1659,13 @@ describe('Verification controller', () => {
     })
 
     it('should return 400 when hash data is not found', async () => {
-      MockVerificationService.verifyOtp.mockReturnValueOnce(
+      MockVerificationService.verifyFormOtp.mockReturnValueOnce(
         errAsync(new MissingHashDataError()),
       )
 
       await VerificationController.handleVerifyOtp(mockReq, mockRes, jest.fn())
 
-      expect(MockVerificationService.verifyOtp).toHaveBeenCalledWith(
+      expect(MockVerificationService.verifyFormOtp).toHaveBeenCalledWith(
         verifyOtpTransactionId,
         otpFieldId,
         MOCK_OTP,
@@ -1675,13 +1675,13 @@ describe('Verification controller', () => {
     })
 
     it('should return 422 when OTP is expired', async () => {
-      MockVerificationService.verifyOtp.mockReturnValueOnce(
+      MockVerificationService.verifyFormOtp.mockReturnValueOnce(
         errAsync(new OtpExpiredError()),
       )
 
       await VerificationController.handleVerifyOtp(mockReq, mockRes, jest.fn())
 
-      expect(MockVerificationService.verifyOtp).toHaveBeenCalledWith(
+      expect(MockVerificationService.verifyFormOtp).toHaveBeenCalledWith(
         verifyOtpTransactionId,
         otpFieldId,
         MOCK_OTP,
@@ -1693,13 +1693,13 @@ describe('Verification controller', () => {
     })
 
     it('should return 422 when OTP max retries are exceeded', async () => {
-      MockVerificationService.verifyOtp.mockReturnValueOnce(
+      MockVerificationService.verifyFormOtp.mockReturnValueOnce(
         errAsync(new OtpRetryExceededError()),
       )
 
       await VerificationController.handleVerifyOtp(mockReq, mockRes, jest.fn())
 
-      expect(MockVerificationService.verifyOtp).toHaveBeenCalledWith(
+      expect(MockVerificationService.verifyFormOtp).toHaveBeenCalledWith(
         verifyOtpTransactionId,
         otpFieldId,
         MOCK_OTP,
@@ -1711,13 +1711,13 @@ describe('Verification controller', () => {
     })
 
     it('should return 422 when OTP is wrong', async () => {
-      MockVerificationService.verifyOtp.mockReturnValueOnce(
+      MockVerificationService.verifyFormOtp.mockReturnValueOnce(
         errAsync(new WrongOtpError()),
       )
 
       await VerificationController.handleVerifyOtp(mockReq, mockRes, jest.fn())
 
-      expect(MockVerificationService.verifyOtp).toHaveBeenCalledWith(
+      expect(MockVerificationService.verifyFormOtp).toHaveBeenCalledWith(
         verifyOtpTransactionId,
         otpFieldId,
         MOCK_OTP,
@@ -1729,13 +1729,13 @@ describe('Verification controller', () => {
     })
 
     it('should return 500 when error occurs while hashing OTP', async () => {
-      MockVerificationService.verifyOtp.mockReturnValueOnce(
+      MockVerificationService.verifyFormOtp.mockReturnValueOnce(
         errAsync(new HashingError()),
       )
 
       await VerificationController.handleVerifyOtp(mockReq, mockRes, jest.fn())
 
-      expect(MockVerificationService.verifyOtp).toHaveBeenCalledWith(
+      expect(MockVerificationService.verifyFormOtp).toHaveBeenCalledWith(
         verifyOtpTransactionId,
         otpFieldId,
         MOCK_OTP,
@@ -1747,13 +1747,13 @@ describe('Verification controller', () => {
     })
 
     it('should return 500 when database error occurs', async () => {
-      MockVerificationService.verifyOtp.mockReturnValueOnce(
+      MockVerificationService.verifyFormOtp.mockReturnValueOnce(
         errAsync(new DatabaseError()),
       )
 
       await VerificationController.handleVerifyOtp(mockReq, mockRes, jest.fn())
 
-      expect(MockVerificationService.verifyOtp).toHaveBeenCalledWith(
+      expect(MockVerificationService.verifyFormOtp).toHaveBeenCalledWith(
         verifyOtpTransactionId,
         otpFieldId,
         MOCK_OTP,
@@ -1953,12 +1953,12 @@ describe('Verification controller', () => {
 
     it('should correctly call service when params are valid', async () => {
       // Arrange
-      MockVerificationService.verifyOtp.mockReturnValueOnce(
+      MockVerificationService.verifyFormOtp.mockReturnValueOnce(
         okAsync(MOCK_SIGNED_DATA),
       )
 
       // Act
-      await VerificationController._handleOtpVerification(
+      await VerificationController._handleFormOtpVerification(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -1968,7 +1968,7 @@ describe('Verification controller', () => {
       expect(MockFormService.retrieveFormById).toHaveBeenCalledWith(
         MOCK_FORM_ID,
       )
-      expect(MockVerificationService.verifyOtp).toHaveBeenCalledWith(
+      expect(MockVerificationService.verifyFormOtp).toHaveBeenCalledWith(
         MOCK_TRANSACTION_ID,
         MOCK_FIELD_ID,
         MOCK_OTP,
@@ -1979,7 +1979,7 @@ describe('Verification controller', () => {
 
     it('should return 400 when the transaction is expired', async () => {
       // Arrange
-      MockVerificationService.verifyOtp.mockReturnValueOnce(
+      MockVerificationService.verifyFormOtp.mockReturnValueOnce(
         errAsync(new TransactionExpiredError()),
       )
       const expectedResponse = {
@@ -1987,7 +1987,7 @@ describe('Verification controller', () => {
       }
 
       // Act
-      await VerificationController._handleOtpVerification(
+      await VerificationController._handleFormOtpVerification(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -1997,7 +1997,7 @@ describe('Verification controller', () => {
       expect(MockFormService.retrieveFormById).toHaveBeenCalledWith(
         MOCK_FORM_ID,
       )
-      expect(MockVerificationService.verifyOtp).toHaveBeenCalledWith(
+      expect(MockVerificationService.verifyFormOtp).toHaveBeenCalledWith(
         MOCK_TRANSACTION_ID,
         MOCK_FIELD_ID,
         MOCK_OTP,
@@ -2008,7 +2008,7 @@ describe('Verification controller', () => {
 
     it('should return 400 when the hash data could not be found', async () => {
       // Arrange
-      MockVerificationService.verifyOtp.mockReturnValueOnce(
+      MockVerificationService.verifyFormOtp.mockReturnValueOnce(
         errAsync(new MissingHashDataError()),
       )
       const expectedResponse = {
@@ -2016,7 +2016,7 @@ describe('Verification controller', () => {
       }
 
       // Act
-      await VerificationController._handleOtpVerification(
+      await VerificationController._handleFormOtpVerification(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -2026,7 +2026,7 @@ describe('Verification controller', () => {
       expect(MockFormService.retrieveFormById).toHaveBeenCalledWith(
         MOCK_FORM_ID,
       )
-      expect(MockVerificationService.verifyOtp).toHaveBeenCalledWith(
+      expect(MockVerificationService.verifyFormOtp).toHaveBeenCalledWith(
         MOCK_TRANSACTION_ID,
         MOCK_FIELD_ID,
         MOCK_OTP,
@@ -2045,7 +2045,7 @@ describe('Verification controller', () => {
       }
 
       // Act
-      await VerificationController._handleOtpVerification(
+      await VerificationController._handleFormOtpVerification(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -2055,14 +2055,14 @@ describe('Verification controller', () => {
       expect(MockFormService.retrieveFormById).toHaveBeenCalledWith(
         MOCK_FORM_ID,
       )
-      expect(MockVerificationService.verifyOtp).not.toHaveBeenCalled()
+      expect(MockVerificationService.verifyFormOtp).not.toHaveBeenCalled()
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.NOT_FOUND)
       expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
     })
 
     it('should return 404 when the transaction could not be found', async () => {
       // Arrange
-      MockVerificationService.verifyOtp.mockReturnValueOnce(
+      MockVerificationService.verifyFormOtp.mockReturnValueOnce(
         errAsync(new TransactionNotFoundError()),
       )
       const expectedResponse = {
@@ -2070,7 +2070,7 @@ describe('Verification controller', () => {
       }
 
       // Act
-      await VerificationController._handleOtpVerification(
+      await VerificationController._handleFormOtpVerification(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -2080,7 +2080,7 @@ describe('Verification controller', () => {
       expect(MockFormService.retrieveFormById).toHaveBeenCalledWith(
         MOCK_FORM_ID,
       )
-      expect(MockVerificationService.verifyOtp).toHaveBeenCalledWith(
+      expect(MockVerificationService.verifyFormOtp).toHaveBeenCalledWith(
         MOCK_TRANSACTION_ID,
         MOCK_FIELD_ID,
         MOCK_OTP,
@@ -2091,7 +2091,7 @@ describe('Verification controller', () => {
 
     it('should return 404 when the field could not be found for the specified transaction', async () => {
       // Arrange
-      MockVerificationService.verifyOtp.mockReturnValueOnce(
+      MockVerificationService.verifyFormOtp.mockReturnValueOnce(
         errAsync(new FieldNotFoundInTransactionError()),
       )
       const expectedResponse = {
@@ -2099,7 +2099,7 @@ describe('Verification controller', () => {
       }
 
       // Act
-      await VerificationController._handleOtpVerification(
+      await VerificationController._handleFormOtpVerification(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -2109,7 +2109,7 @@ describe('Verification controller', () => {
       expect(MockFormService.retrieveFormById).toHaveBeenCalledWith(
         MOCK_FORM_ID,
       )
-      expect(MockVerificationService.verifyOtp).toHaveBeenCalledWith(
+      expect(MockVerificationService.verifyFormOtp).toHaveBeenCalledWith(
         MOCK_TRANSACTION_ID,
         MOCK_FIELD_ID,
         MOCK_OTP,
@@ -2120,7 +2120,7 @@ describe('Verification controller', () => {
 
     it('should return 422 when the otp has expired', async () => {
       // Arrange
-      MockVerificationService.verifyOtp.mockReturnValueOnce(
+      MockVerificationService.verifyFormOtp.mockReturnValueOnce(
         errAsync(new OtpExpiredError()),
       )
       const expectedResponse = {
@@ -2128,7 +2128,7 @@ describe('Verification controller', () => {
       }
 
       // Act
-      await VerificationController._handleOtpVerification(
+      await VerificationController._handleFormOtpVerification(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -2138,7 +2138,7 @@ describe('Verification controller', () => {
       expect(MockFormService.retrieveFormById).toHaveBeenCalledWith(
         MOCK_FORM_ID,
       )
-      expect(MockVerificationService.verifyOtp).toHaveBeenCalledWith(
+      expect(MockVerificationService.verifyFormOtp).toHaveBeenCalledWith(
         MOCK_TRANSACTION_ID,
         MOCK_FIELD_ID,
         MOCK_OTP,
@@ -2151,7 +2151,7 @@ describe('Verification controller', () => {
 
     it('should return 422 when the user has exceeded the number of retries for otp', async () => {
       // Arrange
-      MockVerificationService.verifyOtp.mockReturnValueOnce(
+      MockVerificationService.verifyFormOtp.mockReturnValueOnce(
         errAsync(new OtpRetryExceededError()),
       )
       const expectedResponse = {
@@ -2160,7 +2160,7 @@ describe('Verification controller', () => {
       }
 
       // Act
-      await VerificationController._handleOtpVerification(
+      await VerificationController._handleFormOtpVerification(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -2170,7 +2170,7 @@ describe('Verification controller', () => {
       expect(MockFormService.retrieveFormById).toHaveBeenCalledWith(
         MOCK_FORM_ID,
       )
-      expect(MockVerificationService.verifyOtp).toHaveBeenCalledWith(
+      expect(MockVerificationService.verifyFormOtp).toHaveBeenCalledWith(
         MOCK_TRANSACTION_ID,
         MOCK_FIELD_ID,
         MOCK_OTP,
@@ -2183,7 +2183,7 @@ describe('Verification controller', () => {
 
     it('should return 422 when the otp submitted is wrong', async () => {
       // Arrange
-      MockVerificationService.verifyOtp.mockReturnValueOnce(
+      MockVerificationService.verifyFormOtp.mockReturnValueOnce(
         errAsync(new WrongOtpError()),
       )
       const expectedResponse = {
@@ -2191,7 +2191,7 @@ describe('Verification controller', () => {
       }
 
       // Act
-      await VerificationController._handleOtpVerification(
+      await VerificationController._handleFormOtpVerification(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -2201,7 +2201,7 @@ describe('Verification controller', () => {
       expect(MockFormService.retrieveFormById).toHaveBeenCalledWith(
         MOCK_FORM_ID,
       )
-      expect(MockVerificationService.verifyOtp).toHaveBeenCalledWith(
+      expect(MockVerificationService.verifyFormOtp).toHaveBeenCalledWith(
         MOCK_TRANSACTION_ID,
         MOCK_FIELD_ID,
         MOCK_OTP,
@@ -2214,7 +2214,7 @@ describe('Verification controller', () => {
 
     it('should return 500 when an error occurred while hashing the otp', async () => {
       // Arrange
-      MockVerificationService.verifyOtp.mockReturnValueOnce(
+      MockVerificationService.verifyFormOtp.mockReturnValueOnce(
         errAsync(new HashingError()),
       )
       const expectedResponse = {
@@ -2222,7 +2222,7 @@ describe('Verification controller', () => {
       }
 
       // Act
-      await VerificationController._handleOtpVerification(
+      await VerificationController._handleFormOtpVerification(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -2232,7 +2232,7 @@ describe('Verification controller', () => {
       expect(MockFormService.retrieveFormById).toHaveBeenCalledWith(
         MOCK_FORM_ID,
       )
-      expect(MockVerificationService.verifyOtp).toHaveBeenCalledWith(
+      expect(MockVerificationService.verifyFormOtp).toHaveBeenCalledWith(
         MOCK_TRANSACTION_ID,
         MOCK_FIELD_ID,
         MOCK_OTP,
@@ -2245,7 +2245,7 @@ describe('Verification controller', () => {
 
     it('should return 500 when a database error occurs', async () => {
       // Arrange
-      MockVerificationService.verifyOtp.mockReturnValueOnce(
+      MockVerificationService.verifyFormOtp.mockReturnValueOnce(
         errAsync(new DatabaseError()),
       )
       const expectedResponse = {
@@ -2253,7 +2253,7 @@ describe('Verification controller', () => {
       }
 
       // Act
-      await VerificationController._handleOtpVerification(
+      await VerificationController._handleFormOtpVerification(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -2263,7 +2263,7 @@ describe('Verification controller', () => {
       expect(MockFormService.retrieveFormById).toHaveBeenCalledWith(
         MOCK_FORM_ID,
       )
-      expect(MockVerificationService.verifyOtp).toHaveBeenCalledWith(
+      expect(MockVerificationService.verifyFormOtp).toHaveBeenCalledWith(
         MOCK_TRANSACTION_ID,
         MOCK_FIELD_ID,
         MOCK_OTP,

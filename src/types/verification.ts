@@ -83,9 +83,15 @@ export interface IVerificationModel extends Model<IVerificationSchema> {
   /**
    * Increments the number of retries for a given field by 1.
    */
-  incrementFieldRetries(
+  incrementFormFieldRetries(
     transactionId: string,
     fieldId: string,
+  ): Promise<IVerificationSchema | null>
+  /**
+   * Increments the number of retries for payment contact field by 1.
+   */
+  incrementPaymentFieldRetries(
+    transactionId: string,
   ): Promise<IVerificationSchema | null>
   /**
    * Resets the hash records of a single field.

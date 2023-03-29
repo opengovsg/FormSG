@@ -56,6 +56,7 @@ export const VerifiableFieldProvider = ({
     triggerResendFormOtpMutation,
     verifyFormOtpMutation,
     triggerSendPaymentOtpMutation,
+    verifyPaymentOtpMutation,
   } = useVerifiableFieldMutations({
     schema,
     formId,
@@ -160,13 +161,18 @@ export const VerifiableFieldProvider = ({
     schema._id,
     setError,
     triggerSendFormOtpMutation,
+    triggerSendPaymentOtpMutation,
     validateInputForVfn,
   ])
 
   const handleVerifyOtp = useCallback(
     (otp: string) => {
       // async so verification box can show error message
-      return verifyFormOtpMutation.mutateAsync(otp, {
+      const verifyOtpMutationFx =
+        schema._id === PAYMENT_CONTACT_FIELD_ID
+          ? verifyPaymentOtpMutation
+          : verifyFormOtpMutation
+      return verifyOtpMutationFx.mutateAsync(otp, {
         onSuccess: (signature) => {
           const currentValue = getValues(schema._id)?.value
           if (!currentValue) return
@@ -189,7 +195,14 @@ export const VerifiableFieldProvider = ({
         },
       })
     },
-    [getValues, schema._id, setFocus, setValue, verifyFormOtpMutation],
+    [
+      getValues,
+      schema._id,
+      setFocus,
+      setValue,
+      verifyFormOtpMutation,
+      verifyPaymentOtpMutation,
+    ],
   )
 
   return (
@@ -202,7 +215,9 @@ export const VerifiableFieldProvider = ({
         handleResendOtp,
         handleVerifyOtp,
         hasSignature: !!currentSignature,
-        isSendingOtp: triggerSendFormOtpMutation.isLoading,
+        isSendingOtp:
+          triggerSendFormOtpMutation.isLoading ||
+          triggerSendPaymentOtpMutation.isLoading,
       }}
     >
       {children}

@@ -515,7 +515,7 @@ export const handleVerifyOtp: ControllerHandler<
     fieldId,
     ...createReqMeta(req),
   }
-  return VerificationService.verifyOtp(transactionId, fieldId, otp)
+  return VerificationService.verifyFormOtp(transactionId, fieldId, otp)
     .map((signedData) => res.status(StatusCodes.OK).json(signedData))
     .mapErr((error) => {
       logger.error({
@@ -530,7 +530,7 @@ export const handleVerifyOtp: ControllerHandler<
 
 /**
  * NOTE: Exported solely for testing
- * Handler for otp verification; double checks the submitted otp against the true otp
+ * Handler for form otp verification; double checks the submitted otp against the true otp
  * If the submitted otp is correct,
  * the signature that was saved will be appended to the response of the form when submitted
  * @param formId The id of the form which verification is for
@@ -548,7 +548,7 @@ export const handleVerifyOtp: ControllerHandler<
  * @returns 500 when HashingError occurs
  * @returns 500 when DatabaseError occurs
  */
-export const _handleOtpVerification: ControllerHandler<
+export const _handleFormOtpVerification: ControllerHandler<
   { transactionId: string; fieldId: string; formId: string },
   string | ErrorDto,
   { otp: string }
@@ -556,7 +556,7 @@ export const _handleOtpVerification: ControllerHandler<
   const { transactionId, fieldId, formId } = req.params
   const { otp } = req.body
   const logMeta = {
-    action: '_handleOtpVerification',
+    action: '_handleFormOtpVerification',
     transactionId,
     fieldId,
     ...createReqMeta(req),
@@ -565,7 +565,9 @@ export const _handleOtpVerification: ControllerHandler<
   return (
     FormService.retrieveFormById(formId)
       // Step 2: Verify the otp sent over by the client
-      .andThen(() => VerificationService.verifyOtp(transactionId, fieldId, otp))
+      .andThen(() =>
+        VerificationService.verifyFormOtp(transactionId, fieldId, otp),
+      )
       .map((signedData) => res.status(StatusCodes.OK).json(signedData))
       .mapErr((error) => {
         logger.error({
@@ -582,7 +584,7 @@ export const _handleOtpVerification: ControllerHandler<
 /**
  * Handler with otp validation for POST /forms/:formId/fieldverifications/:id/fields/:fieldId/otp/verify
  */
-export const handleOtpVerification = [
+export const handleFormOtpVerification = [
   celebrate({
     [Segments.BODY]: Joi.object({
       otp: Joi.string()
@@ -591,7 +593,73 @@ export const handleOtpVerification = [
         .message('Please enter a valid OTP'),
     }),
   }),
-  _handleOtpVerification,
+  _handleFormOtpVerification,
+] as ControllerHandler[]
+
+/**
+ * NOTE: Exported solely for testing
+ * Handler for payment otp verification; double checks the submitted otp against the true otp
+ * If the submitted otp is correct,
+ * the signature that was saved will be appended to the response of the form when submitted
+ * @param formId The id of the form which verification is for
+ * @param transactionId The id of the transaction to validate
+ * @param fieldId The id of the field to validate
+ * @returns 200 when the otp is correct and the parameters are valid
+ * @returns 400 when TransactionExpiredError occurs
+ * @returns 400 when MissingHashDataError occurs
+ * @returns 404 when FormNotFoundError occurs
+ * @returns 404 when TransactionNotFoundError occurs
+ * @returns 404 when FieldNotFoundInTransactionError occurs
+ * @returns 422 when OtpExpiredError occurs
+ * @returns 422 when OtpRetryExceededError occurs
+ * @returns 422 when WrongOtpError occurs
+ * @returns 500 when HashingError occurs
+ * @returns 500 when DatabaseError occurs
+ */
+export const _handlePaymentOtpVerification: ControllerHandler<
+  { transactionId: string; fieldId: string; formId: string },
+  string | ErrorDto,
+  { otp: string }
+> = async (req, res) => {
+  const { transactionId, fieldId, formId } = req.params
+  const { otp } = req.body
+  const logMeta = {
+    action: '_handlePaymentOtpVerification',
+    transactionId,
+    fieldId,
+    ...createReqMeta(req),
+  }
+  // Step 1: Ensure that the form for the specified transaction exists
+  return (
+    FormService.retrieveFormById(formId)
+      // Step 2: Verify the otp sent over by the client
+      .andThen(() => VerificationService.verifyPaymentOtp(transactionId, otp))
+      .map((signedData) => res.status(StatusCodes.OK).json(signedData))
+      .mapErr((error) => {
+        logger.error({
+          message: 'Error verifying OTP',
+          meta: logMeta,
+          error,
+        })
+        const { statusCode, errorMessage } = mapRouteError(error)
+        return res.status(statusCode).json({ message: errorMessage })
+      })
+  )
+}
+
+/**
+ * Handler with otp validation for POST /forms/:formId/fieldverifications/:id/payment/otp/verify
+ */
+export const handlePaymentOtpVerification = [
+  celebrate({
+    [Segments.BODY]: Joi.object({
+      otp: Joi.string()
+        .required()
+        .regex(/^\d{6}$/)
+        .message('Please enter a valid OTP'),
+    }),
+  }),
+  _handlePaymentOtpVerification,
 ] as ControllerHandler[]
 
 /**

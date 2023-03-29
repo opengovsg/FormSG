@@ -615,7 +615,7 @@ describe('Verification service', () => {
 
     beforeEach(async () => {
       incrementRetriesSpy = jest
-        .spyOn(VerificationModel, 'incrementFieldRetries')
+        .spyOn(VerificationModel, 'incrementFormFieldRetries')
         .mockResolvedValue(mockTransaction)
       MockHashUtils.compareHash.mockReturnValue(okAsync(true))
       verifyOtpTransaction = await VerificationModel.create({
@@ -634,7 +634,7 @@ describe('Verification service', () => {
     })
 
     it('should return signedData when OTP is valid', async () => {
-      const result = await VerificationService.verifyOtp(
+      const result = await VerificationService.verifyFormOtp(
         verifyOtpTransactionId,
         otpFieldId,
         MOCK_OTP,
@@ -654,7 +654,7 @@ describe('Verification service', () => {
     })
 
     it('should return TransactionNotFoundError when transaction ID does not exist', async () => {
-      const result = await VerificationService.verifyOtp(
+      const result = await VerificationService.verifyFormOtp(
         new ObjectId().toHexString(),
         mockFieldId,
         MOCK_OTP,
@@ -671,7 +671,7 @@ describe('Verification service', () => {
         expireAt: subHours(new Date(), 25),
       })
 
-      const result = await VerificationService.verifyOtp(
+      const result = await VerificationService.verifyFormOtp(
         expiredTransaction._id,
         mockFieldId,
         MOCK_OTP,
@@ -682,7 +682,7 @@ describe('Verification service', () => {
     })
 
     it('should return FieldNotFoundInTransactionError when field ID does not exist', async () => {
-      const result = await VerificationService.verifyOtp(
+      const result = await VerificationService.verifyFormOtp(
         mockTransactionId,
         new ObjectId().toHexString(),
         MOCK_OTP,
@@ -701,7 +701,7 @@ describe('Verification service', () => {
         fields: [generateFieldParams()],
       })
 
-      const result = await VerificationService.verifyOtp(
+      const result = await VerificationService.verifyFormOtp(
         missingHashTransaction._id,
         missingHashTransaction.fields[0]._id!,
         MOCK_OTP,
@@ -723,7 +723,7 @@ describe('Verification service', () => {
         fields: [expiredOtpField],
       })
 
-      const result = await VerificationService.verifyOtp(
+      const result = await VerificationService.verifyFormOtp(
         expiredOtpTransaction._id,
         expiredOtpField._id,
         MOCK_OTP,
@@ -744,7 +744,7 @@ describe('Verification service', () => {
         fields: [retriesExceededField],
       })
 
-      const result = await VerificationService.verifyOtp(
+      const result = await VerificationService.verifyFormOtp(
         retriesExceededTransaction._id,
         retriesExceededField._id,
         MOCK_OTP,
@@ -756,7 +756,7 @@ describe('Verification service', () => {
     it('should return DatabaseError when database update errors', async () => {
       incrementRetriesSpy.mockRejectedValueOnce('rejected')
 
-      const result = await VerificationService.verifyOtp(
+      const result = await VerificationService.verifyFormOtp(
         verifyOtpTransactionId,
         otpFieldId,
         MOCK_OTP,
@@ -772,7 +772,7 @@ describe('Verification service', () => {
     it('should return WrongOtpError when OTP is wrong', async () => {
       MockHashUtils.compareHash.mockReturnValueOnce(okAsync(false))
 
-      const result = await VerificationService.verifyOtp(
+      const result = await VerificationService.verifyFormOtp(
         verifyOtpTransactionId,
         otpFieldId,
         MOCK_OTP,
