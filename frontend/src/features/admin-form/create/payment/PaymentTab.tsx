@@ -1,6 +1,3 @@
-import { useEffect } from 'react'
-import { useLocation } from 'react-router-dom'
-
 import { FormResponseMode } from '~shared/types'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
@@ -10,7 +7,7 @@ import { PaymentDrawer } from './PaymentDrawer'
 import { defaultPaymentsField } from './usePaymentStore'
 
 export const PaymentTab = (): JSX.Element => {
-  const { data: form, refetch } = useAdminForm()
+  const { data: form } = useAdminForm()
 
   const isEncryptMode = form?.responseMode === FormResponseMode.Encrypt
 
@@ -19,21 +16,10 @@ export const PaymentTab = (): JSX.Element => {
       ? form.payments_field
       : defaultPaymentsField
 
-  const isStripeConnected =
-    isEncryptMode &&
-    form.payments_channel?.target_account_id !== undefined &&
-    form.payments_channel?.target_account_id !== ''
-
-  const location = useLocation()
-  useEffect(() => {
-    refetch()
-  }, [location, refetch])
-
   return (
     <>
       <PaymentDrawer
         isEncryptMode={isEncryptMode}
-        isStripeConnected={isStripeConnected}
         paymentsField={paymentsField}
       />
       <PaymentContent paymentsField={paymentsField} />
