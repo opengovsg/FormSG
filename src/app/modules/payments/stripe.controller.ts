@@ -51,6 +51,7 @@ const _handleStripeEventUpdates: ControllerHandler<
 > = async (req, res) => {
   // Step 1: Verify the payload and ensure that it is indeed sent from Stripe.
   // See https://stripe.com/docs/webhooks/signatures
+
   const sig = req.headers['stripe-signature']
   if (!sig) return res.sendStatus(StatusCodes.BAD_REQUEST)
 
@@ -77,32 +78,30 @@ const _handleStripeEventUpdates: ControllerHandler<
     return res.sendStatus(StatusCodes.BAD_REQUEST)
   }
 
+  // Step 2: Received event, proceed to process it.
+
   const logMeta = {
     action: 'handleStripeEventUpdates',
     event,
   }
 
-  // Step 2: Received event, proceed to process it.
   logger.info({
     message: 'Received Stripe event from webhook',
     meta: logMeta,
   })
 
-  // Step 3: Get the relevant payment Id
-
   let result: Result<void, any> = ok(undefined)
 
   switch (event.type) {
-    // Ignore these two charge event types as they are only for capture flow.
-    // case 'charge.captured':
-    // case 'charge.expired':
-    // Ignore this charge event type as it is for when descriptions or metadata
-    // are updated (which we will not support).
-    // case 'charge.updated':
-    case 'payment_intent.amount_capturable_updated':
+    // We catch all payment_intent, charge and payout events, except the
+    // following ignored event types (as associated features are not supported):
+    // - charge.captured, charge.expired (only for capture flow)
+    // - charge.updated (descriptions or metadata are updated)
+    // - payment_intent.amount_capturable_updated (only for capture flow)
+    // - payment_intent.partially_funded (only occurs when payment intents are
+    //   completed in part by customer stripe account balance)
     case 'payment_intent.canceled':
     case 'payment_intent.created':
-    case 'payment_intent.partially_funded':
     case 'payment_intent.payment_failed':
     case 'payment_intent.processing':
     case 'payment_intent.requires_action':
@@ -205,9 +204,14 @@ const _handleStripeEventUpdates: ControllerHandler<
     }
     default:
       // Ignore all other events
+      logger.warn({
+        message: 'Received Stripe event from webhook with unknown event.type',
+        meta: logMeta,
+      })
       break
   }
 
+  // Step 4: Return response to Stripe based on result
   result.match(
     () => res.sendStatus(StatusCodes.OK),
     (error) => {
