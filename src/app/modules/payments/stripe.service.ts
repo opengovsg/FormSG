@@ -32,7 +32,7 @@ import {
 } from './stripe.errors'
 import {
   computePaymentState,
-  getPayoutState,
+  computePayoutDetails,
   getRedirectUri,
 } from './stripe.utils'
 
@@ -230,13 +230,14 @@ export const processStripeEvent = (
             },
           ),
         )
-        // Step 4. Compute the payout state
+        // Step 5. Compute the payout state
         .andThen((payment) =>
-          getPayoutState(payment.webhookLog).asyncAndThen((payout) => {
+          computePayoutDetails(payment.webhookLog).asyncAndThen((payout) => {
             payment.payout = payout
             return okAsync(payment)
           }),
         )
+        // Step 6. Save the payment document
         .andThen((payment) =>
           ResultAsync.fromPromise(payment.save(), (error) => {
             logger.error({

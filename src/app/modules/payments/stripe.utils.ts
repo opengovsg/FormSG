@@ -222,7 +222,7 @@ export const computePaymentState = (
  * @param {Stripe.Event[]} events the list of Stripe events for payout state to be computed on
  * @returns ok(payout) payout based on the list of events
  */
-export const getPayoutState = (
+export const computePayoutDetails = (
   events: Stripe.Event[],
 ): Ok<Payment['payout'], never> => {
   const payoutEvents = events.filter(

@@ -42,7 +42,8 @@ const validateStripeEvent = celebrate({
  *
  * @returns 200 if webhook is successfully processed
  * @returns 400 if the Stripe-Signature header is missing or invalid
- * @returns 500 if any errors occurs in processing the webhook or saving payment to DB
+ * @returns 422 if any errors occurs in processing the webhook or saving payment to DB
+ * @returns 500 if any unexpected errors occur
  */
 const _handleStripeEventUpdates: ControllerHandler<
   unknown,
@@ -214,7 +215,8 @@ const _handleStripeEventUpdates: ControllerHandler<
         meta: logMeta,
         error,
       })
-      return res.sendStatus(StatusCodes.BAD_REQUEST)
+      // TODO: Add map route error here
+      return res.status(StatusCodes.UNPROCESSABLE_ENTITY)
     },
   )
 }
