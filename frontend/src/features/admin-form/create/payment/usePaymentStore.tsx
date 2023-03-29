@@ -58,10 +58,10 @@ export const usePaymentStore = create<PaymentStore>()(
     },
     setToInactive: (holding) => {
       if (holding) {
-        set({ holdingState: PaymentState.EditingPayment })
+        set({ holdingState: PaymentState.Inactive })
       } else {
         set({
-          state: PaymentState.EditingPayment,
+          state: PaymentState.Inactive,
           data: undefined,
         })
       }
