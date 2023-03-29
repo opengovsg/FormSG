@@ -154,7 +154,7 @@ export const submitEmailModeFormWithFetch = async ({
   }).toString()
 
   const response = await fetch(
-    `${API_BASE_URL}/${PUBLIC_FORMS_ENDPOINT}/${formId}/submissions/email?${queryString}`,
+    `${API_BASE_URL}${PUBLIC_FORMS_ENDPOINT}/${formId}/submissions/email?${queryString}`,
     {
       method: 'POST',
       body: formData,
@@ -190,7 +190,7 @@ export const submitStorageModeFormWithFetch = async ({
   }).toString()
 
   const response = await fetch(
-    `${API_BASE_URL}/${PUBLIC_FORMS_ENDPOINT}/${formId}/submissions/encrypt?${queryString}`,
+    `${API_BASE_URL}${PUBLIC_FORMS_ENDPOINT}/${formId}/submissions/encrypt?${queryString}`,
     {
       method: 'POST',
       body: JSON.stringify(submissionContent),
