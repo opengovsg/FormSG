@@ -1,4 +1,9 @@
-import { IVerificationFieldSchema, IVerificationSchema } from '../../../types'
+import { IVerificationModel, IVerificationSchema } from '../../../types'
+
+import {
+  getFieldFromTransaction,
+  getPaymentContactFieldFromTransaction,
+} from './verification.util'
 
 export type Transaction =
   | {
@@ -7,24 +12,18 @@ export type Transaction =
     }
   | Record<string, never>
 
-type SharedSendOtpParams = {
+export type SendOtpParams = {
   recipient: string
   otp: string
   hashedOtp: string
   otpPrefix: string
   senderIp: string
-}
-
-export type SendFormOtpParams = SharedSendOtpParams & {
   transactionId: string
   fieldId: string
-}
-
-export type SendPaymentOtpParams = SharedSendOtpParams & {
-  transactionId: string
-}
-
-export type SendOtpWithTransactionParams = SharedSendOtpParams & {
-  field: IVerificationFieldSchema
-  transaction: IVerificationSchema
+  getFieldFromTransactionFx:
+    | typeof getFieldFromTransaction
+    | typeof getPaymentContactFieldFromTransaction
+  updateHashFx:
+    | IVerificationModel['updateHashForFormField']
+    | IVerificationModel['updateHashForPaymentField']
 }

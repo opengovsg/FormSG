@@ -1,6 +1,9 @@
 import { celebrate, Joi, Segments } from 'celebrate'
 import { StatusCodes } from 'http-status-codes'
+import mongoose from 'mongoose'
 import { ok } from 'neverthrow'
+
+import { UpdateFormFieldData, UpdatePaymentFieldData } from 'src/types'
 
 import { PAYMENT_CONTACT_FIELD_ID } from '../../../../shared/constants'
 import {
@@ -20,11 +23,18 @@ import * as MyInfoUtil from '../myinfo/myinfo.util'
 import { SgidService } from '../sgid/sgid.service'
 import { getOidcService } from '../spcp/spcp.oidc.service'
 
+import getVerificationModel from './verification.model'
 import * as VerificationService from './verification.service'
 import { Transaction } from './verification.types'
-import { mapRouteError } from './verification.util'
+import {
+  getFieldFromTransaction,
+  getPaymentContactFieldFromTransaction,
+  mapRouteError,
+} from './verification.util'
 
 const logger = createLoggerWithLabel(module)
+
+const VerificationModel = getVerificationModel(mongoose)
 
 /**
  * NOTE: Private handler for POST /transaction
@@ -164,7 +174,7 @@ export const handleGetOtp: ControllerHandler<
   }
   return generateOtpWithHash(logMeta, SALT_ROUNDS)
     .andThen(({ otp, hashedOtp, otpPrefix }) =>
-      VerificationService.sendNewFormOtp({
+      VerificationService.sendNewOtp({
         hashedOtp,
         otp,
         otpPrefix,
@@ -172,6 +182,9 @@ export const handleGetOtp: ControllerHandler<
         transactionId,
         senderIp,
         fieldId,
+        getFieldFromTransactionFx: getFieldFromTransaction,
+        updateHashFx: (updateData: UpdateFormFieldData) =>
+          VerificationModel.updateHashForFormField(updateData),
       }),
     )
     .map(() => res.sendStatus(StatusCodes.CREATED))
@@ -291,7 +304,7 @@ export const _handleGenerateFormOtp: ControllerHandler<
         generateOtpWithHash(logMeta, SALT_ROUNDS).andThen(
           ({ otp, hashedOtp, otpPrefix }) =>
             // Step 3: Send Otp
-            VerificationService.sendNewFormOtp({
+            VerificationService.sendNewOtp({
               fieldId,
               hashedOtp,
               otp,
@@ -299,6 +312,9 @@ export const _handleGenerateFormOtp: ControllerHandler<
               recipient: answer,
               transactionId,
               senderIp,
+              getFieldFromTransactionFx: getFieldFromTransaction,
+              updateHashFx: (updateData: UpdateFormFieldData) =>
+                VerificationModel.updateHashForFormField(updateData),
             }) // Return the required data for next steps.
               .map((updatedTransaction) => ({
                 updatedTransaction,
@@ -445,13 +461,17 @@ export const _handleGeneratePaymentOtp: ControllerHandler<
         generateOtpWithHash(logMeta, SALT_ROUNDS).andThen(
           ({ otp, hashedOtp, otpPrefix }) =>
             // Step 3: Send Otp
-            VerificationService.sendNewPaymentOtp({
+            VerificationService.sendNewOtp({
               hashedOtp,
               otp,
               otpPrefix,
               recipient: answer,
               transactionId,
               senderIp,
+              fieldId: PAYMENT_CONTACT_FIELD_ID,
+              getFieldFromTransactionFx: getPaymentContactFieldFromTransaction,
+              updateHashFx: (updateData: UpdatePaymentFieldData) =>
+                VerificationModel.updateHashForPaymentField(updateData),
             }) // Return the required data for next steps.
               .map((updatedTransaction) => ({
                 updatedTransaction,
