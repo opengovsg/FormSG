@@ -13,7 +13,7 @@ import {
 import { SubmissionResponseDto } from '~shared/types/submission'
 
 import { transformAllIsoStringsToDate } from '~utils/date'
-import { ApiService } from '~services/ApiService'
+import { API_BASE_URL, ApiService } from '~services/ApiService'
 import { FormFieldValues } from '~templates/Field'
 
 import {
@@ -131,6 +131,76 @@ export const submitStorageModeForm = async ({
       },
     },
   ).then(({ data }) => data)
+}
+
+// TODO (#5826): Fallback mutation using Fetch. Remove once network error is resolved
+export const submitEmailModeFormWithFetch = async ({
+  formFields,
+  formLogics,
+  formInputs,
+  formId,
+  captchaResponse = null,
+}: SubmitEmailFormArgs): Promise<SubmissionResponseDto> => {
+  const filteredInputs = filterHiddenInputs({
+    formFields,
+    formInputs,
+    formLogics,
+  })
+  const formData = createEmailSubmissionFormData(formFields, filteredInputs)
+
+  // Add captcha response to query string
+  const queryString = new URLSearchParams({
+    captchaResponse: String(captchaResponse),
+  }).toString()
+
+  const response = await fetch(
+    `${API_BASE_URL}/${PUBLIC_FORMS_ENDPOINT}/${formId}/submissions/email?${queryString}`,
+    {
+      method: 'POST',
+      body: formData,
+    },
+  )
+
+  return response.json()
+}
+
+// TODO (#5826): Fallback mutation using Fetch. Remove once network error is resolved
+export const submitStorageModeFormWithFetch = async ({
+  formFields,
+  formLogics,
+  formInputs,
+  formId,
+  publicKey,
+  captchaResponse = null,
+}: SubmitStorageFormArgs) => {
+  const filteredInputs = filterHiddenInputs({
+    formFields,
+    formInputs,
+    formLogics,
+  })
+  const submissionContent = await createEncryptedSubmissionData(
+    formFields,
+    filteredInputs,
+    publicKey,
+  )
+
+  // Add captcha response to query string
+  const queryString = new URLSearchParams({
+    captchaResponse: String(captchaResponse),
+  }).toString()
+
+  const response = await fetch(
+    `${API_BASE_URL}/${PUBLIC_FORMS_ENDPOINT}/${formId}/submissions/encrypt?${queryString}`,
+    {
+      method: 'POST',
+      body: JSON.stringify(submissionContent),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    },
+  )
+
+  return response.json()
 }
 
 /**

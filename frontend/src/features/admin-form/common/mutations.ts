@@ -22,7 +22,9 @@ import { workspaceKeys } from '~features/workspace/queries'
 
 import {
   submitEmailModeFormPreview,
+  submitEmailModeFormPreviewWithFetch,
   submitStorageModeFormPreview,
+  submitStorageModeFormPreviewWithFetch,
 } from '../common/AdminViewFormService'
 import { downloadFormFeedback } from '../responses/FeedbackPage/FeedbackService'
 
@@ -407,9 +409,24 @@ export const usePreviewFormMutations = (formId: string) => {
     },
   )
 
+  // TODO (#5826): Fallback mutation using Fetch. Remove once network error is resolved
+  const submitEmailModeFormFetchMutation = useMutation(
+    (args: Omit<SubmitEmailFormArgs, 'formId'>) => {
+      return submitEmailModeFormPreviewWithFetch({ ...args, formId })
+    },
+  )
+
+  const submitStorageModeFormFetchMutation = useMutation(
+    (args: Omit<SubmitStorageFormArgs, 'formId'>) => {
+      return submitStorageModeFormPreviewWithFetch({ ...args, formId })
+    },
+  )
+
   return {
     submitEmailModeFormMutation,
     submitStorageModeFormMutation,
+    submitEmailModeFormFetchMutation,
+    submitStorageModeFormFetchMutation,
   }
 }
 
