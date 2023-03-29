@@ -368,7 +368,6 @@ const submitEncryptModeForm: ControllerHandler<
     }
 
     const payment = new Payment({
-      target_account_id: form.payments_channel.target_account_id,
       amount,
       email: req.body.paymentReceiptEmail,
     })

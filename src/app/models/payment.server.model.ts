@@ -10,10 +10,6 @@ export const PAYMENT_SCHEMA_ID = 'Payment'
 
 const PaymentSchema = new Schema<IPaymentSchema, IPaymentModel>(
   {
-    target_account_id: {
-      type: String,
-      required: true,
-    },
     pendingSubmissionId: {
       type: Schema.Types.ObjectId,
       // Defer loading of the ref due to circular dependency on schema IDs.

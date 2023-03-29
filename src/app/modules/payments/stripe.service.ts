@@ -106,7 +106,7 @@ const confirmStripePaymentPendingSubmission = (
           ? stripe.balanceTransactions.retrieve(
               charge.balance_transaction,
               undefined,
-              { stripeAccount: payment.target_account_id },
+              { stripeAccount: event.account },
             )
           : Promise.resolve(charge.balance_transaction),
         (error) => {

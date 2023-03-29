@@ -172,20 +172,13 @@ const _handleStripeEventUpdates: ControllerHandler<
     case 'payout.paid':
     case 'payout.updated':
     case 'payout.reconciliation_completed': {
-      const payout = event.data.object.id
-      const stripeAccount = event.account
-      if (!stripeAccount) {
-        logger.warn({
-          message: 'Received payout event without event.account attribute',
-          meta: { ...logMeta, payout },
-        })
-        return res.sendStatus(StatusCodes.BAD_REQUEST)
-      }
-
       // Retrieve the list of balance transactions related to this payout, and
       // associate the payout with the set of charges it pays out for
       await stripe.balanceTransactions
-        .list({ payout, expand: ['data.source'] }, { stripeAccount })
+        .list(
+          { payout: event.data.object.id, expand: ['data.source'] },
+          { stripeAccount: event.account },
+        )
         .autoPagingEach(async (balanceTransaction) => {
           if (balanceTransaction.type !== 'charge') return
 
