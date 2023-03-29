@@ -85,8 +85,7 @@ const PaymentSchema = new Schema<IPaymentSchema, IPaymentModel>(
       createdAt: 'created',
       updatedAt: 'lastModified',
     },
-    // TODO: Uncomment later
-    // read: 'secondary',
+    read: 'secondary',
   },
 )
 
