@@ -18,11 +18,7 @@ import { StripeReceiptContainer } from './StripeReceiptContainer'
 import { getPaymentViewType } from './utils'
 
 const StripeElementWrapper = ({ paymentPageId }: { paymentPageId: string }) => {
-  const { data: paymentInfoData, error: paymentInfoError } =
-    useGetPaymentInfo(paymentPageId)
-
-  const [debugText, setDebugText] = useState<string>('')
-  console.log({ paymentInfoData, paymentInfoError })
+  const { data: paymentInfoData } = useGetPaymentInfo(paymentPageId)
 
   if (!paymentInfoData) {
     throw new Error('useGetPaymentInfo not ready')
@@ -34,15 +30,10 @@ const StripeElementWrapper = ({ paymentPageId }: { paymentPageId: string }) => {
   return (
     <Elements
       stripe={stripePromise}
-      options={{
-        clientSecret: paymentInfoData.client_secret,
-      }}
+      options={{ clientSecret: paymentInfoData.client_secret }}
     >
       <Flex flexDir="column" align="center">
-        <StripeHookWrapper
-          paymentInfoData={paymentInfoData}
-          setDebugText={setDebugText}
-        />
+        <StripeHookWrapper paymentInfoData={paymentInfoData} />
       </Flex>
     </Elements>
   )
@@ -50,21 +41,15 @@ const StripeElementWrapper = ({ paymentPageId }: { paymentPageId: string }) => {
 
 const StripeHookWrapper = ({
   paymentInfoData,
-  setDebugText,
 }: {
   paymentInfoData: GetPaymentInfoDto
-  setDebugText: (text: string) => void
 }) => {
   const stripe = useStripe()
   if (!stripe) {
     throw Promise.reject('Stripe is not ready')
   }
   return (
-    <StripePaymentContainer
-      paymentInfoData={paymentInfoData}
-      stripe={stripe}
-      setDebugText={setDebugText}
-    />
+    <StripePaymentContainer paymentInfoData={paymentInfoData} stripe={stripe} />
   )
 }
 
@@ -85,33 +70,22 @@ const PaymentBox = ({ children }: { children: React.ReactNode }) => (
 const StripePaymentContainer = ({
   paymentInfoData,
   stripe,
-  setDebugText,
 }: {
   paymentInfoData: GetPaymentInfoDto
   stripe: Stripe
-  setDebugText: (text: string) => void
 }) => {
   const { formId, paymentPageId } = useParams()
   if (!formId) throw new Error('No formId provided')
   if (!paymentPageId) throw new Error('No paymentPageId provided')
 
   const [refetchKey, setRefetchKey] = useState<number>(0)
-  const { data, isLoading, error } = useGetPaymentStatusFromStripe({
+  const { data } = useGetPaymentStatusFromStripe({
     clientSecret: paymentInfoData.client_secret,
     stripe,
     refetchKey,
   })
 
   const viewType = getPaymentViewType(data?.paymentIntent?.status)
-  useEffect(() => {
-    setDebugText(
-      JSON.stringify(
-        { viewType, status: data?.paymentIntent?.status },
-        null,
-        2,
-      ),
-    )
-  }, [setDebugText, viewType, data])
 
   switch (viewType) {
     case 'invalid':

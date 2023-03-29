@@ -14,9 +14,7 @@ export const StripeReceiptContainer = ({
     formId,
     paymentPageId,
   )
-  console.log({ isLoading, error, data })
-
-  if (isLoading || error) {
+  if (isLoading || error || !data) {
     return <StripeLoadingReceiptBlock paymentId={paymentPageId} />
   }
   return <DownloadReceiptBlock formId={formId} paymentPageId={paymentPageId} />

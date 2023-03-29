@@ -27,7 +27,6 @@ PaymentsRouter.route('/receipt/:formId([a-fA-F0-9]{24})/:paymentId/status').get(
  */
 PaymentsRouter.route(
   // '/receipt/:formId([a-fA-F0-9]{24})/:submissionId([a-fA-F0-9]{24})/download',
-  // TODO: change to paymentId in child funcs
   '/receipt/:formId([a-fA-F0-9]{24})/:paymentId/download',
 ).get(
   limitRate({ max: rateLimitConfig.downloadPaymentReceipt }),

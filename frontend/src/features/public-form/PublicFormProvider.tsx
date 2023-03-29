@@ -286,7 +286,6 @@ export const PublicFormProvider = ({
                       )
                       return
                     }
-                    // TODO: ensure that there's no side effect for on function
                     setSubmissionData({
                       id: submissionId,
                       timestamp,
@@ -330,6 +329,8 @@ export const PublicFormProvider = ({
       showErrorToast,
       submitEmailModeFormMutation,
       submitStorageModeFormMutation,
+      formId,
+      navigate,
     ],
   )
 

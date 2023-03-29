@@ -1,8 +1,4 @@
-import {
-  GetPaymentInfoDto,
-  PaymentReceiptStatusDto,
-  SuccessMessageDto,
-} from '~shared/types'
+import { SuccessMessageDto } from '~shared/types'
 import { FormFieldDto } from '~shared/types/field'
 import {
   PublicFormAuthLogoutDto,

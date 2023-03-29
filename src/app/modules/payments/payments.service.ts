@@ -250,7 +250,6 @@ export const findPaymentByPaymentIntentId = (
   paymentIntentId: string,
 ): ResultAsync<IPaymentSchema, PaymentNotFoundError | DatabaseError> => {
   return ResultAsync.fromPromise(
-    // TODO: what happens if we have multiple matches?
     PaymentModel.findOne({ paymentIntentId }, null, {
       readPreference: 'primary',
     }).exec(),

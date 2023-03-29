@@ -8,7 +8,11 @@ import mongoose from 'mongoose'
 import { errAsync, ok, Result, ResultAsync } from 'neverthrow'
 import Stripe from 'stripe'
 
-import { ErrorDto, GetPaymentInfoDto } from '../../../../shared/types'
+import {
+  ErrorDto,
+  FormResponseMode,
+  GetPaymentInfoDto,
+} from '../../../../shared/types'
 import config from '../../config/config'
 import { paymentConfig } from '../../config/features/payment.config'
 import { createLoggerWithLabel } from '../../config/logger'
@@ -21,7 +25,9 @@ import * as FormService from '../form/form.service'
 import { isFormEncryptMode } from '../form/form.utils'
 import * as PendingSubmissionModel from '../pending-submission/pending-submission.service'
 import { checkFormIsEncryptMode } from '../submission/encrypt-submission/encrypt-submission.service'
+import { ResponseModeError } from '../submission/submission.errors'
 
+import { PaymentAccountInformationError } from './payments.errors'
 import * as PaymentService from './payments.service'
 import { StripeFetchError } from './stripe.errors'
 import * as StripeService from './stripe.service'
@@ -245,8 +251,8 @@ export const checkPaymentReceiptStatus: ControllerHandler<{
     },
   })
 
-  return PaymentService.findPaymentByPaymentIntentId(paymentId).map(
-    (payment) => {
+  return PaymentService.findPaymentByPaymentIntentId(paymentId)
+    .map((payment) => {
       logger.info({
         message: 'Found paymentId in payment document',
         meta: {
@@ -255,38 +261,43 @@ export const checkPaymentReceiptStatus: ControllerHandler<{
         },
       })
 
-      if (payment.completedPayment?.receiptUrl) {
-        return res.status(StatusCodes.OK).json({ isReady: true })
+      if (!payment.completedPayment?.receiptUrl) {
+        return res.status(StatusCodes.NOT_FOUND).json({ isReady: false })
       }
+      return res.status(StatusCodes.OK).json({ isReady: true })
+
       // no payment found, perhaps webhook from stripe has not arrived
       // trigger a manual sync flow
-      return StripeService.getPaymentFromLatestSuccessfulCharge(
-        formId,
-        paymentId,
-      )
-        .map((payment) => {
-          // has confirmedPayment but no receiptUrl, system is desync-ed
-          if (!payment.completedPayment?.receiptUrl) {
-            logger.error({
-              message: 'has confirmedPayment but no receiptUrl',
-              meta: {
-                action: 'checkPaymentReceiptStatus',
-                payment,
-                paymentId,
-                formId,
-              },
-            })
-            return res
-              .status(StatusCodes.INTERNAL_SERVER_ERROR)
-              .json({ message: 'Missing receipt url' })
-          }
-          return res.status(StatusCodes.OK).json({ isReady: true })
-        })
-        .mapErr((error) => {
-          return res.status(StatusCodes.NOT_FOUND).json({ message: error })
-        })
-    },
-  )
+      // TODO: manual sync flow not available after https://github.com/opengovsg/FormSG/pull/5937
+      // return StripeService.getPaymentFromLatestSuccessfulCharge(
+      //   formId,
+      //   paymentId,
+      // )
+      //   .map((payment) => {
+      //     // has confirmedPayment but no receiptUrl, system is desync-ed
+      //     if (!payment.completedPayment?.receiptUrl) {
+      //       logger.error({
+      //         message: 'has confirmedPayment but no receiptUrl',
+      //         meta: {
+      //           action: 'checkPaymentReceiptStatus',
+      //           payment,
+      //           paymentId,
+      //           formId,
+      //         },
+      //       })
+      //       return res
+      //         .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      //         .json({ message: 'Missing receipt url' })
+      //     }
+      //     return res.status(StatusCodes.OK).json({ isReady: true })
+      //   })
+      //   .mapErr((error) => {
+      //     return res.status(StatusCodes.NOT_FOUND).json({ message: error })
+      //   })
+    })
+    .mapErr((error) => {
+      return res.status(StatusCodes.NOT_FOUND).json({ message: error })
+    })
 }
 
 // TODO: Refactor for use in static payment url implementation
@@ -410,7 +421,6 @@ export const handleConnectOauthCallback = [
   _handleConnectOauthCallback,
 ] as ControllerHandler[]
 
-// #TODO: think about where to place this payment fetcher, should it be strongly tied to stripe?
 export const getPaymentInfo: ControllerHandler<
   {
     paymentId: string
@@ -436,29 +446,30 @@ export const getPaymentInfo: ControllerHandler<
     .andThen((form) => {
       // Payment forms are encrypted
       if (!isFormEncryptMode(form)) {
-        logger.warn({
+        logger.error({
           message:
-            'Requested for payment information for possibly non-payment form',
+            'Requested for payment information in possibly non-payment form. Expected payment forms to be encrypted forms',
           meta: {
             action: 'getPaymentInfo',
             paymentId,
+            formResponseMode: form.responseMode,
           },
         })
-        // TODO: change to error object
-        return errAsync(new Error('Is not a payment form'))
+        return errAsync(
+          new ResponseModeError(FormResponseMode.Encrypt, form.responseMode),
+        )
       }
       const stripeAccount = form.payments_channel?.target_account_id
       // Early termination to prevent consumption of QPS limit to stripe
       if (!stripeAccount) {
-        logger.warn({
+        logger.error({
           message: 'Missing payments_channel on this form',
           meta: {
             action: 'getPaymentInfo',
             paymentId,
           },
         })
-        // TODO: change to error object
-        return errAsync(new Error('Is not a payment form'))
+        return errAsync(new PaymentAccountInformationError())
       }
 
       return ResultAsync.fromPromise(
@@ -478,7 +489,6 @@ export const getPaymentInfo: ControllerHandler<
         },
       ).map((stripeFullIntentObj) => ({
         stripeFullIntentObj,
-        // TODO: check publiashable key seemed to be tied to payment intent?
         publishableKey: form.payments_channel?.publishable_key || '',
       }))
     })

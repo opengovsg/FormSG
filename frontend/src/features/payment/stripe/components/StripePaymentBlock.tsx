@@ -57,14 +57,12 @@ const StripeCheckoutForm = ({
     }
   }, [isRetry])
 
-  // Upon complete payment, redirect to <formId>?stripeSubmissionId=<submissionId>
-  const return_url = window.location.href
-
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     // We don't want to let default form submission happen here,
     // which would refresh the page.
     event.preventDefault()
     setIsStripeProcessing(true)
+    setStripeMessage('')
 
     if (!stripe || !elements) {
       return null
@@ -76,21 +74,25 @@ const StripeCheckoutForm = ({
       //`Elements` instance that was used to create the Payment Element
       elements,
       confirmParams: {
-        return_url,
+        // 1. Responders should return back to the same payment page to view the receipt
+        // 2. Your customer will be redirected to your `return_url`. For some payment
+        //    methods like iDEAL, your customer will be redirected to an intermediate
+        //    site first to authorize the payment, then redirected to the `return_url`.
+        return_url: window.location.href,
       },
+
+      // The default is `redirect?: 'always'` and this will introduce
+      // a bad UX of triggering a page reload of the same page.
+      // By setting if_required we can control when it reloads,
+      // which is after the payment had completed successfully.
       redirect: 'if_required',
     })
 
     if (result.error && result.error.message) {
-      // Show error to your customer (for example, payment details incomplete)
       setStripeMessage(result.error.message)
     } else {
-      setStripeMessage('')
-      // Your customer will be redirected to your `return_url`. For some payment
-      // methods like iDEAL, your customer will be redirected to an intermediate
-      // site first to authorize the payment, then redirected to the `return_url`.
-
-      // in the event that customer is not redirected, we will trigger a payment status refetch
+      // In the event that customer is not on a payment that has a redirected flow,
+      // we will trigger a payment status refetch
       triggerPaymentStatusRefetch()
     }
     setIsStripeProcessing(false)
