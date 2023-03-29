@@ -50,7 +50,11 @@ import {
   WrongOtpError,
 } from './verification.errors'
 import getVerificationModel from './verification.model'
-import { SendOtpParams, VerifyOtpParams } from './verification.types'
+import {
+  ResetFieldForTransactionParams,
+  SendOtpParams,
+  VerifyOtpParams,
+} from './verification.types'
 import {
   hasAdminExceededFreeSmsLimit,
   isOtpExpired,
@@ -220,10 +224,12 @@ const getFieldFromTransaction = (
  * @returns err(FieldNotFoundInTransactionError) when field does not exist
  * @returns err(PossibleDatabaseError) when database read/write errors
  */
-export const resetFieldForTransaction = (
-  transactionId: string,
-  fieldId: string,
-): ResultAsync<
+export const resetFieldForTransaction = ({
+  transactionId,
+  fieldId,
+  getFieldFromTransactionFx,
+  resetFieldFx,
+}: ResetFieldForTransactionParams): ResultAsync<
   IVerificationSchema,
   | TransactionNotFoundError
   | TransactionExpiredError
@@ -239,11 +245,11 @@ export const resetFieldForTransaction = (
       formId: transaction.formId,
     }
     return (
-      getFieldFromTransaction(transaction, fieldId)
+      getFieldFromTransactionFx(transaction, fieldId)
         // Apply atomic update
         .asyncAndThen(() =>
           ResultAsync.fromPromise(
-            VerificationModel.resetField(transactionId, fieldId),
+            resetFieldFx(transactionId, fieldId),
             (error) => {
               logger.error({
                 message: 'Error while resetting field data in transaction',

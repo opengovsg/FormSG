@@ -39,3 +39,14 @@ export type VerifyOtpParams = {
     | IVerificationModel['incrementFormFieldRetries']
     | IVerificationModel['incrementPaymentFieldRetries']
 }
+
+export type ResetFieldForTransactionParams = {
+  transactionId: string
+  fieldId: string
+  getFieldFromTransactionFx:
+    | typeof getFieldFromTransaction
+    | typeof getPaymentContactFieldFromTransaction
+  resetFieldFx:
+    | IVerificationModel['resetFormField']
+    | IVerificationModel['resetPaymentField']
+}

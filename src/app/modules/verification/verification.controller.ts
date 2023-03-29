@@ -137,7 +137,12 @@ export const handleResetField: ControllerHandler<
     fieldId,
     ...createReqMeta(req),
   }
-  return VerificationService.resetFieldForTransaction(transactionId, fieldId)
+  return VerificationService.resetFieldForTransaction({
+    transactionId,
+    fieldId,
+    getFieldFromTransactionFx: getFieldFromTransaction,
+    resetFieldFx: VerificationModel.resetFormField,
+  })
     .map(() => res.sendStatus(StatusCodes.OK))
     .mapErr((error) => {
       logger.error({
@@ -717,7 +722,7 @@ export const handlePaymentOtpVerification = [
  * @returns 404 when the field could not be found
  * @returns 500 when a database error occurs
  */
-export const handleResetFieldVerification: ControllerHandler<
+export const handleResetFormFieldVerification: ControllerHandler<
   {
     formId: string
     fieldId: string
@@ -727,14 +732,67 @@ export const handleResetFieldVerification: ControllerHandler<
 > = async (req, res) => {
   const { transactionId, fieldId, formId } = req.params
   const logMeta = {
-    action: 'handleResetFieldVerification',
+    action: 'handleResetFormFieldVerification',
     transactionId,
     fieldId,
     ...createReqMeta(req),
   }
   return FormService.retrieveFormById(formId)
     .andThen(() =>
-      VerificationService.resetFieldForTransaction(transactionId, fieldId),
+      VerificationService.resetFieldForTransaction({
+        transactionId,
+        fieldId,
+        getFieldFromTransactionFx: getFieldFromTransaction,
+        resetFieldFx: VerificationModel.resetFormField,
+      }),
+    )
+    .map(() => res.sendStatus(StatusCodes.NO_CONTENT))
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error resetting field in transaction',
+        meta: logMeta,
+        error,
+      })
+      const { errorMessage, statusCode } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
+}
+
+/**
+ * Handler for resetting the verification state of a field.
+ * @param formId The id of the form to reset the field verification for
+ * @param fieldId The id of the field to reset verification for
+ * @param transactionId The transaction to reset
+ * @returns 204 when reset is successful
+ * @returns 400 when the transaction has expired
+ * @returns 404 when the form could not be found
+ * @returns 404 when the transaction could not be found
+ * @returns 404 when the field could not be found
+ * @returns 500 when a database error occurs
+ */
+export const handleResetPaymentFieldVerification: ControllerHandler<
+  {
+    formId: string
+    fieldId: string
+    transactionId: string
+  },
+  ErrorDto
+> = async (req, res) => {
+  const { transactionId, fieldId, formId } = req.params
+  const logMeta = {
+    action: 'handleResetPaymentFieldVerification',
+    transactionId,
+    fieldId,
+    ...createReqMeta(req),
+  }
+  return FormService.retrieveFormById(formId)
+    .andThen(() =>
+      VerificationService.resetFieldForTransaction({
+        transactionId,
+        fieldId,
+        getFieldFromTransactionFx: getPaymentContactFieldFromTransaction,
+        resetFieldFx: VerificationModel.resetPaymentField,
+      }),
     )
     .map(() => res.sendStatus(StatusCodes.NO_CONTENT))
     .mapErr((error) => {

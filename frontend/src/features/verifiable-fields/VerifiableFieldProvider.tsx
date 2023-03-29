@@ -56,6 +56,7 @@ export const VerifiableFieldProvider = ({
     triggerResendFormOtpMutation,
     verifyFormOtpMutation,
     triggerSendPaymentOtpMutation,
+    triggerResendPaymentOtpMutation,
     verifyPaymentOtpMutation,
   } = useVerifiableFieldMutations({
     schema,
@@ -110,10 +111,19 @@ export const VerifiableFieldProvider = ({
     // Should not happen, but guarding against this just in case.
     if (!currentInputValue) return
 
-    return triggerResendFormOtpMutation.mutate(currentInputValue, {
-      onSuccess: ({ otpPrefix }) => setOtpPrefix(otpPrefix),
-    })
-  }, [getValues, schema._id, triggerResendFormOtpMutation])
+    return schema._id === PAYMENT_CONTACT_FIELD_ID
+      ? triggerResendPaymentOtpMutation.mutate(currentInputValue, {
+          onSuccess: ({ otpPrefix }) => setOtpPrefix(otpPrefix),
+        })
+      : triggerResendFormOtpMutation.mutate(currentInputValue, {
+          onSuccess: ({ otpPrefix }) => setOtpPrefix(otpPrefix),
+        })
+  }, [
+    getValues,
+    schema._id,
+    triggerResendFormOtpMutation,
+    triggerResendPaymentOtpMutation,
+  ])
 
   const handleVfnButtonClick = useCallback(() => {
     const currentInputValue = getValues(schema._id)?.value

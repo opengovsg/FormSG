@@ -90,6 +90,10 @@ export const useVerifiableFieldMutations = ({
     onError: handleError,
   })
 
+  const triggerResendPaymentOtpMutation = useMutation(handleSendPaymentOtp, {
+    onError: handleError,
+  })
+
   const verifyFormOtpMutation = useMutation(async (otp: string) => {
     const transactionId = await getTransactionId()
     if (!transactionId) throw new Error('No transactionId generated')
@@ -107,6 +111,7 @@ export const useVerifiableFieldMutations = ({
     triggerResendFormOtpMutation,
     verifyFormOtpMutation,
     triggerSendPaymentOtpMutation,
+    triggerResendPaymentOtpMutation,
     verifyPaymentOtpMutation,
   }
 }

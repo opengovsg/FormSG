@@ -96,10 +96,14 @@ export interface IVerificationModel extends Model<IVerificationSchema> {
   /**
    * Resets the hash records of a single field.
    */
-  resetField(
+  resetFormField(
     transactionId: string,
     fieldId: string,
   ): Promise<IVerificationSchema | null>
+  /**
+   * Resets the hash records of a payment contact field.
+   */
+  resetPaymentField(transactionId: string): Promise<IVerificationSchema | null>
   /**
    * Updates the hash records for a single field
    * @param updateData Data with which to update field

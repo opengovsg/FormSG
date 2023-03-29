@@ -169,7 +169,7 @@ const compileVerificationModel = (db: Mongoose): IVerificationModel => {
     ).exec()
   }
 
-  VerificationSchema.statics.resetField = async function (
+  VerificationSchema.statics.resetFormField = async function (
     transactionId: string,
     fieldId: string,
   ): Promise<IVerificationSchema | null> {
@@ -184,6 +184,29 @@ const compileVerificationModel = (db: Mongoose): IVerificationModel => {
           'fields.$.hashedOtp': null,
           'fields.$.signedData': null,
           'fields.$.hashRetries': 0,
+        },
+      },
+      {
+        new: true,
+        runValidators: true,
+        setDefaultsOnInsert: true,
+      },
+    ).exec()
+  }
+
+  VerificationSchema.statics.resetPaymentField = async function (
+    transactionId: string,
+  ): Promise<IVerificationSchema | null> {
+    return this.findOneAndUpdate(
+      {
+        _id: transactionId,
+      },
+      {
+        $set: {
+          'paymentField.hashCreatedAt': null,
+          'paymentField.hashedOtp': null,
+          'paymentField.signedData': null,
+          'paymentField.hashRetries': 0,
         },
       },
       {

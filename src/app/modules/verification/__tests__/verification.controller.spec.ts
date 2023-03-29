@@ -1787,7 +1787,7 @@ describe('Verification controller', () => {
       )
 
       // Act
-      await VerificationController.handleResetFieldVerification(
+      await VerificationController.handleResetFormFieldVerification(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -1810,7 +1810,7 @@ describe('Verification controller', () => {
       )
 
       // Act
-      await VerificationController.handleResetFieldVerification(
+      await VerificationController.handleResetFormFieldVerification(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -1836,7 +1836,7 @@ describe('Verification controller', () => {
       )
 
       // Act
-      await VerificationController.handleResetFieldVerification(
+      await VerificationController.handleResetFormFieldVerification(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -1862,7 +1862,7 @@ describe('Verification controller', () => {
       )
 
       // Act
-      await VerificationController.handleResetFieldVerification(
+      await VerificationController.handleResetFormFieldVerification(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -1888,7 +1888,7 @@ describe('Verification controller', () => {
       )
 
       // Act
-      await VerificationController.handleResetFieldVerification(
+      await VerificationController.handleResetFormFieldVerification(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -1914,7 +1914,7 @@ describe('Verification controller', () => {
       )
 
       // Act
-      await VerificationController.handleResetFieldVerification(
+      await VerificationController.handleResetFormFieldVerification(
         MOCK_REQ,
         mockRes,
         jest.fn(),
