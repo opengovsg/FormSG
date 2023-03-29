@@ -60,7 +60,7 @@ import {
 } from '../../../../../../shared/types'
 import { smsConfig } from '../../../../config/features/sms.config'
 import * as SmsService from '../../../../services/sms/sms.service'
-import { InvalidPaymentAmountError } from '../../../payments/payment.errors'
+import { InvalidPaymentAmountError } from '../../../payments/payments.errors'
 import {
   FormNotFoundError,
   LogicNotFoundError,

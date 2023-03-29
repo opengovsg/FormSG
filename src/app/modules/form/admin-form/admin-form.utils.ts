@@ -30,7 +30,7 @@ import {
   TwilioCacheError,
 } from '../../core/core.errors'
 import { ErrorResponseData } from '../../core/core.types'
-import { InvalidPaymentAmountError } from '../../payments/payment.errors'
+import { InvalidPaymentAmountError } from '../../payments/payments.errors'
 import {
   StripeAccountError,
   StripeAccountNotFoundError,
