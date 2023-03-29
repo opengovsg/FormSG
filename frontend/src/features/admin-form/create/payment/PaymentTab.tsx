@@ -19,7 +19,6 @@ export const PaymentTab = (): JSX.Element => {
       ? form.payments_field
       : defaultPaymentsField
 
-  // Check if payment channel
   const isStripeConnected =
     isEncryptMode &&
     form.payments_channel?.target_account_id !== undefined &&
