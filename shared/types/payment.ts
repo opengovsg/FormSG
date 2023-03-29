@@ -24,8 +24,8 @@ export type CompletedPaymentMeta = {
 }
 
 export type PayoutMeta = {
-  payoutId?: string
-  payoutDate?: Date
+  payoutId: string
+  payoutDate: Date
 }
 
 export type Payment = {

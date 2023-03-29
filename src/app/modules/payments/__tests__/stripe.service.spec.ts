@@ -168,6 +168,38 @@ const MOCK_STRIPE_EVENTS = [
     },
     type: 'charge.dispute.created',
   },
+  {
+    id: 'evt_PAYOUT_CREATED',
+    object: 'event',
+    created: 1677205973,
+    data: {
+      object: {
+        id: 'po_MOCK_PAYOUT',
+        object: 'payout',
+        amount: 12345,
+        created: 1677205972,
+        status: 'pending',
+        arrival_date: 1677215972,
+      },
+    },
+    type: 'payout.created',
+  },
+  {
+    id: 'evt_PAYOUT_CANCELLED',
+    object: 'event',
+    created: 1677205983,
+    data: {
+      object: {
+        id: 'po_MOCK_PAYOUT',
+        object: 'payout',
+        amount: 12345,
+        created: 1677205972,
+        status: 'canceled',
+        arrival_date: 1677215972,
+      },
+    },
+    type: 'payout.canceled',
+  },
 ] as unknown as Stripe.Event[]
 
 const MOCK_STRIPE_EVENTS_MAP = keyBy(MOCK_STRIPE_EVENTS, 'id')
@@ -213,7 +245,7 @@ describe('stripe.service', () => {
       // Arrange
       // Inject the expected webhook logs and state into the payment object.
       await Payment.updateOne(
-        { paymentIntentId: 'pi_MOCK_PAYMENT_INTENT' },
+        { _id: payment._id },
         {
           webhookLog: [MOCK_STRIPE_EVENTS_MAP['evt_PAYMENT_INTENT_CREATED']],
         },
@@ -230,9 +262,7 @@ describe('stripe.service', () => {
       // Assert
       expect(result.isOk()).toEqual(true)
 
-      const updatedPayment = await Payment.findOne({
-        paymentIntentId: 'pi_MOCK_PAYMENT_INTENT',
-      })
+      const updatedPayment = await Payment.findById(payment.id)
       if (!updatedPayment) throw new Error('Payment not found!')
 
       expect(updatedPayment.status).toEqual(PaymentStatus.Failed)
@@ -267,7 +297,7 @@ describe('stripe.service', () => {
 
       // Inject the expected webhook logs and state into the payment object.
       await Payment.updateOne(
-        { paymentIntentId: 'pi_MOCK_PAYMENT_INTENT' },
+        { _id: payment._id },
         {
           webhookLog: [MOCK_STRIPE_EVENTS_MAP['evt_PAYMENT_INTENT_CREATED']],
         },
@@ -287,9 +317,7 @@ describe('stripe.service', () => {
       expect(balanceTransactionApiSpy).toHaveBeenCalledOnce()
       expect(confirmSpy).toHaveBeenCalledOnce()
 
-      const updatedPayment = await Payment.findOne({
-        paymentIntentId: 'pi_MOCK_PAYMENT_INTENT',
-      })
+      const updatedPayment = await Payment.findById(payment.id)
       if (!updatedPayment) throw new Error('Payment not found!')
 
       expect(updatedPayment.status).toEqual(PaymentStatus.Succeeded)
@@ -300,7 +328,7 @@ describe('stripe.service', () => {
       // Arrange
       // Inject the expected webhook logs and state into the payment object.
       await Payment.updateOne(
-        { paymentIntentId: 'pi_MOCK_PAYMENT_INTENT' },
+        { _id: payment._id },
         {
           webhookLog: [
             MOCK_STRIPE_EVENTS_MAP['evt_PAYMENT_INTENT_CREATED'],
@@ -331,9 +359,7 @@ describe('stripe.service', () => {
       // Assert
       expect(result.isOk()).toEqual(true)
 
-      const updatedPayment = await Payment.findOne({
-        paymentIntentId: 'pi_MOCK_PAYMENT_INTENT',
-      })
+      const updatedPayment = await Payment.findById(payment.id)
       if (!updatedPayment) throw new Error('Payment not found!')
 
       expect(updatedPayment.status).toEqual(PaymentStatus.PartiallyRefunded)
@@ -345,7 +371,7 @@ describe('stripe.service', () => {
       // Arrange
       // Inject the expected webhook logs and state into the payment object.
       await Payment.updateOne(
-        { paymentIntentId: 'pi_MOCK_PAYMENT_INTENT' },
+        { _id: payment._id },
         {
           webhookLog: [
             MOCK_STRIPE_EVENTS_MAP['evt_PAYMENT_INTENT_CREATED'],
@@ -376,9 +402,7 @@ describe('stripe.service', () => {
       // Assert
       expect(result.isOk()).toEqual(true)
 
-      const updatedPayment = await Payment.findOne({
-        paymentIntentId: 'pi_MOCK_PAYMENT_INTENT',
-      })
+      const updatedPayment = await Payment.findById(payment.id)
       if (!updatedPayment) throw new Error('Payment not found!')
 
       expect(updatedPayment.status).toEqual(PaymentStatus.FullyRefunded)
@@ -390,7 +414,7 @@ describe('stripe.service', () => {
       // Arrange
       // Inject the expected webhook logs and state into the payment object.
       await Payment.updateOne(
-        { paymentIntentId: 'pi_MOCK_PAYMENT_INTENT' },
+        { _id: payment._id },
         {
           webhookLog: [
             MOCK_STRIPE_EVENTS_MAP['evt_PAYMENT_INTENT_CREATED'],
@@ -419,14 +443,85 @@ describe('stripe.service', () => {
       // Assert
       expect(result.isOk()).toEqual(true)
 
-      const updatedPayment = await Payment.findOne({
-        paymentIntentId: 'pi_MOCK_PAYMENT_INTENT',
-      })
+      const updatedPayment = await Payment.findById(payment.id)
       if (!updatedPayment) throw new Error('Payment not found!')
 
       expect(updatedPayment.status).toEqual(PaymentStatus.Disputed)
       expect(updatedPayment.chargeIdLatest).toEqual(dispute.charge)
       expect(updatedPayment.completedPayment).toBeTruthy()
+    })
+
+    it('should add the payout details when a payout.created event is received', async () => {
+      // Arrange
+      // Inject the expected webhook logs and state into the payment object.
+      await Payment.updateOne(
+        { _id: payment._id },
+        {
+          webhookLog: [
+            MOCK_STRIPE_EVENTS_MAP['evt_PAYMENT_INTENT_CREATED'],
+            MOCK_STRIPE_EVENTS_MAP['evt_CHARGE_SUCCEEDED'],
+            MOCK_STRIPE_EVENTS_MAP['evt_PAYMENT_INTENT_SUCCEEDED'],
+          ],
+          status: PaymentStatus.Succeeded,
+        },
+      ).exec()
+
+      // Act
+      const eventPayout = MOCK_STRIPE_EVENTS_MAP['evt_PAYOUT_CREATED']
+      const payout = eventPayout.data.object as Stripe.Payout
+      const result = await StripeService.processStripeEvent(
+        String(payment._id),
+        eventPayout,
+      )
+
+      // Assert
+      expect(result.isOk()).toEqual(true)
+
+      const updatedPayment = await Payment.findById(payment.id)
+      if (!updatedPayment) throw new Error('Payment not found!')
+
+      expect(updatedPayment.payout?.payoutId).toEqual(payout.id)
+      expect(updatedPayment.payout?.payoutDate).toEqual(
+        new Date(payout.arrival_date),
+      )
+    })
+
+    it('should remove the payout details when a payout.cancelled event is received', async () => {
+      // Arrange
+      const payoutCreatedEvent = MOCK_STRIPE_EVENTS_MAP['evt_PAYOUT_CREATED']
+      const payoutCreated = payoutCreatedEvent.data.object as Stripe.Payout
+
+      // Inject the expected webhook logs and state into the payment object.
+      await Payment.updateOne(
+        { _id: payment._id },
+        {
+          webhookLog: [
+            MOCK_STRIPE_EVENTS_MAP['evt_PAYMENT_INTENT_CREATED'],
+            MOCK_STRIPE_EVENTS_MAP['evt_CHARGE_SUCCEEDED'],
+            MOCK_STRIPE_EVENTS_MAP['evt_PAYMENT_INTENT_SUCCEEDED'],
+            payoutCreatedEvent,
+          ],
+          status: PaymentStatus.Succeeded,
+          payout: {
+            payoutDate: new Date(payoutCreated.arrival_date),
+            payoutId: payoutCreated.id,
+          },
+        },
+      ).exec()
+
+      // Act
+      const result = await StripeService.processStripeEvent(
+        String(payment._id),
+        MOCK_STRIPE_EVENTS_MAP['evt_PAYOUT_CANCELLED'],
+      )
+
+      // Assert
+      expect(result.isOk()).toEqual(true)
+
+      const updatedPayment = await Payment.findById(payment.id)
+      if (!updatedPayment) throw new Error('Payment not found!')
+
+      expect(updatedPayment.payout).toBeUndefined()
     })
 
     it('should return PaymentNotFoundError when the payment cannot be found', async () => {

@@ -5,6 +5,7 @@ import { celebrate, Joi, Segments } from 'celebrate'
 import { StatusCodes } from 'http-status-codes'
 import get from 'lodash/get'
 import mongoose from 'mongoose'
+import { ok, Result } from 'neverthrow'
 import Stripe from 'stripe'
 
 import config from '../../config/config'
@@ -20,6 +21,7 @@ import { checkFormIsEncryptMode } from '../submission/encrypt-submission/encrypt
 
 import * as PaymentService from './payments.service'
 import * as StripeService from './stripe.service'
+import { getMetadataPaymentId } from './stripe.utils'
 
 const logger = createLoggerWithLabel(module)
 const PaymentModel = getPaymentModel(mongoose)
@@ -55,7 +57,7 @@ const _handleStripeEventUpdates: ControllerHandler<
   // Needed to obtain the raw body from the request. Set in the parser middlewares
   const rawBody = get(req, 'rawBody') as unknown as string
 
-  let event
+  let event: Stripe.DiscriminatedEvent
   try {
     event = stripe.webhooks.constructEvent(
       rawBody,
@@ -88,6 +90,8 @@ const _handleStripeEventUpdates: ControllerHandler<
 
   // Step 3: Get the relevant payment Id
 
+  let result: Result<void, any> = ok(undefined)
+
   switch (event.type) {
     // Ignore these two charge event types as they are only for capture flow.
     // case 'charge.captured':
@@ -107,17 +111,11 @@ const _handleStripeEventUpdates: ControllerHandler<
     case 'charge.pending':
     case 'charge.refunded':
     case 'charge.succeeded': {
-      const paymentId = get(event.data.object.metadata, 'paymentId') // TODO: Extract this value to a constant?
-      if (!paymentId || !mongoose.Types.ObjectId.isValid(paymentId)) {
-        logger.warn({
-          message:
-            'Received payment intent or charge event with invalid paymentId',
-          meta: { ...logMeta, paymentId },
-        })
-        return res.sendStatus(StatusCodes.BAD_REQUEST)
-      }
-
-      await StripeService.processStripeEvent(paymentId, event)
+      result = await getMetadataPaymentId(
+        event.data.object.metadata,
+      ).asyncAndThen((paymentId) =>
+        StripeService.processStripeEvent(paymentId, event),
+      )
       break
     }
     case 'charge.dispute.closed':
@@ -125,7 +123,6 @@ const _handleStripeEventUpdates: ControllerHandler<
     case 'charge.dispute.funds_reinstated':
     case 'charge.dispute.funds_withdrawn':
     case 'charge.dispute.updated': {
-      // Retrieve the charge object to get the corresponding submissionId
       const chargeIdLatest =
         typeof event.data.object.charge === 'string'
           ? event.data.object.charge
@@ -140,11 +137,10 @@ const _handleStripeEventUpdates: ControllerHandler<
         return res.sendStatus(StatusCodes.BAD_REQUEST)
       }
 
-      await StripeService.processStripeEvent(payment.id, event)
+      result = await StripeService.processStripeEvent(payment.id, event)
       break
     }
     case 'charge.refund.updated': {
-      // Retrieve the charge object to get the corresponding submissionId
       const chargeIdLatest =
         typeof event.data.object.charge === 'string'
           ? event.data.object.charge
@@ -168,7 +164,7 @@ const _handleStripeEventUpdates: ControllerHandler<
         return res.sendStatus(StatusCodes.BAD_REQUEST)
       }
 
-      await StripeService.processStripeEvent(payment.id, event)
+      result = await StripeService.processStripeEvent(payment.id, event)
       break
     }
     case 'payout.canceled':
@@ -176,24 +172,54 @@ const _handleStripeEventUpdates: ControllerHandler<
     case 'payout.failed':
     case 'payout.paid':
     case 'payout.updated':
-      // TODO: This is most definitely wrong but need to test when payouts come in
-      await StripeService.processStripeEvent(
-        'paymentId',
-        event,
-        // {
-        //   payout: {
-        //     payoutId: event.data.object.id,
-        //     payoutDate: new Date(event.data.object.arrival_date),
-        //   },
-        // },
-      )
+    case 'payout.reconciliation_completed': {
+      const payout = event.data.object.id
+      const stripeAccount = event.account
+      if (!stripeAccount) {
+        logger.warn({
+          message: 'Received payout event without event.account attribute',
+          meta: { ...logMeta, payout },
+        })
+        return res.sendStatus(StatusCodes.BAD_REQUEST)
+      }
+
+      // Retrieve the list of balance transactions related to this payout, and
+      // associate the payout with the set of charges it pays out for
+      await stripe.balanceTransactions
+        .list({ payout, expand: ['data.source'] }, { stripeAccount })
+        .autoPagingEach(async (balanceTransaction) => {
+          if (balanceTransaction.type !== 'charge') return
+
+          const charge = balanceTransaction.source as Stripe.Charge
+          const innerResult = await getMetadataPaymentId(
+            charge.metadata,
+          ).asyncAndThen((paymentId) =>
+            StripeService.processStripeEvent(paymentId, event),
+          )
+
+          // Reducer to keep errors around
+          result = result.isOk() ? innerResult : result
+        })
+
       break
+    }
     default:
       // Ignore all other events
       break
   }
 
-  return res.status(StatusCodes.OK).send()
+  result.match(
+    () => res.sendStatus(StatusCodes.OK),
+    (error) => {
+      // Additional logging with error details
+      logger.error({
+        message: 'Error thrown in webhook handler',
+        meta: logMeta,
+        error,
+      })
+      return res.sendStatus(StatusCodes.BAD_REQUEST)
+    },
+  )
 }
 
 export const handleStripeEventUpdates = [

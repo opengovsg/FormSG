@@ -1,14 +1,19 @@
 // Use 'stripe-event-types' for better type discrimination.
 /// <reference types="stripe-event-types" />
 
-import { err, ok, Result } from 'neverthrow'
+import get from 'lodash/get'
+import mongoose from 'mongoose'
+import { err, Ok, ok, Result } from 'neverthrow'
 import Stripe from 'stripe'
 
 import { Payment, PaymentStatus } from '../../../../shared/types'
 import config from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
 
-import { ComputePaymentStateError } from './stripe.errors'
+import {
+  ComputePaymentStateError,
+  StripeMetadataValidPaymentIdNotFoundError,
+} from './stripe.errors'
 
 const logger = createLoggerWithLabel(module)
 
@@ -18,10 +23,35 @@ export const getRedirectUri = () =>
   }/api/v3/payments/stripe/callback`
 
 /**
+ * Extracts the payment id from the metadata field of objects expected to have
+ * it (i.e. payment intents and charges).
+ * @param {Stripe.Metadata} metadata the metadata object which is expected to have a payment id
+ * @returns ok(paymentId) the extracted paymentId
+ * @returns err(StripeMetadataValidPaymentIdNotFoundError) if the payment id was not found or is an invalid BSON object id
+ */
+export const getMetadataPaymentId = (
+  metadata: Stripe.Metadata,
+): Result<string, StripeMetadataValidPaymentIdNotFoundError> => {
+  const logMeta = {
+    action: 'getMetadataPaymentId',
+    metadata,
+  }
+  const paymentId = get(metadata, 'paymentId') // TODO: Extract this value to a constant?
+  if (!paymentId || !mongoose.Types.ObjectId.isValid(paymentId)) {
+    logger.warn({
+      message: 'Got metadata with invalid paymentId',
+      meta: { ...logMeta, metadata },
+    })
+    return err(new StripeMetadataValidPaymentIdNotFoundError())
+  }
+  return ok(paymentId)
+}
+
+/**
  * State machine that computes the state of the payment, given the list of
  * Stripe events received via webhooks for this submission.
- * @param events the list of Stripe events for state to be computed on
- * @returns ok() status and latest charge id based on the list of events
+ * @param {Stripe.Event[]} events the list of Stripe events for state to be computed on
+ * @returns ok({status, chargeIdLatest}) status and latest charge id based on the list of events
  * @returns err(ComputePaymentStateError) if there is an error in computing the state
  */
 export const computePaymentState = (
@@ -184,4 +214,43 @@ export const computePaymentState = (
       })
       return err(new ComputePaymentStateError())
   }
+}
+
+/**
+ * Computes the state of the payout, given the list of Stripe events received
+ * via webhooks for this payment.
+ * @param {Stripe.Event[]} events the list of Stripe events for payout state to be computed on
+ * @returns ok(payout) payout based on the list of events
+ */
+export const getPayoutState = (
+  events: Stripe.Event[],
+): Ok<Payment['payout'], never> => {
+  const payoutEvents = events.filter(
+    (event): event is Stripe.DiscriminatedEvent.PayoutEvent =>
+      event.type.startsWith('payout.'),
+  )
+
+  let payout
+
+  for (const event of payoutEvents) {
+    switch (event.type) {
+      case 'payout.created':
+        // Once created, we know it will happen, so update the payout
+        payout = {
+          payoutId: event.data.object.id,
+          payoutDate: new Date(event.data.object.arrival_date),
+        }
+        break
+      case 'payout.canceled':
+      case 'payout.failed':
+        // If it failed or cancelled, clear the payout details
+        payout = undefined
+        break
+      default:
+        // Do nothing
+        break
+    }
+  }
+
+  return ok(payout)
 }

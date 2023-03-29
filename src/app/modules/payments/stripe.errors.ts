@@ -32,6 +32,12 @@ export class MalformedStripeChargeObjectError extends ApplicationError {
   }
 }
 
+export class StripeMetadataValidPaymentIdNotFoundError extends ApplicationError {
+  constructor(message = 'Valid payment id not found in Stripe metadata') {
+    super(message)
+  }
+}
+
 export class StripeFetchError extends ApplicationError {
   constructor(message = 'Error while requesting Stripe data') {
     super(message)
