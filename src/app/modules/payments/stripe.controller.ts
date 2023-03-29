@@ -245,8 +245,8 @@ export const checkPaymentReceiptStatus: ControllerHandler<{
     },
   })
 
-  return PaymentService.findPaymentByPaymentIntentId(paymentId)
-    .map((payment) => {
+  return PaymentService.findPaymentByPaymentIntentId(paymentId).map(
+    (payment) => {
       logger.info({
         message: 'Found paymentId in payment document',
         meta: {
@@ -254,23 +254,39 @@ export const checkPaymentReceiptStatus: ControllerHandler<{
           payment,
         },
       })
-      if (!payment.completedPayment?.receiptUrl) {
-        return res.status(StatusCodes.NOT_FOUND).json({ isReady: false })
+
+      if (payment.completedPayment?.receiptUrl) {
+        return res.status(StatusCodes.OK).json({ isReady: true })
       }
-      return res.status(StatusCodes.OK).json({ isReady: true })
-    })
-    .mapErr((error) => {
-      logger.error({
-        message: 'Error retrieving receipt',
-        meta: {
-          action: 'checkPaymentReceiptStatus',
-          formId,
-          paymentId,
-        },
-        error,
-      })
-      return res.status(StatusCodes.NOT_FOUND).json({ message: error })
-    })
+      // no payment found, perhaps webhook from stripe has not arrived
+      // trigger a manual sync flow
+      return StripeService.getPaymentFromLatestSuccessfulCharge(
+        formId,
+        paymentId,
+      )
+        .map((payment) => {
+          // has confirmedPayment but no receiptUrl, system is desync-ed
+          if (!payment.completedPayment?.receiptUrl) {
+            logger.error({
+              message: 'has confirmedPayment but no receiptUrl',
+              meta: {
+                action: 'checkPaymentReceiptStatus',
+                payment,
+                paymentId,
+                formId,
+              },
+            })
+            return res
+              .status(StatusCodes.INTERNAL_SERVER_ERROR)
+              .json({ message: 'Missing receipt url' })
+          }
+          return res.status(StatusCodes.OK).json({ isReady: true })
+        })
+        .mapErr((error) => {
+          return res.status(StatusCodes.NOT_FOUND).json({ message: error })
+        })
+    },
+  )
 }
 
 // TODO: Refactor for use in static payment url implementation
@@ -412,17 +428,11 @@ export const getPaymentInfo: ControllerHandler<
 
   return PaymentService.findPaymentByPaymentIntentId(paymentId)
     .andThen((payment) =>
-      // TODO: swap to pending submission service
-      // SubmissionService.findSubmissionById(payment.pendingSubmissionId),
-      {
-        return PendingSubmissionModel.findPendingSubmissionById(
-          payment.pendingSubmissionId,
-        )
-      },
+      PendingSubmissionModel.findPendingSubmissionById(
+        payment.pendingSubmissionId,
+      ),
     )
-    .andThen((submission) => {
-      return FormService.retrieveFormById(submission.form)
-    })
+    .andThen((submission) => FormService.retrieveFormById(submission.form))
     .andThen((form) => {
       // Payment forms are encrypted
       if (!isFormEncryptMode(form)) {
@@ -438,7 +448,7 @@ export const getPaymentInfo: ControllerHandler<
         return errAsync(new Error('Is not a payment form'))
       }
       const stripeAccount = form.payments_channel?.target_account_id
-      // Early termination to prevent consumption of QPS to stripe
+      // Early termination to prevent consumption of QPS limit to stripe
       if (!stripeAccount) {
         logger.warn({
           message: 'Missing payments_channel on this form',
