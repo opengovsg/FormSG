@@ -103,11 +103,9 @@ const confirmStripePaymentPendingSubmission = (
     return (
       ResultAsync.fromPromise(
         typeof charge.balance_transaction === 'string'
-          ? stripe.balanceTransactions.retrieve(
-              charge.balance_transaction,
-              undefined,
-              { stripeAccount: event.account },
-            )
+          ? stripe.balanceTransactions.retrieve(charge.balance_transaction, {
+              stripeAccount: event.account,
+            })
           : Promise.resolve(charge.balance_transaction),
         (error) => {
           logger.error({
