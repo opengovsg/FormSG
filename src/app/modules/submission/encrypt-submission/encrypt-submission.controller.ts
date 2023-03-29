@@ -526,11 +526,7 @@ const submitEncryptModeForm: ControllerHandler<
     // client will display error message. We still return 200 OK because the
     // state is recoverable.
     const paymentData = paymentClientSecret
-      ? {
-          paymentClientSecret,
-          paymentPublishableKey: form.payments_channel?.publishable_key,
-          paymentIntentId: paymentIntent?.id,
-        }
+      ? { paymentIntentId: paymentIntent?.id }
       : null
 
     return res.json({

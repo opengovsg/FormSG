@@ -162,8 +162,5 @@ export type StorageModeSubmissionContentDto = {
 export type StorageModePaymentSubmissionDto = Payment
 
 export type PaymentSubmissionData = {
-  // TODO: can remove payment clientsecret and publishablekey
   paymentIntentId: string
-  paymentClientSecret: string
-  paymentPublishableKey: string
 }
