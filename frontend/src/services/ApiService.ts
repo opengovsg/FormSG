@@ -78,3 +78,32 @@ ApiService.interceptors.response.use(
     throw transformedError
   },
 )
+
+export const processFetchResponse = async (response: Response) => {
+  try {
+    const data = response.json()
+
+    // TODO: data may be present but if response is non 2XX, transform to error and throw
+    return data
+  } catch (error) {
+    datadogLogs.logger.warn(`Fetch error: ${error.message}`, {
+      meta: {
+        action: 'processFetchResponse',
+        response: {
+          status: response.status,
+          statusText: response.statusText,
+          headers: [...(response.headers?.entries() || [])],
+          body: response.body,
+        },
+        error: {
+          code: error?.code,
+          message: error?.message,
+          stack: error?.stack,
+          dump: error?.toJSON ? error.toJSON() : undefined,
+        },
+      },
+    })
+
+    throw error
+  }
+}

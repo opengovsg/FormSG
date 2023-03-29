@@ -11,7 +11,11 @@ import {
 
 import { ADMINFORM_USETEMPLATE_ROUTE } from '~constants/routes'
 import { transformAllIsoStringsToDate } from '~utils/date'
-import { API_BASE_URL, ApiService } from '~services/ApiService'
+import {
+  API_BASE_URL,
+  ApiService,
+  processFetchResponse,
+} from '~services/ApiService'
 
 import { augmentWithMyInfoDisplayValue } from '~features/myinfo/utils'
 import {
@@ -221,7 +225,7 @@ export const submitEmailModeFormPreviewWithFetch = async ({
       body: formData,
     },
   )
-  return response.json()
+  return processFetchResponse(response)
 }
 
 /**
@@ -256,5 +260,5 @@ export const submitStorageModeFormPreviewWithFetch = async ({
       },
     },
   )
-  return response.json()
+  return processFetchResponse(response)
 }
