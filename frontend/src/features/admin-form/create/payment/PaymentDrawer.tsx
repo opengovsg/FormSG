@@ -18,8 +18,8 @@ import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import InlineMessage from '~components/InlineMessage'
+import Input from '~components/Input'
 import MoneyInput from '~components/MoneyInput'
-import Textarea from '~components/Textarea'
 import Toggle from '~components/Toggle'
 
 import { useMutateFormPage } from '~features/admin-form/common/mutations'
@@ -51,6 +51,12 @@ const formatCurrency = new Intl.NumberFormat('en-SG', {
   minimumFractionDigits: 2,
   maximumFractionDigits: 2,
 }).format
+/**
+ * Description in payment field will be rendered as 'Name' in the Frontend, but kept as description in the backend
+ * This is for design purpose as 'Name' conveys clearer information to the users,
+ * Whilst description will still be used in the backend for consistency with Stripe's API
+ */
+const NAME_INFORMATION = 'Name will be reflected on payment receipt'
 
 export const PaymentInput = ({
   isDisabled,
@@ -203,6 +209,21 @@ export const PaymentInput = ({
           <>
             <FormControl
               isReadOnly={paymentsMutation.isLoading}
+              isInvalid={!!errors.description}
+              isRequired
+              isDisabled={isDisabled}
+            >
+              <FormLabel description={NAME_INFORMATION}>Name</FormLabel>
+              <Input
+                {...register('description', {
+                  required: 'Please enter a payment description',
+                })}
+              />
+              <FormErrorMessage>{errors.description?.message}</FormErrorMessage>
+            </FormControl>
+            <Divider />
+            <FormControl
+              isReadOnly={paymentsMutation.isLoading}
               isInvalid={!!errors.display_amount}
               isDisabled={isDisabled}
             >
@@ -224,21 +245,6 @@ export const PaymentInput = ({
               <FormErrorMessage>
                 {errors.display_amount?.message}
               </FormErrorMessage>
-            </FormControl>
-
-            <FormControl
-              isReadOnly={paymentsMutation.isLoading}
-              isInvalid={!!errors.description}
-              isRequired
-              isDisabled={isDisabled}
-            >
-              <FormLabel>Description</FormLabel>
-              <Textarea
-                {...register('description', {
-                  required: 'Please enter a payment description',
-                })}
-              />
-              <FormErrorMessage>{errors.description?.message}</FormErrorMessage>
             </FormControl>
           </>
         )}
