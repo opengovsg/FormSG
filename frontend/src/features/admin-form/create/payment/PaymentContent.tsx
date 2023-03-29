@@ -5,7 +5,6 @@ import { FormPaymentsField } from '~shared/types'
 
 import { centsToDollars } from '~utils/payments'
 
-import { useAdminForm } from '~features/admin-form/common/queries'
 import { useBgColor } from '~features/public-form/components/PublicFormWrapper'
 
 import { useDesignColorTheme } from '../builder-and-design/utils/useDesignColorTheme'
@@ -18,7 +17,6 @@ export const PaymentContent = ({
 }: {
   paymentsField: FormPaymentsField
 }): JSX.Element => {
-  const { data: form } = useAdminForm()
   const paymentsFromStore = usePaymentStore(dataSelector)
 
   // When drawer is opened, store is populated. We always want the drawer settings
@@ -52,7 +50,7 @@ export const PaymentContent = ({
         bg={bg}
       >
         <Box py={{ base: '1.5rem', md: '2.5rem' }} w="100%">
-          {form && payments?.enabled ? (
+          {payments?.enabled ? (
             <Container p={0}>
               <Flex flexDir="column" align="center">
                 <Stack
