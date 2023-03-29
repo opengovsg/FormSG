@@ -39,15 +39,6 @@ const StripeElementWrapper = ({ paymentPageId }: { paymentPageId: string }) => {
       }}
     >
       <Flex flexDir="column" align="center">
-        <Box position={'fixed'} w={'50%'} top={0} left={0}>
-          <pre>
-            <Code>
-              {JSON.stringify(paymentInfoData, null, 2)}
-              <br />
-              {debugText}
-            </Code>
-          </pre>
-        </Box>
         <StripeHookWrapper
           paymentInfoData={paymentInfoData}
           setDebugText={setDebugText}
