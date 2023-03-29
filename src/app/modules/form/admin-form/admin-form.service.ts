@@ -67,7 +67,7 @@ import {
   SecretsManagerNotFoundError,
   TwilioCacheError,
 } from '../../core/core.errors'
-import { InvalidPaymentAmountError } from '../../payments/payment.errors'
+import { InvalidPaymentAmountError } from '../../payments/payments.errors'
 import { MissingUserError } from '../../user/user.errors'
 import * as UserService from '../../user/user.service'
 import { SmsLimitExceededError } from '../../verification/verification.errors'
