@@ -82,10 +82,10 @@ export const PaymentInput = ({
     ),
   )
 
-  // unpack payment data if it exists
-  const { amount_cents: paymentAmountCents, ...paymentCommon } = paymentsData
-    ? paymentsData
-    : ({ enabled: false } as FormPaymentsField)
+  // unpack payment data for paymentAmount if it exists
+  const paymentAmountCents = paymentsData
+    ? paymentsData.amount_cents
+    : undefined
 
   const { handleClose } = useCreatePageSidebar()
 
@@ -97,7 +97,7 @@ export const PaymentInput = ({
   } = useForm<FormPaymentsDisplay>({
     mode: 'onChange',
     defaultValues: {
-      ...paymentCommon,
+      ...paymentsData,
       // Change calculate display_amount value from amount_cents
       display_amount: centsToDollars(paymentAmountCents ?? 0),
     },
@@ -193,7 +193,7 @@ export const PaymentInput = ({
       }
     }
     return paymentsMutation.mutate(
-      { ...paymentCommon, amount_cents: paymentAmountCents },
+      { ...paymentsData, amount_cents: paymentAmountCents },
       {
         onSuccess: () => {
           setToInactive()
@@ -282,7 +282,7 @@ export const PaymentInput = ({
           variant="clear"
           colorScheme="secondary"
           isDisabled={paymentsMutation.isLoading}
-          onClick={() => handleCloseDrawer()}
+          onClick={handleCloseDrawer}
         >
           Cancel
         </Button>
