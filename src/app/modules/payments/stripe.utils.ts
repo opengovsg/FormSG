@@ -79,11 +79,12 @@ export const computePaymentState = (
     ): event is
       | Stripe.DiscriminatedEvent.ChargeEvent
       | Stripe.DiscriminatedEvent.ChargeDisputeEvent =>
-      event.type === 'charge.failed' ||
-      event.type === 'charge.pending' ||
-      event.type === 'charge.refunded' ||
-      event.type === 'charge.succeeded' ||
-      event.type.startsWith('charge.dispute.'),
+      [
+        'charge.failed',
+        'charge.pending',
+        'charge.refunded',
+        'charge.succeeded',
+      ].includes(event.type) || event.type.startsWith('charge.dispute.'),
   )
 
   // Step 1: State machine for computing the current value of the payment state.
