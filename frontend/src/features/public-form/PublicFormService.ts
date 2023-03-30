@@ -162,6 +162,9 @@ export const submitEmailModeFormWithFetch = async ({
     {
       method: 'POST',
       body: formData,
+      headers: {
+        Accept: 'application/json',
+      },
     },
   )
 
@@ -200,6 +203,7 @@ export const submitStorageModeFormWithFetch = async ({
       body: JSON.stringify(submissionContent),
       headers: {
         'Content-Type': 'application/json',
+        Accept: 'application/json',
       },
     },
   )
