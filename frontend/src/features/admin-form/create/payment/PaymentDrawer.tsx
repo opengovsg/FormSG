@@ -185,8 +185,8 @@ export const PaymentInput = ({
   )
 
   const handleUpdatePayments = handleSubmit(() => {
-    if (isDisabled) {
-      // do not mutate if payments is disabled
+    if (isDisabled || !paymentsData) {
+      // do not mutate if payments is disabled or unavailable
       return () => {
         setToInactive()
         handleCloseDrawer()
