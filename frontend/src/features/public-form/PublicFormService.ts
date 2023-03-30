@@ -13,7 +13,11 @@ import {
 import { SubmissionResponseDto } from '~shared/types/submission'
 
 import { transformAllIsoStringsToDate } from '~utils/date'
-import { API_BASE_URL, ApiService } from '~services/ApiService'
+import {
+  API_BASE_URL,
+  ApiService,
+  processFetchResponse,
+} from '~services/ApiService'
 import { FormFieldValues } from '~templates/Field'
 
 import {
@@ -154,14 +158,17 @@ export const submitEmailModeFormWithFetch = async ({
   }).toString()
 
   const response = await fetch(
-    `${API_BASE_URL}/${PUBLIC_FORMS_ENDPOINT}/${formId}/submissions/email?${queryString}`,
+    `${API_BASE_URL}${PUBLIC_FORMS_ENDPOINT}/${formId}/submissions/email?${queryString}`,
     {
       method: 'POST',
       body: formData,
+      headers: {
+        Accept: 'application/json',
+      },
     },
   )
 
-  return response.json()
+  return processFetchResponse(response)
 }
 
 // TODO (#5826): Fallback mutation using Fetch. Remove once network error is resolved
@@ -190,17 +197,18 @@ export const submitStorageModeFormWithFetch = async ({
   }).toString()
 
   const response = await fetch(
-    `${API_BASE_URL}/${PUBLIC_FORMS_ENDPOINT}/${formId}/submissions/encrypt?${queryString}`,
+    `${API_BASE_URL}${PUBLIC_FORMS_ENDPOINT}/${formId}/submissions/encrypt?${queryString}`,
     {
       method: 'POST',
       body: JSON.stringify(submissionContent),
       headers: {
         'Content-Type': 'application/json',
+        Accept: 'application/json',
       },
     },
   )
 
-  return response.json()
+  return processFetchResponse(response)
 }
 
 /**
