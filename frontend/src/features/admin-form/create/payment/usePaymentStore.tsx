@@ -21,13 +21,11 @@ export type PaymentStore = {
   moveFromHolding: () => void
 }
 
-const defaultPaymentsField = { enabled: false } as FormPaymentsField
-
 export const usePaymentStore = create<PaymentStore>()(
   devtools((set, get) => ({
     state: PaymentState.Inactive,
     holdingState: null,
-    data: defaultPaymentsField,
+    data: { enabled: false } as FormPaymentsField,
     moveFromHolding: () => {
       const currentHoldingState = get().holdingState
       if (!currentHoldingState) return
