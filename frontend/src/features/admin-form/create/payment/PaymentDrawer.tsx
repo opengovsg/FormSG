@@ -293,11 +293,11 @@ export const PaymentInput = ({
 
 // Will be extended for stripe unconnected messages too
 const PaymentDisabledMessage = ({
-  isEncryptMode,
+  isEmailMode,
 }: {
-  isEncryptMode: boolean
+  isEmailMode: boolean
 }): JSX.Element | null => {
-  return !isEncryptMode ? (
+  return isEmailMode ? (
     <Box px="1.5rem" pt="2rem" pb="1.5rem">
       <InlineMessage variant={'info'}>
         <Text>Payments are not available in email mode forms.</Text>
@@ -336,7 +336,7 @@ export const PaymentDrawer = ({
 
   return (
     <CreatePageDrawerContainer>
-      <PaymentDisabledMessage isEncryptMode={isEncryptMode} />
+      <PaymentDisabledMessage isEmailMode={!isEncryptMode} />
       <Flex pos="relative" h="100%" display="flex" flexDir="column">
         <Box pt="1rem" px="1.5rem" bg="white">
           <Flex justify="space-between">
