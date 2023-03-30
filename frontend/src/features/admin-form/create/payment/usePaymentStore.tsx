@@ -21,7 +21,7 @@ export type PaymentStore = {
   moveFromHolding: () => void
 }
 
-export const defaultPaymentsField = { enabled: false } as FormPaymentsField
+const defaultPaymentsField = { enabled: false } as FormPaymentsField
 
 export const usePaymentStore = create<PaymentStore>()(
   devtools((set, get) => ({
