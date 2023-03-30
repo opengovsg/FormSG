@@ -185,6 +185,13 @@ export const PaymentInput = ({
   )
 
   const handleUpdatePayments = handleSubmit(() => {
+    if (isDisabled) {
+      // do not mutate if payments is disabled
+      return () => {
+        setToInactive()
+        handleCloseDrawer()
+      }
+    }
     return paymentsMutation.mutate(
       { ...paymentCommon, amount_cents: paymentAmountCents },
       {
