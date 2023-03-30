@@ -97,8 +97,9 @@ export const processFetchResponse = async (response: Response) => {
             body: response.body,
           },
           error: {
-            message: error?.message,
-            stack: error?.stack,
+            name: error.name,
+            message: error.message,
+            stack: error.stack,
             dump: JSON.stringify(error),
           },
         },
