@@ -17,10 +17,20 @@ import {
 
 const logger = createLoggerWithLabel(module)
 
+/**
+ * Helper function to get redirect URI for OAuth callback on account linkage.
+ */
 export const getRedirectUri = () =>
   `${
     config.isDev ? 'http://localhost:5001' : config.app.appUrl
   }/api/v3/payments/stripe/callback`
+
+/**
+ * Helper function to get the charge id from a nested charge object.
+ */
+export const getChargeIdFromNestedCharge = (
+  charge: string | Stripe.Charge,
+): string => (typeof charge === 'string' ? charge : charge.id)
 
 /**
  * Extracts the payment id from the metadata field of objects expected to have
@@ -64,10 +74,6 @@ export const computePaymentState = (
     action: 'computePaymentState',
     events,
   }
-
-  // Helper to get the charge id from a nested charge object.
-  const getChargeId = (charge: string | Stripe.Charge): string =>
-    typeof charge === 'string' ? charge : charge.id
 
   // We only care about charge and dispute events for computing payment status.
   // The event types are:
@@ -122,7 +128,8 @@ export const computePaymentState = (
               : PaymentStatus.PartiallyRefunded
         } else if (
           event.type === 'charge.dispute.created' &&
-          getChargeId(event.data.object.charge) === chargeIdLatest
+          getChargeIdFromNestedCharge(event.data.object.charge) ===
+            chargeIdLatest
         ) {
           status = PaymentStatus.Disputed
         } else {
@@ -135,7 +142,8 @@ export const computePaymentState = (
             event.type === 'charge.dispute.updated' ||
             event.type === 'charge.dispute.closed' ||
             event.type === 'charge.dispute.funds_reinstated') &&
-          getChargeId(event.data.object.charge) === chargeIdLatest
+          getChargeIdFromNestedCharge(event.data.object.charge) ===
+            chargeIdLatest
         ) {
           // Do nothing to retain identical state here - in the future, we can
           // add more detailed tracking if necessary
@@ -205,7 +213,9 @@ export const computePaymentState = (
     case 'charge.dispute.closed':
       return ok({
         status: PaymentStatus.Disputed,
-        chargeIdLatest: getChargeId(lastEvent.data.object.charge),
+        chargeIdLatest: getChargeIdFromNestedCharge(
+          lastEvent.data.object.charge,
+        ),
       })
     default:
       // All cases have been covered, so this should never happen.

@@ -21,7 +21,10 @@ import { checkFormIsEncryptMode } from '../submission/encrypt-submission/encrypt
 
 import * as PaymentService from './payments.service'
 import * as StripeService from './stripe.service'
-import { getMetadataPaymentId } from './stripe.utils'
+import {
+  getChargeIdFromNestedCharge,
+  getMetadataPaymentId,
+} from './stripe.utils'
 
 const logger = createLoggerWithLabel(module)
 const PaymentModel = getPaymentModel(mongoose)
@@ -123,10 +126,9 @@ const _handleStripeEventUpdates: ControllerHandler<
     case 'charge.dispute.funds_reinstated':
     case 'charge.dispute.funds_withdrawn':
     case 'charge.dispute.updated': {
-      const chargeIdLatest =
-        typeof event.data.object.charge === 'string'
-          ? event.data.object.charge
-          : event.data.object.charge.id
+      const chargeIdLatest = getChargeIdFromNestedCharge(
+        event.data.object.charge,
+      )
 
       const payment = await PaymentModel.findOne({ chargeIdLatest })
       if (!payment) {
@@ -141,18 +143,17 @@ const _handleStripeEventUpdates: ControllerHandler<
       break
     }
     case 'charge.refund.updated': {
-      const chargeIdLatest =
-        typeof event.data.object.charge === 'string'
-          ? event.data.object.charge
-          : event.data.object.charge?.id
-
-      if (!chargeIdLatest) {
+      if (!event.data.object.charge) {
         logger.warn({
           message: 'Received Stripe event charge.refund.updated with no charge',
-          meta: { ...logMeta, chargeIdLatest },
+          meta: { ...logMeta, chargeIdLatest: event.data.object.charge },
         })
         return res.sendStatus(StatusCodes.BAD_REQUEST)
       }
+
+      const chargeIdLatest = getChargeIdFromNestedCharge(
+        event.data.object.charge,
+      )
 
       const payment = await PaymentModel.findOne({ chargeIdLatest })
       if (!payment) {
