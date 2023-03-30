@@ -11,7 +11,11 @@ import {
 
 import { ADMINFORM_USETEMPLATE_ROUTE } from '~constants/routes'
 import { transformAllIsoStringsToDate } from '~utils/date'
-import { ApiService } from '~services/ApiService'
+import {
+  API_BASE_URL,
+  ApiService,
+  processFetchResponse,
+} from '~services/ApiService'
 
 import { augmentWithMyInfoDisplayValue } from '~features/myinfo/utils'
 import {
@@ -27,7 +31,7 @@ import {
 import { PREVIEW_MOCK_UINFIN } from '../preview/constants'
 
 // endpoint exported for testing
-export const ADMIN_FORM_ENDPOINT = 'admin/forms'
+export const ADMIN_FORM_ENDPOINT = '/admin/forms'
 
 /**
  * Gets admin view of form.
@@ -195,4 +199,70 @@ export const submitStorageModeFormPreview = async ({
     `${ADMIN_FORM_ENDPOINT}/${formId}/preview/submissions/encrypt`,
     submissionContent,
   ).then(({ data }) => data)
+}
+
+/**
+ * Submit an email mode form in preview mode using fetch
+ * TODO(#5826): Fallback using Fetch. Remove once network error is resolved
+ */
+export const submitEmailModeFormPreviewWithFetch = async ({
+  formFields,
+  formLogics,
+  formInputs,
+  formId,
+}: SubmitEmailFormArgs): Promise<SubmissionResponseDto> => {
+  const filteredInputs = filterHiddenInputs({
+    formFields,
+    formInputs,
+    formLogics,
+  })
+  const formData = createEmailSubmissionFormData(formFields, filteredInputs)
+
+  const response = await fetch(
+    `${API_BASE_URL}${ADMIN_FORM_ENDPOINT}/${formId}/preview/submissions/email`,
+    {
+      method: 'POST',
+      body: formData,
+      headers: {
+        Accept: 'application/json',
+      },
+    },
+  )
+  return processFetchResponse(response)
+}
+
+/**
+ * Submit a storage mode form in preview mode using fetch
+ * TODO(#5826): Fallback using Fetch. Remove once network error is resolved
+ */
+export const submitStorageModeFormPreviewWithFetch = async ({
+  formFields,
+  formLogics,
+  formInputs,
+  formId,
+  publicKey,
+}: SubmitStorageFormArgs): Promise<SubmissionResponseDto> => {
+  const filteredInputs = filterHiddenInputs({
+    formFields,
+    formInputs,
+    formLogics,
+  })
+  const submissionContent = await createEncryptedSubmissionData(
+    formFields,
+    filteredInputs,
+    publicKey,
+  )
+
+  const response = await fetch(
+    `${API_BASE_URL}${ADMIN_FORM_ENDPOINT}/${formId}/preview/submissions/encrypt`,
+    {
+      method: 'POST',
+      body: JSON.stringify(submissionContent),
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+    },
+  )
+  return processFetchResponse(response)
 }

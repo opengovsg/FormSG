@@ -34,5 +34,8 @@ export const getClientEnvVars = (): ClientEnvVars => {
       config.reactMigration.removeAdminInfoboxThreshold,
     removeRespondentsInfoboxThreshold:
       config.reactMigration.removeRespondentsInfoboxThreshold,
+
+    // TODO (#5826): Toggle to use fetch for submissions instead of axios. Remove once network error is resolved
+    useFetchForSubmissions: config.reactMigration.useFetchForSubmissions,
   }
 }

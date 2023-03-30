@@ -43,8 +43,10 @@ export const transformAxiosError = (error: Error): ApiError => {
         meta: {
           action: 'transformAxiosError',
           error: {
+            code: error?.code,
             message: error?.message,
             stack: error?.stack,
+            dump: JSON.stringify(error),
           },
         },
       })
@@ -76,3 +78,37 @@ ApiService.interceptors.response.use(
     throw transformedError
   },
 )
+
+export const processFetchResponse = async (response: Response) => {
+  try {
+    // throw if response status not 2XX
+    if (response.status < 200 || response.status >= 300) {
+      throw new Error(`Non-2XX response: ${response.status}`)
+    } else {
+      const data = await response.json()
+      return data
+    }
+  } catch (error: any) {
+    // No guarantee that error is an Error object
+    datadogLogs.logger.warn(`Fetch error: ${error.message}`, {
+      meta: {
+        action: 'processFetchResponse',
+        response: {
+          status: response.status,
+          statusText: response.statusText,
+          headers: [...(response.headers?.entries() || [])],
+          body: await response.text(),
+        },
+        error: {
+          name: error.name,
+          message: error.message,
+          stack: error.stack,
+          code: error.code,
+          dump: JSON.stringify(error),
+        },
+      },
+    })
+
+    throw error
+  }
+}

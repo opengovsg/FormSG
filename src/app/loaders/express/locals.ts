@@ -33,6 +33,8 @@ const frontendVars = {
     config.reactMigration.respondentRolloutStorage,
   reactMigrationAdminRollout: config.reactMigration.adminRollout,
   reactMigrationAngularPhaseOutDate: config.reactMigration.angularPhaseOutDate,
+  reactMigrationUseFetchForSubmissions:
+    config.reactMigration.useFetchForSubmissions,
 }
 const environment = ejs.render(
   `
@@ -64,6 +66,7 @@ const environment = ejs.render(
     var reactMigrationRespondentRolloutStorage = "<%= reactMigrationRespondentRolloutStorage%>"
     var reactMigrationAdminRollout = "<%= reactMigrationAdminRollout%>"
     var reactMigrationAngularPhaseOutDate = "<%= reactMigrationAngularPhaseOutDate%>"
+    var reactMigrationUseFetchForSubmissions = <%= reactMigrationUseFetchForSubmissions%>
   `,
   frontendVars,
 )
