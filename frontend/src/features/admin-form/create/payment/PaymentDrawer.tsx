@@ -71,11 +71,7 @@ export const PaymentInput = ({
 
   const setIsDirty = useDirtyFieldStore(setIsDirtySelector)
 
-  const {
-    paymentsData: { amount_cents: paymentAmountCents, ...paymentCommon },
-    setData,
-    setToInactive,
-  } = usePaymentStore(
+  const { paymentsData, setData, setToInactive } = usePaymentStore(
     useCallback(
       (state) => ({
         paymentsData: dataSelector(state),
@@ -85,6 +81,11 @@ export const PaymentInput = ({
       [],
     ),
   )
+
+  // unpack payment data if it exists
+  const { amount_cents: paymentAmountCents, ...paymentCommon } = paymentsData
+    ? paymentsData
+    : ({ enabled: false } as FormPaymentsField)
 
   const { handleClose } = useCreatePageSidebar()
 
@@ -195,6 +196,8 @@ export const PaymentInput = ({
     )
   })
 
+  const paymentToggleLabel = 'Enable Payment'
+
   return (
     <CreatePageDrawerContentContainer>
       <Stack gap="2rem">
@@ -202,7 +205,11 @@ export const PaymentInput = ({
           isReadOnly={paymentsMutation.isLoading}
           isDisabled={isDisabled}
         >
-          <Toggle {...register('enabled')} label="Enable payment" />
+          {isDisabled ? (
+            <Toggle value={1} label={paymentToggleLabel} />
+          ) : (
+            <Toggle {...register('enabled')} label={paymentToggleLabel} />
+          )}
         </FormControl>
 
         {watchedEnabled && (
@@ -317,7 +324,8 @@ export const PaymentDrawer = ({
     return resetData
   }, [paymentsField, resetData, setData])
 
-  if (!paymentData) return null
+  // Allows for payment data refresh in encrypt mode
+  if (!paymentData && isEncryptMode) return null
 
   return (
     <CreatePageDrawerContainer>
