@@ -81,10 +81,13 @@ ApiService.interceptors.response.use(
 
 export const processFetchResponse = async (response: Response) => {
   try {
-    const data = await response.json()
-
-    // TODO: data may be present but if response is non 2XX, transform to error and throw
-    return data
+    // throw if response status not 2XX
+    if (response.status < 200 || response.status >= 300) {
+      throw new Error(`Non-2XX response: ${response.status}`)
+    } else {
+      const data = await response.json()
+      return data
+    }
   } catch (error) {
     if (error instanceof Error) {
       datadogLogs.logger.warn(`Fetch error: ${error.message}`, {
