@@ -11,7 +11,11 @@ import {
 
 import { ADMINFORM_USETEMPLATE_ROUTE } from '~constants/routes'
 import { transformAllIsoStringsToDate } from '~utils/date'
-import { API_BASE_URL, ApiService } from '~services/ApiService'
+import {
+  API_BASE_URL,
+  ApiService,
+  processFetchResponse,
+} from '~services/ApiService'
 
 import { augmentWithMyInfoDisplayValue } from '~features/myinfo/utils'
 import {
@@ -27,7 +31,7 @@ import {
 import { PREVIEW_MOCK_UINFIN } from '../preview/constants'
 
 // endpoint exported for testing
-export const ADMIN_FORM_ENDPOINT = 'admin/forms'
+export const ADMIN_FORM_ENDPOINT = '/admin/forms'
 
 /**
  * Gets admin view of form.
@@ -215,13 +219,16 @@ export const submitEmailModeFormPreviewWithFetch = async ({
   const formData = createEmailSubmissionFormData(formFields, filteredInputs)
 
   const response = await fetch(
-    `${API_BASE_URL}/${ADMIN_FORM_ENDPOINT}/${formId}/preview/submissions/email`,
+    `${API_BASE_URL}${ADMIN_FORM_ENDPOINT}/${formId}/preview/submissions/email`,
     {
       method: 'POST',
       body: formData,
+      headers: {
+        Accept: 'application/json',
+      },
     },
   )
-  return response.json()
+  return processFetchResponse(response)
 }
 
 /**
@@ -247,14 +254,15 @@ export const submitStorageModeFormPreviewWithFetch = async ({
   )
 
   const response = await fetch(
-    `${API_BASE_URL}/${ADMIN_FORM_ENDPOINT}/${formId}/preview/submissions/encrypt`,
+    `${API_BASE_URL}${ADMIN_FORM_ENDPOINT}/${formId}/preview/submissions/encrypt`,
     {
       method: 'POST',
       body: JSON.stringify(submissionContent),
       headers: {
         'Content-Type': 'application/json',
+        Accept: 'application/json',
       },
     },
   )
-  return response.json()
+  return processFetchResponse(response)
 }
