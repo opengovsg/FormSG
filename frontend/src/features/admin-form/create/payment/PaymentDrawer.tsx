@@ -83,9 +83,7 @@ export const PaymentInput = ({
   )
 
   // unpack payment data for paymentAmount if it exists
-  const paymentAmountCents = paymentsData
-    ? paymentsData.amount_cents
-    : undefined
+  const paymentAmountCents = paymentsData?.amount_cents
 
   const { handleClose } = useCreatePageSidebar()
 
