@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { ObjectId } from 'bson'
 import { keyBy } from 'lodash'
 import mongoose from 'mongoose'
@@ -263,10 +264,10 @@ describe('stripe.service', () => {
       expect(result.isOk()).toEqual(true)
 
       const updatedPayment = await Payment.findById(payment.id)
-      if (!updatedPayment) throw new Error('Payment not found!')
+      expect(updatedPayment).toBeTruthy()
 
-      expect(updatedPayment.status).toEqual(PaymentStatus.Failed)
-      expect(updatedPayment.chargeIdLatest).toEqual(chargeFailed.id)
+      expect(updatedPayment!.status).toEqual(PaymentStatus.Failed)
+      expect(updatedPayment!.chargeIdLatest).toEqual(chargeFailed.id)
     })
 
     it('should update the charge status from Pending to Succeeded when a charge.succeeded event is received, move the pending submission to submissions', async () => {
@@ -318,10 +319,10 @@ describe('stripe.service', () => {
       expect(confirmSpy).toHaveBeenCalledOnce()
 
       const updatedPayment = await Payment.findById(payment.id)
-      if (!updatedPayment) throw new Error('Payment not found!')
+      expect(updatedPayment).toBeTruthy()
 
-      expect(updatedPayment.status).toEqual(PaymentStatus.Succeeded)
-      expect(updatedPayment.chargeIdLatest).toEqual(chargeSucceeded.id)
+      expect(updatedPayment!.status).toEqual(PaymentStatus.Succeeded)
+      expect(updatedPayment!.chargeIdLatest).toEqual(chargeSucceeded.id)
     })
 
     it('should update the charge status from Succeeded to Partially Refunded when a charge.refunded event is received for a partial refund', async () => {
@@ -360,11 +361,11 @@ describe('stripe.service', () => {
       expect(result.isOk()).toEqual(true)
 
       const updatedPayment = await Payment.findById(payment.id)
-      if (!updatedPayment) throw new Error('Payment not found!')
+      expect(updatedPayment).toBeTruthy()
 
-      expect(updatedPayment.status).toEqual(PaymentStatus.PartiallyRefunded)
-      expect(updatedPayment.chargeIdLatest).toEqual(chargePartiallyRefunded.id)
-      expect(updatedPayment.completedPayment).toBeTruthy()
+      expect(updatedPayment!.status).toEqual(PaymentStatus.PartiallyRefunded)
+      expect(updatedPayment!.chargeIdLatest).toEqual(chargePartiallyRefunded.id)
+      expect(updatedPayment!.completedPayment).toBeTruthy()
     })
 
     it('should update the charge status from Succeeded to Fully Refunded when a charge.refunded event is received for a full refund', async () => {
@@ -403,11 +404,11 @@ describe('stripe.service', () => {
       expect(result.isOk()).toEqual(true)
 
       const updatedPayment = await Payment.findById(payment.id)
-      if (!updatedPayment) throw new Error('Payment not found!')
+      expect(updatedPayment).toBeTruthy()
 
-      expect(updatedPayment.status).toEqual(PaymentStatus.FullyRefunded)
-      expect(updatedPayment.chargeIdLatest).toEqual(chargeFullyRefunded.id)
-      expect(updatedPayment.completedPayment).toBeTruthy()
+      expect(updatedPayment!.status).toEqual(PaymentStatus.FullyRefunded)
+      expect(updatedPayment!.chargeIdLatest).toEqual(chargeFullyRefunded.id)
+      expect(updatedPayment!.completedPayment).toBeTruthy()
     })
 
     it('should update the charge status from Succeeded to Disputed when a charge.dispute.created event is received', async () => {
@@ -444,11 +445,11 @@ describe('stripe.service', () => {
       expect(result.isOk()).toEqual(true)
 
       const updatedPayment = await Payment.findById(payment.id)
-      if (!updatedPayment) throw new Error('Payment not found!')
+      expect(updatedPayment).toBeTruthy()
 
-      expect(updatedPayment.status).toEqual(PaymentStatus.Disputed)
-      expect(updatedPayment.chargeIdLatest).toEqual(dispute.charge)
-      expect(updatedPayment.completedPayment).toBeTruthy()
+      expect(updatedPayment!.status).toEqual(PaymentStatus.Disputed)
+      expect(updatedPayment!.chargeIdLatest).toEqual(dispute.charge)
+      expect(updatedPayment!.completedPayment).toBeTruthy()
     })
 
     it('should add the payout details when a payout.created event is received', async () => {
@@ -478,10 +479,10 @@ describe('stripe.service', () => {
       expect(result.isOk()).toEqual(true)
 
       const updatedPayment = await Payment.findById(payment.id)
-      if (!updatedPayment) throw new Error('Payment not found!')
+      expect(updatedPayment).toBeTruthy()
 
-      expect(updatedPayment.payout?.payoutId).toEqual(payout.id)
-      expect(updatedPayment.payout?.payoutDate).toEqual(
+      expect(updatedPayment!.payout?.payoutId).toEqual(payout.id)
+      expect(updatedPayment!.payout?.payoutDate).toEqual(
         new Date(payout.arrival_date),
       )
     })
@@ -519,9 +520,9 @@ describe('stripe.service', () => {
       expect(result.isOk()).toEqual(true)
 
       const updatedPayment = await Payment.findById(payment.id)
-      if (!updatedPayment) throw new Error('Payment not found!')
+      expect(updatedPayment).toBeTruthy()
 
-      expect(updatedPayment.payout).toBeUndefined()
+      expect(updatedPayment!.payout).toBeUndefined()
     })
 
     it('should return PaymentNotFoundError when the payment cannot be found', async () => {
