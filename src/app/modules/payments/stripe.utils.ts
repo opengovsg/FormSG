@@ -58,6 +58,90 @@ export const getMetadataPaymentId = (
 }
 
 /**
+ * Type representing the payment status state, used in the state machine for
+ * computing the current value of the payment state from an array of charge or
+ * charge dispute events.
+ */
+type PaymentState = {
+  // A "null" status represents an unknown state, and should be recovered from.
+  status: Payment['status'] | null
+  chargeIdLatest: Payment['chargeIdLatest']
+}
+
+/**
+ * Reducer function representing the state machine transitions for computing
+ * the current value of the payment state from an array of events.
+ */
+const chargeStateReducer = (
+  state: PaymentState,
+  event:
+    | Stripe.DiscriminatedEvent.ChargeEvent
+    | Stripe.DiscriminatedEvent.ChargeDisputeEvent,
+): PaymentState => {
+  switch (state.status) {
+    case PaymentStatus.Pending:
+    case PaymentStatus.Failed:
+      if (event.type === 'charge.failed') {
+        state.status = PaymentStatus.Failed
+        state.chargeIdLatest = event.data.object.id
+      } else if (event.type === 'charge.succeeded') {
+        state.status = PaymentStatus.Succeeded
+        state.chargeIdLatest = event.data.object.id
+      } else {
+        state.status = null
+      }
+      break
+    // Once the payment is successful, ensure that all future events are
+    // related to the latest charge. Otherwise, the status should be in an
+    // unknown state.
+    case PaymentStatus.Succeeded:
+    case PaymentStatus.PartiallyRefunded:
+      if (
+        event.type === 'charge.refunded' &&
+        event.data.object.id === state.chargeIdLatest
+      ) {
+        state.status =
+          event.data.object.amount_captured ===
+          event.data.object.amount_refunded
+            ? PaymentStatus.FullyRefunded
+            : PaymentStatus.PartiallyRefunded
+      } else if (
+        event.type === 'charge.dispute.created' &&
+        getChargeIdFromNestedCharge(event.data.object.charge) ===
+          state.chargeIdLatest
+      ) {
+        state.status = PaymentStatus.Disputed
+      } else {
+        state.status = null
+      }
+      break
+    case PaymentStatus.Disputed:
+      if (
+        (event.type === 'charge.dispute.funds_withdrawn' ||
+          event.type === 'charge.dispute.updated' ||
+          event.type === 'charge.dispute.closed' ||
+          event.type === 'charge.dispute.funds_reinstated') &&
+        getChargeIdFromNestedCharge(event.data.object.charge) ===
+          state.chargeIdLatest
+      ) {
+        // Do nothing to retain identical state here - in the future, we can
+        // add more detailed tracking if necessary
+      } else {
+        state.status = null
+      }
+      break
+    case PaymentStatus.FullyRefunded:
+      // If we recieve any more charge events, the status is unknown.
+      state.status = null
+      break
+    default:
+      // status is null, so do nothing - null is a sink state
+      break
+  }
+  return state
+}
+
+/**
  * State machine that computes the state of the payment, given the list of
  * Stripe events received via webhooks for this submission.
  * @param {Stripe.Event[]} events the list of Stripe events for state to be computed on
@@ -93,73 +177,11 @@ export const computePaymentState = (
       ].includes(event.type) || event.type.startsWith('charge.dispute.'),
   )
 
-  // Step 1: State machine for computing the current value of the payment state.
-  // A "null" status represents an unknown state, and should be recovered from later.
-  let status: Payment['status'] | null = PaymentStatus.Pending
-  let chargeIdLatest: Payment['chargeIdLatest']
-
-  for (const event of chargeEvents) {
-    switch (status) {
-      case PaymentStatus.Pending:
-      case PaymentStatus.Failed:
-        if (event.type === 'charge.failed') {
-          status = PaymentStatus.Failed
-          chargeIdLatest = event.data.object.id
-        } else if (event.type === 'charge.succeeded') {
-          status = PaymentStatus.Succeeded
-          chargeIdLatest = event.data.object.id
-        } else {
-          status = null
-        }
-        break
-      // Once the payment is successful, ensure that all future events are
-      // related to the latest charge. Otherwise, the status should be in an
-      // unknown state.
-      case PaymentStatus.Succeeded:
-      case PaymentStatus.PartiallyRefunded:
-        if (
-          event.type === 'charge.refunded' &&
-          event.data.object.id === chargeIdLatest
-        ) {
-          status =
-            event.data.object.amount_captured ===
-            event.data.object.amount_refunded
-              ? PaymentStatus.FullyRefunded
-              : PaymentStatus.PartiallyRefunded
-        } else if (
-          event.type === 'charge.dispute.created' &&
-          getChargeIdFromNestedCharge(event.data.object.charge) ===
-            chargeIdLatest
-        ) {
-          status = PaymentStatus.Disputed
-        } else {
-          status = null
-        }
-        break
-      case PaymentStatus.Disputed:
-        if (
-          (event.type === 'charge.dispute.funds_withdrawn' ||
-            event.type === 'charge.dispute.updated' ||
-            event.type === 'charge.dispute.closed' ||
-            event.type === 'charge.dispute.funds_reinstated') &&
-          getChargeIdFromNestedCharge(event.data.object.charge) ===
-            chargeIdLatest
-        ) {
-          // Do nothing to retain identical state here - in the future, we can
-          // add more detailed tracking if necessary
-        } else {
-          status = null
-        }
-        break
-      case PaymentStatus.FullyRefunded:
-        // If we recieve any more charge events, the status is unknown.
-        status = null
-        break
-      default:
-        // status is null, so do nothing - null is a sink state
-        break
-    }
-  }
+  // Step 1: Run the state machine on the array of charge events.
+  const { status, chargeIdLatest } = chargeEvents.reduce(chargeStateReducer, {
+    status: PaymentStatus.Pending,
+    chargeIdLatest: undefined,
+  })
 
   if (status) return ok({ status, chargeIdLatest })
 
@@ -168,8 +190,8 @@ export const computePaymentState = (
     meta: logMeta,
   })
 
-  // Step 2: Fallback. If the state transitioned into an unknown state, take the
-  // latest charge event that was received as the current status.
+  // Step 2: Fallback. If the state transitioned into an unknown null state,
+  // take the latest charge event that was received as the current status.
   if (chargeEvents.length === 0) {
     // An empty chargeEvents array should return a pending status, so this
     // should never happen.
@@ -228,6 +250,30 @@ export const computePaymentState = (
 }
 
 /**
+ * Reducer function representing the state machine transitions for computing
+ * the current value of the payout state from an array of payout events.
+ */
+const payoutStateReducer = (
+  payout: Payment['payout'],
+  event: Stripe.DiscriminatedEvent.PayoutEvent,
+): Payment['payout'] => {
+  switch (event.type) {
+    case 'payout.created':
+      // Once created, we know it will happen, so update the payout
+      return {
+        payoutId: event.data.object.id,
+        payoutDate: new Date(event.data.object.arrival_date),
+      }
+    case 'payout.canceled':
+    case 'payout.failed':
+      // If it failed or cancelled, clear the payout details
+      return undefined
+    default:
+      return payout
+  }
+}
+
+/**
  * Computes the state of the payout, given the list of Stripe events received
  * via webhooks for this payment.
  * @param {Stripe.Event[]} events the list of Stripe events for payout state to be computed on
@@ -240,28 +286,5 @@ export const computePayoutDetails = (
     (event): event is Stripe.DiscriminatedEvent.PayoutEvent =>
       event.type.startsWith('payout.'),
   )
-
-  let payout
-
-  for (const event of payoutEvents) {
-    switch (event.type) {
-      case 'payout.created':
-        // Once created, we know it will happen, so update the payout
-        payout = {
-          payoutId: event.data.object.id,
-          payoutDate: new Date(event.data.object.arrival_date),
-        }
-        break
-      case 'payout.canceled':
-      case 'payout.failed':
-        // If it failed or cancelled, clear the payout details
-        payout = undefined
-        break
-      default:
-        // Do nothing
-        break
-    }
-  }
-
-  return ok(payout)
+  return ok(payoutEvents.reduce(payoutStateReducer, undefined))
 }
