@@ -15,7 +15,7 @@ import { dataSelector, usePaymentStore } from './usePaymentStore'
 export const PaymentContent = ({
   paymentsField,
 }: {
-  paymentsField: FormPaymentsField
+  paymentsField?: FormPaymentsField
 }): JSX.Element => {
   const paymentsFromStore = usePaymentStore(dataSelector)
 
