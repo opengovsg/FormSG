@@ -88,27 +88,26 @@ export const processFetchResponse = async (response: Response) => {
       const data = await response.json()
       return data
     }
-  } catch (error) {
-    if (error instanceof Error) {
-      datadogLogs.logger.warn(`Fetch error: ${error.message}`, {
-        meta: {
-          action: 'processFetchResponse',
-          response: {
-            status: response.status,
-            statusText: response.statusText,
-            headers: [...(response.headers?.entries() || [])],
-            body: await response.text(),
-          },
-          error: {
-            name: error.name,
-            message: error.message,
-            stack: error.stack,
-            dump: JSON.stringify(error),
-          },
+  } catch (error: any) {
+    // No guarantee that error is an Error object
+    datadogLogs.logger.warn(`Fetch error: ${error.message}`, {
+      meta: {
+        action: 'processFetchResponse',
+        response: {
+          status: response.status,
+          statusText: response.statusText,
+          headers: [...(response.headers?.entries() || [])],
+          body: await response.text(),
         },
-      })
+        error: {
+          name: error.name,
+          message: error.message,
+          stack: error.stack,
+          dump: JSON.stringify(error),
+        },
+      },
+    })
 
-      throw error
-    }
+    throw error
   }
 }
