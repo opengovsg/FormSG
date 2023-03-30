@@ -1,7 +1,6 @@
-import React, { useEffect, useMemo, useState } from 'react'
-import { ReactElement } from 'react-markdown/lib/react-markdown'
+import React, { useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
-import { Box, Code, Flex } from '@chakra-ui/react'
+import { Box, Flex } from '@chakra-ui/react'
 import { Elements, useStripe } from '@stripe/react-stripe-js'
 import { loadStripe, Stripe } from '@stripe/stripe-js'
 
