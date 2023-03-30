@@ -8,14 +8,20 @@ import { PaymentDrawer } from './PaymentDrawer'
 export const PaymentTab = (): JSX.Element => {
   const { data: form } = useAdminForm()
 
-  return form?.responseMode === FormResponseMode.Encrypt &&
-    form?.payments_field ? (
+  const isEncryptMode = form?.responseMode === FormResponseMode.Encrypt
+
+  return isEncryptMode ? (
     <>
-      <PaymentDrawer paymentsField={form.payments_field} />
+      <PaymentDrawer
+        isEncryptMode={isEncryptMode}
+        paymentsField={form.payments_field}
+      />
       <PaymentContent paymentsField={form.payments_field} />
     </>
   ) : (
-    // TODO: Handle PaymentTab for email mode forms
-    <></>
+    <>
+      <PaymentDrawer isEncryptMode={isEncryptMode} />
+      <PaymentContent />
+    </>
   )
 }
