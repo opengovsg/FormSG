@@ -7,6 +7,8 @@ import mongoose from 'mongoose'
 import Stripe from 'stripe'
 import type { SetOptional } from 'type-fest'
 
+import { StripePaymentMetadataDto } from 'src/types'
+
 import {
   ErrorDto,
   FormAuthType,
@@ -350,8 +352,8 @@ const submitEncryptModeForm: ControllerHandler<
     form.payments_field?.enabled &&
     form.payments_channel?.channel === PaymentChannel.Stripe
   ) {
+    // Step 0: Perform validation checks
     const amount = form.payments_field.amount_cents
-    // Step 1: Create payment without payment intent id and pending submission id.
     if (
       !amount ||
       amount < paymentConfig.minPaymentAmountCents ||
@@ -367,9 +369,23 @@ const submitEncryptModeForm: ControllerHandler<
       })
     }
 
+    const paymentReceiptEmail = req.body.paymentReceiptEmail
+    if (!paymentReceiptEmail) {
+      logger.error({
+        message:
+          'Error when creating payment: payment receipt email not provided.',
+        meta: logMeta,
+      })
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        message:
+          "The form's payment settings are invalid. Please contact the admin of the form to rectify the issue.",
+      })
+    }
+
+    // Step 1: Create payment without payment intent id and pending submission id.
     const payment = new Payment({
       amount,
-      email: req.body.paymentReceiptEmail,
+      email: paymentReceiptEmail,
     })
     const paymentId = payment.id
 
@@ -408,6 +424,13 @@ const submitEncryptModeForm: ControllerHandler<
 
     // Step 3: Create the payment intent via API call to stripe.
     // Stripe requires the amount to be an integer in the smallest currency unit (i.e. cents)
+    const metadata: StripePaymentMetadataDto = {
+      formTitle: form.title,
+      formId,
+      paymentId,
+      paymentReceiptEmail,
+    }
+
     const createPaymentIntentParams: Stripe.PaymentIntentCreateParams = {
       amount,
       currency: paymentConfig.defaultCurrency,
@@ -416,11 +439,8 @@ const submitEncryptModeForm: ControllerHandler<
         /* 'grabpay', 'paynow'*/
       ],
       description: form.payments_field.description,
-      receipt_email: req.body.paymentReceiptEmail,
-      metadata: {
-        formId,
-        paymentId,
-      },
+      receipt_email: paymentReceiptEmail,
+      metadata,
     }
 
     let paymentIntent

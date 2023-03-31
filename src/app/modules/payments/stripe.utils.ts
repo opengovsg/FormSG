@@ -1,10 +1,11 @@
 // Use 'stripe-event-types' for better type discrimination.
 /// <reference types="stripe-event-types" />
-
-import get from 'lodash/get'
 import mongoose from 'mongoose'
 import { err, Ok, ok, Result } from 'neverthrow'
+import { hasProp } from 'shared/utils/has-prop'
 import Stripe from 'stripe'
+
+import { StripePaymentMetadataDto } from 'src/types'
 
 import { Payment, PaymentStatus } from '../../../../shared/types'
 import { createLoggerWithLabel } from '../../config/logger'
@@ -24,6 +25,18 @@ export const getChargeIdFromNestedCharge = (
 ): string => (typeof charge === 'string' ? charge : charge.id)
 
 /**
+ * Helper function to typeguard Stripe metadata received from payment intents
+ * and charges.
+ */
+const isStripeMetadata = (
+  obj: Stripe.Metadata,
+): obj is StripePaymentMetadataDto =>
+  hasProp(obj, 'formTitle') &&
+  hasProp(obj, 'formId') &&
+  hasProp(obj, 'paymentId') &&
+  hasProp(obj, 'paymentReceiptEmail')
+
+/**
  * Extracts the payment id from the metadata field of objects expected to have
  * it (i.e. payment intents and charges).
  * @param {Stripe.Metadata} metadata the metadata object which is expected to have a payment id
@@ -37,15 +50,17 @@ export const getMetadataPaymentId = (
     action: 'getMetadataPaymentId',
     metadata,
   }
-  const paymentId = get(metadata, 'paymentId') // TODO: Extract this value to a constant?
-  if (!paymentId || !mongoose.Types.ObjectId.isValid(paymentId)) {
+  if (
+    !isStripeMetadata(metadata) ||
+    !mongoose.Types.ObjectId.isValid(metadata.paymentId)
+  ) {
     logger.warn({
       message: 'Got metadata with invalid paymentId',
       meta: { ...logMeta, metadata },
     })
     return err(new StripeMetadataValidPaymentIdNotFoundError())
   }
-  return ok(paymentId)
+  return ok(metadata.paymentId)
 }
 
 /**
