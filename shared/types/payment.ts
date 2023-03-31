@@ -1,10 +1,14 @@
 import Stripe from 'stripe'
 import { DateString } from './generic'
 
+// Stripe Charge status
 export enum PaymentStatus {
-  Failed = 'failed',
   Pending = 'pending',
+  Failed = 'failed',
   Succeeded = 'succeeded',
+  PartiallyRefunded = 'partially_refunded',
+  FullyRefunded = 'fully_refunded',
+  Disputed = 'disputed',
 }
 
 export enum PaymentChannel {
@@ -20,8 +24,8 @@ export type CompletedPaymentMeta = {
 }
 
 export type PayoutMeta = {
-  payoutId?: string
-  payoutDate?: Date
+  payoutId: string
+  payoutDate: Date
 }
 
 export type Payment = {
@@ -43,6 +47,7 @@ export type Payment = {
   payout?: PayoutMeta
 
   created: DateString
+  lastModified: DateString
 }
 
 export type PaymentReceiptStatusDto = {

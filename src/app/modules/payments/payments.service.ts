@@ -1,7 +1,6 @@
 import mongoose from 'mongoose'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 
-import { Payment } from '../../../../shared/types'
 import { IPaymentSchema } from '../../../types'
 import { createLoggerWithLabel } from '../../config/logger'
 import getPaymentModel from '../../models/payment.server.model'
@@ -60,7 +59,7 @@ export const findBySubmissionIdAndUpdate = (
   submissionId: string,
   update?:
     | mongoose.UpdateWithAggregationPipeline
-    | mongoose.UpdateQuery<Payment>,
+    | mongoose.UpdateQuery<IPaymentSchema>,
 ): ResultAsync<IPaymentSchema, PaymentNotFoundError | DatabaseError> => {
   return ResultAsync.fromPromise(
     PaymentModel.findOneAndUpdate({ submissionId }, update).exec(),
@@ -92,7 +91,7 @@ export const findPaymentBySubmissionId = (
   submissionId: string,
 ): ResultAsync<IPaymentSchema, PaymentNotFoundError | DatabaseError> => {
   return ResultAsync.fromPromise(
-    PaymentModel.findOne({ submissionId }).exec(),
+    PaymentModel.findOne({ submissionId }),
     (error) => {
       logger.error({
         message: 'Database find payment submissionId error',
@@ -117,12 +116,16 @@ export const findPaymentBySubmissionId = (
  * payment document with the new submission id, receipt URL and transaction fee.
  * This is done within a single transaction, so that the information in the
  * document is always consistent.
+ * @requires paymentId must reference a payment document such that payment.completedPayment is undefined
+ *
  * @param paymentId payment id of the payment to be confirmed
  * @param receiptUrl the payment's receipt URL
  * @param transactionFee the transaction fee associated with the payment
  *
  * @returns ok(payment) if the confirmation transaction was successful
  * @returns err(PaymentNotFoundError) if the paymentId was not valid
+ * @returns err(PendingSubmissionNotFoundError) if the pending submission being referenced by the payment document does not exist
+ * @returns err(PaymentAlreadyConfirmedError) if the payment document already has an associated completed payment
  * @returns err(DatabaseError) if error occurs whilst querying the database
  */
 export const confirmPaymentPendingSubmission = (
