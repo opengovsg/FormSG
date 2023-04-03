@@ -18,6 +18,7 @@ import { loadStripe } from '@stripe/stripe-js'
 
 import { FormColorTheme, FormResponseMode } from '~shared/types/form'
 
+import { useBrowserStm } from '~hooks/payments'
 import { centsToDollars } from '~utils/payments'
 import Button from '~components/Button'
 
@@ -46,11 +47,13 @@ const StripeCheckoutForm = ({
   isRetry,
   triggerPaymentStatusRefetch,
 }: StripeCheckoutFormProps) => {
+  const { formId } = usePublicFormContext()
   const stripe = useStripe()
   const elements = useElements()
 
   const [stripeMessage, setStripeMessage] = useState('')
   const [isStripeProcessing, setIsStripeProcessing] = useState(false)
+  const [, , clearPaymentMemory] = useBrowserStm(formId)
 
   useEffect(() => {
     if (isRetry) {
@@ -95,6 +98,7 @@ const StripeCheckoutForm = ({
       // In the event that customer is not on a payment that has a redirected flow,
       // we will trigger a payment status refetch
       triggerPaymentStatusRefetch()
+      clearPaymentMemory()
     }
     setIsStripeProcessing(false)
   }

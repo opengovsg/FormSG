@@ -22,6 +22,7 @@ import {
 } from '~shared/types/form'
 
 import { FORMID_REGEX } from '~constants/routes'
+import { useBrowserStm } from '~hooks/payments'
 import { useTimeout } from '~hooks/useTimeout'
 import { useToast } from '~hooks/useToast'
 import { getPaymentPageUrl } from '~utils/urls'
@@ -191,6 +192,7 @@ export const PublicFormProvider = ({
   const { handleLogoutMutation } = usePublicAuthMutations(formId)
 
   const navigate = useNavigate()
+  const [, storePaymentMemory] = useBrowserStm(formId)
   const handleSubmitForm: SubmitHandler<
     FormFieldValues & { payment_receipt_email_field?: { value: string } }
   > = useCallback(
@@ -283,6 +285,7 @@ export const PublicFormProvider = ({
 
                     if (paymentData) {
                       navigate(getPaymentPageUrl(formId, paymentData.paymentId))
+                      storePaymentMemory(paymentData.paymentId)
                       return
                     }
                     setSubmissionData({
@@ -330,6 +333,7 @@ export const PublicFormProvider = ({
       submitStorageModeFormMutation,
       formId,
       navigate,
+      storePaymentMemory,
     ],
   )
 
