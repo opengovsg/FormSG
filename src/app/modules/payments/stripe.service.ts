@@ -313,7 +313,7 @@ export const linkStripeAccountToForm = (
   },
 ): ResultAsync<string, DatabaseError> => {
   // Check if form already has account id
-  if (form.payments_channel?.target_account_id) {
+  if (form.payments_channel) {
     return okAsync(form.payments_channel.target_account_id)
   }
 
@@ -338,7 +338,7 @@ export const linkStripeAccountToForm = (
 }
 
 export const unlinkStripeAccountFromForm = (form: IPopulatedEncryptedForm) => {
-  if (!form.payments_channel?.target_account_id) {
+  if (!form.payments_channel) {
     return okAsync(true)
   }
 

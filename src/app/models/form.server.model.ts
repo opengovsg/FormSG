@@ -1,5 +1,5 @@
 import BSON, { ObjectId } from 'bson-ext'
-import { compact, merge, omit, pick, uniq } from 'lodash'
+import { compact, omit, pick, uniq } from 'lodash'
 import mongoose, {
   ClientSession,
   Mongoose,
@@ -184,22 +184,24 @@ EncryptedFormDocumentSchema.methods.addPaymentAccountId = async function ({
   accountId: FormPaymentsChannel['target_account_id']
   publishableKey: FormPaymentsChannel['publishable_key']
 }) {
-  this.payments_channel = merge(this.payments_channel, {
-    target_account_id: accountId,
-    publishable_key: publishableKey,
-    enabled: true,
-  })
+  if (!this.payments_channel) {
+    this.payments_channel = {
+      // Definitely Stripe for now, may be different later on.
+      channel: PaymentChannel.Stripe,
+      target_account_id: accountId,
+      publishable_key: publishableKey,
+    }
+  }
   return this.save()
 }
 
 EncryptedFormDocumentSchema.methods.removePaymentAccount = async function () {
-  if (this.payments_channel?.target_account_id) {
-    this.payments_channel.target_account_id = undefined
+  if (this.payments_channel) {
+    this.payments_channel = undefined
     if (this.payments_field) {
       this.payments_field.enabled = false
     }
   }
-
   return this.save()
 }
 

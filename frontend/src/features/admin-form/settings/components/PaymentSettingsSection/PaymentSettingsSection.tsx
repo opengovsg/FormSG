@@ -101,7 +101,7 @@ const PaymentsSectionText = () => {
 
   if (
     settings?.responseMode === FormResponseMode.Encrypt &&
-    settings?.payments_channel?.target_account_id
+    settings?.payments_channel
   ) {
     return (
       <>
