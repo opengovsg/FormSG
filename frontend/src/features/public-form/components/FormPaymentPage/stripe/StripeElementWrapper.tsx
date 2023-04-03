@@ -13,7 +13,7 @@ import { useGetPaymentInfo } from '../queries'
 import { StripePaymentBlock } from './components/StripePaymentBlock'
 import { useGetPaymentStatusFromStripe } from './stripeQueries'
 import { StripeReceiptContainer } from './StripeReceiptContainer'
-import { getPaymentViewType } from './utils'
+import { getPaymentViewStates, PaymentViewStates } from './utils'
 
 const StripeElementWrapper = ({ paymentPageId }: { paymentPageId: string }) => {
   const { data: paymentInfoData } = useGetPaymentInfo(paymentPageId)
@@ -83,10 +83,10 @@ const StripePaymentContainer = ({
     refetchKey,
   })
 
-  const viewType = getPaymentViewType(data?.paymentIntent?.status)
+  const viewStates = getPaymentViewStates(data?.paymentIntent?.status)
 
-  switch (viewType) {
-    case 'invalid':
+  switch (viewStates) {
+    case PaymentViewStates.Invalid:
       return (
         <PaymentBox>
           <CreatePaymentIntentFailureBlock
@@ -96,14 +96,14 @@ const StripePaymentContainer = ({
           />
         </PaymentBox>
       )
-    case 'canceled':
+    case PaymentViewStates.Canceled:
       return (
         <PaymentBox>
-          <span>{viewType}</span>
+          <span>{viewStates}</span>
         </PaymentBox>
       )
       break
-    case 'payment':
+    case PaymentViewStates.Pending:
       return (
         <PaymentBox>
           <StripePaymentBlock
@@ -114,7 +114,7 @@ const StripePaymentContainer = ({
           />
         </PaymentBox>
       )
-    case 'receipt':
+    case PaymentViewStates.Succeeded:
       return (
         <>
           <PaymentSuccessSvgr maxW="100%" />
@@ -126,8 +126,12 @@ const StripePaymentContainer = ({
           </PaymentBox>
         </>
       )
-    default:
-      throw new Error(`Undefined view type: ${viewType}`)
+    default: {
+      // Force TS to emit an error if the cases above are not exhaustive
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const exhaustiveCheck: never = viewStates
+      throw new Error(`Undefined view type: ${viewStates}`)
+    }
   }
 }
 
