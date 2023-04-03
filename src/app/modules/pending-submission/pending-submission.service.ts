@@ -13,11 +13,11 @@ const logger = createLoggerWithLabel(module)
 const PendingSubmissionModel = getPendingSubmissionModel(mongoose)
 
 /**
- * @param pendingSubmissionId the submission id to find amongst all the form submissions
+ * @param pendingSubmissionId the submission id to find amongst all the pending submissions
  *
  * @returns ok(submission document) if retrieval is successful
- * @returns err(SubmissionNotFoundError) if submission does not exist in the database
- * @returns err(DatabaseError) if database errors occurs whilst retrieving user
+ * @returns err(SubmissionNotFoundError) if pending submission does not exist in the database
+ * @returns err(DatabaseError) if database errors occurs whilst retrieving pending submission
  */
 export const findPendingSubmissionById = (
   pendingSubmissionId: string,
@@ -43,7 +43,6 @@ export const findPendingSubmissionById = (
     },
   ).andThen((submission) => {
     if (!submission) {
-      console.log({ pendingSubmissionId })
       return errAsync(new PendingSubmissionNotFoundError())
     }
     return okAsync(submission)
