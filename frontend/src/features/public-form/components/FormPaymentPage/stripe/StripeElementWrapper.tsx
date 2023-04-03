@@ -6,8 +6,7 @@ import { loadStripe, Stripe } from '@stripe/stripe-js'
 
 import { GetPaymentInfoDto } from '~shared/types'
 
-import { CreatePaymentIntentFailureBlock } from '~features/payment/components/CreatePaymentIntentFailureBlock'
-
+import { CreatePaymentIntentFailureBlock } from '../components/CreatePaymentIntentFailureBlock'
 import { PaymentSuccessSvgr } from '../components/PaymentSuccessSvgr'
 import { useGetPaymentInfo } from '../queries'
 

@@ -21,8 +21,9 @@ import { FormColorTheme, FormResponseMode } from '~shared/types/form'
 import { centsToDollars } from '~utils/payments'
 import Button from '~components/Button'
 
-import { FormPaymentPageProps } from '~features/payment/FormPaymentPage'
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
+
+import { FormPaymentPageProps } from '../../FormPaymentPage'
 
 // Make sure to call `loadStripe` outside of a component’s render to avoid
 // recreating the `Stripe` object on every render.
