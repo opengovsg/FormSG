@@ -15,6 +15,7 @@ import { FormResponseMode } from '~shared/types'
 
 import { useBrowserStm } from '~hooks/payments'
 import { useIsMobile } from '~hooks/useIsMobile'
+import { getPaymentPageUrl } from '~utils/urls'
 import Button from '~components/Button'
 
 import { usePublicFormContext } from '../../PublicFormContext'
@@ -46,7 +47,7 @@ export const PublicFormPaymentResumeModal = (): JSX.Element => {
       onClose()
       return
     }
-    navigate(`payment/${lastPaymentMemory.paymentId}`)
+    navigate(getPaymentPageUrl(formId, lastPaymentMemory.paymentId))
   }
 
   const handleStartOver = () => {
