@@ -10,8 +10,10 @@ export const useGetPaymentReceiptStatus = (
   formId: string,
   paymentId: string,
 ): UseQueryResult<PaymentReceiptStatusDto, ApiError> => {
-  return useQuery<PaymentReceiptStatusDto, ApiError>([formId, paymentId], () =>
-    getPaymentReceiptStatus(formId, paymentId),
+  return useQuery<PaymentReceiptStatusDto, ApiError>(
+    [formId, paymentId],
+    () => getPaymentReceiptStatus(formId, paymentId),
+    { retry: true },
   )
 }
 
