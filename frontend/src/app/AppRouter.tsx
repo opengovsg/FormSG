@@ -33,7 +33,7 @@ import {
   ResponsesPage,
 } from '~features/admin-form/responses'
 import { SettingsPage } from '~features/admin-form/settings/SettingsPage'
-import { FormPaymentPage } from '~features/payment/FormPaymentPage'
+import { FormPaymentPage } from '~features/public-form/components/FormPaymentPage/FormPaymentPage'
 import { BillingPage } from '~features/user/billing'
 
 import { HashRouterElement } from './HashRouterElement'
