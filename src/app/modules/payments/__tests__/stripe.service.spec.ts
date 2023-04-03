@@ -607,7 +607,7 @@ describe('stripe.service', () => {
       expect(result._unsafeUnwrap()).toBe(expectedAccountId)
     })
 
-    it('to', async () => {
+    it('should return existing account information when called with new account to be linked', async () => {
       // Arrange
       const mockForm = generateMockForm()
       mockForm.addPaymentAccountId = jest.fn()
