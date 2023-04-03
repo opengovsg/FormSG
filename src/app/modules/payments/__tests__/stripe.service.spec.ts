@@ -27,6 +27,7 @@ import * as StripeService from '../stripe.service'
 const Payment = getPaymentModel(mongoose)
 const EncryptPendingSubmission = getEncryptPendingSubmissionModel(mongoose)
 const Submission = getSubmissionModel(mongoose)
+const EncryptedForm = getEncryptedFormModel(mongoose)
 
 const MOCK_PAYMENT_ID = new ObjectId().toHexString()
 const MOCK_FORM_ID = new ObjectId().toHexString()
@@ -582,7 +583,6 @@ describe('stripe.service', () => {
   describe('linkStripeAccountToForm', () => {
     it('should call func to attach payment account information', async () => {
       // Arrange
-      const EncryptedForm = getEncryptedFormModel(mongoose)
       await dbHandler.insertFormCollectionReqs({
         userId: MOCK_USER_ID,
       })
