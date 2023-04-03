@@ -487,15 +487,11 @@ export const getPaymentInfo: ControllerHandler<
           })
           return new StripeFetchError(String(error))
         },
-      ).map((stripeFullIntentObj) => ({
-        stripeFullIntentObj,
-        publishableKey: form.payments_channel?.publishable_key || '',
-      }))
-    })
-    .map(({ stripeFullIntentObj, publishableKey }) => {
-      return res.status(StatusCodes.OK).json({
-        client_secret: stripeFullIntentObj.client_secret || '',
-        publishableKey,
+      ).map((paymentIntent) => {
+        return res.status(StatusCodes.OK).json({
+          client_secret: paymentIntent.client_secret || '',
+          publishableKey: form.payments_channel?.publishable_key ?? '',
+        })
       })
     })
     .mapErr((e) => {
