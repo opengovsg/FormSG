@@ -57,4 +57,5 @@ export type PaymentReceiptStatusDto = {
 export type GetPaymentInfoDto = {
   client_secret: string
   publishableKey: string
+  payment_intent_id: string
 }

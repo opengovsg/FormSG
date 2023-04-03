@@ -5,21 +5,45 @@ import getPaymentModel from 'src/app/models/payment.server.model'
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
-import { findPaymentByPaymentIntentId } from '../payments.service'
+import * as PaymentsService from '../payments.service'
 
 const Payment = getPaymentModel(mongoose)
-describe('payments.service', () => {
-  beforeAll(async () => await dbHandler.connect())
-  afterAll(async () => await dbHandler.closeDatabase())
-  beforeEach(() => jest.clearAllMocks())
 
-  describe('findPaymentByPaymentIntentId', () => {
+describe('payments.service', () => {
+  beforeEach(async () => {
+    await dbHandler.connect()
+    jest.clearAllMocks()
+  })
+  afterEach(async () => await dbHandler.closeDatabase())
+
+  describe('findPaymentById', () => {
     beforeEach(async () => {
       await dbHandler.clearCollection(Payment.collection.name)
     })
     afterEach(() => jest.clearAllMocks())
-    it('should return with error if payment intent is not found', async () => {
-      const result = await findPaymentByPaymentIntentId(
+
+    it('should return with without error if payment id is found', async () => {
+      // Arrange
+      const expectedObjectId = new ObjectId()
+      await Payment.create({
+        _id: expectedObjectId,
+        pendingSubmissionId: new ObjectId(),
+        paymentIntentId: 'somePaymentIntentId',
+        amount: 314159,
+        email: 'someone@mail.com',
+      })
+
+      // Act
+      const result = await PaymentsService.findPaymentById(
+        expectedObjectId.toHexString(),
+      )
+
+      // Assert
+      expect(result.isOk()).toBeTrue()
+    })
+
+    it('should return with error if payment id is not found', async () => {
+      const result = await PaymentsService.findPaymentById(
         new ObjectId().toHexString(),
       )
       expect(result.isErr()).toBeTrue()
@@ -27,7 +51,7 @@ describe('payments.service', () => {
 
     it('should return with error if mongodb is not ready', async () => {
       await dbHandler.closeDatabase()
-      const result = await findPaymentByPaymentIntentId(
+      const result = await PaymentsService.findPaymentById(
         new ObjectId().toHexString(),
       )
       expect(result.isErr()).toBeTrue()

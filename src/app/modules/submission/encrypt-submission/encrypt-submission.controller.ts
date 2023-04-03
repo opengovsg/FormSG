@@ -350,6 +350,9 @@ const submitEncryptModeForm: ControllerHandler<
     form.payments_field?.enabled &&
     form.payments_channel?.channel === PaymentChannel.Stripe
   ) {
+    /**
+     * Start of Payment Forms Submission Flow
+     */
     const amount = form.payments_field.amount_cents
     // Step 1: Create payment without payment intent id and pending submission id.
     if (
@@ -505,38 +508,16 @@ const submitEncryptModeForm: ControllerHandler<
       },
     })
 
-    // Step 5: Extract payment_client_secret from paymentIntent and return to client.
-    const paymentClientSecret = paymentIntent.client_secret
-
-    // if paymentClientSecret is null or undefined, log error
-    if (!paymentClientSecret) {
-      logger.error({
-        message: `No client secret provided with Stripe payment intent`,
-        meta: {
-          ...logMeta,
-          createPaymentIntentParams,
-          pendingSubmissionId,
-          paymentIntentId,
-          paymentId,
-        },
-      })
-    }
-
-    // Attach required payment configs if client secret is present. Otherwise,
-    // client will display error message. We still return 200 OK because the
-    // state is recoverable.
-    const paymentData = paymentClientSecret
-      ? { paymentIntentId: paymentIntent?.id }
-      : null
-
     return res.json({
       message: 'Form submission successful',
       submissionId: pendingSubmissionId,
       timestamp: (pendingSubmission.created || new Date()).getTime(),
-      // hide paymentData obj in response if it is a payment form
-      ...(paymentData ? { paymentData } : {}),
+      paymentData: { paymentId },
     })
   }
+  /**
+   * End of Payment Forms Submission Flow
+   */
 
   const submission = new EncryptSubmission(submissionContent)
 

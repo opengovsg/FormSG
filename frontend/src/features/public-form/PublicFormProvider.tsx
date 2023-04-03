@@ -281,9 +281,7 @@ export const PublicFormProvider = ({
                     trackSubmitForm(form)
 
                     if (paymentData) {
-                      navigate(
-                        `/${formId}/payment/${paymentData.paymentIntentId}`,
-                      )
+                      navigate(`/${formId}/payment/${paymentData.paymentId}`)
                       return
                     }
                     setSubmissionData({

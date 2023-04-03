@@ -238,36 +238,3 @@ export const confirmPaymentPendingSubmission = (
     )
   })
 }
-
-/**
- * Retrieves payment associated with paymentIntentId from Stripe
- * @param paymentIntentId the paymentIntentId from Stripe
- * @returns ok(payment) if associated entry is found
- * @returns err(PaymentNotFoundError) if the payment does not exist
- * @returns err(DatabaseError) if error occurs whilst querying the database
- */
-export const findPaymentByPaymentIntentId = (
-  paymentIntentId: string,
-): ResultAsync<IPaymentSchema, PaymentNotFoundError | DatabaseError> => {
-  return ResultAsync.fromPromise(
-    PaymentModel.findOne({ paymentIntentId }, null, {
-      readPreference: 'primary',
-    }).exec(),
-    (error) => {
-      logger.error({
-        message: 'Database find payment by paymentIntentId error',
-        meta: {
-          action: 'findPaymentByPaymentIntentId',
-          paymentIntentId,
-        },
-        error,
-      })
-      return new DatabaseError(getMongoErrorMessage(error))
-    },
-  ).andThen((payment) => {
-    if (!payment) {
-      return errAsync(new PaymentNotFoundError())
-    }
-    return okAsync(payment)
-  })
-}

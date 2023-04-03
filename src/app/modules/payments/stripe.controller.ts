@@ -25,7 +25,10 @@ import * as FormService from '../form/form.service'
 import { isFormEncryptMode } from '../form/form.utils'
 import * as PendingSubmissionModel from '../pending-submission/pending-submission.service'
 import { checkFormIsEncryptMode } from '../submission/encrypt-submission/encrypt-submission.service'
-import { ResponseModeError } from '../submission/submission.errors'
+import {
+  PendingSubmissionNotFoundError,
+  ResponseModeError,
+} from '../submission/submission.errors'
 
 import { PaymentAccountInformationError } from './payments.errors'
 import * as PaymentService from './payments.service'
@@ -251,7 +254,7 @@ export const checkPaymentReceiptStatus: ControllerHandler<{
     },
   })
 
-  return PaymentService.findPaymentByPaymentIntentId(paymentId)
+  return PaymentService.findPaymentById(paymentId)
     .map((payment) => {
       logger.info({
         message: 'Found paymentId in payment document',
@@ -315,7 +318,7 @@ export const downloadPaymentReceipt: ControllerHandler<{
     },
   })
 
-  return PaymentService.findPaymentByPaymentIntentId(paymentId)
+  return PaymentService.findPaymentById(paymentId)
     .map((payment) => {
       logger.info({
         message: 'Found paymentId in payment document',
@@ -422,9 +425,7 @@ export const handleConnectOauthCallback = [
 ] as ControllerHandler[]
 
 export const getPaymentInfo: ControllerHandler<
-  {
-    paymentId: string
-  },
+  { paymentId: string },
   GetPaymentInfoDto | ErrorDto
 > = async (req, res) => {
   const { paymentId } = req.params
@@ -436,67 +437,84 @@ export const getPaymentInfo: ControllerHandler<
     },
   })
 
-  return PaymentService.findPaymentByPaymentIntentId(paymentId)
-    .andThen((payment) =>
-      PendingSubmissionModel.findPendingSubmissionById(
+  return PaymentService.findPaymentById(paymentId)
+    .andThen((payment) => {
+      return PendingSubmissionModel.findPendingSubmissionById(
         payment.pendingSubmissionId,
-      ),
-    )
-    .andThen((submission) => FormService.retrieveFormById(submission.form))
-    .andThen((form) => {
-      // Payment forms are encrypted
-      if (!isFormEncryptMode(form)) {
-        logger.error({
-          message:
-            'Requested for payment information in possibly non-payment form. Expected payment forms to be encrypted forms',
-          meta: {
-            action: 'getPaymentInfo',
-            paymentId,
-            formResponseMode: form.responseMode,
-          },
-        })
-        return errAsync(
-          new ResponseModeError(FormResponseMode.Encrypt, form.responseMode),
-        )
-      }
-      const stripeAccount = form.payments_channel?.target_account_id
-      // Early termination to prevent consumption of QPS limit to stripe
-      if (!stripeAccount) {
-        logger.error({
-          message: 'Missing payments_channel on this form',
-          meta: {
-            action: 'getPaymentInfo',
-            paymentId,
-          },
-        })
-        return errAsync(new PaymentAccountInformationError())
-      }
+      )
+        .andThen((submission) => FormService.retrieveFormById(submission.form))
+        .andThen((form) => {
+          // Payment forms are encrypted
+          if (!isFormEncryptMode(form)) {
+            logger.error({
+              message:
+                'Requested for payment information in possibly non-payment form. Expected payment forms to be encrypted forms',
+              meta: {
+                action: 'getPaymentInfo',
+                paymentId,
+                formResponseMode: form.responseMode,
+              },
+            })
+            return errAsync(
+              new ResponseModeError(
+                FormResponseMode.Encrypt,
+                form.responseMode,
+              ),
+            )
+          }
+          const stripeAccount = form.payments_channel?.target_account_id
+          // Early termination to prevent consumption of QPS limit to stripe
+          if (!stripeAccount) {
+            logger.error({
+              message: 'Missing payments_channel on this form',
+              meta: {
+                action: 'getPaymentInfo',
+                paymentId,
+              },
+            })
+            return errAsync(new PaymentAccountInformationError())
+          }
 
-      return ResultAsync.fromPromise(
-        stripe.paymentIntents.retrieve(paymentId, {
-          stripeAccount,
-        }),
-        (error) => {
-          logger.error({
-            message: 'stripe.paymentIntents.retrieve called',
-            meta: {
-              action: 'getPaymentInfo',
-              paymentId,
-              error,
+          const paymentIntentId = payment.paymentIntentId
+          return ResultAsync.fromPromise(
+            stripe.paymentIntents.retrieve(paymentIntentId, {
+              stripeAccount,
+            }),
+            (error) => {
+              logger.error({
+                message: 'stripe.paymentIntents.retrieve called',
+                meta: {
+                  action: 'getPaymentInfo',
+                  paymentId,
+                  paymentIntentId,
+                  error,
+                },
+              })
+              return new StripeFetchError(String(error))
             },
+          ).map((paymentIntent) => {
+            return res.status(StatusCodes.OK).json({
+              client_secret: paymentIntent.client_secret || '',
+              publishableKey: form.payments_channel?.publishable_key ?? '',
+              payment_intent_id: payment.paymentIntentId,
+            })
           })
-          return new StripeFetchError(String(error))
-        },
-      ).map((paymentIntent) => {
-        return res.status(StatusCodes.OK).json({
-          client_secret: paymentIntent.client_secret || '',
-          publishableKey: form.payments_channel?.publishable_key ?? '',
         })
-      })
     })
-    .mapErr((e) => {
-      return res
-        .status(StatusCodes.INTERNAL_SERVER_ERROR)
-        .json({ message: e.message })
+    .mapErr((error) => {
+      switch (error.constructor) {
+        case ResponseModeError:
+          res.status(StatusCodes.UNPROCESSABLE_ENTITY)
+          break
+        case PendingSubmissionNotFoundError:
+          res.status(StatusCodes.NOT_FOUND)
+          break
+        case StripeFetchError: // fall-through
+        case PaymentAccountInformationError: // fall-through
+        default:
+          res.status(StatusCodes.INTERNAL_SERVER_ERROR)
+          break
+      }
+      return res.json({ message: error.message })
     })
 }
