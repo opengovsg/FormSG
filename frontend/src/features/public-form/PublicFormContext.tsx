@@ -10,7 +10,7 @@ export type SubmissionData = {
   id: string | undefined
   /** Submission time in ms from epoch  */
   timestamp: number
-  // payment forms will return a paymentIntentId
+  // payment forms will have non-empty paymentData field
   paymentData?: PaymentSubmissionData
 }
 

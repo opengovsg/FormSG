@@ -24,6 +24,7 @@ import {
 import { FORMID_REGEX } from '~constants/routes'
 import { useTimeout } from '~hooks/useTimeout'
 import { useToast } from '~hooks/useToast'
+import { getPaymentPageUrl } from '~utils/urls'
 import { HttpError } from '~services/ApiService'
 import { FormFieldValues } from '~templates/Field'
 
@@ -275,15 +276,13 @@ export const PublicFormProvider = ({
                   onSuccess: ({
                     submissionId,
                     timestamp,
-                    // payment forms will return a paymentIntentId
+                    // payment forms will have non-empty paymentData field
                     paymentData,
                   }) => {
                     trackSubmitForm(form)
 
                     if (paymentData) {
-                      navigate(
-                        `/${formId}/payment/${paymentData.paymentIntentId}`,
-                      )
+                      navigate(getPaymentPageUrl(formId, paymentData.paymentId))
                       return
                     }
                     setSubmissionData({
