@@ -149,7 +149,7 @@
     "@types/dedent": "^0.7.0",
     "@types/file-saver": "^2.0.3",
     "@types/gtag.js": "0.0.10",
-    "@types/jest": "^29.2.4",
+    "@types/jest": "^26.0.14",
     "@types/node": "^16.11.12",
     "@types/react": "^17.0.37",
     "@types/react-beautiful-dnd": "^13.1.2",
