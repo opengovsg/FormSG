@@ -196,15 +196,13 @@ EncryptedFormDocumentSchema.methods.addPaymentAccountId = async function ({
 }
 
 EncryptedFormDocumentSchema.methods.removePaymentAccount = async function () {
-  if (this.payments_channel) {
-    this.payments_channel = {
-      channel: PaymentChannel.Unconnected,
-      target_account_id: '',
-      publishable_key: '',
-    }
-    if (this.payments_field) {
-      this.payments_field.enabled = false
-    }
+  this.payments_channel = {
+    channel: PaymentChannel.Unconnected,
+    target_account_id: '',
+    publishable_key: '',
+  }
+  if (this.payments_field) {
+    this.payments_field.enabled = false
   }
   return this.save()
 }
