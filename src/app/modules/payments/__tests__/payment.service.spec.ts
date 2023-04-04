@@ -22,7 +22,7 @@ describe('payments.service', () => {
     })
     afterEach(() => jest.clearAllMocks())
 
-    it('should return with without error if payment id is found', async () => {
+    it('should return without error if payment id is found', async () => {
       // Arrange
       const expectedObjectId = new ObjectId()
       await Payment.create({

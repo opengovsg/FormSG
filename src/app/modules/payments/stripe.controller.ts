@@ -8,11 +8,7 @@ import mongoose from 'mongoose'
 import { errAsync, ok, Result, ResultAsync } from 'neverthrow'
 import Stripe from 'stripe'
 
-import {
-  ErrorDto,
-  FormResponseMode,
-  GetPaymentInfoDto,
-} from '../../../../shared/types'
+import { ErrorDto, GetPaymentInfoDto } from '../../../../shared/types'
 import config from '../../config/config'
 import { paymentConfig } from '../../config/features/payment.config'
 import { createLoggerWithLabel } from '../../config/logger'
@@ -22,13 +18,8 @@ import { generatePdfFromHtml } from '../../utils/convert-html-to-pdf'
 import { createReqMeta } from '../../utils/request'
 import { ControllerHandler } from '../core/core.types'
 import * as FormService from '../form/form.service'
-import { isFormEncryptMode } from '../form/form.utils'
 import * as PendingSubmissionModel from '../pending-submission/pending-submission.service'
 import { checkFormIsEncryptMode } from '../submission/encrypt-submission/encrypt-submission.service'
-import {
-  PendingSubmissionNotFoundError,
-  ResponseModeError,
-} from '../submission/submission.errors'
 
 import { PaymentAccountInformationError } from './payments.errors'
 import * as PaymentService from './payments.service'
@@ -37,6 +28,7 @@ import * as StripeService from './stripe.service'
 import {
   getChargeIdFromNestedCharge,
   getMetadataPaymentId,
+  mapRouteErr,
 } from './stripe.utils'
 
 const logger = createLoggerWithLabel(module)
@@ -442,26 +434,11 @@ export const getPaymentInfo: ControllerHandler<
       return PendingSubmissionModel.findPendingSubmissionById(
         payment.pendingSubmissionId,
       )
-        .andThen((submission) => FormService.retrieveFormById(submission.form))
+        .andThen((submission) =>
+          FormService.retrieveFullFormById(submission.form),
+        )
+        .andThen(checkFormIsEncryptMode) // Payment forms are encrypted
         .andThen((form) => {
-          // Payment forms are encrypted
-          if (!isFormEncryptMode(form)) {
-            logger.error({
-              message:
-                'Requested for payment information in possibly non-payment form. Expected payment forms to be encrypted forms',
-              meta: {
-                action: 'getPaymentInfo',
-                paymentId,
-                formResponseMode: form.responseMode,
-              },
-            })
-            return errAsync(
-              new ResponseModeError(
-                FormResponseMode.Encrypt,
-                form.responseMode,
-              ),
-            )
-          }
           const stripeAccount = form.payments_channel?.target_account_id
           // Early termination to prevent consumption of QPS limit to stripe
           if (!stripeAccount) {
@@ -502,19 +479,8 @@ export const getPaymentInfo: ControllerHandler<
         })
     })
     .mapErr((error) => {
-      switch (error.constructor) {
-        case ResponseModeError:
-          res.status(StatusCodes.UNPROCESSABLE_ENTITY)
-          break
-        case PendingSubmissionNotFoundError:
-          res.status(StatusCodes.NOT_FOUND)
-          break
-        case StripeFetchError: // fall-through
-        case PaymentAccountInformationError: // fall-through
-        default:
-          res.status(StatusCodes.INTERNAL_SERVER_ERROR)
-          break
-      }
-      return res.json({ message: error.message })
+      const { errorMessage, statusCode } = mapRouteErr(error)
+
+      return res.status(statusCode).json({ message: errorMessage })
     })
 }

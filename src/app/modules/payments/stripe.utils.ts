@@ -1,6 +1,7 @@
 // Use 'stripe-event-types' for better type discrimination.
 /// <reference types="stripe-event-types" />
 
+import { StatusCodes } from 'http-status-codes'
 import get from 'lodash/get'
 import mongoose from 'mongoose'
 import { err, Ok, ok, Result } from 'neverthrow'
@@ -9,9 +10,19 @@ import Stripe from 'stripe'
 import { Payment, PaymentStatus } from '../../../../shared/types'
 import config from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
+import { ApplicationError } from '../core/core.errors'
+import {
+  PendingSubmissionNotFoundError,
+  ResponseModeError,
+} from '../submission/submission.errors'
 
 import {
+  PaymentAccountInformationError,
+  PaymentNotFoundError,
+} from './payments.errors'
+import {
   ComputePaymentStateError,
+  StripeFetchError,
   StripeMetadataValidPaymentIdNotFoundError,
 } from './stripe.errors'
 
@@ -287,4 +298,27 @@ export const computePayoutDetails = (
       event.type.startsWith('payout.'),
   )
   return ok(payoutEvents.reduce(payoutStateReducer, undefined))
+}
+
+export const mapRouteErr = (error: ApplicationError) => {
+  switch (error.constructor) {
+    case ResponseModeError:
+      return {
+        statusCode: StatusCodes.UNPROCESSABLE_ENTITY,
+        errorMessage: error.message,
+      }
+    case PaymentNotFoundError: // fall-through
+    case PendingSubmissionNotFoundError:
+      return {
+        statusCode: StatusCodes.NOT_FOUND,
+        errorMessage: error.message,
+      }
+    case StripeFetchError: // fall-through
+    case PaymentAccountInformationError: // fall-through
+    default:
+      return {
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        errorMessage: error.message,
+      }
+  }
 }

@@ -5,17 +5,17 @@ import { StripeLoadingReceiptBlock } from './components/StripeLoadingReceiptBloc
 
 export const StripeReceiptContainer = ({
   formId,
-  paymentPageId,
+  paymentId,
 }: {
   formId: string
-  paymentPageId: string
+  paymentId: string
 }) => {
   const { data, isLoading, error } = useGetPaymentReceiptStatus(
     formId,
-    paymentPageId,
+    paymentId,
   )
   if (isLoading || error || !data) {
-    return <StripeLoadingReceiptBlock paymentId={paymentPageId} />
+    return <StripeLoadingReceiptBlock paymentId={paymentId} />
   }
-  return <DownloadReceiptBlock formId={formId} paymentPageId={paymentPageId} />
+  return <DownloadReceiptBlock formId={formId} paymentId={paymentId} />
 }

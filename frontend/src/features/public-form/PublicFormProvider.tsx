@@ -287,7 +287,6 @@ export const PublicFormProvider = ({
                     setSubmissionData({
                       id: submissionId,
                       timestamp,
-                      paymentData,
                     })
                   },
                 },

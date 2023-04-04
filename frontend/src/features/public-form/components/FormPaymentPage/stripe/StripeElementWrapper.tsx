@@ -15,8 +15,8 @@ import { useGetPaymentStatusFromStripe } from './stripeQueries'
 import { StripeReceiptContainer } from './StripeReceiptContainer'
 import { getPaymentViewStates, PaymentViewStates } from './utils'
 
-const StripeElementWrapper = ({ paymentPageId }: { paymentPageId: string }) => {
-  const { data: paymentInfoData } = useGetPaymentInfo(paymentPageId)
+const StripeElementWrapper = ({ paymentId }: { paymentId: string }) => {
+  const { data: paymentInfoData } = useGetPaymentInfo(paymentId)
 
   if (!paymentInfoData) {
     throw new Error('useGetPaymentInfo not ready')
@@ -72,9 +72,9 @@ const StripePaymentContainer = ({
   paymentInfoData: GetPaymentInfoDto
   stripe: Stripe
 }) => {
-  const { formId, paymentPageId } = useParams()
+  const { formId, paymentId } = useParams()
   if (!formId) throw new Error('No formId provided')
-  if (!paymentPageId) throw new Error('No paymentPageId provided')
+  if (!paymentId) throw new Error('No paymentId provided')
 
   const [refetchKey, setRefetchKey] = useState<number>(0)
   const { data } = useGetPaymentStatusFromStripe({
@@ -90,7 +90,7 @@ const StripePaymentContainer = ({
       return (
         <PaymentBox>
           <CreatePaymentIntentFailureBlock
-            submissionId={paymentPageId}
+            submissionId={paymentId}
             paymentClientSecret={paymentInfoData.client_secret}
             publishableKey={paymentInfoData.publishableKey}
           />
@@ -107,7 +107,7 @@ const StripePaymentContainer = ({
       return (
         <PaymentBox>
           <StripePaymentBlock
-            submissionId={paymentPageId}
+            submissionId={paymentId}
             paymentClientSecret={paymentInfoData.client_secret}
             publishableKey={paymentInfoData.publishableKey}
             triggerPaymentStatusRefetch={() => setRefetchKey(Date.now())}
@@ -119,10 +119,7 @@ const StripePaymentContainer = ({
         <>
           <PaymentSuccessSvgr maxW="100%" />
           <PaymentBox>
-            <StripeReceiptContainer
-              formId={formId}
-              paymentPageId={paymentPageId}
-            />
+            <StripeReceiptContainer formId={formId} paymentId={paymentId} />
           </PaymentBox>
         </>
       )
