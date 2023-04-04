@@ -350,7 +350,7 @@ const submitEncryptModeForm: ControllerHandler<
   // Handle submissions for payments forms
   if (
     form.payments_field?.enabled &&
-    form.payments_channel?.channel === PaymentChannel.Stripe
+    form.payments_channel.channel === PaymentChannel.Stripe
   ) {
     // Step 0: Perform validation checks
     const amount = form.payments_field.amount_cents

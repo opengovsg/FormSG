@@ -133,11 +133,12 @@ const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
     type: String,
     required: true,
   },
+
   payments_channel: {
     channel: {
       type: String,
       enum: Object.values(PaymentChannel),
-      default: PaymentChannel.Stripe,
+      default: PaymentChannel.Unconnected,
     },
     target_account_id: {
       type: String,
@@ -149,7 +150,6 @@ const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
       default: '',
       validate: [/^\S*$/i, 'publishable_key must not contain whitespace.'],
     },
-    required: false,
   },
 
   payments_field: {
@@ -159,6 +159,7 @@ const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
     },
     description: {
       type: String,
+      trim: true,
       default: '',
     },
     amount_cents: {
@@ -170,7 +171,6 @@ const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
         message: 'Payment amount must be at least 50 cents and an integer.',
       },
     },
-    required: false,
   },
 })
 
@@ -184,7 +184,7 @@ EncryptedFormDocumentSchema.methods.addPaymentAccountId = async function ({
   accountId: FormPaymentsChannel['target_account_id']
   publishableKey: FormPaymentsChannel['publishable_key']
 }) {
-  if (!this.payments_channel) {
+  if (this.payments_channel?.channel === PaymentChannel.Unconnected) {
     this.payments_channel = {
       // Definitely Stripe for now, may be different later on.
       channel: PaymentChannel.Stripe,
@@ -196,11 +196,13 @@ EncryptedFormDocumentSchema.methods.addPaymentAccountId = async function ({
 }
 
 EncryptedFormDocumentSchema.methods.removePaymentAccount = async function () {
-  if (this.payments_channel) {
-    this.payments_channel = undefined
-    if (this.payments_field) {
-      this.payments_field.enabled = false
-    }
+  this.payments_channel = {
+    channel: PaymentChannel.Unconnected,
+    target_account_id: '',
+    publishable_key: '',
+  }
+  if (this.payments_field) {
+    this.payments_field.enabled = false
   }
   return this.save()
 }

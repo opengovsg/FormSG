@@ -118,8 +118,8 @@ export interface EmailFormBase extends FormBase {
 export interface StorageFormBase extends FormBase {
   responseMode: FormResponseMode.Encrypt
   publicKey: string
-  payments_channel?: FormPaymentsChannel
-  payments_field?: FormPaymentsField
+  payments_channel: FormPaymentsChannel
+  payments_field: FormPaymentsField
 }
 
 /**

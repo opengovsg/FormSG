@@ -8,7 +8,11 @@ import Stripe from 'stripe'
 import { MarkRequired } from 'ts-essentials'
 import isURL from 'validator/lib/isURL'
 
-import { IPaymentSchema, IPopulatedEncryptedForm } from '../../../types'
+import {
+  IEncryptedFormSchema,
+  IPaymentSchema,
+  IPopulatedEncryptedForm,
+} from '../../../types'
 import config from '../../config/config'
 import { paymentConfig } from '../../config/features/payment.config'
 import { createLoggerWithLabel } from '../../config/logger'
@@ -306,14 +310,8 @@ export const linkStripeAccountToForm = (
     accountId: string
     publishableKey: string
   },
-): ResultAsync<string, DatabaseError> => {
-  // Check if form already has account id
-  if (form.payments_channel) {
-    return okAsync(form.payments_channel.target_account_id)
-  }
-
-  // No account id, create and inject into form
-  return ResultAsync.fromPromise(
+): ResultAsync<string, DatabaseError> =>
+  ResultAsync.fromPromise(
     form.addPaymentAccountId({ accountId, publishableKey }),
     (error) => {
       const errMsg = 'Failed to update payment account id'
@@ -330,14 +328,11 @@ export const linkStripeAccountToForm = (
       return new DatabaseError(errMsg)
     },
   ).map((updatedForm) => updatedForm.payments_channel.target_account_id)
-}
 
-export const unlinkStripeAccountFromForm = (form: IPopulatedEncryptedForm) => {
-  if (!form.payments_channel) {
-    return okAsync(true)
-  }
-
-  return ResultAsync.fromPromise(form.removePaymentAccount(), (error) => {
+export const unlinkStripeAccountFromForm = (
+  form: IPopulatedEncryptedForm,
+): ResultAsync<IEncryptedFormSchema, DatabaseError> =>
+  ResultAsync.fromPromise(form.removePaymentAccount(), (error) => {
     const errMsg = 'Failed to remove payment account from form'
     logger.error({
       message: errMsg,
@@ -349,7 +344,6 @@ export const unlinkStripeAccountFromForm = (form: IPopulatedEncryptedForm) => {
     })
     return new DatabaseError(errMsg)
   })
-}
 
 export const createAccountLink = (
   accountId: string,
