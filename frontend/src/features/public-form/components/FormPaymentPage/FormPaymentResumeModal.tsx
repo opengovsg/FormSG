@@ -70,7 +70,10 @@ export const PublicFormPaymentResumeModal = (): JSX.Element => {
             previous session and complete payment.
           </ModalBody>
           <ModalFooter>
-            <ButtonGroup flexWrap={'wrap'} justifyContent="end">
+            <ButtonGroup
+              flexWrap={isMobile ? 'wrap-reverse' : 'wrap'}
+              justifyContent="end"
+            >
               <Button
                 variant="clear"
                 onClick={handleStartOver}
