@@ -95,6 +95,6 @@ PublicFormsVerificationRouter.route(
 PublicFormsVerificationRouter.route(
   '/:formId([a-fA-F0-9]{24})/fieldverifications/:transactionId([a-fA-F0-9]{24})/payment/otp/generate',
 ).post(
-  // limitRate({ max: rateLimitConfig.sendAuthOtp }),
+  limitRate({ max: rateLimitConfig.sendAuthOtp }),
   VerificationController.handleGeneratePaymentOtp,
 )
