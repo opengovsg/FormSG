@@ -217,13 +217,6 @@ const MOCK_USER = {
   email: 'somerandom@example.com',
 } as IPopulatedUser
 
-const generateMockForm = () =>
-  ({
-    admin: MOCK_USER,
-    _id: MOCK_FORM_ID,
-    title: 'mock title',
-  } as IPopulatedEncryptedForm)
-
 describe('stripe.service', () => {
   beforeAll(async () => await dbHandler.connect())
   afterAll(async () => await dbHandler.closeDatabase())
@@ -609,22 +602,27 @@ describe('stripe.service', () => {
 
     it('should return existing account information when called with new account to be linked', async () => {
       // Arrange
-      const mockForm = generateMockForm()
-      mockForm.addPaymentAccountId = jest.fn()
+      const mockForm = (await new EncryptedForm({
+        admin: MOCK_USER,
+        title: 'Test Form',
+        publicKey: 'mockPublicKey',
+      })
+        .populate('admin')
+        .execPopulate()) as IPopulatedEncryptedForm
       const expectedAccountId = 'existingAccountId'
       mockForm.payments_channel = {
         target_account_id: expectedAccountId,
         channel: PaymentChannel.Stripe,
+        publishable_key: 'publishableKey',
       }
 
       // Act
       const result = await StripeService.linkStripeAccountToForm(mockForm, {
-        accountId: expectedAccountId,
-        publishableKey: 'publishableKey',
+        accountId: 'anotherAccountId',
+        publishableKey: 'anotherPublishableKey',
       })
 
       // Assert
-      expect(mockForm.addPaymentAccountId).toHaveBeenCalledTimes(0)
       expect(result._unsafeUnwrap()).toBe(expectedAccountId)
     })
   })
