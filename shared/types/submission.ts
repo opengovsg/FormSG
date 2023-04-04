@@ -103,8 +103,9 @@ export type SubmissionResponseDto = {
   submissionId: string
   // Timestamp is given as ms from epoch
   timestamp: number
-  paymentClientSecret?: string
-  paymentPublishableKey?: string
+
+  // payment form only fields
+  paymentData?: PaymentSubmissionData
 }
 
 export type SubmissionErrorDto = ErrorDto & { spcpSubmissionFailure?: true }
@@ -159,3 +160,7 @@ export type StorageModeSubmissionContentDto = {
 }
 
 export type StorageModePaymentSubmissionDto = Payment
+
+export type PaymentSubmissionData = {
+  paymentId: string
+}

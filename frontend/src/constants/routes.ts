@@ -43,3 +43,4 @@ export const ACTIVE_ADMINFORM_RESULTS_ROUTE_REGEX = new RegExp(
   `${ADMINFORM_ROUTE}/([a-fA-F0-9]{24})/${ADMINFORM_RESULTS_SUBROUTE}(/${RESULTS_FEEDBACK_SUBROUTE})?/?`,
   'i',
 )
+export const PAYMENT_PAGE_SUBROUTE = 'payment/:paymentId'

@@ -3,6 +3,7 @@ import {
   Box,
   Flex,
   FormControl,
+  FormErrorMessage,
   Stack,
   Text,
   VisuallyHidden,
@@ -20,16 +21,16 @@ import { FormColorTheme, FormResponseMode } from '~shared/types/form'
 import { centsToDollars } from '~utils/payments'
 import Button from '~components/Button'
 
-import FormErrorMessage from '../../../../../components/FormControl/FormErrorMessage'
-import { STRIPE_SUBMISSION_ID_KEY } from '../../../constants'
-import { usePublicFormContext } from '../../../PublicFormContext'
-import { FormPaymentPageProps } from '../FormPaymentPage'
+import { usePublicFormContext } from '~features/public-form/PublicFormContext'
+
+import { FormPaymentPageProps } from '../../FormPaymentPage'
 
 // Make sure to call `loadStripe` outside of a component’s render to avoid
 // recreating the `Stripe` object on every render.
 
 export interface PaymentPageBlockProps extends FormPaymentPageProps {
   focusOnMount?: boolean
+  triggerPaymentStatusRefetch: () => void
 }
 
 type StripeCheckoutFormProps = Pick<
@@ -37,12 +38,13 @@ type StripeCheckoutFormProps = Pick<
   'submissionId' | 'isRetry'
 > & {
   colorTheme: FormColorTheme
+  triggerPaymentStatusRefetch: () => void
 }
 
 const StripeCheckoutForm = ({
   colorTheme,
-  submissionId,
   isRetry,
+  triggerPaymentStatusRefetch,
 }: StripeCheckoutFormProps) => {
   const stripe = useStripe()
   const elements = useElements()
@@ -56,16 +58,12 @@ const StripeCheckoutForm = ({
     }
   }, [isRetry])
 
-  // Upon complete payment, redirect to <formId>?stripeSubmissionId=<submissionId>
-  const return_url = `${
-    window.location.href.split('?')[0]
-  }?${STRIPE_SUBMISSION_ID_KEY}=${submissionId}`
-
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     // We don't want to let default form submission happen here,
     // which would refresh the page.
     event.preventDefault()
     setIsStripeProcessing(true)
+    setStripeMessage('')
 
     if (!stripe || !elements) {
       return null
@@ -77,18 +75,26 @@ const StripeCheckoutForm = ({
       //`Elements` instance that was used to create the Payment Element
       elements,
       confirmParams: {
-        return_url,
+        // 1. Responders should return back to the same payment page to view the receipt
+        // 2. Your customer will be redirected to your `return_url`. For some payment
+        //    methods like iDEAL, your customer will be redirected to an intermediate
+        //    site first to authorize the payment, then redirected to the `return_url`.
+        return_url: window.location.href,
       },
+
+      // The default is `redirect?: 'always'` and this will introduce
+      // a bad UX of triggering a page reload of the same page.
+      // By setting if_required we can control when it reloads,
+      // which is after the payment had completed successfully.
+      redirect: 'if_required',
     })
 
     if (result.error && result.error.message) {
-      // Show error to your customer (for example, payment details incomplete)
       setStripeMessage(result.error.message)
     } else {
-      setStripeMessage('')
-      // Your customer will be redirected to your `return_url`. For some payment
-      // methods like iDEAL, your customer will be redirected to an intermediate
-      // site first to authorize the payment, then redirected to the `return_url`.
+      // In the event that customer is not on a payment that has a redirected flow,
+      // we will trigger a payment status refetch
+      triggerPaymentStatusRefetch()
     }
     setIsStripeProcessing(false)
   }
@@ -119,12 +125,13 @@ const StripeCheckoutForm = ({
   )
 }
 
-export const PaymentPageBlock = ({
+export const StripePaymentBlock = ({
   submissionId,
   paymentClientSecret,
   publishableKey,
   focusOnMount,
   isRetry,
+  triggerPaymentStatusRefetch,
 }: PaymentPageBlockProps): JSX.Element => {
   const { form } = usePublicFormContext()
 
@@ -183,6 +190,7 @@ export const PaymentPageBlock = ({
               colorTheme={colorTheme}
               submissionId={submissionId}
               isRetry={isRetry}
+              triggerPaymentStatusRefetch={triggerPaymentStatusRefetch}
             />
           </Elements>
         )}

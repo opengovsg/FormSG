@@ -230,9 +230,11 @@ export const copyPendingSubmissionToSubmissions = (
     action: 'confirmPendingSubmission',
     pendingSubmissionId,
   }
-
   return ResultAsync.fromPromise(
-    PendingSubmissionModel.findById(pendingSubmissionId).session(session),
+    PendingSubmissionModel.findById(pendingSubmissionId, null, {
+      // readPreference from transaction isn't respected, thus we are setting it on operation
+      readPreference: 'primary',
+    }).session(session),
     (error) => {
       logger.error({
         message: 'Database find pending submission error',

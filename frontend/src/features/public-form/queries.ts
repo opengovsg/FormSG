@@ -1,13 +1,12 @@
 import { useQuery, UseQueryResult } from 'react-query'
 
 import { PublicFormViewDto } from '~shared/types/form/form'
-import { PaymentReceiptStatusDto } from '~shared/types/payment'
 
 import { ApiError } from '~typings/core'
 
 import { FORMID_REGEX } from '~constants/routes'
 
-import { getPaymentReceiptStatus, getPublicFormView } from './PublicFormService'
+import { getPublicFormView } from './PublicFormService'
 
 export const publicFormKeys = {
   // All keys map to either an array or function returning an array for
@@ -29,15 +28,5 @@ export const usePublicFormView = (
       staleTime: Infinity,
       enabled: FORMID_REGEX.test(formId) && enabled,
     },
-  )
-}
-
-export const useGetPaymentReceiptStatus = (
-  formId: string,
-  submissionId: string,
-): UseQueryResult<PaymentReceiptStatusDto, ApiError> => {
-  return useQuery<PaymentReceiptStatusDto, ApiError>(
-    [formId, submissionId],
-    () => getPaymentReceiptStatus(formId, submissionId),
   )
 }

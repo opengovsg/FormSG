@@ -1,8 +1,6 @@
 import { useCallback, useState } from 'react'
 import { Box } from '@chakra-ui/react'
 
-import { FormResponseMode } from '~shared/types'
-
 import { useToast } from '~hooks/useToast'
 
 import { usePublicFormMutations } from '~features/public-form/mutations'
@@ -10,7 +8,6 @@ import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
 import { FeedbackFormInput } from './components/FeedbackBlock'
 import { FormEndPage } from './FormEndPage'
-import { FormPaymentPage } from './FormPaymentPage'
 
 interface FormEndPageContainerProps {
   isPreview?: boolean
@@ -65,23 +62,14 @@ export const FormEndPageContainer = ({
 
   return (
     <Box py={{ base: '1.5rem', md: '2.5rem' }} w="100%">
-      {form?.responseMode === FormResponseMode.Encrypt &&
-      form?.payments_field?.enabled ? (
-        <FormPaymentPage
-          submissionId={submissionData.id || ''}
-          paymentClientSecret={submissionData.paymentClientSecret || ''}
-          publishableKey={submissionData.paymentPublishableKey || ''}
-        />
-      ) : (
-        <FormEndPage
-          colorTheme={form.startPage.colorTheme}
-          submissionData={submissionData}
-          formTitle={form.title}
-          endPage={form.endPage}
-          isFeedbackSubmitted={isFeedbackSubmitted}
-          handleSubmitFeedback={handleSubmitFeedback}
-        />
-      )}
+      <FormEndPage
+        colorTheme={form.startPage.colorTheme}
+        submissionData={submissionData}
+        formTitle={form.title}
+        endPage={form.endPage}
+        isFeedbackSubmitted={isFeedbackSubmitted}
+        handleSubmitFeedback={handleSubmitFeedback}
+      />
     </Box>
   )
 }

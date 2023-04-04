@@ -8,6 +8,7 @@ import {
 } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { SubmitHandler } from 'react-hook-form'
+import { useNavigate } from 'react-router-dom'
 import { useDisclosure } from '@chakra-ui/react'
 import { datadogLogs } from '@datadog/browser-logs'
 import { differenceInMilliseconds, isPast } from 'date-fns'
@@ -188,6 +189,7 @@ export const PublicFormProvider = ({
 
   const { handleLogoutMutation } = usePublicAuthMutations(formId)
 
+  const navigate = useNavigate()
   const handleSubmitForm: SubmitHandler<
     FormFieldValues & { payment_receipt_email_field?: { value: string } }
   > = useCallback(
@@ -273,16 +275,19 @@ export const PublicFormProvider = ({
                   onSuccess: ({
                     submissionId,
                     timestamp,
-                    paymentClientSecret,
-                    paymentPublishableKey,
+                    // payment forms will return a paymentIntentId
+                    paymentData,
                   }) => {
+                    trackSubmitForm(form)
+
+                    if (paymentData) {
+                      navigate(`/${formId}/payment/${paymentData.paymentId}`)
+                      return
+                    }
                     setSubmissionData({
                       id: submissionId,
                       timestamp,
-                      paymentClientSecret,
-                      paymentPublishableKey,
                     })
-                    trackSubmitForm(form)
                   },
                 },
               )
@@ -321,6 +326,8 @@ export const PublicFormProvider = ({
       showErrorToast,
       submitEmailModeFormMutation,
       submitStorageModeFormMutation,
+      formId,
+      navigate,
     ],
   )
 

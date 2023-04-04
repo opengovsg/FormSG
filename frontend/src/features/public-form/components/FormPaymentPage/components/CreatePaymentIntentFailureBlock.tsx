@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef } from 'react'
 import { Box, Flex, Stack, Text, VisuallyHidden } from '@chakra-ui/react'
 
-import { usePublicFormContext } from '../../../PublicFormContext'
+import { usePublicFormContext } from '~features/public-form/PublicFormContext'
+
 import { FormPaymentPageProps } from '../FormPaymentPage'
 
 // Make sure to call `loadStripe` outside of a component’s render to avoid

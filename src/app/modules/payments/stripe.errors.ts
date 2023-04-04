@@ -1,19 +1,5 @@
 import { ApplicationError } from '../core/core.errors'
 
-export class SubmissionNotFoundError extends ApplicationError {
-  constructor(message = 'Payment submission not found') {
-    super(message)
-  }
-}
-
-export class SubmissionAndFormMismatchError extends ApplicationError {
-  constructor(
-    message = 'Submission id provided does not match the one linked to the form id',
-  ) {
-    super(message)
-  }
-}
-
 export class SuccessfulChargeNotFoundError extends ApplicationError {
   constructor(message = 'Successful charge not found from Stripe API') {
     super(message)

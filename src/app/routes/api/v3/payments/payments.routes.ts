@@ -10,24 +10,24 @@ PaymentsRouter.get('/stripe')
 
 /**
  * Checks if the payment receipt is ready
- * @route GET /payments/receipt/:formId/:submissionId/status
+ * @route GET /payments/receipt/:formId/:paymentId/status
  *
  * @returns 200 if receipt URL exists
- * @returns 404 if receipt URL does not exist
+ * @returns 404 if receipt URL does not exist or payment does not exist
  */
 PaymentsRouter.route(
-  '/receipt/:formId([a-fA-F0-9]{24})/:submissionId([a-fA-F0-9]{24})/status',
+  '/receipt/:formId([a-fA-F0-9]{24})/:paymentId([a-fA-F0-9]{24})/status',
 ).get(StripeController.checkPaymentReceiptStatus)
 
 /**
  * Downloads the receipt pdf
- * @route GET /receipt/:formId/:submissionId/download
+ * @route GET /payments/receipt/:formId/:paymentId/download
  *
- * @returns 200 with receipt URL exists
+ * @returns 200 with receipt attatchment as content in PDF
+ * @returns 404 if receipt url doesn't exist or payment does not exist
  */
-// TODO: consider rate limiting this endpoint #5924
 PaymentsRouter.route(
-  '/receipt/:formId([a-fA-F0-9]{24})/:submissionId([a-fA-F0-9]{24})/download',
+  '/receipt/:formId([a-fA-F0-9]{24})/:paymentId([a-fA-F0-9]{24})/download',
 ).get(
   limitRate({ max: rateLimitConfig.downloadPaymentReceipt }),
   StripeController.downloadPaymentReceipt,
@@ -35,4 +35,18 @@ PaymentsRouter.route(
 
 PaymentsRouter.route('/stripe/callback').get(
   StripeController.handleConnectOauthCallback,
+)
+
+/**
+ * returns clientSecret and publishableKey from paymentId
+ * @route /payments/:paymentId/getinfo
+ *
+ * @returns 200 with payment information if payment id exist
+ * @returns 404 when no pending submission is associated with the payment id
+ * @returns 422 if the form associated is not in encrypted mode
+ * @returns 500 if the form associated did not contain payment information
+ * @returns 500 if error occured whilst retrieving payment information from stripe
+ */
+PaymentsRouter.route('/:paymentId([a-fA-F0-9]{24})/getinfo').get(
+  StripeController.getPaymentInfo,
 )

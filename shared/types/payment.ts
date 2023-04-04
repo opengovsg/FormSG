@@ -54,3 +54,9 @@ export type Payment = {
 export type PaymentReceiptStatusDto = {
   isReady: boolean
 }
+
+export type GetPaymentInfoDto = {
+  client_secret: string
+  publishableKey: string
+  payment_intent_id: string
+}

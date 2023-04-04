@@ -17,3 +17,9 @@ export class PaymentAlreadyConfirmedError extends ApplicationError {
     super(message)
   }
 }
+
+export class PaymentAccountInformationError extends ApplicationError {
+  constructor(message = 'Missing payment account information') {
+    super(message)
+  }
+}

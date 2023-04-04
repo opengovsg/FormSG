@@ -2,6 +2,7 @@
 import { createContext, RefObject, useContext } from 'react'
 import { UseQueryResult } from 'react-query'
 
+import { PaymentSubmissionData } from '~shared/types'
 import { PublicFormViewDto } from '~shared/types/form'
 
 export type SubmissionData = {
@@ -9,8 +10,8 @@ export type SubmissionData = {
   id: string | undefined
   /** Submission time in ms from epoch  */
   timestamp: number
-  paymentClientSecret?: string
-  paymentPublishableKey?: string
+  // payment forms will return a paymentIntentId
+  paymentData?: PaymentSubmissionData
 }
 
 export interface PublicFormContextProps

@@ -867,7 +867,11 @@ describe('submission.service', () => {
       )
       session.endSession()
 
-      expect(findSpy).toHaveBeenCalledWith(MOCK_PENDING_SUBMISSION_ID)
+      expect(findSpy).toHaveBeenCalledWith(
+        MOCK_PENDING_SUBMISSION_ID,
+        null,
+        expect.anything(),
+      )
       expect(result.isErr()).toEqual(true)
       expect(result._unsafeUnwrapErr()).toBeInstanceOf(DatabaseError)
     })

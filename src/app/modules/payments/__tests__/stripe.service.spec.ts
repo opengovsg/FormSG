@@ -3,15 +3,20 @@ import { ObjectId } from 'bson'
 import { keyBy } from 'lodash'
 import mongoose from 'mongoose'
 import { ResultAsync } from 'neverthrow'
-import { PaymentStatus, SubmissionType } from 'shared/types'
+import { PaymentChannel, PaymentStatus, SubmissionType } from 'shared/types'
 import Stripe from 'stripe'
 
 import { stripe } from 'src/app/loaders/stripe'
+import { getEncryptedFormModel } from 'src/app/models/form.server.model'
 import getPaymentModel from 'src/app/models/payment.server.model'
 import { getEncryptPendingSubmissionModel } from 'src/app/models/pending_submission.server.model'
 import getSubmissionModel from 'src/app/models/submission.server.model'
 import { DatabaseError } from 'src/app/modules/core/core.errors'
-import { IPaymentSchema } from 'src/types'
+import {
+  IPaymentSchema,
+  IPopulatedEncryptedForm,
+  IPopulatedUser,
+} from 'src/types'
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
@@ -22,6 +27,7 @@ import * as StripeService from '../stripe.service'
 const Payment = getPaymentModel(mongoose)
 const EncryptPendingSubmission = getEncryptPendingSubmissionModel(mongoose)
 const Submission = getSubmissionModel(mongoose)
+const EncryptedForm = getEncryptedFormModel(mongoose)
 
 const MOCK_PAYMENT_ID = new ObjectId().toHexString()
 const MOCK_FORM_ID = new ObjectId().toHexString()
@@ -204,6 +210,12 @@ const MOCK_STRIPE_EVENTS = [
 ] as unknown as Stripe.Event[]
 
 const MOCK_STRIPE_EVENTS_MAP = keyBy(MOCK_STRIPE_EVENTS, 'id')
+
+const MOCK_USER_ID = new ObjectId()
+const MOCK_USER = {
+  _id: MOCK_USER_ID,
+  email: 'somerandom@example.com',
+} as IPopulatedUser
 
 describe('stripe.service', () => {
   beforeAll(async () => await dbHandler.connect())
@@ -559,6 +571,59 @@ describe('stripe.service', () => {
       expect(findSpy).toHaveBeenCalledOnce()
       expect(result.isErr()).toEqual(true)
       expect(result._unsafeUnwrapErr()).toBeInstanceOf(DatabaseError)
+    })
+  })
+  describe('linkStripeAccountToForm', () => {
+    it('should call func to attach payment account information', async () => {
+      // Arrange
+      await dbHandler.insertFormCollectionReqs({
+        userId: MOCK_USER_ID,
+      })
+      const mockForm = (await new EncryptedForm({
+        admin: MOCK_USER,
+        title: 'Test Form',
+        publicKey: 'mockPublicKey',
+      })
+        .populate('admin')
+        .execPopulate()) as IPopulatedEncryptedForm
+      const spiedFn = jest.spyOn(mockForm, 'addPaymentAccountId')
+      const expectedAccountId = 'accountId'
+
+      // Act
+      const result = await StripeService.linkStripeAccountToForm(mockForm, {
+        accountId: expectedAccountId,
+        publishableKey: 'publishableKey',
+      })
+
+      // Assert
+      expect(spiedFn).toHaveBeenCalledTimes(1)
+      expect(result._unsafeUnwrap()).toBe(expectedAccountId)
+    })
+
+    it('should return existing account information when called with new account to be linked', async () => {
+      // Arrange
+      const mockForm = (await new EncryptedForm({
+        admin: MOCK_USER,
+        title: 'Test Form',
+        publicKey: 'mockPublicKey',
+      })
+        .populate('admin')
+        .execPopulate()) as IPopulatedEncryptedForm
+      const expectedAccountId = 'existingAccountId'
+      mockForm.payments_channel = {
+        target_account_id: expectedAccountId,
+        channel: PaymentChannel.Stripe,
+        publishable_key: 'publishableKey',
+      }
+
+      // Act
+      const result = await StripeService.linkStripeAccountToForm(mockForm, {
+        accountId: 'anotherAccountId',
+        publishableKey: 'anotherPublishableKey',
+      })
+
+      // Assert
+      expect(result._unsafeUnwrap()).toBe(expectedAccountId)
     })
   })
 })

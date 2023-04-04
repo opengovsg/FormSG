@@ -2,18 +2,17 @@ import { BiDownload } from 'react-icons/bi'
 import { Box, Stack, Text } from '@chakra-ui/react'
 
 import { useToast } from '~hooks/useToast'
-
-import Button from '../../../../../components/Button'
-import { API_BASE_URL } from '../../../../../services/ApiService'
+import { API_BASE_URL } from '~services/ApiService'
+import Button from '~components/Button'
 
 type DownloadReceiptBlockProps = {
   formId: string
-  stripeSubmissionId: string
+  paymentId: string
 }
 
 export const DownloadReceiptBlock = ({
   formId,
-  stripeSubmissionId,
+  paymentId,
 }: DownloadReceiptBlockProps) => {
   const toast = useToast({ status: 'success', isClosable: true })
 
@@ -21,7 +20,7 @@ export const DownloadReceiptBlock = ({
     toast({
       description: 'Receipt download started',
     })
-    window.location.href = `${API_BASE_URL}/payments/receipt/${formId}/${stripeSubmissionId}/download`
+    window.location.href = `${API_BASE_URL}/payments/receipt/${formId}/${paymentId}/download`
   }
   return (
     <Box>
@@ -34,7 +33,7 @@ export const DownloadReceiptBlock = ({
         </Text>
       </Stack>
       <Text textColor="secondary.300" mt="2rem">
-        Response ID: {stripeSubmissionId}
+        Response ID: {paymentId}
       </Text>
 
       <Button
