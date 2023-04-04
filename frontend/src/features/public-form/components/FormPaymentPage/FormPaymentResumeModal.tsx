@@ -15,8 +15,9 @@ import { FormResponseMode } from '~shared/types'
 
 import { useBrowserStm } from '~hooks/payments'
 import { useIsMobile } from '~hooks/useIsMobile'
-import { getPaymentPageUrl } from '~utils/urls'
 import Button from '~components/Button'
+
+import { getPaymentPageUrl } from '~features/public-form/utils/urls'
 
 import { usePublicFormContext } from '../../PublicFormContext'
 
@@ -64,12 +65,12 @@ export const PublicFormPaymentResumeModal = (): JSX.Element => {
       >
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader>Restore previous session?</ModalHeader>
-          <ModalBody whiteSpace="pre-line">
+          <ModalHeader pb={'2rem'}>Restore previous session?</ModalHeader>
+          <ModalBody>
             We noticed an incomplete session on this form. You can restore your
             previous session and complete payment.
           </ModalBody>
-          <ModalFooter>
+          <ModalFooter pt={'2.5rem'} pb={'2.5rem'}>
             <ButtonGroup
               flexWrap={isMobile ? 'wrap-reverse' : 'wrap'}
               justifyContent="end"
