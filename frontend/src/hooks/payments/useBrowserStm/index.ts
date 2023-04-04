@@ -42,7 +42,7 @@ export const useBrowserStm = (
   )
 
   const entryObj = deserialize(paymentMemory || '')
-  processEviction(entryObj)
+  processEviction(entryObj, (obj) => setPaymentMemory(serialize(obj)))
 
   const lastPaymentMemory = getEntry(entryObj, formId)
   const storePaymentMemory = (paymentId: string) => {

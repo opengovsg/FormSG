@@ -12,7 +12,10 @@ export type BrowserStmDto = {
 const EXPIRY_TIME_IN_HRS = 24 // 1 day
 const EVICTION_DEBOUNCE_TIME = 1000 * 20 // 20 seconds
 
-const _processEviction = (entryObj: BrowserStmDto) => {
+const _processEviction = (
+  entryObj: BrowserStmDto,
+  setStateCallbackFn: (newEntryObj: BrowserStmDto) => void,
+) => {
   const curTime = Date.now()
   const returnObj = { ...entryObj }
   Object.keys(returnObj).forEach((formId) => {
@@ -22,7 +25,7 @@ const _processEviction = (entryObj: BrowserStmDto) => {
       delete returnObj[formId]
     }
   })
-  return returnObj
+  setStateCallbackFn(returnObj)
 }
 
 export const processEviction = throttle(
