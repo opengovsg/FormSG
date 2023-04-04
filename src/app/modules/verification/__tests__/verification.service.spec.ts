@@ -1,6 +1,6 @@
 /* eslint-disable import/first */
 import { ObjectId } from 'bson'
-import { addHours, subHours, subSeconds } from 'date-fns'
+import { addHours, subHours, subMinutes, subSeconds } from 'date-fns'
 import mongoose from 'mongoose'
 import { errAsync, okAsync } from 'neverthrow'
 
@@ -18,8 +18,12 @@ import { smsConfig } from 'src/app/config/features/sms.config'
 import formsgSdk from 'src/app/config/formsg-sdk'
 import * as FormService from 'src/app/modules/form/form.service'
 import {
+  MissingHashDataError,
+  OtpExpiredError,
   OtpRequestCountExceededError,
   OtpRequestError,
+  OtpRetryExceededError,
+  WrongOtpError,
 } from 'src/app/modules/verification/verification.errors'
 import {
   MailGenerationError,
@@ -29,6 +33,7 @@ import MailService from 'src/app/services/mail/mail.service'
 import { SmsSendError } from 'src/app/services/sms/sms.errors'
 import { SmsFactory } from 'src/app/services/sms/sms.factory'
 import * as SmsService from 'src/app/services/sms/sms.service'
+import * as HashUtils from 'src/app/utils/hash'
 import {
   IFormSchema,
   IPopulatedForm,
@@ -56,6 +61,7 @@ import * as VerificationService from '../verification.service'
 import {
   ResetFieldForTransactionParams,
   SendOtpParams,
+  VerifyOtpParams,
 } from '../verification.types'
 import { getFieldFromTransaction } from '../verification.util'
 
@@ -82,6 +88,7 @@ const MockMailService = jest.mocked(MailService)
 jest.mock('src/app/modules/form/form.service')
 const MockFormService = jest.mocked(FormService)
 jest.mock('src/app/utils/hash')
+const MockHashUtils = jest.mocked(HashUtils)
 
 describe('Verification service', () => {
   const mockFieldIdObj = new ObjectId()
@@ -576,6 +583,183 @@ describe('Verification service', () => {
         transactionId: mockTransactionId,
       })
       expect(result._unsafeUnwrapErr()).toEqual(new TransactionNotFoundError())
+    })
+  })
+
+  describe('verifyOtp', () => {
+    let verifyOtpTransaction: IVerificationSchema
+    let verifyOtpTransactionId: string
+    let otpFieldId: string
+
+    let mockVerifyOtpValidInput: VerifyOtpParams
+    const incrementFieldRetriesFx = jest.fn()
+
+    beforeEach(async () => {
+      incrementFieldRetriesFx.mockResolvedValue(mockField)
+      MockHashUtils.compareHash.mockReturnValue(okAsync(true))
+      verifyOtpTransaction = await VerificationModel.create({
+        formId: mockFormId,
+        fields: [
+          generateFieldParams({
+            signedData: MOCK_SIGNED_DATA,
+            hashRetries: 0,
+            hashedOtp: MOCK_HASHED_OTP,
+            hashCreatedAt: new Date(),
+          }),
+        ],
+      })
+      verifyOtpTransactionId = verifyOtpTransaction._id
+      otpFieldId = verifyOtpTransaction.fields[0]._id!
+      mockVerifyOtpValidInput = {
+        transactionId: verifyOtpTransactionId,
+        fieldId: otpFieldId,
+        inputOtp: MOCK_OTP,
+        getFieldFromTransactionFx: getFieldFromTransaction,
+        incrementFieldRetriesFx,
+      }
+    })
+
+    it('should return signedData when OTP is valid', async () => {
+      const result = await VerificationService.verifyOtp(
+        mockVerifyOtpValidInput,
+      )
+
+      expect(incrementFieldRetriesFx).toHaveBeenCalledWith(
+        verifyOtpTransactionId,
+        otpFieldId,
+      )
+      expect(MockHashUtils.compareHash).toHaveBeenCalledWith(
+        MOCK_OTP,
+        verifyOtpTransaction.fields[0].hashedOtp,
+      )
+      expect(result._unsafeUnwrap()).toEqual(
+        verifyOtpTransaction.fields[0].signedData,
+      )
+    })
+
+    it('should return TransactionNotFoundError when transaction ID does not exist', async () => {
+      const result = await VerificationService.verifyOtp({
+        ...mockVerifyOtpValidInput,
+        transactionId: new ObjectId().toHexString(),
+      })
+
+      expect(incrementFieldRetriesFx).not.toHaveBeenCalled()
+      expect(result._unsafeUnwrapErr()).toEqual(new TransactionNotFoundError())
+    })
+
+    it('should return TransactionExpiredError when transaction has expired', async () => {
+      const expiredTransaction = await VerificationModel.create({
+        formId: mockFormId,
+        // Expire 25 hours ago
+        expireAt: subHours(new Date(), 25),
+      })
+
+      const result = await VerificationService.verifyOtp({
+        ...mockVerifyOtpValidInput,
+        transactionId: expiredTransaction._id,
+      })
+
+      expect(incrementFieldRetriesFx).not.toHaveBeenCalled()
+      expect(result._unsafeUnwrapErr()).toEqual(new TransactionExpiredError())
+    })
+
+    it('should return FieldNotFoundInTransactionError when field ID does not exist', async () => {
+      const result = await VerificationService.verifyOtp({
+        ...mockVerifyOtpValidInput,
+        fieldId: new ObjectId().toHexString(),
+      })
+
+      expect(incrementFieldRetriesFx).not.toHaveBeenCalled()
+      expect(result._unsafeUnwrapErr()).toEqual(
+        new FieldNotFoundInTransactionError(),
+      )
+    })
+
+    it('should return MissingHashDataError when hash has not been created', async () => {
+      const missingHashTransaction = await VerificationModel.create({
+        formId: mockFormId,
+        // hash data defaults to null
+        fields: [generateFieldParams()],
+      })
+
+      const result = await VerificationService.verifyOtp({
+        ...mockVerifyOtpValidInput,
+        transactionId: missingHashTransaction._id,
+        fieldId: missingHashTransaction.fields[0]._id!,
+      })
+
+      expect(result._unsafeUnwrapErr()).toEqual(new MissingHashDataError())
+    })
+
+    it('should return OtpExpiredError when OTP has expired', async () => {
+      const expiredOtpField = generateFieldParams({
+        signedData: MOCK_SIGNED_DATA,
+        hashRetries: 0,
+        hashedOtp: MOCK_HASHED_OTP,
+        // hash created 60min ago
+        hashCreatedAt: subMinutes(new Date(), 60),
+      })
+      const expiredOtpTransaction = await VerificationModel.create({
+        formId: mockFormId,
+        fields: [expiredOtpField],
+      })
+
+      const result = await VerificationService.verifyOtp({
+        ...mockVerifyOtpValidInput,
+        transactionId: expiredOtpTransaction._id,
+        fieldId: expiredOtpField._id,
+      })
+
+      expect(result._unsafeUnwrapErr()).toEqual(new OtpExpiredError())
+    })
+
+    it('should return OtpRetryExceededError when max retries have been exceeded', async () => {
+      const retriesExceededField = generateFieldParams({
+        signedData: MOCK_SIGNED_DATA,
+        hashRetries: 5,
+        hashedOtp: MOCK_HASHED_OTP,
+        hashCreatedAt: new Date(),
+      })
+      const retriesExceededTransaction = await VerificationModel.create({
+        formId: mockFormId,
+        fields: [retriesExceededField],
+      })
+
+      const result = await VerificationService.verifyOtp({
+        ...mockVerifyOtpValidInput,
+        transactionId: retriesExceededTransaction._id,
+        fieldId: retriesExceededField._id,
+      })
+
+      expect(result._unsafeUnwrapErr()).toEqual(new OtpRetryExceededError())
+    })
+
+    it('should return DatabaseError when database update errors', async () => {
+      incrementFieldRetriesFx.mockRejectedValueOnce('rejected')
+
+      const result = await VerificationService.verifyOtp(
+        mockVerifyOtpValidInput,
+      )
+
+      expect(incrementFieldRetriesFx).toHaveBeenCalledWith(
+        verifyOtpTransactionId,
+        otpFieldId,
+      )
+      expect(result._unsafeUnwrapErr()).toBeInstanceOf(DatabaseError)
+    })
+
+    it('should return WrongOtpError when OTP is wrong', async () => {
+      MockHashUtils.compareHash.mockReturnValueOnce(okAsync(false))
+
+      const result = await VerificationService.verifyOtp(
+        mockVerifyOtpValidInput,
+      )
+
+      expect(incrementFieldRetriesFx).toHaveBeenCalledWith(
+        verifyOtpTransactionId,
+        otpFieldId,
+      )
+      expect(result._unsafeUnwrapErr()).toEqual(new WrongOtpError())
     })
   })
 
