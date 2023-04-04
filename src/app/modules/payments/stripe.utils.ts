@@ -34,7 +34,7 @@ const isStripeMetadata = (
   hasProp(obj, 'formTitle') &&
   hasProp(obj, 'formId') &&
   hasProp(obj, 'paymentId') &&
-  hasProp(obj, 'paymentReceiptEmail')
+  hasProp(obj, 'paymentContactEmail')
 
 /**
  * Extracts the payment id from the metadata field of objects expected to have

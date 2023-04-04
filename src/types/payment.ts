@@ -11,5 +11,5 @@ export interface StripePaymentMetadataDto extends Stripe.Metadata {
   formTitle: string
   formId: string
   paymentId: string
-  paymentReceiptEmail: string
+  paymentContactEmail: string
 }

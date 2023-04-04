@@ -428,7 +428,7 @@ const submitEncryptModeForm: ControllerHandler<
       formTitle: form.title,
       formId,
       paymentId,
-      paymentReceiptEmail,
+      paymentContactEmail: paymentReceiptEmail,
     }
 
     const createPaymentIntentParams: Stripe.PaymentIntentCreateParams = {
