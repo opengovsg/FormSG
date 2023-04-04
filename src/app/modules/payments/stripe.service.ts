@@ -27,14 +27,9 @@ import {
   ComputePaymentStateError,
   MalformedStripeChargeObjectError,
   StripeAccountError,
-  StripeAccountNotFoundError,
   StripeFetchError,
 } from './stripe.errors'
-import {
-  computePaymentState,
-  computePayoutDetails,
-  getRedirectUri,
-} from './stripe.utils'
+import { computePaymentState, computePayoutDetails } from './stripe.utils'
 
 const logger = createLoggerWithLabel(module)
 const Payment = getPaymentModel(mongoose)
@@ -262,7 +257,7 @@ export const getStripeOauthUrl = (form: IPopulatedEncryptedForm) => {
       response_type: 'code',
       scope: 'read_write',
       state,
-      redirect_uri: getRedirectUri(),
+      redirect_uri: `${config.app.appUrl}/api/v3/payments/stripe/callback`,
     }),
     state,
   })
@@ -359,7 +354,7 @@ export const unlinkStripeAccountFromForm = (form: IPopulatedEncryptedForm) => {
 export const createAccountLink = (
   accountId: string,
   redirectFormId: string,
-) => {
+): ResultAsync<Stripe.Response<Stripe.AccountLink>, StripeAccountError> => {
   return ResultAsync.fromPromise(
     stripe.accountLinks.create({
       account: accountId,
@@ -384,10 +379,7 @@ export const createAccountLink = (
 
 export const validateAccount = (
   accountId?: string,
-): ResultAsync<
-  Stripe.Response<Stripe.Account> | null,
-  StripeAccountError | StripeAccountNotFoundError
-> => {
+): ResultAsync<Stripe.Response<Stripe.Account> | null, StripeAccountError> => {
   if (!accountId) {
     return okAsync(null)
   }
