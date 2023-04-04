@@ -23,7 +23,6 @@ import MoneyInput from '~components/MoneyInput'
 import Toggle from '~components/Toggle'
 
 import { useMutateFormPage } from '~features/admin-form/common/mutations'
-import { useAdminForm } from '~features/admin-form/common/queries'
 
 import { useEnv } from '../../../env/queries'
 import {
@@ -338,10 +337,10 @@ export const PaymentDrawer = ({
     return resetData
   }, [paymentsField, resetData, setData])
 
-  // Allows for payment data refresh in encrypt mode
-  if (!paymentData && isEncryptMode && isStripeConnected) return null
-
   const isDisabled = !(isEncryptMode && isStripeConnected)
+
+  // Allows for payment data refresh in encrypt mode
+  if (!paymentData && !isDisabled) return null
 
   return (
     <CreatePageDrawerContainer>
