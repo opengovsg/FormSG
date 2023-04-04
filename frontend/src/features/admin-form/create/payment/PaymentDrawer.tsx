@@ -23,6 +23,7 @@ import MoneyInput from '~components/MoneyInput'
 import Toggle from '~components/Toggle'
 
 import { useMutateFormPage } from '~features/admin-form/common/mutations'
+import { useAdminForm } from '~features/admin-form/common/queries'
 
 import { useEnv } from '../../../env/queries'
 import {
@@ -292,13 +293,19 @@ export const PaymentInput = ({
 // Will be extended for stripe unconnected messages too
 const PaymentDisabledMessage = ({
   isEmailMode,
+  isStripeUnconnected,
 }: {
   isEmailMode: boolean
+  isStripeUnconnected: boolean
 }): JSX.Element | null => {
-  return isEmailMode ? (
+  return isEmailMode || isStripeUnconnected ? (
     <Box px="1.5rem" pt="2rem" pb="1.5rem">
       <InlineMessage variant={'info'}>
-        <Text>Payments are not available in email mode forms.</Text>
+        {isEmailMode ? (
+          <Text>Payments are not available in email mode forms.</Text>
+        ) : (
+          <Text>Connect your Stripe account in Settings.</Text>
+        )}
       </InlineMessage>
     </Box>
   ) : null
@@ -306,13 +313,16 @@ const PaymentDisabledMessage = ({
 
 type PaymentDrawerProps = {
   isEncryptMode: boolean
+  isStripeConnected: boolean
   paymentsField?: FormPaymentsField
 }
 
 export const PaymentDrawer = ({
   isEncryptMode,
+  isStripeConnected,
   paymentsField,
 }: PaymentDrawerProps): JSX.Element | null => {
+  const { isLoading } = useAdminForm()
   const { paymentData, setData, resetData } = usePaymentStore(
     useCallback(
       (state) => ({
@@ -330,11 +340,16 @@ export const PaymentDrawer = ({
   }, [paymentsField, resetData, setData])
 
   // Allows for payment data refresh in encrypt mode
-  if (!paymentData && isEncryptMode) return null
+  if (!paymentData && isEncryptMode && isStripeConnected) return null
+
+  const isDisabled = !(isEncryptMode && isStripeConnected) || isLoading
 
   return (
     <CreatePageDrawerContainer>
-      <PaymentDisabledMessage isEmailMode={!isEncryptMode} />
+      <PaymentDisabledMessage
+        isEmailMode={!isEncryptMode}
+        isStripeUnconnected={!isStripeConnected}
+      />
       <Flex pos="relative" h="100%" display="flex" flexDir="column">
         <Box pt="1rem" px="1.5rem" bg="white">
           <Flex justify="space-between">
@@ -345,7 +360,7 @@ export const PaymentDrawer = ({
           </Flex>
           <Divider w="auto" mx="-1.5rem" />
         </Box>
-        <PaymentInput isDisabled={!isEncryptMode} />
+        <PaymentInput isDisabled={isDisabled} />
       </Flex>
     </CreatePageDrawerContainer>
   )
