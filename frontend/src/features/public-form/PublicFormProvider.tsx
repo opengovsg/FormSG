@@ -25,7 +25,6 @@ import { FORMID_REGEX } from '~constants/routes'
 import { useBrowserStm } from '~hooks/payments'
 import { useTimeout } from '~hooks/useTimeout'
 import { useToast } from '~hooks/useToast'
-import { getPaymentPageUrl } from '~utils/urls'
 import { HttpError } from '~services/ApiService'
 import { FormFieldValues } from '~templates/Field'
 
@@ -37,6 +36,7 @@ import {
   trackVisitPublicForm,
 } from '~features/analytics/AnalyticsService'
 import { useEnv } from '~features/env/queries'
+import { getPaymentPageUrl } from '~features/public-form/utils/urls'
 import {
   RecaptchaClosedError,
   useRecaptcha,
