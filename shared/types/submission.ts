@@ -162,5 +162,5 @@ export type StorageModeSubmissionContentDto = {
 export type StorageModePaymentSubmissionDto = Payment
 
 export type PaymentSubmissionData = {
-  paymentIntentId: string
+  paymentId: string
 }

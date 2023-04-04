@@ -1,29 +1,33 @@
 // Use 'stripe-event-types' for better type discrimination.
 /// <reference types="stripe-event-types" />
 
-import get from 'lodash/get'
+import { StatusCodes } from 'http-status-codes'
 import mongoose from 'mongoose'
 import { err, Ok, ok, Result } from 'neverthrow'
 import Stripe from 'stripe'
 
+import { StripePaymentMetadataDto } from 'src/types'
+
 import { Payment, PaymentStatus } from '../../../../shared/types'
-import config from '../../config/config'
+import { hasProp } from '../../../../shared/utils/has-prop'
 import { createLoggerWithLabel } from '../../config/logger'
+import { ApplicationError } from '../core/core.errors'
+import {
+  PendingSubmissionNotFoundError,
+  ResponseModeError,
+} from '../submission/submission.errors'
 
 import {
+  PaymentAccountInformationError,
+  PaymentNotFoundError,
+} from './payments.errors'
+import {
   ComputePaymentStateError,
+  StripeFetchError,
   StripeMetadataValidPaymentIdNotFoundError,
 } from './stripe.errors'
 
 const logger = createLoggerWithLabel(module)
-
-/**
- * Helper function to get redirect URI for OAuth callback on account linkage.
- */
-export const getRedirectUri = () =>
-  `${
-    config.isDev ? 'http://localhost:5001' : config.app.appUrl
-  }/api/v3/payments/stripe/callback`
 
 /**
  * Helper function to get the charge id from a nested charge object.
@@ -31,6 +35,18 @@ export const getRedirectUri = () =>
 export const getChargeIdFromNestedCharge = (
   charge: string | Stripe.Charge,
 ): string => (typeof charge === 'string' ? charge : charge.id)
+
+/**
+ * Helper function to typeguard Stripe metadata received from payment intents
+ * and charges.
+ */
+const isStripeMetadata = (
+  obj: Stripe.Metadata,
+): obj is StripePaymentMetadataDto =>
+  hasProp(obj, 'formTitle') &&
+  hasProp(obj, 'formId') &&
+  hasProp(obj, 'paymentId') &&
+  hasProp(obj, 'paymentContactEmail')
 
 /**
  * Extracts the payment id from the metadata field of objects expected to have
@@ -46,15 +62,17 @@ export const getMetadataPaymentId = (
     action: 'getMetadataPaymentId',
     metadata,
   }
-  const paymentId = get(metadata, 'paymentId') // TODO: Extract this value to a constant?
-  if (!paymentId || !mongoose.Types.ObjectId.isValid(paymentId)) {
+  if (
+    !isStripeMetadata(metadata) ||
+    !mongoose.Types.ObjectId.isValid(metadata.paymentId)
+  ) {
     logger.warn({
       message: 'Got metadata with invalid paymentId',
       meta: { ...logMeta, metadata },
     })
     return err(new StripeMetadataValidPaymentIdNotFoundError())
   }
-  return ok(paymentId)
+  return ok(metadata.paymentId)
 }
 
 /**
@@ -287,4 +305,27 @@ export const computePayoutDetails = (
       event.type.startsWith('payout.'),
   )
   return ok(payoutEvents.reduce(payoutStateReducer, undefined))
+}
+
+export const mapRouteErr = (error: ApplicationError) => {
+  switch (error.constructor) {
+    case ResponseModeError:
+      return {
+        statusCode: StatusCodes.UNPROCESSABLE_ENTITY,
+        errorMessage: error.message,
+      }
+    case PaymentNotFoundError: // fall-through
+    case PendingSubmissionNotFoundError:
+      return {
+        statusCode: StatusCodes.NOT_FOUND,
+        errorMessage: error.message,
+      }
+    case StripeFetchError: // fall-through
+    case PaymentAccountInformationError: // fall-through
+    default:
+      return {
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        errorMessage: error.message,
+      }
+  }
 }

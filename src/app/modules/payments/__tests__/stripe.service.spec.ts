@@ -27,6 +27,7 @@ import * as StripeService from '../stripe.service'
 const Payment = getPaymentModel(mongoose)
 const EncryptPendingSubmission = getEncryptPendingSubmissionModel(mongoose)
 const Submission = getSubmissionModel(mongoose)
+const EncryptedForm = getEncryptedFormModel(mongoose)
 
 const MOCK_PAYMENT_ID = new ObjectId().toHexString()
 const MOCK_FORM_ID = new ObjectId().toHexString()
@@ -215,13 +216,6 @@ const MOCK_USER = {
   _id: MOCK_USER_ID,
   email: 'somerandom@example.com',
 } as IPopulatedUser
-
-const generateMockForm = () =>
-  ({
-    admin: MOCK_USER,
-    _id: MOCK_FORM_ID,
-    title: 'mock title',
-  } as IPopulatedEncryptedForm)
 
 describe('stripe.service', () => {
   beforeAll(async () => await dbHandler.connect())
@@ -582,7 +576,6 @@ describe('stripe.service', () => {
   describe('linkStripeAccountToForm', () => {
     it('should call func to attach payment account information', async () => {
       // Arrange
-      const EncryptedForm = getEncryptedFormModel(mongoose)
       await dbHandler.insertFormCollectionReqs({
         userId: MOCK_USER_ID,
       })
@@ -607,24 +600,29 @@ describe('stripe.service', () => {
       expect(result._unsafeUnwrap()).toBe(expectedAccountId)
     })
 
-    it('to', async () => {
+    it('should return existing account information when called with new account to be linked', async () => {
       // Arrange
-      const mockForm = generateMockForm()
-      mockForm.addPaymentAccountId = jest.fn()
+      const mockForm = (await new EncryptedForm({
+        admin: MOCK_USER,
+        title: 'Test Form',
+        publicKey: 'mockPublicKey',
+      })
+        .populate('admin')
+        .execPopulate()) as IPopulatedEncryptedForm
       const expectedAccountId = 'existingAccountId'
       mockForm.payments_channel = {
         target_account_id: expectedAccountId,
         channel: PaymentChannel.Stripe,
+        publishable_key: 'publishableKey',
       }
 
       // Act
       const result = await StripeService.linkStripeAccountToForm(mockForm, {
-        accountId: expectedAccountId,
-        publishableKey: 'publishableKey',
+        accountId: 'anotherAccountId',
+        publishableKey: 'anotherPublishableKey',
       })
 
       // Assert
-      expect(mockForm.addPaymentAccountId).toHaveBeenCalledTimes(0)
       expect(result._unsafeUnwrap()).toBe(expectedAccountId)
     })
   })

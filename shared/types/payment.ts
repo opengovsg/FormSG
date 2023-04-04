@@ -12,6 +12,7 @@ export enum PaymentStatus {
 }
 
 export enum PaymentChannel {
+  Unconnected = 'Unconnected',
   Stripe = 'Stripe',
   // for extensibility to future payment options
 }
@@ -57,4 +58,5 @@ export type PaymentReceiptStatusDto = {
 export type GetPaymentInfoDto = {
   client_secret: string
   publishableKey: string
+  payment_intent_id: string
 }

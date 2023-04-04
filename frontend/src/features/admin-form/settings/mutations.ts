@@ -360,17 +360,23 @@ export const useMutateTwilioCreds = () => {
 export const useMutateStripeAccount = () => {
   const { formId } = useParams()
   if (!formId) throw new Error('No formId provided')
-
   const queryClient = useQueryClient()
 
-  const linkStripeAccountMutation = useMutation(() =>
-    createStripeAccount(formId),
+  const linkStripeAccountMutation = useMutation(
+    () => createStripeAccount(formId),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(adminFormKeys.id(formId))
+        queryClient.invalidateQueries(adminFormSettingsKeys.id(formId))
+      },
+    },
   )
 
   const unlinkStripeAccountMutation = useMutation(
     () => unlinkStripeAccount(formId),
     {
       onSuccess: () => {
+        queryClient.invalidateQueries(adminFormKeys.id(formId))
         queryClient.invalidateQueries(adminFormSettingsKeys.id(formId))
       },
     },

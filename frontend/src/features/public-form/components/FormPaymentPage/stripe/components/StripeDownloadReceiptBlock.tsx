@@ -7,12 +7,12 @@ import Button from '~components/Button'
 
 type DownloadReceiptBlockProps = {
   formId: string
-  paymentPageId: string
+  paymentId: string
 }
 
 export const DownloadReceiptBlock = ({
   formId,
-  paymentPageId,
+  paymentId,
 }: DownloadReceiptBlockProps) => {
   const toast = useToast({ status: 'success', isClosable: true })
 
@@ -20,7 +20,7 @@ export const DownloadReceiptBlock = ({
     toast({
       description: 'Receipt download started',
     })
-    window.location.href = `${API_BASE_URL}/payments/receipt/${formId}/${paymentPageId}/download`
+    window.location.href = `${API_BASE_URL}/payments/receipt/${formId}/${paymentId}/download`
   }
   return (
     <Box>
@@ -33,7 +33,7 @@ export const DownloadReceiptBlock = ({
         </Text>
       </Stack>
       <Text textColor="secondary.300" mt="2rem">
-        Response ID: {paymentPageId}
+        Response ID: {paymentId}
       </Text>
 
       <Button

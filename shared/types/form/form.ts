@@ -71,8 +71,8 @@ export enum FormResponseMode {
 
 export type FormPaymentsChannel = {
   channel: PaymentChannel
-  target_account_id?: string
-  publishable_key?: string
+  target_account_id: string
+  publishable_key: string
 }
 
 export type FormPaymentsField = {
@@ -118,8 +118,8 @@ export interface EmailFormBase extends FormBase {
 export interface StorageFormBase extends FormBase {
   responseMode: FormResponseMode.Encrypt
   publicKey: string
-  payments_channel?: FormPaymentsChannel
-  payments_field?: FormPaymentsField
+  payments_channel: FormPaymentsChannel
+  payments_field: FormPaymentsField
 }
 
 /**

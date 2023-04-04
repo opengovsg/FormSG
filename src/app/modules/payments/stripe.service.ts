@@ -8,7 +8,11 @@ import Stripe from 'stripe'
 import { MarkRequired } from 'ts-essentials'
 import isURL from 'validator/lib/isURL'
 
-import { IPaymentSchema, IPopulatedEncryptedForm } from '../../../types'
+import {
+  IEncryptedFormSchema,
+  IPaymentSchema,
+  IPopulatedEncryptedForm,
+} from '../../../types'
 import config from '../../config/config'
 import { paymentConfig } from '../../config/features/payment.config'
 import { createLoggerWithLabel } from '../../config/logger'
@@ -27,14 +31,9 @@ import {
   ComputePaymentStateError,
   MalformedStripeChargeObjectError,
   StripeAccountError,
-  StripeAccountNotFoundError,
   StripeFetchError,
 } from './stripe.errors'
-import {
-  computePaymentState,
-  computePayoutDetails,
-  getRedirectUri,
-} from './stripe.utils'
+import { computePaymentState, computePayoutDetails } from './stripe.utils'
 
 const logger = createLoggerWithLabel(module)
 const Payment = getPaymentModel(mongoose)
@@ -262,7 +261,7 @@ export const getStripeOauthUrl = (form: IPopulatedEncryptedForm) => {
       response_type: 'code',
       scope: 'read_write',
       state,
-      redirect_uri: getRedirectUri(),
+      redirect_uri: `${config.app.appUrl}/api/v3/payments/stripe/callback`,
     }),
     state,
   })
@@ -311,14 +310,8 @@ export const linkStripeAccountToForm = (
     accountId: string
     publishableKey: string
   },
-): ResultAsync<string, DatabaseError> => {
-  // Check if form already has account id
-  if (form.payments_channel?.target_account_id) {
-    return okAsync(form.payments_channel.target_account_id)
-  }
-
-  // No account id, create and inject into form
-  return ResultAsync.fromPromise(
+): ResultAsync<string, DatabaseError> =>
+  ResultAsync.fromPromise(
     form.addPaymentAccountId({ accountId, publishableKey }),
     (error) => {
       const errMsg = 'Failed to update payment account id'
@@ -335,14 +328,11 @@ export const linkStripeAccountToForm = (
       return new DatabaseError(errMsg)
     },
   ).map((updatedForm) => updatedForm.payments_channel.target_account_id)
-}
 
-export const unlinkStripeAccountFromForm = (form: IPopulatedEncryptedForm) => {
-  if (!form.payments_channel?.target_account_id) {
-    return okAsync(true)
-  }
-
-  return ResultAsync.fromPromise(form.removePaymentAccount(), (error) => {
+export const unlinkStripeAccountFromForm = (
+  form: IPopulatedEncryptedForm,
+): ResultAsync<IEncryptedFormSchema, DatabaseError> =>
+  ResultAsync.fromPromise(form.removePaymentAccount(), (error) => {
     const errMsg = 'Failed to remove payment account from form'
     logger.error({
       message: errMsg,
@@ -354,12 +344,11 @@ export const unlinkStripeAccountFromForm = (form: IPopulatedEncryptedForm) => {
     })
     return new DatabaseError(errMsg)
   })
-}
 
 export const createAccountLink = (
   accountId: string,
   redirectFormId: string,
-) => {
+): ResultAsync<Stripe.Response<Stripe.AccountLink>, StripeAccountError> => {
   return ResultAsync.fromPromise(
     stripe.accountLinks.create({
       account: accountId,
@@ -384,10 +373,7 @@ export const createAccountLink = (
 
 export const validateAccount = (
   accountId?: string,
-): ResultAsync<
-  Stripe.Response<Stripe.Account> | null,
-  StripeAccountError | StripeAccountNotFoundError
-> => {
+): ResultAsync<Stripe.Response<Stripe.Account> | null, StripeAccountError> => {
   if (!accountId) {
     return okAsync(null)
   }

@@ -22,10 +22,10 @@ export interface FormPaymentPageProps {
 }
 
 export const FormPaymentPage = () => {
-  const { formId, paymentPageId } = useParams()
+  const { formId, paymentId } = useParams()
 
   if (!formId) throw new Error('No formId provided')
-  if (!paymentPageId) throw new Error('No paymentPageId provided')
+  if (!paymentId) throw new Error('No paymentId provided')
 
   return (
     <PublicFormProvider formId={formId}>
@@ -46,7 +46,7 @@ export const FormPaymentPage = () => {
                     </Skeleton>
                   }
                 >
-                  <StripeElementWrapper paymentPageId={paymentPageId} />
+                  <StripeElementWrapper paymentId={paymentId} />
                 </Suspense>
               </Container>
             </Box>

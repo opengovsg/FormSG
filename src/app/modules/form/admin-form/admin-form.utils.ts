@@ -31,10 +31,8 @@ import {
 } from '../../core/core.errors'
 import { ErrorResponseData } from '../../core/core.types'
 import { InvalidPaymentAmountError } from '../../payments/payments.errors'
-import {
-  StripeAccountError,
-  StripeAccountNotFoundError,
-} from '../../payments/stripe.errors'
+import { StripeAccountError } from '../../payments/stripe.errors'
+import { ResponseModeError } from '../../submission/submission.errors'
 import { MissingUserError } from '../../user/user.errors'
 import { SmsLimitExceededError } from '../../verification/verification.errors'
 import {
@@ -84,12 +82,8 @@ export const mapRouteError = (
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage: error.message,
       }
-    case FieldNotFoundError:
     case FormNotFoundError:
-      return {
-        statusCode: StatusCodes.NOT_FOUND,
-        errorMessage: error.message,
-      }
+    case FieldNotFoundError:
     case LogicNotFoundError:
       return {
         statusCode: StatusCodes.NOT_FOUND,
@@ -158,20 +152,19 @@ export const mapRouteError = (
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         errorMessage: coreErrorMessage ?? error.message,
       }
-    case StripeAccountNotFoundError:
-      return {
-        statusCode: StatusCodes.NOT_FOUND,
-        errorMessage: coreErrorMessage ?? error.message,
-      }
-    // TODO: Decide on status code
     case StripeAccountError:
       return {
-        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        statusCode: StatusCodes.BAD_GATEWAY,
         errorMessage: coreErrorMessage ?? error.message,
       }
     case InvalidPaymentAmountError:
       return {
         statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage: error.message,
+      }
+    case ResponseModeError:
+      return {
+        statusCode: StatusCodes.UNPROCESSABLE_ENTITY,
         errorMessage: error.message,
       }
     default:

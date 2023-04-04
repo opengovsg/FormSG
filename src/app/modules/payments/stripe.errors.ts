@@ -36,12 +36,6 @@ export class StripeAccountError extends ApplicationError {
   }
 }
 
-export class StripeAccountNotFoundError extends ApplicationError {
-  constructor(message = 'Stripe account not found') {
-    super(message)
-  }
-}
-
 export class ComputePaymentStateError extends ApplicationError {
   constructor(message = 'Error while computing payment state') {
     super(message)
