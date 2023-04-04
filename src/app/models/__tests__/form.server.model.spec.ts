@@ -91,7 +91,7 @@ const FORM_DEFAULTS = {
 
 const PAYMENTS_DEFAULTS = {
   payments_channel: {
-    channel: PaymentChannel.Stripe,
+    channel: PaymentChannel.Unconnected,
     target_account_id: '',
     publishable_key: '',
   },

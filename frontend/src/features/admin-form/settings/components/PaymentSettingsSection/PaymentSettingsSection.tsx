@@ -1,6 +1,6 @@
 import { Flex, FormControl, Icon, Skeleton, Text } from '@chakra-ui/react'
 
-import { FormResponseMode } from '~shared/types'
+import { FormResponseMode, PaymentChannel } from '~shared/types'
 
 import { BxsCheckCircle, BxsError, BxsInfoCircle } from '~assets/icons'
 import FormLabel from '~components/FormControl/FormLabel'
@@ -101,7 +101,7 @@ const PaymentsSectionText = () => {
 
   if (
     settings?.responseMode === FormResponseMode.Encrypt &&
-    settings?.payments_channel?.target_account_id
+    settings?.payments_channel.channel !== PaymentChannel.Unconnected
   ) {
     return (
       <>

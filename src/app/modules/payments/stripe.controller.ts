@@ -360,12 +360,10 @@ const _handleConnectOauthCallback: ControllerHandler<
 > = async (req, res) => {
   const { code, state } = req.query
 
-  //Extracting state parameter previously signed and stored in cookies
+  // Step 0: Extract state parameter previously signed and stored in cookies.
+  // Compare state values to ensure that no tampering has occurred.
   const { stripeState } = req.signedCookies
-
-  //Comparing state parameters
   if (state !== stripeState) {
-    //throwing unprocessable entity error
     return res.status(StatusCodes.UNPROCESSABLE_ENTITY).json({
       message: 'Invalid state parameter',
     })

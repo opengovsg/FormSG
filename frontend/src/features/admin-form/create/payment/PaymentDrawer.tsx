@@ -289,28 +289,15 @@ export const PaymentInput = ({
   )
 }
 
-// Will be extended for stripe unconnected messages too
-const PaymentDisabledMessage = ({
-  isEmailMode,
-}: {
-  isEmailMode: boolean
-}): JSX.Element | null => {
-  return isEmailMode ? (
-    <Box px="1.5rem" pt="2rem" pb="1.5rem">
-      <InlineMessage variant={'info'}>
-        <Text>Payments are not available in email mode forms.</Text>
-      </InlineMessage>
-    </Box>
-  ) : null
-}
-
 type PaymentDrawerProps = {
   isEncryptMode: boolean
+  isStripeConnected: boolean
   paymentsField?: FormPaymentsField
 }
 
 export const PaymentDrawer = ({
   isEncryptMode,
+  isStripeConnected,
   paymentsField,
 }: PaymentDrawerProps): JSX.Element | null => {
   const { paymentData, setData, resetData } = usePaymentStore(
@@ -329,12 +316,27 @@ export const PaymentDrawer = ({
     return resetData
   }, [paymentsField, resetData, setData])
 
+  const paymentDisabledMessage = !isEncryptMode
+    ? 'Payments are not available in email mode forms.'
+    : !isStripeConnected
+    ? 'Connect your Stripe account in Settings.'
+    : ''
+
+  // payment eligibility will be dependent on whether paymentDisabledMessage is non empty
+  const isPaymentDisabled = !!paymentDisabledMessage
+
   // Allows for payment data refresh in encrypt mode
-  if (!paymentData && isEncryptMode) return null
+  if (!paymentData && !isPaymentDisabled) return null
 
   return (
     <CreatePageDrawerContainer>
-      <PaymentDisabledMessage isEmailMode={!isEncryptMode} />
+      {isPaymentDisabled && (
+        <Box px="1.5rem" pt="2rem" pb="1.5rem">
+          <InlineMessage variant={'info'}>
+            <Text>{paymentDisabledMessage}</Text>
+          </InlineMessage>
+        </Box>
+      )}
       <Flex pos="relative" h="100%" display="flex" flexDir="column">
         <Box pt="1rem" px="1.5rem" bg="white">
           <Flex justify="space-between">
@@ -345,7 +347,7 @@ export const PaymentDrawer = ({
           </Flex>
           <Divider w="auto" mx="-1.5rem" />
         </Box>
-        <PaymentInput isDisabled={!isEncryptMode} />
+        <PaymentInput isDisabled={isPaymentDisabled} />
       </Flex>
     </CreatePageDrawerContainer>
   )
