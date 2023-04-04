@@ -141,7 +141,7 @@ export const handleResetField: ControllerHandler<
     transactionId,
     fieldId,
     getFieldFromTransactionFx: getFieldFromTransaction,
-    resetFieldFx: VerificationModel.resetFormField,
+    resetFieldFx: resetFormFieldWrapper,
   })
     .map(() => res.sendStatus(StatusCodes.OK))
     .mapErr((error) => {
@@ -154,6 +154,15 @@ export const handleResetField: ControllerHandler<
       return res.status(statusCode).json({ message: errorMessage })
     })
 }
+
+/**
+ * NOTE: Exported soley for testing
+ * @param updateData
+ * @returns
+ */
+export const updateHashForFormFieldWrapper = (
+  updateData: UpdateFormFieldData,
+) => VerificationModel.updateHashForFormField(updateData)
 
 /**
  * When user requests to verify a field, an otp is generated.
@@ -188,8 +197,7 @@ export const handleGetOtp: ControllerHandler<
         senderIp,
         fieldId,
         getFieldFromTransactionFx: getFieldFromTransaction,
-        updateHashFx: (updateData: UpdateFormFieldData) =>
-          VerificationModel.updateHashForFormField(updateData),
+        updateHashFx: updateHashForFormFieldWrapper,
       }),
     )
     .map(() => res.sendStatus(StatusCodes.CREATED))
@@ -318,8 +326,7 @@ export const _handleGenerateFormOtp: ControllerHandler<
               transactionId,
               senderIp,
               getFieldFromTransactionFx: getFieldFromTransaction,
-              updateHashFx: (updateData: UpdateFormFieldData) =>
-                VerificationModel.updateHashForFormField(updateData),
+              updateHashFx: updateHashForFormFieldWrapper,
             }) // Return the required data for next steps.
               .map((updatedTransaction) => ({
                 updatedTransaction,
@@ -361,6 +368,15 @@ export const handleGenerateFormOtp = [
   }),
   _handleGenerateFormOtp,
 ] as ControllerHandler[]
+
+/**
+ * NOTE: Exported soley for testing
+ * @param updateData
+ * @returns
+ */
+export const updateHashForPaymentFieldWrapper = (
+  updateData: UpdatePaymentFieldData,
+) => VerificationModel.updateHashForPaymentField(updateData)
 
 /**
  * Generates an otp when a user requests to verify a payment contact field.
@@ -475,8 +491,7 @@ export const _handleGeneratePaymentOtp: ControllerHandler<
               senderIp,
               fieldId: PAYMENT_CONTACT_FIELD_ID,
               getFieldFromTransactionFx: getPaymentContactFieldFromTransaction,
-              updateHashFx: (updateData: UpdatePaymentFieldData) =>
-                VerificationModel.updateHashForPaymentField(updateData),
+              updateHashFx: updateHashForPaymentFieldWrapper,
             }) // Return the required data for next steps.
               .map((updatedTransaction) => ({
                 updatedTransaction,
@@ -545,8 +560,7 @@ export const handleVerifyOtp: ControllerHandler<
     inputOtp: otp,
     fieldId,
     getFieldFromTransactionFx: getFieldFromTransaction,
-    incrementFieldRetriesFx: (transactionId: string, fieldId: string) =>
-      VerificationModel.incrementFormFieldRetries(transactionId, fieldId),
+    incrementFieldRetriesFx: incrementFormFieldRetriesWrapper,
   })
     .map((signedData) => res.status(StatusCodes.OK).json(signedData))
     .mapErr((error) => {
@@ -559,6 +573,16 @@ export const handleVerifyOtp: ControllerHandler<
       return res.status(statusCode).json({ message: errorMessage })
     })
 }
+
+/**
+ * NOTE: Exported soley for testing
+ * @param transactionId
+ * @returns Promise<IVerificationSchema | null>
+ */
+export const incrementFormFieldRetriesWrapper = (
+  transactionId: string,
+  fieldId: string,
+) => VerificationModel.incrementFormFieldRetries(transactionId, fieldId)
 
 /**
  * NOTE: Exported solely for testing
@@ -603,8 +627,7 @@ export const _handleFormOtpVerification: ControllerHandler<
           inputOtp: otp,
           fieldId,
           getFieldFromTransactionFx: getFieldFromTransaction,
-          incrementFieldRetriesFx: (transactionId: string, fieldId: string) =>
-            VerificationModel.incrementFormFieldRetries(transactionId, fieldId),
+          incrementFieldRetriesFx: incrementFormFieldRetriesWrapper,
         }),
       )
       .map((signedData) => res.status(StatusCodes.OK).json(signedData))
@@ -634,6 +657,14 @@ export const handleFormOtpVerification = [
   }),
   _handleFormOtpVerification,
 ] as ControllerHandler[]
+
+/**
+ * NOTE: Exported soley for testing
+ * @param transactionId
+ * @returns Promise<IVerificationSchema | null>
+ */
+export const incrementPaymentFieldRetriesWrapper = (transactionId: string) =>
+  VerificationModel.incrementPaymentFieldRetries(transactionId)
 
 /**
  * NOTE: Exported solely for testing
@@ -678,8 +709,7 @@ export const _handlePaymentOtpVerification: ControllerHandler<
           inputOtp: otp,
           fieldId: PAYMENT_CONTACT_FIELD_ID,
           getFieldFromTransactionFx: getPaymentContactFieldFromTransaction,
-          incrementFieldRetriesFx: (transactionId: string) =>
-            VerificationModel.incrementPaymentFieldRetries(transactionId),
+          incrementFieldRetriesFx: incrementPaymentFieldRetriesWrapper,
         }),
       )
       .map((signedData) => res.status(StatusCodes.OK).json(signedData))
@@ -709,6 +739,14 @@ export const handlePaymentOtpVerification = [
   }),
   _handlePaymentOtpVerification,
 ] as ControllerHandler[]
+
+/**
+ * NOTE: Exported soley for testing
+ * @param transactionId
+ * @returns Promise<IVerificationSchema | null>
+ */
+export const resetFormFieldWrapper = (transactionId: string, fieldId: string) =>
+  VerificationModel.resetFormField(transactionId, fieldId)
 
 /**
  * Handler for resetting the verification state of a field.
@@ -743,7 +781,7 @@ export const handleResetFormFieldVerification: ControllerHandler<
         transactionId,
         fieldId,
         getFieldFromTransactionFx: getFieldFromTransaction,
-        resetFieldFx: VerificationModel.resetFormField,
+        resetFieldFx: resetFormFieldWrapper,
       }),
     )
     .map(() => res.sendStatus(StatusCodes.NO_CONTENT))

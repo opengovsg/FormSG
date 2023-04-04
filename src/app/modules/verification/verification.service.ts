@@ -1,5 +1,5 @@
 import mongoose from 'mongoose'
-import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
+import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 
 import { BasicField } from '../../../../shared/types'
 import { startsWithSgPrefix } from '../../../../shared/utils/phone-num-validation'
@@ -56,6 +56,7 @@ import {
   VerifyOtpParams,
 } from './verification.types'
 import {
+  getFieldFromTransaction,
   hasAdminExceededFreeSmsLimit,
   isOtpExpired,
   isOtpRequestCountExceeded,
@@ -186,33 +187,6 @@ const getValidTransaction = (
     }
     return okAsync(transaction)
   })
-}
-
-/**
- * Extracts an individual field's data from a transaction document.
- * @param transaction Transaction document
- * @param fieldId ID of field to find
- * @returns ok(field) when field exists
- * @returns err(FieldNotFoundInTransactionError) when field does not exist
- */
-const getFieldFromTransaction = (
-  transaction: IVerificationSchema,
-  fieldId: string,
-): Result<IVerificationFieldSchema, FieldNotFoundInTransactionError> => {
-  const field = transaction.getField(fieldId)
-  if (!field) {
-    logger.warn({
-      message: 'Field ID not found for transaction',
-      meta: {
-        action: 'getFieldFromTransaction',
-        transactionId: transaction._id,
-        fieldId,
-        formId: transaction.formId,
-      },
-    })
-    return err(new FieldNotFoundInTransactionError())
-  }
-  return ok(field)
 }
 
 /**

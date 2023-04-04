@@ -109,13 +109,14 @@ const compileVerificationModel = (db: Mongoose): IVerificationModel => {
   ): Promise<IVerificationSchema | null> {
     const { form_fields, payments_field } = form
     if (
-      !form_fields &&
+      (!form_fields || form_fields.length == 0) &&
       (payments_field == undefined || !payments_field.enabled)
     )
       return null
     let fields, paymentField
     if (form_fields) {
       fields = extractTransactionFields(form_fields)
+      if (fields.length === 0) return null
     }
     if (payments_field?.enabled) {
       paymentField = { _id: PAYMENT_CONTACT_FIELD_ID, fieldType: 'email' }

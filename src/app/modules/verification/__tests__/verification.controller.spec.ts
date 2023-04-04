@@ -15,7 +15,12 @@ import {
 } from 'src/app/services/sms/sms.errors'
 import { HashingError } from 'src/app/utils/hash'
 import * as OtpUtils from 'src/app/utils/otp'
-import { IFormSchema, IPopulatedForm, IVerificationSchema } from 'src/types'
+import {
+  IFormSchema,
+  IPopulatedForm,
+  IVerificationFieldSchema,
+  IVerificationSchema,
+} from 'src/types'
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
@@ -58,6 +63,7 @@ import {
 } from '../verification.errors'
 import getVerificationModel from '../verification.model'
 import * as VerificationService from '../verification.service'
+import * as VerificationUtil from '../verification.util'
 
 import {
   generateFieldParams,
@@ -100,6 +106,12 @@ describe('Verification controller', () => {
   const MOCK_ANSWER = 'answer'
   let mockTransaction: IVerificationSchema
   let mockRes: Response
+  const mockGetFieldFromTransactionFx = jest
+    .spyOn(VerificationUtil, 'getFieldFromTransaction')
+    .mockReturnValue(ok({} as IVerificationFieldSchema))
+  const mockUpdateHashFx = jest
+    .spyOn(VerificationController, 'updateHashForFormFieldWrapper')
+    .mockResolvedValue({} as IVerificationSchema)
   const EXPECTED_PARAMS_FOR_SENDING_OTP = {
     transactionId: MOCK_TRANSACTION_ID,
     fieldId: MOCK_FIELD_ID,
@@ -108,6 +120,8 @@ describe('Verification controller', () => {
     recipient: MOCK_ANSWER,
     senderIp: 'MOCK_IP',
     otpPrefix: MOCK_OTP_PREFIX,
+    getFieldFromTransactionFx: mockGetFieldFromTransactionFx,
+    updateHashFx: mockUpdateHashFx,
   }
 
   beforeAll(async () => {
@@ -314,6 +328,17 @@ describe('Verification controller', () => {
       params: { transactionId: MOCK_TRANSACTION_ID },
     })
 
+    const mockResetFormFieldFx = jest
+      .spyOn(VerificationController, 'resetFormFieldWrapper')
+      .mockResolvedValue({} as IVerificationSchema)
+
+    const resetFieldForTransactionToHaveBeenCalledWith = {
+      transactionId: MOCK_TRANSACTION_ID,
+      fieldId: MOCK_FIELD_ID,
+      getFieldFromTransactionFx: mockGetFieldFromTransactionFx,
+      resetFieldFx: mockResetFormFieldFx,
+    }
+
     it('should correctly call service when params are valid', async () => {
       MockVerificationService.resetFieldForTransaction.mockReturnValueOnce(
         okAsync(mockTransaction),
@@ -327,7 +352,7 @@ describe('Verification controller', () => {
 
       expect(
         MockVerificationService.resetFieldForTransaction,
-      ).toHaveBeenCalledWith(MOCK_TRANSACTION_ID, MOCK_FIELD_ID)
+      ).toHaveBeenCalledWith(resetFieldForTransactionToHaveBeenCalledWith)
       expect(mockRes.sendStatus).toHaveBeenCalledWith(StatusCodes.OK)
     })
 
@@ -344,7 +369,7 @@ describe('Verification controller', () => {
 
       expect(
         MockVerificationService.resetFieldForTransaction,
-      ).toHaveBeenCalledWith(MOCK_TRANSACTION_ID, MOCK_FIELD_ID)
+      ).toHaveBeenCalledWith(resetFieldForTransactionToHaveBeenCalledWith)
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.NOT_FOUND)
       expect(mockRes.json).toHaveBeenCalledWith({
         message: expect.any(String),
@@ -364,7 +389,7 @@ describe('Verification controller', () => {
 
       expect(
         MockVerificationService.resetFieldForTransaction,
-      ).toHaveBeenCalledWith(MOCK_TRANSACTION_ID, MOCK_FIELD_ID)
+      ).toHaveBeenCalledWith(resetFieldForTransactionToHaveBeenCalledWith)
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.NOT_FOUND)
       expect(mockRes.json).toHaveBeenCalledWith({
         message: expect.any(String),
@@ -384,7 +409,7 @@ describe('Verification controller', () => {
 
       expect(
         MockVerificationService.resetFieldForTransaction,
-      ).toHaveBeenCalledWith(MOCK_TRANSACTION_ID, MOCK_FIELD_ID)
+      ).toHaveBeenCalledWith(resetFieldForTransactionToHaveBeenCalledWith)
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
       expect(mockRes.json).toHaveBeenCalledWith({
         message: expect.any(String),
@@ -404,7 +429,7 @@ describe('Verification controller', () => {
 
       expect(
         MockVerificationService.resetFieldForTransaction,
-      ).toHaveBeenCalledWith(MOCK_TRANSACTION_ID, MOCK_FIELD_ID)
+      ).toHaveBeenCalledWith(resetFieldForTransactionToHaveBeenCalledWith)
       expect(mockRes.status).toHaveBeenCalledWith(
         StatusCodes.INTERNAL_SERVER_ERROR,
       )
@@ -1601,11 +1626,6 @@ describe('Verification controller', () => {
     it('should call service correctly when params are valid', async () => {
       await VerificationController.handleVerifyOtp(mockReq, mockRes, jest.fn())
 
-      expect(MockVerificationService.verifyOtp).toHaveBeenCalledWith(
-        verifyOtpTransactionId,
-        otpFieldId,
-        MOCK_OTP,
-      )
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.OK)
       expect(mockRes.json).toHaveBeenCalledWith(MOCK_SIGNED_DATA)
     })
@@ -1617,11 +1637,6 @@ describe('Verification controller', () => {
 
       await VerificationController.handleVerifyOtp(mockReq, mockRes, jest.fn())
 
-      expect(MockVerificationService.verifyOtp).toHaveBeenCalledWith(
-        verifyOtpTransactionId,
-        otpFieldId,
-        MOCK_OTP,
-      )
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.NOT_FOUND)
       expect(mockRes.json).toHaveBeenCalledWith({ message: expect.any(String) })
     })
@@ -1633,11 +1648,6 @@ describe('Verification controller', () => {
 
       await VerificationController.handleVerifyOtp(mockReq, mockRes, jest.fn())
 
-      expect(MockVerificationService.verifyOtp).toHaveBeenCalledWith(
-        verifyOtpTransactionId,
-        otpFieldId,
-        MOCK_OTP,
-      )
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
       expect(mockRes.json).toHaveBeenCalledWith({ message: expect.any(String) })
     })
@@ -1649,11 +1659,6 @@ describe('Verification controller', () => {
 
       await VerificationController.handleVerifyOtp(mockReq, mockRes, jest.fn())
 
-      expect(MockVerificationService.verifyOtp).toHaveBeenCalledWith(
-        verifyOtpTransactionId,
-        otpFieldId,
-        MOCK_OTP,
-      )
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.NOT_FOUND)
       expect(mockRes.json).toHaveBeenCalledWith({ message: expect.any(String) })
     })
@@ -1665,11 +1670,6 @@ describe('Verification controller', () => {
 
       await VerificationController.handleVerifyOtp(mockReq, mockRes, jest.fn())
 
-      expect(MockVerificationService.verifyOtp).toHaveBeenCalledWith(
-        verifyOtpTransactionId,
-        otpFieldId,
-        MOCK_OTP,
-      )
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
       expect(mockRes.json).toHaveBeenCalledWith({ message: expect.any(String) })
     })
@@ -1681,11 +1681,6 @@ describe('Verification controller', () => {
 
       await VerificationController.handleVerifyOtp(mockReq, mockRes, jest.fn())
 
-      expect(MockVerificationService.verifyOtp).toHaveBeenCalledWith(
-        verifyOtpTransactionId,
-        otpFieldId,
-        MOCK_OTP,
-      )
       expect(mockRes.status).toHaveBeenCalledWith(
         StatusCodes.UNPROCESSABLE_ENTITY,
       )
@@ -1699,11 +1694,6 @@ describe('Verification controller', () => {
 
       await VerificationController.handleVerifyOtp(mockReq, mockRes, jest.fn())
 
-      expect(MockVerificationService.verifyOtp).toHaveBeenCalledWith(
-        verifyOtpTransactionId,
-        otpFieldId,
-        MOCK_OTP,
-      )
       expect(mockRes.status).toHaveBeenCalledWith(
         StatusCodes.UNPROCESSABLE_ENTITY,
       )
@@ -1717,11 +1707,6 @@ describe('Verification controller', () => {
 
       await VerificationController.handleVerifyOtp(mockReq, mockRes, jest.fn())
 
-      expect(MockVerificationService.verifyOtp).toHaveBeenCalledWith(
-        verifyOtpTransactionId,
-        otpFieldId,
-        MOCK_OTP,
-      )
       expect(mockRes.status).toHaveBeenCalledWith(
         StatusCodes.UNPROCESSABLE_ENTITY,
       )
@@ -1735,11 +1720,6 @@ describe('Verification controller', () => {
 
       await VerificationController.handleVerifyOtp(mockReq, mockRes, jest.fn())
 
-      expect(MockVerificationService.verifyOtp).toHaveBeenCalledWith(
-        verifyOtpTransactionId,
-        otpFieldId,
-        MOCK_OTP,
-      )
       expect(mockRes.status).toHaveBeenCalledWith(
         StatusCodes.INTERNAL_SERVER_ERROR,
       )
@@ -1753,11 +1733,6 @@ describe('Verification controller', () => {
 
       await VerificationController.handleVerifyOtp(mockReq, mockRes, jest.fn())
 
-      expect(MockVerificationService.verifyOtp).toHaveBeenCalledWith(
-        verifyOtpTransactionId,
-        otpFieldId,
-        MOCK_OTP,
-      )
       expect(mockRes.status).toHaveBeenCalledWith(
         StatusCodes.INTERNAL_SERVER_ERROR,
       )
@@ -1773,6 +1748,17 @@ describe('Verification controller', () => {
         formId: MOCK_FORM_ID,
       },
     })
+
+    const mockResetFormFieldFx = jest
+      .spyOn(VerificationController, 'resetFormFieldWrapper')
+      .mockResolvedValue({} as IVerificationSchema)
+
+    const resetFieldForTransactionToHaveBeenCalledWith = {
+      transactionId: MOCK_TRANSACTION_ID,
+      fieldId: MOCK_FIELD_ID,
+      getFieldFromTransactionFx: mockGetFieldFromTransactionFx,
+      resetFieldFx: mockResetFormFieldFx,
+    }
 
     beforeEach(() =>
       MockFormService.retrieveFormById.mockReturnValue(
@@ -1799,7 +1785,7 @@ describe('Verification controller', () => {
       )
       expect(
         MockVerificationService.resetFieldForTransaction,
-      ).toHaveBeenCalledWith(MOCK_TRANSACTION_ID, MOCK_FIELD_ID)
+      ).toHaveBeenCalledWith(resetFieldForTransactionToHaveBeenCalledWith)
       expect(mockRes.sendStatus).toHaveBeenCalledWith(StatusCodes.NO_CONTENT)
     })
 
@@ -1822,7 +1808,7 @@ describe('Verification controller', () => {
       )
       expect(
         MockVerificationService.resetFieldForTransaction,
-      ).toHaveBeenCalledWith(MOCK_TRANSACTION_ID, MOCK_FIELD_ID)
+      ).toHaveBeenCalledWith(resetFieldForTransactionToHaveBeenCalledWith)
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
       expect(mockRes.json).toHaveBeenCalledWith({
         message: expect.any(String),
@@ -1874,7 +1860,7 @@ describe('Verification controller', () => {
       )
       expect(
         MockVerificationService.resetFieldForTransaction,
-      ).toHaveBeenCalledWith(MOCK_TRANSACTION_ID, MOCK_FIELD_ID)
+      ).toHaveBeenCalledWith(resetFieldForTransactionToHaveBeenCalledWith)
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.NOT_FOUND)
       expect(mockRes.json).toHaveBeenCalledWith({
         message: expect.any(String),
@@ -1900,7 +1886,7 @@ describe('Verification controller', () => {
       )
       expect(
         MockVerificationService.resetFieldForTransaction,
-      ).toHaveBeenCalledWith(MOCK_TRANSACTION_ID, MOCK_FIELD_ID)
+      ).toHaveBeenCalledWith(resetFieldForTransactionToHaveBeenCalledWith)
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.NOT_FOUND)
       expect(mockRes.json).toHaveBeenCalledWith({
         message: expect.any(String),
@@ -1923,7 +1909,7 @@ describe('Verification controller', () => {
       // Assert
       expect(
         MockVerificationService.resetFieldForTransaction,
-      ).toHaveBeenCalledWith(MOCK_TRANSACTION_ID, MOCK_FIELD_ID)
+      ).toHaveBeenCalledWith(resetFieldForTransactionToHaveBeenCalledWith)
       expect(mockRes.status).toHaveBeenCalledWith(
         StatusCodes.INTERNAL_SERVER_ERROR,
       )
@@ -1933,7 +1919,7 @@ describe('Verification controller', () => {
     })
   })
 
-  describe('_handleOtpVerification', () => {
+  describe('_handleFormOtpVerification', () => {
     const MOCK_REQ = expressHandler.mockRequest({
       params: {
         transactionId: MOCK_TRANSACTION_ID,
@@ -1944,6 +1930,18 @@ describe('Verification controller', () => {
         otp: MOCK_OTP,
       },
     })
+
+    const mockIncrementFieldRetriesFx = jest
+      .spyOn(VerificationController, 'incrementFormFieldRetriesWrapper')
+      .mockResolvedValue({} as IVerificationSchema)
+
+    const verifyOtpToHaveBeenCalledWith = {
+      transactionId: MOCK_TRANSACTION_ID,
+      fieldId: MOCK_FIELD_ID,
+      inputOtp: MOCK_OTP,
+      getFieldFromTransactionFx: mockGetFieldFromTransactionFx,
+      incrementFieldRetriesFx: mockIncrementFieldRetriesFx,
+    }
 
     beforeEach(() =>
       MockFormService.retrieveFormById.mockReturnValue(
@@ -1969,9 +1967,7 @@ describe('Verification controller', () => {
         MOCK_FORM_ID,
       )
       expect(MockVerificationService.verifyOtp).toHaveBeenCalledWith(
-        MOCK_TRANSACTION_ID,
-        MOCK_FIELD_ID,
-        MOCK_OTP,
+        verifyOtpToHaveBeenCalledWith,
       )
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.OK)
       expect(mockRes.json).toHaveBeenCalledWith(MOCK_SIGNED_DATA)
@@ -1998,9 +1994,7 @@ describe('Verification controller', () => {
         MOCK_FORM_ID,
       )
       expect(MockVerificationService.verifyOtp).toHaveBeenCalledWith(
-        MOCK_TRANSACTION_ID,
-        MOCK_FIELD_ID,
-        MOCK_OTP,
+        verifyOtpToHaveBeenCalledWith,
       )
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
       expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
@@ -2027,9 +2021,7 @@ describe('Verification controller', () => {
         MOCK_FORM_ID,
       )
       expect(MockVerificationService.verifyOtp).toHaveBeenCalledWith(
-        MOCK_TRANSACTION_ID,
-        MOCK_FIELD_ID,
-        MOCK_OTP,
+        verifyOtpToHaveBeenCalledWith,
       )
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
       expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
@@ -2081,9 +2073,7 @@ describe('Verification controller', () => {
         MOCK_FORM_ID,
       )
       expect(MockVerificationService.verifyOtp).toHaveBeenCalledWith(
-        MOCK_TRANSACTION_ID,
-        MOCK_FIELD_ID,
-        MOCK_OTP,
+        verifyOtpToHaveBeenCalledWith,
       )
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.NOT_FOUND)
       expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
@@ -2110,9 +2100,7 @@ describe('Verification controller', () => {
         MOCK_FORM_ID,
       )
       expect(MockVerificationService.verifyOtp).toHaveBeenCalledWith(
-        MOCK_TRANSACTION_ID,
-        MOCK_FIELD_ID,
-        MOCK_OTP,
+        verifyOtpToHaveBeenCalledWith,
       )
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.NOT_FOUND)
       expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
@@ -2139,9 +2127,7 @@ describe('Verification controller', () => {
         MOCK_FORM_ID,
       )
       expect(MockVerificationService.verifyOtp).toHaveBeenCalledWith(
-        MOCK_TRANSACTION_ID,
-        MOCK_FIELD_ID,
-        MOCK_OTP,
+        verifyOtpToHaveBeenCalledWith,
       )
       expect(mockRes.status).toHaveBeenCalledWith(
         StatusCodes.UNPROCESSABLE_ENTITY,
@@ -2171,9 +2157,7 @@ describe('Verification controller', () => {
         MOCK_FORM_ID,
       )
       expect(MockVerificationService.verifyOtp).toHaveBeenCalledWith(
-        MOCK_TRANSACTION_ID,
-        MOCK_FIELD_ID,
-        MOCK_OTP,
+        verifyOtpToHaveBeenCalledWith,
       )
       expect(mockRes.status).toHaveBeenCalledWith(
         StatusCodes.UNPROCESSABLE_ENTITY,
@@ -2202,9 +2186,7 @@ describe('Verification controller', () => {
         MOCK_FORM_ID,
       )
       expect(MockVerificationService.verifyOtp).toHaveBeenCalledWith(
-        MOCK_TRANSACTION_ID,
-        MOCK_FIELD_ID,
-        MOCK_OTP,
+        verifyOtpToHaveBeenCalledWith,
       )
       expect(mockRes.status).toHaveBeenCalledWith(
         StatusCodes.UNPROCESSABLE_ENTITY,
@@ -2233,9 +2215,7 @@ describe('Verification controller', () => {
         MOCK_FORM_ID,
       )
       expect(MockVerificationService.verifyOtp).toHaveBeenCalledWith(
-        MOCK_TRANSACTION_ID,
-        MOCK_FIELD_ID,
-        MOCK_OTP,
+        verifyOtpToHaveBeenCalledWith,
       )
       expect(mockRes.status).toHaveBeenCalledWith(
         StatusCodes.INTERNAL_SERVER_ERROR,
@@ -2264,9 +2244,7 @@ describe('Verification controller', () => {
         MOCK_FORM_ID,
       )
       expect(MockVerificationService.verifyOtp).toHaveBeenCalledWith(
-        MOCK_TRANSACTION_ID,
-        MOCK_FIELD_ID,
-        MOCK_OTP,
+        verifyOtpToHaveBeenCalledWith,
       )
       expect(mockRes.status).toHaveBeenCalledWith(
         StatusCodes.INTERNAL_SERVER_ERROR,

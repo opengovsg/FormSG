@@ -390,7 +390,7 @@ describe('Verification Model', () => {
           fields: [field],
         })
 
-        const result = await VerificationModel.resetField(
+        const result = await VerificationModel.resetFormField(
           String(transaction._id),
           String(field._id),
         )
@@ -420,7 +420,7 @@ describe('Verification Model', () => {
           fields: [field1, field2],
         })
 
-        const result = await VerificationModel.resetField(
+        const result = await VerificationModel.resetFormField(
           String(transaction._id),
           String(field1._id),
         )
@@ -441,7 +441,7 @@ describe('Verification Model', () => {
       })
 
       it('should return null when the transaction ID is not found', async () => {
-        const result = await VerificationModel.resetField(
+        const result = await VerificationModel.resetFormField(
           new ObjectId().toHexString(),
           new ObjectId().toHexString(),
         )
