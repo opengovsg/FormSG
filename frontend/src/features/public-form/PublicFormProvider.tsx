@@ -264,7 +264,10 @@ export const PublicFormProvider = ({
                     },
                   },
                 })
-                showErrorToast(error, form)
+                showErrorToast(
+                  'Failed to submit. If you are uploading a file and using online storage such as Google Drive, download your file before attaching the downloaded version. Otherwise, please refresh and try again.',
+                  form,
+                )
               })
           }
 
