@@ -316,18 +316,17 @@ export const PaymentDrawer = ({
     return resetData
   }, [paymentsField, resetData, setData])
 
-  const isPaymentEligible = isEncryptMode && isStripeConnected
-
-  // Allows for payment data refresh in encrypt mode
-  if (!paymentData && isPaymentEligible) return null
-
-  const isPaymentDisabled = !isPaymentEligible
-
   const paymentDisabledMessage = !isEncryptMode
     ? 'Payments are not available in email mode forms.'
     : !isStripeConnected
     ? 'Connect your Stripe account in Settings.'
     : ''
+
+  // payment eligibility will be dependent on whether paymentDisabledMessage is non empty
+  const isPaymentDisabled = !!paymentDisabledMessage
+
+  // Allows for payment data refresh in encrypt mode
+  if (!paymentData && !isPaymentDisabled) return null
 
   return (
     <CreatePageDrawerContainer>
