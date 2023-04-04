@@ -348,7 +348,7 @@ const submitEncryptModeForm: ControllerHandler<
   // Handle submissions for payments forms
   if (
     form.payments_field?.enabled &&
-    form.payments_channel?.channel === PaymentChannel.Stripe
+    form.payments_channel.channel === PaymentChannel.Stripe
   ) {
     const amount = form.payments_field.amount_cents
     // Step 1: Create payment without payment intent id and pending submission id.

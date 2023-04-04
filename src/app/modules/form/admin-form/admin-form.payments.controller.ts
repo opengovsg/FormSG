@@ -84,7 +84,7 @@ export const handleConnectAccount: ControllerHandler<{
 }
 
 /**
- * Handler for DELETE /:formId/stripe
+ * Handler for DELETE /:formId/stripe.
  * @security session
  *
  * @returns 200 when Stripe credentials successfully deleted
@@ -134,6 +134,20 @@ export const handleUnlinkAccount: ControllerHandler<{
   )
 }
 
+/**
+ * Handler for GET /:formId/stripe/validate.
+ * @security session
+ *
+ * @returns 200 when Stripe credentials have been validated
+ * @returns 401 when user is not logged in
+ * @returns 403 when user does not have permissions to update the form
+ * @returns 404 when form to update cannot be found
+ * @returns 410 when form to update has been deleted
+ * @returns 422 when id of user who is updating the form cannot be found
+ * @returns 422 when the form to be updated is not an encrypt mode form
+ * @returns 500 when database error occurs
+ * @returns 502 when the connected Stripe credentials are invalid
+ */
 export const handleValidatePaymentAccount: ControllerHandler<{
   formId: string
 }> = async (req, res) => {
@@ -155,7 +169,7 @@ export const handleValidatePaymentAccount: ControllerHandler<{
       .andThen(checkFormIsEncryptMode)
       // Step 4: Validate the associated Stripe account.
       .andThen((form) =>
-        validateAccount(form.payments_channel?.target_account_id),
+        validateAccount(form.payments_channel.target_account_id),
       )
       .map((account) => res.json({ account }))
       .mapErr((error) => {
@@ -175,12 +189,13 @@ export const handleValidatePaymentAccount: ControllerHandler<{
 }
 
 /**
+ * Private handler for PUT /:formId/payment
  * NOTE: Exported for testing.
- * Private handler for PUT /forms/:formId/payment
  * @precondition Must be preceded by request validation
  * @security session
  *
  * @returns 200 with updated payments
+ * @returns 400 when updated payment amount is out of bounds
  * @returns 403 when current user does not have permissions to update the payments
  * @returns 404 when form cannot be found
  * @returns 410 when updating the payments for an archived form
@@ -232,7 +247,7 @@ export const _handleUpdatePayments: ControllerHandler<
 }
 
 /**
- * Handler for PUT /forms/:formId/payment
+ * Handler for PUT /:formId/payment
  */
 export const handleUpdatePayments = [
   celebrate({
