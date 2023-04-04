@@ -51,7 +51,7 @@ export const addEntry = (
 ): BrowserStmDto => {
   return {
     ...entryObj,
-    formId: {
+    [formId]: {
       paymentId,
       dateCreated: Date.now(),
     },
