@@ -2,12 +2,12 @@
 /// <reference types="stripe-event-types" />
 import mongoose from 'mongoose'
 import { err, Ok, ok, Result } from 'neverthrow'
-import { hasProp } from 'shared/utils/has-prop'
 import Stripe from 'stripe'
 
 import { StripePaymentMetadataDto } from 'src/types'
 
 import { Payment, PaymentStatus } from '../../../../shared/types'
+import { hasProp } from '../../../../shared/utils/has-prop'
 import { createLoggerWithLabel } from '../../config/logger'
 
 import {
