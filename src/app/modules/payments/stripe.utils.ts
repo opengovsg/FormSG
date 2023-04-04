@@ -7,7 +7,6 @@ import { err, Ok, ok, Result } from 'neverthrow'
 import Stripe from 'stripe'
 
 import { Payment, PaymentStatus } from '../../../../shared/types'
-import config from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
 
 import {
@@ -16,14 +15,6 @@ import {
 } from './stripe.errors'
 
 const logger = createLoggerWithLabel(module)
-
-/**
- * Helper function to get redirect URI for OAuth callback on account linkage.
- */
-export const getRedirectUri = () =>
-  `${
-    config.isDev ? 'http://localhost:5001' : config.app.appUrl
-  }/api/v3/payments/stripe/callback`
 
 /**
  * Helper function to get the charge id from a nested charge object.
