@@ -1,4 +1,4 @@
-import { FormResponseMode } from '~shared/types'
+import { FormResponseMode, PaymentChannel } from '~shared/types'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
 
@@ -11,7 +11,7 @@ export const PaymentTab = (): JSX.Element => {
   const isEncryptMode = form?.responseMode === FormResponseMode.Encrypt
 
   const isStripeConnected =
-    isEncryptMode && !!form.payments_channel?.target_account_id
+    isEncryptMode && form.payments_channel.channel === PaymentChannel.Stripe
 
   return isEncryptMode && isStripeConnected ? (
     <>
