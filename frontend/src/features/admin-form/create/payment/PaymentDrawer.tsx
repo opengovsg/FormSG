@@ -337,10 +337,10 @@ export const PaymentDrawer = ({
     return resetData
   }, [paymentsField, resetData, setData])
 
-  const isDisabled = !(isEncryptMode && isStripeConnected)
+  const isPaymentEligible = isEncryptMode && isStripeConnected
 
   // Allows for payment data refresh in encrypt mode
-  if (!paymentData && !isDisabled) return null
+  if (!paymentData && isPaymentEligible) return null
 
   return (
     <CreatePageDrawerContainer>
@@ -358,7 +358,7 @@ export const PaymentDrawer = ({
           </Flex>
           <Divider w="auto" mx="-1.5rem" />
         </Box>
-        <PaymentInput isDisabled={isDisabled} />
+        <PaymentInput isDisabled={!isPaymentEligible} />
       </Flex>
     </CreatePageDrawerContainer>
   )
