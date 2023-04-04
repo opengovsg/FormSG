@@ -289,27 +289,6 @@ export const PaymentInput = ({
   )
 }
 
-// Will be extended for stripe unconnected messages too
-const PaymentDisabledMessage = ({
-  isEmailMode,
-  isStripeUnconnected,
-}: {
-  isEmailMode: boolean
-  isStripeUnconnected: boolean
-}): JSX.Element | null => {
-  return isEmailMode || isStripeUnconnected ? (
-    <Box px="1.5rem" pt="2rem" pb="1.5rem">
-      <InlineMessage variant={'info'}>
-        {isEmailMode ? (
-          <Text>Payments are not available in email mode forms.</Text>
-        ) : (
-          <Text>Connect your Stripe account in Settings.</Text>
-        )}
-      </InlineMessage>
-    </Box>
-  ) : null
-}
-
 type PaymentDrawerProps = {
   isEncryptMode: boolean
   isStripeConnected: boolean
@@ -342,12 +321,23 @@ export const PaymentDrawer = ({
   // Allows for payment data refresh in encrypt mode
   if (!paymentData && isPaymentEligible) return null
 
+  const isPaymentDisabled = !isPaymentEligible
+
+  const paymentDisabledMessage = !isEncryptMode
+    ? 'Payments are not available in email mode forms.'
+    : !isStripeConnected
+    ? 'Connect your Stripe account in Settings.'
+    : ''
+
   return (
     <CreatePageDrawerContainer>
-      <PaymentDisabledMessage
-        isEmailMode={!isEncryptMode}
-        isStripeUnconnected={!isStripeConnected}
-      />
+      {isPaymentDisabled && (
+        <Box px="1.5rem" pt="2rem" pb="1.5rem">
+          <InlineMessage variant={'info'}>
+            <Text>{paymentDisabledMessage}</Text>
+          </InlineMessage>
+        </Box>
+      )}
       <Flex pos="relative" h="100%" display="flex" flexDir="column">
         <Box pt="1rem" px="1.5rem" bg="white">
           <Flex justify="space-between">
@@ -358,7 +348,7 @@ export const PaymentDrawer = ({
           </Flex>
           <Divider w="auto" mx="-1.5rem" />
         </Box>
-        <PaymentInput isDisabled={!isPaymentEligible} />
+        <PaymentInput isDisabled={isPaymentDisabled} />
       </Flex>
     </CreatePageDrawerContainer>
   )
