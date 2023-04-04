@@ -19,8 +19,8 @@ import { VfnRouter } from '../verification.routes'
 import {
   generateFieldParams,
   MOCK_HASHED_OTP,
+  MOCK_LOCAL_RECIPIENT,
   MOCK_OTP,
-  MOCK_RECIPIENT,
   MOCK_SIGNED_DATA,
 } from './verification.test.helpers'
 
@@ -213,7 +213,7 @@ describe('verification.routes', () => {
     it('should return 400 when fieldId is not provided in body', async () => {
       const response = await request
         .post(`/transaction/${mockTransactionId}/otp`)
-        .send({ answer: MOCK_RECIPIENT })
+        .send({ answer: MOCK_LOCAL_RECIPIENT })
 
       expect(response.status).toBe(StatusCodes.BAD_REQUEST)
       expect(response.body).toEqual(
@@ -224,7 +224,7 @@ describe('verification.routes', () => {
     it('should return 400 when fieldId is malformed', async () => {
       const response = await request
         .post(`/transaction/${mockTransactionId}/otp`)
-        .send({ fieldId: 'malformed', answer: MOCK_RECIPIENT })
+        .send({ fieldId: 'malformed', answer: MOCK_LOCAL_RECIPIENT })
 
       expect(response.status).toBe(StatusCodes.BAD_REQUEST)
       expect(response.body).toEqual(
