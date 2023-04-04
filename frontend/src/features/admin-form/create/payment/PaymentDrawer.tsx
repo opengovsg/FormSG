@@ -322,7 +322,6 @@ export const PaymentDrawer = ({
   isStripeConnected,
   paymentsField,
 }: PaymentDrawerProps): JSX.Element | null => {
-  const { isLoading } = useAdminForm()
   const { paymentData, setData, resetData } = usePaymentStore(
     useCallback(
       (state) => ({
@@ -342,7 +341,7 @@ export const PaymentDrawer = ({
   // Allows for payment data refresh in encrypt mode
   if (!paymentData && isEncryptMode && isStripeConnected) return null
 
-  const isDisabled = !(isEncryptMode && isStripeConnected) || isLoading
+  const isDisabled = !(isEncryptMode && isStripeConnected)
 
   return (
     <CreatePageDrawerContainer>
