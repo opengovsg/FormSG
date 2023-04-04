@@ -12,7 +12,7 @@ export enum PaymentStatus {
 }
 
 export enum PaymentChannel {
-  Unconnected = 'Not connected',
+  Unconnected = 'Unconnected',
   Stripe = 'Stripe',
   // for extensibility to future payment options
 }
