@@ -1,6 +1,6 @@
 import { cloneDeep } from 'lodash'
 
-import { SubmissionPaymentData } from '~shared/types'
+import { SubmissionPaymentDto } from '~shared/types'
 
 import { getPaymentDataView } from '~features/admin-form/responses/common/utils/getPaymentDataView'
 
@@ -30,7 +30,7 @@ export class CsvRecord {
     public id: string,
     public created: string,
     public status: CsvRecordStatus,
-    public paymentData?: SubmissionPaymentData,
+    public paymentData?: SubmissionPaymentDto,
   ) {
     this.#statusMessage = status
     this.#record = []
@@ -68,7 +68,7 @@ export class CsvRecord {
   // Function mapping payment data keys to ids. This is necessary to maintain
   // static mapping from keys to IDs which is important for the csv generator to
   // put the correct values in the correct columns.
-  private paymentDataKeyToId(key: keyof SubmissionPaymentData): string {
+  private paymentDataKeyToId(key: keyof SubmissionPaymentDto): string {
     switch (key) {
       case 'id':
         return '000000000000000000000001'

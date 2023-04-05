@@ -53,7 +53,7 @@ import {
   getSubmissionCursor,
   getSubmissionMetadata,
   getSubmissionMetadataList,
-  getSubmissionPaymentData,
+  getSubmissionPaymentDto,
   transformAttachmentMetasToSignedUrls,
   transformAttachmentMetaStream,
   uploadAttachments,
@@ -832,7 +832,7 @@ export const getEncryptedResponseUsingQueryParams: ControllerHandler<
           return okAsync({ submissionData, paymentData: undefined })
         }
 
-        return getSubmissionPaymentData(submissionData.paymentId).map(
+        return getSubmissionPaymentDto(submissionData.paymentId).map(
           (paymentData) => ({
             submissionData,
             paymentData,
@@ -940,7 +940,7 @@ export const handleGetEncryptedResponse: ControllerHandler<
           return okAsync({ submissionData, paymentData: undefined })
         }
 
-        return getSubmissionPaymentData(submissionData.paymentId).map(
+        return getSubmissionPaymentDto(submissionData.paymentId).map(
           (paymentData) => ({
             submissionData,
             paymentData,

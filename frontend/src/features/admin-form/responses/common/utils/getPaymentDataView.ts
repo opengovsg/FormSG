@@ -1,7 +1,7 @@
-import { SubmissionPaymentData } from '~shared/types'
+import { SubmissionPaymentDto } from '~shared/types'
 
 type PaymentDataViewItem = {
-  key: keyof SubmissionPaymentData
+  key: keyof SubmissionPaymentDto
   name: string
   value: string
 }
@@ -13,7 +13,7 @@ type PaymentDataViewItem = {
  * @returns the name to be displayed to the admin
  */
 export const getPaymentDataViewName = (
-  key: keyof SubmissionPaymentData,
+  key: keyof SubmissionPaymentDto,
 ): string => {
   switch (key) {
     case 'id':
@@ -51,11 +51,11 @@ const toSentenceCase = (str: string) =>
  * @returns payment data view with an array of names and values, ordered in CSV column order.
  */
 export const getPaymentDataView = (
-  payment: SubmissionPaymentData,
+  payment: SubmissionPaymentDto,
 ): PaymentDataViewItem[] => {
   // Payment data association of keys to values, in CSV column order
   const paymentDataValues: {
-    key: keyof SubmissionPaymentData
+    key: keyof SubmissionPaymentDto
     value: string
   }[] = [
     { key: 'email', value: payment.email },
@@ -73,7 +73,7 @@ export const getPaymentDataView = (
     ...(payment.payoutId
       ? [
           {
-            key: 'payoutId' as keyof SubmissionPaymentData,
+            key: 'payoutId' as keyof SubmissionPaymentDto,
             value: payment.payoutId,
           },
         ]
@@ -82,7 +82,7 @@ export const getPaymentDataView = (
     ...(payment.payoutDate
       ? [
           {
-            key: 'payoutDate' as keyof SubmissionPaymentData,
+            key: 'payoutDate' as keyof SubmissionPaymentDto,
             value: payment.payoutDate,
           },
         ]

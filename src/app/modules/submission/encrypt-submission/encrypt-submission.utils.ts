@@ -3,7 +3,7 @@ import moment from 'moment-timezone'
 
 import {
   StorageModeSubmissionDto,
-  SubmissionPaymentData,
+  SubmissionPaymentDto,
 } from '../../../../../shared/types'
 import { MapRouteErrors, SubmissionData } from '../../../../types'
 import { MapRouteError } from '../../../../types/routing'
@@ -206,7 +206,7 @@ export const mapRouteError: MapRouteErrors =
 export const createEncryptedSubmissionDto = (
   submissionData: SubmissionData,
   attachmentPresignedUrls: Record<string, string>,
-  payment?: SubmissionPaymentData,
+  payment?: SubmissionPaymentDto,
 ): StorageModeSubmissionDto => {
   return {
     refNo: submissionData._id,

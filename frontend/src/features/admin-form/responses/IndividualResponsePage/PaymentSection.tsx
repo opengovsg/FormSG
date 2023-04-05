@@ -1,7 +1,7 @@
 import { Box, Divider, Link, Stack, Text } from '@chakra-ui/react'
 import { keyBy } from 'lodash'
 
-import { SubmissionPaymentData } from '~shared/types'
+import { SubmissionPaymentDto } from '~shared/types'
 
 import { getPaymentDataView } from '../common/utils/getPaymentDataView'
 
@@ -41,7 +41,7 @@ const PaymentDataItem = ({
 export const PaymentSection = ({
   payment,
 }: {
-  payment: SubmissionPaymentData
+  payment: SubmissionPaymentDto
 }): JSX.Element | null => {
   if (!payment) return null
 

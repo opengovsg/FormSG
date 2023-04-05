@@ -11,7 +11,7 @@ import {
   FormResponseMode,
   StorageModeSubmissionMetadata,
   StorageModeSubmissionMetadataList,
-  SubmissionPaymentData,
+  SubmissionPaymentDto,
 } from '../../../../../shared/types'
 import {
   IEncryptedSubmissionSchema,
@@ -229,7 +229,7 @@ export const addPaymentDataStream = (): Transform => {
         return callback(null, data)
       }
 
-      return getSubmissionPaymentData(data.paymentId).match(
+      return getSubmissionPaymentDto(data.paymentId).match(
         (payment) => {
           const returnData = {
             ...omit(data, 'paymentId'),
@@ -301,9 +301,9 @@ export const getEncryptedSubmissionData = (
  * @returns err(PaymentNotFoundError) if the paymentId does not reference a payment, or if the payment is incomplete
  * @returns err(DatabaseError) if mongoose threw an error during the process
  */
-export const getSubmissionPaymentData = (
+export const getSubmissionPaymentDto = (
   paymentId: string,
-): ResultAsync<SubmissionPaymentData, PaymentNotFoundError | DatabaseError> =>
+): ResultAsync<SubmissionPaymentDto, PaymentNotFoundError | DatabaseError> =>
   PaymentsService.findPaymentById(paymentId).andThen((payment) => {
     // If the payment is incomplete, the "complete payment" is not found. This
     // also implies an internal consistency error.

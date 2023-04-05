@@ -63,7 +63,7 @@ export type StorageModeSubmissionBase = z.infer<
   typeof StorageModeSubmissionBase
 >
 
-export const SubmissionPaymentData = z.object({
+export const SubmissionPaymentDto = z.object({
   id: z.string(),
   paymentIntentId: z.string(),
   email: z.string(),
@@ -77,7 +77,7 @@ export const SubmissionPaymentData = z.object({
   payoutId: z.string().optional(),
   payoutDate: z.string().optional(),
 })
-export type SubmissionPaymentData = z.infer<typeof SubmissionPaymentData>
+export type SubmissionPaymentDto = z.infer<typeof SubmissionPaymentDto>
 
 export type StorageModeSubmissionDto = {
   refNo: SubmissionId
@@ -85,7 +85,7 @@ export type StorageModeSubmissionDto = {
   content: string
   verified?: string
   attachmentMetadata: Record<string, string>
-  payment?: SubmissionPaymentData
+  payment?: SubmissionPaymentDto
   version: number
 }
 
@@ -95,7 +95,7 @@ export const StorageModeSubmissionStreamDto = StorageModeSubmissionBase.pick({
   version: true,
 }).extend({
   attachmentMetadata: z.record(z.string()),
-  payment: z.optional(SubmissionPaymentData),
+  payment: z.optional(SubmissionPaymentDto),
   _id: SubmissionId,
   created: DateString,
 })
