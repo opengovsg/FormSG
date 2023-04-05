@@ -233,7 +233,7 @@ export const handleGetOtp: ControllerHandler<
  * @returns 500 when the otp could not be hashed
  * @returns 500 when there is a database error
  */
-export const _handleGenerateFormOtp: ControllerHandler<
+export const _handleGenerateOtp: ControllerHandler<
   { transactionId: string; formId: string; fieldId: string; otpPrefix: string },
   SendFormOtpResponseDto | ErrorDto,
   { answer: string }
@@ -243,7 +243,7 @@ export const _handleGenerateFormOtp: ControllerHandler<
   const senderIp = getRequestIp(req)
 
   const logMeta = {
-    action: '_handleGenerateFormOtp',
+    action: '_handleGenerateOtp',
     transactionId,
     fieldId,
     ...createReqMeta(req),
@@ -317,22 +317,34 @@ export const _handleGenerateFormOtp: ControllerHandler<
         generateOtpWithHash(logMeta, SALT_ROUNDS).andThen(
           ({ otp, hashedOtp, otpPrefix }) =>
             // Step 3: Send Otp
-            VerificationService.sendNewOtp({
-              fieldId,
-              hashedOtp,
-              otp,
-              otpPrefix,
-              recipient: answer,
-              transactionId,
-              senderIp,
-              getFieldFromTransactionFx: getFieldFromTransaction,
-              updateHashFx: updateHashForFormFieldWrapper,
-            }) // Return the required data for next steps.
-              .map((updatedTransaction) => ({
-                updatedTransaction,
-                form,
+            {
+              let getFieldFromTransactionFx
+              let updateHashFx
+              if (fieldId === PAYMENT_CONTACT_FIELD_ID) {
+                getFieldFromTransactionFx =
+                  getPaymentContactFieldFromTransaction
+                updateHashFx = updateHashForPaymentFieldWrapper
+              } else {
+                getFieldFromTransactionFx = getFieldFromTransaction
+                updateHashFx = updateHashForFormFieldWrapper
+              }
+              return VerificationService.sendNewOtp({
+                fieldId,
+                hashedOtp,
+                otp,
                 otpPrefix,
-              })),
+                recipient: answer,
+                transactionId,
+                senderIp,
+                getFieldFromTransactionFx,
+                updateHashFx,
+              }) // Return the required data for next steps.
+                .map((updatedTransaction) => ({
+                  updatedTransaction,
+                  form,
+                  otpPrefix,
+                }))
+            },
         ),
       )
       .map(({ updatedTransaction, form, otpPrefix }) => {
@@ -366,7 +378,7 @@ export const handleGenerateFormOtp = [
       answer: Joi.string().required(),
     }),
   }),
-  _handleGenerateFormOtp,
+  _handleGenerateOtp,
 ] as ControllerHandler[]
 
 /**
@@ -377,162 +389,6 @@ export const handleGenerateFormOtp = [
 export const updateHashForPaymentFieldWrapper = (
   updateData: UpdatePaymentFieldData,
 ) => VerificationModel.updateHashForPaymentField(updateData)
-
-/**
- * Generates an otp when a user requests to verify a payment contact field.
- * The current answer is signed, and the signature is also saved in the transaction, with the fixed field id as the key.
- * @param answer The mobile or email number of the user
- * @param transactionId The id of the transaction to verify
- * @param formId The id of the form to verify
- * @param fieldId The id of the field to verify
- * @returns 201 when otp generated successfully
- * @returns 400 when the parameters could not be parsed
- * @returns 400 when the transaction has expired
- * @returns 400 when the otp could not be sent via sms
- * @returns 400 when the otp could not be sent via email
- * @returns 400 when the provided phone number is not valid
- * @returns 400 when the field type is not supported for validation
- * @returns 404 when the requested form was not found
- * @returns 404 when the transaction was not found
- * @returns 404 when the field was not found
- * @returns 422 when the user requested for a new otp without waiting
- * @returns 500 when the otp could not be hashed
- * @returns 500 when there is a database error
- */
-export const _handleGeneratePaymentOtp: ControllerHandler<
-  { transactionId: string; formId: string; otpPrefix: string },
-  SendFormOtpResponseDto | ErrorDto,
-  { answer: string }
-> = async (req, res) => {
-  const { transactionId, formId } = req.params
-  const { answer } = req.body
-  const senderIp = getRequestIp(req)
-
-  const logMeta = {
-    action: '_handleGeneratePaymentOtp',
-    transactionId,
-    ...createReqMeta(req),
-  }
-  // Step 1: Ensure that the form for the specified transaction exists
-  return (
-    FormService.retrieveFullFormById(formId)
-      // Step 2: Verify SPCP/MyInfo, if form requires it
-      .andThen((form) => {
-        setFormTags(form)
-        const { authType } = form
-        switch (authType) {
-          case FormAuthType.CP: {
-            const oidcService = getOidcService(FormAuthType.CP)
-            return oidcService
-              .extractJwt(req.cookies)
-              .asyncAndThen((jwt) => oidcService.extractJwtPayload(jwt))
-              .map(() => form)
-              .mapErr((error) => {
-                logger.error({
-                  message: 'Failed to verify Corppass JWT with cp oidc client',
-                  meta: logMeta,
-                  error,
-                })
-                return error
-              })
-          }
-          case FormAuthType.SP: {
-            const oidcService = getOidcService(FormAuthType.SP)
-            return oidcService
-              .extractJwt(req.cookies)
-              .asyncAndThen((jwt) => oidcService.extractJwtPayload(jwt))
-              .map(() => form)
-              .mapErr((error) => {
-                logger.error({
-                  message: 'Failed to verify Singpass JWT with sp oidc client',
-                  meta: logMeta,
-                  error,
-                })
-                return error
-              })
-          }
-          case FormAuthType.SGID:
-            return SgidService.extractSgidJwtPayload(req.cookies.jwtSgid)
-              .map(() => form)
-              .mapErr((error) => {
-                logger.error({
-                  message: 'Failed to verify sgID JWT with auth client',
-                  meta: logMeta,
-                  error,
-                })
-                return error
-              })
-          case FormAuthType.MyInfo:
-            return MyInfoUtil.extractMyInfoLoginJwt(req.cookies)
-              .andThen(MyInfoService.verifyLoginJwt)
-              .map(() => form)
-              .mapErr((error) => {
-                logger.error({
-                  message: 'Failed to verify MyInfo hashes',
-                  meta: logMeta,
-                  error,
-                })
-                return error
-              })
-          default:
-            return ok(form)
-        }
-      })
-      .andThen((form) =>
-        generateOtpWithHash(logMeta, SALT_ROUNDS).andThen(
-          ({ otp, hashedOtp, otpPrefix }) =>
-            // Step 3: Send Otp
-            VerificationService.sendNewOtp({
-              hashedOtp,
-              otp,
-              otpPrefix,
-              recipient: answer,
-              transactionId,
-              senderIp,
-              fieldId: PAYMENT_CONTACT_FIELD_ID,
-              getFieldFromTransactionFx: getPaymentContactFieldFromTransaction,
-              updateHashFx: updateHashForPaymentFieldWrapper,
-            }) // Return the required data for next steps.
-              .map((updatedTransaction) => ({
-                updatedTransaction,
-                form,
-                otpPrefix,
-              })),
-        ),
-      )
-      .map(({ updatedTransaction, form, otpPrefix }) => {
-        res.status(StatusCodes.CREATED).json({ otpPrefix })
-        // NOTE: This is returned because tests require this to avoid async mocks interfering with each other.
-        // However, this is not an issue in reality because express does not require awaiting on the sendStatus call.
-        return VerificationService.disableVerifiedFieldsIfRequired(
-          form,
-          updatedTransaction,
-          PAYMENT_CONTACT_FIELD_ID,
-        )
-      })
-      .mapErr((error) => {
-        logger.error({
-          message: 'Error creating new OTP',
-          meta: logMeta,
-          error,
-        })
-        const { errorMessage, statusCode } = mapRouteError(error)
-        return res.status(statusCode).json({ message: errorMessage })
-      })
-  )
-}
-
-/**
- * Handler for the POST /forms/:formId/fieldverifications/:transactionId/payment/otp/generate endpoint
- */
-export const handleGeneratePaymentOtp = [
-  celebrate({
-    [Segments.BODY]: Joi.object({
-      answer: Joi.string().required(),
-    }),
-  }),
-  _handleGeneratePaymentOtp,
-] as ControllerHandler[]
 
 /**
  * When user submits their otp for the field, the otp is validated.
@@ -604,7 +460,7 @@ export const incrementFormFieldRetriesWrapper = (
  * @returns 500 when HashingError occurs
  * @returns 500 when DatabaseError occurs
  */
-export const _handleFormOtpVerification: ControllerHandler<
+export const _handleOtpVerification: ControllerHandler<
   { transactionId: string; fieldId: string; formId: string },
   string | ErrorDto,
   { otp: string }
@@ -612,7 +468,7 @@ export const _handleFormOtpVerification: ControllerHandler<
   const { transactionId, fieldId, formId } = req.params
   const { otp } = req.body
   const logMeta = {
-    action: '_handleFormOtpVerification',
+    action: '_handleOtpVerification',
     transactionId,
     fieldId,
     ...createReqMeta(req),
@@ -621,15 +477,24 @@ export const _handleFormOtpVerification: ControllerHandler<
   return (
     FormService.retrieveFormById(formId)
       // Step 2: Verify the otp sent over by the client
-      .andThen(() =>
-        VerificationService.verifyOtp({
+      .andThen(() => {
+        let getFieldFromTransactionFx
+        let incrementFieldRetriesFx
+        if (fieldId === PAYMENT_CONTACT_FIELD_ID) {
+          getFieldFromTransactionFx = getPaymentContactFieldFromTransaction
+          incrementFieldRetriesFx = incrementPaymentFieldRetriesWrapper
+        } else {
+          getFieldFromTransactionFx = getFieldFromTransaction
+          incrementFieldRetriesFx = incrementFormFieldRetriesWrapper
+        }
+        return VerificationService.verifyOtp({
           transactionId,
           inputOtp: otp,
           fieldId,
-          getFieldFromTransactionFx: getFieldFromTransaction,
-          incrementFieldRetriesFx: incrementFormFieldRetriesWrapper,
-        }),
-      )
+          getFieldFromTransactionFx,
+          incrementFieldRetriesFx,
+        })
+      })
       .map((signedData) => res.status(StatusCodes.OK).json(signedData))
       .mapErr((error) => {
         logger.error({
@@ -655,7 +520,7 @@ export const handleFormOtpVerification = [
         .message('Please enter a valid OTP'),
     }),
   }),
-  _handleFormOtpVerification,
+  _handleOtpVerification,
 ] as ControllerHandler[]
 
 /**
@@ -665,80 +530,6 @@ export const handleFormOtpVerification = [
  */
 export const incrementPaymentFieldRetriesWrapper = (transactionId: string) =>
   VerificationModel.incrementPaymentFieldRetries(transactionId)
-
-/**
- * NOTE: Exported solely for testing
- * Handler for payment otp verification; double checks the submitted otp against the true otp
- * If the submitted otp is correct,
- * the signature that was saved will be appended to the response of the form when submitted
- * @param formId The id of the form which verification is for
- * @param transactionId The id of the transaction to validate
- * @param fieldId The id of the field to validate
- * @returns 200 when the otp is correct and the parameters are valid
- * @returns 400 when TransactionExpiredError occurs
- * @returns 400 when MissingHashDataError occurs
- * @returns 404 when FormNotFoundError occurs
- * @returns 404 when TransactionNotFoundError occurs
- * @returns 404 when FieldNotFoundInTransactionError occurs
- * @returns 422 when OtpExpiredError occurs
- * @returns 422 when OtpRetryExceededError occurs
- * @returns 422 when WrongOtpError occurs
- * @returns 500 when HashingError occurs
- * @returns 500 when DatabaseError occurs
- */
-export const _handlePaymentOtpVerification: ControllerHandler<
-  { transactionId: string; fieldId: string; formId: string },
-  string | ErrorDto,
-  { otp: string }
-> = async (req, res) => {
-  const { transactionId, fieldId, formId } = req.params
-  const { otp } = req.body
-  const logMeta = {
-    action: '_handlePaymentOtpVerification',
-    transactionId,
-    fieldId,
-    ...createReqMeta(req),
-  }
-  // Step 1: Ensure that the form for the specified transaction exists
-  return (
-    FormService.retrieveFormById(formId)
-      // Step 2: Verify the otp sent over by the client
-      .andThen(() =>
-        VerificationService.verifyOtp({
-          transactionId,
-          inputOtp: otp,
-          fieldId: PAYMENT_CONTACT_FIELD_ID,
-          getFieldFromTransactionFx: getPaymentContactFieldFromTransaction,
-          incrementFieldRetriesFx: incrementPaymentFieldRetriesWrapper,
-        }),
-      )
-      .map((signedData) => res.status(StatusCodes.OK).json(signedData))
-      .mapErr((error) => {
-        logger.error({
-          message: 'Error verifying OTP',
-          meta: logMeta,
-          error,
-        })
-        const { statusCode, errorMessage } = mapRouteError(error)
-        return res.status(statusCode).json({ message: errorMessage })
-      })
-  )
-}
-
-/**
- * Handler with otp validation for POST /forms/:formId/fieldverifications/:id/payment/otp/verify
- */
-export const handlePaymentOtpVerification = [
-  celebrate({
-    [Segments.BODY]: Joi.object({
-      otp: Joi.string()
-        .required()
-        .regex(/^\d{6}$/)
-        .message('Please enter a valid OTP'),
-    }),
-  }),
-  _handlePaymentOtpVerification,
-] as ControllerHandler[]
 
 /**
  * NOTE: Exported soley for testing
@@ -760,7 +551,7 @@ export const resetFormFieldWrapper = (transactionId: string, fieldId: string) =>
  * @returns 404 when the field could not be found
  * @returns 500 when a database error occurs
  */
-export const handleResetFormFieldVerification: ControllerHandler<
+export const handleResetFieldVerification: ControllerHandler<
   {
     formId: string
     fieldId: string
@@ -770,7 +561,7 @@ export const handleResetFormFieldVerification: ControllerHandler<
 > = async (req, res) => {
   const { transactionId, fieldId, formId } = req.params
   const logMeta = {
-    action: 'handleResetFormFieldVerification',
+    action: 'handleResetFieldVerification',
     transactionId,
     fieldId,
     ...createReqMeta(req),

@@ -5,7 +5,6 @@ import {
   useWatch,
 } from 'react-hook-form'
 
-import { PAYMENT_CONTACT_FIELD_ID } from '~shared/constants'
 import { FormFieldWithId } from '~shared/types/field'
 
 import { useTimeout } from '~hooks/useTimeout'
@@ -55,9 +54,6 @@ export const VerifiableFieldProvider = ({
     triggerSendFormOtpMutation,
     triggerResendFormOtpMutation,
     verifyFormOtpMutation,
-    triggerSendPaymentOtpMutation,
-    triggerResendPaymentOtpMutation,
-    verifyPaymentOtpMutation,
   } = useVerifiableFieldMutations({
     schema,
     formId,
@@ -111,19 +107,10 @@ export const VerifiableFieldProvider = ({
     // Should not happen, but guarding against this just in case.
     if (!currentInputValue) return
 
-    return schema._id === PAYMENT_CONTACT_FIELD_ID
-      ? triggerResendPaymentOtpMutation.mutate(currentInputValue, {
-          onSuccess: ({ otpPrefix }) => setOtpPrefix(otpPrefix),
-        })
-      : triggerResendFormOtpMutation.mutate(currentInputValue, {
-          onSuccess: ({ otpPrefix }) => setOtpPrefix(otpPrefix),
-        })
-  }, [
-    getValues,
-    schema._id,
-    triggerResendFormOtpMutation,
-    triggerResendPaymentOtpMutation,
-  ])
+    return triggerResendFormOtpMutation.mutate(currentInputValue, {
+      onSuccess: ({ otpPrefix }) => setOtpPrefix(otpPrefix),
+    })
+  }, [getValues, schema._id, triggerResendFormOtpMutation])
 
   const handleVfnButtonClick = useCallback(() => {
     const currentInputValue = getValues(schema._id)?.value
@@ -141,21 +128,12 @@ export const VerifiableFieldProvider = ({
     // Only trigger send otp if the input is a valid input.
     const validateResult = validateInputForVfn(currentInputValue)
     if (validateResult === true) {
-      if (schema._id === PAYMENT_CONTACT_FIELD_ID) {
-        return triggerSendPaymentOtpMutation.mutate(currentInputValue, {
-          onSuccess: ({ otpPrefix }) => {
-            setIsVfnBoxOpen(true)
-            setOtpPrefix(otpPrefix)
-          },
-        })
-      } else {
-        return triggerSendFormOtpMutation.mutate(currentInputValue, {
-          onSuccess: ({ otpPrefix }) => {
-            setIsVfnBoxOpen(true)
-            setOtpPrefix(otpPrefix)
-          },
-        })
-      }
+      return triggerSendFormOtpMutation.mutate(currentInputValue, {
+        onSuccess: ({ otpPrefix }) => {
+          setIsVfnBoxOpen(true)
+          setOtpPrefix(otpPrefix)
+        },
+      })
     }
 
     // Else invalid input.
@@ -171,18 +149,13 @@ export const VerifiableFieldProvider = ({
     schema._id,
     setError,
     triggerSendFormOtpMutation,
-    triggerSendPaymentOtpMutation,
     validateInputForVfn,
   ])
 
   const handleVerifyOtp = useCallback(
     (otp: string) => {
       // async so verification box can show error message
-      const verifyOtpMutationFx =
-        schema._id === PAYMENT_CONTACT_FIELD_ID
-          ? verifyPaymentOtpMutation
-          : verifyFormOtpMutation
-      return verifyOtpMutationFx.mutateAsync(otp, {
+      return verifyFormOtpMutation.mutateAsync(otp, {
         onSuccess: (signature) => {
           const currentValue = getValues(schema._id)?.value
           if (!currentValue) return
@@ -205,14 +178,7 @@ export const VerifiableFieldProvider = ({
         },
       })
     },
-    [
-      getValues,
-      schema._id,
-      setFocus,
-      setValue,
-      verifyFormOtpMutation,
-      verifyPaymentOtpMutation,
-    ],
+    [getValues, schema._id, setFocus, setValue, verifyFormOtpMutation],
   )
 
   return (
@@ -225,9 +191,7 @@ export const VerifiableFieldProvider = ({
         handleResendOtp,
         handleVerifyOtp,
         hasSignature: !!currentSignature,
-        isSendingOtp:
-          triggerSendFormOtpMutation.isLoading ||
-          triggerSendPaymentOtpMutation.isLoading,
+        isSendingOtp: triggerSendFormOtpMutation.isLoading,
       }}
     >
       {children}

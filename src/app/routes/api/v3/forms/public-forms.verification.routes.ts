@@ -1,5 +1,6 @@
 import { Router } from 'express'
 
+import { PAYMENT_CONTACT_FIELD_ID } from '../../../../../../shared/constants'
 import { rateLimitConfig } from '../../../../config/config'
 import * as VerificationController from '../../../../modules/verification/verification.controller'
 import { limitRate } from '../../../../utils/limit-rate'
@@ -24,7 +25,7 @@ PublicFormsVerificationRouter.route(
  */
 PublicFormsVerificationRouter.route(
   '/:formId([a-fA-F0-9]{24})/fieldverifications/:transactionId([a-fA-F0-9]{24})/fields/:fieldId([a-fA-F0-9]{24})/reset',
-).post(VerificationController.handleResetFormFieldVerification)
+).post(VerificationController.handleResetFieldVerification)
 
 /**
  * Route for verifying the otp for a given field
@@ -41,31 +42,10 @@ PublicFormsVerificationRouter.route(
  * @returns 500 when DatabaseError occurs
  */
 PublicFormsVerificationRouter.route(
-  '/:formId([a-fA-F0-9]{24})/fieldverifications/:transactionId([a-fA-F0-9]{24})/fields/:fieldId([a-fA-F0-9]{24})/otp/verify',
+  `/:formId([a-fA-F0-9]{24})/fieldverifications/:transactionId([a-fA-F0-9]{24})/fields/:fieldId([a-fA-F0-9]{24}|${PAYMENT_CONTACT_FIELD_ID})/otp/verify`,
 ).post(
   limitRate({ max: rateLimitConfig.sendAuthOtp }),
   VerificationController.handleFormOtpVerification,
-)
-
-/**
- * Route for verifying the otp for payment
- * @returns 200 when the otp is correct and the parameters are valid
- * @returns 400 when TransactionExpiredError occurs
- * @returns 400 when MissingHashDataError occurs
- * @returns 404 when FormNotFoundError occurs
- * @returns 404 when TransactionNotFoundError occurs
- * @returns 404 when FieldNotFoundInTransactionError occurs
- * @returns 422 when OtpExpiredError occurs
- * @returns 422 when OtpRetryExceededError occurs
- * @returns 422 when WrongOtpError occurs
- * @returns 500 when HashingError occurs
- * @returns 500 when DatabaseError occurs
- */
-PublicFormsVerificationRouter.route(
-  '/:formId([a-fA-F0-9]{24})/fieldverifications/:transactionId([a-fA-F0-9]{24})/payment/otp/verify',
-).post(
-  limitRate({ max: rateLimitConfig.sendAuthOtp }),
-  VerificationController.handlePaymentOtpVerification,
 )
 
 /**
@@ -86,15 +66,8 @@ PublicFormsVerificationRouter.route(
  * @returns 500 when there is a database error
  */
 PublicFormsVerificationRouter.route(
-  '/:formId([a-fA-F0-9]{24})/fieldverifications/:transactionId([a-fA-F0-9]{24})/fields/:fieldId([a-fA-F0-9]{24})/otp/generate',
+  `/:formId([a-fA-F0-9]{24})/fieldverifications/:transactionId([a-fA-F0-9]{24})/fields/:fieldId([a-fA-F0-9]{24}|${PAYMENT_CONTACT_FIELD_ID})/otp/generate`,
 ).post(
   limitRate({ max: rateLimitConfig.sendAuthOtp }),
   VerificationController.handleGenerateFormOtp,
-)
-
-PublicFormsVerificationRouter.route(
-  '/:formId([a-fA-F0-9]{24})/fieldverifications/:transactionId([a-fA-F0-9]{24})/payment/otp/generate',
-).post(
-  limitRate({ max: rateLimitConfig.sendAuthOtp }),
-  VerificationController.handleGeneratePaymentOtp,
 )

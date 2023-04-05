@@ -66,35 +66,6 @@ export const triggerSendFormOtp = async ({
 }
 
 /**
- * Sends a payment contact field OTP to given answer.
- * @param args
- * @param args.formId The id of the form to generate the otp for
- * @param args.transactionId The generated transaction id for the form
- * @param args.fieldId The id of the verification field
- * @param args.answer The value of the verification field to verify. Usually an email or phone number
- * @returns 201 Created status if successfully sent
- */
-export const triggerSendPaymentOtp = async ({
-  formId,
-  transactionId,
-  answer,
-}: {
-  /** The id of the form to generate the otp for */
-  formId: string
-  /** The generated transaction id for the form */
-  transactionId: string
-  /** The value of the verification field to verify. Usually an email or phone number */
-  answer: string
-}): Promise<SendFormOtpResponseDto> => {
-  return ApiService.post(
-    `${FORM_API_PREFIX}/${formId}/${VERIFICATION_ENDPOINT}/${transactionId}/payment/otp/generate`,
-    {
-      answer,
-    },
-  ).then(({ data }) => data)
-}
-
-/**
  * Verifies given OTP for given fieldId
  * @param formId The id of the form
  * @param transactionId The generated transaction id for the form
@@ -115,31 +86,6 @@ export const verifyFormOtp = async ({
 }): Promise<VerifiedFieldSignature> => {
   return ApiService.post<VerifiedFieldSignature>(
     `${FORM_API_PREFIX}/${formId}/${VERIFICATION_ENDPOINT}/${transactionId}/fields/${fieldId}/otp/verify`,
-    {
-      otp,
-    },
-  ).then(({ data }) => data)
-}
-
-/**
- * Verifies given OTP for given fieldId
- * @param formId The id of the form
- * @param transactionId The generated transaction id for the form
- * @param fieldId The id of the verification field
- * @param otp The user-entered OTP value to verify against
- * @returns The verified signature on success
- */
-export const verifyPaymentOtp = async ({
-  formId,
-  transactionId,
-  otp,
-}: {
-  formId: string
-  transactionId: string
-  otp: string
-}): Promise<VerifiedFieldSignature> => {
-  return ApiService.post<VerifiedFieldSignature>(
-    `${FORM_API_PREFIX}/${formId}/${VERIFICATION_ENDPOINT}/${transactionId}/payment/otp/verify`,
     {
       otp,
     },
