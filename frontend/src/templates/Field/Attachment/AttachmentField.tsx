@@ -58,16 +58,16 @@ export const AttachmentField = ({
         // an error during form submission.
         // See https://bugs.chromium.org/p/chromium/issues/detail?id=1063576#c79
         // and https://stackoverflow.com/questions/62714319/attached-from-google-drivecloud-storage-in-android-file-gives-err-upload-file
-        // as possible sources of the error  (still not confirmed it is the same thing).
+        // as possible sources of the error (still not confirmed it is the same thing).
         if (file) {
           try {
             const buffer = await file.arrayBuffer()
             clone = new File([buffer], file.name, { type: file.type })
           } catch (error) {
             setErrorMessage(
-              'Error uploading file. Please try again or choose another file.',
+              'There was an error reading your file. If you are uploading a file and using online storage such as Google Drive, download your file before attaching the downloaded version. Otherwise, please refresh and try again.',
             )
-            console.error(error) // For RUM error tracking
+            console.error('handleFileChange', error) // For RUM error tracking
           }
         }
         onChange(clone)
