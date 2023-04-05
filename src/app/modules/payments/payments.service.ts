@@ -1,3 +1,4 @@
+import { ObjectId } from 'mongodb'
 import mongoose from 'mongoose'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 
@@ -67,7 +68,10 @@ export const findBySubmissionIdAndUpdate = (
     | mongoose.UpdateQuery<IPaymentSchema>,
 ): ResultAsync<IPaymentSchema, PaymentNotFoundError | DatabaseError> => {
   return ResultAsync.fromPromise(
-    PaymentModel.findOneAndUpdate({ submissionId }, update).exec(),
+    PaymentModel.findOneAndUpdate(
+      { 'completedPayment.submissionId': new ObjectId(submissionId) },
+      update,
+    ).exec(),
     (error) => {
       logger.error({
         message: 'Error updating payment in database',
@@ -96,7 +100,9 @@ export const findPaymentBySubmissionId = (
   submissionId: string,
 ): ResultAsync<IPaymentSchema, PaymentNotFoundError | DatabaseError> => {
   return ResultAsync.fromPromise(
-    PaymentModel.findOne({ submissionId }),
+    PaymentModel.findOne({
+      'completedPayment.submissionId': new ObjectId(submissionId),
+    }),
     (error) => {
       logger.error({
         message: 'Database find payment submissionId error',
