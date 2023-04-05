@@ -228,7 +228,7 @@ export const BASE_FORM = {
       globalId: 'iJpZkr9GasJrAvQHOYAyRiGRGNhDJAzRw6FwTLaQImS',
     },
     {
-      fieldOptions: ['Option 1'],
+      fieldOptions: ['Option 1', 'Option 2', 'Option 3'],
       title: 'Dropdown',
       description: '',
       required: true,
@@ -248,7 +248,7 @@ export const BASE_FORM = {
     },
     {
       ValidationOptions: { customMax: null, customMin: null },
-      fieldOptions: ['Option 1'],
+      fieldOptions: ['Option 1', 'Option 2', 'Option 3'],
       othersRadioButton: false,
       validateByValue: false,
       title: 'Checkbox',
@@ -260,7 +260,7 @@ export const BASE_FORM = {
       globalId: 'l4gMDfFhA1ITmhUPQCjA05aUAOROUOwlNAjMJMkwmJ7',
     },
     {
-      fieldOptions: ['Option 1'],
+      fieldOptions: ['Option 1', 'Option 2', 'Option 3'],
       othersRadioButton: false,
       title: 'Radio',
       description: '',
