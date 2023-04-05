@@ -240,11 +240,13 @@ export const PublicFormProvider = ({
         case FormResponseMode.Email: {
           // Using mutateAsync so react-hook-form goes into loading state.
 
-          const submitEmailFormWithFetch = function () {
+          const submitEmailFormWithFetch = function (
+            isAxiosFallback?: boolean,
+          ) {
             datadogLogs.logger.info(`handleSubmitForm: submitting via fetch`, {
               meta: {
                 ...logMeta,
-                responseMode: 'email',
+                responseMode: form.responseMode,
                 method: 'fetch',
               },
             })
@@ -255,7 +257,7 @@ export const PublicFormProvider = ({
                 datadogLogs.logger.warn(`handleSubmitForm: ${error.message}`, {
                   meta: {
                     ...logMeta,
-                    responseMode: 'email',
+                    responseMode: form.responseMode,
                     method: 'fetch',
                     error: {
                       message: error.message,
@@ -265,9 +267,11 @@ export const PublicFormProvider = ({
                   },
                 })
                 showErrorToast(
-                  new Error(
-                    'Failed to submit. If you are uploading a file and using online storage such as Google Drive, download your file before attaching the downloaded version. Otherwise, please refresh and try again.',
-                  ),
+                  isAxiosFallback
+                    ? new Error(
+                        'Failed to submit. If you are uploading a file and using online storage such as Google Drive, download your file before attaching the downloaded version. Otherwise, please refresh and try again.',
+                      )
+                    : error,
                   form,
                 )
               })
@@ -275,12 +279,12 @@ export const PublicFormProvider = ({
 
           // TODO (#5826): Toggle to use fetch for submissions instead of axios. If enabled, this is used for testing and to use fetch instead of axios by default if testing shows fetch is more  stable. Remove once network error is resolved
           if (useFetchForSubmissions) {
-            return submitEmailFormWithFetch()
+            return submitEmailFormWithFetch(false)
           } else {
             datadogLogs.logger.info(`handleSubmitForm: submitting via axios`, {
               meta: {
                 ...logMeta,
-                responseMode: 'email',
+                responseMode: form.responseMode,
                 method: 'axios',
               },
             })
@@ -296,7 +300,7 @@ export const PublicFormProvider = ({
                     {
                       meta: {
                         ...logMeta,
-                        responseMode: 'email',
+                        responseMode: form.responseMode,
                         method: 'axios',
                         error: {
                           message: error.message,
@@ -307,7 +311,7 @@ export const PublicFormProvider = ({
                   )
                   if (/Network Error/i.test(error.message)) {
                     axiosDebugFlow()
-                    return submitEmailFormWithFetch()
+                    return submitEmailFormWithFetch(true)
                   } else {
                     showErrorToast(error, form)
                   }
@@ -318,11 +322,13 @@ export const PublicFormProvider = ({
         case FormResponseMode.Encrypt: {
           // Using mutateAsync so react-hook-form goes into loading state.
 
-          const submitStorageFormWithFetch = function () {
+          const submitStorageFormWithFetch = function (
+            isAxiosFallback?: boolean,
+          ) {
             datadogLogs.logger.info(`handleSubmitForm: submitting via fetch`, {
               meta: {
                 ...logMeta,
-                responseMode: 'storage',
+                responseMode: form.responseMode,
                 method: 'fetch',
               },
             })
@@ -341,7 +347,7 @@ export const PublicFormProvider = ({
                 datadogLogs.logger.warn(`handleSubmitForm: ${error.message}`, {
                   meta: {
                     ...logMeta,
-                    responseMode: 'storage',
+                    responseMode: form.responseMode,
                     method: 'fetch',
                     error: {
                       message: error.message,
@@ -350,18 +356,25 @@ export const PublicFormProvider = ({
                     },
                   },
                 })
-                showErrorToast(error, form)
+                showErrorToast(
+                  isAxiosFallback
+                    ? new Error(
+                        'Failed to submit. If you are uploading a file and using online storage such as Google Drive, download your file before attaching the downloaded version. Otherwise, please refresh and try again.',
+                      )
+                    : error,
+                  form,
+                )
               })
           }
 
           // TODO (#5826): Toggle to use fetch for submissions instead of axios. If enabled, this is used for testing and to use fetch instead of axios by default if testing shows fetch is more  stable. Remove once network error is resolved
           if (useFetchForSubmissions) {
-            return submitStorageFormWithFetch()
+            return submitStorageFormWithFetch(false)
           } else {
             datadogLogs.logger.info(`handleSubmitForm: submitting via axios`, {
               meta: {
                 ...logMeta,
-                responseMode: 'storage',
+                responseMode: form.responseMode,
                 method: 'axios',
               },
             })
@@ -385,7 +398,7 @@ export const PublicFormProvider = ({
                     {
                       meta: {
                         ...logMeta,
-                        responseMode: 'storage',
+                        responseMode: form.responseMode,
                         method: 'axios',
                         error: {
                           message: error.message,
@@ -397,7 +410,7 @@ export const PublicFormProvider = ({
 
                   if (/Network Error/i.test(error.message)) {
                     axiosDebugFlow()
-                    return submitStorageFormWithFetch()
+                    return submitStorageFormWithFetch(true)
                   } else {
                     showErrorToast(error, form)
                   }
