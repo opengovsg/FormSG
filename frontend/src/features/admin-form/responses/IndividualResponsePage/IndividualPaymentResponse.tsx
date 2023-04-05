@@ -28,7 +28,7 @@ export const IndividualPaymentResponse = (submissionId: {
       {isError || isLoading ? (
         //TODO: check with design for skeleton layout
         <Skeleton height="1.5rem" />
-      ) : paymentData ? (
+      ) : paymentData?.completedPayment ? (
         <>
           <Stack>
             <Stack direction={{ base: 'column', md: 'row' }}>
@@ -67,13 +67,12 @@ export const IndividualPaymentResponse = (submissionId: {
               <Text textStyle="subhead-1">Transaction fee:</Text>
               <Text>
                 S$
-                {(paymentData.stripeTransactionFee / 100).toLocaleString(
-                  'en-GB',
-                  {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                  },
-                )}
+                {(
+                  paymentData.completedPayment.transactionFee / 100
+                ).toLocaleString('en-GB', {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}
               </Text>
             </Stack>
           </Stack>
