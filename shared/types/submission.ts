@@ -6,7 +6,7 @@ import { FormFieldDto, MyInfoAttribute } from './field'
 import { FormAuthType } from './form/form'
 import { DateString } from './generic'
 import { EmailResponse, FieldResponse, MobileResponse } from './response'
-import { Payment } from './payment'
+import { PaymentStatus } from './payment'
 export type SubmissionId = Opaque<string, 'SubmissionId'>
 export const SubmissionId = z.string() as unknown as z.Schema<SubmissionId>
 
@@ -63,12 +63,29 @@ export type StorageModeSubmissionBase = z.infer<
   typeof StorageModeSubmissionBase
 >
 
+export const SubmissionPaymentData = z.object({
+  id: z.string(),
+  paymentIntentId: z.string(),
+  email: z.string(),
+  amount: z.number(),
+  status: z.nativeEnum(PaymentStatus),
+
+  paymentDate: z.string(),
+  transactionFee: z.number(),
+  receiptUrl: z.string(),
+
+  payoutId: z.string().optional(),
+  payoutDate: z.string().optional(),
+})
+export type SubmissionPaymentData = z.infer<typeof SubmissionPaymentData>
+
 export type StorageModeSubmissionDto = {
   refNo: SubmissionId
   submissionTime: string
   content: string
   verified?: string
   attachmentMetadata: Record<string, string>
+  payment?: SubmissionPaymentData
   version: number
 }
 
@@ -158,8 +175,6 @@ export type StorageModeSubmissionContentDto = {
   paymentReceiptEmail?: string
   version: number
 }
-
-export type StorageModePaymentSubmissionDto = Payment
 
 export type PaymentSubmissionData = {
   paymentId: string

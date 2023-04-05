@@ -11,12 +11,8 @@ import {
 } from '@chakra-ui/react'
 import simplur from 'simplur'
 
-import { FormResponseMode } from '~shared/types'
-
 import Button from '~components/Button'
 import Spinner from '~components/Spinner'
-
-import { useAdminForm } from '~features/admin-form/common/queries'
 
 import {
   SecretKeyVerification,
@@ -24,9 +20,9 @@ import {
 } from '../ResponsesPage/storage'
 
 import { DecryptedRow } from './DecryptedRow'
-import { IndividualPaymentResponse } from './IndividualPaymentResponse'
 import { IndividualResponseNavbar } from './IndividualResponseNavbar'
 import { useMutateDownloadAttachments } from './mutations'
+import { PaymentSection } from './PaymentSection'
 import { useIndividualSubmission } from './queries'
 
 const LoadingDecryption = memo(() => {
@@ -56,7 +52,6 @@ export const IndividualResponsePage = (): JSX.Element => {
 
   const { secretKey } = useStorageResponsesContext()
   const { data, isLoading, isError } = useIndividualSubmission()
-  const { data: form } = useAdminForm()
 
   const attachmentDownloadUrls = useMemo(() => {
     const attachmentDownloadUrls = new Map()
@@ -157,18 +152,15 @@ export const IndividualResponsePage = (): JSX.Element => {
         {isLoading || isError ? (
           <LoadingDecryption />
         ) : (
-          <Stack>
+          <>
             <Stack spacing="1.5rem" divider={<StackDivider />}>
               {data?.responses.map((r, idx) => (
                 <DecryptedRow row={r} secretKey={secretKey} key={idx} />
               ))}
               <Box />
             </Stack>
-            {form?.responseMode === FormResponseMode.Encrypt &&
-              form?.payments_field?.enabled && (
-                <IndividualPaymentResponse submissionId={submissionId} />
-              )}
-          </Stack>
+            {data?.payment && <PaymentSection paymentData={data.payment} />}
+          </>
         )}
       </Stack>
     </Flex>

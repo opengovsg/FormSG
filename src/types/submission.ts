@@ -88,6 +88,7 @@ export type SubmissionData = Pick<
   | 'encryptedContent'
   | 'verifiedContent'
   | 'attachmentMetadata'
+  | 'paymentId'
   | 'created'
   | 'version'
 > &

@@ -383,6 +383,7 @@ EncryptSubmissionSchema.statics.findEncryptedSubmissionById = function (
       encryptedContent: 1,
       verifiedContent: 1,
       attachmentMetadata: 1,
+      paymentId: 1,
       created: 1,
       version: 1,
     })

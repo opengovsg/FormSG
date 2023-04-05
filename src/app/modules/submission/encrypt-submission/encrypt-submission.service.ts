@@ -1,6 +1,7 @@
 import { ManagedUpload } from 'aws-sdk/clients/s3'
 import Bluebird from 'bluebird'
 import crypto from 'crypto'
+import moment from 'moment'
 import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import { Transform } from 'stream'
@@ -9,6 +10,7 @@ import {
   FormResponseMode,
   StorageModeSubmissionMetadata,
   StorageModeSubmissionMetadataList,
+  SubmissionPaymentData,
 } from '../../../../../shared/types'
 import {
   IEncryptedSubmissionSchema,
@@ -29,6 +31,8 @@ import {
 } from '../../core/core.errors'
 import { CreatePresignedUrlError } from '../../form/admin-form/admin-form.errors'
 import { isFormEncryptMode } from '../../form/form.utils'
+import { PaymentNotFoundError } from '../../payments/payments.errors'
+import * as PaymentsService from '../../payments/payments.service'
 import {
   ResponseModeError,
   SubmissionNotFoundError,
@@ -255,6 +259,46 @@ export const getEncryptedSubmissionData = (
     return okAsync(submission)
   })
 }
+
+/**
+ * Gets completed payment details associated with a particular submission for a
+ * given paymentId.
+ * @param paymentId the payment
+ * @requires paymentId must be a completed payment
+ *
+ * @returns ok(SubmissionPayment)
+ * @returns err(PaymentNotFoundError) if the paymentId does not reference a payment, or if the payment is incomplete
+ * @returns err(DatabaseError) if mongoose threw an error during the process
+ */
+export const getSubmissionPaymentData = (
+  paymentId: string,
+): ResultAsync<SubmissionPaymentData, PaymentNotFoundError | DatabaseError> =>
+  PaymentsService.findPaymentById(paymentId).andThen((payment) => {
+    // If the payment is incomplete, the "complete payment" is not found. This
+    // also implies an internal consistency error.
+    if (!payment.completedPayment) return errAsync(new PaymentNotFoundError())
+
+    return okAsync({
+      id: payment._id,
+      paymentIntentId: payment.paymentIntentId,
+      email: payment.email,
+      amount: payment.amount,
+      status: payment.status,
+
+      paymentDate: moment(payment.completedPayment.paymentDate)
+        .tz('Asia/Singapore')
+        .format('ddd, D MMM YYYY, hh:mm:ss A'),
+      transactionFee: payment.completedPayment.transactionFee,
+      receiptUrl: payment.completedPayment.receiptUrl,
+
+      payoutId: payment.payout?.payoutId,
+      payoutDate:
+        payment.payout?.payoutDate &&
+        moment(payment.payout.payoutDate)
+          .tz('Asia/Singapore')
+          .format('ddd, D MMM YYYY'),
+    })
+  })
 
 /**
  * Transforms given attachment metadata to their S3 signed url counterparts.
