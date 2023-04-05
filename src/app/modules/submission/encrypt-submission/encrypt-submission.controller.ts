@@ -826,32 +826,15 @@ export const getEncryptedResponseUsingQueryParams: ControllerHandler<
       .andThen(checkFormIsEncryptMode)
       // Step 4: Is encrypt mode form, retrieve submission data.
       .andThen(() => getEncryptedSubmissionData(formId, submissionId))
-      // Step 5: If there is an associated payment, get the payment details.
+      // Step 5: Retrieve presigned URLs for attachments.
       .andThen((submissionData) => {
-        if (!submissionData.paymentId) {
-          return okAsync({ submissionData, paymentData: undefined })
-        }
-
-        return getSubmissionPaymentDto(submissionData.paymentId).map(
-          (paymentData) => ({
-            submissionData,
-            paymentData,
-          }),
-        )
-      })
-      // Step 6: Retrieve presigned URLs for attachments.
-      .andThen(({ submissionData, paymentData }) => {
         // Remaining login duration in seconds.
         const urlExpiry = (req.session?.cookie.maxAge ?? 0) / 1000
         return transformAttachmentMetasToSignedUrls(
           submissionData.attachmentMetadata,
           urlExpiry,
         ).map((presignedUrls) =>
-          createEncryptedSubmissionDto(
-            submissionData,
-            presignedUrls,
-            paymentData,
-          ),
+          createEncryptedSubmissionDto(submissionData, presignedUrls),
         )
       })
       .map((responseData) => {
