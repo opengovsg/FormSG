@@ -140,9 +140,11 @@ export const PreviewFormProvider = ({
         case FormResponseMode.Email: {
           // Using mutateAsync so react-hook-form goes into loading state.
 
-          const submitEmailFormWithFetch = function (
-            isAxiosFallback?: boolean,
-          ) {
+          const submitEmailFormWithFetch = function ({
+            isAxiosFallback,
+          }: {
+            isAxiosFallback: boolean
+          }) {
             datadogLogs.logger.info(`handleSubmitForm: submitting via fetch`, {
               meta: {
                 ...logMeta,
@@ -178,7 +180,7 @@ export const PreviewFormProvider = ({
 
           // TODO (#5826): Toggle to use fetch for submissions instead of axios. If enabled, this is used for testing and to use fetch instead of axios by default if testing shows fetch is more  stable. Remove once network error is resolved
           if (useFetchForSubmissions) {
-            return submitEmailFormWithFetch(false)
+            return submitEmailFormWithFetch({ isAxiosFallback: false })
           } else {
             datadogLogs.logger.info(`handleSubmitForm: submitting via axios`, {
               meta: {
@@ -210,7 +212,7 @@ export const PreviewFormProvider = ({
                   )
                   if (/Network Error/i.test(error.message)) {
                     axiosDebugFlow()
-                    return submitEmailFormWithFetch(true)
+                    return submitEmailFormWithFetch({ isAxiosFallback: true })
                   } else {
                     // Show error toast from axios mutation if not network error
                     showErrorToast(error)
@@ -222,9 +224,11 @@ export const PreviewFormProvider = ({
         case FormResponseMode.Encrypt: {
           // Using mutateAsync so react-hook-form goes into loading state.
 
-          const submitStorageFormWithFetch = function (
-            isAxiosFallback?: boolean,
-          ) {
+          const submitStorageFormWithFetch = function ({
+            isAxiosFallback,
+          }: {
+            isAxiosFallback: boolean
+          }) {
             datadogLogs.logger.info(`handleSubmitForm: submitting via fetch`, {
               meta: {
                 ...logMeta,
@@ -268,7 +272,7 @@ export const PreviewFormProvider = ({
 
           // TODO (#5826): Toggle to use fetch for submissions instead of axios. If enabled, this is used for testing and to use fetch instead of axios by default if testing shows fetch is more  stable. Remove once network error is resolved
           if (useFetchForSubmissions) {
-            return submitStorageFormWithFetch(false)
+            return submitStorageFormWithFetch({ isAxiosFallback: false })
           } else {
             datadogLogs.logger.info(`handleSubmitForm: submitting via axios`, {
               meta: {
@@ -308,7 +312,7 @@ export const PreviewFormProvider = ({
                   )
                   if (/Network Error/i.test(error.message)) {
                     axiosDebugFlow()
-                    return submitStorageFormWithFetch(true)
+                    return submitStorageFormWithFetch({ isAxiosFallback: true })
                   } else {
                     // Show error toast from axios mutation if not network error
                     showErrorToast(error)
