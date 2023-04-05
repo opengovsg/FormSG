@@ -159,7 +159,7 @@ export const IndividualResponsePage = (): JSX.Element => {
               ))}
               <Box />
             </Stack>
-            {data?.payment && <PaymentSection paymentData={data.payment} />}
+            {data?.payment && <PaymentSection payment={data.payment} />}
           </>
         )}
       </Stack>

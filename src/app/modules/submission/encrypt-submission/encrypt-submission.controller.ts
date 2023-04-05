@@ -47,6 +47,7 @@ import { sendEmailConfirmations } from '../submission.service'
 import { extractEmailConfirmationDataFromIncomingSubmission } from '../submission.utils'
 
 import {
+  addPaymentDataStream,
   checkFormIsEncryptMode,
   getEncryptedSubmissionData,
   getSubmissionCursor,
@@ -712,6 +713,9 @@ export const streamEncryptedResponses: ControllerHandler<
         urlValidDuration: (req.session?.cookie.maxAge ?? 0) / 1000,
       }),
     )
+    // TODO: Can we include this within the cursor query as aggregation pipeline
+    // instead, so that we make one query to mongo rather than two.
+    .pipe(addPaymentDataStream())
     .on('error', (error) => {
       logger.error({
         message: 'Error retrieving URL for attachments',

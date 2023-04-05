@@ -95,6 +95,7 @@ export const StorageModeSubmissionStreamDto = StorageModeSubmissionBase.pick({
   version: true,
 }).extend({
   attachmentMetadata: z.record(z.string()),
+  payment: z.optional(SubmissionPaymentData),
   _id: SubmissionId,
   created: DateString,
 })

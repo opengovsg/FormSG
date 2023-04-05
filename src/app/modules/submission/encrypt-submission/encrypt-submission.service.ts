@@ -1,6 +1,7 @@
 import { ManagedUpload } from 'aws-sdk/clients/s3'
 import Bluebird from 'bluebird'
 import crypto from 'crypto'
+import omit from 'lodash/omit'
 import moment from 'moment'
 import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
@@ -208,6 +209,36 @@ export const transformAttachmentMetaStream = ({
           },
         )
       }
+    },
+  })
+}
+
+/**
+ * Returns a Transform pipeline that transforms all attachment metadata of each
+ * data chunk from the object path to the S3 signed URL so it can be retrieved
+ * by the client.
+ * @param enabled whether to perform any transformation
+ * @param urlValidDuration how long to keep the S3 signed URL valid for
+ * @returns a Transform pipeline to perform transformations on the pipe
+ */
+export const addPaymentDataStream = (): Transform => {
+  return new Transform({
+    objectMode: true,
+    transform: async (data: SubmissionCursorData, _encoding, callback) => {
+      if (!data.paymentId) {
+        return callback(null, data)
+      }
+
+      return getSubmissionPaymentData(data.paymentId).match(
+        (payment) => {
+          const returnData = {
+            ...omit(data, 'paymentId'),
+            payment,
+          }
+          return callback(null, returnData)
+        },
+        () => callback(null, data),
+      )
     },
   })
 }

@@ -1,53 +1,53 @@
-import { Stack, Text } from '@chakra-ui/react'
+import { Box, Divider, Link, Stack, Text } from '@chakra-ui/react'
+import { keyBy } from 'lodash'
 
-import { StorageModeSubmissionDto } from '~shared/types'
+import { SubmissionPaymentData } from '~shared/types'
 
-type PaymentDataViewItem = {
+import { getPaymentDataView } from '../common/utils/getPaymentDataView'
+
+const PaymentDataItem = ({
+  name,
+  value,
+  isMonospace,
+  isUrl,
+}: {
   name: string
-  value?: string | Date
-  isFontMonospace?: boolean
-}
+  value: string
+  isMonospace?: boolean
+  isUrl?: boolean
+}) => (
+  <Stack direction={{ base: 'column', md: 'row' }}>
+    <Text textStyle="subhead-1">{name}:</Text>
+    <Text
+      sx={
+        isMonospace
+          ? {
+              fontFeatureSettings: "'tnum' on, 'lnum' on, 'zero' on, 'cv05' on",
+            }
+          : {}
+      }
+    >
+      {isUrl ? (
+        <Link as="a" href={value} target="_blank">
+          {value}
+        </Link>
+      ) : (
+        value
+      )}
+    </Text>
+  </Stack>
+)
 
 export const PaymentSection = ({
-  paymentData,
+  payment,
 }: {
-  paymentData: StorageModeSubmissionDto['payment']
+  payment: SubmissionPaymentData
 }): JSX.Element | null => {
-  if (!paymentData) return null
+  if (!payment) return null
 
-  const paymentDataView: PaymentDataViewItem[] = [
-    {
-      name: 'Payment amount',
-      value: `S$${(paymentData.amount / 100).toLocaleString('en-GB', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      })}`,
-    },
-    { name: "Payer's contact email", value: paymentData.email },
-    { name: 'Payment status', value: paymentData.status.toUpperCase() },
-    {
-      name: 'Payment date',
-      value: paymentData.paymentDate,
-    },
-    {
-      name: 'Payment intent ID',
-      value: paymentData.paymentIntentId,
-      isFontMonospace: true,
-    },
-    {
-      name: 'Transaction fee',
-      value: `S$${(paymentData.transactionFee / 100).toLocaleString('en-GB', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      })}`,
-    },
-    { name: 'Receipt', value: paymentData.receiptUrl },
-    { name: 'Payout ID', value: paymentData.payoutId, isFontMonospace: true },
-    {
-      name: 'Payout date',
-      value: paymentData.payoutDate,
-    },
-  ]
+  const displayPayoutSection = payment.payoutId || payment.payoutDate
+
+  const paymentDataMap = keyBy(getPaymentDataView(payment), 'key')
 
   return (
     <Stack>
@@ -61,25 +61,24 @@ export const PaymentSection = ({
         Payment details
       </Text>
       <Stack>
-        {paymentDataView.map(
-          ({ name, value, isFontMonospace }) =>
-            value && (
-              <Stack direction={{ base: 'column', md: 'row' }}>
-                <Text textStyle="subhead-1">{name}:</Text>
-                <Text
-                  sx={
-                    isFontMonospace
-                      ? {
-                          fontFeatureSettings:
-                            "'tnum' on, 'lnum' on, 'zero' on, 'cv05' on",
-                        }
-                      : {}
-                  }
-                >
-                  {value}
-                </Text>
-              </Stack>
-            ),
+        <PaymentDataItem {...paymentDataMap['email']} />
+        <PaymentDataItem {...paymentDataMap['receiptUrl']} isUrl />
+        <Box py="0.75rem">
+          <Divider />
+        </Box>
+        <PaymentDataItem {...paymentDataMap['paymentIntentId']} isMonospace />
+        <PaymentDataItem {...paymentDataMap['amount']} />
+        <PaymentDataItem {...paymentDataMap['transactionFee']} />
+        <PaymentDataItem {...paymentDataMap['status']} />
+        <PaymentDataItem {...paymentDataMap['paymentDate']} />
+        {displayPayoutSection && (
+          <>
+            <Box py="0.75rem">
+              <Divider />
+            </Box>
+            <PaymentDataItem {...paymentDataMap['payoutId']} isMonospace />
+            <PaymentDataItem {...paymentDataMap['payoutDate']} />
+          </>
         )}
       </Stack>
     </Stack>
