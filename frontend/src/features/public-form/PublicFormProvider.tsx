@@ -22,6 +22,7 @@ import {
 } from '~shared/types/form'
 
 import { FORMID_REGEX } from '~constants/routes'
+import { useBrowserStm } from '~hooks/payments'
 import { useTimeout } from '~hooks/useTimeout'
 import { useToast } from '~hooks/useToast'
 import { HttpError } from '~services/ApiService'
@@ -35,6 +36,7 @@ import {
   trackVisitPublicForm,
 } from '~features/analytics/AnalyticsService'
 import { useEnv } from '~features/env/queries'
+import { getPaymentPageUrl } from '~features/public-form/utils/urls'
 import {
   RecaptchaClosedError,
   useRecaptcha,
@@ -190,6 +192,7 @@ export const PublicFormProvider = ({
   const { handleLogoutMutation } = usePublicAuthMutations(formId)
 
   const navigate = useNavigate()
+  const [, storePaymentMemory] = useBrowserStm(formId)
   const handleSubmitForm: SubmitHandler<
     FormFieldValues & { payment_receipt_email_field?: { value: string } }
   > = useCallback(
@@ -275,13 +278,14 @@ export const PublicFormProvider = ({
                   onSuccess: ({
                     submissionId,
                     timestamp,
-                    // payment forms will return a paymentIntentId
+                    // payment forms will have non-empty paymentData field
                     paymentData,
                   }) => {
                     trackSubmitForm(form)
 
                     if (paymentData) {
-                      navigate(`/${formId}/payment/${paymentData.paymentId}`)
+                      navigate(getPaymentPageUrl(formId, paymentData.paymentId))
+                      storePaymentMemory(paymentData.paymentId)
                       return
                     }
                     setSubmissionData({
@@ -328,6 +332,7 @@ export const PublicFormProvider = ({
       submitStorageModeFormMutation,
       formId,
       navigate,
+      storePaymentMemory,
     ],
   )
 

@@ -19,6 +19,7 @@ import {
 import { useFetchPrefillQuery } from '~features/public-form/hooks/useFetchPrefillQuery'
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
+import { PublicFormPaymentResumeModal } from '../FormPaymentPage/FormPaymentResumeModal'
 import { FormPaymentPreview } from '../FormPaymentPreview/FormPaymentPreview'
 
 import { PublicFormSubmitButton } from './PublicFormSubmitButton'
@@ -136,6 +137,7 @@ export const FormFields = ({
               paymentDetails={form.payments_field}
             />
           )}
+        <PublicFormPaymentResumeModal />
         <PublicFormSubmitButton
           onSubmit={onSubmit ? formMethods.handleSubmit(onSubmit) : undefined}
           formFields={augmentedFormFields}

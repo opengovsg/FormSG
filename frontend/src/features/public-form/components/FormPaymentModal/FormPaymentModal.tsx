@@ -29,10 +29,9 @@ export const FormPaymentModal = ({
         <ModalContent>
           <ModalCloseButton />
           <ModalHeader>You are about to make payment</ModalHeader>
-          <ModalBody whiteSpace="pre-line">
-            {
-              'Please ensure that your form information is accurate. You will not be able to edit your form after you proceed.'
-            }
+          <ModalBody>
+            Please ensure that your form information is accurate. You will not
+            be able to edit your form after you proceed.
           </ModalBody>
           <ModalFooter>
             <ButtonGroup>
