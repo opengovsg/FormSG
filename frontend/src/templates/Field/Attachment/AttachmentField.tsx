@@ -10,6 +10,7 @@ import { FormColorTheme } from '~shared/types'
 import { VALID_EXTENSIONS } from '~shared/utils/file-validation'
 
 import { createAttachmentValidationRules } from '~utils/fieldValidation'
+import fileArrayBuffer from '~utils/fileArrayBuffer'
 import Attachment from '~components/Field/Attachment'
 
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
@@ -61,7 +62,7 @@ export const AttachmentField = ({
         // as possible sources of the error (still not confirmed it is the same thing).
         if (file) {
           try {
-            const buffer = await file.arrayBuffer()
+            const buffer = await fileArrayBuffer(file)
             clone = new File([buffer], file.name, { type: file.type })
           } catch (error) {
             setErrorMessage(

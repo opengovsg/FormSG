@@ -14,6 +14,8 @@ import {
   StorageModeSubmissionContentDto,
 } from '~shared/types/submission'
 
+import fileArrayBuffer from '~/utils/fileArrayBuffer'
+
 import formsgSdk from '~utils/formSdk'
 import { AttachmentFieldSchema, FormFieldValues } from '~templates/Field'
 
@@ -167,32 +169,11 @@ const encryptAttachment = async (
 ): Promise<StorageModeAttachment & { id: string }> => {
   let label
 
-  function promisifyFile(obj: FileReader): Promise<ArrayBuffer> {
-    return new Promise(function (resolve, reject) {
-      obj.onload = obj.onerror = function (evt) {
-        obj.onload = obj.onerror = null
-        console.log(obj.result)
-        evt.type === 'load' && obj.result
-          ? resolve(obj.result as ArrayBuffer)
-          : reject(new Error('Failed to read the blob/file'))
-      }
-    })
-  }
-
   try {
     label = 'Read file content'
-    let fileArrayBuffer
+    const buffer = await fileArrayBuffer(attachment)
 
-    // arrayBuffer is only compatible with Safari 14 onwards
-    // for older browsers, use readAsArrayBuffer
-    if (!attachment.arrayBuffer) {
-      const fr = new FileReader()
-      fr.readAsArrayBuffer(attachment)
-      fileArrayBuffer = await promisifyFile(fr)
-    } else {
-      fileArrayBuffer = await attachment.arrayBuffer()
-    }
-    const fileContentsView = new Uint8Array(fileArrayBuffer)
+    const fileContentsView = new Uint8Array(buffer)
 
     label = 'Encrypt content'
     const encryptedAttachment = await formsgSdk.crypto.encryptFile(
