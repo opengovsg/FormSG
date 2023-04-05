@@ -4,6 +4,7 @@ import {
   ControllerRenderProps,
   useFormContext,
 } from 'react-hook-form'
+import { datadogLogs } from '@datadog/browser-logs'
 
 import { MB } from '~shared/constants/file'
 import { FormColorTheme } from '~shared/types'
@@ -60,7 +61,7 @@ export const AttachmentField = ({
         // See https://bugs.chromium.org/p/chromium/issues/detail?id=1063576#c79
         // and https://stackoverflow.com/questions/62714319/attached-from-google-drivecloud-storage-in-android-file-gives-err-upload-file
         // as possible sources of the error (still not confirmed it is the same thing).
-        console.log('handleFileChange running')
+        datadogLogs.logger.log(`handleFileChange running`)
         if (file) {
           try {
             const buffer = await fileArrayBuffer(file)
@@ -69,8 +70,28 @@ export const AttachmentField = ({
             setErrorMessage(
               'There was an error reading your file. If you are uploading a file and using online storage such as Google Drive, download your file before attaching the downloaded version. Otherwise, please refresh and try again.',
             )
-            console.error('handleFileChange', error) // For RUM error tracking
+            datadogLogs.logger.error('handleFileChange', {
+              meta: {
+                action: 'handleFileChange',
+                error: {
+                  message: error?.message,
+                  stack: error?.stack,
+                },
+              },
+            }) // For RUM error tracking
           }
+
+          datadogLogs.logger.warn(`handleFileChange ran`, {
+            meta: {
+              action: 'handleFileChange',
+              file: {
+                name: clone?.name,
+                size: clone?.size,
+                type: clone?.type,
+                buffer: clone && (await fileArrayBuffer(clone)),
+              },
+            },
+          })
         }
         onChange(clone)
       },
