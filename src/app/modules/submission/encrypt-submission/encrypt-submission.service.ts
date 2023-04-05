@@ -214,11 +214,8 @@ export const transformAttachmentMetaStream = ({
 }
 
 /**
- * Returns a Transform pipeline that transforms all attachment metadata of each
- * data chunk from the object path to the S3 signed URL so it can be retrieved
- * by the client.
- * @param enabled whether to perform any transformation
- * @param urlValidDuration how long to keep the S3 signed URL valid for
+ * Returns a Transform pipeline that expands the payment id of each submission
+ * to its corresponding payment object with information in SubmissionPaymentDto.
  * @returns a Transform pipeline to perform transformations on the pipe
  */
 export const addPaymentDataStream = (): Transform => {
