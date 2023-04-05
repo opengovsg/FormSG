@@ -60,6 +60,7 @@ export const AttachmentField = ({
         // See https://bugs.chromium.org/p/chromium/issues/detail?id=1063576#c79
         // and https://stackoverflow.com/questions/62714319/attached-from-google-drivecloud-storage-in-android-file-gives-err-upload-file
         // as possible sources of the error (still not confirmed it is the same thing).
+        console.log('handleFileChange running')
         if (file) {
           try {
             const buffer = await fileArrayBuffer(file)
