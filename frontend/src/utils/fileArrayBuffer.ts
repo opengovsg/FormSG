@@ -14,14 +14,14 @@ function promisifyFile(obj: FileReader): Promise<ArrayBuffer> {
 
 const fileArrayBuffer = async (file: File): Promise<ArrayBuffer> => {
   let buffer
-  // arrayBuffer is only compatible with Safari 14 onwards
-  // for older browsers, use readAsArrayBuffer
-  if (!file.arrayBuffer) {
+  if (file.arrayBuffer) {
+    buffer = await file.arrayBuffer()
+  } else {
+    // arrayBuffer is only compatible with Safari 14 onwards
+    // for older browsers, use readAsArrayBuffer
     const fr = new FileReader()
     fr.readAsArrayBuffer(file)
     buffer = await promisifyFile(fr)
-  } else {
-    buffer = await file.arrayBuffer()
   }
   return buffer
 }
