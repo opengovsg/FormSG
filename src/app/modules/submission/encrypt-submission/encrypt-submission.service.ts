@@ -1,7 +1,6 @@
 import { ManagedUpload } from 'aws-sdk/clients/s3'
 import Bluebird from 'bluebird'
 import crypto from 'crypto'
-import omit from 'lodash/omit'
 import moment from 'moment'
 import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
@@ -226,15 +225,11 @@ export const addPaymentDataStream = (): Transform => {
         return callback(null, data)
       }
 
-      return getSubmissionPaymentDto(data.paymentId).match(
-        (payment) => {
-          const returnData = {
-            ...omit(data, 'paymentId'),
-            payment,
-          }
-          return callback(null, returnData)
-        },
-        () => callback(null, data),
+      const { paymentId, ...rest } = data
+
+      return getSubmissionPaymentDto(paymentId).match(
+        (payment) => callback(null, { ...rest, payment }),
+        () => callback(null, rest),
       )
     },
   })

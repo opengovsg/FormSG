@@ -786,7 +786,7 @@ const validateSubmissionId = celebrate({
  * @returns 404 when form cannot be found
  * @returns 410 when form is archived
  * @returns 422 when user in session cannot be retrieved from the database
- * @returns 500 when any errors occurs in database query or generating signed URL
+ * @returns 500 when any errors occurs in database query, generating signed URL or retrieving payment data
  */
 export const getEncryptedResponseUsingQueryParams: ControllerHandler<
   { formId: string },
@@ -880,7 +880,7 @@ export const handleGetEncryptedResponseUsingQueryParams = [
  * @returns 404 when form cannot be found
  * @returns 410 when form is archived
  * @returns 422 when user in session cannot be retrieved from the database
- * @returns 500 when any errors occurs in database query or generating signed URL
+ * @returns 500 when any errors occurs in database query, generating signed URL or retrieving payment data
  */
 export const handleGetEncryptedResponse: ControllerHandler<
   { formId: string; submissionId: string },

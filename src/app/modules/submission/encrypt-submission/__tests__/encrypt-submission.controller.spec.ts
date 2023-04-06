@@ -10,6 +10,7 @@ import {
   FormDeletedError,
   FormNotFoundError,
 } from 'src/app/modules/form/form.errors'
+import { PaymentNotFoundError } from 'src/app/modules/payments/payments.errors'
 import { MissingUserError } from 'src/app/modules/user/user.errors'
 import * as UserService from 'src/app/modules/user/user.service'
 import {
@@ -25,6 +26,7 @@ import {
   FormResponseMode,
   StorageModeSubmissionMetadata,
   SubmissionId,
+  SubmissionPaymentDto,
 } from '../../../../../../shared/types'
 import {
   ResponseModeError,
@@ -385,11 +387,15 @@ describe('encrypt-submission.controller', () => {
         encryptedContent: 'some encrypted content',
         verifiedContent: 'some verified content',
         created: new Date('2020-10-10'),
+        paymentId: 'payment id',
       } as SubmissionData
       const mockSignedUrls = {
         someKey1: 'some-signed-url',
         someKey2: 'another-signed-url',
       }
+      const mockPaymentDetails = {
+        paymentIntentId: 'pi_sample_id',
+      } as SubmissionPaymentDto
       const mockRes = expressHandler.mockResponse()
 
       // Mock service responses.
@@ -398,6 +404,9 @@ describe('encrypt-submission.controller', () => {
       )
       MockEncryptSubService.transformAttachmentMetasToSignedUrls.mockReturnValueOnce(
         okAsync(mockSignedUrls),
+      )
+      MockEncryptSubService.getSubmissionPaymentDto.mockReturnValueOnce(
+        okAsync(mockPaymentDetails),
       )
 
       // Act
@@ -410,6 +419,7 @@ describe('encrypt-submission.controller', () => {
         content: mockSubData.encryptedContent,
         verified: mockSubData.verifiedContent,
         attachmentMetadata: mockSignedUrls,
+        payment: mockPaymentDetails,
       }
       expect(mockRes.json).toHaveBeenCalledWith(expected)
       expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
@@ -601,6 +611,41 @@ describe('encrypt-submission.controller', () => {
       )
     })
 
+    it('should return 500 when database error occurs whilst retrieving payment data', async () => {
+      // Arrange
+      const mockErrorString = 'payment error occured'
+      MockEncryptSubService.getEncryptedSubmissionData.mockReturnValueOnce(
+        okAsync({ paymentId: 'paymentId' } as SubmissionData),
+      )
+      MockEncryptSubService.getSubmissionPaymentDto.mockReturnValueOnce(
+        errAsync(new DatabaseError(mockErrorString)),
+      )
+
+      const mockRes = expressHandler.mockResponse()
+
+      // Act
+      await handleGetEncryptedResponse(MOCK_REQ, mockRes, jest.fn())
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(500)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: mockErrorString,
+      })
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+      expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
+        {
+          user: MOCK_USER,
+          formId: MOCK_FORM_ID,
+          level: PermissionLevel.Read,
+        },
+      )
+      expect(MockEncryptSubService.checkFormIsEncryptMode).toHaveBeenCalledWith(
+        MOCK_FORM,
+      )
+    })
+
     it('should return 500 when error occurs whilst generating presigned URLs', async () => {
       // Arrange
       const mockErrorString = 'presigned url error occured'
@@ -619,6 +664,41 @@ describe('encrypt-submission.controller', () => {
       // Assert
       expect(mockRes.status).toHaveBeenCalledWith(500)
       expect(mockRes.json).toHaveBeenCalledWith({ message: mockErrorString })
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+      expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
+        {
+          user: MOCK_USER,
+          formId: MOCK_FORM_ID,
+          level: PermissionLevel.Read,
+        },
+      )
+      expect(MockEncryptSubService.checkFormIsEncryptMode).toHaveBeenCalledWith(
+        MOCK_FORM,
+      )
+    })
+
+    it('should return 500 when payment was not found for a completed submission', async () => {
+      // Arrange
+      const mockErrorString = 'payment error occured'
+      MockEncryptSubService.getEncryptedSubmissionData.mockReturnValueOnce(
+        okAsync({ paymentId: 'paymentId' } as SubmissionData),
+      )
+      MockEncryptSubService.getSubmissionPaymentDto.mockReturnValueOnce(
+        errAsync(new PaymentNotFoundError(mockErrorString)),
+      )
+
+      const mockRes = expressHandler.mockResponse()
+
+      // Act
+      await handleGetEncryptedResponse(MOCK_REQ, mockRes, jest.fn())
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(500)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: mockErrorString,
+      })
       expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
         MOCK_USER_ID,
       )
