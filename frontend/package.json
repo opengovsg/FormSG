@@ -1,6 +1,6 @@
 {
   "name": "form-frontend",
-  "version": "6.37.0",
+  "version": "6.38.0",
   "homepage": ".",
   "private": true,
   "dependencies": {
@@ -24,7 +24,7 @@
     "dayjs": "^1.10.7",
     "dayzed": "^3.2.2",
     "dedent": "^0.7.0",
-    "downshift": "^6.1.7",
+    "downshift": "^7.3.2",
     "file-saver": "^2.0.5",
     "focus-visible": "^5.2.0",
     "framer-motion": "^5.4.5",

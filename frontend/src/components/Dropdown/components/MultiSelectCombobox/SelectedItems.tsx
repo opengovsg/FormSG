@@ -21,7 +21,13 @@ const ShowMoreItemBlock = ({ amountToShow }: { amountToShow: number }) => {
   )
 
   return (
-    <Button onClick={handleClick} variant="link" size="sm" tabIndex={-1}>
+    <Button
+      onClick={handleClick}
+      variant="link"
+      size="sm"
+      tabIndex={-1}
+      alignSelf="center"
+    >
       +{amountToShow} more
     </Button>
   )
