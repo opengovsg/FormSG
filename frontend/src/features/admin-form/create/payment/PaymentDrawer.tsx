@@ -268,6 +268,7 @@ export const PaymentInput = ({
         handleClick={handleUpdatePayments}
         handleCancel={handleCloseDrawer}
         buttonText={buttonText}
+        isDisabled={isDisabled}
       ></FormFieldDrawerActions>
     </CreatePageDrawerContentContainer>
   )
