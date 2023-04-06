@@ -41,7 +41,12 @@ export const FormPaymentModal = ({
               <Button
                 isLoading={isSubmitting}
                 loadingText="Submitting"
-                onClick={onSubmit}
+                onClick={(event) => {
+                  onClose()
+                  if (onSubmit) {
+                    onSubmit(event)
+                  }
+                }}
               >
                 Proceed to pay
               </Button>
