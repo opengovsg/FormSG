@@ -12,9 +12,7 @@ import { cloneDeep } from 'lodash'
 
 import { FormPaymentsField } from '~shared/types'
 
-import { useIsMobile } from '~hooks/useIsMobile'
 import { centsToDollars, dollarsToCents } from '~utils/payments'
-import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import InlineMessage from '~components/InlineMessage'
@@ -65,7 +63,6 @@ export const PaymentInput = ({
 }: {
   isDisabled: boolean
 }): JSX.Element => {
-  const isMobile = useIsMobile()
   const { paymentsMutation } = useMutateFormPage()
 
   const { data: { maxPaymentAmountCents, minPaymentAmountCents } = {} } =
@@ -130,11 +127,6 @@ export const PaymentInput = ({
   const clonedWatchedInputs = useMemo(
     () => cloneDeep(watchedInputs),
     [watchedInputs],
-  )
-
-  const watchedEnabled = useMemo(
-    () => clonedWatchedInputs.enabled,
-    [clonedWatchedInputs.enabled],
   )
 
   useDebounce(() => handlePaymentsChanges(clonedWatchedInputs), 300, [
@@ -304,7 +296,7 @@ export const PaymentDrawer = ({
   const paymentDisabledMessage = !isEncryptMode
     ? 'Payments are not available in email mode forms.'
     : !isStripeConnected
-    ? 'Connect your Stripe account in Settings.'
+    ? 'Connect your Stripe account in Settings to save this field.'
     : ''
 
   // payment eligibility will be dependent on whether paymentDisabledMessage is non empty
