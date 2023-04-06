@@ -91,13 +91,7 @@ export const IndividualResponsePage = (): JSX.Element => {
         px={{ md: '1.75rem', lg: '2rem' }}
         spacing={{ base: '1.5rem', md: '2.5rem' }}
       >
-        <Stack
-          bg="primary.100"
-          p="1.5rem"
-          sx={{
-            fontFeatureSettings: "'tnum' on, 'lnum' on, 'zero' on, 'cv05' on",
-          }}
-        >
+        <Stack bg="primary.100" p="1.5rem" textStyle="monospace">
           <Stack
             spacing={{ base: '0', md: '0.5rem' }}
             direction={{ base: 'column', md: 'row' }}
