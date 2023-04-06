@@ -222,7 +222,6 @@ export const PaymentInput = ({
         isReadOnly={paymentsMutation.isLoading}
         isInvalid={!!errors.description}
         isRequired
-        isDisabled={isDisabled}
       >
         <FormLabel description={NAME_INFORMATION}>Name</FormLabel>
         <Input
@@ -235,7 +234,6 @@ export const PaymentInput = ({
       <FormControl
         isReadOnly={paymentsMutation.isLoading}
         isInvalid={!!errors.display_amount}
-        isDisabled={isDisabled}
       >
         <FormLabel isRequired>Payment Amount</FormLabel>
         <Controller
@@ -298,12 +296,11 @@ export const PaymentDrawer = ({
     : !isStripeConnected
     ? 'Connect your Stripe account in Settings to save this field.'
     : ''
-
   // payment eligibility will be dependent on whether paymentDisabledMessage is non empty
   const isPaymentDisabled = !!paymentDisabledMessage
 
   // Allows for payment data refresh in encrypt mode
-  if (!paymentData && !isPaymentDisabled) return null
+  if (!paymentData && isEncryptMode) return null
 
   return (
     <CreatePageDrawerContainer>
