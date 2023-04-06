@@ -26,6 +26,7 @@ import * as PaymentService from './payments.service'
 import { StripeFetchError } from './stripe.errors'
 import * as StripeService from './stripe.service'
 import {
+  convertToInvoiceForrmat,
   getChargeIdFromNestedCharge,
   getMetadataPaymentId,
   mapRouteErr,
@@ -295,7 +296,63 @@ export const checkPaymentReceiptStatus: ControllerHandler<{
     })
 }
 
-// TODO: Refactor for use in static payment url implementation
+export const downloadPaymentInvoice: ControllerHandler<{
+  formId: string
+  paymentId: string
+}> = (req, res) => {
+  const { formId, paymentId } = req.params
+  logger.info({
+    message: 'downloadPaymentInvoice endpoint called',
+    meta: {
+      action: 'downloadPaymentInvoice',
+      formId,
+      paymentId,
+    },
+  })
+
+  return PaymentService.findPaymentById(paymentId)
+    .map((payment) => {
+      logger.info({
+        message: 'Found paymentId in payment document',
+        meta: {
+          action: 'downloadPaymentInvoice',
+          payment,
+        },
+      })
+      // retrieve receiptURL as html
+      return (
+        axios
+          .get<string>(payment.completedPayment?.receiptUrl ?? '')
+          // convert to pdf and return
+          .then((receiptUrlResponse) => {
+            let html = receiptUrlResponse.data
+            html = convertToInvoiceForrmat(html)
+            const pdfBufferPromise = generatePdfFromHtml(html)
+            return pdfBufferPromise
+          })
+          .then((pdfBuffer) => {
+            res.set({
+              'Content-Type': 'application/pdf',
+              'Content-Disposition': `attachment; filename=${paymentId}-invoice.pdf`,
+            })
+            return res.status(StatusCodes.OK).send(pdfBuffer)
+          })
+      )
+    })
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error retrieving invoice',
+        meta: {
+          action: 'downloadPaymentInvoice',
+          formId,
+          paymentId,
+        },
+        error,
+      })
+      return res.status(StatusCodes.NOT_FOUND).json({ message: error })
+    })
+}
+
 export const downloadPaymentReceipt: ControllerHandler<{
   formId: string
   paymentId: string

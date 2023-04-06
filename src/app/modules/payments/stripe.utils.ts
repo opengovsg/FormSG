@@ -1,7 +1,9 @@
 // Use 'stripe-event-types' for better type discrimination.
 /// <reference types="stripe-event-types" />
-
+import fs from 'fs'
+import { encode } from 'html-entities'
 import { StatusCodes } from 'http-status-codes'
+import { JSDOM } from 'jsdom'
 import mongoose from 'mongoose'
 import { err, Ok, ok, Result } from 'neverthrow'
 import Stripe from 'stripe'
@@ -328,4 +330,49 @@ export const mapRouteErr = (error: ApplicationError) => {
         errorMessage: error.message,
       }
   }
+}
+
+/**
+ * Converts receipt sourced from Stripe into an invoice format
+ * @param receiptHtmlSource
+ */
+export const convertToInvoiceForrmat = (receiptHtmlSource: string) => {
+  // handle special characters in addresses
+  const ADDRESS = encode('8 Jurong Town Hall Road; Singapore 609434')
+  const GST_REG_NO = encode('M91234567X')
+
+  fs.writeFileSync('./' + Date.now(), receiptHtmlSource)
+  const edited = receiptHtmlSource
+    .replace(/(<title>.*?)receipt(.*?<\/title>)/, '$1invoice$2')
+    .replace(/Receipt from /g, 'Invoice from ')
+    .replace(
+      /Receipt (#[0-9-]+)/,
+      `Invoice $1<br /><br />GST Reg No: ${GST_REG_NO}<br />Address: ${ADDRESS}`,
+    )
+    .replace(/<br>\(This amount is inclusive of GST\)/, '') // not needed for real description (was added by Amit in his test)
+    .replace(
+      /<strong>Amount charged<\/strong>/,
+      '<strong>Amount charged</strong> <i>(includes GST)</i>',
+    )
+
+  const dom = new JSDOM(edited)
+  const { document } = dom.window
+
+  // select last 5 tables to remove, n = last index
+  /**
+   * These are:
+   * n-5  [Kept] Horizontal Rule
+   * n-4  Browser Copy: Something wrong with the email?...
+   * n-3  Divider Small
+   * n-2  Legal Copy: You're receiving this email because you made a purchase at XXX, which partners with Stripe...
+   * n-1  Divider Small
+   * n    Divider
+   */
+  const tables = document.querySelectorAll('table table table')
+
+  let toRemove = 5
+  while (toRemove--) {
+    tables[tables.length - toRemove - 1].remove()
+  }
+  return dom.serialize()
 }

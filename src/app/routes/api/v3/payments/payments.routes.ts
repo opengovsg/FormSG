@@ -10,7 +10,7 @@ PaymentsRouter.get('/stripe')
 
 /**
  * Checks if the payment receipt is ready
- * @route GET /payments/receipt/:formId/:paymentId/status
+ * @route GET /payments/:formId/:paymentId/receipt/status
  *
  * @returns 200 if receipt URL exists
  * @returns 404 if receipt URL does not exist or payment does not exist
@@ -31,6 +31,20 @@ PaymentsRouter.route(
 ).get(
   limitRate({ max: rateLimitConfig.downloadPaymentReceipt }),
   StripeController.downloadPaymentReceipt,
+)
+
+/**
+ * Downloads the invoice pdf
+ * @route GET /payments/:formId/:paymentId/invoice/download
+ *
+ * @returns 200 with receipt attatchment as content in PDF
+ * @returns 404 if receipt url doesn't exist or payment does not exist
+ */
+PaymentsRouter.route(
+  '/:formId([a-fA-F0-9]{24})/:paymentId([a-fA-F0-9]{24})/invoice/download',
+).get(
+  limitRate({ max: rateLimitConfig.downloadPaymentReceipt }),
+  StripeController.downloadPaymentInvoice,
 )
 
 PaymentsRouter.route('/stripe/callback').get(
