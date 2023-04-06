@@ -6,43 +6,12 @@ type PaymentDataViewItem = {
   value: string
 }
 
-/**
- * Helper function representing a translation table from payment object keys to
- * display name on the individual response page or exported CSV.
- * @param key key to obtain the corresponding name for
- * @returns the name to be displayed to the admin
- */
-export const getPaymentDataViewName = (
-  key: keyof SubmissionPaymentDto,
-): string => {
-  switch (key) {
-    case 'id':
-      return 'Payment id'
-    case 'amount':
-      return 'Payment amount'
-    case 'email':
-      return 'Payer'
-    case 'status':
-      return 'Payment status'
-    case 'paymentDate':
-      return 'Payment date and time'
-    case 'paymentIntentId':
-      return 'Payment intent ID'
-    case 'transactionFee':
-      return 'Transaction fee'
-    case 'receiptUrl':
-      return 'Receipt link'
-    case 'payoutId':
-      return 'Payout ID'
-    case 'payoutDate':
-      return 'Payout date and time'
-  }
-}
-
 /** Utility functions for prettifying the output of the payment data view. */
 const centsToDollarString = (cents: number) => `S$${(cents / 100).toFixed(2)}`
 const toSentenceCase = (str: string) =>
   `${str.charAt(0).toUpperCase()}${str.substring(1).toLowerCase()}`
+    // replace underscores with a space
+    .replace(/_/g, ' ')
 
 /**
  * Helper function to obtain the payment field data that we want to display to
@@ -52,28 +21,45 @@ const toSentenceCase = (str: string) =>
  */
 export const getPaymentDataView = (
   payment: SubmissionPaymentDto,
-): PaymentDataViewItem[] => {
+): PaymentDataViewItem[] =>
   // Payment data association of keys to values, in CSV column order
-  const paymentDataValues: {
-    key: keyof SubmissionPaymentDto
-    value: string
-  }[] = [
-    { key: 'email', value: payment.email },
-    { key: 'receiptUrl', value: payment.receiptUrl },
+  [
+    {
+      key: 'status',
+      name: 'Payment status',
+      value: toSentenceCase(payment.status),
+    },
 
-    { key: 'paymentIntentId', value: payment.paymentIntentId },
-    { key: 'amount', value: centsToDollarString(payment.amount) },
+    { key: 'email', name: 'Payer', value: payment.email },
+    { key: 'receiptUrl', name: 'Receipt', value: payment.receiptUrl },
+
+    {
+      key: 'paymentIntentId',
+      name: 'Payment intent ID',
+      value: payment.paymentIntentId,
+    },
+    {
+      key: 'amount',
+      name: 'Payment amount',
+      value: centsToDollarString(payment.amount),
+    },
+    {
+      key: 'paymentDate',
+      name: 'Payment date and time',
+      value: payment.paymentDate,
+    },
+
     {
       key: 'transactionFee',
+      name: 'Transaction fee',
       value: centsToDollarString(payment.transactionFee),
     },
-    { key: 'status', value: toSentenceCase(payment.status) },
-    { key: 'paymentDate', value: payment.paymentDate },
 
     ...(payment.payoutId
       ? [
           {
             key: 'payoutId' as keyof SubmissionPaymentDto,
+            name: 'Payout ID',
             value: payment.payoutId,
           },
         ]
@@ -83,16 +69,9 @@ export const getPaymentDataView = (
       ? [
           {
             key: 'payoutDate' as keyof SubmissionPaymentDto,
+            name: 'Payout date and time',
             value: payment.payoutDate,
           },
         ]
       : []),
   ]
-
-  // Inject names from translation table
-  return paymentDataValues.map(({ key, value }) => ({
-    key,
-    name: getPaymentDataViewName(key),
-    value,
-  }))
-}
