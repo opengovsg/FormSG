@@ -4,6 +4,7 @@ import { AuthedSessionData } from 'express-session'
 import { StatusCodes } from 'http-status-codes'
 import JSONStream from 'JSONStream'
 import mongoose from 'mongoose'
+import { okAsync } from 'neverthrow'
 import Stripe from 'stripe'
 import type { SetOptional } from 'type-fest'
 
@@ -36,7 +37,6 @@ import { ControllerHandler } from '../../core/core.types'
 import { setFormTags } from '../../datadog/datadog.utils'
 import { PermissionLevel } from '../../form/admin-form/admin-form.types'
 import * as FormService from '../../form/form.service'
-import { findPaymentBySubmissionId } from '../../payments/payments.service'
 import { SgidService } from '../../sgid/sgid.service'
 import { getOidcService } from '../../spcp/spcp.oidc.service'
 import { getPopulatedUserById } from '../../user/user.service'
@@ -47,11 +47,13 @@ import { sendEmailConfirmations } from '../submission.service'
 import { extractEmailConfirmationDataFromIncomingSubmission } from '../submission.utils'
 
 import {
+  addPaymentDataStream,
   checkFormIsEncryptMode,
   getEncryptedSubmissionData,
   getSubmissionCursor,
   getSubmissionMetadata,
   getSubmissionMetadataList,
+  getSubmissionPaymentDto,
   transformAttachmentMetasToSignedUrls,
   transformAttachmentMetaStream,
   uploadAttachments,
@@ -711,6 +713,9 @@ export const streamEncryptedResponses: ControllerHandler<
         urlValidDuration: (req.session?.cookie.maxAge ?? 0) / 1000,
       }),
     )
+    // TODO: Can we include this within the cursor query as aggregation pipeline
+    // instead, so that we make one query to mongo rather than two.
+    .pipe(addPaymentDataStream())
     .on('error', (error) => {
       logger.error({
         message: 'Error retrieving URL for attachments',
@@ -781,7 +786,7 @@ const validateSubmissionId = celebrate({
  * @returns 404 when form cannot be found
  * @returns 410 when form is archived
  * @returns 422 when user in session cannot be retrieved from the database
- * @returns 500 when any errors occurs in database query or generating signed URL
+ * @returns 500 when any errors occurs in database query, generating signed URL or retrieving payment data
  */
 export const getEncryptedResponseUsingQueryParams: ControllerHandler<
   { formId: string },
@@ -875,7 +880,7 @@ export const handleGetEncryptedResponseUsingQueryParams = [
  * @returns 404 when form cannot be found
  * @returns 410 when form is archived
  * @returns 422 when user in session cannot be retrieved from the database
- * @returns 500 when any errors occurs in database query or generating signed URL
+ * @returns 500 when any errors occurs in database query, generating signed URL or retrieving payment data
  */
 export const handleGetEncryptedResponse: ControllerHandler<
   { formId: string; submissionId: string },
@@ -912,15 +917,32 @@ export const handleGetEncryptedResponse: ControllerHandler<
       .andThen(checkFormIsEncryptMode)
       // Step 4: Is encrypt mode form, retrieve submission data.
       .andThen(() => getEncryptedSubmissionData(formId, submissionId))
-      // Step 5: Retrieve presigned URLs for attachments.
+      // Step 5: If there is an associated payment, get the payment details.
       .andThen((submissionData) => {
+        if (!submissionData.paymentId) {
+          return okAsync({ submissionData, paymentData: undefined })
+        }
+
+        return getSubmissionPaymentDto(submissionData.paymentId).map(
+          (paymentData) => ({
+            submissionData,
+            paymentData,
+          }),
+        )
+      })
+      // Step 6: Retrieve presigned URLs for attachments.
+      .andThen(({ submissionData, paymentData }) => {
         // Remaining login duration in seconds.
         const urlExpiry = (req.session?.cookie.maxAge ?? 0) / 1000
         return transformAttachmentMetasToSignedUrls(
           submissionData.attachmentMetadata,
           urlExpiry,
         ).map((presignedUrls) =>
-          createEncryptedSubmissionDto(submissionData, presignedUrls),
+          createEncryptedSubmissionDto(
+            submissionData,
+            presignedUrls,
+            paymentData,
+          ),
         )
       })
       .map((responseData) => {
@@ -1041,74 +1063,3 @@ export const handleGetMetadata = [
   }),
   getMetadata,
 ] as ControllerHandler[]
-
-/**
- * Handler for GET /:formId/submissions/:submissionId
- * @security session
- *
- * @returns 200 with encrypted submission data response
- * @returns 400 when form is not an encrypt mode form
- * @returns 403 when user does not have read permissions for form
- * @returns 404 when submissionId cannot be found in the database
- * @returns 404 when form cannot be found
- * @returns 410 when form is archived
- * @returns 422 when user in session cannot be retrieved from the database
- * @returns 500 when any errors occurs in database query or generating signed URL
- */
-export const handleGetPaymentResponse: ControllerHandler<
-  { formId: string; submissionId: string },
-  Payment | ErrorDto
-> = async (req, res) => {
-  const sessionUserId = (req.session as AuthedSessionData).user._id
-  const { formId, submissionId } = req.params
-
-  const logMeta = {
-    action: 'handleGetPaymentResponse',
-    submissionId,
-    formId,
-    sessionUserId,
-    ...createReqMeta(req),
-  }
-
-  logger.info({
-    message: 'Get payment response using submissionId start',
-    meta: logMeta,
-  })
-
-  return (
-    // Step 1: Retrieve logged in user.
-    getPopulatedUserById(sessionUserId)
-      // Step 2: Check whether user has read permissions to form.
-      .andThen((user) =>
-        getFormAfterPermissionChecks({
-          user,
-          formId,
-          level: PermissionLevel.Read,
-        }),
-      )
-      // Step 3: Check whether form is encrypt mode.
-      .andThen(checkFormIsEncryptMode)
-      // Step 4: Is encrypt mode form, retrieve submission data.
-      .andThen(() => findPaymentBySubmissionId(submissionId))
-      // Step 5: Retrieve presigned URLs for attachments.
-      .map((paymentData) => {
-        logger.info({
-          message: 'Get payment submission using submissionId success',
-          meta: logMeta,
-        })
-        return res.json(paymentData)
-      })
-      .mapErr((error) => {
-        logger.error({
-          message: 'Failure retrieving payment submission response',
-          meta: logMeta,
-          error,
-        })
-
-        const { statusCode, errorMessage } = mapRouteError(error)
-        return res.status(statusCode).json({
-          message: errorMessage,
-        })
-      })
-  )
-}

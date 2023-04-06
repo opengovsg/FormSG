@@ -80,7 +80,12 @@ export interface IEncryptedSubmissionSchema
 // Due to schema changes, some objects may not have attachmentMetadata key.
 export type SubmissionCursorData = Pick<
   IEncryptedSubmissionSchema,
-  'encryptedContent' | 'verifiedContent' | 'created' | 'id' | 'version'
+  | 'encryptedContent'
+  | 'verifiedContent'
+  | 'paymentId'
+  | 'created'
+  | 'id'
+  | 'version'
 > & { attachmentMetadata?: Record<string, string> } & Document
 
 export type SubmissionData = Pick<
@@ -88,6 +93,7 @@ export type SubmissionData = Pick<
   | 'encryptedContent'
   | 'verifiedContent'
   | 'attachmentMetadata'
+  | 'paymentId'
   | 'created'
   | 'version'
 > &

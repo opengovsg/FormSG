@@ -1,7 +1,10 @@
 import { StatusCodes } from 'http-status-codes'
 import moment from 'moment-timezone'
 
-import { StorageModeSubmissionDto } from '../../../../../shared/types'
+import {
+  StorageModeSubmissionDto,
+  SubmissionPaymentDto,
+} from '../../../../../shared/types'
 import { MapRouteErrors, SubmissionData } from '../../../../types'
 import { MapRouteError } from '../../../../types/routing'
 import { createLoggerWithLabel } from '../../../config/logger'
@@ -28,6 +31,7 @@ import {
   FormNotFoundError,
   PrivateFormError,
 } from '../../form/form.errors'
+import { PaymentNotFoundError } from '../../payments/payments.errors'
 import {
   SgidInvalidJwtError,
   SgidMissingJwtError,
@@ -168,6 +172,7 @@ const errorMapper: MapRouteError = (
         errorMessage:
           'The form has been updated. Please refresh and submit again.',
       }
+    case PaymentNotFoundError:
     case CreatePresignedUrlError:
     case DatabaseError:
     case EmptyErrorFieldError:
@@ -201,6 +206,7 @@ export const mapRouteError: MapRouteErrors =
 export const createEncryptedSubmissionDto = (
   submissionData: SubmissionData,
   attachmentPresignedUrls: Record<string, string>,
+  payment?: SubmissionPaymentDto,
 ): StorageModeSubmissionDto => {
   return {
     refNo: submissionData._id,
@@ -210,6 +216,7 @@ export const createEncryptedSubmissionDto = (
     content: submissionData.encryptedContent,
     verified: submissionData.verifiedContent,
     attachmentMetadata: attachmentPresignedUrls,
+    payment,
     version: submissionData.version,
   }
 }

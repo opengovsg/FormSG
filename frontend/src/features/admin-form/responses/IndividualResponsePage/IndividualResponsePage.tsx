@@ -11,12 +11,8 @@ import {
 } from '@chakra-ui/react'
 import simplur from 'simplur'
 
-import { FormResponseMode } from '~shared/types'
-
 import Button from '~components/Button'
 import Spinner from '~components/Spinner'
-
-import { useAdminForm } from '~features/admin-form/common/queries'
 
 import {
   SecretKeyVerification,
@@ -24,9 +20,9 @@ import {
 } from '../ResponsesPage/storage'
 
 import { DecryptedRow } from './DecryptedRow'
-import { IndividualPaymentResponse } from './IndividualPaymentResponse'
 import { IndividualResponseNavbar } from './IndividualResponseNavbar'
 import { useMutateDownloadAttachments } from './mutations'
+import { PaymentSection } from './PaymentSection'
 import { useIndividualSubmission } from './queries'
 
 const LoadingDecryption = memo(() => {
@@ -56,7 +52,6 @@ export const IndividualResponsePage = (): JSX.Element => {
 
   const { secretKey } = useStorageResponsesContext()
   const { data, isLoading, isError } = useIndividualSubmission()
-  const { data: form } = useAdminForm()
 
   const attachmentDownloadUrls = useMemo(() => {
     const attachmentDownloadUrls = new Map()
@@ -96,13 +91,7 @@ export const IndividualResponsePage = (): JSX.Element => {
         px={{ md: '1.75rem', lg: '2rem' }}
         spacing={{ base: '1.5rem', md: '2.5rem' }}
       >
-        <Stack
-          bg="primary.100"
-          p="1.5rem"
-          sx={{
-            fontFeatureSettings: "'tnum' on, 'lnum' on, 'zero' on, 'cv05' on",
-          }}
-        >
+        <Stack bg="primary.100" p="1.5rem" textStyle="monospace">
           <Stack
             spacing={{ base: '0', md: '0.5rem' }}
             direction={{ base: 'column', md: 'row' }}
@@ -157,18 +146,15 @@ export const IndividualResponsePage = (): JSX.Element => {
         {isLoading || isError ? (
           <LoadingDecryption />
         ) : (
-          <Stack>
+          <>
             <Stack spacing="1.5rem" divider={<StackDivider />}>
               {data?.responses.map((r, idx) => (
                 <DecryptedRow row={r} secretKey={secretKey} key={idx} />
               ))}
               <Box />
             </Stack>
-            {form?.responseMode === FormResponseMode.Encrypt &&
-              form?.payments_field?.enabled && (
-                <IndividualPaymentResponse submissionId={submissionId} />
-              )}
-          </Stack>
+            {data?.payment && <PaymentSection payment={data.payment} />}
+          </>
         )}
       </Stack>
     </Flex>
