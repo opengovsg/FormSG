@@ -59,8 +59,7 @@ export const PaymentSection = ({
       ? { label: 'Fully refunded', colorScheme: 'secondary' }
       : payment.status === PaymentStatus.Disputed
       ? { label: 'Disputed', colorScheme: 'warning' }
-      : // The remaining options should never appear.
-        undefined
+      : undefined // The remaining options should never appear.
 
   // Error: the payment is invalid and should not reach this state
   if (!paymentTagProps) return null
