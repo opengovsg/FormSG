@@ -7,7 +7,7 @@ import {
   useWatch,
 } from 'react-hook-form'
 import { useDebounce } from 'react-use'
-import { Box, Divider, Flex, FormControl, Stack, Text } from '@chakra-ui/react'
+import { Box, Divider, Flex, FormControl, Text } from '@chakra-ui/react'
 import { cloneDeep } from 'lodash'
 
 import { FormPaymentsField } from '~shared/types'
@@ -25,6 +25,7 @@ import Toggle from '~components/Toggle'
 import { useMutateFormPage } from '~features/admin-form/common/mutations'
 
 import { useEnv } from '../../../env/queries'
+import { FormFieldDrawerActions } from '../builder-and-design/BuilderAndDesignDrawer/EditFieldDrawer/edit-fieldtype/common/FormFieldDrawerActions'
 import {
   setIsDirtySelector,
   useDirtyFieldStore,
@@ -33,7 +34,6 @@ import {
   CreatePageDrawerContentContainer,
   useCreatePageSidebar,
 } from '../common'
-import { CreatePageDrawerCloseButton } from '../common/CreatePageDrawer/CreatePageDrawerCloseButton'
 import { CreatePageDrawerContainer } from '../common/CreatePageDrawer/CreatePageDrawerContainer'
 
 import { FormPaymentsDisplay } from './types'
@@ -204,97 +204,71 @@ export const PaymentInput = ({
   })
 
   const paymentToggleLabel = 'Enable Payment'
+  const buttonText = 'Save payment settings'
 
   return (
     <CreatePageDrawerContentContainer>
-      <Stack gap="2rem">
-        <FormControl
-          isReadOnly={paymentsMutation.isLoading}
-          isDisabled={isDisabled}
-        >
-          {isDisabled ? (
-            <Toggle
-              description={ENABLE_PAYMENT_INFORMATION}
-              value={1}
-              label={paymentToggleLabel}
-            />
-          ) : (
-            <Toggle
-              {...register('enabled')}
-              description={ENABLE_PAYMENT_INFORMATION}
-              label={paymentToggleLabel}
+      <FormControl
+        isReadOnly={paymentsMutation.isLoading}
+        isDisabled={isDisabled}
+      >
+        {isDisabled ? (
+          <Toggle
+            description={ENABLE_PAYMENT_INFORMATION}
+            value={1}
+            label={paymentToggleLabel}
+          />
+        ) : (
+          <Toggle
+            {...register('enabled')}
+            description={ENABLE_PAYMENT_INFORMATION}
+            label={paymentToggleLabel}
+          />
+        )}
+      </FormControl>
+      <FormControl
+        isReadOnly={paymentsMutation.isLoading}
+        isInvalid={!!errors.description}
+        isRequired
+        isDisabled={isDisabled}
+      >
+        <FormLabel description={NAME_INFORMATION}>Name</FormLabel>
+        <Input
+          {...register('description', {
+            required: 'Please enter a payment description',
+          })}
+        />
+        <FormErrorMessage>{errors.description?.message}</FormErrorMessage>
+      </FormControl>
+      <FormControl
+        isReadOnly={paymentsMutation.isLoading}
+        isInvalid={!!errors.display_amount}
+        isDisabled={isDisabled}
+      >
+        <FormLabel isRequired>Payment Amount</FormLabel>
+        <Controller
+          name="display_amount"
+          control={control}
+          rules={amountValidation}
+          render={({ field }) => (
+            <MoneyInput
+              flex={1}
+              step={0}
+              inputMode="decimal"
+              placeholder="0.00"
+              {...field}
             />
           )}
-        </FormControl>
+        />
+        <FormErrorMessage>{errors.display_amount?.message}</FormErrorMessage>
+      </FormControl>
 
-        {watchedEnabled && (
-          <>
-            <FormControl
-              isReadOnly={paymentsMutation.isLoading}
-              isInvalid={!!errors.description}
-              isRequired
-              isDisabled={isDisabled}
-            >
-              <FormLabel description={NAME_INFORMATION}>Name</FormLabel>
-              <Input
-                {...register('description', {
-                  required: 'Please enter a payment description',
-                })}
-              />
-              <FormErrorMessage>{errors.description?.message}</FormErrorMessage>
-            </FormControl>
-            <Divider />
-            <FormControl
-              isReadOnly={paymentsMutation.isLoading}
-              isInvalid={!!errors.display_amount}
-              isDisabled={isDisabled}
-            >
-              <FormLabel isRequired>Payment Amount</FormLabel>
-              <Controller
-                name="display_amount"
-                control={control}
-                rules={amountValidation}
-                render={({ field }) => (
-                  <MoneyInput
-                    flex={1}
-                    step={0}
-                    inputMode="decimal"
-                    placeholder="0.00"
-                    {...field}
-                  />
-                )}
-              />
-              <FormErrorMessage>
-                {errors.display_amount?.message}
-              </FormErrorMessage>
-            </FormControl>
-          </>
-        )}
-      </Stack>
-
-      <Stack
-        direction={{ base: 'column', md: 'row-reverse' }}
-        justifyContent="end"
-        spacing="1rem"
-      >
-        <Button
-          isFullWidth={isMobile}
-          onClick={handleUpdatePayments}
-          isLoading={paymentsMutation.isLoading}
-          isDisabled={isDisabled}
-        >
-          Save payment settings
-        </Button>
-        <Button
-          isFullWidth={isMobile}
-          variant="clear"
-          colorScheme="secondary"
-          isDisabled={paymentsMutation.isLoading}
-          onClick={handleCloseDrawer}
-        >
-          Cancel
-        </Button>
-      </Stack>
+      <FormFieldDrawerActions
+        isLoading={paymentsMutation.isLoading}
+        handleClick={handleUpdatePayments}
+        handleCancel={handleCloseDrawer}
+        buttonText={buttonText}
+      ></FormFieldDrawerActions>
     </CreatePageDrawerContentContainer>
   )
 }
@@ -340,23 +314,22 @@ export const PaymentDrawer = ({
 
   return (
     <CreatePageDrawerContainer>
-      {isPaymentDisabled && (
-        <Box px="1.5rem" pt="2rem" pb="1.5rem">
-          <InlineMessage variant={'info'}>
-            <Text>{paymentDisabledMessage}</Text>
-          </InlineMessage>
-        </Box>
-      )}
       <Flex pos="relative" h="100%" display="flex" flexDir="column">
         <Box pt="1rem" px="1.5rem" bg="white">
           <Flex justify="space-between">
             <Text textStyle="subhead-3" color="secondary.500" mb="1rem">
               Edit payment
             </Text>
-            <CreatePageDrawerCloseButton />
           </Flex>
           <Divider w="auto" mx="-1.5rem" />
         </Box>
+        {isPaymentDisabled && (
+          <Box px="1.5rem" pt="2rem" pb="1.5rem">
+            <InlineMessage variant={'info'}>
+              <Text>{paymentDisabledMessage}</Text>
+            </InlineMessage>
+          </Box>
+        )}
         <PaymentInput isDisabled={isPaymentDisabled} />
       </Flex>
     </CreatePageDrawerContainer>
