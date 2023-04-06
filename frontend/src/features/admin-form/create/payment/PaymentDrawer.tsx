@@ -196,7 +196,7 @@ export const PaymentInput = ({
   })
 
   const paymentToggleLabel = 'Enable Payment'
-  const buttonText = 'Save payment settings'
+  const buttonText = 'Save payment field'
 
   return (
     <CreatePageDrawerContentContainer>
@@ -296,6 +296,7 @@ export const PaymentDrawer = ({
     : !isStripeConnected
     ? 'Connect your Stripe account in Settings to save this field.'
     : ''
+
   // payment eligibility will be dependent on whether paymentDisabledMessage is non empty
   const isPaymentDisabled = !!paymentDisabledMessage
 
