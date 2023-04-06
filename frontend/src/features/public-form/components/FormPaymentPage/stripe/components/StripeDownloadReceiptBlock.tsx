@@ -16,11 +16,11 @@ export const DownloadReceiptBlock = ({
 }: DownloadReceiptBlockProps) => {
   const toast = useToast({ status: 'success', isClosable: true })
 
-  const handleClick = () => {
+  const handleReceiptClick = () => {
     toast({
       description: 'Receipt download started',
     })
-    window.location.href = `${API_BASE_URL}/payments/receipt/${formId}/${paymentId}/download`
+    window.location.href = `${API_BASE_URL}/payments/${formId}/${paymentId}/receipt/download`
   }
   return (
     <Box>
@@ -39,7 +39,7 @@ export const DownloadReceiptBlock = ({
       <Button
         mt="2.25rem"
         leftIcon={<BiDownload fontSize="1.5rem" />}
-        onClick={handleClick}
+        onClick={handleReceiptClick}
       >
         Save payment receipt
       </Button>

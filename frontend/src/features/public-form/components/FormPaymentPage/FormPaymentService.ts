@@ -13,7 +13,7 @@ export const getPaymentReceiptStatus = async (
   paymentId: string,
 ): Promise<PaymentReceiptStatusDto> => {
   return ApiService.get<PaymentReceiptStatusDto>(
-    `payments/receipt/${formId}/${paymentId}/status`,
+    `payments/${formId}/${paymentId}/receipt/status`,
   ).then(({ data }) => data)
 }
 
