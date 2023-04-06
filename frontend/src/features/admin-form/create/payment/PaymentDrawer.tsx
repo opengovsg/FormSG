@@ -57,6 +57,8 @@ const formatCurrency = new Intl.NumberFormat('en-SG', {
  * Whilst description will still be used in the backend for consistency with Stripe's API
  */
 const NAME_INFORMATION = 'Name will be reflected on payment receipt'
+const ENABLE_PAYMENT_INFORMATION =
+  'Payment field will not be shown when this is toggled off. Respondents can still submit the form.'
 
 export const PaymentInput = ({
   isDisabled,
@@ -211,9 +213,17 @@ export const PaymentInput = ({
           isDisabled={isDisabled}
         >
           {isDisabled ? (
-            <Toggle value={1} label={paymentToggleLabel} />
+            <Toggle
+              description={ENABLE_PAYMENT_INFORMATION}
+              value={1}
+              label={paymentToggleLabel}
+            />
           ) : (
-            <Toggle {...register('enabled')} label={paymentToggleLabel} />
+            <Toggle
+              {...register('enabled')}
+              description={ENABLE_PAYMENT_INFORMATION}
+              label={paymentToggleLabel}
+            />
           )}
         </FormControl>
 
