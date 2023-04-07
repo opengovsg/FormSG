@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 
 import { CreatePageDrawerContainer } from '../../common/CreatePageDrawer/CreatePageDrawerContainer'
 import {
+  CreatePageSiderBarWidthProvider,
   DrawerTabs,
   useCreatePageSidebar,
 } from '../../common/CreatePageSidebarContext'
@@ -39,6 +40,10 @@ export const BuilderAndDesignDrawer = (): JSX.Element | null => {
   }, [fieldBuilderState, activeTab])
 
   return (
-    <CreatePageDrawerContainer>{renderDrawerContent}</CreatePageDrawerContainer>
+    <CreatePageSiderBarWidthProvider>
+      <CreatePageDrawerContainer>
+        {renderDrawerContent}
+      </CreatePageDrawerContainer>
+    </CreatePageSiderBarWidthProvider>
   )
 }

@@ -45,12 +45,19 @@ type CreatePageSidebarContextProps = {
   isDrawerOpen: boolean
   fieldListTabIndex: FieldListTabIndex
   setFieldListTabIndex: (tabIndex: FieldListTabIndex) => void
+  // drawerRef: UseMeasureRef<HTMLDivElement>
+  // drawerWidth: number
+}
+type CreatePageSidebarWidthContextProps = {
   drawerRef: UseMeasureRef<HTMLDivElement>
   drawerWidth: number
 }
-
 const CreatePageSidebarContext = createContext<
   CreatePageSidebarContextProps | undefined
+>(undefined)
+
+const CreatePageSidebarWidthContext = createContext<
+  CreatePageSidebarWidthContextProps | undefined
 >(undefined)
 
 export const useCreatePageSidebar = (): CreatePageSidebarContextProps => {
@@ -62,6 +69,16 @@ export const useCreatePageSidebar = (): CreatePageSidebarContextProps => {
   }
   return context
 }
+export const useCreatePageSidebarWidth =
+  (): CreatePageSidebarWidthContextProps => {
+    const context = useContext(CreatePageSidebarWidthContext)
+    if (!context) {
+      throw new Error(
+        `useCreatePageSidebar must be used within a CreatePageSidebarWidthProvider component`,
+      )
+    }
+    return context
+  }
 
 export const useCreatePageSidebarContext =
   (): CreatePageSidebarContextProps => {
@@ -157,8 +174,6 @@ export const useCreatePageSidebarContext =
       setPendingTab(undefined)
     }, [isMobile, pendingTab, setFieldsToInactive])
 
-    const [drawerRef, { width: drawerWidth }] = useMeasure<HTMLDivElement>()
-
     return {
       activeTab,
       pendingTab,
@@ -172,6 +187,15 @@ export const useCreatePageSidebarContext =
       handleClose,
       fieldListTabIndex,
       setFieldListTabIndex,
+      // drawerRef,
+      //     drawerWidth,
+    }
+  }
+
+export const useCreatePageSidebarWidthContext =
+  (): CreatePageSidebarWidthContextProps => {
+    const [drawerRef, { width: drawerWidth }] = useMeasure<HTMLDivElement>()
+    return {
       drawerRef,
       drawerWidth,
     }
@@ -188,5 +212,14 @@ export const CreatePageSidebarProvider: FC = ({ children }) => {
     <CreatePageSidebarContext.Provider value={context}>
       {children}
     </CreatePageSidebarContext.Provider>
+  )
+}
+
+export const CreatePageSiderBarWidthProvider: FC = ({ children }) => {
+  const context = useCreatePageSidebarWidthContext()
+  return (
+    <CreatePageSidebarWidthContext.Provider value={context}>
+      {children}
+    </CreatePageSidebarWidthContext.Provider>
   )
 }

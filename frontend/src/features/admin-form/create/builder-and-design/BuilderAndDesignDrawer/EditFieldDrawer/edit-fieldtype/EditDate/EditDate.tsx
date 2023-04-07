@@ -20,7 +20,10 @@ import Input from '~components/Input'
 import Textarea from '~components/Textarea'
 import Toggle from '~components/Toggle'
 
-import { useCreatePageSidebar } from '~features/admin-form/create/common'
+import {
+  useCreatePageSidebar,
+  useCreatePageSidebarWidth,
+} from '~features/admin-form/create/common'
 
 import { CreatePageDrawerContentContainer } from '../../../../../common'
 import { FormFieldDrawerActions } from '../common/FormFieldDrawerActions'
@@ -150,7 +153,7 @@ export const EditDate = ({ field }: EditDateProps): JSX.Element => {
     [getValues],
   )
 
-  const { drawerWidth } = useCreatePageSidebar()
+  const { drawerWidth } = useCreatePageSidebarWidth()
 
   return (
     <CreatePageDrawerContentContainer>
