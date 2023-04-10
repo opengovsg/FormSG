@@ -20,10 +20,7 @@ import Input from '~components/Input'
 import Textarea from '~components/Textarea'
 import Toggle from '~components/Toggle'
 
-import {
-  useCreatePageSidebar,
-  useCreatePageSidebarWidth,
-} from '~features/admin-form/create/common'
+import { useCreatePageSidebarWidth } from '~features/admin-form/create/common/CreatePageSideBarWidthContext'
 
 import { CreatePageDrawerContentContainer } from '../../../../../common'
 import { FormFieldDrawerActions } from '../common/FormFieldDrawerActions'

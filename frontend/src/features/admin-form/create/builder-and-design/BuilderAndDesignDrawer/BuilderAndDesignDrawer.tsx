@@ -2,10 +2,10 @@ import { useMemo } from 'react'
 
 import { CreatePageDrawerContainer } from '../../common/CreatePageDrawer/CreatePageDrawerContainer'
 import {
-  CreatePageSiderBarWidthProvider,
   DrawerTabs,
   useCreatePageSidebar,
 } from '../../common/CreatePageSidebarContext'
+import { CreatePageSiderBarWidthProvider } from '../../common/CreatePageSideBarWidthContext'
 import {
   FieldBuilderState,
   fieldBuilderStateSelector,

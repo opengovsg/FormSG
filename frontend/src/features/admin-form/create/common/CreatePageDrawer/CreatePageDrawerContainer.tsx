@@ -5,10 +5,8 @@ import { AnimatePresence } from 'framer-motion'
 import { useIsMobile } from '~hooks/useIsMobile'
 import { MotionBox } from '~components/motion'
 
-import {
-  useCreatePageSidebar,
-  useCreatePageSidebarWidth,
-} from '../CreatePageSidebarContext'
+import { useCreatePageSidebar } from '../CreatePageSidebarContext'
+import { useCreatePageSidebarWidth } from '../CreatePageSideBarWidthContext'
 
 export const CreatePageDrawerContainer = ({
   children,
