@@ -31,7 +31,7 @@ export const useCreatePageSidebarWidthContext =
     }
   }
 
-export const CreatePageSiderBarWidthProvider: FC = ({ children }) => {
+export const CreatePageSideBarWidthProvider: FC = ({ children }) => {
   const context = useCreatePageSidebarWidthContext()
   return (
     <CreatePageSidebarWidthContext.Provider value={context}>

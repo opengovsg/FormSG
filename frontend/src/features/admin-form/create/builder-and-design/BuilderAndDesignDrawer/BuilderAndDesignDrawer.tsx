@@ -5,7 +5,7 @@ import {
   DrawerTabs,
   useCreatePageSidebar,
 } from '../../common/CreatePageSidebarContext'
-import { CreatePageSiderBarWidthProvider } from '../../common/CreatePageSideBarWidthContext'
+import { CreatePageSideBarWidthProvider } from '../../common/CreatePageSideBarWidthContext'
 import {
   FieldBuilderState,
   fieldBuilderStateSelector,
@@ -40,10 +40,10 @@ export const BuilderAndDesignDrawer = (): JSX.Element | null => {
   }, [fieldBuilderState, activeTab])
 
   return (
-    <CreatePageSiderBarWidthProvider>
+    <CreatePageSideBarWidthProvider>
       <CreatePageDrawerContainer>
         {renderDrawerContent}
       </CreatePageDrawerContainer>
-    </CreatePageSiderBarWidthProvider>
+    </CreatePageSideBarWidthProvider>
   )
 }
