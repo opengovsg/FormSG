@@ -22,6 +22,7 @@ export const FormPaymentModal = ({
   onClose,
   isSubmitting,
 }: FormPaymentModalProps): JSX.Element => {
+  // We need to dismiss the FormPaymentModal to release the scroll lock that affects the captcha
   const closeAndSubmit = (event: MouseEvent<HTMLButtonElement>) => {
     onClose()
     if (onSubmit) {
