@@ -7,14 +7,12 @@ import {
   useWatch,
 } from 'react-hook-form'
 import { useDebounce } from 'react-use'
-import { Box, Divider, Flex, FormControl, Stack, Text } from '@chakra-ui/react'
+import { Box, Divider, Flex, FormControl, Text } from '@chakra-ui/react'
 import { cloneDeep } from 'lodash'
 
 import { FormPaymentsField } from '~shared/types'
 
-import { useIsMobile } from '~hooks/useIsMobile'
 import { centsToDollars, dollarsToCents } from '~utils/payments'
-import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import InlineMessage from '~components/InlineMessage'
@@ -25,6 +23,7 @@ import Toggle from '~components/Toggle'
 import { useMutateFormPage } from '~features/admin-form/common/mutations'
 
 import { useEnv } from '../../../env/queries'
+import { FormFieldDrawerActions } from '../builder-and-design/BuilderAndDesignDrawer/EditFieldDrawer/edit-fieldtype/common/FormFieldDrawerActions'
 import {
   setIsDirtySelector,
   useDirtyFieldStore,
@@ -33,7 +32,6 @@ import {
   CreatePageDrawerContentContainer,
   useCreatePageSidebar,
 } from '../common'
-import { CreatePageDrawerCloseButton } from '../common/CreatePageDrawer/CreatePageDrawerCloseButton'
 import { CreatePageDrawerContainer } from '../common/CreatePageDrawer/CreatePageDrawerContainer'
 
 import { FormPaymentsDisplay } from './types'
@@ -57,13 +55,14 @@ const formatCurrency = new Intl.NumberFormat('en-SG', {
  * Whilst description will still be used in the backend for consistency with Stripe's API
  */
 const NAME_INFORMATION = 'Name will be reflected on payment receipt'
+const ENABLE_PAYMENT_INFORMATION =
+  'Payment field will not be shown when this is toggled off. Respondents can still submit the form.'
 
 export const PaymentInput = ({
   isDisabled,
 }: {
   isDisabled: boolean
 }): JSX.Element => {
-  const isMobile = useIsMobile()
   const { paymentsMutation } = useMutateFormPage()
 
   const { data: { maxPaymentAmountCents, minPaymentAmountCents } = {} } =
@@ -128,11 +127,6 @@ export const PaymentInput = ({
   const clonedWatchedInputs = useMemo(
     () => cloneDeep(watchedInputs),
     [watchedInputs],
-  )
-
-  const watchedEnabled = useMemo(
-    () => clonedWatchedInputs.enabled,
-    [clonedWatchedInputs.enabled],
   )
 
   useDebounce(() => handlePaymentsChanges(clonedWatchedInputs), 300, [
@@ -202,89 +196,62 @@ export const PaymentInput = ({
   })
 
   const paymentToggleLabel = 'Enable Payment'
+  const buttonText = 'Save payment field'
 
   return (
     <CreatePageDrawerContentContainer>
-      <Stack gap="2rem">
-        <FormControl
-          isReadOnly={paymentsMutation.isLoading}
-          isDisabled={isDisabled}
-        >
-          {isDisabled ? (
-            <Toggle value={1} label={paymentToggleLabel} />
-          ) : (
-            <Toggle {...register('enabled')} label={paymentToggleLabel} />
-          )}
-        </FormControl>
-
-        {watchedEnabled && (
-          <>
-            <FormControl
-              isReadOnly={paymentsMutation.isLoading}
-              isInvalid={!!errors.description}
-              isRequired
-              isDisabled={isDisabled}
-            >
-              <FormLabel description={NAME_INFORMATION}>Name</FormLabel>
-              <Input
-                {...register('description', {
-                  required: 'Please enter a payment description',
-                })}
-              />
-              <FormErrorMessage>{errors.description?.message}</FormErrorMessage>
-            </FormControl>
-            <Divider />
-            <FormControl
-              isReadOnly={paymentsMutation.isLoading}
-              isInvalid={!!errors.display_amount}
-              isDisabled={isDisabled}
-            >
-              <FormLabel isRequired>Payment Amount</FormLabel>
-              <Controller
-                name="display_amount"
-                control={control}
-                rules={amountValidation}
-                render={({ field }) => (
-                  <MoneyInput
-                    flex={1}
-                    step={0}
-                    inputMode="decimal"
-                    placeholder="0.00"
-                    {...field}
-                  />
-                )}
-              />
-              <FormErrorMessage>
-                {errors.display_amount?.message}
-              </FormErrorMessage>
-            </FormControl>
-          </>
-        )}
-      </Stack>
-
-      <Stack
-        direction={{ base: 'column', md: 'row-reverse' }}
-        justifyContent="end"
-        spacing="1rem"
+      <FormControl
+        isReadOnly={paymentsMutation.isLoading}
+        isDisabled={isDisabled}
       >
-        <Button
-          isFullWidth={isMobile}
-          onClick={handleUpdatePayments}
-          isLoading={paymentsMutation.isLoading}
-          isDisabled={isDisabled}
-        >
-          Save payment settings
-        </Button>
-        <Button
-          isFullWidth={isMobile}
-          variant="clear"
-          colorScheme="secondary"
-          isDisabled={paymentsMutation.isLoading}
-          onClick={handleCloseDrawer}
-        >
-          Cancel
-        </Button>
-      </Stack>
+        <Toggle
+          {...register('enabled')}
+          description={ENABLE_PAYMENT_INFORMATION}
+          label={paymentToggleLabel}
+        />
+      </FormControl>
+      <FormControl
+        isReadOnly={paymentsMutation.isLoading}
+        isInvalid={!!errors.description}
+        isRequired
+      >
+        <FormLabel description={NAME_INFORMATION}>Name</FormLabel>
+        <Input
+          {...register('description', {
+            required: 'Please enter a payment description',
+          })}
+        />
+        <FormErrorMessage>{errors.description?.message}</FormErrorMessage>
+      </FormControl>
+      <FormControl
+        isReadOnly={paymentsMutation.isLoading}
+        isInvalid={!!errors.display_amount}
+      >
+        <FormLabel isRequired>Payment Amount</FormLabel>
+        <Controller
+          name="display_amount"
+          control={control}
+          rules={amountValidation}
+          render={({ field }) => (
+            <MoneyInput
+              flex={1}
+              step={0}
+              inputMode="decimal"
+              placeholder="0.00"
+              {...field}
+            />
+          )}
+        />
+        <FormErrorMessage>{errors.display_amount?.message}</FormErrorMessage>
+      </FormControl>
+
+      <FormFieldDrawerActions
+        isLoading={paymentsMutation.isLoading}
+        handleClick={handleUpdatePayments}
+        handleCancel={handleCloseDrawer}
+        buttonText={buttonText}
+        isDisabled={isDisabled}
+      ></FormFieldDrawerActions>
     </CreatePageDrawerContentContainer>
   )
 }
@@ -319,34 +286,33 @@ export const PaymentDrawer = ({
   const paymentDisabledMessage = !isEncryptMode
     ? 'Payments are not available in email mode forms.'
     : !isStripeConnected
-    ? 'Connect your Stripe account in Settings.'
+    ? 'Connect your Stripe account in Settings to save this field.'
     : ''
 
   // payment eligibility will be dependent on whether paymentDisabledMessage is non empty
   const isPaymentDisabled = !!paymentDisabledMessage
 
   // Allows for payment data refresh in encrypt mode
-  if (!paymentData && !isPaymentDisabled) return null
+  if (!paymentData && isEncryptMode) return null
 
   return (
     <CreatePageDrawerContainer>
-      {isPaymentDisabled && (
-        <Box px="1.5rem" pt="2rem" pb="1.5rem">
-          <InlineMessage variant={'info'}>
-            <Text>{paymentDisabledMessage}</Text>
-          </InlineMessage>
-        </Box>
-      )}
       <Flex pos="relative" h="100%" display="flex" flexDir="column">
         <Box pt="1rem" px="1.5rem" bg="white">
           <Flex justify="space-between">
             <Text textStyle="subhead-3" color="secondary.500" mb="1rem">
               Edit payment
             </Text>
-            <CreatePageDrawerCloseButton />
           </Flex>
           <Divider w="auto" mx="-1.5rem" />
         </Box>
+        {isPaymentDisabled && (
+          <Box px="1.5rem" pt="2rem" pb="1.5rem">
+            <InlineMessage variant={'info'}>
+              <Text>{paymentDisabledMessage}</Text>
+            </InlineMessage>
+          </Box>
+        )}
         <PaymentInput isDisabled={isPaymentDisabled} />
       </Flex>
     </CreatePageDrawerContainer>

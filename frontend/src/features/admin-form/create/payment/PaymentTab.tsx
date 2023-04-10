@@ -13,7 +13,7 @@ export const PaymentTab = (): JSX.Element => {
   const isStripeConnected =
     isEncryptMode && form.payments_channel.channel === PaymentChannel.Stripe
 
-  return isEncryptMode && isStripeConnected ? (
+  return isEncryptMode ? (
     <>
       <PaymentDrawer
         isEncryptMode={isEncryptMode}
