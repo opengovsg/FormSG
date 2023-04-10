@@ -1,4 +1,4 @@
-import { MouseEventHandler } from 'react'
+import { MouseEvent, MouseEventHandler } from 'react'
 import {
   Button,
   ButtonGroup,
@@ -22,6 +22,13 @@ export const FormPaymentModal = ({
   onClose,
   isSubmitting,
 }: FormPaymentModalProps): JSX.Element => {
+  // We need to dismiss the FormPaymentModal to release the scroll lock that affects the captcha
+  const closeAndSubmit = (event: MouseEvent<HTMLButtonElement>) => {
+    onClose()
+    if (onSubmit) {
+      onSubmit(event)
+    }
+  }
   return (
     <>
       <Modal isOpen onClose={onClose}>
@@ -41,7 +48,7 @@ export const FormPaymentModal = ({
               <Button
                 isLoading={isSubmitting}
                 loadingText="Submitting"
-                onClick={onSubmit}
+                onClick={closeAndSubmit}
               >
                 Proceed to pay
               </Button>
