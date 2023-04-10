@@ -16,7 +16,7 @@ import {
 
 import { AdminFormLayout } from '~features/admin-form/common/AdminFormLayout'
 import { BuilderAndDesignContext } from '~features/admin-form/create/builder-and-design/BuilderAndDesignContext'
-import { CreatePageSidebarProvider } from '~features/admin-form/create/common/CreatePageSidebarContext'
+import { CreatePageSideBarWidthProvider } from '~features/admin-form/create/common/CreatePageSideBarWidthContext'
 
 import { fillHeightCss } from './fillHeightCss'
 
@@ -104,7 +104,7 @@ export const EditFieldDrawerDecorator: DecoratorFn = (storyFn) => {
   const deleteFieldModalDisclosure = useDisclosure()
   return (
     <Box maxW="33.25rem">
-      <CreatePageSidebarProvider>
+      <CreatePageSideBarWidthProvider>
         <BuilderAndDesignContext.Provider
           value={{
             deleteFieldModalDisclosure,
@@ -112,7 +112,7 @@ export const EditFieldDrawerDecorator: DecoratorFn = (storyFn) => {
         >
           {storyFn()}
         </BuilderAndDesignContext.Provider>
-      </CreatePageSidebarProvider>
+      </CreatePageSideBarWidthProvider>
     </Box>
   )
 }
