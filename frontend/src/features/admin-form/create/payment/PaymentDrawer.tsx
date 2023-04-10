@@ -204,19 +204,11 @@ export const PaymentInput = ({
         isReadOnly={paymentsMutation.isLoading}
         isDisabled={isDisabled}
       >
-        {isDisabled ? (
-          <Toggle
-            description={ENABLE_PAYMENT_INFORMATION}
-            value={1}
-            label={paymentToggleLabel}
-          />
-        ) : (
-          <Toggle
-            {...register('enabled')}
-            description={ENABLE_PAYMENT_INFORMATION}
-            label={paymentToggleLabel}
-          />
-        )}
+        <Toggle
+          {...register('enabled')}
+          description={ENABLE_PAYMENT_INFORMATION}
+          label={paymentToggleLabel}
+        />
       </FormControl>
       <FormControl
         isReadOnly={paymentsMutation.isLoading}
