@@ -14,7 +14,6 @@ import {
   IVerificationFieldSchema,
   IVerificationSchema,
   PublicTransaction,
-  // UpdateFieldData,
 } from '../../../types'
 import formsgSdk from '../../config/formsg-sdk'
 import { createLoggerWithLabel } from '../../config/logger'
