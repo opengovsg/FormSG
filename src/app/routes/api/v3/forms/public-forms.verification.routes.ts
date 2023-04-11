@@ -49,7 +49,7 @@ PublicFormsVerificationRouter.route(
 )
 
 /**
- * Route for generating a new otp for a given form field
+ * Route for generating a new otp for a given field
  * @returns 201 when otp generated successfully
  * @returns 400 when joi validation fails
  * @returns 400 when the parameters could not be parsed
