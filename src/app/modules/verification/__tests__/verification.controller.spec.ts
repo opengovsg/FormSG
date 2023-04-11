@@ -65,7 +65,6 @@ import {
 } from '../verification.errors'
 import getVerificationModel from '../verification.model'
 import * as VerificationService from '../verification.service'
-import * as VerificationUtil from '../verification.util'
 
 import {
   generateFieldParams,
@@ -108,9 +107,6 @@ describe('Verification controller', () => {
   const MOCK_ANSWER = 'answer'
   let mockTransaction: IVerificationSchema
   let mockRes: Response
-  const mockUpdateHashForFormFieldFx = jest
-    .spyOn(VerificationController, 'updateHashForFormFieldWrapper')
-    .mockResolvedValue({} as IVerificationSchema)
   const EXPECTED_PARAMS_FOR_SENDING_FORM_OTP = {
     transactionId: MOCK_TRANSACTION_ID,
     fieldId: MOCK_FIELD_ID,
@@ -119,8 +115,6 @@ describe('Verification controller', () => {
     recipient: MOCK_ANSWER,
     senderIp: 'MOCK_IP',
     otpPrefix: MOCK_OTP_PREFIX,
-    getFieldFromTransactionFx: VerificationUtil.getFieldFromTransaction,
-    updateHashFx: mockUpdateHashForFormFieldFx,
   }
 
   beforeAll(async () => {
@@ -336,15 +330,9 @@ describe('Verification controller', () => {
       params: { transactionId: MOCK_TRANSACTION_ID },
     })
 
-    const mockResetFormFieldFx = jest
-      .spyOn(VerificationController, 'resetFormFieldWrapper')
-      .mockResolvedValue({} as IVerificationSchema)
-
     const resetFieldForTransactionToHaveBeenCalledWith = {
       transactionId: MOCK_TRANSACTION_ID,
       fieldId: MOCK_FIELD_ID,
-      getFieldFromTransactionFx: VerificationUtil.getFieldFromTransaction,
-      resetFieldFx: mockResetFormFieldFx,
     }
 
     it('should correctly call service when params are valid', async () => {
@@ -694,9 +682,6 @@ describe('Verification controller', () => {
     const EXPECTED_PARAMS_FOR_SENDING_PAYMENT_OTP = {
       ...EXPECTED_PARAMS_FOR_SENDING_FORM_OTP,
       fieldId: PAYMENT_CONTACT_FIELD_ID,
-      getFieldFromTransactionFx:
-        VerificationUtil.getPaymentContactFieldFromTransaction,
-      updateHashFx: VerificationController.updateHashForPaymentFieldWrapper,
     }
 
     beforeEach(async () => {
@@ -2674,8 +2659,6 @@ describe('Verification controller', () => {
     const resetFieldForTransactionToHaveBeenCalledWith = {
       transactionId: MOCK_TRANSACTION_ID,
       fieldId: MOCK_FIELD_ID,
-      getFieldFromTransactionFx: VerificationUtil.getFieldFromTransaction,
-      resetFieldFx: VerificationController.resetFormFieldWrapper,
     }
 
     beforeEach(() =>
@@ -2853,9 +2836,6 @@ describe('Verification controller', () => {
       transactionId: MOCK_TRANSACTION_ID,
       fieldId: MOCK_FIELD_ID,
       inputOtp: MOCK_OTP,
-      getFieldFromTransactionFx: VerificationUtil.getFieldFromTransaction,
-      incrementFieldRetriesFx:
-        VerificationController.incrementFormFieldRetriesWrapper,
     }
 
     const MOCK_PAYMENT_REQ = expressHandler.mockRequest({
@@ -2873,10 +2853,6 @@ describe('Verification controller', () => {
       transactionId: MOCK_TRANSACTION_ID,
       fieldId: PAYMENT_CONTACT_FIELD_ID,
       inputOtp: MOCK_OTP,
-      getFieldFromTransactionFx:
-        VerificationUtil.getPaymentContactFieldFromTransaction,
-      incrementFieldRetriesFx:
-        VerificationController.incrementPaymentFieldRetriesWrapper,
     }
 
     beforeEach(() =>

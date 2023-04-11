@@ -39,6 +39,7 @@ import {
   IPopulatedForm,
   IVerificationSchema,
   PublicTransaction,
+  UpdateFieldData,
 } from 'src/types'
 
 import { generateDefaultField } from 'tests/unit/backend/helpers/generate-form-data'
@@ -63,7 +64,6 @@ import {
   SendOtpParams,
   VerifyOtpParams,
 } from '../verification.types'
-import { getFieldFromTransaction } from '../verification.util'
 
 import {
   generateFieldParams,
@@ -210,18 +210,21 @@ describe('Verification service', () => {
   })
 
   describe('resetFieldForTransaction', () => {
-    const mockResetFieldFx = jest.fn()
+    let resetFieldSpy: jest.SpyInstance<
+      Promise<IVerificationSchema | null>,
+      [transactionId: string, isPayment: boolean, fieldId: string]
+    >
 
     const mockResetFieldForTransactionValidInputs: ResetFieldForTransactionParams =
       {
         transactionId: mockTransactionId,
         fieldId: mockFieldId,
-        getFieldFromTransactionFx: getFieldFromTransaction,
-        resetFieldFx: mockResetFieldFx,
       }
 
     beforeEach(() => {
-      mockResetFieldFx.mockResolvedValue(mockTransaction)
+      resetFieldSpy = jest
+        .spyOn(VerificationModel, 'resetField')
+        .mockResolvedValue(mockTransaction)
     })
 
     it('should call VerificationModel.resetField when transaction and field IDs are valid', async () => {
@@ -229,8 +232,9 @@ describe('Verification service', () => {
         mockResetFieldForTransactionValidInputs,
       )
 
-      expect(mockResetFieldFx).toHaveBeenCalledWith(
+      expect(resetFieldSpy).toHaveBeenCalledWith(
         mockTransactionId,
+        false,
         mockFieldId,
       )
       expect(result._unsafeUnwrap()).toEqual(mockTransaction)
@@ -242,7 +246,7 @@ describe('Verification service', () => {
         transactionId: new ObjectId().toHexString(),
       })
 
-      expect(mockResetFieldFx).not.toHaveBeenCalled()
+      expect(resetFieldSpy).not.toHaveBeenCalled()
       expect(result._unsafeUnwrapErr()).toEqual(new TransactionNotFoundError())
     })
 
@@ -258,7 +262,7 @@ describe('Verification service', () => {
         transactionId: expiredTransaction._id,
       })
 
-      expect(mockResetFieldFx).not.toHaveBeenCalled()
+      expect(resetFieldSpy).not.toHaveBeenCalled()
       expect(result._unsafeUnwrapErr()).toEqual(new TransactionExpiredError())
     })
 
@@ -268,35 +272,37 @@ describe('Verification service', () => {
         fieldId: new ObjectId().toHexString(),
       })
 
-      expect(mockResetFieldFx).not.toHaveBeenCalled()
+      expect(resetFieldSpy).not.toHaveBeenCalled()
       expect(result._unsafeUnwrapErr()).toEqual(
         new FieldNotFoundInTransactionError(),
       )
     })
 
     it('should return TransactionNotFoundError when database update returns null', async () => {
-      mockResetFieldFx.mockResolvedValue(null)
+      resetFieldSpy.mockResolvedValueOnce(null)
 
       const result = await VerificationService.resetFieldForTransaction(
         mockResetFieldForTransactionValidInputs,
       )
 
-      expect(mockResetFieldFx).toHaveBeenCalledWith(
+      expect(resetFieldSpy).toHaveBeenCalledWith(
         mockTransactionId,
+        false,
         mockFieldId,
       )
       expect(result._unsafeUnwrapErr()).toEqual(new TransactionNotFoundError())
     })
 
     it('should return DatabaseError when database update errors', async () => {
-      mockResetFieldFx.mockRejectedValueOnce('rejected')
+      resetFieldSpy.mockRejectedValueOnce('rejected')
 
       const result = await VerificationService.resetFieldForTransaction(
         mockResetFieldForTransactionValidInputs,
       )
 
-      expect(mockResetFieldFx).toHaveBeenCalledWith(
+      expect(resetFieldSpy).toHaveBeenCalledWith(
         mockTransactionId,
+        false,
         mockFieldId,
       )
       expect(result._unsafeUnwrapErr()).toBeInstanceOf(DatabaseError)
@@ -316,7 +322,10 @@ describe('Verification service', () => {
       msgSrvcName: 'abc',
     } as unknown as IFormSchema
 
-    const mockUpdateHashFx = jest.fn()
+    let updateHashSpy: jest.SpyInstance<
+      Promise<IVerificationSchema | null>,
+      [updateData: UpdateFieldData]
+    >
 
     const mockSendNewOtpValidInput: SendOtpParams = {
       transactionId: mockTransactionId,
@@ -326,8 +335,6 @@ describe('Verification service', () => {
       recipient: MOCK_LOCAL_RECIPIENT,
       senderIp: MOCK_SENDER_IP,
       otpPrefix: MOCK_OTP_PREFIX,
-      getFieldFromTransactionFx: getFieldFromTransaction,
-      updateHashFx: mockUpdateHashFx,
     }
 
     let mockTransactionSuccessful: IVerificationSchema
@@ -344,7 +351,9 @@ describe('Verification service', () => {
       mockTransactionSuccessful.fields[0].hashedOtp = MOCK_HASHED_OTP
       mockTransactionSuccessful.fields[0].otpRequests = 1
 
-      mockUpdateHashFx.mockResolvedValue(mockTransactionSuccessful)
+      updateHashSpy = jest
+        .spyOn(VerificationModel, 'updateHashForField')
+        .mockResolvedValue(mockTransactionSuccessful)
       MockFormService.retrieveFormById.mockReturnValue(okAsync(mockForm))
     })
 
@@ -384,7 +393,7 @@ describe('Verification service', () => {
       expect(
         MockFormsgSdk.verification.generateSignature,
       ).not.toHaveBeenCalled()
-      expect(mockUpdateHashFx).not.toHaveBeenCalled()
+      expect(updateHashSpy).not.toHaveBeenCalled()
       expect(result._unsafeUnwrapErr()).toEqual(new TransactionNotFoundError())
     })
 
@@ -409,7 +418,7 @@ describe('Verification service', () => {
       expect(
         MockFormsgSdk.verification.generateSignature,
       ).not.toHaveBeenCalled()
-      expect(mockUpdateHashFx).not.toHaveBeenCalled()
+      expect(updateHashSpy).not.toHaveBeenCalled()
       expect(result._unsafeUnwrapErr()).toEqual(new TransactionExpiredError())
     })
 
@@ -429,7 +438,7 @@ describe('Verification service', () => {
       expect(
         MockFormsgSdk.verification.generateSignature,
       ).not.toHaveBeenCalled()
-      expect(mockUpdateHashFx).not.toHaveBeenCalled()
+      expect(updateHashSpy).not.toHaveBeenCalled()
       expect(result._unsafeUnwrapErr()).toEqual(
         new FieldNotFoundInTransactionError(),
       )
@@ -458,7 +467,7 @@ describe('Verification service', () => {
       expect(
         MockFormsgSdk.verification.generateSignature,
       ).not.toHaveBeenCalled()
-      expect(mockUpdateHashFx).not.toHaveBeenCalled()
+      expect(updateHashSpy).not.toHaveBeenCalled()
       expect(result._unsafeUnwrapErr()).toEqual(new WaitForOtpError())
     })
 
@@ -484,7 +493,7 @@ describe('Verification service', () => {
       expect(
         MockFormsgSdk.verification.generateSignature,
       ).not.toHaveBeenCalled()
-      expect(mockUpdateHashFx).not.toHaveBeenCalled()
+      expect(updateHashSpy).not.toHaveBeenCalled()
       expect(result._unsafeUnwrapErr()).toEqual(
         new OtpRequestCountExceededError(),
       )
@@ -515,7 +524,7 @@ describe('Verification service', () => {
       expect(
         MockFormsgSdk.verification.generateSignature,
       ).not.toHaveBeenCalled()
-      expect(mockUpdateHashFx).not.toHaveBeenCalled()
+      expect(updateHashSpy).not.toHaveBeenCalled()
       expect(result._unsafeUnwrapErr()).toEqual(error)
     })
 
@@ -549,12 +558,12 @@ describe('Verification service', () => {
       expect(
         MockFormsgSdk.verification.generateSignature,
       ).not.toHaveBeenCalled()
-      expect(mockUpdateHashFx).not.toHaveBeenCalled()
+      expect(updateHashSpy).not.toHaveBeenCalled()
       expect(result._unsafeUnwrapErr()).toEqual(error)
     })
 
     it('should return TransactionNotFoundError when database update returns null', async () => {
-      mockUpdateHashFx.mockResolvedValueOnce(null)
+      updateHashSpy.mockResolvedValueOnce(null)
 
       const result = await VerificationService.sendNewOtp(
         mockSendNewOtpValidInput,
@@ -576,11 +585,12 @@ describe('Verification service', () => {
           answer: MOCK_LOCAL_RECIPIENT,
         },
       )
-      expect(mockUpdateHashFx).toHaveBeenCalledWith({
+      expect(updateHashSpy).toHaveBeenCalledWith({
         fieldId: mockFieldId,
         hashedOtp: MOCK_HASHED_OTP,
         signedData: MOCK_SIGNED_DATA,
         transactionId: mockTransactionId,
+        isPayment: false,
       })
       expect(result._unsafeUnwrapErr()).toEqual(new TransactionNotFoundError())
     })
@@ -592,10 +602,15 @@ describe('Verification service', () => {
     let otpFieldId: string
 
     let mockVerifyOtpValidInput: VerifyOtpParams
-    const incrementFieldRetriesFx = jest.fn()
+    let incrementFieldRetriesSpy: jest.SpyInstance<
+      Promise<IVerificationSchema | null>,
+      [transactionId: string, isPayment: boolean, fieldId: string]
+    >
 
     beforeEach(async () => {
-      incrementFieldRetriesFx.mockResolvedValue(mockField)
+      incrementFieldRetriesSpy = jest
+        .spyOn(VerificationModel, 'incrementFieldRetries')
+        .mockResolvedValue(mockField)
       MockHashUtils.compareHash.mockReturnValue(okAsync(true))
       verifyOtpTransaction = await VerificationModel.create({
         formId: mockFormId,
@@ -614,8 +629,6 @@ describe('Verification service', () => {
         transactionId: verifyOtpTransactionId,
         fieldId: otpFieldId,
         inputOtp: MOCK_OTP,
-        getFieldFromTransactionFx: getFieldFromTransaction,
-        incrementFieldRetriesFx,
       }
     })
 
@@ -624,8 +637,9 @@ describe('Verification service', () => {
         mockVerifyOtpValidInput,
       )
 
-      expect(incrementFieldRetriesFx).toHaveBeenCalledWith(
+      expect(incrementFieldRetriesSpy).toHaveBeenCalledWith(
         verifyOtpTransactionId,
+        false,
         otpFieldId,
       )
       expect(MockHashUtils.compareHash).toHaveBeenCalledWith(
@@ -643,7 +657,7 @@ describe('Verification service', () => {
         transactionId: new ObjectId().toHexString(),
       })
 
-      expect(incrementFieldRetriesFx).not.toHaveBeenCalled()
+      expect(incrementFieldRetriesSpy).not.toHaveBeenCalled()
       expect(result._unsafeUnwrapErr()).toEqual(new TransactionNotFoundError())
     })
 
@@ -659,7 +673,7 @@ describe('Verification service', () => {
         transactionId: expiredTransaction._id,
       })
 
-      expect(incrementFieldRetriesFx).not.toHaveBeenCalled()
+      expect(incrementFieldRetriesSpy).not.toHaveBeenCalled()
       expect(result._unsafeUnwrapErr()).toEqual(new TransactionExpiredError())
     })
 
@@ -669,7 +683,7 @@ describe('Verification service', () => {
         fieldId: new ObjectId().toHexString(),
       })
 
-      expect(incrementFieldRetriesFx).not.toHaveBeenCalled()
+      expect(incrementFieldRetriesSpy).not.toHaveBeenCalled()
       expect(result._unsafeUnwrapErr()).toEqual(
         new FieldNotFoundInTransactionError(),
       )
@@ -735,14 +749,15 @@ describe('Verification service', () => {
     })
 
     it('should return DatabaseError when database update errors', async () => {
-      incrementFieldRetriesFx.mockRejectedValueOnce('rejected')
+      incrementFieldRetriesSpy.mockRejectedValueOnce('rejected')
 
       const result = await VerificationService.verifyOtp(
         mockVerifyOtpValidInput,
       )
 
-      expect(incrementFieldRetriesFx).toHaveBeenCalledWith(
+      expect(incrementFieldRetriesSpy).toHaveBeenCalledWith(
         verifyOtpTransactionId,
+        false,
         otpFieldId,
       )
       expect(result._unsafeUnwrapErr()).toBeInstanceOf(DatabaseError)
@@ -755,8 +770,9 @@ describe('Verification service', () => {
         mockVerifyOtpValidInput,
       )
 
-      expect(incrementFieldRetriesFx).toHaveBeenCalledWith(
+      expect(incrementFieldRetriesSpy).toHaveBeenCalledWith(
         verifyOtpTransactionId,
+        false,
         otpFieldId,
       )
       expect(result._unsafeUnwrapErr()).toEqual(new WrongOtpError())

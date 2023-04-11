@@ -2,7 +2,7 @@ import { ObjectId } from 'bson'
 import { merge, omit, pick } from 'lodash'
 import mongoose from 'mongoose'
 
-import { UpdateFormFieldData } from 'src/types'
+import { UpdateFieldData } from 'src/types'
 
 import { generateDefaultField } from 'tests/unit/backend/helpers/generate-form-data'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
@@ -126,7 +126,7 @@ describe('Verification Model', () => {
           fields: [field1, field2],
         })
 
-        const result = transaction.getField(field1._id)!.toJSON()
+        const result = transaction.getField(false, field1._id)!.toJSON()
 
         expect(omit(result, '_id')).toEqual(omit(field1, '_id'))
         expect(String(result._id)).toEqual(field1._id)
@@ -141,7 +141,7 @@ describe('Verification Model', () => {
         })
 
         expect(
-          transaction.getField(new ObjectId().toHexString()),
+          transaction.getField(false, new ObjectId().toHexString()),
         ).toBeUndefined()
       })
     })
@@ -327,8 +327,9 @@ describe('Verification Model', () => {
           fields: [field],
         })
 
-        const result = await VerificationModel.incrementFormFieldRetries(
+        const result = await VerificationModel.incrementFieldRetries(
           String(transaction._id),
+          false,
           String(field._id),
         )
 
@@ -347,8 +348,9 @@ describe('Verification Model', () => {
           fields: [field1, field2],
         })
 
-        const result = await VerificationModel.incrementFormFieldRetries(
+        const result = await VerificationModel.incrementFieldRetries(
           String(transaction._id),
+          false,
           String(field1._id),
         )
 
@@ -368,8 +370,9 @@ describe('Verification Model', () => {
       })
 
       it('should return null when the transaction ID is not found', async () => {
-        const result = await VerificationModel.incrementFormFieldRetries(
+        const result = await VerificationModel.incrementFieldRetries(
           new ObjectId().toHexString(),
+          false,
           new ObjectId().toHexString(),
         )
 
@@ -390,8 +393,9 @@ describe('Verification Model', () => {
           fields: [field],
         })
 
-        const result = await VerificationModel.resetFormField(
+        const result = await VerificationModel.resetField(
           String(transaction._id),
+          false,
           String(field._id),
         )
 
@@ -420,8 +424,9 @@ describe('Verification Model', () => {
           fields: [field1, field2],
         })
 
-        const result = await VerificationModel.resetFormField(
+        const result = await VerificationModel.resetField(
           String(transaction._id),
+          false,
           String(field1._id),
         )
 
@@ -441,8 +446,9 @@ describe('Verification Model', () => {
       })
 
       it('should return null when the transaction ID is not found', async () => {
-        const result = await VerificationModel.resetFormField(
+        const result = await VerificationModel.resetField(
           new ObjectId().toHexString(),
+          false,
           new ObjectId().toHexString(),
         )
 
@@ -464,16 +470,15 @@ describe('Verification Model', () => {
           ...VFN_PARAMS,
           fields: [field],
         })
-        const updateParams: UpdateFormFieldData = {
+        const updateParams: UpdateFieldData = {
+          isPayment: false,
           fieldId: field._id,
           transactionId: transaction._id,
           hashedOtp: 'updatedHashedOtp',
           signedData: 'updatedSignedData',
         }
 
-        const result = await VerificationModel.updateHashForFormField(
-          updateParams,
-        )
+        const result = await VerificationModel.updateHashForField(updateParams)
 
         expect(result!.fields[0].hashRetries).toEqual(0)
         expect(result!.fields[0].hashCreatedAt).toBeInstanceOf(Date)
@@ -507,16 +512,15 @@ describe('Verification Model', () => {
           ...VFN_PARAMS,
           fields: [field1, field2],
         })
-        const updateParams: UpdateFormFieldData = {
+        const updateParams: UpdateFieldData = {
+          isPayment: false,
           fieldId: field1._id,
           transactionId: transaction._id,
           hashedOtp: 'updatedHashedOtp',
           signedData: 'updatedSignedData',
         }
 
-        const result = await VerificationModel.updateHashForFormField(
-          updateParams,
-        )
+        const result = await VerificationModel.updateHashForField(updateParams)
 
         expect(result!.fields[0].hashRetries).toEqual(0)
         expect(result!.fields[0].hashCreatedAt).toBeInstanceOf(Date)
@@ -539,7 +543,8 @@ describe('Verification Model', () => {
       })
 
       it('should return null when the transaction ID is not found', async () => {
-        const result = await VerificationModel.updateHashForFormField({
+        const result = await VerificationModel.updateHashForField({
+          isPayment: false,
           fieldId: new ObjectId().toHexString(),
           transactionId: new ObjectId().toHexString(),
           hashedOtp: 'mockHashedOtp',
