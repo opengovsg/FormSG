@@ -404,7 +404,7 @@ export const disableVerifiedFieldsIfRequired = (
 }
 
 /**
- * Compares the given form otp. If correct, returns signedData, else returns an error
+ * Compares the given otp. If correct, returns signedData, else returns an error
  * @param transactionId
  * @param fieldId
  * @param inputOtp
