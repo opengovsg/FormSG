@@ -296,6 +296,15 @@ export const checkPaymentReceiptStatus: ControllerHandler<{
     })
 }
 
+/**
+ * Handler for GET /api/v3/payments/:formId/:paymentId/invoice/download
+ * Receives Stripe webhooks and updates the database with transaction details.
+ *
+ * @returns 200 if webhook is successfully processed
+ * @returns 404 if the PaymentId is not found
+ * @returns 404 if the FormId is not found
+ * @returns 404 if payment.completedPayment?.receiptUrl is not found
+ */
 export const downloadPaymentInvoice: ControllerHandler<{
   formId: string
   paymentId: string
@@ -310,8 +319,11 @@ export const downloadPaymentInvoice: ControllerHandler<{
     },
   })
 
-  return PaymentService.findPaymentById(paymentId)
-    .map((payment) => {
+  return ResultAsync.combine([
+    PaymentService.findPaymentById(paymentId),
+    FormService.retrieveFullFormById(formId).andThen(checkFormIsEncryptMode),
+  ])
+    .map(([payment, populatedForm]) => {
       logger.info({
         message: 'Found paymentId in payment document',
         meta: {
@@ -319,15 +331,38 @@ export const downloadPaymentInvoice: ControllerHandler<{
           payment,
         },
       })
+      if (!payment.completedPayment?.receiptUrl) {
+        return res
+          .status(StatusCodes.NOT_FOUND)
+          .send({ message: 'Receipt url not ready' })
+      }
       // retrieve receiptURL as html
       return (
         axios
-          .get<string>(payment.completedPayment?.receiptUrl ?? '')
+          .get<string>(payment.completedPayment.receiptUrl)
           // convert to pdf and return
           .then((receiptUrlResponse) => {
-            let html = receiptUrlResponse.data
-            html = convertToInvoiceForrmat(html)
-            const pdfBufferPromise = generatePdfFromHtml(html)
+            const html = receiptUrlResponse.data
+            const businessInfo = populatedForm.admin.agency.business
+
+            // we will still continute the invoice generation even if there's no address/gstregno
+            if (!businessInfo.address || !businessInfo.gstRegNo)
+              logger.warn({
+                message:
+                  'Some business info not available during invoice generation',
+                meta: {
+                  action: 'downloadPaymentInvoice',
+                  payment,
+                  agencyName: populatedForm.admin.agency.fullName,
+                  businessInfo: businessInfo,
+                },
+              })
+            const invoiceHtml = convertToInvoiceForrmat(html, {
+              address: businessInfo.address || '',
+              gstRegNo: businessInfo.gstRegNo || '',
+            })
+
+            const pdfBufferPromise = generatePdfFromHtml(invoiceHtml)
             return pdfBufferPromise
           })
           .then((pdfBuffer) => {
@@ -353,6 +388,15 @@ export const downloadPaymentInvoice: ControllerHandler<{
     })
 }
 
+/**
+ * Handler for GET /api/v3/payments/:formId/:paymentId/invoice/download
+ * Receives Stripe webhooks and updates the database with transaction details.
+ *
+ * @returns 200 if webhook is successfully processed
+ * @returns 404 if the PaymentId is not found
+ * @returns 404 if the FormId is not found
+ * @returns 404 if payment.completedPayment?.receiptUrl is not found
+ */
 export const downloadPaymentReceipt: ControllerHandler<{
   formId: string
   paymentId: string
@@ -376,10 +420,15 @@ export const downloadPaymentReceipt: ControllerHandler<{
           payment,
         },
       })
+      if (!payment.completedPayment?.receiptUrl) {
+        return res
+          .status(StatusCodes.NOT_FOUND)
+          .send({ message: 'Receipt url not ready' })
+      }
       // retrieve receiptURL as html
       return (
         axios
-          .get<string>(payment.completedPayment?.receiptUrl ?? '')
+          .get<string>(payment.completedPayment.receiptUrl)
           // convert to pdf and return
           .then((receiptUrlResponse) => {
             const html = receiptUrlResponse.data
