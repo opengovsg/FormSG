@@ -2,8 +2,12 @@ import { BiDownload } from 'react-icons/bi'
 import { Box, Stack, Text } from '@chakra-ui/react'
 
 import { useToast } from '~hooks/useToast'
-import { API_BASE_URL } from '~services/ApiService'
 import Button from '~components/Button'
+
+import {
+  getPaymentInvoiceDownloadUrl,
+  getPaymentReceiptDownloadUrl,
+} from '~features/public-form/utils/urls'
 
 type DownloadReceiptBlockProps = {
   formId: string
@@ -20,14 +24,14 @@ export const DownloadReceiptBlock = ({
     toast({
       description: 'Receipt download started',
     })
-    window.location.href = `${API_BASE_URL}/payments/${formId}/${paymentId}/receipt/download`
+    window.location.href = getPaymentReceiptDownloadUrl(formId, paymentId)
   }
 
   const handleInvoiceClick = () => {
     toast({
       description: 'Invoice download started',
     })
-    window.location.href = `${API_BASE_URL}/payments/${formId}/${paymentId}/invoice/download`
+    window.location.href = getPaymentInvoiceDownloadUrl(formId, paymentId)
   }
   return (
     <Box>
