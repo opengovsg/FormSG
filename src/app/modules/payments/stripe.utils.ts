@@ -1,6 +1,5 @@
 // Use 'stripe-event-types' for better type discrimination.
 /// <reference types="stripe-event-types" />
-import fs from 'fs'
 import { encode } from 'html-entities'
 import { StatusCodes } from 'http-status-codes'
 import { JSDOM } from 'jsdom'
@@ -336,12 +335,14 @@ export const mapRouteErr = (error: ApplicationError) => {
  * Converts receipt sourced from Stripe into an invoice format
  * @param receiptHtmlSource
  */
-export const convertToInvoiceForrmat = (receiptHtmlSource: string) => {
+export const convertToInvoiceForrmat = (
+  receiptHtmlSource: string,
+  { address, gstRegNo }: { address: string; gstRegNo: string },
+) => {
   // handle special characters in addresses
-  const ADDRESS = encode('8 Jurong Town Hall Road; Singapore 609434')
-  const GST_REG_NO = encode('M91234567X')
+  const ADDRESS = encode(address)
+  const GST_REG_NO = encode(gstRegNo)
 
-  fs.writeFileSync('./' + Date.now(), receiptHtmlSource)
   const edited = receiptHtmlSource
     .replace(/(<title>.*?)receipt(.*?<\/title>)/, '$1invoice$2')
     .replace(/Receipt from /g, 'Invoice from ')
