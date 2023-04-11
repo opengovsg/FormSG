@@ -634,7 +634,7 @@ describe('Verification controller', () => {
     })
   })
 
-  describe('_handleGenerateFormOtp', () => {
+  describe('_handleGenerateOtp', () => {
     const MOCK_FORM_REQ = expressHandler.mockRequest({
       body: { answer: MOCK_ANSWER },
       params: {
@@ -2820,7 +2820,7 @@ describe('Verification controller', () => {
     })
   })
 
-  describe('_handleFormOtpVerification', () => {
+  describe('_handleOtpVerification', () => {
     const MOCK_FORM_REQ = expressHandler.mockRequest({
       params: {
         transactionId: MOCK_TRANSACTION_ID,

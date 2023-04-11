@@ -336,7 +336,7 @@ export const _handleGenerateOtp: ControllerHandler<
 /**
  * Handler for the POST /forms/:formId/fieldverifications/:transactionId/fields/:fieldId/otp/generate endpoint
  */
-export const handleGenerateFormOtp = [
+export const handleGenerateOtp = [
   celebrate({
     [Segments.BODY]: Joi.object({
       answer: Joi.string().required(),
@@ -443,7 +443,7 @@ export const _handleOtpVerification: ControllerHandler<
 /**
  * Handler with otp validation for POST /forms/:formId/fieldverifications/:id/fields/:fieldId/otp/verify
  */
-export const handleFormOtpVerification = [
+export const handleOtpVerification = [
   celebrate({
     [Segments.BODY]: Joi.object({
       otp: Joi.string()

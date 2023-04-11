@@ -45,7 +45,7 @@ PublicFormsVerificationRouter.route(
   `/:formId([a-fA-F0-9]{24})/fieldverifications/:transactionId([a-fA-F0-9]{24})/fields/:fieldId([a-fA-F0-9]{24}|${PAYMENT_CONTACT_FIELD_ID})/otp/verify`,
 ).post(
   limitRate({ max: rateLimitConfig.sendAuthOtp }),
-  VerificationController.handleFormOtpVerification,
+  VerificationController.handleOtpVerification,
 )
 
 /**
@@ -69,5 +69,5 @@ PublicFormsVerificationRouter.route(
   `/:formId([a-fA-F0-9]{24})/fieldverifications/:transactionId([a-fA-F0-9]{24})/fields/:fieldId([a-fA-F0-9]{24}|${PAYMENT_CONTACT_FIELD_ID})/otp/generate`,
 ).post(
   limitRate({ max: rateLimitConfig.sendAuthOtp }),
-  VerificationController.handleGenerateFormOtp,
+  VerificationController.handleGenerateOtp,
 )
