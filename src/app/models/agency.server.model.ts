@@ -47,8 +47,10 @@ const AgencySchema = new Schema<
       trim: true,
     },
     business: {
-      address: { type: String, required: true, trim: true },
-      gstRegNo: { type: String, required: true, trim: true },
+      type: {
+        address: { type: String, required: true, trim: true },
+        gstRegNo: { type: String, required: true, trim: true },
+      },
     },
   },
   {
