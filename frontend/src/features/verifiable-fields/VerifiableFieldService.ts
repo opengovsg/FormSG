@@ -42,7 +42,7 @@ export const createTransactionForForm = async (
  * @param args.answer The value of the verification field to verify. Usually an email or phone number
  * @returns 201 Created status if successfully sent
  */
-export const triggerSendFormOtp = async ({
+export const triggerSendOtp = async ({
   formId,
   transactionId,
   fieldId,
@@ -73,7 +73,7 @@ export const triggerSendFormOtp = async ({
  * @param otp The user-entered OTP value to verify against
  * @returns The verified signature on success
  */
-export const verifyFormOtp = async ({
+export const verifyOtp = async ({
   formId,
   transactionId,
   fieldId,

@@ -19,7 +19,6 @@ import { createLoggerWithLabel } from '../../config/logger'
 import {
   OtpRequestCountExceededError,
   OtpRequestError,
-  PaymentContactFieldNotFoundInTransactionError,
   SmsLimitExceededError,
 } from '../../modules/verification/verification.errors'
 import { MailSendError } from '../../services/mail/mail.errors'
@@ -276,32 +275,6 @@ export const hasAdminExceededFreeSmsLimit = (smsCount: number): boolean => {
 }
 
 /**
- *
- * @param transaction Transaction document
- * @returns ok(paymentField)
- */
-export const getPaymentContactFieldFromTransaction = (
-  transaction: IVerificationSchema,
-): Result<
-  IVerificationFieldSchema,
-  PaymentContactFieldNotFoundInTransactionError
-> => {
-  const paymentContactField = transaction.getPaymentContactField()
-  if (!paymentContactField) {
-    logger.warn({
-      message: 'Payment contact field not found for transaction',
-      meta: {
-        action: 'getPaymentContactFieldFromTransaction',
-        transactionId: transaction._id,
-        formId: transaction.formId,
-      },
-    })
-    return err(new PaymentContactFieldNotFoundInTransactionError())
-  }
-  return ok(paymentContactField)
-}
-
-/**
  * Extracts an individual field's data from a transaction document.
  * @param transaction Transaction document
  * @param fieldId ID of field to find
@@ -310,9 +283,10 @@ export const getPaymentContactFieldFromTransaction = (
  */
 export const getFieldFromTransaction = (
   transaction: IVerificationSchema,
+  isPayment: boolean,
   fieldId: string,
 ): Result<IVerificationFieldSchema, FieldNotFoundInTransactionError> => {
-  const field = transaction.getField(fieldId)
+  const field = transaction.getField(isPayment, fieldId)
   if (!field) {
     logger.warn({
       message: 'Field ID not found for transaction',

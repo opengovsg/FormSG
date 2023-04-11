@@ -8,8 +8,8 @@ import { useToast } from '~hooks/useToast'
 import { VerifiableFieldBase, VerifiableFieldSchema } from './types'
 import {
   createTransactionForForm,
-  triggerSendFormOtp,
-  verifyFormOtp,
+  triggerSendOtp,
+  verifyOtp,
 } from './VerifiableFieldService'
 
 export const useTransactionMutations = (formId: string) => {
@@ -46,12 +46,12 @@ export const useVerifiableFieldMutations = ({
     [toast],
   )
 
-  const handleSendFormOtp = useCallback(
+  const handleSendOtp = useCallback(
     async (answer: string) => {
       const transactionId = await getTransactionId()
       if (!transactionId) throw new Error('No transactionId generated')
 
-      return triggerSendFormOtp({
+      return triggerSendOtp({
         formId,
         transactionId,
         fieldId: schema._id,
@@ -61,24 +61,24 @@ export const useVerifiableFieldMutations = ({
     [formId, getTransactionId, schema._id],
   )
 
-  const triggerSendFormOtpMutation = useMutation(handleSendFormOtp, {
+  const triggerSendOtpMutation = useMutation(handleSendOtp, {
     onError: handleError,
   })
 
   // Exactly the same as sendOtp, but different mutation for different loading indicators
-  const triggerResendFormOtpMutation = useMutation(handleSendFormOtp, {
+  const triggerResendOtpMutation = useMutation(handleSendOtp, {
     onError: handleError,
   })
 
-  const verifyFormOtpMutation = useMutation(async (otp: string) => {
+  const verifyOtpMutation = useMutation(async (otp: string) => {
     const transactionId = await getTransactionId()
     if (!transactionId) throw new Error('No transactionId generated')
-    return verifyFormOtp({ fieldId: schema._id, otp, formId, transactionId })
+    return verifyOtp({ fieldId: schema._id, otp, formId, transactionId })
   })
 
   return {
-    triggerSendFormOtpMutation,
-    triggerResendFormOtpMutation,
-    verifyFormOtpMutation,
+    triggerSendOtpMutation,
+    triggerResendOtpMutation,
+    verifyOtpMutation,
   }
 }

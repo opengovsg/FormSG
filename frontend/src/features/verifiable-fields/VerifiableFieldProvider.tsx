@@ -51,9 +51,9 @@ export const VerifiableFieldProvider = ({
   const { formId, getTransactionId, expiryInMs } = usePublicFormContext()
 
   const {
-    triggerSendFormOtpMutation,
-    triggerResendFormOtpMutation,
-    verifyFormOtpMutation,
+    triggerSendOtpMutation,
+    triggerResendOtpMutation,
+    verifyOtpMutation,
   } = useVerifiableFieldMutations({
     schema,
     formId,
@@ -107,10 +107,10 @@ export const VerifiableFieldProvider = ({
     // Should not happen, but guarding against this just in case.
     if (!currentInputValue) return
 
-    return triggerResendFormOtpMutation.mutate(currentInputValue, {
+    return triggerResendOtpMutation.mutate(currentInputValue, {
       onSuccess: ({ otpPrefix }) => setOtpPrefix(otpPrefix),
     })
-  }, [getValues, schema._id, triggerResendFormOtpMutation])
+  }, [getValues, schema._id, triggerResendOtpMutation])
 
   const handleVfnButtonClick = useCallback(() => {
     const currentInputValue = getValues(schema._id)?.value
@@ -128,7 +128,7 @@ export const VerifiableFieldProvider = ({
     // Only trigger send otp if the input is a valid input.
     const validateResult = validateInputForVfn(currentInputValue)
     if (validateResult === true) {
-      return triggerSendFormOtpMutation.mutate(currentInputValue, {
+      return triggerSendOtpMutation.mutate(currentInputValue, {
         onSuccess: ({ otpPrefix }) => {
           setIsVfnBoxOpen(true)
           setOtpPrefix(otpPrefix)
@@ -148,14 +148,14 @@ export const VerifiableFieldProvider = ({
     mapNumberToSignature,
     schema._id,
     setError,
-    triggerSendFormOtpMutation,
+    triggerSendOtpMutation,
     validateInputForVfn,
   ])
 
   const handleVerifyOtp = useCallback(
     (otp: string) => {
       // async so verification box can show error message
-      return verifyFormOtpMutation.mutateAsync(otp, {
+      return verifyOtpMutation.mutateAsync(otp, {
         onSuccess: (signature) => {
           const currentValue = getValues(schema._id)?.value
           if (!currentValue) return
@@ -178,7 +178,7 @@ export const VerifiableFieldProvider = ({
         },
       })
     },
-    [getValues, schema._id, setFocus, setValue, verifyFormOtpMutation],
+    [getValues, schema._id, setFocus, setValue, verifyOtpMutation],
   )
 
   return (
@@ -191,7 +191,7 @@ export const VerifiableFieldProvider = ({
         handleResendOtp,
         handleVerifyOtp,
         hasSignature: !!currentSignature,
-        isSendingOtp: triggerSendFormOtpMutation.isLoading,
+        isSendingOtp: triggerSendOtpMutation.isLoading,
       }}
     >
       {children}

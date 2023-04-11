@@ -10,8 +10,7 @@ import {
   IVerificationModel,
   IVerificationSchema,
   PublicTransaction,
-  UpdateFormFieldData,
-  UpdatePaymentFieldData,
+  UpdateFieldData,
 } from '../../../types'
 import { FORM_SCHEMA_ID } from '../../models/form.server.model'
 
@@ -83,15 +82,14 @@ const compileVerificationModel = (db: Mongoose): IVerificationModel => {
   }
 
   VerificationSchema.methods.getField = function (
+    isPayment: boolean,
     fieldId: string,
   ): IVerificationFieldSchema | undefined {
-    return this.fields.find((field) => field._id === fieldId)
-  }
-
-  VerificationSchema.methods.getPaymentContactField = function ():
-    | IVerificationFieldSchema
-    | undefined {
-    return this.paymentField
+    if (isPayment) {
+      return this.paymentField
+    } else {
+      return this.fields.find((field) => field._id === fieldId)
+    }
   }
 
   // Static methods
@@ -131,18 +129,20 @@ const compileVerificationModel = (db: Mongoose): IVerificationModel => {
     })
   }
 
-  VerificationSchema.statics.incrementFormFieldRetries = async function (
+  VerificationSchema.statics.incrementFieldRetries = async function (
     transactionId: string,
+    isPayment: boolean,
     fieldId: string,
   ): Promise<IVerificationSchema | null> {
+    const operationPrefix = isPayment ? 'paymentField' : 'fields.$'
     return this.findOneAndUpdate(
       {
         _id: transactionId,
-        'fields._id': fieldId,
+        ...(!isPayment && { 'fields._id': fieldId }),
       },
       {
         $inc: {
-          'fields.$.hashRetries': 1,
+          [`${operationPrefix}.hashRetries`]: 1,
         },
       },
       {
@@ -153,41 +153,23 @@ const compileVerificationModel = (db: Mongoose): IVerificationModel => {
     ).exec()
   }
 
-  VerificationSchema.statics.incrementPaymentFieldRetries = async function (
+  VerificationSchema.statics.resetField = async function (
     transactionId: string,
-  ): Promise<IVerificationSchema | null> {
-    return this.findOneAndUpdate(
-      {
-        _id: transactionId,
-      },
-      {
-        $inc: {
-          'paymentField.hashRetries': 1,
-        },
-      },
-      {
-        new: true,
-        runValidators: true,
-        setDefaultsOnInsert: true,
-      },
-    ).exec()
-  }
-
-  VerificationSchema.statics.resetFormField = async function (
-    transactionId: string,
+    isPayment: boolean,
     fieldId: string,
   ): Promise<IVerificationSchema | null> {
+    const operationPrefix = isPayment ? 'paymentField' : 'fields.$'
     return this.findOneAndUpdate(
       {
         _id: transactionId,
-        'fields._id': fieldId,
+        ...(!isPayment && { 'fields._id': fieldId }),
       },
       {
         $set: {
-          'fields.$.hashCreatedAt': null,
-          'fields.$.hashedOtp': null,
-          'fields.$.signedData': null,
-          'fields.$.hashRetries': 0,
+          [`${operationPrefix}.hashCreatedAt`]: null,
+          [`${operationPrefix}.hashedOtp`]: null,
+          [`${operationPrefix}.signedData`]: null,
+          [`${operationPrefix}.hashRetries`]: 0,
         },
       },
       {
@@ -198,72 +180,24 @@ const compileVerificationModel = (db: Mongoose): IVerificationModel => {
     ).exec()
   }
 
-  VerificationSchema.statics.resetPaymentField = async function (
-    transactionId: string,
+  VerificationSchema.statics.updateHashForField = async function (
+    updateData: UpdateFieldData,
   ): Promise<IVerificationSchema | null> {
-    return this.findOneAndUpdate(
-      {
-        _id: transactionId,
-      },
-      {
-        $set: {
-          'paymentField.hashCreatedAt': null,
-          'paymentField.hashedOtp': null,
-          'paymentField.signedData': null,
-          'paymentField.hashRetries': 0,
-        },
-      },
-      {
-        new: true,
-        runValidators: true,
-        setDefaultsOnInsert: true,
-      },
-    ).exec()
-  }
-
-  VerificationSchema.statics.updateHashForFormField = async function (
-    updateData: UpdateFormFieldData,
-  ): Promise<IVerificationSchema | null> {
+    const operationPrefix = updateData.isPayment ? 'paymentField' : 'fields.$'
     return this.findOneAndUpdate(
       {
         _id: updateData.transactionId,
-        'fields._id': updateData.fieldId,
+        ...(!updateData.isPayment && { 'fields._id': updateData.fieldId }),
       },
       {
         $set: {
-          'fields.$.hashCreatedAt': new Date(),
-          'fields.$.hashedOtp': updateData.hashedOtp,
-          'fields.$.signedData': updateData.signedData,
-          'fields.$.hashRetries': 0,
+          [`${operationPrefix}.hashCreatedAt`]: new Date(),
+          [`${operationPrefix}.hashedOtp`]: updateData.hashedOtp,
+          [`${operationPrefix}.signedData`]: updateData.signedData,
+          [`${operationPrefix}.hashRetries`]: 0,
         },
         $inc: {
-          'fields.$.otpRequests': 1,
-        },
-      },
-      {
-        new: true,
-        runValidators: true,
-        setDefaultsOnInsert: true,
-      },
-    ).exec()
-  }
-
-  VerificationSchema.statics.updateHashForPaymentField = async function (
-    updateData: UpdatePaymentFieldData,
-  ): Promise<IVerificationSchema | null> {
-    return this.findOneAndUpdate(
-      {
-        _id: updateData.transactionId,
-      },
-      {
-        $set: {
-          'paymentField.hashCreatedAt': new Date(),
-          'paymentField.hashedOtp': updateData.hashedOtp,
-          'paymentField.signedData': updateData.signedData,
-          'paymentField.hashRetries': 0,
-        },
-        $inc: {
-          'paymentField.otpRequests': 1,
+          [`${operationPrefix}.otpRequests`]: 1,
         },
       },
       {

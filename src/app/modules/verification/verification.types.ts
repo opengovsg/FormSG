@@ -1,9 +1,4 @@
-import { IVerificationModel, IVerificationSchema } from '../../../types'
-
-import {
-  getFieldFromTransaction,
-  getPaymentContactFieldFromTransaction,
-} from './verification.util'
+import { IVerificationSchema } from '../../../types'
 
 export type Transaction =
   | {
@@ -20,33 +15,15 @@ export type SendOtpParams = {
   senderIp: string
   transactionId: string
   fieldId: string
-  getFieldFromTransactionFx:
-    | typeof getFieldFromTransaction
-    | typeof getPaymentContactFieldFromTransaction
-  updateHashFx:
-    | IVerificationModel['updateHashForFormField']
-    | IVerificationModel['updateHashForPaymentField']
 }
 
 export type VerifyOtpParams = {
   transactionId: string
   fieldId: string
   inputOtp: string
-  getFieldFromTransactionFx:
-    | typeof getFieldFromTransaction
-    | typeof getPaymentContactFieldFromTransaction
-  incrementFieldRetriesFx:
-    | IVerificationModel['incrementFormFieldRetries']
-    | IVerificationModel['incrementPaymentFieldRetries']
 }
 
 export type ResetFieldForTransactionParams = {
   transactionId: string
   fieldId: string
-  getFieldFromTransactionFx:
-    | typeof getFieldFromTransaction
-    | typeof getPaymentContactFieldFromTransaction
-  resetFieldFx:
-    | IVerificationModel['resetFormField']
-    | IVerificationModel['resetPaymentField']
 }

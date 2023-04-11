@@ -1,11 +1,7 @@
 import { celebrate, Joi, Segments } from 'celebrate'
 import { StatusCodes } from 'http-status-codes'
-import mongoose from 'mongoose'
 import { ok } from 'neverthrow'
 
-import { UpdateFormFieldData, UpdatePaymentFieldData } from 'src/types'
-
-import { PAYMENT_CONTACT_FIELD_ID } from '../../../../shared/constants'
 import {
   ErrorDto,
   FormAuthType,
@@ -23,18 +19,11 @@ import * as MyInfoUtil from '../myinfo/myinfo.util'
 import { SgidService } from '../sgid/sgid.service'
 import { getOidcService } from '../spcp/spcp.oidc.service'
 
-import getVerificationModel from './verification.model'
 import * as VerificationService from './verification.service'
 import { Transaction } from './verification.types'
-import {
-  getFieldFromTransaction,
-  getPaymentContactFieldFromTransaction,
-  mapRouteError,
-} from './verification.util'
+import { mapRouteError } from './verification.util'
 
 const logger = createLoggerWithLabel(module)
-
-const VerificationModel = getVerificationModel(mongoose)
 
 /**
  * NOTE: Private handler for POST /transaction
@@ -140,8 +129,6 @@ export const handleResetField: ControllerHandler<
   return VerificationService.resetFieldForTransaction({
     transactionId,
     fieldId,
-    getFieldFromTransactionFx: getFieldFromTransaction,
-    resetFieldFx: resetFormFieldWrapper,
   })
     .map(() => res.sendStatus(StatusCodes.OK))
     .mapErr((error) => {
@@ -154,15 +141,6 @@ export const handleResetField: ControllerHandler<
       return res.status(statusCode).json({ message: errorMessage })
     })
 }
-
-/**
- * NOTE: Exported soley for testing
- * @param updateData
- * @returns
- */
-export const updateHashForFormFieldWrapper = (
-  updateData: UpdateFormFieldData,
-) => VerificationModel.updateHashForFormField(updateData)
 
 /**
  * When user requests to verify a field, an otp is generated.
@@ -196,8 +174,6 @@ export const handleGetOtp: ControllerHandler<
         transactionId,
         senderIp,
         fieldId,
-        getFieldFromTransactionFx: getFieldFromTransaction,
-        updateHashFx: updateHashForFormFieldWrapper,
       }),
     )
     .map(() => res.sendStatus(StatusCodes.CREATED))
@@ -318,16 +294,6 @@ export const _handleGenerateOtp: ControllerHandler<
           ({ otp, hashedOtp, otpPrefix }) =>
             // Step 3: Send Otp
             {
-              let getFieldFromTransactionFx
-              let updateHashFx
-              if (fieldId === PAYMENT_CONTACT_FIELD_ID) {
-                getFieldFromTransactionFx =
-                  getPaymentContactFieldFromTransaction
-                updateHashFx = updateHashForPaymentFieldWrapper
-              } else {
-                getFieldFromTransactionFx = getFieldFromTransaction
-                updateHashFx = updateHashForFormFieldWrapper
-              }
               return VerificationService.sendNewOtp({
                 fieldId,
                 hashedOtp,
@@ -336,8 +302,6 @@ export const _handleGenerateOtp: ControllerHandler<
                 recipient: answer,
                 transactionId,
                 senderIp,
-                getFieldFromTransactionFx,
-                updateHashFx,
               }) // Return the required data for next steps.
                 .map((updatedTransaction) => ({
                   updatedTransaction,
@@ -382,15 +346,6 @@ export const handleGenerateFormOtp = [
 ] as ControllerHandler[]
 
 /**
- * NOTE: Exported soley for testing
- * @param updateData
- * @returns
- */
-export const updateHashForPaymentFieldWrapper = (
-  updateData: UpdatePaymentFieldData,
-) => VerificationModel.updateHashForPaymentField(updateData)
-
-/**
  * When user submits their otp for the field, the otp is validated.
  * If it is correct, we return the signature that was saved.
  * This signature will be appended to the response when the form is submitted.
@@ -415,8 +370,6 @@ export const handleVerifyOtp: ControllerHandler<
     transactionId,
     inputOtp: otp,
     fieldId,
-    getFieldFromTransactionFx: getFieldFromTransaction,
-    incrementFieldRetriesFx: incrementFormFieldRetriesWrapper,
   })
     .map((signedData) => res.status(StatusCodes.OK).json(signedData))
     .mapErr((error) => {
@@ -429,16 +382,6 @@ export const handleVerifyOtp: ControllerHandler<
       return res.status(statusCode).json({ message: errorMessage })
     })
 }
-
-/**
- * NOTE: Exported soley for testing
- * @param transactionId
- * @returns Promise<IVerificationSchema | null>
- */
-export const incrementFormFieldRetriesWrapper = (
-  transactionId: string,
-  fieldId: string,
-) => VerificationModel.incrementFormFieldRetries(transactionId, fieldId)
 
 /**
  * NOTE: Exported solely for testing
@@ -478,21 +421,10 @@ export const _handleOtpVerification: ControllerHandler<
     FormService.retrieveFormById(formId)
       // Step 2: Verify the otp sent over by the client
       .andThen(() => {
-        let getFieldFromTransactionFx
-        let incrementFieldRetriesFx
-        if (fieldId === PAYMENT_CONTACT_FIELD_ID) {
-          getFieldFromTransactionFx = getPaymentContactFieldFromTransaction
-          incrementFieldRetriesFx = incrementPaymentFieldRetriesWrapper
-        } else {
-          getFieldFromTransactionFx = getFieldFromTransaction
-          incrementFieldRetriesFx = incrementFormFieldRetriesWrapper
-        }
         return VerificationService.verifyOtp({
           transactionId,
           inputOtp: otp,
           fieldId,
-          getFieldFromTransactionFx,
-          incrementFieldRetriesFx,
         })
       })
       .map((signedData) => res.status(StatusCodes.OK).json(signedData))
@@ -522,22 +454,6 @@ export const handleFormOtpVerification = [
   }),
   _handleOtpVerification,
 ] as ControllerHandler[]
-
-/**
- * NOTE: Exported soley for testing
- * @param transactionId
- * @returns Promise<IVerificationSchema | null>
- */
-export const incrementPaymentFieldRetriesWrapper = (transactionId: string) =>
-  VerificationModel.incrementPaymentFieldRetries(transactionId)
-
-/**
- * NOTE: Exported soley for testing
- * @param transactionId
- * @returns Promise<IVerificationSchema | null>
- */
-export const resetFormFieldWrapper = (transactionId: string, fieldId: string) =>
-  VerificationModel.resetFormField(transactionId, fieldId)
 
 /**
  * Handler for resetting the verification state of a field.
@@ -571,8 +487,6 @@ export const handleResetFieldVerification: ControllerHandler<
       VerificationService.resetFieldForTransaction({
         transactionId,
         fieldId,
-        getFieldFromTransactionFx: getFieldFromTransaction,
-        resetFieldFx: resetFormFieldWrapper,
       }),
     )
     .map(() => res.sendStatus(StatusCodes.NO_CONTENT))

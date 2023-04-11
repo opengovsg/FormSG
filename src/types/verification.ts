@@ -29,13 +29,11 @@ export interface IVerification {
   paymentField: IVerificationFieldSchema
 }
 
-export type UpdatePaymentFieldData = {
+export type UpdateFieldData = {
+  isPayment: boolean
   transactionId: string
   hashedOtp: string
   signedData: string
-}
-
-export type UpdateFormFieldData = UpdatePaymentFieldData & {
   fieldId: string
 }
 
@@ -44,18 +42,16 @@ export interface IVerificationSchema
     Document,
     PublicView<PublicTransaction> {
   /**
-   * Retrieves an individual field in a transaction, or undefined if not found
-   * @param fieldId
-   */
-  getField(fieldId: string): IVerificationFieldSchema | undefined
-  /**
    * Extracts non-sensitive fields from a transaction
    */
   getPublicView(): PublicTransaction
   /**
-   * Retrieves payment contact field in a transaction, or undefined if not found
+   * Retrieves field in a transaction, or undefined if not found
    */
-  getPaymentContactField(): IVerificationFieldSchema | undefined
+  getField(
+    isPayment: boolean,
+    fieldId: string,
+  ): IVerificationFieldSchema | undefined
 }
 
 // Keep in sync with VERIFICATION_PUBLIC_FIELDS
@@ -83,39 +79,20 @@ export interface IVerificationModel extends Model<IVerificationSchema> {
   /**
    * Increments the number of retries for a given field by 1.
    */
-  incrementFormFieldRetries(
+  incrementFieldRetries(
     transactionId: string,
+    isPayment: boolean,
     fieldId: string,
-  ): Promise<IVerificationSchema | null>
-  /**
-   * Increments the number of retries for payment contact field by 1.
-   */
-  incrementPaymentFieldRetries(
-    transactionId: string,
   ): Promise<IVerificationSchema | null>
   /**
    * Resets the hash records of a single field.
    */
-  resetFormField(
+  resetField(
     transactionId: string,
+    isPayment: boolean,
     fieldId: string,
   ): Promise<IVerificationSchema | null>
-  /**
-   * Resets the hash records of a payment contact field.
-   */
-  resetPaymentField(transactionId: string): Promise<IVerificationSchema | null>
-  /**
-   * Updates the hash records for a single field
-   * @param updateData Data with which to update field
-   */
-  updateHashForFormField(
-    updateData: UpdateFormFieldData,
-  ): Promise<IVerificationSchema | null>
-  /**
-   * Updates the hash records for a payment contact field
-   * @param updateData Data with which to update field
-   */
-  updateHashForPaymentField(
-    updateData: UpdatePaymentFieldData,
+  updateHashForField(
+    updateData: UpdateFieldData,
   ): Promise<IVerificationSchema | null>
 }
