@@ -66,6 +66,8 @@ export const TransferOwnershipModal = ({
     trigger()
   }, [])
 
+  // TODO: Prevent transferring ownership to self
+  // TODO: Any need to ensure the new owner is a user of FormSG?
   // FIXME: Fix double modal rendering issue (see PR for screenshots)
   return (
     <Modal
@@ -117,9 +119,12 @@ export const TransferOwnershipModal = ({
           {page === 1 && (
             <section>
               <Text textStyle="body-2" color="secondary.500">
-                You are transferring all forms to {email}. You will be removed
-                as a collaborator and lose access to the forms you previously
-                owned.
+                You are transferring all forms to{' '}
+                <Text as="span" color="danger.500" fontWeight="bold">
+                  {email}
+                </Text>
+                . You will be removed as a collaborator and lose access to the
+                forms you previously owned.
               </Text>
               <section style={{ marginTop: '1rem', textAlign: 'right' }}>
                 <ButtonGroup spacing="6">
