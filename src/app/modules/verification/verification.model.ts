@@ -119,7 +119,7 @@ const compileVerificationModel = (db: Mongoose): IVerificationModel => {
       if (fields.length === 0) return null
     }
     if (payments_field?.enabled) {
-      paymentField = { _id: PAYMENT_CONTACT_FIELD_ID, fieldType: 'email' }
+      paymentField = { _id: PAYMENT_CONTACT_FIELD_ID, fieldType: BasicField.Email }
     }
     return this.create({
       formId: form._id,
