@@ -26,6 +26,7 @@ import * as PaymentService from './payments.service'
 import { StripeFetchError } from './stripe.errors'
 import * as StripeService from './stripe.service'
 import {
+  convertToInvoiceForrmat,
   getChargeIdFromNestedCharge,
   getMetadataPaymentId,
   mapRouteErr,
@@ -295,7 +296,107 @@ export const checkPaymentReceiptStatus: ControllerHandler<{
     })
 }
 
-// TODO: Refactor for use in static payment url implementation
+/**
+ * Handler for GET /api/v3/payments/:formId/:paymentId/invoice/download
+ * Receives Stripe webhooks and updates the database with transaction details.
+ *
+ * @returns 200 if webhook is successfully processed
+ * @returns 404 if the PaymentId is not found
+ * @returns 404 if the FormId is not found
+ * @returns 404 if payment.completedPayment?.receiptUrl is not found
+ */
+export const downloadPaymentInvoice: ControllerHandler<{
+  formId: string
+  paymentId: string
+}> = (req, res) => {
+  const { formId, paymentId } = req.params
+  logger.info({
+    message: 'downloadPaymentInvoice endpoint called',
+    meta: {
+      action: 'downloadPaymentInvoice',
+      formId,
+      paymentId,
+    },
+  })
+
+  return ResultAsync.combine([
+    PaymentService.findPaymentById(paymentId),
+    FormService.retrieveFullFormById(formId).andThen(checkFormIsEncryptMode),
+  ])
+    .map(([payment, populatedForm]) => {
+      logger.info({
+        message: 'Found paymentId in payment document',
+        meta: {
+          action: 'downloadPaymentInvoice',
+          payment,
+        },
+      })
+      if (!payment.completedPayment?.receiptUrl) {
+        return res
+          .status(StatusCodes.NOT_FOUND)
+          .send({ message: 'Receipt url not ready' })
+      }
+      // retrieve receiptURL as html
+      return (
+        axios
+          .get<string>(payment.completedPayment.receiptUrl)
+          // convert to pdf and return
+          .then((receiptUrlResponse) => {
+            const html = receiptUrlResponse.data
+            const businessInfo = populatedForm.admin.agency.business
+
+            // we will still continute the invoice generation even if there's no address/gstregno
+            if (!businessInfo.address || !businessInfo.gstRegNo)
+              logger.warn({
+                message:
+                  'Some business info not available during invoice generation',
+                meta: {
+                  action: 'downloadPaymentInvoice',
+                  payment,
+                  agencyName: populatedForm.admin.agency.fullName,
+                  businessInfo: businessInfo,
+                },
+              })
+            const invoiceHtml = convertToInvoiceForrmat(html, {
+              address: businessInfo.address || '',
+              gstRegNo: businessInfo.gstRegNo || '',
+            })
+
+            const pdfBufferPromise = generatePdfFromHtml(invoiceHtml)
+            return pdfBufferPromise
+          })
+          .then((pdfBuffer) => {
+            res.set({
+              'Content-Type': 'application/pdf',
+              'Content-Disposition': `attachment; filename=${paymentId}-invoice.pdf`,
+            })
+            return res.status(StatusCodes.OK).send(pdfBuffer)
+          })
+      )
+    })
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error retrieving invoice',
+        meta: {
+          action: 'downloadPaymentInvoice',
+          formId,
+          paymentId,
+        },
+        error,
+      })
+      return res.status(StatusCodes.NOT_FOUND).json({ message: error })
+    })
+}
+
+/**
+ * Handler for GET /api/v3/payments/:formId/:paymentId/invoice/download
+ * Receives Stripe webhooks and updates the database with transaction details.
+ *
+ * @returns 200 if webhook is successfully processed
+ * @returns 404 if the PaymentId is not found
+ * @returns 404 if the FormId is not found
+ * @returns 404 if payment.completedPayment?.receiptUrl is not found
+ */
 export const downloadPaymentReceipt: ControllerHandler<{
   formId: string
   paymentId: string
@@ -319,10 +420,15 @@ export const downloadPaymentReceipt: ControllerHandler<{
           payment,
         },
       })
+      if (!payment.completedPayment?.receiptUrl) {
+        return res
+          .status(StatusCodes.NOT_FOUND)
+          .send({ message: 'Receipt url not ready' })
+      }
       // retrieve receiptURL as html
       return (
         axios
-          .get<string>(payment.completedPayment?.receiptUrl ?? '')
+          .get<string>(payment.completedPayment.receiptUrl)
           // convert to pdf and return
           .then((receiptUrlResponse) => {
             const html = receiptUrlResponse.data

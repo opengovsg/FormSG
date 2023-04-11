@@ -2,8 +2,12 @@ import { BiDownload } from 'react-icons/bi'
 import { Box, Stack, Text } from '@chakra-ui/react'
 
 import { useToast } from '~hooks/useToast'
-import { API_BASE_URL } from '~services/ApiService'
 import Button from '~components/Button'
+
+import {
+  getPaymentInvoiceDownloadUrl,
+  getPaymentReceiptDownloadUrl,
+} from '~features/public-form/utils/urls'
 
 type DownloadReceiptBlockProps = {
   formId: string
@@ -16,11 +20,18 @@ export const DownloadReceiptBlock = ({
 }: DownloadReceiptBlockProps) => {
   const toast = useToast({ status: 'success', isClosable: true })
 
-  const handleClick = () => {
+  const handleReceiptClick = () => {
     toast({
       description: 'Receipt download started',
     })
-    window.location.href = `${API_BASE_URL}/payments/receipt/${formId}/${paymentId}/download`
+    window.location.href = getPaymentReceiptDownloadUrl(formId, paymentId)
+  }
+
+  const handleInvoiceClick = () => {
+    toast({
+      description: 'Invoice download started',
+    })
+    window.location.href = getPaymentInvoiceDownloadUrl(formId, paymentId)
   }
   return (
     <Box>
@@ -37,11 +48,20 @@ export const DownloadReceiptBlock = ({
       </Text>
 
       <Button
+        hidden // Currently hidden for JTC
         mt="2.25rem"
+        mr="2.25rem"
         leftIcon={<BiDownload fontSize="1.5rem" />}
-        onClick={handleClick}
+        onClick={handleReceiptClick}
       >
         Save payment receipt
+      </Button>
+      <Button
+        mt="2.25rem"
+        leftIcon={<BiDownload fontSize="1.5rem" />}
+        onClick={handleInvoiceClick}
+      >
+        Save payment invoice
       </Button>
     </Box>
   )
