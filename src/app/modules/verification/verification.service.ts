@@ -273,12 +273,12 @@ export const resetFieldForTransaction = ({
  */
 export const sendNewOtp = ({
   transactionId,
+  fieldId,
   recipient,
   otp,
   hashedOtp,
   otpPrefix,
   senderIp,
-  fieldId,
 }: SendOtpParams): ResultAsync<
   IVerificationSchema,
   | TransactionNotFoundError

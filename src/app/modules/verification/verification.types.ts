@@ -8,13 +8,13 @@ export type Transaction =
   | Record<string, never>
 
 export type SendOtpParams = {
+  transactionId: string
+  fieldId: string
   recipient: string
   otp: string
   hashedOtp: string
   otpPrefix: string
   senderIp: string
-  transactionId: string
-  fieldId: string
 }
 
 export type VerifyOtpParams = {

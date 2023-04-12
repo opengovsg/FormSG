@@ -189,7 +189,8 @@ export const handleGetOtp: ControllerHandler<
 }
 
 /**
- * Generates an otp when a user requests to verify a form field.
+ * NOTE: This is exported solely for testing
+ * Generates an otp when a user requests to verify a field.
  * The current answer is signed, and the signature is also saved in the transaction, with the field id as the key.
  * @param answer The mobile or email number of the user
  * @param transactionId The id of the transaction to verify
@@ -385,7 +386,7 @@ export const handleVerifyOtp: ControllerHandler<
 
 /**
  * NOTE: Exported solely for testing
- * Handler for form otp verification; double checks the submitted otp against the true otp
+ * Handler for otp verification; double checks the submitted otp against the true otp
  * If the submitted otp is correct,
  * the signature that was saved will be appended to the response of the form when submitted
  * @param formId The id of the form which verification is for
