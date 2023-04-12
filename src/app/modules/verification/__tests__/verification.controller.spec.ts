@@ -20,7 +20,6 @@ import {
   IFormSchema,
   IPopulatedForm,
   IVerificationFieldSchema,
-  // IVerificationFieldSchema,
   IVerificationSchema,
 } from 'src/types'
 
