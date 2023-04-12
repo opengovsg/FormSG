@@ -145,7 +145,7 @@ const StripePaymentContainer = ({
             />
           </PaymentStack>
         )
-      case PaymentViewStates.Pending:
+      case PaymentViewStates.PendingPayment:
         return (
           <PaymentStack>
             <StripePaymentBlock

@@ -4,7 +4,7 @@ export enum PaymentViewStates {
   Invalid,
   Succeeded,
   Canceled,
-  Pending,
+  PendingPayment,
   Processing,
 }
 export const getPaymentViewStates = (
@@ -14,5 +14,5 @@ export const getPaymentViewStates = (
   if (['succeeded'].includes(status)) return PaymentViewStates.Succeeded
   if (['canceled'].includes(status)) return PaymentViewStates.Canceled
   if (['processing'].includes(status)) return PaymentViewStates.Processing
-  return PaymentViewStates.Pending
+  return PaymentViewStates.PendingPayment
 }
