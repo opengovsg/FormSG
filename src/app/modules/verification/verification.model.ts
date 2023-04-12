@@ -139,6 +139,7 @@ const compileVerificationModel = (db: Mongoose): IVerificationModel => {
         paymentField,
       })
     } else {
+      if (!formFields) return null
       return this.create({
         formId: form._id,
         fields: formFields,
