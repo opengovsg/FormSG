@@ -2,9 +2,15 @@ import { pick } from 'lodash'
 import { Mongoose, Schema } from 'mongoose'
 
 import { PAYMENT_CONTACT_FIELD_ID } from '../../../../shared/constants'
-import { BasicField } from '../../../../shared/types'
+import {
+  BasicField,
+  FormPaymentsField,
+  FormResponseMode,
+} from '../../../../shared/types'
 import { TRANSACTION_EXPIRE_AFTER_SECONDS } from '../../../../shared/utils/verification'
 import {
+  FormFieldSchema,
+  IEncryptedFormSchema,
   IFormSchema,
   IVerificationFieldSchema,
   IVerificationModel,
@@ -102,31 +108,42 @@ const compileVerificationModel = (db: Mongoose): IVerificationModel => {
     return document.getPublicView()
   }
 
+  const getVerifiableFormFields = (formFields?: FormFieldSchema[]) => {
+    if (!formFields) return null
+    const fields = extractTransactionFields(formFields)
+    if (fields.length === 0) return null
+    return fields
+  }
+
+  const getVerifiablePaymentContactField = (
+    paymentsField?: FormPaymentsField,
+  ) => {
+    if (!paymentsField?.enabled) return null
+    return {
+      _id: PAYMENT_CONTACT_FIELD_ID,
+      fieldType: BasicField.Email,
+    }
+  }
+
   VerificationSchema.statics.createTransactionFromForm = async function (
-    form: IFormSchema,
+    form: IFormSchema | IEncryptedFormSchema,
   ): Promise<IVerificationSchema | null> {
-    const { form_fields, payments_field } = form
-    if (
-      (!form_fields || form_fields.length == 0) &&
-      (payments_field == undefined || !payments_field.enabled)
-    )
-      return null
-    let fields, paymentField
-    if (form_fields) {
-      fields = extractTransactionFields(form_fields)
-      if (fields.length === 0) return null
+    const formFields = getVerifiableFormFields(form.form_fields)
+    if (form.responseMode === FormResponseMode.Encrypt) {
+      const { payments_field } = form as IEncryptedFormSchema
+      const paymentField = getVerifiablePaymentContactField(payments_field)
+      if (!formFields && !paymentField) return null
+      return this.create({
+        formId: form._id,
+        fields: formFields,
+        paymentField,
+      })
+    } else {
+      return this.create({
+        formId: form._id,
+        fields: formFields,
+      })
     }
-    if (payments_field?.enabled) {
-      paymentField = {
-        _id: PAYMENT_CONTACT_FIELD_ID,
-        fieldType: BasicField.Email,
-      }
-    }
-    return this.create({
-      formId: form._id,
-      fields,
-      paymentField,
-    })
   }
 
   VerificationSchema.statics.incrementFieldRetries = async function (

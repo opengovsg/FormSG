@@ -3,7 +3,7 @@ import { Document, Model } from 'mongoose'
 import { BasicField } from '../../shared/types'
 
 import { PublicView } from './database'
-import { IFormSchema } from './form'
+import { IEncryptedFormSchema, IFormSchema } from './form'
 
 export interface IVerificationField {
   fieldType: BasicField
@@ -74,7 +74,7 @@ export interface IVerificationModel extends Model<IVerificationSchema> {
    * @param form Form document
    */
   createTransactionFromForm(
-    form: IFormSchema,
+    form: IFormSchema | IEncryptedFormSchema,
   ): Promise<IVerificationSchema | null>
   /**
    * Increments the number of retries for a given field by 1.
