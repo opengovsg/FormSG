@@ -135,7 +135,7 @@ const compileVerificationModel = (db: Mongoose): IVerificationModel => {
       if (!formFields && !paymentField) return null
       return this.create({
         formId: form._id,
-        fields: formFields,
+        fields: formFields ?? [],
         paymentField,
       })
     } else {
