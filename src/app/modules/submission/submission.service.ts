@@ -265,8 +265,8 @@ export const copyPendingSubmissionToSubmissions = (
       ])
       const submission = new SubmissionModel({
         // Explicitly copy over the pending submission's _id
-        _id: pendingSubmissionId,
         ...submissionContent,
+        _id: pendingSubmissionId,
       })
 
       return ResultAsync.fromPromise(submission.save({ session }), (error) => {
