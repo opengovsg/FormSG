@@ -4,8 +4,14 @@ import moment from 'moment-timezone'
 import {
   StorageModeSubmissionDto,
   SubmissionPaymentDto,
+  SubmissionType,
 } from '../../../../../shared/types'
-import { MapRouteErrors, SubmissionData } from '../../../../types'
+import {
+  IEncryptedSubmissionSchema,
+  ISubmissionSchema,
+  MapRouteErrors,
+  SubmissionData,
+} from '../../../../types'
 import { MapRouteError } from '../../../../types/routing'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { MalformedVerifiedContentError } from '../../../modules/verified-content/verified-content.errors'
@@ -198,6 +204,17 @@ const errorMapper: MapRouteError = (
 
 export const mapRouteError: MapRouteErrors =
   genericMapRouteErrorTransform(errorMapper)
+
+/**
+ * Typeguard to check if given submission is an encrypt mode submission.
+ * @param submission the submission to check
+ * @returns true if submission is encrypt mode submission, false otherwise.
+ */
+export const isSubmissionEncryptMode = (
+  submission: ISubmissionSchema,
+): submission is IEncryptedSubmissionSchema => {
+  return submission.submissionType === SubmissionType.Encrypt
+}
 
 /**
  * Creates and returns an EncryptedSubmissionDto object from submissionData and

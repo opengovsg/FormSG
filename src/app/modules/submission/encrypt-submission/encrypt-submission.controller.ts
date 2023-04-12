@@ -41,10 +41,7 @@ import { SgidService } from '../../sgid/sgid.service'
 import { getOidcService } from '../../spcp/spcp.oidc.service'
 import { getPopulatedUserById } from '../../user/user.service'
 import * as VerifiedContentService from '../../verified-content/verified-content.service'
-import { WebhookFactory } from '../../webhook/webhook.factory'
 import * as EncryptSubmissionMiddleware from '../encrypt-submission/encrypt-submission.middleware'
-import { sendEmailConfirmations } from '../submission.service'
-import { extractEmailConfirmationDataFromIncomingSubmission } from '../submission.utils'
 
 import {
   addPaymentDataStream,
@@ -54,6 +51,7 @@ import {
   getSubmissionMetadata,
   getSubmissionMetadataList,
   getSubmissionPaymentDto,
+  performEncryptPostSubmissionActions,
   transformAttachmentMetasToSignedUrls,
   transformAttachmentMetaStream,
   uploadAttachments,
@@ -391,6 +389,7 @@ const submitEncryptModeForm: ControllerHandler<
     const payment = new Payment({
       amount,
       email: paymentReceiptEmail,
+      responses: incomingSubmission.responses,
     })
     const paymentId = payment.id
 
@@ -571,18 +570,6 @@ const submitEncryptModeForm: ControllerHandler<
     },
   })
 
-  // Fire webhooks if available
-  // To avoid being coupled to latency of receiving system,
-  // do not await on webhook
-  const webhookUrl = form.webhook?.url
-  if (webhookUrl) {
-    void WebhookFactory.sendInitialWebhook(
-      submission,
-      webhookUrl,
-      !!form.webhook?.isRetryEnabled,
-    )
-  }
-
   // Send success back to client
   res.json({
     message: 'Form submission successful.',
@@ -590,21 +577,10 @@ const submitEncryptModeForm: ControllerHandler<
     timestamp: (submission.created || new Date()).getTime(),
   })
 
-  // Send Email Confirmations
-  return sendEmailConfirmations({
-    form,
+  return await performEncryptPostSubmissionActions(
     submission,
-    recipientData:
-      extractEmailConfirmationDataFromIncomingSubmission(incomingSubmission),
-  }).mapErr((error) => {
-    logger.error({
-      message: 'Error while sending email confirmations',
-      meta: {
-        action: 'sendEmailAutoReplies',
-      },
-      error,
-    })
-  })
+    incomingSubmission.responses,
+  )
 }
 
 export const handleEncryptedSubmission = [
