@@ -105,7 +105,6 @@ export type PickDuplicateForm = Pick<
 export interface IFormSchema extends IForm, Document, PublicView<PublicForm> {
   form_fields?: Types.DocumentArray<FormFieldSchema> | FormFieldSchema[]
   form_logics?: Types.DocumentArray<FormLogicSchema> | FormLogicSchema[]
-  payments_field?: { enabled?: boolean }
 
   created?: Date
   lastModified?: Date
