@@ -166,7 +166,6 @@ const StripePaymentContainer = ({
                 title={'Stripe is processing your payment.'}
                 subtitle={''}
               />
-              <FeedbackBlock onSubmit={handleSubmitFeedback} />
             </PaymentStack>
           </>
         )
@@ -176,7 +175,9 @@ const StripePaymentContainer = ({
             <PaymentSuccessSvgr maxW="100%" />
             <PaymentStack>
               <StripeReceiptContainer formId={formId} paymentId={paymentId} />
-              <FeedbackBlock onSubmit={handleSubmitFeedback} />
+              {!isFeedbackSubmitted && (
+                <FeedbackBlock onSubmit={handleSubmitFeedback} />
+              )}
             </PaymentStack>
           </>
         )
