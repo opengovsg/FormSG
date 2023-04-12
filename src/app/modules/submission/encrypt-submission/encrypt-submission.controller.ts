@@ -436,7 +436,11 @@ const submitEncryptModeForm: ControllerHandler<
       paymentContactEmail: paymentReceiptEmail,
     }
 
-    const paymentReceiptDescription = `${form.payments_field.description}\nFormSG form: ${form.title}\nResponse ID: ${pendingSubmissionId}`
+    const paymentReceiptDescription = [
+      form.payments_field.description,
+      `FormSG form: ${form.title}`,
+      `Response ID: ${pendingSubmissionId}`,
+    ].join('\n')
 
     const createPaymentIntentParams: Stripe.PaymentIntentCreateParams = {
       amount,
