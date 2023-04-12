@@ -5,6 +5,7 @@ export enum PaymentViewStates {
   Succeeded,
   Canceled,
   Pending,
+  Processing,
 }
 export const getPaymentViewStates = (
   status: PaymentIntent.Status | undefined,
@@ -12,5 +13,6 @@ export const getPaymentViewStates = (
   if (!status) return PaymentViewStates.Invalid
   if (['succeeded'].includes(status)) return PaymentViewStates.Succeeded
   if (['canceled'].includes(status)) return PaymentViewStates.Canceled
+  if (['processing'].includes(status)) return PaymentViewStates.Processing
   return PaymentViewStates.Pending
 }
