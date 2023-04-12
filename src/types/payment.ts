@@ -10,6 +10,7 @@ export type IPaymentModel = Model<IPaymentSchema>
 export interface StripePaymentMetadataDto extends Stripe.Metadata {
   formTitle: string
   formId: string
+  submissionId: string
   paymentId: string
   paymentContactEmail: string
 }
