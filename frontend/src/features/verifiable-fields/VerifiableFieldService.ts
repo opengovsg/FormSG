@@ -34,7 +34,7 @@ export const createTransactionForForm = async (
 }
 
 /**
- * Sends a form field OTP to given answer.
+ * Sends an OTP to given answer.
  * @param args
  * @param args.formId The id of the form to generate the otp for
  * @param args.transactionId The generated transaction id for the form
