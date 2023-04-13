@@ -5,4 +5,5 @@ export interface ShortTextFieldBase extends MyInfoableFieldBase, FieldBase {
   fieldType: BasicField.ShortText
   ValidationOptions: TextValidationOptions
   allowPrefill?: boolean
+  lockPrefill?: boolean
 }

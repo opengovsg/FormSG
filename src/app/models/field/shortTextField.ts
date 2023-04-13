@@ -21,6 +21,17 @@ const createShortTextFieldSchema = () => {
       type: Boolean,
       default: false,
     },
+    lockPrefill: {
+      // locks prefill if it is enabled
+      type: Boolean,
+      default: false,
+      required: false,
+      // Only allow lock prefill if prefill is enabled
+      validator: function (this: IShortTextFieldSchema) {
+        return !this.allowPrefill && this.lockPrefill
+      },
+      message: 'Cannot lock prefill if prefill is not enabled',
+    },
   })
 
   return ShortTextFieldSchema
