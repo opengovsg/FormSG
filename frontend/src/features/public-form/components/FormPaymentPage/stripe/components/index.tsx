@@ -1,3 +1,4 @@
-export * from './StripeDownloadReceiptBlock'
-export * from './StripePaymentBlock'
-export * from './StripePaymentGenericMessageBlock'
+export * from './DownloadReceiptBlock'
+export * from './GenericMessageBlock'
+export * from './PaymentBlock'
+export * from './PaymentStack'

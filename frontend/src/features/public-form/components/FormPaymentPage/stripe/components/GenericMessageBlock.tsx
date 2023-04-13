@@ -6,7 +6,7 @@ type StripePaymentGenericMessageBlockProps = {
   subtitle?: string
   children?: JSX.Element
 }
-export const StripePaymentGenericMessageBlock = ({
+export const GenericMessageBlock = ({
   paymentId,
   title,
   subtitle,

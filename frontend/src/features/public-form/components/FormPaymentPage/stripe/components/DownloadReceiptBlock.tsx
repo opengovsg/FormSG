@@ -8,7 +8,7 @@ import {
   getPaymentReceiptDownloadUrl,
 } from '~features/public-form/utils/urls'
 
-import { StripePaymentGenericMessageBlock } from './StripePaymentGenericMessageBlock'
+import { GenericMessageBlock } from './GenericMessageBlock'
 
 type DownloadReceiptBlockProps = {
   formId: string
@@ -35,7 +35,7 @@ export const DownloadReceiptBlock = ({
     window.location.href = getPaymentInvoiceDownloadUrl(formId, paymentId)
   }
   return (
-    <StripePaymentGenericMessageBlock
+    <GenericMessageBlock
       title={'Your payment has been made successfully.'}
       subtitle={'Your form has been submitted and payment has been made.'}
       paymentId={paymentId}
@@ -58,6 +58,6 @@ export const DownloadReceiptBlock = ({
           Save payment invoice
         </Button>
       </>
-    </StripePaymentGenericMessageBlock>
+    </GenericMessageBlock>
   )
 }

@@ -11,11 +11,11 @@ import { PaymentSuccessSvgr } from '../components/PaymentSuccessSvgr'
 import { useGetPaymentInfo } from '../queries'
 
 import {
+  GenericMessageBlock,
+  PaymentStack,
   StripePaymentBlock,
-  StripePaymentGenericMessageBlock,
 } from './components'
-import { PaymentStack } from './PaymentStack'
-import { useGetPaymentStatusFromStripe } from './stripeQueries'
+import { useGetPaymentStatusFromStripe } from './queries'
 import { StripeReceiptContainer } from './StripeReceiptContainer'
 import { getPaymentViewStates, PaymentViewStates } from './utils'
 
@@ -82,7 +82,7 @@ const StripePaymentContainer = ({
       case PaymentViewStates.Canceled:
         return (
           <PaymentStack>
-            <StripePaymentGenericMessageBlock
+            <GenericMessageBlock
               paymentId={paymentId}
               title={'Payment request was canceled.'}
               subtitle={
@@ -105,7 +105,7 @@ const StripePaymentContainer = ({
       case PaymentViewStates.Processing:
         return (
           <PaymentStack>
-            <StripePaymentGenericMessageBlock
+            <GenericMessageBlock
               paymentId={paymentId}
               title={'Stripe is still processing your payment.'}
               subtitle={
