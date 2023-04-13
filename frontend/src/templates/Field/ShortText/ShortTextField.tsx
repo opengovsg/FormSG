@@ -7,16 +7,17 @@ import { useFormContext } from 'react-hook-form'
 import { createTextValidationRules } from '~utils/fieldValidation'
 import Input from '~components/Input'
 
+import { PrefillMap } from '../../../features/public-form/components/FormFields/FormFields'
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
 import { ShortTextFieldSchema, SingleAnswerFieldInput } from '../types'
 
 export interface ShortTextFieldProps extends BaseFieldProps {
   schema: ShortTextFieldSchema
+  prefill?: PrefillMap[string]
 }
 
 export const ShortTextField = ({
   schema,
-  isPrefilled,
   ...fieldContainerProps
 }: ShortTextFieldProps): JSX.Element => {
   const validationRules = useMemo(
@@ -29,7 +30,9 @@ export const ShortTextField = ({
   return (
     <FieldContainer schema={schema} {...fieldContainerProps}>
       <Input
-        isPrefilled={isPrefilled}
+        isPrefilled={!!fieldContainerProps?.prefill?.prefillValue}
+        // Prevent editing of pre-filled fields if lockPrefill is true
+        isDisabled={!!fieldContainerProps?.prefill?.lockPrefill}
         aria-label={`${schema.questionNumber}. ${schema.title}`}
         defaultValue=""
         preventDefaultOnEnter

@@ -32,6 +32,13 @@ export interface FormFieldsProps {
   onSubmit: SubmitHandler<FormFieldValues> | undefined
 }
 
+export type PrefillMap = {
+  [fieldId: string]: {
+    prefillValue: string
+    lockPrefill: boolean
+  }
+}
+
 export const FormFields = ({
   formFields,
   formLogics,
@@ -49,10 +56,13 @@ export const FormFields = ({
         field.allowPrefill &&
         searchParams.has(field._id)
       ) {
-        acc[field._id] = searchParams.get(field._id) ?? ''
+        acc[field._id] = {
+          prefillValue: searchParams.get(field._id) ?? '',
+          lockPrefill: field.lockPrefill ?? false,
+        }
       }
       return acc
-    }, {} as Record<string, string>)
+    }, {} as PrefillMap)
   }, [formFields, searchParams])
 
   const augmentedFormFields = useMemo(
@@ -70,7 +80,7 @@ export const FormFields = ({
 
       // Use prefill value if exists.
       if (fieldPrefillMap[field._id]) {
-        acc[field._id] = fieldPrefillMap[field._id]
+        acc[field._id] = fieldPrefillMap[field._id].prefillValue
         return acc
       }
 
@@ -113,14 +123,20 @@ export const FormFields = ({
         {!!formFields?.length && (
           <Box bg={'white'} py="2.5rem" px={{ base: '1rem', md: '2.5rem' }}>
             <Stack spacing="2.25rem">
-              {!isEmpty(fieldPrefillMap) && (
-                <InlineMessage variant="warning">
-                  The highlighted fields in this form have been pre-filled
-                  according to the link that you clicked. Please check that
-                  these values are what you intend to submit, and edit if
-                  necessary.
-                </InlineMessage>
-              )}
+              {
+                // Check that PrefillMap is not empty and that at least one field is not locked and has a value
+                !isEmpty(fieldPrefillMap) &&
+                  Object.values(fieldPrefillMap).some(
+                    (field) => !field.lockPrefill && field.prefillValue,
+                  ) && (
+                    <InlineMessage variant="warning">
+                      The highlighted fields in this form have been pre-filled
+                      according to the link that you clicked. Please check that
+                      these values are what you intend to submit, and edit if
+                      necessary.
+                    </InlineMessage>
+                  )
+              }
               <VisibleFormFields
                 colorTheme={colorTheme}
                 control={formMethods.control}
