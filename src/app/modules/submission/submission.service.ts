@@ -275,47 +275,46 @@ export const copyPendingSubmissionToSubmissions = (
           meta: logMeta,
           error,
         })
-
-        const databaseError = transformMongoError(error)
-
-        return databaseError instanceof DatabaseDuplicateKeyError
-          ? databaseError
-          : new DatabaseError(getMongoErrorMessage(error))
+        return transformMongoError(error)
       }).orElse((error) => {
-        if (error instanceof DatabaseDuplicateKeyError) {
-          // Failed to save due to duplicate keys.
-          logger.error({
-            message:
-              'Failed to move pending submission to submission: duplicate key error in submission collection',
-            meta: logMeta,
-            error,
-          })
-          // Recover by attempting to save with a different id.
-          const recoverySubmission = new SubmissionModel(submissionContent)
-          // TODO: Set alarms for both branches
-          return ResultAsync.fromPromise(
-            recoverySubmission.save({ session }),
-            (error) => {
-              logger.error({
-                message: 'Failed to recover from duplicate key error',
-                meta: logMeta,
-                error,
-              })
-              return new DatabaseError(getMongoErrorMessage(error))
-            },
-          ).andThen((recoverySubmission) => {
-            logger.warn({
-              message: `Successfully recovered from duplicate key error`,
-              meta: {
-                submissionId: recoverySubmission._id,
-                ...logMeta,
-              },
+        const isDuplicateKeyError = error instanceof DatabaseDuplicateKeyError
+
+        if (!isDuplicateKeyError) {
+          return errAsync(new DatabaseError(getMongoErrorMessage(error)))
+        }
+
+        // Failed to save due to duplicate keys.
+        logger.error({
+          message:
+            'Failed to move pending submission to submission: duplicate key error in submission collection',
+          meta: logMeta,
+          error,
+        })
+
+        // Recover by attempting to save with a different id.
+        const recoverySubmission = new SubmissionModel(submissionContent)
+        // TODO: Set alarms for both branches
+        return ResultAsync.fromPromise(
+          recoverySubmission.save({ session }),
+          (error) => {
+            logger.error({
+              message: 'Failed to recover from duplicate key error',
+              meta: logMeta,
               error,
             })
-            return okAsync(recoverySubmission)
+            return new DatabaseError(getMongoErrorMessage(error))
+          },
+        ).andThen((recoverySubmission) => {
+          logger.warn({
+            message: `Successfully recovered from duplicate key error`,
+            meta: {
+              submissionId: recoverySubmission._id,
+              ...logMeta,
+            },
+            error,
           })
-        }
-        return errAsync(error)
+          return okAsync(recoverySubmission)
+        })
       })
     })
 }
