@@ -126,7 +126,10 @@ export const handleResetField: ControllerHandler<
     fieldId,
     ...createReqMeta(req),
   }
-  return VerificationService.resetFieldForTransaction(transactionId, fieldId)
+  return VerificationService.resetFieldForTransaction({
+    transactionId,
+    fieldId,
+  })
     .map(() => res.sendStatus(StatusCodes.OK))
     .mapErr((error) => {
       logger.error({
@@ -164,13 +167,13 @@ export const handleGetOtp: ControllerHandler<
   return generateOtpWithHash(logMeta, SALT_ROUNDS)
     .andThen(({ otp, hashedOtp, otpPrefix }) =>
       VerificationService.sendNewOtp({
-        fieldId,
         hashedOtp,
         otp,
         otpPrefix,
         recipient: answer,
         transactionId,
         senderIp,
+        fieldId,
       }),
     )
     .map(() => res.sendStatus(StatusCodes.CREATED))
@@ -217,7 +220,7 @@ export const _handleGenerateOtp: ControllerHandler<
   const senderIp = getRequestIp(req)
 
   const logMeta = {
-    action: 'handleGenerateOtp',
+    action: '_handleGenerateOtp',
     transactionId,
     fieldId,
     ...createReqMeta(req),
@@ -291,20 +294,22 @@ export const _handleGenerateOtp: ControllerHandler<
         generateOtpWithHash(logMeta, SALT_ROUNDS).andThen(
           ({ otp, hashedOtp, otpPrefix }) =>
             // Step 3: Send Otp
-            VerificationService.sendNewOtp({
-              fieldId,
-              hashedOtp,
-              otp,
-              otpPrefix,
-              recipient: answer,
-              transactionId,
-              senderIp,
-            }) // Return the required data for next steps.
-              .map((updatedTransaction) => ({
-                updatedTransaction,
-                form,
+            {
+              return VerificationService.sendNewOtp({
+                fieldId,
+                hashedOtp,
+                otp,
                 otpPrefix,
-              })),
+                recipient: answer,
+                transactionId,
+                senderIp,
+              }) // Return the required data for next steps.
+                .map((updatedTransaction) => ({
+                  updatedTransaction,
+                  form,
+                  otpPrefix,
+                }))
+            },
         ),
       )
       .map(({ updatedTransaction, form, otpPrefix }) => {
@@ -362,7 +367,11 @@ export const handleVerifyOtp: ControllerHandler<
     fieldId,
     ...createReqMeta(req),
   }
-  return VerificationService.verifyOtp(transactionId, fieldId, otp)
+  return VerificationService.verifyOtp({
+    transactionId,
+    inputOtp: otp,
+    fieldId,
+  })
     .map((signedData) => res.status(StatusCodes.OK).json(signedData))
     .mapErr((error) => {
       logger.error({
@@ -412,7 +421,13 @@ export const _handleOtpVerification: ControllerHandler<
   return (
     FormService.retrieveFormById(formId)
       // Step 2: Verify the otp sent over by the client
-      .andThen(() => VerificationService.verifyOtp(transactionId, fieldId, otp))
+      .andThen(() => {
+        return VerificationService.verifyOtp({
+          transactionId,
+          inputOtp: otp,
+          fieldId,
+        })
+      })
       .map((signedData) => res.status(StatusCodes.OK).json(signedData))
       .mapErr((error) => {
         logger.error({
@@ -470,7 +485,10 @@ export const handleResetFieldVerification: ControllerHandler<
   }
   return FormService.retrieveFormById(formId)
     .andThen(() =>
-      VerificationService.resetFieldForTransaction(transactionId, fieldId),
+      VerificationService.resetFieldForTransaction({
+        transactionId,
+        fieldId,
+      }),
     )
     .map(() => res.sendStatus(StatusCodes.NO_CONTENT))
     .mapErr((error) => {

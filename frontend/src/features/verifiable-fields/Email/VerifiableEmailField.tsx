@@ -18,7 +18,7 @@ export interface VerifiableEmailFieldProps extends EmailFieldProps {
 
 /**
  * @example
- * { value: '+65 9876 5432', signature: some-signature }
+ * { value: 'form@open.gov.sg', signature: some-signature }
  */
 const InnerVerifiableEmailField = ({
   schema,
