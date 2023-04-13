@@ -125,6 +125,10 @@ const compileVerificationModel = (db: Mongoose): IVerificationModel => {
     }
   }
 
+  const getVerificationPrefix = (isPayment: boolean) => {
+    return isPayment ? 'paymentField' : 'fields.$'
+  }
+
   VerificationSchema.statics.createTransactionFromForm = async function (
     form: IFormSchema | IEncryptedFormSchema,
   ): Promise<IVerificationSchema | null> {
@@ -152,7 +156,7 @@ const compileVerificationModel = (db: Mongoose): IVerificationModel => {
     isPayment: boolean,
     fieldId: string,
   ): Promise<IVerificationSchema | null> {
-    const operationPrefix = isPayment ? 'paymentField' : 'fields.$'
+    const operationPrefix = getVerificationPrefix(isPayment)
     return this.findOneAndUpdate(
       {
         _id: transactionId,
@@ -176,7 +180,7 @@ const compileVerificationModel = (db: Mongoose): IVerificationModel => {
     isPayment: boolean,
     fieldId: string,
   ): Promise<IVerificationSchema | null> {
-    const operationPrefix = isPayment ? 'paymentField' : 'fields.$'
+    const operationPrefix = getVerificationPrefix(isPayment)
     return this.findOneAndUpdate(
       {
         _id: transactionId,
@@ -201,7 +205,7 @@ const compileVerificationModel = (db: Mongoose): IVerificationModel => {
   VerificationSchema.statics.updateHashForField = async function (
     updateData: UpdateFieldData,
   ): Promise<IVerificationSchema | null> {
-    const operationPrefix = updateData.isPayment ? 'paymentField' : 'fields.$'
+    const operationPrefix = getVerificationPrefix(updateData.isPayment)
     return this.findOneAndUpdate(
       {
         _id: updateData.transactionId,
