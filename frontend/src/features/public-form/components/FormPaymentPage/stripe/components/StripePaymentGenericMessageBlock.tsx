@@ -4,11 +4,13 @@ type StripePaymentGenericMessageBlockProps = {
   paymentId: string
   title: string
   subtitle?: string
+  children?: JSX.Element
 }
 export const StripePaymentGenericMessageBlock = ({
   paymentId,
   title,
   subtitle,
+  children,
 }: StripePaymentGenericMessageBlockProps) => {
   return (
     <Box>
@@ -23,6 +25,7 @@ export const StripePaymentGenericMessageBlock = ({
       <Text textColor="secondary.300" mt="2rem">
         Response ID: {paymentId}
       </Text>
+      {children}
     </Box>
   )
 }

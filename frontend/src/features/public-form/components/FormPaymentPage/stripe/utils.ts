@@ -5,7 +5,7 @@ export enum PaymentViewStates {
   Succeeded,
   Canceled,
   PendingPayment,
-  Processing,
+  Processing, // can lead to decline/failure or succeeded
 }
 export const getPaymentViewStates = (
   status: PaymentIntent.Status | undefined,

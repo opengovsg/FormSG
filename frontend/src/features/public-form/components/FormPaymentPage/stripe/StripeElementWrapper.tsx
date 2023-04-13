@@ -1,17 +1,11 @@
-import React, { useCallback, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
-import { Button, Flex, Stack, StackDivider, useToast } from '@chakra-ui/react'
+import { Flex } from '@chakra-ui/react'
 import { Elements, useStripe } from '@stripe/react-stripe-js'
-import { loadStripe, Stripe } from '@stripe/stripe-js'
+import { loadStripe } from '@stripe/stripe-js'
 
 import { GetPaymentInfoDto } from '~shared/types'
 
-import { usePublicFormMutations } from '~features/public-form/mutations'
-
-import {
-  FeedbackBlock,
-  FeedbackFormInput,
-} from '../../FormEndPage/components/FeedbackBlock'
 import { CreatePaymentIntentFailureBlock } from '../components/CreatePaymentIntentFailureBlock'
 import { PaymentSuccessSvgr } from '../components/PaymentSuccessSvgr'
 import { useGetPaymentInfo } from '../queries'
@@ -20,6 +14,7 @@ import {
   StripePaymentBlock,
   StripePaymentGenericMessageBlock,
 } from './components'
+import { PaymentStack } from './PaymentStack'
 import { useGetPaymentStatusFromStripe } from './stripeQueries'
 import { StripeReceiptContainer } from './StripeReceiptContainer'
 import { getPaymentViewStates, PaymentViewStates } from './utils'
@@ -40,52 +35,28 @@ const StripeElementWrapper = ({ paymentId }: { paymentId: string }) => {
       options={{ clientSecret: paymentInfoData.client_secret }}
     >
       <Flex flexDir="column" align="center">
-        <StripeHookWrapper paymentInfoData={paymentInfoData} />
+        <StripePaymentContainer paymentInfoData={paymentInfoData} />
       </Flex>
     </Elements>
   )
 }
 
-const StripeHookWrapper = ({
-  paymentInfoData,
-}: {
-  paymentInfoData: GetPaymentInfoDto
-}) => {
-  const stripe = useStripe()
-  if (!stripe) {
-    throw Promise.reject('Stripe is not ready')
-  }
-  return (
-    <StripePaymentContainer paymentInfoData={paymentInfoData} stripe={stripe} />
-  )
-}
-
-const PaymentStack = ({ children }: { children: React.ReactNode }) => (
-  <Stack
-    spacing={{ base: '1.5rem', md: '3rem' }}
-    py={{ base: '1.5rem', md: '3rem' }}
-    px={{ base: '1.5rem', md: '4rem' }}
-    bg="white"
-    w="100%"
-    divider={<StackDivider />}
-  >
-    {children}
-  </Stack>
-)
 /**
- * Handles decision to render StripePaymentModal or StripeReceiptModal
+ * Handles the presentational logic for stripe payment flow
+ * @param paymentInfoData
  * @returns
  */
 const StripePaymentContainer = ({
   paymentInfoData,
-  stripe,
 }: {
   paymentInfoData: GetPaymentInfoDto
-  stripe: Stripe
 }) => {
   const { formId, paymentId } = useParams()
   if (!formId) throw new Error('No formId provided')
   if (!paymentId) throw new Error('No paymentId provided')
+
+  const stripe = useStripe()
+  if (!stripe) throw Promise.reject('Stripe is not ready')
 
   const [refetchKey, setRefetchKey] = useState<number>(0)
   const { data } = useGetPaymentStatusFromStripe({
@@ -93,33 +64,6 @@ const StripePaymentContainer = ({
     stripe,
     refetchKey,
   })
-
-  const { submitFormFeedbackMutation } = usePublicFormMutations(
-    formId,
-    paymentId,
-  )
-  const toast = useToast()
-  const [isFeedbackSubmitted, setIsFeedbackSubmitted] = useState(false)
-
-  /**
-   * Handles feedback submission
-   */
-  const handleSubmitFeedback = useCallback(
-    (inputs: FeedbackFormInput) => {
-      // no mutation required in preview-form mode
-      return submitFormFeedbackMutation.mutateAsync(inputs, {
-        onSuccess: () => {
-          toast({
-            description: 'Thank you for submitting your feedback!',
-            status: 'success',
-            isClosable: true,
-          })
-          setIsFeedbackSubmitted(true)
-        },
-      })
-    },
-    [submitFormFeedbackMutation, toast],
-  )
 
   const viewStates = getPaymentViewStates(data?.paymentIntent?.status)
 
@@ -140,8 +84,10 @@ const StripePaymentContainer = ({
           <PaymentStack>
             <StripePaymentGenericMessageBlock
               paymentId={paymentId}
-              title={'The payment request has been canceled.'}
-              subtitle={'No payment has been made.'}
+              title={'Payment request was canceled.'}
+              subtitle={
+                'The payment request has been canceled. If any payment has been completed, the payment will be refunded.'
+              }
             />
           </PaymentStack>
         )
@@ -158,27 +104,21 @@ const StripePaymentContainer = ({
         )
       case PaymentViewStates.Processing:
         return (
-          <>
-            <PaymentSuccessSvgr maxW="100%" />
-            <PaymentStack>
-              <StripePaymentGenericMessageBlock
-                paymentId={paymentId}
-                title={'Stripe is processing your payment.'}
-                subtitle={''}
-              />
-            </PaymentStack>
-          </>
+          <PaymentStack>
+            <StripePaymentGenericMessageBlock
+              paymentId={paymentId}
+              title={'Stripe is still processing your payment.'}
+              subtitle={
+                'Hold tight, your payment is still being processed by stripe.'
+              }
+            />
+          </PaymentStack>
         )
       case PaymentViewStates.Succeeded:
         return (
           <>
             <PaymentSuccessSvgr maxW="100%" />
-            <PaymentStack>
-              <StripeReceiptContainer formId={formId} paymentId={paymentId} />
-              {!isFeedbackSubmitted && (
-                <FeedbackBlock onSubmit={handleSubmitFeedback} />
-              )}
-            </PaymentStack>
+            <StripeReceiptContainer formId={formId} paymentId={paymentId} />
           </>
         )
       default: {
@@ -189,7 +129,7 @@ const StripePaymentContainer = ({
       }
     }
   }
-  return <>{renderViewState()}</>
+  return renderViewState()
 }
 
 export default StripeElementWrapper
