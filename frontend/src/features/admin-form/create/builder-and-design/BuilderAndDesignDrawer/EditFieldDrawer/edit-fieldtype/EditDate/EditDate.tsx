@@ -53,14 +53,10 @@ const transformDateFieldToEditForm = (field: DateFieldBase): EditDateInputs => {
     selectedDateValidation:
       field.dateValidation.selectedDateValidation ?? ('' as const),
     customMaxDate: field.dateValidation.selectedDateValidation
-      ? field.dateValidation.customMaxDate
-        ? loadDateFromNormalizedDate(field.dateValidation.customMaxDate)
-        : null
+      ? loadDateFromNormalizedDate(field.dateValidation.customMaxDate)
       : null,
     customMinDate: field.dateValidation.selectedDateValidation
-      ? field.dateValidation.customMinDate
-        ? loadDateFromNormalizedDate(field.dateValidation.customMinDate)
-        : null
+      ? loadDateFromNormalizedDate(field.dateValidation.customMinDate)
       : null,
   }
   return {
@@ -112,16 +108,12 @@ export const EditDate = ({ field }: EditDateProps): JSX.Element => {
         ...output,
         dateValidation: {
           ...inputs.dateValidation,
-          ...(inputs.dateValidation.customMinDate !== null && {
-            customMinDate: normalizeDateToUtc(
-              inputs.dateValidation.customMinDate,
-            ),
-          }),
-          ...(inputs.dateValidation.customMaxDate !== null && {
-            customMaxDate: normalizeDateToUtc(
-              inputs.dateValidation.customMaxDate,
-            ),
-          }),
+          customMinDate: normalizeDateToUtc(
+            inputs.dateValidation.customMinDate,
+          ),
+          customMaxDate: normalizeDateToUtc(
+            inputs.dateValidation.customMaxDate,
+          ),
         },
       } as DateFieldBase
     },

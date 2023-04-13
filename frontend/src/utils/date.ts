@@ -38,11 +38,13 @@ export const isDateAfterToday = (date: number | Date) => {
   return isAfter(date, endOfToday())
 }
 
-export const normalizeDateToUtc = (date: Date) => {
+export const normalizeDateToUtc = (date: Date | null) => {
+  if (!date) return date
   return new Date(date.valueOf() - date.getTimezoneOffset() * 60 * 1000)
 }
 
-export const loadDateFromNormalizedDate = (date: Date) => {
+export const loadDateFromNormalizedDate = (date: Date | null) => {
+  if (!date) return date
   return new Date(date.valueOf() + date.getTimezoneOffset() * 60 * 1000)
 }
 
