@@ -53,10 +53,10 @@ import {
 import { VerifiableFieldBase } from '~features/verifiable-fields/types'
 
 import {
-  fromUtcToLocalDate,
   isDateAfterToday,
   isDateBeforeToday,
   isDateOutOfRange,
+  loadDateFromNormalizedDate,
 } from './date'
 import { formatNumberToLocaleString } from './stringFormat'
 
@@ -431,12 +431,15 @@ export const createDateValidationRules: ValidationRuleFn<DateFieldBase> = (
         }
 
         const { customMinDate, customMaxDate } = schema.dateValidation ?? {}
+        const customMinNoTime = customMinDate
+          ? loadDateFromNormalizedDate(customMinDate)
+          : null
+        const customMaxNoTime = customMaxDate
+          ? loadDateFromNormalizedDate(customMaxDate)
+          : null
         return (
-          !isDateOutOfRange(
-            parseDate(val),
-            fromUtcToLocalDate(customMinDate),
-            fromUtcToLocalDate(customMaxDate),
-          ) || 'Selected date is not within the allowed date range'
+          !isDateOutOfRange(parseDate(val), customMinNoTime, customMaxNoTime) ||
+          'Selected date is not within the allowed date range'
         )
       },
     },

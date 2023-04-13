@@ -38,10 +38,12 @@ export const isDateAfterToday = (date: number | Date) => {
   return isAfter(date, endOfToday())
 }
 
-// Converts UTC time to the same date in local time, ignoring original timezone.
-export const fromUtcToLocalDate = (date?: Date | null) => {
-  if (!date) return date
-  return new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate())
+export const normalizeDateToUtc = (date: Date) => {
+  return new Date(date.valueOf() - date.getTimezoneOffset() * 60 * 1000)
+}
+
+export const loadDateFromNormalizedDate = (date: Date) => {
+  return new Date(date.valueOf() + date.getTimezoneOffset() * 60 * 1000)
 }
 
 /**

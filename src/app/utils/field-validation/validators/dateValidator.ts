@@ -45,7 +45,7 @@ const pastOnlyValidator: DateValidator = (response) => {
   // Add 14 hours here to account for up to UTC + 14 timezone
   // This allows validation to pass as long as user is on the correct date (locally)
   // Even if they are in a different timezone
-  const todayMax = moment().utc().add(14, 'hours').startOf('day')
+  const todayMax = moment()
   const { answer } = response
   const answerDate = createMomentFromDateString(answer)
 
@@ -62,7 +62,7 @@ const futureOnlyValidator: DateValidator = (response) => {
   // Subtract 12 hours here to account for up to UTC - 12 timezone
   // This allows validation to pass as long as user is on the correct date (locally)
   // Even if they are in a different timezone
-  const todayMin = moment().utc().subtract(12, 'hours').startOf('day')
+  const todayMin = moment()
   const { answer } = response
   const answerDate = createMomentFromDateString(answer)
 
