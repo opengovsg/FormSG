@@ -402,6 +402,13 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
       default: 10,
       env: 'REACT_MIGRATION_REMOVE_INFOBOX_THRESHOLD_RESPONDENT',
     },
+    useFetchForSubmissions: {
+      // TODO (#5826): Toggle to use fetch for submissions instead of axios. Remove once network error is resolved
+      doc: 'Toggle to use fetch for submissions instead of axios',
+      format: Boolean,
+      default: false,
+      env: 'REACT_MIGRATION_USE_FETCH_FOR_SUBMISSIONS',
+    },
   },
 }
 

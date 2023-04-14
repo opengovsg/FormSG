@@ -1223,7 +1223,7 @@ describe('admin-form.routes', () => {
           emails: defaultUser.email,
           responseMode: 'email',
           title: 'email mode form test should fail',
-          permissionList: [{ email: 'invalidEmailDomain@example.com' }],
+          permissionList: [{ email: 'not a valid email' }],
         },
       }
 
@@ -2246,7 +2246,7 @@ describe('admin-form.routes', () => {
 
     it('should return 400 when the new owner is not in the database', async () => {
       // Arrange
-      const emailNotInDb = 'notInDb@example.com'
+      const emailNotInDb = 'notindb@example.com'
       const formToTransfer = await EncryptFormModel.create({
         title: 'Original form title',
         admin: defaultUser._id,

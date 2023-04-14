@@ -1,5 +1,12 @@
 import { useMemo } from 'react'
-import { Flex, Icon, ListItem, Stack, Text } from '@chakra-ui/react'
+import {
+  Flex,
+  Icon,
+  ListItem,
+  Stack,
+  Text,
+  VisuallyHidden,
+} from '@chakra-ui/react'
 
 import { useSelectContext } from '~components/Dropdown/SelectContext'
 import { ComboboxItem } from '~components/Dropdown/types'
@@ -82,6 +89,9 @@ export const MultiDropdownItem = ({
                 textToHighlight={description}
               />
             </Text>
+          )}
+          {isSelected && (
+            <VisuallyHidden aria-live="assertive">, selected</VisuallyHidden>
           )}
         </Flex>
       </Stack>

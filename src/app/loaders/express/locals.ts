@@ -35,6 +35,8 @@ const frontendVars = {
   reactMigrationAdminRollout: config.reactMigration.adminRollout,
   reactMigrationAngularPhaseOutDate: config.reactMigration.angularPhaseOutDate,
   // payment variables
+  reactMigrationUseFetchForSubmissions:
+    config.reactMigration.useFetchForSubmissions,
   maxPaymentAmountCents: paymentConfig.maxPaymentAmountCents,
   minPaymentAmountCents: paymentConfig.minPaymentAmountCents,
 }
@@ -68,6 +70,7 @@ const environment = ejs.render(
     var reactMigrationRespondentRolloutStorage = "<%= reactMigrationRespondentRolloutStorage%>"
     var reactMigrationAdminRollout = "<%= reactMigrationAdminRollout%>"
     var reactMigrationAngularPhaseOutDate = "<%= reactMigrationAngularPhaseOutDate%>"
+    var reactMigrationUseFetchForSubmissions = <%= reactMigrationUseFetchForSubmissions%>
     // Payment
     var maxPaymentAmountCents = <%= maxPaymentAmountCents%>
     var minPaymentAmountCents = <%= minPaymentAmountCents%>

@@ -67,6 +67,8 @@ export type ReactMigrationConfig = {
   angularPhaseOutDate: string
   removeAdminInfoboxThreshold: number
   removeRespondentsInfoboxThreshold: number
+  // TODO (#5826): Toggle to use fetch for submissions instead of axios. Remove once network error is resolved
+  useFetchForSubmissions: boolean
 }
 
 export type Config = {
@@ -194,6 +196,8 @@ export interface IOptionalVarsSchema {
     angularPhaseOutDate: string
     removeAdminInfoboxThreshold: number
     removeRespondentsInfoboxThreshold: number
+    // TODO (#5826): Toggle to use fetch for submissions instead of axios. Remove once network error is resolved
+    useFetchForSubmissions: boolean
   }
 }
 

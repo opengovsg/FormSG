@@ -22,6 +22,8 @@ type LogMeta = {
     adminCookieOld: string | undefined
     adminCookie: string | undefined
     respCookie: string | undefined
+    // TODO (#5826): Toggle to use fetch for submissions instead of axios. Remove once network error is resolved
+    useFetchForSubmissions?: boolean
   }
 }
 
@@ -87,6 +89,8 @@ const loggingMiddleware = () => {
             req.cookies?.[config.reactMigration.adminCookieNameOld],
           adminCookie: req.cookies?.[config.reactMigration.adminCookieName],
           respCookie: req.cookies?.[config.reactMigration.respondentCookieName],
+          // TODO (#5826): Toggle to use fetch for submissions instead of axios. Remove once network error is resolved
+          useFetchForSubmissions: config.reactMigration.useFetchForSubmissions,
         }
       }
 

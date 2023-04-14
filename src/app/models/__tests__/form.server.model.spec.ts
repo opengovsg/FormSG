@@ -383,12 +383,10 @@ describe('Form Model', () => {
         )
       })
 
-      it('should reject when form permissionList[].email is not in the Agency collection', async () => {
+      it('should reject when form permissionList[].email is not a valid email', async () => {
         // Arrange
         // permissionList has an email domain not inside Agency collection
-        const invalidPermissionList = [
-          { email: 'test@example2.com', write: true },
-        ]
+        const invalidPermissionList = [{ email: 'not an email', write: true }]
         const malformedParams = merge({}, MOCK_FORM_PARAMS, {
           permissionList: invalidPermissionList,
         })
@@ -667,12 +665,10 @@ describe('Form Model', () => {
         )
       })
 
-      it('should reject when form permissionList[].email is not in the Agency collection', async () => {
+      it('should reject when form permissionList[].email is not a valid email', async () => {
         // Arrange
         // permissionList has an email domain not inside Agency collection
-        const invalidPermissionList = [
-          { email: 'test@example2.com', write: true },
-        ]
+        const invalidPermissionList = [{ email: 'not an email', write: true }]
         const malformedParams = merge({}, MOCK_ENCRYPTED_FORM_PARAMS, {
           permissionList: invalidPermissionList,
         })
@@ -1113,12 +1109,10 @@ describe('Form Model', () => {
         )
       })
 
-      it('should reject when form permissionList[].email is not in the Agency collection', async () => {
+      it('should reject when form permissionList[].email is not a valid email', async () => {
         // Arrange
         // permissionList has an email domain not inside Agency collection
-        const invalidPermissionList = [
-          { email: 'test@example2.com', write: true },
-        ]
+        const invalidPermissionList = [{ email: 'not an email', write: true }]
         const malformedParams = merge({}, MOCK_EMAIL_FORM_PARAMS, {
           permissionList: invalidPermissionList,
         })
@@ -2878,7 +2872,7 @@ describe('Form Model', () => {
         // Arrange
         const newCollaborators = [
           {
-            email: `fakeuser@fakeemail.com`,
+            email: 'string that is not an email',
             write: false,
           },
         ]
