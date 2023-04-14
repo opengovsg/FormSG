@@ -55,9 +55,9 @@ export const retryPromiseThreeAttempts = <T>(
             attemptNo,
           },
           error: {
-            message: e.message,
-            stack: e.stack,
-            code: e.code,
+            message: e?.message,
+            stack: e?.stack,
+            code: e?.code,
           },
         })
         return retry(e)
@@ -115,9 +115,9 @@ export const retryPromiseForever = <T>(
             attemptNo,
           },
           error: {
-            message: e.message,
-            stack: e.stack,
-            code: e.code,
+            message: e?.message,
+            stack: e?.stack,
+            code: e?.code,
           },
         })
         return retry(e)
