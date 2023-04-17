@@ -35,7 +35,6 @@ export type Payment = {
   email: string
   amount: number
   paymentIntentId: string
-  responses: any[] // Will be typed as FilteredResponse[]
 
   // Payment status tracking
   webhookLog: Stripe.Event[]

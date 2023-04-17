@@ -3,7 +3,13 @@ import Stripe from 'stripe'
 
 import { Payment } from '../../shared/types/payment'
 
-export interface IPaymentSchema extends Payment, Document {}
+export interface IPaymentSchema extends Payment, Document {
+  /**
+   * Additional field to store responses for sending email confirmations post-payment.
+   * Will be used to store FilteredResponse[], allows for population.
+   */
+  responses: any[]
+}
 
 export type IPaymentModel = Model<IPaymentSchema>
 
