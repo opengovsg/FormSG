@@ -839,7 +839,7 @@ describe('submission.service', () => {
       const pendingSubmission = await PendingSubmission.create(
         MOCK_PENDING_SUBMISSION,
       )
-      await Submission.create(MOCK_SUBMISSION)
+      await Submission.create(MOCK_PENDING_SUBMISSION)
 
       // Act
       const session = await mongoose.startSession()
