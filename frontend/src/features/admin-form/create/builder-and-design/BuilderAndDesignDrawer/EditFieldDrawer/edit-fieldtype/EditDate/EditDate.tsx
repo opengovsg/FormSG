@@ -107,7 +107,10 @@ export const EditDate = ({ field }: EditDateProps): JSX.Element => {
       return {
         ...output,
         dateValidation: {
-          ...inputs.dateValidation,
+          selectedDateValidation:
+            inputs.dateValidation.selectedDateValidation === ''
+              ? null
+              : inputs.dateValidation.selectedDateValidation,
           customMinDate: normalizeDateToUtc(
             inputs.dateValidation.customMinDate,
           ),
