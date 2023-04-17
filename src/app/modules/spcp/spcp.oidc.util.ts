@@ -46,7 +46,7 @@ export const retryPromiseThreeAttempts = <T>(
           },
         })
         return result
-      } catch (e) {
+      } catch (e: any) {
         logger.warn({
           message: 'Promise rejected',
           meta: {
@@ -54,7 +54,11 @@ export const retryPromiseThreeAttempts = <T>(
             promise: promiseName,
             attemptNo,
           },
-          error: e,
+          error: {
+            message: e?.message,
+            stack: e?.stack,
+            code: e?.code,
+          },
         })
         return retry(e)
       }
@@ -102,7 +106,7 @@ export const retryPromiseForever = <T>(
           },
         })
         return result
-      } catch (e) {
+      } catch (e: any) {
         logger.warn({
           message: 'Promise rejected',
           meta: {
@@ -110,7 +114,11 @@ export const retryPromiseForever = <T>(
             promise: promiseName,
             attemptNo,
           },
-          error: e,
+          error: {
+            message: e?.message,
+            stack: e?.stack,
+            code: e?.code,
+          },
         })
         return retry(e)
       }
