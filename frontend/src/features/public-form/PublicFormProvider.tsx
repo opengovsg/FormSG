@@ -15,6 +15,7 @@ import { differenceInMilliseconds, isPast } from 'date-fns'
 import get from 'lodash/get'
 import simplur from 'simplur'
 
+import { PAYMENT_CONTACT_FIELD_ID } from '~shared/constants'
 import {
   FormAuthType,
   FormResponseMode,
@@ -199,9 +200,12 @@ export const PublicFormProvider = ({
   const navigate = useNavigate()
   const [, storePaymentMemory] = useBrowserStm(formId)
   const handleSubmitForm: SubmitHandler<
-    FormFieldValues & { payment_receipt_email_field?: { value: string } }
+    FormFieldValues & { [PAYMENT_CONTACT_FIELD_ID]?: { value: string } }
   > = useCallback(
-    async ({ payment_receipt_email_field, ...formInputs }) => {
+    async ({
+      [PAYMENT_CONTACT_FIELD_ID]: paymentReceiptEmailField,
+      ...formInputs
+    }) => {
       const { form } = data ?? {}
       if (!form) return
 
@@ -335,7 +339,7 @@ export const PublicFormProvider = ({
                   ...formData,
                   publicKey: form.publicKey,
                   captchaResponse,
-                  paymentReceiptEmail: payment_receipt_email_field?.value,
+                  paymentReceiptEmail: paymentReceiptEmailField?.value,
                 },
                 {
                   onSuccess: ({
@@ -394,7 +398,7 @@ export const PublicFormProvider = ({
                     ...formData,
                     publicKey: form.publicKey,
                     captchaResponse,
-                    paymentReceiptEmail: payment_receipt_email_field?.value,
+                    paymentReceiptEmail: paymentReceiptEmailField?.value,
                   },
                   {
                     onSuccess: ({
