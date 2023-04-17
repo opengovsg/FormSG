@@ -7,10 +7,9 @@ import mongoose from 'mongoose'
 import { err, Ok, ok, Result } from 'neverthrow'
 import Stripe from 'stripe'
 
-import { StripePaymentMetadataDto } from 'src/types'
-
 import { Payment, PaymentStatus } from '../../../../shared/types'
 import { hasProp } from '../../../../shared/utils/has-prop'
+import { StripePaymentMetadataDto } from '../../../types'
 import { createLoggerWithLabel } from '../../config/logger'
 import { ApplicationError } from '../core/core.errors'
 import {
@@ -46,6 +45,7 @@ const isStripeMetadata = (
 ): obj is StripePaymentMetadataDto =>
   hasProp(obj, 'formTitle') &&
   hasProp(obj, 'formId') &&
+  hasProp(obj, 'submissionId') &&
   hasProp(obj, 'paymentId') &&
   hasProp(obj, 'paymentContactEmail')
 

@@ -8,8 +8,6 @@ import { okAsync } from 'neverthrow'
 import Stripe from 'stripe'
 import type { SetOptional } from 'type-fest'
 
-import { StripePaymentMetadataDto } from 'src/types'
-
 import {
   ErrorDto,
   FormAuthType,
@@ -21,6 +19,7 @@ import {
   SubmissionErrorDto,
   SubmissionResponseDto,
 } from '../../../../../shared/types'
+import { StripePaymentMetadataDto } from '../../../../types'
 import { EncryptSubmissionDto } from '../../../../types/api'
 import { paymentConfig } from '../../../config/features/payment.config'
 import { createLoggerWithLabel } from '../../../config/logger'
@@ -432,9 +431,16 @@ const submitEncryptModeForm: ControllerHandler<
     const metadata: StripePaymentMetadataDto = {
       formTitle: form.title,
       formId,
+      submissionId: pendingSubmissionId,
       paymentId,
       paymentContactEmail: paymentReceiptEmail,
     }
+
+    const paymentReceiptDescription = [
+      form.payments_field.description,
+      `FormSG form: ${form.title}`,
+      `Response ID: ${pendingSubmissionId}`,
+    ].join('\n')
 
     const createPaymentIntentParams: Stripe.PaymentIntentCreateParams = {
       amount,
@@ -443,7 +449,7 @@ const submitEncryptModeForm: ControllerHandler<
         'card',
         /* 'grabpay', 'paynow'*/
       ],
-      description: form.payments_field.description,
+      description: paymentReceiptDescription,
       receipt_email: paymentReceiptEmail,
       metadata,
     }

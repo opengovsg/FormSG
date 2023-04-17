@@ -794,22 +794,29 @@ describe('submission.service', () => {
   describe('copyPendingSubmissionToSubmissions', () => {
     const MOCK_PENDING_SUBMISSION_ID = MOCK_SUBMISSION._id
 
+    const MOCK_PENDING_SUBMISSION = {
+      _id: MOCK_PENDING_SUBMISSION_ID,
+      submissionType: SubmissionType.Encrypt,
+      form: MOCK_FORM_ID,
+      encryptedContent: 'some random encrypted content',
+      version: 1,
+      responseHash: 'hash',
+      responseSalt: 'salt',
+    }
+
     beforeEach(async () => {
+      await dbHandler.clearCollection(PendingSubmission.collection.name)
       await dbHandler.clearCollection(Submission.collection.name)
     })
     afterEach(() => jest.clearAllMocks())
 
-    it('should return a submission document if copying from pending submissions to submissions was successful', async () => {
-      const pendingSubmission = await PendingSubmission.create({
-        _id: MOCK_PENDING_SUBMISSION_ID,
-        submissionType: SubmissionType.Encrypt,
-        form: MOCK_FORM_ID,
-        encryptedContent: 'some random encrypted content',
-        version: 1,
-        responseHash: 'hash',
-        responseSalt: 'salt',
-      })
+    it('should return a submission document with the same ObjectID if copying from pending submissions to submissions was successful', async () => {
+      // Arrange
+      const pendingSubmission = await PendingSubmission.create(
+        MOCK_PENDING_SUBMISSION,
+      )
 
+      // Act
       const session = await mongoose.startSession()
       const result = await SubmissionService.copyPendingSubmissionToSubmissions(
         MOCK_PENDING_SUBMISSION_ID,
@@ -817,27 +824,45 @@ describe('submission.service', () => {
       )
       session.endSession()
 
+      //Assert
       expect(result.isOk()).toEqual(true)
 
       const submission = result._unsafeUnwrap()
+      Object.keys(pendingSubmission).forEach((key) => {
+        if (['created', 'lastModified'].includes(key)) return
+        expect(submission.get(key)).toEqual(pendingSubmission.get(key))
+      })
+    })
 
+    it('should return a submission document with a different ObjectID if an ObjectID collision occurs while copying the pending submission to the submissions collection', async () => {
+      // Arrange
+      const pendingSubmission = await PendingSubmission.create(
+        MOCK_PENDING_SUBMISSION,
+      )
+      await Submission.create(MOCK_PENDING_SUBMISSION)
+
+      // Act
+      const session = await mongoose.startSession()
+      const result = await SubmissionService.copyPendingSubmissionToSubmissions(
+        MOCK_PENDING_SUBMISSION_ID,
+        session,
+      )
+      session.endSession()
+
+      // Assert
+      expect(result.isOk()).toEqual(true)
+
+      const submission = result._unsafeUnwrap()
+      // Explicitly check the '_id' field to be different
+      expect(submission.get('_id')).not.toEqual(pendingSubmission._id)
       Object.keys(pendingSubmission).forEach((key) => {
         if (['_id', 'created', 'lastModified'].includes(key)) return
         expect(submission.get(key)).toEqual(pendingSubmission.get(key))
       })
     })
 
-    it('should return false if pendingSubmissionId does not exist', async () => {
-      await Submission.create({
-        _id: MOCK_PENDING_SUBMISSION_ID,
-        submissionType: SubmissionType.Encrypt,
-        form: MOCK_FORM_ID,
-        encryptedContent: 'some random encrypted content',
-        version: 1,
-        responseHash: 'hash',
-        responseSalt: 'salt',
-      })
-
+    it('should return PendingSubmissionNotFoundError if pendingSubmissionId does not exist', async () => {
+      // Act
       const session = await mongoose.startSession()
       const result = await SubmissionService.copyPendingSubmissionToSubmissions(
         new ObjectId().toHexString(),
@@ -845,6 +870,7 @@ describe('submission.service', () => {
       )
       session.endSession()
 
+      // Assert
       expect(result.isErr()).toEqual(true)
       expect(result._unsafeUnwrapErr()).toBeInstanceOf(
         PendingSubmissionNotFoundError,
@@ -852,6 +878,7 @@ describe('submission.service', () => {
     })
 
     it('should return DatabaseError when error occurs whilst querying database', async () => {
+      // Arrange
       const findSpy = jest.spyOn(PendingSubmission, 'findById')
       findSpy.mockImplementationOnce(
         () =>
@@ -860,6 +887,7 @@ describe('submission.service', () => {
           } as unknown as mongoose.Query<any, any>),
       )
 
+      // Act
       const session = await mongoose.startSession()
       const result = await SubmissionService.copyPendingSubmissionToSubmissions(
         MOCK_PENDING_SUBMISSION_ID,
@@ -867,6 +895,7 @@ describe('submission.service', () => {
       )
       session.endSession()
 
+      // Assert
       expect(findSpy).toHaveBeenCalledWith(
         MOCK_PENDING_SUBMISSION_ID,
         null,
