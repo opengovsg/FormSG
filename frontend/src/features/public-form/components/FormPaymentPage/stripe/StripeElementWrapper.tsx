@@ -51,9 +51,8 @@ const StripePaymentContainer = ({
 }: {
   paymentInfoData: GetPaymentInfoDto
 }) => {
-  const { formId, paymentId } = useParams()
+  const { formId } = useParams()
   if (!formId) throw new Error('No formId provided')
-  if (!paymentId) throw new Error('No paymentId provided')
 
   const stripe = useStripe()
   if (!stripe) throw Promise.reject('Stripe is not ready')
@@ -73,7 +72,7 @@ const StripePaymentContainer = ({
         return (
           <PaymentStack>
             <CreatePaymentIntentFailureBlock
-              submissionId={paymentId}
+              submissionId={paymentInfoData.submissionId}
               paymentClientSecret={paymentInfoData.client_secret}
               publishableKey={paymentInfoData.publishableKey}
             />
@@ -83,7 +82,7 @@ const StripePaymentContainer = ({
         return (
           <PaymentStack>
             <GenericMessageBlock
-              paymentId={paymentId}
+              submissionId={paymentInfoData.submissionId}
               title="Payment request was canceled."
               subtitle="The payment request has been canceled. If any payment has been completed, the payment will be refunded."
             />
@@ -93,7 +92,7 @@ const StripePaymentContainer = ({
         return (
           <PaymentStack>
             <StripePaymentBlock
-              submissionId={paymentId}
+              submissionId={paymentInfoData.submissionId}
               paymentClientSecret={paymentInfoData.client_secret}
               publishableKey={paymentInfoData.publishableKey}
               triggerPaymentStatusRefetch={() => setRefetchKey(Date.now())}
@@ -104,7 +103,7 @@ const StripePaymentContainer = ({
         return (
           <PaymentStack>
             <GenericMessageBlock
-              paymentId={paymentId}
+              submissionId={paymentInfoData.submissionId}
               title="Stripe is still processing your payment."
               subtitle="Hold tight, your payment is still being processed by stripe."
             />
@@ -114,7 +113,10 @@ const StripePaymentContainer = ({
         return (
           <>
             <PaymentSuccessSvgr maxW="100%" />
-            <StripeReceiptContainer formId={formId} paymentId={paymentId} />
+            <StripeReceiptContainer
+              formId={formId}
+              paymentId={paymentInfoData.submissionId}
+            />
           </>
         )
       default: {
