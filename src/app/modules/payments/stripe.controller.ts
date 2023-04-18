@@ -578,6 +578,7 @@ export const getPaymentInfo: ControllerHandler<
               client_secret: paymentIntent.client_secret || '',
               publishableKey: form.payments_channel?.publishable_key ?? '',
               payment_intent_id: payment.paymentIntentId,
+              submissionId: payment.pendingSubmissionId,
             })
           })
         })

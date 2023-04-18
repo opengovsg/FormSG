@@ -59,4 +59,5 @@ export type GetPaymentInfoDto = {
   client_secret: string
   publishableKey: string
   payment_intent_id: string
+  submissionId: string
 }

@@ -72,9 +72,8 @@ const StripePaymentContainer = ({
   paymentInfoData: GetPaymentInfoDto
   stripe: Stripe
 }) => {
-  const { formId, paymentId } = useParams()
+  const { formId } = useParams()
   if (!formId) throw new Error('No formId provided')
-  if (!paymentId) throw new Error('No paymentId provided')
 
   const [refetchKey, setRefetchKey] = useState<number>(0)
   const { data } = useGetPaymentStatusFromStripe({
@@ -90,7 +89,7 @@ const StripePaymentContainer = ({
       return (
         <PaymentBox>
           <CreatePaymentIntentFailureBlock
-            submissionId={paymentId}
+            submissionId={paymentInfoData.submissionId}
             paymentClientSecret={paymentInfoData.client_secret}
             publishableKey={paymentInfoData.publishableKey}
           />
@@ -107,7 +106,7 @@ const StripePaymentContainer = ({
       return (
         <PaymentBox>
           <StripePaymentBlock
-            submissionId={paymentId}
+            submissionId={paymentInfoData.submissionId}
             paymentClientSecret={paymentInfoData.client_secret}
             publishableKey={paymentInfoData.publishableKey}
             triggerPaymentStatusRefetch={() => setRefetchKey(Date.now())}
@@ -119,7 +118,10 @@ const StripePaymentContainer = ({
         <>
           <PaymentSuccessSvgr maxW="100%" />
           <PaymentBox>
-            <StripeReceiptContainer formId={formId} paymentId={paymentId} />
+            <StripeReceiptContainer
+              formId={formId}
+              paymentId={paymentInfoData.submissionId}
+            />
           </PaymentBox>
         </>
       )
