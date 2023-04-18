@@ -18,4 +18,6 @@ export const renderVerificationSms = (
   appHost: string,
 ): string => dedent`Use the OTP ${otpPrefix}-${otp} to submit on ${appHost}.
 
-  Never share your OTP with anyone else. If you did not request this OTP, you can safely ignore this SMS.`
+  Never share your OTP with anyone else. If you did not request this OTP, you can safely ignore this SMS.
+  
+  @${appHost} #${otp}`
