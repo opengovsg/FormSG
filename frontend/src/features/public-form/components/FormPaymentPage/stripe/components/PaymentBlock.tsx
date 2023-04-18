@@ -161,7 +161,7 @@ export const StripePaymentBlock = ({
     return 'Please make payment.'
   }, [formTitle])
 
-  if (form?.responseMode !== FormResponseMode.Encrypt) {
+  if (!form || form.responseMode !== FormResponseMode.Encrypt) {
     return <></>
   }
   return (
@@ -181,7 +181,7 @@ export const StripePaymentBlock = ({
         <Text textStyle="body-1" textColor="secondary.700">
           Your credit card will be charged:{' '}
           <Text as="span" fontWeight="bold">
-            S${centsToDollars(form?.payments_field?.amount_cents || 0)}
+            S${centsToDollars(form.payments_field?.amount_cents || 0)}
           </Text>
         </Text>
         {paymentClientSecret && (
