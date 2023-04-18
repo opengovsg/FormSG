@@ -1,13 +1,13 @@
 import { Box, Stack, Text } from '@chakra-ui/react'
 
 type StripePaymentGenericMessageBlockProps = {
-  paymentId: string
+  submissionId: string
   title: string
   subtitle?: string
   children?: JSX.Element
 }
 export const GenericMessageBlock = ({
-  paymentId,
+  submissionId,
   title,
   subtitle,
   children,
@@ -23,7 +23,7 @@ export const GenericMessageBlock = ({
         </Text>
       </Stack>
       <Text textColor="secondary.300" mt="2rem">
-        Response ID: {paymentId}
+        Response ID: {submissionId}
       </Text>
       {children}
     </Box>
