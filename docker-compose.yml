@@ -104,7 +104,7 @@ services:
       - REACT_MIGRATION_USE_FETCH_FOR_SUBMISSIONS=false
       # env vars for stripe payment integration
       - PAYMENT_STRIPE_PUBLISHABLE_KEY=publishableKey
-      # duplicate PAYMENT_STRIPE_SECRET_KEY to stripe-webhook-listener container as well
+      # duplicate PAYMENT_STRIPE_SECRET_KEY to STRIPE_API_KEY in stripe-webhook-listener container
       - PAYMENT_STRIPE_SECRET_KEY=secretKey
       - PAYMENT_STRIPE_CLIENT_ID=clientId
       - PAYMENT_STRIPE_WEBHOOK_SECRET=webhookSecret
@@ -160,9 +160,9 @@ services:
   stripe-cli:
     image: stripe/stripe-cli
     container_name: stripe-webhook-listener
-    command: "listen --api-key ${PAYMENT_STRIPE_SECRET_KEY} --device-name ${STRIPE_DEVICE_NAME} --forward-to host.docker.internal:5001/api/v3/notifications/stripe"
+    command: "listen --api-key ${STRIPE_API_KEY} --device-name ${STRIPE_DEVICE_NAME} --forward-to host.docker.internal:5001/api/v3/notifications/stripe"
     environment:
-     - PAYMENT_STRIPE_SECRET_KEY=secretKey
+     - STRIPE_API_KEY=secretKey
      - STRIPE_DEVICE_NAME=StripeWebhookListener
      
 volumes:
