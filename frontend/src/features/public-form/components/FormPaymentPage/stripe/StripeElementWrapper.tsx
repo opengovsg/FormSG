@@ -84,10 +84,8 @@ const StripePaymentContainer = ({
           <PaymentStack>
             <GenericMessageBlock
               paymentId={paymentId}
-              title={'Payment request was canceled.'}
-              subtitle={
-                'The payment request has been canceled. If any payment has been completed, the payment will be refunded.'
-              }
+              title="Payment request was canceled."
+              subtitle="The payment request has been canceled. If any payment has been completed, the payment will be refunded."
             />
           </PaymentStack>
         )
@@ -107,10 +105,8 @@ const StripePaymentContainer = ({
           <PaymentStack>
             <GenericMessageBlock
               paymentId={paymentId}
-              title={'Stripe is still processing your payment.'}
-              subtitle={
-                'Hold tight, your payment is still being processed by stripe.'
-              }
+              title="Stripe is still processing your payment."
+              subtitle="Hold tight, your payment is still being processed by stripe."
             />
           </PaymentStack>
         )
