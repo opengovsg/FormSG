@@ -1,8 +1,8 @@
-import React, { useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
-import { Box, Flex } from '@chakra-ui/react'
+import { Flex } from '@chakra-ui/react'
 import { Elements, useStripe } from '@stripe/react-stripe-js'
-import { loadStripe, Stripe } from '@stripe/stripe-js'
+import { loadStripe } from '@stripe/stripe-js'
 
 import { GetPaymentInfoDto } from '~shared/types'
 
@@ -10,8 +10,12 @@ import { CreatePaymentIntentFailureBlock } from '../components/CreatePaymentInte
 import { PaymentSuccessSvgr } from '../components/PaymentSuccessSvgr'
 import { useGetPaymentInfo } from '../queries'
 
-import { StripePaymentBlock } from './components/StripePaymentBlock'
-import { useGetPaymentStatusFromStripe } from './stripeQueries'
+import {
+  GenericMessageBlock,
+  PaymentStack,
+  StripePaymentBlock,
+} from './components'
+import { useGetPaymentStatusFromStripe } from './queries'
 import { StripeReceiptContainer } from './StripeReceiptContainer'
 import { getPaymentViewStates, PaymentViewStates } from './utils'
 
@@ -31,50 +35,28 @@ const StripeElementWrapper = ({ paymentId }: { paymentId: string }) => {
       options={{ clientSecret: paymentInfoData.client_secret }}
     >
       <Flex flexDir="column" align="center">
-        <StripeHookWrapper paymentInfoData={paymentInfoData} />
+        <StripePaymentContainer paymentInfoData={paymentInfoData} />
       </Flex>
     </Elements>
   )
 }
 
-const StripeHookWrapper = ({
-  paymentInfoData,
-}: {
-  paymentInfoData: GetPaymentInfoDto
-}) => {
-  const stripe = useStripe()
-  if (!stripe) {
-    throw Promise.reject('Stripe is not ready')
-  }
-  return (
-    <StripePaymentContainer paymentInfoData={paymentInfoData} stripe={stripe} />
-  )
-}
-
-const PaymentBox = ({ children }: { children: React.ReactNode }) => (
-  <Box
-    py={{ base: '1.5rem', md: '3rem' }}
-    px={{ base: '1.5rem', md: '4rem' }}
-    bg="white"
-    w="100%"
-  >
-    {children}
-  </Box>
-)
 /**
- * Handles decision to render StripePaymentModal or StripeReceiptModal
+ * Handles the presentational logic for stripe payment flow
+ * @param paymentInfoData
  * @returns
  */
 const StripePaymentContainer = ({
   paymentInfoData,
-  stripe,
 }: {
   paymentInfoData: GetPaymentInfoDto
-  stripe: Stripe
 }) => {
   const { formId, paymentId } = useParams()
   if (!formId) throw new Error('No formId provided')
   if (!paymentId) throw new Error('No paymentId provided')
+
+  const stripe = useStripe()
+  if (!stripe) throw Promise.reject('Stripe is not ready')
 
   const [refetchKey, setRefetchKey] = useState<number>(0)
   const { data } = useGetPaymentStatusFromStripe({
@@ -85,51 +67,65 @@ const StripePaymentContainer = ({
 
   const viewStates = getPaymentViewStates(data?.paymentIntent?.status)
 
-  switch (viewStates) {
-    case PaymentViewStates.Invalid:
-      return (
-        <PaymentBox>
-          <CreatePaymentIntentFailureBlock
-            submissionId={paymentId}
-            paymentClientSecret={paymentInfoData.client_secret}
-            publishableKey={paymentInfoData.publishableKey}
-          />
-        </PaymentBox>
-      )
-    case PaymentViewStates.Canceled:
-      return (
-        <PaymentBox>
-          <span>{viewStates}</span>
-        </PaymentBox>
-      )
-      break
-    case PaymentViewStates.Pending:
-      return (
-        <PaymentBox>
-          <StripePaymentBlock
-            submissionId={paymentId}
-            paymentClientSecret={paymentInfoData.client_secret}
-            publishableKey={paymentInfoData.publishableKey}
-            triggerPaymentStatusRefetch={() => setRefetchKey(Date.now())}
-          />
-        </PaymentBox>
-      )
-    case PaymentViewStates.Succeeded:
-      return (
-        <>
-          <PaymentSuccessSvgr maxW="100%" />
-          <PaymentBox>
+  const renderViewState = () => {
+    switch (viewStates) {
+      case PaymentViewStates.Invalid:
+        return (
+          <PaymentStack>
+            <CreatePaymentIntentFailureBlock
+              submissionId={paymentId}
+              paymentClientSecret={paymentInfoData.client_secret}
+              publishableKey={paymentInfoData.publishableKey}
+            />
+          </PaymentStack>
+        )
+      case PaymentViewStates.Canceled:
+        return (
+          <PaymentStack>
+            <GenericMessageBlock
+              paymentId={paymentId}
+              title="Payment request was canceled."
+              subtitle="The payment request has been canceled. If any payment has been completed, the payment will be refunded."
+            />
+          </PaymentStack>
+        )
+      case PaymentViewStates.PendingPayment:
+        return (
+          <PaymentStack>
+            <StripePaymentBlock
+              submissionId={paymentId}
+              paymentClientSecret={paymentInfoData.client_secret}
+              publishableKey={paymentInfoData.publishableKey}
+              triggerPaymentStatusRefetch={() => setRefetchKey(Date.now())}
+            />
+          </PaymentStack>
+        )
+      case PaymentViewStates.Processing:
+        return (
+          <PaymentStack>
+            <GenericMessageBlock
+              paymentId={paymentId}
+              title="Stripe is still processing your payment."
+              subtitle="Hold tight, your payment is still being processed by stripe."
+            />
+          </PaymentStack>
+        )
+      case PaymentViewStates.Succeeded:
+        return (
+          <>
+            <PaymentSuccessSvgr maxW="100%" />
             <StripeReceiptContainer formId={formId} paymentId={paymentId} />
-          </PaymentBox>
-        </>
-      )
-    default: {
-      // Force TS to emit an error if the cases above are not exhaustive
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const exhaustiveCheck: never = viewStates
-      throw new Error(`Undefined view type: ${viewStates}`)
+          </>
+        )
+      default: {
+        // Force TS to emit an error if the cases above are not exhaustive
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const exhaustiveCheck: never = viewStates
+        throw new Error(`Undefined view type: ${viewStates}`)
+      }
     }
   }
+  return renderViewState()
 }
 
 export default StripeElementWrapper

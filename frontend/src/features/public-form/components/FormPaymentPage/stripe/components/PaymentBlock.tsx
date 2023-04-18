@@ -161,7 +161,10 @@ export const StripePaymentBlock = ({
     return 'Please make payment.'
   }, [formTitle])
 
-  return form?.responseMode === FormResponseMode.Encrypt ? (
+  if (!form || form.responseMode !== FormResponseMode.Encrypt) {
+    return <></>
+  }
+  return (
     <Flex flexDir="column">
       <Stack tabIndex={-1} ref={focusRef} spacing="1rem">
         <Box>
@@ -178,10 +181,9 @@ export const StripePaymentBlock = ({
         <Text textStyle="body-1" textColor="secondary.700">
           Your credit card will be charged:{' '}
           <Text as="span" fontWeight="bold">
-            S${centsToDollars(form?.payments_field?.amount_cents || 0)}
+            S${centsToDollars(form.payments_field?.amount_cents || 0)}
           </Text>
         </Text>
-
         {paymentClientSecret && (
           <Elements
             stripe={stripePromise}
@@ -198,11 +200,8 @@ export const StripePaymentBlock = ({
             />
           </Elements>
         )}
-
         <Text textColor="secondary.300">Response ID: {submissionId}</Text>
       </Stack>
     </Flex>
-  ) : (
-    <></>
   )
 }

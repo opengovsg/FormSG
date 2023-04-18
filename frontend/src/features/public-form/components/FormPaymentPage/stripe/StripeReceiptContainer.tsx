@@ -1,7 +1,19 @@
+import { useCallback, useState } from 'react'
+import { useToast } from '@chakra-ui/react'
+
+import { usePublicFormMutations } from '~features/public-form/mutations'
+
+import {
+  FeedbackBlock,
+  FeedbackFormInput,
+} from '../../FormEndPage/components/FeedbackBlock'
 import { useGetPaymentReceiptStatus } from '../queries'
 
-import { DownloadReceiptBlock } from './components/StripeDownloadReceiptBlock'
-import { StripeLoadingReceiptBlock } from './components/StripeLoadingReceiptBlock'
+import {
+  DownloadReceiptBlock,
+  GenericMessageBlock,
+  PaymentStack,
+} from './components'
 
 export const StripeReceiptContainer = ({
   formId,
@@ -14,8 +26,51 @@ export const StripeReceiptContainer = ({
     formId,
     paymentId,
   )
+
+  const toast = useToast()
+  const [isFeedbackSubmitted, setIsFeedbackSubmitted] = useState(false)
+
+  const { submitFormFeedbackMutation } = usePublicFormMutations(
+    formId,
+    paymentId,
+  )
+
+  const handleSubmitFeedback = useCallback(
+    (inputs: FeedbackFormInput) => {
+      return submitFormFeedbackMutation.mutateAsync(inputs, {
+        onSuccess: () => {
+          toast({
+            description: 'Thank you for submitting your feedback!',
+            status: 'success',
+            isClosable: true,
+          })
+          setIsFeedbackSubmitted(true)
+        },
+      })
+    },
+    [submitFormFeedbackMutation, toast],
+  )
+
   if (isLoading || error || !data) {
-    return <StripeLoadingReceiptBlock paymentId={paymentId} />
+    return (
+      <PaymentStack>
+        <GenericMessageBlock
+          title="Your payment has been received."
+          subtitle="We are confirming your payment with Stripe. You may come back to the same link to download your receipt later."
+          paymentId={paymentId}
+        />
+      </PaymentStack>
+    )
   }
-  return <DownloadReceiptBlock formId={formId} paymentId={paymentId} />
+  return (
+    /**
+     * PaymentStack is explictly added in this component due to https://github.com/chakra-ui/chakra-ui/issues/6757
+     */
+    <PaymentStack>
+      <DownloadReceiptBlock formId={formId} paymentId={paymentId} />
+      {!isFeedbackSubmitted && (
+        <FeedbackBlock onSubmit={handleSubmitFeedback} />
+      )}
+    </PaymentStack>
+  )
 }
