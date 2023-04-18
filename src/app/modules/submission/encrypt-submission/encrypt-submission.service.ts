@@ -13,6 +13,7 @@ import {
   SubmissionPaymentDto,
 } from '../../../../../shared/types'
 import {
+  FieldResponse,
   IEncryptedSubmissionSchema,
   IPopulatedEncryptedForm,
   IPopulatedForm,
@@ -28,15 +29,25 @@ import {
   AttachmentUploadError,
   DatabaseError,
   MalformedParametersError,
+  PossibleDatabaseError,
 } from '../../core/core.errors'
 import { CreatePresignedUrlError } from '../../form/admin-form/admin-form.errors'
+import { FormNotFoundError } from '../../form/form.errors'
+import * as FormService from '../../form/form.service'
 import { isFormEncryptMode } from '../../form/form.utils'
 import { PaymentNotFoundError } from '../../payments/payments.errors'
 import * as PaymentsService from '../../payments/payments.service'
 import {
+  WebhookPushToQueueError,
+  WebhookValidationError,
+} from '../../webhook/webhook.errors'
+import { WebhookFactory } from '../../webhook/webhook.factory'
+import {
   ResponseModeError,
   SubmissionNotFoundError,
 } from '../submission.errors'
+import { sendEmailConfirmations } from '../submission.service'
+import { extractEmailConfirmationData } from '../submission.utils'
 
 import {
   AttachmentMetadata,
@@ -447,4 +458,66 @@ export const createEncryptSubmissionWithoutSave = ({
     attachmentMetadata,
     version,
   })
+}
+
+/**
+ * Performs the post-submission actions for encrypt submissions. This is to be
+ * called when the submission is completed
+ * @param submission the completed submission
+ * @param responses the verified field responses sent with the original submission request
+ * @returns ok(true) if all actions were completed successfully
+ * @returns err(FormNotFoundError) if the form or form admin does not exist
+ * @returns err(ResponseModeError) if the form is not encrypt mode
+ * @returns err(WebhookValidationError) if the webhook URL failed validation
+ * @returns err(WebhookPushToQueueError) if the webhook was failed to be pushed to SQS
+ * @returns err(SubmissionNotFoundError) if there was an error updating the submission with the webhook record
+ * @returns err(PossibleDatabaseError) if error occurs whilst querying the database
+ */
+export const performEncryptPostSubmissionActions = (
+  submission: IEncryptedSubmissionSchema,
+  responses: FieldResponse[],
+): ResultAsync<
+  true,
+  | FormNotFoundError
+  | ResponseModeError
+  | WebhookValidationError
+  | WebhookPushToQueueError
+  | SubmissionNotFoundError
+  | PossibleDatabaseError
+> => {
+  return FormService.retrieveFullFormById(submission.form)
+    .andThen(checkFormIsEncryptMode)
+    .andThen((form) => {
+      // Fire webhooks if available
+      // To avoid being coupled to latency of receiving system,
+      // do not await on webhook
+      const webhookUrl = form.webhook?.url
+      if (!webhookUrl) return okAsync(form)
+
+      return WebhookFactory.sendInitialWebhook(
+        submission,
+        webhookUrl,
+        !!form.webhook?.isRetryEnabled,
+      ).andThen(() => okAsync(form))
+    })
+    .andThen((form) => {
+      // Send Email Confirmations
+      return sendEmailConfirmations({
+        form,
+        submission,
+        recipientData: extractEmailConfirmationData(
+          responses,
+          form.form_fields,
+        ),
+      }).mapErr((error) => {
+        logger.error({
+          message: 'Error while sending email confirmations',
+          meta: {
+            action: 'sendEmailAutoReplies',
+          },
+          error,
+        })
+        return error
+      })
+    })
 }

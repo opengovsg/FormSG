@@ -28,6 +28,7 @@ const PaymentSchema = new Schema<IPaymentSchema, IPaymentModel>(
       type: String,
       required: true,
     },
+    responses: [],
 
     webhookLog: [],
     status: {
