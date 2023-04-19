@@ -127,7 +127,7 @@ const confirmStripePaymentPendingSubmission = (
         .andThen((transactionFee) =>
           PaymentsService.confirmPaymentPendingSubmission(
             payment.id,
-            new Date(event.created),
+            new Date(event.created * 1000), // Convert to miliseconds from epoch
             receiptUrl,
             transactionFee,
           ),
