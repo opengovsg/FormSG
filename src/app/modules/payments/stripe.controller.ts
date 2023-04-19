@@ -8,6 +8,8 @@ import mongoose from 'mongoose'
 import { errAsync, ok, Result, ResultAsync } from 'neverthrow'
 import Stripe from 'stripe'
 
+import { IPopulatedForm } from 'src/types'
+
 import { ErrorDto, GetPaymentInfoDto } from '../../../../shared/types'
 import config from '../../config/config'
 import { paymentConfig } from '../../config/features/payment.config'
@@ -343,7 +345,8 @@ export const downloadPaymentInvoice: ControllerHandler<{
           // convert to pdf and return
           .then((receiptUrlResponse) => {
             const html = receiptUrlResponse.data
-            const businessInfo = populatedForm.admin.agency.business
+            const businessInfo = (populatedForm as IPopulatedForm).admin.agency
+              .business
 
             // we will still continute the invoice generation even if there's no address/gstregno
             if (!businessInfo.address || !businessInfo.gstRegNo)
