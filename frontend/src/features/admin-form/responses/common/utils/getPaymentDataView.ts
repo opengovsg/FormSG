@@ -13,6 +13,9 @@ const toSentenceCase = (str: string) =>
     // replace underscores with a space
     .replace(/_/g, ' ')
 
+const getInvoiceUrl = (formId: string, payment: SubmissionPaymentDto) => {
+  return `/api/v3/payments/${formId}/${payment.id}/invoice/download`
+}
 /**
  * Helper function to obtain the payment field data that we want to display to
  * admins, used both in the individual response page and the exported CSV.
@@ -21,6 +24,7 @@ const toSentenceCase = (str: string) =>
  */
 export const getPaymentDataView = (
   payment: SubmissionPaymentDto,
+  formId: string,
 ): PaymentDataViewItem[] =>
   // Payment data association of keys to values, in CSV column order
   [
@@ -31,7 +35,11 @@ export const getPaymentDataView = (
     },
 
     { key: 'email', name: 'Payer', value: payment.email },
-    { key: 'receiptUrl', name: 'Receipt', value: payment.receiptUrl },
+    {
+      key: 'receiptUrl',
+      name: 'Receipt',
+      value: getInvoiceUrl(formId, payment), // payment.receiptUrl
+    },
 
     {
       key: 'paymentIntentId',
