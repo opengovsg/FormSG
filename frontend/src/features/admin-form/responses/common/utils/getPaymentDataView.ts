@@ -1,5 +1,7 @@
 import { SubmissionPaymentDto } from '~shared/types'
 
+import { getPaymentInvoiceDownloadUrl } from '~features/public-form/utils/urls'
+
 type PaymentDataViewItem = {
   key: keyof SubmissionPaymentDto
   name: string
@@ -13,9 +15,23 @@ const toSentenceCase = (str: string) =>
     // replace underscores with a space
     .replace(/_/g, ' ')
 
-const getInvoiceUrl = (formId: string, payment: SubmissionPaymentDto) => {
-  return `/api/v3/payments/${formId}/${payment.id}/invoice/download`
+/**
+ * webworker friendly full url generation of payment invoice
+ * @param hostOrigin
+ * @param formId
+ * @param paymentId
+ * @returns
+ */
+const getFullInvoiceDownloadUrl = (
+  hostOrigin: string,
+  formId: string,
+  paymentId: string,
+): string => {
+  const pathName = getPaymentInvoiceDownloadUrl(formId, paymentId)
+  const url = new URL(pathName, hostOrigin)
+  return url.toString()
 }
+
 /**
  * Helper function to obtain the payment field data that we want to display to
  * admins, used both in the individual response page and the exported CSV.
@@ -23,6 +39,7 @@ const getInvoiceUrl = (formId: string, payment: SubmissionPaymentDto) => {
  * @returns payment data view with an array of names and values, ordered in CSV column order.
  */
 export const getPaymentDataView = (
+  hostOrigin: string,
   payment: SubmissionPaymentDto,
   formId: string,
 ): PaymentDataViewItem[] =>
@@ -38,7 +55,7 @@ export const getPaymentDataView = (
     {
       key: 'receiptUrl',
       name: 'Receipt',
-      value: getInvoiceUrl(formId, payment), // payment.receiptUrl
+      value: getFullInvoiceDownloadUrl(hostOrigin, formId, payment.id),
     },
 
     {

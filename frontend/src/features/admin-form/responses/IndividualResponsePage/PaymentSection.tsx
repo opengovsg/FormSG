@@ -50,7 +50,10 @@ export const PaymentSection = ({
 
   const displayPayoutSection = payment.payoutId || payment.payoutDate
 
-  const paymentDataMap = keyBy(getPaymentDataView(payment, formId), 'key')
+  const paymentDataMap = keyBy(
+    getPaymentDataView(window.location.origin, payment, formId),
+    'key',
+  )
 
   const paymentTagProps =
     payment.status === PaymentStatus.Succeeded
