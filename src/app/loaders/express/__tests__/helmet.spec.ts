@@ -122,7 +122,7 @@ describe('helmetMiddlewares', () => {
     if (hstsFn) {
       hstsFn(mockReq, mockRes, mockNext)
     }
-    expect(mockHelmet.hsts).toHaveBeenCalledWith({ maxAge: 5184000 })
+    expect(mockHelmet.hsts).toHaveBeenCalledWith({ maxAge: 400 * 24 * 60 * 60 }) // 400 days
     expect(mockNext).not.toHaveBeenCalled()
   })
 

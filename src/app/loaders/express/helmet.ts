@@ -9,7 +9,7 @@ const helmetMiddlewares = () => {
   // Only add the "Strict-Transport-Security" header if request is https.
   const hstsMiddleware: RequestHandler = (req, res, next) => {
     if (req.secure) {
-      helmet.hsts({ maxAge: 5184000 })(req, res, next) // 60 days
+      helmet.hsts({ maxAge: 400 * 24 * 60 * 60 })(req, res, next) // 400 days
     } else next()
   }
 
