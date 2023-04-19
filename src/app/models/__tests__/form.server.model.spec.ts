@@ -98,6 +98,7 @@ const PAYMENTS_DEFAULTS = {
   payments_field: {
     enabled: false,
     description: '',
+    amount_cents: 0,
   },
 }
 
@@ -793,7 +794,7 @@ describe('Form Model', () => {
 
         // Assert
         await expect(invalidForm.save()).rejects.toThrow(
-          'Payment amount must be at least 50 cents and an integer.',
+          'amount_cents must be a non-negative integer.',
         )
       })
 
@@ -812,26 +813,7 @@ describe('Form Model', () => {
 
         // Assert
         await expect(invalidForm.save()).rejects.toThrow(
-          'Payment amount must be at least 50 cents and an integer.',
-        )
-      })
-
-      it('should reject when amount is less than 50', async () => {
-        // Arrange
-        const invalidFormParams = merge({}, MOCK_ENCRYPTED_FORM_PARAMS, {
-          payments_field: {
-            enabled: true,
-            amount_cents: 49,
-            description: 'some payment',
-          },
-        })
-
-        // Act
-        const invalidForm = new Form(invalidFormParams)
-
-        // Assert
-        await expect(invalidForm.save()).rejects.toThrow(
-          'Payment amount must be at least 50 cents and an integer.',
+          'amount_cents must be a non-negative integer.',
         )
       })
     })
