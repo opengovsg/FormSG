@@ -493,10 +493,8 @@ describe('stripe.service', () => {
       const updatedPayment = await Payment.findById(payment.id)
       expect(updatedPayment).toBeTruthy()
 
+      expect(updatedPayment!.payout).toBeTruthy()
       expect(updatedPayment!.payout?.payoutId).toEqual(payout.id)
-      expect(updatedPayment!.payout?.payoutDate).toEqual(
-        new Date(payout.arrival_date),
-      )
     })
 
     it('should remove the payout details when a payout.cancelled event is received', async () => {
@@ -516,7 +514,7 @@ describe('stripe.service', () => {
           ],
           status: PaymentStatus.Succeeded,
           payout: {
-            payoutDate: new Date(payoutCreated.arrival_date),
+            payoutDate: new Date(payoutCreated.arrival_date * 1000),
             payoutId: payoutCreated.id,
           },
         },

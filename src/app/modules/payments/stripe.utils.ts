@@ -281,7 +281,7 @@ const payoutStateReducer = (
       // Once created, we know it will happen, so update the payout
       return {
         payoutId: event.data.object.id,
-        payoutDate: new Date(event.data.object.arrival_date),
+        payoutDate: new Date(event.data.object.arrival_date * 1000), // Convert to miliseconds from epoch
       }
     case 'payout.canceled':
     case 'payout.failed':
