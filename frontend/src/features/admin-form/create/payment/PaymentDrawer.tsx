@@ -49,14 +49,6 @@ const formatCurrency = new Intl.NumberFormat('en-SG', {
   minimumFractionDigits: 2,
   maximumFractionDigits: 2,
 }).format
-/**
- * Description in payment field will be rendered as 'Name' in the Frontend, but kept as description in the backend
- * This is for design purpose as 'Name' conveys clearer information to the users,
- * Whilst description will still be used in the backend for consistency with Stripe's API
- */
-const NAME_INFORMATION = 'Name will be reflected on payment receipt'
-const ENABLE_PAYMENT_INFORMATION =
-  'Payment field will not be shown when this is toggled off. Respondents can still submit the form.'
 
 export const PaymentInput = ({
   isDisabled,
@@ -205,8 +197,8 @@ export const PaymentInput = ({
             // Retrigger validation to remove errors when payment is toggled from enabled -> disabled
             onChange: () => paymentIsEnabled && trigger(),
           })}
-          description={ENABLE_PAYMENT_INFORMATION}
-          label="Enable Payment"
+          description="Payment field will not be shown when this is toggled off. Respondents can still submit the form."
+          label="Enable payment"
         />
       </FormControl>
       <FormControl
@@ -215,8 +207,11 @@ export const PaymentInput = ({
         isDisabled={!paymentIsEnabled}
         isRequired
       >
-        <FormLabel description={NAME_INFORMATION}>Name</FormLabel>
+        <FormLabel description="This will be reflected on the payment receipt">
+          Product/service name
+        </FormLabel>
         <Input
+          placeholder="Product/service name"
           {...register('description', {
             required: paymentIsEnabled && 'Please enter a payment description',
           })}
@@ -229,7 +224,7 @@ export const PaymentInput = ({
         isDisabled={!paymentIsEnabled}
         isRequired
       >
-        <FormLabel isRequired>Payment Amount</FormLabel>
+        <FormLabel isRequired>Payment amount</FormLabel>
         <Controller
           name="display_amount"
           control={control}
