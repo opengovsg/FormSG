@@ -349,7 +349,11 @@ export const downloadPaymentInvoice: ControllerHandler<{
               .business
 
             // we will still continute the invoice generation even if there's no address/gstregno
-            if (!businessInfo.address || !businessInfo.gstRegNo)
+            if (
+              !businessInfo ||
+              !businessInfo.address ||
+              !businessInfo.gstRegNo
+            )
               logger.warn({
                 message:
                   'Some business info not available during invoice generation',
@@ -361,8 +365,8 @@ export const downloadPaymentInvoice: ControllerHandler<{
                 },
               })
             const invoiceHtml = convertToInvoiceForrmat(html, {
-              address: businessInfo.address || '',
-              gstRegNo: businessInfo.gstRegNo || '',
+              address: businessInfo?.address || '',
+              gstRegNo: businessInfo?.gstRegNo || '',
             })
 
             const pdfBufferPromise = generatePdfFromHtml(invoiceHtml)
