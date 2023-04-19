@@ -91,6 +91,7 @@ export const PaymentInput = ({
     formState: { errors, dirtyFields },
     control,
     handleSubmit,
+    trigger,
   } = useForm<FormPaymentsDisplay>({
     mode: 'onChange',
     defaultValues: {
@@ -135,46 +136,44 @@ export const PaymentInput = ({
 
   const handleCloseDrawer = useCallback(() => handleClose(false), [handleClose])
 
+  const paymentIsEnabled = clonedWatchedInputs.enabled
+
   const amountValidation: RegisterOptions<
     FormPaymentsDisplay,
     'display_amount'
-  > = useMemo(
-    () => ({
-      validate: {
-        validateMoney: (val) => {
-          return (
-            /* Regex allows: 
-               - leading and trailing spaces
-               - max 2dp
-            */
-            /^\s*(\d+)(\.\d{0,2})?\s*$/.test(val ?? '') ||
-            'Please enter a valid payment amount'
-          )
-        },
-        validateMin: (val) => {
-          if (minPaymentAmountCents === undefined) return true
-          return (
-            // val is in dollars
-            (val && dollarsToCents(val) >= minPaymentAmountCents) ||
-            `Please enter a payment amount above ${formatCurrency(
-              Number(centsToDollars(minPaymentAmountCents)),
-            )}`
-          )
-        },
-        validateMax: (val) => {
-          if (maxPaymentAmountCents === undefined) return true
-          return (
-            // val is in dollars
-            (val && dollarsToCents(val) <= maxPaymentAmountCents) ||
-            `Please enter a payment amount below ${formatCurrency(
-              Number(centsToDollars(maxPaymentAmountCents)),
-            )}`
-          )
-        },
-      },
-    }),
-    [maxPaymentAmountCents, minPaymentAmountCents],
-  )
+  > = {
+    validate: (val) => {
+      if (!paymentIsEnabled) return true
+
+      // Validate that it is a money value.
+      // Regex allows leading and trailing spaces, max 2dp
+      const validateMoney = /^\s*(\d+)(\.\d{0,2})?\s*$/.test(val ?? '')
+      if (!validateMoney) return 'Please enter a valid payment amount'
+
+      const validateMin =
+        !!minPaymentAmountCents &&
+        !!val &&
+        dollarsToCents(val) >= minPaymentAmountCents
+      // Repeat the check on minPaymentAmountCents for correct typing
+      if (!!minPaymentAmountCents && !validateMin) {
+        return `Please enter a payment amount above ${formatCurrency(
+          Number(centsToDollars(minPaymentAmountCents)),
+        )}`
+      }
+
+      const validateMax =
+        !!maxPaymentAmountCents &&
+        !!val &&
+        dollarsToCents(val) <= maxPaymentAmountCents
+      // Repeat the check on maxPaymentAmountCents for correct typing
+      if (!!maxPaymentAmountCents && !validateMax) {
+        return `Please enter a payment amount below ${formatCurrency(
+          Number(centsToDollars(maxPaymentAmountCents)),
+        )}`
+      }
+      return true
+    },
+  }
 
   const handleUpdatePayments = handleSubmit(() => {
     if (isDisabled || !paymentsData) {
@@ -195,9 +194,6 @@ export const PaymentInput = ({
     )
   })
 
-  const paymentToggleLabel = 'Enable Payment'
-  const buttonText = 'Save payment field'
-
   return (
     <CreatePageDrawerContentContainer>
       <FormControl
@@ -205,20 +201,24 @@ export const PaymentInput = ({
         isDisabled={isDisabled}
       >
         <Toggle
-          {...register('enabled')}
+          {...register('enabled', {
+            // Retrigger validation to remove errors when payment is toggled from enabled -> disabled
+            onChange: () => paymentIsEnabled && trigger(),
+          })}
           description={ENABLE_PAYMENT_INFORMATION}
-          label={paymentToggleLabel}
+          label="Enable Payment"
         />
       </FormControl>
       <FormControl
         isReadOnly={paymentsMutation.isLoading}
         isInvalid={!!errors.description}
+        isDisabled={!paymentIsEnabled}
         isRequired
       >
         <FormLabel description={NAME_INFORMATION}>Name</FormLabel>
         <Input
           {...register('description', {
-            required: 'Please enter a payment description',
+            required: paymentIsEnabled && 'Please enter a payment description',
           })}
         />
         <FormErrorMessage>{errors.description?.message}</FormErrorMessage>
@@ -226,6 +226,8 @@ export const PaymentInput = ({
       <FormControl
         isReadOnly={paymentsMutation.isLoading}
         isInvalid={!!errors.display_amount}
+        isDisabled={!paymentIsEnabled}
+        isRequired
       >
         <FormLabel isRequired>Payment Amount</FormLabel>
         <Controller
@@ -249,7 +251,7 @@ export const PaymentInput = ({
         isLoading={paymentsMutation.isLoading}
         handleClick={handleUpdatePayments}
         handleCancel={handleCloseDrawer}
-        buttonText={buttonText}
+        buttonText="Save payment field"
         isDisabled={isDisabled}
       ></FormFieldDrawerActions>
     </CreatePageDrawerContentContainer>
