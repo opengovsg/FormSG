@@ -164,11 +164,12 @@ const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
     },
     amount_cents: {
       type: Number,
+      default: 0,
       validate: {
         validator: (amount_cents: number) => {
-          return amount_cents >= 50 && Number.isInteger(amount_cents)
+          return amount_cents >= 0 && Number.isInteger(amount_cents)
         },
-        message: 'Payment amount must be at least 50 cents and an integer.',
+        message: 'amount_cents must be a non-negative integer.',
       },
     },
   },
