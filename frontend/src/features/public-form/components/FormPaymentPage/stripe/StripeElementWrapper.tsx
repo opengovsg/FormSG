@@ -51,8 +51,9 @@ const StripePaymentContainer = ({
 }: {
   paymentInfoData: GetPaymentInfoDto
 }) => {
-  const { formId } = useParams()
+  const { formId, paymentId } = useParams()
   if (!formId) throw new Error('No formId provided')
+  if (!paymentId) throw new Error('No paymentId provided')
 
   const stripe = useStripe()
   if (!stripe) throw Promise.reject('Stripe is not ready')
@@ -115,7 +116,8 @@ const StripePaymentContainer = ({
             <PaymentSuccessSvgr maxW="100%" />
             <StripeReceiptContainer
               formId={formId}
-              paymentId={paymentInfoData.submissionId}
+              paymentId={paymentId}
+              submissionId={paymentInfoData.submissionId}
             />
           </>
         )

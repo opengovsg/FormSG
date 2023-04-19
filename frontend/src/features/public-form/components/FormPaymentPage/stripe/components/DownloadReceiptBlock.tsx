@@ -12,11 +12,13 @@ import { GenericMessageBlock } from './GenericMessageBlock'
 
 type DownloadReceiptBlockProps = {
   formId: string
+  submissionId: string
   paymentId: string
 }
 
 export const DownloadReceiptBlock = ({
   formId,
+  submissionId,
   paymentId,
 }: DownloadReceiptBlockProps) => {
   const toast = useToast({ status: 'success', isClosable: true })
@@ -38,7 +40,7 @@ export const DownloadReceiptBlock = ({
     <GenericMessageBlock
       title={'Your payment has been made successfully.'}
       subtitle={'Your form has been submitted and payment has been made.'}
-      paymentId={paymentId}
+      submissionId={submissionId}
     >
       <>
         <Button
