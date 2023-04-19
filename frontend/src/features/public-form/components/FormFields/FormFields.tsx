@@ -95,6 +95,7 @@ export const FormFields = ({
   const {
     reset,
     formState: { isDirty },
+    trigger,
   } = formMethods
 
   // Reset default values when they change
@@ -143,6 +144,7 @@ export const FormFields = ({
           formFields={augmentedFormFields}
           formLogics={formLogics}
           colorTheme={colorTheme}
+          trigger={trigger}
         />
       </form>
     </FormProvider>
