@@ -266,3 +266,27 @@ export const generateSmsVerificationWarningHtmlForCollab = (
   })
   return safeRenderFile(pathToTemplate, htmlData)
 }
+
+export const generatePaymentConfirmationHtml = ({
+  formTitle,
+  responseId,
+  appName,
+  invoiceUrl,
+}: {
+  formTitle: string
+  responseId: string
+  appName: string
+  invoiceUrl: string
+}): string => {
+  return dedent`
+    <p>Hello there,</p>
+    <p>
+      Your payment on ${appName} form: ${formTitle} has been received successfully.
+      Your response ID is ${responseId} and your payment invoice can be found 
+      <a href="${invoiceUrl}">here</a>
+    </p>
+    <p>Regards,
+    <br />
+    <p>${appName} team</p>   
+  `
+}
