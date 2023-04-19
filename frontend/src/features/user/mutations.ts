@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from 'react-query'
 
 import {
   SendUserContactOtpDto,
+  TransferOwnershipDto,
   UserDto,
   VerifyUserContactOtpDto,
 } from '~shared/types/user'
@@ -50,9 +51,22 @@ export const useUserMutations = () => {
     },
   })
 
+  // FIXME: Fix mutation
+  const transferOwnershipMutation = useMutation(
+    (params: TransferOwnershipDto) => console.log(params),
+    {
+      onSuccess: (_) => {
+        toast({
+          description: 'Ownership transferred.',
+        })
+      },
+    },
+  )
+
   return {
     generateOtpMutation,
     verifyOtpMutation,
     updateLastSeenFeatureVersionMutation,
+    transferOwnershipMutation,
   }
 }

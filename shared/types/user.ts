@@ -70,3 +70,7 @@ export type SendOtpResponseDto = {
 export type GetSgidAuthUrlResponseDto = {
   redirectUrl: string
 }
+
+export type TransferOwnershipDto = {
+  email: string
+}

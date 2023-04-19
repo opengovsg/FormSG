@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom'
 import { useDisclosure } from '@chakra-ui/hooks'
 import { Meta, Story } from '@storybook/react'
 
-import { userHandlers } from '~/mocks/msw/handlers/user'
+import { getUser, MOCK_USER, userHandlers } from '~/mocks/msw/handlers/user'
 
 import {
   fullScreenDecorator,
@@ -50,6 +50,9 @@ const Template: Story = () => {
   )
 }
 export const Default = Template.bind({})
+Default.parameters = {
+  msw: [getUser({ delay: 0, mockUser: MOCK_USER })],
+}
 
 export const Mobile = Template.bind({})
 Mobile.parameters = {

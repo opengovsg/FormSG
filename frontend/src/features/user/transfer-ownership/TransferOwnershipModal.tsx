@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { SubmitHandler, useForm } from 'react-hook-form'
 import {
   Button,
@@ -17,8 +17,14 @@ import {
 } from '@chakra-ui/react'
 import isEmail from 'validator/lib/isEmail'
 
-import { INVALID_EMAIL_ERROR, REQUIRED_ERROR } from '~constants/validation'
+import {
+  CANNOT_TRANSFER_OWNERSHIP_TO_SELF,
+  INVALID_EMAIL_ERROR,
+  REQUIRED_ERROR,
+} from '~constants/validation'
 import { ModalCloseButton } from '~components/Modal'
+
+import { useUser } from '../queries'
 
 interface TransferOwnershipModalProps {
   isOpen: boolean
@@ -29,13 +35,53 @@ type TransferOwnershipInputs = {
   email: string
 }
 
+const useModalState = ({ onClose, reset, trigger }) => {
+  const [page, setPage] = useState(0)
+  const [email, setEmail] = useState('')
+
+  const { user } = useUser()
+
+  const isOwnEmail = useCallback(
+    (value: string) => {
+      return user?.email && value.toLowerCase() === user.email
+    },
+    [user?.email],
+  )
+
+  const resetModal = useCallback(() => {
+    setPage(0)
+    reset()
+    trigger() // FIXME: This does not seem to trigger validation for unknown reasons.
+    onClose()
+  }, [page, email])
+
+  const onNext: SubmitHandler<TransferOwnershipInputs> = useCallback(
+    ({ email }) => {
+      setEmail(email)
+      setPage(1)
+    },
+    [page, email],
+  )
+
+  const onConfirm = useCallback(() => {
+    // TODO: Call Transfer ownership API
+    resetModal()
+  }, [page, email])
+
+  useEffect(() => {
+    trigger()
+  }, [])
+
+  return [
+    { page, email },
+    { isOwnEmail, resetModal, onNext, onConfirm },
+  ]
+}
+
 export const TransferOwnershipModal = ({
   isOpen,
   onClose,
 }: TransferOwnershipModalProps): JSX.Element => {
-  const [page, setPage] = useState(0)
-  const [email, setEmail] = useState('')
-
   const {
     reset,
     trigger,
@@ -45,16 +91,12 @@ export const TransferOwnershipModal = ({
   } = useForm<TransferOwnershipInputs>({
     mode: 'onChange',
   })
-  const onSubmit: SubmitHandler<TransferOwnershipInputs> = ({ email }) => {
-    setEmail(email)
-    setPage(1)
-  }
-  const onConfirmSubmit = () => {
-    // TODO: Transfer ownership
-    setPage(0)
-    reset()
-    onClose()
-  }
+  const [{ page, email }, { isOwnEmail, resetModal, onNext, onConfirm }] =
+    useModalState({
+      onClose,
+      reset,
+      trigger,
+    })
 
   const modalSize = useBreakpointValue({
     base: 'mobile',
@@ -62,30 +104,16 @@ export const TransferOwnershipModal = ({
     md: 'md',
   })
 
-  useEffect(() => {
-    trigger()
-  }, [])
-
-  // TODO: Prevent transferring ownership to self
   // TODO: Any need to ensure the new owner is a user of FormSG?
-  // FIXME: Fix double modal rendering issue (see PR for screenshots)
   return (
-    <Modal
-      size={modalSize}
-      isOpen={isOpen}
-      onClose={() => {
-        setPage(0)
-        reset()
-        onClose()
-      }}
-    >
+    <Modal size={modalSize} isOpen={isOpen} onClose={resetModal!}>
       <ModalOverlay />
       <ModalContent>
         <ModalCloseButton />
         <ModalHeader color="secondary.700">Transfer all forms</ModalHeader>
         <ModalBody whiteSpace="pre-wrap" pb="3.25rem">
           {page === 0 && (
-            <form onSubmit={handleSubmit(onSubmit)}>
+            <form onSubmit={handleSubmit(onNext!)}>
               <FormControl isInvalid={!!errors['email']}>
                 <FormLabel>
                   Transfer ownership of all forms
@@ -99,17 +127,24 @@ export const TransferOwnershipModal = ({
                   placeholder="me@example.com"
                   {...register('email', {
                     required: REQUIRED_ERROR,
-                    validate: (value) => isEmail(value) || INVALID_EMAIL_ERROR,
+                    validate: (value) => {
+                      if (!isEmail(value)) {
+                        return INVALID_EMAIL_ERROR
+                      }
+                      return (
+                        !isOwnEmail!(value) || CANNOT_TRANSFER_OWNERSHIP_TO_SELF
+                      )
+                    },
                   })}
                 />
                 <FormErrorMessage>{errors['email']?.message}</FormErrorMessage>
               </FormControl>
               <section style={{ marginTop: '1rem', textAlign: 'right' }}>
                 <ButtonGroup spacing="6">
-                  <Button variant="link" onClick={onClose}>
+                  <Button variant="link" onClick={resetModal}>
                     Cancel
                   </Button>
-                  <Button type="submit" disabled={errors['email']?.message}>
+                  <Button type="submit" disabled={!!errors['email']}>
                     Transfer ownership
                   </Button>
                 </ButtonGroup>
@@ -128,8 +163,10 @@ export const TransferOwnershipModal = ({
               </Text>
               <section style={{ marginTop: '1rem', textAlign: 'right' }}>
                 <ButtonGroup spacing="6">
-                  <Button variant="link">Cancel</Button>
-                  <Button colorScheme="danger" onClick={onConfirmSubmit}>
+                  <Button variant="link" onClick={resetModal}>
+                    Cancel
+                  </Button>
+                  <Button colorScheme="danger" onClick={onConfirm}>
                     Yes, transfer all forms
                   </Button>
                 </ButtonGroup>
