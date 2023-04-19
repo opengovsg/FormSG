@@ -1,5 +1,5 @@
 import { MouseEventHandler, useMemo } from 'react'
-import { useFormState, useWatch } from 'react-hook-form'
+import { useFormState, UseFormTrigger, useWatch } from 'react-hook-form'
 import { Stack, useDisclosure, VisuallyHidden } from '@chakra-ui/react'
 
 import {
@@ -25,6 +25,7 @@ interface PublicFormSubmitButtonProps {
   formLogics: LogicDto[]
   colorTheme: string
   onSubmit: MouseEventHandler<HTMLButtonElement> | undefined
+  trigger: UseFormTrigger<FormFieldValues>
 }
 
 /**
@@ -36,6 +37,7 @@ export const PublicFormSubmitButton = ({
   formLogics,
   colorTheme,
   onSubmit,
+  trigger,
 }: PublicFormSubmitButtonProps): JSX.Element => {
   const isMobile = useIsMobile()
   const { isSubmitting } = useFormState()
@@ -52,6 +54,11 @@ export const PublicFormSubmitButton = ({
 
   // For payments submit and pay modal
   const { isOpen, onOpen, onClose } = useDisclosure({ defaultIsOpen: false })
+
+  const checkBeforeOpen = async () => {
+    const result = await trigger()
+    if (result) onOpen()
+  }
 
   const isPaymentEnabled =
     form?.responseMode === FormResponseMode.Encrypt &&
@@ -74,7 +81,7 @@ export const PublicFormSubmitButton = ({
         isLoading={isSubmitting}
         isDisabled={!!preventSubmissionLogic || !onSubmit}
         loadingText="Submitting"
-        onClick={isPaymentEnabled ? onOpen : onSubmit}
+        onClick={isPaymentEnabled ? checkBeforeOpen : onSubmit}
       >
         <VisuallyHidden>End of form.</VisuallyHidden>
         {preventSubmissionLogic
