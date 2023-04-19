@@ -130,4 +130,8 @@ export const textStyles = {
     lineHeight: '0.75rem',
     fontFeatureSettings: "'tnum' on, 'lnum' on, 'cv05' on",
   },
+  monospace: {
+    fontStyle: 'normal',
+    fontFeatureSettings: "'tnum' on, 'lnum' on, 'zero' on, 'cv05' on",
+  },
 }

@@ -5,7 +5,7 @@ import { Box, Stack } from '@chakra-ui/react'
 import { isEmpty, times } from 'lodash'
 
 import { BasicField, FormFieldDto } from '~shared/types/field'
-import { FormColorTheme, LogicDto } from '~shared/types/form'
+import { FormColorTheme, FormResponseMode, LogicDto } from '~shared/types/form'
 
 import InlineMessage from '~components/InlineMessage'
 import { FormFieldValues } from '~templates/Field'
@@ -17,6 +17,10 @@ import {
   hasExistingFieldValue,
 } from '~features/myinfo/utils'
 import { useFetchPrefillQuery } from '~features/public-form/hooks/useFetchPrefillQuery'
+import { usePublicFormContext } from '~features/public-form/PublicFormContext'
+
+import { PublicFormPaymentResumeModal } from '../FormPaymentPage/FormPaymentResumeModal'
+import { FormPaymentPreview } from '../FormPaymentPreview/FormPaymentPreview'
 
 import { PublicFormSubmitButton } from './PublicFormSubmitButton'
 import { VisibleFormFields } from './VisibleFormFields'
@@ -91,6 +95,7 @@ export const FormFields = ({
   const {
     reset,
     formState: { isDirty },
+    trigger,
   } = formMethods
 
   // Reset default values when they change
@@ -99,6 +104,8 @@ export const FormFields = ({
       reset(defaultFormValues)
     }
   }, [defaultFormValues, isDirty, reset])
+
+  const { form } = usePublicFormContext()
 
   return (
     <FormProvider {...formMethods}>
@@ -124,11 +131,20 @@ export const FormFields = ({
             </Stack>
           </Box>
         )}
+        {form?.responseMode === FormResponseMode.Encrypt &&
+          form?.payments_field?.enabled && (
+            <FormPaymentPreview
+              colorTheme={colorTheme}
+              paymentDetails={form.payments_field}
+            />
+          )}
+        <PublicFormPaymentResumeModal />
         <PublicFormSubmitButton
           onSubmit={onSubmit ? formMethods.handleSubmit(onSubmit) : undefined}
           formFields={augmentedFormFields}
           formLogics={formLogics}
           colorTheme={colorTheme}
+          trigger={trigger}
         />
       </form>
     </FormProvider>

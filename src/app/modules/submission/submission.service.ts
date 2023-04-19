@@ -1,3 +1,4 @@
+import omit from 'lodash/omit'
 import mongoose from 'mongoose'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 
@@ -8,18 +9,31 @@ import {
   ISubmissionSchema,
 } from '../../../types'
 import { createLoggerWithLabel } from '../../config/logger'
+import getPendingSubmissionModel from '../../models/pending_submission.server.model'
 import getSubmissionModel from '../../models/submission.server.model'
 import MailService from '../../services/mail/mail.service'
 import { AutoReplyMailData } from '../../services/mail/mail.types'
 import { createQueryWithDateParam, isMalformedDate } from '../../utils/date'
-import { getMongoErrorMessage } from '../../utils/handle-mongo-error'
-import { DatabaseError, MalformedParametersError } from '../core/core.errors'
+import {
+  getMongoErrorMessage,
+  transformMongoError,
+} from '../../utils/handle-mongo-error'
+import {
+  DatabaseDuplicateKeyError,
+  DatabaseError,
+  MalformedParametersError,
+} from '../core/core.errors'
 import { InvalidSubmissionIdError } from '../feedback/feedback.errors'
 
-import { SendEmailConfirmationError } from './submission.errors'
+import {
+  PendingSubmissionNotFoundError,
+  SendEmailConfirmationError,
+  SubmissionNotFoundError,
+} from './submission.errors'
 
 const logger = createLoggerWithLabel(module)
 const SubmissionModel = getSubmissionModel(mongoose)
+const PendingSubmissionModel = getPendingSubmissionModel(mongoose)
 
 /**
  * Returns number of form submissions of given form id in the given date range.
@@ -169,3 +183,138 @@ export const doesSubmissionIdExist = (
     }
     return okAsync(true as const)
   })
+
+/**
+ * @param submissionId the submission id to find amongst all the form submissions
+ *
+ * @returns ok(submission document) if retrieval is successful
+ * @returns err(SubmissionNotFoundError) if submission does not exist in the database
+ * @returns err(DatabaseError) if database errors occurs whilst retrieving user
+ */
+export const findSubmissionById = (
+  submissionId: string,
+): ResultAsync<ISubmissionSchema, DatabaseError | SubmissionNotFoundError> => {
+  return ResultAsync.fromPromise(
+    SubmissionModel.findById(submissionId).exec(),
+    (error) => {
+      logger.error({
+        message: 'Database find submission error',
+        meta: {
+          action: 'findSubmissionById',
+          submissionId,
+        },
+        error,
+      })
+      return new DatabaseError(getMongoErrorMessage(error))
+    },
+  ).andThen((submission) => {
+    if (!submission) {
+      return errAsync(new SubmissionNotFoundError())
+    }
+    return okAsync(submission)
+  })
+}
+
+/**
+ * Copies a pending submission by ID to the submission collection. For correctness,
+ * this should always be done within a transaction, thus a session must be provided.
+ *
+ * @param pendingSubmissionId the id of the pending submission to confirm
+ * @param session the mongoose transaction session to be used, if any
+ *
+ * @returns ok(submission document) if a submission document is successfully created
+ * @returns err(PendingSubmissionNotFoundError) if pending submission does not exist in the database
+ * @returns err(DatabaseError) if database errors occurs while copying the document over
+ */
+export const copyPendingSubmissionToSubmissions = (
+  pendingSubmissionId: string,
+  session: mongoose.ClientSession,
+): ResultAsync<
+  ISubmissionSchema,
+  DatabaseError | PendingSubmissionNotFoundError
+> => {
+  const logMeta = {
+    action: 'confirmPendingSubmission',
+    pendingSubmissionId,
+  }
+  return ResultAsync.fromPromise(
+    PendingSubmissionModel.findById(pendingSubmissionId, null, {
+      // readPreference from transaction isn't respected, thus we are setting it on operation
+      readPreference: 'primary',
+    }).session(session),
+    (error) => {
+      logger.error({
+        message: 'Database find pending submission error',
+        meta: logMeta,
+        error,
+      })
+      return new DatabaseError(getMongoErrorMessage(error))
+    },
+  )
+    .andThen((submission) => {
+      if (!submission) {
+        return errAsync(new PendingSubmissionNotFoundError())
+      }
+      return okAsync(submission)
+    })
+    .andThen((pendingSubmission) => {
+      const submissionContent = omit(pendingSubmission, [
+        '_id',
+        'created',
+        'lastModified',
+      ])
+      const submission = new SubmissionModel({
+        // Explicitly copy over the pending submission's _id
+        ...submissionContent,
+        _id: pendingSubmissionId,
+      })
+
+      return ResultAsync.fromPromise(submission.save({ session }), (error) => {
+        logger.error({
+          message: 'Database save submission error',
+          meta: logMeta,
+          error,
+        })
+        return transformMongoError(error)
+      }).orElse((error) => {
+        const isDuplicateKeyError = error instanceof DatabaseDuplicateKeyError
+
+        if (!isDuplicateKeyError) {
+          return errAsync(new DatabaseError(getMongoErrorMessage(error)))
+        }
+
+        // Failed to save due to duplicate keys.
+        logger.error({
+          message:
+            'Failed to move pending submission to submission: duplicate key error in submission collection',
+          meta: logMeta,
+          error,
+        })
+
+        // Recover by attempting to save with a different id.
+        const recoverySubmission = new SubmissionModel(submissionContent)
+        // TODO: Set alarms for both branches
+        return ResultAsync.fromPromise(
+          recoverySubmission.save({ session }),
+          (error) => {
+            logger.error({
+              message: 'Failed to recover from duplicate key error',
+              meta: logMeta,
+              error,
+            })
+            return new DatabaseError(getMongoErrorMessage(error))
+          },
+        ).andThen((recoverySubmission) => {
+          logger.warn({
+            message: `Successfully recovered from duplicate key error`,
+            meta: {
+              submissionId: recoverySubmission._id,
+              ...logMeta,
+            },
+            error,
+          })
+          return okAsync(recoverySubmission)
+        })
+      })
+    })
+}

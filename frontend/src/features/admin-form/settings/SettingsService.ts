@@ -1,3 +1,5 @@
+import Stripe from 'stripe'
+
 import {
   EmailFormSettings,
   FormSettings,
@@ -133,5 +135,21 @@ export const updateTwilioCredentials = async (
 export const deleteTwilioCredentials = async (formId: string) => {
   return ApiService.delete<void>(
     `${ADMIN_FORM_ENDPOINT}/${formId}/twilio`,
+  ).then(({ data }) => data)
+}
+
+export const createStripeAccount = async (formId: string) => {
+  return ApiService.post<{ authUrl: string }>(
+    `${ADMIN_FORM_ENDPOINT}/${formId}/stripe`,
+  ).then(({ data }) => data)
+}
+
+export const unlinkStripeAccount = async (formId: string) => {
+  return ApiService.delete<void>(`${ADMIN_FORM_ENDPOINT}/${formId}/stripe`)
+}
+
+export const validateStripeAccount = async (formId: string) => {
+  return ApiService.get<{ account: Stripe.Response<Stripe.Account> | null }>(
+    `${ADMIN_FORM_ENDPOINT}/${formId}/stripe/validate`,
   ).then(({ data }) => data)
 }

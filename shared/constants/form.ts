@@ -16,6 +16,7 @@ const PUBLIC_FORM_FIELDS = <const>[
 export const EMAIL_PUBLIC_FORM_FIELDS = PUBLIC_FORM_FIELDS
 export const STORAGE_PUBLIC_FORM_FIELDS = <const>[
   ...PUBLIC_FORM_FIELDS,
+  'payments_field',
   'publicKey',
 ]
 
@@ -37,6 +38,8 @@ export const EMAIL_FORM_SETTINGS_FIELDS = <const>[
 ]
 export const STORAGE_FORM_SETTINGS_FIELDS = <const>[
   ...FORM_SETTINGS_FIELDS,
+  'payments_channel',
+  'payments_field',
   'publicKey',
 ]
 
@@ -48,3 +51,5 @@ export const ADMIN_FORM_META_FIELDS = <const>[
   '_id',
   'responseMode',
 ]
+
+export const PAYMENT_CONTACT_FIELD_ID = 'payment_contact_field'
