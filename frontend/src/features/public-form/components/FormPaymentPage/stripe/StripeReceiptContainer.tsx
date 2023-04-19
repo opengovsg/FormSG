@@ -17,14 +17,16 @@ import {
 
 export const StripeReceiptContainer = ({
   formId,
+  submissionId,
   paymentId,
 }: {
   formId: string
+  submissionId: string
   paymentId: string
 }) => {
   const { data, isLoading, error } = useGetPaymentReceiptStatus(
     formId,
-    paymentId,
+    submissionId,
   )
 
   const toast = useToast()
@@ -32,7 +34,7 @@ export const StripeReceiptContainer = ({
 
   const { submitFormFeedbackMutation } = usePublicFormMutations(
     formId,
-    paymentId,
+    submissionId,
   )
 
   const handleSubmitFeedback = useCallback(
@@ -57,7 +59,7 @@ export const StripeReceiptContainer = ({
         <GenericMessageBlock
           title="Your payment has been received."
           subtitle="We are confirming your payment with Stripe. You may come back to the same link to download your receipt later."
-          paymentId={paymentId}
+          submissionId={submissionId}
         />
       </PaymentStack>
     )
@@ -67,7 +69,11 @@ export const StripeReceiptContainer = ({
      * PaymentStack is explictly added in this component due to https://github.com/chakra-ui/chakra-ui/issues/6757
      */
     <PaymentStack>
-      <DownloadReceiptBlock formId={formId} paymentId={paymentId} />
+      <DownloadReceiptBlock
+        formId={formId}
+        submissionId={submissionId}
+        paymentId={paymentId}
+      />
       {!isFeedbackSubmitted && (
         <FeedbackBlock onSubmit={handleSubmitFeedback} />
       )}
