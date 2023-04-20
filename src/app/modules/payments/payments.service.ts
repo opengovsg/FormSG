@@ -283,7 +283,10 @@ export const confirmPaymentPendingSubmission = (
 
 /**
  * This function sends a payment confirmation email
- * @param paymentId
+ * @param paymentId payment id of the payment that has been completed
+ *
+ * @returns ok(true) if the payment confirmation email has been sent
+ * @returns err(ConfirmedPaymentNotFoundError) if the paymentId does not have a submission ID associated with a completed payment
  */
 export const sendPaymentConfirmationEmailByPaymentId = (
   paymentId: IPaymentSchema['_id'],
