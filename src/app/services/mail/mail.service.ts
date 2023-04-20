@@ -815,7 +815,7 @@ export class MailService {
         }/api/v3/payments/${formId}/${paymentId}/invoice/download`,
       }),
       headers: {
-        [EMAIL_HEADERS.emailType]: EmailType.PaymenntConfirmation,
+        [EMAIL_HEADERS.emailType]: EmailType.PaymentConfirmation,
       },
     }
     return this.#sendNodeMail(mail, { mailId: 'paymentConfirmation' })
