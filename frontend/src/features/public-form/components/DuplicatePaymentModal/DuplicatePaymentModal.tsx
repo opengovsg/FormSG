@@ -22,7 +22,7 @@ type FormPaymentModalProps = {
   paymentId: string
 }
 
-export const FormPaymentModal = ({
+export const DuplicatePaymentModal = ({
   onSubmit,
   onClose,
   isSubmitting,

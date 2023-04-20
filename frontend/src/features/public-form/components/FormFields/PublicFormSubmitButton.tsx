@@ -18,6 +18,7 @@ import { FormFieldValues } from '~templates/Field'
 import { getLogicUnitPreventingSubmit } from '~features/logic/utils'
 
 import { usePublicFormContext } from '../../PublicFormContext'
+import { DuplicatePaymentModal } from '../DuplicatePaymentModal/DuplicatePaymentModal'
 import { FormPaymentModal } from '../FormPaymentModal/FormPaymentModal'
 
 interface PublicFormSubmitButtonProps {
@@ -42,7 +43,7 @@ export const PublicFormSubmitButton = ({
   const isMobile = useIsMobile()
   const { isSubmitting } = useFormState()
   const formInputs = useWatch<FormFieldValues>({}) as FormFieldValues
-  const { form } = usePublicFormContext()
+  const { form, formId } = usePublicFormContext()
 
   const preventSubmissionLogic = useMemo(() => {
     return getLogicUnitPreventingSubmit({
@@ -64,14 +65,26 @@ export const PublicFormSubmitButton = ({
     form?.responseMode === FormResponseMode.Encrypt &&
     form?.payments_field?.enabled
 
+  const isDuplicate = true
+
   return (
     <Stack px={{ base: '1rem', md: 0 }} pt="2.5rem" pb="4rem">
       {isOpen ? (
-        <FormPaymentModal
-          onSubmit={onSubmit}
-          onClose={onClose}
-          isSubmitting={isSubmitting}
-        />
+        isDuplicate ? (
+          <DuplicatePaymentModal
+            onSubmit={onSubmit}
+            onClose={onClose}
+            isSubmitting={isSubmitting}
+            formId={formId}
+            paymentId={'413243243'}
+          />
+        ) : (
+          <FormPaymentModal
+            onSubmit={onSubmit}
+            onClose={onClose}
+            isSubmitting={isSubmitting}
+          />
+        )
       ) : null}
       <Button
         isFullWidth={isMobile}
