@@ -122,11 +122,27 @@ const _handleStripeEventUpdates: ControllerHandler<
     case 'charge.pending':
     case 'charge.refunded':
     case 'charge.succeeded': {
+      let paymentIdForEmail
+
       result = await getMetadataPaymentId(
         event.data.object.metadata,
-      ).asyncAndThen((paymentId) =>
-        StripeService.processStripeEvent(paymentId, event),
-      )
+      ).asyncAndThen((paymentId) => {
+        paymentIdForEmail = paymentId
+        return StripeService.processStripeEvent(paymentId, event)
+      })
+
+      if (result) {
+        const mailSent =
+          await PaymentService.sendPaymentConfirmationEmailByPaymentId(
+            paymentIdForEmail,
+          )
+        if (!mailSent) {
+          logger.warn({
+            message: 'Payment confirmation email not sent',
+            meta: { ...logMeta },
+          })
+        }
+      }
       break
     }
     case 'charge.dispute.closed':
