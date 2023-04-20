@@ -1,4 +1,5 @@
 import { StatusCodes } from 'http-status-codes'
+import { err, ok, Result } from 'neverthrow'
 
 import {
   HASH_EXPIRE_AFTER_SECONDS,
@@ -9,6 +10,7 @@ import {
 } from '../../../../shared/utils/verification'
 import {
   IFieldSchema,
+  IVerificationFieldSchema,
   IVerificationSchema,
   MapRouteError,
 } from '../../../types'
@@ -270,4 +272,32 @@ export const mapRouteError: MapRouteError = (
 
 export const hasAdminExceededFreeSmsLimit = (smsCount: number): boolean => {
   return smsCount > smsConfig.smsVerificationLimit
+}
+
+/**
+ * Extracts an individual field's data from a transaction document.
+ * @param transaction Transaction document
+ * @param fieldId ID of field to find
+ * @returns ok(field) when field exists
+ * @returns err(FieldNotFoundInTransactionError) when field does not exist
+ */
+export const getFieldFromTransaction = (
+  transaction: IVerificationSchema,
+  isPayment: boolean,
+  fieldId: string,
+): Result<IVerificationFieldSchema, FieldNotFoundInTransactionError> => {
+  const field = transaction.getField(isPayment, fieldId)
+  if (!field) {
+    logger.warn({
+      message: 'Field ID not found for transaction',
+      meta: {
+        action: 'getFieldFromTransaction',
+        transactionId: transaction._id,
+        fieldId,
+        formId: transaction.formId,
+      },
+    })
+    return err(new FieldNotFoundInTransactionError())
+  }
+  return ok(field)
 }

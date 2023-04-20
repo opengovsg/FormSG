@@ -51,6 +51,7 @@ export type MailConfig = {
 export type RateLimitConfig = {
   submissions: number
   sendAuthOtp: number
+  downloadPaymentReceipt: number
 }
 
 export type ReactMigrationConfig = {
@@ -75,7 +76,6 @@ export type Config = {
   db: DbConfig
   aws: AwsConfig
   mail: MailConfig
-
   cookieSettings: SessionOptions['cookie']
   // Consts
   isDev: boolean
@@ -183,6 +183,7 @@ export interface IOptionalVarsSchema {
   rateLimit: {
     submissions: number
     sendAuthOtp: number
+    downloadPaymentReceipt: number
   }
   reactMigration: {
     respondentRolloutEmail: number

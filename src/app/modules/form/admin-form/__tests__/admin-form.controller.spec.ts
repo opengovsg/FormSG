@@ -6141,11 +6141,9 @@ describe('admin-form.controller', () => {
           responses: MOCK_RESPONSES,
           form: MOCK_FORM,
           encryptedContent: MOCK_ENCRYPTED_CONTENT,
-        } as IncomingEncryptSubmission),
+        } as unknown as IncomingEncryptSubmission),
       )
-      MockSubmissionUtils.extractEmailConfirmationDataFromIncomingSubmission.mockReturnValue(
-        [],
-      )
+      MockSubmissionUtils.extractEmailConfirmationData.mockReturnValue([])
       MockEncryptSubmissionService.createEncryptSubmissionWithoutSave.mockReturnValue(
         MOCK_SUBMISSION,
       )

@@ -16,3 +16,14 @@ export type SendOtpParams = {
   otpPrefix: string
   senderIp: string
 }
+
+export type VerifyOtpParams = {
+  transactionId: string
+  fieldId: string
+  inputOtp: string
+}
+
+export type ResetFieldForTransactionParams = {
+  transactionId: string
+  fieldId: string
+}

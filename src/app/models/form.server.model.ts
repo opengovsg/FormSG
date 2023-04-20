@@ -29,6 +29,8 @@ import {
   FormField,
   FormFieldDto,
   FormLogoState,
+  FormPaymentsChannel,
+  FormPaymentsField,
   FormPermission,
   FormResponseMode,
   FormSettings,
@@ -37,6 +39,7 @@ import {
   LogicConditionState,
   LogicDto,
   LogicType,
+  PaymentChannel,
   StorageFormSettings,
 } from '../../../shared/types'
 import { reorder } from '../../../shared/utils/immutable-array-fns'
@@ -46,6 +49,7 @@ import {
   FormOtpData,
   IEmailFormModel,
   IEmailFormSchema,
+  IEncryptedFormDocument,
   IEncryptedFormModel,
   IEncryptedFormSchema,
   IFieldSchema,
@@ -129,7 +133,80 @@ const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
     type: String,
     required: true,
   },
+
+  payments_channel: {
+    channel: {
+      type: String,
+      enum: Object.values(PaymentChannel),
+      default: PaymentChannel.Unconnected,
+    },
+    target_account_id: {
+      type: String,
+      default: '',
+      validate: [/^\S*$/i, 'target_account_id must not contain whitespace.'],
+    },
+    publishable_key: {
+      type: String,
+      default: '',
+      validate: [/^\S*$/i, 'publishable_key must not contain whitespace.'],
+    },
+  },
+
+  payments_field: {
+    enabled: {
+      type: Boolean,
+      default: false,
+    },
+    description: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    amount_cents: {
+      type: Number,
+      default: 0,
+      validate: {
+        validator: (amount_cents: number) => {
+          return amount_cents >= 0 && Number.isInteger(amount_cents)
+        },
+        message: 'amount_cents must be a non-negative integer.',
+      },
+    },
+  },
 })
+
+const EncryptedFormDocumentSchema =
+  EncryptedFormSchema as unknown as Schema<IEncryptedFormDocument>
+
+EncryptedFormDocumentSchema.methods.addPaymentAccountId = async function ({
+  accountId,
+  publishableKey,
+}: {
+  accountId: FormPaymentsChannel['target_account_id']
+  publishableKey: FormPaymentsChannel['publishable_key']
+}) {
+  if (this.payments_channel?.channel === PaymentChannel.Unconnected) {
+    this.payments_channel = {
+      // Definitely Stripe for now, may be different later on.
+      channel: PaymentChannel.Stripe,
+      target_account_id: accountId,
+      publishable_key: publishableKey,
+    }
+  }
+  return this.save()
+}
+
+EncryptedFormDocumentSchema.methods.removePaymentAccount = async function () {
+  this.payments_channel = {
+    channel: PaymentChannel.Unconnected,
+    target_account_id: '',
+    publishable_key: '',
+  }
+  if (this.payments_field) {
+    this.payments_field.enabled = false
+  }
+  return this.save()
+}
 
 const EmailFormSchema = new Schema<IEmailFormSchema, IEmailFormModel>({
   emails: {
@@ -815,6 +892,17 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     return this.findByIdAndUpdate(
       formId,
       { startPage: newStartPage },
+      { new: true, runValidators: true },
+    ).exec()
+  }
+
+  FormSchema.statics.updatePaymentsById = async function (
+    formId: string,
+    newPayments: FormPaymentsField,
+  ) {
+    return this.findByIdAndUpdate(
+      formId,
+      { payments_field: newPayments },
       { new: true, runValidators: true },
     ).exec()
   }

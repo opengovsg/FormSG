@@ -11,7 +11,11 @@ export type UserId = Opaque<string, 'UserId'>
 export const UserBase = z.object({
   email: z.string().email(),
   agency: AgencyBase.shape._id,
-  betaFlags: z.object({}).optional(),
+  betaFlags: z
+    .object({
+      payment: z.boolean().optional(),
+    })
+    .optional(),
   flags: z
     .object({ lastSeenFeatureUpdateVersion: z.number().optional() })
     .optional(),

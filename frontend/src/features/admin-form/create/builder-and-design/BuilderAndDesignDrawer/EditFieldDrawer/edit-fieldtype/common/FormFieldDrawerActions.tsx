@@ -9,6 +9,7 @@ interface FormFieldDrawerActionsProps {
   handleClick: ReturnType<UseFormHandleSubmit<FieldValues>>
   handleCancel: () => void
   buttonText: string
+  isDisabled?: boolean
 }
 
 export const FormFieldDrawerActions = ({
@@ -16,8 +17,10 @@ export const FormFieldDrawerActions = ({
   handleClick,
   handleCancel,
   buttonText,
+  isDisabled,
 }: FormFieldDrawerActionsProps): JSX.Element => {
   const isMobile = useIsMobile()
+  const isSavingDisabled = isDisabled || isLoading
 
   return (
     <Stack
@@ -28,7 +31,7 @@ export const FormFieldDrawerActions = ({
     >
       <Button
         isFullWidth={isMobile}
-        isDisabled={isLoading}
+        isDisabled={isSavingDisabled}
         isLoading={isLoading}
         onClick={handleClick}
       >

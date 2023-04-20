@@ -8,12 +8,14 @@ import {
 } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { SubmitHandler } from 'react-hook-form'
+import { useNavigate } from 'react-router-dom'
 import { useDisclosure } from '@chakra-ui/react'
 import { datadogLogs } from '@datadog/browser-logs'
 import { differenceInMilliseconds, isPast } from 'date-fns'
 import get from 'lodash/get'
 import simplur from 'simplur'
 
+import { PAYMENT_CONTACT_FIELD_ID } from '~shared/constants'
 import {
   FormAuthType,
   FormResponseMode,
@@ -21,6 +23,7 @@ import {
 } from '~shared/types/form'
 
 import { FORMID_REGEX } from '~constants/routes'
+import { useBrowserStm } from '~hooks/payments'
 import { useTimeout } from '~hooks/useTimeout'
 import { useToast } from '~hooks/useToast'
 import { HttpError } from '~services/ApiService'
@@ -34,6 +37,7 @@ import {
   trackVisitPublicForm,
 } from '~features/analytics/AnalyticsService'
 import { useEnv } from '~features/env/queries'
+import { getPaymentPageUrl } from '~features/public-form/utils/urls'
 import {
   RecaptchaClosedError,
   useRecaptcha,
@@ -193,8 +197,15 @@ export const PublicFormProvider = ({
 
   const { handleLogoutMutation } = usePublicAuthMutations(formId)
 
-  const handleSubmitForm: SubmitHandler<FormFieldValues> = useCallback(
-    async (formInputs) => {
+  const navigate = useNavigate()
+  const [, storePaymentMemory] = useBrowserStm(formId)
+  const handleSubmitForm: SubmitHandler<
+    FormFieldValues & { [PAYMENT_CONTACT_FIELD_ID]?: { value: string } }
+  > = useCallback(
+    async ({
+      [PAYMENT_CONTACT_FIELD_ID]: paymentReceiptEmailField,
+      ...formInputs
+    }) => {
       const { form } = data ?? {}
       if (!form) return
 
@@ -327,9 +338,28 @@ export const PublicFormProvider = ({
                 {
                   ...formData,
                   publicKey: form.publicKey,
+                  captchaResponse,
+                  paymentReceiptEmail: paymentReceiptEmailField?.value,
                 },
                 {
-                  onSuccess,
+                  onSuccess: ({
+                    submissionId,
+                    timestamp,
+                    // payment forms will have non-empty paymentData field
+                    paymentData,
+                  }) => {
+                    trackSubmitForm(form)
+
+                    if (paymentData) {
+                      navigate(getPaymentPageUrl(formId, paymentData.paymentId))
+                      storePaymentMemory(paymentData.paymentId)
+                      return
+                    }
+                    setSubmissionData({
+                      id: submissionId,
+                      timestamp,
+                    })
+                  },
                 },
               )
               .catch(async (error) => {
@@ -367,9 +397,30 @@ export const PublicFormProvider = ({
                   {
                     ...formData,
                     publicKey: form.publicKey,
+                    captchaResponse,
+                    paymentReceiptEmail: paymentReceiptEmailField?.value,
                   },
                   {
-                    onSuccess,
+                    onSuccess: ({
+                      submissionId,
+                      timestamp,
+                      // payment forms will have non-empty paymentData field
+                      paymentData,
+                    }) => {
+                      trackSubmitForm(form)
+
+                      if (paymentData) {
+                        navigate(
+                          getPaymentPageUrl(formId, paymentData.paymentId),
+                        )
+                        storePaymentMemory(paymentData.paymentId)
+                        return
+                      }
+                      setSubmissionData({
+                        id: submissionId,
+                        timestamp,
+                      })
+                    },
                   },
                 )
                 // Using catch since we are using mutateAsync and react-hook-form will continue bubbling this up.
@@ -408,6 +459,9 @@ export const PublicFormProvider = ({
       showErrorToast,
       submitEmailModeFormMutation,
       submitStorageModeFormMutation,
+      formId,
+      navigate,
+      storePaymentMemory,
       submitEmailModeFormFetchMutation,
       submitStorageModeFormFetchMutation,
       useFetchForSubmissions,

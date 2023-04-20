@@ -94,6 +94,7 @@ async function decryptIntoCsv(data: LineData): Promise<MaterializedCsvRecord> {
       submission._id,
       submission.created,
       CsvRecordStatus.Unknown,
+      submission.payment,
     )
     try {
       const decryptedObject = formsgSdk.crypto.decrypt(secretKey, {
@@ -156,7 +157,7 @@ async function decryptIntoCsv(data: LineData): Promise<MaterializedCsvRecord> {
   } catch (err) {
     csvRecord = new CsvRecord(
       CsvRecordStatus.Error,
-      formatInTimeZone(new Date(), 'Asia/Singapore', 'DD MMM YYYY hh:mm:ss A'),
+      formatInTimeZone(new Date(), 'Asia/Singapore', 'dd MMM yyyy hh:mm:ss z'),
       CsvRecordStatus.Error,
     )
     csvRecord.setStatus(CsvRecordStatus.Error, 'Submission decryption error')

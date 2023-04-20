@@ -16,6 +16,7 @@ import { PublicFormProvider } from './PublicFormProvider'
 
 export const PublicFormPage = (): JSX.Element => {
   const { formId } = useParams()
+
   if (!formId) throw new Error('No formId provided')
 
   return (
@@ -29,6 +30,7 @@ export const PublicFormPage = (): JSX.Element => {
             <FormInstructions />
             <FormFields />
             <FormEndPage />
+
             <FormFooter />
           </PublicFormWrapper>
         </Flex>

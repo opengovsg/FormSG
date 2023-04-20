@@ -334,6 +334,12 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
       default: 60,
       env: 'SEND_AUTH_OTP_RATE_LIMIT',
     },
+    downloadPaymentReceipt: {
+      doc: 'Per-minute, per-IP request limit to download the payment receipt from Stripe',
+      format: 'int',
+      default: 10,
+      env: 'DOWNLOAD_PAYMENT_RECEIPT_RATE_LIMIT',
+    },
   },
   reactMigration: {
     respondentRolloutEmail: {
