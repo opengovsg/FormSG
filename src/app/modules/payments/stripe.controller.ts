@@ -225,7 +225,7 @@ const _handleStripeEventUpdates: ControllerHandler<
         error,
       })
       // TODO: Add map route error here
-      return res.status(StatusCodes.UNPROCESSABLE_ENTITY)
+      return res.sendStatus(StatusCodes.UNPROCESSABLE_ENTITY)
     },
   )
 }
