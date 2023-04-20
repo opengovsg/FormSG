@@ -10,10 +10,3 @@ export const getPaymentReceiptDownloadUrl = (
 ) => {
   return `${API_BASE_URL}/payments/${formId}/${paymentId}/receipt/download` as const
 }
-
-export const getPaymentInvoiceDownloadUrl = (
-  formId: string,
-  paymentId: string,
-) => {
-  return `${API_BASE_URL}/payments/${formId}/${paymentId}/invoice/download` as const
-}
