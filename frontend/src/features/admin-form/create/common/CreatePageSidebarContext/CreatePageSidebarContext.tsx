@@ -7,10 +7,8 @@ import {
   useMemo,
   useState,
 } from 'react'
-import { UseMeasureRef } from 'react-use/lib/useMeasure'
 
 import { useIsMobile } from '~hooks/useIsMobile'
-import { useMeasure } from '~hooks/useMeasure'
 
 import { FieldListTabIndex } from '../../builder-and-design/constants'
 import {
@@ -51,10 +49,7 @@ type CreatePageSidebarContextProps = {
   isDrawerOpen: boolean
   fieldListTabIndex: FieldListTabIndex
   setFieldListTabIndex: (tabIndex: FieldListTabIndex) => void
-  drawerRef: UseMeasureRef<HTMLDivElement>
-  drawerWidth: number
 }
-
 const CreatePageSidebarContext = createContext<
   CreatePageSidebarContextProps | undefined
 >(undefined)
@@ -68,7 +63,6 @@ export const useCreatePageSidebar = (): CreatePageSidebarContextProps => {
   }
   return context
 }
-
 export const useCreatePageSidebarContext =
   (): CreatePageSidebarContextProps => {
     const isMobile = useIsMobile()
@@ -174,8 +168,6 @@ export const useCreatePageSidebarContext =
       setPendingTab(undefined)
     }, [isMobile, pendingTab, setFieldsToInactive])
 
-    const [drawerRef, { width: drawerWidth }] = useMeasure<HTMLDivElement>()
-
     return {
       activeTab,
       pendingTab,
@@ -190,8 +182,6 @@ export const useCreatePageSidebarContext =
       handleClose,
       fieldListTabIndex,
       setFieldListTabIndex,
-      drawerRef,
-      drawerWidth,
     }
   }
 

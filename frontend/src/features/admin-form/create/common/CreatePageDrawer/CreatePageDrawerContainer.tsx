@@ -6,6 +6,7 @@ import { useIsMobile } from '~hooks/useIsMobile'
 import { MotionBox } from '~components/motion'
 
 import { useCreatePageSidebar } from '../CreatePageSidebarContext'
+import { useCreatePageSidebarLayout } from '../CreatePageSideBarLayoutContext'
 
 export const CreatePageDrawerContainer = ({
   children,
@@ -13,7 +14,8 @@ export const CreatePageDrawerContainer = ({
   children: React.ReactNode
 }): JSX.Element => {
   const isMobile = useIsMobile()
-  const { isDrawerOpen, drawerRef } = useCreatePageSidebar()
+  const { isDrawerOpen } = useCreatePageSidebar()
+  const { drawerRef } = useCreatePageSidebarLayout()
 
   const drawerMotionProps = useMemo(() => {
     return {
