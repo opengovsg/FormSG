@@ -8,6 +8,7 @@ import dbHandler from 'tests/unit/backend/helpers/jest-db'
 import * as PaymentsService from '../payments.service'
 
 const Payment = getPaymentModel(mongoose)
+const MOCK_FORM_ID = new ObjectId().toHexString()
 
 describe('payments.service', () => {
   beforeEach(async () => {
@@ -27,6 +28,7 @@ describe('payments.service', () => {
       const expectedObjectId = new ObjectId()
       await Payment.create({
         _id: expectedObjectId,
+        formId: MOCK_FORM_ID,
         pendingSubmissionId: new ObjectId(),
         paymentIntentId: 'somePaymentIntentId',
         amount: 314159,
