@@ -16,7 +16,7 @@ export const useCreatePageSidebarLayout =
     const context = useContext(CreatePageSidebarLayoutContext)
     if (!context) {
       throw new Error(
-        `useCreatePageSidebar must be used within a CreatePageSideBarLayoutProvider component`,
+        `useCreatePageSidebarLayout must be used within a CreatePageSideBarLayoutProvider component`,
       )
     }
     return context
