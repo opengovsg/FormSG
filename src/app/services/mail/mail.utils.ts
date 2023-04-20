@@ -283,7 +283,7 @@ export const generatePaymentConfirmationHtml = ({
     <p>
       Your payment on ${appName} form: ${formTitle} has been received successfully.
       Your response ID is ${responseId} and your payment invoice can be found 
-      <a href="${invoiceUrl}">here</a>
+      <a href="${invoiceUrl}">here</a>.
     </p>
     <p>Regards,
     <br />
