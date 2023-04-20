@@ -46,6 +46,7 @@ import {
   generateAutoreplyPdf,
   generateBounceNotificationHtml,
   generateLoginOtpHtml,
+  generatePaymentConfirmationHtml,
   generateSmsVerificationDisabledHtmlForAdmin,
   generateSmsVerificationDisabledHtmlForCollab,
   generateSmsVerificationWarningHtmlForAdmin,
@@ -777,6 +778,47 @@ export class MailService {
           ),
         ).map(() => true as const)
       })
+  }
+
+  /**
+   * Sends a payment confirmation to a valid email
+   * @param recipient the recipient email address
+   * @param formTitle the form title of the payment form
+   * @param responseId the response ID
+   * @param formId the payment form ID
+   * @param paymentId the payment ID
+   * @throws error if mail fails, to be handled by the caller
+   */
+  sendPaymentConfirmationEmail = ({
+    recipient,
+    formTitle,
+    responseId,
+    formId,
+    paymentId,
+  }: {
+    recipient: string
+    formTitle: string
+    responseId: string
+    formId: string
+    paymentId: string
+  }): ResultAsync<true, MailSendError> => {
+    const mail: MailOptions = {
+      to: recipient,
+      from: this.#senderFromString,
+      subject: `Your payment on ${this.#appName} was successful`,
+      html: generatePaymentConfirmationHtml({
+        appName: this.#appName,
+        formTitle,
+        responseId,
+        invoiceUrl: `${
+          this.#appUrl
+        }/api/v3/payments/${formId}/${paymentId}/invoice/download`,
+      }),
+      headers: {
+        [EMAIL_HEADERS.emailType]: EmailType.PaymentConfirmation,
+      },
+    }
+    return this.#sendNodeMail(mail, { mailId: 'paymentConfirmation' })
   }
 
   // Utility method to send a warning mail to the collaborators of a form.
