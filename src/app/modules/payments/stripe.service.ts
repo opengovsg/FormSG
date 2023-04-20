@@ -42,6 +42,7 @@ const logger = createLoggerWithLabel(module)
  *
  * @param {Stripe.Event} event the new Stripe Event causing the operation to occur
  * @param {IPaymentSchema} payment the payment to be confirmed
+ * @param {mongoose.ClientSession} session the mongoose session to use for all db operations
  *
  * @returns ok(payment) if payment exists
  * @returns err(MalformedStripeChargeObjectError) if the shape of the charge object returned by Stripe does not have expected fields

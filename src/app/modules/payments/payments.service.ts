@@ -135,6 +135,7 @@ export const findPaymentBySubmissionId = (
  * @param paymentDate date of the charge success
  * @param receiptUrl the payment's receipt URL
  * @param transactionFee the transaction fee associated with the payment
+ * @param {mongoose.ClientSession} session the mongoose session to use for all db operations
  *
  * @returns ok(payment) if the confirmation transaction was successful
  * @returns err(PendingSubmissionNotFoundError) if the pending submission being referenced by the payment document does not exist
