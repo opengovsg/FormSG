@@ -321,6 +321,10 @@ export const sendPaymentConfirmationEmailByPaymentId = (
       )
     })
     .andThen(({ formTitle, formId, responseId, recipient }) => {
+      logger.info({
+        message: 'sendPaymentConfirmationEmail',
+        meta: logMeta,
+      })
       // Step 4: Send payment confirmation email
       return MailService.sendPaymentConfirmationEmail({
         recipient,
