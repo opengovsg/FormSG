@@ -26,7 +26,7 @@ export const StripeReceiptContainer = ({
 }) => {
   const { data, isLoading, error } = useGetPaymentReceiptStatus(
     formId,
-    submissionId,
+    paymentId,
   )
 
   const toast = useToast()
