@@ -1,3 +1,5 @@
+import { getPaymentInvoiceDownloadUrlPath } from '~shared/utils/urls'
+
 import { API_BASE_URL } from '~services/ApiService'
 
 export const getPaymentPageUrl = (formId: string, paymentId: string) => {
@@ -9,4 +11,11 @@ export const getPaymentReceiptDownloadUrl = (
   paymentId: string,
 ) => {
   return `${API_BASE_URL}/payments/${formId}/${paymentId}/receipt/download` as const
+}
+
+export const getPaymentInvoiceDownloadUrl = (
+  formId: string,
+  paymentId: string,
+) => {
+  return `${API_BASE_URL}/${getPaymentInvoiceDownloadUrlPath}` as const
 }

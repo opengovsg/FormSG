@@ -6,7 +6,7 @@ import Mail from 'nodemailer/lib/mailer'
 import promiseRetry from 'promise-retry'
 import validator from 'validator'
 
-import { getPaymentInvoiceDownloadUrl } from '../../../../shared/utils/urls'
+import { getPaymentInvoiceDownloadUrlPath } from '../../../../shared/utils/urls'
 import {
   HASH_EXPIRE_AFTER_SECONDS,
   stringifiedSmsWarningTiers,
@@ -811,7 +811,10 @@ export class MailService {
         appName: this.#appName,
         formTitle,
         responseId,
-        invoiceUrl: `${getPaymentInvoiceDownloadUrl(formId, paymentId)}`,
+        invoiceUrl: `${this.#appUrl}/api/v3/${getPaymentInvoiceDownloadUrlPath(
+          formId,
+          paymentId,
+        )}`,
       }),
       headers: {
         [EMAIL_HEADERS.emailType]: EmailType.PaymentConfirmation,

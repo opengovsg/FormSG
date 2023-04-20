@@ -1,11 +1,12 @@
 import { BiDownload } from 'react-icons/bi'
 
-import { getPaymentInvoiceDownloadUrl } from '~shared/utils/urls'
-
 import { useToast } from '~hooks/useToast'
 import Button from '~components/Button'
 
-import { getPaymentReceiptDownloadUrl } from '~features/public-form/utils/urls'
+import {
+  getPaymentInvoiceDownloadUrl,
+  getPaymentReceiptDownloadUrl,
+} from '~features/public-form/utils/urls'
 
 import { GenericMessageBlock } from './GenericMessageBlock'
 

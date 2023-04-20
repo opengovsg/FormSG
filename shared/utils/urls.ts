@@ -1,6 +1,6 @@
-export const getPaymentInvoiceDownloadUrl = (
+export const getPaymentInvoiceDownloadUrlPath = (
   formId: string,
   paymentId: string,
 ) => {
-  return `${process.env.appUrl}/api/v3/payments/${formId}/${paymentId}/invoice/download` as const
+  return `payments/${formId}/${paymentId}/invoice/download` as const
 }
