@@ -131,7 +131,7 @@ const _handleStripeEventUpdates: ControllerHandler<
         return StripeService.processStripeEvent(paymentId, event)
       })
 
-      if (result) {
+      if (result.isOk() && event.type === 'charge.succeeded') {
         const mailSent =
           await PaymentService.sendPaymentConfirmationEmailByPaymentId(
             paymentIdForEmail,
