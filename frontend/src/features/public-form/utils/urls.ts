@@ -17,5 +17,8 @@ export const getPaymentInvoiceDownloadUrl = (
   formId: string,
   paymentId: string,
 ) => {
-  return `${API_BASE_URL}/${getPaymentInvoiceDownloadUrlPath}` as const
+  return `${API_BASE_URL}/${getPaymentInvoiceDownloadUrlPath(
+    formId,
+    paymentId,
+  )}` as const
 }
