@@ -314,7 +314,7 @@ export const sendPaymentConfirmationEmailByPaymentId = (
           .andThen((submission) => retrieveFormById(submission.form))
           .map((form) => ({
             formTitle: form.title,
-            formId: form.id,
+            formId: form._id,
             responseId: submissionId,
             recipient,
           }))
