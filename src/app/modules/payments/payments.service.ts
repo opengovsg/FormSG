@@ -131,7 +131,7 @@ export const findPaymentBySubmissionId = (
  * document is always consistent.
  * @requires paymentId must reference a payment document such that payment.completedPayment is undefined
  *
- * @param paymentId payment id of the payment to be confirmed
+ * @param payment the payment to be confirmed
  * @param paymentDate date of the charge success
  * @param receiptUrl the payment's receipt URL
  * @param transactionFee the transaction fee associated with the payment
