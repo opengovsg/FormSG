@@ -36,8 +36,8 @@ export const findPaymentById = (
       paymentId,
       null,
       // readPreference from transaction isn't respected, thus we are setting it on operation
-      session ? { readPreference: 'primary' } : null,
-    ).session(session ? session : null),
+      session ? { session, readPreference: 'primary' } : null,
+    ),
     (error) => {
       logger.error({
         message: 'Database error while finding payment by id',
@@ -137,142 +137,57 @@ export const findPaymentBySubmissionId = (
  * @param transactionFee the transaction fee associated with the payment
  *
  * @returns ok(payment) if the confirmation transaction was successful
- * @returns err(PaymentNotFoundError) if the paymentId was not valid
  * @returns err(PendingSubmissionNotFoundError) if the pending submission being referenced by the payment document does not exist
  * @returns err(PaymentAlreadyConfirmedError) if the payment document already has an associated completed payment
  * @returns err(DatabaseError) if error occurs whilst querying the database
  */
 export const confirmPaymentPendingSubmission = (
-  paymentId: IPaymentSchema['_id'],
+  payment: IPaymentSchema,
   paymentDate: Date,
   receiptUrl: string,
   transactionFee: number,
+  session: mongoose.ClientSession,
 ): ResultAsync<
   IPaymentSchema,
-  | PaymentNotFoundError
-  | PendingSubmissionNotFoundError
-  | PaymentAlreadyConfirmedError
-  | DatabaseError
+  PendingSubmissionNotFoundError | PaymentAlreadyConfirmedError | DatabaseError
 > => {
-  const logMeta = {
-    action: 'confirmPaymentPendingSubmission',
-    paymentId,
+  // Step 1: Check that the payment has not already been confirmed.
+  if (payment.completedPayment) {
+    return errAsync(new PaymentAlreadyConfirmedError())
   }
 
-  // Step 0: Set up the session and start the transaction
   return (
-    ResultAsync.fromPromise(mongoose.startSession(), (error) => {
-      logger.error({
-        message: 'Database error while starting mongoose session',
-        meta: logMeta,
-        error,
-      })
-      return new DatabaseError(getMongoErrorMessage(error))
-    })
-      .andThen((session) => {
-        session.startTransaction({
-          readPreference: 'primary',
-          readConcern: { level: 'snapshot' },
-          writeConcern: { w: 'majority' },
-        })
-
-        return (
-          // Step 1: Retrieve the payment by payment id and check that the payment
-          // has not already been confirmed.
-          findPaymentById(paymentId, session)
-            .andThen((payment) =>
-              payment.completedPayment
-                ? errAsync(new PaymentAlreadyConfirmedError())
-                : okAsync(payment),
-            )
-            .andThen((payment) =>
-              // Step 2: Copy the pending submission to the submissions collection
-              SubmissionService.copyPendingSubmissionToSubmissions(
-                payment.pendingSubmissionId,
-                session,
-              ).andThen((submission) => {
-                // Step 3: Update the payment document with the metadata showing that
-                // the payment is complete and save it
-                payment.completedPayment = {
-                  submissionId: submission._id,
-                  paymentDate,
-                  receiptUrl,
-                  transactionFee,
-                }
-                return ResultAsync.fromPromise(
-                  payment.save({ session }),
-                  (error) => {
-                    logger.error({
-                      message: 'Database error while saving payment document',
-                      meta: logMeta,
-                      error,
-                    })
-                    return new DatabaseError(getMongoErrorMessage(error))
-                  },
-                ).andThen(() => okAsync(submission))
-              }),
-            )
-            // Finally: Commit or abort depending on whether an error was caught,
-            // then end the session
-            .andThen((submission) => {
-              return ResultAsync.fromPromise(
-                session.commitTransaction(),
-                (error) => {
-                  logger.error({
-                    message: 'Database error while committing transaction',
-                    meta: logMeta,
-                    error,
-                  })
-                  return new DatabaseError(getMongoErrorMessage(error))
-                },
-              ).andThen(() => {
-                session.endSession()
-                return okAsync(submission)
-              })
-            })
-            .orElse((err) => {
-              return ResultAsync.fromPromise(
-                session.abortTransaction(),
-                (error) => {
-                  logger.error({
-                    message: 'Database error while aborting transaction',
-                    meta: logMeta,
-                    error,
-                  })
-                  return new DatabaseError(getMongoErrorMessage(error))
-                },
-              ).andThen(() => {
-                session.endSession()
-                return errAsync(err)
-              })
-            })
-        )
+    // Step 2: Copy the pending submission to the submissions collection
+    SubmissionService.copyPendingSubmissionToSubmissions(
+      payment.pendingSubmissionId,
+      session,
+    )
+      .andThen((submission) => {
+        // Step 3: Update the payment document with the metadata showing that
+        // the payment is complete and save it
+        payment.completedPayment = {
+          submissionId: submission._id,
+          paymentDate,
+          receiptUrl,
+          transactionFee,
+        }
+        return okAsync(submission)
       })
       // Post-submission: fire webhooks and send email confirmations.
-      .andThen((submission) =>
-        findPaymentById(paymentId).andThen((payment) => {
-          if (isSubmissionEncryptMode(submission)) {
-            return performEncryptPostSubmissionActions(
-              submission,
-              payment.responses,
-            )
-              .andThen(() => {
-                // If successfully sent email confirmations, delete response data from payment document.
-                payment.responses = []
-                return ResultAsync.fromPromise(payment.save(), (error) => {
-                  logger.error({
-                    message:
-                      'Database error while deleting responses from payment',
-                    meta: logMeta,
-                    error,
-                  })
-                  return new DatabaseError(getMongoErrorMessage(error))
-                }).andThen(() => okAsync(payment))
-              })
-              .orElse(() => okAsync(payment))
-          }
-          return okAsync(payment)
-        }),
-      )
+      .andThen((submission) => {
+        if (isSubmissionEncryptMode(submission)) {
+          return performEncryptPostSubmissionActions(
+            submission,
+            payment.responses,
+          )
+            .andThen(() => {
+              // If successfully sent email confirmations, delete response data from payment document.
+              payment.responses = []
+              return okAsync(payment)
+            })
+            .orElse(() => okAsync(payment))
+        }
+        return okAsync(payment)
+      })
   )
 }
