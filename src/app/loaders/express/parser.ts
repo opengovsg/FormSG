@@ -11,6 +11,9 @@ const parserMiddlewares = () => {
     return next()
   }
 
+  // processes that must be done before any other middlewares
+  const preMiddlewareProcesses = [convertSnsMessageType]
+
   const bodyParserUrlMiddleWare = bodyParser.urlencoded({
     extended: true,
     limit: '100mb',
@@ -28,7 +31,7 @@ const parserMiddlewares = () => {
   })
 
   return [
-    convertSnsMessageType,
+    ...preMiddlewareProcesses,
     bodyParserUrlMiddleWare,
     bodyParserJsonMiddleware,
   ]
