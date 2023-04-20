@@ -33,6 +33,7 @@ import {
   useCreatePageSidebar,
 } from '../common'
 import { CreatePageDrawerContainer } from '../common/CreatePageDrawer/CreatePageDrawerContainer'
+import { CreatePageSideBarLayoutProvider } from '../common/CreatePageSideBarLayoutContext'
 
 import { FormPaymentsDisplay } from './types'
 import {
@@ -293,25 +294,27 @@ export const PaymentDrawer = ({
   if (!paymentData && isEncryptMode) return null
 
   return (
-    <CreatePageDrawerContainer>
-      <Flex pos="relative" h="100%" display="flex" flexDir="column">
-        <Box pt="1rem" px="1.5rem" bg="white">
-          <Flex justify="space-between">
-            <Text textStyle="subhead-3" color="secondary.500" mb="1rem">
-              Edit payment
-            </Text>
-          </Flex>
-          <Divider w="auto" mx="-1.5rem" />
-        </Box>
-        {isPaymentDisabled && (
-          <Box px="1.5rem" pt="2rem" pb="1.5rem">
-            <InlineMessage variant={'info'}>
-              <Text>{paymentDisabledMessage}</Text>
-            </InlineMessage>
+    <CreatePageSideBarLayoutProvider>
+      <CreatePageDrawerContainer>
+        <Flex pos="relative" h="100%" display="flex" flexDir="column">
+          <Box pt="1rem" px="1.5rem" bg="white">
+            <Flex justify="space-between">
+              <Text textStyle="subhead-3" color="secondary.500" mb="1rem">
+                Edit payment
+              </Text>
+            </Flex>
+            <Divider w="auto" mx="-1.5rem" />
           </Box>
-        )}
-        <PaymentInput isDisabled={isPaymentDisabled} />
-      </Flex>
-    </CreatePageDrawerContainer>
+          {isPaymentDisabled && (
+            <Box px="1.5rem" pt="2rem" pb="1.5rem">
+              <InlineMessage variant={'info'}>
+                <Text>{paymentDisabledMessage}</Text>
+              </InlineMessage>
+            </Box>
+          )}
+          <PaymentInput isDisabled={isPaymentDisabled} />
+        </Flex>
+      </CreatePageDrawerContainer>
+    </CreatePageSideBarLayoutProvider>
   )
 }

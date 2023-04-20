@@ -34,6 +34,7 @@ import {
 } from '../common'
 import { CreatePageDrawerCloseButton } from '../common/CreatePageDrawer/CreatePageDrawerCloseButton'
 import { CreatePageDrawerContainer } from '../common/CreatePageDrawer/CreatePageDrawerContainer'
+import { CreatePageSideBarLayoutProvider } from '../common/CreatePageSideBarLayoutContext'
 
 import {
   dataSelector,
@@ -217,19 +218,21 @@ export const EndPageDrawer = (): JSX.Element | null => {
   if (!endPageData) return null
 
   return (
-    <CreatePageDrawerContainer>
-      <Flex pos="relative" h="100%" display="flex" flexDir="column">
-        <Box pt="1rem" px="1.5rem" bg="white">
-          <Flex justify="space-between">
-            <Text textStyle="subhead-3" color="secondary.500" mb="1rem">
-              Edit thank you page
-            </Text>
-            <CreatePageDrawerCloseButton />
-          </Flex>
-          <Divider w="auto" mx="-1.5rem" />
-        </Box>
-        <EndPageInput />
-      </Flex>
-    </CreatePageDrawerContainer>
+    <CreatePageSideBarLayoutProvider>
+      <CreatePageDrawerContainer>
+        <Flex pos="relative" h="100%" display="flex" flexDir="column">
+          <Box pt="1rem" px="1.5rem" bg="white">
+            <Flex justify="space-between">
+              <Text textStyle="subhead-3" color="secondary.500" mb="1rem">
+                Edit thank you page
+              </Text>
+              <CreatePageDrawerCloseButton />
+            </Flex>
+            <Divider w="auto" mx="-1.5rem" />
+          </Box>
+          <EndPageInput />
+        </Flex>
+      </CreatePageDrawerContainer>
+    </CreatePageSideBarLayoutProvider>
   )
 }
