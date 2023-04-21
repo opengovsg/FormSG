@@ -3,7 +3,6 @@
 import cuid from 'cuid'
 import mongoose from 'mongoose'
 import { errAsync, ok, okAsync, ResultAsync } from 'neverthrow'
-import { Payment } from 'shared/types'
 import Stripe from 'stripe'
 import { MarkRequired } from 'ts-essentials'
 import isURL from 'validator/lib/isURL'
@@ -17,7 +16,6 @@ import config from '../../config/config'
 import { paymentConfig } from '../../config/features/payment.config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { stripe } from '../../loaders/stripe'
-import getPaymentModel from '../../models/payment.server.model'
 import { getMongoErrorMessage } from '../../utils/handle-mongo-error'
 import { DatabaseError } from '../core/core.errors'
 import { PendingSubmissionNotFoundError } from '../submission/submission.errors'
@@ -36,7 +34,6 @@ import {
 import { computePaymentState, computePayoutDetails } from './stripe.utils'
 
 const logger = createLoggerWithLabel(module)
-const Payment = getPaymentModel(mongoose)
 
 /**
  * Helper function that confirms a pending submission for a Stripe payment form
@@ -45,6 +42,7 @@ const Payment = getPaymentModel(mongoose)
  *
  * @param {Stripe.Event} event the new Stripe Event causing the operation to occur
  * @param {IPaymentSchema} payment the payment to be confirmed
+ * @param {mongoose.ClientSession} session the mongoose session to use for all db operations
  *
  * @returns ok(payment) if payment exists
  * @returns err(MalformedStripeChargeObjectError) if the shape of the charge object returned by Stripe does not have expected fields
@@ -57,6 +55,7 @@ const Payment = getPaymentModel(mongoose)
 const confirmStripePaymentPendingSubmission = (
   event: Stripe.Event,
   payment: IPaymentSchema,
+  session: mongoose.ClientSession,
 ): ResultAsync<
   IPaymentSchema,
   | MalformedStripeChargeObjectError
@@ -126,16 +125,125 @@ const confirmStripePaymentPendingSubmission = (
         // Step 2: Update the payment object with the new completed payment metadata
         .andThen((transactionFee) =>
           PaymentsService.confirmPaymentPendingSubmission(
-            payment.id,
+            payment,
             new Date(event.created * 1000), // Convert to miliseconds from epoch
             receiptUrl,
             transactionFee,
+            session,
           ),
         )
     )
   }
 
   return okAsync(payment)
+}
+
+/**
+ * Retrieves and updates payment document of the given paymentId with the event.
+ * NOTE: This is exported only for testing
+ *
+ * @param {string} paymentId the payment id to be updated
+ * @param {Stripe.Event} event the new Stripe Event causing the update operation to occur
+ * @param {mongoose.ClientSession} session the mongoose session to use for all db operations
+ *
+ * @returns ok() if event was successfully processed
+ * @returns err(EventMetadataPaymentIdInvalidError) if the payment id is not found in the event metadata or is found but an invalid BSON object id
+ * @returns err(MalformedStripeChargeObjectError) if the shape of the charge object returned by Stripe does not have expected fields
+ * @returns err(PaymentNotFoundError) if the payment document does not exist
+ * @returns err(PendingSubmissionNotFoundError) if the pending submission being referenced by the payment document does not exist
+ * @returns err(PaymentAlreadyConfirmedError) if the payment document already has an associated completed payment
+ * @returns err(StripeFetchError) if there was an error while calling Stripe API
+ * @returns err(ComputePaymentStateError) if there was an error while recomputing the payment state
+ * @returns err(DatabaseError) if error occurs whilst querying the database
+ */
+export const processStripeEventWithinSession = (
+  paymentId: string,
+  event: Stripe.Event,
+  session: mongoose.ClientSession,
+): ResultAsync<
+  void,
+  | MalformedStripeChargeObjectError
+  | PaymentNotFoundError
+  | PendingSubmissionNotFoundError
+  | PaymentAlreadyConfirmedError
+  | StripeFetchError
+  | ComputePaymentStateError
+  | DatabaseError
+> => {
+  const logMeta = {
+    action: 'processStripeEventWithinSession',
+    paymentId,
+    event,
+  }
+
+  // Step 1a: Get the payment.
+  return PaymentsService.findPaymentById(paymentId, session).andThen(
+    (payment) => {
+      // Step 1b: If the submission does not exist or the event has been processed
+      // before, ignore the event.
+      if (!payment) {
+        logger.error({
+          message:
+            'Payment not found for paymentId received in Stripe metadata',
+          meta: { ...logMeta, paymentId },
+        })
+        return errAsync(new PaymentNotFoundError())
+      }
+
+      if (payment.webhookLog.some((e) => e.id === event.id)) {
+        // Stop processing if we encounter a duplicate event. This may have
+        // occurred due to various reasons (e.g. us timing out on Stripe, so
+        // Stripe retried the webhook).
+        logger.warn({
+          message: 'Duplicate event received from Stripe webhook endpoint',
+          meta: { ...logMeta, paymentId },
+        })
+        return okAsync(undefined)
+      }
+
+      // Step 2: Confirm the pending submission awaiting payment from Stripe
+      return (
+        confirmStripePaymentPendingSubmission(event, payment, session)
+          // Step 3: Inject the event into the webhook log.
+          .andThen((payment) => {
+            // We expect webhook arrays to be small (~10 entries max), so push and
+            // sort is ok.
+            payment.webhookLog.push(event)
+            payment.webhookLog.sort((e1, e2) => e1.created - e2.created)
+            return ok(payment)
+          })
+          // Step 4. Compute the payment state
+          .andThen((payment) =>
+            computePaymentState(payment.webhookLog).asyncAndThen(
+              ({ status, chargeIdLatest }) => {
+                payment.status = status
+                payment.chargeIdLatest = chargeIdLatest
+                return okAsync(payment)
+              },
+            ),
+          )
+          // Step 5. Compute the payout state
+          .andThen((payment) =>
+            computePayoutDetails(payment.webhookLog).asyncAndThen((payout) => {
+              payment.payout = payout
+              return okAsync(payment)
+            }),
+          )
+          // Step 6. Save the payment document
+          .andThen((payment) =>
+            ResultAsync.fromPromise(payment.save({ session }), (error) => {
+              logger.error({
+                message: 'Error encountered while updating payment',
+                meta: logMeta,
+                error,
+              })
+              return new DatabaseError(getMongoErrorMessage(error))
+            }),
+          )
+          .andThen(() => okAsync(undefined))
+      )
+    },
+  )
 }
 
 /**
@@ -170,84 +278,62 @@ export const processStripeEvent = (
   | DatabaseError
 > => {
   const logMeta = {
-    action: 'updateEventLogById',
+    action: 'processStripeEvent',
     paymentId,
     event,
   }
 
-  return ResultAsync.fromPromise(
-    // Step 1a: Get the payment.
-    Payment.findById(paymentId),
-    (error) => {
-      logger.error({
-        message: 'Error encountered while finding payment by id',
-        meta: { ...logMeta, paymentId },
-        error,
-      })
-      return new DatabaseError(getMongoErrorMessage(error))
-    },
-  ).andThen((payment) => {
-    // Step 1b: If the submission does not exist or the event has been processed
-    // before, ignore the event.
-    if (!payment) {
-      logger.error({
-        message: 'Payment not found for paymentId received in Stripe metadata',
-        meta: { ...logMeta, paymentId },
-      })
-      return errAsync(new PaymentNotFoundError())
-    }
+  // Step 0: Set up the session and start the transaction
+  return ResultAsync.fromPromise(mongoose.startSession(), (error) => {
+    logger.error({
+      message: 'Database error while starting mongoose session',
+      meta: logMeta,
+      error,
+    })
+    return new DatabaseError(getMongoErrorMessage(error))
+  }).andThen((session) => {
+    session.startTransaction({
+      readPreference: 'primary',
+      readConcern: { level: 'snapshot' },
+      writeConcern: { w: 'majority' },
+    })
 
-    if (payment.webhookLog.some((e) => e.id === event.id)) {
-      // Stop processing if we encounter a duplicate event. This may have
-      // occurred due to various reasons (e.g. us timing out on Stripe, so
-      // Stripe retried the webhook).
-      logger.warn({
-        message: 'Duplicate event received from Stripe webhook endpoint',
-        meta: { ...logMeta, paymentId },
-      })
-      return okAsync(undefined)
-    }
-
-    // Step 2: Confirm the pending submission awaiting payment from Stripe
     return (
-      confirmStripePaymentPendingSubmission(event, payment)
-        // Step 3: Inject the event into the webhook log.
-        .andThen((payment) => {
-          // We expect webhook arrays to be small (~10 entries max), so push and
-          // sort is ok.
-          payment.webhookLog.push(event)
-          payment.webhookLog.sort((e1, e2) => e1.created - e2.created)
-          return ok(payment)
-        })
-        // Step 4. Compute the payment state
-        .andThen((payment) =>
-          computePaymentState(payment.webhookLog).asyncAndThen(
-            ({ status, chargeIdLatest }) => {
-              payment.status = status
-              payment.chargeIdLatest = chargeIdLatest
-              return okAsync(payment)
+      processStripeEventWithinSession(paymentId, event, session)
+        // Finally: Commit or abort depending on whether an error was caught,
+        // then end the session
+        .andThen((submission) => {
+          return ResultAsync.fromPromise(
+            session.commitTransaction(),
+            (error) => {
+              logger.error({
+                message: 'Database error while committing transaction',
+                meta: logMeta,
+                error,
+              })
+              return new DatabaseError(getMongoErrorMessage(error))
             },
-          ),
-        )
-        // Step 5. Compute the payout state
-        .andThen((payment) =>
-          computePayoutDetails(payment.webhookLog).asyncAndThen((payout) => {
-            payment.payout = payout
-            return okAsync(payment)
-          }),
-        )
-        // Step 6. Save the payment document
-        .andThen((payment) =>
-          ResultAsync.fromPromise(payment.save(), (error) => {
-            logger.error({
-              message: 'Error encountered while updating payment',
-              meta: logMeta,
-              error,
-            })
-            return new DatabaseError(getMongoErrorMessage(error))
-          }),
-        )
-        .andThen(() => okAsync(undefined))
+          ).andThen(() => {
+            session.endSession()
+            return okAsync(submission)
+          })
+        })
+        .orElse((err) => {
+          return ResultAsync.fromPromise(
+            session.abortTransaction(),
+            (error) => {
+              logger.error({
+                message: 'Database error while aborting transaction',
+                meta: logMeta,
+                error,
+              })
+              return new DatabaseError(getMongoErrorMessage(error))
+            },
+          ).andThen(() => {
+            session.endSession()
+            return errAsync(err)
+          })
+        })
     )
   })
 }

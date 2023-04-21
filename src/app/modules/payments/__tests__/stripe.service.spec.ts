@@ -252,6 +252,18 @@ describe('stripe.service', () => {
       await pendingSubmission.updateOne({
         paymentId: payment._id,
       })
+
+      // Calls to processStripeEvent should skip the transaction handler steps
+      // and directly into the main body of the function.
+      jest
+        .spyOn(StripeService, 'processStripeEvent')
+        .mockImplementationOnce((paymentId, event) =>
+          StripeService.processStripeEventWithinSession(
+            paymentId,
+            event,
+            null as unknown as mongoose.ClientSession,
+          ),
+        )
     })
     afterEach(() => jest.clearAllMocks())
 
