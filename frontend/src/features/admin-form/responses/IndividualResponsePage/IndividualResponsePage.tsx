@@ -47,8 +47,9 @@ const LoadingDecryption = memo(() => {
 })
 
 export const IndividualResponsePage = (): JSX.Element => {
-  const { submissionId } = useParams()
+  const { submissionId, formId } = useParams()
   if (!submissionId) throw new Error('Missing submissionId')
+  if (!formId) throw new Error('Missing formId')
 
   const { secretKey } = useStorageResponsesContext()
   const { data, isLoading, isError } = useIndividualSubmission()
@@ -153,7 +154,9 @@ export const IndividualResponsePage = (): JSX.Element => {
               ))}
               <Box />
             </Stack>
-            {data?.payment && <PaymentSection payment={data.payment} />}
+            {data?.payment && (
+              <PaymentSection payment={data.payment} formId={formId} />
+            )}
           </>
         )}
       </Stack>
