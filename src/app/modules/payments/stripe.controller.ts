@@ -645,8 +645,18 @@ const _handleGetPreviousPayment: ControllerHandler<{
   )
 }
 
-// Handler for GET /:formId/duplicate/payments/:email
-export const handleGetPreviousPayment = [
+/**
+ * Handler for GET /api/v3/:formId/payments/previous/:email
+ * Finds and return the latest successful payment made by the
+ * specific respondent based on their email.
+ *
+ * @params formId formId of related form to retrieve payment
+ * @params email email of respondents to retrieve payment
+ *
+ * @returns 200 with payment document if successful payment is found
+ * @returns 200 without data if no payment has been made
+ * @returns 500 if there is an unexpected error
+ */ export const handleGetPreviousPayment = [
   celebrate({
     [Segments.QUERY]: {
       formId: Joi.string().required,
