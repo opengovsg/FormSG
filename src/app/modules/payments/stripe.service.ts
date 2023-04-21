@@ -140,6 +140,114 @@ const confirmStripePaymentPendingSubmission = (
 
 /**
  * Retrieves and updates payment document of the given paymentId with the event.
+ * NOTE: This is exported only for testing
+ *
+ * @param {string} paymentId the payment id to be updated
+ * @param {Stripe.Event} event the new Stripe Event causing the update operation to occur
+ * @param {mongoose.ClientSession} session the mongoose session to use for all db operations
+ *
+ * @returns ok() if event was successfully processed
+ * @returns err(EventMetadataPaymentIdInvalidError) if the payment id is not found in the event metadata or is found but an invalid BSON object id
+ * @returns err(MalformedStripeChargeObjectError) if the shape of the charge object returned by Stripe does not have expected fields
+ * @returns err(PaymentNotFoundError) if the payment document does not exist
+ * @returns err(PendingSubmissionNotFoundError) if the pending submission being referenced by the payment document does not exist
+ * @returns err(PaymentAlreadyConfirmedError) if the payment document already has an associated completed payment
+ * @returns err(StripeFetchError) if there was an error while calling Stripe API
+ * @returns err(ComputePaymentStateError) if there was an error while recomputing the payment state
+ * @returns err(DatabaseError) if error occurs whilst querying the database
+ */
+export const processStripeEventWithinSession = (
+  paymentId: string,
+  event: Stripe.Event,
+  session: mongoose.ClientSession,
+): ResultAsync<
+  void,
+  | MalformedStripeChargeObjectError
+  | PaymentNotFoundError
+  | PendingSubmissionNotFoundError
+  | PaymentAlreadyConfirmedError
+  | StripeFetchError
+  | ComputePaymentStateError
+  | DatabaseError
+> => {
+  const logMeta = {
+    action: 'processStripeEventWithinSession',
+    paymentId,
+    event,
+  }
+
+  // Step 1a: Get the payment.
+  return PaymentsService.findPaymentById(paymentId, session).andThen(
+    (payment) => {
+      // Step 1b: If the submission does not exist or the event has been processed
+      // before, ignore the event.
+      if (!payment) {
+        logger.error({
+          message:
+            'Payment not found for paymentId received in Stripe metadata',
+          meta: { ...logMeta, paymentId },
+        })
+        return errAsync(new PaymentNotFoundError())
+      }
+
+      if (payment.webhookLog.some((e) => e.id === event.id)) {
+        // Stop processing if we encounter a duplicate event. This may have
+        // occurred due to various reasons (e.g. us timing out on Stripe, so
+        // Stripe retried the webhook).
+        logger.warn({
+          message: 'Duplicate event received from Stripe webhook endpoint',
+          meta: { ...logMeta, paymentId },
+        })
+        return okAsync(undefined)
+      }
+
+      // Step 2: Confirm the pending submission awaiting payment from Stripe
+      return (
+        confirmStripePaymentPendingSubmission(event, payment, session)
+          // Step 3: Inject the event into the webhook log.
+          .andThen((payment) => {
+            // We expect webhook arrays to be small (~10 entries max), so push and
+            // sort is ok.
+            payment.webhookLog.push(event)
+            payment.webhookLog.sort((e1, e2) => e1.created - e2.created)
+            return ok(payment)
+          })
+          // Step 4. Compute the payment state
+          .andThen((payment) =>
+            computePaymentState(payment.webhookLog).asyncAndThen(
+              ({ status, chargeIdLatest }) => {
+                payment.status = status
+                payment.chargeIdLatest = chargeIdLatest
+                return okAsync(payment)
+              },
+            ),
+          )
+          // Step 5. Compute the payout state
+          .andThen((payment) =>
+            computePayoutDetails(payment.webhookLog).asyncAndThen((payout) => {
+              payment.payout = payout
+              return okAsync(payment)
+            }),
+          )
+          // Step 6. Save the payment document
+          .andThen((payment) =>
+            ResultAsync.fromPromise(payment.save({ session }), (error) => {
+              logger.error({
+                message: 'Error encountered while updating payment',
+                meta: logMeta,
+                error,
+              })
+              return new DatabaseError(getMongoErrorMessage(error))
+            }),
+          )
+          .andThen(() => okAsync(undefined))
+      )
+    },
+  )
+}
+
+/**
+ * Retrieves and updates payment document of the given paymentId with the event.
  * This is done within a single transaction, so that the information in the
  * document is always consistent.
  *
@@ -170,7 +278,7 @@ export const processStripeEvent = (
   | DatabaseError
 > => {
   const logMeta = {
-    action: 'updateEventLogById',
+    action: 'processStripeEvent',
     paymentId,
     event,
   }
@@ -191,75 +299,7 @@ export const processStripeEvent = (
     })
 
     return (
-      // Step 1a: Get the payment.
-      PaymentsService.findPaymentById(paymentId, session)
-        .andThen((payment) => {
-          // Step 1b: If the submission does not exist or the event has been processed
-          // before, ignore the event.
-          if (!payment) {
-            logger.error({
-              message:
-                'Payment not found for paymentId received in Stripe metadata',
-              meta: { ...logMeta, paymentId },
-            })
-            return errAsync(new PaymentNotFoundError())
-          }
-
-          if (payment.webhookLog.some((e) => e.id === event.id)) {
-            // Stop processing if we encounter a duplicate event. This may have
-            // occurred due to various reasons (e.g. us timing out on Stripe, so
-            // Stripe retried the webhook).
-            logger.warn({
-              message: 'Duplicate event received from Stripe webhook endpoint',
-              meta: { ...logMeta, paymentId },
-            })
-            return okAsync(undefined)
-          }
-
-          // Step 2: Confirm the pending submission awaiting payment from Stripe
-          return (
-            confirmStripePaymentPendingSubmission(event, payment, session)
-              // Step 3: Inject the event into the webhook log.
-              .andThen((payment) => {
-                // We expect webhook arrays to be small (~10 entries max), so push and
-                // sort is ok.
-                payment.webhookLog.push(event)
-                payment.webhookLog.sort((e1, e2) => e1.created - e2.created)
-                return ok(payment)
-              })
-              // Step 4. Compute the payment state
-              .andThen((payment) =>
-                computePaymentState(payment.webhookLog).asyncAndThen(
-                  ({ status, chargeIdLatest }) => {
-                    payment.status = status
-                    payment.chargeIdLatest = chargeIdLatest
-                    return okAsync(payment)
-                  },
-                ),
-              )
-              // Step 5. Compute the payout state
-              .andThen((payment) =>
-                computePayoutDetails(payment.webhookLog).asyncAndThen(
-                  (payout) => {
-                    payment.payout = payout
-                    return okAsync(payment)
-                  },
-                ),
-              )
-              // Step 6. Save the payment document
-              .andThen((payment) =>
-                ResultAsync.fromPromise(payment.save({ session }), (error) => {
-                  logger.error({
-                    message: 'Error encountered while updating payment',
-                    meta: logMeta,
-                    error,
-                  })
-                  return new DatabaseError(getMongoErrorMessage(error))
-                }),
-              )
-              .andThen(() => okAsync(undefined))
-          )
-        })
+      processStripeEventWithinSession(paymentId, event, session)
         // Finally: Commit or abort depending on whether an error was caught,
         // then end the session
         .andThen((submission) => {
