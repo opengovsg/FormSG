@@ -3,6 +3,7 @@ import { Mongoose, Schema } from 'mongoose'
 import { PaymentStatus } from '../../../shared/types'
 import { IPaymentModel, IPaymentSchema } from '../../types'
 
+import { FORM_SCHEMA_ID } from './form.server.model'
 import { PENDING_SUBMISSION_SCHEMA_ID } from './pending_submission.server.model'
 import { SUBMISSION_SCHEMA_ID } from './submission.server.model'
 
@@ -14,6 +15,11 @@ const PaymentSchema = new Schema<IPaymentSchema, IPaymentModel>(
       type: Schema.Types.ObjectId,
       // Defer loading of the ref due to circular dependency on schema IDs.
       ref: () => PENDING_SUBMISSION_SCHEMA_ID,
+      required: true,
+    },
+    formId: {
+      type: Schema.Types.ObjectId,
+      ref: () => FORM_SCHEMA_ID,
       required: true,
     },
     email: {

@@ -19,6 +19,8 @@ import * as StripeUtils from '../stripe.utils'
 const Payment = getPaymentModel(mongoose)
 const EncryptPendingSubmission = getEncryptPendingSubmissionModel(mongoose)
 
+const MOCK_FORM_ID = new ObjectId().toHexString()
+
 jest.mock('axios')
 jest.mock('src/app/modules/payments/stripe.utils')
 jest.mock('src/app/utils/convert-html-to-pdf')
@@ -43,11 +45,22 @@ describe('stripe.controller', () => {
     it('should generate return a pdf file when receipt url is present', async () => {
       const pendingSubmission = await EncryptPendingSubmission.create({
         submissionType: SubmissionType.Encrypt,
-        form: new ObjectId(),
+        form: MOCK_FORM_ID,
         encryptedContent: 'some random encrypted content',
         version: 1,
       })
+      const mockBusinessInfo = { address: 'localhost', gstRegNo: 'G123456' }
+      const mockForm = {
+        _id: MOCK_FORM_ID,
+        admin: {
+          agency: {
+            business: mockBusinessInfo,
+          },
+        },
+      } as IPopulatedForm
+
       const payment = await Payment.create({
+        formId: mockForm._id,
         target_account_id: 'acct_MOCK_ACCOUNT_ID',
         pendingSubmissionId: pendingSubmission._id,
         amount: 12345,
@@ -58,15 +71,6 @@ describe('stripe.controller', () => {
           receiptUrl: 'http://form.gov.sg',
         },
       })
-      const mockBusinessInfo = { address: 'localhost', gstRegNo: 'G123456' }
-      const mockForm = {
-        admin: {
-          agency: {
-            business: mockBusinessInfo,
-          },
-        },
-      } as IPopulatedForm
-
       MockFormService.retrieveFullFormById.mockReturnValue(okAsync(mockForm))
       MockEncryptSubmissionService.checkFormIsEncryptMode.mockReturnValue(
         ok(mockForm as IPopulatedEncryptedForm),
@@ -110,11 +114,12 @@ describe('stripe.controller', () => {
     it('should generate return a pdf file when receipt url is present', async () => {
       const pendingSubmission = await EncryptPendingSubmission.create({
         submissionType: SubmissionType.Encrypt,
-        form: new ObjectId(),
+        form: MOCK_FORM_ID,
         encryptedContent: 'some random encrypted content',
         version: 1,
       })
       const payment = await Payment.create({
+        formId: MOCK_FORM_ID,
         target_account_id: 'acct_MOCK_ACCOUNT_ID',
         pendingSubmissionId: pendingSubmission._id,
         amount: 12345,

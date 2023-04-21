@@ -241,6 +241,7 @@ describe('stripe.service', () => {
         responseSalt: 'salt',
       })
       payment = await Payment.create({
+        formId: MOCK_FORM_ID,
         target_account_id: 'acct_MOCK_ACCOUNT_ID',
         pendingSubmissionId: pendingSubmission._id,
         amount: 12345,
