@@ -1,6 +1,6 @@
 import {
   GetPaymentInfoDto,
-  Payment,
+  PaymentDto,
   PaymentReceiptStatusDto,
 } from '~shared/types'
 
@@ -47,8 +47,8 @@ export const getPaymentInfo = async (paymentId: string) => {
 export const getPreviousPayment = async (
   email: string,
   formId: string,
-): Promise<Payment | undefined> => {
-  return ApiService.get<Payment | undefined>(
+): Promise<PaymentDto | undefined> => {
+  return ApiService.get<PaymentDto | undefined>(
     `${PAYMENTS_ENDPOINT}/${formId}/payments/previous/${email}`,
   ).then(({ data }) => data)
 }

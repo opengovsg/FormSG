@@ -30,8 +30,6 @@ export type PayoutMeta = {
 }
 
 export type Payment = {
-  _id: string
-
   // Pre-payment metadata
   pendingSubmissionId: string
   formId: string
@@ -53,6 +51,8 @@ export type Payment = {
   created: DateString
   lastModified: DateString
 }
+
+export type PaymentDto = Payment & { _id: string }
 
 export type PaymentReceiptStatusDto = {
   isReady: boolean
