@@ -14,7 +14,7 @@ import {
 
 import { getPaymentPageUrl } from '~features/public-form/utils/urls'
 
-type FormPaymentModalProps = {
+type DuplicatePaymentModalProps = {
   onSubmit: MouseEventHandler<HTMLButtonElement> | undefined
   onClose: () => void
   isSubmitting: boolean
@@ -28,7 +28,7 @@ export const DuplicatePaymentModal = ({
   isSubmitting,
   formId,
   paymentId,
-}: FormPaymentModalProps): JSX.Element => {
+}: DuplicatePaymentModalProps): JSX.Element => {
   const paymentUrl = getPaymentPageUrl(formId, paymentId)
 
   // We need to dismiss the Modal to release the scroll lock that affects the captcha
@@ -49,8 +49,8 @@ export const DuplicatePaymentModal = ({
             We noticed a successful payment made on this form by your email
             address.
             <Link href={paymentUrl}>View your previous payment</Link>
+            {'\n'}Do you wish to proceed to make another payment?
           </ModalBody>
-          <ModalBody>Do you wish to proceed to make another payment?</ModalBody>
           <ModalFooter>
             <ButtonGroup>
               <Button variant="clear" onClick={onClose}>
