@@ -23,8 +23,12 @@ import * as FormService from '../form/form.service'
 import * as PendingSubmissionModel from '../pending-submission/pending-submission.service'
 import { checkFormIsEncryptMode } from '../submission/encrypt-submission/encrypt-submission.service'
 
-import { PaymentAccountInformationError } from './payments.errors'
+import {
+  PaymentAccountInformationError,
+  PaymentNotFoundError,
+} from './payments.errors'
 import * as PaymentService from './payments.service'
+import { findLatestSuccessfulPaymentByEmailAndFormId } from './payments.service'
 import { StripeFetchError } from './stripe.errors'
 import * as StripeService from './stripe.service'
 import {
@@ -612,3 +616,42 @@ export const getPaymentInfo: ControllerHandler<
       return res.status(statusCode).json({ message: errorMessage })
     })
 }
+
+const _handleGetPreviousPayment: ControllerHandler<{
+  email: string
+  formId: string
+}> = (req, res) => {
+  const { email, formId } = req.params
+  // Step 1 get Payment document from email and formId
+  return (
+    findLatestSuccessfulPaymentByEmailAndFormId(email, formId)
+      // If payment found, return payment
+      .map((payment) => {
+        return res.send(payment)
+      })
+      // If payment is not found, there is no previous payment
+      // If database error, return 500
+      .mapErr((error) => {
+        // if payment isn't found, return empty response
+        if (error instanceof PaymentNotFoundError) {
+          return res.send()
+        }
+        // Database error
+        return res
+          .status(StatusCodes.INTERNAL_SERVER_ERROR)
+          .json({ message: 'Database error' })
+          .send()
+      })
+  )
+}
+
+// Handler for GET /:formId/duplicate/payments/:email
+export const handleGetPreviousPayment = [
+  celebrate({
+    [Segments.QUERY]: {
+      formId: Joi.string().required,
+      email: Joi.string().required,
+    },
+  }),
+  _handleGetPreviousPayment,
+] as ControllerHandler[]

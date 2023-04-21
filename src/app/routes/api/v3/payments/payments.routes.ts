@@ -64,3 +64,17 @@ PaymentsRouter.route('/stripe/callback').get(
 PaymentsRouter.route('/:paymentId([a-fA-F0-9]{24})/getinfo').get(
   StripeController.getPaymentInfo,
 )
+
+/**
+ * Get previous latest successful payment document if it exists
+ * @route GET /:formId/payments/previous/:email
+ *
+ * @returns 200 with payment if it exists
+ * @returns 200 without payment if it doesnt exists
+ * @returns 500 when database error occurs
+ */
+PaymentsRouter.get(
+  '/:formId([a-fA-F0-9]{24})/payments/previous/:email',
+  limitRate({ max: rateLimitConfig.submissions }),
+  StripeController.handleGetPreviousPayment,
+)
