@@ -5,14 +5,18 @@ import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 import { IPaymentSchema } from '../../../types'
 import { createLoggerWithLabel } from '../../config/logger'
 import getPaymentModel from '../../models/payment.server.model'
+import MailService from '../../services/mail/mail.service'
 import { getMongoErrorMessage } from '../../utils/handle-mongo-error'
 import { DatabaseError } from '../core/core.errors'
+import { retrieveFormById } from '../form/form.service'
 import { performEncryptPostSubmissionActions } from '../submission/encrypt-submission/encrypt-submission.service'
 import { isSubmissionEncryptMode } from '../submission/encrypt-submission/encrypt-submission.utils'
 import { PendingSubmissionNotFoundError } from '../submission/submission.errors'
 import * as SubmissionService from '../submission/submission.service'
+import { findSubmissionById } from '../submission/submission.service'
 
 import {
+  ConfirmedPaymentNotFoundError,
   PaymentAlreadyConfirmedError,
   PaymentNotFoundError,
 } from './payments.errors'
@@ -275,4 +279,62 @@ export const confirmPaymentPendingSubmission = (
         }),
       )
   )
+}
+
+/**
+ * This function sends a payment confirmation email
+ * @param paymentId payment id of the payment that has been completed
+ *
+ * @returns ok(true) if the payment confirmation email has been sent
+ * @returns err(ConfirmedPaymentNotFoundError) if the paymentId does not have a submission ID associated with a completed payment
+ */
+export const sendPaymentConfirmationEmailByPaymentId = (
+  paymentId: IPaymentSchema['_id'],
+): ResultAsync<true, ConfirmedPaymentNotFoundError> => {
+  const logMeta = {
+    action: 'sendPaymentConfirmationEmail',
+    paymentId,
+  }
+
+  // Step 1: Find payment object
+  return findPaymentById(paymentId)
+    .map((payment) => ({
+      submissionId: payment.completedPayment?.submissionId,
+      recipient: payment.email,
+    }))
+    .andThen(({ submissionId, recipient }) => {
+      if (!submissionId) {
+        logger.warn({
+          message: 'Submission ID from completed payment could not be found',
+          meta: logMeta,
+        })
+        return errAsync(new ConfirmedPaymentNotFoundError())
+      }
+      // Step 2: Find submission document
+      return (
+        findSubmissionById(submissionId)
+          // Step 3: Find form document
+          .andThen((submission) => retrieveFormById(submission.form))
+          .map((form) => ({
+            formTitle: form.title,
+            formId: form._id,
+            responseId: submissionId,
+            recipient,
+          }))
+      )
+    })
+    .andThen(({ formTitle, formId, responseId, recipient }) => {
+      logger.info({
+        message: 'sendPaymentConfirmationEmail',
+        meta: logMeta,
+      })
+      // Step 4: Send payment confirmation email
+      return MailService.sendPaymentConfirmationEmail({
+        recipient,
+        formTitle,
+        responseId,
+        formId,
+        paymentId,
+      })
+    })
 }

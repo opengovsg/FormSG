@@ -12,6 +12,12 @@ export class PaymentNotFoundError extends ApplicationError {
   }
 }
 
+export class ConfirmedPaymentNotFoundError extends ApplicationError {
+  constructor(message = 'Confirmed payment not found') {
+    super(message)
+  }
+}
+
 export class PaymentAlreadyConfirmedError extends ApplicationError {
   constructor(message = 'Payment has already been confirmed') {
     super(message)
