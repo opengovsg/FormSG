@@ -2,6 +2,7 @@ import { ObjectId } from 'mongodb'
 import mongoose from 'mongoose'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 
+import { PaymentStatus } from '../../../../shared/types'
 import { IPaymentSchema } from '../../../types'
 import { createLoggerWithLabel } from '../../config/logger'
 import getPaymentModel from '../../models/payment.server.model'
@@ -263,7 +264,7 @@ export const sendPaymentConfirmationEmailByPaymentId = (
  * @returns err(PaymentNotFoundError) if the payment does not exist
  * @returns err(DatabaseError) if error occurs whilst querying the database
  */
-export const findLatestPaymentByEmailAndFormId = (
+export const findLatestSuccessfulPaymentByEmailAndFormId = (
   email: IPaymentSchema['email'],
   formId: string,
 ): ResultAsync<IPaymentSchema, PaymentNotFoundError | DatabaseError> => {
@@ -271,8 +272,9 @@ export const findLatestPaymentByEmailAndFormId = (
     PaymentModel.findOne({
       email: email,
       formId: formId,
+      status: PaymentStatus.Succeeded,
     })
-      .sort({ created_at: -1 })
+      .sort({ _id: -1 })
       .exec(),
     (error) => {
       logger.error({
