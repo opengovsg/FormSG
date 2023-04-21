@@ -30,6 +30,8 @@ export type PayoutMeta = {
 }
 
 export type Payment = {
+  _id: string
+
   // Pre-payment metadata
   pendingSubmissionId: string
   formId: string
