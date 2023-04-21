@@ -371,7 +371,7 @@ const submitEncryptModeForm: ControllerHandler<
       })
     }
 
-    const paymentReceiptEmail = req.body.paymentReceiptEmail
+    const paymentReceiptEmail = req.body.paymentReceiptEmail?.toLowerCase()
     if (!paymentReceiptEmail) {
       logger.error({
         message:
