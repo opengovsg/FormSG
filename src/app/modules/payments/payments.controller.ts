@@ -1,6 +1,8 @@
 import { celebrate, Joi, Segments } from 'celebrate'
 import { StatusCodes } from 'http-status-codes'
 
+import { IPaymentSchema } from 'src/types'
+
 import { createLoggerWithLabel } from '../../config/logger'
 import { ControllerHandler } from '../core/core.types'
 
@@ -9,11 +11,16 @@ import { findLatestSuccessfulPaymentByEmailAndFormId } from './payments.service'
 
 const logger = createLoggerWithLabel(module)
 
-const _handleGetPreviousPayment: ControllerHandler<{
-  email: string
-  formId: string
-}> = (req, res) => {
-  const { email, formId } = req.params
+// exported for testing
+export const _handleGetPreviousPayment: ControllerHandler<
+  {
+    formId: string
+  },
+  IPaymentSchema,
+  { email: string }
+> = (req, res) => {
+  const { formId } = req.params
+  const { email } = req.body
   // Step 1 get Payment document from email and formId
   return (
     findLatestSuccessfulPaymentByEmailAndFormId(email, formId)
@@ -58,10 +65,7 @@ const _handleGetPreviousPayment: ControllerHandler<{
             error,
           },
         })
-        return res
-          .status(StatusCodes.INTERNAL_SERVER_ERROR)
-          .json({ message: 'Database error' })
-          .send()
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).send()
       })
   )
 }
@@ -70,9 +74,9 @@ const _handleGetPreviousPayment: ControllerHandler<{
  * Handler for GET /api/v3/:formId/payments/previous/:email
  * Finds and return the latest successful payment made by the
  * specific respondent based on their email.
+ * Email will be acquired from the request body
  *
  * @params formId formId of related form to retrieve payment
- * @params email email of respondents to retrieve payment
  *
  * @returns 200 with payment document if successful payment is found
  * @returns 200 without data if no payment has been made
@@ -81,7 +85,6 @@ const _handleGetPreviousPayment: ControllerHandler<{
   celebrate({
     [Segments.QUERY]: {
       formId: Joi.string().required,
-      email: Joi.string().required,
     },
   }),
   _handleGetPreviousPayment,
