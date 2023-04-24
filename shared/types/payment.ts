@@ -52,6 +52,8 @@ export type Payment = {
   lastModified: DateString
 }
 
+export type PaymentDto = Payment & { _id: string }
+
 export type PaymentReceiptStatusDto = {
   isReady: boolean
 }

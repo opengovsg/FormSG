@@ -2,6 +2,7 @@ import { ObjectId } from 'mongodb'
 import mongoose from 'mongoose'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 
+import { PaymentStatus } from '../../../../shared/types'
 import { IPaymentSchema } from '../../../types'
 import { createLoggerWithLabel } from '../../config/logger'
 import getPaymentModel from '../../models/payment.server.model'
@@ -253,4 +254,43 @@ export const sendPaymentConfirmationEmailByPaymentId = (
         paymentId,
       })
     })
+}
+
+/**
+ * Retrieves the latest payment document by email and formId.
+ * @param email the email of the payment to be retrieved
+ * @param formId the formId of the payment to be retrieved
+ * @returns ok(payment) if payment exists
+ * @returns err(PaymentNotFoundError) if the payment does not exist
+ * @returns err(DatabaseError) if error occurs whilst querying the database
+ */
+export const findLatestSuccessfulPaymentByEmailAndFormId = (
+  email: IPaymentSchema['email'],
+  formId: string,
+): ResultAsync<IPaymentSchema, PaymentNotFoundError | DatabaseError> => {
+  return ResultAsync.fromPromise(
+    PaymentModel.findOne({
+      email: email,
+      formId: formId,
+      status: PaymentStatus.Succeeded,
+    })
+      .sort({ _id: -1 })
+      .exec(),
+    (error) => {
+      logger.error({
+        message:
+          'Database error while finding latest payment by email and FormId',
+        meta: {
+          action: 'findLatestPaymentByEmailAndFormId',
+          formId,
+          email,
+        },
+        error,
+      })
+      return new DatabaseError(getMongoErrorMessage(error))
+    },
+  ).andThen((result) => {
+    if (!result) return errAsync(new PaymentNotFoundError())
+    return okAsync(result)
+  })
 }

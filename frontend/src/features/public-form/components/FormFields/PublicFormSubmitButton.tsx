@@ -1,7 +1,8 @@
-import { MouseEventHandler, useMemo } from 'react'
+import { MouseEventHandler, useMemo, useState } from 'react'
 import { useFormState, UseFormTrigger, useWatch } from 'react-hook-form'
 import { Stack, useDisclosure, VisuallyHidden } from '@chakra-ui/react'
 
+import { PAYMENT_CONTACT_FIELD_ID } from '~shared/constants'
 import {
   FormField,
   FormResponseMode,
@@ -13,12 +14,14 @@ import { ThemeColorScheme } from '~theme/foundations/colours'
 import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
 import InlineMessage from '~components/InlineMessage'
-import { FormFieldValues } from '~templates/Field'
+import { FormFieldValues, VerifiableFieldValues } from '~templates/Field'
 
 import { getLogicUnitPreventingSubmit } from '~features/logic/utils'
 
 import { usePublicFormContext } from '../../PublicFormContext'
+import { DuplicatePaymentModal } from '../DuplicatePaymentModal/DuplicatePaymentModal'
 import { FormPaymentModal } from '../FormPaymentModal/FormPaymentModal'
+import { getPreviousPayment } from '../FormPaymentPage/FormPaymentService'
 
 interface PublicFormSubmitButtonProps {
   formFields: MyInfoFormField<FormField>[]
@@ -39,10 +42,17 @@ export const PublicFormSubmitButton = ({
   onSubmit,
   trigger,
 }: PublicFormSubmitButtonProps): JSX.Element => {
+  const [isDuplicate, setDuplicate] = useState(false)
+  const [paymentId, setPaymentId] = useState('')
+
   const isMobile = useIsMobile()
   const { isSubmitting } = useFormState()
   const formInputs = useWatch<FormFieldValues>({}) as FormFieldValues
-  const { form } = usePublicFormContext()
+  const { form, formId } = usePublicFormContext()
+
+  const paymentEmailField = formInputs[
+    PAYMENT_CONTACT_FIELD_ID
+  ] as VerifiableFieldValues
 
   const preventSubmissionLogic = useMemo(() => {
     return getLogicUnitPreventingSubmit({
@@ -57,7 +67,23 @@ export const PublicFormSubmitButton = ({
 
   const checkBeforeOpen = async () => {
     const result = await trigger()
-    if (result) onOpen()
+
+    if (result) {
+      // get previous payment
+      try {
+        const payment = await getPreviousPayment(
+          paymentEmailField.value,
+          formId,
+        )
+        if (payment) {
+          setDuplicate(true)
+          setPaymentId(payment._id)
+        }
+      } catch (err) {
+        setDuplicate(false)
+      }
+      onOpen()
+    }
   }
 
   const isPaymentEnabled =
@@ -67,11 +93,21 @@ export const PublicFormSubmitButton = ({
   return (
     <Stack px={{ base: '1rem', md: 0 }} pt="2.5rem" pb="4rem">
       {isOpen ? (
-        <FormPaymentModal
-          onSubmit={onSubmit}
-          onClose={onClose}
-          isSubmitting={isSubmitting}
-        />
+        isDuplicate ? (
+          <DuplicatePaymentModal
+            onSubmit={onSubmit}
+            onClose={onClose}
+            isSubmitting={isSubmitting}
+            formId={formId}
+            paymentId={paymentId}
+          />
+        ) : (
+          <FormPaymentModal
+            onSubmit={onSubmit}
+            onClose={onClose}
+            isSubmitting={isSubmitting}
+          />
+        )
       ) : null}
       <Button
         isFullWidth={isMobile}

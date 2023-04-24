@@ -1,6 +1,12 @@
-import { GetPaymentInfoDto, PaymentReceiptStatusDto } from '~shared/types'
+import {
+  GetPaymentInfoDto,
+  PaymentDto,
+  PaymentReceiptStatusDto,
+} from '~shared/types'
 
 import { ApiService } from '~services/ApiService'
+
+const PAYMENTS_ENDPOINT = '/payments'
 
 /**
  * Obtain payment receipt status for a given submission.
@@ -13,7 +19,7 @@ export const getPaymentReceiptStatus = async (
   paymentId: string,
 ): Promise<PaymentReceiptStatusDto> => {
   return ApiService.get<PaymentReceiptStatusDto>(
-    `payments/${formId}/${paymentId}/receipt/status`,
+    `${PAYMENTS_ENDPOINT}/${formId}/${paymentId}/receipt/status`,
   ).then(({ data }) => data)
 }
 
@@ -26,6 +32,25 @@ export const getPaymentReceiptStatus = async (
  */
 export const getPaymentInfo = async (paymentId: string) => {
   return ApiService.get<GetPaymentInfoDto>(
-    `payments/${paymentId}/getinfo`,
+    `${PAYMENTS_ENDPOINT}/${paymentId}/getinfo`,
+  ).then(({ data }) => data)
+}
+
+/**
+ * Obtain the payment object if the respondent has already
+ * made a payment on a specific form before.
+ * @param email the email of the user making the payment
+ * @param formId the id of the form
+ * @returns payment object is the respondent has made a payment
+ * @returns undefined if the respondent has yet to make payment
+ */
+export const getPreviousPayment = async (
+  email: string,
+  formId: string,
+): Promise<PaymentDto | undefined> => {
+  const emailData = { email }
+  return ApiService.post<PaymentDto | undefined>(
+    `${PAYMENTS_ENDPOINT}/${formId}/payments/previous/`,
+    emailData,
   ).then(({ data }) => data)
 }
