@@ -880,6 +880,33 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     )
   }
 
+  // Get all forms owned by the specified user ID.
+  FormDocumentSchema.statics.getFormsOwnedByUserId = async function (
+    userId: IUserSchema['_id'],
+  ): Promise<AdminDashboardFormMetaDto[]> {
+    return (
+      this.find()
+        // List forms when either the user is an admin only.
+        .where('admin')
+        .equal(userId)
+        // Project selected fields.
+        // `responseMode` is a discriminator key and is returned regardless,
+        // selection is made for explicitness.
+        // `_id` is also returned regardless and selection is made for
+        // explicitness.
+        .select(ADMIN_FORM_META_FIELDS.join(' '))
+        .sort('-lastModified')
+        .populate({
+          path: 'admin',
+          populate: {
+            path: 'agency',
+          },
+        })
+        .lean()
+        .exec()
+    )
+  }
+
   // Deletes specified form logic.
   FormSchema.statics.deleteFormLogic = async function (
     formId: string,

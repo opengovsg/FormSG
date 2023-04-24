@@ -153,6 +153,43 @@ export const getDashboardForms = (
 }
 
 /**
+ * Retrieves a list of forms that the user of the given userId is an owner of.
+ * @param userId the id of the user to retrieve accessible forms for.
+ * @returns ok(DashboardFormViewList)
+ * @returns err(MissingUserError) if user with userId does not exist in the database
+ * @returns err(DatabaseError) if error occurs whilst querying the database
+ */
+export const getOwnedForms = (
+  userId: string,
+): ResultAsync<
+  AdminDashboardFormMetaDto[],
+  MissingUserError | DatabaseError
+> => {
+  // Step 1: Verify user exists.
+  return (
+    UserService.findUserById(userId)
+      // Step 2: Retrieve lists users are authorized to see.
+      .andThen(() => {
+        return ResultAsync.fromPromise(
+          FormModel.getFormsOwnedByUserId(userId),
+          (error) => {
+            logger.error({
+              message: 'Database error when retrieving admin owned forms',
+              meta: {
+                action: 'getOwnedForms',
+                userId,
+              },
+              error,
+            })
+
+            return new DatabaseError()
+          },
+        )
+      })
+  )
+}
+
+/**
  * Private function to generate a presigned POST URL to upload into the given
  * bucket.
  *

@@ -221,6 +221,36 @@ export const handleListDashboardForms: ControllerHandler<
 }
 
 /**
+ * Handler for GET /adminform/owned endpoint.
+ * @security session
+ *
+ * @returns 200 with list of forms user owns when list is retrieved successfully
+ * @returns 422 when user of given id cannnot be found in the database
+ * @returns 500 when database errors occur
+ */
+export const handleListOwnedForms: ControllerHandler<
+  unknown,
+  AdminDashboardFormMetaDto[] | ErrorDto
+> = async (req, res) => {
+  const authedUserId = (req.session as AuthedSessionData).user._id
+
+  return AdminFormService.getOwnedForms(authedUserId)
+    .map((dashboardView) => res.json(dashboardView))
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error listing owned forms',
+        meta: {
+          action: 'handleListOwnedForms',
+          userId: authedUserId,
+        },
+        error,
+      })
+      const { errorMessage, statusCode } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
+}
+
+/**
  * Handler for GET /:formId/adminform.
  * @security session
  *
