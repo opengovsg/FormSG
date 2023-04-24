@@ -282,6 +282,7 @@ export const findLatestSuccessfulPaymentByEmailAndFormId = (
           'Database error while finding latest payment by email and FormId',
         meta: {
           action: 'findLatestPaymentByEmailAndFormId',
+          formId,
           email,
         },
         error,
