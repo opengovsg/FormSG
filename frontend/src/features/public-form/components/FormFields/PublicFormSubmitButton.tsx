@@ -80,7 +80,7 @@ export const PublicFormSubmitButton = ({
       onOpen()
     }
   }
-  console.log(paymentId)
+
   const isPaymentEnabled =
     form?.responseMode === FormResponseMode.Encrypt &&
     form?.payments_field?.enabled
