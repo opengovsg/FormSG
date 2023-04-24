@@ -53,7 +53,7 @@ export const _handleGetPreviousPayment: ControllerHandler<
               error,
             },
           })
-          return res.status(StatusCodes.NOT_FOUND).send()
+          return res.sendStatus(StatusCodes.NOT_FOUND)
         }
         // Database error
         logger.error({
