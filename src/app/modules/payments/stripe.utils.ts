@@ -335,7 +335,7 @@ export const mapRouteErr = (error: ApplicationError) => {
  * Converts receipt sourced from Stripe into an invoice format
  * @param receiptHtmlSource
  */
-export const convertToInvoiceForrmat = (
+export const convertToInvoiceFormat = (
   receiptHtmlSource: string,
   { address, gstRegNo }: { address: string; gstRegNo: string },
 ) => {

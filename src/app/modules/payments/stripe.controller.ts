@@ -28,7 +28,7 @@ import * as PaymentService from './payments.service'
 import { StripeFetchError } from './stripe.errors'
 import * as StripeService from './stripe.service'
 import {
-  convertToInvoiceForrmat,
+  convertToInvoiceFormat,
   getChargeIdFromNestedCharge,
   getMetadataPaymentId,
   mapRouteErr,
@@ -380,7 +380,7 @@ export const downloadPaymentInvoice: ControllerHandler<{
                   businessInfo: businessInfo,
                 },
               })
-            const invoiceHtml = convertToInvoiceForrmat(html, {
+            const invoiceHtml = convertToInvoiceFormat(html, {
               address: businessInfo?.address || '',
               gstRegNo: businessInfo?.gstRegNo || '',
             })
