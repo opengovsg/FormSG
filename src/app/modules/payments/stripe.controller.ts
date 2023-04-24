@@ -383,6 +383,8 @@ export const downloadPaymentInvoice: ControllerHandler<{
             const invoiceHtml = convertToInvoiceFormat(html, {
               address: businessInfo?.address || '',
               gstRegNo: businessInfo?.gstRegNo || '',
+              formTitle: populatedForm.title,
+              submissionId: payment.completedPayment?.submissionId || '',
             })
 
             const pdfBufferPromise = generatePdfFromHtml(invoiceHtml)
