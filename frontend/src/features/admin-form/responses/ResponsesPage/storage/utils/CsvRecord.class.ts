@@ -30,6 +30,8 @@ export class CsvRecord {
     public id: string,
     public created: string,
     public status: CsvRecordStatus,
+    public form: string,
+    public hostOrigin: string,
     public paymentData?: SubmissionPaymentDto,
   ) {
     this.#statusMessage = status
@@ -116,13 +118,14 @@ export class CsvRecord {
 
     // Inject the payment details into the csv
     if (this.paymentData) {
-      getPaymentDataView(this.paymentData).forEach(({ key, name, value }) =>
-        output.push({
-          _id: this.paymentDataKeyToId(key),
-          fieldType: 'textfield',
-          question: name,
-          answer: value,
-        }),
+      getPaymentDataView(this.hostOrigin, this.paymentData, this.form).forEach(
+        ({ key, name, value }) =>
+          output.push({
+            _id: this.paymentDataKeyToId(key),
+            fieldType: 'textfield',
+            question: name,
+            answer: value,
+          }),
       )
     }
 

@@ -27,7 +27,7 @@ const PaymentDataItem = ({
       <Text textStyle={isMonospace ? 'monospace' : undefined}>
         {isUrl ? (
           <Link href={value} target="_blank">
-            {value}
+            Download as PDF
           </Link>
         ) : (
           value
@@ -39,16 +39,21 @@ const PaymentDataItem = ({
 
 type PaymentSectionProps = {
   payment: SubmissionPaymentDto
+  formId: string
 }
 
 export const PaymentSection = ({
   payment,
+  formId,
 }: PaymentSectionProps): JSX.Element | null => {
   if (!payment) return null
 
   const displayPayoutSection = payment.payoutId || payment.payoutDate
 
-  const paymentDataMap = keyBy(getPaymentDataView(payment), 'key')
+  const paymentDataMap = keyBy(
+    getPaymentDataView(window.location.origin, payment, formId),
+    'key',
+  )
 
   const paymentTagProps =
     payment.status === PaymentStatus.Succeeded

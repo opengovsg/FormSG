@@ -371,7 +371,7 @@ const submitEncryptModeForm: ControllerHandler<
       })
     }
 
-    const paymentReceiptEmail = req.body.paymentReceiptEmail
+    const paymentReceiptEmail = req.body.paymentReceiptEmail?.toLowerCase()
     if (!paymentReceiptEmail) {
       logger.error({
         message:
@@ -386,6 +386,7 @@ const submitEncryptModeForm: ControllerHandler<
 
     // Step 1: Create payment without payment intent id and pending submission id.
     const payment = new Payment({
+      formId,
       amount,
       email: paymentReceiptEmail,
       responses: incomingSubmission.responses,

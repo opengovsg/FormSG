@@ -139,6 +139,8 @@ const useDecryptionWorkers = ({
                   line: result.value,
                   secretKey,
                   downloadAttachments,
+                  formId: adminForm._id,
+                  hostOrigin: window.location.origin,
                 })
                 progress += 1
                 onProgress(progress)
