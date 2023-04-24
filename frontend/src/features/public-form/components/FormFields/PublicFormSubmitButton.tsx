@@ -8,7 +8,6 @@ import {
   FormResponseMode,
   LogicDto,
   MyInfoFormField,
-  PaymentStatus,
 } from '~shared/types'
 
 import { ThemeColorScheme } from '~theme/foundations/colours'
