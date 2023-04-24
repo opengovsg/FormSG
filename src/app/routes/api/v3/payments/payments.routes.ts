@@ -1,6 +1,7 @@
 import { Router } from 'express'
 
 import { rateLimitConfig } from '../../../../config/config'
+import * as PaymentsController from '../../../../modules/payments/payments.controller'
 import * as StripeController from '../../../../modules/payments/stripe.controller'
 import { limitRate } from '../../../../utils/limit-rate'
 
@@ -76,5 +77,5 @@ PaymentsRouter.route('/:paymentId([a-fA-F0-9]{24})/getinfo').get(
 PaymentsRouter.get(
   '/:formId([a-fA-F0-9]{24})/payments/previous/:email',
   limitRate({ max: rateLimitConfig.submissions }),
-  StripeController.handleGetPreviousPayment,
+  PaymentsController.handleGetPreviousPayment,
 )
