@@ -86,7 +86,7 @@ describe('stripe.controller', () => {
 
       const convertInvoiceSpy = jest.spyOn(
         StripeUtils,
-        'convertToInvoiceForrmat',
+        'convertToInvoiceFormat',
       )
 
       // Act
