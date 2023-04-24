@@ -71,6 +71,12 @@ export type GetSgidAuthUrlResponseDto = {
   redirectUrl: string
 }
 
-export type TransferOwnershipDto = {
-  email: string
+export type TransferOwnershipRequestDto = {
+  newOwnerEmail: string
+}
+
+export type TransferOwnershipResponseDto = {
+  newOwnerEmail: string
+  successFormIds: string[]
+  failureFormIds: string[]
 }

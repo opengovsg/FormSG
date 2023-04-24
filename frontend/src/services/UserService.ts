@@ -1,11 +1,14 @@
+import { AdminDashboardFormMetaDto, AdminFormViewDto } from '~shared/types'
 import {
   SendUserContactOtpDto,
+  TransferOwnershipRequestDto,
   UserDto,
   VerifyUserContactOtpDto,
 } from '~shared/types/user'
 
 import { ApiService } from './ApiService'
 
+const ADMIN_FORM_ENDPOINT = '/api/v3/admin/forms'
 const USER_ENDPOINT = '/user'
 
 /**
@@ -39,4 +42,23 @@ export const updateUserLastSeenFeatureUpdateVersion = async (
     `${USER_ENDPOINT}/flag/new-features-last-seen`,
     { version },
   ).then(({ data }) => data)
+}
+
+export const transferOwnership = async (
+  request: TransferOwnershipRequestDto,
+): Promise<TransferOwnershipResponseDto> => {
+  const { newOwnerEmail } = request
+
+  const ownedFormIds = await ApiService.get<AdminDashboardFormMetaDto[]>(
+    `${ADMIN_FORM_ENDPOINT}/owned`,
+  ).then(({ data }) => data._id) // FIXME: Correctly retrieve form ID
+
+  const p: Promise<AdminFormViewDto>[] = ownedFormIds.map((formId: string) =>
+    ApiService.post<AdminFormViewDto>(
+      `${ADMIN_FORM_ENDPOINT}/${formId}/collaborators/transfer-owner`,
+      { email: newOwnerEmail },
+    ),
+  )
+
+  // TODO: Return TransferOwnershipResponseDto
 }

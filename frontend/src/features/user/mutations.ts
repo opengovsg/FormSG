@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from 'react-query'
 
 import {
   SendUserContactOtpDto,
-  TransferOwnershipDto,
+  TransferOwnershipRequestDto,
   UserDto,
   VerifyUserContactOtpDto,
 } from '~shared/types/user'
@@ -12,6 +12,7 @@ import { ApiError } from '~typings/core'
 import { useToast } from '~hooks/useToast'
 import {
   generateUserContactOtp,
+  transferOwnership,
   updateUserLastSeenFeatureUpdateVersion,
   verifyUserContactOtp,
 } from '~services/UserService'
@@ -51,9 +52,8 @@ export const useUserMutations = () => {
     },
   })
 
-  // FIXME: Fix mutation
   const transferOwnershipMutation = useMutation(
-    (params: TransferOwnershipDto) => console.log(params),
+    (params: TransferOwnershipRequestDto) => transferOwnership(params),
     {
       onSuccess: (_) => {
         toast({
