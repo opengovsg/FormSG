@@ -337,7 +337,17 @@ export const mapRouteErr = (error: ApplicationError) => {
  */
 export const convertToInvoiceFormat = (
   receiptHtmlSource: string,
-  { address, gstRegNo }: { address: string; gstRegNo: string },
+  {
+    address,
+    gstRegNo,
+    formTitle,
+    submissionId,
+  }: {
+    address: string
+    gstRegNo: string
+    formTitle: string
+    submissionId: string
+  },
 ) => {
   // handle special characters in addresses
   const ADDRESS = encode(address)
@@ -352,8 +362,12 @@ export const convertToInvoiceFormat = (
     )
     .replace(/<br>\(This amount is inclusive of GST\)/, '') // not needed for real description (was added by Amit in his test)
     .replace(
-      /<strong>Amount charged<\/strong>/,
+      '<strong>Amount charged</strong>',
       '<strong>Amount charged</strong> <i>(includes GST)</i>',
+    )
+    .replace(
+      /Something wrong with the email\? <a.+a>/,
+      `FormSG Form: ${formTitle}<br>Response ID: ${submissionId}`,
     )
 
   const dom = new JSDOM(edited)
@@ -371,7 +385,7 @@ export const convertToInvoiceFormat = (
    */
   const tables = document.querySelectorAll('table table table')
 
-  let toRemove = 5
+  let toRemove = 3
   while (toRemove--) {
     tables[tables.length - toRemove - 1].remove()
   }
