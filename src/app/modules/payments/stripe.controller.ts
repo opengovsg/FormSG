@@ -627,6 +627,16 @@ const _handleGetPreviousPayment: ControllerHandler<{
     findLatestSuccessfulPaymentByEmailAndFormId(email, formId)
       // If payment found, return payment
       .map((payment) => {
+        logger.info({
+          message:
+            'Found latest successful payment document from email and formId',
+          meta: {
+            action: 'handleGetPreviousPayment',
+            email,
+            formId,
+            payment,
+          },
+        })
         return res.send(payment)
       })
       // If payment is not found, there is no previous payment
@@ -634,9 +644,28 @@ const _handleGetPreviousPayment: ControllerHandler<{
       .mapErr((error) => {
         // if payment isn't found, return empty response
         if (error instanceof PaymentNotFoundError) {
+          logger.info({
+            message:
+              'Did not find previous successful payment from email and formId',
+            meta: {
+              action: 'handleGetPreviousPayment',
+              email,
+              formId,
+              error,
+            },
+          })
           return res.send()
         }
         // Database error
+        logger.error({
+          message: 'Error retrieving payment documents using email and formId',
+          meta: {
+            action: 'handleGetPreviousPayment',
+            email,
+            formId,
+            error,
+          },
+        })
         return res
           .status(StatusCodes.INTERNAL_SERVER_ERROR)
           .json({ message: 'Database error' })
