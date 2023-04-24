@@ -51,9 +51,10 @@ export const DuplicatePaymentModal = ({
             <Stack>
               <Text>
                 We noticed a successful payment made on this form by your email
-                address.
+                address.&nbsp;
                 <Link href={paymentUrl}>View your previous payment ↪</Link>
               </Text>
+              <br />
               <Text>Do you wish to proceed to make another payment?</Text>
             </Stack>
           </ModalBody>
