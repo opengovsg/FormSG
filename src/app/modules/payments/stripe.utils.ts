@@ -335,9 +335,19 @@ export const mapRouteErr = (error: ApplicationError) => {
  * Converts receipt sourced from Stripe into an invoice format
  * @param receiptHtmlSource
  */
-export const convertToInvoiceForrmat = (
+export const convertToInvoiceFormat = (
   receiptHtmlSource: string,
-  { address, gstRegNo }: { address: string; gstRegNo: string },
+  {
+    address,
+    gstRegNo,
+    formTitle,
+    submissionId,
+  }: {
+    address: string
+    gstRegNo: string
+    formTitle: string
+    submissionId: string
+  },
 ) => {
   // handle special characters in addresses
   const ADDRESS = encode(address)
@@ -350,16 +360,24 @@ export const convertToInvoiceForrmat = (
       /Receipt (#[0-9-]+)/,
       `Invoice $1<br /><br />GST Reg No: ${GST_REG_NO}<br />Address: ${ADDRESS}`,
     )
-    .replace(/<br>\(This amount is inclusive of GST\)/, '') // not needed for real description (was added by Amit in his test)
+    .replace(/<br>\(This amount is inclusive of GST\)/, '')
     .replace(
-      /<strong>Amount charged<\/strong>/,
+      '<strong>Amount charged</strong>',
       '<strong>Amount charged</strong> <i>(includes GST)</i>',
+    )
+    .replace(
+      /Something wrong with the email\? <a.+a>/,
+      `FormSG Form: ${formTitle}<br>Response ID: ${submissionId}`,
+    )
+    .replace(
+      /<td class="Spacer Spacer--gutter" width="64" .+<\/td>/,
+      '<td class="st-Spacer st-Spacer--gutter" width="48"></td>',
     )
 
   const dom = new JSDOM(edited)
   const { document } = dom.window
 
-  // select last 5 tables to remove, n = last index
+  // select last 3 tables to remove, n = last index
   /**
    * These are:
    * n-5  [Kept] Horizontal Rule
@@ -371,7 +389,7 @@ export const convertToInvoiceForrmat = (
    */
   const tables = document.querySelectorAll('table table table')
 
-  let toRemove = 5
+  let toRemove = 3
   while (toRemove--) {
     tables[tables.length - toRemove - 1].remove()
   }
