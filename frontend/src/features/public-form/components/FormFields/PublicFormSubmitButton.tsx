@@ -71,11 +71,17 @@ export const PublicFormSubmitButton = ({
 
     if (result) {
       // get previous payment
-      const payment = await getPreviousPayment(paymentEmailField.value, formId)
-      // check if duplicate
-      if (payment) {
-        setDuplicate(payment.status === PaymentStatus.Succeeded)
-        setPaymentId(payment._id)
+      try {
+        const payment = await getPreviousPayment(
+          paymentEmailField.value,
+          formId,
+        )
+        if (payment) {
+          setDuplicate(true)
+          setPaymentId(payment._id)
+        }
+      } catch (err) {
+        setDuplicate(false)
       }
       onOpen()
     }

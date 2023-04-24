@@ -36,7 +36,7 @@ export const _handleGetPreviousPayment: ControllerHandler<
             payment,
           },
         })
-        return res.send(payment)
+        return res.status(StatusCodes.OK).send(payment)
       })
       // If payment is not found, there is no previous payment
       // If database error, return 500
@@ -53,7 +53,7 @@ export const _handleGetPreviousPayment: ControllerHandler<
               error,
             },
           })
-          return res.send()
+          return res.status(StatusCodes.NOT_FOUND).send()
         }
         // Database error
         logger.error({
@@ -79,7 +79,7 @@ export const _handleGetPreviousPayment: ControllerHandler<
  * @params formId formId of related form to retrieve payment
  *
  * @returns 200 with payment document if successful payment is found
- * @returns 200 without data if no payment has been made
+ * @returns 404 without data if no payment has been made
  * @returns 500 if there is an unexpected error
  */ export const handleGetPreviousPayment = [
   celebrate({

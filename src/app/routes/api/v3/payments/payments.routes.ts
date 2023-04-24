@@ -71,8 +71,8 @@ PaymentsRouter.route('/:paymentId([a-fA-F0-9]{24})/getinfo').get(
  * Uses post request to collect the email data from the request body
  * @route POST /:formId/payments/previous
  *
- * @returns 200 with payment if it exists
- * @returns 200 without payment if it doesnt exists
+ * @returns 200 if previous payment exists
+ * @returns 404 if previous payment doesnt exists
  * @returns 500 when database error occurs
  */
 PaymentsRouter.route('/:formId([a-fA-F0-9]{24})/payments/previous').post(
