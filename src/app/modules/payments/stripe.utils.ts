@@ -369,6 +369,10 @@ export const convertToInvoiceFormat = (
       /Something wrong with the email\? <a.+a>/,
       `FormSG Form: ${formTitle}<br>Response ID: ${submissionId}`,
     )
+    .replace(
+      /<td class="Spacer Spacer--gutter" width="64" .+<\/td>/,
+      '<td class="st-Spacer st-Spacer--gutter" style="border: 0; margin: 0; padding: 0; font-size: 1px; line-height: 1px; mso-line-height-rule: exactly;" width="48"><div class="st-Spacer st-Spacer--filler"> </div></td>',
+    )
 
   const dom = new JSDOM(edited)
   const { document } = dom.window
