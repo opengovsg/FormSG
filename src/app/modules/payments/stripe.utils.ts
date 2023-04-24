@@ -360,7 +360,7 @@ export const convertToInvoiceFormat = (
       /Receipt (#[0-9-]+)/,
       `Invoice $1<br /><br />GST Reg No: ${GST_REG_NO}<br />Address: ${ADDRESS}`,
     )
-    .replace(/<br>\(This amount is inclusive of GST\)/, '') // not needed for real description (was added by Amit in his test)
+    .replace(/<br>\(This amount is inclusive of GST\)/, '')
     .replace(
       '<strong>Amount charged</strong>',
       '<strong>Amount charged</strong> <i>(includes GST)</i>',
@@ -377,7 +377,7 @@ export const convertToInvoiceFormat = (
   const dom = new JSDOM(edited)
   const { document } = dom.window
 
-  // select last 5 tables to remove, n = last index
+  // select last 3 tables to remove, n = last index
   /**
    * These are:
    * n-5  [Kept] Horizontal Rule
