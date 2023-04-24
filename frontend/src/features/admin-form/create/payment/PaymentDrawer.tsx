@@ -208,7 +208,7 @@ export const PaymentInput = ({
         isDisabled={!paymentIsEnabled}
         isRequired
       >
-        <FormLabel description="This will be reflected on the payment receipt">
+        <FormLabel description="This will be reflected on the payment invoice">
           Product/service name
         </FormLabel>
         <Input
