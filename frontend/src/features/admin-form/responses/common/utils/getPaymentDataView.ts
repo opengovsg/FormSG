@@ -54,7 +54,7 @@ export const getPaymentDataView = (
     { key: 'email', name: 'Payer', value: payment.email },
     {
       key: 'receiptUrl',
-      name: 'Receipt',
+      name: 'Invoice',
       value: getFullInvoiceDownloadUrl(hostOrigin, formId, payment.id),
     },
 
