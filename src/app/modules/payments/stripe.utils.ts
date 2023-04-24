@@ -371,7 +371,7 @@ export const convertToInvoiceFormat = (
     )
     .replace(
       /<td class="Spacer Spacer--gutter" width="64" .+<\/td>/,
-      '<td class="st-Spacer st-Spacer--gutter" style="border: 0; margin: 0; padding: 0; font-size: 1px; line-height: 1px; mso-line-height-rule: exactly;" width="48"><div class="st-Spacer st-Spacer--filler"> </div></td>',
+      '<td class="st-Spacer st-Spacer--gutter" width="48"></td>',
     )
 
   const dom = new JSDOM(edited)
