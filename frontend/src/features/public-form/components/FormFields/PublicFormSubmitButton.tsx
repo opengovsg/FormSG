@@ -42,8 +42,7 @@ export const PublicFormSubmitButton = ({
   onSubmit,
   trigger,
 }: PublicFormSubmitButtonProps): JSX.Element => {
-  const [isDuplicate, setDuplicate] = useState(false)
-  const [paymentId, setPaymentId] = useState('')
+  const [prevPaymentId, setPrevPaymentId] = useState('')
 
   const isMobile = useIsMobile()
   const { isSubmitting } = useFormState()
@@ -75,10 +74,9 @@ export const PublicFormSubmitButton = ({
           paymentEmailField.value,
           formId,
         )
-        setDuplicate(true)
-        setPaymentId(payment._id)
+        setPrevPaymentId(payment._id)
       } catch (err) {
-        setDuplicate(false)
+        setPrevPaymentId('')
       }
       onOpen()
     }
@@ -91,13 +89,13 @@ export const PublicFormSubmitButton = ({
   return (
     <Stack px={{ base: '1rem', md: 0 }} pt="2.5rem" pb="4rem">
       {isOpen ? (
-        isDuplicate ? (
+        prevPaymentId ? (
           <DuplicatePaymentModal
             onSubmit={onSubmit}
             onClose={onClose}
             isSubmitting={isSubmitting}
             formId={formId}
-            paymentId={paymentId}
+            paymentId={prevPaymentId}
           />
         ) : (
           <FormPaymentModal
