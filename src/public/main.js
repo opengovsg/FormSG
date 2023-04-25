@@ -193,7 +193,6 @@ require('./modules/forms/admin/components/edit-logic.client.component.js')
 require('./modules/forms/admin/components/export-button.client.component.js')
 require('./modules/forms/admin/components/form-title-input.client.component.js')
 require('./modules/forms/admin/components/form-emails-input.client.component.js')
-require('./modules/forms/admin/components/react-switch-banner.client.component.js')
 
 // response components
 require('./modules/forms/admin/components/response-components/response.client.component.js')
