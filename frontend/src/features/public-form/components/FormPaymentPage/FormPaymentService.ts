@@ -47,9 +47,9 @@ export const getPaymentInfo = async (paymentId: string) => {
 export const getPreviousPayment = async (
   email: string,
   formId: string,
-): Promise<PaymentDto | undefined> => {
+): Promise<PaymentDto> => {
   const emailData = { email }
-  return ApiService.post<PaymentDto | undefined>(
+  return ApiService.post<PaymentDto>(
     `${PAYMENTS_ENDPOINT}/${formId}/payments/previous/`,
     emailData,
   ).then(({ data }) => data)

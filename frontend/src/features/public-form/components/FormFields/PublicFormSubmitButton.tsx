@@ -75,10 +75,8 @@ export const PublicFormSubmitButton = ({
           paymentEmailField.value,
           formId,
         )
-        if (payment) {
-          setDuplicate(true)
-          setPaymentId(payment._id)
-        }
+        setDuplicate(true)
+        setPaymentId(payment._id)
       } catch (err) {
         setDuplicate(false)
       }
