@@ -52,6 +52,7 @@ export const transferOwnership = async (
   const ownedFormIds = await ApiService.get<AdminDashboardFormMetaDto[]>(
     `${ADMIN_FORM_ENDPOINT}/owned`,
   ).then(({ data }) => data.map((formMetaDto) => formMetaDto._id))
+  // FIXME: Remove newOwnerEmail from collaborator list here
   return Promise.all(
     ownedFormIds.map((formId: string) =>
       ApiService.post<AdminFormViewDto>(
