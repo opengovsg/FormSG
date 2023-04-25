@@ -35,7 +35,7 @@ export enum DrawerTabs {
   EndPage,
 }
 
-type CreatePageSidebarContextProps = {
+export type CreatePageSidebarContextProps = {
   activeTab: DrawerTabs | null
   pendingTab?: DrawerTabs | null
   movePendingToActiveTab: () => void
