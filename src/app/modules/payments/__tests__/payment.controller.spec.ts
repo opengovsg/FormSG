@@ -109,5 +109,38 @@ describe('payments.controller', () => {
       )
       expect(mockRes.sendStatus).toHaveBeenCalledWith(404)
     })
+    it('should return 500 if there is an internal server error', async () => {
+      const payment = await Payment.create({
+        formId: MOCK_FORM_ID,
+        target_account_id: 'acct_MOCK_ACCOUNT_ID',
+        pendingSubmissionId: new ObjectId(),
+        amount: 12345,
+        status: PaymentStatus.Succeeded,
+        paymentIntentId: 'pi_MOCK_PAYMENT_INTENT',
+        email: 'formsg@tech.gov.sg',
+        completedPayment: {
+          receiptUrl: 'http://form.gov.sg',
+        },
+      })
+
+      const mockReq = expressHandler.mockRequest({
+        params: { formId: new ObjectId().toHexString() },
+        body: { email: payment.email },
+      })
+
+      const mockRes = expressHandler.mockResponse()
+
+      // close DB to mock server error
+      await dbHandler.closeDatabase()
+      // Act
+      await PaymentsController._handleGetPreviousPayment(
+        mockReq,
+        mockRes,
+        jest.fn(),
+      )
+      expect(mockRes.sendStatus).toHaveBeenCalledWith(500)
+      // reconnect DB
+      await dbHandler.connect()
+    })
   })
 })
