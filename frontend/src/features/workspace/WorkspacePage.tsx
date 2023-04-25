@@ -7,8 +7,6 @@ import { fillHeightCss } from '~utils/fillHeightCss'
 import { getBannerProps } from '~utils/getBannerProps'
 import { Banner } from '~components/Banner'
 
-// TODO #4279: Remove after React rollout is complete
-import { AdminFeedbackIcon } from '~features/env/AdminFeedbackIcon'
 import { useEnv } from '~features/env/queries'
 
 // TODO #4279: Remove after React rollout is complete
@@ -49,7 +47,6 @@ export const WorkspacePage = (): JSX.Element => {
           </Banner>
         ) : null}
         <AdminNavBar />
-        <AdminFeedbackIcon />
         <WorkspaceProvider>
           <WorkspacePageContent
             handleCreateFormModalOpen={createFormModalDisclosure.onOpen}

@@ -23,17 +23,6 @@ const frontendVars = {
   // TODO: remove after React rollout #4786
   GATrackingID: googleAnalyticsConfig.GATrackingID,
   spcpCookieDomain: spcpMyInfoConfig.spcpCookieDomain, // Cookie domain used for removing spcp cookies
-  // react migration variables
-  reactMigrationRespondentCookieName:
-    config.reactMigration.respondentCookieName,
-  reactMigrationAdminCookieNameOld: config.reactMigration.adminCookieNameOld,
-  reactMigrationAdminCookieName: config.reactMigration.adminCookieName,
-  reactMigrationRespondentRolloutEmail:
-    config.reactMigration.respondentRolloutEmail,
-  reactMigrationRespondentRolloutStorage:
-    config.reactMigration.respondentRolloutStorage,
-  reactMigrationAdminRollout: config.reactMigration.adminRollout,
-  reactMigrationAngularPhaseOutDate: config.reactMigration.angularPhaseOutDate,
   // payment variables
   reactMigrationUseFetchForSubmissions:
     config.reactMigration.useFetchForSubmissions,
@@ -63,13 +52,6 @@ const environment = ejs.render(
     // SPCP Cookie
     var spcpCookieDomain = "<%= spcpCookieDomain%>"
     // React Migration
-    var reactMigrationRespondentCookieName = "<%= reactMigrationRespondentCookieName%>"
-    var reactMigrationAdminCookieNameOld = "<%= reactMigrationAdminCookieNameOld%>"
-    var reactMigrationAdminCookieName = "<%= reactMigrationAdminCookieName%>"
-    var reactMigrationRespondentRolloutEmail = "<%= reactMigrationRespondentRolloutEmail%>"
-    var reactMigrationRespondentRolloutStorage = "<%= reactMigrationRespondentRolloutStorage%>"
-    var reactMigrationAdminRollout = "<%= reactMigrationAdminRollout%>"
-    var reactMigrationAngularPhaseOutDate = "<%= reactMigrationAngularPhaseOutDate%>"
     var reactMigrationUseFetchForSubmissions = <%= reactMigrationUseFetchForSubmissions%>
     // Payment
     var maxPaymentAmountCents = <%= maxPaymentAmountCents%>

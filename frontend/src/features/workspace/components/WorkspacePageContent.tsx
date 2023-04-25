@@ -11,8 +11,6 @@ import { useUser } from '~features/user/queries'
 import { useWorkspaceContext } from '../WorkspaceContext'
 import { CONTAINER_MAXW } from '../WorkspacePage'
 
-// TODO #4279: Remove after React rollout is complete
-import { AdminSwitchEnvMessage } from './AdminSwitchEnvMessage'
 import { EmptyWorkspace } from './EmptyWorkspace'
 import { WorkspaceFormRows } from './WorkspaceFormRow'
 import { WorkspaceHeader } from './WorkspaceHeader'
@@ -55,9 +53,6 @@ export const WorkspacePageContent = ({
       templateAreas="'banner' 'header' 'main'"
       py="1.5rem"
     >
-      <Container gridArea="banner" maxW={CONTAINER_MAXW}>
-        <AdminSwitchEnvMessage />
-      </Container>
       <Container
         gridArea="header"
         maxW={CONTAINER_MAXW}

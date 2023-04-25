@@ -4,8 +4,6 @@ import { Flex } from '@chakra-ui/react'
 import { fillHeightCss } from '~utils/fillHeightCss'
 import GovtMasthead from '~components/GovtMasthead'
 
-// TODO #4279: Remove after React rollout is complete
-import { AdminFeedbackIcon } from '~features/env/AdminFeedbackIcon'
 import FormEndPage from '~features/public-form/components/FormEndPage'
 import FormFields from '~features/public-form/components/FormFields'
 import { FormSectionsProvider } from '~features/public-form/components/FormFields/FormSectionsContext'
@@ -28,7 +26,6 @@ export const PreviewFormPage = (): JSX.Element => {
       <PreviewFormProvider formId={formId}>
         <GovtMasthead />
         <PreviewFormBannerContainer />
-        <AdminFeedbackIcon />
         <FormSectionsProvider>
           <PublicFormLogo />
           <FormStartPage />

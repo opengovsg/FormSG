@@ -1,7 +1,6 @@
 import { Router } from 'express'
 
 import { rateLimitConfig } from '../../../../config/config'
-import { injectFeedbackFormUrl } from '../../../../modules/form/public-form/public-form.middlewares'
 import * as EmailSubmissionController from '../../../../modules/submission/email-submission/email-submission.controller'
 import * as EncryptSubmissionController from '../../../../modules/submission/encrypt-submission/encrypt-submission.controller'
 import { limitRate } from '../../../../utils/limit-rate'
@@ -48,14 +47,4 @@ PublicFormsSubmissionsRouter.route(
 ).post(
   limitRate({ max: rateLimitConfig.submissions }),
   EncryptSubmissionController.handleEncryptedSubmission,
-)
-
-// TODO #4279: Remove after React rollout is complete
-/**
- * Submit the bug report feedback form for React to Angular switch (public)
- */
-PublicFormsSubmissionsRouter.route('/submissions/email/switchenvfeedback').post(
-  limitRate({ max: rateLimitConfig.submissions }),
-  injectFeedbackFormUrl,
-  EmailSubmissionController.handleEmailSubmission,
 )

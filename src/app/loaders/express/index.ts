@@ -15,7 +15,6 @@ import { FrontendRouter } from '../../modules/frontend/frontend.routes'
 import * as HomeController from '../../modules/home/home.controller'
 import { MYINFO_ROUTER_PREFIX } from '../../modules/myinfo/myinfo.constants'
 import { MyInfoRouter } from '../../modules/myinfo/myinfo.routes'
-import { ReactMigrationRouter } from '../../modules/react-migration/react-migration.routes'
 import { SgidRouter } from '../../modules/sgid/sgid.routes'
 import { SubmissionRouter } from '../../modules/submission/submission.routes'
 import { VfnRouter } from '../../modules/verification/verification.routes'
@@ -148,7 +147,6 @@ const loadExpressApp = async (connection: Connection) => {
   app.get(/^\/[^/]+\.[a-z]+$/, catchNonExistentStaticRoutesMiddleware)
 
   app.get('/old/', HomeController.home)
-  app.use('/', ReactMigrationRouter)
 
   app.use(sentryMiddlewares())
   app.use(errorHandlerMiddlewares())

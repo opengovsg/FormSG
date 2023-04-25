@@ -14,7 +14,6 @@ import {
   PublicFormDto,
   PublicFormViewDto,
 } from '../../../../../shared/types'
-import config from '../../../config/config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { isMongoError } from '../../../utils/handle-mongo-error'
 import { createReqMeta, getRequestIp } from '../../../utils/request'
@@ -44,7 +43,6 @@ import {
 } from '../../spcp/spcp.util'
 import { AuthTypeMismatchError, PrivateFormError } from '../form.errors'
 import * as FormService from '../form.service'
-import { isFormEncryptMode } from '../form.utils'
 
 import * as PublicFormService from './public-form.service'
 import { RedirectParams } from './public-form.types'
@@ -161,13 +159,6 @@ export const handleGetPublicForm: ControllerHandler<
 
   const form = formResult.value
   const publicForm = form.getPublicView() as PublicFormDto
-
-  // If payments is enabled on the form, clear the angular cookie
-  // TODO(#4279): Remove once react rollout complete
-  if (isFormEncryptMode(form) && form.payments_field?.enabled) {
-    const angularCookie = config.reactMigration.respondentCookieName
-    res.clearCookie(angularCookie)
-  }
 
   const { authType } = form
   const isIntranetUser = FormService.checkIsIntranetFormAccess(

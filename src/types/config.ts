@@ -55,18 +55,6 @@ export type RateLimitConfig = {
 }
 
 export type ReactMigrationConfig = {
-  respondentRolloutEmail: number
-  respondentRolloutStorage: number
-  adminRollout: number
-  respondentCookieName: string
-  adminCookieNameOld: string
-  adminCookieName: string
-  qaCookieName: string
-  adminSwitchEnvFeedbackFormId: string
-  respondentSwitchEnvFeedbackFormId: string
-  angularPhaseOutDate: string
-  removeAdminInfoboxThreshold: number
-  removeRespondentsInfoboxThreshold: number
   // TODO (#5826): Toggle to use fetch for submissions instead of axios. Remove once network error is resolved
   useFetchForSubmissions: boolean
 }
@@ -130,10 +118,6 @@ export interface ICompulsoryVarsSchema {
     logoS3Bucket: string
     attachmentS3Bucket: string
   }
-  reactMigration: {
-    adminSwitchEnvFeedbackFormId: string
-    respondentSwitchEnvFeedbackFormId: string
-  }
 }
 
 export interface ISgidVarsSchema {
@@ -190,16 +174,6 @@ export interface IOptionalVarsSchema {
     downloadPaymentReceipt: number
   }
   reactMigration: {
-    respondentRolloutEmail: number
-    respondentRolloutStorage: number
-    adminRollout: number
-    respondentCookieName: string
-    adminCookieNameOld: string
-    adminCookieName: string
-    qaCookieName: string
-    angularPhaseOutDate: string
-    removeAdminInfoboxThreshold: number
-    removeRespondentsInfoboxThreshold: number
     // TODO (#5826): Toggle to use fetch for submissions instead of axios. Remove once network error is resolved
     useFetchForSubmissions: boolean
   }

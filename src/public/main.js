@@ -367,10 +367,6 @@ app.run([
       'modules/forms/admin/componentViews/form-emails-input.client.view.html',
       require('./modules/forms/admin/componentViews/form-emails-input.client.view.html'),
     )
-    $templateCache.put(
-      'modules/forms/admin/componentViews/react-switch-banner.client.view.html',
-      require('./modules/forms/admin/componentViews/react-switch-banner.client.view.html'),
-    )
 
     // Response component views
     $templateCache.put(
