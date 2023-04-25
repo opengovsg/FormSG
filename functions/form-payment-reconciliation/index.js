@@ -65,12 +65,14 @@ async function main() {
     return
   }
 
+  const startTime = Date.now()
   const reconcileResult = await reconcileAccount(
     secret['CRON_PAYMENT_API_SECRET'],
     firstAccountToProcess,
   )
   console.log('Reconcile Report')
   console.log(JSON.stringify(reconcileResult, null, 2))
+  console.log('Reconcile took(ms):', Date.now() - startTime)
 }
 
 if (require.main === module) {
