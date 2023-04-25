@@ -1,6 +1,7 @@
 import { Router } from 'express'
 
 import { rateLimitConfig } from '../../../../config/config'
+import * as PaymentsController from '../../../../modules/payments/payments.controller'
 import * as StripeController from '../../../../modules/payments/stripe.controller'
 import { limitRate } from '../../../../utils/limit-rate'
 
@@ -63,4 +64,18 @@ PaymentsRouter.route('/stripe/callback').get(
  */
 PaymentsRouter.route('/:paymentId([a-fA-F0-9]{24})/getinfo').get(
   StripeController.getPaymentInfo,
+)
+
+/**
+ * Get previous latest successful payment document if it exists
+ * Uses post request to collect the email data from the request body
+ * @route POST /:formId/payments/previous
+ *
+ * @returns 200 if previous payment exists
+ * @returns 404 if previous payment doesnt exists
+ * @returns 500 when database error occurs
+ */
+PaymentsRouter.route('/:formId([a-fA-F0-9]{24})/payments/previous').post(
+  limitRate({ max: rateLimitConfig.submissions }),
+  PaymentsController.handleGetPreviousPayment,
 )

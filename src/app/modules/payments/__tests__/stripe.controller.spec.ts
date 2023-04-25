@@ -49,7 +49,17 @@ describe('stripe.controller', () => {
         encryptedContent: 'some random encrypted content',
         version: 1,
       })
-      const mockBusinessInfo = { address: 'localhost', gstRegNo: 'G123456' }
+      const mockBusinessInfo = {
+        address: 'localhost',
+        gstRegNo: 'G123456',
+      }
+      const mockFormTitle = 'Mock Form Title'
+      const mockSubmissionId = 'MOCK_SUBMISSION_ID'
+      const mockInvoiceArgs = {
+        ...mockBusinessInfo,
+        formTitle: mockFormTitle,
+        submissionId: mockSubmissionId,
+      }
       const mockForm = {
         _id: MOCK_FORM_ID,
         admin: {
@@ -57,6 +67,7 @@ describe('stripe.controller', () => {
             business: mockBusinessInfo,
           },
         },
+        title: mockFormTitle,
       } as IPopulatedForm
 
       const payment = await Payment.create({
@@ -69,6 +80,7 @@ describe('stripe.controller', () => {
         email: 'formsg@tech.gov.sg',
         completedPayment: {
           receiptUrl: 'http://form.gov.sg',
+          submissionId: mockSubmissionId,
         },
       })
       MockFormService.retrieveFullFormById.mockReturnValue(okAsync(mockForm))
@@ -86,7 +98,7 @@ describe('stripe.controller', () => {
 
       const convertInvoiceSpy = jest.spyOn(
         StripeUtils,
-        'convertToInvoiceForrmat',
+        'convertToInvoiceFormat',
       )
 
       // Act
@@ -99,7 +111,7 @@ describe('stripe.controller', () => {
       expect(axiosSpy).toHaveBeenCalledOnce()
       expect(convertInvoiceSpy).toHaveBeenCalledWith(
         expect.any(String),
-        mockBusinessInfo,
+        mockInvoiceArgs,
       )
       expect(mockRes.send).toHaveBeenCalledOnce()
       expect(mockRes.status).toHaveBeenCalledWith(200)
