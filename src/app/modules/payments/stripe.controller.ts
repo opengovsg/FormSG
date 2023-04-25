@@ -672,12 +672,13 @@ export const reconcileAccount: ControllerHandler<
     message: 'reconcileAccount endpoint called',
     meta: {
       action: 'reconcileAccount',
-      stripeAccountId,
+      agentinfo: stripeAccountId,
     },
   })
 
   const results: Array<IPaymentSchema> = []
   const failedResults: Array<{
+    type: string
     paymentId: string
     err: ApplicationError
     event:
@@ -695,12 +696,13 @@ export const reconcileAccount: ControllerHandler<
       logger.info({
         message: 'received event',
         meta: {
-          action: 'getUndeliveredPaymentIntentSuccessEventsFromAccount',
+          action:
+            'reconcileAccount getUndeliveredPaymentIntentSuccessEventsFromAccount',
           event,
         },
       })
-      return getMetadataPaymentId(event.data.object.metadata).asyncAndThen(
-        (paymentId) => {
+      return getMetadataPaymentId(event.data.object.metadata)
+        .asyncAndThen((paymentId) => {
           return StripeService.processStripeEvent(paymentId, event)
             .andThen(() => PaymentService.findPaymentById(paymentId))
             .andThen((result) => {
@@ -708,26 +710,38 @@ export const reconcileAccount: ControllerHandler<
               logger.info({
                 message: 'processed stripe event',
                 meta: {
-                  action: 'StripeService.processStripeEvent',
+                  action: 'reconcileAccount StripeService.processStripeEvent',
                   result,
                 },
               })
               return ok(undefined)
             })
             .orElse((err) => {
-              failedResults.push({ paymentId, err, event })
+              failedResults.push({
+                type: 'from StripeService.processStripeEvent',
+                paymentId,
+                err,
+                event,
+              })
 
               logger.info({
                 message: 'failed to process stripe event',
                 meta: {
-                  action: 'StripeService.processStripeEvent',
+                  action: 'reconcileAccount StripeService.processStripeEvent',
                   err,
                 },
               })
               return ok(undefined)
             })
-        },
-      )
+        })
+        .mapErr((err) => {
+          failedResults.push({
+            type: 'from getMetadataPaymentId',
+            paymentId: '',
+            err,
+            event,
+          })
+        })
     },
   )
     .map(() => {
