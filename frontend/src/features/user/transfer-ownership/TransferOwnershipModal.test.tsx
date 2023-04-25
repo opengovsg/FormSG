@@ -65,8 +65,7 @@ describe('User transfers ownership of all owned forms', () => {
 
     // Assert
     // Toast should appear.
-    // FIXME: Fix mutation
-    // expect(screen.getByText(/ownership transferred\./i)).toBeInTheDocument()
+    expect(screen.getByText(/ownership transferred\./i)).toBeInTheDocument()
   })
 
   it('should disable ownership transfer to self', async () => {

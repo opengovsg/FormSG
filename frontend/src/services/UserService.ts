@@ -2,6 +2,7 @@ import { AdminDashboardFormMetaDto, AdminFormViewDto } from '~shared/types'
 import {
   SendUserContactOtpDto,
   TransferOwnershipRequestDto,
+  TransferOwnershipResponseDto,
   UserDto,
   VerifyUserContactOtpDto,
 } from '~shared/types/user'
@@ -48,17 +49,30 @@ export const transferOwnership = async (
   request: TransferOwnershipRequestDto,
 ): Promise<TransferOwnershipResponseDto> => {
   const { newOwnerEmail } = request
-
   const ownedFormIds = await ApiService.get<AdminDashboardFormMetaDto[]>(
     `${ADMIN_FORM_ENDPOINT}/owned`,
-  ).then(({ data }) => data._id) // FIXME: Correctly retrieve form ID
-
-  const p: Promise<AdminFormViewDto>[] = ownedFormIds.map((formId: string) =>
-    ApiService.post<AdminFormViewDto>(
-      `${ADMIN_FORM_ENDPOINT}/${formId}/collaborators/transfer-owner`,
-      { email: newOwnerEmail },
+  ).then(({ data }) => data.map((formMetaDto) => formMetaDto._id))
+  return Promise.all(
+    ownedFormIds.map((formId: string) =>
+      ApiService.post<AdminFormViewDto>(
+        `${ADMIN_FORM_ENDPOINT}/${formId}/collaborators/transfer-owner`,
+        { email: newOwnerEmail },
+      ),
     ),
   )
-
-  // TODO: Return TransferOwnershipResponseDto
+    .then((responses) => {
+      const formIds = responses.map((response) => response.data.form._id)
+      return {
+        newOwnerEmail,
+        formIds,
+        error: '',
+      }
+    })
+    .catch((error) => {
+      return {
+        newOwnerEmail,
+        formIds: [],
+        error: error.message,
+      }
+    })
 }

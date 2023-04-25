@@ -24,6 +24,8 @@ import {
 } from '~constants/validation'
 import { ModalCloseButton } from '~components/Modal'
 
+import { useUserMutations } from '~features/user/mutations'
+
 import { useUser } from '../queries'
 
 interface TransferOwnershipModalProps {
@@ -40,6 +42,7 @@ const useModalState = ({ onClose, reset, trigger }) => {
   const [email, setEmail] = useState('')
 
   const { user } = useUser()
+  const { transferOwnershipMutation } = useUserMutations
 
   const isOwnEmail = useCallback(
     (value: string) => {
@@ -63,10 +66,20 @@ const useModalState = ({ onClose, reset, trigger }) => {
     [page, email],
   )
 
-  const onConfirm = useCallback(() => {
-    // TODO: Call Transfer ownership API
-    resetModal()
-  }, [page, email])
+  const onConfirm = useCallback(
+    (inputs: TransferOwnershipInputs) => {
+      if (!user) return
+      return transferOwnershipMutation.mutate(
+        { newOwnerEmail: inputs.email },
+        {
+          onSuccess: () => {
+            resetModal()
+          },
+        },
+      )
+    },
+    [page, email, user],
+  )
 
   useEffect(() => {
     trigger()
@@ -104,7 +117,6 @@ export const TransferOwnershipModal = ({
     md: 'md',
   })
 
-  // TODO: Any need to ensure the new owner is a user of FormSG?
   return (
     <Modal size={modalSize} isOpen={isOpen} onClose={resetModal!}>
       <ModalOverlay />
