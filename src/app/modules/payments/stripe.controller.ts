@@ -692,16 +692,38 @@ export const reconcileAccount: ControllerHandler<
         | Stripe.DiscriminatedEvent.PaymentIntentEvent
         | Stripe.DiscriminatedEvent.ChargeEvent
 
+      logger.info({
+        message: 'received event',
+        meta: {
+          action: 'getUndeliveredPaymentIntentSuccessEventsFromAccount',
+          event,
+        },
+      })
       return getMetadataPaymentId(event.data.object.metadata).asyncAndThen(
         (paymentId) => {
           return StripeService.processStripeEvent(paymentId, event)
             .andThen(() => PaymentService.findPaymentById(paymentId))
             .andThen((result) => {
               results.push(result)
+              logger.info({
+                message: 'processed stripe event',
+                meta: {
+                  action: 'StripeService.processStripeEvent',
+                  result,
+                },
+              })
               return ok(undefined)
             })
             .orElse((err) => {
               failedResults.push({ paymentId, err, event })
+
+              logger.info({
+                message: 'failed to process stripe event',
+                meta: {
+                  action: 'StripeService.processStripeEvent',
+                  err,
+                },
+              })
               return ok(undefined)
             })
         },
