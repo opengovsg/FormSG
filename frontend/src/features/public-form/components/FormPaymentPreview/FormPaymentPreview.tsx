@@ -27,8 +27,9 @@ export const FormPaymentPreview = ({
   const sectionColor = useSectionColor(colorTheme)
   const emailFieldSchema: VerifiableEmailFieldSchema = {
     ...(getFieldCreationMeta(BasicField.Email) as EmailFieldBase),
+    title: 'Email Address',
     _id: PAYMENT_CONTACT_FIELD_ID,
-    description: 'Proof of payment will be sent to this email',
+    description: 'For delivery of invoice',
     isVerifiable: true,
   }
   return (
