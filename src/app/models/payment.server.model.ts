@@ -100,11 +100,12 @@ const compilePaymentModel = (db: Mongoose): IPaymentModel => {
   PaymentSchema.statics.getPaymentBetweenDatesByType = async function (
     status: Payment['status'],
     created_after: Payment['created'],
-    created_before: Payment['created'],
   ) {
     return this.find({
       status,
-      createdAt: { $gte: created_after, $lte: created_before },
+      created: {
+        $gte: created_after,
+      },
     })
       .lean()
       .exec()

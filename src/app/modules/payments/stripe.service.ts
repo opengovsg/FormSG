@@ -486,6 +486,8 @@ export const validateAccount = (
   )
 }
 
+// three days
+const threeDaysInSeconds = 60 * 60 * 24 * 3
 export const getUndeliveredPaymentIntentSuccessEventsFromAccount = (
   stripeAccountId: string,
   callback: (item: Stripe.Event) => void,
@@ -494,6 +496,7 @@ export const getUndeliveredPaymentIntentSuccessEventsFromAccount = (
     stripe.events
       .list(
         {
+          created: { gte: Date.now() - threeDaysInSeconds },
           delivery_success: false,
           types: [
             'payment_intent.succeeded',

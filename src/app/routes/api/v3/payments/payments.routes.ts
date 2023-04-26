@@ -87,7 +87,7 @@ const ProtectedPaymentRoutes = PaymentsRouter.use(
 /**
  * @private
  * @protected
- * @route GET /payments/pendingPayments?after=<time>&before=<time>
+ * @route GET /payments/pendingPayments?createdHrsAgo=<number>
  */
 ProtectedPaymentRoutes.route('/pendingPayments').get(
   StripeController.queryPendingPayments,

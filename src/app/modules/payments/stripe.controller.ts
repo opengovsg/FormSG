@@ -635,16 +635,14 @@ export const queryPendingPayments: ControllerHandler<
   unknown,
   unknown,
   {
-    after: string
-    before: string
+    createdHrsAgo: number
     // limit: number
   }
 > = (req, res) => {
-  const { after: createdAfter, before: createdBefore } = req.query
+  const { createdHrsAgo } = req.query
 
   return PaymentService.findPendingPaymentsByTime(
-    createdAfter,
-    createdBefore,
+    createdHrsAgo,
     // limit,
   )
     .map((results) => {

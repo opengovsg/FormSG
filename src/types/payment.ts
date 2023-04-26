@@ -15,7 +15,6 @@ export interface IPaymentModel extends Model<IPaymentSchema> {
   getPaymentBetweenDatesByType(
     status: Payment['status'],
     created_after: Payment['created'],
-    created_before: Payment['created'],
   ): Promise<IPaymentSchema[]>
 }
 
