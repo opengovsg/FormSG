@@ -1,10 +1,11 @@
 const { SSMClient, GetParameterCommand } = require('@aws-sdk/client-ssm')
+const { generateLinkToCloudwatch, postToSlack } = require('./utils')
 
 const AWS_REGION = 'ap-southeast-1'
 
 const PARAMETER_STORE_NAME = 'staging-cron-payment'
 
-const SUB_DOMAIN = 'staging-alt.'
+const SUB_DOMAIN = process.env.ENV_SITE_SUBDOMAIN || 'staging.'
 
 /** TODO: migrate to separate file */
 function getSecrets() {
@@ -27,15 +28,6 @@ function getSecrets() {
     })
 }
 
-const generateLinkToCloudwatch = (context) => {
-  const { logGroupName, logStreamName } = context
-  return (
-    'https://ap-southeast-1.console.aws.amazon.com/cloudwatch/home?region=ap-southeast-1#logsV2:log-groups/log-group/' +
-    encodeURIComponent(encodeURIComponent(logGroupName)) +
-    '/log-events/' +
-    encodeURIComponent(encodeURIComponent(logStreamName))
-  )
-}
 const getPendingQueries = (apiSecret) => {
   return fetch(
     `https://${SUB_DOMAIN}form.gov.sg/api/v3/payments/pendingPayments`,
@@ -58,16 +50,6 @@ const reconcileAccount = (apiSecret, stripeAccountId) => {
       body: { stripeAccountId },
     },
   ).then((d) => d.json())
-}
-
-const postToSlack = (slackApiSecret, message) => {
-  return fetch(`https://hooks.slack.com/services/${slackApiSecret}`, {
-    method: 'POST',
-    headers: {
-      'Content-type': 'application/json',
-    },
-    body: JSON.stringify({ text: '```' + message + '```' }),
-  })
 }
 
 async function main(events, context) {
