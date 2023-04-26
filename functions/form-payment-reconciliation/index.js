@@ -105,7 +105,7 @@ async function main(events, context) {
   const report = [
     'Reconcile Report',
     reconciledStr,
-    'Reconcile took(ms): ' + Date.now() - startTime,
+    'Reconcile took(ms): ' + (Date.now() - startTime),
     'Lambda Invocation Id: ' + JSON.stringify(context),
     'Details: ' + generateLinkToCloudwatch(context),
   ].join('\n')
