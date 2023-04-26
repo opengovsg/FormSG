@@ -65,7 +65,7 @@ export const _handleGetPreviousPayment: ControllerHandler<
             error,
           },
         })
-        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).send()
+        return res.sendStatus(StatusCodes.INTERNAL_SERVER_ERROR)
       })
   )
 }
