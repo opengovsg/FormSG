@@ -298,6 +298,7 @@ export const performPaymentPostSubmissionActions = (
     })
 }
 
+const MILLISECONDS_IN_AN_HOUR = 60 * 60 * 1000
 /**
  * Retrieves the latest payment document by email and formId.
  * @param email the email of the payment to be retrieved
@@ -342,16 +343,16 @@ export const findLatestSuccessfulPaymentByEmailAndFormId = (
  * @param createdHrsAgo defaults to 72
  * @returns
  */
+
 export const findPendingPaymentsByTime = (createdHrsAgo = 72) => {
   const logMeta = {
     action: 'findPaymentByTime',
     createdHrsAgo,
   }
   const positiveHrsAgo = Math.max(createdHrsAgo, 1)
-  const threeDaysInSeconds = 60 * 60 * positiveHrsAgo * 3000
+  const msAgo = MILLISECONDS_IN_AN_HOUR * positiveHrsAgo
   const _createdAfter = moment
-    .tz(Date.now() - threeDaysInSeconds, 'Asia/Singapore')
-    .startOf('day')
+    .tz(Date.now() - msAgo, 'Asia/Singapore')
     .toISOString() as DateString
 
   return ResultAsync.fromPromise(

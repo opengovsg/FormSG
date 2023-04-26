@@ -630,6 +630,13 @@ export const getPaymentInfo: ControllerHandler<
     })
 }
 
+/**
+ * Handler for GET /payments/pendingPayments?createdHrsAgo=<number>
+ * Retrieves payments that are in PaymentStatus.Pending satisfying X hours agos
+ *
+ * @returns 200 with found payment records
+ * @returns 500 if there were unexpected errors in retrieving payment data
+ */
 export const queryPendingPayments: ControllerHandler<
   unknown,
   unknown,
@@ -651,20 +658,30 @@ export const queryPendingPayments: ControllerHandler<
         .json({ data: results, count: results.length })
     })
     .mapErr((error) => {
-      return res.status(StatusCodes.BAD_REQUEST).json({ message: error })
+      return res
+        .status(StatusCodes.INTERNAL_SERVER_ERROR)
+        .json({ message: error })
     })
 }
 
+/**
+ * Handler for POST /payments/reconcileAccount
+ * Fetches undelivered stripe webhooks and replays event for the supplied account
+ *
+ * @returns 200 with array of processed and failed events
+ * @returns 500 if there were unexpected errors in retrieving stripe events
+ */
 export const reconcileAccount: ControllerHandler<
   unknown,
   unknown,
   {
     stripeAccountId: string
+    daysAgo: number
     // paymentIntentId: string
     // paymentId: string
   }
 > = (req, res) => {
-  const { stripeAccountId } = req.body
+  const { stripeAccountId, daysAgo } = req.body
 
   logger.info({
     message: 'reconcileAccount endpoint called',
@@ -674,7 +691,12 @@ export const reconcileAccount: ControllerHandler<
     },
   })
 
-  const results: Array<IPaymentSchema> = []
+  const results: Array<{
+    payment: IPaymentSchema
+    event:
+      | Stripe.DiscriminatedEvent.PaymentIntentEvent
+      | Stripe.DiscriminatedEvent.ChargeEvent
+  }> = []
   const failedResults: Array<{
     type: string
     paymentId: string
@@ -704,7 +726,7 @@ export const reconcileAccount: ControllerHandler<
           return StripeService.processStripeEvent(paymentId, event)
             .andThen(() => PaymentService.findPaymentById(paymentId))
             .andThen((result) => {
-              results.push(result)
+              results.push({ payment: result, event })
               logger.info({
                 message: 'processed stripe event',
                 meta: {
@@ -741,12 +763,16 @@ export const reconcileAccount: ControllerHandler<
           })
         })
     },
+    daysAgo,
   )
     .map(() => {
       const formattedResults = results.map((res) => ({
-        status: res.status,
-        paymentId: res.paymentIntentId,
-        id: res._id,
+        status: res.payment.status,
+        paymentIntentId: res.payment.paymentIntentId,
+        paymentId: res.payment._id,
+        eventId: res.event.id,
+        eventCreated: res.event.created,
+        eventType: res.event.type,
       }))
       const formattedFailedResults = failedResults.map((paymentId) => ({
         paymentId,

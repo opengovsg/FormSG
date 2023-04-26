@@ -98,6 +98,7 @@ ProtectedPaymentRoutes.route('/pendingPayments').get(
  * @route POST /payments/reconcileAccount
  *
  * @params stripeAccountId: string
+ * @params daysAgo: optional number
  */
 ProtectedPaymentRoutes.route('/reconcileAccount').post(
   StripeController.reconcileAccount,
