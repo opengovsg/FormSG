@@ -360,6 +360,7 @@ export const convertToInvoiceFormat = (
       /Receipt (#[0-9-]+)/,
       `Invoice $1<br /><br />GST Reg No: ${GST_REG_NO}<br />Address: ${ADDRESS}`,
     )
+    .replace(/Date paid/g, 'Invoice Date')
     .replace(/<br>\(This amount is inclusive of GST\)/, '')
     .replace(
       '<strong>Amount charged</strong>',
