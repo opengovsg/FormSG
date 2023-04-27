@@ -168,7 +168,7 @@ export const verifyEncryptSubmission = async (
   await page.getByRole('button', { name: 'Unlock responses' }).click()
 
   // Try downloading CSV and checking contents
-  const downloadPromise = page.waitForEvent('download', { timeout: 5000 })
+  const downloadPromise = page.waitForEvent('download', { timeout: 3000 })
   await page.getByRole('button', { name: 'Download' }).click()
   await page.getByRole('menuitem', { name: 'CSV only' }).click()
   const download = await downloadPromise
