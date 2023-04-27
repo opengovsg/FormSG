@@ -56,7 +56,7 @@ const getEmailsBy = async (
   filterFn: (email: MailData) => boolean,
 ): Promise<MailData[]> => {
   const inbox = await MAIL_CLIENT.getAll()
-  return inbox.filter(filterFn).sort((a, b) => (a.time > b.time ? -1 : 1))
+  return inbox.filter(filterFn).sort((a, b) => a.time - b.time)
 }
 
 /**
@@ -71,8 +71,6 @@ export const extractOtp = async (recipient: string): Promise<string> => {
 
   const otp = lastEmail.html.match(/\d{6}/)?.[0]
   if (!otp) throw Error('otp was not found in email')
-
-  await MAIL_CLIENT.deleteById(lastEmail.id)
 
   return otp
 }
