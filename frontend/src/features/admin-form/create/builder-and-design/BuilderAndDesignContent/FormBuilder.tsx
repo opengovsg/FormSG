@@ -239,7 +239,7 @@ const PaymentPreviewBuilder = () => {
   }
 
   return (
-    <Box ref={paymentPreviewRef}>
+    <Box w="100%" maxW="57rem" alignSelf="center" ref={paymentPreviewRef}>
       <FormProvider {...formMethods}>
         <PaymentPreview
           colorTheme={form?.startPage.colorTheme}
