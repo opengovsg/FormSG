@@ -19,7 +19,7 @@ import {
   VerifiableEmailFieldSchema,
 } from '~features/verifiable-fields/Email'
 
-type FormPaymentPreviewProps = {
+type PaymentPreviewProps = {
   colorTheme?: FormColorTheme
   paymentDetails?: FormPaymentsField
   isBuilder?: boolean
@@ -27,13 +27,13 @@ type FormPaymentPreviewProps = {
   onClick?: () => void
 }
 
-export const FormPaymentPreview = ({
+export const PaymentPreview = ({
   colorTheme = FormColorTheme.Blue,
   paymentDetails,
   isBuilder,
   isActive,
   onClick,
-}: FormPaymentPreviewProps) => {
+}: PaymentPreviewProps) => {
   const sectionColor = useSectionColor(colorTheme)
   const emailFieldSchema: VerifiableEmailFieldSchema = {
     ...(getFieldCreationMeta(BasicField.Email) as EmailFieldBase),

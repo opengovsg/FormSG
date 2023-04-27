@@ -6,10 +6,10 @@ import { Box, Flex, FlexProps, Skeleton, Stack } from '@chakra-ui/react'
 import { FormFieldDto, FormResponseMode } from '~shared/types'
 
 import Button from '~components/Button'
+import { PaymentPreview } from '~templates/Field/PaymentPreview/PaymentPreview'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
 import { getVisibleFieldIds } from '~features/logic/utils'
-import { FormPaymentPreview } from '~features/public-form/components/FormPaymentPreview/FormPaymentPreview'
 import { useBgColor } from '~features/public-form/components/PublicFormWrapper'
 
 import { useCreatePageSidebar } from '../../common/CreatePageSidebarContext'
@@ -173,7 +173,7 @@ export const FormBuilder = ({
             )}
           </Box>
 
-          <FormPaymentPreviewBuilder />
+          <PaymentPreviewBuilder />
         </Flex>
 
         <Flex
@@ -203,7 +203,7 @@ export const FormBuilder = ({
   )
 }
 
-const FormPaymentPreviewBuilder = () => {
+const PaymentPreviewBuilder = () => {
   const { data: form } = useAdminForm()
   const { paymentPreviewRef } = useBuilderAndDesignContext()
   const { handleBuilderClick, setFieldListTabIndex } = useCreatePageSidebar()
@@ -241,7 +241,7 @@ const FormPaymentPreviewBuilder = () => {
   return (
     <Box ref={paymentPreviewRef}>
       <FormProvider {...formMethods}>
-        <FormPaymentPreview
+        <PaymentPreview
           colorTheme={form?.startPage.colorTheme}
           paymentDetails={paymentDetails}
           isBuilder

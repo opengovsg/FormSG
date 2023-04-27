@@ -19,8 +19,8 @@ import {
 import { useFetchPrefillQuery } from '~features/public-form/hooks/useFetchPrefillQuery'
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
+import { PaymentPreview } from '../../../../templates/Field/PaymentPreview/PaymentPreview'
 import { PublicFormPaymentResumeModal } from '../FormPaymentPage/FormPaymentResumeModal'
-import { FormPaymentPreview } from '../FormPaymentPreview/FormPaymentPreview'
 
 import { PublicFormSubmitButton } from './PublicFormSubmitButton'
 import { VisibleFormFields } from './VisibleFormFields'
@@ -132,7 +132,7 @@ export const FormFields = ({
           </Box>
         )}
         {form?.responseMode === FormResponseMode.Encrypt && (
-          <FormPaymentPreview
+          <PaymentPreview
             colorTheme={colorTheme}
             paymentDetails={form?.payments_field}
           />
