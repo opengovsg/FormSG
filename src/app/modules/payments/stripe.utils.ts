@@ -342,11 +342,13 @@ export const convertToInvoiceFormat = (
     gstRegNo,
     formTitle,
     submissionId,
+    background,
   }: {
     address: string
     gstRegNo: string
     formTitle: string
     submissionId: string
+    background: boolean
   },
 ) => {
   // handle special characters in addresses
@@ -394,5 +396,10 @@ export const convertToInvoiceFormat = (
   while (toRemove--) {
     tables[tables.length - toRemove - 1].remove()
   }
+  if (!background) {
+    document.querySelectorAll('td.Header-left a img')[0].remove()
+    document.querySelectorAll('td.Header-right a img')[0].remove()
+  }
+
   return dom.serialize()
 }
