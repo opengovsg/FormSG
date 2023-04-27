@@ -1,8 +1,9 @@
-import { createContext, useContext } from 'react'
+import { createContext, RefObject, useContext } from 'react'
 import { UseDisclosureReturn } from '@chakra-ui/react'
 
 export type BuilderAndDesignContextProps = {
   deleteFieldModalDisclosure: UseDisclosureReturn
+  paymentPreviewRef: RefObject<HTMLDivElement>
 }
 
 export const BuilderAndDesignContext = createContext<

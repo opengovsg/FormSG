@@ -131,13 +131,12 @@ export const FormFields = ({
             </Stack>
           </Box>
         )}
-        {form?.responseMode === FormResponseMode.Encrypt &&
-          form?.payments_field?.enabled && (
-            <FormPaymentPreview
-              colorTheme={colorTheme}
-              paymentDetails={form.payments_field}
-            />
-          )}
+        {form?.responseMode === FormResponseMode.Encrypt && (
+          <FormPaymentPreview
+            colorTheme={colorTheme}
+            paymentDetails={form?.payments_field}
+          />
+        )}
         <PublicFormPaymentResumeModal />
         <PublicFormSubmitButton
           onSubmit={onSubmit ? formMethods.handleSubmit(onSubmit) : undefined}

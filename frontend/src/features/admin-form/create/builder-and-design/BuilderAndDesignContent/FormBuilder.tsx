@@ -1,10 +1,15 @@
-import { useCallback, useMemo } from 'react'
+import { forwardRef, useCallback, useMemo } from 'react'
 import { Droppable } from 'react-beautiful-dnd'
+import { FormProvider, useForm } from 'react-hook-form'
 import { Box, Flex, FlexProps, Skeleton, Stack } from '@chakra-ui/react'
+
+import { FormFieldDto, FormResponseMode } from '~shared/types'
 
 import Button from '~components/Button'
 
+import { useAdminForm } from '~features/admin-form/common/queries'
 import { getVisibleFieldIds } from '~features/logic/utils'
+import { FormPaymentPreview } from '~features/public-form/components/FormPaymentPreview/FormPaymentPreview'
 import { useBgColor } from '~features/public-form/components/PublicFormWrapper'
 
 import { useCreatePageSidebar } from '../../common/CreatePageSidebarContext'
@@ -15,6 +20,11 @@ import {
   useEndPageStore,
 } from '../../end-page/useEndPageStore'
 import { useAdminFormLogic } from '../../logic/hooks/useAdminFormLogic'
+import { useBuilderAndDesignContext } from '../BuilderAndDesignContext'
+import {
+  dataSelector,
+  usePaymentStore,
+} from '../BuilderAndDesignDrawer/FieldListDrawer/field-panels/usePaymentStore'
 import { FIELD_LIST_DROP_ID } from '../constants'
 import { DndPlaceholderProps } from '../types'
 import { isDirtySelector, useDirtyFieldStore } from '../useDirtyFieldStore'
@@ -44,15 +54,10 @@ export const FormBuilder = ({
   const { handleBuilderClick, handleEndpageClick } = useCreatePageSidebar()
   const setToInactive = useFieldBuilderStore(setToInactiveSelector)
   const isDirty = useDirtyFieldStore(isDirtySelector)
-  const { endPageState, setEditingEndPageState } = useEndPageStore(
-    useCallback(
-      (state) => ({
-        endPageState: endPageStateSelector(state),
-        setEditingEndPageState: setToEditingEndPageSelector(state),
-      }),
-      [],
-    ),
-  )
+  const { endPageState, setEditingEndPageState } = useEndPageStore((state) => ({
+    endPageState: endPageStateSelector(state),
+    setEditingEndPageState: setToEditingEndPageSelector(state),
+  }))
 
   const visibleFieldIds = useMemo(
     () =>
@@ -89,6 +94,8 @@ export const FormBuilder = ({
   ])
 
   const bg = useBgColor({ colorTheme: useDesignColorTheme() })
+
+  const { paymentPreviewRef } = useBuilderAndDesignContext()
 
   return (
     <Flex
@@ -159,7 +166,10 @@ export const FormBuilder = ({
               </Droppable>
             )}
           </Box>
+
+          <FormPaymentPreviewBuilder ref={paymentPreviewRef} />
         </Flex>
+
         <Flex
           justify="center"
           w="100%"
@@ -186,3 +196,31 @@ export const FormBuilder = ({
     </Flex>
   )
 }
+
+const FormPaymentPreviewBuilder = forwardRef<HTMLDivElement>((_props, ref) => {
+  const { data: form } = useAdminForm()
+
+  const { paymentFromStore } = usePaymentStore((state) => ({
+    paymentFromStore: dataSelector(state),
+  }))
+
+  const formMethods = useForm<FormFieldDto>({
+    mode: 'onChange',
+  })
+
+  if (form?.responseMode !== FormResponseMode.Encrypt) return null
+
+  const paymentDetails = paymentFromStore ?? form.payments_field
+
+  return (
+    <Box ref={ref}>
+      <FormProvider {...formMethods}>
+        <FormPaymentPreview
+          colorTheme={form?.startPage.colorTheme}
+          paymentDetails={paymentDetails}
+          isBuilder
+        />
+      </FormProvider>
+    </Box>
+  )
+})

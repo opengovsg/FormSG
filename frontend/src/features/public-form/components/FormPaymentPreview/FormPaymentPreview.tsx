@@ -9,21 +9,27 @@ import {
 } from '~shared/types'
 
 import { centsToDollars } from '~utils/payments'
+import { EmailFieldInput } from '~templates/Field/Email'
 import { useSectionColor } from '~templates/Field/Section/SectionField'
 
+import { VerifiableFieldBuilderContainer } from '~features/admin-form/create/builder-and-design/BuilderAndDesignContent/FieldRow/VerifiableFieldBuilderContainer'
 import { getFieldCreationMeta } from '~features/admin-form/create/builder-and-design/utils/fieldCreation'
 import {
   VerifiableEmailField,
   VerifiableEmailFieldSchema,
 } from '~features/verifiable-fields/Email'
 
+type FormPaymentPreviewProps = {
+  colorTheme?: FormColorTheme
+  paymentDetails?: FormPaymentsField
+  isBuilder?: boolean
+}
+
 export const FormPaymentPreview = ({
   colorTheme = FormColorTheme.Blue,
   paymentDetails,
-}: {
-  colorTheme: FormColorTheme
-  paymentDetails: FormPaymentsField
-}): JSX.Element => {
+  isBuilder,
+}: FormPaymentPreviewProps) => {
   const sectionColor = useSectionColor(colorTheme)
   const emailFieldSchema: VerifiableEmailFieldSchema = {
     ...(getFieldCreationMeta(BasicField.Email) as EmailFieldBase),
@@ -32,6 +38,9 @@ export const FormPaymentPreview = ({
     description: 'For delivery of invoice',
     isVerifiable: true,
   }
+
+  if (!paymentDetails || !paymentDetails.enabled) return null
+
   return (
     <Stack px={{ base: '1rem', md: 0 }} pt="2.5rem">
       <Box bg={'white'} py="2.5rem" px={{ base: '1rem', md: '2.5rem' }}>
@@ -53,7 +62,13 @@ export const FormPaymentPreview = ({
             paymentDetails.amount_cents ?? 0,
           )} SGD`}</Box>
         </Box>
-        <VerifiableEmailField schema={emailFieldSchema} />
+        {isBuilder ? (
+          <VerifiableFieldBuilderContainer schema={emailFieldSchema}>
+            <EmailFieldInput schema={emailFieldSchema} />
+          </VerifiableFieldBuilderContainer>
+        ) : (
+          <VerifiableEmailField schema={emailFieldSchema} />
+        )}
       </Box>
     </Stack>
   )
