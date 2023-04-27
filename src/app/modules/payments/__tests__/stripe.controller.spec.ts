@@ -59,6 +59,7 @@ describe('stripe.controller', () => {
         ...mockBusinessInfo,
         formTitle: mockFormTitle,
         submissionId: mockSubmissionId,
+        background: false,
       }
       const mockForm = {
         _id: MOCK_FORM_ID,

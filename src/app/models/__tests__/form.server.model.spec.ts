@@ -94,6 +94,7 @@ const PAYMENTS_DEFAULTS = {
     channel: PaymentChannel.Unconnected,
     target_account_id: '',
     publishable_key: '',
+    invoice_background: true,
   },
   payments_field: {
     enabled: false,
