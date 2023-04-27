@@ -5,11 +5,21 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "lambda:update": "npm install && rm -rf dist && mkdir -p dist && zip -r dist/function.zip index.js src package.json node_modules && aws lambda update-function-code --function-name staging-form-payment-reconciliation --zip-file fileb://dist/function.zip"
+    "lambda:prep": "npm install --omit=dev && rm -rf dist && mkdir -p dist && zip -r dist/function.zip index.js src package.json node_modules",
+    "lambda:push-staging:default": "aws lambda update-function-code --function-name staging-form-payment-reconciliation --zip-file fileb://dist/function.zip 1>/dev/null",
+    "lambda:push-staging:alt": "aws lambda update-function-code --function-name staging-alt-form-payment-reconciliation --zip-file fileb://dist/function.zip 1>/dev/null",
+    "lambda:push-staging:alt2": "aws lambda update-function-code --function-name staging-alt2-form-payment-reconciliation --zip-file fileb://dist/function.zip 1>/dev/null",
+    "lambda:update:all-staging": "npm run lambda:prep && concurrently \"npm:lambda:push-staging:*\"",
+    "lambda:push-uat:default": "aws lambda update-function-code --function-name staging-alt2-form-payment-reconciliation --zip-file fileb://dist/function.zip 1>/dev/null",
+    "lambda:update:uat": "npm run lambda:prep && concurrently \"npm:lambda:push-uat:*\"",
+    "lambda:update:prod": "npm run lambda:prep && aws lambda update-function-code --function-name prod-form-payment-reconciliation --zip-file fileb://dist/function.zip 1>/dev/null"
   },
   "private": true,
   "dependencies": {
     "@aws-sdk/client-secrets-manager": "^3.312.0",
     "@aws-sdk/client-ssm": "^3.312.0"
+  },
+  "devDependencies": {
+    "concurrently": "^8.0.1"
   }
 }
