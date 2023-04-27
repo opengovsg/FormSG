@@ -21,7 +21,7 @@ import { getLogicUnitPreventingSubmit } from '~features/logic/utils'
 import { usePublicFormContext } from '../../PublicFormContext'
 import { DuplicatePaymentModal } from '../DuplicatePaymentModal/DuplicatePaymentModal'
 import { FormPaymentModal } from '../FormPaymentModal/FormPaymentModal'
-import { getPreviousPayment } from '../FormPaymentPage/FormPaymentService'
+import { getPreviousPaymentId } from '../FormPaymentPage/FormPaymentService'
 
 interface PublicFormSubmitButtonProps {
   formFields: MyInfoFormField<FormField>[]
@@ -70,11 +70,11 @@ export const PublicFormSubmitButton = ({
     if (result) {
       // get previous payment
       try {
-        const payment = await getPreviousPayment(
+        const paymentId = await getPreviousPaymentId(
           paymentEmailField.value,
           formId,
         )
-        setPrevPaymentId(payment._id)
+        setPrevPaymentId(paymentId)
       } catch (err) {
         setPrevPaymentId('')
       }
