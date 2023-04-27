@@ -14,7 +14,7 @@ const postToSlack = (slackApiSecret, message) => {
     headers: {
       'Content-type': 'application/json',
     },
-    body: JSON.stringify({ text: '```' + message + '```' }),
+    body: JSON.stringify({ text: message }),
   })
 }
 

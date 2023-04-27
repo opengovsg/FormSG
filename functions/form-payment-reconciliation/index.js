@@ -1,5 +1,5 @@
 const { SSMClient, GetParameterCommand } = require('@aws-sdk/client-ssm')
-const { generateLinkToCloudwatch, postToSlack } = require('./utils')
+const { generateLinkToCloudwatch, postToSlack } = require('./src/utils')
 
 const AWS_REGION = 'ap-southeast-1'
 
@@ -52,13 +52,44 @@ const reconcileAccount = (apiSecret, stripeAccountId) => {
   ).then((d) => d.json())
 }
 
+const reportToSlack = async ({
+  env,
+  title,
+  reportContent,
+  cloudwatchLink,
+  timing,
+  functionName,
+}) => {
+  const titleContentWithHeaderMrkdwn = `*${title}* for *${env}*`
+  const reportContentWithCodeMrkdwn = '```' + reportContent + '```'
+  const linkContentInHtml = `Detailed report on <${cloudwatchLink}|cloudwatch>`
+  const runContent = `Run took(ms) ${timing}`
+  const preparedTimeContent = `Report from \`${functionName}\` prepared on \`${new Date().toLocaleString(
+    'en-SG',
+  )} SGT\``
+  const msgContent = [
+    titleContentWithHeaderMrkdwn,
+    `---`,
+    '', // spacing
+    reportContentWithCodeMrkdwn,
+    linkContentInHtml,
+    runContent,
+    preparedTimeContent,
+  ].join('\n')
+
+  return postToSlack(secret['SLACK_API_SECRET'], msgContent).then((d) =>
+    console.log(d),
+  )
+}
+
+let secret
 async function main(events, context) {
-  const secret = await getSecrets()
+  const startTime = Date.now()
+  secret = await getSecrets()
 
   const pendingQueries = await getPendingQueries(
     secret['CRON_PAYMENT_API_SECRET'],
   )
-  console.log(secret)
 
   if (pendingQueries.length <= 0) {
     console.log(
@@ -68,8 +99,9 @@ async function main(events, context) {
     return
   }
 
-  console.log('Pending Queries Report')
-  console.log(JSON.stringify(pendingQueries, null, 2))
+  console.log(
+    'Pending Queries Report' + '\n' + JSON.stringify(pendingQueries, null, 2),
+  )
 
   const firstAccountToProcess =
     pendingQueries.data[pendingQueries.data.length - 1].stripeAccount
@@ -78,25 +110,37 @@ async function main(events, context) {
     return
   }
 
-  const startTime = Date.now()
+  const reconcileStartTime = Date.now()
   const reconcileResult = await reconcileAccount(
     secret['CRON_PAYMENT_API_SECRET'],
     firstAccountToProcess,
   )
-  const reconciledStr = JSON.stringify(reconcileResult, null, 2)
+  const verboseReport = JSON.stringify(reconcileResult, null, 2)
   const report = [
     'Reconcile Report',
-    reconciledStr,
-    'Reconcile took(ms): ' + (Date.now() - startTime),
+    verboseReport,
+    'Reconcile took(ms): ' + (Date.now() - reconcileStartTime),
+    'Lambda Event Details: ' + JSON.stringify(events),
     'Lambda Invocation Id: ' + JSON.stringify(context),
     'Details: ' + generateLinkToCloudwatch(context),
   ].join('\n')
-
   console.log(report)
 
-  await postToSlack(secret['SLACK_API_SECRET'], report).then((d) =>
-    console.log(d),
-  )
+  const summarizedReport = {
+    ...reconcileResult,
+    data: {
+      processedCount: reconcileResult.data.processed.length,
+      failedCount: reconcileResult.data.failed.length,
+    },
+  }
+  await reportToSlack({
+    env: SUB_DOMAIN,
+    title: 'Reconcilation Report',
+    reportContent: JSON.stringify(summarizedReport, null, 2),
+    cloudwatchLink: generateLinkToCloudwatch(context),
+    timing: Date.now() - startTime,
+    functionName: context.functionName,
+  })
 }
 
 if (require.main === module) {

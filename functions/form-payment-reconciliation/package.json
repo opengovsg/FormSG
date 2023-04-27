@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "lambda:update": "npm install && mkdir -p dist && zip -r dist/function.zip index.js package.json node_modules && aws lambda update-function-code --function-name staging-form-payment-reconciliation --zip-file fileb://dist/function.zip"
+    "lambda:update": "npm install && rm -rf dist && mkdir -p dist && zip -r dist/function.zip index.js src package.json node_modules && aws lambda update-function-code --function-name staging-form-payment-reconciliation --zip-file fileb://dist/function.zip"
   },
   "private": true,
   "dependencies": {
