@@ -73,6 +73,7 @@ export type FormPaymentsChannel = {
   channel: PaymentChannel
   target_account_id: string
   publishable_key: string
+  invoice_background?: boolean
 }
 
 export type FormPaymentsField = {

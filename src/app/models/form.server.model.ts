@@ -150,6 +150,10 @@ const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
       default: '',
       validate: [/^\S*$/i, 'publishable_key must not contain whitespace.'],
     },
+    invoice_background: {
+      type: Boolean,
+      default: true,
+    },
   },
 
   payments_field: {
