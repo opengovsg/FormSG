@@ -86,6 +86,9 @@ const addForm = async (
 ): Promise<AddFormReturn> => {
   await page.goto(DASHBOARD_PAGE)
 
+  // Wait for all modals to render
+  await page.waitForTimeout(1000)
+
   // Press escape 5 times to get rid of any banners
   await page.keyboard.press('Escape')
   await page.keyboard.press('Escape')
@@ -109,7 +112,7 @@ const addForm = async (
   }
   if (responseMode === FormResponseMode.Encrypt) {
     // Download the secret key and save it for the test.
-    const downloadPromise = page.waitForEvent('download')
+    const downloadPromise = page.waitForEvent('download', { timeout: 3000 })
     await page.getByRole('button', { name: 'Download key' }).click()
     const download = await downloadPromise
     const path = await download.path()
