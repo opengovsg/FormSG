@@ -23,12 +23,16 @@ type FormPaymentPreviewProps = {
   colorTheme?: FormColorTheme
   paymentDetails?: FormPaymentsField
   isBuilder?: boolean
+  isActive?: boolean
+  onClick?: () => void
 }
 
 export const FormPaymentPreview = ({
   colorTheme = FormColorTheme.Blue,
   paymentDetails,
   isBuilder,
+  isActive,
+  onClick,
 }: FormPaymentPreviewProps) => {
   const sectionColor = useSectionColor(colorTheme)
   const emailFieldSchema: VerifiableEmailFieldSchema = {
@@ -43,7 +47,23 @@ export const FormPaymentPreview = ({
 
   return (
     <Stack px={{ base: '1rem', md: 0 }} pt="2.5rem">
-      <Box bg={'white'} py="2.5rem" px={{ base: '1rem', md: '2.5rem' }}>
+      <Box
+        bg={'white'}
+        py="2.5rem"
+        px={{ base: '1rem', md: '2.5rem' }}
+        {...(isBuilder && {
+          _hover: { bg: 'secondary.100', cursor: 'pointer' },
+          _active: {
+            bg: 'secondary.100',
+            boxShadow: '0 0 0 2px var(--chakra-colors-primary-500)',
+            borderRadius: '4px',
+          },
+          'data-active': isActive || undefined,
+          transition: 'ease',
+          transitionDuration: '0.2s',
+          onClick,
+        })}
+      >
         <Box as="h2" mb="1rem" textStyle="h2" color={sectionColor}>
           Payment
         </Box>

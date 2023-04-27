@@ -16,7 +16,6 @@ import { useUser } from '~features/user/queries'
 
 import { useCreateTabForm } from '../../../builder-and-design/useCreateTabForm'
 import { CreatePageDrawerCloseButton } from '../../../common'
-import { useBuilderAndDesignContext } from '../../BuilderAndDesignContext'
 
 import {
   BasicFieldPanel,
@@ -30,8 +29,6 @@ export const FieldListDrawer = (): JSX.Element => {
 
   const { user } = useUser()
   const displayPayments = user?.betaFlags?.payment
-  const { paymentPreviewRef } = useBuilderAndDesignContext()
-
   return (
     <Tabs
       pos="relative"
@@ -40,6 +37,7 @@ export const FieldListDrawer = (): JSX.Element => {
       flexDir="column"
       index={fieldListTabIndex}
       onChange={setFieldListTabIndex}
+      isLazy
     >
       <Box pt="1rem" px="1.5rem" bg="white">
         <Flex justify="space-between">
@@ -51,14 +49,7 @@ export const FieldListDrawer = (): JSX.Element => {
         <TabList mx="-0.25rem" w="100%">
           <Tab isDisabled={isLoading}>Basic</Tab>
           <Tab isDisabled={isLoading}>MyInfo</Tab>
-          {displayPayments && (
-            <Tab
-              isDisabled={isLoading}
-              onClick={() => paymentPreviewRef.current?.scrollIntoView()}
-            >
-              Payments
-            </Tab>
-          )}
+          {displayPayments && <Tab isDisabled={isLoading}>Payments</Tab>}
         </TabList>
         <Divider w="auto" mx="-1.5rem" />
       </Box>

@@ -1,4 +1,4 @@
-import { forwardRef, useCallback, useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import { Droppable } from 'react-beautiful-dnd'
 import { FormProvider, useForm } from 'react-hook-form'
 import { Box, Flex, FlexProps, Skeleton, Stack } from '@chakra-ui/react'
@@ -23,13 +23,22 @@ import { useAdminFormLogic } from '../../logic/hooks/useAdminFormLogic'
 import { useBuilderAndDesignContext } from '../BuilderAndDesignContext'
 import {
   dataSelector,
+  PaymentState,
+  setToEditingPaymentSelector,
+  setToInactiveSelector as setPaymentToInactiveSelector,
+  stateSelector,
   usePaymentStore,
 } from '../BuilderAndDesignDrawer/FieldListDrawer/field-panels/usePaymentStore'
-import { FIELD_LIST_DROP_ID } from '../constants'
+import { FIELD_LIST_DROP_ID, FieldListTabIndex } from '../constants'
 import { DndPlaceholderProps } from '../types'
+import {
+  DesignState,
+  setStateSelector as setDesignStateSelector,
+  useDesignStore,
+} from '../useDesignStore'
 import { isDirtySelector, useDirtyFieldStore } from '../useDirtyFieldStore'
 import {
-  setToInactiveSelector,
+  setToInactiveSelector as setFieldBuilderToInactiveSelector,
   useFieldBuilderStore,
 } from '../useFieldBuilderStore'
 import { useDesignColorTheme } from '../utils/useDesignColorTheme'
@@ -52,7 +61,10 @@ export const FormBuilder = ({
   const { builderFields, isLoading } = useBuilderFields()
   const { formLogics } = useAdminFormLogic()
   const { handleBuilderClick, handleEndpageClick } = useCreatePageSidebar()
-  const setToInactive = useFieldBuilderStore(setToInactiveSelector)
+  const setFieldBuilderToInactive = useFieldBuilderStore(
+    setFieldBuilderToInactiveSelector,
+  )
+  const setPaymentToInactive = usePaymentStore(setPaymentToInactiveSelector)
   const isDirty = useDirtyFieldStore(isDirtySelector)
   const { endPageState, setEditingEndPageState } = useEndPageStore((state) => ({
     endPageState: endPageStateSelector(state),
@@ -78,24 +90,18 @@ export const FormBuilder = ({
     [endPageState, isDirty],
   )
 
-  const handleEditEndPageClick = useCallback(() => {
+  const handleEditEndPageClick = () => {
     if (isDirtyAndEndPageInactive) {
       return setEditingEndPageState(true)
     }
 
     setEditingEndPageState()
-    setToInactive()
+    setFieldBuilderToInactive()
+    setPaymentToInactive()
     handleEndpageClick(false)
-  }, [
-    handleEndpageClick,
-    isDirtyAndEndPageInactive,
-    setEditingEndPageState,
-    setToInactive,
-  ])
+  }
 
   const bg = useBgColor({ colorTheme: useDesignColorTheme() })
-
-  const { paymentPreviewRef } = useBuilderAndDesignContext()
 
   return (
     <Flex
@@ -167,7 +173,7 @@ export const FormBuilder = ({
             )}
           </Box>
 
-          <FormPaymentPreviewBuilder ref={paymentPreviewRef} />
+          <FormPaymentPreviewBuilder />
         </Flex>
 
         <Flex
@@ -197,12 +203,21 @@ export const FormBuilder = ({
   )
 }
 
-const FormPaymentPreviewBuilder = forwardRef<HTMLDivElement>((_props, ref) => {
+const FormPaymentPreviewBuilder = () => {
   const { data: form } = useAdminForm()
+  const { paymentPreviewRef } = useBuilderAndDesignContext()
+  const { handleBuilderClick, setFieldListTabIndex } = useCreatePageSidebar()
+  const { paymentFromStore, paymentState, setToEditingPayment } =
+    usePaymentStore((state) => ({
+      paymentFromStore: dataSelector(state),
+      paymentState: stateSelector(state),
+      setToEditingPayment: setToEditingPaymentSelector(state),
+    }))
 
-  const { paymentFromStore } = usePaymentStore((state) => ({
-    paymentFromStore: dataSelector(state),
-  }))
+  const setFieldBuilderToInactive = useFieldBuilderStore(
+    setFieldBuilderToInactiveSelector,
+  )
+  const setDesignState = useDesignStore(setDesignStateSelector)
 
   const formMethods = useForm<FormFieldDto>({
     mode: 'onChange',
@@ -210,17 +225,30 @@ const FormPaymentPreviewBuilder = forwardRef<HTMLDivElement>((_props, ref) => {
 
   if (form?.responseMode !== FormResponseMode.Encrypt) return null
 
+  const isActive = paymentState === PaymentState.EditingPayment
+
   const paymentDetails = paymentFromStore ?? form.payments_field
 
+  const handlePaymentClick = () => {
+    setToEditingPayment()
+    setFieldBuilderToInactive()
+    setDesignState(DesignState.Inactive)
+
+    handleBuilderClick(false)
+    setFieldListTabIndex(FieldListTabIndex.Payments)
+  }
+
   return (
-    <Box ref={ref}>
+    <Box ref={paymentPreviewRef}>
       <FormProvider {...formMethods}>
         <FormPaymentPreview
           colorTheme={form?.startPage.colorTheme}
           paymentDetails={paymentDetails}
           isBuilder
+          isActive={isActive}
+          onClick={handlePaymentClick}
         />
       </FormProvider>
     </Box>
   )
-})
+}

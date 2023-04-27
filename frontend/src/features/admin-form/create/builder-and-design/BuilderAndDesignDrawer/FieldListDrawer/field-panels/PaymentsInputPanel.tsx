@@ -32,6 +32,7 @@ import {
   CreatePageDrawerContentContainer,
   useCreatePageSidebar,
 } from '../../../../common'
+import { useBuilderAndDesignContext } from '../../../BuilderAndDesignContext'
 import { FieldListTabIndex } from '../../../constants'
 import {
   setIsDirtySelector,
@@ -43,6 +44,7 @@ import {
   dataSelector,
   resetDataSelector,
   setDataSelector,
+  setToEditingPaymentSelector,
   setToInactiveSelector,
   usePaymentStore,
 } from './usePaymentStore'
@@ -256,21 +258,43 @@ export const PaymentInput = ({ isDisabled }: { isDisabled: boolean }) => {
 
 export const PaymentsInputPanel = (): JSX.Element | null => {
   const { data: form } = useAdminForm()
+  const { paymentPreviewRef } = useBuilderAndDesignContext()
 
   const isEncryptMode = form?.responseMode === FormResponseMode.Encrypt
   const isStripeConnected =
     isEncryptMode && form.payments_channel.channel === PaymentChannel.Stripe
   const paymentsField = isEncryptMode ? form.payments_field : undefined
 
-  const { setData, resetData } = usePaymentStore((state) => ({
+  const {
+    paymentsData,
+    setToEditingPayment,
+    setToInactive,
+    setData,
+    resetData,
+  } = usePaymentStore((state) => ({
+    paymentsData: dataSelector(state),
+    setToEditingPayment: setToEditingPaymentSelector(state),
+    setToInactive: setToInactiveSelector(state),
     setData: setDataSelector(state),
     resetData: resetDataSelector(state),
   }))
 
   useEffect(() => {
+    paymentPreviewRef.current?.scrollIntoView()
+    setToEditingPayment()
     setData(paymentsField)
-    return resetData
-  }, [paymentsField, resetData, setData])
+    return () => {
+      resetData()
+      setToInactive()
+    }
+  }, [
+    paymentPreviewRef,
+    paymentsField,
+    resetData,
+    setData,
+    setToEditingPayment,
+    setToInactive,
+  ])
 
   const paymentDisabledMessage = !isEncryptMode
     ? 'Payments are not available in email mode forms.'
@@ -280,6 +304,8 @@ export const PaymentsInputPanel = (): JSX.Element | null => {
 
   // payment eligibility will be dependent on whether paymentDisabledMessage is non empty
   const isPaymentDisabled = !!paymentDisabledMessage
+
+  if (!paymentsData) return null
 
   return (
     <>
