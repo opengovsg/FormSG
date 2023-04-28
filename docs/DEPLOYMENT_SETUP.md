@@ -102,7 +102,7 @@ Store of AWS Service Manager. These groups have names formatted as `<environment
 The environment for each group is user-defined, and should be specified in the Elastic Beanstalk configuration
 as the environment variable `SSM_PREFIX`.
 The specific environment is user-defined, and should be specified in the Elastic Beanstalk configuration
-as the environment variable `SSM_ACTUAL_ENV_NAME`. This variable is optional.
+as the environment variable `SSM_ENV_SITE_NAME`. This variable is optional.
 
 The list of categories can be inferred by looking at the file `.ebextensions/env-file-creation.config`.
 
@@ -114,7 +114,7 @@ The list of categories can be inferred by looking at the file `.ebextensions/env
 | :----------- | --------------------------------------------------------------------------------------------------------------------- |
 | `SSM_PREFIX` | String prefix (typically the environment name) for AWS SSM parameter names to create a .env file for FormSG.          |
 | `SECRET_ENV` | String (typically the environment name) to be used in building of AWS Secrets Manager keys in different environments. (`staging`, `prod`)|
-| `SSM_ACTUAL_ENV_NAME` | String (the specific environment name) to be used in building of AWS Secrets Manager keys in different environments. Optional. (`staging-alt`, `staging-alt2`)|
+| `SSM_ENV_SITE_NAME` | String (the specific environment site name) to be used in building of AWS Secrets Manager keys in different environments. Optional. (`staging-alt`, `staging-alt2`)|
 
 #### App Config
 
