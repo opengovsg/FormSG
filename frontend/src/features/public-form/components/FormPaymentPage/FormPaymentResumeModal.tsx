@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import {
   ButtonGroup,
+  ButtonGroupProps,
   Modal,
   ModalBody,
   ModalContent,
@@ -55,9 +56,21 @@ export const PublicFormPaymentResumeModal = (): JSX.Element => {
     clearPaymentMemory()
     onClose()
   }
+
+  const modalResponsiveLayoutProps = isMobile ? { size: 'full' } : {}
+  const buttonGrpResponsiveLayoutProps: ButtonGroupProps = isMobile
+    ? {
+        flexDir: 'column-reverse',
+        w: '100%',
+        spacing: 0,
+        pt: '2rem',
+        rowGap: '0.75rem',
+      }
+    : {}
   return (
     <Stack px={{ base: '1rem', md: 0 }} pt="2.5rem" pb="4rem">
       <Modal
+        {...modalResponsiveLayoutProps}
         isOpen
         onClose={() => {
           // do nothing, prevent dismissal through backdrop touch
@@ -66,13 +79,13 @@ export const PublicFormPaymentResumeModal = (): JSX.Element => {
         <ModalOverlay />
         <ModalContent>
           <ModalHeader pb={'2rem'}>Restore previous session?</ModalHeader>
-          <ModalBody>
+          <ModalBody flexGrow={0}>
             We noticed an incomplete session on this form. You can restore your
             previous session and complete payment.
           </ModalBody>
-          <ModalFooter pt={'2.5rem'} pb={'2.5rem'}>
+          <ModalFooter>
             <ButtonGroup
-              flexWrap={isMobile ? 'wrap-reverse' : 'wrap'}
+              {...buttonGrpResponsiveLayoutProps}
               justifyContent="end"
             >
               <Button

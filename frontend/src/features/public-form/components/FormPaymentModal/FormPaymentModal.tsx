@@ -34,8 +34,8 @@ export const FormPaymentModal = ({
   }
 
   const isMobile = useIsMobile()
-  const props = { size: isMobile ? 'full' : undefined }
-  const responsiveProps: ButtonGroupProps = isMobile
+  const modalResponsiveLayoutProps = { size: isMobile ? 'full' : undefined }
+  const buttonGrpResponsiveLayoutProps: ButtonGroupProps = isMobile
     ? {
         flexDir: 'column-reverse',
         w: '100%',
@@ -47,17 +47,17 @@ export const FormPaymentModal = ({
 
   return (
     <>
-      <Modal {...props} isOpen onClose={onClose}>
+      <Modal {...modalResponsiveLayoutProps} isOpen onClose={onClose}>
         <ModalOverlay />
         <ModalContent>
           {!isMobile && <ModalCloseButton />}
-          <ModalHeader>You are about to make payment</ModalHeader>
+          <ModalHeader pb={'2rem'}>You are about to make payment</ModalHeader>
           <ModalBody flexGrow={0}>
             Please ensure that your form information is accurate. You will not
             be able to edit your form after you proceed.
           </ModalBody>
           <ModalFooter>
-            <ButtonGroup {...responsiveProps}>
+            <ButtonGroup {...buttonGrpResponsiveLayoutProps}>
               <Button variant="clear" onClick={onClose} isFullWidth={isMobile}>
                 Cancel
               </Button>
