@@ -1,14 +1,9 @@
 import { useCallback, useMemo } from 'react'
 import { Droppable } from 'react-beautiful-dnd'
-import { FormProvider, useForm } from 'react-hook-form'
 import { Box, Flex, FlexProps, Skeleton, Stack } from '@chakra-ui/react'
 
-import { FormFieldDto, FormResponseMode } from '~shared/types'
-
 import Button from '~components/Button'
-import { PaymentPreview } from '~templates/Field/PaymentPreview/PaymentPreview'
 
-import { useAdminForm } from '~features/admin-form/common/queries'
 import { getVisibleFieldIds } from '~features/logic/utils'
 import { useBgColor } from '~features/public-form/components/PublicFormWrapper'
 
@@ -20,22 +15,12 @@ import {
   useEndPageStore,
 } from '../../end-page/useEndPageStore'
 import { useAdminFormLogic } from '../../logic/hooks/useAdminFormLogic'
-import { useBuilderAndDesignContext } from '../BuilderAndDesignContext'
 import {
-  dataSelector,
-  PaymentState,
-  setToEditingPaymentSelector,
   setToInactiveSelector as setPaymentToInactiveSelector,
-  stateSelector,
   usePaymentStore,
 } from '../BuilderAndDesignDrawer/FieldListDrawer/field-panels/usePaymentStore'
-import { FIELD_LIST_DROP_ID, FieldListTabIndex } from '../constants'
+import { FIELD_LIST_DROP_ID } from '../constants'
 import { DndPlaceholderProps } from '../types'
-import {
-  DesignState,
-  setStateSelector as setDesignStateSelector,
-  useDesignStore,
-} from '../useDesignStore'
 import { isDirtySelector, useDirtyFieldStore } from '../useDirtyFieldStore'
 import {
   setToInactiveSelector as setFieldBuilderToInactiveSelector,
@@ -47,6 +32,7 @@ import { EmptyFormPlaceholder } from './BuilderAndDesignPlaceholder/EmptyFormPla
 import { FormBuilderFieldsSkeleton } from './FormBuilder/FormBuilderFieldsSkeleton'
 import BuilderAndDesignPlaceholder from './BuilderAndDesignPlaceholder'
 import { BuilderFields } from './BuilderFields'
+import { PaymentView } from './PaymentView'
 import { StartPageView } from './StartPageView'
 import { useBuilderFields } from './useBuilderFields'
 
@@ -173,7 +159,7 @@ export const FormBuilder = ({
             )}
           </Box>
 
-          <PaymentPreviewBuilder />
+          <PaymentView />
         </Flex>
 
         <Flex
@@ -200,55 +186,5 @@ export const FormBuilder = ({
         </Flex>
       </Stack>
     </Flex>
-  )
-}
-
-const PaymentPreviewBuilder = () => {
-  const { data: form } = useAdminForm()
-  const { paymentPreviewRef } = useBuilderAndDesignContext()
-  const { handleBuilderClick, setFieldListTabIndex } = useCreatePageSidebar()
-  const { paymentFromStore, paymentState, setToEditingPayment } =
-    usePaymentStore((state) => ({
-      paymentFromStore: dataSelector(state),
-      paymentState: stateSelector(state),
-      setToEditingPayment: setToEditingPaymentSelector(state),
-    }))
-
-  const setFieldBuilderToInactive = useFieldBuilderStore(
-    setFieldBuilderToInactiveSelector,
-  )
-  const setDesignState = useDesignStore(setDesignStateSelector)
-
-  const formMethods = useForm<FormFieldDto>({
-    mode: 'onChange',
-  })
-
-  if (form?.responseMode !== FormResponseMode.Encrypt) return null
-
-  const isActive = paymentState === PaymentState.EditingPayment
-
-  const paymentDetails = paymentFromStore ?? form.payments_field
-
-  const handlePaymentClick = () => {
-    setToEditingPayment()
-    setFieldBuilderToInactive()
-    setDesignState(DesignState.Inactive)
-
-    handleBuilderClick(false)
-    setFieldListTabIndex(FieldListTabIndex.Payments)
-  }
-
-  return (
-    <Box w="100%" maxW="57rem" alignSelf="center" ref={paymentPreviewRef}>
-      <FormProvider {...formMethods}>
-        <PaymentPreview
-          colorTheme={form?.startPage.colorTheme}
-          paymentDetails={paymentDetails}
-          isBuilder
-          isActive={isActive}
-          onClick={handlePaymentClick}
-        />
-      </FormProvider>
-    </Box>
   )
 }

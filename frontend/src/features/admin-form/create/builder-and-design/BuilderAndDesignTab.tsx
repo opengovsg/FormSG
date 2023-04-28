@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useState } from 'react'
 import {
   DragDropContext,
   DragStart,
@@ -138,8 +138,6 @@ export const BuilderAndDesignTab = (): JSX.Element => {
 
   const deleteFieldModalDisclosure = useDisclosure()
 
-  const paymentPreviewRef = useRef<HTMLDivElement>(null)
-
   return (
     <DragDropContext
       onDragStart={onDragStart}
@@ -149,7 +147,6 @@ export const BuilderAndDesignTab = (): JSX.Element => {
       <BuilderAndDesignContext.Provider
         value={{
           deleteFieldModalDisclosure,
-          paymentPreviewRef,
         }}
       >
         <BuilderAndDesignDrawer />

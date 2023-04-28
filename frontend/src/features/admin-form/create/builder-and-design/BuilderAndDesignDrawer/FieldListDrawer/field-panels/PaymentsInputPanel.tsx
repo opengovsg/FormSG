@@ -32,7 +32,6 @@ import {
   CreatePageDrawerContentContainer,
   useCreatePageSidebar,
 } from '../../../../common'
-import { useBuilderAndDesignContext } from '../../../BuilderAndDesignContext'
 import { FieldListTabIndex } from '../../../constants'
 import {
   setIsDirtySelector,
@@ -258,7 +257,6 @@ export const PaymentInput = ({ isDisabled }: { isDisabled: boolean }) => {
 
 export const PaymentsInputPanel = (): JSX.Element | null => {
   const { data: form } = useAdminForm()
-  const { paymentPreviewRef } = useBuilderAndDesignContext()
 
   const isEncryptMode = form?.responseMode === FormResponseMode.Encrypt
   const isStripeConnected =
@@ -280,21 +278,13 @@ export const PaymentsInputPanel = (): JSX.Element | null => {
   }))
 
   useEffect(() => {
-    paymentPreviewRef.current?.scrollIntoView()
     setToEditingPayment()
     setData(paymentsField)
     return () => {
       resetData()
       setToInactive()
     }
-  }, [
-    paymentPreviewRef,
-    paymentsField,
-    resetData,
-    setData,
-    setToEditingPayment,
-    setToInactive,
-  ])
+  }, [paymentsField, resetData, setData, setToEditingPayment, setToInactive])
 
   const paymentDisabledMessage = !isEncryptMode
     ? 'Payments are not available in email mode forms.'
