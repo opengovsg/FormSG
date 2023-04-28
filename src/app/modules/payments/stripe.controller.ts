@@ -385,7 +385,8 @@ export const downloadPaymentInvoice: ControllerHandler<{
               gstRegNo: businessInfo?.gstRegNo || '',
               formTitle: populatedForm.title,
               submissionId: payment.completedPayment?.submissionId || '',
-              background: !!populatedForm.payments_channel?.invoice_background,
+              isBackgroundOn:
+                !!populatedForm.payments_channel?.invoice_background,
             })
 
             const pdfBufferPromise = generatePdfFromHtml(invoiceHtml)
