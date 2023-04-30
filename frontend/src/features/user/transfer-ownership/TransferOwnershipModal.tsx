@@ -42,8 +42,7 @@ const useModalState = ({ onClose, reset, trigger }) => {
   const [email, setEmail] = useState('')
 
   const { user } = useUser()
-  // FIXME: Property 'transferOwnershipMutation' does not exist
-  const { transferOwnershipMutation } = useUserMutations
+  const { transferOwnershipMutation } = useUserMutations()
 
   const isOwnEmail = useCallback(
     (value: string) => {
