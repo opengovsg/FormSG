@@ -54,6 +54,22 @@ const PREFILLABLE_SHORTTEXT_FIELD: ShortTextFieldSchema = {
   _id: '5da04eafe397fc0013f63b22',
 }
 
+const PREFILLABLE_LOCKED_SHORTTEXT_FIELD: ShortTextFieldSchema = {
+  ValidationOptions: {
+    customVal: null,
+    selectedValidation: null,
+  },
+  allowPrefill: true, // This prop allows for prefill
+  lockPrefill: true, // This prop locks the prefill
+  title: 'Short Text With Prefill Locked',
+  description:
+    'Probably do not have to worry so much, React automatically sanitizes what gets rendered',
+  required: true,
+  disabled: false,
+  fieldType: BasicField.ShortText,
+  _id: '5da04eafe397fc0013f63b23',
+}
+
 const generateMswHandlersForColorTheme = (colorTheme: FormColorTheme) => {
   return [
     ...envHandlers,
@@ -78,7 +94,7 @@ export default {
   decorators: [
     StoryRouter({
       initialEntries: [
-        `/61540ece3d4a6e50ac0cc6ff?${PREFILLABLE_SHORTTEXT_FIELD._id}=${PREFILLABLE_TEST_STRING}`,
+        `/61540ece3d4a6e50ac0cc6ff?${PREFILLABLE_SHORTTEXT_FIELD._id}=${PREFILLABLE_TEST_STRING}&${PREFILLABLE_LOCKED_SHORTTEXT_FIELD._id}=${PREFILLABLE_TEST_STRING}`,
       ],
       path: '/:formId',
     }),
@@ -164,6 +180,26 @@ WithPrefilledFields.parameters = {
 export const WithPrefilledFieldsMobile = Template.bind({})
 WithPrefilledFieldsMobile.parameters = {
   ...WithPrefilledFields.parameters,
+  ...getMobileViewParameters(),
+}
+
+export const WithPrefilledLockedFields = Template.bind({})
+WithPrefilledLockedFields.parameters = {
+  msw: [
+    getPublicFormResponse({
+      delay: 0,
+      overrides: {
+        form: {
+          form_fields: [PREFILLABLE_LOCKED_SHORTTEXT_FIELD],
+        },
+      },
+    }),
+  ],
+}
+
+export const WithPrefilledLockedFieldsMobile = Template.bind({})
+WithPrefilledLockedFieldsMobile.parameters = {
+  ...WithPrefilledLockedFields.parameters,
   ...getMobileViewParameters(),
 }
 
