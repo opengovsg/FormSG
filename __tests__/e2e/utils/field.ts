@@ -167,12 +167,8 @@ export const fillDropdown = async (
   input: Locator,
   value: string,
 ): Promise<void> => {
-  await input.fill(value)
-  const menuId = await input.getAttribute('aria-controls')
-  const menu = page.locator(`id=${menuId}`)
-  // Scroll menu into view to avoid flakiness.
-  await menu.scrollIntoViewIfNeeded()
-  await menu.getByRole('option', { name: value }).click()
+  await input.click()
+  await page.getByRole('option', { name: value }).click()
 }
 
 /**
