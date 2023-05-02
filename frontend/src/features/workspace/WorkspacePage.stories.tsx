@@ -47,7 +47,7 @@ const createForm = (num: number, overrideTitle?: string) => {
   }).reverse()
 }
 
-const THIRTY_FORMS = [
+export const THIRTY_FORMS = [
   ...createForm(
     1,
     'This is a very very very very very very very very long title it should be properly truncated only in desktop view',
