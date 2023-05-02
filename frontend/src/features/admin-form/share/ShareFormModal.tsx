@@ -1,10 +1,12 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { BiLinkExternal } from 'react-icons/bi'
 import { useNavigate } from 'react-router-dom'
 import {
   Box,
   FormControl,
+  FormHelperText,
   InputGroup,
+  InputLeftAddon,
   InputRightElement,
   Modal,
   ModalBody,
@@ -16,6 +18,8 @@ import {
   useBreakpointValue,
 } from '@chakra-ui/react'
 import dedent from 'dedent'
+
+import { BxsCheckCircle, BxsErrorCircle } from '~/assets/icons'
 
 import {
   ADMINFORM_ROUTE,
@@ -30,6 +34,31 @@ import Input from '~components/Input'
 import { ModalCloseButton } from '~components/Modal'
 import Textarea from '~components/Textarea'
 import { CopyButton } from '~templates/CopyButton'
+
+import { useListShortenerMutations } from '~features/link-shortener/mutations'
+
+type goLinkHelperTextType = {
+  color: string
+  icon: JSX.Element
+  text: string
+}
+
+const goLinkAvailableHelperText: goLinkHelperTextType = {
+  color: 'success.700',
+  icon: <BxsCheckCircle />,
+  text: 'Short link is available. Claim link to use it for this form.',
+}
+
+const goLinkTakenHelperText: goLinkHelperTextType = {
+  color: 'danger.500',
+  icon: <BxsErrorCircle />,
+  text: 'Short link is already in use.',
+}
+
+enum goLinkStage {
+  CHECK = 'Check',
+  CLAIM = 'Claim',
+}
 
 export interface ShareFormModalProps {
   isOpen: boolean
@@ -108,6 +137,38 @@ export const ShareFormModal = ({
     navigate(`${ADMINFORM_ROUTE}/${formId}/${ADMINFORM_SETTINGS_SUBROUTE}`)
   }, [formId, navigate, onClose])
 
+  const [goLinkStageState, setGoLinkStageState] = useState<goLinkStage>(
+    goLinkStage.CHECK,
+  )
+
+  const [goLinkSuffix, setGoLinkSuffix] = useState('')
+
+  const { getLinkSuffixMutation, claimGoLinkMutation } =
+    useListShortenerMutations()
+
+  const [goLinkHelperText, setGoLinkHelperText] = useState<
+    goLinkHelperTextType | undefined
+  >()
+
+  const handleCheckGoLinkClick = useCallback(async () => {
+    const linkAvailable = await getLinkSuffixMutation.mutateAsync({
+      linkSuffix: goLinkSuffix,
+    })
+    if (linkAvailable) {
+      setGoLinkHelperText(goLinkAvailableHelperText)
+      setGoLinkStageState(goLinkStage.CLAIM)
+    } else {
+      setGoLinkHelperText(goLinkTakenHelperText)
+    }
+  }, [getLinkSuffixMutation, goLinkSuffix])
+
+  const handleClaimGoLinkClick = useCallback(() => {
+    return claimGoLinkMutation.mutateAsync({
+      linkSuffix: goLinkSuffix,
+      formLink: shareLink,
+    })
+  }, [claimGoLinkMutation, goLinkSuffix, shareLink])
+
   return (
     <Modal size={modalSize} isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
@@ -169,6 +230,50 @@ export const ShareFormModal = ({
                     aria-label="Open link in new tab"
                   />
                 </Stack>
+              </Skeleton>
+            </FormControl>
+            <FormControl>
+              <FormLabel description="Customise a Go link for your form.">
+                Go link
+              </FormLabel>
+
+              <Skeleton isLoaded={!!formId}>
+                <Stack direction="row" align="center">
+                  <InputGroup>
+                    <InputLeftAddon children="https://go.gov.sg/" />
+                    <Input
+                      value={goLinkSuffix}
+                      onChange={(e) => {
+                        setGoLinkSuffix(e.target.value)
+                        setGoLinkHelperText(undefined)
+                        setGoLinkStageState(goLinkStage.CHECK)
+                      }}
+                    />
+                  </InputGroup>
+                  <Button
+                    aria-label={
+                      goLinkStageState === goLinkStage.CHECK
+                        ? 'Check if Go link suffix is available'
+                        : 'Claim Go link'
+                    }
+                    onClick={
+                      goLinkStageState === goLinkStage.CHECK
+                        ? handleCheckGoLinkClick
+                        : handleClaimGoLinkClick
+                    }
+                    isDisabled={!goLinkSuffix}
+                  >
+                    {goLinkStageState}
+                  </Button>
+                </Stack>
+                {goLinkHelperText && (
+                  <FormHelperText color={goLinkHelperText.color}>
+                    <Stack direction="row" align="center">
+                      <Box>{goLinkHelperText.icon}</Box>
+                      <Box>{goLinkHelperText.text}</Box>
+                    </Stack>
+                  </FormHelperText>
+                )}
               </Skeleton>
             </FormControl>
             <FormControl isReadOnly>
