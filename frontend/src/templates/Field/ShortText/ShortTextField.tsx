@@ -28,7 +28,12 @@ export const ShortTextField = ({
   const { register } = useFormContext<SingleAnswerFieldInput>()
 
   const isPrefilled = !!fieldContainerProps?.prefill?.prefillValue
-  const isPrefillLocked = !!fieldContainerProps?.prefill?.lockPrefill
+
+  // Prefill can be locked only if there is a prefill value
+  // If prefill is enabled but no prefill value is provided, it is not locked
+  const isPrefillLocked =
+    isPrefilled && !!fieldContainerProps?.prefill?.lockPrefill
+
   return (
     <FieldContainer schema={schema} {...fieldContainerProps}>
       <Input
