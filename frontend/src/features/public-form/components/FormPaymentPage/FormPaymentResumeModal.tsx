@@ -11,8 +11,6 @@ import {
   useDisclosure,
 } from '@chakra-ui/react'
 
-import { FormResponseMode } from '~shared/types'
-
 import { useBrowserStm } from '~hooks/payments'
 import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
@@ -27,13 +25,9 @@ import { usePublicFormContext } from '../../PublicFormContext'
  */
 export const PublicFormPaymentResumeModal = (): JSX.Element => {
   const isMobile = useIsMobile()
-  const { form, formId } = usePublicFormContext()
+  const { isPaymentEnabled, formId } = usePublicFormContext()
 
   const [lastPaymentMemory, , clearPaymentMemory] = useBrowserStm(formId)
-
-  const isPaymentEnabled =
-    form?.responseMode === FormResponseMode.Encrypt &&
-    form?.payments_field?.enabled
 
   const { isOpen, onClose } = useDisclosure({
     defaultIsOpen: Boolean(lastPaymentMemory && isPaymentEnabled),
