@@ -1,7 +1,5 @@
 import { useNavigate } from 'react-router-dom'
 import {
-  ButtonGroup,
-  ButtonGroupProps,
   Modal,
   ModalBody,
   ModalContent,
@@ -17,6 +15,7 @@ import { FormResponseMode } from '~shared/types'
 import { useBrowserStm } from '~hooks/payments'
 import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
+import ButtonGroup from '~components/ButtonGroup'
 
 import { getPaymentPageUrl } from '~features/public-form/utils/urls'
 
@@ -57,20 +56,10 @@ export const PublicFormPaymentResumeModal = (): JSX.Element => {
     onClose()
   }
 
-  const modalResponsiveLayoutProps = isMobile ? { size: 'full' } : {}
-  const buttonGrpResponsiveLayoutProps: ButtonGroupProps = isMobile
-    ? {
-        flexDir: 'column-reverse',
-        w: '100%',
-        spacing: 0,
-        pt: '2rem',
-        rowGap: '0.75rem',
-      }
-    : {}
   return (
     <Stack px={{ base: '1rem', md: 0 }} pt="2.5rem" pb="4rem">
       <Modal
-        {...modalResponsiveLayoutProps}
+        size={isMobile ? 'full' : undefined}
         isOpen
         onClose={() => {
           // do nothing, prevent dismissal through backdrop touch
@@ -84,10 +73,7 @@ export const PublicFormPaymentResumeModal = (): JSX.Element => {
             previous session and complete payment.
           </ModalBody>
           <ModalFooter>
-            <ButtonGroup
-              {...buttonGrpResponsiveLayoutProps}
-              justifyContent="end"
-            >
+            <ButtonGroup isFullWidth={isMobile} justifyContent="end">
               <Button
                 variant="clear"
                 onClick={handleStartOver}

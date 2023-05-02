@@ -1,7 +1,5 @@
 import { MouseEvent, MouseEventHandler } from 'react'
 import {
-  ButtonGroup,
-  ButtonGroupProps,
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -13,6 +11,7 @@ import {
 
 import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
+import ButtonGroup from '~components/ButtonGroup'
 
 type FormPaymentModalProps = {
   onSubmit: MouseEventHandler<HTMLButtonElement> | undefined
@@ -34,20 +33,10 @@ export const FormPaymentModal = ({
   }
 
   const isMobile = useIsMobile()
-  const modalResponsiveLayoutProps = { size: isMobile ? 'full' : undefined }
-  const buttonGrpResponsiveLayoutProps: ButtonGroupProps = isMobile
-    ? {
-        flexDir: 'column-reverse',
-        w: '100%',
-        spacing: 0,
-        pt: '2rem',
-        rowGap: '0.75rem',
-      }
-    : {}
 
   return (
     <>
-      <Modal {...modalResponsiveLayoutProps} isOpen onClose={onClose}>
+      <Modal isOpen onClose={onClose} size={isMobile ? 'full' : undefined}>
         <ModalOverlay />
         <ModalContent>
           {!isMobile && <ModalCloseButton />}
@@ -57,7 +46,7 @@ export const FormPaymentModal = ({
             be able to edit your form after you proceed.
           </ModalBody>
           <ModalFooter>
-            <ButtonGroup {...buttonGrpResponsiveLayoutProps}>
+            <ButtonGroup isFullWidth={isMobile}>
               <Button variant="clear" onClick={onClose} isFullWidth={isMobile}>
                 Cancel
               </Button>
