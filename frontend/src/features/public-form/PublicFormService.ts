@@ -21,6 +21,7 @@ import {
 import { FormFieldValues } from '~templates/Field'
 
 import {
+  createdStorageModeUnencryptedSubmissionData,
   createEmailSubmissionFormData,
   createEncryptedSubmissionData,
 } from './utils/createSubmission'
@@ -113,7 +114,6 @@ export const submitStorageModeForm = async ({
   formLogics,
   formInputs,
   formId,
-  publicKey,
   captchaResponse = null,
   paymentReceiptEmail,
 }: SubmitStorageFormArgs) => {
@@ -122,10 +122,9 @@ export const submitStorageModeForm = async ({
     formInputs,
     formLogics,
   })
-  const submissionContent = await createEncryptedSubmissionData(
+  const submissionContent = await createdStorageModeUnencryptedSubmissionData(
     formFields,
     filteredInputs,
-    publicKey,
     paymentReceiptEmail,
   )
 
@@ -180,7 +179,6 @@ export const submitStorageModeFormWithFetch = async ({
   formLogics,
   formInputs,
   formId,
-  publicKey,
   captchaResponse = null,
   paymentReceiptEmail,
 }: SubmitStorageFormArgs) => {
@@ -189,10 +187,10 @@ export const submitStorageModeFormWithFetch = async ({
     formInputs,
     formLogics,
   })
-  const submissionContent = await createEncryptedSubmissionData(
+
+  const submissionContent = await createdStorageModeUnencryptedSubmissionData(
     formFields,
     filteredInputs,
-    publicKey,
     paymentReceiptEmail,
   )
 

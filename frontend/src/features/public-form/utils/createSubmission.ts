@@ -62,6 +62,33 @@ export const createEncryptedSubmissionData = async (
 }
 
 /**
+ * @returns StorageModeSubmissionContentDto
+ * @throw Error if form inputs are invalid.
+ */
+export const createdStorageModeUnencryptedSubmissionData = async (
+  formFields: FormFieldDto[],
+  formInputs: FormFieldValues,
+  paymentReceiptEmail?: string,
+) => {
+  const responses = createResponsesArray(formFields, formInputs)
+  const attachments = getAttachmentsMap(formFields, formInputs)
+
+  // Convert content to FormData object.
+  const formData = new FormData()
+  formData.append('body', JSON.stringify({ responses, paymentReceiptEmail }))
+
+  if (!isEmpty(attachments)) {
+    forOwn(attachments, (attachment, fieldId) => {
+      if (attachment) {
+        formData.append(attachment.name, attachment, fieldId)
+      }
+    })
+  }
+
+  return formData
+}
+
+/**
  * @returns formData containing form responses and attachments.
  * @throws Error if form inputs are invalid.
  */
