@@ -236,7 +236,7 @@ export const EditShortText = ({ field }: EditShortTextProps): JSX.Element => {
         <Toggle
           {...register('allowPrefill')}
           label="Enable pre-fill"
-          description={`Use the Field ID to pre-populate this field for your users via an URL. [Learn how](${GUIDE_PREFILL})`}
+          description={`Use Field ID in the form URL to pre-fill this field for respondents. [Learn how](${GUIDE_PREFILL})`}
         />
         {watchAllowPrefill ? (
           <>
@@ -265,8 +265,8 @@ export const EditShortText = ({ field }: EditShortTextProps): JSX.Element => {
         <Toggle
           {...lockPrefillRegister}
           ref={mergedLockPrefillRef}
-          label="Lock pre-fill"
-          description="Prevent users from editing the pre-filled value. Prefill must be enabled first."
+          label="Prevent pre-fill editing"
+          description="This prevents respondents from clicking the field to edit it. However, field content can still be modified via the URL. Prefill must be enabled first."
           isDisabled={!watchAllowPrefill}
         />
       </FormControl>
