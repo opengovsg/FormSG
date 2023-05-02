@@ -22,6 +22,8 @@ jobs:
           NODE_OPTIONS: '--max-old-space-size=4096 --openssl-legacy-provider'
           REACT_APP_FORMSG_SDK_MODE: 'test'
         run: npm run build
+      - name: Run Playwright tests (email-submission-1)
+        run: npx playwright test -g "Create and submit email mode form with all fields" -gv "optional|shown by logic"
       - name: Run Playwright tests (email-submission-2)
         run: npx playwright test -g "Create and submit email mode form with all fields optional"
       - name: Run Playwright tests (email-submission-3)
@@ -42,8 +44,6 @@ jobs:
         run: npx playwright test -g "Create and submit email mode form with a field hidden by logic"
       - name: Run Playwright tests (email-submission-11)
         run: npx playwright test -g "Create email mode form with submission disabled by chained logic"
-      - name: Run Playwright tests (email-submission-1)
-        run: npx playwright test -g "Create and submit email mode form with all fields" -gv "optional|shown by logic"
       - name: Run Playwright tests (login)
         run: npx playwright test __tests__/e2e/login.spec.ts
       - uses: actions/upload-artifact@v3
