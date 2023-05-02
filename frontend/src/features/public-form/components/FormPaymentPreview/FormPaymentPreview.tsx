@@ -1,4 +1,4 @@
-import { Box, Stack, Text } from '@chakra-ui/react'
+import { Box, Stack } from '@chakra-ui/react'
 
 import { PAYMENT_CONTACT_FIELD_ID } from '~shared/constants'
 import {
@@ -8,7 +8,6 @@ import {
   FormPaymentsField,
 } from '~shared/types'
 
-import { centsToDollars } from '~utils/payments'
 import { useSectionColor } from '~templates/Field/Section/SectionField'
 
 import { getFieldCreationMeta } from '~features/admin-form/create/builder-and-design/utils/fieldCreation'
@@ -16,6 +15,8 @@ import {
   VerifiableEmailField,
   VerifiableEmailFieldSchema,
 } from '~features/verifiable-fields/Email'
+
+import { PaymentItemDetailsBlock } from '../FormPaymentPage/stripe/components/PaymentItemDetailsBlock'
 
 export const FormPaymentPreview = ({
   colorTheme = FormColorTheme.Blue,
@@ -38,21 +39,11 @@ export const FormPaymentPreview = ({
         <Box as="h2" mb="1rem" textStyle="h2" color={sectionColor}>
           Payment
         </Box>
-        <Box
-          backgroundColor={`theme-${colorTheme}.100`}
-          borderWidth="1px"
-          borderColor={`theme-${colorTheme}.300`}
-          borderRadius="4px"
-          p="0.7rem"
-          mb="2rem"
-        >
-          <Text textStyle="body-1" mb="0.5rem">
-            {paymentDetails.description}
-          </Text>
-          <Box as="h2" textStyle="h2">{`${centsToDollars(
-            paymentDetails.amount_cents ?? 0,
-          )} SGD`}</Box>
-        </Box>
+        <PaymentItemDetailsBlock
+          paymentItemName={paymentDetails.description}
+          colorTheme={colorTheme}
+          paymentAmount={paymentDetails.amount_cents}
+        />
         <VerifiableEmailField schema={emailFieldSchema} />
       </Box>
     </Stack>
