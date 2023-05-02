@@ -73,7 +73,7 @@ export const PublicFormPaymentResumeModal = (): JSX.Element => {
             previous session and complete payment.
           </ModalBody>
           <ModalFooter>
-            <ButtonGroup isFullWidth={isMobile} justifyContent="end">
+            <ButtonGroup isFullWidth={isMobile}>
               <Button
                 variant="clear"
                 onClick={handleStartOver}
