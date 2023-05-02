@@ -459,15 +459,13 @@ const addBasicField = async (
 
   // Handle the rest of the individual fields.
   switch (field.fieldType) {
-    case BasicField.Attachment:
-      await fillDropdown(
-        page,
-        page.getByRole('textbox', {
-          name: 'Maximum size of individual attachment',
-        }),
-        `${field.attachmentSize} MB`,
-      )
+    case BasicField.Attachment: {
+      const textBox = page.getByRole('textbox', {
+        name: 'Maximum size of individual attachment',
+      })
+      await fillDropdown(page, textBox, `${field.attachmentSize} MB`)
       break
+    }
     case BasicField.Checkbox:
       if (field.validateByValue) {
         await page.getByLabel('Selection limits').click()
