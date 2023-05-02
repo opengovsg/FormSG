@@ -25,27 +25,27 @@ jobs:
       - name: Run Playwright tests (login)
         run: npx playwright test __tests__/e2e/login.spec.ts
       - name: Run Playwright tests (email-submission-1)
-        run: -g "Create and submit email mode form with all fields" -gv "optional|shown by logic"
+        run: npx playwright test -g "Create and submit email mode form with all fields" -gv "optional|shown by logic"
       - name: Run Playwright tests (email-submission-2)
-        run: -g "Create and submit email mode form with all fields optional"
+        run: npx playwright test -g "Create and submit email mode form with all fields optional"
       - name: Run Playwright tests (email-submission-3)
-        run: -g "Create and submit email mode form with identical attachment names"
+        run: npx playwright test -g "Create and submit email mode form with identical attachment names"
       - name: Run Playwright tests (email-submission-4)
-        run: -g "Create and submit email mode form with optional and required attachments"
+        run: npx playwright test -g "Create and submit email mode form with optional and required attachments"
       - name: Run Playwright tests (email-submission-5)
-        run: -g "Create and submit email mode form with Singpass authentication"
+        run: npx playwright test -g "Create and submit email mode form with Singpass authentication"
       - name: Run Playwright tests (email-submission-6)
-        run: -g "Create and submit email mode form with Corppass authentication"
+        run: npx playwright test -g "Create and submit email mode form with Corppass authentication"
       - name: Run Playwright tests (email-submission-7)
-        run: -g "Create and submit email mode form with SGID authentication"
+        run: npx playwright test -g "Create and submit email mode form with SGID authentication"
       - name: Run Playwright tests (email-submission-8)
-        run: -g "Create and submit email mode form with MyInfo fields"
+        run: npx playwright test -g "Create and submit email mode form with MyInfo fields"
       - name: Run Playwright tests (email-submission-9)
-        run: -g "Create and submit email mode form with all fields shown by logic"
+        run: npx playwright test -g "Create and submit email mode form with all fields shown by logic"
       - name: Run Playwright tests (email-submission-10)
-        run: -g "Create and submit email mode form with a field hidden by logic"
+        run: npx playwright test -g "Create and submit email mode form with a field hidden by logic"
       - name: Run Playwright tests (email-submission-11)
-        run: -g "Create email mode form with submission disabled by chained logic"
+        run: npx playwright test -g "Create email mode form with submission disabled by chained logic"
       - uses: actions/upload-artifact@v3
         if: always()
         with:
