@@ -4,6 +4,7 @@ import {
   EmailFormSettings,
   FormSettings,
   SettingsUpdateDto,
+  StorageFormSettings,
 } from '~shared/types/form/form'
 
 import { ApiService } from '~services/ApiService'
@@ -14,6 +15,11 @@ import { ADMIN_FORM_ENDPOINT } from '../common/AdminViewFormService'
 type UpdateEmailFormFn<T extends keyof EmailFormSettings> = (
   formId: string,
   settingsToUpdate: EmailFormSettings[T],
+) => Promise<FormSettings>
+
+type UpdateStorageFormFn<T extends keyof StorageFormSettings> = (
+  formId: string,
+  settingsToUpdate: StorageFormSettings[T],
 ) => Promise<FormSettings>
 
 type UpdateFormFn<T extends keyof FormSettings> = (
@@ -104,6 +110,13 @@ export const updateFormWebhookRetries = async (
       isRetryEnabled: nextEnabled,
     },
   })
+}
+
+export const updateBusinessInfo: UpdateStorageFormFn<'business'> = async (
+  formId,
+  newBusinessField: StorageFormSettings['business'],
+) => {
+  return updateFormSettings(formId, { business: newBusinessField })
 }
 
 /**
