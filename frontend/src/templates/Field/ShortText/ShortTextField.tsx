@@ -27,12 +27,14 @@ export const ShortTextField = ({
 
   const { register } = useFormContext<SingleAnswerFieldInput>()
 
+  const isPrefilled = !!fieldContainerProps?.prefill?.prefillValue
+  const isPrefillLocked = !!fieldContainerProps?.prefill?.lockPrefill
   return (
     <FieldContainer schema={schema} {...fieldContainerProps}>
       <Input
-        isPrefilled={!!fieldContainerProps?.prefill?.prefillValue}
+        isPrefilled={isPrefilled}
         // Prevent editing of pre-filled fields if lockPrefill is true
-        isDisabled={!!fieldContainerProps?.prefill?.lockPrefill}
+        isPrefillLocked={isPrefillLocked}
         aria-label={`${schema.questionNumber}. ${schema.title}`}
         defaultValue=""
         preventDefaultOnEnter

@@ -24,7 +24,7 @@ const outlineVariant = (props: StyleFunctionProps) => {
 
   return {
     field: {
-      bg: isPrefilled ? 'warning.100' : 'white',
+      bg: 'white',
       textStyle: 'body-1',
       border: '1px solid',
       borderColor: isSuccess ? 'success.700' : 'neutral.400',
@@ -71,6 +71,20 @@ const outlineVariant = (props: StyleFunctionProps) => {
         borderColor: getColor(theme, fc),
         boxShadow: `0 0 0 1px ${getColor(theme, fc)}`,
       },
+      ...(isPrefilled
+        ? {
+            bg: 'warning.100',
+            _disabled: {
+              bg: 'warning.100',
+            },
+            _hover: {
+              bg: 'warning.100',
+            },
+            _active: {
+              bg: 'warning.100',
+            },
+          }
+        : {}),
     },
     success: {
       pointerEvents: 'none',
