@@ -25,7 +25,10 @@ import { checkFormIsEncryptMode } from '../submission/encrypt-submission/encrypt
 
 import { PaymentAccountInformationError } from './payments.errors'
 import * as PaymentService from './payments.service'
-import { StripeFetchError } from './stripe.errors'
+import {
+  StripeFetchError,
+  StripeMetadataIncorrectEnvError,
+} from './stripe.errors'
 import * as StripeService from './stripe.service'
 import {
   convertToInvoiceFormat,
@@ -234,6 +237,11 @@ const _handleStripeEventUpdates: ControllerHandler<
   result.match(
     () => res.sendStatus(StatusCodes.OK),
     (error) => {
+      if (error instanceof StripeMetadataIncorrectEnvError) {
+        // Intercept this error and return 202 Accepted instead, indicating
+        // the request will be processed by another environment server.
+        return res.sendStatus(StatusCodes.ACCEPTED)
+      }
       // Additional logging with error details
       logger.error({
         message: 'Error thrown in webhook handler',

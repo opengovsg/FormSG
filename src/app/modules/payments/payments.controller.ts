@@ -82,7 +82,7 @@ export const _handleGetPreviousPaymentId: ControllerHandler<
  */ export const handleGetPreviousPaymentId = [
   celebrate({
     [Segments.QUERY]: {
-      formId: Joi.string().required,
+      formId: Joi.string().required(),
     },
   }),
   _handleGetPreviousPaymentId,

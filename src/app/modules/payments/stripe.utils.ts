@@ -10,6 +10,7 @@ import Stripe from 'stripe'
 import { Payment, PaymentStatus } from '../../../../shared/types'
 import { hasProp } from '../../../../shared/utils/has-prop'
 import { StripePaymentMetadataDto } from '../../../types'
+import config from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { ApplicationError } from '../core/core.errors'
 import {
@@ -24,6 +25,8 @@ import {
 import {
   ComputePaymentStateError,
   StripeFetchError,
+  StripeMetadataIncorrectEnvError,
+  StripeMetadataInvalidError,
   StripeMetadataValidPaymentIdNotFoundError,
 } from './stripe.errors'
 
@@ -43,6 +46,7 @@ export const getChargeIdFromNestedCharge = (
 const isStripeMetadata = (
   obj: Stripe.Metadata,
 ): obj is StripePaymentMetadataDto =>
+  // hasProp(obj, 'env') && // TODO: Make this required later
   hasProp(obj, 'formTitle') &&
   hasProp(obj, 'formId') &&
   hasProp(obj, 'submissionId') &&
@@ -54,24 +58,41 @@ const isStripeMetadata = (
  * it (i.e. payment intents and charges).
  * @param {Stripe.Metadata} metadata the metadata object which is expected to have a payment id
  * @returns ok(paymentId) the extracted paymentId
+ * @returns err(StripeMetadataInvalidError) if the metadata has an invalid shape
  * @returns err(StripeMetadataValidPaymentIdNotFoundError) if the payment id was not found or is an invalid BSON object id
+ * @returns err(StripeMetadataIncorrectEnvError) if the app is incorrect
  */
 export const getMetadataPaymentId = (
   metadata: Stripe.Metadata,
-): Result<string, StripeMetadataValidPaymentIdNotFoundError> => {
+): Result<
+  string,
+  | StripeMetadataInvalidError
+  | StripeMetadataValidPaymentIdNotFoundError
+  | StripeMetadataIncorrectEnvError
+> => {
   const logMeta = {
     action: 'getMetadataPaymentId',
     metadata,
   }
-  if (
-    !isStripeMetadata(metadata) ||
-    !mongoose.Types.ObjectId.isValid(metadata.paymentId)
-  ) {
+  if (!isStripeMetadata(metadata)) {
     logger.warn({
-      message: 'Got metadata with invalid paymentId',
+      message: 'Got invalid Stripe metadata',
+      meta: { ...logMeta, metadata },
+    })
+    return err(new StripeMetadataInvalidError())
+  }
+  if (!mongoose.Types.ObjectId.isValid(metadata.paymentId)) {
+    logger.warn({
+      message: 'Got Stripe metadata with invalid paymentId',
       meta: { ...logMeta, metadata },
     })
     return err(new StripeMetadataValidPaymentIdNotFoundError())
+  }
+  // Explicit check for metadata.env to ensure that non-existent legacy metadata
+  // passes through on production.
+  // TODO: remove the existence check later.
+  if (metadata.env && metadata.env !== config.envSiteName) {
+    return err(new StripeMetadataIncorrectEnvError())
   }
   return ok(metadata.paymentId)
 }

@@ -108,6 +108,12 @@ export const compulsoryVarsSchema: Schema<ICompulsoryVarsSchema> = {
       default: null,
       env: 'SECRET_ENV',
     },
+    envSiteName: {
+      doc: 'Environment site name used to build key for AWS Secrets Manager',
+      format: String,
+      default: null,
+      env: 'SSM_ENV_SITE_NAME',
+    },
   },
   reactMigration: {
     adminSwitchEnvFeedbackFormId: {
