@@ -182,6 +182,7 @@ export const submitStorageModeFormWithFetch = async ({
   formId,
   publicKey,
   captchaResponse = null,
+  paymentReceiptEmail,
 }: SubmitStorageFormArgs) => {
   const filteredInputs = filterHiddenInputs({
     formFields,
@@ -192,6 +193,7 @@ export const submitStorageModeFormWithFetch = async ({
     formFields,
     filteredInputs,
     publicKey,
+    paymentReceiptEmail,
   )
 
   // Add captcha response to query string
