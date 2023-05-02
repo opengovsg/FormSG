@@ -715,7 +715,7 @@ const addLogics = async (
       }
     }
 
-    const logicTypeInput = page.locator('id=logicType')
+    const logicTypeInput = page.getByRole('combobox', { name: 'Then' })
     switch (logic.logicType) {
       case LogicType.ShowFields:
         await fillDropdown(page, logicTypeInput, 'Show field(s)')
