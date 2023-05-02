@@ -295,13 +295,13 @@ export const PaymentsInputPanel = (): JSX.Element | null => {
   // payment eligibility will be dependent on whether paymentDisabledMessage is non empty
   const isPaymentDisabled = !!paymentDisabledMessage
 
-  if (!paymentsData) return null
+  if (isEncryptMode && !paymentsData) return null
 
   return (
     <>
       {isPaymentDisabled && (
         <Box px="1.5rem" pt="2rem" pb="1.5rem">
-          <InlineMessage variant={'info'}>
+          <InlineMessage variant="info">
             <Text>{paymentDisabledMessage}</Text>
           </InlineMessage>
         </Box>
