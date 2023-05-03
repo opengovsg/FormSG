@@ -300,7 +300,7 @@ export const processStripeEvent = (
       processStripeEventWithinSession(paymentId, event, session)
         // Finally: Commit or abort depending on whether an error was caught,
         // then end the session
-        .andThen((submission) => {
+        .andThen(() => {
           return ResultAsync.fromPromise(
             session.commitTransaction(),
             (error) => {
@@ -313,7 +313,7 @@ export const processStripeEvent = (
             },
           ).andThen(() => {
             session.endSession()
-            return okAsync(submission)
+            return okAsync(undefined)
           })
         })
         .orElse((err) => {
