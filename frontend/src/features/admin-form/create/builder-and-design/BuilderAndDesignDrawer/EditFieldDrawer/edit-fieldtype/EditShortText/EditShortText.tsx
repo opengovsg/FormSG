@@ -266,7 +266,7 @@ export const EditShortText = ({ field }: EditShortTextProps): JSX.Element => {
           {...lockPrefillRegister}
           ref={mergedLockPrefillRef}
           label="Prevent pre-fill editing"
-          description="This prevents respondents from clicking the field to edit it. However, field content can still be modified via the URL. Prefill must be enabled first."
+          description="This prevents respondents from clicking the field to edit it. However, field content can still be modified via the URL."
           isDisabled={!watchAllowPrefill}
         />
       </FormControl>
