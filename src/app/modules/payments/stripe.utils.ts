@@ -123,8 +123,8 @@ export const getMetadataPaymentId = (
     })
     return err(new StripeMetadataValidPaymentIdNotFoundError())
   }
-  // Explicit check for metadata.env to ensure that non-existent legacy metadata
-  // passes through on production.
+  // Explicit check for metadata.env to ensure that legacy metadata which does
+  // not have the env value still gets processed.
   // TODO: remove the existence check later.
   if (metadata.env && metadata.env !== config.envSiteName) {
     return err(new StripeMetadataIncorrectEnvError())
