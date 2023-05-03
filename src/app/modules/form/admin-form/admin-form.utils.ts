@@ -172,7 +172,7 @@ export const mapRouteError = (
       }
     case PaymentChannelNotFoundError:
       return {
-        statusCode: StatusCodes.BAD_REQUEST,
+        statusCode: StatusCodes.FORBIDDEN,
         errorMessage: error.message,
       }
     default:
