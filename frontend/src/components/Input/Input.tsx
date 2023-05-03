@@ -6,6 +6,7 @@ import {
   InputGroup,
   InputLeftAddon,
   InputProps as ChakraInputProps,
+  InputRightAddon,
   InputRightElement,
   useMultiStyleConfig,
 } from '@chakra-ui/react'
@@ -82,21 +83,26 @@ export const Input = forwardRef<InputProps, 'input'>((props, ref) => {
         </InputGroup>
       )
     } else {
-      return (
+      return props.isPrefillLocked ? (
         <InputGroup>
           <ChakraInput
             ref={ref}
             {...preventDefault}
             {...inputProps}
-            {...(props.isPrefillLocked ? { isDisabled: true } : {})}
+            isDisabled={true}
             sx={props.sx ?? inputStyles.field}
           />
-          {props.isPrefillLocked ? (
-            <InputRightElement>
-              <BxLockAlt />
-            </InputRightElement>
-          ) : null}
+          <InputRightElement>
+            <BxLockAlt />
+          </InputRightElement>
         </InputGroup>
+      ) : (
+        <ChakraInput
+          ref={ref}
+          {...preventDefault}
+          {...inputProps}
+          sx={props.sx ?? inputStyles.field}
+        />
       )
     }
   }
