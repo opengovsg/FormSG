@@ -45,7 +45,6 @@ export const updateUserLastSeenFeatureUpdateVersion = async (
   ).then(({ data }) => data)
 }
 
-// FIXME: Mock both endpoints and inject handler into tests
 export const transferOwnership = async (
   request: TransferOwnershipRequestDto,
 ): Promise<TransferOwnershipResponseDto> => {

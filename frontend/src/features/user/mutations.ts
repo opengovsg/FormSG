@@ -60,6 +60,11 @@ export const useUserMutations = () => {
           description: 'Ownership transferred.',
         })
       },
+      onError: (error) => {
+        toast({
+          description: error,
+        })
+      },
     },
   )
 

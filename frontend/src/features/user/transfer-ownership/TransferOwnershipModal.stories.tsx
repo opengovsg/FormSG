@@ -14,7 +14,7 @@ import {
   getOwnedForms,
   transferOwnership,
 } from '~/mocks/msw/handlers/admin-form/transfer-ownership'
-import { getUser, MOCK_USER, userHandlers } from '~/mocks/msw/handlers/user'
+import { getUser, MOCK_USER } from '~/mocks/msw/handlers/user'
 
 import {
   fullScreenDecorator,
@@ -24,6 +24,8 @@ import {
 
 import { TransferOwnershipModal } from './TransferOwnershipModal'
 
+// FIXME: getUser, MOCK_USER are imported from another mock file. Consider relocating to a commons file?
+// FIXME: Copied from frontend/src/features/workspace/WorkspacePage.stories.tsx. Should DRY.
 const createForm: (_: number) => AdminDashboardFormMetaDto[] = (
   num: number,
 ) => {
@@ -34,15 +36,7 @@ const createForm: (_: number) => AdminDashboardFormMetaDto[] = (
       responseMode: x % 2 ? FormResponseMode.Email : FormResponseMode.Encrypt,
       title: `Test form ${x}`,
       admin: {
-        _id: '618b2cc0648fb70070000292',
-        email: 'test@example.com',
-        agency: {
-          _id: '618aaf0725e150255e745a23',
-          shortName: 'test',
-          fullName: 'Test Technology Agency',
-          logo: 'path/to/logo',
-          emailDomain: ['example.com'],
-        },
+        ...MOCK_USER,
       },
       lastModified: `2021-11-${((x % 30) + 1)
         .toString()
@@ -62,9 +56,12 @@ export default {
     // Prevent flaky tests due to modal animating in.
     chromatic: { pauseAnimationAtEnd: true },
     msw: [
+      getUser({ delay: 0, mockUser: MOCK_USER }),
       getOwnedForms({ overrides: [...MOCK_OWNED_FORMS] }),
       transferOwnership({
-        overrides: [...MOCK_OWNED_FORMS.map((form) => form._id)],
+        overrides: {
+          body: [...MOCK_OWNED_FORMS.map((form) => form._id)],
+        },
       }),
     ],
   },
@@ -94,10 +91,8 @@ const Template: Story = () => {
     el,
   )
 }
+
 export const Default = Template.bind({})
-Default.parameters = {
-  msw: [getUser({ delay: 0, mockUser: MOCK_USER })],
-}
 
 export const Mobile = Template.bind({})
 Mobile.parameters = {
@@ -105,4 +100,14 @@ Mobile.parameters = {
     defaultViewport: 'mobile1',
   },
   chromatic: { viewports: [viewports.xs] },
+}
+
+// FIXME: Toast still triggered onSuccess instead of onError
+export const Failure = Template.bind({})
+Failure.parameters = {
+  msw: [
+    getUser({ delay: 0, mockUser: MOCK_USER }),
+    getOwnedForms({ overrides: [...MOCK_OWNED_FORMS] }),
+    transferOwnership({ overrides: { status: 500, body: [] } }),
+  ],
 }

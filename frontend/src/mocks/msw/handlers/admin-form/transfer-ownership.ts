@@ -21,13 +21,17 @@ export const transferOwnership = ({
   overrides,
   delay = 0,
 }: {
-  overrides?: string[]
+  overrides?: { status?: number; body?: string[] }
   delay?: number | 'infinite'
 } = {}): ReturnType<typeof rest['get']> => {
   return rest.post<AdminDashboardFormMetaDto[]>(
     '/api/v3/admin/forms/:formId/collaborators/transfer-owner',
     (req, res, ctx) => {
-      return res(ctx.delay(delay), ctx.status(200), ctx.json(overrides ?? []))
+      return res(
+        ctx.delay(delay),
+        ctx.status(overrides?.status ?? 200),
+        ctx.json(overrides?.body ?? []),
+      )
     },
   )
 }
