@@ -17,6 +17,10 @@ import { FormHeader } from '~features/public-form/components/FormStartPage/FormH
 import { useFormHeader } from '~features/public-form/components/FormStartPage/useFormHeader'
 
 import { useCreatePageSidebar } from '../../common/CreatePageSidebarContext'
+import {
+  setToInactiveSelector as setPaymentToInactiveSelector,
+  usePaymentStore,
+} from '../BuilderAndDesignDrawer/FieldListDrawer/field-panels/usePaymentStore'
 import { useCreateTabForm } from '../useCreateTabForm'
 import {
   customLogoMetaSelector,
@@ -28,28 +32,26 @@ import {
 } from '../useDesignStore'
 import { isDirtySelector, useDirtyFieldStore } from '../useDirtyFieldStore'
 import {
-  setToInactiveSelector,
+  setToInactiveSelector as setFieldBuilderToInactiveSelector,
   useFieldBuilderStore,
 } from '../useFieldBuilderStore'
 
 export const StartPageView = () => {
   const isMobile = useIsMobile()
   const { data: form, isLoading } = useCreateTabForm()
-  const setToInactive = useFieldBuilderStore(setToInactiveSelector)
+  const setFieldBuilderToInactive = useFieldBuilderStore(
+    setFieldBuilderToInactiveSelector,
+  )
+  const setPaymentToInactive = usePaymentStore(setPaymentToInactiveSelector)
   const isDirty = useDirtyFieldStore(isDirtySelector)
 
   const { designState, startPageData, customLogoMeta, setDesignState } =
-    useDesignStore(
-      useCallback(
-        (state) => ({
-          designState: stateSelector(state),
-          startPageData: startPageDataSelector(state),
-          customLogoMeta: customLogoMetaSelector(state),
-          setDesignState: setStateSelector(state),
-        }),
-        [],
-      ),
-    )
+    useDesignStore((state) => ({
+      designState: stateSelector(state),
+      startPageData: startPageDataSelector(state),
+      customLogoMeta: customLogoMetaSelector(state),
+      setDesignState: setStateSelector(state),
+    }))
 
   const { data: { logoBucketUrl } = {} } = useEnv(
     form?.startPage.logo.state === FormLogoState.Custom,
@@ -124,13 +126,15 @@ export const StartPageView = () => {
     }
 
     setDesignState(DesignState.EditingHeader)
-    setToInactive()
+    setFieldBuilderToInactive()
+    setPaymentToInactive()
     handleDesignClick(false)
   }, [
     handleDesignClick,
     isDirtyAndDesignInactive,
     setDesignState,
-    setToInactive,
+    setFieldBuilderToInactive,
+    setPaymentToInactive,
   ])
 
   const handleInstructionsClick = useCallback(() => {
@@ -139,14 +143,16 @@ export const StartPageView = () => {
     }
 
     setDesignState(DesignState.EditingInstructions)
-    setToInactive()
+    setFieldBuilderToInactive()
+    setPaymentToInactive()
     if (!isMobile) handleDesignClick(false)
   }, [
     handleDesignClick,
     isDirtyAndDesignInactive,
     isMobile,
     setDesignState,
-    setToInactive,
+    setFieldBuilderToInactive,
+    setPaymentToInactive,
   ])
 
   const handleEditInstructionsClick = useCallback(() => {
