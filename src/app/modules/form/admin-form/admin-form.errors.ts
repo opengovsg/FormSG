@@ -29,3 +29,11 @@ export class InvalidCollaboratorError extends ApplicationError {
     super(message)
   }
 }
+
+export class PaymentChannelNotFoundError extends ApplicationError {
+  constructor(
+    message = 'Payment channel not found. Please connect your Payment account in Settings',
+  ) {
+    super(message)
+  }
+}
