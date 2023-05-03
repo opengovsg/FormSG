@@ -2,10 +2,14 @@ import { celebrate, Joi, Segments } from 'celebrate'
 import { AuthedSessionData } from 'express-session'
 import { StatusCodes } from 'http-status-codes'
 import { err, ok } from 'neverthrow'
-import { ErrorDto, PaymentChannel, PaymentsUpdateDto } from 'shared/types'
 
 import { IEncryptedFormDocument } from 'src/types'
 
+import {
+  ErrorDto,
+  PaymentChannel,
+  PaymentsUpdateDto,
+} from '../../../../../shared/types'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { createReqMeta } from '../../../utils/request'
 import { getFormAfterPermissionChecks } from '../../auth/auth.service'
@@ -228,7 +232,7 @@ export const _handleUpdatePayments: ControllerHandler<
       .andThen(checkFormIsEncryptMode)
       // Step 3: Check that the payment form has a stripe account connected
       .andThen((form) => {
-        if (form.payments_channel.channel === PaymentChannel.Unconnected) {
+        if (form.payments_channel.channel !== PaymentChannel.Unconnected) {
           return ok(form)
         } else {
           return err(new PaymentChannelNotFoundError())
