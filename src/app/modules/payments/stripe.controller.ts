@@ -55,7 +55,9 @@ const validateStripeEvent = celebrate({
  * Receives Stripe webhooks and updates the database with transaction details.
  *
  * @returns 200 if webhook is successfully processed
- * @returns 400 if the Stripe-Signature header is missing or invalid
+ * @returns 202 if webhooks is not meant for this environment and will be processed by another environment
+ * @returns 400 if the Stripe-Signature header is missing or invalid, or the event is malformed
+ * @returns 404 if the payment or submission linked to the event cannot be found
  * @returns 422 if any errors occurs in processing the webhook or saving payment to DB
  * @returns 500 if any unexpected errors occur
  */
