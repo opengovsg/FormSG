@@ -9,10 +9,10 @@ import Stripe from 'stripe'
 
 import { Payment, PaymentStatus } from '../../../../shared/types'
 import { hasProp } from '../../../../shared/utils/has-prop'
-import { StripePaymentMetadataDto } from '../../../types'
+import { MapRouteError, StripePaymentMetadataDto } from '../../../types'
 import config from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
-import { ApplicationError } from '../core/core.errors'
+import { ApplicationError, DatabaseError } from '../core/core.errors'
 import {
   PendingSubmissionNotFoundError,
   ResponseModeError,
@@ -20,10 +20,12 @@ import {
 
 import {
   PaymentAccountInformationError,
+  PaymentAlreadyConfirmedError,
   PaymentNotFoundError,
 } from './payments.errors'
 import {
   ComputePaymentStateError,
+  MalformedStripeChargeObjectError,
   StripeFetchError,
   StripeMetadataIncorrectEnvError,
   StripeMetadataInvalidError,
@@ -31,6 +33,39 @@ import {
 } from './stripe.errors'
 
 const logger = createLoggerWithLabel(module)
+
+export const mapRouteError: MapRouteError = (error: ApplicationError) => {
+  switch (error.constructor) {
+    case StripeMetadataInvalidError:
+    case MalformedStripeChargeObjectError:
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage: error.message,
+      }
+    case ResponseModeError:
+    case StripeMetadataValidPaymentIdNotFoundError:
+    case PaymentAlreadyConfirmedError:
+      return {
+        statusCode: StatusCodes.UNPROCESSABLE_ENTITY,
+        errorMessage: error.message,
+      }
+    case PaymentNotFoundError:
+    case PendingSubmissionNotFoundError:
+      return {
+        statusCode: StatusCodes.NOT_FOUND,
+        errorMessage: error.message,
+      }
+    case StripeFetchError:
+    case PaymentAccountInformationError:
+    case ComputePaymentStateError:
+    case DatabaseError:
+    default:
+      return {
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        errorMessage: error.message,
+      }
+  }
+}
 
 /**
  * Helper function to get the charge id from a nested charge object.
@@ -327,29 +362,6 @@ export const computePayoutDetails = (
       event.type.startsWith('payout.'),
   )
   return ok(payoutEvents.reduce(payoutStateReducer, undefined))
-}
-
-export const mapRouteErr = (error: ApplicationError) => {
-  switch (error.constructor) {
-    case ResponseModeError:
-      return {
-        statusCode: StatusCodes.UNPROCESSABLE_ENTITY,
-        errorMessage: error.message,
-      }
-    case PaymentNotFoundError: // fall-through
-    case PendingSubmissionNotFoundError:
-      return {
-        statusCode: StatusCodes.NOT_FOUND,
-        errorMessage: error.message,
-      }
-    case StripeFetchError: // fall-through
-    case PaymentAccountInformationError: // fall-through
-    default:
-      return {
-        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
-        errorMessage: error.message,
-      }
-  }
 }
 
 /**

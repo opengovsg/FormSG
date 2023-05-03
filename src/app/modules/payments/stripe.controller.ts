@@ -34,7 +34,7 @@ import {
   convertToInvoiceFormat,
   getChargeIdFromNestedCharge,
   getMetadataPaymentId,
-  mapRouteErr,
+  mapRouteError,
 } from './stripe.utils'
 
 const logger = createLoggerWithLabel(module)
@@ -61,7 +61,7 @@ const validateStripeEvent = celebrate({
  */
 const _handleStripeEventUpdates: ControllerHandler<
   unknown,
-  never,
+  void | ErrorDto,
   string
 > = async (req, res) => {
   // Step 1: Verify the payload and ensure that it is indeed sent from Stripe.
@@ -248,8 +248,8 @@ const _handleStripeEventUpdates: ControllerHandler<
         meta: logMeta,
         error,
       })
-      // TODO: Add map route error here
-      return res.sendStatus(StatusCodes.UNPROCESSABLE_ENTITY)
+      const { errorMessage, statusCode } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
     },
   )
 }
@@ -617,8 +617,7 @@ export const getPaymentInfo: ControllerHandler<
         })
     })
     .mapErr((error) => {
-      const { errorMessage, statusCode } = mapRouteErr(error)
-
+      const { errorMessage, statusCode } = mapRouteError(error)
       return res.status(statusCode).json({ message: errorMessage })
     })
 }
