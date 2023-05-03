@@ -80,7 +80,7 @@ export const useRecaptcha = ({
   useEnterprise = true,
   badge = 'inline',
   size = 'invisible',
-  useRecaptchaNet,
+  useRecaptchaNet = true,
 }: UseRecaptchaProps) => {
   useScript(getRecaptchaUrl({ useEnterprise, useRecaptchaNet }))
 
