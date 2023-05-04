@@ -6,7 +6,6 @@ import {
   InputGroup,
   InputLeftAddon,
   InputProps as ChakraInputProps,
-  InputRightAddon,
   InputRightElement,
   useMultiStyleConfig,
 } from '@chakra-ui/react'
