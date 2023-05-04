@@ -105,6 +105,7 @@ const useDecryptionWorkers = ({
         action: 'downloadEncryptedReponses',
         formId: adminForm._id,
         formTitle: adminForm.title,
+        downloadAttachments: downloadAttachments,
         num_workers: numWorkers,
         expectedNumSubmissions: NUM_OF_METADATA_ROWS,
         adminId: user?._id,
