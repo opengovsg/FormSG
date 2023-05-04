@@ -257,7 +257,8 @@ export const performPaymentPostSubmissionActions = (
               )
             }
             return okAsync(submission)
-          }) // Step 3: Find form document
+          })
+          // Step 4: Find form document
           .andThen((submission) => retrieveFormById(submission.form))
           .map((form) => ({
             formTitle: form.title,
@@ -272,7 +273,7 @@ export const performPaymentPostSubmissionActions = (
         message: 'Sending payment confirmation email',
         meta: { ...logMeta, submissionId, email },
       })
-      // Step 4: Send payment confirmation email
+      // Step 5: Send payment confirmation email
       return MailService.sendPaymentConfirmationEmail({
         email,
         formTitle,
