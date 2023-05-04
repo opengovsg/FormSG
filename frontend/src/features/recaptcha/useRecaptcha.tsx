@@ -54,7 +54,7 @@ const getRecaptchaUrl = ({
   useEnterprise,
   useRecaptchaNet,
 }: Pick<UseRecaptchaProps, 'useEnterprise' | 'useRecaptchaNet'>) => {
-  const hostname = useRecaptchaNet ? 'recaptcha.net' : 'www.google.com'
+  const hostname = useRecaptchaNet ? 'www.recaptcha.net' : 'www.google.com'
   return `https://${hostname}/recaptcha/${
     useEnterprise ? 'enterprise' : 'api'
   }.js?render=explicit`
@@ -80,7 +80,7 @@ export const useRecaptcha = ({
   useEnterprise = true,
   badge = 'inline',
   size = 'invisible',
-  useRecaptchaNet,
+  useRecaptchaNet = true,
 }: UseRecaptchaProps) => {
   useScript(getRecaptchaUrl({ useEnterprise, useRecaptchaNet }))
 
