@@ -67,11 +67,13 @@ export const PaymentPreview = ({
         <Box as="h2" mb="1rem" textStyle="h2" color={sectionColor}>
           Payment
         </Box>
-        <PaymentItemDetailsBlock
-          paymentItemName={paymentDetails.description}
-          colorTheme={colorTheme}
-          paymentAmount={paymentDetails.amount_cents}
-        />
+        <Box mb="1rem">
+          <PaymentItemDetailsBlock
+            paymentItemName={paymentDetails.description}
+            colorTheme={colorTheme}
+            paymentAmount={paymentDetails.amount_cents}
+          />
+        </Box>
         {isBuilder ? (
           <VerifiableFieldBuilderContainer schema={emailFieldSchema}>
             <EmailFieldInput schema={emailFieldSchema} />

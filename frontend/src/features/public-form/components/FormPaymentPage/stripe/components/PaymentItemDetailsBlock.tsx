@@ -22,7 +22,6 @@ export const PaymentItemDetailsBlock = ({
       borderColor={`theme-${colorTheme}.300`}
       borderRadius="4px"
       p="0.7rem"
-      mb="2rem"
     >
       <Text textStyle="body-1" mb="0.5rem">
         {paymentItemName}
