@@ -1,10 +1,15 @@
 import { celebrate, Joi, Segments } from 'celebrate'
 import { AuthedSessionData } from 'express-session'
 import { StatusCodes } from 'http-status-codes'
-import { ErrorDto, PaymentsUpdateDto } from 'shared/types'
+import { err, ok } from 'neverthrow'
 
 import { IEncryptedFormDocument } from 'src/types'
 
+import {
+  ErrorDto,
+  PaymentChannel,
+  PaymentsUpdateDto,
+} from '../../../../../shared/types'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { createReqMeta } from '../../../utils/request'
 import { getFormAfterPermissionChecks } from '../../auth/auth.service'
@@ -19,6 +24,7 @@ import { checkFormIsEncryptMode } from '../../submission/encrypt-submission/encr
 import { getPopulatedUserById } from '../../user/user.service'
 import * as UserService from '../../user/user.service'
 
+import { PaymentChannelNotFoundError } from './admin-form.errors'
 import * as AdminFormService from './admin-form.service'
 import { PermissionLevel } from './admin-form.types'
 import { mapRouteError, verifyUserBetaflag } from './admin-form.utils'
@@ -223,7 +229,14 @@ export const _handleUpdatePayments: ControllerHandler<
           level: PermissionLevel.Write,
         }),
       )
-      // Step 3: User has permissions, proceed to allow updating of start page
+      .andThen(checkFormIsEncryptMode)
+      // Step 3: Check that the payment form has a stripe account connected
+      .andThen((form) =>
+        form.payments_channel.channel === PaymentChannel.Unconnected
+          ? err(new PaymentChannelNotFoundError())
+          : ok(form),
+      )
+      // Step 4: User has permissions, proceed to allow updating of start page
       .andThen(() => AdminFormService.updatePayments(formId, req.body))
       .map((updatedPayments) =>
         res.status(StatusCodes.OK).json(updatedPayments),
