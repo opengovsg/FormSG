@@ -110,11 +110,11 @@ The list of categories can be inferred by looking at the file `.ebextensions/env
 
 #### AWS Systems Manager
 
-| Variable     | Description                                                                                                           |
-| :----------- | --------------------------------------------------------------------------------------------------------------------- |
-| `SSM_PREFIX` | String prefix (typically the environment name) for AWS SSM parameter names to create a .env file for FormSG. (`staging`, `prod`)|
-| `SECRET_ENV` | String (typically the environment name) to be used in building of AWS Secrets Manager keys in different environments.|
-| `SSM_ENV_SITE_NAME` | String (the specific environment site name) to be used in building of AWS Secrets Manager keys in different environments. Optional. (`staging-alt`, `staging-alt2`)|
+| Variable            | Description                                                                                                                                                                         |
+| :------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `SSM_PREFIX`        | String prefix (typically the environment type) for AWS SSM parameter names to create a .env file for FormSG. (`staging`, `prod`, `uat`)                                             |
+| `SECRET_ENV`        | String (typically the environment type) to be used in building of AWS Secrets Manager keys in different environments.                                                               |
+| `SSM_ENV_SITE_NAME` | String (the specific environment site name) to be used in building of AWS Secrets Manager keys in different environments. (`staging`, `staging-alt`, `staging-alt2`, `prod`, `uat`) |
 
 #### App Config
 
