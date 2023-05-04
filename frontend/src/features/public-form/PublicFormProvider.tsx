@@ -483,6 +483,10 @@ export const PublicFormProvider = ({
     [data?.form, data?.spcpSession],
   )
 
+  const isPaymentEnabled =
+    data?.form.responseMode === FormResponseMode.Encrypt &&
+    data.form.payments_field.enabled
+
   if (isNotFormId) {
     return <NotFoundErrorPage />
   }
@@ -499,6 +503,7 @@ export const PublicFormProvider = ({
         captchaContainerId: containerId,
         expiryInMs,
         isLoading: isLoading || (!!data?.form.hasCaptcha && !hasLoaded),
+        isPaymentEnabled,
         ...commonFormValues,
         ...data,
         ...rest,
