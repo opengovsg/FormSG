@@ -29,14 +29,16 @@ const BusinessFieldInput = ({
 
   const handleValueChange: ChangeEventHandler<HTMLInputElement> = useCallback(
     (e) => {
-      setValue(e.target.value.trim())
+      setValue(e.target.value)
     },
     [],
   )
 
   const handleBlur = useCallback(() => {
     if (value === initialValue) return
-    handleMutation(value)
+    const trimmedValue = value.trim()
+    handleMutation(trimmedValue)
+    setValue(trimmedValue)
   }, [handleMutation, value, initialValue])
 
   const handleKeydown: KeyboardEventHandler<HTMLInputElement> = useCallback(
