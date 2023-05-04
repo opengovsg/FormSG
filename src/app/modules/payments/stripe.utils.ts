@@ -13,12 +13,15 @@ import { MapRouteError, StripePaymentMetadataDto } from '../../../types'
 import config from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { ApplicationError, DatabaseError } from '../core/core.errors'
+import { FormNotFoundError } from '../form/form.errors'
 import {
   PendingSubmissionNotFoundError,
   ResponseModeError,
+  SubmissionNotFoundError,
 } from '../submission/submission.errors'
 
 import {
+  ConfirmedPaymentNotFoundError,
   PaymentAccountInformationError,
   PaymentAlreadyConfirmedError,
   PaymentNotFoundError,
@@ -51,6 +54,9 @@ export const mapRouteError: MapRouteError = (error: ApplicationError) => {
       }
     case PaymentNotFoundError:
     case PendingSubmissionNotFoundError:
+    case ConfirmedPaymentNotFoundError:
+    case SubmissionNotFoundError:
+    case FormNotFoundError:
       return {
         statusCode: StatusCodes.NOT_FOUND,
         errorMessage: error.message,
