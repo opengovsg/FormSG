@@ -51,6 +51,12 @@ export class DatabaseDuplicateKeyError extends ApplicationError {
   }
 }
 
+export class DatabaseWriteConflictError extends ApplicationError {
+  constructor(message: string) {
+    super(message)
+  }
+}
+
 export class SecretsManagerError extends ApplicationError {
   constructor(message?: string) {
     super(message)
@@ -84,6 +90,7 @@ export type PossibleDatabaseError =
   | DatabaseConflictError
   | DatabasePayloadSizeError
   | DatabaseDuplicateKeyError
+  | DatabaseWriteConflictError
 
 export class MalformedParametersError extends ApplicationError {
   constructor(message: string, meta?: unknown) {
