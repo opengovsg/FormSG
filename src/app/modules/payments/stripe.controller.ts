@@ -25,13 +25,16 @@ import { checkFormIsEncryptMode } from '../submission/encrypt-submission/encrypt
 
 import { PaymentAccountInformationError } from './payments.errors'
 import * as PaymentService from './payments.service'
-import { StripeFetchError } from './stripe.errors'
+import {
+  StripeFetchError,
+  StripeMetadataIncorrectEnvError,
+} from './stripe.errors'
 import * as StripeService from './stripe.service'
 import {
   convertToInvoiceFormat,
   getChargeIdFromNestedCharge,
   getMetadataPaymentId,
-  mapRouteErr,
+  mapRouteError,
 } from './stripe.utils'
 
 const logger = createLoggerWithLabel(module)
@@ -52,13 +55,15 @@ const validateStripeEvent = celebrate({
  * Receives Stripe webhooks and updates the database with transaction details.
  *
  * @returns 200 if webhook is successfully processed
- * @returns 400 if the Stripe-Signature header is missing or invalid
+ * @returns 202 if webhooks is not meant for this environment and will be processed by another environment
+ * @returns 400 if the Stripe-Signature header is missing or invalid, or the event is malformed
+ * @returns 404 if the payment or submission linked to the event cannot be found
  * @returns 422 if any errors occurs in processing the webhook or saving payment to DB
  * @returns 500 if any unexpected errors occur
  */
 const _handleStripeEventUpdates: ControllerHandler<
   unknown,
-  never,
+  void | ErrorDto,
   string
 > = async (req, res) => {
   // Step 1: Verify the payload and ensure that it is indeed sent from Stripe.
@@ -234,14 +239,19 @@ const _handleStripeEventUpdates: ControllerHandler<
   result.match(
     () => res.sendStatus(StatusCodes.OK),
     (error) => {
+      if (error instanceof StripeMetadataIncorrectEnvError) {
+        // Intercept this error and return 202 Accepted instead, indicating
+        // the request will be processed by another environment server.
+        return res.sendStatus(StatusCodes.ACCEPTED)
+      }
       // Additional logging with error details
       logger.error({
         message: 'Error thrown in webhook handler',
         meta: logMeta,
         error,
       })
-      // TODO: Add map route error here
-      return res.sendStatus(StatusCodes.UNPROCESSABLE_ENTITY)
+      const { errorMessage, statusCode } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
     },
   )
 }
@@ -609,8 +619,7 @@ export const getPaymentInfo: ControllerHandler<
         })
     })
     .mapErr((error) => {
-      const { errorMessage, statusCode } = mapRouteErr(error)
-
+      const { errorMessage, statusCode } = mapRouteError(error)
       return res.status(statusCode).json({ message: errorMessage })
     })
 }

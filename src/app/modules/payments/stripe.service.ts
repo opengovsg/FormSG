@@ -147,7 +147,6 @@ const confirmStripePaymentPendingSubmission = (
  * @param {mongoose.ClientSession} session the mongoose session to use for all db operations
  *
  * @returns ok() if event was successfully processed
- * @returns err(EventMetadataPaymentIdInvalidError) if the payment id is not found in the event metadata or is found but an invalid BSON object id
  * @returns err(MalformedStripeChargeObjectError) if the shape of the charge object returned by Stripe does not have expected fields
  * @returns err(PaymentNotFoundError) if the payment document does not exist
  * @returns err(PendingSubmissionNotFoundError) if the pending submission being referenced by the payment document does not exist
@@ -255,7 +254,6 @@ export const processStripeEventWithinSession = (
  * @param {Stripe.Event} event the new Stripe Event causing the update operation to occur
  *
  * @returns ok() if event was successfully processed
- * @returns err(EventMetadataPaymentIdInvalidError) if the payment id is not found in the event metadata or is found but an invalid BSON object id
  * @returns err(MalformedStripeChargeObjectError) if the shape of the charge object returned by Stripe does not have expected fields
  * @returns err(PaymentNotFoundError) if the payment document does not exist
  * @returns err(PendingSubmissionNotFoundError) if the pending submission being referenced by the payment document does not exist
@@ -302,7 +300,7 @@ export const processStripeEvent = (
       processStripeEventWithinSession(paymentId, event, session)
         // Finally: Commit or abort depending on whether an error was caught,
         // then end the session
-        .andThen((submission) => {
+        .andThen(() => {
           return ResultAsync.fromPromise(
             session.commitTransaction(),
             (error) => {
@@ -315,7 +313,7 @@ export const processStripeEvent = (
             },
           ).andThen(() => {
             session.endSession()
-            return okAsync(submission)
+            return okAsync(undefined)
           })
         })
         .orElse((err) => {

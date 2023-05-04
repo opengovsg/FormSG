@@ -21,6 +21,7 @@ import {
 } from '../../../../../shared/types'
 import { StripePaymentMetadataDto } from '../../../../types'
 import { EncryptSubmissionDto } from '../../../../types/api'
+import config from '../../../config/config'
 import { paymentConfig } from '../../../config/features/payment.config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { stripe } from '../../../loaders/stripe'
@@ -429,6 +430,7 @@ const submitEncryptModeForm: ControllerHandler<
     // Step 3: Create the payment intent via API call to stripe.
     // Stripe requires the amount to be an integer in the smallest currency unit (i.e. cents)
     const metadata: StripePaymentMetadataDto = {
+      env: config.envSiteName,
       formTitle: form.title,
       formId,
       submissionId: pendingSubmissionId,
