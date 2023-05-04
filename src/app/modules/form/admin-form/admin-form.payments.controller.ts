@@ -231,13 +231,11 @@ export const _handleUpdatePayments: ControllerHandler<
       )
       .andThen(checkFormIsEncryptMode)
       // Step 3: Check that the payment form has a stripe account connected
-      .andThen((form) => {
-        if (form.payments_channel.channel !== PaymentChannel.Unconnected) {
-          return ok(form)
-        } else {
-          return err(new PaymentChannelNotFoundError())
-        }
-      })
+      .andThen((form) =>
+        form.payments_channel.channel === PaymentChannel.Unconnected
+          ? err(new PaymentChannelNotFoundError())
+          : ok(form),
+      )
       // Step 4: User has permissions, proceed to allow updating of start page
       .andThen(() => AdminFormService.updatePayments(formId, req.body))
       .map((updatedPayments) =>
