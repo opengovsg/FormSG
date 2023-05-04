@@ -6,7 +6,6 @@ import { PaymentStatus } from '../../../../shared/types'
 import { IPaymentSchema } from '../../../types'
 import { createLoggerWithLabel } from '../../config/logger'
 import getPaymentModel from '../../models/payment.server.model'
-import { MailSendError } from '../../services/mail/mail.errors'
 import MailService from '../../services/mail/mail.service'
 import { getMongoErrorMessage } from '../../utils/handle-mongo-error'
 import { DatabaseError } from '../core/core.errors'
@@ -197,18 +196,16 @@ export const confirmPaymentPendingSubmission = (
  * @returns err(ConfirmedPaymentNotFoundError) if the paymentId does not have a submission ID associated with a completed payment
  * @returns err(SubmissionNotFoundError) if submission does not exist in the database
  * @returns err(FormNotFoundError) if the form or form admin does not exist
- * @returns err(MailSendError) if error occurs while sending the mail
  * @returns err(DatabaseError) if error occurs whilst querying the database
  */
 export const performPaymentPostSubmissionActions = (
   paymentId: IPaymentSchema['_id'],
 ): ResultAsync<
-  true,
+  void,
   | PaymentNotFoundError
   | ConfirmedPaymentNotFoundError
   | SubmissionNotFoundError
   | FormNotFoundError
-  | MailSendError
   | DatabaseError
 > => {
   const logMeta = {
@@ -254,36 +251,43 @@ export const performPaymentPostSubmissionActions = (
                       },
                     ).map(() => submission),
                   )
-                  // Ignore failures as they will be logged, but should not be
-                  // considered a failed webhook.
+                  // Ignore failures as they will be logged, but the webhook
+                  // response should not be a failure
                   .orElse(() => okAsync(submission))
               )
             }
             return okAsync(submission)
-          })
-          // Step 3: Find form document
+          }) // Step 3: Find form document
           .andThen((submission) => retrieveFormById(submission.form))
           .map((form) => ({
             formTitle: form.title,
             formId: form._id,
-            responseId: submissionId,
-            recipient: payment.email,
+            submissionId,
+            email: payment.email,
           }))
       )
     })
-    .andThen(({ formTitle, formId, responseId, recipient }) => {
+    .andThen(({ formTitle, formId, submissionId, email }) => {
       logger.info({
         message: 'Sending payment confirmation email',
-        meta: logMeta,
+        meta: { ...logMeta, submissionId, email },
       })
       // Step 4: Send payment confirmation email
       return MailService.sendPaymentConfirmationEmail({
-        recipient,
+        email,
         formTitle,
-        responseId,
+        submissionId,
         formId,
         paymentId,
       })
+        .andThen(() => okAsync(undefined))
+        .orElse(() => {
+          logger.error({
+            message: 'Failed to send payment confirmation email',
+            meta: { ...logMeta, submissionId, email },
+          })
+          return okAsync(undefined)
+        })
     })
 }
 
