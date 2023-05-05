@@ -5,7 +5,7 @@ import { celebrate, Joi, Segments } from 'celebrate'
 import { StatusCodes } from 'http-status-codes'
 import get from 'lodash/get'
 import mongoose from 'mongoose'
-import { errAsync, ok, Result, ResultAsync } from 'neverthrow'
+import { errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import Stripe from 'stripe'
 
 import { IPopulatedForm } from 'src/types'
@@ -127,27 +127,23 @@ const _handleStripeEventUpdates: ControllerHandler<
     case 'charge.pending':
     case 'charge.refunded':
     case 'charge.succeeded': {
-      let paymentIdForEmail
-
       result = await getMetadataPaymentId(
         event.data.object.metadata,
-      ).asyncAndThen((paymentId) => {
-        paymentIdForEmail = paymentId
-        return StripeService.processStripeEvent(paymentId, event)
-      })
+      ).asyncAndThen((paymentId) =>
+        StripeService.processStripeEvent(paymentId, event).andThen(() => {
+          if (event.type !== 'charge.succeeded') return okAsync(undefined)
 
-      if (result.isOk() && event.type === 'charge.succeeded') {
-        const mailSent =
-          await PaymentService.sendPaymentConfirmationEmailByPaymentId(
-            paymentIdForEmail,
-          )
-        if (!mailSent) {
-          logger.warn({
-            message: 'Payment confirmation email not sent',
-            meta: { ...logMeta },
-          })
-        }
-      }
+          return PaymentService.performPaymentPostSubmissionActions(paymentId)
+            .andThen(() => okAsync(undefined))
+            .orElse((e) => {
+              logger.warn({
+                message: 'Payment confirmation email not sent',
+                meta: logMeta,
+              })
+              return errAsync(e)
+            })
+        }),
+      )
       break
     }
     case 'charge.dispute.closed':
