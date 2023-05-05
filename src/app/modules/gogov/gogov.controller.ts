@@ -46,6 +46,9 @@ export const claimGoLink: ControllerHandler<
     {
       headers: {
         Authorization: `Bearer ${goGovConfig.goGovAPIKey}`,
+        // Required due to bug introduced in axios 1.2.1: https://github.com/axios/axios/issues/5346
+        // TODO: remove when axios is upgraded to 1.2.2
+        'Accept-Encoding': 'gzip,deflate,compress',
       },
     },
   )
