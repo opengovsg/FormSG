@@ -822,7 +822,7 @@ describe('submission.service', () => {
         MOCK_PENDING_SUBMISSION_ID,
         session,
       )
-      session.endSession()
+      await session.endSession()
 
       //Assert
       expect(result.isOk()).toEqual(true)
@@ -847,7 +847,7 @@ describe('submission.service', () => {
         MOCK_PENDING_SUBMISSION_ID,
         session,
       )
-      session.endSession()
+      await session.endSession()
 
       // Assert
       expect(result.isOk()).toEqual(true)
@@ -868,7 +868,7 @@ describe('submission.service', () => {
         new ObjectId().toHexString(),
         session,
       )
-      session.endSession()
+      await session.endSession()
 
       // Assert
       expect(result.isErr()).toEqual(true)
@@ -893,7 +893,7 @@ describe('submission.service', () => {
         MOCK_PENDING_SUBMISSION_ID,
         session,
       )
-      session.endSession()
+      await session.endSession()
 
       // Assert
       expect(findSpy).toHaveBeenCalledWith(

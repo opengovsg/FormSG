@@ -338,12 +338,18 @@ export const processStripeEvent = (
       },
     )
       .andThen(() => {
-        session.endSession()
-        return okAsync(undefined)
+        return ResultAsync.fromPromise(session.endSession(), (err) => {
+          // Throw all application errors to trigger an abort.
+          // eslint-disable-next-line typesafe/no-throw-sync-func
+          throw err
+        }).andThen(() => okAsync(undefined))
       })
       .orElse((err) => {
-        session.endSession()
-        return errAsync(err)
+        return ResultAsync.fromPromise(session.endSession(), (err) => {
+          // Throw all application errors to trigger an abort.
+          // eslint-disable-next-line typesafe/no-throw-sync-func
+          throw err
+        }).andThen(() => errAsync(err))
       }),
   )
 }
