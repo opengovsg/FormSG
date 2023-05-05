@@ -322,7 +322,7 @@ const useDecryptionWorkers = ({
           })
       })
     },
-    [adminForm, onProgress, workers],
+    [adminForm, onProgress, user?._id, workers],
   )
 
   const handleExportCsvMutation = useMutation(
