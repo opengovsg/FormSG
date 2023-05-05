@@ -296,7 +296,7 @@ export const useMutateFormSettings = () => {
       onSuccess: (newData) => {
         handleSuccess({
           newData,
-          toastDescription: `Business information have been updated.`,
+          toastDescription: `Business information has been updated.`,
         })
       },
       onError: handleError,
