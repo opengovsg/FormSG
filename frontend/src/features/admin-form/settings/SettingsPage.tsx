@@ -14,6 +14,7 @@ import {
 import { ADMINFORM_RESULTS_SUBROUTE, ADMINFORM_ROUTE } from '~constants/routes'
 import { useDraggable } from '~hooks/useDraggable'
 
+import { useGlobalBeta } from '~features/env/queries'
 import { useUser } from '~features/user/queries'
 
 import { useAdminFormCollaborators } from '../common/queries'
@@ -28,6 +29,7 @@ import { SettingsWebhooksPage } from './SettingsWebhooksPage'
 export const SettingsPage = (): JSX.Element => {
   const { formId } = useParams()
   const { user } = useUser()
+  const { flagEnabled: paymentGlobalBeta } = useGlobalBeta('payment')
 
   if (!formId) throw new Error('No formId provided')
 
@@ -84,7 +86,7 @@ export const SettingsPage = (): JSX.Element => {
             <SettingsTab label="Singpass" icon={BiKey} />
             <SettingsTab label="Twilio credentials" icon={BiMessage} />
             <SettingsTab label="Webhooks" icon={BiCodeBlock} />
-            {user?.betaFlags?.payment && (
+            {(user?.betaFlags?.payment || paymentGlobalBeta) && (
               <SettingsTab label="Payments" icon={BiDollar} />
             )}
           </TabList>
@@ -106,7 +108,7 @@ export const SettingsPage = (): JSX.Element => {
           <TabPanel>
             <SettingsWebhooksPage />
           </TabPanel>
-          {user?.betaFlags?.payment && (
+          {(user?.betaFlags?.payment || paymentGlobalBeta) && (
             <TabPanel>
               <SettingsPaymentsPage />
             </TabPanel>

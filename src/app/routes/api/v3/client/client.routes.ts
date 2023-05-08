@@ -48,3 +48,10 @@ ClientRouter.get('/features', FrontendServerController.showFeaturesStates)
  * @return 400 when redirect code fails
  */
 ClientRouter.get('/redirect', FrontendServerController.generateRedirectUrl)
+
+/**
+ * Retrieve the environment variables for the frontend.
+ * @route GET /api/v3/client/global-beta
+ * @return 200 with environment variables needed for the client
+ */
+ClientRouter.get('/global-beta', FrontendServerController.handleGetGlobalBeta)

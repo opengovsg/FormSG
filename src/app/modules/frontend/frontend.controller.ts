@@ -1,13 +1,13 @@
 import ejs from 'ejs'
 import { StatusCodes } from 'http-status-codes'
 
-import { ClientEnvVars } from '../../../../shared/types/core'
+import { ClientEnvVars, ErrorDto } from '../../../../shared/types/core'
 import { createLoggerWithLabel } from '../../config/logger'
 import { createReqMeta } from '../../utils/request'
 import { ControllerHandler } from '../core/core.types'
 
 import { validateGenerateRedirectParams } from './frontend.middlewares'
-import { getClientEnvVars } from './frontend.service'
+import { getClientEnvVars, getGlobalBetaFlag } from './frontend.service'
 
 const logger = createLoggerWithLabel(module)
 
@@ -80,7 +80,7 @@ export const addEnvVarData: ControllerHandler<unknown, { message: string }> = (
 }
 
 /**
- * Handler for GET /frontend/env endpoint.
+ * Handler for GET /client/env endpoint.
  * @returns the environment variables needed to hydrate the frontend.
  */
 export const handleGetEnvironment: ControllerHandler<never, ClientEnvVars> = (
@@ -169,4 +169,31 @@ export const showFeaturesStates: ControllerHandler<
     [FeatureNames.WebhookVerifiedContent]: true,
     [FeatureNames.Sentry]: true,
   })
+}
+
+/**
+ * Handler for GET /client/global-beta endpoint.
+ * @returns the environment variables needed to hydrate the frontend.
+ */
+export const handleGetGlobalBeta: ControllerHandler<
+  never,
+  boolean | ErrorDto,
+  never,
+  { flag: string }
+> = (req, res) => {
+  return getGlobalBetaFlag(req.query.flag)
+    .map((result) => res.status(StatusCodes.OK).json(result))
+    .mapErr((error) => {
+      logger.error({
+        message: `Failed to retrieve global beta flag '${req.query.flag}'`,
+        meta: {
+          action: 'handleGetGlobalBeta',
+          ...createReqMeta(req),
+        },
+        error,
+      })
+      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        message: `Error retrieving global beta flag '${req.query.flag}'`,
+      })
+    })
 }

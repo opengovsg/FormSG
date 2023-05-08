@@ -12,6 +12,7 @@ import {
 import { Tab } from '~components/Tabs'
 
 import { useCreatePageSidebar } from '~features/admin-form/create/common/CreatePageSidebarContext'
+import { useGlobalBeta } from '~features/env/queries'
 import { useUser } from '~features/user/queries'
 
 import { useCreateTabForm } from '../../../builder-and-design/useCreateTabForm'
@@ -28,7 +29,9 @@ export const FieldListDrawer = (): JSX.Element => {
   const { isLoading } = useCreateTabForm()
 
   const { user } = useUser()
-  const displayPayments = user?.betaFlags?.payment
+  const { flagEnabled: paymentGlobalBeta } = useGlobalBeta('payment')
+
+  const displayPayments = user?.betaFlags?.payment || paymentGlobalBeta
   return (
     <Tabs
       pos="relative"

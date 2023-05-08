@@ -5,12 +5,17 @@ import { ClientEnvVars } from '~shared/types/core'
 
 import { ApiError } from '~typings/core'
 
-import { getClientEnvVars, getFeedbackFormView } from './EnvService'
+import {
+  getClientEnvVars,
+  getFeedbackFormView,
+  getGlobalBetaFlag,
+} from './EnvService'
 
 const envKeys = {
   base: ['env'],
   adminFeedbackForm: ['adminFeedbackForm'] as const,
   publicFeedbackForm: ['publicFeedbackForm'] as const,
+  globalBeta: ['globalBeta'] as const,
 }
 
 export const useEnv = (
@@ -42,4 +47,16 @@ export const usePublicFeedbackFormView = (
     () => getFeedbackFormView(/* admin = */ false),
     { enabled },
   )
+}
+
+type UseGlobalBetaReturn = {
+  flagEnabled?: boolean
+}
+
+export const useGlobalBeta = (flag: string): UseGlobalBetaReturn => {
+  const { data: flagEnabled } = useQuery<boolean>(envKeys.globalBeta, () =>
+    getGlobalBetaFlag(flag),
+  )
+
+  return { flagEnabled }
 }
