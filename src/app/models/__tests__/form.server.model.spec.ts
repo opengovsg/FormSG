@@ -2703,7 +2703,7 @@ describe('Form Model', () => {
       })
     })
 
-    describe('duplicateFormFieldById', () => {
+    describe('duplicateFormFieldByIdAndIndex', () => {
       it('should return updated document with duplicated form field', async () => {
         // Arrange
         const fieldToDuplicate = generateDefaultField(BasicField.Checkbox)
@@ -2712,7 +2712,10 @@ describe('Form Model', () => {
         const fieldId = fieldToDuplicate._id
 
         // Act
-        const actual = await validForm.duplicateFormFieldById(fieldId)
+        const actual = await validForm.duplicateFormFieldByIdAndIndex(
+          fieldId,
+          1,
+        )
         // @ts-ignore
         const actualDuplicatedField = omit(actual?.form_fields.toObject()[1], [
           '_id',
@@ -2736,8 +2739,9 @@ describe('Form Model', () => {
       })
 
       it('should return null if given fieldId is invalid', async () => {
-        const updatedForm = await validForm.duplicateFormFieldById(
+        const updatedForm = await validForm.duplicateFormFieldByIdAndIndex(
           new ObjectId().toHexString(),
+          0,
         )
 
         // Assert

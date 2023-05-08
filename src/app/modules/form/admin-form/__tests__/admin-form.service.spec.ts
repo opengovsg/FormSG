@@ -1552,14 +1552,16 @@ describe('admin-form.service', () => {
       const duplicatedField = generateDefaultField(BasicField.Mobile)
       const mockUpdatedForm = {
         title: 'some mock form',
-        // Append duplicated field to end of form_fields.
+        // Append duplicated field to after target field to duplicate.
         form_fields: [fieldToDuplicate, duplicatedField],
       } as IFormSchema
       const mockForm = {
         title: 'some mock form',
         form_fields: [fieldToDuplicate],
         _id: new ObjectId(),
-        duplicateFormFieldById: jest.fn().mockResolvedValue(mockUpdatedForm),
+        duplicateFormFieldByIdAndIndex: jest
+          .fn()
+          .mockResolvedValue(mockUpdatedForm),
       } as unknown as IPopulatedForm
 
       // Act
@@ -1589,7 +1591,7 @@ describe('admin-form.service', () => {
         title: 'some mock form',
         form_fields: [fieldToDuplicate],
         _id: new ObjectId(),
-        duplicateFormFieldById: jest.fn().mockResolvedValue(null),
+        duplicateFormFieldByIdAndIndex: jest.fn().mockResolvedValue(null),
       } as unknown as IPopulatedForm
 
       // Act
@@ -1608,7 +1610,7 @@ describe('admin-form.service', () => {
       const mockForm = {
         title: 'some mock form',
         form_fields: initialFields,
-        duplicateFormFieldById: jest.fn().mockRejectedValue(
+        duplicateFormFieldByIdAndIndex: jest.fn().mockRejectedValue(
           // @ts-ignore
           new mongoose.Error.ValidationError({ errors: 'does not matter' }),
         ),
