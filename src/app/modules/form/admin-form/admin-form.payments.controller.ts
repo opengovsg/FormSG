@@ -326,6 +326,8 @@ export const handleUpdatePayments = [
         then: Joi.string().required(),
         otherwise: Joi.string().allow(''),
       }),
+      // v2 fields
+      title: Joi.string().required(),
     },
   }),
   _handleUpdatePayments,
