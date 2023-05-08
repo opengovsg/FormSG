@@ -228,6 +228,7 @@ export const handleListDashboardForms: ControllerHandler<
  * @returns 422 when user of given id cannnot be found in the database
  * @returns 500 when database errors occur
  */
+// FIXME: DRY
 export const handleListOwnedForms: ControllerHandler<
   unknown,
   AdminDashboardFormMetaDto[] | ErrorDto

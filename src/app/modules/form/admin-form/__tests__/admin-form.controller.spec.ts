@@ -210,6 +210,73 @@ describe('admin-form.controller', () => {
     })
   })
 
+  // FIXME: DRY
+  describe('handleListOwnedForms', () => {
+    const MOCK_REQ = expressHandler.mockRequest({
+      session: {
+        user: {
+          _id: 'exists',
+        },
+      },
+    })
+
+    it('should return 200 with list of owned forms', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+      // Mock return array.
+      MockAdminFormService.getOwnedForms.mockReturnValueOnce(okAsync([]))
+
+      // Act
+      await AdminFormController.handleListOwnedForms(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.json).toHaveBeenCalledWith([])
+    })
+
+    it('should return 422 on MissingUserError', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+      MockAdminFormService.getOwnedForms.mockReturnValueOnce(
+        errAsync(new MissingUserError()),
+      )
+
+      // Act
+      await AdminFormController.handleListOwnedForms(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(422)
+      expect(mockRes.json).toHaveBeenCalledWith({ message: 'User not found' })
+    })
+
+    it('should return 500 when database error occurs', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+      const mockErrorString = 'something went wrong'
+      MockAdminFormService.getOwnedForms.mockReturnValueOnce(
+        errAsync(new DatabaseError(mockErrorString)),
+      )
+
+      // Act
+      await AdminFormController.handleListOwnedForms(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(500)
+      expect(mockRes.json).toHaveBeenCalledWith({ message: mockErrorString })
+    })
+  })
+
   describe('createForm', () => {
     const MOCK_USER_ID = new ObjectId()
     const MOCK_USER = {
