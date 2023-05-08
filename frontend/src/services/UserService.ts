@@ -48,7 +48,7 @@ export const updateUserLastSeenFeatureUpdateVersion = async (
 export const transferOwnership = async (
   request: TransferOwnershipRequestDto,
 ): Promise<TransferOwnershipResponseDto> => {
-  const { newOwnerEmail } = request
+  const { email } = request
   const ownedFormIds = await ApiService.get<AdminDashboardFormMetaDto[]>(
     `${ADMIN_FORM_ENDPOINT}/owned`,
   ).then(({ data }) => data.map((formMetaDto) => formMetaDto._id))
@@ -56,21 +56,21 @@ export const transferOwnership = async (
     ownedFormIds.map((formId: string) =>
       ApiService.post<AdminFormViewDto>(
         `${ADMIN_FORM_ENDPOINT}/${formId}/collaborators/transfer-owner`,
-        { email: newOwnerEmail },
+        { email },
       ),
     ),
   )
     .then((responses) => {
       const formIds = responses.map((response) => response.data.form._id)
       return {
-        newOwnerEmail,
+        email,
         formIds,
         error: '',
       }
     })
     .catch((error) => {
       return {
-        newOwnerEmail,
+        email,
         formIds: [],
         error: error.message,
       }

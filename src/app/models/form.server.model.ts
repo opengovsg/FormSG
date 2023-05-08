@@ -888,7 +888,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       this.find()
         // List forms when either the user is an admin only.
         .where('admin')
-        .equal(userId)
+        .eq(userId)
         // Project selected fields.
         // `responseMode` is a discriminator key and is returned regardless,
         // selection is made for explicitness.

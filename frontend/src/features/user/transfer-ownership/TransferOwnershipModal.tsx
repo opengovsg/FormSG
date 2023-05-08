@@ -66,20 +66,17 @@ const useModalState = ({ onClose, reset, trigger }) => {
     [page, email],
   )
 
-  const onConfirm = useCallback(
-    (inputs: TransferOwnershipInputs) => {
-      if (!user) return
-      return transferOwnershipMutation.mutate(
-        { newOwnerEmail: inputs.email },
-        {
-          onSuccess: () => {
-            resetModal()
-          },
+  const onConfirm = useCallback(() => {
+    if (!user) return
+    return transferOwnershipMutation.mutate(
+      { email },
+      {
+        onSuccess: () => {
+          resetModal()
         },
-      )
-    },
-    [page, email, user],
-  )
+      },
+    )
+  }, [page, email, user])
 
   useEffect(() => {
     trigger()

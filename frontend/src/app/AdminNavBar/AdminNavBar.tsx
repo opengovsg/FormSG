@@ -34,6 +34,7 @@ import { AvatarMenu, AvatarMenuDivider } from '~templates/AvatarMenu/AvatarMenu'
 import { EmergencyContactModal } from '~features/user/emergency-contact/EmergencyContactModal'
 import { useUserMutations } from '~features/user/mutations'
 import { useUser } from '~features/user/queries'
+import { TransferOwnershipModal } from '~features/user/transfer-ownership/TransferOwnershipModal'
 import { FEATURE_UPDATE_LIST } from '~features/whats-new/FeatureUpdateList'
 import { getShowLatestFeatureUpdateNotification } from '~features/whats-new/utils/utils'
 import { WhatsNewDrawer } from '~features/whats-new/WhatsNewDrawer'
@@ -190,6 +191,13 @@ export const AdminNavBar = ({ isMenuOpen }: AdminNavBarProps): JSX.Element => {
     },
   })
 
+  // FIXME: Show only if user owns at least one form
+  const {
+    isOpen: isTransferOwnershipModalOpen,
+    onClose: onTransferOwnershipModalClose,
+    onOpen: onTransferOwnershipModalOpen,
+  } = useDisclosure()
+
   const shouldShowFeatureUpdateNotification = useMemo(() => {
     if (isUserLoading || !user) return false
     return getShowLatestFeatureUpdateNotification(user)
@@ -264,6 +272,9 @@ export const AdminNavBar = ({ isMenuOpen }: AdminNavBarProps): JSX.Element => {
             <Menu.Item onClick={onContactModalOpen}>
               Emergency contact
             </Menu.Item>
+            <Menu.Item onClick={onTransferOwnershipModalOpen}>
+              Transfer all forms
+            </Menu.Item>
             <AvatarMenuDivider />
             <Menu.Item onClick={handleLogout}>Log out</Menu.Item>
           </AvatarMenu>
@@ -276,6 +287,10 @@ export const AdminNavBar = ({ isMenuOpen }: AdminNavBarProps): JSX.Element => {
       <EmergencyContactModal
         onClose={onContactModalClose}
         isOpen={isContactModalOpen}
+      />
+      <TransferOwnershipModal
+        onClose={onTransferOwnershipModalClose}
+        isOpen={isTransferOwnershipModalOpen}
       />
     </>
   )
