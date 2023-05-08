@@ -16,8 +16,11 @@ import config from '../../config/config'
 import { paymentConfig } from '../../config/features/payment.config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { stripe } from '../../loaders/stripe'
-import { getMongoErrorMessage } from '../../utils/handle-mongo-error'
-import { DatabaseError } from '../core/core.errors'
+import {
+  getMongoErrorMessage,
+  transformMongoError,
+} from '../../utils/handle-mongo-error'
+import { DatabaseError, DatabaseWriteConflictError } from '../core/core.errors'
 import { PendingSubmissionNotFoundError } from '../submission/submission.errors'
 
 import {
@@ -147,7 +150,6 @@ const confirmStripePaymentPendingSubmission = (
  * @param {mongoose.ClientSession} session the mongoose session to use for all db operations
  *
  * @returns ok() if event was successfully processed
- * @returns err(EventMetadataPaymentIdInvalidError) if the payment id is not found in the event metadata or is found but an invalid BSON object id
  * @returns err(MalformedStripeChargeObjectError) if the shape of the charge object returned by Stripe does not have expected fields
  * @returns err(PaymentNotFoundError) if the payment document does not exist
  * @returns err(PendingSubmissionNotFoundError) if the pending submission being referenced by the payment document does not exist
@@ -232,6 +234,19 @@ export const processStripeEventWithinSession = (
           // Step 6. Save the payment document
           .andThen((payment) =>
             ResultAsync.fromPromise(payment.save({ session }), (error) => {
+              const mongoError = transformMongoError(error)
+              if (mongoError instanceof DatabaseWriteConflictError) {
+                logger.error({
+                  message:
+                    'Write conflict error encountered while updating payment',
+                  meta: logMeta,
+                  error,
+                })
+                // Directly throw write conflict errors to enable mongo transaction retries
+                // eslint-disable-next-line typesafe/no-throw-sync-func
+                throw error
+              }
+
               logger.error({
                 message: 'Error encountered while updating payment',
                 meta: logMeta,
@@ -255,7 +270,6 @@ export const processStripeEventWithinSession = (
  * @param {Stripe.Event} event the new Stripe Event causing the update operation to occur
  *
  * @returns ok() if event was successfully processed
- * @returns err(EventMetadataPaymentIdInvalidError) if the payment id is not found in the event metadata or is found but an invalid BSON object id
  * @returns err(MalformedStripeChargeObjectError) if the shape of the charge object returned by Stripe does not have expected fields
  * @returns err(PaymentNotFoundError) if the payment document does not exist
  * @returns err(PendingSubmissionNotFoundError) if the pending submission being referenced by the payment document does not exist
@@ -291,51 +305,47 @@ export const processStripeEvent = (
       error,
     })
     return new DatabaseError(getMongoErrorMessage(error))
-  }).andThen((session) => {
-    session.startTransaction({
-      readPreference: 'primary',
-      readConcern: { level: 'snapshot' },
-      writeConcern: { w: 'majority' },
-    })
-
-    return (
-      processStripeEventWithinSession(paymentId, event, session)
-        // Finally: Commit or abort depending on whether an error was caught,
-        // then end the session
-        .andThen((submission) => {
-          return ResultAsync.fromPromise(
-            session.commitTransaction(),
-            (error) => {
-              logger.error({
-                message: 'Database error while committing transaction',
-                meta: logMeta,
-                error,
-              })
-              return new DatabaseError(getMongoErrorMessage(error))
+  }).andThen((session) =>
+    ResultAsync.fromPromise(
+      session.withTransaction(
+        () =>
+          // Since withTransaction uses throw-catch to determine whether to
+          // commit or abort, need to map out of neverthrow
+          processStripeEventWithinSession(paymentId, event, session).match(
+            () => {
+              return
             },
-          ).andThen(() => {
-            session.endSession()
-            return okAsync(submission)
-          })
-        })
-        .orElse((err) => {
-          return ResultAsync.fromPromise(
-            session.abortTransaction(),
-            (error) => {
-              logger.error({
-                message: 'Database error while aborting transaction',
-                meta: logMeta,
-                error,
-              })
-              return new DatabaseError(getMongoErrorMessage(error))
+            (err) => {
+              // Throw all application errors to trigger an abort.
+              // eslint-disable-next-line typesafe/no-throw-sync-func
+              throw err
             },
-          ).andThen(() => {
-            session.endSession()
-            return errAsync(err)
-          })
+          ),
+        {
+          readPreference: 'primary',
+          readConcern: { level: 'snapshot' },
+          writeConcern: { w: 'majority' },
+        },
+      ),
+      (error) => {
+        // Catch application errors and return them directly
+        logger.error({
+          message: 'Error occurred in transaction to process Stripe webhook',
+          meta: logMeta,
+          error,
         })
+        return error as any
+      },
     )
-  })
+      .andThen(() => {
+        session.endSession()
+        return okAsync(undefined)
+      })
+      .orElse((err) => {
+        session.endSession()
+        return errAsync(err)
+      }),
+  )
 }
 
 export const getStripeOauthUrl = (form: IPopulatedEncryptedForm) => {

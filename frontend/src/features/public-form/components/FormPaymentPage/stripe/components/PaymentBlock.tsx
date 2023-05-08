@@ -19,12 +19,13 @@ import { loadStripe } from '@stripe/stripe-js'
 import { FormColorTheme, FormResponseMode } from '~shared/types/form'
 
 import { useBrowserStm } from '~hooks/payments'
-import { centsToDollars } from '~utils/payments'
 import Button from '~components/Button'
 
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
 import { FormPaymentPageProps } from '../../FormPaymentPage'
+
+import { PaymentItemDetailsBlock } from './PaymentItemDetailsBlock'
 
 // Make sure to call `loadStripe` outside of a component’s render to avoid
 // recreating the `Stripe` object on every render.
@@ -171,19 +172,15 @@ export const StripePaymentBlock = ({
           <VisuallyHidden aria-live="assertive">
             {submittedAriaText}
           </VisuallyHidden>
-          <Text textStyle="h3" textColor="primary.500">
+          <Text textStyle="h3" textColor="primary.500" mb="1rem">
             Payment
           </Text>
-          <Text textStyle="body-2" textColor="secondary.500">
-            This amount is inclusive of GST
-          </Text>
+          <PaymentItemDetailsBlock
+            paymentItemName={form.payments_field?.description}
+            colorTheme={colorTheme}
+            paymentAmount={form.payments_field?.amount_cents}
+          />
         </Box>
-        <Text textStyle="body-1" textColor="secondary.700">
-          Your credit card will be charged:{' '}
-          <Text as="span" fontWeight="bold">
-            S${centsToDollars(form.payments_field?.amount_cents || 0)}
-          </Text>
-        </Text>
         {paymentClientSecret && (
           <Elements
             stripe={stripePromise}

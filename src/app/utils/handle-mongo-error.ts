@@ -7,6 +7,7 @@ import {
   DatabaseError,
   DatabasePayloadSizeError,
   DatabaseValidationError,
+  DatabaseWriteConflictError,
   PossibleDatabaseError,
 } from '../modules/core/core.errors'
 
@@ -105,6 +106,13 @@ export const transformMongoError = (error: unknown): PossibleDatabaseError => {
     return new DatabaseDuplicateKeyError(errorMessage)
   }
 
+  if (
+    error instanceof MongoError &&
+    error.code === MONGO_ERROR_CODE.WriteConflict
+  ) {
+    return new DatabaseWriteConflictError(errorMessage)
+  }
+
   return new DatabaseError(errorMessage)
 }
 
@@ -114,6 +122,8 @@ export const isMongoError = (error: Error): boolean => {
     case DatabaseError:
     case DatabasePayloadSizeError:
     case DatabaseValidationError:
+    case DatabaseDuplicateKeyError:
+    case DatabaseWriteConflictError:
       return true
     default:
       return false
