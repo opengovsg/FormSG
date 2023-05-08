@@ -105,6 +105,17 @@ export const getFormFieldById = (
   return formFields.find((f) => fieldId === String(f._id)) ?? null
 }
 
+export const getFormFieldIndexById = (
+  formFields: IFormSchema['form_fields'],
+  fieldId: FormFieldSchema['_id'],
+): number | null => {
+  if (!formFields) {
+    return null
+  }
+
+  return formFields.findIndex((o) => o._id.equals(fieldId))
+}
+
 /**
  * Finds and returns form logic in given form by its id
  * @param form_logics the logics to search from
