@@ -15,6 +15,7 @@ import { createReqMeta } from '../../../utils/request'
 import { getFormAfterPermissionChecks } from '../../auth/auth.service'
 import * as AuthService from '../../auth/auth.service'
 import { ControllerHandler } from '../../core/core.types'
+import { getGlobalBetaFlag } from '../../frontend/frontend.service'
 import {
   getStripeOauthUrl,
   unlinkStripeAccountFromForm,
@@ -50,11 +51,35 @@ export const handleConnectAccount: ControllerHandler<{
   const { formId } = req.params
   const sessionUserId = (req.session as AuthedSessionData).user._id
 
+  const logMeta = {
+    action: 'handleConnectAccount',
+    ...createReqMeta(req),
+  }
+
+  const globalBetaEnabledResult = await getGlobalBetaFlag('payment')
+
+  if (globalBetaEnabledResult.isErr()) {
+    logger.error({
+      message: 'Error occurred whilst retrieving global beta flag status',
+      meta: logMeta,
+      error: globalBetaEnabledResult.error,
+    })
+
+    const { statusCode, errorMessage } = mapRouteError(
+      globalBetaEnabledResult.error,
+    )
+    return res.status(statusCode).json({
+      message: errorMessage,
+    })
+  }
+
   // Step 1: Retrieve currently logged in user.
   return (
     getPopulatedUserById(sessionUserId)
       // Step 2: Check if user has 'payment' betaflag
-      .andThen((user) => verifyUserBetaflag(user, 'payment'))
+      .andThen((user) =>
+        verifyUserBetaflag(user, globalBetaEnabledResult.value, 'payment'),
+      )
       .andThen((user) =>
         // Step 3: Retrieve form with write permission check.
         getFormAfterPermissionChecks({
@@ -76,10 +101,7 @@ export const handleConnectAccount: ControllerHandler<{
       .mapErr((error) => {
         logger.error({
           message: 'Error connecting admin form payment account',
-          meta: {
-            action: 'handleConnectAccount',
-            ...createReqMeta(req),
-          },
+          meta: logMeta,
           error,
         })
 
@@ -212,15 +234,42 @@ export const _handleUpdatePayments: ControllerHandler<
   { formId: string },
   IEncryptedFormDocument['payments_field'] | ErrorDto,
   PaymentsUpdateDto
-> = (req, res) => {
+> = async (req, res) => {
   const { formId } = req.params
   const sessionUserId = (req.session as AuthedSessionData).user._id
+
+  const logMeta = {
+    action: '_handleUpdatePayments',
+    ...createReqMeta(req),
+    userId: sessionUserId,
+    formId,
+    body: req.body,
+  }
+
+  const globalBetaEnabledResult = await getGlobalBetaFlag('payment')
+
+  if (globalBetaEnabledResult.isErr()) {
+    logger.error({
+      message: 'Error occurred whilst retrieving global beta flag status',
+      meta: logMeta,
+      error: globalBetaEnabledResult.error,
+    })
+
+    const { statusCode, errorMessage } = mapRouteError(
+      globalBetaEnabledResult.error,
+    )
+    return res.status(statusCode).json({
+      message: errorMessage,
+    })
+  }
 
   // Step 1: Retrieve currently logged in user.
   return (
     UserService.getPopulatedUserById(sessionUserId)
       // Step 2: Check if user has 'payment' betaflag
-      .andThen((user) => verifyUserBetaflag(user, 'payment'))
+      .andThen((user) =>
+        verifyUserBetaflag(user, globalBetaEnabledResult.value, 'payment'),
+      )
       .andThen((user) =>
         // Step 2: Retrieve form with write permission check.
         AuthService.getFormAfterPermissionChecks({
@@ -244,13 +293,7 @@ export const _handleUpdatePayments: ControllerHandler<
       .mapErr((error) => {
         logger.error({
           message: 'Error occurred when updating payments',
-          meta: {
-            action: '_handleUpdatePayments',
-            ...createReqMeta(req),
-            userId: sessionUserId,
-            formId,
-            body: req.body,
-          },
+          meta: logMeta,
           error,
         })
         const { errorMessage, statusCode } = mapRouteError(error)
