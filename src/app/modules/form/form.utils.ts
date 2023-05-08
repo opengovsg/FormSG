@@ -113,7 +113,7 @@ export const getFormFieldIndexById = (
     return null
   }
 
-  return formFields.findIndex((o) => o._id.equals(fieldId))
+  return formFields.findIndex((f) => fieldId === String(f._id))
 }
 
 /**
