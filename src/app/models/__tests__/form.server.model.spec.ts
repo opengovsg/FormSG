@@ -2772,6 +2772,9 @@ describe('Form Model', () => {
         // @ts-ignore
         expect(actual?.form_fields.toObject()[0]).toEqual(expectedOriginalField)
         expect(actualDuplicatedField).toEqual(expectedDuplicatedField)
+        // ensure nothing has been deleted from splice
+        // @ts-ignore
+        expect(actual?.form_fields.length).toEqual(3)
       })
 
       it('should return null if given fieldId is invalid', async () => {
