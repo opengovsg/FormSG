@@ -348,11 +348,7 @@ export const sendVerificationOtp = (
       TwilioConfig,
       SmsSendError | InvalidNumberError
     >(getTwilio(otpData.msgSrvcName, defaultConfig)).andThen((twilioConfig) => {
-      const message = renderVerificationSms(
-        otp,
-        otpPrefix,
-        new URL(config.app.appUrl).host,
-      )
+      const message = renderVerificationSms(otp, otpPrefix)
 
       return sendSms(
         twilioConfig,
