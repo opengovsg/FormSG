@@ -462,9 +462,7 @@ const addBasicField = async (
     case BasicField.Attachment:
       await fillDropdown(
         page,
-        page.getByRole('combobox', {
-          name: 'Maximum size of individual attachment',
-        }),
+        page.getByLabel('Maximum size of individual attachment').first(),
         `${field.attachmentSize} MB`,
       )
       break
@@ -593,12 +591,12 @@ const addBasicField = async (
     case BasicField.Rating:
       await fillDropdown(
         page,
-        page.getByRole('combobox', { name: 'Number of steps' }),
+        page.getByLabel('Number of steps').first(),
         String(field.ratingOptions.steps),
       )
       await fillDropdown(
         page,
-        page.getByRole('combobox', { name: 'Shape' }),
+        page.getByLabel('Shape').first(),
         field.ratingOptions.shape,
       )
       break
@@ -715,13 +713,13 @@ const addLogics = async (
       }
     }
 
-    const logicTypeInput = page.getByRole('combobox', { name: 'Then' })
+    const logicTypeInput = page.getByLabel('Then').first()
     switch (logic.logicType) {
       case LogicType.ShowFields:
         await fillDropdown(page, logicTypeInput, 'Show field(s)')
         await fillMultiDropdown(
           page,
-          page.getByRole('combobox', { name: 'Show' }),
+          page.getByLabel('Show').first(),
           logic.show.map((n) => getTitleWithQuestionNumber(formFields, n)),
         )
         break

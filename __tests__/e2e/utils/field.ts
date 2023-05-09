@@ -183,11 +183,19 @@ export const fillMultiDropdown = async (
   input: Locator,
   values: string[],
 ): Promise<void> => {
-  await input.click()
-  for (const value of values)
-    await page.getByRole('option', { name: value }).click()
-  // Multiselect dropdown, click the input again to close the popover
-  await input.click()
+  const inputGroup = page.getByRole('group').filter({ has: input })
+
+  await inputGroup
+    .getByRole('button', { name: 'Open dropdown options' })
+    .click()
+  for (const value of values) {
+    const option = page.getByRole('option', { name: value })
+    await option.scrollIntoViewIfNeeded()
+    await option.click()
+  }
+  await inputGroup
+    .getByRole('button', { name: 'Close dropdown options' })
+    .click()
 }
 
 /**
