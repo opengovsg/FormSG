@@ -67,7 +67,7 @@ PaymentsRouter.route('/:paymentId([a-fA-F0-9]{24})/getinfo').get(
 )
 
 /**
- * Get previous latest successful payment document if it exists
+ * Get previous latest successful payment id if it exists
  * Uses post request to collect the email data from the request body
  * @route POST /:formId/payments/previous
  *
@@ -77,5 +77,5 @@ PaymentsRouter.route('/:paymentId([a-fA-F0-9]{24})/getinfo').get(
  */
 PaymentsRouter.route('/:formId([a-fA-F0-9]{24})/payments/previous').post(
   limitRate({ max: rateLimitConfig.submissions }),
-  PaymentsController.handleGetPreviousPayment,
+  PaymentsController.handleGetPreviousPaymentId,
 )

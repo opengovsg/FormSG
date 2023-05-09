@@ -18,8 +18,20 @@ export class MalformedStripeChargeObjectError extends ApplicationError {
   }
 }
 
+export class StripeMetadataInvalidError extends ApplicationError {
+  constructor(message = 'Invalid shape found for Stripe metadata') {
+    super(message)
+  }
+}
+
 export class StripeMetadataValidPaymentIdNotFoundError extends ApplicationError {
   constructor(message = 'Valid payment id not found in Stripe metadata') {
+    super(message)
+  }
+}
+
+export class StripeMetadataIncorrectEnvError extends ApplicationError {
+  constructor(message = 'Stripe webhook sent to incorrect application') {
     super(message)
   }
 }

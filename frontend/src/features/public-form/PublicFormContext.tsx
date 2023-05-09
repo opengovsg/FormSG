@@ -46,6 +46,9 @@ export interface PublicFormContextProps
    */
   onMobileDrawerOpen: () => void
   onMobileDrawerClose: () => void
+
+  /** Whether payment is enabled */
+  isPaymentEnabled: boolean
 }
 
 export const PublicFormContext = createContext<

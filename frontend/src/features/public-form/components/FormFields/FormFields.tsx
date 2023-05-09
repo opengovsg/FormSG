@@ -19,8 +19,8 @@ import {
 import { useFetchPrefillQuery } from '~features/public-form/hooks/useFetchPrefillQuery'
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
+import { PaymentPreview } from '../../../../templates/Field/PaymentPreview/PaymentPreview'
 import { PublicFormPaymentResumeModal } from '../FormPaymentPage/FormPaymentResumeModal'
-import { FormPaymentPreview } from '../FormPaymentPreview/FormPaymentPreview'
 
 import { PublicFormSubmitButton } from './PublicFormSubmitButton'
 import { VisibleFormFields } from './VisibleFormFields'
@@ -131,13 +131,12 @@ export const FormFields = ({
             </Stack>
           </Box>
         )}
-        {form?.responseMode === FormResponseMode.Encrypt &&
-          form?.payments_field?.enabled && (
-            <FormPaymentPreview
-              colorTheme={colorTheme}
-              paymentDetails={form.payments_field}
-            />
-          )}
+        {form?.responseMode === FormResponseMode.Encrypt && (
+          <PaymentPreview
+            colorTheme={colorTheme}
+            paymentDetails={form?.payments_field}
+          />
+        )}
         <PublicFormPaymentResumeModal />
         <PublicFormSubmitButton
           onSubmit={onSubmit ? formMethods.handleSubmit(onSubmit) : undefined}

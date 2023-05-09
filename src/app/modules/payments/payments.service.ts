@@ -9,10 +9,14 @@ import getPaymentModel from '../../models/payment.server.model'
 import MailService from '../../services/mail/mail.service'
 import { getMongoErrorMessage } from '../../utils/handle-mongo-error'
 import { DatabaseError } from '../core/core.errors'
+import { FormNotFoundError } from '../form/form.errors'
 import { retrieveFormById } from '../form/form.service'
 import { performEncryptPostSubmissionActions } from '../submission/encrypt-submission/encrypt-submission.service'
 import { isSubmissionEncryptMode } from '../submission/encrypt-submission/encrypt-submission.utils'
-import { PendingSubmissionNotFoundError } from '../submission/submission.errors'
+import {
+  PendingSubmissionNotFoundError,
+  SubmissionNotFoundError,
+} from '../submission/submission.errors'
 import * as SubmissionService from '../submission/submission.service'
 import { findSubmissionById } from '../submission/submission.service'
 
@@ -167,59 +171,52 @@ export const confirmPaymentPendingSubmission = (
     SubmissionService.copyPendingSubmissionToSubmissions(
       payment.pendingSubmissionId,
       session,
-    )
-      .andThen((submission) => {
-        // Step 3: Update the payment document with the metadata showing that
-        // the payment is complete and save it
-        payment.completedPayment = {
-          submissionId: submission._id,
-          paymentDate,
-          receiptUrl,
-          transactionFee,
-        }
-        return okAsync(submission)
-      })
-      // Post-submission: fire webhooks and send email confirmations.
-      .andThen((submission) => {
-        if (isSubmissionEncryptMode(submission)) {
-          return performEncryptPostSubmissionActions(
-            submission,
-            payment.responses,
-          )
-            .andThen(() => {
-              // If successfully sent email confirmations, delete response data from payment document.
-              payment.responses = []
-              return okAsync(payment)
-            })
-            .orElse(() => okAsync(payment))
-        }
-        return okAsync(payment)
-      })
+    ).andThen((submission) => {
+      // Step 3: Update the payment document with the metadata showing that
+      // the payment is complete and save it
+      payment.completedPayment = {
+        submissionId: submission._id,
+        paymentDate,
+        receiptUrl,
+        transactionFee,
+      }
+      return okAsync(payment)
+    })
   )
 }
 
 /**
- * This function sends a payment confirmation email
+ * This function sends performs payment post-submission actions. In particular,
+ * it fires webhooks, sends email confirmations to respondents and a payment
+ * confirmation email to the payer.
  * @param paymentId payment id of the payment that has been completed
  *
  * @returns ok(true) if the payment confirmation email has been sent
+ * @returns err(PaymentNotFoundError) if the payment does not exist
  * @returns err(ConfirmedPaymentNotFoundError) if the paymentId does not have a submission ID associated with a completed payment
+ * @returns err(SubmissionNotFoundError) if submission does not exist in the database
+ * @returns err(FormNotFoundError) if the form or form admin does not exist
+ * @returns err(DatabaseError) if error occurs whilst querying the database
  */
-export const sendPaymentConfirmationEmailByPaymentId = (
+export const performPaymentPostSubmissionActions = (
   paymentId: IPaymentSchema['_id'],
-): ResultAsync<true, ConfirmedPaymentNotFoundError> => {
+): ResultAsync<
+  void,
+  | PaymentNotFoundError
+  | ConfirmedPaymentNotFoundError
+  | SubmissionNotFoundError
+  | FormNotFoundError
+  | DatabaseError
+> => {
   const logMeta = {
-    action: 'sendPaymentConfirmationEmail',
+    action: 'performPaymentPostSubmissionActions',
     paymentId,
   }
 
-  // Step 1: Find payment object
+  // Step 1: Find payment document
   return findPaymentById(paymentId)
-    .map((payment) => ({
-      submissionId: payment.completedPayment?.submissionId,
-      recipient: payment.email,
-    }))
-    .andThen(({ submissionId, recipient }) => {
+    .andThen((payment) => {
+      const submissionId = payment.completedPayment?.submissionId
       if (!submissionId) {
         logger.warn({
           message: 'Submission ID from completed payment could not be found',
@@ -230,29 +227,68 @@ export const sendPaymentConfirmationEmailByPaymentId = (
       // Step 2: Find submission document
       return (
         findSubmissionById(submissionId)
-          // Step 3: Find form document
+          // Step 3: fire webhooks and send email confirmations.
+          .andThen((submission) => {
+            if (isSubmissionEncryptMode(submission)) {
+              return (
+                performEncryptPostSubmissionActions(
+                  submission,
+                  payment.responses,
+                )
+                  .andThen(() =>
+                    // If successfully sent email confirmations, delete response data from payment document.
+                    ResultAsync.fromPromise(
+                      PaymentModel.findByIdAndUpdate(paymentId, {
+                        responses: [],
+                      }),
+                      (error) => {
+                        logger.error({
+                          message: 'Database error while finding payment by id',
+                          meta: logMeta,
+                          error,
+                        })
+                        return new DatabaseError(getMongoErrorMessage(error))
+                      },
+                    ).map(() => submission),
+                  )
+                  // Ignore failures as they will be logged, but the webhook
+                  // response should not be a failure
+                  .orElse(() => okAsync(submission))
+              )
+            }
+            return okAsync(submission)
+          })
+          // Step 4: Find form document
           .andThen((submission) => retrieveFormById(submission.form))
           .map((form) => ({
             formTitle: form.title,
             formId: form._id,
-            responseId: submissionId,
-            recipient,
+            submissionId,
+            email: payment.email,
           }))
       )
     })
-    .andThen(({ formTitle, formId, responseId, recipient }) => {
+    .andThen(({ formTitle, formId, submissionId, email }) => {
       logger.info({
-        message: 'sendPaymentConfirmationEmail',
-        meta: logMeta,
+        message: 'Sending payment confirmation email',
+        meta: { ...logMeta, submissionId, email },
       })
-      // Step 4: Send payment confirmation email
+      // Step 5: Send payment confirmation email
       return MailService.sendPaymentConfirmationEmail({
-        recipient,
+        email,
         formTitle,
-        responseId,
+        submissionId,
         formId,
         paymentId,
       })
+        .andThen(() => okAsync(undefined))
+        .orElse(() => {
+          logger.error({
+            message: 'Failed to send payment confirmation email',
+            meta: { ...logMeta, submissionId, email },
+          })
+          return okAsync(undefined)
+        })
     })
 }
 

@@ -80,23 +80,14 @@ export const getPaymentDataView = (
       value: centsToDollarString(payment.transactionFee),
     },
 
-    ...(payment.payoutId
-      ? [
-          {
-            key: 'payoutId' as keyof SubmissionPaymentDto,
-            name: 'Payout ID',
-            value: payment.payoutId,
-          },
-        ]
-      : []),
-
-    ...(payment.payoutDate
-      ? [
-          {
-            key: 'payoutDate' as keyof SubmissionPaymentDto,
-            name: 'Payout date and time',
-            value: payment.payoutDate,
-          },
-        ]
-      : []),
+    {
+      key: 'payoutId',
+      name: 'Payout ID',
+      value: payment.payoutId ?? '-',
+    },
+    {
+      key: 'payoutDate',
+      name: 'Payout date and time',
+      value: payment.payoutDate ?? '-',
+    },
   ]

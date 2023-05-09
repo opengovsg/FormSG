@@ -51,6 +51,7 @@ import {
   FieldNotFoundError,
   InvalidCollaboratorError,
   InvalidFileTypeError,
+  PaymentChannelNotFoundError,
 } from './admin-form.errors'
 import {
   AssertFormFn,
@@ -167,6 +168,11 @@ export const mapRouteError = (
     case ResponseModeError:
       return {
         statusCode: StatusCodes.UNPROCESSABLE_ENTITY,
+        errorMessage: error.message,
+      }
+    case PaymentChannelNotFoundError:
+      return {
+        statusCode: StatusCodes.FORBIDDEN,
         errorMessage: error.message,
       }
     default:

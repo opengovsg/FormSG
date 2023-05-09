@@ -233,6 +233,7 @@ const config: Config = {
   reactMigration: basicVars.reactMigration,
   configureAws,
   secretEnv: basicVars.core.secretEnv,
+  envSiteName: basicVars.core.envSiteName,
 }
 
 export = config

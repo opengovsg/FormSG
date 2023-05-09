@@ -102,6 +102,7 @@ export type Config = {
   rateLimitConfig: RateLimitConfig
   reactMigration: ReactMigrationConfig
   secretEnv: string
+  envSiteName: string
 
   // Functions
   configureAws: () => Promise<void>
@@ -120,6 +121,7 @@ export interface ICompulsoryVarsSchema {
   core: {
     sessionSecret: string
     secretEnv: string
+    envSiteName: string
   }
   awsConfig: {
     imageS3Bucket: string

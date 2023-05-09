@@ -3,12 +3,7 @@ import { useFormState, UseFormTrigger, useWatch } from 'react-hook-form'
 import { Stack, useDisclosure, VisuallyHidden } from '@chakra-ui/react'
 
 import { PAYMENT_CONTACT_FIELD_ID } from '~shared/constants'
-import {
-  FormField,
-  FormResponseMode,
-  LogicDto,
-  MyInfoFormField,
-} from '~shared/types'
+import { FormField, LogicDto, MyInfoFormField } from '~shared/types'
 
 import { ThemeColorScheme } from '~theme/foundations/colours'
 import { useIsMobile } from '~hooks/useIsMobile'
@@ -21,7 +16,7 @@ import { getLogicUnitPreventingSubmit } from '~features/logic/utils'
 import { usePublicFormContext } from '../../PublicFormContext'
 import { DuplicatePaymentModal } from '../DuplicatePaymentModal/DuplicatePaymentModal'
 import { FormPaymentModal } from '../FormPaymentModal/FormPaymentModal'
-import { getPreviousPayment } from '../FormPaymentPage/FormPaymentService'
+import { getPreviousPaymentId } from '../FormPaymentPage/FormPaymentService'
 
 interface PublicFormSubmitButtonProps {
   formFields: MyInfoFormField<FormField>[]
@@ -47,7 +42,7 @@ export const PublicFormSubmitButton = ({
   const isMobile = useIsMobile()
   const { isSubmitting } = useFormState()
   const formInputs = useWatch<FormFieldValues>({}) as FormFieldValues
-  const { form, formId } = usePublicFormContext()
+  const { formId, isPaymentEnabled } = usePublicFormContext()
 
   const paymentEmailField = formInputs[
     PAYMENT_CONTACT_FIELD_ID
@@ -70,21 +65,17 @@ export const PublicFormSubmitButton = ({
     if (result) {
       // get previous payment
       try {
-        const payment = await getPreviousPayment(
+        const paymentId = await getPreviousPaymentId(
           paymentEmailField.value,
           formId,
         )
-        setPrevPaymentId(payment._id)
+        setPrevPaymentId(paymentId)
       } catch (err) {
         setPrevPaymentId('')
       }
       onOpen()
     }
   }
-
-  const isPaymentEnabled =
-    form?.responseMode === FormResponseMode.Encrypt &&
-    form?.payments_field?.enabled
 
   return (
     <Stack px={{ base: '1rem', md: 0 }} pt="2.5rem" pb="4rem">
