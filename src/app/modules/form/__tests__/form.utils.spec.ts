@@ -113,7 +113,7 @@ describe('form.utils', () => {
   })
 
   describe('getFormFieldIndexById', () => {
-    it('should return index of the field when form fields given is a primitive array', async () => {
+    it('should return index of the field on valid fieldId', async () => {
       // Arrange
       const fieldToFind = generateDefaultField(BasicField.HomeNo)
       const formFields = [
