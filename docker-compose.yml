@@ -110,6 +110,7 @@ services:
       - PAYMENT_STRIPE_WEBHOOK_SECRET=webhookSecret
       - PAYMENT_MAX_PAYMENT_AMOUNT_CENTS=100000
       - PAYMENT_MIN_PAYMENT_AMOUNT_CENTS=50
+      - SSM_ENV_SITE_NAME=development
 
   mockpass:
     build: https://github.com/opengovsg/mockpass.git
