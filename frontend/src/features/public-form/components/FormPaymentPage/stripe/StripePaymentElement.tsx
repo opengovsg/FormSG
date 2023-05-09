@@ -19,7 +19,7 @@ import { useGetPaymentStatusFromStripe } from './queries'
 import { StripeReceiptContainer } from './StripeReceiptContainer'
 import { getPaymentViewStates, PaymentViewStates } from './utils'
 
-const StripeElementWrapper = ({ paymentId }: { paymentId: string }) => {
+const StripePaymentElement = ({ paymentId }: { paymentId: string }) => {
   const { data: paymentInfoData } = useGetPaymentInfo(paymentId)
 
   if (!paymentInfoData) {
@@ -132,4 +132,4 @@ const StripePaymentContainer = ({
   return renderViewState()
 }
 
-export default StripeElementWrapper
+export default StripePaymentElement

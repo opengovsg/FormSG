@@ -12,7 +12,7 @@ import FormStartPage from '~features/public-form/components/FormStartPage'
 import { PublicFormWrapper } from '~features/public-form/components/PublicFormWrapper'
 import { PublicFormProvider } from '~features/public-form/PublicFormProvider'
 
-import StripeElementWrapper from './stripe/StripeElementWrapper'
+import StripePaymentElement from './stripe/StripePaymentElement'
 
 export interface FormPaymentPageProps {
   submissionId: string
@@ -46,7 +46,7 @@ export const FormPaymentPage = () => {
                     </Skeleton>
                   }
                 >
-                  <StripeElementWrapper paymentId={paymentId} />
+                  <StripePaymentElement paymentId={paymentId} />
                 </Suspense>
               </Container>
             </Box>
