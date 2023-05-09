@@ -7,6 +7,7 @@ import { AdminFormDto, PreviewFormViewDto } from '~shared/types/form/form'
 import { ApiError } from '~typings/core'
 
 import { FORMID_REGEX } from '~constants/routes'
+import { ApiService } from '~services/ApiService'
 
 import { useUser } from '~features/user/queries'
 
@@ -153,4 +154,10 @@ export const useFormTemplate = (
       enabled: FORMID_REGEX.test(formId) && enabled,
     },
   )
+}
+
+export const getGlobalBetaFlag = async (flag: string): Promise<boolean> => {
+  return ApiService.get<boolean>('/admin/forms/global-beta', {
+    params: { flag },
+  }).then(({ data }) => data)
 }

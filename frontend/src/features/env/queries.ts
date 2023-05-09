@@ -5,11 +5,9 @@ import { ClientEnvVars } from '~shared/types/core'
 
 import { ApiError } from '~typings/core'
 
-import {
-  getClientEnvVars,
-  getFeedbackFormView,
-  getGlobalBetaFlag,
-} from './EnvService'
+import { getGlobalBetaFlag } from '~features/admin-form/common/queries'
+
+import { getClientEnvVars, getFeedbackFormView } from './EnvService'
 
 const envKeys = {
   base: ['env'],

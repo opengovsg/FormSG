@@ -136,9 +136,3 @@ export const getFeedbackFormView = async (
     .then(({ data }) => data)
     .then(transformAllIsoStringsToDate)
 }
-
-export const getGlobalBetaFlag = async (flag: string): Promise<boolean> => {
-  return ApiService.get<boolean>('/client/global-beta', {
-    params: { flag },
-  }).then(({ data }) => data)
-}

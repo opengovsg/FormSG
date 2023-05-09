@@ -15,7 +15,6 @@ import { createReqMeta } from '../../../utils/request'
 import { getFormAfterPermissionChecks } from '../../auth/auth.service'
 import * as AuthService from '../../auth/auth.service'
 import { ControllerHandler } from '../../core/core.types'
-import { getGlobalBetaFlag } from '../../frontend/frontend.service'
 import {
   getStripeOauthUrl,
   unlinkStripeAccountFromForm,
@@ -56,7 +55,9 @@ export const handleConnectAccount: ControllerHandler<{
     ...createReqMeta(req),
   }
 
-  const globalBetaEnabledResult = await getGlobalBetaFlag('payment')
+  const globalBetaEnabledResult = await AdminFormService.getGlobalBetaFlag(
+    'payment',
+  )
 
   if (globalBetaEnabledResult.isErr()) {
     logger.error({
@@ -246,7 +247,9 @@ export const _handleUpdatePayments: ControllerHandler<
     body: req.body,
   }
 
-  const globalBetaEnabledResult = await getGlobalBetaFlag('payment')
+  const globalBetaEnabledResult = await AdminFormService.getGlobalBetaFlag(
+    'payment',
+  )
 
   if (globalBetaEnabledResult.isErr()) {
     logger.error({

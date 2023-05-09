@@ -2689,3 +2689,30 @@ export const handleUpdateTwilio = [
   validateTwilioCredentials,
   updateTwilioCredentials,
 ] as ControllerHandler[]
+
+/**
+ * Handler for GET /client/global-beta endpoint.
+ * @returns whether global beta flag has been enabled.
+ */
+export const handleGetGlobalBeta: ControllerHandler<
+  never,
+  boolean | ErrorDto,
+  never,
+  { flag: string }
+> = (req, res) => {
+  return AdminFormService.getGlobalBetaFlag(req.query.flag)
+    .map((result) => res.status(StatusCodes.OK).json(result))
+    .mapErr((error) => {
+      logger.error({
+        message: `Failed to retrieve global beta flag '${req.query.flag}'`,
+        meta: {
+          action: 'handleGetGlobalBeta',
+          ...createReqMeta(req),
+        },
+        error,
+      })
+      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        message: `Error retrieving global beta flag '${req.query.flag}'`,
+      })
+    })
+}

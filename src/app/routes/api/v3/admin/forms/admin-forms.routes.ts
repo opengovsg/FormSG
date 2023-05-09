@@ -5,6 +5,7 @@ import {
   withUserAuthentication,
 } from '../../../../../modules/auth/auth.middlewares'
 
+import { AdminFormsBetaRouter } from './admin-forms.beta.routes'
 import { AdminFormsFeedbackRouter } from './admin-forms.feedback.routes'
 import { AdminFormsFormRouter } from './admin-forms.form.routes'
 import { AdminFormsLogicRouter } from './admin-forms.logic.routes'
@@ -32,3 +33,4 @@ AdminFormsRouter.use(AdminFormsPresignRouter)
 AdminFormsRouter.use(AdminFormsLogicRouter)
 AdminFormsRouter.use(AdminFormsTwilioRouter)
 AdminFormsRouter.use(AdminFormsPaymentsRouter)
+AdminFormsRouter.use(AdminFormsBetaRouter)

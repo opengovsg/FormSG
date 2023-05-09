@@ -12,6 +12,7 @@ import type { Except, Merge } from 'type-fest'
 
 import {
   MAX_UPLOAD_FILE_SIZE,
+  SUPPORT_FORM_LINK,
   VALID_UPLOAD_FILE_TYPES,
 } from '../../../../../shared/constants'
 import { MYINFO_ATTRIBUTE_MAP } from '../../../../../shared/constants/field/myinfo'
@@ -50,6 +51,7 @@ import getAgencyModel from '../../../models/agency.server.model'
 import getFormModel, {
   getEncryptedFormModel,
 } from '../../../models/form.server.model'
+import getGlobalBetaModel from '../../../models/global_beta.server.model'
 import * as SmsService from '../../../services/sms/sms.service'
 import { twilioClientCache } from '../../../services/sms/sms.service'
 import { dotifyObject } from '../../../utils/dotify-object'
@@ -104,6 +106,7 @@ const logger = createLoggerWithLabel(module)
 const FormModel = getFormModel(mongoose)
 const EncryptedFormModel = getEncryptedFormModel(mongoose)
 const AgencyModel = getAgencyModel(mongoose)
+const GlobalBetaModel = getGlobalBetaModel(mongoose)
 
 export const secretsManager = new SecretsManager({
   region: config.aws.region,
@@ -1609,4 +1612,25 @@ export const updatePayments = (
     }
     return okAsync(updatedForm.payments_field)
   })
+}
+
+export const getGlobalBetaFlag = (
+  betaFlag: string,
+): ResultAsync<boolean, DatabaseError> => {
+  return ResultAsync.fromPromise(
+    GlobalBetaModel.findFlag(betaFlag),
+    (error) => {
+      logger.error({
+        message: 'Database error when getting global beta flag status',
+        meta: {
+          action: 'findFlag',
+        },
+        error,
+      })
+
+      return new DatabaseError(
+        `Unable to get global beta flag status. If this issue persists, please submit a Support Form at (${SUPPORT_FORM_LINK})`,
+      )
+    },
+  ).andThen((betaFlagDoc) => okAsync(!!betaFlagDoc?.enabled))
 }
