@@ -74,8 +74,6 @@ const StripePaymentContainer = ({
           <PaymentStack>
             <CreatePaymentIntentFailureBlock
               submissionId={paymentInfoData.submissionId}
-              paymentClientSecret={paymentInfoData.client_secret}
-              publishableKey={paymentInfoData.publishableKey}
             />
           </PaymentStack>
         )
@@ -94,8 +92,6 @@ const StripePaymentContainer = ({
           <PaymentStack>
             <StripePaymentBlock
               submissionId={paymentInfoData.submissionId}
-              paymentClientSecret={paymentInfoData.client_secret}
-              publishableKey={paymentInfoData.publishableKey}
               triggerPaymentStatusRefetch={() => setRefetchKey(Date.now())}
             />
           </PaymentStack>

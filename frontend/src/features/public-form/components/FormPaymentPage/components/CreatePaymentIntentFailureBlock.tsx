@@ -3,13 +3,11 @@ import { Box, Flex, Stack, Text, VisuallyHidden } from '@chakra-ui/react'
 
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
-import { FormPaymentPageProps } from '../FormPaymentPage'
-
 // Make sure to call `loadStripe` outside of a component’s render to avoid
 // recreating the `Stripe` object on every render.
 
-export interface CreatePaymentIntentFailureBlockProps
-  extends FormPaymentPageProps {
+export interface CreatePaymentIntentFailureBlockProps {
+  submissionId: string
   focusOnMount?: boolean
 }
 
