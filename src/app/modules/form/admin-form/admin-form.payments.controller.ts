@@ -5,6 +5,7 @@ import { err, ok } from 'neverthrow'
 
 import { IEncryptedFormDocument } from 'src/types'
 
+import { betaFlags } from '../../../../../shared/constants'
 import {
   ErrorDto,
   PaymentChannel,
@@ -56,7 +57,7 @@ export const handleConnectAccount: ControllerHandler<{
   }
 
   const globalBetaEnabledResult = await AdminFormService.getGlobalBetaFlag(
-    'payment',
+    betaFlags.payment,
   )
 
   if (globalBetaEnabledResult.isErr()) {
@@ -79,7 +80,11 @@ export const handleConnectAccount: ControllerHandler<{
     getPopulatedUserById(sessionUserId)
       // Step 2: Check if user has 'payment' betaflag
       .andThen((user) =>
-        verifyUserBetaflag(user, globalBetaEnabledResult.value, 'payment'),
+        verifyUserBetaflag(
+          user,
+          globalBetaEnabledResult.value,
+          betaFlags.payment,
+        ),
       )
       .andThen((user) =>
         // Step 3: Retrieve form with write permission check.
@@ -248,7 +253,7 @@ export const _handleUpdatePayments: ControllerHandler<
   }
 
   const globalBetaEnabledResult = await AdminFormService.getGlobalBetaFlag(
-    'payment',
+    betaFlags.payment,
   )
 
   if (globalBetaEnabledResult.isErr()) {
@@ -271,7 +276,11 @@ export const _handleUpdatePayments: ControllerHandler<
     UserService.getPopulatedUserById(sessionUserId)
       // Step 2: Check if user has 'payment' betaflag
       .andThen((user) =>
-        verifyUserBetaflag(user, globalBetaEnabledResult.value, 'payment'),
+        verifyUserBetaflag(
+          user,
+          globalBetaEnabledResult.value,
+          betaFlags.payment,
+        ),
       )
       .andThen((user) =>
         // Step 2: Retrieve form with write permission check.

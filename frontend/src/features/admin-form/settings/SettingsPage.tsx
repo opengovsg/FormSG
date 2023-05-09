@@ -11,6 +11,8 @@ import {
   Tabs,
 } from '@chakra-ui/react'
 
+import { betaFlags } from '~shared/constants'
+
 import { ADMINFORM_RESULTS_SUBROUTE, ADMINFORM_ROUTE } from '~constants/routes'
 import { useDraggable } from '~hooks/useDraggable'
 
@@ -29,7 +31,7 @@ import { SettingsWebhooksPage } from './SettingsWebhooksPage'
 export const SettingsPage = (): JSX.Element => {
   const { formId } = useParams()
   const { user } = useUser()
-  const { flagEnabled: paymentGlobalBeta } = useGlobalBeta('payment')
+  const { flagEnabled: paymentGlobalBeta } = useGlobalBeta(betaFlags.payment)
 
   if (!formId) throw new Error('No formId provided')
 

@@ -9,6 +9,8 @@ import {
   Text,
 } from '@chakra-ui/react'
 
+import { betaFlags } from '~shared/constants'
+
 import { Tab } from '~components/Tabs'
 
 import { useCreatePageSidebar } from '~features/admin-form/create/common/CreatePageSidebarContext'
@@ -29,7 +31,7 @@ export const FieldListDrawer = (): JSX.Element => {
   const { isLoading } = useCreateTabForm()
 
   const { user } = useUser()
-  const { flagEnabled: paymentGlobalBeta } = useGlobalBeta('payment')
+  const { flagEnabled: paymentGlobalBeta } = useGlobalBeta(betaFlags.payment)
 
   const displayPayments = user?.betaFlags?.payment || paymentGlobalBeta
   return (
