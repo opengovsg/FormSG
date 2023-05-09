@@ -6,7 +6,7 @@ export const AdminFormsBetaRouter = Router()
 
 /**
  * Retrieve the environment variables for the frontend.
- * @route GET /api/v3/global-beta
+ * @route GET /api/v3/admin/forms/global-beta
  * @return 200 with environment variables needed for the client
  */
 AdminFormsBetaRouter.get(

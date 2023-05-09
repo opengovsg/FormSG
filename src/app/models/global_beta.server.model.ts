@@ -20,7 +20,7 @@ const GlobalBetaSchema = new Schema<IGlobalBetaSchema, IGlobalBetaModel>(
 
 // Statics
 /**
- * Upserts given OTP into AdminVerification collection.
+ * Find beta flag document given beta flag name
  */
 GlobalBetaSchema.statics.findFlag = async function (flag: string) {
   return await this.findOne({ name: flag }).exec()
