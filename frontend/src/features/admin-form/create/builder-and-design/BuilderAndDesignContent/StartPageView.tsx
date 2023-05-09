@@ -20,7 +20,7 @@ import { useCreatePageSidebar } from '../../common/CreatePageSidebarContext'
 import {
   setToInactiveSelector as setPaymentToInactiveSelector,
   usePaymentStore,
-} from '../BuilderAndDesignDrawer/FieldListDrawer/field-panels/usePaymentStore'
+} from '../BuilderAndDesignDrawer/FieldListDrawer/field-panels/PaymentPanel'
 import { useCreateTabForm } from '../useCreateTabForm'
 import {
   customLogoMetaSelector,

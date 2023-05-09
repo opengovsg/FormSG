@@ -15,7 +15,7 @@ import {
   setToEditingPaymentSelector,
   stateSelector,
   usePaymentStore,
-} from '../BuilderAndDesignDrawer/FieldListDrawer/field-panels/usePaymentStore'
+} from '../BuilderAndDesignDrawer/FieldListDrawer/field-panels/PaymentPanel'
 import { FieldListTabIndex } from '../constants'
 import {
   DesignState,

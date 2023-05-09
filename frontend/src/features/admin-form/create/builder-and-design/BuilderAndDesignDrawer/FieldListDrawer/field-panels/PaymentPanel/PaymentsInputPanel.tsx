@@ -6,30 +6,9 @@ import {
   useForm,
   useWatch,
 } from 'react-hook-form'
-import { GoPlus } from 'react-icons/go'
 import { Link as ReactLink } from 'react-router-dom'
 import { useDebounce } from 'react-use'
-import {
-  Box,
-  Button,
-  ButtonGroup,
-  Divider,
-  Flex,
-  FormControl,
-  Icon,
-  Link,
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  ModalOverlay,
-  Stack,
-  Text,
-  Textarea,
-  useDisclosure,
-} from '@chakra-ui/react'
+import { Box, FormControl, Link, Text } from '@chakra-ui/react'
 import { cloneDeep } from 'lodash'
 
 import {
@@ -49,18 +28,19 @@ import Toggle from '~components/Toggle'
 import { useMutateFormPage } from '~features/admin-form/common/mutations'
 import { useAdminForm } from '~features/admin-form/common/queries'
 
-import { useEnv } from '../../../../../../env/queries'
+import { useEnv } from '../../../../../../../env/queries'
 import {
   CreatePageDrawerContentContainer,
   useCreatePageSidebar,
-} from '../../../../common'
-import { FieldListTabIndex } from '../../../constants'
+} from '../../../../../common'
+import { FieldListTabIndex } from '../../../../constants'
 import {
   setIsDirtySelector,
   useDirtyFieldStore,
-} from '../../../useDirtyFieldStore'
-import { FormFieldDrawerActions } from '../../EditFieldDrawer/edit-fieldtype/common/FormFieldDrawerActions'
+} from '../../../../useDirtyFieldStore'
+import { FormFieldDrawerActions } from '../../../EditFieldDrawer/edit-fieldtype/common/FormFieldDrawerActions'
 
+import { ProductServiceBoxv2 } from './ProductServiceBoxv2'
 import {
   dataSelector,
   resetDataSelector,
@@ -236,13 +216,13 @@ export const PaymentInput = ({ isDisabled }: { isDisabled: boolean }) => {
         <FormLabel isRequired>Title</FormLabel>
         <Input {...register('title', { required: paymentIsEnabled })} />
       </FormControl>
-
+      {/* 
       <ProductServiceBox
         register={register}
         paymentsMutation={paymentsMutation}
         errors={errors}
         paymentIsEnabled={paymentIsEnabled}
-      />
+      /> */}
 
       <ProductServiceBoxv2
         register={register}
@@ -250,9 +230,15 @@ export const PaymentInput = ({ isDisabled }: { isDisabled: boolean }) => {
         errors={errors}
         paymentIsEnabled={paymentIsEnabled}
         amountValidation={amountValidation}
-        control={control}
       />
-
+      <FormControl isReadOnly={paymentsMutation.isLoading}>
+        <Toggle
+          {...register('product-multi-selection', {
+            onChange: () => paymentIsEnabled,
+          })}
+          label="Allow selection of multiple types of products/services"
+        />
+      </FormControl>
       <FormControl
         isReadOnly={paymentsMutation.isLoading}
         isInvalid={!!errors.display_amount}
@@ -350,150 +336,6 @@ export const PaymentsInputPanel = (): JSX.Element | null => {
   )
 }
 
-const AddProductModal = ({ onClose, register, amountValidation, control }) => {
-  return (
-    <Modal isOpen onClose={onClose}>
-      <ModalOverlay />
-      <ModalContent>
-        <ModalCloseButton />
-        <ModalHeader>Add product/service</ModalHeader>
-        <ModalBody>
-          <Stack
-            spacing={{ base: '1.5rem', md: '2.25rem' }}
-            divider={<Divider />}
-          >
-            <Box>
-              <FormControl>
-                <FormLabel isRequired>Name</FormLabel>
-                <Input />
-              </FormControl>
-
-              <FormControl>
-                <FormLabel isRequired>Description</FormLabel>
-                <Textarea />
-              </FormControl>
-
-              <FormControl>
-                <FormLabel isRequired>Payment Amount</FormLabel>
-                <Controller
-                  name="display_amount"
-                  control={control}
-                  rules={amountValidation}
-                  render={({ field }) => (
-                    <MoneyInput
-                      flex={1}
-                      step={0}
-                      inputMode="decimal"
-                      placeholder="0.00"
-                      {...field}
-                    />
-                  )}
-                />
-              </FormControl>
-            </Box>
-            <Box>
-              <FormControl>
-                <Toggle
-                  {...register('enabled', {
-                    // Retrigger validation to remove errors when payment is toggled from enabled -> disabled
-                    onChange: () => {
-                      //
-                    },
-                  })}
-                  description="Customise the range that users can select from"
-                  label="Allow multiple quantities"
-                />
-                <Flex flexDirection="row">
-                  <Input mr="0.5rem" />
-                  <Input />
-                </Flex>
-              </FormControl>
-            </Box>
-          </Stack>
-        </ModalBody>
-        <ModalFooter>
-          <ButtonGroup>
-            <Button variant="clear" onClick={onClose}>
-              Cancel
-            </Button>
-            <Button loadingText="Saving" onClick={onClose}>
-              Save product
-            </Button>
-          </ButtonGroup>
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
-  )
-}
-const PROD_DATA = []
-const ProductServiceBoxv2 = ({
-  paymentsMutation,
-  errors,
-  paymentIsEnabled,
-  register,
-  amountValidation,
-  control,
-}) => {
-  const { onOpen, onClose, isOpen } = useDisclosure({
-    defaultIsOpen: true,
-  })
-  if (PROD_DATA.length <= 0) {
-    return (
-      <>
-        {isOpen ? (
-          <AddProductModal
-            register={register}
-            onClose={onClose}
-            amountValidation={amountValidation}
-            control={control}
-          />
-        ) : null}
-        <Box>
-          <FormLabel description="This will be reflected on the payment invoice">
-            Product/service name
-          </FormLabel>
-          <Box px="1.5rem" pt="2rem" pb="1.5rem" backgroundColor={'#F9F9F9'}>
-            <Text textStyle={'subhead-1'} pb="0.25rem" color="secondary.500">
-              You haven't added any product/service
-            </Text>
-            <Text textStyle={'caption-1'} color="secondary.500">
-              Click 'Add' to configure your product/service
-            </Text>
-          </Box>
-          <hr />
-          <Flex flexDirection="row" onClick={() => onOpen()}>
-            <Icon as={GoPlus} color="danger.500" />
-            <Text>Add</Text>
-          </Flex>
-        </Box>
-      </>
-    )
-  }
-  return (
-    <FormControl
-      isReadOnly={paymentsMutation.isLoading}
-      isInvalid={!!errors.description}
-      isDisabled={!paymentIsEnabled}
-      isRequired
-    >
-      <FormLabel description="This will be reflected on the payment invoice">
-        Product/service name
-      </FormLabel>
-
-      <FormControl
-        isReadOnly={paymentsMutation.isLoading}
-        // isDisabled={isDisabled}
-      >
-        <Toggle
-          {...register('product-multi-selection', {
-            onChange: () => paymentIsEnabled,
-          })}
-          label="Allow selection of multiple types of products/services"
-        />
-      </FormControl>
-    </FormControl>
-  )
-}
 const ProductServiceBox = ({
   register,
   paymentsMutation,
