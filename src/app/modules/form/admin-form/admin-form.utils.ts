@@ -501,10 +501,9 @@ export const verifyValidUnicodeString = (value: any, helpers: any) => {
  */
 export const verifyUserBetaflag = (
   user: IUserSchema,
-  featureFlagEnabled: boolean,
   betaFlag: keyof Exclude<IUserSchema['betaFlags'], undefined>,
 ) => {
-  return user?.betaFlags?.[betaFlag] || featureFlagEnabled
+  return user?.betaFlags?.[betaFlag]
     ? ok(user)
     : err(
         new ForbiddenFormError(

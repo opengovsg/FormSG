@@ -59,20 +59,20 @@ export const handleConnectAccount: ControllerHandler<{
 
   // If getFeatureFlag throws a DatabaseError, we want to log it, but respond
   // to the client as if the flag is not found.
-  const featureFlagEnabledResult = await FeatureFlagService.getFeatureFlag(
-    featureFlags.payment,
-  )
+  const featureFlagsListResult = await FeatureFlagService.getEnabledFlags()
 
   let featureFlagEnabled = false
 
-  if (featureFlagEnabledResult.isErr()) {
+  if (featureFlagsListResult.isErr()) {
     logger.error({
       message: 'Error occurred whilst retrieving feature flag status',
       meta: logMeta,
-      error: featureFlagEnabledResult.error,
+      error: featureFlagsListResult.error,
     })
   } else {
-    featureFlagEnabled = featureFlagEnabledResult.value
+    featureFlagEnabled = featureFlagsListResult.value.includes(
+      featureFlags.payment,
+    )
   }
 
   // Step 1: Retrieve currently logged in user.
@@ -80,7 +80,9 @@ export const handleConnectAccount: ControllerHandler<{
     getPopulatedUserById(sessionUserId)
       // Step 2: Check if user has 'payment' betaflag
       .andThen((user) =>
-        verifyUserBetaflag(user, featureFlagEnabled, featureFlags.payment),
+        featureFlagEnabled
+          ? ok(user)
+          : verifyUserBetaflag(user, featureFlags.payment),
       )
       .andThen((user) =>
         // Step 3: Retrieve form with write permission check.
@@ -250,20 +252,20 @@ export const _handleUpdatePayments: ControllerHandler<
 
   // If getFeatureFlag throws a DatabaseError, we want to log it, but respond
   // to the client as if the flag is not found.
-  const featureFlagEnabledResult = await FeatureFlagService.getFeatureFlag(
-    featureFlags.payment,
-  )
+  const featureFlagsListResult = await FeatureFlagService.getEnabledFlags()
 
   let featureFlagEnabled = false
 
-  if (featureFlagEnabledResult.isErr()) {
+  if (featureFlagsListResult.isErr()) {
     logger.error({
       message: 'Error occurred whilst retrieving global beta flag status',
       meta: logMeta,
-      error: featureFlagEnabledResult.error,
+      error: featureFlagsListResult.error,
     })
   } else {
-    featureFlagEnabled = featureFlagEnabledResult.value
+    featureFlagEnabled = featureFlagsListResult.value.includes(
+      featureFlags.payment,
+    )
   }
 
   // Step 1: Retrieve currently logged in user.
@@ -271,7 +273,9 @@ export const _handleUpdatePayments: ControllerHandler<
     UserService.getPopulatedUserById(sessionUserId)
       // Step 2: Check if user has 'payment' betaflag
       .andThen((user) =>
-        verifyUserBetaflag(user, featureFlagEnabled, featureFlags.payment),
+        featureFlagEnabled
+          ? ok(user)
+          : verifyUserBetaflag(user, featureFlags.payment),
       )
       .andThen((user) =>
         // Step 2: Retrieve form with write permission check.
