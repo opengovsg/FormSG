@@ -65,7 +65,7 @@ export const handleConnectAccount: ControllerHandler<{
 
   if (featureFlagsListResult.isErr()) {
     logger.error({
-      message: 'Error occurred whilst retrieving feature flag status',
+      message: 'Error occurred whilst retrieving enabled feature flags',
       meta: logMeta,
       error: featureFlagsListResult.error,
     })
@@ -258,7 +258,7 @@ export const _handleUpdatePayments: ControllerHandler<
 
   if (featureFlagsListResult.isErr()) {
     logger.error({
-      message: 'Error occurred whilst retrieving global beta flag status',
+      message: 'Error occurred whilst retrieving enabled feature flags',
       meta: logMeta,
       error: featureFlagsListResult.error,
     })

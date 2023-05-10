@@ -10,15 +10,13 @@ import * as FeatureFlagService from './feature-flags.service'
 const logger = createLoggerWithLabel(module)
 
 /**
- * Handler for GET /feature-flags endpoint.
+ * Handler for GET /feature-flags/enabled endpoint.
  * @returns whether feature flag has been enabled.
  */
 export const handleGetEnabledFlags: ControllerHandler<
   never,
   // TODO: stricter typing to restrict typing to flag values in shared/constants
-  string[] | ErrorDto,
-  never,
-  { flag: string }
+  string[] | ErrorDto
 > = (req, res) => {
   // If getFeatureFlag throws a DatabaseError, we want to log it, but respond
   // to the client as if the flag is not found.
@@ -28,7 +26,7 @@ export const handleGetEnabledFlags: ControllerHandler<
     })
     .mapErr((error) => {
       logger.error({
-        message: `Failed to retrieve feature flag '${req.query.flag}'`,
+        message: `Failed to retrieve enabled feature flags`,
         meta: {
           action: 'handleGetFeatureFlag',
           ...createReqMeta(req),
