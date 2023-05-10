@@ -3,6 +3,7 @@ import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
 import {
   FormAuthType,
+  FormFieldDto,
   FormResponseMode,
   FormStatus,
 } from '../../../../shared/types'
@@ -342,4 +343,52 @@ export const retrievePublicFormsWithSmsVerification = (
     }
     return okAsync(forms)
   })
+}
+
+export const createSampleSubmissionData = (
+  sampleData: Record<string, unknown>,
+  field: FormFieldDto,
+) => {
+  let sampleValue = null
+  switch (field.fieldType) {
+    case 'textarea':
+    case 'textfield':
+      sampleValue =
+        'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.'
+      break
+    case 'radiobutton':
+    case 'dropdown':
+      sampleValue = field.fieldOptions[0]
+      break
+    case 'email':
+      sampleValue = 'hello@example.com'
+      break
+    case 'decimal':
+      sampleValue = 1.234
+      break
+    case 'number':
+      sampleValue = 1234
+      break
+    case 'mobile':
+      sampleValue = '+6598765432'
+      break
+    case 'homeno':
+      sampleValue = '+6567890123'
+      break
+    case 'yes_no':
+      sampleValue = 'yes'
+      break
+    case 'rating':
+      sampleValue = 1
+      break
+    default:
+      break
+  }
+  if (sampleValue != null) {
+    sampleData[field._id] = {
+      question: field.title,
+      answer: sampleValue,
+    }
+  }
+  return sampleValue
 }
