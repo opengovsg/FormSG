@@ -28,6 +28,7 @@ import {
   FormSettings,
   LogicDto,
   MobileFieldBase,
+  PaymentsProductUpdateDto,
   PaymentsUpdateDto,
   SettingsUpdateDto,
   StartPageUpdateDto,
@@ -1609,6 +1610,57 @@ export const updatePayments = (
           action: 'updatePayments',
           formId,
           newPayments,
+        },
+        error,
+      })
+      return transformMongoError(error)
+    },
+  ).andThen((updatedForm) => {
+    if (!updatedForm) {
+      return errAsync(new FormNotFoundError())
+    }
+    return okAsync(updatedForm.payments_field)
+  })
+}
+
+/**
+ * Update the payments of the given form
+ * @param formId the id of the form to update the end page for
+ * @param newStartPage the new start page object to replace the current one
+ * @returns ok(updated start page object) when update is successful
+ * @returns err(FormNotFoundError) if form cannot be found
+ * @returns err(PossibleDatabaseError) if start page update fails
+ * @returns err(InvalidPaymentAmountError) if payment amount exceeds MAX_PAYMENT_AMOUNT
+ */
+export const updatePaymentsProduct = (
+  formId: string,
+  newProducts: PaymentsProductUpdateDto,
+): ResultAsync<
+  IEncryptedFormDocument['payments_field'],
+  PossibleDatabaseError | FormNotFoundError | InvalidPaymentAmountError
+> => {
+  // TODO: should ensure if amounts_cents is within range for array
+  // const { enabled, amount_cents } = newProducts
+
+  // // Check if payment amount exceeds maxPaymentAmountCents or below minPaymentAmountCents if the payment is enabled
+  // if (enabled && amount_cents !== undefined) {
+  //   if (
+  //     amount_cents > paymentConfig.maxPaymentAmountCents ||
+  //     amount_cents < paymentConfig.minPaymentAmountCents
+  //   ) {
+  //     return errAsync(new InvalidPaymentAmountError())
+  //   }
+  // }
+
+  return ResultAsync.fromPromise(
+    EncryptedFormModel.updatePaymentsProductById(formId, newProducts),
+    (error) => {
+      logger.error({
+        message: 'Error occurred when updating form payments',
+        meta: {
+          action: 'updatePaymentsProduct',
+          formId,
+          newProducts,
         },
         error,
       })

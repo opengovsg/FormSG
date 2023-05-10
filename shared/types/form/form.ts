@@ -79,6 +79,20 @@ export type FormPaymentsField = {
   enabled: boolean
   amount_cents?: number
   description?: string
+
+  // payment by products fields
+  products: Array<Product>
+  products_meta?: {
+    description: string
+    multi_product: boolean
+  }
+}
+
+export type Product = {
+  title: string
+  min_qty: number
+  max_qty: number
+  amount_cents: number
 }
 
 export type FormBusinessField = {
@@ -253,6 +267,7 @@ export type FormPermissionsDto = FormPermission[]
 export type PermissionsUpdateDto = FormPermission[]
 export type PaymentsUpdateDto = FormPaymentsField
 export type BusinessUpdateDto = FormBusinessField
+export type PaymentsProductUpdateDto = FormPaymentsField['products']
 
 export type SendFormOtpResponseDto = {
   otpPrefix: string

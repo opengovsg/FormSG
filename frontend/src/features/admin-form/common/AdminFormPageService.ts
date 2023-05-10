@@ -1,5 +1,6 @@
 import {
   EndPageUpdateDto,
+  PaymentsProductUpdateDto,
   PaymentsUpdateDto,
   StartPageUpdateDto,
 } from '~shared/types'
@@ -56,5 +57,22 @@ export const updateFormPayments = async (
   return ApiService.put<PaymentsUpdateDto>(
     `${ADMIN_FORM_ENDPOINT}/${formId}/payments`,
     newPayments,
+  ).then(({ data }) => data)
+}
+
+/**
+ * Updates the payments for the given form referenced by its id
+ *
+ * @param formId the id of the form to update payments for
+ * @param newPayments the new payment to replace with
+ * @returns the updated payment on success
+ */
+export const updateFormPaymentProducts = async (
+  formId: string,
+  products: PaymentsProductUpdateDto,
+): Promise<PaymentsProductUpdateDto> => {
+  return ApiService.put<PaymentsProductUpdateDto>(
+    `${ADMIN_FORM_ENDPOINT}/${formId}/payments/products`,
+    products,
   ).then(({ data }) => data)
 }

@@ -72,3 +72,15 @@ AdminFormsPaymentsRouter.put(
   '/:formId([a-fA-F0-9]{24})/payments',
   AdminPaymentsController.handleUpdatePayments,
 )
+
+/**
+ * Replaces the payments data of the given form with what is given in the request
+ * @precondition Must be preceded by request validation
+ * @security session
+ *
+ * #TODO
+ */
+AdminFormsPaymentsRouter.put(
+  '/:formId([a-fA-F0-9]{24})/payments/products',
+  AdminPaymentsController.handleUpdatePaymentsProduct,
+)

@@ -162,6 +162,7 @@ const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
       trim: true,
       default: '',
     },
+    // unused for v2
     amount_cents: {
       type: Number,
       default: 0,
@@ -170,6 +171,47 @@ const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
           return amount_cents >= 0 && Number.isInteger(amount_cents)
         },
         message: 'amount_cents must be a non-negative integer.',
+      },
+    },
+    products: [
+      {
+        title: {
+          type: String,
+          trim: true,
+          default: '',
+        },
+        min_qty: {
+          type: Number,
+          default: 1,
+          required: false,
+        },
+        max_qty: {
+          type: Number,
+          default: 1,
+          required: false,
+        },
+        amount_cents: {
+          type: Number,
+          default: 0,
+          validate: {
+            validator: (amount_cents: number) => {
+              return amount_cents >= 0 && Number.isInteger(amount_cents)
+            },
+            message: 'amount_cents must be a non-negative integer.',
+          },
+        },
+      },
+    ],
+    products_meta: {
+      description: {
+        type: String,
+        trim: true,
+        default: '',
+      },
+
+      multi_product: {
+        type: Boolean,
+        default: false,
       },
     },
   },
@@ -913,6 +955,17 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     return this.findByIdAndUpdate(
       formId,
       { payments_field: newPayments },
+      { new: true, runValidators: true },
+    ).exec()
+  }
+
+  FormSchema.statics.updatePaymentsProductById = async function (
+    formId: string,
+    newProducts: FormPaymentsField['products'],
+  ) {
+    return this.findByIdAndUpdate(
+      formId,
+      { payments_field: { products: newProducts } },
       { new: true, runValidators: true },
     ).exec()
   }
