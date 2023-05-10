@@ -56,9 +56,13 @@ export const handleConnectAccount: ControllerHandler<{
     ...createReqMeta(req),
   }
 
+  // If getGlobalBetaFlag throws a DatabaseError, we want to log it, but respond
+  // to the client as if the flag is not found.
   const globalBetaEnabledResult = await AdminFormService.getGlobalBetaFlag(
     betaFlags.payment,
   )
+
+  let globalBetaEnabled = false
 
   if (globalBetaEnabledResult.isErr()) {
     logger.error({
@@ -66,13 +70,8 @@ export const handleConnectAccount: ControllerHandler<{
       meta: logMeta,
       error: globalBetaEnabledResult.error,
     })
-
-    const { statusCode, errorMessage } = mapRouteError(
-      globalBetaEnabledResult.error,
-    )
-    return res.status(statusCode).json({
-      message: errorMessage,
-    })
+  } else {
+    globalBetaEnabled = globalBetaEnabledResult.value
   }
 
   // Step 1: Retrieve currently logged in user.
@@ -80,11 +79,7 @@ export const handleConnectAccount: ControllerHandler<{
     getPopulatedUserById(sessionUserId)
       // Step 2: Check if user has 'payment' betaflag
       .andThen((user) =>
-        verifyUserBetaflag(
-          user,
-          globalBetaEnabledResult.value,
-          betaFlags.payment,
-        ),
+        verifyUserBetaflag(user, globalBetaEnabled, betaFlags.payment),
       )
       .andThen((user) =>
         // Step 3: Retrieve form with write permission check.
@@ -252,9 +247,13 @@ export const _handleUpdatePayments: ControllerHandler<
     body: req.body,
   }
 
+  // If getGlobalBetaFlag throws a DatabaseError, we want to log it, but respond
+  // to the client as if the flag is not found.
   const globalBetaEnabledResult = await AdminFormService.getGlobalBetaFlag(
     betaFlags.payment,
   )
+
+  let globalBetaEnabled = false
 
   if (globalBetaEnabledResult.isErr()) {
     logger.error({
@@ -262,13 +261,8 @@ export const _handleUpdatePayments: ControllerHandler<
       meta: logMeta,
       error: globalBetaEnabledResult.error,
     })
-
-    const { statusCode, errorMessage } = mapRouteError(
-      globalBetaEnabledResult.error,
-    )
-    return res.status(statusCode).json({
-      message: errorMessage,
-    })
+  } else {
+    globalBetaEnabled = globalBetaEnabledResult.value
   }
 
   // Step 1: Retrieve currently logged in user.
@@ -276,11 +270,7 @@ export const _handleUpdatePayments: ControllerHandler<
     UserService.getPopulatedUserById(sessionUserId)
       // Step 2: Check if user has 'payment' betaflag
       .andThen((user) =>
-        verifyUserBetaflag(
-          user,
-          globalBetaEnabledResult.value,
-          betaFlags.payment,
-        ),
+        verifyUserBetaflag(user, globalBetaEnabled, betaFlags.payment),
       )
       .andThen((user) =>
         // Step 2: Retrieve form with write permission check.

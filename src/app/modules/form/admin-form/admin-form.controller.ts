@@ -2700,6 +2700,8 @@ export const handleGetGlobalBeta: ControllerHandler<
   never,
   { flag: string }
 > = (req, res) => {
+  // If getGlobalBetaFlag throws a DatabaseError, we want to log it, but respond
+  // to the client as if the flag is not found.
   return AdminFormService.getGlobalBetaFlag(req.query.flag)
     .map((result) => res.status(StatusCodes.OK).json(result))
     .mapErr((error) => {
@@ -2711,8 +2713,6 @@ export const handleGetGlobalBeta: ControllerHandler<
         },
         error,
       })
-      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-        message: `Error retrieving global beta flag '${req.query.flag}'`,
-      })
+      return res.status(StatusCodes.OK).json(false)
     })
 }

@@ -12,7 +12,6 @@ import type { Except, Merge } from 'type-fest'
 
 import {
   MAX_UPLOAD_FILE_SIZE,
-  SUPPORT_FORM_LINK,
   VALID_UPLOAD_FILE_TYPES,
 } from '../../../../../shared/constants'
 import { MYINFO_ATTRIBUTE_MAP } from '../../../../../shared/constants/field/myinfo'
@@ -1628,9 +1627,7 @@ export const getGlobalBetaFlag = (
         error,
       })
 
-      return new DatabaseError(
-        `Unable to get global beta flag status. If this issue persists, please submit a Support Form at (${SUPPORT_FORM_LINK})`,
-      )
+      return new DatabaseError(`Unable to get global beta flag status.`)
     },
   ).andThen((betaFlagDoc) => okAsync(!!betaFlagDoc?.enabled))
 }
