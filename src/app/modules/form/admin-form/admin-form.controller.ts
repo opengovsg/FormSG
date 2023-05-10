@@ -2689,30 +2689,3 @@ export const handleUpdateTwilio = [
   validateTwilioCredentials,
   updateTwilioCredentials,
 ] as ControllerHandler[]
-
-/**
- * Handler for GET /admin/forms/feature-flag endpoint.
- * @returns whether feature flag has been enabled.
- */
-export const handleGetFeatureFlag: ControllerHandler<
-  never,
-  boolean | ErrorDto,
-  never,
-  { flag: string }
-> = (req, res) => {
-  // If getFeatureFlag throws a DatabaseError, we want to log it, but respond
-  // to the client as if the flag is not found.
-  return AdminFormService.getFeatureFlag(req.query.flag)
-    .map((result) => res.status(StatusCodes.OK).json(result))
-    .mapErr((error) => {
-      logger.error({
-        message: `Failed to retrieve feature flag '${req.query.flag}'`,
-        meta: {
-          action: 'handleGetFeatureFlag',
-          ...createReqMeta(req),
-        },
-        error,
-      })
-      return res.status(StatusCodes.OK).json(false)
-    })
-}

@@ -16,6 +16,7 @@ import { createReqMeta } from '../../../utils/request'
 import { getFormAfterPermissionChecks } from '../../auth/auth.service'
 import * as AuthService from '../../auth/auth.service'
 import { ControllerHandler } from '../../core/core.types'
+import * as FeatureFlagService from '../../feature-flags/feature-flags.service'
 import {
   getStripeOauthUrl,
   unlinkStripeAccountFromForm,
@@ -58,7 +59,7 @@ export const handleConnectAccount: ControllerHandler<{
 
   // If getFeatureFlag throws a DatabaseError, we want to log it, but respond
   // to the client as if the flag is not found.
-  const featureFlagEnabledResult = await AdminFormService.getFeatureFlag(
+  const featureFlagEnabledResult = await FeatureFlagService.getFeatureFlag(
     featureFlags.payment,
   )
 
@@ -249,7 +250,7 @@ export const _handleUpdatePayments: ControllerHandler<
 
   // If getFeatureFlag throws a DatabaseError, we want to log it, but respond
   // to the client as if the flag is not found.
-  const featureFlagEnabledResult = await AdminFormService.getFeatureFlag(
+  const featureFlagEnabledResult = await FeatureFlagService.getFeatureFlag(
     featureFlags.payment,
   )
 

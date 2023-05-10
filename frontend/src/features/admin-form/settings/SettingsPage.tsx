@@ -16,9 +16,10 @@ import { featureFlags } from '~shared/constants'
 import { ADMINFORM_RESULTS_SUBROUTE, ADMINFORM_ROUTE } from '~constants/routes'
 import { useDraggable } from '~hooks/useDraggable'
 
+import { useFeatureFlagEnabled } from '~features/feature-flags/queries'
 import { useUser } from '~features/user/queries'
 
-import { getFeatureFlag, useAdminFormCollaborators } from '../common/queries'
+import { useAdminFormCollaborators } from '../common/queries'
 
 import { SettingsTab } from './components/SettingsTab'
 import { SettingsAuthPage } from './SettingsAuthPage'
@@ -30,7 +31,9 @@ import { SettingsWebhooksPage } from './SettingsWebhooksPage'
 export const SettingsPage = (): JSX.Element => {
   const { formId } = useParams()
   const { user } = useUser()
-  const paymentFeatureFlag = getFeatureFlag(featureFlags.payment)
+  const { data: paymentFeatureFlag } = useFeatureFlagEnabled(
+    featureFlags.payment,
+  )
 
   if (!formId) throw new Error('No formId provided')
 

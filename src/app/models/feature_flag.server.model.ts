@@ -2,7 +2,7 @@ import { Mongoose, Schema } from 'mongoose'
 
 import { IFeatureFlagModel, IFeatureFlagSchema } from 'src/types/feature_flag'
 
-export const FEATURE_FLAG_SCHEMA_ID = 'featureFlag'
+const FEATURE_FLAG_SCHEMA_ID = 'featureFlag'
 
 const compileFeatureFlagModel = (db: Mongoose): IFeatureFlagModel => {
   const FeatureFlagSchema = new Schema<IFeatureFlagSchema, IFeatureFlagModel>({
@@ -13,6 +13,7 @@ const compileFeatureFlagModel = (db: Mongoose): IFeatureFlagModel => {
     enabled: {
       type: Schema.Types.Boolean,
       required: true,
+      default: false,
     },
   })
 
@@ -24,12 +25,12 @@ const compileFeatureFlagModel = (db: Mongoose): IFeatureFlagModel => {
     return await this.findOne({ name: flag }).exec()
   }
 
-  const GlobalBetaModel = db.model<IFeatureFlagSchema, IFeatureFlagModel>(
+  const FeatureFlagModel = db.model<IFeatureFlagSchema, IFeatureFlagModel>(
     FEATURE_FLAG_SCHEMA_ID,
     FeatureFlagSchema,
   )
 
-  return GlobalBetaModel
+  return FeatureFlagModel
 }
 
 const getFeatureFlagModel = (db: Mongoose): IFeatureFlagModel => {

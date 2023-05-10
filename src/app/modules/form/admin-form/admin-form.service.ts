@@ -47,7 +47,6 @@ import config, { aws as AwsConfig } from '../../../config/config'
 import { paymentConfig } from '../../../config/features/payment.config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import getAgencyModel from '../../../models/agency.server.model'
-import getFeatureFlagModel from '../../../models/feature_flag.server.model'
 import getFormModel, {
   getEncryptedFormModel,
 } from '../../../models/form.server.model'
@@ -105,7 +104,6 @@ const logger = createLoggerWithLabel(module)
 const FormModel = getFormModel(mongoose)
 const EncryptedFormModel = getEncryptedFormModel(mongoose)
 const AgencyModel = getAgencyModel(mongoose)
-const FeatureFlagModel = getFeatureFlagModel(mongoose)
 
 export const secretsManager = new SecretsManager({
   region: config.aws.region,
@@ -1611,23 +1609,4 @@ export const updatePayments = (
     }
     return okAsync(updatedForm.payments_field)
   })
-}
-
-export const getFeatureFlag = (
-  featureFlag: string,
-): ResultAsync<boolean, DatabaseError> => {
-  return ResultAsync.fromPromise(
-    FeatureFlagModel.findFlag(featureFlag),
-    (error) => {
-      logger.error({
-        message: 'Database error when getting feature flag status',
-        meta: {
-          action: 'findFlag',
-        },
-        error,
-      })
-
-      return new DatabaseError(`Unable to get feature flag status.`)
-    },
-  ).andThen((featureFlagDoc) => okAsync(!!featureFlagDoc?.enabled))
 }
