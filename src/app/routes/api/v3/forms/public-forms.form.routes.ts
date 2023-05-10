@@ -24,6 +24,10 @@ PublicFormsFormRouter.route('/:formId([a-fA-F0-9]{24})').get(
   PublicFormController.handleGetPublicForm,
 )
 
+PublicFormsFormRouter.route('/:formId([a-fA-F0-9]{24})/sample-submission').get(
+  PublicFormController.handleGetPublicFormSampleSubmission,
+)
+
 // TODO #4279: Remove after React rollout is complete
 /**
  * Returns the React to Angular switch feedback form to the user

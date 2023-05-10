@@ -326,6 +326,62 @@ export const handleGetPublicForm: ControllerHandler<
   }
 }
 
+export const handleGetPublicFormSampleSubmission: ControllerHandler<
+  { formId: string },
+  Record<string, any> | ErrorDto | PrivateFormErrorDto
+> = async (req, res) => {
+  const { formId } = req.params
+  const logMeta = {
+    action: 'handleGetPublicFormSampleSubmission',
+    ...createReqMeta(req),
+    formId,
+  }
+
+  const formResult = await getFormIfPublic(formId).andThen((form) =>
+    FormService.checkFormSubmissionLimitAndDeactivateForm(form),
+  )
+  // Early return if form is not public or any error occurred.
+  if (formResult.isErr()) {
+    const { error } = formResult
+    // NOTE: Only log on possible database errors.
+    // This is because the other kinds of errors are expected errors and are not truly exceptional
+    if (isMongoError(error)) {
+      logger.error({
+        message: 'Error retrieving public form',
+        meta: logMeta,
+        error,
+      })
+    }
+    const { errorMessage, statusCode } = mapRouteError(error)
+
+    // Specialized error response for PrivateFormError.
+    // This is to maintain backwards compatibility with the middleware implementation
+    if (error instanceof PrivateFormError) {
+      return res.status(statusCode).json({
+        message: error.message,
+        // Flag to prevent default 404 subtext ("please check link") from
+        // showing.
+        isPageFound: true,
+        formTitle: error.formTitle,
+      })
+    }
+
+    return res.status(statusCode).json({ message: errorMessage })
+  }
+  const form = formResult.value
+
+  const publicForm = form.getPublicView() as PublicFormDto
+
+  const sampleData: Record<string, any> = {}
+  const formFields = publicForm.form_fields
+  if (!formFields) {
+    throw new Error('unable to get form fields')
+  }
+  for (const field of formFields) {
+    FormService.createSampleSubmissionData(sampleData, field)
+  }
+  return res.json({ responses: sampleData })
+}
 /**
  * NOTE: This is exported only for testing
  * Generates redirect URL to Official SingPass/CorpPass log in page
