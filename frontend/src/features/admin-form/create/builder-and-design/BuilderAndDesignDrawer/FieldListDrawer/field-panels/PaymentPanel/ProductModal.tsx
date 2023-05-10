@@ -1,4 +1,4 @@
-import { Controller, useForm } from 'react-hook-form'
+import { Controller, RegisterOptions, useForm } from 'react-hook-form'
 import {
   Box,
   Button,
@@ -17,17 +17,28 @@ import {
   Textarea,
 } from '@chakra-ui/react'
 
-import { dollarsToCents } from '~utils/payments'
+import { Product } from '~shared/types'
+
+import { centsToDollars, dollarsToCents, formatCurrency } from '~utils/payments'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import Input from '~components/Input'
 import MoneyInput from '~components/MoneyInput'
 import Toggle from '~components/Toggle'
 
-export const AddProductModal = ({
+import { useEnv } from '~features/env/queries'
+
+type ProductInput = Product & {
+  display_amount: string
+}
+export const ProductModal = ({
   onClose,
-  amountValidation,
-  onAddProduct,
+  onSaveProduct,
+  product, // pass non-null product to edit
+}: {
+  onClose: any
+  onSaveProduct: any
+  product: Product | null
 }) => {
   const {
     register,
@@ -37,9 +48,45 @@ export const AddProductModal = ({
     formState: { errors },
   } = useForm()
 
+  const { data: { maxPaymentAmountCents, minPaymentAmountCents } = {} } =
+    useEnv()
+
+  const amountValidation: RegisterOptions<ProductInput, 'display_amount'> = {
+    validate: (val) => {
+      // Validate that it is a money value.
+      // Regex allows leading and trailing spaces, max 2dp
+      const validateMoney = /^\s*(\d+)(\.\d{0,2})?\s*$/.test(val ?? '')
+      if (!validateMoney) return 'Please enter a valid payment amount'
+
+      const validateMin =
+        !!minPaymentAmountCents &&
+        !!val &&
+        dollarsToCents(val) >= minPaymentAmountCents
+      // Repeat the check on minPaymentAmountCents for correct typing
+      if (!!minPaymentAmountCents && !validateMin) {
+        return `Please enter a payment amount above ${formatCurrency(
+          Number(centsToDollars(minPaymentAmountCents)),
+        )}`
+      }
+
+      const validateMax =
+        !!maxPaymentAmountCents &&
+        !!val &&
+        dollarsToCents(val) <= maxPaymentAmountCents
+      // Repeat the check on maxPaymentAmountCents for correct typing
+      if (!!maxPaymentAmountCents && !validateMax) {
+        return `Please enter a payment amount below ${formatCurrency(
+          Number(centsToDollars(maxPaymentAmountCents)),
+        )}`
+      }
+      return true
+    },
+  }
+
   const watchMultiQtyEnabled = watch('product.multi_qty_enabled', false)
   const handleSaveProduct = handleSubmit(({ product }) => {
-    onAddProduct({ ...product, price: dollarsToCents(product.price) })
+    const { display_amount, ...rest } = product
+    onSaveProduct({ ...rest, amounts_cents: dollarsToCents(display_amount) })
     onClose()
   })
 
@@ -74,7 +121,7 @@ export const AddProductModal = ({
               <FormControl isInvalid={!!errors.product?.price}>
                 <FormLabel isRequired>Payment Amount</FormLabel>
                 <Controller
-                  name="product.price"
+                  name="product.display_amount"
                   control={control}
                   rules={amountValidation}
                   render={({ field }) => (

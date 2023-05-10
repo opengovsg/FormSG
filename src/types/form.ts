@@ -19,6 +19,7 @@ import {
   FormFieldDto,
   FormPaymentsChannel,
   FormPaymentsField,
+  FormPaymentsFieldV2,
   FormPermission,
   FormSettings,
   FormStartPage,
@@ -384,7 +385,7 @@ export interface IFormModel extends Model<IFormSchema> {
 
   updatePaymentsProductById(
     formId: string,
-    newProducts: FormPaymentsField['products'],
+    newProducts: FormPaymentsFieldV2['products'],
   ): Promise<IEncryptedFormDocument | null>
 
   updateFormLogic(

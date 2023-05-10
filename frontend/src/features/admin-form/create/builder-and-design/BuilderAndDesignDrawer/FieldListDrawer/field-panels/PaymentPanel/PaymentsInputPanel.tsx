@@ -17,7 +17,7 @@ import {
   PaymentChannel,
 } from '~shared/types'
 
-import { centsToDollars, dollarsToCents } from '~utils/payments'
+import { centsToDollars, dollarsToCents, formatCurrency } from '~utils/payments'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import InlineMessage from '~components/InlineMessage'
@@ -27,8 +27,8 @@ import Toggle from '~components/Toggle'
 
 import { useMutateFormPage } from '~features/admin-form/common/mutations'
 import { useAdminForm } from '~features/admin-form/common/queries'
+import { useEnv } from '~features/env/queries'
 
-import { useEnv } from '../../../../../../../env/queries'
 import {
   CreatePageDrawerContentContainer,
   useCreatePageSidebar,
@@ -40,7 +40,8 @@ import {
 } from '../../../../useDirtyFieldStore'
 import { FormFieldDrawerActions } from '../../../EditFieldDrawer/edit-fieldtype/common/FormFieldDrawerActions'
 
-import { ProductServiceBoxv2 } from './ProductServiceBoxv2'
+import { ProductServiceBoxv2 } from './v2/ProductServiceBox'
+import { ProductServiceBox } from './ProductServiceBox'
 import {
   dataSelector,
   resetDataSelector,
@@ -50,28 +51,12 @@ import {
   usePaymentStore,
 } from './usePaymentStore'
 
-const formatCurrency = new Intl.NumberFormat('en-SG', {
-  style: 'currency',
-  currency: 'SGD',
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2,
-}).format
-
-type FormPaymentsInputv2 = FormPaymentsInput & {
-  title: string
-  // version: '2'
-}
-type FormPaymentsInput = {
-  enabled: boolean
-  description: string
+export type FormPaymentsInput = FormPaymentsField & {
   display_amount: string
 }
 
 export const PaymentInput = ({ isDisabled }: { isDisabled: boolean }) => {
   const { paymentsMutation } = useMutateFormPage()
-
-  const { data: { maxPaymentAmountCents, minPaymentAmountCents } = {} } =
-    useEnv()
 
   const setIsDirty = useDirtyFieldStore(setIsDirtySelector)
 
@@ -94,7 +79,8 @@ export const PaymentInput = ({ isDisabled }: { isDisabled: boolean }) => {
     control,
     handleSubmit,
     trigger,
-  } = useForm<FormPaymentsInput | FormPaymentsInputv2>({
+    setValue,
+  } = useForm<FormPaymentsInput>({
     mode: 'onChange',
     defaultValues: {
       ...paymentsData,
@@ -102,6 +88,10 @@ export const PaymentInput = ({ isDisabled }: { isDisabled: boolean }) => {
       display_amount: centsToDollars(paymentAmountCents ?? 0),
     },
   })
+
+  register('products')
+  register('version', { value: 2 })
+  const PAYMENT_VERSION = 2
 
   // Update dirty state of payment so confirmation modal can be shown
   useEffect(() => {
@@ -115,6 +105,7 @@ export const PaymentInput = ({ isDisabled }: { isDisabled: boolean }) => {
   const handlePaymentsChanges = useCallback(
     (paymentsInputs: FormPaymentsInput) => {
       const { display_amount, ...rest } = paymentsInputs
+      console.log({ paymentsInputs })
       setData({
         ...rest,
         amount_cents: dollarsToCents(display_amount ?? '0'),
@@ -138,6 +129,27 @@ export const PaymentInput = ({ isDisabled }: { isDisabled: boolean }) => {
 
   const paymentIsEnabled = clonedWatchedInputs.enabled
 
+  const handleUpdatePayments = handleSubmit(() => {
+    if (isDisabled || !paymentsData) {
+      // do not mutate if payments is disabled or unavailable
+      return () => {
+        setToInactive()
+        handleClose()
+      }
+    }
+    return paymentsMutation.mutate(
+      { ...paymentsData, amount_cents: paymentAmountCents },
+      {
+        onSuccess: () => {
+          setToInactive()
+          handleClose()
+        },
+      },
+    )
+  })
+
+  const { data: { maxPaymentAmountCents, minPaymentAmountCents } = {} } =
+    useEnv()
   const amountValidation: RegisterOptions<FormPaymentsInput, 'display_amount'> =
     {
       validate: (val) => {
@@ -173,25 +185,6 @@ export const PaymentInput = ({ isDisabled }: { isDisabled: boolean }) => {
       },
     }
 
-  const handleUpdatePayments = handleSubmit(() => {
-    if (isDisabled || !paymentsData) {
-      // do not mutate if payments is disabled or unavailable
-      return () => {
-        setToInactive()
-        handleClose()
-      }
-    }
-    return paymentsMutation.mutate(
-      { ...paymentsData, amount_cents: paymentAmountCents },
-      {
-        onSuccess: () => {
-          setToInactive()
-          handleClose()
-        },
-      },
-    )
-  })
-
   return (
     <CreatePageDrawerContentContainer>
       <FormControl
@@ -214,29 +207,10 @@ export const PaymentInput = ({ isDisabled }: { isDisabled: boolean }) => {
         isDisabled={!paymentIsEnabled}
       >
         <FormLabel isRequired>Title</FormLabel>
-        <Input {...register('title', { required: paymentIsEnabled })} />
-      </FormControl>
-      {/* 
-      <ProductServiceBox
-        register={register}
-        paymentsMutation={paymentsMutation}
-        errors={errors}
-        paymentIsEnabled={paymentIsEnabled}
-      /> */}
-
-      <ProductServiceBoxv2
-        register={register}
-        paymentsMutation={paymentsMutation}
-        errors={errors}
-        paymentIsEnabled={paymentIsEnabled}
-        amountValidation={amountValidation}
-      />
-      <FormControl isReadOnly={paymentsMutation.isLoading}>
-        <Toggle
-          {...register('product-multi-selection', {
-            onChange: () => paymentIsEnabled,
+        <Input
+          {...register('products_meta.description', {
+            required: paymentIsEnabled,
           })}
-          label="Allow selection of multiple types of products/services"
         />
       </FormControl>
       <FormControl
@@ -262,8 +236,59 @@ export const PaymentInput = ({ isDisabled }: { isDisabled: boolean }) => {
             />
           )}
         />
-        <FormErrorMessage>{errors.display_amount?.message}</FormErrorMessage>
       </FormControl>
+      {PAYMENT_VERSION === 2 ? (
+        <ProductServiceBoxv2
+          isLoading={paymentsMutation.isLoading}
+          errors={errors}
+          paymentIsEnabled={paymentIsEnabled}
+          setValue={(newProducts) => setValue('products', newProducts)}
+        />
+      ) : (
+        <ProductServiceBox
+          register={register}
+          paymentsMutation={paymentsMutation}
+          errors={errors}
+          paymentIsEnabled={paymentIsEnabled}
+        />
+      )}
+      {PAYMENT_VERSION === 2 ? (
+        <FormControl
+          isReadOnly={paymentsMutation.isLoading}
+          isDisabled={!paymentIsEnabled}
+        >
+          <Toggle
+            {...register('products_meta.multi_product', {
+              onChange: () => paymentIsEnabled,
+            })}
+            label="Allow selection of multiple types of products/services"
+          />
+        </FormControl>
+      ) : (
+        <FormControl
+          isReadOnly={paymentsMutation.isLoading}
+          isInvalid={!!errors.display_amount}
+          isDisabled={!paymentIsEnabled}
+          isRequired
+        >
+          <FormLabel isRequired>Payment amount</FormLabel>
+          <Controller
+            name="display_amount"
+            control={control}
+            rules={amountValidation}
+            render={({ field }) => (
+              <MoneyInput
+                flex={1}
+                step={0}
+                inputMode="decimal"
+                placeholder="0.00"
+                {...field}
+              />
+            )}
+          />
+          <FormErrorMessage>{errors.display_amount?.message}</FormErrorMessage>
+        </FormControl>
+      )}
 
       <FormFieldDrawerActions
         isLoading={paymentsMutation.isLoading}
@@ -333,32 +358,5 @@ export const PaymentsInputPanel = (): JSX.Element | null => {
       )}
       <PaymentInput isDisabled={isPaymentDisabled} />
     </>
-  )
-}
-
-const ProductServiceBox = ({
-  register,
-  paymentsMutation,
-  errors,
-  paymentIsEnabled,
-}) => {
-  return (
-    <FormControl
-      isReadOnly={paymentsMutation.isLoading}
-      isInvalid={!!errors.description}
-      isDisabled={!paymentIsEnabled}
-      isRequired
-    >
-      <FormLabel description="This will be reflected on the payment invoice">
-        Product/service name
-      </FormLabel>
-      <Input
-        placeholder="Product/service name"
-        {...register('description', {
-          required: paymentIsEnabled && 'Please enter a payment description',
-        })}
-      />
-      <FormErrorMessage>{errors.description?.message}</FormErrorMessage>
-    </FormControl>
   )
 }

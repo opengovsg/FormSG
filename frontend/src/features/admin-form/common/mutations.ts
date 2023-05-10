@@ -6,6 +6,8 @@ import {
   AdminFormDto,
   AdminStorageFormDto,
   EndPageUpdateDto,
+  FormPaymentsFieldV1,
+  FormPaymentsFieldV2,
   FormPermission,
   FormPermissionsDto,
   PaymentsProductUpdateDto,
@@ -399,8 +401,21 @@ export const useMutateFormPage = () => {
   )
 
   const paymentsMutation = useMutation(
-    (payments_field: PaymentsUpdateDto) =>
-      updateFormPayments(formId, payments_field),
+    (payments_field: PaymentsUpdateDto) => {
+      const paymentsV2Adapter = (payments: FormPaymentsFieldV2) => {
+        // old field that requires amount_cents to be populated
+        return { ...payments, version: 2 }
+      }
+      const paymentsV1Adapter = (payments: FormPaymentsFieldV1) => {
+        // extract products, don't pass it
+        return { ...payments, version: 1 }
+      }
+      const adaptedPayments =
+        payments_field.version === 2
+          ? paymentsV2Adapter(payments_field)
+          : paymentsV1Adapter(payments_field)
+      return updateFormPayments(formId, adaptedPayments)
+    },
     {
       onSuccess: (newData) => {
         toast.closeAll()
@@ -423,10 +438,18 @@ export const useMutateFormPage = () => {
     {
       onSuccess: (newData) => {
         toast.closeAll()
-        queryClient.setQueryData<PaymentsProductUpdateDto | undefined>(
+        queryClient.setQueryData<AdminStorageFormDto | undefined>(
           adminFormKeys.id(formId),
           (oldData) =>
-            oldData ? { ...oldData, products: newData } : undefined,
+            oldData
+              ? {
+                  ...oldData,
+                  payments_field: {
+                    ...oldData.payments_field,
+                    products: newData,
+                  },
+                }
+              : undefined,
         )
         toast({
           description: 'Payments product was updated.',

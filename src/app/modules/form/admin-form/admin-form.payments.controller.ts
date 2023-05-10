@@ -1,4 +1,4 @@
-// import { celebrate, Joi, Segments } from 'celebrate'
+import { celebrate, Joi, Segments } from 'celebrate'
 import { AuthedSessionData } from 'express-session'
 import { StatusCodes } from 'http-status-codes'
 import { err, ok } from 'neverthrow'
@@ -364,25 +364,66 @@ export const _handleUpdatePaymentsProduct: ControllerHandler<
 /**
  * Handler for PUT /:formId/payment
  */
+
+const AmountCentsWhenEnabled = Joi.when('enabled', {
+  is: Joi.equal(true),
+  then: Joi.number().integer().positive().required(),
+  otherwise: Joi.number().integer(),
+})
+
+const DescriptionWhenEnabled = Joi.when('enabled', {
+  is: Joi.equal(true),
+  then: Joi.string().required(),
+  otherwise: Joi.string().allow(''),
+})
 export const handleUpdatePayments = [
-  // TODO: populate actual products_meta
-  // celebrate({
-  //   [Segments.BODY]: {
-  //     enabled: Joi.boolean().required(),
-  //     amount_cents: Joi.when('enabled', {
-  //       is: Joi.equal(true),
-  //       then: Joi.number().integer().positive().required(),
-  //       otherwise: Joi.number().integer(),
-  //     }),
-  //     description: Joi.when('enabled', {
-  //       is: Joi.equal(true),
-  //       then: Joi.string().required(),
-  //       otherwise: Joi.string().allow(''),
-  //     }),
-  //     // v2 fields
-  //     products_meta: {} Joi.string().required(),
-  //   },
-  // }),
+  celebrate({
+    [Segments.BODY]: {
+      // common fields
+      enabled: Joi.boolean().required(),
+
+      // v1 fields
+      amount_cents: Joi.when('version', {
+        switch: [
+          { is: 1, then: AmountCentsWhenEnabled },
+          { is: 2, then: Joi.any() },
+        ],
+      }),
+
+      description: Joi.when('version', {
+        switch: [
+          { is: 1, then: DescriptionWhenEnabled },
+          { is: 2, then: Joi.any() },
+        ],
+      }),
+      // end v1 fields
+
+      version: Joi.number().required(),
+      // v2 fields
+      products_meta: Joi.when('version', {
+        switch: [
+          { is: 1, then: Joi.any() },
+          {
+            is: 2,
+            then: {
+              description: Joi.string().required(),
+              multi_product: Joi.bool().required(),
+            },
+          },
+        ],
+      }),
+
+      products: Joi.when('version', {
+        switch: [
+          { is: 1, then: Joi.any() },
+          {
+            is: 2,
+            then: Joi.any(),
+          },
+        ],
+      }),
+    },
+  }),
   _handleUpdatePayments,
 ] as ControllerHandler[]
 

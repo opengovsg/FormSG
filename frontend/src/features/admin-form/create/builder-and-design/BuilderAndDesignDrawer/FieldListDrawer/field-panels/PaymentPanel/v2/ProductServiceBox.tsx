@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { BiEditAlt, BiPlus, BiTrash } from 'react-icons/bi'
 import {
   Box,
@@ -10,27 +9,34 @@ import {
   useDisclosure,
 } from '@chakra-ui/react'
 
-import { centsToDollars } from '~utils/payments'
+import { FormPaymentsFieldV2, Product } from '~shared/types'
+
+import { centsToDollars, dollarsToCents } from '~utils/payments'
 import Button from '~components/Button'
 import FormLabel from '~components/FormControl/FormLabel'
 import IconButton from '~components/IconButton'
+import Toggle from '~components/Toggle'
 
-import { AddProductModal } from './AddProductModal'
+import { useMutateFormPage } from '~features/admin-form/common/mutations'
 
-export const PROD_DATA: Array<Record<string, unknown>> = []
+import { ProductModal } from '../ProductModal'
+import {
+  dataSelector,
+  setDataSelector,
+  usePaymentStore,
+} from '../usePaymentStore'
 
 const ProductItem = ({ product }) => {
-  console.log({ product })
   return (
     <>
       <Box px="1rem" py="1rem" backgroundColor={'#F8F9FD'}>
         <Flex justifyContent="center">
           <Box flexGrow={1}>
             <Text textStyle="subhead-1" pb="0.25rem" color="secondary.500">
-              {product.name}
+              {product.title}
             </Text>
             <Text textStyle="caption-1" color="secondary.500">
-              ${centsToDollars(product.price)}
+              ${centsToDollars(product.amount_cents)}
             </Text>
           </Box>
 
@@ -72,8 +78,8 @@ const AddProductButton = ({ onOpen }) => {
   )
 }
 
-const ProductsBlock = ({ prodData, onOpen }) => {
-  if (prodData.length <= 0) {
+const ProductsBlock = ({ products, onOpen }) => {
+  if (products.length <= 0) {
     return (
       <>
         <Box px="1rem" py="1rem" backgroundColor={'#F9F9F9'} mb="1.5rem">
@@ -92,8 +98,8 @@ const ProductsBlock = ({ prodData, onOpen }) => {
   return (
     <>
       <Stack spacing="1.5rem" mb="1.5rem">
-        {prodData.map((productDetail) => (
-          <ProductItem product={productDetail} />
+        {products.map((productDetail, idx) => (
+          <ProductItem key={idx} product={productDetail} />
         ))}
       </Stack>
       <hr />
@@ -103,38 +109,56 @@ const ProductsBlock = ({ prodData, onOpen }) => {
 }
 
 export const ProductServiceBoxv2 = ({
-  paymentsMutation,
+  isLoading,
   errors,
   paymentIsEnabled,
-  amountValidation,
+  setValue,
+}: {
+  isLoading: boolean
+  errors: any
+  paymentIsEnabled: boolean
+  setValue: any
 }) => {
   const { onOpen, onClose, isOpen } = useDisclosure({
     defaultIsOpen: false,
   })
-  const [prodData, setProdData] = useState(PROD_DATA)
-  const handleAddProduct = (data) => {
-    prodData.push(data)
-    setProdData([...prodData])
+
+  const { paymentsProductMutation } = useMutateFormPage()
+
+  const { paymentsData: _paymentsData } = usePaymentStore((state) => ({
+    paymentsData: dataSelector(state),
+    setData: setDataSelector(state),
+  }))
+
+  if (!_paymentsData) return <></>
+
+  const paymentsData = _paymentsData as FormPaymentsFieldV2
+  const { products = [] } = paymentsData
+
+  const handleAddProduct = (newProduct: Product) => {
+    const updatedProductList = [...products, newProduct]
+    paymentsProductMutation.mutate(updatedProductList)
+    setValue(updatedProductList)
   }
 
   return (
     <>
       {isOpen ? (
-        <AddProductModal
+        <ProductModal
           onClose={onClose}
-          amountValidation={amountValidation}
-          onAddProduct={handleAddProduct}
+          onSaveProduct={handleAddProduct}
+          product={null}
         />
       ) : null}
 
       <FormControl
-        isReadOnly={paymentsMutation.isLoading}
+        isReadOnly={isLoading}
         isInvalid={!!errors.description}
         isDisabled={!paymentIsEnabled}
         isRequired
       >
         <FormLabel>Product/service name</FormLabel>
-        <ProductsBlock prodData={prodData} onOpen={onOpen} />
+        <ProductsBlock products={products} onOpen={onOpen} />
       </FormControl>
     </>
   )
