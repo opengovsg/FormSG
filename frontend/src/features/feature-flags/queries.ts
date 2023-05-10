@@ -1,13 +1,11 @@
 import { useQuery, UseQueryResult } from 'react-query'
 
-import { getFeatureFlagEnabled } from '~services/FeatureFlagService'
+import { getFeatureFlagsEnabled } from '~services/FeatureFlagService'
 
 export const featureFlagsKeys = {
   base: ['feature-flags'] as const,
 }
 
-export const useFeatureFlagEnabled = (
-  flag: string,
-): UseQueryResult<boolean> => {
-  return useQuery(featureFlagsKeys.base, () => getFeatureFlagEnabled(flag))
+export const useFeatureFlagsEnabled = (): UseQueryResult<Set<string>> => {
+  return useQuery(featureFlagsKeys.base, () => getFeatureFlagsEnabled())
 }

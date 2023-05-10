@@ -1,7 +1,7 @@
 import { ApiService } from './ApiService'
 
-export const getFeatureFlagEnabled = async (flag: string): Promise<boolean> => {
-  return ApiService.get<boolean>('/feature-flags/enabled', {
-    params: { flag },
-  }).then(({ data }) => data)
+export const getFeatureFlagsEnabled = async (): Promise<Set<string>> => {
+  return ApiService.get<string[]>('/feature-flags/enabled').then(
+    ({ data }) => new Set(data),
+  )
 }

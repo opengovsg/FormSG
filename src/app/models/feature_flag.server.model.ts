@@ -19,10 +19,10 @@ const compileFeatureFlagModel = (db: Mongoose): IFeatureFlagModel => {
 
   // Statics
   /**
-   * Find beta flag document given beta flag name
+   * Find all enabled flags
    */
-  FeatureFlagSchema.statics.findFlag = async function (flag: string) {
-    return await this.findOne({ name: flag }).exec()
+  FeatureFlagSchema.statics.enabledFlags = async function () {
+    return await this.find({ enabled: true }).exec()
   }
 
   const FeatureFlagModel = db.model<IFeatureFlagSchema, IFeatureFlagModel>(

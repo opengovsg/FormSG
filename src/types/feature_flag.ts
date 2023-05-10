@@ -6,5 +6,5 @@ export interface IFeatureFlagSchema {
 }
 
 export interface IFeatureFlagModel extends Model<IFeatureFlagSchema> {
-  findFlag: (flag: string) => Promise<IFeatureFlagSchema>
+  enabledFlags: () => Promise<IFeatureFlagSchema[]>
 }

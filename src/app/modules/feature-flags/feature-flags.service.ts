@@ -8,23 +8,18 @@ import { DatabaseError } from '../core/core.errors'
 const logger = createLoggerWithLabel(module)
 const FeatureFlagModel = getFeatureFlagModel(mongoose)
 
-export const getFeatureFlag = (
-  featureFlag: string,
-): ResultAsync<boolean, DatabaseError> => {
-  return ResultAsync.fromPromise(
-    FeatureFlagModel.findFlag(featureFlag),
-    (error) => {
-      logger.error({
-        message: 'Database error when getting feature flag status',
-        meta: {
-          action: 'findFlag',
-        },
-        error,
-      })
+export const getEnabledFlags = (): ResultAsync<string[], DatabaseError> => {
+  return ResultAsync.fromPromise(FeatureFlagModel.enabledFlags(), (error) => {
+    logger.error({
+      message: 'Database error when getting feature flag status',
+      meta: {
+        action: 'getEnabledFlags',
+      },
+      error,
+    })
 
-      return new DatabaseError(`Unable to get feature flag status.`)
-    },
-  ).andThen((featureFlagDoc) => {
-    return okAsync(!!featureFlagDoc?.enabled)
-  })
+    return new DatabaseError(`Unable to get feature flag status.`)
+  }).andThen((enabledFlagsDocs) =>
+    okAsync(enabledFlagsDocs.map((doc) => doc.name)),
+  )
 }

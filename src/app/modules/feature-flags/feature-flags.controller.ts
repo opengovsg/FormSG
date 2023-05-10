@@ -10,18 +10,19 @@ import * as FeatureFlagService from './feature-flags.service'
 const logger = createLoggerWithLabel(module)
 
 /**
- * Handler for GET /admin/forms/feature-flag endpoint.
+ * Handler for GET /feature-flags endpoint.
  * @returns whether feature flag has been enabled.
  */
-export const handleGetFeatureFlag: ControllerHandler<
+export const handleGetEnabledFlags: ControllerHandler<
   never,
-  boolean | ErrorDto,
+  // TODO: stricter typing to restrict typing to flag values in shared/constants
+  string[] | ErrorDto,
   never,
   { flag: string }
 > = (req, res) => {
   // If getFeatureFlag throws a DatabaseError, we want to log it, but respond
   // to the client as if the flag is not found.
-  return FeatureFlagService.getFeatureFlag(req.query.flag)
+  return FeatureFlagService.getEnabledFlags()
     .map((result) => {
       return res.status(StatusCodes.OK).json(result)
     })
@@ -34,6 +35,6 @@ export const handleGetFeatureFlag: ControllerHandler<
         },
         error,
       })
-      return res.status(StatusCodes.OK).json(false)
+      return res.status(StatusCodes.OK).json([])
     })
 }
