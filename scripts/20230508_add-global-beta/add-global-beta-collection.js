@@ -13,7 +13,7 @@ db.globalBeta.update(
   { name: 'payment' },
   {
     $setOnInsert: {
-      enabled: true,
+      enabled: false,
     },
   },
   { upsert: true },
