@@ -31,7 +31,7 @@ export const FieldListDrawer = (): JSX.Element => {
   const { isLoading } = useCreateTabForm()
 
   const { user } = useUser()
-  const { flagEnabled: paymentGlobalBeta } = useGlobalBeta(betaFlags.payment)
+  const { enabled: paymentGlobalBeta } = useGlobalBeta(betaFlags.payment)
 
   const displayPayments = user?.betaFlags?.payment || paymentGlobalBeta
   return (

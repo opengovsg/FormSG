@@ -31,7 +31,7 @@ import { SettingsWebhooksPage } from './SettingsWebhooksPage'
 export const SettingsPage = (): JSX.Element => {
   const { formId } = useParams()
   const { user } = useUser()
-  const { flagEnabled: paymentGlobalBeta } = useGlobalBeta(betaFlags.payment)
+  const { enabled: paymentGlobalBeta } = useGlobalBeta(betaFlags.payment)
 
   if (!formId) throw new Error('No formId provided')
 

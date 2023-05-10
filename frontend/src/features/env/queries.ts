@@ -48,13 +48,13 @@ export const usePublicFeedbackFormView = (
 }
 
 type UseGlobalBetaReturn = {
-  flagEnabled?: boolean
+  enabled?: boolean
 }
 
 export const useGlobalBeta = (flag: string): UseGlobalBetaReturn => {
-  const { data: flagEnabled } = useQuery<boolean>(envKeys.globalBeta, () =>
+  const { data: enabled } = useQuery<boolean>(envKeys.globalBeta, () =>
     getGlobalBetaFlag(flag),
   )
 
-  return { flagEnabled }
+  return { enabled }
 }
