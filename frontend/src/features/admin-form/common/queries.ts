@@ -156,8 +156,8 @@ export const useFormTemplate = (
   )
 }
 
-export const getGlobalBetaFlag = async (flag: string): Promise<boolean> => {
-  return ApiService.get<boolean>('/admin/forms/global-beta', {
+export const getFeatureFlag = async (flag: string): Promise<boolean> => {
+  return ApiService.get<boolean>('/admin/forms/feature-flag', {
     params: { flag },
   }).then(({ data }) => data)
 }

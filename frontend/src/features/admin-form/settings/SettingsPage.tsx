@@ -11,15 +11,14 @@ import {
   Tabs,
 } from '@chakra-ui/react'
 
-import { betaFlags } from '~shared/constants'
+import { featureFlags } from '~shared/constants'
 
 import { ADMINFORM_RESULTS_SUBROUTE, ADMINFORM_ROUTE } from '~constants/routes'
 import { useDraggable } from '~hooks/useDraggable'
 
-import { useGlobalBeta } from '~features/env/queries'
 import { useUser } from '~features/user/queries'
 
-import { useAdminFormCollaborators } from '../common/queries'
+import { getFeatureFlag, useAdminFormCollaborators } from '../common/queries'
 
 import { SettingsTab } from './components/SettingsTab'
 import { SettingsAuthPage } from './SettingsAuthPage'
@@ -31,7 +30,7 @@ import { SettingsWebhooksPage } from './SettingsWebhooksPage'
 export const SettingsPage = (): JSX.Element => {
   const { formId } = useParams()
   const { user } = useUser()
-  const { enabled: paymentGlobalBeta } = useGlobalBeta(betaFlags.payment)
+  const paymentFeatureFlag = getFeatureFlag(featureFlags.payment)
 
   if (!formId) throw new Error('No formId provided')
 
@@ -47,7 +46,7 @@ export const SettingsPage = (): JSX.Element => {
 
   const { ref, onMouseDown } = useDraggable<HTMLDivElement>()
 
-  const displayPayments = user?.betaFlags?.payment || paymentGlobalBeta
+  const displayPayments = user?.betaFlags?.payment || paymentFeatureFlag
 
   return (
     <Box overflow="auto" flex={1}>

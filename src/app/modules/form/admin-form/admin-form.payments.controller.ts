@@ -5,7 +5,7 @@ import { err, ok } from 'neverthrow'
 
 import { IEncryptedFormDocument } from 'src/types'
 
-import { betaFlags } from '../../../../../shared/constants'
+import { featureFlags } from '../../../../../shared/constants'
 import {
   ErrorDto,
   PaymentChannel,
@@ -56,22 +56,22 @@ export const handleConnectAccount: ControllerHandler<{
     ...createReqMeta(req),
   }
 
-  // If getGlobalBetaFlag throws a DatabaseError, we want to log it, but respond
+  // If getFeatureFlag throws a DatabaseError, we want to log it, but respond
   // to the client as if the flag is not found.
-  const globalBetaEnabledResult = await AdminFormService.getGlobalBetaFlag(
-    betaFlags.payment,
+  const featureFlagEnabledResult = await AdminFormService.getFeatureFlag(
+    featureFlags.payment,
   )
 
-  let globalBetaEnabled = false
+  let featureFlagEnabled = false
 
-  if (globalBetaEnabledResult.isErr()) {
+  if (featureFlagEnabledResult.isErr()) {
     logger.error({
-      message: 'Error occurred whilst retrieving global beta flag status',
+      message: 'Error occurred whilst retrieving feature flag status',
       meta: logMeta,
-      error: globalBetaEnabledResult.error,
+      error: featureFlagEnabledResult.error,
     })
   } else {
-    globalBetaEnabled = globalBetaEnabledResult.value
+    featureFlagEnabled = featureFlagEnabledResult.value
   }
 
   // Step 1: Retrieve currently logged in user.
@@ -79,7 +79,7 @@ export const handleConnectAccount: ControllerHandler<{
     getPopulatedUserById(sessionUserId)
       // Step 2: Check if user has 'payment' betaflag
       .andThen((user) =>
-        verifyUserBetaflag(user, globalBetaEnabled, betaFlags.payment),
+        verifyUserBetaflag(user, featureFlagEnabled, featureFlags.payment),
       )
       .andThen((user) =>
         // Step 3: Retrieve form with write permission check.
@@ -247,22 +247,22 @@ export const _handleUpdatePayments: ControllerHandler<
     body: req.body,
   }
 
-  // If getGlobalBetaFlag throws a DatabaseError, we want to log it, but respond
+  // If getFeatureFlag throws a DatabaseError, we want to log it, but respond
   // to the client as if the flag is not found.
-  const globalBetaEnabledResult = await AdminFormService.getGlobalBetaFlag(
-    betaFlags.payment,
+  const featureFlagEnabledResult = await AdminFormService.getFeatureFlag(
+    featureFlags.payment,
   )
 
-  let globalBetaEnabled = false
+  let featureFlagEnabled = false
 
-  if (globalBetaEnabledResult.isErr()) {
+  if (featureFlagEnabledResult.isErr()) {
     logger.error({
       message: 'Error occurred whilst retrieving global beta flag status',
       meta: logMeta,
-      error: globalBetaEnabledResult.error,
+      error: featureFlagEnabledResult.error,
     })
   } else {
-    globalBetaEnabled = globalBetaEnabledResult.value
+    featureFlagEnabled = featureFlagEnabledResult.value
   }
 
   // Step 1: Retrieve currently logged in user.
@@ -270,7 +270,7 @@ export const _handleUpdatePayments: ControllerHandler<
     UserService.getPopulatedUserById(sessionUserId)
       // Step 2: Check if user has 'payment' betaflag
       .andThen((user) =>
-        verifyUserBetaflag(user, globalBetaEnabled, betaFlags.payment),
+        verifyUserBetaflag(user, featureFlagEnabled, featureFlags.payment),
       )
       .andThen((user) =>
         // Step 2: Retrieve form with write permission check.

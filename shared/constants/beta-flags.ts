@@ -1,3 +1,3 @@
-export const betaFlags = {
+export const featureFlags = {
   payment: 'payment' as const,
 }

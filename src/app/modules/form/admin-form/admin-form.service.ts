@@ -47,10 +47,10 @@ import config, { aws as AwsConfig } from '../../../config/config'
 import { paymentConfig } from '../../../config/features/payment.config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import getAgencyModel from '../../../models/agency.server.model'
+import getFeatureFlagModel from '../../../models/feature_flag.server.model'
 import getFormModel, {
   getEncryptedFormModel,
 } from '../../../models/form.server.model'
-import getGlobalBetaModel from '../../../models/global_beta.server.model'
 import * as SmsService from '../../../services/sms/sms.service'
 import { twilioClientCache } from '../../../services/sms/sms.service'
 import { dotifyObject } from '../../../utils/dotify-object'
@@ -105,7 +105,7 @@ const logger = createLoggerWithLabel(module)
 const FormModel = getFormModel(mongoose)
 const EncryptedFormModel = getEncryptedFormModel(mongoose)
 const AgencyModel = getAgencyModel(mongoose)
-const GlobalBetaModel = getGlobalBetaModel(mongoose)
+const FeatureFlagModel = getFeatureFlagModel(mongoose)
 
 export const secretsManager = new SecretsManager({
   region: config.aws.region,
@@ -1613,21 +1613,21 @@ export const updatePayments = (
   })
 }
 
-export const getGlobalBetaFlag = (
-  betaFlag: string,
+export const getFeatureFlag = (
+  featureFlag: string,
 ): ResultAsync<boolean, DatabaseError> => {
   return ResultAsync.fromPromise(
-    GlobalBetaModel.findFlag(betaFlag),
+    FeatureFlagModel.findFlag(featureFlag),
     (error) => {
       logger.error({
-        message: 'Database error when getting global beta flag status',
+        message: 'Database error when getting feature flag status',
         meta: {
           action: 'findFlag',
         },
         error,
       })
 
-      return new DatabaseError(`Unable to get global beta flag status.`)
+      return new DatabaseError(`Unable to get feature flag status.`)
     },
-  ).andThen((betaFlagDoc) => okAsync(!!betaFlagDoc?.enabled))
+  ).andThen((featureFlagDoc) => okAsync(!!featureFlagDoc?.enabled))
 }
