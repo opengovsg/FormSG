@@ -47,6 +47,8 @@ export const SettingsPage = (): JSX.Element => {
 
   const { ref, onMouseDown } = useDraggable<HTMLDivElement>()
 
+  const displayPayments = user?.betaFlags?.payment || paymentGlobalBeta
+
   return (
     <Box overflow="auto" flex={1}>
       <Tabs
@@ -88,7 +90,7 @@ export const SettingsPage = (): JSX.Element => {
             <SettingsTab label="Singpass" icon={BiKey} />
             <SettingsTab label="Twilio credentials" icon={BiMessage} />
             <SettingsTab label="Webhooks" icon={BiCodeBlock} />
-            {(user?.betaFlags?.payment || paymentGlobalBeta) && (
+            {displayPayments && (
               <SettingsTab label="Payments" icon={BiDollar} />
             )}
           </TabList>
@@ -110,7 +112,7 @@ export const SettingsPage = (): JSX.Element => {
           <TabPanel>
             <SettingsWebhooksPage />
           </TabPanel>
-          {(user?.betaFlags?.payment || paymentGlobalBeta) && (
+          {displayPayments && (
             <TabPanel>
               <SettingsPaymentsPage />
             </TabPanel>
