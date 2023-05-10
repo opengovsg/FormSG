@@ -4,8 +4,8 @@ import { IGlobalBetaModel, IGlobalBetaSchema } from 'src/types/global_beta'
 
 export const GLOBAL_BETA_SCHEMA_ID = 'globalBeta'
 
-const GlobalBetaSchema = new Schema<IGlobalBetaSchema, IGlobalBetaModel>(
-  {
+const compileGlobalBetaModel = (db: Mongoose): IGlobalBetaModel => {
+  const GlobalBetaSchema = new Schema<IGlobalBetaSchema, IGlobalBetaModel>({
     name: {
       type: Schema.Types.String,
       required: true,
@@ -14,19 +14,16 @@ const GlobalBetaSchema = new Schema<IGlobalBetaSchema, IGlobalBetaModel>(
       type: Schema.Types.Boolean,
       required: true,
     },
-  },
-  { collection: GLOBAL_BETA_SCHEMA_ID },
-)
+  })
 
-// Statics
-/**
- * Find beta flag document given beta flag name
- */
-GlobalBetaSchema.statics.findFlag = async function (flag: string) {
-  return await this.findOne({ name: flag }).exec()
-}
+  // Statics
+  /**
+   * Find beta flag document given beta flag name
+   */
+  GlobalBetaSchema.statics.findFlag = async function (flag: string) {
+    return await this.findOne({ name: flag }).exec()
+  }
 
-const compileGlobalBetaModel = (db: Mongoose): IGlobalBetaModel => {
   const GlobalBetaModel = db.model<IGlobalBetaSchema, IGlobalBetaModel>(
     GLOBAL_BETA_SCHEMA_ID,
     GlobalBetaSchema,
