@@ -6,6 +6,7 @@ import {
   EmailFieldBase,
   FormColorTheme,
   FormPaymentsField,
+  FormPaymentsFieldV2,
 } from '~shared/types'
 
 import { EmailFieldInput } from '~templates/Field/Email'
@@ -46,7 +47,9 @@ export const PaymentPreview = ({
       </Box>
       <Box mb="2rem">
         <PaymentItemDetailsBlock
-          paymentDetails={paymentDetails}
+          paymentDetails={
+            { ...paymentDetails, version: 2 } as FormPaymentsFieldV2
+          }
           colorTheme={colorTheme}
         />
       </Box>

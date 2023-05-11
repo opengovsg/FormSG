@@ -1,6 +1,8 @@
 import { useState } from 'react'
+import { useFormContext } from 'react-hook-form'
 import { Box, Flex, Stack, Text } from '@chakra-ui/react'
 
+import { PAYMENT_PRODUCT_FIELD_ID } from '~shared/constants'
 import {
   FormColorTheme,
   FormPaymentsField,
@@ -133,6 +135,8 @@ const PaymentItemBlockV2 = ({
   paymentDetails: FormPaymentsFieldV2
   colorTheme: FormColorTheme
 }) => {
+  const { register, setValue } = useFormContext()
+  register(PAYMENT_PRODUCT_FIELD_ID)
   const [productItems, updateProductItems] = useState<Array<ProductItem>>(
     () => {
       return paymentDetails.products.map((product) => ({
@@ -163,6 +167,7 @@ const PaymentItemBlockV2 = ({
       }
     })
     updateProductItems(updatedProductItems)
+    setValue(PAYMENT_PRODUCT_FIELD_ID, updatedProductItems)
   }
 
   return (
