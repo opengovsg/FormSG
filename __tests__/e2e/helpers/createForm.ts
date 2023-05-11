@@ -695,7 +695,11 @@ const addLogics = async (
       const valueInput = page.locator(`id=conditions.${i}.value`)
       switch (state) {
         case LogicConditionState.Either:
-          await fillMultiDropdown(page, valueInput, value)
+          await fillMultiDropdown(
+            page,
+            page.getByRole('group').filter({ has: valueInput }),
+            value,
+          )
           break
         default:
           switch (formFields[field].fieldType) {
