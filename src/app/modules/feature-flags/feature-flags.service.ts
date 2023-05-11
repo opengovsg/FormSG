@@ -18,7 +18,7 @@ export const getEnabledFlags = (): ResultAsync<string[], DatabaseError> => {
       error,
     })
 
-    return new DatabaseError(`Unable to get feature flag status.`)
+    return new DatabaseError('Unable to fetch enabled feature flags.')
   }).andThen((enabledFlagsDocs) =>
     okAsync(enabledFlagsDocs.map((doc) => doc.name)),
   )
