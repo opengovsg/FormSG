@@ -75,6 +75,7 @@ export const PaymentInput = ({ isDisabled }: { isDisabled: boolean }) => {
   // unpack payment data for paymentAmount if it exists
   const paymentAmountCents = paymentsData?.amount_cents
 
+  const paymentDocumentVersion = PAYMENT_VERSION === 2 ? 2 : 1
   const {
     register,
     formState: { errors, dirtyFields },
@@ -86,6 +87,7 @@ export const PaymentInput = ({ isDisabled }: { isDisabled: boolean }) => {
     mode: 'onChange',
     defaultValues: {
       ...paymentsData,
+      version: paymentDocumentVersion,
       // Change calculate display_amount value from amount_cents
       display_amount: centsToDollars(paymentAmountCents ?? 0),
     },
@@ -94,8 +96,6 @@ export const PaymentInput = ({ isDisabled }: { isDisabled: boolean }) => {
   if (PAYMENT_VERSION === 2) {
     register('products')
   }
-  const paymentDocumentVersion = PAYMENT_VERSION === 2 ? 2 : 1
-  register('version', { value: paymentDocumentVersion })
 
   // Update dirty state of payment so confirmation modal can be shown
   useEffect(() => {

@@ -218,6 +218,9 @@ const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
         default: false,
       },
     },
+    version: {
+      type: Number,
+    },
   },
 
   business: {
