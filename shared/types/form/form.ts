@@ -13,6 +13,7 @@ import {
 import { DateString } from '../generic'
 import { FormLogic, LogicDto } from './form_logic'
 import { PaymentChannel } from '../payment'
+import { Product } from './product'
 
 export type FormId = Opaque<string, 'FormId'>
 
@@ -81,7 +82,7 @@ export type FormPaymentsFieldV1 = FormPaymentsFieldBase & {
   version: 1
 }
 export type FormPaymentsFieldV2 = FormPaymentsFieldBase & {
-  products?: Array<Product>
+  products: Array<Product>
   products_meta?: {
     multi_product: boolean
   }
