@@ -296,7 +296,7 @@ const FieldRowContainer = ({
                 </FormProvider>
               </Box>
               <Collapse in={isActive} style={{ width: '100%' }}>
-                {isActive && fieldBuilderState !== undefined && (
+                {isActive && (
                   <FieldButtonGroup
                     field={field}
                     fieldBuilderState={fieldBuilderState}
