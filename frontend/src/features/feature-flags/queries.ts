@@ -7,7 +7,7 @@ export const featureFlagsKeys = {
 }
 
 // TODO: Add local caching system with interval based refresh
-// Refer to https://github.com/opengovsg/FormSG/pull/6286
+// Refer to https://github.com/opengovsg/FormSG/pull/6286#discussion_r1190529370
 export const useFeatureFlags = (): UseQueryResult<Set<string>> => {
   return useQuery(featureFlagsKeys.base, () => getEnabledFeatureFlags())
 }
