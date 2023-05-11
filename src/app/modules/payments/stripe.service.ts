@@ -486,7 +486,7 @@ export const validateAccount = (
   )
 }
 
-const SECONDS_IN_ONE_DAY = 60 * 60 * 24 * 3
+const SECONDS_IN_ONE_DAY = 60 * 60 * 24
 export const getUndeliveredPaymentIntentSuccessEventsFromAccount = (
   stripeAccountId: string,
   callback: (item: Stripe.Event) => void,
