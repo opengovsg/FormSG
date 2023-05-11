@@ -22,40 +22,12 @@ jobs:
           NODE_OPTIONS: '--max-old-space-size=4096 --openssl-legacy-provider'
           REACT_APP_FORMSG_SDK_MODE: 'test'
         run: npm run build
-      - name: Run Playwright tests (encrypt-submission-1)
-        run: npx playwright test -g "Create and submit storage mode form with all fields" -gv "optional|shown by logic"
-      - name: Run Playwright tests (encrypt-submission-2)
-        run: npx playwright test -g "Create and submit storage mode form with all fields optional"
-      - name: Run Playwright tests (encrypt-submission-3)
-        run: npx playwright test -g "Create and submit storage mode form with all fields shown by logic"
-      - name: Run Playwright tests (encrypt-submission-4)
-        run: npx playwright test -g "Create and submit storage mode form with a field hidden by logic"
-      - name: Run Playwright tests (encrypt-submission-5)
-        run: npx playwright test -g "Create storage mode form with submission disabled by chained logic"
-      - name: Run Playwright tests (email-submission-1)
-        run: npx playwright test -g "Create and submit email mode form with all fields" -gv "optional|shown by logic"
-      - name: Run Playwright tests (email-submission-2)
-        run: npx playwright test -g "Create and submit email mode form with all fields optional"
-      - name: Run Playwright tests (email-submission-3)
-        run: npx playwright test -g "Create and submit email mode form with identical attachment names"
-      - name: Run Playwright tests (email-submission-4)
-        run: npx playwright test -g "Create and submit email mode form with optional and required attachments"
-      - name: Run Playwright tests (email-submission-5)
-        run: npx playwright test -g "Create and submit email mode form with Singpass authentication"
-      - name: Run Playwright tests (email-submission-6)
-        run: npx playwright test -g "Create and submit email mode form with Corppass authentication"
-      - name: Run Playwright tests (email-submission-7)
-        run: npx playwright test -g "Create and submit email mode form with SGID authentication"
-      - name: Run Playwright tests (email-submission-8)
-        run: npx playwright test -g "Create and submit email mode form with MyInfo fields"
-      - name: Run Playwright tests (email-submission-9)
-        run: npx playwright test -g "Create and submit email mode form with all fields shown by logic"
-      - name: Run Playwright tests (email-submission-10)
-        run: npx playwright test -g "Create and submit email mode form with a field hidden by logic"
-      - name: Run Playwright tests (email-submission-11)
-        run: npx playwright test -g "Create email mode form with submission disabled by chained logic"
       - name: Run Playwright tests (login)
         run: npx playwright test __tests__/e2e/login.spec.ts
+      - name: Run Playwright tests (email-submission)
+        run: npx playwright test __tests__/e2e/email-submission.spec.ts
+      - name: Run Playwright tests (encrypt-submission)
+        run: npx playwright test __tests__/e2e/encrypt-submission.spec.ts
       - uses: actions/upload-artifact@v3
         if: always()
         with:
