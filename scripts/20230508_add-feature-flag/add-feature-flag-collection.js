@@ -5,11 +5,11 @@ Add global beta collection to store global beta flags
 */
 
 // Create globalBeta collection
-db.createCollection('globalBeta')
+db.createCollection('featureflags')
 
 // Add payment beta flag and set enabled to true or false
 // Upsert if not exist
-db.globalBeta.update(
+db.featureflags.update(
   { name: 'payment' },
   {
     $setOnInsert: {
