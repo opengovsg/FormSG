@@ -13,7 +13,7 @@ import { useSectionColor } from '~templates/Field/Section/SectionField'
 
 import { VerifiableFieldBuilderContainer } from '~features/admin-form/create/builder-and-design/BuilderAndDesignContent/FieldRow/VerifiableFieldBuilderContainer'
 import { getFieldCreationMeta } from '~features/admin-form/create/builder-and-design/utils/fieldCreation'
-import { PaymentItemDetailsBlock } from '~features/public-form/components/FormPaymentPage/stripe/components/PaymentItemDetailsBlock'
+import { PaymentItemDetailsBlock } from '~features/public-form/components/FormPaymentPage/stripe/components/PaymentItemDetails'
 import {
   VerifiableEmailField,
   VerifiableEmailFieldSchema,
@@ -46,9 +46,14 @@ export const PaymentPreview = ({
       </Box>
       <Box mb="2rem">
         <PaymentItemDetailsBlock
-          paymentItemName={paymentDetails.description}
+          paymentDetails={paymentDetails}
           colorTheme={colorTheme}
-          paymentAmount={paymentDetails.amount_cents}
+        />
+      </Box>
+      <Box>
+        <PaymentItemDetailsBlock
+          paymentDetails={{ ...paymentDetails, version: 1 }}
+          colorTheme={colorTheme}
         />
       </Box>
       {isBuilder ? (
