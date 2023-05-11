@@ -15,10 +15,14 @@ import { differenceInMilliseconds, isPast } from 'date-fns'
 import get from 'lodash/get'
 import simplur from 'simplur'
 
-import { PAYMENT_CONTACT_FIELD_ID } from '~shared/constants'
+import {
+  PAYMENT_CONTACT_FIELD_ID,
+  PAYMENT_PRODUCT_FIELD_ID,
+} from '~shared/constants'
 import {
   FormAuthType,
   FormResponseMode,
+  ProductItem,
   PublicFormDto,
 } from '~shared/types/form'
 
@@ -202,12 +206,10 @@ export const PublicFormProvider = ({
 
   const navigate = useNavigate()
   const [, storePaymentMemory] = useBrowserStm(formId)
-  const handleSubmitForm: SubmitHandler<
-    FormFieldValues & { [PAYMENT_CONTACT_FIELD_ID]?: { value: string } }
-  > = useCallback(
+  const handleSubmitForm: SubmitHandler<FormFieldValues> = useCallback(
     async ({
-      // selectedProducts: [{ selectedQty: 1, data: ProductFromDB }]
       [PAYMENT_CONTACT_FIELD_ID]: paymentReceiptEmailField,
+      [PAYMENT_PRODUCT_FIELD_ID]: paymentProducts,
       ...formInputs
     }) => {
       const { form } = data ?? {}
@@ -234,6 +236,17 @@ export const PublicFormProvider = ({
           responseTimeMs: differenceInMilliseconds(Date.now(), startTime),
           numVisibleFields,
         },
+      }
+
+      const formPaymentData: {
+        paymentReceiptEmail: string | undefined
+        paymentProducts: Array<ProductItem> | undefined
+      } = {
+        paymentReceiptEmail: paymentReceiptEmailField?.value,
+        paymentProducts: paymentProducts?.filter<ProductItem>(
+          (product): product is ProductItem =>
+            product.selected && product.quantity > 0,
+        ),
       }
 
       const logMeta = {
@@ -345,9 +358,8 @@ export const PublicFormProvider = ({
               .mutateAsync(
                 {
                   ...formData,
+                  ...formPaymentData,
                   publicKey: form.publicKey,
-                  captchaResponse,
-                  paymentReceiptEmail: paymentReceiptEmailField?.value,
                 },
                 {
                   onSuccess: ({
@@ -404,9 +416,8 @@ export const PublicFormProvider = ({
                 .mutateAsync(
                   {
                     ...formData,
+                    ...formPaymentData,
                     publicKey: form.publicKey,
-                    captchaResponse,
-                    paymentReceiptEmail: paymentReceiptEmailField?.value,
                   },
                   {
                     onSuccess: ({

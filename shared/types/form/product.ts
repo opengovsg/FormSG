@@ -10,3 +10,9 @@ export type Product = {
   amount_cents: number
   _id: ProductId
 }
+
+export type ProductItem = {
+  data: Product
+  selected: boolean
+  quantity: number
+}

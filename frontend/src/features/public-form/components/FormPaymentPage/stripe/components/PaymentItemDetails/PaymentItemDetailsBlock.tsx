@@ -6,6 +6,7 @@ import {
   FormPaymentsField,
   FormPaymentsFieldV1,
   FormPaymentsFieldV2,
+  ProductItem,
 } from '~shared/types'
 
 import { centsToDollars } from '~utils/payments'
@@ -14,7 +15,6 @@ import { SingleSelect } from '~components/Dropdown/SingleSelect/SingleSelect'
 import Radio from '~components/Radio'
 
 import { PaymentItem } from './PaymentItem'
-import { ProductItem } from './types'
 import { calculatePrice, generateIntRange } from './utils'
 
 export interface PaymentItemDetailsBlockProps {

@@ -1,4 +1,4 @@
-import { ProductItem } from './types'
+import { ProductItem } from '~shared/types'
 
 export const calculatePrice = (productItems: Array<ProductItem>) => {
   const total = productItems.reduce((accum, item) => {
