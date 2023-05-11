@@ -206,6 +206,7 @@ export const PublicFormProvider = ({
     FormFieldValues & { [PAYMENT_CONTACT_FIELD_ID]?: { value: string } }
   > = useCallback(
     async ({
+      // selectedProducts: [{ selectedQty: 1, data: ProductFromDB }]
       [PAYMENT_CONTACT_FIELD_ID]: paymentReceiptEmailField,
       ...formInputs
     }) => {

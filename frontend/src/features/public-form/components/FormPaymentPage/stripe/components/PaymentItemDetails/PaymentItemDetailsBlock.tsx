@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Box, Flex, Stack, Text } from '@chakra-ui/react'
+import { Box, Flex, Select, Stack, Text } from '@chakra-ui/react'
 
 import {
   FormColorTheme,
@@ -9,6 +9,8 @@ import {
 } from '~shared/types'
 
 import { centsToDollars } from '~utils/payments'
+import Checkbox from '~components/Checkbox'
+import Radio from '~components/Radio'
 
 import { ProductItem } from './types'
 import { calculatePrice } from './utils'
@@ -45,17 +47,54 @@ const PaymentItem = ({
   )
 }
 
+const ItemQuantity = ({ product }: { product: ProductItem }) => {
+  const [qty, setQty] = useState(product.quantity)
+
+  if (!product.data.multi_qty) {
+    return <></>
+  }
+
+  /**
+   * [start, end]
+   */
+  const generateIntRange = (start: number, end: number) => {
+    const arrayLen = end - start + 1
+    const arr = new Array(arrayLen).fill(0)
+    return arr.map((_, i) => i + start + 1)
+  }
+  const qtyOptions = generateIntRange(
+    product.data.min_qty,
+    product.data.max_qty + 1,
+  )
+  return (
+    <Box>
+      <Select>
+        {qtyOptions.map((i) => (
+          <option value={i} key={i}>
+            {i}
+          </option>
+        ))}
+      </Select>
+    </Box>
+  )
+}
 const PaymentItemV2 = ({
-  paymentItemName,
-  paymentAmount,
+  product,
   colorTheme,
-  onChange,
+  onItemChange,
+  isMultiSelect,
 }: {
-  paymentItemName: string
-  paymentAmount: number
+  product: ProductItem
   colorTheme: FormColorTheme
-  onChange: (isSelected, selectedQuantity) => void
+  onItemChange: (
+    productId: string,
+    isSelected: boolean,
+    selectedQuantity: number,
+  ) => void
+  isMultiSelect: boolean
 }) => {
+  const ChoiceElement = isMultiSelect ? Checkbox : Radio
+
   return (
     <Box
       backgroundColor={`theme-${colorTheme}.100`}
@@ -63,13 +102,28 @@ const PaymentItemV2 = ({
       borderColor={`theme-${colorTheme}.300`}
       borderRadius="4px"
       p="0.7rem"
+      width="100%"
     >
-      <Text textStyle="body-1" mb="0.5rem">
-        {paymentItemName}
-      </Text>
-      <Box as="h2" textStyle="h2">{`${centsToDollars(
-        paymentAmount ?? 0,
-      )} SGD`}</Box>
+      <ChoiceElement
+        onChange={() =>
+          onItemChange(product.data._id, !product.selected, product.quantity)
+        }
+      >
+        <Box background={'pink'} flexGrow={1}>
+          <Text textStyle="body-1" mb="0.5rem">
+            {product.data.name}
+          </Text>
+          <Text textStyle="body-1" mb="0.5rem">
+            {product.data.description}
+          </Text>
+          <Flex>
+            <Box flexGrow={1} as="h2" textStyle="h2">{`${centsToDollars(
+              product.data.amount_cents ?? 0,
+            )} SGD`}</Box>
+            <ItemQuantity product={product} />
+          </Flex>
+        </Box>
+      </ChoiceElement>
     </Box>
   )
 }
@@ -102,7 +156,7 @@ const PaymentItemBlockV2 = ({
       return paymentDetails.products.map((product) => ({
         data: product,
         selected: false,
-        quantity: 0,
+        quantity: product.multi_qty ? 0 : 1,
       }))
     },
   )
@@ -115,14 +169,24 @@ const PaymentItemBlockV2 = ({
 
   return (
     <Stack spacing="2rem">
-      {paymentDetails.products.map((product) => (
+      {productItems.map((product) => (
         <PaymentItemV2
-          paymentItemName={product.description}
-          paymentAmount={product.amount_cents}
+          key={product.data._id}
+          product={product}
           colorTheme={colorTheme}
-          onChange={() => {
-            //
+          onItemChange={(productId, isSelected, selectedQuantity) => {
+            const updatedProductItems = productItems.map((product) => {
+              if (product.data._id !== productId) return product
+
+              return {
+                ...product,
+                selected: isSelected,
+                quantity: selectedQuantity,
+              }
+            })
+            updateProductItems(updatedProductItems)
           }}
+          isMultiSelect={true}
         />
       ))}
       <hr />
@@ -131,7 +195,7 @@ const PaymentItemBlockV2 = ({
           Total price
         </Text>
         <Text textStyle={'h4'} fontWeight="600" fontSize={'24px'}>
-          {totalPrice} SGD
+          {centsToDollars(totalPrice)} SGD
         </Text>
       </Flex>
     </Stack>
