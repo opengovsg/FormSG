@@ -80,7 +80,7 @@ export const addEnvVarData: ControllerHandler<unknown, { message: string }> = (
 }
 
 /**
- * Handler for GET /frontend/env endpoint.
+ * Handler for GET /client/env endpoint.
  * @returns the environment variables needed to hydrate the frontend.
  */
 export const handleGetEnvironment: ControllerHandler<never, ClientEnvVars> = (
