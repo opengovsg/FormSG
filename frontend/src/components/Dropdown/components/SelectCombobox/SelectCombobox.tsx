@@ -64,6 +64,7 @@ export const SelectCombobox = forwardRef<HTMLInputElement>(
             align="center"
             zIndex={2}
             aria-hidden
+            sx={styles.inputStack}
           >
             {selectedItemMeta.icon ? (
               <Icon

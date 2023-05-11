@@ -38,6 +38,8 @@ export interface SingleSelectProviderProps<
   children: React.ReactNode
   /** Color scheme of component */
   colorScheme?: ThemeColorScheme
+  /** Variant of component */
+  variant?: 'clear'
 }
 export const SingleSelectProvider = ({
   items: rawItems,
@@ -59,6 +61,7 @@ export const SingleSelectProvider = ({
   inputAria,
   colorScheme,
   comboboxProps = {},
+  variant,
 }: SingleSelectProviderProps): JSX.Element => {
   const { items, getItemByValue } = useItems({ rawItems })
   const [isFocused, setIsFocused] = useState(false)
@@ -220,6 +223,7 @@ export const SingleSelectProvider = ({
   const styles = useMultiStyleConfig('SingleSelect', {
     isClearable,
     colorScheme,
+    variant,
   })
 
   const virtualListHeight = useMemo(() => {
