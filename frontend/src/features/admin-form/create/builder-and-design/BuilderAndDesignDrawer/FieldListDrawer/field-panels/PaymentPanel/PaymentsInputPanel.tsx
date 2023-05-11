@@ -57,6 +57,8 @@ export type FormPaymentsInput = FormPaymentsField & {
 
 export const PaymentInput = ({ isDisabled }: { isDisabled: boolean }) => {
   const { paymentsMutation } = useMutateFormPage()
+  // #TODO: check this from beta flags?
+  const PAYMENT_VERSION = 2
 
   const setIsDirty = useDirtyFieldStore(setIsDirtySelector)
 
@@ -89,9 +91,11 @@ export const PaymentInput = ({ isDisabled }: { isDisabled: boolean }) => {
     },
   })
 
-  register('products')
-  register('version', { value: 2 })
-  const PAYMENT_VERSION = 2
+  if (PAYMENT_VERSION === 2) {
+    register('products')
+  }
+  const paymentDocumentVersion = PAYMENT_VERSION === 2 ? 2 : 1
+  register('version', { value: paymentDocumentVersion })
 
   // Update dirty state of payment so confirmation modal can be shown
   useEffect(() => {
@@ -208,7 +212,7 @@ export const PaymentInput = ({ isDisabled }: { isDisabled: boolean }) => {
       >
         <FormLabel isRequired>Title</FormLabel>
         <Input
-          {...register('products_meta.description', {
+          {...register('description', {
             required: paymentIsEnabled,
           })}
         />

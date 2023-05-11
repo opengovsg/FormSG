@@ -26,14 +26,14 @@ import {
   usePaymentStore,
 } from '../usePaymentStore'
 
-const ProductItem = ({ product }) => {
+const ProductItem = ({ product }: { product: Product }) => {
   return (
     <>
       <Box px="1rem" py="1rem" backgroundColor={'#F8F9FD'}>
         <Flex justifyContent="center">
           <Box flexGrow={1}>
             <Text textStyle="subhead-1" pb="0.25rem" color="secondary.500">
-              {product.title}
+              {product.name}
             </Text>
             <Text textStyle="caption-1" color="secondary.500">
               ${centsToDollars(product.amount_cents)}
@@ -58,7 +58,7 @@ const ProductItem = ({ product }) => {
   )
 }
 
-const AddProductButton = ({ onOpen }) => {
+const AddProductButton = ({ onOpen }: { onOpen: () => void }) => {
   return (
     <Flex
       flexDirection="row"
@@ -78,7 +78,13 @@ const AddProductButton = ({ onOpen }) => {
   )
 }
 
-const ProductsBlock = ({ products, onOpen }) => {
+const ProductList = ({
+  products,
+  onOpen,
+}: {
+  products: Product[]
+  onOpen: () => void
+}) => {
   if (products.length <= 0) {
     return (
       <>
@@ -158,7 +164,7 @@ export const ProductServiceBoxv2 = ({
         isRequired
       >
         <FormLabel>Product/service name</FormLabel>
-        <ProductsBlock products={products} onOpen={onOpen} />
+        <ProductList products={products} onOpen={onOpen} />
       </FormControl>
     </>
   )

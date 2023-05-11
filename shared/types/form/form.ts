@@ -75,16 +75,14 @@ export type FormPaymentsChannel = {
   publishable_key: string
 }
 
-export type FormPaymentsFieldBase = { enabled: boolean }
+export type FormPaymentsFieldBase = { enabled: boolean; description?: string }
 export type FormPaymentsFieldV1 = FormPaymentsFieldBase & {
   amount_cents?: number
-  description?: string
   version: 1
 }
 export type FormPaymentsFieldV2 = FormPaymentsFieldBase & {
   products?: Array<Product>
   products_meta?: {
-    description: string
     multi_product: boolean
   }
   version: 2
@@ -94,7 +92,7 @@ export type FormPaymentsField = FormPaymentsFieldV1 | FormPaymentsFieldV2
 export type Product = {
   name: string
   description: string
-  multi_qty_enabled: boolean
+  multi_qty: boolean
   min_qty: number
   max_qty: number
   amount_cents: number

@@ -403,12 +403,12 @@ export const useMutateFormPage = () => {
   const paymentsMutation = useMutation(
     (payments_field: PaymentsUpdateDto) => {
       const paymentsV2Adapter = (payments: FormPaymentsFieldV2) => {
-        // old field that requires amount_cents to be populated
-        return { ...payments, version: 2 }
+        // TODO: backport fields?
+        return { ...payments }
       }
       const paymentsV1Adapter = (payments: FormPaymentsFieldV1) => {
-        // extract products, don't pass it
-        return { ...payments, version: 1 }
+        // TODO: backport fields?
+        return { ...payments }
       }
       const adaptedPayments =
         payments_field.version === 2

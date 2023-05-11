@@ -365,34 +365,27 @@ export const _handleUpdatePaymentsProduct: ControllerHandler<
  * Handler for PUT /:formId/payment
  */
 
-const AmountCentsWhenEnabled = Joi.when('enabled', {
+const PositiveIntWhenEnabledElseAnyInt = Joi.when('enabled', {
   is: Joi.equal(true),
   then: Joi.number().integer().positive().required(),
   otherwise: Joi.number().integer(),
 })
 
-const DescriptionWhenEnabled = Joi.when('enabled', {
-  is: Joi.equal(true),
-  then: Joi.string().required(),
-  otherwise: Joi.string().allow(''),
-})
 export const handleUpdatePayments = [
   celebrate({
     [Segments.BODY]: {
       // common fields
       enabled: Joi.boolean().required(),
+      description: Joi.when('enabled', {
+        is: Joi.equal(true),
+        then: Joi.string().required(),
+        otherwise: Joi.string().allow(''),
+      }),
 
       // v1 fields
       amount_cents: Joi.when('version', {
         switch: [
-          { is: 1, then: AmountCentsWhenEnabled },
-          { is: 2, then: Joi.any() },
-        ],
-      }),
-
-      description: Joi.when('version', {
-        switch: [
-          { is: 1, then: DescriptionWhenEnabled },
+          { is: 1, then: PositiveIntWhenEnabledElseAnyInt },
           { is: 2, then: Joi.any() },
         ],
       }),
@@ -406,7 +399,6 @@ export const handleUpdatePayments = [
           {
             is: 2,
             then: {
-              description: Joi.string().required(),
               multi_product: Joi.bool().required(),
             },
           },

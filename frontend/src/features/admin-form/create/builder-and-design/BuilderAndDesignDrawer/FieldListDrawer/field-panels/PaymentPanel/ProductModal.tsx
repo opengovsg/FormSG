@@ -36,8 +36,8 @@ export const ProductModal = ({
   onSaveProduct,
   product, // pass non-null product to edit
 }: {
-  onClose: any
-  onSaveProduct: any
+  onClose: () => void
+  onSaveProduct: (product: Product) => void
   product: Product | null
 }) => {
   const {
@@ -46,7 +46,7 @@ export const ProductModal = ({
     control,
     watch,
     formState: { errors },
-  } = useForm()
+  } = useForm<ProductInput>()
 
   const { data: { maxPaymentAmountCents, minPaymentAmountCents } = {} } =
     useEnv()
@@ -83,10 +83,10 @@ export const ProductModal = ({
     },
   }
 
-  const watchMultiQtyEnabled = watch('product.multi_qty_enabled', false)
-  const handleSaveProduct = handleSubmit(({ product }) => {
+  const watchMultiQtyEnabled = watch('multi_qty', false)
+  const handleSaveProduct = handleSubmit((product) => {
     const { display_amount, ...rest } = product
-    onSaveProduct({ ...rest, amounts_cents: dollarsToCents(display_amount) })
+    onSaveProduct({ ...rest, amount_cents: dollarsToCents(display_amount) })
     onClose()
   })
 
@@ -105,23 +105,23 @@ export const ProductModal = ({
               <FormControl>
                 <FormLabel isRequired>Name</FormLabel>
                 <Input
-                  {...register('product.name', { required: true })}
-                  isInvalid={!!errors.product?.name}
+                  {...register('name', { required: true })}
+                  isInvalid={!!errors.name}
                 />
               </FormControl>
 
               <FormControl>
                 <FormLabel isRequired>Description</FormLabel>
                 <Textarea
-                  {...register('product.description', { required: true })}
-                  isInvalid={!!errors.product?.description}
+                  {...register('description', { required: true })}
+                  isInvalid={!!errors.description}
                 />
               </FormControl>
 
-              <FormControl isInvalid={!!errors.product?.price}>
+              <FormControl isInvalid={!!errors.display_amount}>
                 <FormLabel isRequired>Payment Amount</FormLabel>
                 <Controller
-                  name="product.display_amount"
+                  name="display_amount"
                   control={control}
                   rules={amountValidation}
                   render={({ field }) => (
@@ -136,14 +136,14 @@ export const ProductModal = ({
                   )}
                 />
                 <FormErrorMessage>
-                  {errors.product?.price?.message}
+                  {errors.display_amount?.message}
                 </FormErrorMessage>
               </FormControl>
             </Stack>
             <Box>
               <FormControl>
                 <Toggle
-                  {...register('product.multi_qty_enabled', {
+                  {...register('multi_qty', {
                     // Retrigger validation to remove errors when payment is toggled from enabled -> disabled
                     onChange: () => {
                       //
@@ -157,16 +157,16 @@ export const ProductModal = ({
                 <Flex flexDirection="row">
                   <Input
                     mr="0.5rem"
-                    {...register('product.min_qty', {
+                    {...register('min_qty', {
                       required: watchMultiQtyEnabled,
                     })}
-                    isInvalid={errors.product?.min_qty}
+                    isInvalid={!!errors.min_qty}
                   />
                   <Input
-                    {...register('product.max_qty', {
+                    {...register('max_qty', {
                       required: watchMultiQtyEnabled,
                     })}
-                    isInvalid={errors.product?.max_qty}
+                    isInvalid={!!errors.max_qty}
                   />
                 </Flex>
               </FormControl>

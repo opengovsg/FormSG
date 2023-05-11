@@ -31,6 +31,7 @@ import {
   FormLogoState,
   FormPaymentsChannel,
   FormPaymentsField,
+  FormPaymentsFieldV2,
   FormPermission,
   FormResponseMode,
   FormSettings,
@@ -175,20 +176,29 @@ const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
     },
     products: [
       {
-        title: {
+        name: {
           type: String,
           trim: true,
           default: '',
         },
+        description: {
+          type: String,
+          trim: true,
+          default: '',
+        },
+        multi_qty: {
+          type: Boolean,
+          default: false,
+        },
         min_qty: {
           type: Number,
-          default: 1,
           required: false,
+          // TODO: validate higher than 0
         },
         max_qty: {
           type: Number,
-          default: 1,
           required: false,
+          // TODO: validate higher than min_qty
         },
         amount_cents: {
           type: Number,
@@ -203,12 +213,6 @@ const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
       },
     ],
     products_meta: {
-      description: {
-        type: String,
-        trim: true,
-        default: '',
-      },
-
       multi_product: {
         type: Boolean,
         default: false,
@@ -961,11 +965,11 @@ const compileFormModel = (db: Mongoose): IFormModel => {
 
   FormSchema.statics.updatePaymentsProductById = async function (
     formId: string,
-    newProducts: FormPaymentsField['products'],
+    newProducts: FormPaymentsFieldV2['products'],
   ) {
     return this.findByIdAndUpdate(
       formId,
-      { payments_field: { products: newProducts } },
+      { 'payments_field.products': newProducts },
       { new: true, runValidators: true },
     ).exec()
   }
