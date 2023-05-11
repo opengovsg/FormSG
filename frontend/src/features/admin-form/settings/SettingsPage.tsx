@@ -16,7 +16,7 @@ import { featureFlags } from '~shared/constants'
 import { ADMINFORM_RESULTS_SUBROUTE, ADMINFORM_ROUTE } from '~constants/routes'
 import { useDraggable } from '~hooks/useDraggable'
 
-import { useFeatureFlagsEnabled } from '~features/feature-flags/queries'
+import { useFeatureFlags } from '~features/feature-flags/queries'
 import { useUser } from '~features/user/queries'
 
 import { useAdminFormCollaborators } from '../common/queries'
@@ -31,7 +31,7 @@ import { SettingsWebhooksPage } from './SettingsWebhooksPage'
 export const SettingsPage = (): JSX.Element => {
   const { formId } = useParams()
   const { user } = useUser()
-  const { data: featureFlagsEnabled } = useFeatureFlagsEnabled()
+  const { data: flags } = useFeatureFlags()
 
   if (!formId) throw new Error('No formId provided')
 
@@ -48,7 +48,7 @@ export const SettingsPage = (): JSX.Element => {
   const { ref, onMouseDown } = useDraggable<HTMLDivElement>()
 
   const displayPayments =
-    user?.betaFlags?.payment || featureFlagsEnabled?.has(featureFlags.payment)
+    user?.betaFlags?.payment || flags?.has(featureFlags.payment)
 
   return (
     <Box overflow="auto" flex={1}>

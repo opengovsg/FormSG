@@ -14,7 +14,7 @@ import { featureFlags } from '~shared/constants'
 import { Tab } from '~components/Tabs'
 
 import { useCreatePageSidebar } from '~features/admin-form/create/common/CreatePageSidebarContext'
-import { useFeatureFlagsEnabled } from '~features/feature-flags/queries'
+import { useFeatureFlags } from '~features/feature-flags/queries'
 import { useUser } from '~features/user/queries'
 
 import { useCreateTabForm } from '../../../builder-and-design/useCreateTabForm'
@@ -31,10 +31,10 @@ export const FieldListDrawer = (): JSX.Element => {
   const { isLoading } = useCreateTabForm()
 
   const { user } = useUser()
-  const { data: featureFlagsEnabled } = useFeatureFlagsEnabled()
+  const { data: flags } = useFeatureFlags()
 
   const displayPayments =
-    user?.betaFlags?.payment || featureFlagsEnabled?.has(featureFlags.payment)
+    user?.betaFlags?.payment || flags?.has(featureFlags.payment)
 
   return (
     <Tabs
