@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Box, Flex, Select, Stack, Text } from '@chakra-ui/react'
+import { Box, Flex, Stack, Text } from '@chakra-ui/react'
 
 import {
   FormColorTheme,
@@ -10,71 +10,47 @@ import {
 
 import { centsToDollars } from '~utils/payments'
 import Checkbox from '~components/Checkbox'
+import { SingleSelect } from '~components/Dropdown/SingleSelect/SingleSelect'
 import Radio from '~components/Radio'
 
+import { PaymentItem } from './PaymentItem'
 import { ProductItem } from './types'
-import { calculatePrice } from './utils'
+import { calculatePrice, generateIntRange } from './utils'
 
 export interface PaymentItemDetailsBlockProps {
   colorTheme: FormColorTheme
   paymentDetails: FormPaymentsField
 }
 
-const PaymentItem = ({
-  paymentItemName,
-  paymentAmount,
-  colorTheme,
+const ItemQuantity = ({
+  product,
+  onChange,
 }: {
-  paymentItemName: string
-  paymentAmount: number
-  colorTheme: FormColorTheme
+  product: ProductItem
+  onChange: any
 }) => {
-  return (
-    <Box
-      backgroundColor={`theme-${colorTheme}.100`}
-      borderWidth="1px"
-      borderColor={`theme-${colorTheme}.300`}
-      borderRadius="4px"
-      p="0.7rem"
-    >
-      <Text textStyle="body-1" mb="0.5rem">
-        {paymentItemName}
-      </Text>
-      <Box as="h2" textStyle="h2">{`${centsToDollars(
-        paymentAmount ?? 0,
-      )} SGD`}</Box>
-    </Box>
-  )
-}
-
-const ItemQuantity = ({ product }: { product: ProductItem }) => {
-  const [qty, setQty] = useState(product.quantity)
-
   if (!product.data.multi_qty) {
     return <></>
   }
 
-  /**
-   * [start, end]
-   */
-  const generateIntRange = (start: number, end: number) => {
-    const arrayLen = end - start + 1
-    const arr = new Array(arrayLen).fill(0)
-    return arr.map((_, i) => i + start + 1)
-  }
   const qtyOptions = generateIntRange(
     product.data.min_qty,
     product.data.max_qty + 1,
-  )
+  ).map((quantity) => ({
+    label: String(quantity),
+    value: String(quantity),
+  }))
   return (
-    <Box>
-      <Select>
-        {qtyOptions.map((i) => (
-          <option value={i} key={i}>
-            {i}
-          </option>
-        ))}
-      </Select>
+    <Box width="8rem">
+      <SingleSelect
+        isClearable={false}
+        items={qtyOptions}
+        placeholder="Quantity"
+        onChange={onChange}
+        value={String(product.quantity)}
+        name={'Quantity'}
+        variant={'clear'}
+      />
     </Box>
   )
 }
@@ -116,11 +92,16 @@ const PaymentItemV2 = ({
           <Text textStyle="body-1" mb="0.5rem">
             {product.data.description}
           </Text>
-          <Flex>
+          <Flex alignItems={'center'}>
             <Box flexGrow={1} as="h2" textStyle="h2">{`${centsToDollars(
               product.data.amount_cents ?? 0,
             )} SGD`}</Box>
-            <ItemQuantity product={product} />
+            <ItemQuantity
+              product={product}
+              onChange={(qty: number) =>
+                onItemChange(product.data._id, product.selected, qty)
+              }
+            />
           </Flex>
         </Box>
       </ChoiceElement>
