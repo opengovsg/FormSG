@@ -4,7 +4,11 @@ import { userEvent, waitFor, within } from '@storybook/testing-library'
 import dedent from 'dedent'
 
 import { BasicField } from '~shared/types/field'
-import { FormAuthType, FormColorTheme } from '~shared/types/form'
+import {
+  FormAuthType,
+  FormColorTheme,
+  FormResponseMode,
+} from '~shared/types/form'
 
 import {
   getPreviewFormErrorResponse,
@@ -376,4 +380,23 @@ export const FormNotFoundMobile = Template.bind({})
 FormNotFoundMobile.parameters = {
   ...FormNotFound.parameters,
   ...getMobileViewParameters(),
+}
+
+export const WithPayment = Template.bind({})
+WithPayment.parameters = {
+  msw: [
+    getPreviewFormResponse({
+      overrides: {
+        form: {
+          responseMode: FormResponseMode.Encrypt,
+          payments_field: {
+            enabled: true,
+            amount_cents: 5000,
+            description: 'Mock event registration',
+          },
+        },
+      },
+    }),
+    ...DEFAULT_MSW_HANDLERS,
+  ],
 }

@@ -19,7 +19,7 @@ import { useGetPaymentStatusFromStripe } from './queries'
 import { StripeReceiptContainer } from './StripeReceiptContainer'
 import { getPaymentViewStates, PaymentViewStates } from './utils'
 
-const StripeElementWrapper = ({ paymentId }: { paymentId: string }) => {
+const StripePaymentElement = ({ paymentId }: { paymentId: string }) => {
   const { data: paymentInfoData } = useGetPaymentInfo(paymentId)
 
   if (!paymentInfoData) {
@@ -74,8 +74,6 @@ const StripePaymentContainer = ({
           <PaymentStack>
             <CreatePaymentIntentFailureBlock
               submissionId={paymentInfoData.submissionId}
-              paymentClientSecret={paymentInfoData.client_secret}
-              publishableKey={paymentInfoData.publishableKey}
             />
           </PaymentStack>
         )
@@ -94,8 +92,6 @@ const StripePaymentContainer = ({
           <PaymentStack>
             <StripePaymentBlock
               submissionId={paymentInfoData.submissionId}
-              paymentClientSecret={paymentInfoData.client_secret}
-              publishableKey={paymentInfoData.publishableKey}
               triggerPaymentStatusRefetch={() => setRefetchKey(Date.now())}
             />
           </PaymentStack>
@@ -132,4 +128,4 @@ const StripePaymentContainer = ({
   return renderViewState()
 }
 
-export default StripeElementWrapper
+export default StripePaymentElement

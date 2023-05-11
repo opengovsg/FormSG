@@ -132,12 +132,17 @@ const PaymentsSectionText = () => {
 }
 
 export const PaymentSettingsSection = (): JSX.Element => {
+  const { hasPaymentCapabilities } = useAdminFormPayments()
   return (
     <>
       <PaymentsSectionText />
       <StripeConnectButton />
-      <Divider my="2.5rem" />
-      <BusinessInfoSection />
+      {hasPaymentCapabilities && (
+        <>
+          <Divider my="2.5rem" />
+          <BusinessInfoSection />
+        </>
+      )}
     </>
   )
 }

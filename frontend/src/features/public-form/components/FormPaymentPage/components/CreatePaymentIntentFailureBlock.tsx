@@ -3,13 +3,11 @@ import { Box, Flex, Stack, Text, VisuallyHidden } from '@chakra-ui/react'
 
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
-import { FormPaymentPageProps } from '../FormPaymentPage'
-
 // Make sure to call `loadStripe` outside of a component’s render to avoid
 // recreating the `Stripe` object on every render.
 
-export interface CreatePaymentIntentFailureBlockProps
-  extends FormPaymentPageProps {
+export interface CreatePaymentIntentFailureBlockProps {
+  submissionId: string
   focusOnMount?: boolean
 }
 
@@ -43,13 +41,10 @@ export const CreatePaymentIntentFailureBlock = ({
           <Text textStyle="h3" textColor="primary.500">
             There was an error preparing the payment.
           </Text>
-          <Text textStyle="body-2" textColor="secondary.500">
-            Please contact the agency which gave you this form link for
-            assistance and share with them the Response ID below.
-          </Text>
         </Box>
         <Text textStyle="body-1" textColor="secondary.700">
-          No payment has been made for this form.
+          For assistance, share the response ID with the agency that gave you
+          the form link. No payment has been taken.
         </Text>
 
         <Text textColor="secondary.300">Response ID: {submissionId}</Text>

@@ -8,13 +8,7 @@ import {
   Text,
   VisuallyHidden,
 } from '@chakra-ui/react'
-import {
-  Elements,
-  PaymentElement,
-  useElements,
-  useStripe,
-} from '@stripe/react-stripe-js'
-import { loadStripe } from '@stripe/stripe-js'
+import { PaymentElement, useElements, useStripe } from '@stripe/react-stripe-js'
 
 import { FormColorTheme, FormResponseMode } from '~shared/types/form'
 
@@ -23,22 +17,17 @@ import Button from '~components/Button'
 
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
-import { FormPaymentPageProps } from '../../FormPaymentPage'
-
 import { PaymentItemDetailsBlock } from './PaymentItemDetailsBlock'
 
-// Make sure to call `loadStripe` outside of a component’s render to avoid
-// recreating the `Stripe` object on every render.
-
-export interface PaymentPageBlockProps extends FormPaymentPageProps {
+interface PaymentPageBlockProps {
+  submissionId: string
+  isRetry?: boolean
   focusOnMount?: boolean
   triggerPaymentStatusRefetch: () => void
 }
 
-type StripeCheckoutFormProps = Pick<
-  PaymentPageBlockProps,
-  'submissionId' | 'isRetry'
-> & {
+interface StripeCheckoutFormProps {
+  isRetry?: boolean
   colorTheme: FormColorTheme
   triggerPaymentStatusRefetch: () => void
 }
@@ -132,8 +121,6 @@ const StripeCheckoutForm = ({
 
 export const StripePaymentBlock = ({
   submissionId,
-  paymentClientSecret,
-  publishableKey,
   focusOnMount,
   isRetry,
   triggerPaymentStatusRefetch,
@@ -142,11 +129,6 @@ export const StripePaymentBlock = ({
 
   const formTitle = form?.title
   const colorTheme = form?.startPage.colorTheme || FormColorTheme.Blue
-
-  const stripePromise = useMemo(
-    () => loadStripe(publishableKey),
-    [publishableKey],
-  )
 
   const focusRef = useRef<HTMLDivElement>(null)
   useEffect(() => {
@@ -181,22 +163,11 @@ export const StripePaymentBlock = ({
             paymentAmount={form.payments_field?.amount_cents}
           />
         </Box>
-        {paymentClientSecret && (
-          <Elements
-            stripe={stripePromise}
-            options={{
-              // passing the client secret obtained from the server
-              clientSecret: paymentClientSecret,
-            }}
-          >
-            <StripeCheckoutForm
-              colorTheme={colorTheme}
-              submissionId={submissionId}
-              isRetry={isRetry}
-              triggerPaymentStatusRefetch={triggerPaymentStatusRefetch}
-            />
-          </Elements>
-        )}
+        <StripeCheckoutForm
+          colorTheme={colorTheme}
+          isRetry={isRetry}
+          triggerPaymentStatusRefetch={triggerPaymentStatusRefetch}
+        />
         <Text textColor="secondary.300">Response ID: {submissionId}</Text>
       </Stack>
     </Flex>
