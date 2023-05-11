@@ -9,9 +9,12 @@ import {
   Text,
 } from '@chakra-ui/react'
 
+import { featureFlags } from '~shared/constants'
+
 import { Tab } from '~components/Tabs'
 
 import { useCreatePageSidebar } from '~features/admin-form/create/common/CreatePageSidebarContext'
+import { useFeatureFlags } from '~features/feature-flags/queries'
 import { useUser } from '~features/user/queries'
 
 import { useCreateTabForm } from '../../../builder-and-design/useCreateTabForm'
@@ -28,7 +31,11 @@ export const FieldListDrawer = (): JSX.Element => {
   const { isLoading } = useCreateTabForm()
 
   const { user } = useUser()
-  const displayPayments = user?.betaFlags?.payment
+  const { data: flags } = useFeatureFlags()
+
+  const displayPayments =
+    user?.betaFlags?.payment || flags?.has(featureFlags.payment)
+
   return (
     <Tabs
       pos="relative"

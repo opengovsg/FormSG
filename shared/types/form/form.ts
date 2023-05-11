@@ -81,6 +81,11 @@ export type FormPaymentsField = {
   description?: string
 }
 
+export type FormBusinessField = {
+  address?: string
+  gstRegNo?: string
+}
+
 export interface FormBase {
   title: string
   admin: UserDto['_id']
@@ -120,6 +125,7 @@ export interface StorageFormBase extends FormBase {
   publicKey: string
   payments_channel: FormPaymentsChannel
   payments_field: FormPaymentsField
+  business?: FormBusinessField
 }
 
 /**
@@ -246,6 +252,7 @@ export type EndPageUpdateDto = FormEndPage
 export type FormPermissionsDto = FormPermission[]
 export type PermissionsUpdateDto = FormPermission[]
 export type PaymentsUpdateDto = FormPaymentsField
+export type BusinessUpdateDto = FormBusinessField
 
 export type SendFormOtpResponseDto = {
   otpPrefix: string

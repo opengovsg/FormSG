@@ -11,9 +11,12 @@ import {
   Tabs,
 } from '@chakra-ui/react'
 
+import { featureFlags } from '~shared/constants'
+
 import { ADMINFORM_RESULTS_SUBROUTE, ADMINFORM_ROUTE } from '~constants/routes'
 import { useDraggable } from '~hooks/useDraggable'
 
+import { useFeatureFlags } from '~features/feature-flags/queries'
 import { useUser } from '~features/user/queries'
 
 import { useAdminFormCollaborators } from '../common/queries'
@@ -28,6 +31,7 @@ import { SettingsWebhooksPage } from './SettingsWebhooksPage'
 export const SettingsPage = (): JSX.Element => {
   const { formId } = useParams()
   const { user } = useUser()
+  const { data: flags } = useFeatureFlags()
 
   if (!formId) throw new Error('No formId provided')
 
@@ -42,6 +46,9 @@ export const SettingsPage = (): JSX.Element => {
   }, [formId, hasEditAccess, isCollabLoading, navigate])
 
   const { ref, onMouseDown } = useDraggable<HTMLDivElement>()
+
+  const displayPayments =
+    user?.betaFlags?.payment || flags?.has(featureFlags.payment)
 
   return (
     <Box overflow="auto" flex={1}>
@@ -84,7 +91,7 @@ export const SettingsPage = (): JSX.Element => {
             <SettingsTab label="Singpass" icon={BiKey} />
             <SettingsTab label="Twilio credentials" icon={BiMessage} />
             <SettingsTab label="Webhooks" icon={BiCodeBlock} />
-            {user?.betaFlags?.payment && (
+            {displayPayments && (
               <SettingsTab label="Payments" icon={BiDollar} />
             )}
           </TabList>
@@ -106,7 +113,7 @@ export const SettingsPage = (): JSX.Element => {
           <TabPanel>
             <SettingsWebhooksPage />
           </TabPanel>
-          {user?.betaFlags?.payment && (
+          {displayPayments && (
             <TabPanel>
               <SettingsPaymentsPage />
             </TabPanel>
