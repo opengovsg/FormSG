@@ -84,8 +84,9 @@ const PaymentItemV2 = ({
         onChange={() =>
           onItemChange(product.data._id, !product.selected, product.quantity)
         }
+        variant="fullWidth"
       >
-        <Box background={'pink'} flexGrow={1}>
+        <Box flexGrow={1}>
           <Text textStyle="body-1" mb="0.5rem">
             {product.data.name}
           </Text>
@@ -146,7 +147,23 @@ const PaymentItemBlockV2 = ({
   if (!paymentDetails.products) {
     return <></>
   }
-  //
+
+  const handleItemChange = (
+    productId: string,
+    isSelected: boolean,
+    selectedQuantity: number,
+  ) => {
+    const updatedProductItems = productItems.map((product) => {
+      if (product.data._id !== productId) return product
+
+      return {
+        ...product,
+        selected: isSelected,
+        quantity: selectedQuantity,
+      }
+    })
+    updateProductItems(updatedProductItems)
+  }
 
   return (
     <Stack spacing="2rem">
@@ -155,18 +172,7 @@ const PaymentItemBlockV2 = ({
           key={product.data._id}
           product={product}
           colorTheme={colorTheme}
-          onItemChange={(productId, isSelected, selectedQuantity) => {
-            const updatedProductItems = productItems.map((product) => {
-              if (product.data._id !== productId) return product
-
-              return {
-                ...product,
-                selected: isSelected,
-                quantity: selectedQuantity,
-              }
-            })
-            updateProductItems(updatedProductItems)
-          }}
+          onItemChange={handleItemChange}
           isMultiSelect={true}
         />
       ))}
