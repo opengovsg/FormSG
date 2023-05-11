@@ -342,18 +342,6 @@ const FieldButtonGroup = ({
     deleteFieldModalDisclosure: { onOpen: onDeleteModalOpen },
   } = useBuilderAndDesignContext()
 
-  // Get remaining available attachment size limit
-  const availableAttachmentSize = form
-    ? getAttachmentSizeLimit(form.responseMode) -
-      form.form_fields.reduce(
-        (sum, ff) =>
-          ff.fieldType === BasicField.Attachment
-            ? sum + Number(ff.attachmentSize)
-            : sum,
-        0,
-      )
-    : 0
-
   const handleEditFieldClick = useCallback(() => {
     if (isMobile) {
       handleBuilderClick(false)
@@ -368,7 +356,19 @@ const FieldButtonGroup = ({
     // Duplicate button should be hidden if field is not yet created, but guard here just in case
     if (fieldBuilderState === FieldBuilderState.CreatingField) return
     // Disallow duplicating attachment fields if after the dupe, the filesize exceeds the limit
+
     if (field.fieldType === BasicField.Attachment) {
+      // Get remaining available attachment size limit
+      const availableAttachmentSize = form
+        ? getAttachmentSizeLimit(form.responseMode) -
+          form.form_fields.reduce(
+            (sum, ff) =>
+              ff.fieldType === BasicField.Attachment
+                ? sum + Number(ff.attachmentSize)
+                : sum,
+            0,
+          )
+        : 0
       const thisAttachmentSize = Number(field.attachmentSize)
       if (thisAttachmentSize > availableAttachmentSize) {
         toast({
@@ -379,13 +379,7 @@ const FieldButtonGroup = ({
       }
     }
     duplicateFieldMutation.mutate(field._id)
-  }, [
-    fieldBuilderState,
-    field,
-    duplicateFieldMutation,
-    availableAttachmentSize,
-    toast,
-  ])
+  }, [form, fieldBuilderState, field, duplicateFieldMutation, toast])
 
   const handleDeleteClick = useCallback(() => {
     if (fieldBuilderState === FieldBuilderState.CreatingField) {
