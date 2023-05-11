@@ -719,7 +719,9 @@ const addLogics = async (
         await fillDropdown(page, logicTypeInput, 'Show field(s)')
         await fillMultiDropdown(
           page,
-          page.getByLabel('Show').first(),
+          page
+            .getByRole('group')
+            .filter({ has: page.getByLabel('Show').first() }),
           logic.show.map((n) => getTitleWithQuestionNumber(formFields, n)),
         )
         break

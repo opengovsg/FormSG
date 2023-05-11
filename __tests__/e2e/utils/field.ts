@@ -180,12 +180,10 @@ export const fillDropdown = async (
  */
 export const fillMultiDropdown = async (
   page: Page,
-  input: Locator,
+  inputScope: Locator,
   values: string[],
 ): Promise<void> => {
-  const inputGroup = page.getByRole('group').filter({ has: input })
-
-  await inputGroup
+  await inputScope
     .getByRole('button', { name: 'Open dropdown options' })
     .click()
   for (const value of values) {
@@ -193,7 +191,7 @@ export const fillMultiDropdown = async (
     await option.scrollIntoViewIfNeeded()
     await option.click()
   }
-  await inputGroup
+  await inputScope
     .getByRole('button', { name: 'Close dropdown options' })
     .click()
 }
