@@ -111,7 +111,7 @@ export const FormFields = ({
     <FormProvider {...formMethods}>
       <form noValidate>
         {!!formFields?.length && (
-          <Box bg={'white'} py="2.5rem" px={{ base: '1rem', md: '2.5rem' }}>
+          <Box bg="white" py="2.5rem" px={{ base: '1rem', md: '2.5rem' }}>
             <Stack spacing="2.25rem">
               {!isEmpty(fieldPrefillMap) && (
                 <InlineMessage variant="warning">
@@ -132,10 +132,17 @@ export const FormFields = ({
           </Box>
         )}
         {form?.responseMode === FormResponseMode.Encrypt && (
-          <PaymentPreview
-            colorTheme={colorTheme}
-            paymentDetails={form?.payments_field}
-          />
+          <Box
+            mt="2.5rem"
+            bg="white"
+            py="2.5rem"
+            px={{ base: '1rem', md: '2.5rem' }}
+          >
+            <PaymentPreview
+              colorTheme={colorTheme}
+              paymentDetails={form?.payments_field}
+            />
+          </Box>
         )}
         <PublicFormPaymentResumeModal />
         <PublicFormSubmitButton
