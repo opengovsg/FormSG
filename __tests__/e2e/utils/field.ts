@@ -185,7 +185,7 @@ export const fillMultiDropdown = async (
 ): Promise<void> => {
   await inputScope
     .getByRole('button', { name: 'Open dropdown options' })
-    .first()
+    .last()
     .click()
   for (const value of values) {
     const option = page.getByRole('option', { name: value })
@@ -194,7 +194,7 @@ export const fillMultiDropdown = async (
   }
   await inputScope
     .getByRole('button', { name: 'Close dropdown options' })
-    .first()
+    .last()
     .click()
 }
 
