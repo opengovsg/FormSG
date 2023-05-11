@@ -67,7 +67,7 @@ export const PaymentPreview = ({
         <Box as="h2" mb="1rem" textStyle="h2" color={sectionColor}>
           Payment
         </Box>
-        <Box mb="1rem">
+        <Box mb="2rem">
           <PaymentItemDetailsBlock
             paymentItemName={paymentDetails.description}
             colorTheme={colorTheme}
