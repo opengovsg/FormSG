@@ -22,8 +22,12 @@ jobs:
           NODE_OPTIONS: '--max-old-space-size=4096 --openssl-legacy-provider'
           REACT_APP_FORMSG_SDK_MODE: 'test'
         run: npm run build
-      - name: Run Playwright tests
-        run: npx playwright test
+      - name: Run Playwright tests (login)
+        run: npx playwright test __tests__/e2e/login.spec.ts
+      - name: Run Playwright tests (email-submission)
+        run: npx playwright test __tests__/e2e/email-submission.spec.ts
+      - name: Run Playwright tests (encrypt-submission)
+        run: npx playwright test __tests__/e2e/encrypt-submission.spec.ts
       - uses: actions/upload-artifact@v3
         if: always()
         with:
