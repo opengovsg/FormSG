@@ -462,7 +462,9 @@ const addBasicField = async (
     case BasicField.Attachment:
       await fillDropdown(
         page,
-        page.getByLabel('Maximum size of individual attachment').first(),
+        page.getByRole('combobox', {
+          name: 'Maximum size of individual attachment',
+        }),
         `${field.attachmentSize} MB`,
       )
       break
@@ -591,12 +593,16 @@ const addBasicField = async (
     case BasicField.Rating:
       await fillDropdown(
         page,
-        page.getByLabel('Number of steps').first(),
+        page.getByRole('combobox', {
+          name: 'Number of steps',
+        }),
         String(field.ratingOptions.steps),
       )
       await fillDropdown(
         page,
-        page.getByLabel('Shape').first(),
+        page.getByRole('combobox', {
+          name: 'Shape',
+        }),
         field.ratingOptions.shape,
       )
       break
