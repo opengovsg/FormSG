@@ -926,6 +926,25 @@ export class MailService {
       )
     )
   }
+
+  // Utility method to send a mail during local dev (to maildev)
+  // The sender and receipent are both form's internal mailing address
+  sendLocalDevMail = (
+    subject: string,
+    mailHtml: string,
+  ): ResultAsync<true, MailGenerationError | MailSendError> => {
+    const mailOptions: MailOptions = {
+      to: this.#officialMail,
+      from: this.#senderFromString,
+      html: mailHtml,
+      subject: subject,
+      replyTo: this.#officialMail,
+      bcc: this.#senderMail,
+    }
+    return this.#sendNodeMail(mailOptions, {
+      mailId: 'sendWarningMailForAdmin',
+    })
+  }
 }
 
 export default new MailService()

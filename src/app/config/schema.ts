@@ -326,6 +326,12 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
       default: Environment.Prod,
       env: 'NODE_ENV',
     },
+    useMockTwilio: {
+      doc: 'Enables twilio API mocking and directs SMS body over to maildev',
+      format: 'Boolean',
+      default: false,
+      env: 'USE_MOCK_TWILIO',
+    },
   },
   rateLimit: {
     submissions: {
