@@ -83,7 +83,7 @@ export interface FieldRowContainerProps {
   field: FormFieldDto
   index: number
   isHiddenByLogic: boolean
-  isDraggingOver: boolean
+  isDraggingOver?: boolean
   // Field only needs to know fieldBuilderState if it is active, else it is agnostic to state
   fieldBuilderState?: FieldBuilderState
   isDirty: boolean

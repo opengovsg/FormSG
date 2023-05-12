@@ -44,21 +44,27 @@ export const BuilderFields = ({
 
   return (
     <>
-      {fieldsWithQuestionNos.map((f, i) => (
-        <FieldRow
-          index={i}
-          key={f._id}
-          field={f}
-          isHiddenByLogic={!visibleFieldIds.has(f._id)}
-          isDraggingOver={f._id === activeFieldId && isDraggingOver}
-          fieldBuilderState={
-            f._id === activeFieldId ? stateData.state : undefined
-          }
-          handleBuilderClick={handleBuilderClick}
-          isDirty={isDirty}
-          colorTheme={colorTheme}
-        />
-      ))}
+      {fieldsWithQuestionNos.map((f, i) => {
+        const activeFieldExtraProps =
+          f._id === activeFieldId
+            ? {
+                isDraggingOver,
+                fieldBuilderState: stateData.state,
+              }
+            : {}
+        return (
+          <FieldRow
+            index={i}
+            key={f._id}
+            field={f}
+            isHiddenByLogic={!visibleFieldIds.has(f._id)}
+            handleBuilderClick={handleBuilderClick}
+            isDirty={isDirty}
+            colorTheme={colorTheme}
+            {...activeFieldExtraProps}
+          />
+        )
+      })}
     </>
   )
 }
