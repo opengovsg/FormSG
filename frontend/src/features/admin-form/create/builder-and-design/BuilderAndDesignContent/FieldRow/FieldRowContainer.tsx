@@ -56,12 +56,16 @@ import {
 } from '~features/myinfo/utils'
 
 import { BuilderAndDesignContextProps } from '../../BuilderAndDesignContext'
+import {
+  setToInactiveSelector as setPaymentToInactiveSelector,
+  usePaymentStore,
+} from '../../BuilderAndDesignDrawer/FieldListDrawer/field-panels/usePaymentStore'
 import { useDeleteFormField } from '../../mutations/useDeleteFormField'
 import { useDuplicateFormField } from '../../mutations/useDuplicateFormField'
 import { useCreateTabForm } from '../../useCreateTabForm'
 import {
   DesignState,
-  setStateSelector,
+  setStateSelector as setDesignStateSelector,
   useDesignStore,
 } from '../../useDesignStore'
 import { isDirtySelector, useDirtyFieldStore } from '../../useDirtyFieldStore'
@@ -107,8 +111,10 @@ const FieldRowContainer = ({
   const isDirty = useDirtyFieldStore(isDirtySelector)
   const toast = useToast({ status: 'danger', isClosable: true })
 
-  const setDesignState = useDesignStore(setStateSelector)
-
+  const setDesignState = useDesignStore(setDesignStateSelector)
+  const setPaymentStateToInactive = usePaymentStore(
+    setPaymentToInactiveSelector,
+  )
   const { duplicateFieldMutation } = useDuplicateFormField()
   const { deleteFieldMutation } = useDeleteFormField()
 
@@ -157,17 +163,20 @@ const FieldRowContainer = ({
     }
     updateEditState(field)
     setDesignState(DesignState.Inactive)
+    setPaymentStateToInactive()
+
     if (!isMobile) {
       // Do not open builder if in mobile so user can view active state without
       // drawer blocking the view.
       handleBuilderClick(false)
     }
   }, [
-    isDirty,
     isActive,
+    isDirty,
     updateEditState,
     field,
     setDesignState,
+    setPaymentStateToInactive,
     isMobile,
     handleBuilderClick,
   ])

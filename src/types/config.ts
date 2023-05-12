@@ -80,6 +80,7 @@ export type Config = {
   // Consts
   isDev: boolean
   nodeEnv: Environment
+  useMockTwilio: boolean
   port: number
   sessionSecret: string
   chromiumBin: string
@@ -102,6 +103,7 @@ export type Config = {
   rateLimitConfig: RateLimitConfig
   reactMigration: ReactMigrationConfig
   secretEnv: string
+  envSiteName: string
 
   // Functions
   configureAws: () => Promise<void>
@@ -120,6 +122,7 @@ export interface ICompulsoryVarsSchema {
   core: {
     sessionSecret: string
     secretEnv: string
+    envSiteName: string
   }
   awsConfig: {
     imageS3Bucket: string
@@ -153,6 +156,7 @@ export interface IOptionalVarsSchema {
     otpLifeSpan: number
     submissionsTopUp: number
     nodeEnv: Environment
+    useMockTwilio: boolean
   }
   banner: {
     isGeneralMaintenance: string

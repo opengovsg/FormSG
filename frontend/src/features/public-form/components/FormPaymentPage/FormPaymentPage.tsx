@@ -12,14 +12,7 @@ import FormStartPage from '~features/public-form/components/FormStartPage'
 import { PublicFormWrapper } from '~features/public-form/components/PublicFormWrapper'
 import { PublicFormProvider } from '~features/public-form/PublicFormProvider'
 
-import StripeElementWrapper from './stripe/StripeElementWrapper'
-
-export interface FormPaymentPageProps {
-  submissionId: string
-  paymentClientSecret: string
-  publishableKey: string
-  isRetry?: boolean
-}
+import StripePaymentElement from './stripe/StripePaymentElement'
 
 export const FormPaymentPage = () => {
   const { formId, paymentId } = useParams()
@@ -46,7 +39,7 @@ export const FormPaymentPage = () => {
                     </Skeleton>
                   }
                 >
-                  <StripeElementWrapper paymentId={paymentId} />
+                  <StripePaymentElement paymentId={paymentId} />
                 </Suspense>
               </Container>
             </Box>

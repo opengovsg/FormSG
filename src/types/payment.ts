@@ -14,6 +14,7 @@ export interface IPaymentSchema extends Payment, Document {
 export type IPaymentModel = Model<IPaymentSchema>
 
 export interface StripePaymentMetadataDto extends Stripe.Metadata {
+  env: string
   formTitle: string
   formId: string
   submissionId: string

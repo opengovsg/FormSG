@@ -783,34 +783,34 @@ export class MailService {
 
   /**
    * Sends a payment confirmation to a valid email
-   * @param recipient the recipient email address
+   * @param email the recipient email address
    * @param formTitle the form title of the payment form
-   * @param responseId the response ID
+   * @param submissionId the response ID
    * @param formId the payment form ID
    * @param paymentId the payment ID
    * @throws error if mail fails, to be handled by the caller
    */
   sendPaymentConfirmationEmail = ({
-    recipient,
+    email,
     formTitle,
-    responseId,
+    submissionId,
     formId,
     paymentId,
   }: {
-    recipient: string
+    email: string
     formTitle: string
-    responseId: string
+    submissionId: string
     formId: string
     paymentId: string
   }): ResultAsync<true, MailSendError> => {
     const mail: MailOptions = {
-      to: recipient,
+      to: email,
       from: this.#senderFromString,
       subject: `Your payment on ${this.#appName} was successful`,
       html: generatePaymentConfirmationHtml({
         appName: this.#appName,
         formTitle,
-        responseId,
+        submissionId,
         invoiceUrl: `${this.#appUrl}/api/v3/${getPaymentInvoiceDownloadUrlPath(
           formId,
           paymentId,
@@ -925,6 +925,25 @@ export class MailService {
         },
       )
     )
+  }
+
+  // Utility method to send a mail during local dev (to maildev)
+  // The sender and receipent are both form's internal mailing address
+  sendLocalDevMail = (
+    subject: string,
+    mailHtml: string,
+  ): ResultAsync<true, MailGenerationError | MailSendError> => {
+    const mailOptions: MailOptions = {
+      to: this.#officialMail,
+      from: this.#senderFromString,
+      html: mailHtml,
+      subject: subject,
+      replyTo: this.#officialMail,
+      bcc: this.#senderMail,
+    }
+    return this.#sendNodeMail(mailOptions, {
+      mailId: 'sendWarningMailForAdmin',
+    })
   }
 }
 

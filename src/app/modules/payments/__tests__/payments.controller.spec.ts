@@ -43,7 +43,7 @@ describe('payments.controller', () => {
       const mockRes = expressHandler.mockResponse()
 
       // Act
-      await PaymentsController._handleGetPreviousPaymentId(
+      await PaymentsController.handleGetPreviousPaymentId(
         mockReq,
         mockRes,
         jest.fn(),
@@ -73,7 +73,7 @@ describe('payments.controller', () => {
       const mockRes = expressHandler.mockResponse()
 
       // Act
-      await PaymentsController._handleGetPreviousPaymentId(
+      await PaymentsController.handleGetPreviousPaymentId(
         mockReq,
         mockRes,
         jest.fn(),
@@ -102,7 +102,7 @@ describe('payments.controller', () => {
       const mockRes = expressHandler.mockResponse()
 
       // Act
-      await PaymentsController._handleGetPreviousPaymentId(
+      await PaymentsController.handleGetPreviousPaymentId(
         mockReq,
         mockRes,
         jest.fn(),
@@ -133,7 +133,7 @@ describe('payments.controller', () => {
       // close DB to mock server error
       await dbHandler.closeDatabase()
       // Act
-      await PaymentsController._handleGetPreviousPaymentId(
+      await PaymentsController.handleGetPreviousPaymentId(
         mockReq,
         mockRes,
         jest.fn(),

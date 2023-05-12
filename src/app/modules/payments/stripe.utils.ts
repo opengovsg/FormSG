@@ -9,25 +9,69 @@ import Stripe from 'stripe'
 
 import { Payment, PaymentStatus } from '../../../../shared/types'
 import { hasProp } from '../../../../shared/utils/has-prop'
-import { StripePaymentMetadataDto } from '../../../types'
+import { MapRouteError, StripePaymentMetadataDto } from '../../../types'
+import config from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
-import { ApplicationError } from '../core/core.errors'
+import { ApplicationError, DatabaseError } from '../core/core.errors'
+import { FormNotFoundError } from '../form/form.errors'
 import {
   PendingSubmissionNotFoundError,
   ResponseModeError,
+  SubmissionNotFoundError,
 } from '../submission/submission.errors'
 
 import {
+  ConfirmedPaymentNotFoundError,
   PaymentAccountInformationError,
+  PaymentAlreadyConfirmedError,
   PaymentNotFoundError,
 } from './payments.errors'
 import {
   ComputePaymentStateError,
+  MalformedStripeChargeObjectError,
   StripeFetchError,
+  StripeMetadataIncorrectEnvError,
+  StripeMetadataInvalidError,
   StripeMetadataValidPaymentIdNotFoundError,
 } from './stripe.errors'
 
 const logger = createLoggerWithLabel(module)
+
+export const mapRouteError: MapRouteError = (error: ApplicationError) => {
+  switch (error.constructor) {
+    case StripeMetadataInvalidError:
+    case MalformedStripeChargeObjectError:
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage: error.message,
+      }
+    case ResponseModeError:
+    case StripeMetadataValidPaymentIdNotFoundError:
+    case PaymentAlreadyConfirmedError:
+      return {
+        statusCode: StatusCodes.UNPROCESSABLE_ENTITY,
+        errorMessage: error.message,
+      }
+    case PaymentNotFoundError:
+    case PendingSubmissionNotFoundError:
+    case ConfirmedPaymentNotFoundError:
+    case SubmissionNotFoundError:
+    case FormNotFoundError:
+      return {
+        statusCode: StatusCodes.NOT_FOUND,
+        errorMessage: error.message,
+      }
+    case StripeFetchError:
+    case PaymentAccountInformationError:
+    case ComputePaymentStateError:
+    case DatabaseError:
+    default:
+      return {
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        errorMessage: error.message,
+      }
+  }
+}
 
 /**
  * Helper function to get the charge id from a nested charge object.
@@ -43,6 +87,7 @@ export const getChargeIdFromNestedCharge = (
 const isStripeMetadata = (
   obj: Stripe.Metadata,
 ): obj is StripePaymentMetadataDto =>
+  // hasProp(obj, 'env') && // TODO: Make this required later
   hasProp(obj, 'formTitle') &&
   hasProp(obj, 'formId') &&
   hasProp(obj, 'submissionId') &&
@@ -54,24 +99,41 @@ const isStripeMetadata = (
  * it (i.e. payment intents and charges).
  * @param {Stripe.Metadata} metadata the metadata object which is expected to have a payment id
  * @returns ok(paymentId) the extracted paymentId
+ * @returns err(StripeMetadataInvalidError) if the metadata has an invalid shape
  * @returns err(StripeMetadataValidPaymentIdNotFoundError) if the payment id was not found or is an invalid BSON object id
+ * @returns err(StripeMetadataIncorrectEnvError) if the app is incorrect
  */
 export const getMetadataPaymentId = (
   metadata: Stripe.Metadata,
-): Result<string, StripeMetadataValidPaymentIdNotFoundError> => {
+): Result<
+  string,
+  | StripeMetadataInvalidError
+  | StripeMetadataValidPaymentIdNotFoundError
+  | StripeMetadataIncorrectEnvError
+> => {
   const logMeta = {
     action: 'getMetadataPaymentId',
     metadata,
   }
-  if (
-    !isStripeMetadata(metadata) ||
-    !mongoose.Types.ObjectId.isValid(metadata.paymentId)
-  ) {
+  if (!isStripeMetadata(metadata)) {
     logger.warn({
-      message: 'Got metadata with invalid paymentId',
+      message: 'Got invalid Stripe metadata',
+      meta: { ...logMeta, metadata },
+    })
+    return err(new StripeMetadataInvalidError())
+  }
+  if (!mongoose.Types.ObjectId.isValid(metadata.paymentId)) {
+    logger.warn({
+      message: 'Got Stripe metadata with invalid paymentId',
       meta: { ...logMeta, metadata },
     })
     return err(new StripeMetadataValidPaymentIdNotFoundError())
+  }
+  // Explicit check for metadata.env to ensure that legacy metadata which does
+  // not have the env value still gets processed.
+  // TODO: remove the existence check later.
+  if (metadata.env && metadata.env !== config.envSiteName) {
+    return err(new StripeMetadataIncorrectEnvError())
   }
   return ok(metadata.paymentId)
 }
@@ -306,29 +368,6 @@ export const computePayoutDetails = (
       event.type.startsWith('payout.'),
   )
   return ok(payoutEvents.reduce(payoutStateReducer, undefined))
-}
-
-export const mapRouteErr = (error: ApplicationError) => {
-  switch (error.constructor) {
-    case ResponseModeError:
-      return {
-        statusCode: StatusCodes.UNPROCESSABLE_ENTITY,
-        errorMessage: error.message,
-      }
-    case PaymentNotFoundError: // fall-through
-    case PendingSubmissionNotFoundError:
-      return {
-        statusCode: StatusCodes.NOT_FOUND,
-        errorMessage: error.message,
-      }
-    case StripeFetchError: // fall-through
-    case PaymentAccountInformationError: // fall-through
-    default:
-      return {
-        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
-        errorMessage: error.message,
-      }
-  }
 }
 
 /**

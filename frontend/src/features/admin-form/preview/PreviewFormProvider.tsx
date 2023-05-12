@@ -314,6 +314,10 @@ export const PreviewFormProvider = ({
     ],
   )
 
+  const isPaymentEnabled =
+    data?.form.responseMode === FormResponseMode.Encrypt &&
+    data.form.payments_field.enabled
+
   if (isNotFormId) {
     return <NotFoundErrorPage />
   }
@@ -329,6 +333,7 @@ export const PreviewFormProvider = ({
         expiryInMs,
         isLoading,
         handleLogout: undefined,
+        isPaymentEnabled,
         ...commonFormValues,
         ...data,
         ...rest,

@@ -5,8 +5,8 @@ import { devtools } from 'zustand/middleware'
 import { FormPaymentsField } from '~shared/types'
 
 export enum PaymentState {
-  EditingPayment,
   Inactive,
+  EditingPayment,
 }
 
 export type PaymentStore = {
@@ -49,18 +49,13 @@ export const usePaymentStore = create<PaymentStore>()(
       set({ data: payment_field })
     },
     resetData: () => {
-      set({
-        data: undefined,
-      })
+      set({ data: undefined })
     },
     setToInactive: (holding) => {
       if (holding) {
         set({ holdingState: PaymentState.Inactive })
       } else {
-        set({
-          state: PaymentState.Inactive,
-          data: undefined,
-        })
+        set({ state: PaymentState.Inactive, data: undefined })
       }
     },
   })),

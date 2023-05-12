@@ -1,7 +1,6 @@
 import { MouseEvent, MouseEventHandler } from 'react'
 import {
   Button,
-  ButtonGroup,
   Link,
   Modal,
   ModalBody,
@@ -13,6 +12,9 @@ import {
   Stack,
   Text,
 } from '@chakra-ui/react'
+
+import { useIsMobile } from '~hooks/useIsMobile'
+import ButtonGroup from '~components/ButtonGroup'
 
 import { getPaymentPageUrl } from '~features/public-form/utils/urls'
 
@@ -40,14 +42,16 @@ export const DuplicatePaymentModal = ({
       onSubmit(event)
     }
   }
+  const isMobile = useIsMobile()
+
   return (
     <>
-      <Modal isOpen onClose={onClose}>
+      <Modal isOpen onClose={onClose} size={isMobile ? 'full' : undefined}>
         <ModalOverlay />
         <ModalContent>
-          <ModalCloseButton />
-          <ModalHeader>Proceed to pay again?</ModalHeader>
-          <ModalBody>
+          {!isMobile && <ModalCloseButton />}
+          <ModalHeader pb={'2rem'}>Proceed to pay again?</ModalHeader>
+          <ModalBody flexGrow={0}>
             <Stack>
               <Text>
                 We noticed a successful payment made on this form by your email
@@ -59,7 +63,7 @@ export const DuplicatePaymentModal = ({
             </Stack>
           </ModalBody>
           <ModalFooter>
-            <ButtonGroup>
+            <ButtonGroup isFullWidth={isMobile}>
               <Button variant="clear" onClick={onClose}>
                 Cancel
               </Button>

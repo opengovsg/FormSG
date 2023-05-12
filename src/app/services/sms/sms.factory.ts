@@ -1,7 +1,9 @@
-import Twilio from 'twilio'
+import Twilio, { RequestClient } from 'twilio'
 
+import { useMockTwilio } from '../../config/config'
 import { ISms, smsConfig } from '../../config/features/sms.config'
 
+import { PrismClient } from './sms.dev.prismclient'
 import {
   sendAdminContactOtp,
   sendBouncedSubmissionSms,
@@ -61,6 +63,9 @@ export const createSmsFactory = (smsConfig: ISms): ISmsFactory => {
 
   const twilioClient = Twilio(twilioApiKey, twilioApiSecret, {
     accountSid: twilioAccountSid,
+    httpClient: useMockTwilio
+      ? new PrismClient('http://127.0.0.1:4010', new RequestClient())
+      : undefined,
   })
   const twilioConfig: TwilioConfig = {
     msgSrvcSid: twilioMsgSrvcSid,

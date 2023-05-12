@@ -1,4 +1,11 @@
-import { Flex, FormControl, Icon, Skeleton, Text } from '@chakra-ui/react'
+import {
+  Divider,
+  Flex,
+  FormControl,
+  Icon,
+  Skeleton,
+  Text,
+} from '@chakra-ui/react'
 
 import { FormResponseMode, PaymentChannel } from '~shared/types'
 
@@ -8,6 +15,7 @@ import Input from '~components/Input'
 
 import { useAdminFormPayments, useAdminFormSettings } from '../../queries'
 
+import { BusinessInfoSection } from './BusinessInfoSection'
 import { StripeConnectButton } from './StripeConnectButton'
 
 const PaymentsAccountValidation = () => {
@@ -124,10 +132,17 @@ const PaymentsSectionText = () => {
 }
 
 export const PaymentSettingsSection = (): JSX.Element => {
+  const { hasPaymentCapabilities } = useAdminFormPayments()
   return (
     <>
       <PaymentsSectionText />
       <StripeConnectButton />
+      {hasPaymentCapabilities && (
+        <>
+          <Divider my="2.5rem" />
+          <BusinessInfoSection />
+        </>
+      )}
     </>
   )
 }

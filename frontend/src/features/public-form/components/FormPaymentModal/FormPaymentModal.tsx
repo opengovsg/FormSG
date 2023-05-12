@@ -1,7 +1,5 @@
 import { MouseEvent, MouseEventHandler } from 'react'
 import {
-  Button,
-  ButtonGroup,
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -10,6 +8,10 @@ import {
   ModalHeader,
   ModalOverlay,
 } from '@chakra-ui/react'
+
+import { useIsMobile } from '~hooks/useIsMobile'
+import Button from '~components/Button'
+import ButtonGroup from '~components/ButtonGroup'
 
 type FormPaymentModalProps = {
   onSubmit: MouseEventHandler<HTMLButtonElement> | undefined
@@ -29,26 +31,30 @@ export const FormPaymentModal = ({
       onSubmit(event)
     }
   }
+
+  const isMobile = useIsMobile()
+
   return (
     <>
-      <Modal isOpen onClose={onClose}>
+      <Modal isOpen onClose={onClose} size={isMobile ? 'full' : undefined}>
         <ModalOverlay />
         <ModalContent>
-          <ModalCloseButton />
-          <ModalHeader>You are about to make payment</ModalHeader>
-          <ModalBody>
+          {!isMobile && <ModalCloseButton />}
+          <ModalHeader pb={'2rem'}>You are about to make payment</ModalHeader>
+          <ModalBody flexGrow={0}>
             Please ensure that your form information is accurate. You will not
             be able to edit your form after you proceed.
           </ModalBody>
           <ModalFooter>
-            <ButtonGroup>
-              <Button variant="clear" onClick={onClose}>
+            <ButtonGroup isFullWidth={isMobile}>
+              <Button variant="clear" onClick={onClose} isFullWidth={isMobile}>
                 Cancel
               </Button>
               <Button
                 isLoading={isSubmitting}
                 loadingText="Submitting"
                 onClick={closeAndSubmit}
+                isFullWidth={isMobile}
               >
                 Proceed to pay
               </Button>

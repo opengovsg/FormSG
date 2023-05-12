@@ -87,7 +87,6 @@ grep -v -E -- '- [a-z]+\(deps(-dev)?\)' ${pr_body_file} | grep -v -E -- '- build
 done
 
 gh pr create \
-  -w \
   -H ${release_branch} \
   -B release-al2 \
   -t "build: release ${release_version}" \

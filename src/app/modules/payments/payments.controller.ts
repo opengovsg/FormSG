@@ -1,4 +1,3 @@
-import { celebrate, Joi, Segments } from 'celebrate'
 import { StatusCodes } from 'http-status-codes'
 
 import { createLoggerWithLabel } from '../../config/logger'
@@ -9,17 +8,31 @@ import { findLatestSuccessfulPaymentByEmailAndFormId } from './payments.service'
 
 const logger = createLoggerWithLabel(module)
 
-// exported for testing
-export const _handleGetPreviousPaymentId: ControllerHandler<
-  {
-    formId: string
-  },
+/**
+ * Handler for GET /api/v3/:formId/payments/previous/:email
+ * Finds and return the latest successful payment made by the specific
+ * respondent based on their email. Email will be acquired from the request body
+ * @params formId id of related form to retrieve payment
+ *
+ * @returns 200 with payment document if successful payment is found
+ * @returns 404 without data if no payment has been made
+ * @returns 500 if there is an unexpected error
+ */
+export const handleGetPreviousPaymentId: ControllerHandler<
+  { formId: string },
   string,
   { email: string }
 > = (req, res) => {
   const { formId } = req.params
   const { email } = req.body
-  // Step 1 get Payment document from email and formId
+
+  const logMeta = {
+    action: 'handleGetPreviousPayment',
+    email,
+    formId,
+  }
+
+  // Step 1: Get Payment document from email and formId
   return (
     findLatestSuccessfulPaymentByEmailAndFormId(email, formId)
       // If payment found, return payment id
@@ -27,12 +40,7 @@ export const _handleGetPreviousPaymentId: ControllerHandler<
         logger.info({
           message:
             'Found latest successful payment document from email and formId',
-          meta: {
-            action: 'handleGetPreviousPayment',
-            email,
-            formId,
-            payment,
-          },
+          meta: { ...logMeta, paymentId: payment._id },
         })
         return res.status(StatusCodes.OK).send(payment._id)
       })
@@ -44,46 +52,17 @@ export const _handleGetPreviousPaymentId: ControllerHandler<
           logger.info({
             message:
               'Did not find previous successful payment from email and formId',
-            meta: {
-              action: 'handleGetPreviousPayment',
-              email,
-              formId,
-              error,
-            },
+            meta: logMeta,
           })
           return res.sendStatus(StatusCodes.NOT_FOUND)
         }
         // Database error
         logger.error({
           message: 'Error retrieving payment documents using email and formId',
-          meta: {
-            action: 'handleGetPreviousPayment',
-            email,
-            formId,
-            error,
-          },
+          meta: logMeta,
+          error,
         })
         return res.sendStatus(StatusCodes.INTERNAL_SERVER_ERROR)
       })
   )
 }
-
-/**
- * Handler for GET /api/v3/:formId/payments/previous/:email
- * Finds and return the latest successful payment made by the
- * specific respondent based on their email.
- * Email will be acquired from the request body
- *
- * @params formId formId of related form to retrieve payment
- *
- * @returns 200 with payment document if successful payment is found
- * @returns 404 without data if no payment has been made
- * @returns 500 if there is an unexpected error
- */ export const handleGetPreviousPaymentId = [
-  celebrate({
-    [Segments.QUERY]: {
-      formId: Joi.string().required,
-    },
-  }),
-  _handleGetPreviousPaymentId,
-] as ControllerHandler[]

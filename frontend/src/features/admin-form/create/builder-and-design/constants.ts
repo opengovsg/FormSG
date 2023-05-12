@@ -115,4 +115,5 @@ export const PENDING_CREATE_FIELD_ID = 'FIELD-PENDING-CREATION'
 export enum FieldListTabIndex {
   Basic,
   MyInfo,
+  Payments,
 }

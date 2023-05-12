@@ -44,7 +44,7 @@ interface PreviewFormBannerProps {
 export const PreviewFormBanner = ({
   isTemplate,
 }: PreviewFormBannerProps): JSX.Element => {
-  const { formId } = usePublicFormContext()
+  const { formId, isPaymentEnabled } = usePublicFormContext()
   const {
     isOpen: isModalOpen,
     onOpen: onModalOpen,
@@ -165,6 +165,19 @@ export const PreviewFormBanner = ({
           </DrawerContent>
         </Drawer>
       </Flex>
+      {isPaymentEnabled && (
+        <Flex backgroundColor={'#3A3E46'}>
+          <Text
+            textStyle="body-2"
+            color="white"
+            ml="2rem"
+            mt="0.5rem"
+            mb="0.5rem"
+          >
+            Payments made in Form Preview mode will not reflect on Stripe.
+          </Text>
+        </Flex>
+      )}
       <Divider />
     </>
   )

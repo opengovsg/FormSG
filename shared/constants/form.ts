@@ -41,6 +41,7 @@ export const STORAGE_FORM_SETTINGS_FIELDS = <const>[
   'payments_channel',
   'payments_field',
   'publicKey',
+  'business',
 ]
 
 export const ADMIN_FORM_META_FIELDS = <const>[

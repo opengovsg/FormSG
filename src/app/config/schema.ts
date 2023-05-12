@@ -108,6 +108,12 @@ export const compulsoryVarsSchema: Schema<ICompulsoryVarsSchema> = {
       default: null,
       env: 'SECRET_ENV',
     },
+    envSiteName: {
+      doc: 'Environment site name used to build key for AWS Secrets Manager',
+      format: String,
+      default: null,
+      env: 'SSM_ENV_SITE_NAME',
+    },
   },
   reactMigration: {
     adminSwitchEnvFeedbackFormId: {
@@ -319,6 +325,12 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
       format: [Environment.Prod, Environment.Dev, Environment.Test],
       default: Environment.Prod,
       env: 'NODE_ENV',
+    },
+    useMockTwilio: {
+      doc: 'Enables twilio API mocking and directs SMS body over to maildev',
+      format: 'Boolean',
+      default: false,
+      env: 'USE_MOCK_TWILIO',
     },
   },
   rateLimit: {

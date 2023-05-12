@@ -44,6 +44,7 @@ import {
 import { WebhookFactory } from '../../webhook/webhook.factory'
 import {
   ResponseModeError,
+  SendEmailConfirmationError,
   SubmissionNotFoundError,
 } from '../submission.errors'
 import { sendEmailConfirmations } from '../submission.service'
@@ -471,6 +472,7 @@ export const createEncryptSubmissionWithoutSave = ({
  * @returns err(WebhookValidationError) if the webhook URL failed validation
  * @returns err(WebhookPushToQueueError) if the webhook was failed to be pushed to SQS
  * @returns err(SubmissionNotFoundError) if there was an error updating the submission with the webhook record
+ * @returns err(SendEmailConfirmationError) if any email failed to be sent
  * @returns err(PossibleDatabaseError) if error occurs whilst querying the database
  */
 export const performEncryptPostSubmissionActions = (
@@ -482,6 +484,7 @@ export const performEncryptPostSubmissionActions = (
   | ResponseModeError
   | WebhookValidationError
   | WebhookPushToQueueError
+  | SendEmailConfirmationError
   | SubmissionNotFoundError
   | PossibleDatabaseError
 > => {

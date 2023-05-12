@@ -19,8 +19,8 @@ import {
 import { useFetchPrefillQuery } from '~features/public-form/hooks/useFetchPrefillQuery'
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
+import { PaymentPreview } from '../../../../templates/Field/PaymentPreview/PaymentPreview'
 import { PublicFormPaymentResumeModal } from '../FormPaymentPage/FormPaymentResumeModal'
-import { FormPaymentPreview } from '../FormPaymentPreview/FormPaymentPreview'
 
 import { PublicFormSubmitButton } from './PublicFormSubmitButton'
 import { VisibleFormFields } from './VisibleFormFields'
@@ -137,7 +137,7 @@ export const FormFields = ({
     <FormProvider {...formMethods}>
       <form noValidate>
         {!!formFields?.length && (
-          <Box bg={'white'} py="2.5rem" px={{ base: '1rem', md: '2.5rem' }}>
+          <Box bg="white" py="2.5rem" px={{ base: '1rem', md: '2.5rem' }}>
             <Stack spacing="2.25rem">
               {isEmpty(fieldPrefillMap) ? null : hasLockedNormalPrefills ? (
                 // If there are both locked and non-locked prefills, show this message.
@@ -170,13 +170,19 @@ export const FormFields = ({
             </Stack>
           </Box>
         )}
-        {form?.responseMode === FormResponseMode.Encrypt &&
-          form?.payments_field?.enabled && (
-            <FormPaymentPreview
+        {form?.responseMode === FormResponseMode.Encrypt && (
+          <Box
+            mt="2.5rem"
+            bg="white"
+            py="2.5rem"
+            px={{ base: '1rem', md: '2.5rem' }}
+          >
+            <PaymentPreview
               colorTheme={colorTheme}
-              paymentDetails={form.payments_field}
+              paymentDetails={form?.payments_field}
             />
-          )}
+          </Box>
+        )}
         <PublicFormPaymentResumeModal />
         <PublicFormSubmitButton
           onSubmit={onSubmit ? formMethods.handleSubmit(onSubmit) : undefined}

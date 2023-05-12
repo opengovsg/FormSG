@@ -29,3 +29,11 @@ export class InvalidCollaboratorError extends ApplicationError {
     super(message)
   }
 }
+
+export class PaymentChannelNotFoundError extends ApplicationError {
+  constructor(
+    message = 'Please ensure that you have connected your Stripe account in settings to save this field',
+  ) {
+    super(message)
+  }
+}

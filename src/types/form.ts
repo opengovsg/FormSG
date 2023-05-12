@@ -13,6 +13,7 @@ import type { Merge, SetOptional } from 'type-fest'
 import {
   AdminDashboardFormMetaDto,
   FormBase,
+  FormBusinessField,
   FormEndPage,
   FormField,
   FormFieldDto,
@@ -276,6 +277,7 @@ export interface IEncryptedForm extends IForm {
   // are not defined in DB. See https://github.com/Automattic/mongoose/issues/5310
   payments_channel: FormPaymentsChannel
   payments_field: FormPaymentsField
+  business?: FormBusinessField
   emails?: never
 }
 

@@ -1,7 +1,5 @@
 import { useMemo } from 'react'
 
-import { FormResponseMode } from '~shared/types'
-
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
 import { useFormSections } from '../FormFields/FormSectionsContext'
@@ -22,15 +20,13 @@ export const FormStartPage = ({
     miniHeaderRef,
     onMobileDrawerOpen,
     handleLogout,
+    isPaymentEnabled,
   } = usePublicFormContext()
   const { activeSectionId } = useFormSections()
 
   const showHeaderAndMiniHeader = useMemo(
-    () =>
-      !submissionData ||
-      (form?.responseMode === FormResponseMode.Encrypt &&
-        form?.payments_field?.enabled),
-    [submissionData, form],
+    () => !submissionData || isPaymentEnabled,
+    [submissionData, isPaymentEnabled],
   )
 
   const formHeaderProps = useFormHeader({ startPage: form?.startPage })

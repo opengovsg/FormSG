@@ -3,12 +3,7 @@ import { useFormState, UseFormTrigger, useWatch } from 'react-hook-form'
 import { Stack, useDisclosure, VisuallyHidden } from '@chakra-ui/react'
 
 import { PAYMENT_CONTACT_FIELD_ID } from '~shared/constants'
-import {
-  FormField,
-  FormResponseMode,
-  LogicDto,
-  MyInfoFormField,
-} from '~shared/types'
+import { FormField, LogicDto, MyInfoFormField } from '~shared/types'
 
 import { ThemeColorScheme } from '~theme/foundations/colours'
 import { useIsMobile } from '~hooks/useIsMobile'
@@ -47,7 +42,7 @@ export const PublicFormSubmitButton = ({
   const isMobile = useIsMobile()
   const { isSubmitting } = useFormState()
   const formInputs = useWatch<FormFieldValues>({}) as FormFieldValues
-  const { form, formId } = usePublicFormContext()
+  const { formId, isPaymentEnabled } = usePublicFormContext()
 
   const paymentEmailField = formInputs[
     PAYMENT_CONTACT_FIELD_ID
@@ -81,10 +76,6 @@ export const PublicFormSubmitButton = ({
       onOpen()
     }
   }
-
-  const isPaymentEnabled =
-    form?.responseMode === FormResponseMode.Encrypt &&
-    form?.payments_field?.enabled
 
   return (
     <Stack px={{ base: '1rem', md: 0 }} pt="2.5rem" pb="4rem">

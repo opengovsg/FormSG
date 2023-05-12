@@ -1,5 +1,5 @@
 import { useCallback } from 'react'
-import { BiCreditCard, BiGitMerge, BiQuestionMark } from 'react-icons/bi'
+import { BiGitMerge, BiQuestionMark } from 'react-icons/bi'
 import { Stack } from '@chakra-ui/react'
 
 import { PhHandsClapping } from '~assets/icons'
@@ -14,7 +14,6 @@ import {
   DrawerTabs,
   useCreatePageSidebar,
 } from '~features/admin-form/create/common/CreatePageSidebarContext/CreatePageSidebarContext'
-import { useUser } from '~features/user/queries'
 
 import {
   isDirtySelector,
@@ -32,13 +31,11 @@ export const CreatePageSidebar = (): JSX.Element | null => {
   const isMobile = useIsMobile()
   const setFieldsToInactive = useFieldBuilderStore(setToInactiveSelector)
   const isDirty = useDirtyFieldStore(isDirtySelector)
-  const { user } = useUser()
   const {
     activeTab,
     handleBuilderClick,
     handleDesignClick,
     handleLogicClick,
-    handlePaymentClick,
     handleEndpageClick,
   } = useCreatePageSidebar()
 
@@ -58,11 +55,6 @@ export const CreatePageSidebar = (): JSX.Element | null => {
   const handleDrawerLogicClick = useCallback(
     () => handleLogicClick(isDirty),
     [handleLogicClick, isDirty],
-  )
-
-  const handleDrawerPaymentClick = useCallback(
-    () => handlePaymentClick(isDirty),
-    [handlePaymentClick, isDirty],
   )
 
   const handleDrawerEndpageClick = useCallback(
@@ -104,15 +96,6 @@ export const CreatePageSidebar = (): JSX.Element | null => {
           isActive={activeTab === DrawerTabs.Logic}
           id={FEATURE_TOUR[2].id}
         />
-        {user?.betaFlags?.payment && (
-          <DrawerTabIcon
-            label="Add payment"
-            icon={<BiCreditCard fontSize="1.5rem" />}
-            onClick={handleDrawerPaymentClick}
-            isActive={activeTab === DrawerTabs.Payment}
-          />
-        )}
-
         <DrawerTabIcon
           label="Edit Thank you page"
           icon={<PhHandsClapping fontSize="1.5rem" />}

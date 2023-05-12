@@ -4,7 +4,11 @@ import { userEvent, waitFor, within } from '@storybook/testing-library'
 import dedent from 'dedent'
 
 import { BasicField } from '~shared/types/field'
-import { FormAuthType, FormColorTheme } from '~shared/types/form'
+import {
+  FormAuthType,
+  FormColorTheme,
+  FormResponseMode,
+} from '~shared/types/form'
 
 import { MOCK_PREFILLED_MYINFO_FIELDS } from '~/mocks/msw/handlers/admin-form'
 import { envHandlers } from '~/mocks/msw/handlers/env'
@@ -480,6 +484,25 @@ WithMyInfo.parameters = {
       overrides: {
         form: {
           form_fields: MOCK_PREFILLED_MYINFO_FIELDS,
+        },
+      },
+    }),
+    ...DEFAULT_MSW_HANDLERS,
+  ],
+}
+
+export const WithPayment = Template.bind({})
+WithPayment.parameters = {
+  msw: [
+    getPublicFormResponse({
+      overrides: {
+        form: {
+          responseMode: FormResponseMode.Encrypt,
+          payments_field: {
+            enabled: true,
+            amount_cents: 5000,
+            description: 'Mock event registration',
+          },
         },
       },
     }),
