@@ -181,13 +181,7 @@ export const EditConditionBlock = ({
   }, [currentSelectedField])
 
   const logicValueWrapperWidth = useMemo(() => {
-    if (!ifValueTypeValue) return 'auto'
-    switch (ifValueTypeValue) {
-      case LogicIfValue.MultiSelect:
-        return '0px'
-      default:
-        return 'auto'
-    }
+    return ifValueTypeValue === LogicIfValue.MultiSelect ? '0px' : 'auto'
   }, [ifValueTypeValue])
 
   const validateValueInputComponent = useCallback(
