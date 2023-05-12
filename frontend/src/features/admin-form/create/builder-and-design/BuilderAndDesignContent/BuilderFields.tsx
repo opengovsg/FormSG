@@ -31,7 +31,7 @@ export const BuilderFields = ({
 
   const { handleBuilderClick } = useCreatePageSidebar()
 
-  const activeFieldNumber =
+  const activeFieldId =
     stateData.state === FieldBuilderState.EditingField
       ? stateData.field._id
       : stateData.state === FieldBuilderState.CreatingField
@@ -50,9 +50,9 @@ export const BuilderFields = ({
           key={f._id}
           field={f}
           isHiddenByLogic={!visibleFieldIds.has(f._id)}
-          isDraggingOver={f._id === activeFieldNumber ? isDraggingOver : false}
+          isDraggingOver={f._id === activeFieldId ? isDraggingOver : false}
           fieldBuilderState={
-            f._id === activeFieldNumber ? stateData.state : undefined
+            f._id === activeFieldId ? stateData.state : undefined
           }
           handleBuilderClick={handleBuilderClick}
           isDirty={isDirty}
