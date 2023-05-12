@@ -87,7 +87,7 @@ const addForm = async (
   await page.goto(DASHBOARD_PAGE)
 
   // Wait for all modals to render
-  await page.waitForTimeout(1000)
+  await page.waitForTimeout(500)
 
   // Press escape 5 times to get rid of any banners
   await page.keyboard.press('Escape')
