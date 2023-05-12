@@ -50,7 +50,7 @@ export const BuilderFields = ({
           key={f._id}
           field={f}
           isHiddenByLogic={!visibleFieldIds.has(f._id)}
-          isDraggingOver={f._id === activeFieldId ? isDraggingOver : false}
+          isDraggingOver={f._id === activeFieldId && isDraggingOver}
           fieldBuilderState={
             f._id === activeFieldId ? stateData.state : undefined
           }
