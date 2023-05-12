@@ -117,25 +117,49 @@ export const FormFields = ({
 
   const { form } = usePublicFormContext()
 
+  const hasLockedNormalPrefills =
+    Object.values(fieldPrefillMap).some(
+      (field) => !field.lockPrefill && field.prefillValue,
+    ) &&
+    Object.values(fieldPrefillMap).some(
+      (field) => field.lockPrefill && field.prefillValue,
+    )
+
+  const hasLockedPrefills = Object.values(fieldPrefillMap).some(
+    (field) => field.lockPrefill && field.prefillValue,
+  )
+
+  const hasNormalPrefills = Object.values(fieldPrefillMap).some(
+    (field) => !field.lockPrefill && field.prefillValue,
+  )
+
   return (
     <FormProvider {...formMethods}>
       <form noValidate>
         {!!formFields?.length && (
           <Box bg={'white'} py="2.5rem" px={{ base: '1rem', md: '2.5rem' }}>
             <Stack spacing="2.25rem">
-              {
-                // Check that PrefillMap is not empty and that at least one field is not locked and has a value
-                !isEmpty(fieldPrefillMap) &&
-                  Object.values(fieldPrefillMap).some(
-                    (field) => !field.lockPrefill && field.prefillValue,
-                  ) && (
-                    <InlineMessage variant="warning">
-                      Highlighted fields below have been pre-filled according to
-                      the form link you clicked. You may edit these fields if
-                      necessary, except non-editable fields with a lock icon.
-                    </InlineMessage>
-                  )
-              }
+              {isEmpty(fieldPrefillMap) ? null : hasLockedNormalPrefills ? (
+                // If there are both locked and non-locked prefills, show this message.
+                <InlineMessage variant="warning">
+                  Highlighted fields below have been pre-filled according to the
+                  form link you clicked. You may edit these fields if necessary,
+                  except non-editable fields with a lock icon.
+                </InlineMessage>
+              ) : hasLockedPrefills ? (
+                // If there are only locked prefills, show this message.
+                <InlineMessage variant="warning">
+                  Highlighted fields below have been pre-filled according to the
+                  form link you clicked. These are non-editable fields with a
+                  lock icon.
+                </InlineMessage>
+              ) : hasNormalPrefills ? (
+                // If there are only non-locked prefills, show this message.
+                <InlineMessage variant="warning">
+                  Highlighted fields below have been pre-filled according to the
+                  form link you clicked. You may edit these fields if necessary.
+                </InlineMessage>
+              ) : null}
               <VisibleFormFields
                 colorTheme={colorTheme}
                 control={formMethods.control}
