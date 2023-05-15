@@ -13,11 +13,17 @@ import { omit } from '@chakra-ui/utils'
 
 import { BxsCheckCircle } from '~assets/icons/BxsCheckCircle'
 
+import { BxLockAlt } from '../../assets/icons/BxLockAlt'
+
 export interface InputProps extends ChakraInputProps {
   /**
    * Whether the input is in a prefilled state.
    */
   isPrefilled?: boolean
+  /**
+   * Whether the input is in a locked prefilled state.
+   */
+  isPrefillLocked?: boolean
   /**
    * Whether the input is in a success state.
    */
@@ -36,6 +42,7 @@ export const Input = forwardRef<InputProps, 'input'>((props, ref) => {
   const inputProps = omit(props, [
     'isSuccess',
     'isPrefilled',
+    'isPrefillLocked',
     'preventDefaultOnEnter',
   ])
 
@@ -64,12 +71,31 @@ export const Input = forwardRef<InputProps, 'input'>((props, ref) => {
             ref={ref}
             {...preventDefault}
             {...inputProps}
+            {...(props.isPrefillLocked ? { isDisabled: true } : {})}
             sx={props.sx ?? inputStyles.field}
           />
+          {props.isPrefillLocked ? (
+            <InputRightElement>
+              <BxLockAlt />
+            </InputRightElement>
+          ) : null}
         </InputGroup>
       )
     } else {
-      return (
+      return props.isPrefillLocked ? (
+        <InputGroup>
+          <ChakraInput
+            ref={ref}
+            {...preventDefault}
+            {...inputProps}
+            isDisabled={true}
+            sx={props.sx ?? inputStyles.field}
+          />
+          <InputRightElement>
+            <BxLockAlt />
+          </InputRightElement>
+        </InputGroup>
+      ) : (
         <ChakraInput
           ref={ref}
           {...preventDefault}

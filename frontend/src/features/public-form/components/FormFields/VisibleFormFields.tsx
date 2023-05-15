@@ -10,6 +10,7 @@ import { augmentWithQuestionNo } from '~features/form/utils'
 import { getVisibleFieldIds } from '~features/logic/utils'
 
 import { FieldFactory } from './FieldFactory'
+import { PrefillMap } from './FormFields'
 import { useFormSections } from './FormSectionsContext'
 
 interface VisibleFormFieldsProps {
@@ -17,7 +18,7 @@ interface VisibleFormFieldsProps {
   formFields: FormFieldWithQuestionNo[]
   formLogics: LogicDto[]
   colorTheme: FormColorTheme
-  fieldPrefillMap: Record<string, string>
+  fieldPrefillMap: PrefillMap
 }
 
 /**
@@ -55,7 +56,7 @@ export const VisibleFormFields = ({
           colorTheme={colorTheme}
           field={field}
           key={field._id}
-          isPrefilled={!!fieldPrefillMap[field._id]}
+          prefill={fieldPrefillMap[field._id]}
         />
       ))}
     </>

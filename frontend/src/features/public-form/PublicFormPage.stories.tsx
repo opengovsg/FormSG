@@ -43,19 +43,35 @@ const DEFAULT_MSW_HANDLERS = [
 const PREFILLABLE_TEST_STRING =
   '%E8%87%AA%E7%94%B1 %F0%90%90%80 hello+world 日本語%20normal space'
 
-const PREFILLABLE_SHORTTEXT_FIELD: ShortTextFieldSchema = {
+const PREFILLABLE_NORMAL_SHORTTEXT_FIELD: ShortTextFieldSchema = {
   ValidationOptions: {
     customVal: null,
     selectedValidation: null,
   },
   allowPrefill: true, // This prop allows for prefill
-  title: 'Short Text With Prefill',
+  title: 'Short Text With Normal Prefill',
   description:
     'Probably do not have to worry so much, React automatically sanitizes what gets rendered',
   required: true,
   disabled: false,
   fieldType: BasicField.ShortText,
   _id: '5da04eafe397fc0013f63b22',
+}
+
+const PREFILLABLE_LOCKED_SHORTTEXT_FIELD: ShortTextFieldSchema = {
+  ValidationOptions: {
+    customVal: null,
+    selectedValidation: null,
+  },
+  allowPrefill: true, // This prop allows for prefill
+  lockPrefill: true, // This prop locks the prefill
+  title: 'Short Text With Prefill Locked',
+  description:
+    'Probably do not have to worry so much, React automatically sanitizes what gets rendered',
+  required: true,
+  disabled: false,
+  fieldType: BasicField.ShortText,
+  _id: '5da04eafe397fc0013f63b23',
 }
 
 const generateMswHandlersForColorTheme = (colorTheme: FormColorTheme) => {
@@ -82,7 +98,7 @@ export default {
   decorators: [
     StoryRouter({
       initialEntries: [
-        `/61540ece3d4a6e50ac0cc6ff?${PREFILLABLE_SHORTTEXT_FIELD._id}=${PREFILLABLE_TEST_STRING}`,
+        `/61540ece3d4a6e50ac0cc6ff?${PREFILLABLE_NORMAL_SHORTTEXT_FIELD._id}=${PREFILLABLE_TEST_STRING}&${PREFILLABLE_LOCKED_SHORTTEXT_FIELD._id}=${PREFILLABLE_TEST_STRING}`,
       ],
       path: '/:formId',
     }),
@@ -151,23 +167,66 @@ WithCaptcha.parameters = {
   ],
 }
 
-export const WithPrefilledFields = Template.bind({})
-WithPrefilledFields.parameters = {
+export const WithPrefilledNormalFields = Template.bind({})
+WithPrefilledNormalFields.parameters = {
   msw: [
     getPublicFormResponse({
       delay: 0,
       overrides: {
         form: {
-          form_fields: [PREFILLABLE_SHORTTEXT_FIELD],
+          form_fields: [PREFILLABLE_NORMAL_SHORTTEXT_FIELD],
         },
       },
     }),
   ],
 }
 
-export const WithPrefilledFieldsMobile = Template.bind({})
-WithPrefilledFieldsMobile.parameters = {
-  ...WithPrefilledFields.parameters,
+export const WithPrefilledNormalFieldsMobile = Template.bind({})
+WithPrefilledNormalFieldsMobile.parameters = {
+  ...WithPrefilledNormalFields.parameters,
+  ...getMobileViewParameters(),
+}
+
+export const WithPrefilledLockedFields = Template.bind({})
+WithPrefilledLockedFields.parameters = {
+  msw: [
+    getPublicFormResponse({
+      delay: 0,
+      overrides: {
+        form: {
+          form_fields: [PREFILLABLE_LOCKED_SHORTTEXT_FIELD],
+        },
+      },
+    }),
+  ],
+}
+
+export const WithPrefilledLockedFieldsMobile = Template.bind({})
+WithPrefilledLockedFieldsMobile.parameters = {
+  ...WithPrefilledLockedFields.parameters,
+  ...getMobileViewParameters(),
+}
+
+export const WithPrefilledLockedAndNormalFields = Template.bind({})
+WithPrefilledLockedAndNormalFields.parameters = {
+  msw: [
+    getPublicFormResponse({
+      delay: 0,
+      overrides: {
+        form: {
+          form_fields: [
+            PREFILLABLE_LOCKED_SHORTTEXT_FIELD,
+            PREFILLABLE_NORMAL_SHORTTEXT_FIELD,
+          ],
+        },
+      },
+    }),
+  ],
+}
+
+export const WithPrefilledLockedAndNormalFieldsMobile = Template.bind({})
+WithPrefilledLockedAndNormalFieldsMobile.parameters = {
+  ...WithPrefilledLockedAndNormalFields.parameters,
   ...getMobileViewParameters(),
 }
 
