@@ -337,9 +337,7 @@ export const handleGetPublicFormSampleSubmission: ControllerHandler<
     formId,
   }
 
-  const formResult = await getFormIfPublic(formId).andThen((form) =>
-    FormService.checkFormSubmissionLimitAndDeactivateForm(form),
-  )
+  const formResult = await getFormIfPublic(formId)
   // Early return if form is not public or any error occurred.
   if (formResult.isErr()) {
     const { error } = formResult
