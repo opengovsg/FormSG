@@ -5,6 +5,7 @@ import { errAsync } from 'neverthrow'
 import supertest, { Session } from 'supertest-session'
 
 import { DatabaseError } from 'src/app/modules/core/core.errors'
+import { createSampleSubmissionData } from 'src/app/modules/form/form.service'
 import {
   MOCK_ACCESS_TOKEN,
   MOCK_AUTH_CODE,
@@ -311,6 +312,124 @@ describe('public-form.form.routes', () => {
 
       // Act
       const actualResponse = await request.get(`/forms/${form._id}`)
+
+      // Assert
+      expect(actualResponse.status).toEqual(500)
+      expect(actualResponse.body).toEqual(expectedResponseBody)
+    })
+  })
+
+  describe('GET /:formId/sample-submission', () => {
+    it('should return 200 with public form when form has a valid formId', async () => {
+      // Arrange
+      const { form } = await dbHandler.insertEmailForm({
+        formOptions: { status: FormStatus.Public },
+      })
+      // NOTE: This is needed to inject admin info into the form
+      const fullForm = await dbHandler.getFullFormById(form._id)
+      expect(fullForm).not.toBeNull()
+
+      const formFields = fullForm?.getPublicView().form_fields
+      if (!formFields) return
+      const expectedSampleData = {}
+      for (const field of formFields) {
+        createSampleSubmissionData(expectedSampleData, field)
+      }
+      const expectedResponseBody = JSON.parse(
+        JSON.stringify({
+          responses: expectedSampleData,
+        }),
+      )
+
+      // Act
+      const actualResponse = await request.get(
+        `/forms/${form._id}/sample-submission`,
+      )
+
+      // Assert
+      expect(actualResponse.status).toEqual(200)
+      expect(actualResponse.body).toEqual(expectedResponseBody)
+    })
+
+    it('should return 404 if the form does not exist', async () => {
+      const MOCK_FORM_ID = new ObjectId().toHexString()
+      const expectedResponseBody = JSON.parse(
+        JSON.stringify({
+          message: 'Form not found',
+        }),
+      )
+
+      // Act
+      const actualResponse = await request.get(
+        `/forms/${MOCK_FORM_ID}/sample-submission`,
+      )
+
+      // Assert
+      expect(actualResponse.status).toEqual(404)
+      expect(actualResponse.body).toEqual(expectedResponseBody)
+    })
+
+    it('should return 404 if the form is private', async () => {
+      // Arrange
+      const { form } = await dbHandler.insertEmailForm({
+        formOptions: { status: FormStatus.Private },
+      })
+      const expectedResponseBody = JSON.parse(
+        JSON.stringify({
+          message: form.inactiveMessage,
+          formTitle: form.title,
+          isPageFound: true,
+        }),
+      )
+
+      // Act
+      const actualResponse = await request.get(
+        `/forms/${form._id}/sample-submission`,
+      )
+
+      // Assert
+      expect(actualResponse.status).toEqual(404)
+      expect(actualResponse.body).toEqual(expectedResponseBody)
+    })
+
+    it('should return 410 if the form has been archived', async () => {
+      // Arrange
+      const { form } = await dbHandler.insertEmailForm({
+        formOptions: { status: FormStatus.Archived },
+      })
+      const expectedResponseBody = JSON.parse(
+        JSON.stringify({
+          message: 'This form is no longer active',
+        }),
+      )
+
+      // Act
+      const actualResponse = await request.get(
+        `/forms/${form._id}/sample-submission`,
+      )
+
+      // Assert
+      expect(actualResponse.status).toEqual(410)
+      expect(actualResponse.body).toEqual(expectedResponseBody)
+    })
+
+    it('should return 500 if a database error occurs', async () => {
+      // Arrange
+      const { form } = await dbHandler.insertEmailForm({
+        formOptions: { status: FormStatus.Public },
+      })
+      const expectedError = new DatabaseError('all your base are belong to us')
+      const expectedResponseBody = JSON.parse(
+        JSON.stringify({ message: expectedError.message }),
+      )
+      jest
+        .spyOn(AuthService, 'getFormIfPublic')
+        .mockReturnValueOnce(errAsync(expectedError))
+
+      // Act
+      const actualResponse = await request.get(
+        `/forms/${form._id}/sample-submission`,
+      )
 
       // Assert
       expect(actualResponse.status).toEqual(500)
