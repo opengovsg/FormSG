@@ -81,7 +81,7 @@ const loadExpressApp = async (connection: Connection) => {
     compression({
       // only compress files for the following content types
       filter: function (_req, res) {
-        return /json|text|javascript|css/.test(res.get('content-type'))
+        return /json|text|javascript|css/.test(res.get('content-type') ?? '')
       },
       // zlib option for compression level
       level: 9,
