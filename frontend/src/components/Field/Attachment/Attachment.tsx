@@ -155,6 +155,7 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
             maxWidthOrHeight: 1440,
             initialQuality: 0.8,
             useWebWorker: false,
+            preserveExif: true,
           }).then((blob) =>
             onChange(
               new File([blob], acceptedFile.name, {
