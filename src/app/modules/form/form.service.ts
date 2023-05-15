@@ -350,6 +350,8 @@ export const createSampleSubmissionData = (
   field: FormFieldDto,
 ) => {
   let sampleValue = null
+  let noOfOptions = 0
+  let randomSelectedOption = 0
   switch (field.fieldType) {
     case 'textarea':
     case 'textfield':
@@ -358,7 +360,9 @@ export const createSampleSubmissionData = (
       break
     case 'radiobutton':
     case 'dropdown':
-      sampleValue = field.fieldOptions[0]
+      noOfOptions = field.fieldOptions.length
+      randomSelectedOption = Math.floor(Math.random() * noOfOptions)
+      sampleValue = field.fieldOptions[randomSelectedOption]
       break
     case 'email':
       sampleValue = 'hello@example.com'
@@ -381,6 +385,9 @@ export const createSampleSubmissionData = (
     case 'rating':
       sampleValue = 1
       break
+    case 'attachment':
+      sampleValue = 'attachmentFileName'
+      break
     default:
       break
   }
@@ -388,6 +395,7 @@ export const createSampleSubmissionData = (
     sampleData[field._id] = {
       question: field.title,
       answer: sampleValue,
+      fieldType: field.fieldType,
     }
   }
   return sampleValue
