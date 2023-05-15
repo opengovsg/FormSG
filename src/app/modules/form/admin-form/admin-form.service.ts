@@ -539,7 +539,7 @@ export const duplicateFormField = (
   const fieldIndex = getFormFieldIndexById(form.form_fields, fieldId)
   // if fieldIndex does not exist, append to end of form fields
   const insertionIndex =
-    fieldIndex === null ? form.form_fields.length + 1 : fieldIndex + 1
+    fieldIndex === null ? form.form_fields.length : fieldIndex + 1
   return ResultAsync.fromPromise(
     form.duplicateFormFieldByIdAndIndex(fieldId, insertionIndex),
     (error) => {
