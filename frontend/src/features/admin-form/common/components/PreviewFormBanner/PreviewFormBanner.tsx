@@ -166,16 +166,32 @@ export const PreviewFormBanner = ({
         </Drawer>
       </Flex>
       {isPaymentEnabled && (
-        <Flex backgroundColor={'#3A3E46'}>
-          <Text
-            textStyle="body-2"
-            color="white"
-            ml="2rem"
-            mt="0.5rem"
-            mb="0.5rem"
-          >
-            Payments made in Form Preview mode will not reflect on Stripe.
-          </Text>
+        <Flex backgroundColor="neutral.900">
+          {process.env.SECRET_ENV === 'production' ? (
+            <Text
+              textStyle="body-2"
+              color="white"
+              ml="2rem"
+              mt="0.5rem"
+              mb="0.5rem"
+            >
+              To test your payment form, replicate this form on our{' '}
+              <Link isExternal color="white" href="https://uat.form.gov.sg">
+                testing platform.
+              </Link>
+            </Text>
+          ) : (
+            <Text
+              textStyle="body-2"
+              color="white"
+              ml="2rem"
+              mt="0.5rem"
+              mb="0.5rem"
+            >
+              You will not be able to make a test payment in Form Preview mode.
+              Open your form to make a test payment.
+            </Text>
+          )}
         </Flex>
       )}
       <Divider />
