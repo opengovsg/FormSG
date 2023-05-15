@@ -62,7 +62,12 @@ export const useDuplicateFormField = () => {
         if (!oldForm) throw new Error('Query should have been set')
         const insertionIndex =
           oldForm.form_fields.findIndex((o) => o._id === fieldId) + 1
-        oldForm.form_fields.splice(insertionIndex, 0, newField)
+        if (insertionIndex > 0) {
+          oldForm.form_fields.splice(insertionIndex, 0, newField)
+        } else {
+          // if index does not exist, push new field to end
+          oldForm.form_fields.push(newField)
+        }
         return oldForm
       })
       // Switch to editing new field
