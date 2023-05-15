@@ -117,14 +117,6 @@ export const FormFields = ({
 
   const { form } = usePublicFormContext()
 
-  const hasLockedNormalPrefills =
-    Object.values(fieldPrefillMap).some(
-      (field) => !field.lockPrefill && field.prefillValue,
-    ) &&
-    Object.values(fieldPrefillMap).some(
-      (field) => field.lockPrefill && field.prefillValue,
-    )
-
   const hasLockedPrefills = Object.values(fieldPrefillMap).some(
     (field) => field.lockPrefill && field.prefillValue,
   )
@@ -132,6 +124,8 @@ export const FormFields = ({
   const hasNormalPrefills = Object.values(fieldPrefillMap).some(
     (field) => !field.lockPrefill && field.prefillValue,
   )
+
+  const hasLockedNormalPrefills = hasLockedPrefills && hasNormalPrefills
 
   return (
     <FormProvider {...formMethods}>
@@ -150,8 +144,7 @@ export const FormFields = ({
                 // If there are only locked prefills, show this message.
                 <InlineMessage variant="warning">
                   Highlighted fields below have been pre-filled according to the
-                  form link you clicked. These are non-editable fields with a
-                  lock icon.
+                  form link you clicked. These are non-editable fields.
                 </InlineMessage>
               ) : hasNormalPrefills ? (
                 // If there are only non-locked prefills, show this message.
