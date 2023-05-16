@@ -15,6 +15,7 @@ import {
   Slide,
   Stack,
   Text,
+  TextProps,
   useDisclosure,
 } from '@chakra-ui/react'
 
@@ -39,6 +40,14 @@ export const StickyPreviewHeader = ({
 )
 interface PreviewFormBannerProps {
   isTemplate?: boolean
+}
+
+const textProps: TextProps = {
+  textStyle: 'body-2',
+  color: 'white',
+  ml: '2rem',
+  mt: '0.5rem',
+  mb: '0.5rem',
 }
 
 export const PreviewFormBanner = ({
@@ -167,27 +176,15 @@ export const PreviewFormBanner = ({
       </Flex>
       {isPaymentEnabled && (
         <Flex backgroundColor="neutral.900">
-          {process.env.SECRET_ENV === 'production' ? (
-            <Text
-              textStyle="body-2"
-              color="white"
-              ml="2rem"
-              mt="0.5rem"
-              mb="0.5rem"
-            >
+          {process.env.SECRET_ENV !== 'production' ? (
+            <Text {...textProps}>
               To test your payment form, replicate this form on our{' '}
               <Link isExternal color="white" href="https://uat.form.gov.sg">
                 testing platform.
               </Link>
             </Text>
           ) : (
-            <Text
-              textStyle="body-2"
-              color="white"
-              ml="2rem"
-              mt="0.5rem"
-              mb="0.5rem"
-            >
+            <Text {...textProps}>
               You will not be able to make a test payment in Form Preview mode.
               Open your form to make a test payment.
             </Text>
