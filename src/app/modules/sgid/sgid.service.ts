@@ -9,7 +9,7 @@ import { sgid } from '../../config/features/sgid.config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { ApplicationError } from '../core/core.errors'
 
-import { internalAttrListToScopes } from './sgid.adapter'
+import { internalAttrListToScopes, SGIDMyInfoData } from './sgid.adapter'
 import { SGID_MYINFO_NRIC_NUMBER_SCOPE } from './sgid.constants'
 import {
   SgidCreateRedirectUrlError,
@@ -224,7 +224,7 @@ export class SgidServiceClass {
   extractSgidJwtPayload(
     jwtSgid: string,
   ): Result<
-    SGIDScopeToValue,
+    SGIDMyInfoData,
     SgidVerifyJwtError | SgidInvalidJwtError | SgidMissingJwtError
   > {
     const logMeta = {
@@ -240,7 +240,7 @@ export class SgidServiceClass {
       })
 
       if (isSgidJwtPayload(payload)) {
-        return ok(payload['data'])
+        return ok(new SGIDMyInfoData(payload['data']))
       }
 
       const payloadIsDefined = !!payload

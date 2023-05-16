@@ -276,7 +276,7 @@ const submitEncryptModeForm: ControllerHandler<
           spcpSubmissionFailure: true,
         })
       }
-      uinFin = jwtPayloadResult.value.userName
+      uinFin = jwtPayloadResult.value.getUinFin()
       break
     }
   }

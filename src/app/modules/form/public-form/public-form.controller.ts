@@ -33,7 +33,6 @@ import {
   extractAuthCode,
   validateMyInfoForm,
 } from '../../myinfo/myinfo.util'
-import { SGIDMyInfoData } from '../../sgid/sgid.adapter'
 import { SgidInvalidJwtError, SgidVerifyJwtError } from '../../sgid/sgid.errors'
 import { SgidService } from '../../sgid/sgid.service'
 import { validateSgidForm } from '../../sgid/sgid.util'
@@ -301,8 +300,7 @@ export const handleGetPublicForm: ControllerHandler<
     }
     case FormAuthType.SGID:
       return SgidService.extractSgidJwtPayload(req.cookies.jwtSgid)
-        .map((payload) => {
-          const data = new SGIDMyInfoData(payload)
+        .map((data) => {
           return res.json({
             form: publicForm,
             isIntranetUser,

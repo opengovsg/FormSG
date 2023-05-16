@@ -4,6 +4,7 @@ import fs from 'fs'
 import Jwt from 'jsonwebtoken'
 import { MyInfoAttribute } from 'shared/types'
 
+import { SGIDMyInfoData } from '../sgid.adapter'
 import { SGID_MYINFO_NRIC_NUMBER_SCOPE } from '../sgid.constants'
 import {
   SgidCreateRedirectUrlError,
@@ -241,7 +242,9 @@ describe('sgid.service', () => {
       // @ts-ignore
       MockJwt.verify.mockReturnValue(MOCK_JWT_PAYLOAD)
       const result = SgidService.extractSgidJwtPayload(MOCK_JWT)
-      expect(result._unsafeUnwrap()).toStrictEqual(MOCK_JWT_PAYLOAD.data)
+      expect(result._unsafeUnwrap()).toStrictEqual(
+        new SGIDMyInfoData(MOCK_JWT_PAYLOAD.data),
+      )
       expect(MockJwt.verify).toHaveBeenCalledWith(
         MOCK_JWT,
         MOCK_OPTIONS.publicKeyPath,

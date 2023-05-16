@@ -234,15 +234,13 @@ const submitEmailModeForm: ControllerHandler<
               })
           case FormAuthType.SGID:
             return SgidService.extractSgidJwtPayload(req.cookies.jwtSgid)
-              .map<IPopulatedEmailFormWithResponsesAndHash>(
-                ({ userName: uinFin }) => ({
-                  form,
-                  parsedResponses: parsedResponses.addNdiResponses({
-                    authType,
-                    uinFin,
-                  }),
+              .map<IPopulatedEmailFormWithResponsesAndHash>((data) => ({
+                form,
+                parsedResponses: parsedResponses.addNdiResponses({
+                  authType,
+                  uinFin: data.getUinFin(),
                 }),
-              )
+              }))
               .mapErr((error) => {
                 spcpSubmissionFailure = true
                 logger.error({
