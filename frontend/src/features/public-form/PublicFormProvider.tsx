@@ -504,6 +504,7 @@ export const PublicFormProvider = ({
         expiryInMs,
         isLoading: isLoading || (!!data?.form.hasCaptcha && !hasLoaded),
         isPaymentEnabled,
+        isPreview: false,
         ...commonFormValues,
         ...data,
         ...rest,
