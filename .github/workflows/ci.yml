@@ -44,8 +44,6 @@ jobs:
   build:
     needs: install
     runs-on: ubuntu-latest
-    env:
-      NODE_OPTIONS: '--max-old-space-size=4096 --openssl-legacy-provider'
     steps:
       - uses: actions/checkout@v2
       - run: mkdir -p build-output/
@@ -57,6 +55,8 @@ jobs:
           cache-dependency-path: '**/package-lock.json'
       - run: npm ci
       - run: npm run build
+        env:
+          NODE_OPTIONS: '--max-old-space-size=4096 --openssl-legacy-provider'
       - name: Upload build files
         uses: actions/upload-artifact@v2
         if: always()
