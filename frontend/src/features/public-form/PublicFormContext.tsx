@@ -49,6 +49,9 @@ export interface PublicFormContextProps
 
   /** Whether payment is enabled */
   isPaymentEnabled: boolean
+
+  /** Whether it is a preview form */
+  isPreview?: boolean
 }
 
 export const PublicFormContext = createContext<
