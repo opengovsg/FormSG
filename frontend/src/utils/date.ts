@@ -40,7 +40,7 @@ export const isDateAfterToday = (date: number | Date) => {
 
 export const normalizeDateToUtc = (date: Date | null) => {
   if (!date) return date
-  return Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
+  return new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()))
 }
 
 export const loadDateFromNormalizedDate = (date: Date | null) => {
