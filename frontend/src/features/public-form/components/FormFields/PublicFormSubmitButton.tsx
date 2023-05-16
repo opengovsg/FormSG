@@ -63,8 +63,6 @@ export const PublicFormSubmitButton = ({
     const result = await trigger()
 
     if (result) {
-      // if isPreview mode do not get previous payment
-      if (isPreview) return onOpen()
       // get previous payment
       try {
         const paymentId = await getPreviousPaymentId(
@@ -106,7 +104,7 @@ export const PublicFormSubmitButton = ({
         isLoading={isSubmitting}
         isDisabled={!!preventSubmissionLogic || !onSubmit}
         loadingText="Submitting"
-        onClick={isPaymentEnabled ? checkBeforeOpen : onSubmit}
+        onClick={isPaymentEnabled && !isPreview ? checkBeforeOpen : onSubmit}
       >
         <VisuallyHidden>End of form.</VisuallyHidden>
         {preventSubmissionLogic
