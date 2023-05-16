@@ -4,6 +4,7 @@ import mongoose from 'mongoose'
 import { err, ok } from 'neverthrow'
 import session, { Session } from 'supertest-session'
 
+import { SGIDMyInfoData } from 'src/app/modules/sgid/sgid.adapter'
 import { FormFieldSchema } from 'src/types'
 
 import { setupApp } from 'tests/integration/helpers/express-setup'
@@ -862,9 +863,11 @@ describe('email-submission.routes', () => {
     describe('SGID', () => {
       it('should return 200 when submission is valid', async () => {
         MockSgidService.extractSgidJwtPayload.mockReturnValueOnce(
-          ok({
-            userName: 'S1234567A',
-          }),
+          ok(
+            new SGIDMyInfoData({
+              'myinfo.nric_number': 'S1234567A',
+            }),
+          ),
         )
         const { form } = await dbHandler.insertEmailForm({
           formOptions: {
