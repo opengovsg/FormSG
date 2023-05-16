@@ -133,7 +133,7 @@ const PaymentsSectionText = () => {
       <InlineMessage variant="info" mt="2rem">
         <Text>
           Don't have a Stripe account? Follow{' '}
-          <Link isExternal href={GUIDE_PAYMENTS}>
+          <Link target="_blank" href={GUIDE_PAYMENTS}>
             this guide
           </Link>{' '}
           to create one.
