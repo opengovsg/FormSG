@@ -5,6 +5,7 @@ import { setupApp } from 'tests/integration/helpers/express-setup'
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import { FormAuthType, FormStatus } from '../../../../../../shared/types'
+import { SGIDMyInfoData } from '../../../sgid/sgid.adapter'
 import { SGID_COOKIE_NAME } from '../../../sgid/sgid.constants'
 import {
   SgidInvalidJwtError,
@@ -332,9 +333,11 @@ describe('encrypt-submission.routes', () => {
       })
       it('should return 200 when submission is valid', async () => {
         MockSgidService.extractSgidJwtPayload.mockReturnValueOnce(
-          ok({
-            userName: 'S1234567A',
-          }),
+          ok(
+            new SGIDMyInfoData({
+              'myinfo.nric_number': 'S1234567A',
+            }),
+          ),
         )
         const { form } = await dbHandler.insertEncryptForm({
           formOptions: {
