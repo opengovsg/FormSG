@@ -177,7 +177,7 @@ export const PreviewFormBanner = ({
       </Flex>
       {isPaymentEnabled && (
         <Flex backgroundColor="neutral.900">
-          {process.env.SECRET_ENV !== 'production' ? (
+          {process.env.SECRET_ENV === 'production' ? (
             <Text {...textProps}>
               To test your payment form, replicate this form on our{' '}
               <Link isExternal color="white" href={FORMSG_UAT}>
