@@ -302,7 +302,7 @@ export const PaymentsInputPanel = (): JSX.Element | null => {
   return (
     <>
       {isPaymentDisabled && (
-        <Box pt="2rem" pb="1.5rem">
+        <Box px="1.5rem" pt="2rem" pb="1.5rem">
           <InlineMessage variant="info">
             <Text>{paymentDisabledMessage}</Text>
           </InlineMessage>
