@@ -45,7 +45,7 @@ jobs:
     needs: install
     runs-on: ubuntu-latest
     env:
-      NODE_OPTIONS: '--max-old-space-size=4096'
+      NODE_OPTIONS: '--max-old-space-size=4096 --openssl-legacy-provider'
     steps:
       - uses: actions/checkout@v2
       - run: mkdir -p build-output/
