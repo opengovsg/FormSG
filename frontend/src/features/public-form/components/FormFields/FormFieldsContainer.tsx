@@ -12,15 +12,15 @@ import { PublicSwitchEnvMessage } from '../PublicSwitchEnvMessage'
 import { FormFields } from './FormFields'
 import { FormFieldsSkeleton } from './FormFieldsSkeleton'
 
-interface FormFieldsContainerProps {
-  isPreview?: boolean
-}
-
-export const FormFieldsContainer = ({
-  isPreview,
-}: FormFieldsContainerProps): JSX.Element | null => {
-  const { form, isAuthRequired, isLoading, handleSubmitForm, submissionData } =
-    usePublicFormContext()
+export const FormFieldsContainer = (): JSX.Element | null => {
+  const {
+    form,
+    isAuthRequired,
+    isLoading,
+    handleSubmitForm,
+    submissionData,
+    isPreview,
+  } = usePublicFormContext()
 
   const renderFields = useMemo(() => {
     // Render skeleton when no data
