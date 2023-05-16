@@ -1,3 +1,5 @@
+import timezoneMock from 'timezone-mock'
+
 import * as DateUtils from './date'
 
 describe('date', () => {
@@ -76,10 +78,10 @@ describe('date', () => {
   })
 
   describe('normalizeDateToUtc', () => {
+    beforeEach(() => {
+      timezoneMock.unregister()
+    })
     it('should convert local dates to UTC', () => {
-      // We can only test using this function in different system times by
-      // manually changing system time and rerunning this test
-
       const dateString = '2023-04-23T00:00:00'
       const localDate = new Date(Date.parse(dateString))
       const utcDate = new Date(Date.parse(`${dateString}+00:00`))
@@ -88,13 +90,40 @@ describe('date', () => {
 
       expect(result).toStrictEqual(utcDate)
     })
+    it('should convert negative UTC (local) dates to UTC', () => {
+      const dateString = '2023-04-23T00:00:00'
+
+      // First, create Date value for UTC
+      timezoneMock.register('UTC')
+      const utcDate = new Date(Date.parse(dateString))
+
+      // Simulate 'local' timezone when users are in UTC-12
+      timezoneMock.register('Etc/GMT+12')
+      const negativeUtcDate = new Date(Date.parse(dateString))
+
+      const result = DateUtils.normalizeDateToUtc(negativeUtcDate)
+
+      expect(result).toStrictEqual(utcDate)
+    })
+    it('should convert positive UTC (local) dates to UTC', () => {
+      const dateString = '2023-04-23T00:00:00'
+
+      // First, create Date value for UTC
+      timezoneMock.register('UTC')
+      const utcDate = new Date(Date.parse(dateString))
+
+      // Simulate 'local' timezone when users are in UTC+14
+      timezoneMock.register('Etc/GMT-14')
+      const positiveUtcDate = new Date(Date.parse(dateString))
+
+      const result = DateUtils.normalizeDateToUtc(positiveUtcDate)
+
+      expect(result).toStrictEqual(utcDate)
+    })
   })
 
   describe('loadDateFromNormalizedDate', () => {
     it('should convert normalised (UTC) dates to local date', () => {
-      // We can only test using this function in different system times by
-      // manually changing system time and rerunning this test
-
       const dateString = '2023-04-23T00:00:00'
       const utcDate = new Date(Date.parse(`${dateString}+00:00`))
       const localDate = new Date(Date.parse(dateString))
@@ -102,6 +131,36 @@ describe('date', () => {
       const result = DateUtils.loadDateFromNormalizedDate(utcDate)
 
       expect(result).toStrictEqual(localDate)
+    })
+    it('should convert normalised (UTC) dates to negative UTC (local) date', () => {
+      const dateString = '2023-04-23T00:00:00'
+
+      // First, create Date value for UTC
+      timezoneMock.register('UTC')
+      const utcDate = new Date(Date.parse(dateString))
+
+      // Simulate 'local' timezone when users are in UTC-12
+      timezoneMock.register('Etc/GMT+12')
+      const negativeUtcDate = new Date(Date.parse(dateString))
+
+      const result = DateUtils.loadDateFromNormalizedDate(utcDate)
+
+      expect(result).toStrictEqual(negativeUtcDate)
+    })
+    it('should convert normalised (UTC) dates to positive UTC (local) date', () => {
+      const dateString = '2023-04-23T00:00:00'
+
+      // First, create Date value for UTC
+      timezoneMock.register('UTC')
+      const utcDate = new Date(Date.parse(dateString))
+
+      // Simulate 'local' timezone when users are in UTC+14
+      timezoneMock.register('Etc/GMT-14')
+      const positiveUtcDate = new Date(Date.parse(dateString))
+
+      const result = DateUtils.loadDateFromNormalizedDate(utcDate)
+
+      expect(result).toStrictEqual(positiveUtcDate)
     })
   })
 })
