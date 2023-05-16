@@ -33,6 +33,7 @@ import {
   extractAuthCode,
   validateMyInfoForm,
 } from '../../myinfo/myinfo.util'
+import { SGIDMyInfoData } from '../../sgid/sgid.adapter'
 import { SgidInvalidJwtError, SgidVerifyJwtError } from '../../sgid/sgid.errors'
 import { SgidService } from '../../sgid/sgid.service'
 import { validateSgidForm } from '../../sgid/sgid.util'
@@ -300,11 +301,12 @@ export const handleGetPublicForm: ControllerHandler<
     }
     case FormAuthType.SGID:
       return SgidService.extractSgidJwtPayload(req.cookies.jwtSgid)
-        .map((spcpSession) => {
+        .map((payload) => {
+          const data = new SGIDMyInfoData(payload)
           return res.json({
             form: publicForm,
             isIntranetUser,
-            spcpSession,
+            spcpSession: { userName: data.getUinFin() },
           })
         })
         .mapErr((error) => {
@@ -403,6 +405,7 @@ export const _handleFormAuthRedirect: ControllerHandler<
             return SgidService.createRedirectUrl(
               formId,
               Boolean(isPersistentLogin),
+              [],
               encodedQuery,
             )
           })

@@ -3,11 +3,14 @@ import fs from 'fs'
 import Jwt from 'jsonwebtoken'
 import { err, ok, Result, ResultAsync } from 'neverthrow'
 
+import { MyInfoAttribute as InternalAttr } from '../../../../shared/types'
 import { ISgidVarsSchema } from '../../../types'
 import { sgid } from '../../config/features/sgid.config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { ApplicationError } from '../core/core.errors'
 
+import { internalAttrListToScopes } from './sgid.adapter'
+import { SGID_MYINFO_NRIC_NUMBER_SCOPE } from './sgid.constants'
 import {
   SgidCreateRedirectUrlError,
   SgidFetchAccessTokenError,
@@ -17,12 +20,12 @@ import {
   SgidMissingJwtError,
   SgidVerifyJwtError,
 } from './sgid.errors'
+import { SGIDScopeToValue } from './sgid.types'
 import { isSgidJwtPayload } from './sgid.util'
 
 const logger = createLoggerWithLabel(module)
 
 const JWT_ALGORITHM = 'RS256'
-export const SGID_SCOPES = 'openid myinfo.nric_number'
 
 export class SgidServiceClass {
   private client: SgidClient
@@ -60,12 +63,14 @@ export class SgidServiceClass {
    * Create a URL to sgID which is used to redirect the user for authentication
    * @param formId - the form id to redirect to after authentication
    * @param rememberMe - whether we create a JWT that remembers the user
+   * @param requestedAttributes - sgID attributes requested by this form
    * @param encodedQuery base64 encoded queryId for frontend to retrieve stored query params (usually contains prefilled form information)
    * for an extended period of time
    */
   createRedirectUrl(
     formId: string,
     rememberMe: boolean,
+    requestedAttributes: InternalAttr[],
     encodedQuery?: string,
   ): Result<string, SgidCreateRedirectUrlError> {
     const state = encodedQuery
@@ -75,7 +80,8 @@ export class SgidServiceClass {
       action: 'createRedirectUrl',
       state,
     }
-    const result = this.client.authorizationUrl(state, SGID_SCOPES, null)
+    const scopes = internalAttrListToScopes(requestedAttributes)
+    const result = this.client.authorizationUrl(state, scopes, null)
     if (typeof result.url === 'string') {
       return ok(result.url)
     } else {
@@ -167,14 +173,16 @@ export class SgidServiceClass {
   }: {
     accessToken: string
   }): ResultAsync<
-    { sub: string; data: { 'myinfo.nric_number': string } },
+    { sub: string; data: SGIDScopeToValue },
     SgidFetchUserInfoError
   > {
     return ResultAsync.fromPromise(
-      this.client.userinfo(accessToken).then(({ sub, data }) => ({
-        sub,
-        data: { 'myinfo.nric_number': data['myinfo.nric_number'] },
-      })),
+      this.client.userinfo(accessToken).then(({ sub, data }) => {
+        return {
+          sub,
+          data,
+        }
+      }),
       (error) => {
         logger.error({
           message: 'Failed to retrieve user info from sgID',
@@ -195,11 +203,11 @@ export class SgidServiceClass {
    * @param rememberMe - determines how long the JWT is valid for
    */
   createJwt(
-    data: { 'myinfo.nric_number': string },
+    data: SGIDScopeToValue,
     rememberMe: boolean,
   ): Result<{ jwt: string; maxAge: number }, ApplicationError> {
-    const userName = data['myinfo.nric_number']
-    const payload = { userName, rememberMe }
+    const userName = data[SGID_MYINFO_NRIC_NUMBER_SCOPE]
+    const payload = { userName, data, rememberMe }
     const maxAge = rememberMe ? this.cookieMaxAgePreserved : this.cookieMaxAge
     const jwt = Jwt.sign(payload, this.privateKey, {
       algorithm: JWT_ALGORITHM,
@@ -218,7 +226,7 @@ export class SgidServiceClass {
   extractSgidJwtPayload(
     jwtSgid: string,
   ): Result<
-    { userName: string },
+    SGIDScopeToValue,
     SgidVerifyJwtError | SgidInvalidJwtError | SgidMissingJwtError
   > {
     const logMeta = {
@@ -234,7 +242,7 @@ export class SgidServiceClass {
       })
 
       if (isSgidJwtPayload(payload)) {
-        return ok(payload)
+        return ok(payload['data'])
       }
 
       const payloadIsDefined = !!payload

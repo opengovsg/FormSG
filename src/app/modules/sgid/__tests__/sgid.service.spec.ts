@@ -2,7 +2,9 @@
 import { SgidClient } from '@opengovsg/sgid-client'
 import fs from 'fs'
 import Jwt from 'jsonwebtoken'
+import { MyInfoAttribute } from 'shared/types'
 
+import { SGID_MYINFO_NRIC_NUMBER_SCOPE } from '../sgid.constants'
 import {
   SgidCreateRedirectUrlError,
   SgidFetchAccessTokenError,
@@ -12,7 +14,7 @@ import {
   SgidMissingJwtError,
   SgidVerifyJwtError,
 } from '../sgid.errors'
-import { SGID_SCOPES, SgidServiceClass } from '../sgid.service'
+import { SgidServiceClass } from '../sgid.service'
 
 import {
   MOCK_ACCESS_TOKEN,
@@ -28,6 +30,9 @@ import {
   MOCK_TOKEN_RESULT,
   MOCK_USER_INFO,
 } from './sgid.test.constants'
+
+const SGID_DEFAULT_SCOPES = 'openid myinfo.nric_number'
+const SGID_DEFAULT_ATTR_LIST: MyInfoAttribute[] = []
 
 jest.mock('@opengovsg/sgid-client')
 const MockSgidClient = jest.mocked(SgidClient)
@@ -68,14 +73,36 @@ describe('sgid.service', () => {
       const url = SgidService.createRedirectUrl(
         MOCK_DESTINATION,
         MOCK_REMEMBER_ME,
+        SGID_DEFAULT_ATTR_LIST,
       )
       expect(url._unsafeUnwrap()).toEqual(MOCK_REDIRECT_URL)
       expect(sgidClient.authorizationUrl).toHaveBeenCalledWith(
         MOCK_STATE,
-        SGID_SCOPES,
+        SGID_DEFAULT_SCOPES,
         null,
       )
     })
+
+    it('should return extract additional OAuth scopes from MyInfo', () => {
+      const SgidService = new SgidServiceClass(MOCK_OPTIONS)
+      const sgidClient = jest.mocked(MockSgidClient.mock.instances[0])
+      sgidClient.authorizationUrl.mockReturnValue({
+        url: MOCK_REDIRECT_URL,
+        nonce: MOCK_NONCE,
+      })
+      const url = SgidService.createRedirectUrl(
+        MOCK_DESTINATION,
+        MOCK_REMEMBER_ME,
+        [MyInfoAttribute.RegisteredAddress, MyInfoAttribute.PassportExpiryDate],
+      )
+      expect(url._unsafeUnwrap()).toEqual(MOCK_REDIRECT_URL)
+      expect(sgidClient.authorizationUrl).toHaveBeenCalledWith(
+        MOCK_STATE,
+        'openid myinfo.nric_number myinfo.registered_address myinfo.passport_expiry_date',
+        null,
+      )
+    })
+
     it('should return error if not ok', () => {
       const SgidService = new SgidServiceClass(MOCK_OPTIONS)
       const sgidClient = jest.mocked(MockSgidClient.mock.instances[0])
@@ -87,11 +114,12 @@ describe('sgid.service', () => {
       const url = SgidService.createRedirectUrl(
         MOCK_DESTINATION,
         MOCK_REMEMBER_ME,
+        SGID_DEFAULT_ATTR_LIST,
       )
       expect(url._unsafeUnwrapErr()).toBeInstanceOf(SgidCreateRedirectUrlError)
       expect(sgidClient.authorizationUrl).toHaveBeenCalledWith(
         MOCK_STATE,
-        SGID_SCOPES,
+        SGID_DEFAULT_SCOPES,
         null,
       )
     })
@@ -135,17 +163,18 @@ describe('sgid.service', () => {
     it('should return the userinfo given the code', async () => {
       const SgidService = new SgidServiceClass(MOCK_OPTIONS)
       const sgidClient = jest.mocked(MockSgidClient.mock.instances[0])
-      sgidClient.userinfo.mockResolvedValue({
+      const mockUserInfoWithAdditional = {
         sub: MOCK_USER_INFO.sub,
         data: {
           ...MOCK_USER_INFO.data,
-          'myinfo.name': 'not supposed to be here',
+          'myinfo.name': 'supposed to be here',
         },
-      })
+      }
+      sgidClient.userinfo.mockResolvedValue(mockUserInfoWithAdditional)
       const result = await SgidService.retrieveUserInfo({
         accessToken: MOCK_ACCESS_TOKEN,
       })
-      expect(result._unsafeUnwrap()).toStrictEqual(MOCK_USER_INFO)
+      expect(result._unsafeUnwrap()).toStrictEqual(mockUserInfoWithAdditional)
       expect(sgidClient.userinfo).toHaveBeenCalledWith(MOCK_ACCESS_TOKEN)
     })
     it('should return error on error', async () => {
@@ -171,6 +200,7 @@ describe('sgid.service', () => {
       })
       expect(MockJwt.sign).toHaveBeenCalledWith(
         {
+          data: { 'myinfo.nric_number': 'S9322889A' },
           userName: MOCK_USER_INFO.data['myinfo.nric_number'],
           rememberMe: false,
         },
@@ -193,7 +223,8 @@ describe('sgid.service', () => {
       })
       expect(MockJwt.sign).toHaveBeenCalledWith(
         {
-          userName: MOCK_USER_INFO.data['myinfo.nric_number'],
+          data: { 'myinfo.nric_number': 'S9322889A' },
+          userName: MOCK_USER_INFO.data[SGID_MYINFO_NRIC_NUMBER_SCOPE],
           rememberMe: true,
         },
         MOCK_OPTIONS.privateKeyPath,
@@ -210,7 +241,7 @@ describe('sgid.service', () => {
       // @ts-ignore
       MockJwt.verify.mockReturnValue(MOCK_JWT_PAYLOAD)
       const result = SgidService.extractSgidJwtPayload(MOCK_JWT)
-      expect(result._unsafeUnwrap()).toStrictEqual(MOCK_JWT_PAYLOAD)
+      expect(result._unsafeUnwrap()).toStrictEqual(MOCK_JWT_PAYLOAD.data)
       expect(MockJwt.verify).toHaveBeenCalledWith(
         MOCK_JWT,
         MOCK_OPTIONS.publicKeyPath,

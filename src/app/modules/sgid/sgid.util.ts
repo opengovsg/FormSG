@@ -10,7 +10,7 @@ import { IFormSchema, SgidFieldTitle } from '../../../types'
 import { AuthTypeMismatchError } from '../form/form.errors'
 import { ProcessedSingleAnswerResponse } from '../submission/submission.types'
 
-import { SgidForm } from './sgid.types'
+import { SgidForm, SGIDScopeToValue } from './sgid.types'
 
 /**
  * Validates that a form is an sgID form
@@ -53,11 +53,13 @@ export const createSgidParsedResponses = (
  */
 export const isSgidJwtPayload = (
   payload: unknown,
-): payload is { userName: string } => {
+): payload is Record<string, SGIDScopeToValue> => {
   return (
     typeof payload === 'object' &&
     !!payload &&
     hasProp(payload, 'userName') &&
-    typeof payload.userName === 'string'
+    typeof payload.userName === 'string' &&
+    hasProp(payload, 'data') &&
+    typeof payload.data === 'object'
   )
 }
