@@ -177,12 +177,10 @@ export class SgidServiceClass {
     SgidFetchUserInfoError
   > {
     return ResultAsync.fromPromise(
-      this.client.userinfo(accessToken).then(({ sub, data }) => {
-        return {
-          sub,
-          data,
-        }
-      }),
+      this.client.userinfo(accessToken).then(({ sub, data }) => ({
+        sub,
+        data,
+      })),
       (error) => {
         logger.error({
           message: 'Failed to retrieve user info from sgID',
