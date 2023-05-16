@@ -389,16 +389,12 @@ export const createSingleSampleSubmissionAnswer = (field: FormFieldDto) => {
     default:
       break
   }
-  let answer = {}
-  if (sampleValue != null) {
-    answer = {
-      id: field._id,
-      question: field.title,
-      answer: sampleValue,
-      fieldType: field.fieldType,
-    }
+  return {
+    id: field._id,
+    question: field.title,
+    answer: sampleValue,
+    fieldType: field.fieldType,
   }
-  return answer
 }
 
 export const createSampleSubmissionResponses = (
