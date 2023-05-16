@@ -25,7 +25,9 @@ export const internalAttrToScope = (attr: InternalAttr): ExternalAttr => {
       return ExternalAttr.RegisteredAddress
     default:
       // This should be removed once sgID reaches parity with MyInfo.
-      return new UnreachableCaseError(attr)
+      // For now, the returned value will be automatically filtered
+      // out by other functions.
+      return ExternalAttr.NricFin
   }
 }
 
@@ -35,7 +37,9 @@ export const internalAttrListToScopes = (attrs: InternalAttr[]): string =>
     .map(internalAttrToScope)
     .join(' ')}`.trim()
 
-const internalAttrToSGIDExternal = (attr: InternalAttr): ExternalAttr => {
+const internalAttrToSGIDExternal = (
+  attr: InternalAttr,
+): ExternalAttr | undefined => {
   switch (attr) {
     case InternalAttr.Name:
       return ExternalAttr.Name
@@ -50,7 +54,7 @@ const internalAttrToSGIDExternal = (attr: InternalAttr): ExternalAttr => {
     case InternalAttr.RegisteredAddress:
       return ExternalAttr.RegisteredAddress
     default:
-      return new UnreachableCaseError(attr)
+      return undefined
   }
 }
 
@@ -115,6 +119,12 @@ export class SGIDMyInfoData
     isReadOnly: boolean
   } {
     const externalAttr = internalAttrToSGIDExternal(attr)
+    if (externalAttr === undefined) {
+      return {
+        fieldValue: undefined,
+        isReadOnly: false,
+      }
+    }
     const fieldValue = this._formatFieldValue(externalAttr)
     return {
       fieldValue,
