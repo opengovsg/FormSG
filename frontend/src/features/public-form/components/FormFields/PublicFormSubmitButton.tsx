@@ -42,7 +42,7 @@ export const PublicFormSubmitButton = ({
   const isMobile = useIsMobile()
   const { isSubmitting } = useFormState()
   const formInputs = useWatch<FormFieldValues>({}) as FormFieldValues
-  const { formId, isPaymentEnabled } = usePublicFormContext()
+  const { formId, isPaymentEnabled, isPreview } = usePublicFormContext()
 
   const paymentEmailField = formInputs[
     PAYMENT_CONTACT_FIELD_ID
@@ -63,6 +63,8 @@ export const PublicFormSubmitButton = ({
     const result = await trigger()
 
     if (result) {
+      // if isPreview mode do not get previous payment
+      if (isPreview) return onOpen()
       // get previous payment
       try {
         const paymentId = await getPreviousPaymentId(
