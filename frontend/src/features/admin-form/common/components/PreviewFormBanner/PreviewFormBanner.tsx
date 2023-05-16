@@ -19,6 +19,7 @@ import {
   useDisclosure,
 } from '@chakra-ui/react'
 
+import { FORMSG_UAT } from '~constants/links'
 import { ADMINFORM_ROUTE, DASHBOARD_ROUTE } from '~constants/routes'
 import Button, { ButtonProps } from '~components/Button'
 import Link from '~components/Link'
@@ -179,7 +180,7 @@ export const PreviewFormBanner = ({
           {process.env.SECRET_ENV !== 'production' ? (
             <Text {...textProps}>
               To test your payment form, replicate this form on our{' '}
-              <Link isExternal color="white" href="https://uat.form.gov.sg">
+              <Link isExternal color="white" href={FORMSG_UAT}>
                 testing platform.
               </Link>
             </Text>
