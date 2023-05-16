@@ -3,6 +3,7 @@ import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
 import {
   FormAuthType,
+  FormField,
   FormFieldDto,
   FormResponseMode,
   FormStatus,
@@ -345,10 +346,7 @@ export const retrievePublicFormsWithSmsVerification = (
   })
 }
 
-export const createSampleSubmissionData = (
-  sampleData: Record<string, unknown>,
-  field: FormFieldDto,
-) => {
+export const createSingleSampleSubmissionAnswer = (field: FormFieldDto) => {
   let sampleValue = null
   let noOfOptions = 0
   let randomSelectedOption = 0
@@ -391,12 +389,26 @@ export const createSampleSubmissionData = (
     default:
       break
   }
+  let answer = {}
   if (sampleValue != null) {
-    sampleData[field._id] = {
+    answer = {
+      id: field._id,
       question: field.title,
       answer: sampleValue,
       fieldType: field.fieldType,
     }
   }
-  return sampleValue
+  return answer
+}
+
+export const createSampleSubmissionResponses = (
+  formFields: FormFieldDto<FormField>[],
+) => {
+  const sampleData: Record<string, any> = {}
+  formFields.forEach((field) => {
+    const answer = createSingleSampleSubmissionAnswer(field)
+    if (!answer) return
+    sampleData[field._id] = answer
+  })
+  return sampleData
 }

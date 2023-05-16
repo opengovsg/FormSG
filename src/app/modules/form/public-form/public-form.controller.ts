@@ -370,14 +370,13 @@ export const handleGetPublicFormSampleSubmission: ControllerHandler<
 
   const publicForm = form.getPublicView() as PublicFormDto
 
-  const sampleData: Record<string, any> = {}
   const formFields = publicForm.form_fields
   if (!formFields) {
     throw new Error('unable to get form fields')
   }
-  for (const field of formFields) {
-    FormService.createSampleSubmissionData(sampleData, field)
-  }
+
+  const sampleData = FormService.createSampleSubmissionResponses(formFields)
+
   return res.json({ responses: sampleData })
 }
 /**
