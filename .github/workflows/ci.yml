@@ -36,7 +36,7 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: 14
           cache: 'npm'
           cache-dependency-path: '**/package-lock.json'
       - run: npm ci
@@ -50,13 +50,13 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: 14
           cache: 'npm'
           cache-dependency-path: '**/package-lock.json'
       - run: npm ci
       - run: npm run build
         env:
-          NODE_OPTIONS: '--max-old-space-size=4096 --openssl-legacy-provider'
+          NODE_OPTIONS: '--max-old-space-size=4096'
       - name: Upload build files
         uses: actions/upload-artifact@v2
         if: always()
@@ -75,7 +75,7 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: 14
           cache: 'npm'
           cache-dependency-path: '**/package-lock.json'
       - run: npm ci
@@ -90,7 +90,7 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: 14
           cache: 'npm'
           cache-dependency-path: '**/package-lock.json'
       - run: npm ci
@@ -109,7 +109,7 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: 14
           cache: 'npm'
           cache-dependency-path: '**/package-lock.json'
       - run: npm ci
@@ -128,7 +128,7 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: 14
           cache: 'npm'
           cache-dependency-path: '**/package-lock.json'
       - run: npm ci
