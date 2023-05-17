@@ -4,7 +4,7 @@ import dotenv from 'dotenv'
 import path from 'path'
 
 dotenv.config({
-  path: path.resolve(__dirname, './__tests__/e2e/setup/.test-env'),
+  path: path.resolve(__dirname, './__tests__/setup/.test-env'),
 })
 
 /**
@@ -102,7 +102,7 @@ const config: PlaywrightTestConfig = {
   webServer: [
     {
       command: 'npm run test:e2e-v2:server',
-      url: 'http://localhost:5000/api/v3/analytics/statistics',
+      url: 'http://localhost:5000/analytics/statistics',
       timeout: 120 * 1000,
       reuseExistingServer: !process.env.CI,
     },
