@@ -102,7 +102,6 @@ Mobile.parameters = {
   chromatic: { viewports: [viewports.xs] },
 }
 
-// FIXME: Toast still triggered onSuccess instead of onError
 export const Failure = Template.bind({})
 Failure.parameters = {
   msw: [
