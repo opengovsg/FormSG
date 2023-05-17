@@ -101,6 +101,11 @@ describe('date', () => {
       timezoneMock.register('Etc/GMT+12')
       const negativeUtcDate = new Date(Date.parse(dateString))
 
+      // Check that the negative UTC date created is different from UTC time and
+      // negative UTC's midnight should happen after UTC's midnight
+      expect(negativeUtcDate).not.toStrictEqual(utcDate)
+      expect(negativeUtcDate.getTime()).toBeGreaterThan(utcDate.getTime())
+
       const result = DateUtils.normalizeDateToUtc(negativeUtcDate)
 
       expect(result).toStrictEqual(utcDate)
@@ -115,6 +120,11 @@ describe('date', () => {
       // Simulate 'local' timezone when users are in UTC+14
       timezoneMock.register('Etc/GMT-14')
       const positiveUtcDate = new Date(Date.parse(dateString))
+
+      // Check that the positive UTC date created is different from UTC time and
+      // positive UTC's midnight should happen before UTC's midnight
+      expect(positiveUtcDate).not.toStrictEqual(utcDate)
+      expect(positiveUtcDate.getTime()).toBeLessThan(utcDate.getTime())
 
       const result = DateUtils.normalizeDateToUtc(positiveUtcDate)
 
@@ -143,6 +153,11 @@ describe('date', () => {
       timezoneMock.register('Etc/GMT+12')
       const negativeUtcDate = new Date(Date.parse(dateString))
 
+      // Check that the negative UTC date created is different from UTC time and
+      // negative UTC's midnight should happen after UTC's midnight
+      expect(negativeUtcDate).not.toStrictEqual(utcDate)
+      expect(negativeUtcDate.getTime()).toBeGreaterThan(utcDate.getTime())
+
       const result = DateUtils.loadDateFromNormalizedDate(utcDate)
 
       expect(result).toStrictEqual(negativeUtcDate)
@@ -157,6 +172,11 @@ describe('date', () => {
       // Simulate 'local' timezone when users are in UTC+14
       timezoneMock.register('Etc/GMT-14')
       const positiveUtcDate = new Date(Date.parse(dateString))
+
+      // Check that the positive UTC date created is different from UTC time and
+      // positive UTC's midnight should happen before UTC's midnight
+      expect(positiveUtcDate).not.toStrictEqual(utcDate)
+      expect(positiveUtcDate.getTime()).toBeLessThan(utcDate.getTime())
 
       const result = DateUtils.loadDateFromNormalizedDate(utcDate)
 
