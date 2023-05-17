@@ -46,6 +46,24 @@ export const handleLogin: ControllerHandler<
   }
 
   const form = formResult.value
+  // @TODO move this to separate route.
+  if (form.authType === FormAuthType.SGID_MyInfo) {
+    const jwtResult = await SgidService.retrieveAccessToken(code).andThen(
+      (data) => SgidService.createSgidMyInfoJwt(data.accessToken, rememberMe),
+    )
+
+    if (!jwtResult.isErr()) {
+      const { maxAge, jwt } = jwtResult.value
+      res.cookie(SGID_COOKIE_NAME, jwt, {
+        maxAge,
+        httpOnly: true,
+        sameSite: 'lax', // Setting to 'strict' prevents Singpass login on Safari, Firefox
+        secure: !config.isDev,
+        ...SgidService.getCookieSettings(),
+      })
+      return res.redirect(target)
+    }
+  }
   if (form.authType !== FormAuthType.SGID) {
     logger.error({
       message: "Log in attempt to wrong endpoint for form's authType",

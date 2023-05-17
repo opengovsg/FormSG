@@ -327,7 +327,14 @@ export const handleGetPublicForm: ControllerHandler<
         })
     case FormAuthType.SGID_MyInfo: {
       const accessTokenCookie = req.cookies[SGID_COOKIE_NAME]
+      if (!accessTokenCookie) {
+        return res.json({
+          form: publicForm,
+          isIntranetUser,
+        })
+      }
       res.clearCookie(SGID_COOKIE_NAME)
+      res.clearCookie(MYINFO_LOGIN_COOKIE_NAME)
       return SgidService.extractSgidJwtMyInfoPayload(accessTokenCookie)
         .asyncAndThen((auth) =>
           SgidService.retrieveUserInfo({ accessToken: auth.accessToken }),
@@ -339,14 +346,20 @@ export const handleGetPublicForm: ControllerHandler<
             data,
             form.toJSON().form_fields,
           ).map((prefilledFields) => {
-            return res.json({
-              form: {
-                ...publicForm,
-                form_fields: prefilledFields as FormFieldDto[],
-              },
-              spcpSession: { userName: data.getUinFin() },
-              isIntranetUser,
-            })
+            return res
+              .cookie(
+                MYINFO_LOGIN_COOKIE_NAME,
+                createMyInfoLoginCookie(data.getUinFin()),
+                MYINFO_LOGIN_COOKIE_OPTIONS,
+              )
+              .json({
+                form: {
+                  ...publicForm,
+                  form_fields: prefilledFields as FormFieldDto[],
+                },
+                spcpSession: { userName: data.getUinFin() },
+                isIntranetUser,
+              })
           })
         })
         .mapErr((error) => {
@@ -519,6 +532,7 @@ export const _handlePublicAuthLogout: ControllerHandler<
       | FormAuthType.CP
       | FormAuthType.MyInfo
       | FormAuthType.SGID
+      | FormAuthType.SGID_MyInfo
   },
   PublicFormAuthLogoutDto
 > = (req, res) => {
@@ -545,6 +559,7 @@ export const handlePublicAuthLogout = [
           FormAuthType.CP,
           FormAuthType.MyInfo,
           FormAuthType.SGID,
+          FormAuthType.SGID_MyInfo,
         )
         .required(),
     }),

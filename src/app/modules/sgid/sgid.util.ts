@@ -30,7 +30,10 @@ export const validateSgidForm = <T extends IFormSchema>(
 
 // Typeguard to ensure that form has the correct authType
 const isSgidForm = <F extends IFormSchema>(form: F): form is SgidForm<F> => {
-  return form.authType === FormAuthType.SGID
+  return (
+    form.authType === FormAuthType.SGID ||
+    form.authType === FormAuthType.SGID_MyInfo
+  )
 }
 
 /**

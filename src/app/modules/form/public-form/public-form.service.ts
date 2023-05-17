@@ -73,9 +73,11 @@ export const getCookieNameByAuthType = (
     | FormAuthType.SP
     | FormAuthType.CP
     | FormAuthType.MyInfo
-    | FormAuthType.SGID,
+    | FormAuthType.SGID
+    | FormAuthType.SGID_MyInfo,
 ): string => {
   switch (authType) {
+    case FormAuthType.SGID_MyInfo:
     case FormAuthType.MyInfo:
       return MYINFO_LOGIN_COOKIE_NAME
     case FormAuthType.SGID:

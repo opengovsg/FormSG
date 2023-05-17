@@ -264,7 +264,8 @@ const compileFormModel = (db: Mongoose): IFormModel => {
             )
             return (
               myInfoFieldCount === 0 ||
-              (this.authType === FormAuthType.MyInfo &&
+              ((this.authType === FormAuthType.MyInfo ||
+                this.authType == FormAuthType.SGID_MyInfo) &&
                 this.responseMode === FormResponseMode.Email &&
                 myInfoFieldCount <= 30)
             )
@@ -559,7 +560,10 @@ const compileFormModel = (db: Mongoose): IFormModel => {
 
   // Method to return myInfo attributes
   FormSchema.methods.getUniqueMyInfoAttrs = function () {
-    if (this.authType !== FormAuthType.MyInfo) {
+    if (
+      this.authType !== FormAuthType.MyInfo &&
+      this.authType !== FormAuthType.SGID_MyInfo
+    ) {
       return []
     }
 

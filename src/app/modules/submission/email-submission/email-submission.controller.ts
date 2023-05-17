@@ -202,6 +202,7 @@ const submitEmailModeForm: ControllerHandler<
                 return error
               })
           }
+          case FormAuthType.SGID_MyInfo:
           case FormAuthType.MyInfo:
             return extractMyInfoLoginJwt(req.cookies)
               .andThen(MyInfoService.verifyLoginJwt)
@@ -227,14 +228,14 @@ const submitEmailModeForm: ControllerHandler<
               .mapErr((error) => {
                 spcpSubmissionFailure = true
                 logger.error({
-                  message: 'Error verifying MyInfo hashes',
+                  message: `Error verifying MyInfo${
+                    authType === FormAuthType.SGID_MyInfo ? '(over SGID)' : ''
+                  } hashes`,
                   meta: logMeta,
                   error,
                 })
                 return error
               })
-          // SGID_MyInfo is temporarily placed here for now.
-          case FormAuthType.SGID_MyInfo:
           case FormAuthType.SGID:
             return SgidService.extractSgidSingpassJwtPayload(
               req.cookies[SGID_COOKIE_NAME],
