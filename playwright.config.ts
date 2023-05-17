@@ -102,7 +102,7 @@ const config: PlaywrightTestConfig = {
   webServer: [
     {
       command: 'npm run test:e2e-v2:server',
-      url: 'http://localhost:5000/analytics/statistics',
+      url: 'http://localhost:5000/api/v3/analytics/statistics',
       timeout: 120 * 1000,
       reuseExistingServer: !process.env.CI,
     },
