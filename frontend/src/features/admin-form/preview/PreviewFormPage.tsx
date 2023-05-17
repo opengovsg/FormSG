@@ -34,8 +34,8 @@ export const PreviewFormPage = (): JSX.Element => {
           <FormStartPage />
           <PublicFormWrapper>
             <FormInstructions />
-            <FormFields isPreview />
-            <FormEndPage isPreview />
+            <FormFields />
+            <FormEndPage />
             <FormFooter />
           </PublicFormWrapper>
         </FormSectionsProvider>

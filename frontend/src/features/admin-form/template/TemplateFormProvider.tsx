@@ -88,6 +88,8 @@ export const TemplateFormProvider = ({
         expiryInMs,
         isLoading,
         handleLogout: undefined,
+        isPreview: true,
+        isPaymentEnabled: false,
         ...commonFormValues,
         ...data,
         ...rest,
