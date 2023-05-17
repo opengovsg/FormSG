@@ -723,7 +723,9 @@ describe('Verification controller', () => {
       expect(mockSpOidcServiceClass.extractJwtPayload).not.toHaveBeenCalled()
       expect(mockCpOidcServiceClass.extractJwtPayload).not.toHaveBeenCalled()
 
-      expect(MockSgidService.extractSgidJwtPayload).not.toHaveBeenCalled()
+      expect(
+        MockSgidService.extractSgidSingpassJwtPayload,
+      ).not.toHaveBeenCalled()
       expect(MockMyInfoUtil.extractMyInfoLoginJwt).not.toHaveBeenCalled()
       expect(MockMyInfoService.verifyLoginJwt).not.toHaveBeenCalled()
       expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
@@ -865,7 +867,7 @@ describe('Verification controller', () => {
       MockVerificationService.disableVerifiedFieldsIfRequired.mockReturnValueOnce(
         okAsync(true),
       )
-      MockSgidService.extractSgidJwtPayload.mockReturnValueOnce(
+      MockSgidService.extractSgidSingpassJwtPayload.mockReturnValueOnce(
         ok(MOCK_VALID_SGID_PAYLOAD),
       )
 
@@ -880,9 +882,9 @@ describe('Verification controller', () => {
       expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
         MOCK_FORM_ID,
       )
-      expect(MockSgidService.extractSgidJwtPayload).toHaveBeenCalledWith(
-        MOCK_SGID_REQ.cookies.jwtSgid,
-      )
+      expect(
+        MockSgidService.extractSgidSingpassJwtPayload,
+      ).toHaveBeenCalledWith(MOCK_SGID_REQ.cookies.jwtSgid)
       expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
       expect(MockVerificationService.sendNewOtp).toHaveBeenCalledWith(
         EXPECTED_PARAMS_FOR_SENDING_FORM_OTP,
@@ -1291,7 +1293,7 @@ describe('Verification controller', () => {
       MockFormService.retrieveFullFormById.mockReturnValueOnce(
         okAsync(MOCK_SGID_FORM),
       )
-      MockSgidService.extractSgidJwtPayload.mockReturnValueOnce(
+      MockSgidService.extractSgidSingpassJwtPayload.mockReturnValueOnce(
         err(new SgidMissingJwtError()),
       )
       const expectedResponse = {
@@ -1309,9 +1311,9 @@ describe('Verification controller', () => {
       expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
         MOCK_FORM_ID,
       )
-      expect(MockSgidService.extractSgidJwtPayload).toHaveBeenCalledWith(
-        MOCK_SGID_REQ.cookies.jwtSgid,
-      )
+      expect(
+        MockSgidService.extractSgidSingpassJwtPayload,
+      ).toHaveBeenCalledWith(MOCK_SGID_REQ.cookies.jwtSgid)
       expect(MockOtpUtils.generateOtpWithHash).not.toHaveBeenCalled()
       expect(MockVerificationService.sendNewOtp).not.toHaveBeenCalled()
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
@@ -1333,7 +1335,7 @@ describe('Verification controller', () => {
       MockFormService.retrieveFullFormById.mockReturnValueOnce(
         okAsync(MOCK_SGID_FORM),
       )
-      MockSgidService.extractSgidJwtPayload.mockReturnValueOnce(
+      MockSgidService.extractSgidSingpassJwtPayload.mockReturnValueOnce(
         err(new SgidInvalidJwtError()),
       )
       const expectedResponse = {
@@ -1351,9 +1353,9 @@ describe('Verification controller', () => {
       expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
         MOCK_FORM_ID,
       )
-      expect(MockSgidService.extractSgidJwtPayload).toHaveBeenCalledWith(
-        MOCK_SGID_REQ.cookies.jwt,
-      )
+      expect(
+        MockSgidService.extractSgidSingpassJwtPayload,
+      ).toHaveBeenCalledWith(MOCK_SGID_REQ.cookies.jwt)
       expect(MockOtpUtils.generateOtpWithHash).not.toHaveBeenCalled()
       expect(MockVerificationService.sendNewOtp).not.toHaveBeenCalled()
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
@@ -1620,7 +1622,9 @@ describe('Verification controller', () => {
       expect(mockSpOidcServiceClass.extractJwtPayload).not.toHaveBeenCalled()
       expect(mockCpOidcServiceClass.extractJwtPayload).not.toHaveBeenCalled()
 
-      expect(MockSgidService.extractSgidJwtPayload).not.toHaveBeenCalled()
+      expect(
+        MockSgidService.extractSgidSingpassJwtPayload,
+      ).not.toHaveBeenCalled()
       expect(MockMyInfoUtil.extractMyInfoLoginJwt).not.toHaveBeenCalled()
       expect(MockMyInfoService.verifyLoginJwt).not.toHaveBeenCalled()
       expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
@@ -1762,7 +1766,7 @@ describe('Verification controller', () => {
       MockVerificationService.disableVerifiedFieldsIfRequired.mockReturnValueOnce(
         okAsync(true),
       )
-      MockSgidService.extractSgidJwtPayload.mockReturnValueOnce(
+      MockSgidService.extractSgidSingpassJwtPayload.mockReturnValueOnce(
         ok(MOCK_VALID_SGID_PAYLOAD),
       )
 
@@ -1777,9 +1781,9 @@ describe('Verification controller', () => {
       expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
         MOCK_FORM_ID,
       )
-      expect(MockSgidService.extractSgidJwtPayload).toHaveBeenCalledWith(
-        MOCK_SGID_REQ.cookies.jwtSgid,
-      )
+      expect(
+        MockSgidService.extractSgidSingpassJwtPayload,
+      ).toHaveBeenCalledWith(MOCK_SGID_REQ.cookies.jwtSgid)
       expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
       expect(MockVerificationService.sendNewOtp).toHaveBeenCalledWith(
         EXPECTED_PARAMS_FOR_SENDING_PAYMENT_OTP,
@@ -2188,7 +2192,7 @@ describe('Verification controller', () => {
       MockFormService.retrieveFullFormById.mockReturnValueOnce(
         okAsync(MOCK_SGID_FORM),
       )
-      MockSgidService.extractSgidJwtPayload.mockReturnValueOnce(
+      MockSgidService.extractSgidSingpassJwtPayload.mockReturnValueOnce(
         err(new SgidMissingJwtError()),
       )
       const expectedResponse = {
@@ -2206,9 +2210,9 @@ describe('Verification controller', () => {
       expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
         MOCK_FORM_ID,
       )
-      expect(MockSgidService.extractSgidJwtPayload).toHaveBeenCalledWith(
-        MOCK_SGID_REQ.cookies.jwtSgid,
-      )
+      expect(
+        MockSgidService.extractSgidSingpassJwtPayload,
+      ).toHaveBeenCalledWith(MOCK_SGID_REQ.cookies.jwtSgid)
       expect(MockOtpUtils.generateOtpWithHash).not.toHaveBeenCalled()
       expect(MockVerificationService.sendNewOtp).not.toHaveBeenCalled()
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
@@ -2230,7 +2234,7 @@ describe('Verification controller', () => {
       MockFormService.retrieveFullFormById.mockReturnValueOnce(
         okAsync(MOCK_SGID_FORM),
       )
-      MockSgidService.extractSgidJwtPayload.mockReturnValueOnce(
+      MockSgidService.extractSgidSingpassJwtPayload.mockReturnValueOnce(
         err(new SgidInvalidJwtError()),
       )
       const expectedResponse = {
@@ -2248,9 +2252,9 @@ describe('Verification controller', () => {
       expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
         MOCK_FORM_ID,
       )
-      expect(MockSgidService.extractSgidJwtPayload).toHaveBeenCalledWith(
-        MOCK_SGID_REQ.cookies.jwt,
-      )
+      expect(
+        MockSgidService.extractSgidSingpassJwtPayload,
+      ).toHaveBeenCalledWith(MOCK_SGID_REQ.cookies.jwt)
       expect(MockOtpUtils.generateOtpWithHash).not.toHaveBeenCalled()
       expect(MockVerificationService.sendNewOtp).not.toHaveBeenCalled()
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
