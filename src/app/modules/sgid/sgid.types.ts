@@ -9,7 +9,6 @@ export type SGIDScopeToValue = Record<string, string>
 
 export type SGIDJwtSingpassPayload = { userName: string }
 export type SGIDJwtAccessPayload = {
-  userName: string | undefined
   accessToken: string
   rememberMe: boolean
 }

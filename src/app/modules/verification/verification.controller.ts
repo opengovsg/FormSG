@@ -263,8 +263,12 @@ export const _handleGenerateOtp: ControllerHandler<
                 return error
               })
           }
+          // SGID_MyInfo temporarily here
+          case FormAuthType.SGID_MyInfo:
           case FormAuthType.SGID:
-            return SgidService.extractSgidJwtPayload(req.cookies.jwtSgid)
+            return SgidService.extractSgidSingpassJwtPayload(
+              req.cookies.jwtSgid,
+            )
               .map(() => form)
               .mapErr((error) => {
                 logger.error({
