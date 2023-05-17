@@ -334,6 +334,7 @@ export const PreviewFormProvider = ({
         isLoading,
         handleLogout: undefined,
         isPaymentEnabled,
+        isPreview: true,
         ...commonFormValues,
         ...data,
         ...rest,

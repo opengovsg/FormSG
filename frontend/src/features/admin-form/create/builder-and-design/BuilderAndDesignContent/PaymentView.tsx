@@ -80,7 +80,7 @@ export const PaymentView = () => {
     setFieldListTabIndex(FieldListTabIndex.Payments)
   }
 
-  return (
+  return paymentDetails.enabled ? (
     <Box w="100%" maxW="57rem" alignSelf="center" ref={paymentRef}>
       <FormProvider {...formMethods}>
         <Box mt="2.5rem" bg="white" py="2.5rem" px="1.5rem">
@@ -106,5 +106,5 @@ export const PaymentView = () => {
         </Box>
       </FormProvider>
     </Box>
-  )
+  ) : null
 }

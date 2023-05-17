@@ -25,12 +25,12 @@ import { usePublicFormContext } from '../../PublicFormContext'
  */
 export const PublicFormPaymentResumeModal = (): JSX.Element => {
   const isMobile = useIsMobile()
-  const { isPaymentEnabled, formId } = usePublicFormContext()
+  const { isPaymentEnabled, formId, isPreview } = usePublicFormContext()
 
   const [lastPaymentMemory, , clearPaymentMemory] = useBrowserStm(formId)
 
   const { isOpen, onClose } = useDisclosure({
-    defaultIsOpen: Boolean(lastPaymentMemory && isPaymentEnabled),
+    defaultIsOpen: Boolean(lastPaymentMemory && isPaymentEnabled && !isPreview),
   })
 
   const navigate = useNavigate()
@@ -38,7 +38,7 @@ export const PublicFormPaymentResumeModal = (): JSX.Element => {
     return <></>
   }
   const onSubmit = () => {
-    if (!lastPaymentMemory) {
+    if (!lastPaymentMemory || isPreview) {
       onClose()
       return
     }
