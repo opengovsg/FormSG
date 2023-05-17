@@ -55,7 +55,7 @@
     "postinstall:shared": "npm --prefix shared install"
   },
   "dependencies": {
-    "@aws-sdk/client-cloudwatch-logs": "^3.276.0",
+    "@aws-sdk/client-cloudwatch-logs": "^3.332.0",
     "@babel/runtime": "^7.20.13",
     "@joi/date": "^2.1.0",
     "@opengovsg/angular-daterangepicker-webpack": "^1.1.5",
