@@ -10,8 +10,11 @@ import {
 import { FormResponseMode, PaymentChannel } from '~shared/types'
 
 import { BxsCheckCircle, BxsError, BxsInfoCircle } from '~assets/icons'
+import { GUIDE_PAYMENTS } from '~constants/links'
 import FormLabel from '~components/FormControl/FormLabel'
+import InlineMessage from '~components/InlineMessage'
 import Input from '~components/Input'
+import Link from '~components/Link'
 
 import { useAdminFormPayments, useAdminFormSettings } from '../../queries'
 
@@ -125,8 +128,17 @@ const PaymentsSectionText = () => {
   return (
     <Skeleton isLoaded={!isLoading} mb="2.5rem">
       <Text>
-        Link your form to a Stripe account to start collecting payments.
+        Connect your Stripe account to this form to start collecting payments.
       </Text>
+      <InlineMessage variant="info" mt="2rem">
+        <Text>
+          Don't have a Stripe account? Follow{' '}
+          <Link target="_blank" href={GUIDE_PAYMENTS}>
+            this guide
+          </Link>{' '}
+          to create one.
+        </Text>
+      </InlineMessage>
     </Skeleton>
   )
 }

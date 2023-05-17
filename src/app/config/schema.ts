@@ -115,20 +115,6 @@ export const compulsoryVarsSchema: Schema<ICompulsoryVarsSchema> = {
       env: 'SSM_ENV_SITE_NAME',
     },
   },
-  reactMigration: {
-    adminSwitchEnvFeedbackFormId: {
-      doc: 'Form ID of the React to Angular bug report feedback form for admins',
-      format: String,
-      default: null,
-      env: 'REACT_SWITCH_ENV_FEEDBACK_FORM_ID_ADMIN',
-    },
-    respondentSwitchEnvFeedbackFormId: {
-      doc: 'Form ID of the React to Angular bug report feedback form for respondents',
-      format: String,
-      default: null,
-      env: 'REACT_SWITCH_ENV_FEEDBACK_FORM_ID_RESPONDENT',
-    },
-  },
 }
 
 // If the following environment variables are not specified, we will fall back to the defaults provided
@@ -354,66 +340,6 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
     },
   },
   reactMigration: {
-    respondentRolloutEmail: {
-      doc: 'Percentage threshold to serve React for respondents for Phase 1 (email mode forms)',
-      format: 'int',
-      default: 0,
-      env: 'REACT_MIGRATION_RESP_ROLLOUT_EMAIL',
-    },
-    respondentRolloutStorage: {
-      doc: 'Percentage threshold to serve React for respondents for Phase 2 (storage mode forms)',
-      format: 'int',
-      default: 0,
-      env: 'REACT_MIGRATION_RESP_ROLLOUT_STORAGE',
-    },
-    adminRollout: {
-      doc: 'Percentage threshold to serve React for admins',
-      format: 'int',
-      default: 0,
-      env: 'REACT_MIGRATION_ADMIN_ROLLOUT',
-    },
-    respondentCookieName: {
-      doc: "Name of the cookie that will store respondents' assigned environment.",
-      format: String,
-      default: 'v2-respondent-ui',
-      env: 'REACT_MIGRATION_RESP_COOKIE_NAME',
-    },
-    adminCookieNameOld: {
-      doc: "Name of the old cookie that will store admins' choice of environment.",
-      format: String,
-      default: 'v2-admin-ui',
-      env: 'REACT_MIGRATION_ADMIN_COOKIE_NAME_OLD',
-    },
-    adminCookieName: {
-      doc: "Name of the cookie that will store admins' choice of environment.",
-      format: String,
-      default: 'v2-admin-ui-Jan-2023',
-      env: 'REACT_MIGRATION_ADMIN_COOKIE_NAME',
-    },
-    qaCookieName: {
-      doc: 'Priority cookie to select react/angular during QA.',
-      format: String,
-      default: 'v2-qa-ui',
-      env: 'REACT_MIGRATION_QA_COOKIE_NAME',
-    },
-    angularPhaseOutDate: {
-      doc: 'Last date that AngularJS app is available',
-      format: String,
-      default: '15 September 2022',
-      env: 'REACT_MIGRATION_ANGULAR_END_DATE',
-    },
-    removeAdminInfoboxThreshold: {
-      doc: 'Percentage threshold where switch-to-angular infobox for Admins will no longer be visible',
-      format: 'int',
-      default: 100,
-      env: 'REACT_MIGRATION_REMOVE_INFOBOX_THRESHOLD_ADMIN',
-    },
-    removeRespondentsInfoboxThreshold: {
-      doc: 'Percentage threshold where switch-to-angular infobox for Respondents will no longer be visible',
-      format: 'int',
-      default: 10,
-      env: 'REACT_MIGRATION_REMOVE_INFOBOX_THRESHOLD_RESPONDENT',
-    },
     useFetchForSubmissions: {
       // TODO (#5826): Toggle to use fetch for submissions instead of axios. Remove once network error is resolved
       doc: 'Toggle to use fetch for submissions instead of axios',

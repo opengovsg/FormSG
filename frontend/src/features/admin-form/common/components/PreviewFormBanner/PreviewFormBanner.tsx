@@ -15,9 +15,11 @@ import {
   Slide,
   Stack,
   Text,
+  TextProps,
   useDisclosure,
 } from '@chakra-ui/react'
 
+import { FORMSG_UAT } from '~constants/links'
 import { ADMINFORM_ROUTE, DASHBOARD_ROUTE } from '~constants/routes'
 import Button, { ButtonProps } from '~components/Button'
 import Link from '~components/Link'
@@ -39,6 +41,14 @@ export const StickyPreviewHeader = ({
 )
 interface PreviewFormBannerProps {
   isTemplate?: boolean
+}
+
+const textProps: TextProps = {
+  textStyle: 'body-2',
+  color: 'white',
+  ml: '2rem',
+  mt: '0.5rem',
+  mb: '0.5rem',
 }
 
 export const PreviewFormBanner = ({
@@ -166,16 +176,20 @@ export const PreviewFormBanner = ({
         </Drawer>
       </Flex>
       {isPaymentEnabled && (
-        <Flex backgroundColor={'#3A3E46'}>
-          <Text
-            textStyle="body-2"
-            color="white"
-            ml="2rem"
-            mt="0.5rem"
-            mb="0.5rem"
-          >
-            Payments made in Form Preview mode will not reflect on Stripe.
-          </Text>
+        <Flex backgroundColor="neutral.900">
+          {process.env.SECRET_ENV === 'production' ? (
+            <Text {...textProps}>
+              To test your payment form, replicate this form on our{' '}
+              <Link isExternal color="white" href={FORMSG_UAT}>
+                testing platform.
+              </Link>
+            </Text>
+          ) : (
+            <Text {...textProps}>
+              You will not be able to make a test payment in Form Preview mode.
+              Open your form to make a test payment.
+            </Text>
+          )}
         </Flex>
       )}
       <Divider />

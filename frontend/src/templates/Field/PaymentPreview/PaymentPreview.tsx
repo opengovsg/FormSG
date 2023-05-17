@@ -21,7 +21,7 @@ import {
 
 type PaymentPreviewProps = {
   colorTheme?: FormColorTheme
-  paymentDetails?: FormPaymentsField
+  paymentDetails: FormPaymentsField
   isBuilder?: boolean
 }
 
@@ -38,8 +38,6 @@ export const PaymentPreview = ({
     description: 'Proof of payment will be sent to this email',
     isVerifiable: true,
   }
-
-  if (!paymentDetails || !paymentDetails.enabled) return null
 
   return (
     <>
