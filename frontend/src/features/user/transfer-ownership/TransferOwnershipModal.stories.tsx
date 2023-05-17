@@ -6,6 +6,7 @@ import { times } from 'lodash'
 
 import {
   AdminDashboardFormMetaDto,
+  AdminFormViewDto,
   FormResponseMode,
   FormStatus,
 } from '~shared/types'
@@ -26,26 +27,26 @@ import { TransferOwnershipModal } from './TransferOwnershipModal'
 
 // FIXME: getUser, MOCK_USER are imported from another mock file. Consider relocating to a commons file?
 // FIXME: Copied from frontend/src/features/workspace/WorkspacePage.stories.tsx. Should DRY.
-const createForm: (_: number) => AdminDashboardFormMetaDto[] = (
-  num: number,
-) => {
+const createForm: (_: number) => AdminFormViewDto[] = (num: number) => {
   return times(num, (x) => {
     return {
-      _id: `618b2d5e648fb700700002b${x}`,
-      status: x % 2 ? FormStatus.Public : FormStatus.Private,
-      responseMode: x % 2 ? FormResponseMode.Email : FormResponseMode.Encrypt,
-      title: `Test form ${x}`,
-      admin: {
-        ...MOCK_USER,
+      form: {
+        _id: `618b2d5e648fb700700002b${x}`,
+        status: x % 2 ? FormStatus.Public : FormStatus.Private,
+        responseMode: x % 2 ? FormResponseMode.Email : FormResponseMode.Encrypt,
+        title: `Test form ${x}`,
+        admin: {
+          ...MOCK_USER,
+        },
+        lastModified: `2021-11-${((x % 30) + 1)
+          .toString()
+          .padStart(2, '0')}T07:46:29.388Z`,
       },
-      lastModified: `2021-11-${((x % 30) + 1)
-        .toString()
-        .padStart(2, '0')}T07:46:29.388Z`,
-    } as AdminDashboardFormMetaDto
+    } as AdminFormViewDto
   }).reverse()
 }
 
-const MOCK_OWNED_FORMS: AdminDashboardFormMetaDto[] = createForm(10)
+const MOCK_OWNED_FORMS: AdminFormViewDto[] = createForm(10)
 
 export default {
   title: 'Features/User/TransferOwnershipModal',
@@ -57,10 +58,12 @@ export default {
     chromatic: { pauseAnimationAtEnd: true },
     msw: [
       getUser({ delay: 0, mockUser: MOCK_USER }),
-      getOwnedForms({ overrides: [...MOCK_OWNED_FORMS] }),
+      getOwnedForms({
+        overrides: [...MOCK_OWNED_FORMS.map((formView) => formView.form)],
+      }),
       transferOwnership({
         overrides: {
-          body: [...MOCK_OWNED_FORMS.map((form) => form._id)],
+          body: [...MOCK_OWNED_FORMS],
         },
       }),
     ],
@@ -102,11 +105,22 @@ Mobile.parameters = {
   chromatic: { viewports: [viewports.xs] },
 }
 
-export const Failure = Template.bind({})
-Failure.parameters = {
+export const FailureBecauseNoOwnedForms = Template.bind({})
+FailureBecauseNoOwnedForms.parameters = {
   msw: [
     getUser({ delay: 0, mockUser: MOCK_USER }),
-    getOwnedForms({ overrides: [...MOCK_OWNED_FORMS] }),
+    getOwnedForms({ overrides: [] }),
+    transferOwnership(),
+  ],
+}
+
+export const FailureBecauseTransferEndpointFailed = Template.bind({})
+FailureBecauseTransferEndpointFailed.parameters = {
+  msw: [
+    getUser({ delay: 0, mockUser: MOCK_USER }),
+    getOwnedForms({
+      overrides: [...MOCK_OWNED_FORMS.map((formView) => formView.form)],
+    }),
     transferOwnership({ overrides: { status: 500, body: [] } }),
   ],
 }

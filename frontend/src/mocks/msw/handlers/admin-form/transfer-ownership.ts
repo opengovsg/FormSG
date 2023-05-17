@@ -1,6 +1,6 @@
 import { rest } from 'msw'
 
-import { AdminDashboardFormMetaDto } from '~shared/types'
+import { AdminDashboardFormMetaDto, AdminFormViewDto } from '~shared/types'
 
 export const getOwnedForms = ({
   overrides,
@@ -21,10 +21,10 @@ export const transferOwnership = ({
   overrides,
   delay = 0,
 }: {
-  overrides?: { status?: number; body?: string[] }
+  overrides?: { status?: number; body?: AdminFormViewDto[] }
   delay?: number | 'infinite'
 } = {}): ReturnType<typeof rest['get']> => {
-  return rest.post<AdminDashboardFormMetaDto[]>(
+  return rest.post<AdminFormViewDto[]>(
     '/api/v3/admin/forms/:formId/collaborators/transfer-owner',
     (req, res, ctx) => {
       return res(
