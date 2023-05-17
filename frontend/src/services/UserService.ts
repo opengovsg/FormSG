@@ -59,20 +59,12 @@ export const transferOwnership = async (
         { email },
       ),
     ),
-  )
-    .then((responses) => {
-      const formIds = responses.map((response) => response.data.form._id)
-      return {
-        email,
-        formIds,
-        error: '',
-      }
-    })
-    .catch((error) => {
-      return {
-        email,
-        formIds: [],
-        error: error.message,
-      }
-    })
+  ).then((responses) => {
+    const formIds = responses.map((response) => response.data.form._id)
+    return {
+      email,
+      formIds,
+      error: '',
+    }
+  })
 }
