@@ -60,6 +60,13 @@ export const transferOwnership = async (
       ),
     ),
   ).then((responses) => {
+    if (!Array.isArray(responses) || !responses.length) {
+      return Promise.reject(
+        new Error(
+          'Failed to transfer ownership because no owned forms were found.',
+        ),
+      )
+    }
     const formIds = responses.map((response) => response.data.form._id)
     return {
       email,
