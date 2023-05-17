@@ -9,8 +9,6 @@ import { Banner } from '~components/Banner'
 
 import AdminForbiddenErrorPage from '~pages/AdminForbiddenError'
 import NotFoundErrorPage from '~pages/NotFoundError'
-// TODO #4279: Remove after React rollout is complete
-import { AdminFeedbackIcon } from '~features/env/AdminFeedbackIcon'
 import { useEnv } from '~features/env/queries'
 
 import { StorageResponsesProvider } from '../responses/ResponsesPage/storage/StorageResponsesProvider'
@@ -68,7 +66,6 @@ export const AdminFormLayout = (): JSX.Element => {
         </Banner>
       ) : null}
       <AdminFormNavbar />
-      <AdminFeedbackIcon />
       <StorageResponsesProvider>
         <Outlet />
       </StorageResponsesProvider>
