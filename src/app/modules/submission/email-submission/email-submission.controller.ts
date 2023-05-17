@@ -21,6 +21,7 @@ import {
 } from '../../myinfo/myinfo.constants'
 import { MyInfoService } from '../../myinfo/myinfo.service'
 import { extractMyInfoLoginJwt } from '../../myinfo/myinfo.util'
+import { SGID_COOKIE_NAME } from '../../sgid/sgid.constants'
 import { SgidService } from '../../sgid/sgid.service'
 import { getOidcService } from '../../spcp/spcp.oidc.service'
 import * as EmailSubmissionMiddleware from '../email-submission/email-submission.middleware'
@@ -232,15 +233,21 @@ const submitEmailModeForm: ControllerHandler<
                 })
                 return error
               })
+          // SGID_MyInfo is temporarily placed here for now.
+          case FormAuthType.SGID_MyInfo:
           case FormAuthType.SGID:
-            return SgidService.extractSgidJwtPayload(req.cookies.jwtSgid)
-              .map<IPopulatedEmailFormWithResponsesAndHash>((data) => ({
-                form,
-                parsedResponses: parsedResponses.addNdiResponses({
-                  authType,
-                  uinFin: data.getUinFin(),
+            return SgidService.extractSgidSingpassJwtPayload(
+              req.cookies[SGID_COOKIE_NAME],
+            )
+              .map<IPopulatedEmailFormWithResponsesAndHash>(
+                ({ userName: uinFin }) => ({
+                  form,
+                  parsedResponses: parsedResponses.addNdiResponses({
+                    authType,
+                    uinFin,
+                  }),
                 }),
-              }))
+              )
               .mapErr((error) => {
                 spcpSubmissionFailure = true
                 logger.error({

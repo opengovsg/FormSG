@@ -33,7 +33,6 @@ export const MOCK_USER_INFO = {
 }
 
 export const MOCK_JWT_PAYLOAD = {
-  data: { 'myinfo.nric_number': 'S9322889A' },
   userName: MOCK_USER_INFO.data[SGID_MYINFO_NRIC_NUMBER_SCOPE],
 }
 

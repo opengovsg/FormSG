@@ -61,7 +61,12 @@ export const handleLogin: ControllerHandler<
 
   const jwtResult = await SgidService.retrieveAccessToken(code)
     .andThen((data) => SgidService.retrieveUserInfo(data))
-    .andThen(({ data }) => SgidService.createJwt(data, rememberMe))
+    .andThen(({ data }) =>
+      SgidService.createSgidSingpassJwt(
+        { 'myinfo.nric_number': data['myinfo.nric_number'] },
+        rememberMe,
+      ),
+    )
 
   if (jwtResult.isErr()) {
     logger.error({

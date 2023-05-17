@@ -33,6 +33,7 @@ import {
   extractAuthCode,
   validateMyInfoForm,
 } from '../../myinfo/myinfo.util'
+import { SGID_COOKIE_NAME } from '../../sgid/sgid.constants'
 import { SgidInvalidJwtError, SgidVerifyJwtError } from '../../sgid/sgid.errors'
 import { SgidService } from '../../sgid/sgid.service'
 import { validateSgidForm } from '../../sgid/sgid.util'
@@ -299,12 +300,14 @@ export const handleGetPublicForm: ControllerHandler<
         })
     }
     case FormAuthType.SGID:
-      return SgidService.extractSgidJwtPayload(req.cookies.jwtSgid)
-        .map((data) => {
+      return SgidService.extractSgidSingpassJwtPayload(
+        req.cookies[SGID_COOKIE_NAME],
+      )
+        .map((spcpSession) => {
           return res.json({
             form: publicForm,
             isIntranetUser,
-            spcpSession: { userName: data.getUinFin() },
+            spcpSession,
           })
         })
         .mapErr((error) => {
@@ -321,6 +324,8 @@ export const handleGetPublicForm: ControllerHandler<
           }
           return res.json({ form: publicForm, isIntranetUser })
         })
+    case FormAuthType.SGID_MyInfo:
+      return res.json({ form: publicForm, isIntranetUser: false })
     default:
       return new UnreachableCaseError(authType)
   }
@@ -404,6 +409,15 @@ export const _handleFormAuthRedirect: ControllerHandler<
               formId,
               Boolean(isPersistentLogin),
               [],
+              encodedQuery,
+            )
+          })
+        case FormAuthType.SGID_MyInfo:
+          return validateSgidForm(form).andThen(() => {
+            return SgidService.createRedirectUrl(
+              formId,
+              Boolean(isPersistentLogin),
+              form.getUniqueMyInfoAttrs(),
               encodedQuery,
             )
           })

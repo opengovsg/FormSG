@@ -259,7 +259,7 @@ const submitEncryptModeForm: ControllerHandler<
       break
     }
     case FormAuthType.SGID: {
-      const jwtPayloadResult = SgidService.extractSgidJwtPayload(
+      const jwtPayloadResult = SgidService.extractSgidSingpassJwtPayload(
         req.cookies.jwtSgid,
       )
       if (jwtPayloadResult.isErr()) {
@@ -276,7 +276,7 @@ const submitEncryptModeForm: ControllerHandler<
           spcpSubmissionFailure: true,
         })
       }
-      uinFin = jwtPayloadResult.value.getUinFin()
+      uinFin = jwtPayloadResult.value.userName
       break
     }
   }

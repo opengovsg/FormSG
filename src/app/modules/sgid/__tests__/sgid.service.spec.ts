@@ -4,7 +4,6 @@ import fs from 'fs'
 import Jwt from 'jsonwebtoken'
 import { MyInfoAttribute } from 'shared/types'
 
-import { SGIDMyInfoData } from '../sgid.adapter'
 import { SGID_MYINFO_NRIC_NUMBER_SCOPE } from '../sgid.constants'
 import {
   SgidCreateRedirectUrlError,
@@ -32,7 +31,7 @@ import {
   MOCK_USER_INFO,
 } from './sgid.test.constants'
 
-const SGID_DEFAULT_SCOPES = 'openid myinfo.nric_number'
+const SGID_SINGPASS_SCOPE = 'openid myinfo.nric_number'
 const SGID_DEFAULT_ATTR_LIST: MyInfoAttribute[] = []
 
 jest.mock('@opengovsg/sgid-client')
@@ -79,7 +78,7 @@ describe('sgid.service', () => {
       expect(url._unsafeUnwrap()).toEqual(MOCK_REDIRECT_URL)
       expect(sgidClient.authorizationUrl).toHaveBeenCalledWith(
         MOCK_STATE,
-        SGID_DEFAULT_SCOPES,
+        SGID_SINGPASS_SCOPE,
         null,
       )
     })
@@ -120,7 +119,7 @@ describe('sgid.service', () => {
       expect(url._unsafeUnwrapErr()).toBeInstanceOf(SgidCreateRedirectUrlError)
       expect(sgidClient.authorizationUrl).toHaveBeenCalledWith(
         MOCK_STATE,
-        SGID_DEFAULT_SCOPES,
+        SGID_SINGPASS_SCOPE,
         null,
       )
     })
@@ -194,14 +193,16 @@ describe('sgid.service', () => {
       const SgidService = new SgidServiceClass(MOCK_OPTIONS)
       // @ts-ignore
       MockJwt.sign.mockReturnValue(MOCK_JWT)
-      const result = SgidService.createJwt(MOCK_USER_INFO.data, false)
+      const result = SgidService.createSgidSingpassJwt(
+        MOCK_USER_INFO.data,
+        false,
+      )
       expect(result._unsafeUnwrap()).toStrictEqual({
         jwt: MOCK_JWT,
         maxAge: MOCK_OPTIONS.cookieMaxAge,
       })
       expect(MockJwt.sign).toHaveBeenCalledWith(
         {
-          data: { 'myinfo.nric_number': 'S9322889A' },
           userName: MOCK_USER_INFO.data['myinfo.nric_number'],
           rememberMe: false,
         },
@@ -217,14 +218,16 @@ describe('sgid.service', () => {
       const SgidService = new SgidServiceClass(MOCK_OPTIONS)
       // @ts-ignore
       MockJwt.sign.mockReturnValue(MOCK_JWT)
-      const result = SgidService.createJwt(MOCK_USER_INFO.data, true)
+      const result = SgidService.createSgidSingpassJwt(
+        MOCK_USER_INFO.data,
+        true,
+      )
       expect(result._unsafeUnwrap()).toStrictEqual({
         jwt: MOCK_JWT,
         maxAge: MOCK_OPTIONS.cookieMaxAgePreserved,
       })
       expect(MockJwt.sign).toHaveBeenCalledWith(
         {
-          data: { 'myinfo.nric_number': 'S9322889A' },
           userName: MOCK_USER_INFO.data[SGID_MYINFO_NRIC_NUMBER_SCOPE],
           rememberMe: true,
         },
@@ -241,10 +244,8 @@ describe('sgid.service', () => {
       const SgidService = new SgidServiceClass(MOCK_OPTIONS)
       // @ts-ignore
       MockJwt.verify.mockReturnValue(MOCK_JWT_PAYLOAD)
-      const result = SgidService.extractSgidJwtPayload(MOCK_JWT)
-      expect(result._unsafeUnwrap()).toStrictEqual(
-        new SGIDMyInfoData(MOCK_JWT_PAYLOAD.data),
-      )
+      const result = SgidService.extractSgidSingpassJwtPayload(MOCK_JWT)
+      expect(result._unsafeUnwrap()).toStrictEqual(MOCK_JWT_PAYLOAD)
       expect(MockJwt.verify).toHaveBeenCalledWith(
         MOCK_JWT,
         MOCK_OPTIONS.publicKeyPath,
@@ -255,7 +256,7 @@ describe('sgid.service', () => {
     it('should return SgidMissingJwtError on malformed payload', () => {
       const SgidService = new SgidServiceClass(MOCK_OPTIONS)
       // @ts-ignore
-      const result = SgidService.extractSgidJwtPayload(undefined)
+      const result = SgidService.extractSgidSingpassJwtPayload(undefined)
       expect(result._unsafeUnwrapErr()).toBeInstanceOf(SgidMissingJwtError)
       expect(MockJwt.verify).not.toHaveBeenCalled()
     })
@@ -264,7 +265,7 @@ describe('sgid.service', () => {
       const SgidService = new SgidServiceClass(MOCK_OPTIONS)
       // @ts-ignore
       MockJwt.verify.mockReturnValue({})
-      const result = SgidService.extractSgidJwtPayload(MOCK_JWT)
+      const result = SgidService.extractSgidSingpassJwtPayload(MOCK_JWT)
       expect(result._unsafeUnwrapErr()).toBeInstanceOf(SgidInvalidJwtError)
       expect(MockJwt.verify).toHaveBeenCalledWith(
         MOCK_JWT,
@@ -277,7 +278,7 @@ describe('sgid.service', () => {
       MockJwt.verify.mockImplementation(() => {
         throw new Error()
       })
-      const result = SgidService.extractSgidJwtPayload(MOCK_JWT)
+      const result = SgidService.extractSgidSingpassJwtPayload(MOCK_JWT)
       expect(result._unsafeUnwrapErr()).toBeInstanceOf(SgidVerifyJwtError)
       expect(MockJwt.verify).toHaveBeenCalledWith(
         MOCK_JWT,

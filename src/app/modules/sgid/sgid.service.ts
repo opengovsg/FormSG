@@ -9,8 +9,7 @@ import { sgid } from '../../config/features/sgid.config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { ApplicationError } from '../core/core.errors'
 
-import { internalAttrListToScopes, SGIDMyInfoData } from './sgid.adapter'
-import { SGID_MYINFO_NRIC_NUMBER_SCOPE } from './sgid.constants'
+import { internalAttrListToScopes } from './sgid.adapter'
 import {
   SgidCreateRedirectUrlError,
   SgidFetchAccessTokenError,
@@ -20,8 +19,13 @@ import {
   SgidMissingJwtError,
   SgidVerifyJwtError,
 } from './sgid.errors'
-import { SGIDScopeToValue } from './sgid.types'
-import { isSgidJwtPayload } from './sgid.util'
+import {
+  SGIDJwtAccessPayload,
+  SGIDJwtSingpassPayload,
+  SGIDJwtVerifierFunction,
+  SGIDScopeToValue,
+} from './sgid.types'
+import { isSgidJwtAccessPayload, isSgidJwtSingpassPayload } from './sgid.util'
 
 const logger = createLoggerWithLabel(module)
 
@@ -177,10 +181,12 @@ export class SgidServiceClass {
     SgidFetchUserInfoError
   > {
     return ResultAsync.fromPromise(
-      this.client.userinfo(accessToken).then(({ sub, data }) => ({
-        sub,
-        data,
-      })),
+      this.client.userinfo(accessToken).then(({ sub, data }) => {
+        return {
+          sub,
+          data,
+        }
+      }),
       (error) => {
         logger.error({
           message: 'Failed to retrieve user info from sgID',
@@ -200,12 +206,12 @@ export class SgidServiceClass {
    * @param data - the userinfo as obtained from sgID
    * @param rememberMe - determines how long the JWT is valid for
    */
-  createJwt(
-    data: SGIDScopeToValue,
+  createSgidSingpassJwt(
+    data: { 'myinfo.nric_number': string },
     rememberMe: boolean,
   ): Result<{ jwt: string; maxAge: number }, ApplicationError> {
-    const userName = data[SGID_MYINFO_NRIC_NUMBER_SCOPE]
-    const payload = { userName, data, rememberMe }
+    const userName = data['myinfo.nric_number']
+    const payload = { userName, rememberMe }
     const maxAge = rememberMe ? this.cookieMaxAgePreserved : this.cookieMaxAge
     const jwt = Jwt.sign(payload, this.privateKey, {
       algorithm: JWT_ALGORITHM,
@@ -218,17 +224,79 @@ export class SgidServiceClass {
   }
 
   /**
-   * Verifies a sgID JWT and extracts its payload.
+   * Create a JWT based with access token from sgID
+   * @param accessToken - sgID access token
+   * @param rememberMe - determines how long the JWT is valid for
+   */
+  createSgidMyInfoJwt(
+    accessToken: string,
+    rememberMe: boolean,
+  ): Result<{ jwt: string; maxAge: number }, ApplicationError> {
+    const payload: SGIDJwtAccessPayload = { accessToken, rememberMe }
+    const maxAge = rememberMe ? this.cookieMaxAgePreserved : this.cookieMaxAge
+    const jwt = Jwt.sign(payload, this.privateKey, {
+      algorithm: JWT_ALGORITHM,
+      expiresIn: maxAge / 1000,
+    })
+    return ok({
+      jwt,
+      maxAge,
+    })
+  }
+
+  /**
+   * Verifies a sgID JWT and extracts its payload (Singpass userName).
    * @param jwtSgid The contents of the JWT cookie
    */
-  extractSgidJwtPayload(
+  extractSgidSingpassJwtPayload(
     jwtSgid: string,
   ): Result<
-    SGIDMyInfoData,
+    SGIDJwtSingpassPayload,
     SgidVerifyJwtError | SgidInvalidJwtError | SgidMissingJwtError
   > {
+    return this._extractSgidJwtGenericPayload<SGIDJwtSingpassPayload>(
+      jwtSgid,
+      'extractSgidJwtSingpassPayload',
+      isSgidJwtSingpassPayload,
+    )
+  }
+
+  /**
+   * Verifies a sgID JWT and extracts its payload (access token).
+   * @param jwtSgid The contents of the JWT cookie
+   */
+  extractSgidJwtMyInfoPayload(
+    jwtSgid: string,
+  ): Result<
+    SGIDJwtAccessPayload,
+    SgidVerifyJwtError | SgidInvalidJwtError | SgidMissingJwtError
+  > {
+    return this._extractSgidJwtGenericPayload<SGIDJwtAccessPayload>(
+      jwtSgid,
+      'extractSgidJwtAccessPayload',
+      isSgidJwtAccessPayload,
+    )
+  }
+
+  /**
+   * Verifies a sgID JWT and extract its payload.
+   * sgID JWT has two types/modes
+   *   1. Simple auth mode (Singpass auth replacement).
+   *   2. MyInfo access token mode (used to fill up MyInfo fields over sgID).
+   * @param jwtSgid The contents of the JWT cookie.
+   * @param action Name of the calling function.
+   * @param verifier Function to verify the contents of the JWT
+   * @returns
+   */
+  _extractSgidJwtGenericPayload<
+    R extends SGIDJwtSingpassPayload | SGIDJwtAccessPayload,
+  >(
+    jwtSgid: string,
+    action: string,
+    verifier: SGIDJwtVerifierFunction<R>,
+  ): Result<R, SgidVerifyJwtError | SgidInvalidJwtError | SgidMissingJwtError> {
     const logMeta = {
-      action: 'extractSgidJwtPayload',
+      action,
     }
     try {
       if (!jwtSgid) {
@@ -239,8 +307,8 @@ export class SgidServiceClass {
         algorithms: [JWT_ALGORITHM],
       })
 
-      if (isSgidJwtPayload(payload)) {
-        return ok(new SGIDMyInfoData(payload['data']))
+      if (verifier(payload)) {
+        return ok(payload)
       }
 
       const payloadIsDefined = !!payload
