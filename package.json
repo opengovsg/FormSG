@@ -266,7 +266,7 @@
     "regenerator": "^0.14.10",
     "rimraf": "^4.4.0",
     "stripe-event-types": "^2.3.0",
-    "stylelint": "^13.13.1",
+    "stylelint": "^15.6.2",
     "stylelint-config-prettier": "^9.0.5",
     "stylelint-config-standard": "^22.0.0",
     "stylelint-prettier": "^1.2.0",
