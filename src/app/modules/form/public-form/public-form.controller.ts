@@ -33,6 +33,7 @@ import {
   extractAuthCode,
   validateMyInfoForm,
 } from '../../myinfo/myinfo.util'
+import { SGIDMyInfoData } from '../../sgid/sgid.adapter'
 import { SGID_COOKIE_NAME } from '../../sgid/sgid.constants'
 import { SgidInvalidJwtError, SgidVerifyJwtError } from '../../sgid/sgid.errors'
 import { SgidService } from '../../sgid/sgid.service'
@@ -324,8 +325,43 @@ export const handleGetPublicForm: ControllerHandler<
           }
           return res.json({ form: publicForm, isIntranetUser })
         })
-    case FormAuthType.SGID_MyInfo:
-      return res.json({ form: publicForm, isIntranetUser: false })
+    case FormAuthType.SGID_MyInfo: {
+      const accessTokenCookie = req.cookies[SGID_COOKIE_NAME]
+      res.clearCookie(SGID_COOKIE_NAME)
+      return SgidService.extractSgidJwtMyInfoPayload(accessTokenCookie)
+        .asyncAndThen((auth) =>
+          SgidService.retrieveUserInfo({ accessToken: auth.accessToken }),
+        )
+        .andThen((userInfo) => {
+          const data = new SGIDMyInfoData(userInfo.data)
+          return MyInfoService.prefillAndSaveMyInfoFields(
+            form._id,
+            data,
+            form.toJSON().form_fields,
+          ).map((prefilledFields) => {
+            return res.json({
+              form: {
+                ...publicForm,
+                form_fields: prefilledFields as FormFieldDto[],
+              },
+              spcpSession: { userName: data.getUinFin() },
+              isIntranetUser,
+            })
+          })
+        })
+        .mapErr((error) => {
+          logger.error({
+            message: 'sgID: MyInfo login error',
+            meta: logMeta,
+            error,
+          })
+          return res.json({
+            form: publicForm,
+            myInfoError: true,
+            isIntranetUser,
+          })
+        })
+    }
     default:
       return new UnreachableCaseError(authType)
   }
