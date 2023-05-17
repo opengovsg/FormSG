@@ -163,19 +163,20 @@ export const FormFields = ({
             </Stack>
           </Box>
         )}
-        {form?.responseMode === FormResponseMode.Encrypt && (
-          <Box
-            mt="2.5rem"
-            bg="white"
-            py="2.5rem"
-            px={{ base: '1rem', md: '2.5rem' }}
-          >
-            <PaymentPreview
-              colorTheme={colorTheme}
-              paymentDetails={form?.payments_field}
-            />
-          </Box>
-        )}
+        {form?.responseMode === FormResponseMode.Encrypt &&
+          form?.payments_field.enabled && (
+            <Box
+              mt="2.5rem"
+              bg="white"
+              py="2.5rem"
+              px={{ base: '1rem', md: '2.5rem' }}
+            >
+              <PaymentPreview
+                colorTheme={colorTheme}
+                paymentDetails={form?.payments_field}
+              />
+            </Box>
+          )}
         <PublicFormPaymentResumeModal />
         <PublicFormSubmitButton
           onSubmit={onSubmit ? formMethods.handleSubmit(onSubmit) : undefined}
