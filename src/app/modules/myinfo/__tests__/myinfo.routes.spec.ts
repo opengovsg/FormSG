@@ -1,11 +1,10 @@
+import { setupApp } from '__tests__/integration/helpers/express-setup'
+import { buildCelebrateError } from '__tests__/unit/backend/helpers/celebrate'
+import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import MyInfoClient, { IMyInfoConfig } from '@opengovsg/myinfo-gov-client'
 import { ObjectId } from 'bson'
 import session, { Session } from 'supertest-session'
 import { v4 as uuidv4 } from 'uuid'
-
-import { setupApp } from 'tests/integration/helpers/express-setup'
-import { buildCelebrateError } from 'tests/unit/backend/helpers/celebrate'
-import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import { FormAuthType } from '../../../../../shared/types'
 import { MyInfoAuthCodeCookieState } from '../myinfo.types'

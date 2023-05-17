@@ -1,3 +1,5 @@
+import { setupApp } from '__tests__/integration/helpers/express-setup'
+import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import MyInfoClient, { IMyInfoConfig } from '@opengovsg/myinfo-gov-client'
 import { ObjectId } from 'bson-ext'
 import jwt from 'jsonwebtoken'
@@ -13,9 +15,6 @@ import {
 } from 'src/app/modules/myinfo/__tests__/myinfo.test.constants'
 import { MYINFO_AUTH_CODE_COOKIE_NAME } from 'src/app/modules/myinfo/myinfo.constants'
 import { MyInfoAuthCodeCookieState } from 'src/app/modules/myinfo/myinfo.types'
-
-import { setupApp } from 'tests/integration/helpers/express-setup'
-import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import { FormAuthType, FormStatus } from '../../../../../../shared/types'
 import * as AuthService from '../../../auth/auth.service'

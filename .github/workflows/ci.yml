@@ -23,7 +23,7 @@ jobs:
               - shared/**
               - frontend/**
             backend:
-              - tests/**
+              - __tests__/**
               - shared/**
               - src/**
               - package.json

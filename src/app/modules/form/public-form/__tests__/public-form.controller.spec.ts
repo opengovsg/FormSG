@@ -1,3 +1,4 @@
+import expressHandler from '__tests__/unit/backend/helpers/jest-express'
 import { IPersonResponse } from '@opengovsg/myinfo-gov-client'
 import { ObjectId } from 'bson-ext'
 import { Request } from 'express'
@@ -27,8 +28,6 @@ import {
   IPopulatedUser,
   PublicForm,
 } from 'src/types'
-
-import expressHandler from 'tests/unit/backend/helpers/jest-express'
 
 import { FormAuthType, MyInfoAttribute } from '../../../../../../shared/types'
 import * as AuthService from '../../../auth/auth.service'

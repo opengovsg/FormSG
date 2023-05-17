@@ -1,3 +1,7 @@
+import { setupApp } from '__tests__/integration/helpers/express-setup'
+import { buildCelebrateError } from '__tests__/unit/backend/helpers/celebrate'
+import dbHandler from '__tests__/unit/backend/helpers/jest-db'
+import { jsonParseStringify } from '__tests__/unit/backend/helpers/serialize-data'
 import { ObjectId } from 'bson-ext'
 import { StatusCodes } from 'http-status-codes'
 import { err, errAsync } from 'neverthrow'
@@ -5,11 +9,6 @@ import supertest, { Session } from 'supertest-session'
 
 import { DatabaseError } from 'src/app/modules/core/core.errors'
 import { getRedirectTargetSpcpOidc } from 'src/app/modules/spcp/spcp.util'
-
-import { setupApp } from 'tests/integration/helpers/express-setup'
-import { buildCelebrateError } from 'tests/unit/backend/helpers/celebrate'
-import dbHandler from 'tests/unit/backend/helpers/jest-db'
-import { jsonParseStringify } from 'tests/unit/backend/helpers/serialize-data'
 
 import { FormAuthType, FormStatus } from '../../../../../../../shared/types'
 import * as FormService from '../../../../../modules/form/form.service'

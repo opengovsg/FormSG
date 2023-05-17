@@ -1,3 +1,6 @@
+import { setupApp } from '__tests__/integration/helpers/express-setup'
+import { buildCelebrateError } from '__tests__/unit/backend/helpers/celebrate'
+import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { pick } from 'lodash'
 import { errAsync, okAsync } from 'neverthrow'
 import supertest, { Session } from 'supertest-session'
@@ -7,10 +10,6 @@ import MailService from 'src/app/services/mail/mail.service'
 import { HashingError } from 'src/app/utils/hash'
 import * as OtpUtils from 'src/app/utils/otp'
 import { AgencyDocument } from 'src/types'
-
-import { setupApp } from 'tests/integration/helpers/express-setup'
-import { buildCelebrateError } from 'tests/unit/backend/helpers/celebrate'
-import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import * as AuthService from '../../../../../modules/auth/auth.service'
 import { DatabaseError } from '../../../../../modules/core/core.errors'

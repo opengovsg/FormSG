@@ -36,6 +36,7 @@
 We welcome all contributions, bug reports, bug fixes, documentation improvements, enhancements, and ideas to code open sourced by the Government Technology Agency of Singapore. Contributors will also be asked to sign a Contributor License Agreement (CLA) to ensure that everybody is free to use their contributions.
 
 #### IMPORTANT NOTE TO ALL CONTRIBUTORS
+
 Before contributing, please read [CONTRIBUTING.md](CONTRIBUTING.md). In particular, we strongly encourage contributors to please **first discuss the change you wish to make via GitHub issue**, [email](mailto:contribute@form.gov.sg), or any other method with the repository owners beforehand. Otherwise, we may not be able to review or accept your PR.
 
 ## Features
@@ -180,8 +181,8 @@ npm run test
 ```
 
 will build the backend and run both our backend and frontend unit tests. The tests are located at
-[`tests/unit/frontend`](./tests/unit/frontend) and
-[`tests/unit/backend`](./tests/unit/backend).
+[`__tests__/unit/frontend`](./__tests__/unit/frontend) and
+[`__tests__/unit/backend`](./__tests__/unit/backend).
 
 If the backend is already built, you can run
 
@@ -195,7 +196,7 @@ npm run test-ci
 npm run test-e2e
 ```
 
-will build both the frontend and backend then run our end-to-end tests. The tests are located at [`tests/end-to-end`](./tests/end-to-end). You will need to stop the Docker dev container to be able to run the end-to-end tests.
+will build both the frontend and backend then run our end-to-end tests. The tests are located at [`__tests__/e2e`](./__tests__/e2e). You will need to stop the Docker dev container to be able to run the end-to-end tests.
 
 If you do not need to rebuild the frontend and backend, you can run
 

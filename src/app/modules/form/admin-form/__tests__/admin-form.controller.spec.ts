@@ -1,4 +1,10 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
+import {
+  generateDefaultField,
+  generateNewSingleAnswerResponse,
+  generateUnprocessedSingleAnswerResponse,
+} from '__tests__/unit/backend/helpers/generate-form-data'
+import expressHandler from '__tests__/unit/backend/helpers/jest-express'
 import { PresignedPost } from 'aws-sdk/clients/s3'
 import { ObjectId } from 'bson-ext'
 import { StatusCodes } from 'http-status-codes'
@@ -57,13 +63,6 @@ import {
   PublicForm,
 } from 'src/types'
 import { EditFormFieldParams, EncryptSubmissionDto } from 'src/types/api'
-
-import {
-  generateDefaultField,
-  generateNewSingleAnswerResponse,
-  generateUnprocessedSingleAnswerResponse,
-} from 'tests/unit/backend/helpers/generate-form-data'
-import expressHandler from 'tests/unit/backend/helpers/jest-express'
 
 import {
   AdminDashboardFormMetaDto,

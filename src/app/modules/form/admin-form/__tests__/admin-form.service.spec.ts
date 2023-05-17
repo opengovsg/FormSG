@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
+import { generateDefaultField } from '__tests__/unit/backend/helpers/generate-form-data'
 import { PresignedPost } from 'aws-sdk/clients/s3'
 import { ObjectId } from 'bson-ext'
 import { assignIn, cloneDeep, merge, omit, pick } from 'lodash'
@@ -35,8 +36,6 @@ import {
   PickDuplicateForm,
 } from 'src/types'
 import { EditFormFieldParams } from 'src/types/api'
-
-import { generateDefaultField } from 'tests/unit/backend/helpers/generate-form-data'
 
 import { VALID_UPLOAD_FILE_TYPES } from '../../../../../../shared/constants/file'
 import {

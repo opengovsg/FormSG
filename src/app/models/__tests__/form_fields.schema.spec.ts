@@ -1,11 +1,10 @@
+import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { ObjectID } from 'bson'
 import mongoose from 'mongoose'
 import { BasicField, FormResponseMode } from 'shared/types'
 
 import getFormModel from 'src/app/models/form.server.model'
 import { IFieldSchema } from 'src/types'
-
-import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import { aws } from '../../config/config'
 

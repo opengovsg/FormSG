@@ -1,4 +1,12 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
+import {
+  createAuthedSession,
+  logoutSession,
+} from '__tests__/integration/helpers/express-auth'
+import { setupApp } from '__tests__/integration/helpers/express-setup'
+import { buildCelebrateError } from '__tests__/unit/backend/helpers/celebrate'
+import dbHandler from '__tests__/unit/backend/helpers/jest-db'
+import { jsonParseStringify } from '__tests__/unit/backend/helpers/serialize-data'
 import { ObjectId } from 'bson-ext'
 import { format, subDays } from 'date-fns'
 import { times } from 'lodash'
@@ -22,15 +30,6 @@ import {
   IUserSchema,
   SubmissionCursorData,
 } from 'src/types'
-
-import {
-  createAuthedSession,
-  logoutSession,
-} from 'tests/integration/helpers/express-auth'
-import { setupApp } from 'tests/integration/helpers/express-setup'
-import { buildCelebrateError } from 'tests/unit/backend/helpers/celebrate'
-import dbHandler from 'tests/unit/backend/helpers/jest-db'
-import { jsonParseStringify } from 'tests/unit/backend/helpers/serialize-data'
 
 import {
   FormResponseMode,

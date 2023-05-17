@@ -1,4 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
+import { generateDefaultField } from '__tests__/unit/backend/helpers/generate-form-data'
+import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { ObjectId } from 'bson-ext'
 import { cloneDeep, map, merge, omit, orderBy, pick, range } from 'lodash'
 import mongoose, { Types } from 'mongoose'
@@ -35,9 +37,6 @@ import {
   ILogicSchema,
   IPopulatedUser,
 } from 'src/types'
-
-import { generateDefaultField } from 'tests/unit/backend/helpers/generate-form-data'
-import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 const Form = getFormModel(mongoose)
 const EncryptedForm = getEncryptedFormModel(mongoose)

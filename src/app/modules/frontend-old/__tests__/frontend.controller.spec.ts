@@ -1,8 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
+import expressHandler from '__tests__/unit/backend/helpers/jest-express'
 import { Request } from 'express'
 import { StatusCodes } from 'http-status-codes'
-
-import expressHandler from 'tests/unit/backend/helpers/jest-express'
 
 import * as FrontendServerController from '../frontend.controller'
 

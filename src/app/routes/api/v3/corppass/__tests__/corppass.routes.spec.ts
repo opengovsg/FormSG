@@ -1,14 +1,13 @@
+import { setupApp } from '__tests__/integration/helpers/express-setup'
 import { ObjectId } from 'bson-ext'
 import fs from 'fs'
 import { JWTVerifyResult } from 'jose'
 import mongoose from 'mongoose'
 import session, { Session } from 'supertest-session'
 
-import { setupApp } from 'tests/integration/helpers/express-setup'
-
+import { buildCelebrateError } from '../../../../../../../__tests__/unit/backend/helpers/celebrate'
+import dbHandler from '../../../../../../../__tests__/unit/backend/helpers/jest-db'
 import { FormAuthType } from '../../../../../../../shared/types'
-import { buildCelebrateError } from '../../../../../../../tests/unit/backend/helpers/celebrate'
-import dbHandler from '../../../../../../../tests/unit/backend/helpers/jest-db'
 import getLoginModel from '../../../../../models/login.server.model'
 import {
   MOCK_CP_OIDC_AUTHORISATION_CODE,

@@ -1,3 +1,4 @@
+import MemoryDatabaseServer from '__tests__/setup/database'
 import { ObjectID } from 'bson'
 import mongoose from 'mongoose'
 import { FormResponseMode } from 'shared/types'
@@ -24,8 +25,6 @@ import {
   ISubmissionSchema,
   IUserSchema,
 } from 'src/types'
-
-import MemoryDatabaseServer from 'tests/database'
 
 /**
  * Connect to the in-memory database

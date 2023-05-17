@@ -1,3 +1,8 @@
+import { createAuthedSession } from '__tests__/integration/helpers/express-auth'
+import { setupApp } from '__tests__/integration/helpers/express-setup'
+import { buildCelebrateError } from '__tests__/unit/backend/helpers/celebrate'
+import dbHandler from '__tests__/unit/backend/helpers/jest-db'
+import { jsonParseStringify } from '__tests__/unit/backend/helpers/serialize-data'
 import { ObjectId } from 'bson-ext'
 import { merge } from 'lodash'
 import mongoose from 'mongoose'
@@ -6,12 +11,6 @@ import supertest, { Session } from 'supertest-session'
 
 import getUserModel from 'src/app/models/user.server.model'
 import { DatabaseError } from 'src/app/modules/core/core.errors'
-
-import { createAuthedSession } from 'tests/integration/helpers/express-auth'
-import { setupApp } from 'tests/integration/helpers/express-setup'
-import { buildCelebrateError } from 'tests/unit/backend/helpers/celebrate'
-import dbHandler from 'tests/unit/backend/helpers/jest-db'
-import { jsonParseStringify } from 'tests/unit/backend/helpers/serialize-data'
 
 import {
   FormStatus,

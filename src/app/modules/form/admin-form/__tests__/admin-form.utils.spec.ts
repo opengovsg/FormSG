@@ -1,3 +1,4 @@
+import { generateDefaultField } from '__tests__/unit/backend/helpers/generate-form-data'
 import { ObjectId } from 'bson-ext'
 import { cloneDeep, omit, tail } from 'lodash'
 
@@ -9,8 +10,6 @@ import {
   IPopulatedUser,
 } from 'src/types'
 import { EditFormFieldParams } from 'src/types/api'
-
-import { generateDefaultField } from 'tests/unit/backend/helpers/generate-form-data'
 
 import {
   BasicField,

@@ -1,9 +1,8 @@
+import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { JWTVerifyResult } from 'jose'
 import { omit } from 'lodash'
 
 import { MOCK_COOKIE_AGE } from 'src/app/modules/myinfo/__tests__/myinfo.test.constants'
-
-import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import {
   MOCK_COOKIES,

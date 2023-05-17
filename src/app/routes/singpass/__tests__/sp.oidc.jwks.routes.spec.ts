@@ -1,7 +1,6 @@
+import { setupApp } from '__tests__/integration/helpers/express-setup'
 import fs from 'fs'
 import session, { Session } from 'supertest-session'
-
-import { setupApp } from 'tests/integration/helpers/express-setup'
 
 import { MOCK_SERVICE_PARAMS } from '../../../modules/spcp/__tests__/spcp.test.constants'
 import { SpOidcJwksRouter } from '../sp.oidc.jwks.routes'

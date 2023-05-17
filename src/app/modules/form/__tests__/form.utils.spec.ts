@@ -1,9 +1,8 @@
+import { generateDefaultField } from '__tests__/unit/backend/helpers/generate-form-data'
 import { ObjectId } from 'bson-ext'
 import { Types } from 'mongoose'
 
 import { FormFieldSchema } from 'src/types'
-
-import { generateDefaultField } from 'tests/unit/backend/helpers/generate-form-data'
 
 import { BasicField, FormPermission } from '../../../../../shared/types'
 import { getCollabEmailsWithPermission, getFormFieldById } from '../form.utils'
