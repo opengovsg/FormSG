@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom'
 import { Box, Container, Flex, Skeleton, Text } from '@chakra-ui/react'
 
 import { fillMinHeightCss } from '~utils/fillHeightCss'
+import InlineMessage from '~components/InlineMessage'
 
 import { FormBanner } from '~features/public-form/components/FormBanner'
 import { FormSectionsProvider } from '~features/public-form/components/FormFields/FormSectionsContext'
@@ -12,14 +13,7 @@ import FormStartPage from '~features/public-form/components/FormStartPage'
 import { PublicFormWrapper } from '~features/public-form/components/PublicFormWrapper'
 import { PublicFormProvider } from '~features/public-form/PublicFormProvider'
 
-import StripeElementWrapper from './stripe/StripeElementWrapper'
-
-export interface FormPaymentPageProps {
-  submissionId: string
-  paymentClientSecret: string
-  publishableKey: string
-  isRetry?: boolean
-}
+import StripePaymentElement from './stripe/StripePaymentElement'
 
 export const FormPaymentPage = () => {
   const { formId, paymentId } = useParams()
@@ -35,7 +29,7 @@ export const FormPaymentPage = () => {
           <PublicFormLogo />
           <FormStartPage />
           <PublicFormWrapper>
-            <Box py={{ base: '1.5rem', md: '2.5rem' }} w="100%">
+            <Box py="1rem" w="100%">
               <Container w="42.5rem" maxW="100%" p={0}>
                 <Suspense
                   fallback={
@@ -46,7 +40,14 @@ export const FormPaymentPage = () => {
                     </Skeleton>
                   }
                 >
-                  <StripeElementWrapper paymentId={paymentId} />
+                  {process.env.SECRET_ENV === 'production' ? null : (
+                    <InlineMessage variant="warning" mb="1rem">
+                      Use '4242 4242 4242 4242' as your card number to test
+                      payments on this form. Payments made on this form will
+                      only show in test mode in Stripe.
+                    </InlineMessage>
+                  )}
+                  <StripePaymentElement paymentId={paymentId} />
                 </Suspense>
               </Container>
             </Box>

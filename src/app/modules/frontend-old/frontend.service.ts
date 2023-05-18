@@ -27,14 +27,6 @@ export const getClientEnvVars = (): ClientEnvVars => {
     adminBannerContentReact: config.adminBannerContentReact,
 
     spcpCookieDomain: spcpMyInfoConfig.spcpCookieDomain, // Cookie domain used for removing spcp cookies
-    respondentRolloutEmail: config.reactMigration.respondentRolloutEmail,
-    respondentRolloutStorage: config.reactMigration.respondentRolloutStorage,
-    adminRollout: config.reactMigration.adminRollout,
-    angularPhaseOutDate: config.reactMigration.angularPhaseOutDate,
-    removeAdminInfoboxThreshold:
-      config.reactMigration.removeAdminInfoboxThreshold,
-    removeRespondentsInfoboxThreshold:
-      config.reactMigration.removeRespondentsInfoboxThreshold,
     stripePublishableKey: paymentConfig.stripePublishableKey,
     maxPaymentAmountCents: paymentConfig.maxPaymentAmountCents,
     minPaymentAmountCents: paymentConfig.minPaymentAmountCents,

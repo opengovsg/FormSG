@@ -15,4 +15,6 @@ jest.mock('twilio', () => () => twilio)
 
 const MockTwilio = jest.mocked(twilio)
 
+jest.mock('src/app/services/sms/sms.dev.prismclient', () => () => ({}))
+
 export default MockTwilio

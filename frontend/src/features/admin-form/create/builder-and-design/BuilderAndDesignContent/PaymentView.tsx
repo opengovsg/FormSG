@@ -80,17 +80,31 @@ export const PaymentView = () => {
     setFieldListTabIndex(FieldListTabIndex.Payments)
   }
 
-  return (
+  return paymentDetails.enabled ? (
     <Box w="100%" maxW="57rem" alignSelf="center" ref={paymentRef}>
       <FormProvider {...formMethods}>
-        <PaymentPreview
-          colorTheme={form?.startPage.colorTheme}
-          paymentDetails={paymentDetails}
-          isBuilder
-          isActive={isActive}
-          onClick={handlePaymentClick}
-        />
+        <Box mt="2.5rem" bg="white" py="2.5rem" px="1.5rem">
+          <Box
+            transition="background 0.2s ease"
+            _hover={{ bg: 'secondary.100', cursor: 'pointer' }}
+            borderRadius="4px"
+            _active={{
+              bg: 'secondary.100',
+              boxShadow: '0 0 0 2px var(--chakra-colors-primary-500)',
+            }}
+            data-active={isActive || undefined}
+            onClick={handlePaymentClick}
+          >
+            <Box p={{ base: '0.75rem', md: '1.5rem' }}>
+              <PaymentPreview
+                colorTheme={form?.startPage.colorTheme}
+                paymentDetails={paymentDetails}
+                isBuilder
+              />
+            </Box>
+          </Box>
+        </Box>
       </FormProvider>
     </Box>
-  )
+  ) : null
 }

@@ -1,6 +1,6 @@
 import { Meta, Story } from '@storybook/react'
 
-import { UserId } from '~shared/types'
+import { PaymentChannel, UserId } from '~shared/types'
 import {
   AdminFormDto,
   FormAuthType,
@@ -148,5 +148,28 @@ FormWithWebhook.parameters = {
 export const FormWithWebhookMobile = Template.bind({})
 FormWithWebhookMobile.parameters = {
   ...FormWithWebhook.parameters,
+  ...getMobileViewParameters(),
+}
+
+export const FormWithPayment = Template.bind({})
+FormWithPayment.parameters = {
+  msw: buildMswRoutes({
+    responseMode: FormResponseMode.Encrypt,
+    payments_channel: {
+      channel: PaymentChannel.Stripe,
+      target_account_id: 'acct_sampleid',
+      publishable_key: 'pk_samplekey',
+    },
+    payments_field: {
+      enabled: true,
+      amount_cents: 5000,
+      description: 'Test event registration fee',
+    },
+  }),
+}
+
+export const FormWithPaymentMobile = Template.bind({})
+FormWithPaymentMobile.parameters = {
+  ...FormWithPayment.parameters,
   ...getMobileViewParameters(),
 }

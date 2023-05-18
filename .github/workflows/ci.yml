@@ -13,7 +13,6 @@ jobs:
     outputs:
       backend: ${{ steps.filter.outputs.backend }}
       frontend: ${{ steps.filter.outputs.frontend }}
-      angularjs: ${{ steps.filter.outputs.angularjs }}
     steps:
       - uses: actions/checkout@v2
       - uses: dorny/paths-filter@v2
@@ -23,19 +22,13 @@ jobs:
             frontend:
               - shared/**
               - frontend/**
-            angularjs:
-              - shared/**
-              - src/shared/**
-              - package.json
-              - package-lock.json
-              - src/public/**
             backend:
               - tests/**
               - shared/**
-              - src/shared/**
+              - src/**
               - package.json
               - package-lock.json
-              - src/app/**
+
   install:
     runs-on: ubuntu-latest
     steps:
@@ -51,8 +44,6 @@ jobs:
   build:
     needs: install
     runs-on: ubuntu-latest
-    env:
-      NODE_OPTIONS: '--max-old-space-size=4096'
     steps:
       - uses: actions/checkout@v2
       - run: mkdir -p build-output/
@@ -64,6 +55,8 @@ jobs:
           cache-dependency-path: '**/package-lock.json'
       - run: npm ci
       - run: npm run build
+        env:
+          NODE_OPTIONS: '--max-old-space-size=4096'
       - name: Upload build files
         uses: actions/upload-artifact@v2
         if: always()
@@ -126,24 +119,9 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
-  angularjs_test:
+  backend_lint:
     needs: [changes, install]
-    if: ${{ needs.changes.outputs.angularjs == 'true' }}
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Use Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 14
-          cache: 'npm'
-          cache-dependency-path: '**/package-lock.json'
-      - run: npm ci
-      - run: npm run test:angularjs
-
-  src_lint:
-    needs: [changes, install]
-    if: ${{ needs.changes.outputs.backend == 'true' || needs.changes.outputs.angularjs == 'true' }}
+    if: ${{ needs.changes.outputs.backend == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -156,24 +134,3 @@ jobs:
       - run: npm ci
       - run: npm run lint-ci
       - run: npm_config_mode=yes npx lockfile-lint --type npm --path package.json --validate-https --allowed-hosts npm
-
-  src_e2e:
-    needs: [changes, build]
-    if: ${{ needs.changes.outputs.backend == 'true' || needs.changes.outputs.angularjs == 'true' }}
-    runs-on: ubuntu-latest
-    env:
-      NODE_OPTIONS: '--max-old-space-size=4096'
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v3
-        if: always()
-        with:
-          name: build-output
-      - name: Use Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 14
-          cache: 'npm'
-          cache-dependency-path: '**/package-lock.json'
-      - run: npm ci
-      - run: npm run test-e2e

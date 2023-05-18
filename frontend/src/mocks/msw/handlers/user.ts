@@ -7,7 +7,7 @@ import { UserDto, UserId, VerifyUserContactOtpDto } from '~shared/types/user'
 
 import { DefaultRequestReturn, WithDelayProps } from './types'
 
-export const MOCK_USER = {
+export const MOCK_USER: UserDto = {
   _id: 'mock_id' as UserId,
   email: 'admin@example.com',
   agency: {
@@ -19,6 +19,7 @@ export const MOCK_USER = {
     logo: '/path/to/logo/example.jpg',
     created: '2017-09-15T06:03:58.792Z' as DateString,
   },
+  betaFlags: { payment: true },
   created: '2020-03-26T09:39:44.613Z' as DateString,
   contact: '+6598765432',
   lastAccessed: '2021-08-24T09:10:02.661Z' as DateString,

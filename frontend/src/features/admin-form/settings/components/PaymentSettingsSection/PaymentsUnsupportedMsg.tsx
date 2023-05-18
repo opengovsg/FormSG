@@ -12,10 +12,10 @@ export const PaymentsUnsupportedMsg = (): JSX.Element => {
         Payments are not available in Email mode
       </Text>
       <Text textStyle="body-1" color="secondary.500" mb="2.5rem">
-        Collect payments through FormSG via integration with Stripe. This
-        feature is only available in Storage Mode.&nbsp;
+        Citizens can now make payment for fees or services directly on your
+        form. This feature is only available in Storage Mode.&nbsp;
         <Link isExternal href={GUIDE_PAYMENTS}>
-          Read more about payments
+          Learn more about payments
         </Link>
       </Text>
       <SettingsUnsupportedSvgr />

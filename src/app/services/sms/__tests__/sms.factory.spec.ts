@@ -15,6 +15,8 @@ jest.mock('twilio', () =>
   })),
 )
 
+jest.mock('src/app/services/sms/sms.dev.prismclient', () => () => ({}))
+
 jest.mock('../sms.service')
 const MockSmsService = jest.mocked(SmsService)
 

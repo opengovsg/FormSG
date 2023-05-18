@@ -1,6 +1,6 @@
 {
   "name": "form-frontend",
-  "version": "6.49.0",
+  "version": "6.50.0",
   "homepage": ".",
   "private": true,
   "dependencies": {
@@ -16,7 +16,7 @@
     "@stripe/stripe-js": "^1.44.1",
     "axios": "^1.2.1",
     "broadcast-channel": "^4.13.0",
-    "browser-image-compression": "^2.0.0",
+    "browser-image-compression": "^2.0.2",
     "comlink": "^4.3.1",
     "country-flag-icons": "^1.4.19",
     "csv-string": "^4.1.0",

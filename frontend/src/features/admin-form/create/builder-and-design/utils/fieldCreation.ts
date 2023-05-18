@@ -87,6 +87,7 @@ export const getFieldCreationMeta = (fieldType: BasicField): FieldCreateDto => {
           customVal: null,
         },
         allowPrefill: false,
+        lockPrefill: false,
       }
     }
     case BasicField.LongText:

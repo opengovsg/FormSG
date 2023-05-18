@@ -14,7 +14,6 @@ import {
   PublicFormDto,
   PublicFormViewDto,
 } from '../../../../../shared/types'
-import config from '../../../config/config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { isMongoError } from '../../../utils/handle-mongo-error'
 import { createReqMeta, getRequestIp } from '../../../utils/request'
@@ -44,7 +43,6 @@ import {
 } from '../../spcp/spcp.util'
 import { AuthTypeMismatchError, PrivateFormError } from '../form.errors'
 import * as FormService from '../form.service'
-import { isFormEncryptMode } from '../form.utils'
 
 import * as PublicFormService from './public-form.service'
 import { RedirectParams } from './public-form.types'
@@ -161,13 +159,6 @@ export const handleGetPublicForm: ControllerHandler<
 
   const form = formResult.value
   const publicForm = form.getPublicView() as PublicFormDto
-
-  // If payments is enabled on the form, clear the angular cookie
-  // TODO(#4279): Remove once react rollout complete
-  if (isFormEncryptMode(form) && form.payments_field?.enabled) {
-    const angularCookie = config.reactMigration.respondentCookieName
-    res.clearCookie(angularCookie)
-  }
 
   const { authType } = form
   const isIntranetUser = FormService.checkIsIntranetFormAccess(
@@ -326,6 +317,59 @@ export const handleGetPublicForm: ControllerHandler<
   }
 }
 
+export const handleGetPublicFormSampleSubmission: ControllerHandler<
+  { formId: string },
+  Record<string, any> | ErrorDto | PrivateFormErrorDto
+> = async (req, res) => {
+  const { formId } = req.params
+  const logMeta = {
+    action: 'handleGetPublicFormSampleSubmission',
+    ...createReqMeta(req),
+    formId,
+  }
+
+  const formResult = await getFormIfPublic(formId)
+  // Early return if form is not public or any error occurred.
+  if (formResult.isErr()) {
+    const { error } = formResult
+    // NOTE: Only log on possible database errors.
+    // This is because the other kinds of errors are expected errors and are not truly exceptional
+    if (isMongoError(error)) {
+      logger.error({
+        message: 'Error retrieving public form',
+        meta: logMeta,
+        error,
+      })
+    }
+    const { errorMessage, statusCode } = mapRouteError(error)
+
+    // Specialized error response for PrivateFormError.
+    // This is to maintain backwards compatibility with the middleware implementation
+    if (error instanceof PrivateFormError) {
+      return res.status(statusCode).json({
+        message: error.message,
+        // Flag to prevent default 404 subtext ("please check link") from
+        // showing.
+        isPageFound: true,
+        formTitle: error.formTitle,
+      })
+    }
+
+    return res.status(statusCode).json({ message: errorMessage })
+  }
+  const form = formResult.value
+
+  const publicForm = form.getPublicView() as PublicFormDto
+
+  const formFields = publicForm.form_fields
+  if (!formFields) {
+    throw new Error('unable to get form fields')
+  }
+
+  const sampleData = FormService.createSampleSubmissionResponses(formFields)
+
+  return res.json({ responses: sampleData })
+}
 /**
  * NOTE: This is exported only for testing
  * Generates redirect URL to Official SingPass/CorpPass log in page
