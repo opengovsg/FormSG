@@ -112,9 +112,11 @@ export const AppRouter = (): JSX.Element => {
         >
           <Route index element={<CreatePage />} />
           <Route
-            path={ADMINFORM_SETTINGS_SUBROUTE}
+            path={`${ADMINFORM_SETTINGS_SUBROUTE}`}
             element={<SettingsPage />}
-          />
+          >
+            <Route path={':settingsTab'} element={<SettingsPage />} />
+          </Route>
           <Route
             path={ADMINFORM_RESULTS_SUBROUTE}
             element={<FormResultsLayout />}
