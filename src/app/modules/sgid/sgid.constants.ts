@@ -4,6 +4,12 @@
  */
 export const SGID_COOKIE_NAME = 'jwtSgid'
 
+/**
+ * Name of cookie containing sgID access token to
+ * MyInfo scopes.
+ */
+export const SGID_MYINFO_COOKIE_NAME = 'jwtSgidMyInfo'
+
 export const SGID_MYINFO_NRIC_NUMBER_SCOPE = 'myinfo.nric_number'
 
 export enum SGIDScope {

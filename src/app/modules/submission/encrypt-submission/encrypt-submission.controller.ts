@@ -37,6 +37,7 @@ import { ControllerHandler } from '../../core/core.types'
 import { setFormTags } from '../../datadog/datadog.utils'
 import { PermissionLevel } from '../../form/admin-form/admin-form.types'
 import * as FormService from '../../form/form.service'
+import { SGID_COOKIE_NAME } from '../../sgid/sgid.constants'
 import { SgidService } from '../../sgid/sgid.service'
 import { getOidcService } from '../../spcp/spcp.oidc.service'
 import { getPopulatedUserById } from '../../user/user.service'
@@ -260,7 +261,7 @@ const submitEncryptModeForm: ControllerHandler<
     }
     case FormAuthType.SGID: {
       const jwtPayloadResult = SgidService.extractSgidSingpassJwtPayload(
-        req.cookies.jwtSgid,
+        req.cookies[SGID_COOKIE_NAME],
       )
       if (jwtPayloadResult.isErr()) {
         const { statusCode, errorMessage } = mapRouteError(

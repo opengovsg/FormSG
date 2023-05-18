@@ -7,7 +7,7 @@ import { createLoggerWithLabel } from '../../config/logger'
 import { ControllerHandler } from '../core/core.types'
 import * as FormService from '../form/form.service'
 
-import { SGID_COOKIE_NAME } from './sgid.constants'
+import { SGID_COOKIE_NAME, SGID_MYINFO_COOKIE_NAME } from './sgid.constants'
 import { SgidService } from './sgid.service'
 
 const logger = createLoggerWithLabel(module)
@@ -52,17 +52,25 @@ export const handleLogin: ControllerHandler<
       (data) => SgidService.createSgidMyInfoJwt(data.accessToken, rememberMe),
     )
 
-    if (!jwtResult.isErr()) {
-      const { maxAge, jwt } = jwtResult.value
-      res.cookie(SGID_COOKIE_NAME, jwt, {
-        maxAge,
-        httpOnly: true,
-        sameSite: 'lax', // Setting to 'strict' prevents Singpass login on Safari, Firefox
-        secure: !config.isDev,
-        ...SgidService.getCookieSettings(),
+    if (jwtResult.isErr()) {
+      logger.error({
+        message: 'Error while handling login via sgID (MyInfo)',
+        meta,
+        error: jwtResult.error,
       })
+      res.cookie('isLoginError', true)
       return res.redirect(target)
     }
+
+    const { maxAge, jwt } = jwtResult.value
+    res.cookie(SGID_MYINFO_COOKIE_NAME, jwt, {
+      maxAge,
+      httpOnly: true,
+      sameSite: 'lax', // Setting to 'strict' prevents Singpass login on Safari, Firefox
+      secure: !config.isDev,
+      ...SgidService.getCookieSettings(),
+    })
+    return res.redirect(target)
   }
   if (form.authType !== FormAuthType.SGID) {
     logger.error({

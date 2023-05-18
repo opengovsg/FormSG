@@ -37,6 +37,7 @@ import {
   MyInfoInvalidLoginCookieError,
   MyInfoMissingLoginCookieError,
 } from '../../myinfo/myinfo.errors'
+import { SGID_COOKIE_NAME } from '../../sgid/sgid.constants'
 import {
   SgidInvalidJwtError,
   SgidMissingJwtError,
@@ -884,7 +885,7 @@ describe('Verification controller', () => {
       )
       expect(
         MockSgidService.extractSgidSingpassJwtPayload,
-      ).toHaveBeenCalledWith(MOCK_SGID_REQ.cookies.jwtSgid)
+      ).toHaveBeenCalledWith(MOCK_SGID_REQ.cookies[SGID_COOKIE_NAME])
       expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
       expect(MockVerificationService.sendNewOtp).toHaveBeenCalledWith(
         EXPECTED_PARAMS_FOR_SENDING_FORM_OTP,
@@ -1313,7 +1314,7 @@ describe('Verification controller', () => {
       )
       expect(
         MockSgidService.extractSgidSingpassJwtPayload,
-      ).toHaveBeenCalledWith(MOCK_SGID_REQ.cookies.jwtSgid)
+      ).toHaveBeenCalledWith(MOCK_SGID_REQ.cookies[SGID_COOKIE_NAME])
       expect(MockOtpUtils.generateOtpWithHash).not.toHaveBeenCalled()
       expect(MockVerificationService.sendNewOtp).not.toHaveBeenCalled()
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
@@ -1783,7 +1784,7 @@ describe('Verification controller', () => {
       )
       expect(
         MockSgidService.extractSgidSingpassJwtPayload,
-      ).toHaveBeenCalledWith(MOCK_SGID_REQ.cookies.jwtSgid)
+      ).toHaveBeenCalledWith(MOCK_SGID_REQ.cookies[SGID_COOKIE_NAME])
       expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
       expect(MockVerificationService.sendNewOtp).toHaveBeenCalledWith(
         EXPECTED_PARAMS_FOR_SENDING_PAYMENT_OTP,
@@ -2212,7 +2213,7 @@ describe('Verification controller', () => {
       )
       expect(
         MockSgidService.extractSgidSingpassJwtPayload,
-      ).toHaveBeenCalledWith(MOCK_SGID_REQ.cookies.jwtSgid)
+      ).toHaveBeenCalledWith(MOCK_SGID_REQ.cookies[SGID_COOKIE_NAME])
       expect(MockOtpUtils.generateOtpWithHash).not.toHaveBeenCalled()
       expect(MockVerificationService.sendNewOtp).not.toHaveBeenCalled()
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)

@@ -34,7 +34,10 @@ import {
   validateMyInfoForm,
 } from '../../myinfo/myinfo.util'
 import { SGIDMyInfoData } from '../../sgid/sgid.adapter'
-import { SGID_COOKIE_NAME } from '../../sgid/sgid.constants'
+import {
+  SGID_COOKIE_NAME,
+  SGID_MYINFO_COOKIE_NAME,
+} from '../../sgid/sgid.constants'
 import { SgidInvalidJwtError, SgidVerifyJwtError } from '../../sgid/sgid.errors'
 import { SgidService } from '../../sgid/sgid.service'
 import { validateSgidForm } from '../../sgid/sgid.util'
@@ -326,14 +329,14 @@ export const handleGetPublicForm: ControllerHandler<
           return res.json({ form: publicForm, isIntranetUser })
         })
     case FormAuthType.SGID_MyInfo: {
-      const accessTokenCookie = req.cookies[SGID_COOKIE_NAME]
+      const accessTokenCookie = req.cookies[SGID_MYINFO_COOKIE_NAME]
       if (!accessTokenCookie) {
         return res.json({
           form: publicForm,
           isIntranetUser,
         })
       }
-      res.clearCookie(SGID_COOKIE_NAME)
+      res.clearCookie(SGID_MYINFO_COOKIE_NAME)
       res.clearCookie(MYINFO_LOGIN_COOKIE_NAME)
       return SgidService.extractSgidJwtMyInfoPayload(accessTokenCookie)
         .asyncAndThen((auth) =>
