@@ -350,30 +350,28 @@ export const retrievePublicFormsWithSmsVerification = (
 
 export const createSingleSampleSubmissionAnswer = (field: FormFieldDto) => {
   let sampleValue = null
-  let noOfOptions = 0
-  let randomSelectedOption = 0
-  let noOfRows
-  let noOfCols
+  let noOfTableRows
+  let noOfTableCols
   const tableSampleValue = []
   switch (field.fieldType) {
     case BasicField.LongText:
-    case BasicField.ShortText:
       sampleValue = faker.lorem.sentence()
+      break
+    case BasicField.ShortText:
+      sampleValue = faker.lorem.word()
       break
     case BasicField.Radio:
     case BasicField.Dropdown:
-      noOfOptions = field.fieldOptions.length
-      randomSelectedOption = Math.floor(Math.random() * noOfOptions)
-      sampleValue = field.fieldOptions[randomSelectedOption]
+      sampleValue = faker.helpers.arrayElement(field.fieldOptions)
       break
     case BasicField.Email:
       sampleValue = faker.internet.email()
       break
     case BasicField.Decimal:
-      sampleValue = faker.number.float({ precision: 0.1 })
+      sampleValue = faker.number.float({ precision: 0.1 }).toString()
       break
     case BasicField.Number:
-      sampleValue = faker.number.int(100)
+      sampleValue = faker.number.int(100).toString()
       break
     case BasicField.Mobile:
       sampleValue = faker.phone.number('+659#######')
@@ -382,21 +380,22 @@ export const createSingleSampleSubmissionAnswer = (field: FormFieldDto) => {
       sampleValue = faker.phone.number('+656#######')
       break
     case BasicField.YesNo:
-      sampleValue = 'yes'
+      sampleValue = faker.helpers.arrayElement(['Yes', 'No'])
       break
     case BasicField.Rating:
-      noOfOptions = field.ratingOptions.steps
-      sampleValue = faker.number.int({ min: 1, max: noOfOptions })
+      sampleValue = faker.number
+        .int({ min: 1, max: field.ratingOptions.steps })
+        .toString()
       break
     case BasicField.Attachment:
       sampleValue = 'attachmentFileName'
       break
     case BasicField.Table:
-      noOfRows = field.minimumRows
-      noOfCols = field.columns.length
-      for (let row = 0; row < noOfRows; row++) {
+      noOfTableRows = field.minimumRows
+      noOfTableCols = field.columns.length
+      for (let row = 0; row < noOfTableRows; row++) {
         const rowSampleValue = []
-        for (let col = 0; col < noOfCols; col++) {
+        for (let col = 0; col < noOfTableCols; col++) {
           rowSampleValue.push(`row${row + 1}col${col + 1}`)
         }
         tableSampleValue.push(rowSampleValue)
@@ -404,9 +403,7 @@ export const createSingleSampleSubmissionAnswer = (field: FormFieldDto) => {
       sampleValue = tableSampleValue
       break
     case BasicField.Checkbox:
-      noOfOptions = field.fieldOptions.length
-      randomSelectedOption = Math.floor(Math.random() * noOfOptions)
-      sampleValue = field.fieldOptions[randomSelectedOption]
+      sampleValue = faker.helpers.arrayElements(field.fieldOptions)
       break
     case BasicField.Date:
       sampleValue = new Date(Date.now()).toLocaleDateString('en-SG', {
