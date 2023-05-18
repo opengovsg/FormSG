@@ -182,6 +182,7 @@
     "@babel/core": "^7.20.7",
     "@babel/plugin-transform-runtime": "^7.21.4",
     "@babel/preset-env": "^7.20.2",
+    "@faker-js/faker": "^8.0.1",
     "@opengovsg/mockpass": "^3.1.0",
     "@playwright/test": "^1.29.1",
     "@types/bcrypt": "^5.0.0",

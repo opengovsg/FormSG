@@ -1,3 +1,4 @@
+import { faker } from '@faker-js/faker'
 import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
@@ -357,8 +358,7 @@ export const createSingleSampleSubmissionAnswer = (field: FormFieldDto) => {
   switch (field.fieldType) {
     case BasicField.LongText:
     case BasicField.ShortText:
-      sampleValue =
-        'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.'
+      sampleValue = faker.lorem.sentence()
       break
     case BasicField.Radio:
     case BasicField.Dropdown:
@@ -367,25 +367,26 @@ export const createSingleSampleSubmissionAnswer = (field: FormFieldDto) => {
       sampleValue = field.fieldOptions[randomSelectedOption]
       break
     case BasicField.Email:
-      sampleValue = 'hello@example.com'
+      sampleValue = faker.internet.email()
       break
     case BasicField.Decimal:
-      sampleValue = 1.234
+      sampleValue = faker.number.float({ precision: 0.1 })
       break
     case BasicField.Number:
-      sampleValue = 1234
+      sampleValue = faker.number.int(100)
       break
     case BasicField.Mobile:
-      sampleValue = '+6598765432'
+      sampleValue = faker.phone.number('+659#######')
       break
     case BasicField.HomeNo:
-      sampleValue = '+6567890123'
+      sampleValue = faker.phone.number('+656#######')
       break
     case BasicField.YesNo:
       sampleValue = 'yes'
       break
     case BasicField.Rating:
-      sampleValue = 1
+      noOfOptions = field.ratingOptions.steps
+      sampleValue = faker.number.int({ min: 1, max: noOfOptions })
       break
     case BasicField.Attachment:
       sampleValue = 'attachmentFileName'
