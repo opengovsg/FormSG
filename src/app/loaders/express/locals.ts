@@ -28,6 +28,7 @@ const frontendVars = {
     config.reactMigration.useFetchForSubmissions,
   maxPaymentAmountCents: paymentConfig.maxPaymentAmountCents,
   minPaymentAmountCents: paymentConfig.minPaymentAmountCents,
+  secretEnv: config.secretEnv,
 }
 const environment = ejs.render(
   `
