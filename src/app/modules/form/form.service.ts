@@ -402,6 +402,11 @@ export const createSingleSampleSubmissionAnswer = (field: FormFieldDto) => {
       }
       sampleValue = tableSampleValue
       break
+    case BasicField.Checkbox:
+      noOfOptions = field.fieldOptions.length
+      randomSelectedOption = Math.floor(Math.random() * noOfOptions)
+      sampleValue = field.fieldOptions[randomSelectedOption]
+      break
     default:
       break
   }
