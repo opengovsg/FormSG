@@ -351,6 +351,9 @@ export const createSingleSampleSubmissionAnswer = (field: FormFieldDto) => {
   let sampleValue = null
   let noOfOptions = 0
   let randomSelectedOption = 0
+  let noOfRows
+  let noOfCols
+  const tableSampleValue = []
   switch (field.fieldType) {
     case BasicField.LongText:
     case BasicField.ShortText:
@@ -386,6 +389,18 @@ export const createSingleSampleSubmissionAnswer = (field: FormFieldDto) => {
       break
     case BasicField.Attachment:
       sampleValue = 'attachmentFileName'
+      break
+    case BasicField.Table:
+      noOfRows = field.minimumRows
+      noOfCols = field.columns.length
+      for (let row = 0; row < noOfRows; row++) {
+        const rowSampleValue = []
+        for (let col = 0; col < noOfCols; col++) {
+          rowSampleValue.push(`row${row + 1}col${col + 1}`)
+        }
+        tableSampleValue.push(rowSampleValue)
+      }
+      sampleValue = tableSampleValue
       break
     default:
       break
