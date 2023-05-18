@@ -416,7 +416,10 @@ export const createSingleSampleSubmissionAnswer = (field: FormFieldDto) => {
       })
       break
     case BasicField.Nric:
-      sampleValue = 'S9999999A'
+      sampleValue = faker.helpers.replaceSymbols('S9######A')
+      break
+    case BasicField.Uen:
+      sampleValue = faker.helpers.replaceSymbols('#########A')
       break
     default:
       break
