@@ -2,6 +2,7 @@ import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
 import {
+  BasicField,
   FormAuthType,
   FormField,
   FormFieldDto,
@@ -351,39 +352,39 @@ export const createSingleSampleSubmissionAnswer = (field: FormFieldDto) => {
   let noOfOptions = 0
   let randomSelectedOption = 0
   switch (field.fieldType) {
-    case 'textarea':
-    case 'textfield':
+    case BasicField.LongText:
+    case BasicField.ShortText:
       sampleValue =
         'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.'
       break
-    case 'radiobutton':
-    case 'dropdown':
+    case BasicField.Radio:
+    case BasicField.Dropdown:
       noOfOptions = field.fieldOptions.length
       randomSelectedOption = Math.floor(Math.random() * noOfOptions)
       sampleValue = field.fieldOptions[randomSelectedOption]
       break
-    case 'email':
+    case BasicField.Email:
       sampleValue = 'hello@example.com'
       break
-    case 'decimal':
+    case BasicField.Decimal:
       sampleValue = 1.234
       break
-    case 'number':
+    case BasicField.Number:
       sampleValue = 1234
       break
-    case 'mobile':
+    case BasicField.Mobile:
       sampleValue = '+6598765432'
       break
-    case 'homeno':
+    case BasicField.HomeNo:
       sampleValue = '+6567890123'
       break
-    case 'yes_no':
+    case BasicField.YesNo:
       sampleValue = 'yes'
       break
-    case 'rating':
+    case BasicField.Rating:
       sampleValue = 1
       break
-    case 'attachment':
+    case BasicField.Attachment:
       sampleValue = 'attachmentFileName'
       break
     default:
