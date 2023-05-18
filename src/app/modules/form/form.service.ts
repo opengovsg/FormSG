@@ -407,6 +407,16 @@ export const createSingleSampleSubmissionAnswer = (field: FormFieldDto) => {
       randomSelectedOption = Math.floor(Math.random() * noOfOptions)
       sampleValue = field.fieldOptions[randomSelectedOption]
       break
+    case BasicField.Date:
+      sampleValue = new Date(Date.now()).toLocaleDateString('en-SG', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      })
+      break
+    case BasicField.Nric:
+      sampleValue = 'S9999999A'
+      break
     default:
       break
   }
