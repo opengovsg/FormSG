@@ -1562,9 +1562,9 @@ const deleteTwilioTransaction = async (
 }
 
 /**
- * Update the payments of the given form
+ * Update the payments field of the given form
  * @param formId the id of the form to update the end page for
- * @param newStartPage the new start page object to replace the current one
+ * @param newPayments the new payments field to replace the current one
  * @returns ok(updated start page object) when update is successful
  * @returns err(FormNotFoundError) if form cannot be found
  * @returns err(PossibleDatabaseError) if start page update fails

@@ -72,7 +72,7 @@ describe('stripe.controller', () => {
 
       const payment = await Payment.create({
         formId: mockForm._id,
-        target_account_id: 'acct_MOCK_ACCOUNT_ID',
+        targetAccountId: 'acct_MOCK_ACCOUNT_ID',
         pendingSubmissionId: pendingSubmission._id,
         amount: 12345,
         status: PaymentStatus.Succeeded,
@@ -132,7 +132,7 @@ describe('stripe.controller', () => {
       })
       const payment = await Payment.create({
         formId: MOCK_FORM_ID,
-        target_account_id: 'acct_MOCK_ACCOUNT_ID',
+        targetAccountId: 'acct_MOCK_ACCOUNT_ID',
         pendingSubmissionId: pendingSubmission._id,
         amount: 12345,
         status: PaymentStatus.Succeeded,

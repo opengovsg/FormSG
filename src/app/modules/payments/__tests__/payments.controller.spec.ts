@@ -24,7 +24,7 @@ describe('payments.controller', () => {
       const email = 'formsg@tech.gov.sg'
       const payment = await Payment.create({
         formId: MOCK_FORM_ID,
-        target_account_id: 'acct_MOCK_ACCOUNT_ID',
+        targetAccountId: 'acct_MOCK_ACCOUNT_ID',
         pendingSubmissionId: new ObjectId(),
         amount: 12345,
         status: PaymentStatus.Succeeded,
@@ -54,7 +54,7 @@ describe('payments.controller', () => {
     it('should return 404 if there are no previous payments by the specific email', async () => {
       const payment = await Payment.create({
         formId: MOCK_FORM_ID,
-        target_account_id: 'acct_MOCK_ACCOUNT_ID',
+        targetAccountId: 'acct_MOCK_ACCOUNT_ID',
         pendingSubmissionId: new ObjectId(),
         amount: 12345,
         status: PaymentStatus.Succeeded,
@@ -83,7 +83,7 @@ describe('payments.controller', () => {
     it('should return 404 if there are no previous payments by the email in the specific formId', async () => {
       const payment = await Payment.create({
         formId: MOCK_FORM_ID,
-        target_account_id: 'acct_MOCK_ACCOUNT_ID',
+        targetAccountId: 'acct_MOCK_ACCOUNT_ID',
         pendingSubmissionId: new ObjectId(),
         amount: 12345,
         status: PaymentStatus.Succeeded,
@@ -112,7 +112,7 @@ describe('payments.controller', () => {
     it('should return 500 if there is an internal server error', async () => {
       const payment = await Payment.create({
         formId: MOCK_FORM_ID,
-        target_account_id: 'acct_MOCK_ACCOUNT_ID',
+        targetAccountId: 'acct_MOCK_ACCOUNT_ID',
         pendingSubmissionId: new ObjectId(),
         amount: 12345,
         status: PaymentStatus.Succeeded,

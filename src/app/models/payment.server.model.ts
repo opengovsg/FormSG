@@ -22,6 +22,10 @@ const PaymentSchema = new Schema<IPaymentSchema, IPaymentModel>(
       ref: () => FORM_SCHEMA_ID,
       required: true,
     },
+    targetAccountId: {
+      type: String,
+      required: true,
+    },
     email: {
       type: String,
       required: true,
