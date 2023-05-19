@@ -30,6 +30,7 @@ describe('payments.service', () => {
       await Payment.create({
         _id: expectedObjectId,
         formId: MOCK_FORM_ID,
+        targetAccountId: 'acct_MOCK_ACCOUNT_ID',
         pendingSubmissionId: new ObjectId(),
         paymentIntentId: 'somePaymentIntentId',
         amount: 314159,
@@ -70,6 +71,7 @@ describe('payments.service', () => {
       await Payment.create({
         _id: expectedObjectId,
         formId: MOCK_FORM_ID,
+        targetAccountId: 'acct_MOCK_ACCOUNT_ID',
         pendingSubmissionId: new ObjectId(),
         paymentIntentId: 'somePaymentIntentId',
         amount: 314159,
@@ -97,6 +99,7 @@ describe('payments.service', () => {
       await Payment.create({
         _id: latestId,
         formId: MOCK_FORM_ID,
+        targetAccountId: 'acct_MOCK_ACCOUNT_ID',
         pendingSubmissionId: new ObjectId(),
         paymentIntentId: 'somePaymentIntentId',
         amount: 314159,
@@ -145,6 +148,7 @@ describe('payments.service', () => {
       await Payment.create({
         _id: newId,
         formId: newFormId,
+        targetAccountId: 'acct_MOCK_ACCOUNT_ID',
         pendingSubmissionId: new ObjectId(),
         paymentIntentId: 'somePaymentIntentId',
         amount: 314159,

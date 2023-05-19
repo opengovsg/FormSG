@@ -40,7 +40,9 @@ const MOCK_STRIPE_METADATA = {
 const MOCK_STRIPE_EVENTS = [
   {
     id: 'evt_PAYMENT_INTENT_CREATED',
+    object: 'event',
     created: 1677205503,
+    account: 'acct_MOCK_ACCOUNT_ID',
     data: {
       object: {
         id: 'pi_MOCK_PAYMENT_INTENT',
@@ -55,7 +57,9 @@ const MOCK_STRIPE_EVENTS = [
   },
   {
     id: 'evt_CHARGE_FAILED',
+    object: 'event',
     created: 1677205563,
+    account: 'acct_MOCK_ACCOUNT_ID',
     data: {
       object: {
         id: 'ch_MOCK_FAILED_CHARGE',
@@ -71,7 +75,9 @@ const MOCK_STRIPE_EVENTS = [
   },
   {
     id: 'evt_PAYMENT_INTENT_FAILED',
+    object: 'event',
     created: 1677205563,
+    account: 'acct_MOCK_ACCOUNT_ID',
     data: {
       object: {
         id: 'pi_MOCK_PAYMENT_INTENT',
@@ -87,7 +93,9 @@ const MOCK_STRIPE_EVENTS = [
   },
   {
     id: 'evt_PAYMENT_INTENT_SUCCEEDED',
+    object: 'event',
     created: 1677205663,
+    account: 'acct_MOCK_ACCOUNT_ID',
     data: {
       object: {
         id: 'pi_MOCK_PAYMENT_INTENT',
@@ -105,6 +113,7 @@ const MOCK_STRIPE_EVENTS = [
     id: 'evt_CHARGE_SUCCEEDED',
     object: 'event',
     created: 1677205663,
+    account: 'acct_MOCK_ACCOUNT_ID',
     data: {
       object: {
         id: 'ch_MOCK_SUCCEEDED_CHARGE',
@@ -125,6 +134,7 @@ const MOCK_STRIPE_EVENTS = [
     id: 'evt_CHARGE_PARTIALLY_REFUNDED',
     object: 'event',
     created: 1677205763,
+    account: 'acct_MOCK_ACCOUNT_ID',
     data: {
       object: {
         id: 'ch_MOCK_SUCCEEDED_CHARGE',
@@ -144,6 +154,7 @@ const MOCK_STRIPE_EVENTS = [
     id: 'evt_CHARGE_FULLY_REFUNDED',
     object: 'event',
     created: 1677205863,
+    account: 'acct_MOCK_ACCOUNT_ID',
     data: {
       object: {
         id: 'ch_MOCK_SUCCEEDED_CHARGE',
@@ -163,6 +174,7 @@ const MOCK_STRIPE_EVENTS = [
     id: 'evt_CHARGE_DISPUTE_CREATED',
     object: 'event',
     created: 1677205963,
+    account: 'acct_MOCK_ACCOUNT_ID',
     data: {
       object: {
         id: 'dp_MOCK_DISPUTE',
@@ -179,6 +191,7 @@ const MOCK_STRIPE_EVENTS = [
     id: 'evt_PAYOUT_CREATED',
     object: 'event',
     created: 1677205973,
+    account: 'acct_MOCK_ACCOUNT_ID',
     data: {
       object: {
         id: 'po_MOCK_PAYOUT',
@@ -195,6 +208,7 @@ const MOCK_STRIPE_EVENTS = [
     id: 'evt_PAYOUT_CANCELLED',
     object: 'event',
     created: 1677205983,
+    account: 'acct_MOCK_ACCOUNT_ID',
     data: {
       object: {
         id: 'po_MOCK_PAYOUT',
