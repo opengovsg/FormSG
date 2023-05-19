@@ -234,8 +234,8 @@ const config: Config = {
   rateLimitConfig: basicVars.rateLimit,
   reactMigration: basicVars.reactMigration,
   configureAws,
-  secretEnv: basicVars.core.secretEnv,
   envSiteName: basicVars.core.envSiteName,
+  secretEnv: basicVars.core.secretEnv,
 }
 
 export = config
