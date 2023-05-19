@@ -355,10 +355,10 @@ export const createSingleSampleSubmissionAnswer = (field: FormFieldDto) => {
   const tableSampleValue = []
   switch (field.fieldType) {
     case BasicField.LongText:
-      sampleValue = faker.lorem.sentence()
+      sampleValue = faker.lorem.text()
       break
     case BasicField.ShortText:
-      sampleValue = faker.lorem.word()
+      sampleValue = faker.lorem.words()
       break
     case BasicField.Radio:
     case BasicField.Dropdown:
@@ -406,7 +406,7 @@ export const createSingleSampleSubmissionAnswer = (field: FormFieldDto) => {
       sampleValue = faker.helpers.arrayElements(field.fieldOptions)
       break
     case BasicField.Date:
-      sampleValue = new Date(Date.now()).toLocaleDateString('en-SG', {
+      sampleValue = faker.date.anytime().toLocaleDateString('en-SG', {
         day: 'numeric',
         month: 'long',
         year: 'numeric',
