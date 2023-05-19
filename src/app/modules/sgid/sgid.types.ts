@@ -7,10 +7,9 @@ export type SgidForm<T extends IFormSchema> = T & {
 
 export type SGIDScopeToValue = Record<string, string>
 
-export type SGIDJwtSingpassPayload = { userName: string }
+export type SGIDJwtSingpassPayload = { userName: string; rememberMe: boolean }
 export type SGIDJwtAccessPayload = {
   accessToken: string
-  rememberMe: boolean
 }
 
 export type SGIDJwtVerifierFunction<

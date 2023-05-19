@@ -169,7 +169,8 @@ export class SgidServiceClass {
 
   /**
    * Given the OIDC access token from sgID, obtain the
-   * user's NRIC number and proxy id
+   * user's information (depending on OAuth scopes
+   * associated with the accessToken) and proxy id
    * @param accessToken - the access token
    */
   retrieveUserInfo({
@@ -211,7 +212,7 @@ export class SgidServiceClass {
     rememberMe: boolean,
   ): Result<{ jwt: string; maxAge: number }, ApplicationError> {
     const userName = data['myinfo.nric_number']
-    const payload = { userName, rememberMe }
+    const payload: SGIDJwtSingpassPayload = { userName, rememberMe }
     const maxAge = rememberMe ? this.cookieMaxAgePreserved : this.cookieMaxAge
     const jwt = Jwt.sign(payload, this.privateKey, {
       algorithm: JWT_ALGORITHM,
@@ -224,16 +225,23 @@ export class SgidServiceClass {
   }
 
   /**
-   * Create a JWT based with access token from sgID
+   * Create a JWT with access token from sgID
+   *
+   * This access token is then used to exchange for MyInfo data in the
+   * public form controller.
+   *
+   * Unlike createSgidSingpassJwt, where the access token is exchanged for
+   * userinfo upfront and userinfo (NRIC) is stored in the JWT.
+   *
+   * Note: sgID access token is tied to the sgID OAuth scopes requested.
    * @param accessToken - sgID access token
    * @param rememberMe - determines how long the JWT is valid for
    */
   createSgidMyInfoJwt(
     accessToken: string,
-    rememberMe: boolean,
   ): Result<{ jwt: string; maxAge: number }, ApplicationError> {
-    const payload: SGIDJwtAccessPayload = { accessToken, rememberMe }
-    const maxAge = rememberMe ? this.cookieMaxAgePreserved : this.cookieMaxAge
+    const payload: SGIDJwtAccessPayload = { accessToken }
+    const maxAge = this.cookieMaxAge
     const jwt = Jwt.sign(payload, this.privateKey, {
       algorithm: JWT_ALGORITHM,
       expiresIn: maxAge / 1000,

@@ -7,7 +7,11 @@ import { createLoggerWithLabel } from '../../config/logger'
 import { ControllerHandler } from '../core/core.types'
 import * as FormService from '../form/form.service'
 
-import { SGID_COOKIE_NAME, SGID_MYINFO_COOKIE_NAME } from './sgid.constants'
+import {
+  SGID_COOKIE_NAME,
+  SGID_MYINFO_COOKIE_NAME,
+  SGID_MYINFO_NRIC_NUMBER_SCOPE,
+} from './sgid.constants'
 import { SgidService } from './sgid.service'
 
 const logger = createLoggerWithLabel(module)
@@ -46,10 +50,25 @@ export const handleLogin: ControllerHandler<
   }
 
   const form = formResult.value
-  // @TODO move this to separate route.
+
+  if (
+    form.authType !== FormAuthType.SGID &&
+    form.authType !== FormAuthType.SGID_MyInfo
+  ) {
+    logger.error({
+      message: "Log in attempt to wrong endpoint for form's authType",
+      meta: {
+        ...meta,
+        formAuthType: form.authType,
+        endpointAuthType: FormAuthType.SGID,
+      },
+    })
+    res.cookie('isLoginError', true)
+    return res.redirect(target)
+  }
   if (form.authType === FormAuthType.SGID_MyInfo) {
     const jwtResult = await SgidService.retrieveAccessToken(code).andThen(
-      (data) => SgidService.createSgidMyInfoJwt(data.accessToken, rememberMe),
+      (data) => SgidService.createSgidMyInfoJwt(data.accessToken),
     )
 
     if (jwtResult.isErr()) {
@@ -72,24 +91,12 @@ export const handleLogin: ControllerHandler<
     })
     return res.redirect(target)
   }
-  if (form.authType !== FormAuthType.SGID) {
-    logger.error({
-      message: "Log in attempt to wrong endpoint for form's authType",
-      meta: {
-        ...meta,
-        formAuthType: form.authType,
-        endpointAuthType: FormAuthType.SGID,
-      },
-    })
-    res.cookie('isLoginError', true)
-    return res.redirect(target)
-  }
 
   const jwtResult = await SgidService.retrieveAccessToken(code)
     .andThen((data) => SgidService.retrieveUserInfo(data))
     .andThen(({ data }) =>
       SgidService.createSgidSingpassJwt(
-        { 'myinfo.nric_number': data['myinfo.nric_number'] },
+        { 'myinfo.nric_number': data[SGID_MYINFO_NRIC_NUMBER_SCOPE] },
         rememberMe,
       ),
     )

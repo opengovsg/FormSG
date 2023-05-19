@@ -201,10 +201,12 @@ const submitEncryptModeForm: ControllerHandler<
   let userInfo
   const { authType } = form
   switch (authType) {
+    case FormAuthType.SGID_MyInfo:
     case FormAuthType.MyInfo: {
       logger.error({
-        message:
-          'Storage mode form is not allowed to have MyInfo authorisation',
+        message: `Storage mode form is not allowed to have MyInfo${
+          authType == FormAuthType.SGID_MyInfo ? '(over sgID)' : ''
+        } authorisation`,
         meta: logMeta,
       })
       const { errorMessage, statusCode } = mapRouteError(
