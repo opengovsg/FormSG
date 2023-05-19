@@ -80,8 +80,6 @@ export const isSgidJwtAccessPayload = (
     typeof payload === 'object' &&
     !!payload &&
     hasProp(payload, 'accessToken') &&
-    typeof payload.accessToken === 'string' &&
-    hasProp(payload, 'rememberMe') &&
-    typeof payload.rememberMe === 'boolean'
+    typeof payload.accessToken === 'string'
   )
 }

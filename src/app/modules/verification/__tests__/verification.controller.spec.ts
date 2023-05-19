@@ -928,6 +928,7 @@ describe('Verification controller', () => {
       )
       expect(MockMyInfoUtil.extractMyInfoLoginJwt).toHaveBeenCalledWith(
         MOCK_FORM_REQ.cookies,
+        FormAuthType.MyInfo,
       )
       expect(MockMyInfoService.verifyLoginJwt).toHaveBeenCalledWith(
         MOCK_MYINFO_JWT,
@@ -1388,6 +1389,7 @@ describe('Verification controller', () => {
       )
       expect(MockMyInfoUtil.extractMyInfoLoginJwt).toHaveBeenCalledWith(
         MOCK_FORM_REQ.cookies,
+        FormAuthType.MyInfo,
       )
       expect(MockMyInfoService.verifyLoginJwt).not.toHaveBeenCalled()
       expect(MockOtpUtils.generateOtpWithHash).not.toHaveBeenCalled()
@@ -1424,6 +1426,7 @@ describe('Verification controller', () => {
       )
       expect(MockMyInfoUtil.extractMyInfoLoginJwt).toHaveBeenCalledWith(
         MOCK_FORM_REQ.cookies,
+        FormAuthType.MyInfo,
       )
       expect(MockMyInfoService.verifyLoginJwt).toHaveBeenCalledWith(
         MOCK_MYINFO_JWT,
@@ -1827,6 +1830,7 @@ describe('Verification controller', () => {
       )
       expect(MockMyInfoUtil.extractMyInfoLoginJwt).toHaveBeenCalledWith(
         MOCK_PAYMENT_REQ.cookies,
+        FormAuthType.MyInfo,
       )
       expect(MockMyInfoService.verifyLoginJwt).toHaveBeenCalledWith(
         MOCK_MYINFO_JWT,
@@ -2287,6 +2291,7 @@ describe('Verification controller', () => {
       )
       expect(MockMyInfoUtil.extractMyInfoLoginJwt).toHaveBeenCalledWith(
         MOCK_PAYMENT_REQ.cookies,
+        FormAuthType.MyInfo,
       )
       expect(MockMyInfoService.verifyLoginJwt).not.toHaveBeenCalled()
       expect(MockOtpUtils.generateOtpWithHash).not.toHaveBeenCalled()
@@ -2323,6 +2328,7 @@ describe('Verification controller', () => {
       )
       expect(MockMyInfoUtil.extractMyInfoLoginJwt).toHaveBeenCalledWith(
         MOCK_PAYMENT_REQ.cookies,
+        FormAuthType.MyInfo,
       )
       expect(MockMyInfoService.verifyLoginJwt).toHaveBeenCalledWith(
         MOCK_MYINFO_JWT,

@@ -21,7 +21,10 @@ import {
 } from '../../myinfo/myinfo.constants'
 import { MyInfoService } from '../../myinfo/myinfo.service'
 import { extractMyInfoLoginJwt } from '../../myinfo/myinfo.util'
-import { SGID_COOKIE_NAME } from '../../sgid/sgid.constants'
+import {
+  SGID_COOKIE_NAME,
+  SGID_MYINFO_LOGIN_COOKIE_NAME,
+} from '../../sgid/sgid.constants'
 import { SgidService } from '../../sgid/sgid.service'
 import { getOidcService } from '../../spcp/spcp.oidc.service'
 import * as EmailSubmissionMiddleware from '../email-submission/email-submission.middleware'
@@ -204,7 +207,7 @@ const submitEmailModeForm: ControllerHandler<
           }
           case FormAuthType.SGID_MyInfo:
           case FormAuthType.MyInfo:
-            return extractMyInfoLoginJwt(req.cookies)
+            return extractMyInfoLoginJwt(req.cookies, authType)
               .andThen(MyInfoService.verifyLoginJwt)
               .asyncAndThen(({ uinFin }) =>
                 MyInfoService.fetchMyInfoHashes(uinFin, formId)
@@ -365,8 +368,13 @@ const submitEmailModeForm: ControllerHandler<
             })
           })
           // MyInfo access token is single-use, so clear it
+          // Similarly for sgID-MyInfo
           return res
             .clearCookie(MYINFO_LOGIN_COOKIE_NAME, MYINFO_LOGIN_COOKIE_OPTIONS)
+            .clearCookie(
+              SGID_MYINFO_LOGIN_COOKIE_NAME,
+              MYINFO_LOGIN_COOKIE_OPTIONS,
+            )
             .json({
               // Return the reply early to the submitter
               message: 'Form submission successful.',

@@ -37,6 +37,7 @@ import { SGIDMyInfoData } from '../../sgid/sgid.adapter'
 import {
   SGID_COOKIE_NAME,
   SGID_MYINFO_COOKIE_NAME,
+  SGID_MYINFO_LOGIN_COOKIE_NAME,
 } from '../../sgid/sgid.constants'
 import { SgidInvalidJwtError, SgidVerifyJwtError } from '../../sgid/sgid.errors'
 import { SgidService } from '../../sgid/sgid.service'
@@ -337,7 +338,7 @@ export const handleGetPublicForm: ControllerHandler<
         })
       }
       res.clearCookie(SGID_MYINFO_COOKIE_NAME)
-      res.clearCookie(MYINFO_LOGIN_COOKIE_NAME)
+      res.clearCookie(SGID_MYINFO_LOGIN_COOKIE_NAME)
       return SgidService.extractSgidJwtMyInfoPayload(accessTokenCookie)
         .asyncAndThen((auth) =>
           SgidService.retrieveUserInfo({ accessToken: auth.accessToken }),
@@ -351,7 +352,7 @@ export const handleGetPublicForm: ControllerHandler<
           ).map((prefilledFields) => {
             return res
               .cookie(
-                MYINFO_LOGIN_COOKIE_NAME,
+                SGID_MYINFO_LOGIN_COOKIE_NAME,
                 createMyInfoLoginCookie(data.getUinFin()),
                 MYINFO_LOGIN_COOKIE_OPTIONS,
               )

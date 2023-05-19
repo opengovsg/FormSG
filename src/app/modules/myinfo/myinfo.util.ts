@@ -24,6 +24,7 @@ import {
   FormAuthNoEsrvcIdError,
   FormNotFoundError,
 } from '../form/form.errors'
+import { SGID_MYINFO_LOGIN_COOKIE_NAME } from '../sgid/sgid.constants'
 import { ProcessedFieldResponse } from '../submission/submission.types'
 
 import { MYINFO_LOGIN_COOKIE_NAME } from './myinfo.constants'
@@ -299,8 +300,14 @@ export const isMyInfoAuthCodeCookie = (
  */
 export const extractMyInfoLoginJwt = (
   cookies: Record<string, unknown>,
+  authType: FormAuthType.MyInfo | FormAuthType.SGID_MyInfo,
 ): Result<string, MyInfoMissingLoginCookieError> => {
-  const jwt = cookies[MYINFO_LOGIN_COOKIE_NAME]
+  const jwt =
+    cookies[
+      authType === FormAuthType.MyInfo
+        ? MYINFO_LOGIN_COOKIE_NAME
+        : SGID_MYINFO_LOGIN_COOKIE_NAME
+    ]
   if (typeof jwt === 'string' && !!jwt) {
     return ok(jwt)
   }
