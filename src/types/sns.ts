@@ -38,6 +38,7 @@ export interface IEmailNotification {
 export enum BounceType {
   Permanent = 'Permanent',
   Transient = 'Transient',
+  Undetermined = 'Undetermined',
 }
 
 export interface IBounceNotification extends IEmailNotification {

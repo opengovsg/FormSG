@@ -25,6 +25,7 @@ import Button, { ButtonProps } from '~components/Button'
 import Link from '~components/Link'
 
 import { UseTemplateModal } from '~features/admin-form/template/UseTemplateModal'
+import { useEnv } from '~features/env/queries'
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 import { DuplicateFormModal } from '~features/workspace/components/DuplicateFormModal'
 
@@ -55,6 +56,7 @@ export const PreviewFormBanner = ({
   isTemplate,
 }: PreviewFormBannerProps): JSX.Element => {
   const { formId, isPaymentEnabled } = usePublicFormContext()
+  const { data: { secretEnv } = {} } = useEnv()
   const {
     isOpen: isModalOpen,
     onOpen: onModalOpen,
@@ -177,7 +179,7 @@ export const PreviewFormBanner = ({
       </Flex>
       {isPaymentEnabled && (
         <Flex backgroundColor="neutral.900">
-          {process.env.SECRET_ENV === 'production' ? (
+          {secretEnv === 'production' ? (
             <Text {...textProps}>
               To test your payment form, replicate this form on our{' '}
               <Link isExternal color="white" href={FORMSG_UAT}>

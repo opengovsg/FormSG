@@ -412,6 +412,7 @@ export const saveBounceDoc = (
           action: 'saveBounceDoc',
           formId: bounceDoc.formId,
         },
+        error,
       })
     }
     return transformMongoError(error)
