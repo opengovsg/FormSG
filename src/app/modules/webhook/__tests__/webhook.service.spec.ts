@@ -401,11 +401,9 @@ describe('webhook.service', () => {
     // since there are separate tests for sending webhooks and saving
     // responses to the database.
     let testSubmission: IEncryptedSubmissionSchema
-    const generateMockProducer = () =>
-      ({
-        sendMessage: jest.fn().mockReturnValue(okAsync(true)),
-      } as unknown as WebhookProducer)
-
+    const MOCK_PRODUCER = {
+      sendMessage: jest.fn().mockReturnValue(okAsync(true)),
+    } as unknown as WebhookProducer
     beforeEach(() => {
       jest.clearAllMocks()
 
@@ -422,7 +420,7 @@ describe('webhook.service', () => {
       MockAxios.post.mockResolvedValue(MOCK_AXIOS_SUCCESS_RESPONSE)
 
       const result = await WebhookService.createInitialWebhookSender(
-        generateMockProducer(),
+        MOCK_PRODUCER,
       )(testSubmission, MOCK_WEBHOOK_URL, /* isRetryEnabled= */ true)
 
       expect(result._unsafeUnwrap()).toBe(true)
@@ -460,7 +458,7 @@ describe('webhook.service', () => {
         ok(mockQueueMessage),
       )
       MockAxios.post.mockResolvedValue(MOCK_AXIOS_FAILURE_RESPONSE)
-      const MOCK_PRODUCER = generateMockProducer()
+
       const result = await WebhookService.createInitialWebhookSender(
         MOCK_PRODUCER,
       )(testSubmission, MOCK_WEBHOOK_URL, /* isRetryEnabled= */ true)
