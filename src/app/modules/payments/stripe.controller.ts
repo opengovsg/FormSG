@@ -367,28 +367,36 @@ export const downloadPaymentInvoice: ControllerHandler<{
           // convert to pdf and return
           .then((receiptUrlResponse) => {
             const html = receiptUrlResponse.data
-            const businessInfo = (populatedForm as IPopulatedForm).admin.agency
-              .business
+            const agencyBusinessInfo = (populatedForm as IPopulatedForm).admin
+              .agency.business
+            const formBusinessInfo = populatedForm.business
+
+            const businessAddress = [
+              formBusinessInfo?.address,
+              agencyBusinessInfo?.address,
+            ].find(Boolean)
+
+            const businessGstRegNo = [
+              formBusinessInfo?.gstRegNo,
+              agencyBusinessInfo?.gstRegNo,
+            ].find(Boolean)
 
             // we will still continute the invoice generation even if there's no address/gstregno
-            if (
-              !businessInfo ||
-              !businessInfo.address ||
-              !businessInfo.gstRegNo
-            )
+            if (!businessAddress || !businessGstRegNo)
               logger.warn({
                 message:
-                  'Some business info not available during invoice generation',
+                  'Some business info not available during invoice generation. Expecting either agency or form to have business info',
                 meta: {
                   action: 'downloadPaymentInvoice',
                   payment,
                   agencyName: populatedForm.admin.agency.fullName,
-                  businessInfo: businessInfo,
+                  agencyBusinessInfo,
+                  formBusinessInfo,
                 },
               })
             const invoiceHtml = convertToInvoiceFormat(html, {
-              address: businessInfo?.address || '',
-              gstRegNo: businessInfo?.gstRegNo || '',
+              address: businessAddress || '',
+              gstRegNo: businessGstRegNo || '',
               formTitle: populatedForm.title,
               submissionId: payment.completedPayment?.submissionId || '',
             })

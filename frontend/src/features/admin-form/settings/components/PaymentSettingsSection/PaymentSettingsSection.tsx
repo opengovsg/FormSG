@@ -1,13 +1,24 @@
-import { Flex, FormControl, Icon, Skeleton, Text } from '@chakra-ui/react'
+import {
+  Divider,
+  Flex,
+  FormControl,
+  Icon,
+  Skeleton,
+  Text,
+} from '@chakra-ui/react'
 
 import { FormResponseMode, PaymentChannel } from '~shared/types'
 
 import { BxsCheckCircle, BxsError, BxsInfoCircle } from '~assets/icons'
+import { GUIDE_PAYMENTS } from '~constants/links'
 import FormLabel from '~components/FormControl/FormLabel'
+import InlineMessage from '~components/InlineMessage'
 import Input from '~components/Input'
+import Link from '~components/Link'
 
 import { useAdminFormPayments, useAdminFormSettings } from '../../queries'
 
+import { BusinessInfoSection } from './BusinessInfoSection'
 import { StripeConnectButton } from './StripeConnectButton'
 
 const PaymentsAccountValidation = () => {
@@ -117,17 +128,33 @@ const PaymentsSectionText = () => {
   return (
     <Skeleton isLoaded={!isLoading} mb="2.5rem">
       <Text>
-        Link your form to a Stripe account to start collecting payments.
+        Connect your Stripe account to this form to start collecting payments.
       </Text>
+      <InlineMessage variant="info" mt="2rem">
+        <Text>
+          Don't have a Stripe account? Follow{' '}
+          <Link target="_blank" href={GUIDE_PAYMENTS}>
+            this guide
+          </Link>{' '}
+          to create one.
+        </Text>
+      </InlineMessage>
     </Skeleton>
   )
 }
 
 export const PaymentSettingsSection = (): JSX.Element => {
+  const { hasPaymentCapabilities } = useAdminFormPayments()
   return (
     <>
       <PaymentsSectionText />
       <StripeConnectButton />
+      {hasPaymentCapabilities && (
+        <>
+          <Divider my="2.5rem" />
+          <BusinessInfoSection />
+        </>
+      )}
     </>
   )
 }

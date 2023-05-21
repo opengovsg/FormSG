@@ -226,7 +226,9 @@ export const PaymentInput = ({ isDisabled }: { isDisabled: boolean }) => {
         isDisabled={!paymentIsEnabled}
         isRequired
       >
-        <FormLabel isRequired>Payment amount</FormLabel>
+        <FormLabel isRequired description="Amount should include GST">
+          Payment amount
+        </FormLabel>
         <Controller
           name="display_amount"
           control={control}

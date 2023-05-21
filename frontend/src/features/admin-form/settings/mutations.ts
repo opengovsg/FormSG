@@ -9,6 +9,7 @@ import {
   FormResponseMode,
   FormSettings,
   FormStatus,
+  StorageFormSettings,
 } from '~shared/types/form/form'
 import { TwilioCredentials } from '~shared/types/twilio'
 
@@ -25,6 +26,7 @@ import {
   createStripeAccount,
   deleteTwilioCredentials,
   unlinkStripeAccount,
+  updateBusinessInfo,
   updateFormAuthType,
   updateFormCaptcha,
   updateFormEmails,
@@ -287,6 +289,20 @@ export const useMutateFormSettings = () => {
     },
   )
 
+  const mutateFormBusiness = useMutation(
+    (businessInfo: StorageFormSettings['business']) =>
+      updateBusinessInfo(formId, businessInfo),
+    {
+      onSuccess: (newData) => {
+        handleSuccess({
+          newData,
+          toastDescription: `Business information has been updated.`,
+        })
+      },
+      onError: handleError,
+    },
+  )
+
   return {
     mutateWebhookRetries,
     mutateFormWebhookUrl,
@@ -298,6 +314,7 @@ export const useMutateFormSettings = () => {
     mutateFormTitle,
     mutateFormAuthType,
     mutateFormEsrvcId,
+    mutateFormBusiness,
   }
 }
 

@@ -78,11 +78,13 @@ export const FieldContainer = ({
         >
           {schema.title}
         </FormLabel>
-        <Box hidden={!showMyInfoBadge} gridArea="myinfobadge">
-          <Badge variant="subtle" colorScheme="secondary">
-            MyInfo
-          </Badge>
-        </Box>
+        {showMyInfoBadge && (
+          <Box gridArea="myinfobadge">
+            <Badge variant="subtle" colorScheme="secondary">
+              MyInfo
+            </Badge>
+          </Box>
+        )}
       </Grid>
       {children}
       <FormErrorMessage>{error?.message}</FormErrorMessage>

@@ -443,10 +443,10 @@ const submitEncryptModeForm: ControllerHandler<
     const createPaymentIntentParams: Stripe.PaymentIntentCreateParams = {
       amount,
       currency: paymentConfig.defaultCurrency,
-      payment_method_types: [
-        'card',
-        /* 'grabpay', 'paynow'*/
-      ],
+      // determine payment methods available based on stripe settings
+      automatic_payment_methods: {
+        enabled: true,
+      },
       description: paymentReceiptDescription,
       receipt_email: paymentReceiptEmail,
       metadata,

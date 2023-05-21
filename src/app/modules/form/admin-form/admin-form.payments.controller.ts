@@ -5,6 +5,7 @@ import { err, ok } from 'neverthrow'
 
 import { IEncryptedFormDocument } from 'src/types'
 
+import { featureFlags } from '../../../../../shared/constants'
 import {
   ErrorDto,
   PaymentChannel,
@@ -15,6 +16,7 @@ import { createReqMeta } from '../../../utils/request'
 import { getFormAfterPermissionChecks } from '../../auth/auth.service'
 import * as AuthService from '../../auth/auth.service'
 import { ControllerHandler } from '../../core/core.types'
+import * as FeatureFlagService from '../../feature-flags/feature-flags.service'
 import {
   getStripeOauthUrl,
   unlinkStripeAccountFromForm,
@@ -50,11 +52,38 @@ export const handleConnectAccount: ControllerHandler<{
   const { formId } = req.params
   const sessionUserId = (req.session as AuthedSessionData).user._id
 
+  const logMeta = {
+    action: 'handleConnectAccount',
+    ...createReqMeta(req),
+  }
+
+  // If getFeatureFlag throws a DatabaseError, we want to log it, but respond
+  // to the client as if the flag is not found.
+  const featureFlagsListResult = await FeatureFlagService.getEnabledFlags()
+
+  let featureFlagEnabled = false
+
+  if (featureFlagsListResult.isErr()) {
+    logger.error({
+      message: 'Error occurred whilst retrieving enabled feature flags',
+      meta: logMeta,
+      error: featureFlagsListResult.error,
+    })
+  } else {
+    featureFlagEnabled = featureFlagsListResult.value.includes(
+      featureFlags.payment,
+    )
+  }
+
   // Step 1: Retrieve currently logged in user.
   return (
     getPopulatedUserById(sessionUserId)
       // Step 2: Check if user has 'payment' betaflag
-      .andThen((user) => verifyUserBetaflag(user, 'payment'))
+      .andThen((user) =>
+        featureFlagEnabled
+          ? ok(user)
+          : verifyUserBetaflag(user, featureFlags.payment),
+      )
       .andThen((user) =>
         // Step 3: Retrieve form with write permission check.
         getFormAfterPermissionChecks({
@@ -76,10 +105,7 @@ export const handleConnectAccount: ControllerHandler<{
       .mapErr((error) => {
         logger.error({
           message: 'Error connecting admin form payment account',
-          meta: {
-            action: 'handleConnectAccount',
-            ...createReqMeta(req),
-          },
+          meta: logMeta,
           error,
         })
 
@@ -212,15 +238,45 @@ export const _handleUpdatePayments: ControllerHandler<
   { formId: string },
   IEncryptedFormDocument['payments_field'] | ErrorDto,
   PaymentsUpdateDto
-> = (req, res) => {
+> = async (req, res) => {
   const { formId } = req.params
   const sessionUserId = (req.session as AuthedSessionData).user._id
+
+  const logMeta = {
+    action: '_handleUpdatePayments',
+    ...createReqMeta(req),
+    userId: sessionUserId,
+    formId,
+    body: req.body,
+  }
+
+  // If getFeatureFlag throws a DatabaseError, we want to log it, but respond
+  // to the client as if the flag is not found.
+  const featureFlagsListResult = await FeatureFlagService.getEnabledFlags()
+
+  let featureFlagEnabled = false
+
+  if (featureFlagsListResult.isErr()) {
+    logger.error({
+      message: 'Error occurred whilst retrieving enabled feature flags',
+      meta: logMeta,
+      error: featureFlagsListResult.error,
+    })
+  } else {
+    featureFlagEnabled = featureFlagsListResult.value.includes(
+      featureFlags.payment,
+    )
+  }
 
   // Step 1: Retrieve currently logged in user.
   return (
     UserService.getPopulatedUserById(sessionUserId)
       // Step 2: Check if user has 'payment' betaflag
-      .andThen((user) => verifyUserBetaflag(user, 'payment'))
+      .andThen((user) =>
+        featureFlagEnabled
+          ? ok(user)
+          : verifyUserBetaflag(user, featureFlags.payment),
+      )
       .andThen((user) =>
         // Step 2: Retrieve form with write permission check.
         AuthService.getFormAfterPermissionChecks({
@@ -244,13 +300,7 @@ export const _handleUpdatePayments: ControllerHandler<
       .mapErr((error) => {
         logger.error({
           message: 'Error occurred when updating payments',
-          meta: {
-            action: '_handleUpdatePayments',
-            ...createReqMeta(req),
-            userId: sessionUserId,
-            formId,
-            body: req.body,
-          },
+          meta: logMeta,
           error,
         })
         const { errorMessage, statusCode } = mapRouteError(error)

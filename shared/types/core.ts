@@ -32,15 +32,10 @@ export type ClientEnvVars = {
   adminBannerContentReact: string
 
   spcpCookieDomain: string // Cookie domain used for removing spcp cookies
-  respondentRolloutEmail: number
-  respondentRolloutStorage: number
-  adminRollout: number
-  angularPhaseOutDate: string | null
-  removeAdminInfoboxThreshold: number
-  removeRespondentsInfoboxThreshold: number
   stripePublishableKey: string
   maxPaymentAmountCents: number
   minPaymentAmountCents: number
   // TODO (#5826): Toggle to use fetch for submissions instead of axios. Remove once network error is resolved
   useFetchForSubmissions: boolean
+  secretEnv: string
 }

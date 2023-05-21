@@ -36,9 +36,11 @@ import {
   VerifiableMobileFieldSchema,
 } from '~features/verifiable-fields/Mobile'
 
+import { PrefillMap } from './FormFields'
+
 interface FieldFactoryProps {
   field: FormFieldWithQuestionNo
-  isPrefilled?: boolean
+  prefill?: PrefillMap[string]
   colorTheme?: FormColorTheme
 }
 

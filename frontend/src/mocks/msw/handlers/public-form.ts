@@ -7,6 +7,7 @@ import {
   LogicConditionState,
   LogicIfValue,
   LogicType,
+  PaymentChannel,
   PreventSubmitLogicDto,
   ShowFieldLogicDto,
 } from '~shared/types'
@@ -364,6 +365,8 @@ export const BASE_FORM = {
     },
   ],
   form_logics: [],
+  payments_channel: { channel: PaymentChannel.Unconnected },
+  payments_field: { enabled: false },
   hasCaptcha: false,
   startPage: {
     colorTheme: 'blue',
@@ -401,6 +404,8 @@ export const BASE_FORM_WITHOUT_SECTIONS = {
     },
   ],
   form_logics: [],
+  payments_channel: { channel: PaymentChannel.Unconnected },
+  payments_field: { enabled: false },
   hasCaptcha: false,
   startPage: {
     colorTheme: 'blue',

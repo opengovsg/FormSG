@@ -28,6 +28,10 @@ export const updateSettingsValidator = celebrate({
       url: Joi.string().uri().allow(''),
       isRetryEnabled: Joi.boolean(),
     }).min(1),
+    business: Joi.object({
+      address: Joi.string().allow(''),
+      gstRegNo: Joi.string().allow(''),
+    }),
   })
     .min(1)
     .custom((value, helpers) => verifyValidUnicodeString(value, helpers)),

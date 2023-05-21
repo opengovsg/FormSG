@@ -1,6 +1,6 @@
 import { Router } from 'express'
 
-import * as FrontendServerController from '../../../../modules/frontend/frontend.controller'
+import * as FrontendServerController from '../../../../modules/frontend-old/frontend.controller'
 
 export const ClientRouter = Router()
 

@@ -36,58 +36,134 @@ describe('Form Field Schema', () => {
   afterEach(async () => await dbHandler.clearDatabase())
   afterAll(async () => await dbHandler.closeDatabase())
 
-  describe('Methods', () => {
-    describe('getQuestion', () => {
-      it('should return field title when field type is not a table field', async () => {
+  describe('Short Text Field', () => {
+    describe('prefill', () => {
+      it('should allow creation of short text field with no prefill setting and populate prefill settings with default', async () => {
         // Arrange
-        // Get all field types
-        const fieldTypes = Object.values(BasicField)
-        for (const fieldType of fieldTypes) {
-          if (fieldType === BasicField.Table) return
+        const field = await createAndReturnFormField({
+          fieldType: BasicField.ShortText,
+        })
 
-          // Act
-          const fieldTitle = `test ${fieldType} field title`
-          const field = await createAndReturnFormField({
-            fieldType,
-            title: fieldTitle,
-          })
-
-          // Assert
-          expect(field.getQuestion()).toEqual(fieldTitle)
-        }
+        // Assert
+        const fieldObj = field.toObject()
+        expect(fieldObj).toHaveProperty('allowPrefill', false)
+        expect(fieldObj).toHaveProperty('lockPrefill', false)
       })
 
-      it('should return table title concatenated with all column titles when field type is a table field', async () => {
+      it('should allow creation of short text field with allowPrefill = false setting and populate lockPrefill settings with default', async () => {
         // Arrange
-        const tableFieldParams = {
-          title: 'testTableTitle',
-          minimumRows: 1,
-          columns: [
-            {
-              title: 'Test Column Title 1',
-              required: true,
-              columnType: 'textfield',
-            },
-            {
-              title: 'Test Column Title 2',
-              required: true,
-              columnType: 'dropdown',
-            },
-          ],
-          fieldType: 'table',
+        const field = await createAndReturnFormField({
+          fieldType: BasicField.ShortText,
+          allowPrefill: false,
+        })
+
+        // Assert
+        const fieldObj = field.toObject()
+        expect(fieldObj).toHaveProperty('allowPrefill', false)
+        expect(fieldObj).toHaveProperty('lockPrefill', false)
+      })
+
+      it('should allow creation of short text field with allowPrefill = true setting and populate lockPrefill settings with default', async () => {
+        // Arrange
+        const field = await createAndReturnFormField({
+          fieldType: BasicField.ShortText,
+          allowPrefill: true,
+        })
+
+        // Assert
+        const fieldObj = field.toObject()
+        expect(fieldObj).toHaveProperty('allowPrefill', true)
+        expect(fieldObj).toHaveProperty('lockPrefill', false)
+      })
+
+      it('should allow creation of short text field with allowPrefill = true and lockPrefill = true settings', async () => {
+        // Arrange
+        const field = await createAndReturnFormField({
+          fieldType: BasicField.ShortText,
+          allowPrefill: true,
+          lockPrefill: true,
+        })
+
+        // Assert
+        const fieldObj = field.toObject()
+        expect(fieldObj).toHaveProperty('allowPrefill', true)
+        expect(fieldObj).toHaveProperty('lockPrefill', true)
+      })
+
+      it('should not allow creation of short text field with allowPrefill = false and lockPrefill = true settings', async () => {
+        // Arrange
+        const createField = async () => {
+          const field = await createAndReturnFormField({
+            fieldType: BasicField.ShortText,
+            allowPrefill: false,
+            lockPrefill: true,
+          })
+
+          return field
         }
 
         // Act
-        const tableField = await createAndReturnFormField(tableFieldParams)
+        const createFieldPromise = createField()
 
         // Assert
-        const expectedQuestionString = `${
-          tableFieldParams.title
-        } (${tableFieldParams.columns.map((col) => col.title).join(', ')})`
-        expect(tableField.getQuestion()).toEqual(expectedQuestionString)
+        await expect(createFieldPromise).rejects.toThrow(
+          'Cannot lock prefill if prefill is not enabled',
+        )
       })
     })
-  })
+  }),
+    describe('Methods', () => {
+      describe('getQuestion', () => {
+        it('should return field title when field type is not a table field', async () => {
+          // Arrange
+          // Get all field types
+          const fieldTypes = Object.values(BasicField)
+          for (const fieldType of fieldTypes) {
+            if (fieldType === BasicField.Table) return
+
+            // Act
+            const fieldTitle = `test ${fieldType} field title`
+            const field = await createAndReturnFormField({
+              fieldType,
+              title: fieldTitle,
+            })
+
+            // Assert
+            expect(field.getQuestion()).toEqual(fieldTitle)
+          }
+        })
+
+        it('should return table title concatenated with all column titles when field type is a table field', async () => {
+          // Arrange
+          const tableFieldParams = {
+            title: 'testTableTitle',
+            minimumRows: 1,
+            columns: [
+              {
+                title: 'Test Column Title 1',
+                required: true,
+                columnType: 'textfield',
+              },
+              {
+                title: 'Test Column Title 2',
+                required: true,
+                columnType: 'dropdown',
+              },
+            ],
+            fieldType: 'table',
+          }
+
+          // Act
+          const tableField = await createAndReturnFormField(tableFieldParams)
+
+          // Assert
+          const expectedQuestionString = `${
+            tableFieldParams.title
+          } (${tableFieldParams.columns.map((col) => col.title).join(', ')})`
+          expect(tableField.getQuestion()).toEqual(expectedQuestionString)
+        })
+      })
+    })
 })
 
 const createAndReturnFormField = async (

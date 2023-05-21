@@ -29,6 +29,14 @@ Prefilled.args = {
   isPrefilled: true,
 }
 
+export const PrefilledLocked = Template.bind({})
+PrefilledLocked.args = {
+  placeholder: 'Test placeholder',
+  defaultValue: 'Prefilled locked field',
+  isPrefilled: true,
+  isPrefillLocked: true,
+}
+
 export const Error = Template.bind({})
 Error.args = {
   isInvalid: true,
