@@ -87,8 +87,7 @@ export const ShareFormModal = ({
   })
 
   const shareLink = useMemo(
-    // () => `${window.location.origin}/${formId}`,
-    () => `https://form.gov.sg/${formId}`,
+    () => `${window.location.origin}/${formId}`,
     [formId],
   )
 
