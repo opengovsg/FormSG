@@ -5,10 +5,13 @@ import { StatusCodes } from 'http-status-codes'
 import { createLoggerWithLabel } from '../../config/logger'
 import { createReqMeta } from '../../utils/request'
 import { ControllerHandler } from '../core/core.types'
+import { findUserByApiKey } from '../user/user.service'
 
 import { isUserInSession } from './auth.utils'
 
 const logger = createLoggerWithLabel(module)
+const BEARER_STRING = 'Bearer'
+const BEARER_SEPARATOR = ' '
 
 /**
  * Middleware that only allows authenticated users to pass through to the next
@@ -92,3 +95,39 @@ export const validateVerifyOtpParams = celebrate({
       .message('Please enter a valid OTP'),
   }),
 })
+
+/**
+ * Middleware that only allows users with a valid bearer token to pass through to the next handler
+ */
+export const authenticateApiKey: ControllerHandler<unknown, unknown, any> = (
+  req,
+  res,
+  next,
+) => {
+  const authorizationHeader = req.headers.authorization
+  if (!authorizationHeader) {
+    return res
+      .status(StatusCodes.UNAUTHORIZED)
+      .json({ message: 'Authorisation header is missing' })
+  }
+  const [bearerString, apiKey] = authorizationHeader.split(BEARER_SEPARATOR)
+  if (bearerString !== BEARER_STRING) {
+    return res
+      .status(StatusCodes.UNAUTHORIZED)
+      .json({ message: 'Invalid authorisation header format' })
+  }
+  try {
+    const user = findUserByApiKey(apiKey)
+    if (!user) {
+      return res
+        .status(StatusCodes.UNAUTHORIZED)
+        .json({ message: 'Invalid API key' })
+    }
+    // req.body.userId = user._id
+    return next()
+  } catch {
+    return res
+      .status(StatusCodes.UNAUTHORIZED)
+      .json({ message: 'Invalid API key' })
+  }
+}

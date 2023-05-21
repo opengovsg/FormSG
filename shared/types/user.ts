@@ -23,6 +23,7 @@ export const UserBase = z.object({
   lastAccessed: z.date().optional(),
   updatedAt: z.date(),
   contact: z.string().optional(),
+  apiKey: z.string().optional(),
 })
 export type UserBase = z.infer<typeof UserBase>
 
