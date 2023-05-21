@@ -79,7 +79,12 @@ import {
   TransferOwnershipError,
 } from '../form.errors'
 import { getFormModelByResponseMode } from '../form.service'
-import { getFormFieldById, getLogicById, isFormOnboarded } from '../form.utils'
+import {
+  getFormFieldById,
+  getFormFieldIndexById,
+  getLogicById,
+  isFormOnboarded,
+} from '../form.utils'
 
 import {
   TwilioCredentials,
@@ -531,8 +536,12 @@ export const duplicateFormField = (
   FormFieldSchema,
   PossibleDatabaseError | FormNotFoundError | FieldNotFoundError
 > => {
+  const fieldIndex = getFormFieldIndexById(form.form_fields, fieldId)
+  // if fieldIndex does not exist, append to end of form fields
+  const insertionIndex =
+    fieldIndex === null ? form.form_fields.length : fieldIndex + 1
   return ResultAsync.fromPromise(
-    form.duplicateFormFieldById(fieldId),
+    form.duplicateFormFieldByIdAndIndex(fieldId, insertionIndex),
     (error) => {
       logger.error({
         message: 'Error encountered while duplicating form field',
@@ -540,6 +549,8 @@ export const duplicateFormField = (
           action: 'duplicateFormField',
           formId: form._id,
           fieldId,
+          fieldIndex,
+          insertionIndex,
         },
         error,
       })
@@ -555,7 +566,7 @@ export const duplicateFormField = (
         errAsync(new FormNotFoundError()),
       )
     }
-    const updatedField = last(updatedForm.form_fields)
+    const updatedField = updatedForm.form_fields[insertionIndex]
     return updatedField
       ? okAsync(updatedField)
       : errAsync(new FieldNotFoundError())
