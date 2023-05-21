@@ -707,15 +707,18 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     return this.save()
   }
 
-  FormDocumentSchema.methods.duplicateFormFieldById = function (
+  FormDocumentSchema.methods.duplicateFormFieldByIdAndIndex = function (
     fieldId: string,
+    insertionIndex: number,
   ) {
     const fieldToDuplicate = getFormFieldById(this.form_fields, fieldId)
     if (!fieldToDuplicate) return Promise.resolve(null)
     const duplicatedField = omit(fieldToDuplicate, ['_id', 'globalId'])
 
     // eslint-disable-next-line @typescript-eslint/no-extra-semi
-    ;(this.form_fields as Types.DocumentArray<IFieldSchema>).push(
+    ;(this.form_fields as Types.DocumentArray<IFieldSchema>).splice(
+      insertionIndex,
+      0,
       duplicatedField,
     )
     return this.save()

@@ -2703,7 +2703,7 @@ describe('Form Model', () => {
       })
     })
 
-    describe('duplicateFormFieldById', () => {
+    describe('duplicateFormFieldByIdAndIndex', () => {
       it('should return updated document with duplicated form field', async () => {
         // Arrange
         const fieldToDuplicate = generateDefaultField(BasicField.Checkbox)
@@ -2712,7 +2712,10 @@ describe('Form Model', () => {
         const fieldId = fieldToDuplicate._id
 
         // Act
-        const actual = await validForm.duplicateFormFieldById(fieldId)
+        const actual = await validForm.duplicateFormFieldByIdAndIndex(
+          fieldId,
+          1,
+        )
         // @ts-ignore
         const actualDuplicatedField = omit(actual?.form_fields.toObject()[1], [
           '_id',
@@ -2735,9 +2738,49 @@ describe('Form Model', () => {
         expect(actualDuplicatedField).toEqual(expectedDuplicatedField)
       })
 
+      it('should duplicate form field at the target index', async () => {
+        // Arrange
+        const fieldToDuplicate = generateDefaultField(BasicField.Checkbox)
+        const dummyField = generateDefaultField(BasicField.Mobile)
+
+        validForm.form_fields = [fieldToDuplicate, dummyField]
+        const fieldId = fieldToDuplicate._id
+
+        // Act
+        const actual = await validForm.duplicateFormFieldByIdAndIndex(
+          fieldId,
+          1,
+        )
+        // actual duplicated field should be at index 1
+        // @ts-ignore
+        const actualDuplicatedField = omit(actual?.form_fields.toObject()[1], [
+          '_id',
+          'globalId',
+        ]) // do not compare _id and globalId
+
+        // Assert
+        const expectedOriginalField = {
+          ...omit(fieldToDuplicate, ['getQuestion']),
+          _id: new ObjectId(fieldToDuplicate._id),
+        }
+        const expectedDuplicatedField = omit(fieldToDuplicate, [
+          '_id',
+          'globalId',
+          'getQuestion',
+        ])
+
+        // @ts-ignore
+        expect(actual?.form_fields.toObject()[0]).toEqual(expectedOriginalField)
+        expect(actualDuplicatedField).toEqual(expectedDuplicatedField)
+        // ensure nothing has been deleted from splice
+        // @ts-ignore
+        expect(actual?.form_fields.length).toEqual(3)
+      })
+
       it('should return null if given fieldId is invalid', async () => {
-        const updatedForm = await validForm.duplicateFormFieldById(
+        const updatedForm = await validForm.duplicateFormFieldByIdAndIndex(
           new ObjectId().toHexString(),
+          0,
         )
 
         // Assert

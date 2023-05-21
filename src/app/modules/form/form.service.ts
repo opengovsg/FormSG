@@ -1,7 +1,9 @@
+import { faker } from '@faker-js/faker'
 import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
 import {
+  BasicField,
   FormAuthType,
   FormField,
   FormFieldDto,
@@ -348,43 +350,73 @@ export const retrievePublicFormsWithSmsVerification = (
 
 export const createSingleSampleSubmissionAnswer = (field: FormFieldDto) => {
   let sampleValue = null
-  let noOfOptions = 0
-  let randomSelectedOption = 0
+  let noOfTableRows
+  let noOfTableCols
+  const tableSampleValue = []
   switch (field.fieldType) {
-    case 'textarea':
-    case 'textfield':
-      sampleValue =
-        'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.'
+    case BasicField.LongText:
+      sampleValue = faker.lorem.text()
       break
-    case 'radiobutton':
-    case 'dropdown':
-      noOfOptions = field.fieldOptions.length
-      randomSelectedOption = Math.floor(Math.random() * noOfOptions)
-      sampleValue = field.fieldOptions[randomSelectedOption]
+    case BasicField.ShortText:
+      sampleValue = faker.lorem.words()
       break
-    case 'email':
-      sampleValue = 'hello@example.com'
+    case BasicField.Radio:
+    case BasicField.Dropdown:
+      sampleValue = faker.helpers.arrayElement(field.fieldOptions)
       break
-    case 'decimal':
-      sampleValue = 1.234
+    case BasicField.Email:
+      sampleValue = faker.internet.email()
       break
-    case 'number':
-      sampleValue = 1234
+    case BasicField.Decimal:
+      sampleValue = faker.number.float({ precision: 0.1 }).toString()
       break
-    case 'mobile':
-      sampleValue = '+6598765432'
+    case BasicField.Number:
+      sampleValue = faker.number.int(100).toString()
       break
-    case 'homeno':
-      sampleValue = '+6567890123'
+    case BasicField.Mobile:
+      sampleValue = faker.phone.number('+659#######')
       break
-    case 'yes_no':
-      sampleValue = 'yes'
+    case BasicField.HomeNo:
+      sampleValue = faker.phone.number('+656#######')
       break
-    case 'rating':
-      sampleValue = 1
+    case BasicField.YesNo:
+      sampleValue = faker.helpers.arrayElement(['Yes', 'No'])
       break
-    case 'attachment':
+    case BasicField.Rating:
+      sampleValue = faker.number
+        .int({ min: 1, max: field.ratingOptions.steps })
+        .toString()
+      break
+    case BasicField.Attachment:
       sampleValue = 'attachmentFileName'
+      break
+    case BasicField.Table:
+      noOfTableRows = field.minimumRows
+      noOfTableCols = field.columns.length
+      for (let row = 0; row < noOfTableRows; row++) {
+        const rowSampleValue = []
+        for (let col = 0; col < noOfTableCols; col++) {
+          rowSampleValue.push(`row${row + 1}col${col + 1}`)
+        }
+        tableSampleValue.push(rowSampleValue)
+      }
+      sampleValue = tableSampleValue
+      break
+    case BasicField.Checkbox:
+      sampleValue = faker.helpers.arrayElements(field.fieldOptions)
+      break
+    case BasicField.Date:
+      sampleValue = faker.date.anytime().toLocaleDateString('en-SG', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      })
+      break
+    case BasicField.Nric:
+      sampleValue = faker.helpers.replaceSymbols('S9######A')
+      break
+    case BasicField.Uen:
+      sampleValue = faker.helpers.replaceSymbols('#########A')
       break
     default:
       break
