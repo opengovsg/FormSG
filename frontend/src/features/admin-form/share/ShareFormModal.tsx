@@ -152,16 +152,15 @@ export const ShareFormModal = ({
     try {
       await claimGoLinkMutation.mutateAsync({
         linkSuffix: goLinkSuffix,
-        formLink: shareLink,
+        formId: formId ?? '',
       })
       setGoLinkHelperText(goLinkClaimSuccessHelperText)
       return
     } catch (err) {
-      console.log(err)
       setGoLinkHelperText(goLinkClaimFailureHelperText)
       return
     }
-  }, [claimGoLinkMutation, goLinkSuffix, shareLink])
+  }, [claimGoLinkMutation, goLinkSuffix, formId])
 
   return (
     <Modal size={modalSize} isOpen={isOpen} onClose={onClose}>

@@ -4,10 +4,10 @@ const GOGOV_ENDPOINT = '/gogov'
 
 export const claimGoLink = async (
   linkSuffix: string,
-  formLink: string,
+  formId: string,
 ): Promise<unknown> => {
   return ApiService.post(`${GOGOV_ENDPOINT}/claim`, {
-    formLink,
+    formId,
     linkSuffix,
   })
 }

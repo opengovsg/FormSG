@@ -10,13 +10,13 @@ const GoGovBaseUrl = 'https://go.gov.sg'
 export const claimGoLink: ControllerHandler<
   null,
   null,
-  { linkSuffix: string; formLink: string }
+  { linkSuffix: string; formId: string }
 > = async (req, res) => {
   return await axios
     .post(
       `${GoGovBaseUrl}/api/v1/urls`,
       {
-        longUrl: req.body.formLink,
+        longUrl: `${process.env.APP_URL}/${req.body.formId}`,
         shortUrl: req.body.linkSuffix,
       },
       {
