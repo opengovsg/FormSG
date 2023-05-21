@@ -8,6 +8,7 @@ import {
   InputGroup,
   InputLeftAddon,
   InputRightElement,
+  Link,
   Modal,
   ModalBody,
   ModalContent,
@@ -15,6 +16,7 @@ import {
   ModalOverlay,
   Skeleton,
   Stack,
+  Text,
   useBreakpointValue,
 } from '@chakra-ui/react'
 import dedent from 'dedent'
@@ -40,24 +42,24 @@ import { useListShortenerMutations } from '~features/link-shortener/mutations'
 type goLinkHelperTextType = {
   color: string
   icon: JSX.Element
-  text: string
+  text: JSX.Element
 }
 
-const goLinkAvailableHelperText: goLinkHelperTextType = {
+const goLinkClaimSuccessHelperText: goLinkHelperTextType = {
   color: 'success.700',
   icon: <BxsCheckCircle />,
-  text: 'Short link is available. Claim link to use it for this form.',
+  text: (
+    <Text>
+      You have successfully claimed this link. This link will appear in your{' '}
+      <Link href="https://go.gov.sg">Go account</Link>.
+    </Text>
+  ),
 }
 
-const goLinkTakenHelperText: goLinkHelperTextType = {
+const goLinkClaimFailureHelperText: goLinkHelperTextType = {
   color: 'danger.500',
   icon: <BxsErrorCircle />,
-  text: 'Short link is already in use.',
-}
-
-enum goLinkStage {
-  CHECK = 'Check',
-  CLAIM = 'Claim',
+  text: <Text>Short link is already in use.</Text>,
 }
 
 export interface ShareFormModalProps {
@@ -85,7 +87,8 @@ export const ShareFormModal = ({
   })
 
   const shareLink = useMemo(
-    () => `${window.location.origin}/${formId}`,
+    // () => `${window.location.origin}/${formId}`,
+    () => `https://form.gov.sg/${formId}`,
     [formId],
   )
 
@@ -137,36 +140,27 @@ export const ShareFormModal = ({
     navigate(`${ADMINFORM_ROUTE}/${formId}/${ADMINFORM_SETTINGS_SUBROUTE}`)
   }, [formId, navigate, onClose])
 
-  const [goLinkStageState, setGoLinkStageState] = useState<goLinkStage>(
-    goLinkStage.CHECK,
-  )
-
   const [goLinkSuffix, setGoLinkSuffix] = useState('')
 
-  const { getLinkSuffixMutation, claimGoLinkMutation } =
-    useListShortenerMutations()
+  const { claimGoLinkMutation } = useListShortenerMutations()
 
   const [goLinkHelperText, setGoLinkHelperText] = useState<
     goLinkHelperTextType | undefined
   >()
 
-  const handleCheckGoLinkClick = useCallback(async () => {
-    const linkAvailable = await getLinkSuffixMutation.mutateAsync({
-      linkSuffix: goLinkSuffix,
-    })
-    if (linkAvailable) {
-      setGoLinkHelperText(goLinkAvailableHelperText)
-      setGoLinkStageState(goLinkStage.CLAIM)
-    } else {
-      setGoLinkHelperText(goLinkTakenHelperText)
+  const handleClaimGoLinkClick = useCallback(async () => {
+    try {
+      await claimGoLinkMutation.mutateAsync({
+        linkSuffix: goLinkSuffix,
+        formLink: shareLink,
+      })
+      setGoLinkHelperText(goLinkClaimSuccessHelperText)
+      return
+    } catch (err) {
+      console.log(err)
+      setGoLinkHelperText(goLinkClaimFailureHelperText)
+      return
     }
-  }, [getLinkSuffixMutation, goLinkSuffix])
-
-  const handleClaimGoLinkClick = useCallback(() => {
-    return claimGoLinkMutation.mutateAsync({
-      linkSuffix: goLinkSuffix,
-      formLink: shareLink,
-    })
   }, [claimGoLinkMutation, goLinkSuffix, shareLink])
 
   return (
@@ -246,24 +240,15 @@ export const ShareFormModal = ({
                       onChange={(e) => {
                         setGoLinkSuffix(e.target.value)
                         setGoLinkHelperText(undefined)
-                        setGoLinkStageState(goLinkStage.CHECK)
                       }}
                     />
                   </InputGroup>
                   <Button
-                    aria-label={
-                      goLinkStageState === goLinkStage.CHECK
-                        ? 'Check if Go link suffix is available'
-                        : 'Claim Go link'
-                    }
-                    onClick={
-                      goLinkStageState === goLinkStage.CHECK
-                        ? handleCheckGoLinkClick
-                        : handleClaimGoLinkClick
-                    }
+                    aria-label="Claim Go link"
+                    onClick={handleClaimGoLinkClick}
                     isDisabled={!goLinkSuffix}
                   >
-                    {goLinkStageState}
+                    Claim
                   </Button>
                 </Stack>
                 {goLinkHelperText && (
