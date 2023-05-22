@@ -258,7 +258,7 @@
     "jest-mock-axios": "^4.7.2",
     "lint-staged": "^13.1.0",
     "maildev": "^2.0.5",
-    "mini-css-extract-plugin": "^0.5.0",
+    "mini-css-extract-plugin": "^2.7.6",
     "mockdate": "^3.0.5",
     "ngrok": "^4.3.3",
     "optimize-css-assets-webpack-plugin": "^5.0.8",
