@@ -21,7 +21,7 @@ import {
 } from '@chakra-ui/react'
 import dedent from 'dedent'
 
-import { GOGOV_BASE_URL } from '~shared/constants'
+import { featureFlags, GOGOV_BASE_URL } from '~shared/constants'
 
 import { BxsCheckCircle, BxsErrorCircle } from '~/assets/icons'
 
@@ -39,6 +39,7 @@ import { ModalCloseButton } from '~components/Modal'
 import Textarea from '~components/Textarea'
 import { CopyButton } from '~templates/CopyButton'
 
+import { useFeatureFlags } from '~features/feature-flags/queries'
 import { useListShortenerMutations } from '~features/link-shortener/mutations'
 import { useGoLink } from '~features/link-shortener/queries'
 
@@ -91,6 +92,9 @@ export const ShareFormModal = ({
     xs: 'mobile',
     md: 'md',
   })
+
+  const { data: flags } = useFeatureFlags()
+  const displayGoLink = flags?.has(featureFlags.goLinks)
 
   const shareLink = useMemo(
     () => `${window.location.origin}/${formId}`,
@@ -154,7 +158,7 @@ export const ShareFormModal = ({
       setGoLinkSaved(true)
       setGoLinkSuffixInput(goLinkSuffixData?.goLinkSuffix ?? '')
     }
-  }, [goLinkSuffixData?.goLinkSuffix, setGoLinkSuffixInput])
+  }, [goLinkSuffixData?.goLinkSuffix])
 
   const { claimGoLinkMutation } = useListShortenerMutations()
 
@@ -240,53 +244,56 @@ export const ShareFormModal = ({
                 </Stack>
               </Skeleton>
             </FormControl>
-            <FormControl>
-              <FormLabel description="Customise a Go link for your form.">
-                Go link
-              </FormLabel>
+            {displayGoLink ? (
+              <FormControl>
+                <FormLabel description="Customise a Go link for your form.">
+                  Go link
+                </FormLabel>
 
-              <Skeleton isLoaded={!!formId}>
-                <Stack direction="row" align="center">
-                  <InputGroup>
-                    <InputLeftAddon children="https://go.gov.sg/" />
-                    <Input
-                      value={goLinkSuffixInput}
-                      onChange={(e) => {
-                        setGoLinkSuffixInput(e.target.value)
-                        setGoLinkHelperText(undefined)
-                      }}
-                      isReadOnly={goLinkSaved}
-                    />
-                    {goLinkSaved ? (
-                      <InputRightElement>
-                        <CopyButton
-                          colorScheme="secondary"
-                          stringToCopy={`${GOGOV_BASE_URL}/${goLinkSuffixInput}`}
-                          aria-label="Copy respondent form link"
-                        />
-                      </InputRightElement>
-                    ) : null}
-                  </InputGroup>
-                  {goLinkSaved ? null : (
-                    <Button
-                      aria-label="Claim Go link"
-                      onClick={handleClaimGoLinkClick}
-                      isDisabled={!goLinkSuffixInput}
-                    >
-                      Claim
-                    </Button>
+                <Skeleton isLoaded={!!formId}>
+                  <Stack direction="row" align="center">
+                    <InputGroup>
+                      <InputLeftAddon children={`${GOGOV_BASE_URL}/`} />
+                      <Input
+                        value={goLinkSuffixInput}
+                        onChange={(e) => {
+                          setGoLinkSuffixInput(e.target.value)
+                          setGoLinkHelperText(undefined)
+                        }}
+                        isReadOnly={goLinkSaved}
+                      />
+                      {goLinkSaved ? (
+                        <InputRightElement>
+                          <CopyButton
+                            colorScheme="secondary"
+                            stringToCopy={`${GOGOV_BASE_URL}/${goLinkSuffixInput}`}
+                            aria-label="Copy respondent form link"
+                          />
+                        </InputRightElement>
+                      ) : null}
+                    </InputGroup>
+                    {goLinkSaved ? null : (
+                      <Button
+                        aria-label="Claim Go link"
+                        onClick={handleClaimGoLinkClick}
+                        isDisabled={!goLinkSuffixInput}
+                      >
+                        Claim
+                      </Button>
+                    )}
+                  </Stack>
+                  {goLinkHelperText && (
+                    <FormHelperText color={goLinkHelperText.color}>
+                      <Stack direction="row" align="center">
+                        <Box>{goLinkHelperText.icon}</Box>
+                        <Box>{goLinkHelperText.text}</Box>
+                      </Stack>
+                    </FormHelperText>
                   )}
-                </Stack>
-                {goLinkHelperText && (
-                  <FormHelperText color={goLinkHelperText.color}>
-                    <Stack direction="row" align="center">
-                      <Box>{goLinkHelperText.icon}</Box>
-                      <Box>{goLinkHelperText.text}</Box>
-                    </Stack>
-                  </FormHelperText>
-                )}
-              </Skeleton>
-            </FormControl>
+                </Skeleton>
+              </FormControl>
+            ) : null}
+
             <FormControl isReadOnly>
               <FormLabel isRequired>Share template</FormLabel>
               <Skeleton isLoaded={!!formId}>
