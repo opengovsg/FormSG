@@ -1635,3 +1635,20 @@ export const getGoLinkSuffix = (formId: string) => {
     return transformMongoError(error)
   })
 }
+
+export const setGoLinkSuffix = (formId: string, linkSuffix: string) => {
+  return ResultAsync.fromPromise(
+    FormModel.setGoLinkSuffix(formId, linkSuffix),
+    (error) => {
+      logger.error({
+        message: 'Error occurred when setting go link suffix',
+        meta: {
+          action: 'setGoLinkSuffix',
+          formId,
+        },
+        error,
+      })
+      return transformMongoError(error)
+    },
+  )
+}

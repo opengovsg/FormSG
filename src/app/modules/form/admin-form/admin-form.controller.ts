@@ -1,4 +1,5 @@
 import JoiDate from '@joi/date'
+import axios from 'axios'
 import { ObjectId } from 'bson'
 import { celebrate, Joi as BaseJoi, Segments } from 'celebrate'
 import { AuthedSessionData } from 'express-session'
@@ -6,6 +7,7 @@ import { StatusCodes } from 'http-status-codes'
 import JSONStream from 'JSONStream'
 import { ResultAsync } from 'neverthrow'
 
+import { GOGOV_BASE_URL } from '../../../../../shared/constants'
 import {
   MAX_UPLOAD_FILE_SIZE,
   VALID_UPLOAD_FILE_TYPES,
@@ -47,6 +49,7 @@ import {
   FormUpdateParams,
   ParsedEmailModeSubmissionBody,
 } from '../../../../types/api'
+import { goGovConfig } from '../../../config/features/gogov.config'
 import { smsConfig } from '../../../config/features/sms.config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import MailService from '../../../services/mail/mail.service'
@@ -54,6 +57,7 @@ import * as SmsService from '../../../services/sms/sms.service'
 import { createReqMeta } from '../../../utils/request'
 import * as AuthService from '../../auth/auth.service'
 import {
+  ApplicationError,
   DatabaseConflictError,
   DatabaseError,
   DatabasePayloadSizeError,
@@ -2717,6 +2721,67 @@ export const handleGetGoLinkSuffix: ControllerHandler<{ formId: string }> = (
           message: 'Error occurred when getting GoGov link suffix',
           meta: {
             action: 'handleGetGoLinkSuffix',
+            ...createReqMeta(req),
+            userId: sessionUserId,
+            formId,
+          },
+          error,
+        })
+        const { errorMessage, statusCode } = mapRouteError(error)
+        return res.status(statusCode).json({ message: errorMessage })
+      })
+  )
+}
+
+export const handleSetGoLinkSuffix: ControllerHandler<
+  { formId: string },
+  unknown,
+  { linkSuffix: string }
+> = (req, res) => {
+  const { formId } = req.params
+  const { linkSuffix } = req.body
+  const sessionUserId = (req.session as AuthedSessionData).user._id
+
+  // Step 1: Get the form after permission checks
+  return (
+    UserService.getPopulatedUserById(sessionUserId)
+      .andThen((user) => {
+        return AuthService.getFormAfterPermissionChecks({
+          user,
+          formId,
+          level: PermissionLevel.Read,
+        })
+      })
+      // Step 2: After permission checks, try to get GoGov link
+      .andThen(() => {
+        return ResultAsync.fromPromise(
+          axios.post(
+            `${GOGOV_BASE_URL}/api/v1/urls`,
+            {
+              // longUrl: `${process.env.APP_URL}/${req.body.formId}`,
+              longUrl: `https://form.gov.sg/${formId}`,
+              shortUrl: linkSuffix,
+            },
+            {
+              headers: {
+                Authorization: `Bearer ${goGovConfig.goGovAPIKey}`,
+                // Required due to bug introduced in axios 1.2.1: https://github.com/axios/axios/issues/5346
+                // TODO: remove when axios is upgraded to 1.2.2
+                'Accept-Encoding': 'gzip,deflate,compress',
+              },
+            },
+          ),
+          () => new ApplicationError('Error occurred when claiming GoGov link'),
+        )
+      })
+      // Step 3: After obtaining GoGov link, save it to the form
+      .andThen(() => AdminFormService.setGoLinkSuffix(formId, linkSuffix))
+      .map((data) => res.status(StatusCodes.OK).json(data))
+      .mapErr((error) => {
+        logger.error({
+          message: 'Error occurred when setting GoGov link suffix',
+          meta: {
+            action: 'handleSetGoLinkSuffix',
             ...createReqMeta(req),
             userId: sessionUserId,
             formId,

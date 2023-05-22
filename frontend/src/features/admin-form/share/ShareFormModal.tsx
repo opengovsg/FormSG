@@ -21,6 +21,8 @@ import {
 } from '@chakra-ui/react'
 import dedent from 'dedent'
 
+import { GOGOV_BASE_URL } from '~shared/constants'
+
 import { BxsCheckCircle, BxsErrorCircle } from '~/assets/icons'
 
 import {
@@ -52,7 +54,10 @@ const goLinkClaimSuccessHelperText: goLinkHelperTextType = {
   text: (
     <Text>
       You have successfully claimed this link. This link will appear in your{' '}
-      <Link href="https://go.gov.sg">Go account</Link>.
+      <Link isExternal href="https://go.gov.sg">
+        Go account
+      </Link>
+      .
     </Text>
   ),
 }
@@ -255,7 +260,7 @@ export const ShareFormModal = ({
                       <InputRightElement>
                         <CopyButton
                           colorScheme="secondary"
-                          stringToCopy={`https://go.gov.sg/${goLinkSuffixInput}`}
+                          stringToCopy={`${GOGOV_BASE_URL}/${goLinkSuffixInput}`}
                           aria-label="Copy respondent form link"
                         />
                       </InputRightElement>

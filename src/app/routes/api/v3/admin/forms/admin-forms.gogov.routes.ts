@@ -11,3 +11,10 @@ AdminFormsGoGovRouter.route('/:formId([a-fA-F0-9]{24})/gogov')
    * @security session
    */
   .get(AdminFormController.handleGetGoLinkSuffix)
+
+  /**
+   * Set the go.gov.sg link for specified form
+   * @route POST /:formId/gogov
+   * @security session
+   */
+  .post(AdminFormController.handleSetGoLinkSuffix)
