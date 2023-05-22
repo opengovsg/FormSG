@@ -141,11 +141,15 @@ export const ShareFormModal = ({
   }, [formId, navigate, onClose])
 
   const { data: goLinkSuffixData } = useGoLink(formId ?? '')
-  const [goLinkSuffix, setGoLinkSuffix] = useState('')
+  const [goLinkSuffixInput, setGoLinkSuffixInput] = useState('')
+  const [goLinkSaved, setGoLinkSaved] = useState(false)
 
   useEffect(() => {
-    setGoLinkSuffix(goLinkSuffixData?.goLinkSuffix ?? '')
-  }, [goLinkSuffixData?.goLinkSuffix, setGoLinkSuffix])
+    if (goLinkSuffixData?.goLinkSuffix) {
+      setGoLinkSaved(true)
+      setGoLinkSuffixInput(goLinkSuffixData?.goLinkSuffix ?? '')
+    }
+  }, [goLinkSuffixData?.goLinkSuffix, setGoLinkSuffixInput])
 
   const { claimGoLinkMutation } = useListShortenerMutations()
 
@@ -156,7 +160,7 @@ export const ShareFormModal = ({
   const handleClaimGoLinkClick = useCallback(async () => {
     try {
       await claimGoLinkMutation.mutateAsync({
-        linkSuffix: goLinkSuffix,
+        linkSuffix: goLinkSuffixInput,
         formId: formId ?? '',
       })
       setGoLinkHelperText(goLinkClaimSuccessHelperText)
@@ -165,7 +169,7 @@ export const ShareFormModal = ({
       setGoLinkHelperText(goLinkClaimFailureHelperText)
       return
     }
-  }, [claimGoLinkMutation, goLinkSuffix, formId])
+  }, [claimGoLinkMutation, goLinkSuffixInput, formId])
 
   return (
     <Modal size={modalSize} isOpen={isOpen} onClose={onClose}>
@@ -240,20 +244,32 @@ export const ShareFormModal = ({
                   <InputGroup>
                     <InputLeftAddon children="https://go.gov.sg/" />
                     <Input
-                      value={goLinkSuffix}
+                      value={goLinkSuffixInput}
                       onChange={(e) => {
-                        setGoLinkSuffix(e.target.value)
+                        setGoLinkSuffixInput(e.target.value)
                         setGoLinkHelperText(undefined)
                       }}
+                      isReadOnly={goLinkSaved}
                     />
+                    {goLinkSaved ? (
+                      <InputRightElement>
+                        <CopyButton
+                          colorScheme="secondary"
+                          stringToCopy={`https://go.gov.sg/${goLinkSuffixInput}`}
+                          aria-label="Copy respondent form link"
+                        />
+                      </InputRightElement>
+                    ) : null}
                   </InputGroup>
-                  <Button
-                    aria-label="Claim Go link"
-                    onClick={handleClaimGoLinkClick}
-                    isDisabled={!goLinkSuffix}
-                  >
-                    Claim
-                  </Button>
+                  {goLinkSaved ? null : (
+                    <Button
+                      aria-label="Claim Go link"
+                      onClick={handleClaimGoLinkClick}
+                      isDisabled={!goLinkSuffixInput}
+                    >
+                      Claim
+                    </Button>
+                  )}
                 </Stack>
                 {goLinkHelperText && (
                   <FormHelperText color={goLinkHelperText.color}>

@@ -9,7 +9,6 @@ export const useGoLink = (
   formId: string,
 ): UseQueryResult<{ goLinkSuffix: string }> => {
   return useQuery(formId, () => getGoLinkSuffix(formId), {
-    staleTime: 0,
     enabled: !!formId,
   })
 }
