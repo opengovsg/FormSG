@@ -667,33 +667,63 @@ export const reconcileAccount: ControllerHandler<
   }
 > = (req, res) => {
   const { stripeAccountId } = req.body
+
+  logger.info({
+    message: 'reconcileAccount endpoint called',
+    meta: {
+      action: 'reconcileAccount',
+      stripeAccountId,
+    },
+  })
+
+  const results: Array<IPaymentSchema> = []
+  const failedResults: Array<{
+    paymentId: string
+    err: ApplicationError
+    event:
+      | Stripe.DiscriminatedEvent.PaymentIntentEvent
+      | Stripe.DiscriminatedEvent.ChargeEvent
+  }> = []
+
   return StripeService.getUndeliveredPaymentIntentSuccessEventsFromAccount(
     stripeAccountId,
-  )
-    .andThen((events) => {
-      return ok(events)
-    })
-    .andThen((events) =>
-      ResultAsync.combine(
-        events.data.map((_event) => {
-          const event = _event as Stripe.DiscriminatedEvent.PaymentIntentEvent
+    async (_event) => {
+      const event = _event as
+        | Stripe.DiscriminatedEvent.PaymentIntentEvent
+        | Stripe.DiscriminatedEvent.ChargeEvent
 
-          return getMetadataPaymentId(event.data.object.metadata).asyncAndThen(
-            (paymentId) =>
-              StripeService.processStripeEvent(paymentId, event).andThen(() =>
-                PaymentService.findPaymentById(paymentId),
-              ),
-          )
-        }),
-      ),
-    )
-    .map((results) => {
-      const resp = results.map((res) =>
-        res
-          ? { status: res.status, paymentId: res.paymentIntentId, id: res._id }
-          : null,
+      return getMetadataPaymentId(event.data.object.metadata).asyncAndThen(
+        (paymentId) => {
+          return StripeService.processStripeEvent(paymentId, event)
+            .andThen(() => PaymentService.findPaymentById(paymentId))
+            .andThen((result) => {
+              results.push(result)
+              return ok(undefined)
+            })
+            .orElse((err) => {
+              failedResults.push({ paymentId, err, event })
+              return ok(undefined)
+            })
+        },
       )
-      return res.status(StatusCodes.OK).json(resp)
+    },
+  )
+    .map(() => {
+      const formattedResults = results.map((res) => ({
+        status: res.status,
+        paymentId: res.paymentIntentId,
+        id: res._id,
+      }))
+      const formattedFailedResults = failedResults.map((paymentId) => ({
+        paymentId,
+      }))
+      return res.status(StatusCodes.OK).json({
+        data: {
+          processed: formattedResults,
+          failed: formattedFailedResults,
+        },
+        count: formattedResults.length + formattedFailedResults.length,
+      })
     })
     .mapErr((error) => {
       return res.status(StatusCodes.BAD_REQUEST).json({ message: error })

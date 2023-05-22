@@ -488,15 +488,22 @@ export const validateAccount = (
 
 export const getUndeliveredPaymentIntentSuccessEventsFromAccount = (
   stripeAccountId: string,
+  callback: (item: Stripe.Event) => void,
 ) => {
   return ResultAsync.fromPromise(
-    stripe.events.list(
-      {
-        delivery_success: false,
-        types: ['payment_intent.succeeded', 'payment_intent.created'],
-      },
-      { stripeAccount: stripeAccountId },
-    ),
+    stripe.events
+      .list(
+        {
+          delivery_success: false,
+          types: [
+            'payment_intent.succeeded',
+            'payment_intent.created',
+            'charge.succeeded',
+          ],
+        },
+        { stripeAccount: stripeAccountId },
+      )
+      .autoPagingEach(callback),
     (error) => {
       logger.error({
         message: 'stripe.events.list called',
