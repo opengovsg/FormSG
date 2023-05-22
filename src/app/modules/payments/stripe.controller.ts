@@ -11,6 +11,7 @@ import Stripe from 'stripe'
 import { IPopulatedForm } from 'src/types'
 
 import { ErrorDto, GetPaymentInfoDto } from '../../../../shared/types'
+import { IPaymentSchema } from '../../../types'
 import config from '../../config/config'
 import { paymentConfig } from '../../config/features/payment.config'
 import { createLoggerWithLabel } from '../../config/logger'
@@ -18,6 +19,7 @@ import { stripe } from '../../loaders/stripe'
 import getPaymentModel from '../../models/payment.server.model'
 import { generatePdfFromHtml } from '../../utils/convert-html-to-pdf'
 import { createReqMeta } from '../../utils/request'
+import { ApplicationError } from '../core/core.errors'
 import { ControllerHandler } from '../core/core.types'
 import * as FormService from '../form/form.service'
 import * as PendingSubmissionModel from '../pending-submission/pending-submission.service'
@@ -107,7 +109,7 @@ const _handleStripeEventUpdates: ControllerHandler<
     meta: logMeta,
   })
 
-  let result: Result<void, any> = ok(undefined)
+  let result: Result<IPaymentSchema | void, ApplicationError> = ok(undefined)
 
   switch (event.type) {
     // We catch all payment_intent, charge and payout events, except the
@@ -625,5 +627,75 @@ export const getPaymentInfo: ControllerHandler<
     .mapErr((error) => {
       const { errorMessage, statusCode } = mapRouteError(error)
       return res.status(statusCode).json({ message: errorMessage })
+    })
+}
+
+export const queryPendingPayments: ControllerHandler<
+  unknown,
+  unknown,
+  unknown,
+  {
+    after: string
+    before: string
+    // limit: number
+  }
+> = (req, res) => {
+  const { after: createdAfter, before: createdBefore } = req.query
+
+  return PaymentService.findPendingPaymentsByTime(
+    createdAfter,
+    createdBefore,
+    // limit,
+  )
+    .map((results) => {
+      return res
+        .status(StatusCodes.OK)
+        .json({ data: results, count: results.length })
+    })
+    .mapErr((error) => {
+      return res.status(StatusCodes.BAD_REQUEST).json({ message: error })
+    })
+}
+
+export const reconcileAccount: ControllerHandler<
+  unknown,
+  unknown,
+  {
+    stripeAccountId: string
+    // paymentIntentId: string
+    // paymentId: string
+  }
+> = (req, res) => {
+  const { stripeAccountId } = req.body
+  return StripeService.getUndeliveredPaymentIntentSuccessEventsFromAccount(
+    stripeAccountId,
+  )
+    .andThen((events) => {
+      return ok(events)
+    })
+    .andThen((events) =>
+      ResultAsync.combine(
+        events.data.map((_event) => {
+          const event = _event as Stripe.DiscriminatedEvent.PaymentIntentEvent
+
+          return getMetadataPaymentId(event.data.object.metadata).asyncAndThen(
+            (paymentId) =>
+              StripeService.processStripeEvent(paymentId, event).andThen(() =>
+                PaymentService.findPaymentById(paymentId),
+              ),
+          )
+        }),
+      ),
+    )
+    .map((results) => {
+      const resp = results.map((res) =>
+        res
+          ? { status: res.status, paymentId: res.paymentIntentId, id: res._id }
+          : null,
+      )
+      return res.status(StatusCodes.OK).json(resp)
+    })
+    .mapErr((error) => {
+      return res.status(StatusCodes.BAD_REQUEST).json({ message: error })
     })
 }

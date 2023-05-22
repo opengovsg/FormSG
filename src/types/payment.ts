@@ -11,7 +11,13 @@ export interface IPaymentSchema extends Payment, Document {
   responses: any[]
 }
 
-export type IPaymentModel = Model<IPaymentSchema>
+export interface IPaymentModel extends Model<IPaymentSchema> {
+  getPaymentBetweenDatesByType(
+    status: Payment['status'],
+    created_after: Payment['created'],
+    created_before: Payment['created'],
+  ): Promise<IPaymentSchema[]>
+}
 
 export interface StripePaymentMetadataDto extends Stripe.Metadata {
   env: string

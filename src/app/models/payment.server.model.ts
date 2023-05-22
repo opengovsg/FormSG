@@ -1,6 +1,6 @@
 import { Mongoose, Schema } from 'mongoose'
 
-import { PaymentStatus } from '../../../shared/types'
+import { Payment, PaymentStatus } from '../../../shared/types'
 import { IPaymentModel, IPaymentSchema } from '../../types'
 
 import { FORM_SCHEMA_ID } from './form.server.model'
@@ -97,6 +97,19 @@ const PaymentSchema = new Schema<IPaymentSchema, IPaymentModel>(
 )
 
 const compilePaymentModel = (db: Mongoose): IPaymentModel => {
+  PaymentSchema.statics.getPaymentBetweenDatesByType = async function (
+    status: Payment['status'],
+    created_after: Payment['created'],
+    created_before: Payment['created'],
+  ) {
+    return this.find({
+      status,
+      createdAt: { $gte: created_after, $lte: created_before },
+    })
+      .lean()
+      .exec()
+  }
+
   const PaymentModel = db.model<IPaymentSchema, IPaymentModel>(
     PAYMENT_SCHEMA_ID,
     PaymentSchema,

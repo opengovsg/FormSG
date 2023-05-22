@@ -485,3 +485,28 @@ export const validateAccount = (
     (error) => new StripeAccountError(String(error)),
   )
 }
+
+export const getUndeliveredPaymentIntentSuccessEventsFromAccount = (
+  stripeAccountId: string,
+) => {
+  return ResultAsync.fromPromise(
+    stripe.events.list(
+      {
+        delivery_success: false,
+        types: ['payment_intent.succeeded', 'payment_intent.created'],
+      },
+      { stripeAccount: stripeAccountId },
+    ),
+    (error) => {
+      logger.error({
+        message: 'stripe.events.list called',
+        meta: {
+          action: 'getStripeEventsFromAccount',
+          stripeAccountId,
+          error,
+        },
+      })
+      return new StripeFetchError(String(error))
+    },
+  )
+}

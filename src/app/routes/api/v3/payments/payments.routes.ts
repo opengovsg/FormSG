@@ -54,7 +54,7 @@ PaymentsRouter.route('/stripe/callback').get(
 
 /**
  * returns clientSecret and publishableKey from paymentId
- * @route /payments/:paymentId/getinfo
+ * @route GET /payments/:paymentId/getinfo
  *
  * @returns 200 with payment information if payment id exist
  * @returns 404 when no pending submission is associated with the payment id
@@ -78,4 +78,22 @@ PaymentsRouter.route('/:paymentId([a-fA-F0-9]{24})/getinfo').get(
 PaymentsRouter.route('/:formId([a-fA-F0-9]{24})/payments/previous').post(
   limitRate({ max: rateLimitConfig.submissions }),
   PaymentsController.handleGetPreviousPaymentId,
+)
+
+/**
+ * @private
+ * @route GET /payments/pendingPayments?after=<time>&before=<time>
+ */
+PaymentsRouter.route('/pendingPayments').get(
+  StripeController.queryPendingPayments,
+)
+
+/**
+ * @private
+ * @route POST /payments/reconcileAccount
+ *
+ * @params stripeAccountId: string
+ */
+PaymentsRouter.route('/reconcileAccount').post(
+  StripeController.reconcileAccount,
 )
