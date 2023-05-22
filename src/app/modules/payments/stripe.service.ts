@@ -31,6 +31,7 @@ import * as PaymentsService from './payments.service'
 import {
   ComputePaymentStateError,
   MalformedStripeChargeObjectError,
+  MalformedStripeEventObjectError,
   StripeAccountError,
   StripeFetchError,
 } from './stripe.errors'
@@ -150,6 +151,7 @@ const confirmStripePaymentPendingSubmission = (
  * @param {mongoose.ClientSession} session the mongoose session to use for all db operations
  *
  * @returns ok() if event was successfully processed
+ * @returns err(MalformedStripeEventObjectError) if the shape of the event object received from Stripe does not have expected fields
  * @returns err(MalformedStripeChargeObjectError) if the shape of the charge object returned by Stripe does not have expected fields
  * @returns err(PaymentNotFoundError) if the payment document does not exist
  * @returns err(PendingSubmissionNotFoundError) if the pending submission being referenced by the payment document does not exist
@@ -164,6 +166,7 @@ export const processStripeEventWithinSession = (
   session: mongoose.ClientSession,
 ): ResultAsync<
   void,
+  | MalformedStripeEventObjectError
   | MalformedStripeChargeObjectError
   | PaymentNotFoundError
   | PendingSubmissionNotFoundError
@@ -187,7 +190,7 @@ export const processStripeEventWithinSession = (
         logger.error({
           message:
             'Payment not found for paymentId received in Stripe metadata',
-          meta: { ...logMeta, paymentId },
+          meta: logMeta,
         })
         return errAsync(new PaymentNotFoundError())
       }
@@ -198,9 +201,19 @@ export const processStripeEventWithinSession = (
         // Stripe retried the webhook).
         logger.warn({
           message: 'Duplicate event received from Stripe webhook endpoint',
-          meta: { ...logMeta, paymentId },
+          meta: logMeta,
         })
         return okAsync(undefined)
+      }
+
+      if (payment.targetAccountId !== event.account) {
+        // Reject the event if the accounts do not match up. Should never happen!
+        logger.error({
+          message:
+            'Received Stripe event with different target account id from related payment',
+          meta: { ...logMeta, targetAccountId: payment.targetAccountId },
+        })
+        return errAsync(new MalformedStripeEventObjectError())
       }
 
       // Step 2: Confirm the pending submission awaiting payment from Stripe
@@ -270,6 +283,7 @@ export const processStripeEventWithinSession = (
  * @param {Stripe.Event} event the new Stripe Event causing the update operation to occur
  *
  * @returns ok() if event was successfully processed
+ * @returns err(MalformedStripeEventObjectError) if the shape of the event object received from Stripe does not have expected fields
  * @returns err(MalformedStripeChargeObjectError) if the shape of the charge object returned by Stripe does not have expected fields
  * @returns err(PaymentNotFoundError) if the payment document does not exist
  * @returns err(PendingSubmissionNotFoundError) if the pending submission being referenced by the payment document does not exist
@@ -283,6 +297,7 @@ export const processStripeEvent = (
   event: Stripe.Event,
 ): ResultAsync<
   void,
+  | MalformedStripeEventObjectError
   | MalformedStripeChargeObjectError
   | PaymentNotFoundError
   | PendingSubmissionNotFoundError
