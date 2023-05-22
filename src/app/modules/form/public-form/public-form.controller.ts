@@ -469,7 +469,7 @@ export const _handleFormAuthRedirect: ControllerHandler<
           return validateSgidForm(form).andThen(() => {
             return SgidService.createRedirectUrl(
               formId,
-              Boolean(isPersistentLogin),
+              false,
               form.getUniqueMyInfoAttrs(),
               encodedQuery,
             )
