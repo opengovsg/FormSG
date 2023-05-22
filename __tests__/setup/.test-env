@@ -21,7 +21,7 @@ MYINFO_CLIENT_SECRET=mockClientSecret
 MYINFO_JWT_SECRET=mockJwtSecret
 SINGPASS_ESRVC_ID=Test-eServiceId-Sp # Needed for MyInfo
 
-SGID_HOSTNAME=http://localhost:5156/sgid
+SGID_HOSTNAME=http://localhost:5156
 SGID_CLIENT_ID=sgidclientid
 SGID_CLIENT_SECRET=sgidclientsecret
 SGID_REDIRECT_URI=http://localhost:5000/sgid/login

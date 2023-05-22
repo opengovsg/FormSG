@@ -49,6 +49,7 @@ export class SgidServiceClass {
       hostname: hostname || undefined,
       ...sgidOptions,
       privateKey: this.privateKey,
+      apiVersion: 2,
     })
     this.publicKey = fs.readFileSync(publicKeyPath)
     this.cookieDomain = cookieDomain
