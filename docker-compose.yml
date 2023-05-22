@@ -165,8 +165,8 @@ services:
     container_name: stripe-webhook-listener
     command: 'listen --api-key ${STRIPE_API_KEY} --device-name ${STRIPE_DEVICE_NAME} --forward-to host.docker.internal:5001/api/v3/notifications/stripe'
     environment:
-      - STRIPE_API_KEY=secretKey
-      - STRIPE_DEVICE_NAME=StripeWebhookListener
+      - STRIPE_API_KEY
+      - STRIPE_DEVICE_NAME
 
   mocktwilio:
     image: stoplight/prism:4
