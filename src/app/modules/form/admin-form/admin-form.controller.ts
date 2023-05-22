@@ -2689,3 +2689,42 @@ export const handleUpdateTwilio = [
   validateTwilioCredentials,
   updateTwilioCredentials,
 ] as ControllerHandler[]
+
+export const handleGetGoLinkSuffix: ControllerHandler<{ formId: string }> = (
+  req,
+  res,
+) => {
+  const { formId } = req.params
+  const sessionUserId = (req.session as AuthedSessionData).user._id
+
+  // Step 1: Get the form after permission checks
+  return (
+    UserService.getPopulatedUserById(sessionUserId)
+      .andThen((user) => {
+        return AuthService.getFormAfterPermissionChecks({
+          user,
+          formId,
+          level: PermissionLevel.Read,
+        })
+      })
+      // Step 2: After permission checks, get the GoGov link suffix
+      .andThen(() => {
+        return AdminFormService.getGoLinkSuffix(formId)
+      })
+      .map((goLinkSuffix) => res.status(StatusCodes.OK).json(goLinkSuffix))
+      .mapErr((error) => {
+        logger.error({
+          message: 'Error occurred when getting GoGov link suffix',
+          meta: {
+            action: 'handleGetGoLinkSuffix',
+            ...createReqMeta(req),
+            userId: sessionUserId,
+            formId,
+          },
+          error,
+        })
+        const { errorMessage, statusCode } = mapRouteError(error)
+        return res.status(statusCode).json({ message: errorMessage })
+      })
+  )
+}

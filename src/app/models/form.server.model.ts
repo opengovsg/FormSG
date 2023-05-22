@@ -964,6 +964,10 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       .exec()
   }
 
+  FormSchema.statics.getGoLinkSuffix = async function (formId: string) {
+    return this.findById(formId, 'goLinkSuffix').exec()
+  }
+
   // Hooks
   FormSchema.pre<IFormSchema>('validate', function (next) {
     // Reject save if form document is too large

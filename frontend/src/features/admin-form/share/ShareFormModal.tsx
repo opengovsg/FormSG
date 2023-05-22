@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { BiLinkExternal } from 'react-icons/bi'
 import { useNavigate } from 'react-router-dom'
 import {
@@ -38,6 +38,7 @@ import Textarea from '~components/Textarea'
 import { CopyButton } from '~templates/CopyButton'
 
 import { useListShortenerMutations } from '~features/link-shortener/mutations'
+import { useGoLink } from '~features/link-shortener/queries'
 
 type goLinkHelperTextType = {
   color: string
@@ -139,7 +140,12 @@ export const ShareFormModal = ({
     navigate(`${ADMINFORM_ROUTE}/${formId}/${ADMINFORM_SETTINGS_SUBROUTE}`)
   }, [formId, navigate, onClose])
 
+  const { data: goLinkSuffixData } = useGoLink(formId ?? '')
   const [goLinkSuffix, setGoLinkSuffix] = useState('')
+
+  useEffect(() => {
+    setGoLinkSuffix(goLinkSuffixData?.goLinkSuffix ?? '')
+  }, [goLinkSuffixData?.goLinkSuffix, setGoLinkSuffix])
 
   const { claimGoLinkMutation } = useListShortenerMutations()
 
