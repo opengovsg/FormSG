@@ -1565,7 +1565,7 @@ const deleteTwilioTransaction = async (
  * Update the payments field of the given form
  * @param formId the id of the form to update the end page for
  * @param newPayments the new payments field to replace the current one
- * @returns ok(updated start page object) when update is successful
+ * @returns ok(updated payments object) when update is successful
  * @returns err(FormNotFoundError) if form cannot be found
  * @returns err(PossibleDatabaseError) if start page update fails
  * @returns err(InvalidPaymentAmountError) if payment amount exceeds MAX_PAYMENT_AMOUNT
