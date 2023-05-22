@@ -11,9 +11,9 @@ const total = db.getCollection('payments').countDocuments({})
 db.getCollection('payments').countDocuments({ targetAccountId: { $exists: false } }) === total
 
 // UPDATE
-db.getCollection('payments').update(
+db.getCollection('payments').updateMany(
   {},
-  { $set: { targetAccountId: { $first: '$webhookLog.account' } } },
+  [ { $set: { targetAccountId: { $first: '$webhookLog.account' } } } ],
 )
 
 // AFTER
