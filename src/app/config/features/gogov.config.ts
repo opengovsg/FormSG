@@ -8,7 +8,7 @@ const goGovSchema: Schema<IGoGov> = {
   goGovAPIKey: {
     doc: 'GoGov API key',
     format: String,
-    default: null,
+    default: '',
     env: 'GOGOV_API_KEY',
   },
 }
