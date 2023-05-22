@@ -18,6 +18,7 @@ import {
   RESULTS_FEEDBACK_SUBROUTE,
   TOU_ROUTE,
   USE_TEMPLATE_REDIRECT_SUBROUTE,
+  WAITING_ROOM_ROUTE,
 } from '~constants/routes'
 import { fillHeightCss } from '~utils/fillHeightCss'
 import { lazyRetry } from '~utils/lazyRetry'
@@ -57,6 +58,9 @@ const PreviewFormPage = lazy(() =>
 const TemplateFormPage = lazy(() =>
   lazyRetry(() => import('~features/admin-form/template')),
 )
+const WaitingRoomPage = lazy(() =>
+  lazyRetry(() => import('~pages/WaitingRoom')),
+)
 
 const WithSuspense = ({ children }: { children: React.ReactNode }) => (
   <Suspense fallback={<Box bg="neutral.100" css={fillHeightCss} w="100vw" />}>
@@ -91,6 +95,10 @@ export const AppRouter = (): JSX.Element => {
         <Route
           path={BILLING_ROUTE}
           element={<PrivateElement element={<BillingPage />} />}
+        />
+        <Route
+          path={`${WAITING_ROOM_ROUTE}`}
+          element={<PublicElement element={<WaitingRoomPage />} />}
         />
         <Route path={PUBLICFORM_ROUTE}>
           <Route
