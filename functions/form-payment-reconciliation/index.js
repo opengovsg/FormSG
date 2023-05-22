@@ -7,46 +7,47 @@ const PARAMETER_STORE_NAME = 'staging-cron-payment'
 
 const SUB_DOMAIN = process.env.ENV_SITE_SUBDOMAIN || 'staging.'
 
+const KEY_VALUE_PAIR_REGEX = /^([^\s=]+)\s*=\s*(\S+)$/ // Make use of capture groups to obtain the key and value.
+
+const API_AUTH_HEADER = 'x-formsg-cron-payment-secret'
+
 /** TODO: migrate to separate file */
-function getSecrets() {
+const getSecrets = () => {
   const awsSsmClient = new SSMClient({ region: AWS_REGION })
   const input = {
     Name: PARAMETER_STORE_NAME,
     WithDecryption: true,
   }
   const command = new GetParameterCommand(input)
-  return awsSsmClient
-    .send(command)
-    .then((d) => d.Parameter.Value)
-    .then((d) => {
-      const dn = d.split('\n')
-      return dn.reduce((accum, line) => {
-        const [key, value] = line.split('=')
-        accum[key] = value
-        return accum
-      }, {})
-    })
+  return awsSsmClient.send(command).then((res) => {
+    const parametersAsString = res.Parameter.Value
+    const parameters = parametersAsString
+      .split(/[\r\n]+/)
+      .map((line) => line.trim())
+      .filter((line) => !!line) // Filter out empty lines
+    return parameters.reduce((parameterMap, line) => {
+      const match = line.match(KEY_VALUE_PAIR_REGEX)
+      if (match && match.length === 3) parameterMap[match[1]] = match[2]
+      return parameterMap
+    }, {})
+  })
 }
 
-const getPendingQueries = (apiSecret) => {
+const getPendingQueries = async (apiSecret) => {
   return fetch(
     `https://${SUB_DOMAIN}form.gov.sg/api/v3/payments/pendingPayments`,
     {
-      headers: {
-        'x-cron-payment-secret': apiSecret,
-      },
+      headers: { [API_AUTH_HEADER]: apiSecret },
     },
   ).then((d) => d.json())
 }
 
-const reconcileAccount = (apiSecret, stripeAccountId) => {
+const reconcileAccount = async (apiSecret, stripeAccountId) => {
   return fetch(
     `https://${SUB_DOMAIN}form.gov.sg/api/v3/payments/reconcileAccount`,
     {
       method: 'POST',
-      headers: {
-        'x-cron-payment-secret': apiSecret,
-      },
+      headers: { [API_AUTH_HEADER]: apiSecret },
       body: { stripeAccountId },
     },
   ).then((d) => d.json())

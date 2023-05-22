@@ -67,5 +67,5 @@ export const getUserIdFromSession = (
 }
 
 export const isCronPaymentAuthValid = (header: IncomingHttpHeaders) => {
-  return header['x-cron-payment-secret'] === cronPaymentConfig.apiSecret
+  return header['x-formsg-cron-payment-secret'] === cronPaymentConfig.apiSecret
 }
