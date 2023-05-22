@@ -1,3 +1,4 @@
+import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { ObjectId } from 'bson-ext'
 import { compareAsc } from 'date-fns'
 import { omit, times } from 'lodash'
@@ -5,8 +6,6 @@ import moment from 'moment-timezone'
 import mongoose from 'mongoose'
 
 import getFormFeedbackModel from 'src/app/models/form_feedback.server.model'
-
-import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import { FormFeedbackMetaDto } from '../../../../../shared/types'
 import { DatabaseError } from '../../core/core.errors'

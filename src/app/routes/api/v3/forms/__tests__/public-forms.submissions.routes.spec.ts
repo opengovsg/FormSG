@@ -1,12 +1,11 @@
+import { setupApp } from '__tests__/integration/helpers/express-setup'
+import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import jwt from 'jsonwebtoken'
 import { omit } from 'lodash'
 import mongoose from 'mongoose'
 import session, { Session } from 'supertest-session'
 
 import { FormFieldSchema } from 'src/types'
-
-import { setupApp } from 'tests/integration/helpers/express-setup'
-import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import { FormAuthType, FormStatus } from '../../../../../../../shared/types'
 import {

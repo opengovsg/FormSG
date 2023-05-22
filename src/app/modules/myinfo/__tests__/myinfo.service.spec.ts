@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
+import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { MyInfoGovClient } from '@opengovsg/myinfo-gov-client'
 import bcrypt from 'bcrypt'
 import { ObjectId } from 'bson-ext'
@@ -17,8 +18,6 @@ import {
   IPopulatedForm,
   PossiblyPrefilledField,
 } from 'src/types'
-
-import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import { MyInfoAttribute } from '../../../../../shared/types'
 import { DatabaseError } from '../../core/core.errors'

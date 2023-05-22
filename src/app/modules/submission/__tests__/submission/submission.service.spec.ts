@@ -1,3 +1,8 @@
+import {
+  generateDefaultField,
+  generateNewSingleAnswerResponse,
+} from '__tests__/unit/backend/helpers/generate-form-data'
+import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { ObjectId } from 'bson'
 import { times } from 'lodash'
 import mongoose from 'mongoose'
@@ -19,12 +24,6 @@ import {
   IPopulatedForm,
   ISubmissionSchema,
 } from 'src/types'
-
-import {
-  generateDefaultField,
-  generateNewSingleAnswerResponse,
-} from 'tests/unit/backend/helpers/generate-form-data'
-import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import {
   AutoReplyOptions,

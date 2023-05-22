@@ -1,6 +1,5 @@
+import expressHandler from '__tests__/unit/backend/helpers/jest-express'
 import { errAsync, okAsync } from 'neverthrow'
-
-import expressHandler from 'tests/unit/backend/helpers/jest-express'
 
 import { FormColorTheme } from '../../../../../shared/types'
 import { DatabaseError } from '../../core/core.errors'

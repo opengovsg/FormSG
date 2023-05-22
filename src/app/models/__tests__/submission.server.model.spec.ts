@@ -1,3 +1,4 @@
+import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { ObjectId } from 'bson'
 import { promises as dns } from 'dns'
 import { times } from 'lodash'
@@ -7,8 +8,6 @@ import getSubmissionModel, {
   getEmailSubmissionModel,
   getEncryptSubmissionModel,
 } from 'src/app/models/submission.server.model'
-
-import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import {
   FormAuthType,

@@ -1,14 +1,14 @@
 import {
+  generateDefaultField,
+  generateProcessedSingleAnswerResponse,
+  generateSingleAnswerResponse,
+} from '../../../../../../__tests__/unit/backend/helpers/generate-form-data'
+import {
   BasicField,
   FormResponseMode,
   LogicType,
   MyInfoAttribute,
 } from '../../../../../../shared/types'
-import {
-  generateDefaultField,
-  generateProcessedSingleAnswerResponse,
-  generateSingleAnswerResponse,
-} from '../../../../../../tests/unit/backend/helpers/generate-form-data'
 import * as LogicUtil from '../../../../../shared/util/logic'
 import {
   FormFieldSchema,

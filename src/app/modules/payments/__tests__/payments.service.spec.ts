@@ -1,10 +1,9 @@
+import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { ObjectId } from 'bson'
 import mongoose from 'mongoose'
 import { PaymentStatus } from 'shared/types'
 
 import getPaymentModel from 'src/app/models/payment.server.model'
-
-import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import * as PaymentsService from '../payments.service'
 

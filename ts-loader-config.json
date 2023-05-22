@@ -62,7 +62,6 @@
   },
   "include": ["src/public", "src/shared"],
   "exclude": [
-    "tests/",
     "**/*.spec.ts",
     "**/*.test.ts",
     "**/__tests__/"

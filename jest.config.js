@@ -3,7 +3,7 @@ module.exports = {
   testMatch: ['**/?(*.)+(spec|test).[t]s?(x)'],
   modulePaths: ['<rootDir>'],
   testEnvironment: 'node',
-  globalSetup: '<rootDir>/tests/jest-global-setup.js',
+  globalSetup: '<rootDir>/__tests__/setup/jest-global-setup.js',
   testPathIgnorePatterns: [
     '<rootDir>/__tests__/e2e',
     '<rootDir>/dist/',
@@ -27,5 +27,5 @@ module.exports = {
       isolatedModules: true,
     },
   },
-  setupFilesAfterEnv: ['<rootDir>/tests/jest-setupAfterEnv.js'],
+  setupFilesAfterEnv: ['<rootDir>/__tests__/setup/jest-setupAfterEnv.js'],
 }

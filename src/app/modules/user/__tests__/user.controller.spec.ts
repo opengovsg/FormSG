@@ -1,3 +1,4 @@
+import expressHandler from '__tests__/unit/backend/helpers/jest-express'
 import { StatusCodes } from 'http-status-codes'
 import { errAsync, okAsync } from 'neverthrow'
 
@@ -11,8 +12,6 @@ import { SmsSendError } from 'src/app/services/sms/sms.errors'
 import { SmsFactory } from 'src/app/services/sms/sms.factory'
 import { HashingError } from 'src/app/utils/hash'
 import { IPopulatedUser } from 'src/types'
-
-import expressHandler from 'tests/unit/backend/helpers/jest-express'
 
 import { DatabaseError } from '../../core/core.errors'
 import { UNAUTHORIZED_USER_MESSAGE } from '../user.constant'

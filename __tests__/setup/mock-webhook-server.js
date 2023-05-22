@@ -2,7 +2,6 @@ const express = require('express')
 const bodyParser = require('body-parser')
 const fs = require('fs')
 const formsgSdkPackage = require('@opengovsg/formsg-sdk')
-const { getDownloadsFolder } = require('./end-to-end/helpers/util')
 
 const WEBHOOK_PORT = process.env.MOCK_WEBHOOK_PORT
 const WEBHOOK_CONFIG_FILE = process.env.MOCK_WEBHOOK_CONFIG_FILE
@@ -16,6 +15,17 @@ const formsgSdk = formsgSdkPackage({
     transactionExpiry: 14400, // 4 hours
   },
 })
+
+// Helper to get the Downloads folder of the system
+const getDownloadsFolder = () => {
+  let downloadsFolder = `${process.env.HOME}/Downloads`
+  try {
+    fs.statSync(downloadsFolder)
+  } catch (e) {
+    downloadsFolder = '/tmp'
+  }
+  return downloadsFolder
+}
 
 // Create app
 const app = express()

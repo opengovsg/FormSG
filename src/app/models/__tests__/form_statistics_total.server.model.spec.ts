@@ -1,10 +1,9 @@
+import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { ObjectId } from 'bson-ext'
 import mongoose from 'mongoose'
 
 import getFormStatisticsTotalModel from 'src/app/models/form_statistics_total.server.model'
 import { AggregateFormCountResult, IFormStatisticsTotalSchema } from 'src/types'
-
-import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 const FormStatsModel = getFormStatisticsTotalModel(mongoose)
 

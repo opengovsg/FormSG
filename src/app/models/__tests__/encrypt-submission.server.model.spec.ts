@@ -1,3 +1,4 @@
+import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { ObjectId } from 'bson-ext'
 import { pick, times } from 'lodash'
 import moment from 'moment-timezone'
@@ -9,8 +10,6 @@ import getSubmissionModel, {
   getEncryptSubmissionModel,
 } from 'src/app/models/submission.server.model'
 import { IEncryptedSubmissionSchema } from 'src/types'
-
-import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 const Submission = getSubmissionModel(mongoose)
 const EmailSubmission = getEmailSubmissionModel(mongoose)

@@ -1,3 +1,4 @@
+import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import * as E from 'fp-ts/lib/Either'
 import { times } from 'lodash'
 import mongoose, { Query } from 'mongoose'
@@ -7,8 +8,6 @@ import getFormModel from 'src/app/models/form.server.model'
 import getSubmissionModel from 'src/app/models/submission.server.model'
 import getUserModel from 'src/app/models/user.server.model'
 import { IAgencySchema, IUserSchema } from 'src/types'
-
-import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import { FormResponseMode, SubmissionType } from '../../../../../shared/types'
 import { DatabaseError } from '../../core/core.errors'

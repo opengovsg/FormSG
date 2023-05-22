@@ -1,4 +1,6 @@
 /* eslint-disable import/first */
+import dbHandler from '__tests__/unit/backend/helpers/jest-db'
+import getMockLogger from '__tests__/unit/backend/helpers/jest-logger'
 import { ObjectId } from 'bson'
 import { cloneDeep, omit, pick } from 'lodash'
 import mongoose from 'mongoose'
@@ -17,9 +19,6 @@ import {
   ISnsNotification,
   IUserSchema,
 } from 'src/types'
-
-import dbHandler from 'tests/unit/backend/helpers/jest-db'
-import getMockLogger from 'tests/unit/backend/helpers/jest-logger'
 
 import { DatabaseError } from '../../core/core.errors'
 import { UserWithContactNumber } from '../../user/user.types'

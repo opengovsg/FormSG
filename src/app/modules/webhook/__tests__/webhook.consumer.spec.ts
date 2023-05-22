@@ -1,3 +1,4 @@
+import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import aws from 'aws-sdk'
 import { ObjectId } from 'bson'
 import { addHours } from 'date-fns'
@@ -6,8 +7,6 @@ import { errAsync, okAsync } from 'neverthrow'
 
 import { getEncryptSubmissionModel } from 'src/app/models/submission.server.model'
 import { SubmissionWebhookInfo } from 'src/types'
-
-import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import { WebhookResponse } from '../../../../../shared/types'
 import { createWebhookQueueHandler } from '../webhook.consumer'

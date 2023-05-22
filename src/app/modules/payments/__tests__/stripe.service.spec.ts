@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
+import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { ObjectId } from 'bson'
 import { keyBy } from 'lodash'
 import mongoose from 'mongoose'
@@ -17,8 +18,6 @@ import {
   IPopulatedEncryptedForm,
   IPopulatedUser,
 } from 'src/types'
-
-import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import { PaymentNotFoundError } from '../payments.errors'
 import * as PaymentsService from '../payments.service'

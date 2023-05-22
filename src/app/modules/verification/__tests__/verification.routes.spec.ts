@@ -1,4 +1,8 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
+import { setupApp } from '__tests__/integration/helpers/express-setup'
+import { buildCelebrateError } from '__tests__/unit/backend/helpers/celebrate'
+import { generateDefaultField } from '__tests__/unit/backend/helpers/generate-form-data'
+import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import bcrypt from 'bcrypt'
 import subMinutes from 'date-fns/subMinutes'
 import { getReasonPhrase, StatusCodes } from 'http-status-codes'
@@ -6,11 +10,6 @@ import mongoose from 'mongoose'
 import session, { Session } from 'supertest-session'
 
 import { IVerificationSchema } from 'src/types'
-
-import { setupApp } from 'tests/integration/helpers/express-setup'
-import { buildCelebrateError } from 'tests/unit/backend/helpers/celebrate'
-import { generateDefaultField } from 'tests/unit/backend/helpers/generate-form-data'
-import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import { BasicField } from '../../../../../shared/types'
 import getVerificationModel from '../verification.model'
