@@ -235,7 +235,6 @@ export class SgidServiceClass {
    *
    * Note: sgID access token is tied to the sgID OAuth scopes requested.
    * @param accessToken - sgID access token
-   * @param rememberMe - determines how long the JWT is valid for
    */
   createSgidMyInfoJwt(
     accessToken: string,
