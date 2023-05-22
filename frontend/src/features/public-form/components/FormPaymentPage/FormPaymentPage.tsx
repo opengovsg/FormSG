@@ -5,6 +5,7 @@ import { Box, Container, Flex, Skeleton, Text } from '@chakra-ui/react'
 import { fillMinHeightCss } from '~utils/fillHeightCss'
 import InlineMessage from '~components/InlineMessage'
 
+import { useEnv } from '~features/env/queries'
 import { FormBanner } from '~features/public-form/components/FormBanner'
 import { FormSectionsProvider } from '~features/public-form/components/FormFields/FormSectionsContext'
 import { FormFooter } from '~features/public-form/components/FormFooter'
@@ -17,6 +18,7 @@ import StripePaymentElement from './stripe/StripePaymentElement'
 
 export const FormPaymentPage = () => {
   const { formId, paymentId } = useParams()
+  const { data: { secretEnv } = {} } = useEnv()
 
   if (!formId) throw new Error('No formId provided')
   if (!paymentId) throw new Error('No paymentId provided')
@@ -40,7 +42,7 @@ export const FormPaymentPage = () => {
                     </Skeleton>
                   }
                 >
-                  {process.env.SECRET_ENV === 'production' ? null : (
+                  {secretEnv === 'production' ? null : (
                     <InlineMessage variant="warning" mb="1rem">
                       Use '4242 4242 4242 4242' as your card number to test
                       payments on this form. Payments made on this form will

@@ -21,3 +21,17 @@ export const PublicFormsFormRouter = Router()
 PublicFormsFormRouter.route('/:formId([a-fA-F0-9]{24})').get(
   PublicFormController.handleGetPublicForm,
 )
+
+/**
+ * Returns a sample submission response of the specified form to the user
+ *
+ * @route GET /:formId/sample-submission
+ *
+ * @returns 200 with form when form exists and is public
+ * @returns 404 when form is private or form with given ID does not exist
+ * @returns 410 when form is archived
+ * @returns 500 when database error occurs
+ */
+PublicFormsFormRouter.route('/:formId([a-fA-F0-9]{24})/sample-submission').get(
+  PublicFormController.handleGetPublicFormSampleSubmission,
+)

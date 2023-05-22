@@ -39,15 +39,8 @@ const MOCK_WEBHOOK_FAILURE_RESPONSE: WebhookResponse = {
   },
 }
 
-const SUCCESS_PRODUCER = {
-  sendMessage: jest.fn().mockReturnValue(okAsync(true)),
-} as unknown as WebhookProducer
-
-const FAILURE_PRODUCER = {
-  sendMessage: jest
-    .fn()
-    .mockReturnValue(errAsync(new WebhookPushToQueueError())),
-} as unknown as WebhookProducer
+let SUCCESS_PRODUCER: WebhookProducer
+let FAILURE_PRODUCER: WebhookProducer
 
 const VALID_MESSAGE_BODY: WebhookQueueMessageObject = {
   submissionId: new ObjectId().toHexString(),
@@ -75,6 +68,16 @@ describe('webhook.consumer', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     jest.restoreAllMocks()
+
+    SUCCESS_PRODUCER = {
+      sendMessage: jest.fn().mockReturnValue(okAsync(true)),
+    } as unknown as WebhookProducer
+
+    FAILURE_PRODUCER = {
+      sendMessage: jest
+        .fn()
+        .mockReturnValue(errAsync(new WebhookPushToQueueError())),
+    } as unknown as WebhookProducer
   })
   afterAll(async () => await dbHandler.closeDatabase())
 

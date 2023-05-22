@@ -112,6 +112,7 @@ describe('corppass.oidc.router', () => {
         MOCK_NRIC,
       )
       mockClient.extractCPEntityIdFromIdToken.mockReturnValueOnce(MOCK_UEN)
+      mockClient.createJWT.mockResolvedValue(MOCK_JWT)
 
       // Act
       const response = await request.get(LOGIN_ROUTE).query({
@@ -218,6 +219,7 @@ describe('corppass.oidc.router', () => {
         MOCK_NRIC,
       )
       mockClient.extractCPEntityIdFromIdToken.mockReturnValueOnce(MOCK_UEN)
+      mockClient.createJWT.mockResolvedValue(MOCK_JWT)
 
       jest.spyOn(LoginModel, 'addLoginFromForm').mockRejectedValueOnce('')
 

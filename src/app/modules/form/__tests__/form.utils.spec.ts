@@ -5,7 +5,11 @@ import { Types } from 'mongoose'
 import { FormFieldSchema } from 'src/types'
 
 import { BasicField, FormPermission } from '../../../../../shared/types'
-import { getCollabEmailsWithPermission, getFormFieldById } from '../form.utils'
+import {
+  getCollabEmailsWithPermission,
+  getFormFieldById,
+  getFormFieldIndexById,
+} from '../form.utils'
 
 const MOCK_EMAIL_1 = 'a@abc.com'
 const MOCK_EMAIL_2 = 'b@def.com'
@@ -86,6 +90,51 @@ describe('form.utils', () => {
 
       // Act
       const result = getFormFieldById(undefined, someFieldId)
+
+      // Assert
+      expect(result).toEqual(null)
+    })
+
+    it('should return null when no fields correspond to given field id', async () => {
+      // Arrange
+      const invalidFieldId = new ObjectId()
+      const formFields = [
+        generateDefaultField(BasicField.Date),
+        generateDefaultField(BasicField.Date),
+      ]
+
+      // Act
+      const result = getFormFieldById(formFields, invalidFieldId)
+
+      // Assert
+      expect(result).toEqual(null)
+    })
+  })
+
+  describe('getFormFieldIndexById', () => {
+    it('should return index of the field on valid fieldId', async () => {
+      // Arrange
+      const fieldToFind = generateDefaultField(BasicField.HomeNo)
+      const formFields = [
+        generateDefaultField(BasicField.Date),
+        fieldToFind,
+        generateDefaultField(BasicField.Date),
+      ]
+      const expectedIndex = 1
+
+      // Act
+      const result = getFormFieldIndexById(formFields, fieldToFind._id)
+
+      // Assert
+      expect(result).toEqual(expectedIndex)
+    })
+
+    it('should return null when given form fields are undefined', async () => {
+      // Arrange
+      const someFieldId = new ObjectId()
+
+      // Act
+      const result = getFormFieldIndexById(undefined, someFieldId)
 
       // Assert
       expect(result).toEqual(null)
