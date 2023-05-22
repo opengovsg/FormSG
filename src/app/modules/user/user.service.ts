@@ -510,23 +510,23 @@ export const findContactsForEmails = (
 }
 
 /**
- * Retrieves the user with the given API key.
+ * Retrieves the user with the given API key hash.
  * @param apiKey the API key of the user to retrieve
  * @returns ok(user document) if retrieval is successful
  * @returns err(DatabaseError) if database errors occurs whilst retrieving user
  * @returns err(MissingUserError) if user does not exist in the database
  */
-export const findUserByApiKey = (
-  apiKey: string,
+export const findUserByApiKeyHash = (
+  apiKeyHash: string,
 ): ResultAsync<IUserSchema, MissingUserError | DatabaseError> => {
   return ResultAsync.fromPromise(
-    UserModel.findOne({ apiKey }).exec(),
+    UserModel.findOne({ apiKeyHash }).exec(),
     (error) => {
       logger.error({
-        message: 'Database find user API key error',
+        message: 'Database find user API key hash error',
         meta: {
-          action: 'findUserByApiKey',
-          apiKey,
+          action: 'findUserByApiKeyHash',
+          apiKeyHash,
         },
         error,
       })
