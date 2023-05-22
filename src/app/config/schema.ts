@@ -348,6 +348,26 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
       env: 'REACT_MIGRATION_USE_FETCH_FOR_SUBMISSIONS',
     },
   },
+  waitingRoom: {
+    isEnabled: {
+      doc: 'Toggle to enable waiting room. If not enabled, user will be redirected to form directly',
+      format: Boolean,
+      default: false,
+      env: 'WAITING_ROOM_IS_ENABLED',
+    },
+    targetFormId: {
+      doc: 'Form ID of the form to be protected by waiting room',
+      format: String,
+      default: '',
+      env: 'WAITING_ROOM_TARGET_FORM_ID',
+    },
+    maxWaitMinutes: {
+      doc: 'Maximum duration in minutes that the user has to wait before being allowed to access the form',
+      format: 'int',
+      default: 10,
+      env: 'WAITING_ROOM_MAX_WAIT_MINUTES',
+    },
+  },
 }
 
 export const prodOnlyVarsSchema: Schema<IProdOnlyVarsSchema> = {

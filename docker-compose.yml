@@ -111,6 +111,9 @@ services:
       - PAYMENT_MAX_PAYMENT_AMOUNT_CENTS=100000
       - PAYMENT_MIN_PAYMENT_AMOUNT_CENTS=50
       - SSM_ENV_SITE_NAME=development
+      - WAITING_ROOM_IS_ENABLED=
+      - WAITING_ROOM_TARGET_FORM_ID=
+      - WAITING_ROOM_MAX_WAIT_MINUTES=
 
   mockpass:
     build: https://github.com/opengovsg/mockpass.git#v3.1.3

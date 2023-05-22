@@ -12,6 +12,7 @@ import { NotificationsRouter } from './notifications'
 import { PaymentsRouter } from './payments'
 import { SingpassOidcRouter } from './singpass'
 import { UserRouter } from './user'
+import { WaitingRoomRouter } from './waiting-room'
 
 export const V3Router = Router()
 
@@ -27,3 +28,4 @@ V3Router.use('/singpass', SingpassOidcRouter)
 V3Router.use('/corppass', CorppassOidcRouter)
 V3Router.use('/payments', PaymentsRouter)
 V3Router.use('/feature-flags', FeatureFlagsRouter)
+V3Router.use('/waiting-room', WaitingRoomRouter)

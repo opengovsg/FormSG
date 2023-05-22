@@ -93,6 +93,12 @@ export type Config = {
   secretEnv: string
   envSiteName: string
 
+  waitingRoom: {
+    isEnabled: boolean
+    targetFormId: string
+    maxWaitMinutes: number
+  }
+
   // Functions
   configureAws: () => Promise<void>
 }
@@ -176,6 +182,11 @@ export interface IOptionalVarsSchema {
   reactMigration: {
     // TODO (#5826): Toggle to use fetch for submissions instead of axios. Remove once network error is resolved
     useFetchForSubmissions: boolean
+  }
+  waitingRoom: {
+    isEnabled: boolean
+    targetFormId: string
+    maxWaitMinutes: number
   }
 }
 
