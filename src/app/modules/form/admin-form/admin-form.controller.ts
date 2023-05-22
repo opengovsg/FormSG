@@ -2758,8 +2758,7 @@ export const handleSetGoLinkSuffix: ControllerHandler<
           axios.post(
             `${GOGOV_BASE_URL}/api/v1/urls`,
             {
-              // longUrl: `${process.env.APP_URL}/${req.body.formId}`,
-              longUrl: `https://form.gov.sg/${formId}`,
+              longUrl: `${process.env.APP_URL}/${formId}`,
               shortUrl: linkSuffix,
             },
             {
