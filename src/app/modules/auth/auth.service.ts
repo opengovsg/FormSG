@@ -11,7 +11,7 @@ import {
   ITokenSchema,
   IUserSchema,
 } from '../../../types'
-import config, { apiKeySalt } from '../../config/config'
+import config from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
 import getAgencyModel from '../../models/agency.server.model'
 import getTokenModel from '../../models/token.server.model'
@@ -365,22 +365,31 @@ export const getUserByApiKey = (
  */
 const getApiKeyHash = (apiKey: string): ResultAsync<string, HashingError> => {
   const [name, version, key] = apiKey.split(API_KEY_SEPARATOR)
-  return ResultAsync.fromPromise(bcrypt.hash(key, apiKeySalt), (error) => {
-    logger.error({
-      message: 'bcrypt hash error',
-      meta: {
-        action: 'getApiKeyHash',
-      },
-      error,
-    })
-    return new HashingError()
-  }).map((hash) => `${name}_${version}_${hash.replace(apiKeySalt, '')}`)
+  return ResultAsync.fromPromise(
+    bcrypt.hash(key, config.externalApiConfig.apiKeySalt),
+    (error) => {
+      logger.error({
+        message: 'bcrypt hash error',
+        meta: {
+          action: 'getApiKeyHash',
+        },
+        error,
+      })
+      return new HashingError()
+    },
+  ).map(
+    (hash) =>
+      `${name}_${version}_${hash.replace(
+        config.externalApiConfig.apiKeySalt,
+        '',
+      )}`,
+  )
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const generateApiKey = (): string => {
   const randomString = crypto.randomBytes(32).toString('base64')
-  const apiEnv = 'dev'
-  const apiKeyVersion = 'v1'
+  const apiEnv = config.externalApiConfig.apiEnv
+  const apiKeyVersion = config.externalApiConfig.apiKeyVersion
   return `${apiEnv}_${apiKeyVersion}_${randomString}`
 }

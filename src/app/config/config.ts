@@ -11,6 +11,7 @@ import {
   Config,
   DbConfig,
   Environment,
+  ExternalApiConfig,
   MailConfig,
 } from '../../types'
 
@@ -205,6 +206,13 @@ const configureAws = async () => {
   }
 }
 
+const apiEnv = isDev ? 'test' : 'live'
+const externalApiConfig: ExternalApiConfig = {
+  apiEnv,
+  apiKeySalt: basicVars.externalApi.apiKeySalt,
+  apiKeyVersion: basicVars.externalApi.apiKeyVersion,
+}
+
 const config: Config = {
   app: basicVars.appConfig,
   db: dbConfig,
@@ -236,7 +244,7 @@ const config: Config = {
   configureAws,
   secretEnv: basicVars.core.secretEnv,
   envSiteName: basicVars.core.envSiteName,
-  apiKeySalt: basicVars.apiKeySalt,
+  externalApiConfig,
 }
 
 export = config

@@ -54,6 +54,12 @@ export type RateLimitConfig = {
   downloadPaymentReceipt: number
 }
 
+export type ExternalApiConfig = {
+  apiKeySalt: string
+  apiEnv: string
+  apiKeyVersion: string
+}
+
 export type ReactMigrationConfig = {
   // TODO (#5826): Toggle to use fetch for submissions instead of axios. Remove once network error is resolved
   useFetchForSubmissions: boolean
@@ -92,7 +98,7 @@ export type Config = {
   reactMigration: ReactMigrationConfig
   secretEnv: string
   envSiteName: string
-  apiKeySalt: string
+  externalApiConfig: ExternalApiConfig
 
   // Functions
   configureAws: () => Promise<void>
@@ -178,7 +184,11 @@ export interface IOptionalVarsSchema {
     // TODO (#5826): Toggle to use fetch for submissions instead of axios. Remove once network error is resolved
     useFetchForSubmissions: boolean
   }
-  apiKeySalt: string
+  externalApi: {
+    apiKeySalt: string
+    // apiEnv: string
+    apiKeyVersion: string
+  }
 }
 
 export interface IBucketUrlSchema {
