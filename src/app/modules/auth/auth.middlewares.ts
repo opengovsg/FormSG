@@ -123,7 +123,7 @@ export const authenticateApiKey: ControllerHandler<unknown, unknown, any> = (
           .status(StatusCodes.UNAUTHORIZED)
           .json({ message: 'Invalid API key' })
       }
-      res.locals.userId = user._id
+      res.locals.userId = user.id
       return next()
     })
     .mapErr((error) => {
