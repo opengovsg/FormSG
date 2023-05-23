@@ -27,6 +27,8 @@ import { StripeConnectButton } from './StripeConnectButton'
 
 const PaymentsAccountValidation = () => {
   const { hasPaymentCapabilities, isLoading, isError } = useAdminFormPayments()
+  const { data: { secretEnv } = {} } = useEnv()
+  const isProduction = secretEnv === 'production'
 
   if (isError) {
     return (
@@ -50,43 +52,70 @@ const PaymentsAccountValidation = () => {
   }
 
   if (hasPaymentCapabilities) {
+    let connectionSuccessText
+    if (isProduction) {
+      // Live mode: Account connected successfully and can be charged
+      connectionSuccessText = 'Your Stripe account is connected to this Form.'
+    } else {
+      // Test mode: Account connected successfully but note that will only be on test mode
+      connectionSuccessText =
+        'Stripe account connected. Payments made on this form will only show in test mode in your Stripe account.'
+    }
     return (
       <Skeleton isLoaded={!isLoading}>
         <Flex mb="2.5rem">
           <Icon
             aria-hidden
             marginEnd="0.5em"
-            color="success.500"
+            color="success.700"
             fontSize="1rem"
             h="1.5rem"
             as={BxsCheckCircle}
             mr={2}
           />
-          <Text>Your Stripe account is linked to FormSG</Text>
+          <Text>{connectionSuccessText}</Text>
+        </Flex>
+      </Skeleton>
+    )
+  } else if (!isProduction) {
+    // Test mode: Stripe account connection step skipped
+    return (
+      <Skeleton isLoaded={!isLoading}>
+        <Flex mb="2.5rem">
+          <Icon
+            aria-hidden
+            marginEnd="0.5em"
+            color="success.700"
+            fontSize="1rem"
+            h="1.5rem"
+            as={BxsCheckCircle}
+            mr={2}
+          />
+          <Text>You are connected to a test account.</Text>
+        </Flex>
+      </Skeleton>
+    )
+  } else {
+    // Live mode: Linked account has no payment capabilities.
+    return (
+      <Skeleton isLoaded={!isLoading}>
+        <Flex mb="2.5rem">
+          <Icon
+            aria-hidden
+            marginEnd="0.5em"
+            color="warning.500"
+            fontSize="1rem"
+            h="1.5rem"
+            as={BxsInfoCircle}
+            mr={2}
+          />
+          <Text>
+            The connected account does not have the ability to process payments.
+          </Text>
         </Flex>
       </Skeleton>
     )
   }
-
-  // Linked account has no payment capabilities.
-  return (
-    <Skeleton isLoaded={!isLoading}>
-      <Flex mb="2.5rem">
-        <Icon
-          aria-hidden
-          marginEnd="0.5em"
-          color="warning.500"
-          fontSize="1rem"
-          h="1.5rem"
-          as={BxsInfoCircle}
-          mr={2}
-        />
-        <Text>
-          The connected account does not have the ability to process payments.
-        </Text>
-      </Flex>
-    </Skeleton>
-  )
 }
 
 const PaymentsAccountInformation = ({
@@ -170,11 +199,12 @@ const PaymentsSectionText = () => {
 
 export const PaymentSettingsSection = (): JSX.Element => {
   const { hasPaymentCapabilities, data } = useAdminFormPayments()
+  const stripeAccount = data?.account
   return (
     <>
       <PaymentsSectionText />
-      {data?.account ? (
-        <StripeConnectButton stripeAccount={data?.account} />
+      {stripeAccount ? (
+        <StripeConnectButton stripeAccount={stripeAccount} />
       ) : null}
       {hasPaymentCapabilities && (
         <>
