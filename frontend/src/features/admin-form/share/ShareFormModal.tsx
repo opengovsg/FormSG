@@ -52,15 +52,7 @@ type goLinkHelperTextType = {
 const goLinkClaimSuccessHelperText: goLinkHelperTextType = {
   color: 'success.700',
   icon: <BxsCheckCircle />,
-  text: (
-    <Text>
-      You have successfully claimed this link. This link will appear in your{' '}
-      <Link isExternal href={GOGOV_BASE_URL}>
-        Go account
-      </Link>
-      .
-    </Text>
-  ),
+  text: <Text>You have successfully claimed this link.</Text>,
 }
 
 const goLinkClaimFailureHelperText: goLinkHelperTextType = {
