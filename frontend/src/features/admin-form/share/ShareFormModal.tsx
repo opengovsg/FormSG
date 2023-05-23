@@ -55,7 +55,7 @@ const goLinkClaimSuccessHelperText: goLinkHelperTextType = {
   text: (
     <Text>
       You have successfully claimed this link. This link will appear in your{' '}
-      <Link isExternal href="https://go.gov.sg">
+      <Link isExternal href={GOGOV_BASE_URL}>
         Go account
       </Link>
       .
