@@ -110,7 +110,7 @@ export const PublicFormProvider = ({
 }: PublicFormProviderProps): JSX.Element => {
   // Once form has been submitted, submission data will be set here.
   const [submissionData, setSubmissionData] = useState<SubmissionData>()
-  const [numVisibleFields, setNumVisibleFields] = useState(-1)
+  const [numVisibleFields, setNumVisibleFields] = useState(0)
 
   const { data, isLoading, error, ...rest } = usePublicFormView(
     formId,
@@ -234,9 +234,6 @@ export const PublicFormProvider = ({
           numVisibleFields,
         },
       }
-
-      // TODO remove logging
-      console.log(formData.responseMetadata)
 
       const logMeta = {
         action: 'handleSubmitForm',
