@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import {
   Divider,
   Flex,
@@ -11,10 +12,13 @@ import { FormResponseMode, PaymentChannel } from '~shared/types'
 
 import { BxsCheckCircle, BxsError, BxsInfoCircle } from '~assets/icons'
 import { GUIDE_PAYMENTS } from '~constants/links'
+import Checkbox from '~components/Checkbox'
 import FormLabel from '~components/FormControl/FormLabel'
 import InlineMessage from '~components/InlineMessage'
 import Input from '~components/Input'
 import Link from '~components/Link'
+
+import { useEnv } from '~features/env/queries'
 
 import { useAdminFormPayments, useAdminFormSettings } from '../../queries'
 
@@ -109,6 +113,8 @@ const PaymentsAccountInformation = ({
 
 const PaymentsSectionText = () => {
   const { data: settings, isLoading } = useAdminFormSettings()
+  const { data: { secretEnv } = {} } = useEnv()
+  const [disclaimerChecked, setDisclaimerChecked] = useState(false)
 
   if (
     settings?.responseMode === FormResponseMode.Encrypt &&
@@ -123,24 +129,43 @@ const PaymentsSectionText = () => {
         />
       </>
     )
+  } else if (secretEnv === 'production') {
+    return (
+      <Skeleton isLoaded={!isLoading}>
+        <InlineMessage variant="info" my="2rem">
+          <Text>
+            Read{' '}
+            <Link isExternal href={GUIDE_PAYMENTS}>
+              our guide
+            </Link>{' '}
+            to set up a Stripe account. To enjoy bulk tender transaction rates,
+            send your Stripe account ID and raise a purchase order to Stripe.
+          </Text>
+        </InlineMessage>
+        <Checkbox
+          isChecked={disclaimerChecked}
+          mb="2rem"
+          onChange={(e) => setDisclaimerChecked(e.target.checked)}
+        >
+          I understand that if I do not send my Stripe account ID and raise a
+          purchase order to Stripe, I will be paying default transaction rates.
+        </Checkbox>
+        <StripeConnectButton isDisabled={!disclaimerChecked} />
+      </Skeleton>
+    )
+  } else {
+    return (
+      <Skeleton isLoaded={!isLoading}>
+        <InlineMessage variant="info" my="2rem">
+          <Text>
+            You are currently in test mode. You can choose to skip connecting a
+            Stripe account after clicking the button below.
+          </Text>
+        </InlineMessage>
+        <StripeConnectButton />
+      </Skeleton>
+    )
   }
-
-  return (
-    <Skeleton isLoaded={!isLoading} mb="2.5rem">
-      <Text>
-        Connect your Stripe account to this form to start collecting payments.
-      </Text>
-      <InlineMessage variant="info" mt="2rem">
-        <Text>
-          Don't have a Stripe account? Follow{' '}
-          <Link target="_blank" href={GUIDE_PAYMENTS}>
-            this guide
-          </Link>{' '}
-          to create one.
-        </Text>
-      </InlineMessage>
-    </Skeleton>
-  )
 }
 
 export const PaymentSettingsSection = (): JSX.Element => {
@@ -148,7 +173,6 @@ export const PaymentSettingsSection = (): JSX.Element => {
   return (
     <>
       <PaymentsSectionText />
-      <StripeConnectButton />
       {hasPaymentCapabilities && (
         <>
           <Divider my="2.5rem" />

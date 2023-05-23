@@ -13,7 +13,11 @@ const StripeIcon = () => {
   )
 }
 
-export const StripeConnectButton = (): JSX.Element => {
+export const StripeConnectButton = ({
+  isDisabled = false,
+}: {
+  isDisabled?: boolean
+}): JSX.Element => {
   const { data, isLoading } = useAdminFormPayments()
 
   const { linkStripeAccountMutation, unlinkStripeAccountMutation } =
@@ -38,6 +42,7 @@ export const StripeConnectButton = (): JSX.Element => {
     return (
       <Skeleton isLoaded={!isLoading} w="fit-content">
         <Button
+          isDisabled={isDisabled}
           isLoading={linkStripeAccountMutation.isLoading}
           onClick={onLinkAccountClick}
           title="Connect with Stripe"
@@ -45,10 +50,8 @@ export const StripeConnectButton = (): JSX.Element => {
           _hover={{
             bg: '#7a73ff',
           }}
-          rightIcon={<StripeIcon />}
         >
-          Connect with
-          <VisuallyHidden>Stripe</VisuallyHidden>
+          Connect with my Stripe Account
         </Button>
       </Skeleton>
     )
