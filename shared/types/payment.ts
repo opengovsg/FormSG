@@ -9,6 +9,7 @@ export enum PaymentStatus {
   PartiallyRefunded = 'partially_refunded',
   FullyRefunded = 'fully_refunded',
   Disputed = 'disputed',
+  Canceled = 'canceled',
 }
 
 export enum PaymentChannel {

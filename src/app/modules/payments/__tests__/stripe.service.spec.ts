@@ -91,6 +91,24 @@ const MOCK_STRIPE_EVENTS = [
     type: 'payment_intent.payment_failed',
   },
   {
+    id: 'evt_PAYMENT_INTENT_CANCELED',
+    object: 'event',
+    created: 1677205663,
+    account: 'acct_MOCK_ACCOUNT_ID',
+    data: {
+      object: {
+        id: 'pi_MOCK_PAYMENT_INTENT',
+        object: 'payment_intent',
+        amount: 12345,
+        created: 1677205503,
+        latest_charge: 'ch_MOCK_FAILED_CHARGE',
+        metadata: MOCK_STRIPE_METADATA,
+        status: 'canceled',
+      },
+    },
+    type: 'payment_intent.canceled',
+  },
+  {
     id: 'evt_PAYMENT_INTENT_SUCCEEDED',
     object: 'event',
     created: 1677205663,
@@ -280,7 +298,7 @@ describe('stripe.service', () => {
     })
     afterEach(() => jest.clearAllMocks())
 
-    it('should update the charge status from Pending to Failed when a charge.failed event is received', async () => {
+    it('should update the payment status from Pending to Failed when a charge.failed event is received', async () => {
       // Arrange
       // Inject the expected webhook logs and state into the payment object.
       await Payment.updateOne(
@@ -308,7 +326,39 @@ describe('stripe.service', () => {
       expect(updatedPayment!.chargeIdLatest).toEqual(chargeFailed.id)
     })
 
-    it('should update the charge status from Pending to Succeeded when a charge.succeeded event is received, move the pending submission to submissions', async () => {
+    it('should update the payment status from Pending to Canceled when a payment_intent.canceled event is received', async () => {
+      // Arrange
+      // Inject the expected webhook logs and state into the payment object.
+      await Payment.updateOne(
+        { _id: payment._id },
+        {
+          webhookLog: [MOCK_STRIPE_EVENTS_MAP['evt_PAYMENT_INTENT_CREATED']],
+        },
+      ).exec()
+
+      // Act
+      const eventPaymentIntentCanceled =
+        MOCK_STRIPE_EVENTS_MAP['evt_PAYMENT_INTENT_CANCELED']
+      const paymentIntentCanceled = eventPaymentIntentCanceled.data
+        .object as Stripe.PaymentIntent
+      const result = await StripeService.processStripeEvent(
+        String(payment._id),
+        eventPaymentIntentCanceled,
+      )
+
+      // Assert
+      expect(result.isOk()).toEqual(true)
+
+      const updatedPayment = await Payment.findById(payment.id)
+      expect(updatedPayment).toBeTruthy()
+
+      expect(updatedPayment!.status).toEqual(PaymentStatus.Canceled)
+      expect(updatedPayment!.chargeIdLatest).toEqual(
+        paymentIntentCanceled.latest_charge,
+      )
+    })
+
+    it('should update the payment status from Pending to Succeeded when a charge.succeeded event is received, move the pending submission to submissions', async () => {
       // Arrange
       // Mock Stripe API
       const transactionFee = 10
@@ -363,7 +413,7 @@ describe('stripe.service', () => {
       expect(updatedPayment!.chargeIdLatest).toEqual(chargeSucceeded.id)
     })
 
-    it('should update the charge status from Succeeded to Partially Refunded when a charge.refunded event is received for a partial refund', async () => {
+    it('should update the payment status from Succeeded to Partially Refunded when a charge.refunded event is received for a partial refund', async () => {
       // Arrange
       // Inject the expected webhook logs and state into the payment object.
       await Payment.updateOne(
@@ -406,7 +456,7 @@ describe('stripe.service', () => {
       expect(updatedPayment!.completedPayment).toBeTruthy()
     })
 
-    it('should update the charge status from Succeeded to Fully Refunded when a charge.refunded event is received for a full refund', async () => {
+    it('should update the payment status from Succeeded to Fully Refunded when a charge.refunded event is received for a full refund', async () => {
       // Arrange
       // Inject the expected webhook logs and state into the payment object.
       await Payment.updateOne(
@@ -449,7 +499,7 @@ describe('stripe.service', () => {
       expect(updatedPayment!.completedPayment).toBeTruthy()
     })
 
-    it('should update the charge status from Succeeded to Disputed when a charge.dispute.created event is received', async () => {
+    it('should update the payment status from Succeeded to Disputed when a charge.dispute.created event is received', async () => {
       // Arrange
       // Inject the expected webhook logs and state into the payment object.
       await Payment.updateOne(
