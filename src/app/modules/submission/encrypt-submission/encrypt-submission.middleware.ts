@@ -48,14 +48,14 @@ export const validateEncryptSubmissionParams = celebrate({
       )
       .optional(),
     paymentReceiptEmail: Joi.string(),
-    /**
-     * @deprecated unused key, but frontend may still send it.
-     */
-    isPreview: Joi.boolean(),
     version: Joi.number().required(),
     responseMetadata: Joi.object({
       responseTimeMs: Joi.number(),
       numVisibleFields: Joi.number(),
     }),
+    /**
+     * @deprecated unused key, but frontend may still send it.
+     */
+    isPreview: Joi.boolean(),
   }),
 })
