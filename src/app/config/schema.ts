@@ -338,6 +338,12 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
       default: 10,
       env: 'DOWNLOAD_PAYMENT_RECEIPT_RATE_LIMIT',
     },
+    externalApi: {
+      doc: 'Per-minute, per-IP request limit for external APIs',
+      format: 'int',
+      default: 100,
+      env: 'EXTERNAL_API_RATE_LIMIT',
+    },
   },
   reactMigration: {
     useFetchForSubmissions: {

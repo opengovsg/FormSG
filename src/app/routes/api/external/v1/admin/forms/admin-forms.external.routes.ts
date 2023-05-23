@@ -1,7 +1,9 @@
 import { Router } from 'express'
 
+import { rateLimitConfig } from '../../../../../../config/config'
 import { authenticateApiKey } from '../../../../../../modules/auth/auth.middlewares'
 import * as AdminFormController from '../../../../../../modules/form/admin-form/admin-form.controller'
+import { limitRate } from '../../../../../../utils/limit-rate'
 
 export const AdminFormsExternalRouter = Router()
 
@@ -17,8 +19,11 @@ AdminFormsExternalRouter.route('/')
    * @security session
    *
    * @returns 200 with a list of forms managed by the user
-   * @returns 401 when user is not logged in
+   * @returns 401 when user is not authorised
    * @returns 422 when user of given id cannnot be found in the database
    * @returns 500 when database errors occur
    */
-  .get(AdminFormController.handleListDashboardForms)
+  .get(
+    limitRate({ max: rateLimitConfig.externalApi }),
+    AdminFormController.handleListDashboardForms,
+  )

@@ -52,6 +52,7 @@ export type RateLimitConfig = {
   submissions: number
   sendAuthOtp: number
   downloadPaymentReceipt: number
+  externalApi: number
 }
 
 export type ExternalApiConfig = {
@@ -179,6 +180,7 @@ export interface IOptionalVarsSchema {
     submissions: number
     sendAuthOtp: number
     downloadPaymentReceipt: number
+    externalApi: number
   }
   reactMigration: {
     // TODO (#5826): Toggle to use fetch for submissions instead of axios. Remove once network error is resolved
