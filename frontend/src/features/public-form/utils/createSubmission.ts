@@ -9,6 +9,7 @@ import {
   MobileResponse,
 } from '~shared/types/response'
 import {
+  ResponseMetadata,
   StorageModeAttachment,
   StorageModeAttachmentsMap,
   StorageModeSubmissionContentDto,
@@ -35,6 +36,7 @@ export const createEncryptedSubmissionData = async (
   formFields: FormFieldDto[],
   formInputs: FormFieldValues,
   publicKey: string,
+  responseMetadata: ResponseMetadata,
   paymentReceiptEmail?: string,
 ): Promise<StorageModeSubmissionContentDto> => {
   const responses = createResponsesArray(formFields, formInputs)
@@ -58,6 +60,7 @@ export const createEncryptedSubmissionData = async (
     encryptedContent,
     paymentReceiptEmail,
     version: ENCRYPT_VERSION,
+    responseMetadata,
   }
 }
 
@@ -68,13 +71,14 @@ export const createEncryptedSubmissionData = async (
 export const createEmailSubmissionFormData = (
   formFields: FormFieldDto[],
   formInputs: FormFieldValues,
+  responseMetadata: ResponseMetadata,
 ) => {
   const responses = createResponsesArray(formFields, formInputs)
   const attachments = getAttachmentsMap(formFields, formInputs)
 
   // Convert content to FormData object.
   const formData = new FormData()
-  formData.append('body', JSON.stringify({ responses }))
+  formData.append('body', JSON.stringify({ responses, responseMetadata }))
 
   if (!isEmpty(attachments)) {
     forOwn(attachments, (attachment, fieldId) => {
