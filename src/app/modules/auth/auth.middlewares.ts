@@ -5,9 +5,9 @@ import { StatusCodes } from 'http-status-codes'
 import { createLoggerWithLabel } from '../../config/logger'
 import { createReqMeta } from '../../utils/request'
 import { ControllerHandler } from '../core/core.types'
-import { findUserByApiKey } from '../user/user.service'
 
-import { isUserInSession } from './auth.utils'
+import { getUserByApiKey } from './auth.service'
+import { isUserInSession, mapRouteError } from './auth.utils'
 
 const logger = createLoggerWithLabel(module)
 const BEARER_STRING = 'Bearer'
@@ -116,18 +116,18 @@ export const authenticateApiKey: ControllerHandler<unknown, unknown, any> = (
       .status(StatusCodes.UNAUTHORIZED)
       .json({ message: 'Invalid authorisation header format' })
   }
-  try {
-    const user = findUserByApiKey(apiKey)
-    if (!user) {
-      return res
-        .status(StatusCodes.UNAUTHORIZED)
-        .json({ message: 'Invalid API key' })
-    }
-    // req.body.userId = user._id
-    return next()
-  } catch {
-    return res
-      .status(StatusCodes.UNAUTHORIZED)
-      .json({ message: 'Invalid API key' })
-  }
+  return getUserByApiKey(apiKey)
+    .map((user) => {
+      if (!user) {
+        return res
+          .status(StatusCodes.UNAUTHORIZED)
+          .json({ message: 'Invalid API key' })
+      }
+      res.locals.userId = user._id
+      return next()
+    })
+    .mapErr((error) => {
+      const { errorMessage, statusCode } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
 }

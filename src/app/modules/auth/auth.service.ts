@@ -1,3 +1,5 @@
+import bcrypt from 'bcrypt'
+import crypto from 'crypto'
 import mongoose from 'mongoose'
 import { errAsync, okAsync, Result, ResultAsync } from 'neverthrow'
 import validator from 'validator'
@@ -9,7 +11,7 @@ import {
   ITokenSchema,
   IUserSchema,
 } from '../../../types'
-import config from '../../config/config'
+import config, { apiKeySalt } from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
 import getAgencyModel from '../../models/agency.server.model'
 import getTokenModel from '../../models/token.server.model'
@@ -28,6 +30,7 @@ import {
   PrivateFormError,
 } from '../form/form.errors'
 import * as FormService from '../form/form.service'
+import { findUserByApiKeyHash } from '../user/user.service'
 
 import { InvalidDomainError, InvalidOtpError } from './auth.errors'
 
@@ -35,6 +38,7 @@ const logger = createLoggerWithLabel(module)
 const TokenModel = getTokenModel(mongoose)
 const AgencyModel = getAgencyModel(mongoose)
 
+export const API_KEY_SEPARATOR = '_'
 export const MAX_OTP_ATTEMPTS = 10
 
 /**
@@ -338,4 +342,35 @@ export const getFormIfPublic = (
   return FormService.retrieveFullFormById(formId).andThen((form) =>
     FormService.isFormPublic(form).map(() => form),
   )
+}
+
+/**
+ *
+ */
+export const getUserByApiKey = (
+  apiKey: string,
+): ResultAsync<IUserSchema, Error> => {
+  return getApiKeyHash(apiKey).andThen((hash) => findUserByApiKeyHash(hash))
+}
+
+const getApiKeyHash = (apiKey: string): ResultAsync<string, HashingError> => {
+  const [name, version, key] = apiKey.split(API_KEY_SEPARATOR)
+  return ResultAsync.fromPromise(bcrypt.hash(key, apiKeySalt), (error) => {
+    logger.error({
+      message: 'bcrypt hash error',
+      meta: {
+        action: 'getApiKeyHash',
+      },
+      error,
+    })
+    return new HashingError()
+  }).map((hash) => `${name}_${version}_${hash.replace(apiKeySalt, '')}`)
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const generateApiKey = (): string => {
+  const randomString = crypto.randomBytes(32).toString('base64')
+  const apiEnv = 'staging'
+  const apiKeyVersion = 'v1'
+  return `${apiEnv}_${apiKeyVersion}_${randomString}`
 }
