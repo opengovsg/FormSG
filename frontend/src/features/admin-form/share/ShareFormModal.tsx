@@ -8,7 +8,6 @@ import {
   InputGroup,
   InputLeftAddon,
   InputRightElement,
-  Link,
   Modal,
   ModalBody,
   ModalContent,
@@ -42,6 +41,7 @@ import { CopyButton } from '~templates/CopyButton'
 import { useFeatureFlags } from '~features/feature-flags/queries'
 import { useListShortenerMutations } from '~features/link-shortener/mutations'
 import { useGoLink } from '~features/link-shortener/queries'
+import { useUser } from '~features/user/queries'
 
 type goLinkHelperTextType = {
   color: string
@@ -87,6 +87,13 @@ export const ShareFormModal = ({
 
   const { data: flags } = useFeatureFlags()
   const displayGoLink = flags?.has(featureFlags.goLinks)
+
+  const gogovWhiteListed = '.gov.sg'
+  const { user } = useUser()
+  const whitelisted = useMemo(
+    () => user?.email.endsWith(gogovWhiteListed),
+    [user?.email],
+  )
 
   const shareLink = useMemo(
     () => `${window.location.origin}/${formId}`,
@@ -240,7 +247,8 @@ export const ShareFormModal = ({
                 </Stack>
               </Skeleton>
             </FormControl>
-            {displayGoLink || goLinkSuffixData?.goLinkSuffix ? (
+            {(displayGoLink && whitelisted) ||
+            goLinkSuffixData?.goLinkSuffix ? (
               <FormControl>
                 <FormLabel
                   isRequired
