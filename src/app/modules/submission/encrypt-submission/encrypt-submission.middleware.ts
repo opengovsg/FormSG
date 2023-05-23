@@ -53,5 +53,9 @@ export const validateEncryptSubmissionParams = celebrate({
      */
     isPreview: Joi.boolean(),
     version: Joi.number().required(),
+    responseMetadata: Joi.object({
+      responseTimeMs: Joi.number(),
+      numVisibleFields: Joi.number(),
+    }),
   }),
 })

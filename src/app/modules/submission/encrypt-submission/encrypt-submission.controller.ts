@@ -177,7 +177,7 @@ const submitEncryptModeForm: ControllerHandler<
   }
 
   // Create Incoming Submission
-  const { encryptedContent, responses } = req.body
+  const { encryptedContent, responses, responseMetadata } = req.body
   const incomingSubmissionResult = IncomingEncryptSubmission.init(
     form,
     responses,
@@ -345,6 +345,7 @@ const submitEncryptModeForm: ControllerHandler<
     verifiedContent: verified,
     attachmentMetadata,
     version: req.body.version,
+    responseMetadata,
   }
 
   // Handle submissions for payments forms
@@ -427,6 +428,7 @@ const submitEncryptModeForm: ControllerHandler<
       meta: {
         ...logMeta,
         pendingSubmissionId,
+        responseMetadata,
       },
     })
 
@@ -573,6 +575,7 @@ const submitEncryptModeForm: ControllerHandler<
       ...logMeta,
       submissionId,
       formId,
+      responseMetadata,
     },
   })
 
