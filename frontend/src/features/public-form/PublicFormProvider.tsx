@@ -56,6 +56,7 @@ import { axiosDebugFlow } from './utils'
 interface PublicFormProviderProps {
   formId: string
   children: React.ReactNode
+  startTime: number
 }
 
 export function useCommonFormProvider(formId: string) {
@@ -105,13 +106,11 @@ export function useCommonFormProvider(formId: string) {
 export const PublicFormProvider = ({
   formId,
   children,
+  startTime,
 }: PublicFormProviderProps): JSX.Element => {
   // Once form has been submitted, submission data will be set here.
   const [submissionData, setSubmissionData] = useState<SubmissionData>()
   const [numVisibleFields, setNumVisibleFields] = useState(-1)
-
-  // Get date time in miliseconds when user first loads the form
-  const startTime = Date.now()
 
   const { data, isLoading, error, ...rest } = usePublicFormView(
     formId,
@@ -230,14 +229,14 @@ export const PublicFormProvider = ({
         formLogics: form.form_logics,
         formInputs,
         captchaResponse,
-        submissionMetadata: {
-          submissionTimeMs: differenceInMilliseconds(Date.now(), startTime),
+        responseMetadata: {
+          responseTimeMs: differenceInMilliseconds(Date.now(), startTime),
           numVisibleFields,
         },
       }
 
       // TODO remove logging
-      console.log(formData.submissionMetadata)
+      console.log(formData.responseMetadata)
 
       const logMeta = {
         action: 'handleSubmitForm',
