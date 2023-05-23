@@ -240,7 +240,7 @@ export const ShareFormModal = ({
                 </Stack>
               </Skeleton>
             </FormControl>
-            {displayGoLink ? (
+            {displayGoLink || goLinkSuffixData?.goLinkSuffix ? (
               <FormControl>
                 <FormLabel description="Customise a Go link for your form.">
                   Go link
