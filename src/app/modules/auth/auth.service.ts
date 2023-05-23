@@ -345,7 +345,11 @@ export const getFormIfPublic = (
 }
 
 /**
+ * Retrieves the user of the given API key
  *
+ * @returns ok(user) if the API key matches the hashed API key in the DB
+ * @returns err(DatabaseError) if database errors occurs whilst retrieving user
+ * @returns err(MissingUserError) if user does not exist in the database
  */
 export const getUserByApiKey = (
   apiKey: string,
@@ -353,6 +357,12 @@ export const getUserByApiKey = (
   return getApiKeyHash(apiKey).andThen((hash) => findUserByApiKeyHash(hash))
 }
 
+/**
+ * Hashes the API key using a pre-defined salt
+ * @param apiKey API Key of the user
+ * @returns ok(hash string) if API key is hashed successfully
+ * @returns err(HashingError) if error occurs while hashing API key
+ */
 const getApiKeyHash = (apiKey: string): ResultAsync<string, HashingError> => {
   const [name, version, key] = apiKey.split(API_KEY_SEPARATOR)
   return ResultAsync.fromPromise(bcrypt.hash(key, apiKeySalt), (error) => {
@@ -370,7 +380,7 @@ const getApiKeyHash = (apiKey: string): ResultAsync<string, HashingError> => {
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const generateApiKey = (): string => {
   const randomString = crypto.randomBytes(32).toString('base64')
-  const apiEnv = 'staging'
+  const apiEnv = 'dev'
   const apiKeyVersion = 'v1'
   return `${apiEnv}_${apiKeyVersion}_${randomString}`
 }
