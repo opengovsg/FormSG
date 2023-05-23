@@ -169,10 +169,13 @@ const PaymentsSectionText = () => {
 }
 
 export const PaymentSettingsSection = (): JSX.Element => {
-  const { hasPaymentCapabilities } = useAdminFormPayments()
+  const { hasPaymentCapabilities, data } = useAdminFormPayments()
   return (
     <>
       <PaymentsSectionText />
+      {data?.account ? (
+        <StripeConnectButton stripeAccount={data?.account} />
+      ) : null}
       {hasPaymentCapabilities && (
         <>
           <Divider my="2.5rem" />
