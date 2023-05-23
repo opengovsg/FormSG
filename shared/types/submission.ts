@@ -23,6 +23,12 @@ export const SubmissionBase = z.object({
 })
 export type SubmissionBase = z.infer<typeof SubmissionBase>
 
+export type ResponseMetadata = {
+  // time taken to submit the form in miliseconds
+  responseTimeMs: number
+  numVisibleFields: number
+}
+
 /**
  * Email mode submission typings as stored in the database.
  */
@@ -87,6 +93,7 @@ export type StorageModeSubmissionDto = {
   attachmentMetadata: Record<string, string>
   payment?: SubmissionPaymentDto
   version: number
+  responseMetadata: ResponseMetadata
 }
 
 export const StorageModeSubmissionStreamDto = StorageModeSubmissionBase.pick({
@@ -121,6 +128,9 @@ export type SubmissionResponseDto = {
   submissionId: string
   // Timestamp is given as ms from epoch
   timestamp: number
+
+  // response metadata to track form filling time
+  responseMetadata: ResponseMetadata
 
   // payment form only fields
   paymentData?: PaymentSubmissionData
@@ -175,6 +185,7 @@ export type StorageModeSubmissionContentDto = {
   attachments?: StorageModeAttachmentsMap
   paymentReceiptEmail?: string
   version: number
+  responseMetadata: ResponseMetadata
 }
 
 export type PaymentSubmissionData = {
