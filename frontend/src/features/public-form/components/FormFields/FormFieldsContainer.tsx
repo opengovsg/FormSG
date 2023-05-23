@@ -11,14 +11,8 @@ import { FormFields } from './FormFields'
 import { FormFieldsSkeleton } from './FormFieldsSkeleton'
 
 export const FormFieldsContainer = (): JSX.Element | null => {
-  const {
-    form,
-    isAuthRequired,
-    isLoading,
-    handleSubmitForm,
-    submissionData,
-    isPreview,
-  } = usePublicFormContext()
+  const { form, isAuthRequired, isLoading, handleSubmitForm, submissionData } =
+    usePublicFormContext()
 
   const renderFields = useMemo(() => {
     // Render skeleton when no data
