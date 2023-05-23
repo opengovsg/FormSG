@@ -39,6 +39,7 @@ const TokenModel = getTokenModel(mongoose)
 const AgencyModel = getAgencyModel(mongoose)
 
 export const API_KEY_SEPARATOR = '_'
+export const DEFAULT_SALT_ROUNDS = 1
 export const MAX_OTP_ATTEMPTS = 10
 
 /**
@@ -364,9 +365,9 @@ export const getUserByApiKey = (
  * @returns err(HashingError) if error occurs while hashing API key
  */
 const getApiKeyHash = (apiKey: string): ResultAsync<string, HashingError> => {
-  const [name, version, key] = apiKey.split(API_KEY_SEPARATOR)
+  const [apiEnv, version, key] = apiKey.split(API_KEY_SEPARATOR)
   return ResultAsync.fromPromise(
-    bcrypt.hash(key, config.externalApiConfig.apiKeySalt),
+    bcrypt.hash(key, DEFAULT_SALT_ROUNDS),
     (error) => {
       logger.error({
         message: 'bcrypt hash error',
@@ -377,13 +378,7 @@ const getApiKeyHash = (apiKey: string): ResultAsync<string, HashingError> => {
       })
       return new HashingError()
     },
-  ).map(
-    (hash) =>
-      `${name}_${version}_${hash.replace(
-        config.externalApiConfig.apiKeySalt,
-        '',
-      )}`,
-  )
+  ).map((hash) => `${apiEnv}_${version}_${hash}`)
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars

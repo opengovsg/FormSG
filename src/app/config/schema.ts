@@ -355,18 +355,6 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
     },
   },
   externalApi: {
-    apiKeySalt: {
-      doc: 'API key salt',
-      format: String,
-      default: null,
-      env: 'API_KEY_SALT',
-    },
-    // apiEnv: {
-    //   doc: 'API env',
-    //   format: ['live', 'development', 'test'],
-    //   default: 'development',
-    //   env: 'API_ENV',
-    // },
     apiKeyVersion: {
       doc: 'API key version',
       format: String,

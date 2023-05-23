@@ -56,7 +56,6 @@ export type RateLimitConfig = {
 }
 
 export type ExternalApiConfig = {
-  apiKeySalt: string
   apiEnv: string
   apiKeyVersion: string
 }
@@ -187,8 +186,6 @@ export interface IOptionalVarsSchema {
     useFetchForSubmissions: boolean
   }
   externalApi: {
-    apiKeySalt: string
-    // apiEnv: string
     apiKeyVersion: string
   }
 }
