@@ -111,6 +111,7 @@ services:
       - PAYMENT_MAX_PAYMENT_AMOUNT_CENTS=100000
       - PAYMENT_MIN_PAYMENT_AMOUNT_CENTS=50
       - SSM_ENV_SITE_NAME=development
+      - API_KEY_SALT=$$2b$$10$$zmeDWswWAtn0DEXZ.4jd8.
 
   mockpass:
     build: https://github.com/opengovsg/mockpass.git#v3.1.3
