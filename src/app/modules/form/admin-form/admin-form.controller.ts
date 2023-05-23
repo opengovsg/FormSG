@@ -2770,6 +2770,7 @@ export const handleSetGoLinkSuffix: ControllerHandler<
               },
             },
           ),
+          // TODO: fix error handling (https://linear.app/ogp/issue/FRM-901/improve-error-handling-when-calling-gogov-api)
           () => new ApplicationError('Error occurred when claiming GoGov link'),
         )
       })
