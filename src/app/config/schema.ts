@@ -348,6 +348,12 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
       env: 'REACT_MIGRATION_USE_FETCH_FOR_SUBMISSIONS',
     },
   },
+  apiKeySalt: {
+    doc: 'API key salt',
+    format: String,
+    default: null,
+    env: 'API_KEY_SALT',
+  },
 }
 
 export const prodOnlyVarsSchema: Schema<IProdOnlyVarsSchema> = {

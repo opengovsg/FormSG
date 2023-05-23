@@ -92,6 +92,7 @@ export type Config = {
   reactMigration: ReactMigrationConfig
   secretEnv: string
   envSiteName: string
+  apiKeySalt: string
 
   // Functions
   configureAws: () => Promise<void>
@@ -177,6 +178,7 @@ export interface IOptionalVarsSchema {
     // TODO (#5826): Toggle to use fetch for submissions instead of axios. Remove once network error is resolved
     useFetchForSubmissions: boolean
   }
+  apiKeySalt: string
 }
 
 export interface IBucketUrlSchema {

@@ -236,6 +236,7 @@ const config: Config = {
   configureAws,
   secretEnv: basicVars.core.secretEnv,
   envSiteName: basicVars.core.envSiteName,
+  apiKeySalt: basicVars.apiKeySalt,
 }
 
 export = config
