@@ -144,6 +144,7 @@ export const ShareFormModal = ({
   const { data: goLinkSuffixData } = useGoLink(formId ?? '')
   const [goLinkSuffixInput, setGoLinkSuffixInput] = useState('')
   const [goLinkSaved, setGoLinkSaved] = useState(false)
+  const [claimGoLoading, setClaimGoLoading] = useState(false)
 
   useEffect(() => {
     if (goLinkSuffixData?.goLinkSuffix) {
@@ -160,14 +161,17 @@ export const ShareFormModal = ({
 
   const handleClaimGoLinkClick = useCallback(async () => {
     try {
+      setClaimGoLoading(true)
       await claimGoLinkMutation.mutateAsync({
         linkSuffix: goLinkSuffixInput,
         formId: formId ?? '',
       })
+      setClaimGoLoading(false)
       setGoLinkSaved(true)
       setGoLinkHelperText(goLinkClaimSuccessHelperText)
       return
     } catch (err) {
+      setClaimGoLoading(false)
       setGoLinkHelperText(goLinkClaimFailureHelperText)
       return
     }
@@ -269,6 +273,7 @@ export const ShareFormModal = ({
                         aria-label="Claim Go link"
                         onClick={handleClaimGoLinkClick}
                         isDisabled={!goLinkSuffixInput}
+                        isLoading={claimGoLoading}
                       >
                         Claim
                       </Button>
