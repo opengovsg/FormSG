@@ -8,6 +8,7 @@ import { FormFieldValues } from '~templates/Field'
 import { FormFieldWithQuestionNo } from '~features/form/types'
 import { augmentWithQuestionNo } from '~features/form/utils'
 import { getVisibleFieldIds } from '~features/logic/utils'
+import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
 import { FieldFactory } from './FieldFactory'
 import { PrefillMap } from './FormFields'
@@ -35,6 +36,7 @@ export const VisibleFormFields = ({
   const watchedValues = useWatch({ control })
   const { setVisibleFieldIdsForScrollData } = useFormSections()
   const [visibleFormFields, setVisibleFormFields] = useState(formFields)
+  const { setNumVisibleFields } = usePublicFormContext()
 
   useEffect(() => {
     const visibleFieldIds = getVisibleFieldIds(watchedValues, {
@@ -47,7 +49,16 @@ export const VisibleFormFields = ({
     )
     const visibleFieldsWithQuestionNo = augmentWithQuestionNo(visibleFields)
     setVisibleFormFields(visibleFieldsWithQuestionNo)
-  }, [formFields, formLogics, setVisibleFieldIdsForScrollData, watchedValues])
+
+    // set the number of visible fields in the context
+    setNumVisibleFields(visibleFieldsWithQuestionNo.length)
+  }, [
+    formFields,
+    formLogics,
+    setVisibleFieldIdsForScrollData,
+    watchedValues,
+    setNumVisibleFields,
+  ])
 
   return (
     <>
