@@ -108,6 +108,10 @@ export const PublicFormProvider = ({
 }: PublicFormProviderProps): JSX.Element => {
   // Once form has been submitted, submission data will be set here.
   const [submissionData, setSubmissionData] = useState<SubmissionData>()
+  const [numVisibleFields, setNumVisibleFields] = useState(-1)
+
+  // Get date time in miliseconds when user first loads the form
+  const startTime = Date.now()
 
   const { data, isLoading, error, ...rest } = usePublicFormView(
     formId,
@@ -226,7 +230,14 @@ export const PublicFormProvider = ({
         formLogics: form.form_logics,
         formInputs,
         captchaResponse,
+        submissionMetadata: {
+          submissionTimeMs: differenceInMilliseconds(Date.now(), startTime),
+          numVisibleFields,
+        },
       }
+
+      // TODO remove logging
+      console.log(formData.submissionMetadata)
 
       const logMeta = {
         action: 'handleSubmitForm',
@@ -465,6 +476,8 @@ export const PublicFormProvider = ({
       submitEmailModeFormFetchMutation,
       submitStorageModeFormFetchMutation,
       useFetchForSubmissions,
+      numVisibleFields,
+      startTime,
     ],
   )
 
@@ -505,6 +518,7 @@ export const PublicFormProvider = ({
         isLoading: isLoading || (!!data?.form.hasCaptcha && !hasLoaded),
         isPaymentEnabled,
         isPreview: false,
+        setNumVisibleFields,
         ...commonFormValues,
         ...data,
         ...rest,
