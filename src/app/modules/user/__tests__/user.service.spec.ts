@@ -1,3 +1,4 @@
+import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { ObjectID } from 'bson'
 import { zipWith } from 'lodash'
 import MockDate from 'mockdate'
@@ -11,8 +12,6 @@ import * as UserService from 'src/app/modules/user/user.service'
 import * as HashUtils from 'src/app/utils/hash'
 import * as OtpUtils from 'src/app/utils/otp'
 import { AgencyDocument, IPopulatedUser, IUserSchema } from 'src/types'
-
-import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import { ApplicationError, DatabaseError } from '../../core/core.errors'
 import { InvalidOtpError, MissingUserError } from '../user.errors'

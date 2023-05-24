@@ -4,14 +4,14 @@ SP_OIDC_NDI_DISCOVERY_ENDPOINT=http://localhost:5156/singpass/v2/.well-known/ope
 SP_OIDC_NDI_JWKS_ENDPOINT=http://localhost:5156/singpass/v2/.well-known/keys
 SP_OIDC_RP_CLIENT_ID=rpClientId
 SP_OIDC_RP_REDIRECT_URL=http://localhost:5000/api/v3/singpass/login
-SP_OIDC_RP_JWKS_PUBLIC_PATH=./__tests__/e2e/setup/certs/test_sp_rp_public_jwks.json
-SP_OIDC_RP_JWKS_SECRET_PATH=./__tests__/e2e/setup/certs/test_sp_rp_secret_jwks.json
+SP_OIDC_RP_JWKS_PUBLIC_PATH=./__tests__/setup/certs/test_sp_rp_public_jwks.json
+SP_OIDC_RP_JWKS_SECRET_PATH=./__tests__/setup/certs/test_sp_rp_secret_jwks.json
 CP_OIDC_NDI_DISCOVERY_ENDPOINT=http://localhost:5156/corppass/v2/.well-known/openid-configuration
 CP_OIDC_NDI_JWKS_ENDPOINT=http://localhost:5156/corppass/v2/.well-known/keys
 CP_OIDC_RP_CLIENT_ID=rpClientId
 CP_OIDC_RP_REDIRECT_URL=http://localhost:5000/api/v3/corppass/login
-CP_OIDC_RP_JWKS_PUBLIC_PATH=./__tests__/e2e/setup/certs/test_cp_rp_public_jwks.json
-CP_OIDC_RP_JWKS_SECRET_PATH=./__tests__/e2e/setup/certs/test_cp_rp_secret_jwks.json
+CP_OIDC_RP_JWKS_PUBLIC_PATH=./__tests__/setup/certs/test_cp_rp_public_jwks.json
+CP_OIDC_RP_JWKS_SECRET_PATH=./__tests__/setup/certs/test_cp_rp_secret_jwks.json
 
 MYINFO_CLIENT_CONFIG=dev
 MYINFO_FORMSG_KEY_PATH=./node_modules/@opengovsg/mockpass/static/certs/key.pem
@@ -72,7 +72,7 @@ AWS_ENDPOINT=http://localhost:4566
 APP_URL=http://localhost:5000
 
 SECRET_ENV=development
-INTRANET_IP_LIST_PATH=tests/mock-intranet-ips.txt
+INTRANET_IP_LIST_PATH=__tests__/setup/mock-intranet-ips.txt
 
 REACT_SWITCH_ENV_FEEDBACK_FORM_ID_ADMIN=62da6a569ee8e90143b5da26
 REACT_SWITCH_ENV_FEEDBACK_FORM_ID_RESPONDENT=62da6a569ee8e90143b5da26

@@ -1,3 +1,4 @@
+import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { ObjectId } from 'bson'
 import { Request, Response } from 'express'
 import { StatusCodes } from 'http-status-codes'
@@ -23,9 +24,7 @@ import {
   IVerificationSchema,
 } from 'src/types'
 
-import dbHandler from 'tests/unit/backend/helpers/jest-db'
-
-import expressHandler from '../../../../../tests/unit/backend/helpers/jest-express'
+import expressHandler from '../../../../../__tests__/unit/backend/helpers/jest-express'
 import { DatabaseError, MalformedParametersError } from '../../core/core.errors'
 import { FormNotFoundError } from '../../form/form.errors'
 import * as FormService from '../../form/form.service'

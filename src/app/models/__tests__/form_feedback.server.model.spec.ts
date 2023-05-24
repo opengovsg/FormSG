@@ -1,11 +1,10 @@
+import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { ObjectId } from 'bson-ext'
 import { omit } from 'lodash'
 import mongoose from 'mongoose'
 
 import getFormFeedbackModel from 'src/app/models/form_feedback.server.model'
 import { IFormFeedback } from 'src/types'
-
-import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 const FeedbackModel = getFormFeedbackModel(mongoose)
 

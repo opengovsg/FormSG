@@ -1,4 +1,5 @@
 /* eslint-disable import/first */
+import getMockLogger from '__tests__/unit/backend/helpers/jest-logger'
 import { ObjectId } from 'bson'
 import { addHours, subHours, subMinutes, subSeconds } from 'date-fns'
 import mongoose from 'mongoose'
@@ -7,13 +8,13 @@ import { errAsync, okAsync } from 'neverthrow'
 // These need to be mocked first before the rest of the test
 import * as LoggerModule from 'src/app/config/logger'
 
-import getMockLogger from 'tests/unit/backend/helpers/jest-logger'
-
 const mockLogger = getMockLogger()
 jest.mock('src/app/config/logger')
 const MockLoggerModule = jest.mocked(LoggerModule)
 MockLoggerModule.createLoggerWithLabel.mockReturnValue(mockLogger)
 
+import { generateDefaultField } from '__tests__/unit/backend/helpers/generate-form-data'
+import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { PAYMENT_CONTACT_FIELD_ID } from 'shared/constants'
 
 import { smsConfig } from 'src/app/config/features/sms.config'
@@ -43,9 +44,6 @@ import {
   PublicTransaction,
   UpdateFieldData,
 } from 'src/types'
-
-import { generateDefaultField } from 'tests/unit/backend/helpers/generate-form-data'
-import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import { BasicField } from '../../../../../shared/types'
 import { SMS_WARNING_TIERS } from '../../../../../shared/utils/verification'

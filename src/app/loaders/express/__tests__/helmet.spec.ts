@@ -1,9 +1,8 @@
+import expressHandler from '__tests__/unit/backend/helpers/jest-express'
 import helmet from 'helmet'
 
 import config from 'src/app/config/config'
 import { sentryConfig } from 'src/app/config/features/sentry.config'
-
-import expressHandler from 'tests/unit/backend/helpers/jest-express'
 
 import helmetMiddlewares from '../helmet'
 

@@ -1,11 +1,10 @@
+import dbHandler from '__tests__/unit/backend/helpers/jest-db'
+import expressHandler from '__tests__/unit/backend/helpers/jest-express'
 import { ObjectId } from 'bson'
 import mongoose from 'mongoose'
 import { PaymentStatus } from 'shared/types'
 
 import getPaymentModel from 'src/app/models/payment.server.model'
-
-import dbHandler from 'tests/unit/backend/helpers/jest-db'
-import expressHandler from 'tests/unit/backend/helpers/jest-express'
 
 import * as PaymentsController from '../payments.controller'
 
@@ -24,7 +23,7 @@ describe('payments.controller', () => {
       const email = 'formsg@tech.gov.sg'
       const payment = await Payment.create({
         formId: MOCK_FORM_ID,
-        target_account_id: 'acct_MOCK_ACCOUNT_ID',
+        targetAccountId: 'acct_MOCK_ACCOUNT_ID',
         pendingSubmissionId: new ObjectId(),
         amount: 12345,
         status: PaymentStatus.Succeeded,
@@ -54,7 +53,7 @@ describe('payments.controller', () => {
     it('should return 404 if there are no previous payments by the specific email', async () => {
       const payment = await Payment.create({
         formId: MOCK_FORM_ID,
-        target_account_id: 'acct_MOCK_ACCOUNT_ID',
+        targetAccountId: 'acct_MOCK_ACCOUNT_ID',
         pendingSubmissionId: new ObjectId(),
         amount: 12345,
         status: PaymentStatus.Succeeded,
@@ -83,7 +82,7 @@ describe('payments.controller', () => {
     it('should return 404 if there are no previous payments by the email in the specific formId', async () => {
       const payment = await Payment.create({
         formId: MOCK_FORM_ID,
-        target_account_id: 'acct_MOCK_ACCOUNT_ID',
+        targetAccountId: 'acct_MOCK_ACCOUNT_ID',
         pendingSubmissionId: new ObjectId(),
         amount: 12345,
         status: PaymentStatus.Succeeded,
@@ -112,7 +111,7 @@ describe('payments.controller', () => {
     it('should return 500 if there is an internal server error', async () => {
       const payment = await Payment.create({
         formId: MOCK_FORM_ID,
-        target_account_id: 'acct_MOCK_ACCOUNT_ID',
+        targetAccountId: 'acct_MOCK_ACCOUNT_ID',
         pendingSubmissionId: new ObjectId(),
         amount: 12345,
         status: PaymentStatus.Succeeded,

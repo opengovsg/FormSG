@@ -1,3 +1,5 @@
+import dbHandler from '__tests__/unit/backend/helpers/jest-db'
+import expressHandler from '__tests__/unit/backend/helpers/jest-express'
 import axios from 'axios'
 import { ObjectId } from 'bson'
 import mongoose from 'mongoose'
@@ -7,9 +9,6 @@ import { PaymentStatus, SubmissionType } from 'shared/types'
 import getPaymentModel from 'src/app/models/payment.server.model'
 import { getEncryptPendingSubmissionModel } from 'src/app/models/pending_submission.server.model'
 import { IPopulatedEncryptedForm, IPopulatedForm } from 'src/types'
-
-import dbHandler from 'tests/unit/backend/helpers/jest-db'
-import expressHandler from 'tests/unit/backend/helpers/jest-express'
 
 import * as FormService from '../../form/form.service'
 import * as EncryptSubmissionService from '../../submission/encrypt-submission/encrypt-submission.service'
@@ -72,7 +71,7 @@ describe('stripe.controller', () => {
 
       const payment = await Payment.create({
         formId: mockForm._id,
-        target_account_id: 'acct_MOCK_ACCOUNT_ID',
+        targetAccountId: 'acct_MOCK_ACCOUNT_ID',
         pendingSubmissionId: pendingSubmission._id,
         amount: 12345,
         status: PaymentStatus.Succeeded,
@@ -132,7 +131,7 @@ describe('stripe.controller', () => {
       })
       const payment = await Payment.create({
         formId: MOCK_FORM_ID,
-        target_account_id: 'acct_MOCK_ACCOUNT_ID',
+        targetAccountId: 'acct_MOCK_ACCOUNT_ID',
         pendingSubmissionId: pendingSubmission._id,
         amount: 12345,
         status: PaymentStatus.Succeeded,

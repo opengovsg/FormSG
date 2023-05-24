@@ -1,3 +1,4 @@
+import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { ObjectID } from 'bson'
 import mongoose from 'mongoose'
 
@@ -6,8 +7,6 @@ import {
   IAdminVerification,
   UpsertOtpParams,
 } from 'src/types/admin_verification'
-
-import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 const AdminVerification = getAdminVerificationModel(mongoose)
 

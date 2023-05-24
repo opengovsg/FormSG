@@ -1,3 +1,4 @@
+import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios'
 import { ObjectId } from 'bson'
 import mongoose from 'mongoose'
@@ -9,8 +10,6 @@ import { WebhookValidationError } from 'src/app/modules/webhook/webhook.errors'
 import * as WebhookValidationModule from 'src/app/modules/webhook/webhook.validation'
 import { transformMongoError } from 'src/app/utils/handle-mongo-error'
 import { IEncryptedSubmissionSchema, WebhookView } from 'src/types'
-
-import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import { WebhookResponse } from '../../../../../shared/types'
 import { SubmissionNotFoundError } from '../../submission/submission.errors'

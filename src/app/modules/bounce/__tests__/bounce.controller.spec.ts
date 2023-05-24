@@ -1,3 +1,5 @@
+import dbHandler from '__tests__/unit/backend/helpers/jest-db'
+import expressHandler from '__tests__/unit/backend/helpers/jest-express'
 import { ObjectId } from 'bson'
 import mongoose from 'mongoose'
 import { errAsync, ok, okAsync } from 'neverthrow'
@@ -14,9 +16,6 @@ import {
   IPopulatedForm,
   ISnsNotification,
 } from 'src/types'
-
-import dbHandler from 'tests/unit/backend/helpers/jest-db'
-import expressHandler from 'tests/unit/backend/helpers/jest-express'
 
 import { DatabaseError } from '../../core/core.errors'
 import { InvalidNotificationError } from '../bounce.errors'

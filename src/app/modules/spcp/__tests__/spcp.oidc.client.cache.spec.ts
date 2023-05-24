@@ -22,10 +22,12 @@ jest.mock('openid-client')
 jest.mock('axios')
 
 const TEST_RP_SECRET_JWKS: SecretJwks = JSON.parse(
-  fs.readFileSync('tests/certs/test_sp_rp_secret_jwks.json').toString(),
+  fs
+    .readFileSync('__tests__/setup/certs/test_sp_rp_secret_jwks.json')
+    .toString(),
 )
 const TEST_NDI_PUBLIC_JWKS: PublicJwks = JSON.parse(
-  fs.readFileSync('tests/certs/test_ndi_public_jwks.json').toString(),
+  fs.readFileSync('__tests__/setup/certs/test_ndi_public_jwks.json').toString(),
 )
 
 const createPublicKeysFromJwks = (jwks: PublicJwks) => {

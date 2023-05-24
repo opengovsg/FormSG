@@ -1,10 +1,9 @@
+import expressHandler from '__tests__/unit/backend/helpers/jest-express'
 import { err, errAsync, ok, okAsync } from 'neverthrow'
 
 import config from 'src/app/config/config'
 import * as RealFormService from 'src/app/modules/form/form.service'
 import { MOCK_COOKIE_AGE } from 'src/app/modules/myinfo/__tests__/myinfo.test.constants'
-
-import expressHandler from 'tests/unit/backend/helpers/jest-express'
 
 import { ApplicationError } from '../../core/core.errors'
 import { FormNotFoundError } from '../../form/form.errors'

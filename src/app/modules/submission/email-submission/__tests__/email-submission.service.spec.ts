@@ -1,3 +1,9 @@
+import { generateSingleAnswerFormData } from '__tests__/unit/backend/helpers/generate-email-data'
+import {
+  generateNewAttachmentResponse,
+  generateNewSingleAnswerResponse,
+} from '__tests__/unit/backend/helpers/generate-form-data'
+import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { ObjectId } from 'bson'
 import crypto from 'crypto'
 import { readFileSync } from 'fs'
@@ -11,13 +17,6 @@ import {
   IEmailSubmissionSchema,
   IPopulatedEmailForm,
 } from 'src/types'
-
-import { generateSingleAnswerFormData } from 'tests/unit/backend/helpers/generate-email-data'
-import {
-  generateNewAttachmentResponse,
-  generateNewSingleAnswerResponse,
-} from 'tests/unit/backend/helpers/generate-form-data'
-import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import {
   BasicField,
@@ -107,7 +106,7 @@ describe('email-submission.service', () => {
 
     it('should reject submissions when file types are invalid', async () => {
       const processedResponse1 = generateNewAttachmentResponse({
-        content: readFileSync('./tests/unit/backend/resources/invalid.py'),
+        content: readFileSync('./__tests__/unit/backend/resources/invalid.py'),
         filename: 'invalid.py',
       })
 
@@ -126,7 +125,7 @@ describe('email-submission.service', () => {
     it('should reject submissions when there are invalid file types in zip', async () => {
       const processedResponse1 = generateNewAttachmentResponse({
         content: readFileSync(
-          './tests/unit/backend/resources/nestedInvalid.zip',
+          './__tests__/unit/backend/resources/nestedInvalid.zip',
         ),
         filename: 'nestedInvalid.zip',
       })
@@ -145,7 +144,7 @@ describe('email-submission.service', () => {
 
     it('should accept submissions when file types are valid', async () => {
       const processedResponse1 = generateNewAttachmentResponse({
-        content: readFileSync('./tests/unit/backend/resources/govtech.jpg'),
+        content: readFileSync('./__tests__/unit/backend/resources/govtech.jpg'),
         filename: 'govtech.jpg',
       })
 
@@ -163,7 +162,9 @@ describe('email-submission.service', () => {
 
     it('should accept submissions when file types in zip are valid', async () => {
       const processedResponse1 = generateNewAttachmentResponse({
-        content: readFileSync('./tests/unit/backend/resources/nestedValid.zip'),
+        content: readFileSync(
+          './__tests__/unit/backend/resources/nestedValid.zip',
+        ),
         filename: 'nestedValid.zip',
       })
 

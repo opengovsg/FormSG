@@ -31,14 +31,14 @@ export const MOCK_SERVICE_PARAMS: ISpcpMyInfo = {
   spOidcNdiJwksEndpoint: 'spOidcNdiJwksEndpoint',
   spOidcRpClientId: 'spOidcRpClientId',
   spOidcRpRedirectUrl: 'spOidcRpRedirectUrl',
-  spOidcRpJwksPublicPath: 'tests/certs/test_sp_rp_public_jwks.json',
-  spOidcRpJwksSecretPath: 'tests/certs/test_sp_rp_secret_jwks.json',
+  spOidcRpJwksPublicPath: '__tests__/setup/certs/test_sp_rp_public_jwks.json',
+  spOidcRpJwksSecretPath: '__tests__/setup/certs/test_sp_rp_secret_jwks.json',
   cpOidcNdiDiscoveryEndpoint: 'cpOidcNdiDiscoveryEndpoint',
   cpOidcNdiJwksEndpoint: 'cpOidcNdiJwksEndpoint',
   cpOidcRpClientId: 'cpOidcRpClientId',
   cpOidcRpRedirectUrl: 'cpOidcRpRedirectUrl',
-  cpOidcRpJwksPublicPath: 'tests/certs/test_cp_rp_public_jwks.json',
-  cpOidcRpJwksSecretPath: 'tests/certs/test_cp_rp_secret_jwks.json',
+  cpOidcRpJwksPublicPath: '__tests__/setup/certs/test_cp_rp_public_jwks.json',
+  cpOidcRpJwksSecretPath: '__tests__/setup/certs/test_cp_rp_secret_jwks.json',
 }
 
 export const MOCK_ESRVCID = 'eServiceId'
@@ -152,25 +152,33 @@ export const CP_OIDC_RP_CLIENT_ID = 'cpOidcRpClientId'
 export const CP_OIDC_RP_REDIRECT_URL = 'cpOidcRpRedirectUrl'
 
 export const TEST_SP_RP_PUBLIC_JWKS: PublicJwks = JSON.parse(
-  fs.readFileSync('tests/certs/test_sp_rp_public_jwks.json').toString(),
+  fs
+    .readFileSync('__tests__/setup/certs/test_sp_rp_public_jwks.json')
+    .toString(),
 )
 export const TEST_SP_RP_SECRET_JWKS: SecretJwks = JSON.parse(
-  fs.readFileSync('tests/certs/test_sp_rp_secret_jwks.json').toString(),
+  fs
+    .readFileSync('__tests__/setup/certs/test_sp_rp_secret_jwks.json')
+    .toString(),
 )
 
 export const TEST_CP_RP_PUBLIC_JWKS: PublicJwks = JSON.parse(
-  fs.readFileSync('tests/certs/test_cp_rp_public_jwks.json').toString(),
+  fs
+    .readFileSync('__tests__/setup/certs/test_cp_rp_public_jwks.json')
+    .toString(),
 )
 export const TEST_CP_RP_SECRET_JWKS: SecretJwks = JSON.parse(
-  fs.readFileSync('tests/certs/test_cp_rp_secret_jwks.json').toString(),
+  fs
+    .readFileSync('__tests__/setup/certs/test_cp_rp_secret_jwks.json')
+    .toString(),
 )
 
 export const TEST_NDI_SECRET_JWKS: PublicJwks = JSON.parse(
-  fs.readFileSync('tests/certs/test_ndi_secret_jwks.json').toString(),
+  fs.readFileSync('__tests__/setup/certs/test_ndi_secret_jwks.json').toString(),
 )
 
 export const TEST_NDI_PUBLIC_JWKS: PublicJwks = JSON.parse(
-  fs.readFileSync('tests/certs/test_ndi_public_jwks.json').toString(),
+  fs.readFileSync('__tests__/setup/certs/test_ndi_public_jwks.json').toString(),
 )
 
 export const spOidcClientConfig: SpcpOidcClientConstructorParams = {

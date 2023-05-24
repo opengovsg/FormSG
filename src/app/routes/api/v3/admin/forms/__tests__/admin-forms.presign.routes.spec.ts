@@ -1,4 +1,8 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
+import { createAuthedSession } from '__tests__/integration/helpers/express-auth'
+import { setupApp } from '__tests__/integration/helpers/express-setup'
+import { buildCelebrateError } from '__tests__/unit/backend/helpers/celebrate'
+import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { ObjectId } from 'bson-ext'
 import mongoose from 'mongoose'
 import SparkMD5 from 'spark-md5'
@@ -8,11 +12,6 @@ import { aws } from 'src/app/config/config'
 import { getEncryptedFormModel } from 'src/app/models/form.server.model'
 import getUserModel from 'src/app/models/user.server.model'
 import { IUserSchema } from 'src/types'
-
-import { createAuthedSession } from 'tests/integration/helpers/express-auth'
-import { setupApp } from 'tests/integration/helpers/express-setup'
-import { buildCelebrateError } from 'tests/unit/backend/helpers/celebrate'
-import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import { VALID_UPLOAD_FILE_TYPES } from '../../../../../../../../shared/constants/file'
 import {

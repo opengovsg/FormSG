@@ -1,4 +1,8 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
+import { setupApp } from '__tests__/integration/helpers/express-setup'
+import MockTwilio from '__tests__/integration/helpers/twilio'
+import { generateDefaultField } from '__tests__/unit/backend/helpers/generate-form-data'
+import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import bcrypt from 'bcrypt'
 import { ObjectId } from 'bson-ext'
 import { subMinutes, subYears } from 'date-fns'
@@ -22,11 +26,6 @@ import { SmsSendError } from 'src/app/services/sms/sms.errors'
 import * as SmsService from 'src/app/services/sms/sms.service'
 import * as OtpUtils from 'src/app/utils/otp'
 import { IVerificationSchema } from 'src/types'
-
-import { setupApp } from 'tests/integration/helpers/express-setup'
-import MockTwilio from 'tests/integration/helpers/twilio'
-import { generateDefaultField } from 'tests/unit/backend/helpers/generate-form-data'
-import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import { BasicField } from '../../../../../../../shared/types'
 import {

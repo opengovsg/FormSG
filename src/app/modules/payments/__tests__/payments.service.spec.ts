@@ -1,10 +1,9 @@
+import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { ObjectId } from 'bson'
 import mongoose from 'mongoose'
 import { PaymentStatus } from 'shared/types'
 
 import getPaymentModel from 'src/app/models/payment.server.model'
-
-import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import * as PaymentsService from '../payments.service'
 
@@ -30,6 +29,7 @@ describe('payments.service', () => {
       await Payment.create({
         _id: expectedObjectId,
         formId: MOCK_FORM_ID,
+        targetAccountId: 'acct_MOCK_ACCOUNT_ID',
         pendingSubmissionId: new ObjectId(),
         paymentIntentId: 'somePaymentIntentId',
         amount: 314159,
@@ -70,6 +70,7 @@ describe('payments.service', () => {
       await Payment.create({
         _id: expectedObjectId,
         formId: MOCK_FORM_ID,
+        targetAccountId: 'acct_MOCK_ACCOUNT_ID',
         pendingSubmissionId: new ObjectId(),
         paymentIntentId: 'somePaymentIntentId',
         amount: 314159,
@@ -97,6 +98,7 @@ describe('payments.service', () => {
       await Payment.create({
         _id: latestId,
         formId: MOCK_FORM_ID,
+        targetAccountId: 'acct_MOCK_ACCOUNT_ID',
         pendingSubmissionId: new ObjectId(),
         paymentIntentId: 'somePaymentIntentId',
         amount: 314159,
@@ -145,6 +147,7 @@ describe('payments.service', () => {
       await Payment.create({
         _id: newId,
         formId: newFormId,
+        targetAccountId: 'acct_MOCK_ACCOUNT_ID',
         pendingSubmissionId: new ObjectId(),
         paymentIntentId: 'somePaymentIntentId',
         amount: 314159,

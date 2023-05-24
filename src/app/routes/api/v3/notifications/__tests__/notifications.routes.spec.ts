@@ -1,8 +1,7 @@
+import { setupApp } from '__tests__/integration/helpers/express-setup'
 import supertest, { Session } from 'supertest-session'
 
 import { ITwilioSmsWebhookBody } from 'src/types'
-
-import { setupApp } from 'tests/integration/helpers/express-setup'
 
 import { NotificationsRouter } from './../notifications.routes'
 

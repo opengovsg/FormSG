@@ -1,10 +1,9 @@
+import expressHandler from '__tests__/unit/backend/helpers/jest-express'
 import { errAsync, okAsync } from 'neverthrow'
 
 import MailService from 'src/app/services/mail/mail.service'
 import { HashingError } from 'src/app/utils/hash'
 import { AgencyDocument, IPopulatedUser } from 'src/types'
-
-import expressHandler from 'tests/unit/backend/helpers/jest-express'
 
 import { MailSendError } from '../../../services/mail/mail.errors'
 import { DatabaseError } from '../../core/core.errors'

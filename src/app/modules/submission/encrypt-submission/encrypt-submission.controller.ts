@@ -385,9 +385,12 @@ const submitEncryptModeForm: ControllerHandler<
       })
     }
 
+    const targetAccountId = form.payments_channel.target_account_id
+
     // Step 1: Create payment without payment intent id and pending submission id.
     const payment = new Payment({
       formId,
+      targetAccountId,
       amount,
       email: paymentReceiptEmail,
       responses: incomingSubmission.responses,
@@ -438,8 +441,6 @@ const submitEncryptModeForm: ControllerHandler<
       paymentContactEmail: paymentReceiptEmail,
     }
 
-    const paymentReceiptDescription = form.payments_field.description
-
     const createPaymentIntentParams: Stripe.PaymentIntentCreateParams = {
       amount,
       currency: paymentConfig.defaultCurrency,
@@ -447,7 +448,7 @@ const submitEncryptModeForm: ControllerHandler<
       automatic_payment_methods: {
         enabled: true,
       },
-      description: paymentReceiptDescription,
+      description: form.payments_field.description,
       receipt_email: paymentReceiptEmail,
       metadata,
     }
@@ -456,7 +457,7 @@ const submitEncryptModeForm: ControllerHandler<
     try {
       paymentIntent = await stripe.paymentIntents.create(
         createPaymentIntentParams,
-        { stripeAccount: form.payments_channel.target_account_id },
+        { stripeAccount: targetAccountId },
       )
     } catch (err) {
       logger.error({
@@ -503,7 +504,7 @@ const submitEncryptModeForm: ControllerHandler<
       // Cancel the payment intent if saving the document fails.
       try {
         await stripe.paymentIntents.cancel(paymentIntent.id, {
-          stripeAccount: form.payments_channel.target_account_id,
+          stripeAccount: targetAccountId,
         })
       } catch (stripeErr) {
         logger.error({

@@ -1,3 +1,6 @@
+import { setupApp } from '__tests__/integration/helpers/express-setup'
+import { buildCelebrateError } from '__tests__/unit/backend/helpers/celebrate'
+import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { ObjectId } from 'mongodb'
 import { errAsync } from 'neverthrow'
 import supertest, { Session } from 'supertest-session'
@@ -7,10 +10,6 @@ import {
   DuplicateFeedbackSubmissionError,
   InvalidSubmissionIdError,
 } from 'src/app/modules/feedback/feedback.errors'
-
-import { setupApp } from 'tests/integration/helpers/express-setup'
-import { buildCelebrateError } from 'tests/unit/backend/helpers/celebrate'
-import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import { FormStatus } from '../../../../../../../shared/types'
 import * as FormService from '../../../../../modules/form/form.service'

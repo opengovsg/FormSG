@@ -5,7 +5,7 @@ import mongoose from 'mongoose'
 
 import config from 'src/app/config/config'
 
-import dbHandler from '../../../../../tests/unit/backend/helpers/jest-db'
+import dbHandler from '../../../../../__tests__/unit/backend/helpers/jest-db'
 
 jest.mock('src/app/config/config')
 const MockConfig = jest.mocked(config)

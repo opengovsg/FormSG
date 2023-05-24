@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
+import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { ObjectId } from 'bson-ext'
 import { omit } from 'lodash'
 import moment from 'moment-timezone'
@@ -11,8 +12,6 @@ import {
   IPopulatedForm,
   IUserSchema,
 } from 'src/types'
-
-import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import { FormAuthType } from '../../../../shared/types'
 
