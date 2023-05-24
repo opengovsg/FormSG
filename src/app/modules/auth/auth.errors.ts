@@ -25,9 +25,3 @@ export class MissingTokenError extends ApplicationError {
     super(message)
   }
 }
-
-export class MissingUserError extends ApplicationError {
-  constructor(message = 'User ID not found') {
-    super(message)
-  }
-}

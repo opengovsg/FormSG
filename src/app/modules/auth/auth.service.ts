@@ -37,9 +37,8 @@ import {
   InvalidOtpError,
   InvalidTokenError,
   MissingTokenError,
-  MissingUserError,
 } from './auth.errors'
-import { API_KEY_SEPARATOR, DEFAULT_SALT_ROUNDS } from './constants'
+import { DEFAULT_SALT_ROUNDS } from './constants'
 
 const logger = createLoggerWithLabel(module)
 const TokenModel = getTokenModel(mongoose)
@@ -358,33 +357,18 @@ export const getFormIfPublic = (
  * @returns err(MissingUserError) if user does not exist in the database
  */
 export const getUserByApiKey = (
-  apiKey: string,
+  userId: string,
+  token: string,
 ): ResultAsync<IUserSchema, Error> => {
-  const { userId, key } = getUserIdAndKeyFromApiKey(apiKey)
-  if (!userId) return errAsync(new MissingUserError())
   return findUserById(userId).andThen((user) => {
     if (!user.apiKeyHash) {
       return errAsync(new MissingTokenError())
     }
-    return compareHash(key, user.apiKeyHash ?? '').andThen((isHashMatch) => {
+    return compareHash(token, user.apiKeyHash ?? '').andThen((isHashMatch) => {
       if (isHashMatch) return okAsync(user)
       return errAsync(new InvalidTokenError())
     })
   })
-}
-
-/**
- * Hashes the API key using a pre-defined salt
- * @param apiKey API Key of the user
- * @returns ok(hash string) if API key is hashed successfully
- * @returns err(HashingError) if error occurs while hashing API key
- */
-
-const getUserIdAndKeyFromApiKey = (
-  apiKey: string,
-): { userId: string; key: string } => {
-  const [, , userId, key] = apiKey.split(API_KEY_SEPARATOR)
-  return { userId, key }
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars

@@ -70,12 +70,6 @@ export const mapRouteExternalApiError: MapRouteError = (error) => {
         statusCode: StatusCodes.UNAUTHORIZED,
         errorMessage: error.message,
       }
-    case AuthErrors.MissingUserError:
-      return {
-        statusCode: StatusCodes.UNAUTHORIZED,
-        errorMessage: error.message,
-      }
-
     default:
       logger.error({
         message: 'Unknown route error observed',
