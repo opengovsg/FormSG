@@ -1,16 +1,19 @@
 import { useCallback } from 'react'
-import Stripe from 'stripe'
 
 import Button from '~components/Button'
 
 import { useMutateStripeAccount } from '../../mutations'
 
+export const enum StripeConnectButtonStates {
+  DISABLED,
+  ENABLED,
+  LINKED,
+}
+
 export const StripeConnectButton = ({
-  stripeAccount,
-  isDisabled = false,
+  connectState,
 }: {
-  stripeAccount?: Stripe.Response<Stripe.Account> | null
-  isDisabled?: boolean
+  connectState: StripeConnectButtonStates
 }): JSX.Element => {
   const { linkStripeAccountMutation, unlinkStripeAccountMutation } =
     useMutateStripeAccount()
@@ -30,10 +33,10 @@ export const StripeConnectButton = ({
     [unlinkStripeAccountMutation],
   )
 
-  if (!stripeAccount) {
+  if (connectState !== StripeConnectButtonStates.LINKED) {
     return (
       <Button
-        isDisabled={isDisabled}
+        isDisabled={connectState === StripeConnectButtonStates.DISABLED}
         isLoading={linkStripeAccountMutation.isLoading}
         onClick={onLinkAccountClick}
         colorScheme="primary"
@@ -41,15 +44,15 @@ export const StripeConnectButton = ({
         Connect with my Stripe account
       </Button>
     )
+  } else {
+    return (
+      <Button
+        colorScheme="danger"
+        onClick={onUnlinkAccountClick}
+        isLoading={unlinkStripeAccountMutation.isLoading}
+      >
+        Disconnect Stripe
+      </Button>
+    )
   }
-
-  return (
-    <Button
-      colorScheme="danger"
-      onClick={onUnlinkAccountClick}
-      isLoading={unlinkStripeAccountMutation.isLoading}
-    >
-      Disconnect Stripe
-    </Button>
-  )
 }
