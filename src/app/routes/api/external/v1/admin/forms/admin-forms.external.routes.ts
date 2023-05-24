@@ -10,9 +10,6 @@ export const AdminFormsExternalRouter = Router()
 // All routes in this handler should be protected by authentication.
 AdminFormsExternalRouter.use(authenticateApiKey)
 
-// Log all non-get admin form actions
-// AdminFormsExternalRouter.use('/:formId([a-fA-F0-9]{24})', logAdminAction)
-
 AdminFormsExternalRouter.route('/')
   /**
    * List the forms managed by the user
