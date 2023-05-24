@@ -81,7 +81,11 @@ PaymentsRouter.route('/:formId([a-fA-F0-9]{24})/payments/previous').post(
   PaymentsController.handleGetPreviousPaymentId,
 )
 
+/**
+ * Protected routes for CRON job. Not really REST style, more like RPC style.
+ */
 const ProtectedPaymentRoutes = PaymentsRouter.use(
+  '/reconcile',
   withCronPaymentSecretAuthentication,
 )
 
@@ -89,19 +93,24 @@ const ProtectedPaymentRoutes = PaymentsRouter.use(
  * Get all payments in incomplete state (Pending or Failed) which need to be
  * reconciled.
  * @protected
- * @route GET /payments/incompletePayments
+ * @route GET /payments/reconcile/incompletePayments
+ *
+ * @returns 200 with found payment records
+ * @returns 500 if there were unexpected errors in retrieving payment data
  */
 ProtectedPaymentRoutes.route('/incompletePayments').get(
   StripeController.getIncompletePayments,
 )
 
 /**
+ * Reconciles all payments within an account by re-processing all undelivered
+ * events.
  * @protected
- * @route POST /payments/reconcileAccount
+ * @route POST /payments/reconcile/account/:stripeAccount
  *
- * @params stripeAccountId: string
- * @params daysAgo: optional number
+ * @returns 200 with two report arrays, one for event processing and another for payment status verification
+ * @returns 500 if there were unexpected errors in retrieving data from Stripe
  */
-ProtectedPaymentRoutes.route('/reconcileAccount').post(
+ProtectedPaymentRoutes.route('/account/:stripeAccount').post(
   StripeController.reconcileAccount,
 )

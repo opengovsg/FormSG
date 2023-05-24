@@ -4,22 +4,23 @@ import axios from 'axios'
 import { celebrate, Joi, Segments } from 'celebrate'
 import { StatusCodes } from 'http-status-codes'
 import get from 'lodash/get'
-import mongoose from 'mongoose'
-import { errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
+import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 import Stripe from 'stripe'
 
-import { IPopulatedForm } from 'src/types'
-
-import { ErrorDto, GetPaymentInfoDto } from '../../../../shared/types'
-import { IPaymentSchema } from '../../../types'
+import {
+  ErrorDto,
+  GetPaymentInfoDto,
+  IncompletePaymentsDto,
+  ReconciliationEventsReportLine,
+  ReconciliationReport,
+} from '../../../../shared/types'
+import { IPopulatedForm } from '../../../types'
 import config from '../../config/config'
 import { paymentConfig } from '../../config/features/payment.config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { stripe } from '../../loaders/stripe'
-import getPaymentModel from '../../models/payment.server.model'
 import { generatePdfFromHtml } from '../../utils/convert-html-to-pdf'
 import { createReqMeta } from '../../utils/request'
-import { ApplicationError } from '../core/core.errors'
 import { ControllerHandler } from '../core/core.types'
 import * as FormService from '../form/form.service'
 import * as PendingSubmissionModel from '../pending-submission/pending-submission.service'
@@ -32,21 +33,15 @@ import {
   StripeMetadataIncorrectEnvError,
 } from './stripe.errors'
 import * as StripeService from './stripe.service'
-import {
-  convertToInvoiceFormat,
-  getChargeIdFromNestedCharge,
-  getMetadataPaymentId,
-  mapRouteError,
-} from './stripe.utils'
+import { convertToInvoiceFormat, mapRouteError } from './stripe.utils'
 
 const logger = createLoggerWithLabel(module)
-const PaymentModel = getPaymentModel(mongoose)
 
 /**
  * Middleware which validates that a request came from Stripe webhook by
  * checking the presence of Stripe-Signature in request header
  */
-const validateStripeEvent = celebrate({
+const validateStripeWebhook = celebrate({
   [Segments.HEADERS]: Joi.object({
     'stripe-signature': Joi.string().required(),
   }).unknown(),
@@ -63,14 +58,13 @@ const validateStripeEvent = celebrate({
  * @returns 422 if any errors occurs in processing the webhook or saving payment to DB
  * @returns 500 if any unexpected errors occur
  */
-const _handleStripeEventUpdates: ControllerHandler<
-  unknown,
+const _handleStripeEventFromWebhook: ControllerHandler<
+  never,
   void | ErrorDto,
   string
 > = async (req, res) => {
   // Step 1: Verify the payload and ensure that it is indeed sent from Stripe.
   // See https://stripe.com/docs/webhooks/signatures
-
   const sig = req.headers['stripe-signature']
   if (!sig) return res.sendStatus(StatusCodes.BAD_REQUEST)
 
@@ -84,23 +78,22 @@ const _handleStripeEventUpdates: ControllerHandler<
       sig,
       paymentConfig.stripeWebhookSecret,
     ) as Stripe.DiscriminatedEvent
-  } catch (e) {
+  } catch (error) {
     // Throws Stripe.errors.StripeSignatureVerificationError
     logger.error({
       message: 'Received invalid request from Stripe webhook endpoint',
       meta: {
-        action: 'handleStripeEventUpdates',
+        action: 'handleStripeEventFromWebhook',
         req: req.body,
-        error: e,
+        error,
       },
     })
     return res.sendStatus(StatusCodes.BAD_REQUEST)
   }
 
   // Step 2: Received event, proceed to process it.
-
   const logMeta = {
-    action: 'handleStripeEventUpdates',
+    action: 'handleStripeEventFromWebhook',
     event,
   }
 
@@ -109,154 +102,32 @@ const _handleStripeEventUpdates: ControllerHandler<
     meta: logMeta,
   })
 
-  let result: Result<IPaymentSchema | void, ApplicationError> = ok(undefined)
-
-  switch (event.type) {
-    // We catch all payment_intent, charge and payout events, except the
-    // following ignored event types (as associated features are not supported):
-    // - charge.captured, charge.expired (only for capture flow)
-    // - charge.updated (descriptions or metadata are updated)
-    // - payment_intent.amount_capturable_updated (only for capture flow)
-    // - payment_intent.partially_funded (only occurs when payment intents are
-    //   completed in part by customer stripe account balance)
-    case 'payment_intent.canceled':
-    case 'payment_intent.created':
-    case 'payment_intent.payment_failed':
-    case 'payment_intent.processing':
-    case 'payment_intent.requires_action':
-    case 'payment_intent.succeeded':
-    case 'charge.failed':
-    case 'charge.pending':
-    case 'charge.refunded':
-    case 'charge.succeeded': {
-      result = await getMetadataPaymentId(
-        event.data.object.metadata,
-      ).asyncAndThen((paymentId) =>
-        StripeService.processStripeEvent(paymentId, event).andThen(() => {
-          if (event.type !== 'charge.succeeded') return okAsync(undefined)
-
-          return PaymentService.performPaymentPostSubmissionActions(paymentId)
-            .andThen(() => okAsync(undefined))
-            .orElse((e) => {
-              logger.warn({
-                message: 'Payment confirmation email not sent',
-                meta: logMeta,
-              })
-              return errAsync(e)
-            })
-        }),
-      )
-      break
-    }
-    case 'charge.dispute.closed':
-    case 'charge.dispute.created':
-    case 'charge.dispute.funds_reinstated':
-    case 'charge.dispute.funds_withdrawn':
-    case 'charge.dispute.updated': {
-      const chargeIdLatest = getChargeIdFromNestedCharge(
-        event.data.object.charge,
-      )
-
-      const payment = await PaymentModel.findOne({ chargeIdLatest })
-      if (!payment) {
-        logger.warn({
-          message: 'Received dispute event with unknown latest charge id',
-          meta: { ...logMeta, chargeIdLatest },
+  // Step 3: Process the event
+  await StripeService.handleStripeEvent(event)
+    // Step 4: Return response to Stripe based on result
+    .match(
+      () => res.sendStatus(StatusCodes.OK),
+      (error) => {
+        if (error instanceof StripeMetadataIncorrectEnvError) {
+          // Intercept this error and return 202 Accepted instead, indicating
+          // the request will be processed by another environment server.
+          return res.sendStatus(StatusCodes.ACCEPTED)
+        }
+        // Additional logging with error details
+        logger.error({
+          message: 'Error thrown in Stripe webhook event handler',
+          meta: logMeta,
+          error,
         })
-        return res.sendStatus(StatusCodes.BAD_REQUEST)
-      }
-
-      result = await StripeService.processStripeEvent(payment.id, event)
-      break
-    }
-    case 'charge.refund.updated': {
-      if (!event.data.object.charge) {
-        logger.warn({
-          message: 'Received Stripe event charge.refund.updated with no charge',
-          meta: { ...logMeta, chargeIdLatest: event.data.object.charge },
-        })
-        return res.sendStatus(StatusCodes.BAD_REQUEST)
-      }
-
-      const chargeIdLatest = getChargeIdFromNestedCharge(
-        event.data.object.charge,
-      )
-
-      const payment = await PaymentModel.findOne({ chargeIdLatest })
-      if (!payment) {
-        logger.warn({
-          message:
-            'Received refund updated event with unknown latest charge id',
-          meta: { ...logMeta, chargeIdLatest },
-        })
-        return res.sendStatus(StatusCodes.BAD_REQUEST)
-      }
-
-      result = await StripeService.processStripeEvent(payment.id, event)
-      break
-    }
-    case 'payout.canceled':
-    case 'payout.created':
-    case 'payout.failed':
-    case 'payout.paid':
-    case 'payout.updated':
-    case 'payout.reconciliation_completed': {
-      // Retrieve the list of balance transactions related to this payout, and
-      // associate the payout with the set of charges it pays out for
-      await stripe.balanceTransactions
-        .list(
-          { payout: event.data.object.id, expand: ['data.source'] },
-          { stripeAccount: event.account },
-        )
-        .autoPagingEach(async (balanceTransaction) => {
-          if (balanceTransaction.type !== 'charge') return
-
-          const charge = balanceTransaction.source as Stripe.Charge
-          const innerResult = await getMetadataPaymentId(
-            charge.metadata,
-          ).asyncAndThen((paymentId) =>
-            StripeService.processStripeEvent(paymentId, event),
-          )
-
-          // Reducer to keep errors around
-          result = result.isOk() ? innerResult : result
-        })
-
-      break
-    }
-    default:
-      // Ignore all other events
-      logger.warn({
-        message: 'Received Stripe event from webhook with unknown event.type',
-        meta: logMeta,
-      })
-      break
-  }
-
-  // Step 4: Return response to Stripe based on result
-  result.match(
-    () => res.sendStatus(StatusCodes.OK),
-    (error) => {
-      if (error instanceof StripeMetadataIncorrectEnvError) {
-        // Intercept this error and return 202 Accepted instead, indicating
-        // the request will be processed by another environment server.
-        return res.sendStatus(StatusCodes.ACCEPTED)
-      }
-      // Additional logging with error details
-      logger.error({
-        message: 'Error thrown in webhook handler',
-        meta: logMeta,
-        error,
-      })
-      const { errorMessage, statusCode } = mapRouteError(error)
-      return res.status(statusCode).json({ message: errorMessage })
-    },
-  )
+        const { errorMessage, statusCode } = mapRouteError(error)
+        return res.status(statusCode).json({ message: errorMessage })
+      },
+    )
 }
 
-export const handleStripeEventUpdates = [
-  validateStripeEvent,
-  _handleStripeEventUpdates,
+export const handleStripeEventFromWebhook = [
+  validateStripeWebhook,
+  _handleStripeEventFromWebhook,
 ]
 
 export const checkPaymentReceiptStatus: ControllerHandler<{
@@ -287,35 +158,6 @@ export const checkPaymentReceiptStatus: ControllerHandler<{
         return res.status(StatusCodes.NOT_FOUND).json({ isReady: false })
       }
       return res.status(StatusCodes.OK).json({ isReady: true })
-
-      // no payment found, perhaps webhook from stripe has not arrived
-      // trigger a manual sync flow
-      // TODO: manual sync flow not available after https://github.com/opengovsg/FormSG/pull/5937
-      // return StripeService.getPaymentFromLatestSuccessfulCharge(
-      //   formId,
-      //   paymentId,
-      // )
-      //   .map((payment) => {
-      //     // has confirmedPayment but no receiptUrl, system is desync-ed
-      //     if (!payment.completedPayment?.receiptUrl) {
-      //       logger.error({
-      //         message: 'has confirmedPayment but no receiptUrl',
-      //         meta: {
-      //           action: 'checkPaymentReceiptStatus',
-      //           payment,
-      //           paymentId,
-      //           formId,
-      //         },
-      //       })
-      //       return res
-      //         .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      //         .json({ message: 'Missing receipt url' })
-      //     }
-      //     return res.status(StatusCodes.OK).json({ isReady: true })
-      //   })
-      //   .mapErr((error) => {
-      //     return res.status(StatusCodes.NOT_FOUND).json({ message: error })
-      //   })
     })
     .mapErr((error) => {
       return res.status(StatusCodes.NOT_FOUND).json({ message: error })
@@ -631,160 +473,111 @@ export const getPaymentInfo: ControllerHandler<
 }
 
 /**
- * Handler for GET /payments/incompletePayments
+ * Handler for GET /payments/reconcile/incompletePayments
  * Retrieves payments that are in Pending or Failed states
  *
  * @returns 200 with found payment records
  * @returns 500 if there were unexpected errors in retrieving payment data
  */
-export const getIncompletePayments: ControllerHandler = (_req, res) => {
+export const getIncompletePayments: ControllerHandler<
+  never,
+  IncompletePaymentsDto | ErrorDto
+> = (_req, res) => {
   return PaymentService.getIncompletePayments()
     .andThen((payments) =>
       ResultAsync.combine(
         payments.map((payment) =>
           okAsync({
             stripeAccount: payment.targetAccountId,
-            paymentIntentId: payment.paymentIntentId,
             paymentId: payment._id,
-            paymentCreationTime: payment.created,
           }),
         ),
       ),
     )
-    .map((results) => {
-      return res
-        .status(StatusCodes.OK)
-        .json({ data: results, count: results.length })
+    .map((paymentMetas) => {
+      return res.status(StatusCodes.OK).json(paymentMetas)
     })
     .mapErr((error) => {
       return res
         .status(StatusCodes.INTERNAL_SERVER_ERROR)
-        .json({ message: error })
+        .json({ message: error.message })
     })
 }
 
 /**
- * Handler for POST /payments/reconcileAccount
+ * Handler for POST /payments/reconcile/account/:stripeAccount
  * Fetches undelivered stripe webhooks and replays event for the supplied account
  *
- * @returns 200 with array of processed and failed events
- * @returns 500 if there were unexpected errors in retrieving stripe events
+ * @param {string} stripeAccount the Stripe account id of the account to be reconciles
+ * @body {string[]} paymentIds
+ *
+ * @returns 200 with two report arrays, one for event processing and another for payment status verification
+ * @returns 500 if there were unexpected errors in retrieving data from Stripe
  */
 export const reconcileAccount: ControllerHandler<
-  unknown,
-  unknown,
-  {
-    stripeAccountId: string
-    daysAgo: number
-    // paymentIntentId: string
-    // paymentId: string
-  }
+  { stripeAccount: string },
+  ReconciliationReport | ErrorDto,
+  { paymentIds: string[] }
 > = (req, res) => {
-  const { stripeAccountId, daysAgo } = req.body
+  const { stripeAccount } = req.params
+  const { paymentIds } = req.body
+
+  const logMeta = {
+    action: 'reconcileAccount',
+    stripeAccount,
+  }
 
   logger.info({
-    message: 'reconcileAccount endpoint called',
-    meta: {
-      action: 'reconcileAccount',
-      agentinfo: stripeAccountId,
-    },
+    message: 'Reconciling account started',
+    meta: logMeta,
   })
 
-  const results: Array<{
-    payment: IPaymentSchema
-    event:
-      | Stripe.DiscriminatedEvent.PaymentIntentEvent
-      | Stripe.DiscriminatedEvent.ChargeEvent
-  }> = []
-  const failedResults: Array<{
-    type: string
-    paymentId: string
-    err: ApplicationError
-    event:
-      | Stripe.DiscriminatedEvent.PaymentIntentEvent
-      | Stripe.DiscriminatedEvent.ChargeEvent
-  }> = []
+  const eventsReport: ReconciliationEventsReportLine[] = []
 
-  return StripeService.getUndeliveredPaymentIntentSuccessEventsFromAccount(
-    stripeAccountId,
-    async (_event) => {
-      const event = _event as
-        | Stripe.DiscriminatedEvent.PaymentIntentEvent
-        | Stripe.DiscriminatedEvent.ChargeEvent
-
-      logger.info({
-        message: 'received event',
-        meta: {
-          action:
-            'reconcileAccount getUndeliveredPaymentIntentSuccessEventsFromAccount',
-          event,
-        },
-      })
-      return getMetadataPaymentId(event.data.object.metadata)
-        .asyncAndThen((paymentId) => {
-          return StripeService.processStripeEvent(paymentId, event)
-            .andThen(() => PaymentService.findPaymentById(paymentId))
-            .andThen((result) => {
-              results.push({ payment: result, event })
-              logger.info({
-                message: 'processed stripe event',
-                meta: {
-                  action: 'reconcileAccount StripeService.processStripeEvent',
-                  result,
-                },
-              })
-              return ok(undefined)
-            })
-            .orElse((err) => {
-              failedResults.push({
-                type: 'from StripeService.processStripeEvent',
-                paymentId,
-                err,
-                event,
-              })
-
-              logger.info({
-                message: 'failed to process stripe event',
-                meta: {
-                  action: 'reconcileAccount StripeService.processStripeEvent',
-                  err,
-                },
-              })
-              return ok(undefined)
-            })
-        })
-        .mapErr((err) => {
-          failedResults.push({
-            type: 'from getMetadataPaymentId',
-            paymentId: '',
-            err,
+  return StripeService.getUndeliveredStripeEventsForAccount(stripeAccount)
+    .forEach(async (event) => {
+      await StripeService.handleStripeEvent(event as Stripe.DiscriminatedEvent)
+        .andThen(() => {
+          logger.warn({
+            message:
+              'Successfully processed Stripe event while reconciling account',
+            meta: { ...logMeta, event },
+          })
+          eventsReport.push({
             event,
           })
+          return okAsync(undefined)
         })
-    },
-    daysAgo,
-  )
-    .map(() => {
-      const formattedResults = results.map((res) => ({
-        status: res.payment.status,
-        paymentIntentId: res.payment.paymentIntentId,
-        paymentId: res.payment._id,
-        eventId: res.event.id,
-        eventCreated: res.event.created,
-        eventType: res.event.type,
-      }))
-      const formattedFailedResults = failedResults.map((paymentId) => ({
-        paymentId,
-      }))
-      return res.status(StatusCodes.OK).json({
-        data: {
-          processed: formattedResults,
-          failed: formattedFailedResults,
-        },
-        count: formattedResults.length + formattedFailedResults.length,
-      })
+        .orElse((error) => {
+          if (error instanceof StripeMetadataIncorrectEnvError) {
+            // Intercept this as it is not really an error. Ignore it as it was
+            // never meant for this environment anyway.
+            return okAsync(undefined)
+          }
+          logger.error({
+            message: 'Failed to process Stripe event while reconciling account',
+            meta: { ...logMeta, event },
+            error,
+          })
+          eventsReport.push({
+            event,
+            error: error.message,
+          })
+          return okAsync(undefined)
+        })
     })
-    .mapErr((error) => {
-      return res.status(StatusCodes.BAD_REQUEST).json({ message: error })
-    })
+    .andThen(() =>
+      // Validate all the associated payments with Stripe
+      ResultAsync.combine(
+        paymentIds.map(StripeService.verifyPaymentStatusWithStripe),
+      ),
+    )
+    .match(
+      (reconciliationReport) =>
+        res.status(StatusCodes.OK).json({ eventsReport, reconciliationReport }),
+      (error) =>
+        res
+          .status(StatusCodes.INTERNAL_SERVER_ERROR)
+          .json({ message: error.message }),
+    )
 }
