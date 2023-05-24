@@ -36,7 +36,7 @@ export const createEncryptedSubmissionData = async (
   formFields: FormFieldDto[],
   formInputs: FormFieldValues,
   publicKey: string,
-  responseMetadata: ResponseMetadata,
+  responseMetadata?: ResponseMetadata,
   paymentReceiptEmail?: string,
 ): Promise<StorageModeSubmissionContentDto> => {
   const responses = createResponsesArray(formFields, formInputs)
@@ -71,7 +71,7 @@ export const createEncryptedSubmissionData = async (
 export const createEmailSubmissionFormData = (
   formFields: FormFieldDto[],
   formInputs: FormFieldValues,
-  responseMetadata: ResponseMetadata,
+  responseMetadata?: ResponseMetadata,
 ) => {
   const responses = createResponsesArray(formFields, formInputs)
   const attachments = getAttachmentsMap(formFields, formInputs)

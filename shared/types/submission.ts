@@ -187,7 +187,7 @@ export type StorageModeSubmissionContentDto = {
   attachments?: StorageModeAttachmentsMap
   paymentReceiptEmail?: string
   version: number
-  responseMetadata: ResponseMetadata
+  responseMetadata?: ResponseMetadata
 }
 
 export type PaymentSubmissionData = {

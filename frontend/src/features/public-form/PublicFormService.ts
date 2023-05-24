@@ -81,7 +81,7 @@ export type SubmitEmailFormArgs = {
   formFields: FormFieldDto[]
   formLogics: FormDto['form_logics']
   formInputs: FormFieldValues
-  responseMetadata: ResponseMetadata
+  responseMetadata?: ResponseMetadata
   paymentReceiptEmail?: string
 }
 
