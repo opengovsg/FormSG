@@ -209,7 +209,6 @@ const configureAws = async () => {
 const apiEnv = isDev ? 'test' : 'live'
 const externalApiConfig: ExternalApiConfig = {
   apiEnv,
-  apiKeySalt: basicVars.externalApi.apiKeySalt,
   apiKeyVersion: basicVars.externalApi.apiKeyVersion,
 }
 
