@@ -99,7 +99,7 @@ export const validateVerifyOtpParams = celebrate({
 /**
  * Middleware that only allows users with a valid bearer token to pass through to the next handler
  */
-export const authenticateApiKey: ControllerHandler<unknown, unknown, any> = (
+export const authenticateApiKey: ControllerHandler<unknown, unknown> = (
   req,
   res,
   next,
@@ -123,7 +123,7 @@ export const authenticateApiKey: ControllerHandler<unknown, unknown, any> = (
           .status(StatusCodes.UNAUTHORIZED)
           .json({ message: 'Invalid API key' })
       }
-      res.locals.userId = user.id
+      req.body.formSg = { userId: user.id }
       return next()
     })
     .mapErr((error) => {

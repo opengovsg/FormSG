@@ -200,10 +200,9 @@ export const handleListDashboardForms: ControllerHandler<
   unknown,
   AdminDashboardFormMetaDto[] | ErrorDto
 > = async (req, res) => {
-  // console.log('res.locals.userId', res.locals.userId)
   let authedUserId: string
-  if (res.locals.userId) {
-    authedUserId = res.locals.userId as string
+  if (req.body.formSg?.userId) {
+    authedUserId = req.body.formSg?.userId
   } else {
     authedUserId = (req.session as AuthedSessionData).user._id
   }

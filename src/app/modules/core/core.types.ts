@@ -9,7 +9,7 @@ export type ErrorResponseData = {
 export type ControllerHandler<
   P = unknown,
   ResBody = unknown,
-  ReqBody = unknown,
+  ReqBody = { formSg?: { userId?: string } },
   ReqQuery = unknown,
   Locals extends Record<string, unknown> = Record<string, unknown>,
 > = RequestHandler<P, ResBody, ReqBody, ReqQuery, Locals>
