@@ -7,11 +7,10 @@ import { createReqMeta } from '../../utils/request'
 import { ControllerHandler } from '../core/core.types'
 
 import { getUserByApiKey } from './auth.service'
-import { isUserInSession, mapRouteError } from './auth.utils'
+import { isUserInSession, mapRouteExternalApiError } from './auth.utils'
+import { API_KEY_SEPARATOR, BEARER_SEPARATOR, BEARER_STRING } from './constants'
 
 const logger = createLoggerWithLabel(module)
-const BEARER_STRING = 'Bearer'
-const BEARER_SEPARATOR = ' '
 
 /**
  * Middleware that only allows authenticated users to pass through to the next
@@ -113,8 +112,14 @@ export const authenticateApiKey: ControllerHandler<unknown, unknown> = (
   const [bearerString, apiKey] = authorizationHeader.split(BEARER_SEPARATOR)
   if (bearerString !== BEARER_STRING) {
     return res
-      .status(StatusCodes.UNAUTHORIZED)
+      .status(StatusCodes.BAD_REQUEST)
       .json({ message: 'Invalid authorisation header format' })
+  }
+  const apiKeyComponents = apiKey.split(API_KEY_SEPARATOR)
+  if (apiKeyComponents.length !== 4) {
+    return res
+      .status(StatusCodes.BAD_REQUEST)
+      .json({ message: 'Invalid API key format' })
   }
   return getUserByApiKey(apiKey)
     .map((user) => {
@@ -127,7 +132,7 @@ export const authenticateApiKey: ControllerHandler<unknown, unknown> = (
       return next()
     })
     .mapErr((error) => {
-      const { errorMessage, statusCode } = mapRouteError(error)
+      const { errorMessage, statusCode } = mapRouteExternalApiError(error)
       return res.status(statusCode).json({ message: errorMessage })
     })
 }

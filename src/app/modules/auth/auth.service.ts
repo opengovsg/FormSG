@@ -32,14 +32,19 @@ import {
 import * as FormService from '../form/form.service'
 import { findUserById } from '../user/user.service'
 
-import { InvalidDomainError, InvalidOtpError } from './auth.errors'
+import {
+  InvalidDomainError,
+  InvalidOtpError,
+  InvalidTokenError,
+  MissingTokenError,
+  MissingUserError,
+} from './auth.errors'
+import { API_KEY_SEPARATOR, DEFAULT_SALT_ROUNDS } from './constants'
 
 const logger = createLoggerWithLabel(module)
 const TokenModel = getTokenModel(mongoose)
 const AgencyModel = getAgencyModel(mongoose)
 
-export const API_KEY_SEPARATOR = '_'
-export const DEFAULT_SALT_ROUNDS = 1
 export const MAX_OTP_ATTEMPTS = 10
 
 /**
@@ -356,15 +361,14 @@ export const getUserByApiKey = (
   apiKey: string,
 ): ResultAsync<IUserSchema, Error> => {
   const { userId, key } = getUserIdAndKeyFromApiKey(apiKey)
-  console.log('userId getUserByApiKey:', userId)
+  if (!userId) return errAsync(new MissingUserError())
   return findUserById(userId).andThen((user) => {
-    console.log('findUserById: ', user)
     if (!user.apiKeyHash) {
-      return errAsync(new Error('User has no API key hash'))
+      return errAsync(new MissingTokenError())
     }
     return compareHash(key, user.apiKeyHash ?? '').andThen((isHashMatch) => {
       if (isHashMatch) return okAsync(user)
-      return errAsync(new Error('no hash match'))
+      return errAsync(new InvalidTokenError())
     })
   })
 }

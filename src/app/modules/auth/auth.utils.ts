@@ -52,6 +52,45 @@ export const mapRouteError: MapRouteError = (error, coreErrorMessage) => {
   }
 }
 
+/**
+ * Handler to map ApplicationErrors to their correct status code and error
+ * messages.
+ * @param error The error to retrieve the status codes and error messages
+ * @param coreErrorMessage Any error message to return instead of the default core error message, if any
+ */
+export const mapRouteExternalApiError: MapRouteError = (error) => {
+  switch (error.constructor) {
+    case AuthErrors.InvalidTokenError:
+      return {
+        statusCode: StatusCodes.UNAUTHORIZED,
+        errorMessage: error.message,
+      }
+    case AuthErrors.MissingTokenError:
+      return {
+        statusCode: StatusCodes.UNAUTHORIZED,
+        errorMessage: error.message,
+      }
+    case AuthErrors.MissingUserError:
+      return {
+        statusCode: StatusCodes.UNAUTHORIZED,
+        errorMessage: error.message,
+      }
+
+    default:
+      logger.error({
+        message: 'Unknown route error observed',
+        meta: {
+          action: 'mapRouteError',
+        },
+        error,
+      })
+      return {
+        statusCode: StatusCodes.UNAUTHORIZED,
+        errorMessage: 'Something went wrong. Please try again.',
+      }
+  }
+}
+
 export const isUserInSession = (
   session?: SessionData,
 ): session is AuthedSessionData => {
