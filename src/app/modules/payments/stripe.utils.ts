@@ -169,7 +169,18 @@ const chargeStateReducer = (
         state.status = PaymentStatus.Succeeded
         state.chargeIdLatest = event.data.object.id
       } else if (event.type === 'payment_intent.canceled') {
-        state.status = PaymentStatus.Canceled
+        // Verify that the latest charge in the payment intent object is correct
+        const latestCharge = event.data.object.latest_charge
+        const chargeIdLatest = !latestCharge
+          ? undefined
+          : typeof latestCharge === 'string'
+          ? latestCharge
+          : latestCharge.id
+        if (state.chargeIdLatest === chargeIdLatest) {
+          state.status = PaymentStatus.Canceled
+        } else {
+          state.status = null
+        }
       } else {
         state.status = null
       }

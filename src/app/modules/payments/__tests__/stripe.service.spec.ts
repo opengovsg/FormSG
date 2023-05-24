@@ -332,7 +332,11 @@ describe('stripe.service', () => {
       await Payment.updateOne(
         { _id: payment._id },
         {
-          webhookLog: [MOCK_STRIPE_EVENTS_MAP['evt_PAYMENT_INTENT_CREATED']],
+          webhookLog: [
+            MOCK_STRIPE_EVENTS_MAP['evt_PAYMENT_INTENT_CREATED'],
+            MOCK_STRIPE_EVENTS_MAP['evt_CHARGE_FAILED'],
+            MOCK_STRIPE_EVENTS_MAP['evt_PAYMENT_INTENT_FAILED'],
+          ],
         },
       ).exec()
 
