@@ -12,10 +12,12 @@ export interface IPaymentSchema extends Payment, Document {
 }
 
 export interface IPaymentModel extends Model<IPaymentSchema> {
-  getPaymentBetweenDatesByType(
-    status: Payment['status'],
-    created_after: Payment['created'],
-  ): Promise<IPaymentSchema[]>
+  /**
+   * Gets payment documents by status
+   * @param statuses destructured list of statuses for payments to find
+   * @returns list of payment documents with status corresponding to any one of the listed statuses
+   */
+  getByStatus(...statuses: Payment['status'][]): Promise<IPaymentSchema[]>
 }
 
 export interface StripePaymentMetadataDto extends Stripe.Metadata {

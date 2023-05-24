@@ -1,9 +1,8 @@
-import moment from 'moment'
 import { ObjectId } from 'mongodb'
 import mongoose from 'mongoose'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 
-import { DateString, PaymentStatus } from '../../../../shared/types'
+import { PaymentStatus } from '../../../../shared/types'
 import { IPaymentSchema } from '../../../types'
 import { createLoggerWithLabel } from '../../config/logger'
 import getPaymentModel from '../../models/payment.server.model'
@@ -12,12 +11,7 @@ import { getMongoErrorMessage } from '../../utils/handle-mongo-error'
 import { DatabaseError } from '../core/core.errors'
 import { FormNotFoundError } from '../form/form.errors'
 import { retrieveFormById } from '../form/form.service'
-import * as FormService from '../form/form.service'
-import * as PendingSubmissionModel from '../pending-submission/pending-submission.service'
-import {
-  checkFormIsEncryptMode,
-  performEncryptPostSubmissionActions,
-} from '../submission/encrypt-submission/encrypt-submission.service'
+import { performEncryptPostSubmissionActions } from '../submission/encrypt-submission/encrypt-submission.service'
 import { isSubmissionEncryptMode } from '../submission/encrypt-submission/encrypt-submission.utils'
 import {
   PendingSubmissionNotFoundError,
@@ -298,7 +292,6 @@ export const performPaymentPostSubmissionActions = (
     })
 }
 
-const MILLISECONDS_IN_AN_HOUR = 60 * 60 * 1000
 /**
  * Retrieves the latest payment document by email and formId.
  * @param email the email of the payment to be retrieved
@@ -339,68 +332,22 @@ export const findLatestSuccessfulPaymentByEmailAndFormId = (
 }
 
 /**
- * Retrieves payments that are in PaymentStatus.Pending satisfying X hours agos
- * @param createdHrsAgo defaults to 72
- * @returns
+ * Retrieves all payments that are in Pending or Failed statuses.
+ * @returns a list of payments that are incomplete.
  */
-
-export const findPendingPaymentsByTime = (createdHrsAgo = 72) => {
-  const logMeta = {
-    action: 'findPaymentByTime',
-    createdHrsAgo,
-  }
-  const positiveHrsAgo = Math.max(createdHrsAgo, 1)
-  const msAgo = MILLISECONDS_IN_AN_HOUR * positiveHrsAgo
-  const _createdAfter = moment
-    .tz(Date.now() - msAgo, 'Asia/Singapore')
-    .toISOString() as DateString
-
+export const getIncompletePayments = (): ResultAsync<
+  IPaymentSchema[],
+  DatabaseError
+> => {
   return ResultAsync.fromPromise(
-    PaymentModel.getPaymentBetweenDatesByType(
-      PaymentStatus.Pending,
-      _createdAfter,
-    ),
+    PaymentModel.getByStatus(PaymentStatus.Pending, PaymentStatus.Failed),
     (error) => {
       logger.error({
-        message: 'Database error while starting mongoose session',
-        meta: logMeta,
+        message: 'Database error while retrieving payments by status',
+        meta: { action: 'findIncompletePayments' },
         error,
       })
       return new DatabaseError()
     },
-  ).andThen((payments) =>
-    ResultAsync.combine(
-      payments.map((payment) =>
-        PendingSubmissionModel.findPendingSubmissionById(
-          payment.pendingSubmissionId,
-        )
-          .andThen((submission) =>
-            FormService.retrieveFullFormById(submission.form),
-          )
-          .andThen(checkFormIsEncryptMode) // Payment forms are encrypted
-          .andThen((form) => {
-            const stripeAccount = form.payments_channel?.target_account_id
-            return okAsync({
-              stripeAccount,
-              paymentIntentId: payment.paymentIntentId,
-              paymentId: payment._id,
-              paymentCreationTime: payment.created,
-            })
-          })
-          .orElse((error) => {
-            logger.warn({
-              message: `Error when resolving stripeAccount.`,
-              meta: { ...logMeta, paymentId: payment._id },
-              error,
-            })
-            return okAsync({
-              stripeAccount: '-1',
-              paymentIntentId: payment.paymentIntentId,
-              paymentId: payment._id,
-              paymentCreationTime: payment.created,
-            })
-          }),
-      ),
-    ),
   )
 }

@@ -631,27 +631,26 @@ export const getPaymentInfo: ControllerHandler<
 }
 
 /**
- * Handler for GET /payments/pendingPayments?createdHrsAgo=<number>
- * Retrieves payments that are in PaymentStatus.Pending satisfying X hours agos
+ * Handler for GET /payments/incompletePayments
+ * Retrieves payments that are in Pending or Failed states
  *
  * @returns 200 with found payment records
  * @returns 500 if there were unexpected errors in retrieving payment data
  */
-export const queryPendingPayments: ControllerHandler<
-  unknown,
-  unknown,
-  unknown,
-  {
-    createdHrsAgo: number
-    // limit: number
-  }
-> = (req, res) => {
-  const { createdHrsAgo } = req.query
-
-  return PaymentService.findPendingPaymentsByTime(
-    createdHrsAgo,
-    // limit,
-  )
+export const getIncompletePayments: ControllerHandler = (_req, res) => {
+  return PaymentService.getIncompletePayments()
+    .andThen((payments) =>
+      ResultAsync.combine(
+        payments.map((payment) =>
+          okAsync({
+            stripeAccount: payment.targetAccountId,
+            paymentIntentId: payment.paymentIntentId,
+            paymentId: payment._id,
+            paymentCreationTime: payment.created,
+          }),
+        ),
+      ),
+    )
     .map((results) => {
       return res
         .status(StatusCodes.OK)

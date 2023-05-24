@@ -84,13 +84,15 @@ PaymentsRouter.route('/:formId([a-fA-F0-9]{24})/payments/previous').post(
 const ProtectedPaymentRoutes = PaymentsRouter.use(
   withCronPaymentSecretAuthentication,
 )
+
 /**
- * @private
+ * Get all payments in incomplete state (Pending or Failed) which need to be
+ * reconciled.
  * @protected
- * @route GET /payments/pendingPayments?createdHrsAgo=<number>
+ * @route GET /payments/incompletePayments
  */
-ProtectedPaymentRoutes.route('/pendingPayments').get(
-  StripeController.queryPendingPayments,
+ProtectedPaymentRoutes.route('/incompletePayments').get(
+  StripeController.getIncompletePayments,
 )
 
 /**
