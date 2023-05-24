@@ -30,7 +30,7 @@ import {
   PrivateFormError,
 } from '../form/form.errors'
 import * as FormService from '../form/form.service'
-import { findUserByApiKeyHash } from '../user/user.service'
+import { findUserById } from '../user/user.service'
 
 import { InvalidDomainError, InvalidOtpError } from './auth.errors'
 
@@ -348,14 +348,25 @@ export const getFormIfPublic = (
 /**
  * Retrieves the user of the given API key
  *
- * @returns ok(user) if the API key matches the hashed API key in the DB
+ * @returns ok(IUserSchema) if the API key matches the hashed API key in the DB
  * @returns err(DatabaseError) if database errors occurs whilst retrieving user
  * @returns err(MissingUserError) if user does not exist in the database
  */
 export const getUserByApiKey = (
   apiKey: string,
 ): ResultAsync<IUserSchema, Error> => {
-  return getApiKeyHash(apiKey).andThen((hash) => findUserByApiKeyHash(hash))
+  const { userId, key } = getUserIdAndKeyFromApiKey(apiKey)
+  console.log('userId getUserByApiKey:', userId)
+  return findUserById(userId).andThen((user) => {
+    console.log('findUserById: ', user)
+    if (!user.apiKeyHash) {
+      return errAsync(new Error('User has no API key hash'))
+    }
+    return compareHash(key, user.apiKeyHash ?? '').andThen((isHashMatch) => {
+      if (isHashMatch) return okAsync(user)
+      return errAsync(new Error('no hash match'))
+    })
+  })
 }
 
 /**
@@ -364,10 +375,18 @@ export const getUserByApiKey = (
  * @returns ok(hash string) if API key is hashed successfully
  * @returns err(HashingError) if error occurs while hashing API key
  */
+
+const getUserIdAndKeyFromApiKey = (
+  apiKey: string,
+): { userId: string; key: string } => {
+  const [, , userId, key] = apiKey.split(API_KEY_SEPARATOR)
+  return { userId, key }
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const getApiKeyHash = (apiKey: string): ResultAsync<string, HashingError> => {
-  const [apiEnv, version, key] = apiKey.split(API_KEY_SEPARATOR)
   return ResultAsync.fromPromise(
-    bcrypt.hash(key, DEFAULT_SALT_ROUNDS),
+    bcrypt.hash(apiKey, DEFAULT_SALT_ROUNDS),
     (error) => {
       logger.error({
         message: 'bcrypt hash error',
@@ -378,13 +397,13 @@ const getApiKeyHash = (apiKey: string): ResultAsync<string, HashingError> => {
       })
       return new HashingError()
     },
-  ).map((hash) => `${apiEnv}_${version}_${hash}`)
+  ).map((hash) => `${hash}`)
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const generateApiKey = (): string => {
-  const randomString = crypto.randomBytes(32).toString('base64')
+const generateApiKey = (user: IUserSchema): string => {
+  const key = crypto.randomBytes(32).toString('base64')
   const apiEnv = config.externalApiConfig.apiEnv
   const apiKeyVersion = config.externalApiConfig.apiKeyVersion
-  return `${apiEnv}_${apiKeyVersion}_${randomString}`
+  return `${apiEnv}_${apiKeyVersion}_${user._id}_${key}`
 }
