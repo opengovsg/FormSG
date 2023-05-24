@@ -1,7 +1,7 @@
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { ObjectId } from 'bson'
 import { promises as dns } from 'dns'
-import { times } from 'lodash'
+import { merge, omit, times } from 'lodash'
 import mongoose from 'mongoose'
 
 import getSubmissionModel, {
@@ -39,6 +39,105 @@ describe('Submission Model', () => {
   const MOCK_ENCRYPTED_CONTENT = 'abcdefg encryptedContent'
   const MOCK_VERIFIED_CONTENT = 'hijklmnop verifiedContent'
   const MOCK_WEBHOOK_URL = 'https://test.web.site'
+
+  const MOCK_FORM_ID = new ObjectId()
+
+  const MOCK_SUBMISSION_PARAMS = {
+    form: MOCK_FORM_ID,
+    authType: FormAuthType.NIL,
+    myInfoFields: [],
+  }
+
+  const MOCK_EMAIL_SUBMISSION_PARAMS = merge(
+    // email schema params
+    {
+      submissionType: SubmissionType.Email,
+      recipientEmails: ['someone@something.gov.sg'],
+      responseHash: 'This is a hash',
+      responseSalt: 'This is a salt',
+      hasBounced: false,
+    },
+    MOCK_SUBMISSION_PARAMS,
+  )
+
+  const MOCK_ENCRYPT_SUBMISSION_PARAMS = merge(
+    // encrypt schema params
+    {
+      submissionType: SubmissionType.Encrypt,
+      encryptedContent: MOCK_ENCRYPTED_CONTENT,
+      verifiedContent: MOCK_VERIFIED_CONTENT,
+      version: 1,
+      webhookResponses: [],
+    },
+    MOCK_SUBMISSION_PARAMS,
+  )
+
+  describe('Schema', () => {
+    describe('SubmissionSchema', () => {
+      it('email schema should create and save successfully', async () => {
+        const validSubmission = new Submission(MOCK_EMAIL_SUBMISSION_PARAMS)
+        const saved = await validSubmission.save()
+
+        // Assert
+        expect(saved._id).toBeDefined()
+        expect(saved.created).toBeInstanceOf(Date)
+
+        const actualSavedObject = omit(saved.toObject(), [
+          '_id',
+          'created',
+          'lastModified',
+          '__v',
+        ])
+
+        const expectedObject = merge({}, MOCK_EMAIL_SUBMISSION_PARAMS)
+        expect(actualSavedObject).toEqual(expectedObject)
+      })
+
+      it('email schema should create and save successfully with responseMetadata', async () => {
+        const submissionParamWithResponseMetadata = merge(
+          { responseMetadata: { responseTimeMs: 1000, numVisibleFields: 10 } },
+          MOCK_EMAIL_SUBMISSION_PARAMS,
+        )
+        const validSubmission = new Submission(
+          submissionParamWithResponseMetadata,
+        )
+        const saved = await validSubmission.save()
+
+        // Assert
+        expect(saved._id).toBeDefined()
+        expect(saved.created).toBeInstanceOf(Date)
+        expect(saved.responseMetadata).toBeDefined()
+
+        const actualSavedObject = omit(saved.toObject(), [
+          '_id',
+          'created',
+          'lastModified',
+          '__v',
+        ])
+
+        const expectedObject = merge({}, submissionParamWithResponseMetadata)
+        expect(actualSavedObject).toEqual(expectedObject)
+      })
+      it('encrypt schema should create and save successfully', async () => {
+        const validSubmission = new Submission(MOCK_ENCRYPT_SUBMISSION_PARAMS)
+        const saved = await validSubmission.save()
+
+        // Assert
+        expect(saved._id).toBeDefined()
+        expect(saved.created).toBeInstanceOf(Date)
+
+        const actualSavedObject = omit(saved.toObject(), [
+          '_id',
+          'created',
+          'lastModified',
+          '__v',
+        ])
+
+        const expectedObject = merge({}, MOCK_ENCRYPT_SUBMISSION_PARAMS)
+        expect(actualSavedObject).toEqual(expectedObject)
+      })
+    })
+  })
 
   describe('Statics', () => {
     describe('retrieveWebhookInfoById', () => {

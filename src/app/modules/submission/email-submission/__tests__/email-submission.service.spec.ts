@@ -21,6 +21,7 @@ import {
 import {
   BasicField,
   FormAuthType,
+  ResponseMetadata,
   SubmissionType,
 } from '../../../../../../shared/types'
 import { ProcessedSingleAnswerResponse } from '../../submission.types'
@@ -330,6 +331,10 @@ describe('email-submission.service', () => {
       getUniqueMyInfoAttrs: () => MYINFO_ATTRS,
       emails: ['a@abc.com', 'b@cde.com'],
     } as IEmailFormSchema
+    const MOCK_RESPONSE_METADATA = {
+      responseTimeMs: 1000,
+      numVisibleFields: 3,
+    } as ResponseMetadata
 
     it('should create an email submission with the correct parameters', async () => {
       const mockSubmission = 'mockSubmission'
@@ -341,6 +346,7 @@ describe('email-submission.service', () => {
       const result = await EmailSubmissionService.saveSubmissionMetadata(
         MOCK_EMAIL_FORM as IPopulatedEmailForm,
         { hash: MOCK_HASH.toString(), salt: MOCK_SALT.toString() },
+        MOCK_RESPONSE_METADATA,
       )
       expect(createEmailSubmissionSpy).toHaveBeenCalledWith({
         form: MOCK_EMAIL_FORM._id,
@@ -350,6 +356,7 @@ describe('email-submission.service', () => {
         responseHash: MOCK_HASH.toString(),
         responseSalt: MOCK_SALT.toString(),
         submissionType: SubmissionType.Email,
+        responseMetadata: MOCK_RESPONSE_METADATA,
       })
       expect(result._unsafeUnwrap()).toEqual(mockSubmission)
     })
