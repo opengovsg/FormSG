@@ -48,6 +48,7 @@ const BeforeConnectionInstructions = ({
             send your Stripe account ID and raise a purchase order to Stripe.
           </Text>
         </InlineMessage>
+        {/* Stripe connect button should only be enabled when checkbox is checked. */}
         <Checkbox
           isChecked={allowConnect}
           mb="2rem"
