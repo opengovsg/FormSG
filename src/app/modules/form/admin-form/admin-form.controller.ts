@@ -53,6 +53,7 @@ import MailService from '../../../services/mail/mail.service'
 import * as SmsService from '../../../services/sms/sms.service'
 import { createReqMeta } from '../../../utils/request'
 import * as AuthService from '../../auth/auth.service'
+import { ApiReqBody } from '../../auth/auth.types'
 import {
   DatabaseConflictError,
   DatabaseError,
@@ -198,7 +199,8 @@ const fileUploadValidator = celebrate({
  */
 export const handleListDashboardForms: ControllerHandler<
   unknown,
-  AdminDashboardFormMetaDto[] | ErrorDto
+  AdminDashboardFormMetaDto[] | ErrorDto,
+  ApiReqBody
 > = async (req, res) => {
   let authedUserId: string
   if (req.body.formSg?.userId) {
