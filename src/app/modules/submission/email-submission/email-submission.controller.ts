@@ -2,7 +2,6 @@ import { ok, okAsync, ResultAsync } from 'neverthrow'
 
 import {
   FormAuthType,
-  ResponseMetadata,
   SubmissionErrorDto,
   SubmissionResponseDto,
 } from '../../../../../shared/types'
@@ -269,7 +268,7 @@ const submitEmailModeForm: ControllerHandler<
         )
 
         // Get response metadata from the request body
-        const responseMetadata = req.body.responseMetadata as ResponseMetadata
+        const { responseMetadata } = req.body
 
         // Save submission to database
         return EmailSubmissionService.hashSubmission(
