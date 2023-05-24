@@ -95,7 +95,7 @@ export type StorageModeSubmissionDto = {
   attachmentMetadata: Record<string, string>
   payment?: SubmissionPaymentDto
   version: number
-  responseMetadata: ResponseMetadata
+  responseMetadata?: ResponseMetadata
 }
 
 export const StorageModeSubmissionStreamDto = StorageModeSubmissionBase.pick({
