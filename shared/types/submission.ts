@@ -131,9 +131,6 @@ export type SubmissionResponseDto = {
   // Timestamp is given as ms from epoch
   timestamp: number
 
-  // response metadata to track form filling time
-  responseMetadata: ResponseMetadata
-
   // payment form only fields
   paymentData?: PaymentSubmissionData
 }

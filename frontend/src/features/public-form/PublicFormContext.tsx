@@ -59,8 +59,8 @@ export interface PublicFormContextProps
   /** Whether it is a preview form */
   isPreview: boolean
 
-  /** Sets the current number of visible fields in the form */
-  setNumVisibleFields: Dispatch<SetStateAction<number>>
+  /** Sets the current number of visible fields in the form in public forms only*/
+  setNumVisibleFields?: Dispatch<SetStateAction<number>>
 }
 
 export const PublicFormContext = createContext<

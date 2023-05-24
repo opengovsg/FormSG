@@ -50,8 +50,9 @@ export const VisibleFormFields = ({
     const visibleFieldsWithQuestionNo = augmentWithQuestionNo(visibleFields)
     setVisibleFormFields(visibleFieldsWithQuestionNo)
 
-    // set the number of visible fields in the context
-    setNumVisibleFields(visibleFieldsWithQuestionNo.length)
+    // set the number of visible fields in the context for public forms
+    if (setNumVisibleFields)
+      setNumVisibleFields(visibleFieldsWithQuestionNo.length)
   }, [
     formFields,
     formLogics,
