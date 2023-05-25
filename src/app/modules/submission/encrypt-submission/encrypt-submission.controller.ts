@@ -22,6 +22,7 @@ import {
 import { StripePaymentMetadataDto } from '../../../../types'
 import { EncryptSubmissionDto } from '../../../../types/api'
 import config from '../../../config/config'
+import { statsdClient } from '../../../config/datadog-statsd-client'
 import { paymentConfig } from '../../../config/features/payment.config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { stripe } from '../../../loaders/stripe'
@@ -42,6 +43,7 @@ import { getOidcService } from '../../spcp/spcp.oidc.service'
 import { getPopulatedUserById } from '../../user/user.service'
 import * as VerifiedContentService from '../../verified-content/verified-content.service'
 import * as EncryptSubmissionMiddleware from '../encrypt-submission/encrypt-submission.middleware'
+import { getNormalisedResponseTime } from '../submission.utils'
 
 import {
   addPaymentDataStream,
@@ -432,6 +434,22 @@ const submitEncryptModeForm: ControllerHandler<
       },
     })
 
+    if (responseMetadata)
+      statsdClient.distribution(
+        'formsg.submissions.normalisedReponseTime',
+        getNormalisedResponseTime(
+          responseMetadata.responseTimeMs,
+          responseMetadata.numVisibleFields,
+        ),
+        1,
+        {
+          mode: 'encrypt',
+          payment: 'true',
+          responseTimeMs: '${responseMetadata.responseTimeMs}',
+          numOfVisibleFields: '${responseMetadata.numVisibleFields}',
+        },
+      )
+
     // Step 3: Create the payment intent via API call to stripe.
     // Stripe requires the amount to be an integer in the smallest currency unit (i.e. cents)
     const metadata: StripePaymentMetadataDto = {
@@ -578,6 +596,22 @@ const submitEncryptModeForm: ControllerHandler<
       responseMetadata,
     },
   })
+
+  if (responseMetadata)
+    statsdClient.distribution(
+      'formsg.submissions.normalisedReponseTime',
+      getNormalisedResponseTime(
+        responseMetadata.responseTimeMs,
+        responseMetadata.numVisibleFields,
+      ),
+      1,
+      {
+        mode: 'encrypt',
+        payment: 'false',
+        responseTimeMs: '${responseMetadata.responseTimeMs}',
+        numOfVisibleFields: '${responseMetadata.numVisibleFields}',
+      },
+    )
 
   // Send success back to client
   res.json({
