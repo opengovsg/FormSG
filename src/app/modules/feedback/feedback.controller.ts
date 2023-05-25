@@ -2,8 +2,7 @@ import { celebrate, Joi, Segments } from 'celebrate'
 import { StatusCodes } from 'http-status-codes'
 import { ErrorDto, PrivateFormErrorDto } from 'shared/types'
 
-import { statsdClient } from 'src/app/config/datadog-statsd-client'
-
+import { statsdClient } from '../../config/datadog-statsd-client'
 import { createLoggerWithLabel } from '../../config/logger'
 import { createReqMeta } from '../../utils/request'
 import { ControllerHandler } from '../core/core.types'
