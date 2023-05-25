@@ -28,16 +28,8 @@ import { SettingsPaymentsPage } from './SettingsPaymentsPage'
 import { SettingsTwilioPage } from './SettingsTwilioPage'
 import { SettingsWebhooksPage } from './SettingsWebhooksPage'
 
-const settingsTabsOrder = [
-  'general',
-  'singpass',
-  'twilio',
-  'webhooks',
-  'payments',
-]
-
 export const SettingsPage = (): JSX.Element => {
-  const { formId, settingsTab = settingsTabsOrder[0] } = useParams()
+  const { formId, settingsTab } = useParams()
   const { user } = useUser()
   const { data: flags } = useFeatureFlags()
 
@@ -58,7 +50,15 @@ export const SettingsPage = (): JSX.Element => {
   const displayPayments =
     user?.betaFlags?.payment || flags?.has(featureFlags.payment)
 
-  const tabIndex = settingsTabsOrder.indexOf(settingsTab)
+  const settingsTabsOrder = [
+    'general',
+    'singpass',
+    'twilio',
+    'webhooks',
+    ...(displayPayments ? ['payments'] : []),
+  ]
+
+  const tabIndex = settingsTabsOrder.indexOf(settingsTab ?? '')
 
   return (
     <Box overflow="auto" flex={1}>
