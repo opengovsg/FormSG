@@ -106,14 +106,18 @@ const ConnectionStatusText = ({
 
 const AfterConnectionInfo = ({
   isProductionEnv,
+  hasPaymentCapabilities,
+  adminFormPaymentsLoading,
+  adminFormPaymentsError,
 }: {
   isProductionEnv: boolean
+  hasPaymentCapabilities: boolean
+  adminFormPaymentsLoading: boolean
+  adminFormPaymentsError: boolean
 }): JSX.Element => {
-  const { hasPaymentCapabilities, isLoading, isError } = useAdminFormPayments()
-
   let connectionInfo: JSX.Element
 
-  if (isError) {
+  if (adminFormPaymentsError) {
     // Base case: Error retrieving form payments data
     connectionInfo = (
       <ConnectionStatusText
@@ -156,8 +160,8 @@ const AfterConnectionInfo = ({
       // Test mode: Stripe account connection step skipped
       connectionInfo = (
         <ConnectionStatusText
-          color="warning.500"
-          icon={BxsInfoCircle}
+          color="success.700"
+          icon={BxsCheckCircle}
           text="You are connected to a test account."
         />
       )
@@ -165,7 +169,7 @@ const AfterConnectionInfo = ({
   }
 
   return (
-    <Skeleton isLoaded={!isLoading}>
+    <Skeleton isLoaded={!adminFormPaymentsLoading}>
       <Flex mb="2.5rem">{connectionInfo}</Flex>
     </Skeleton>
   )
@@ -194,7 +198,12 @@ const PaymentsAccountInformation = ({
 }
 
 export const PaymentSettingsSection = (): JSX.Element => {
-  const { hasPaymentCapabilities, data } = useAdminFormPayments()
+  const {
+    hasPaymentCapabilities,
+    data,
+    isLoading: adminFormPaymentsLoading,
+    isError: adminFormPaymentsError,
+  } = useAdminFormPayments()
   const stripeAccount = data?.account
 
   const { data: settings, isLoading: settingsIsLoading } =
@@ -203,24 +212,33 @@ export const PaymentSettingsSection = (): JSX.Element => {
   const isProductionEnv = secretEnv === 'production'
 
   return settings?.responseMode === FormResponseMode.Encrypt ? (
-    !stripeAccount ? (
-      <BeforeConnectionInstructions isProductionEnv={isProductionEnv} />
-    ) : (
-      <Skeleton isLoaded={!settingsIsLoading}>
-        <AfterConnectionInfo isProductionEnv={isProductionEnv} />
-        <PaymentsAccountInformation
-          account_id={settings?.payments_channel?.target_account_id}
-          isLoading={settingsIsLoading}
-        />
-        <StripeConnectButton connectState={StripeConnectButtonStates.LINKED} />
-        {hasPaymentCapabilities && (
-          <>
-            <Divider my="2.5rem" />
-            <BusinessInfoSection />
-          </>
-        )}
-      </Skeleton>
-    )
+    <Skeleton isLoaded={!adminFormPaymentsLoading}>
+      {!stripeAccount ? (
+        <BeforeConnectionInstructions isProductionEnv={isProductionEnv} />
+      ) : (
+        <Skeleton isLoaded={!settingsIsLoading}>
+          <AfterConnectionInfo
+            isProductionEnv={isProductionEnv}
+            hasPaymentCapabilities={hasPaymentCapabilities}
+            adminFormPaymentsLoading={adminFormPaymentsLoading}
+            adminFormPaymentsError={adminFormPaymentsError}
+          />
+          <PaymentsAccountInformation
+            account_id={settings?.payments_channel?.target_account_id}
+            isLoading={settingsIsLoading}
+          />
+          <StripeConnectButton
+            connectState={StripeConnectButtonStates.LINKED}
+          />
+          {hasPaymentCapabilities && (
+            <>
+              <Divider my="2.5rem" />
+              <BusinessInfoSection />
+            </>
+          )}
+        </Skeleton>
+      )}
+    </Skeleton>
   ) : (
     <></>
   )
