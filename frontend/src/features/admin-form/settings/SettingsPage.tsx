@@ -52,17 +52,20 @@ export const SettingsPage = (): JSX.Element => {
   const displayPayments =
     user?.betaFlags?.payment || flags?.has(featureFlags.payment)
 
-  // Note: Admins are not redirected to /general on invalid settings tabs.
+  const [tabIndex, setTabIndex] = useState(
+    settingsTabsOrder.indexOf(settingsTab ?? ''),
+  )
+
+  // Note: Admins are not redirected to /general on invalid settings tabs as we
+  // don't want to do this prematurely before displayPayments can be determined.
   useEffect(() => {
     if (displayPayments) {
+      // Dynamically push payments tab to settings tab order as needed, in case
+      // there may be multiple hidden tabs in the future.
       settingsTabsOrder.push('payments')
       setTabIndex(settingsTabsOrder.indexOf(settingsTab ?? ''))
     }
   }, [displayPayments, settingsTab])
-
-  const [tabIndex, setTabIndex] = useState(
-    settingsTabsOrder.indexOf(settingsTab ?? ''),
-  )
 
   const handleTabChange = (index: number) => {
     setTabIndex(index)
