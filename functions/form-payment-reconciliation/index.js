@@ -132,11 +132,7 @@ async function main(events, context) {
     const incompletePaymentsByStripeAccount = {}
     getIncompletePaymentsResponse.data.forEach(
       ({ stripeAccount, paymentId }) => {
-        if (
-          !Object.keys(incompletePaymentsByStripeAccount).includes(
-            stripeAccount,
-          )
-        ) {
+        if (!incompletePaymentsByStripeAccount[stripeAccount]) {
           incompletePaymentsByStripeAccount[stripeAccount] = []
         }
         incompletePaymentsByStripeAccount[stripeAccount].push(paymentId)
@@ -162,75 +158,72 @@ async function main(events, context) {
       },
     }
 
-    Object.keys(incompletePaymentsByStripeAccount).forEach(
-      async (stripeAccount) => {
-        console.log('Reconciling Stripe account', stripeAccount)
+    for (const [stripeAccount, paymentIds] of Object.entries(
+      incompletePaymentsByStripeAccount,
+    )) {
+      console.log('Reconciling Stripe account', stripeAccount)
 
-        const paymentIds = incompletePaymentsByStripeAccount[stripeAccount]
-        const reconcileAccountResponse = await reconcileAccount(
-          stripeAccount,
-          paymentIds,
+      const reconcileAccountResponse = await reconcileAccount(
+        stripeAccount,
+        paymentIds,
+      )
+
+      if (!reconcileAccountResponse.ok) {
+        console.error(
+          `Error occurred while reconciling Stripe account ${stripeAccount}:`,
+          reconcileAccountResponse.data.message,
         )
+        REPORT.push(
+          `Error occurred while reconciling Stripe account ${stripeAccount}:`,
+          reconcileAccountResponse.data.message,
+        )
+        reconciliationMeta.error.accounts.push(stripeAccount)
+        continue
+      }
 
-        if (!reconcileAccountResponse.ok) {
-          console.error(
-            `Error occurred while reconciling Stripe account ${stripeAccount}:`,
-            reconcileAccountResponse.data.message,
+      console.log(
+        `Reconcile attempt OK for Stripe account ${stripeAccount}`,
+        JSON.stringify(reconcileAccountResponse.data, null, 2),
+      )
+      reconciliationMeta.ok.accounts.push(stripeAccount)
+
+      // Aggregate data of resent events
+      reconcileAccountResponse.data.eventsReport.forEach(({ event, error }) => {
+        const identifier = `${stripeAccount}::${event.id}`
+        if (error) {
+          reconciliationMeta.ok.events.failed.push(
+            `${identifier} [ERROR: ${error}]`,
           )
-          REPORT.push(
-            `Error occurred while reconciling Stripe account ${stripeAccount}:`,
-            reconcileAccountResponse.data.message,
-          )
-          reconciliationMeta.error.accounts.push(stripeAccount)
-          return
+        } else {
+          reconciliationMeta.ok.events.success.push(identifier)
         }
+      })
 
-        console.log(
-          `Reconcile attempt OK for Stripe account ${stripeAccount}`,
-          JSON.stringify(reconcileAccountResponse.data, null, 2),
-        )
-        reconciliationMeta.ok.accounts.push(stripeAccount)
+      // Aggregate data of payments
+      reconcileAccountResponse.data.reconciliationReport.forEach(
+        ({ payment, paymentIntent, mismatch, canceled }) => {
+          const identifier = `${stripeAccount}::${payment.id}::${paymentIntent.id}`
 
-        // Aggregate data of resent events
-        reconcileAccountResponse.data.eventsReport.forEach(
-          ({ event, error }) => {
-            const identifier = `${stripeAccount}::${event.id}`
-            if (error) {
-              reconciliationMeta.ok.events.failed.push(
-                `${identifier} [ERROR: ${error}]`,
+          if (mismatch) {
+            reconciliationMeta.ok.payments.mismatch.push(identifier)
+            // Mismatched payments should never be canceled
+            if (canceled) {
+              console.error(
+                `Found mismatched payment that was canceled: ${identifier}`,
               )
-            } else {
-              reconciliationMeta.ok.events.success.push(identifier)
+              REPORT.push(
+                `Found mismatched payment that was canceled: ${identifier}`,
+              )
             }
-          },
-        )
-
-        // Aggregate data of payments
-        reconcileAccountResponse.data.reconciliationReport.forEach(
-          ({ payment, paymentIntent, mismatch, canceled }) => {
-            const identifier = `${stripeAccount}::${payment.id}::${paymentIntent.id}`
-
-            if (mismatch) {
-              reconciliationMeta.ok.payments.mismatch.push(identifier)
-              // Mismatched payments should never be canceled
-              if (canceled) {
-                console.error(
-                  `Found mismatched payment that was canceled: ${identifier}`,
-                )
-                REPORT.push(
-                  `Found mismatched payment that was canceled: ${identifier}`,
-                )
-              }
-            } else {
-              reconciliationMeta.ok.payments.match.push(identifier)
-              if (canceled) {
-                reconciliationMeta.ok.payments.canceled.push(identifier)
-              }
+          } else {
+            reconciliationMeta.ok.payments.match.push(identifier)
+            if (canceled) {
+              reconciliationMeta.ok.payments.canceled.push(identifier)
             }
-          },
-        )
-      },
-    )
+          }
+        },
+      )
+    }
 
     // Step 4: Aggregate reconciliation meta counts for reporting to Slack
     const reconciliationMetaCounts = {
