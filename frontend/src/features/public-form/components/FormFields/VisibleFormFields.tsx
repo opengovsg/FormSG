@@ -51,6 +51,7 @@ export const VisibleFormFields = ({
     setVisibleFormFields(visibleFieldsWithQuestionNo)
 
     // set the number of visible fields in the context for public forms
+    // the setter will only exist for public forms and will be undefined for preview
     if (setNumVisibleFields)
       setNumVisibleFields(visibleFieldsWithQuestionNo.length)
   }, [
