@@ -8,8 +8,6 @@ import { limitRate } from '../../../../utils/limit-rate'
 
 export const PaymentsRouter = Router()
 
-PaymentsRouter.get('/stripe')
-
 /**
  * Checks if the payment receipt is ready
  * @route GET /payments/:formId/:paymentId/receipt/status
@@ -84,10 +82,9 @@ PaymentsRouter.route('/:formId([a-fA-F0-9]{24})/payments/previous').post(
 /**
  * Protected routes for CRON job. Not really REST style, more like RPC style.
  */
-const ProtectedPaymentRoutes = PaymentsRouter.use(
-  '/reconcile',
-  withCronPaymentSecretAuthentication,
-)
+const ProtectedPaymentsRouter = Router()
+
+ProtectedPaymentsRouter.use(withCronPaymentSecretAuthentication)
 
 /**
  * Get all payments in incomplete state (Pending or Failed) which need to be
@@ -98,7 +95,7 @@ const ProtectedPaymentRoutes = PaymentsRouter.use(
  * @returns 200 with found payment records
  * @returns 500 if there were unexpected errors in retrieving payment data
  */
-ProtectedPaymentRoutes.route('/incompletePayments').get(
+ProtectedPaymentsRouter.route('/incompletePayments').get(
   StripeController.getIncompletePayments,
 )
 
@@ -111,6 +108,8 @@ ProtectedPaymentRoutes.route('/incompletePayments').get(
  * @returns 200 with two report arrays, one for event processing and another for payment status verification
  * @returns 500 if there were unexpected errors in retrieving data from Stripe
  */
-ProtectedPaymentRoutes.route('/account/:stripeAccount').post(
+ProtectedPaymentsRouter.route('/account/:stripeAccount').post(
   StripeController.reconcileAccount,
 )
+
+PaymentsRouter.use('/reconcile', ProtectedPaymentsRouter)
