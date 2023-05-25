@@ -15,11 +15,19 @@ export enum SubmissionType {
   Encrypt = 'encryptSubmission',
 }
 
+export const ResponseMetadata = z.object({
+  responseTimeMs: z.number(),
+  numVisibleFields: z.number(),
+})
+
+export type ResponseMetadata = z.infer<typeof ResponseMetadata>
+
 export const SubmissionBase = z.object({
   form: z.string(),
   authType: z.nativeEnum(FormAuthType),
   myInfoFields: z.array(z.nativeEnum(MyInfoAttribute)).optional(),
   submissionType: z.nativeEnum(SubmissionType),
+  responseMetadata: ResponseMetadata.optional(),
 })
 export type SubmissionBase = z.infer<typeof SubmissionBase>
 
@@ -175,6 +183,7 @@ export type StorageModeSubmissionContentDto = {
   attachments?: StorageModeAttachmentsMap
   paymentReceiptEmail?: string
   version: number
+  responseMetadata?: ResponseMetadata
 }
 
 export type PaymentSubmissionData = {

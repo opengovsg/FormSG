@@ -1,21 +1,20 @@
 import { useCallback } from 'react'
-import { Icon, Skeleton, VisuallyHidden } from '@chakra-ui/react'
 
-import { FaStripe } from '~assets/icons/FaStripe'
 import Button from '~components/Button'
 
 import { useMutateStripeAccount } from '../../mutations'
-import { useAdminFormPayments } from '../../queries'
 
-const StripeIcon = () => {
-  return (
-    <Icon as={FaStripe} top="1px" ml="-2px" pos="relative" fontSize="2.5rem" />
-  )
+export const enum StripeConnectButtonStates {
+  DISABLED,
+  ENABLED,
+  LINKED,
 }
 
-export const StripeConnectButton = (): JSX.Element => {
-  const { data, isLoading } = useAdminFormPayments()
-
+export const StripeConnectButton = ({
+  connectState,
+}: {
+  connectState: StripeConnectButtonStates
+}): JSX.Element => {
   const { linkStripeAccountMutation, unlinkStripeAccountMutation } =
     useMutateStripeAccount()
 
@@ -34,35 +33,26 @@ export const StripeConnectButton = (): JSX.Element => {
     [unlinkStripeAccountMutation],
   )
 
-  if (!data?.account) {
+  if (connectState !== StripeConnectButtonStates.LINKED) {
     return (
-      <Skeleton isLoaded={!isLoading} w="fit-content">
-        <Button
-          isLoading={linkStripeAccountMutation.isLoading}
-          onClick={onLinkAccountClick}
-          title="Connect with Stripe"
-          bg="#635bff"
-          _hover={{
-            bg: '#7a73ff',
-          }}
-          rightIcon={<StripeIcon />}
-        >
-          Connect with
-          <VisuallyHidden>Stripe</VisuallyHidden>
-        </Button>
-      </Skeleton>
+      <Button
+        isDisabled={connectState === StripeConnectButtonStates.DISABLED}
+        isLoading={linkStripeAccountMutation.isLoading}
+        onClick={onLinkAccountClick}
+        colorScheme="primary"
+      >
+        Connect with my Stripe account
+      </Button>
+    )
+  } else {
+    return (
+      <Button
+        colorScheme="danger"
+        onClick={onUnlinkAccountClick}
+        isLoading={unlinkStripeAccountMutation.isLoading}
+      >
+        Disconnect Stripe
+      </Button>
     )
   }
-
-  return (
-    <Button
-      colorScheme="danger"
-      onClick={onUnlinkAccountClick}
-      isLoading={unlinkStripeAccountMutation.isLoading}
-      rightIcon={<StripeIcon />}
-    >
-      Disconnect
-      <VisuallyHidden>Stripe</VisuallyHidden>
-    </Button>
-  )
 }
