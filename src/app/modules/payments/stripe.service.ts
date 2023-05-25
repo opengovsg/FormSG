@@ -732,34 +732,17 @@ export const validateAccount = (
  * specified Stripe account.
  *
  * @param {string} stripeAccount the Stripe account id to retrieve events for
- * @param {number} maxAgeDays optional; filter for max age of Stripe events to process, measured in days
  *
  * @returns forEach, which takes a callback that is run for each retrieved event
  */
-const SECONDS_IN_ONE_DAY = 60 * 60 * 24
-export const getUndeliveredStripeEventsForAccount = (
-  stripeAccount: string,
-  maxAgeDays?: number,
-) => {
+export const getUndeliveredStripeEventsForAccount = (stripeAccount: string) => {
   return {
     forEach: (
       cb: (event: Stripe.Event) => boolean | void | Promise<boolean | void>,
     ) =>
       ResultAsync.fromPromise(
         stripe.events
-          .list(
-            {
-              created: maxAgeDays
-                ? {
-                    gte:
-                      Math.trunc(Date.now() / 1000) -
-                      maxAgeDays * SECONDS_IN_ONE_DAY,
-                  }
-                : undefined,
-              delivery_success: false,
-            },
-            { stripeAccount },
-          )
+          .list({ delivery_success: false }, { stripeAccount })
           .autoPagingEach(cb),
         (error) => {
           logger.error({
@@ -839,9 +822,10 @@ export const verifyPaymentStatusWithStripe = (
           // if it is stale (> 30 min old).
           const paymentAgeInSeconds =
             Math.trunc(Date.now() / 1000) - paymentIntent.created
+          // TODO: Extract payment stale time into env var
+          const paymentStaleTimeInSeconds = 1800 /* = 30 min * 60 sec/min */
 
-          // TODO: Extract payment max age into env var
-          if (paymentAgeInSeconds > 1800 /* = 30 min * 60 sec/min */) {
+          if (paymentAgeInSeconds > paymentStaleTimeInSeconds) {
             return ResultAsync.fromPromise(
               stripe.paymentIntents.cancel(paymentIntent.id, {
                 stripeAccount: payment.targetAccountId,
@@ -879,6 +863,9 @@ export const verifyPaymentStatusWithStripe = (
           ].includes(payment.status)
 
           if (!isPaymentStatusComplete) {
+            //!! This is the case we are worried about !!
+            // On Stripe, the payment might be complete but FormSG does not know
+            // even after reconciliation.
             logger.error({
               message:
                 'Payment state mismatch found (Stripe complete, FormSG incomplete)',

@@ -543,9 +543,7 @@ export const reconcileAccount: ControllerHandler<
               'Successfully processed Stripe event while reconciling account',
             meta: { ...logMeta, event },
           })
-          eventsReport.push({
-            event,
-          })
+          eventsReport.push({ event })
           return okAsync(undefined)
         })
         .orElse((error) => {
