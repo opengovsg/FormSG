@@ -94,12 +94,12 @@ describe('Submission Model', () => {
       })
 
       it('email schema should create and save successfully with responseMetadata', async () => {
-        const submissionParamWithResponseMetadata = merge(
+        const emailSubmissionWithResponseMetadata = merge(
           { responseMetadata: { responseTimeMs: 1000, numVisibleFields: 10 } },
           MOCK_EMAIL_SUBMISSION_PARAMS,
         )
         const validSubmission = new Submission(
-          submissionParamWithResponseMetadata,
+          emailSubmissionWithResponseMetadata,
         )
         const saved = await validSubmission.save()
 
@@ -115,9 +115,10 @@ describe('Submission Model', () => {
           '__v',
         ])
 
-        const expectedObject = merge({}, submissionParamWithResponseMetadata)
+        const expectedObject = merge({}, emailSubmissionWithResponseMetadata)
         expect(actualSavedObject).toEqual(expectedObject)
       })
+
       it('encrypt schema should create and save successfully', async () => {
         const validSubmission = new Submission(MOCK_ENCRYPT_SUBMISSION_PARAMS)
         const saved = await validSubmission.save()
@@ -134,6 +135,32 @@ describe('Submission Model', () => {
         ])
 
         const expectedObject = merge({}, MOCK_ENCRYPT_SUBMISSION_PARAMS)
+        expect(actualSavedObject).toEqual(expectedObject)
+      })
+
+      it('encrypt schema should create and save successfully with responseMetadata', async () => {
+        const encryptSubmissionWithResponseMetadata = merge(
+          { responseMetadata: { responseTimeMs: 1000, numVisibleFields: 10 } },
+          MOCK_ENCRYPT_SUBMISSION_PARAMS,
+        )
+        const validSubmission = new Submission(
+          encryptSubmissionWithResponseMetadata,
+        )
+        const saved = await validSubmission.save()
+
+        // Assert
+        expect(saved._id).toBeDefined()
+        expect(saved.created).toBeInstanceOf(Date)
+        expect(saved.responseMetadata).toBeDefined()
+
+        const actualSavedObject = omit(saved.toObject(), [
+          '_id',
+          'created',
+          'lastModified',
+          '__v',
+        ])
+
+        const expectedObject = merge({}, encryptSubmissionWithResponseMetadata)
         expect(actualSavedObject).toEqual(expectedObject)
       })
     })
