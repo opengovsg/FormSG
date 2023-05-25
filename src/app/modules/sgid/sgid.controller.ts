@@ -96,7 +96,9 @@ export const handleLogin: ControllerHandler<
     .andThen((data) => SgidService.retrieveUserInfo(data))
     .andThen(({ data }) =>
       SgidService.createSgidSingpassJwt(
-        { 'myinfo.nric_number': data[SGID_MYINFO_NRIC_NUMBER_SCOPE] },
+        {
+          [SGID_MYINFO_NRIC_NUMBER_SCOPE]: data[SGID_MYINFO_NRIC_NUMBER_SCOPE],
+        },
         rememberMe,
       ),
     )
