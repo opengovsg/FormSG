@@ -90,7 +90,7 @@ const BusinessInfoBlock = ({
     <>
       <FormControl mb="2.5rem" isReadOnly={mutateFormBusiness.isLoading}>
         <FormLabel
-          description="Leave empty to use your agency defaults."
+          description="Leave blank to use your agency's GST Registration Number"
           isRequired
         >
           GST Registration Number
@@ -103,7 +103,7 @@ const BusinessInfoBlock = ({
       </FormControl>
       <FormControl mb="2.5rem" isReadOnly={mutateFormBusiness.isLoading}>
         <FormLabel
-          description="Leave empty to use your agency defaults."
+          description="Leave blank to use your agency's business address"
           isRequired
         >
           Business Address
