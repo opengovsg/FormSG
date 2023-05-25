@@ -78,7 +78,6 @@ const compileUserModel = (db: Mongoose) => {
       },
       apiKeyHash: {
         type: String,
-        unique: true,
       },
     },
     {
