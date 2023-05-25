@@ -2781,6 +2781,22 @@ export const handleUpdateTwilio = [
   updateTwilioCredentials,
 ] as ControllerHandler[]
 
+/**
+ * Handler for PUT api/external/v1/admin/forms/:formId.
+ * @security session
+ *
+ * @returns 200 with form successfully updated
+ * @returns 401 when user is not authenticated
+ * @returns 404 when form cannot be found
+ * @returns 404 when form field cannot be found
+ * @returns 409 when form field update conflicts with database state
+ * @returns 410 when updating an archived form
+ * @returns 413 when updating form field causes form to be too large to be saved in the database
+ * @returns 422 when an invalid form field update is attempted on the form
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when database error occurs
+ */
+
 export const _handleUpdateFormApi: ControllerHandler<
   { formId: string },
   IPopulatedForm | ErrorDto,
@@ -2792,7 +2808,7 @@ export const _handleUpdateFormApi: ControllerHandler<
   }
 > = (req, res) => {
   const { formId } = req.params
-  const { form_fields, startPage } = req.body.form
+  const { form_fields, startPage, endPage } = req.body.form
   const authedUserId = req.body.formSg?.userId
 
   logger.info({
@@ -2804,105 +2820,128 @@ export const _handleUpdateFormApi: ControllerHandler<
   })
 
   // Step 1: Retrieve currently logged in user.
-  return UserService.getPopulatedUserById(authedUserId)
-    .andThen((user) =>
-      // Step 2: Retrieve form with write permission check.
-      AuthService.getFormAfterPermissionChecks({
-        user,
-        formId,
-        level: PermissionLevel.Write,
-      }),
-    )
-    .andThen((form) => {
-      if (form_fields) {
-        form_fields.forEach((formField) =>
-          // Step 3: Check if the user has exceeded the allowable limit for sms if the fieldType is mobile
-          AdminFormService.shouldUpdateFormField(form, formField).andThen(
-            (form) => {
-              // Step 4: Check if a field ID exists. If it does, update the form field
-              if (formField._id) {
-                return AdminFormService.updateFormField(
-                  form,
-                  formField._id,
-                  formField,
-                ).mapErr((error) => {
-                  logger.error({
-                    message: 'Error occurred when updating form field',
-                    meta: {
-                      action: '_handleCreateFormField',
-                      ...createReqMeta(req),
-                      userId: authedUserId,
-                      formId,
-                      createFieldBody: formField,
-                    },
-                    error,
-                  })
-                  const { errorMessage, statusCode } = mapRouteError(error)
-                  return res.status(statusCode).json({ message: errorMessage })
-                })
-              } else {
-                // Step 5: If field ID doesn't exist, create a new form field
-                return AdminFormService.createFormField(form, formField).mapErr(
-                  (error) => {
+  return (
+    UserService.getPopulatedUserById(authedUserId)
+      .andThen((user) =>
+        // Step 2: Retrieve form with write permission check.
+        AuthService.getFormAfterPermissionChecks({
+          user,
+          formId,
+          level: PermissionLevel.Write,
+        }),
+      )
+      .andThen((form) => {
+        if (form_fields) {
+          form_fields.forEach((formField) =>
+            // Step 3: Check if the user has exceeded the allowable limit for sms if the fieldType is mobile
+            AdminFormService.shouldUpdateFormField(form, formField).andThen(
+              (form) => {
+                // Step 4: Check if a field ID exists. If it does, update the form field
+                if (formField._id) {
+                  return AdminFormService.updateFormField(
+                    form,
+                    formField._id,
+                    formField,
+                  ).mapErr((error) => {
                     logger.error({
-                      message: 'Error occurred when creating form field',
+                      message: 'Error occurred when updating form field',
                       meta: {
-                        action: '_handleCreateFormField',
+                        action: '_handleUpdateFormApi',
                         ...createReqMeta(req),
                         userId: authedUserId,
                         formId,
-                        createFieldBody: formField,
+                        body: req.body,
                       },
                       error,
                     })
-                    const { errorMessage, statusCode } = mapRouteError(error)
-                    return res
-                      .status(statusCode)
-                      .json({ message: errorMessage })
-                  },
-                )
-              }
-            },
-          ),
-        )
-      }
-      if (startPage) {
-        return AdminFormService.updateStartPage(formId, startPage)
-          .andThen(() => {
-            return okAsync(form)
-          })
-          .mapErr((error) => {
-            logger.error({
-              message: 'Error occurred when updating start page',
-              meta: {
-                action: '_handleUpdateStartPage',
-                ...createReqMeta(req),
-                userId: authedUserId,
-                formId,
-                body: req.body,
+                    return new Error('Error updating form field using API')
+                  })
+                } else {
+                  // Step 5: If field ID doesn't exist, create a new form field
+                  return AdminFormService.createFormField(
+                    form,
+                    formField,
+                  ).mapErr((error) => {
+                    logger.error({
+                      message: 'Error occurred when creating form field',
+                      meta: {
+                        action: '_handleUpdateFormApi',
+                        ...createReqMeta(req),
+                        userId: authedUserId,
+                        formId,
+                        body: req.body,
+                      },
+                      error,
+                    })
+                    return new Error('Error updating form field using API')
+                  })
+                }
               },
-              error,
+            ),
+          )
+        }
+        // Step 6: Update start page fields
+        if (startPage) {
+          return AdminFormService.updateStartPage(formId, startPage)
+            .andThen(() => {
+              return okAsync(form)
             })
-            return new Error('error updating start page')
-          })
-      }
-      return okAsync(form)
-    })
-    .map((form) => res.status(StatusCodes.OK).json(form))
-    .mapErr((error) => {
-      logger.error({
-        message: 'Error occurred when creating form field',
-        meta: {
-          action: '_handleUpdateFormApi',
-          ...createReqMeta(req),
-          userId: authedUserId,
-          formId,
-        },
-        error,
+            .mapErr((error) => {
+              logger.error({
+                message: 'Error occurred when updating start page',
+                meta: {
+                  action: '_handleUpdateFormApi',
+                  ...createReqMeta(req),
+                  userId: authedUserId,
+                  formId,
+                  body: req.body,
+                },
+                error,
+              })
+              return new Error('Error updating form start page using API')
+            })
+        }
+        // Step 7: Update end page fields
+        if (endPage) {
+          return AdminFormService.updateEndPage(formId, endPage)
+            .andThen(() => {
+              return okAsync(form)
+            })
+            .mapErr((error) => {
+              logger.error({
+                message: 'Error occurred when updating end page',
+                meta: {
+                  action: '_handleUpdateFormApi',
+                  ...createReqMeta(req),
+                  userId: authedUserId,
+                  formId,
+                  body: req.body,
+                },
+                error,
+              })
+              return new Error('Error updating form end page using API')
+            })
+        }
+        return okAsync(form)
       })
-      const { errorMessage, statusCode } = mapRouteError(error)
-      return res.status(statusCode).json({ message: errorMessage })
-    })
+      // Step 8: Retrieve updated form
+      .andThen(() => FormService.retrieveFullFormById(formId))
+      .map((form) => res.status(StatusCodes.OK).json(form))
+      .mapErr((error) => {
+        logger.error({
+          message: 'Error occurred when updating form',
+          meta: {
+            action: '_handleUpdateFormApi',
+            ...createReqMeta(req),
+            userId: authedUserId,
+            formId,
+          },
+          error,
+        })
+        const { errorMessage, statusCode } = mapRouteError(error)
+        return res.status(statusCode).json({ message: errorMessage })
+      })
+  )
 }
 
 export const handleUpdateFormApi = [
