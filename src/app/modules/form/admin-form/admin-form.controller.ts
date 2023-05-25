@@ -4,7 +4,7 @@ import { celebrate, Joi as BaseJoi, Segments } from 'celebrate'
 import { AuthedSessionData } from 'express-session'
 import { StatusCodes } from 'http-status-codes'
 import JSONStream from 'JSONStream'
-import { ResultAsync } from 'neverthrow'
+import { okAsync, ResultAsync } from 'neverthrow'
 
 import {
   MAX_UPLOAD_FILE_SIZE,
@@ -1121,6 +1121,97 @@ export const handleCreateForm = [
   createFormValidator,
   createForm,
 ] as ControllerHandler[]
+
+/**
+ * Handler for PUT /:formId/adminform.
+ * @security session
+ *
+ * @returns 200 with updated form
+ * @returns 400 when form field has invalid updates to be performed
+ * @returns 403 when current user does not have permissions to update form
+ * @returns 404 when form to update cannot be found
+ * @returns 409 when saving updated form incurs a conflict in the database
+ * @returns 410 when form to update is archived
+ * @returns 413 when updated form is too large to be saved in the database
+ * @returns 422 when an invalid update is attempted on the form
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when database error occurs
+ */
+export const handleUpdateFormDefinition: ControllerHandler<
+  { formId: string },
+  unknown,
+  {
+    form: FormUpdateParams
+    formSg?: {
+      userId?: string
+    }
+  }
+> = (req, res) => {
+  const { formId } = req.params
+  const { form: formUpdateParams } = req.body
+  // const sessionUserId = (req.session as AuthedSessionData).user._id
+  let authedUserId: string
+  if (req.body.formSg?.userId) {
+    authedUserId = req.body.formSg?.userId
+  } else {
+    authedUserId = (req.session as AuthedSessionData).user._id
+  }
+
+  logger.info({
+    message: 'updating',
+    meta: {
+      action: 'handleUpdateFormDefinition',
+      formUpdateParams,
+    },
+  })
+  // Step 1: Retrieve currently logged in user.
+  return UserService.getPopulatedUserById(authedUserId)
+    .andThen((user) =>
+      // Step 2: Retrieve form with write permission check.
+      AuthService.getFormAfterPermissionChecks({
+        user,
+        formId,
+        level: PermissionLevel.Write,
+      }),
+    )
+    .andThen((retrievedForm) => {
+      // Step 3: Update form or form fields depending on form update parameters
+      // passed in.
+      // const { editFormField } = formUpdateParams
+
+      // Use different service function depending on type of form update.
+      const updateFormResult: ResultAsync<
+        IPopulatedForm,
+        | EditFieldError
+        | DatabaseError
+        | DatabaseValidationError
+        | DatabaseConflictError
+        | DatabasePayloadSizeError
+      > = AdminFormService.updateForm(retrievedForm, formUpdateParams)
+
+      // editFormField
+      //   ? AdminFormService.editFormFields(retrievedForm, editFormField)
+      //   : AdminFormService.updateForm(retrievedForm, formUpdateParams)
+
+      return updateFormResult
+    })
+    .map((updatedForm) => res.status(StatusCodes.OK).json(updatedForm))
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error occurred when updating form',
+        meta: {
+          action: 'handleUpdateFormDefinition',
+          ...createReqMeta(req),
+          userId: authedUserId,
+          formId,
+          formUpdateParams,
+        },
+        error,
+      })
+      const { errorMessage, statusCode } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
+}
 
 /**
  * Handler for PUT /:formId/adminform.
@@ -2689,3 +2780,150 @@ export const handleUpdateTwilio = [
   validateTwilioCredentials,
   updateTwilioCredentials,
 ] as ControllerHandler[]
+
+export const _handleUpdateFormApi: ControllerHandler<
+  { formId: string },
+  IPopulatedForm | ErrorDto,
+  {
+    form: PublicFormDto
+    formSg?: {
+      userId?: string
+    }
+  }
+> = (req, res) => {
+  const { formId } = req.params
+  const { form_fields } = req.body.form
+  const authedUserId = req.body.formSg?.userId
+
+  logger.info({
+    message: 'updatingFormField',
+    meta: {
+      action: '_handleUpdateFormApi',
+      data: req.body,
+    },
+  })
+
+  // Step 1: Retrieve currently logged in user.
+  return UserService.getPopulatedUserById(authedUserId)
+    .andThen((user) =>
+      // Step 2: Retrieve form with write permission check.
+      AuthService.getFormAfterPermissionChecks({
+        user,
+        formId,
+        level: PermissionLevel.Write,
+      }),
+    )
+    .andThen((form) => {
+      form_fields.forEach((formField) =>
+        // Step 3: Check if the user has exceeded the allowable limit for sms if the fieldType is mobile
+        AdminFormService.shouldUpdateFormField(form, formField).andThen(
+          (form) => {
+            // Step 4: Check if a field ID exists. If it does, update the form field
+            if (formField._id) {
+              return AdminFormService.updateFormField(
+                form,
+                formField._id,
+                formField,
+              ).mapErr((error) => {
+                logger.error({
+                  message: 'Error occurred when updating form field',
+                  meta: {
+                    action: '_handleCreateFormField',
+                    ...createReqMeta(req),
+                    userId: authedUserId,
+                    formId,
+                    createFieldBody: formField,
+                  },
+                  error,
+                })
+                const { errorMessage, statusCode } = mapRouteError(error)
+                return res.status(statusCode).json({ message: errorMessage })
+              })
+            } else {
+              // Step 5: If field ID doesn't exist, create a new form field
+              return AdminFormService.createFormField(form, formField).mapErr(
+                (error) => {
+                  logger.error({
+                    message: 'Error occurred when creating form field',
+                    meta: {
+                      action: '_handleCreateFormField',
+                      ...createReqMeta(req),
+                      userId: authedUserId,
+                      formId,
+                      createFieldBody: formField,
+                    },
+                    error,
+                  })
+                  const { errorMessage, statusCode } = mapRouteError(error)
+                  return res.status(statusCode).json({ message: errorMessage })
+                },
+              )
+            }
+          },
+        ),
+      )
+      return okAsync(form)
+    })
+    .map((form) => res.status(StatusCodes.OK).json(form))
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error occurred when creating form field',
+        meta: {
+          action: '_handleUpdateFormApi',
+          ...createReqMeta(req),
+          userId: authedUserId,
+          formId,
+        },
+        error,
+      })
+      const { errorMessage, statusCode } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
+}
+
+export const handleUpdateFormApi = [
+  celebrate({
+    [Segments.BODY]: {
+      formSg: { userId: Joi.string() },
+      form: {
+        startPage: {
+          paragraph: Joi.string().allow('').optional(),
+          estTimeTaken: Joi.number().min(1).max(1000),
+          colorTheme: Joi.string().valid(...Object.values(FormColorTheme)),
+          logo: Joi.object({
+            state: Joi.string().valid(...Object.values(FormLogoState)),
+          }).required(),
+        },
+        form_fields: Joi.array().items(
+          Joi.object({
+            // Ensures given field is same as accessed field.
+            _id: Joi.string().valid(Joi.ref('$params.fieldId')),
+            fieldType: Joi.string()
+              .valid(...Object.values(BasicField))
+              .required(),
+            description: Joi.string().allow('').required(),
+            required: Joi.boolean().required(),
+            title: Joi.string().trim().required(),
+            disabled: Joi.boolean().required(),
+            // Allow other field related key-values to be provided and let the model
+            // layer handle the validation.
+          })
+            .unknown(true)
+            .custom((value, helpers) =>
+              verifyValidUnicodeString(value, helpers),
+            ),
+        ),
+        endPage: Joi.object({
+          title: Joi.string(),
+          paragraph: Joi.string().allow(''),
+          buttonLink: Joi.string()
+            .uri({ scheme: ['http', 'https'] })
+            .allow('')
+            .message('Please enter a valid HTTP or HTTPS URI'),
+          buttonText: Joi.string().allow(''),
+        }).unknown(true),
+      },
+    },
+  }),
+  _handleUpdateFormApi,
+]

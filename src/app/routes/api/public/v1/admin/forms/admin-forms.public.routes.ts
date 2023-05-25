@@ -24,3 +24,12 @@ AdminFormsPublicRouter.route('/')
     limitRate({ max: rateLimitConfig.publicApi }),
     AdminFormController.handleListDashboardForms,
   )
+
+AdminFormsExternalRouter.route('/:formId([a-fA-F0-9]{24})')
+  /**
+   * Updates the form definition of a particular form
+   */
+  .put(
+    limitRate({ max: rateLimitConfig.externalApi }),
+    AdminFormController.handleUpdateFormApi,
+  )
