@@ -10,7 +10,10 @@ import {
   FormDto,
   PublicFormViewDto,
 } from '~shared/types/form/form'
-import { SubmissionResponseDto } from '~shared/types/submission'
+import {
+  ResponseMetadata,
+  SubmissionResponseDto,
+} from '~shared/types/submission'
 
 import { transformAllIsoStringsToDate } from '~utils/date'
 import {
@@ -78,6 +81,7 @@ export type SubmitEmailFormArgs = {
   formFields: FormFieldDto[]
   formLogics: FormDto['form_logics']
   formInputs: FormFieldValues
+  responseMetadata?: ResponseMetadata
   paymentReceiptEmail?: string
 }
 
@@ -89,13 +93,18 @@ export const submitEmailModeForm = async ({
   formInputs,
   formId,
   captchaResponse = null,
+  responseMetadata,
 }: SubmitEmailFormArgs): Promise<SubmissionResponseDto> => {
   const filteredInputs = filterHiddenInputs({
     formFields,
     formInputs,
     formLogics,
   })
-  const formData = createEmailSubmissionFormData(formFields, filteredInputs)
+  const formData = createEmailSubmissionFormData(
+    formFields,
+    filteredInputs,
+    responseMetadata,
+  )
 
   return ApiService.post<SubmissionResponseDto>(
     `${PUBLIC_FORMS_ENDPOINT}/${formId}/submissions/email`,
@@ -116,6 +125,7 @@ export const submitStorageModeForm = async ({
   publicKey,
   captchaResponse = null,
   paymentReceiptEmail,
+  responseMetadata,
 }: SubmitStorageFormArgs) => {
   const filteredInputs = filterHiddenInputs({
     formFields,
@@ -126,6 +136,7 @@ export const submitStorageModeForm = async ({
     formFields,
     filteredInputs,
     publicKey,
+    responseMetadata,
     paymentReceiptEmail,
   )
 
@@ -147,13 +158,18 @@ export const submitEmailModeFormWithFetch = async ({
   formInputs,
   formId,
   captchaResponse = null,
+  responseMetadata,
 }: SubmitEmailFormArgs): Promise<SubmissionResponseDto> => {
   const filteredInputs = filterHiddenInputs({
     formFields,
     formInputs,
     formLogics,
   })
-  const formData = createEmailSubmissionFormData(formFields, filteredInputs)
+  const formData = createEmailSubmissionFormData(
+    formFields,
+    filteredInputs,
+    responseMetadata,
+  )
 
   // Add captcha response to query string
   const queryString = new URLSearchParams({
@@ -183,6 +199,7 @@ export const submitStorageModeFormWithFetch = async ({
   publicKey,
   captchaResponse = null,
   paymentReceiptEmail,
+  responseMetadata,
 }: SubmitStorageFormArgs) => {
   const filteredInputs = filterHiddenInputs({
     formFields,
@@ -193,6 +210,7 @@ export const submitStorageModeFormWithFetch = async ({
     formFields,
     filteredInputs,
     publicKey,
+    responseMetadata,
     paymentReceiptEmail,
   )
 

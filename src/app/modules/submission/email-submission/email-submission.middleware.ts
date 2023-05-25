@@ -76,6 +76,10 @@ export const validateResponseParams = celebrate({
           .with('filename', 'content'), // if filename is present, content must be present
       )
       .required(),
+    responseMetadata: Joi.object({
+      responseTimeMs: Joi.number(),
+      numVisibleFields: Joi.number(),
+    }),
     /**
      * @deprecated unused key, but frontend still sends it.
      */

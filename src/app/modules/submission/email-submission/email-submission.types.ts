@@ -1,3 +1,5 @@
+import { ResponseMetadata } from 'shared/types'
+
 import { FieldResponse, IPopulatedEmailForm } from '../../../../types'
 import { ProcessedResponse } from '../submission.types'
 
@@ -11,6 +13,7 @@ export type ResponseFormattedForEmail = Omit<FieldResponse, 'answerArray'> & {
 
 export interface ParsedMultipartForm {
   responses: FieldResponse[]
+  responseMetadata: ResponseMetadata
 }
 
 export interface SubmissionHash {
