@@ -6,8 +6,9 @@ import {
   useForm,
   useWatch,
 } from 'react-hook-form'
+import { Link as ReactLink } from 'react-router-dom'
 import { useDebounce } from 'react-use'
-import { Box, FormControl, Text } from '@chakra-ui/react'
+import { Box, FormControl, Link, Text } from '@chakra-ui/react'
 import { cloneDeep } from 'lodash'
 
 import {
@@ -288,11 +289,17 @@ export const PaymentsInputPanel = (): JSX.Element | null => {
     }
   }, [paymentsField, resetData, setData, setToEditingPayment, setToInactive])
 
-  const paymentDisabledMessage = !isEncryptMode
-    ? 'Payments are not available in email mode forms.'
-    : !isStripeConnected
-    ? 'Connect your Stripe account in Settings to save this field.'
-    : ''
+  const paymentDisabledMessage = !isEncryptMode ? (
+    <Text>Payments are not available in email mode forms.</Text>
+  ) : !isStripeConnected ? (
+    <Text>
+      Connect your Stripe account in{' '}
+      <Link as={ReactLink} to={`settings/payments`}>
+        Settings
+      </Link>{' '}
+      to add payment field.
+    </Text>
+  ) : null
 
   // payment eligibility will be dependent on whether paymentDisabledMessage is non empty
   const isPaymentDisabled = !!paymentDisabledMessage
@@ -303,9 +310,7 @@ export const PaymentsInputPanel = (): JSX.Element | null => {
     <>
       {isPaymentDisabled && (
         <Box px="1.5rem" pt="2rem" pb="1.5rem">
-          <InlineMessage variant="info">
-            <Text>{paymentDisabledMessage}</Text>
-          </InlineMessage>
+          <InlineMessage variant="info">{paymentDisabledMessage}</InlineMessage>
         </Box>
       )}
       <PaymentInput isDisabled={isPaymentDisabled} />

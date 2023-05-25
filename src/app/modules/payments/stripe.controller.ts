@@ -516,7 +516,7 @@ const _handleConnectOauthCallback: ControllerHandler<
 
   // Step 1: Retrieve formId from state.
   const formId = state.split('.')[0]
-  const redirectUrl = `${config.app.appUrl}/admin/form/${formId}/settings`
+  const redirectUrl = `${config.app.appUrl}/admin/form/${formId}/settings/payments`
   // Step 2: Retrieve currently logged in user.
   return (
     FormService.retrieveFullFormById(formId)

@@ -463,8 +463,8 @@ export const createAccountLink = (
   return ResultAsync.fromPromise(
     stripe.accountLinks.create({
       account: accountId,
-      refresh_url: `${config.app.appUrl}/admin/form/${redirectFormId}/settings`,
-      return_url: `${config.app.appUrl}/admin/form/${redirectFormId}/settings`,
+      refresh_url: `${config.app.appUrl}/admin/form/${redirectFormId}/settings/payments`,
+      return_url: `${config.app.appUrl}/admin/form/${redirectFormId}/settings/payments`,
       type: 'account_onboarding',
     }),
     (error) => {
