@@ -3,11 +3,14 @@
 import cuid from 'cuid'
 import mongoose from 'mongoose'
 import { errAsync, ok, okAsync, ResultAsync } from 'neverthrow'
-import { PaymentStatus, ReconciliationReportLine } from 'shared/types'
 import Stripe from 'stripe'
 import { MarkRequired } from 'ts-essentials'
 import isURL from 'validator/lib/isURL'
 
+import {
+  PaymentStatus,
+  ReconciliationReportLine,
+} from '../../../../shared/types'
 import {
   IEncryptedFormSchema,
   IPaymentSchema,
