@@ -1137,97 +1137,6 @@ export const handleCreateForm = [
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 when database error occurs
  */
-export const handleUpdateFormDefinition: ControllerHandler<
-  { formId: string },
-  unknown,
-  {
-    form: FormUpdateParams
-    formSg?: {
-      userId?: string
-    }
-  }
-> = (req, res) => {
-  const { formId } = req.params
-  const { form: formUpdateParams } = req.body
-  // const sessionUserId = (req.session as AuthedSessionData).user._id
-  let authedUserId: string
-  if (req.body.formSg?.userId) {
-    authedUserId = req.body.formSg?.userId
-  } else {
-    authedUserId = (req.session as AuthedSessionData).user._id
-  }
-
-  logger.info({
-    message: 'updating',
-    meta: {
-      action: 'handleUpdateFormDefinition',
-      formUpdateParams,
-    },
-  })
-  // Step 1: Retrieve currently logged in user.
-  return UserService.getPopulatedUserById(authedUserId)
-    .andThen((user) =>
-      // Step 2: Retrieve form with write permission check.
-      AuthService.getFormAfterPermissionChecks({
-        user,
-        formId,
-        level: PermissionLevel.Write,
-      }),
-    )
-    .andThen((retrievedForm) => {
-      // Step 3: Update form or form fields depending on form update parameters
-      // passed in.
-      // const { editFormField } = formUpdateParams
-
-      // Use different service function depending on type of form update.
-      const updateFormResult: ResultAsync<
-        IPopulatedForm,
-        | EditFieldError
-        | DatabaseError
-        | DatabaseValidationError
-        | DatabaseConflictError
-        | DatabasePayloadSizeError
-      > = AdminFormService.updateForm(retrievedForm, formUpdateParams)
-
-      // editFormField
-      //   ? AdminFormService.editFormFields(retrievedForm, editFormField)
-      //   : AdminFormService.updateForm(retrievedForm, formUpdateParams)
-
-      return updateFormResult
-    })
-    .map((updatedForm) => res.status(StatusCodes.OK).json(updatedForm))
-    .mapErr((error) => {
-      logger.error({
-        message: 'Error occurred when updating form',
-        meta: {
-          action: 'handleUpdateFormDefinition',
-          ...createReqMeta(req),
-          userId: authedUserId,
-          formId,
-          formUpdateParams,
-        },
-        error,
-      })
-      const { errorMessage, statusCode } = mapRouteError(error)
-      return res.status(statusCode).json({ message: errorMessage })
-    })
-}
-
-/**
- * Handler for PUT /:formId/adminform.
- * @security session
- *
- * @returns 200 with updated form
- * @returns 400 when form field has invalid updates to be performed
- * @returns 403 when current user does not have permissions to update form
- * @returns 404 when form to update cannot be found
- * @returns 409 when saving updated form incurs a conflict in the database
- * @returns 410 when form to update is archived
- * @returns 413 when updated form is too large to be saved in the database
- * @returns 422 when an invalid update is attempted on the form
- * @returns 422 when user in session cannot be retrieved from the database
- * @returns 500 when database error occurs
- */
 export const handleUpdateForm: ControllerHandler<
   { formId: string },
   unknown,
@@ -2800,16 +2709,11 @@ export const handleUpdateTwilio = [
 export const _handleUpdateFormApi: ControllerHandler<
   { formId: string },
   IPopulatedForm | ErrorDto,
-  {
-    form: PublicFormDto
-    formSg?: {
-      userId?: string
-    }
-  }
+  { form: PublicFormDto }
 > = (req, res) => {
   const { formId } = req.params
   const { form_fields, startPage, endPage } = req.body.form
-  const authedUserId = req.body.formSg?.userId
+  const authedUserId = (req.session as AuthedSessionData).user._id
 
   logger.info({
     message: 'updatingFormField',
@@ -2947,7 +2851,6 @@ export const _handleUpdateFormApi: ControllerHandler<
 export const handleUpdateFormApi = [
   celebrate({
     [Segments.BODY]: {
-      formSg: { userId: Joi.string() },
       form: {
         startPage: {
           paragraph: Joi.string().allow('').optional(),
