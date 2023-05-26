@@ -5,12 +5,12 @@ import { authenticateApiKey } from '../../../../../../modules/auth/auth.middlewa
 import * as AdminFormController from '../../../../../../modules/form/admin-form/admin-form.controller'
 import { limitRate } from '../../../../../../utils/limit-rate'
 
-export const AdminFormsExternalRouter = Router()
+export const AdminFormsPublicRouter = Router()
 
 // All routes in this handler should be protected by authentication.
-AdminFormsExternalRouter.use(authenticateApiKey)
+AdminFormsPublicRouter.use(authenticateApiKey)
 
-AdminFormsExternalRouter.route('/')
+AdminFormsPublicRouter.route('/')
   /**
    * List the forms managed by the user
    * @security session
