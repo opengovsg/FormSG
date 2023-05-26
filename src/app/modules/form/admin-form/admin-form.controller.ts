@@ -203,9 +203,12 @@ export const handleListDashboardForms: ControllerHandler<
   ApiReqBody
 > = async (req, res) => {
   let authedUserId: string
+
   if (req.body.formSg?.userId) {
+    // Check if user is authenticating via API
     authedUserId = req.body.formSg?.userId
   } else {
+    // Else, check if the user logged in via UI
     authedUserId = (req.session as AuthedSessionData).user._id
   }
 
