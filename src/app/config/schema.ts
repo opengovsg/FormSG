@@ -339,7 +339,7 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
       env: 'DOWNLOAD_PAYMENT_RECEIPT_RATE_LIMIT',
     },
     publicApi: {
-      doc: 'Per-minute, per-IP, per-instance request limit for external APIs',
+      doc: 'Per-minute, per-IP, per-instance request limit for public APIs',
       format: 'int',
       default: 100,
       env: 'PUBLIC_API_RATE_LIMIT',
