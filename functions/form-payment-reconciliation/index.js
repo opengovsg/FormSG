@@ -25,6 +25,8 @@ const CRON_PAYMENT_SLACK_SECRET_KEY = 'SLACK_API_SECRET'
 
 const API_AUTH_HEADER = 'x-formsg-cron-payment-secret'
 
+const MAX_AGE_HRS_EVENTS = 7
+
 /**
  * Helper function to obtain secrets map from parameter store.
  */
@@ -64,11 +66,17 @@ const getApi = (apiSecret) => {
   }
 
   const reconcileAccount = async (stripeAccount, paymentIds) => {
-    return fetch(`${CRON_API_PREFIX}account/${stripeAccount}`, {
-      method: 'POST',
-      headers: { [API_AUTH_HEADER]: apiSecret },
-      body: { paymentIds },
-    }).then(async (res) => ({ ok: res.ok, data: await res.json() }))
+    return fetch(
+      `${CRON_API_PREFIX}account/${stripeAccount}?maxAgeHrs=${MAX_AGE_HRS_EVENTS}`,
+      {
+        method: 'POST',
+        headers: {
+          [API_AUTH_HEADER]: apiSecret,
+          'Content-Type': 'application/json',
+        },
+        body: { paymentIds },
+      },
+    ).then(async (res) => ({ ok: res.ok, data: await res.json() }))
   }
 
   return { getIncompletePayments, reconcileAccount }
@@ -268,7 +276,9 @@ async function main(events, context) {
     '---',
     `Report from \`${
       context.functionName
-    }\` prepared on \`${new Date().toLocaleString('en-SG')} SGT\``,
+    }\` prepared on \`${new Date().toLocaleString('en-GB', {
+      timeZone: 'Asia/Singapore',
+    })} SGT\``,
   )
 
   await postToSlack(REPORT.join('\n')).then((res) =>

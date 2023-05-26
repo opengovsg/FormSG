@@ -735,17 +735,34 @@ export const validateAccount = (
  * specified Stripe account.
  *
  * @param {string} stripeAccount the Stripe account id to retrieve events for
+ * @param {number} maxAgeHrs (optional) the max age of events to attempt reconciliation for, in hours before now; if omitted, it is treated as infinite
  *
  * @returns forEach, which takes a callback that is run for each retrieved event
  */
-export const getUndeliveredStripeEventsForAccount = (stripeAccount: string) => {
+export const getUndeliveredStripeEventsForAccount = (
+  stripeAccount: string,
+  maxAgeHrs?: number,
+) => {
+  const SECONDS_PER_HOUR = 60 * 60
   return {
     forEach: (
       cb: (event: Stripe.Event) => boolean | void | Promise<boolean | void>,
     ) =>
       ResultAsync.fromPromise(
         stripe.events
-          .list({ delivery_success: false }, { stripeAccount })
+          .list(
+            {
+              created: maxAgeHrs
+                ? {
+                    gte:
+                      Math.trunc(Date.now() / 1000) -
+                      maxAgeHrs * SECONDS_PER_HOUR,
+                  }
+                : undefined,
+              delivery_success: false,
+            },
+            { stripeAccount },
+          )
           .autoPagingEach(cb),
         (error) => {
           logger.error({

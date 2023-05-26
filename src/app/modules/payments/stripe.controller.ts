@@ -505,11 +505,12 @@ export const getIncompletePayments: ControllerHandler<
 }
 
 /**
- * Handler for POST /payments/reconcile/account/:stripeAccount
+ * Handler for POST /payments/reconcile/account/:stripeAccount?maxAgeHrs=<number>
  * Fetches undelivered stripe webhooks and replays event for the supplied account
  *
  * @param {string} stripeAccount the Stripe account id of the account to be reconciles
- * @body {string[]} paymentIds
+ * @body {string[]} paymentIds the list of payment ids to reconcile
+ * @query {number} (optional) maxAgeHrs the max age of events to attempt reconciliation for, in hours before now; if omitted, it is treated as infinite
  *
  * @returns 200 with two report arrays, one for event processing and another for payment status verification
  * @returns 500 if there were unexpected errors in retrieving data from Stripe
@@ -517,14 +518,18 @@ export const getIncompletePayments: ControllerHandler<
 export const reconcileAccount: ControllerHandler<
   { stripeAccount: string },
   ReconciliationReport | ErrorDto,
-  { paymentIds: string[] }
+  { paymentIds: string[] },
+  { maxAgeHrs?: number }
 > = (req, res) => {
   const { stripeAccount } = req.params
   const { paymentIds } = req.body
+  const { maxAgeHrs } = req.query
 
   const logMeta = {
     action: 'reconcileAccount',
     stripeAccount,
+    paymentIds,
+    maxAgeHrs,
   }
 
   logger.info({
@@ -534,8 +539,16 @@ export const reconcileAccount: ControllerHandler<
 
   const eventsReport: ReconciliationEventsReportLine[] = []
 
-  return StripeService.getUndeliveredStripeEventsForAccount(stripeAccount)
+  return StripeService.getUndeliveredStripeEventsForAccount(
+    stripeAccount,
+    maxAgeHrs,
+  )
     .forEach(async (event) => {
+      logger.info({
+        message: 'Started processing Stripe event while reconciling account',
+        meta: { ...logMeta, event },
+      })
+
       await StripeService.handleStripeEvent(event as Stripe.DiscriminatedEvent)
         .andThen(() => {
           logger.warn({

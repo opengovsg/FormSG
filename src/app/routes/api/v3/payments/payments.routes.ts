@@ -103,7 +103,7 @@ ProtectedPaymentsRouter.route('/incompletePayments').get(
  * Reconciles all payments within an account by re-processing all undelivered
  * events.
  * @protected
- * @route POST /payments/reconcile/account/:stripeAccount
+ * @route POST /payments/reconcile/account/:stripeAccount?maxAgeHrs=<number>
  *
  * @returns 200 with two report arrays, one for event processing and another for payment status verification
  * @returns 500 if there were unexpected errors in retrieving data from Stripe
