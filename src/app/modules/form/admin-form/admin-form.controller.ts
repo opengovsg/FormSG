@@ -2782,7 +2782,7 @@ export const handleUpdateTwilio = [
 ] as ControllerHandler[]
 
 /**
- * Handler for PUT api/external/v1/admin/forms/:formId.
+ * Handler for PUT api/public/v1/admin/forms/:formId.
  * @security session
  *
  * @returns 200 with form successfully updated

@@ -25,7 +25,7 @@ AdminFormsPublicRouter.route('/')
     AdminFormController.handleListDashboardForms,
   )
 
-AdminFormsExternalRouter.route('/:formId([a-fA-F0-9]{24})')
+AdminFormsPublicRouter.route('/:formId([a-fA-F0-9]{24})')
   /**
    * Updates the form definition of a given form
    * @security bearer authentication
@@ -42,6 +42,6 @@ AdminFormsExternalRouter.route('/:formId([a-fA-F0-9]{24})')
    * @returns 500 when database error occurs
    */
   .put(
-    limitRate({ max: rateLimitConfig.externalApi }),
+    limitRate({ max: rateLimitConfig.publicApi }),
     AdminFormController.handleUpdateFormApi,
   )
