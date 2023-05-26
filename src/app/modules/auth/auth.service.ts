@@ -391,7 +391,7 @@ const getApiKeyHash = (apiKey: string): ResultAsync<string, HashingError> => {
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const generateApiKey = (user: IUserSchema): string => {
   const key = crypto.randomBytes(32).toString('base64')
-  const apiEnv = config.externalApiConfig.apiEnv
-  const apiKeyVersion = config.externalApiConfig.apiKeyVersion
+  const apiEnv = config.publicApiConfig.apiEnv
+  const apiKeyVersion = config.publicApiConfig.apiKeyVersion
   return `${apiEnv}_${apiKeyVersion}_${user._id}_${key}`
 }

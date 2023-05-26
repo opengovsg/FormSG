@@ -91,5 +91,5 @@ CP_RP_JWKS_ENDPOINT=http://localhost:5000/api/v3/corppass/.well-known/jwks.json
 # Payment env vars
 SSM_ENV_SITE_NAME=test
 
-# External API env vars
+# Public API env vars
 API_KEY_VERSION=v1

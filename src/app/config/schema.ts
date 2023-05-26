@@ -338,11 +338,11 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
       default: 10,
       env: 'DOWNLOAD_PAYMENT_RECEIPT_RATE_LIMIT',
     },
-    externalApi: {
-      doc: 'Per-minute, per-IP request limit for external APIs',
+    publicApi: {
+      doc: 'Per-minute, per-IP, per-instance request limit for external APIs',
       format: 'int',
       default: 100,
-      env: 'EXTERNAL_API_RATE_LIMIT',
+      env: 'PUBLIC_API_RATE_LIMIT',
     },
   },
   reactMigration: {
@@ -354,7 +354,7 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
       env: 'REACT_MIGRATION_USE_FETCH_FOR_SUBMISSIONS',
     },
   },
-  externalApi: {
+  publicApi: {
     apiKeyVersion: {
       doc: 'API key version',
       format: String,

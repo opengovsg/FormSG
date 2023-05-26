@@ -21,6 +21,6 @@ AdminFormsPublicRouter.route('/')
    * @returns 500 when database errors occur
    */
   .get(
-    limitRate({ max: rateLimitConfig.externalApi }),
+    limitRate({ max: rateLimitConfig.publicApi }),
     AdminFormController.handleListDashboardForms,
   )
