@@ -117,7 +117,7 @@ export const authenticateApiKey: ControllerHandler<
       .json({ message: 'Invalid authorisation header format' })
   }
   const splitApiKey = apiKey.split(API_KEY_SEPARATOR)
-  if (apiKey.length !== 4) {
+  if (splitApiKey.length !== 4) {
     return res
       .status(StatusCodes.BAD_REQUEST)
       .json({ message: 'Invalid API key format' })
