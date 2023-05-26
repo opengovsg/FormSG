@@ -117,11 +117,20 @@ export const authenticateApiKey: ControllerHandler<
       .json({ message: 'Invalid authorisation header format' })
   }
   const [apiEnv, apiVersion, userId, token] = apiKey.split(API_KEY_SEPARATOR)
-  if (!apiEnv || !apiVersion || !userId || !token) {
+  if (apiKey.length !== 4) {
     return res
       .status(StatusCodes.BAD_REQUEST)
       .json({ message: 'Invalid API key format' })
   }
+  logger.info({
+    message: 'User attempting to authenticate using API key',
+    meta: {
+      action: 'authenticateApiKey',
+      apiEnv,
+      apiVersion,
+      user: userId,
+    },
+  })
   return getUserByApiKey(userId, token)
     .map((user) => {
       if (!user) {
