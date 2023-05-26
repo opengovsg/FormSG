@@ -53,7 +53,6 @@ import MailService from '../../../services/mail/mail.service'
 import * as SmsService from '../../../services/sms/sms.service'
 import { createReqMeta } from '../../../utils/request'
 import * as AuthService from '../../auth/auth.service'
-import { ApiReqBody } from '../../auth/auth.types'
 import {
   DatabaseConflictError,
   DatabaseError,
@@ -199,18 +198,9 @@ const fileUploadValidator = celebrate({
  */
 export const handleListDashboardForms: ControllerHandler<
   unknown,
-  AdminDashboardFormMetaDto[] | ErrorDto,
-  ApiReqBody
+  AdminDashboardFormMetaDto[] | ErrorDto
 > = async (req, res) => {
-  let authedUserId: string
-
-  if (req.body.formSg?.userId) {
-    // Check if user is authenticating via API
-    authedUserId = req.body.formSg?.userId
-  } else {
-    // Else, check if the user logged in via UI
-    authedUserId = (req.session as AuthedSessionData).user._id
-  }
+  const authedUserId = (req.session as AuthedSessionData).user._id
 
   return AdminFormService.getDashboardForms(authedUserId)
     .map((dashboardView) => res.json(dashboardView))

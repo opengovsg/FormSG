@@ -7,7 +7,6 @@ import { createReqMeta } from '../../utils/request'
 import { ControllerHandler } from '../core/core.types'
 
 import { getUserByApiKey } from './auth.service'
-import { ApiReqBody } from './auth.types'
 import { isUserInSession, mapRouteExternalApiError } from './auth.utils'
 import { API_KEY_SEPARATOR, BEARER_SEPARATOR, BEARER_STRING } from './constants'
 
@@ -99,11 +98,7 @@ export const validateVerifyOtpParams = celebrate({
 /**
  * Middleware that only allows users with a valid bearer token to pass through to the next handler
  */
-export const authenticateApiKey: ControllerHandler<
-  unknown,
-  unknown,
-  ApiReqBody
-> = (req, res, next) => {
+export const authenticateApiKey: ControllerHandler = (req, res, next) => {
   const authorizationHeader = req.headers.authorization
   if (!authorizationHeader) {
     return res
@@ -139,7 +134,7 @@ export const authenticateApiKey: ControllerHandler<
           .status(StatusCodes.UNAUTHORIZED)
           .json({ message: 'Invalid API key' })
       }
-      req.body.formSg = { userId: user.id }
+      req.session.user = { _id: user.id }
       return next()
     })
     .mapErr((error) => {
