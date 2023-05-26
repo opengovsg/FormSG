@@ -2960,7 +2960,7 @@ export const handleUpdateFormApi = [
         form_fields: Joi.array().items(
           Joi.object({
             // Ensures given field is same as accessed field.
-            _id: Joi.string().valid(Joi.ref('$params.fieldId')),
+            _id: Joi.string(),
             fieldType: Joi.string()
               .valid(...Object.values(BasicField))
               .required(),
