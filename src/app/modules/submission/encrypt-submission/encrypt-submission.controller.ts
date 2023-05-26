@@ -436,7 +436,7 @@ const submitEncryptModeForm: ControllerHandler<
 
     if (responseMetadata)
       statsdClient.distribution(
-        'formsg.submissions.normalisedReponseTime',
+        'formsg.submissions.normResponseTimeMetadata',
         getNormalisedResponseTime(
           responseMetadata.responseTimeMs,
           responseMetadata.numVisibleFields,
@@ -599,7 +599,7 @@ const submitEncryptModeForm: ControllerHandler<
 
   if (responseMetadata)
     statsdClient.distribution(
-      'formsg.submissions.normalisedReponseTime',
+      'formsg.submissions.normResponseTimeMetadata',
       getNormalisedResponseTime(
         responseMetadata.responseTimeMs,
         responseMetadata.numVisibleFields,
