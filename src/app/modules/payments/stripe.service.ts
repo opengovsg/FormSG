@@ -798,7 +798,9 @@ export const verifyPaymentStatusWithStripe = (
   return PaymentsService.findPaymentById(paymentId)
     .andThen((payment) =>
       ResultAsync.fromPromise(
-        stripe.paymentIntents.retrieve(payment.paymentIntentId),
+        stripe.paymentIntents.retrieve(payment.paymentIntentId, {
+          stripeAccount: payment.targetAccountId,
+        }),
         (error) => {
           logger.error({
             message: 'Error while retrieving payment intent',
