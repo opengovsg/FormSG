@@ -74,7 +74,7 @@ const getApi = (apiSecret) => {
           [API_AUTH_HEADER]: apiSecret,
           'Content-Type': 'application/json',
         },
-        body: { paymentIds },
+        body: JSON.stringify({ paymentIds }),
       },
     ).then(async (res) => ({ ok: res.ok, data: await res.json() }))
   }
@@ -116,8 +116,7 @@ async function main(events, context) {
         getIncompletePaymentsResponse.data.message,
       )
       REPORT.push(
-        'Error occurred while retrieving incomplete payments: ' +
-          getIncompletePaymentsResponse.data.message,
+        `- Error occurred while retrieving incomplete payments: \`${getIncompletePaymentsResponse.data.message}\``,
         '---',
       )
       return
@@ -182,8 +181,7 @@ async function main(events, context) {
           reconcileAccountResponse.data.message,
         )
         REPORT.push(
-          `Error occurred while reconciling Stripe account ${stripeAccount}:`,
-          reconcileAccountResponse.data.message,
+          `- Error occurred while reconciling Stripe account \`${stripeAccount}\`: \`${reconcileAccountResponse.data.message}\``,
         )
         reconciliationMeta.error.accounts.push(stripeAccount)
         continue
@@ -220,7 +218,7 @@ async function main(events, context) {
                 `Found mismatched payment that was canceled: ${identifier}`,
               )
               REPORT.push(
-                `Found mismatched payment that was canceled: ${identifier}`,
+                `- Found mismatched payment that was canceled: \`${identifier}\``,
               )
             }
           } else {
@@ -258,6 +256,7 @@ async function main(events, context) {
     REPORT.push(
       '---',
       'Reconciliation result (aggregated):',
+      '',
       '```' + JSON.stringify(reconciliationMetaCounts, null, 2) + '```',
     )
   }
