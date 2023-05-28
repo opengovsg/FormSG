@@ -320,6 +320,8 @@ const submitEmailModeForm: ControllerHandler<
             message: 'Sending admin mail',
             meta: logMetaWithSubmission,
           })
+
+          // TODO 6395 make responseMetadata mandatory
           if (responseMetadata)
             statsdClient.distribution(
               'formsg.submissions.normResponseTimeMetadata',

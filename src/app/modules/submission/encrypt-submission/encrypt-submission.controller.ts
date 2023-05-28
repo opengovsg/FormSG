@@ -434,6 +434,7 @@ const submitEncryptModeForm: ControllerHandler<
       },
     })
 
+    // TODO 6395 make responseMetadata mandatory
     if (responseMetadata)
       statsdClient.distribution(
         'formsg.submissions.normResponseTimeMetadata',
@@ -444,7 +445,7 @@ const submitEncryptModeForm: ControllerHandler<
         1,
         {
           mode: 'encrypt',
-          payment: 'true',
+          payment: true as unknown as string,
           responseTimeMs: '${responseMetadata.responseTimeMs}',
           numOfVisibleFields: '${responseMetadata.numVisibleFields}',
         },
@@ -597,6 +598,7 @@ const submitEncryptModeForm: ControllerHandler<
     },
   })
 
+  // TODO 6395 make responseMetadata mandatory
   if (responseMetadata)
     statsdClient.distribution(
       'formsg.submissions.normResponseTimeMetadata',
@@ -607,7 +609,7 @@ const submitEncryptModeForm: ControllerHandler<
       1,
       {
         mode: 'encrypt',
-        payment: 'false',
+        payment: false as unknown as string,
         responseTimeMs: '${responseMetadata.responseTimeMs}',
         numOfVisibleFields: '${responseMetadata.numVisibleFields}',
       },
