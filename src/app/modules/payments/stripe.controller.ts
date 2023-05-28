@@ -579,16 +579,17 @@ export const reconcileAccount: ControllerHandler<
     })
     .andThen(() =>
       // Validate all the associated payments with Stripe
-      ResultAsync.combine(
+      ResultAsync.combineWithAllErrors(
         paymentIds.map(StripeService.verifyPaymentStatusWithStripe),
       ),
     )
     .match(
       (reconciliationReport) =>
         res.status(StatusCodes.OK).json({ eventsReport, reconciliationReport }),
-      (error) =>
-        res
-          .status(StatusCodes.INTERNAL_SERVER_ERROR)
-          .json({ message: error.message }),
+      (errors) => {
+        const errorsAsArray = errors instanceof Array ? errors : [errors]
+        const message = errorsAsArray.map((error) => error.message).join('; ')
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message })
+      },
     )
 }

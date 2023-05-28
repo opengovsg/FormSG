@@ -808,7 +808,7 @@ export const verifyPaymentStatusWithStripe = (
             },
             error,
           })
-          return new StripeFetchError()
+          return new StripeFetchError(String(error))
         },
       ).andThen((paymentIntent) => okAsync({ payment, paymentIntent })),
     )
@@ -856,7 +856,7 @@ export const verifyPaymentStatusWithStripe = (
                   meta: { ...logMeta, payment, paymentIntent },
                   error,
                 })
-                return new StripeFetchError()
+                return new StripeFetchError(String(error))
               },
             ).andThen(() =>
               okAsync({
