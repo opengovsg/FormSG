@@ -16,6 +16,7 @@ import get from 'lodash/get'
 import simplur from 'simplur'
 
 import { PAYMENT_CONTACT_FIELD_ID } from '~shared/constants'
+import { PaymentChannel } from '~shared/types'
 import {
   FormAuthType,
   FormResponseMode,
@@ -494,7 +495,7 @@ export const PublicFormProvider = ({
 
   const isPaymentEnabled =
     data?.form.responseMode === FormResponseMode.Encrypt &&
-    data.form.payments_field.enabled
+    data.form.payments_channel.channel !== PaymentChannel.Unconnected
 
   if (isNotFormId) {
     return <NotFoundErrorPage />

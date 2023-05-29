@@ -153,10 +153,6 @@ const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
   },
 
   payments_field: {
-    enabled: {
-      type: Boolean,
-      default: false,
-    },
     description: {
       type: String,
       trim: true,
@@ -208,9 +204,6 @@ EncryptedFormDocumentSchema.methods.removePaymentAccount = async function () {
     channel: PaymentChannel.Unconnected,
     target_account_id: '',
     publishable_key: '',
-  }
-  if (this.payments_field) {
-    this.payments_field.enabled = false
   }
   return this.save()
 }

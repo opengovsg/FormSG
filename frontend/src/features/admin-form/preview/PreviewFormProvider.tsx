@@ -5,6 +5,7 @@ import { datadogLogs } from '@datadog/browser-logs'
 import get from 'lodash/get'
 import simplur from 'simplur'
 
+import { PaymentChannel } from '~shared/types'
 import { FormAuthType, FormResponseMode } from '~shared/types/form'
 
 import { usePreviewForm } from '~/features/admin-form/common/queries'
@@ -316,7 +317,7 @@ export const PreviewFormProvider = ({
 
   const isPaymentEnabled =
     data?.form.responseMode === FormResponseMode.Encrypt &&
-    data.form.payments_field.enabled
+    data.form.payments_channel.channel !== PaymentChannel.Unconnected
 
   if (isNotFormId) {
     return <NotFoundErrorPage />

@@ -349,10 +349,7 @@ const submitEncryptModeForm: ControllerHandler<
   }
 
   // Handle submissions for payments forms
-  if (
-    form.payments_field?.enabled &&
-    form.payments_channel.channel === PaymentChannel.Stripe
-  ) {
+  if (form.payments_channel.channel === PaymentChannel.Stripe) {
     /**
      * Start of Payment Forms Submission Flow
      */

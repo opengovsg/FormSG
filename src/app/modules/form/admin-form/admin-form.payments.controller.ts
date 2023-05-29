@@ -315,17 +315,8 @@ export const _handleUpdatePayments: ControllerHandler<
 export const handleUpdatePayments = [
   celebrate({
     [Segments.BODY]: {
-      enabled: Joi.boolean().required(),
-      amount_cents: Joi.when('enabled', {
-        is: Joi.equal(true),
-        then: Joi.number().integer().positive().required(),
-        otherwise: Joi.number().integer(),
-      }),
-      description: Joi.when('enabled', {
-        is: Joi.equal(true),
-        then: Joi.string().required(),
-        otherwise: Joi.string().allow(''),
-      }),
+      amount_cents: Joi.number().integer().positive(),
+      description: Joi.string(),
     },
   }),
   _handleUpdatePayments,

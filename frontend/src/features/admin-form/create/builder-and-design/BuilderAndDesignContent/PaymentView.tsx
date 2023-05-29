@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 import { Box } from '@chakra-ui/react'
 
-import { FormFieldDto, FormResponseMode } from '~shared/types'
+import { FormFieldDto, FormResponseMode, PaymentChannel } from '~shared/types'
 
 import { PaymentPreview } from '~templates/Field/PaymentPreview/PaymentPreview'
 
@@ -80,7 +80,7 @@ export const PaymentView = () => {
     setFieldListTabIndex(FieldListTabIndex.Payments)
   }
 
-  return paymentDetails.enabled ? (
+  return form.payments_channel.channel !== PaymentChannel.Unconnected ? (
     <Box w="100%" maxW="57rem" alignSelf="center" ref={paymentRef}>
       <FormProvider {...formMethods}>
         <Box mt="2.5rem" bg="white" py="2.5rem" px="1.5rem">

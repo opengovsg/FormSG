@@ -4,6 +4,7 @@ import { useSearchParams } from 'react-router-dom'
 import { Box, Stack } from '@chakra-ui/react'
 import { isEmpty, times } from 'lodash'
 
+import { PaymentChannel } from '~shared/types'
 import { BasicField, FormFieldDto } from '~shared/types/field'
 import { FormColorTheme, FormResponseMode, LogicDto } from '~shared/types/form'
 
@@ -164,7 +165,7 @@ export const FormFields = ({
           </Box>
         )}
         {form?.responseMode === FormResponseMode.Encrypt &&
-          form?.payments_field.enabled && (
+          form?.payments_channel.channel !== PaymentChannel.Unconnected && (
             <Box
               mt="2.5rem"
               bg="white"

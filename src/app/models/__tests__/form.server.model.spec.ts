@@ -95,7 +95,6 @@ const PAYMENTS_DEFAULTS = {
     publishable_key: '',
   },
   payments_field: {
-    enabled: false,
     description: '',
     amount_cents: 0,
   },
@@ -734,7 +733,6 @@ describe('Form Model', () => {
         // Arrange
         const validFormParams = merge({}, MOCK_ENCRYPTED_FORM_PARAMS, {
           payments_field: {
-            enabled: true,
             amount_cents: 50,
             description: 'some payment',
           },
@@ -782,7 +780,6 @@ describe('Form Model', () => {
         // Arrange
         const invalidFormParams = merge({}, MOCK_ENCRYPTED_FORM_PARAMS, {
           payments_field: {
-            enabled: true,
             amount_cents: -50,
             description: 'some payment',
           },

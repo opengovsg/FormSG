@@ -4,8 +4,8 @@ import { Mongoose, Schema } from 'mongoose'
 import { PAYMENT_CONTACT_FIELD_ID } from '../../../../shared/constants'
 import {
   BasicField,
-  FormPaymentsField,
   FormResponseMode,
+  PaymentChannel,
 } from '../../../../shared/types'
 import { TRANSACTION_EXPIRE_AFTER_SECONDS } from '../../../../shared/utils/verification'
 import {
@@ -115,10 +115,8 @@ const compileVerificationModel = (db: Mongoose): IVerificationModel => {
     return fields
   }
 
-  const getVerifiablePaymentContactField = (
-    paymentsField?: FormPaymentsField,
-  ) => {
-    if (!paymentsField?.enabled) return null
+  const getVerifiablePaymentContactField = (paymentsAccConnected?: boolean) => {
+    if (!paymentsAccConnected) return null
     return {
       _id: PAYMENT_CONTACT_FIELD_ID,
       fieldType: BasicField.Email,
@@ -134,8 +132,10 @@ const compileVerificationModel = (db: Mongoose): IVerificationModel => {
   ): Promise<IVerificationSchema | null> {
     const formFields = getVerifiableFormFields(form.form_fields)
     if (form.responseMode === FormResponseMode.Encrypt) {
-      const { payments_field } = form as IEncryptedFormSchema
-      const paymentField = getVerifiablePaymentContactField(payments_field)
+      const { payments_channel } = form as IEncryptedFormSchema
+      const paymentField = getVerifiablePaymentContactField(
+        payments_channel.channel !== PaymentChannel.Unconnected,
+      )
       if (!formFields && !paymentField) return null
       return this.create({
         formId: form._id,
