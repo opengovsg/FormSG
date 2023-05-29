@@ -23,7 +23,6 @@ import {
   SubmissionErrorDto,
   SubmissionResponseDto,
 } from '../../../../../shared/types'
-import { CaptchaTypes } from '../../../../../shared/types/captcha'
 import { IPopulatedForm, StripePaymentMetadataDto } from '../../../../types'
 import {
   EncryptFormFieldResponse,
@@ -39,10 +38,9 @@ import getPaymentModel from '../../../models/payment.server.model'
 import { getEncryptPendingSubmissionModel } from '../../../models/pending_submission.server.model'
 import { getEncryptSubmissionModel } from '../../../models/submission.server.model'
 import * as CaptchaMiddleware from '../../../services/captcha/captcha.middleware'
-import * as CaptchaService from '../../../services/captcha/captcha.service'
 import * as TurnstileMiddleware from '../../../services/turnstile/turnstile.middleware'
-import * as TurnstileService from '../../../services/turnstile/turnstile.service'
-import { createReqMeta, getRequestIp } from '../../../utils/request'
+import { Pipeline } from '../../../utils/pipeline-middleware'
+import { createReqMeta } from '../../../utils/request'
 import { getFormAfterPermissionChecks } from '../../auth/auth.service'
 import { MalformedParametersError } from '../../core/core.errors'
 import { ControllerHandler } from '../../core/core.types'
@@ -61,6 +59,11 @@ import * as ReceiverMiddleware from '../receiver/receiver.middleware'
 import { getFilteredResponses, isAttachmentResponse } from '../submission.utils'
 import { reportSubmissionResponseTime } from '../submissions.statsd-client'
 
+import {
+  ensureIsFormWithinSubmissionLimits,
+  ensureIsPublicForm,
+  ensureIsValidCaptcha,
+} from './encrypt-submission.ensures'
 import {
   addPaymentDataStream,
   checkFormIsEncryptMode,
@@ -81,7 +84,7 @@ import {
 } from './encrypt-submission.utils'
 import IncomingEncryptSubmission from './IncomingEncryptSubmission.class'
 
-const logger = createLoggerWithLabel(module)
+export const logger = createLoggerWithLabel(module)
 const EncryptSubmission = getEncryptSubmissionModel(mongoose)
 const EncryptPendingSubmission = getEncryptPendingSubmissionModel(mongoose)
 const Payment = getPaymentModel(mongoose)
@@ -157,81 +160,20 @@ const submitEncryptModeForm: ControllerHandler<
   }
   const form = checkFormIsEncryptModeResult.value
 
-  // Check that form is public
-  const formPublicResult = FormService.isFormPublic(form)
-  if (formPublicResult.isErr()) {
-    logger.warn({
-      message: 'Attempt to submit non-public form',
-      meta: logMeta,
-      error: formPublicResult.error,
-    })
-    const { statusCode, errorMessage } = mapRouteError(formPublicResult.error)
-    return res.status(statusCode).json({
-      message: errorMessage,
-    })
-  }
-  // Check if respondent is a GSIB user
-  const isIntranetUser = FormService.checkIsIntranetFormAccess(
-    getRequestIp(req),
-    form,
+  const ensurePipeline = Pipeline(
+    ensureIsPublicForm,
+    ensureIsValidCaptcha,
+    ensureIsFormWithinSubmissionLimits,
   )
-  // Check captcha, provided user is not on GSIB
-  if (!isIntranetUser && form.hasCaptcha) {
-    switch (req.query.captchaType) {
-      case CaptchaTypes.Turnstile: {
-        const turnstileResult = await TurnstileService.verifyTurnstileResponse(
-          req.query.captchaResponse,
-          getRequestIp(req),
-        )
-        if (turnstileResult.isErr()) {
-          logger.error({
-            message: 'Error while verifying turnstile',
-            meta: logMeta,
-            error: turnstileResult.error,
-          })
-          const { errorMessage, statusCode } = mapRouteError(
-            turnstileResult.error,
-          )
-          return res.status(statusCode).json({ message: errorMessage })
-        }
-        break
-      }
-      case CaptchaTypes.Recaptcha: // fallthrough, defaults to reCAPTCHA
-      default: {
-        const captchaResult = await CaptchaService.verifyCaptchaResponse(
-          req.query.captchaResponse,
-          getRequestIp(req),
-        )
-        if (captchaResult.isErr()) {
-          logger.error({
-            message: 'Error while verifying captcha',
-            meta: logMeta,
-            error: captchaResult.error,
-          })
-          const { errorMessage, statusCode } = mapRouteError(
-            captchaResult.error,
-          )
-          return res.status(statusCode).json({ message: errorMessage })
-        }
-        break
-      }
-    }
-  }
 
-  // Check that the form has not reached submission limits
-  const formSubmissionLimitResult =
-    await FormService.checkFormSubmissionLimitAndDeactivateForm(form)
-  if (formSubmissionLimitResult.isErr()) {
-    logger.warn({
-      message:
-        'Attempt to submit form which has just reached submission limits',
-      meta: logMeta,
-      error: formSubmissionLimitResult.error,
-    })
-    const { statusCode } = mapRouteError(formSubmissionLimitResult.error)
-    return res.status(statusCode).json({
-      message: form.inactiveMessage,
-    })
+  const hasEnsuredAll = await ensurePipeline.execute({
+    form,
+    logMeta,
+    req,
+    res,
+  })
+  if (!hasEnsuredAll) {
+    return
   }
 
   // Create Incoming Submission
@@ -789,81 +731,20 @@ const submitStorageModeForm: ControllerHandler<
   }
   const form = checkFormIsEncryptModeResult.value
 
-  // Check that form is public
-  const formPublicResult = FormService.isFormPublic(form)
-  if (formPublicResult.isErr()) {
-    logger.warn({
-      message: 'Attempt to submit non-public form',
-      meta: logMeta,
-      error: formPublicResult.error,
-    })
-    const { statusCode, errorMessage } = mapRouteError(formPublicResult.error)
-    return res.status(statusCode).json({
-      message: errorMessage,
-    })
-  }
-  // Check if respondent is a GSIB user
-  const isIntranetUser = FormService.checkIsIntranetFormAccess(
-    getRequestIp(req),
-    form,
+  const ensurePipeline = Pipeline(
+    ensureIsPublicForm,
+    ensureIsValidCaptcha,
+    ensureIsFormWithinSubmissionLimits,
   )
-  // Check captcha, provided user is not on GSIB
-  if (!isIntranetUser && form.hasCaptcha) {
-    switch (req.query.captchaType) {
-      case CaptchaTypes.Turnstile: {
-        const turnstileResult = await TurnstileService.verifyTurnstileResponse(
-          req.query.captchaResponse,
-          getRequestIp(req),
-        )
-        if (turnstileResult.isErr()) {
-          logger.error({
-            message: 'Error while verifying turnstile',
-            meta: logMeta,
-            error: turnstileResult.error,
-          })
-          const { errorMessage, statusCode } = mapRouteError(
-            turnstileResult.error,
-          )
-          return res.status(statusCode).json({ message: errorMessage })
-        }
-        break
-      }
-      case CaptchaTypes.Recaptcha: // fallthrough, defaults to reCAPTCHA
-      default: {
-        const captchaResult = await CaptchaService.verifyCaptchaResponse(
-          req.query.captchaResponse,
-          getRequestIp(req),
-        )
-        if (captchaResult.isErr()) {
-          logger.error({
-            message: 'Error while verifying captcha',
-            meta: logMeta,
-            error: captchaResult.error,
-          })
-          const { errorMessage, statusCode } = mapRouteError(
-            captchaResult.error,
-          )
-          return res.status(statusCode).json({ message: errorMessage })
-        }
-        break
-      }
-    }
-  }
 
-  // Check that the form has not reached submission limits
-  const formSubmissionLimitResult =
-    await FormService.checkFormSubmissionLimitAndDeactivateForm(form)
-  if (formSubmissionLimitResult.isErr()) {
-    logger.warn({
-      message:
-        'Attempt to submit form which has just reached submission limits',
-      meta: logMeta,
-      error: formSubmissionLimitResult.error,
-    })
-    const { statusCode } = mapRouteError(formSubmissionLimitResult.error)
-    return res.status(statusCode).json({
-      message: form.inactiveMessage,
-    })
+  const hasEnsuredAll = await ensurePipeline.execute({
+    form,
+    logMeta,
+    req,
+    res,
+  })
+  if (!hasEnsuredAll) {
+    return
   }
 
   // Create Incoming Submission
