@@ -9,7 +9,7 @@ import {
   Text,
 } from '@chakra-ui/react'
 
-import { FormResponseMode } from '~shared/types'
+import { FormResponseMode, PaymentChannel } from '~shared/types'
 
 import { BxsCheckCircle, BxsError, BxsInfoCircle } from '~assets/icons'
 import { GUIDE_PAYMENTS } from '~constants/links'
@@ -106,14 +106,16 @@ const ConnectionStatusText = ({
 
 const AfterConnectionInfo = ({
   isProductionEnv,
+  hasPaymentCapabilities,
+  adminFormPaymentsError,
 }: {
   isProductionEnv: boolean
+  hasPaymentCapabilities: boolean
+  adminFormPaymentsError: boolean
 }): JSX.Element => {
-  const { hasPaymentCapabilities, isLoading, isError } = useAdminFormPayments()
-
   let connectionInfo: JSX.Element
 
-  if (isError) {
+  if (adminFormPaymentsError) {
     // Base case: Error retrieving form payments data
     connectionInfo = (
       <ConnectionStatusText
@@ -156,19 +158,15 @@ const AfterConnectionInfo = ({
       // Test mode: Stripe account connection step skipped
       connectionInfo = (
         <ConnectionStatusText
-          color="warning.500"
-          icon={BxsInfoCircle}
+          color="success.700"
+          icon={BxsCheckCircle}
           text="You are connected to a test account."
         />
       )
     }
   }
 
-  return (
-    <Skeleton isLoaded={!isLoading}>
-      <Flex mb="2.5rem">{connectionInfo}</Flex>
-    </Skeleton>
-  )
+  return <Flex mb="2.5rem">{connectionInfo}</Flex>
 }
 
 const PaymentsAccountInformation = ({
@@ -194,8 +192,11 @@ const PaymentsAccountInformation = ({
 }
 
 export const PaymentSettingsSection = (): JSX.Element => {
-  const { hasPaymentCapabilities, data } = useAdminFormPayments()
-  const stripeAccount = data?.account
+  const {
+    hasPaymentCapabilities,
+    isLoading: adminFormPaymentsLoading,
+    isError: adminFormPaymentsError,
+  } = useAdminFormPayments()
 
   const { data: settings, isLoading: settingsIsLoading } =
     useAdminFormSettings()
@@ -203,24 +204,32 @@ export const PaymentSettingsSection = (): JSX.Element => {
   const isProductionEnv = secretEnv === 'production'
 
   return settings?.responseMode === FormResponseMode.Encrypt ? (
-    !stripeAccount ? (
-      <BeforeConnectionInstructions isProductionEnv={isProductionEnv} />
-    ) : (
-      <Skeleton isLoaded={!settingsIsLoading}>
-        <AfterConnectionInfo isProductionEnv={isProductionEnv} />
-        <PaymentsAccountInformation
-          account_id={settings?.payments_channel?.target_account_id}
-          isLoading={settingsIsLoading}
-        />
-        <StripeConnectButton connectState={StripeConnectButtonStates.LINKED} />
-        {hasPaymentCapabilities && (
-          <>
-            <Divider my="2.5rem" />
-            <BusinessInfoSection />
-          </>
-        )}
-      </Skeleton>
-    )
+    <Skeleton isLoaded={!settingsIsLoading}>
+      {settings.payments_channel.channel === PaymentChannel.Unconnected ? (
+        <BeforeConnectionInstructions isProductionEnv={isProductionEnv} />
+      ) : (
+        <Skeleton isLoaded={!adminFormPaymentsLoading}>
+          <AfterConnectionInfo
+            isProductionEnv={isProductionEnv}
+            hasPaymentCapabilities={hasPaymentCapabilities}
+            adminFormPaymentsError={adminFormPaymentsError}
+          />
+          <PaymentsAccountInformation
+            account_id={settings.payments_channel.target_account_id}
+            isLoading={settingsIsLoading}
+          />
+          <StripeConnectButton
+            connectState={StripeConnectButtonStates.LINKED}
+          />
+          {hasPaymentCapabilities && (
+            <>
+              <Divider my="2.5rem" />
+              <BusinessInfoSection />
+            </>
+          )}
+        </Skeleton>
+      )}
+    </Skeleton>
   ) : (
     <></>
   )
