@@ -1,3 +1,3 @@
 # Functions
 
-This folder contains lambda functions organized in their own respective folders
+This folder contains lambda functions which are organized in their own respective folders

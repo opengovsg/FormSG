@@ -1,10 +1,9 @@
 {
   "name": "form-payment-reconciliation",
   "version": "1.0.0",
-  "description": "lambda func for payment reconciliation",
+  "description": "Lambda function for payment reconciliation",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "lambda:prep": "npm install --omit=dev && rm -rf dist && mkdir -p dist && zip -r dist/function.zip index.js src package.json node_modules",
     "lambda:push:prod": "aws lambda update-function-code --function-name prod-form-payment-reconciliation --zip-file fileb://dist/function.zip 1>/dev/null",
     "lambda:push:staging": "aws lambda update-function-code --function-name staging-form-payment-reconciliation --zip-file fileb://dist/function.zip 1>/dev/null",
@@ -21,8 +20,5 @@
   "dependencies": {
     "@aws-sdk/client-secrets-manager": "^3.312.0",
     "@aws-sdk/client-ssm": "^3.312.0"
-  },
-  "devDependencies": {
-    "concurrently": "^8.0.1"
   }
 }
