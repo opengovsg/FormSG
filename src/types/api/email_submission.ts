@@ -27,6 +27,6 @@ export type ParsedEmailModeSubmissionBody = Merge<
   EmailModeSubmissionContentDto,
   {
     responses: ParsedEmailFormFieldResponse[]
-    responseMetadata: ResponseMetadata
+    responseMetadata?: ResponseMetadata
   }
 >

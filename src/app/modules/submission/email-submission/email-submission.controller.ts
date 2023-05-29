@@ -7,6 +7,7 @@ import {
 } from '../../../../../shared/types'
 import { IPopulatedEmailForm } from '../../../../types'
 import { ParsedEmailModeSubmissionBody } from '../../../../types/api'
+import { statsdClient } from '../../../config/datadog-statsd-client'
 import { createLoggerWithLabel } from '../../../config/logger'
 import * as CaptchaMiddleware from '../../../services/captcha/captcha.middleware'
 import * as CaptchaService from '../../../services/captcha/captcha.service'
@@ -25,7 +26,10 @@ import { SgidService } from '../../sgid/sgid.service'
 import { getOidcService } from '../../spcp/spcp.oidc.service'
 import * as EmailSubmissionMiddleware from '../email-submission/email-submission.middleware'
 import * as SubmissionService from '../submission.service'
-import { extractEmailConfirmationData } from '../submission.utils'
+import {
+  extractEmailConfirmationData,
+  getNormalisedResponseTime,
+} from '../submission.utils'
 
 import * as EmailSubmissionService from './email-submission.service'
 import { IPopulatedEmailFormWithResponsesAndHash } from './email-submission.types'
@@ -316,6 +320,22 @@ const submitEmailModeForm: ControllerHandler<
             message: 'Sending admin mail',
             meta: logMetaWithSubmission,
           })
+
+          // TODO 6395 make responseMetadata mandatory
+          if (responseMetadata)
+            statsdClient.distribution(
+              'formsg.submissions.normResponseTimeMetadata',
+              getNormalisedResponseTime(
+                responseMetadata.responseTimeMs,
+                responseMetadata.numVisibleFields,
+              ),
+              1,
+              {
+                mode: 'email',
+                responseTimeMs: '${responseMetadata.responseTimeMs}',
+                numOfVisibleFields: '${responseMetadata.numVisibleFields}',
+              },
+            )
 
           // Send response to admin
           // NOTE: This should short circuit in the event of an error.
