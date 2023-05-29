@@ -29,8 +29,8 @@ import getPaymentModel from '../../../models/payment.server.model'
 import { getEncryptPendingSubmissionModel } from '../../../models/pending_submission.server.model'
 import { getEncryptSubmissionModel } from '../../../models/submission.server.model'
 import * as CaptchaMiddleware from '../../../services/captcha/captcha.middleware'
-import * as CaptchaService from '../../../services/captcha/captcha.service'
-import { createReqMeta, getRequestIp } from '../../../utils/request'
+import { Pipeline } from '../../../utils/pipeline-middleware'
+import { createReqMeta } from '../../../utils/request'
 import { getFormAfterPermissionChecks } from '../../auth/auth.service'
 import { MalformedParametersError } from '../../core/core.errors'
 import { ControllerHandler } from '../../core/core.types'
@@ -43,6 +43,11 @@ import { getPopulatedUserById } from '../../user/user.service'
 import * as VerifiedContentService from '../../verified-content/verified-content.service'
 import * as EncryptSubmissionMiddleware from '../encrypt-submission/encrypt-submission.middleware'
 
+import {
+  ensureIsFormWithinSubmissionLimits,
+  ensureIsPublicForm,
+  ensureIsValidCaptcha,
+} from './encrypt-submission.ensures'
 import {
   addPaymentDataStream,
   checkFormIsEncryptMode,
@@ -62,7 +67,7 @@ import {
 } from './encrypt-submission.utils'
 import IncomingEncryptSubmission from './IncomingEncryptSubmission.class'
 
-const logger = createLoggerWithLabel(module)
+export const logger = createLoggerWithLabel(module)
 const EncryptSubmission = getEncryptSubmissionModel(mongoose)
 const EncryptPendingSubmission = getEncryptPendingSubmissionModel(mongoose)
 const Payment = getPaymentModel(mongoose)
@@ -125,54 +130,20 @@ const submitEncryptModeForm: ControllerHandler<
   }
   const form = checkFormIsEncryptModeResult.value
 
-  // Check that form is public
-  const formPublicResult = FormService.isFormPublic(form)
-  if (formPublicResult.isErr()) {
-    logger.warn({
-      message: 'Attempt to submit non-public form',
-      meta: logMeta,
-      error: formPublicResult.error,
-    })
-    const { statusCode, errorMessage } = mapRouteError(formPublicResult.error)
-    if (statusCode === StatusCodes.GONE) {
-      return res.sendStatus(statusCode)
-    }
-    return res.status(statusCode).json({
-      message: errorMessage,
-    })
-  }
+  const ensurePipeline = Pipeline(
+    ensureIsPublicForm,
+    ensureIsValidCaptcha,
+    ensureIsFormWithinSubmissionLimits,
+  )
 
-  // Check captcha
-  if (form.hasCaptcha) {
-    const captchaResult = await CaptchaService.verifyCaptchaResponse(
-      req.query.captchaResponse,
-      getRequestIp(req),
-    )
-    if (captchaResult.isErr()) {
-      logger.error({
-        message: 'Error while verifying captcha',
-        meta: logMeta,
-        error: captchaResult.error,
-      })
-      const { errorMessage, statusCode } = mapRouteError(captchaResult.error)
-      return res.status(statusCode).json({ message: errorMessage })
-    }
-  }
-
-  // Check that the form has not reached submission limits
-  const formSubmissionLimitResult =
-    await FormService.checkFormSubmissionLimitAndDeactivateForm(form)
-  if (formSubmissionLimitResult.isErr()) {
-    logger.warn({
-      message:
-        'Attempt to submit form which has just reached submission limits',
-      meta: logMeta,
-      error: formSubmissionLimitResult.error,
-    })
-    const { statusCode } = mapRouteError(formSubmissionLimitResult.error)
-    return res.status(statusCode).json({
-      message: form.inactiveMessage,
-    })
+  const hasEnsuredAll = await ensurePipeline.execute({
+    form,
+    logMeta,
+    req,
+    res,
+  })
+  if (!hasEnsuredAll) {
+    return
   }
 
   // Create Incoming Submission
