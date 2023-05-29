@@ -7,7 +7,7 @@ import { PAYMENT_CONTACT_FIELD_ID } from 'shared/constants'
 
 import { UpdateFieldData } from 'src/types'
 
-import { BasicField } from '../../../../../shared/types'
+import { BasicField, PaymentChannel } from '../../../../../shared/types'
 import getVerificationModel from '../verification.model'
 
 import {
@@ -298,7 +298,11 @@ describe('Verification Model', () => {
                 generateDefaultField(BasicField.Email),
                 generateDefaultField(BasicField.Mobile),
               ],
-              payments_field: { enabled: false },
+              payments_channel: {
+                channel: PaymentChannel.Unconnected,
+                target_account_id: '',
+                publishable_key: '',
+              },
             },
           })
 
@@ -369,7 +373,11 @@ describe('Verification Model', () => {
                 generateDefaultField(BasicField.Email),
                 generateDefaultField(BasicField.Mobile),
               ],
-              payments_field: { enabled: true },
+              payments_channel: {
+                channel: PaymentChannel.Stripe,
+                target_account_id: 'mockAccountId',
+                publishable_key: 'mockPublishableKey',
+              },
             },
           })
 
@@ -399,7 +407,11 @@ describe('Verification Model', () => {
                 generateDefaultField(BasicField.Email),
                 generateDefaultField(BasicField.Mobile),
               ],
-              payments_field: { enabled: true },
+              payments_channel: {
+                channel: PaymentChannel.Stripe,
+                target_account_id: 'mockAccountId',
+                publishable_key: 'mockPublishableKey',
+              },
             },
           })
 
