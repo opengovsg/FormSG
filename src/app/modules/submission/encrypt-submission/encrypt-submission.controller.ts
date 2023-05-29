@@ -136,11 +136,10 @@ const submitEncryptModeForm: ControllerHandler<
     const { statusCode, errorMessage } = mapRouteError(formPublicResult.error)
     if (statusCode === StatusCodes.GONE) {
       return res.sendStatus(statusCode)
-    } else {
-      return res.status(statusCode).json({
-        message: errorMessage,
-      })
     }
+    return res.status(statusCode).json({
+      message: errorMessage,
+    })
   }
 
   // Check captcha
@@ -353,149 +352,200 @@ const submitEncryptModeForm: ControllerHandler<
     form.payments_field?.enabled &&
     form.payments_channel.channel === PaymentChannel.Stripe
   ) {
-    /**
-     * Start of Payment Forms Submission Flow
-     */
-    // Step 0: Perform validation checks
-    const amount = form.payments_field.amount_cents
-    if (
-      !amount ||
-      amount < paymentConfig.minPaymentAmountCents ||
-      amount > paymentConfig.maxPaymentAmountCents
-    ) {
-      logger.error({
-        message: 'Error when creating payment: amount is not within bounds',
-        meta: logMeta,
-      })
-      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-        message:
-          "The form's payment settings are invalid. Please contact the admin of the form to rectify the issue.",
-      })
-    }
-
-    const paymentReceiptEmail = req.body.paymentReceiptEmail?.toLowerCase()
-    if (!paymentReceiptEmail) {
-      logger.error({
-        message:
-          'Error when creating payment: payment receipt email not provided.',
-        meta: logMeta,
-      })
-      return res.status(StatusCodes.BAD_REQUEST).json({
-        message:
-          "The form's payment settings are invalid. Please contact the admin of the form to rectify the issue.",
-      })
-    }
-
-    const targetAccountId = form.payments_channel.target_account_id
-
-    // Step 1: Create payment without payment intent id and pending submission id.
-    const payment = new Payment({
+    return _createPaymentSubmission({
+      req,
+      res,
+      form,
+      logMeta,
       formId,
-      targetAccountId,
-      amount,
-      email: paymentReceiptEmail,
-      responses: incomingSubmission.responses,
+      incomingSubmission,
+      submissionContent,
+      responseMetadata,
     })
-    const paymentId = payment.id
+  }
+  /**
+   * End of Payment Forms Submission Flow
+   */
 
-    // Step 2: Create and save pending submission.
-    const pendingSubmission = new EncryptPendingSubmission({
-      ...submissionContent,
-      paymentId,
+  return _createSubmission({
+    req,
+    res,
+    submissionContent,
+    logMeta,
+    formId,
+    responseMetadata,
+    incomingSubmission,
+  })
+}
+
+const _createPaymentSubmission = async ({
+  req,
+  res,
+  form,
+  logMeta,
+  formId,
+  incomingSubmission,
+  submissionContent,
+  responseMetadata,
+}) => {
+  /**
+   * Start of Payment Forms Submission Flow
+   */
+  // Step 0: Perform validation checks
+  const amount = form.payments_field.amount_cents
+  if (
+    !amount ||
+    amount < paymentConfig.minPaymentAmountCents ||
+    amount > paymentConfig.maxPaymentAmountCents
+  ) {
+    logger.error({
+      message: 'Error when creating payment: amount is not within bounds',
+      meta: logMeta,
     })
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message:
+        "The form's payment settings are invalid. Please contact the admin of the form to rectify the issue.",
+    })
+  }
 
-    try {
-      await pendingSubmission.save()
-    } catch (err) {
-      logger.error({
-        message: 'Encrypt pending submission save error',
-        meta: {
-          action: 'onEncryptSubmissionFailure',
-          ...createReqMeta(req),
-        },
-        error: err,
-      })
-      // Block the submission so that user can try to resubmit
-      return res.status(StatusCodes.BAD_REQUEST).json({
-        message:
-          'Could not save pending submission. For assistance, please contact the person who asked you to fill in this form.',
-      })
-    }
+  const paymentReceiptEmail = req.body.paymentReceiptEmail?.toLowerCase()
+  if (!paymentReceiptEmail) {
+    logger.error({
+      message:
+        'Error when creating payment: payment receipt email not provided.',
+      meta: logMeta,
+    })
+    return res.status(StatusCodes.BAD_REQUEST).json({
+      message:
+        "The form's payment settings are invalid. Please contact the admin of the form to rectify the issue.",
+    })
+  }
 
-    const pendingSubmissionId = pendingSubmission.id
-    logger.info({
-      message: 'Created pending submission in DB',
+  const targetAccountId = form.payments_channel.target_account_id
+
+  // Step 1: Create payment without payment intent id and pending submission id.
+  const payment = new Payment({
+    formId,
+    targetAccountId,
+    amount,
+    email: paymentReceiptEmail,
+    responses: incomingSubmission.responses,
+  })
+  const paymentId = payment.id
+
+  // Step 2: Create and save pending submission.
+  const pendingSubmission = new EncryptPendingSubmission({
+    ...submissionContent,
+    paymentId,
+  })
+
+  try {
+    await pendingSubmission.save()
+  } catch (err) {
+    logger.error({
+      message: 'Encrypt pending submission save error',
+      meta: {
+        action: 'onEncryptSubmissionFailure',
+        ...createReqMeta(req),
+      },
+      error: err,
+    })
+    // Block the submission so that user can try to resubmit
+    return res.status(StatusCodes.BAD_REQUEST).json({
+      message:
+        'Could not save pending submission. For assistance, please contact the person who asked you to fill in this form.',
+    })
+  }
+
+  const pendingSubmissionId = pendingSubmission.id
+  logger.info({
+    message: 'Created pending submission in DB',
+    meta: {
+      ...logMeta,
+      pendingSubmissionId,
+      responseMetadata,
+    },
+  })
+
+  // Step 3: Create the payment intent via API call to stripe.
+  // Stripe requires the amount to be an integer in the smallest currency unit (i.e. cents)
+  const metadata: StripePaymentMetadataDto = {
+    env: config.envSiteName,
+    formTitle: form.title,
+    formId,
+    submissionId: pendingSubmissionId,
+    paymentId,
+    paymentContactEmail: paymentReceiptEmail,
+  }
+
+  const createPaymentIntentParams: Stripe.PaymentIntentCreateParams = {
+    amount,
+    currency: paymentConfig.defaultCurrency,
+    // determine payment methods available based on stripe settings
+    automatic_payment_methods: {
+      enabled: true,
+    },
+    description: form.payments_field.description,
+    receipt_email: paymentReceiptEmail,
+    metadata,
+  }
+
+  let paymentIntent
+  try {
+    paymentIntent = await stripe.paymentIntents.create(
+      createPaymentIntentParams,
+      { stripeAccount: targetAccountId },
+    )
+  } catch (err) {
+    logger.error({
+      message: 'Error when creating payment intent',
       meta: {
         ...logMeta,
         pendingSubmissionId,
-        responseMetadata,
-      },
-    })
-
-    // Step 3: Create the payment intent via API call to stripe.
-    // Stripe requires the amount to be an integer in the smallest currency unit (i.e. cents)
-    const metadata: StripePaymentMetadataDto = {
-      env: config.envSiteName,
-      formTitle: form.title,
-      formId,
-      submissionId: pendingSubmissionId,
-      paymentId,
-      paymentContactEmail: paymentReceiptEmail,
-    }
-
-    const createPaymentIntentParams: Stripe.PaymentIntentCreateParams = {
-      amount,
-      currency: paymentConfig.defaultCurrency,
-      // determine payment methods available based on stripe settings
-      automatic_payment_methods: {
-        enabled: true,
-      },
-      description: form.payments_field.description,
-      receipt_email: paymentReceiptEmail,
-      metadata,
-    }
-
-    let paymentIntent
-    try {
-      paymentIntent = await stripe.paymentIntents.create(
         createPaymentIntentParams,
-        { stripeAccount: targetAccountId },
-      )
-    } catch (err) {
-      logger.error({
-        message: 'Error when creating payment intent',
-        meta: {
-          ...logMeta,
-          pendingSubmissionId,
-          createPaymentIntentParams,
-        },
-        error: err,
-      })
-      // Return a 502 error here since the issue was with Stripe.
-      return res.status(StatusCodes.BAD_GATEWAY).json({
-        message:
-          'There was a problem creating the payment intent. Please try again.',
-      })
-    }
+      },
+      error: err,
+    })
+    // Return a 502 error here since the issue was with Stripe.
+    return res.status(StatusCodes.BAD_GATEWAY).json({
+      message:
+        'There was a problem creating the payment intent. Please try again.',
+    })
+  }
 
-    const paymentIntentId = paymentIntent.id
-    logger.info({
-      message: 'Created payment intent from Stripe',
+  const paymentIntentId = paymentIntent.id
+  logger.info({
+    message: 'Created payment intent from Stripe',
+    meta: {
+      ...logMeta,
+      pendingSubmissionId,
+      paymentIntentId,
+    },
+  })
+
+  // Step 4: Update payment document with payment intent id and pending submission id, and save it.
+  payment.paymentIntentId = paymentIntentId
+  payment.pendingSubmissionId = pendingSubmissionId
+  try {
+    await payment.save()
+  } catch (err) {
+    logger.error({
+      message: 'Error updating payment document with payment intent id',
       meta: {
         ...logMeta,
         pendingSubmissionId,
         paymentIntentId,
       },
+      error: err,
     })
-
-    // Step 4: Update payment document with payment intent id and pending submission id, and save it.
-    payment.paymentIntentId = paymentIntentId
-    payment.pendingSubmissionId = pendingSubmissionId
+    // Cancel the payment intent if saving the document fails.
     try {
-      await payment.save()
-    } catch (err) {
+      await stripe.paymentIntents.cancel(paymentIntent.id, {
+        stripeAccount: targetAccountId,
+      })
+    } catch (stripeErr) {
       logger.error({
-        message: 'Error updating payment document with payment intent id',
+        message: 'Failed to cancel Stripe payment intent',
         meta: {
           ...logMeta,
           pendingSubmissionId,
@@ -503,51 +553,42 @@ const submitEncryptModeForm: ControllerHandler<
         },
         error: err,
       })
-      // Cancel the payment intent if saving the document fails.
-      try {
-        await stripe.paymentIntents.cancel(paymentIntent.id, {
-          stripeAccount: targetAccountId,
-        })
-      } catch (stripeErr) {
-        logger.error({
-          message: 'Failed to cancel Stripe payment intent',
-          meta: {
-            ...logMeta,
-            pendingSubmissionId,
-            paymentIntentId,
-          },
-          error: err,
-        })
-      }
-      // Regardless of whether the cancellation succeeded or failed, block the
-      // submission so that user can try to resubmit
-      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-        message:
-          'There was a problem updating the payment document. Please try again.',
-      })
     }
-
-    logger.info({
-      message: 'Saved payment document to DB',
-      meta: {
-        ...logMeta,
-        pendingSubmissionId,
-        paymentIntentId,
-        paymentId,
-      },
-    })
-
-    return res.json({
-      message: 'Form submission successful',
-      submissionId: pendingSubmissionId,
-      timestamp: (pendingSubmission.created || new Date()).getTime(),
-      paymentData: { paymentId },
+    // Regardless of whether the cancellation succeeded or failed, block the
+    // submission so that user can try to resubmit
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message:
+        'There was a problem updating the payment document. Please try again.',
     })
   }
-  /**
-   * End of Payment Forms Submission Flow
-   */
 
+  logger.info({
+    message: 'Saved payment document to DB',
+    meta: {
+      ...logMeta,
+      pendingSubmissionId,
+      paymentIntentId,
+      paymentId,
+    },
+  })
+
+  return res.json({
+    message: 'Form submission successful',
+    submissionId: pendingSubmissionId,
+    timestamp: (pendingSubmission.created || new Date()).getTime(),
+    paymentData: { paymentId },
+  })
+}
+
+const _createSubmission = async ({
+  req,
+  res,
+  submissionContent,
+  logMeta,
+  formId,
+  responseMetadata,
+  incomingSubmission,
+}) => {
   const submission = new EncryptSubmission(submissionContent)
 
   try {
