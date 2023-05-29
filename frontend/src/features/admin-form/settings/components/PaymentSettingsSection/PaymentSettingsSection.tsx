@@ -9,7 +9,7 @@ import {
   Text,
 } from '@chakra-ui/react'
 
-import { FormResponseMode } from '~shared/types'
+import { FormResponseMode, PaymentChannel } from '~shared/types'
 
 import { BxsCheckCircle, BxsError, BxsInfoCircle } from '~assets/icons'
 import { GUIDE_PAYMENTS } from '~constants/links'
@@ -200,11 +200,9 @@ const PaymentsAccountInformation = ({
 export const PaymentSettingsSection = (): JSX.Element => {
   const {
     hasPaymentCapabilities,
-    data,
     isLoading: adminFormPaymentsLoading,
     isError: adminFormPaymentsError,
   } = useAdminFormPayments()
-  const stripeAccount = data?.account
 
   const { data: settings, isLoading: settingsIsLoading } =
     useAdminFormSettings()
@@ -212,11 +210,11 @@ export const PaymentSettingsSection = (): JSX.Element => {
   const isProductionEnv = secretEnv === 'production'
 
   return settings?.responseMode === FormResponseMode.Encrypt ? (
-    <Skeleton isLoaded={!adminFormPaymentsLoading}>
-      {!stripeAccount ? (
+    <Skeleton isLoaded={!settingsIsLoading}>
+      {settings.payments_channel.channel === PaymentChannel.Unconnected ? (
         <BeforeConnectionInstructions isProductionEnv={isProductionEnv} />
       ) : (
-        <Skeleton isLoaded={!settingsIsLoading}>
+        <Skeleton isLoaded={!adminFormPaymentsLoading}>
           <AfterConnectionInfo
             isProductionEnv={isProductionEnv}
             hasPaymentCapabilities={hasPaymentCapabilities}
@@ -224,7 +222,7 @@ export const PaymentSettingsSection = (): JSX.Element => {
             adminFormPaymentsError={adminFormPaymentsError}
           />
           <PaymentsAccountInformation
-            account_id={settings?.payments_channel?.target_account_id}
+            account_id={settings.payments_channel.target_account_id}
             isLoading={settingsIsLoading}
           />
           <StripeConnectButton
