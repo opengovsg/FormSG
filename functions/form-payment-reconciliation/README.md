@@ -94,6 +94,9 @@ Retrieving all pending payments will make increasingly less sense, as this is a 
 Since we should only cancel payments that have been reconciled and verified to be still in pending states even on Stripe, we can modify the process to be the following.
 
 4. Double-check each payment status with the Stripe payment status
+
    a. If the Stripe payment status is still pending, the FormSG payment status cannot be anything other than pending (otherwise our state machine is definitely incorrect!). If the payment is stale (i.e. 30 min has passed since creation), Cancel the payment. Otherwise, do nothing.
+
    b. If the Stripe payment status is successful and FormSG payment status is also successful, then reconciliation was successful and no further action needs to be taken.
+
    c. If the Stripe payment status is successful and FormSG payment status is pending, then report an error. A race condition likely occurred, and will be reconciled by a future webhook or the next CRON job.
