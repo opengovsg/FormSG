@@ -34,7 +34,7 @@ export const ensureIsFormWithinSubmissionLimits: Middleware<
       message: form.inactiveMessage,
     })
   }
-  void next()
+  return next()
 }
 export const ensureIsValidCaptcha: Middleware<
   FormSubmissionPipelineContext
@@ -54,7 +54,7 @@ export const ensureIsValidCaptcha: Middleware<
       return res.status(statusCode).json({ message: errorMessage })
     }
   }
-  void next()
+  return next()
 }
 export const ensureIsPublicForm: Middleware<FormSubmissionPipelineContext> = (
   { form, logMeta, res },
@@ -75,5 +75,5 @@ export const ensureIsPublicForm: Middleware<FormSubmissionPipelineContext> = (
       message: errorMessage,
     })
   }
-  void next()
+  return next()
 }
