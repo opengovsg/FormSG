@@ -107,12 +107,10 @@ const ConnectionStatusText = ({
 const AfterConnectionInfo = ({
   isProductionEnv,
   hasPaymentCapabilities,
-  adminFormPaymentsLoading,
   adminFormPaymentsError,
 }: {
   isProductionEnv: boolean
   hasPaymentCapabilities: boolean
-  adminFormPaymentsLoading: boolean
   adminFormPaymentsError: boolean
 }): JSX.Element => {
   let connectionInfo: JSX.Element
@@ -168,11 +166,7 @@ const AfterConnectionInfo = ({
     }
   }
 
-  return (
-    <Skeleton isLoaded={!adminFormPaymentsLoading}>
-      <Flex mb="2.5rem">{connectionInfo}</Flex>
-    </Skeleton>
-  )
+  return <Flex mb="2.5rem">{connectionInfo}</Flex>
 }
 
 const PaymentsAccountInformation = ({
@@ -218,7 +212,6 @@ export const PaymentSettingsSection = (): JSX.Element => {
           <AfterConnectionInfo
             isProductionEnv={isProductionEnv}
             hasPaymentCapabilities={hasPaymentCapabilities}
-            adminFormPaymentsLoading={adminFormPaymentsLoading}
             adminFormPaymentsError={adminFormPaymentsError}
           />
           <PaymentsAccountInformation
