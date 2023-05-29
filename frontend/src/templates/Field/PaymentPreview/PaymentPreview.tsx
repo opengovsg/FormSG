@@ -53,6 +53,7 @@ export const PaymentPreview = ({
           colorTheme={colorTheme}
         />
       </Box>
+      {/* TODO(ken): add payment version detection/switch */}
       <Box>
         <PaymentItemDetailsBlock
           paymentDetails={{ ...paymentDetails, version: 1 }}

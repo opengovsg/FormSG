@@ -158,9 +158,8 @@ export const StripePaymentBlock = ({
             Payment
           </Text>
           <PaymentItemDetailsBlock
-            paymentItemName={form.payments_field?.description}
+            paymentDetails={form.payments_field}
             colorTheme={colorTheme}
-            paymentAmount={form.payments_field?.amount_cents}
           />
         </Box>
         <StripeCheckoutForm

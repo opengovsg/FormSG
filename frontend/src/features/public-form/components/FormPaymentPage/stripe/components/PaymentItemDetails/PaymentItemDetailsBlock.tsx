@@ -137,6 +137,7 @@ const PaymentItemBlockV2 = ({
 }) => {
   const { register, setValue } = useFormContext()
   register(PAYMENT_PRODUCT_FIELD_ID)
+  console.log({ paymentDetails })
   const [productItems, updateProductItems] = useState<Array<ProductItem>>(
     () => {
       return paymentDetails.products.map((product) => ({
