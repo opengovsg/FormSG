@@ -1,6 +1,6 @@
 import { Router } from 'express'
 
-import { handleStripeEventUpdates } from '../../../../modules/payments/stripe.controller'
+import { handleStripeEventUpdates } from '../../../../modules/payments/stripe.events.controller'
 import { handleTwilioSmsUpdates } from '../../../../modules/twilio/twilio.controller'
 
 import { BouncesRouter } from './bounces'
