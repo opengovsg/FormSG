@@ -495,7 +495,9 @@ export const PublicFormProvider = ({
 
   const isPaymentEnabled =
     data?.form.responseMode === FormResponseMode.Encrypt &&
-    data.form.payments_channel.channel !== PaymentChannel.Unconnected
+    data.form.payments_channel.channel !== PaymentChannel.Unconnected &&
+    !!data.form.payments_field.amount_cents &&
+    !!data.form.payments_field.description
 
   if (isNotFormId) {
     return <NotFoundErrorPage />
