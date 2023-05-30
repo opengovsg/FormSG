@@ -31,6 +31,8 @@ export const GUIDE_PREVENT_EMAIL_BOUNCE =
 export const GUIDE_EMAIL_RELIABILITY =
   'https://go.gov.sg/formsg-guide-email-reliability'
 export const GUIDE_PREFILL = 'https://go.gov.sg/formsg-guide-prefills'
+export const GUIDE_STRIPE_ONBOARDING =
+  'https://go.gov.sg/formsg-stripe-onboarding'
 
 export const ACCEPTED_FILETYPES_SPREADSHEET = 'https://go.gov.sg/formsg-cwl'
 
