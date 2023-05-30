@@ -322,7 +322,17 @@ const submitEmailModeForm: ControllerHandler<
           })
 
           // TODO 6395 make responseMetadata mandatory
-          if (responseMetadata)
+          if (responseMetadata) {
+            // response time
+            statsdClient.distribution(
+              'formsg.submissions.responseTimeMetadata',
+              responseMetadata.responseTimeMs,
+              1,
+              {
+                mode: 'email',
+              },
+            )
+            // normalised resposne time
             statsdClient.distribution(
               'formsg.submissions.normResponseTimeMetadata',
               getNormalisedResponseTime(
@@ -332,11 +342,9 @@ const submitEmailModeForm: ControllerHandler<
               1,
               {
                 mode: 'email',
-                responseTimeMs: '${responseMetadata.responseTimeMs}',
-                numOfVisibleFields: '${responseMetadata.numVisibleFields}',
               },
             )
-
+          }
           // Send response to admin
           // NOTE: This should short circuit in the event of an error.
           // This is why sendSubmissionToAdmin is separated from sendEmailConfirmations in 2 blocks

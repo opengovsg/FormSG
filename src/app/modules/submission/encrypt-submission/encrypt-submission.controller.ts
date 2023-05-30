@@ -435,7 +435,18 @@ const submitEncryptModeForm: ControllerHandler<
     })
 
     // TODO 6395 make responseMetadata mandatory
-    if (responseMetadata)
+    if (responseMetadata) {
+      // response time
+      statsdClient.distribution(
+        'formsg.submissions.responseTimeMetadata',
+        responseMetadata.responseTimeMs,
+        1,
+        {
+          mode: 'encrypt',
+          payment: false as unknown as string,
+        },
+      )
+      // normalised response time
       statsdClient.distribution(
         'formsg.submissions.normResponseTimeMetadata',
         getNormalisedResponseTime(
@@ -446,11 +457,9 @@ const submitEncryptModeForm: ControllerHandler<
         {
           mode: 'encrypt',
           payment: true as unknown as string,
-          responseTimeMs: '${responseMetadata.responseTimeMs}',
-          numOfVisibleFields: '${responseMetadata.numVisibleFields}',
         },
       )
-
+    }
     // Step 3: Create the payment intent via API call to stripe.
     // Stripe requires the amount to be an integer in the smallest currency unit (i.e. cents)
     const metadata: StripePaymentMetadataDto = {
@@ -599,7 +608,18 @@ const submitEncryptModeForm: ControllerHandler<
   })
 
   // TODO 6395 make responseMetadata mandatory
-  if (responseMetadata)
+  if (responseMetadata) {
+    // response time
+    statsdClient.distribution(
+      'formsg.submissions.responseTimeMetadata',
+      responseMetadata.responseTimeMs,
+      1,
+      {
+        mode: 'encrypt',
+        payment: false as unknown as string,
+      },
+    )
+    // normalised response time
     statsdClient.distribution(
       'formsg.submissions.normResponseTimeMetadata',
       getNormalisedResponseTime(
@@ -610,10 +630,9 @@ const submitEncryptModeForm: ControllerHandler<
       {
         mode: 'encrypt',
         payment: false as unknown as string,
-        responseTimeMs: '${responseMetadata.responseTimeMs}',
-        numOfVisibleFields: '${responseMetadata.numVisibleFields}',
       },
     )
+  }
 
   // Send success back to client
   res.json({
