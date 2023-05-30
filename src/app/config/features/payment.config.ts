@@ -8,6 +8,7 @@ export interface IStripe {
   stripeWebhookSecret: string
   maxPaymentAmountCents: number
   minPaymentAmountCents: number
+  guideLink: string
 }
 
 const paymentFeature: Schema<IStripe> = {
@@ -52,6 +53,12 @@ const paymentFeature: Schema<IStripe> = {
     format: Number,
     default: 50, // $0.50, as specified by stripe
     env: 'PAYMENT_MIN_PAYMENT_AMOUNT_CENTS',
+  },
+  guideLink: {
+    doc: 'Link to payment guide',
+    format: String,
+    default: 'https://go.gov.sg/formsg-guide-payments',
+    env: 'PAYMENT_GUIDE_LINK',
   },
 }
 

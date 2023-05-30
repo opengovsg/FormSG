@@ -23,6 +23,7 @@ import { useEnv } from '~features/env/queries'
 import { useAdminFormPayments, useAdminFormSettings } from '../../queries'
 
 import { BusinessInfoSection } from './BusinessInfoSection'
+import { usePaymentGuideLink } from './queries'
 import {
   StripeConnectButton,
   StripeConnectButtonStates,
@@ -34,7 +35,7 @@ const BeforeConnectionInstructions = ({
   isProductionEnv: boolean
 }): JSX.Element => {
   const [allowConnect, setAllowConnect] = useState(false)
-  const { data: { paymentGuideLink } = {} } = useEnv()
+  const { data: paymentGuideLink } = usePaymentGuideLink()
   if (isProductionEnv) {
     return (
       <>

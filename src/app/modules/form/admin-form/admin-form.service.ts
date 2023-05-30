@@ -1621,3 +1621,7 @@ export const updatePayments = (
     return okAsync(updatedForm.payments_field)
   })
 }
+
+export const getPaymentGuideLink = (): string => {
+  return paymentConfig.guideLink
+}

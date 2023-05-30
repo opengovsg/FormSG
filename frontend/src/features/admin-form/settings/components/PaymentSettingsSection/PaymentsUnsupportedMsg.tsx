@@ -3,10 +3,11 @@ import { Flex, Text } from '@chakra-ui/react'
 import Link from '~components/Link'
 
 import { SettingsUnsupportedSvgr } from '~features/admin-form/settings/svgrs/SettingsUnsupportedSvgr'
-import { useEnv } from '~features/env/queries'
+
+import { usePaymentGuideLink } from './queries'
 
 export const PaymentsUnsupportedMsg = (): JSX.Element => {
-  const { data: { paymentGuideLink } = {} } = useEnv()
+  const { data: paymentGuideLink } = usePaymentGuideLink()
   return (
     <Flex justify="center" flexDir="column" textAlign="center">
       <Text textStyle="h2" as="h2" color="primary.500" mb="1rem">

@@ -35,7 +35,5 @@ export const getClientEnvVars = (): ClientEnvVars => {
     useFetchForSubmissions: config.reactMigration.useFetchForSubmissions,
 
     secretEnv: config.secretEnv, // Used for conditional rendering of payment copy
-
-    paymentGuideLink: config.paymentGuideLink,
   }
 }

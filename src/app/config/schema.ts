@@ -348,14 +348,6 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
       env: 'REACT_MIGRATION_USE_FETCH_FOR_SUBMISSIONS',
     },
   },
-  guides: {
-    payment: {
-      doc: 'Link to payment guide',
-      format: String,
-      default: 'https://go.gov.sg/formsg-guide-payments',
-      env: 'PAYMENT_GUIDE_LINK',
-    },
-  },
 }
 
 export const prodOnlyVarsSchema: Schema<IProdOnlyVarsSchema> = {

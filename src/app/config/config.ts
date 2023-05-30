@@ -236,7 +236,6 @@ const config: Config = {
   configureAws,
   secretEnv: basicVars.core.secretEnv,
   envSiteName: basicVars.core.envSiteName,
-  paymentGuideLink: basicVars.guides.payment,
 }
 
 export = config
