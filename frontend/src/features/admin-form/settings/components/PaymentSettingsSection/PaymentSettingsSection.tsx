@@ -12,7 +12,6 @@ import {
 import { FormResponseMode, PaymentChannel } from '~shared/types'
 
 import { BxsCheckCircle, BxsError, BxsInfoCircle } from '~assets/icons'
-import { GUIDE_PAYMENTS } from '~constants/links'
 import Checkbox from '~components/Checkbox'
 import FormLabel from '~components/FormControl/FormLabel'
 import InlineMessage from '~components/InlineMessage'
@@ -24,6 +23,7 @@ import { useEnv } from '~features/env/queries'
 import { useAdminFormPayments, useAdminFormSettings } from '../../queries'
 
 import { BusinessInfoSection } from './BusinessInfoSection'
+import { usePaymentGuideLink } from './queries'
 import {
   StripeConnectButton,
   StripeConnectButtonStates,
@@ -35,13 +35,14 @@ const BeforeConnectionInstructions = ({
   isProductionEnv: boolean
 }): JSX.Element => {
   const [allowConnect, setAllowConnect] = useState(false)
+  const { data: paymentGuideLink } = usePaymentGuideLink()
   if (isProductionEnv) {
     return (
       <>
         <InlineMessage variant="info" my="2rem">
           <Text>
             Read{' '}
-            <Link isExternal href={GUIDE_PAYMENTS}>
+            <Link isExternal href={paymentGuideLink}>
               our guide
             </Link>{' '}
             to set up a Stripe account. To enjoy bulk tender transaction rates,

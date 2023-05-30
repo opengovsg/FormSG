@@ -72,3 +72,8 @@ AdminFormsPaymentsRouter.put(
   '/:formId([a-fA-F0-9]{24})/payments',
   AdminPaymentsController.handleUpdatePayments,
 )
+
+AdminFormsPaymentsRouter.get(
+  '/guide/payments',
+  AdminPaymentsController.handleGetPaymentGuideLink,
+)

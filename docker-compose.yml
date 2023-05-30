@@ -111,6 +111,7 @@ services:
       - PAYMENT_MAX_PAYMENT_AMOUNT_CENTS=100000
       - PAYMENT_MIN_PAYMENT_AMOUNT_CENTS=50
       - SSM_ENV_SITE_NAME=development
+      - PAYMENT_GUIDE_LINK
 
   mockpass:
     build: https://github.com/opengovsg/mockpass.git#v3.1.3
