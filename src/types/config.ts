@@ -93,6 +93,8 @@ export type Config = {
   secretEnv: string
   envSiteName: string
 
+  paymentGuideLink: string
+
   // Functions
   configureAws: () => Promise<void>
 }
@@ -176,6 +178,9 @@ export interface IOptionalVarsSchema {
   reactMigration: {
     // TODO (#5826): Toggle to use fetch for submissions instead of axios. Remove once network error is resolved
     useFetchForSubmissions: boolean
+  }
+  guides: {
+    payment: string
   }
 }
 
