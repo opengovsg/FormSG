@@ -62,6 +62,8 @@ export const PaymentView = () => {
   const isActive = paymentState === PaymentState.EditingPayment
 
   const paymentDetails = paymentFromStore ?? form.payments_field
+  paymentDetails.description =
+    paymentDetails.description || 'Product/service name'
 
   const isDirtyAndPaymentInactive =
     isDirty && paymentState === PaymentState.Inactive
@@ -80,9 +82,7 @@ export const PaymentView = () => {
     setFieldListTabIndex(FieldListTabIndex.Payments)
   }
 
-  return form.payments_channel.channel !== PaymentChannel.Unconnected &&
-    !!form.payments_field.amount_cents &&
-    !!form.payments_field.description ? (
+  return form.payments_channel.channel !== PaymentChannel.Unconnected ? (
     <Box w="100%" maxW="57rem" alignSelf="center" ref={paymentRef}>
       <FormProvider {...formMethods}>
         <Box mt="2.5rem" bg="white" py="2.5rem" px="1.5rem">
