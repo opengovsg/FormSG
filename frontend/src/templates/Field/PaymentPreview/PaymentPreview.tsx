@@ -47,16 +47,7 @@ export const PaymentPreview = ({
       </Box>
       <Box mb="2rem">
         <PaymentItemDetailsBlock
-          paymentDetails={
-            { ...paymentDetails, version: 2 } as FormPaymentsFieldV2
-          }
-          colorTheme={colorTheme}
-        />
-      </Box>
-      {/* TODO(ken): add payment version detection/switch */}
-      <Box>
-        <PaymentItemDetailsBlock
-          paymentDetails={{ ...paymentDetails, version: 1 }}
+          paymentDetails={paymentDetails}
           colorTheme={colorTheme}
         />
       </Box>

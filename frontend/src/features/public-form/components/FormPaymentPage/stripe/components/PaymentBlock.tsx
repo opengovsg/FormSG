@@ -147,6 +147,7 @@ export const StripePaymentBlock = ({
   if (!form || form.responseMode !== FormResponseMode.Encrypt) {
     return <></>
   }
+  console.log({ payments_field: form.payments_field })
   return (
     <Flex flexDir="column">
       <Stack tabIndex={-1} ref={focusRef} spacing="1rem">
@@ -157,10 +158,14 @@ export const StripePaymentBlock = ({
           <Text textStyle="h3" textColor="primary.500" mb="1rem">
             Payment
           </Text>
-          <PaymentItemDetailsBlock
-            paymentDetails={form.payments_field}
-            colorTheme={colorTheme}
-          />
+          {/* TODO(ken): version 2 doesn't have design yet, might not be 100% compatible
+          as PaymentItemDetailsBlockv2 is the selector block */}
+          {form.payments_field.version === 1 ? (
+            <PaymentItemDetailsBlock
+              paymentDetails={form.payments_field}
+              colorTheme={colorTheme}
+            />
+          ) : null}
         </Box>
         <StripeCheckoutForm
           colorTheme={colorTheme}
