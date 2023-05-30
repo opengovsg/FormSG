@@ -148,10 +148,3 @@ export const getFilteredResponses = (
   }
   return ok(results as FilteredResponse[])
 }
-
-export const getNormalisedResponseTime = (
-  responseTimeMs: number,
-  numVisibleFields: number,
-) => {
-  return (10 * responseTimeMs) / numVisibleFields
-}
