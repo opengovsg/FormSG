@@ -89,7 +89,7 @@ export const getChargeIdFromNestedCharge = (
 const isStripeMetadata = (
   obj: Stripe.Metadata,
 ): obj is StripePaymentMetadataDto =>
-  hasProp(obj, 'env') &&
+  // hasProp(obj, 'env') && // TODO: Make this required later
   hasProp(obj, 'formTitle') &&
   hasProp(obj, 'formId') &&
   hasProp(obj, 'submissionId') &&
@@ -131,7 +131,10 @@ export const getMetadataPaymentId = (
     })
     return err(new StripeMetadataValidPaymentIdNotFoundError())
   }
-  if (metadata.env !== config.envSiteName) {
+  // Explicit check for metadata.env to ensure that legacy metadata which does
+  // not have the env value still gets processed.
+  // TODO: remove the existence check later.
+  if (metadata.env && metadata.env !== config.envSiteName) {
     return err(new StripeMetadataIncorrectEnvError())
   }
   return ok(metadata.paymentId)
