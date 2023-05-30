@@ -118,21 +118,13 @@ const confirmStripePaymentPendingSubmission = (
           return new StripeFetchError()
         },
       )
-        .andThen((balanceTransaction) =>
-          okAsync(
-            balanceTransaction.fee_details
-              .filter((feeDetail) => feeDetail.type === 'stripe_fee')
-              .map((feeDetail) => feeDetail.amount)
-              .reduce((a, b) => a + b),
-          ),
-        )
         // Step 2: Update the payment object with the new completed payment metadata
-        .andThen((transactionFee) =>
+        .andThen((balanceTransaction) =>
           PaymentsService.confirmPaymentPendingSubmission(
             payment,
             new Date(event.created * 1000), // Convert to miliseconds from epoch
             receiptUrl,
-            transactionFee,
+            balanceTransaction.fee,
             session,
           ),
         )
