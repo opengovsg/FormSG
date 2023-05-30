@@ -245,6 +245,13 @@ export const PaymentInput = ({ isDisabled }: { isDisabled: boolean }) => {
           )}
         />
         <FormErrorMessage>{errors.display_amount?.message}</FormErrorMessage>
+        {Number(clonedWatchedInputs.display_amount) > 1000 ? (
+          <InlineMessage variant="warning" mt="2rem" useMarkdown>
+            You would need to issue your own invoice for amounts above S$1000.
+            [Learn more about
+            this](https://guide.form.gov.sg/faq/faq/payments#simplified-tax-invoices-versus-regular-tax-invoices)
+          </InlineMessage>
+        ) : null}
       </FormControl>
 
       <FormFieldDrawerActions
