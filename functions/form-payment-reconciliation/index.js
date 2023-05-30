@@ -17,7 +17,7 @@ const AWS_REGION = process.env.AWS_REGION
 const ENV_SITE_NAME = process.env.SSM_ENV_SITE_NAME
 const CRON_API_PREFIX = `https://${
   ENV_SITE_NAME === 'prod' ? '' : `${ENV_SITE_NAME}.`
-}form.gov.sg/api/v3/payments/reconcile/`
+}form.gov.sg/api/v3/payments/reconcile`
 
 const PARAMETER_STORE_NAME = `${ENV_SITE_NAME}-cron-payment`
 const CRON_PAYMENT_API_SECRET_KEY = 'CRON_PAYMENT_API_SECRET'
@@ -60,14 +60,14 @@ const getSSMSecrets = () => {
  */
 const getApi = (apiSecret) => {
   const getIncompletePayments = async () => {
-    return fetch(`${CRON_API_PREFIX}incompletePayments`, {
+    return fetch(`${CRON_API_PREFIX}/incompletePayments`, {
       headers: { [API_AUTH_HEADER]: apiSecret },
     }).then(async (res) => ({ ok: res.ok, data: await res.json() }))
   }
 
   const reconcileAccount = async (stripeAccount, paymentIds) => {
     return fetch(
-      `${CRON_API_PREFIX}account/${stripeAccount}?maxAgeHrs=${MAX_AGE_HRS_EVENTS}`,
+      `${CRON_API_PREFIX}/account/${stripeAccount}?maxAgeHrs=${MAX_AGE_HRS_EVENTS}`,
       {
         method: 'POST',
         headers: {
