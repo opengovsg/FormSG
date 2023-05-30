@@ -25,7 +25,7 @@ const CRON_PAYMENT_SLACK_SECRET_KEY = 'SLACK_API_SECRET'
 
 const API_AUTH_HEADER = 'x-formsg-cron-payment-secret'
 
-const MAX_AGE_HRS_EVENTS = 7
+const MAX_AGE_HRS_EVENTS = 24
 
 /**
  * Helper function to obtain secrets map from parameter store.
