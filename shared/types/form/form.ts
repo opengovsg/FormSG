@@ -90,15 +90,6 @@ export type FormPaymentsFieldV2 = FormPaymentsFieldBase & {
 }
 export type FormPaymentsField = FormPaymentsFieldV1 | FormPaymentsFieldV2
 
-export type Product = {
-  name: string
-  description: string
-  multi_qty: boolean
-  min_qty: number
-  max_qty: number
-  amount_cents: number
-}
-
 export type FormBusinessField = {
   address?: string
   gstRegNo?: string

@@ -17,7 +17,7 @@ type FormSubmissionPipelineContext = {
   form: IPopulatedEncryptedForm
 }
 
-export const ensureIsFormWithinSubmissionLimits: Middleware<
+export const ensureFormWithinSubmissionLimits: Middleware<
   FormSubmissionPipelineContext
 > = async ({ logMeta, res, form }, next) => {
   const formSubmissionLimitResult =
@@ -36,7 +36,7 @@ export const ensureIsFormWithinSubmissionLimits: Middleware<
   }
   return next()
 }
-export const ensureIsValidCaptcha: Middleware<
+export const ensureValidCaptcha: Middleware<
   FormSubmissionPipelineContext
 > = async ({ form, req, logMeta, res }, next) => {
   if (form.hasCaptcha) {
@@ -56,7 +56,7 @@ export const ensureIsValidCaptcha: Middleware<
   }
   return next()
 }
-export const ensureIsPublicForm: Middleware<FormSubmissionPipelineContext> = (
+export const ensurePublicForm: Middleware<FormSubmissionPipelineContext> = (
   { form, logMeta, res },
   next,
 ) => {

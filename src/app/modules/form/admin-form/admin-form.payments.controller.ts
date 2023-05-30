@@ -8,6 +8,7 @@ import { IEncryptedFormDocument } from 'src/types'
 import { featureFlags } from '../../../../../shared/constants'
 import {
   ErrorDto,
+  FormPaymentsFieldV2,
   PaymentChannel,
   PaymentsProductUpdateDto,
   PaymentsUpdateDto,
@@ -312,7 +313,7 @@ export const _handleUpdatePayments: ControllerHandler<
 
 export const _handleUpdatePaymentsProduct: ControllerHandler<
   { formId: string },
-  IEncryptedFormDocument['payments_field']['products'] | ErrorDto,
+  FormPaymentsFieldV2['products'] | ErrorDto,
   PaymentsProductUpdateDto
 > = (req, res) => {
   const { formId } = req.params
@@ -341,7 +342,9 @@ export const _handleUpdatePaymentsProduct: ControllerHandler<
       // Step 4: User has permissions, proceed to allow updating of start page
       .andThen(() => AdminFormService.updatePaymentsProduct(formId, req.body))
       .map((updatedPayments) =>
-        res.status(StatusCodes.OK).json(updatedPayments.products),
+        res
+          .status(StatusCodes.OK)
+          .json((updatedPayments as FormPaymentsFieldV2).products),
       )
       .mapErr((error) => {
         logger.error({

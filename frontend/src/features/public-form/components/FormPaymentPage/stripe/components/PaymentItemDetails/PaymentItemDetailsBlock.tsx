@@ -10,6 +10,7 @@ import {
   FormPaymentsFieldV2,
   ProductItem,
 } from '~shared/types'
+import { calculatePrice } from '~shared/utils/paymentProductPrice'
 
 import { centsToDollars } from '~utils/payments'
 import Checkbox from '~components/Checkbox'
@@ -17,7 +18,7 @@ import { SingleSelect } from '~components/Dropdown/SingleSelect/SingleSelect'
 import Radio from '~components/Radio'
 
 import { PaymentItem } from './PaymentItem'
-import { calculatePrice, generateIntRange } from './utils'
+import { generateIntRange } from './utils'
 
 export interface PaymentItemDetailsBlockProps {
   colorTheme: FormColorTheme

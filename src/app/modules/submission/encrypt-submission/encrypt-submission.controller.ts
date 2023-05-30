@@ -11,15 +11,21 @@ import type { SetOptional } from 'type-fest'
 import {
   ErrorDto,
   FormAuthType,
+  FormPaymentsField,
   FormSubmissionMetadataQueryDto,
   Payment,
   PaymentChannel,
+  StorageModeSubmissionContentDto,
   StorageModeSubmissionDto,
   StorageModeSubmissionMetadataList,
   SubmissionErrorDto,
   SubmissionResponseDto,
 } from '../../../../../shared/types'
-import { StripePaymentMetadataDto } from '../../../../types'
+import { calculatePrice } from '../../../../../shared/utils/paymentProductPrice'
+import {
+  IPopulatedEncryptedForm,
+  StripePaymentMetadataDto,
+} from '../../../../types'
 import { EncryptSubmissionDto } from '../../../../types/api'
 import config from '../../../config/config'
 import { paymentConfig } from '../../../config/features/payment.config'
@@ -44,9 +50,9 @@ import * as VerifiedContentService from '../../verified-content/verified-content
 import * as EncryptSubmissionMiddleware from '../encrypt-submission/encrypt-submission.middleware'
 
 import {
-  ensureIsFormWithinSubmissionLimits,
-  ensureIsPublicForm,
-  ensureIsValidCaptcha,
+  ensureFormWithinSubmissionLimits,
+  ensurePublicForm,
+  ensureValidCaptcha,
 } from './encrypt-submission.ensures'
 import {
   addPaymentDataStream,
@@ -131,9 +137,10 @@ const submitEncryptModeForm: ControllerHandler<
   const form = checkFormIsEncryptModeResult.value
 
   const ensurePipeline = Pipeline(
-    ensureIsPublicForm,
-    ensureIsValidCaptcha,
-    ensureIsFormWithinSubmissionLimits,
+    ensurePublicForm,
+    ensureValidCaptcha,
+    ensureFormWithinSubmissionLimits,
+    // TODO(ken): ensureValidPaymentProducts
   )
 
   const hasEnsuredAll = await ensurePipeline.execute({
@@ -147,7 +154,8 @@ const submitEncryptModeForm: ControllerHandler<
   }
 
   // Create Incoming Submission
-  const { encryptedContent, responses, responseMetadata } = req.body
+  const { encryptedContent, responses, responseMetadata, paymentProducts } =
+    req.body
   const incomingSubmissionResult = IncomingEncryptSubmission.init(
     form,
     responses,
@@ -332,6 +340,7 @@ const submitEncryptModeForm: ControllerHandler<
       incomingSubmission,
       submissionContent,
       responseMetadata,
+      paymentProducts,
     })
   }
   /**
@@ -349,6 +358,22 @@ const submitEncryptModeForm: ControllerHandler<
   })
 }
 
+const getAmount = (
+  payments_field: FormPaymentsField,
+  paymentProducts: StorageModeSubmissionContentDto['paymentProducts'],
+) => {
+  if (payments_field.version === 1) {
+    return payments_field.amount_cents
+  }
+
+  if (payments_field.version === 2) {
+    if (!paymentProducts || paymentProducts.length <= 0) {
+      return 0
+    }
+    return calculatePrice(paymentProducts)
+  }
+}
+
 const _createPaymentSubmission = async ({
   req,
   res,
@@ -358,12 +383,17 @@ const _createPaymentSubmission = async ({
   incomingSubmission,
   submissionContent,
   responseMetadata,
+  paymentProducts,
+}: {
+  [other: string]: any
+  form: IPopulatedEncryptedForm
+  paymentProducts: StorageModeSubmissionContentDto['paymentProducts']
 }) => {
-  /**
-   * Start of Payment Forms Submission Flow
-   */
+  const { payments_field } = form
+
+  const amount = getAmount(payments_field, paymentProducts)
+
   // Step 0: Perform validation checks
-  const amount = form.payments_field.amount_cents
   if (
     !amount ||
     amount < paymentConfig.minPaymentAmountCents ||
