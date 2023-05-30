@@ -1,6 +1,7 @@
 import { Router } from 'express'
 
 import { rateLimitConfig } from '../../../../config/config'
+import { withCronPaymentSecretAuthentication } from '../../../../modules/auth/auth.middlewares'
 import * as PaymentsController from '../../../../modules/payments/payments.controller'
 import * as StripeController from '../../../../modules/payments/stripe.controller'
 import { limitRate } from '../../../../utils/limit-rate'
@@ -80,20 +81,24 @@ PaymentsRouter.route('/:formId([a-fA-F0-9]{24})/payments/previous').post(
   PaymentsController.handleGetPreviousPaymentId,
 )
 
+const ProtectedPaymentRoutes = PaymentsRouter.use(
+  withCronPaymentSecretAuthentication,
+)
 /**
  * @private
+ * @protected
  * @route GET /payments/pendingPayments?after=<time>&before=<time>
  */
-PaymentsRouter.route('/pendingPayments').get(
+ProtectedPaymentRoutes.route('/pendingPayments').get(
   StripeController.queryPendingPayments,
 )
 
 /**
- * @private
+ * @protected
  * @route POST /payments/reconcileAccount
  *
  * @params stripeAccountId: string
  */
-PaymentsRouter.route('/reconcileAccount').post(
+ProtectedPaymentRoutes.route('/reconcileAccount').post(
   StripeController.reconcileAccount,
 )
