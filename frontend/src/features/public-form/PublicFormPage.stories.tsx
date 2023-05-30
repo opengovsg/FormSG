@@ -3,6 +3,7 @@ import { Meta, Story } from '@storybook/react'
 import { userEvent, waitFor, within } from '@storybook/testing-library'
 import dedent from 'dedent'
 
+import { PaymentChannel } from '~shared/types'
 import { BasicField } from '~shared/types/field'
 import {
   FormAuthType,
@@ -522,9 +523,11 @@ WithPayment.parameters = {
         form: {
           responseMode: FormResponseMode.Encrypt,
           payments_field: {
-            enabled: true,
             amount_cents: 5000,
             description: 'Mock event registration',
+          },
+          payments_channel: {
+            channel: PaymentChannel.Stripe,
           },
         },
       },

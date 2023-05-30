@@ -161,7 +161,6 @@ FormWithPayment.parameters = {
       publishable_key: 'pk_samplekey',
     },
     payments_field: {
-      enabled: true,
       amount_cents: 5000,
       description: 'Test event registration fee',
     },
