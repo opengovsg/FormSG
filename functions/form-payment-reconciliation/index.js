@@ -25,6 +25,16 @@ const CRON_PAYMENT_SLACK_SECRET_KEY = 'SLACK_API_SECRET'
 
 const API_AUTH_HEADER = 'x-formsg-cron-payment-secret'
 
+/**
+ * Set to be 24 hours. If an event's re-processing failed, we should look into
+ * it. If we didn't look into it, it should continue to be retried and reported
+ * as failed in future CRON jobs. In the case that we looked into it but deemed
+ * it not to be a relevant event, we should let it exit the system at some
+ * point, so that we don't keep it around. I think a reasonable timeframe to
+ * assume we will get to looking at failed events is 24h (e.g. if this occurs
+ * while we are asleep, we need at least 8 hours buffer, assuming we all sleep
+ * at least 8 hours a night :clown-face:).
+ */
 const MAX_AGE_HRS_EVENTS = 24
 
 /**
