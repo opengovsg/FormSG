@@ -80,7 +80,9 @@ export const PaymentView = () => {
     setFieldListTabIndex(FieldListTabIndex.Payments)
   }
 
-  return form.payments_channel.channel !== PaymentChannel.Unconnected ? (
+  return form.payments_channel.channel !== PaymentChannel.Unconnected &&
+    !!form.payments_field.amount_cents &&
+    !!form.payments_field.description ? (
     <Box w="100%" maxW="57rem" alignSelf="center" ref={paymentRef}>
       <FormProvider {...formMethods}>
         <Box mt="2.5rem" bg="white" py="2.5rem" px="1.5rem">
