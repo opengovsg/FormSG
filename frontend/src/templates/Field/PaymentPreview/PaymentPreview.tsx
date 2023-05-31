@@ -6,6 +6,8 @@ import {
   EmailFieldBase,
   FormColorTheme,
   FormPaymentsField,
+  FormPaymentsFieldV1,
+  FormPaymentsFieldV2,
 } from '~shared/types'
 
 import { EmailFieldInput } from '~templates/Field/Email'
@@ -13,7 +15,10 @@ import { useSectionColor } from '~templates/Field/Section/SectionField'
 
 import { VerifiableFieldBuilderContainer } from '~features/admin-form/create/builder-and-design/BuilderAndDesignContent/FieldRow/VerifiableFieldBuilderContainer'
 import { getFieldCreationMeta } from '~features/admin-form/create/builder-and-design/utils/fieldCreation'
-import { PaymentItemDetailsBlock } from '~features/public-form/components/FormPaymentPage/stripe/components/PaymentItemDetails'
+import {
+  PaymentItemDetailsBlock,
+  PaymentItemDetailsBlockV2,
+} from '~features/public-form/components/FormPaymentPage/stripe/components/PaymentItemDetails'
 import {
   VerifiableEmailField,
   VerifiableEmailFieldSchema,
@@ -23,6 +28,46 @@ type PaymentPreviewProps = {
   colorTheme?: FormColorTheme
   paymentDetails: FormPaymentsField
   isBuilder?: boolean
+}
+
+const PaymentPreviewV1 = (props: {
+  colorTheme: FormColorTheme
+  paymentDetails: FormPaymentsFieldV1
+  sectionColor: ReturnType<typeof useSectionColor>
+}) => {
+  return (
+    <>
+      <Box as="h2" mb="1rem" textStyle="h2" color={props.sectionColor}>
+        Payment
+      </Box>
+      <Box mb="2rem">
+        <PaymentItemDetailsBlock
+          paymentDetails={props.paymentDetails}
+          colorTheme={props.colorTheme}
+        />
+      </Box>
+    </>
+  )
+}
+
+const PaymentPreviewV2 = (props: {
+  colorTheme: FormColorTheme
+  paymentDetails: FormPaymentsFieldV2
+  sectionColor: ReturnType<typeof useSectionColor>
+}) => {
+  return (
+    <>
+      <Box as="h2" mb="1rem" textStyle="h2" color={props.sectionColor}>
+        {props.paymentDetails.description}
+      </Box>
+      <Box mb="2rem">
+        <PaymentItemDetailsBlockV2
+          paymentDetails={props.paymentDetails}
+          colorTheme={props.colorTheme}
+        />
+      </Box>
+    </>
+  )
 }
 
 export const PaymentPreview = ({
@@ -41,15 +86,19 @@ export const PaymentPreview = ({
 
   return (
     <>
-      <Box as="h2" mb="1rem" textStyle="h2" color={sectionColor}>
-        Payment
-      </Box>
-      <Box mb="2rem">
-        <PaymentItemDetailsBlock
+      {paymentDetails.version === 1 ? (
+        <PaymentPreviewV1
           paymentDetails={paymentDetails}
           colorTheme={colorTheme}
+          sectionColor={sectionColor}
         />
-      </Box>
+      ) : (
+        <PaymentPreviewV2
+          paymentDetails={paymentDetails}
+          colorTheme={colorTheme}
+          sectionColor={sectionColor}
+        />
+      )}
       {isBuilder ? (
         <VerifiableFieldBuilderContainer schema={emailFieldSchema}>
           <EmailFieldInput schema={emailFieldSchema} />

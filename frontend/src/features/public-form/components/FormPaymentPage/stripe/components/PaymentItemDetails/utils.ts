@@ -1,5 +1,3 @@
-import { ProductItem } from '~shared/types'
-
 /**
  * Generates integer range, inclusive of start anding values
  * [start, end]
