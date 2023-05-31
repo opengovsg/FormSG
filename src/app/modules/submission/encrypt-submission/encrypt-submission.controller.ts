@@ -42,8 +42,7 @@ import { getOidcService } from '../../spcp/spcp.oidc.service'
 import { getPopulatedUserById } from '../../user/user.service'
 import * as VerifiedContentService from '../../verified-content/verified-content.service'
 import * as EncryptSubmissionMiddleware from '../encrypt-submission/encrypt-submission.middleware'
-import { getNormalisedResponseTime } from '../submission.utils'
-import { submissionsStatsdClient } from '../submissions.statsd-client'
+import { reportSubmissionResponseTime } from '../submissions.statsd-client'
 
 import {
   addPaymentDataStream,
@@ -436,29 +435,10 @@ const submitEncryptModeForm: ControllerHandler<
 
     // TODO 6395 make responseMetadata mandatory
     if (responseMetadata) {
-      // response time
-      submissionsStatsdClient.distribution(
-        'responseTime',
-        responseMetadata.responseTimeMs,
-        1,
-        {
-          mode: 'encrypt',
-          payment: false as unknown as string,
-        },
-      )
-      // normalised response time
-      submissionsStatsdClient.distribution(
-        'normResponseTime',
-        getNormalisedResponseTime(
-          responseMetadata.responseTimeMs,
-          responseMetadata.numVisibleFields,
-        ),
-        1,
-        {
-          mode: 'encrypt',
-          payment: true as unknown as string,
-        },
-      )
+      reportSubmissionResponseTime(responseMetadata, {
+        mode: 'encrypt',
+        payment: false as unknown as string,
+      })
     }
     // Step 3: Create the payment intent via API call to stripe.
     // Stripe requires the amount to be an integer in the smallest currency unit (i.e. cents)
@@ -609,29 +589,10 @@ const submitEncryptModeForm: ControllerHandler<
 
   // TODO 6395 make responseMetadata mandatory
   if (responseMetadata) {
-    // response time
-    submissionsStatsdClient.distribution(
-      'responseTime',
-      responseMetadata.responseTimeMs,
-      1,
-      {
-        mode: 'encrypt',
-        payment: false as unknown as string,
-      },
-    )
-    // normalised response time
-    submissionsStatsdClient.distribution(
-      'normResponseTime',
-      getNormalisedResponseTime(
-        responseMetadata.responseTimeMs,
-        responseMetadata.numVisibleFields,
-      ),
-      1,
-      {
-        mode: 'encrypt',
-        payment: false as unknown as string,
-      },
-    )
+    reportSubmissionResponseTime(responseMetadata, {
+      mode: 'encrypt',
+      payment: true as unknown as string,
+    })
   }
 
   // Send success back to client

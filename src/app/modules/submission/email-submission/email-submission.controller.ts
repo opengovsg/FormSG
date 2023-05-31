@@ -25,11 +25,8 @@ import { SgidService } from '../../sgid/sgid.service'
 import { getOidcService } from '../../spcp/spcp.oidc.service'
 import * as EmailSubmissionMiddleware from '../email-submission/email-submission.middleware'
 import * as SubmissionService from '../submission.service'
-import {
-  extractEmailConfirmationData,
-  getNormalisedResponseTime,
-} from '../submission.utils'
-import { submissionsStatsdClient } from '../submissions.statsd-client'
+import { extractEmailConfirmationData } from '../submission.utils'
+import { reportSubmissionResponseTime } from '../submissions.statsd-client'
 
 import * as EmailSubmissionService from './email-submission.service'
 import { IPopulatedEmailFormWithResponsesAndHash } from './email-submission.types'
@@ -323,27 +320,9 @@ const submitEmailModeForm: ControllerHandler<
 
           // TODO 6395 make responseMetadata mandatory
           if (responseMetadata) {
-            // response time
-            submissionsStatsdClient.distribution(
-              'responseTime',
-              responseMetadata.responseTimeMs,
-              1,
-              {
-                mode: 'email',
-              },
-            )
-            // normalised resposne time
-            submissionsStatsdClient.distribution(
-              'normResponseTime',
-              getNormalisedResponseTime(
-                responseMetadata.responseTimeMs,
-                responseMetadata.numVisibleFields,
-              ),
-              1,
-              {
-                mode: 'email',
-              },
-            )
+            reportSubmissionResponseTime(responseMetadata, {
+              mode: 'email',
+            })
           }
           // Send response to admin
           // NOTE: This should short circuit in the event of an error.
