@@ -7,7 +7,6 @@ import {
 } from '../../../../../shared/types'
 import { IPopulatedEmailForm } from '../../../../types'
 import { ParsedEmailModeSubmissionBody } from '../../../../types/api'
-import { statsdClient } from '../../../config/datadog-statsd-client'
 import { createLoggerWithLabel } from '../../../config/logger'
 import * as CaptchaMiddleware from '../../../services/captcha/captcha.middleware'
 import * as CaptchaService from '../../../services/captcha/captcha.service'
@@ -30,6 +29,7 @@ import {
   extractEmailConfirmationData,
   getNormalisedResponseTime,
 } from '../submission.utils'
+import { submissionsStatsdClient } from '../submissions.statsd-client'
 
 import * as EmailSubmissionService from './email-submission.service'
 import { IPopulatedEmailFormWithResponsesAndHash } from './email-submission.types'
@@ -324,8 +324,8 @@ const submitEmailModeForm: ControllerHandler<
           // TODO 6395 make responseMetadata mandatory
           if (responseMetadata) {
             // response time
-            statsdClient.distribution(
-              'formsg.submissions.responseTime',
+            submissionsStatsdClient.distribution(
+              'responseTime',
               responseMetadata.responseTimeMs,
               1,
               {
@@ -333,8 +333,8 @@ const submitEmailModeForm: ControllerHandler<
               },
             )
             // normalised resposne time
-            statsdClient.distribution(
-              'formsg.submissions.normResponseTime',
+            submissionsStatsdClient.distribution(
+              'normResponseTime',
               getNormalisedResponseTime(
                 responseMetadata.responseTimeMs,
                 responseMetadata.numVisibleFields,

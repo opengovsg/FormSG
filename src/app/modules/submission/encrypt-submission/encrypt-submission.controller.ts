@@ -22,7 +22,6 @@ import {
 import { StripePaymentMetadataDto } from '../../../../types'
 import { EncryptSubmissionDto } from '../../../../types/api'
 import config from '../../../config/config'
-import { statsdClient } from '../../../config/datadog-statsd-client'
 import { paymentConfig } from '../../../config/features/payment.config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { stripe } from '../../../loaders/stripe'
@@ -44,6 +43,7 @@ import { getPopulatedUserById } from '../../user/user.service'
 import * as VerifiedContentService from '../../verified-content/verified-content.service'
 import * as EncryptSubmissionMiddleware from '../encrypt-submission/encrypt-submission.middleware'
 import { getNormalisedResponseTime } from '../submission.utils'
+import { submissionsStatsdClient } from '../submissions.statsd-client'
 
 import {
   addPaymentDataStream,
@@ -437,8 +437,8 @@ const submitEncryptModeForm: ControllerHandler<
     // TODO 6395 make responseMetadata mandatory
     if (responseMetadata) {
       // response time
-      statsdClient.distribution(
-        'formsg.submissions.responseTime',
+      submissionsStatsdClient.distribution(
+        'responseTime',
         responseMetadata.responseTimeMs,
         1,
         {
@@ -447,8 +447,8 @@ const submitEncryptModeForm: ControllerHandler<
         },
       )
       // normalised response time
-      statsdClient.distribution(
-        'formsg.submissions.normResponseTime',
+      submissionsStatsdClient.distribution(
+        'normResponseTime',
         getNormalisedResponseTime(
           responseMetadata.responseTimeMs,
           responseMetadata.numVisibleFields,
@@ -610,8 +610,8 @@ const submitEncryptModeForm: ControllerHandler<
   // TODO 6395 make responseMetadata mandatory
   if (responseMetadata) {
     // response time
-    statsdClient.distribution(
-      'formsg.submissions.responseTime',
+    submissionsStatsdClient.distribution(
+      'responseTime',
       responseMetadata.responseTimeMs,
       1,
       {
@@ -620,8 +620,8 @@ const submitEncryptModeForm: ControllerHandler<
       },
     )
     // normalised response time
-    statsdClient.distribution(
-      'formsg.submissions.normResponseTime',
+    submissionsStatsdClient.distribution(
+      'normResponseTime',
       getNormalisedResponseTime(
         responseMetadata.responseTimeMs,
         responseMetadata.numVisibleFields,
