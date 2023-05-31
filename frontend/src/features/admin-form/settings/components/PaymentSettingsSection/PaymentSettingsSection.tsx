@@ -12,6 +12,7 @@ import {
 import { FormResponseMode, PaymentChannel } from '~shared/types'
 
 import { BxsCheckCircle, BxsError, BxsInfoCircle } from '~assets/icons'
+import { GUIDE_STRIPE_ONBOARDING } from '~constants/links'
 import Checkbox from '~components/Checkbox'
 import FormLabel from '~components/FormControl/FormLabel'
 import InlineMessage from '~components/InlineMessage'
@@ -45,8 +46,13 @@ const BeforeConnectionInstructions = ({
             <Link isExternal href={paymentGuideLink}>
               our guide
             </Link>{' '}
-            to set up a Stripe account. To enjoy bulk tender transaction rates,
-            send your Stripe account ID and raise a purchase order to Stripe.
+            to learn more about onboarding to Stripe. To enjoy bulk tender
+            transaction rates,{' '}
+            <Link href={GUIDE_STRIPE_ONBOARDING} target="_blank">
+              use this form
+            </Link>{' '}
+            to submit your Stripe account ID and raise a purchase order to
+            Stripe.
           </Text>
         </InlineMessage>
         {/* Stripe connect button should only be enabled when checkbox is checked. */}

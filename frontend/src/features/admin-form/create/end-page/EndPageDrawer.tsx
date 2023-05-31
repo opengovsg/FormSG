@@ -11,7 +11,7 @@ import { Box, Divider, Flex, FormControl, Stack, Text } from '@chakra-ui/react'
 import { cloneDeep } from 'lodash'
 import validator from 'validator'
 
-import { FormEndPage } from '~shared/types'
+import { FormEndPage, FormResponseMode } from '~shared/types'
 
 import { REQUIRED_ERROR } from '~constants/validation'
 import { useIsMobile } from '~hooks/useIsMobile'
@@ -54,7 +54,11 @@ const buttonLinkRules: RegisterOptions<FormEndPage, 'buttonLink'> = {
     'Please enter a valid URL (starting with https:// or http://)',
 } as FieldValues
 
-export const EndPageInput = (): JSX.Element => {
+export const EndPageInput = ({
+  isPayment = false,
+}: {
+  isPayment: boolean
+}): JSX.Element => {
   const isMobile = useIsMobile()
   const { endPageMutation } = useMutateFormPage()
 
@@ -73,6 +77,13 @@ export const EndPageInput = (): JSX.Element => {
 
   const { handleClose } = useCreatePageSidebar()
 
+  const paymentDefaults = {
+    title: 'Your payment has been made successfully.',
+    paragraph: 'Your form has been submitted and payment has been made.',
+    buttonLink: 'Default invoice link',
+    buttonText: 'Save payment invoice',
+  }
+
   const {
     register,
     formState: { errors, dirtyFields },
@@ -80,7 +91,7 @@ export const EndPageInput = (): JSX.Element => {
     handleSubmit,
   } = useForm<FormEndPage>({
     mode: 'onBlur',
-    defaultValues: endPageData,
+    defaultValues: isPayment ? paymentDefaults : endPageData,
   })
 
   // Update dirty state of builder so confirmation modal can be shown
@@ -129,6 +140,7 @@ export const EndPageInput = (): JSX.Element => {
         <FormControl
           isReadOnly={endPageMutation.isLoading}
           isInvalid={!!errors.title}
+          isDisabled={isPayment}
         >
           <FormLabel isRequired>Title</FormLabel>
           <Input
@@ -140,6 +152,7 @@ export const EndPageInput = (): JSX.Element => {
         <FormControl
           isReadOnly={endPageMutation.isLoading}
           isInvalid={!!errors.paragraph}
+          isDisabled={isPayment}
         >
           <FormLabel isRequired>Follow-up instructions</FormLabel>
           <Textarea {...register('paragraph')} />
@@ -149,6 +162,7 @@ export const EndPageInput = (): JSX.Element => {
           <FormControl
             isReadOnly={endPageMutation.isLoading}
             isInvalid={!!errors.buttonText}
+            isDisabled={isPayment}
           >
             <FormLabel isRequired>Button text</FormLabel>
             <Input
@@ -160,6 +174,7 @@ export const EndPageInput = (): JSX.Element => {
           <FormControl
             isReadOnly={endPageMutation.isLoading}
             isInvalid={!!errors.buttonLink}
+            isDisabled={isPayment}
           >
             <FormLabel isRequired>Button redirect link</FormLabel>
             <Input
@@ -210,6 +225,10 @@ export const EndPageDrawer = (): JSX.Element | null => {
     ),
   )
 
+  const isPaymentEnabled =
+    form?.responseMode === FormResponseMode.Encrypt &&
+    form?.payments_field.enabled
+
   useEffect(() => {
     setData(form?.endPage)
     return resetData
@@ -230,7 +249,7 @@ export const EndPageDrawer = (): JSX.Element | null => {
             </Flex>
             <Divider w="auto" mx="-1.5rem" />
           </Box>
-          <EndPageInput />
+          <EndPageInput isPayment={isPaymentEnabled} />
         </Flex>
       </CreatePageDrawerContainer>
     </CreatePageSideBarLayoutProvider>
