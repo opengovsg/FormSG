@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useFormContext } from 'react-hook-form'
 import { Box, Flex, Stack, Text } from '@chakra-ui/react'
 
@@ -138,7 +138,7 @@ const PaymentItemBlockV2 = ({
 }) => {
   const { register, setValue } = useFormContext()
   register(PAYMENT_PRODUCT_FIELD_ID)
-  console.log({ paymentDetails })
+
   const [productItems, updateProductItems] = useState<Array<ProductItem>>(
     () => {
       return paymentDetails.products.map((product) => ({
@@ -148,6 +148,17 @@ const PaymentItemBlockV2 = ({
       }))
     },
   )
+
+  // lifecycle: getDerivedStateFromProps to track updates from parent
+  useEffect(() => {
+    updateProductItems(
+      paymentDetails.products.map((product) => ({
+        data: product,
+        selected: false,
+        quantity: product.multi_qty ? 0 : 1,
+      })),
+    )
+  }, [paymentDetails.products])
 
   const totalPrice = calculatePrice(productItems)
   if (!paymentDetails.products) {

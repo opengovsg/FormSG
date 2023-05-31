@@ -6,7 +6,6 @@ import {
   EmailFieldBase,
   FormColorTheme,
   FormPaymentsField,
-  FormPaymentsFieldV2,
 } from '~shared/types'
 
 import { EmailFieldInput } from '~templates/Field/Email'

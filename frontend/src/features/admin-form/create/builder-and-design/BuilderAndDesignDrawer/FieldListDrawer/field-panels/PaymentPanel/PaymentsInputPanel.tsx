@@ -99,7 +99,7 @@ const PaymentInput = ({ isDisabled }: { isDisabled: boolean }) => {
   const handlePaymentsChanges = useCallback(
     (paymentsInputs: FormPaymentsInput) => {
       const { display_amount, ...rest } = paymentsInputs
-      console.log({ paymentsInputs })
+      console.log('v1', { paymentsInputs })
       setData({
         ...rest,
         amount_cents: dollarsToCents(display_amount ?? '0'),
@@ -109,7 +109,7 @@ const PaymentInput = ({ isDisabled }: { isDisabled: boolean }) => {
   )
 
   const watchedInputs = useWatch({
-    control: control,
+    control,
   }) as UnpackNestedValue<FormPaymentsInput>
 
   const clonedWatchedInputs = useMemo(
@@ -192,31 +192,6 @@ const PaymentInput = ({ isDisabled }: { isDisabled: boolean }) => {
           })}
           description="Payment field will not be shown when this is toggled off. Respondents can still submit the form."
           label="Enable payment"
-        />
-      </FormControl>
-
-      <FormControl
-        isReadOnly={paymentsMutation.isLoading}
-        isInvalid={!!errors.display_amount}
-        isDisabled={!paymentIsEnabled}
-        isRequired
-      >
-        <FormLabel isRequired description="Amount should include GST">
-          Payment amount
-        </FormLabel>
-        <Controller
-          name="display_amount"
-          control={control}
-          rules={amountValidation}
-          render={({ field }) => (
-            <MoneyInput
-              flex={1}
-              step={0}
-              inputMode="decimal"
-              placeholder="0.00"
-              {...field}
-            />
-          )}
         />
       </FormControl>
 
