@@ -132,15 +132,17 @@ const compileVerificationModel = (db: Mongoose): IVerificationModel => {
   ): Promise<IVerificationSchema | null> {
     const formFields = getVerifiableFormFields(form.form_fields)
     if (form.responseMode === FormResponseMode.Encrypt) {
-      const { payments_channel } = form as IEncryptedFormSchema
-      const paymentField = getVerifiablePaymentContactField(
-        payments_channel.channel !== PaymentChannel.Unconnected,
+      const { payments_channel, payments_field } = form as IEncryptedFormSchema
+      const paymentContactField = getVerifiablePaymentContactField(
+        payments_channel.channel !== PaymentChannel.Unconnected &&
+          !!payments_field.amount_cents &&
+          !!payments_field.description,
       )
-      if (!formFields && !paymentField) return null
+      if (!formFields && !paymentContactField) return null
       return this.create({
         formId: form._id,
         fields: formFields ?? [],
-        paymentField,
+        paymentField: paymentContactField,
       })
     } else {
       if (!formFields) return null
