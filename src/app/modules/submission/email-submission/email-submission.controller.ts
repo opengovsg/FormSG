@@ -325,7 +325,7 @@ const submitEmailModeForm: ControllerHandler<
           if (responseMetadata) {
             // response time
             statsdClient.distribution(
-              'formsg.submissions.responseTimeMetadata',
+              'formsg.submissions.responseTime',
               responseMetadata.responseTimeMs,
               1,
               {
@@ -334,7 +334,7 @@ const submitEmailModeForm: ControllerHandler<
             )
             // normalised resposne time
             statsdClient.distribution(
-              'formsg.submissions.normResponseTimeMetadata',
+              'formsg.submissions.normResponseTime',
               getNormalisedResponseTime(
                 responseMetadata.responseTimeMs,
                 responseMetadata.numVisibleFields,
