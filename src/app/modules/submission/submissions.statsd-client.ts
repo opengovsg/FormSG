@@ -23,7 +23,7 @@ export const reportSubmissionResponseTime = (
 
   // normalised response Time
   submissionsStatsdClient.distribution(
-    'normResponseTime',
+    'responseTime.normalised',
     getNormalisedResponseTime(
       responseMetadata.responseTimeMs,
       responseMetadata.numVisibleFields,

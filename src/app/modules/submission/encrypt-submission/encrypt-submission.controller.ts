@@ -437,7 +437,7 @@ const submitEncryptModeForm: ControllerHandler<
     if (responseMetadata) {
       reportSubmissionResponseTime(responseMetadata, {
         mode: 'encrypt',
-        payment: false as unknown as string,
+        payment: 'false',
       })
     }
     // Step 3: Create the payment intent via API call to stripe.
@@ -591,7 +591,7 @@ const submitEncryptModeForm: ControllerHandler<
   if (responseMetadata) {
     reportSubmissionResponseTime(responseMetadata, {
       mode: 'encrypt',
-      payment: true as unknown as string,
+      payment: 'true',
     })
   }
 
