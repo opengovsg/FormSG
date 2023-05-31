@@ -164,8 +164,9 @@ export const FormFields = ({
             </Stack>
           </Box>
         )}
-        {form?.responseMode === FormResponseMode.Encrypt &&
-          form?.payments_channel.channel !== PaymentChannel.Unconnected &&
+        {form &&
+          form.responseMode === FormResponseMode.Encrypt &&
+          form.payments_channel.channel !== PaymentChannel.Unconnected &&
           !!form.payments_field.amount_cents &&
           !!form.payments_field.description && (
             <Box
