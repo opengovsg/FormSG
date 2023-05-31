@@ -11,7 +11,6 @@ import {
   PaymentChannel,
 } from '~shared/types'
 
-import { dollarsToCents } from '~utils/payments'
 import FormLabel from '~components/FormControl/FormLabel'
 import InlineMessage from '~components/InlineMessage'
 import Input from '~components/Input'
@@ -88,12 +87,7 @@ const PaymentInput = ({ isDisabled }: { isDisabled: boolean }) => {
 
   const handlePaymentsChanges = useCallback(
     (paymentsInputs: FormPaymentsInput) => {
-      const { display_amount, ...rest } = paymentsInputs
-      console.log({ paymentsInputs })
-      setData({
-        ...rest,
-        amount_cents: dollarsToCents(display_amount ?? '0'),
-      } as FormPaymentsField)
+      setData(paymentsInputs)
     },
     [setData],
   )

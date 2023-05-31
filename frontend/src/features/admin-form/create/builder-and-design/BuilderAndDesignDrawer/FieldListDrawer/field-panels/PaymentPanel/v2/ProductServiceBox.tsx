@@ -68,9 +68,9 @@ const ProductItem = ({
   )
 }
 
-const AddProductButton = ({ onOpen }: { onOpen: () => void }) => {
+const AddProductButton = ({ onClick }: { onClick: () => void }) => {
   return (
-    <Flex flexDirection="row" onClick={onOpen} alignItems="center" mt="0.5rem">
+    <Flex flexDirection="row" onClick={onClick} alignItems="center" mt="0.5rem">
       <Button
         leftIcon={<BiPlus />}
         color="primary.500"
@@ -85,10 +85,12 @@ const AddProductButton = ({ onOpen }: { onOpen: () => void }) => {
 
 const ProductList = ({
   products,
-  handleClick,
+  handleAddOrEditClick,
+  handleDeleteClick,
 }: {
   products: Product[]
-  handleClick: (product: Product | null) => void
+  handleAddOrEditClick: (product: Product | null) => void
+  handleDeleteClick: (product: Product) => void
 }) => {
   if (products.length <= 0) {
     return (
@@ -102,7 +104,7 @@ const ProductList = ({
           </Text>
         </Box>
         <hr />
-        <AddProductButton onOpen={() => handleClick(null)} />
+        <AddProductButton onClick={() => handleAddOrEditClick(null)} />
       </>
     )
   }
@@ -113,15 +115,13 @@ const ProductList = ({
           <ProductItem
             key={idx}
             product={productDetail}
-            onEditClick={() => handleClick(productDetail)}
-            onDeleteClick={() => {
-              //
-            }}
+            onEditClick={() => handleAddOrEditClick(productDetail)}
+            onDeleteClick={() => handleDeleteClick(productDetail)}
           />
         ))}
       </Stack>
       <hr />
-      <AddProductButton onOpen={() => handleClick(null)} />
+      <AddProductButton onClick={() => handleAddOrEditClick(null)} />
     </>
   )
 }
@@ -170,6 +170,18 @@ export const ProductServiceBoxv2 = ({
     setValue(updatedProductList)
   }
 
+  const handleDeleteProduct = (productToBeDeleted: Product) => {
+    const foundIdx = products.findIndex(
+      (product) => product._id === productToBeDeleted._id,
+    )
+    const updatedProductList =
+      foundIdx >= 0
+        ? [...products.slice(0, foundIdx), ...products.slice(foundIdx + 1)]
+        : products
+    paymentsProductMutation.mutate(updatedProductList)
+    setValue(updatedProductList)
+  }
+
   const handleOnOpen = (product: Product | null) => {
     setEditProduct(product)
     onOpen()
@@ -196,7 +208,11 @@ export const ProductServiceBoxv2 = ({
         isRequired
       >
         <FormLabel>Product/service name</FormLabel>
-        <ProductList products={products} handleClick={handleOnOpen} />
+        <ProductList
+          products={products}
+          handleAddOrEditClick={handleOnOpen}
+          handleDeleteClick={handleDeleteProduct}
+        />
       </FormControl>
     </>
   )
