@@ -2698,7 +2698,7 @@ describe('admin-form.service', () => {
 
       const updatedPaymentSettingsExceeded = {
         ...updatedPaymentSettings,
-        amount_cents: 500000,
+        amount_cents: 100000001,
       } as PaymentsUpdateDto
 
       // Act
