@@ -45,7 +45,7 @@ const paymentFeature: Schema<IStripe> = {
   maxPaymentAmountCents: {
     doc: 'Maximum amount that can be paid for a form',
     format: Number,
-    default: 100000, // $1000, due to IRAS limit for invoice
+    default: Number.MAX_VALUE,
     env: 'PAYMENT_MAX_PAYMENT_AMOUNT_CENTS',
   },
   minPaymentAmountCents: {
