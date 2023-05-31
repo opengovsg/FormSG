@@ -34,6 +34,7 @@ import FormLabel from '~components/FormControl/FormLabel'
 import IconButton from '~components/IconButton'
 import InlineMessage from '~components/InlineMessage'
 import Input from '~components/Input'
+import Link from '~components/Link'
 import { ModalCloseButton } from '~components/Modal'
 import Textarea from '~components/Textarea'
 import { CopyButton } from '~templates/CopyButton'
@@ -52,7 +53,14 @@ type goLinkHelperTextType = {
 const goLinkClaimSuccessHelperText: goLinkHelperTextType = {
   color: 'success.700',
   icon: <BxsCheckCircle />,
-  text: <Text>You have successfully claimed this link.</Text>,
+  text: (
+    <Text>
+      You have successfully claimed this link.This link will appear in your{' '}
+      <Link isExternal href="https://go.gov.sg">
+        Go account
+      </Link>
+    </Text>
+  ),
 }
 
 const goLinkClaimFailureHelperText: goLinkHelperTextType = {
@@ -168,10 +176,13 @@ export const ShareFormModal = ({
 
   const handleClaimGoLinkClick = useCallback(async () => {
     try {
+      if (!user) throw Error('User not loaded yet')
+
       setClaimGoLoading(true)
       await claimGoLinkMutation.mutateAsync({
         linkSuffix: goLinkSuffixInput,
         formId: formId ?? '',
+        adminEmail: user.email,
       })
       setClaimGoLoading(false)
       setGoLinkSaved(true)
@@ -182,7 +193,7 @@ export const ShareFormModal = ({
       setGoLinkHelperText(goLinkClaimFailureHelperText)
       return
     }
-  }, [claimGoLinkMutation, goLinkSuffixInput, formId])
+  }, [user, claimGoLinkMutation, goLinkSuffixInput, formId])
 
   return (
     <Modal size={modalSize} isOpen={isOpen} onClose={onClose}>

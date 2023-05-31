@@ -4,8 +4,15 @@ import { claimGoLink } from './GoGovService'
 
 export const useListShortenerMutations = () => {
   const claimGoLinkMutation = useMutation(
-    ({ linkSuffix, formId }: { linkSuffix: string; formId: string }) =>
-      claimGoLink(linkSuffix, formId),
+    ({
+      linkSuffix,
+      formId,
+      adminEmail,
+    }: {
+      linkSuffix: string
+      formId: string
+      adminEmail: string
+    }) => claimGoLink(linkSuffix, formId, adminEmail),
   )
 
   return { claimGoLinkMutation }

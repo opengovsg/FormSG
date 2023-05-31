@@ -13,8 +13,10 @@ export const getGoLinkSuffix = async (formId: string): Promise<unknown> => {
 export const claimGoLink = async (
   linkSuffix: string,
   formId: string,
+  adminEmail: string,
 ): Promise<unknown> => {
   return ApiService.post(`${ADMIN_FORM_ENDPOINT}/${formId}/${GOGOV_ENDPOINT}`, {
     linkSuffix,
+    adminEmail,
   }).then(({ data }) => data)
 }

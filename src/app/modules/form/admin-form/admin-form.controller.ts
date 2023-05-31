@@ -2736,10 +2736,10 @@ export const handleGetGoLinkSuffix: ControllerHandler<{ formId: string }> = (
 export const handleSetGoLinkSuffix: ControllerHandler<
   { formId: string },
   unknown,
-  { linkSuffix: string }
+  { linkSuffix: string; adminEmail: string }
 > = (req, res) => {
   const { formId } = req.params
-  const { linkSuffix } = req.body
+  const { linkSuffix, adminEmail } = req.body
   const sessionUserId = (req.session as AuthedSessionData).user._id
 
   // Step 1: Get the form after permission checks
@@ -2756,10 +2756,11 @@ export const handleSetGoLinkSuffix: ControllerHandler<
       .andThen(() => {
         return ResultAsync.fromPromise(
           axios.post(
-            `${GOGOV_BASE_URL}/api/v1/urls`,
+            `${GOGOV_BASE_URL}/api/v1/admin/urls`,
             {
               longUrl: `${process.env.APP_URL}/${formId}`,
               shortUrl: linkSuffix,
+              email: adminEmail,
             },
             {
               headers: {
