@@ -33,7 +33,10 @@ export const NewFeatureContent = (props: {
       </ModalHeader>
       <ModalBody whiteSpace="pre-wrap">
         <Text textStyle="body-1" color="secondary.500">
-          {description} <Link href={learnMoreLink}>Learn more</Link>
+          {description}{' '}
+          <Link isExternal href={learnMoreLink}>
+            Learn more
+          </Link>
         </Text>
       </ModalBody>
     </>
