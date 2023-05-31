@@ -162,7 +162,7 @@ export const ProductModal = ({
                   label="Allow multiple quantities"
                 />
               </FormControl>
-              <FormControl isDisabled={!watchMultiQtyEnabled}>
+              <FormControl hidden={!watchMultiQtyEnabled}>
                 <Flex flexDirection="row">
                   <Input
                     mr="0.5rem"
