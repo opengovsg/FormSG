@@ -9,6 +9,7 @@ export enum PaymentStatus {
   PartiallyRefunded = 'partially_refunded',
   FullyRefunded = 'fully_refunded',
   Disputed = 'disputed',
+  Canceled = 'canceled',
 }
 
 export enum PaymentChannel {
@@ -64,4 +65,26 @@ export type GetPaymentInfoDto = {
   publishableKey: string
   payment_intent_id: string
   submissionId: string
+}
+
+export type IncompletePaymentsDto = {
+  stripeAccount: string
+  paymentId: string
+}[]
+
+export type ReconciliationEventsReportLine = {
+  event: Stripe.Event
+  error?: string
+}
+
+export type ReconciliationReportLine = {
+  payment: Payment
+  paymentIntent: Stripe.PaymentIntent
+  mismatch: boolean
+  canceled: boolean
+}
+
+export type ReconciliationReport = {
+  eventsReport: ReconciliationEventsReportLine[]
+  reconciliationReport: ReconciliationReportLine[]
 }

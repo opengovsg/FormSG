@@ -112,6 +112,8 @@ services:
       - PAYMENT_MIN_PAYMENT_AMOUNT_CENTS=50
       - SSM_ENV_SITE_NAME=development
       - PAYMENT_GUIDE_LINK
+      # Cron secrets
+      - CRON_PAYMENT_API_SECRET=secretKey
 
   mockpass:
     build: https://github.com/opengovsg/mockpass.git#v3.1.3
