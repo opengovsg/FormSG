@@ -516,7 +516,7 @@ const _handleConnectOauthCallback: ControllerHandler<
 
   // Step 1: Retrieve formId from state.
   const formId = state.split('.')[0]
-  const redirectUrl = `${config.app.appUrl}/admin/form/${formId}/settings`
+  const redirectUrl = `${config.app.appUrl}/admin/form/${formId}/settings/payments`
   // Step 2: Retrieve currently logged in user.
   return (
     FormService.retrieveFullFormById(formId)
@@ -564,12 +564,15 @@ export const getPaymentInfo: ControllerHandler<
   GetPaymentInfoDto | ErrorDto
 > = async (req, res) => {
   const { paymentId } = req.params
+
+  const logMeta = {
+    action: 'getPaymentInfo',
+    paymentId,
+  }
+
   logger.info({
     message: 'getPaymentInfo endpoint called',
-    meta: {
-      action: 'getPaymentInfo',
-      paymentId,
-    },
+    meta: logMeta,
   })
 
   return PaymentService.findPaymentById(paymentId)
@@ -582,15 +585,13 @@ export const getPaymentInfo: ControllerHandler<
         )
         .andThen(checkFormIsEncryptMode) // Payment forms are encrypted
         .andThen((form) => {
-          const stripeAccount = form.payments_channel?.target_account_id
+          const stripeAccount = payment.targetAccountId
           // Early termination to prevent consumption of QPS limit to stripe
-          if (!stripeAccount) {
+          if (stripeAccount !== form.payments_channel.target_account_id) {
             logger.error({
-              message: 'Missing payments_channel on this form',
-              meta: {
-                action: 'getPaymentInfo',
-                paymentId,
-              },
+              message:
+                'Target stripe account for this form has changed, unable to get payment info',
+              meta: logMeta,
             })
             return errAsync(new PaymentAccountInformationError())
           }
@@ -602,10 +603,9 @@ export const getPaymentInfo: ControllerHandler<
             }),
             (error) => {
               logger.error({
-                message: 'stripe.paymentIntents.retrieve called',
+                message: 'Calling stripe.paymentIntents.retrieve failed',
                 meta: {
-                  action: 'getPaymentInfo',
-                  paymentId,
+                  ...logMeta,
                   paymentIntentId,
                   error,
                 },
@@ -615,7 +615,7 @@ export const getPaymentInfo: ControllerHandler<
           ).map((paymentIntent) => {
             return res.status(StatusCodes.OK).json({
               client_secret: paymentIntent.client_secret || '',
-              publishableKey: form.payments_channel?.publishable_key ?? '',
+              publishableKey: form.payments_channel.publishable_key,
               payment_intent_id: payment.paymentIntentId,
               submissionId: payment.pendingSubmissionId,
             })

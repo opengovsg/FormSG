@@ -2682,13 +2682,11 @@ describe('admin-form.service', () => {
   describe('updatePayments', () => {
     // Arrange
     const mockFormId = new ObjectId().toString()
-    const updatedPaymentSettings = {
+    const updatedPaymentSettings: PaymentsUpdateDto = {
       enabled: true,
-      target_account_id: 'someId',
-      publishable_key: 'somekey',
       amount_cents: 5000,
       description: 'some description',
-    } as PaymentsUpdateDto
+    }
 
     const mockUpdatedForm = {
       _id: mockFormId,

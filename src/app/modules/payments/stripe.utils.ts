@@ -29,6 +29,7 @@ import {
 import {
   ComputePaymentStateError,
   MalformedStripeChargeObjectError,
+  MalformedStripeEventObjectError,
   StripeFetchError,
   StripeMetadataIncorrectEnvError,
   StripeMetadataInvalidError,
@@ -40,6 +41,7 @@ const logger = createLoggerWithLabel(module)
 export const mapRouteError: MapRouteError = (error: ApplicationError) => {
   switch (error.constructor) {
     case StripeMetadataInvalidError:
+    case MalformedStripeEventObjectError:
     case MalformedStripeChargeObjectError:
       return {
         statusCode: StatusCodes.BAD_REQUEST,

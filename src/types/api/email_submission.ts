@@ -4,6 +4,7 @@ import {
   AttachmentResponse,
   EmailModeSubmissionContentDto,
   FieldResponse,
+  ResponseMetadata,
 } from '../../../shared/types'
 
 /**
@@ -24,5 +25,8 @@ export type ParsedEmailFormFieldResponse =
  */
 export type ParsedEmailModeSubmissionBody = Merge<
   EmailModeSubmissionContentDto,
-  { responses: ParsedEmailFormFieldResponse[] }
+  {
+    responses: ParsedEmailFormFieldResponse[]
+    responseMetadata: ResponseMetadata
+  }
 >

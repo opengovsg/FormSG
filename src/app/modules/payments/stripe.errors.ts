@@ -18,6 +18,12 @@ export class MalformedStripeChargeObjectError extends ApplicationError {
   }
 }
 
+export class MalformedStripeEventObjectError extends ApplicationError {
+  constructor(message = 'Data missing from event object') {
+    super(message)
+  }
+}
+
 export class StripeMetadataInvalidError extends ApplicationError {
   constructor(message = 'Invalid shape found for Stripe metadata') {
     super(message)
