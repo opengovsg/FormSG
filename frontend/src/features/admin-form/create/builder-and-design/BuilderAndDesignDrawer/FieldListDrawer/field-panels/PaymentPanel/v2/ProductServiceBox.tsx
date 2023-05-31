@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { BiEditAlt, BiPlus, BiTrash } from 'react-icons/bi'
 import {
   Box,
@@ -11,11 +12,10 @@ import {
 
 import { FormPaymentsFieldV2, Product } from '~shared/types'
 
-import { centsToDollars, dollarsToCents } from '~utils/payments'
+import { centsToDollars } from '~utils/payments'
 import Button from '~components/Button'
 import FormLabel from '~components/FormControl/FormLabel'
 import IconButton from '~components/IconButton'
-import Toggle from '~components/Toggle'
 
 import { useMutateFormPage } from '~features/admin-form/common/mutations'
 
@@ -26,7 +26,15 @@ import {
   usePaymentStore,
 } from '../usePaymentStore'
 
-const ProductItem = ({ product }: { product: Product }) => {
+const ProductItem = ({
+  product,
+  onEditClick,
+  onDeleteClick,
+}: {
+  product: Product
+  onEditClick: () => void
+  onDeleteClick: () => void
+}) => {
   return (
     <>
       <Box px="1rem" py="1rem" backgroundColor={'#F8F9FD'}>
@@ -45,11 +53,13 @@ const ProductItem = ({ product }: { product: Product }) => {
               icon={<BiEditAlt type="solid" />}
               color="primary.500"
               aria-label={'Edit'}
+              onClick={onEditClick}
             />
             <IconButton
               icon={<BiTrash />}
               color="danger.500"
               aria-label={'Delete'}
+              onClick={onDeleteClick}
             />
           </ButtonGroup>
         </Flex>
@@ -60,12 +70,7 @@ const ProductItem = ({ product }: { product: Product }) => {
 
 const AddProductButton = ({ onOpen }: { onOpen: () => void }) => {
   return (
-    <Flex
-      flexDirection="row"
-      onClick={() => onOpen()}
-      alignItems="center"
-      mt="0.5rem"
-    >
+    <Flex flexDirection="row" onClick={onOpen} alignItems="center" mt="0.5rem">
       <Button
         leftIcon={<BiPlus />}
         color="primary.500"
@@ -80,10 +85,10 @@ const AddProductButton = ({ onOpen }: { onOpen: () => void }) => {
 
 const ProductList = ({
   products,
-  onOpen,
+  handleClick,
 }: {
   products: Product[]
-  onOpen: () => void
+  handleClick: (product: Product | null) => void
 }) => {
   if (products.length <= 0) {
     return (
@@ -97,7 +102,7 @@ const ProductList = ({
           </Text>
         </Box>
         <hr />
-        <AddProductButton onOpen={onOpen} />
+        <AddProductButton onOpen={() => handleClick(null)} />
       </>
     )
   }
@@ -105,11 +110,18 @@ const ProductList = ({
     <>
       <Stack spacing="1.5rem" mb="1.5rem">
         {products.map((productDetail, idx) => (
-          <ProductItem key={idx} product={productDetail} />
+          <ProductItem
+            key={idx}
+            product={productDetail}
+            onEditClick={() => handleClick(productDetail)}
+            onDeleteClick={() => {
+              //
+            }}
+          />
         ))}
       </Stack>
       <hr />
-      <AddProductButton onOpen={onOpen} />
+      <AddProductButton onOpen={() => handleClick(null)} />
     </>
   )
 }
@@ -136,24 +148,44 @@ export const ProductServiceBoxv2 = ({
     setData: setDataSelector(state),
   }))
 
+  const [editProduct, setEditProduct] = useState<Product | null>(null)
   if (!_paymentsData) return <></>
 
   const paymentsData = _paymentsData as FormPaymentsFieldV2
   const { products = [] } = paymentsData
 
-  const handleAddProduct = (newProduct: Product) => {
-    const updatedProductList = [...products, newProduct]
+  const handleSaveProduct = (newProduct: Product) => {
+    const foundIdx = products.findIndex(
+      (product) => product._id === newProduct._id,
+    )
+    const updatedProductList =
+      foundIdx >= 0
+        ? [
+            ...products.slice(0, foundIdx),
+            newProduct,
+            ...products.slice(foundIdx + 1),
+          ]
+        : [...products, newProduct]
     paymentsProductMutation.mutate(updatedProductList)
     setValue(updatedProductList)
   }
 
+  const handleOnOpen = (product: Product | null) => {
+    setEditProduct(product)
+    onOpen()
+  }
+
+  const handleOnClose = () => {
+    setEditProduct(null)
+    onClose()
+  }
   return (
     <>
       {isOpen ? (
         <ProductModal
-          onClose={onClose}
-          onSaveProduct={handleAddProduct}
-          product={null}
+          onClose={handleOnClose}
+          onSaveProduct={handleSaveProduct}
+          product={editProduct}
         />
       ) : null}
 
@@ -164,7 +196,7 @@ export const ProductServiceBoxv2 = ({
         isRequired
       >
         <FormLabel>Product/service name</FormLabel>
-        <ProductList products={products} onOpen={onOpen} />
+        <ProductList products={products} handleClick={handleOnOpen} />
       </FormControl>
     </>
   )

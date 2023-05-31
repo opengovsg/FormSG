@@ -46,7 +46,16 @@ export const ProductModal = ({
     control,
     watch,
     formState: { errors },
-  } = useForm<ProductInput>()
+  } = useForm<ProductInput>(
+    product
+      ? {
+          defaultValues: {
+            ...product,
+            display_amount: centsToDollars(product.amount_cents ?? 0),
+          },
+        }
+      : undefined,
+  )
 
   const { data: { maxPaymentAmountCents, minPaymentAmountCents } = {} } =
     useEnv()
