@@ -35,7 +35,7 @@ export const NewFeatureContent = (props: {
         <Text textStyle="body-1" color="secondary.500">
           {description}
         </Text>
-        <Text>
+        <Text textStyle="body-1" color="secondary.500">
           Click <Link href={learnMoreLink}>here</Link> to learn more.
         </Text>
       </ModalBody>
