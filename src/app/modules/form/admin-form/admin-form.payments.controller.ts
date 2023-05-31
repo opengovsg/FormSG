@@ -330,3 +330,59 @@ export const handleUpdatePayments = [
   }),
   _handleUpdatePayments,
 ] as ControllerHandler[]
+
+export const handleGetPaymentGuideLink: ControllerHandler = async (
+  req,
+  res,
+) => {
+  const sessionUserId = (req.session as AuthedSessionData).user._id
+
+  const logMeta = {
+    action: 'handleGetPaymentGuideLink',
+    ...createReqMeta(req),
+    userId: sessionUserId,
+  }
+
+  // If getFeatureFlag throws a DatabaseError, we want to log it, but respond
+  // to the client as if the flag is not found.
+  const featureFlagsListResult = await FeatureFlagService.getEnabledFlags()
+
+  let featureFlagEnabled = false
+
+  if (featureFlagsListResult.isErr()) {
+    logger.error({
+      message: 'Error occurred whilst retrieving enabled feature flags',
+      meta: logMeta,
+      error: featureFlagsListResult.error,
+    })
+  } else {
+    featureFlagEnabled = featureFlagsListResult.value.includes(
+      featureFlags.payment,
+    )
+  }
+
+  // Step 1: Retrieve currently logged in user.
+  return (
+    UserService.getPopulatedUserById(sessionUserId)
+      // Step 2: Check if user has 'payment' betaflag
+      .andThen((user) =>
+        featureFlagEnabled
+          ? ok(user)
+          : verifyUserBetaflag(user, featureFlags.payment),
+      )
+      // Step 3: User has permissions, proceed to get payment guide link
+      .map(() =>
+        res.status(StatusCodes.OK).json(AdminFormService.getPaymentGuideLink()),
+      )
+      .mapErr((error) => {
+        logger.error({
+          message: 'Error checking if payment feature is enabled',
+          meta: logMeta,
+          error,
+        })
+
+        const { statusCode, errorMessage } = mapRouteError(error)
+        return res.status(statusCode).json({ message: errorMessage })
+      })
+  )
+}

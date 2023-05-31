@@ -89,7 +89,7 @@ export const getChargeIdFromNestedCharge = (
 const isStripeMetadata = (
   obj: Stripe.Metadata,
 ): obj is StripePaymentMetadataDto =>
-  hasProp(obj, 'env') &&
+  // hasProp(obj, 'env') && // TODO: Make this required later
   hasProp(obj, 'formTitle') &&
   hasProp(obj, 'formId') &&
   hasProp(obj, 'submissionId') &&
@@ -131,7 +131,10 @@ export const getMetadataPaymentId = (
     })
     return err(new StripeMetadataValidPaymentIdNotFoundError())
   }
-  if (metadata.env !== config.envSiteName) {
+  // Explicit check for metadata.env to ensure that legacy metadata which does
+  // not have the env value still gets processed.
+  // TODO: remove the existence check later.
+  if (metadata.env && metadata.env !== config.envSiteName) {
     return err(new StripeMetadataIncorrectEnvError())
   }
   return ok(metadata.paymentId)
@@ -155,6 +158,7 @@ type PaymentState = {
 const chargeStateReducer = (
   state: PaymentState,
   event:
+    | Stripe.DiscriminatedEvent.PaymentIntentEvent
     | Stripe.DiscriminatedEvent.ChargeEvent
     | Stripe.DiscriminatedEvent.ChargeDisputeEvent,
 ): PaymentState => {
@@ -167,6 +171,19 @@ const chargeStateReducer = (
       } else if (event.type === 'charge.succeeded') {
         state.status = PaymentStatus.Succeeded
         state.chargeIdLatest = event.data.object.id
+      } else if (event.type === 'payment_intent.canceled') {
+        // Verify that the latest charge in the payment intent object is correct
+        const latestCharge = event.data.object.latest_charge
+        const chargeIdLatest = !latestCharge
+          ? undefined
+          : typeof latestCharge === 'string'
+          ? latestCharge
+          : latestCharge.id
+        if (state.chargeIdLatest === chargeIdLatest) {
+          state.status = PaymentStatus.Canceled
+        } else {
+          state.status = null
+        }
       } else {
         state.status = null
       }
@@ -211,7 +228,8 @@ const chargeStateReducer = (
       }
       break
     case PaymentStatus.FullyRefunded:
-      // If we recieve any more charge events, the status is unknown.
+    case PaymentStatus.Canceled:
+      // If we recieve any more events, the status is unknown.
       state.status = null
       break
     default:
@@ -239,17 +257,20 @@ export const computePaymentState = (
     events,
   }
 
-  // We only care about charge and dispute events for computing payment status.
-  // The event types are:
+  // We only care about charge, dispute and payment canceled events for
+  // computing payment status. The event types are:
   // - charge.(failed|pending|refunded|succeeded)
   // - charge.dispute.(closed|created|funds_reinstated|funds_withdrawn|updated)
+  // - payment_intent.canceled
   const chargeEvents = (events as Stripe.DiscriminatedEvent[]).filter(
     (
       event: Stripe.DiscriminatedEvent,
     ): event is
+      | Stripe.DiscriminatedEvent.PaymentIntentEvent
       | Stripe.DiscriminatedEvent.ChargeEvent
       | Stripe.DiscriminatedEvent.ChargeDisputeEvent =>
       [
+        'payment_intent.canceled',
         'charge.failed',
         'charge.pending',
         'charge.refunded',
@@ -319,6 +340,17 @@ export const computePaymentState = (
           lastEvent.data.object.charge,
         ),
       })
+    case 'payment_intent.canceled': {
+      const latestCharge = lastEvent.data.object.latest_charge
+      return ok({
+        status: PaymentStatus.Canceled,
+        chargeIdLatest: !latestCharge
+          ? undefined
+          : typeof latestCharge === 'string'
+          ? latestCharge
+          : latestCharge.id,
+      })
+    }
     default:
       // All cases have been covered, so this should never happen.
       logger.error({

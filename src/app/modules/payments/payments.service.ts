@@ -330,3 +330,24 @@ export const findLatestSuccessfulPaymentByEmailAndFormId = (
     return okAsync(result)
   })
 }
+
+/**
+ * Retrieves all payments that are in Pending or Failed statuses.
+ * @returns a list of payments that are incomplete.
+ */
+export const getIncompletePayments = (): ResultAsync<
+  IPaymentSchema[],
+  DatabaseError
+> => {
+  return ResultAsync.fromPromise(
+    PaymentModel.getByStatus(PaymentStatus.Pending, PaymentStatus.Failed),
+    (error) => {
+      logger.error({
+        message: 'Database error while retrieving payments by status',
+        meta: { action: 'findIncompletePayments' },
+        error,
+      })
+      return new DatabaseError()
+    },
+  )
+}

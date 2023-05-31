@@ -9,10 +9,10 @@ import {
   Text,
 } from '@chakra-ui/react'
 
-import { FormResponseMode } from '~shared/types'
+import { FormResponseMode, PaymentChannel } from '~shared/types'
 
 import { BxsCheckCircle, BxsError, BxsInfoCircle } from '~assets/icons'
-import { GUIDE_PAYMENTS } from '~constants/links'
+import { GUIDE_STRIPE_ONBOARDING } from '~constants/links'
 import Checkbox from '~components/Checkbox'
 import FormLabel from '~components/FormControl/FormLabel'
 import InlineMessage from '~components/InlineMessage'
@@ -24,6 +24,7 @@ import { useEnv } from '~features/env/queries'
 import { useAdminFormPayments, useAdminFormSettings } from '../../queries'
 
 import { BusinessInfoSection } from './BusinessInfoSection'
+import { usePaymentGuideLink } from './queries'
 import {
   StripeConnectButton,
   StripeConnectButtonStates,
@@ -35,17 +36,23 @@ const BeforeConnectionInstructions = ({
   isProductionEnv: boolean
 }): JSX.Element => {
   const [allowConnect, setAllowConnect] = useState(false)
+  const { data: paymentGuideLink } = usePaymentGuideLink()
   if (isProductionEnv) {
     return (
       <>
         <InlineMessage variant="info" my="2rem">
           <Text>
             Read{' '}
-            <Link isExternal href={GUIDE_PAYMENTS}>
+            <Link isExternal href={paymentGuideLink}>
               our guide
             </Link>{' '}
-            to set up a Stripe account. To enjoy bulk tender transaction rates,
-            send your Stripe account ID and raise a purchase order to Stripe.
+            to learn more about onboarding to Stripe. To enjoy bulk tender
+            transaction rates,{' '}
+            <Link href={GUIDE_STRIPE_ONBOARDING} target="_blank">
+              use this form
+            </Link>{' '}
+            to submit your Stripe account ID and raise a purchase order to
+            Stripe.
           </Text>
         </InlineMessage>
         {/* Stripe connect button should only be enabled when checkbox is checked. */}
@@ -106,14 +113,16 @@ const ConnectionStatusText = ({
 
 const AfterConnectionInfo = ({
   isProductionEnv,
+  hasPaymentCapabilities,
+  adminFormPaymentsError,
 }: {
   isProductionEnv: boolean
+  hasPaymentCapabilities: boolean
+  adminFormPaymentsError: boolean
 }): JSX.Element => {
-  const { hasPaymentCapabilities, isLoading, isError } = useAdminFormPayments()
-
   let connectionInfo: JSX.Element
 
-  if (isError) {
+  if (adminFormPaymentsError) {
     // Base case: Error retrieving form payments data
     connectionInfo = (
       <ConnectionStatusText
@@ -156,19 +165,15 @@ const AfterConnectionInfo = ({
       // Test mode: Stripe account connection step skipped
       connectionInfo = (
         <ConnectionStatusText
-          color="warning.500"
-          icon={BxsInfoCircle}
+          color="success.700"
+          icon={BxsCheckCircle}
           text="You are connected to a test account."
         />
       )
     }
   }
 
-  return (
-    <Skeleton isLoaded={!isLoading}>
-      <Flex mb="2.5rem">{connectionInfo}</Flex>
-    </Skeleton>
-  )
+  return <Flex mb="2.5rem">{connectionInfo}</Flex>
 }
 
 const PaymentsAccountInformation = ({
@@ -194,8 +199,11 @@ const PaymentsAccountInformation = ({
 }
 
 export const PaymentSettingsSection = (): JSX.Element => {
-  const { hasPaymentCapabilities, data } = useAdminFormPayments()
-  const stripeAccount = data?.account
+  const {
+    hasPaymentCapabilities,
+    isLoading: adminFormPaymentsLoading,
+    isError: adminFormPaymentsError,
+  } = useAdminFormPayments()
 
   const { data: settings, isLoading: settingsIsLoading } =
     useAdminFormSettings()
@@ -203,24 +211,32 @@ export const PaymentSettingsSection = (): JSX.Element => {
   const isProductionEnv = secretEnv === 'production'
 
   return settings?.responseMode === FormResponseMode.Encrypt ? (
-    !stripeAccount ? (
-      <BeforeConnectionInstructions isProductionEnv={isProductionEnv} />
-    ) : (
-      <Skeleton isLoaded={!settingsIsLoading}>
-        <AfterConnectionInfo isProductionEnv={isProductionEnv} />
-        <PaymentsAccountInformation
-          account_id={settings?.payments_channel?.target_account_id}
-          isLoading={settingsIsLoading}
-        />
-        <StripeConnectButton connectState={StripeConnectButtonStates.LINKED} />
-        {hasPaymentCapabilities && (
-          <>
-            <Divider my="2.5rem" />
-            <BusinessInfoSection />
-          </>
-        )}
-      </Skeleton>
-    )
+    <Skeleton isLoaded={!settingsIsLoading}>
+      {settings.payments_channel.channel === PaymentChannel.Unconnected ? (
+        <BeforeConnectionInstructions isProductionEnv={isProductionEnv} />
+      ) : (
+        <Skeleton isLoaded={!adminFormPaymentsLoading}>
+          <AfterConnectionInfo
+            isProductionEnv={isProductionEnv}
+            hasPaymentCapabilities={hasPaymentCapabilities}
+            adminFormPaymentsError={adminFormPaymentsError}
+          />
+          <PaymentsAccountInformation
+            account_id={settings.payments_channel.target_account_id}
+            isLoading={settingsIsLoading}
+          />
+          <StripeConnectButton
+            connectState={StripeConnectButtonStates.LINKED}
+          />
+          {hasPaymentCapabilities && (
+            <>
+              <Divider my="2.5rem" />
+              <BusinessInfoSection />
+            </>
+          )}
+        </Skeleton>
+      )}
+    </Skeleton>
   ) : (
     <></>
   )

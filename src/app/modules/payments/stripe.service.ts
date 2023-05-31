@@ -8,6 +8,10 @@ import { MarkRequired } from 'ts-essentials'
 import isURL from 'validator/lib/isURL'
 
 import {
+  PaymentStatus,
+  ReconciliationReportLine,
+} from '../../../../shared/types'
+import {
   IEncryptedFormSchema,
   IPaymentSchema,
   IPopulatedEncryptedForm,
@@ -21,9 +25,14 @@ import {
   transformMongoError,
 } from '../../utils/handle-mongo-error'
 import { DatabaseError, DatabaseWriteConflictError } from '../core/core.errors'
-import { PendingSubmissionNotFoundError } from '../submission/submission.errors'
+import { FormNotFoundError } from '../form/form.errors'
+import {
+  PendingSubmissionNotFoundError,
+  SubmissionNotFoundError,
+} from '../submission/submission.errors'
 
 import {
+  ConfirmedPaymentNotFoundError,
   PaymentAlreadyConfirmedError,
   PaymentNotFoundError,
 } from './payments.errors'
@@ -34,10 +43,46 @@ import {
   MalformedStripeEventObjectError,
   StripeAccountError,
   StripeFetchError,
+  StripeMetadataIncorrectEnvError,
+  StripeMetadataInvalidError,
+  StripeMetadataValidPaymentIdNotFoundError,
 } from './stripe.errors'
-import { computePaymentState, computePayoutDetails } from './stripe.utils'
+import {
+  computePaymentState,
+  computePayoutDetails,
+  getChargeIdFromNestedCharge,
+  getMetadataPaymentId,
+} from './stripe.utils'
 
 const logger = createLoggerWithLabel(module)
+
+/**
+ * Retrieves charge object from Stripe when given the charge ID.
+ * @param {string} chargeId the charge id of to be retrieved
+ * @param {string} stripeAccount optional; the Stripe account id the charge belongs to
+ * @returns ok(charge) if charge exists
+ * @returns err(StripeFetchError) if an error occurred while retrieving the charge
+ */
+export const getStripeChargeById = (
+  chargeId: string,
+  stripeAccount?: string,
+): ResultAsync<Stripe.Charge, StripeFetchError> => {
+  return ResultAsync.fromPromise(
+    stripe.charges.retrieve(chargeId, { stripeAccount }),
+    (error) => {
+      logger.error({
+        message: 'Error while retrieving Stripe charge by id',
+        meta: {
+          action: 'getStripeChargeById',
+          chargeId,
+          stripeAccount,
+        },
+        error,
+      })
+      return new StripeFetchError()
+    },
+  )
+}
 
 /**
  * Helper function that confirms a pending submission for a Stripe payment form
@@ -118,21 +163,13 @@ const confirmStripePaymentPendingSubmission = (
           return new StripeFetchError()
         },
       )
-        .andThen((balanceTransaction) =>
-          okAsync(
-            balanceTransaction.fee_details
-              .filter((feeDetail) => feeDetail.type === 'stripe_fee')
-              .map((feeDetail) => feeDetail.amount)
-              .reduce((a, b) => a + b),
-          ),
-        )
         // Step 2: Update the payment object with the new completed payment metadata
-        .andThen((transactionFee) =>
+        .andThen((balanceTransaction) =>
           PaymentsService.confirmPaymentPendingSubmission(
             payment,
             new Date(event.created * 1000), // Convert to miliseconds from epoch
             receiptUrl,
-            transactionFee,
+            balanceTransaction.fee,
             session,
           ),
         )
@@ -200,7 +237,7 @@ export const processStripeEventWithinSession = (
         // occurred due to various reasons (e.g. us timing out on Stripe, so
         // Stripe retried the webhook).
         logger.warn({
-          message: 'Duplicate event received from Stripe webhook endpoint',
+          message: 'Duplicate event received by Stripe event handler',
           meta: logMeta,
         })
         return okAsync(undefined)
@@ -363,6 +400,205 @@ export const processStripeEvent = (
   )
 }
 
+type HandleStripeEventResultError =
+  | StripeMetadataInvalidError
+  | StripeMetadataValidPaymentIdNotFoundError
+  | StripeMetadataIncorrectEnvError
+  | MalformedStripeEventObjectError
+  | MalformedStripeChargeObjectError
+  | PaymentNotFoundError
+  | PendingSubmissionNotFoundError
+  | PaymentAlreadyConfirmedError
+  | StripeFetchError
+  | ComputePaymentStateError
+  | ConfirmedPaymentNotFoundError
+  | SubmissionNotFoundError
+  | FormNotFoundError
+  | DatabaseError
+
+/**
+ * Processes an incoming Stripe event.
+ *
+ * @param {Stripe.Event} event the new Stripe event to be processed
+ *
+ * @returns ok() if event was successfully processed
+ * @returns err(MalformedStripeEventObjectError) if the shape of the event object received from Stripe does not have expected fields
+ * @returns err(MalformedStripeChargeObjectError) if the shape of the charge object returned by Stripe does not have expected fields
+ * @returns err(PaymentNotFoundError) if the payment document does not exist
+ * @returns err(PendingSubmissionNotFoundError) if the pending submission being referenced by the payment document does not exist
+ * @returns err(PaymentAlreadyConfirmedError) if the payment document already has an associated completed payment
+ * @returns err(StripeFetchError) if there was an error while calling Stripe API
+ * @returns err(ComputePaymentStateError) if there was an error while recomputing the payment state
+ * @returns err(StripeMetadataInvalidError) if the metadata has an invalid shape
+ * @returns err(StripeMetadataValidPaymentIdNotFoundError) if the payment id was not found or is an invalid BSON object id
+ * @returns err(StripeMetadataIncorrectEnvError) if the app is incorrect
+ * @returns err(ConfirmedPaymentNotFoundError) if the paymentId does not have a submission ID associated with a completed payment
+ * @returns err(SubmissionNotFoundError) if submission does not exist in the database
+ * @returns err(FormNotFoundError) if the form or form admin does not exist
+ * @returns err(DatabaseError) if error occurs whilst querying the database
+ */
+export const handleStripeEvent = (
+  event: Stripe.DiscriminatedEvent,
+): ResultAsync<void, HandleStripeEventResultError> => {
+  const logMeta = {
+    action: 'handleStripeEvent',
+    event,
+  }
+
+  let result: ResultAsync<void, HandleStripeEventResultError> =
+    okAsync(undefined)
+
+  switch (event.type) {
+    // We catch all payment_intent, charge and payout events, except the
+    // following ignored event types (as associated features are not supported):
+    // - charge.captured, charge.expired (only for capture flow)
+    // - charge.updated (descriptions or metadata are updated)
+    // - payment_intent.amount_capturable_updated (only for capture flow)
+    // - payment_intent.partially_funded (only occurs when payment intents are
+    //   completed in part by customer stripe account balance)
+    case 'payment_intent.canceled':
+    case 'payment_intent.created':
+    case 'payment_intent.payment_failed':
+    case 'payment_intent.processing':
+    case 'payment_intent.requires_action':
+    case 'payment_intent.succeeded':
+    case 'charge.failed':
+    case 'charge.pending':
+    case 'charge.refunded':
+    case 'charge.succeeded': {
+      result = getMetadataPaymentId(event.data.object.metadata).asyncAndThen(
+        (paymentId) =>
+          processStripeEvent(paymentId, event).andThen(() => {
+            if (event.type !== 'charge.succeeded') return okAsync(undefined)
+
+            return PaymentsService.performPaymentPostSubmissionActions(
+              paymentId,
+            )
+              .andThen(() => okAsync(undefined))
+              .orElse((e) => {
+                logger.warn({
+                  message: 'Payment confirmation email not sent',
+                  meta: logMeta,
+                })
+                return errAsync(e)
+              })
+          }),
+      )
+      break
+    }
+    case 'charge.dispute.closed':
+    case 'charge.dispute.created':
+    case 'charge.dispute.funds_reinstated':
+    case 'charge.dispute.funds_withdrawn':
+    case 'charge.dispute.updated': {
+      const chargeIdLatest = getChargeIdFromNestedCharge(
+        event.data.object.charge,
+      )
+
+      result = getStripeChargeById(chargeIdLatest, event.account)
+        .andThen((charge) => getMetadataPaymentId(charge.metadata))
+        .mapErr((error) => {
+          if (error instanceof PaymentNotFoundError) {
+            logger.warn({
+              message: 'Received dispute event with unknown latest charge id',
+              meta: { ...logMeta, chargeIdLatest },
+            })
+          }
+          return error
+        })
+        .andThen((paymentId) => processStripeEvent(paymentId, event))
+      break
+    }
+    case 'charge.refund.updated': {
+      if (!event.data.object.charge) {
+        logger.warn({
+          message: 'Received Stripe event charge.refund.updated with no charge',
+          meta: { ...logMeta, chargeIdLatest: event.data.object.charge },
+        })
+        result = errAsync(new PaymentNotFoundError())
+        break
+      }
+
+      const chargeIdLatest = getChargeIdFromNestedCharge(
+        event.data.object.charge,
+      )
+
+      result = getStripeChargeById(chargeIdLatest, event.account)
+        .andThen((charge) => getMetadataPaymentId(charge.metadata))
+        .mapErr((error) => {
+          if (error instanceof PaymentNotFoundError) {
+            logger.warn({
+              message:
+                'Received refund updated event with unknown latest charge id',
+              meta: { ...logMeta, chargeIdLatest },
+            })
+          }
+          return error
+        })
+        .andThen((paymentId) => processStripeEvent(paymentId, event))
+      break
+    }
+    case 'payout.canceled':
+    case 'payout.created':
+    case 'payout.failed':
+    case 'payout.paid':
+    case 'payout.updated':
+    case 'payout.reconciliation_completed': {
+      // Retrieve the list of balance transactions related to this payout, and
+      // associate the payout with the set of charges it pays out for
+      result = ResultAsync.fromPromise(
+        stripe.balanceTransactions
+          .list(
+            { payout: event.data.object.id, expand: ['data.source'] },
+            { stripeAccount: event.account },
+          )
+          .autoPagingEach(async (balanceTransaction) => {
+            if (balanceTransaction.type !== 'charge') return
+
+            const charge = balanceTransaction.source as Stripe.Charge
+            const innerResult = getMetadataPaymentId(
+              charge.metadata,
+            ).asyncAndThen((paymentId) => processStripeEvent(paymentId, event))
+
+            // Reducer to keep errors around
+            result = result.andThen(() => innerResult)
+          }),
+        (error) => {
+          if (error instanceof Stripe.errors.StripeInvalidRequestError) {
+            // In the case that Stripe re-issues an invalid request error, it is
+            // likely due to incorrect environment. Ignore this specific error
+            // and move on with life.
+            logger.warn({
+              message:
+                'Stripe invalid request error while processing Stripe payout event',
+              meta: logMeta,
+              error,
+            })
+            return new StripeMetadataIncorrectEnvError()
+          }
+
+          logger.error({
+            message: 'Error while processing Stripe payout event',
+            meta: logMeta,
+            error,
+          })
+          return new StripeFetchError()
+        },
+      ).andThen(() => result)
+      break
+    }
+    default:
+      // Ignore all other events
+      logger.warn({
+        message: 'Received Stripe event with unknown event.type',
+        meta: logMeta,
+      })
+      break
+  }
+
+  return result
+}
+
 export const getStripeOauthUrl = (form: IPopulatedEncryptedForm) => {
   const state = `${form._id}.${cuid()}`
 
@@ -492,4 +728,213 @@ export const validateAccount = (
     stripe.accounts.retrieve(accountId),
     (error) => new StripeAccountError(String(error)),
   )
+}
+
+/**
+ * Service to interface with Stripe to get all undelivered events for a
+ * specified Stripe account.
+ *
+ * @param {string} stripeAccount the Stripe account id to retrieve events for
+ * @param {number} maxAgeHrs (optional) the max age of events to attempt reconciliation for, in hours before now; if omitted, it is treated as infinite
+ *
+ * @returns forEach, which takes a callback that is run for each retrieved event
+ */
+export const getUndeliveredStripeEventsForAccount = (
+  stripeAccount: string,
+  maxAgeHrs?: number,
+) => {
+  const SECONDS_PER_HOUR = 60 * 60
+  return {
+    forEach: (
+      cb: (event: Stripe.Event) => boolean | void | Promise<boolean | void>,
+    ) =>
+      ResultAsync.fromPromise(
+        stripe.events
+          .list(
+            {
+              created: maxAgeHrs
+                ? {
+                    gte:
+                      Math.trunc(Date.now() / 1000) -
+                      maxAgeHrs * SECONDS_PER_HOUR,
+                  }
+                : undefined,
+              delivery_success: false,
+            },
+            { stripeAccount },
+          )
+          .autoPagingEach(cb),
+        (error) => {
+          logger.error({
+            message: 'Error while processing Stripe events for account',
+            meta: {
+              action: 'getUndeliveredStripeEventsForAccount',
+              stripeAccount,
+              error,
+            },
+          })
+          return new StripeFetchError(String(error))
+        },
+      ),
+  }
+}
+
+/**
+ * Function that cross-validates payment statuses between Stripe and our database.
+ *
+ * @param {string} paymentId the payment id to check
+ *
+ * @returns ok(ReconciliationReport) if no errors are thrown while matching payment statuses
+ * @returns err(StripeFetchError) if an error is thrown while calling Stripe API
+ */
+export const verifyPaymentStatusWithStripe = (
+  paymentId: string,
+): ResultAsync<ReconciliationReportLine, StripeFetchError> => {
+  const logMeta = {
+    action: 'verifyPaymentStatusWithStripe',
+    paymentId,
+  }
+
+  return PaymentsService.findPaymentById(paymentId)
+    .andThen((payment) =>
+      ResultAsync.fromPromise(
+        stripe.paymentIntents.retrieve(payment.paymentIntentId, {
+          stripeAccount: payment.targetAccountId,
+        }),
+        (error) => {
+          logger.error({
+            message: 'Error while retrieving payment intent',
+            meta: {
+              ...logMeta,
+              paymentIntentId: payment.paymentIntentId,
+            },
+            error,
+          })
+          return new StripeFetchError(String(error))
+        },
+      ).andThen((paymentIntent) => okAsync({ payment, paymentIntent })),
+    )
+    .andThen(({ payment, paymentIntent }) => {
+      switch (paymentIntent.status) {
+        case 'requires_payment_method':
+        case 'requires_confirmation':
+        case 'requires_capture':
+        case 'requires_action': {
+          const isPaymentStatusIncomplete = [
+            PaymentStatus.Pending,
+            PaymentStatus.Failed,
+          ].includes(payment.status)
+
+          if (!isPaymentStatusIncomplete) {
+            // If the payment is in a completed state, something is wrong!
+            logger.error({
+              message:
+                'Payment state mismatch found (Stripe incomplete, FormSG complete)',
+              meta: { ...logMeta, payment, paymentIntent },
+            })
+            return okAsync({
+              payment,
+              paymentIntent,
+              mismatch: true,
+              canceled: false,
+            })
+          }
+
+          // Payment is still incomplete on our end. Check the age, and cancel
+          // if it is stale (> 30 min old).
+          const paymentAgeInSeconds =
+            Math.trunc(Date.now() / 1000) - paymentIntent.created
+          // TODO: Extract payment stale time into env var
+          const paymentStaleTimeInSeconds = 1800 /* = 30 min * 60 sec/min */
+
+          if (paymentAgeInSeconds > paymentStaleTimeInSeconds) {
+            return ResultAsync.fromPromise(
+              stripe.paymentIntents.cancel(paymentIntent.id, {
+                stripeAccount: payment.targetAccountId,
+              }),
+              (error) => {
+                logger.error({
+                  message: 'Error while canceling stale payment intent',
+                  meta: { ...logMeta, payment, paymentIntent },
+                  error,
+                })
+                return new StripeFetchError(String(error))
+              },
+            ).andThen(() =>
+              okAsync({
+                payment,
+                paymentIntent,
+                mismatch: false,
+                canceled: true,
+              }),
+            )
+          }
+          return okAsync({
+            payment,
+            paymentIntent,
+            mismatch: false,
+            canceled: false,
+          })
+        }
+        case 'succeeded': {
+          const isPaymentStatusComplete = [
+            PaymentStatus.Succeeded,
+            PaymentStatus.PartiallyRefunded,
+            PaymentStatus.FullyRefunded,
+            PaymentStatus.Disputed,
+          ].includes(payment.status)
+
+          if (!isPaymentStatusComplete) {
+            //!! This is the case we are worried about !!
+            // On Stripe, the payment might be complete but FormSG does not know
+            // even after reconciliation.
+            logger.error({
+              message:
+                'Payment state mismatch found (Stripe complete, FormSG incomplete)',
+              meta: { ...logMeta, payment, paymentIntent },
+            })
+            return okAsync({
+              payment,
+              paymentIntent,
+              mismatch: true,
+              canceled: false,
+            })
+          }
+          return okAsync({
+            payment,
+            paymentIntent,
+            mismatch: false,
+            canceled: false,
+          })
+        }
+        case 'canceled':
+          if (payment.status !== PaymentStatus.Canceled) {
+            logger.error({
+              message:
+                'Payment state mismatch found (Stripe canceled, FormSG not canceled)',
+              meta: { ...logMeta, payment, paymentIntent },
+            })
+            return okAsync({
+              payment,
+              paymentIntent,
+              mismatch: true,
+              canceled: false,
+            })
+          }
+          return okAsync({
+            payment,
+            paymentIntent,
+            mismatch: false,
+            canceled: false,
+          })
+        default:
+          // 'processing' is a limbo state, do nothing.
+          return okAsync({
+            payment,
+            paymentIntent,
+            mismatch: false,
+            canceled: false,
+          })
+      }
+    })
 }
