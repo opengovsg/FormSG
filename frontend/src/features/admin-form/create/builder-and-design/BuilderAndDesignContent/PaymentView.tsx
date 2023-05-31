@@ -77,7 +77,11 @@ export const PaymentView = () => {
 
     handleClose(false)
     handleBuilderClick(false)
-    setFieldListTabIndex(FieldListTabIndex.Payments)
+    setFieldListTabIndex(
+      paymentDetails.version === 1
+        ? FieldListTabIndex.Payments
+        : FieldListTabIndex.PaymentsV2,
+    )
   }
 
   return paymentDetails.enabled ? (

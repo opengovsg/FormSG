@@ -19,6 +19,7 @@ import { useUser } from '~features/user/queries'
 
 import { useCreateTabForm } from '../../../builder-and-design/useCreateTabForm'
 import { CreatePageDrawerCloseButton } from '../../../common'
+import { FieldListTabIndex } from '../../constants'
 
 import {
   BasicFieldPanel,
@@ -43,28 +44,30 @@ export const FieldListDrawer = (): JSX.Element => {
       component: BasicFieldPanel,
       isHidden: false,
       isDisabled: isLoading,
+      key: FieldListTabIndex.Basic,
     },
     {
       header: 'MyInfo',
       component: MyInfoFieldPanel,
       isHidden: false,
       isDisabled: isLoading,
+      key: FieldListTabIndex.MyInfo,
     },
     {
       header: 'Payments',
       component: PaymentsInputPanel,
       isHidden: !displayPayments,
       isDisabled: isLoading,
+      key: FieldListTabIndex.Payments,
     },
     {
       header: 'Payments v2',
       component: PaymentsInputPanelV2,
       isHidden: !displayPayments,
       isDisabled: isLoading,
+      key: FieldListTabIndex.PaymentsV2,
     },
-  ]
-    .map((tab, idx) => ({ ...tab, key: idx }))
-    .filter((tab) => !tab.isHidden)
+  ].filter((tab) => !tab.isHidden)
 
   return (
     <Tabs
