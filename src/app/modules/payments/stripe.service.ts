@@ -237,7 +237,7 @@ export const processStripeEventWithinSession = (
         // occurred due to various reasons (e.g. us timing out on Stripe, so
         // Stripe retried the webhook).
         logger.warn({
-          message: 'Duplicate event received from Stripe webhook endpoint',
+          message: 'Duplicate event received by Stripe event handler',
           meta: logMeta,
         })
         return okAsync(undefined)
