@@ -8,6 +8,7 @@ export const NEW_FEATURES = [
     title: 'Collect payments on your form',
     description:
       'Citizens can now pay for fees and services directly on your form! We integrate with Stripe to provide reliable payments and hassle-free reconciliations. Payment methods we support include credit card and PayNow.',
+    learnMoreLink: 'https://go.gov.sg/formsg-payment-overview',
     animationData: PaymentsAnnouncementGraphic,
   },
 ]
