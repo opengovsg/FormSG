@@ -1,11 +1,5 @@
 import { useCallback, useEffect, useMemo } from 'react'
-import {
-  Controller,
-  RegisterOptions,
-  UnpackNestedValue,
-  useForm,
-  useWatch,
-} from 'react-hook-form'
+import { UnpackNestedValue, useForm, useWatch } from 'react-hook-form'
 import { Link as ReactLink } from 'react-router-dom'
 import { useDebounce } from 'react-use'
 import { Box, FormControl, Link, Text } from '@chakra-ui/react'
@@ -17,29 +11,25 @@ import {
   PaymentChannel,
 } from '~shared/types'
 
-import { centsToDollars, dollarsToCents, formatCurrency } from '~utils/payments'
-import FormErrorMessage from '~components/FormControl/FormErrorMessage'
+import { dollarsToCents } from '~utils/payments'
 import FormLabel from '~components/FormControl/FormLabel'
 import InlineMessage from '~components/InlineMessage'
-import MoneyInput from '~components/MoneyInput'
+import Input from '~components/Input'
 import Toggle from '~components/Toggle'
 
 import { useMutateFormPage } from '~features/admin-form/common/mutations'
 import { useAdminForm } from '~features/admin-form/common/queries'
-import { useEnv } from '~features/env/queries'
 
 import {
   CreatePageDrawerContentContainer,
   useCreatePageSidebar,
-} from '../../../../../common'
-import { FieldListTabIndex } from '../../../../constants'
+} from '../../../../../../common'
+import { FieldListTabIndex } from '../../../../../constants'
 import {
   setIsDirtySelector,
   useDirtyFieldStore,
-} from '../../../../useDirtyFieldStore'
-import { FormFieldDrawerActions } from '../../../EditFieldDrawer/edit-fieldtype/common/FormFieldDrawerActions'
-
-import { ProductServiceBox } from './ProductServiceBox'
+} from '../../../../../useDirtyFieldStore'
+import { FormFieldDrawerActions } from '../../../../EditFieldDrawer/edit-fieldtype/common/FormFieldDrawerActions'
 import {
   dataSelector,
   resetDataSelector,
@@ -47,7 +37,9 @@ import {
   setToEditingPaymentSelector,
   setToInactiveSelector,
   usePaymentStore,
-} from './usePaymentStore'
+} from '../usePaymentStore'
+
+import { ProductServiceBoxv2 } from './ProductServiceBox'
 
 type FormPaymentsInput = FormPaymentsField & {
   display_amount: string
@@ -68,24 +60,22 @@ const PaymentInput = ({ isDisabled }: { isDisabled: boolean }) => {
 
   const handleClose = () => setFieldListTabIndex(FieldListTabIndex.Basic)
 
-  // unpack payment data for paymentAmount if it exists
-  const paymentAmountCents = paymentsData?.amount_cents
-
   const {
     register,
     formState: { errors, dirtyFields },
     control,
     handleSubmit,
     trigger,
+    setValue,
   } = useForm<FormPaymentsInput>({
     mode: 'onChange',
     defaultValues: {
       ...paymentsData,
-      version: 1,
-      // Change calculate display_amount value from amount_cents
-      display_amount: centsToDollars(paymentAmountCents ?? 0),
+      version: 2,
     },
   })
+
+  register('products')
 
   // Update dirty state of payment so confirmation modal can be shown
   useEffect(() => {
@@ -131,53 +121,13 @@ const PaymentInput = ({ isDisabled }: { isDisabled: boolean }) => {
         handleClose()
       }
     }
-    return paymentsMutation.mutate(
-      { ...paymentsData, amount_cents: paymentAmountCents },
-      {
-        onSuccess: () => {
-          setToInactive()
-          handleClose()
-        },
+    return paymentsMutation.mutate(paymentsData, {
+      onSuccess: () => {
+        setToInactive()
+        handleClose()
       },
-    )
+    })
   })
-
-  const { data: { maxPaymentAmountCents, minPaymentAmountCents } = {} } =
-    useEnv()
-  const amountValidation: RegisterOptions<FormPaymentsInput, 'display_amount'> =
-    {
-      validate: (val) => {
-        if (!paymentIsEnabled) return true
-
-        // Validate that it is a money value.
-        // Regex allows leading and trailing spaces, max 2dp
-        const validateMoney = /^\s*(\d+)(\.\d{0,2})?\s*$/.test(val ?? '')
-        if (!validateMoney) return 'Please enter a valid payment amount'
-
-        const validateMin =
-          !!minPaymentAmountCents &&
-          !!val &&
-          dollarsToCents(val) >= minPaymentAmountCents
-        // Repeat the check on minPaymentAmountCents for correct typing
-        if (!!minPaymentAmountCents && !validateMin) {
-          return `Please enter a payment amount above ${formatCurrency(
-            Number(centsToDollars(minPaymentAmountCents)),
-          )}`
-        }
-
-        const validateMax =
-          !!maxPaymentAmountCents &&
-          !!val &&
-          dollarsToCents(val) <= maxPaymentAmountCents
-        // Repeat the check on maxPaymentAmountCents for correct typing
-        if (!!maxPaymentAmountCents && !validateMax) {
-          return `Please enter a payment amount below ${formatCurrency(
-            Number(centsToDollars(maxPaymentAmountCents)),
-          )}`
-        }
-        return true
-      },
-    }
 
   return (
     <CreatePageDrawerContentContainer>
@@ -194,61 +144,35 @@ const PaymentInput = ({ isDisabled }: { isDisabled: boolean }) => {
           label="Enable payment"
         />
       </FormControl>
-
       <FormControl
         isReadOnly={paymentsMutation.isLoading}
-        isInvalid={!!errors.display_amount}
-        isDisabled={!paymentIsEnabled}
         isRequired
+        isDisabled={!paymentIsEnabled}
       >
-        <FormLabel isRequired description="Amount should include GST">
-          Payment amount
-        </FormLabel>
-        <Controller
-          name="display_amount"
-          control={control}
-          rules={amountValidation}
-          render={({ field }) => (
-            <MoneyInput
-              flex={1}
-              step={0}
-              inputMode="decimal"
-              placeholder="0.00"
-              {...field}
-            />
-          )}
+        <FormLabel isRequired>Title</FormLabel>
+        <Input
+          {...register('description', {
+            required: paymentIsEnabled,
+          })}
         />
       </FormControl>
-
-      <ProductServiceBox
-        register={register}
-        paymentsMutation={paymentsMutation}
+      <ProductServiceBoxv2
+        isLoading={paymentsMutation.isLoading}
         errors={errors}
         paymentIsEnabled={paymentIsEnabled}
+        setValue={(newProducts) => setValue('products', newProducts)}
       />
 
       <FormControl
         isReadOnly={paymentsMutation.isLoading}
-        isInvalid={!!errors.display_amount}
         isDisabled={!paymentIsEnabled}
-        isRequired
       >
-        <FormLabel isRequired>Payment amount</FormLabel>
-        <Controller
-          name="display_amount"
-          control={control}
-          rules={amountValidation}
-          render={({ field }) => (
-            <MoneyInput
-              flex={1}
-              step={0}
-              inputMode="decimal"
-              placeholder="0.00"
-              {...field}
-            />
-          )}
+        <Toggle
+          {...register('products_meta.multi_product', {
+            onChange: () => paymentIsEnabled,
+          })}
+          label="Allow selection of multiple types of products/services"
         />
-        <FormErrorMessage>{errors.display_amount?.message}</FormErrorMessage>
       </FormControl>
 
       <FormFieldDrawerActions
@@ -262,7 +186,7 @@ const PaymentInput = ({ isDisabled }: { isDisabled: boolean }) => {
   )
 }
 
-export const PaymentsInputPanel = (): JSX.Element | null => {
+export const PaymentsInputPanelV2 = (): JSX.Element | null => {
   const { data: form } = useAdminForm()
 
   const isEncryptMode = form?.responseMode === FormResponseMode.Encrypt

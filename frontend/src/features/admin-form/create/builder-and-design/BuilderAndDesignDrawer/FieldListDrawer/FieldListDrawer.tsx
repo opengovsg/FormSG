@@ -24,6 +24,7 @@ import {
   BasicFieldPanel,
   MyInfoFieldPanel,
   PaymentsInputPanel,
+  PaymentsInputPanelV2,
 } from './field-panels'
 
 export const FieldListDrawer = (): JSX.Element => {
@@ -35,6 +36,35 @@ export const FieldListDrawer = (): JSX.Element => {
 
   const displayPayments =
     user?.betaFlags?.payment || flags?.has(featureFlags.payment)
+
+  const tabsDataList = [
+    {
+      header: 'Basic',
+      component: BasicFieldPanel,
+      isHidden: false,
+      isDisabled: isLoading,
+    },
+    {
+      header: 'MyInfo',
+      component: MyInfoFieldPanel,
+      isHidden: false,
+      isDisabled: isLoading,
+    },
+    {
+      header: 'Payments',
+      component: PaymentsInputPanel,
+      isHidden: !displayPayments,
+      isDisabled: isLoading,
+    },
+    {
+      header: 'Payments v2',
+      component: PaymentsInputPanelV2,
+      isHidden: !displayPayments,
+      isDisabled: isLoading,
+    },
+  ]
+    .map((tab, idx) => ({ ...tab, key: idx }))
+    .filter((tab) => !tab.isHidden)
 
   return (
     <Tabs
@@ -54,24 +84,20 @@ export const FieldListDrawer = (): JSX.Element => {
           <CreatePageDrawerCloseButton />
         </Flex>
         <TabList mx="-0.25rem" w="100%">
-          <Tab isDisabled={isLoading}>Basic</Tab>
-          <Tab isDisabled={isLoading}>MyInfo</Tab>
-          {displayPayments && <Tab isDisabled={isLoading}>Payments</Tab>}
+          {tabsDataList.map((tab) => (
+            <Tab key={tab.key} isDisabled={tab.isDisabled}>
+              {tab.header}
+            </Tab>
+          ))}
         </TabList>
         <Divider w="auto" mx="-1.5rem" />
       </Box>
       <TabPanels pb="1rem" flex={1} overflowY="auto">
-        <TabPanel>
-          <BasicFieldPanel />
-        </TabPanel>
-        <TabPanel>
-          <MyInfoFieldPanel />
-        </TabPanel>
-        {displayPayments && (
-          <TabPanel>
-            <PaymentsInputPanel />
+        {tabsDataList.map((tab) => (
+          <TabPanel key={tab.key}>
+            <tab.component />
           </TabPanel>
-        )}
+        ))}
       </TabPanels>
     </Tabs>
   )
