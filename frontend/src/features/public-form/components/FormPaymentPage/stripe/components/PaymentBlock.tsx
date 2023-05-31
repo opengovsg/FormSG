@@ -162,8 +162,9 @@ export const StripePaymentBlock = ({
           as PaymentItemDetailsBlockv2 is the selector block */}
           {form.payments_field.version === 1 ? (
             <PaymentItemDetailsBlock
-              paymentDetails={form.payments_field}
+              paymentItemName={form.payments_field?.description}
               colorTheme={colorTheme}
+              paymentAmount={form.payments_field?.amount_cents}
             />
           ) : null}
         </Box>

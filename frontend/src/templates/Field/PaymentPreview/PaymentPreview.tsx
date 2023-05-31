@@ -30,20 +30,25 @@ type PaymentPreviewProps = {
   isBuilder?: boolean
 }
 
-const PaymentPreviewV1 = (props: {
+const PaymentPreviewV1 = ({
+  colorTheme,
+  paymentDetails,
+  sectionColor,
+}: {
   colorTheme: FormColorTheme
   paymentDetails: FormPaymentsFieldV1
   sectionColor: ReturnType<typeof useSectionColor>
 }) => {
   return (
     <>
-      <Box as="h2" mb="1rem" textStyle="h2" color={props.sectionColor}>
+      <Box as="h2" mb="1rem" textStyle="h2" color={sectionColor}>
         Payment
       </Box>
       <Box mb="2rem">
         <PaymentItemDetailsBlock
-          paymentDetails={props.paymentDetails}
-          colorTheme={props.colorTheme}
+          paymentItemName={paymentDetails.description}
+          colorTheme={colorTheme}
+          paymentAmount={paymentDetails.amount_cents}
         />
       </Box>
     </>

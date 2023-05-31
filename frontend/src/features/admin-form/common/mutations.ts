@@ -402,19 +402,7 @@ export const useMutateFormPage = () => {
 
   const paymentsMutation = useMutation(
     (payments_field: PaymentsUpdateDto) => {
-      const paymentsV2Adapter = (payments: FormPaymentsFieldV2) => {
-        // TODO: backport fields?
-        return { ...payments }
-      }
-      const paymentsV1Adapter = (payments: FormPaymentsFieldV1) => {
-        // TODO: backport fields?
-        return { ...payments }
-      }
-      const adaptedPayments =
-        payments_field.version === 2
-          ? paymentsV2Adapter(payments_field)
-          : paymentsV1Adapter(payments_field)
-      return updateFormPayments(formId, adaptedPayments)
+      return updateFormPayments(formId, payments_field)
     },
     {
       onSuccess: (newData) => {
