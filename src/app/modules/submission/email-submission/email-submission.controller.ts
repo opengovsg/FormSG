@@ -26,6 +26,7 @@ import { getOidcService } from '../../spcp/spcp.oidc.service'
 import * as EmailSubmissionMiddleware from '../email-submission/email-submission.middleware'
 import * as SubmissionService from '../submission.service'
 import { extractEmailConfirmationData } from '../submission.utils'
+import { reportSubmissionResponseTime } from '../submissions.statsd-client'
 
 import * as EmailSubmissionService from './email-submission.service'
 import { IPopulatedEmailFormWithResponsesAndHash } from './email-submission.types'
@@ -317,6 +318,12 @@ const submitEmailModeForm: ControllerHandler<
             meta: logMetaWithSubmission,
           })
 
+          // TODO 6395 make responseMetadata mandatory
+          if (responseMetadata) {
+            reportSubmissionResponseTime(responseMetadata, {
+              mode: 'email',
+            })
+          }
           // Send response to admin
           // NOTE: This should short circuit in the event of an error.
           // This is why sendSubmissionToAdmin is separated from sendEmailConfirmations in 2 blocks
