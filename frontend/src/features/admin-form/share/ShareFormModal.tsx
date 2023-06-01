@@ -220,13 +220,7 @@ export const ShareFormModal = ({
               </InlineMessage>
             ) : null}
             <FormControl isReadOnly>
-              <FormLabel
-                isRequired
-                useMarkdownForDescription
-                description="Create an official short link and QR code with [Go.gov.sg](https://go.gov.sg) and share it over the Internet."
-              >
-                Share link
-              </FormLabel>
+              <FormLabel isRequired>Form link</FormLabel>
 
               <Skeleton isLoaded={!!formId}>
                 <Stack direction="row" align="center">
@@ -263,7 +257,7 @@ export const ShareFormModal = ({
               <FormControl>
                 <FormLabel
                   isRequired
-                  description="Customise a Go link for your form."
+                  description="Create an official short link and share it over the Internet."
                 >
                   Go link
                 </FormLabel>
