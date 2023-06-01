@@ -1,5 +1,7 @@
 import { ObjectId } from 'bson-ext'
 import mongoose from 'mongoose'
+import { UserId } from 'shared/types'
+import { Workspace, WorkspaceId } from 'shared/types/workspace'
 import supertest, { Session } from 'supertest-session'
 
 import getFormModel from 'src/app/models/form.server.model'
@@ -30,11 +32,11 @@ const app = setupApp('/workspaces', WorkspacesRouter, {
 
 const MOCK_USER_ID = new ObjectId()
 const MOCK_FORM_ID = new ObjectId()
-const MOCK_WORKSPACE_ID = new ObjectId()
+const MOCK_WORKSPACE_ID = new ObjectId().toHexString() as WorkspaceId
 const MOCK_WORKSPACE_DOC = {
   _id: MOCK_WORKSPACE_ID,
   title: 'Workspace1',
-  admin: MOCK_USER_ID,
+  admin: MOCK_USER_ID.toHexString() as UserId,
   formIds: [],
 }
 
@@ -318,14 +320,10 @@ describe('workspaces.routes', () => {
        * because the mocked mongoose MemoryDatabaseServer doesn't support transactions.
        * See issue #4503 for more details.
        **/
-      jest.spyOn(WorkspaceModel, 'deleteWorkspace').mockImplementationOnce(() =>
-        WorkspaceModel.deleteWorkspace({
-          workspaceId: MOCK_WORKSPACE_DOC._id,
-        }),
-      )
       jest
-        .spyOn(FormModel, 'archiveForms')
-        .mockImplementationOnce((formIds) => FormModel.archiveForms(formIds))
+        .spyOn(WorkspaceModel, 'deleteWorkspace')
+        .mockResolvedValueOnce(MOCK_WORKSPACE_DOC as Workspace)
+      jest.spyOn(FormModel, 'archiveForms').mockResolvedValueOnce()
 
       const response = await request
         .delete(DELETE_WORKSPACE_ENDPOINT)
@@ -398,6 +396,50 @@ describe('workspaces.routes', () => {
       expect(response.body).toEqual({
         message: formatErrorRecoveryMessage(mockErrorMessage),
       })
+    })
+  })
+
+  describe('POST /workspaces/move', () => {
+    const MOVE_WORKSPACE_ENDPOINT = `/workspaces/move`
+    const FORM_ID_TO_MOVE = new ObjectId().toHexString()
+    const moveWorkspaceParams = {
+      formIds: [FORM_ID_TO_MOVE],
+      destWorkspaceId: MOCK_WORKSPACE_ID.toString(),
+    }
+
+    it('should return 200 with the workspace when forms are successfully moved', async () => {
+      await WorkspaceModel.create(MOCK_WORKSPACE_DOC)
+
+      jest
+        .spyOn(WorkspaceModel, 'removeFormIdsFromAllWorkspaces')
+        .mockResolvedValueOnce()
+
+      jest
+        .spyOn(WorkspaceModel, 'addFormIdsToWorkspace')
+        .mockImplementationOnce(async () => {
+          await WorkspaceModel.updateOne(
+            { _id: MOCK_WORKSPACE_ID },
+            {
+              $set: { formIds: [MOCK_FORM_ID.toHexString(), FORM_ID_TO_MOVE] },
+            },
+          )
+          return (await WorkspaceModel.findOne({
+            _id: MOCK_WORKSPACE_ID,
+          })) as Workspace
+        })
+
+      const response = await request
+        .post(MOVE_WORKSPACE_ENDPOINT)
+        .send(moveWorkspaceParams)
+
+      const expected = {
+        title: MOCK_WORKSPACE_DOC.title,
+        admin: MOCK_USER_ID.toHexString(),
+        formIds: [MOCK_FORM_ID.toHexString(), FORM_ID_TO_MOVE],
+      }
+
+      expect(response.status).toEqual(200)
+      expect(response.body).toMatchObject(expected)
     })
   })
 })

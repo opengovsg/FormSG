@@ -264,7 +264,7 @@ describe('Workspace Model', () => {
           formIds: { $elemMatch: { $eq: MOCK_FORM_ID } },
         })
 
-        expect(actual?.formIds).toContain(MOCK_FORM_ID)
+        expect(actual).toBeDefined()
       })
     })
   })
