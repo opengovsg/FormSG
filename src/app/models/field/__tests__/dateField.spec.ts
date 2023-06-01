@@ -1,3 +1,4 @@
+import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import merge from 'lodash/merge'
 import mongoose, { Model, Schema } from 'mongoose'
 import {
@@ -7,8 +8,6 @@ import {
 } from 'shared/types'
 
 import { IDateFieldSchema } from 'src/types'
-
-import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import createDateFieldSchema from '../dateField'
 
