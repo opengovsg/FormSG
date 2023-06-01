@@ -3,6 +3,7 @@ import { BiLinkExternal } from 'react-icons/bi'
 import { useNavigate } from 'react-router-dom'
 import {
   Box,
+  Divider,
   FormControl,
   FormHelperText,
   InputGroup,
@@ -15,6 +16,10 @@ import {
   ModalOverlay,
   Skeleton,
   Stack,
+  TabList,
+  TabPanel,
+  TabPanels,
+  Tabs,
   Text,
   useBreakpointValue,
 } from '@chakra-ui/react'
@@ -36,6 +41,7 @@ import InlineMessage from '~components/InlineMessage'
 import Input from '~components/Input'
 import Link from '~components/Link'
 import { ModalCloseButton } from '~components/Modal'
+import { Tab } from '~components/Tabs'
 import Textarea from '~components/Textarea'
 import { CopyButton } from '~templates/CopyButton'
 
@@ -195,6 +201,149 @@ export const ShareFormModal = ({
     }
   }, [user, claimGoLinkMutation, goLinkSuffixInput, formId])
 
+  const FormLinkSection = () => (
+    <FormControl isReadOnly>
+      <FormLabel isRequired>Form link</FormLabel>
+      <Skeleton isLoaded={!!formId}>
+        <Stack direction="row" align="center">
+          <InputGroup>
+            <Input
+              // The link will always change in Chromatic so this should be ignored.
+              data-chromatic="ignore"
+              isReadOnly
+              value={shareLink}
+            />
+            {formId ? (
+              <InputRightElement>
+                <CopyButton
+                  colorScheme="secondary"
+                  stringToCopy={shareLink}
+                  aria-label="Copy respondent form link"
+                />
+              </InputRightElement>
+            ) : null}
+          </InputGroup>
+          <IconButton
+            as="a"
+            icon={<BiLinkExternal fontSize="1.5rem" />}
+            href={shareLink}
+            target="_blank"
+            rel="noopener"
+            aria-label="Open link in new tab"
+          />
+        </Stack>
+      </Skeleton>
+    </FormControl>
+  )
+
+  const GoLinkSection = () => (
+    <FormControl mt="1rem">
+      <FormLabel
+        isRequired
+        description="Create an official short link and share it over the Internet."
+      >
+        Go link
+      </FormLabel>
+
+      <Skeleton isLoaded={!!formId}>
+        <Stack direction="row" align="center">
+          <InputGroup>
+            <InputLeftAddon children={`go.gov.sg/`} />
+            <Input
+              value={goLinkSuffixInput}
+              onChange={(e) => {
+                setGoLinkSuffixInput(e.target.value)
+                setGoLinkHelperText(undefined)
+              }}
+              isReadOnly={goLinkSaved}
+            />
+            {goLinkSaved ? (
+              <InputRightElement>
+                <CopyButton
+                  colorScheme="secondary"
+                  stringToCopy={`${GOGOV_BASE_URL}/${goLinkSuffixInput}`}
+                  aria-label="Copy respondent form link"
+                />
+              </InputRightElement>
+            ) : null}
+          </InputGroup>
+          {goLinkSaved ? null : (
+            <Button
+              aria-label="Claim Go link"
+              onClick={handleClaimGoLinkClick}
+              isDisabled={!goLinkSuffixInput}
+              isLoading={claimGoLoading}
+            >
+              Claim
+            </Button>
+          )}
+        </Stack>
+        {goLinkHelperText && (
+          <FormHelperText color={goLinkHelperText.color}>
+            <Stack direction="row" align="center">
+              <Box>{goLinkHelperText.icon}</Box>
+              <Box>{goLinkHelperText.text}</Box>
+            </Stack>
+          </FormHelperText>
+        )}
+      </Skeleton>
+    </FormControl>
+  )
+
+  const TemplateSection = () => (
+    <FormControl isReadOnly>
+      <FormLabel isRequired>Share template</FormLabel>
+      <Skeleton isLoaded={!!formId}>
+        <InputGroup>
+          <Input
+            // The link will always change in Chromatic so this should be ignored.
+            data-chromatic="ignore"
+            isReadOnly
+            isDisabled={isFormPrivate}
+            value={`${templateLink}`}
+          />
+          {formId ? (
+            <InputRightElement>
+              <CopyButton
+                colorScheme="secondary"
+                stringToCopy={`${templateLink}`}
+                aria-label="Copy link to use this form as a template"
+                isDisabled={isFormPrivate}
+              />
+            </InputRightElement>
+          ) : null}
+        </InputGroup>
+      </Skeleton>
+    </FormControl>
+  )
+
+  const EmbedSection = () => (
+    <FormControl isReadOnly>
+      <FormLabel isRequired>Embed HTML</FormLabel>
+      <Skeleton isLoaded={!!formId}>
+        <InputGroup>
+          <Textarea
+            pr="2.75rem"
+            fontFamily="monospace"
+            textStyle="body-1"
+            isReadOnly
+            value={embeddedHtml}
+          />
+          {formId ? (
+            <InputRightElement>
+              <CopyButton
+                bg="white"
+                colorScheme="secondary"
+                stringToCopy={embeddedHtml}
+                aria-label="Copy HTML code for embedding this form"
+              />
+            </InputRightElement>
+          ) : null}
+        </InputGroup>
+      </Skeleton>
+    </FormControl>
+  )
+
   return (
     <Modal size={modalSize} isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
@@ -202,160 +351,43 @@ export const ShareFormModal = ({
         <ModalCloseButton />
         <ModalHeader color="secondary.700">Share form</ModalHeader>
         <ModalBody whiteSpace="pre-wrap">
-          <Stack spacing="1rem" pb="2rem">
-            {isFormPrivate ? (
-              <InlineMessage variant="warning">
-                <Box>
-                  This form is currently closed to new responses. Activate your
-                  form in{' '}
-                  <Button
-                    p={0}
-                    variant="link"
-                    onClick={handleRedirectToSettings}
-                  >
-                    Settings
-                  </Button>{' '}
-                  to allow new responses or to share it as a template.
-                </Box>
-              </InlineMessage>
-            ) : null}
-            <FormControl isReadOnly>
-              <FormLabel isRequired>Form link</FormLabel>
-
-              <Skeleton isLoaded={!!formId}>
-                <Stack direction="row" align="center">
-                  <InputGroup>
-                    <Input
-                      // The link will always change in Chromatic so this should be ignored.
-                      data-chromatic="ignore"
-                      isReadOnly
-                      value={shareLink}
-                    />
-                    {formId ? (
-                      <InputRightElement>
-                        <CopyButton
-                          colorScheme="secondary"
-                          stringToCopy={shareLink}
-                          aria-label="Copy respondent form link"
-                        />
-                      </InputRightElement>
-                    ) : null}
-                  </InputGroup>
-                  <IconButton
-                    as="a"
-                    icon={<BiLinkExternal fontSize="1.5rem" />}
-                    href={shareLink}
-                    target="_blank"
-                    rel="noopener"
-                    aria-label="Open link in new tab"
-                  />
-                </Stack>
-              </Skeleton>
-            </FormControl>
-            {(displayGoLink && whitelisted) ||
-            goLinkSuffixData?.goLinkSuffix ? (
-              <FormControl>
-                <FormLabel
-                  isRequired
-                  description="Create an official short link and share it over the Internet."
-                >
-                  Go link
-                </FormLabel>
-
-                <Skeleton isLoaded={!!formId}>
-                  <Stack direction="row" align="center">
-                    <InputGroup>
-                      <InputLeftAddon children={`${GOGOV_BASE_URL}/`} />
-                      <Input
-                        value={goLinkSuffixInput}
-                        onChange={(e) => {
-                          setGoLinkSuffixInput(e.target.value)
-                          setGoLinkHelperText(undefined)
-                        }}
-                        isReadOnly={goLinkSaved}
-                      />
-                      {goLinkSaved ? (
-                        <InputRightElement>
-                          <CopyButton
-                            colorScheme="secondary"
-                            stringToCopy={`${GOGOV_BASE_URL}/${goLinkSuffixInput}`}
-                            aria-label="Copy respondent form link"
-                          />
-                        </InputRightElement>
-                      ) : null}
-                    </InputGroup>
-                    {goLinkSaved ? null : (
-                      <Button
-                        aria-label="Claim Go link"
-                        onClick={handleClaimGoLinkClick}
-                        isDisabled={!goLinkSuffixInput}
-                        isLoading={claimGoLoading}
-                      >
-                        Claim
-                      </Button>
-                    )}
-                  </Stack>
-                  {goLinkHelperText && (
-                    <FormHelperText color={goLinkHelperText.color}>
-                      <Stack direction="row" align="center">
-                        <Box>{goLinkHelperText.icon}</Box>
-                        <Box>{goLinkHelperText.text}</Box>
-                      </Stack>
-                    </FormHelperText>
-                  )}
-                </Skeleton>
-              </FormControl>
-            ) : null}
-
-            <FormControl isReadOnly>
-              <FormLabel isRequired>Share template</FormLabel>
-              <Skeleton isLoaded={!!formId}>
-                <InputGroup>
-                  <Input
-                    // The link will always change in Chromatic so this should be ignored.
-                    data-chromatic="ignore"
-                    isReadOnly
-                    isDisabled={isFormPrivate}
-                    value={`${templateLink}`}
-                  />
-                  {formId ? (
-                    <InputRightElement>
-                      <CopyButton
-                        colorScheme="secondary"
-                        stringToCopy={`${templateLink}`}
-                        aria-label="Copy link to use this form as a template"
-                        isDisabled={isFormPrivate}
-                      />
-                    </InputRightElement>
-                  ) : null}
-                </InputGroup>
-              </Skeleton>
-            </FormControl>
-            <FormControl isReadOnly>
-              <FormLabel isRequired>Embed HTML</FormLabel>
-              <Skeleton isLoaded={!!formId}>
-                <InputGroup>
-                  <Textarea
-                    pr="2.75rem"
-                    fontFamily="monospace"
-                    textStyle="body-1"
-                    isReadOnly
-                    value={embeddedHtml}
-                  />
-                  {formId ? (
-                    <InputRightElement>
-                      <CopyButton
-                        bg="white"
-                        colorScheme="secondary"
-                        stringToCopy={embeddedHtml}
-                        aria-label="Copy HTML code for embedding this form"
-                      />
-                    </InputRightElement>
-                  ) : null}
-                </InputGroup>
-              </Skeleton>
-            </FormControl>
-          </Stack>
+          {isFormPrivate ? (
+            <InlineMessage variant="warning" mb="1rem">
+              <Box>
+                This form is currently closed to new responses. Activate your
+                form in{' '}
+                <Button p={0} variant="link" onClick={handleRedirectToSettings}>
+                  Settings
+                </Button>{' '}
+                to allow new responses or to share it as a template.
+              </Box>
+            </InlineMessage>
+          ) : null}
+          <Tabs pos="relative" h="100%" display="flex" flexDir="column" isLazy>
+            <Box bg="white">
+              <TabList mx="-0.25rem" w="100%">
+                <Tab>Link</Tab>
+                <Tab>Template</Tab>
+                <Tab>Embed</Tab>
+              </TabList>
+              <Divider w="auto" />
+            </Box>
+            <TabPanels mt="1.5rem" mb="2rem" flex={1} overflowY="auto">
+              <TabPanel>
+                <FormLinkSection />
+                {(displayGoLink && whitelisted) ||
+                goLinkSuffixData?.goLinkSuffix ? (
+                  <GoLinkSection />
+                ) : null}
+              </TabPanel>
+              <TabPanel>
+                <TemplateSection />
+              </TabPanel>
+              <TabPanel>
+                <EmbedSection />
+              </TabPanel>
+            </TabPanels>
+          </Tabs>
         </ModalBody>
       </ModalContent>
     </Modal>
