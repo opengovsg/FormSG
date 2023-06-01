@@ -441,5 +441,82 @@ describe('workspaces.routes', () => {
       expect(response.status).toEqual(200)
       expect(response.body).toMatchObject(expected)
     })
+
+    it('should return 401 when user is not logged in', async () => {
+      await logoutSession(request)
+      const response = await request
+        .post(MOVE_WORKSPACE_ENDPOINT)
+        .send(moveWorkspaceParams)
+
+      expect(response.status).toEqual(401)
+      expect(response.body).toEqual({ message: 'User is unauthorized.' })
+    })
+
+    it('should return 403 when user does not own the workspace', async () => {
+      const otherUserId = new ObjectId()
+      const otherWorkspaceId = new ObjectId()
+      await dbHandler.insertUser({
+        userId: otherUserId,
+        agencyId: new ObjectId(),
+        mailName: 'different',
+      })
+      const workspaceBelongingToOtherAdmin = {
+        _id: otherWorkspaceId,
+        title: 'Workspace2',
+        admin: otherUserId,
+        formIds: [],
+      }
+      await WorkspaceModel.create(workspaceBelongingToOtherAdmin)
+      const response = await request
+        .post(MOVE_WORKSPACE_ENDPOINT)
+        .send({ formIds: [FORM_ID_TO_MOVE], destWorkspaceId: otherWorkspaceId })
+
+      expect(response.status).toEqual(403)
+      expect(response.body).toEqual({
+        message: new ForbiddenWorkspaceError().message,
+      })
+    })
+
+    it('should return 500 when database errors occur for adding form to workspace', async () => {
+      await WorkspaceModel.create(MOCK_WORKSPACE_DOC)
+
+      const mockErrorMessage = 'something went wrong'
+
+      jest
+        .spyOn(WorkspaceModel, 'removeFormIdsFromAllWorkspaces')
+        .mockResolvedValueOnce()
+
+      jest
+        .spyOn(WorkspaceModel, 'addFormIdsToWorkspace')
+        .mockRejectedValueOnce(new Error(mockErrorMessage))
+
+      const response = await request
+        .post(MOVE_WORKSPACE_ENDPOINT)
+        .send(moveWorkspaceParams)
+
+      expect(response.status).toEqual(500)
+      expect(response.body).toEqual({
+        message: formatErrorRecoveryMessage(mockErrorMessage),
+      })
+    })
+
+    it('should return 500 when database errors occur for removing form from workspace', async () => {
+      await WorkspaceModel.create(MOCK_WORKSPACE_DOC)
+
+      const mockErrorMessage = 'something went wrong'
+
+      jest
+        .spyOn(WorkspaceModel, 'removeFormIdsFromAllWorkspaces')
+        .mockRejectedValueOnce(new Error(mockErrorMessage))
+
+      const response = await request
+        .post(MOVE_WORKSPACE_ENDPOINT)
+        .send(moveWorkspaceParams)
+
+      expect(response.status).toEqual(500)
+      expect(response.body).toEqual({
+        message: formatErrorRecoveryMessage(mockErrorMessage),
+      })
+    })
   })
 })
