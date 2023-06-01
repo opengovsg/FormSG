@@ -2,6 +2,7 @@ import { ObjectId } from 'bson-ext'
 import mongoose from 'mongoose'
 import supertest, { Session } from 'supertest-session'
 
+import getFormModel from 'src/app/models/form.server.model'
 import { getWorkspaceModel } from 'src/app/models/workspace.server.model'
 import { WorkspacesRouter } from 'src/app/routes/api/v3/admin/workspaces'
 import { formatErrorRecoveryMessage } from 'src/app/utils/handle-mongo-error'
@@ -21,6 +22,7 @@ import {
 } from '../workspace.errors'
 
 const WorkspaceModel = getWorkspaceModel(mongoose)
+const FormModel = getFormModel(mongoose)
 
 const app = setupApp('/workspaces', WorkspacesRouter, {
   setupWithAuth: true,
@@ -38,8 +40,12 @@ const MOCK_WORKSPACE_DOC = {
 
 describe('workspaces.routes', () => {
   let request: Session
+  let connection: typeof mongoose
 
-  beforeAll(async () => await dbHandler.connect())
+  beforeAll(async () => {
+    connection = await dbHandler.connect()
+    await connection.startSession()
+  })
   beforeEach(async () => {
     request = supertest(app)
     const { user } = await dbHandler.insertEncryptForm({
@@ -52,7 +58,9 @@ describe('workspaces.routes', () => {
     await dbHandler.clearDatabase()
     jest.restoreAllMocks()
   })
-  afterAll(async () => await dbHandler.closeDatabase())
+  afterAll(async () => {
+    await dbHandler.closeDatabase()
+  })
 
   describe('GET /workspaces', () => {
     const GET_WORKSPACES_ENDPOINT = '/workspaces'
@@ -287,6 +295,104 @@ describe('workspaces.routes', () => {
       const response = await request
         .put(UPDATE_WORKSPACE_ENDPOINT)
         .send(updateWorkspaceParam)
+
+      expect(response.status).toEqual(500)
+      expect(response.body).toEqual({
+        message: formatErrorRecoveryMessage(mockErrorMessage),
+      })
+    })
+  })
+
+  describe('DELETE /workspaces/:workspaceId', () => {
+    const DELETE_WORKSPACE_ENDPOINT = `/workspaces/${MOCK_WORKSPACE_ID}`
+    const DELETE_SUCCESS_MESSAGE = 'Successfully deleted workspace'
+    const deleteWorkspaceParam = {
+      shouldDeleteForms: true,
+    }
+
+    it('should return 200 with success message on successful deletion', async () => {
+      await WorkspaceModel.create(MOCK_WORKSPACE_DOC)
+
+      /**
+       * We mock deleteWorkspace to run without use of mongoose session, i.e without a transaction
+       * because the mocked mongoose MemoryDatabaseServer doesn't support transactions.
+       * See issue #4503 for more details.
+       **/
+      jest.spyOn(WorkspaceModel, 'deleteWorkspace').mockImplementationOnce(() =>
+        WorkspaceModel.deleteWorkspace({
+          workspaceId: MOCK_WORKSPACE_DOC._id,
+        }),
+      )
+      jest
+        .spyOn(FormModel, 'archiveForms')
+        .mockImplementationOnce((formIds) => FormModel.archiveForms(formIds))
+
+      const response = await request
+        .delete(DELETE_WORKSPACE_ENDPOINT)
+        .send(deleteWorkspaceParam)
+      const expected = { message: DELETE_SUCCESS_MESSAGE }
+
+      expect(response.status).toEqual(200)
+      expect(response.body).toMatchObject(expected)
+    })
+
+    it('should return 401 when user is not logged in', async () => {
+      await logoutSession(request)
+      const response = await request
+        .delete(DELETE_WORKSPACE_ENDPOINT)
+        .send(deleteWorkspaceParam)
+
+      expect(response.status).toEqual(401)
+      expect(response.body).toEqual({ message: 'User is unauthorized.' })
+    })
+
+    it('should return 403 when user does not own the workspace', async () => {
+      const otherUserId = new ObjectId()
+      const otherWorkspaceId = new ObjectId()
+      await dbHandler.insertUser({
+        userId: otherUserId,
+        agencyId: new ObjectId(),
+        mailName: 'different',
+      })
+      const workspaceBelongingToOtherAdmin = {
+        _id: otherWorkspaceId,
+        title: 'Workspace2',
+        admin: otherUserId,
+        formIds: [],
+      }
+      await WorkspaceModel.create(workspaceBelongingToOtherAdmin)
+      const response = await request
+        .delete(`/workspaces/${otherWorkspaceId.toHexString()}`)
+        .send(deleteWorkspaceParam)
+
+      expect(response.status).toEqual(403)
+      expect(response.body).toEqual({
+        message: new ForbiddenWorkspaceError().message,
+      })
+    })
+
+    it('should return 404 when workspace is not found', async () => {
+      const response = await request
+        .delete(`/workspaces/${new ObjectId().toHexString()}`)
+        .send(deleteWorkspaceParam)
+
+      expect(response.status).toEqual(404)
+      expect(response.body).toEqual({
+        message: new WorkspaceNotFoundError().message,
+      })
+    })
+
+    it('should return 500 when database errors occur', async () => {
+      await WorkspaceModel.create(MOCK_WORKSPACE_DOC)
+
+      const mockErrorMessage = 'something went wrong'
+
+      jest
+        .spyOn(WorkspaceModel, 'deleteWorkspace')
+        .mockRejectedValueOnce(new Error(mockErrorMessage))
+      const response = await request
+        .delete(DELETE_WORKSPACE_ENDPOINT)
+        .send(deleteWorkspaceParam)
 
       expect(response.status).toEqual(500)
       expect(response.body).toEqual({

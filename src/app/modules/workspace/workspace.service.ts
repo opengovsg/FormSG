@@ -5,7 +5,12 @@ import { WorkspaceDto } from 'shared/types/workspace'
 import { createLoggerWithLabel } from '../../config/logger'
 import { getWorkspaceModel } from '../../models/workspace.server.model'
 import { transformMongoError } from '../../utils/handle-mongo-error'
-import { DatabaseError, DatabaseValidationError } from '../core/core.errors'
+import {
+  DatabaseError,
+  DatabaseValidationError,
+  PossibleDatabaseError,
+} from '../core/core.errors'
+import * as AdminFormService from '../form/admin-form/admin-form.service'
 
 import {
   ForbiddenWorkspaceError,
@@ -83,14 +88,62 @@ export const updateWorkspaceTitle = ({
   )
 }
 
-export const deleteWorkspace = (
-  workspaceId: string,
-  shouldDeleteForms: boolean,
-): ResultAsync<any, DatabaseError> => {
-  return okAsync({
-    workspaceId: workspaceId,
-    shouldDeleteForms: shouldDeleteForms,
-  })
+export const deleteWorkspace = ({
+  workspaceId,
+  userId,
+  shouldDeleteForms,
+}: {
+  workspaceId: string
+  userId: string
+  shouldDeleteForms: boolean
+}): ResultAsync<WorkspaceDto | null, PossibleDatabaseError> => {
+  return ResultAsync.fromPromise(
+    deleteWorkspaceTransaction({ workspaceId, userId, shouldDeleteForms }),
+    (error) => {
+      logger.error({
+        message:
+          'Database error when deleting workspace, rolling back transaction',
+        meta: {
+          action: 'deleteWorkspace',
+          workspaceId,
+          shouldDeleteForms,
+        },
+        error,
+      })
+      return transformMongoError(error)
+    },
+  )
+}
+
+const deleteWorkspaceTransaction = async ({
+  workspaceId,
+  userId,
+  shouldDeleteForms,
+}: {
+  workspaceId: string
+  userId: string
+  shouldDeleteForms: boolean
+}): Promise<WorkspaceDto | null> => {
+  let deleted: WorkspaceDto | null
+
+  const session = await WorkspaceModel.startSession()
+  return session
+    .withTransaction(async () => {
+      deleted = await WorkspaceModel.deleteWorkspace({
+        workspaceId,
+        session,
+      })
+
+      if (shouldDeleteForms && deleted?.formIds) {
+        await AdminFormService.archiveForms({
+          formIds: deleted?.formIds,
+          admin: userId,
+          session,
+        })
+      }
+    })
+    .then(() => deleted)
+    .finally(() => session.endSession())
 }
 
 export const getForms = (

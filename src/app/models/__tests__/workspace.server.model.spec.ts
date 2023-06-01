@@ -1,12 +1,16 @@
 import { ObjectId } from 'bson-ext'
 import { omit } from 'lodash'
 import mongoose from 'mongoose'
+import { FormStatus } from 'shared/types'
 
 import { getWorkspaceModel } from 'src/app/models/workspace.server.model'
 import { IUserSchema } from 'src/types'
 
 import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
+import getFormModel from '../form.server.model'
+
+const Form = getFormModel(mongoose)
 const Workspace = getWorkspaceModel(mongoose)
 
 const MOCK_USER_ID = new ObjectId()
@@ -197,6 +201,38 @@ describe('Workspace Model', () => {
         })
 
         expect(actual).toBeNull()
+      })
+    })
+
+    describe('deleteWorkspace', () => {
+      it('should correctly remove workspace from database when deleted', async () => {
+        await Workspace.deleteWorkspace({
+          workspaceId: MOCK_WORKSPACE_ID,
+        })
+
+        const actual = await Workspace.exists({ _id: MOCK_WORKSPACE_ID })
+        expect(actual).toEqual(false)
+      })
+
+      it('should not archive forms when workspace is deleted', async () => {
+        await Workspace.updateOne(
+          { _id: MOCK_WORKSPACE_ID },
+          { $addToSet: { formIds: MOCK_FORM_ID } },
+        )
+        await Workspace.deleteWorkspace({
+          workspaceId: MOCK_WORKSPACE_ID,
+        })
+
+        const actual = await Workspace.exists({ _id: MOCK_WORKSPACE_ID })
+        const doesFormExist = await Form.exists({ _id: MOCK_FORM_ID })
+        const isFormArchived = await Form.exists({
+          _id: MOCK_FORM_ID,
+          status: FormStatus.Archived,
+        })
+
+        expect(actual).toEqual(false)
+        expect(doesFormExist).toEqual(true)
+        expect(isFormArchived).toEqual(false)
       })
     })
   })

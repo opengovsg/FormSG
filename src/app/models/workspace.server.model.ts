@@ -1,4 +1,4 @@
-import { Mongoose, Schema } from 'mongoose'
+import { ClientSession, Mongoose, Schema } from 'mongoose'
 
 import { IUserSchema, IWorkspaceModel, IWorkspaceSchema } from '../../types'
 
@@ -9,6 +9,7 @@ const compileWorkspaceModel = (db: Mongoose): IWorkspaceModel => {
     id: false,
     timestamps: true,
   }
+
   const WorkspaceSchema = new Schema<IWorkspaceSchema, IWorkspaceModel>(
     {
       title: {
@@ -67,6 +68,21 @@ const compileWorkspaceModel = (db: Mongoose): IWorkspaceModel => {
     workspaceId: IWorkspaceSchema['_id']
   }) {
     return this.findOneAndUpdate({ _id: workspaceId }, { title }, { new: true })
+  }
+
+  WorkspaceSchema.statics.deleteWorkspace = async function ({
+    workspaceId,
+    session,
+  }: {
+    workspaceId: IWorkspaceSchema['_id']
+    session: ClientSession
+  }) {
+    return this.findOneAndDelete(
+      {
+        _id: workspaceId,
+      },
+      { session },
+    )
   }
 
   return db.model<IWorkspaceSchema, IWorkspaceModel>(

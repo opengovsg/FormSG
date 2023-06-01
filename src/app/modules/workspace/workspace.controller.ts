@@ -150,27 +150,54 @@ export const updateWorkspaceTitle = [
  * @security session
  *
  * @returns 200 with success message
+ * @returns 403 when user does not have permissions to delete the workspace
  * @returns 404 when workspace cannot be found
- * @returns 422 when user of given id cannnot be found in the database
+ * @returns 409 when a database conflict error occurs
  * @returns 500 when database error occurs
  */
 export const deleteWorkspace: ControllerHandler<
   { workspaceId: string },
-  any | ErrorDto,
+  ErrorDto,
   { shouldDeleteForms: boolean }
 > = async (req, res) => {
   const { workspaceId } = req.params
   const { shouldDeleteForms } = req.body
+  const userId = (req.session as AuthedSessionData).user._id
 
-  return WorkspaceService.deleteWorkspace(workspaceId, shouldDeleteForms)
-    .map(() =>
-      res
-        .status(StatusCodes.OK)
-        .json({ message: 'Successfully deleted workspace' }),
+  return WorkspaceService.getWorkspace(workspaceId)
+    .andThen((workspace) =>
+      WorkspaceService.verifyWorkspaceAdmin(workspace, userId),
     )
-    .mapErr((err) =>
-      res.status(StatusCodes.BAD_REQUEST).json({ message: err.message }),
+    .andThen(() =>
+      WorkspaceService.deleteWorkspace({
+        workspaceId,
+        userId,
+        shouldDeleteForms,
+      }).map((workspace) => {
+        return workspace
+          ? res
+              .status(StatusCodes.OK)
+              .json({ message: 'Successfully deleted workspace' })
+          : res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+              message:
+                'Sorry something went wrong, we are unable to delete the workspace',
+            })
+      }),
     )
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error deleting workspace',
+        meta: {
+          action: 'deleteWorkspace',
+          workspaceId,
+          userId,
+        },
+        error,
+      })
+
+      const { statusCode, errorMessage } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
 }
 
 /**

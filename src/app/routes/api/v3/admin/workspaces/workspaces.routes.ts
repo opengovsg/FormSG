@@ -50,8 +50,9 @@ WorkspacesRouter.route('/:workspaceId([a-fA-F0-9]{24})')
    *
    * @returns 200 with success message
    * @returns 401 when user does not exist in session
+   * @returns 403 when user does not have permissions to delete the workspace
    * @returns 404 when workspace cannot be found
-   * @returns 422 when user of given id cannnot be found in the database
+   * @returns 409 when a database conflict error occurs
    * @returns 500 when database error occurs
    */
   .delete(WorkspaceController.deleteWorkspace)
@@ -65,7 +66,6 @@ WorkspacesRouter.route('/:workspaceId([a-fA-F0-9]{24})/title')
    * @returns 400 when new title fails Joi validation
    * @returns 401 when user does not exist in session
    * @returns 404 when workspace cannot be found
-   * @returns 422 when user of given id cannnot be found in the database
    * @returns 500 when database error occurs
    */
   .put(WorkspaceController.updateWorkspaceTitle)

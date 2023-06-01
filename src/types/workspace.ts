@@ -1,4 +1,4 @@
-import { Document, Model } from 'mongoose'
+import { ClientSession, Document, Model } from 'mongoose'
 import { WorkspaceDto } from 'shared/types/workspace'
 
 import { IFormSchema } from './form'
@@ -28,5 +28,18 @@ export interface IWorkspaceModel extends Model<IWorkspaceSchema> {
   }: {
     title: string
     workspaceId: IWorkspaceSchema['_id']
+  }): Promise<WorkspaceDto | null>
+
+  deleteWorkspace({
+    workspaceId,
+    session,
+  }: {
+    workspaceId: IWorkspaceSchema['_id']
+    /**
+     * Session is optional so that we can mock this function in our tests to test it without a session.
+     * Reason is our mocked mongo database does not support transactions.
+     * See issue #4503 for more details.
+     */
+    session?: ClientSession
   }): Promise<WorkspaceDto | null>
 }

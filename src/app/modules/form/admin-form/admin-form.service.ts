@@ -1498,3 +1498,21 @@ const deleteTwilioTransaction = async (
     throw new SecretsManagerError(awsError.message)
   }
 }
+
+export const archiveForms = async ({
+  formIds,
+  session,
+  admin,
+}: {
+  formIds: string[]
+  admin: string
+  session: ClientSession
+}): Promise<void> => {
+  const canBeArchivedForms = await FormModel.find({
+    _id: { $in: formIds },
+    admin,
+  })
+  const canBeArchivedFormIds = canBeArchivedForms.map((form) => form._id)
+
+  await FormModel.archiveForms(canBeArchivedFormIds, session)
+}
