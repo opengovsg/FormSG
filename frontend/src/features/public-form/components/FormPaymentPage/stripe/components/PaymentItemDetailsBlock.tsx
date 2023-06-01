@@ -26,9 +26,9 @@ export const PaymentItemDetailsBlock = ({
       <Text textStyle="body-1" mb="0.75rem">
         {paymentItemName}
       </Text>
-      <Box as="h2" textStyle="h2">{`${centsToDollars(
+      <Box as="h2" textStyle="h2">{`S$ ${centsToDollars(
         paymentAmount ?? 0,
-      )} SGD`}</Box>
+      )}`}</Box>
     </Box>
   )
 }
