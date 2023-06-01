@@ -74,7 +74,7 @@ describe('Workspace Model', () => {
         formIds: [duplicateFormId, duplicateFormId],
       }
       const invalidWorkspace = new Workspace(workspaceObject)
-      await expect(invalidWorkspace.save()).rejects.toThrowError(
+      await expect(invalidWorkspace.save()).rejects.toThrow(
         mongoose.Error.ValidationError,
       )
     })
@@ -86,7 +86,7 @@ describe('Workspace Model', () => {
         formIds: [],
       }
       const invalidWorkspace = new Workspace(workspaceObject)
-      await expect(invalidWorkspace.save()).rejects.toThrowError(
+      await expect(invalidWorkspace.save()).rejects.toThrow(
         mongoose.Error.ValidationError,
       )
     })
@@ -98,7 +98,7 @@ describe('Workspace Model', () => {
         formIds: [],
       }
       const invalidWorkspace = new Workspace(workspaceObject)
-      await expect(invalidWorkspace.save()).rejects.toThrowError(
+      await expect(invalidWorkspace.save()).rejects.toThrow(
         mongoose.Error.ValidationError,
       )
     })
@@ -110,7 +110,7 @@ describe('Workspace Model', () => {
         formIds: [],
       }
       const invalidWorkspace = new Workspace(workspaceObject)
-      await expect(invalidWorkspace.save()).rejects.toThrowError(
+      await expect(invalidWorkspace.save()).rejects.toThrow(
         mongoose.Error.ValidationError,
       )
     })
@@ -233,6 +233,38 @@ describe('Workspace Model', () => {
         expect(actual).toEqual(false)
         expect(doesFormExist).toEqual(true)
         expect(isFormArchived).toEqual(false)
+      })
+    })
+
+    describe('removeFormIdsFromAllWorkspaces', () => {
+      it('should correctly remove formIds from all workspaces', async () => {
+        await Workspace.removeFormIdsFromAllWorkspaces({
+          admin: MOCK_USER_ID,
+          formIds: [MOCK_FORM_ID],
+        })
+
+        const actual = await Workspace.find({
+          admin: MOCK_USER_ID,
+          formIds: { $elemMatch: { $eq: MOCK_FORM_ID } },
+        })
+
+        expect(actual.length).toEqual(0)
+      })
+    })
+
+    describe('addFormIdsToWorkspaces', () => {
+      it('should correctly add form id to workspace when workspace id is specified', async () => {
+        await Workspace.addFormIdsToWorkspace({
+          workspaceId: MOCK_WORKSPACE_ID,
+          formIds: [MOCK_FORM_ID],
+        })
+
+        const actual = await Workspace.findOne({
+          _id: MOCK_USER_ID,
+          formIds: { $elemMatch: { $eq: MOCK_FORM_ID } },
+        })
+
+        expect(actual?.formIds).toContain(MOCK_FORM_ID)
       })
     })
   })
