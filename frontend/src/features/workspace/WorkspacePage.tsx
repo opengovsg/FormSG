@@ -6,6 +6,7 @@ import { AdminNavBar } from '~/app/AdminNavBar'
 import { fillHeightCss } from '~utils/fillHeightCss'
 import { getBannerProps } from '~utils/getBannerProps'
 import { Banner } from '~components/Banner'
+import InlineMessage from '~components/InlineMessage'
 
 import { useEnv } from '~features/env/queries'
 
@@ -47,6 +48,11 @@ export const WorkspacePage = (): JSX.Element => {
           </Banner>
         ) : null}
         <AdminNavBar />
+        <InlineMessage useMarkdown>
+          Introducing FormSG Payments: Citizens can now pay for fees and
+          services directly on your form. [Learn
+          more](https://go.gov.sg/formsg-payment-overview)
+        </InlineMessage>
         <WorkspaceProvider>
           <WorkspacePageContent
             handleCreateFormModalOpen={createFormModalDisclosure.onOpen}
