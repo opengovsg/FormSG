@@ -7,15 +7,13 @@ import {
   useMemo,
   useState,
 } from 'react'
-import { UseMeasureRef } from 'react-use/lib/useMeasure'
 
 import { useIsMobile } from '~hooks/useIsMobile'
-import { useMeasure } from '~hooks/useMeasure'
 
 import { FieldListTabIndex } from '../../builder-and-design/constants'
 import {
   DesignState,
-  setStateSelector,
+  setStateSelector as setDesignStateSelector,
   useDesignStore,
 } from '../../builder-and-design/useDesignStore'
 import {
@@ -32,7 +30,7 @@ export enum DrawerTabs {
   EndPage,
 }
 
-type CreatePageSidebarContextProps = {
+export type CreatePageSidebarContextProps = {
   activeTab: DrawerTabs | null
   pendingTab?: DrawerTabs | null
   movePendingToActiveTab: () => void
@@ -45,10 +43,7 @@ type CreatePageSidebarContextProps = {
   isDrawerOpen: boolean
   fieldListTabIndex: FieldListTabIndex
   setFieldListTabIndex: (tabIndex: FieldListTabIndex) => void
-  drawerRef: UseMeasureRef<HTMLDivElement>
-  drawerWidth: number
 }
-
 const CreatePageSidebarContext = createContext<
   CreatePageSidebarContextProps | undefined
 >(undefined)
@@ -62,7 +57,6 @@ export const useCreatePageSidebar = (): CreatePageSidebarContextProps => {
   }
   return context
 }
-
 export const useCreatePageSidebarContext =
   (): CreatePageSidebarContextProps => {
     const isMobile = useIsMobile()
@@ -79,7 +73,7 @@ export const useCreatePageSidebarContext =
     const fieldBuilderState = useFieldBuilderStore(fieldBuilderStateSelector)
     const setFieldsToInactive = useFieldBuilderStore(setToInactiveSelector)
 
-    const setDesignState = useDesignStore(setStateSelector)
+    const setDesignState = useDesignStore(setDesignStateSelector)
 
     const [fieldListTabIndex, setFieldListTabIndex] =
       useState<FieldListTabIndex>(FieldListTabIndex.Basic)
@@ -157,8 +151,6 @@ export const useCreatePageSidebarContext =
       setPendingTab(undefined)
     }, [isMobile, pendingTab, setFieldsToInactive])
 
-    const [drawerRef, { width: drawerWidth }] = useMeasure<HTMLDivElement>()
-
     return {
       activeTab,
       pendingTab,
@@ -172,8 +164,6 @@ export const useCreatePageSidebarContext =
       handleClose,
       fieldListTabIndex,
       setFieldListTabIndex,
-      drawerRef,
-      drawerWidth,
     }
   }
 

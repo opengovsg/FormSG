@@ -1,20 +1,18 @@
+import expressHandler from '__tests__/unit/backend/helpers/jest-express'
 import helmet from 'helmet'
-import { mocked } from 'ts-jest/utils'
 
 import config from 'src/app/config/config'
 import { sentryConfig } from 'src/app/config/features/sentry.config'
-
-import expressHandler from 'tests/unit/backend/helpers/jest-express'
 
 import helmetMiddlewares from '../helmet'
 
 describe('helmetMiddlewares', () => {
   jest.mock('helmet')
-  const mockHelmet = mocked(helmet, true)
+  const mockHelmet = jest.mocked(helmet)
   jest.mock('src/app/config/config')
-  const mockConfig = mocked(config, true)
+  const mockConfig = jest.mocked(config)
   jest.mock('src/app/config/features/sentry.config')
-  const mockSentryConfig = mocked(sentryConfig, true)
+  const mockSentryConfig = jest.mocked(sentryConfig)
 
   const cspCoreDirectives = {
     imgSrc: [
@@ -40,6 +38,7 @@ describe('helmetMiddlewares', () => {
       'https://www.google.com/recaptcha/',
       'https://www.recaptcha.net/recaptcha/',
       'https://www.gstatic.com/recaptcha/',
+      'https://js.stripe.com/v3',
       'https://www.gstatic.cn/',
       'https://*.googletagmanager.com',
     ],
@@ -60,6 +59,7 @@ describe('helmetMiddlewares', () => {
       "'self'",
       'https://www.google.com/recaptcha/',
       'https://www.recaptcha.net/recaptcha/',
+      'https://js.stripe.com/',
     ],
     styleSrc: [
       "'self'",
@@ -123,7 +123,7 @@ describe('helmetMiddlewares', () => {
     if (hstsFn) {
       hstsFn(mockReq, mockRes, mockNext)
     }
-    expect(mockHelmet.hsts).toHaveBeenCalledWith({ maxAge: 5184000 })
+    expect(mockHelmet.hsts).toHaveBeenCalledWith({ maxAge: 400 * 24 * 60 * 60 }) // 400 days
     expect(mockNext).not.toHaveBeenCalled()
   })
 

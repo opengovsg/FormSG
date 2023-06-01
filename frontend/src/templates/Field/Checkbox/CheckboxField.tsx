@@ -79,7 +79,7 @@ export const CheckboxField = ({
 
   return (
     <FieldContainer schema={schema} errorKey={checkboxInputName}>
-      <Box aria-label={schema.title} role="list">
+      <Box aria-label={`${schema.questionNumber}. ${schema.title}`} role="list">
         {schema.fieldOptions.map((o, idx) => (
           <Checkbox
             colorScheme={fieldColorScheme}

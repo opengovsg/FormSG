@@ -12,7 +12,7 @@ import {
   replaceAt,
 } from '../../../../../shared/utils/immutable-array-fns'
 import { EditFieldActions } from '../../../../shared/constants'
-import { FormFieldSchema, IPopulatedForm } from '../../../../types'
+import { FormFieldSchema, IPopulatedForm, IUserSchema } from '../../../../types'
 import { EditFormFieldParams } from '../../../../types/api'
 import config from '../../../config/config'
 import { createLoggerWithLabel } from '../../../config/logger'
@@ -30,6 +30,9 @@ import {
   TwilioCacheError,
 } from '../../core/core.errors'
 import { ErrorResponseData } from '../../core/core.types'
+import { InvalidPaymentAmountError } from '../../payments/payments.errors'
+import { StripeAccountError } from '../../payments/stripe.errors'
+import { ResponseModeError } from '../../submission/submission.errors'
 import { MissingUserError } from '../../user/user.errors'
 import { SmsLimitExceededError } from '../../verification/verification.errors'
 import {
@@ -40,12 +43,15 @@ import {
   PrivateFormError,
   TransferOwnershipError,
 } from '../form.errors'
+import { UNICODE_ESCAPED_REGEX } from '../form.utils'
 
 import {
   CreatePresignedUrlError,
   EditFieldError,
   FieldNotFoundError,
+  InvalidCollaboratorError,
   InvalidFileTypeError,
+  PaymentChannelNotFoundError,
 } from './admin-form.errors'
 import {
   AssertFormFn,
@@ -78,12 +84,8 @@ export const mapRouteError = (
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage: error.message,
       }
-    case FieldNotFoundError:
     case FormNotFoundError:
-      return {
-        statusCode: StatusCodes.NOT_FOUND,
-        errorMessage: error.message,
-      }
+    case FieldNotFoundError:
     case LogicNotFoundError:
       return {
         statusCode: StatusCodes.NOT_FOUND,
@@ -103,6 +105,7 @@ export const mapRouteError = (
     case EditFieldError:
     case DatabaseValidationError:
     case MissingUserError:
+    case InvalidCollaboratorError:
       return {
         statusCode: StatusCodes.UNPROCESSABLE_ENTITY,
         errorMessage: error.message,
@@ -152,6 +155,26 @@ export const mapRouteError = (
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         errorMessage: coreErrorMessage ?? error.message,
       }
+    case StripeAccountError:
+      return {
+        statusCode: StatusCodes.BAD_GATEWAY,
+        errorMessage: coreErrorMessage ?? error.message,
+      }
+    case InvalidPaymentAmountError:
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage: error.message,
+      }
+    case ResponseModeError:
+      return {
+        statusCode: StatusCodes.UNPROCESSABLE_ENTITY,
+        errorMessage: error.message,
+      }
+    case PaymentChannelNotFoundError:
+      return {
+        statusCode: StatusCodes.FORBIDDEN,
+        errorMessage: error.message,
+      }
     default:
       logger.error({
         message: 'Unknown route error observed',
@@ -195,7 +218,8 @@ export const assertHasReadPermissions: AssertFormFn = (user, form) => {
 
   // Check if user email is currently in form's allowed list.
   const hasReadPermissions = !!form.permissionList?.find(
-    (allowedUser) => allowedUser.email === user.email,
+    (allowedUser) =>
+      allowedUser.email.toLowerCase() === user.email.toLowerCase(),
   )
 
   return hasReadPermissions
@@ -238,7 +262,9 @@ export const assertHasWritePermissions: AssertFormFn = (user, form) => {
   // Check if user email is currently in form's allowed list, and has write
   // permissions.
   const hasWritePermissions = !!form.permissionList?.find(
-    (allowedUser) => allowedUser.email === user.email && allowedUser.write,
+    (allowedUser) =>
+      allowedUser.email.toLowerCase() === user.email.toLowerCase() &&
+      allowedUser.write,
   )
 
   return hasWritePermissions
@@ -441,4 +467,47 @@ export const generateTwilioCredSecretKeyName = (formId: string): string =>
 export const checkIsApiSecretKeyName = (msgSrvcName: string): boolean => {
   const prefix = `formsg/${config.secretEnv}/api`
   return msgSrvcName.startsWith(prefix)
+}
+
+/**
+ * Validation check for invalid utf-8 encoded unicode-escaped characteres
+ * @param value
+ * @param helpers
+ * @returns custom err message if there are invalid characters in the input
+ */
+export const verifyValidUnicodeString = (value: any, helpers: any) => {
+  // If there are invalid utf-8 encoded unicode-escaped characters,
+  // nodejs treats the sequence of characters as a string e.g. \udbbb is treated as a 6-character string instead of an escaped unicode sequence
+  // If this is saved into the db, an error is thrown when the driver attempts to read the db document as the driver interprets this as an escaped unicode sequence.
+  // Since valid unicode-escaped characters will be processed correctly (e.g. \u00ae is processed as ®), they will not trigger an error
+  // Also note that if the user intends to input a 6-character string of the same form e.g. \udbbb, the backslash will be escaped (i.e. double backslash) and hence this will also not trigger an error
+
+  const valueStr = JSON.stringify(value)
+
+  if (UNICODE_ESCAPED_REGEX.test(valueStr)) {
+    return helpers.message({
+      custom: 'There are invalid characters in your input',
+    })
+  }
+  return value
+}
+
+/**
+ * Checks if the user has the specified beta flag enabled
+ * @param user
+ * @param flag which is the string representation of the beta flag
+ * @returns ok(user) if the user has the beta flag enabled
+ * @returns err(ForbiddenFormUser) to deny user access to the beta feature
+ */
+export const verifyUserBetaflag = (
+  user: IUserSchema,
+  betaFlag: keyof Exclude<IUserSchema['betaFlags'], undefined>,
+) => {
+  return user?.betaFlags?.[betaFlag]
+    ? ok(user)
+    : err(
+        new ForbiddenFormError(
+          `User ${user.email} is not authorized to access ${betaFlag} beta features`,
+        ),
+      )
 }

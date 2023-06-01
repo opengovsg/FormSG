@@ -1,5 +1,7 @@
 import { Opaque } from 'type-fest'
 
+import { SendFormOtpResponseDto } from '~shared/types/form'
+
 import { transformAllIsoStringsToDate } from '~utils/date'
 import { ApiService } from '~services/ApiService'
 
@@ -54,13 +56,13 @@ export const triggerSendOtp = async ({
   fieldId: string
   /** The value of the verification field to verify. Usually an email or phone number */
   answer: string
-}): Promise<void> => {
+}): Promise<SendFormOtpResponseDto> => {
   return ApiService.post(
     `${FORM_API_PREFIX}/${formId}/${VERIFICATION_ENDPOINT}/${transactionId}/fields/${fieldId}/otp/generate`,
     {
       answer,
     },
-  )
+  ).then(({ data }) => data)
 }
 
 /**

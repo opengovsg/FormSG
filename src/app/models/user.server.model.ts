@@ -22,6 +22,8 @@ const compileUserModel = (db: Mongoose) => {
     {
       email: {
         type: String,
+        // Ensure lowercase email addresses are stored in the database.
+        set: (v: string) => v.toLowerCase(),
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         trim: true,
@@ -69,7 +71,7 @@ const compileUserModel = (db: Mongoose) => {
         default: () => Date.now(),
       },
       betaFlags: {
-        sgid: Boolean,
+        payment: Boolean,
       },
       flags: {
         lastSeenFeatureUpdateVersion: Number,

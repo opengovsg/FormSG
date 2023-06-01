@@ -17,7 +17,11 @@ import {
 } from '@chakra-ui/react'
 import dedent from 'dedent'
 
-import { ADMINFORM_ROUTE, ADMINFORM_SETTINGS_SUBROUTE } from '~constants/routes'
+import {
+  ADMINFORM_ROUTE,
+  ADMINFORM_SETTINGS_SUBROUTE,
+  ADMINFORM_USETEMPLATE_ROUTE,
+} from '~constants/routes'
 import Button from '~components/Button'
 import FormLabel from '~components/FormControl/FormLabel'
 import IconButton from '~components/IconButton'
@@ -53,6 +57,12 @@ export const ShareFormModal = ({
 
   const shareLink = useMemo(
     () => `${window.location.origin}/${formId}`,
+    [formId],
+  )
+
+  const templateLink = useMemo(
+    () =>
+      `${window.location.origin}${ADMINFORM_ROUTE}/${formId}/${ADMINFORM_USETEMPLATE_ROUTE}`,
     [formId],
   )
 
@@ -118,7 +128,7 @@ export const ShareFormModal = ({
                   >
                     Settings
                   </Button>{' '}
-                  to allow new responses.
+                  to allow new responses or to share it as a template.
                 </Box>
               </InlineMessage>
             ) : null}
@@ -159,6 +169,30 @@ export const ShareFormModal = ({
                     aria-label="Open link in new tab"
                   />
                 </Stack>
+              </Skeleton>
+            </FormControl>
+            <FormControl isReadOnly>
+              <FormLabel isRequired>Share template</FormLabel>
+              <Skeleton isLoaded={!!formId}>
+                <InputGroup>
+                  <Input
+                    // The link will always change in Chromatic so this should be ignored.
+                    data-chromatic="ignore"
+                    isReadOnly
+                    isDisabled={isFormPrivate}
+                    value={`${templateLink}`}
+                  />
+                  {formId ? (
+                    <InputRightElement>
+                      <CopyButton
+                        colorScheme="secondary"
+                        stringToCopy={`${templateLink}`}
+                        aria-label="Copy link to use this form as a template"
+                        isDisabled={isFormPrivate}
+                      />
+                    </InputRightElement>
+                  ) : null}
+                </InputGroup>
               </Skeleton>
             </FormControl>
             <FormControl isReadOnly>

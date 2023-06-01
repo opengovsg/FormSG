@@ -1,6 +1,5 @@
 import { ObjectId } from 'bson'
 import { okAsync } from 'neverthrow'
-import { mocked } from 'ts-jest/utils'
 import Twilio from 'twilio'
 
 import { ISms } from 'src/app/config/features/sms.config'
@@ -16,8 +15,10 @@ jest.mock('twilio', () =>
   })),
 )
 
+jest.mock('src/app/services/sms/sms.dev.prismclient', () => () => ({}))
+
 jest.mock('../sms.service')
-const MockSmsService = mocked(SmsService, true)
+const MockSmsService = jest.mocked(SmsService)
 
 const MOCKED_TWILIO = {
   mocked: 'this is mocked',
@@ -74,9 +75,10 @@ describe('sms.factory', () => {
     // Arrange
     MockSmsService.sendVerificationOtp.mockReturnValue(okAsync(true))
 
-    const mockArguments: Parameters<typeof SmsFactory.sendAdminContactOtp> = [
+    const mockArguments: Parameters<typeof SmsFactory.sendVerificationOtp> = [
       'mockRecipient',
       'mockOtp',
+      'mockOtpPrefix',
       'mockUserId',
       'mockSenderIp',
     ]

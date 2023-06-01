@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 import { Controller, RegisterOptions } from 'react-hook-form'
 import { Box, FormControl, SimpleGrid } from '@chakra-ui/react'
 import { extend, isEmpty, pick } from 'lodash'
@@ -17,6 +17,7 @@ import { validateNumberInput } from '~features/admin-form/create/builder-and-des
 
 import { CreatePageDrawerContentContainer } from '../../../../../common'
 import {
+  DUPLICATE_OTHERS_VALIDATION,
   SPLIT_TEXTAREA_TRANSFORM,
   SPLIT_TEXTAREA_VALIDATION,
 } from '../common/constants'
@@ -102,6 +103,18 @@ export const EditCheckbox = ({ field }: EditCheckboxProps): JSX.Element => {
   )
 
   const watchedInputs = watch()
+
+  const optionsValidation = useCallback(
+    (opts: string) => {
+      const textareaValidation = SPLIT_TEXTAREA_VALIDATION.validate(opts)
+      // Explicit check for !== true, since the error strings returned by the validator will also be truthy.
+      if (textareaValidation !== true) return textareaValidation
+      return DUPLICATE_OTHERS_VALIDATION(
+        watchedInputs.othersRadioButton,
+      ).validate(opts)
+    },
+    [watchedInputs.othersRadioButton],
+  )
 
   const customMinValidationOptions: RegisterOptions = useMemo(
     () => ({
@@ -222,7 +235,7 @@ export const EditCheckbox = ({ field }: EditCheckboxProps): JSX.Element => {
         <Textarea
           placeholder="Enter one option per line"
           {...register('fieldOptions', {
-            validate: SPLIT_TEXTAREA_VALIDATION,
+            validate: optionsValidation,
           })}
         />
         <FormErrorMessage>{errors?.fieldOptions?.message}</FormErrorMessage>

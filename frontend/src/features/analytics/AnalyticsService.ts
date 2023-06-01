@@ -127,7 +127,7 @@ export const trackDownloadResponseFailure = (
   errorMessage: string,
 ) => {
   GA().gtag('event', 'storage_mode', {
-    event_action: 'download_success',
+    event_action: 'download_failure',
     form_title: adminForm.title,
     form_id: adminForm._id,
     num_workers: numWorkers,

@@ -5,7 +5,6 @@ import {
   subDays,
 } from 'date-fns'
 import range from 'lodash/range'
-import { v4 as uuidv4 } from 'uuid'
 
 /**
  * Full names of calendar months
@@ -87,17 +86,17 @@ export const getNewDateFromKeyPress = (
 /**
  * Based on a custom className given to a date element, finds the
  * date corresponding to that element.
- * The pattern used is uuid_dateTime, where dateTime corresponds to
+ * The pattern used is id_dateTime, where dateTime corresponds to
  * Date.getTime().
  * @param className Class name of element
- * @param uuid UUID to find
+ * @param id ID to find
  * @returns Date corresponding to element
  */
 export const getDateFromClassName = (
   className: string,
-  uuid: string,
+  id: string,
 ): Date | null => {
-  const timestamp = new RegExp(`${uuid}_([0-9]+)`).exec(className)
+  const timestamp = new RegExp(`${id}_([0-9]+)`).exec(className)
   if (!timestamp) return null
   return new Date(parseInt(timestamp[1]))
 }
@@ -105,20 +104,10 @@ export const getDateFromClassName = (
 /**
  * Creates a unique className for a date element, from which the corresponding
  * date can be derived.
- * @param uuid UUID to include in className
+ * @param id class name id to include in className
  * @param date Date of element
  * @returns A unique className from which the corresponding date can be derived
  */
-export const generateClassNameForDate = (uuid: string, date: Date): string => {
-  return `${uuid}_${startOfDay(date).getTime()}`
-}
-
-/**
- * Generates a UUID which is also a valid HTML class name.
- * @returns A valid UUID which can be used as a class name
- */
-export const generateValidUuidClass = (): string => {
-  // Ensure className starts with alphabet and has no hyphens
-  // followed by digits
-  return `a${uuidv4().replaceAll('-', '_')}`
+export const generateClassNameForDate = (id: string, date: Date): string => {
+  return `${id}_${startOfDay(date).getTime()}`
 }

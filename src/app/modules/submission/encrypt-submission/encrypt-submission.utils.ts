@@ -1,8 +1,17 @@
 import { StatusCodes } from 'http-status-codes'
 import moment from 'moment-timezone'
 
-import { StorageModeSubmissionDto } from '../../../../../shared/types'
-import { MapRouteErrors, SubmissionData } from '../../../../types'
+import {
+  StorageModeSubmissionDto,
+  SubmissionPaymentDto,
+  SubmissionType,
+} from '../../../../../shared/types'
+import {
+  IEncryptedSubmissionSchema,
+  ISubmissionSchema,
+  MapRouteErrors,
+  SubmissionData,
+} from '../../../../types'
 import { MapRouteError } from '../../../../types/routing'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { MalformedVerifiedContentError } from '../../../modules/verified-content/verified-content.errors'
@@ -28,6 +37,7 @@ import {
   FormNotFoundError,
   PrivateFormError,
 } from '../../form/form.errors'
+import { PaymentNotFoundError } from '../../payments/payments.errors'
 import {
   SgidInvalidJwtError,
   SgidMissingJwtError,
@@ -35,9 +45,7 @@ import {
 } from '../../sgid/sgid.errors'
 import {
   CreateRedirectUrlError,
-  FetchLoginPageError,
   InvalidJwtError,
-  LoginPageValidationError,
   MissingJwtError,
   VerifyJwtError,
 } from '../../spcp/spcp.errors'
@@ -73,16 +81,6 @@ const errorMapper: MapRouteError = (
       return {
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         errorMessage: coreErrorMessage,
-      }
-    case FetchLoginPageError:
-      return {
-        statusCode: StatusCodes.SERVICE_UNAVAILABLE,
-        errorMessage: 'Failed to contact SingPass. Please try again.',
-      }
-    case LoginPageValidationError:
-      return {
-        statusCode: StatusCodes.BAD_GATEWAY,
-        errorMessage: 'Error while contacting SingPass. Please try again.',
       }
     case SgidMissingJwtError:
     case SgidVerifyJwtError:
@@ -180,6 +178,7 @@ const errorMapper: MapRouteError = (
         errorMessage:
           'The form has been updated. Please refresh and submit again.',
       }
+    case PaymentNotFoundError:
     case CreatePresignedUrlError:
     case DatabaseError:
     case EmptyErrorFieldError:
@@ -207,12 +206,24 @@ export const mapRouteError: MapRouteErrors =
   genericMapRouteErrorTransform(errorMapper)
 
 /**
+ * Typeguard to check if given submission is an encrypt mode submission.
+ * @param submission the submission to check
+ * @returns true if submission is encrypt mode submission, false otherwise.
+ */
+export const isSubmissionEncryptMode = (
+  submission: ISubmissionSchema,
+): submission is IEncryptedSubmissionSchema => {
+  return submission.submissionType === SubmissionType.Encrypt
+}
+
+/**
  * Creates and returns an EncryptedSubmissionDto object from submissionData and
  * attachment presigned urls.
  */
 export const createEncryptedSubmissionDto = (
   submissionData: SubmissionData,
   attachmentPresignedUrls: Record<string, string>,
+  payment?: SubmissionPaymentDto,
 ): StorageModeSubmissionDto => {
   return {
     refNo: submissionData._id,
@@ -222,6 +233,7 @@ export const createEncryptedSubmissionDto = (
     content: submissionData.encryptedContent,
     verified: submissionData.verifiedContent,
     attachmentMetadata: attachmentPresignedUrls,
+    payment,
     version: submissionData.version,
   }
 }

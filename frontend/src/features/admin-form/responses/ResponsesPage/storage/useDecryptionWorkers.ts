@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useMutation, UseMutationOptions } from 'react-query'
+import { datadogLogs } from '@datadog/browser-logs'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
 import {
@@ -9,6 +10,7 @@ import {
   trackDownloadResponseSuccess,
   trackPartialDecryptionFailure,
 } from '~features/analytics/AnalyticsService'
+import { useUser } from '~features/user/queries'
 
 import { downloadResponseAttachment } from './utils/downloadCsv'
 import { EncryptedResponseCsvGenerator } from './utils/EncryptedResponseCsvGenerator'
@@ -53,6 +55,7 @@ const useDecryptionWorkers = ({
   const abortControllerRef = useRef(new AbortController())
 
   const { data: adminForm } = useAdminForm()
+  const { user } = useUser()
 
   useEffect(() => {
     return () => killWorkers(workers)
@@ -98,8 +101,22 @@ const useDecryptionWorkers = ({
       let attachmentErrorCount = 0
       let receivedRecordCount = 0
 
+      const logMeta = {
+        action: 'downloadEncryptedReponses',
+        formId: adminForm._id,
+        formTitle: adminForm.title,
+        downloadAttachments: downloadAttachments,
+        num_workers: numWorkers,
+        expectedNumSubmissions: NUM_OF_METADATA_ROWS,
+        adminId: user?._id,
+      }
       // Trigger analytics here before starting decryption worker
       trackDownloadResponseStart(adminForm, numWorkers, NUM_OF_METADATA_ROWS)
+      datadogLogs.logger.info('Download response start', {
+        meta: {
+          ...logMeta,
+        },
+      })
 
       const workerPool: CleanableDecryptionWorkerApi[] = []
 
@@ -139,6 +156,8 @@ const useDecryptionWorkers = ({
                   line: result.value,
                   secretKey,
                   downloadAttachments,
+                  formId: adminForm._id,
+                  hostOrigin: window.location.origin,
                 })
                 progress += 1
                 onProgress(progress)
@@ -180,11 +199,32 @@ const useDecryptionWorkers = ({
           .catch((err) => {
             if (!downloadStartTime) {
               // No start time, means did not even start http request.
-
+              datadogLogs.logger.info('Download network failure', {
+                meta: {
+                  ...logMeta,
+                  error: {
+                    message: err.message,
+                    name: err.name,
+                    stack: err.stack,
+                  },
+                },
+              })
               trackDownloadNetworkFailure(adminForm, err)
             } else {
               const downloadFailedTime = performance.now()
               const timeDifference = downloadFailedTime - downloadStartTime
+
+              datadogLogs.logger.info('Download response failure', {
+                meta: {
+                  ...logMeta,
+                  duration: timeDifference,
+                  error: {
+                    message: err.message,
+                    name: err.name,
+                    stack: err.stack,
+                  },
+                },
+              })
 
               trackDownloadResponseFailure(
                 adminForm,
@@ -208,6 +248,16 @@ const useDecryptionWorkers = ({
               if (errorCount + unverifiedCount === responsesCount) {
                 const failureEndTime = performance.now()
                 const timeDifference = failureEndTime - downloadStartTime
+
+                datadogLogs.logger.info('Partial decryption failure', {
+                  meta: {
+                    ...logMeta,
+                    duration: timeDifference,
+                    error_count: errorCount,
+                    unverified_count: unverifiedCount,
+                    attachment_error_count: attachmentErrorCount,
+                  },
+                })
 
                 trackPartialDecryptionFailure(
                   adminForm,
@@ -243,6 +293,13 @@ const useDecryptionWorkers = ({
                 const downloadEndTime = performance.now()
                 const timeDifference = downloadEndTime - downloadStartTime
 
+                datadogLogs.logger.info('Download response success', {
+                  meta: {
+                    ...logMeta,
+                    duration: timeDifference,
+                  },
+                })
+
                 trackDownloadResponseSuccess(
                   adminForm,
                   numWorkers,
@@ -265,7 +322,7 @@ const useDecryptionWorkers = ({
           })
       })
     },
-    [adminForm, onProgress, workers],
+    [adminForm, onProgress, user?._id, workers],
   )
 
   const handleExportCsvMutation = useMutation(

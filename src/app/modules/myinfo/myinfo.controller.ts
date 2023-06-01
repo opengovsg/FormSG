@@ -1,25 +1,22 @@
 import { celebrate, Joi, Segments } from 'celebrate'
 import { StatusCodes } from 'http-status-codes'
 
-import {
-  FormAuthType,
-  PublicFormAuthValidateEsrvcIdDto,
-} from '../../../../shared/types'
 import { createLoggerWithLabel } from '../../config/logger'
 import { createReqMeta } from '../../utils/request'
-import * as BillingService from '../billing/billing.service'
 import { ControllerHandler } from '../core/core.types'
 import * as FormService from '../form/form.service'
-import { SpcpService } from '../spcp/spcp.service'
 
-import { MYINFO_COOKIE_NAME, MYINFO_COOKIE_OPTIONS } from './myinfo.constants'
-import { MyInfoService } from './myinfo.service'
-import { MyInfoCookiePayload, MyInfoCookieState } from './myinfo.types'
 import {
-  mapEServiceIdCheckError,
-  mapRedirectURLError,
-  validateMyInfoForm,
-} from './myinfo.util'
+  MYINFO_AUTH_CODE_COOKIE_NAME,
+  MYINFO_AUTH_CODE_COOKIE_OPTIONS,
+} from './myinfo.constants'
+import { MyInfoService } from './myinfo.service'
+import {
+  MyInfoAuthCodeCookiePayload,
+  MyInfoAuthCodeCookieState,
+  MyInfoAuthCodeSuccessPayload,
+} from './myinfo.types'
+import { mapRedirectURLError, validateMyInfoForm } from './myinfo.util'
 
 const logger = createLoggerWithLabel(module)
 
@@ -83,61 +80,6 @@ export const handleRedirectURLRequest = [
 ] as ControllerHandler[]
 
 /**
- * Validation middleware for requests to check that an
- * e-service ID on a MyInfo form is valid.
- */
-const validateEServiceIdCheck = celebrate({
-  [Segments.QUERY]: {
-    formId: Joi.string()
-      .regex(/^[0-9a-fA-F]{24}$/)
-      .required(),
-  },
-})
-
-/**
- * Checks that a form's e-service ID is valid.
- * @param req Express request
- * @param res Express response
- */
-export const checkMyInfoEServiceId: ControllerHandler<
-  unknown,
-  PublicFormAuthValidateEsrvcIdDto | { message: string },
-  unknown,
-  { formId: string }
-> = async (req, res) => {
-  const { formId } = req.query
-  return FormService.retrieveFormById(formId)
-    .andThen((form) => validateMyInfoForm(form))
-    .andThen((form) =>
-      SpcpService.createRedirectUrl(FormAuthType.SP, formId, form.esrvcId),
-    )
-    .andThen(SpcpService.fetchLoginPage)
-    .andThen(SpcpService.validateLoginPage)
-    .map((result) => res.status(StatusCodes.OK).json(result))
-    .mapErr((error) => {
-      logger.error({
-        message: 'Error while validating MyInfo e-service ID',
-        meta: {
-          action: 'checkMyInfoEServiceId',
-          ...createReqMeta(req),
-          formId,
-        },
-        error,
-      })
-      const { statusCode, errorMessage } = mapEServiceIdCheckError(error)
-      return res.status(statusCode).json({ message: errorMessage })
-    })
-}
-
-/**
- * Handles requests to validate e-service ID for a MyInfo form.
- */
-export const handleEServiceIdCheck = [
-  validateEServiceIdCheck,
-  checkMyInfoEServiceId,
-] as ControllerHandler[]
-
-/**
  * Validation middleware for the MyInfo redirect endpoint.
  * This is the endpoint to which MyInfo will redirect the client
  * after they have consented to provide their MyInfo data.
@@ -171,8 +113,8 @@ type MyInfoLoginQueryParams =
     }
 
 /**
- * Logs a user in to MyInfo by retrieving their access token and
- * redirecting them to the correct form.
+ * Logs a user in to MyInfo by storing the authorisation code
+ * in a cookie and redirecting them to the correct form.
  * @param req Express request
  * @param res Express response
  */
@@ -195,7 +137,7 @@ export const loginToMyInfo: ControllerHandler<
     })
     return res.sendStatus(StatusCodes.BAD_REQUEST)
   }
-  const { formId, cookieDuration, encodedQuery } = parseStateResult.value
+  const { formId, encodedQuery } = parseStateResult.value
 
   let redirectDestination = `/${formId}`
 
@@ -211,33 +153,9 @@ export const loginToMyInfo: ControllerHandler<
     }
   }
 
-  // Ensure form exists
-  const formResult = await FormService.retrieveFullFormById(formId)
-  if (formResult.isErr()) {
-    logger.error({
-      message: 'Form in MyInfo relayState not found',
-      meta: logMeta,
-      error: formResult.error,
-    })
-    // No valid redirect destination, so redirect to home
-    return res.redirect('/')
-  }
-  const form = formResult.value
-
-  // Cookie payload for any errors while retrieving access token
-  const errorCookiePayload: MyInfoCookiePayload = {
-    state: MyInfoCookieState.Error,
-  }
-
-  // Ensure form is a MyInfo form
-  if (form.authType !== FormAuthType.MyInfo) {
-    logger.error({
-      message: "Log in attempt to wrong endpoint for form's authType",
-      meta: logMeta,
-    })
-    // Set cookie so that user still sees MyInfo error message.
-    res.cookie(MYINFO_COOKIE_NAME, errorCookiePayload, MYINFO_COOKIE_OPTIONS)
-    return res.redirect(redirectDestination)
+  // Cookie payload for error returned by MyInfo
+  const errorCookiePayload: MyInfoAuthCodeCookiePayload = {
+    state: MyInfoAuthCodeCookieState.Error,
   }
 
   // Consent flow not successful
@@ -250,49 +168,24 @@ export const loginToMyInfo: ControllerHandler<
         errorDescription: req.query['error-description'],
       },
     })
-    res.cookie(MYINFO_COOKIE_NAME, errorCookiePayload, MYINFO_COOKIE_OPTIONS)
+    res.cookie(
+      MYINFO_AUTH_CODE_COOKIE_NAME,
+      errorCookiePayload,
+      MYINFO_AUTH_CODE_COOKIE_OPTIONS,
+    )
     return res.redirect(redirectDestination)
   }
 
-  // Consent flow successful, hence code is present
-  const accessTokenResult = await MyInfoService.retrieveAccessToken(
-    req.query.code,
+  const cookiePayload: MyInfoAuthCodeSuccessPayload = {
+    authCode: req.query.code,
+    state: MyInfoAuthCodeCookieState.Success,
+  }
+  res.cookie(
+    MYINFO_AUTH_CODE_COOKIE_NAME,
+    cookiePayload,
+    MYINFO_AUTH_CODE_COOKIE_OPTIONS,
   )
-  if (accessTokenResult.isErr()) {
-    logger.error({
-      message: 'Error while retrieving MyInfo access token',
-      meta: logMeta,
-      error: accessTokenResult.error,
-    })
-    res.cookie(MYINFO_COOKIE_NAME, errorCookiePayload, MYINFO_COOKIE_OPTIONS)
-    return res.redirect(redirectDestination)
-  }
-  const accessToken = accessTokenResult.value
-
-  // Once access token is retrieved, the request is assured to be legitimate,
-  // so add the login
-  return BillingService.recordLoginByForm(form)
-    .map(() => {
-      const cookiePayload: MyInfoCookiePayload = {
-        accessToken,
-        usedCount: 0,
-        state: MyInfoCookieState.Success,
-      }
-      res.cookie(MYINFO_COOKIE_NAME, cookiePayload, {
-        maxAge: cookieDuration,
-        ...MYINFO_COOKIE_OPTIONS,
-      })
-      return res.redirect(redirectDestination)
-    })
-    .mapErr((error) => {
-      logger.error({
-        message: 'Error while adding MyInfo login record to database',
-        meta: logMeta,
-        error,
-      })
-      res.cookie(MYINFO_COOKIE_NAME, errorCookiePayload, MYINFO_COOKIE_OPTIONS)
-      return res.redirect(redirectDestination)
-    })
+  return res.redirect(redirectDestination)
 }
 
 /**

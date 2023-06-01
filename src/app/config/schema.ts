@@ -87,6 +87,12 @@ export const compulsoryVarsSchema: Schema<ICompulsoryVarsSchema> = {
       default: null,
       env: 'ATTACHMENT_S3_BUCKET',
     },
+    staticAssetsS3Bucket: {
+      doc: 'S3 Bucket containing static assets',
+      format: String,
+      default: null,
+      env: 'STATIC_ASSETS_S3_BUCKET',
+    },
   },
   core: {
     sessionSecret: {
@@ -102,13 +108,11 @@ export const compulsoryVarsSchema: Schema<ICompulsoryVarsSchema> = {
       default: null,
       env: 'SECRET_ENV',
     },
-  },
-  reactMigration: {
-    reactToAngularFeedbackFormId: {
-      doc: 'Form ID of the React to Angular bug report feedback form',
+    envSiteName: {
+      doc: 'Environment site name used to build key for AWS Secrets Manager',
       format: String,
       default: null,
-      env: 'REACT_TO_ANGULAR_FEEDBACK_FORM_ID',
+      env: 'SSM_ENV_SITE_NAME',
     },
   },
 }
@@ -125,7 +129,7 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
     description: {
       doc: 'Application description in meta tag',
       format: String,
-      default: 'Form Manager for Government',
+      default: 'Trusted form manager of the Singapore Government',
       env: 'APP_DESC',
     },
     appUrl: {
@@ -308,6 +312,12 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
       default: Environment.Prod,
       env: 'NODE_ENV',
     },
+    useMockTwilio: {
+      doc: 'Enables twilio API mocking and directs SMS body over to maildev',
+      format: 'Boolean',
+      default: false,
+      env: 'USE_MOCK_TWILIO',
+    },
   },
   rateLimit: {
     submissions: {
@@ -322,61 +332,20 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
       default: 60,
       env: 'SEND_AUTH_OTP_RATE_LIMIT',
     },
-  },
-  reactMigration: {
-    respondentRolloutEmail: {
-      doc: 'Percentage threshold to serve React for respondents for Phase 1 (email mode forms)',
-      format: 'int',
-      default: 0,
-      env: 'REACT_MIGRATION_RESP_ROLLOUT_EMAIL',
-    },
-    respondentRolloutStorage: {
-      doc: 'Percentage threshold to serve React for respondents for Phase 2 (storage mode forms)',
-      format: 'int',
-      default: 0,
-      env: 'REACT_MIGRATION_RESP_ROLLOUT_STORAGE',
-    },
-    adminRollout: {
-      doc: 'Percentage threshold to serve React for admins',
-      format: 'int',
-      default: 0,
-      env: 'REACT_MIGRATION_ADMIN_ROLLOUT',
-    },
-    respondentCookieName: {
-      doc: "Name of the cookie that will store respondents' assigned environment.",
-      format: String,
-      default: 'v2-respondent-ui',
-      env: 'REACT_MIGRATION_RESP_COOKIE_NAME',
-    },
-    adminCookieName: {
-      doc: "Name of the cookie that will store admins' choice of environment.",
-      format: String,
-      default: 'v2-admin-ui',
-      env: 'REACT_MIGRATION_ADMIN_COOKIE_NAME',
-    },
-    qaCookieName: {
-      doc: 'Priority cookie to select react/angular during QA.',
-      format: String,
-      default: 'v2-qa-ui',
-      env: 'REACT_MIGRATION_QA_COOKIE_NAME',
-    },
-    angularPhaseOutDate: {
-      doc: 'Last date that AngularJS app is available',
-      format: String,
-      default: '15 September 2022',
-      env: 'REACT_MIGRATION_ANGULAR_END_DATE',
-    },
-    removeAdminInfoboxThreshold: {
-      doc: 'Percentage threshold where switch-to-angular infobox for Admins will no longer be visible',
-      format: 'int',
-      default: 100,
-      env: 'REACT_MIGRATION_REMOVE_INFOBOX_THRESHOLD_ADMIN',
-    },
-    removeRespondentsInfoboxThreshold: {
-      doc: 'Percentage threshold where switch-to-angular infobox for Respondents will no longer be visible',
+    downloadPaymentReceipt: {
+      doc: 'Per-minute, per-IP request limit to download the payment receipt from Stripe',
       format: 'int',
       default: 10,
-      env: 'REACT_MIGRATION_REMOVE_INFOBOX_THRESHOLD_RESPONDENT',
+      env: 'DOWNLOAD_PAYMENT_RECEIPT_RATE_LIMIT',
+    },
+  },
+  reactMigration: {
+    useFetchForSubmissions: {
+      // TODO (#5826): Toggle to use fetch for submissions instead of axios. Remove once network error is resolved
+      doc: 'Toggle to use fetch for submissions instead of axios',
+      format: Boolean,
+      default: false,
+      env: 'REACT_MIGRATION_USE_FETCH_FOR_SUBMISSIONS',
     },
   },
 }
@@ -467,6 +436,12 @@ export const loadS3BucketUrlSchema = ({
     },
     imageBucketUrl: {
       doc: 'Url of images S3 bucket derived from S3 endpoint and bucket name',
+      format: (val) =>
+        validateS3BucketUrl(val, { isDev, hasTrailingSlash: false, region }),
+      default: null,
+    },
+    staticAssetsBucketUrl: {
+      doc: 'Url of static assets S3 bucket.',
       format: (val) =>
         validateS3BucketUrl(val, { isDev, hasTrailingSlash: false, region }),
       default: null,

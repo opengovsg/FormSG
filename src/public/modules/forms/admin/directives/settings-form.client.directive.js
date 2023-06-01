@@ -2,7 +2,6 @@
 const dedent = require('dedent-js')
 const { get, set, isEqual } = require('lodash')
 const AdminSubmissionsService = require('../../../../services/AdminSubmissionsService')
-const BetaService = require('../../../../services/BetaService')
 
 const UserService = require('../../../../services/UserService')
 
@@ -144,11 +143,9 @@ function settingsFormDirective(
           )
         }
 
-        $scope.isDisableAuthType = (authType) => {
+        $scope.isDisableAuthType = () => {
           return (
             $scope.isFormPublic() ||
-            (authType.val === 'SGID' &&
-              !BetaService.userHasAccessToFeature($scope.user, 'sgid')) ||
             ($scope.isFormPrivate() && $scope.myInfoSPWarning())
           )
         }

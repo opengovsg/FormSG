@@ -10,8 +10,6 @@ import { Banner } from '~components/Banner'
 import AdminForbiddenErrorPage from '~pages/AdminForbiddenError'
 import NotFoundErrorPage from '~pages/NotFoundError'
 import { useEnv } from '~features/env/queries'
-// TODO #4279: Remove after React rollout is complete
-import { SwitchEnvIcon } from '~features/env/SwitchEnvIcon'
 
 import { StorageResponsesProvider } from '../responses/ResponsesPage/storage/StorageResponsesProvider'
 
@@ -50,14 +48,24 @@ export const AdminFormLayout = (): JSX.Element => {
   }
 
   return (
-    <Flex flexDir="column" css={fillHeightCss} overflow="hidden" pos="relative">
+    <Flex
+      flexDir="column"
+      css={fillHeightCss}
+      overflow="hidden"
+      pos="relative"
+      sx={{
+        '@media print': {
+          overflow: 'visible !important',
+          display: 'block !important',
+        },
+      }}
+    >
       {bannerProps ? (
         <Banner useMarkdown variant={bannerProps.variant}>
           {bannerProps.msg}
         </Banner>
       ) : null}
       <AdminFormNavbar />
-      <SwitchEnvIcon />
       <StorageResponsesProvider>
         <Outlet />
       </StorageResponsesProvider>

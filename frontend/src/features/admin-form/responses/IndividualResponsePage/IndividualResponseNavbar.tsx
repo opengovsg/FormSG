@@ -16,6 +16,7 @@ import {
   Text,
 } from '@chakra-ui/react'
 
+import { noPrintCss } from '~utils/noPrintCss'
 import IconButton from '~components/IconButton'
 
 import { useUnlockedResponses } from '../ResponsesPage/storage/UnlockedResponses/UnlockedResponsesProvider'
@@ -100,6 +101,7 @@ export const IndividualResponseNavbar = (): JSX.Element => {
 
   return (
     <Grid
+      sx={noPrintCss}
       position="sticky"
       top={0}
       bg="white"

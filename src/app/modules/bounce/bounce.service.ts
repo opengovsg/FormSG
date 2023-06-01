@@ -412,6 +412,7 @@ export const saveBounceDoc = (
           action: 'saveBounceDoc',
           formId: bounceDoc.formId,
         },
+        error,
       })
     }
     return transformMongoError(error)
@@ -432,6 +433,7 @@ export const safeParseNotification = (
         message: 'Unable to parse SNS notification',
         meta: {
           action: 'safeParseNotification',
+          message: message,
         },
         error,
       })

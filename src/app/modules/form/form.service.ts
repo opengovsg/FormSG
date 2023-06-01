@@ -1,8 +1,12 @@
+import { faker } from '@faker-js/faker'
 import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
 import {
+  BasicField,
   FormAuthType,
+  FormField,
+  FormFieldDto,
   FormResponseMode,
   FormStatus,
 } from '../../../../shared/types'
@@ -342,4 +346,97 @@ export const retrievePublicFormsWithSmsVerification = (
     }
     return okAsync(forms)
   })
+}
+
+export const createSingleSampleSubmissionAnswer = (field: FormFieldDto) => {
+  let sampleValue = null
+  let noOfTableRows
+  let noOfTableCols
+  const tableSampleValue = []
+  switch (field.fieldType) {
+    case BasicField.LongText:
+      sampleValue = faker.lorem.text()
+      break
+    case BasicField.ShortText:
+      sampleValue = faker.lorem.words()
+      break
+    case BasicField.Radio:
+    case BasicField.Dropdown:
+      sampleValue = faker.helpers.arrayElement(field.fieldOptions)
+      break
+    case BasicField.Email:
+      sampleValue = faker.internet.email()
+      break
+    case BasicField.Decimal:
+      sampleValue = faker.number.float({ precision: 0.1 }).toString()
+      break
+    case BasicField.Number:
+      sampleValue = faker.number.int(100).toString()
+      break
+    case BasicField.Mobile:
+      sampleValue = faker.phone.number('+659#######')
+      break
+    case BasicField.HomeNo:
+      sampleValue = faker.phone.number('+656#######')
+      break
+    case BasicField.YesNo:
+      sampleValue = faker.helpers.arrayElement(['Yes', 'No'])
+      break
+    case BasicField.Rating:
+      sampleValue = faker.number
+        .int({ min: 1, max: field.ratingOptions.steps })
+        .toString()
+      break
+    case BasicField.Attachment:
+      sampleValue = 'attachmentFileName'
+      break
+    case BasicField.Table:
+      noOfTableRows = field.minimumRows
+      noOfTableCols = field.columns.length
+      for (let row = 0; row < noOfTableRows; row++) {
+        const rowSampleValue = []
+        for (let col = 0; col < noOfTableCols; col++) {
+          rowSampleValue.push(`row${row + 1}col${col + 1}`)
+        }
+        tableSampleValue.push(rowSampleValue)
+      }
+      sampleValue = tableSampleValue
+      break
+    case BasicField.Checkbox:
+      sampleValue = faker.helpers.arrayElements(field.fieldOptions)
+      break
+    case BasicField.Date:
+      sampleValue = faker.date.anytime().toLocaleDateString('en-SG', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      })
+      break
+    case BasicField.Nric:
+      sampleValue = faker.helpers.replaceSymbols('S9######A')
+      break
+    case BasicField.Uen:
+      sampleValue = faker.helpers.replaceSymbols('#########A')
+      break
+    default:
+      break
+  }
+  return {
+    id: field._id,
+    question: field.title,
+    answer: sampleValue,
+    fieldType: field.fieldType,
+  }
+}
+
+export const createSampleSubmissionResponses = (
+  formFields: FormFieldDto<FormField>[],
+) => {
+  const sampleData: Record<string, any> = {}
+  formFields.forEach((field) => {
+    const answer = createSingleSampleSubmissionAnswer(field)
+    if (!answer) return
+    sampleData[field._id] = answer
+  })
+  return sampleData
 }

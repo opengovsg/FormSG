@@ -9,8 +9,13 @@ import {
   SmsCountsDto,
 } from '~shared/types/form/form'
 
+import { ADMINFORM_USETEMPLATE_ROUTE } from '~constants/routes'
 import { transformAllIsoStringsToDate } from '~utils/date'
-import { ApiService } from '~services/ApiService'
+import {
+  API_BASE_URL,
+  ApiService,
+  processFetchResponse,
+} from '~services/ApiService'
 
 import { augmentWithMyInfoDisplayValue } from '~features/myinfo/utils'
 import {
@@ -20,12 +25,13 @@ import {
 import {
   createEmailSubmissionFormData,
   createEncryptedSubmissionData,
+  filterHiddenInputs,
 } from '~features/public-form/utils'
 
 import { PREVIEW_MOCK_UINFIN } from '../preview/constants'
 
 // endpoint exported for testing
-export const ADMIN_FORM_ENDPOINT = 'admin/forms'
+export const ADMIN_FORM_ENDPOINT = '/admin/forms'
 
 /**
  * Gets admin view of form.
@@ -51,6 +57,35 @@ export const previewForm = async (
 ): Promise<PreviewFormViewDto> => {
   return ApiService.get<PreviewFormViewDto>(
     `${ADMIN_FORM_ENDPOINT}/${formId}/preview`,
+  )
+    .then(({ data }) => {
+      // Add default mock authenticated state if previewing an authenticatable form
+      // and if server has not already sent back a mock authenticated state.
+      if (data.form.authType !== FormAuthType.NIL && !data.spcpSession) {
+        data.spcpSession = { userName: PREVIEW_MOCK_UINFIN }
+      }
+
+      // Inject MyInfo preview values into form fields (if they are MyInfo fields).
+      data.form.form_fields = data.form.form_fields.map(
+        augmentWithMyInfoDisplayValue,
+      )
+
+      return data
+    })
+    .then(transformAllIsoStringsToDate)
+}
+
+/**
+ * Gets the public view of a form. Used for viewing the form from the form template page.
+ * Must be an admin.
+ * @param formId formId of form in question
+ * @returns Public view of a form
+ */
+export const viewFormTemplate = async (
+  formId: string,
+): Promise<PreviewFormViewDto> => {
+  return ApiService.get<PreviewFormViewDto>(
+    `${ADMIN_FORM_ENDPOINT}/${formId}/${ADMINFORM_USETEMPLATE_ROUTE}`,
   )
     .then(({ data }) => {
       // Add default mock authenticated state if previewing an authenticatable form
@@ -122,10 +157,16 @@ export const removeSelfFromFormCollaborators = async (
  */
 export const submitEmailModeFormPreview = async ({
   formFields,
+  formLogics,
   formInputs,
   formId,
 }: SubmitEmailFormArgs): Promise<SubmissionResponseDto> => {
-  const formData = createEmailSubmissionFormData(formFields, formInputs)
+  const filteredInputs = filterHiddenInputs({
+    formFields,
+    formInputs,
+    formLogics,
+  })
+  const formData = createEmailSubmissionFormData(formFields, filteredInputs)
 
   return ApiService.post<SubmissionResponseDto>(
     `${ADMIN_FORM_ENDPOINT}/${formId}/preview/submissions/email`,
@@ -138,13 +179,19 @@ export const submitEmailModeFormPreview = async ({
  */
 export const submitStorageModeFormPreview = async ({
   formFields,
+  formLogics,
   formInputs,
   formId,
   publicKey,
 }: SubmitStorageFormArgs) => {
-  const submissionContent = await createEncryptedSubmissionData(
+  const filteredInputs = filterHiddenInputs({
     formFields,
     formInputs,
+    formLogics,
+  })
+  const submissionContent = await createEncryptedSubmissionData(
+    formFields,
+    filteredInputs,
     publicKey,
   )
 
@@ -152,4 +199,70 @@ export const submitStorageModeFormPreview = async ({
     `${ADMIN_FORM_ENDPOINT}/${formId}/preview/submissions/encrypt`,
     submissionContent,
   ).then(({ data }) => data)
+}
+
+/**
+ * Submit an email mode form in preview mode using fetch
+ * TODO(#5826): Fallback using Fetch. Remove once network error is resolved
+ */
+export const submitEmailModeFormPreviewWithFetch = async ({
+  formFields,
+  formLogics,
+  formInputs,
+  formId,
+}: SubmitEmailFormArgs): Promise<SubmissionResponseDto> => {
+  const filteredInputs = filterHiddenInputs({
+    formFields,
+    formInputs,
+    formLogics,
+  })
+  const formData = createEmailSubmissionFormData(formFields, filteredInputs)
+
+  const response = await fetch(
+    `${API_BASE_URL}${ADMIN_FORM_ENDPOINT}/${formId}/preview/submissions/email`,
+    {
+      method: 'POST',
+      body: formData,
+      headers: {
+        Accept: 'application/json',
+      },
+    },
+  )
+  return processFetchResponse(response)
+}
+
+/**
+ * Submit a storage mode form in preview mode using fetch
+ * TODO(#5826): Fallback using Fetch. Remove once network error is resolved
+ */
+export const submitStorageModeFormPreviewWithFetch = async ({
+  formFields,
+  formLogics,
+  formInputs,
+  formId,
+  publicKey,
+}: SubmitStorageFormArgs): Promise<SubmissionResponseDto> => {
+  const filteredInputs = filterHiddenInputs({
+    formFields,
+    formInputs,
+    formLogics,
+  })
+  const submissionContent = await createEncryptedSubmissionData(
+    formFields,
+    filteredInputs,
+    publicKey,
+  )
+
+  const response = await fetch(
+    `${API_BASE_URL}${ADMIN_FORM_ENDPOINT}/${formId}/preview/submissions/encrypt`,
+    {
+      method: 'POST',
+      body: JSON.stringify(submissionContent),
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+    },
+  )
+  return processFetchResponse(response)
 }

@@ -1,8 +1,7 @@
+import mockFile from '__tests__/unit/frontend/helpers/mockFile'
 import { ObjectId } from 'bson-ext'
 import mockAxios from 'jest-mock-axios'
 import MockDate from 'mockdate'
-
-import mockFile from 'tests/unit/frontend/helpers/mockFile'
 
 import * as FileHandlerService from '../FileHandlerService'
 

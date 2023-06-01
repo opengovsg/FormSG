@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { Box, forwardRef, Text } from '@chakra-ui/react'
+import { Box, forwardRef } from '@chakra-ui/react'
 
 import { FormColorTheme } from '~shared/types'
 
@@ -54,16 +54,15 @@ export const BaseSectionField = forwardRef<
     // id given so app can scrolled to this section.
     <Box
       id={schema._id}
-      role="heading"
       ref={ref}
       _focus={{
         boxShadow: `0 0 0 2px var(--chakra-colors-theme-${colorTheme}-500)`,
       }}
       {...rest}
     >
-      <Text textStyle="h2" color={sectionColor}>
+      <Box as="h2" textStyle="h2" color={sectionColor}>
         {schema.title}
-      </Text>
+      </Box>
       {schema.description && (
         <Box mt="1rem">
           <MarkdownText multilineBreaks components={mdComponents}>

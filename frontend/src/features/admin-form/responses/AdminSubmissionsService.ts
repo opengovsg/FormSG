@@ -93,6 +93,7 @@ export const getDecryptedSubmissionById = async ({
     processDecryptedContent(decryptedContent),
     attachmentMetadata,
   )
+
   // Add metadata for display.
   return {
     ...rest,

@@ -1,12 +1,13 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
+import { generateDefaultField } from '__tests__/unit/backend/helpers/generate-form-data'
 import { PresignedPost } from 'aws-sdk/clients/s3'
 import { ObjectId } from 'bson-ext'
 import { assignIn, cloneDeep, merge, omit, pick } from 'lodash'
 import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync } from 'neverthrow'
-import { mocked } from 'ts-jest/utils'
 
 import config, { aws } from 'src/app/config/config'
+import getAgencyModel from 'src/app/models/agency.server.model'
 import getFormModel, {
   getEmailFormModel,
   getEncryptedFormModel,
@@ -27,6 +28,7 @@ import { EditFieldActions } from 'src/shared/constants'
 import {
   FormLogicSchema,
   IEmailFormSchema,
+  IEncryptedFormDocument,
   IFormDocument,
   IFormSchema,
   IPopulatedForm,
@@ -34,8 +36,6 @@ import {
   PickDuplicateForm,
 } from 'src/types'
 import { EditFormFieldParams } from 'src/types/api'
-
-import { generateDefaultField } from 'tests/unit/backend/helpers/generate-form-data'
 
 import { VALID_UPLOAD_FILE_TYPES } from '../../../../../../shared/constants/file'
 import {
@@ -55,10 +55,12 @@ import {
   FormStatus,
   LogicDto,
   LogicType,
+  PaymentsUpdateDto,
   SettingsUpdateDto,
 } from '../../../../../../shared/types'
 import { smsConfig } from '../../../../config/features/sms.config'
 import * as SmsService from '../../../../services/sms/sms.service'
+import { InvalidPaymentAmountError } from '../../../payments/payments.errors'
 import {
   FormNotFoundError,
   LogicNotFoundError,
@@ -68,6 +70,7 @@ import {
   CreatePresignedUrlError,
   EditFieldError,
   FieldNotFoundError,
+  InvalidCollaboratorError,
   InvalidFileTypeError,
 } from '../admin-form.errors'
 import * as AdminFormService from '../admin-form.service'
@@ -79,12 +82,13 @@ import { secretsManager } from './../admin-form.service'
 const FormModel = getFormModel(mongoose)
 const EmailFormModel = getEmailFormModel(mongoose)
 const EncryptFormModel = getEncryptedFormModel(mongoose)
+const AgencyModel = getAgencyModel(mongoose)
 
 jest.mock('src/app/modules/user/user.service')
-const MockUserService = mocked(UserService)
+const MockUserService = jest.mocked(UserService)
 
 jest.mock('../../../../services/sms/sms.service')
-const MockSmsService = mocked(SmsService)
+const MockSmsService = jest.mocked(SmsService)
 
 describe('admin-form.service', () => {
   beforeEach(async () => {
@@ -939,7 +943,7 @@ describe('admin-form.service', () => {
       ],
     } as unknown as IPopulatedForm
 
-    const MOCK_INTIAL_FORM = mocked({
+    const MOCK_INTIAL_FORM = jest.mocked({
       _id: MOCK_UPDATED_FORM._id,
       admin: MOCK_UPDATED_FORM.admin,
       form_fields: [
@@ -1042,7 +1046,7 @@ describe('admin-form.service', () => {
       ],
     } as unknown as IPopulatedForm
 
-    const MOCK_INITIAL_FORM = mocked({
+    const MOCK_INITIAL_FORM = jest.mocked({
       _id: MOCK_UPDATED_FORM._id,
       admin: MOCK_UPDATED_FORM.admin,
       status: FormStatus.Public,
@@ -1122,12 +1126,12 @@ describe('admin-form.service', () => {
       getSettings: jest.fn().mockReturnValue(MOCK_UPDATED_SETTINGS),
     } as unknown as IFormDocument
 
-    const MOCK_EMAIL_FORM = mocked({
+    const MOCK_EMAIL_FORM = jest.mocked({
       _id: new ObjectId(),
       status: FormStatus.Public,
       responseMode: FormResponseMode.Email,
     } as unknown as IPopulatedForm)
-    const MOCK_ENCRYPT_FORM = mocked({
+    const MOCK_ENCRYPT_FORM = jest.mocked({
       _id: new ObjectId(),
       status: FormStatus.Public,
       responseMode: FormResponseMode.Encrypt,
@@ -1547,14 +1551,16 @@ describe('admin-form.service', () => {
       const duplicatedField = generateDefaultField(BasicField.Mobile)
       const mockUpdatedForm = {
         title: 'some mock form',
-        // Append duplicated field to end of form_fields.
+        // Append duplicated field to after target field to duplicate.
         form_fields: [fieldToDuplicate, duplicatedField],
       } as IFormSchema
       const mockForm = {
         title: 'some mock form',
         form_fields: [fieldToDuplicate],
         _id: new ObjectId(),
-        duplicateFormFieldById: jest.fn().mockResolvedValue(mockUpdatedForm),
+        duplicateFormFieldByIdAndIndex: jest
+          .fn()
+          .mockResolvedValue(mockUpdatedForm),
       } as unknown as IPopulatedForm
 
       // Act
@@ -1584,7 +1590,7 @@ describe('admin-form.service', () => {
         title: 'some mock form',
         form_fields: [fieldToDuplicate],
         _id: new ObjectId(),
-        duplicateFormFieldById: jest.fn().mockResolvedValue(null),
+        duplicateFormFieldByIdAndIndex: jest.fn().mockResolvedValue(null),
       } as unknown as IPopulatedForm
 
       // Act
@@ -1603,7 +1609,7 @@ describe('admin-form.service', () => {
       const mockForm = {
         title: 'some mock form',
         form_fields: initialFields,
-        duplicateFormFieldById: jest.fn().mockRejectedValue(
+        duplicateFormFieldByIdAndIndex: jest.fn().mockRejectedValue(
           // @ts-ignore
           new mongoose.Error.ValidationError({ errors: 'does not matter' }),
         ),
@@ -1709,6 +1715,11 @@ describe('admin-form.service', () => {
   describe('updateFormCollaborators', () => {
     it('should return the list of collaborators when update is successful', async () => {
       // Arrange
+      const findAgencySpy = jest.spyOn(AgencyModel, 'findOne')
+      // Return a truthy value to ensure that the find is successful
+      //@ts-ignore
+      findAgencySpy.mockResolvedValueOnce({})
+
       const newCollaborators = [
         {
           email: `fakeuser@gov.sg`,
@@ -1717,6 +1728,7 @@ describe('admin-form.service', () => {
       ]
       const mockForm = {
         title: 'some mock form',
+        permissionList: [],
         updateFormCollaborators: jest
           .fn()
           .mockResolvedValue({ permissionList: newCollaborators }),
@@ -1737,6 +1749,11 @@ describe('admin-form.service', () => {
 
     it('should return an application error when updating the form model fails', async () => {
       // Arrange
+      const findAgencySpy = jest.spyOn(AgencyModel, 'findOne')
+      // Return a truthy value to ensure that the find is successful
+      //@ts-ignore
+      findAgencySpy.mockResolvedValueOnce({})
+
       const newCollaborators = [
         {
           email: `fakeuser@gov.sg`,
@@ -1745,6 +1762,7 @@ describe('admin-form.service', () => {
       ]
       const mockForm = {
         title: 'some mock form',
+        permissionList: [],
         updateFormCollaborators: jest
           .fn()
           .mockRejectedValue(new DatabaseError()),
@@ -1761,6 +1779,37 @@ describe('admin-form.service', () => {
         newCollaborators,
       )
       expect(actual._unsafeUnwrapErr()).toBeInstanceOf(ApplicationError)
+    })
+
+    it('should return InvalidCollaboratorError when the new collaborator has a non-whitelisted email', async () => {
+      // Arrange
+      const findAgencySpy = jest.spyOn(AgencyModel, 'findOne')
+      findAgencySpy.mockResolvedValueOnce(null)
+
+      const newCollaborators = [
+        {
+          email: `fakeuser@gov.sg`,
+          write: false,
+        },
+      ]
+      const mockForm = {
+        title: 'some mock form',
+        permissionList: [],
+        updateFormCollaborators: jest
+          .fn()
+          .mockResolvedValue({ permissionList: newCollaborators }),
+      } as unknown as IPopulatedForm
+
+      // Act
+      const actual = await AdminFormService.updateFormCollaborators(
+        mockForm,
+        newCollaborators,
+      )
+
+      // Assert
+      expect(findAgencySpy).toHaveBeenCalledOnce()
+      expect(mockForm.updateFormCollaborators).not.toHaveBeenCalled()
+      expect(actual._unsafeUnwrapErr()).toBeInstanceOf(InvalidCollaboratorError)
     })
   })
 
@@ -2627,6 +2676,121 @@ describe('admin-form.service', () => {
       expect(actualResult._unsafeUnwrap()).toEqual(1)
 
       expect(twilioCacheSpy).toHaveBeenCalledWith(MSG_SRVC_NAME)
+    })
+  })
+
+  describe('updatePayments', () => {
+    // Arrange
+    const mockFormId = new ObjectId().toString()
+    const updatedPaymentSettings: PaymentsUpdateDto = {
+      enabled: true,
+      amount_cents: 5000,
+      description: 'some description',
+    }
+
+    const mockUpdatedForm = {
+      _id: mockFormId,
+      payments_field: updatedPaymentSettings,
+    }
+
+    it('should return InvalidPaymentAmountError if payment amount exceeds maxPaymentAmountCents', async () => {
+      // Arrange
+
+      const updatedPaymentSettingsExceeded = {
+        ...updatedPaymentSettings,
+        amount_cents: 100000001,
+      } as PaymentsUpdateDto
+
+      // Act
+      const actualResult = await AdminFormService.updatePayments(
+        mockFormId,
+        updatedPaymentSettingsExceeded,
+      )
+
+      // Assert
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(
+        InvalidPaymentAmountError,
+      )
+    })
+
+    it('should return InvalidPaymentAmountError if payment amount is below minPaymentAmountCents', async () => {
+      // Arrange
+
+      const updatedPaymentSettingsBelow = {
+        ...updatedPaymentSettings,
+        amount_cents: 49,
+      } as PaymentsUpdateDto
+
+      // Act
+      const actualResult = await AdminFormService.updatePayments(
+        mockFormId,
+        updatedPaymentSettingsBelow,
+      )
+
+      // Assert
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(
+        InvalidPaymentAmountError,
+      )
+    })
+
+    it('should successfuly call updatePaymentsById with formId and newPayments and return the updated payment settings', async () => {
+      // Arrange
+      const putSpy = jest
+        .spyOn(EncryptFormModel, 'updatePaymentsById')
+        .mockResolvedValueOnce(
+          mockUpdatedForm as unknown as IEncryptedFormDocument,
+        )
+
+      // Act
+      const actualResult = await AdminFormService.updatePayments(
+        mockFormId,
+        updatedPaymentSettings,
+      )
+
+      // Assert
+      expect(putSpy).toHaveBeenCalledWith(mockFormId, updatedPaymentSettings)
+
+      expect(actualResult.isOk()).toEqual(true)
+      // Should equal updatedPaymentSettings obj
+      expect(actualResult._unsafeUnwrap()).toEqual(updatedPaymentSettings)
+    })
+
+    it('should return PossibleDatabaseError if db update fails', async () => {
+      // Arrange
+      const putSpy = jest
+        .spyOn(EncryptFormModel, 'updatePaymentsById')
+        .mockRejectedValueOnce(new DatabaseError())
+
+      // Act
+      const actualResult = await AdminFormService.updatePayments(
+        mockFormId,
+        updatedPaymentSettings,
+      )
+
+      // Assert
+      expect(putSpy).toHaveBeenCalledWith(mockFormId, updatedPaymentSettings)
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(DatabaseError)
+    })
+
+    it('should return FormNotFoundError if no form is returned after updating db', async () => {
+      // Arrange
+      const putSpy = jest
+        .spyOn(EncryptFormModel, 'updatePaymentsById')
+        .mockResolvedValueOnce(null)
+
+      // Act
+      const actualResult = await AdminFormService.updatePayments(
+        mockFormId,
+        updatedPaymentSettings,
+      )
+
+      // Assert
+      expect(putSpy).toHaveBeenCalledWith(mockFormId, updatedPaymentSettings)
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(FormNotFoundError)
     })
   })
 })

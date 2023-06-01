@@ -1,16 +1,18 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
+import { setupApp } from '__tests__/integration/helpers/express-setup'
+import MockTwilio from '__tests__/integration/helpers/twilio'
+import { generateDefaultField } from '__tests__/unit/backend/helpers/generate-form-data'
+import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import bcrypt from 'bcrypt'
 import { ObjectId } from 'bson-ext'
 import { subMinutes, subYears } from 'date-fns'
-import { getReasonPhrase, StatusCodes } from 'http-status-codes'
+import { StatusCodes } from 'http-status-codes'
 import _ from 'lodash'
 import mongoose from 'mongoose'
 import { okAsync } from 'neverthrow'
 import nodemailer from 'nodemailer'
 import Mail from 'nodemailer/lib/mailer'
 import session, { Session } from 'supertest-session'
-import { MockedObjectDeep } from 'ts-jest/dist/utils/testing'
-import { mocked } from 'ts-jest/utils'
 
 import getFormModel from 'src/app/models/form.server.model'
 import {
@@ -24,11 +26,6 @@ import { SmsSendError } from 'src/app/services/sms/sms.errors'
 import * as SmsService from 'src/app/services/sms/sms.service'
 import * as OtpUtils from 'src/app/utils/otp'
 import { IVerificationSchema } from 'src/types'
-
-import { setupApp } from 'tests/integration/helpers/express-setup'
-import MockTwilio from 'tests/integration/helpers/twilio'
-import { generateDefaultField } from 'tests/unit/backend/helpers/generate-form-data'
-import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import { BasicField } from '../../../../../../../shared/types'
 import {
@@ -66,11 +63,11 @@ describe('public-forms.verification.routes', () => {
   const MOCK_MOBILE_NUMBER = '+6582990039'
   const MOCK_VALID_EMAIL_DOMAIN = 'example.com'
   const MOCK_EMAIL = `mock@${MOCK_VALID_EMAIL_DOMAIN}`
-  let MockTransport: MockedObjectDeep<Mail>
+  let MockTransport: jest.Mocked<Mail>
 
   beforeAll(async () => {
     await dbHandler.connect()
-    MockTransport = mocked(nodemailer.createTransport(), true)
+    MockTransport = jest.mocked(nodemailer.createTransport())
   })
 
   beforeEach(async () => {
@@ -279,7 +276,7 @@ describe('public-forms.verification.routes', () => {
 
       // Assert
       expect(response.status).toBe(StatusCodes.CREATED)
-      expect(response.text).toBe(getReasonPhrase(StatusCodes.CREATED))
+      expect(response.body).toContainKey('otpPrefix')
     })
 
     it('should return 201 when parameters for mobile field are valid', async () => {
@@ -294,7 +291,7 @@ describe('public-forms.verification.routes', () => {
 
       // Assert
       expect(response.status).toBe(StatusCodes.CREATED)
-      expect(response.text).toBe(getReasonPhrase(StatusCodes.CREATED))
+      expect(response.body).toContainKey('otpPrefix')
     })
 
     it('should return 400 when fieldType is email but the provided email is not valid', async () => {
@@ -837,6 +834,7 @@ describe('public-forms.verification.routes', () => {
       )
       .send({ answer })
     expect(response.status).toBe(StatusCodes.CREATED)
+    expect(response.body).toContainKey('otpPrefix')
   }
 
   const requestForSmsOtp = async (fieldId: string, answer: string) => {
@@ -851,5 +849,6 @@ describe('public-forms.verification.routes', () => {
       )
       .send({ answer })
     expect(response.status).toBe(StatusCodes.CREATED)
+    expect(response.body).toContainKey('otpPrefix')
   }
 })

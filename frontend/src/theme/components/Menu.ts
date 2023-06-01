@@ -64,7 +64,6 @@ const variantClear: PartsStyleFunction<typeof parts> = (_props) => {
   return {
     button: {
       minH: 'auto',
-      p: '0.25rem',
       outline: 'none',
       border: 'none',
       boxShadow: 'none',

@@ -15,12 +15,8 @@ type LogMeta = {
   transactionId?: string
   trace?: string
   reactMigration?: {
-    respRolloutEmail: number
-    respRolloutStorage: number
-    adminRollout: number
-    qaCookie: string | undefined
-    adminCookie: string | undefined
-    respCookie: string | undefined
+    // TODO (#5826): Toggle to use fetch for submissions instead of axios. Remove once network error is resolved
+    useFetchForSubmissions?: boolean
   }
 }
 
@@ -71,19 +67,9 @@ const loggingMiddleware = () => {
       }
 
       // Temporary: cookies are blacklisted, but we to track the state of the rollout for this particular request
-      if (
-        req.cookies?.[config.reactMigration.adminCookieName] ||
-        req.cookies?.[config.reactMigration.respondentCookieName] ||
-        req.cookies?.[config.reactMigration.qaCookieName]
-      ) {
-        meta.reactMigration = {
-          respRolloutEmail: config.reactMigration.respondentRolloutEmail,
-          respRolloutStorage: config.reactMigration.respondentRolloutStorage,
-          adminRollout: config.reactMigration.adminRollout,
-          qaCookie: req.cookies?.[config.reactMigration.qaCookieName],
-          adminCookie: req.cookies?.[config.reactMigration.adminCookieName],
-          respCookie: req.cookies?.[config.reactMigration.respondentCookieName],
-        }
+      meta.reactMigration = {
+        // TODO (#5826): Toggle to use fetch for submissions instead of axios. Remove once network error is resolved
+        useFetchForSubmissions: config.reactMigration.useFetchForSubmissions,
       }
 
       return meta

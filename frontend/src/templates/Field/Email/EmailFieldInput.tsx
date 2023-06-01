@@ -45,11 +45,12 @@ export const EmailFieldInput = ({
           autoComplete="email"
           value={value?.value ?? ''}
           onChange={(event) => {
-            const value = event.target.value
+            const value = event.target.value.trim().toLowerCase()
             return handleInputChange
               ? handleInputChange(onChange)(value)
               : onChange({ value })
           }}
+          preventDefaultOnEnter
           {...field}
           {...inputProps}
         />

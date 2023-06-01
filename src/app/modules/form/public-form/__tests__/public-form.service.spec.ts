@@ -9,7 +9,7 @@ import { DatabaseError } from 'src/app/modules/core/core.errors'
 import { IFormSchema } from 'src/types'
 
 import { FormAuthType } from '../../../../../../shared/types'
-import { MYINFO_COOKIE_NAME } from '../../../myinfo/myinfo.constants'
+import { MYINFO_LOGIN_COOKIE_NAME } from '../../../myinfo/myinfo.constants'
 import { SGID_COOKIE_NAME } from '../../../sgid/sgid.constants'
 import { JwtName } from '../../../spcp/spcp.types'
 import { FormNotFoundError } from '../../form.errors'
@@ -45,7 +45,7 @@ describe('public-form.service', () => {
       expect(result).toEqual(JwtName[FormAuthType.CP])
     })
 
-    it('should return MYINFO_COOKIE_NAME when authType is MyInfo', () => {
+    it('should return MYINFO_LOGIN_COOKIE_NAME when authType is MyInfo', () => {
       // Arrange
       const authType = FormAuthType.MyInfo
 
@@ -53,7 +53,7 @@ describe('public-form.service', () => {
       const result = PublicFormService.getCookieNameByAuthType(authType)
 
       // Assert
-      expect(result).toEqual(MYINFO_COOKIE_NAME)
+      expect(result).toEqual(MYINFO_LOGIN_COOKIE_NAME)
     })
 
     it('should return SGID_COOKIE_NAME when authType is SGID', () => {

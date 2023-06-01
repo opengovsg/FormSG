@@ -29,7 +29,6 @@ export type CreateFormWizardContextReturn = {
   handleCreateStorageModeForm: ReturnType<
     UseFormHandleSubmit<CreateFormWizardInputProps>
   >
-  handleBackToDetails: () => void
   keypair: ReturnType<typeof formsgSdk.crypto.generate>
   // Whether any async operation is in progress.
   isFetching: boolean

@@ -74,14 +74,10 @@ import * as EncryptSubmissionService from '../../submission/encrypt-submission/e
 import { mapRouteError as mapEncryptSubmissionError } from '../../submission/encrypt-submission/encrypt-submission.utils'
 import IncomingEncryptSubmission from '../../submission/encrypt-submission/IncomingEncryptSubmission.class'
 import * as SubmissionService from '../../submission/submission.service'
-import {
-  extractEmailConfirmationData,
-  extractEmailConfirmationDataFromIncomingSubmission,
-} from '../../submission/submission.utils'
+import { extractEmailConfirmationData } from '../../submission/submission.utils'
 import * as UserService from '../../user/user.service'
 import { PrivateFormError } from '../form.errors'
 import * as FormService from '../form.service'
-import { UNICODE_ESCAPED_REGEX } from '../form.utils'
 
 import { TwilioCredentials } from './../../../services/sms/sms.types'
 import {
@@ -93,7 +89,7 @@ import { EditFieldError } from './admin-form.errors'
 import { updateSettingsValidator } from './admin-form.middlewares'
 import * as AdminFormService from './admin-form.service'
 import { PermissionLevel } from './admin-form.types'
-import { mapRouteError } from './admin-form.utils'
+import { mapRouteError, verifyValidUnicodeString } from './admin-form.utils'
 
 // NOTE: Refer to this for documentation: https://github.com/sideway/joi-date/blob/master/API.md
 const Joi = BaseJoi.extend(JoiDate) as typeof BaseJoi
@@ -136,7 +132,8 @@ const createFormValidator = celebrate({
       })
       .required()
       // Allow other form schema keys to be passed for form creation.
-      .unknown(true),
+      .unknown(true)
+      .custom((value, helpers) => verifyValidUnicodeString(value, helpers)),
   },
 })
 
@@ -174,12 +171,9 @@ const transferFormOwnershipValidator = celebrate({
   [Segments.BODY]: {
     email: Joi.string()
       .required()
-      .email({
-        minDomainSegments: 2, // Number of segments required for the domain
-        tlds: { allow: true }, // TLD (top level domain) validation
-        multiple: false, // Disallow multiple emails
-      })
-      .message('Please enter a valid email'),
+      .email()
+      .message('Please enter a valid email')
+      .lowercase(),
   },
 })
 
@@ -898,9 +892,10 @@ export const handleDuplicateAdminForm = [
 
 /**
  * Handler for GET /:formId/adminform/template
+ * Handler for GET /api/v3/admin/forms/:formId/use-template
  * @security session
  *
- * @returns 200 with target form's public view
+ * @returns 200 with target form's template view
  * @returns 403 when the target form is private
  * @returns 404 when form cannot be found
  * @returns 410 when form is archived
@@ -952,13 +947,13 @@ export const handleGetTemplateForm: ControllerHandler<
 }
 
 /**
- * Handler for POST /:formId/adminform/copy
+ * Handler for POST /:formId/adminform/use-template
  * Duplicates the form corresponding to the formId. The form must be public to
  * be copied.
  * @note The current user will be the admin of the new duplicated form
  * @security session
  *
- * @returns 200 with the duplicate form dashboard view
+ * @returns 200 with the new form dashboard view
  * @returns 403 when form is private
  * @returns 404 when form cannot be found
  * @returns 410 when form is archived
@@ -986,7 +981,7 @@ export const handleCopyTemplateForm: ControllerHandler<
             .map((duplicatedForm) => duplicatedForm.getDashboardView(user)),
         ),
       )
-      // Success; return duplicated form's dashboard view.
+      // Success; return new form's dashboard view.
       .map((dupedDashView) => res.json(dupedDashView))
       // Error; some error occurred in the chain.
       .mapErr((error) => {
@@ -1490,10 +1485,10 @@ export const submitEncryptPreview: ControllerHandler<
       void SubmissionService.sendEmailConfirmations({
         form,
         submission,
-        recipientData:
-          extractEmailConfirmationDataFromIncomingSubmission(
-            incomingSubmission,
-          ),
+        recipientData: extractEmailConfirmationData(
+          incomingSubmission.responses,
+          form.form_fields,
+        ),
       })
 
       // Return the reply early to the submitter
@@ -1690,29 +1685,13 @@ export const handleUpdateFormField = [
           .required(),
         description: Joi.string().allow('').required(),
         required: Joi.boolean().required(),
-        title: Joi.string().required(),
+        title: Joi.string().trim().required(),
         disabled: Joi.boolean().required(),
         // Allow other field related key-values to be provided and let the model
         // layer handle the validation.
       })
         .unknown(true)
-        .custom((value, helpers) => {
-          // If there are unicode-escaped characters are not valid utf-8 encoded,
-          // node 14 treats the sequence of characters as a string e.g. \udbbb is treated as a 6-character string instead of an escaped unicode sequence
-          // If this is saved into the db, an error is thrown when the driver attempts to read the db document as the driver interprets this as an escaped unicode character
-          // Since valid unicode-escaped characters will be processed correctly (e.g. \u00ae is processed as ®), they will not trigger an error
-          // Also note that if the user intends to input a 6-character string of the same form e.g. \udbbb, the backslash will be escaped (i.e. double backslash) and hence this will also not trigger an error
-
-          const valueStr = JSON.stringify(value)
-
-          if (UNICODE_ESCAPED_REGEX.test(valueStr)) {
-            return helpers.message({
-              custom:
-                'Please check that there are no improperly encoded characters in your input',
-            })
-          }
-          return value
-        }),
+        .custom((value, helpers) => verifyValidUnicodeString(value, helpers)),
     },
     undefined,
     // Required so req.body can be validated against values in req.params.
@@ -1958,7 +1937,7 @@ export const handleCreateFormField = [
       fieldType: Joi.string()
         .valid(...Object.values(BasicField))
         .required(),
-      title: Joi.string().required(),
+      title: Joi.string().trim().required(),
       description: Joi.string().allow(''),
       required: Joi.boolean(),
       disabled: Joi.boolean(),
@@ -1966,23 +1945,7 @@ export const handleCreateFormField = [
       // layer handle the validation.
     })
       .unknown(true)
-      .custom((value, helpers) => {
-        // If there are unicode-escaped characters are not valid utf-8 encoded,
-        // node 14 treats the sequence of characters as a string e.g. \udbbb is treated as a 6-character string instead of an escaped unicode sequence
-        // If this is saved into the db, an error is thrown when the driver attempts to read the db document as the driver interprets this as an escaped unicode sequence
-        // Since valid unicode-escaped characters will be processed correctly (e.g. \u00ae is processed as ®), they will not trigger an error
-        // Also note that if the user intends to input a 6-character string of the same form e.g. \udbbb, the backslash will be escaped (i.e. double backslash) and hence this will also not trigger an error
-
-        const valueStr = JSON.stringify(value)
-
-        if (UNICODE_ESCAPED_REGEX.test(valueStr)) {
-          return helpers.message({
-            custom:
-              'Please check that there are no improperly encoded characters in your input',
-          })
-        }
-        return value
-      }),
+      .custom((value, helpers) => verifyValidUnicodeString(value, helpers)),
     [Segments.QUERY]: {
       // Optional index to insert the field at.
       to: Joi.number().min(0),
@@ -2385,7 +2348,8 @@ export const handleUpdateCollaborators = [
         email: Joi.string()
           .required()
           .email()
-          .message('Please enter a valid email'),
+          .message('Please enter a valid email')
+          .lowercase(),
         write: Joi.bool().optional(),
         _id: Joi.string().optional(),
       }),

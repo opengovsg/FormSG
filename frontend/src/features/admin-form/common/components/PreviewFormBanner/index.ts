@@ -1,1 +1,1 @@
-export { PreviewFormBanner } from './PreviewFormBanner'
+export { PreviewFormBannerContainer } from './PreviewFormBanner'

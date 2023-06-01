@@ -29,6 +29,8 @@ temp_release_branch=temp_${short_hash}
 git checkout -b ${temp_release_branch}
 
 release_version=$(npm --no-git-tag-version version minor | grep -E '^v\d')
+# Also update the version in frontend directory
+npm --prefix frontend --no-git-tag-version version minor
 release_branch=release_${release_version}
 may_force_push=
 
@@ -39,13 +41,13 @@ if [[ "$1" == "--recut" ]]; then
   may_force_push=-f
 fi
 
-git commit -a -m "chore: bump version to ${release_version}"
+git commit -a -n -m "chore: bump version to ${release_version}"
 git tag ${release_version}
 git checkout -b ${release_branch}
 git branch -D ${temp_release_branch}
 
 git push origin ${may_force_push} HEAD:${release_branch}
-git push -f origin HEAD:staging-al2
+git push -f origin HEAD:staging
 git push origin ${release_version}
 
 # extract changelog to inject into the PR
@@ -85,7 +87,6 @@ grep -v -E -- '- [a-z]+\(deps(-dev)?\)' ${pr_body_file} | grep -v -E -- '- build
 done
 
 gh pr create \
-  -w \
   -H ${release_branch} \
   -B release-al2 \
   -t "build: release ${release_version}" \
@@ -94,4 +95,5 @@ gh pr create \
 # cleanup
 rm ${pr_body_file}
 rm ${pr_body_file_groupped}
+git checkout develop
 git branch -D ${release_branch}

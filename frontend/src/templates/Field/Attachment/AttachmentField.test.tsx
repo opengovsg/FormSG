@@ -153,9 +153,9 @@ describe('attachment validation', () => {
     // Valid large file
     const mockLargeFile = new File(
       ["We're no strangers to love"],
-      'rickastley.png',
+      'rickastley.pdf',
       {
-        type: 'image/png',
+        type: 'application/pdf',
       },
     )
     Object.defineProperty(mockLargeFile, 'size', { value: 1.001 * MB })

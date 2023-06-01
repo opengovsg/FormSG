@@ -13,7 +13,7 @@ export const UserBase = z.object({
   agency: AgencyBase.shape._id,
   betaFlags: z
     .object({
-      sgid: z.boolean().optional(),
+      payment: z.boolean().optional(),
     })
     .optional(),
   flags: z
@@ -52,4 +52,9 @@ export type VerifyUserContactOtpDto = {
   userId: string
   otp: string
   contact: string
+}
+
+export type SendOtpResponseDto = {
+  message: string
+  otpPrefix: string
 }

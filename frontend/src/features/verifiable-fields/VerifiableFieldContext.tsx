@@ -3,6 +3,7 @@ import { ControllerRenderProps } from 'react-hook-form'
 
 interface VerifiableFieldContextReturn {
   isVfnBoxOpen: boolean
+  otpPrefix: string
   handleInputChange: (
     onChange: ControllerRenderProps['onChange'],
   ) => (value?: string) => void

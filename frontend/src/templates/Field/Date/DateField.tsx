@@ -6,10 +6,10 @@ import { DateSelectedValidation } from '~shared/types/field'
 import { isDateAnInvalidDay } from '~shared/utils/date-validation'
 
 import {
-  fromUtcToLocalDate,
   isDateAfterToday,
   isDateBeforeToday,
   isDateOutOfRange,
+  loadDateFromNormalizedDate,
 } from '~utils/date'
 import { createDateValidationRules } from '~utils/fieldValidation'
 import { DatePicker } from '~components/DatePicker'
@@ -56,8 +56,8 @@ export const DateField = ({
           // need to convert to local time but with the same date as UTC.
           isDateUnavailable = isDateOutOfRange(
             date,
-            fromUtcToLocalDate(customMinDate),
-            fromUtcToLocalDate(customMaxDate),
+            loadDateFromNormalizedDate(customMinDate),
+            loadDateFromNormalizedDate(customMaxDate),
           )
           break
         }

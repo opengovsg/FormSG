@@ -15,6 +15,7 @@ import {
   getFormCollaborators,
   getFreeSmsQuota,
   previewForm,
+  viewFormTemplate,
 } from './AdminViewFormService'
 
 export const adminFormKeys = {
@@ -26,6 +27,8 @@ export const adminFormKeys = {
     [...adminFormKeys.id(id), 'collaborators'] as const,
   previewForm: (id: string) =>
     [...adminFormKeys.id(id), 'previewForm'] as const,
+  viewFormTemplate: (id: string) =>
+    [...adminFormKeys.id(id), 'viewFormTemplate'] as const,
 }
 
 /**
@@ -99,12 +102,14 @@ export const useAdminFormCollaborators = (formId: string) => {
     // Collaborators is source of truth if it has already loaded.
     if (collaborators) {
       return collaborators.some(
-        (perms) => perms.write && perms.email === user.email,
+        (perms) =>
+          perms.write && perms.email.toLowerCase() === user.email.toLowerCase(),
       )
     }
     // Else use permissionList first
     return form.permissionList.some(
-      (perms) => perms.write && perms.email === user.email,
+      (perms) =>
+        perms.write && perms.email.toLowerCase() === user.email.toLowerCase(),
     )
   }, [collaborators, form, isFormAdmin, user])
 
@@ -126,6 +131,22 @@ export const usePreviewForm = (
   return useQuery(
     adminFormKeys.previewForm(formId),
     () => previewForm(formId),
+    {
+      // Treat preview form as static on load.
+      staleTime: Infinity,
+      enabled: FORMID_REGEX.test(formId) && enabled,
+    },
+  )
+}
+
+export const useFormTemplate = (
+  formId: string,
+  /** Extra override to determine whether query is enabled */
+  enabled = true,
+): UseQueryResult<PreviewFormViewDto, ApiError> => {
+  return useQuery(
+    adminFormKeys.viewFormTemplate(formId),
+    () => viewFormTemplate(formId),
     {
       // Treat preview form as static on load.
       staleTime: Infinity,

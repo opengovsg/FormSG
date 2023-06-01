@@ -1,18 +1,17 @@
 import { ok } from 'neverthrow'
-import { mocked } from 'ts-jest/utils'
 
 import formsgSdk from 'src/app/config/formsg-sdk'
 
+import {
+  generateDefaultField,
+  generateProcessedSingleAnswerResponse,
+  generateSingleAnswerResponse,
+} from '../../../../../../__tests__/unit/backend/helpers/generate-form-data'
 import {
   BasicField,
   FormResponseMode,
   LogicType,
 } from '../../../../../../shared/types'
-import {
-  generateDefaultField,
-  generateProcessedSingleAnswerResponse,
-  generateSingleAnswerResponse,
-} from '../../../../../../tests/unit/backend/helpers/generate-form-data'
 import * as LogicUtil from '../../../../../shared/util/logic'
 import {
   IPopulatedEncryptedForm,
@@ -27,7 +26,7 @@ import {
 import IncomingEncryptSubmission from '../IncomingEncryptSubmission.class'
 
 jest.mock('../../../../utils/encryption')
-const mockCheckIsEncryptedEncoding = mocked(checkIsEncryptedEncoding)
+const mockCheckIsEncryptedEncoding = jest.mocked(checkIsEncryptedEncoding)
 
 type VerificationMock = {
   authenticate: () => boolean

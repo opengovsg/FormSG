@@ -32,6 +32,7 @@ export const handleSns: ControllerHandler<
       message: 'Unable to parse email notification request',
       meta: {
         action: 'handleSns',
+        message: req.body,
       },
       error: notificationResult.error,
     })

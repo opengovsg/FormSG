@@ -18,6 +18,18 @@ export const generateOtp = (): string => {
 }
 
 /**
+ * Randomly generates and returns a 3 letter OTP prefix.
+ * @returns 3 letter OTP prefix string
+ */
+export const generateOtpPrefix = (): string => {
+  // Generates cryptographically strong pseudo-random data. 65 is the starting ASCII character code for upper case letters.
+  return Array(3)
+    .fill(0)
+    .map(() => String.fromCharCode(65 + crypto.randomInt(0, 26)))
+    .join('')
+}
+
+/**
  * Generates a 6-digit OTP together with its hash.
  * @param logMeta Metadata to be included in logs. Defaults to empty object.
  * @param saltRounds Number of salt rounds to use when hashing. Defaults to 10.
@@ -31,12 +43,15 @@ export const generateOtpWithHash = (
   {
     otp: string
     hashedOtp: string
+    otpPrefix: string
   },
   HashingError
 > => {
   const otp = generateOtp()
+  const otpPrefix = generateOtpPrefix()
   return hashData(otp, logMeta, saltRounds).map((hashedOtp) => ({
     otp,
     hashedOtp,
+    otpPrefix,
   }))
 }

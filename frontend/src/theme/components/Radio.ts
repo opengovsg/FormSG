@@ -24,6 +24,8 @@ export const Radio: ComponentMultiStyleConfig<typeof parts> = {
   parts: parts.keys,
   baseStyle: ({ colorScheme: c, theme }) => ({
     control: {
+      // Keep bg when printing.
+      WebkitPrintColorAdjust: 'exact',
       bg: 'white',
       cursor: 'pointer',
       border: '2px solid',

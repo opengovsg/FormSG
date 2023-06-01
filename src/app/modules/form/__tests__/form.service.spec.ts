@@ -1,3 +1,4 @@
+import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { ObjectId } from 'bson'
 import { merge, times } from 'lodash'
 import mongoose from 'mongoose'
@@ -5,8 +6,6 @@ import mongoose from 'mongoose'
 import getFormModel from 'src/app/models/form.server.model'
 import getSubmissionModel from 'src/app/models/submission.server.model'
 import { IFormSchema, IPopulatedForm } from 'src/types'
-
-import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import {
   FormResponseMode,

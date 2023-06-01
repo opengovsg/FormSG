@@ -1,14 +1,12 @@
+import { setupApp } from '__tests__/integration/helpers/express-setup'
 import { ObjectId } from 'bson-ext'
 import { JWTVerifyResult } from 'jose'
 import mongoose from 'mongoose'
 import session, { Session } from 'supertest-session'
-import { mocked } from 'ts-jest/utils'
 
-import { setupApp } from 'tests/integration/helpers/express-setup'
-
+import { buildCelebrateError } from '../../../../../../../__tests__/unit/backend/helpers/celebrate'
+import dbHandler from '../../../../../../../__tests__/unit/backend/helpers/jest-db'
 import { FormAuthType } from '../../../../../../../shared/types'
-import { buildCelebrateError } from '../../../../../../../tests/unit/backend/helpers/celebrate'
-import dbHandler from '../../../../../../../tests/unit/backend/helpers/jest-db'
 import getLoginModel from '../../../../../models/login.server.model'
 import {
   MOCK_CP_OIDC_AUTHORISATION_CODE,
@@ -25,7 +23,7 @@ import { SingpassOidcRouter } from '../singpass.routes'
 jest.mock('../../../../../modules/spcp/spcp.oidc.client')
 const LoginModel = getLoginModel(mongoose)
 
-const MockSpOidcClient = mocked(SpOidcClient, true)
+const MockSpOidcClient = jest.mocked(SpOidcClient)
 
 describe('singpass.oidc.router', () => {
   beforeAll(async () => await dbHandler.connect())
@@ -41,7 +39,7 @@ describe('singpass.oidc.router', () => {
 
   describe('GET /singpass/login', () => {
     const LOGIN_ROUTE = '/singpass/login'
-    const mockClient = mocked(MockSpOidcClient.mock.instances[0], true)
+    const mockClient = jest.mocked(MockSpOidcClient.mock.instances[0])
     beforeEach(async () => {
       mockClient.createJWT.mockResolvedValue(MOCK_JWT)
       jest.restoreAllMocks()
@@ -93,7 +91,7 @@ describe('singpass.oidc.router', () => {
       mockClient.extractNricOrForeignIdFromIdToken.mockReturnValueOnce(
         MOCK_NRIC,
       )
-
+      mockClient.createJWT.mockResolvedValue(MOCK_JWT)
       // Act
       const response = await request.get(LOGIN_ROUTE).query({
         state: MOCK_OIDC_STATE,
@@ -196,6 +194,7 @@ describe('singpass.oidc.router', () => {
       mockClient.extractNricOrForeignIdFromIdToken.mockReturnValueOnce(
         MOCK_NRIC,
       )
+      mockClient.createJWT.mockResolvedValue(MOCK_JWT)
 
       jest.spyOn(LoginModel, 'addLoginFromForm').mockRejectedValueOnce('')
 

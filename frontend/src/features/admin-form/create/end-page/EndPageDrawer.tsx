@@ -11,7 +11,7 @@ import { Box, Divider, Flex, FormControl, Stack, Text } from '@chakra-ui/react'
 import { cloneDeep } from 'lodash'
 import validator from 'validator'
 
-import { FormEndPage } from '~shared/types'
+import { FormEndPage, FormResponseMode } from '~shared/types'
 
 import { REQUIRED_ERROR } from '~constants/validation'
 import { useIsMobile } from '~hooks/useIsMobile'
@@ -34,6 +34,7 @@ import {
 } from '../common'
 import { CreatePageDrawerCloseButton } from '../common/CreatePageDrawer/CreatePageDrawerCloseButton'
 import { CreatePageDrawerContainer } from '../common/CreatePageDrawer/CreatePageDrawerContainer'
+import { CreatePageSideBarLayoutProvider } from '../common/CreatePageSideBarLayoutContext'
 
 import {
   dataSelector,
@@ -53,7 +54,11 @@ const buttonLinkRules: RegisterOptions<FormEndPage, 'buttonLink'> = {
     'Please enter a valid URL (starting with https:// or http://)',
 } as FieldValues
 
-export const EndPageInput = (): JSX.Element => {
+export const EndPageInput = ({
+  isPayment = false,
+}: {
+  isPayment: boolean
+}): JSX.Element => {
   const isMobile = useIsMobile()
   const { endPageMutation } = useMutateFormPage()
 
@@ -72,24 +77,31 @@ export const EndPageInput = (): JSX.Element => {
 
   const { handleClose } = useCreatePageSidebar()
 
+  const paymentDefaults = {
+    title: 'Your payment has been made successfully.',
+    paragraph: 'Your form has been submitted and payment has been made.',
+    buttonLink: 'Default invoice link',
+    buttonText: 'Save payment invoice',
+  }
+
   const {
     register,
-    formState: { errors, isDirty },
+    formState: { errors, dirtyFields },
     control,
     handleSubmit,
   } = useForm<FormEndPage>({
     mode: 'onBlur',
-    defaultValues: endPageData,
+    defaultValues: isPayment ? paymentDefaults : endPageData,
   })
 
   // Update dirty state of builder so confirmation modal can be shown
   useEffect(() => {
-    setIsDirty(isDirty)
+    setIsDirty(Object.keys(dirtyFields).length !== 0)
 
     return () => {
       setIsDirty(false)
     }
-  }, [isDirty, setIsDirty])
+  }, [dirtyFields, setIsDirty])
 
   const handleEndPageBuilderChanges = useCallback(
     (endPageInputs) => {
@@ -128,6 +140,7 @@ export const EndPageInput = (): JSX.Element => {
         <FormControl
           isReadOnly={endPageMutation.isLoading}
           isInvalid={!!errors.title}
+          isDisabled={isPayment}
         >
           <FormLabel isRequired>Title</FormLabel>
           <Input
@@ -139,6 +152,7 @@ export const EndPageInput = (): JSX.Element => {
         <FormControl
           isReadOnly={endPageMutation.isLoading}
           isInvalid={!!errors.paragraph}
+          isDisabled={isPayment}
         >
           <FormLabel isRequired>Follow-up instructions</FormLabel>
           <Textarea {...register('paragraph')} />
@@ -148,6 +162,7 @@ export const EndPageInput = (): JSX.Element => {
           <FormControl
             isReadOnly={endPageMutation.isLoading}
             isInvalid={!!errors.buttonText}
+            isDisabled={isPayment}
           >
             <FormLabel isRequired>Button text</FormLabel>
             <Input
@@ -159,6 +174,7 @@ export const EndPageInput = (): JSX.Element => {
           <FormControl
             isReadOnly={endPageMutation.isLoading}
             isInvalid={!!errors.buttonLink}
+            isDisabled={isPayment}
           >
             <FormLabel isRequired>Button redirect link</FormLabel>
             <Input
@@ -209,6 +225,10 @@ export const EndPageDrawer = (): JSX.Element | null => {
     ),
   )
 
+  const isPaymentEnabled =
+    form?.responseMode === FormResponseMode.Encrypt &&
+    form?.payments_field.enabled
+
   useEffect(() => {
     setData(form?.endPage)
     return resetData
@@ -217,19 +237,21 @@ export const EndPageDrawer = (): JSX.Element | null => {
   if (!endPageData) return null
 
   return (
-    <CreatePageDrawerContainer>
-      <Flex pos="relative" h="100%" display="flex" flexDir="column">
-        <Box pt="1rem" px="1.5rem" bg="white">
-          <Flex justify="space-between">
-            <Text textStyle="subhead-3" color="secondary.500" mb="1rem">
-              Edit thank you page
-            </Text>
-            <CreatePageDrawerCloseButton />
-          </Flex>
-          <Divider w="auto" mx="-1.5rem" />
-        </Box>
-        <EndPageInput />
-      </Flex>
-    </CreatePageDrawerContainer>
+    <CreatePageSideBarLayoutProvider>
+      <CreatePageDrawerContainer>
+        <Flex pos="relative" h="100%" display="flex" flexDir="column">
+          <Box pt="1rem" px="1.5rem" bg="white">
+            <Flex justify="space-between">
+              <Text textStyle="subhead-3" color="secondary.500" mb="1rem">
+                Edit thank you page
+              </Text>
+              <CreatePageDrawerCloseButton />
+            </Flex>
+            <Divider w="auto" mx="-1.5rem" />
+          </Box>
+          <EndPageInput isPayment={isPaymentEnabled} />
+        </Flex>
+      </CreatePageDrawerContainer>
+    </CreatePageSideBarLayoutProvider>
   )
 }

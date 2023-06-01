@@ -60,7 +60,10 @@ export const EsrvcIdBox = ({
     if (esrvcId.trim() === initialEsrvcId) return
     return mutateFormEsrvcId.mutate(esrvcId.trim(), {
       onError: () => reset(),
-      onSuccess: ({ esrvcId }) => setValue('esrvcId', esrvcId ?? ''),
+      onSuccess: ({ esrvcId }) => {
+        setValue('esrvcId', esrvcId ?? '')
+        reset({ esrvcId })
+      },
     })
   })
 

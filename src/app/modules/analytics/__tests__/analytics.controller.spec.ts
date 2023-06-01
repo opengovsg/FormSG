@@ -1,7 +1,6 @@
+import expressHandler from '__tests__/unit/backend/helpers/jest-express'
 import * as E from 'fp-ts/lib/Either'
 import * as TE from 'fp-ts/TaskEither'
-
-import expressHandler from 'tests/unit/backend/helpers/jest-express'
 
 import { DatabaseError } from '../../core/core.errors'
 import * as AnalyticsController from '../analytics.controller'

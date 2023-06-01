@@ -1,7 +1,7 @@
 import express from 'express'
 import supertest, { Session } from 'supertest-session'
 
-import errorHandlerMiddlewares from '../error-handler'
+import { errorHandlerMiddlewares } from '../error-handler'
 import parserMiddlewares from '../parser'
 
 describe('error-handler.loader', () => {

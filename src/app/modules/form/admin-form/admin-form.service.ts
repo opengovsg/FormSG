@@ -14,6 +14,7 @@ import {
   MAX_UPLOAD_FILE_SIZE,
   VALID_UPLOAD_FILE_TYPES,
 } from '../../../../../shared/constants'
+import { MYINFO_ATTRIBUTE_MAP } from '../../../../../shared/constants/field/myinfo'
 import {
   AdminDashboardFormMetaDto,
   BasicField,
@@ -27,6 +28,7 @@ import {
   FormSettings,
   LogicDto,
   MobileFieldBase,
+  PaymentsUpdateDto,
   SettingsUpdateDto,
   StartPageUpdateDto,
 } from '../../../../../shared/types'
@@ -34,6 +36,7 @@ import { EditFieldActions } from '../../../../shared/constants'
 import {
   FormFieldSchema,
   FormLogicSchema,
+  IEncryptedFormDocument,
   IForm,
   IFormDocument,
   IFormSchema,
@@ -41,8 +44,12 @@ import {
 } from '../../../../types'
 import { EditFormFieldParams, FormUpdateParams } from '../../../../types/api'
 import config, { aws as AwsConfig } from '../../../config/config'
+import { paymentConfig } from '../../../config/features/payment.config'
 import { createLoggerWithLabel } from '../../../config/logger'
-import getFormModel from '../../../models/form.server.model'
+import getAgencyModel from '../../../models/agency.server.model'
+import getFormModel, {
+  getEncryptedFormModel,
+} from '../../../models/form.server.model'
 import * as SmsService from '../../../services/sms/sms.service'
 import { twilioClientCache } from '../../../services/sms/sms.service'
 import { dotifyObject } from '../../../utils/dotify-object'
@@ -61,6 +68,7 @@ import {
   SecretsManagerNotFoundError,
   TwilioCacheError,
 } from '../../core/core.errors'
+import { InvalidPaymentAmountError } from '../../payments/payments.errors'
 import { MissingUserError } from '../../user/user.errors'
 import * as UserService from '../../user/user.service'
 import { SmsLimitExceededError } from '../../verification/verification.errors'
@@ -71,7 +79,12 @@ import {
   TransferOwnershipError,
 } from '../form.errors'
 import { getFormModelByResponseMode } from '../form.service'
-import { getFormFieldById, getLogicById, isFormOnboarded } from '../form.utils'
+import {
+  getFormFieldById,
+  getFormFieldIndexById,
+  getLogicById,
+  isFormOnboarded,
+} from '../form.utils'
 
 import {
   TwilioCredentials,
@@ -82,6 +95,7 @@ import {
   CreatePresignedUrlError,
   EditFieldError,
   FieldNotFoundError,
+  InvalidCollaboratorError,
   InvalidFileTypeError,
 } from './admin-form.errors'
 import {
@@ -93,6 +107,8 @@ import {
 
 const logger = createLoggerWithLabel(module)
 const FormModel = getFormModel(mongoose)
+const EncryptedFormModel = getEncryptedFormModel(mongoose)
+const AgencyModel = getAgencyModel(mongoose)
 
 export const secretsManager = new SecretsManager({
   region: config.aws.region,
@@ -318,7 +334,7 @@ export const transferFormOwnership = (
       .andThen((currentOwner) => {
         // No need to transfer form ownership if new and current owners are
         // the same.
-        if (newOwnerEmail === currentOwner.email) {
+        if (newOwnerEmail.toLowerCase() === currentOwner.email.toLowerCase()) {
           return errAsync(
             new TransferOwnershipError(
               'You are already the owner of this form',
@@ -520,8 +536,12 @@ export const duplicateFormField = (
   FormFieldSchema,
   PossibleDatabaseError | FormNotFoundError | FieldNotFoundError
 > => {
+  const fieldIndex = getFormFieldIndexById(form.form_fields, fieldId)
+  // if fieldIndex does not exist, append to end of form fields
+  const insertionIndex =
+    fieldIndex === null ? form.form_fields.length : fieldIndex + 1
   return ResultAsync.fromPromise(
-    form.duplicateFormFieldById(fieldId),
+    form.duplicateFormFieldByIdAndIndex(fieldId, insertionIndex),
     (error) => {
       logger.error({
         message: 'Error encountered while duplicating form field',
@@ -529,6 +549,8 @@ export const duplicateFormField = (
           action: 'duplicateFormField',
           formId: form._id,
           fieldId,
+          fieldIndex,
+          insertionIndex,
         },
         error,
       })
@@ -544,7 +566,7 @@ export const duplicateFormField = (
         errAsync(new FormNotFoundError()),
       )
     }
-    const updatedField = last(updatedForm.form_fields)
+    const updatedField = updatedForm.form_fields[insertionIndex]
     return updatedField
       ? okAsync(updatedField)
       : errAsync(new FieldNotFoundError())
@@ -567,6 +589,12 @@ export const createFormField = (
   FormFieldSchema,
   PossibleDatabaseError | FormNotFoundError | FieldNotFoundError
 > => {
+  // If MyInfo field, override field title to stored name.
+  if (newField.myInfo?.attr) {
+    newField.title =
+      MYINFO_ATTRIBUTE_MAP[newField.myInfo.attr]?.value ?? newField.title
+  }
+
   return ResultAsync.fromPromise(
     form.insertFormField(newField, to),
     (error) => {
@@ -744,26 +772,71 @@ export const updateForm = (
  *
  * @returns ok(collaborators) if form updates successfully
  * @returns err(PossibleDatabaseError) if any database errors occurs
+ * @returns err(InvalidCollaboratorError) if a newly-added collaborator email is not whitelisted
  */
 export const updateFormCollaborators = (
   form: IPopulatedForm,
   updatedCollaborators: FormPermission[],
-): ResultAsync<FormPermission[], PossibleDatabaseError> => {
+): ResultAsync<
+  FormPermission[],
+  PossibleDatabaseError | InvalidCollaboratorError
+> => {
+  const logMeta = {
+    action: 'updateFormCollaborators',
+    formId: form._id,
+  }
+
+  // Get the updated (added or modified) collaborator emails (i.e. they are not
+  // in the original collaborator list).
+  const updatedCollaboratorEmails = updatedCollaborators
+    .filter(
+      (c1) =>
+        !form.permissionList.some(
+          (c2) => c1.email === c2.email && c1.write === c2.write,
+        ),
+    )
+    .map((collaborator) => collaborator.email)
+
   return ResultAsync.fromPromise(
-    form.updateFormCollaborators(updatedCollaborators),
+    // Check that all updated collaborator domains exist in the Agency collection.
+    Promise.all(
+      updatedCollaboratorEmails.map(async (email) => {
+        const emailDomain = email.split('@').pop()
+        const result = await AgencyModel.findOne({ emailDomain })
+        return !!result
+      }),
+    ),
     (error) => {
       logger.error({
-        message: 'Error encountered while updating form collaborators',
-        meta: {
-          action: 'updateFormCollaborators',
-          formId: form._id,
-        },
+        message: 'Error encountered while validating new form collaborators',
+        meta: logMeta,
         error,
       })
-
       return transformMongoError(error)
     },
-  ).andThen(({ permissionList }) => okAsync(permissionList))
+  )
+    .andThen((doNewCollaboratorsExist) => {
+      const falseIdx = doNewCollaboratorsExist.findIndex((exists) => !exists)
+      return falseIdx < 0
+        ? okAsync(undefined)
+        : errAsync(
+            new InvalidCollaboratorError(updatedCollaboratorEmails[falseIdx]),
+          )
+    })
+    .andThen(() =>
+      ResultAsync.fromPromise(
+        form.updateFormCollaborators(updatedCollaborators),
+        (error) => {
+          logger.error({
+            message: 'Error encountered while updating form collaborators',
+            meta: logMeta,
+            error,
+          })
+          return transformMongoError(error)
+        },
+      ),
+    )
+    .andThen(({ permissionList }) => okAsync(permissionList))
 }
 
 /**
@@ -1497,4 +1570,58 @@ const deleteTwilioTransaction = async (
     })
     throw new SecretsManagerError(awsError.message)
   }
+}
+
+/**
+ * Update the payments field of the given form
+ * @param formId the id of the form to update the end page for
+ * @param newPayments the new payments field to replace the current one
+ * @returns ok(updated payments object) when update is successful
+ * @returns err(FormNotFoundError) if form cannot be found
+ * @returns err(PossibleDatabaseError) if start page update fails
+ * @returns err(InvalidPaymentAmountError) if payment amount exceeds MAX_PAYMENT_AMOUNT
+ */
+export const updatePayments = (
+  formId: string,
+  newPayments: PaymentsUpdateDto,
+): ResultAsync<
+  IEncryptedFormDocument['payments_field'],
+  PossibleDatabaseError | FormNotFoundError | InvalidPaymentAmountError
+> => {
+  const { enabled, amount_cents } = newPayments
+
+  // Check if payment amount exceeds maxPaymentAmountCents or below minPaymentAmountCents if the payment is enabled
+  if (enabled && amount_cents !== undefined) {
+    if (
+      amount_cents > paymentConfig.maxPaymentAmountCents ||
+      amount_cents < paymentConfig.minPaymentAmountCents
+    ) {
+      return errAsync(new InvalidPaymentAmountError())
+    }
+  }
+
+  return ResultAsync.fromPromise(
+    EncryptedFormModel.updatePaymentsById(formId, newPayments),
+    (error) => {
+      logger.error({
+        message: 'Error occurred when updating form payments',
+        meta: {
+          action: 'updatePayments',
+          formId,
+          newPayments,
+        },
+        error,
+      })
+      return transformMongoError(error)
+    },
+  ).andThen((updatedForm) => {
+    if (!updatedForm) {
+      return errAsync(new FormNotFoundError())
+    }
+    return okAsync(updatedForm.payments_field)
+  })
+}
+
+export const getPaymentGuideLink = (): string => {
+  return paymentConfig.guideLink
 }

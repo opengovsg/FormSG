@@ -21,14 +21,21 @@ const ShowMoreItemBlock = ({ amountToShow }: { amountToShow: number }) => {
   )
 
   return (
-    <Button onClick={handleClick} variant="link" size="sm" tabIndex={-1}>
+    <Button
+      onClick={handleClick}
+      variant="link"
+      size="sm"
+      tabIndex={-1}
+      alignSelf="center"
+    >
       +{amountToShow} more
     </Button>
   )
 }
 
 export const SelectedItems = (): JSX.Element => {
-  const { selectedItems, maxItems } = useMultiSelectContext()
+  const { selectedItems, maxItems, isSelectedItemFullWidth } =
+    useMultiSelectContext()
   const { isFocused } = useSelectContext()
 
   const items = useMemo(() => {
@@ -38,7 +45,14 @@ export const SelectedItems = (): JSX.Element => {
         const item = selectedItems[i]
         // Key has to be index so focus is maintained correctly when items are removed.
         // Some downshift quirk it seems.
-        itemsToRender.push(<MultiSelectItem item={item} index={i} key={i} />)
+        itemsToRender.push(
+          <MultiSelectItem
+            item={item}
+            index={i}
+            key={i}
+            w={isSelectedItemFullWidth ? '100%' : undefined}
+          />,
+        )
       } else {
         itemsToRender.push(
           <ShowMoreItemBlock
@@ -50,7 +64,7 @@ export const SelectedItems = (): JSX.Element => {
       }
     }
     return itemsToRender
-  }, [isFocused, maxItems, selectedItems])
+  }, [isFocused, isSelectedItemFullWidth, maxItems, selectedItems])
 
   return <>{items}</>
 }

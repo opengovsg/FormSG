@@ -16,10 +16,14 @@ import { PublicFormProvider } from './PublicFormProvider'
 
 export const PublicFormPage = (): JSX.Element => {
   const { formId } = useParams()
+
   if (!formId) throw new Error('No formId provided')
 
+  // Get date time in miliseconds when user first loads the form
+  const startTime = Date.now()
+
   return (
-    <PublicFormProvider formId={formId}>
+    <PublicFormProvider formId={formId} startTime={startTime}>
       <FormSectionsProvider>
         <Flex direction="column" css={fillMinHeightCss}>
           <FormBanner />
@@ -29,6 +33,7 @@ export const PublicFormPage = (): JSX.Element => {
             <FormInstructions />
             <FormFields />
             <FormEndPage />
+
             <FormFooter />
           </PublicFormWrapper>
         </Flex>

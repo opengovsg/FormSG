@@ -17,6 +17,12 @@ export class SubmissionNotFoundError extends ApplicationError {
   }
 }
 
+export class PendingSubmissionNotFoundError extends ApplicationError {
+  constructor(message = 'Pending submission not found for given ID') {
+    super(message)
+  }
+}
+
 /**
  * A custom error class returned when given submission has invalid encryption encoding
  */

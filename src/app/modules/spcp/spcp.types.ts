@@ -56,17 +56,6 @@ export type JwtPayloadFromCookie =
   | CorppassJwtPayloadFromCookie
   | SgidJwtPayloadFromCookie
 
-export interface SingpassAttributes {
-  UserName?: string
-}
-
-export interface CorppassAttributes {
-  UserInfo?: {
-    CPEntID?: string
-    CPUID?: string
-  }
-}
-
 export type SpcpDomainSettings =
   | { domain: string; path: string }
   | { [k: string]: never }
@@ -83,13 +72,8 @@ export type SpcpForm<T extends IFormSchema> = T & {
   esrvcId: string
 }
 
-// either <formId>,boolean or <formId>,boolean,encodedQuery
-export type RedirectTarget =
-  | `${string},${boolean}`
-  | `${string},${boolean},${string}`
-
 // either <formId>-boolean or <formId>-boolean-encodedQuery
 // NDI OIDC does not allow comma separated values in state
-export type RedirectTargetSpOidc =
+export type RedirectTargetSpcpOidc =
   | `${string}-${boolean}`
   | `${string}-${boolean}-${string}`

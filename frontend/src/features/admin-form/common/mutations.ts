@@ -4,9 +4,11 @@ import { useNavigate, useParams } from 'react-router-dom'
 
 import {
   AdminFormDto,
+  AdminStorageFormDto,
   EndPageUpdateDto,
   FormPermission,
   FormPermissionsDto,
+  PaymentsUpdateDto,
   StartPageUpdateDto,
 } from '~shared/types/form/form'
 
@@ -22,13 +24,19 @@ import { workspaceKeys } from '~features/workspace/queries'
 
 import {
   submitEmailModeFormPreview,
+  submitEmailModeFormPreviewWithFetch,
   submitStorageModeFormPreview,
+  submitStorageModeFormPreviewWithFetch,
 } from '../common/AdminViewFormService'
 import { downloadFormFeedback } from '../responses/FeedbackPage/FeedbackService'
 
 import { useCollaboratorWizard } from './components/CollaboratorModal/CollaboratorWizardContext'
 import { permissionsToRole } from './components/CollaboratorModal/utils'
-import { updateFormEndPage, updateFormStartPage } from './AdminFormPageService'
+import {
+  updateFormEndPage,
+  updateFormPayments,
+  updateFormStartPage,
+} from './AdminFormPageService'
 import {
   removeSelfFromFormCollaborators,
   transferFormOwner,
@@ -229,8 +237,12 @@ export const useMutateCollaborators = () => {
         } has been updated to the ${permissionsToRole(permissionToUpdate)} role`
         handleSuccess({ newData, toastDescription })
       },
-      onError: (error: Error) => {
-        handleError(error, FormCollaboratorAction.UPDATE)
+      onError: (error: Error, { permissionToUpdate }) => {
+        handleError(
+          error,
+          FormCollaboratorAction.UPDATE,
+          permissionToUpdate.email,
+        )
       },
     },
   )
@@ -384,9 +396,29 @@ export const useMutateFormPage = () => {
     },
   )
 
+  const paymentsMutation = useMutation(
+    (payments_field: PaymentsUpdateDto) =>
+      updateFormPayments(formId, payments_field),
+    {
+      onSuccess: (newData) => {
+        toast.closeAll()
+        queryClient.setQueryData<AdminStorageFormDto | undefined>(
+          adminFormKeys.id(formId),
+          (oldData) =>
+            oldData ? { ...oldData, payments_field: newData } : undefined,
+        )
+        toast({
+          description: 'The payment was updated.',
+        })
+      },
+      onError: handleError,
+    },
+  )
+
   return {
     startPageMutation,
     endPageMutation,
+    paymentsMutation,
   }
 }
 
@@ -403,9 +435,24 @@ export const usePreviewFormMutations = (formId: string) => {
     },
   )
 
+  // TODO (#5826): Fallback mutation using Fetch. Remove once network error is resolved
+  const submitEmailModeFormFetchMutation = useMutation(
+    (args: Omit<SubmitEmailFormArgs, 'formId'>) => {
+      return submitEmailModeFormPreviewWithFetch({ ...args, formId })
+    },
+  )
+
+  const submitStorageModeFormFetchMutation = useMutation(
+    (args: Omit<SubmitStorageFormArgs, 'formId'>) => {
+      return submitStorageModeFormPreviewWithFetch({ ...args, formId })
+    },
+  )
+
   return {
     submitEmailModeFormMutation,
     submitStorageModeFormMutation,
+    submitEmailModeFormFetchMutation,
+    submitStorageModeFormFetchMutation,
   }
 }
 

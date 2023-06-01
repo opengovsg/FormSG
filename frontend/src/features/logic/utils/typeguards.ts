@@ -2,6 +2,7 @@ import { DeepPartial } from 'react-hook-form'
 
 import { BasicField } from '~shared/types/field'
 import {
+  FormCondition,
   LogicableField,
   LogicDto,
   LogicType,
@@ -39,4 +40,11 @@ export const isLogicableField = (args: {
   input: FormFieldValue<LogicableField>
 } => {
   return ALLOWED_LOGIC_FIELDS.has(args.fieldType)
+}
+
+export const isValueStringArray = (
+  value: FormCondition['value'],
+): value is string[] => {
+  // use .some because of limitation of typecript in calling .every() on union of array types: https://github.com/microsoft/TypeScript/issues/44373
+  return Array.isArray(value) && !value.some((v) => typeof v === 'number')
 }

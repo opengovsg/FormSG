@@ -1,6 +1,6 @@
+import expressHandler from '__tests__/unit/backend/helpers/jest-express'
 import { StatusCodes } from 'http-status-codes'
 import { errAsync, okAsync } from 'neverthrow'
-import { mocked } from 'ts-jest/utils'
 
 import * as UserController from 'src/app/modules/user/user.controller'
 import {
@@ -13,15 +13,13 @@ import { SmsFactory } from 'src/app/services/sms/sms.factory'
 import { HashingError } from 'src/app/utils/hash'
 import { IPopulatedUser } from 'src/types'
 
-import expressHandler from 'tests/unit/backend/helpers/jest-express'
-
 import { DatabaseError } from '../../core/core.errors'
 import { UNAUTHORIZED_USER_MESSAGE } from '../user.constant'
 
 jest.mock('src/app/modules/user/user.service')
 jest.mock('src/app/services/sms/sms.factory')
-const MockUserService = mocked(UserService)
-const MockSmsFactory = mocked(SmsFactory)
+const MockUserService = jest.mocked(UserService)
+const MockSmsFactory = jest.mocked(SmsFactory)
 
 describe('user.controller', () => {
   afterEach(() => {

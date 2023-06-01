@@ -1,6 +1,5 @@
 import { addHours, addMinutes } from 'date-fns'
 import { last } from 'lodash'
-import { mocked } from 'ts-jest/utils'
 
 import { randomUniformInt } from 'src/app/utils/random-uniform'
 
@@ -9,7 +8,7 @@ import { WebhookNoMoreRetriesError } from '../webhook.errors'
 import { calculateDelaySeconds, getNextAttempt } from '../webhook.utils'
 
 jest.mock('src/app/utils/random-uniform')
-const MockRandomUniformInt = mocked(randomUniformInt, true)
+const MockRandomUniformInt = jest.mocked(randomUniformInt)
 
 describe('webhook.utils', () => {
   const MOCK_NOW = Date.now()

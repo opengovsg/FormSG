@@ -35,7 +35,11 @@ export const YesNoField = ({
         rules={validationRules}
         name={schema._id}
         render={({ field }) => (
-          <YesNo colorScheme={`theme-${colorTheme}`} {...field} />
+          <YesNo
+            colorScheme={`theme-${colorTheme}`}
+            title={`${schema.questionNumber}. ${schema.title}`}
+            {...field}
+          />
         )}
       />
     </FieldContainer>

@@ -77,7 +77,11 @@ export const DeleteFieldModal = (): JSX.Element => {
             ml="1.75rem"
             mt="1rem"
           >
-            <ListItem display="flex" alignItems="flex-start">
+            <ListItem
+              display="flex"
+              alignItems="flex-start"
+              wordBreak="break-word"
+            >
               <Icon
                 as={fieldIcon}
                 fontSize="1.25rem"

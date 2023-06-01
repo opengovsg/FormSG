@@ -3,6 +3,7 @@ import ejs from 'ejs'
 import config from '../../config/config'
 import { captchaConfig } from '../../config/features/captcha.config'
 import { googleAnalyticsConfig } from '../../config/features/google-analytics.config'
+import { paymentConfig } from '../../config/features/payment.config'
 import { sentryConfig } from '../../config/features/sentry.config'
 import { spcpMyInfoConfig } from '../../config/features/spcp-myinfo.config'
 
@@ -22,16 +23,12 @@ const frontendVars = {
   // TODO: remove after React rollout #4786
   GATrackingID: googleAnalyticsConfig.GATrackingID,
   spcpCookieDomain: spcpMyInfoConfig.spcpCookieDomain, // Cookie domain used for removing spcp cookies
-  // react migration variables
-  reactMigrationRespondentCookieName:
-    config.reactMigration.respondentCookieName,
-  reactMigrationAdminCookieName: config.reactMigration.adminCookieName,
-  reactMigrationRespondentRolloutEmail:
-    config.reactMigration.respondentRolloutEmail,
-  reactMigrationRespondentRolloutStorage:
-    config.reactMigration.respondentRolloutStorage,
-  reactMigrationAdminRollout: config.reactMigration.adminRollout,
-  reactMigrationAngularPhaseOutDate: config.reactMigration.angularPhaseOutDate,
+  // payment variables
+  reactMigrationUseFetchForSubmissions:
+    config.reactMigration.useFetchForSubmissions,
+  maxPaymentAmountCents: paymentConfig.maxPaymentAmountCents,
+  minPaymentAmountCents: paymentConfig.minPaymentAmountCents,
+  secretEnv: config.secretEnv,
 }
 const environment = ejs.render(
   `
@@ -56,12 +53,10 @@ const environment = ejs.render(
     // SPCP Cookie
     var spcpCookieDomain = "<%= spcpCookieDomain%>"
     // React Migration
-    var reactMigrationRespondentCookieName = "<%= reactMigrationRespondentCookieName%>"
-    var reactMigrationAdminCookieName = "<%= reactMigrationAdminCookieName%>"
-    var reactMigrationRespondentRolloutEmail = "<%= reactMigrationRespondentRolloutEmail%>"
-    var reactMigrationRespondentRolloutStorage = "<%= reactMigrationRespondentRolloutStorage%>"
-    var reactMigrationAdminRollout = "<%= reactMigrationAdminRollout%>"
-    var reactMigrationAngularPhaseOutDate = "<%= reactMigrationAngularPhaseOutDate%>"
+    var reactMigrationUseFetchForSubmissions = <%= reactMigrationUseFetchForSubmissions%>
+    // Payment
+    var maxPaymentAmountCents = <%= maxPaymentAmountCents%>
+    var minPaymentAmountCents = <%= minPaymentAmountCents%>
   `,
   frontendVars,
 )

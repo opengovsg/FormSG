@@ -1,7 +1,6 @@
 import { useCallback } from 'react'
 import { useMutation, useQueryClient } from 'react-query'
 import { useParams } from 'react-router-dom'
-import { merge } from 'lodash'
 
 import { FormFieldDto } from '~shared/types/field'
 import { AdminFormDto } from '~shared/types/form'
@@ -61,7 +60,7 @@ export const useReorderFormField = () => {
             queryClient.setQueryData<AdminFormDto>(adminFormKey, (old) => {
               if (!old) throw new Error('Query should have been set')
               const reorderedFields = reorder(old.form_fields, from, to)
-              return merge({}, old, { form_fields: reorderedFields })
+              return { ...old, form_fields: reorderedFields }
             })
           }
           // Return a context object with the snapshotted value

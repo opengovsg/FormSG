@@ -1,1 +1,1 @@
-export { FieldRowContainer as default } from './FieldRowContainer'
+export { MemoizedFieldRow as default } from './FieldRowContainer'

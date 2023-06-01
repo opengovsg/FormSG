@@ -1,5 +1,4 @@
 import axios from 'axios'
-import { mocked } from 'ts-jest/utils'
 import type { Opaque } from 'type-fest'
 
 import {
@@ -11,7 +10,7 @@ import {
 } from '../AuthService'
 
 jest.mock('axios')
-const MockAxios = mocked(axios, true)
+const MockAxios = jest.mocked(axios)
 
 // Duplicated here instead of exporting from AuthService to prevent production
 // code from casting to Email type without going through a type guard/validator.

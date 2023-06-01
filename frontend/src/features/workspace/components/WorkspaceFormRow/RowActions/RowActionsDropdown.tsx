@@ -5,6 +5,7 @@ import {
   BiTrash,
   BiUserPlus,
 } from 'react-icons/bi'
+import { Link as ReactLink } from 'react-router-dom'
 import { ButtonGroup, MenuButton, MenuDivider } from '@chakra-ui/react'
 
 import { BxsChevronDown } from '~assets/icons/BxsChevronDown'
@@ -21,8 +22,8 @@ export const RowActionsDropdown = ({
   formMeta,
 }: RowActionsProps): JSX.Element => {
   const {
-    handleEditForm,
-    handlePreviewForm,
+    adminFormLink,
+    previewFormLink,
     handleDeleteForm,
     handleDuplicateForm,
     handleCollaborators,
@@ -44,11 +45,18 @@ export const RowActionsDropdown = ({
             colorScheme="secondary"
             display={{ base: 'none', md: 'flex' }}
           >
-            <Button px="1.5rem" mr="-1px" onClick={handleEditForm}>
+            <Button
+              as={ReactLink}
+              to={adminFormLink}
+              px="1.5rem"
+              mr="-1px"
+              borderEndRadius={0}
+            >
               Edit
             </Button>
             <MenuButton
               as={IconButton}
+              borderStartRadius={0}
               isDisabled={isDisabled}
               _active={{ bg: 'secondary.100' }}
               isActive={isOpen}
@@ -58,7 +66,9 @@ export const RowActionsDropdown = ({
           </ButtonGroup>
           <Menu.List>
             <Menu.Item
-              onClick={handlePreviewForm}
+              as={ReactLink}
+              to={previewFormLink}
+              target="_blank"
               icon={<BiShow fontSize="1.25rem" />}
             >
               Preview

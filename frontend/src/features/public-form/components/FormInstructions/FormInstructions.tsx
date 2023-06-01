@@ -1,4 +1,4 @@
-import { Box, Text } from '@chakra-ui/react'
+import { Box } from '@chakra-ui/react'
 
 import { FormColorTheme } from '~shared/types'
 
@@ -27,9 +27,9 @@ export const FormInstructions = ({
 
   return (
     <>
-      <Text textStyle="h2" color={sectionColor}>
+      <Box as="h2" textStyle="h2" color={sectionColor}>
         Instructions
-      </Text>
+      </Box>
       <Box mt="1rem">
         <MarkdownText multilineBreaks components={mdComponents}>
           {content}

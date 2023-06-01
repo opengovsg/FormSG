@@ -59,6 +59,7 @@ export const IntlPhoneNumberInput = forwardRef<
         onChange={handleInputChange}
         type="tel"
         sx={styles.field}
+        preventDefaultOnEnter
         {...props}
         placeholder={inputPlaceholder}
       />

@@ -13,6 +13,12 @@ export const AgencyBase = z.object({
   fullName: z.string(),
   shortName: z.string(),
   logo: z.string(),
+  business: z
+    .object({
+      address: z.string(),
+      gstRegNo: z.string(),
+    })
+    .optional(),
 })
 export type AgencyBase = z.infer<typeof AgencyBase>
 

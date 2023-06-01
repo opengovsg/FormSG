@@ -1,4 +1,4 @@
-import expressHandler from 'tests/unit/backend/helpers/jest-express'
+import expressHandler from '__tests__/unit/backend/helpers/jest-express'
 
 import { withUserAuthentication } from '../auth.middlewares'
 

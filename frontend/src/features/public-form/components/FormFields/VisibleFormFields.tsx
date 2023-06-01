@@ -8,8 +8,10 @@ import { FormFieldValues } from '~templates/Field'
 import { FormFieldWithQuestionNo } from '~features/form/types'
 import { augmentWithQuestionNo } from '~features/form/utils'
 import { getVisibleFieldIds } from '~features/logic/utils'
+import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
 import { FieldFactory } from './FieldFactory'
+import { PrefillMap } from './FormFields'
 import { useFormSections } from './FormSectionsContext'
 
 interface VisibleFormFieldsProps {
@@ -17,7 +19,7 @@ interface VisibleFormFieldsProps {
   formFields: FormFieldWithQuestionNo[]
   formLogics: LogicDto[]
   colorTheme: FormColorTheme
-  fieldPrefillMap: Record<string, string>
+  fieldPrefillMap: PrefillMap
 }
 
 /**
@@ -34,6 +36,7 @@ export const VisibleFormFields = ({
   const watchedValues = useWatch({ control })
   const { setVisibleFieldIdsForScrollData } = useFormSections()
   const [visibleFormFields, setVisibleFormFields] = useState(formFields)
+  const { setNumVisibleFields } = usePublicFormContext()
 
   useEffect(() => {
     const visibleFieldIds = getVisibleFieldIds(watchedValues, {
@@ -46,7 +49,18 @@ export const VisibleFormFields = ({
     )
     const visibleFieldsWithQuestionNo = augmentWithQuestionNo(visibleFields)
     setVisibleFormFields(visibleFieldsWithQuestionNo)
-  }, [formFields, formLogics, setVisibleFieldIdsForScrollData, watchedValues])
+
+    // set the number of visible fields in the context for public forms
+    // the setter will only exist for public forms and will be undefined for preview
+    if (setNumVisibleFields)
+      setNumVisibleFields(visibleFieldsWithQuestionNo.length)
+  }, [
+    formFields,
+    formLogics,
+    setVisibleFieldIdsForScrollData,
+    watchedValues,
+    setNumVisibleFields,
+  ])
 
   return (
     <>
@@ -55,7 +69,7 @@ export const VisibleFormFields = ({
           colorTheme={colorTheme}
           field={field}
           key={field._id}
-          isPrefilled={!!fieldPrefillMap[field._id]}
+          prefill={fieldPrefillMap[field._id]}
         />
       ))}
     </>

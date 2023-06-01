@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef } from 'react'
+import { memo, useCallback, useEffect, useMemo, useRef } from 'react'
 import { Draggable } from 'react-beautiful-dnd'
 import { FormProvider, useForm } from 'react-hook-form'
 import { BiCog, BiDuplicate, BiGridHorizontal, BiTrash } from 'react-icons/bi'
@@ -12,7 +12,7 @@ import {
   Flex,
   Icon,
 } from '@chakra-ui/react'
-import { times } from 'lodash'
+import { isEqual, times } from 'lodash'
 
 import { FormColorTheme } from '~shared/types'
 import { BasicField, FormFieldDto } from '~shared/types/field'
@@ -47,7 +47,7 @@ import { MobileFieldInput } from '~templates/Field/Mobile'
 import { createTableRow } from '~templates/Field/Table/utils/createRow'
 
 import { adminFormKeys } from '~features/admin-form/common/queries'
-import { useCreatePageSidebar } from '~features/admin-form/create/common/CreatePageSidebarContext'
+import { CreatePageSidebarContextProps } from '~features/admin-form/create/common'
 import {
   augmentWithMyInfoDisplayValue,
   extractPreviewValue,
@@ -56,25 +56,25 @@ import {
 } from '~features/myinfo/utils'
 
 import { useBuilderAndDesignContext } from '../../BuilderAndDesignContext'
-import { PENDING_CREATE_FIELD_ID } from '../../constants'
+import {
+  setToInactiveSelector as setPaymentToInactiveSelector,
+  usePaymentStore,
+} from '../../BuilderAndDesignDrawer/FieldListDrawer/field-panels/usePaymentStore'
 import { useDeleteFormField } from '../../mutations/useDeleteFormField'
 import { useDuplicateFormField } from '../../mutations/useDuplicateFormField'
 import { useCreateTabForm } from '../../useCreateTabForm'
 import {
   DesignState,
-  setStateSelector,
+  setStateSelector as setDesignStateSelector,
   useDesignStore,
 } from '../../useDesignStore'
-import { isDirtySelector, useDirtyFieldStore } from '../../useDirtyFieldStore'
 import {
   FieldBuilderState,
   setToInactiveSelector,
-  stateDataSelector,
   updateEditStateSelector,
   useFieldBuilderStore,
 } from '../../useFieldBuilderStore'
 import { getAttachmentSizeLimit } from '../../utils/getAttachmentSizeLimit'
-import { useDesignColorTheme } from '../../utils/useDesignColorTheme'
 
 import { SectionFieldRow } from './SectionFieldRow'
 import { VerifiableFieldBuilderContainer } from './VerifiableFieldBuilderContainer'
@@ -83,42 +83,39 @@ export interface FieldRowContainerProps {
   field: FormFieldDto
   index: number
   isHiddenByLogic: boolean
-  isDraggingOver: boolean
+  isDraggingOver?: boolean
+  // Field only needs to know fieldBuilderState if it is active, else it is agnostic to state
+  fieldBuilderState?: FieldBuilderState
+  isDirty: boolean
+  colorTheme?: FormColorTheme
+  // handleBuilderClick is passed down to prevent unnecessary re-renders from useContext
+  handleBuilderClick: CreatePageSidebarContextProps['handleBuilderClick']
 }
 
-export const FieldRowContainer = ({
+const FieldRowContainer = ({
   field,
   index,
   isHiddenByLogic,
   isDraggingOver,
+  fieldBuilderState,
+  isDirty,
+  colorTheme,
+  handleBuilderClick,
 }: FieldRowContainerProps): JSX.Element => {
   const isMobile = useIsMobile()
-  const { data: form } = useCreateTabForm()
   const numFormFieldMutations = useIsMutating(adminFormKeys.base)
-  const { stateData, setToInactive, updateEditState } = useFieldBuilderStore(
-    useCallback(
-      (state) => ({
-        stateData: stateDataSelector(state),
-        setToInactive: setToInactiveSelector(state),
-        updateEditState: updateEditStateSelector(state),
-      }),
-      [],
-    ),
+  const updateEditState = useFieldBuilderStore(updateEditStateSelector)
+
+  const setDesignState = useDesignStore(setDesignStateSelector)
+  const setPaymentStateToInactive = usePaymentStore(
+    setPaymentToInactiveSelector,
   )
 
-  const isDirty = useDirtyFieldStore(isDirtySelector)
-  const toast = useToast({ status: 'danger', isClosable: true })
-
-  const setDesignState = useDesignStore(setStateSelector)
-
-  const { handleBuilderClick } = useCreatePageSidebar()
-
-  const { duplicateFieldMutation } = useDuplicateFormField()
-  const { deleteFieldMutation } = useDeleteFormField()
-
-  const colorTheme = useDesignColorTheme()
-
   const isMyInfoField = useMemo(() => isMyInfo(field), [field])
+
+  // Explicitly defining isActive here to prevent constant checks to undefined
+  // due to falsy nature of FieldBuilderState.CreatingField = 0
+  const isActive = fieldBuilderState !== undefined
 
   const defaultFieldValues = useMemo(() => {
     if (field.fieldType === BasicField.Table) {
@@ -141,19 +138,6 @@ export const FieldRowContainer = ({
     defaultValues: defaultFieldValues,
   })
 
-  const isActive = useMemo(() => {
-    if (stateData.state === FieldBuilderState.EditingField) {
-      return field._id === stateData.field._id
-    } else if (stateData.state === FieldBuilderState.CreatingField) {
-      return field._id === PENDING_CREATE_FIELD_ID
-    }
-    return false
-  }, [stateData, field])
-
-  const {
-    deleteFieldModalDisclosure: { onOpen: onDeleteModalOpen },
-  } = useBuilderAndDesignContext()
-
   const ref = useRef<HTMLDivElement | null>(null)
   useEffect(() => {
     if (isActive) {
@@ -174,17 +158,20 @@ export const FieldRowContainer = ({
     }
     updateEditState(field)
     setDesignState(DesignState.Inactive)
+    setPaymentStateToInactive()
+
     if (!isMobile) {
       // Do not open builder if in mobile so user can view active state without
       // drawer blocking the view.
       handleBuilderClick(false)
     }
   }, [
-    isDirty,
     isActive,
+    isDirty,
     updateEditState,
     field,
     setDesignState,
+    setPaymentStateToInactive,
     isMobile,
     handleBuilderClick,
   ])
@@ -199,60 +186,14 @@ export const FieldRowContainer = ({
     [handleFieldClick],
   )
 
-  const handleEditFieldClick = useCallback(() => {
-    if (isMobile) {
-      handleBuilderClick(false)
-    }
-  }, [handleBuilderClick, isMobile])
-
-  const handleDuplicateClick = useCallback(() => {
-    if (!form) return
-    // Duplicate button should be hidden if field is not yet created, but guard here just in case
-    if (stateData.state === FieldBuilderState.CreatingField) return
-    // Disallow duplicating attachment fields if after the dupe, the filesize exceeds the limit
-    if (field.fieldType === BasicField.Attachment) {
-      const existingAttachmentsSize = form.form_fields.reduce(
-        (sum, ff) =>
-          ff.fieldType === BasicField.Attachment
-            ? sum + Number(ff.attachmentSize)
-            : sum,
-        0,
-      )
-      const remainingAvailableSize =
-        getAttachmentSizeLimit(form.responseMode) - existingAttachmentsSize
-      const thisAttachmentSize = Number(field.attachmentSize)
-      if (thisAttachmentSize > remainingAvailableSize) {
-        toast({
-          useMarkdown: true,
-          description: `The field "${field.title}" could not be duplicated. The attachment size of **${thisAttachmentSize} MB** exceeds the form's remaining available attachment size of **${remainingAvailableSize} MB**.`,
-        })
-        return
-      }
-    }
-    duplicateFieldMutation.mutate(field._id)
-  }, [stateData.state, field, duplicateFieldMutation, form, toast])
-
-  const handleDeleteClick = useCallback(() => {
-    if (stateData.state === FieldBuilderState.CreatingField) {
-      setToInactive()
-    } else if (stateData.state === FieldBuilderState.EditingField) {
-      onDeleteModalOpen()
-    }
-  }, [setToInactive, stateData.state, onDeleteModalOpen])
-
-  const isAnyMutationLoading = useMemo(
-    () => duplicateFieldMutation.isLoading || deleteFieldMutation.isLoading,
-    [duplicateFieldMutation, deleteFieldMutation],
-  )
-
   const isDragDisabled = useMemo(() => {
     return (
       !isActive ||
       isDirty ||
       !!numFormFieldMutations ||
-      stateData.state === FieldBuilderState.CreatingField
+      fieldBuilderState === FieldBuilderState.CreatingField
     )
-  }, [isActive, isDirty, numFormFieldMutations, stateData.state])
+  }, [isActive, isDirty, numFormFieldMutations, fieldBuilderState])
 
   return (
     <Draggable
@@ -306,30 +247,36 @@ export const FieldRowContainer = ({
             >
               <Fade in={isActive}>
                 <chakra.button
+                  disabled={isDragDisabled}
                   display="flex"
                   tabIndex={isActive ? 0 : -1}
                   {...provided.dragHandleProps}
                   borderRadius="4px"
+                  _disabled={{
+                    cursor: 'not-allowed',
+                    opacity: 0.4,
+                  }}
                   _focus={{
                     boxShadow: snapshot.isDragging
                       ? undefined
                       : '0 0 0 2px var(--chakra-colors-neutral-500)',
                   }}
+                  transition="color 0.2s ease"
+                  _hover={{
+                    color: 'secondary.300',
+                    _disabled: {
+                      color: 'secondary.200',
+                    },
+                  }}
+                  color={
+                    snapshot.isDragging ? 'secondary.300' : 'secondary.200'
+                  }
                 >
-                  {stateData.state === FieldBuilderState.EditingField ? (
-                    <Icon
-                      transition="color 0.2s ease"
-                      _hover={{
-                        color: 'secondary.300',
-                      }}
-                      color={
-                        snapshot.isDragging ? 'secondary.300' : 'secondary.200'
-                      }
-                      as={BiGridHorizontal}
-                      fontSize="1.5rem"
-                    />
+                  {fieldBuilderState === FieldBuilderState.EditingField &&
+                  !isDragDisabled ? (
+                    <Icon as={BiGridHorizontal} fontSize="1.5rem" />
                   ) : (
-                    <Box h="1.125rem"></Box>
+                    <Box h="1.5rem"></Box>
                   )}
                 </chakra.button>
               </Fade>
@@ -349,58 +296,142 @@ export const FieldRowContainer = ({
                 </FormProvider>
               </Box>
               <Collapse in={isActive} style={{ width: '100%' }}>
-                <Flex
-                  px={{ base: '0.75rem', md: '1.5rem' }}
-                  flex={1}
-                  borderTop="1px solid var(--chakra-colors-neutral-300)"
-                  justify="flex-end"
-                >
-                  <ButtonGroup
-                    variant="clear"
-                    colorScheme="secondary"
-                    spacing={0}
-                  >
-                    {isMobile ? (
-                      <IconButton
-                        variant="clear"
-                        colorScheme="secondary"
-                        aria-label="Edit field"
-                        icon={<BiCog fontSize="1.25rem" />}
-                        onClick={handleEditFieldClick}
-                      />
-                    ) : null}
-                    {
-                      // Fields which are not yet created cannot be duplicated
-                      stateData.state !== FieldBuilderState.CreatingField && (
-                        <Tooltip label="Duplicate field">
-                          <IconButton
-                            aria-label="Duplicate field"
-                            isDisabled={isAnyMutationLoading}
-                            onClick={handleDuplicateClick}
-                            isLoading={duplicateFieldMutation.isLoading}
-                            icon={<BiDuplicate fontSize="1.25rem" />}
-                          />
-                        </Tooltip>
-                      )
-                    }
-                    <Tooltip label="Delete field">
-                      <IconButton
-                        colorScheme="danger"
-                        aria-label="Delete field"
-                        icon={<BiTrash fontSize="1.25rem" />}
-                        onClick={handleDeleteClick}
-                        isLoading={deleteFieldMutation.isLoading}
-                        isDisabled={isAnyMutationLoading}
-                      />
-                    </Tooltip>
-                  </ButtonGroup>
-                </Flex>
+                {isActive && (
+                  <FieldButtonGroup
+                    field={field}
+                    fieldBuilderState={fieldBuilderState}
+                    isMobile={isMobile}
+                    handleBuilderClick={handleBuilderClick}
+                  />
+                )}
               </Collapse>
             </Flex>
           </Tooltip>
         </Box>
       )}
     </Draggable>
+  )
+}
+
+export const MemoizedFieldRow = memo(FieldRowContainer, (prevProps, newProps) =>
+  isEqual(prevProps, newProps),
+)
+
+type FieldButtonGroupProps = {
+  field: FormFieldDto
+  fieldBuilderState: FieldBuilderState
+  isMobile: boolean
+  handleBuilderClick: CreatePageSidebarContextProps['handleBuilderClick']
+}
+
+const FieldButtonGroup = ({
+  field,
+  fieldBuilderState,
+  isMobile,
+  handleBuilderClick,
+}: FieldButtonGroupProps) => {
+  const setToInactive = useFieldBuilderStore(setToInactiveSelector)
+
+  const { data: form } = useCreateTabForm()
+
+  const toast = useToast({ status: 'danger', isClosable: true })
+
+  const { duplicateFieldMutation } = useDuplicateFormField()
+  const { deleteFieldMutation } = useDeleteFormField()
+  const {
+    deleteFieldModalDisclosure: { onOpen: onDeleteModalOpen },
+  } = useBuilderAndDesignContext()
+
+  const handleEditFieldClick = useCallback(() => {
+    if (isMobile) {
+      handleBuilderClick(false)
+    }
+  }, [handleBuilderClick, isMobile])
+
+  const isAnyMutationLoading = useMemo(
+    () => duplicateFieldMutation.isLoading || deleteFieldMutation.isLoading,
+    [duplicateFieldMutation, deleteFieldMutation],
+  )
+  const handleDuplicateClick = useCallback(() => {
+    // Duplicate button should be hidden if field is not yet created, but guard here just in case
+    if (fieldBuilderState === FieldBuilderState.CreatingField) return
+    // Disallow duplicating attachment fields if after the dupe, the filesize exceeds the limit
+
+    if (field.fieldType === BasicField.Attachment) {
+      // Get remaining available attachment size limit
+      const availableAttachmentSize = form
+        ? getAttachmentSizeLimit(form.responseMode) -
+          form.form_fields.reduce(
+            (sum, ff) =>
+              ff.fieldType === BasicField.Attachment
+                ? sum + Number(ff.attachmentSize)
+                : sum,
+            0,
+          )
+        : 0
+      const thisAttachmentSize = Number(field.attachmentSize)
+      if (thisAttachmentSize > availableAttachmentSize) {
+        toast({
+          useMarkdown: true,
+          description: `The field "${field.title}" could not be duplicated. The attachment size of **${thisAttachmentSize} MB** exceeds the form's remaining available attachment size of **${availableAttachmentSize} MB**.`,
+        })
+        return
+      }
+    }
+    duplicateFieldMutation.mutate(field._id)
+  }, [form, fieldBuilderState, field, duplicateFieldMutation, toast])
+
+  const handleDeleteClick = useCallback(() => {
+    if (fieldBuilderState === FieldBuilderState.CreatingField) {
+      setToInactive()
+    } else if (fieldBuilderState === FieldBuilderState.EditingField) {
+      onDeleteModalOpen()
+    }
+  }, [setToInactive, fieldBuilderState, onDeleteModalOpen])
+
+  return (
+    <Flex
+      px={{ base: '0.75rem', md: '1.5rem' }}
+      flex={1}
+      borderTop="1px solid var(--chakra-colors-neutral-300)"
+      justify="flex-end"
+    >
+      <ButtonGroup variant="clear" colorScheme="secondary" spacing={0}>
+        {isMobile ? (
+          <IconButton
+            variant="clear"
+            colorScheme="secondary"
+            aria-label="Edit field"
+            icon={<BiCog fontSize="1.25rem" />}
+            onClick={handleEditFieldClick}
+          />
+        ) : null}
+        {
+          // Fields which are not yet created cannot be duplicated
+          fieldBuilderState !== FieldBuilderState.CreatingField && (
+            <Tooltip label="Duplicate field">
+              <IconButton
+                aria-label="Duplicate field"
+                isDisabled={isAnyMutationLoading}
+                onClick={handleDuplicateClick}
+                isLoading={duplicateFieldMutation.isLoading}
+                icon={<BiDuplicate fontSize="1.25rem" />}
+              />
+            </Tooltip>
+          )
+        }
+        <Tooltip label="Delete field">
+          <IconButton
+            colorScheme="danger"
+            aria-label="Delete field"
+            icon={<BiTrash fontSize="1.25rem" />}
+            onClick={handleDeleteClick}
+            isLoading={deleteFieldMutation.isLoading}
+            isDisabled={isAnyMutationLoading}
+          />
+        </Tooltip>
+      </ButtonGroup>
+    </Flex>
   )
 }
 

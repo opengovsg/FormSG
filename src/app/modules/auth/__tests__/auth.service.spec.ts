@@ -1,12 +1,10 @@
+import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { ObjectId } from 'bson-ext'
 import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync } from 'neverthrow'
-import { mocked } from 'ts-jest/utils'
 
 import getTokenModel from 'src/app/models/token.server.model'
 import { AgencyDocument, IPopulatedForm, IPopulatedUser } from 'src/types'
-
-import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import * as OtpUtils from '../../../utils/otp'
 import { DatabaseError } from '../../core/core.errors'
@@ -23,15 +21,16 @@ import { InvalidDomainError, InvalidOtpError } from '../auth.errors'
 import * as AuthService from '../auth.service'
 
 jest.mock('../../form/form.service')
-const MockFormService = mocked(FormService)
+const MockFormService = jest.mocked(FormService)
 jest.mock('../../form/admin-form/admin-form.utils')
-const MockAdminFormUtils = mocked(AdminFormUtils)
+const MockAdminFormUtils = jest.mocked(AdminFormUtils)
 
 const TokenModel = getTokenModel(mongoose)
 
 const VALID_EMAIL_DOMAIN = 'test.gov.sg'
 const VALID_EMAIL = `valid@${VALID_EMAIL_DOMAIN}`
 const MOCK_OTP = '123456'
+const MOCK_OTP_PREFIX = 'ABC'
 
 describe('auth.service', () => {
   let defaultAgency: AgencyDocument
@@ -94,13 +93,19 @@ describe('auth.service', () => {
       // Should have no documents prior to this.
       await expect(TokenModel.countDocuments()).resolves.toEqual(0)
       jest.spyOn(OtpUtils, 'generateOtp').mockReturnValueOnce(MOCK_OTP)
+      jest
+        .spyOn(OtpUtils, 'generateOtpPrefix')
+        .mockReturnValueOnce(MOCK_OTP_PREFIX)
 
       // Act
       const actualResult = await AuthService.createLoginOtp(VALID_EMAIL)
 
       // Assert
       expect(actualResult.isOk()).toBe(true)
-      expect(actualResult._unsafeUnwrap()).toEqual(MOCK_OTP)
+      expect(actualResult._unsafeUnwrap()).toEqual({
+        otp: MOCK_OTP,
+        otpPrefix: MOCK_OTP_PREFIX,
+      })
       // Should have new token document inserted.
       await expect(TokenModel.countDocuments()).resolves.toEqual(1)
     })

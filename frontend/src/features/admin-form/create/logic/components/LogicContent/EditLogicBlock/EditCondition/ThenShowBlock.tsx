@@ -18,6 +18,8 @@ import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants
 import { EditLogicInputs } from '~features/admin-form/create/logic/types'
 import { FormFieldWithQuestionNo } from '~features/form/types'
 
+import { getLogicFieldLabel } from '../../utils/getLogicFieldLabel'
+
 import { BlockLabelText } from './BlockLabelText'
 
 interface ThenShowBlockProps {
@@ -209,24 +211,17 @@ const ThenLogicInput = ({
   const thenValueItems = useMemo(() => {
     // Return every field except fields that are already used in the logic.
     if (logicTypeValue === LogicType.ShowFields) {
+      if (!formFields || !mapIdToField) return []
       const usedFieldIds = new Set(
         logicConditionsWatch.value.map((condition) => condition.field),
       )
-      if (!formFields || !mapIdToField) return []
       return formFields
         .filter((f) => !usedFieldIds.has(f._id))
-        .map((f) => {
-          const mappedField = mapIdToField[f._id]
-          return {
-            value: f._id,
-            label: `${
-              mappedField.questionNumber
-                ? `${mappedField.questionNumber}. `
-                : ''
-            }${mappedField.title}`,
-            icon: BASICFIELD_TO_DRAWER_META[f.fieldType].icon,
-          }
-        })
+        .map((f) => ({
+          value: f._id,
+          label: getLogicFieldLabel(mapIdToField[f._id]),
+          icon: BASICFIELD_TO_DRAWER_META[f.fieldType].icon,
+        }))
     }
     return []
     // Watch entire <***>Watch variables since <***>Watch.value is a Proxy object
@@ -281,6 +276,7 @@ const ThenLogicInput = ({
             placeholder={null}
             items={thenValueItems}
             values={value ?? []}
+            isSelectedItemFullWidth
             {...rest}
           />
         )}

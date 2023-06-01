@@ -1,11 +1,10 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import axios from 'axios'
-import { mocked } from 'ts-jest/utils'
 
 import * as AdminMetaService from '../AdminMetaService'
 
 jest.mock('axios')
-const MockAxios = mocked(axios, true)
+const MockAxios = jest.mocked(axios)
 
 describe('AdminMetaService', () => {
   describe('getFreeSmsCountsUsedByFormAdmin', () => {

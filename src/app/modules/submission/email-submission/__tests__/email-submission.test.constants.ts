@@ -1,14 +1,13 @@
-import fs from 'fs'
-import { BasicField, FieldBase } from 'shared/types'
-
-import { IAttachmentFieldSchema, ICheckboxFieldSchema } from 'src/types'
-
 import {
   generateAttachmentResponse,
   generateCheckboxResponse,
   generateDefaultField,
   generateSingleAnswerResponse,
-} from 'tests/unit/backend/helpers/generate-form-data'
+} from '__tests__/unit/backend/helpers/generate-form-data'
+import fs from 'fs'
+import { BasicField, FieldBase } from 'shared/types'
+
+import { IAttachmentFieldSchema, ICheckboxFieldSchema } from 'src/types'
 
 export const MOCK_NO_RESPONSES_BODY = {
   responses: [],
@@ -22,7 +21,7 @@ export const MOCK_ATTACHMENT_FIELD = generateDefaultField(BasicField.Attachment)
 export const MOCK_ATTACHMENT_RESPONSE = generateAttachmentResponse(
   MOCK_ATTACHMENT_FIELD as IAttachmentFieldSchema,
   'valid.txt',
-  fs.readFileSync('tests/unit/backend/resources/valid.txt'),
+  fs.readFileSync('__tests__/unit/backend/resources/valid.txt'),
 )
 
 export const MOCK_SECTION_FIELD = generateDefaultField(BasicField.Section)

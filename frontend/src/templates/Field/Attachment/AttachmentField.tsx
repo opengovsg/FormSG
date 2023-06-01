@@ -1,11 +1,17 @@
 import { useCallback, useMemo } from 'react'
-import { Controller, useFormContext } from 'react-hook-form'
+import {
+  Controller,
+  ControllerRenderProps,
+  useFormContext,
+} from 'react-hook-form'
+import { datadogLogs } from '@datadog/browser-logs'
 
 import { MB } from '~shared/constants/file'
 import { FormColorTheme } from '~shared/types'
 import { VALID_EXTENSIONS } from '~shared/utils/file-validation'
 
 import { createAttachmentValidationRules } from '~utils/fieldValidation'
+import fileArrayBuffer from '~utils/fileArrayBuffer'
 import Attachment from '~components/Field/Attachment'
 
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
@@ -42,6 +48,43 @@ export const AttachmentField = ({
     [fieldName, setError],
   )
 
+  const handleFileChange = useCallback(
+    (onChange: ControllerRenderProps['onChange']) =>
+      async (file: File | undefined) => {
+        clearErrors(fieldName)
+        // Case where attachment is cleared.
+        if (!file) {
+          onChange(undefined)
+          return
+        }
+        // Clone file due to bug where attached file may be empty or corrupted if the
+        // file is a Google Drive file selected from Android's native file picker.
+        // Cloning the file ensures that the file can be read (and/or not mutated by Android)
+        // and throws an error if the file cannot be read instead of silently failing and only throw
+        // an error during form submission.
+        // See https://bugs.chromium.org/p/chromium/issues/detail?id=1063576#c79
+        // and https://stackoverflow.com/questions/62714319/attached-from-google-drivecloud-storage-in-android-file-gives-err-upload-file
+        // as possible sources of the error (still not confirmed it is the same thing).
+        try {
+          const buffer = await fileArrayBuffer(file)
+          const clone = new File([buffer], file.name, { type: file.type })
+          return onChange(clone)
+        } catch (error) {
+          setErrorMessage(
+            'There was an error reading your file. If you are uploading a file and using online storage such as Google Drive, download your file before attaching the downloaded version. Otherwise, please refresh and try again.',
+          )
+
+          // For RUM error tracking
+          datadogLogs.logger.error(
+            `handleFileChange error: ${(error as Error)?.message}`,
+          )
+
+          return onChange(undefined) // Clear attachment and return
+        }
+      },
+    [clearErrors, fieldName, setErrorMessage],
+  )
+
   return (
     <FieldContainer schema={schema}>
       <Controller
@@ -53,11 +96,9 @@ export const AttachmentField = ({
             maxSize={maxSizeInBytes}
             accept={VALID_EXTENSIONS}
             showFileSize
-            onChange={(file) => {
-              clearErrors(fieldName)
-              onChange(file)
-            }}
+            onChange={handleFileChange(onChange)}
             onError={setErrorMessage}
+            title={`${schema.questionNumber}. ${schema.title}`}
           />
         )}
         name={fieldName}

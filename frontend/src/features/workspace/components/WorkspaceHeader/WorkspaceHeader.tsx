@@ -1,16 +1,24 @@
+import { useMemo } from 'react'
 import { BiPlus } from 'react-icons/bi'
-import { Skeleton, Stack, Text } from '@chakra-ui/react'
+import {
+  Box,
+  Flex,
+  Grid,
+  Skeleton,
+  Text,
+  useDisclosure,
+} from '@chakra-ui/react'
+import simplur from 'simplur'
 
-import { useIsMobile } from '~hooks/useIsMobile'
+import { useIsDesktop, useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
 
+import { useWorkspaceContext } from '~features/workspace/WorkspaceContext'
+
+import { MobileWorkspaceSearchbar } from '../WorkspaceSearchbar/MobileWorkspaceSearchbar'
+import { WorkspaceSearchbar } from '../WorkspaceSearchbar/WorkspaceSearchbar'
+
 export interface WorkspaceHeaderProps {
-  /**
-   * Number of forms in the workspace.
-   * Defaults to '---' (to account for loading or error states)
-   */
-  totalFormCount?: number | '---'
-  isLoading: boolean
   handleOpenCreateFormModal: () => void
 }
 
@@ -18,43 +26,100 @@ export interface WorkspaceHeaderProps {
  * Header for listing number of forms, or updating the sort order of listed forms, etc.
  */
 export const WorkspaceHeader = ({
-  totalFormCount = '---',
-  isLoading,
   handleOpenCreateFormModal,
 }: WorkspaceHeaderProps): JSX.Element => {
   const isMobile = useIsMobile()
+  const isDesktop = useIsDesktop()
+
+  const {
+    isLoading,
+    totalFormsCount,
+    displayedFormsCount,
+    activeSearch,
+    setActiveSearch,
+    activeFilter,
+    setActiveFilter,
+    hasActiveSearchOrFilter,
+  } = useWorkspaceContext()
+
+  const { isOpen: isSearchExpanded, onToggle: onToggleSearchExpansion } =
+    useDisclosure()
+
+  const headerText = useMemo(
+    () =>
+      hasActiveSearchOrFilter
+        ? simplur`Showing ${displayedFormsCount} of ${totalFormsCount} form[|s]`
+        : `All forms (${totalFormsCount})`,
+    [displayedFormsCount, hasActiveSearchOrFilter, totalFormsCount],
+  )
 
   return (
-    <Stack
-      justify="space-between"
-      direction={{ base: 'column', md: 'row' }}
-      align={{ base: 'flex-start', md: 'center' }}
-      spacing="1rem"
+    <Grid
+      gridTemplateAreas={{
+        // Note: these gridTemplateAreas labels are used also in MobileWorkspaceSearchbar.
+        base: isSearchExpanded
+          ? "'header filter' 'search search' 'create create'"
+          : "'header searchIcon filter' 'create create create'",
+        md: isSearchExpanded
+          ? "'header filter create' 'search search search'"
+          : "'header searchIcon filter create'",
+        lg: "'header searchFilter create'",
+      }}
+      gridTemplateColumns={{
+        base: isSearchExpanded ? '1fr auto' : '1fr auto auto',
+        md: isSearchExpanded ? '1fr auto auto' : '1fr auto auto auto',
+        lg: '1fr auto auto',
+      }}
+      gap="1rem"
     >
-      <Text
+      <Flex
+        gridArea="header"
         flex={1}
-        as="h2"
-        textStyle="h2"
         display="flex"
         color="secondary.500"
+        alignSelf="center"
       >
-        All forms (<Skeleton isLoaded={!isLoading}>{totalFormCount}</Skeleton>)
-      </Text>
-      <Stack
-        w={{ base: '100%', md: 'auto' }}
-        spacing="1rem"
-        direction={{ base: 'column', md: 'row' }}
-        h="fit-content"
+        <Skeleton isLoaded={!isLoading}>
+          <Text
+            textStyle={isMobile && hasActiveSearchOrFilter ? 'subhead-1' : 'h2'}
+          >
+            {headerText}
+          </Text>
+        </Skeleton>
+      </Flex>
+
+      {isDesktop ? (
+        // Combination box used in desktop mode.
+        <Box gridArea="searchFilter">
+          <WorkspaceSearchbar
+            placeholder="Search by title"
+            value={activeSearch}
+            onChange={setActiveSearch}
+            filterValue={activeFilter}
+            onFilter={setActiveFilter}
+          />
+        </Box>
+      ) : (
+        <MobileWorkspaceSearchbar
+          isExpanded={isSearchExpanded}
+          onToggleExpansion={onToggleSearchExpansion}
+          placeholder="Search by title"
+          value={activeSearch}
+          onChange={setActiveSearch}
+          filterValue={activeFilter}
+          onFilter={setActiveFilter}
+        />
+      )}
+
+      <Button
+        gridArea="create"
+        isFullWidth={isMobile}
+        isDisabled={isLoading}
+        onClick={handleOpenCreateFormModal}
+        leftIcon={<BiPlus fontSize="1.5rem" />}
       >
-        <Button
-          isFullWidth={isMobile}
-          isDisabled={isLoading}
-          onClick={handleOpenCreateFormModal}
-          leftIcon={<BiPlus fontSize="1.5rem" />}
-        >
-          Create form
-        </Button>
-      </Stack>
-    </Stack>
+        Create form
+      </Button>
+    </Grid>
   )
 }

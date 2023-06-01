@@ -1,3 +1,9 @@
 # https://www.robotstxt.org/robotstxt.html
+
+User-agent: NLB_archive_bot
+Allow: /
+Allow: /public/
+Disallow: *
+
 User-agent: *
 Disallow:

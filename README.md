@@ -1,12 +1,18 @@
-# FormSG
+<p align="left">
+  <a href="https://form.gov.sg"><img src="https://file.go.gov.sg/form-logo-background-rmved.png"></a>
+</p>
 
-[![Build Status](https://github.com/opengovsg/FormSG/actions/workflows/deploy-eb.yml)](https://github.com/opengovsg/FormSG/actions/workflows/deploy-eb.yml)
+---
+
+[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](code_of_conduct.md)
+[![Build Status](https://github.com/opengovsg/FormSG/actions/workflows/deploy-eb.yml/badge.svg)](https://github.com/opengovsg/FormSG/actions/workflows/deploy-eb.yml)
 [![Coverage Status](https://coveralls.io/repos/github/opengovsg/FormSG/badge.svg?branch=develop)](https://coveralls.io/github/opengovsg/FormSG?branch=develop)
 
 ## Table of Contents
 
 - [FormSG](#formsg)
   - [Table of Contents](#table-of-contents)
+  - [Contributing](#contributing)
   - [Features](#features)
   - [Local Development (Docker)](#local-development-docker)
     - [Prerequisites](#prerequisites)
@@ -22,9 +28,16 @@
       - [End-to-end tests](#end-to-end-tests)
   - [Architecture](#architecture)
   - [MongoDB Scripts](#mongodb-scripts)
-  - [Contributing](#contributing)
   - [Support](#support)
   - [Acknowledgements](#acknowledgements)
+
+## Contributing
+
+We welcome all contributions, bug reports, bug fixes, documentation improvements, enhancements, and ideas to code open sourced by the Government Technology Agency of Singapore. Contributors will also be asked to sign a Contributor License Agreement (CLA) to ensure that everybody is free to use their contributions.
+
+#### IMPORTANT NOTE TO ALL CONTRIBUTORS
+
+Before contributing, please read [CONTRIBUTING.md](CONTRIBUTING.md). In particular, we strongly encourage contributors to please **first discuss the change you wish to make via GitHub issue**, [email](mailto:contribute@form.gov.sg), or any other method with the repository owners beforehand. Otherwise, we may not be able to review or accept your PR.
 
 ## Features
 
@@ -37,9 +50,10 @@ Notable features include:
 - Automatic emailing of submissions for forms built with Email Mode
 - End-to-end encryption for forms built with Storage Mode
 - (Singapore government agencies only) Citizen authentication with [SingPass](https://www.singpass.gov.sg/singpass/common/aboutus)
+- (Singapore government agencies only) Citizen authentication with [sgID](https://www.id.gov.sg/)
 - (Singapore government agencies only) Corporate authentication with [CorpPass](https://www.corppass.gov.sg/corppass/common/aboutus)
 - (Singapore government agencies only) Automatic prefill of verified data with [MyInfo](https://www.singpass.gov.sg/myinfo/common/aboutus)
-- Webhooks functionality via the official [FormSG JavaScript SDK](https://github.com/opengovsg/formsg-sdk) and contributor-supported [FormSG Ruby SDK](<https://github.com/opengovsg/formsg-ruby-sdk>)
+- Webhooks functionality via the official [FormSG JavaScript SDK](https://github.com/opengovsg/formsg-sdk) and contributor-supported [FormSG Ruby SDK](https://github.com/opengovsg/formsg-ruby-sdk)
 
 The current product roadmap includes:
 
@@ -57,31 +71,26 @@ Install [docker and docker-compose](https://docs.docker.com/get-docker/).
 
 ### First Setup
 
-Run the following shell command to install relevant npm packages.
+To install the relevant npm packages, run the following in the root direcory:
 
 ```bash
 npm install
 ```
 
+To prevent breaking changes to webpack4 introduced in node 17 and above, enable the `--openssl-legacy-provider` flag:
+
+```bash
+export NODE_OPTIONS=--openssl-legacy-provider
+```
+
 If you are on Mac OS X, you may want to allow Docker to use more RAM (minimum of 4GB) by clicking on the Docker icon on the toolbar, clicking on the "Preferences" menu item, then clicking on the "Resources" link on the left.
-
-If you are on macOS Monetery or higher, port 5000 is now used by the system. This conflicts with the default port used by the backend. You could either:
-
-- Update the backend ports in these environment variables:
-  - `Dockerfile.development`
-    - Update exposed port
-  - `docker-compose.yml`
-    - Introduce a new env var `PORT`
-    - Update `APP_URL`
-  - `frontend/package.json`
-    - Update the proxy URL
-- [Disable control center](https://apple.stackexchange.com/a/431164)
 
 ### Running Locally
 
-Run the following shell command to build the Docker image from scratch. This will usually take 10 or so minutes. This command runs the backend services specified under [docker-compose.yml](docker-compose.yml) and the React frontend on the native host.
+Run the following shell commands to build the Docker image from scratch. This will usually take 10 or so minutes. These commands runs the backend services specified under [docker-compose.yml](docker-compose.yml) and the React frontend on the native host.
 
 ```bash
+npm run build:frontend
 npm run dev
 ```
 
@@ -148,14 +157,14 @@ The team uses macOS for development.
 
 Make you sure have the following node version & package manager on your machine:
 
-- `"node": ">=14.17.0"`
-- `"npm": ">=6.0.0"`
+- `"node": ">=18.12.1"`
+- `"npm": ">=8.19.2"`
 - `"mongo": ">=4.0.0"`
 
 Run
 
 ```bash
-nvm install 14
+nvm install 18
 npm install
 pip install "localstack[full]"
 ```
@@ -172,8 +181,8 @@ npm run test
 ```
 
 will build the backend and run both our backend and frontend unit tests. The tests are located at
-[`tests/unit/frontend`](./tests/unit/frontend) and
-[`tests/unit/backend`](./tests/unit/backend).
+[`__tests__/unit/frontend`](./__tests__/unit/frontend) and
+[`__tests__/unit/backend`](./__tests__/unit/backend).
 
 If the backend is already built, you can run
 
@@ -187,13 +196,17 @@ npm run test-ci
 npm run test-e2e
 ```
 
-will build both the frontend and backend then run our end-to-end tests. The tests are located at [`tests/end-to-end`](./tests/end-to-end). You will need to stop the Docker dev container to be able to run the end-to-end tests.
+will build both the frontend and backend then run our end-to-end tests. The tests are located at [`__tests__/e2e`](./__tests__/e2e). You will need to stop the Docker dev container to be able to run the end-to-end tests.
 
 If you do not need to rebuild the frontend and backend, you can run
 
 ```bash
 npm run test-e2e-ci
 ```
+
+#### Cross-browser testing
+
+This project is tested with [BrowserStack](https://www.browserstack.com/open-source).
 
 ## Architecture
 
@@ -203,13 +216,9 @@ The architecture overview is [here](docs/ARCHITECTURE.md).
 
 Scripts for common tasks in MongoDB can be found [here](docs/MONGODB.md).
 
-## Contributing
-
-We welcome all contributions, bug reports, bug fixes, documentation improvements, enhancements, and ideas to code open sourced by the Government Technology Agency of Singapore. Contributors should read [CONTRIBUTING.md](CONTRIBUTING.md) and will also be asked to sign a Contributor License Agreement (CLA) to ensure that everybody is free to use their contributions.
-
 ## Support
 
-Please contact FormSG (formsg@tech.gov.sg) for any details.
+Please contact FormSG (support@form.gov.sg) for any details.
 
 ## Acknowledgements
 

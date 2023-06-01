@@ -1,3 +1,4 @@
+import { datadogLogs } from '@datadog/browser-logs'
 import axios, { AxiosError } from 'axios'
 import { StatusCodes } from 'http-status-codes'
 
@@ -19,30 +20,42 @@ export class HttpError extends Error {
  *
  * @returns HttpError if AxiosError, else original error
  */
-export const transformAxiosError = (e: Error): ApiError => {
-  if (axios.isAxiosError(e)) {
-    if (e.response) {
-      const statusCode = e.response.status
+export const transformAxiosError = (error: Error): ApiError => {
+  if (axios.isAxiosError(error)) {
+    if (error.response) {
+      const statusCode = error.response.status
       if (statusCode === StatusCodes.TOO_MANY_REQUESTS) {
         return new HttpError('Please try again later.', statusCode)
       }
-      if (typeof e.response.data === 'string') {
-        return new HttpError(e.response.data, statusCode)
+      if (typeof error.response.data === 'string') {
+        return new HttpError(error.response.data, statusCode)
       }
-      if (e.response.data?.message) {
-        return new HttpError(e.response.data.message, statusCode)
+      if (error.response.data?.message) {
+        return new HttpError(error.response.data.message, statusCode)
       }
-      if (e.response.statusText) {
-        return new HttpError(e.response.statusText, statusCode)
+      if (error.response.statusText) {
+        return new HttpError(error.response.statusText, statusCode)
       }
-      return new HttpError(`Http ${statusCode} error`, statusCode)
-    } else if (e.request) {
+      return new HttpError(`Error: ${statusCode}`, statusCode)
+    } else if (error.request) {
+      // TODO: Remove this logging once Network Error sources have been identified.
+      datadogLogs.logger.warn(`Unknown error: ${error.message}`, {
+        meta: {
+          action: 'transformAxiosError',
+          error: {
+            code: error?.code,
+            message: error?.message,
+            stack: error?.stack,
+            dump: JSON.stringify(error),
+          },
+        },
+      })
       return new Error(
-        'There was a problem with your internet connection. Please check your network and try again.',
+        `There was a problem with your internet connection. Please check your network and try again. ${error.message}`,
       )
     }
   }
-  return e
+  return error
 }
 
 // Create own axios instance with defaults.
@@ -65,3 +78,37 @@ ApiService.interceptors.response.use(
     throw transformedError
   },
 )
+
+export const processFetchResponse = async (response: Response) => {
+  try {
+    // throw if response status not 2XX
+    if (response.status < 200 || response.status >= 300) {
+      throw new Error(`Non-2XX response: ${response.status}`)
+    } else {
+      const data = await response.json()
+      return data
+    }
+  } catch (error: any) {
+    // No guarantee that error is an Error object
+    datadogLogs.logger.warn(`Fetch error: ${error.message}`, {
+      meta: {
+        action: 'processFetchResponse',
+        response: {
+          status: response.status,
+          statusText: response.statusText,
+          headers: [...(response.headers?.entries() || [])],
+          body: await response.text(),
+        },
+        error: {
+          name: error.name,
+          message: error.message,
+          stack: error.stack,
+          code: error.code,
+          dump: JSON.stringify(error),
+        },
+      },
+    })
+
+    throw error
+  }
+}

@@ -1,12 +1,5 @@
 import { FC, forwardRef, useCallback } from 'react'
-import {
-  Box,
-  chakra,
-  Flex,
-  Icon,
-  useMergeRefs,
-  VisuallyHidden,
-} from '@chakra-ui/react'
+import { Box, chakra, Flex, Icon, useMergeRefs } from '@chakra-ui/react'
 
 import { BxsChevronDown } from '~assets/icons/BxsChevronDown'
 import { BxsChevronUp } from '~assets/icons/BxsChevronUp'
@@ -25,7 +18,8 @@ const MultiItemsContainer: FC = ({ children }) => {
       // Margin difference for selected items.
       my="-3px"
       // Padding for dropdown toggle.
-      maxW="calc(100% - 2.5rem)"
+      flexBasis="calc(100% - 2.5rem)"
+      minW="0px"
     >
       {children}
     </Box>
@@ -35,7 +29,6 @@ const MultiItemsContainer: FC = ({ children }) => {
 export const MultiSelectCombobox = forwardRef<HTMLInputElement>(
   (_props, ref): JSX.Element => {
     const {
-      getComboboxProps,
       getInputProps,
       styles,
       isDisabled,
@@ -47,20 +40,20 @@ export const MultiSelectCombobox = forwardRef<HTMLInputElement>(
       toggleMenu,
       isInvalid,
       inputRef,
-      inputAria,
+      getToggleButtonProps,
     } = useSelectContext()
 
     const { getDropdownProps } = useMultiSelectContext()
 
     const mergedRefs = useMergeRefs(inputRef, ref)
 
-    const handleWrapperClick = useCallback(() => {
+    const handleToggleMenu = useCallback(() => {
       if (isDisabled || isReadOnly) return
-      setIsFocused(true)
-      toggleMenu()
       if (!isOpen) {
         inputRef?.current?.focus()
       }
+      toggleMenu()
+      setIsFocused(true)
     }, [inputRef, isDisabled, isOpen, isReadOnly, setIsFocused, toggleMenu])
 
     /**
@@ -81,44 +74,50 @@ export const MultiSelectCombobox = forwardRef<HTMLInputElement>(
         aria-invalid={isInvalid}
         aria-readonly={isReadOnly}
         __css={styles.fieldwrapper}
-        {...getComboboxProps({
-          disabled: isDisabled,
-          readOnly: isReadOnly,
-          required: isRequired,
-          'aria-expanded': !!isOpen,
-          onClick: handleWrapperClick,
-        })}
+        onClick={handleToggleMenu}
       >
-        <VisuallyHidden id={inputAria.id}>{inputAria.label}</VisuallyHidden>
         <MultiItemsContainer>
           <SelectedItems />
           <chakra.input
             placeholder={placeholder}
             __css={styles.field}
-            {...getInputProps(
-              getDropdownProps({
+            {...getInputProps({
+              ...getDropdownProps({
                 ref: mergedRefs,
                 onFocus: () => setIsFocused(true),
                 onKeyDown: handleInputTabKeydown,
                 readOnly: isReadOnly,
                 disabled: isDisabled,
-                'aria-describedby': inputAria.id,
               }),
-            )}
+              required: isRequired,
+              'aria-expanded': !!isOpen,
+            })}
           />
         </MultiItemsContainer>
         <Box
-          display="inline-flex"
-          py="0.3125rem"
-          px="0.625rem"
-          h="fit-content"
-          aria-disabled={isDisabled}
-          __css={styles.icon}
+          as="button"
+          type="button"
+          pt="0.25rem"
+          px="0.5rem"
+          _disabled={{
+            cursor: 'not-allowed',
+          }}
+          alignSelf="flex-start"
+          sx={styles.icon}
+          aria-label={`${isOpen ? 'Close' : 'Open'} dropdown options`}
+          {...getToggleButtonProps({
+            disabled: isDisabled || isReadOnly,
+            // Allow navigation to this button with screen readers.
+            tabIndex: 0,
+            // onClick needs to be defined on the toggle button itself to allow
+            // screen readers to activate the click action, but need to stop
+            // bubbling up to the parent to avoid double-toggling
+            onClick: (e) => e.stopPropagation(),
+          })}
         >
           <Icon
             as={isOpen ? BxsChevronUp : BxsChevronDown}
-            aria-label={`${isOpen ? 'Close' : 'Open'} dropdown options icon`}
-            aria-disabled={isDisabled}
+            aria-disabled={isDisabled || isReadOnly}
           />
         </Box>
       </Flex>

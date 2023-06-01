@@ -2,6 +2,7 @@ import cuid from 'cuid'
 import { merge } from 'lodash'
 import { rest } from 'msw'
 
+import { PaymentChannel } from '~shared/types'
 import { AgencyId } from '~shared/types/agency'
 import {
   AttachmentSize,
@@ -597,6 +598,8 @@ export const createMockForm = (
         submissionLimit: null,
         form_fields: [],
         form_logics: [],
+        payments_channel: { channel: PaymentChannel.Unconnected },
+        payments_field: { enabled: false },
         permissionList: [],
         title: 'Test form title',
         admin: {

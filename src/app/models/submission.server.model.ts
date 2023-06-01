@@ -1,6 +1,5 @@
 import moment from 'moment-timezone'
 import mongoose, { Mongoose, QueryCursor, Schema } from 'mongoose'
-import type { FixedLengthArray } from 'type-fest'
 
 import {
   FormAuthType,
@@ -28,10 +27,12 @@ import {
 import { createQueryWithDateParam } from '../utils/date'
 
 import { FORM_SCHEMA_ID } from './form.server.model'
+import { PAYMENT_SCHEMA_ID } from './payment.server.model'
 
 export const SUBMISSION_SCHEMA_ID = 'Submission'
 
-const SubmissionSchema = new Schema<ISubmissionSchema, ISubmissionModel>(
+// Exported for use in pending submissions model
+export const SubmissionSchema = new Schema<ISubmissionSchema, ISubmissionModel>(
   {
     form: {
       type: Schema.Types.ObjectId,
@@ -56,6 +57,14 @@ const SubmissionSchema = new Schema<ISubmissionSchema, ISubmissionModel>(
       type: String,
       enum: Object.values(SubmissionType),
       required: true,
+    },
+    responseMetadata: {
+      responseTimeMs: {
+        type: Number,
+      },
+      numVisibleFields: {
+        type: Number,
+      },
     },
   },
   {
@@ -95,7 +104,8 @@ SubmissionSchema.statics.findFormsWithSubsAbove = function (
   ]).exec()
 }
 
-const EmailSubmissionSchema = new Schema<IEmailSubmissionSchema>({
+// Exported for use in pending submissions model
+export const EmailSubmissionSchema = new Schema<IEmailSubmissionSchema>({
   recipientEmails: {
     type: [
       {
@@ -155,7 +165,8 @@ const webhookResponseSchema = new Schema<IWebhookResponseSchema>(
   },
 )
 
-const EncryptSubmissionSchema = new Schema<
+// Exported for use in pending submissions model
+export const EncryptSubmissionSchema = new Schema<
   IEncryptedSubmissionSchema,
   IEncryptSubmissionModel
 >({
@@ -175,6 +186,11 @@ const EncryptSubmissionSchema = new Schema<
   version: {
     type: Number,
     required: true,
+  },
+  paymentId: {
+    type: Schema.Types.ObjectId,
+    // Defer loading of the ref due to circular dependency on schema IDs.
+    ref: () => PAYMENT_SCHEMA_ID,
   },
   webhookResponses: [webhookResponseSchema],
 })
@@ -274,10 +290,7 @@ EncryptSubmissionSchema.statics.findSingleMetadata = function (
  * Unexported as the type is only used in {@see findAllMetadataByFormId} for
  * now.
  */
-type MetadataAggregateResult = {
-  pageResults: Pick<ISubmissionSchema, '_id' | 'created'>[]
-  allResults: FixedLengthArray<{ count: number }, 1> | []
-}
+type MetadataAggregateResult = Pick<ISubmissionSchema, '_id' | 'created'>
 
 EncryptSubmissionSchema.statics.findAllMetadataByFormId = function (
   formId: string,
@@ -294,54 +307,46 @@ EncryptSubmissionSchema.statics.findAllMetadataByFormId = function (
 }> {
   const numToSkip = (page - 1) * pageSize
 
-  return (
-    this.aggregate()
-      .match({
-        // Casting to ObjectId as Mongoose does not cast pipeline stages.
-        // See https://mongoosejs.com/docs/api.html#aggregate_Aggregate.
-        form: mongoose.Types.ObjectId(formId),
-        submissionType: SubmissionType.Encrypt,
-      })
-      .sort({ created: -1 })
-      .facet({
-        pageResults: [
-          { $skip: numToSkip },
-          { $limit: pageSize },
-          { $project: { _id: 1, created: 1 } },
-        ],
-        allResults: [
-          { $group: { _id: null, count: { $sum: 1 } } },
-          { $project: { _id: 0 } },
-        ],
-      })
-      // prevents out-of-memory for large search results (max 100MB).
-      .allowDiskUse(true)
-      .then((result: MetadataAggregateResult[]) => {
-        const [{ pageResults, allResults }] = result
-        const [numResults] = allResults
-        const count = numResults?.count ?? 0
-
-        let currentNumber = count - numToSkip
-
-        const metadata = pageResults.map((data) => {
-          const metadataEntry: StorageModeSubmissionMetadata = {
-            number: currentNumber,
-            refNo: data._id,
-            submissionTime: moment(data.created)
-              .tz('Asia/Singapore')
-              .format('Do MMM YYYY, h:mm:ss a'),
-          }
-
-          currentNumber--
-          return metadataEntry
-        })
-
-        return {
-          metadata,
-          count,
-        }
-      })
+  // return documents within the page
+  const pageResults: Promise<MetadataAggregateResult[]> = this.find(
+    {
+      form: mongoose.Types.ObjectId(formId),
+      submissionType: SubmissionType.Encrypt,
+    },
+    { _id: 1, created: 1 },
   )
+    .sort({ created: -1 })
+    .skip(numToSkip)
+    .limit(pageSize)
+    .exec()
+
+  const count =
+    this.countDocuments({
+      form: mongoose.Types.ObjectId(formId),
+      submissionType: SubmissionType.Encrypt,
+    }).exec() ?? 0
+
+  return Promise.all([pageResults, count]).then(([result, count]) => {
+    let currentNumber = count - numToSkip
+
+    const metadata = result.map((data) => {
+      const metadataEntry: StorageModeSubmissionMetadata = {
+        number: currentNumber,
+        refNo: data._id,
+        submissionTime: moment(data.created)
+          .tz('Asia/Singapore')
+          .format('Do MMM YYYY, h:mm:ss a'),
+      }
+
+      currentNumber--
+      return metadataEntry
+    })
+
+    return {
+      metadata,
+      count,
+    }
+  })
 }
 
 EncryptSubmissionSchema.statics.getSubmissionCursorByFormId = function (
@@ -361,6 +366,7 @@ EncryptSubmissionSchema.statics.getSubmissionCursorByFormId = function (
         encryptedContent: 1,
         verifiedContent: 1,
         attachmentMetadata: 1,
+        paymentId: 1,
         created: 1,
         version: 1,
         id: 1,
@@ -386,6 +392,7 @@ EncryptSubmissionSchema.statics.findEncryptedSubmissionById = function (
       encryptedContent: 1,
       verifiedContent: 1,
       attachmentMetadata: 1,
+      paymentId: 1,
       created: 1,
       version: 1,
     })
@@ -394,7 +401,7 @@ EncryptSubmissionSchema.statics.findEncryptedSubmissionById = function (
 
 const compileSubmissionModel = (db: Mongoose): ISubmissionModel => {
   const Submission = db.model<ISubmissionSchema, ISubmissionModel>(
-    'Submission',
+    SUBMISSION_SCHEMA_ID,
     SubmissionSchema,
   )
   Submission.discriminator(SubmissionType.Email, EmailSubmissionSchema)

@@ -1,15 +1,16 @@
 import { useCallback, useMemo } from 'react'
 import {
   BiDotsHorizontalRounded,
-  BiLeftArrowAlt,
   BiShareAlt,
   BiShow,
   BiUserPlus,
 } from 'react-icons/bi'
-import { useLocation } from 'react-router-dom'
+import { Link as ReactLink, useLocation } from 'react-router-dom'
 import {
   Box,
   ButtonGroup,
+  chakra,
+  Divider,
   Drawer,
   DrawerBody,
   DrawerContent,
@@ -17,9 +18,12 @@ import {
   Flex,
   Grid,
   GridItem,
+  Skeleton,
+  Text,
   useBreakpointValue,
   useDisclosure,
 } from '@chakra-ui/react'
+import format from 'date-fns/format'
 
 import { AdminFormDto } from '~shared/types/form/form'
 
@@ -30,12 +34,13 @@ import {
   ADMINFORM_SETTINGS_SUBROUTE,
 } from '~constants/routes'
 import { useDraggable } from '~hooks/useDraggable'
+import { noPrintCss } from '~utils/noPrintCss'
 import Button, { ButtonProps } from '~components/Button'
 import IconButton from '~components/IconButton'
 import Tooltip from '~components/Tooltip'
 import { NavigationTab, NavigationTabList } from '~templates/NavigationTabs'
 
-import { AdminFormNavbarDetails } from './AdminFormNavbarDetails'
+import { AdminFormNavbarBreadcrumbs } from './AdminFormNavbarBreadcrumbs'
 
 export interface AdminFormNavbarProps {
   /**
@@ -43,13 +48,10 @@ export interface AdminFormNavbarProps {
    * If not provided, the navbar will be in a loading state.
    */
   formInfo?: Pick<AdminFormDto, 'title' | 'lastModified'>
-
   viewOnly: boolean
-
-  handleBackButtonClick: () => void
   handleAddCollabButtonClick: () => void
-  handlePreviewFormButtonClick: () => void
   handleShareButtonClick: () => void
+  previewFormLink: string
 }
 
 /**
@@ -59,9 +61,8 @@ export const AdminFormNavbar = ({
   formInfo,
   viewOnly,
   handleAddCollabButtonClick,
-  handleBackButtonClick,
-  handlePreviewFormButtonClick,
   handleShareButtonClick,
+  previewFormLink,
 }: AdminFormNavbarProps): JSX.Element => {
   const { ref, onMouseDown } = useDraggable<HTMLDivElement>()
   const { isOpen, onClose, onOpen } = useDisclosure()
@@ -93,19 +94,40 @@ export const AdminFormNavbar = ({
     [],
   )
 
+  const renderLastModified = useMemo(() => {
+    const lastModified = formInfo ? new Date(formInfo.lastModified) : new Date()
+    return (
+      <Skeleton isLoaded={!!formInfo}>
+        <Text
+          textStyle="legal"
+          textTransform="uppercase"
+          color="neutral.700"
+          textAlign="right"
+        >
+          {/* Use spans with nowrap to break the second half of the date as a group */}
+          <chakra.span>Saved at {format(lastModified, 'h:mm a')}, </chakra.span>
+          <chakra.span whiteSpace="nowrap">
+            {format(lastModified, 'dd LLL y')}
+          </chakra.span>
+        </Text>
+      </Skeleton>
+    )
+  }, [formInfo])
+
   return (
     <Grid
+      sx={noPrintCss}
       w="100vw"
       position="sticky"
       top={0}
       flexDir="column"
       templateColumns={{
-        base: '1fr',
+        base: 'auto auto',
         lg: 'repeat(3, minmax(0, 1fr))',
       }}
       templateRows="min-content"
       templateAreas={{
-        base: `'left right' 'actions actions' 'tabs tabs'`,
+        base: `'left right' 'tabs tabs'`,
         lg: `'left tabs right'`,
       }}
       boxShadow={{ lg: '0 1px 1px var(--chakra-colors-neutral-300)' }}
@@ -124,17 +146,7 @@ export const AdminFormNavbar = ({
         pl={{ base: '1.5rem', md: '1.75rem', lg: '2rem' }}
         pr="1rem"
       >
-        <Box>
-          <IconButton
-            mr="0.5rem"
-            aria-label="Go back to dashboard"
-            variant="clear"
-            colorScheme="secondary"
-            onClick={handleBackButtonClick}
-            icon={<BiLeftArrowAlt />}
-          />
-        </Box>
-        <AdminFormNavbarDetails formInfo={formInfo} />
+        <AdminFormNavbarBreadcrumbs formInfo={formInfo} />
       </GridItem>
       <NavigationTabList
         variant={tabResponsiveVariant}
@@ -185,6 +197,9 @@ export const AdminFormNavbar = ({
           icon={<BiDotsHorizontalRounded />}
         />
         <Box display={{ base: 'none', md: 'flex' }}>
+          <Flex pr="1rem" alignItems="center">
+            {renderLastModified}
+          </Flex>
           <ButtonGroup spacing="0.5rem" isDisabled={!formInfo}>
             <Tooltip label="Manage collaborators">
               <IconButton
@@ -196,9 +211,11 @@ export const AdminFormNavbar = ({
             </Tooltip>
             <Tooltip label="Preview form">
               <IconButton
+                as={ReactLink}
                 aria-label="Preview form"
                 variant="outline"
-                onClick={handlePreviewFormButtonClick}
+                to={previewFormLink}
+                target="_blank"
                 icon={<BiShow />}
               />
             </Tooltip>
@@ -212,6 +229,8 @@ export const AdminFormNavbar = ({
         <DrawerOverlay />
         <DrawerContent borderTopRadius="0.25rem">
           <DrawerBody px={0} py="0.5rem">
+            <Flex p="1rem">{renderLastModified}</Flex>
+            <Divider />
             <ButtonGroup
               flexDir="column"
               isDisabled={!formInfo}
@@ -219,7 +238,9 @@ export const AdminFormNavbar = ({
               w="100%"
             >
               <Button
-                onClick={handlePreviewFormButtonClick}
+                as={ReactLink}
+                to={previewFormLink}
+                target="_blank"
                 {...mobileDrawerExtraButtonProps}
                 leftIcon={<BiShow fontSize="1.25rem" />}
               >

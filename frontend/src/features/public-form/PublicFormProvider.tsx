@@ -8,11 +8,14 @@ import {
 } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { SubmitHandler } from 'react-hook-form'
+import { useNavigate } from 'react-router-dom'
 import { useDisclosure } from '@chakra-ui/react'
+import { datadogLogs } from '@datadog/browser-logs'
 import { differenceInMilliseconds, isPast } from 'date-fns'
 import get from 'lodash/get'
 import simplur from 'simplur'
 
+import { PAYMENT_CONTACT_FIELD_ID } from '~shared/constants'
 import {
   FormAuthType,
   FormResponseMode,
@@ -20,6 +23,7 @@ import {
 } from '~shared/types/form'
 
 import { FORMID_REGEX } from '~constants/routes'
+import { useBrowserStm } from '~hooks/payments'
 import { useTimeout } from '~hooks/useTimeout'
 import { useToast } from '~hooks/useToast'
 import { HttpError } from '~services/ApiService'
@@ -33,6 +37,7 @@ import {
   trackVisitPublicForm,
 } from '~features/analytics/AnalyticsService'
 import { useEnv } from '~features/env/queries'
+import { getPaymentPageUrl } from '~features/public-form/utils/urls'
 import {
   RecaptchaClosedError,
   useRecaptcha,
@@ -46,10 +51,12 @@ import { FormNotFound } from './components/FormNotFound'
 import { usePublicAuthMutations, usePublicFormMutations } from './mutations'
 import { PublicFormContext, SubmissionData } from './PublicFormContext'
 import { usePublicFormView } from './queries'
+import { axiosDebugFlow } from './utils'
 
 interface PublicFormProviderProps {
   formId: string
   children: React.ReactNode
+  startTime: number
 }
 
 export function useCommonFormProvider(formId: string) {
@@ -99,9 +106,11 @@ export function useCommonFormProvider(formId: string) {
 export const PublicFormProvider = ({
   formId,
   children,
+  startTime,
 }: PublicFormProviderProps): JSX.Element => {
   // Once form has been submitted, submission data will be set here.
   const [submissionData, setSubmissionData] = useState<SubmissionData>()
+  const [numVisibleFields, setNumVisibleFields] = useState(0)
 
   const { data, isLoading, error, ...rest } = usePublicFormView(
     formId,
@@ -116,7 +125,7 @@ export const PublicFormProvider = ({
     }
   }, [submissionData])
 
-  const { data: { captchaPublicKey } = {} } = useEnv(
+  const { data: { captchaPublicKey, useFetchForSubmissions } = {} } = useEnv(
     /* enabled= */ !!data?.form.hasCaptcha,
   )
   const { hasLoaded, getCaptchaResponse, containerId } = useRecaptcha({
@@ -182,13 +191,24 @@ export const PublicFormProvider = ({
     }
   }, [data?.form.form_fields, toast, vfnToastIdRef])
 
-  const { submitEmailModeFormMutation, submitStorageModeFormMutation } =
-    usePublicFormMutations(formId, submissionData?.id ?? '')
+  const {
+    submitEmailModeFormMutation,
+    submitStorageModeFormMutation,
+    submitEmailModeFormFetchMutation,
+    submitStorageModeFormFetchMutation,
+  } = usePublicFormMutations(formId, submissionData?.id ?? '')
 
   const { handleLogoutMutation } = usePublicAuthMutations(formId)
 
-  const handleSubmitForm: SubmitHandler<FormFieldValues> = useCallback(
-    async (formInputs) => {
+  const navigate = useNavigate()
+  const [, storePaymentMemory] = useBrowserStm(formId)
+  const handleSubmitForm: SubmitHandler<
+    FormFieldValues & { [PAYMENT_CONTACT_FIELD_ID]?: { value: string } }
+  > = useCallback(
+    async ({
+      [PAYMENT_CONTACT_FIELD_ID]: paymentReceiptEmailField,
+      ...formInputs
+    }) => {
       const { form } = data ?? {}
       if (!form) return
 
@@ -204,52 +224,240 @@ export const PublicFormProvider = ({
         return showErrorToast(error, form)
       }
 
+      const formData = {
+        formFields: form.form_fields,
+        formLogics: form.form_logics,
+        formInputs,
+        captchaResponse,
+        responseMetadata: {
+          responseTimeMs: differenceInMilliseconds(Date.now(), startTime),
+          numVisibleFields,
+        },
+      }
+
+      const logMeta = {
+        action: 'handleSubmitForm',
+        useFetchForSubmissions,
+      }
+
+      const onSuccess = ({
+        submissionId,
+        timestamp,
+      }: {
+        submissionId: string
+        timestamp: number
+      }) => {
+        setSubmissionData({
+          id: submissionId,
+          timestamp,
+        })
+        trackSubmitForm(form)
+      }
+
       switch (form.responseMode) {
-        case FormResponseMode.Email:
+        case FormResponseMode.Email: {
           // Using mutateAsync so react-hook-form goes into loading state.
-          return (
-            submitEmailModeFormMutation
-              .mutateAsync(
-                { formFields: form.form_fields, formInputs, captchaResponse },
-                {
-                  onSuccess: ({ submissionId }) => {
-                    setSubmissionData({
-                      id: submissionId,
-                      // TODO: Server should return server time so browser time is not used.
-                      timeInEpochMs: Date.now(),
-                    })
-                    trackSubmitForm(form)
+
+          const submitEmailFormWithFetch = function () {
+            datadogLogs.logger.info(`handleSubmitForm: submitting via fetch`, {
+              meta: {
+                ...logMeta,
+                responseMode: 'email',
+                method: 'fetch',
+              },
+            })
+
+            return submitEmailModeFormFetchMutation
+              .mutateAsync(formData, { onSuccess })
+              .catch(async (error) => {
+                datadogLogs.logger.warn(`handleSubmitForm: ${error.message}`, {
+                  meta: {
+                    ...logMeta,
+                    responseMode: 'email',
+                    method: 'fetch',
+                    error: {
+                      message: error.message,
+                      name: error.name,
+                      stack: error.stack,
+                    },
                   },
-                },
-              )
-              // Using catch since we are using mutateAsync and react-hook-form will continue bubbling this up.
-              .catch((error) => showErrorToast(error, form))
-          )
-        case FormResponseMode.Encrypt:
+                })
+                showErrorToast(error, form)
+              })
+          }
+
+          // TODO (#5826): Toggle to use fetch for submissions instead of axios. If enabled, this is used for testing and to use fetch instead of axios by default if testing shows fetch is more  stable. Remove once network error is resolved
+          if (useFetchForSubmissions) {
+            return submitEmailFormWithFetch()
+          } else {
+            datadogLogs.logger.info(`handleSubmitForm: submitting via axios`, {
+              meta: {
+                ...logMeta,
+                responseMode: 'email',
+                method: 'axios',
+              },
+            })
+
+            return (
+              submitEmailModeFormMutation
+                .mutateAsync(formData, { onSuccess })
+                // Using catch since we are using mutateAsync and react-hook-form will continue bubbling this up.
+                .catch(async (error) => {
+                  // TODO(#5826): Remove when we have resolved the Network Error
+                  datadogLogs.logger.warn(
+                    `handleSubmitForm: ${error.message}`,
+                    {
+                      meta: {
+                        ...logMeta,
+                        responseMode: 'email',
+                        method: 'axios',
+                        error: {
+                          message: error.message,
+                          stack: error.stack,
+                        },
+                      },
+                    },
+                  )
+                  if (/Network Error/i.test(error.message)) {
+                    axiosDebugFlow()
+                    return submitEmailFormWithFetch()
+                  } else {
+                    showErrorToast(error, form)
+                  }
+                })
+            )
+          }
+        }
+        case FormResponseMode.Encrypt: {
           // Using mutateAsync so react-hook-form goes into loading state.
-          return (
-            submitStorageModeFormMutation
+
+          const submitStorageFormWithFetch = function () {
+            datadogLogs.logger.info(`handleSubmitForm: submitting via fetch`, {
+              meta: {
+                ...logMeta,
+                responseMode: 'storage',
+                method: 'fetch',
+              },
+            })
+
+            return submitStorageModeFormFetchMutation
               .mutateAsync(
                 {
-                  formFields: form.form_fields,
-                  formInputs,
+                  ...formData,
                   publicKey: form.publicKey,
                   captchaResponse,
+                  paymentReceiptEmail: paymentReceiptEmailField?.value,
                 },
                 {
-                  onSuccess: ({ submissionId }) => {
+                  onSuccess: ({
+                    submissionId,
+                    timestamp,
+                    // payment forms will have non-empty paymentData field
+                    paymentData,
+                  }) => {
+                    trackSubmitForm(form)
+
+                    if (paymentData) {
+                      navigate(getPaymentPageUrl(formId, paymentData.paymentId))
+                      storePaymentMemory(paymentData.paymentId)
+                      return
+                    }
                     setSubmissionData({
                       id: submissionId,
-                      // TODO: Server should return server time so browser time is not used.
-                      timeInEpochMs: Date.now(),
+                      timestamp,
                     })
-                    trackSubmitForm(form)
                   },
                 },
               )
-              // Using catch since we are using mutateAsync and react-hook-form will continue bubbling this up.
-              .catch((error) => showErrorToast(error, form))
-          )
+              .catch(async (error) => {
+                datadogLogs.logger.warn(`handleSubmitForm: ${error.message}`, {
+                  meta: {
+                    ...logMeta,
+                    responseMode: 'storage',
+                    method: 'fetch',
+                    error: {
+                      message: error.message,
+                      name: error.name,
+                      stack: error.stack,
+                    },
+                  },
+                })
+                showErrorToast(error, form)
+              })
+          }
+
+          // TODO (#5826): Toggle to use fetch for submissions instead of axios. If enabled, this is used for testing and to use fetch instead of axios by default if testing shows fetch is more  stable. Remove once network error is resolved
+          if (useFetchForSubmissions) {
+            return submitStorageFormWithFetch()
+          } else {
+            datadogLogs.logger.info(`handleSubmitForm: submitting via axios`, {
+              meta: {
+                ...logMeta,
+                responseMode: 'storage',
+                method: 'axios',
+              },
+            })
+
+            return (
+              submitStorageModeFormMutation
+                .mutateAsync(
+                  {
+                    ...formData,
+                    publicKey: form.publicKey,
+                    captchaResponse,
+                    paymentReceiptEmail: paymentReceiptEmailField?.value,
+                  },
+                  {
+                    onSuccess: ({
+                      submissionId,
+                      timestamp,
+                      // payment forms will have non-empty paymentData field
+                      paymentData,
+                    }) => {
+                      trackSubmitForm(form)
+
+                      if (paymentData) {
+                        navigate(
+                          getPaymentPageUrl(formId, paymentData.paymentId),
+                        )
+                        storePaymentMemory(paymentData.paymentId)
+                        return
+                      }
+                      setSubmissionData({
+                        id: submissionId,
+                        timestamp,
+                      })
+                    },
+                  },
+                )
+                // Using catch since we are using mutateAsync and react-hook-form will continue bubbling this up.
+                .catch(async (error) => {
+                  // TODO(#5826): Remove when we have resolved the Network Error
+                  datadogLogs.logger.warn(
+                    `handleSubmitForm: ${error.message}`,
+                    {
+                      meta: {
+                        ...logMeta,
+                        responseMode: 'storage',
+                        method: 'axios',
+                        error: {
+                          message: error.message,
+                          stack: error.stack,
+                        },
+                      },
+                    },
+                  )
+
+                  if (/Network Error/i.test(error.message)) {
+                    axiosDebugFlow()
+                    return submitStorageFormWithFetch()
+                  } else {
+                    showErrorToast(error, form)
+                  }
+                })
+            )
+          }
+        }
       }
     },
     [
@@ -258,6 +466,14 @@ export const PublicFormProvider = ({
       showErrorToast,
       submitEmailModeFormMutation,
       submitStorageModeFormMutation,
+      formId,
+      navigate,
+      storePaymentMemory,
+      submitEmailModeFormFetchMutation,
+      submitStorageModeFormFetchMutation,
+      useFetchForSubmissions,
+      numVisibleFields,
+      startTime,
     ],
   )
 
@@ -276,6 +492,10 @@ export const PublicFormProvider = ({
     [data?.form, data?.spcpSession],
   )
 
+  const isPaymentEnabled =
+    data?.form.responseMode === FormResponseMode.Encrypt &&
+    data.form.payments_field.enabled
+
   if (isNotFormId) {
     return <NotFoundErrorPage />
   }
@@ -292,6 +512,9 @@ export const PublicFormProvider = ({
         captchaContainerId: containerId,
         expiryInMs,
         isLoading: isLoading || (!!data?.form.hasCaptcha && !hasLoaded),
+        isPaymentEnabled,
+        isPreview: false,
+        setNumVisibleFields,
         ...commonFormValues,
         ...data,
         ...rest,

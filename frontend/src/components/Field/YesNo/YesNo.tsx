@@ -89,6 +89,7 @@ export const YesNo = forwardRef<YesNoProps, 'input'>(
           // Ref is set here for tracking current value, and also so any errors
           // can focus this input.
           ref={ref}
+          title={props.title}
         />
         <YesNoOption
           side="right"
@@ -96,6 +97,7 @@ export const YesNo = forwardRef<YesNoProps, 'input'>(
           {...yesProps}
           leftIcon={BiCheck}
           label="Yes"
+          title={props.title}
         />
       </HStack>
     )

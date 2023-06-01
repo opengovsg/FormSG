@@ -8,6 +8,9 @@ import * as stories from './NricField.stories'
 
 const { ValidationRequired, ValidationOptional } = composeStories(stories)
 
+const VALID_NRIC = 'S0000002G'
+const INVALID_NRIC = 'S0000001B'
+
 describe('validation required', () => {
   it('renders error when field is not filled before submitting', async () => {
     // Arrange
@@ -29,19 +32,21 @@ describe('validation required', () => {
     const user = userEvent.setup()
     const schema = ValidationRequired.args?.schema
     render(<ValidationRequired />)
-    const input = screen.getByLabelText(schema!.title) as HTMLInputElement
+    const input = screen.getByLabelText(
+      `${schema!.questionNumber}. ${schema!.title}`,
+    ) as HTMLInputElement
     const submitButton = screen.getByText('Submit')
 
     expect(input.value).toBe('')
 
     // Act
     // Valid NRIC
-    await user.type(input, 'S0000002G')
+    await user.type(input, VALID_NRIC)
     await user.click(submitButton)
 
     // Assert
     // Should show success message.
-    const success = screen.getByText('You have submitted: S0000002G')
+    const success = screen.getByText(`You have submitted: ${VALID_NRIC}`)
     expect(success).not.toBeNull()
     const error = screen.queryByText('Please fill in required field')
     expect(error).toBeNull()
@@ -69,7 +74,9 @@ describe('validation optional', () => {
     const user = userEvent.setup()
     const schema = ValidationOptional.args?.schema
     render(<ValidationOptional />)
-    const input = screen.getByLabelText(schema!.title) as HTMLInputElement
+    const input = screen.getByLabelText(
+      `${schema!.questionNumber}. ${schema!.title}`,
+    ) as HTMLInputElement
     const submitButton = screen.getByText('Submit')
 
     expect(input.value).toBe('')
@@ -93,18 +100,69 @@ describe('NRIC validation', () => {
     const user = userEvent.setup()
     const schema = ValidationOptional.args?.schema
     render(<ValidationOptional />)
-    const input = screen.getByLabelText(schema!.title) as HTMLInputElement
+    const input = screen.getByLabelText(
+      `${schema!.questionNumber}. ${schema!.title}`,
+    ) as HTMLInputElement
     const submitButton = screen.getByText('Submit')
 
     expect(input.value).toBe('')
 
     // Act
-    await user.type(input, 'S0000001B')
+    await user.type(input, INVALID_NRIC)
     await user.click(submitButton)
 
     // Assert
     // Should show error message.
     const error = screen.getByText('Please enter a valid NRIC')
+    expect(error).not.toBeNull()
+  })
+})
+
+describe('NRIC field input', () => {
+  it('handles leading spaces', async () => {
+    // Arrange
+    const user = userEvent.setup()
+    const schema = ValidationOptional.args?.schema
+    render(<ValidationOptional />)
+    const input = screen.getByLabelText(
+      `${schema!.questionNumber}. ${schema!.title}`,
+    ) as HTMLInputElement
+    const submitButton = screen.getByText('Submit')
+
+    expect(input.value).toBe('')
+
+    // Act
+    await user.type(input, ` ${VALID_NRIC}`)
+
+    expect(input.value).toBe(VALID_NRIC)
+
+    await user.click(submitButton)
+
+    // Assert
+    // Should show error message.
+    const error = screen.getByText(`You have submitted: ${VALID_NRIC}`)
+    expect(error).not.toBeNull()
+  })
+
+  it('handles trailing spaces and renders no errors', async () => {
+    // Arrange
+    const user = userEvent.setup()
+    const schema = ValidationOptional.args?.schema
+    render(<ValidationOptional />)
+    const input = screen.getByLabelText(
+      `${schema!.questionNumber}. ${schema!.title}`,
+    ) as HTMLInputElement
+    const submitButton = screen.getByText('Submit')
+
+    expect(input.value).toBe('')
+
+    // Act
+    await user.type(input, `${VALID_NRIC} `)
+    await user.click(submitButton)
+
+    // Assert
+    // Should show error message.
+    const error = screen.getByText(`You have submitted: ${VALID_NRIC}`)
     expect(error).not.toBeNull()
   })
 })

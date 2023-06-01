@@ -1,5 +1,7 @@
 import { Meta, Story } from '@storybook/react'
 
+import { getUnauthedUser } from '~/mocks/msw/handlers/user'
+
 import {
   getMobileViewParameters,
   LoggedInDecorator,
@@ -31,6 +33,9 @@ const Template: Story = (args: AdminForbiddenErrorPageProps) => (
 )
 export const NotLoggedIn = Template.bind({})
 NotLoggedIn.decorators = [LoggedOutDecorator]
+NotLoggedIn.parameters = {
+  msw: [getUnauthedUser()],
+}
 
 export const WithMessage = Template.bind({})
 WithMessage.args = {

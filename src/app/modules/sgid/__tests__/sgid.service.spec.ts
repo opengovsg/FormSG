@@ -2,7 +2,6 @@
 import { SgidClient } from '@opengovsg/sgid-client'
 import fs from 'fs'
 import Jwt from 'jsonwebtoken'
-import { mocked } from 'ts-jest/utils'
 
 import {
   SgidCreateRedirectUrlError,
@@ -31,9 +30,9 @@ import {
 } from './sgid.test.constants'
 
 jest.mock('@opengovsg/sgid-client')
-const MockSgidClient = mocked(SgidClient, true)
+const MockSgidClient = jest.mocked(SgidClient)
 jest.mock('jsonwebtoken')
-const MockJwt = mocked(Jwt)
+const MockJwt = jest.mocked(Jwt)
 jest.mock('fs', () => ({
   ...(jest.requireActual('fs') as typeof fs),
   readFileSync: jest.fn().mockImplementation((v) => v),
@@ -61,7 +60,7 @@ describe('sgid.service', () => {
   describe('createRedirectUrl', () => {
     it('should return a string if ok', () => {
       const SgidService = new SgidServiceClass(MOCK_OPTIONS)
-      const sgidClient = mocked(MockSgidClient.mock.instances[0], true)
+      const sgidClient = jest.mocked(MockSgidClient.mock.instances[0])
       sgidClient.authorizationUrl.mockReturnValue({
         url: MOCK_REDIRECT_URL,
         nonce: MOCK_NONCE,
@@ -79,7 +78,7 @@ describe('sgid.service', () => {
     })
     it('should return error if not ok', () => {
       const SgidService = new SgidServiceClass(MOCK_OPTIONS)
-      const sgidClient = mocked(MockSgidClient.mock.instances[0], true)
+      const sgidClient = jest.mocked(MockSgidClient.mock.instances[0])
       sgidClient.authorizationUrl.mockReturnValue({
         // @ts-ignore
         url: undefined,
@@ -115,7 +114,7 @@ describe('sgid.service', () => {
   describe('token', () => {
     it('should return the access token given the code', async () => {
       const SgidService = new SgidServiceClass(MOCK_OPTIONS)
-      const sgidClient = mocked(MockSgidClient.mock.instances[0], true)
+      const sgidClient = jest.mocked(MockSgidClient.mock.instances[0])
       sgidClient.callback.mockResolvedValue(MOCK_TOKEN_RESULT)
       const result = await SgidService.retrieveAccessToken(MOCK_AUTH_CODE)
       expect(result._unsafeUnwrap()).toStrictEqual(MOCK_TOKEN_RESULT)
@@ -123,7 +122,7 @@ describe('sgid.service', () => {
     })
     it('should return error on error', async () => {
       const SgidService = new SgidServiceClass(MOCK_OPTIONS)
-      const sgidClient = mocked(MockSgidClient.mock.instances[0], true)
+      const sgidClient = jest.mocked(MockSgidClient.mock.instances[0])
       sgidClient.callback.mockRejectedValue(new Error())
       const result = await SgidService.retrieveAccessToken(MOCK_AUTH_CODE)
       expect(result._unsafeUnwrapErr()).toBeInstanceOf(
@@ -135,7 +134,7 @@ describe('sgid.service', () => {
   describe('userInfo', () => {
     it('should return the userinfo given the code', async () => {
       const SgidService = new SgidServiceClass(MOCK_OPTIONS)
-      const sgidClient = mocked(MockSgidClient.mock.instances[0], true)
+      const sgidClient = jest.mocked(MockSgidClient.mock.instances[0])
       sgidClient.userinfo.mockResolvedValue({
         sub: MOCK_USER_INFO.sub,
         data: {
@@ -151,7 +150,7 @@ describe('sgid.service', () => {
     })
     it('should return error on error', async () => {
       const SgidService = new SgidServiceClass(MOCK_OPTIONS)
-      const sgidClient = mocked(MockSgidClient.mock.instances[0], true)
+      const sgidClient = jest.mocked(MockSgidClient.mock.instances[0])
       sgidClient.userinfo.mockRejectedValue(new Error())
       const result = await SgidService.retrieveUserInfo({
         accessToken: MOCK_ACCESS_TOKEN,

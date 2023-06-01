@@ -20,14 +20,19 @@ export const NricField = ({ schema }: NricFieldProps): JSX.Element => {
     [schema],
   )
 
-  const { register } = useFormContext<SingleAnswerFieldInput>()
+  const { register, setValue } = useFormContext<SingleAnswerFieldInput>()
 
   return (
     <FieldContainer schema={schema}>
       <Input
-        aria-label={schema.title}
+        aria-label={`${schema.questionNumber}. ${schema.title}`}
         defaultValue=""
-        {...register(schema._id, validationRules)}
+        preventDefaultOnEnter
+        {...register(schema._id, {
+          ...validationRules,
+          onChange: (event: React.ChangeEvent<HTMLInputElement>) =>
+            setValue(schema._id, event.target.value.trim()),
+        })}
       />
     </FieldContainer>
   )

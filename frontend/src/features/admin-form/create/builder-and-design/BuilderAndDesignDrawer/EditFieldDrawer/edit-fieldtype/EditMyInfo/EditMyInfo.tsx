@@ -47,7 +47,7 @@ export const EditMyInfo = ({ field }: EditMyInfoProps): JSX.Element => {
   return (
     <CreatePageDrawerContentContainer>
       <VStack align="flex-start">
-        <Text textStyle="subhead-1">Data Source</Text>
+        <Text textStyle="subhead-1">Data source</Text>
         {extendedField.dataSource.map((dataSource, idx) => (
           <HStack key={idx} align="flex-start">
             <Icon fontSize="1.5rem" as={BiData}></Icon>

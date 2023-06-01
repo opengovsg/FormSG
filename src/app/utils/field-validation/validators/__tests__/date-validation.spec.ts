@@ -1,10 +1,10 @@
-import { ValidateFieldError } from 'src/app/modules/submission/submission.errors'
-import { validateField } from 'src/app/utils/field-validation'
-
 import {
   generateDefaultField,
   generateNewSingleAnswerResponse,
-} from 'tests/unit/backend/helpers/generate-form-data'
+} from '__tests__/unit/backend/helpers/generate-form-data'
+
+import { ValidateFieldError } from 'src/app/modules/submission/submission.errors'
+import { validateField } from 'src/app/utils/field-validation'
 
 import {
   BasicField,

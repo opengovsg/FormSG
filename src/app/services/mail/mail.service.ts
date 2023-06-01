@@ -1,4 +1,4 @@
-import { tracer } from 'dd-trace'
+import tracer from 'dd-trace'
 import { get, inRange, isEmpty } from 'lodash'
 import moment from 'moment-timezone'
 import { err, errAsync, okAsync, Result, ResultAsync } from 'neverthrow'
@@ -6,6 +6,7 @@ import Mail from 'nodemailer/lib/mailer'
 import promiseRetry from 'promise-retry'
 import validator from 'validator'
 
+import { getPaymentInvoiceDownloadUrlPath } from '../../../../shared/utils/urls'
 import {
   HASH_EXPIRE_AFTER_SECONDS,
   stringifiedSmsWarningTiers,
@@ -46,6 +47,7 @@ import {
   generateAutoreplyPdf,
   generateBounceNotificationHtml,
   generateLoginOtpHtml,
+  generatePaymentConfirmationHtml,
   generateSmsVerificationDisabledHtmlForAdmin,
   generateSmsVerificationDisabledHtmlForCollab,
   generateSmsVerificationWarningHtmlForAdmin,
@@ -76,7 +78,7 @@ export class MailService {
    */
   #appUrl: Required<MailServiceParams>['appUrl']
   /**
-   * The transporter to be used to send mail.
+   * The transporter to be used to send mail (SES in SG).
    */
   #transporter: Required<MailServiceParams>['transporter']
   /**
@@ -175,8 +177,9 @@ export class MailService {
           error,
         })
 
+        const respCode: number | undefined = get(error, 'responseCode')
         // Retry only on 4xx errors.
-        if (inRange(get(error, 'responseCode', 0), 400, 500)) {
+        if (!!respCode && inRange(respCode, 400, 500)) {
           return retry(error)
         }
 
@@ -310,11 +313,13 @@ export class MailService {
    * Sends a verification otp to a valid email
    * @param recipient the recipient email address
    * @param otp the otp to send
+   * @param otpPrefix the otpPrefix to identify
    * @throws error if mail fails, to be handled by the caller
    */
   sendVerificationOtp = (
     recipient: string,
     otp: string,
+    otpPrefix: string,
   ): ResultAsync<true, MailSendError> => {
     const minutesToExpiry = Math.floor(HASH_EXPIRE_AFTER_SECONDS / 60)
 
@@ -326,6 +331,7 @@ export class MailService {
         appName: this.#appName,
         minutesToExpiry,
         otp,
+        otpPrefix,
       }),
       headers: {
         [EMAIL_HEADERS.emailType]: EmailType.VerificationOtp,
@@ -345,10 +351,12 @@ export class MailService {
   sendLoginOtp = ({
     recipient,
     otp,
+    otpPrefix,
     ipAddress,
   }: {
     recipient: string
     otp: string
+    otpPrefix: string
     ipAddress: string
   }): ResultAsync<true, MailSendError> => {
     return generateLoginOtpHtml({
@@ -356,6 +364,7 @@ export class MailService {
       appUrl: this.#appUrl,
       ipAddress: ipAddress,
       otp,
+      otpPrefix,
     }).andThen((loginHtml) => {
       const mail: MailOptions = {
         to: recipient,
@@ -772,6 +781,48 @@ export class MailService {
       })
   }
 
+  /**
+   * Sends a payment confirmation to a valid email
+   * @param email the recipient email address
+   * @param formTitle the form title of the payment form
+   * @param submissionId the response ID
+   * @param formId the payment form ID
+   * @param paymentId the payment ID
+   * @throws error if mail fails, to be handled by the caller
+   */
+  sendPaymentConfirmationEmail = ({
+    email,
+    formTitle,
+    submissionId,
+    formId,
+    paymentId,
+  }: {
+    email: string
+    formTitle: string
+    submissionId: string
+    formId: string
+    paymentId: string
+  }): ResultAsync<true, MailSendError> => {
+    const mail: MailOptions = {
+      to: email,
+      from: this.#senderFromString,
+      subject: `Your payment on ${this.#appName} was successful`,
+      html: generatePaymentConfirmationHtml({
+        appName: this.#appName,
+        formTitle,
+        submissionId,
+        invoiceUrl: `${this.#appUrl}/api/v3/${getPaymentInvoiceDownloadUrlPath(
+          formId,
+          paymentId,
+        )}`,
+      }),
+      headers: {
+        [EMAIL_HEADERS.emailType]: EmailType.PaymentConfirmation,
+      },
+    }
+    return this.#sendNodeMail(mail, { mailId: 'paymentConfirmation' })
+  }
+
   // Utility method to send a warning mail to the collaborators of a form.
   // Note that this also sends the mail out to the admin of the form as well.
   sendWarningMailForCollab = (
@@ -874,6 +925,25 @@ export class MailService {
         },
       )
     )
+  }
+
+  // Utility method to send a mail during local dev (to maildev)
+  // The sender and receipent are both form's internal mailing address
+  sendLocalDevMail = (
+    subject: string,
+    mailHtml: string,
+  ): ResultAsync<true, MailGenerationError | MailSendError> => {
+    const mailOptions: MailOptions = {
+      to: this.#officialMail,
+      from: this.#senderFromString,
+      html: mailHtml,
+      subject: subject,
+      replyTo: this.#officialMail,
+      bcc: this.#senderMail,
+    }
+    return this.#sendNodeMail(mailOptions, {
+      mailId: 'sendWarningMailForAdmin',
+    })
   }
 }
 

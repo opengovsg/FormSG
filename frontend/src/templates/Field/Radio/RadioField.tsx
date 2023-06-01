@@ -86,7 +86,7 @@ export const RadioField = ({
               // Trigger validation of others input if Other radio is selected.
               if (value === RADIO_OTHERS_INPUT_VALUE) trigger(othersInputName)
             }}
-            aria-label={schema.title}
+            aria-label={`${schema.questionNumber}. ${schema.title}`}
             aria-invalid={
               !!get(errors, radioInputName) || !!get(errors, othersInputName)
             }

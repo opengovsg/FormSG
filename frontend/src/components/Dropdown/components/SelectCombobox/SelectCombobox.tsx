@@ -6,7 +6,6 @@ import {
   Stack,
   Text,
   useMergeRefs,
-  VisuallyHidden,
 } from '@chakra-ui/react'
 
 import Input from '~components/Input'
@@ -20,7 +19,6 @@ import { ToggleChevron } from './ToggleChevron'
 export const SelectCombobox = forwardRef<HTMLInputElement>(
   (_props, ref): JSX.Element => {
     const {
-      getComboboxProps,
       toggleMenu,
       selectedItem,
       getInputProps,
@@ -32,10 +30,8 @@ export const SelectCombobox = forwardRef<HTMLInputElement>(
       inputValue,
       isRequired,
       placeholder,
-      setIsFocused,
       isOpen,
       resetInputValue,
-      inputAria,
       inputRef,
     } = useSelectContext()
 
@@ -56,19 +52,7 @@ export const SelectCombobox = forwardRef<HTMLInputElement>(
 
     return (
       <Flex>
-        <VisuallyHidden id={inputAria.id}>{inputAria.label}</VisuallyHidden>
-        <InputGroup
-          pos="relative"
-          display="grid"
-          gridTemplateColumns="1fr"
-          {...getComboboxProps({
-            disabled: isDisabled,
-            readOnly: isReadOnly,
-            required: isRequired,
-            'aria-expanded': !!isOpen,
-            onFocus: () => setIsFocused(true),
-          })}
-        >
+        <InputGroup pos="relative" display="grid" gridTemplateColumns="1fr">
           <Stack
             visibility={inputValue ? 'hidden' : 'initial'}
             direction="row"
@@ -79,6 +63,7 @@ export const SelectCombobox = forwardRef<HTMLInputElement>(
             pr="calc(2.75rem + 1px)"
             align="center"
             zIndex={2}
+            aria-hidden
           >
             {selectedItemMeta.icon ? (
               <Icon
@@ -106,7 +91,10 @@ export const SelectCombobox = forwardRef<HTMLInputElement>(
               onClick: handleToggleMenu,
               onBlur: () => !isOpen && resetInputValue(),
               ref: mergedInputRef,
-              'aria-describedby': inputAria.id,
+              disabled: isDisabled,
+              readOnly: isReadOnly,
+              required: isRequired,
+              'aria-expanded': !!isOpen,
             })}
           />
           <ToggleChevron />

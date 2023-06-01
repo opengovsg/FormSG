@@ -8,13 +8,14 @@
     "jszip": "^3.7.1",
     "libphonenumber-js": "^1.9.43",
     "lodash": "^4.17.21",
-    "type-fest": "^2.8.0",
+    "type-fest": "^3.2.0",
     "validator": "^13.7.0",
     "zod": "^3.11.6"
   },
   "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "^4.28.2",
-    "@typescript-eslint/parser": "^4.28.2",
+    "@types/lodash": "^4.14.186",
+    "@typescript-eslint/eslint-plugin": "^5.42.1",
+    "@typescript-eslint/parser": "^5.42.1",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^4.0.0"
   }

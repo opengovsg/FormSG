@@ -1,3 +1,4 @@
+import { MYINFO_ATTRIBUTE_MAP } from '~shared/constants/field/myinfo'
 import {
   AttachmentSize,
   BasicField,
@@ -7,14 +8,10 @@ import {
   RatingShape,
 } from '~shared/types/field'
 
-import {
-  BASICFIELD_TO_DRAWER_META,
-  MYINFO_FIELD_TO_DRAWER_META,
-} from '../../constants'
+import { BASICFIELD_TO_DRAWER_META } from '../../constants'
 import {
   MYINFO_DATEFIELD_META,
   MYINFO_DROPDOWNFIELD_META,
-  MYINFO_FIELD_CONSTANTS,
   MYINFO_MOBILEFIELD_META,
   MYINFO_TEXTFIELD_META,
 } from '../constants'
@@ -90,6 +87,7 @@ export const getFieldCreationMeta = (fieldType: BasicField): FieldCreateDto => {
           customVal: null,
         },
         allowPrefill: false,
+        lockPrefill: false,
       }
     }
     case BasicField.LongText:
@@ -196,9 +194,9 @@ export const getMyInfoFieldCreationMeta = (
   > = {
     disabled: false,
     required: true,
-    title: MYINFO_FIELD_TO_DRAWER_META[myInfoAttribute].label,
+    title: MYINFO_ATTRIBUTE_MAP[myInfoAttribute].value,
     description: '',
-    fieldType: MYINFO_FIELD_CONSTANTS[myInfoAttribute].fieldType,
+    fieldType: MYINFO_ATTRIBUTE_MAP[myInfoAttribute].fieldType,
     myInfo: {
       attr: myInfoAttribute,
     },

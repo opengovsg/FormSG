@@ -1,5 +1,4 @@
 import { useCallback, useMemo } from 'react'
-import { useNavigate } from 'react-router-dom'
 
 import { AdminDashboardFormMetaDto } from '~shared/types/form/form'
 
@@ -10,8 +9,8 @@ import { useUser } from '~features/user/queries'
 import { useWorkspaceRowsContext } from '../WorkspaceRowsContext'
 
 type UseRowActionReturn = {
-  handleEditForm: () => void
-  handlePreviewForm: () => void
+  adminFormLink: string
+  previewFormLink: string
   handleDuplicateForm: () => void
   handleCollaborators: () => void
   handleDeleteForm: () => void
@@ -22,7 +21,6 @@ type UseRowActionReturn = {
 export const useRowAction = (
   formMeta: AdminDashboardFormMetaDto,
 ): UseRowActionReturn => {
-  const navigate = useNavigate()
   const { user } = useUser()
 
   const {
@@ -37,21 +35,20 @@ export const useRowAction = (
     [formMeta, user],
   )
 
+  const adminFormLink = useMemo(
+    () => `${ADMINFORM_ROUTE}/${formMeta._id}`,
+    [formMeta],
+  )
+
+  const previewFormLink = useMemo(
+    () => `${ADMINFORM_ROUTE}/${formMeta._id}/${ADMINFORM_PREVIEW_ROUTE}`,
+    [formMeta],
+  )
+
   const handleShareForm = useCallback(
     () => onOpenShareFormModal(formMeta),
     [formMeta, onOpenShareFormModal],
   )
-
-  const handleEditForm = useCallback(
-    () => navigate(`${ADMINFORM_ROUTE}/${formMeta._id}`),
-    [formMeta, navigate],
-  )
-
-  const handlePreviewForm = useCallback(() => {
-    return window.open(
-      `${window.location.origin}${ADMINFORM_ROUTE}/${formMeta._id}/${ADMINFORM_PREVIEW_ROUTE}`,
-    )
-  }, [formMeta])
 
   const handleDuplicateForm = useCallback(
     () => onOpenDupeFormModal(formMeta),
@@ -69,9 +66,9 @@ export const useRowAction = (
   }, [formMeta, isFormAdmin, onOpenDeleteFormModal])
 
   return {
+    adminFormLink,
+    previewFormLink,
     handleShareForm,
-    handleEditForm,
-    handlePreviewForm,
     handleDuplicateForm,
     handleCollaborators,
     handleDeleteForm,

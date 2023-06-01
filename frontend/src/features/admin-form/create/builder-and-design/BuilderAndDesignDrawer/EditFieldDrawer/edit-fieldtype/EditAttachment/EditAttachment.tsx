@@ -163,7 +163,11 @@ export const EditAttachment = ({ field }: EditAttachmentProps): JSX.Element => {
       <FormControl isReadOnly={isLoading}>
         <Toggle {...register('required')} label="Required" />
       </FormControl>
-      <FormControl isReadOnly={isLoading} isInvalid={!!errors.attachmentSize}>
+      <FormControl
+        id="attachmentSize"
+        isReadOnly={isLoading}
+        isInvalid={!!errors.attachmentSize}
+      >
         <FormLabel isRequired>Maximum size of individual attachment</FormLabel>
         <Skeleton isLoaded={!!form}>
           <Controller

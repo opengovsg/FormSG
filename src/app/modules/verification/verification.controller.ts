@@ -2,7 +2,11 @@ import { celebrate, Joi, Segments } from 'celebrate'
 import { StatusCodes } from 'http-status-codes'
 import { ok } from 'neverthrow'
 
-import { ErrorDto, FormAuthType } from '../../../../shared/types'
+import {
+  ErrorDto,
+  FormAuthType,
+  SendFormOtpResponseDto,
+} from '../../../../shared/types'
 import { SALT_ROUNDS } from '../../../../shared/utils/verification'
 import { createLoggerWithLabel } from '../../config/logger'
 import { generateOtpWithHash } from '../../utils/otp'
@@ -10,6 +14,7 @@ import { createReqMeta, getRequestIp } from '../../utils/request'
 import { ControllerHandler } from '../core/core.types'
 import { setFormTags } from '../datadog/datadog.utils'
 import * as FormService from '../form/form.service'
+import { MyInfoService } from '../myinfo/myinfo.service'
 import * as MyInfoUtil from '../myinfo/myinfo.util'
 import { SgidService } from '../sgid/sgid.service'
 import { getOidcService } from '../spcp/spcp.oidc.service'
@@ -121,7 +126,10 @@ export const handleResetField: ControllerHandler<
     fieldId,
     ...createReqMeta(req),
   }
-  return VerificationService.resetFieldForTransaction(transactionId, fieldId)
+  return VerificationService.resetFieldForTransaction({
+    transactionId,
+    fieldId,
+  })
     .map(() => res.sendStatus(StatusCodes.OK))
     .mapErr((error) => {
       logger.error({
@@ -157,14 +165,15 @@ export const handleGetOtp: ControllerHandler<
     ...createReqMeta(req),
   }
   return generateOtpWithHash(logMeta, SALT_ROUNDS)
-    .andThen(({ otp, hashedOtp }) =>
+    .andThen(({ otp, hashedOtp, otpPrefix }) =>
       VerificationService.sendNewOtp({
-        fieldId,
         hashedOtp,
         otp,
+        otpPrefix,
         recipient: answer,
         transactionId,
         senderIp,
+        fieldId,
       }),
     )
     .map(() => res.sendStatus(StatusCodes.CREATED))
@@ -202,8 +211,8 @@ export const handleGetOtp: ControllerHandler<
  * @returns 500 when there is a database error
  */
 export const _handleGenerateOtp: ControllerHandler<
-  { transactionId: string; formId: string; fieldId: string },
-  ErrorDto,
+  { transactionId: string; formId: string; fieldId: string; otpPrefix: string },
+  SendFormOtpResponseDto | ErrorDto,
   { answer: string }
 > = async (req, res) => {
   const { transactionId, formId, fieldId } = req.params
@@ -211,7 +220,7 @@ export const _handleGenerateOtp: ControllerHandler<
   const senderIp = getRequestIp(req)
 
   const logMeta = {
-    action: 'handleGenerateOtp',
+    action: '_handleGenerateOtp',
     transactionId,
     fieldId,
     ...createReqMeta(req),
@@ -266,8 +275,8 @@ export const _handleGenerateOtp: ControllerHandler<
                 return error
               })
           case FormAuthType.MyInfo:
-            return MyInfoUtil.extractMyInfoCookie(req.cookies)
-              .andThen(MyInfoUtil.extractAccessTokenFromCookie)
+            return MyInfoUtil.extractMyInfoLoginJwt(req.cookies)
+              .andThen(MyInfoService.verifyLoginJwt)
               .map(() => form)
               .mapErr((error) => {
                 logger.error({
@@ -282,23 +291,29 @@ export const _handleGenerateOtp: ControllerHandler<
         }
       })
       .andThen((form) =>
-        generateOtpWithHash(logMeta, SALT_ROUNDS)
-          .andThen(({ otp, hashedOtp }) =>
-            // Step 3: Send otp
-            VerificationService.sendNewOtp({
-              fieldId,
-              hashedOtp,
-              otp,
-              recipient: answer,
-              transactionId,
-              senderIp,
-            }),
-          )
-          // Return the required data for next steps.
-          .map((updatedTransaction) => ({ updatedTransaction, form })),
+        generateOtpWithHash(logMeta, SALT_ROUNDS).andThen(
+          ({ otp, hashedOtp, otpPrefix }) =>
+            // Step 3: Send Otp
+            {
+              return VerificationService.sendNewOtp({
+                fieldId,
+                hashedOtp,
+                otp,
+                otpPrefix,
+                recipient: answer,
+                transactionId,
+                senderIp,
+              }) // Return the required data for next steps.
+                .map((updatedTransaction) => ({
+                  updatedTransaction,
+                  form,
+                  otpPrefix,
+                }))
+            },
+        ),
       )
-      .map(({ updatedTransaction, form }) => {
-        res.sendStatus(StatusCodes.CREATED)
+      .map(({ updatedTransaction, form, otpPrefix }) => {
+        res.status(StatusCodes.CREATED).json({ otpPrefix })
         // NOTE: This is returned because tests require this to avoid async mocks interfering with each other.
         // However, this is not an issue in reality because express does not require awaiting on the sendStatus call.
         return VerificationService.disableVerifiedFieldsIfRequired(
@@ -352,7 +367,11 @@ export const handleVerifyOtp: ControllerHandler<
     fieldId,
     ...createReqMeta(req),
   }
-  return VerificationService.verifyOtp(transactionId, fieldId, otp)
+  return VerificationService.verifyOtp({
+    transactionId,
+    inputOtp: otp,
+    fieldId,
+  })
     .map((signedData) => res.status(StatusCodes.OK).json(signedData))
     .mapErr((error) => {
       logger.error({
@@ -402,7 +421,13 @@ export const _handleOtpVerification: ControllerHandler<
   return (
     FormService.retrieveFormById(formId)
       // Step 2: Verify the otp sent over by the client
-      .andThen(() => VerificationService.verifyOtp(transactionId, fieldId, otp))
+      .andThen(() => {
+        return VerificationService.verifyOtp({
+          transactionId,
+          inputOtp: otp,
+          fieldId,
+        })
+      })
       .map((signedData) => res.status(StatusCodes.OK).json(signedData))
       .mapErr((error) => {
         logger.error({
@@ -460,7 +485,10 @@ export const handleResetFieldVerification: ControllerHandler<
   }
   return FormService.retrieveFormById(formId)
     .andThen(() =>
-      VerificationService.resetFieldForTransaction(transactionId, fieldId),
+      VerificationService.resetFieldForTransaction({
+        transactionId,
+        fieldId,
+      }),
     )
     .map(() => res.sendStatus(StatusCodes.NO_CONTENT))
     .mapErr((error) => {

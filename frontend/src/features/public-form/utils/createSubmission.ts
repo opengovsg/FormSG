@@ -1,3 +1,4 @@
+import { datadogLogs } from '@datadog/browser-logs'
 import { encode as encodeBase64 } from '@stablelib/base64'
 import { chain, forOwn, isEmpty, keyBy, omit, pick } from 'lodash'
 
@@ -8,10 +9,13 @@ import {
   MobileResponse,
 } from '~shared/types/response'
 import {
+  ResponseMetadata,
   StorageModeAttachment,
   StorageModeAttachmentsMap,
   StorageModeSubmissionContentDto,
 } from '~shared/types/submission'
+
+import fileArrayBuffer from '~/utils/fileArrayBuffer'
 
 import formsgSdk from '~utils/formSdk'
 import { AttachmentFieldSchema, FormFieldValues } from '~templates/Field'
@@ -32,6 +36,8 @@ export const createEncryptedSubmissionData = async (
   formFields: FormFieldDto[],
   formInputs: FormFieldValues,
   publicKey: string,
+  responseMetadata?: ResponseMetadata,
+  paymentReceiptEmail?: string,
 ): Promise<StorageModeSubmissionContentDto> => {
   const responses = createResponsesArray(formFields, formInputs)
   const encryptedContent = formsgSdk.crypto.encrypt(responses, publicKey)
@@ -52,7 +58,9 @@ export const createEncryptedSubmissionData = async (
     attachments,
     responses: filteredResponses,
     encryptedContent,
+    paymentReceiptEmail,
     version: ENCRYPT_VERSION,
+    responseMetadata,
   }
 }
 
@@ -63,13 +71,14 @@ export const createEncryptedSubmissionData = async (
 export const createEmailSubmissionFormData = (
   formFields: FormFieldDto[],
   formInputs: FormFieldValues,
+  responseMetadata?: ResponseMetadata,
 ) => {
   const responses = createResponsesArray(formFields, formInputs)
   const attachments = getAttachmentsMap(formFields, formInputs)
 
   // Convert content to FormData object.
   const formData = new FormData()
-  formData.append('body', JSON.stringify({ responses }))
+  formData.append('body', JSON.stringify({ responses, responseMetadata }))
 
   if (!isEmpty(attachments)) {
     forOwn(attachments, (attachment, fieldId) => {
@@ -100,19 +109,17 @@ const getEncryptedAttachmentsMap = async (
 ): Promise<StorageModeAttachmentsMap> => {
   const attachmentsMap = getAttachmentsMap(formFields, formInputs)
 
-  const attachmentPromises = Object.keys(attachmentsMap).map((id) =>
-    encryptAttachment(attachmentsMap[id], { id, publicKey }),
+  const attachmentPromises = Object.entries(attachmentsMap).map(
+    ([id, attachment]) => encryptAttachment(attachment, { id, publicKey }),
   )
 
-  return Promise.all(attachmentPromises).then((encryptedAttachmentsMeta) => {
-    return (
-      chain(encryptedAttachmentsMeta)
-        .keyBy('id')
-        // Remove id from object.
-        .mapValues((v) => omit(v, 'id'))
-        .value()
-    )
-  })
+  return Promise.all(attachmentPromises).then((encryptedAttachmentsMeta) =>
+    chain(encryptedAttachmentsMeta)
+      .keyBy('id')
+      // Remove id from object.
+      .mapValues((v) => omit(v, 'id'))
+      .value(),
+  )
 }
 
 const getAttachmentsMap = (
@@ -166,17 +173,47 @@ const encryptAttachment = async (
   attachment: File,
   { id, publicKey }: { id: string; publicKey: string },
 ): Promise<StorageModeAttachment & { id: string }> => {
-  const fileArrayBuffer = await attachment.arrayBuffer()
-  const fileContentsView = new Uint8Array(fileArrayBuffer)
+  let label
 
-  const encryptedAttachment = await formsgSdk.crypto.encryptFile(
-    fileContentsView,
-    publicKey,
-  )
-  const encodedEncryptedAttachment = {
-    ...encryptedAttachment,
-    binary: encodeBase64(encryptedAttachment.binary),
+  try {
+    label = 'Read file content'
+    const buffer = await fileArrayBuffer(attachment)
+
+    const fileContentsView = new Uint8Array(buffer)
+
+    label = 'Encrypt content'
+    const encryptedAttachment = await formsgSdk.crypto.encryptFile(
+      fileContentsView,
+      publicKey,
+    )
+
+    label = 'Base64-encode encrypted content'
+    const encodedEncryptedAttachment = {
+      ...encryptedAttachment,
+      binary: encodeBase64(encryptedAttachment.binary),
+    }
+
+    return { id, encryptedFile: encodedEncryptedAttachment }
+  } catch (error) {
+    // TODO: remove error logging when error about arrayBuffer not being a function is resolved
+    datadogLogs.logger.error(`encryptAttachment: ${label}: ${error?.message}`, {
+      meta: {
+        error: {
+          message: error?.message,
+          stack: error?.stack,
+        },
+        attachment: {
+          id,
+          type: typeof attachment,
+          extension: attachment.name?.split('.').pop(),
+          size: attachment.size,
+          isBlob: attachment instanceof Blob,
+          isFile: attachment instanceof File,
+          arrayBuffer: typeof attachment.arrayBuffer,
+        },
+      },
+    })
+    // Rethrow to maintain behaviour
+    throw error
   }
-
-  return { id, encryptedFile: encodedEncryptedAttachment }
 }

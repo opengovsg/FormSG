@@ -7,7 +7,12 @@ import { useFormSections } from '../FormFields/FormSectionsContext'
 import { FormHeader } from './FormHeader'
 import { useFormHeader } from './useFormHeader'
 
-export const FormStartPage = (): JSX.Element => {
+interface FormStartPageProps {
+  isTemplate?: boolean
+}
+export const FormStartPage = ({
+  isTemplate,
+}: FormStartPageProps): JSX.Element => {
   const {
     form,
     spcpSession,
@@ -15,12 +20,13 @@ export const FormStartPage = (): JSX.Element => {
     miniHeaderRef,
     onMobileDrawerOpen,
     handleLogout,
+    isPaymentEnabled,
   } = usePublicFormContext()
   const { activeSectionId } = useFormSections()
 
   const showHeaderAndMiniHeader = useMemo(
-    () => !submissionData,
-    [submissionData],
+    () => !submissionData || isPaymentEnabled,
+    [submissionData, isPaymentEnabled],
   )
 
   const formHeaderProps = useFormHeader({ startPage: form?.startPage })
@@ -35,6 +41,7 @@ export const FormStartPage = (): JSX.Element => {
       miniHeaderRef={miniHeaderRef}
       onMobileDrawerOpen={onMobileDrawerOpen}
       handleLogout={handleLogout}
+      isTemplate={isTemplate}
       {...formHeaderProps}
     />
   )

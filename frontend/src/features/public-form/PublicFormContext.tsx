@@ -1,5 +1,11 @@
 // Contains all the shared props that will probably be passed down.
-import { createContext, RefObject, useContext } from 'react'
+import {
+  createContext,
+  Dispatch,
+  RefObject,
+  SetStateAction,
+  useContext,
+} from 'react'
 import { UseQueryResult } from 'react-query'
 
 import { PublicFormViewDto } from '~shared/types/form'
@@ -7,9 +13,10 @@ import { PublicFormViewDto } from '~shared/types/form'
 export type SubmissionData = {
   /** Submission id */
   id: string | undefined
-  /** Submission time (on browser)  */
-  timeInEpochMs: number
+  /** Submission time in ms from epoch  */
+  timestamp: number
 }
+
 export interface PublicFormContextProps
   extends Partial<PublicFormViewDto>,
     Omit<UseQueryResult<PublicFormViewDto>, 'data'> {
@@ -30,7 +37,7 @@ export interface PublicFormContextProps
   submissionData?: SubmissionData
   /** Callback to be invoked when user submits public form. */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  handleSubmitForm: (formInputs: any) => void
+  handleSubmitForm: ((formInputs: any) => void) | undefined
   /** Callback to be invoked to logout of authenticated form, if user is logged in.  */
   handleLogout: (() => void) | undefined
   /** id of container to render captcha in.
@@ -45,6 +52,15 @@ export interface PublicFormContextProps
    */
   onMobileDrawerOpen: () => void
   onMobileDrawerClose: () => void
+
+  /** Whether payment is enabled */
+  isPaymentEnabled: boolean
+
+  /** Whether it is a preview form */
+  isPreview: boolean
+
+  /** Sets the current number of visible fields in the form in public forms only*/
+  setNumVisibleFields?: Dispatch<SetStateAction<number>>
 }
 
 export const PublicFormContext = createContext<

@@ -2,6 +2,7 @@ import { celebrate, Joi, Segments } from 'celebrate'
 import { StatusCodes } from 'http-status-codes'
 import { ErrorDto, PrivateFormErrorDto } from 'shared/types'
 
+import { statsdClient } from '../../config/datadog-statsd-client'
 import { createLoggerWithLabel } from '../../config/logger'
 import { createReqMeta } from '../../utils/request'
 import { ControllerHandler } from '../core/core.types'
@@ -55,6 +56,9 @@ const submitFormFeedback: ControllerHandler<
     .andThen(() => FormService.retrieveFullFormById(formId))
     .andThen((form) => FormService.isFormPublic(form).map(() => form))
     .andThen((form) => {
+      statsdClient.distribution('formsg.feedback.rating', rating, 1, {
+        rating: `${rating}`,
+      })
       return PublicFormService.insertFormFeedback({
         formId: form._id,
         submissionId: submissionId,

@@ -1,7 +1,5 @@
 'use strict'
 
-const moment = require('moment-timezone')
-
 angular.module('forms').component('endPageComponent', {
   templateUrl: 'modules/forms/base/componentViews/end-page.html',
   bindings: {
@@ -14,6 +12,7 @@ angular.module('forms').component('endPageComponent', {
     isAdminPreview: '<',
     colorTheme: '@',
     submissionId: '@',
+    timestamp: '@',
   },
   controller: ['SpcpSession', '$window', endPageController],
   controllerAs: 'vm',
@@ -22,7 +21,6 @@ angular.module('forms').component('endPageComponent', {
 function endPageController(SpcpSession, $window) {
   const vm = this
 
-  vm.timestamp = moment().format('D MMM YYYY, HH:mm')
   vm.userName = SpcpSession.userName
   vm.formLogout = SpcpSession.logout
 

@@ -1,22 +1,20 @@
-import MyInfoClient, { IMyInfoConfig } from '@opengovsg/myinfo-gov-client'
+import { setupApp } from '__tests__/integration/helpers/express-setup'
+import dbHandler from '__tests__/unit/backend/helpers/jest-db'
+import jwt from 'jsonwebtoken'
 import { omit } from 'lodash'
 import mongoose from 'mongoose'
 import { err, ok } from 'neverthrow'
 import session, { Session } from 'supertest-session'
-import { mocked } from 'ts-jest/utils'
 
 import { FormFieldSchema } from 'src/types'
-
-import { setupApp } from 'tests/integration/helpers/express-setup'
-import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import { FormAuthType, FormStatus } from '../../../../../../shared/types'
 import {
   MOCK_COOKIE_AGE,
+  MOCK_MYINFO_JWT,
   MOCK_UINFIN,
 } from '../../../myinfo/__tests__/myinfo.test.constants'
-import { MYINFO_COOKIE_NAME } from '../../../myinfo/myinfo.constants'
-import { MyInfoCookieState } from '../../../myinfo/myinfo.types'
+import { MYINFO_LOGIN_COOKIE_NAME } from '../../../myinfo/myinfo.constants'
 import getMyInfoHashModel from '../../../myinfo/myinfo_hash.model'
 import { SGID_COOKIE_NAME } from '../../../sgid/sgid.constants'
 import {
@@ -25,7 +23,6 @@ import {
 } from '../../../sgid/sgid.errors'
 import { SgidService } from '../../../sgid/sgid.service'
 import { CpOidcClient, SpOidcClient } from '../../../spcp/spcp.oidc.client'
-import * as SpcpUtils from '../../../spcp/spcp.util'
 // Import last so mocks are imported correctly
 // eslint-disable-next-line import/first
 import { EmailSubmissionRouter } from '../email-submission.routes'
@@ -47,8 +44,8 @@ import {
 const MyInfoHashModel = getMyInfoHashModel(mongoose)
 jest.mock('../../../sgid/sgid.service')
 
-const MockSgidService = mocked(SgidService, true)
-const MockCpOidcClient = mocked(CpOidcClient, true)
+const MockSgidService = jest.mocked(SgidService)
+const MockCpOidcClient = jest.mocked(CpOidcClient)
 
 jest.mock('../../../spcp/spcp.oidc.client')
 
@@ -70,11 +67,6 @@ jest.mock('@opengovsg/myinfo-gov-client', () => ({
     .MyInfoAttribute,
 }))
 
-const MockMyInfoGovClient = mocked(
-  new MyInfoClient.MyInfoGovClient({} as IMyInfoConfig),
-  true,
-)
-
 const SUBMISSIONS_ENDPT_BASE = '/v2/submissions/email'
 
 const EmailSubmissionsApp = setupApp(
@@ -85,7 +77,7 @@ const EmailSubmissionsApp = setupApp(
 describe('email-submission.routes', () => {
   let request: Session
 
-  const mockCpClient = mocked(MockCpOidcClient.mock.instances[0], true)
+  const mockCpClient = jest.mocked(MockCpOidcClient.mock.instances[0])
 
   beforeAll(async () => await dbHandler.connect())
   beforeEach(() => {
@@ -122,6 +114,7 @@ describe('email-submission.routes', () => {
       expect(response.body).toEqual({
         message: 'Form submission successful.',
         submissionId: expect.any(String),
+        timestamp: expect.any(Number),
       })
     })
 
@@ -150,6 +143,7 @@ describe('email-submission.routes', () => {
       expect(response.body).toEqual({
         message: 'Form submission successful.',
         submissionId: expect.any(String),
+        timestamp: expect.any(Number),
       })
     })
 
@@ -181,6 +175,7 @@ describe('email-submission.routes', () => {
       expect(response.body).toEqual({
         message: 'Form submission successful.',
         submissionId: expect.any(String),
+        timestamp: expect.any(Number),
       })
     })
 
@@ -207,6 +202,7 @@ describe('email-submission.routes', () => {
       expect(response.body).toEqual({
         message: 'Form submission successful.',
         submissionId: expect.any(String),
+        timestamp: expect.any(Number),
       })
     })
 
@@ -233,6 +229,7 @@ describe('email-submission.routes', () => {
       expect(response.body).toEqual({
         message: 'Form submission successful.',
         submissionId: expect.any(String),
+        timestamp: expect.any(Number),
       })
     })
 
@@ -259,6 +256,7 @@ describe('email-submission.routes', () => {
       expect(response.body).toEqual({
         message: 'Form submission successful.',
         submissionId: expect.any(String),
+        timestamp: expect.any(Number),
       })
     })
 
@@ -463,6 +461,7 @@ describe('email-submission.routes', () => {
         expect(response.body).toEqual({
           message: 'Form submission successful.',
           submissionId: expect.any(String),
+          timestamp: expect.any(Number),
         })
       })
 
@@ -575,8 +574,14 @@ describe('email-submission.routes', () => {
     })
 
     describe('MyInfo', () => {
+      afterEach(() => jest.restoreAllMocks())
+
       it('should return 200 when submission is valid', async () => {
-        MockMyInfoGovClient.extractUinFin.mockReturnValueOnce(MOCK_UINFIN)
+        // Arrange
+        // Ignore TS errors as .verify has multiple overloads
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        jest.spyOn(jwt, 'verify').mockReturnValueOnce({ uinFin: MOCK_UINFIN })
         const { form } = await dbHandler.insertEmailForm({
           formOptions: {
             esrvcId: 'mockEsrvcId',
@@ -591,11 +596,6 @@ describe('email-submission.routes', () => {
           {},
           MOCK_COOKIE_AGE,
         )
-        const cookie = JSON.stringify({
-          accessToken: 'mockAccessToken',
-          usedCount: 0,
-          state: MyInfoCookieState.Success,
-        })
 
         const response = await request
           .post(`${SUBMISSIONS_ENDPT_BASE}/${form._id}`)
@@ -603,13 +603,14 @@ describe('email-submission.routes', () => {
           .query({ captchaResponse: 'null' })
           .set('Cookie', [
             // The j: indicates that the cookie is in JSON
-            `${MYINFO_COOKIE_NAME}=j:${encodeURIComponent(cookie)}`,
+            `${MYINFO_LOGIN_COOKIE_NAME}=${MOCK_MYINFO_JWT}`,
           ])
 
         expect(response.status).toBe(200)
         expect(response.body).toEqual({
           message: 'Form submission successful.',
           submissionId: expect.any(String),
+          timestamp: expect.any(Number),
         })
       })
 
@@ -663,8 +664,7 @@ describe('email-submission.routes', () => {
       })
 
       it('should return 401 when submission has invalid cookie', async () => {
-        // Mock MyInfoGovClient to return error when decoding JWT
-        MockMyInfoGovClient.extractUinFin.mockImplementationOnce(() => {
+        jest.spyOn(jwt, 'verify').mockImplementationOnce(() => {
           throw new Error()
         })
         const { form } = await dbHandler.insertEmailForm({
@@ -675,11 +675,6 @@ describe('email-submission.routes', () => {
             status: FormStatus.Public,
           },
         })
-        const cookie = JSON.stringify({
-          accessToken: 'mockAccessToken',
-          usedCount: 0,
-          state: MyInfoCookieState.Success,
-        })
 
         const response = await request
           .post(`${SUBMISSIONS_ENDPT_BASE}/${form._id}`)
@@ -687,7 +682,7 @@ describe('email-submission.routes', () => {
           .query({ captchaResponse: 'null' })
           .set('Cookie', [
             // The j: indicates that the cookie is in JSON
-            `${MYINFO_COOKIE_NAME}=j:${encodeURIComponent(cookie)}`,
+            `${MYINFO_LOGIN_COOKIE_NAME}=${MOCK_MYINFO_JWT}`,
           ])
 
         expect(response.status).toBe(401)
@@ -699,19 +694,16 @@ describe('email-submission.routes', () => {
       })
 
       it('should return 401 when submission has cookie with the wrong shape', async () => {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        jest.spyOn(jwt, 'verify').mockReturnValueOnce({ someKey: 'someValue' })
         const { form } = await dbHandler.insertEmailForm({
           formOptions: {
             esrvcId: 'mockEsrvcId',
-            authType: FormAuthType.SP,
+            authType: FormAuthType.MyInfo,
             hasCaptcha: false,
             status: FormStatus.Public,
           },
-        })
-        const cookie = JSON.stringify({
-          accessToken: 'mockAccessToken',
-          usedCount: 0,
-          // Note that state is set to Error instead of Success
-          state: MyInfoCookieState.Error,
         })
 
         const response = await request
@@ -720,7 +712,7 @@ describe('email-submission.routes', () => {
           .query({ captchaResponse: 'null' })
           .set('Cookie', [
             // The j: indicates that the cookie is in JSON
-            `${MYINFO_COOKIE_NAME}=j:${encodeURIComponent(cookie)}`,
+            `${MYINFO_LOGIN_COOKIE_NAME}=${MOCK_MYINFO_JWT}`,
           ])
 
         expect(response.status).toBe(401)
@@ -757,37 +749,7 @@ describe('email-submission.routes', () => {
         expect(response.body).toEqual({
           message: 'Form submission successful.',
           submissionId: expect.any(String),
-        })
-      })
-
-      // TODO(#4496): Remove backward compatible code to allow jwt signed with saml keys
-      it('should return 200 when client has jwt signed with SAML keys', async () => {
-        mockCpClient.verifyJwt.mockRejectedValueOnce(new Error())
-
-        jest.spyOn(SpcpUtils, 'verifyJwtPromise').mockResolvedValueOnce({
-          userName: 'S1234567A',
-          userInfo: 'MyCorpPassUEN',
-        })
-
-        const { form } = await dbHandler.insertEmailForm({
-          formOptions: {
-            esrvcId: 'mockEsrvcId',
-            authType: FormAuthType.CP,
-            hasCaptcha: false,
-            status: FormStatus.Public,
-          },
-        })
-
-        const response = await request
-          .post(`${SUBMISSIONS_ENDPT_BASE}/${form._id}`)
-          .field('body', JSON.stringify(MOCK_NO_RESPONSES_BODY))
-          .query({ captchaResponse: 'null' })
-          .set('Cookie', ['jwtCp=mockJwt'])
-
-        expect(response.status).toBe(200)
-        expect(response.body).toEqual({
-          message: 'Form submission successful.',
-          submissionId: expect.any(String),
+          timestamp: expect.any(Number),
         })
       })
 
@@ -922,6 +884,7 @@ describe('email-submission.routes', () => {
         expect(response.body).toEqual({
           message: 'Form submission successful.',
           submissionId: expect.any(String),
+          timestamp: expect.any(Number),
         })
       })
 

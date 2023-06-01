@@ -1,10 +1,8 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { expect, test } from '@playwright/test'
 import cuid from 'cuid'
 
-import { extractOtp } from './utils/mail'
-
-const ROOT_PAGE = 'http://localhost:5000'
+import { DASHBOARD_PAGE, LOGIN_PAGE, ROOT_PAGE } from './constants'
+import { extractOtp } from './utils'
 
 test.describe('login', () => {
   test.beforeEach(async ({ page }) => {
@@ -15,7 +13,7 @@ test.describe('login', () => {
     page,
   }) => {
     await page.getByRole('link', { name: /log in/i }).click()
-    await expect(page).toHaveURL(`${ROOT_PAGE}/login`)
+    await expect(page).toHaveURL(LOGIN_PAGE)
 
     // Enter log in email.
     await page
@@ -35,7 +33,7 @@ test.describe('login', () => {
     const legitUserEmail = `totally-legit-user${cuid()}@data.gov.sg`
 
     await page.getByRole('link', { name: 'Log in' }).click()
-    await expect(page).toHaveURL(`${ROOT_PAGE}/login`)
+    await expect(page).toHaveURL(LOGIN_PAGE)
 
     await page.getByRole('textbox', { name: /log in/i }).fill(legitUserEmail)
     await page.getByRole('button', { name: /log in/i }).click()
@@ -52,7 +50,7 @@ test.describe('login', () => {
     await page.locator('input[name="otp"]').fill(otp!)
 
     await page.getByRole('button', { name: 'Sign in' }).click()
-    await expect(page).toHaveURL(`${ROOT_PAGE}/dashboard`)
+    await expect(page).toHaveURL(DASHBOARD_PAGE)
   })
 
   test('Prevent login if OTP is incorrect', async ({ page }) => {
@@ -60,7 +58,7 @@ test.describe('login', () => {
     const legitUserEmail = `totally-legit-user${cuid()}@data.gov.sg`
 
     await page.getByRole('link', { name: 'Log in' }).click()
-    await expect(page).toHaveURL(`${ROOT_PAGE}/login`)
+    await expect(page).toHaveURL(LOGIN_PAGE)
 
     await page.getByRole('textbox', { name: /log in/i }).fill(legitUserEmail)
     await page.getByRole('button', { name: /log in/i }).click()
@@ -72,7 +70,7 @@ test.describe('login', () => {
 
     // Get OTP
     const otp = await extractOtp(legitUserEmail)
-    expect(otp).toBeTruthy()
+
     // Increment OTP by 1, keep to 6 digits
     const newOtp = String(parseInt(otp!, 10) + 1).slice(0, 6)
 

@@ -317,10 +317,12 @@ const isConditionFulfilled = (
     condition.state === LogicConditionState.Equal ||
     condition.state === LogicConditionState.Either
   ) {
-    // condition.value can be a string (is equals to), or an array (is either)
+    // condition.value can be a string (is equals to), or an array (is either) (not strictly true either...)
     const conditionValues = ([] as unknown[])
       .concat(condition.value)
       .map(String)
+      // TODO #4279: Revisit decision to trim in backend after React rollout is complete
+      .map((opt) => opt.trim())
     currentValue = String(currentValue)
     /*
     Handling 'Others' for radiobutton
@@ -338,20 +340,24 @@ const isConditionFulfilled = (
     // TODO: An option that is named "Others: Something..." will also pass this test,
     // even if the field has not been configured to set othersRadioButton=true
     if (conditionValues.indexOf('Others') > -1) {
+      // TODO: This is used for angular's client. The server has no need for these magic values, as they are never seen by the server.
       if (field.fieldType === 'radiobutton') {
         conditionValues.push('radioButtonOthers')
       } else if (field.fieldType === 'checkbox') {
         conditionValues.push('checkboxOthers') // Checkbox currently doesn't have logic, but the 'Others' will work in the future if it in implemented
       }
+      // This needs to work for manual "Others" options created by users as well.
+      // The only reason this works is that manual "Others" will satisfy the client-side
+      // condition, albeit on the server. See #5318 for more info.
       return (
         conditionValues.indexOf(currentValue) > -1 || // Client-side
         currentValue.startsWith('Others: ')
       ) // Server-side
     }
     return conditionValues.indexOf(currentValue) > -1
-  } else if (condition.state === 'is less than or equal to') {
+  } else if (condition.state === LogicConditionState.Lte) {
     return Number(currentValue) <= Number(condition.value)
-  } else if (condition.state === 'is more than or equal to') {
+  } else if (condition.state === LogicConditionState.Gte) {
     return Number(currentValue) >= Number(condition.value)
   } else {
     return false

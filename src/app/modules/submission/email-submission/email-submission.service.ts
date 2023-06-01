@@ -5,6 +5,7 @@ import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import {
   BasicField,
   FormResponseMode,
+  ResponseMetadata,
   SubmissionType,
 } from '../../../../../shared/types'
 import {
@@ -142,6 +143,7 @@ export const hashSubmission = (
 export const saveSubmissionMetadata = (
   form: IPopulatedEmailForm,
   submissionHash: SubmissionHash,
+  responseMetadata?: ResponseMetadata,
 ): ResultAsync<IEmailSubmissionSchema, DatabaseError> => {
   const params = {
     form: form._id,
@@ -151,6 +153,7 @@ export const saveSubmissionMetadata = (
     responseHash: submissionHash.hash,
     responseSalt: submissionHash.salt,
     submissionType: SubmissionType.Email,
+    responseMetadata,
   }
   return ResultAsync.fromPromise(
     EmailSubmissionModel.create(params),

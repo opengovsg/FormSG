@@ -1,3 +1,4 @@
+import keyBy from 'lodash/keyBy'
 import { BasicField, MyInfoAttribute, MyInfoField } from '../../../types/field'
 import COUNTRIES from './myinfo-countries'
 import DIALECTS from './myinfo-dialects'
@@ -215,7 +216,7 @@ export const types: MyInfoFieldBlock[] = [
     verified: ['F'],
     source: 'Ministry of Manpower',
     description:
-      'The occupation of the form-filler. Verified for foreigners with SingPass only.',
+      'The occupation of the form-filler. Verified for foreigners with Singpass only.',
     fieldType: BasicField.Dropdown,
     fieldOptions: OCCUPATIONS,
     previewValue: 'MANAGING DIRECTOR/CHIEF EXECUTIVE OFFICER',
@@ -227,7 +228,7 @@ export const types: MyInfoFieldBlock[] = [
     verified: ['F'],
     source: 'Ministry of Manpower',
     description:
-      "The name of the form-filler's employer. Verified for foreigners with SingPass only.",
+      "The name of the form-filler's employer. Verified for foreigners with Singpass only.",
     fieldType: BasicField.ShortText,
     previewValue: 'PCK PTE LTD',
   },
@@ -237,7 +238,7 @@ export const types: MyInfoFieldBlock[] = [
     category: 'personal',
     verified: [],
     source: 'User-provided',
-    description: 'Vehicle plate number of the form-filler.',
+    description: 'The vehicle plate number of the form-filler.',
     fieldType: BasicField.ShortText,
     previewValue: 'SHA1234X',
   },
@@ -248,7 +249,7 @@ export const types: MyInfoFieldBlock[] = [
     verified: [],
     source: 'Ministry of Social and Family Development',
     description:
-      'Marriage Certificate Number of form-filler. This field is treated as unverified, as data provided by MSF may be outdated in cases of marriages in a foreign country.',
+      'The marriage certificate number of the form-filler. This field is treated as unverified, as data provided by MSF may be outdated in cases of marriages in a foreign country.',
     fieldType: BasicField.ShortText,
     previewValue: '123456789012345',
   },
@@ -280,7 +281,7 @@ export const types: MyInfoFieldBlock[] = [
     category: 'employment_education',
     verified: ['F'],
     source: 'Ministry of Manpower',
-    description: 'Workpass application status of foreigner.',
+    description: 'The workpass application status of the foreigner.',
     fieldType: BasicField.Dropdown,
     fieldOptions: ['Live', 'Approved'],
     previewValue: 'Live',
@@ -301,8 +302,10 @@ export const types: MyInfoFieldBlock[] = [
     category: 'contact',
     verified: [],
     source: 'User-provided',
-    description: 'Mobile telephone number of form-filler.',
+    description: 'The mobile telephone number of the form-filler.',
     fieldType: BasicField.Mobile,
     previewValue: '98765432',
   },
 ]
+
+export const MYINFO_ATTRIBUTE_MAP = keyBy(types, 'name')

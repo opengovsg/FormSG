@@ -31,11 +31,12 @@ export const GUIDE_PREVENT_EMAIL_BOUNCE =
 export const GUIDE_EMAIL_RELIABILITY =
   'https://go.gov.sg/formsg-guide-email-reliability'
 export const GUIDE_PREFILL = 'https://go.gov.sg/formsg-guide-prefills'
+export const GUIDE_STRIPE_ONBOARDING =
+  'https://go.gov.sg/formsg-stripe-onboarding'
 
 export const ACCEPTED_FILETYPES_SPREADSHEET = 'https://go.gov.sg/formsg-cwl'
 
 export const APP_FOOTER_LINKS = [
-  { label: 'Contact us', href: CONTACT_US },
   { label: 'Guide', href: FORM_GUIDE },
   { label: 'Privacy', href: PRIVACY_POLICY_ROUTE },
   { label: 'Terms of use', href: TOU_ROUTE },
@@ -78,3 +79,5 @@ export const OGP_FORMSG_COLLATE = 'https://collate.form.gov.sg'
 export const OGP_SGID = 'https://go.gov.sg/sgid-formsg'
 
 export const OGP_FORMSG_REPO = 'https://github.com/opengovsg/formsg'
+
+export const FORMSG_UAT = 'https://uat.form.gov.sg'

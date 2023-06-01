@@ -1,9 +1,8 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
+import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { ObjectId } from 'bson'
 import { cloneDeep, merge, omit } from 'lodash'
 import mongoose from 'mongoose'
-
-import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import { smsConfig } from '../../../config/features/sms.config'
 import {

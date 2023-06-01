@@ -16,10 +16,6 @@ export const FORM_TITLE_VALIDATION_RULES: UseControllerProps['rules'] = {
     value: MAX_TITLE_LENGTH,
     message: `Form name must be at most ${MAX_TITLE_LENGTH} characters`,
   },
-  pattern: {
-    value: /^[a-zA-Z0-9_\-./() &`;'"]*$/,
-    message: 'Form name cannot contain special characters',
-  },
   validate: {
     trimMinLength: (value: string) => {
       return (

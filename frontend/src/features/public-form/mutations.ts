@@ -10,9 +10,11 @@ import {
   logoutPublicForm,
   SubmitEmailFormArgs,
   submitEmailModeForm,
+  submitEmailModeFormWithFetch,
   submitFormFeedback,
   SubmitStorageFormArgs,
   submitStorageModeForm,
+  submitStorageModeFormWithFetch,
 } from './PublicFormService'
 
 export const usePublicAuthMutations = (formId: string) => {
@@ -73,6 +75,19 @@ export const usePublicFormMutations = (
     },
   )
 
+  // TODO (#5826): Fallback mutation using Fetch. Remove once network error is resolved
+  const submitEmailModeFormFetchMutation = useMutation(
+    (args: Omit<SubmitEmailFormArgs, 'formId'>) => {
+      return submitEmailModeFormWithFetch({ ...args, formId })
+    },
+  )
+
+  const submitStorageModeFormFetchMutation = useMutation(
+    (args: Omit<SubmitStorageFormArgs, 'formId'>) => {
+      return submitStorageModeFormWithFetch({ ...args, formId })
+    },
+  )
+
   const submitFormFeedbackMutation = useMutation(
     (args: SubmitFormFeedbackBodyDto) =>
       submitFormFeedback(formId, submissionId, args),
@@ -87,5 +102,7 @@ export const usePublicFormMutations = (
     submitEmailModeFormMutation,
     submitStorageModeFormMutation,
     submitFormFeedbackMutation,
+    submitStorageModeFormFetchMutation,
+    submitEmailModeFormFetchMutation,
   }
 }

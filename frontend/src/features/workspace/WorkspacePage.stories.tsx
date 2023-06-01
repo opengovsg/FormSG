@@ -140,3 +140,31 @@ EmptyMobile.parameters = {
   ...Empty.parameters,
   ...Mobile.parameters,
 }
+
+export const AllOpenDesktop = Template.bind({})
+AllOpenDesktop.parameters = {
+  msw: [
+    rest.get<AdminDashboardFormMetaDto[]>(
+      '/api/v3/admin/forms',
+      (req, res, ctx) => {
+        return res(
+          ctx.json(
+            THIRTY_FORMS.filter((form) => form.status === FormStatus.Public),
+          ),
+        )
+      },
+    ),
+    getUser({
+      delay: 0,
+      mockUser: {
+        ...MOCK_USER,
+        email: 'user@example.com',
+      },
+    }),
+  ],
+}
+export const AllOpenMobile = Template.bind({})
+AllOpenMobile.parameters = {
+  ...Mobile.parameters,
+  ...AllOpenDesktop.parameters,
+}

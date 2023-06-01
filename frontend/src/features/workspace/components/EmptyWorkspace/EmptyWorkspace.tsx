@@ -1,12 +1,9 @@
 import { BiPlus } from 'react-icons/bi'
-import { Box, Flex, Text } from '@chakra-ui/react'
+import { Flex, Text } from '@chakra-ui/react'
 
 import { useIsMobile } from '~hooks/useIsMobile'
 import { fillHeightCss } from '~utils/fillHeightCss'
 import Button from '~components/Button'
-
-// TODO #4279: Remove after React rollout is complete
-import { AdminSwitchEnvMessage } from '../AdminSwitchEnvMessage'
 
 import { EmptyWorkspaceSvgr } from './EmptyWorkspaceSvgr'
 
@@ -31,9 +28,6 @@ export const EmptyWorkspace = ({
       bg="neutral.100"
       css={fillHeightCss}
     >
-      <Box pb="1.5rem">
-        <AdminSwitchEnvMessage />
-      </Box>
       <Text as="h2" textStyle="h2" color="primary.500" mb="1rem">
         You don't have any forms yet
       </Text>

@@ -1,9 +1,7 @@
+import { setupApp } from '__tests__/integration/helpers/express-setup'
+import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { err, ok } from 'neverthrow'
 import session, { Session } from 'supertest-session'
-import { mocked } from 'ts-jest/utils'
-
-import { setupApp } from 'tests/integration/helpers/express-setup'
-import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import { FormAuthType, FormStatus } from '../../../../../../shared/types'
 import { SGID_COOKIE_NAME } from '../../../sgid/sgid.constants'
@@ -17,11 +15,11 @@ import { EncryptSubmissionRouter } from '../encrypt-submission.routes'
 
 jest.mock('../../../sgid/sgid.service')
 
-const MockSgidService = mocked(SgidService, true)
+const MockSgidService = jest.mocked(SgidService)
 
 jest.mock('../../../spcp/spcp.oidc.client')
 
-const MockCpOidcClient = mocked(CpOidcClient, true)
+const MockCpOidcClient = jest.mocked(CpOidcClient)
 
 const SUBMISSIONS_ENDPT_BASE = '/v2/submissions/encrypt'
 
@@ -42,7 +40,7 @@ const EncryptSubmissionsApp = setupApp(
 describe('encrypt-submission.routes', () => {
   let request: Session
 
-  const mockCpClient = mocked(MockCpOidcClient.mock.instances[0], true)
+  const mockCpClient = jest.mocked(MockCpOidcClient.mock.instances[0])
 
   beforeAll(async () => await dbHandler.connect())
   beforeEach(() => {
@@ -80,6 +78,7 @@ describe('encrypt-submission.routes', () => {
         expect(response.body).toEqual({
           message: 'Form submission successful.',
           submissionId: expect.any(String),
+          timestamp: expect.any(Number),
         })
       })
 
@@ -216,6 +215,7 @@ describe('encrypt-submission.routes', () => {
         expect(response.body).toEqual({
           message: 'Form submission successful.',
           submissionId: expect.any(String),
+          timestamp: expect.any(Number),
         })
       })
 
@@ -354,6 +354,7 @@ describe('encrypt-submission.routes', () => {
         expect(response.body).toEqual({
           message: 'Form submission successful.',
           submissionId: expect.any(String),
+          timestamp: expect.any(Number),
         })
       })
 

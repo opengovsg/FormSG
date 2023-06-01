@@ -12,6 +12,7 @@ import {
 } from '../../constants/form'
 import { DateString } from '../generic'
 import { FormLogic, LogicDto } from './form_logic'
+import { PaymentChannel } from '../payment'
 
 export type FormId = Opaque<string, 'FormId'>
 
@@ -68,6 +69,23 @@ export enum FormResponseMode {
   Email = 'email',
 }
 
+export type FormPaymentsChannel = {
+  channel: PaymentChannel
+  target_account_id: string
+  publishable_key: string
+}
+
+export type FormPaymentsField = {
+  enabled: boolean
+  amount_cents?: number
+  description?: string
+}
+
+export type FormBusinessField = {
+  address?: string
+  gstRegNo?: string
+}
+
 export interface FormBase {
   title: string
   admin: UserDto['_id']
@@ -105,6 +123,9 @@ export interface EmailFormBase extends FormBase {
 export interface StorageFormBase extends FormBase {
   responseMode: FormResponseMode.Encrypt
   publicKey: string
+  payments_channel: FormPaymentsChannel
+  payments_field: FormPaymentsField
+  business?: FormBusinessField
 }
 
 /**
@@ -230,3 +251,9 @@ export type StartPageUpdateDto = FormStartPage
 export type EndPageUpdateDto = FormEndPage
 export type FormPermissionsDto = FormPermission[]
 export type PermissionsUpdateDto = FormPermission[]
+export type PaymentsUpdateDto = FormPaymentsField
+export type BusinessUpdateDto = FormBusinessField
+
+export type SendFormOtpResponseDto = {
+  otpPrefix: string
+}

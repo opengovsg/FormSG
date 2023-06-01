@@ -1,7 +1,10 @@
+import Stripe from 'stripe'
+
 import {
   EmailFormSettings,
   FormSettings,
   SettingsUpdateDto,
+  StorageFormSettings,
 } from '~shared/types/form/form'
 
 import { ApiService } from '~services/ApiService'
@@ -12,6 +15,11 @@ import { ADMIN_FORM_ENDPOINT } from '../common/AdminViewFormService'
 type UpdateEmailFormFn<T extends keyof EmailFormSettings> = (
   formId: string,
   settingsToUpdate: EmailFormSettings[T],
+) => Promise<FormSettings>
+
+type UpdateStorageFormFn<T extends keyof StorageFormSettings> = (
+  formId: string,
+  settingsToUpdate: StorageFormSettings[T],
 ) => Promise<FormSettings>
 
 type UpdateFormFn<T extends keyof FormSettings> = (
@@ -104,6 +112,13 @@ export const updateFormWebhookRetries = async (
   })
 }
 
+export const updateBusinessInfo: UpdateStorageFormFn<'business'> = async (
+  formId,
+  newBusinessField: StorageFormSettings['business'],
+) => {
+  return updateFormSettings(formId, { business: newBusinessField })
+}
+
 /**
  * Internal function that calls the PATCH API.
  * @param formId the id of the form to update
@@ -133,5 +148,21 @@ export const updateTwilioCredentials = async (
 export const deleteTwilioCredentials = async (formId: string) => {
   return ApiService.delete<void>(
     `${ADMIN_FORM_ENDPOINT}/${formId}/twilio`,
+  ).then(({ data }) => data)
+}
+
+export const createStripeAccount = async (formId: string) => {
+  return ApiService.post<{ authUrl: string }>(
+    `${ADMIN_FORM_ENDPOINT}/${formId}/stripe`,
+  ).then(({ data }) => data)
+}
+
+export const unlinkStripeAccount = async (formId: string) => {
+  return ApiService.delete<void>(`${ADMIN_FORM_ENDPOINT}/${formId}/stripe`)
+}
+
+export const validateStripeAccount = async (formId: string) => {
+  return ApiService.get<{ account: Stripe.Response<Stripe.Account> | null }>(
+    `${ADMIN_FORM_ENDPOINT}/${formId}/stripe/validate`,
   ).then(({ data }) => data)
 }

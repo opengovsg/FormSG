@@ -94,5 +94,7 @@ export type FormFieldDto<T extends FormField = FormField> =
   | MyInfoFormField<T>
   | FormFieldWithId<T>
 
-export type FieldCreateDto = FormField
+export type FieldCreateDto =
+  | (FormField & { myInfo?: MyInfoField['myInfo'] })
+  | MyInfoField
 export type FieldUpdateDto = FormFieldWithId

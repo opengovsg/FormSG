@@ -1,4 +1,4 @@
-import { matchSorter, MatchSorterOptions } from 'match-sorter'
+import fuzzysort from 'fuzzysort'
 
 import { ComboboxItem } from '../types'
 
@@ -10,10 +10,9 @@ export const defaultFilter = <Item extends ComboboxItem>(
 ) => {
   const item = items[0]
   if (!item) return items
-  let matchSorterOptions: MatchSorterOptions<Item> = {}
-  if (itemIsObject(item)) {
-    const sortKeys: string[] = []
 
+  const sortKeys: string[] = []
+  if (itemIsObject(item)) {
     // Use label to sort if it exists, else use value.
     // Do not use both since users may search by label and get confused when
     // value (that may not be the same as the label) shows up.
@@ -23,7 +22,23 @@ export const defaultFilter = <Item extends ComboboxItem>(
       sortKeys.push('value')
     }
     sortKeys.push('description')
-    matchSorterOptions = { keys: sortKeys }
+
+    return fuzzysort
+      .go(value, items, {
+        all: true,
+        keys: sortKeys,
+        // Create a custom combined score to sort by. -500 to the desc score makes it a worse match
+        scoreFn: (a) => {
+          return Math.max(
+            a[0] ? a[0].score : -1000,
+            a[1] ? a[1].score - 500 : -1000,
+          )
+        },
+        threshold: -999,
+      })
+      .map((result) => result.obj)
   }
-  return matchSorter(items, value, matchSorterOptions)
+
+  // String search.
+  return fuzzysort.go(value, items as string[]).map((result) => result.target)
 }

@@ -1,11 +1,9 @@
+import expressHandler from '__tests__/unit/backend/helpers/jest-express'
 import { errAsync, okAsync } from 'neverthrow'
-import { mocked } from 'ts-jest/utils'
 
 import MailService from 'src/app/services/mail/mail.service'
 import { HashingError } from 'src/app/utils/hash'
 import { AgencyDocument, IPopulatedUser } from 'src/types'
-
-import expressHandler from 'tests/unit/backend/helpers/jest-express'
 
 import { MailSendError } from '../../../services/mail/mail.errors'
 import { DatabaseError } from '../../core/core.errors'
@@ -20,9 +18,9 @@ const VALID_EMAIL = 'test@example.com'
 jest.mock('../auth.service')
 jest.mock('../../user/user.service')
 jest.mock('src/app/services/mail/mail.service')
-const MockAuthService = mocked(AuthService)
-const MockMailService = mocked(MailService)
-const MockUserService = mocked(UserService)
+const MockAuthService = jest.mocked(AuthService)
+const MockMailService = jest.mocked(MailService)
+const MockUserService = jest.mocked(UserService)
 
 describe('auth.controller', () => {
   afterEach(() => {
@@ -67,6 +65,7 @@ describe('auth.controller', () => {
 
   describe('handleLoginSendOtp', () => {
     const MOCK_OTP = '123456'
+    const MOCK_OTP_PREFIX = 'ABC'
     const MOCK_REQ = expressHandler.mockRequest({
       body: { email: VALID_EMAIL },
     })
@@ -78,7 +77,9 @@ describe('auth.controller', () => {
       MockAuthService.validateEmailDomain.mockReturnValueOnce(
         okAsync(<AgencyDocument>{}),
       )
-      MockAuthService.createLoginOtp.mockReturnValueOnce(okAsync(MOCK_OTP))
+      MockAuthService.createLoginOtp.mockReturnValueOnce(
+        okAsync({ otp: MOCK_OTP, otpPrefix: MOCK_OTP_PREFIX }),
+      )
       MockMailService.sendLoginOtp.mockReturnValueOnce(okAsync(true))
 
       // Act
@@ -86,7 +87,10 @@ describe('auth.controller', () => {
 
       // Assert
       expect(mockRes.status).toHaveBeenCalledWith(200)
-      expect(mockRes.json).toHaveBeenCalledWith(`OTP sent to ${VALID_EMAIL}`)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: `OTP sent to ${VALID_EMAIL}`,
+        otpPrefix: MOCK_OTP_PREFIX,
+      })
       // Services should have been invoked.
       expect(MockAuthService.createLoginOtp).toHaveBeenCalledTimes(1)
       expect(MockMailService.sendLoginOtp).toHaveBeenCalledTimes(1)
@@ -128,7 +132,7 @@ describe('auth.controller', () => {
       expect(mockRes.status).toHaveBeenCalledWith(500)
       expect(mockRes.json).toHaveBeenCalledWith({
         message:
-          'Failed to send login OTP. Please try again later and if the problem persists, contact us.',
+          'Failed to create login OTP. Please try again later and if the problem persists, contact us.',
       })
       // Sending login OTP should not have been called.
       expect(MockAuthService.createLoginOtp).toHaveBeenCalledTimes(1)
@@ -142,7 +146,9 @@ describe('auth.controller', () => {
         okAsync(<AgencyDocument>{}),
       )
       // Mock createLoginOtp success but sendLoginOtp failure.
-      MockAuthService.createLoginOtp.mockReturnValueOnce(okAsync(MOCK_OTP))
+      MockAuthService.createLoginOtp.mockReturnValueOnce(
+        okAsync({ otp: MOCK_OTP, otpPrefix: MOCK_OTP_PREFIX }),
+      )
       MockMailService.sendLoginOtp.mockReturnValueOnce(
         errAsync(new MailSendError('send error')),
       )

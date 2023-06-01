@@ -50,6 +50,8 @@ export interface ISubmissionSchema extends SubmissionBase, Document {
   created?: Date
 }
 
+export type IPendingSubmissionSchema = ISubmissionSchema
+
 export interface ISubmissionModel extends Model<ISubmissionSchema> {
   findFormsWithSubsAbove(
     minSubCount: number,
@@ -78,7 +80,12 @@ export interface IEncryptedSubmissionSchema
 // Due to schema changes, some objects may not have attachmentMetadata key.
 export type SubmissionCursorData = Pick<
   IEncryptedSubmissionSchema,
-  'encryptedContent' | 'verifiedContent' | 'created' | 'id' | 'version'
+  | 'encryptedContent'
+  | 'verifiedContent'
+  | 'paymentId'
+  | 'created'
+  | 'id'
+  | 'version'
 > & { attachmentMetadata?: Record<string, string> } & Document
 
 export type SubmissionData = Pick<
@@ -86,6 +93,7 @@ export type SubmissionData = Pick<
   | 'encryptedContent'
   | 'verifiedContent'
   | 'attachmentMetadata'
+  | 'paymentId'
   | 'created'
   | 'version'
 > &

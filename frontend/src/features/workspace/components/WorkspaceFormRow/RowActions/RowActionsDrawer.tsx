@@ -8,6 +8,7 @@ import {
   BiTrash,
   BiUserPlus,
 } from 'react-icons/bi'
+import { Link as ReactLink } from 'react-router-dom'
 import {
   Box,
   ButtonGroup,
@@ -35,11 +36,11 @@ export const RowActionsDrawer = ({
   const { isOpen, onOpen, onClose } = useDisclosure()
 
   const {
+    adminFormLink,
+    previewFormLink,
     handleDeleteForm,
     handleDuplicateForm,
-    handleEditForm,
     handleCollaborators,
-    handlePreviewForm,
     handleShareForm,
   } = useRowAction(formMeta)
 
@@ -74,15 +75,18 @@ export const RowActionsDrawer = ({
               colorScheme="secondary"
             >
               <Button
+                as={ReactLink}
+                to={adminFormLink}
                 {...buttonProps}
-                onClick={handleEditForm}
                 leftIcon={<BiEditAlt fontSize="1.25rem" />}
               >
                 Edit
               </Button>
               <Button
+                as={ReactLink}
+                to={previewFormLink}
+                target="_blank"
                 {...buttonProps}
-                onClick={handlePreviewForm}
                 leftIcon={<BiShow fontSize="1.25rem" />}
               >
                 Preview

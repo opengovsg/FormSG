@@ -1,14 +1,9 @@
-import { useCallback } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import { useDisclosure } from '@chakra-ui/react'
 
 import { FormStatus } from '~shared/types'
 
-import {
-  ADMINFORM_PREVIEW_ROUTE,
-  ADMINFORM_ROUTE,
-  DASHBOARD_ROUTE,
-} from '~constants/routes'
+import { ADMINFORM_PREVIEW_ROUTE, ADMINFORM_ROUTE } from '~constants/routes'
 
 import { ShareFormModal } from '~features/admin-form/share'
 
@@ -23,25 +18,10 @@ const useAdminFormNavbar = () => {
 
   const { data: form } = useAdminForm()
   const { hasEditAccess, isLoading } = useAdminFormCollaborators(formId)
-  const navigate = useNavigate()
-
-  const handleBackToDashboard = useCallback(
-    (): void => navigate(DASHBOARD_ROUTE),
-    [navigate],
-  )
-
-  const handlePreviewForm = useCallback((): void => {
-    window.open(
-      `${window.location.origin}${ADMINFORM_ROUTE}/${formId}/${ADMINFORM_PREVIEW_ROUTE}`,
-    )
-  }, [formId])
-
   const collaboratorModalDisclosure = useDisclosure()
   const shareFormModalDisclosure = useDisclosure()
 
   return {
-    handleBackToDashboard,
-    handlePreviewForm,
     form,
     formId,
     collaboratorModalDisclosure,
@@ -55,8 +35,6 @@ const useAdminFormNavbar = () => {
  */
 export const AdminFormNavbarContainer = (): JSX.Element => {
   const {
-    handleBackToDashboard,
-    handlePreviewForm,
     collaboratorModalDisclosure,
     shareFormModalDisclosure,
     form,
@@ -80,9 +58,8 @@ export const AdminFormNavbarContainer = (): JSX.Element => {
       <AdminFormNavbar
         formInfo={form}
         viewOnly={viewOnly}
-        handleBackButtonClick={handleBackToDashboard}
+        previewFormLink={`${ADMINFORM_ROUTE}/${formId}/${ADMINFORM_PREVIEW_ROUTE}`}
         handleAddCollabButtonClick={collaboratorModalDisclosure.onOpen}
-        handlePreviewFormButtonClick={handlePreviewForm}
         handleShareButtonClick={shareFormModalDisclosure.onOpen}
       />
     </>

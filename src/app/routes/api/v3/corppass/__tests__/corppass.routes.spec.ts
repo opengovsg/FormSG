@@ -1,15 +1,13 @@
+import { setupApp } from '__tests__/integration/helpers/express-setup'
 import { ObjectId } from 'bson-ext'
 import fs from 'fs'
 import { JWTVerifyResult } from 'jose'
 import mongoose from 'mongoose'
 import session, { Session } from 'supertest-session'
-import { mocked } from 'ts-jest/utils'
 
-import { setupApp } from 'tests/integration/helpers/express-setup'
-
+import { buildCelebrateError } from '../../../../../../../__tests__/unit/backend/helpers/celebrate'
+import dbHandler from '../../../../../../../__tests__/unit/backend/helpers/jest-db'
 import { FormAuthType } from '../../../../../../../shared/types'
-import { buildCelebrateError } from '../../../../../../../tests/unit/backend/helpers/celebrate'
-import dbHandler from '../../../../../../../tests/unit/backend/helpers/jest-db'
 import getLoginModel from '../../../../../models/login.server.model'
 import {
   MOCK_CP_OIDC_AUTHORISATION_CODE,
@@ -29,7 +27,7 @@ const LoginModel = getLoginModel(mongoose)
 
 jest.mock('../../../../../modules/spcp/spcp.oidc.client')
 
-const MockCpOidcClient = mocked(CpOidcClient, true)
+const MockCpOidcClient = jest.mocked(CpOidcClient)
 
 describe('corppass.oidc.router', () => {
   beforeAll(async () => await dbHandler.connect())
@@ -61,7 +59,7 @@ describe('corppass.oidc.router', () => {
 
   describe('GET /corppass/login', () => {
     const LOGIN_ROUTE = '/corppass/login'
-    const mockClient = mocked(MockCpOidcClient.mock.instances[0], true)
+    const mockClient = jest.mocked(MockCpOidcClient.mock.instances[0])
     beforeEach(async () => {
       mockClient.createJWT.mockResolvedValue(MOCK_JWT)
       jest.restoreAllMocks()
@@ -114,6 +112,7 @@ describe('corppass.oidc.router', () => {
         MOCK_NRIC,
       )
       mockClient.extractCPEntityIdFromIdToken.mockReturnValueOnce(MOCK_UEN)
+      mockClient.createJWT.mockResolvedValue(MOCK_JWT)
 
       // Act
       const response = await request.get(LOGIN_ROUTE).query({
@@ -220,6 +219,7 @@ describe('corppass.oidc.router', () => {
         MOCK_NRIC,
       )
       mockClient.extractCPEntityIdFromIdToken.mockReturnValueOnce(MOCK_UEN)
+      mockClient.createJWT.mockResolvedValue(MOCK_JWT)
 
       jest.spyOn(LoginModel, 'addLoginFromForm').mockRejectedValueOnce('')
 

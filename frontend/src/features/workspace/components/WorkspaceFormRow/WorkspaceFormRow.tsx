@@ -1,10 +1,12 @@
 import { useMemo } from 'react'
+import { Link as ReactLink } from 'react-router-dom'
 import { Box, ButtonProps, chakra, Flex, Text } from '@chakra-ui/react'
 import dayjs from 'dayjs'
 
 import { AdminDashboardFormMetaDto, FormStatus } from '~shared/types/form/form'
 
-import { useRowAction } from './RowActions/useRowAction'
+import { ADMINFORM_ROUTE } from '~constants/routes'
+
 import { FormStatusLabel } from './FormStatusLabel'
 import { RowActions } from './RowActions'
 
@@ -29,14 +31,14 @@ export const WorkspaceFormRow = ({
     return dayjs(formMeta.lastModified).calendar(null, RELATIVE_DATE_FORMAT)
   }, [formMeta.lastModified])
 
-  const { handleEditForm } = useRowAction(formMeta)
-
   return (
     <Box pos="relative">
       <chakra.button
+        data-testid={`form-row-${formMeta._id}`}
+        as={ReactLink}
         transitionProperty="common"
         transitionDuration="normal"
-        onClick={handleEditForm}
+        to={`${ADMINFORM_ROUTE}/${formMeta._id}`}
         w="100%"
         py="1.5rem"
         display="grid"

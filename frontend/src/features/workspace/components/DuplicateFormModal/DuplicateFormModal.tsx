@@ -25,7 +25,6 @@ export const DuplicateFormModal = ({
     xs: 'mobile',
     md: 'full',
   })
-
   return (
     <Modal isOpen={isOpen} onClose={onClose} size={modalSize}>
       <ModalContent py={{ base: 'initial', md: '4.5rem' }}>

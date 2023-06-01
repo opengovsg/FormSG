@@ -4,19 +4,29 @@ import { AuthedSessionData } from 'express-session'
 import { StatusCodes } from 'http-status-codes'
 import JSONStream from 'JSONStream'
 import mongoose from 'mongoose'
+import { okAsync } from 'neverthrow'
+import Stripe from 'stripe'
 import type { SetOptional } from 'type-fest'
 
 import {
   ErrorDto,
   FormAuthType,
   FormSubmissionMetadataQueryDto,
+  Payment,
+  PaymentChannel,
   StorageModeSubmissionDto,
   StorageModeSubmissionMetadataList,
   SubmissionErrorDto,
   SubmissionResponseDto,
 } from '../../../../../shared/types'
+import { StripePaymentMetadataDto } from '../../../../types'
 import { EncryptSubmissionDto } from '../../../../types/api'
+import config from '../../../config/config'
+import { paymentConfig } from '../../../config/features/payment.config'
 import { createLoggerWithLabel } from '../../../config/logger'
+import { stripe } from '../../../loaders/stripe'
+import getPaymentModel from '../../../models/payment.server.model'
+import { getEncryptPendingSubmissionModel } from '../../../models/pending_submission.server.model'
 import { getEncryptSubmissionModel } from '../../../models/submission.server.model'
 import * as CaptchaMiddleware from '../../../services/captcha/captcha.middleware'
 import * as CaptchaService from '../../../services/captcha/captcha.service'
@@ -31,17 +41,18 @@ import { SgidService } from '../../sgid/sgid.service'
 import { getOidcService } from '../../spcp/spcp.oidc.service'
 import { getPopulatedUserById } from '../../user/user.service'
 import * as VerifiedContentService from '../../verified-content/verified-content.service'
-import { WebhookFactory } from '../../webhook/webhook.factory'
 import * as EncryptSubmissionMiddleware from '../encrypt-submission/encrypt-submission.middleware'
-import { sendEmailConfirmations } from '../submission.service'
-import { extractEmailConfirmationDataFromIncomingSubmission } from '../submission.utils'
+import { reportSubmissionResponseTime } from '../submissions.statsd-client'
 
 import {
+  addPaymentDataStream,
   checkFormIsEncryptMode,
   getEncryptedSubmissionData,
   getSubmissionCursor,
   getSubmissionMetadata,
   getSubmissionMetadataList,
+  getSubmissionPaymentDto,
+  performEncryptPostSubmissionActions,
   transformAttachmentMetasToSignedUrls,
   transformAttachmentMetaStream,
   uploadAttachments,
@@ -54,6 +65,8 @@ import IncomingEncryptSubmission from './IncomingEncryptSubmission.class'
 
 const logger = createLoggerWithLabel(module)
 const EncryptSubmission = getEncryptSubmissionModel(mongoose)
+const EncryptPendingSubmission = getEncryptPendingSubmissionModel(mongoose)
+const Payment = getPaymentModel(mongoose)
 
 // NOTE: Refer to this for documentation: https://github.com/sideway/joi-date/blob/master/API.md
 const Joi = BaseJoi.extend(JoiDate)
@@ -165,7 +178,7 @@ const submitEncryptModeForm: ControllerHandler<
   }
 
   // Create Incoming Submission
-  const { encryptedContent, responses } = req.body
+  const { encryptedContent, responses, responseMetadata } = req.body
   const incomingSubmissionResult = IncomingEncryptSubmission.init(
     form,
     responses,
@@ -325,7 +338,7 @@ const submitEncryptModeForm: ControllerHandler<
     }
   }
 
-  const submission = new EncryptSubmission({
+  const submissionContent = {
     form: form._id,
     authType: form.authType,
     myInfoFields: form.getUniqueMyInfoAttrs(),
@@ -333,11 +346,220 @@ const submitEncryptModeForm: ControllerHandler<
     verifiedContent: verified,
     attachmentMetadata,
     version: req.body.version,
-  })
+    responseMetadata,
+  }
 
-  let savedSubmission
+  // Handle submissions for payments forms
+  if (
+    form.payments_field?.enabled &&
+    form.payments_channel.channel === PaymentChannel.Stripe
+  ) {
+    /**
+     * Start of Payment Forms Submission Flow
+     */
+    // Step 0: Perform validation checks
+    const amount = form.payments_field.amount_cents
+    if (
+      !amount ||
+      amount < paymentConfig.minPaymentAmountCents ||
+      amount > paymentConfig.maxPaymentAmountCents
+    ) {
+      logger.error({
+        message: 'Error when creating payment: amount is not within bounds',
+        meta: logMeta,
+      })
+      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        message:
+          "The form's payment settings are invalid. Please contact the admin of the form to rectify the issue.",
+      })
+    }
+
+    const paymentReceiptEmail = req.body.paymentReceiptEmail?.toLowerCase()
+    if (!paymentReceiptEmail) {
+      logger.error({
+        message:
+          'Error when creating payment: payment receipt email not provided.',
+        meta: logMeta,
+      })
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        message:
+          "The form's payment settings are invalid. Please contact the admin of the form to rectify the issue.",
+      })
+    }
+
+    const targetAccountId = form.payments_channel.target_account_id
+
+    // Step 1: Create payment without payment intent id and pending submission id.
+    const payment = new Payment({
+      formId,
+      targetAccountId,
+      amount,
+      email: paymentReceiptEmail,
+      responses: incomingSubmission.responses,
+    })
+    const paymentId = payment.id
+
+    // Step 2: Create and save pending submission.
+    const pendingSubmission = new EncryptPendingSubmission({
+      ...submissionContent,
+      paymentId,
+    })
+
+    try {
+      await pendingSubmission.save()
+    } catch (err) {
+      logger.error({
+        message: 'Encrypt pending submission save error',
+        meta: {
+          action: 'onEncryptSubmissionFailure',
+          ...createReqMeta(req),
+        },
+        error: err,
+      })
+      // Block the submission so that user can try to resubmit
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        message:
+          'Could not save pending submission. For assistance, please contact the person who asked you to fill in this form.',
+      })
+    }
+
+    const pendingSubmissionId = pendingSubmission.id
+    logger.info({
+      message: 'Created pending submission in DB',
+      meta: {
+        ...logMeta,
+        pendingSubmissionId,
+        responseMetadata,
+      },
+    })
+
+    // TODO 6395 make responseMetadata mandatory
+    if (responseMetadata) {
+      reportSubmissionResponseTime(responseMetadata, {
+        mode: 'encrypt',
+        payment: 'false',
+      })
+    }
+    // Step 3: Create the payment intent via API call to stripe.
+    // Stripe requires the amount to be an integer in the smallest currency unit (i.e. cents)
+    const metadata: StripePaymentMetadataDto = {
+      env: config.envSiteName,
+      formTitle: form.title,
+      formId,
+      submissionId: pendingSubmissionId,
+      paymentId,
+      paymentContactEmail: paymentReceiptEmail,
+    }
+
+    const createPaymentIntentParams: Stripe.PaymentIntentCreateParams = {
+      amount,
+      currency: paymentConfig.defaultCurrency,
+      // determine payment methods available based on stripe settings
+      automatic_payment_methods: {
+        enabled: true,
+      },
+      description: form.payments_field.description,
+      receipt_email: paymentReceiptEmail,
+      metadata,
+    }
+
+    let paymentIntent
+    try {
+      paymentIntent = await stripe.paymentIntents.create(
+        createPaymentIntentParams,
+        { stripeAccount: targetAccountId },
+      )
+    } catch (err) {
+      logger.error({
+        message: 'Error when creating payment intent',
+        meta: {
+          ...logMeta,
+          pendingSubmissionId,
+          createPaymentIntentParams,
+        },
+        error: err,
+      })
+      // Return a 502 error here since the issue was with Stripe.
+      return res.status(StatusCodes.BAD_GATEWAY).json({
+        message:
+          'There was a problem creating the payment intent. Please try again.',
+      })
+    }
+
+    const paymentIntentId = paymentIntent.id
+    logger.info({
+      message: 'Created payment intent from Stripe',
+      meta: {
+        ...logMeta,
+        pendingSubmissionId,
+        paymentIntentId,
+      },
+    })
+
+    // Step 4: Update payment document with payment intent id and pending submission id, and save it.
+    payment.paymentIntentId = paymentIntentId
+    payment.pendingSubmissionId = pendingSubmissionId
+    try {
+      await payment.save()
+    } catch (err) {
+      logger.error({
+        message: 'Error updating payment document with payment intent id',
+        meta: {
+          ...logMeta,
+          pendingSubmissionId,
+          paymentIntentId,
+        },
+        error: err,
+      })
+      // Cancel the payment intent if saving the document fails.
+      try {
+        await stripe.paymentIntents.cancel(paymentIntent.id, {
+          stripeAccount: targetAccountId,
+        })
+      } catch (stripeErr) {
+        logger.error({
+          message: 'Failed to cancel Stripe payment intent',
+          meta: {
+            ...logMeta,
+            pendingSubmissionId,
+            paymentIntentId,
+          },
+          error: err,
+        })
+      }
+      // Regardless of whether the cancellation succeeded or failed, block the
+      // submission so that user can try to resubmit
+      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        message:
+          'There was a problem updating the payment document. Please try again.',
+      })
+    }
+
+    logger.info({
+      message: 'Saved payment document to DB',
+      meta: {
+        ...logMeta,
+        pendingSubmissionId,
+        paymentIntentId,
+        paymentId,
+      },
+    })
+
+    return res.json({
+      message: 'Form submission successful',
+      submissionId: pendingSubmissionId,
+      timestamp: (pendingSubmission.created || new Date()).getTime(),
+      paymentData: { paymentId },
+    })
+  }
+  /**
+   * End of Payment Forms Submission Flow
+   */
+
+  const submission = new EncryptSubmission(submissionContent)
+
   try {
-    savedSubmission = await submission.save()
+    await submission.save()
   } catch (err) {
     logger.error({
       message: 'Encrypt submission save error',
@@ -354,46 +576,36 @@ const submitEncryptModeForm: ControllerHandler<
     })
   }
 
+  const submissionId = submission.id
   logger.info({
     message: 'Saved submission to MongoDB',
     meta: {
       ...logMeta,
-      submissionId: savedSubmission._id,
+      submissionId,
+      formId,
+      responseMetadata,
     },
   })
 
-  // Fire webhooks if available
-  // To avoid being coupled to latency of receiving system,
-  // do not await on webhook
-  const webhookUrl = form.webhook?.url
-  if (webhookUrl) {
-    void WebhookFactory.sendInitialWebhook(
-      submission,
-      webhookUrl,
-      !!form.webhook?.isRetryEnabled,
-    )
+  // TODO 6395 make responseMetadata mandatory
+  if (responseMetadata) {
+    reportSubmissionResponseTime(responseMetadata, {
+      mode: 'encrypt',
+      payment: 'true',
+    })
   }
 
-  // Send Email Confirmations
+  // Send success back to client
   res.json({
     message: 'Form submission successful.',
-    submissionId: submission.id,
+    submissionId,
+    timestamp: (submission.created || new Date()).getTime(),
   })
 
-  return sendEmailConfirmations({
-    form,
-    submission: savedSubmission,
-    recipientData:
-      extractEmailConfirmationDataFromIncomingSubmission(incomingSubmission),
-  }).mapErr((error) => {
-    logger.error({
-      message: 'Error while sending email confirmations',
-      meta: {
-        action: 'sendEmailAutoReplies',
-      },
-      error,
-    })
-  })
+  return await performEncryptPostSubmissionActions(
+    submission,
+    incomingSubmission.responses,
+  )
 }
 
 export const handleEncryptedSubmission = [
@@ -502,6 +714,9 @@ export const streamEncryptedResponses: ControllerHandler<
         urlValidDuration: (req.session?.cookie.maxAge ?? 0) / 1000,
       }),
     )
+    // TODO: Can we include this within the cursor query as aggregation pipeline
+    // instead, so that we make one query to mongo rather than two.
+    .pipe(addPaymentDataStream())
     .on('error', (error) => {
       logger.error({
         message: 'Error retrieving URL for attachments',
@@ -572,7 +787,7 @@ const validateSubmissionId = celebrate({
  * @returns 404 when form cannot be found
  * @returns 410 when form is archived
  * @returns 422 when user in session cannot be retrieved from the database
- * @returns 500 when any errors occurs in database query or generating signed URL
+ * @returns 500 when any errors occurs in database query, generating signed URL or retrieving payment data
  */
 export const getEncryptedResponseUsingQueryParams: ControllerHandler<
   { formId: string },
@@ -666,7 +881,7 @@ export const handleGetEncryptedResponseUsingQueryParams = [
  * @returns 404 when form cannot be found
  * @returns 410 when form is archived
  * @returns 422 when user in session cannot be retrieved from the database
- * @returns 500 when any errors occurs in database query or generating signed URL
+ * @returns 500 when any errors occurs in database query, generating signed URL or retrieving payment data
  */
 export const handleGetEncryptedResponse: ControllerHandler<
   { formId: string; submissionId: string },
@@ -703,15 +918,32 @@ export const handleGetEncryptedResponse: ControllerHandler<
       .andThen(checkFormIsEncryptMode)
       // Step 4: Is encrypt mode form, retrieve submission data.
       .andThen(() => getEncryptedSubmissionData(formId, submissionId))
-      // Step 5: Retrieve presigned URLs for attachments.
+      // Step 5: If there is an associated payment, get the payment details.
       .andThen((submissionData) => {
+        if (!submissionData.paymentId) {
+          return okAsync({ submissionData, paymentData: undefined })
+        }
+
+        return getSubmissionPaymentDto(submissionData.paymentId).map(
+          (paymentData) => ({
+            submissionData,
+            paymentData,
+          }),
+        )
+      })
+      // Step 6: Retrieve presigned URLs for attachments.
+      .andThen(({ submissionData, paymentData }) => {
         // Remaining login duration in seconds.
         const urlExpiry = (req.session?.cookie.maxAge ?? 0) / 1000
         return transformAttachmentMetasToSignedUrls(
           submissionData.attachmentMetadata,
           urlExpiry,
         ).map((presignedUrls) =>
-          createEncryptedSubmissionDto(submissionData, presignedUrls),
+          createEncryptedSubmissionDto(
+            submissionData,
+            presignedUrls,
+            paymentData,
+          ),
         )
       })
       .map((responseData) => {

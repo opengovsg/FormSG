@@ -1,8 +1,11 @@
 import { useQuery } from 'react-query'
+import { StatusCodes } from 'http-status-codes'
 
 import { UserDto } from '~shared/types/user'
 
-import { useAuth } from '~contexts/AuthContext'
+import { LOGGED_IN_KEY } from '~constants/localStorage'
+import { useLocalStorage } from '~hooks/useLocalStorage'
+import { HttpError } from '~services/ApiService'
 import { fetchUser } from '~services/UserService'
 
 export const userKeys = {
@@ -16,21 +19,26 @@ type UseUserReturn = {
 }
 
 export const useUser = (): UseUserReturn => {
-  const { isAuthenticated } = useAuth()
+  const [, setIsLocalStorageAuthenticated] =
+    useLocalStorage<boolean>(LOGGED_IN_KEY)
 
   const {
     data: user,
     isLoading,
     remove,
-  } = useQuery<UserDto>(
-    userKeys.base,
-    () => fetchUser(),
+  } = useQuery(userKeys.base, () => fetchUser(), {
+    onSuccess: () => setIsLocalStorageAuthenticated(true),
+    onError: (err) => {
+      if (err instanceof HttpError && err.code === StatusCodes.UNAUTHORIZED) {
+        setIsLocalStorageAuthenticated(undefined)
+      }
+    },
     // 10 minutes staletime, do not need to retrieve so often.
-    { staleTime: 600000, enabled: !!isAuthenticated },
-  )
+    staleTime: 600000,
+  })
 
   return {
-    user: isAuthenticated ? user : undefined,
+    user,
     isLoading,
     removeQuery: remove,
   }

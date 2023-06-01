@@ -9,6 +9,7 @@ import {
   FormResponseMode,
   FormSettings,
   FormStatus,
+  StorageFormSettings,
 } from '~shared/types/form/form'
 import { TwilioCredentials } from '~shared/types/twilio'
 
@@ -22,7 +23,10 @@ import { adminFormKeys } from '../common/queries'
 
 import { adminFormSettingsKeys } from './queries'
 import {
+  createStripeAccount,
   deleteTwilioCredentials,
+  unlinkStripeAccount,
+  updateBusinessInfo,
   updateFormAuthType,
   updateFormCaptcha,
   updateFormEmails,
@@ -285,6 +289,20 @@ export const useMutateFormSettings = () => {
     },
   )
 
+  const mutateFormBusiness = useMutation(
+    (businessInfo: StorageFormSettings['business']) =>
+      updateBusinessInfo(formId, businessInfo),
+    {
+      onSuccess: (newData) => {
+        handleSuccess({
+          newData,
+          toastDescription: `Business information has been updated.`,
+        })
+      },
+      onError: handleError,
+    },
+  )
+
   return {
     mutateWebhookRetries,
     mutateFormWebhookUrl,
@@ -296,6 +314,7 @@ export const useMutateFormSettings = () => {
     mutateFormTitle,
     mutateFormAuthType,
     mutateFormEsrvcId,
+    mutateFormBusiness,
   }
 }
 
@@ -352,5 +371,36 @@ export const useMutateTwilioCreds = () => {
   return {
     mutateFormTwilioDeletion,
     mutateFormTwilioDetails,
+  }
+}
+
+export const useMutateStripeAccount = () => {
+  const { formId } = useParams()
+  if (!formId) throw new Error('No formId provided')
+  const queryClient = useQueryClient()
+
+  const linkStripeAccountMutation = useMutation(
+    () => createStripeAccount(formId),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(adminFormKeys.id(formId))
+        queryClient.invalidateQueries(adminFormSettingsKeys.id(formId))
+      },
+    },
+  )
+
+  const unlinkStripeAccountMutation = useMutation(
+    () => unlinkStripeAccount(formId),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(adminFormKeys.id(formId))
+        queryClient.invalidateQueries(adminFormSettingsKeys.id(formId))
+      },
+    },
+  )
+
+  return {
+    linkStripeAccountMutation,
+    unlinkStripeAccountMutation,
   }
 }

@@ -15,11 +15,15 @@ import {
   useEndPageStore,
 } from '../../end-page/useEndPageStore'
 import { useAdminFormLogic } from '../../logic/hooks/useAdminFormLogic'
+import {
+  setToInactiveSelector as setPaymentToInactiveSelector,
+  usePaymentStore,
+} from '../BuilderAndDesignDrawer/FieldListDrawer/field-panels/usePaymentStore'
 import { FIELD_LIST_DROP_ID } from '../constants'
 import { DndPlaceholderProps } from '../types'
 import { isDirtySelector, useDirtyFieldStore } from '../useDirtyFieldStore'
 import {
-  setToInactiveSelector,
+  setToInactiveSelector as setFieldBuilderToInactiveSelector,
   useFieldBuilderStore,
 } from '../useFieldBuilderStore'
 import { useDesignColorTheme } from '../utils/useDesignColorTheme'
@@ -28,6 +32,7 @@ import { EmptyFormPlaceholder } from './BuilderAndDesignPlaceholder/EmptyFormPla
 import { FormBuilderFieldsSkeleton } from './FormBuilder/FormBuilderFieldsSkeleton'
 import BuilderAndDesignPlaceholder from './BuilderAndDesignPlaceholder'
 import { BuilderFields } from './BuilderFields'
+import { PaymentView } from './PaymentView'
 import { StartPageView } from './StartPageView'
 import { useBuilderFields } from './useBuilderFields'
 
@@ -42,17 +47,15 @@ export const FormBuilder = ({
   const { builderFields, isLoading } = useBuilderFields()
   const { formLogics } = useAdminFormLogic()
   const { handleBuilderClick, handleEndpageClick } = useCreatePageSidebar()
-  const setToInactive = useFieldBuilderStore(setToInactiveSelector)
-  const isDirty = useDirtyFieldStore(isDirtySelector)
-  const { endPageState, setEditingEndPageState } = useEndPageStore(
-    useCallback(
-      (state) => ({
-        endPageState: endPageStateSelector(state),
-        setEditingEndPageState: setToEditingEndPageSelector(state),
-      }),
-      [],
-    ),
+  const setFieldBuilderToInactive = useFieldBuilderStore(
+    setFieldBuilderToInactiveSelector,
   )
+  const setPaymentToInactive = usePaymentStore(setPaymentToInactiveSelector)
+  const isDirty = useDirtyFieldStore(isDirtySelector)
+  const { endPageState, setEditingEndPageState } = useEndPageStore((state) => ({
+    endPageState: endPageStateSelector(state),
+    setEditingEndPageState: setToEditingEndPageSelector(state),
+  }))
 
   const visibleFieldIds = useMemo(
     () =>
@@ -73,20 +76,16 @@ export const FormBuilder = ({
     [endPageState, isDirty],
   )
 
-  const handleEditEndPageClick = useCallback(() => {
+  const handleEditEndPageClick = () => {
     if (isDirtyAndEndPageInactive) {
       return setEditingEndPageState(true)
     }
 
     setEditingEndPageState()
-    setToInactive()
+    setFieldBuilderToInactive()
+    setPaymentToInactive()
     handleEndpageClick(false)
-  }, [
-    handleEndpageClick,
-    isDirtyAndEndPageInactive,
-    setEditingEndPageState,
-    setToInactive,
-  ])
+  }
 
   const bg = useBgColor({ colorTheme: useDesignColorTheme() })
 
@@ -159,7 +158,10 @@ export const FormBuilder = ({
               </Droppable>
             )}
           </Box>
+
+          <PaymentView />
         </Flex>
+
         <Flex
           justify="center"
           w="100%"

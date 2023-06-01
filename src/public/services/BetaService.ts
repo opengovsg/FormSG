@@ -1,11 +1,6 @@
 import { get } from 'lodash'
 
-import {
-  BasicField,
-  FormAuthType,
-  FormDto,
-  UserDto,
-} from '../../../shared/types'
+import { BasicField, FormDto, UserDto } from '../../../shared/types'
 
 type BetaFeature = {
   // User-facing name for the feature
@@ -34,14 +29,6 @@ const BETA_FEATURES: BetaFeature[] = [
   //   },
   //  fieldType: 'mobile',
   // },
-  // sgID: an authentication mechanism similar to Singpass
-  {
-    name: 'SGID',
-    flag: 'sgid',
-    matches: (form) => form.authType === FormAuthType.SGID,
-    // SGID is associated with entire form, not individual field
-    fieldType: null,
-  },
 ]
 
 const getBetaFeaturesForForm = (

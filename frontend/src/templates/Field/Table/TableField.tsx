@@ -135,6 +135,14 @@ export const TableField = ({
     return description
   }, [fields.length, schema.addMoreRows, schema.maximumRows])
 
+  // If a table field with >1 column is present in a form, Chrome and MS Edge sometimes truncate the form in print mode.
+  // as it erroneously computes the number of pages to print.
+  // We set the height of the table explicitly (based on the number of cols and rows)
+  // for use in the media query so that the browser is able to render the full table in print mode
+  // calculation = the amount of space taken by each table cell and table cell heading + additional margins for each row
+  const printTableHeight =
+    schema.columns.length * rows.length * (2.75 + 2.25 + 1.5) + rows.length * 3
+
   return (
     <TableFieldContainer schema={schema}>
       <Box
@@ -148,6 +156,11 @@ export const TableField = ({
           '&::-webkit-scrollbar-thumb': {
             background: 'rgba(0,0,0,.5)',
             borderRadius: '4px',
+          },
+          '@media print': {
+            h: `${printTableHeight}rem`,
+            display: 'block !important',
+            overflow: 'visible !important',
           },
         }}
       >
@@ -189,6 +202,11 @@ export const TableField = ({
                     <Td
                       {...cell.getCellProps()}
                       display={{ base: 'block', md: 'table-cell' }}
+                      sx={{
+                        '@media print': {
+                          breakInside: 'avoid',
+                        },
+                      }}
                     >
                       {cell.render('Cell', {
                         schemaId: schema._id,
