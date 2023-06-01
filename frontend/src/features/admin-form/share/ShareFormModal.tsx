@@ -236,60 +236,6 @@ export const ShareFormModal = ({
     </FormControl>
   )
 
-  const GoLinkSection = () => (
-    <FormControl mt="1rem">
-      <FormLabel
-        isRequired
-        description="Create an official short link and share it over the Internet."
-      >
-        Go link
-      </FormLabel>
-
-      <Skeleton isLoaded={!!formId}>
-        <Stack direction="row" align="center">
-          <InputGroup>
-            <InputLeftAddon children={`go.gov.sg/`} />
-            <Input
-              value={goLinkSuffixInput}
-              onChange={(e) => {
-                setGoLinkSuffixInput(e.target.value)
-                setGoLinkHelperText(undefined)
-              }}
-              isReadOnly={goLinkSaved}
-            />
-            {goLinkSaved ? (
-              <InputRightElement>
-                <CopyButton
-                  colorScheme="secondary"
-                  stringToCopy={`${GOGOV_BASE_URL}/${goLinkSuffixInput}`}
-                  aria-label="Copy respondent form link"
-                />
-              </InputRightElement>
-            ) : null}
-          </InputGroup>
-          {goLinkSaved ? null : (
-            <Button
-              aria-label="Claim Go link"
-              onClick={handleClaimGoLinkClick}
-              isDisabled={!goLinkSuffixInput}
-              isLoading={claimGoLoading}
-            >
-              Claim
-            </Button>
-          )}
-        </Stack>
-        {goLinkHelperText && (
-          <FormHelperText color={goLinkHelperText.color}>
-            <Stack direction="row" align="center">
-              <Box>{goLinkHelperText.icon}</Box>
-              <Box>{goLinkHelperText.text}</Box>
-            </Stack>
-          </FormHelperText>
-        )}
-      </Skeleton>
-    </FormControl>
-  )
-
   const TemplateSection = () => (
     <FormControl isReadOnly>
       <FormLabel isRequired>Share template</FormLabel>
@@ -375,9 +321,59 @@ export const ShareFormModal = ({
             <TabPanels mt="1.5rem" mb="2rem" flex={1} overflowY="auto">
               <TabPanel>
                 <FormLinkSection />
+                {/* GoLinkSection */}
                 {(displayGoLink && whitelisted) ||
                 goLinkSuffixData?.goLinkSuffix ? (
-                  <GoLinkSection />
+                  <FormControl mt="1rem">
+                    <FormLabel
+                      isRequired
+                      description="Create an official short link and share it over the Internet."
+                    >
+                      Go link
+                    </FormLabel>
+                    <Skeleton isLoaded={!!formId}>
+                      <Stack direction="row" align="center">
+                        <InputGroup>
+                          <InputLeftAddon children={`go.gov.sg/`} />
+                          <Input
+                            value={goLinkSuffixInput}
+                            onChange={(e) => {
+                              setGoLinkSuffixInput(e.target.value)
+                              setGoLinkHelperText(undefined)
+                            }}
+                            isReadOnly={goLinkSaved}
+                          />
+                          {goLinkSaved ? (
+                            <InputRightElement>
+                              <CopyButton
+                                colorScheme="secondary"
+                                stringToCopy={`${GOGOV_BASE_URL}/${goLinkSuffixInput}`}
+                                aria-label="Copy respondent form link"
+                              />
+                            </InputRightElement>
+                          ) : null}
+                        </InputGroup>
+                        {goLinkSaved ? null : (
+                          <Button
+                            aria-label="Claim Go link"
+                            onClick={handleClaimGoLinkClick}
+                            isDisabled={!goLinkSuffixInput}
+                            isLoading={claimGoLoading}
+                          >
+                            Claim
+                          </Button>
+                        )}
+                      </Stack>
+                      {goLinkHelperText && (
+                        <FormHelperText color={goLinkHelperText.color}>
+                          <Stack direction="row" align="center">
+                            <Box>{goLinkHelperText.icon}</Box>
+                            <Box>{goLinkHelperText.text}</Box>
+                          </Stack>
+                        </FormHelperText>
+                      )}
+                    </Skeleton>
+                  </FormControl>
                 ) : null}
               </TabPanel>
               <TabPanel>
