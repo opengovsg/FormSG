@@ -56,6 +56,7 @@ import { axiosDebugFlow } from './utils'
 interface PublicFormProviderProps {
   formId: string
   children: React.ReactNode
+  startTime: number
 }
 
 export function useCommonFormProvider(formId: string) {
@@ -105,9 +106,11 @@ export function useCommonFormProvider(formId: string) {
 export const PublicFormProvider = ({
   formId,
   children,
+  startTime,
 }: PublicFormProviderProps): JSX.Element => {
   // Once form has been submitted, submission data will be set here.
   const [submissionData, setSubmissionData] = useState<SubmissionData>()
+  const [numVisibleFields, setNumVisibleFields] = useState(0)
 
   const { data, isLoading, error, ...rest } = usePublicFormView(
     formId,
@@ -226,6 +229,10 @@ export const PublicFormProvider = ({
         formLogics: form.form_logics,
         formInputs,
         captchaResponse,
+        responseMetadata: {
+          responseTimeMs: differenceInMilliseconds(Date.now(), startTime),
+          numVisibleFields,
+        },
       }
 
       const logMeta = {
@@ -465,6 +472,8 @@ export const PublicFormProvider = ({
       submitEmailModeFormFetchMutation,
       submitStorageModeFormFetchMutation,
       useFetchForSubmissions,
+      numVisibleFields,
+      startTime,
     ],
   )
 
@@ -505,6 +514,7 @@ export const PublicFormProvider = ({
         isLoading: isLoading || (!!data?.form.hasCaptcha && !hasLoaded),
         isPaymentEnabled,
         isPreview: false,
+        setNumVisibleFields,
         ...commonFormValues,
         ...data,
         ...rest,

@@ -42,6 +42,7 @@ import { getOidcService } from '../../spcp/spcp.oidc.service'
 import { getPopulatedUserById } from '../../user/user.service'
 import * as VerifiedContentService from '../../verified-content/verified-content.service'
 import * as EncryptSubmissionMiddleware from '../encrypt-submission/encrypt-submission.middleware'
+import { reportSubmissionResponseTime } from '../submissions.statsd-client'
 
 import {
   addPaymentDataStream,
@@ -177,7 +178,7 @@ const submitEncryptModeForm: ControllerHandler<
   }
 
   // Create Incoming Submission
-  const { encryptedContent, responses } = req.body
+  const { encryptedContent, responses, responseMetadata } = req.body
   const incomingSubmissionResult = IncomingEncryptSubmission.init(
     form,
     responses,
@@ -345,6 +346,7 @@ const submitEncryptModeForm: ControllerHandler<
     verifiedContent: verified,
     attachmentMetadata,
     version: req.body.version,
+    responseMetadata,
   }
 
   // Handle submissions for payments forms
@@ -385,9 +387,12 @@ const submitEncryptModeForm: ControllerHandler<
       })
     }
 
+    const targetAccountId = form.payments_channel.target_account_id
+
     // Step 1: Create payment without payment intent id and pending submission id.
     const payment = new Payment({
       formId,
+      targetAccountId,
       amount,
       email: paymentReceiptEmail,
       responses: incomingSubmission.responses,
@@ -424,9 +429,17 @@ const submitEncryptModeForm: ControllerHandler<
       meta: {
         ...logMeta,
         pendingSubmissionId,
+        responseMetadata,
       },
     })
 
+    // TODO 6395 make responseMetadata mandatory
+    if (responseMetadata) {
+      reportSubmissionResponseTime(responseMetadata, {
+        mode: 'encrypt',
+        payment: 'false',
+      })
+    }
     // Step 3: Create the payment intent via API call to stripe.
     // Stripe requires the amount to be an integer in the smallest currency unit (i.e. cents)
     const metadata: StripePaymentMetadataDto = {
@@ -438,8 +451,6 @@ const submitEncryptModeForm: ControllerHandler<
       paymentContactEmail: paymentReceiptEmail,
     }
 
-    const paymentReceiptDescription = form.payments_field.description
-
     const createPaymentIntentParams: Stripe.PaymentIntentCreateParams = {
       amount,
       currency: paymentConfig.defaultCurrency,
@@ -447,7 +458,7 @@ const submitEncryptModeForm: ControllerHandler<
       automatic_payment_methods: {
         enabled: true,
       },
-      description: paymentReceiptDescription,
+      description: form.payments_field.description,
       receipt_email: paymentReceiptEmail,
       metadata,
     }
@@ -456,7 +467,7 @@ const submitEncryptModeForm: ControllerHandler<
     try {
       paymentIntent = await stripe.paymentIntents.create(
         createPaymentIntentParams,
-        { stripeAccount: form.payments_channel.target_account_id },
+        { stripeAccount: targetAccountId },
       )
     } catch (err) {
       logger.error({
@@ -503,7 +514,7 @@ const submitEncryptModeForm: ControllerHandler<
       // Cancel the payment intent if saving the document fails.
       try {
         await stripe.paymentIntents.cancel(paymentIntent.id, {
-          stripeAccount: form.payments_channel.target_account_id,
+          stripeAccount: targetAccountId,
         })
       } catch (stripeErr) {
         logger.error({
@@ -572,8 +583,17 @@ const submitEncryptModeForm: ControllerHandler<
       ...logMeta,
       submissionId,
       formId,
+      responseMetadata,
     },
   })
+
+  // TODO 6395 make responseMetadata mandatory
+  if (responseMetadata) {
+    reportSubmissionResponseTime(responseMetadata, {
+      mode: 'encrypt',
+      payment: 'true',
+    })
+  }
 
   // Send success back to client
   res.json({

@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { BiCodeBlock, BiCog, BiDollar, BiKey, BiMessage } from 'react-icons/bi'
 import { useNavigate, useParams } from 'react-router-dom'
 import {
@@ -28,8 +28,10 @@ import { SettingsPaymentsPage } from './SettingsPaymentsPage'
 import { SettingsTwilioPage } from './SettingsTwilioPage'
 import { SettingsWebhooksPage } from './SettingsWebhooksPage'
 
+const settingsTabsOrder = ['general', 'singpass', 'twilio', 'webhooks']
+
 export const SettingsPage = (): JSX.Element => {
-  const { formId } = useParams()
+  const { formId, settingsTab } = useParams()
   const { user } = useUser()
   const { data: flags } = useFeatureFlags()
 
@@ -50,6 +52,28 @@ export const SettingsPage = (): JSX.Element => {
   const displayPayments =
     user?.betaFlags?.payment || flags?.has(featureFlags.payment)
 
+  const [tabIndex, setTabIndex] = useState(
+    settingsTabsOrder.indexOf(settingsTab ?? ''),
+  )
+
+  // Note: Admins are not redirected to /general on invalid settings tabs as we
+  // don't want to do this prematurely before displayPayments can be determined.
+  useEffect(() => {
+    if (displayPayments) {
+      // Dynamically push payments tab to settings tab order as needed, in case
+      // there may be multiple hidden tabs in the future.
+      settingsTabsOrder.push('payments')
+      setTabIndex(settingsTabsOrder.indexOf(settingsTab ?? ''))
+    }
+  }, [displayPayments, settingsTab])
+
+  const handleTabChange = (index: number) => {
+    setTabIndex(index)
+    navigate(
+      `${ADMINFORM_ROUTE}/${formId}/settings/${settingsTabsOrder[index]}`,
+    )
+  }
+
   return (
     <Box overflow="auto" flex={1}>
       <Tabs
@@ -59,6 +83,8 @@ export const SettingsPage = (): JSX.Element => {
         variant="line"
         py={{ base: '2.5rem', lg: '3.125rem' }}
         px={{ base: '1.5rem', md: '1.75rem', lg: '2rem' }}
+        index={tabIndex === -1 ? 0 : tabIndex}
+        onChange={handleTabChange}
       >
         <Flex
           h="max-content"

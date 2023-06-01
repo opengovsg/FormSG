@@ -6,6 +6,10 @@ import { loadStripe } from '@stripe/stripe-js'
 
 import { GetPaymentInfoDto } from '~shared/types'
 
+import InlineMessage from '~components/InlineMessage'
+
+import { useEnv } from '~features/env/queries'
+
 import { CreatePaymentIntentFailureBlock } from '../components/CreatePaymentIntentFailureBlock'
 import { PaymentSuccessSvgr } from '../components/PaymentSuccessSvgr'
 import { useGetPaymentInfo } from '../queries'
@@ -55,6 +59,8 @@ const StripePaymentContainer = ({
   if (!formId) throw new Error('No formId provided')
   if (!paymentId) throw new Error('No paymentId provided')
 
+  const { data: { secretEnv } = {} } = useEnv()
+
   const stripe = useStripe()
   if (!stripe) throw Promise.reject('Stripe is not ready')
 
@@ -83,18 +89,27 @@ const StripePaymentContainer = ({
             <GenericMessageBlock
               submissionId={paymentInfoData.submissionId}
               title="Payment request was canceled."
-              subtitle="The payment request has been canceled. If any payment has been completed, the payment will be refunded."
+              subtitle="The payment request has timed out. No payment has been taken. Please submit the form again."
             />
           </PaymentStack>
         )
       case PaymentViewStates.PendingPayment:
         return (
-          <PaymentStack>
-            <StripePaymentBlock
-              submissionId={paymentInfoData.submissionId}
-              triggerPaymentStatusRefetch={() => setRefetchKey(Date.now())}
-            />
-          </PaymentStack>
+          <>
+            {secretEnv === 'production' ? null : (
+              <InlineMessage variant="warning" mb="1rem">
+                Use '4242 4242 4242 4242' as your card number to test payments
+                on this form. Payments made on this form will only show in test
+                mode in Stripe.
+              </InlineMessage>
+            )}
+            <PaymentStack>
+              <StripePaymentBlock
+                submissionId={paymentInfoData.submissionId}
+                triggerPaymentStatusRefetch={() => setRefetchKey(Date.now())}
+              />
+            </PaymentStack>
+          </>
         )
       case PaymentViewStates.Processing:
         return (

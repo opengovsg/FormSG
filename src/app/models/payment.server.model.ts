@@ -1,6 +1,6 @@
 import { Mongoose, Schema } from 'mongoose'
 
-import { PaymentStatus } from '../../../shared/types'
+import { Payment, PaymentStatus } from '../../../shared/types'
 import { IPaymentModel, IPaymentSchema } from '../../types'
 
 import { FORM_SCHEMA_ID } from './form.server.model'
@@ -20,6 +20,10 @@ const PaymentSchema = new Schema<IPaymentSchema, IPaymentModel>(
     formId: {
       type: Schema.Types.ObjectId,
       ref: () => FORM_SCHEMA_ID,
+      required: true,
+    },
+    targetAccountId: {
+      type: String,
       required: true,
     },
     email: {
@@ -93,6 +97,12 @@ const PaymentSchema = new Schema<IPaymentSchema, IPaymentModel>(
 )
 
 const compilePaymentModel = (db: Mongoose): IPaymentModel => {
+  PaymentSchema.statics.getByStatus = async function (
+    ...statuses: Payment['status'][]
+  ): Promise<IPaymentSchema[]> {
+    return this.find({ status: { $in: statuses } }).exec()
+  }
+
   const PaymentModel = db.model<IPaymentSchema, IPaymentModel>(
     PAYMENT_SCHEMA_ID,
     PaymentSchema,

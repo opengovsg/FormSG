@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import { Controller, RegisterOptions } from 'react-hook-form'
 import { Box, FormControl, SimpleGrid } from '@chakra-ui/react'
 import { isBefore, isEqual, isValid } from 'date-fns'
@@ -10,7 +10,11 @@ import {
   DateValidationOptions,
 } from '~shared/types/field'
 
-import { fromUtcToLocalDate, isDateOutOfRange } from '~utils/date'
+import {
+  isDateOutOfRange,
+  loadDateFromNormalizedDate,
+  normalizeDateToUtc,
+} from '~utils/date'
 import { createBaseValidationRules } from '~utils/fieldValidation'
 import { DatePicker } from '~components/DatePicker'
 import { SingleSelect } from '~components/Dropdown'
@@ -49,10 +53,10 @@ const transformDateFieldToEditForm = (field: DateFieldBase): EditDateInputs => {
     selectedDateValidation:
       field.dateValidation.selectedDateValidation ?? ('' as const),
     customMaxDate: field.dateValidation.selectedDateValidation
-      ? field.dateValidation.customMaxDate ?? null
+      ? loadDateFromNormalizedDate(field.dateValidation.customMaxDate)
       : null,
     customMinDate: field.dateValidation.selectedDateValidation
-      ? field.dateValidation.customMinDate ?? null
+      ? loadDateFromNormalizedDate(field.dateValidation.customMinDate)
       : null,
   }
   return {
@@ -97,6 +101,28 @@ const transformDateEditFormToField = (
 }
 
 export const EditDate = ({ field }: EditDateProps): JSX.Element => {
+  const preSubmitTransform = useCallback(
+    (inputs: EditDateInputs, output: DateFieldBase): DateFieldBase => {
+      // normalize time to UTC before saving
+      return {
+        ...output,
+        dateValidation: {
+          selectedDateValidation:
+            inputs.dateValidation.selectedDateValidation === ''
+              ? null
+              : inputs.dateValidation.selectedDateValidation,
+          customMinDate: normalizeDateToUtc(
+            inputs.dateValidation.customMinDate,
+          ),
+          customMaxDate: normalizeDateToUtc(
+            inputs.dateValidation.customMaxDate,
+          ),
+        },
+      } as DateFieldBase
+    },
+    [],
+  )
+
   const {
     register,
     formState: { errors },
@@ -111,6 +137,7 @@ export const EditDate = ({ field }: EditDateProps): JSX.Element => {
     transform: {
       input: transformDateFieldToEditForm,
       output: transformDateEditFormToField,
+      preSubmit: preSubmitTransform,
     },
   })
 
@@ -222,9 +249,7 @@ export const EditDate = ({ field }: EditDateProps): JSX.Element => {
                       isDateUnavailable={(d) =>
                         isDateOutOfRange(
                           d,
-                          fromUtcToLocalDate(
-                            getValues('dateValidation.customMinDate'),
-                          ),
+                          getValues('dateValidation.customMinDate'),
                         )
                       }
                       {...field}

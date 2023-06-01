@@ -5,6 +5,7 @@ import { PaymentStatus } from 'shared/types'
 
 import getPaymentModel from 'src/app/models/payment.server.model'
 
+import { DatabaseError } from '../../core/core.errors'
 import * as PaymentsService from '../payments.service'
 
 const Payment = getPaymentModel(mongoose)
@@ -29,6 +30,7 @@ describe('payments.service', () => {
       await Payment.create({
         _id: expectedObjectId,
         formId: MOCK_FORM_ID,
+        targetAccountId: 'acct_MOCK_ACCOUNT_ID',
         pendingSubmissionId: new ObjectId(),
         paymentIntentId: 'somePaymentIntentId',
         amount: 314159,
@@ -69,6 +71,7 @@ describe('payments.service', () => {
       await Payment.create({
         _id: expectedObjectId,
         formId: MOCK_FORM_ID,
+        targetAccountId: 'acct_MOCK_ACCOUNT_ID',
         pendingSubmissionId: new ObjectId(),
         paymentIntentId: 'somePaymentIntentId',
         amount: 314159,
@@ -96,6 +99,7 @@ describe('payments.service', () => {
       await Payment.create({
         _id: latestId,
         formId: MOCK_FORM_ID,
+        targetAccountId: 'acct_MOCK_ACCOUNT_ID',
         pendingSubmissionId: new ObjectId(),
         paymentIntentId: 'somePaymentIntentId',
         amount: 314159,
@@ -144,6 +148,7 @@ describe('payments.service', () => {
       await Payment.create({
         _id: newId,
         formId: newFormId,
+        targetAccountId: 'acct_MOCK_ACCOUNT_ID',
         pendingSubmissionId: new ObjectId(),
         paymentIntentId: 'somePaymentIntentId',
         amount: 314159,
@@ -166,6 +171,77 @@ describe('payments.service', () => {
           MOCK_FORM_ID,
         )
       expect(result.isErr()).toBeTrue()
+    })
+  })
+
+  describe('getIncompletePayments', () => {
+    beforeEach(async () => {
+      await dbHandler.clearCollection(Payment.collection.name)
+    })
+
+    it('should return only the incomplete payments from the collection', async () => {
+      // Arrange
+      const MOCK_PAYMENT = {
+        paymentIntentId: 'pi_MOCK_ID',
+        amount: 1000,
+        email: 'formsg@tech.gov.sg',
+        targetAccountId: 'acct_MOCK_ID',
+        formId: new ObjectId(),
+        pendingSubmissionId: new ObjectId(),
+      }
+
+      await Payment.create({
+        ...MOCK_PAYMENT,
+        status: PaymentStatus.Pending,
+      })
+      await Payment.create({
+        ...MOCK_PAYMENT,
+        status: PaymentStatus.Failed,
+      })
+      await Payment.create({
+        ...MOCK_PAYMENT,
+        status: PaymentStatus.Succeeded,
+      })
+      await Payment.create({
+        ...MOCK_PAYMENT,
+        status: PaymentStatus.Canceled,
+      })
+      await Payment.create({
+        ...MOCK_PAYMENT,
+        status: PaymentStatus.FullyRefunded,
+      })
+
+      // Act
+      const result = await PaymentsService.getIncompletePayments()
+
+      // Assert
+      expect(result.isOk()).toBe(true)
+      const incompletePayments = result._unsafeUnwrap()
+      expect(incompletePayments).toBeArrayOfSize(2)
+      expect(incompletePayments).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            status: expect.toBeOneOf([
+              PaymentStatus.Pending,
+              PaymentStatus.Failed,
+            ]),
+          }),
+        ]),
+      )
+    })
+
+    it('should return a DatabaseError if the database throws an error', async () => {
+      // Arrange
+      const getSpy = jest.spyOn(Payment, 'getByStatus')
+      getSpy.mockImplementationOnce(() => Promise.reject('boom!'))
+
+      // Act
+      const result = await PaymentsService.getIncompletePayments()
+
+      // Assert
+      expect(result.isErr()).toBe(true)
+      const incompletePaymentsErr = result._unsafeUnwrapErr()
+      expect(incompletePaymentsErr).toBeInstanceOf(DatabaseError)
     })
   })
 })

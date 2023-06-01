@@ -1,13 +1,12 @@
 import { Router } from 'express'
 
 import { rateLimitConfig } from '../../../../config/config'
+import { withCronPaymentSecretAuthentication } from '../../../../modules/auth/auth.middlewares'
 import * as PaymentsController from '../../../../modules/payments/payments.controller'
 import * as StripeController from '../../../../modules/payments/stripe.controller'
 import { limitRate } from '../../../../utils/limit-rate'
 
 export const PaymentsRouter = Router()
-
-PaymentsRouter.get('/stripe')
 
 /**
  * Checks if the payment receipt is ready
@@ -16,9 +15,10 @@ PaymentsRouter.get('/stripe')
  * @returns 200 if receipt URL exists
  * @returns 404 if receipt URL does not exist or payment does not exist
  */
-PaymentsRouter.route(
+PaymentsRouter.get(
   '/:formId([a-fA-F0-9]{24})/:paymentId([a-fA-F0-9]{24})/receipt/status',
-).get(StripeController.checkPaymentReceiptStatus)
+  StripeController.checkPaymentReceiptStatus,
+)
 
 /**
  * Downloads the receipt pdf
@@ -27,9 +27,8 @@ PaymentsRouter.route(
  * @returns 200 with receipt attatchment as content in PDF
  * @returns 404 if receipt url doesn't exist or payment does not exist
  */
-PaymentsRouter.route(
+PaymentsRouter.get(
   '/:formId([a-fA-F0-9]{24})/:paymentId([a-fA-F0-9]{24})/receipt/download',
-).get(
   limitRate({ max: rateLimitConfig.downloadPaymentReceipt }),
   StripeController.downloadPaymentReceipt,
 )
@@ -41,20 +40,20 @@ PaymentsRouter.route(
  * @returns 200 with receipt attatchment as content in PDF
  * @returns 404 if receipt url doesn't exist or payment does not exist
  */
-PaymentsRouter.route(
+PaymentsRouter.get(
   '/:formId([a-fA-F0-9]{24})/:paymentId([a-fA-F0-9]{24})/invoice/download',
-).get(
   limitRate({ max: rateLimitConfig.downloadPaymentReceipt }),
   StripeController.downloadPaymentInvoice,
 )
 
-PaymentsRouter.route('/stripe/callback').get(
+PaymentsRouter.get(
+  '/stripe/callback',
   StripeController.handleConnectOauthCallback,
 )
 
 /**
  * returns clientSecret and publishableKey from paymentId
- * @route /payments/:paymentId/getinfo
+ * @route GET /payments/:paymentId/getinfo
  *
  * @returns 200 with payment information if payment id exist
  * @returns 404 when no pending submission is associated with the payment id
@@ -62,7 +61,8 @@ PaymentsRouter.route('/stripe/callback').get(
  * @returns 500 if the form associated did not contain payment information
  * @returns 500 if error occured whilst retrieving payment information from stripe
  */
-PaymentsRouter.route('/:paymentId([a-fA-F0-9]{24})/getinfo').get(
+PaymentsRouter.get(
+  '/:paymentId([a-fA-F0-9]{24})/getinfo',
   StripeController.getPaymentInfo,
 )
 
@@ -75,7 +75,45 @@ PaymentsRouter.route('/:paymentId([a-fA-F0-9]{24})/getinfo').get(
  * @returns 404 if previous payment doesnt exists
  * @returns 500 when database error occurs
  */
-PaymentsRouter.route('/:formId([a-fA-F0-9]{24})/payments/previous').post(
+PaymentsRouter.post(
+  '/:formId([a-fA-F0-9]{24})/payments/previous',
   limitRate({ max: rateLimitConfig.submissions }),
   PaymentsController.handleGetPreviousPaymentId,
 )
+
+/**
+ * Protected routes for CRON job. Not really REST style, more like RPC style.
+ */
+const ProtectedPaymentsRouter = Router()
+
+ProtectedPaymentsRouter.use(withCronPaymentSecretAuthentication)
+
+/**
+ * Get all payments in incomplete state (Pending or Failed) which need to be
+ * reconciled.
+ * @protected
+ * @route GET /payments/reconcile/incompletePayments
+ *
+ * @returns 200 with found payment records
+ * @returns 500 if there were unexpected errors in retrieving payment data
+ */
+ProtectedPaymentsRouter.get(
+  '/incompletePayments',
+  StripeController.getIncompletePayments,
+)
+
+/**
+ * Reconciles all payments within an account by re-processing all undelivered
+ * events.
+ * @protected
+ * @route POST /payments/reconcile/account/:stripeAccount?maxAgeHrs=<number>
+ *
+ * @returns 200 with two report arrays, one for event processing and another for payment status verification
+ * @returns 500 if there were unexpected errors in retrieving data from Stripe
+ */
+ProtectedPaymentsRouter.post(
+  '/account/:stripeAccount',
+  StripeController.reconcileAccount,
+)
+
+PaymentsRouter.use('/reconcile', ProtectedPaymentsRouter)

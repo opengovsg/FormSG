@@ -6,7 +6,7 @@ import { createLoggerWithLabel } from '../../config/logger'
 import { createReqMeta } from '../../utils/request'
 import { ControllerHandler } from '../core/core.types'
 
-import { isUserInSession } from './auth.utils'
+import { isCronPaymentAuthValid, isUserInSession } from './auth.utils'
 
 const logger = createLoggerWithLabel(module)
 
@@ -92,3 +92,17 @@ export const validateVerifyOtpParams = celebrate({
       .message('Please enter a valid OTP'),
   }),
 })
+
+export const withCronPaymentSecretAuthentication: ControllerHandler = (
+  req,
+  res,
+  next,
+) => {
+  if (isCronPaymentAuthValid(req.headers)) {
+    return next()
+  }
+
+  return res
+    .status(StatusCodes.UNAUTHORIZED)
+    .json({ message: 'Request is unauthorized.' })
+}

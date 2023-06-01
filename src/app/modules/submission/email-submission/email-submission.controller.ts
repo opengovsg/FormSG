@@ -26,6 +26,7 @@ import { getOidcService } from '../../spcp/spcp.oidc.service'
 import * as EmailSubmissionMiddleware from '../email-submission/email-submission.middleware'
 import * as SubmissionService from '../submission.service'
 import { extractEmailConfirmationData } from '../submission.utils'
+import { reportSubmissionResponseTime } from '../submissions.statsd-client'
 
 import * as EmailSubmissionService from './email-submission.service'
 import { IPopulatedEmailFormWithResponsesAndHash } from './email-submission.types'
@@ -267,19 +268,27 @@ const submitEmailModeForm: ControllerHandler<
           form.authType,
         )
 
+        // Get response metadata from the request body
+        const { responseMetadata } = req.body
+
         // Save submission to database
         return EmailSubmissionService.hashSubmission(
           emailData.formData,
           attachments,
         )
           .andThen((submissionHash) =>
-            EmailSubmissionService.saveSubmissionMetadata(form, submissionHash),
+            EmailSubmissionService.saveSubmissionMetadata(
+              form,
+              submissionHash,
+              responseMetadata,
+            ),
           )
           .map((submission) => ({
             form,
             parsedResponses,
             submission,
             emailData,
+            responseMetadata,
           }))
           .mapErr((error) => {
             logger.error({
@@ -290,46 +299,61 @@ const submitEmailModeForm: ControllerHandler<
             return error
           })
       })
-      .andThen(({ form, parsedResponses, submission, emailData }) => {
-        const logMetaWithSubmission = {
-          ...logMeta,
-          submissionId: submission._id,
-        }
-
-        logger.info({
-          message: 'Sending admin mail',
-          meta: logMetaWithSubmission,
-        })
-
-        // Send response to admin
-        // NOTE: This should short circuit in the event of an error.
-        // This is why sendSubmissionToAdmin is separated from sendEmailConfirmations in 2 blocks
-        return MailService.sendSubmissionToAdmin({
-          replyToEmails: EmailSubmissionService.extractEmailAnswers(
-            parsedResponses.getAllResponses(),
-          ),
+      .andThen(
+        ({
           form,
+          parsedResponses,
           submission,
-          attachments,
-          dataCollationData: emailData.dataCollationData,
-          formData: emailData.formData,
-        })
-          .map(() => ({
-            form,
-            parsedResponses,
-            submission,
-            emailData,
-            logMetaWithSubmission,
-          }))
-          .mapErr((error) => {
-            logger.error({
-              message: 'Error sending submission to admin',
-              meta: logMetaWithSubmission,
-              error,
-            })
-            return error
+          emailData,
+          responseMetadata,
+        }) => {
+          const logMetaWithSubmission = {
+            ...logMeta,
+            submissionId: submission._id,
+            responseMetadata,
+          }
+
+          logger.info({
+            message: 'Sending admin mail',
+            meta: logMetaWithSubmission,
           })
-      })
+
+          // TODO 6395 make responseMetadata mandatory
+          if (responseMetadata) {
+            reportSubmissionResponseTime(responseMetadata, {
+              mode: 'email',
+            })
+          }
+          // Send response to admin
+          // NOTE: This should short circuit in the event of an error.
+          // This is why sendSubmissionToAdmin is separated from sendEmailConfirmations in 2 blocks
+          return MailService.sendSubmissionToAdmin({
+            replyToEmails: EmailSubmissionService.extractEmailAnswers(
+              parsedResponses.getAllResponses(),
+            ),
+            form,
+            submission,
+            attachments,
+            dataCollationData: emailData.dataCollationData,
+            formData: emailData.formData,
+          })
+            .map(() => ({
+              form,
+              parsedResponses,
+              submission,
+              emailData,
+              logMetaWithSubmission,
+            }))
+            .mapErr((error) => {
+              logger.error({
+                message: 'Error sending submission to admin',
+                meta: logMetaWithSubmission,
+                error,
+              })
+              return error
+            })
+        },
+      )
       .map(
         ({
           form,

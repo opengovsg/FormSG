@@ -49,6 +49,7 @@ export const FormResponseOptions = forwardRef<
             'Attachments: up to 20MB per form',
             'Up to Restricted and Sensitive (Normal) data',
             'Supports webhooks for responses',
+            'Supports payments',
           ]}
         />
       </Tile>
