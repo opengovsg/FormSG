@@ -171,6 +171,7 @@ export const ShareFormModal = ({
     if (goLinkSuffixData?.goLinkSuffix) {
       setGoLinkSaved(true)
       setGoLinkSuffixInput(goLinkSuffixData?.goLinkSuffix ?? '')
+      setGoLinkHelperText(goLinkClaimSuccessHelperText)
     }
   }, [goLinkSuffixData?.goLinkSuffix])
 
