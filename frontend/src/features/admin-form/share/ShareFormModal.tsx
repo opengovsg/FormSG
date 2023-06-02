@@ -319,7 +319,7 @@ export const ShareFormModal = ({
               </TabList>
               <Divider w="auto" />
             </Box>
-            <TabPanels mt="1.5rem" mb="2rem" flex={1} overflowY="auto">
+            <TabPanels mt="1.5rem" pb="2rem" flex={1} overflowY="auto">
               <TabPanel>
                 <FormLinkSection />
                 {/* GoLinkSection */}
