@@ -4,7 +4,7 @@ import * as WorkspaceController from '../../../../../modules/workspace/workspace
 
 export const WorkspacesFormRouter = Router()
 
-WorkspacesFormRouter.route('/')
+WorkspacesFormRouter.route('/:workspaceId([a-fA-F0-9]{24})/forms')
   /**
    * Gets all the forms belonging to the workspace
    * @security session
@@ -28,16 +28,3 @@ WorkspacesFormRouter.route('/')
    * @returns 500 when database errors occur
    */
   .delete(WorkspaceController.deleteForms)
-
-WorkspacesFormRouter.route('/move')
-  /**
-   * Move forms from source workspace to destination workspace
-   * @security session
-   *
-   * @returns 200 with a list of remaining forms in the source workspace
-   * @returns 401 when user is not logged in
-   * @returns 404 when the source or destination workspace does not exist or belong to the user
-   * @returns 422 when user of given id cannnot be found in the database
-   * @returns 500 when database errors occur
-   */
-  .post(WorkspaceController.moveForms)

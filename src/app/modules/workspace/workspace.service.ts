@@ -159,16 +159,66 @@ export const deleteForms = (
   return okAsync({ workspaceId: workspaceId, formIds: formIds })
 }
 
-export const moveForms = (
-  sourceWorkspaceId: string,
-  destWorkspaceId: string,
-  formIds: string[],
-): ResultAsync<any, DatabaseError> => {
-  return okAsync({
-    sourceWorkspaceId: sourceWorkspaceId,
-    destWorkspaceId: destWorkspaceId,
-    formIds: formIds,
-  })
+export const moveForms = ({
+  userId,
+  destWorkspaceId,
+  formIds,
+}: {
+  userId: string
+  destWorkspaceId: string
+  formIds: string[]
+}): ResultAsync<WorkspaceDto | null, PossibleDatabaseError> => {
+  return ResultAsync.fromPromise(
+    moveFormsTransaction({
+      userId,
+      destWorkspaceId,
+      formIds,
+    }),
+    (error) => {
+      logger.error({
+        message:
+          'Database error when moving forms to another workspace, rolling back transaction',
+        meta: {
+          action: 'moveForms',
+          destWorkspaceId,
+          formIds,
+        },
+        error,
+      })
+      return transformMongoError(error)
+    },
+  )
+}
+
+const moveFormsTransaction = async ({
+  userId,
+  destWorkspaceId,
+  formIds,
+}: {
+  userId: string
+  destWorkspaceId: string
+  formIds: string[]
+}): Promise<WorkspaceDto | null> => {
+  let destWorkspace: WorkspaceDto | null
+
+  const session = await WorkspaceModel.startSession()
+  return session
+    .withTransaction(async () => {
+      // Forms could be from multiple different workspaces, from one source workspace, or have no workspaces yet
+      await WorkspaceModel.removeFormIdsFromAllWorkspaces({
+        admin: userId,
+        formIds,
+        session,
+      })
+
+      destWorkspace = await WorkspaceModel.addFormIdsToWorkspace({
+        workspaceId: destWorkspaceId,
+        formIds,
+        session,
+      })
+    })
+    .then(() => destWorkspace)
+    .finally(() => session.endSession())
 }
 
 export const getWorkspace = (

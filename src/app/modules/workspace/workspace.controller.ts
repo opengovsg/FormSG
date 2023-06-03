@@ -253,22 +253,51 @@ export const deleteForms: ControllerHandler<
  * @security session
  *
  * @returns 200 with a list of remaining forms in the source workspace
+ * @returns 403 when user does not have permissions to update the source or destination workspace
  * @returns 404 when the workspace does not exist or belong to the user
  * @returns 422 when user of given id cannnot be found in the database
  * @returns 500 when database errors occur
  */
-export const moveForms: ControllerHandler<
-  { sourceWorkspaceId: string },
+export const moveFormsToWorkspace: ControllerHandler<
   unknown,
-  any | ErrorDto,
-  { formIds: any[]; destWorkspaceId: string }
+  WorkspaceDto | ErrorDto,
+  { formIds: string[]; destWorkspaceId: string }
 > = async (req, res) => {
-  const { sourceWorkspaceId } = req.params
+  const userId = (req.session as AuthedSessionData).user._id
   const { formIds, destWorkspaceId } = req.body
 
-  return WorkspaceService.moveForms(sourceWorkspaceId, destWorkspaceId, formIds)
-    .map((forms) => res.status(StatusCodes.OK).json(forms))
-    .mapErr((err) =>
-      res.status(StatusCodes.BAD_REQUEST).json({ message: err.message }),
+  return WorkspaceService.getWorkspace(destWorkspaceId)
+    .andThen((destWorkspace) =>
+      WorkspaceService.verifyWorkspaceAdmin(destWorkspace, userId),
     )
+    .andThen(() =>
+      WorkspaceService.moveForms({
+        userId,
+        destWorkspaceId,
+        formIds,
+      }),
+    )
+    .map((workspace) =>
+      workspace
+        ? res.status(StatusCodes.OK).json(workspace)
+        : res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            message:
+              'Sorry something went wrong, we are unable to move the forms to another workspace',
+          }),
+    )
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error moving forms to another workspace',
+        meta: {
+          action: 'moveForms',
+          destWorkspaceId,
+          formIds,
+          userId,
+        },
+        error,
+      })
+
+      const { statusCode, errorMessage } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
 }

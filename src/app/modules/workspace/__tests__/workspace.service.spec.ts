@@ -389,4 +389,43 @@ describe('workspace.service', () => {
       expect(actual._unsafeUnwrapErr()).toBeInstanceOf(DatabaseError)
     })
   })
+
+  describe('moveForms', () => {
+    const mockFormId = new ObjectId().toHexString() as FormId
+    const adminId = new ObjectId().toHexString() as UserId
+    const mockWorkspaceOrigin = {
+      _id: new ObjectId().toHexString() as WorkspaceId,
+      admin: adminId,
+      title: 'workspace1',
+      formIds: [],
+    }
+
+    const mockWorkspaceDestination = {
+      _id: new ObjectId().toHexString() as WorkspaceId,
+      admin: adminId,
+      title: 'workspace1',
+      formIds: [mockFormId],
+    }
+    it('should move forms when user has access to a specified destination workspace', async () => {
+      await WorkspaceModel.create(mockWorkspaceOrigin)
+      await WorkspaceModel.create(mockWorkspaceDestination)
+
+      jest
+        .spyOn(WorkspaceModel, 'removeFormIdsFromAllWorkspaces')
+        .mockResolvedValueOnce()
+
+      jest
+        .spyOn(WorkspaceModel, 'addFormIdsToWorkspace')
+        .mockResolvedValueOnce(mockWorkspaceDestination)
+
+      const actual = await WorkspaceService.moveForms({
+        destWorkspaceId: mockWorkspaceDestination._id,
+        userId: adminId,
+        formIds: [mockFormId],
+      })
+
+      expect(actual.isOk()).toEqual(true)
+      expect(actual._unsafeUnwrap()?.formIds).toContain(mockFormId)
+    })
+  })
 })

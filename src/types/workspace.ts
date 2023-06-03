@@ -42,4 +42,24 @@ export interface IWorkspaceModel extends Model<IWorkspaceSchema> {
      */
     session?: ClientSession
   }): Promise<WorkspaceDto | null>
+
+  removeFormIdsFromAllWorkspaces({
+    admin,
+    formIds,
+    session,
+  }: {
+    admin: IUserSchema['_id']
+    formIds: IFormSchema['_id'][]
+    session?: ClientSession
+  }): Promise<void>
+
+  addFormIdsToWorkspace({
+    workspaceId,
+    formIds,
+    session,
+  }: {
+    workspaceId: IWorkspaceSchema['_id']
+    formIds: IFormSchema['_id'][]
+    session?: ClientSession
+  }): Promise<WorkspaceDto | null>
 }

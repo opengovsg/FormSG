@@ -1,5 +1,7 @@
 import { ObjectId } from 'bson-ext'
 import mongoose from 'mongoose'
+import { UserId } from 'shared/types'
+import { Workspace, WorkspaceId } from 'shared/types/workspace'
 import supertest, { Session } from 'supertest-session'
 
 import getFormModel from 'src/app/models/form.server.model'
@@ -30,11 +32,11 @@ const app = setupApp('/workspaces', WorkspacesRouter, {
 
 const MOCK_USER_ID = new ObjectId()
 const MOCK_FORM_ID = new ObjectId()
-const MOCK_WORKSPACE_ID = new ObjectId()
+const MOCK_WORKSPACE_ID = new ObjectId().toHexString() as WorkspaceId
 const MOCK_WORKSPACE_DOC = {
   _id: MOCK_WORKSPACE_ID,
   title: 'Workspace1',
-  admin: MOCK_USER_ID,
+  admin: MOCK_USER_ID.toHexString() as UserId,
   formIds: [],
 }
 
@@ -318,14 +320,10 @@ describe('workspaces.routes', () => {
        * because the mocked mongoose MemoryDatabaseServer doesn't support transactions.
        * See issue #4503 for more details.
        **/
-      jest.spyOn(WorkspaceModel, 'deleteWorkspace').mockImplementationOnce(() =>
-        WorkspaceModel.deleteWorkspace({
-          workspaceId: MOCK_WORKSPACE_DOC._id,
-        }),
-      )
       jest
-        .spyOn(FormModel, 'archiveForms')
-        .mockImplementationOnce((formIds) => FormModel.archiveForms(formIds))
+        .spyOn(WorkspaceModel, 'deleteWorkspace')
+        .mockResolvedValueOnce(MOCK_WORKSPACE_DOC as Workspace)
+      jest.spyOn(FormModel, 'archiveForms').mockResolvedValueOnce()
 
       const response = await request
         .delete(DELETE_WORKSPACE_ENDPOINT)
@@ -393,6 +391,127 @@ describe('workspaces.routes', () => {
       const response = await request
         .delete(DELETE_WORKSPACE_ENDPOINT)
         .send(deleteWorkspaceParam)
+
+      expect(response.status).toEqual(500)
+      expect(response.body).toEqual({
+        message: formatErrorRecoveryMessage(mockErrorMessage),
+      })
+    })
+  })
+
+  describe('POST /workspaces/move', () => {
+    const MOVE_WORKSPACE_ENDPOINT = `/workspaces/move`
+    const FORM_ID_TO_MOVE = new ObjectId().toHexString()
+    const moveWorkspaceParams = {
+      formIds: [FORM_ID_TO_MOVE],
+      destWorkspaceId: MOCK_WORKSPACE_ID.toString(),
+    }
+
+    it('should return 200 with the workspace when forms are successfully moved', async () => {
+      await WorkspaceModel.create(MOCK_WORKSPACE_DOC)
+
+      jest
+        .spyOn(WorkspaceModel, 'removeFormIdsFromAllWorkspaces')
+        .mockResolvedValueOnce()
+
+      jest
+        .spyOn(WorkspaceModel, 'addFormIdsToWorkspace')
+        .mockImplementationOnce(async () => {
+          await WorkspaceModel.updateOne(
+            { _id: MOCK_WORKSPACE_ID },
+            {
+              $set: { formIds: [MOCK_FORM_ID.toHexString(), FORM_ID_TO_MOVE] },
+            },
+          )
+          return (await WorkspaceModel.findOne({
+            _id: MOCK_WORKSPACE_ID,
+          })) as Workspace
+        })
+
+      const response = await request
+        .post(MOVE_WORKSPACE_ENDPOINT)
+        .send(moveWorkspaceParams)
+
+      const expected = {
+        title: MOCK_WORKSPACE_DOC.title,
+        admin: MOCK_USER_ID.toHexString(),
+        formIds: [MOCK_FORM_ID.toHexString(), FORM_ID_TO_MOVE],
+      }
+
+      expect(response.status).toEqual(200)
+      expect(response.body).toMatchObject(expected)
+    })
+
+    it('should return 401 when user is not logged in', async () => {
+      await logoutSession(request)
+      const response = await request
+        .post(MOVE_WORKSPACE_ENDPOINT)
+        .send(moveWorkspaceParams)
+
+      expect(response.status).toEqual(401)
+      expect(response.body).toEqual({ message: 'User is unauthorized.' })
+    })
+
+    it('should return 403 when user does not own the workspace', async () => {
+      const otherUserId = new ObjectId()
+      const otherWorkspaceId = new ObjectId()
+      await dbHandler.insertUser({
+        userId: otherUserId,
+        agencyId: new ObjectId(),
+        mailName: 'different',
+      })
+      const workspaceBelongingToOtherAdmin = {
+        _id: otherWorkspaceId,
+        title: 'Workspace2',
+        admin: otherUserId,
+        formIds: [],
+      }
+      await WorkspaceModel.create(workspaceBelongingToOtherAdmin)
+      const response = await request
+        .post(MOVE_WORKSPACE_ENDPOINT)
+        .send({ formIds: [FORM_ID_TO_MOVE], destWorkspaceId: otherWorkspaceId })
+
+      expect(response.status).toEqual(403)
+      expect(response.body).toEqual({
+        message: new ForbiddenWorkspaceError().message,
+      })
+    })
+
+    it('should return 500 when database errors occur for adding form to workspace', async () => {
+      await WorkspaceModel.create(MOCK_WORKSPACE_DOC)
+
+      const mockErrorMessage = 'something went wrong'
+
+      jest
+        .spyOn(WorkspaceModel, 'removeFormIdsFromAllWorkspaces')
+        .mockResolvedValueOnce()
+
+      jest
+        .spyOn(WorkspaceModel, 'addFormIdsToWorkspace')
+        .mockRejectedValueOnce(new Error(mockErrorMessage))
+
+      const response = await request
+        .post(MOVE_WORKSPACE_ENDPOINT)
+        .send(moveWorkspaceParams)
+
+      expect(response.status).toEqual(500)
+      expect(response.body).toEqual({
+        message: formatErrorRecoveryMessage(mockErrorMessage),
+      })
+    })
+
+    it('should return 500 when database errors occur for removing form from workspace', async () => {
+      await WorkspaceModel.create(MOCK_WORKSPACE_DOC)
+
+      const mockErrorMessage = 'something went wrong'
+
+      jest
+        .spyOn(WorkspaceModel, 'removeFormIdsFromAllWorkspaces')
+        .mockRejectedValueOnce(new Error(mockErrorMessage))
+
+      const response = await request
+        .post(MOVE_WORKSPACE_ENDPOINT)
+        .send(moveWorkspaceParams)
 
       expect(response.status).toEqual(500)
       expect(response.body).toEqual({
