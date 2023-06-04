@@ -364,12 +364,10 @@ export const getUserByApiKey = (
     if (!user.apiToken?.keyHash) {
       return errAsync(new MissingTokenError())
     }
-    return compareHash(token, user.apiToken.keyHash ?? '').andThen(
-      (isHashMatch) => {
-        if (isHashMatch) return okAsync(user)
-        return errAsync(new InvalidTokenError())
-      },
-    )
+    return compareHash(token, user.apiToken.keyHash).andThen((isHashMatch) => {
+      if (isHashMatch) return okAsync(user)
+      return errAsync(new InvalidTokenError())
+    })
   })
 }
 
