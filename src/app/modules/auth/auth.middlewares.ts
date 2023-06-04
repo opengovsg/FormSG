@@ -156,6 +156,7 @@ export const authenticateApiKey: ControllerHandler = (req, res, next) => {
           .json({ message: 'Invalid API key' })
       }
       req.session.user = { _id: user.id }
+      // TODO: update apiToken lastUsedAt in DB for the user
       return next()
     })
     .mapErr((error) => {
