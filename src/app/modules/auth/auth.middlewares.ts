@@ -8,7 +8,6 @@ import { ControllerHandler } from '../core/core.types'
 
 import { getUserByApiKey } from './auth.service'
 import { isUserInSession, mapRouteExternalApiError } from './auth.utils'
-import { API_KEY_SEPARATOR, BEARER_SEPARATOR, BEARER_STRING } from './constants'
 
 const logger = createLoggerWithLabel(module)
 
@@ -95,6 +94,22 @@ export const validateVerifyOtpParams = celebrate({
   }),
 })
 
+type bearerTokenRegExpMatchArray =
+  | null
+  | (RegExpMatchArray & {
+      groups: {
+        token: string
+      }
+    })
+
+type apiKeyRegExpMatchArray =
+  | null
+  | (RegExpMatchArray & {
+      groups: {
+        userId: string
+      }
+    })
+
 /**
  * Middleware that only allows users with a valid bearer token to pass through to the next handler
  */
@@ -105,29 +120,35 @@ export const authenticateApiKey: ControllerHandler = (req, res, next) => {
       .status(StatusCodes.UNAUTHORIZED)
       .json({ message: 'Authorisation header is missing' })
   }
-  const [bearerString, apiKey] = authorizationHeader.split(BEARER_SEPARATOR)
-  if (bearerString !== BEARER_STRING) {
+  const bearerMatch = authorizationHeader.match(
+    /^Bearer (?<token>\S+)$/,
+  ) as bearerTokenRegExpMatchArray
+  if (!bearerMatch) {
     return res
       .status(StatusCodes.BAD_REQUEST)
       .json({ message: 'Invalid authorisation header format' })
   }
-  const splitApiKey = apiKey.split(API_KEY_SEPARATOR)
-  if (splitApiKey.length !== 4) {
+
+  // Note: testing the exact token format is not needed
+  // The minimum knowledge needed about the format is to extract the userId
+  // Other than that, invalid tokens will simply fail hash comparison
+  const apiKeyMatch = bearerMatch.groups.token.match(
+    /^(\w+)_(v\d+)_(?<userId>[0-9a-f]{24})_([a-z0-9/+]+=*)$/i,
+  ) as apiKeyRegExpMatchArray
+  if (!apiKeyMatch) {
     return res
       .status(StatusCodes.BAD_REQUEST)
       .json({ message: 'Invalid API key format' })
   }
-  const [apiEnv, apiVersion, userId, token] = splitApiKey
   logger.info({
     message: 'User attempting to authenticate using API key',
     meta: {
       action: 'authenticateApiKey',
-      apiEnv,
-      apiVersion,
-      user: userId,
+      userId: apiKeyMatch.groups.userId,
+      token: bearerMatch.groups.token,
     },
   })
-  return getUserByApiKey(userId, token)
+  return getUserByApiKey(apiKeyMatch.groups.userId, bearerMatch.groups.token)
     .map((user) => {
       if (!user) {
         return res
