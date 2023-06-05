@@ -102,6 +102,7 @@ export const ShareFormModal = ({
   const { data: flags } = useFeatureFlags()
   const displayGoLink = flags?.has(featureFlags.goLinks)
 
+  // Hard-coded .gov.sg whitelist for GoGov integration
   const gogovWhiteListed = '.gov.sg'
   const { user } = useUser()
   const whitelisted = useMemo(
