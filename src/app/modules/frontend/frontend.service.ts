@@ -1,6 +1,7 @@
 import { ClientEnvVars } from '../../../../shared/types/core'
 import config from '../../config/config'
 import { captchaConfig } from '../../config/features/captcha.config'
+import { goGovConfig } from '../../config/features/gogov.config'
 import { googleAnalyticsConfig } from '../../config/features/google-analytics.config'
 import { paymentConfig } from '../../config/features/payment.config'
 import { sentryConfig } from '../../config/features/sentry.config'
@@ -35,5 +36,7 @@ export const getClientEnvVars = (): ClientEnvVars => {
     useFetchForSubmissions: config.reactMigration.useFetchForSubmissions,
 
     secretEnv: config.secretEnv, // Used for conditional rendering of payment copy
+
+    goGovBaseUrl: goGovConfig.goGovBaseUrl, // Used for GoGov integration
   }
 }

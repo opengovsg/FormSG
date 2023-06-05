@@ -387,6 +387,13 @@ export interface IFormModel extends Model<IFormSchema> {
     logicId: string,
     updatedLogic: LogicDto,
   ): Promise<IFormSchema | null>
+
+  getGoLinkSuffix(formId: string): Promise<IFormDocument | null>
+
+  setGoLinkSuffix(
+    formId: string,
+    goLinkSuffix: string,
+  ): Promise<IFormDocument | null>
 }
 
 export type IEncryptedFormModel = Model<IEncryptedFormSchema> & IFormModel

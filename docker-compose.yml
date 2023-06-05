@@ -114,6 +114,8 @@ services:
       - PAYMENT_GUIDE_LINK
       # Cron secrets
       - CRON_PAYMENT_API_SECRET=secretKey
+      # env vars for go integration
+      - GOGOV_API_KEY
 
   mockpass:
     build: https://github.com/opengovsg/mockpass.git#v3.1.3
