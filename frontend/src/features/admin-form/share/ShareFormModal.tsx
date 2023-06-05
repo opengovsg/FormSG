@@ -61,7 +61,7 @@ const goLinkClaimSuccessHelperText: goLinkHelperTextType = {
   icon: <BxsCheckCircle />,
   text: (
     <Text>
-      You have successfully claimed this link.This link will appear in your{' '}
+      You have successfully claimed this link. This link will appear in your{' '}
       <Link isExternal href="https://go.gov.sg">
         Go account
       </Link>
