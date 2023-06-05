@@ -1,8 +1,10 @@
+import { format } from 'date-fns'
 import { chain, left, right } from 'fp-ts/lib/Either'
 import { flow } from 'fp-ts/lib/function'
 import moment from 'moment-timezone'
 
 import { DateSelectedValidation } from '../../../../../shared/types'
+import { convertInvalidDaysOfTheWeekToNumberSet as convertInvalidDaysToNumberSet } from '../../../../../shared/utils/date-validation'
 import {
   IDateFieldSchema,
   OmitUnusedValidatorProps,
@@ -107,6 +109,23 @@ const makeDateValidator: DateValidatorConstructor = (dateField) => {
 }
 
 /**
+ * Returns a validator to check if date is an invalid day
+ */
+const makeInvalidDaysValidator: DateValidatorConstructor =
+  (dateField) => (response) => {
+    const { answer } = response
+    const invalidDays = convertInvalidDaysToNumberSet(
+      dateField.invalidDays ?? [],
+    )
+    // Convert date response to a ISO day of the week number format
+    const dateResponseNumberFormat = parseInt(format(new Date(answer), 'i'))
+
+    return invalidDays.has(dateResponseNumberFormat)
+      ? left(`DateValidator:\t answer is an invalid day`)
+      : right(response)
+  }
+
+/**
  * Returns a validation function for a date field when called.
  */
 export const constructDateValidator: DateValidatorConstructor = (dateField) =>
@@ -114,4 +133,5 @@ export const constructDateValidator: DateValidatorConstructor = (dateField) =>
     notEmptySingleAnswerResponse,
     chain(dateFormatValidator),
     chain(makeDateValidator(dateField)),
+    chain(makeInvalidDaysValidator(dateField)),
   )
