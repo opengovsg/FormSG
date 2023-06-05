@@ -45,15 +45,10 @@ export const hasAvailableDates = (
     return true
   }
 
-  for (
-    let date = new Date(start);
-    date <= end;
-    date.setDate(date.getDate() + 1)
-  ) {
-    if (isDateAnInvalidDay(date, invalidDays)) {
-      continue
+  for (let date = start; date <= end; date.setDate(date.getDate() + 1)) {
+    if (!isDateAnInvalidDay(date, invalidDays)) {
+      return true
     }
-    return true
   }
 
   return false
