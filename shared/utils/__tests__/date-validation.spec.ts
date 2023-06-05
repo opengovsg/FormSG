@@ -29,12 +29,14 @@ describe('File validation utils', () => {
   })
   describe('isDateAnInvalidDay', () => {
     it('should return true if there is a match in invalidDays array', () => {
-      const mockDate = new Date('2022-08-02')
+      const mockTues = new Date('2022-08-02')
+      const mockWed = new Date('2022-08-03')
       const mockInvalidDays = [
         InvalidDaysOptions.Tuesday,
         InvalidDaysOptions.Wednesday,
       ]
-      expect(isDateAnInvalidDay(mockDate, mockInvalidDays)).toBe(true)
+      expect(isDateAnInvalidDay(mockTues, mockInvalidDays)).toBe(true)
+      expect(isDateAnInvalidDay(mockWed, mockInvalidDays)).toBe(true)
     })
 
     it('should return false if there is no invalid day in invalidDays array', () => {
@@ -44,12 +46,20 @@ describe('File validation utils', () => {
     })
 
     it('should return false if there is no match between date and invalidDays array', () => {
-      const mockDate = new Date('2022-08-02')
+      const mockTues = new Date('2022-08-02')
+      const mockWed = new Date('2022-08-03')
+      const mockThurs = new Date('2022-08-04')
+      const mockSat = new Date('2022-08-06')
+      const mockSun = new Date('2022-08-07')
       const mockInvalidDays = [
         InvalidDaysOptions.Friday,
         InvalidDaysOptions.Monday,
       ]
-      expect(isDateAnInvalidDay(mockDate, mockInvalidDays)).toBe(false)
+      expect(isDateAnInvalidDay(mockTues, mockInvalidDays)).toBe(false)
+      expect(isDateAnInvalidDay(mockWed, mockInvalidDays)).toBe(false)
+      expect(isDateAnInvalidDay(mockThurs, mockInvalidDays)).toBe(false)
+      expect(isDateAnInvalidDay(mockSat, mockInvalidDays)).toBe(false)
+      expect(isDateAnInvalidDay(mockSun, mockInvalidDays)).toBe(false)
     })
   })
   describe('hasAvailableDates', () => {
@@ -80,7 +90,7 @@ describe('File validation utils', () => {
           InvalidDaysOptions.Thursday,
           InvalidDaysOptions.Friday,
           InvalidDaysOptions.Saturday,
-          InvalidDaysOptions.Saturday,
+          InvalidDaysOptions.Saturday, // duplicate day of the week
         ]
         expect(
           hasAvailableDates(mockStartDate, mockEndDate, mockInvalidDays),
@@ -89,7 +99,7 @@ describe('File validation utils', () => {
     })
     describe('when there is less than 7 invalid days', () => {
       describe('when the date difference is more than or equals to 6 days', () => {
-        it('should return true', () => {
+        it('should return true when there are valid days', () => {
           const mockStartDate = new Date('2022-10-19')
           const mockEndDate = new Date('2022-10-25')
           const mockInvalidDays = [
@@ -122,8 +132,8 @@ describe('File validation utils', () => {
           ).toBe(false)
         })
         it('should return true when not all dates are invalid days', () => {
-          const mockStartDate = new Date('2022-10-19')
-          const mockEndDate = new Date('2022-10-24')
+          const mockStartDate = new Date('2022-10-19') // Wednesday
+          const mockEndDate = new Date('2022-10-24') // Monday
           const mockInvalidDays = [
             InvalidDaysOptions.Monday,
             InvalidDaysOptions.Tuesday,
@@ -132,6 +142,7 @@ describe('File validation utils', () => {
             InvalidDaysOptions.Friday,
             InvalidDaysOptions.Saturday,
           ]
+          // Sunday is not an invalid day
           expect(
             hasAvailableDates(mockStartDate, mockEndDate, mockInvalidDays),
           ).toBe(true)

@@ -350,10 +350,17 @@ describe('Date field validation', () => {
         customMinDate: null,
         customMaxDate: null,
       },
-      invalidDays: [InvalidDaysOptions.Wednesday, InvalidDaysOptions.Thursday],
+      invalidDays: [
+        InvalidDaysOptions.Saturday,
+        InvalidDaysOptions.Sunday,
+        InvalidDaysOptions.Monday,
+        InvalidDaysOptions.Tuesday,
+        InvalidDaysOptions.Wednesday,
+        InvalidDaysOptions.Thursday,
+      ],
     })
     const response = generateNewSingleAnswerResponse(BasicField.Date, {
-      answer: '29 Jul 2022',
+      answer: '29 Jul 2022', // Friday
     })
 
     const validateResult = validateField('formId', formField, response)
@@ -370,13 +377,31 @@ describe('Date field validation', () => {
       },
       invalidDays: [InvalidDaysOptions.Wednesday, InvalidDaysOptions.Thursday],
     })
-    const response = generateNewSingleAnswerResponse(BasicField.Date, {
+    const mockWedResponse = generateNewSingleAnswerResponse(BasicField.Date, {
       answer: '27 Jul 2022',
     })
 
-    const validateResult = validateField('formId', formField, response)
-    expect(validateResult.isErr()).toBe(true)
-    expect(validateResult._unsafeUnwrapErr()).toEqual(
+    const validateWedResult = validateField(
+      'formId',
+      formField,
+      mockWedResponse,
+    )
+    expect(validateWedResult.isErr()).toBe(true)
+    expect(validateWedResult._unsafeUnwrapErr()).toEqual(
+      new ValidateFieldError('Invalid answer submitted'),
+    )
+
+    const mockThursResponse = generateNewSingleAnswerResponse(BasicField.Date, {
+      answer: '28 Jul 2022',
+    })
+
+    const validateThursResult = validateField(
+      'formId',
+      formField,
+      mockThursResponse,
+    )
+    expect(validateThursResult.isErr()).toBe(true)
+    expect(validateThursResult._unsafeUnwrapErr()).toEqual(
       new ValidateFieldError('Invalid answer submitted'),
     )
   })
