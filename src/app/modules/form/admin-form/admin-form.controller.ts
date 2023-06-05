@@ -2716,17 +2716,20 @@ export const handleGetGoLinkSuffix: ControllerHandler<{ formId: string }> = (
       })
       .map((goLinkSuffix) => res.status(StatusCodes.OK).json(goLinkSuffix))
       .mapErr((error) => {
-        logger.error({
-          message: 'Error occurred when getting GoGov link suffix',
-          meta: {
-            action: 'handleGetGoLinkSuffix',
-            ...createReqMeta(req),
-            userId: sessionUserId,
-            formId,
-          },
-          error,
-        })
         const { errorMessage, statusCode } = mapRouteError(error)
+        // Don't log 404 errors as they are expected for most forms
+        if (statusCode !== StatusCodes.NOT_FOUND) {
+          logger.error({
+            message: 'Error occurred when getting GoGov link suffix',
+            meta: {
+              action: 'handleGetGoLinkSuffix',
+              ...createReqMeta(req),
+              userId: sessionUserId,
+              formId,
+            },
+            error,
+          })
+        }
         return res.status(statusCode).json({ message: errorMessage })
       })
   )
