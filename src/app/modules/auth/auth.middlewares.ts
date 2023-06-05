@@ -133,7 +133,7 @@ export const authenticateApiKey: ControllerHandler = (req, res, next) => {
   // The minimum knowledge needed about the format is to extract the userId
   // Other than that, invalid tokens will simply fail hash comparison
   const apiKeyMatch = bearerMatch.groups.token.match(
-    /^(\w+)_(v\d+)_(?<userId>[0-9a-f]{24})_([a-z0-9/+]+=*)$/i,
+    /^(\w+)_(v\d+)_(?<userId>[0-9a-f]{24})_([a-z0-9/.+]+=*)$/i,
   ) as apiKeyRegExpMatchArray
   if (!apiKeyMatch) {
     return res
