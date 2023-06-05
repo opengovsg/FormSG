@@ -86,7 +86,7 @@ const compileWorkspaceModel = (db: Mongoose): IWorkspaceModel => {
       {
         _id: workspaceId,
       },
-      { session, new: true },
+      { session },
     )
   }
 

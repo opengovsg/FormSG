@@ -1,11 +1,9 @@
+import expressHandler from '__tests__/unit/backend/helpers/jest-express'
 import { ObjectId } from 'bson-ext'
 import { errAsync, okAsync } from 'neverthrow'
-import { mocked } from 'ts-jest/utils'
 
 import * as WorkspaceService from 'src/app/modules/workspace/workspace.service'
 import { IUserSchema, IWorkspaceSchema } from 'src/types'
-
-import expressHandler from 'tests/unit/backend/helpers/jest-express'
 
 import { DatabaseConflictError, DatabaseError } from '../../core/core.errors'
 import * as WorkspaceController from '../workspace.controller'
@@ -15,7 +13,7 @@ import {
 } from '../workspace.errors'
 
 jest.mock('../workspace.service')
-const MockWorkspaceService = mocked(WorkspaceService)
+const MockWorkspaceService = jest.mocked(WorkspaceService)
 
 describe('workspace.controller', () => {
   beforeEach(() => jest.clearAllMocks())
@@ -45,8 +43,8 @@ describe('workspace.controller', () => {
       )
       await WorkspaceController.getWorkspaces(MOCK_REQ, mockRes, jest.fn())
 
-      expect(mockRes.status).toBeCalledWith(409)
-      expect(mockRes.json).toBeCalledWith({ message: mockErrorString })
+      expect(mockRes.status).toHaveBeenCalledWith(409)
+      expect(mockRes.json).toHaveBeenCalledWith({ message: mockErrorString })
     })
 
     it('should return 500 when database error occurs', async () => {
@@ -57,8 +55,8 @@ describe('workspace.controller', () => {
       )
       await WorkspaceController.getWorkspaces(MOCK_REQ, mockRes, jest.fn())
 
-      expect(mockRes.status).toBeCalledWith(500)
-      expect(mockRes.json).toBeCalledWith({ message: mockErrorString })
+      expect(mockRes.status).toHaveBeenCalledWith(500)
+      expect(mockRes.json).toHaveBeenCalledWith({ message: mockErrorString })
     })
   })
 
@@ -106,8 +104,8 @@ describe('workspace.controller', () => {
         jest.fn(),
       )
 
-      expect(mockRes.status).toBeCalledWith(409)
-      expect(mockRes.json).toBeCalledWith({ message: mockErrorString })
+      expect(mockRes.status).toHaveBeenCalledWith(409)
+      expect(mockRes.json).toHaveBeenCalledWith({ message: mockErrorString })
     })
 
     it('should return 500 when database error occurs', async () => {
@@ -122,8 +120,8 @@ describe('workspace.controller', () => {
         jest.fn(),
       )
 
-      expect(mockRes.status).toBeCalledWith(500)
-      expect(mockRes.json).toBeCalledWith({ message: mockErrorString })
+      expect(mockRes.status).toHaveBeenCalledWith(500)
+      expect(mockRes.json).toHaveBeenCalledWith({ message: mockErrorString })
     })
   })
 
@@ -184,8 +182,8 @@ describe('workspace.controller', () => {
         jest.fn(),
       )
 
-      expect(mockRes.status).toBeCalledWith(403)
-      expect(mockRes.json).toBeCalledWith({ message: mockErrorString })
+      expect(mockRes.status).toHaveBeenCalledWith(403)
+      expect(mockRes.json).toHaveBeenCalledWith({ message: mockErrorString })
     })
 
     it('should return 404 when workspace is not found', async () => {
@@ -204,8 +202,8 @@ describe('workspace.controller', () => {
         jest.fn(),
       )
 
-      expect(mockRes.status).toBeCalledWith(404)
-      expect(mockRes.json).toBeCalledWith({ message: mockErrorString })
+      expect(mockRes.status).toHaveBeenCalledWith(404)
+      expect(mockRes.json).toHaveBeenCalledWith({ message: mockErrorString })
     })
 
     it('should return 500 when database error occurs', async () => {
@@ -227,8 +225,8 @@ describe('workspace.controller', () => {
         jest.fn(),
       )
 
-      expect(mockRes.status).toBeCalledWith(500)
-      expect(mockRes.json).toBeCalledWith({ message: mockErrorString })
+      expect(mockRes.status).toHaveBeenCalledWith(500)
+      expect(mockRes.json).toHaveBeenCalledWith({ message: mockErrorString })
     })
   })
 
@@ -285,8 +283,8 @@ describe('workspace.controller', () => {
 
       await WorkspaceController.deleteWorkspace(MOCK_REQ, mockRes, jest.fn())
 
-      expect(mockRes.status).toBeCalledWith(404)
-      expect(mockRes.json).toBeCalledWith({ message: mockErrorString })
+      expect(mockRes.status).toHaveBeenCalledWith(404)
+      expect(mockRes.json).toHaveBeenCalledWith({ message: mockErrorString })
     })
 
     it('should return 409 when database conflict occurs', async () => {
@@ -304,8 +302,8 @@ describe('workspace.controller', () => {
       )
       await WorkspaceController.deleteWorkspace(MOCK_REQ, mockRes, jest.fn())
 
-      expect(mockRes.status).toBeCalledWith(409)
-      expect(mockRes.json).toBeCalledWith({ message: mockErrorString })
+      expect(mockRes.status).toHaveBeenCalledWith(409)
+      expect(mockRes.json).toHaveBeenCalledWith({ message: mockErrorString })
     })
 
     it('should return 500 when database error occurs', async () => {
@@ -324,8 +322,8 @@ describe('workspace.controller', () => {
 
       await WorkspaceController.deleteWorkspace(MOCK_REQ, mockRes, jest.fn())
 
-      expect(mockRes.status).toBeCalledWith(500)
-      expect(mockRes.json).toBeCalledWith({ message: mockErrorString })
+      expect(mockRes.status).toHaveBeenCalledWith(500)
+      expect(mockRes.json).toHaveBeenCalledWith({ message: mockErrorString })
     })
   })
 })
