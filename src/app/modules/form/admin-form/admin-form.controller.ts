@@ -2749,7 +2749,7 @@ export const handleSetGoLinkSuffix: ControllerHandler<
         return AuthService.getFormAfterPermissionChecks({
           user,
           formId,
-          level: PermissionLevel.Read,
+          level: PermissionLevel.Write,
         })
       })
       // Step 2: After permission checks, try to get GoGov link
