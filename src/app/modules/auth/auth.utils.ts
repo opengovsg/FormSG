@@ -60,7 +60,7 @@ export const mapRouteError: MapRouteError = (error, coreErrorMessage) => {
  * @param error The error to retrieve the status codes and error messages
  * @param coreErrorMessage Any error message to return instead of the default core error message, if any
  */
-export const mapRouteExternalApiError: MapRouteError = (error) => {
+export const mapRoutePublicApiError: MapRouteError = (error) => {
   switch (error.constructor) {
     case AuthErrors.InvalidTokenError:
       return {

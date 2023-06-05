@@ -10,7 +10,7 @@ import { getUserByApiKey } from './auth.service'
 import {
   isCronPaymentAuthValid,
   isUserInSession,
-  mapRouteExternalApiError,
+  mapRoutePublicApiError,
 } from './auth.utils'
 
 const logger = createLoggerWithLabel(module)
@@ -178,7 +178,7 @@ export const authenticateApiKey: ControllerHandler = (req, res, next) => {
       return next()
     })
     .mapErr((error) => {
-      const { errorMessage, statusCode } = mapRouteExternalApiError(error)
+      const { errorMessage, statusCode } = mapRoutePublicApiError(error)
       return res.status(statusCode).json({ message: errorMessage })
     })
 }
