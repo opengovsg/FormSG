@@ -6,8 +6,9 @@ import {
   useForm,
   useWatch,
 } from 'react-hook-form'
+import { Link as ReactLink } from 'react-router-dom'
 import { useDebounce } from 'react-use'
-import { Box, FormControl, Text } from '@chakra-ui/react'
+import { Box, FormControl, Link, Text } from '@chakra-ui/react'
 import { cloneDeep } from 'lodash'
 
 import {
@@ -244,6 +245,13 @@ export const PaymentInput = ({ isDisabled }: { isDisabled: boolean }) => {
           )}
         />
         <FormErrorMessage>{errors.display_amount?.message}</FormErrorMessage>
+        {Number(clonedWatchedInputs.display_amount) > 1000 ? (
+          <InlineMessage variant="warning" mt="2rem" useMarkdown>
+            You would need to issue your own invoice for amounts above S$1000.
+            [Learn more about
+            this](https://guide.form.gov.sg/faq/faq/payments#simplified-tax-invoices-versus-regular-tax-invoices)
+          </InlineMessage>
+        ) : null}
       </FormControl>
 
       <FormFieldDrawerActions
@@ -288,11 +296,17 @@ export const PaymentsInputPanel = (): JSX.Element | null => {
     }
   }, [paymentsField, resetData, setData, setToEditingPayment, setToInactive])
 
-  const paymentDisabledMessage = !isEncryptMode
-    ? 'Payments are not available in email mode forms.'
-    : !isStripeConnected
-    ? 'Connect your Stripe account in Settings to save this field.'
-    : ''
+  const paymentDisabledMessage = !isEncryptMode ? (
+    <Text>Payments are not available in email mode forms.</Text>
+  ) : !isStripeConnected ? (
+    <Text>
+      Connect your Stripe account in{' '}
+      <Link as={ReactLink} to={`settings/payments`}>
+        Settings
+      </Link>{' '}
+      to add payment field.
+    </Text>
+  ) : null
 
   // payment eligibility will be dependent on whether paymentDisabledMessage is non empty
   const isPaymentDisabled = !!paymentDisabledMessage
@@ -303,9 +317,7 @@ export const PaymentsInputPanel = (): JSX.Element | null => {
     <>
       {isPaymentDisabled && (
         <Box px="1.5rem" pt="2rem" pb="1.5rem">
-          <InlineMessage variant="info">
-            <Text>{paymentDisabledMessage}</Text>
-          </InlineMessage>
+          <InlineMessage variant="info">{paymentDisabledMessage}</InlineMessage>
         </Box>
       )}
       <PaymentInput isDisabled={isPaymentDisabled} />

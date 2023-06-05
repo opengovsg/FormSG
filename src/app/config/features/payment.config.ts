@@ -8,6 +8,7 @@ export interface IStripe {
   stripeWebhookSecret: string
   maxPaymentAmountCents: number
   minPaymentAmountCents: number
+  guideLink: string
 }
 
 const paymentFeature: Schema<IStripe> = {
@@ -44,7 +45,7 @@ const paymentFeature: Schema<IStripe> = {
   maxPaymentAmountCents: {
     doc: 'Maximum amount that can be paid for a form',
     format: Number,
-    default: 100000, // $1000, due to IRAS limit for invoice
+    default: 100000000, // Arbitrary large payment amount we should be concerned about
     env: 'PAYMENT_MAX_PAYMENT_AMOUNT_CENTS',
   },
   minPaymentAmountCents: {
@@ -52,6 +53,12 @@ const paymentFeature: Schema<IStripe> = {
     format: Number,
     default: 50, // $0.50, as specified by stripe
     env: 'PAYMENT_MIN_PAYMENT_AMOUNT_CENTS',
+  },
+  guideLink: {
+    doc: 'Link to payment guide',
+    format: String,
+    default: 'https://go.gov.sg/formsg-guide-payments',
+    env: 'PAYMENT_GUIDE_LINK',
   },
 }
 

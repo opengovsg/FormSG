@@ -89,7 +89,7 @@ const StripePaymentContainer = ({
             <GenericMessageBlock
               submissionId={paymentInfoData.submissionId}
               title="Payment request was canceled."
-              subtitle="The payment request has been canceled. If any payment has been completed, the payment will be refunded."
+              subtitle="The payment request has timed out. No payment has been taken. Please submit the form again."
             />
           </PaymentStack>
         )

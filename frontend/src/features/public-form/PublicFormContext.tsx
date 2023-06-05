@@ -1,5 +1,11 @@
 // Contains all the shared props that will probably be passed down.
-import { createContext, RefObject, useContext } from 'react'
+import {
+  createContext,
+  Dispatch,
+  RefObject,
+  SetStateAction,
+  useContext,
+} from 'react'
 import { UseQueryResult } from 'react-query'
 
 import { PublicFormViewDto } from '~shared/types/form'
@@ -52,6 +58,9 @@ export interface PublicFormContextProps
 
   /** Whether it is a preview form */
   isPreview: boolean
+
+  /** Sets the current number of visible fields in the form in public forms only*/
+  setNumVisibleFields?: Dispatch<SetStateAction<number>>
 }
 
 export const PublicFormContext = createContext<

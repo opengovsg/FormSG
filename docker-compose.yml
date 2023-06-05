@@ -108,9 +108,13 @@ services:
       - PAYMENT_STRIPE_SECRET_KEY=secretKey
       - PAYMENT_STRIPE_CLIENT_ID=clientId
       - PAYMENT_STRIPE_WEBHOOK_SECRET=webhookSecret
-      - PAYMENT_MAX_PAYMENT_AMOUNT_CENTS=100000
+      - PAYMENT_MAX_PAYMENT_AMOUNT_CENTS
       - PAYMENT_MIN_PAYMENT_AMOUNT_CENTS=50
       - SSM_ENV_SITE_NAME=development
+      - PAYMENT_GUIDE_LINK
+      # Cron secrets
+      - CRON_PAYMENT_API_SECRET=secretKey
+      # Bearer token API key format
       - API_KEY_VERSION=v1
 
   mockpass:

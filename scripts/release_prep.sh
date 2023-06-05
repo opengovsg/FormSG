@@ -47,7 +47,7 @@ git checkout -b ${release_branch}
 git branch -D ${temp_release_branch}
 
 git push origin ${may_force_push} HEAD:${release_branch}
-git push -f origin HEAD:staging-al2
+git push -f origin HEAD:staging
 git push origin ${release_version}
 
 # extract changelog to inject into the PR
