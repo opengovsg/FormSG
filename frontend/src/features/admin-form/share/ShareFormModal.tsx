@@ -25,7 +25,7 @@ import {
 } from '@chakra-ui/react'
 import dedent from 'dedent'
 
-import { featureFlags, GOGOV_BASE_URL } from '~shared/constants'
+import { featureFlags } from '~shared/constants'
 
 import { BxsCheckCircle, BxsErrorCircle } from '~/assets/icons'
 
@@ -45,6 +45,7 @@ import { Tab } from '~components/Tabs'
 import Textarea from '~components/Textarea'
 import { CopyButton } from '~templates/CopyButton'
 
+import { useEnv } from '~features/env/queries'
 import { useFeatureFlags } from '~features/feature-flags/queries'
 import { useListShortenerMutations } from '~features/link-shortener/mutations'
 import { useGoLink } from '~features/link-shortener/queries'
@@ -98,6 +99,8 @@ export const ShareFormModal = ({
     xs: 'mobile',
     md: 'md',
   })
+
+  const { data: { goGovBaseUrl } = {} } = useEnv()
 
   const { data: flags } = useFeatureFlags()
   const displayGoLink = flags?.has(featureFlags.goLinks)
@@ -349,7 +352,7 @@ export const ShareFormModal = ({
                             <InputRightElement>
                               <CopyButton
                                 colorScheme="secondary"
-                                stringToCopy={`${GOGOV_BASE_URL}/${goLinkSuffixInput}`}
+                                stringToCopy={`${goGovBaseUrl}/${goLinkSuffixInput}`}
                                 aria-label="Copy respondent form link"
                               />
                             </InputRightElement>

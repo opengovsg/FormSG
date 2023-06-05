@@ -38,4 +38,5 @@ export type ClientEnvVars = {
   // TODO (#5826): Toggle to use fetch for submissions instead of axios. Remove once network error is resolved
   useFetchForSubmissions: boolean
   secretEnv: string
+  goGovBaseUrl: string
 }

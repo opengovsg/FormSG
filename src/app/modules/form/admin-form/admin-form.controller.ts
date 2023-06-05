@@ -7,7 +7,6 @@ import { StatusCodes } from 'http-status-codes'
 import JSONStream from 'JSONStream'
 import { ResultAsync } from 'neverthrow'
 
-import { GOGOV_BASE_URL } from '../../../../../shared/constants'
 import {
   MAX_UPLOAD_FILE_SIZE,
   VALID_UPLOAD_FILE_TYPES,
@@ -2738,6 +2737,7 @@ export const handleSetGoLinkSuffix: ControllerHandler<
   unknown,
   { linkSuffix: string; adminEmail: string }
 > = (req, res) => {
+  const goGovBaseUrl = goGovConfig.goGovBaseUrl
   const { formId } = req.params
   const { linkSuffix, adminEmail } = req.body
   const sessionUserId = (req.session as AuthedSessionData).user._id
@@ -2756,7 +2756,7 @@ export const handleSetGoLinkSuffix: ControllerHandler<
       .andThen(() => {
         return ResultAsync.fromPromise(
           axios.post(
-            `${GOGOV_BASE_URL}/api/v1/admin/urls`,
+            `${goGovBaseUrl}/api/v1/admin/urls`,
             {
               longUrl: `${process.env.APP_URL}/${formId}`,
               shortUrl: linkSuffix,
