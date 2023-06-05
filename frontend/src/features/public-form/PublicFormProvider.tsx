@@ -135,6 +135,10 @@ export const PublicFormProvider = ({
   const { isNotFormId, toast, vfnToastIdRef, expiryInMs, ...commonFormValues } =
     useCommonFormProvider(formId)
 
+  const isPaymentEnabled =
+    data?.form.responseMode === FormResponseMode.Encrypt &&
+    data.form.payments_field.enabled
+
   useEffect(() => {
     if (data?.myInfoError) {
       toast({
@@ -231,7 +235,9 @@ export const PublicFormProvider = ({
         captchaResponse,
         responseMetadata: {
           responseTimeMs: differenceInMilliseconds(Date.now(), startTime),
-          numVisibleFields,
+          numVisibleFields: isPaymentEnabled
+            ? numVisibleFields + 1
+            : numVisibleFields,
         },
       }
 
@@ -474,6 +480,7 @@ export const PublicFormProvider = ({
       useFetchForSubmissions,
       numVisibleFields,
       startTime,
+      isPaymentEnabled,
     ],
   )
 
@@ -491,10 +498,6 @@ export const PublicFormProvider = ({
       !data.spcpSession,
     [data?.form, data?.spcpSession],
   )
-
-  const isPaymentEnabled =
-    data?.form.responseMode === FormResponseMode.Encrypt &&
-    data.form.payments_field.enabled
 
   if (isNotFormId) {
     return <NotFoundErrorPage />

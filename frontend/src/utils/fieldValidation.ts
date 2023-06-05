@@ -30,6 +30,7 @@ import {
   TextSelectedValidation,
   UenFieldBase,
 } from '~shared/types/field'
+import { isDateAnInvalidDay } from '~shared/utils/date-validation'
 import { isMFinSeriesValid, isNricValid } from '~shared/utils/nric-validation'
 import {
   isHomePhoneNumber,
@@ -439,6 +440,12 @@ export const createDateValidationRules: ValidationRuleFn<DateFieldBase> = (
           ) || 'Selected date is not within the allowed date range'
         )
       },
+      invalidDays: (val) =>
+        !val ||
+        !schema.invalidDays ||
+        !schema.invalidDays.length ||
+        !isDateAnInvalidDay(parseDate(val), schema.invalidDays) ||
+        'This date is not allowed by the form admin',
     },
   }
 }

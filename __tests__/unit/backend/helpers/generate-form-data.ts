@@ -13,6 +13,7 @@ import {
   IAttachmentFieldSchema,
   IAttachmentResponse,
   ICheckboxFieldSchema,
+  IDateFieldSchema,
   IDecimalFieldSchema,
   IDropdownFieldSchema,
   IHomenoFieldSchema,
@@ -149,6 +150,12 @@ export const generateDefaultField = (
         },
         ...customParams,
       } as IRatingFieldSchema
+    case BasicField.Date:
+      return {
+        ...defaultParams,
+        invalidDays: [],
+        ...customParams,
+      } as IDateFieldSchema
     default:
       return {
         ...defaultParams,
