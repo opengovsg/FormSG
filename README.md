@@ -180,14 +180,18 @@ to install node modules and Localstack locally to be able to run tests. Note tha
 npm run test
 ```
 
-will build the backend and run both our backend and frontend unit tests. The tests are located at
-[`__tests__/unit/frontend`](./__tests__/unit/frontend) and
-[`__tests__/unit/backend`](./__tests__/unit/backend).
+will build the backend and run our backend unit tests. The tests are located at [`__tests__/unit/backend`](./__tests__/unit/backend).
 
 If the backend is already built, you can run
 
 ```bash
 npm run test-ci
+```
+
+Frontend tests are located at [`frontend/__tests__`](./frontend/__tests__). They can be run with
+
+```bash
+npm run test:frontend
 ```
 
 #### End-to-end tests

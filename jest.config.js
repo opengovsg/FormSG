@@ -8,7 +8,6 @@ module.exports = {
     '<rootDir>/__tests__/e2e',
     '<rootDir>/dist/',
     '<rootDir>/node_modules/',
-    '<rootDir>/src/public',
     '<rootDir>/frontend',
   ],
   collectCoverageFrom: ['./src/**/*.{ts,js}', '!**/__tests__/**'],
