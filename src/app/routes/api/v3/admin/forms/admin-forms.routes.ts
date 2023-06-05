@@ -7,6 +7,7 @@ import {
 
 import { AdminFormsFeedbackRouter } from './admin-forms.feedback.routes'
 import { AdminFormsFormRouter } from './admin-forms.form.routes'
+import { AdminFormsGoGovRouter } from './admin-forms.gogov.routes'
 import { AdminFormsLogicRouter } from './admin-forms.logic.routes'
 import { AdminFormsPaymentsRouter } from './admin-forms.payments.routes'
 import { AdminFormsPresignRouter } from './admin-forms.presign.routes'
@@ -32,3 +33,4 @@ AdminFormsRouter.use(AdminFormsPresignRouter)
 AdminFormsRouter.use(AdminFormsLogicRouter)
 AdminFormsRouter.use(AdminFormsTwilioRouter)
 AdminFormsRouter.use(AdminFormsPaymentsRouter)
+AdminFormsRouter.use(AdminFormsGoGovRouter)

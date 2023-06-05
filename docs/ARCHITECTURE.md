@@ -61,12 +61,6 @@ to security on FormSG.
 
 ## Frontend
 
-The frontend JavaScript and CSS codebase is found in `src/public/modules` and inherits
-tellform's partitioning into `core`, `users` and `forms`. Each partition holds the
-relevant AngularJS controllers, directives and views that make up the user interface,
-as well as supporting config and services. All this is bootstrapped by `src/public/main.js`,
-and is webpacked together into `dist/frontend`.
+The frontend is written in React and can be found in `frontend/src`.
 
-The static HTML files that embed the above AngularJS files are templated and served by
-express.js, and are hence served in `src/app/views/index.server.view.html` and other templates
-in `src/app/views/templates/*.html`
+The index file is located at `frontend/public/index.html`. The frontend is built with CRA.

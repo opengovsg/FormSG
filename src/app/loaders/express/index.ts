@@ -12,7 +12,6 @@ import { ExamplesRouter } from '../../modules/examples/examples.routes'
 import { AdminFormsRouter } from '../../modules/form/admin-form/admin-form.routes'
 import { PublicFormRouter } from '../../modules/form/public-form/public-form.routes'
 import { FrontendRouter } from '../../modules/frontend/frontend.routes'
-import { FrontendRouter as OldFrontendRouter } from '../../modules/frontend-old/frontend.routes'
 import { MYINFO_ROUTER_PREFIX } from '../../modules/myinfo/myinfo.constants'
 import { MyInfoRouter } from '../../modules/myinfo/myinfo.routes'
 import { SgidRouter } from '../../modules/sgid/sgid.routes'
@@ -113,7 +112,6 @@ const loadExpressApp = async (connection: Connection) => {
   app.use(IntranetMiddleware.logIntranetUsage)
 
   // Deprecated routes
-  app.use('/frontend', OldFrontendRouter)
   app.use('/auth', AuthRouter)
   app.use('/transaction', VfnRouter)
   app.use('/examples', ExamplesRouter)
