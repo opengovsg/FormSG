@@ -47,10 +47,15 @@ import {
   MyInfoCookieStateError,
   MyInfoHashDidNotMatchError,
   MyInfoHashingError,
-  MyInfoInvalidAccessTokenError,
-  MyInfoMissingAccessTokenError,
+  MyInfoInvalidLoginCookieError,
   MyInfoMissingHashError,
+  MyInfoMissingLoginCookieError,
 } from '../../myinfo/myinfo.errors'
+import {
+  SgidInvalidJwtError,
+  SgidMissingJwtError,
+  SgidVerifyJwtError,
+} from '../../sgid/sgid.errors'
 import {
   InvalidJwtError,
   MissingJwtError,
@@ -420,12 +425,15 @@ export const mapRouteError: MapRouteError = (error) => {
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage: 'Captcha was missing. Please refresh and submit again.',
       }
+    case SgidMissingJwtError:
+    case SgidVerifyJwtError:
+    case SgidInvalidJwtError:
     case MissingJwtError:
     case VerifyJwtError:
     case InvalidJwtError:
-    case MyInfoMissingAccessTokenError:
+    case MyInfoMissingLoginCookieError:
     case MyInfoCookieStateError:
-    case MyInfoInvalidAccessTokenError:
+    case MyInfoInvalidLoginCookieError:
       return {
         statusCode: StatusCodes.UNAUTHORIZED,
         errorMessage:

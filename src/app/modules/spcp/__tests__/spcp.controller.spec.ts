@@ -1,312 +1,136 @@
+import expressHandler from '__tests__/unit/backend/helpers/jest-express'
 import { err, errAsync, ok, okAsync } from 'neverthrow'
-import { mocked } from 'ts-jest/utils'
 
 import config from 'src/app/config/config'
 import * as FormService from 'src/app/modules/form/form.service'
 import { MOCK_COOKIE_AGE } from 'src/app/modules/myinfo/__tests__/myinfo.test.constants'
 
-import expressHandler from 'tests/unit/backend/helpers/jest-express'
-
 import { FormAuthType } from '../../../../../shared/types'
 import * as BillingService from '../../billing/billing.service'
-import { ApplicationError, DatabaseError } from '../../core/core.errors'
+import { DatabaseError } from '../../core/core.errors'
 import { FormNotFoundError } from '../../form/form.errors'
 import * as SpcpController from '../spcp.controller'
 import {
-  CreateRedirectUrlError,
-  FetchLoginPageError,
-  InvalidOOBParamsError,
-  LoginPageValidationError,
+  CreateJwtError,
+  InvalidIdTokenError,
+  InvalidStateError,
   MissingAttributesError,
-  RetrieveAttributesError,
 } from '../spcp.errors'
-import { SpcpService } from '../spcp.service'
+import { CpOidcServiceClass } from '../spcp.oidc.service/spcp.oidc.service.cp'
+import { SpOidcServiceClass } from '../spcp.oidc.service/spcp.oidc.service.sp'
+import { JwtName } from '../spcp.types'
 
 import {
-  MOCK_ATTRIBUTES,
   MOCK_COOKIE_SETTINGS,
   MOCK_CP_FORM,
-  MOCK_CP_SAML,
+  MOCK_CP_OIDC_AUTHORISATION_CODE,
+  MOCK_CP_OIDC_EXTRACTED_NDI_PAYLOAD,
+  MOCK_CP_OIDC_JWT_PAYLOAD,
   MOCK_DESTINATION,
-  MOCK_ERROR_CODE,
-  MOCK_ESRVCID,
   MOCK_JWT,
-  MOCK_JWT_PAYLOAD,
   MOCK_LOGIN_DOC,
-  MOCK_LOGIN_HTML,
-  MOCK_REDIRECT_URL,
-  MOCK_RELAY_STATE,
+  MOCK_OIDC_STATE,
   MOCK_REMEMBER_ME,
   MOCK_SP_FORM,
-  MOCK_SP_SAML,
+  MOCK_SP_OIDC_AUTHORISATION_CODE,
+  MOCK_SP_OIDC_EXTRACTED_NDI_PAYLOAD,
+  MOCK_SP_OIDC_JWT_PAYLOAD,
   MOCK_TARGET,
 } from './spcp.test.constants'
 
-jest.mock('../sp.oidc.client')
+jest.mock('../spcp.oidc.client')
 
-jest.mock('../spcp.service')
-const MockSpcpService = mocked(SpcpService, true)
+jest.mock('../spcp.oidc.service/spcp.oidc.service.sp')
+const MockSpOidcServiceClass = jest.mocked(SpOidcServiceClass)
+jest.mock('../spcp.oidc.service/spcp.oidc.service.cp')
+const MockCpOidcServiceClass = jest.mocked(CpOidcServiceClass)
 jest.mock('../../billing/billing.service')
-const MockBillingService = mocked(BillingService, true)
+const MockBillingService = jest.mocked(BillingService)
 jest.mock('src/app/modules/form/form.service')
-const MockFormService = mocked(FormService, true)
+const MockFormService = jest.mocked(FormService)
 jest.mock('src/app/config/config')
-const MockConfig = mocked(config, true)
+const MockConfig = jest.mocked(config)
 MockConfig.isDev = false
 
 const MOCK_RESPONSE = expressHandler.mockResponse()
-const MOCK_REDIRECT_REQ = expressHandler.mockRequest({
-  query: {
-    target: MOCK_RELAY_STATE,
-    authType: FormAuthType.SP as const,
-    esrvcId: MOCK_ESRVCID,
-  },
+
+const MOCK_SPOIDC_LOGIN_REQ = expressHandler.mockRequest({
+  query: { state: MOCK_OIDC_STATE, code: MOCK_SP_OIDC_AUTHORISATION_CODE },
 })
-const MOCK_VALIDATE_REQ = expressHandler.mockRequest({
-  query: {
-    target: MOCK_TARGET,
-    authType: FormAuthType.SP as const,
-    esrvcId: MOCK_ESRVCID,
-  },
-})
-const MOCK_SP_LOGIN_REQ = expressHandler.mockRequest({
-  query: { SAMLart: MOCK_SP_SAML, RelayState: MOCK_RELAY_STATE },
-})
-const MOCK_CP_LOGIN_REQ = expressHandler.mockRequest({
-  query: { SAMLart: MOCK_CP_SAML, RelayState: MOCK_RELAY_STATE },
+const MOCK_CPOIDC_LOGIN_REQ = expressHandler.mockRequest({
+  query: { state: MOCK_OIDC_STATE, code: MOCK_CP_OIDC_AUTHORISATION_CODE },
 })
 
 describe('spcp.controller', () => {
   beforeEach(() => jest.clearAllMocks())
 
-  describe('handleRedirect', () => {
-    it('should return the redirect URL correctly', () => {
-      MockSpcpService.createRedirectUrl.mockReturnValueOnce(
-        ok(MOCK_REDIRECT_URL),
-      )
-
-      SpcpController.handleRedirect(MOCK_REDIRECT_REQ, MOCK_RESPONSE, jest.fn())
-
-      expect(MockSpcpService.createRedirectUrl).toHaveBeenCalledWith(
-        FormAuthType.SP,
-        MOCK_RELAY_STATE,
-        MOCK_ESRVCID,
-      )
-      expect(MOCK_RESPONSE.status).toHaveBeenCalledWith(200)
-      expect(MOCK_RESPONSE.json).toHaveBeenCalledWith({
-        redirectURL: MOCK_REDIRECT_URL,
-      })
-    })
-
-    it('should return 500 if auth client throws an error', () => {
-      MockSpcpService.createRedirectUrl.mockReturnValueOnce(
-        err(new CreateRedirectUrlError()),
-      )
-
-      SpcpController.handleRedirect(MOCK_REDIRECT_REQ, MOCK_RESPONSE, jest.fn())
-
-      expect(MockSpcpService.createRedirectUrl).toHaveBeenCalledWith(
-        FormAuthType.SP,
-        MOCK_RELAY_STATE,
-        MOCK_ESRVCID,
-      )
-      expect(MOCK_RESPONSE.status).toHaveBeenCalledWith(500)
-      expect(MOCK_RESPONSE.json).toHaveBeenCalledWith({
-        message: 'Sorry, something went wrong. Please try again.',
-      })
-    })
-  })
-
-  describe('handleValidate', () => {
-    it('should return 200 with isValid true if validation passes', async () => {
-      MockSpcpService.createRedirectUrl.mockReturnValueOnce(
-        ok(MOCK_REDIRECT_URL),
-      )
-      MockSpcpService.fetchLoginPage.mockReturnValueOnce(
-        okAsync(MOCK_LOGIN_HTML),
-      )
-      MockSpcpService.validateLoginPage.mockReturnValueOnce(
-        ok({ isValid: true }),
-      )
-
-      await SpcpController.handleValidate(
-        MOCK_VALIDATE_REQ,
-        MOCK_RESPONSE,
-        jest.fn(),
-      )
-
-      expect(MockSpcpService.createRedirectUrl).toHaveBeenCalledWith(
-        FormAuthType.SP,
-        MOCK_TARGET,
-        MOCK_ESRVCID,
-      )
-      expect(MockSpcpService.fetchLoginPage).toHaveBeenCalledWith(
-        MOCK_REDIRECT_URL,
-      )
-      expect(MockSpcpService.validateLoginPage).toHaveBeenCalledWith(
-        MOCK_LOGIN_HTML,
-      )
-      expect(MOCK_RESPONSE.status).toHaveBeenCalledWith(200)
-      expect(MOCK_RESPONSE.json).toHaveBeenCalledWith({
-        isValid: true,
-      })
-    })
-
-    it('should return 200 with isValid false if validation fails', async () => {
-      MockSpcpService.createRedirectUrl.mockReturnValueOnce(
-        ok(MOCK_REDIRECT_URL),
-      )
-      MockSpcpService.fetchLoginPage.mockReturnValueOnce(
-        okAsync(MOCK_LOGIN_HTML),
-      )
-      MockSpcpService.validateLoginPage.mockReturnValueOnce(
-        ok({ isValid: false, errorCode: MOCK_ERROR_CODE }),
-      )
-
-      await SpcpController.handleValidate(
-        MOCK_VALIDATE_REQ,
-        MOCK_RESPONSE,
-        jest.fn(),
-      )
-
-      expect(MockSpcpService.createRedirectUrl).toHaveBeenCalledWith(
-        FormAuthType.SP,
-        MOCK_TARGET,
-        MOCK_ESRVCID,
-      )
-      expect(MockSpcpService.fetchLoginPage).toHaveBeenCalledWith(
-        MOCK_REDIRECT_URL,
-      )
-      expect(MockSpcpService.validateLoginPage).toHaveBeenCalledWith(
-        MOCK_LOGIN_HTML,
-      )
-      expect(MOCK_RESPONSE.status).toHaveBeenCalledWith(200)
-      expect(MOCK_RESPONSE.json).toHaveBeenCalledWith({
-        isValid: false,
-        errorCode: MOCK_ERROR_CODE,
-      })
-    })
-
-    it('should return 503 when FetchLoginPageError occurs', async () => {
-      MockSpcpService.createRedirectUrl.mockReturnValueOnce(
-        ok(MOCK_REDIRECT_URL),
-      )
-      MockSpcpService.fetchLoginPage.mockReturnValueOnce(
-        errAsync(new FetchLoginPageError()),
-      )
-
-      await SpcpController.handleValidate(
-        MOCK_VALIDATE_REQ,
-        MOCK_RESPONSE,
-        jest.fn(),
-      )
-
-      expect(MockSpcpService.createRedirectUrl).toHaveBeenCalledWith(
-        FormAuthType.SP,
-        MOCK_TARGET,
-        MOCK_ESRVCID,
-      )
-      expect(MockSpcpService.fetchLoginPage).toHaveBeenCalledWith(
-        MOCK_REDIRECT_URL,
-      )
-      expect(MockSpcpService.validateLoginPage).not.toHaveBeenCalled()
-      expect(MOCK_RESPONSE.status).toHaveBeenCalledWith(503)
-      expect(MOCK_RESPONSE.json).toHaveBeenCalledWith({
-        message: 'Failed to contact SingPass. Please try again.',
-      })
-    })
-
-    it('should return 502 when LoginPageValidationError occurs', async () => {
-      MockSpcpService.createRedirectUrl.mockReturnValueOnce(
-        ok(MOCK_REDIRECT_URL),
-      )
-      MockSpcpService.fetchLoginPage.mockReturnValueOnce(
-        okAsync(MOCK_LOGIN_HTML),
-      )
-      MockSpcpService.validateLoginPage.mockReturnValueOnce(
-        err(new LoginPageValidationError()),
-      )
-
-      await SpcpController.handleValidate(
-        MOCK_VALIDATE_REQ,
-        MOCK_RESPONSE,
-        jest.fn(),
-      )
-
-      expect(MockSpcpService.createRedirectUrl).toHaveBeenCalledWith(
-        FormAuthType.SP,
-        MOCK_TARGET,
-        MOCK_ESRVCID,
-      )
-      expect(MockSpcpService.fetchLoginPage).toHaveBeenCalledWith(
-        MOCK_REDIRECT_URL,
-      )
-      expect(MockSpcpService.validateLoginPage).toHaveBeenCalledWith(
-        MOCK_LOGIN_HTML,
-      )
-      expect(MOCK_RESPONSE.status).toHaveBeenCalledWith(502)
-      expect(MOCK_RESPONSE.json).toHaveBeenCalledWith({
-        message: 'Error while contacting SingPass. Please try again.',
-      })
-    })
-  })
-
-  describe('handleLogin', () => {
+  describe('handleSpcpOidcLogin', () => {
     describe('(Singpass)', () => {
-      const loginHandler = SpcpController.handleLogin(FormAuthType.SP)
+      const loginHandler = SpcpController.handleSpcpOidcLogin(FormAuthType.SP)
+
+      const mockSpOidcServiceClass = jest.mocked(
+        MockSpOidcServiceClass.mock.instances[0],
+      )
 
       beforeEach(() => {
-        MockSpcpService.parseOOBParams.mockReturnValue(
+        mockSpOidcServiceClass.exchangeAuthCodeAndRetrieveData.mockReturnValue(
+          okAsync(MOCK_SP_OIDC_EXTRACTED_NDI_PAYLOAD),
+        )
+
+        mockSpOidcServiceClass.parseState.mockReturnValue(
           ok({
             formId: MOCK_TARGET,
             destination: MOCK_DESTINATION,
             rememberMe: MOCK_REMEMBER_ME,
             cookieDuration: MOCK_COOKIE_AGE,
-            samlArt: MOCK_SP_SAML,
           }),
         )
+
         MockFormService.retrieveFullFormById.mockReturnValue(
           okAsync(MOCK_SP_FORM),
         )
-        MockSpcpService.getSpcpAttributes.mockReturnValue(
-          okAsync(MOCK_ATTRIBUTES),
+
+        mockSpOidcServiceClass.createJWTPayload.mockReturnValue(
+          ok(MOCK_SP_OIDC_JWT_PAYLOAD),
         )
-        MockSpcpService.createJWTPayload.mockReturnValue(ok(MOCK_JWT_PAYLOAD))
-        MockSpcpService.createJWT.mockReturnValue(ok(MOCK_JWT))
+        mockSpOidcServiceClass.createJWT.mockResolvedValue(ok(MOCK_JWT))
         MockBillingService.recordLoginByForm.mockReturnValue(
           okAsync(MOCK_LOGIN_DOC),
         )
-        MockSpcpService.getCookieSettings.mockReturnValue(MOCK_COOKIE_SETTINGS)
+        mockSpOidcServiceClass.getCookieSettings.mockReturnValue(
+          MOCK_COOKIE_SETTINGS,
+        )
       })
 
       it('should set the cookie with the correct params and redirect to the destination', async () => {
-        await loginHandler(MOCK_SP_LOGIN_REQ, MOCK_RESPONSE, jest.fn())
-        expect(MockSpcpService.parseOOBParams).toHaveBeenCalledWith(
-          MOCK_SP_SAML,
-          MOCK_RELAY_STATE,
-          FormAuthType.SP,
-        )
+        // Arrange
+        mockSpOidcServiceClass.jwtName = JwtName.SP
+
+        // Act
+        await loginHandler(MOCK_SPOIDC_LOGIN_REQ, MOCK_RESPONSE, jest.fn())
+
+        // Assert
+        expect(
+          mockSpOidcServiceClass.exchangeAuthCodeAndRetrieveData,
+        ).toHaveBeenCalledWith(MOCK_SP_OIDC_AUTHORISATION_CODE)
         expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
           MOCK_TARGET,
         )
-        expect(MockSpcpService.getSpcpAttributes).toHaveBeenCalledWith(
-          MOCK_SP_SAML,
-          MOCK_DESTINATION,
-          FormAuthType.SP,
+        expect(mockSpOidcServiceClass.parseState).toHaveBeenCalledWith(
+          MOCK_OIDC_STATE,
         )
-        expect(MockSpcpService.createJWTPayload).toHaveBeenCalledWith(
-          MOCK_ATTRIBUTES,
+        expect(mockSpOidcServiceClass.createJWTPayload).toHaveBeenCalledWith(
+          MOCK_SP_OIDC_EXTRACTED_NDI_PAYLOAD,
           MOCK_REMEMBER_ME,
-          FormAuthType.SP,
         )
-        expect(MockSpcpService.createJWT).toHaveBeenCalledWith(
-          MOCK_JWT_PAYLOAD,
+        expect(mockSpOidcServiceClass.createJWT).toHaveBeenCalledWith(
+          MOCK_SP_OIDC_JWT_PAYLOAD,
           MOCK_COOKIE_AGE,
-          FormAuthType.SP,
         )
         expect(MockBillingService.recordLoginByForm).toHaveBeenCalledWith(
           MOCK_SP_FORM,
         )
+
         expect(MOCK_RESPONSE.cookie).toHaveBeenCalledWith('jwtSp', MOCK_JWT, {
           maxAge: MOCK_COOKIE_AGE,
           httpOnly: true,
@@ -317,37 +141,80 @@ describe('spcp.controller', () => {
         expect(MOCK_RESPONSE.redirect).toHaveBeenCalledWith(MOCK_DESTINATION)
       })
 
-      it('should return 400 when params cannot be parsed', async () => {
-        MockSpcpService.parseOOBParams.mockReturnValue(
-          err(new InvalidOOBParamsError()),
+      it('should return 400 when token exchange fails', async () => {
+        // Arrange
+
+        mockSpOidcServiceClass.exchangeAuthCodeAndRetrieveData.mockReturnValue(
+          errAsync(new InvalidIdTokenError()),
         )
-        await loginHandler(MOCK_SP_LOGIN_REQ, MOCK_RESPONSE, jest.fn())
-        expect(MockSpcpService.parseOOBParams).toHaveBeenCalledWith(
-          MOCK_SP_SAML,
-          MOCK_RELAY_STATE,
-          FormAuthType.SP,
+
+        // Act
+        await loginHandler(MOCK_SPOIDC_LOGIN_REQ, MOCK_RESPONSE, jest.fn())
+
+        // Assert
+        expect(
+          mockSpOidcServiceClass.exchangeAuthCodeAndRetrieveData,
+        ).toHaveBeenCalledWith(MOCK_SP_OIDC_AUTHORISATION_CODE)
+        expect(MOCK_RESPONSE.sendStatus).toHaveBeenCalledWith(400)
+        expect(MOCK_RESPONSE.cookie).not.toHaveBeenCalled()
+        expect(MOCK_RESPONSE.redirect).not.toHaveBeenCalled()
+        expect(MockFormService.retrieveFullFormById).not.toHaveBeenCalled()
+        expect(mockSpOidcServiceClass.parseState).not.toHaveBeenCalled()
+        expect(mockSpOidcServiceClass.createJWTPayload).not.toHaveBeenCalled()
+        expect(mockSpOidcServiceClass.createJWT).not.toHaveBeenCalled()
+        expect(MockBillingService.recordLoginByForm).not.toHaveBeenCalled()
+        expect(mockSpOidcServiceClass.getCookieSettings).not.toHaveBeenCalled()
+        expect(MOCK_RESPONSE.cookie).not.toHaveBeenCalled()
+      })
+
+      it('should return 400 when parse state fails', async () => {
+        // Arrange
+
+        mockSpOidcServiceClass.parseState.mockReturnValueOnce(
+          err(new InvalidStateError()),
+        )
+
+        // Act
+        await loginHandler(MOCK_SPOIDC_LOGIN_REQ, MOCK_RESPONSE, jest.fn())
+
+        // Assert
+        expect(
+          mockSpOidcServiceClass.exchangeAuthCodeAndRetrieveData,
+        ).toHaveBeenCalledWith(MOCK_SP_OIDC_AUTHORISATION_CODE)
+        expect(mockSpOidcServiceClass.parseState).toHaveBeenCalledWith(
+          MOCK_OIDC_STATE,
         )
         expect(MOCK_RESPONSE.sendStatus).toHaveBeenCalledWith(400)
         expect(MOCK_RESPONSE.cookie).not.toHaveBeenCalled()
         expect(MOCK_RESPONSE.redirect).not.toHaveBeenCalled()
         expect(MockFormService.retrieveFullFormById).not.toHaveBeenCalled()
-        expect(MockSpcpService.getSpcpAttributes).not.toHaveBeenCalled()
-        expect(MockSpcpService.createJWTPayload).not.toHaveBeenCalled()
-        expect(MockSpcpService.createJWT).not.toHaveBeenCalled()
+        expect(mockSpOidcServiceClass.createJWTPayload).not.toHaveBeenCalled()
+        expect(mockSpOidcServiceClass.createJWT).not.toHaveBeenCalled()
         expect(MockBillingService.recordLoginByForm).not.toHaveBeenCalled()
-        expect(MockSpcpService.getCookieSettings).not.toHaveBeenCalled()
+        expect(mockSpOidcServiceClass.getCookieSettings).not.toHaveBeenCalled()
         expect(MOCK_RESPONSE.cookie).not.toHaveBeenCalled()
       })
 
       it('should return 404 when form cannot be found', async () => {
-        MockFormService.retrieveFullFormById.mockReturnValue(
+        // Arrange
+
+        MockFormService.retrieveFullFormById.mockReturnValueOnce(
           errAsync(new FormNotFoundError()),
         )
-        await loginHandler(MOCK_SP_LOGIN_REQ, MOCK_RESPONSE, jest.fn())
-        expect(MockSpcpService.parseOOBParams).toHaveBeenCalledWith(
-          MOCK_SP_SAML,
-          MOCK_RELAY_STATE,
-          FormAuthType.SP,
+
+        // Act
+
+        await loginHandler(MOCK_SPOIDC_LOGIN_REQ, MOCK_RESPONSE, jest.fn())
+
+        // Assert
+        expect(
+          mockSpOidcServiceClass.exchangeAuthCodeAndRetrieveData,
+        ).toHaveBeenCalledWith(MOCK_SP_OIDC_AUTHORISATION_CODE)
+        expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
+          MOCK_TARGET,
+        )
+        expect(mockSpOidcServiceClass.parseState).toHaveBeenCalledWith(
+          MOCK_OIDC_STATE,
         )
         expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
           MOCK_TARGET,
@@ -355,217 +222,213 @@ describe('spcp.controller', () => {
         expect(MOCK_RESPONSE.sendStatus).toHaveBeenCalledWith(404)
         expect(MOCK_RESPONSE.cookie).not.toHaveBeenCalled()
         expect(MOCK_RESPONSE.redirect).not.toHaveBeenCalled()
-        expect(MockSpcpService.getSpcpAttributes).not.toHaveBeenCalled()
-        expect(MockSpcpService.createJWTPayload).not.toHaveBeenCalled()
-        expect(MockSpcpService.createJWT).not.toHaveBeenCalled()
+        expect(mockSpOidcServiceClass.createJWTPayload).not.toHaveBeenCalled()
+        expect(mockSpOidcServiceClass.createJWT).not.toHaveBeenCalled()
         expect(MockBillingService.recordLoginByForm).not.toHaveBeenCalled()
-        expect(MockSpcpService.getCookieSettings).not.toHaveBeenCalled()
+        expect(mockSpOidcServiceClass.getCookieSettings).not.toHaveBeenCalled()
         expect(MOCK_RESPONSE.cookie).not.toHaveBeenCalled()
       })
 
       it('should set isLoginError cookie and redirect when form has wrong auth type', async () => {
+        // Arrange
         MockFormService.retrieveFullFormById.mockReturnValue(
           // Note that this is a CorpPass form
           okAsync(MOCK_CP_FORM),
         )
-        await loginHandler(MOCK_SP_LOGIN_REQ, MOCK_RESPONSE, jest.fn())
-        expect(MockSpcpService.parseOOBParams).toHaveBeenCalledWith(
-          MOCK_SP_SAML,
-          MOCK_RELAY_STATE,
-          FormAuthType.SP,
-        )
-        expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
-          MOCK_TARGET,
-        )
-        expect(MOCK_RESPONSE.cookie).toHaveBeenCalledWith('isLoginError', true)
-        expect(MOCK_RESPONSE.redirect).toHaveBeenCalledWith(MOCK_DESTINATION)
-        expect(MockSpcpService.getSpcpAttributes).not.toHaveBeenCalled()
-        expect(MockSpcpService.createJWTPayload).not.toHaveBeenCalled()
-        expect(MockSpcpService.createJWT).not.toHaveBeenCalled()
-        expect(MockBillingService.recordLoginByForm).not.toHaveBeenCalled()
-        expect(MockSpcpService.getCookieSettings).not.toHaveBeenCalled()
-      })
 
-      it('should set isLoginError cookie and redirect when getSpcpAttributes errors', async () => {
-        MockSpcpService.getSpcpAttributes.mockReturnValue(
-          errAsync(new RetrieveAttributesError()),
-        )
-        await loginHandler(MOCK_SP_LOGIN_REQ, MOCK_RESPONSE, jest.fn())
-        expect(MockSpcpService.parseOOBParams).toHaveBeenCalledWith(
-          MOCK_SP_SAML,
-          MOCK_RELAY_STATE,
-          FormAuthType.SP,
-        )
+        // Act
+        await loginHandler(MOCK_SPOIDC_LOGIN_REQ, MOCK_RESPONSE, jest.fn())
+
+        // Assert
+        expect(
+          mockSpOidcServiceClass.exchangeAuthCodeAndRetrieveData,
+        ).toHaveBeenCalledWith(MOCK_SP_OIDC_AUTHORISATION_CODE)
         expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
           MOCK_TARGET,
         )
-        expect(MockSpcpService.getSpcpAttributes).toHaveBeenCalledWith(
-          MOCK_SP_SAML,
-          MOCK_DESTINATION,
-          FormAuthType.SP,
+        expect(mockSpOidcServiceClass.parseState).toHaveBeenCalledWith(
+          MOCK_OIDC_STATE,
         )
         expect(MOCK_RESPONSE.cookie).toHaveBeenCalledWith('isLoginError', true)
         expect(MOCK_RESPONSE.redirect).toHaveBeenCalledWith(MOCK_DESTINATION)
-        expect(MockSpcpService.createJWTPayload).not.toHaveBeenCalled()
-        expect(MockSpcpService.createJWT).not.toHaveBeenCalled()
+        expect(mockSpOidcServiceClass.createJWTPayload).not.toHaveBeenCalled()
+        expect(mockSpOidcServiceClass.createJWT).not.toHaveBeenCalled()
         expect(MockBillingService.recordLoginByForm).not.toHaveBeenCalled()
-        expect(MockSpcpService.getCookieSettings).not.toHaveBeenCalled()
+        expect(mockSpOidcServiceClass.getCookieSettings).not.toHaveBeenCalled()
       })
 
       it('should set isLoginError cookie and redirect when createJWTPayload errors', async () => {
-        MockSpcpService.createJWTPayload.mockReturnValue(
+        // Arrange
+        mockSpOidcServiceClass.createJWTPayload.mockReturnValue(
           err(new MissingAttributesError()),
         )
-        await loginHandler(MOCK_SP_LOGIN_REQ, MOCK_RESPONSE, jest.fn())
-        expect(MockSpcpService.parseOOBParams).toHaveBeenCalledWith(
-          MOCK_SP_SAML,
-          MOCK_RELAY_STATE,
-          FormAuthType.SP,
-        )
+
+        // Act
+        await loginHandler(MOCK_SPOIDC_LOGIN_REQ, MOCK_RESPONSE, jest.fn())
+
+        // Assert
+
+        expect(
+          mockSpOidcServiceClass.exchangeAuthCodeAndRetrieveData,
+        ).toHaveBeenCalledWith(MOCK_SP_OIDC_AUTHORISATION_CODE)
         expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
           MOCK_TARGET,
         )
-        expect(MockSpcpService.getSpcpAttributes).toHaveBeenCalledWith(
-          MOCK_SP_SAML,
-          MOCK_DESTINATION,
-          FormAuthType.SP,
+        expect(mockSpOidcServiceClass.parseState).toHaveBeenCalledWith(
+          MOCK_OIDC_STATE,
         )
-        expect(MockSpcpService.createJWTPayload).toHaveBeenCalledWith(
-          MOCK_ATTRIBUTES,
+        expect(mockSpOidcServiceClass.createJWTPayload).toHaveBeenCalledWith(
+          MOCK_SP_OIDC_EXTRACTED_NDI_PAYLOAD,
           MOCK_REMEMBER_ME,
-          FormAuthType.SP,
         )
+
         expect(MOCK_RESPONSE.cookie).toHaveBeenCalledWith('isLoginError', true)
         expect(MOCK_RESPONSE.redirect).toHaveBeenCalledWith(MOCK_DESTINATION)
-        expect(MockSpcpService.createJWT).not.toHaveBeenCalled()
+        expect(mockSpOidcServiceClass.createJWT).not.toHaveBeenCalled()
         expect(MockBillingService.recordLoginByForm).not.toHaveBeenCalled()
-        expect(MockSpcpService.getCookieSettings).not.toHaveBeenCalled()
+        expect(mockSpOidcServiceClass.getCookieSettings).not.toHaveBeenCalled()
       })
 
       it('should set isLoginError cookie and redirect when createJWT errors', async () => {
-        MockSpcpService.createJWT.mockReturnValue(err(new ApplicationError()))
-        await loginHandler(MOCK_SP_LOGIN_REQ, MOCK_RESPONSE, jest.fn())
-        expect(MockSpcpService.parseOOBParams).toHaveBeenCalledWith(
-          MOCK_SP_SAML,
-          MOCK_RELAY_STATE,
-          FormAuthType.SP,
+        // Arrange
+        mockSpOidcServiceClass.createJWT.mockReturnValue(
+          errAsync(new CreateJwtError()),
         )
+
+        // Act
+        await loginHandler(MOCK_SPOIDC_LOGIN_REQ, MOCK_RESPONSE, jest.fn())
+
+        // Assert
+
+        expect(
+          mockSpOidcServiceClass.exchangeAuthCodeAndRetrieveData,
+        ).toHaveBeenCalledWith(MOCK_SP_OIDC_AUTHORISATION_CODE)
         expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
           MOCK_TARGET,
         )
-        expect(MockSpcpService.getSpcpAttributes).toHaveBeenCalledWith(
-          MOCK_SP_SAML,
-          MOCK_DESTINATION,
-          FormAuthType.SP,
+        expect(mockSpOidcServiceClass.parseState).toHaveBeenCalledWith(
+          MOCK_OIDC_STATE,
         )
-        expect(MockSpcpService.createJWTPayload).toHaveBeenCalledWith(
-          MOCK_ATTRIBUTES,
+        expect(mockSpOidcServiceClass.createJWTPayload).toHaveBeenCalledWith(
+          MOCK_SP_OIDC_EXTRACTED_NDI_PAYLOAD,
           MOCK_REMEMBER_ME,
-          FormAuthType.SP,
         )
-        expect(MockSpcpService.createJWT).toHaveBeenCalledWith(
-          MOCK_JWT_PAYLOAD,
+
+        expect(mockSpOidcServiceClass.createJWT).toHaveBeenCalledWith(
+          MOCK_SP_OIDC_JWT_PAYLOAD,
           MOCK_COOKIE_AGE,
-          FormAuthType.SP,
         )
         expect(MOCK_RESPONSE.cookie).toHaveBeenCalledWith('isLoginError', true)
         expect(MOCK_RESPONSE.redirect).toHaveBeenCalledWith(MOCK_DESTINATION)
+
         expect(MockBillingService.recordLoginByForm).not.toHaveBeenCalled()
-        expect(MockSpcpService.getCookieSettings).not.toHaveBeenCalled()
+        expect(mockSpOidcServiceClass.getCookieSettings).not.toHaveBeenCalled()
       })
 
       it('should set isLoginError cookie and redirect when recordLoginByForm errors', async () => {
+        // Arrange
         MockBillingService.recordLoginByForm.mockReturnValue(
           errAsync(new DatabaseError()),
         )
-        await loginHandler(MOCK_SP_LOGIN_REQ, MOCK_RESPONSE, jest.fn())
-        expect(MockSpcpService.parseOOBParams).toHaveBeenCalledWith(
-          MOCK_SP_SAML,
-          MOCK_RELAY_STATE,
-          FormAuthType.SP,
-        )
+
+        // Act
+        await loginHandler(MOCK_SPOIDC_LOGIN_REQ, MOCK_RESPONSE, jest.fn())
+
+        // Assert
+
+        expect(
+          mockSpOidcServiceClass.exchangeAuthCodeAndRetrieveData,
+        ).toHaveBeenCalledWith(MOCK_SP_OIDC_AUTHORISATION_CODE)
         expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
           MOCK_TARGET,
         )
-        expect(MockSpcpService.getSpcpAttributes).toHaveBeenCalledWith(
-          MOCK_SP_SAML,
-          MOCK_DESTINATION,
-          FormAuthType.SP,
+        expect(mockSpOidcServiceClass.parseState).toHaveBeenCalledWith(
+          MOCK_OIDC_STATE,
         )
-        expect(MockSpcpService.createJWTPayload).toHaveBeenCalledWith(
-          MOCK_ATTRIBUTES,
+        expect(mockSpOidcServiceClass.createJWTPayload).toHaveBeenCalledWith(
+          MOCK_SP_OIDC_EXTRACTED_NDI_PAYLOAD,
           MOCK_REMEMBER_ME,
-          FormAuthType.SP,
         )
-        expect(MockSpcpService.createJWT).toHaveBeenCalledWith(
-          MOCK_JWT_PAYLOAD,
+
+        expect(mockSpOidcServiceClass.createJWT).toHaveBeenCalledWith(
+          MOCK_SP_OIDC_JWT_PAYLOAD,
           MOCK_COOKIE_AGE,
-          FormAuthType.SP,
-        )
-        expect(MockBillingService.recordLoginByForm).toHaveBeenCalledWith(
-          MOCK_SP_FORM,
         )
         expect(MOCK_RESPONSE.cookie).toHaveBeenCalledWith('isLoginError', true)
         expect(MOCK_RESPONSE.redirect).toHaveBeenCalledWith(MOCK_DESTINATION)
-        expect(MockSpcpService.getCookieSettings).not.toHaveBeenCalled()
+
+        expect(MockBillingService.recordLoginByForm).toHaveBeenCalledWith(
+          MOCK_SP_FORM,
+        )
+        expect(mockSpOidcServiceClass.getCookieSettings).not.toHaveBeenCalled()
       })
     })
-
     describe('(Corppass)', () => {
-      const loginHandler = SpcpController.handleLogin(FormAuthType.CP)
+      const loginHandler = SpcpController.handleSpcpOidcLogin(FormAuthType.CP)
+
+      const mockCpOidcServiceClass = jest.mocked(
+        MockCpOidcServiceClass.mock.instances[0],
+      )
 
       beforeEach(() => {
-        MockSpcpService.parseOOBParams.mockReturnValue(
+        mockCpOidcServiceClass.exchangeAuthCodeAndRetrieveData.mockReturnValue(
+          okAsync(MOCK_CP_OIDC_EXTRACTED_NDI_PAYLOAD),
+        )
+
+        mockCpOidcServiceClass.parseState.mockReturnValue(
           ok({
             formId: MOCK_TARGET,
             destination: MOCK_DESTINATION,
             rememberMe: MOCK_REMEMBER_ME,
             cookieDuration: MOCK_COOKIE_AGE,
-            samlArt: MOCK_CP_SAML,
           }),
         )
+
         MockFormService.retrieveFullFormById.mockReturnValue(
           okAsync(MOCK_CP_FORM),
         )
-        MockSpcpService.getSpcpAttributes.mockReturnValue(
-          okAsync(MOCK_ATTRIBUTES),
+
+        mockCpOidcServiceClass.createJWTPayload.mockReturnValue(
+          ok(MOCK_CP_OIDC_JWT_PAYLOAD),
         )
-        MockSpcpService.createJWTPayload.mockReturnValue(ok(MOCK_JWT_PAYLOAD))
-        MockSpcpService.createJWT.mockReturnValue(ok(MOCK_JWT))
+        mockCpOidcServiceClass.createJWT.mockResolvedValue(ok(MOCK_JWT))
         MockBillingService.recordLoginByForm.mockReturnValue(
           okAsync(MOCK_LOGIN_DOC),
         )
-        MockSpcpService.getCookieSettings.mockReturnValue(MOCK_COOKIE_SETTINGS)
+        mockCpOidcServiceClass.getCookieSettings.mockReturnValue(
+          MOCK_COOKIE_SETTINGS,
+        )
       })
 
       it('should set the cookie with the correct params and redirect to the destination', async () => {
-        await loginHandler(MOCK_CP_LOGIN_REQ, MOCK_RESPONSE, jest.fn())
-        expect(MockSpcpService.parseOOBParams).toHaveBeenCalledWith(
-          MOCK_CP_SAML,
-          MOCK_RELAY_STATE,
-          FormAuthType.CP,
-        )
+        // Arrange
+        mockCpOidcServiceClass.jwtName = JwtName.CP
+
+        // Act
+        await loginHandler(MOCK_CPOIDC_LOGIN_REQ, MOCK_RESPONSE, jest.fn())
+
+        // Assert
+        expect(
+          mockCpOidcServiceClass.exchangeAuthCodeAndRetrieveData,
+        ).toHaveBeenCalledWith(MOCK_CP_OIDC_AUTHORISATION_CODE)
         expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
           MOCK_TARGET,
         )
-        expect(MockSpcpService.getSpcpAttributes).toHaveBeenCalledWith(
-          MOCK_CP_SAML,
-          MOCK_DESTINATION,
-          FormAuthType.CP,
+        expect(mockCpOidcServiceClass.parseState).toHaveBeenCalledWith(
+          MOCK_OIDC_STATE,
         )
-        expect(MockSpcpService.createJWTPayload).toHaveBeenCalledWith(
-          MOCK_ATTRIBUTES,
+        expect(mockCpOidcServiceClass.createJWTPayload).toHaveBeenCalledWith(
+          MOCK_CP_OIDC_EXTRACTED_NDI_PAYLOAD,
           MOCK_REMEMBER_ME,
-          FormAuthType.CP,
         )
-        expect(MockSpcpService.createJWT).toHaveBeenCalledWith(
-          MOCK_JWT_PAYLOAD,
+        expect(mockCpOidcServiceClass.createJWT).toHaveBeenCalledWith(
+          MOCK_CP_OIDC_JWT_PAYLOAD,
           MOCK_COOKIE_AGE,
-          FormAuthType.CP,
         )
         expect(MockBillingService.recordLoginByForm).toHaveBeenCalledWith(
           MOCK_CP_FORM,
         )
+
         expect(MOCK_RESPONSE.cookie).toHaveBeenCalledWith('jwtCp', MOCK_JWT, {
           maxAge: MOCK_COOKIE_AGE,
           httpOnly: true,
@@ -576,60 +439,80 @@ describe('spcp.controller', () => {
         expect(MOCK_RESPONSE.redirect).toHaveBeenCalledWith(MOCK_DESTINATION)
       })
 
-      it('should return 400 when params cannot be parsed', async () => {
-        MockSpcpService.parseOOBParams.mockReturnValue(
-          err(new InvalidOOBParamsError()),
+      it('should return 400 when token exchange fails', async () => {
+        // Arrange
+
+        mockCpOidcServiceClass.exchangeAuthCodeAndRetrieveData.mockReturnValue(
+          errAsync(new InvalidIdTokenError()),
         )
-        await loginHandler(MOCK_CP_LOGIN_REQ, MOCK_RESPONSE, jest.fn())
-        expect(MockSpcpService.parseOOBParams).toHaveBeenCalledWith(
-          MOCK_CP_SAML,
-          MOCK_RELAY_STATE,
-          FormAuthType.CP,
+
+        // Act
+        await loginHandler(MOCK_CPOIDC_LOGIN_REQ, MOCK_RESPONSE, jest.fn())
+
+        // Assert
+        expect(
+          mockCpOidcServiceClass.exchangeAuthCodeAndRetrieveData,
+        ).toHaveBeenCalledWith(MOCK_CP_OIDC_AUTHORISATION_CODE)
+        expect(MOCK_RESPONSE.sendStatus).toHaveBeenCalledWith(400)
+        expect(MOCK_RESPONSE.cookie).not.toHaveBeenCalled()
+        expect(MOCK_RESPONSE.redirect).not.toHaveBeenCalled()
+        expect(MockFormService.retrieveFullFormById).not.toHaveBeenCalled()
+        expect(mockCpOidcServiceClass.parseState).not.toHaveBeenCalled()
+        expect(mockCpOidcServiceClass.createJWTPayload).not.toHaveBeenCalled()
+        expect(mockCpOidcServiceClass.createJWT).not.toHaveBeenCalled()
+        expect(MockBillingService.recordLoginByForm).not.toHaveBeenCalled()
+        expect(mockCpOidcServiceClass.getCookieSettings).not.toHaveBeenCalled()
+        expect(MOCK_RESPONSE.cookie).not.toHaveBeenCalled()
+      })
+
+      it('should return 400 when parse state fails', async () => {
+        // Arrange
+
+        mockCpOidcServiceClass.parseState.mockReturnValueOnce(
+          err(new InvalidStateError()),
+        )
+
+        // Act
+        await loginHandler(MOCK_CPOIDC_LOGIN_REQ, MOCK_RESPONSE, jest.fn())
+
+        // Assert
+        expect(
+          mockCpOidcServiceClass.exchangeAuthCodeAndRetrieveData,
+        ).toHaveBeenCalledWith(MOCK_CP_OIDC_AUTHORISATION_CODE)
+        expect(mockCpOidcServiceClass.parseState).toHaveBeenCalledWith(
+          MOCK_OIDC_STATE,
         )
         expect(MOCK_RESPONSE.sendStatus).toHaveBeenCalledWith(400)
         expect(MOCK_RESPONSE.cookie).not.toHaveBeenCalled()
         expect(MOCK_RESPONSE.redirect).not.toHaveBeenCalled()
         expect(MockFormService.retrieveFullFormById).not.toHaveBeenCalled()
-        expect(MockSpcpService.getSpcpAttributes).not.toHaveBeenCalled()
-        expect(MockSpcpService.createJWTPayload).not.toHaveBeenCalled()
-        expect(MockSpcpService.createJWT).not.toHaveBeenCalled()
+        expect(mockCpOidcServiceClass.createJWTPayload).not.toHaveBeenCalled()
+        expect(mockCpOidcServiceClass.createJWT).not.toHaveBeenCalled()
         expect(MockBillingService.recordLoginByForm).not.toHaveBeenCalled()
-        expect(MockSpcpService.getCookieSettings).not.toHaveBeenCalled()
+        expect(mockCpOidcServiceClass.getCookieSettings).not.toHaveBeenCalled()
         expect(MOCK_RESPONSE.cookie).not.toHaveBeenCalled()
       })
 
-      it('should set isLoginError cookie and redirect when form has wrong auth type', async () => {
-        MockFormService.retrieveFullFormById.mockReturnValue(
-          // Note that this is a SingPass form
-          okAsync(MOCK_SP_FORM),
+      it('should return 404 when form cannot be found', async () => {
+        // Arrange
+
+        MockFormService.retrieveFullFormById.mockReturnValueOnce(
+          errAsync(new FormNotFoundError()),
         )
-        await loginHandler(MOCK_CP_LOGIN_REQ, MOCK_RESPONSE, jest.fn())
-        expect(MockSpcpService.parseOOBParams).toHaveBeenCalledWith(
-          MOCK_CP_SAML,
-          MOCK_RELAY_STATE,
-          FormAuthType.CP,
-        )
+
+        // Act
+
+        await loginHandler(MOCK_CPOIDC_LOGIN_REQ, MOCK_RESPONSE, jest.fn())
+
+        // Assert
+        expect(
+          mockCpOidcServiceClass.exchangeAuthCodeAndRetrieveData,
+        ).toHaveBeenCalledWith(MOCK_CP_OIDC_AUTHORISATION_CODE)
         expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
           MOCK_TARGET,
         )
-        expect(MOCK_RESPONSE.cookie).toHaveBeenCalledWith('isLoginError', true)
-        expect(MOCK_RESPONSE.redirect).toHaveBeenCalledWith(MOCK_DESTINATION)
-        expect(MockSpcpService.getSpcpAttributes).not.toHaveBeenCalled()
-        expect(MockSpcpService.createJWTPayload).not.toHaveBeenCalled()
-        expect(MockSpcpService.createJWT).not.toHaveBeenCalled()
-        expect(MockBillingService.recordLoginByForm).not.toHaveBeenCalled()
-        expect(MockSpcpService.getCookieSettings).not.toHaveBeenCalled()
-      })
-
-      it('should return 404 when form cannot be found', async () => {
-        MockFormService.retrieveFullFormById.mockReturnValue(
-          errAsync(new FormNotFoundError()),
-        )
-        await loginHandler(MOCK_CP_LOGIN_REQ, MOCK_RESPONSE, jest.fn())
-        expect(MockSpcpService.parseOOBParams).toHaveBeenCalledWith(
-          MOCK_CP_SAML,
-          MOCK_RELAY_STATE,
-          FormAuthType.CP,
+        expect(mockCpOidcServiceClass.parseState).toHaveBeenCalledWith(
+          MOCK_OIDC_STATE,
         )
         expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
           MOCK_TARGET,
@@ -637,136 +520,145 @@ describe('spcp.controller', () => {
         expect(MOCK_RESPONSE.sendStatus).toHaveBeenCalledWith(404)
         expect(MOCK_RESPONSE.cookie).not.toHaveBeenCalled()
         expect(MOCK_RESPONSE.redirect).not.toHaveBeenCalled()
-        expect(MockSpcpService.getSpcpAttributes).not.toHaveBeenCalled()
-        expect(MockSpcpService.createJWTPayload).not.toHaveBeenCalled()
-        expect(MockSpcpService.createJWT).not.toHaveBeenCalled()
+        expect(mockCpOidcServiceClass.createJWTPayload).not.toHaveBeenCalled()
+        expect(mockCpOidcServiceClass.createJWT).not.toHaveBeenCalled()
         expect(MockBillingService.recordLoginByForm).not.toHaveBeenCalled()
-        expect(MockSpcpService.getCookieSettings).not.toHaveBeenCalled()
+        expect(mockCpOidcServiceClass.getCookieSettings).not.toHaveBeenCalled()
         expect(MOCK_RESPONSE.cookie).not.toHaveBeenCalled()
       })
 
-      it('should set isLoginError cookie and redirect when getSpcpAttributes errors', async () => {
-        MockSpcpService.getSpcpAttributes.mockReturnValue(
-          errAsync(new RetrieveAttributesError()),
+      it('should set isLoginError cookie and redirect when form has wrong auth type', async () => {
+        // Arrange
+        MockFormService.retrieveFullFormById.mockReturnValue(
+          // Note that this is a SingPass form
+          okAsync(MOCK_SP_FORM),
         )
-        await loginHandler(MOCK_CP_LOGIN_REQ, MOCK_RESPONSE, jest.fn())
-        expect(MockSpcpService.parseOOBParams).toHaveBeenCalledWith(
-          MOCK_CP_SAML,
-          MOCK_RELAY_STATE,
-          FormAuthType.CP,
-        )
+
+        // Act
+        await loginHandler(MOCK_CPOIDC_LOGIN_REQ, MOCK_RESPONSE, jest.fn())
+
+        // Assert
+        expect(
+          mockCpOidcServiceClass.exchangeAuthCodeAndRetrieveData,
+        ).toHaveBeenCalledWith(MOCK_CP_OIDC_AUTHORISATION_CODE)
         expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
           MOCK_TARGET,
         )
-        expect(MockSpcpService.getSpcpAttributes).toHaveBeenCalledWith(
-          MOCK_CP_SAML,
-          MOCK_DESTINATION,
-          FormAuthType.CP,
+        expect(mockCpOidcServiceClass.parseState).toHaveBeenCalledWith(
+          MOCK_OIDC_STATE,
         )
         expect(MOCK_RESPONSE.cookie).toHaveBeenCalledWith('isLoginError', true)
         expect(MOCK_RESPONSE.redirect).toHaveBeenCalledWith(MOCK_DESTINATION)
-        expect(MockSpcpService.createJWTPayload).not.toHaveBeenCalled()
-        expect(MockSpcpService.createJWT).not.toHaveBeenCalled()
+        expect(mockCpOidcServiceClass.createJWTPayload).not.toHaveBeenCalled()
+        expect(mockCpOidcServiceClass.createJWT).not.toHaveBeenCalled()
         expect(MockBillingService.recordLoginByForm).not.toHaveBeenCalled()
-        expect(MockSpcpService.getCookieSettings).not.toHaveBeenCalled()
+        expect(mockCpOidcServiceClass.getCookieSettings).not.toHaveBeenCalled()
       })
 
       it('should set isLoginError cookie and redirect when createJWTPayload errors', async () => {
-        MockSpcpService.createJWTPayload.mockReturnValue(
+        // Arrange
+        mockCpOidcServiceClass.createJWTPayload.mockReturnValue(
           err(new MissingAttributesError()),
         )
-        await loginHandler(MOCK_CP_LOGIN_REQ, MOCK_RESPONSE, jest.fn())
-        expect(MockSpcpService.parseOOBParams).toHaveBeenCalledWith(
-          MOCK_CP_SAML,
-          MOCK_RELAY_STATE,
-          FormAuthType.CP,
-        )
+
+        // Act
+        await loginHandler(MOCK_CPOIDC_LOGIN_REQ, MOCK_RESPONSE, jest.fn())
+
+        // Assert
+
+        expect(
+          mockCpOidcServiceClass.exchangeAuthCodeAndRetrieveData,
+        ).toHaveBeenCalledWith(MOCK_CP_OIDC_AUTHORISATION_CODE)
         expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
           MOCK_TARGET,
         )
-        expect(MockSpcpService.getSpcpAttributes).toHaveBeenCalledWith(
-          MOCK_CP_SAML,
-          MOCK_DESTINATION,
-          FormAuthType.CP,
+        expect(mockCpOidcServiceClass.parseState).toHaveBeenCalledWith(
+          MOCK_OIDC_STATE,
         )
-        expect(MockSpcpService.createJWTPayload).toHaveBeenCalledWith(
-          MOCK_ATTRIBUTES,
+        expect(mockCpOidcServiceClass.createJWTPayload).toHaveBeenCalledWith(
+          MOCK_CP_OIDC_EXTRACTED_NDI_PAYLOAD,
           MOCK_REMEMBER_ME,
-          FormAuthType.CP,
         )
+
         expect(MOCK_RESPONSE.cookie).toHaveBeenCalledWith('isLoginError', true)
         expect(MOCK_RESPONSE.redirect).toHaveBeenCalledWith(MOCK_DESTINATION)
-        expect(MockSpcpService.createJWT).not.toHaveBeenCalled()
+        expect(mockCpOidcServiceClass.createJWT).not.toHaveBeenCalled()
         expect(MockBillingService.recordLoginByForm).not.toHaveBeenCalled()
-        expect(MockSpcpService.getCookieSettings).not.toHaveBeenCalled()
+        expect(mockCpOidcServiceClass.getCookieSettings).not.toHaveBeenCalled()
       })
 
       it('should set isLoginError cookie and redirect when createJWT errors', async () => {
-        MockSpcpService.createJWT.mockReturnValue(err(new ApplicationError()))
-        await loginHandler(MOCK_CP_LOGIN_REQ, MOCK_RESPONSE, jest.fn())
-        expect(MockSpcpService.parseOOBParams).toHaveBeenCalledWith(
-          MOCK_CP_SAML,
-          MOCK_RELAY_STATE,
-          FormAuthType.CP,
+        // Arrange
+        mockCpOidcServiceClass.createJWT.mockReturnValue(
+          errAsync(new CreateJwtError()),
         )
+
+        // Act
+        await loginHandler(MOCK_CPOIDC_LOGIN_REQ, MOCK_RESPONSE, jest.fn())
+
+        // Assert
+
+        expect(
+          mockCpOidcServiceClass.exchangeAuthCodeAndRetrieveData,
+        ).toHaveBeenCalledWith(MOCK_CP_OIDC_AUTHORISATION_CODE)
         expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
           MOCK_TARGET,
         )
-        expect(MockSpcpService.getSpcpAttributes).toHaveBeenCalledWith(
-          MOCK_CP_SAML,
-          MOCK_DESTINATION,
-          FormAuthType.CP,
+        expect(mockCpOidcServiceClass.parseState).toHaveBeenCalledWith(
+          MOCK_OIDC_STATE,
         )
-        expect(MockSpcpService.createJWTPayload).toHaveBeenCalledWith(
-          MOCK_ATTRIBUTES,
+        expect(mockCpOidcServiceClass.createJWTPayload).toHaveBeenCalledWith(
+          MOCK_CP_OIDC_EXTRACTED_NDI_PAYLOAD,
           MOCK_REMEMBER_ME,
-          FormAuthType.CP,
         )
-        expect(MockSpcpService.createJWT).toHaveBeenCalledWith(
-          MOCK_JWT_PAYLOAD,
+
+        expect(mockCpOidcServiceClass.createJWT).toHaveBeenCalledWith(
+          MOCK_CP_OIDC_JWT_PAYLOAD,
           MOCK_COOKIE_AGE,
-          FormAuthType.CP,
         )
         expect(MOCK_RESPONSE.cookie).toHaveBeenCalledWith('isLoginError', true)
         expect(MOCK_RESPONSE.redirect).toHaveBeenCalledWith(MOCK_DESTINATION)
+
         expect(MockBillingService.recordLoginByForm).not.toHaveBeenCalled()
-        expect(MockSpcpService.getCookieSettings).not.toHaveBeenCalled()
+        expect(mockCpOidcServiceClass.getCookieSettings).not.toHaveBeenCalled()
       })
 
       it('should set isLoginError cookie and redirect when recordLoginByForm errors', async () => {
+        // Arrange
         MockBillingService.recordLoginByForm.mockReturnValue(
           errAsync(new DatabaseError()),
         )
-        await loginHandler(MOCK_CP_LOGIN_REQ, MOCK_RESPONSE, jest.fn())
-        expect(MockSpcpService.parseOOBParams).toHaveBeenCalledWith(
-          MOCK_CP_SAML,
-          MOCK_RELAY_STATE,
-          FormAuthType.CP,
-        )
+
+        // Act
+        await loginHandler(MOCK_CPOIDC_LOGIN_REQ, MOCK_RESPONSE, jest.fn())
+
+        // Assert
+
+        expect(
+          mockCpOidcServiceClass.exchangeAuthCodeAndRetrieveData,
+        ).toHaveBeenCalledWith(MOCK_CP_OIDC_AUTHORISATION_CODE)
         expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
           MOCK_TARGET,
         )
-        expect(MockSpcpService.getSpcpAttributes).toHaveBeenCalledWith(
-          MOCK_CP_SAML,
-          MOCK_DESTINATION,
-          FormAuthType.CP,
+        expect(mockCpOidcServiceClass.parseState).toHaveBeenCalledWith(
+          MOCK_OIDC_STATE,
         )
-        expect(MockSpcpService.createJWTPayload).toHaveBeenCalledWith(
-          MOCK_ATTRIBUTES,
+        expect(mockCpOidcServiceClass.createJWTPayload).toHaveBeenCalledWith(
+          MOCK_CP_OIDC_EXTRACTED_NDI_PAYLOAD,
           MOCK_REMEMBER_ME,
-          FormAuthType.CP,
         )
-        expect(MockSpcpService.createJWT).toHaveBeenCalledWith(
-          MOCK_JWT_PAYLOAD,
+
+        expect(mockCpOidcServiceClass.createJWT).toHaveBeenCalledWith(
+          MOCK_CP_OIDC_JWT_PAYLOAD,
           MOCK_COOKIE_AGE,
-          FormAuthType.CP,
-        )
-        expect(MockBillingService.recordLoginByForm).toHaveBeenCalledWith(
-          MOCK_CP_FORM,
         )
         expect(MOCK_RESPONSE.cookie).toHaveBeenCalledWith('isLoginError', true)
         expect(MOCK_RESPONSE.redirect).toHaveBeenCalledWith(MOCK_DESTINATION)
-        expect(MockSpcpService.getCookieSettings).not.toHaveBeenCalled()
+
+        expect(MockBillingService.recordLoginByForm).toHaveBeenCalledWith(
+          MOCK_CP_FORM,
+        )
+        expect(mockCpOidcServiceClass.getCookieSettings).not.toHaveBeenCalled()
       })
     })
   })

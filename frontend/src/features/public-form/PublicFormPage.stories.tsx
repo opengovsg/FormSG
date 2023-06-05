@@ -1,9 +1,14 @@
 import { expect } from '@storybook/jest'
 import { Meta, Story } from '@storybook/react'
 import { userEvent, waitFor, within } from '@storybook/testing-library'
+import dedent from 'dedent'
 
 import { BasicField } from '~shared/types/field'
-import { FormAuthType, FormColorTheme } from '~shared/types/form'
+import {
+  FormAuthType,
+  FormColorTheme,
+  FormResponseMode,
+} from '~shared/types/form'
 
 import { MOCK_PREFILLED_MYINFO_FIELDS } from '~/mocks/msw/handlers/admin-form'
 import { envHandlers } from '~/mocks/msw/handlers/env'
@@ -17,7 +22,11 @@ import {
   SHOW_FIELDS_ON_YES_LOGIC,
 } from '~/mocks/msw/handlers/public-form'
 
-import { getMobileViewParameters, StoryRouter } from '~utils/storybook'
+import {
+  getMobileViewParameters,
+  getTabletViewParameters,
+  StoryRouter,
+} from '~utils/storybook'
 import { ShortTextFieldSchema } from '~templates/Field'
 
 import PublicFormPage from './PublicFormPage'
@@ -34,19 +43,35 @@ const DEFAULT_MSW_HANDLERS = [
 const PREFILLABLE_TEST_STRING =
   '%E8%87%AA%E7%94%B1 %F0%90%90%80 hello+world 日本語%20normal space'
 
-const PREFILLABLE_SHORTTEXT_FIELD: ShortTextFieldSchema = {
+const PREFILLABLE_NORMAL_SHORTTEXT_FIELD: ShortTextFieldSchema = {
   ValidationOptions: {
     customVal: null,
     selectedValidation: null,
   },
   allowPrefill: true, // This prop allows for prefill
-  title: 'Short Text With Prefill',
+  title: 'Short Text With Normal Prefill',
   description:
     'Probably do not have to worry so much, React automatically sanitizes what gets rendered',
   required: true,
   disabled: false,
   fieldType: BasicField.ShortText,
   _id: '5da04eafe397fc0013f63b22',
+}
+
+const PREFILLABLE_LOCKED_SHORTTEXT_FIELD: ShortTextFieldSchema = {
+  ValidationOptions: {
+    customVal: null,
+    selectedValidation: null,
+  },
+  allowPrefill: true, // This prop allows for prefill
+  lockPrefill: true, // This prop locks the prefill
+  title: 'Short Text With Prefill Locked',
+  description:
+    'Probably do not have to worry so much, React automatically sanitizes what gets rendered',
+  required: true,
+  disabled: false,
+  fieldType: BasicField.ShortText,
+  _id: '5da04eafe397fc0013f63b23',
 }
 
 const generateMswHandlersForColorTheme = (colorTheme: FormColorTheme) => {
@@ -73,7 +98,7 @@ export default {
   decorators: [
     StoryRouter({
       initialEntries: [
-        `/61540ece3d4a6e50ac0cc6ff?${PREFILLABLE_SHORTTEXT_FIELD._id}=${PREFILLABLE_TEST_STRING}`,
+        `/61540ece3d4a6e50ac0cc6ff?${PREFILLABLE_NORMAL_SHORTTEXT_FIELD._id}=${PREFILLABLE_TEST_STRING}&${PREFILLABLE_LOCKED_SHORTTEXT_FIELD._id}=${PREFILLABLE_TEST_STRING}`,
       ],
       path: '/:formId',
     }),
@@ -113,29 +138,13 @@ WithLongInstructions.parameters = {
       overrides: {
         form: {
           startPage: {
-            paragraph: `Fill in this mock form in this story. Lorem\
-          ipsum dolor sit amet, consectetur adipiscing elit. Donec ac tincidunt\
-          orci. Vivamus id nisl tellus. Aliquam ullamcorper nec diam id ornare.\
-          Praesent mattis ligula egestas magna sagittis, non aliquet mauris\
-          sollicitudin. In maximus euismod nunc eget pellentesque. Maecenas\
-          sollicitudin lobortis consectetur. Suspendisse potenti. Nam a est\
-          risus.
+            paragraph: dedent`
+            Fill in this mock form in this story. 
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec ac tincidunt orci. Go watch this funny video of a cat https://www.youtube.com/watch?v=dQw4w9WgXcQ. Vivamus id nisl tellus. Aliquam ullamcorper nec diam id ornare. Praesent mattis ligula egestas magna sagittis, non aliquet mauris sollicitudin. In maximus euismod nunc eget pellentesque. Maecenas sollicitudin lobortis consectetur. Suspendisse potenti. Nam a est risus.
 
-          Aliquam egestas diam in velit pellentesque lacinia. Praesent nunc ex,\
-          fermentum sed nunc nec, laoreet dignissim nisi. Vivamus et lorem non\
-          velit facilisis luctus. Sed et luctus magna, sed tincidunt odio. Fusce\
-          quis pretium eros. Mauris in est ornare, aliquam odio quis, porttitor\
-          lacus. Aliquam dignissim laoreet libero, sed pharetra enim.\
-          Pellentesque habitant morbi tristique senectus et netus et malesuada\
-          fames ac turpis egestas.
+            Aliquam egestas diam in velit pellentesque lacinia. Praesent nunc ex, fermentum sed nunc nec, laoreet dignissim nisi. Vivamus et lorem non velit facilisis luctus. Sed et luctus magna, sed tincidunt odio. Fusce quis pretium eros. Mauris in est ornare, aliquam odio quis, porttitor lacus. Aliquam dignissim laoreet libero, sed pharetra enim. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.
           
-          Donec scelerisque eros mattis tempor commodo. Vestibulum massa ante,\
-          fermentum nec sollicitudin eu, tincidunt sed lectus. Etiam maximus\
-          luctus dapibus. Morbi et mollis nibh. Praesent ante orci, pellentesque\
-          vel molestie ut, lobortis nec dui. Aliquam eleifend luctus pharetra.\
-          Nullam lacinia eget erat ac commodo. Curabitur suscipit felis a\
-          venenatis consectetur. Cras dictum, metus a egestas aliquam, ipsum\
-          neque fermentum orci, vitae fermentum neque mi non arcu.`,
+            Donec scelerisque eros mattis tempor commodo. Vestibulum massa ante, fermentum nec sollicitudin eu, tincidunt sed lectus. Etiam maximus luctus dapibus. Morbi et mollis nibh. Praesent ante orci, pellentesque vel molestie ut, lobortis nec dui. Aliquam eleifend luctus pharetra. Nullam lacinia eget erat ac commodo. Curabitur suscipit felis a venenatis consectetur. Cras dictum, metus a egestas aliquam, ipsum neque fermentum orci, vitae fermentum neque mi non arcu.`,
           },
         },
       },
@@ -158,23 +167,66 @@ WithCaptcha.parameters = {
   ],
 }
 
-export const WithPrefilledFields = Template.bind({})
-WithPrefilledFields.parameters = {
+export const WithPrefilledNormalFields = Template.bind({})
+WithPrefilledNormalFields.parameters = {
   msw: [
     getPublicFormResponse({
       delay: 0,
       overrides: {
         form: {
-          form_fields: [PREFILLABLE_SHORTTEXT_FIELD],
+          form_fields: [PREFILLABLE_NORMAL_SHORTTEXT_FIELD],
         },
       },
     }),
   ],
 }
 
-export const WithPrefilledFieldsMobile = Template.bind({})
-WithPrefilledFieldsMobile.parameters = {
-  ...WithPrefilledFields.parameters,
+export const WithPrefilledNormalFieldsMobile = Template.bind({})
+WithPrefilledNormalFieldsMobile.parameters = {
+  ...WithPrefilledNormalFields.parameters,
+  ...getMobileViewParameters(),
+}
+
+export const WithPrefilledLockedFields = Template.bind({})
+WithPrefilledLockedFields.parameters = {
+  msw: [
+    getPublicFormResponse({
+      delay: 0,
+      overrides: {
+        form: {
+          form_fields: [PREFILLABLE_LOCKED_SHORTTEXT_FIELD],
+        },
+      },
+    }),
+  ],
+}
+
+export const WithPrefilledLockedFieldsMobile = Template.bind({})
+WithPrefilledLockedFieldsMobile.parameters = {
+  ...WithPrefilledLockedFields.parameters,
+  ...getMobileViewParameters(),
+}
+
+export const WithPrefilledLockedAndNormalFields = Template.bind({})
+WithPrefilledLockedAndNormalFields.parameters = {
+  msw: [
+    getPublicFormResponse({
+      delay: 0,
+      overrides: {
+        form: {
+          form_fields: [
+            PREFILLABLE_LOCKED_SHORTTEXT_FIELD,
+            PREFILLABLE_NORMAL_SHORTTEXT_FIELD,
+          ],
+        },
+      },
+    }),
+  ],
+}
+
+export const WithPrefilledLockedAndNormalFieldsMobile = Template.bind({})
+WithPrefilledLockedAndNormalFieldsMobile.parameters = {
+  ...WithPrefilledLockedAndNormalFields.parameters,
   ...getMobileViewParameters(),
 }
 
@@ -436,6 +488,12 @@ FormNotFound.parameters = {
   msw: [getPublicFormErrorResponse()],
 }
 
+export const FormNotFoundTablet = Template.bind({})
+FormNotFoundTablet.parameters = {
+  ...FormNotFound.parameters,
+  ...getTabletViewParameters(),
+}
+
 export const FormNotFoundMobile = Template.bind({})
 FormNotFoundMobile.parameters = {
   ...FormNotFound.parameters,
@@ -449,6 +507,25 @@ WithMyInfo.parameters = {
       overrides: {
         form: {
           form_fields: MOCK_PREFILLED_MYINFO_FIELDS,
+        },
+      },
+    }),
+    ...DEFAULT_MSW_HANDLERS,
+  ],
+}
+
+export const WithPayment = Template.bind({})
+WithPayment.parameters = {
+  msw: [
+    getPublicFormResponse({
+      overrides: {
+        form: {
+          responseMode: FormResponseMode.Encrypt,
+          payments_field: {
+            enabled: true,
+            amount_cents: 5000,
+            description: 'Mock event registration',
+          },
         },
       },
     }),

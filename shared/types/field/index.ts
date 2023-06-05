@@ -1,24 +1,24 @@
-import { AttachmentFieldBase } from './attachmentField'
-import { CheckboxFieldBase } from './checkboxField'
-import { DateFieldBase } from './dateField'
-import { DecimalFieldBase } from './decimalField'
-import { DropdownFieldBase } from './dropdownField'
-import { EmailFieldBase } from './emailField'
-import { HomenoFieldBase } from './homeNoField'
-import { ImageFieldBase } from './imageField'
-import { LongTextFieldBase } from './longTextField'
-import { MobileFieldBase } from './mobileField'
-import { NricFieldBase } from './nricField'
-import { NumberFieldBase } from './numberField'
-import { RadioFieldBase } from './radioField'
-import { RatingFieldBase } from './ratingField'
-import { SectionFieldBase } from './sectionField'
-import { ShortTextFieldBase } from './shortTextField'
-import { StatementFieldBase } from './statementField'
-import { TableFieldBase, TableFieldDto } from './tableField'
-import { UenFieldBase } from './uenField'
-import { YesNoFieldBase } from './yesNoField'
-import { SetRequired } from 'type-fest'
+import type { AttachmentFieldBase } from './attachmentField'
+import type { CheckboxFieldBase } from './checkboxField'
+import type { DateFieldBase } from './dateField'
+import type { DecimalFieldBase } from './decimalField'
+import type { DropdownFieldBase } from './dropdownField'
+import type { EmailFieldBase } from './emailField'
+import type { HomenoFieldBase } from './homeNoField'
+import type { ImageFieldBase } from './imageField'
+import type { LongTextFieldBase } from './longTextField'
+import type { MobileFieldBase } from './mobileField'
+import type { NricFieldBase } from './nricField'
+import type { NumberFieldBase } from './numberField'
+import type { RadioFieldBase } from './radioField'
+import type { RatingFieldBase } from './ratingField'
+import type { SectionFieldBase } from './sectionField'
+import type { ShortTextFieldBase } from './shortTextField'
+import type { StatementFieldBase } from './statementField'
+import type { TableFieldBase, TableFieldDto } from './tableField'
+import type { UenFieldBase } from './uenField'
+import type { YesNoFieldBase } from './yesNoField'
+import type { SetRequired } from 'type-fest'
 
 export * from './attachmentField'
 export * from './base'
@@ -94,5 +94,7 @@ export type FormFieldDto<T extends FormField = FormField> =
   | MyInfoFormField<T>
   | FormFieldWithId<T>
 
-export type FieldCreateDto = FormField
+export type FieldCreateDto =
+  | (FormField & { myInfo?: MyInfoField['myInfo'] })
+  | MyInfoField
 export type FieldUpdateDto = FormFieldWithId

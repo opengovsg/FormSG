@@ -13,37 +13,28 @@ type ISpcpConfig = {
   spCookieMaxAgePreserved: number
   spcpCookieDomain: string
   cpCookieMaxAge: number
-  spIdpId: string
-  cpIdpId: string
-  spPartnerEntityId: string
-  cpPartnerEntityId: string
-  spIdpLoginUrl: string
-  cpIdpLoginUrl: string
-  spIdpEndpoint: string
-  cpIdpEndpoint: string
-  spEsrvcId: string
-  cpEsrvcId: string
-  spFormSgKeyPath: string
-  cpFormSgKeyPath: string
-  spFormSgCertPath: string
-  cpFormSgCertPath: string
-  spIdpCertPath: string
-  cpIdpCertPath: string
   spOidcNdiDiscoveryEndpoint: string
   spOidcNdiJwksEndpoint: string
   spOidcRpClientId: string
   spOidcRpRedirectUrl: string
   spOidcRpJwksPublicPath: string
   spOidcRpJwksSecretPath: string
+  cpOidcNdiDiscoveryEndpoint: string
+  cpOidcNdiJwksEndpoint: string
+  cpOidcRpClientId: string
+  cpOidcRpRedirectUrl: string
   cpOidcRpJwksPublicPath: string
+  cpOidcRpJwksSecretPath: string
 }
 
 type IMyInfoConfig = {
+  spEsrvcId: string // Needed for MyInfo
   myInfoClientMode: MyInfoMode
   myInfoKeyPath: string
   myInfoCertPath: string
   myInfoClientId: string
   myInfoClientSecret: string
+  myInfoJwtSecret: string
 }
 
 // Config of MyInfo is coupled to that of Singpass
@@ -96,101 +87,11 @@ const spcpMyInfoSchema: Schema<ISpcpMyInfo> = {
     default: 6 * HOUR_IN_MILLIS,
     env: 'CP_COOKIE_MAX_AGE',
   },
-  spIdpId: {
-    doc: 'Partner ID of National Digital Identity Office for SingPass authentication',
-    format: 'url',
-    default: null,
-    env: 'SINGPASS_IDP_ID',
-  },
-  cpIdpId: {
-    doc: 'Partner ID of National Digital Identity Office for CorpPass authentication',
-    format: 'url',
-    default: null,
-    env: 'CORPPASS_IDP_ID',
-  },
-  spPartnerEntityId: {
-    doc: 'Partner ID registered with National Digital Identity Office for SingPass authentication',
-    format: 'url',
-    default: null,
-    env: 'SINGPASS_PARTNER_ENTITY_ID',
-  },
-  cpPartnerEntityId: {
-    doc: 'Partner ID registered with National Digital Identity Office for CorpPass authentication',
-    format: 'url',
-    default: null,
-    env: 'CORPPASS_PARTNER_ENTITY_ID',
-  },
-  spIdpLoginUrl: {
-    doc: 'URL of SingPass Login Page',
-    format: 'url',
-    default: null,
-    env: 'SINGPASS_IDP_LOGIN_URL',
-  },
-  cpIdpLoginUrl: {
-    doc: 'URL of CorpPass Login Page',
-    format: 'url',
-    default: null,
-    env: 'CORPPASS_IDP_LOGIN_URL',
-  },
-  spIdpEndpoint: {
-    doc: 'URL to retrieve NRIC of SingPass-validated user from',
-    format: 'url',
-    default: null,
-    env: 'SINGPASS_IDP_ENDPOINT',
-  },
-  cpIdpEndpoint: {
-    doc: 'URL to retrieve UEN of CorpPass-validated user from',
-    format: 'url',
-    default: null,
-    env: 'CORPPASS_IDP_ENDPOINT',
-  },
   spEsrvcId: {
-    doc: 'e-service ID registered with National Digital Identity office for SingPass authentication',
+    doc: 'e-service ID registered with National Digital Identity office for SingPass authentication. Needed for MyInfo.',
     format: String,
     default: null,
     env: 'SINGPASS_ESRVC_ID',
-  },
-  cpEsrvcId: {
-    doc: 'e-service ID registered with National Digital Identity office for CorpPass authentication',
-    format: String,
-    default: null,
-    env: 'CORPPASS_ESRVC_ID',
-  },
-  spFormSgKeyPath: {
-    doc: 'Path to X.509 key used for SingPass related communication with National Digital Identity office',
-    format: String,
-    default: null,
-    env: 'SP_FORMSG_KEY_PATH',
-  },
-  cpFormSgKeyPath: {
-    doc: 'Path to X.509 key used for CorpPass related communication with National Digital Identity office',
-    format: String,
-    default: null,
-    env: 'CP_FORMSG_KEY_PATH',
-  },
-  spFormSgCertPath: {
-    doc: 'Path to X.509 cert used for SingPass related communication with National Digital Identity office',
-    format: String,
-    default: null,
-    env: 'SP_FORMSG_CERT_PATH',
-  },
-  cpFormSgCertPath: {
-    doc: 'Path to X.509 cert used for CorpPass related communication with National Digital Identity office',
-    format: String,
-    default: null,
-    env: 'CP_FORMSG_CERT_PATH',
-  },
-  spIdpCertPath: {
-    doc: 'Path to National Digital Identity offices X.509 cert used for SingPass related communication',
-    format: String,
-    default: null,
-    env: 'SP_IDP_CERT_PATH',
-  },
-  cpIdpCertPath: {
-    doc: 'Path to National Digital Identity offices X.509 cert used for CorpPass related communication',
-    format: String,
-    default: null,
-    env: 'CP_IDP_CERT_PATH',
   },
   myInfoClientMode: {
     doc: 'Configures MyInfoGovClient. Set this to either `stg` or `prod` to fetch MyInfo data from the corresponding endpoints.',
@@ -222,6 +123,12 @@ const spcpMyInfoSchema: Schema<ISpcpMyInfo> = {
     default: null,
     env: 'MYINFO_CLIENT_SECRET',
   },
+  myInfoJwtSecret: {
+    doc: 'Secret for signing MyInfo JWT.',
+    format: String,
+    default: null,
+    env: 'MYINFO_JWT_SECRET',
+  },
   spOidcNdiDiscoveryEndpoint: {
     doc: "NDI's Singpass OIDC Discovery Endpoint",
     format: String,
@@ -235,13 +142,13 @@ const spcpMyInfoSchema: Schema<ISpcpMyInfo> = {
     env: 'SP_OIDC_NDI_JWKS_ENDPOINT',
   },
   spOidcRpClientId: {
-    doc: "The Relying Party's Client ID as registered with NDI",
+    doc: "The Relying Party's Singpass Client ID as registered with NDI",
     format: String,
     default: null,
     env: 'SP_OIDC_RP_CLIENT_ID',
   },
   spOidcRpRedirectUrl: {
-    doc: "The Relying Party's Redirect URL",
+    doc: "The Relying Party's Singpass Redirect URL",
     format: String,
     default: null,
     env: 'SP_OIDC_RP_REDIRECT_URL',
@@ -258,11 +165,41 @@ const spcpMyInfoSchema: Schema<ISpcpMyInfo> = {
     default: null,
     env: 'SP_OIDC_RP_JWKS_SECRET_PATH',
   },
+  cpOidcNdiDiscoveryEndpoint: {
+    doc: "NDI's Corppass OIDC Discovery Endpoint",
+    format: String,
+    default: null,
+    env: 'CP_OIDC_NDI_DISCOVERY_ENDPOINT',
+  },
+  cpOidcNdiJwksEndpoint: {
+    doc: "NDI's Corppass OIDC JWKS Endpoint",
+    format: String,
+    default: null,
+    env: 'CP_OIDC_NDI_JWKS_ENDPOINT',
+  },
+  cpOidcRpClientId: {
+    doc: "The Relying Party's Corppass Client ID as registered with NDI",
+    format: String,
+    default: null,
+    env: 'CP_OIDC_RP_CLIENT_ID',
+  },
+  cpOidcRpRedirectUrl: {
+    doc: "The Relying Party's Corppass Redirect URL",
+    format: String,
+    default: null,
+    env: 'CP_OIDC_RP_REDIRECT_URL',
+  },
   cpOidcRpJwksPublicPath: {
     doc: "Path to the Relying Party's Public Json Web Key Set used for Corppass-related communication with NDI.  This will be hosted at api/v3/corppass/.well-known/jwks.json endpoint.",
     format: String,
     default: null,
     env: 'CP_OIDC_RP_JWKS_PUBLIC_PATH',
+  },
+  cpOidcRpJwksSecretPath: {
+    doc: "Path to the Relying Party's Secret Json Web Key Set used for Cingpass-related communication with NDI",
+    format: String,
+    default: null,
+    env: 'CP_OIDC_RP_JWKS_SECRET_PATH',
   },
 }
 

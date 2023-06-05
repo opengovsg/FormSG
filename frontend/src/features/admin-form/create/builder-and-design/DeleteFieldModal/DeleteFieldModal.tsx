@@ -1,43 +1,55 @@
 import { useCallback, useMemo } from 'react'
 import {
   ButtonGroup,
+  Icon,
+  ListItem,
   Modal,
   ModalBody,
   ModalContent,
   ModalFooter,
   ModalHeader,
   ModalOverlay,
+  Text,
+  UnorderedList,
 } from '@chakra-ui/react'
 
 import Button from '~components/Button'
 import { ModalCloseButton } from '~components/Modal'
 
 import { BASICFIELD_TO_DRAWER_META } from '../../constants'
+import { useAdminFormLogic } from '../../logic/hooks/useAdminFormLogic'
 import { useBuilderAndDesignContext } from '../BuilderAndDesignContext'
 import { useDeleteFormField } from '../mutations/useDeleteFormField'
 import {
-  BuildFieldState,
+  FieldBuilderState,
   stateDataSelector,
-  useBuilderAndDesignStore,
-} from '../useBuilderAndDesignStore'
+  useFieldBuilderStore,
+} from '../useFieldBuilderStore'
 
 export const DeleteFieldModal = (): JSX.Element => {
-  const stateData = useBuilderAndDesignStore(stateDataSelector)
+  const stateData = useFieldBuilderStore(stateDataSelector)
   const {
-    deleteFieldModalDisclosure: { isOpen, onClose },
+    deleteFieldModalDisclosure: { onClose },
   } = useBuilderAndDesignContext()
+  const { mapIdToField, logicedFieldIdsSet } = useAdminFormLogic()
 
-  const fieldTypeLabel = useMemo(() => {
-    if (stateData.state === BuildFieldState.EditingField) {
-      return BASICFIELD_TO_DRAWER_META[stateData.field.fieldType].label
+  const { fieldIsInLogic, fieldIcon, fieldLabel } = useMemo(() => {
+    if (stateData.state !== FieldBuilderState.EditingField) return {}
+    const questionNumber = mapIdToField?.[stateData.field._id].questionNumber
+    const fieldTitle = stateData.field.title
+    return {
+      fieldIsInLogic: logicedFieldIdsSet?.has(stateData.field._id),
+      fieldIcon: BASICFIELD_TO_DRAWER_META[stateData.field.fieldType].icon,
+      fieldLabel: questionNumber
+        ? `${questionNumber}. ${fieldTitle}`
+        : fieldTitle,
     }
-    return null
-  }, [stateData])
+  }, [mapIdToField, stateData, logicedFieldIdsSet])
 
   const { deleteFieldMutation } = useDeleteFormField()
 
   const handleDeleteConfirmation = useCallback(() => {
-    if (stateData.state === BuildFieldState.EditingField) {
+    if (stateData.state === FieldBuilderState.EditingField) {
       deleteFieldMutation.mutate(stateData.field._id, {
         onSuccess: onClose,
       })
@@ -45,14 +57,41 @@ export const DeleteFieldModal = (): JSX.Element => {
   }, [deleteFieldMutation, onClose, stateData])
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    <Modal isOpen onClose={onClose}>
       <ModalOverlay />
       <ModalContent>
         <ModalCloseButton />
-        <ModalHeader>Delete {fieldTypeLabel} field</ModalHeader>
+        <ModalHeader>Delete field</ModalHeader>
         <ModalBody>
-          This field will be deleted permanently. Are you sure you want to
-          proceed?
+          <Text color="secondary.500">
+            {fieldIsInLogic
+              ? `This field is used in your form logic, so deleting it may cause
+                your logic to stop working correctly. Are you sure you want to 
+                delete this field?`
+              : `Are you sure you want to delete this field? This action
+                cannot be undone.`}
+          </Text>
+          <UnorderedList
+            spacing="0.5rem"
+            listStyleType="none"
+            ml="1.75rem"
+            mt="1rem"
+          >
+            <ListItem
+              display="flex"
+              alignItems="flex-start"
+              wordBreak="break-word"
+            >
+              <Icon
+                as={fieldIcon}
+                fontSize="1.25rem"
+                h="1.5rem"
+                ml="-1.75rem"
+                mr="0.5rem"
+              />
+              {fieldLabel}
+            </ListItem>
+          </UnorderedList>
         </ModalBody>
         <ModalFooter>
           <ButtonGroup>

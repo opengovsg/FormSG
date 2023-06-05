@@ -1,5 +1,5 @@
 import { composeStories } from '@storybook/testing-react'
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { merge } from 'lodash'
 
@@ -12,12 +12,12 @@ const { ValidationRequired, ValidationOptional } = composeStories(stories)
 describe('validation required', () => {
   it('renders error when field is not filled before submitting', async () => {
     // Arrange
+    const user = userEvent.setup()
     render(<ValidationRequired />)
     const submitButton = screen.getByText('Submit')
 
     // Act
-    userEvent.click(submitButton)
-    await waitFor(() => submitButton.textContent !== 'Submitting')
+    await user.click(submitButton)
 
     // Assert
     // Should show error message.
@@ -27,17 +27,19 @@ describe('validation required', () => {
 
   it('renders success when field is filled when submitted', async () => {
     // Arrange
+    const user = userEvent.setup()
     const schema = ValidationRequired.args?.schema
     render(<ValidationRequired />)
-    const input = screen.getByLabelText(schema!.title) as HTMLInputElement
+    const input = screen.getByLabelText(
+      `${schema!.questionNumber}. ${schema!.title}`,
+    ) as HTMLInputElement
     const submitButton = screen.getByText('Submit')
 
     expect(input.value).toBe('')
 
     // Act
-    userEvent.type(input, '123')
-    userEvent.click(submitButton)
-    await waitFor(() => submitButton.textContent !== 'Submitting')
+    await user.type(input, '123')
+    await user.click(submitButton)
 
     // Assert
     // Should show success message.
@@ -51,12 +53,12 @@ describe('validation required', () => {
 describe('validation optional', () => {
   it('renders success even when field is empty before submitting', async () => {
     // Arrange
+    const user = userEvent.setup()
     render(<ValidationOptional />)
     const submitButton = screen.getByText('Submit')
 
     // Act
-    userEvent.click(submitButton)
-    await waitFor(() => submitButton.textContent !== 'Submitting')
+    await user.click(submitButton)
 
     // Assert
     // Should show success message.
@@ -66,17 +68,19 @@ describe('validation optional', () => {
 
   it('renders success when field is filled when submitted', async () => {
     // Arrange
+    const user = userEvent.setup()
     const schema = ValidationOptional.args?.schema
     render(<ValidationOptional />)
-    const input = screen.getByLabelText(schema!.title) as HTMLInputElement
+    const input = screen.getByLabelText(
+      `${schema!.questionNumber}. ${schema!.title}`,
+    ) as HTMLInputElement
     const submitButton = screen.getByText('Submit')
 
     expect(input.value).toBe('')
 
     // Act
-    userEvent.type(input, '111')
-    userEvent.click(submitButton)
-    await waitFor(() => submitButton.textContent !== 'Submitting')
+    await user.type(input, '111')
+    await user.click(submitButton)
 
     // Assert
     // Should show success message.
@@ -91,6 +95,7 @@ describe('text validation', () => {
   describe('NumberSelectedValidation.Min', () => {
     it('renders error when field input length is < minimum length when submitted', async () => {
       // Arrange
+      const user = userEvent.setup()
       // Using ValidationRequired base story to render the field without any value
       // and make validation options explicit.
       const schema = merge({}, ValidationRequired.args?.schema, {
@@ -100,15 +105,16 @@ describe('text validation', () => {
         },
       })
       render(<ValidationRequired schema={schema} />)
-      const input = screen.getByLabelText(schema!.title) as HTMLInputElement
+      const input = screen.getByLabelText(
+        `${schema!.questionNumber}. ${schema!.title}`,
+      ) as HTMLInputElement
       const submitButton = screen.getByText('Submit')
 
       expect(input.value).toBe('')
 
       // Act
-      userEvent.type(input, '1234')
-      userEvent.click(submitButton)
-      await waitFor(() => submitButton.textContent !== 'Submitting')
+      await user.type(input, '1234')
+      await user.click(submitButton)
 
       // Assert
       // Should show error validation message.
@@ -119,6 +125,7 @@ describe('text validation', () => {
     })
 
     it('renders success when field input length is >= minimum length when submitted', async () => {
+      const user = userEvent.setup()
       const schema = merge({}, ValidationRequired.args?.schema, {
         ValidationOptions: {
           customVal: 2,
@@ -126,16 +133,17 @@ describe('text validation', () => {
         },
       })
       render(<ValidationRequired schema={schema} />)
-      const input = screen.getByLabelText(schema!.title) as HTMLInputElement
+      const input = screen.getByLabelText(
+        `${schema!.questionNumber}. ${schema!.title}`,
+      ) as HTMLInputElement
       const submitButton = screen.getByText('Submit')
 
       expect(input.value).toBe('')
       const inputString = '11111111'
 
       // Act
-      userEvent.type(input, inputString)
-      userEvent.click(submitButton)
-      await waitFor(() => submitButton.textContent !== 'Submitting')
+      await user.type(input, inputString)
+      await user.click(submitButton)
 
       // Assert
       // Should show success message.
@@ -147,6 +155,7 @@ describe('text validation', () => {
   describe('TextSelectedValidation.Maximum', () => {
     it('renders error when field input length is > maximum length when submitted', async () => {
       // Arrange
+      const user = userEvent.setup()
       const schema = merge({}, ValidationRequired.args?.schema, {
         ValidationOptions: {
           customVal: 2,
@@ -155,15 +164,16 @@ describe('text validation', () => {
       })
       // Using ValidationRequired base story to render the field without any value.
       render(<ValidationRequired schema={schema} />)
-      const input = screen.getByLabelText(schema!.title) as HTMLInputElement
+      const input = screen.getByLabelText(
+        `${schema!.questionNumber}. ${schema!.title}`,
+      ) as HTMLInputElement
       const submitButton = screen.getByText('Submit')
 
       expect(input.value).toBe('')
 
       // Act
-      userEvent.type(input, '4444')
-      userEvent.click(submitButton)
-      await waitFor(() => submitButton.textContent !== 'Submitting')
+      await user.type(input, '4444')
+      await user.click(submitButton)
 
       // Assert
       // Should show error validation message.
@@ -174,6 +184,7 @@ describe('text validation', () => {
     })
 
     it('renders success when field input length is <= maximum length when submitted', async () => {
+      const user = userEvent.setup()
       const schema = merge({}, ValidationRequired.args?.schema, {
         ValidationOptions: {
           customVal: 3,
@@ -181,16 +192,17 @@ describe('text validation', () => {
         },
       })
       render(<ValidationRequired schema={schema} />)
-      const input = screen.getByLabelText(schema!.title) as HTMLInputElement
+      const input = screen.getByLabelText(
+        `${schema!.questionNumber}. ${schema!.title}`,
+      ) as HTMLInputElement
       const submitButton = screen.getByText('Submit')
 
       expect(input.value).toBe('')
       const inputString = '333'
 
       // Act
-      userEvent.type(input, inputString)
-      userEvent.click(submitButton)
-      await waitFor(() => submitButton.textContent !== 'Submitting')
+      await user.type(input, inputString)
+      await user.click(submitButton)
 
       // Assert
       // Should show success message.
@@ -202,6 +214,7 @@ describe('text validation', () => {
   describe('TextSelectedValidation.Exact', () => {
     it('renders error when field input length not exact length when submitted', async () => {
       // Arrange
+      const user = userEvent.setup()
       const schema = merge({}, ValidationRequired.args?.schema, {
         ValidationOptions: {
           customVal: 3,
@@ -210,15 +223,16 @@ describe('text validation', () => {
       })
       // Using ValidationRequired base story to render the field without any value.
       render(<ValidationRequired schema={schema} />)
-      const input = screen.getByLabelText(schema!.title) as HTMLInputElement
+      const input = screen.getByLabelText(
+        `${schema!.questionNumber}. ${schema!.title}`,
+      ) as HTMLInputElement
       const submitButton = screen.getByText('Submit')
 
       expect(input.value).toBe('')
 
       // Act
-      userEvent.type(input, '55555')
-      userEvent.click(submitButton)
-      await waitFor(() => submitButton.textContent !== 'Submitting')
+      await user.type(input, '55555')
+      await user.click(submitButton)
 
       // Assert
       // Should show error validation message.
@@ -229,6 +243,7 @@ describe('text validation', () => {
     })
 
     it('renders success when field input length is exact length when submitted', async () => {
+      const user = userEvent.setup()
       const schema = merge({}, ValidationRequired.args?.schema, {
         ValidationOptions: {
           customVal: 5,
@@ -236,16 +251,17 @@ describe('text validation', () => {
         },
       })
       render(<ValidationRequired schema={schema} />)
-      const input = screen.getByLabelText(schema!.title) as HTMLInputElement
+      const input = screen.getByLabelText(
+        `${schema!.questionNumber}. ${schema!.title}`,
+      ) as HTMLInputElement
       const submitButton = screen.getByText('Submit')
 
       expect(input.value).toBe('')
       const inputString = '55555'
 
       // Act
-      userEvent.type(input, inputString)
-      userEvent.click(submitButton)
-      await waitFor(() => submitButton.textContent !== 'Submitting')
+      await user.type(input, inputString)
+      await user.click(submitButton)
 
       // Assert
       // Should show success message.

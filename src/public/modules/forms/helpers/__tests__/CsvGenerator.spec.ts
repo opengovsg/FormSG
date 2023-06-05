@@ -1,5 +1,4 @@
 import { stringify } from 'csv-string'
-import { mocked } from 'ts-jest/utils'
 
 import { CsvGenerator } from '../CsvGenerator'
 import { triggerFileDownload } from '../util'
@@ -7,7 +6,7 @@ import { triggerFileDownload } from '../util'
 const UTF8_BYTE_ORDER_MARK = '\uFEFF'
 
 jest.mock('../util')
-const MockTriggerFileDownload = mocked(triggerFileDownload)
+const MockTriggerFileDownload = jest.mocked(triggerFileDownload)
 
 describe('CsvGenerator', () => {
   afterAll(() => {

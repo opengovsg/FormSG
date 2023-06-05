@@ -29,7 +29,7 @@ export const SubmissionSearchbar = ({
       onChange={setInputValue}
       onCollapseIconClick={() => setSubmissionId(null)}
       onSearch={setSubmissionId}
-      placeholder="Search by reference ID"
+      placeholder="Search by response ID"
     />
   )
 }

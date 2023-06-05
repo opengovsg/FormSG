@@ -1,8 +1,9 @@
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Controller, UseFormReturn } from 'react-hook-form'
 import { BiShow, BiX } from 'react-icons/bi'
-import { FormControl, Stack } from '@chakra-ui/react'
+import { FormControl, Stack, Text } from '@chakra-ui/react'
 import get from 'lodash/get'
+import simplur from 'simplur'
 
 import { FormFieldDto } from '~shared/types/field'
 import { LogicType } from '~shared/types/form'
@@ -10,11 +11,14 @@ import { LogicType } from '~shared/types/form'
 import { useWatchDependency } from '~hooks/useWatchDependency'
 import { MultiSelect, SingleSelect } from '~components/Dropdown'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
+import InlineMessage from '~components/InlineMessage'
 import Textarea from '~components/Textarea'
 
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
 import { EditLogicInputs } from '~features/admin-form/create/logic/types'
 import { FormFieldWithQuestionNo } from '~features/form/types'
+
+import { getLogicFieldLabel } from '../../utils/getLogicFieldLabel'
 
 import { BlockLabelText } from './BlockLabelText'
 
@@ -34,8 +38,11 @@ export const ThenShowBlock = ({
   const {
     watch,
     formState: { errors },
+    setValue,
     resetField,
+    setError,
     control,
+    trigger,
   } = formMethods
 
   const logicTypeValue = watch('logicType')
@@ -70,6 +77,49 @@ export const ThenShowBlock = ({
       : 'show'
   }, [logicTypeValue])
 
+  const [deletedFieldsCount, setDeletedFieldsCount] = useState(0)
+
+  /**
+   * Compute whether any/all fields in the show fields are deleted, then run
+   * effect to delete fields on render and show appropriate error/infobox.
+   * useWatch here to avoid infinite re-render (since if there are deleted
+   * fields, we always reset the value of the show).
+   */
+  const showValueWatch = useWatchDependency(watch, 'show')
+
+  useEffect(() => {
+    if (
+      logicTypeValue !== LogicType.ShowFields ||
+      !showValueWatch.value?.length ||
+      !mapIdToField
+    )
+      return
+    const filteredShowFields = showValueWatch.value.filter(
+      (field) => field in mapIdToField,
+    )
+    const deletedFieldsCount =
+      showValueWatch.value.length - filteredShowFields.length
+    if (deletedFieldsCount === 0) {
+      trigger('show')
+      return
+    }
+    setValue('show', filteredShowFields)
+    if (filteredShowFields.length === 0)
+      setError('show', {
+        type: 'manual',
+        message: 'All fields were deleted, please select at least one field',
+      })
+    else setDeletedFieldsCount(deletedFieldsCount)
+  }, [
+    logicTypeValue,
+    mapIdToField,
+    resetField,
+    setError,
+    setValue,
+    showValueWatch.value,
+    trigger,
+  ])
+
   return (
     <Stack
       direction="column"
@@ -77,6 +127,16 @@ export const ThenShowBlock = ({
       py="1.5rem"
       px={{ base: '1.5rem', md: '2rem' }}
     >
+      {deletedFieldsCount ? (
+        <InlineMessage variant="info" p={0}>
+          <Text>
+            <strong>{simplur`${deletedFieldsCount} Show field[|s]`}</strong>{' '}
+            {simplur`${[deletedFieldsCount]}[was|were] deleted, and [has|have]`}{' '}
+            been removed from your logic
+          </Text>
+        </InlineMessage>
+      ) : null}
+
       <Stack
         direction={{ base: 'column', md: 'row' }}
         spacing={{ base: 0, md: '0.5rem' }}
@@ -151,24 +211,17 @@ const ThenLogicInput = ({
   const thenValueItems = useMemo(() => {
     // Return every field except fields that are already used in the logic.
     if (logicTypeValue === LogicType.ShowFields) {
+      if (!formFields || !mapIdToField) return []
       const usedFieldIds = new Set(
         logicConditionsWatch.value.map((condition) => condition.field),
       )
-      if (!formFields || !mapIdToField) return []
       return formFields
         .filter((f) => !usedFieldIds.has(f._id))
-        .map((f) => {
-          const mappedField = mapIdToField[f._id]
-          return {
-            value: f._id,
-            label: `${
-              mappedField.questionNumber
-                ? `${mappedField.questionNumber}. `
-                : ''
-            }${mappedField.title}`,
-            icon: BASICFIELD_TO_DRAWER_META[f.fieldType].icon,
-          }
-        })
+        .map((f) => ({
+          value: f._id,
+          label: getLogicFieldLabel(mapIdToField[f._id]),
+          icon: BASICFIELD_TO_DRAWER_META[f.fieldType].icon,
+        }))
     }
     return []
     // Watch entire <***>Watch variables since <***>Watch.value is a Proxy object
@@ -206,6 +259,7 @@ const ThenLogicInput = ({
       isReadOnly={isLoading}
       isRequired
       isInvalid={!!errors.show}
+      minW={0}
     >
       <Controller
         name="show"
@@ -222,6 +276,7 @@ const ThenLogicInput = ({
             placeholder={null}
             items={thenValueItems}
             values={value ?? []}
+            isSelectedItemFullWidth
             {...rest}
           />
         )}

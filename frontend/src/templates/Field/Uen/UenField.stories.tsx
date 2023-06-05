@@ -34,6 +34,7 @@ const baseSchema: UenFieldSchema = {
   disabled: false,
   fieldType: BasicField.Uen,
   _id: '611b94dfbb9e300012f702a7',
+  questionNumber: 1,
 }
 
 interface StoryUenFieldProps extends UenFieldProps {

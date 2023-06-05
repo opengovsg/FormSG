@@ -81,16 +81,15 @@ const FormLimitBlock = ({
       <FormLabel
         isRequired
         description="Your form will automatically close once it reaches the set limit. Enable
-        reCaptcha to prevent spam submissions from triggering this limit."
+        reCAPTCHA to prevent spam submissions from triggering this limit."
       >
         Maximum number of responses allowed
       </FormLabel>
       <NumberInput
         maxW="16rem"
         ref={inputRef}
-        // min={currentResponseCount + 1}
         inputMode="numeric"
-        allowMouseWheel
+        showSteppers={false}
         clampValueOnBlur
         precision={0}
         value={value}
@@ -148,7 +147,7 @@ export const FormLimitToggle = (): JSX.Element => {
   ])
 
   return (
-    <Skeleton isLoaded={!isLoadingSettings && !!settings}>
+    <Skeleton isLoaded={!isLoadingSettings && !!settings} mt="2rem">
       <Toggle
         isLoading={mutateFormLimit.isLoading}
         isChecked={isLimit}

@@ -5,7 +5,7 @@ import { Box, Flex, Stack, Text } from '@chakra-ui/react'
 import { AppFooter } from '~/app/AppFooter'
 
 import { useAuth } from '~contexts/AuthContext'
-import { LOGIN_ROUTE, ROOT_ROUTE } from '~constants/routes'
+import { DASHBOARD_ROUTE, LOGIN_ROUTE } from '~constants/routes'
 import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
 import Link from '~components/Link'
@@ -80,7 +80,7 @@ export const AdminForbiddenErrorPage = ({
               <Link
                 variant="standalone"
                 as={ReactLink}
-                to={isAuthenticated ? ROOT_ROUTE : LOGIN_ROUTE}
+                to={isAuthenticated ? DASHBOARD_ROUTE : LOGIN_ROUTE}
               >
                 {isAuthenticated ? 'Go to dashboard' : 'Log in'}
               </Link>

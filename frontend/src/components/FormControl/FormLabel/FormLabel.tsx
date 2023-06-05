@@ -1,5 +1,4 @@
 import { useMemo } from 'react'
-import ReactMarkdown from 'react-markdown'
 import {
   Box,
   FormLabel as ChakraFormLabel,
@@ -7,13 +6,13 @@ import {
   Icon,
   Text,
   TextProps,
-  Tooltip,
   useFormControlContext,
-  VisuallyHidden,
 } from '@chakra-ui/react'
 
 import { BxsHelpCircle } from '~assets/icons/BxsHelpCircle'
 import { useMdComponents } from '~hooks/useMdComponents'
+import { MarkdownText } from '~components/MarkdownText'
+import Tooltip from '~components/Tooltip'
 
 export interface FormLabelProps extends ChakraFormLabelProps {
   /**
@@ -67,9 +66,10 @@ export const FormLabel = ({
       requiredIndicator={<Box />}
       display="flex"
       flexDir="column"
+      overflowWrap="break-word"
       {...labelProps}
     >
-      <Box>
+      <Box overflowWrap="anywhere">
         {questionNumber && (
           <FormLabel.QuestionNumber>{questionNumber}</FormLabel.QuestionNumber>
         )}
@@ -87,7 +87,11 @@ export const FormLabel = ({
         )}
       </Box>
       {description && (
-        <FormLabel.Description useMarkdown={useMarkdownForDescription}>
+        <FormLabel.Description
+          useMarkdown={useMarkdownForDescription}
+          whiteSpace="pre-wrap"
+          overflowWrap="anywhere"
+        >
           {description}
         </FormLabel.Description>
       )}
@@ -143,7 +147,9 @@ const FormLabelDescription = ({
   })
 
   return useMarkdown ? (
-    <ReactMarkdown components={mdComponents}>{children}</ReactMarkdown>
+    <MarkdownText multilineBreaks components={mdComponents}>
+      {children}
+    </MarkdownText>
   ) : (
     <Text {...fieldProps} {...styleProps}>
       {children}
@@ -164,7 +170,6 @@ FormLabel.QuestionNumber = ({ children, ...props }: TextProps): JSX.Element => {
       lineHeight={0}
       {...props}
     >
-      <VisuallyHidden>Question number:</VisuallyHidden>
       {children}
     </Text>
   )

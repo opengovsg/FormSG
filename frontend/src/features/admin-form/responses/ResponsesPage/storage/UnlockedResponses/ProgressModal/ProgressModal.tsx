@@ -18,7 +18,6 @@ import { ProgressModalContent } from './ProgressModalContent'
 export interface ProgressModalProps
   extends Pick<UseDisclosureReturn, 'onClose' | 'isOpen'> {
   downloadPercentage: number
-  isDownloading: boolean
   children: React.ReactNode
   downloadMetadata?: DownloadResult | CanceledResult
   onCancel: () => void
@@ -36,7 +35,6 @@ const INITIAL_STEP_STATE: [ProgressFlowStates, 1 | -1] = [
 
 export const ProgressModal = ({
   isOpen,
-  isDownloading,
   onClose,
   onCancel,
   downloadPercentage,
@@ -70,6 +68,7 @@ export const ProgressModal = ({
       size={modalSize}
       isOpen={isOpen}
       onClose={onClose}
+      closeOnEsc={currentStep !== ProgressFlowStates.Progress}
       closeOnOverlayClick={currentStep !== ProgressFlowStates.Progress}
     >
       <ModalOverlay />
@@ -77,7 +76,6 @@ export const ProgressModal = ({
         <XMotionBox keyProp={currentStep} custom={direction}>
           {currentStep === ProgressFlowStates.Progress && (
             <ProgressModalContent
-              isDownloading={isDownloading}
               onCancel={onCancel}
               children={children}
               downloadPercentage={downloadPercentage}
@@ -86,6 +84,7 @@ export const ProgressModal = ({
           {currentStep === ProgressFlowStates.Complete &&
             !isCanceledResult(downloadMetadata) && (
               <CompleteScreen
+                isWithAttachments={false}
                 downloadMetadata={downloadMetadata}
                 onClose={onClose}
               />

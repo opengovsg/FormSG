@@ -7,6 +7,7 @@ import {
   LogicConditionState,
   LogicIfValue,
   LogicType,
+  PaymentChannel,
   PreventSubmitLogicDto,
   ShowFieldLogicDto,
 } from '~shared/types'
@@ -79,7 +80,7 @@ export const BASE_FORM = {
   form_fields: [
     {
       title: 'Yes/No',
-      description: '',
+      description: 'This is a\n\nmultiline description\r\nanother line',
       required: true,
       disabled: false,
       fieldType: 'yes_no',
@@ -228,7 +229,7 @@ export const BASE_FORM = {
       globalId: 'iJpZkr9GasJrAvQHOYAyRiGRGNhDJAzRw6FwTLaQImS',
     },
     {
-      fieldOptions: ['Option 1'],
+      fieldOptions: ['Option 1', 'Option 2', 'Option 3'],
       title: 'Dropdown',
       description: '',
       required: true,
@@ -248,7 +249,7 @@ export const BASE_FORM = {
     },
     {
       ValidationOptions: { customMax: null, customMin: null },
-      fieldOptions: ['Option 1'],
+      fieldOptions: ['Option 1', 'Option 2', 'Option 3'],
       othersRadioButton: false,
       validateByValue: false,
       title: 'Checkbox',
@@ -260,7 +261,7 @@ export const BASE_FORM = {
       globalId: 'l4gMDfFhA1ITmhUPQCjA05aUAOROUOwlNAjMJMkwmJ7',
     },
     {
-      fieldOptions: ['Option 1'],
+      fieldOptions: ['Option 1', 'Option 2', 'Option 3'],
       othersRadioButton: false,
       title: 'Radio',
       description: '',
@@ -364,6 +365,8 @@ export const BASE_FORM = {
     },
   ],
   form_logics: [],
+  payments_channel: { channel: PaymentChannel.Unconnected },
+  payments_field: { enabled: false },
   hasCaptcha: false,
   startPage: {
     colorTheme: 'blue',
@@ -401,6 +404,8 @@ export const BASE_FORM_WITHOUT_SECTIONS = {
     },
   ],
   form_logics: [],
+  payments_channel: { channel: PaymentChannel.Unconnected },
+  payments_field: { enabled: false },
   hasCaptcha: false,
   startPage: {
     colorTheme: 'blue',

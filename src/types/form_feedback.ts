@@ -1,13 +1,14 @@
 import { Document, Model, QueryCursor } from 'mongoose'
-import { Merge } from 'type-fest'
+import type { Merge } from 'type-fest'
 
 import { FormFeedbackBase } from '../../shared/types'
 
 import { IFormSchema } from './form'
+import { ISubmissionSchema } from './submission'
 
 export type IFormFeedback = Merge<
   FormFeedbackBase,
-  { formId: IFormSchema['_id'] }
+  { formId: IFormSchema['_id']; submissionId: ISubmissionSchema['_id'] }
 >
 export interface IFormFeedbackSchema extends IFormFeedback, Document {
   created?: Date

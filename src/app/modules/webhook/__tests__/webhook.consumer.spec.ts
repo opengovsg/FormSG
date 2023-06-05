@@ -1,14 +1,12 @@
+import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import aws from 'aws-sdk'
 import { ObjectId } from 'bson'
 import { addHours } from 'date-fns'
 import mongoose from 'mongoose'
 import { errAsync, okAsync } from 'neverthrow'
-import { mocked } from 'ts-jest/utils'
 
 import { getEncryptSubmissionModel } from 'src/app/models/submission.server.model'
 import { SubmissionWebhookInfo } from 'src/types'
-
-import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import { WebhookResponse } from '../../../../../shared/types'
 import { createWebhookQueueHandler } from '../webhook.consumer'
@@ -18,7 +16,7 @@ import * as WebhookService from '../webhook.service'
 import { WebhookQueueMessageObject } from '../webhook.types'
 
 jest.mock('../webhook.service')
-const MockWebhookService = mocked(WebhookService, true)
+const MockWebhookService = jest.mocked(WebhookService)
 
 const EncryptSubmissionModel = getEncryptSubmissionModel(mongoose)
 
@@ -41,15 +39,8 @@ const MOCK_WEBHOOK_FAILURE_RESPONSE: WebhookResponse = {
   },
 }
 
-const SUCCESS_PRODUCER = {
-  sendMessage: jest.fn().mockReturnValue(okAsync(true)),
-} as unknown as WebhookProducer
-
-const FAILURE_PRODUCER = {
-  sendMessage: jest
-    .fn()
-    .mockReturnValue(errAsync(new WebhookPushToQueueError())),
-} as unknown as WebhookProducer
+let SUCCESS_PRODUCER: WebhookProducer
+let FAILURE_PRODUCER: WebhookProducer
 
 const VALID_MESSAGE_BODY: WebhookQueueMessageObject = {
   submissionId: new ObjectId().toHexString(),
@@ -77,6 +68,16 @@ describe('webhook.consumer', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     jest.restoreAllMocks()
+
+    SUCCESS_PRODUCER = {
+      sendMessage: jest.fn().mockReturnValue(okAsync(true)),
+    } as unknown as WebhookProducer
+
+    FAILURE_PRODUCER = {
+      sendMessage: jest
+        .fn()
+        .mockReturnValue(errAsync(new WebhookPushToQueueError())),
+    } as unknown as WebhookProducer
   })
   afterAll(async () => await dbHandler.closeDatabase())
 

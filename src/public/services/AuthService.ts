@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { Opaque } from 'type-fest'
+import type { Opaque } from 'type-fest'
 
 import { UserDto } from '../../../shared/types'
 

@@ -24,6 +24,8 @@ export const usePublicFormView = (
     publicFormKeys.id(formId),
     () => getPublicFormView(formId),
     {
+      // Treat form as static on load.
+      staleTime: Infinity,
       enabled: FORMID_REGEX.test(formId) && enabled,
     },
   )

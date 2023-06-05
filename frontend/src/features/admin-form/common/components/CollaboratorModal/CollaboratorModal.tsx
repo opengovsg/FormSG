@@ -13,11 +13,13 @@ import { CollaboratorWizardProvider } from './CollaboratorWizardContext'
 interface CollaboratorModalProps {
   isOpen: boolean
   onClose: () => void
+  formId?: string
 }
 
 export const CollaboratorModal = ({
   isOpen,
   onClose,
+  formId,
 }: CollaboratorModalProps): JSX.Element => {
   const modalSize = useBreakpointValue({
     base: 'mobile',
@@ -33,7 +35,7 @@ export const CollaboratorModal = ({
       >
         <ModalCloseButton />
         {isOpen && (
-          <CollaboratorWizardProvider>
+          <CollaboratorWizardProvider formId={formId ?? ''} onClose={onClose}>
             <CollaboratorModalContent />
           </CollaboratorWizardProvider>
         )}

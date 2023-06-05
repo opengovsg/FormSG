@@ -1,7 +1,7 @@
 import { Outlet } from 'react-router-dom'
 import { Flex } from '@chakra-ui/react'
 
-import FormResultsNavbar from './components/FormResultsNavbar'
+import { FormResultsNavbar } from './components/FormResultsNavbar'
 
 /**
  * Page for rendering subroutes via `Outlet` component for admin form result pages.

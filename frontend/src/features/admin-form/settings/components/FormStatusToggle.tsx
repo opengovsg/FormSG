@@ -31,7 +31,10 @@ export const FormStatusToggle = (): JSX.Element => {
       // But only if form is not already public
       // (so admin can toggle to private mode when that happens somehow).
       status === FormStatus.Private &&
-      authType !== FormAuthType.NIL &&
+      authType &&
+      [FormAuthType.CP, FormAuthType.SP, FormAuthType.MyInfo].includes(
+        authType,
+      ) &&
       !esrvcId,
     [authType, esrvcId, status],
   )

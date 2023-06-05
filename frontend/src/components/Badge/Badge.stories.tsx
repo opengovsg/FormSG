@@ -7,7 +7,7 @@ export default {
   title: 'Components/Badge',
   component: Badge,
   decorators: [],
-} as Meta
+} as Meta<BadgeProps>
 
 const Template: Story<BadgeProps> = (args) => <Badge {...args} />
 

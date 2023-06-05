@@ -1,3 +1,9 @@
+import { generateSingleAnswerFormData } from '__tests__/unit/backend/helpers/generate-email-data'
+import {
+  generateNewAttachmentResponse,
+  generateNewSingleAnswerResponse,
+} from '__tests__/unit/backend/helpers/generate-form-data'
+import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { ObjectId } from 'bson'
 import crypto from 'crypto'
 import { readFileSync } from 'fs'
@@ -12,16 +18,10 @@ import {
   IPopulatedEmailForm,
 } from 'src/types'
 
-import { generateSingleAnswerFormData } from 'tests/unit/backend/helpers/generate-email-data'
-import {
-  generateNewAttachmentResponse,
-  generateNewSingleAnswerResponse,
-} from 'tests/unit/backend/helpers/generate-form-data'
-import dbHandler from 'tests/unit/backend/helpers/jest-db'
-
 import {
   BasicField,
   FormAuthType,
+  ResponseMetadata,
   SubmissionType,
 } from '../../../../../../shared/types'
 import { ProcessedSingleAnswerResponse } from '../../submission.types'
@@ -107,7 +107,7 @@ describe('email-submission.service', () => {
 
     it('should reject submissions when file types are invalid', async () => {
       const processedResponse1 = generateNewAttachmentResponse({
-        content: readFileSync('./tests/unit/backend/resources/invalid.py'),
+        content: readFileSync('./__tests__/unit/backend/resources/invalid.py'),
         filename: 'invalid.py',
       })
 
@@ -126,7 +126,7 @@ describe('email-submission.service', () => {
     it('should reject submissions when there are invalid file types in zip', async () => {
       const processedResponse1 = generateNewAttachmentResponse({
         content: readFileSync(
-          './tests/unit/backend/resources/nestedInvalid.zip',
+          './__tests__/unit/backend/resources/nestedInvalid.zip',
         ),
         filename: 'nestedInvalid.zip',
       })
@@ -145,7 +145,7 @@ describe('email-submission.service', () => {
 
     it('should accept submissions when file types are valid', async () => {
       const processedResponse1 = generateNewAttachmentResponse({
-        content: readFileSync('./tests/unit/backend/resources/govtech.jpg'),
+        content: readFileSync('./__tests__/unit/backend/resources/govtech.jpg'),
         filename: 'govtech.jpg',
       })
 
@@ -163,7 +163,9 @@ describe('email-submission.service', () => {
 
     it('should accept submissions when file types in zip are valid', async () => {
       const processedResponse1 = generateNewAttachmentResponse({
-        content: readFileSync('./tests/unit/backend/resources/nestedValid.zip'),
+        content: readFileSync(
+          './__tests__/unit/backend/resources/nestedValid.zip',
+        ),
         filename: 'nestedValid.zip',
       })
 
@@ -329,6 +331,10 @@ describe('email-submission.service', () => {
       getUniqueMyInfoAttrs: () => MYINFO_ATTRS,
       emails: ['a@abc.com', 'b@cde.com'],
     } as IEmailFormSchema
+    const MOCK_RESPONSE_METADATA = {
+      responseTimeMs: 1000,
+      numVisibleFields: 3,
+    } as ResponseMetadata
 
     it('should create an email submission with the correct parameters', async () => {
       const mockSubmission = 'mockSubmission'
@@ -340,6 +346,7 @@ describe('email-submission.service', () => {
       const result = await EmailSubmissionService.saveSubmissionMetadata(
         MOCK_EMAIL_FORM as IPopulatedEmailForm,
         { hash: MOCK_HASH.toString(), salt: MOCK_SALT.toString() },
+        MOCK_RESPONSE_METADATA,
       )
       expect(createEmailSubmissionSpy).toHaveBeenCalledWith({
         form: MOCK_EMAIL_FORM._id,
@@ -349,6 +356,7 @@ describe('email-submission.service', () => {
         responseHash: MOCK_HASH.toString(),
         responseSalt: MOCK_SALT.toString(),
         submissionType: SubmissionType.Email,
+        responseMetadata: MOCK_RESPONSE_METADATA,
       })
       expect(result._unsafeUnwrap()).toEqual(mockSubmission)
     })

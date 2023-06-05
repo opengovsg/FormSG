@@ -25,13 +25,12 @@ Default.args = {
     buttonText: 'Continue',
     title:
       'Thank you for your submission with some super long backstory about how important the submission is to them',
-    paragraph: 'We will get back to you shortly.',
+    paragraph: 'We will get back to you shortly.\n\nOnce again,\r\nthank you.',
   },
   submissionData: {
     id: 'mockSubmissionId',
-    timeInEpochMs: 1648545566989,
+    timestamp: 1648545566989,
   },
-  formTitle: 'Test Form',
   handleSubmitFeedback: (inputs) => console.log(inputs),
 }
 

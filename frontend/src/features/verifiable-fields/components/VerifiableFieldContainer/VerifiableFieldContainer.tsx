@@ -1,8 +1,9 @@
+import { useMemo } from 'react'
 import { BiCheck } from 'react-icons/bi'
 import { Box, Stack } from '@chakra-ui/react'
 
 import { FormColorTheme } from '~shared/types'
-import { FormFieldWithId } from '~shared/types/field'
+import { BasicField, FormFieldWithId } from '~shared/types/field'
 
 import Button from '~components/Button'
 import { BaseFieldProps, FieldContainer } from '~templates/Field/FieldContainer'
@@ -30,12 +31,26 @@ export const VerifiableFieldContainer = ({
 }: VerifiableFieldContainerProps): JSX.Element => {
   const {
     isVfnBoxOpen,
+    otpPrefix,
     handleVfnButtonClick,
     hasSignature,
     handleVerifyOtp,
     handleResendOtp,
     isSendingOtp,
   } = useVerifiableField()
+
+  const verifyButtonAriaLabel: string = useMemo(() => {
+    switch (schema.fieldType) {
+      case BasicField.Email:
+        return hasSignature
+          ? 'Given email address is verified'
+          : 'Verify email address'
+      case BasicField.Mobile:
+        return hasSignature
+          ? 'Given mobile number is verified'
+          : 'Verify mobile number'
+    }
+  }, [hasSignature, schema.fieldType])
 
   return (
     <Box>
@@ -47,6 +62,7 @@ export const VerifiableFieldContainer = ({
               // Bad a11y to disable buttons since screen readers act as if buttons
               // are removed from DOM if the button is disabled.
               // Instead, we allow users to click the button to trigger verification
+              name={`${schema._id}-verify`}
               isDisabled={isVfnBoxOpen || hasSignature}
               isLoading={isSendingOtp}
               onClick={handleVfnButtonClick}
@@ -54,6 +70,7 @@ export const VerifiableFieldContainer = ({
               leftIcon={
                 hasSignature ? <BiCheck fontSize="1.5rem" /> : undefined
               }
+              aria-label={verifyButtonAriaLabel}
             >
               {hasSignature ? 'Verified' : 'Verify'}
             </Button>
@@ -65,6 +82,7 @@ export const VerifiableFieldContainer = ({
           handleVerifyOtp={handleVerifyOtp}
           handleResendOtp={handleResendOtp}
           fieldType={schema.fieldType}
+          otpPrefix={otpPrefix}
         />
       )}
     </Box>

@@ -1,7 +1,20 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
+import {
+  createAuthedSession,
+  logoutSession,
+} from '__tests__/integration/helpers/express-auth'
+import { setupApp } from '__tests__/integration/helpers/express-setup'
+import { buildCelebrateError } from '__tests__/unit/backend/helpers/celebrate'
+import {
+  generateDefaultField,
+  generateUnprocessedSingleAnswerResponse,
+} from '__tests__/unit/backend/helpers/generate-form-data'
+import dbHandler from '__tests__/unit/backend/helpers/jest-db'
+import { jsonParseStringify } from '__tests__/unit/backend/helpers/serialize-data'
 import { ObjectId } from 'bson-ext'
 import { format, subDays } from 'date-fns'
 import { cloneDeep, omit, times } from 'lodash'
+import { ObjectID } from 'mongodb'
 import mongoose from 'mongoose'
 import { errAsync, okAsync } from 'neverthrow'
 import SparkMD5 from 'spark-md5'
@@ -48,19 +61,6 @@ import {
 } from 'src/types'
 import { EncryptFormFieldResponse, EncryptSubmissionDto } from 'src/types/api'
 
-import {
-  createAuthedSession,
-  logoutSession,
-} from 'tests/integration/helpers/express-auth'
-import { setupApp } from 'tests/integration/helpers/express-setup'
-import { buildCelebrateError } from 'tests/unit/backend/helpers/celebrate'
-import {
-  generateDefaultField,
-  generateUnprocessedSingleAnswerResponse,
-} from 'tests/unit/backend/helpers/generate-form-data'
-import dbHandler from 'tests/unit/backend/helpers/jest-db'
-import { jsonParseStringify } from 'tests/unit/backend/helpers/serialize-data'
-
 import { VALID_UPLOAD_FILE_TYPES } from '../../../../../../shared/constants/file'
 import {
   BasicField,
@@ -81,7 +81,7 @@ jest.mock('nodemailer', () => ({
 }))
 
 // Avoid async refresh calls
-jest.mock('src/app/modules/spcp/sp.oidc.client.ts')
+jest.mock('src/app/modules/spcp/spcp.oidc.client.ts')
 
 const UserModel = getUserModel(mongoose)
 const FormModel = getFormModel(mongoose)
@@ -1222,7 +1222,7 @@ describe('admin-form.routes', () => {
           emails: defaultUser.email,
           responseMode: 'email',
           title: 'email mode form test should fail',
-          permissionList: [{ email: 'invalidEmailDomain@example.com' }],
+          permissionList: [{ email: 'not a valid email' }],
         },
       }
 
@@ -2245,7 +2245,7 @@ describe('admin-form.routes', () => {
 
     it('should return 400 when the new owner is not in the database', async () => {
       // Arrange
-      const emailNotInDb = 'notInDb@example.com'
+      const emailNotInDb = 'notindb@example.com'
       const formToTransfer = await EncryptFormModel.create({
         title: 'Original form title',
         admin: defaultUser._id,
@@ -3128,8 +3128,18 @@ describe('admin-form.routes', () => {
     it('should return 200 with form feedback meta when feedback exists', async () => {
       // Arrange
       const formFeedbacks = [
-        { formId: formForFeedback._id, rating: 5, comment: 'nice' },
-        { formId: formForFeedback._id, rating: 2, comment: 'not nice' },
+        {
+          formId: formForFeedback._id,
+          rating: 5,
+          comment: 'nice',
+          submissionId: new ObjectID().toHexString(),
+        },
+        {
+          formId: formForFeedback._id,
+          rating: 2,
+          comment: 'not nice',
+          submissionId: new ObjectID().toHexString(),
+        },
       ]
       await insertFormFeedback(formFeedbacks[0])
       await insertFormFeedback(formFeedbacks[1])
@@ -3308,8 +3318,18 @@ describe('admin-form.routes', () => {
     it('should return 200 with feedback count when feedback exists', async () => {
       // Arrange
       const formFeedbacks = [
-        { formId: formForFeedback._id, rating: 5, comment: 'nice' },
-        { formId: formForFeedback._id, rating: 2, comment: 'not nice' },
+        {
+          formId: formForFeedback._id,
+          rating: 5,
+          comment: 'nice',
+          submissionId: new ObjectID().toHexString(),
+        },
+        {
+          formId: formForFeedback._id,
+          rating: 2,
+          comment: 'not nice',
+          submissionId: new ObjectID().toHexString(),
+        },
       ]
       await insertFormFeedback(formFeedbacks[0])
       await insertFormFeedback(formFeedbacks[1])
@@ -3452,8 +3472,18 @@ describe('admin-form.routes', () => {
     it('should return 200 with feedback stream when feedbacks exist', async () => {
       // Arrange
       const formFeedbacks = [
-        { formId: formForFeedback._id, rating: 5, comment: 'nice' },
-        { formId: formForFeedback._id, rating: 2, comment: 'not nice' },
+        {
+          formId: formForFeedback._id,
+          rating: 5,
+          comment: 'nice',
+          submissionId: new ObjectID().toHexString(),
+        },
+        {
+          formId: formForFeedback._id,
+          rating: 2,
+          comment: 'not nice',
+          submissionId: new ObjectID().toHexString(),
+        },
       ]
       await insertFormFeedback(formFeedbacks[0])
       await insertFormFeedback(formFeedbacks[1])

@@ -1,24 +1,28 @@
-import MyInfoClient, { IMyInfoConfig } from '@opengovsg/myinfo-gov-client'
-import SPCPAuthClient from '@opengovsg/spcp-auth-client'
+import { setupApp } from '__tests__/integration/helpers/express-setup'
+import dbHandler from '__tests__/unit/backend/helpers/jest-db'
+import jwt from 'jsonwebtoken'
 import { omit } from 'lodash'
 import mongoose from 'mongoose'
+import { err, ok } from 'neverthrow'
 import session, { Session } from 'supertest-session'
-import { mocked } from 'ts-jest/utils'
 
-import {
-  MOCK_COOKIE_AGE,
-  MOCK_UINFIN,
-} from 'src/app/modules/myinfo/__tests__/myinfo.test.constants'
-import { MyInfoCookieState } from 'src/app/modules/myinfo/myinfo.types'
-import getMyInfoHashModel from 'src/app/modules/myinfo/myinfo_hash.model'
 import { FormFieldSchema } from 'src/types'
 
-import { setupApp } from 'tests/integration/helpers/express-setup'
-import dbHandler from 'tests/unit/backend/helpers/jest-db'
-
 import { FormAuthType, FormStatus } from '../../../../../../shared/types'
-import { MYINFO_COOKIE_NAME } from '../../../myinfo/myinfo.constants'
-import { SpOidcClient } from '../../../spcp/sp.oidc.client'
+import {
+  MOCK_COOKIE_AGE,
+  MOCK_MYINFO_JWT,
+  MOCK_UINFIN,
+} from '../../../myinfo/__tests__/myinfo.test.constants'
+import { MYINFO_LOGIN_COOKIE_NAME } from '../../../myinfo/myinfo.constants'
+import getMyInfoHashModel from '../../../myinfo/myinfo_hash.model'
+import { SGID_COOKIE_NAME } from '../../../sgid/sgid.constants'
+import {
+  SgidInvalidJwtError,
+  SgidMissingJwtError,
+} from '../../../sgid/sgid.errors'
+import { SgidService } from '../../../sgid/sgid.service'
+import { CpOidcClient, SpOidcClient } from '../../../spcp/spcp.oidc.client'
 // Import last so mocks are imported correctly
 // eslint-disable-next-line import/first
 import { EmailSubmissionRouter } from '../email-submission.routes'
@@ -38,11 +42,12 @@ import {
 } from './email-submission.test.constants'
 
 const MyInfoHashModel = getMyInfoHashModel(mongoose)
+jest.mock('../../../sgid/sgid.service')
 
-jest.mock('@opengovsg/spcp-auth-client')
-const MockAuthClient = mocked(SPCPAuthClient, true)
+const MockSgidService = jest.mocked(SgidService)
+const MockCpOidcClient = jest.mocked(CpOidcClient)
 
-jest.mock('../../../spcp/sp.oidc.client')
+jest.mock('../../../spcp/spcp.oidc.client')
 
 jest.mock('nodemailer', () => ({
   createTransport: jest.fn().mockReturnValue({
@@ -62,11 +67,6 @@ jest.mock('@opengovsg/myinfo-gov-client', () => ({
     .MyInfoAttribute,
 }))
 
-const MockMyInfoGovClient = mocked(
-  new MyInfoClient.MyInfoGovClient({} as IMyInfoConfig),
-  true,
-)
-
 const SUBMISSIONS_ENDPT_BASE = '/v2/submissions/email'
 
 const EmailSubmissionsApp = setupApp(
@@ -77,7 +77,7 @@ const EmailSubmissionsApp = setupApp(
 describe('email-submission.routes', () => {
   let request: Session
 
-  const mockCpClient = mocked(MockAuthClient.mock.instances[1], true)
+  const mockCpClient = jest.mocked(MockCpOidcClient.mock.instances[0])
 
   beforeAll(async () => await dbHandler.connect())
   beforeEach(() => {
@@ -114,6 +114,7 @@ describe('email-submission.routes', () => {
       expect(response.body).toEqual({
         message: 'Form submission successful.',
         submissionId: expect.any(String),
+        timestamp: expect.any(Number),
       })
     })
 
@@ -142,6 +143,7 @@ describe('email-submission.routes', () => {
       expect(response.body).toEqual({
         message: 'Form submission successful.',
         submissionId: expect.any(String),
+        timestamp: expect.any(Number),
       })
     })
 
@@ -173,6 +175,7 @@ describe('email-submission.routes', () => {
       expect(response.body).toEqual({
         message: 'Form submission successful.',
         submissionId: expect.any(String),
+        timestamp: expect.any(Number),
       })
     })
 
@@ -199,6 +202,7 @@ describe('email-submission.routes', () => {
       expect(response.body).toEqual({
         message: 'Form submission successful.',
         submissionId: expect.any(String),
+        timestamp: expect.any(Number),
       })
     })
 
@@ -225,6 +229,7 @@ describe('email-submission.routes', () => {
       expect(response.body).toEqual({
         message: 'Form submission successful.',
         submissionId: expect.any(String),
+        timestamp: expect.any(Number),
       })
     })
 
@@ -251,6 +256,7 @@ describe('email-submission.routes', () => {
       expect(response.body).toEqual({
         message: 'Form submission successful.',
         submissionId: expect.any(String),
+        timestamp: expect.any(Number),
       })
     })
 
@@ -429,7 +435,7 @@ describe('email-submission.routes', () => {
     })
   })
 
-  describe('SP, CP and MyInfo authentication', () => {
+  describe('SP, CP, SGID and MyInfo authentication', () => {
     describe('SingPass', () => {
       it('should return 200 when submission is valid', async () => {
         jest.spyOn(SpOidcClient.prototype, 'verifyJwt').mockResolvedValueOnce({
@@ -455,6 +461,7 @@ describe('email-submission.routes', () => {
         expect(response.body).toEqual({
           message: 'Form submission successful.',
           submissionId: expect.any(String),
+          timestamp: expect.any(Number),
         })
       })
 
@@ -567,8 +574,14 @@ describe('email-submission.routes', () => {
     })
 
     describe('MyInfo', () => {
+      afterEach(() => jest.restoreAllMocks())
+
       it('should return 200 when submission is valid', async () => {
-        MockMyInfoGovClient.extractUinFin.mockReturnValueOnce(MOCK_UINFIN)
+        // Arrange
+        // Ignore TS errors as .verify has multiple overloads
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        jest.spyOn(jwt, 'verify').mockReturnValueOnce({ uinFin: MOCK_UINFIN })
         const { form } = await dbHandler.insertEmailForm({
           formOptions: {
             esrvcId: 'mockEsrvcId',
@@ -583,11 +596,6 @@ describe('email-submission.routes', () => {
           {},
           MOCK_COOKIE_AGE,
         )
-        const cookie = JSON.stringify({
-          accessToken: 'mockAccessToken',
-          usedCount: 0,
-          state: MyInfoCookieState.Success,
-        })
 
         const response = await request
           .post(`${SUBMISSIONS_ENDPT_BASE}/${form._id}`)
@@ -595,13 +603,14 @@ describe('email-submission.routes', () => {
           .query({ captchaResponse: 'null' })
           .set('Cookie', [
             // The j: indicates that the cookie is in JSON
-            `${MYINFO_COOKIE_NAME}=j:${encodeURIComponent(cookie)}`,
+            `${MYINFO_LOGIN_COOKIE_NAME}=${MOCK_MYINFO_JWT}`,
           ])
 
         expect(response.status).toBe(200)
         expect(response.body).toEqual({
           message: 'Form submission successful.',
           submissionId: expect.any(String),
+          timestamp: expect.any(Number),
         })
       })
 
@@ -655,8 +664,7 @@ describe('email-submission.routes', () => {
       })
 
       it('should return 401 when submission has invalid cookie', async () => {
-        // Mock MyInfoGovClient to return error when decoding JWT
-        MockMyInfoGovClient.extractUinFin.mockImplementationOnce(() => {
+        jest.spyOn(jwt, 'verify').mockImplementationOnce(() => {
           throw new Error()
         })
         const { form } = await dbHandler.insertEmailForm({
@@ -667,11 +675,6 @@ describe('email-submission.routes', () => {
             status: FormStatus.Public,
           },
         })
-        const cookie = JSON.stringify({
-          accessToken: 'mockAccessToken',
-          usedCount: 0,
-          state: MyInfoCookieState.Success,
-        })
 
         const response = await request
           .post(`${SUBMISSIONS_ENDPT_BASE}/${form._id}`)
@@ -679,7 +682,7 @@ describe('email-submission.routes', () => {
           .query({ captchaResponse: 'null' })
           .set('Cookie', [
             // The j: indicates that the cookie is in JSON
-            `${MYINFO_COOKIE_NAME}=j:${encodeURIComponent(cookie)}`,
+            `${MYINFO_LOGIN_COOKIE_NAME}=${MOCK_MYINFO_JWT}`,
           ])
 
         expect(response.status).toBe(401)
@@ -691,19 +694,16 @@ describe('email-submission.routes', () => {
       })
 
       it('should return 401 when submission has cookie with the wrong shape', async () => {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        jest.spyOn(jwt, 'verify').mockReturnValueOnce({ someKey: 'someValue' })
         const { form } = await dbHandler.insertEmailForm({
           formOptions: {
             esrvcId: 'mockEsrvcId',
-            authType: FormAuthType.SP,
+            authType: FormAuthType.MyInfo,
             hasCaptcha: false,
             status: FormStatus.Public,
           },
-        })
-        const cookie = JSON.stringify({
-          accessToken: 'mockAccessToken',
-          usedCount: 0,
-          // Note that state is set to Error instead of Success
-          state: MyInfoCookieState.Error,
         })
 
         const response = await request
@@ -712,7 +712,7 @@ describe('email-submission.routes', () => {
           .query({ captchaResponse: 'null' })
           .set('Cookie', [
             // The j: indicates that the cookie is in JSON
-            `${MYINFO_COOKIE_NAME}=j:${encodeURIComponent(cookie)}`,
+            `${MYINFO_LOGIN_COOKIE_NAME}=${MOCK_MYINFO_JWT}`,
           ])
 
         expect(response.status).toBe(401)
@@ -726,12 +726,10 @@ describe('email-submission.routes', () => {
 
     describe('CorpPass', () => {
       it('should return 200 when submission is valid', async () => {
-        mockCpClient.verifyJWT.mockImplementationOnce((_jwt, cb) =>
-          cb(null, {
-            userName: 'S1234567A',
-            userInfo: 'MyCorpPassUEN',
-          }),
-        )
+        mockCpClient.verifyJwt.mockResolvedValueOnce({
+          userName: 'S1234567A',
+          userInfo: 'MyCorpPassUEN',
+        })
         const { form } = await dbHandler.insertEmailForm({
           formOptions: {
             esrvcId: 'mockEsrvcId',
@@ -751,6 +749,7 @@ describe('email-submission.routes', () => {
         expect(response.body).toEqual({
           message: 'Form submission successful.',
           submissionId: expect.any(String),
+          timestamp: expect.any(Number),
         })
       })
 
@@ -805,9 +804,8 @@ describe('email-submission.routes', () => {
 
       it('should return 401 when submission has invalid JWT', async () => {
         // Mock auth client to return error when decoding JWT
-        mockCpClient.verifyJWT.mockImplementationOnce((_jwt, cb) =>
-          cb(new Error()),
-        )
+        mockCpClient.verifyJwt.mockRejectedValueOnce(new Error())
+
         const { form } = await dbHandler.insertEmailForm({
           formOptions: {
             esrvcId: 'mockEsrvcId',
@@ -833,11 +831,9 @@ describe('email-submission.routes', () => {
 
       it('should return 401 when submission has JWT with the wrong shape', async () => {
         // Mock auth client to return wrong decoded JWT shape
-        mockCpClient.verifyJWT.mockImplementationOnce((_jwt, cb) =>
-          cb(null, {
-            wrongKey: 'S1234567A',
-          }),
-        )
+        mockCpClient.verifyJwt.mockResolvedValueOnce({
+          wrongKey: 'S1234567A',
+        })
         const { form } = await dbHandler.insertEmailForm({
           formOptions: {
             esrvcId: 'mockEsrvcId',
@@ -852,6 +848,154 @@ describe('email-submission.routes', () => {
           .field('body', JSON.stringify(MOCK_NO_RESPONSES_BODY))
           .query({ captchaResponse: 'null' })
           .set('Cookie', ['jwtCp=mockJwt'])
+
+        expect(response.status).toBe(401)
+        expect(response.body).toEqual({
+          message:
+            'Something went wrong with your login. Please try logging in and submitting again.',
+          spcpSubmissionFailure: true,
+        })
+      })
+    })
+
+    describe('SGID', () => {
+      it('should return 200 when submission is valid', async () => {
+        MockSgidService.extractSgidJwtPayload.mockReturnValueOnce(
+          ok({
+            userName: 'S1234567A',
+          }),
+        )
+        const { form } = await dbHandler.insertEmailForm({
+          formOptions: {
+            esrvcId: 'mockEsrvcId',
+            authType: FormAuthType.SGID,
+            hasCaptcha: false,
+            status: FormStatus.Public,
+          },
+        })
+
+        const response = await request
+          .post(`${SUBMISSIONS_ENDPT_BASE}/${form._id}`)
+          .field('body', JSON.stringify(MOCK_NO_RESPONSES_BODY))
+          .query({ captchaResponse: 'null' })
+          .set('Cookie', [`${SGID_COOKIE_NAME}=mockJwt`])
+
+        expect(response.status).toBe(200)
+        expect(response.body).toEqual({
+          message: 'Form submission successful.',
+          submissionId: expect.any(String),
+          timestamp: expect.any(Number),
+        })
+      })
+
+      it('should return 401 when submission does not have JWT', async () => {
+        MockSgidService.extractSgidJwtPayload.mockReturnValueOnce(
+          err(new SgidMissingJwtError()),
+        )
+        const { form } = await dbHandler.insertEmailForm({
+          formOptions: {
+            esrvcId: 'mockEsrvcId',
+            authType: FormAuthType.SGID,
+            hasCaptcha: false,
+            status: FormStatus.Public,
+          },
+        })
+
+        const response = await request
+          .post(`${SUBMISSIONS_ENDPT_BASE}/${form._id}`)
+          .field('body', JSON.stringify(MOCK_NO_RESPONSES_BODY))
+          .query({ captchaResponse: 'null' })
+        // Note cookie is not set
+
+        expect(response.status).toBe(401)
+        expect(response.body).toEqual({
+          message:
+            'Something went wrong with your login. Please try logging in and submitting again.',
+          spcpSubmissionFailure: true,
+        })
+        // Should be undefined, since there was no SGID cookie
+        expect(MockSgidService.extractSgidJwtPayload).toHaveBeenLastCalledWith(
+          undefined,
+        )
+      })
+
+      it('should return 401 when submission has the wrong JWT type', async () => {
+        MockSgidService.extractSgidJwtPayload.mockReturnValueOnce(
+          err(new SgidMissingJwtError()),
+        )
+        const { form } = await dbHandler.insertEmailForm({
+          formOptions: {
+            esrvcId: 'mockEsrvcId',
+            authType: FormAuthType.SGID,
+            hasCaptcha: false,
+            status: FormStatus.Public,
+          },
+        })
+
+        const response = await request
+          .post(`${SUBMISSIONS_ENDPT_BASE}/${form._id}`)
+          .field('body', JSON.stringify(MOCK_NO_RESPONSES_BODY))
+          .query({ captchaResponse: 'null' })
+          // Note cookie is for SingPass, not SGID
+          .set('Cookie', ['jwtSp=mockJwt'])
+
+        expect(response.status).toBe(401)
+        expect(response.body).toEqual({
+          message:
+            'Something went wrong with your login. Please try logging in and submitting again.',
+          spcpSubmissionFailure: true,
+        })
+        // Should be undefined, since there was no SGID cookie
+        expect(MockSgidService.extractSgidJwtPayload).toHaveBeenLastCalledWith(
+          undefined,
+        )
+      })
+
+      it('should return 401 when submission has invalid JWT', async () => {
+        MockSgidService.extractSgidJwtPayload.mockReturnValueOnce(
+          err(new SgidInvalidJwtError()),
+        )
+        const { form } = await dbHandler.insertEmailForm({
+          formOptions: {
+            esrvcId: 'mockEsrvcId',
+            authType: FormAuthType.SGID,
+            hasCaptcha: false,
+            status: FormStatus.Public,
+          },
+        })
+
+        const response = await request
+          .post(`${SUBMISSIONS_ENDPT_BASE}/${form._id}`)
+          .field('body', JSON.stringify(MOCK_NO_RESPONSES_BODY))
+          .query({ captchaResponse: 'null' })
+          .set('Cookie', [`${SGID_COOKIE_NAME}=mockJwt`])
+
+        expect(response.status).toBe(401)
+        expect(response.body).toEqual({
+          message:
+            'Something went wrong with your login. Please try logging in and submitting again.',
+          spcpSubmissionFailure: true,
+        })
+      })
+
+      it('should return 401 when submission has JWT with the wrong shape', async () => {
+        MockSgidService.extractSgidJwtPayload.mockReturnValueOnce(
+          err(new SgidInvalidJwtError()),
+        )
+        const { form } = await dbHandler.insertEmailForm({
+          formOptions: {
+            esrvcId: 'mockEsrvcId',
+            authType: FormAuthType.SGID,
+            hasCaptcha: false,
+            status: FormStatus.Public,
+          },
+        })
+
+        const response = await request
+          .post(`${SUBMISSIONS_ENDPT_BASE}/${form._id}`)
+          .field('body', JSON.stringify(MOCK_NO_RESPONSES_BODY))
+          .query({ captchaResponse: 'null' })
+          .set('Cookie', [`${SGID_COOKIE_NAME}=mockJwt`])
 
         expect(response.status).toBe(401)
         expect(response.body).toEqual({

@@ -1,5 +1,9 @@
 import { cloneDeep } from 'lodash'
 
+import { SubmissionPaymentDto } from '~shared/types'
+
+import { getPaymentDataView } from '~features/admin-form/responses/common/utils/getPaymentDataView'
+
 import {
   CsvRecordData,
   CsvRecordStatus,
@@ -26,6 +30,9 @@ export class CsvRecord {
     public id: string,
     public created: string,
     public status: CsvRecordStatus,
+    public form: string,
+    public hostOrigin: string,
+    public paymentData?: SubmissionPaymentDto,
   ) {
     this.#statusMessage = status
     this.#record = []
@@ -60,6 +67,34 @@ export class CsvRecord {
     this.#record = record
   }
 
+  // Function mapping payment data keys to ids. This is necessary to maintain
+  // static mapping from keys to IDs which is important for the csv generator to
+  // put the correct values in the correct columns.
+  private paymentDataKeyToId(key: keyof SubmissionPaymentDto): string {
+    switch (key) {
+      case 'id':
+        return '000000000000000000000001'
+      case 'amount':
+        return '000000000000000000000002'
+      case 'email':
+        return '000000000000000000000003'
+      case 'status':
+        return '000000000000000000000004'
+      case 'paymentDate':
+        return '000000000000000000000005'
+      case 'paymentIntentId':
+        return '000000000000000000000006'
+      case 'transactionFee':
+        return '000000000000000000000007'
+      case 'receiptUrl':
+        return '000000000000000000000008'
+      case 'payoutId':
+        return '000000000000000000000009'
+      case 'payoutDate':
+        return '00000000000000000000000a'
+    }
+  }
+
   /**
    * Materializes the `submissionData` field
    *
@@ -80,6 +115,19 @@ export class CsvRecord {
     }
     const output = cloneDeep(this.#record)
     output.unshift(downloadStatus)
+
+    // Inject the payment details into the csv
+    if (this.paymentData) {
+      getPaymentDataView(this.hostOrigin, this.paymentData, this.form).forEach(
+        ({ key, name, value }) =>
+          output.push({
+            _id: this.paymentDataKeyToId(key),
+            fieldType: 'textfield',
+            question: name,
+            answer: value,
+          }),
+      )
+    }
 
     this.submissionData = {
       created: this.created,

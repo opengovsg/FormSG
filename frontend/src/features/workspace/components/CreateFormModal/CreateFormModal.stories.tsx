@@ -1,8 +1,13 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { useCallback } from 'react'
+import { SyntheticEvent, useCallback, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { MemoryRouter } from 'react-router-dom'
-import { Modal, ModalContent, useDisclosure } from '@chakra-ui/react'
+import {
+  Modal,
+  ModalContent,
+  useClipboard,
+  useDisclosure,
+} from '@chakra-ui/react'
 import { Meta, Story } from '@storybook/react'
 
 import { userHandlers } from '~/mocks/msw/handlers/user'
@@ -12,10 +17,8 @@ import { ModalCloseButton } from '~components/Modal'
 
 import { SaveSecretKeyScreen } from './CreateFormModalContent/SaveSecretKeyScreen'
 import { CreateFormModal, CreateFormModalProps } from './CreateFormModal'
-import {
-  CreateFormWizardInputProps,
-  CreateFormWizardProvider,
-} from './CreateFormWizardContext'
+import { CreateFormWizardInputProps } from './CreateFormWizardContext'
+import { CreateFormWizardProvider } from './CreateFormWizardProvider'
 
 export default {
   title: 'Pages/WorkspacePage/CreateFormModal',
@@ -48,20 +51,35 @@ export const Default = Template.bind({})
 
 export const StorageModeAckScreen = () => {
   const { register } = useForm<CreateFormWizardInputProps>()
+
+  const secretKey = 'mock-secret-key'
+
+  const { hasCopied: hasCopiedKey, onCopy } = useClipboard(secretKey)
+  const handleCopyKey = useCallback(
+    (e?: SyntheticEvent) => {
+      e?.preventDefault()
+      e?.stopPropagation()
+      onCopy()
+    },
+    [onCopy],
+  )
+
   const mockHook = useCallback(() => {
     return {
       isLoading: false,
-      hasActioned: false,
-      hasCopiedKey: false,
-      handleCopyKey: () => console.log('copy key'),
+      isSubmitEnabled: false,
+      hasDownloaded: false,
+      hasCopiedKey,
+      handleCopyKey,
       handleDownloadKey: () => console.log('download key'),
       handleEmailKey: () => console.log('email key'),
+      mailToHref: 'mailto:?subject=&body=',
       handleCreateStorageModeForm: () =>
         Promise.resolve(console.log('create storage mode form')),
-      secretKey: 'mock-secret-key',
+      secretKey,
       register,
     }
-  }, [register])
+  }, [handleCopyKey, hasCopiedKey, register])
 
   return (
     <Modal isOpen onClose={() => console.log('close modal')} size="full">

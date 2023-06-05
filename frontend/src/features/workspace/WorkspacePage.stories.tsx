@@ -8,11 +8,13 @@ import {
   FormStatus,
 } from '~shared/types/form/form'
 
+import { getUser, MOCK_USER } from '~/mocks/msw/handlers/user'
 import { getWorkspaces } from '~/mocks/msw/handlers/workspace'
 
-import { ROOT_ROUTE } from '~constants/routes'
+import { DASHBOARD_ROUTE } from '~constants/routes'
 import {
   getMobileViewParameters,
+  LoggedInDecorator,
   mockDateDecorator,
   StoryRouter,
   ViewedEmergencyContactDecorator,
@@ -59,12 +61,13 @@ export default {
   component: WorkspacePage,
   decorators: [
     ViewedRolloutDecorator,
-    ViewedEmergencyContactDecorator,
     StoryRouter({
-      initialEntries: [ROOT_ROUTE],
-      path: ROOT_ROUTE,
+      initialEntries: [DASHBOARD_ROUTE],
+      path: DASHBOARD_ROUTE,
     }),
     mockDateDecorator,
+    LoggedInDecorator,
+    ViewedEmergencyContactDecorator,
   ],
   parameters: {
     layout: 'fullscreen',
@@ -79,6 +82,13 @@ export default {
         },
       ),
       getWorkspaces(),
+      getUser({
+        delay: 0,
+        mockUser: {
+          ...MOCK_USER,
+          email: 'super_super_super_super_super_long_name@example.com',
+        },
+      }),
     ],
   },
 } as Meta
@@ -131,4 +141,32 @@ export const EmptyMobile = Template.bind({})
 EmptyMobile.parameters = {
   ...Empty.parameters,
   ...Mobile.parameters,
+}
+
+export const AllOpenDesktop = Template.bind({})
+AllOpenDesktop.parameters = {
+  msw: [
+    rest.get<AdminDashboardFormMetaDto[]>(
+      '/api/v3/admin/forms',
+      (req, res, ctx) => {
+        return res(
+          ctx.json(
+            THIRTY_FORMS.filter((form) => form.status === FormStatus.Public),
+          ),
+        )
+      },
+    ),
+    getUser({
+      delay: 0,
+      mockUser: {
+        ...MOCK_USER,
+        email: 'user@example.com',
+      },
+    }),
+  ],
+}
+export const AllOpenMobile = Template.bind({})
+AllOpenMobile.parameters = {
+  ...Mobile.parameters,
+  ...AllOpenDesktop.parameters,
 }

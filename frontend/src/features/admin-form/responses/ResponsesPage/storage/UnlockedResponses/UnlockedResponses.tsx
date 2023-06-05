@@ -1,8 +1,12 @@
 import { useMemo } from 'react'
 import { Box, Flex, Grid, Skeleton, Stack, Text } from '@chakra-ui/react'
+import { format, isValid } from 'date-fns'
 import simplur from 'simplur'
 
-import { DateRangeInput } from '~components/DatePicker/DateRangeInput'
+import { DateString } from '~shared/types'
+
+import { DateRangeValue } from '~components/Calendar'
+import { DateRangePicker } from '~components/DateRangePicker'
 import Pagination from '~components/Pagination'
 
 import { useStorageResponsesContext } from '../StorageResponsesContext'
@@ -11,6 +15,35 @@ import { DownloadButton } from './DownloadButton'
 import { ResponsesTable } from './ResponsesTable'
 import { SubmissionSearchbar } from './SubmissionSearchbar'
 import { useUnlockedResponses } from './UnlockedResponsesProvider'
+
+const transform = {
+  input: (range: DateString[]) => {
+    const [start, end] = range
+    // Convert to Date objects
+    const startDate = new Date(start)
+    const endDate = new Date(end)
+    const result: (Date | null)[] = [null, null]
+    // Check if dates are valid
+    if (isValid(startDate)) {
+      result[0] = startDate
+    }
+    if (isValid(endDate)) {
+      result[1] = endDate
+    }
+    return result as DateRangeValue
+  },
+  output: (range: DateRangeValue) => {
+    const [start, end] = range
+    const result: DateString[] = []
+    if (start) {
+      result.push(format(start, 'yyyy-MM-dd') as DateString)
+    }
+    if (end) {
+      result.push(format(end, 'yyyy-MM-dd') as DateString)
+    }
+    return result
+  },
+}
 
 export const UnlockedResponses = (): JSX.Element => {
   const {
@@ -45,11 +78,11 @@ export const UnlockedResponses = (): JSX.Element => {
         mb="1rem"
         alignItems="end"
         color="secondary.500"
-        gridTemplateColumns={{ base: 'auto', md: 'auto 1fr' }}
-        gridGap={{ base: '0.5rem', md: '1.5rem' }}
+        gridTemplateColumns={{ base: 'auto 1fr', lg: 'auto 1fr auto' }}
+        gridGap="0.5rem"
         gridTemplateAreas={{
-          base: "'submissions' 'export'",
-          md: "'submissions export'",
+          base: "'submissions search' 'export export'",
+          lg: "'submissions search export'",
         }}
       >
         <Stack
@@ -67,19 +100,35 @@ export const UnlockedResponses = (): JSX.Element => {
             </Text>
           </Skeleton>
         </Stack>
-        <Stack direction="row" gridArea="export" justifySelf="end">
+
+        <Flex gridArea="search" justifySelf="end">
           <SubmissionSearchbar
             submissionId={submissionId}
             setSubmissionId={setSubmissionId}
             isAnyFetching={isAnyFetching}
           />
-          <DateRangeInput value={dateRange} onChange={setDateRange} />
+        </Flex>
+
+        <Stack
+          direction={{ base: 'column', sm: 'row' }}
+          justifySelf={{ base: 'start', sm: 'end' }}
+          gridArea="export"
+          maxW="100%"
+        >
+          <DateRangePicker
+            value={transform.input(dateRange)}
+            onChange={(nextDateRange) =>
+              setDateRange(transform.output(nextDateRange))
+            }
+          />
           <DownloadButton />
         </Stack>
       </Grid>
+
       <Box mb="3rem" overflow="auto" flex={1}>
         <ResponsesTable />
       </Box>
+
       <Box display={isLoading || countToUse === 0 ? 'none' : ''}>
         <Pagination
           totalCount={countToUse ?? 0}

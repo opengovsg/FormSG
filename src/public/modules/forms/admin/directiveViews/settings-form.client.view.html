@@ -237,11 +237,11 @@
             <div
               ng-repeat="type in authTypes"
               class="row"
-              ng-class="isDisableAuthType(type) ? 'authType-disabled' : ''"
+              ng-class="isDisableAuthType() ? 'authType-disabled' : ''"
             >
               <div
                 class="radio-option col-xs-12"
-                ng-class="isDisableAuthType(type) ? 'radio-disabled' : ''"
+                ng-class="isDisableAuthType() ? 'radio-disabled' : ''"
                 ng-if="!isFormEncrypt() || type.isEnabledInStorageMode"
               >
                 <label for="auth-type-{{type.val}}" class="col-xs-12">
@@ -251,7 +251,7 @@
                     ng-model="tempForm.authType"
                     value="{{ type.val }}"
                     ng-click="updateSettingsByPath('authType', $event.target.value)"
-                    ng-disabled="isDisableAuthType(type)"
+                    ng-disabled="isDisableAuthType()"
                   />
                   {{ type.name }}
                   <span

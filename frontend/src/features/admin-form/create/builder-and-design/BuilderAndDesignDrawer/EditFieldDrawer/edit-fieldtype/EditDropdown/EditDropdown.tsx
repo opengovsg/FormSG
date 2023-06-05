@@ -11,11 +11,11 @@ import Input from '~components/Input'
 import Textarea from '~components/Textarea'
 import Toggle from '~components/Toggle'
 
+import { CreatePageDrawerContentContainer } from '../../../../../common'
 import {
   SPLIT_TEXTAREA_TRANSFORM,
   SPLIT_TEXTAREA_VALIDATION,
 } from '../common/constants'
-import { DrawerContentContainer } from '../common/DrawerContentContainer'
 import { FormFieldDrawerActions } from '../common/FormFieldDrawerActions'
 import { EditFieldProps } from '../common/types'
 import { useEditFieldForm } from '../common/useEditFieldForm'
@@ -52,7 +52,6 @@ export const EditDropdown = ({ field }: EditDropdownProps): JSX.Element => {
   const {
     register,
     formState: { errors },
-    isSaveEnabled,
     buttonText,
     handleUpdateField,
     isLoading,
@@ -63,6 +62,7 @@ export const EditDropdown = ({ field }: EditDropdownProps): JSX.Element => {
       input: transformDropdownFieldToEditForm,
       output: transformDropdownEditFormToField,
     },
+    mode: 'onBlur',
   })
 
   const requiredValidationRule = useMemo(
@@ -71,7 +71,7 @@ export const EditDropdown = ({ field }: EditDropdownProps): JSX.Element => {
   )
 
   return (
-    <DrawerContentContainer>
+    <CreatePageDrawerContentContainer>
       <FormControl isRequired isReadOnly={isLoading} isInvalid={!!errors.title}>
         <FormLabel>Question</FormLabel>
         <Input autoFocus {...register('title', requiredValidationRule)} />
@@ -92,6 +92,7 @@ export const EditDropdown = ({ field }: EditDropdownProps): JSX.Element => {
       >
         <FormLabel>Options</FormLabel>
         <Textarea
+          placeholder="Enter one option per line"
           {...register('fieldOptionsString', {
             validate: SPLIT_TEXTAREA_VALIDATION,
           })}
@@ -102,11 +103,10 @@ export const EditDropdown = ({ field }: EditDropdownProps): JSX.Element => {
       </FormControl>
       <FormFieldDrawerActions
         isLoading={isLoading}
-        isSaveEnabled={isSaveEnabled}
         buttonText={buttonText}
         handleClick={handleUpdateField}
         handleCancel={handleCancel}
       />
-    </DrawerContentContainer>
+    </CreatePageDrawerContentContainer>
   )
 }

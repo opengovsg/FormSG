@@ -6,7 +6,6 @@ import {
   BiBookHeart,
   BiBriefcase,
   BiBuilding,
-  BiBuildings,
   BiCalculator,
   BiCalendarAlt,
   BiCalendarEvent,
@@ -53,6 +52,8 @@ type BuilderSidebarFieldMeta = {
   isSubmitted: boolean
 }
 
+// !!! Do not use this to reference field titles for MyInfo fields. !!!
+// !!! Use MYINFO_ATTRIBUTE_MAP in ~/shared/constants/field/myinfo/index.ts instead !!!
 export const BASICFIELD_TO_DRAWER_META: {
   [key in BasicField]: BuilderSidebarFieldMeta
 } = {
@@ -69,7 +70,7 @@ export const BASICFIELD_TO_DRAWER_META: {
   },
 
   [BasicField.Section]: {
-    label: 'Header',
+    label: 'Heading',
     icon: BiHeading,
     isSubmitted: false,
   },

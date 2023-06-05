@@ -39,16 +39,13 @@ const RemoveCollaboratorButton = (
 export const CollaboratorList = (): JSX.Element => {
   const isMobile = useIsMobile()
   // Admin form data required for checking for duplicate emails.
-  const { handleForwardToTransferOwnership, handleForwardToRemoveSelf } =
-    useCollaboratorWizard()
   const {
-    collaborators,
-    user,
-    isFormAdmin,
-    form,
-    isLoading,
-    showEditableModal,
-  } = useAdminFormCollaborators()
+    handleForwardToTransferOwnership,
+    handleForwardToRemoveSelf,
+    formId,
+  } = useCollaboratorWizard()
+  const { collaborators, user, isFormAdmin, form, isLoading, hasEditAccess } =
+    useAdminFormCollaborators(formId)
 
   const { mutateUpdateCollaborator, mutateRemoveCollaborator } =
     useMutateCollaborators()
@@ -153,7 +150,7 @@ export const CollaboratorList = (): JSX.Element => {
             key={row.email}
             isLoading={isLoading}
           >
-            {showEditableModal ? (
+            {hasEditAccess ? (
               <Stack
                 w="100%"
                 direction="row"

@@ -31,24 +31,6 @@ function SubmitFormController(
   const vm = this
   const form = FormData.form
 
-  // React migration checker - ONLY for plain form URLs (no suffixes like /template or /preview)
-  if (/^\/[0-9a-fA-F]{24}\/?$/.test($location.path())) {
-    const adminCookie = $cookies.get($window.reactMigrationAdminCookieName)
-    const respondentCookie = $cookies.get(
-      $window.reactMigrationRespondentCookieName,
-    )
-
-    if (adminCookie) {
-      if (adminCookie === 'react') {
-        $window.location.href = `/${form._id}`
-        return
-      }
-    } else if (respondentCookie === 'react') {
-      $window.location.href = `/${form._id}`
-      return
-    }
-  }
-
   // The form attribute of the FormData object contains the form fields, logic etc
   vm.myform = form
 
@@ -97,7 +79,7 @@ function SubmitFormController(
     }
   }
 
-  // For SP / CP forms, also include the spcpSession details
+  // For SP / CP / SGID forms, also include the spcpSession details
   // This allows the log out button to be correctly populated with the UID
   // Also provides time to cookie expiry so that client can refresh page
   if (isSpcpSgidForm && isUserLoggedIn) {

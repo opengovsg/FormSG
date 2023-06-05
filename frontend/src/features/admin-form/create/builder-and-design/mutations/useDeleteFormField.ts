@@ -10,18 +10,29 @@ import { adminFormKeys } from '~features/admin-form/common/queries'
 
 import { deleteSingleFormField } from '../UpdateFormFieldService'
 import {
-  BuildFieldState,
+  FieldBuilderState,
   setToInactiveSelector,
   stateDataSelector,
-  useBuilderAndDesignStore,
-} from '../useBuilderAndDesignStore'
+  useFieldBuilderStore,
+} from '../useFieldBuilderStore'
+import {
+  getMutationErrorMessage,
+  getMutationToastDescriptionFieldName,
+} from '../utils/getMutationMessage'
 
 export const useDeleteFormField = () => {
   const { formId } = useParams()
   if (!formId) throw new Error('No formId provided')
 
-  const setToInactive = useBuilderAndDesignStore(setToInactiveSelector)
-  const stateData = useBuilderAndDesignStore(stateDataSelector)
+  const { stateData, setToInactive } = useFieldBuilderStore(
+    useCallback(
+      (state) => ({
+        stateData: stateDataSelector(state),
+        setToInactive: setToInactiveSelector(state),
+      }),
+      [],
+    ),
+  )
 
   const queryClient = useQueryClient()
   const toast = useToast({ status: 'success', isClosable: true })
@@ -29,7 +40,7 @@ export const useDeleteFormField = () => {
 
   const handleSuccess = useCallback(() => {
     toast.closeAll()
-    if (stateData.state !== BuildFieldState.EditingField) {
+    if (stateData.state !== FieldBuilderState.EditingField) {
       toast({
         status: 'warning',
         description:
@@ -38,7 +49,9 @@ export const useDeleteFormField = () => {
       return
     }
     toast({
-      description: `Field "${stateData.field.title}" deleted`,
+      description: `The ${getMutationToastDescriptionFieldName(
+        stateData.field,
+      )} was deleted.`,
     })
     queryClient.setQueryData<AdminFormDto>(adminFormKey, (oldForm) => {
       // Should not happen, should not be able to update field if there is no
@@ -65,7 +78,7 @@ export const useDeleteFormField = () => {
     (error: Error) => {
       toast.closeAll()
       toast({
-        description: error.message,
+        description: getMutationErrorMessage(error),
         status: 'danger',
       })
     },

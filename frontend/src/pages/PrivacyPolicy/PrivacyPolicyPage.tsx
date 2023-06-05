@@ -5,7 +5,6 @@ import {
   Flex,
   ListItem,
   ListItemProps,
-  ListProps,
   OrderedList,
   Stack,
   Text,
@@ -16,48 +15,21 @@ import { AppPublicHeader } from '~/app/AppPublicHeader'
 
 import Link from '~components/Link'
 
+import {
+  SubSectionListItem,
+  SubSectionOrderedList,
+  SubSubSectionOrderedList,
+} from '../TermsOfUse/TermsOfUsePage'
+
 const SectionListItem: FC<ListItemProps> = ({
   children,
   listStyleType = 'decimal',
 }) => (
-  <ListItem textStyle="body-1" listStyleType={listStyleType}>
+  <ListItem textStyle="body-1" listStyleType={listStyleType} pl="1rem">
     {children}
   </ListItem>
 )
 
-const SubSectionOrderedList: FC<ListProps> = ({
-  children,
-  styleType = 'lower-alpha',
-  ...props
-}) => (
-  <OrderedList spacing="1.5rem" styleType={styleType} {...props}>
-    {children}
-  </OrderedList>
-)
-
-const SubSubSectionOrderedList: FC<ListProps> = ({
-  children,
-  styleType = 'lower-roman',
-  ...props
-}) => (
-  <SubSectionOrderedList
-    marginInlineStart="1.5rem"
-    styleType={styleType}
-    {...props}
-  >
-    {children}
-  </SubSectionOrderedList>
-)
-
-const SubSectionListItem: FC<ListItemProps> = ({
-  children,
-  listStyleType,
-  ...props
-}) => (
-  <ListItem listStyleType={listStyleType} textStyle="body-1" {...props}>
-    {children}
-  </ListItem>
-)
 const SectionParagraph: FC = ({ children }) => (
   <Text mb="1.5rem">{children}</Text>
 )
@@ -91,7 +63,10 @@ export const PrivacyPolicyPage = (): JSX.Element => {
                   through a website, please note that:
                 </SectionParagraph>
                 <SubSectionOrderedList>
-                  <SubSectionListItem>
+                  <SubSectionListItem
+                    isNumericMarker
+                    prependSequenceMarker="1."
+                  >
                     We may use "cookies", where a small data file is sent to
                     your browser to store and track information about you when
                     you enter our websites. The cookie is used to track
@@ -100,7 +75,10 @@ export const PrivacyPolicyPage = (): JSX.Element => {
                     this cookie can tell us when you enter our sites and which
                     pages you visit, it cannot read data off your hard disk.
                   </SubSectionListItem>
-                  <SubSectionListItem>
+                  <SubSectionListItem
+                    isNumericMarker
+                    prependSequenceMarker="1."
+                  >
                     You can choose to accept or decline cookies. Most web
                     browsers automatically accept cookies, but you can usually
                     modify your browser setting to decline cookies if you
@@ -134,17 +112,24 @@ export const PrivacyPolicyPage = (): JSX.Element => {
                   If you provide us with personal data:
                 </SectionParagraph>
                 <SubSectionOrderedList>
-                  <SubSectionListItem>
-                    <SectionParagraph>
-                      We may use, disclose and process the data for any one or
-                      more of the following purposes:
-                    </SectionParagraph>
-                    <SubSubSectionOrderedList>
-                      <SubSectionListItem>
+                  <SubSectionListItem
+                    isNumericMarker
+                    prependSequenceMarker="3."
+                  >
+                    We may use, disclose and process the data for any one or
+                    more of the following purposes:
+                    <SubSubSectionOrderedList mt="1.5rem">
+                      <SubSectionListItem
+                        isNumericMarker
+                        prependSequenceMarker="3."
+                      >
                         to assist, process and facilitate your access or use of
                         the Service;
                       </SubSectionListItem>
-                      <SubSectionListItem>
+                      <SubSectionListItem
+                        isNumericMarker
+                        prependSequenceMarker="3."
+                      >
                         to administer, process and facilitate any transactions
                         or activities by you, whether with us or any other
                         Public Sector Entity or third party service provider or
@@ -152,14 +137,20 @@ export const PrivacyPolicyPage = (): JSX.Element => {
                         the benefit of a third party on whose behalf you are
                         duly authorized to act;
                       </SubSectionListItem>
-                      <SubSectionListItem>
+                      <SubSectionListItem
+                        isNumericMarker
+                        prependSequenceMarker="3."
+                      >
                         to carry out your instructions or respond to any
                         queries, feedback or complaints provided by (or
                         purported to be provided by) you or on your behalf, or
                         otherwise for the purposes of responding to or dealing
                         with your interactions with us;
                       </SubSectionListItem>
-                      <SubSectionListItem>
+                      <SubSectionListItem
+                        isNumericMarker
+                        prependSequenceMarker="3."
+                      >
                         to monitor and track your usage of the Service, to
                         conduct research, data analytics, surveys, market
                         studies and similar activities, in order to assist us in
@@ -175,13 +166,19 @@ export const PrivacyPolicyPage = (): JSX.Element => {
                         Entities for record-keeping and reporting or publication
                         purposes (whether internally or externally);
                       </SubSectionListItem>
-                      <SubSectionListItem>
+                      <SubSectionListItem
+                        isNumericMarker
+                        prependSequenceMarker="3."
+                      >
                         for the purposes of storing or creating backups of your
                         data (whether for contingency or business continuity
                         purposes or otherwise), whether within or outside
                         Singapore;
                       </SubSectionListItem>
-                      <SubSectionListItem>
+                      <SubSectionListItem
+                        isNumericMarker
+                        prependSequenceMarker="3."
+                      >
                         to enable us to contact you or communicate with you on
                         any matters relating to your access or use of the
                         Service, including but not limited to the purposes set
@@ -192,20 +189,29 @@ export const PrivacyPolicyPage = (): JSX.Element => {
                       </SubSectionListItem>
                     </SubSubSectionOrderedList>
                   </SubSectionListItem>
-                  <SubSectionListItem>
+                  <SubSectionListItem
+                    isNumericMarker
+                    prependSequenceMarker="3."
+                  >
                     We may share necessary data with other Public Sector
                     Entities, and third party service providers in connection
                     with the Service, so as to provide the Service to you in the
                     most efficient and effective way unless such sharing is
                     prohibited by law.
                   </SubSectionListItem>
-                  <SubSectionListItem>
+                  <SubSectionListItem
+                    isNumericMarker
+                    prependSequenceMarker="3."
+                  >
                     We will NOT share your personal data with entities which are
                     not Public Sector Entities, except where such sharing is
                     necessary for such entities to assist us in providing the
                     Service to you or for fulfilling any of the purposes herein.
                   </SubSectionListItem>
-                  <SubSectionListItem>
+                  <SubSectionListItem
+                    isNumericMarker
+                    prependSequenceMarker="3."
+                  >
                     For your convenience, we may also display to you data you
                     had previously supplied us or other Public Sector Entities.
                     This will speed up the transaction and save you the trouble
@@ -244,17 +250,23 @@ export const PrivacyPolicyPage = (): JSX.Element => {
               <SectionListItem>
                 <SectionParagraph>
                   Please contact{' '}
-                  <Link isExternal href="mailto:formsg@tech.gov.sg">
-                    formsg@tech.gov.sg
+                  <Link isExternal href="mailto:support@form.gov.sg">
+                    support@form.gov.sg
                   </Link>{' '}
                   if you:
                 </SectionParagraph>
                 <SubSectionOrderedList>
-                  <SubSectionListItem>
+                  <SubSectionListItem
+                    isNumericMarker
+                    prependSequenceMarker="9."
+                  >
                     have any enquiries or feedback on our data protection
                     policies and procedures; or
                   </SubSectionListItem>
-                  <SubSectionListItem>
+                  <SubSectionListItem
+                    isNumericMarker
+                    prependSequenceMarker="9."
+                  >
                     need more information on or access to data which you have
                     provided to us in the past.
                   </SubSectionListItem>
@@ -268,7 +280,7 @@ export const PrivacyPolicyPage = (): JSX.Element => {
               Annex
             </Text>
             <Text textStyle="h3">Name of Service: Form</Text>
-            <OrderedList spacing="1.5rem" marginInlineStart="1.5rem">
+            <OrderedList spacing="1.5rem" marginInlineStart="1.5rem !important">
               <SectionListItem>
                 If you are a form administrator or creator, please note that
                 GovTech will collect your email address and other contact

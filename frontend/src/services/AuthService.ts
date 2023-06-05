@@ -1,4 +1,6 @@
-import { UserDto } from '~shared/types/user'
+import { SendOtpResponseDto, UserDto } from '~shared/types/user'
+
+import { LOCAL_STORAGE_EVENT, LOGGED_IN_KEY } from '~constants/localStorage'
 
 import { ApiService } from './ApiService'
 
@@ -9,8 +11,10 @@ const AUTH_ENDPOINT = '/auth'
  * @param email email to send login OTP to
  * @returns success string if login OTP is sent successfully
  */
-export const sendLoginOtp = async (email: string): Promise<string> => {
-  return ApiService.post<string>(`${AUTH_ENDPOINT}/otp/generate`, {
+export const sendLoginOtp = async (
+  email: string,
+): Promise<SendOtpResponseDto> => {
+  return ApiService.post<SendOtpResponseDto>(`${AUTH_ENDPOINT}/otp/generate`, {
     email: email.toLowerCase(),
   }).then(({ data }) => data)
 }
@@ -32,5 +36,9 @@ export const verifyLoginOtp = async (params: {
 }
 
 export const logout = async (): Promise<void> => {
+  // Remove logged in state from localStorage
+  localStorage.removeItem(LOGGED_IN_KEY)
+  // Event to let useLocalStorage know that key is being deleted.
+  window.dispatchEvent(new Event(LOCAL_STORAGE_EVENT))
   return ApiService.get(`${AUTH_ENDPOINT}/logout`)
 }

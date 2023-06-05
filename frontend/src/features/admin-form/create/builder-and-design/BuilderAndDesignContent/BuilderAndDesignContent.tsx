@@ -1,15 +1,16 @@
-import { useCallback, useEffect } from 'react'
-import { Flex } from '@chakra-ui/react'
+import { useEffect } from 'react'
+import { Box, Flex } from '@chakra-ui/react'
+
+import InlineMessage from '~components/InlineMessage'
+
+import { useAdminFormSettings } from '~features/admin-form/settings/queries'
 
 import { DndPlaceholderProps } from '../types'
 import {
-  BuildFieldState,
   setToInactiveSelector,
-  stateDataSelector,
-  useBuilderAndDesignStore,
-} from '../useBuilderAndDesignStore'
+  useFieldBuilderStore,
+} from '../useFieldBuilderStore'
 
-import { EndPageView } from './EndPageView'
 import { FormBuilder } from './FormBuilder'
 
 interface BuilderAndDesignContentProps {
@@ -19,34 +20,30 @@ interface BuilderAndDesignContentProps {
 export const BuilderAndDesignContent = ({
   placeholderProps,
 }: BuilderAndDesignContentProps): JSX.Element => {
-  const { stateData, setToInactive: setFieldsToInactive } =
-    useBuilderAndDesignStore(
-      useCallback(
-        (state) => ({
-          stateData: stateDataSelector(state),
-          setToInactive: setToInactiveSelector(state),
-        }),
-        [],
-      ),
-    )
+  const { data: settings } = useAdminFormSettings()
 
-  useEffect(() => setFieldsToInactive, [setFieldsToInactive])
+  const setFieldsToInactive = useFieldBuilderStore(setToInactiveSelector)
+
+  useEffect(() => {
+    setFieldsToInactive()
+    return () => setFieldsToInactive()
+  }, [setFieldsToInactive])
 
   return (
-    <Flex flex={1} bg="neutral.200" overflow="auto">
-      <EndPageView
-        display={
-          // Don't conditionally render EndPageView and FormBuilder because it
-          // is expensive and takes time.
-          stateData.state === BuildFieldState.EditingEndPage ? 'flex' : 'none'
-        }
-      />
-      <FormBuilder
-        placeholderProps={placeholderProps}
-        display={
-          stateData.state === BuildFieldState.EditingEndPage ? 'none' : 'flex'
-        }
-      />
+    <Flex flex={1} overflow="auto">
+      <Box w="100%">
+        {settings?.webhook?.url ? (
+          <InlineMessage
+            mx={{ base: 0, md: '2rem' }}
+            mt={{ base: 0, md: '2rem' }}
+            mb={{ base: 0, md: '-1rem' }}
+          >
+            Webhooks are enabled on this form. Please ensure the webhook server
+            is able to handle any field changes.
+          </InlineMessage>
+        ) : null}
+        <FormBuilder placeholderProps={placeholderProps} display="flex" />
+      </Box>
     </Flex>
   )
 }

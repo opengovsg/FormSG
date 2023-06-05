@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 import { Controller, RegisterOptions } from 'react-hook-form'
 import { FormControl, Skeleton } from '@chakra-ui/react'
 import { extend, pick } from 'lodash'
@@ -11,6 +11,10 @@ import {
   FormFieldDto,
 } from '~shared/types/field'
 
+import {
+  ACCEPTED_FILETYPES_SPREADSHEET,
+  GUIDE_EMAIL_RELIABILITY,
+} from '~constants/links'
 import { createBaseValidationRules } from '~utils/fieldValidation'
 import { SingleSelect } from '~components/Dropdown'
 import type { ComboboxItem } from '~components/Dropdown/types'
@@ -22,8 +26,9 @@ import Textarea from '~components/Textarea'
 import Toggle from '~components/Toggle'
 
 import { useCreateTabForm } from '~features/admin-form/create/builder-and-design/useCreateTabForm'
+import { getAttachmentSizeLimit } from '~features/admin-form/create/builder-and-design/utils/getAttachmentSizeLimit'
 
-import { DrawerContentContainer } from '../common/DrawerContentContainer'
+import { CreatePageDrawerContentContainer } from '../../../../../common'
 import { FormFieldDrawerActions } from '../common/FormFieldDrawerActions'
 import { EditFieldProps } from '../common/types'
 import { useEditFieldForm } from '../common/useEditFieldForm'
@@ -63,11 +68,11 @@ export const EditAttachment = ({ field }: EditAttachmentProps): JSX.Element => {
     formState: { errors },
     control,
     getValues,
-    isSaveEnabled,
     buttonText,
     handleUpdateField,
     isLoading,
     handleCancel,
+    trigger,
   } = useEditFieldForm<EditAttachmentInputs, AttachmentFieldBase>({
     field,
     transform: {
@@ -91,15 +96,10 @@ export const EditAttachment = ({ field }: EditAttachmentProps): JSX.Element => {
       .reduce((sum, ff) => sum + Number(ff.attachmentSize), 0)
   }, [field._id, form?.form_fields])
 
-  const maxTotalSizeMb: number = useMemo(() => {
-    if (!form?.responseMode) return 0
-    switch (form.responseMode) {
-      case FormResponseMode.Email:
-        return Number(AttachmentSize.SevenMb)
-      case FormResponseMode.Encrypt:
-        return Number(AttachmentSize.TwentyMb)
-    }
-  }, [form?.responseMode])
+  const maxTotalSizeMb: number = useMemo(
+    () => getAttachmentSizeLimit(form?.responseMode),
+    [form?.responseMode],
+  )
 
   const attachmentSizeOptions: ComboboxItem[] = useMemo(() => {
     if (!form) return []
@@ -128,7 +128,7 @@ export const EditAttachment = ({ field }: EditAttachmentProps): JSX.Element => {
       validate: (val) => {
         return (
           maxTotalSizeMb - otherAttachmentsSize >= Number(val) ||
-          `You have exceeded your form's attachment size limit of ${maxTotalSizeMb} MB. Kindly reduce the size of your attachments.
+          `You have exceeded your form's attachment size limit of ${maxTotalSizeMb} MB
 `
         )
       },
@@ -136,8 +136,20 @@ export const EditAttachment = ({ field }: EditAttachmentProps): JSX.Element => {
     [maxTotalSizeMb, otherAttachmentsSize],
   )
 
+  const validateAttachmentSize = useCallback(() => {
+    trigger('attachmentSize')
+  }, [trigger])
+
+  // Validate on render in order to inform users when other attachments have
+  // already hit the limit, so the user doesn't try to create this attachment
+  // field before changing the other fields.
+  useEffect(() => {
+    if (!form) return
+    validateAttachmentSize()
+  }, [form, validateAttachmentSize])
+
   return (
-    <DrawerContentContainer>
+    <CreatePageDrawerContentContainer>
       <FormControl isRequired isReadOnly={isLoading} isInvalid={!!errors.title}>
         <FormLabel>Question</FormLabel>
         <Input autoFocus {...register('title', requiredValidationRule)} />
@@ -151,41 +163,48 @@ export const EditAttachment = ({ field }: EditAttachmentProps): JSX.Element => {
       <FormControl isReadOnly={isLoading}>
         <Toggle {...register('required')} label="Required" />
       </FormControl>
-      <FormControl isReadOnly={isLoading} isInvalid={!!errors.attachmentSize}>
-        <FormLabel isRequired>Attachment size</FormLabel>
+      <FormControl
+        id="attachmentSize"
+        isReadOnly={isLoading}
+        isInvalid={!!errors.attachmentSize}
+      >
+        <FormLabel isRequired>Maximum size of individual attachment</FormLabel>
         <Skeleton isLoaded={!!form}>
           <Controller
             control={control}
             rules={attachmentSizeValidationRule}
             name="attachmentSize"
-            render={({ field }) => (
-              <SingleSelect items={attachmentSizeOptions} {...field} />
+            render={({ field: { onChange, ...rest } }) => (
+              <SingleSelect
+                isClearable={false}
+                items={attachmentSizeOptions}
+                onChange={(size) => {
+                  onChange(size)
+                  // Validate on each change so that appropriate error message
+                  // is displayed when the attachment size bar also shows red
+                  validateAttachmentSize()
+                }}
+                {...rest}
+              />
             )}
           />
         </Skeleton>
         <FormErrorMessage>{errors?.attachmentSize?.message}</FormErrorMessage>
         <AttachmentStackedBar
-          values={
-            form
-              ? [otherAttachmentsSize, Number(getValues('attachmentSize'))]
-              : undefined
-          }
+          existingValue={form ? otherAttachmentsSize : undefined}
+          newValue={Number(getValues('attachmentSize'))}
           max={maxTotalSizeMb}
         />
       </FormControl>
       <InlineMessage useMarkdown>
-        View our [complete list](https://go.gov.sg/formsg-cwl) of accepted file
-        types. Please also read our [FAQ on email
-        reliability](https://go.gov.sg/form-email-reliability) relating to
-        unaccepted file types.
+        {`View our [complete list](${ACCEPTED_FILETYPES_SPREADSHEET}) of accepted file types. Please also read our [FAQ on email reliability](${GUIDE_EMAIL_RELIABILITY}) relating to unaccepted file types.`}
       </InlineMessage>
       <FormFieldDrawerActions
         isLoading={isLoading}
-        isSaveEnabled={isSaveEnabled}
         buttonText={buttonText}
         handleClick={handleUpdateField}
         handleCancel={handleCancel}
       />
-    </DrawerContentContainer>
+    </CreatePageDrawerContentContainer>
   )
 }

@@ -1,16 +1,17 @@
 import { ok } from 'neverthrow'
-import { mocked } from 'ts-jest/utils'
 
+import formsgSdk from 'src/app/config/formsg-sdk'
+
+import {
+  generateDefaultField,
+  generateProcessedSingleAnswerResponse,
+  generateSingleAnswerResponse,
+} from '../../../../../../__tests__/unit/backend/helpers/generate-form-data'
 import {
   BasicField,
   FormResponseMode,
   LogicType,
 } from '../../../../../../shared/types'
-import {
-  generateDefaultField,
-  generateProcessedSingleAnswerResponse,
-  generateSingleAnswerResponse,
-} from '../../../../../../tests/unit/backend/helpers/generate-form-data'
 import * as LogicUtil from '../../../../../shared/util/logic'
 import {
   IPopulatedEncryptedForm,
@@ -25,20 +26,45 @@ import {
 import IncomingEncryptSubmission from '../IncomingEncryptSubmission.class'
 
 jest.mock('../../../../utils/encryption')
-const mockCheckIsEncryptedEncoding = mocked(checkIsEncryptedEncoding)
+const mockCheckIsEncryptedEncoding = jest.mocked(checkIsEncryptedEncoding)
+
+type VerificationMock = {
+  authenticate: () => boolean
+}
 
 describe('IncomingEncryptSubmission', () => {
+  beforeEach(() => {
+    jest
+      .spyOn(
+        formsgSdk.verification as unknown as VerificationMock,
+        'authenticate',
+      )
+      .mockImplementation(() => true)
+  })
   it('should create an incoming encrypt submission with valid form and responses', () => {
     mockCheckIsEncryptedEncoding.mockReturnValueOnce(ok(true))
-    const mobileField = generateDefaultField(BasicField.Mobile)
-    const emailField = generateDefaultField(BasicField.Email)
+    const mobileField = generateDefaultField(BasicField.Mobile, {
+      isVerifiable: true,
+    })
+    const emailField = generateDefaultField(BasicField.Email, {
+      isVerifiable: true,
+      autoReplyOptions: {
+        hasAutoReply: true,
+        autoReplySubject: 'subject',
+        autoReplySender: 'sender@test.gov.sg',
+        autoReplyMessage: 'message',
+        includeFormSummary: false,
+      },
+    })
     const mobileResponse = generateSingleAnswerResponse(
       mobileField,
       '+6587654321',
+      'signature',
     )
     const emailResponse = generateSingleAnswerResponse(
       emailField,
       'test@example.com',
+      'signature',
     )
     const responses = [mobileResponse, emailResponse]
     const initResult = IncomingEncryptSubmission.init(
@@ -54,11 +80,23 @@ describe('IncomingEncryptSubmission', () => {
 
   it('should fail when responses are missing', () => {
     mockCheckIsEncryptedEncoding.mockReturnValueOnce(ok(true))
-    const mobileField = generateDefaultField(BasicField.Mobile)
-    const emailField = generateDefaultField(BasicField.Email)
+    const mobileField = generateDefaultField(BasicField.Mobile, {
+      isVerifiable: true,
+    })
+    const emailField = generateDefaultField(BasicField.Email, {
+      isVerifiable: true,
+      autoReplyOptions: {
+        hasAutoReply: true,
+        autoReplySubject: 'subject',
+        autoReplySender: 'sender@test.gov.sg',
+        autoReplyMessage: 'message',
+        includeFormSummary: false,
+      },
+    })
     const mobileResponse = generateSingleAnswerResponse(
       mobileField,
       '+6587654321',
+      'signature',
     )
     const responses = [mobileResponse]
     const initResult = IncomingEncryptSubmission.init(
@@ -78,32 +116,35 @@ describe('IncomingEncryptSubmission', () => {
     mockCheckIsEncryptedEncoding.mockReturnValueOnce(ok(true))
     // Only check for mobile and email fields, since the other fields are
     // e2e encrypted from the browser.
-    const mobileField = generateDefaultField(BasicField.Mobile)
-    const emailField = generateDefaultField(BasicField.Email)
+    const mobileField = generateDefaultField(BasicField.Mobile, {
+      isVerifiable: true,
+    })
+    const emailField = generateDefaultField(BasicField.Email, {
+      isVerifiable: true,
+      autoReplyOptions: {
+        hasAutoReply: true,
+        autoReplySubject: 'subject',
+        autoReplySender: 'sender@test.gov.sg',
+        autoReplyMessage: 'message',
+        includeFormSummary: false,
+      },
+    })
     // Add answers to both mobile and email fields
-    const mobileResponse = generateSingleAnswerResponse(
-      mobileField,
-      '+6587654321',
-    )
-
-    const emailResponse = generateSingleAnswerResponse(
-      emailField,
-      'test@example.com',
-    )
-
-    const mobileProcessedResponse = generateProcessedSingleAnswerResponse(
-      mobileField,
-      '+6587654321',
-    )
+    const mobileProcessedResponse = generateProcessedSingleAnswerResponse({
+      field: mobileField,
+      answer: '+6587654321',
+      signature: 'signature',
+    })
     mobileProcessedResponse.isVisible = false
 
-    const emailProcessedResponse = generateProcessedSingleAnswerResponse(
-      emailField,
-      'test@example.com',
-    )
+    const emailProcessedResponse = generateProcessedSingleAnswerResponse({
+      field: emailField,
+      answer: 'test@example.com',
+      signature: 'signature',
+    })
     emailProcessedResponse.isVisible = false
 
-    const responses = [mobileResponse, emailResponse]
+    const responses = [mobileProcessedResponse, emailProcessedResponse]
 
     const result = IncomingEncryptSubmission.init(
       {
@@ -122,7 +163,9 @@ describe('IncomingEncryptSubmission', () => {
     mockCheckIsEncryptedEncoding.mockReturnValueOnce(ok(true))
     // Only mobile and email fields are parsed, since the other fields are
     // e2e encrypted from the browser.
-    const mobileField = generateDefaultField(BasicField.Mobile)
+    const mobileField = generateDefaultField(BasicField.Mobile, {
+      isVerifiable: true,
+    })
     const mobileResponse = generateSingleAnswerResponse(mobileField, 'invalid')
 
     const result = IncomingEncryptSubmission.init(

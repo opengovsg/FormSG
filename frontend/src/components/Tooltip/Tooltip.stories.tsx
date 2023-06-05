@@ -27,7 +27,13 @@ const TooltipStack = (
             label="Tooltip content goes here"
             placement={placement}
           >
-            <Icon as={BxsHelpCircle} aria-hidden ml="0.5rem" />
+            <Icon
+              as={BxsHelpCircle}
+              aria-hidden
+              h="1.25rem"
+              ml="0.5rem"
+              verticalAlign="sub"
+            />
           </Tooltip>
         </Box>
       ))}

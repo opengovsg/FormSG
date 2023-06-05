@@ -5,10 +5,12 @@ export type StorageFormAuthType =
   | FormAuthType.NIL
   | FormAuthType.SP
   | FormAuthType.CP
+  | FormAuthType.SGID
 
 export const STORAGE_MODE_AUTHTYPES: Record<StorageFormAuthType, string> = {
   [FormAuthType.NIL]: 'None',
   [FormAuthType.SP]: 'Singpass',
+  [FormAuthType.SGID]: 'Singpass App-only Login (Free)',
   [FormAuthType.CP]: 'Singpass (Corporate)',
 }
 

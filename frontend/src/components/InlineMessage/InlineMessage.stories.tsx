@@ -34,7 +34,7 @@ export const Warning = InlineMessageTemplate.bind({})
 Warning.args = {
   variant: 'warning',
   children:
-    'The highlighted fields in this form have been pre-filled according to the link that you clicked. Please check that these values are what you intend to submit, and edit if necessary.',
+    'Highlighted fields below have been pre-filled according to the form link you clicked. You may edit these fields if necessary, except non-editable fields with a lock icon.',
   useMarkdown: false,
 }
 

@@ -19,7 +19,7 @@ import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import Textarea from '~components/Textarea'
 
-import { DrawerContentContainer } from '../common/DrawerContentContainer'
+import { CreatePageDrawerContentContainer } from '../../../../../common'
 import { FormFieldDrawerActions } from '../common/FormFieldDrawerActions'
 import { EditFieldProps } from '../common/types'
 import { useEditFieldForm } from '../common/useEditFieldForm'
@@ -125,7 +125,6 @@ export const EditImage = ({ field }: EditImageProps): JSX.Element => {
     formState: { errors, isSubmitting },
     setError,
     clearErrors,
-    isSaveEnabled,
     buttonText,
     handleUpdateField,
     isLoading,
@@ -155,7 +154,7 @@ export const EditImage = ({ field }: EditImageProps): JSX.Element => {
   )
 
   return (
-    <DrawerContentContainer>
+    <CreatePageDrawerContentContainer>
       <FormControl
         isRequired
         isReadOnly={isLoading || isSubmitting}
@@ -194,11 +193,10 @@ export const EditImage = ({ field }: EditImageProps): JSX.Element => {
       </FormControl>
       <FormFieldDrawerActions
         isLoading={isLoading || isSubmitting}
-        isSaveEnabled={isSaveEnabled}
         buttonText={buttonText}
         handleClick={handleUpdateFieldWithCatch}
         handleCancel={handleCancel}
       />
-    </DrawerContentContainer>
+    </CreatePageDrawerContentContainer>
   )
 }

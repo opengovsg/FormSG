@@ -12,12 +12,12 @@ import { insertAt, replaceAt } from '~shared/utils/immutable-array-fns'
 import { augmentWithMyInfo } from '~features/myinfo/utils/augmentWithMyInfo'
 
 import { PENDING_CREATE_FIELD_ID } from '../constants'
-import {
-  BuildFieldState,
-  stateDataSelector,
-  useBuilderAndDesignStore,
-} from '../useBuilderAndDesignStore'
 import { useCreateTabForm } from '../useCreateTabForm'
+import {
+  FieldBuilderState,
+  stateDataSelector,
+  useFieldBuilderStore,
+} from '../useFieldBuilderStore'
 
 const getFormFieldsWhileCreating = (
   formFields: FormFieldDto[],
@@ -52,21 +52,25 @@ const getFormFieldsWhileEditing = (
 }
 
 export const useBuilderFields = () => {
-  const { data: formData } = useCreateTabForm()
-  const stateData = useBuilderAndDesignStore(stateDataSelector)
+  const { data: formData, isLoading } = useCreateTabForm()
+  const stateData = useFieldBuilderStore(stateDataSelector)
   const builderFields = useMemo(() => {
-    const existingFields = formData?.form_fields?.map(augmentWithMyInfo)
-    if (!existingFields) return null
-    if (stateData.state === BuildFieldState.EditingField) {
-      return getFormFieldsWhileEditing(existingFields, stateData.field)
+    let existingFields = formData?.form_fields
+    if (isLoading || !existingFields) return null
+    if (stateData.state === FieldBuilderState.EditingField) {
+      existingFields = getFormFieldsWhileEditing(
+        existingFields,
+        stateData.field,
+      )
+    } else if (stateData.state === FieldBuilderState.CreatingField) {
+      existingFields = getFormFieldsWhileCreating(existingFields, stateData)
     }
-    if (stateData.state === BuildFieldState.CreatingField) {
-      return getFormFieldsWhileCreating(existingFields, stateData)
-    }
-    return existingFields
-  }, [formData, stateData])
+
+    return existingFields.map(augmentWithMyInfo)
+  }, [formData?.form_fields, isLoading, stateData])
 
   return {
     builderFields,
+    isLoading,
   }
 }

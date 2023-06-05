@@ -1,3 +1,14 @@
+import {
+  generateSingleAnswerAutoreply,
+  generateSingleAnswerFormData,
+  generateSingleAnswerJson,
+} from '__tests__/unit/backend/helpers/generate-email-data'
+import {
+  generateNewAttachmentResponse,
+  generateNewCheckboxResponse,
+  generateNewSingleAnswerResponse,
+  generateNewTableResponse,
+} from '__tests__/unit/backend/helpers/generate-form-data'
 import { ObjectId } from 'bson'
 import { readFileSync } from 'fs'
 import { cloneDeep, merge } from 'lodash'
@@ -8,18 +19,6 @@ import {
   SingleAnswerFieldResponse,
   SPCPFieldTitle,
 } from 'src/types'
-
-import {
-  generateSingleAnswerAutoreply,
-  generateSingleAnswerFormData,
-  generateSingleAnswerJson,
-} from 'tests/unit/backend/helpers/generate-email-data'
-import {
-  generateNewAttachmentResponse,
-  generateNewCheckboxResponse,
-  generateNewSingleAnswerResponse,
-  generateNewTableResponse,
-} from 'tests/unit/backend/helpers/generate-form-data'
 
 import { types as basicTypes } from '../../../../../../shared/constants/field/basic'
 import {
@@ -49,43 +48,45 @@ import {
 
 const validSingleFile = {
   filename: 'govtech.jpg',
-  content: readFileSync('./tests/unit/backend/resources/govtech.jpg'),
+  content: readFileSync('./__tests__/unit/backend/resources/govtech.jpg'),
   fieldId: String(new ObjectId()),
 }
 
 const invalidSingleFile = {
   filename: 'invalid.py',
-  content: readFileSync('./tests/unit/backend/resources/invalid.py'),
+  content: readFileSync('./__tests__/unit/backend/resources/invalid.py'),
   fieldId: String(new ObjectId()),
 }
 
 const zipWithValidAndInvalid = {
   filename: 'invalidandvalid.zip',
-  content: readFileSync('./tests/unit/backend/resources/invalidandvalid.zip'),
+  content: readFileSync(
+    './__tests__/unit/backend/resources/invalidandvalid.zip',
+  ),
   fieldId: String(new ObjectId()),
 }
 
 const zipNestedInvalid = {
   filename: 'nested.zip',
-  content: readFileSync('./tests/unit/backend/resources/nestedInvalid.zip'),
+  content: readFileSync('./__tests__/unit/backend/resources/nestedInvalid.zip'),
   fieldId: String(new ObjectId()),
 }
 
 const zipNestedValid = {
   filename: 'nestedValid.zip',
-  content: readFileSync('./tests/unit/backend/resources/nestedValid.zip'),
+  content: readFileSync('./__tests__/unit/backend/resources/nestedValid.zip'),
   fieldId: String(new ObjectId()),
 }
 
 const zipOnlyInvalid = {
   filename: 'onlyinvalid.zip',
-  content: readFileSync('./tests/unit/backend/resources/onlyinvalid.zip'),
+  content: readFileSync('./__tests__/unit/backend/resources/onlyinvalid.zip'),
   fieldId: String(new ObjectId()),
 }
 
 const zipOnlyValid = {
   filename: 'onlyvalid.zip',
-  content: readFileSync('./tests/unit/backend/resources/onlyvalid.zip'),
+  content: readFileSync('./__tests__/unit/backend/resources/onlyvalid.zip'),
   fieldId: String(new ObjectId()),
 }
 

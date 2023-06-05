@@ -60,6 +60,7 @@ export const EditConditionBlock = ({
     register,
     setValue,
     control,
+    setError,
   } = formMethods
   const ifFieldIdValue = watch(`${name}.field`)
   const hasFieldIdChanged = useHasChanged(
@@ -74,6 +75,20 @@ export const EditConditionBlock = ({
     if (!ifFieldIdValue || !mapIdToField) return
     return mapIdToField[ifFieldIdValue]
   }, [ifFieldIdValue, mapIdToField])
+
+  /**
+   * Effect to set value and error if the user conditions on a deleted field.
+   */
+  useEffect(() => {
+    if (!ifFieldIdValue || !mapIdToField) return
+    if (!(ifFieldIdValue in mapIdToField)) {
+      resetField(`${name}.field`)
+      setError(`${name}.field`, {
+        type: 'manual',
+        message: 'This field was deleted, please select another field',
+      })
+    }
+  }, [ifFieldIdValue, mapIdToField, name, resetField, setError])
 
   /**
    * Effect to reset the field if the field to apply a condition on is changed.
@@ -139,6 +154,11 @@ export const EditConditionBlock = ({
       case BasicField.YesNo:
         return ['Yes', 'No']
       case BasicField.Radio:
+        if (mappedField.othersRadioButton) {
+          // 'Others' does not show up in fieldOptions
+          return mappedField.fieldOptions.concat('Others')
+        }
+        return mappedField.fieldOptions
       case BasicField.Dropdown:
         return mappedField.fieldOptions
       case BasicField.Rating:
@@ -159,6 +179,26 @@ export const EditConditionBlock = ({
         return '14rem'
     }
   }, [currentSelectedField])
+
+  const logicValueWrapperWidth = useMemo(() => {
+    return ifValueTypeValue === LogicIfValue.MultiSelect ? '0px' : 'auto'
+  }, [ifValueTypeValue])
+
+  const validateValueInputComponent = useCallback(
+    (val) => {
+      switch (ifValueTypeValue) {
+        case LogicIfValue.Number: {
+          if (currentSelectedField?.fieldType === BasicField.Decimal)
+            // Mimics behavior of actual decimal field in public forms
+            return !val || !isNaN(Number(val)) || 'Please enter a valid decimal'
+          return true
+        }
+        default:
+          return true
+      }
+    },
+    [currentSelectedField?.fieldType, ifValueTypeValue],
+  )
 
   const renderValueInputComponent = useCallback(
     (field: ControllerRenderProps<EditLogicInputs, `${typeof name}.value`>) => {
@@ -183,7 +223,21 @@ export const EditConditionBlock = ({
               {...rest}
             />
           )
-        case LogicIfValue.Number:
+        case LogicIfValue.Number: {
+          if (currentSelectedField?.fieldType === BasicField.Number)
+            return (
+              <NumberInput
+                inputMode="numeric"
+                isDisabled={!conditionStateValue}
+                value={String(value ?? '')}
+                {...rest}
+                onChange={(val) => {
+                  // Only allow numeric inputs, mimics behavior of NumberField
+                  rest.onChange(val.replace(/\D/g, ''))
+                }}
+                min={0}
+              />
+            )
           return (
             <NumberInput
               isDisabled={!conditionStateValue}
@@ -191,6 +245,7 @@ export const EditConditionBlock = ({
               {...rest}
             />
           )
+        }
         case undefined:
           return (
             <SingleSelect
@@ -202,7 +257,13 @@ export const EditConditionBlock = ({
           )
       }
     },
-    [conditionStateValue, conditionValueItems, ifValueTypeValue, isLoading],
+    [
+      conditionStateValue,
+      conditionValueItems,
+      currentSelectedField?.fieldType,
+      ifValueTypeValue,
+      isLoading,
+    ],
   )
 
   return (
@@ -274,7 +335,7 @@ export const EditConditionBlock = ({
           <BlockLabelText id={`${name}.state-label`} htmlFor={`${name}.state`}>
             IS
           </BlockLabelText>
-          <Flex flexDir="column" flex={1} as="fieldset">
+          <Flex flexDir="column" flex={1} as="fieldset" minW={0}>
             <VisuallyHidden as="legend">Logic criteria</VisuallyHidden>
             <Stack
               direction={{ base: 'column', md: 'row' }}
@@ -310,6 +371,7 @@ export const EditConditionBlock = ({
                 isRequired
                 isReadOnly={isLoading}
                 isInvalid={!!get(errors, `${name}.value`)}
+                minW={{ md: logicValueWrapperWidth }}
               >
                 <VisuallyHidden
                   as="label"
@@ -323,6 +385,7 @@ export const EditConditionBlock = ({
                   name={`${name}.value`}
                   rules={{
                     required: 'Please enter logic criteria.',
+                    validate: validateValueInputComponent,
                   }}
                   render={({ field }) => renderValueInputComponent(field)}
                 />

@@ -1,6 +1,12 @@
 import { useMemo } from 'react'
 import { Components } from 'react-markdown'
-import { CSSObject, ListItem, OrderedList, Text } from '@chakra-ui/react'
+import {
+  CSSObject,
+  ListItem,
+  OrderedList,
+  Text,
+  UnorderedList,
+} from '@chakra-ui/react'
 
 import Link from '~components/Link'
 
@@ -13,6 +19,10 @@ type MdComponentStyles = {
    * If exists, will be used for styling text
    */
   text?: CSSObject
+  /**
+   * If exists, will be used for styling text
+   */
+  list?: CSSObject
 }
 
 type UseMdComponentsProps = {
@@ -25,13 +35,34 @@ export const useMdComponents = ({
   overrides = {},
 }: UseMdComponentsProps = {}): Components => {
   const textStyles = useMemo(
-    () => ({ ...(styles?.text ? { sx: styles.text } : {}) }),
+    () => ({
+      sx: {
+        whiteSpace: 'pre-wrap',
+        ...(styles.text ?? {}),
+      },
+    }),
     [styles.text],
   )
 
   const linkStyles = useMemo(
-    () => ({ ...(styles.link ? { sx: styles.link } : {}) }),
+    () => ({
+      sx: {
+        whiteSpace: 'pre-wrap',
+        display: 'initial',
+        ...(styles.link ?? {}),
+      },
+    }),
     [styles.link],
+  )
+
+  const listStyles = useMemo(
+    () => ({
+      sx: {
+        whiteSpace: 'pre-wrap',
+        ...(styles.list ?? {}),
+      },
+    }),
+    [styles.list],
   )
 
   const mdComponents: Components = useMemo(
@@ -43,6 +74,9 @@ export const useMdComponents = ({
           {...props}
           {...textStyles}
         />
+      ),
+      ul: ({ node, ordered, ...props }) => (
+        <UnorderedList {...props} {...listStyles} />
       ),
       li: ({ node, ordered, ...props }) => (
         <ListItem {...props} {...textStyles} />
@@ -57,7 +91,7 @@ export const useMdComponents = ({
       p: ({ node, ...props }) => <Text {...props} {...textStyles} />,
       ...overrides,
     }),
-    [linkStyles, overrides, textStyles],
+    [linkStyles, overrides, textStyles, listStyles],
   )
 
   return mdComponents

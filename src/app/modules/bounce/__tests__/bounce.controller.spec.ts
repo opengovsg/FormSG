@@ -1,7 +1,8 @@
+import dbHandler from '__tests__/unit/backend/helpers/jest-db'
+import expressHandler from '__tests__/unit/backend/helpers/jest-express'
 import { ObjectId } from 'bson'
 import mongoose from 'mongoose'
 import { errAsync, ok, okAsync } from 'neverthrow'
-import { mocked } from 'ts-jest/utils'
 
 import getFormModel from 'src/app/models/form.server.model'
 import { handleSns } from 'src/app/modules/bounce/bounce.controller'
@@ -16,9 +17,6 @@ import {
   ISnsNotification,
 } from 'src/types'
 
-import dbHandler from 'tests/unit/backend/helpers/jest-db'
-import expressHandler from 'tests/unit/backend/helpers/jest-express'
-
 import { DatabaseError } from '../../core/core.errors'
 import { InvalidNotificationError } from '../bounce.errors'
 
@@ -27,8 +25,8 @@ const FormModel = getFormModel(mongoose)
 
 jest.mock('src/app/modules/bounce/bounce.service')
 jest.mock('src/app/modules/form/form.service')
-const MockBounceService = mocked(BounceService, true)
-const MockFormService = mocked(FormService, true)
+const MockFormService = jest.mocked(FormService)
+const MockBounceService = jest.mocked(BounceService)
 
 class MockVersionError extends Error {
   constructor(msg?: string) {

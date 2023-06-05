@@ -1,7 +1,7 @@
-import { useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import { Controller, RegisterOptions } from 'react-hook-form'
 import { Box, FormControl, SimpleGrid } from '@chakra-ui/react'
-import { isBefore, isDate, isEqual } from 'date-fns'
+import { isBefore, isEqual, isValid } from 'date-fns'
 import { extend, get, isEmpty, pick } from 'lodash'
 
 import {
@@ -11,11 +11,12 @@ import {
 } from '~shared/types/field'
 
 import {
-  transformDateToShortIsoString,
-  transformShortIsoStringToDate,
+  isDateOutOfRange,
+  loadDateFromNormalizedDate,
+  normalizeDateToUtc,
 } from '~utils/date'
 import { createBaseValidationRules } from '~utils/fieldValidation'
-import DateInput from '~components/DatePicker'
+import { DatePicker } from '~components/DatePicker'
 import { SingleSelect } from '~components/Dropdown'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
@@ -23,7 +24,9 @@ import Input from '~components/Input'
 import Textarea from '~components/Textarea'
 import Toggle from '~components/Toggle'
 
-import { DrawerContentContainer } from '../common/DrawerContentContainer'
+import { useCreatePageSidebarLayout } from '~features/admin-form/create/common/CreatePageSideBarLayoutContext'
+
+import { CreatePageDrawerContentContainer } from '../../../../../common'
 import { FormFieldDrawerActions } from '../common/FormFieldDrawerActions'
 import { EditFieldProps } from '../common/types'
 import { useEditFieldForm } from '../common/useEditFieldForm'
@@ -32,14 +35,16 @@ type EditDateProps = EditFieldProps<DateFieldBase>
 
 const EDIT_DATE_FIELD_KEYS = ['title', 'description', 'required'] as const
 
+const MIN_WIDTH_FOR_2_COL = 405
+
 type EditDateInputs = Pick<
   DateFieldBase,
   typeof EDIT_DATE_FIELD_KEYS[number]
 > & {
   dateValidation: {
     selectedDateValidation: DateSelectedValidation | ''
-    customMaxDate: string
-    customMinDate: string
+    customMaxDate: Date | null
+    customMinDate: Date | null
   }
 }
 
@@ -48,11 +53,11 @@ const transformDateFieldToEditForm = (field: DateFieldBase): EditDateInputs => {
     selectedDateValidation:
       field.dateValidation.selectedDateValidation ?? ('' as const),
     customMaxDate: field.dateValidation.selectedDateValidation
-      ? transformDateToShortIsoString(field.dateValidation.customMaxDate) ?? ''
-      : ('' as const),
+      ? loadDateFromNormalizedDate(field.dateValidation.customMaxDate)
+      : null,
     customMinDate: field.dateValidation.selectedDateValidation
-      ? transformDateToShortIsoString(field.dateValidation.customMinDate) ?? ''
-      : ('' as const),
+      ? loadDateFromNormalizedDate(field.dateValidation.customMinDate)
+      : null,
   }
   return {
     ...pick(field, EDIT_DATE_FIELD_KEYS),
@@ -84,12 +89,8 @@ const transformDateEditFormToField = (
     case DateSelectedValidation.Custom: {
       nextValidationOptions = {
         selectedDateValidation: inputs.dateValidation.selectedDateValidation,
-        customMinDate: transformShortIsoStringToDate(
-          inputs.dateValidation.customMinDate,
-        ),
-        customMaxDate: transformShortIsoStringToDate(
-          inputs.dateValidation.customMaxDate,
-        ),
+        customMinDate: inputs.dateValidation.customMinDate,
+        customMaxDate: inputs.dateValidation.customMaxDate,
       }
     }
   }
@@ -100,11 +101,32 @@ const transformDateEditFormToField = (
 }
 
 export const EditDate = ({ field }: EditDateProps): JSX.Element => {
+  const preSubmitTransform = useCallback(
+    (inputs: EditDateInputs, output: DateFieldBase): DateFieldBase => {
+      // normalize time to UTC before saving
+      return {
+        ...output,
+        dateValidation: {
+          selectedDateValidation:
+            inputs.dateValidation.selectedDateValidation === ''
+              ? null
+              : inputs.dateValidation.selectedDateValidation,
+          customMinDate: normalizeDateToUtc(
+            inputs.dateValidation.customMinDate,
+          ),
+          customMaxDate: normalizeDateToUtc(
+            inputs.dateValidation.customMaxDate,
+          ),
+        },
+      } as DateFieldBase
+    },
+    [],
+  )
+
   const {
     register,
     formState: { errors },
     getValues,
-    isSaveEnabled,
     control,
     buttonText,
     handleUpdateField,
@@ -115,6 +137,7 @@ export const EditDate = ({ field }: EditDateProps): JSX.Element => {
     transform: {
       input: transformDateFieldToEditForm,
       output: transformDateEditFormToField,
+      preSubmit: preSubmitTransform,
     },
   })
 
@@ -128,7 +151,7 @@ export const EditDate = ({ field }: EditDateProps): JSX.Element => {
     'dateValidation.customMinDate'
   > = useMemo(
     () => ({
-      // customMin is required if there is selected validation.
+      // either customMin or customMax is required if custom date range validation is selected.
       validate: {
         hasValidation: (val) => {
           const hasMaxValue =
@@ -137,14 +160,15 @@ export const EditDate = ({ field }: EditDateProps): JSX.Element => {
             !!getValues('dateValidation.customMaxDate')
           return !!val || hasMaxValue || 'You must specify at least one date.'
         },
-        validDate: (val) =>
-          !val || isDate(new Date(val)) || 'Please enter a valid date',
+        validDate: (val) => !val || isValid(val) || 'Please enter a valid date',
         inRange: (val) => {
-          const date = new Date(val)
-          const maxDate = new Date(getValues('dateValidation.customMaxDate'))
+          const maxDate = getValues('dateValidation.customMaxDate')
+
           return (
-            isEqual(date, maxDate) ||
-            isBefore(date, maxDate) ||
+            !maxDate || // Only min date
+            !val || // Only max date
+            isEqual(val, maxDate) ||
+            isBefore(val, maxDate) ||
             'Max date cannot be less than min date.'
           )
         },
@@ -153,8 +177,10 @@ export const EditDate = ({ field }: EditDateProps): JSX.Element => {
     [getValues],
   )
 
+  const { drawerWidth } = useCreatePageSidebarLayout()
+
   return (
-    <DrawerContentContainer>
+    <CreatePageDrawerContentContainer>
       <FormControl isRequired isReadOnly={isLoading} isInvalid={!!errors.title}>
         <FormLabel>Question</FormLabel>
         <Input autoFocus {...register('title', requiredValidationRule)} />
@@ -195,20 +221,42 @@ export const EditDate = ({ field }: EditDateProps): JSX.Element => {
           {getValues('dateValidation.selectedDateValidation') ===
           DateSelectedValidation.Custom ? (
             <>
-              <Controller
-                control={control}
-                name="dateValidation.customMinDate"
-                rules={customMinValidationOptions}
-                render={({ field }) => <DateInput {...field} />}
-              />
-              <Controller
-                control={control}
-                rules={{
-                  deps: ['dateValidation.customMinDate'],
-                }}
-                name="dateValidation.customMaxDate"
-                render={({ field }) => <DateInput {...field} />}
-              />
+              <Box
+                gridColumn={
+                  drawerWidth < MIN_WIDTH_FOR_2_COL ? '1/3' : undefined
+                }
+              >
+                <Controller
+                  control={control}
+                  name="dateValidation.customMinDate"
+                  rules={customMinValidationOptions}
+                  render={({ field }) => <DatePicker {...field} />}
+                />
+              </Box>
+              <Box
+                gridColumn={
+                  drawerWidth < MIN_WIDTH_FOR_2_COL ? '1/3' : undefined
+                }
+              >
+                <Controller
+                  control={control}
+                  rules={{
+                    deps: ['dateValidation.customMinDate'],
+                  }}
+                  name="dateValidation.customMaxDate"
+                  render={({ field }) => (
+                    <DatePicker
+                      isDateUnavailable={(d) =>
+                        isDateOutOfRange(
+                          d,
+                          getValues('dateValidation.customMinDate'),
+                        )
+                      }
+                      {...field}
+                    />
+                  )}
+                />
+              </Box>
             </>
           ) : null}
         </SimpleGrid>
@@ -218,11 +266,10 @@ export const EditDate = ({ field }: EditDateProps): JSX.Element => {
       </FormControl>
       <FormFieldDrawerActions
         isLoading={isLoading}
-        isSaveEnabled={isSaveEnabled}
         buttonText={buttonText}
         handleClick={handleUpdateField}
         handleCancel={handleCancel}
       />
-    </DrawerContentContainer>
+    </CreatePageDrawerContentContainer>
   )
 }

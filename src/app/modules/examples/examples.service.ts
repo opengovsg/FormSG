@@ -1,7 +1,7 @@
 import { get } from 'lodash'
 import mongoose from 'mongoose'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
-import { Except, Merge } from 'type-fest'
+import type { Except, Merge } from 'type-fest'
 
 import { createLoggerWithLabel } from '../../config/logger'
 import getFormModel from '../../models/form.server.model'
@@ -114,7 +114,7 @@ const execExamplesQueryWithTotal = (
       ...x,
       timeText: formatToRelativeString(x.lastSubmission),
     }))
-    const totalNumResults: number = get(totalCount, '[0].count', 0)
+    const totalNumResults: number = get(totalCount, '[0].count') ?? 0
     return okAsync({ forms: formattedResults, totalNumResults })
   })
 }

@@ -73,6 +73,7 @@ export const RadioField = ({
       <Controller
         name={radioInputName}
         rules={validationRules}
+        defaultValue=""
         // `ref` omitted so the radiogroup will not have a ref and only the
         // radio themselves get the ref.
         render={({ field: { ref, onChange, value, ...rest } }) => (
@@ -85,9 +86,20 @@ export const RadioField = ({
               // Trigger validation of others input if Other radio is selected.
               if (value === RADIO_OTHERS_INPUT_VALUE) trigger(othersInputName)
             }}
+            aria-label={`${schema.questionNumber}. ${schema.title}`}
+            aria-invalid={
+              !!get(errors, radioInputName) || !!get(errors, othersInputName)
+            }
+            aria-required={schema.required}
           >
             {schema.fieldOptions.map((option, idx) => (
-              <Radio key={idx} value={option} {...(idx === 0 ? { ref } : {})}>
+              <Radio
+                key={idx}
+                value={option}
+                {...(idx === 0 ? { ref } : {})}
+                // Required should apply to radio group rather than individual radio.
+                isRequired={false}
+              >
                 {option}
               </Radio>
             ))}
@@ -103,7 +115,7 @@ export const RadioField = ({
                   isInvalid={!!get(errors, othersInputName)}
                 >
                   <OthersInput
-                    aria-label='Enter value for "Others" option'
+                    aria-label='"Other" response'
                     {...register(othersInputName, othersValidationRules)}
                   />
                   <FormErrorMessage

@@ -1,7 +1,6 @@
 import { useMemo } from 'react'
-import Highlighter from 'react-highlight-words'
-import { chakra, Text } from '@chakra-ui/react'
-import escapeRegExp from 'lodash/escapeRegExp'
+import { chakra } from '@chakra-ui/react'
+import fuzzysort from 'fuzzysort'
 
 interface HighlightMarkProps {
   showHoverBg: boolean
@@ -11,9 +10,6 @@ interface HighlightMarkProps {
 const HighlightMark = ({ showHoverBg, children }: HighlightMarkProps) => (
   <chakra.mark
     bg={showHoverBg ? 'primary.200' : 'primary.100'}
-    transitionProperty="background"
-    transitionDuration="ultra-fast"
-    transitionTimingFunction="ease-in"
     color="primary.500"
   >
     {children}
@@ -32,24 +28,16 @@ export const DropdownItemTextHighlighter = ({
   showHoverBg,
   textToHighlight,
 }: DropdownItemTextHighlighterProps): JSX.Element => {
-  /**
-   * Allows for fuzzy matching of searched characters, resulting in better UX.
-   * E.g. searching for `'rb'` will highlight `r` and `b` in `"radio button"`.
-   */
-  const regexSearchWords = useMemo(
-    () => [new RegExp(`[${escapeRegExp(inputValue)}]`, 'gi')],
-    [inputValue],
-  )
+  const markedComponents = useMemo(() => {
+    const result = fuzzysort.single(inputValue, textToHighlight)
+    // Return the original text if no match is found.
+    if (!result) return textToHighlight
+    return fuzzysort.highlight(result, (m, i) => (
+      <HighlightMark showHoverBg={showHoverBg} key={i}>
+        {m}
+      </HighlightMark>
+    ))
+  }, [inputValue, showHoverBg, textToHighlight])
 
-  return (
-    <Text textStyle="body-1">
-      <Highlighter
-        searchWords={regexSearchWords}
-        highlightTag={({ children }) => (
-          <HighlightMark children={children} showHoverBg={showHoverBg} />
-        )}
-        textToHighlight={textToHighlight}
-      />
-    </Text>
-  )
+  return <chakra.span>{markedComponents}</chakra.span>
 }

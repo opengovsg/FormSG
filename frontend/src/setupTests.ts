@@ -36,3 +36,7 @@ window.matchMedia =
       removeListener: jest.fn(),
     }
   }
+
+global.ResizeObserver = require('resize-observer-polyfill')
+
+jest.setTimeout(20000)

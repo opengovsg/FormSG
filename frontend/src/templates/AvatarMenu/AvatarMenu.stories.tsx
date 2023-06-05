@@ -9,7 +9,7 @@ const DEFAULT_MENU_ITEMS = (
     <Menu.Item>Billing</Menu.Item>
     <Menu.Item>Emergency contact</Menu.Item>
     <AvatarMenuDivider />
-    <Menu.Item>Sign out</Menu.Item>
+    <Menu.Item>Log out</Menu.Item>
   </>
 )
 

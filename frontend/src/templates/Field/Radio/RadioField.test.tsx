@@ -1,5 +1,5 @@
 import { composeStories } from '@storybook/testing-react'
-import { act, render, screen } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
 import { REQUIRED_ERROR } from '~constants/validation'
@@ -13,13 +13,12 @@ const { ValidationOptional, ValidationRequired, WithoutOthersOption } =
 describe('required field', () => {
   it('renders error when field is not selected before submitting', async () => {
     // Arrange
-    await act(async () => {
-      render(<ValidationRequired />)
-    })
+    const user = userEvent.setup()
+    render(<ValidationRequired />)
     const submitButton = screen.getByRole('button', { name: /submit/i })
 
     // Act
-    await act(async () => userEvent.click(submitButton))
+    await user.click(submitButton)
 
     // Assert
     // Should show error message.
@@ -28,17 +27,16 @@ describe('required field', () => {
 
   it('renders success when valid radio field selected when submitted (without others option)', async () => {
     // Arrange
+    const user = userEvent.setup()
     const radioOption =
       WithoutOthersOption.args?.schema?.fieldOptions?.[0] ?? ''
-    await act(async () => {
-      render(<WithoutOthersOption />)
-    })
+    render(<WithoutOthersOption />)
     const submitButton = screen.getByRole('button', { name: /submit/i })
     const firstRadioButton = screen.getByLabelText(radioOption)
 
     // Act
-    await act(async () => userEvent.click(firstRadioButton))
-    await act(async () => userEvent.click(submitButton))
+    await user.click(firstRadioButton)
+    await user.click(submitButton)
 
     // Assert
     // Should show success message.
@@ -50,16 +48,15 @@ describe('required field', () => {
 
   it('renders success when valid radio field selected when submitted (with others option)', async () => {
     // Arrange
+    const user = userEvent.setup()
     const radioOption = ValidationRequired.args?.schema?.fieldOptions?.[0] ?? ''
-    await act(async () => {
-      render(<ValidationRequired />)
-    })
+    render(<ValidationRequired />)
     const submitButton = screen.getByRole('button', { name: /submit/i })
     const firstRadioButton = screen.getByLabelText(radioOption)
 
     // Act
-    await act(async () => userEvent.click(firstRadioButton))
-    await act(async () => userEvent.click(submitButton))
+    await user.click(firstRadioButton)
+    await user.click(submitButton)
 
     // Assert
     // Should show success message.
@@ -78,13 +75,12 @@ describe('required field', () => {
 describe('optional field', () => {
   it('renders success even when field is not selected before submitting', async () => {
     // Arrange
-    await act(async () => {
-      render(<ValidationOptional />)
-    })
+    const user = userEvent.setup()
+    render(<ValidationOptional />)
     const submitButton = screen.getByRole('button', { name: /submit/i })
 
     // Act
-    await act(async () => userEvent.click(submitButton))
+    await user.click(submitButton)
 
     // Assert
     // Should show success message.
@@ -93,16 +89,15 @@ describe('optional field', () => {
 
   it('renders success when valid radio field selected when submitted', async () => {
     // Arrange
+    const user = userEvent.setup()
     const radioOption = ValidationOptional.args?.schema?.fieldOptions?.[3] ?? ''
-    await act(async () => {
-      render(<ValidationOptional />)
-    })
+    render(<ValidationOptional />)
     const submitButton = screen.getByRole('button', { name: /submit/i })
     const firstRadioButton = screen.getByLabelText(radioOption)
 
     // Act
-    await act(async () => userEvent.click(firstRadioButton))
-    await act(async () => userEvent.click(submitButton))
+    await user.click(firstRadioButton)
+    await user.click(submitButton)
 
     // Assert
     // Should show success message.
@@ -121,15 +116,14 @@ describe('optional field', () => {
 describe('radio validation', () => {
   it('renders error when others option is submitted without filling in input', async () => {
     // Arrange
-    await act(async () => {
-      render(<ValidationRequired />)
-    })
+    const user = userEvent.setup()
+    render(<ValidationRequired />)
     const submitButton = screen.getByRole('button', { name: /submit/i })
     const otherRadioButton = screen.getByRole('radio', { name: /other/i })
 
     // Act
-    await act(async () => userEvent.click(otherRadioButton))
-    await act(async () => userEvent.click(submitButton))
+    await user.click(otherRadioButton)
+    await user.click(submitButton)
 
     // Assert
     // Should show specific other required error message.
@@ -140,9 +134,8 @@ describe('radio validation', () => {
 
   it('renders success when switching options before submitting', async () => {
     // Arrange
-    await act(async () => {
-      render(<ValidationRequired />)
-    })
+    const user = userEvent.setup()
+    render(<ValidationRequired />)
     const radioOption = ValidationOptional.args?.schema?.fieldOptions?.[3] ?? ''
 
     const submitButton = screen.getByRole('button', { name: /submit/i })
@@ -150,10 +143,10 @@ describe('radio validation', () => {
     const otherRadioButton = screen.getByRole('radio', { name: /other/i })
 
     // Act
-    await act(async () => userEvent.click(otherRadioButton))
+    await user.click(otherRadioButton)
     // Change radio option
-    await act(async () => userEvent.click(altRadioButton))
-    await act(async () => userEvent.click(submitButton))
+    await user.click(altRadioButton)
+    await user.click(submitButton)
 
     // Assert
     // Should show success message.

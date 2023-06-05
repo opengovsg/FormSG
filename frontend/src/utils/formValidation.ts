@@ -16,10 +16,6 @@ export const FORM_TITLE_VALIDATION_RULES: UseControllerProps['rules'] = {
     value: MAX_TITLE_LENGTH,
     message: `Form name must be at most ${MAX_TITLE_LENGTH} characters`,
   },
-  pattern: {
-    value: /^[a-zA-Z0-9_\-./() &`;'"]*$/,
-    message: 'Form name cannot contain special characters',
-  },
   validate: {
     trimMinLength: (value: string) => {
       return (
@@ -30,49 +26,32 @@ export const FORM_TITLE_VALIDATION_RULES: UseControllerProps['rules'] = {
   },
 }
 
-export const createAdminEmailValidationTransform = () => {
-  const transform = {
-    // Combine and display all emails in a single string in the input field.
-    input: (value: string[]) => value.join(','),
-    // Convert joined email string into an array of emails.
-    output: (value: string) =>
-      value
-        .replace(/\s/g, '')
-        .split(',')
-        .map((v) => v.trim()),
-  }
-
-  const rules: UseControllerProps['rules'] = {
-    validate: {
-      required: (emails: string[]) => {
-        return (
-          emails.filter(Boolean).length > 0 ||
-          'You must at least enter one email to receive responses'
-        )
-      },
-      valid: (emails: string[]) => {
-        return (
-          emails.filter(Boolean).every((e) => validator.isEmail(e)) ||
-          'Please enter valid email(s) (e.g. me@example.com) separated by commas.'
-        )
-      },
-      duplicate: (emails: string[]) => {
-        return (
-          new Set(emails).size === emails.length ||
-          'Please remove duplicate emails.'
-        )
-      },
-      maxLength: (emails: string[]) => {
-        return (
-          emails.length <= MAX_EMAIL_LENGTH ||
-          'Please limit number of emails to 30.'
-        )
-      },
+export const ADMIN_EMAIL_VALIDATION_RULES: UseControllerProps['rules'] = {
+  validate: {
+    required: (emails: string[]) => {
+      return (
+        emails.filter(Boolean).length > 0 ||
+        'You must at least enter one email to receive responses'
+      )
     },
-  }
-
-  return {
-    rules,
-    transform,
-  }
+    valid: (emails: string[]) => {
+      return (
+        emails.filter(Boolean).every((e) => validator.isEmail(e)) ||
+        'Please enter valid email(s) (e.g. me@example.com) separated by commas, as invalid emails will not be saved'
+      )
+    },
+    duplicate: (emails: string[]) => {
+      const truthyEmails = emails.filter(Boolean)
+      return (
+        new Set(truthyEmails).size === truthyEmails.length ||
+        'Please remove duplicate emails'
+      )
+    },
+    maxLength: (emails: string[]) => {
+      return (
+        emails.filter(Boolean).length <= MAX_EMAIL_LENGTH ||
+        `Please limit number of emails to ${MAX_EMAIL_LENGTH}`
+      )
+    },
+  },
 }

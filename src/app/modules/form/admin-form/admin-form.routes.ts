@@ -16,6 +16,7 @@ import * as EncryptSubmissionController from '../../submission/encrypt-submissio
 
 import * as AdminFormController from './admin-form.controller'
 
+/** @deprecated use AdminFormsRouter in src/app/routes/api/v3/admin/forms/admin-forms.routes.ts instead. */
 export const AdminFormsRouter = Router()
 
 const Joi = BaseJoi.extend(JoiDate) as typeof BaseJoi

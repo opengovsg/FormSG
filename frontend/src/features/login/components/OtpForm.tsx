@@ -14,12 +14,14 @@ export type OtpFormInputs = {
 
 interface OtpFormProps {
   email: string
+  otpPrefix: string
   onSubmit: (inputs: OtpFormInputs) => Promise<void>
   onResendOtp: () => Promise<void>
 }
 
 export const OtpForm = ({
   email,
+  otpPrefix,
   onSubmit,
   onResendOtp,
 }: OtpFormProps): JSX.Element => {
@@ -42,12 +44,8 @@ export const OtpForm = ({
   return (
     <form onSubmit={handleSubmit(onSubmitForm)}>
       <FormControl isInvalid={!!formState.errors.otp} mb="2.5rem">
-        <FormLabel
-          isRequired
-          htmlFor="otp"
-          description={`Enter OTP sent to ${email}`}
-        >
-          One-time password
+        <FormLabel isRequired htmlFor="otp">
+          {`Enter OTP sent to ${email.toLowerCase()}`}
         </FormLabel>
         <Input
           type="text"
@@ -63,6 +61,7 @@ export const OtpForm = ({
             },
             validate: validateOtp,
           })}
+          prefix={otpPrefix === undefined ? undefined : `${otpPrefix} -`}
         />
         {formState.errors.otp && (
           <FormErrorMessage>{formState.errors.otp.message}</FormErrorMessage>
@@ -70,7 +69,7 @@ export const OtpForm = ({
       </FormControl>
       <Stack
         direction={{ base: 'column', lg: 'row' }}
-        spacing={{ base: '1.5rem', lg: '2.5rem' }}
+        spacing="1rem"
         align="center"
       >
         <Button

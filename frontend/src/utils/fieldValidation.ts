@@ -3,12 +3,14 @@
  * to the field schema.
  */
 import { RegisterOptions } from 'react-hook-form'
-import { isDate, parseISO } from 'date-fns'
+import { isValid, parse } from 'date-fns'
+import { identity } from 'lodash'
 import simplur from 'simplur'
 import validator from 'validator'
 
 import {
   AttachmentFieldBase,
+  BasicField,
   CheckboxFieldBase,
   DateFieldBase,
   DateSelectedValidation,
@@ -41,44 +43,61 @@ import {
   INVALID_EMAIL_ERROR,
   REQUIRED_ERROR,
 } from '~constants/validation'
-import { VerifiableFieldValues } from '~templates/Field/types'
+import { DATE_PARSE_FORMAT } from '~templates/Field/Date/DateField'
+import {
+  CheckboxFieldValues,
+  SingleAnswerValue,
+  VerifiableFieldValues,
+} from '~templates/Field/types'
 
 import { VerifiableFieldBase } from '~features/verifiable-fields/types'
 
-import { isDateAfterToday, isDateBeforeToday, isDateOutOfRange } from './date'
+import {
+  isDateAfterToday,
+  isDateBeforeToday,
+  isDateOutOfRange,
+  loadDateFromNormalizedDate,
+} from './date'
 import { formatNumberToLocaleString } from './stringFormat'
 
-type OmitUnusedProps<T extends FieldBase> = Omit<
+// Omit unused props
+type MinimumFieldValidationProps<T extends FieldBase> = Omit<
   T,
   'fieldType' | 'description' | 'disabled'
 >
 
+// fieldType is only used in email and mobile field verification, so we don't omit it
+type MinimumFieldValidationPropsEmailAndMobile<T extends FieldBase> = Omit<
+  T,
+  'description' | 'disabled'
+>
+
 type ValidationRuleFn<T extends FieldBase = FieldBase> = (
-  schema: OmitUnusedProps<T>,
+  schema: MinimumFieldValidationProps<T>,
 ) => RegisterOptions
 
-const createRequiredValidationRules = (
-  schema: Pick<FieldBase, 'required'>,
-): RegisterOptions['required'] => {
-  return {
-    value: schema.required,
-    message: REQUIRED_ERROR,
+type ValidationRuleFnEmailAndMobile<T extends FieldBase = FieldBase> = (
+  schema: MinimumFieldValidationPropsEmailAndMobile<T>,
+) => RegisterOptions
+
+const requiredSingleAnswerValidationFn =
+  (schema: Pick<FieldBase, 'required'>) => (value?: SingleAnswerValue) => {
+    if (!schema.required) return true
+    return !!value?.trim() || REQUIRED_ERROR
   }
-}
 
 /**
  * Validation rules for verifiable fields.
  * @param schema verifiable field schema
  * @returns base verifiable fields' validation rules
  */
-const createBaseVfnFieldValidationRules: ValidationRuleFn<
+const createBaseVfnFieldValidationRules: ValidationRuleFnEmailAndMobile<
   VerifiableFieldBase
-> = (schema) => {
+> = (schema): RegisterOptions => {
   return {
     validate: {
       required: (value?: VerifiableFieldValues) => {
-        if (!schema.required) return true
-        return !!value?.value || REQUIRED_ERROR
+        return requiredSingleAnswerValidationFn(schema)(value?.value)
       },
       hasSignature: (val?: VerifiableFieldValues) => {
         if (!schema.isVerifiable) return true
@@ -86,19 +105,13 @@ const createBaseVfnFieldValidationRules: ValidationRuleFn<
         if (!!val?.signature || (!val?.value && !val?.signature)) {
           return true
         }
-        return 'Field verification is required'
+        if (schema.fieldType === BasicField.Mobile) {
+          return 'Please verify your mobile number'
+        }
+        if (schema.fieldType === BasicField.Email) {
+          return 'Please verify your email address'
+        }
       },
-    },
-  }
-}
-
-const createRequiredInValidationRules = (
-  schema: Pick<FieldBase, 'required'>,
-): RegisterOptions['validate'] => {
-  return {
-    required: (value: unknown) => {
-      if (!schema.required) return true
-      return !!value || REQUIRED_ERROR
     },
   }
 }
@@ -107,7 +120,7 @@ export const createBaseValidationRules = (
   schema: Pick<FieldBase, 'required'>,
 ): RegisterOptions => {
   return {
-    required: createRequiredValidationRules(schema),
+    validate: requiredSingleAnswerValidationFn(schema),
   }
 }
 
@@ -116,8 +129,8 @@ export const createDropdownValidationRules: ValidationRuleFn<
 > = (schema): RegisterOptions => {
   // TODO(#3360): Handle MyInfo dropdown validation
   return {
-    ...createBaseValidationRules(schema),
     validate: {
+      required: requiredSingleAnswerValidationFn(schema),
       validOptions: (value: string) => {
         if (!value) return
         return (
@@ -131,34 +144,37 @@ export const createDropdownValidationRules: ValidationRuleFn<
 export const createRatingValidationRules: ValidationRuleFn<RatingFieldBase> = (
   schema,
 ): RegisterOptions => {
-  return {
-    validate: {
-      ...createRequiredInValidationRules(schema),
-    },
-  }
+  return createBaseValidationRules(schema)
 }
 
 export const createAttachmentValidationRules: ValidationRuleFn<
   AttachmentFieldBase
-> = (schema) => {
-  return createBaseValidationRules(schema)
-}
-
-export const createHomeNoValidationRules: ValidationRuleFn<HomenoFieldBase> = (
-  schema,
-) => {
+> = (schema): RegisterOptions => {
   return {
-    ...createBaseValidationRules(schema),
-    validate: (val?: string) => {
-      if (!val) return true
-      return isHomePhoneNumber(val) || 'Please enter a valid landline number'
+    validate: (value?: File) => {
+      if (!schema.required) return true
+      return !!value || REQUIRED_ERROR
     },
   }
 }
 
-export const createMobileValidationRules: ValidationRuleFn<MobileFieldBase> = (
+export const createHomeNoValidationRules: ValidationRuleFn<HomenoFieldBase> = (
   schema,
-) => {
+): RegisterOptions => {
+  return {
+    validate: {
+      required: requiredSingleAnswerValidationFn(schema),
+      validHomeNo: (val?: string) => {
+        if (!val) return true
+        return isHomePhoneNumber(val) || 'Please enter a valid landline number'
+      },
+    },
+  }
+}
+
+export const createMobileValidationRules: ValidationRuleFnEmailAndMobile<
+  MobileFieldBase
+> = (schema): RegisterOptions => {
   return {
     validate: {
       baseValidations: (val?: VerifiableFieldValues) => {
@@ -171,185 +187,214 @@ export const createMobileValidationRules: ValidationRuleFn<MobileFieldBase> = (
 
 export const createNumberValidationRules: ValidationRuleFn<NumberFieldBase> = (
   schema,
-) => {
+): RegisterOptions => {
   const { selectedValidation, customVal } = schema.ValidationOptions
 
   return {
-    ...createBaseValidationRules(schema),
-    validate: (val?: string) => {
-      if (!val || !customVal) return true
+    validate: {
+      required: requiredSingleAnswerValidationFn(schema),
+      validNumber: (val?: string) => {
+        if (!val || !customVal) return true
 
-      const currLen = val.length
+        const currLen = val.trim().length
 
-      switch (selectedValidation) {
-        case NumberSelectedValidation.Exact:
-          return (
-            currLen === customVal ||
-            simplur`Please enter ${customVal} digit[|s] (${currLen}/${customVal})`
-          )
-        case NumberSelectedValidation.Min:
-          return (
-            currLen >= customVal ||
-            simplur`Please enter at least ${customVal} digit[|s] (${currLen}/${customVal})`
-          )
-        case NumberSelectedValidation.Max:
-          return (
-            currLen <= customVal ||
-            simplur`Please enter at most ${customVal} digit[|s] (${currLen}/${customVal})`
-          )
-      }
+        switch (selectedValidation) {
+          case NumberSelectedValidation.Exact:
+            return (
+              currLen === customVal ||
+              simplur`Please enter ${customVal} digit[|s] (${currLen}/${customVal})`
+            )
+          case NumberSelectedValidation.Min:
+            return (
+              currLen >= customVal ||
+              simplur`Please enter at least ${customVal} digit[|s] (${currLen}/${customVal})`
+            )
+          case NumberSelectedValidation.Max:
+            return (
+              currLen <= customVal ||
+              simplur`Please enter at most ${customVal} digit[|s] (${currLen}/${customVal})`
+            )
+        }
+      },
     },
   }
 }
 
 export const createDecimalValidationRules: ValidationRuleFn<
   DecimalFieldBase
-> = (schema) => {
+> = (schema): RegisterOptions => {
   return {
-    ...createBaseValidationRules(schema),
-    validate: (val: string) => {
-      const {
-        ValidationOptions: { customMax, customMin },
-        validateByValue,
-      } = schema
-      if (!val) return true
+    validate: {
+      required: requiredSingleAnswerValidationFn(schema),
+      validDecimal: (val: string) => {
+        const {
+          ValidationOptions: { customMax, customMin },
+          validateByValue,
+        } = schema
+        if (!val) return true
 
-      const numVal = Number(val)
-      if (isNaN(numVal)) {
-        return 'Please enter a valid decimal'
-      }
+        const numVal = Number(val)
+        if (isNaN(numVal)) {
+          return 'Please enter a valid decimal'
+        }
 
-      if (!validateByValue) return true
+        // Validate leading zeros
+        if (/^0[0-9]/.test(val)) {
+          return 'Please enter a valid decimal without leading zeros'
+        }
 
-      if (
-        customMin &&
-        customMax &&
-        (numVal < customMin || numVal > customMax)
-      ) {
-        return `Please enter a decimal between ${formatNumberToLocaleString(
-          customMin,
-        )} and ${formatNumberToLocaleString(customMax)} (inclusive)`
-      }
+        if (!validateByValue) return true
 
-      if (customMin && numVal < customMin) {
-        return `Please enter a decimal greater than or equal to ${formatNumberToLocaleString(
-          customMin,
-        )}`
-      }
+        if (
+          customMin !== null &&
+          customMax !== null &&
+          (numVal < customMin || numVal > customMax)
+        ) {
+          return `Please enter a decimal between ${formatNumberToLocaleString(
+            customMin,
+          )} and ${formatNumberToLocaleString(customMax)} (inclusive)`
+        }
+        if (customMin !== null && numVal < customMin) {
+          return `Please enter a decimal greater than or equal to ${formatNumberToLocaleString(
+            customMin,
+          )}`
+        }
+        if (customMax !== null && numVal > customMax) {
+          return `Please enter a decimal less than or equal to ${formatNumberToLocaleString(
+            customMax,
+          )}`
+        }
 
-      if (customMax && numVal > customMax) {
-        return `Please enter a decimal less than or equal to ${formatNumberToLocaleString(
-          customMax,
-        )}`
-      }
-
-      return true
+        return true
+      },
     },
   }
 }
 
 export const createTextValidationRules: ValidationRuleFn<
   ShortTextFieldBase | LongTextFieldBase
-> = (schema) => {
+> = (schema): RegisterOptions => {
   const { selectedValidation, customVal } = schema.ValidationOptions
   return {
-    ...createBaseValidationRules(schema),
-    validate: (val?: string) => {
-      if (!val || !customVal) return true
+    validate: {
+      required: requiredSingleAnswerValidationFn(schema),
+      validText: (val?: string) => {
+        if (!val || !customVal) return true
 
-      const currLen = val.length
+        const currLen = val.trim().length
 
-      switch (selectedValidation) {
-        case TextSelectedValidation.Exact:
-          return (
-            currLen === customVal ||
-            simplur`Please enter ${customVal} character[|s] (${currLen}/${customVal})`
-          )
-        case TextSelectedValidation.Minimum:
-          return (
-            currLen >= customVal ||
-            simplur`Please enter at least ${customVal} character[|s] (${currLen}/${customVal})`
-          )
-        case TextSelectedValidation.Maximum:
-          return (
-            currLen <= customVal ||
-            simplur`Please enter at most ${customVal} character[|s] (${currLen}/${customVal})`
-          )
-      }
+        switch (selectedValidation) {
+          case TextSelectedValidation.Exact:
+            return (
+              currLen === customVal ||
+              simplur`Please enter ${customVal} character[|s] (${currLen}/${customVal})`
+            )
+          case TextSelectedValidation.Minimum:
+            return (
+              currLen >= customVal ||
+              simplur`Please enter at least ${customVal} character[|s] (${currLen}/${customVal})`
+            )
+          case TextSelectedValidation.Maximum:
+            return (
+              currLen <= customVal ||
+              simplur`Please enter at most ${customVal} character[|s] (${currLen}/${customVal})`
+            )
+        }
+      },
     },
   }
 }
 
 export const createUenValidationRules: ValidationRuleFn<UenFieldBase> = (
   schema,
-) => {
+): RegisterOptions => {
   return {
-    ...createBaseValidationRules(schema),
-    validate: (val?: string) => {
-      if (!val) return true
-      return isUenValid(val) || 'Please enter a valid UEN'
+    validate: {
+      required: requiredSingleAnswerValidationFn(schema),
+      validUen: (val?: string) => {
+        if (!val) return true
+        return isUenValid(val) || 'Please enter a valid UEN'
+      },
     },
   }
 }
 
 export const createNricValidationRules: ValidationRuleFn<NricFieldBase> = (
   schema,
-) => {
+): RegisterOptions => {
   return {
-    ...createBaseValidationRules(schema),
-    validate: (val?: string) => {
-      if (!val) return true
-      return (
-        isNricValid(val) ||
-        isMFinSeriesValid(val) ||
-        'Please enter a valid NRIC'
-      )
+    validate: {
+      required: requiredSingleAnswerValidationFn(schema),
+      validNric: (val?: string) => {
+        if (!val) return true
+        return (
+          isNricValid(val) ||
+          isMFinSeriesValid(val) ||
+          'Please enter a valid NRIC'
+        )
+      },
     },
   }
 }
 
 export const createCheckboxValidationRules: ValidationRuleFn<
   CheckboxFieldBase
-> = (schema) => {
+> = (schema): RegisterOptions => {
   return {
-    ...createBaseValidationRules(schema),
-    validate: (val?: string[]) => {
-      const {
-        ValidationOptions: { customMin, customMax },
-        validateByValue,
-      } = schema
-      if (!val || val.length === 0 || !validateByValue) return true
+    validate: {
+      required: (val?: CheckboxFieldValues['value']) => {
+        if (!schema.required) return true
+        if (!val) return REQUIRED_ERROR
+        // Trim strings before checking for emptiness
+        return val.map((v) => v.trim()).some(identity) || REQUIRED_ERROR
+      },
+      validOptions: (val?: CheckboxFieldValues['value']) => {
+        const {
+          ValidationOptions: { customMin, customMax },
+          validateByValue,
+        } = schema
+        if (!val || val.length === 0 || !validateByValue) return true
 
-      if (
-        customMin &&
-        customMax &&
-        customMin === customMax &&
-        val.length !== customMin
-      ) {
-        return simplur`Please select exactly ${customMin} option[|s] (${val.length}/${customMin})`
-      }
+        if (
+          customMin &&
+          customMax &&
+          customMin === customMax &&
+          val.length !== customMin
+        ) {
+          return simplur`Please select exactly ${customMin} option[|s] (${val.length}/${customMin})`
+        }
 
-      if (customMin && val.length < customMin) {
-        return simplur`Please select at least ${customMin} option[|s] (${val.length}/${customMin})`
-      }
+        if (customMin && val.length < customMin) {
+          return simplur`Please select at least ${customMin} option[|s] (${val.length}/${customMin})`
+        }
 
-      if (customMax && val.length > customMax) {
-        return simplur`Please select at most ${customMax} option[|s] (${val.length}/${customMax})`
-      }
+        if (customMax && val.length > customMax) {
+          return simplur`Please select at most ${customMax} option[|s] (${val.length}/${customMax})`
+        }
 
-      return true
+        return true
+      },
     },
   }
 }
 
+const parseDate = (val: string) => {
+  return parse(val, DATE_PARSE_FORMAT, new Date())
+}
+
 export const createDateValidationRules: ValidationRuleFn<DateFieldBase> = (
   schema,
-) => {
+): RegisterOptions => {
   return {
-    ...createBaseValidationRules(schema),
     validate: {
-      validDate: (val) =>
-        !val || isDate(parseISO(val)) || 'Please enter a valid date',
+      required: requiredSingleAnswerValidationFn(schema),
+      validDate: (val) => {
+        if (!val) return true
+        if (val === DATE_PARSE_FORMAT.toLowerCase()) {
+          return REQUIRED_ERROR
+        }
+        return isValid(parseDate(val)) || 'Please enter a valid date'
+      },
       noFuture: (val) => {
         if (
           !val ||
@@ -359,7 +404,7 @@ export const createDateValidationRules: ValidationRuleFn<DateFieldBase> = (
           return true
         }
         return (
-          !isDateAfterToday(parseISO(val)) ||
+          !isDateAfterToday(parseDate(val)) ||
           'Only dates today or before are allowed'
         )
       },
@@ -372,7 +417,7 @@ export const createDateValidationRules: ValidationRuleFn<DateFieldBase> = (
           return true
         }
         return (
-          !isDateBeforeToday(parseISO(val)) ||
+          !isDateBeforeToday(parseDate(val)) ||
           'Only dates today or after are allowed'
         )
       },
@@ -387,8 +432,11 @@ export const createDateValidationRules: ValidationRuleFn<DateFieldBase> = (
 
         const { customMinDate, customMaxDate } = schema.dateValidation ?? {}
         return (
-          !isDateOutOfRange(parseISO(val), customMinDate, customMaxDate) ||
-          'Selected date is not within the allowed date range'
+          !isDateOutOfRange(
+            parseDate(val),
+            loadDateFromNormalizedDate(customMinDate),
+            loadDateFromNormalizedDate(customMaxDate),
+          ) || 'Selected date is not within the allowed date range'
         )
       },
     },
@@ -397,13 +445,13 @@ export const createDateValidationRules: ValidationRuleFn<DateFieldBase> = (
 
 export const createRadioValidationRules: ValidationRuleFn<RadioFieldBase> = (
   schema,
-) => {
+): RegisterOptions => {
   return createBaseValidationRules(schema)
 }
 
-export const createEmailValidationRules: ValidationRuleFn<EmailFieldBase> = (
-  schema,
-) => {
+export const createEmailValidationRules: ValidationRuleFnEmailAndMobile<
+  EmailFieldBase
+> = (schema): RegisterOptions => {
   return {
     validate: {
       baseValidations: (val?: VerifiableFieldValues) => {
@@ -419,41 +467,37 @@ export const createEmailValidationRules: ValidationRuleFn<EmailFieldBase> = (
  * @returns error string if field is invalid, true otherwise.
  */
 export const baseEmailValidationFn =
-  (schema: OmitUnusedProps<EmailFieldBase>) => (inputValue?: string) => {
-    if (!inputValue) {
-      return true
-    }
+  (schema: MinimumFieldValidationProps<EmailFieldBase>) =>
+  (inputValue?: string) => {
+    if (!inputValue) return true
+
+    const trimmedInputValue = inputValue.trim()
 
     // Valid email check
-    if (!validator.isEmail(inputValue)) {
-      return INVALID_EMAIL_ERROR
-    }
+    if (!validator.isEmail(trimmedInputValue)) return INVALID_EMAIL_ERROR
 
+    // Valid domain check
     const allowedDomains = schema.isVerifiable
       ? new Set(schema.allowedEmailDomains)
       : new Set()
-
-    // Valid domain check
     if (allowedDomains.size !== 0) {
-      const domainInValue = inputValue.split('@')[1]
+      const domainInValue = trimmedInputValue.split('@')[1].toLowerCase()
       if (domainInValue && !allowedDomains.has(`@${domainInValue}`)) {
         return INVALID_EMAIL_DOMAIN_ERROR
       }
     }
+
     // Passed all error validation.
     return true
   }
 
 export const baseMobileValidationFn =
-  (_schema: OmitUnusedProps<MobileFieldBase>) => (inputValue?: string) => {
-    if (!inputValue) {
-      return true
-    }
+  (_schema: MinimumFieldValidationProps<MobileFieldBase>) =>
+  (inputValue?: string) => {
+    if (!inputValue) return true
 
     // Valid mobile check
-    if (!isMobilePhoneNumber(inputValue)) {
-      return 'Please enter a valid mobile number'
-    }
-
-    return true
+    return (
+      isMobilePhoneNumber(inputValue) || 'Please enter a valid mobile number'
+    )
   }

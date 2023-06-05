@@ -19,7 +19,7 @@ Infrastructure
 - AWS Elastic Beanstalk / EC2 for hosting and deployment
 - AWS Elastic File System for mounting files (i.e. SingPass/MyInfo private keys into the `/certs` directory)
 - AWS S3 for image and logo hosting, attachments for Storage Mode forms
-- AWS Service Manager - Parameter Store, for holding environment variable configuration
+- AWS Systems Manager - Parameter Store, for holding environment variable configuration
 
 DevOps
 
@@ -92,6 +92,7 @@ There are also environment secrets for each environment (`staging`, `staging-alt
 |:---------|------------|
 |`APP_NAME`|Application name for the environment.|
 |`DEPLOY_ENV`|Deployment environment on elastic beanstalk.|
+|`REACT_APP_FORMSG_SDK_MODE`|Determines the keys used in the formsg SDK. Set either `production` or `staging`.|
 
 ## Environment Variables
 
@@ -100,17 +101,20 @@ Store of AWS Service Manager. These groups have names formatted as `<environment
 
 The environment for each group is user-defined, and should be specified in the Elastic Beanstalk configuration
 as the environment variable `SSM_PREFIX`.
+The specific environment is user-defined, and should be specified in the Elastic Beanstalk configuration
+as the environment variable `SSM_ENV_SITE_NAME`. This variable is optional.
 
 The list of categories can be inferred by looking at the file `.ebextensions/env-file-creation.config`.
 
 ### Core Features
 
-#### AWS Service Manager
+#### AWS Systems Manager
 
-| Variable     | Description                                                                                                           |
-| :----------- | --------------------------------------------------------------------------------------------------------------------- |
-| `SSM_PREFIX` | String prefix (typically the environment name) for AWS SSM parameter names to create a .env file for FormSG.          |
-| `SECRET_ENV` | String (typically the environment name) to be used in building of AWS Secrets Manager keys in different environments. |
+| Variable            | Description                                                                                                                                                                         |
+| :------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `SSM_PREFIX`        | String prefix (typically the environment type) for AWS SSM parameter names to create a .env file for FormSG. (`staging`, `prod`, `uat`)                                             |
+| `SECRET_ENV`        | String (typically the environment type) to be used in building of AWS Secrets Manager keys in different environments.                                                               |
+| `SSM_ENV_SITE_NAME` | String (the specific environment site name) to be used in building of AWS Secrets Manager keys in different environments. (`staging`, `staging-alt`, `staging-alt2`, `prod`, `uat`) |
 
 #### App Config
 
@@ -207,6 +211,7 @@ SITE_BANNER_CONTENT=hello:This is an invalid banner type, and the full text will
 | `AWS_SECRET_ACCESS_KEY`       | AWS IAM access secret used to access S3.                                                                                            |
 | `AWS_ENDPOINT`                | AWS S3 bucket endpoint.                                                                                                             |
 | `IMAGE_S3_BUCKET`             | Name of S3 bucket for image field uploads.                                                                                          |
+| `STATIC_ASSETS_S3_BUCKET`     | Name of S3 bucket for static assets.                                                                                                |
 | `LOGO_S3_BUCKET`              | Name of S3 bucket for form logo uploads.                                                                                            |
 | `ATTACHMENT_S3_BUCKET`        | Name of S3 bucket for attachment uploads on Storage Mode.                                                                           |
 | `CUSTOM_CLOUDWATCH_LOG_GROUP` | Name of CloudWatch log group to send custom logs. Use this if you want some logs to have custom settings, e.g. shorter expiry time. |
@@ -259,9 +264,9 @@ Forms can be protected with [recaptcha](https://www.google.com/recaptcha/about/)
 
 [Google Analytics](https://analytics.google.com/analytics/web) is used to track website traffic. Examples of events include number of visits to various forms, number of successful submissions and number of submission failures.
 
-| Variable         | Description                   |
-| :--------------- | ----------------------------- |
-| `GA_TRACKING_ID` | Google Analytics tracking ID. |
+| Variable                   | Description                   |
+| :------------------------- | ----------------------------- |
+| `REACT_APP_GA_TRACKING_ID` | Google Analytics tracking ID. |
 
 #### Sentry.io
 
@@ -296,34 +301,25 @@ Note that MyInfo is currently not supported for storage mode forms and enabling 
 | Variable                         | Description                                                                                                                                                                                     |
 | :------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `SPCP_COOKIE_MAX_AGE_PRESERVED`  | Duration of SingPass JWT before expiry in milliseconds. Defaults to 30 days.                                                                                                                    |
-| `SINGPASS_ESRVC_ID`              | e-service ID registered with National Digital Identity office for SingPass authentication.                                                                                                      |
-| `SINGPASS_PARTNER_ENTITY_ID`     | Partner ID registered with National Digital Identity Office for SingPass authentication.                                                                                                        |
-| `SINGPASS_IDP_LOGIN_URL`         | URL of SingPass Login Page.                                                                                                                                                                     |
-| `SINGPASS_IDP_ENDPOINT`          | URL to retrieve NRIC of SingPass-validated user from.                                                                                                                                           |
-| `SINGPASS_IDP_ID`                | Partner ID of National Digital Identity Office for SingPass authentication.                                                                                                                     |
+| `SINGPASS_ESRVC_ID`              | e-service ID registered with National Digital Identity office for SingPass authentication. Needed for MyInfo.                                                                                   |
 | `SP_OIDC_NDI_DISCOVERY_ENDPOINT` | NDI's Singpass OIDC Discovery Endpoint                                                                                                                                                          |
 | `SP_OIDC_NDI_JWKS_ENDPOINT`      | NDI's Singpass OIDC JWKS Endpoint                                                                                                                                                               |
-| `SP_OIDC_RP_CLIENT_ID`           | The Relying Party's Client ID as registered with NDI                                                                                                                                            |
-| `SP_OIDC_RP_REDIRECT_URL`        | The Relying Party's Redirect URL                                                                                                                                                                |
+| `SP_OIDC_RP_CLIENT_ID`           | The Relying Party's Singpass Client ID as registered with NDI                                                                                                                                   |
+| `SP_OIDC_RP_REDIRECT_URL`        | The Relying Party's Singpass Redirect URL                                                                                                                                                       |
 | `SP_OIDC_RP_JWKS_PUBLIC_PATH`    | Path to the Relying Party's Public Json Web Key Set used for Singpass-related communication with NDI. This will be hosted at /singpass/.well-known/jwks.json endpoint.                          |
 | `SP_OIDC_RP_JWKS_SECRET_PATH`    | Path to the Relying Party's Secret Json Web Key Set used for Singpass-related communication with NDI                                                                                            |
+| `CP_OIDC_NDI_DISCOVERY_ENDPOINT` | NDI's Corppass OIDC Discovery Endpoint                                                                                                                                                          |
+| `CP_OIDC_NDI_JWKS_ENDPOINT`      | NDI's Corppass OIDC JWKS Endpoint                                                                                                                                                               |
+| `CP_OIDC_RP_CLIENT_ID`           | The Relying Party's Corppass Client ID as registered with NDI                                                                                                                                   |
+| `CP_OIDC_RP_REDIRECT_URL`        | The Relying Party's Corppass Redirect URL                                                                                                                                                       |
 | `CP_OIDC_RP_JWKS_PUBLIC_PATH`    | Path to the Relying Party's Public Json Web Key Set used for Corppass-related communication with NDI. This will be hosted at api/v3/corppass/.well-known/jwks.json endpoint.                    |
-| `CORPPASS_ESRVC_ID`              | e-service ID registered with National Digital Identity office for CorpPass authentication.                                                                                                      |
-| `CORPPASS_PARTNER_ENTITY_ID`     | Partner ID registered with National Digital Identity Office for CorpPass authentication.                                                                                                        |
-| `CORPPASS_IDP_LOGIN_URL`         | URL of CorpPass Login Page.                                                                                                                                                                     |
-| `CORPPASS_IDP_ENDPOINT`          | URL to retrieve UEN of CorpPass-validated user from.                                                                                                                                            |
-| `CORPPASS_IDP_ID`                | Partner ID of National Digital Identity Office for CorpPass authentication.                                                                                                                     |
-| `SP_FORMSG_KEY_PATH`             | Path to X.509 key used for SingPass related communication with National Digital Identity office.                                                                                                |
-| `SP_FORMSG_CERT_PATH`            | Path to X.509 cert used for SingPass related communication with National Digital Identity office.                                                                                               |
-| `SP_IDP_CERT_PATH`               | Path to National Digital Identity office's X.509 cert used for SingPass related communication.                                                                                                  |
-| `CP_FORMSG_KEY_PATH`             | Path to X.509 key used for CorpPass related communication with National Digital Identity office.                                                                                                |
-| `CP_FORMSG_CERT_PATH`            | Path to X.509 cert used for CorpPass related communication with National Digital Identity office.                                                                                               |
-| `CP_IDP_CERT_PATH`               | Path to National Digital Identity office's X.509 cert used for CorpPass related communication.                                                                                                  |
+| `CP_OIDC_RP_JWKS_SECRET_PATH`    | Path to the Relying Party's Secret Json Web Key Set used for Corppass-related communication with NDI                                                                                            |
 | `MYINFO_CLIENT_CONFIG`           | Configures [MyInfoGovClient](https://github.com/opengovsg/myinfo-gov-client). Set this to either`stg` or `prod` to fetch MyInfo data from the corresponding endpoints.                          |
 | `MYINFO_FORMSG_KEY_PATH`         | Filepath to MyInfo private key, which is used to decrypt data and sign requests when communicating with MyInfo.                                                                                 |
 | `MYINFO_CERT_PATH`               | Path to MyInfo's public certificate, which is used to verify their signature.                                                                                                                   |
 | `MYINFO_CLIENT_ID`               | Client ID registered with MyInfo.                                                                                                                                                               |
 | `MYINFO_CLIENT_SECRET`           | Client secret registered with MyInfo.                                                                                                                                                           |
+| `MYINFO_JWT_SECRET`              | Secret for signing MyInfo JWT.                                                                                                                                                                  |
 | `IS_SP_MAINTENANCE`              | If set, displays a banner message on SingPass forms. Overrides `IS_CP_MAINTENANCE`.                                                                                                             |
 | `IS_CP_MAINTENANCE`              | If set, displays a banner message on CorpPass forms.                                                                                                                                            |
 | `FILE_SYSTEM_ID`                 | The id of the AWS Elastic File System (EFS) file system to mount onto the instances.                                                                                                            |

@@ -25,6 +25,7 @@ export const TableFieldContainer = ({
 
   return (
     <FormControl
+      id={schema._id}
       isRequired={schema.required}
       isDisabled={schema.disabled}
       isReadOnly={isValid && isSubmitting}

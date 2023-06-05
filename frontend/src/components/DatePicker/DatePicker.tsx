@@ -1,53 +1,35 @@
-import {
-  Box,
-  forwardRef,
-  StylesProvider,
-  useMultiStyleConfig,
-} from '@chakra-ui/react'
+import { forwardRef } from '@chakra-ui/react'
 
-import { DATE_INPUT_THEME_KEY } from '~theme/components/DateInput'
-import { ThemeColorScheme } from '~theme/foundations/colours'
+import { CalendarProps } from '~components/Calendar'
 
-import {
-  CalendarPanel,
-  CalendarProvider,
-  CalendarTodayButton,
-} from './Calendar'
+import { CalendarButton } from './components/CalendarButton'
+import { DatePickerCalendar } from './components/DatePickerCalendar'
+import { DatePickerContent } from './components/DatePickerContent'
+import { DatePickerWrapper } from './components/DatePickerWrapper'
+import { DatePickerProvider } from './DatePickerContext'
+import { DatePickerBaseProps } from './types'
 
-export interface DatePickerProps {
+export interface DatePickerProps extends DatePickerBaseProps, CalendarProps {
   /**
-   * Selected date. Undefined if no date is selected.
+   * Value to display in input, derived from the selected date.
+   * If provided, input will be controlled, and empty string denotes no date selection.
    */
-  date?: Date
-  /**
-   * Handler for when date is selected.
-   */
-  onSelectDate: (d: Date) => void
-  /**
-   * Function to determine whether a date should be made
-   * unavailable.
-   */
-  isDateUnavailable?: (d: Date) => boolean
-  /**
-   * Color scheme for date picker component
-   */
-  colorScheme?: ThemeColorScheme
+  inputValue?: string
+  /** If provided, callback will be fired when the controlled input value changes. */
+  onInputValueChange?: (value: string) => void
+  /** Default value for uncontrolled input. */
+  defaultInputValue?: string
 }
 
-export const DatePicker = forwardRef<DatePickerProps, 'input'>(
-  ({ date, ...props }, initialFocusRef) => {
-    const styles = useMultiStyleConfig(DATE_INPUT_THEME_KEY, props)
-
-    return (
-      <CalendarProvider {...props} selectedDates={date}>
-        <StylesProvider value={styles}>
-          {/* Overall container */}
-          <Box sx={styles.container}>
-            <CalendarPanel ref={initialFocusRef} />
-            <CalendarTodayButton />
-          </Box>
-        </StylesProvider>
-      </CalendarProvider>
-    )
-  },
-)
+export const DatePicker = forwardRef<DatePickerProps, 'input'>((props, ref) => {
+  return (
+    <DatePickerProvider {...props}>
+      <DatePickerWrapper ref={ref}>
+        <CalendarButton />
+        <DatePickerContent>
+          <DatePickerCalendar />
+        </DatePickerContent>
+      </DatePickerWrapper>
+    </DatePickerProvider>
+  )
+})

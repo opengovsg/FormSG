@@ -1,40 +1,14 @@
-import FirstAnnouncement from './assets/1-dnd.json'
-import SecondAnnouncement from './assets/2-listview.json'
-import ThirdAnnouncement from './assets/3-a11y.json'
-import { LogicOrderSvgr } from './assets/LogicOrderSvgr'
-import { TwilioSvgr } from './assets/TwilioSvgr'
+import PaymentsAnnouncementGraphic from './assets/payments.json'
 
+// When updating this, remember to update the ROLLOUT_ANNOUNCEMENT_KEY_PREFIX with the new date
+// so admins will see new announcements.
 export const NEW_FEATURES = [
   {
-    title: 'Drag and drop fields to build your form',
+    // Announcement date: 2023-05-31
+    title: 'Collect payments on your form',
     description:
-      'Add and arrange fields with ease. Additionally, you can now preview your form while editing it.',
-    animationData: FirstAnnouncement,
-  },
-  {
-    title: 'Forms now appear in list view',
-    description:
-      'Get an overview of your forms in a structured and organised way.',
-    animationData: SecondAnnouncement,
-  },
-  {
-    title: 'Form filling is now accessible for visually impaired users',
-    description:
-      "Form filling should be accessible to everyone. We've prioritised it in the redesign so everyone can have a pleasant form filling experience.",
-    animationData: ThirdAnnouncement,
-  },
-]
-
-export const OTHER_UPDATES = [
-  {
-    // TODO: Implement this functionality, issue tracked in #3796
-    title:
-      'Logic is now ordered by question number so you can find your conditions easily',
-    ImageSvgr: <LogicOrderSvgr />,
-  },
-  {
-    title:
-      'Add your Twilio credentials so your end-users can verify their mobile number',
-    ImageSvgr: <TwilioSvgr />,
+      'Citizens can now pay for fees and services directly on your form! We integrate with Stripe to provide reliable payments and hassle-free reconciliations. Payment methods we support include credit card and PayNow.',
+    learnMoreLink: 'https://go.gov.sg/formsg-payment-overview',
+    animationData: PaymentsAnnouncementGraphic,
   },
 ]

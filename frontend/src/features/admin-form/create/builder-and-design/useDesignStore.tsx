@@ -8,6 +8,12 @@ import { UploadedImage } from './BuilderAndDesignDrawer/EditFieldDrawer/edit-fie
 
 export type CustomLogoMeta = Omit<CustomFormLogo, keyof FormLogoBase>
 
+export enum DesignState {
+  EditingHeader = 1,
+  EditingInstructions,
+  Inactive,
+}
+
 /** Design drawer form input fields. DesignStore keeps track of the data in the
  * drawer input as a single unit. Other data (specifically the logo metadata) is
  * kept separately with its own getters and setters.
@@ -22,40 +28,47 @@ export type FormStartPageInput = Omit<
 }
 
 export type DesignStore = {
+  state: DesignState
+  holdingState: DesignState | null
+  moveFromHolding: () => void
+  clearHoldingState: () => void
   startPageData?: FormStartPageInput
   customLogoMeta?: CustomLogoMeta
+  setState: (state: DesignState, holding?: boolean) => void
   setStartPageData: (startPageInput: FormStartPageInput) => void
-  setAttachment: (attachment: UploadedImage) => void
   setCustomLogoMeta: (customLogoMetaData: CustomLogoMeta) => void
-  resetCustomLogoMeta: () => void
   resetDesignStore: () => void
 }
 
-export const useDesignStore = create<DesignStore>(
+export const useDesignStore = create<DesignStore>()(
   devtools((set, get) => ({
+    state: DesignState.Inactive,
+    holdingState: null,
+    moveFromHolding: () => {
+      const holdingStateData = get().holdingState
+      if (holdingStateData === null) return
+      set({
+        state: holdingStateData,
+        holdingState: null,
+      })
+    },
+    clearHoldingState: () => set({ holdingState: null }),
+    setState: (state, holding) => {
+      if (holding) {
+        set({ holdingState: state })
+      } else {
+        set({ state })
+      }
+    },
     setStartPageData: (startPageData: FormStartPageInput) => {
       const current = get()
       if (isEqual(current.startPageData, startPageData)) return
       set({ startPageData })
     },
-    setAttachment: (attachment: UploadedImage) => {
-      const current = get()
-      if (!current.startPageData) return
-      if (isEqual(current.startPageData.attachment, attachment)) return
-      set({
-        startPageData: {
-          ...current.startPageData,
-          attachment,
-        },
-      })
-    },
     setCustomLogoMeta: (customLogoMeta: CustomLogoMeta) => {
       const current = get()
       if (isEqual(current.customLogoMeta, customLogoMeta)) return
       set({ customLogoMeta })
-    },
-    resetCustomLogoMeta: () => {
-      set({ customLogoMeta: undefined })
     },
     resetDesignStore: () => {
       set({
@@ -66,6 +79,17 @@ export const useDesignStore = create<DesignStore>(
   })),
 )
 
+export const stateSelector = (state: DesignStore): DesignStore['state'] =>
+  state.state
+
+export const holdingStateSelector = (
+  state: DesignStore,
+): DesignStore['holdingState'] => state.holdingState
+
+export const moveFromHoldingSelector = (
+  state: DesignStore,
+): DesignStore['moveFromHolding'] => state.moveFromHolding
+
 export const startPageDataSelector = (
   state: DesignStore,
 ): DesignStore['startPageData'] => state.startPageData
@@ -74,21 +98,16 @@ export const customLogoMetaSelector = (
   state: DesignStore,
 ): DesignStore['customLogoMeta'] => state.customLogoMeta
 
+export const setStateSelector = (state: DesignStore): DesignStore['setState'] =>
+  state.setState
+
 export const setStartPageDataSelector = (
   state: DesignStore,
 ): DesignStore['setStartPageData'] => state.setStartPageData
 
-export const setAttachmentSelector = (
-  state: DesignStore,
-): DesignStore['setAttachment'] => state.setAttachment
-
 export const setCustomLogoMetaSelector = (
   state: DesignStore,
 ): DesignStore['setCustomLogoMeta'] => state.setCustomLogoMeta
-
-export const resetCustomLogoMetaSelector = (
-  state: DesignStore,
-): DesignStore['resetCustomLogoMeta'] => state.resetCustomLogoMeta
 
 export const resetDesignStoreSelector = (
   state: DesignStore,

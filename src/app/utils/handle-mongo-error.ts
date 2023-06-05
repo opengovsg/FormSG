@@ -1,10 +1,13 @@
 import { Error as MongooseError, mongo as mongodb } from 'mongoose'
 
+import { MONGO_ERROR_CODE } from '../constants/mongo-error'
 import {
   DatabaseConflictError,
+  DatabaseDuplicateKeyError,
   DatabaseError,
   DatabasePayloadSizeError,
   DatabaseValidationError,
+  DatabaseWriteConflictError,
   PossibleDatabaseError,
 } from '../modules/core/core.errors'
 
@@ -31,10 +34,12 @@ export const getMongoErrorMessage = (
   // Handle base Mongo engine errors
   if (err instanceof MongoError) {
     switch (err.code) {
-      case 10334: // BSONObj size invalid error
+      case MONGO_ERROR_CODE.InvalidBSON: // BSONObj size invalid error
         return formatErrorRecoveryMessage(
           'Your form is too large to be supported by the system.',
         )
+      case MONGO_ERROR_CODE.DuplicateKey:
+        return formatErrorRecoveryMessage('Duplicate key error')
       default:
         return formatErrorRecoveryMessage(defaultErrorMessage)
     }
@@ -86,11 +91,26 @@ export const transformMongoError = (error: unknown): PossibleDatabaseError => {
     // Exception when Mongoose breaches Mongo 16MB size limit.
     error instanceof RangeError ||
     // MongoDB Invalid BSON error.
-    (error instanceof MongoError && error.code === 10334) ||
+    (error instanceof MongoError &&
+      error.code === MONGO_ERROR_CODE.InvalidBSON) ||
     // FormSG-imposed limit in pre-validate hook.
     error.name === 'FormSizeError'
   ) {
     return new DatabasePayloadSizeError(errorMessage)
+  }
+
+  if (
+    error instanceof MongoError &&
+    error.code === MONGO_ERROR_CODE.DuplicateKey
+  ) {
+    return new DatabaseDuplicateKeyError(errorMessage)
+  }
+
+  if (
+    error instanceof MongoError &&
+    error.code === MONGO_ERROR_CODE.WriteConflict
+  ) {
+    return new DatabaseWriteConflictError(errorMessage)
   }
 
   return new DatabaseError(errorMessage)
@@ -102,6 +122,8 @@ export const isMongoError = (error: Error): boolean => {
     case DatabaseError:
     case DatabasePayloadSizeError:
     case DatabaseValidationError:
+    case DatabaseDuplicateKeyError:
+    case DatabaseWriteConflictError:
       return true
     default:
       return false

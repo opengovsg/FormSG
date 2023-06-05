@@ -1,5 +1,6 @@
 import { Virtuoso } from 'react-virtuoso'
-import { Box, List, ListItem } from '@chakra-ui/react'
+import { List, ListItem } from '@chakra-ui/react'
+import { FloatingPortal } from '@floating-ui/react-dom-interactions'
 
 import { VIRTUAL_LIST_OVERSCAN_HEIGHT } from '../constants'
 import { useSelectContext } from '../SelectContext'
@@ -19,19 +20,18 @@ export const SelectMenu = (): JSX.Element => {
     virtualListHeight,
   } = useSelectContext()
 
-  const { popperRef, popperStyles, popperAttributes } = useSelectPopover()
+  const { floatingRef, floatingStyles } = useSelectPopover()
 
   return (
-    <Box
-      ref={popperRef}
-      style={popperStyles.popper}
-      {...popperAttributes.popper}
-      zIndex="dropdown"
-    >
+    <FloatingPortal>
       <List
-        {...getMenuProps({
-          hidden: !isOpen,
-        })}
+        {...getMenuProps(
+          { ref: floatingRef },
+          // Suppressing ref error since this will be in a portal and will be conditionally rendered.
+          // See https://github.com/downshift-js/downshift/issues/1272#issuecomment-1063244446
+          { suppressRefError: true },
+        )}
+        style={floatingStyles}
         sx={styles.list}
       >
         {isOpen && items.length > 0 && (
@@ -57,6 +57,6 @@ export const SelectMenu = (): JSX.Element => {
           </ListItem>
         ) : null}
       </List>
-    </Box>
+    </FloatingPortal>
   )
 }

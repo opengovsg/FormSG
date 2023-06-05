@@ -3,10 +3,17 @@ import simplur from 'simplur'
 
 import { FormColorTheme, FormStartPage } from '~shared/types'
 
-export const getTitleBg = (colorTheme?: FormColorTheme) =>
-  colorTheme ? `theme-${colorTheme}.500` : `neutral.200`
+import { ThemeColorScheme } from '~theme/foundations/colours'
 
-export const useFormHeader = (startPage?: FormStartPage) => {
+interface UseFormHeaderProps {
+  startPage?: FormStartPage
+  hover?: boolean
+}
+
+export const getTitleBg = (colorTheme?: FormColorTheme, hover?: boolean) =>
+  colorTheme ? `theme-${colorTheme}.${hover ? 6 : 5}00` : `neutral.200`
+
+export const useFormHeader = ({ startPage, hover }: UseFormHeaderProps) => {
   const titleColor = useMemo(() => {
     if (startPage?.colorTheme === FormColorTheme.Orange) {
       return 'secondary.700'
@@ -15,8 +22,8 @@ export const useFormHeader = (startPage?: FormStartPage) => {
   }, [startPage?.colorTheme])
 
   const titleBg = useMemo(
-    () => getTitleBg(startPage?.colorTheme),
-    [startPage?.colorTheme],
+    () => getTitleBg(startPage?.colorTheme, hover),
+    [hover, startPage?.colorTheme],
   )
 
   const estTimeString = useMemo(() => {
@@ -24,5 +31,15 @@ export const useFormHeader = (startPage?: FormStartPage) => {
     return simplur`${startPage.estTimeTaken} min[|s] estimated time to complete`
   }, [startPage])
 
-  return { titleColor, titleBg, estTimeString }
+  const colorScheme: ThemeColorScheme | undefined = useMemo(() => {
+    if (!startPage?.colorTheme) return
+    return `theme-${startPage.colorTheme}` as const
+  }, [startPage?.colorTheme])
+
+  return {
+    titleColor,
+    titleBg,
+    estTimeString,
+    colorScheme,
+  }
 }

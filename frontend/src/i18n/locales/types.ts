@@ -5,7 +5,6 @@ interface Translation {
         components: {
           LoginForm: {
             onlyAvailableForPublicOfficers: string
-            email: string
             emailEmptyErrorMsg: string
             login: string
             haveAQuestion: string

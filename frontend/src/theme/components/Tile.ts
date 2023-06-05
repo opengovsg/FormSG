@@ -15,7 +15,10 @@ export const Tile: ComponentMultiStyleConfig<typeof parts> = {
       padding: '1.5rem',
       height: 'auto',
       _hover: {
-        bgColor: 'primary.100',
+        bg: 'primary.100',
+        _disabled: {
+          bg: 'initial',
+        },
       },
       _focus: {
         borderColor: 'transparent',
@@ -24,19 +27,23 @@ export const Tile: ComponentMultiStyleConfig<typeof parts> = {
         boxShadow: '0 0 0 2px var(--chakra-colors-primary-500) !important',
       },
       _active: {
-        bgColor: 'primary.200',
+        bg: 'primary.200',
         // borderColor: 'transparent',
         boxShadow: '0 0 0 3px var(--chakra-colors-primary-400)',
+        _disabled: {
+          boxShadow: 'none',
+          bg: 'initial',
+        },
         _focus: {
           // NOTE: For the boxShadow styling, due to conflicts with the focus-visible package,
           // the !important is required to display the boxShadow styling correctly.
           boxShadow: '0 0 0 3px var(--chakra-colors-primary-500) !important',
         },
       },
-      bgColor: 'white',
+      bg: 'white',
       border: '1px solid',
       borderColor: 'neutral.300',
-      whiteSpace: 'pre-line',
+      whiteSpace: 'pre-wrap',
       flexDir: 'column',
       alignItems: 'flex-start',
       maxWidth: 'inherit',

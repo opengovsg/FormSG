@@ -1,6 +1,3 @@
-import { keyBy } from 'lodash'
-
-import { types as MYINFO_TYPE_CONSTANTS } from '~shared/constants/field/myinfo'
 import {
   BasicField,
   DateFieldBase,
@@ -13,26 +10,24 @@ import {
 import { MyInfoFieldMeta } from '~features/myinfo/types'
 
 export const BASIC_FIELDS_ORDERED = [
-  // Page section
-  BasicField.Section,
-  BasicField.Statement,
-  BasicField.Image,
-  // Fields section
   BasicField.ShortText,
   BasicField.LongText,
   BasicField.Radio,
   BasicField.Checkbox,
-  BasicField.Mobile,
-  BasicField.Email,
-  BasicField.HomeNo,
   BasicField.Dropdown,
+  BasicField.Section,
+  BasicField.Statement,
   BasicField.YesNo,
   BasicField.Rating,
+  BasicField.Email,
+  BasicField.Mobile,
+  BasicField.HomeNo,
+  BasicField.Date,
+  BasicField.Image,
+  BasicField.Table,
+  BasicField.Attachment,
   BasicField.Number,
   BasicField.Decimal,
-  BasicField.Attachment,
-  BasicField.Date,
-  BasicField.Table,
   BasicField.Nric,
   BasicField.Uen,
 ]
@@ -68,8 +63,6 @@ export const MYINFO_FIELDS_ORDERED: MyInfoAttribute[] = [
   MyInfoAttribute.DivorceDate,
 ]
 
-export const MYINFO_FIELD_CONSTANTS = keyBy(MYINFO_TYPE_CONSTANTS, 'name')
-
 export const MYINFO_TEXTFIELD_META: MyInfoFieldMeta<ShortTextFieldBase> = {
   ValidationOptions: {
     selectedValidation: null,
@@ -93,9 +86,6 @@ export const MYINFO_DATEFIELD_META: MyInfoFieldMeta<DateFieldBase> = {
   },
 }
 
-export const CREATE_PAGE_FIELDS_ORDERED = BASIC_FIELDS_ORDERED.slice(0, 3)
-export const CREATE_FIELD_FIELDS_ORDERED = BASIC_FIELDS_ORDERED.slice(3)
-
 export const CREATE_MYINFO_PERSONAL_FIELDS_ORDERED =
   MYINFO_FIELDS_ORDERED.slice(0, 13)
 
@@ -110,7 +100,6 @@ export const CREATE_MYINFO_PARTICULARS_FIELDS_ORDERED =
 export const CREATE_MYINFO_MARRIAGE_FIELDS_ORDERED =
   MYINFO_FIELDS_ORDERED.slice(19, 24)
 
-export const CREATE_PAGE_DROP_ID = 'create-fields-page'
 export const CREATE_FIELD_DROP_ID = 'create-fields-field'
 
 export const CREATE_MYINFO_PERSONAL_DROP_ID = 'create-myinfo-personal'
@@ -122,3 +111,9 @@ export const CREATE_MYINFO_PARTICULARS_DROP_ID = 'create-myinfo-particulars'
 export const CREATE_MYINFO_MARRIAGE_DROP_ID = 'create-myinfo-marriage'
 export const FIELD_LIST_DROP_ID = 'formFieldList'
 export const PENDING_CREATE_FIELD_ID = 'FIELD-PENDING-CREATION'
+
+export enum FieldListTabIndex {
+  Basic,
+  MyInfo,
+  Payments,
+}

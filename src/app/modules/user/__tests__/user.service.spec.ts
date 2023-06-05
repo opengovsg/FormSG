@@ -1,3 +1,4 @@
+import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { ObjectID } from 'bson'
 import { zipWith } from 'lodash'
 import MockDate from 'mockdate'
@@ -11,8 +12,6 @@ import * as UserService from 'src/app/modules/user/user.service'
 import * as HashUtils from 'src/app/utils/hash'
 import * as OtpUtils from 'src/app/utils/otp'
 import { AgencyDocument, IPopulatedUser, IUserSchema } from 'src/types'
-
-import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import { ApplicationError, DatabaseError } from '../../core/core.errors'
 import { InvalidOtpError, MissingUserError } from '../user.errors'
@@ -311,6 +310,46 @@ describe('user.service', () => {
     })
   })
 
+  describe('updateUserLastSeenFeatureUpdateVersion', () => {
+    const MOCK_FEATURE_VERSION = 10
+
+    it('should update user successfully', async () => {
+      const user = await dbHandler.insertUser({
+        agencyId: defaultAgency._id,
+        mailName: 'updateUserLastSeenFeatureUpdateVersion',
+      })
+
+      expect(user.flags?.lastSeenFeatureUpdateVersion).toBeUndefined()
+
+      const actualResult =
+        await UserService.updateUserLastSeenFeatureUpdateVersion(
+          user._id,
+          MOCK_FEATURE_VERSION,
+        )
+
+      const updatedUser = await UserService.getPopulatedUserById(user._id)
+      expect(actualResult.isOk()).toEqual(true)
+      expect(
+        updatedUser._unsafeUnwrap()?.toObject().flags
+          ?.lastSeenFeatureUpdateVersion,
+      ).toEqual(MOCK_FEATURE_VERSION)
+    })
+
+    it('should return MissingUserError if userId is invalid', async () => {
+      // Arrange
+      const invalidUserId = new ObjectID()
+
+      // Act
+      const actualResult =
+        await UserService.updateUserLastSeenFeatureUpdateVersion(
+          invalidUserId,
+          MOCK_FEATURE_VERSION,
+        )
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(MissingUserError)
+    })
+  })
+
   describe('getPopulatedUserById', () => {
     it('should return populated user successfully', async () => {
       // Arrange
@@ -321,6 +360,32 @@ describe('user.service', () => {
 
       // Act
       const actualResult = await UserService.getPopulatedUserById(USER_ID)
+
+      // Assert
+      expect(actualResult.isOk()).toEqual(true)
+      expect(actualResult._unsafeUnwrap()?.toObject()).toEqual(expected)
+    })
+
+    it('should return populated user with last seen feature update version successfully', async () => {
+      const mockUserIdWithLastSeenFeatureUpdate = new ObjectID()
+      const { agency, user } = await dbHandler.insertFormCollectionReqs({
+        userId: mockUserIdWithLastSeenFeatureUpdate,
+        mailName: 'userWithLastSeenFeatureUpdate',
+        mailDomain: ALLOWED_DOMAIN,
+        flags: { lastSeenFeatureUpdateVersion: 3 },
+      })
+
+      const defaultUserWithLastSeenFeatureUpdate: IUserSchema = user
+      const defaultAgencyWithLastSeenFeatureUpdate: AgencyDocument = agency
+      const expected = {
+        ...defaultUserWithLastSeenFeatureUpdate.toObject(),
+        agency: defaultAgencyWithLastSeenFeatureUpdate.toObject(),
+      }
+
+      // Act
+      const actualResult = await UserService.getPopulatedUserById(
+        mockUserIdWithLastSeenFeatureUpdate,
+      )
 
       // Assert
       expect(actualResult.isOk()).toEqual(true)
@@ -371,7 +436,8 @@ describe('user.service', () => {
       // Assert
       const expectedUser: Partial<LeanDocument<IPopulatedUser>> = {
         agency: defaultAgency.toObject(),
-        email: newUserEmail,
+        // Should be transformed to lowercased due to schema.
+        email: newUserEmail.toLowerCase(),
         lastAccessed: MOCKED_DATE,
       }
       expect(actualResult.isOk()).toBe(true)

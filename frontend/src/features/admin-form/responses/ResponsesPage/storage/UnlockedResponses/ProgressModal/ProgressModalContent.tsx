@@ -7,33 +7,26 @@ import {
 } from '@chakra-ui/react'
 
 import { useIsMobile } from '~hooks/useIsMobile'
-import { usePrompt } from '~hooks/usePrompt'
 import Button from '~components/Button'
 
 import { ProgressModalProps } from './ProgressModal'
 
 type ProgressModalContentProps = Pick<
   ProgressModalProps,
-  'children' | 'downloadPercentage' | 'onCancel' | 'isDownloading'
+  'children' | 'downloadPercentage' | 'onCancel'
 >
 
 export const ProgressModalContent = ({
   children,
   downloadPercentage,
-  isDownloading,
   onCancel,
 }: ProgressModalContentProps): JSX.Element => {
   const isMobile = useIsMobile()
 
-  usePrompt(
-    'Are you sure you want to navigate away from this page? Navigating away from this page will stop the download.',
-    isDownloading,
-  )
-
   return (
     <>
       <ModalHeader color="secondary.700">Downloading...</ModalHeader>
-      <ModalBody whiteSpace="pre-line" color="secondary.500" textStyle="body-2">
+      <ModalBody whiteSpace="pre-wrap" color="secondary.500" textStyle="body-2">
         {children}
         <Text textStyle="subhead-1" mb="0.5rem">
           {downloadPercentage}% completed

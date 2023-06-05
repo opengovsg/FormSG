@@ -1,7 +1,6 @@
 import { Router } from 'express'
 
 import * as PublicFormController from '../../../../modules/form/public-form/public-form.controller'
-import * as ReactMigrationController from '../../../../modules/react-migration/react-migration.controller'
 
 export const PublicFormsFormRouter = Router()
 
@@ -23,11 +22,16 @@ PublicFormsFormRouter.route('/:formId([a-fA-F0-9]{24})').get(
   PublicFormController.handleGetPublicForm,
 )
 
-// TODO #4279: Remove after React rollout is complete
 /**
- * Switches the environment cookie for a public form
- * @route GET /environment/:ui
+ * Returns a sample submission response of the specified form to the user
+ *
+ * @route GET /:formId/sample-submission
+ *
+ * @returns 200 with form when form exists and is public
+ * @returns 404 when form is private or form with given ID does not exist
+ * @returns 410 when form is archived
+ * @returns 500 when database error occurs
  */
-PublicFormsFormRouter.route('/environment/:ui(react|angular)').get(
-  ReactMigrationController.publicChooseEnvironment,
+PublicFormsFormRouter.route('/:formId([a-fA-F0-9]{24})/sample-submission').get(
+  PublicFormController.handleGetPublicFormSampleSubmission,
 )

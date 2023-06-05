@@ -21,8 +21,8 @@ import { BuilderAndDesignContent } from './BuilderAndDesignContent'
 import { BuilderAndDesignContext } from './BuilderAndDesignContext'
 import { BuilderAndDesignDrawer } from './BuilderAndDesignDrawer'
 import {
+  BASIC_FIELDS_ORDERED,
   CREATE_FIELD_DROP_ID,
-  CREATE_FIELD_FIELDS_ORDERED,
   CREATE_MYINFO_CONTACT_DROP_ID,
   CREATE_MYINFO_CONTACT_FIELDS_ORDERED,
   CREATE_MYINFO_MARRIAGE_DROP_ID,
@@ -31,20 +31,18 @@ import {
   CREATE_MYINFO_PARTICULARS_FIELDS_ORDERED,
   CREATE_MYINFO_PERSONAL_DROP_ID,
   CREATE_MYINFO_PERSONAL_FIELDS_ORDERED,
-  CREATE_PAGE_DROP_ID,
-  CREATE_PAGE_FIELDS_ORDERED,
   FIELD_LIST_DROP_ID,
 } from './constants'
 import { DeleteFieldModal } from './DeleteFieldModal'
 import { DndPlaceholderProps } from './types'
+import { useCreateTabForm } from './useCreateTabForm'
 import {
   updateCreateStateSelector,
-  useBuilderAndDesignStore,
-} from './useBuilderAndDesignStore'
-import { useCreateTabForm } from './useCreateTabForm'
+  useFieldBuilderStore,
+} from './useFieldBuilderStore'
 
 export const BuilderAndDesignTab = (): JSX.Element => {
-  const setToCreating = useBuilderAndDesignStore(updateCreateStateSelector)
+  const setToCreating = useFieldBuilderStore(updateCreateStateSelector)
   const { data } = useCreateTabForm()
 
   const { reorderFieldMutation } = useReorderFormField()
@@ -80,16 +78,9 @@ export const BuilderAndDesignTab = (): JSX.Element => {
       if (!data || !destination) return
 
       switch (source.droppableId) {
-        case CREATE_PAGE_DROP_ID: {
-          return setToCreating(
-            getFieldCreationMeta(CREATE_PAGE_FIELDS_ORDERED[source.index]),
-            destination.index,
-          )
-        }
-
         case CREATE_FIELD_DROP_ID: {
           return setToCreating(
-            getFieldCreationMeta(CREATE_FIELD_FIELDS_ORDERED[source.index]),
+            getFieldCreationMeta(BASIC_FIELDS_ORDERED[source.index]),
             destination.index,
           )
         }
@@ -160,7 +151,7 @@ export const BuilderAndDesignTab = (): JSX.Element => {
       >
         <BuilderAndDesignDrawer />
         <BuilderAndDesignContent placeholderProps={placeholderProps} />
-        <DeleteFieldModal />
+        {deleteFieldModalDisclosure.isOpen && <DeleteFieldModal />}
       </BuilderAndDesignContext.Provider>
     </DragDropContext>
   )

@@ -39,16 +39,18 @@ export const EmailFieldInput = ({
       control={control}
       rules={validationRules}
       name={schema._id}
+      defaultValue={{ value: '' }}
       render={({ field: { onChange, value, ...field } }) => (
         <Input
           autoComplete="email"
           value={value?.value ?? ''}
           onChange={(event) => {
-            const value = event.target.value
+            const value = event.target.value.trim().toLowerCase()
             return handleInputChange
               ? handleInputChange(onChange)(value)
               : onChange({ value })
           }}
+          preventDefaultOnEnter
           {...field}
           {...inputProps}
         />

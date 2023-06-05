@@ -1,9 +1,8 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
+import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { ObjectId } from 'bson'
 import { cloneDeep, merge, omit } from 'lodash'
 import mongoose from 'mongoose'
-
-import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import { smsConfig } from '../../../config/features/sms.config'
 import {
@@ -76,7 +75,7 @@ describe('SmsCount', () => {
         omit(MOCK_FORM_DEACTIVATED_PARAMS, 'form'),
       )
 
-      await expect(invalidSmsCount.save()).rejects.toThrowError(
+      await expect(invalidSmsCount.save()).rejects.toThrow(
         mongoose.Error.ValidationError,
       )
     })
@@ -86,7 +85,7 @@ describe('SmsCount', () => {
         omit(MOCK_FORM_DEACTIVATED_PARAMS, 'formAdmin.email'),
       )
 
-      await expect(invalidSmsCount.save()).rejects.toThrowError(
+      await expect(invalidSmsCount.save()).rejects.toThrow(
         mongoose.Error.ValidationError,
       )
     })
@@ -96,7 +95,7 @@ describe('SmsCount', () => {
         omit(MOCK_FORM_DEACTIVATED_PARAMS, 'formAdmin.userId'),
       )
 
-      await expect(invalidSmsCount.save()).rejects.toThrowError(
+      await expect(invalidSmsCount.save()).rejects.toThrow(
         mongoose.Error.ValidationError,
       )
     })
@@ -106,7 +105,7 @@ describe('SmsCount', () => {
         omit(MOCK_FORM_DEACTIVATED_PARAMS, 'collaboratorEmail'),
       )
 
-      await expect(invalidSmsCount.save()).rejects.toThrowError(
+      await expect(invalidSmsCount.save()).rejects.toThrow(
         mongoose.Error.ValidationError,
       )
     })
@@ -118,7 +117,7 @@ describe('SmsCount', () => {
         }),
       )
 
-      await expect(invalidSmsCount.save()).rejects.toThrowError(
+      await expect(invalidSmsCount.save()).rejects.toThrow(
         mongoose.Error.ValidationError,
       )
     })
@@ -128,7 +127,7 @@ describe('SmsCount', () => {
         omit(MOCK_FORM_DEACTIVATED_PARAMS, 'recipientNumber'),
       )
 
-      await expect(invalidSmsCount.save()).rejects.toThrowError(
+      await expect(invalidSmsCount.save()).rejects.toThrow(
         mongoose.Error.ValidationError,
       )
     })
@@ -140,7 +139,7 @@ describe('SmsCount', () => {
         }),
       )
 
-      await expect(invalidSmsCount.save()).rejects.toThrowError(
+      await expect(invalidSmsCount.save()).rejects.toThrow(
         mongoose.Error.ValidationError,
       )
     })
@@ -165,7 +164,7 @@ describe('SmsCount', () => {
         omit(MOCK_BOUNCED_SUBMISSION_PARAMS, 'form'),
       )
 
-      await expect(invalidSmsCount.save()).rejects.toThrowError(
+      await expect(invalidSmsCount.save()).rejects.toThrow(
         mongoose.Error.ValidationError,
       )
     })
@@ -175,7 +174,7 @@ describe('SmsCount', () => {
         omit(MOCK_BOUNCED_SUBMISSION_PARAMS, 'formAdmin.email'),
       )
 
-      await expect(invalidSmsCount.save()).rejects.toThrowError(
+      await expect(invalidSmsCount.save()).rejects.toThrow(
         mongoose.Error.ValidationError,
       )
     })
@@ -185,7 +184,7 @@ describe('SmsCount', () => {
         omit(MOCK_BOUNCED_SUBMISSION_PARAMS, 'formAdmin.userId'),
       )
 
-      await expect(invalidSmsCount.save()).rejects.toThrowError(
+      await expect(invalidSmsCount.save()).rejects.toThrow(
         mongoose.Error.ValidationError,
       )
     })
@@ -195,7 +194,7 @@ describe('SmsCount', () => {
         omit(MOCK_BOUNCED_SUBMISSION_PARAMS, 'collaboratorEmail'),
       )
 
-      await expect(invalidSmsCount.save()).rejects.toThrowError(
+      await expect(invalidSmsCount.save()).rejects.toThrow(
         mongoose.Error.ValidationError,
       )
     })
@@ -207,7 +206,7 @@ describe('SmsCount', () => {
         }),
       )
 
-      await expect(invalidSmsCount.save()).rejects.toThrowError(
+      await expect(invalidSmsCount.save()).rejects.toThrow(
         mongoose.Error.ValidationError,
       )
     })
@@ -217,7 +216,7 @@ describe('SmsCount', () => {
         omit(MOCK_BOUNCED_SUBMISSION_PARAMS, 'recipientNumber'),
       )
 
-      await expect(invalidSmsCount.save()).rejects.toThrowError(
+      await expect(invalidSmsCount.save()).rejects.toThrow(
         mongoose.Error.ValidationError,
       )
     })
@@ -229,7 +228,7 @@ describe('SmsCount', () => {
         }),
       )
 
-      await expect(invalidSmsCount.save()).rejects.toThrowError(
+      await expect(invalidSmsCount.save()).rejects.toThrow(
         mongoose.Error.ValidationError,
       )
     })
@@ -340,7 +339,7 @@ describe('SmsCount', () => {
       const malformedSmsCount = new SmsCount(malformedParams)
 
       // Act + Assert
-      await expect(malformedSmsCount.save()).rejects.toThrowError(
+      await expect(malformedSmsCount.save()).rejects.toThrow(
         mongoose.Error.ValidationError,
       )
     })
@@ -354,7 +353,7 @@ describe('SmsCount', () => {
       const malformedSmsCount = new SmsCount(malformedParams)
 
       // Act + Assert
-      await expect(malformedSmsCount.save()).rejects.toThrowError(
+      await expect(malformedSmsCount.save()).rejects.toThrow(
         mongoose.Error.ValidationError,
       )
     })
@@ -368,7 +367,7 @@ describe('SmsCount', () => {
       const malformedSmsCount = new SmsCount(malformedParams)
 
       // Act + Assert
-      await expect(malformedSmsCount.save()).rejects.toThrowError(
+      await expect(malformedSmsCount.save()).rejects.toThrow(
         mongoose.Error.ValidationError,
       )
     })
@@ -382,7 +381,7 @@ describe('SmsCount', () => {
       const malformedSmsCount = new SmsCount(malformedParams)
 
       // Act + Assert
-      await expect(malformedSmsCount.save()).rejects.toThrowError(
+      await expect(malformedSmsCount.save()).rejects.toThrow(
         mongoose.Error.ValidationError,
       )
     })
@@ -395,7 +394,7 @@ describe('SmsCount', () => {
       const malformedSmsCount = new SmsCount(malformedParams)
 
       // Act + Assert
-      await expect(malformedSmsCount.save()).rejects.toThrowError(
+      await expect(malformedSmsCount.save()).rejects.toThrow(
         mongoose.Error.ValidationError,
       )
     })
@@ -409,7 +408,7 @@ describe('SmsCount', () => {
       const malformedSmsCount = new SmsCount(malformedParams)
 
       // Act + Assert
-      await expect(malformedSmsCount.save()).rejects.toThrowError(
+      await expect(malformedSmsCount.save()).rejects.toThrow(
         mongoose.Error.ValidationError,
       )
     })
@@ -422,7 +421,7 @@ describe('SmsCount', () => {
       const malformedSmsCount = new SmsCount(malformedParams)
 
       // Act + Assert
-      await expect(malformedSmsCount.save()).rejects.toThrowError(
+      await expect(malformedSmsCount.save()).rejects.toThrow(
         mongoose.Error.ValidationError,
       )
     })
@@ -591,7 +590,7 @@ describe('SmsCount', () => {
             smsType: 'INVALID',
             logType: LogType.failure,
           }),
-        ).rejects.toThrowError(mongoose.Error.ValidationError)
+        ).rejects.toThrow(mongoose.Error.ValidationError)
       })
 
       it('should reject if logType is invalid', async () => {
@@ -601,7 +600,7 @@ describe('SmsCount', () => {
             // @ts-ignore
             logType: 'INVALID',
           }),
-        ).rejects.toThrowError(mongoose.Error.ValidationError)
+        ).rejects.toThrow(mongoose.Error.ValidationError)
       })
     })
   })

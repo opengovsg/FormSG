@@ -13,6 +13,8 @@ import {
 
 import { BxMenuAltLeft } from '~assets/icons/BxMenuAltLeft'
 import { BxsTimeFive } from '~assets/icons/BxsTimeFive'
+import { ThemeColorScheme } from '~theme/foundations/colours'
+import { noPrintCss } from '~utils/noPrintCss'
 import Button from '~components/Button'
 import IconButton from '~components/IconButton'
 
@@ -24,7 +26,8 @@ export type MiniHeaderProps = Pick<
   | 'activeSectionId'
   | 'miniHeaderRef'
   | 'onMobileDrawerOpen'
-> & { isOpen: boolean }
+  | 'colorScheme'
+> & { isOpen: boolean; isTemplate?: boolean }
 
 export const MiniHeader = ({
   title,
@@ -33,7 +36,9 @@ export const MiniHeader = ({
   activeSectionId,
   miniHeaderRef,
   onMobileDrawerOpen,
+  colorScheme,
   isOpen,
+  isTemplate,
 }: MiniHeaderProps): JSX.Element => (
   <Slide
     // Screen readers do not need to know of the existence of this component.
@@ -45,8 +50,10 @@ export const MiniHeader = ({
   >
     <Box
       bg={titleBg}
+      mt={isTemplate ? '4.75rem' : '0'}
       px={{ base: '1.5rem', md: '2rem' }}
       py={{ base: '0.5rem', md: '1rem' }}
+      sx={noPrintCss}
     >
       <Skeleton isLoaded={!!title}>
         <Flex
@@ -56,11 +63,18 @@ export const MiniHeader = ({
           justify="space-between"
           flexDir="row"
         >
-          <Flex alignItems="center" minH={{ base: '4rem', md: '0' }}>
+          <Flex
+            alignItems="center"
+            minH={{ base: '4rem', md: '0' }}
+            flex="1 1 0"
+            w="100%"
+            overflow="hidden"
+          >
             <Text
               textStyle={{ base: 'h4', md: 'h2' }}
               textAlign="start"
               color={titleColor}
+              noOfLines={2}
             >
               {title ?? 'Loading title'}
             </Text>
@@ -68,8 +82,7 @@ export const MiniHeader = ({
           {activeSectionId ? (
             // Section sidebar icon should only show up if sections exist
             <IconButton
-              variant="solid"
-              colorScheme="primary"
+              colorScheme={colorScheme}
               aria-label="Mobile section sidebar"
               fontSize="1.5rem"
               icon={<BxMenuAltLeft />}
@@ -88,10 +101,12 @@ interface FormHeaderProps {
   estTimeString: string
   titleBg: string
   titleColor: string
+  colorScheme?: ThemeColorScheme
   showHeader?: boolean
   loggedInId?: string
   showMiniHeader?: boolean
   activeSectionId?: string
+  isTemplate?: boolean
   miniHeaderRef?: RefObject<HTMLDivElement>
   onMobileDrawerOpen?: () => void
   handleLogout?: () => void
@@ -102,11 +117,13 @@ export const FormHeader = ({
   estTimeString,
   titleBg,
   titleColor,
+  colorScheme,
   showHeader,
   loggedInId,
   showMiniHeader,
   activeSectionId,
   miniHeaderRef,
+  isTemplate,
   onMobileDrawerOpen,
   handleLogout,
 }: FormHeaderProps): JSX.Element | null => {
@@ -134,17 +151,27 @@ export const FormHeader = ({
           title={title}
           titleBg={titleBg}
           titleColor={titleColor}
+          colorScheme={colorScheme}
           activeSectionId={activeSectionId}
           miniHeaderRef={miniHeaderRef}
           onMobileDrawerOpen={onMobileDrawerOpen}
           isOpen={isOpen}
+          isTemplate={isTemplate}
         />
       ) : null}
       <Flex
+        transition="background 0.2s ease"
         px={{ base: '1.5rem', md: '3rem' }}
         py={{ base: '2rem', md: '3rem' }}
+        wordBreak="break-word"
         justify="center"
         bg={titleBg}
+        role="banner"
+        sx={{
+          '@media print': {
+            py: '0',
+          },
+        }}
       >
         <Flex
           maxW="57rem"
@@ -163,7 +190,12 @@ export const FormHeader = ({
           </Skeleton>
           {estTimeString && (
             <Flex align="flex-start" justify="center" mt="0.875rem">
-              <Icon as={BxsTimeFive} fontSize="1.5rem" mr="0.5rem" />
+              <Icon
+                as={BxsTimeFive}
+                fontSize="1.5rem"
+                mr="0.5rem"
+                aria-hidden
+              />
               <Text textStyle="body-2" mt="0.125rem">
                 {estTimeString}
               </Text>
@@ -172,6 +204,7 @@ export const FormHeader = ({
           {loggedInId ? (
             <Button
               mt="2.25rem"
+              colorScheme={colorScheme}
               variant="reverse"
               aria-label="Log out"
               rightIcon={<BiLogOutCircle fontSize="1.5rem" />}

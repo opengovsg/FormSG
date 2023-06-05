@@ -20,11 +20,13 @@ import { useMutateTwilioCreds } from '../../mutations'
 interface DeleteTwilioModalProps {
   isOpen: boolean
   onClose: () => void
+  onDelete: () => void
 }
 
 export const DeleteTwilioModal = ({
   isOpen,
   onClose,
+  onDelete,
 }: DeleteTwilioModalProps): JSX.Element => {
   const modalSize = useBreakpointValue({
     base: 'mobile',
@@ -39,9 +41,12 @@ export const DeleteTwilioModal = ({
 
   const handleConfirmDeleteCreds = useCallback(() => {
     mutateFormTwilioDeletion.mutate(undefined, {
-      onSuccess: onClose,
+      onSuccess: () => {
+        onDelete()
+        onClose()
+      },
     })
-  }, [mutateFormTwilioDeletion, onClose])
+  }, [mutateFormTwilioDeletion, onClose, onDelete])
 
   return (
     <Modal size={modalSize} isOpen={isOpen} onClose={onClose}>
@@ -51,7 +56,7 @@ export const DeleteTwilioModal = ({
         <ModalHeader color="secondary.700">
           Remove Twilio credentials
         </ModalHeader>
-        <ModalBody whiteSpace="pre-line">
+        <ModalBody whiteSpace="pre-wrap">
           <Text textStyle="body-2" color="secondary.500">
             Are you sure you want to remove your Twilio credentials? You will
             not be able to use the Verified SMS feature unless you have free

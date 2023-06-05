@@ -1,9 +1,10 @@
-import { Merge } from 'type-fest'
+import type { Merge } from 'type-fest'
 
 import {
   AttachmentResponse,
   EmailModeSubmissionContentDto,
   FieldResponse,
+  ResponseMetadata,
 } from '../../../shared/types'
 
 /**
@@ -24,5 +25,8 @@ export type ParsedEmailFormFieldResponse =
  */
 export type ParsedEmailModeSubmissionBody = Merge<
   EmailModeSubmissionContentDto,
-  { responses: ParsedEmailFormFieldResponse[] }
+  {
+    responses: ParsedEmailFormFieldResponse[]
+    responseMetadata?: ResponseMetadata
+  }
 >

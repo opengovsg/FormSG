@@ -14,6 +14,7 @@ import {
 } from '~shared/types/field'
 
 import { useIsMobile } from '~hooks/useIsMobile'
+import { useIsPrint } from '~hooks/useIsPrint'
 import {
   createBaseValidationRules,
   createDropdownValidationRules,
@@ -101,6 +102,7 @@ export const ColumnCell = ({
   colorTheme,
 }: ColumnCellProps): JSX.Element => {
   const isMobile = useIsMobile()
+  const isPrint = useIsPrint()
   const { errors } = useFormState<TableFieldInputs>({ name: schemaId })
 
   const inputName = useMemo(
@@ -138,7 +140,8 @@ export const ColumnCell = ({
       isInvalid={!!get(errors, inputName)}
     >
       <FormLabel
-        as={isMobile ? undefined : VisuallyHidden}
+        // display column header in print and mobile modes
+        as={isPrint || isMobile ? undefined : VisuallyHidden}
         color="secondary.700"
       >
         {columnSchema.title}

@@ -1,8 +1,10 @@
+import { useMemo } from 'react'
 import {
   forwardRef,
   Icon,
   Input as ChakraInput,
   InputGroup,
+  InputLeftAddon,
   InputProps as ChakraInputProps,
   InputRightElement,
   useMultiStyleConfig,
@@ -11,15 +13,25 @@ import { omit } from '@chakra-ui/utils'
 
 import { BxsCheckCircle } from '~assets/icons/BxsCheckCircle'
 
+import { BxLockAlt } from '../../assets/icons/BxLockAlt'
+
 export interface InputProps extends ChakraInputProps {
   /**
    * Whether the input is in a prefilled state.
    */
   isPrefilled?: boolean
   /**
+   * Whether the input is in a locked prefilled state.
+   */
+  isPrefillLocked?: boolean
+  /**
    * Whether the input is in a success state.
    */
   isSuccess?: boolean
+  /**
+   * Whether to prevent default on user pressing the 'Enter' key.
+   */
+  preventDefaultOnEnter?: boolean
 }
 
 export const Input = forwardRef<InputProps, 'input'>((props, ref) => {
@@ -27,17 +39,71 @@ export const Input = forwardRef<InputProps, 'input'>((props, ref) => {
 
   // Omit extra props so they will not be passed into the DOM and trigger
   // React warnings.
-  const inputProps = omit(props, ['isSuccess', 'isPrefilled'])
+  const inputProps = omit(props, [
+    'isSuccess',
+    'isPrefilled',
+    'isPrefillLocked',
+    'preventDefaultOnEnter',
+  ])
+
+  const preventDefault = useMemo(
+    () =>
+      // This flag should be set for form input fields, to prevent refresh on enter if form only has one input
+      props.preventDefaultOnEnter
+        ? {
+            onKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => {
+              if (e.key === 'Enter') {
+                e.preventDefault()
+              }
+            },
+          }
+        : {},
+    [props.preventDefaultOnEnter],
+  )
 
   // Return normal input component if not success state.
   if (!props.isSuccess) {
-    return (
-      <ChakraInput
-        ref={ref}
-        {...inputProps}
-        sx={props.sx ?? inputStyles.field}
-      />
-    )
+    if (props.prefix) {
+      return (
+        <InputGroup>
+          <InputLeftAddon pointerEvents="none" children={props.prefix} />
+          <ChakraInput
+            ref={ref}
+            {...preventDefault}
+            {...inputProps}
+            {...(props.isPrefillLocked ? { isDisabled: true } : {})}
+            sx={props.sx ?? inputStyles.field}
+          />
+          {props.isPrefillLocked ? (
+            <InputRightElement>
+              <BxLockAlt />
+            </InputRightElement>
+          ) : null}
+        </InputGroup>
+      )
+    } else {
+      return props.isPrefillLocked ? (
+        <InputGroup>
+          <ChakraInput
+            ref={ref}
+            {...preventDefault}
+            {...inputProps}
+            isDisabled={true}
+            sx={props.sx ?? inputStyles.field}
+          />
+          <InputRightElement>
+            <BxLockAlt />
+          </InputRightElement>
+        </InputGroup>
+      ) : (
+        <ChakraInput
+          ref={ref}
+          {...preventDefault}
+          {...inputProps}
+          sx={props.sx ?? inputStyles.field}
+        />
+      )
+    }
   }
 
   return (
@@ -46,6 +112,7 @@ export const Input = forwardRef<InputProps, 'input'>((props, ref) => {
     <InputGroup>
       <ChakraInput
         ref={ref}
+        {...preventDefault}
         {...inputProps}
         sx={props.sx ?? inputStyles.field}
       />

@@ -11,18 +11,29 @@ import { adminFormKeys } from '~features/admin-form/common/queries'
 
 import { createSingleFormField } from '../UpdateFormFieldService'
 import {
-  BuildFieldState,
+  FieldBuilderState,
   stateDataSelector,
   updateEditStateSelector,
-  useBuilderAndDesignStore,
-} from '../useBuilderAndDesignStore'
+  useFieldBuilderStore,
+} from '../useFieldBuilderStore'
+import {
+  getMutationErrorMessage,
+  getMutationToastDescriptionFieldName,
+} from '../utils/getMutationMessage'
 
 export const useCreateFormField = () => {
   const { formId } = useParams()
   if (!formId) throw new Error('No formId provided')
 
-  const updateEditState = useBuilderAndDesignStore(updateEditStateSelector)
-  const stateData = useBuilderAndDesignStore(stateDataSelector)
+  const { stateData, updateEditState } = useFieldBuilderStore(
+    useCallback(
+      (state) => ({
+        stateData: stateDataSelector(state),
+        updateEditState: updateEditStateSelector(state),
+      }),
+      [],
+    ),
+  )
 
   const queryClient = useQueryClient()
   const toast = useToast({ status: 'success', isClosable: true })
@@ -31,7 +42,7 @@ export const useCreateFormField = () => {
   const handleSuccess = useCallback(
     (newField: FormFieldDto) => {
       toast.closeAll()
-      if (stateData.state !== BuildFieldState.CreatingField) {
+      if (stateData.state !== FieldBuilderState.CreatingField) {
         toast({
           status: 'warning',
           description:
@@ -40,7 +51,9 @@ export const useCreateFormField = () => {
         return
       }
       toast({
-        description: `Field "${newField.title}" created`,
+        description: `The ${getMutationToastDescriptionFieldName(
+          newField,
+        )} was created.`,
       })
       queryClient.setQueryData<AdminFormDto>(adminFormKey, (oldForm) => {
         // Should not happen, should not be able to update field if there is no
@@ -59,7 +72,7 @@ export const useCreateFormField = () => {
     (error: Error) => {
       toast.closeAll()
       toast({
-        description: error.message,
+        description: getMutationErrorMessage(error),
         status: 'danger',
       })
     },
@@ -67,7 +80,7 @@ export const useCreateFormField = () => {
   )
 
   const insertionIndex = useMemo(() => {
-    if (stateData.state === BuildFieldState.CreatingField) {
+    if (stateData.state === FieldBuilderState.CreatingField) {
       return stateData.insertionIndex
     }
   }, [stateData])

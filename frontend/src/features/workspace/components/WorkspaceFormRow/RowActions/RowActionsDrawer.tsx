@@ -8,6 +8,7 @@ import {
   BiTrash,
   BiUserPlus,
 } from 'react-icons/bi'
+import { Link as ReactLink } from 'react-router-dom'
 import {
   Box,
   ButtonGroup,
@@ -19,15 +20,11 @@ import {
   useDisclosure,
 } from '@chakra-ui/react'
 
-import { FormStatus } from '~shared/types'
-
 import Button, { ButtonProps } from '~components/Button'
 import IconButton from '~components/IconButton'
 
-import { ShareFormModal } from '~features/admin-form/share'
-
 import { RowActionsProps } from './RowActions'
-import { useRowActionDropdown } from './useRowActionDropdown'
+import { useRowAction } from './useRowAction'
 
 /**
  * Drawer variant of form actions. Most probably used only in mobile breakpoints.
@@ -39,13 +36,13 @@ export const RowActionsDrawer = ({
   const { isOpen, onOpen, onClose } = useDisclosure()
 
   const {
+    adminFormLink,
+    previewFormLink,
     handleDeleteForm,
     handleDuplicateForm,
-    handleEditForm,
-    handleManageFormAccess,
-    handlePreviewForm,
-    shareFormModalDisclosure,
-  } = useRowActionDropdown(formMeta._id)
+    handleCollaborators,
+    handleShareForm,
+  } = useRowAction(formMeta)
 
   const buttonProps: Partial<ButtonProps> = useMemo(
     () => ({
@@ -59,12 +56,6 @@ export const RowActionsDrawer = ({
 
   return (
     <Box display={{ md: 'none' }}>
-      <ShareFormModal
-        isOpen={shareFormModalDisclosure.isOpen}
-        formId={formMeta._id}
-        onClose={shareFormModalDisclosure.onClose}
-        isFormPrivate={formMeta.status === FormStatus.Private}
-      />
       <IconButton
         variant="clear"
         aria-label="More options"
@@ -84,15 +75,18 @@ export const RowActionsDrawer = ({
               colorScheme="secondary"
             >
               <Button
+                as={ReactLink}
+                to={adminFormLink}
                 {...buttonProps}
-                onClick={handleEditForm}
                 leftIcon={<BiEditAlt fontSize="1.25rem" />}
               >
                 Edit
               </Button>
               <Button
+                as={ReactLink}
+                to={previewFormLink}
+                target="_blank"
                 {...buttonProps}
-                onClick={handlePreviewForm}
                 leftIcon={<BiShow fontSize="1.25rem" />}
               >
                 Preview
@@ -106,17 +100,17 @@ export const RowActionsDrawer = ({
               </Button>
               <Button
                 {...buttonProps}
-                onClick={shareFormModalDisclosure.onOpen}
+                onClick={handleShareForm}
                 leftIcon={<BiShareAlt fontSize="1.25rem" />}
               >
                 Share form
               </Button>
               <Button
                 {...buttonProps}
-                onClick={handleManageFormAccess}
+                onClick={handleCollaborators}
                 leftIcon={<BiUserPlus fontSize="1.25rem" />}
               >
-                Manage form access
+                Manage form admins
               </Button>
               <Divider />
               <Button

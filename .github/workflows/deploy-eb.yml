@@ -2,16 +2,19 @@ name: Deploy to AWS Elastic Beanstalk
 on:
   push:
     # There should be 7 environments in github actions secrets:
-    # release, release-al2, staging, staging-al2, staging-alt, staging-alt2, uat.
+    # release, release-al2, staging, staging-alt, staging-alt2, uat.
     # This is different from the DEPLOY_ENV secret which corresponds to elastic beanstalk environment name.
     branches:
       - release
       - release-al2
       - staging
-      - staging-al2
       - staging-alt
       - staging-alt2
       - uat
+
+permissions:
+  id-token: write
+  contents: read
 
 jobs:
   set_environment:
@@ -20,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - id: set-environment
-        run: echo "::set-output name=current_env::${{github.ref_name}}"
+        run: echo "current_env=${{github.ref_name}}" >> $GITHUB_OUTPUT
 
   build_deploy_application:
     needs: set_environment
@@ -32,55 +35,86 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
-        with:
-          node-version: '14'
-          cache: 'npm'
-      - name: Build
+      - name: Setup secrets for datadog sourcemap deployment
+        run: |
+          echo "APP_VERSION=$(jq -r .version package.json)-$(echo ${GITHUB_REF##*/})-$(echo ${GITHUB_SHA} | cut -c1-8)" >> $GITHUB_ENV
+      - name: Inject frontend build env vars
         env:
-          NODE_OPTIONS: '--max-old-space-size=4096'
           REACT_APP_DD_RUM_APP_ID: ${{ secrets.DD_RUM_APP_ID }}
           REACT_APP_DD_RUM_CLIENT_TOKEN: ${{ secrets.DD_RUM_CLIENT_TOKEN }}
           REACT_APP_DD_RUM_ENV: ${{ secrets.DD_ENV }}
+          REACT_APP_DD_SAMPLE_RATE: ${{ secrets.DD_SAMPLE_RATE }}
+          REACT_APP_GA_TRACKING_ID: ${{ secrets.GA_TRACKING_ID }}
+          REACT_APP_FORMSG_SDK_MODE: ${{ secrets.REACT_APP_FORMSG_SDK_MODE }}
+          REACT_APP_URL: ${{ secrets.APP_URL }}
         run: |
-          echo REACT_APP_DD_RUM_APP_ID=$REACT_APP_DD_RUM_APP_ID > frontend/.env
+          sed -i -e "s|@REACT_APP_URL|${{secrets.APP_URL}}|g" -e "s/@REACT_APP_DD_RUM_APP_ID/$REACT_APP_DD_RUM_APP_ID/g" -e "s/@REACT_APP_DD_RUM_CLIENT_TOKEN/$REACT_APP_DD_RUM_CLIENT_TOKEN/g" -e "s/@REACT_APP_DD_RUM_ENV/$REACT_APP_DD_RUM_ENV/g" -e "s/@REACT_APP_VERSION/${{env.APP_VERSION}}/g" -e "s/@REACT_APP_DD_SAMPLE_RATE/$REACT_APP_DD_SAMPLE_RATE/g" frontend/datadog-chunk.ts
+          echo REACT_APP_VERSION=${{env.APP_VERSION}} > frontend/.env
+          echo REACT_APP_URL=$REACT_APP_URL > frontend/.env
+          echo REACT_APP_GA_TRACKING_ID=$REACT_APP_GA_TRACKING_ID >> frontend/.env
+          echo REACT_APP_FORMSG_SDK_MODE=$REACT_APP_FORMSG_SDK_MODE >> frontend/.env
           echo REACT_APP_DD_RUM_CLIENT_TOKEN=$REACT_APP_DD_RUM_CLIENT_TOKEN >> frontend/.env
           echo REACT_APP_DD_RUM_ENV=$REACT_APP_DD_RUM_ENV >> frontend/.env
-          npm ci
-          set -e
-          npm_config_mode=yes npx lockfile-lint --type npm --path package.json --validate-https --allowed-hosts npm
-          npm run lint-ci
-          npm run build
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
+        uses: aws-actions/configure-aws-credentials@v1.7.0
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          role-to-assume: ${{ secrets.AWS_CI_ROLE_TO_ASSUME }}
           aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
 
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
-      - name: Build, tag, and push image to Amazon ECR
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Build docker image
+        uses: docker/build-push-action@v3
+        env:
+          ECR_REPO: ${{ secrets.ECR_REPO }}
+          DD_API_KEY: ${{ secrets.DD_API_KEY }}
+          DD_ENV: ${{ secrets.DD_ENV }}
+        with:
+          context: .
+          file: ./Dockerfile.production
+          push: false
+          load: true # Load image into local docker daemon so we can tag and push in later steps
+          tags: ${{env.ECR_REPO}}:${{env.IMAGE_TAG}}
+          build-args: |
+            APP_VERSION=${{env.APP_VERSION}}
+            APP_URL=${{secrets.APP_URL}}
+            REPO_URL=${{github.server_url}}/${{github.repository}}
+          secrets: |
+            "dd_api_key=${{ secrets.DD_API_KEY }}"
+
+      - name: Push image to Amazon ECR
         env:
           ECR_REPOSITORY: ${{ secrets.ECR_REPO }}
           DD_API_KEY: ${{ secrets.DD_API_KEY }}
           DD_ENV: ${{ secrets.DD_ENV }}
         run: |
-          docker build -f Dockerfile.production -t $ECR_REPOSITORY:$IMAGE_TAG .
           docker tag $ECR_REPOSITORY:$IMAGE_TAG $ECR_REPOSITORY:$BRANCH
           docker push -a $ECR_REPOSITORY
           sed -i -e "s/@TAG/$IMAGE_TAG/g" Dockerrun.aws.json
           sed -i -e "s/@DD_API_KEY/$DD_API_KEY/g" -e "s/@DD_ENV/$DD_ENV/g" .ebextensions/99datadog-amazon-linux-2.config
           zip -r "$IMAGE_TAG.zip" .ebextensions Dockerrun.aws.json
 
-      - name: Copy to S3
+      - name: Copy Image to S3
         env:
           BUCKET_NAME: ${{ secrets.BUCKET_NAME }}
         run: |
           aws s3 cp $IMAGE_TAG.zip s3://$BUCKET_NAME/$IMAGE_TAG.zip
+
+      - name: Copy Static Assets from Docker Image and Push to S3
+        env:
+          S3_STATIC_ASSETS_BUCKET_NAME: ${{ secrets.S3_STATIC_ASSETS_BUCKET_NAME }}
+          ECR_REPOSITORY: ${{ secrets.ECR_REPO }}
+        run: |
+          mkdir -p /tmp/s3static
+          chmod 777 /tmp/s3static
+          docker run --rm -v /tmp/s3static:/tmp/s3static $ECR_REPOSITORY:$IMAGE_TAG cp -r ./dist/frontend/. /tmp/s3static
+          aws s3 sync /tmp/s3static s3://$S3_STATIC_ASSETS_BUCKET_NAME
 
       - name: Create application version
         env:

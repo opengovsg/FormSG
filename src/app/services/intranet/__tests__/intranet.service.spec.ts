@@ -2,7 +2,7 @@ import fs from 'fs'
 
 import { IntranetService } from '../intranet.service'
 
-const MOCK_IP_LIST_PATH = 'tests/mock-intranet-ips.txt'
+const MOCK_IP_LIST_PATH = '__tests__/setup/mock-intranet-ips.txt'
 const MOCK_IP_LIST = fs.readFileSync(MOCK_IP_LIST_PATH).toString().split('\n')
 
 describe('IntranetService', () => {

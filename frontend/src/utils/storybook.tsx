@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
-import { Box, Center, useDisclosure } from '@chakra-ui/react'
+import { Box, BoxProps, Center, useDisclosure } from '@chakra-ui/react'
 import { DecoratorFn } from '@storybook/react'
 import dayjs from 'dayjs'
 import mockdate from 'mockdate'
@@ -16,14 +16,25 @@ import {
 
 import { AdminFormLayout } from '~features/admin-form/common/AdminFormLayout'
 import { BuilderAndDesignContext } from '~features/admin-form/create/builder-and-design/BuilderAndDesignContext'
-import { CreatePageSidebarProvider } from '~features/admin-form/create/common/CreatePageSidebarContext'
+import { CreatePageSideBarLayoutProvider } from '~features/admin-form/create/common/CreatePageSideBarLayoutContext'
+
+import { fillHeightCss } from './fillHeightCss'
 
 export const centerDecorator: DecoratorFn = (storyFn) => (
   <Center>{storyFn()}</Center>
 )
 
+export const fixedHeightDecorator =
+  (height: BoxProps['h']): DecoratorFn =>
+  (Story) =>
+    (
+      <Box h={height}>
+        <Story />
+      </Box>
+    )
+
 export const fullScreenDecorator: DecoratorFn = (storyFn) => (
-  <Box w="100vw" h="100vh">
+  <Box w="100vw" css={fillHeightCss}>
     {storyFn()}
   </Box>
 )
@@ -93,7 +104,7 @@ export const EditFieldDrawerDecorator: DecoratorFn = (storyFn) => {
   const deleteFieldModalDisclosure = useDisclosure()
   return (
     <Box maxW="33.25rem">
-      <CreatePageSidebarProvider>
+      <CreatePageSideBarLayoutProvider>
         <BuilderAndDesignContext.Provider
           value={{
             deleteFieldModalDisclosure,
@@ -101,7 +112,7 @@ export const EditFieldDrawerDecorator: DecoratorFn = (storyFn) => {
         >
           {storyFn()}
         </BuilderAndDesignContext.Provider>
-      </CreatePageSidebarProvider>
+      </CreatePageSideBarLayoutProvider>
     </Box>
   )
 }
@@ -121,13 +132,18 @@ export const AdminFormCreatePageDecorator: DecoratorFn = (storyFn) => {
 export const mockDateDecorator: DecoratorFn = (storyFn, { parameters }) => {
   mockdate.reset()
 
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  useEffect(() => {
+    return () => mockdate.reset()
+  }, [])
+
   if (parameters.mockdate) {
     mockdate.set(parameters.mockdate)
 
     const mockedDate = dayjs(parameters.mockdate).format('DD-MM-YYYY HH:mma')
 
     return (
-      <Box>
+      <>
         <Box
           pos="fixed"
           top={0}
@@ -141,7 +157,7 @@ export const mockDateDecorator: DecoratorFn = (storyFn, { parameters }) => {
           Mocking date: {mockedDate}
         </Box>
         {storyFn()}
-      </Box>
+      </>
     )
   }
   return storyFn()

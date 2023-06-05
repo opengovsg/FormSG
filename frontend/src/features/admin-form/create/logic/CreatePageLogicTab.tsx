@@ -6,6 +6,7 @@ import IconButton from '~components/IconButton'
 
 import { EmptyLogic } from './components/EmptyLogic'
 import { LogicContent } from './components/LogicContent'
+import { LogicSkeleton } from './components/LogicSkeleton'
 import { useAdminFormLogic } from './hooks/useAdminFormLogic'
 import { useAdminLogicStore } from './adminLogicStore'
 
@@ -26,16 +27,9 @@ export const CreatePageLogicTab = (): JSX.Element => {
     [createOrEditData, formLogics?.length],
   )
 
-  useEffect(() => {
-    return () => {
-      reset()
-    }
-  }, [reset])
+  useEffect(() => reset, [reset])
 
-  if (isLoading) {
-    // TODO: Some loading skeleton
-    return <div>Loading...</div>
-  }
+  if (isLoading) return <LogicSkeleton />
 
   return (
     <Box flex={1} overflow="auto" bg="neutral.100">

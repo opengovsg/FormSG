@@ -15,6 +15,7 @@ import {
   getFormCollaborators,
   getFreeSmsQuota,
   previewForm,
+  viewFormTemplate,
 } from './AdminViewFormService'
 
 export const adminFormKeys = {
@@ -26,6 +27,8 @@ export const adminFormKeys = {
     [...adminFormKeys.id(id), 'collaborators'] as const,
   previewForm: (id: string) =>
     [...adminFormKeys.id(id), 'previewForm'] as const,
+  viewFormTemplate: (id: string) =>
+    [...adminFormKeys.id(id), 'viewFormTemplate'] as const,
 }
 
 /**
@@ -40,8 +43,20 @@ export const useAdminForm = (
   >,
 ): UseQueryResult<AdminFormDto, ApiError> => {
   const { formId } = useParams()
-  if (!formId) throw new Error('No formId provided')
+  if (!formId) throw new Error('No formId provided to useAdminForm')
 
+  return useAdminFormWithId(formId, props)
+}
+
+export const useAdminFormWithId = (
+  formId: string,
+  props?: UseQueryOptions<
+    AdminFormDto,
+    ApiError,
+    AdminFormDto,
+    ReturnType<typeof adminFormKeys.id>
+  >,
+): UseQueryResult<AdminFormDto, ApiError> => {
   return useQuery(
     adminFormKeys.id(formId),
     () => getAdminFormView(formId),
@@ -51,19 +66,24 @@ export const useAdminForm = (
 
 export const useFreeSmsQuota = () => {
   const { formId } = useParams()
-  if (!formId) throw new Error('No formId provided')
+  if (!formId) throw new Error('No formId provided to useFreeSmsQuota')
 
-  return useQuery(adminFormKeys.freeSmsCount(formId), () =>
-    getFreeSmsQuota(formId),
+  return useQuery(
+    adminFormKeys.freeSmsCount(formId),
+    () => getFreeSmsQuota(formId),
+    { staleTime: 0 },
   )
 }
 
-export const useAdminFormCollaborators = () => {
-  const { formId } = useParams()
-  if (!formId) throw new Error('No formId provided')
-
+/**
+ * @params formId - The formId of the form to get the collaborators for.
+ * Params required as formId may come from various sources, either via url params
+ * or a context.
+ */
+export const useAdminFormCollaborators = (formId: string) => {
   const { user, isLoading: isUserLoading } = useUser()
-  const { data: form, isLoading: isAdminFormLoading } = useAdminForm()
+  const { data: form, isLoading: isAdminFormLoading } =
+    useAdminFormWithId(formId)
 
   const { data: collaborators, isLoading: isCollabLoading } = useQuery(
     adminFormKeys.collaborators(formId),
@@ -76,18 +96,20 @@ export const useAdminFormCollaborators = () => {
     [form, user],
   )
 
-  const showEditableModal = useMemo(() => {
+  const hasEditAccess = useMemo(() => {
     if (!form || !user) return false
     if (isFormAdmin) return true
     // Collaborators is source of truth if it has already loaded.
     if (collaborators) {
       return collaborators.some(
-        (perms) => perms.write && perms.email === user.email,
+        (perms) =>
+          perms.write && perms.email.toLowerCase() === user.email.toLowerCase(),
       )
     }
     // Else use permissionList first
     return form.permissionList.some(
-      (perms) => perms.write && perms.email === user.email,
+      (perms) =>
+        perms.write && perms.email.toLowerCase() === user.email.toLowerCase(),
     )
   }, [collaborators, form, isFormAdmin, user])
 
@@ -97,7 +119,7 @@ export const useAdminFormCollaborators = () => {
     collaborators,
     isLoading: isCollabLoading || isAdminFormLoading || isUserLoading,
     isFormAdmin,
-    showEditableModal,
+    hasEditAccess,
   }
 }
 
@@ -110,6 +132,24 @@ export const usePreviewForm = (
     adminFormKeys.previewForm(formId),
     () => previewForm(formId),
     {
+      // Treat preview form as static on load.
+      staleTime: Infinity,
+      enabled: FORMID_REGEX.test(formId) && enabled,
+    },
+  )
+}
+
+export const useFormTemplate = (
+  formId: string,
+  /** Extra override to determine whether query is enabled */
+  enabled = true,
+): UseQueryResult<PreviewFormViewDto, ApiError> => {
+  return useQuery(
+    adminFormKeys.viewFormTemplate(formId),
+    () => viewFormTemplate(formId),
+    {
+      // Treat preview form as static on load.
+      staleTime: Infinity,
       enabled: FORMID_REGEX.test(formId) && enabled,
     },
   )

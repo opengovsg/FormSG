@@ -10,7 +10,6 @@ import {
 import { FieldResponse, FormFieldSchema, IFormDocument } from '../../../types'
 import { AutoReplyMailData } from '../../services/mail/mail.types'
 
-import { IncomingSubmission } from './IncomingSubmission.class'
 import { ConflictError } from './submission.errors'
 import { FilteredResponse } from './submission.types'
 
@@ -52,8 +51,6 @@ const encryptFormFieldModeFilter = <T extends FormField>(
 ) => {
   // To filter for autoreply-able fields.
   return responses.filter((response) => {
-    if ([BasicField.Mobile, BasicField.Email].includes(response.fieldType))
-      return false
     switch (response.fieldType) {
       case BasicField.Mobile:
         return response.isVerifiable
@@ -83,7 +80,6 @@ export const getFormFieldModeFilter = (
  * @param formFields Fields from form object
  * @returns Array of data for email confirmations
  */
-// TODO: Migrate to extractEmailConfirmationDataFromIncomingSubmission
 export const extractEmailConfirmationData = (
   responses: FieldResponse[],
   formFields: FormFieldSchema[] | undefined,
@@ -110,19 +106,6 @@ export const extractEmailConfirmationData = (
     }
     return acc
   }, [])
-}
-
-/**
- * Extracts response data to be sent in email confirmations
- * @param responses Responses from form filler
- * @param formFields Fields from form object
- * @returns Array of data for email confirmations
- */
-export const extractEmailConfirmationDataFromIncomingSubmission = (
-  incomingSubmission: IncomingSubmission,
-): AutoReplyMailData[] => {
-  const { responses, form } = incomingSubmission
-  return extractEmailConfirmationData(responses, form.form_fields)
 }
 
 /**
@@ -164,4 +147,11 @@ export const getFilteredResponses = (
     )
   }
   return ok(results as FilteredResponse[])
+}
+
+export const getNormalisedResponseTime = (
+  responseTimeMs: number,
+  numVisibleFields: number,
+) => {
+  return (10 * responseTimeMs) / numVisibleFields
 }

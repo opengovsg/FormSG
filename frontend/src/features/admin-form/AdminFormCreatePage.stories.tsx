@@ -1,6 +1,6 @@
 import { Meta, Story } from '@storybook/react'
 
-import { UserId } from '~shared/types'
+import { PaymentChannel, UserId } from '~shared/types'
 import {
   AdminFormDto,
   FormAuthType,
@@ -11,7 +11,11 @@ import {
 
 import {
   createFormBuilderMocks,
+  getAdminFormCollaborators,
+  getAdminFormSettings,
+  getAdminFormSubmissions,
   MOCK_FORM_FIELDS_WITH_MYINFO,
+  MOCK_FORM_LOGICS,
 } from '~/mocks/msw/handlers/admin-form'
 import { getFreeSmsQuota } from '~/mocks/msw/handlers/admin-form/twilio'
 import { getUser, MOCK_USER } from '~/mocks/msw/handlers/user'
@@ -31,6 +35,9 @@ const buildMswRoutes = (
   delay?: number | 'infinite' | 'real',
 ) => {
   return [
+    getAdminFormSettings(),
+    getAdminFormCollaborators(),
+    getAdminFormSubmissions(),
     ...createFormBuilderMocks(
       {
         ...overrides,
@@ -43,6 +50,7 @@ const buildMswRoutes = (
       },
       delay,
     ),
+    getAdminFormSubmissions(),
     getUser({
       delay: 0,
       mockUser: { ...MOCK_USER, _id: 'adminFormTestUserId' as UserId },
@@ -80,6 +88,7 @@ DesktopAllFields.parameters = {
     responseMode: FormResponseMode.Email,
   }),
 }
+
 export const DesktopLoading = Template.bind({})
 DesktopLoading.parameters = {
   msw: buildMswRoutes({}, 'infinite'),
@@ -109,4 +118,58 @@ export const MobileLoading = Template.bind({})
 MobileLoading.parameters = {
   ...getMobileViewParameters(),
   msw: buildMswRoutes({}, 'infinite'),
+}
+
+export const AllFieldsFieldsHiddenByLogic = Template.bind({})
+AllFieldsFieldsHiddenByLogic.parameters = {
+  msw: buildMswRoutes({
+    form_fields: MOCK_FORM_FIELDS_WITH_MYINFO,
+    form_logics: MOCK_FORM_LOGICS,
+    authType: FormAuthType.MyInfo,
+    responseMode: FormResponseMode.Email,
+  }),
+}
+
+export const FormWithWebhook = Template.bind({})
+FormWithWebhook.parameters = {
+  msw: [
+    getAdminFormSettings({
+      overrides: {
+        webhook: {
+          url: 'some-webhook-url',
+          isRetryEnabled: false,
+        },
+      },
+    }),
+    ...buildMswRoutes(),
+  ],
+}
+
+export const FormWithWebhookMobile = Template.bind({})
+FormWithWebhookMobile.parameters = {
+  ...FormWithWebhook.parameters,
+  ...getMobileViewParameters(),
+}
+
+export const FormWithPayment = Template.bind({})
+FormWithPayment.parameters = {
+  msw: buildMswRoutes({
+    responseMode: FormResponseMode.Encrypt,
+    payments_channel: {
+      channel: PaymentChannel.Stripe,
+      target_account_id: 'acct_sampleid',
+      publishable_key: 'pk_samplekey',
+    },
+    payments_field: {
+      enabled: true,
+      amount_cents: 5000,
+      description: 'Test event registration fee',
+    },
+  }),
+}
+
+export const FormWithPaymentMobile = Template.bind({})
+FormWithPaymentMobile.parameters = {
+  ...FormWithPayment.parameters,
+  ...getMobileViewParameters(),
 }

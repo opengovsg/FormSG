@@ -3,8 +3,9 @@ module.exports = {
   testMatch: ['**/?(*.)+(spec|test).[t]s?(x)'],
   modulePaths: ['<rootDir>'],
   testEnvironment: 'node',
-  globalSetup: '<rootDir>/tests/jest-global-setup.js',
+  globalSetup: '<rootDir>/__tests__/setup/jest-global-setup.js',
   testPathIgnorePatterns: [
+    '<rootDir>/__tests__/e2e',
     '<rootDir>/dist/',
     '<rootDir>/node_modules/',
     '<rootDir>/src/public',
@@ -18,7 +19,7 @@ module.exports = {
       statements: 38, // Increase this percentage as test coverage improves
     },
   },
-  testTimeout: 10000, // Set timeout to be 10s to reduce test flakiness
+  testTimeout: 15000, // Set timeout to be 15s to reduce test flakiness
   globals: {
     // Revert when memory leak in ts-jest is fixed.
     // See https://github.com/kulshekhar/ts-jest/issues/1967.
@@ -26,5 +27,5 @@ module.exports = {
       isolatedModules: true,
     },
   },
-  setupFilesAfterEnv: ['<rootDir>/tests/jest-setupAfterEnv.js'],
+  setupFilesAfterEnv: ['<rootDir>/__tests__/setup/jest-setupAfterEnv.js'],
 }

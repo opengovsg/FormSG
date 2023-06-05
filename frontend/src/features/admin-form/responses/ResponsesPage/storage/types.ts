@@ -32,6 +32,8 @@ export type LineData = {
   line: string
   secretKey: string
   downloadAttachments?: boolean
+  formId: string
+  hostOrigin: string
 }
 
 export type CleanableDecryptionWorkerApi = {

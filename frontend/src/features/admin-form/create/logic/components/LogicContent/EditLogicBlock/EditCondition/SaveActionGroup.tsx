@@ -1,5 +1,5 @@
 import { BiTrash } from 'react-icons/bi'
-import { Box, ButtonGroup, Flex, Stack } from '@chakra-ui/react'
+import { Box, Flex, Stack } from '@chakra-ui/react'
 
 import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'

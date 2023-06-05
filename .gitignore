@@ -67,3 +67,6 @@ tmp/
 # Tests
 # =======
 coverage/
+/test-results/
+/playwright-report/
+/playwright/.cache/

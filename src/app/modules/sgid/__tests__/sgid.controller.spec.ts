@@ -1,11 +1,9 @@
+import expressHandler from '__tests__/unit/backend/helpers/jest-express'
 import { err, errAsync, ok, okAsync } from 'neverthrow'
-import { mocked } from 'ts-jest/utils'
 
 import config from 'src/app/config/config'
 import * as RealFormService from 'src/app/modules/form/form.service'
 import { MOCK_COOKIE_AGE } from 'src/app/modules/myinfo/__tests__/myinfo.test.constants'
-
-import expressHandler from 'tests/unit/backend/helpers/jest-express'
 
 import { ApplicationError } from '../../core/core.errors'
 import { FormNotFoundError } from '../../form/form.errors'
@@ -33,11 +31,11 @@ import {
 } from './sgid.test.constants'
 
 jest.mock('../sgid.service')
-const SgidService = mocked(RealSgidService, true)
+const SgidService = jest.mocked(RealSgidService)
 jest.mock('src/app/modules/form/form.service')
-const FormService = mocked(RealFormService, true)
+const FormService = jest.mocked(RealFormService)
 jest.mock('src/app/config/config')
-const MockConfig = mocked(config, true)
+const MockConfig = jest.mocked(config)
 MockConfig.isDev = false
 
 const MOCK_RESPONSE = expressHandler.mockResponse()

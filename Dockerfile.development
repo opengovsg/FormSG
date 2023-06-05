@@ -1,4 +1,4 @@
-FROM node:fermium-alpine3.13
+FROM node:hydrogen-alpine3.16
 LABEL maintainer=FormSG<formsg@data.gov.sg>
 
 WORKDIR /opt/formsg
@@ -8,7 +8,15 @@ RUN chown 1001:1001 /mongodb_data
 
 ENV CHROMIUM_BIN=/usr/bin/chromium-browser
 ENV NODE_ENV=development
-ENV NODE_OPTIONS=--max-old-space-size=2048
+# --openssl-legacy-provider flag
+# A breaking change in the SSL provider was introduced in node 17. This caused 
+# webpack 4 to break. This is an interim solution; we should investigate removing
+# this flag once angular has been removed and we have upgraded to CRA5 (which uses
+# webpack 5).
+# See also:
+# * https://stackoverflow.com/questions/69692842/error-message-error0308010cdigital-envelope-routinesunsupported
+# * https://github.com/webpack/webpack/issues/14532#issuecomment-1304378535
+ENV NODE_OPTIONS="--max-old-space-size=2048 --openssl-legacy-provider"
 RUN apk update && apk upgrade && \
     # Build dependencies for node_modules
     apk add --virtual native-deps \
@@ -20,7 +28,7 @@ RUN apk update && apk upgrade && \
     # that is guaranteed to work. Upgrades must be done in lockstep.
     # https://github.com/puppeteer/puppeteer/blob/master/docs/troubleshooting.md#running-on-alpine
     # https://www.npmjs.com/package/puppeteer-core?activeTab=versions for corresponding versions
-    chromium=86.0.4240.111-r0 \
+    chromium=102.0.5005.182-r0 \
     nss \
     freetype \
     freetype-dev \
@@ -36,11 +44,30 @@ RUN apk update && apk upgrade && \
     # [ver1] ensures that the underlying AWS CLI version is also installed
     pip install awscli-local[ver1]
 
+
+# Tell Puppeteer to skip installing Chrome. We'll be using the installed package.
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+
 # Chinese fonts
 RUN echo @edge http://nl.alpinelinux.org/alpine/edge/testing >> /etc/apk/repositories && apk add wqy-zenhei@edge
 
+# Avoid using globs as there seems to be some inconsistency in the way dockerfile handles globs
+# * https://github.com/moby/moby/issues/15858 
+COPY package.json package-lock.json ./
+COPY shared/package.json shared/package-lock.json ./shared/
+COPY frontend/package.json frontend/package-lock.json ./frontend/
+
+# --legacy-peer-deps flag
+# A breaking change in the peer dependency resolution strategy was introduced in
+# npm 7. This resulted in npm throwing an error when installing packages:
+# npm ERR! code ERESOLVE
+# npm ERR! ERESOLVE unable to resolve dependency tree
+# See also:
+# * https://stackoverflow.com/questions/66239691/what-does-npm-install-legacy-peer-deps-do-exactly-when-is-it-recommended-wh
+RUN npm install --legacy-peer-deps
+
 COPY . ./
-RUN npm install
 
 EXPOSE 5000
 

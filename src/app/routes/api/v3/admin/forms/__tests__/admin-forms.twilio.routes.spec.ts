@@ -1,21 +1,19 @@
+import {
+  createAuthedSession,
+  logoutSession,
+} from '__tests__/integration/helpers/express-auth'
+import { setupApp } from '__tests__/integration/helpers/express-setup'
+import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { ObjectId } from 'bson-ext'
 import mongoose from 'mongoose'
 import { errAsync } from 'neverthrow'
 import supertest, { Session } from 'supertest-session'
-import { mocked } from 'ts-jest/utils'
 
 import config from 'src/app/config/config'
 import getFormModel from 'src/app/models/form.server.model'
 import getUserModel from 'src/app/models/user.server.model'
 import { SecretsManagerError } from 'src/app/modules/core/core.errors'
 import { IPopulatedForm } from 'src/types'
-
-import {
-  createAuthedSession,
-  logoutSession,
-} from 'tests/integration/helpers/express-auth'
-import { setupApp } from 'tests/integration/helpers/express-setup'
-import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import * as AdminFormService from '../../../../../../../app/modules/form/admin-form/admin-form.service'
 import { secretsManager } from '../../../../../../../app/modules/form/admin-form/admin-form.service'
@@ -29,9 +27,9 @@ import { TwilioCredentials } from './../../../../../../services/sms/sms.types'
 jest.mock('src/app/utils/limit-rate')
 
 // Avoid async refresh calls
-jest.mock('src/app/modules/spcp/sp.oidc.client.ts')
+jest.mock('src/app/modules/spcp/spcp.oidc.client.ts')
 
-const MockAdminFormService = mocked(AdminFormService)
+const MockAdminFormService = jest.mocked(AdminFormService)
 
 const app = setupApp('/admin/forms', AdminFormsRouter, {
   setupWithAuth: true,
@@ -113,8 +111,8 @@ describe('admin-form.twilio.routes', () => {
         .send(TWILIO_CREDENTIALS)
 
       // Assert
-      expect(createSecretsSpy).toBeCalled()
-      expect(formSpy).toBeCalled()
+      expect(createSecretsSpy).toHaveBeenCalled()
+      expect(formSpy).toHaveBeenCalled()
       expect(response.status).toEqual(200)
       expect(response.body).toEqual(MOCK_SUCCESSFUL_UPDATE)
     })
@@ -318,7 +316,7 @@ describe('admin-form.twilio.routes', () => {
 
       // Assert
       expect(twilioCacheSpy).toHaveBeenCalledWith(msgSrvcName)
-      expect(formSpy).toBeCalled()
+      expect(formSpy).toHaveBeenCalled()
       expect(deleteSecretSpy).toHaveBeenCalledWith({
         SecretId: msgSrvcName,
       })

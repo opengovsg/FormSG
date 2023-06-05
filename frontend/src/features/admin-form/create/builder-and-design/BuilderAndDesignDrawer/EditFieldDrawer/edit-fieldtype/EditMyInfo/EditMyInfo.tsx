@@ -3,9 +3,16 @@ import { HStack, Icon, Text, VStack } from '@chakra-ui/react'
 
 import { MyInfoField } from '~shared/types'
 
+import { SINGPASS_FAQ } from '~constants/links'
 import Link from '~components/Link'
 
-import { DrawerContentContainer } from '../common/DrawerContentContainer'
+import {
+  FieldBuilderState,
+  fieldBuilderStateSelector,
+  useFieldBuilderStore,
+} from '~features/admin-form/create/builder-and-design/useFieldBuilderStore'
+
+import { CreatePageDrawerContentContainer } from '../../../../../common'
 import { FormFieldDrawerActions } from '../common/FormFieldDrawerActions'
 import { EditFieldProps } from '../common/types'
 import { useEditFieldForm } from '../common/useEditFieldForm'
@@ -26,25 +33,21 @@ type EditMyInfoProps = EditFieldProps<MyInfoField>
 
 export const EditMyInfo = ({ field }: EditMyInfoProps): JSX.Element => {
   const extendedField = extendWithMyInfo(field)
-  const {
-    isSaveEnabled,
-    buttonText,
-    handleUpdateField,
-    isLoading,
-    handleCancel,
-  } = useEditFieldForm<EditMyInfoProps, MyInfoField>({
-    field,
-    transform: {
-      // MyInfo fields are not editable, so omit any transformation and output the original field
-      input: () => ({}),
-      output: (_, originalField) => originalField,
-    },
-  })
+  const fieldBuilderState = useFieldBuilderStore(fieldBuilderStateSelector)
+  const { buttonText, handleUpdateField, isLoading, handleCancel } =
+    useEditFieldForm<EditMyInfoProps, MyInfoField>({
+      field,
+      transform: {
+        // MyInfo fields are not editable, so omit any transformation and output the original field
+        input: () => ({}),
+        output: (_, originalField) => originalField,
+      },
+    })
 
   return (
-    <DrawerContentContainer>
+    <CreatePageDrawerContentContainer>
       <VStack align="flex-start">
-        <Text textStyle="subhead-1">Data Source</Text>
+        <Text textStyle="subhead-1">Data source</Text>
         {extendedField.dataSource.map((dataSource, idx) => (
           <HStack key={idx} align="flex-start">
             <Icon fontSize="1.5rem" as={BiData}></Icon>
@@ -71,10 +74,7 @@ export const EditMyInfo = ({ field }: EditMyInfoProps): JSX.Element => {
           />
           <Text>
             Foreigners with{' '}
-            <Link
-              isExternal
-              href="https://www.singpass.gov.sg/main/html/faq.html"
-            >
+            <Link isExternal href={SINGPASS_FAQ}>
               Singpass
             </Link>
           </Text>
@@ -84,13 +84,14 @@ export const EditMyInfo = ({ field }: EditMyInfoProps): JSX.Element => {
         <Text textStyle="subhead-1">Field details</Text>
         <Text>{extendedField.details}</Text>
       </VStack>
-      <FormFieldDrawerActions
-        isLoading={isLoading}
-        isSaveEnabled={isSaveEnabled}
-        buttonText={buttonText}
-        handleClick={handleUpdateField}
-        handleCancel={handleCancel}
-      />
-    </DrawerContentContainer>
+      {fieldBuilderState === FieldBuilderState.CreatingField && (
+        <FormFieldDrawerActions
+          isLoading={isLoading}
+          buttonText={buttonText}
+          handleClick={handleUpdateField}
+          handleCancel={handleCancel}
+        />
+      )}
+    </CreatePageDrawerContentContainer>
   )
 }

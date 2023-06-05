@@ -11,6 +11,7 @@ import { ApiError } from '~typings/core'
 import { useToast } from '~hooks/useToast'
 import {
   generateUserContactOtp,
+  updateUserLastSeenFeatureUpdateVersion,
   verifyUserContactOtp,
 } from '~services/UserService'
 
@@ -39,8 +40,19 @@ export const useUserMutations = () => {
     },
   })
 
+  const updateLastSeenFeatureVersionMutation = useMutation<
+    UserDto,
+    ApiError,
+    number
+  >((version: number) => updateUserLastSeenFeatureUpdateVersion(version), {
+    onSuccess: (newData) => {
+      queryClient.setQueryData(userKeys.base, newData)
+    },
+  })
+
   return {
     generateOtpMutation,
     verifyOtpMutation,
+    updateLastSeenFeatureVersionMutation,
   }
 }

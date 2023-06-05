@@ -16,7 +16,7 @@ import Toggle from '~components/Toggle'
 
 import { validateNumberInput } from '~features/admin-form/create/builder-and-design/utils/validateNumberInput'
 
-import { DrawerContentContainer } from '../common/DrawerContentContainer'
+import { CreatePageDrawerContentContainer } from '../../../../../common'
 import { FormFieldDrawerActions } from '../common/FormFieldDrawerActions'
 import { EditFieldProps } from '../common/types'
 import { useEditFieldForm } from '../common/useEditFieldForm'
@@ -73,7 +73,6 @@ export const EditLongText = ({ field }: EditLongTextProps): JSX.Element => {
     register,
     formState: { errors },
     getValues,
-    isSaveEnabled,
     buttonText,
     handleUpdateField,
     watch,
@@ -129,7 +128,7 @@ export const EditLongText = ({ field }: EditLongTextProps): JSX.Element => {
   )
 
   return (
-    <DrawerContentContainer>
+    <CreatePageDrawerContentContainer>
       <FormControl isRequired isReadOnly={isLoading} isInvalid={!!errors.title}>
         <FormLabel>Question</FormLabel>
         <Input autoFocus {...register('title', requiredValidationRule)} />
@@ -152,7 +151,11 @@ export const EditLongText = ({ field }: EditLongTextProps): JSX.Element => {
         isInvalid={!isEmpty(errors.ValidationOptions)}
       >
         <FormLabel isRequired>Number of characters allowed</FormLabel>
-        <SimpleGrid mt="0.5rem" columns={2} spacing="0.5rem">
+        <SimpleGrid
+          mt="0.5rem"
+          columns={{ base: 2, md: 1, lg: 2 }}
+          spacing="0.5rem"
+        >
           <Controller
             name="ValidationOptions.selectedValidation"
             control={control}
@@ -189,11 +192,10 @@ export const EditLongText = ({ field }: EditLongTextProps): JSX.Element => {
       </FormControl>
       <FormFieldDrawerActions
         isLoading={isLoading}
-        isSaveEnabled={isSaveEnabled}
         buttonText={buttonText}
         handleClick={handleUpdateField}
         handleCancel={handleCancel}
       />
-    </DrawerContentContainer>
+    </CreatePageDrawerContentContainer>
   )
 }

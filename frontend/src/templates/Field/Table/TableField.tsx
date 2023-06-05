@@ -2,8 +2,18 @@ import { useCallback, useEffect, useMemo } from 'react'
 import { useFieldArray, useFormContext, useFormState } from 'react-hook-form'
 import { BiTrash } from 'react-icons/bi'
 import { useTable } from 'react-table'
-import { Box, Table, Tbody, Td, Th, Thead, Tr } from '@chakra-ui/react'
+import {
+  Box,
+  Table,
+  Tbody,
+  Td,
+  Th,
+  Thead,
+  Tr,
+  VisuallyHidden,
+} from '@chakra-ui/react'
 import { get, head, uniq } from 'lodash'
+import simplur from 'simplur'
 
 import { FormColorTheme } from '~shared/types'
 
@@ -59,7 +69,7 @@ export const TableField = ({
     // would not need to be shown in the table field itself.
     if (isMobile) return
     // Get first available error amongst all column cell errors.
-    return head(uniq(tableErrors?.flatMap(Object.values)))
+    return head(uniq(tableErrors?.flatMap((err = {}) => Object.values(err))))
   }, [isMobile, tableErrors])
 
   const { fields, append, remove } = useFieldArray<TableFieldInputs>({
@@ -67,13 +77,18 @@ export const TableField = ({
     name: schema._id,
   })
 
+  const appendTableRow = useCallback(
+    () => append(createTableRow(schema), { shouldFocus: false }),
+    [append, schema],
+  )
+
   useEffect(() => {
     // Update field array when min rows changes.
     if (hasMinRowsChanged) {
       const prevRowLength = fields.length
       if (schema.minimumRows > prevRowLength) {
         for (let i = prevRowLength; i < schema.minimumRows; i++) {
-          append(createTableRow(schema), { shouldFocus: false })
+          appendTableRow()
         }
       } else {
         // Remove rows from field array
@@ -82,15 +97,19 @@ export const TableField = ({
         }
       }
     }
-  }, [append, fields.length, hasMinRowsChanged, remove, schema])
+  }, [appendTableRow, fields.length, hasMinRowsChanged, remove, schema])
 
   const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } =
     useTable({ columns: columnsData, data: fields })
 
   const handleAddRow = useCallback(() => {
-    if (!schema.maximumRows || fields.length >= schema.maximumRows) return
-    return append(createTableRow(schema))
-  }, [append, fields.length, schema])
+    if (
+      !schema.addMoreRows ||
+      (!!schema.maximumRows && fields.length >= schema.maximumRows)
+    )
+      return
+    return appendTableRow()
+  }, [appendTableRow, fields.length, schema])
 
   const handleRemoveRow = useCallback(
     (rowIndex: number) => {
@@ -102,11 +121,56 @@ export const TableField = ({
     [fields.length, remove, schema.minimumRows],
   )
 
+  const ariaTableDescription = useMemo(() => {
+    let description = simplur`This is a table field. There [is|are] ${fields.length} row[|s], excluding the header row.`
+    if (schema.addMoreRows) {
+      description += ` You can add more rows if you'd like by clicking the "Add another row" button below`
+      if (schema.maximumRows) {
+        description += `, up to ${schema.maximumRows} rows`
+      } else {
+        description += '.'
+      }
+    }
+
+    return description
+  }, [fields.length, schema.addMoreRows, schema.maximumRows])
+
+  // If a table field with >1 column is present in a form, Chrome and MS Edge sometimes truncate the form in print mode.
+  // as it erroneously computes the number of pages to print.
+  // We set the height of the table explicitly (based on the number of cols and rows)
+  // for use in the media query so that the browser is able to render the full table in print mode
+  // calculation = the amount of space taken by each table cell and table cell heading + additional margins for each row
+  const printTableHeight =
+    schema.columns.length * rows.length * (2.75 + 2.25 + 1.5) + rows.length * 3
+
   return (
     <TableFieldContainer schema={schema}>
-      <Box d="block" w="100%" overflowX="auto">
+      <Box
+        d="block"
+        w="100%"
+        overflowX="auto"
+        sx={{
+          '&::-webkit-scrollbar': {
+            height: '7px',
+          },
+          '&::-webkit-scrollbar-thumb': {
+            background: 'rgba(0,0,0,.5)',
+            borderRadius: '4px',
+          },
+          '@media print': {
+            h: `${printTableHeight}rem`,
+            display: 'block !important',
+            overflow: 'visible !important',
+          },
+        }}
+      >
+        <VisuallyHidden id={`table-desc-${schema._id}`}>
+          {ariaTableDescription}
+        </VisuallyHidden>
         <Table
           {...getTableProps()}
+          aria-describedby={`table-desc-${schema._id}`}
+          aria-labelledby={`${schema._id}-label`}
           variant="column-stripe"
           size="sm"
           colorScheme={`theme-${colorTheme}`}
@@ -117,6 +181,7 @@ export const TableField = ({
                 {headerGroup.headers.map((column, _idx, array) => (
                   <Th
                     {...column.getHeaderProps()}
+                    scope="col"
                     w={{ base: 'initial', md: `calc(100%/${array.length})` }}
                     minW="15rem"
                     display={{ base: 'block', md: 'table-cell' }}
@@ -137,6 +202,11 @@ export const TableField = ({
                     <Td
                       {...cell.getCellProps()}
                       display={{ base: 'block', md: 'table-cell' }}
+                      sx={{
+                        '@media print': {
+                          breakInside: 'avoid',
+                        },
+                      }}
                     >
                       {cell.render('Cell', {
                         schemaId: schema._id,
@@ -176,7 +246,7 @@ export const TableField = ({
       {schema.addMoreRows && schema.maximumRows !== undefined ? (
         <AddRowFooter
           currentRows={fields.length}
-          maxRows={schema.maximumRows === '' ? 0 : schema.maximumRows}
+          maxRows={schema.maximumRows}
           handleAddRow={handleAddRow}
         />
       ) : null}

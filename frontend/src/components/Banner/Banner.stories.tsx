@@ -24,23 +24,20 @@ WithMarkdown.args = {
 export const Info = Template.bind({})
 Info.args = {
   variant: 'info',
-  children: `Look at this [website](http://localhost:6006) or
-  [Form](https://www.form.gov.sg).`,
+  children: `Look at this [website](http://localhost:6006) or [Form](https://www.form.gov.sg).`,
   useMarkdown: true,
 }
 
 export const Warn = Template.bind({})
 Warn.args = {
   variant: 'warn',
-  children: `Look at this [website](http://localhost:6006) or
-  [Form](https://www.form.gov.sg).`,
+  children: `Look at this [website](http://localhost:6006) or [Form](https://www.form.gov.sg).`,
   useMarkdown: true,
 }
 
 export const Error = Template.bind({})
 Error.args = {
   variant: 'error',
-  children: `Look at this [website](http://localhost:6006) or
-  [Form](https://www.form.gov.sg).`,
+  children: `Look at this [website](http://localhost:6006) or [Form](https://www.form.gov.sg).`,
   useMarkdown: true,
 }

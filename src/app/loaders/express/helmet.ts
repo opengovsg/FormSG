@@ -9,9 +9,10 @@ const helmetMiddlewares = () => {
   // Only add the "Strict-Transport-Security" header if request is https.
   const hstsMiddleware: RequestHandler = (req, res, next) => {
     if (req.secure) {
-      helmet.hsts({ maxAge: 5184000 })(req, res, next) // 60 days
+      helmet.hsts({ maxAge: 400 * 24 * 60 * 60 })(req, res, next) // 400 days
     } else next()
   }
+
   const xssFilterMiddleware = helmet.xssFilter()
 
   const noSniffMiddleware = helmet.noSniff()
@@ -29,13 +30,16 @@ const helmetMiddlewares = () => {
   const cspCoreDirectives: ContentSecurityPolicyOptions['directives'] = {
     imgSrc: [
       "'self'",
+      'blob:',
       'data:',
-      'https://www.googletagmanager.com/',
+      'https://www.googletagmanager.com/', // TODO #4279: This is used for Universal Analytics, so remove after react rollout
       'https://www.google-analytics.com/',
       `https://s3-${config.aws.region}.amazonaws.com/agency.form.sg/`, // Agency logos
       config.aws.imageBucketUrl, // Image field
       config.aws.logoBucketUrl, // Form logo
       '*', // TODO: Remove when we host our own images for Image field and Form Logo
+      'https://*.google-analytics.com', // GA4 https://developers.google.com/tag-platform/tag-manager/web/csp
+      'https://*.googletagmanager.com',
     ],
     fontSrc: ["'self'", 'data:', 'https://fonts.gstatic.com/'],
     scriptSrc: [
@@ -47,8 +51,9 @@ const helmetMiddlewares = () => {
       'https://www.google.com/recaptcha/',
       'https://www.recaptcha.net/recaptcha/',
       'https://www.gstatic.com/recaptcha/',
+      'https://js.stripe.com/v3',
       'https://www.gstatic.cn/',
-      'https://www.google-analytics.com/',
+      'https://*.googletagmanager.com', // GA4 https://developers.google.com/tag-platform/tag-manager/web/csp
     ],
     connectSrc: [
       "'self'",
@@ -59,11 +64,15 @@ const helmetMiddlewares = () => {
       config.aws.attachmentBucketUrl, // Attachment downloads
       config.aws.imageBucketUrl, // Image field
       config.aws.logoBucketUrl, // Form logo
+      'https://*.google-analytics.com', // GA4 https://developers.google.com/tag-platform/tag-manager/web/csp
+      'https://*.analytics.google.com',
+      'https://*.googletagmanager.com',
     ],
     frameSrc: [
       "'self'",
       'https://www.google.com/recaptcha/',
       'https://www.recaptcha.net/recaptcha/',
+      'https://js.stripe.com/',
     ],
     styleSrc: [
       "'self'",
@@ -102,7 +111,6 @@ const helmetMiddlewares = () => {
       ...cspOptionalDirectives,
     },
   })
-
   return [
     xssFilterMiddleware,
     noSniffMiddleware,

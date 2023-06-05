@@ -28,11 +28,13 @@ export const DecimalField = ({ schema }: DecimalFieldProps): JSX.Element => {
         control={control}
         rules={validationRules}
         name={schema._id}
+        defaultValue=""
         render={({ field }) => (
           <NumberInput
             inputMode="decimal"
-            aria-label={schema.title}
+            aria-label={`${schema.questionNumber}. ${schema.title}`}
             allowMouseWheel
+            preventDefaultOnEnter
             {...field}
           />
         )}

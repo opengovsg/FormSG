@@ -11,7 +11,7 @@ services:
       - ./:/opt/formsg
       - /opt/formsg/node_modules
     ports:
-      - '5000:5000'
+      - '5001:5000'
       - '4566:4566' # localstack ports
       - '5156:5156' # mockpass ports
       - '9229:9229' # Node debugger port
@@ -19,10 +19,11 @@ services:
       - NODE_ENV=development
       - DB_HOST=mongodb://database:27017/formsg
       - APP_NAME=FormSG
-      - APP_URL=http://localhost:5000
+      - APP_URL=http://localhost:5001
       - ATTACHMENT_S3_BUCKET=local-attachment-bucket
       - IMAGE_S3_BUCKET=local-image-bucket
       - LOGO_S3_BUCKET=local-logo-bucket
+      - STATIC_ASSETS_S3_BUCKET=local-static-assets-bucket
       - FORMSG_SDK_MODE=development
       - BOUNCE_LIFE_SPAN=86400000
       - AWS_ACCESS_KEY_ID=fakeKey
@@ -40,6 +41,7 @@ services:
       - CSP_REPORT_URI=https://random@sentry.io/123456
       # This needs to be removed and replaced with a real tracking ID in a local .env file
       # in order to enable GA in a local environment
+      # TODO: remove after React rollout #4786
       - GA_TRACKING_ID=mockGATrackingId
       # Test credentials from reCAPTCHA docs
       # https://developers.google.com/recaptcha/docs/faq#id-like-to-run-automated-tests-with-recaptcha.-what-should-i-do
@@ -52,64 +54,77 @@ services:
       # https://github.com/opengovsg/formsg-javascript-sdk/blob/develop/src/resource/signing-keys.ts
       - SIGNING_SECRET_KEY=HDBXpu+2/gu10bLHpy8HjpN89xbA6boH9GwibPGJA8BOXmB+zOUpxCP33/S5p8vBWlPokC7gLR0ca8urVwfMUQ==
       # Mock Twilio credentials. SMSes do not work in dev environment.
-      - TWILIO_ACCOUNT_SID=ACmockTwilioAccountSid
+      - TWILIO_ACCOUNT_SID=AC00000000000000000000000000000000
       - TWILIO_API_KEY=mockTwilioApiKey
       - TWILIO_API_SECRET=mockTwilioApiSecret
-      - TWILIO_MESSAGING_SERVICE_SID=mockTwilioMsgSrvcSid
-      # Use mockpass key pairs and endpoints
-      - SP_FORMSG_KEY_PATH=./node_modules/@opengovsg/mockpass/static/certs/key.pem
-      - SP_FORMSG_CERT_PATH=./node_modules/@opengovsg/mockpass/static/certs/server.crt
-      - SP_IDP_CERT_PATH=./node_modules/@opengovsg/mockpass/static/certs/spcp.crt
-      - SINGPASS_IDP_LOGIN_URL=http://localhost:5156/singpass/logininitial
-      - SINGPASS_IDP_ENDPOINT=http://localhost:5156/singpass/soap
-      - SINGPASS_ESRVC_ID=spEsrvcId
-      - SINGPASS_PARTNER_ENTITY_ID=https://localhost:5000/singpass
-      - SINGPASS_IDP_ID=https://saml-internet.singpass.gov.sg/FIM/sps/SingpassIDPFed/saml20
-      - SP_OIDC_NDI_DISCOVERY_ENDPOINT=https://stg-id.singpass.gov.sg/.well-known/openid-configuration
-      - SP_OIDC_NDI_JWKS_ENDPOINT=https://stg-id.singpass.gov.sg/.well-known/keys
+      - TWILIO_MESSAGING_SERVICE_SID=MG00000000000000000000000000000000
+      - SP_OIDC_NDI_DISCOVERY_ENDPOINT=http://localhost:5156/singpass/v2/.well-known/openid-configuration
+      - SP_OIDC_NDI_JWKS_ENDPOINT=http://localhost:5156/singpass/v2/.well-known/keys
       - SP_OIDC_RP_CLIENT_ID=rpClientId
-      - SP_OIDC_RP_REDIRECT_URL=https://staging.form.gov.sg/api/v3/singpass/login
-      - SP_OIDC_RP_JWKS_PUBLIC_PATH=./tests/certs/test_rp_public_jwks.json
-      - SP_OIDC_RP_JWKS_SECRET_PATH=./tests/certs/test_rp_secret_jwks.json
-      - CP_OIDC_RP_JWKS_PUBLIC_PATH=./tests/certs/test_rp_public_jwks.json
-      - CP_FORMSG_KEY_PATH=./node_modules/@opengovsg/mockpass/static/certs/key.pem
-      - CP_FORMSG_CERT_PATH=./node_modules/@opengovsg/mockpass/static/certs/server.crt
-      - CP_IDP_CERT_PATH=./node_modules/@opengovsg/mockpass/static/certs/spcp.crt
-      - CORPPASS_IDP_LOGIN_URL=http://localhost:5156/corppass/logininitial
-      - CORPPASS_IDP_ENDPOINT=http://localhost:5156/corppass/soap
-      - CORPPASS_PARTNER_ENTITY_ID=https://localhost:5000/corppass
-      - CORPPASS_ESRVC_ID=cpEsrvcId
-      - CORPPASS_IDP_ID=https://saml.corppass.gov.sg/FIM/sps/CorpIDPFed/saml20
+      - SP_OIDC_RP_REDIRECT_URL=http://localhost:5001/api/v3/singpass/login
+      - SP_OIDC_RP_JWKS_PUBLIC_PATH=./__tests__/setup/certs/test_sp_rp_public_jwks.json
+      - SP_OIDC_RP_JWKS_SECRET_PATH=./__tests__/setup/certs/test_sp_rp_secret_jwks.json
+      - CP_OIDC_NDI_DISCOVERY_ENDPOINT=http://localhost:5156/corppass/v2/.well-known/openid-configuration
+      - CP_OIDC_NDI_JWKS_ENDPOINT=http://localhost:5156/corppass/v2/.well-known/keys
+      - CP_OIDC_RP_CLIENT_ID=rpClientId
+      - CP_OIDC_RP_REDIRECT_URL=http://localhost:5001/api/v3/corppass/login
+      - CP_OIDC_RP_JWKS_PUBLIC_PATH=./__tests__/setup/certs/test_cp_rp_public_jwks.json
+      - CP_OIDC_RP_JWKS_SECRET_PATH=./__tests__/setup/certs/test_cp_rp_secret_jwks.json
       - IS_SP_MAINTENANCE
       - IS_CP_MAINTENANCE
+      - SINGPASS_ESRVC_ID=spEsrvcId #Needed for MyInfo
       - MYINFO_BANNER_CONTENT
       - MYINFO_CLIENT_CONFIG=dev
+      # Use mockpass key pairs and endpoints
       - MYINFO_FORMSG_KEY_PATH=./node_modules/@opengovsg/mockpass/static/certs/key.pem
       - MYINFO_CERT_PATH=./node_modules/@opengovsg/mockpass/static/certs/spcp.crt
       - MYINFO_CLIENT_ID=mockClientId
       - MYINFO_CLIENT_SECRET=mockClientSecret
-      - SGID_ENDPOINT=http://localhost:5156/sgid/v1/oauth
+      - MYINFO_JWT_SECRET=mockJwtSecret
+      - SGID_HOSTNAME=http://localhost:5156/sgid
       - SGID_CLIENT_ID=sgidclientid
       - SGID_CLIENT_SECRET=sgidclientsecret
-      - SGID_REDIRECT_URI=http://localhost:5000/sgid/login
+      - SGID_REDIRECT_URI=http://localhost:5001/sgid/login
       - SGID_PRIVATE_KEY=./node_modules/@opengovsg/mockpass/static/certs/key.pem
       - SGID_PUBLIC_KEY=./node_modules/@opengovsg/mockpass/static/certs/server.crt
       - SES_PASS
       - SES_USER
       - OTP_LIFE_SPAN
       - AWS_REGION
+      # this needs to be replaced with the ID of a feedback form that you create
+      # in your local environment
+      - REACT_SWITCH_ENV_FEEDBACK_FORM_ID_ADMIN=6386ecc0bdf691005457c67e
+      - REACT_SWITCH_ENV_FEEDBACK_FORM_ID_RESPONDENT=6386e4ba847f280069797a54
+      - REACT_MIGRATION_ANGULAR_END_DATE=15 September 2022
+      - REACT_MIGRATION_RESP_ROLLOUT_EMAIL=100
+      - REACT_MIGRATION_RESP_ROLLOUT_STORAGE=100
+      - REACT_MIGRATION_ADMIN_ROLLOUT=100
+      - REACT_MIGRATION_REMOVE_INFOBOX_THRESHOLD_ADMIN=101
+      - REACT_MIGRATION_REMOVE_INFOBOX_THRESHOLD_RESPONDENT=101
+      - REACT_MIGRATION_USE_FETCH_FOR_SUBMISSIONS=false
+      # env vars for stripe payment integration
+      - PAYMENT_STRIPE_PUBLISHABLE_KEY=publishableKey
+      # duplicate PAYMENT_STRIPE_SECRET_KEY to STRIPE_API_KEY in stripe-webhook-listener container
+      - PAYMENT_STRIPE_SECRET_KEY=secretKey
+      - PAYMENT_STRIPE_CLIENT_ID=clientId
+      - PAYMENT_STRIPE_WEBHOOK_SECRET=webhookSecret
+      - PAYMENT_MAX_PAYMENT_AMOUNT_CENTS
+      - PAYMENT_MIN_PAYMENT_AMOUNT_CENTS=50
+      - SSM_ENV_SITE_NAME=development
+      - PAYMENT_GUIDE_LINK
+      # Cron secrets
+      - CRON_PAYMENT_API_SECRET=secretKey
+
   mockpass:
-    build: https://github.com/opengovsg/mockpass.git
+    build: https://github.com/opengovsg/mockpass.git#v3.1.3
     depends_on:
       - backend
     environment:
-      - CORPPASS_ASSERT_ENDPOINT=http://localhost:5000/corppass/login
-      - SINGPASS_ASSERT_ENDPOINT=http://localhost:5000/singpass/login
       - MOCKPASS_NRIC=S6005038D
       - MOCKPASS_UEN=123456789A
       - SHOW_LOGIN_PAGE=true
-      - SINGPASS_IDP_ID=https://saml-internet.singpass.gov.sg/FIM/sps/SingpassIDPFed/saml20
-      - CORPPASS_IDP_ID=https://saml.corppass.gov.sg/FIM/sps/CorpIDPFed/saml20
+      - SP_RP_JWKS_ENDPOINT=http://localhost:5000/singpass/.well-known/jwks.json
+      - CP_RP_JWKS_ENDPOINT=http://localhost:5000/api/v3/corppass/.well-known/jwks.json
     network_mode: 'service:backend' # reuse backend service's network stack so that it can resolve localhost:5156 to mockpass:5156
 
   database:
@@ -117,6 +132,7 @@ services:
     container_name: 'formsg-db'
     environment:
       - MONGODB_DATABASE=formsg
+      - MONGODB_ADVERTISED_HOSTNAME=database
       - MONGODB_REPLICA_SET_MODE=primary
       - ALLOW_EMPTY_PASSWORD=yes
     volumes:
@@ -144,6 +160,22 @@ services:
     image: maildev/maildev
     ports:
       - '1080:1080'
+
+  stripe-cli:
+    image: stripe/stripe-cli
+    container_name: stripe-webhook-listener
+    command: 'listen --api-key ${STRIPE_API_KEY} --device-name ${STRIPE_DEVICE_NAME} --forward-to host.docker.internal:5001/api/v3/notifications/stripe'
+    environment:
+      - STRIPE_API_KEY=secretKey
+      - STRIPE_DEVICE_NAME=StripeWebhookListener
+
+  mocktwilio:
+    image: stoplight/prism:4
+    container_name: formsg-mocktwilio
+    depends_on:
+      - backend
+    network_mode: 'service:backend' # reuse backend service's network stack so that it can resolve localhost:4010 to prismtwilio:4010
+    command: mock https://raw.githubusercontent.com/twilio/twilio-oai/main/spec/json/twilio_api_v2010.json
 
 volumes:
   mongodb_data:

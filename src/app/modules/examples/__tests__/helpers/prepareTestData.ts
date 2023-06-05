@@ -9,6 +9,7 @@ import {
   IAgencySchema,
   IFormDocument,
   IFormFeedbackSchema,
+  ISubmissionSchema,
   IUserSchema,
 } from 'src/types'
 
@@ -43,6 +44,8 @@ export type TestData = {
     expectedFormInfo: FormInfo[]
     // Feedbacks for each of the forms.
     feedbacks: IFormFeedbackSchema[]
+    // Submissions for each of the forms.
+    submissions: ISubmissionSchema[]
   }
 }
 
@@ -64,6 +67,7 @@ const prepareTestData = async (
       forms: [],
       expectedFormInfo: [],
       feedbacks: [],
+      submissions: [],
     },
     second: {
       searchTerm: SearchTerm.Second,
@@ -72,6 +76,7 @@ const prepareTestData = async (
       forms: [],
       expectedFormInfo: [],
       feedbacks: [],
+      submissions: [],
     },
     total: {
       searchTerm: '',
@@ -80,6 +85,7 @@ const prepareTestData = async (
       forms: [],
       expectedFormInfo: [],
       feedbacks: [],
+      submissions: [],
     },
   }
 
@@ -126,6 +132,8 @@ const prepareTestData = async (
       ),
     ),
   )
+  testData.first.submissions = await Promise.all(firstSubmissionPromises)
+
   const secondSubmissionPromises = flatten(
     testData.second.forms.map((form) =>
       times(testData.second.submissionCount, () =>
@@ -138,9 +146,14 @@ const prepareTestData = async (
       ),
     ),
   )
+  testData.second.submissions = await Promise.all(secondSubmissionPromises)
 
   // Assign all forms in test data.
   testData.total.forms = testData.first.forms.concat(testData.second.forms)
+
+  testData.total.submissions = testData.first.submissions.concat(
+    testData.second.submissions,
+  )
 
   // Add form statistics for "submissions" for both form prefixes.
   const formStatsPromises = testData.first.forms
@@ -176,6 +189,7 @@ const prepareTestData = async (
     return FeedbackModel.create({
       rating: score,
       formId: testData.total.forms[i]._id,
+      submissionId: testData.total.submissions[i]._id,
       comment: 'very good test',
     })
   })

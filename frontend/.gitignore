@@ -28,5 +28,5 @@ build-storybook.log
 # Lint cache
 .eslintcache
 
-# Dynamic package for loading third party scripts in app.
-~partytown
+#Datadog chunk files
+datadog-chunk.*.js

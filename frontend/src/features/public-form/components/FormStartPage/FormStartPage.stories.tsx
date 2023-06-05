@@ -43,41 +43,6 @@ export default {
 } as Meta
 
 const Template: Story = () => <FormStartPage />
-export const NoLogo = Template.bind({})
-NoLogo.parameters = {
-  msw: [
-    getPublicFormResponse({
-      overrides: {
-        form: {
-          title: 'storybook test title',
-        },
-      },
-      delay: 0,
-    }),
-  ],
-}
-
-export const CustomLogo = Template.bind({})
-CustomLogo.parameters = {
-  msw: [
-    ...envHandlers,
-    getCustomLogoResponse(),
-    getPublicFormResponse({
-      overrides: {
-        form: {
-          title: 'storybook test title',
-          startPage: {
-            logo: {
-              state: FormLogoState.Custom,
-              fileId: 'mockFormLogo',
-            },
-          },
-        },
-      },
-      delay: 0,
-    }),
-  ],
-}
 
 export const NoEstimatedTime = Template.bind({})
 NoEstimatedTime.parameters = {
@@ -94,6 +59,35 @@ NoEstimatedTime.parameters = {
       delay: 0,
     }),
   ],
+}
+
+export const OverflowTitle = Template.bind({})
+OverflowTitle.parameters = {
+  msw: [
+    ...envHandlers,
+    getCustomLogoResponse(),
+    getPublicFormResponse({
+      overrides: {
+        form: {
+          title:
+            'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+          startPage: {
+            logo: {
+              state: FormLogoState.Custom,
+              fileId: 'mockFormLogo',
+            },
+          },
+        },
+      },
+      delay: 0,
+    }),
+  ],
+}
+
+export const OverflowTitleMobile = Template.bind({})
+OverflowTitleMobile.parameters = {
+  ...getMobileViewParameters(),
+  ...OverflowTitle.parameters,
 }
 
 export const ColorThemeBrown = Template.bind({})
@@ -180,9 +174,11 @@ ColorThemeRed.parameters = {
   ],
 }
 
-export const MiniHeader: Story<MiniHeaderProps> = (args) => (
+const MiniHeaderTemplate: Story<MiniHeaderProps> = (args) => (
   <MiniHeaderComponent {...args} />
 )
+
+export const MiniHeader = MiniHeaderTemplate.bind({})
 MiniHeader.args = {
   title: 'storybook test title',
   titleBg: 'theme-blue.500',
@@ -194,21 +190,26 @@ MiniHeader.parameters = {
   msw: [getPublicFormResponse()],
 }
 
-export const MiniHeaderMobileWithSections: Story<MiniHeaderProps> = (args) => (
-  <MiniHeaderComponent {...args} />
-)
+export const OverflowMiniHeader = MiniHeaderTemplate.bind({})
+OverflowMiniHeader.args = {
+  ...MiniHeader.args,
+  title:
+    'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+}
+OverflowMiniHeader.parameters = MiniHeader.parameters
+
+export const MiniHeaderMobileWithSections = MiniHeaderTemplate.bind({})
 MiniHeaderMobileWithSections.args = {
   ...MiniHeader.args,
+  title:
+    'the quick brown fox jumps over the lazy dog the quick brown fox jumps over the lazy dog the quick brown fox jumps over the lazy dog the quick brown fox jumps over the lazy dog the quick brown fox jumps over the lazy dog the quick brown fox jumps over the lazy dog',
 }
-
 MiniHeaderMobileWithSections.parameters = {
   ...MiniHeader.parameters,
   ...getMobileViewParameters(),
 }
 
-export const MiniHeaderMobileWithoutSections: Story<MiniHeaderProps> = (
-  args,
-) => <MiniHeaderComponent {...args} />
+export const MiniHeaderMobileWithoutSections = MiniHeaderTemplate.bind({})
 MiniHeaderMobileWithoutSections.args = {
   ...MiniHeader.args,
   activeSectionId: undefined,

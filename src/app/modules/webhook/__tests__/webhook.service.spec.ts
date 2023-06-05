@@ -1,8 +1,8 @@
+import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios'
 import { ObjectId } from 'bson'
 import mongoose from 'mongoose'
 import { ok, okAsync } from 'neverthrow'
-import { mocked } from 'ts-jest/utils'
 
 import formsgSdk from 'src/app/config/formsg-sdk'
 import { getEncryptSubmissionModel } from 'src/app/models/submission.server.model'
@@ -10,8 +10,6 @@ import { WebhookValidationError } from 'src/app/modules/webhook/webhook.errors'
 import * as WebhookValidationModule from 'src/app/modules/webhook/webhook.validation'
 import { transformMongoError } from 'src/app/utils/handle-mongo-error'
 import { IEncryptedSubmissionSchema, WebhookView } from 'src/types'
-
-import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import { WebhookResponse } from '../../../../../shared/types'
 import { SubmissionNotFoundError } from '../../submission/submission.errors'
@@ -21,16 +19,16 @@ import * as WebhookService from '../webhook.service'
 
 // define suite-wide mocks
 jest.mock('axios')
-const MockAxios = mocked(axios, true)
+const MockAxios = jest.mocked(axios)
 
 jest.mock('src/app/modules/webhook/webhook.validation')
-const MockWebhookValidationModule = mocked(WebhookValidationModule, true)
+const MockWebhookValidationModule = jest.mocked(WebhookValidationModule)
 
 jest.mock('src/app/config/formsg-sdk')
-const MockFormSgSdk = mocked(formsgSdk, true)
+const MockFormSgSdk = jest.mocked(formsgSdk)
 
 jest.mock('../webhook.message.ts')
-const MockWebhookQueueMessage = mocked(WebhookQueueMessage, true)
+const MockWebhookQueueMessage = jest.mocked(WebhookQueueMessage)
 
 const EncryptSubmissionModel = getEncryptSubmissionModel(mongoose)
 
@@ -402,9 +400,11 @@ describe('webhook.service', () => {
     // since there are separate tests for sending webhooks and saving
     // responses to the database.
     let testSubmission: IEncryptedSubmissionSchema
-    const MOCK_PRODUCER = {
-      sendMessage: jest.fn().mockReturnValue(okAsync(true)),
-    } as unknown as WebhookProducer
+    const generateMockProducer = () =>
+      ({
+        sendMessage: jest.fn().mockReturnValue(okAsync(true)),
+      } as unknown as WebhookProducer)
+
     beforeEach(() => {
       jest.clearAllMocks()
 
@@ -421,7 +421,7 @@ describe('webhook.service', () => {
       MockAxios.post.mockResolvedValue(MOCK_AXIOS_SUCCESS_RESPONSE)
 
       const result = await WebhookService.createInitialWebhookSender(
-        MOCK_PRODUCER,
+        generateMockProducer(),
       )(testSubmission, MOCK_WEBHOOK_URL, /* isRetryEnabled= */ true)
 
       expect(result._unsafeUnwrap()).toBe(true)
@@ -459,7 +459,7 @@ describe('webhook.service', () => {
         ok(mockQueueMessage),
       )
       MockAxios.post.mockResolvedValue(MOCK_AXIOS_FAILURE_RESPONSE)
-
+      const MOCK_PRODUCER = generateMockProducer()
       const result = await WebhookService.createInitialWebhookSender(
         MOCK_PRODUCER,
       )(testSubmission, MOCK_WEBHOOK_URL, /* isRetryEnabled= */ true)

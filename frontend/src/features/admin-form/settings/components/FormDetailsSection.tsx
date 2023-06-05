@@ -24,7 +24,7 @@ export const FormDetailsSection = (): JSX.Element => {
       <Stack spacing="2rem">
         {settings ? <FormTitleInput initialTitle={settings.title} /> : null}
         {settings?.responseMode === FormResponseMode.Email ? (
-          <EmailFormSection settings={settings} />
+          <EmailFormSection emails={settings.emails} />
         ) : null}
       </Stack>
     </Skeleton>
@@ -54,7 +54,10 @@ const FormTitleInput = ({ initialTitle }: FormTitleInputProps): JSX.Element => {
       ({ title }) => {
         if (title === initialTitle) return
 
-        return mutateFormTitle.mutate(title, { onError: () => reset() })
+        return mutateFormTitle.mutate(title, {
+          onError: () => reset(),
+          onSuccess: () => reset({ title }),
+        })
       },
       () => reset(),
     )()

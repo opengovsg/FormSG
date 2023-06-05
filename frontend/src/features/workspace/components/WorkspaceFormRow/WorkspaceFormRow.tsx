@@ -1,10 +1,12 @@
 import { useMemo } from 'react'
+import { Link as ReactLink } from 'react-router-dom'
 import { Box, ButtonProps, chakra, Flex, Text } from '@chakra-ui/react'
 import dayjs from 'dayjs'
 
-import { AdminDashboardFormMetaDto } from '~shared/types/form/form'
+import { AdminDashboardFormMetaDto, FormStatus } from '~shared/types/form/form'
 
-import { useRowActionDropdown } from './RowActions/useRowActionDropdown'
+import { ADMINFORM_ROUTE } from '~constants/routes'
+
 import { FormStatusLabel } from './FormStatusLabel'
 import { RowActions } from './RowActions'
 
@@ -29,21 +31,21 @@ export const WorkspaceFormRow = ({
     return dayjs(formMeta.lastModified).calendar(null, RELATIVE_DATE_FORMAT)
   }, [formMeta.lastModified])
 
-  const { handleEditForm } = useRowActionDropdown(formMeta._id)
-
   return (
     <Box pos="relative">
       <chakra.button
+        data-testid={`form-row-${formMeta._id}`}
+        as={ReactLink}
         transitionProperty="common"
         transitionDuration="normal"
-        onClick={handleEditForm}
+        to={`${ADMINFORM_ROUTE}/${formMeta._id}`}
         w="100%"
         py="1.5rem"
         display="grid"
         justifyContent="space-between"
         gridTemplateColumns={{
           base: '1fr 2.75rem',
-          md: '1fr min-content 8rem',
+          md: '1fr 4rem 8rem',
         }}
         gridTemplateRows={{ base: 'auto 2.75rem', md: 'auto' }}
         gridTemplateAreas={{
@@ -67,6 +69,7 @@ export const WorkspaceFormRow = ({
           gridArea="title"
           textAlign="initial"
           overflow="auto"
+          opacity={formMeta.status !== FormStatus.Public ? '30%' : '100%'}
         >
           <Text
             noOfLines={{ base: 0, md: 1 }}

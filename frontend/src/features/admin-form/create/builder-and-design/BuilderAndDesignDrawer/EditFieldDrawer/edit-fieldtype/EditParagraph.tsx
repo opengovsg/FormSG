@@ -9,7 +9,8 @@ import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import Textarea from '~components/Textarea'
 
-import { DrawerContentContainer } from './common/DrawerContentContainer'
+import { CreatePageDrawerContentContainer } from '../../../../common'
+
 import { FormFieldDrawerActions } from './common/FormFieldDrawerActions'
 import { EditFieldProps } from './common/types'
 import { useEditFieldForm } from './common/useEditFieldForm'
@@ -22,7 +23,6 @@ export const EditParagraph = ({ field }: EditParagraphProps): JSX.Element => {
   const {
     register,
     formState: { errors },
-    isSaveEnabled,
     buttonText,
     handleUpdateField,
     isLoading,
@@ -31,7 +31,6 @@ export const EditParagraph = ({ field }: EditParagraphProps): JSX.Element => {
     field,
     transform: {
       input: (inputField) => ({
-        // All Paragraph (aka Statement) fields have a title of "Statement"
         title: 'Statement',
         description: inputField.description,
       }),
@@ -46,13 +45,13 @@ export const EditParagraph = ({ field }: EditParagraphProps): JSX.Element => {
   )
 
   return (
-    <DrawerContentContainer>
+    <CreatePageDrawerContentContainer>
       <FormControl
         isRequired
         isReadOnly={isLoading}
         isInvalid={!!errors.description}
       >
-        <FormLabel>Statement</FormLabel>
+        <FormLabel>Paragraph</FormLabel>
         <Textarea
           autoFocus
           {...register('description', requiredValidationRule)}
@@ -61,11 +60,10 @@ export const EditParagraph = ({ field }: EditParagraphProps): JSX.Element => {
       </FormControl>
       <FormFieldDrawerActions
         isLoading={isLoading}
-        isSaveEnabled={isSaveEnabled}
         buttonText={buttonText}
         handleClick={handleUpdateField}
         handleCancel={handleCancel}
       />
-    </DrawerContentContainer>
+    </CreatePageDrawerContentContainer>
   )
 }

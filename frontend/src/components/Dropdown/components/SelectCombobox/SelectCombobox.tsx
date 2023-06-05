@@ -5,7 +5,7 @@ import {
   InputGroup,
   Stack,
   Text,
-  VisuallyHidden,
+  useMergeRefs,
 } from '@chakra-ui/react'
 
 import Input from '~components/Input'
@@ -19,7 +19,6 @@ import { ToggleChevron } from './ToggleChevron'
 export const SelectCombobox = forwardRef<HTMLInputElement>(
   (_props, ref): JSX.Element => {
     const {
-      getComboboxProps,
       toggleMenu,
       selectedItem,
       getInputProps,
@@ -31,11 +30,12 @@ export const SelectCombobox = forwardRef<HTMLInputElement>(
       inputValue,
       isRequired,
       placeholder,
-      setIsFocused,
       isOpen,
       resetInputValue,
-      inputAria,
+      inputRef,
     } = useSelectContext()
+
+    const mergedInputRef = useMergeRefs(inputRef, ref)
 
     const selectedItemMeta = useMemo(
       () => ({
@@ -52,19 +52,7 @@ export const SelectCombobox = forwardRef<HTMLInputElement>(
 
     return (
       <Flex>
-        <VisuallyHidden id={inputAria.id}>{inputAria.label}</VisuallyHidden>
-        <InputGroup
-          pos="relative"
-          display="grid"
-          gridTemplateColumns="1fr"
-          {...getComboboxProps({
-            disabled: isDisabled,
-            readOnly: isReadOnly,
-            required: isRequired,
-            'aria-expanded': !!isOpen,
-            onFocus: () => setIsFocused(true),
-          })}
-        >
+        <InputGroup pos="relative" display="grid" gridTemplateColumns="1fr">
           <Stack
             visibility={inputValue ? 'hidden' : 'initial'}
             direction="row"
@@ -75,6 +63,7 @@ export const SelectCombobox = forwardRef<HTMLInputElement>(
             pr="calc(2.75rem + 1px)"
             align="center"
             zIndex={2}
+            aria-hidden
           >
             {selectedItemMeta.icon ? (
               <Icon
@@ -101,8 +90,11 @@ export const SelectCombobox = forwardRef<HTMLInputElement>(
             {...getInputProps({
               onClick: handleToggleMenu,
               onBlur: () => !isOpen && resetInputValue(),
-              ref,
-              'aria-describedby': inputAria.id,
+              ref: mergedInputRef,
+              disabled: isDisabled,
+              readOnly: isReadOnly,
+              required: isRequired,
+              'aria-expanded': !!isOpen,
             })}
           />
           <ToggleChevron />

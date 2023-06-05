@@ -5,6 +5,7 @@ import { addDays, isBefore, lightFormat } from 'date-fns'
 
 import { REQUIRED_ERROR } from '~constants/validation'
 
+import { DATE_DISPLAY_FORMAT } from './DateField'
 import * as stories from './DateField.stories'
 
 const {
@@ -15,7 +16,8 @@ const {
   ValidationCustomRange,
 } = composeStories(stories)
 
-const { MOCKED_TODAY_DATE } = stories.default.parameters?.test
+const { MOCKED_TODAY_DATE_STRING, MOCKED_TODAY_DATE } =
+  stories.default.parameters?.test
 
 describe('required field', () => {
   it('renders error when field is empty before submitting', async () => {
@@ -65,7 +67,7 @@ describe('optional field', () => {
     expect(input.value).toBe('')
 
     // Act
-    const validDate = '2011-11-11'
+    const validDate = '11/11/2011'
     await act(async () => userEvent.type(input, validDate))
     await act(async () => userEvent.click(submitButton))
 
@@ -94,7 +96,7 @@ describe('validation', () => {
       expect(input.value).toBe('')
 
       // Act
-      const invalidDate = '2031-11-11'
+      const invalidDate = '11/11/2031'
       await act(async () => userEvent.type(input, invalidDate))
       await act(async () => userEvent.click(submitButton))
 
@@ -118,13 +120,13 @@ describe('validation', () => {
       expect(input.value).toBe('')
 
       // Act
-      await act(async () => userEvent.type(input, MOCKED_TODAY_DATE))
+      await act(async () => userEvent.type(input, MOCKED_TODAY_DATE_STRING))
       await act(async () => userEvent.click(submitButton))
 
       // Assert
       // Should show success message.
       const success = screen.getByText(
-        `You have submitted: ${MOCKED_TODAY_DATE}`,
+        `You have submitted: ${MOCKED_TODAY_DATE_STRING}`,
       )
       expect(success).not.toBeNull()
     })
@@ -144,8 +146,8 @@ describe('validation', () => {
 
       // Act
       const pastDate = lightFormat(
-        addDays(new Date(MOCKED_TODAY_DATE), -10),
-        'yyyy-MM-dd',
+        addDays(MOCKED_TODAY_DATE, -10),
+        DATE_DISPLAY_FORMAT,
       )
       await act(async () => userEvent.type(input, pastDate))
       await act(async () => userEvent.click(submitButton))
@@ -173,8 +175,8 @@ describe('validation', () => {
 
       // Act
       const pastDate = lightFormat(
-        addDays(new Date(MOCKED_TODAY_DATE), -10),
-        'yyyy-MM-dd',
+        addDays(MOCKED_TODAY_DATE, -10),
+        DATE_DISPLAY_FORMAT,
       )
       await act(async () => userEvent.type(input, pastDate))
       await act(async () => userEvent.click(submitButton))
@@ -199,13 +201,13 @@ describe('validation', () => {
       expect(input.value).toBe('')
 
       // Act
-      await act(async () => userEvent.type(input, MOCKED_TODAY_DATE))
+      await act(async () => userEvent.type(input, MOCKED_TODAY_DATE_STRING))
       await act(async () => userEvent.click(submitButton))
 
       // Assert
       // Should show success message.
       const success = screen.getByText(
-        `You have submitted: ${MOCKED_TODAY_DATE}`,
+        `You have submitted: ${MOCKED_TODAY_DATE_STRING}`,
       )
       expect(success).not.toBeNull()
     })
@@ -225,8 +227,8 @@ describe('validation', () => {
 
       // Act
       const futureDate = lightFormat(
-        addDays(new Date(MOCKED_TODAY_DATE), 5),
-        'yyyy-MM-dd',
+        addDays(MOCKED_TODAY_DATE, 5),
+        DATE_DISPLAY_FORMAT,
       )
       await act(async () => userEvent.type(input, futureDate))
       await act(async () => userEvent.click(submitButton))
@@ -242,7 +244,7 @@ describe('validation', () => {
     it('renders invalid date error when date after max is selected', async () => {
       // Arrange
       const schema = ValidationCustomRange.args?.schema
-      const { customMaxDate } = schema.dateValidation
+      const { customMaxDate } = schema!.dateValidation
       await act(async () => {
         render(<ValidationCustomRange defaultValue={undefined} />)
       })
@@ -254,7 +256,10 @@ describe('validation', () => {
       expect(input.value).toBe('')
 
       // Act
-      const afterMaxDate = lightFormat(addDays(customMaxDate, 10), 'yyyy-MM-dd')
+      const afterMaxDate = lightFormat(
+        addDays(customMaxDate!, 10),
+        DATE_DISPLAY_FORMAT,
+      )
       await act(async () => userEvent.type(input, afterMaxDate))
       await act(async () => userEvent.click(submitButton))
 
@@ -269,7 +274,7 @@ describe('validation', () => {
     it('renders invalid date error when date before min is selected', async () => {
       // Arrange
       const schema = ValidationCustomRange.args?.schema
-      const { customMinDate } = schema.dateValidation
+      const { customMinDate } = schema!.dateValidation
       await act(async () => {
         render(<ValidationCustomRange defaultValue={undefined} />)
       })
@@ -282,8 +287,8 @@ describe('validation', () => {
 
       // Act
       const beforeMinDate = lightFormat(
-        addDays(customMinDate, -10),
-        'yyyy-MM-dd',
+        addDays(customMinDate!, -10),
+        DATE_DISPLAY_FORMAT,
       )
       await act(async () => userEvent.type(input, beforeMinDate))
       await act(async () => userEvent.click(submitButton))
@@ -299,7 +304,7 @@ describe('validation', () => {
     it('renders success when selected date is in range', async () => {
       // Arrange
       const schema = ValidationCustomRange.args?.schema
-      const { customMinDate, customMaxDate } = schema.dateValidation
+      const { customMinDate, customMaxDate } = schema!.dateValidation
       await act(async () => {
         render(<ValidationCustomRange defaultValue={undefined} />)
       })
@@ -310,10 +315,10 @@ describe('validation', () => {
 
       expect(input.value).toBe('')
 
-      const inRangeDate = addDays(customMinDate, 10)
-      const inRangeDateString = lightFormat(inRangeDate, 'yyyy-MM-dd')
+      const inRangeDate = addDays(customMinDate!, 10)
+      const inRangeDateString = lightFormat(inRangeDate, DATE_DISPLAY_FORMAT)
       // Should be in range.
-      expect(isBefore(inRangeDate, customMaxDate)).toEqual(true)
+      expect(isBefore(inRangeDate, customMaxDate!)).toEqual(true)
 
       // Act
       await act(async () => userEvent.type(input, inRangeDateString))

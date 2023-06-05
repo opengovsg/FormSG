@@ -1,9 +1,14 @@
 import { expect } from '@storybook/jest'
 import { Meta, Story } from '@storybook/react'
 import { userEvent, waitFor, within } from '@storybook/testing-library'
+import dedent from 'dedent'
 
 import { BasicField } from '~shared/types/field'
-import { FormAuthType, FormColorTheme } from '~shared/types/form'
+import {
+  FormAuthType,
+  FormColorTheme,
+  FormResponseMode,
+} from '~shared/types/form'
 
 import {
   getPreviewFormErrorResponse,
@@ -93,29 +98,13 @@ WithLongInstructions.parameters = {
       overrides: {
         form: {
           startPage: {
-            paragraph: `Fill in this mock form in this story. Lorem\
-          ipsum dolor sit amet, consectetur adipiscing elit. Donec ac tincidunt\
-          orci. Vivamus id nisl tellus. Aliquam ullamcorper nec diam id ornare.\
-          Praesent mattis ligula egestas magna sagittis, non aliquet mauris\
-          sollicitudin. In maximus euismod nunc eget pellentesque. Maecenas\
-          sollicitudin lobortis consectetur. Suspendisse potenti. Nam a est\
-          risus.
+            paragraph: dedent`
+            Fill in this mock form in this story. 
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec ac tincidunt orci. Vivamus id nisl tellus. Aliquam ullamcorper nec diam id ornare. Praesent mattis ligula egestas magna sagittis, non aliquet mauris sollicitudin. In maximus euismod nunc eget pellentesque. Maecenas sollicitudin lobortis consectetur. Suspendisse potenti. Nam a est risus.
 
-          Aliquam egestas diam in velit pellentesque lacinia. Praesent nunc ex,\
-          fermentum sed nunc nec, laoreet dignissim nisi. Vivamus et lorem non\
-          velit facilisis luctus. Sed et luctus magna, sed tincidunt odio. Fusce\
-          quis pretium eros. Mauris in est ornare, aliquam odio quis, porttitor\
-          lacus. Aliquam dignissim laoreet libero, sed pharetra enim.\
-          Pellentesque habitant morbi tristique senectus et netus et malesuada\
-          fames ac turpis egestas.
+            Aliquam egestas diam in velit pellentesque lacinia. Praesent nunc ex, fermentum sed nunc nec, laoreet dignissim nisi. Vivamus et lorem non velit facilisis luctus. Sed et luctus magna, sed tincidunt odio. Fusce quis pretium eros. Mauris in est ornare, aliquam odio quis, porttitor lacus. Aliquam dignissim laoreet libero, sed pharetra enim. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.
           
-          Donec scelerisque eros mattis tempor commodo. Vestibulum massa ante,\
-          fermentum nec sollicitudin eu, tincidunt sed lectus. Etiam maximus\
-          luctus dapibus. Morbi et mollis nibh. Praesent ante orci, pellentesque\
-          vel molestie ut, lobortis nec dui. Aliquam eleifend luctus pharetra.\
-          Nullam lacinia eget erat ac commodo. Curabitur suscipit felis a\
-          venenatis consectetur. Cras dictum, metus a egestas aliquam, ipsum\
-          neque fermentum orci, vitae fermentum neque mi non arcu.`,
+            Donec scelerisque eros mattis tempor commodo. Vestibulum massa ante, fermentum nec sollicitudin eu, tincidunt sed lectus. Etiam maximus luctus dapibus. Morbi et mollis nibh. Praesent ante orci, pellentesque vel molestie ut, lobortis nec dui. Aliquam eleifend luctus pharetra. Nullam lacinia eget erat ac commodo. Curabitur suscipit felis a venenatis consectetur. Cras dictum, metus a egestas aliquam, ipsum neque fermentum orci, vitae fermentum neque mi non arcu.`,
           },
         },
       },
@@ -391,4 +380,23 @@ export const FormNotFoundMobile = Template.bind({})
 FormNotFoundMobile.parameters = {
   ...FormNotFound.parameters,
   ...getMobileViewParameters(),
+}
+
+export const WithPayment = Template.bind({})
+WithPayment.parameters = {
+  msw: [
+    getPreviewFormResponse({
+      overrides: {
+        form: {
+          responseMode: FormResponseMode.Encrypt,
+          payments_field: {
+            enabled: true,
+            amount_cents: 5000,
+            description: 'Mock event registration',
+          },
+        },
+      },
+    }),
+    ...DEFAULT_MSW_HANDLERS,
+  ],
 }

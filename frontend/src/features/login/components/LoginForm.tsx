@@ -45,13 +45,10 @@ export const LoginForm = ({ onSubmit }: LoginFormProps): JSX.Element => {
         isReadOnly={formState.isSubmitting}
         mb="2.5rem"
       >
-        <FormLabel
-          isRequired
-          description={t(
+        <FormLabel isRequired>
+          {t(
             'features.login.components.LoginForm.onlyAvailableForPublicOfficers',
           )}
-        >
-          {t('features.login.components.LoginForm.email')}
         </FormLabel>
         <Input
           autoComplete="email"
@@ -70,7 +67,7 @@ export const LoginForm = ({ onSubmit }: LoginFormProps): JSX.Element => {
       </FormControl>
       <Stack
         direction={{ base: 'column', lg: 'row' }}
-        spacing={{ base: '1.5rem', lg: '2.5rem' }}
+        spacing="1.5rem"
         align="center"
       >
         <Button

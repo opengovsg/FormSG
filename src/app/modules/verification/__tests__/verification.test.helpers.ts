@@ -3,9 +3,13 @@ import { merge } from 'lodash'
 
 import { IVerificationField } from 'src/types'
 
+import { PAYMENT_CONTACT_FIELD_ID } from '../../../../../shared/constants'
+
 export const MOCK_SIGNED_DATA = 'mockSignedData'
 export const MOCK_HASHED_OTP = 'mockHashedOtp'
 export const MOCK_OTP = '123456'
+export const MOCK_OTP_PREFIX = 'ABC'
+export const MOCK_EMAIL_RECIPIENT = 'form@open.gov.sg'
 export const MOCK_LOCAL_RECIPIENT = '+6581234567'
 export const MOCK_INTL_RECIPIENT = '+011234567890'
 export const MOCK_SENDER_IP = '200.0.0.0'
@@ -24,6 +28,17 @@ export const generateFieldParams = (
   const mockParams = {
     fieldType: 'mobile',
     _id: String(new ObjectId()),
+    ...customOptions,
+  }
+  return merge({}, VFN_FIELD_DEFAULTS, mockParams)
+}
+
+export const generatePaymentContactFieldParams = (
+  customOptions: Partial<IVerificationField> & { _id?: string } = {},
+) => {
+  const mockParams = {
+    fieldType: 'email',
+    _id: PAYMENT_CONTACT_FIELD_ID,
     ...customOptions,
   }
   return merge({}, VFN_FIELD_DEFAULTS, mockParams)

@@ -5,11 +5,7 @@ import { MapRouteError } from 'src/types'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { ApplicationError, DatabaseError } from '../../core/core.errors'
 import { ErrorResponseData } from '../../core/core.types'
-import {
-  CreateRedirectUrlError,
-  FetchLoginPageError,
-  LoginPageValidationError,
-} from '../../spcp/spcp.errors'
+import { CreateRedirectUrlError } from '../../spcp/spcp.errors'
 import * as FormErrors from '../form.errors'
 
 const logger = createLoggerWithLabel(module)
@@ -88,16 +84,6 @@ export const mapFormAuthError: MapRouteError = (
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage:
           'Please ensure that the form has authentication enabled. Please refresh and try again.',
-      }
-    case FetchLoginPageError:
-      return {
-        statusCode: StatusCodes.SERVICE_UNAVAILABLE,
-        errorMessage: 'Failed to contact SingPass. Please try again.',
-      }
-    case LoginPageValidationError:
-      return {
-        statusCode: StatusCodes.BAD_GATEWAY,
-        errorMessage: 'Error while contacting SingPass. Please try again.',
       }
     case DatabaseError:
     case CreateRedirectUrlError:

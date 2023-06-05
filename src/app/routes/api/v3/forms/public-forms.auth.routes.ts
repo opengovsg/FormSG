@@ -32,21 +32,3 @@ PublicFormsAuthRouter.route('/:formId([a-fA-F0-9]{24})/auth/redirect').get(
 PublicFormsAuthRouter.route('/auth/:authType/logout').get(
   PublicFormController.handlePublicAuthLogout,
 )
-
-/**
- * Validates a form's eServiceId through parsing the returned html of the spcp login page
- * @route /:formId/auth/validate
- * @deprecated with transition to SP OIDC because NDI no longer returns error page for invalid eservice ID
- *
- * @returns 200 with eserviceId validation result
- * @returns 400 when there is an error on the authType of the form
- * @returns 400 when the eServiceId of the form does not exist
- * @returns 404 when form with given ID does not exist
- * @returns 500 when the title of the fetched login page does not exist
- * @returns 500 when database error occurs
- * @returns 500 when the url for the login page of the form could not be generated
- * @returns 502 when the login page for singpass could not be fetched
- */
-PublicFormsAuthRouter.route('/:formId([a-fA-F0-9]{24})/auth/validate').get(
-  PublicFormController.handleValidateFormEsrvcId,
-)

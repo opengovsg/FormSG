@@ -4,6 +4,8 @@ import { FormCondition, FormDto, PreventSubmitLogicDto } from '~shared/types'
 
 import { FormFieldValues } from '~templates/Field'
 
+import { filterHiddenInputs } from '~features/public-form/utils'
+
 import { FieldIdToType } from '../types'
 
 import { allConditionsExist } from './allConditionsExist'
@@ -66,8 +68,14 @@ export const getLogicUnitPreventingSubmit = ({
 }: {
   formFields: FormDto['form_fields']
   formLogics: FormDto['form_logics']
-  formInputs: UnpackNestedValue<DeepPartialSkipArrayKey<FormFieldValues>>
+  formInputs: FormFieldValues
 }) => {
+  const filteredFormInputs = filterHiddenInputs({
+    formFields,
+    formInputs,
+    formLogics,
+  })
+
   const fieldIdToType = formFields.reduce<FieldIdToType>((acc, ff) => {
     acc[ff._id] = ff.fieldType
     return acc
@@ -78,6 +86,10 @@ export const getLogicUnitPreventingSubmit = ({
     fieldIdToType,
   )
   return preventSubmitConditions.find((logicUnit) =>
-    isLogicUnitSatisfied(formInputs, logicUnit.conditions, fieldIdToType),
+    isLogicUnitSatisfied(
+      filteredFormInputs,
+      logicUnit.conditions,
+      fieldIdToType,
+    ),
   )
 }

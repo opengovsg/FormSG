@@ -2,14 +2,13 @@ import { ObjectId } from 'bson'
 import crypto from 'crypto'
 import { omit, pick } from 'lodash'
 import mongoose from 'mongoose'
-import { mocked } from 'ts-jest/utils'
 
 import config from 'src/app/config/config'
 
-import dbHandler from '../../../../../tests/unit/backend/helpers/jest-db'
+import dbHandler from '../../../../../__tests__/unit/backend/helpers/jest-db'
 
 jest.mock('src/app/config/config')
-const MockConfig = mocked(config, true)
+const MockConfig = jest.mocked(config)
 
 // eslint-disable-next-line import/first
 import getMyInfoHashModel from 'src/app/modules/myinfo/myinfo_hash.model'
@@ -65,7 +64,7 @@ describe('MyInfo Hash Model', () => {
       const actualPromise = myInfoHash.save()
 
       // Assert
-      await expect(actualPromise).rejects.toThrowError(
+      await expect(actualPromise).rejects.toThrow(
         mongoose.Error.ValidationError,
       )
     })
@@ -79,7 +78,7 @@ describe('MyInfo Hash Model', () => {
       const actualPromise = myInfoHash.save()
 
       // Assert
-      await expect(actualPromise).rejects.toThrowError(
+      await expect(actualPromise).rejects.toThrow(
         mongoose.Error.ValidationError,
       )
     })
@@ -93,7 +92,7 @@ describe('MyInfo Hash Model', () => {
       const actualPromise = myInfoHash.save()
 
       // Assert
-      await expect(actualPromise).rejects.toThrowError(
+      await expect(actualPromise).rejects.toThrow(
         mongoose.Error.ValidationError,
       )
     })
@@ -107,7 +106,7 @@ describe('MyInfo Hash Model', () => {
       const actualPromise = myInfoHash.save()
 
       // Assert
-      await expect(actualPromise).rejects.toThrowError(
+      await expect(actualPromise).rejects.toThrow(
         mongoose.Error.ValidationError,
       )
     })

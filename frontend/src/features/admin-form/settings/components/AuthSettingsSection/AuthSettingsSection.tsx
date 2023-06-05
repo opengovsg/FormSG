@@ -6,11 +6,12 @@ import {
   useMemo,
   useState,
 } from 'react'
-import { Box, Icon, Skeleton } from '@chakra-ui/react'
+import { Box, Flex, Icon, Skeleton } from '@chakra-ui/react'
 
 import { FormAuthType, FormSettings, FormStatus } from '~shared/types/form'
 
 import { BxsHelpCircle } from '~assets/icons/BxsHelpCircle'
+import { OGP_SGID } from '~constants/links'
 import InlineMessage from '~components/InlineMessage'
 import Link from '~components/Link'
 import Radio from '~components/Radio'
@@ -18,7 +19,6 @@ import Tooltip from '~components/Tooltip'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
 import { isMyInfo } from '~features/myinfo/utils'
-import { useUser } from '~features/user/queries'
 
 import { useMutateFormSettings } from '../../mutations'
 
@@ -63,7 +63,6 @@ export const AuthSettingsSection = ({
   settings,
 }: AuthSettingsSectionProps): JSX.Element => {
   const { mutateFormAuthType } = useMutateFormSettings()
-  const { user } = useUser()
   const { data: form } = useAdminForm()
 
   const containsMyInfoFields = useMemo(
@@ -80,24 +79,21 @@ export const AuthSettingsSection = ({
 
   const isDisabled = useCallback(
     (authType: FormAuthType) =>
-      isFormPublic ||
-      containsMyInfoFields ||
-      mutateFormAuthType.isLoading ||
-      (authType === FormAuthType.SGID && !user?.betaFlags?.sgid),
-    [
-      isFormPublic,
-      containsMyInfoFields,
-      mutateFormAuthType.isLoading,
-      user?.betaFlags?.sgid,
-    ],
+      isFormPublic || containsMyInfoFields || mutateFormAuthType.isLoading,
+    [isFormPublic, containsMyInfoFields, mutateFormAuthType.isLoading],
+  )
+
+  const isEsrvcIdBoxDisabled = useMemo(
+    () => isFormPublic || mutateFormAuthType.isLoading,
+    [isFormPublic, mutateFormAuthType.isLoading],
   )
 
   const handleEnterKeyDown: KeyboardEventHandler = useCallback(
     (e) => {
       if (
-        !isDisabled &&
         (e.key === 'Enter' || e.key === ' ') &&
         focusedValue &&
+        !isDisabled(focusedValue) &&
         focusedValue !== settings.authType
       ) {
         return mutateFormAuthType.mutate(focusedValue)
@@ -142,7 +138,7 @@ export const AuthSettingsSection = ({
       ) : containsMyInfoFields ? (
         <InlineMessage mb="1.25rem">
           Authentication method cannot be changed without first removing MyInfo
-          fields.
+          fields. You can still update your e-service ID.
         </InlineMessage>
       ) : null}
       <Radio.RadioGroup
@@ -154,41 +150,43 @@ export const AuthSettingsSection = ({
           <Fragment key={authType}>
             <Box onClick={handleOptionClick(authType)}>
               <Radio value={authType} isDisabled={isDisabled(authType)}>
-                {text}
-                {authType === FormAuthType.SGID ? (
-                  <>
+                <Flex align="center">
+                  {text}
+                  {authType === FormAuthType.SGID ? (
+                    <>
+                      <Tooltip
+                        label={SGID_TOOLTIP}
+                        placement="top"
+                        textAlign="center"
+                      >
+                        <Icon as={BxsHelpCircle} aria-hidden marginX="0.5rem" />
+                      </Tooltip>
+                      <Link
+                        href={OGP_SGID}
+                        isExternal
+                        // Needed for link to open since there are nested onClicks
+                        onClickCapture={(e) => e.stopPropagation()}
+                      >
+                        Contact us to find out more
+                      </Link>
+                    </>
+                  ) : null}
+                  {authType === FormAuthType.CP ? (
                     <Tooltip
-                      label={SGID_TOOLTIP}
+                      label={CP_TOOLTIP}
                       placement="top"
                       textAlign="center"
                     >
-                      <Icon as={BxsHelpCircle} aria-hidden marginX="0.5rem" />
+                      <Icon as={BxsHelpCircle} aria-hidden ml="0.5rem" />
                     </Tooltip>
-                    <Link
-                      href="https://go.gov.sg/sgid-formsg"
-                      isExternal
-                      // Needed for link to open since there are nested onClicks
-                      onClickCapture={(e) => e.stopPropagation()}
-                    >
-                      Contact us to find out more
-                    </Link>
-                  </>
-                ) : null}
-                {authType === FormAuthType.CP ? (
-                  <Tooltip
-                    label={CP_TOOLTIP}
-                    placement="top"
-                    textAlign="center"
-                  >
-                    <Icon as={BxsHelpCircle} aria-hidden ml="0.5rem" />
-                  </Tooltip>
-                ) : null}
+                  ) : null}
+                </Flex>
               </Radio>
             </Box>
             {esrvcidRequired(authType) && authType === settings.authType ? (
               <EsrvcIdBox
                 settings={settings}
-                isDisabled={isDisabled(authType)}
+                isDisabled={isEsrvcIdBoxDisabled}
               />
             ) : null}
           </Fragment>

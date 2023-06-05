@@ -1,7 +1,9 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
+import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { ObjectId } from 'bson-ext'
-import { clone } from 'lodash'
+import { clone, omit } from 'lodash'
 import mongoose from 'mongoose'
+import { errAsync, okAsync } from 'neverthrow'
 import { PassThrough, Transform } from 'stream'
 
 import { aws } from 'src/app/config/config'
@@ -11,26 +13,29 @@ import {
   MalformedParametersError,
 } from 'src/app/modules/core/core.errors'
 import { CreatePresignedUrlError } from 'src/app/modules/form/admin-form/admin-form.errors'
+import { PaymentNotFoundError } from 'src/app/modules/payments/payments.errors'
 import { formatErrorRecoveryMessage } from 'src/app/utils/handle-mongo-error'
 import {
+  IPaymentSchema,
   IPopulatedEncryptedForm,
   SubmissionCursorData,
   SubmissionData,
 } from 'src/types'
 
-import dbHandler from 'tests/unit/backend/helpers/jest-db'
-
 import {
   StorageModeSubmissionMetadata,
   SubmissionId,
 } from '../../../../../../shared/types'
+import * as PaymentsService from '../../../payments/payments.service'
 import { SubmissionNotFoundError } from '../../submission.errors'
 import {
+  addPaymentDataStream,
   createEncryptSubmissionWithoutSave,
   getEncryptedSubmissionData,
   getSubmissionCursor,
   getSubmissionMetadata,
   getSubmissionMetadataList,
+  getSubmissionPaymentDto,
   transformAttachmentMetasToSignedUrls,
   transformAttachmentMetaStream,
 } from '../encrypt-submission.service'
@@ -403,6 +408,200 @@ describe('encrypt-submission.service', () => {
     })
   })
 
+  describe('addPaymentDataStream', () => {
+    const MOCK_SUB_CURSOR_DATA_1: Partial<SubmissionCursorData> = {
+      encryptedContent: 'some encrypted content 1',
+      paymentId: 'mockPaymentId1',
+    }
+
+    const MOCK_SUB_CURSOR_DATA_2: Partial<SubmissionCursorData> = {
+      encryptedContent: 'some encrypted content 2',
+      paymentId: 'mockPaymentId2',
+    }
+
+    const MOCK_PAYMENT_1 = {
+      _id: 'mockPaymentId1',
+      paymentIntentId: 'pi_MOCK_PAYMENT_INTENT_ID_1',
+      status: 'succeeded',
+      email: 'form@tech.gov.sg',
+      amount: 3141,
+
+      completedPayment: {
+        paymentDate: new Date(1680770362473),
+        transactionFee: 600,
+        receiptUrl: 'https://some.random.url.com',
+      },
+
+      payout: {
+        payoutId: 'po_MOCK_PAYOUT_ID_1',
+        payoutDate: new Date(1680870362473),
+      },
+    } as IPaymentSchema
+
+    const MOCK_SUBMISSION_PAYMENT_DTO_1 = {
+      id: 'mockPaymentId1',
+      paymentIntentId: 'pi_MOCK_PAYMENT_INTENT_ID_1',
+      email: 'form@tech.gov.sg',
+      amount: 3141,
+      status: 'succeeded',
+
+      paymentDate: 'Thu, 6 Apr 2023, 04:39:22 PM',
+      transactionFee: 600,
+      receiptUrl: 'https://some.random.url.com',
+
+      payoutId: 'po_MOCK_PAYOUT_ID_1',
+      payoutDate: 'Fri, 7 Apr 2023',
+    }
+
+    const MOCK_PAYMENT_2 = {
+      _id: 'mockPaymentId2',
+      paymentIntentId: 'pi_MOCK_PAYMENT_INTENT_ID_2',
+      status: 'succeeded',
+      email: 'open@tech.gov.sg',
+      amount: 12345,
+
+      completedPayment: {
+        paymentDate: new Date(1680771362473),
+        transactionFee: 123,
+        receiptUrl: 'https://some.random.url-2.com',
+      },
+
+      payout: {
+        payoutId: 'po_MOCK_PAYOUT_ID_2',
+        payoutDate: new Date(1680871362473),
+      },
+    } as IPaymentSchema
+
+    const MOCK_SUBMISSION_PAYMENT_DTO_2 = {
+      id: 'mockPaymentId2',
+      paymentIntentId: 'pi_MOCK_PAYMENT_INTENT_ID_2',
+      email: 'open@tech.gov.sg',
+      amount: 12345,
+      status: 'succeeded',
+
+      paymentDate: 'Thu, 6 Apr 2023, 04:56:02 PM',
+      transactionFee: 123,
+      receiptUrl: 'https://some.random.url-2.com',
+
+      payoutId: 'po_MOCK_PAYOUT_ID_2',
+      payoutDate: 'Fri, 7 Apr 2023',
+    }
+
+    beforeEach(() => jest.resetAllMocks())
+
+    it('should successfully transform payment id to submission payment DTO', async () => {
+      // Arrange
+      const mockInput = new PassThrough()
+
+      const actualTransformedData: any[] = []
+
+      const findSpy = jest
+        .spyOn(PaymentsService, 'findPaymentById')
+        .mockImplementationOnce(() => okAsync(MOCK_PAYMENT_1 as IPaymentSchema))
+        .mockImplementationOnce(() => okAsync(MOCK_PAYMENT_2 as IPaymentSchema))
+
+      // Act
+      // Build (promisified) pipeline for testing.
+      const streamPromise = new Promise((resolve) => {
+        mockInput
+          .pipe(addPaymentDataStream())
+          .on('data', (data) => actualTransformedData.push(data))
+          .on('end', resolve)
+      })
+
+      // Emit events.
+      mockInput.emit('data', clone(MOCK_SUB_CURSOR_DATA_1))
+      mockInput.emit('data', clone(MOCK_SUB_CURSOR_DATA_2))
+      mockInput.end()
+      await streamPromise
+
+      // Assert
+      // Data from end of pipe should have their paymentIds replaced by
+      // submission payment objects.
+      expect(actualTransformedData).toEqual([
+        {
+          ...omit(MOCK_SUB_CURSOR_DATA_1, 'paymentId'),
+          payment: MOCK_SUBMISSION_PAYMENT_DTO_1,
+        },
+        {
+          ...omit(MOCK_SUB_CURSOR_DATA_2, 'paymentId'),
+          payment: MOCK_SUBMISSION_PAYMENT_DTO_2,
+        },
+      ])
+      // Check external service calls.
+      expect(findSpy).toHaveBeenNthCalledWith(
+        1,
+        MOCK_SUB_CURSOR_DATA_1.paymentId,
+      )
+      expect(findSpy).toHaveBeenNthCalledWith(
+        2,
+        MOCK_SUB_CURSOR_DATA_2.paymentId,
+      )
+    })
+
+    it('should return empty payment when no payment id is present', async () => {
+      // Arrange
+      const mockInput = new PassThrough()
+      const findSpy = jest.spyOn(PaymentsService, 'findPaymentById')
+
+      const actualTransformedData: any[] = []
+
+      // Act
+      // Build pipeline.
+      mockInput
+        .pipe(addPaymentDataStream())
+        .pipe(stringify())
+        .on('data', (data) => {
+          actualTransformedData.push(JSON.parse(data.toString()))
+        })
+
+      // Emit events.
+      mockInput.emit('data', {})
+
+      // Assert
+      expect(actualTransformedData).toEqual([{}])
+      expect(findSpy).not.toHaveBeenCalled()
+    })
+
+    it('should return original object without payment id when stream errors occurs', async () => {
+      // Arrange
+      const expectedError = new Error('streams are being crossed right now!!!!')
+      // Mock database error.
+      const findSpy = jest
+        .spyOn(PaymentsService, 'findPaymentById')
+        .mockImplementationOnce(() => errAsync(expectedError))
+      const mockInput = new PassThrough()
+
+      const actualTransformedData: any[] = []
+
+      // Act
+      // Build (promisified) pipeline for testing.
+      const streamPromise = new Promise((resolve) => {
+        mockInput
+          .pipe(addPaymentDataStream())
+          .on('data', (data) => actualTransformedData.push(data))
+          .on('end', resolve)
+      })
+
+      // Emit events.
+      mockInput.emit('data', clone(MOCK_SUB_CURSOR_DATA_1))
+      mockInput.end()
+      await streamPromise
+
+      // Assert
+      // Data from end of pipe should have their paymentIds replaced by
+      // submission payment objects.
+      expect(actualTransformedData).toEqual([
+        omit(MOCK_SUB_CURSOR_DATA_1, 'paymentId'),
+      ])
+      // Check external service calls.
+      expect(findSpy).toHaveBeenNthCalledWith(
+        1,
+        MOCK_SUB_CURSOR_DATA_1.paymentId,
+      )
+    })
+  })
+
   describe('getEncryptedSubmissionData', () => {
     it('should return submission data successfully', async () => {
       // Arrange
@@ -492,6 +691,77 @@ describe('encrypt-submission.service', () => {
         mockFormId,
         mockSubmissionId,
       )
+    })
+  })
+
+  describe('getSubmissionPaymentDto', () => {
+    const MOCK_PAYMENT_ID = 'mockPaymentId'
+
+    it('should return submission payment data successfully', async () => {
+      // Arrange
+      const payment = {
+        _id: MOCK_PAYMENT_ID,
+        paymentIntentId: 'pi_MOCK_PAYMENT_INTENT_ID',
+        status: 'succeeded',
+        email: 'form@tech.gov.sg',
+        amount: 3141,
+
+        completedPayment: {
+          paymentDate: new Date(1680766919),
+          transactionFee: 600,
+          receiptUrl: 'https://some.random.url.com',
+        },
+
+        payout: {
+          payoutId: 'po_MOCK_PAYOUT_ID',
+          payoutDate: new Date(1681766919),
+        },
+      } as IPaymentSchema
+
+      const expected = {
+        id: MOCK_PAYMENT_ID,
+        paymentIntentId: 'pi_MOCK_PAYMENT_INTENT_ID',
+        email: 'form@tech.gov.sg',
+        amount: 3141,
+        status: 'succeeded',
+
+        paymentDate: 'Tue, 20 Jan 1970, 06:22:46 PM',
+        transactionFee: 600,
+        receiptUrl: 'https://some.random.url.com',
+
+        payoutId: 'po_MOCK_PAYOUT_ID',
+        payoutDate: 'Tue, 20 Jan 1970',
+      }
+
+      const findSpy = jest
+        .spyOn(PaymentsService, 'findPaymentById')
+        .mockImplementationOnce(() => okAsync(payment))
+
+      // Act
+      const actualResult = await getSubmissionPaymentDto(MOCK_PAYMENT_ID)
+
+      // Assert
+      expect(actualResult.isOk()).toEqual(true)
+      expect(actualResult._unsafeUnwrap()).toEqual(expected)
+      expect(findSpy).toHaveBeenCalledWith(MOCK_PAYMENT_ID)
+    })
+
+    it('should return PaymentNotFoundError when payment does not exist in the database', async () => {
+      // Arrange
+      const findSpy = jest
+        .spyOn(PaymentsService, 'findPaymentById')
+        .mockImplementationOnce(() => errAsync(new PaymentNotFoundError()))
+
+      // Act
+      const actualResult = await getSubmissionPaymentDto(MOCK_PAYMENT_ID)
+
+      // Assert
+      // Should be error.
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toEqual(
+        new PaymentNotFoundError(),
+      )
+      expect(findSpy).toHaveBeenCalledWith(MOCK_PAYMENT_ID)
     })
   })
 

@@ -1,9 +1,8 @@
+import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { pick } from 'lodash'
 import mongoose from 'mongoose'
 
 import getAgencyModel from 'src/app/models/agency.server.model'
-
-import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import { PublicAgencyDto } from '../../../../shared/types'
 

@@ -6,19 +6,18 @@ import {
   SystemStyleObject,
 } from '@chakra-ui/theme-tools'
 
-import { ComponentMultiStyleConfig } from '~theme/types'
-
 import { textStyles } from '../textStyles'
 
 const baseStyleOverlay: SystemStyleObject = {
   bg: 'rgba(0, 0, 0, 0.65)',
+  zIndex: 'overlay',
 }
 
 const baseStyleDialog: SystemStyleFunction = (props) => {
   const { scrollBehavior } = props
   return {
     borderRadius: '0.25rem',
-    my: '8rem',
+    my: '4rem',
     maxH: scrollBehavior === 'inside' ? 'calc(100% - 16rem)' : undefined,
     boxShadow: 'md',
   }
@@ -103,7 +102,7 @@ const sizes = {
   full: getSize('full'),
 }
 
-export const Modal: ComponentMultiStyleConfig<typeof parts> = {
+export const Modal = {
   parts: parts.keys,
   baseStyle,
   sizes,

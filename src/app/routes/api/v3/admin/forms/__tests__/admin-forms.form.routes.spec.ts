@@ -1,4 +1,13 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
+import {
+  createAuthedSession,
+  logoutSession,
+} from '__tests__/integration/helpers/express-auth'
+import { setupApp } from '__tests__/integration/helpers/express-setup'
+import { buildCelebrateError } from '__tests__/unit/backend/helpers/celebrate'
+import { generateDefaultField } from '__tests__/unit/backend/helpers/generate-form-data'
+import dbHandler from '__tests__/unit/backend/helpers/jest-db'
+import { jsonParseStringify } from '__tests__/unit/backend/helpers/serialize-data'
 import { ObjectId } from 'bson-ext'
 import { omit } from 'lodash'
 import mongoose from 'mongoose'
@@ -16,16 +25,6 @@ import {
   DatabasePayloadSizeError,
 } from 'src/app/modules/core/core.errors'
 import { IPopulatedForm, IUserSchema } from 'src/types'
-
-import {
-  createAuthedSession,
-  logoutSession,
-} from 'tests/integration/helpers/express-auth'
-import { setupApp } from 'tests/integration/helpers/express-setup'
-import { buildCelebrateError } from 'tests/unit/backend/helpers/celebrate'
-import { generateDefaultField } from 'tests/unit/backend/helpers/generate-form-data'
-import dbHandler from 'tests/unit/backend/helpers/jest-db'
-import { jsonParseStringify } from 'tests/unit/backend/helpers/serialize-data'
 
 import {
   BasicField,
@@ -48,7 +47,7 @@ jest.mock('nodemailer', () => ({
 }))
 
 // Avoid async refresh calls
-jest.mock('src/app/modules/spcp/sp.oidc.client.ts')
+jest.mock('src/app/modules/spcp/spcp.oidc.client.ts')
 
 const UserModel = getUserModel(mongoose)
 const FormModel = getFormModel(mongoose)
@@ -481,7 +480,7 @@ describe('admin-form.form.routes', () => {
           emails: defaultUser.email,
           responseMode: 'email',
           title: 'email mode form test should fail',
-          permissionList: [{ email: 'invalidEmailDomain@example.com' }],
+          permissionList: [{ email: 'not a valid email' }],
         },
       }
 
@@ -1303,7 +1302,7 @@ describe('admin-form.form.routes', () => {
 
     it('should return 400 when the new owner is not in the database', async () => {
       // Arrange
-      const emailNotInDb = 'notInDb@example.com'
+      const emailNotInDb = 'notindb@example.com'
       const formToTransfer = await EncryptFormModel.create({
         title: 'Original form title',
         admin: defaultUser._id,

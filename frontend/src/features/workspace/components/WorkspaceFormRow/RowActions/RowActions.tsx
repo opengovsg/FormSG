@@ -9,7 +9,7 @@ import { RowActionsDrawer } from './RowActionsDrawer'
 import { RowActionsDropdown } from './RowActionsDropdown'
 
 export interface RowActionsProps {
-  formMeta: Pick<AdminDashboardFormMetaDto, '_id' | 'status'>
+  formMeta: AdminDashboardFormMetaDto
   isDisabled?: boolean
 }
 

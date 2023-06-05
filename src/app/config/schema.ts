@@ -87,6 +87,12 @@ export const compulsoryVarsSchema: Schema<ICompulsoryVarsSchema> = {
       default: null,
       env: 'ATTACHMENT_S3_BUCKET',
     },
+    staticAssetsS3Bucket: {
+      doc: 'S3 Bucket containing static assets',
+      format: String,
+      default: null,
+      env: 'STATIC_ASSETS_S3_BUCKET',
+    },
   },
   core: {
     sessionSecret: {
@@ -101,6 +107,12 @@ export const compulsoryVarsSchema: Schema<ICompulsoryVarsSchema> = {
       format: String,
       default: null,
       env: 'SECRET_ENV',
+    },
+    envSiteName: {
+      doc: 'Environment site name used to build key for AWS Secrets Manager',
+      format: String,
+      default: null,
+      env: 'SSM_ENV_SITE_NAME',
     },
   },
 }
@@ -117,7 +129,7 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
     description: {
       doc: 'Application description in meta tag',
       format: String,
-      default: 'Form Manager for Government',
+      default: 'Trusted form manager of the Singapore Government',
       env: 'APP_DESC',
     },
     appUrl: {
@@ -172,6 +184,31 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
       format: String,
       default: '',
       env: 'ADMIN_BANNER_CONTENT',
+    },
+    // TODO (#4279): Delete these when react migration is over. Revert back to original banner variables in react frontend.
+    isGeneralMaintenanceReact: {
+      doc: 'Load env variable with General Maintenance banner text. For React only.',
+      format: String,
+      default: '',
+      env: 'IS_GENERAL_MAINTENANCE_REACT',
+    },
+    isLoginBannerReact: {
+      doc: 'The banner message on login page. Allows for HTML. For React only.',
+      format: String,
+      default: '',
+      env: 'IS_LOGIN_BANNER_REACT',
+    },
+    siteBannerContentReact: {
+      doc: 'The banner message to show on all pages. Allows for HTML. Will supersede all other banner content if it exists. For React only.',
+      format: String,
+      default: '',
+      env: 'SITE_BANNER_CONTENT_REACT',
+    },
+    adminBannerContentReact: {
+      doc: 'The banner message to show on on admin pages. Allows for HTML. For React only.',
+      format: String,
+      default: '',
+      env: 'ADMIN_BANNER_CONTENT_REACT',
     },
   },
   formsgSdkMode: {
@@ -275,6 +312,12 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
       default: Environment.Prod,
       env: 'NODE_ENV',
     },
+    useMockTwilio: {
+      doc: 'Enables twilio API mocking and directs SMS body over to maildev',
+      format: 'Boolean',
+      default: false,
+      env: 'USE_MOCK_TWILIO',
+    },
   },
   rateLimit: {
     submissions: {
@@ -289,37 +332,20 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
       default: 60,
       env: 'SEND_AUTH_OTP_RATE_LIMIT',
     },
+    downloadPaymentReceipt: {
+      doc: 'Per-minute, per-IP request limit to download the payment receipt from Stripe',
+      format: 'int',
+      default: 10,
+      env: 'DOWNLOAD_PAYMENT_RECEIPT_RATE_LIMIT',
+    },
   },
   reactMigration: {
-    respondentRolloutNoAuth: {
-      doc: 'Percentage threshold to serve React for respondents for Phase 1 (forms WITHOUT Auth)',
-      format: 'int',
-      default: 0,
-      env: 'REACT_MIGRATION_RESP_ROLLOUT_NO_AUTH',
-    },
-    respondentRolloutAuth: {
-      doc: 'Percentage threshold to serve React for respondents for Phase 2 (forms WITH Auth)',
-      format: 'int',
-      default: 0,
-      env: 'REACT_MIGRATION_RESP_ROLLOUT_AUTH',
-    },
-    respondentCookieName: {
-      doc: "Name of the cookie that will store respondents' assigned environment.",
-      format: String,
-      default: 'v2-respondent-ui',
-      env: 'REACT_MIGRATION_RESP_COOKIE_NAME',
-    },
-    adminCookieName: {
-      doc: "Name of the cookie that will store admins' choice of environment.",
-      format: String,
-      default: 'v2-admin-ui',
-      env: 'REACT_MIGRATION_ADMIN_COOKIE_NAME',
-    },
-    qaCookieName: {
-      doc: 'Priority cookie to select react/angular during QA.',
-      format: String,
-      default: 'v2-qa-ui',
-      env: 'REACT_MIGRATION_QA_COOKIE_NAME',
+    useFetchForSubmissions: {
+      // TODO (#5826): Toggle to use fetch for submissions instead of axios. Remove once network error is resolved
+      doc: 'Toggle to use fetch for submissions instead of axios',
+      format: Boolean,
+      default: false,
+      env: 'REACT_MIGRATION_USE_FETCH_FOR_SUBMISSIONS',
     },
   },
 }
@@ -410,6 +436,12 @@ export const loadS3BucketUrlSchema = ({
     },
     imageBucketUrl: {
       doc: 'Url of images S3 bucket derived from S3 endpoint and bucket name',
+      format: (val) =>
+        validateS3BucketUrl(val, { isDev, hasTrailingSlash: false, region }),
+      default: null,
+    },
+    staticAssetsBucketUrl: {
+      doc: 'Url of static assets S3 bucket.',
       format: (val) =>
         validateS3BucketUrl(val, { isDev, hasTrailingSlash: false, region }),
       default: null,

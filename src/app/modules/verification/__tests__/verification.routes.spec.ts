@@ -1,4 +1,8 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
+import { setupApp } from '__tests__/integration/helpers/express-setup'
+import { buildCelebrateError } from '__tests__/unit/backend/helpers/celebrate'
+import { generateDefaultField } from '__tests__/unit/backend/helpers/generate-form-data'
+import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import bcrypt from 'bcrypt'
 import subMinutes from 'date-fns/subMinutes'
 import { getReasonPhrase, StatusCodes } from 'http-status-codes'
@@ -7,11 +11,6 @@ import session, { Session } from 'supertest-session'
 
 import { IVerificationSchema } from 'src/types'
 
-import { setupApp } from 'tests/integration/helpers/express-setup'
-import { buildCelebrateError } from 'tests/unit/backend/helpers/celebrate'
-import { generateDefaultField } from 'tests/unit/backend/helpers/generate-form-data'
-import dbHandler from 'tests/unit/backend/helpers/jest-db'
-
 import { BasicField } from '../../../../../shared/types'
 import getVerificationModel from '../verification.model'
 import { VfnRouter } from '../verification.routes'
@@ -19,8 +18,8 @@ import { VfnRouter } from '../verification.routes'
 import {
   generateFieldParams,
   MOCK_HASHED_OTP,
+  MOCK_LOCAL_RECIPIENT,
   MOCK_OTP,
-  MOCK_RECIPIENT,
   MOCK_SIGNED_DATA,
 } from './verification.test.helpers'
 
@@ -43,6 +42,8 @@ jest.mock('twilio', () => () => ({
     }),
   },
 }))
+
+jest.mock('src/app/services/sms/sms.dev.prismclient', () => () => ({}))
 
 describe('verification.routes', () => {
   let mockTransaction: IVerificationSchema
@@ -213,7 +214,7 @@ describe('verification.routes', () => {
     it('should return 400 when fieldId is not provided in body', async () => {
       const response = await request
         .post(`/transaction/${mockTransactionId}/otp`)
-        .send({ answer: MOCK_RECIPIENT })
+        .send({ answer: MOCK_LOCAL_RECIPIENT })
 
       expect(response.status).toBe(StatusCodes.BAD_REQUEST)
       expect(response.body).toEqual(
@@ -224,7 +225,7 @@ describe('verification.routes', () => {
     it('should return 400 when fieldId is malformed', async () => {
       const response = await request
         .post(`/transaction/${mockTransactionId}/otp`)
-        .send({ fieldId: 'malformed', answer: MOCK_RECIPIENT })
+        .send({ fieldId: 'malformed', answer: MOCK_LOCAL_RECIPIENT })
 
       expect(response.status).toBe(StatusCodes.BAD_REQUEST)
       expect(response.body).toEqual(

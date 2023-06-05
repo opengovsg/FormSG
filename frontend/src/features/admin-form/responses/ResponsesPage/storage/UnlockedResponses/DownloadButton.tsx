@@ -7,9 +7,9 @@ import { BxsChevronDown } from '~assets/icons/BxsChevronDown'
 import { BxsChevronUp } from '~assets/icons/BxsChevronUp'
 import { useTimeout } from '~hooks/useTimeout'
 import { useToast } from '~hooks/useToast'
-import Badge from '~components/Badge'
 import Button from '~components/Button'
 import Menu from '~components/Menu'
+import { NavigationPrompt } from '~templates/NavigationPrompt'
 
 import { useStorageResponsesContext } from '../StorageResponsesContext'
 import { CanceledResult, DownloadResult } from '../types'
@@ -149,6 +149,12 @@ export const DownloadButton = (): JSX.Element => {
 
   return (
     <>
+      <NavigationPrompt
+        title="Stop downloading responses?"
+        description="You are currently downloading form responses. The download will be aborted if you leave this page."
+        confirmButtonText="Yes, leave this page"
+        when={handleExportCsvMutation.isLoading}
+      />
       {dateRangeResponsesCount !== undefined && (
         <DownloadWithAttachmentModal
           responsesCount={dateRangeResponsesCount}
@@ -167,7 +173,6 @@ export const DownloadButton = (): JSX.Element => {
           onClose={handleModalClose}
           onCancel={handleNoAttachmentsDownloadCancel}
           downloadPercentage={downloadPercentage}
-          isDownloading={handleExportCsvMutation.isLoading}
           downloadMetadata={downloadMetadata}
         >
           <Text mb="1rem">
@@ -197,9 +202,6 @@ export const DownloadButton = (): JSX.Element => {
                 </Menu.Item>
                 <Menu.Item onClick={onDownloadModalOpen}>
                   CSV with attachments
-                  <Badge ml="0.5rem" colorScheme="success">
-                    beta
-                  </Badge>
                 </Menu.Item>
               </Menu.List>
             </>

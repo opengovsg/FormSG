@@ -13,7 +13,7 @@ import NumberInput from '~components/NumberInput'
 import Textarea from '~components/Textarea'
 import Toggle from '~components/Toggle'
 
-import { DrawerContentContainer } from '../common/DrawerContentContainer'
+import { CreatePageDrawerContentContainer } from '../../../../../common'
 import { FormFieldDrawerActions } from '../common/FormFieldDrawerActions'
 import { EditFieldProps } from '../common/types'
 import { useEditFieldForm } from '../common/useEditFieldForm'
@@ -55,7 +55,6 @@ export const EditDecimal = ({ field }: EditDecimalProps): JSX.Element => {
     register,
     formState: { errors },
     getValues,
-    isSaveEnabled,
     buttonText,
     handleUpdateField,
     watch,
@@ -95,7 +94,7 @@ export const EditDecimal = ({ field }: EditDecimalProps): JSX.Element => {
   }, [getValues])
 
   return (
-    <DrawerContentContainer>
+    <CreatePageDrawerContentContainer>
       <FormControl isRequired isReadOnly={isLoading} isInvalid={!!errors.title}>
         <FormLabel>Question</FormLabel>
         <Input autoFocus {...register('title', requiredValidationRule)} />
@@ -124,7 +123,11 @@ export const EditDecimal = ({ field }: EditDecimalProps): JSX.Element => {
           label="Number validation"
         />
         {watchValidateByValue ? (
-          <SimpleGrid mt="0.5rem" columns={2} spacing="0.5rem">
+          <SimpleGrid
+            mt="0.5rem"
+            columns={{ base: 1, sm: 2, md: 1, lg: 2 }}
+            spacing="0.5rem"
+          >
             <Controller
               name="ValidationOptions.customMin"
               control={control}
@@ -158,11 +161,10 @@ export const EditDecimal = ({ field }: EditDecimalProps): JSX.Element => {
       </FormControl>
       <FormFieldDrawerActions
         isLoading={isLoading}
-        isSaveEnabled={isSaveEnabled}
         buttonText={buttonText}
         handleClick={handleUpdateField}
         handleCancel={handleCancel}
       />
-    </DrawerContentContainer>
+    </CreatePageDrawerContentContainer>
   )
 }

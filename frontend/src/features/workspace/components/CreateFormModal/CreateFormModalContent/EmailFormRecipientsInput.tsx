@@ -1,11 +1,12 @@
-import { useMemo } from 'react'
 import { Controller } from 'react-hook-form'
 import { Skeleton } from '@chakra-ui/react'
 import { get } from 'lodash'
+import isEmail from 'validator/lib/isEmail'
 
-import { createAdminEmailValidationTransform } from '~utils/formValidation'
+import { ADMIN_EMAIL_VALIDATION_RULES } from '~utils/formValidation'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import Input from '~components/Input'
+import { TagInput } from '~components/TagInput'
 
 import { useUser } from '~features/user/queries'
 
@@ -18,11 +19,6 @@ export const EmailFormRecipientsInput = (): JSX.Element => {
     control,
     formState: { errors },
   } = formMethods
-
-  const emailTransformRules = useMemo(
-    () => createAdminEmailValidationTransform(),
-    [],
-  )
 
   // Add loading skeleton
   if (!user || isLoading) {
@@ -39,14 +35,12 @@ export const EmailFormRecipientsInput = (): JSX.Element => {
         control={control}
         defaultValue={[user.email]}
         name="emails"
-        rules={emailTransformRules.rules}
-        render={({ field: { value, onChange, ...rest } }) => (
-          <Input
-            value={emailTransformRules.transform.input(value)}
-            onChange={(e) =>
-              onChange(emailTransformRules.transform.output(e.target.value))
-            }
-            {...rest}
+        rules={ADMIN_EMAIL_VALIDATION_RULES}
+        render={({ field }) => (
+          <TagInput
+            placeholder="Separate emails with a comma"
+            {...field}
+            tagValidation={isEmail}
           />
         )}
       />

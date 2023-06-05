@@ -1,4 +1,4 @@
-import { useCallback, useRef } from 'react'
+import { useCallback, useMemo, useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import { BiRightArrowAlt, BiUpload } from 'react-icons/bi'
 import {
@@ -49,6 +49,7 @@ const useSecretKeyActivationModal = ({
     formState: { errors },
     setError,
     register,
+    watch,
     setValue,
     reset,
     handleSubmit,
@@ -117,11 +118,26 @@ const useSecretKeyActivationModal = ({
     return onClose()
   }, [onClose, reset])
 
+  const watchedSecretKey = watch(SECRET_KEY_NAME)
+  const watchedAck = watch('ack')
+
+  const secretKeyNotUploaded = useMemo(
+    () => !watchedSecretKey,
+    [watchedSecretKey],
+  )
+
+  const activateDisabled = useMemo(
+    () => !watchedSecretKey || !watchedAck,
+    [watchedSecretKey, watchedAck],
+  )
+
   return {
     fileUploadRef,
     handleFileSelect,
     handleVerifyKeypair,
     register,
+    secretKeyNotUploaded,
+    activateDisabled,
     errors,
     isLoading: mutateFormStatus.isLoading,
     handleOnClose,
@@ -138,6 +154,8 @@ export const SecretKeyActivationModal = ({
     handleFileSelect,
     handleVerifyKeypair,
     register,
+    secretKeyNotUploaded,
+    activateDisabled,
     errors,
     isLoading,
     handleOnClose,
@@ -165,7 +183,7 @@ export const SecretKeyActivationModal = ({
         <ModalHeader color="secondary.500">
           <Container maxW="42.5rem">Activate your form</Container>
         </ModalHeader>
-        <ModalBody whiteSpace="pre-line">
+        <ModalBody whiteSpace="pre-wrap">
           <Container maxW="42.5rem">
             <FormActivationSvg mb="2rem" />
             <form onSubmit={handleVerifyKeypair} noValidate>
@@ -197,7 +215,7 @@ export const SecretKeyActivationModal = ({
                 </Stack>
                 <FormErrorMessage>{errors.secretKey?.message}</FormErrorMessage>
               </FormControl>
-              <FormControl mb="1.25rem">
+              <FormControl hidden={secretKeyNotUploaded} mb="1.25rem">
                 <Checkbox
                   isDisabled={isLoading}
                   isInvalid={!!errors.ack}
@@ -213,6 +231,8 @@ export const SecretKeyActivationModal = ({
                 rightIcon={<BiRightArrowAlt fontSize="1.5rem" />}
                 type="submit"
                 isFullWidth
+                hidden={secretKeyNotUploaded}
+                isDisabled={activateDisabled}
                 isLoading={isLoading}
               >
                 Activate form

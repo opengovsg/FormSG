@@ -1,5 +1,6 @@
 import { Router } from 'express'
 
+import { PAYMENT_CONTACT_FIELD_ID } from '../../../../../../shared/constants'
 import { rateLimitConfig } from '../../../../config/config'
 import * as VerificationController from '../../../../modules/verification/verification.controller'
 import { limitRate } from '../../../../utils/limit-rate'
@@ -41,8 +42,11 @@ PublicFormsVerificationRouter.route(
  * @returns 500 when DatabaseError occurs
  */
 PublicFormsVerificationRouter.route(
-  '/:formId([a-fA-F0-9]{24})/fieldverifications/:transactionId([a-fA-F0-9]{24})/fields/:fieldId([a-fA-F0-9]{24})/otp/verify',
-).post(VerificationController.handleOtpVerification)
+  `/:formId([a-fA-F0-9]{24})/fieldverifications/:transactionId([a-fA-F0-9]{24})/fields/:fieldId([a-fA-F0-9]{24}|${PAYMENT_CONTACT_FIELD_ID})/otp/verify`,
+).post(
+  limitRate({ max: rateLimitConfig.sendAuthOtp }),
+  VerificationController.handleOtpVerification,
+)
 
 /**
  * Route for generating a new otp for a given field
@@ -62,7 +66,7 @@ PublicFormsVerificationRouter.route(
  * @returns 500 when there is a database error
  */
 PublicFormsVerificationRouter.route(
-  '/:formId([a-fA-F0-9]{24})/fieldverifications/:transactionId([a-fA-F0-9]{24})/fields/:fieldId([a-fA-F0-9]{24})/otp/generate',
+  `/:formId([a-fA-F0-9]{24})/fieldverifications/:transactionId([a-fA-F0-9]{24})/fields/:fieldId([a-fA-F0-9]{24}|${PAYMENT_CONTACT_FIELD_ID})/otp/generate`,
 ).post(
   limitRate({ max: rateLimitConfig.sendAuthOtp }),
   VerificationController.handleGenerateOtp,

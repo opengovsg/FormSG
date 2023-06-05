@@ -1,33 +1,66 @@
-import { Container, Flex, TabList } from '@chakra-ui/react'
+import { useCallback } from 'react'
+import { useLocation } from 'react-router-dom'
+import { Flex } from '@chakra-ui/react'
 
+import {
+  ACTIVE_ADMINFORM_RESULTS_ROUTE_REGEX,
+  RESULTS_FEEDBACK_SUBROUTE,
+  RESULTS_RESPONSES_SUBROUTE,
+} from '~constants/routes'
 import { useDraggable } from '~hooks/useDraggable'
-import { Tab } from '~components/Tabs'
+import { noPrintCss } from '~utils/noPrintCss'
+import { NavigationTab, NavigationTabList } from '~templates/NavigationTabs'
 
 export const FormResultsNavbar = (): JSX.Element => {
   const { ref, onMouseDown } = useDraggable<HTMLDivElement>()
+
+  const { pathname } = useLocation()
+
+  const checkTabActive = useCallback(
+    (to: string) => {
+      const match = pathname.match(ACTIVE_ADMINFORM_RESULTS_ROUTE_REGEX)
+      return (match?.[2] ?? '/') === `/${to}`
+    },
+    [pathname],
+  )
+
   return (
     <Flex
+      sx={noPrintCss}
       w="100vw"
       position="sticky"
       top={0}
       flexDir="column"
-      boxShadow="0 1px 1px var(--chakra-colors-neutral-300)"
+      borderBottom="1px"
+      borderBottomColor="neutral.300"
       bg="white"
       zIndex="docked"
-      flex={1}
+      flex={0}
     >
-      <Container maxW="69.5rem" px="1.25rem" pt="0.625rem">
-        <TabList
-          ref={ref}
-          onMouseDown={onMouseDown}
-          w="100vw"
-          borderBottom="none"
-          justifyContent="flex-start"
+      <NavigationTabList
+        ref={ref}
+        onMouseDown={onMouseDown}
+        maxW="69.5rem"
+        px="1.25rem"
+        pt="0.625rem"
+        m="auto"
+        w="100vw"
+        borderBottom="none"
+        justifySelf="flex-start"
+      >
+        <NavigationTab
+          to={RESULTS_RESPONSES_SUBROUTE}
+          isActive={checkTabActive(RESULTS_RESPONSES_SUBROUTE)}
         >
-          <Tab>Responses</Tab>
-          <Tab>Feedback</Tab>
-        </TabList>
-      </Container>
+          Responses
+        </NavigationTab>
+        <NavigationTab
+          to={RESULTS_FEEDBACK_SUBROUTE}
+          isActive={checkTabActive(RESULTS_FEEDBACK_SUBROUTE)}
+        >
+          Feedback
+        </NavigationTab>
+      </NavigationTabList>
     </Flex>
   )
 }

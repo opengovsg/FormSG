@@ -1,5 +1,6 @@
 import { StatusCodes } from 'http-status-codes'
 import { isEmpty } from 'lodash'
+import { SendOtpResponseDto } from 'shared/types/user'
 
 import { SUPPORT_FORM_LINK } from '../../../../shared/constants/links'
 import { createLoggerWithLabel } from '../../config/logger'
@@ -57,7 +58,7 @@ export const handleCheckUser = [
 
 export const _handleLoginSendOtp: ControllerHandler<
   unknown,
-  { message: string } | string,
+  { message: string } | SendOtpResponseDto,
   { email: string }
 > = async (req, res) => {
   // Joi validation ensures existence.
@@ -69,42 +70,60 @@ export const _handleLoginSendOtp: ControllerHandler<
     ...createReqMeta(req),
   }
 
-  return (
-    // Step 1: Validate email domain.
-    AuthService.validateEmailDomain(email)
-      // Step 2: Create login OTP.
-      .andThen(() => AuthService.createLoginOtp(email))
-      // Step 3: Send login OTP to email address.
-      .andThen((otp) =>
-        MailService.sendLoginOtp({
-          recipient: email,
-          otp,
-          ipAddress: requestIp,
-        }),
-      )
-      // Step 4a: Successfully sent login otp.
-      .map(() => {
-        logger.info({
-          message: 'Login OTP sent successfully',
-          meta: logMeta,
-        })
-
-        return res.status(StatusCodes.OK).json(`OTP sent to ${email}`)
-      })
-      // Step 4b: Error occurred whilst sending otp.
-      .mapErr((error) => {
-        logger.error({
-          message: 'Error sending login OTP',
-          meta: logMeta,
-          error,
-        })
-        const { errorMessage, statusCode } = mapRouteError(
-          error,
-          /* coreErrorMessage=*/ 'Failed to send login OTP. Please try again later and if the problem persists, contact us.',
-        )
-        return res.status(statusCode).json({ message: errorMessage })
-      })
+  // Step 1: Validate email domain.
+  const loginOtpResult = await AuthService.validateEmailDomain(email).andThen(
+    // Step 2: Create login OTP.
+    () => AuthService.createLoginOtp(email),
   )
+  // Step 3a: Successfully created login otp.
+  if (loginOtpResult.isOk()) {
+    const { otp, otpPrefix } = loginOtpResult.value
+    return (
+      // Step 4: Send login OTP to email address.
+      MailService.sendLoginOtp({
+        recipient: email,
+        otpPrefix,
+        otp,
+        ipAddress: requestIp,
+      })
+        // Step 5a: Successfully sent login otp.
+        .map(() => {
+          logger.info({
+            message: 'Login OTP sent successfully',
+            meta: logMeta,
+          })
+          return res
+            .status(StatusCodes.OK)
+            .json({ message: `OTP sent to ${email}`, otpPrefix })
+        })
+        // Step 5b: Error occurred whilst sending otp.
+        .mapErr((error) => {
+          logger.error({
+            message: 'Error sending login OTP',
+            meta: logMeta,
+            error,
+          })
+          const { errorMessage, statusCode } = mapRouteError(
+            error,
+            /* coreErrorMessage=*/ 'Failed to send login OTP. Please try again later and if the problem persists, contact us.',
+          )
+          return res.status(statusCode).json({ message: errorMessage })
+        })
+    )
+  } else {
+    // Step 3b: Error occurred whilst creating otp.
+    const error = loginOtpResult.error
+    logger.error({
+      message: 'Error creating login OTP',
+      meta: logMeta,
+      error,
+    })
+    const { errorMessage, statusCode } = mapRouteError(
+      error,
+      /* coreErrorMessage=*/ 'Failed to create login OTP. Please try again later and if the problem persists, contact us.',
+    )
+    return res.status(statusCode).json({ message: errorMessage })
+  }
 }
 
 /**

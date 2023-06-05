@@ -14,17 +14,25 @@ import { ADMINFORM_ROUTE } from '~constants/routes'
 import { useToast } from '~hooks/useToast'
 
 import { adminFormKeys } from '~features/admin-form/common/queries'
+import { trackCreateFormFailed } from '~features/analytics/AnalyticsService'
 
-import { createEmailModeForm, createStorageModeForm } from './WorkspaceService'
+import { workspaceKeys } from './queries'
+import {
+  createEmailModeForm,
+  createStorageModeForm,
+  deleteAdminForm,
+  dupeEmailModeForm,
+  dupeStorageModeForm,
+} from './WorkspaceService'
 
-export const useCreateFormMutations = () => {
+const useCommonHooks = () => {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const toast = useToast({ status: 'danger', isClosable: true })
 
   const handleSuccess = useCallback(
-    (data: FormDto) => {
-      queryClient.setQueryData(adminFormKeys.id(data._id), data)
+    (data: Pick<FormDto, '_id'>) => {
+      queryClient.invalidateQueries(workspaceKeys.all)
       navigate(`${ADMINFORM_ROUTE}/${data._id}`)
     },
     [navigate, queryClient],
@@ -35,9 +43,19 @@ export const useCreateFormMutations = () => {
       toast({
         description: error.message,
       })
+      trackCreateFormFailed()
     },
     [toast],
   )
+
+  return {
+    handleSuccess,
+    handleError,
+  }
+}
+
+export const useCreateFormMutations = () => {
+  const { handleSuccess, handleError } = useCommonHooks()
 
   const createEmailModeFormMutation = useMutation<
     FormDto,
@@ -61,4 +79,75 @@ export const useCreateFormMutations = () => {
     createEmailModeFormMutation,
     createStorageModeFormMutation,
   }
+}
+
+export const useDuplicateFormMutations = () => {
+  const { handleSuccess, handleError } = useCommonHooks()
+
+  const dupeEmailModeFormMutation = useMutation<
+    FormDto,
+    ApiError,
+    CreateEmailFormBodyDto & { formIdToDuplicate: string }
+  >(
+    ({ formIdToDuplicate, ...params }) =>
+      dupeEmailModeForm(formIdToDuplicate, params),
+    {
+      onSuccess: handleSuccess,
+      onError: handleError,
+    },
+  )
+
+  const dupeStorageModeFormMutation = useMutation<
+    FormDto,
+    ApiError,
+    CreateStorageFormBodyDto & { formIdToDuplicate: string }
+  >(
+    ({ formIdToDuplicate, ...params }) =>
+      dupeStorageModeForm(formIdToDuplicate, params),
+    {
+      onSuccess: handleSuccess,
+      onError: handleError,
+    },
+  )
+
+  return {
+    dupeEmailModeFormMutation,
+    dupeStorageModeFormMutation,
+  }
+}
+
+export const useDeleteFormMutation = () => {
+  const queryClient = useQueryClient()
+  const toast = useToast({ status: 'danger', isClosable: true })
+
+  const handleSuccess = useCallback(
+    (formId: string) => {
+      queryClient.invalidateQueries(adminFormKeys.id(formId))
+      queryClient.invalidateQueries(workspaceKeys.all)
+      toast({
+        status: 'success',
+        description: 'The form has been successfully deleted.',
+      })
+    },
+    [queryClient, toast],
+  )
+
+  const handleError = useCallback(
+    (error: ApiError) => {
+      toast({
+        description: error.message,
+      })
+    },
+    [toast],
+  )
+
+  const deleteFormMutation = useMutation(
+    (formId: string) => deleteAdminForm(formId),
+    {
+      onSuccess: (_, formId) => handleSuccess(formId),
+      onError: handleError,
+    },
+  )
+
+  return { deleteFormMutation }
 }

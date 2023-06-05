@@ -1,3 +1,4 @@
+import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { ObjectId } from 'bson'
 import { merge, times } from 'lodash'
 import mongoose from 'mongoose'
@@ -5,8 +6,6 @@ import mongoose from 'mongoose'
 import getFormModel from 'src/app/models/form.server.model'
 import getSubmissionModel from 'src/app/models/submission.server.model'
 import { IFormSchema, IPopulatedForm } from 'src/types'
-
-import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import {
   FormResponseMode,
@@ -474,7 +473,7 @@ describe('FormService', () => {
 
       // Assert
       expect(actual._unsafeUnwrap()).toEqual(expected)
-      expect(retrieveFormSpy).toBeCalledWith(MOCK_ADMIN_ID)
+      expect(retrieveFormSpy).toHaveBeenCalledWith(MOCK_ADMIN_ID)
     })
 
     it('should propagate the error received when error occurs while querying', async () => {
@@ -492,7 +491,7 @@ describe('FormService', () => {
 
       // Assert
       expect(actual._unsafeUnwrapErr()).toBeInstanceOf(DatabaseError)
-      expect(retrieveFormSpy).toBeCalledWith(MOCK_ADMIN_ID)
+      expect(retrieveFormSpy).toHaveBeenCalledWith(MOCK_ADMIN_ID)
     })
   })
 })

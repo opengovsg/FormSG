@@ -2,8 +2,12 @@ import { Meta, Story } from '@storybook/react'
 
 import { AdminFormDto } from '~shared/types/form'
 
-import { createFormBuilderMocks } from '~/mocks/msw/handlers/admin-form'
+import {
+  createFormBuilderMocks,
+  getAdminFormCollaborators,
+} from '~/mocks/msw/handlers/admin-form'
 import { getFreeSmsQuota } from '~/mocks/msw/handlers/admin-form/twilio'
+import { getUser } from '~/mocks/msw/handlers/user'
 
 import { AdminFormCreatePageDecorator } from '~utils/storybook'
 
@@ -15,6 +19,8 @@ const buildMswRoutes = (
 ) => {
   return [
     ...createFormBuilderMocks(overrides, delay),
+    getUser(),
+    getAdminFormCollaborators(),
     getFreeSmsQuota({ delay }),
   ]
 }

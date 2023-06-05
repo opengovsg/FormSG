@@ -87,7 +87,6 @@ CompactFooter.Container = ({
       justify="space-between"
       flexDir="row"
       as="footer"
-      bg="primary.100"
       {...props}
     >
       {children}

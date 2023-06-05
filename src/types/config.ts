@@ -34,6 +34,7 @@ export type AwsConfig = {
   logoBucketUrl: string
   imageBucketUrl: string
   attachmentBucketUrl: string
+  staticAssetsBucketUrl: string
   s3: aws.S3
   endPoint: string
 }
@@ -50,14 +51,12 @@ export type MailConfig = {
 export type RateLimitConfig = {
   submissions: number
   sendAuthOtp: number
+  downloadPaymentReceipt: number
 }
 
 export type ReactMigrationConfig = {
-  respondentRolloutNoAuth: number
-  respondentRolloutAuth: number
-  respondentCookieName: string
-  adminCookieName: string
-  qaCookieName: string
+  // TODO (#5826): Toggle to use fetch for submissions instead of axios. Remove once network error is resolved
+  useFetchForSubmissions: boolean
 }
 
 export type Config = {
@@ -65,11 +64,11 @@ export type Config = {
   db: DbConfig
   aws: AwsConfig
   mail: MailConfig
-
   cookieSettings: SessionOptions['cookie']
   // Consts
   isDev: boolean
   nodeEnv: Environment
+  useMockTwilio: boolean
   port: number
   sessionSecret: string
   chromiumBin: string
@@ -82,9 +81,17 @@ export type Config = {
   isLoginBanner: string
   siteBannerContent: string
   adminBannerContent: string
+
+  // TODO (#4279): Delete these when react migration is over. Revert back to original banner variables in react frontend.
+  isGeneralMaintenanceReact: string
+  isLoginBannerReact: string
+  siteBannerContentReact: string
+  adminBannerContentReact: string
+
   rateLimitConfig: RateLimitConfig
   reactMigration: ReactMigrationConfig
   secretEnv: string
+  envSiteName: string
 
   // Functions
   configureAws: () => Promise<void>
@@ -103,9 +110,11 @@ export interface ICompulsoryVarsSchema {
   core: {
     sessionSecret: string
     secretEnv: string
+    envSiteName: string
   }
   awsConfig: {
     imageS3Bucket: string
+    staticAssetsS3Bucket: string
     logoS3Bucket: string
     attachmentS3Bucket: string
   }
@@ -120,6 +129,7 @@ export interface ISgidVarsSchema {
   cookieMaxAge: number
   cookieMaxAgePreserved: number
   cookieDomain: string
+  hostname: string
 }
 
 export interface IOptionalVarsSchema {
@@ -130,12 +140,18 @@ export interface IOptionalVarsSchema {
     otpLifeSpan: number
     submissionsTopUp: number
     nodeEnv: Environment
+    useMockTwilio: boolean
   }
   banner: {
     isGeneralMaintenance: string
     isLoginBanner: string
     siteBannerContent: string
     adminBannerContent: string
+    // TODO (#4279): Delete these when react migration is over. Revert back to original banner variables in react frontend.
+    isGeneralMaintenanceReact: string
+    isLoginBannerReact: string
+    siteBannerContentReact: string
+    adminBannerContentReact: string
   }
   awsConfig: {
     region: string
@@ -155,13 +171,11 @@ export interface IOptionalVarsSchema {
   rateLimit: {
     submissions: number
     sendAuthOtp: number
+    downloadPaymentReceipt: number
   }
   reactMigration: {
-    respondentRolloutNoAuth: number
-    respondentRolloutAuth: number
-    respondentCookieName: string
-    adminCookieName: string
-    qaCookieName: string
+    // TODO (#5826): Toggle to use fetch for submissions instead of axios. Remove once network error is resolved
+    useFetchForSubmissions: boolean
   }
 }
 
@@ -169,5 +183,6 @@ export interface IBucketUrlSchema {
   attachmentBucketUrl: string
   logoBucketUrl: string
   imageBucketUrl: string
+  staticAssetsBucketUrl: string
   endPoint: string
 }

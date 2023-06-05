@@ -39,7 +39,9 @@ export const TagRightIcon = forwardRef<TagIconProps, 'svg'>((props, ref) => {
   )
 })
 
-const TagCloseIcon = () => <Icon as={BiX} fontSize="1.5rem" />
+const TagCloseIcon = () => (
+  <Icon as={BiX} fontSize="1.5rem" aria-label="Remove option icon" />
+)
 
 export type TagCloseButtonProps = ChakraTagCloseButtonProps
 /** Not using Chakra's TagCloseButton due to inability to override aria-label */

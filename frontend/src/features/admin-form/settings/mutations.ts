@@ -6,13 +6,16 @@ import simplur from 'simplur'
 import {
   AdminFormDto,
   FormAuthType,
+  FormResponseMode,
   FormSettings,
   FormStatus,
+  StorageFormSettings,
 } from '~shared/types/form/form'
 import { TwilioCredentials } from '~shared/types/twilio'
 
 import { ApiError } from '~typings/core'
 
+import { GUIDE_PREVENT_EMAIL_BOUNCE } from '~constants/links'
 import { useToast } from '~hooks/useToast'
 import { formatOrdinal } from '~utils/stringFormat'
 
@@ -20,7 +23,10 @@ import { adminFormKeys } from '../common/queries'
 
 import { adminFormSettingsKeys } from './queries'
 import {
+  createStripeAccount,
   deleteTwilioCredentials,
+  unlinkStripeAccount,
+  updateBusinessInfo,
   updateFormAuthType,
   updateFormCaptcha,
   updateFormEmails,
@@ -94,9 +100,14 @@ export const useMutateFormSettings = () => {
       onSuccess: (newData) => {
         // Show toast on success.
         const isNowPublic = newData.status === FormStatus.Public
+        const toastStatusPublicMessage =
+          newData.responseMode === FormResponseMode.Encrypt
+            ? `Your form is now open.\n\nStore your secret key in a safe place. If you lose your secret key, all your responses will be lost permanently.`
+            : `Your form is now open.\n\nIf you expect a large number of responses,  [AutoArchive your mailbox](${GUIDE_PREVENT_EMAIL_BOUNCE}) to avoid losing any of them.`
+        const toastStatusClosedMessage = 'Your form is closed to new responses.'
         const toastStatusMessage = isNowPublic
-          ? `Congrats! Your form is now open for submission.\n\nFor high-traffic forms, [AutoArchive your mailbox](https://go.gov.sg/form-prevent-bounce) to prevent lost responses.`
-          : 'Your form is closed for submission.'
+          ? toastStatusPublicMessage
+          : toastStatusClosedMessage
 
         handleSuccess({ newData, toastDescription: toastStatusMessage })
       },
@@ -269,9 +280,23 @@ export const useMutateFormSettings = () => {
       onSuccess: (newData, nextEnabled) => {
         handleSuccess({
           newData,
-          toastDescription: `Webhook retries toggled ${
-            nextEnabled ? 'on' : 'off'
-          }.`,
+          toastDescription: `Webhook retries have been ${
+            nextEnabled ? 'en' : 'dis'
+          }abled.`,
+        })
+      },
+      onError: handleError,
+    },
+  )
+
+  const mutateFormBusiness = useMutation(
+    (businessInfo: StorageFormSettings['business']) =>
+      updateBusinessInfo(formId, businessInfo),
+    {
+      onSuccess: (newData) => {
+        handleSuccess({
+          newData,
+          toastDescription: `Business information has been updated.`,
         })
       },
       onError: handleError,
@@ -289,6 +314,7 @@ export const useMutateFormSettings = () => {
     mutateFormTitle,
     mutateFormAuthType,
     mutateFormEsrvcId,
+    mutateFormBusiness,
   }
 }
 
@@ -345,5 +371,36 @@ export const useMutateTwilioCreds = () => {
   return {
     mutateFormTwilioDeletion,
     mutateFormTwilioDetails,
+  }
+}
+
+export const useMutateStripeAccount = () => {
+  const { formId } = useParams()
+  if (!formId) throw new Error('No formId provided')
+  const queryClient = useQueryClient()
+
+  const linkStripeAccountMutation = useMutation(
+    () => createStripeAccount(formId),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(adminFormKeys.id(formId))
+        queryClient.invalidateQueries(adminFormSettingsKeys.id(formId))
+      },
+    },
+  )
+
+  const unlinkStripeAccountMutation = useMutation(
+    () => unlinkStripeAccount(formId),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(adminFormKeys.id(formId))
+        queryClient.invalidateQueries(adminFormSettingsKeys.id(formId))
+      },
+    },
+  )
+
+  return {
+    linkStripeAccountMutation,
+    unlinkStripeAccountMutation,
   }
 }

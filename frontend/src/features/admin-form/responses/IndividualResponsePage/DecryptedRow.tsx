@@ -1,16 +1,16 @@
 import { memo, useCallback } from 'react'
 import { BiDownload } from 'react-icons/bi'
-import { useMutation } from 'react-query'
 import { Stack, Table, Tbody, Td, Text, Tr } from '@chakra-ui/react'
-import FileSaver from 'file-saver'
 
 import { BasicField } from '~shared/types'
 
 import Button from '~components/Button'
 import FormLabel from '~components/FormControl/FormLabel'
+import Spinner from '~components/Spinner'
 
 import { AugmentedDecryptedResponse } from '../ResponsesPage/storage/utils/augmentDecryptedResponses'
-import { downloadAndDecryptAttachment } from '../ResponsesPage/storage/utils/downloadAndDecryptAttachment'
+
+import { useMutateDownloadAttachments } from './mutations'
 
 export interface DecryptedRowBaseProps {
   row: AugmentedDecryptedResponse
@@ -22,7 +22,7 @@ type DecryptedRowProps = DecryptedRowBaseProps & {
 const DecryptedQuestionLabel = ({ row }: DecryptedRowBaseProps) => {
   return (
     <FormLabel questionNumber={`${row.questionNumber}.`} isRequired>
-      {row.question}
+      {`${row.signature ? '[verified] ' : ''}${row.question}`}
     </FormLabel>
   )
 }
@@ -36,7 +36,6 @@ const DecryptedHeaderRow = ({ row }: DecryptedRowBaseProps): JSX.Element => {
       mb="0.5rem"
       _notFirst={{ mt: '2.5rem' }}
     >
-      {row.signature ? `[verified] ` : ''}
       {row.question}
     </Text>
   )
@@ -64,16 +63,16 @@ const DecryptedTableRow = ({ row }: DecryptedRowBaseProps): JSX.Element => {
 }
 
 const DecryptedAttachmentRow = ({ row, secretKey }: DecryptedRowProps) => {
-  const handleDownloadMutation = useMutation(async (url: string) => {
-    const byteArray = await downloadAndDecryptAttachment(url, secretKey)
-    if (!byteArray) throw new Error('Invalid file')
-    return FileSaver.saveAs(new Blob([byteArray]), row.answer)
-  })
+  const { downloadAttachmentMutation } = useMutateDownloadAttachments()
 
   const handleDownload = useCallback(() => {
-    if (!row.downloadUrl) return
-    return handleDownloadMutation.mutate(row.downloadUrl)
-  }, [handleDownloadMutation, row.downloadUrl])
+    if (!row.downloadUrl || !row.answer) return
+    return downloadAttachmentMutation.mutate({
+      url: row.downloadUrl,
+      secretKey,
+      fileName: row.answer,
+    })
+  }, [downloadAttachmentMutation, row, secretKey])
 
   return (
     <Stack>
@@ -84,9 +83,15 @@ const DecryptedAttachmentRow = ({ row, secretKey }: DecryptedRowProps) => {
           <Button
             variant="link"
             aria-label="Download file"
-            isDisabled={handleDownloadMutation.isLoading}
+            isDisabled={downloadAttachmentMutation.isLoading}
             onClick={handleDownload}
-            rightIcon={<BiDownload fontSize="1.5rem" />}
+            rightIcon={
+              downloadAttachmentMutation.isLoading ? (
+                <Spinner fontSize="1.5rem" />
+              ) : (
+                <BiDownload fontSize="1.5rem" />
+              )
+            }
           >
             {row.answer}
           </Button>

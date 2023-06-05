@@ -1,4 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
+import { generateDefaultField } from '__tests__/unit/backend/helpers/generate-form-data'
+import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { ObjectId } from 'bson-ext'
 import { cloneDeep, map, merge, omit, orderBy, pick, range } from 'lodash'
 import mongoose, { Types } from 'mongoose'
@@ -20,6 +22,7 @@ import {
   FormStatus,
   LogicDto,
   LogicType,
+  PaymentChannel,
 } from 'shared/types'
 
 import getFormModel, {
@@ -34,9 +37,6 @@ import {
   ILogicSchema,
   IPopulatedUser,
 } from 'src/types'
-
-import { generateDefaultField } from 'tests/unit/backend/helpers/generate-form-data'
-import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 const Form = getFormModel(mongoose)
 const EncryptedForm = getEncryptedFormModel(mongoose)
@@ -74,7 +74,7 @@ const FORM_DEFAULTS = {
   },
   endPage: {
     title: 'Thank you for filling out the form.',
-    buttonText: 'Submit another form',
+    buttonText: 'Submit another response',
   },
   hasCaptcha: true,
   form_fields: [],
@@ -86,6 +86,19 @@ const FORM_DEFAULTS = {
   },
   status: 'PRIVATE',
   submissionLimit: null,
+}
+
+const PAYMENTS_DEFAULTS = {
+  payments_channel: {
+    channel: PaymentChannel.Unconnected,
+    target_account_id: '',
+    publishable_key: '',
+  },
+  payments_field: {
+    enabled: false,
+    description: '',
+    amount_cents: 0,
+  },
 }
 
 describe('Form Model', () => {
@@ -271,6 +284,13 @@ describe('Form Model', () => {
           MOCK_FORM_PARAMS,
         )
         expect(actualSavedObject).toEqual(expectedObject)
+        // Should become lowercased email.
+        const expectedPermissionList = permissionList.map((permission) => {
+          return {
+            ...permission,
+            email: permission.email.toLowerCase(),
+          }
+        })
 
         // Remove indeterministic id from actual permission list
         const actualPermissionList = saved
@@ -278,7 +298,7 @@ describe('Form Model', () => {
           .permissionList?.map((permission: FormPermission) =>
             omit(permission, '_id'),
           )
-        expect(actualPermissionList).toEqual(permissionList)
+        expect(actualPermissionList).toEqual(expectedPermissionList)
       })
 
       it('should save new admin successfully but remove new admin from permissionList', async () => {
@@ -315,7 +335,7 @@ describe('Form Model', () => {
         const invalidForm = new Form(paramsWithInvalidAdmin)
 
         // Assert
-        await expect(invalidForm.save()).rejects.toThrowError(
+        await expect(invalidForm.save()).rejects.toThrow(
           'Admin for this form is not found.',
         )
       })
@@ -328,7 +348,7 @@ describe('Form Model', () => {
         const invalidForm = new Form(paramsWithoutTitle)
 
         // Assert
-        await expect(invalidForm.save()).rejects.toThrowError(
+        await expect(invalidForm.save()).rejects.toThrow(
           mongoose.Error.ValidationError,
         )
       })
@@ -341,7 +361,7 @@ describe('Form Model', () => {
         const invalidForm = new Form(paramsWithoutAdmin)
 
         // Assert
-        await expect(invalidForm.save()).rejects.toThrowError(
+        await expect(invalidForm.save()).rejects.toThrow(
           'Admin for this form is not found.',
         )
       })
@@ -358,17 +378,15 @@ describe('Form Model', () => {
         const invalidForm = new Form(malformedParams)
 
         // Assert
-        await expect(invalidForm.save()).rejects.toThrowError(
+        await expect(invalidForm.save()).rejects.toThrow(
           mongoose.Error.ValidationError,
         )
       })
 
-      it('should reject when form permissionList[].email is not in the Agency collection', async () => {
+      it('should reject when form permissionList[].email is not a valid email', async () => {
         // Arrange
         // permissionList has an email domain not inside Agency collection
-        const invalidPermissionList = [
-          { email: 'test@example2.com', write: true },
-        ]
+        const invalidPermissionList = [{ email: 'not an email', write: true }]
         const malformedParams = merge({}, MOCK_FORM_PARAMS, {
           permissionList: invalidPermissionList,
         })
@@ -377,7 +395,7 @@ describe('Form Model', () => {
         const invalidForm = new Form(malformedParams)
 
         // Assert
-        await expect(invalidForm.save()).rejects.toThrowError(
+        await expect(invalidForm.save()).rejects.toThrow(
           mongoose.Error.ValidationError,
         )
       })
@@ -393,7 +411,7 @@ describe('Form Model', () => {
         const invalidForm = new Form(paramsWithWhitespaceEsrvcId)
 
         // Assert
-        await expect(invalidForm.save()).rejects.toThrowError(
+        await expect(invalidForm.save()).rejects.toThrow(
           'Form validation failed: esrvcId: e-service ID must not contain whitespace',
         )
       })
@@ -403,6 +421,7 @@ describe('Form Model', () => {
       const ENCRYPT_FORM_DEFAULTS = merge(
         { responseMode: 'encrypt' },
         FORM_DEFAULTS,
+        PAYMENTS_DEFAULTS,
       )
 
       it('should create and save successfully', async () => {
@@ -533,12 +552,19 @@ describe('Form Model', () => {
           MOCK_ENCRYPTED_FORM_PARAMS,
         )
         expect(actualSavedObject).toEqual(expectedObject)
+        // Should become lowercased email.
+        const expectedPermissionList = permissionList.map((permission) => {
+          return {
+            ...permission,
+            email: permission.email.toLowerCase(),
+          }
+        })
 
         // Remove indeterministic id from actual permission list
         const actualPermissionList = (
           saved.toObject() as unknown as IEncryptedForm
         ).permissionList?.map((permission) => omit(permission, '_id'))
-        expect(actualPermissionList).toEqual(permissionList)
+        expect(actualPermissionList).toEqual(expectedPermissionList)
       })
 
       it('should save new admin successfully but remove new admin from permissionList', async () => {
@@ -575,7 +601,7 @@ describe('Form Model', () => {
         const invalidForm = new EncryptedForm(paramsWithoutPublicKey)
 
         // Assert
-        await expect(invalidForm.save()).rejects.toThrowError(
+        await expect(invalidForm.save()).rejects.toThrow(
           mongoose.Error.ValidationError,
         )
       })
@@ -591,7 +617,7 @@ describe('Form Model', () => {
         const invalidForm = new EncryptedForm(paramsWithInvalidAdmin)
 
         // Assert
-        await expect(invalidForm.save()).rejects.toThrowError(
+        await expect(invalidForm.save()).rejects.toThrow(
           'Admin for this form is not found.',
         )
       })
@@ -604,7 +630,7 @@ describe('Form Model', () => {
         const invalidForm = new EncryptedForm(paramsWithoutTitle)
 
         // Assert
-        await expect(invalidForm.save()).rejects.toThrowError(
+        await expect(invalidForm.save()).rejects.toThrow(
           mongoose.Error.ValidationError,
         )
       })
@@ -617,7 +643,7 @@ describe('Form Model', () => {
         const invalidForm = new EncryptedForm(paramsWithoutAdmin)
 
         // Assert
-        await expect(invalidForm.save()).rejects.toThrowError(
+        await expect(invalidForm.save()).rejects.toThrow(
           'Admin for this form is not found.',
         )
       })
@@ -634,17 +660,15 @@ describe('Form Model', () => {
         const invalidForm = new EncryptedForm(malformedParams)
 
         // Assert
-        await expect(invalidForm.save()).rejects.toThrowError(
+        await expect(invalidForm.save()).rejects.toThrow(
           mongoose.Error.ValidationError,
         )
       })
 
-      it('should reject when form permissionList[].email is not in the Agency collection', async () => {
+      it('should reject when form permissionList[].email is not a valid email', async () => {
         // Arrange
         // permissionList has an email domain not inside Agency collection
-        const invalidPermissionList = [
-          { email: 'test@example2.com', write: true },
-        ]
+        const invalidPermissionList = [{ email: 'not an email', write: true }]
         const malformedParams = merge({}, MOCK_ENCRYPTED_FORM_PARAMS, {
           permissionList: invalidPermissionList,
         })
@@ -653,7 +677,7 @@ describe('Form Model', () => {
         const invalidForm = new EncryptedForm(malformedParams)
 
         // Assert
-        await expect(invalidForm.save()).rejects.toThrowError(
+        await expect(invalidForm.save()).rejects.toThrow(
           mongoose.Error.ValidationError,
         )
       })
@@ -671,17 +695,125 @@ describe('Form Model', () => {
         await expect(invalidForm.authType).toBe(FormAuthType.NIL)
       })
 
-      it('should set authType to NIL when given authType is SGID', async () => {
+      // Ensure that encrypted sgID forms can be created since they could not before
+      it('should set authType to SGID when given authType is SGID', async () => {
         // Arrange
-        const malformedParams = merge({}, MOCK_ENCRYPTED_FORM_PARAMS, {
+        const encryptFormParams = merge({}, MOCK_ENCRYPTED_FORM_PARAMS, {
           authType: FormAuthType.SGID,
         })
 
         // Act
-        const invalidForm = await EncryptedForm.create(malformedParams)
+        const sgidForm = await EncryptedForm.create(encryptFormParams)
 
         // Assert
-        await expect(invalidForm.authType).toBe(FormAuthType.NIL)
+        await expect(sgidForm.authType).toBe(FormAuthType.SGID)
+      })
+
+      it('should save with default payments settings', async () => {
+        // Arrange + Act
+        const validForm = new Form(MOCK_ENCRYPTED_FORM_PARAMS)
+        const saved = await validForm.save()
+
+        // Assert
+        // Retrieve object and compare to params, remove indeterministic keys
+        const actualSavedObject = omit(saved.toObject(), [
+          '_id',
+          'created',
+          'lastModified',
+          '__v',
+        ])
+        const expectedObject = merge(
+          {},
+          ENCRYPT_FORM_DEFAULTS,
+          MOCK_ENCRYPTED_FORM_PARAMS,
+        )
+        expect(actualSavedObject).toEqual(expectedObject)
+      })
+
+      it('should create and save successfully with valid payments_field settings', async () => {
+        // Arrange
+        const validFormParams = merge({}, MOCK_ENCRYPTED_FORM_PARAMS, {
+          payments_field: {
+            enabled: true,
+            amount_cents: 50,
+            description: 'some payment',
+          },
+        })
+
+        // Act
+        const validForm = new Form(validFormParams)
+        const saved = await validForm.save()
+
+        // Assert
+        // All fields should exist
+        // Object Id should be defined when successfully saved to MongoDB.
+        expect(saved._id).toBeDefined()
+        expect(saved.created).toBeInstanceOf(Date)
+        expect(saved.lastModified).toBeInstanceOf(Date)
+        // Retrieve object and compare to params, remove indeterministic keys
+        const actualSavedObject = omit(saved.toObject(), [
+          '_id',
+          'created',
+          'lastModified',
+          '__v',
+        ])
+        const expectedObject = merge({}, ENCRYPT_FORM_DEFAULTS, validFormParams)
+        expect(actualSavedObject).toEqual(expectedObject)
+      })
+
+      it('should reject when target account id has whitespace', async () => {
+        // Arrange
+        const invalidFormParams = merge({}, MOCK_ENCRYPTED_FORM_PARAMS, {
+          payments_channel: {
+            target_account_id: 'some Id',
+          },
+        })
+
+        // Act
+        const invalidForm = new Form(invalidFormParams)
+
+        // Assert
+        await expect(invalidForm.save()).rejects.toThrow(
+          'target_account_id must not contain whitespace.',
+        )
+      })
+
+      it('should reject when amount is negative', async () => {
+        // Arrange
+        const invalidFormParams = merge({}, MOCK_ENCRYPTED_FORM_PARAMS, {
+          payments_field: {
+            enabled: true,
+            amount_cents: -50,
+            description: 'some payment',
+          },
+        })
+
+        // Act
+        const invalidForm = new Form(invalidFormParams)
+
+        // Assert
+        await expect(invalidForm.save()).rejects.toThrow(
+          'amount_cents must be a non-negative integer.',
+        )
+      })
+
+      it('should reject when amount has decimals', async () => {
+        // Arrange
+        const invalidFormParams = merge({}, MOCK_ENCRYPTED_FORM_PARAMS, {
+          payments_field: {
+            enabled: true,
+            amount_cents: 54.22,
+            description: 'some payment',
+          },
+        })
+
+        // Act
+        const invalidForm = new Form(invalidFormParams)
+
+        // Assert
+        await expect(invalidForm.save()).rejects.toThrow(
+          'amount_cents must be a non-negative integer.',
+        )
       })
     })
 
@@ -865,7 +997,7 @@ describe('Form Model', () => {
         const invalidForm = new EmailForm(MOCK_EMAIL_FORM_PARAMS_WITH_WEBHOOK)
 
         // Assert
-        await expect(invalidForm.save()).rejects.toThrowError(
+        await expect(invalidForm.save()).rejects.toThrow(
           mongoose.Error.ValidationError,
         )
       })
@@ -878,7 +1010,7 @@ describe('Form Model', () => {
         const invalidForm = new EmailForm(paramsWithoutEmailsArray)
 
         // Assert
-        await expect(invalidForm.save()).rejects.toThrowError(
+        await expect(invalidForm.save()).rejects.toThrow(
           mongoose.Error.ValidationError,
         )
       })
@@ -894,7 +1026,7 @@ describe('Form Model', () => {
         const invalidForm = new EmailForm(paramsWithEmptyEmailsArray)
 
         // Assert
-        await expect(invalidForm.save()).rejects.toThrowError(
+        await expect(invalidForm.save()).rejects.toThrow(
           mongoose.Error.ValidationError,
         )
       })
@@ -910,7 +1042,7 @@ describe('Form Model', () => {
         const invalidForm = new EmailForm(paramsWithInvalidAdmin)
 
         // Assert
-        await expect(invalidForm.save()).rejects.toThrowError(
+        await expect(invalidForm.save()).rejects.toThrow(
           'Admin for this form is not found.',
         )
       })
@@ -923,7 +1055,7 @@ describe('Form Model', () => {
         const invalidForm = new EmailForm(paramsWithoutTitle)
 
         // Assert
-        await expect(invalidForm.save()).rejects.toThrowError(
+        await expect(invalidForm.save()).rejects.toThrow(
           mongoose.Error.ValidationError,
         )
       })
@@ -936,7 +1068,7 @@ describe('Form Model', () => {
         const invalidForm = new EmailForm(paramsWithoutAdmin)
 
         // Assert
-        await expect(invalidForm.save()).rejects.toThrowError(
+        await expect(invalidForm.save()).rejects.toThrow(
           'Admin for this form is not found.',
         )
       })
@@ -953,17 +1085,15 @@ describe('Form Model', () => {
         const invalidForm = new EmailForm(malformedParams)
 
         // Assert
-        await expect(invalidForm.save()).rejects.toThrowError(
+        await expect(invalidForm.save()).rejects.toThrow(
           mongoose.Error.ValidationError,
         )
       })
 
-      it('should reject when form permissionList[].email is not in the Agency collection', async () => {
+      it('should reject when form permissionList[].email is not a valid email', async () => {
         // Arrange
         // permissionList has an email domain not inside Agency collection
-        const invalidPermissionList = [
-          { email: 'test@example2.com', write: true },
-        ]
+        const invalidPermissionList = [{ email: 'not an email', write: true }]
         const malformedParams = merge({}, MOCK_EMAIL_FORM_PARAMS, {
           permissionList: invalidPermissionList,
         })
@@ -972,7 +1102,7 @@ describe('Form Model', () => {
         const invalidForm = new EmailForm(malformedParams)
 
         // Assert
-        await expect(invalidForm.save()).rejects.toThrowError(
+        await expect(invalidForm.save()).rejects.toThrow(
           mongoose.Error.ValidationError,
         )
       })
@@ -1588,7 +1718,7 @@ describe('Form Model', () => {
           endPage: {
             ...updatedEndPage,
             // Defaults should be populated and returned
-            buttonText: 'Submit another form',
+            buttonText: 'Submit another response',
             title: 'Thank you for filling out the form.',
           },
         })
@@ -2572,7 +2702,7 @@ describe('Form Model', () => {
       })
     })
 
-    describe('duplicateFormFieldById', () => {
+    describe('duplicateFormFieldByIdAndIndex', () => {
       it('should return updated document with duplicated form field', async () => {
         // Arrange
         const fieldToDuplicate = generateDefaultField(BasicField.Checkbox)
@@ -2581,7 +2711,10 @@ describe('Form Model', () => {
         const fieldId = fieldToDuplicate._id
 
         // Act
-        const actual = await validForm.duplicateFormFieldById(fieldId)
+        const actual = await validForm.duplicateFormFieldByIdAndIndex(
+          fieldId,
+          1,
+        )
         // @ts-ignore
         const actualDuplicatedField = omit(actual?.form_fields.toObject()[1], [
           '_id',
@@ -2604,9 +2737,49 @@ describe('Form Model', () => {
         expect(actualDuplicatedField).toEqual(expectedDuplicatedField)
       })
 
+      it('should duplicate form field at the target index', async () => {
+        // Arrange
+        const fieldToDuplicate = generateDefaultField(BasicField.Checkbox)
+        const dummyField = generateDefaultField(BasicField.Mobile)
+
+        validForm.form_fields = [fieldToDuplicate, dummyField]
+        const fieldId = fieldToDuplicate._id
+
+        // Act
+        const actual = await validForm.duplicateFormFieldByIdAndIndex(
+          fieldId,
+          1,
+        )
+        // actual duplicated field should be at index 1
+        // @ts-ignore
+        const actualDuplicatedField = omit(actual?.form_fields.toObject()[1], [
+          '_id',
+          'globalId',
+        ]) // do not compare _id and globalId
+
+        // Assert
+        const expectedOriginalField = {
+          ...omit(fieldToDuplicate, ['getQuestion']),
+          _id: new ObjectId(fieldToDuplicate._id),
+        }
+        const expectedDuplicatedField = omit(fieldToDuplicate, [
+          '_id',
+          'globalId',
+          'getQuestion',
+        ])
+
+        // @ts-ignore
+        expect(actual?.form_fields.toObject()[0]).toEqual(expectedOriginalField)
+        expect(actualDuplicatedField).toEqual(expectedDuplicatedField)
+        // ensure nothing has been deleted from splice
+        // @ts-ignore
+        expect(actual?.form_fields.length).toEqual(3)
+      })
+
       it('should return null if given fieldId is invalid', async () => {
-        const updatedForm = await validForm.duplicateFormFieldById(
+        const updatedForm = await validForm.duplicateFormFieldByIdAndIndex(
           new ObjectId().toHexString(),
+          0,
         )
 
         // Assert
@@ -2723,7 +2896,7 @@ describe('Form Model', () => {
         // Arrange
         const newCollaborators = [
           {
-            email: `fakeuser@fakeemail.com`,
+            email: 'string that is not an email',
             write: false,
           },
         ]

@@ -9,6 +9,7 @@ import { createReqMeta } from '../../utils/request'
 import { ControllerHandler } from '../core/core.types'
 
 import {
+  getAgencyCount,
   getFormCount,
   getSubmissionCount,
   getUserCount,
@@ -25,6 +26,7 @@ export const handleGetStatistics: ControllerHandler = async (req, res) => {
       getUserCount(),
       getFormCount(),
       getSubmissionCount(),
+      getAgencyCount(),
     ]),
     TE.bimap(
       (error) => {
@@ -40,11 +42,12 @@ export const handleGetStatistics: ControllerHandler = async (req, res) => {
           .status(StatusCodes.INTERNAL_SERVER_ERROR)
           .json('Unable to retrieve statistics from the database')
       },
-      ([userCount, formCount, submissionCount]) => {
+      ([userCount, formCount, submissionCount, agencyCount]) => {
         const stats: AnalyticStatsDto = {
           userCount,
           formCount,
           submissionCount,
+          agencyCount,
         }
         return res.json(stats)
       },

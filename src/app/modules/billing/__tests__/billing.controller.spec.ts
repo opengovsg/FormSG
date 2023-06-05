@@ -1,11 +1,9 @@
+import expressHandler from '__tests__/unit/backend/helpers/jest-express'
 import { ObjectId } from 'bson-ext'
 import moment from 'moment-timezone'
 import { errAsync, okAsync } from 'neverthrow'
-import { mocked } from 'ts-jest/utils'
 
 import { FormBillingStatistic } from 'src/types'
-
-import expressHandler from 'tests/unit/backend/helpers/jest-express'
 
 import { FormAuthType } from '../../../../../shared/types'
 import { DatabaseError } from '../../core/core.errors'
@@ -13,7 +11,7 @@ import * as BillingController from '../billing.controller'
 import * as BillingService from '../billing.service'
 
 jest.mock('../billing.service')
-const MockBillingService = mocked(BillingService)
+const MockBillingService = jest.mocked(BillingService)
 
 describe('billing.controller', () => {
   beforeEach(() => jest.clearAllMocks())
@@ -74,7 +72,7 @@ describe('billing.controller', () => {
       expect(MockBillingService.getSpLoginStats).toHaveBeenCalledWith(
         ...EXPECTED_SERVICE_CALL_ARGS,
       )
-      expect(mockRes.json).toBeCalledWith({ loginStats: mockLoginStats })
+      expect(mockRes.json).toHaveBeenCalledWith({ loginStats: mockLoginStats })
     })
 
     it('should return 500 when database error occurs', async () => {
@@ -92,8 +90,8 @@ describe('billing.controller', () => {
       expect(MockBillingService.getSpLoginStats).toHaveBeenCalledWith(
         ...EXPECTED_SERVICE_CALL_ARGS,
       )
-      expect(mockRes.status).toBeCalledWith(500)
-      expect(mockRes.json).toBeCalledWith({
+      expect(mockRes.status).toHaveBeenCalledWith(500)
+      expect(mockRes.json).toHaveBeenCalledWith({
         message: 'Error in retrieving billing records',
       })
     })

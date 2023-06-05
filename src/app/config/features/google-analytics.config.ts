@@ -1,3 +1,4 @@
+// TODO: remove after React rollout #4786
 import convict, { Schema } from 'convict'
 
 export interface IGoogleAnalytics {

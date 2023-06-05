@@ -1,5 +1,9 @@
 import { useState } from 'react'
-import { Container } from '@chakra-ui/react'
+import { Container, Flex } from '@chakra-ui/react'
+
+import { AdminNavBar } from '~/app/AdminNavBar'
+
+import { fillHeightCss } from '~utils/fillHeightCss'
 
 import { BillCharges } from './BillCharges'
 import { BillingForm, EsrvcIdFormInputs } from './BillingForm'
@@ -20,27 +24,30 @@ export const BillingPage = (): JSX.Element => {
     setEsrvcId(esrvcId?.trim())
 
   return (
-    <Container
-      overflowY="auto"
-      px={{ base: '1.5rem', md: '1.25rem' }}
-      py={{ base: '1.5rem', md: '3rem' }}
-      maxW="69.5rem"
-      flex={1}
-      display="flex"
-      flexDir="column"
-      color="secondary.500"
-    >
-      {esrvcId ? (
-        <BillCharges
-          esrvcId={esrvcId}
-          dateRange={dateRange}
-          todayDateRange={todayDateRange}
-          setDateRange={setDateRange}
-          onSubmitEsrvcId={onSubmitEsrvcId}
-        />
-      ) : (
-        <BillingForm onSubmitEsrvcId={onSubmitEsrvcId} />
-      )}
-    </Container>
+    <Flex direction="column" css={fillHeightCss}>
+      <AdminNavBar />
+      <Container
+        overflowY="auto"
+        px={{ base: '1.5rem', md: '1.25rem' }}
+        py={{ base: '1.5rem', md: '3rem' }}
+        maxW="69.5rem"
+        flex={1}
+        display="flex"
+        flexDir="column"
+        color="secondary.500"
+      >
+        {esrvcId ? (
+          <BillCharges
+            esrvcId={esrvcId}
+            dateRange={dateRange}
+            todayDateRange={todayDateRange}
+            setDateRange={setDateRange}
+            onSubmitEsrvcId={onSubmitEsrvcId}
+          />
+        ) : (
+          <BillingForm onSubmitEsrvcId={onSubmitEsrvcId} />
+        )}
+      </Container>
+    </Flex>
   )
 }

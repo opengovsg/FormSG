@@ -151,6 +151,11 @@ export default class ParsedResponsesObject {
         processingResponse.isUserVerified = formField.isVerifiable
       }
 
+      // Inject myinfo to response if field is a myinfo field for downstream processing.
+      if (formField.myInfo?.attr) {
+        processingResponse.myInfo = formField.myInfo
+      }
+
       // Error will be returned if the processed response is not valid.
       const validateFieldResult = validateField(
         form._id,

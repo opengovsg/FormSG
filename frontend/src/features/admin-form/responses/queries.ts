@@ -35,6 +35,7 @@ export const adminFormResponsesKeys = {
   },
   individual: (id: string, submissionId: string) =>
     [...adminFormResponsesKeys.id(id), 'individual', submissionId] as const,
+  secretKey: (id: string) => [...adminFormResponsesKeys.id(id), 'secretKey'],
 }
 
 export const adminFormFeedbackKeys = {
@@ -60,7 +61,7 @@ export const useFormResponsesCount = (
   return useQuery(
     adminFormResponsesKeys.count(formId, dateParams),
     () => countFormSubmissions({ formId, dates }),
-    { staleTime: 10 * 60 * 1000 },
+    { staleTime: 0 },
   )
 }
 
@@ -90,10 +91,7 @@ export const useFormResponses = ({
     adminFormResponsesKeys.metadata(formId, params),
     () => getFormSubmissionsMetadata(formId, params),
     {
-      refetchOnMount: true,
-      refetchOnWindowFocus: false,
-      // Data will never change.
-      staleTime: Infinity,
+      staleTime: 0,
       keepPreviousData: !submissionId,
       enabled: !!secretKey && (page > 0 || !!submissionId),
     },
@@ -107,7 +105,9 @@ export const useFormFeedback = (): UseQueryResult<FormFeedbackMetaDto> => {
   const { formId } = useParams()
   if (!formId) throw new Error('No formId provided')
 
-  return useQuery(adminFormFeedbackKeys.id(formId), () =>
-    getFormFeedback(formId),
+  return useQuery(
+    adminFormFeedbackKeys.id(formId),
+    () => getFormFeedback(formId),
+    { staleTime: 0 },
   )
 }

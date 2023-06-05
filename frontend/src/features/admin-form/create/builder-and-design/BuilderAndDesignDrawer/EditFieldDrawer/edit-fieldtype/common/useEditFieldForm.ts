@@ -1,6 +1,7 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 import {
   DeepPartial,
+  Mode,
   UnpackNestedValue,
   useForm,
   UseFormReturn,
@@ -19,13 +20,17 @@ import {
 import { useCreateFormField } from '~features/admin-form/create/builder-and-design/mutations/useCreateFormField'
 import { useEditFormField } from '~features/admin-form/create/builder-and-design/mutations/useEditFormField'
 import {
-  BuildFieldState,
+  setIsDirtySelector,
+  useDirtyFieldStore,
+} from '~features/admin-form/create/builder-and-design/useDirtyFieldStore'
+import {
+  FieldBuilderState,
   setToInactiveSelector,
   stateDataSelector,
   updateCreateStateSelector,
   updateEditStateSelector,
-  useBuilderAndDesignStore,
-} from '~features/admin-form/create/builder-and-design/useBuilderAndDesignStore'
+  useFieldBuilderStore,
+} from '~features/admin-form/create/builder-and-design/useFieldBuilderStore'
 
 import { EditFieldProps } from './types'
 
@@ -48,13 +53,14 @@ type UseEditFieldFormProps<
       output: FieldShape,
     ) => Promise<FieldShape> | FieldShape
   }
+} & {
+  mode?: Mode
 }
 
 export type UseEditFieldFormReturn<U> = UseFormReturn<U> & {
   handleUpdateField: () => Promise<void>
   handleCancel: () => void
   buttonText: string
-  isSaveEnabled: boolean
   isLoading: boolean
   formMethods: UseFormReturn<U>
 }
@@ -62,12 +68,13 @@ export type UseEditFieldFormReturn<U> = UseFormReturn<U> & {
 export const useEditFieldForm = <FormShape, FieldShape extends FormField>({
   field,
   transform,
+  mode,
 }: UseEditFieldFormProps<
   FormShape,
   FieldShape
 >): UseEditFieldFormReturn<FormShape> => {
   const { stateData, setToInactive, updateEditState, updateCreateState } =
-    useBuilderAndDesignStore(
+    useFieldBuilderStore(
       useCallback(
         (state) => ({
           stateData: stateDataSelector(state),
@@ -79,11 +86,13 @@ export const useEditFieldForm = <FormShape, FieldShape extends FormField>({
       ),
     )
 
+  const setIsDirty = useDirtyFieldStore(setIsDirtySelector)
+
   const { editFieldMutation } = useEditFormField()
   const { createFieldMutation } = useCreateFormField()
 
   const isPendingField = useMemo(
-    () => stateData.state === BuildFieldState.CreatingField,
+    () => stateData.state === FieldBuilderState.CreatingField,
     [stateData.state],
   )
 
@@ -93,7 +102,18 @@ export const useEditFieldForm = <FormShape, FieldShape extends FormField>({
   )
   const editForm = useForm<FormShape>({
     defaultValues,
+    mode: mode,
   })
+
+  const { isDirty } = editForm.formState
+  // Update dirty state of builder so confirmation modal can be shown
+  useEffect(() => {
+    setIsDirty(isDirty)
+
+    return () => {
+      setIsDirty(false)
+    }
+  }, [isDirty, setIsDirty])
 
   const watchedInputs = useWatch({
     control: editForm.control,
@@ -123,11 +143,11 @@ export const useEditFieldForm = <FormShape, FieldShape extends FormField>({
     if (transform.preSubmit) {
       updatedFormField = await transform.preSubmit(inputs, updatedFormField)
     }
-    if (stateData.state === BuildFieldState.CreatingField) {
+    if (stateData.state === FieldBuilderState.CreatingField) {
       return createFieldMutation.mutate(updatedFormField, {
         onSuccess: onSaveSuccess,
       })
-    } else if (stateData.state === BuildFieldState.EditingField) {
+    } else if (stateData.state === FieldBuilderState.EditingField) {
       return editFieldMutation.mutate(
         { ...updatedFormField, _id: stateData.field._id } as FormFieldDto,
         { onSuccess: onSaveSuccess },
@@ -137,9 +157,9 @@ export const useEditFieldForm = <FormShape, FieldShape extends FormField>({
 
   const handleChange = useCallback(
     (field: FieldCreateDto | FormFieldDto) => {
-      if (stateData.state === BuildFieldState.CreatingField) {
+      if (stateData.state === FieldBuilderState.CreatingField) {
         updateCreateState(field, stateData.insertionIndex)
-      } else if (stateData.state === BuildFieldState.EditingField) {
+      } else if (stateData.state === FieldBuilderState.EditingField) {
         updateEditState({
           ...(field as FormFieldDto),
           _id: stateData.field._id,
@@ -148,6 +168,10 @@ export const useEditFieldForm = <FormShape, FieldShape extends FormField>({
     },
     [stateData, updateCreateState, updateEditState],
   )
+
+  const handleCancel = useCallback(() => {
+    setToInactive()
+  }, [setToInactive])
 
   useDebounce(
     () => handleChange(transform.output(clonedWatchedInputs, field)),
@@ -160,18 +184,12 @@ export const useEditFieldForm = <FormShape, FieldShape extends FormField>({
     [isPendingField],
   )
 
-  const isSaveEnabled = useMemo(
-    () => editForm.formState.isDirty || isPendingField,
-    [editForm.formState.isDirty, isPendingField],
-  )
-
   return {
     ...editForm,
     formMethods: editForm,
     buttonText,
-    isSaveEnabled,
     handleUpdateField,
-    handleCancel: setToInactive,
+    handleCancel,
     isLoading: createFieldMutation.isLoading || editFieldMutation.isLoading,
   }
 }

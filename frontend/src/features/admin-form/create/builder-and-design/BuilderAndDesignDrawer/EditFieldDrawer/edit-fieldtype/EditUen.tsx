@@ -11,7 +11,8 @@ import Input from '~components/Input'
 import Textarea from '~components/Textarea'
 import Toggle from '~components/Toggle'
 
-import { DrawerContentContainer } from './common/DrawerContentContainer'
+import { CreatePageDrawerContentContainer } from '../../../../common'
+
 import { FormFieldDrawerActions } from './common/FormFieldDrawerActions'
 import { EditFieldProps } from './common/types'
 import { useEditFieldForm } from './common/useEditFieldForm'
@@ -24,7 +25,6 @@ export const EditUen = ({ field }: EditUenProps): JSX.Element => {
   const {
     register,
     formState: { errors },
-    isSaveEnabled,
     buttonText,
     handleUpdateField,
     isLoading,
@@ -45,7 +45,7 @@ export const EditUen = ({ field }: EditUenProps): JSX.Element => {
   )
 
   return (
-    <DrawerContentContainer>
+    <CreatePageDrawerContentContainer>
       <FormControl isRequired isReadOnly={isLoading} isInvalid={!!errors.title}>
         <FormLabel>Question</FormLabel>
         <Input autoFocus {...register('title', requiredValidationRule)} />
@@ -61,11 +61,10 @@ export const EditUen = ({ field }: EditUenProps): JSX.Element => {
       </FormControl>
       <FormFieldDrawerActions
         isLoading={isLoading}
-        isSaveEnabled={isSaveEnabled}
         buttonText={buttonText}
         handleClick={handleUpdateField}
         handleCancel={handleCancel}
       />
-    </DrawerContentContainer>
+    </CreatePageDrawerContentContainer>
   )
 }

@@ -1,8 +1,11 @@
 import { Meta, Story } from '@storybook/react'
 
+import { getUnauthedUser } from '~/mocks/msw/handlers/user'
+
 import {
   getMobileViewParameters,
   LoggedInDecorator,
+  LoggedOutDecorator,
   StoryRouter,
 } from '~utils/storybook'
 
@@ -24,13 +27,18 @@ export default {
 
 const Template: Story = () => <NotFoundErrorPage />
 export const NotLoggedIn = Template.bind({})
+NotLoggedIn.decorators = [LoggedOutDecorator]
+NotLoggedIn.parameters = {
+  msw: [getUnauthedUser()],
+}
 
 export const MobileNotLoggedIn = Template.bind({})
 MobileNotLoggedIn.parameters = getMobileViewParameters()
+MobileNotLoggedIn.decorators = NotLoggedIn.decorators
 
 export const LoggedIn = Template.bind({})
 LoggedIn.decorators = [LoggedInDecorator]
 
 export const MobileLoggedIn = Template.bind({})
 MobileLoggedIn.parameters = getMobileViewParameters()
-MobileLoggedIn.decorators = [LoggedInDecorator]
+MobileLoggedIn.decorators = LoggedIn.decorators

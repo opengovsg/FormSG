@@ -1,15 +1,17 @@
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { Controller, RegisterOptions } from 'react-hook-form'
 import {
   FormControl,
   InputGroup,
   InputRightElement,
   SimpleGrid,
+  useMergeRefs,
 } from '@chakra-ui/react'
 import { extend, isEmpty, pick } from 'lodash'
 
 import { ShortTextFieldBase, TextSelectedValidation } from '~shared/types/field'
 
+import { GUIDE_PREFILL } from '~constants/links'
 import { createBaseValidationRules } from '~utils/fieldValidation'
 import { SingleSelect } from '~components/Dropdown'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
@@ -22,7 +24,7 @@ import { CopyButton } from '~templates/CopyButton'
 
 import { validateNumberInput } from '~features/admin-form/create/builder-and-design/utils/validateNumberInput'
 
-import { DrawerContentContainer } from '../common/DrawerContentContainer'
+import { CreatePageDrawerContentContainer } from '../../../../../common'
 import { FormFieldDrawerActions } from '../common/FormFieldDrawerActions'
 import { EditFieldProps } from '../common/types'
 import { useEditFieldForm } from '../common/useEditFieldForm'
@@ -34,6 +36,7 @@ const EDIT_SHORTTEXT_FIELD_KEYS = [
   'description',
   'required',
   'allowPrefill',
+  'lockPrefill',
 ] as const
 
 type EditShortTextInputs = Pick<
@@ -84,7 +87,6 @@ export const EditShortText = ({ field }: EditShortTextProps): JSX.Element => {
     register,
     formState: { errors },
     getValues,
-    isSaveEnabled,
     buttonText,
     handleUpdateField,
     watch,
@@ -110,7 +112,26 @@ export const EditShortText = ({ field }: EditShortTextProps): JSX.Element => {
     'ValidationOptions.selectedValidation',
   )
 
+  const hasLockPrefillRef = useRef<HTMLInputElement>(null)
+
+  const lockPrefillRegister = useMemo(() => register('lockPrefill'), [register])
+
+  const mergedLockPrefillRef = useMergeRefs(
+    hasLockPrefillRef,
+    lockPrefillRegister.ref,
+  )
+
   const watchAllowPrefill = watch('allowPrefill')
+  const watchLockPrefill = watch('lockPrefill')
+
+  useEffect(() => {
+    // Prefill must be enabled for lockPrefill
+    // We cannot simply use setValue as it does not update
+    // the UI
+    if (!watchAllowPrefill && watchLockPrefill) {
+      hasLockPrefillRef.current?.click()
+    }
+  }, [watchAllowPrefill, watchLockPrefill])
 
   const customValValidationOptions: RegisterOptions<
     EditShortTextInputs,
@@ -152,7 +173,7 @@ export const EditShortText = ({ field }: EditShortTextProps): JSX.Element => {
   }, [clearErrors, setValue, watchedSelectedValidation])
 
   return (
-    <DrawerContentContainer>
+    <CreatePageDrawerContentContainer>
       <FormControl isRequired isReadOnly={isLoading} isInvalid={!!errors.title}>
         <FormLabel>Question</FormLabel>
         <Input autoFocus {...register('title', requiredValidationRule)} />
@@ -175,7 +196,11 @@ export const EditShortText = ({ field }: EditShortTextProps): JSX.Element => {
         isInvalid={!isEmpty(errors.ValidationOptions)}
       >
         <FormLabel isRequired>Number of characters allowed</FormLabel>
-        <SimpleGrid mt="0.5rem" columns={2} spacing="0.5rem">
+        <SimpleGrid
+          mt="0.5rem"
+          columns={{ base: 2, md: 1, lg: 2 }}
+          spacing="0.5rem"
+        >
           <Controller
             name="ValidationOptions.selectedValidation"
             control={control}
@@ -211,36 +236,46 @@ export const EditShortText = ({ field }: EditShortTextProps): JSX.Element => {
         <Toggle
           {...register('allowPrefill')}
           label="Enable pre-fill"
-          description="Use the Field ID to pre-populate this field for your users via an URL. [Learn how](https://go.gov.sg/form-prefill)"
+          description={`Use Field ID in the form URL to pre-fill this field for respondents. [Learn how](${GUIDE_PREFILL})`}
         />
         {watchAllowPrefill ? (
-          <InputGroup mt="0.5rem">
-            <Input
-              isReadOnly
-              isDisabled={!field._id}
-              value={
-                field._id ??
-                'Field ID will be generated after this field is saved'
-              }
-            />
-            {field._id ? (
-              <InputRightElement>
-                <CopyButton
-                  stringToCopy={field._id}
-                  aria-label="Copy field ID value"
-                />
-              </InputRightElement>
-            ) : null}
-          </InputGroup>
+          <>
+            <InputGroup mt="0.5rem">
+              <Input
+                isReadOnly
+                isDisabled={!field._id}
+                value={
+                  field._id ??
+                  'Field ID will be generated after this field is saved'
+                }
+              />
+              {field._id ? (
+                <InputRightElement>
+                  <CopyButton
+                    stringToCopy={field._id}
+                    aria-label="Copy field ID value"
+                  />
+                </InputRightElement>
+              ) : null}
+            </InputGroup>
+          </>
         ) : null}
+      </FormControl>
+      <FormControl isReadOnly={isLoading}>
+        <Toggle
+          {...lockPrefillRegister}
+          ref={mergedLockPrefillRef}
+          label="Prevent pre-fill editing"
+          description="This prevents respondents from clicking the field to edit it. However, field content can still be modified via the URL."
+          isDisabled={!watchAllowPrefill}
+        />
       </FormControl>
       <FormFieldDrawerActions
         isLoading={isLoading}
-        isSaveEnabled={isSaveEnabled}
         buttonText={buttonText}
         handleClick={handleUpdateField}
         handleCancel={handleCancel}
       />
-    </DrawerContentContainer>
+    </CreatePageDrawerContentContainer>
   )
 }

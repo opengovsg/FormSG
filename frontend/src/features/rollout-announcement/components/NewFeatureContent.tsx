@@ -1,57 +1,26 @@
-import { useEffect, useRef } from 'react'
-import { Box, BoxProps, ModalBody, ModalHeader, Text } from '@chakra-ui/react'
-import lottie, { AnimationConfigWithData, SVGRendererConfig } from 'lottie-web'
+import { ModalBody, ModalHeader, Text } from '@chakra-ui/react'
+import { AnimationConfigWithData } from 'lottie-web'
+
+import Link from '~components/Link'
+import { LottieAnimation } from '~templates/LottieAnimation'
 
 import { NewFeatureTag } from './NewFeatureTag'
-
-interface LottieAnimationProps extends BoxProps {
-  animationData: AnimationConfigWithData['animationData']
-  preserveAspectRatio?: SVGRendererConfig['preserveAspectRatio']
-}
-
-export const LottieAnimation = ({
-  animationData,
-  preserveAspectRatio,
-  ...boxProps
-}: LottieAnimationProps): JSX.Element => {
-  const element = useRef<HTMLDivElement>(null)
-  const lottieInstance = useRef<unknown>()
-
-  useEffect(() => {
-    if (!element.current) return
-
-    lottieInstance.current = lottie.loadAnimation({
-      animationData,
-      container: element.current,
-      rendererSettings: {
-        preserveAspectRatio: preserveAspectRatio,
-      },
-    })
-
-    return () => {
-      lottieInstance.current = lottie.destroy()
-    }
-  }, [animationData, preserveAspectRatio])
-
-  return <Box {...boxProps} ref={element} />
-}
 
 interface NewFeatureContentProps {
   title: string
   description: string
+  learnMoreLink: string
   animationData: AnimationConfigWithData['animationData']
 }
 
 export const NewFeatureContent = (props: {
   content: NewFeatureContentProps
 }): JSX.Element => {
-  const { title, description, animationData } = props.content
+  const { title, description, animationData, learnMoreLink } = props.content
 
   return (
     <>
       <LottieAnimation
-        // The link will always change in Chromatic so this should be ignored.
-        data-chromatic="ignore"
         bg="primary.100"
         pt="4.5rem"
         height={{ base: '30vh', md: 'initial' }}
@@ -62,9 +31,12 @@ export const NewFeatureContent = (props: {
         <NewFeatureTag />
         <Text mt="0.625rem">{title}</Text>
       </ModalHeader>
-      <ModalBody whiteSpace="pre-line">
+      <ModalBody whiteSpace="pre-wrap">
         <Text textStyle="body-1" color="secondary.500">
-          {description}
+          {description}{' '}
+          <Link isExternal href={learnMoreLink}>
+            Learn more
+          </Link>
         </Text>
       </ModalBody>
     </>

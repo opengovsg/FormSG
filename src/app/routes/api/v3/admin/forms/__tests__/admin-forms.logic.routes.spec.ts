@@ -1,3 +1,6 @@
+import { createAuthedSession } from '__tests__/integration/helpers/express-auth'
+import { setupApp } from '__tests__/integration/helpers/express-setup'
+import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { ObjectId } from 'bson-ext'
 import mongoose from 'mongoose'
 import supertest, { Session } from 'supertest-session'
@@ -5,17 +8,13 @@ import supertest, { Session } from 'supertest-session'
 import getUserModel from 'src/app/models/user.server.model'
 import { FormLogicSchema } from 'src/types'
 
-import { createAuthedSession } from 'tests/integration/helpers/express-auth'
-import { setupApp } from 'tests/integration/helpers/express-setup'
-import dbHandler from 'tests/unit/backend/helpers/jest-db'
-
 import { LogicType } from '../../../../../../../../shared/types'
 import { AdminFormsRouter } from '../admin-forms.routes'
 
 const UserModel = getUserModel(mongoose)
 
 // Avoid async refresh calls
-jest.mock('src/app/modules/spcp/sp.oidc.client.ts')
+jest.mock('src/app/modules/spcp/spcp.oidc.client.ts')
 
 const app = setupApp('/admin/forms', AdminFormsRouter, {
   setupWithAuth: true,

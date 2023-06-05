@@ -2,6 +2,7 @@ import cuid from 'cuid'
 import { merge } from 'lodash'
 import { rest } from 'msw'
 
+import { PaymentChannel } from '~shared/types'
 import { AgencyId } from '~shared/types/agency'
 import {
   AttachmentSize,
@@ -11,7 +12,12 @@ import {
   RatingShape,
   TableFieldDto,
 } from '~shared/types/field'
-import { FormLogic } from '~shared/types/form'
+import {
+  FormLogic,
+  LogicConditionState,
+  LogicIfValue,
+  LogicType,
+} from '~shared/types/form'
 import {
   AdminFormDto,
   AdminFormViewDto,
@@ -47,7 +53,7 @@ export const MOCK_MYINFO_IMPLEMENTED_TYPES = [
 export const MOCK_FORM_FIELDS: FormFieldDto[] = [
   {
     title: 'Yes/No',
-    description: '',
+    description: 'This is a\n\nmultiline description\r\nanother line',
     required: true,
     disabled: false,
     fieldType: BasicField.YesNo,
@@ -546,6 +552,25 @@ export const MOCK_FORM_FIELDS_WITH_MYINFO = [
   ...MOCK_MYINFO_FIELDS,
 ]
 
+export const MOCK_FORM_LOGICS = [
+  // Note: this logic is actually invalid since the if field cannot be a show
+  // field at the same time. But it's fine just for the purposes of displaying
+  // the hidden view.
+  {
+    show: MOCK_FORM_FIELDS_WITH_MYINFO.map((f) => f._id),
+    _id: '620115f74ad4f00012900a8c',
+    logicType: LogicType.ShowFields as const,
+    conditions: [
+      {
+        ifValueType: LogicIfValue.SingleSelect,
+        field: '5da04eb5e397fc0013f63c7e',
+        state: LogicConditionState.Equal,
+        value: 'Yes',
+      },
+    ],
+  },
+]
+
 export const createMockForm = (
   props: Partial<AdminFormDto> = {},
 ): AdminFormViewDto => {
@@ -573,6 +598,8 @@ export const createMockForm = (
         submissionLimit: null,
         form_fields: [],
         form_logics: [],
+        payments_channel: { channel: PaymentChannel.Unconnected },
+        payments_field: { enabled: false },
         permissionList: [],
         title: 'Test form title',
         admin: {
@@ -754,7 +781,7 @@ export const getStorageSubmissionMetadataResponse = (
   )
 }
 
-export const createLogic = (delay?: number) => {
+export const createLogic = (delay?: number | 'infinite') => {
   return rest.post<FormLogic>(
     '/api/v3/admin/forms/:formId/logic',
     (req, res, ctx) => {
@@ -767,7 +794,7 @@ export const createLogic = (delay?: number) => {
   )
 }
 
-export const deleteLogic = (delay?: number) => {
+export const deleteLogic = (delay?: number | 'infinite') => {
   return rest.delete(
     '/api/v3/admin/forms/:formId/logic/:logicId',
     (_req, res, ctx) => {

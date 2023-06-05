@@ -1,14 +1,12 @@
+import {
+  generateNewAttachmentResponse,
+  generateNewSingleAnswerResponse,
+} from '__tests__/unit/backend/helpers/generate-form-data'
 import Busboy from 'busboy'
 import FormData from 'form-data'
 import { createReadStream, readFileSync } from 'fs'
 import { IncomingHttpHeaders } from 'http'
 import { omit, pick } from 'lodash'
-import { mocked } from 'ts-jest/utils'
-
-import {
-  generateNewAttachmentResponse,
-  generateNewSingleAnswerResponse,
-} from 'tests/unit/backend/helpers/generate-form-data'
 
 import { MB } from '../../../../../../shared/constants/file'
 import { BasicField } from '../../../../../../shared/types'
@@ -19,7 +17,7 @@ import {
 import * as EmailSubmissionReceiver from '../email-submission.receiver'
 
 jest.mock('busboy')
-const MockBusboy = mocked(Busboy, true)
+const MockBusboy = jest.mocked(Busboy)
 const RealBusboy = jest.requireActual('busboy') as typeof Busboy
 
 const MOCK_HEADERS: IncomingHttpHeaders = {
@@ -32,7 +30,7 @@ const MOCK_BUSBOY = {
   on: MOCK_BUSBOY_ON,
 } as unknown as Busboy.Busboy
 
-const VALID_FILE_PATH = 'tests/unit/backend/resources/'
+const VALID_FILE_PATH = '__tests__/unit/backend/resources/'
 const VALID_FILENAME_1 = 'valid.txt'
 const VALID_FILE_CONTENT_1 = readFileSync(
   `${VALID_FILE_PATH}${VALID_FILENAME_1}`,

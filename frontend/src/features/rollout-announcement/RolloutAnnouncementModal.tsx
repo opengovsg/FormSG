@@ -16,17 +16,15 @@ import Button from '~components/Button'
 
 import { ProgressIndicator } from '../../components/ProgressIndicator/ProgressIndicator'
 
-import { LastFeatureContent } from './components/LastFeatureContent'
 import { NewFeatureContent } from './components/NewFeatureContent'
-import { NEW_FEATURES, OTHER_UPDATES } from './Announcements'
+import { NEW_FEATURES } from './Announcements'
 
 interface RolloutAnnouncementModalProps {
   isOpen: boolean
   onClose: () => void
 }
 
-const NUM_OTHER_UPDATES_PAGES = 1
-const NUM_NEW_FEATURES = NEW_FEATURES.length + NUM_OTHER_UPDATES_PAGES
+const NUM_NEW_FEATURES = NEW_FEATURES.length
 
 export const RolloutAnnouncementModal = ({
   isOpen,
@@ -59,11 +57,7 @@ export const RolloutAnnouncementModal = ({
       <ModalOverlay />
       <ModalContent {...swipeHandlers}>
         <ModalCloseButton />
-        {isLastAnnouncement ? (
-          <LastFeatureContent updates={OTHER_UPDATES} />
-        ) : (
-          <NewFeatureContent content={NEW_FEATURES[currActiveIdx]} />
-        )}
+        <NewFeatureContent content={NEW_FEATURES[currActiveIdx]} />
         <ModalFooter>
           <Stack
             direction={isMobile ? 'column' : 'row'}

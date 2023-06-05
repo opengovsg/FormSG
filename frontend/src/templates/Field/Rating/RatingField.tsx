@@ -2,7 +2,8 @@
  * @precondition Must have a parent `react-hook-form#FormProvider` component.
  */
 import { useMemo } from 'react'
-import { Controller, useFormContext } from 'react-hook-form'
+import { Controller, useFormContext, useFormState } from 'react-hook-form'
+import { get } from 'lodash'
 
 import { FormColorTheme } from '~shared/types'
 import { RatingShape } from '~shared/types/field'
@@ -45,6 +46,7 @@ export const RatingField = ({
   }, [schema.ratingOptions.shape])
 
   const { control } = useFormContext<SingleAnswerFieldInput>()
+  const { errors } = useFormState<SingleAnswerFieldInput>()
 
   return (
     <FieldContainer schema={schema}>
@@ -58,6 +60,9 @@ export const RatingField = ({
             numberOfRatings={schema.ratingOptions.steps}
             variant={ratingVariant}
             value={transform.toNumber(value)}
+            isRequired={schema.required}
+            isInvalid={!!get(errors, schema._id)}
+            fieldTitle={`${schema.questionNumber}. ${schema.title}`}
             onChange={(val) => onChange(transform.toString(val))}
             {...rest}
           />

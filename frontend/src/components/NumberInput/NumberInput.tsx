@@ -29,11 +29,14 @@ export interface NumberInputProps extends ChakraNumberInputProps {
    * Whether to show the increment and decrement steppers. Defaults to true.
    */
   showSteppers?: boolean
-
   /**
    * Color scheme of number input.
    */
   colorScheme?: ThemeColorScheme
+  /**
+   * Whether to prevent default on user pressing the 'Enter' key.
+   */
+  preventDefaultOnEnter?: boolean
 }
 
 export const NumberInput = forwardRef<NumberInputProps, 'input'>(
@@ -41,9 +44,11 @@ export const NumberInput = forwardRef<NumberInputProps, 'input'>(
     {
       showSteppers = true,
       clampValueOnBlur = false,
+      focusInputOnChange = false,
       isSuccess,
       isPrefilled,
       colorScheme,
+      preventDefaultOnEnter,
       ...props
     },
     ref,
@@ -70,6 +75,7 @@ export const NumberInput = forwardRef<NumberInputProps, 'input'>(
     } = useNumberInput({
       ...controlProps,
       clampValueOnBlur,
+      focusInputOnChange,
     })
 
     const inputProps = getInputProps({ placeholder: props.placeholder })
@@ -90,6 +96,16 @@ export const NumberInput = forwardRef<NumberInputProps, 'input'>(
         <chakra.input
           {...inputProps}
           paddingInlineEnd={inputEndPadding}
+          // This flag should be set for form input fields, to prevent refresh on enter if form only has one input
+          {...(preventDefaultOnEnter
+            ? {
+                onKeyDown: (e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault()
+                  }
+                },
+              }
+            : {})}
           // Passing in ref to the input element so that it can be focused by
           // the parent.
           // No point passing the ref to the div wrapper as the main component

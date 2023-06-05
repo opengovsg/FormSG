@@ -3,6 +3,7 @@ import ejs from 'ejs'
 import config from '../../config/config'
 import { captchaConfig } from '../../config/features/captcha.config'
 import { googleAnalyticsConfig } from '../../config/features/google-analytics.config'
+import { paymentConfig } from '../../config/features/payment.config'
 import { sentryConfig } from '../../config/features/sentry.config'
 import { spcpMyInfoConfig } from '../../config/features/spcp-myinfo.config'
 
@@ -19,12 +20,15 @@ const frontendVars = {
   isSPMaintenance: spcpMyInfoConfig.isSPMaintenance, // Singpass maintenance message
   isCPMaintenance: spcpMyInfoConfig.isCPMaintenance, // Corppass maintenance message
   myInfoBannerContent: spcpMyInfoConfig.myInfoBannerContent, // MyInfo maintenance message
+  // TODO: remove after React rollout #4786
   GATrackingID: googleAnalyticsConfig.GATrackingID,
   spcpCookieDomain: spcpMyInfoConfig.spcpCookieDomain, // Cookie domain used for removing spcp cookies
-  // react migration variables
-  reactMigrationRespondentCookieName:
-    config.reactMigration.respondentCookieName,
-  reactMigrationAdminCookieName: config.reactMigration.adminCookieName,
+  // payment variables
+  reactMigrationUseFetchForSubmissions:
+    config.reactMigration.useFetchForSubmissions,
+  maxPaymentAmountCents: paymentConfig.maxPaymentAmountCents,
+  minPaymentAmountCents: paymentConfig.minPaymentAmountCents,
+  secretEnv: config.secretEnv,
 }
 const environment = ejs.render(
   `
@@ -49,8 +53,10 @@ const environment = ejs.render(
     // SPCP Cookie
     var spcpCookieDomain = "<%= spcpCookieDomain%>"
     // React Migration
-    var reactMigrationRespondentCookieName = "<%= reactMigrationRespondentCookieName%>"
-    var reactMigrationAdminCookieName = "<%= reactMigrationAdminCookieName%>"
+    var reactMigrationUseFetchForSubmissions = <%= reactMigrationUseFetchForSubmissions%>
+    // Payment
+    var maxPaymentAmountCents = <%= maxPaymentAmountCents%>
+    var minPaymentAmountCents = <%= minPaymentAmountCents%>
   `,
   frontendVars,
 )

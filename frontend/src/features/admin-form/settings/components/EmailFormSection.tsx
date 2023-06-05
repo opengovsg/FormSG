@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 import {
   Controller,
   FormProvider,
@@ -7,32 +7,27 @@ import {
 } from 'react-hook-form'
 import { FormControl } from '@chakra-ui/react'
 import { get, isEmpty, isEqual } from 'lodash'
+import isEmail from 'validator/lib/isEmail'
 
-import { EmailFormSettings } from '~shared/types/form/form'
-
-import { createAdminEmailValidationTransform } from '~utils/formValidation'
+import { GUIDE_PREVENT_EMAIL_BOUNCE } from '~constants/links'
+import { ADMIN_EMAIL_VALIDATION_RULES } from '~utils/formValidation'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
-import Input from '~components/Input'
+import { TagInput } from '~components/TagInput'
 
 import { useMutateFormSettings } from '../mutations'
 
 interface EmailFormSectionProps {
-  settings: EmailFormSettings
+  emails: string[]
 }
 
 export const EmailFormSection = ({
-  settings,
+  emails: initialEmails,
 }: EmailFormSectionProps): JSX.Element => {
-  const initialEmailSet = useMemo(
-    () => new Set(settings.emails),
-    [settings.emails],
-  )
+  const initialEmailSet = useMemo(() => new Set(initialEmails), [initialEmails])
   const formMethods = useForm({
     mode: 'onChange',
-    defaultValues: {
-      emails: settings.emails,
-    },
+    defaultValues: { emails: initialEmails },
   })
 
   const {
@@ -42,13 +37,15 @@ export const EmailFormSection = ({
 
   const { mutateFormEmails } = useMutateFormSettings()
 
-  const handleSubmitEmails = ({ emails: nextEmails }: { emails: string[] }) => {
-    if (isEqual(new Set(nextEmails.filter(Boolean)), initialEmailSet)) {
-      return reset()
-    }
+  const handleSubmitEmails = useCallback(
+    ({ emails }: { emails: string[] }) => {
+      if (isEqual(new Set(emails.filter(Boolean)), initialEmailSet)) return
+      return mutateFormEmails.mutate(emails)
+    },
+    [initialEmailSet, mutateFormEmails],
+  )
 
-    return mutateFormEmails.mutate(nextEmails)
-  }
+  useEffect(() => reset({ emails: initialEmails }), [initialEmails, reset])
 
   return (
     <FormProvider {...formMethods}>
@@ -56,7 +53,7 @@ export const EmailFormSection = ({
         <FormLabel
           isRequired
           useMarkdownForDescription
-          description="Add at least **2 recipients** to prevent loss of response. Learn more [how to guard against bounce emails](https://go.gov.sg/form-prevent-bounce)."
+          description={`Add at least **2 recipients** to prevent loss of response. Learn more on [how to guard against email bounces](${GUIDE_PREVENT_EMAIL_BOUNCE}).`}
         >
           Emails where responses will be sent
         </FormLabel>
@@ -74,27 +71,30 @@ interface AdminEmailRecipientsInputProps {
 const AdminEmailRecipientsInput = ({
   onSubmit,
 }: AdminEmailRecipientsInputProps): JSX.Element => {
-  const { control, handleSubmit, reset } =
+  const { getValues, setValue, control, handleSubmit } =
     useFormContext<{ emails: string[] }>()
 
-  const { rules, transform } = useMemo(
-    () => createAdminEmailValidationTransform(),
-    [],
-  )
+  const tagValidation = useMemo(() => isEmail, [])
 
   const handleBlur = useCallback(() => {
-    return handleSubmit(onSubmit, () => reset())()
-  }, [handleSubmit, onSubmit, reset])
+    // Get rid of bad tags before submitting.
+    setValue(
+      'emails',
+      getValues('emails').filter((email) => tagValidation(email)),
+    )
+    handleSubmit(onSubmit)()
+  }, [getValues, handleSubmit, onSubmit, setValue, tagValidation])
 
   return (
     <Controller
       control={control}
       name="emails"
-      rules={rules}
+      rules={ADMIN_EMAIL_VALIDATION_RULES}
       render={({ field }) => (
-        <Input
-          value={transform.input(field.value)}
-          onChange={(e) => field.onChange(transform.output(e.target.value))}
+        <TagInput
+          placeholder="Separate emails with a comma"
+          {...field}
+          tagValidation={tagValidation}
           onBlur={handleBlur}
         />
       )}

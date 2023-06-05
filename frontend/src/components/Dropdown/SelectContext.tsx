@@ -14,7 +14,7 @@ export interface SharedSelectContextReturnProps<
   isClearable?: boolean
   /** Nothing found label. Defaults to "No matching results" */
   nothingFoundLabel?: string
-  /** aria-label for clear button. Defaults to "Clear dropdown" */
+  /** aria-label for clear button. Defaults to "Clear selection" */
   clearButtonLabel?: string
   /**
    * Placeholder to show in the input field.
@@ -26,11 +26,6 @@ export interface SharedSelectContextReturnProps<
   name: string
   /** Item data used to render items in dropdown */
   items: Item[]
-  /** aria-describedby to be attached to the combobox input, if any. */
-  inputAria?: {
-    id: string
-    label: string
-  }
 }
 
 interface SelectContextReturn<Item extends ComboboxItem = ComboboxItem>
@@ -46,6 +41,11 @@ interface SelectContextReturn<Item extends ComboboxItem = ComboboxItem>
   isFocused: boolean
   setIsFocused: (isFocused: boolean) => void
   inputRef?: MutableRefObject<HTMLInputElement | null>
+  /** aria-describedby to be attached to the combobox input, if any. */
+  inputAria?: {
+    id: string
+    label: string
+  }
   resetInputValue: () => void
   /** Ref for list virtualization */
   virtualListRef: RefObject<VirtuosoHandle>

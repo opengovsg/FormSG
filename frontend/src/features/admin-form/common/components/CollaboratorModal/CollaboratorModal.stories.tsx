@@ -62,6 +62,7 @@ const Template: Story = () => {
     <CollaboratorModal
       {...modalProps}
       onClose={() => console.log('close modal')}
+      formId="mockStoryFormId"
     />,
     el,
   )

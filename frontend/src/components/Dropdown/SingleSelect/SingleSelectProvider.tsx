@@ -14,7 +14,7 @@ import { useItems } from '../hooks/useItems'
 import { SelectContext, SharedSelectContextReturnProps } from '../SelectContext'
 import { ComboboxItem } from '../types'
 import { defaultFilter } from '../utils/defaultFilter'
-import { itemToLabelString, itemToValue } from '../utils/itemUtils'
+import { isItemDisabled, itemToValue } from '../utils/itemUtils'
 
 export interface SingleSelectProviderProps<
   Item extends ComboboxItem = ComboboxItem,
@@ -47,7 +47,7 @@ export const SingleSelectProvider = ({
   filter = defaultFilter,
   nothingFoundLabel = 'No matching results',
   placeholder: placeholderProp,
-  clearButtonLabel = 'Clear dropdown input',
+  clearButtonLabel = 'Clear selection',
   isClearable = true,
   isSearchable = true,
   initialIsOpen,
@@ -56,7 +56,7 @@ export const SingleSelectProvider = ({
   isDisabled: isDisabledProp,
   isRequired: isRequiredProp,
   children,
-  inputAria: inputAriaProp,
+  inputAria,
   colorScheme,
   comboboxProps = {},
 }: SingleSelectProviderProps): JSX.Element => {
@@ -98,13 +98,13 @@ export const SingleSelectProvider = ({
   )
 
   const virtualListRef = useRef<VirtuosoHandle>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
 
   const {
     toggleMenu,
     closeMenu,
     isOpen,
     getLabelProps,
-    getComboboxProps,
     getMenuProps,
     getInputProps,
     getItemProps,
@@ -124,7 +124,9 @@ export const SingleSelectProvider = ({
     selectedItem: memoizedSelectedItem,
     itemToString: itemToValue,
     onSelectedItemChange: ({ selectedItem }) => {
-      onChange(itemToValue(selectedItem))
+      if (!selectedItem || !isItemDisabled(selectedItem)) {
+        onChange(itemToValue(selectedItem))
+      }
     },
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     scrollIntoView: () => {},
@@ -149,7 +151,7 @@ export const SingleSelectProvider = ({
           return
       }
     },
-    stateReducer: (_state, { changes, type }) => {
+    stateReducer: (state, { changes, type }) => {
       switch (type) {
         // Handle controlled `value` prop changes.
         case useCombobox.stateChangeTypes.ControlledPropUpdatedSelectedItem:
@@ -157,8 +159,8 @@ export const SingleSelectProvider = ({
           // This suggests that there is some initial input state that we want to keep.
           // This can only happen on first mount, since inputValue will be empty string
           // on future actions.
-          if (_state.inputValue && !changes.selectedItem) {
-            return { ...changes, inputValue: _state.inputValue }
+          if (state.inputValue && !changes.selectedItem) {
+            return { ...changes, inputValue: state.inputValue }
           }
           return {
             ...changes,
@@ -169,7 +171,7 @@ export const SingleSelectProvider = ({
           if (isClearable) return changes
           return {
             ...changes,
-            selectedItem: _state.selectedItem,
+            selectedItem: state.selectedItem,
           }
         }
         case useCombobox.stateChangeTypes.FunctionSelectItem:
@@ -184,6 +186,16 @@ export const SingleSelectProvider = ({
             isOpen: false,
           }
         }
+        case useCombobox.stateChangeTypes.InputFocus:
+          return {
+            ...changes,
+            isOpen: false, // keep the menu closed when input gets focused.
+          }
+        case useCombobox.stateChangeTypes.ToggleButtonClick:
+          return {
+            ...changes,
+            isOpen: !state.isOpen,
+          }
         default:
           return changes
       }
@@ -210,18 +222,6 @@ export const SingleSelectProvider = ({
     colorScheme,
   })
 
-  const inputAria = useMemo(() => {
-    if (inputAriaProp) return inputAriaProp
-    let label = 'No option selected'
-    if (selectedItem) {
-      label = `Option ${itemToLabelString(selectedItem)}, selected`
-    }
-    return {
-      id: `${name}-current-selection`,
-      label,
-    }
-  }, [inputAriaProp, name, selectedItem])
-
   const virtualListHeight = useMemo(() => {
     const totalHeight = filteredItems.length * 48
     // If the total height is less than the max height, just return the total height.
@@ -237,7 +237,6 @@ export const SingleSelectProvider = ({
         isItemSelected,
         toggleMenu,
         closeMenu,
-        getComboboxProps,
         getInputProps,
         getItemProps,
         getLabelProps,
@@ -262,6 +261,7 @@ export const SingleSelectProvider = ({
         setIsFocused,
         resetInputValue,
         inputAria,
+        inputRef,
         virtualListRef,
         virtualListHeight,
       }}

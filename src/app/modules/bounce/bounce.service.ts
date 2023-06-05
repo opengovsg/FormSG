@@ -1,12 +1,6 @@
 import { difference } from 'lodash'
 import mongoose from 'mongoose'
-import {
-  combineWithAllErrors,
-  errAsync,
-  okAsync,
-  Result,
-  ResultAsync,
-} from 'neverthrow'
+import { errAsync, okAsync, Result, ResultAsync } from 'neverthrow'
 import SNSMessageValidator from 'sns-validator'
 
 import {
@@ -239,7 +233,7 @@ export const sendSmsBounceNotification = (
       ),
   )
   return (
-    combineWithAllErrors(smsResults)
+    ResultAsync.combineWithAllErrors(smsResults)
       // All succeeded
       .map(() => possibleSmsRecipients)
       .orElse((errors) => {
@@ -383,7 +377,7 @@ export const notifyAdminsOfDeactivation = (
       recipientEmail: recipient.email,
     }),
   )
-  return combineWithAllErrors(smsResults)
+  return ResultAsync.combineWithAllErrors(smsResults)
     .map(() => true as const)
     .orElse((errors) => {
       logger.warn({
@@ -418,6 +412,7 @@ export const saveBounceDoc = (
           action: 'saveBounceDoc',
           formId: bounceDoc.formId,
         },
+        error,
       })
     }
     return transformMongoError(error)
@@ -438,6 +433,7 @@ export const safeParseNotification = (
         message: 'Unable to parse SNS notification',
         meta: {
           action: 'safeParseNotification',
+          message: message,
         },
         error,
       })

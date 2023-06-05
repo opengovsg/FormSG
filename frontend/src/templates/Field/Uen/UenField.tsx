@@ -4,8 +4,6 @@
 import { useMemo } from 'react'
 import { useFormContext } from 'react-hook-form'
 
-import { FormFieldWithId, UenFieldBase } from '~shared/types/field'
-
 import { createUenValidationRules } from '~utils/fieldValidation'
 import Input from '~components/Input'
 
@@ -22,13 +20,19 @@ export const UenField = ({ schema }: UenFieldProps): JSX.Element => {
     [schema],
   )
 
-  const { register } = useFormContext<SingleAnswerFieldInput>()
+  const { register, setValue } = useFormContext<SingleAnswerFieldInput>()
 
   return (
     <FieldContainer schema={schema}>
       <Input
-        aria-label={schema.title}
-        {...register(schema._id, validationRules)}
+        aria-label={`${schema.questionNumber}. ${schema.title}`}
+        defaultValue=""
+        preventDefaultOnEnter
+        {...register(schema._id, {
+          ...validationRules,
+          onChange: (event: React.ChangeEvent<HTMLInputElement>) =>
+            setValue(schema._id, event.target.value.trim()),
+        })}
       />
     </FieldContainer>
   )

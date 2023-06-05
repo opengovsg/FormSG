@@ -6,7 +6,7 @@ import {
   UnpackNestedValue,
   useFormState,
 } from 'react-hook-form'
-import { FormControl, Stack, StackDivider } from '@chakra-ui/react'
+import { FormControl, Stack } from '@chakra-ui/react'
 import { extend, pick } from 'lodash'
 
 import { Column, ColumnDto, TableFieldBase } from '~shared/types/field'
@@ -23,7 +23,7 @@ import Toggle from '~components/Toggle'
 import { isTemporaryColumnId } from '~features/admin-form/create/builder-and-design/utils/columnCreation'
 import { validateNumberInput } from '~features/admin-form/create/builder-and-design/utils/validateNumberInput'
 
-import { DrawerContentContainer } from '../common/DrawerContentContainer'
+import { CreatePageDrawerContentContainer } from '../../../../../common'
 import { FormFieldDrawerActions } from '../common/FormFieldDrawerActions'
 import { EditFieldProps } from '../common/types'
 import { useEditFieldForm } from '../common/useEditFieldForm'
@@ -96,7 +96,6 @@ export const EditTable = ({ field }: EditTableProps): JSX.Element => {
 
   const {
     formMethods,
-    isSaveEnabled,
     buttonText,
     handleUpdateField,
     isLoading,
@@ -119,7 +118,7 @@ export const EditTable = ({ field }: EditTableProps): JSX.Element => {
   )
 
   return (
-    <DrawerContentContainer>
+    <CreatePageDrawerContentContainer>
       <FormControl isRequired isReadOnly={isLoading} isInvalid={!!errors.title}>
         <FormLabel>Question</FormLabel>
         <Input autoFocus {...register('title', requiredValidationRule)} />
@@ -175,7 +174,6 @@ export const EditTable = ({ field }: EditTableProps): JSX.Element => {
               name="maximumRows"
               defaultValue=""
               rules={{
-                required: REQUIRED_ERROR,
                 min: {
                   value: 1,
                   message: 'Maximum rows must be greater than 0',
@@ -204,11 +202,10 @@ export const EditTable = ({ field }: EditTableProps): JSX.Element => {
       </FormProvider>
       <FormFieldDrawerActions
         isLoading={isLoading}
-        isSaveEnabled={isSaveEnabled}
         buttonText={buttonText}
         handleClick={handleUpdateField}
         handleCancel={handleCancel}
       />
-    </DrawerContentContainer>
+    </CreatePageDrawerContentContainer>
   )
 }

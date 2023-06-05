@@ -46,7 +46,7 @@ export const useLogicMutations = () => {
           return prev
         })
         toast({
-          description: 'Logic successfully created.',
+          description: 'The logic was successfully created.',
         })
       },
       onError: handleError,
@@ -67,7 +67,7 @@ export const useLogicMutations = () => {
           return prev
         })
         toast({
-          description: 'Logic successfully deleted.',
+          description: 'The logic was successfully deleted.',
         })
       },
       onError: handleError,
@@ -91,7 +91,7 @@ export const useLogicMutations = () => {
           return prev
         })
         toast({
-          description: 'Logic successfully updated.',
+          description: 'The logic was successfully updated.',
         })
       },
       onError: handleError,

@@ -1,11 +1,10 @@
+import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { ObjectId } from 'bson'
 import { omit, pick } from 'lodash'
 import mongoose from 'mongoose'
 
 import getBounceModel from 'src/app/modules/bounce/bounce.model'
 import { BounceType } from 'src/types'
-
-import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import {
   extractBounceObject,
@@ -69,7 +68,7 @@ describe('Bounce Model', () => {
 
     it('should not save when formId is not provided', async () => {
       const bounce = new Bounce()
-      await expect(bounce.save()).rejects.toThrowError('Form ID is required')
+      await expect(bounce.save()).rejects.toThrow('Form ID is required')
     })
   })
 

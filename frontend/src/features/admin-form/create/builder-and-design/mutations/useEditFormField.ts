@@ -11,16 +11,20 @@ import { adminFormKeys } from '~features/admin-form/common/queries'
 
 import { updateSingleFormField } from '../UpdateFormFieldService'
 import {
-  BuildFieldState,
-  stateDataSelector,
-  useBuilderAndDesignStore,
-} from '../useBuilderAndDesignStore'
+  FieldBuilderState,
+  fieldBuilderStateSelector,
+  useFieldBuilderStore,
+} from '../useFieldBuilderStore'
+import {
+  getMutationErrorMessage,
+  getMutationToastDescriptionFieldName,
+} from '../utils/getMutationMessage'
 
 export const useEditFormField = () => {
   const { formId } = useParams()
   if (!formId) throw new Error('No formId provided')
 
-  const stateData = useBuilderAndDesignStore(stateDataSelector)
+  const fieldBuilderState = useFieldBuilderStore(fieldBuilderStateSelector)
 
   const queryClient = useQueryClient()
   const toast = useToast({ status: 'success', isClosable: true })
@@ -29,7 +33,7 @@ export const useEditFormField = () => {
   const handleSuccess = useCallback(
     (newField: FormFieldDto) => {
       toast.closeAll()
-      if (stateData.state !== BuildFieldState.EditingField) {
+      if (fieldBuilderState !== FieldBuilderState.EditingField) {
         toast({
           status: 'warning',
           description:
@@ -38,7 +42,9 @@ export const useEditFormField = () => {
         return
       }
       toast({
-        description: `Field "${newField.title}" updated`,
+        description: `The ${getMutationToastDescriptionFieldName(
+          newField,
+        )} was updated.`,
       })
       queryClient.setQueryData<AdminFormDto>(adminFormKey, (oldForm) => {
         // Should not happen, should not be able to update field if there is no
@@ -51,14 +57,14 @@ export const useEditFormField = () => {
         return oldForm
       })
     },
-    [adminFormKey, stateData, queryClient, toast],
+    [adminFormKey, fieldBuilderState, queryClient, toast],
   )
 
   const handleError = useCallback(
     (error: Error) => {
       toast.closeAll()
       toast({
-        description: error.message,
+        description: getMutationErrorMessage(error),
         status: 'danger',
       })
     },

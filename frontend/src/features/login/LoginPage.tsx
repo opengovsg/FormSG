@@ -1,4 +1,4 @@
-import { FC, useState } from 'react'
+import { FC, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link as ReactLink } from 'react-router-dom'
 import { Box, chakra, Flex, GridItem, GridProps, Text } from '@chakra-ui/react'
@@ -9,7 +9,9 @@ import { ReactComponent as BrandLogoSvg } from '~assets/svgs/brand/brand-hort-co
 import { LOGGED_IN_KEY } from '~constants/localStorage'
 import { LANDING_ROUTE } from '~constants/routes'
 import { useLocalStorage } from '~hooks/useLocalStorage'
+import { getBannerProps } from '~utils/getBannerProps'
 import { sendLoginOtp, verifyLoginOtp } from '~services/AuthService'
+import { Banner } from '~components/Banner'
 import Link from '~components/Link'
 import { AppGrid } from '~templates/AppGrid'
 
@@ -17,6 +19,7 @@ import {
   trackAdminLogin,
   trackAdminLoginFailure,
 } from '~features/analytics/AnalyticsService'
+import { useEnv } from '~features/env/queries'
 
 import { LoginForm, LoginFormInputs } from './components/LoginForm'
 import { LoginImageSvgr } from './components/LoginImageSvgr'
@@ -93,14 +96,30 @@ const NonMobileSidebarGridArea: FC = ({ children }) => (
 )
 
 export const LoginPage = (): JSX.Element => {
+  const { data: { siteBannerContentReact, isLoginBannerReact } = {} } = useEnv()
   const [, setIsAuthenticated] = useLocalStorage<boolean>(LOGGED_IN_KEY)
   const [email, setEmail] = useState<string>()
+  const [otpPrefix, setOtpPrefix] = useState<string>('')
   const { t } = useTranslation()
+
+  // TODO (#4279): Revert back to non-react banners post-migration.
+  const bannerContent = useMemo(
+    // Use || instead of ?? so that we fall through even if previous banners are empty string.
+    () => siteBannerContentReact || isLoginBannerReact,
+    [siteBannerContentReact, isLoginBannerReact],
+  )
+
+  const bannerProps = useMemo(
+    () => getBannerProps(bannerContent),
+    [bannerContent],
+  )
 
   const handleSendOtp = async ({ email }: LoginFormInputs) => {
     const trimmedEmail = email.trim()
-    await sendLoginOtp(trimmedEmail)
-    return setEmail(trimmedEmail)
+    await sendLoginOtp(trimmedEmail).then(({ otpPrefix }) => {
+      setOtpPrefix(otpPrefix)
+      setEmail(trimmedEmail)
+    })
   }
 
   const handleVerifyOtp = async ({ otp }: OtpFormInputs) => {
@@ -127,11 +146,16 @@ export const LoginPage = (): JSX.Element => {
     if (!email) {
       throw new Error('Something went wrong')
     }
-    await sendLoginOtp(email)
+    await sendLoginOtp(email).then(({ otpPrefix }) => setOtpPrefix(otpPrefix))
   }
 
   return (
     <BackgroundBox>
+      {bannerProps ? (
+        <Banner useMarkdown variant={bannerProps.variant}>
+          {bannerProps.msg}
+        </Banner>
+      ) : null}
       <BaseGridLayout flex={1}>
         <NonMobileSidebarGridArea>
           <LoginImageSvgr maxW="100%" aria-hidden />
@@ -165,6 +189,7 @@ export const LoginPage = (): JSX.Element => {
             ) : (
               <OtpForm
                 email={email}
+                otpPrefix={otpPrefix}
                 onSubmit={handleVerifyOtp}
                 onResendOtp={handleResendOtp}
               />

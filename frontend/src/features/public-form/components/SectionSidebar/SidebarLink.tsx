@@ -1,12 +1,12 @@
-import { useCallback } from 'react'
-import { Box, chakra, useStyleConfig } from '@chakra-ui/react'
+import { useCallback, useMemo } from 'react'
+import { Box, chakra, useStyleConfig, VisuallyHidden } from '@chakra-ui/react'
+
+import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
 import {
   SidebarSectionMeta,
-  usePublicFormContext,
-} from '~features/public-form/PublicFormContext'
-
-import { useFormSections } from '../FormFields/FormSectionsContext'
+  useFormSections,
+} from '../FormFields/FormSectionsContext'
 
 interface SidebarLinkProps {
   /**
@@ -24,11 +24,15 @@ export const SidebarLink = ({
   isActive,
   sectionMeta,
 }: SidebarLinkProps): JSX.Element => {
-  const { sectionRefs } = useFormSections()
+  const { sectionRefs, setNavigatedSectionId } = useFormSections()
   const { miniHeaderRef, onMobileDrawerClose } = usePublicFormContext()
 
+  const sectionRef = useMemo(
+    () => sectionRefs[sectionMeta._id],
+    [sectionMeta._id, sectionRefs],
+  )
+
   const handleClick = useCallback(() => {
-    const sectionRef = sectionRefs[sectionMeta._id]
     if (!sectionRef || !sectionRef.current) return
 
     const headerOffset = miniHeaderRef.current?.clientHeight ?? 0
@@ -42,7 +46,17 @@ export const SidebarLink = ({
       top: offsetPosition,
       behavior: 'smooth',
     })
-  }, [miniHeaderRef, sectionMeta._id, sectionRefs, onMobileDrawerClose])
+    // Remove scrolling on focus to prevent app from jumping immediately to the
+    // element without smooth scrolling.
+    sectionRef.current.focus({ preventScroll: true })
+    setNavigatedSectionId(sectionMeta._id)
+  }, [
+    sectionRef,
+    miniHeaderRef,
+    onMobileDrawerClose,
+    sectionMeta._id,
+    setNavigatedSectionId,
+  ])
 
   const styles = useStyleConfig('Link', {
     colorScheme: 'secondary',
@@ -71,6 +85,7 @@ export const SidebarLink = ({
           aria-hidden
         />
       )}
+      <VisuallyHidden>Navigate to section: </VisuallyHidden>
       {sectionMeta.title}
     </chakra.button>
   )

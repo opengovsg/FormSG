@@ -11,11 +11,12 @@ const { ValidationOptional, ValidationRequired } = composeStories(stories)
 describe('required field', () => {
   it('renders error when field is not selected before submitting', async () => {
     // Arrange
+    const user = userEvent.setup()
     render(<ValidationRequired />)
-    const submitButton = screen.getByRole('button', { name: /submit/i })
+    const submitButton = screen.getByText(/submit/i)
 
     // Act
-    await act(async () => userEvent.click(submitButton))
+    await user.click(submitButton)
 
     // Assert
     // Should show error message.
@@ -24,40 +25,47 @@ describe('required field', () => {
 
   it('renders success when a valid option is typed', async () => {
     // Arrange
+    const user = userEvent.setup()
     render(<ValidationRequired />)
 
     const dropdownOptions = ValidationRequired.args?.schema
       ?.fieldOptions as string[]
-    const optionToType = dropdownOptions[0]
-    const submitButton = screen.getByRole('button', { name: /submit/i })
-    const input = screen.getByRole('textbox') as HTMLInputElement
+    const expectedOption = dropdownOptions[0]
+    const optionToType = expectedOption.slice(0, 6)
+    const submitButton = screen.getByText(/submit/i)
+    const input = screen.getByPlaceholderText(
+      'Select an option',
+    ) as HTMLInputElement
     // Act
-    userEvent.type(input, `${optionToType}{enter}`)
     // Act required due to react-hook-form usage.
-    await act(async () => userEvent.click(submitButton))
+    await user.type(input, `${optionToType}[enter]`)
+    await user.click(submitButton)
 
     // Assert
     // Should show success message.
     expect(
-      screen.getByText(`You have submitted: ${optionToType}`),
+      screen.getByText(`You have submitted: ${expectedOption}`),
     ).toBeInTheDocument()
   })
 
   it('renders success when a valid option is selected', async () => {
     // Arrange
+    const user = userEvent.setup()
     render(<ValidationRequired />)
 
     const dropdownOptions = ValidationRequired.args?.schema
       ?.fieldOptions as string[]
     const expectedOption = dropdownOptions[1]
-    const submitButton = screen.getByRole('button', { name: /submit/i })
-    const input = screen.getByRole('textbox') as HTMLInputElement
+    const submitButton = screen.getByText(/submit/i)
+    const input = screen.getByPlaceholderText(
+      'Select an option',
+    ) as HTMLInputElement
     // Act
-    userEvent.click(input)
-    // Arrow down twice and select input
-    userEvent.type(input, '{arrowdown}{arrowdown}{enter}')
+    user.click(input)
     // Act required due to react-hook-form usage.
-    await act(async () => userEvent.click(submitButton))
+    // Arrow down twice and select input
+    await user.type(input, '{arrowdown}{arrowdown}{enter}')
+    await user.click(submitButton)
 
     // Assert
     // Should show success message.
@@ -70,11 +78,12 @@ describe('required field', () => {
 describe('optional field', () => {
   it('renders success even when field has no input before submitting', async () => {
     // Arrange
+    const user = userEvent.setup()
     render(<ValidationOptional />)
-    const submitButton = screen.getByRole('button', { name: /submit/i })
+    const submitButton = screen.getByText(/submit/i)
 
     // Act
-    await act(async () => userEvent.click(submitButton))
+    await user.click(submitButton)
 
     // Assert
     // Should show success message.
@@ -83,20 +92,23 @@ describe('optional field', () => {
 
   it('renders success when a valid option is partially typed then selected', async () => {
     // Arrange
+    const user = userEvent.setup()
     render(<ValidationOptional />)
 
     const dropdownOptions = ValidationRequired.args?.schema
       ?.fieldOptions as string[]
     const expectedOption = dropdownOptions[1]
-    const submitButton = screen.getByRole('button', { name: /submit/i })
-    const input = screen.getByRole('textbox') as HTMLInputElement
+    const submitButton = screen.getByText(/submit/i)
+    const input = screen.getByPlaceholderText(
+      'Select an option',
+    ) as HTMLInputElement
     // Act
-    userEvent.click(input)
+    user.click(input)
     // Type the middle few characters of the option; dropdown should match properly,
     // then select the option.
-    userEvent.type(input, `${expectedOption.slice(5, 16)}{arrowdown}{enter}`)
+    await user.type(input, `${expectedOption.slice(5, 16)}{arrowdown}{enter}`)
     // Act required due to react-hook-form usage.
-    await act(async () => userEvent.click(submitButton))
+    await user.click(submitButton)
 
     // Assert
     // Should show success message.
@@ -109,24 +121,28 @@ describe('optional field', () => {
 describe('dropdown validation', () => {
   it('renders error when input does not match any dropdown option', async () => {
     // Arrange
+    const user = userEvent.setup()
     render(<ValidationRequired />)
 
     const dropdownOptions = ValidationRequired.args?.schema
       ?.fieldOptions as string[]
-    const submitButton = screen.getByRole('button', { name: /submit/i })
-    const inputElement = screen.getByRole('textbox') as HTMLInputElement
+    const submitButton = screen.getByText(/submit/i)
+    const input = screen.getByPlaceholderText(
+      'Select an option',
+    ) as HTMLInputElement
     const inputToType = 'this is not a valid option'
 
     expect(dropdownOptions.includes(inputToType)).toEqual(false)
 
     // Act
-    userEvent.click(inputElement)
-    userEvent.type(inputElement, inputToType)
-    userEvent.tab()
+    user.click(input)
+    await act(() => {
+      user.type(input, inputToType)
+      return user.tab()
+    })
     // Input should blur and input value should be cleared (since nothing was selected).
-    expect(inputElement.value).toEqual('')
-    // Act required due to react-hook-form usage.
-    await act(async () => userEvent.click(submitButton))
+    expect(input.value).toEqual('')
+    await userEvent.click(submitButton)
 
     // Assert
     expect(screen.getByText(REQUIRED_ERROR)).toBeInTheDocument()

@@ -1,3 +1,7 @@
+import { createAuthedSession } from '__tests__/integration/helpers/express-auth'
+import { setupApp } from '__tests__/integration/helpers/express-setup'
+import { buildCelebrateError } from '__tests__/unit/backend/helpers/celebrate'
+import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { flatten, sortBy, times } from 'lodash'
 import mongoose from 'mongoose'
 import { errAsync } from 'neverthrow'
@@ -6,11 +10,6 @@ import supertest, { Session } from 'supertest-session'
 import getFormModel from 'src/app/models/form.server.model'
 import getLoginModel from 'src/app/models/login.server.model'
 import { IUserSchema } from 'src/types'
-
-import { createAuthedSession } from 'tests/integration/helpers/express-auth'
-import { setupApp } from 'tests/integration/helpers/express-setup'
-import { buildCelebrateError } from 'tests/unit/backend/helpers/celebrate'
-import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import {
   FormAuthType,
@@ -206,7 +205,7 @@ describe('billings.routes', () => {
       })
 
       // Assert
-      expect(retrieveStatsSpy).toBeCalled()
+      expect(retrieveStatsSpy).toHaveBeenCalled()
       expect(response.status).toEqual(500)
       expect(response.body).toEqual({
         message: 'Error in retrieving billing records',

@@ -11,6 +11,7 @@ import {
   postVfnTransactionResponse,
 } from '~/mocks/msw/handlers/public-form'
 
+import { getMobileViewParameters } from '~utils/storybook'
 import Button from '~components/Button'
 import {
   VerifiableFieldInput,
@@ -132,6 +133,10 @@ PendingVerification.args = {
     value: '+6598888888',
   },
 }
+
+export const PendingVerificationMobile = Template.bind({})
+PendingVerificationMobile.args = PendingVerification.args
+PendingVerificationMobile.parameters = getMobileViewParameters()
 
 export const Verified = Template.bind({})
 Verified.args = {

@@ -1,18 +1,14 @@
 import { useMemo } from 'react'
-import { Waypoint } from 'react-waypoint'
-import { Box, forwardRef, Text } from '@chakra-ui/react'
+import { Box, forwardRef } from '@chakra-ui/react'
 
 import { FormColorTheme } from '~shared/types'
 
+import { useMdComponents } from '~hooks/useMdComponents'
+import { MarkdownText } from '~components/MarkdownText'
+
 import { SectionFieldContainerProps } from './SectionFieldContainer'
 
-export interface SectionFieldProps extends SectionFieldContainerProps {
-  /**
-   * Callback to be invoked when section boundary enters viewport.
-   * Can be used to set the current active section.
-   */
-  handleSectionEnter?: () => void
-}
+export type SectionFieldProps = SectionFieldContainerProps
 
 export const useSectionColor = (colorTheme?: FormColorTheme) =>
   useMemo(() => {
@@ -26,53 +22,54 @@ export const useSectionColor = (colorTheme?: FormColorTheme) =>
   }, [colorTheme])
 
 // Used by SectionFieldContainer
-export const SectionField = forwardRef<SectionFieldProps, 'div'>(
-  ({ schema, colorTheme = FormColorTheme.Blue, handleSectionEnter }, ref) => {
-    const sectionColor = useSectionColor(colorTheme)
-
+export const SectionField = forwardRef<SectionFieldContainerProps, 'div'>(
+  (props, ref) => {
     return (
       <Box
         _notFirst={{
           mt: '3.75rem',
         }}
       >
-        {/* id given so app can scrolled to this section */}
-        <Box id={schema._id} ref={ref}>
-          <Text textStyle="h2" color={sectionColor}>
-            {schema.title}
-          </Text>
-          <Text textStyle="body-1" color="secondary.700" mt="1rem">
-            {schema.description}
-          </Text>
-        </Box>
-        <Waypoint
-          topOffset="80px"
-          bottomOffset="70%"
-          onEnter={handleSectionEnter}
-        />
+        <BaseSectionField {...props} ref={ref} />
       </Box>
     )
   },
 )
 
 export const BaseSectionField = forwardRef<
-  Pick<SectionFieldProps, 'schema'>,
+  Pick<SectionFieldProps, 'schema' | 'colorTheme'>,
   'div'
->(({ schema }, ref) => {
+>(({ schema, colorTheme = FormColorTheme.Blue, ...rest }, ref) => {
+  const sectionColor = useSectionColor(colorTheme)
+  const mdComponents = useMdComponents({
+    styles: {
+      text: {
+        textStyle: 'body-1',
+        color: 'secondary.700',
+      },
+    },
+  })
+
   return (
     // id given so app can scrolled to this section.
-    <Box id={schema._id} ref={ref}>
-      <Text textStyle="h2" color="primary.600">
+    <Box
+      id={schema._id}
+      ref={ref}
+      _focus={{
+        boxShadow: `0 0 0 2px var(--chakra-colors-theme-${colorTheme}-500)`,
+      }}
+      {...rest}
+    >
+      <Box as="h2" textStyle="h2" color={sectionColor}>
         {schema.title}
-      </Text>
-      <Text
-        textStyle="body-1"
-        color="secondary.700"
-        mt="1rem"
-        whiteSpace="break-spaces"
-      >
-        {schema.description}
-      </Text>
+      </Box>
+      {schema.description && (
+        <Box mt="1rem">
+          <MarkdownText multilineBreaks components={mdComponents}>
+            {schema.description}
+          </MarkdownText>
+        </Box>
+      )}
     </Box>
   )
 })

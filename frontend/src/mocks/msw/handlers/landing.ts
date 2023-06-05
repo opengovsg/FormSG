@@ -7,6 +7,7 @@ export const MOCK_STATS: Partial<AnalyticStatsDto> = {
   userCount: 4923293,
   formCount: 8953950823,
   submissionCount: 401290581259083,
+  agencyCount: 45,
 }
 
 export const getLandingStats = ({

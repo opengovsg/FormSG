@@ -1,23 +1,16 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { SubmitHandler } from 'react-hook-form'
-import { Link, Text } from '@chakra-ui/react'
-import { isEqual } from 'lodash'
+import { datadogLogs } from '@datadog/browser-logs'
 import get from 'lodash/get'
 import simplur from 'simplur'
 
-import { BasicField } from '~shared/types'
-import {
-  FormAuthType,
-  FormResponseMode,
-  PreviewFormViewDto,
-} from '~shared/types/form'
+import { FormAuthType, FormResponseMode } from '~shared/types/form'
 
 import { usePreviewForm } from '~/features/admin-form/common/queries'
 import { FormNotFound } from '~/features/public-form/components/FormNotFound'
 import {
   PublicFormContext,
-  SidebarSectionMeta,
   SubmissionData,
 } from '~/features/public-form/PublicFormContext'
 import { useCommonFormProvider } from '~/features/public-form/PublicFormProvider'
@@ -28,6 +21,8 @@ import { FormFieldValues } from '~templates/Field'
 
 import NotFoundErrorPage from '~pages/NotFoundError'
 
+import { useEnv } from '../../env/queries'
+import { axiosDebugFlow } from '../../public-form/utils'
 import { usePreviewFormMutations } from '../common/mutations'
 
 interface PreviewFormProviderProps {
@@ -48,41 +43,23 @@ export const PreviewFormProvider = ({
     /* enabled= */ !submissionData,
   )
 
-  const [cachedDto, setCachedDto] = useState<PreviewFormViewDto>()
+  const { data: { useFetchForSubmissions } = {} } = useEnv()
 
-  const {
-    isNotFormId,
-    toast,
-    showErrorToast,
-    desyncToastIdRef,
-    vfnToastIdRef,
-    expiryInMs,
-    ...commonFormValues
-  } = useCommonFormProvider(formId)
+  const { isNotFormId, toast, vfnToastIdRef, expiryInMs, ...commonFormValues } =
+    useCommonFormProvider(formId)
 
-  useEffect(() => {
-    if (data) {
-      if (!cachedDto) {
-        setCachedDto(data)
-      } else if (!desyncToastIdRef.current && !isEqual(data, cachedDto)) {
-        desyncToastIdRef.current = toast({
-          status: 'warning',
-          title: (
-            <Text textStyle="subhead-1">
-              The form has been modified and your submission may fail.
-            </Text>
-          ),
-          description: (
-            <Text as="span">
-              <Link href={window.location.href}>Refresh</Link> for the latest
-              version of the form.
-            </Text>
-          ),
-          duration: null,
-        })
-      }
-    }
-  }, [data, cachedDto, toast, desyncToastIdRef])
+  const showErrorToast = useCallback(
+    (error) => {
+      toast({
+        status: 'danger',
+        description:
+          error instanceof Error
+            ? error.message
+            : 'An error occurred whilst processing your submission. Please refresh and try again.',
+      })
+    },
+    [toast],
+  )
 
   useEffect(() => {
     return () => {
@@ -100,7 +77,7 @@ export const PreviewFormProvider = ({
     if (vfnToastIdRef.current) {
       toast.close(vfnToastIdRef.current)
     }
-    const numVerifiable = cachedDto?.form.form_fields.filter((ff) =>
+    const numVerifiable = data?.form.form_fields.filter((ff) =>
       get(ff, 'isVerifiable'),
     ).length
 
@@ -116,94 +93,230 @@ export const PreviewFormProvider = ({
         ]} field[|s] again.`,
       })
     }
-  }, [cachedDto?.form.form_fields, toast, vfnToastIdRef])
+  }, [data?.form.form_fields, toast, vfnToastIdRef])
 
   useTimeout(generateVfnExpiryToast, expiryInMs)
 
   const isAuthRequired = useMemo(
-    () => !!cachedDto?.form && cachedDto.form.authType !== FormAuthType.NIL,
-    [cachedDto?.form],
+    () =>
+      !!data?.form &&
+      data.form.authType !== FormAuthType.NIL &&
+      !data.spcpSession,
+    [data?.form, data?.spcpSession],
   )
 
-  const sectionScrollData = useMemo(() => {
-    const { form } = cachedDto ?? {}
-    if (!form || isAuthRequired) {
-      return []
-    }
-    const sections: SidebarSectionMeta[] = []
-    if (form.startPage.paragraph)
-      sections.push({
-        title: 'Instructions',
-        _id: 'instructions',
-      })
-    form.form_fields.forEach((f) => {
-      if (f.fieldType !== BasicField.Section) return
-      sections.push({
-        title: f.title,
-        _id: f._id,
-      })
-    })
-    return sections
-  }, [cachedDto, isAuthRequired])
-
-  const { submitEmailModeFormMutation, submitStorageModeFormMutation } =
-    usePreviewFormMutations(formId)
+  const {
+    submitEmailModeFormMutation,
+    submitStorageModeFormMutation,
+    // TODO (#5826): Fallback mutation using Fetch. Remove once network error is resolved
+    submitEmailModeFormFetchMutation,
+    submitStorageModeFormFetchMutation,
+  } = usePreviewFormMutations(formId)
 
   const handleSubmitForm: SubmitHandler<FormFieldValues> = useCallback(
     async (formInputs) => {
-      const { form } = cachedDto ?? {}
+      const { form } = data ?? {}
       if (!form) return
 
+      const formData = {
+        formFields: form.form_fields,
+        formLogics: form.form_logics,
+        formInputs,
+      }
+
+      const logMeta = {
+        action: 'handleSubmitForm',
+        isPreview: true,
+        useFetchForSubmissions,
+      }
+
+      const onSuccess = ({ submissionId }: { submissionId: string }) =>
+        setSubmissionData({
+          id: submissionId,
+          timestamp: Date.now(),
+        })
+
       switch (form.responseMode) {
-        case FormResponseMode.Email:
+        case FormResponseMode.Email: {
           // Using mutateAsync so react-hook-form goes into loading state.
-          return (
-            submitEmailModeFormMutation
-              .mutateAsync(
-                { formFields: form.form_fields, formInputs },
-                {
-                  onSuccess: ({ submissionId }) =>
-                    setSubmissionData({
-                      id: submissionId,
-                      // TODO: Server should return server time so browser time is not used.
-                      timeInEpochMs: Date.now(),
-                    }),
-                },
-              )
-              // Using catch since we are using mutateAsync and react-hook-form will continue bubbling this up.
-              .catch(showErrorToast)
-          )
-        case FormResponseMode.Encrypt:
+
+          const submitEmailFormWithFetch = function () {
+            datadogLogs.logger.info(`handleSubmitForm: submitting via fetch`, {
+              meta: {
+                ...logMeta,
+                responseMode: 'email',
+                method: 'fetch',
+              },
+            })
+
+            return submitEmailModeFormFetchMutation
+              .mutateAsync(formData, { onSuccess })
+              .catch(async (error) => {
+                datadogLogs.logger.warn(`handleSubmitForm: ${error.message}`, {
+                  meta: {
+                    ...logMeta,
+                    responseMode: 'email',
+                    method: 'fetch',
+                    error: {
+                      message: error.message,
+                      name: error.name,
+                      stack: error.stack,
+                    },
+                  },
+                })
+                showErrorToast(error)
+              })
+          }
+
+          // TODO (#5826): Toggle to use fetch for submissions instead of axios. If enabled, this is used for testing and to use fetch instead of axios by default if testing shows fetch is more  stable. Remove once network error is resolved
+          if (useFetchForSubmissions) {
+            return submitEmailFormWithFetch()
+          } else {
+            datadogLogs.logger.info(`handleSubmitForm: submitting via axios`, {
+              meta: {
+                ...logMeta,
+                responseMode: 'email',
+                method: 'axios',
+              },
+            })
+
+            return (
+              submitEmailModeFormMutation
+                .mutateAsync(formData, { onSuccess })
+                // Using catch since we are using mutateAsync and react-hook-form will continue bubbling this up.
+                .catch((error) => {
+                  // TODO (#5826): Fallback mutation using Fetch. Remove once network error is resolved
+                  datadogLogs.logger.warn(
+                    `handleSubmitForm: ${error.message}`,
+                    {
+                      meta: {
+                        ...logMeta,
+                        responseMode: 'email',
+                        method: 'axios',
+                        error: {
+                          message: error.message,
+                          stack: error.stack,
+                        },
+                      },
+                    },
+                  )
+                  if (/Network Error/i.test(error.message)) {
+                    axiosDebugFlow()
+                    return submitEmailFormWithFetch()
+                  } else {
+                    // Show error toast from axios mutation if not network error
+                    showErrorToast(error)
+                  }
+                })
+            )
+          }
+        }
+        case FormResponseMode.Encrypt: {
           // Using mutateAsync so react-hook-form goes into loading state.
-          return (
-            submitStorageModeFormMutation
+
+          const submitStorageFormWithFetch = function () {
+            datadogLogs.logger.info(`handleSubmitForm: submitting via fetch`, {
+              meta: {
+                ...logMeta,
+                responseMode: 'storage',
+                method: 'fetch',
+              },
+            })
+
+            return submitStorageModeFormFetchMutation
               .mutateAsync(
                 {
-                  formFields: form.form_fields,
-                  formInputs,
+                  ...formData,
                   publicKey: form.publicKey,
                 },
                 {
-                  onSuccess: ({ submissionId }) =>
-                    setSubmissionData({
-                      id: submissionId,
-                      // TODO: Server should return server time so browser time is not used.
-                      timeInEpochMs: Date.now(),
-                    }),
+                  onSuccess,
                 },
               )
-              // Using catch since we are using mutateAsync and react-hook-form will continue bubbling this up.
-              .catch(showErrorToast)
-          )
+              .catch(async (error) => {
+                datadogLogs.logger.warn(`handleSubmitForm: ${error.message}`, {
+                  meta: {
+                    ...logMeta,
+                    responseMode: 'storage',
+                    method: 'fetch',
+                    error: {
+                      message: error.message,
+                      name: error.name,
+                      stack: error.stack,
+                    },
+                  },
+                })
+                showErrorToast(error)
+              })
+          }
+
+          // TODO (#5826): Toggle to use fetch for submissions instead of axios. If enabled, this is used for testing and to use fetch instead of axios by default if testing shows fetch is more  stable. Remove once network error is resolved
+          if (useFetchForSubmissions) {
+            return submitStorageFormWithFetch()
+          } else {
+            datadogLogs.logger.info(`handleSubmitForm: submitting via axios`, {
+              meta: {
+                ...logMeta,
+                responseMode: 'storage',
+                method: 'axios',
+              },
+            })
+
+            return (
+              submitStorageModeFormMutation
+                .mutateAsync(
+                  {
+                    ...formData,
+                    publicKey: form.publicKey,
+                  },
+                  {
+                    onSuccess,
+                  },
+                )
+                // Using catch since we are using mutateAsync and react-hook-form will continue bubbling this up.
+                .catch((error) => {
+                  // TODO (#5826): Fallback mutation using Fetch. Remove once network error is resolved
+                  datadogLogs.logger.warn(
+                    `handleSubmitForm: ${error.message}`,
+                    {
+                      meta: {
+                        ...logMeta,
+                        responseMode: 'storage',
+                        method: 'axios',
+                        error: {
+                          message: error.message,
+                          stack: error.stack,
+                        },
+                      },
+                    },
+                  )
+                  if (/Network Error/i.test(error.message)) {
+                    axiosDebugFlow()
+                    return submitStorageFormWithFetch()
+                  } else {
+                    // Show error toast from axios mutation if not network error
+                    showErrorToast(error)
+                  }
+                })
+            )
+          }
+        }
       }
     },
     [
-      cachedDto,
+      data,
       showErrorToast,
       submitEmailModeFormMutation,
       submitStorageModeFormMutation,
+      submitEmailModeFormFetchMutation,
+      submitStorageModeFormFetchMutation,
+      useFetchForSubmissions,
     ],
   )
+
+  const isPaymentEnabled =
+    data?.form.responseMode === FormResponseMode.Encrypt &&
+    data.form.payments_field.enabled
 
   if (isNotFormId) {
     return <NotFoundErrorPage />
@@ -216,18 +329,18 @@ export const PreviewFormProvider = ({
         formId,
         error,
         submissionData,
-        sectionScrollData,
         isAuthRequired,
         expiryInMs,
         isLoading,
+        handleLogout: undefined,
+        isPaymentEnabled,
+        isPreview: true,
         ...commonFormValues,
-        ...cachedDto,
+        ...data,
         ...rest,
       }}
     >
-      <Helmet
-        title={isFormNotFound ? 'Form not found' : cachedDto?.form.title}
-      />
+      <Helmet title={isFormNotFound ? 'Form not found' : data?.form.title} />
       {isFormNotFound ? <FormNotFound message={error?.message} /> : children}
     </PublicFormContext.Provider>
   )

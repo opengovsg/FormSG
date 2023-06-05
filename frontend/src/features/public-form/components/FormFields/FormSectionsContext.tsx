@@ -5,18 +5,27 @@ import {
   useContext,
   useEffect,
   useMemo,
-  useRef,
   useState,
 } from 'react'
+import useScrollSpy from 'react-use-scrollspy'
 
-import { BasicField } from '~shared/types/field'
+import { BasicField, FormFieldDto } from '~shared/types'
 
+import { FieldIdSet } from '~features/logic/types'
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
+import { PUBLICFORM_INSTRUCTIONS_SECTIONID } from '../FormInstructions/FormInstructionsContainer'
+
+export type SidebarSectionMeta = Pick<FormFieldDto, 'title' | '_id'>
+
 interface FormSectionsContextProps {
+  /** Scroll data to allow form-fillers to scroll to a particular section. */
+  sectionScrollData: SidebarSectionMeta[]
+  setVisibleFieldIdsForScrollData: (visibleFieldIds: FieldIdSet) => void
   sectionRefs: Record<string, RefObject<HTMLDivElement>>
   activeSectionId?: string
-  setActiveSectionId: (activeId: string) => void
+  navigatedSectionId?: string
+  setNavigatedSectionId: (id: string) => void
 }
 
 const FormSectionsContext = createContext<FormSectionsContextProps | undefined>(
@@ -30,10 +39,35 @@ interface FormSectionsProviderProps {
 export const FormSectionsProvider = ({
   children,
 }: FormSectionsProviderProps): JSX.Element => {
-  const { form } = usePublicFormContext()
+  const { form, isAuthRequired } = usePublicFormContext()
+
+  const [visibleFieldIds, setVisibleFieldIds] = useState<FieldIdSet>()
+
+  const sectionScrollData = useMemo(() => {
+    if (!form || isAuthRequired) return []
+    const sections: SidebarSectionMeta[] = []
+    if (form.startPage.paragraph)
+      sections.push({
+        title: 'Instructions',
+        _id: PUBLICFORM_INSTRUCTIONS_SECTIONID,
+      })
+    form.form_fields.forEach((f) => {
+      if (f.fieldType !== BasicField.Section || !visibleFieldIds?.has(f._id))
+        return
+      sections.push({
+        title: f.title,
+        _id: f._id,
+      })
+    })
+    return sections
+  }, [form, isAuthRequired, visibleFieldIds])
+
   const [sectionRefs, setSectionRefs] = useState<
     Record<string, RefObject<HTMLDivElement>>
   >({})
+  const [sectionRefsArr, setSectionRefsArr] = useState<
+    RefObject<HTMLDivElement>[]
+  >([])
 
   const orderedSectionFieldIds = useMemo(() => {
     if (!form) return
@@ -41,35 +75,41 @@ export const FormSectionsProvider = ({
       .filter((f) => f.fieldType === BasicField.Section)
       .map((f) => f._id)
     return form.startPage.paragraph
-      ? ['instructions'].concat(sections)
+      ? [PUBLICFORM_INSTRUCTIONS_SECTIONID].concat(sections)
       : sections
   }, [form])
-  const [activeSectionId, setActiveSectionId] = useState<string>()
-
-  const isFirstLoad = useRef(false)
-
-  /**
-   * Set default active section id on first load of the form.
-   */
-  useEffect(() => {
-    if (isFirstLoad && orderedSectionFieldIds) {
-      setActiveSectionId(orderedSectionFieldIds[0])
-      isFirstLoad.current = false
-    }
-  }, [orderedSectionFieldIds])
+  const [navigatedSectionId, setNavigatedSectionId] = useState<string>()
 
   useEffect(() => {
     if (!form) return
     const nextSectionRefs: Record<string, RefObject<HTMLDivElement>> = {}
+    const nextSectionRefsArr: RefObject<HTMLDivElement>[] = []
     orderedSectionFieldIds?.forEach((id) => {
-      nextSectionRefs[id] = createRef()
+      const sectionRef = createRef<HTMLDivElement>()
+      nextSectionRefs[id] = sectionRef
+      nextSectionRefsArr.push(sectionRef)
     })
     setSectionRefs(nextSectionRefs)
-  }, [activeSectionId, form, orderedSectionFieldIds])
+    setSectionRefsArr(nextSectionRefsArr)
+  }, [form, orderedSectionFieldIds])
+
+  const activeSection = useScrollSpy({
+    sectionElementRefs: sectionRefsArr,
+    // Seems to give the best results with this offset.
+    // Correctly switches the active section when the user navigates to the section.
+    offsetPx: -100,
+  })
 
   return (
     <FormSectionsContext.Provider
-      value={{ sectionRefs, activeSectionId, setActiveSectionId }}
+      value={{
+        sectionScrollData,
+        setVisibleFieldIdsForScrollData: setVisibleFieldIds,
+        sectionRefs,
+        activeSectionId: orderedSectionFieldIds?.[activeSection] ?? undefined,
+        navigatedSectionId,
+        setNavigatedSectionId,
+      }}
     >
       {children}
     </FormSectionsContext.Provider>

@@ -1,11 +1,10 @@
 import axios from 'axios'
-import { mocked } from 'ts-jest/utils'
 
 import { FormAuthType } from '../../../../shared/types'
 import * as PublicFormAuthService from '../PublicFormAuthService'
 
 jest.mock('axios')
-const MockAxios = mocked(axios, true)
+const MockAxios = jest.mocked(axios)
 
 const MOCK_REDIRECT_URL = 'redirectURL'
 const MOCK_FORM_ID = 'mock-form-id'
@@ -90,7 +89,7 @@ describe('PublicFormAuthService', () => {
         PublicFormAuthService.createRedirectURL(MOCK_FORM_ID)
 
       // Assert
-      await expect(rejectFunction).rejects.toThrowError(error)
+      await expect(rejectFunction).rejects.toThrow(error)
       expect(MockAxios.get).toHaveBeenCalledWith(
         `${PublicFormAuthService.PUBLIC_FORMS_ENDPOINT}/${MOCK_FORM_ID}/auth/redirect`,
         {

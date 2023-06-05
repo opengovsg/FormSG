@@ -1,3 +1,4 @@
+import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { ObjectId } from 'bson-ext'
 import { compareAsc } from 'date-fns'
 import { omit, times } from 'lodash'
@@ -5,8 +6,6 @@ import moment from 'moment-timezone'
 import mongoose from 'mongoose'
 
 import getFormFeedbackModel from 'src/app/models/form_feedback.server.model'
-
-import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import { FormFeedbackMetaDto } from '../../../../../shared/types'
 import { DatabaseError } from '../../core/core.errors'
@@ -30,11 +29,13 @@ describe('feedback.service', () => {
       // Arrange
       // Insert 3 form feedbacks.
       const validFormId = new ObjectId()
+      const validSubmissionId = new ObjectId().toHexString()
       const expectedFeedbackCount = 3
       const feedbackPromises = times(expectedFeedbackCount, (count) =>
         FormFeedback.create({
           comment: `test feedback ${count}`,
           formId: validFormId,
+          submissionId: validSubmissionId,
           rating: 5,
         }),
       )
@@ -109,6 +110,8 @@ describe('feedback.service', () => {
   })
 
   describe('getFormFeedbacks', () => {
+    const MOCK_SUBMISSION_ID = new ObjectId().toHexString()
+
     it('should return correct feedback responses', async () => {
       // Arrange
       const expectedCount = 3
@@ -116,6 +119,7 @@ describe('feedback.service', () => {
       const expectedFbPromises = times(expectedCount, (count) =>
         FormFeedback.create({
           formId: mockFormId,
+          submissionId: MOCK_SUBMISSION_ID,
           comment: `cool form ${count}`,
           rating: 5 - count,
         }),
@@ -123,6 +127,7 @@ describe('feedback.service', () => {
       // Add another feedback with a different form id.
       await FormFeedback.create({
         formId: new ObjectId(),
+        submissionId: MOCK_SUBMISSION_ID,
         comment: 'boo this form sux',
         rating: 1,
       })
@@ -194,6 +199,7 @@ describe('feedback.service', () => {
       const mockFormId = new ObjectId().toHexString()
       const createdFb = await FormFeedback.create({
         formId: mockFormId,
+        submissionId: MOCK_SUBMISSION_ID,
         // Missing comment key value.
         rating: 3,
       })
@@ -281,6 +287,7 @@ describe('feedback.service', () => {
       await FormFeedback.create({
         comment: `test feedback`,
         formId: MOCK_FORM_ID,
+        submissionId: MOCK_SUBMISSION_ID,
         rating: 5,
       })
 

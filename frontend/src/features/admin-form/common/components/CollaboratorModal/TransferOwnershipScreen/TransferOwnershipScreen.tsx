@@ -31,7 +31,7 @@ export const TransferOwnershipScreen = (): JSX.Element | null => {
   return (
     <>
       <ModalHeader color="secondary.700">Transfer form ownership</ModalHeader>
-      <ModalBody whiteSpace="pre-line" color="secondary.500">
+      <ModalBody whiteSpace="pre-wrap" color="secondary.500">
         <Text>
           You are transferring this form to{' '}
           <Text color="danger.500" as="span" fontWeight={700}>

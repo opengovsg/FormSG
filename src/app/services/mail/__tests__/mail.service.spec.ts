@@ -71,7 +71,7 @@ describe('mail.service', () => {
         senderMail: 'notAnEmail',
       }
       // Act + Assert
-      expect(() => new MailService(invalidParams)).toThrowError(
+      expect(() => new MailService(invalidParams)).toThrow(
         `MailService constructor: senderMail: ${invalidParams.senderMail} is not a valid email`,
       )
     })
@@ -227,6 +227,7 @@ describe('mail.service', () => {
   describe('sendLoginOtp', () => {
     const MOCK_OTP = '123456'
     const MOCK_IP = 'mock:5000'
+    const MOCK_OTP_PREFIX = 'ABC'
 
     const generateExpectedArg = async () => {
       return {
@@ -239,6 +240,7 @@ describe('mail.service', () => {
             appName: MOCK_APP_NAME,
             appUrl: MOCK_APP_URL,
             ipAddress: MOCK_IP,
+            otpPrefix: MOCK_OTP_PREFIX,
           })
         )._unsafeUnwrap(),
         headers: {
@@ -259,6 +261,7 @@ describe('mail.service', () => {
       const actualResult = await mailService.sendLoginOtp({
         recipient: MOCK_VALID_EMAIL,
         otp: MOCK_OTP,
+        otpPrefix: MOCK_OTP_PREFIX,
         ipAddress: MOCK_IP,
       })
 
@@ -278,6 +281,7 @@ describe('mail.service', () => {
       const actualResult = await mailService.sendLoginOtp({
         recipient: invalidEmail,
         otp: MOCK_OTP,
+        otpPrefix: MOCK_OTP_PREFIX,
         ipAddress: MOCK_IP,
       })
       // Assert
@@ -303,6 +307,7 @@ describe('mail.service', () => {
       const actualResult = await mailService.sendLoginOtp({
         recipient: MOCK_VALID_EMAIL,
         otp: MOCK_OTP,
+        otpPrefix: MOCK_OTP_PREFIX,
         ipAddress: MOCK_IP,
       })
 
@@ -330,6 +335,7 @@ describe('mail.service', () => {
       const actualResult = await mailService.sendLoginOtp({
         recipient: MOCK_VALID_EMAIL,
         otp: MOCK_OTP,
+        otpPrefix: MOCK_OTP_PREFIX,
         ipAddress: MOCK_IP,
       })
 
@@ -360,6 +366,7 @@ describe('mail.service', () => {
       const actualResult = await mailService.sendLoginOtp({
         recipient: MOCK_VALID_EMAIL,
         otp: MOCK_OTP,
+        otpPrefix: MOCK_OTP_PREFIX,
         ipAddress: MOCK_IP,
       })
 

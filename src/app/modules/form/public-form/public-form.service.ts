@@ -7,7 +7,7 @@ import { createLoggerWithLabel } from '../../../config/logger'
 import getFormModel from '../../../models/form.server.model'
 import getFormFeedbackModel from '../../../models/form_feedback.server.model'
 import { DatabaseError } from '../../core/core.errors'
-import { MYINFO_COOKIE_NAME } from '../../myinfo/myinfo.constants'
+import { MYINFO_LOGIN_COOKIE_NAME } from '../../myinfo/myinfo.constants'
 import { SGID_COOKIE_NAME } from '../../sgid/sgid.constants'
 import { JwtName } from '../../spcp/spcp.types'
 import { FormNotFoundError } from '../form.errors'
@@ -21,6 +21,7 @@ const logger = createLoggerWithLabel(module)
 /**
  * Inserts given feedback to the database.
  * @param formId the formId to insert the feedback for
+ * @param submissionId the submissionId of the form submission that the feedback is for
  * @param rating the feedback rating to insert
  * @param comment the comment accompanying the feedback
  * @returns ok(true) if successfully inserted
@@ -33,7 +34,7 @@ export const insertFormFeedback = ({
   comment,
 }: {
   formId: string
-  submissionId?: string
+  submissionId: string
   rating: number
   comment?: string
 }): ResultAsync<IFormFeedbackSchema, FormNotFoundError | DatabaseError> => {
@@ -76,7 +77,7 @@ export const getCookieNameByAuthType = (
 ): string => {
   switch (authType) {
     case FormAuthType.MyInfo:
-      return MYINFO_COOKIE_NAME
+      return MYINFO_LOGIN_COOKIE_NAME
     case FormAuthType.SGID:
       return SGID_COOKIE_NAME
     default:
@@ -99,8 +100,8 @@ export const createMetatags = ({
   imageBaseUrl,
 }: {
   formId: string
-  appUrl: string
-  imageBaseUrl: string
+  appUrl?: string
+  imageBaseUrl?: string
 }): ResultAsync<Metatags, FormNotFoundError | DatabaseError> => {
   return ResultAsync.fromPromise(FormModel.findById(formId).exec(), (error) => {
     logger.error({
@@ -122,8 +123,10 @@ export const createMetatags = ({
       description: form.startPage?.paragraph,
       appUrl,
       images: [
-        `${imageBaseUrl}/public/modules/core/img/og/img_metatag.png`,
-        `${imageBaseUrl}/public/modules/core/img/og/logo-vertical-color.png`,
+        `${imageBaseUrl ?? '.'}/public/modules/core/img/og/img_metatag.png`,
+        `${
+          imageBaseUrl ?? '.'
+        }/public/modules/core/img/og/logo-vertical-color.png`,
       ],
       twitterImage: `${imageBaseUrl}/public/modules/core/img/og/logo-vertical-color.png`,
     }

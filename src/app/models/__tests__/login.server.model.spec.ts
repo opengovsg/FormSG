@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
+import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { ObjectId } from 'bson-ext'
 import { omit } from 'lodash'
 import moment from 'moment-timezone'
@@ -11,8 +12,6 @@ import {
   IPopulatedForm,
   IUserSchema,
 } from 'src/types'
-
-import dbHandler from 'tests/unit/backend/helpers/jest-db'
 
 import { FormAuthType } from '../../../../shared/types'
 
@@ -53,7 +52,7 @@ describe('login.server.model', () => {
       })
 
       // Assert
-      await expect(actualPromise).rejects.toThrowError(
+      await expect(actualPromise).rejects.toThrow(
         mongoose.Error.ValidationError,
       )
     })
@@ -66,7 +65,7 @@ describe('login.server.model', () => {
       })
 
       // Assert
-      await expect(actualPromise).rejects.toThrowError(
+      await expect(actualPromise).rejects.toThrow(
         mongoose.Error.ValidationError,
       )
     })
@@ -79,7 +78,7 @@ describe('login.server.model', () => {
       })
 
       // Assert
-      await expect(actualPromise).rejects.toThrowError(
+      await expect(actualPromise).rejects.toThrow(
         mongoose.Error.ValidationError,
       )
     })
@@ -90,7 +89,7 @@ describe('login.server.model', () => {
       const actualPromise = LoginModel.create(omit(DEFAULT_PARAMS, 'authType'))
 
       // Assert
-      await expect(actualPromise).rejects.toThrowError(
+      await expect(actualPromise).rejects.toThrow(
         mongoose.Error.ValidationError,
       )
     })
@@ -101,7 +100,7 @@ describe('login.server.model', () => {
       const actualPromise = LoginModel.create(omit(DEFAULT_PARAMS, 'esrvcId'))
 
       // Assert
-      await expect(actualPromise).rejects.toThrowError(
+      await expect(actualPromise).rejects.toThrow(
         mongoose.Error.ValidationError,
       )
     })

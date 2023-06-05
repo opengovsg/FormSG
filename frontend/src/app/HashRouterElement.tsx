@@ -1,6 +1,7 @@
-import { Navigate, useLocation } from 'react-router-dom'
+import { useLayoutEffect, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 
-import { ROOT_ROUTE } from '~constants/routes'
+import { ADMINFORM_USETEMPLATE_ROUTE, DASHBOARD_ROUTE } from '~constants/routes'
 
 import { PublicElement } from './PublicElement'
 
@@ -24,44 +25,69 @@ type FormRegExpMatchArray = RegExpMatchArray & {
   }
 }
 
-const hashRouteMapper = [
+const pathMapper = [
   {
-    regex: /^#!\/(?<formid>[0-9a-fA-F]{24})$/,
+    regex: /^\/(?<formid>[0-9a-fA-F]{24})\/?$/,
     getTarget: (m: FormRegExpMatchArray) => `/${m.groups.formid}`,
   },
   {
-    regex: /^#!\/(?<formid>[0-9a-fA-F]{24})\/admin$/,
-    getTarget: (m: FormRegExpMatchArray) =>
-      `${ROOT_ROUTE}/admin/form/${m.groups.formid}`,
+    regex: /^\/(?<formid>[0-9a-fA-F]{24})\/admin\/?$/,
+    getTarget: (m: FormRegExpMatchArray) => `/admin/form/${m.groups.formid}`,
   },
   {
-    regex: /^#!\/(?<formid>[0-9a-fA-F]{24})\/preview$/,
+    regex: /^\/(?<formid>[0-9a-fA-F]{24})\/preview\/?$/,
     getTarget: (m: FormRegExpMatchArray) =>
-      `${ROOT_ROUTE}/admin/form/${m.groups.formid}/preview`,
+      `/admin/form/${m.groups.formid}/preview`,
   },
   {
-    regex: /^#!\/examples$/,
-    getTarget: (m: FormRegExpMatchArray) => `${ROOT_ROUTE}/admin`,
+    regex: /^\/(?<formid>[0-9a-fA-F]{24})\/use-template\/?$/,
+    getTarget: (m: FormRegExpMatchArray) =>
+      `/admin/form/${m.groups.formid}/${ADMINFORM_USETEMPLATE_ROUTE}`,
+  },
+  {
+    regex: /^\/forms\/?$/,
+    getTarget: (m: FormRegExpMatchArray) => `${DASHBOARD_ROUTE}`,
+  },
+  {
+    regex: /^\/examples\/?$/,
+    getTarget: (m: FormRegExpMatchArray) => `/examples`,
   },
 ]
 
 export const HashRouterElement = ({
   element,
   strict = false,
-}: HashRouterElementProps): React.ReactElement => {
+}: HashRouterElementProps): React.ReactElement | null => {
   const location = useLocation()
+  const [hasMounted, setHasMounted] = useState(false)
 
-  // Retire this custom routing after July 2024
-  if (location.hash.startsWith('#!/')) {
-    // angular routes that need to be mapped
-    for (const { regex, getTarget } of hashRouteMapper) {
-      const match = location.hash.match(regex)
-      if (match) {
-        const redirectTo = getTarget(match as FormRegExpMatchArray)
-        return <Navigate replace to={redirectTo} state={{ from: location }} />
+  useLayoutEffect(() => {
+    let hasRedirect = false
+
+    // we capture angular links where the path is in the url hash. e.g. starting with #!/
+    // the angular links may have a query string in the hash too 🤮😭🙄, so we must do our own extraction of the hash
+    const matches = location.hash.match(/^#!(\/[^?]*)(\?.*)?$/)
+
+    // Retire this custom routing after July 2024
+    if (matches) {
+      const path = matches[1]
+      const querystring = matches[2] || ''
+
+      // angular routes that need to be mapped
+      for (const { regex, getTarget } of pathMapper) {
+        const match = path.match(regex)
+        if (match) {
+          const redirectTo = getTarget(match as FormRegExpMatchArray)
+          hasRedirect = true
+          window.location.assign(`${redirectTo}${querystring}`)
+          break
+        }
       }
     }
-  }
+    setHasMounted(!hasRedirect)
+  }, [location.hash])
+
+  if (!hasMounted) return null
 
   return <PublicElement element={element} strict={strict} />
 }

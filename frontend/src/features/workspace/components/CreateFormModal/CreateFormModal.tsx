@@ -8,7 +8,7 @@ import {
 import { ModalCloseButton } from '~components/Modal'
 
 import { CreateFormModalContent } from './CreateFormModalContent'
-import { CreateFormWizardProvider } from './CreateFormWizardContext'
+import { CreateFormWizardProvider } from './CreateFormWizardProvider'
 
 export type CreateFormModalProps = Pick<
   UseDisclosureReturn,

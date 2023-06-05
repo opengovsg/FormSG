@@ -1,4 +1,7 @@
-FROM node:fermium-alpine3.13 as build
+# syntax=docker/dockerfile:1
+
+FROM node:hydrogen-alpine3.16 as build
+
 # node-modules-builder stage installs/compiles the node_modules folder
 # Python version must be specified starting in alpine3.12
 RUN apk update && apk upgrade && \
@@ -10,21 +13,55 @@ WORKDIR /build
 COPY package.json package-lock.json ./
 COPY shared/package.json shared/package-lock.json ./shared/
 COPY frontend/package.json frontend/package-lock.json ./frontend/
+COPY frontend/patches ./frontend/patches
 
 # Allow running of postinstall scripts
-RUN npm config set unsafe-perm true
-RUN npm ci
+# RUN npm config set unsafe-perm true
+# --legacy-peer-deps flag
+# A breaking change in the peer dependency resolution strategy was introduced in
+# npm 7. This resulted in npm throwing an error when installing packages:
+# npm ERR! code ERESOLVE
+# npm ERR! ERESOLVE unable to resolve dependency tree
+# See also:
+# * https://stackoverflow.com/questions/66239691/what-does-npm-install-legacy-peer-deps-do-exactly-when-is-it-recommended-wh
+# NOTE: This flag is used again later in the build process when calling npm prune.
+RUN npm ci --legacy-peer-deps
 
 COPY . ./
 
-ENV NODE_OPTIONS=--max-old-space-size=3072
+# --openssl-legacy-provider flag
+# A breaking change in the SSL provider was introduced in node 17. This caused 
+# webpack 4 to break. This is an interim solution; we should investigate removing
+# this flag once angular has been removed and we have upgraded to CRA5 (which uses
+# webpack 5). 
+# See also:
+# * https://stackoverflow.com/questions/69692842/error-message-error0308010cdigital-envelope-routinesunsupported
+# * https://github.com/webpack/webpack/issues/14532#issuecomment-1304378535
+# These options are only used in the build stage, not the start stage.
+ENV NODE_OPTIONS="--max-old-space-size=4096 --openssl-legacy-provider"
 
 RUN npm run build
-RUN npm prune --production
+
+ARG APP_VERSION
+ARG APP_URL
+ARG REPO_URL
+
+# Upload datadog source maps from secret mount, id MUST be `id=dd_api_key` in the docker build command
+# Mount creates a file inside /run/secrets/dd_api_key, and source to load the environment variables
+# For the content of the mounted file is only accessible in the RUN command where it’s referred in, use && command.
+RUN --mount=type=secret,id=dd_api_key \
+    export DATADOG_API_KEY=$(cat /run/secrets/dd_api_key) && \
+    npx @datadog/datadog-ci sourcemaps upload ./dist/frontend \
+    --service=formsg-react \
+    --release-version=$APP_VERSION \
+    --minified-path-prefix=$APP_URL \
+    --repository-url=$REPO_URL
+
+RUN npm prune --production --legacy-peer-deps
 
 # This stage builds the final container
-FROM node:fermium-alpine3.13
-LABEL maintainer=FormSG<form@open.gov.sg>
+FROM node:hydrogen-alpine3.16
+LABEL maintainer=FormSG<formsg@data.gov.sg>
 WORKDIR /opt/formsg
 
 # Install build from backend-build
@@ -44,7 +81,7 @@ RUN mv /opt/formsg/dist/backend/shared /opt/formsg/
 # https://www.npmjs.com/package/puppeteer-core?activeTab=versions for corresponding versions
 
 RUN apk add --no-cache \
-    chromium=86.0.4240.111-r0 \
+    chromium=102.0.5005.182-r0 \
     nss \
     freetype \
     freetype-dev \
@@ -52,8 +89,13 @@ RUN apk add --no-cache \
     ca-certificates \
     ttf-freefont \
     tini
+
+# Tell Puppeteer to skip installing Chrome. We'll be using the installed package.
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+
 # This package is needed to render Chinese characters in autoreply PDFs
-RUN echo @edge http://nl.alpinelinux.org/alpine/edge/testing >> /etc/apk/repositories && apk add wqy-zenhei@edge
+RUN echo @edge http://nl.alpinelinux.org/alpine/edge/testing >> /etc/apk/repositories && apk add font-wqy-zenhei@edge
 ENV CHROMIUM_BIN=/usr/bin/chromium-browser
 
 # Run as non-privileged user

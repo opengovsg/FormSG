@@ -10,7 +10,8 @@ import FormLabel from '~components/FormControl/FormLabel'
 import Input from '~components/Input'
 import Textarea from '~components/Textarea'
 
-import { DrawerContentContainer } from './common/DrawerContentContainer'
+import { CreatePageDrawerContentContainer } from '../../../../common'
+
 import { FormFieldDrawerActions } from './common/FormFieldDrawerActions'
 import { EditFieldProps } from './common/types'
 import { useEditFieldForm } from './common/useEditFieldForm'
@@ -23,7 +24,6 @@ export const EditHeader = ({ field }: EditHeaderProps): JSX.Element => {
   const {
     register,
     formState: { errors },
-    isSaveEnabled,
     buttonText,
     handleUpdateField,
     isLoading,
@@ -43,9 +43,9 @@ export const EditHeader = ({ field }: EditHeaderProps): JSX.Element => {
   )
 
   return (
-    <DrawerContentContainer>
+    <CreatePageDrawerContentContainer>
       <FormControl isRequired isReadOnly={isLoading} isInvalid={!!errors.title}>
-        <FormLabel>Section header</FormLabel>
+        <FormLabel>Section heading</FormLabel>
         <Input autoFocus {...register('title', requiredValidationRule)} />
         <FormErrorMessage>{errors?.title?.message}</FormErrorMessage>
       </FormControl>
@@ -56,11 +56,10 @@ export const EditHeader = ({ field }: EditHeaderProps): JSX.Element => {
       </FormControl>
       <FormFieldDrawerActions
         isLoading={isLoading}
-        isSaveEnabled={isSaveEnabled}
         buttonText={buttonText}
         handleClick={handleUpdateField}
         handleCancel={handleCancel}
       />
-    </DrawerContentContainer>
+    </CreatePageDrawerContentContainer>
   )
 }

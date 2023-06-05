@@ -24,6 +24,18 @@ export type ClientEnvVars = {
   isSPMaintenance: string // Singpass maintenance message
   isCPMaintenance: string // Corppass maintenance message
   myInfoBannerContent: string // MyInfo maintenance message
+  // TODO: remove after React rollout #4786, #4279
   GATrackingID: string | null
+  isGeneralMaintenanceReact: string
+  isLoginBannerReact: string
+  siteBannerContentReact: string
+  adminBannerContentReact: string
+
   spcpCookieDomain: string // Cookie domain used for removing spcp cookies
+  stripePublishableKey: string
+  maxPaymentAmountCents: number
+  minPaymentAmountCents: number
+  // TODO (#5826): Toggle to use fetch for submissions instead of axios. Remove once network error is resolved
+  useFetchForSubmissions: boolean
+  secretEnv: string
 }

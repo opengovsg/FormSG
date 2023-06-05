@@ -10,8 +10,11 @@ import {
   useMergeRefs,
   useMultiStyleConfig,
 } from '@chakra-ui/react'
+import imageCompression from 'browser-image-compression'
 import omit from 'lodash/omit'
 import simplur from 'simplur'
+
+import { MB } from '~shared/constants/file'
 
 import { ATTACHMENT_THEME_KEY } from '~theme/components/Field/Attachment'
 import { ThemeColorScheme } from '~theme/foundations/colours'
@@ -23,6 +26,8 @@ import {
   getInvalidFileExtensionsInZip,
   getReadableFileSize,
 } from './utils'
+
+const IMAGE_UPLOAD_TYPES_TO_COMPRESS = ['image/jpeg', 'image/png']
 
 export interface AttachmentProps extends UseFormControlProps<HTMLElement> {
   /**
@@ -75,6 +80,7 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
       value,
       name,
       colorScheme,
+      title,
       ...props
     },
     ref,
@@ -93,28 +99,6 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
       () => !value && showFileSize && readableMaxSize,
       [value, readableMaxSize, showFileSize],
     )
-
-    const ariaDescribedBy = useMemo(() => {
-      const describedByIds = new Set<string>()
-      // Must be in this order so the screen reader reads out something coherent.
-      // 1. Label text (if available)
-      // 2. Initial describedby text (if available)
-      // 3. Max size text (if prop is true)
-      if (inputProps.id) {
-        describedByIds.add(`${inputProps.id}-label`)
-      }
-      inputProps['aria-describedby']
-        ?.split(' ')
-        .map((id) => describedByIds.add(id))
-      if (showMaxSize) {
-        describedByIds.add(maxSizeTextId)
-      }
-
-      // Remove helptext, since label should already consist of the text
-      describedByIds.delete(`${inputProps.id}-helptext`)
-
-      return Array.from(describedByIds).filter(Boolean).join(' ').trim()
-    }, [inputProps, maxSizeTextId, showMaxSize])
 
     const handleFileDrop = useCallback<NonNullable<DropzoneProps['onDrop']>>(
       async ([acceptedFile], rejectedFiles) => {
@@ -160,14 +144,39 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
           }
         }
 
+        // Compress images that are too large.
+        if (
+          IMAGE_UPLOAD_TYPES_TO_COMPRESS.includes(acceptedFile.type) &&
+          maxSize &&
+          acceptedFile.size > maxSize
+        ) {
+          return imageCompression(acceptedFile, {
+            maxSizeMB: maxSize ? maxSize / MB : undefined,
+            maxWidthOrHeight: 1440,
+            initialQuality: 0.8,
+            useWebWorker: false,
+            preserveExif: true,
+          }).then((blob) =>
+            onChange(
+              new File([blob], acceptedFile.name, {
+                type: blob.type,
+              }),
+            ),
+          )
+        }
+
         onChange(acceptedFile)
       },
-      [accept, onChange, onError],
+      [accept, maxSize, onChange, onError],
     )
 
     const fileValidator = useCallback<NonNullable<DropzoneProps['validator']>>(
       (file) => {
-        if (maxSize && file.size > maxSize) {
+        if (
+          !IMAGE_UPLOAD_TYPES_TO_COMPRESS.includes(file.type) &&
+          maxSize &&
+          file.size > maxSize
+        ) {
           return {
             code: 'file-too-large',
             message: `You have exceeded the limit, please upload a file below ${readableMaxSize}`,
@@ -204,7 +213,7 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
     const processedRootProps = useMemo(() => {
       return getRootProps({
         // Root div does not need id prop, prevents duplicate ids.
-        ...omit(inputProps, 'id'),
+        ...omit(inputProps, ['id', 'aria-describedby']),
         // Bunch of extra work to prevent field from being used when in readOnly
         // state.
         onKeyDown: (e) => {
@@ -214,9 +223,8 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
           }
         },
         tabIndex: value ? -1 : 0,
-        'aria-describedby': ariaDescribedBy,
       })
-    }, [ariaDescribedBy, getRootProps, inputProps, value])
+    }, [getRootProps, inputProps, value])
 
     const processedInputProps = useMemo(() => {
       return getInputProps({
@@ -230,8 +238,9 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
         <Box __css={styles.container}>
           <Box
             {...processedRootProps}
-            ref={mergedRefs}
-            __css={value ? undefined : styles.dropzone}
+            {...(!value
+              ? { role: 'button', ref: mergedRefs, __css: styles.dropzone }
+              : {})}
           >
             {value ? (
               <AttachmentFileInfo
@@ -242,6 +251,8 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
               <AttachmentDropzone
                 isDragActive={isDragActive}
                 inputProps={processedInputProps}
+                readableMaxSize={readableMaxSize}
+                question={title}
               />
             )}
           </Box>
@@ -251,6 +262,7 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
               color="secondary.400"
               mt="0.5rem"
               textStyle="body-2"
+              aria-hidden
             >
               Maximum file size: {readableMaxSize}
             </Text>

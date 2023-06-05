@@ -15,6 +15,7 @@ export type ThemeColorScheme =
   | 'theme-red'
   | 'theme-brown'
   | 'white'
+  | 'subtle'
 
 /**
  * Available color schemes to use for form field colors
@@ -185,5 +186,12 @@ export const colours: { [k in ThemeColorScheme]: Record<string, string> } = {
     500: '#7F6F5E',
     600: '#635649',
     700: '#473E34',
+  },
+  subtle: {
+    300: primaryColourPalette[100],
+    500: primaryColourPalette[100],
+    600: primaryColourPalette[200],
+    700: primaryColourPalette[300],
+    800: primaryColourPalette[500],
   },
 }

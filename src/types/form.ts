@@ -7,14 +7,18 @@ import {
   Types,
   UpdateWriteOpResult,
 } from 'mongoose'
-import { Merge, SetOptional } from 'type-fest'
+import { DeepRequired } from 'ts-essentials'
+import type { Merge, SetOptional } from 'type-fest'
 
 import {
   AdminDashboardFormMetaDto,
   FormBase,
+  FormBusinessField,
   FormEndPage,
   FormField,
   FormFieldDto,
+  FormPaymentsChannel,
+  FormPaymentsField,
   FormPermission,
   FormSettings,
   FormStartPage,
@@ -127,12 +131,17 @@ export interface IFormSchema extends IForm, Document, PublicView<PublicForm> {
 
   /**
    * Duplicates a form field into the form
-   * @param newField the fieldId of the field to duplicate
+   * @param fieldId the fieldId of the field to duplicate
+   * @param insertionIndex the index to insert the duplicated field in
    * @returns updated form after the duplication if field duplication is successful
    * @throws FieldNotFound error if field to duplicate does not exist
 
    */
-  duplicateFormFieldById<T>(this: T, fieldId: string): Promise<T | null>
+  duplicateFormFieldByIdAndIndex<T>(
+    this: T,
+    fieldId: string,
+    insertionIndex: number,
+  ): Promise<T | null>
 
   /**
    * Reorders field corresponding to given fieldId to given newPosition
@@ -187,6 +196,26 @@ export interface IFormSchema extends IForm, Document, PublicView<PublicForm> {
     currentOwner: IUserSchema,
     newOwner: IUserSchema,
   ): Promise<T>
+
+  /**
+   * Add payment account ID to the form.
+   * @param accountId the payment account ID to add
+   * @returns updated form
+   */
+  addPaymentAccountId<T = IEncryptedFormSchema>({
+    accountId,
+    publishableKey,
+  }: {
+    accountId: FormPaymentsChannel['target_account_id']
+    publishableKey: FormPaymentsChannel['publishable_key']
+  }): Promise<T & DeepRequired<Pick<IEncryptedFormSchema, 'payments_channel'>>>
+
+  /**
+   * Remove payment account ID from the form.
+   * @returns updated form
+   */
+  removePaymentAccount<T = IEncryptedFormSchema>(): Promise<T>
+
   /**
    * Return essential form creation parameters with the given properties.
    * @param overrideProps the props to override on the duplicated form
@@ -216,22 +245,30 @@ export interface IFormSchema extends IForm, Document, PublicView<PublicForm> {
 /**
  * Schema type with defaults populated and thus set to be defined.
  */
-export interface IFormDocument extends IFormSchema {
-  form_fields: NonNullable<IFormSchema['form_fields']>
-  form_logics: NonNullable<IFormSchema['form_logics']>
-  permissionList: NonNullable<IFormSchema['permissionList']>
-  hasCaptcha: NonNullable<IFormSchema['hasCaptcha']>
-  authType: NonNullable<IFormSchema['authType']>
-  status: NonNullable<IFormSchema['status']>
-  inactiveMessage: NonNullable<IFormSchema['inactiveMessage']>
+interface IFormBaseDocument<T extends IFormSchema> {
+  form_fields: NonNullable<T['form_fields']>
+  form_logics: NonNullable<T['form_logics']>
+  permissionList: NonNullable<T['permissionList']>
+  hasCaptcha: NonNullable<T['hasCaptcha']>
+  authType: NonNullable<T['authType']>
+  status: NonNullable<T['status']>
+  inactiveMessage: NonNullable<T['inactiveMessage']>
   // NOTE: Due to the way creating a form works, creating a form without specifying submissionLimit will throw an error.
   // Hence, using Exclude here over NonNullable.
-  submissionLimit: Exclude<IFormSchema['submissionLimit'], undefined>
-  isListed: NonNullable<IFormSchema['isListed']>
-  startPage: Required<NonNullable<IFormSchema['startPage']>>
-  endPage: Required<NonNullable<IFormSchema['endPage']>>
-  webhook: Required<NonNullable<IFormSchema['webhook']>>
+  submissionLimit: Exclude<T['submissionLimit'], undefined>
+  isListed: NonNullable<T['isListed']>
+  startPage: Required<NonNullable<T['startPage']>>
+  endPage: Required<NonNullable<T['endPage']>>
+  webhook: Required<NonNullable<T['webhook']>>
+  responseMode: NonNullable<T['responseMode']>
 }
+
+export type IFormDocument = IFormBaseDocument<IFormSchema> & IFormSchema
+
+export type IEncryptedFormDocument = IFormBaseDocument<IEncryptedFormSchema> &
+  IEncryptedFormSchema & {
+    publickey: NonNullable<IEncryptedFormSchema['publicKey']>
+  }
 
 export interface IPopulatedForm extends Omit<IFormDocument, 'toJSON'> {
   admin: IPopulatedUser
@@ -241,6 +278,11 @@ export interface IPopulatedForm extends Omit<IFormDocument, 'toJSON'> {
 
 export interface IEncryptedForm extends IForm {
   publicKey: string
+  // Nested objects will always be returned from mongoose finds, even if they
+  // are not defined in DB. See https://github.com/Automattic/mongoose/issues/5310
+  payments_channel: FormPaymentsChannel
+  payments_field: FormPaymentsField
+  business?: FormBusinessField
   emails?: never
 }
 
@@ -329,6 +371,17 @@ export interface IFormModel extends Model<IFormSchema> {
     newStartPage: FormStartPage,
   ): Promise<IFormDocument | null>
 
+  /**
+   * Update the payments of form with given payments object.
+   * @param formId the id of the form to update
+   * @param newPayments the new Payments object to replace with
+   * @returns the updated encrypted form document if form exists, null otherwise
+   */
+  updatePaymentsById(
+    formId: string,
+    newPayments: FormPaymentsField,
+  ): Promise<IEncryptedFormDocument | null>
+
   updateFormLogic(
     formId: string,
     logicId: string,
@@ -346,7 +399,8 @@ export interface IFormModel extends Model<IFormSchema> {
   ): Promise<void>
 }
 
-export type IEncryptedFormModel = IFormModel & Model<IEncryptedFormSchema>
+export type IEncryptedFormModel = Model<IEncryptedFormSchema> & IFormModel
+
 export type IEmailFormModel = IFormModel & Model<IEmailFormSchema>
 
 export type IOnboardedForm<T extends IForm> = T & {

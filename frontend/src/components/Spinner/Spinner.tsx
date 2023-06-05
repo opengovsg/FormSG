@@ -62,7 +62,12 @@ export const Spinner = ({
   return (
     <Flex color={color} align="center" {...flexProps}>
       {label && <VisuallyHidden>{label}</VisuallyHidden>}
-      <Icon animation={animation} as={BiLoader} fontSize={fontSize} />
+      <Icon
+        animation={animation}
+        as={BiLoader}
+        fontSize={fontSize}
+        aria-label="Spinner icon"
+      />
     </Flex>
   )
 }

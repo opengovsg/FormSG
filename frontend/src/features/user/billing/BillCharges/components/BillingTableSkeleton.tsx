@@ -13,8 +13,8 @@ export const BillingTableSkeleton = (): JSX.Element => (
   <Container maxW="69.5rem">
     {Array(11)
       .fill(null)
-      .map(() => (
-        <BillingTableSkeletonRow />
+      .map((_, i) => (
+        <BillingTableSkeletonRow key={i} />
       ))}
   </Container>
 )

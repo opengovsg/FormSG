@@ -59,11 +59,9 @@ export const getPlaceholderStartProps = ({
   return {
     droppableId: source.droppableId,
     clientHeight: draggedDOM.clientHeight,
-    clientWidth: '100%',
+    clientWidth: 'calc(100% - 3.25rem)',
     clientY,
-    clientX: parseFloat(
-      window.getComputedStyle(draggedDOM.parentElement).paddingLeft,
-    ),
+    clientX: 26, // 1.625rem in px
   }
 }
 
@@ -121,10 +119,8 @@ export const getPlaceholderUpdateProps = ({
   return {
     droppableId: source.droppableId,
     clientHeight: draggedDOM.clientHeight,
-    clientWidth: '100%',
+    clientWidth: 'calc(100% - 3.25rem)',
     clientY,
-    clientX: parseFloat(
-      window.getComputedStyle(draggedDOM.parentElement).paddingLeft,
-    ),
+    clientX: 26, // 1.625rem in px
   }
 }

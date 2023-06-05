@@ -1,13 +1,11 @@
+import { setupApp } from '__tests__/integration/helpers/express-setup'
+import { buildCelebrateError } from '__tests__/unit/backend/helpers/celebrate'
 import { err, errAsync, ok, okAsync } from 'neverthrow'
 import session from 'supertest-session'
-import { mocked } from 'ts-jest/utils'
 
 import config from 'src/app/config/config'
 import * as RealFormService from 'src/app/modules/form/form.service'
 import { MOCK_COOKIE_AGE } from 'src/app/modules/myinfo/__tests__/myinfo.test.constants'
-
-import { setupApp } from 'tests/integration/helpers/express-setup'
-import { buildCelebrateError } from 'tests/unit/backend/helpers/celebrate'
 
 import { ApplicationError } from '../../core/core.errors'
 import { FormNotFoundError } from '../../form/form.errors'
@@ -35,11 +33,11 @@ import {
 } from './sgid.test.constants'
 
 jest.mock('../sgid.service')
-const sgidService = mocked(RealSgidService, true)
+const sgidService = jest.mocked(RealSgidService)
 jest.mock('src/app/modules/form/form.service')
-const FormService = mocked(RealFormService, true)
+const FormService = jest.mocked(RealFormService)
 jest.mock('src/app/config/config')
-const MockConfig = mocked(config, true)
+const MockConfig = jest.mocked(config)
 MockConfig.isDev = false
 
 const app = setupApp('/sgid', SgidRouter)

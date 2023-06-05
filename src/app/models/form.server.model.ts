@@ -9,6 +9,7 @@ import mongoose, {
   Types,
 } from 'mongoose'
 import validator from 'validator'
+import isEmail from 'validator/lib/isEmail'
 
 import {
   ADMIN_FORM_META_FIELDS,
@@ -28,6 +29,8 @@ import {
   FormField,
   FormFieldDto,
   FormLogoState,
+  FormPaymentsChannel,
+  FormPaymentsField,
   FormPermission,
   FormResponseMode,
   FormSettings,
@@ -36,6 +39,7 @@ import {
   LogicConditionState,
   LogicDto,
   LogicType,
+  PaymentChannel,
   StorageFormSettings,
 } from '../../../shared/types'
 import { reorder } from '../../../shared/utils/immutable-array-fns'
@@ -45,6 +49,7 @@ import {
   FormOtpData,
   IEmailFormModel,
   IEmailFormSchema,
+  IEncryptedFormDocument,
   IEncryptedFormModel,
   IEncryptedFormSchema,
   IFieldSchema,
@@ -61,7 +66,6 @@ import { OverrideProps } from '../modules/form/admin-form/admin-form.types'
 import { getFormFieldById, transformEmails } from '../modules/form/form.utils'
 import { validateWebhookUrl } from '../modules/webhook/webhook.validation'
 
-import getAgencyModel from './agency.server.model'
 import {
   BaseFieldSchema,
   createAttachmentFieldSchema,
@@ -129,7 +133,87 @@ const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
     type: String,
     required: true,
   },
+
+  payments_channel: {
+    channel: {
+      type: String,
+      enum: Object.values(PaymentChannel),
+      default: PaymentChannel.Unconnected,
+    },
+    target_account_id: {
+      type: String,
+      default: '',
+      validate: [/^\S*$/i, 'target_account_id must not contain whitespace.'],
+    },
+    publishable_key: {
+      type: String,
+      default: '',
+      validate: [/^\S*$/i, 'publishable_key must not contain whitespace.'],
+    },
+  },
+
+  payments_field: {
+    enabled: {
+      type: Boolean,
+      default: false,
+    },
+    description: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    amount_cents: {
+      type: Number,
+      default: 0,
+      validate: {
+        validator: (amount_cents: number) => {
+          return amount_cents >= 0 && Number.isInteger(amount_cents)
+        },
+        message: 'amount_cents must be a non-negative integer.',
+      },
+    },
+  },
+
+  business: {
+    type: {
+      address: { type: String, required: true, trim: true },
+      gstRegNo: { type: String, required: true, trim: true },
+    },
+  },
 })
+
+const EncryptedFormDocumentSchema =
+  EncryptedFormSchema as unknown as Schema<IEncryptedFormDocument>
+
+EncryptedFormDocumentSchema.methods.addPaymentAccountId = async function ({
+  accountId,
+  publishableKey,
+}: {
+  accountId: FormPaymentsChannel['target_account_id']
+  publishableKey: FormPaymentsChannel['publishable_key']
+}) {
+  if (this.payments_channel?.channel === PaymentChannel.Unconnected) {
+    this.payments_channel = {
+      // Definitely Stripe for now, may be different later on.
+      channel: PaymentChannel.Stripe,
+      target_account_id: accountId,
+      publishable_key: publishableKey,
+    }
+  }
+  return this.save()
+}
+
+EncryptedFormDocumentSchema.methods.removePaymentAccount = async function () {
+  this.payments_channel = {
+    channel: PaymentChannel.Unconnected,
+    target_account_id: '',
+    publishable_key: '',
+  }
+  if (this.payments_field) {
+    this.payments_field.enabled = false
+  }
+  return this.save()
+}
 
 const EmailFormSchema = new Schema<IEmailFormSchema, IEmailFormModel>({
   emails: {
@@ -155,7 +239,6 @@ const EmailFormSchema = new Schema<IEmailFormSchema, IEmailFormModel>({
 })
 
 const compileFormModel = (db: Mongoose): IFormModel => {
-  const Agency = getAgencyModel(db)
   const User = getUserModel(db)
 
   // Schema
@@ -163,10 +246,6 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     {
       title: {
         type: String,
-        validate: [
-          /^[a-zA-Z0-9_\-./() &`;'"]*$/,
-          'Form name cannot contain special characters',
-        ],
         required: 'Form name cannot be blank',
         minlength: [4, 'Form name must be at least 4 characters'],
         maxlength: [200, 'Form name can have a maximum of 200 characters'],
@@ -269,6 +348,8 @@ const compileFormModel = (db: Mongoose): IFormModel => {
               type: String,
               trim: true,
               required: true,
+              // Set email to lowercase for consistency
+              set: (v: string) => v.toLowerCase(),
             },
             write: {
               type: Boolean,
@@ -277,25 +358,8 @@ const compileFormModel = (db: Mongoose): IFormModel => {
           },
         ],
         validate: {
-          validator: async (users: FormPermission[]) => {
-            // Retrieve count of users that exist in the Agency collection.
-            // Map is used instead of for...of loop so that this runs in
-            // parallel.
-            const areUsersExist = await Promise.all(
-              users.map(async (user) => {
-                const userEmail = user.email
-                if (!userEmail) {
-                  return false
-                }
-                const emailDomain = userEmail.split('@').pop()
-                const result = await Agency.findOne({ emailDomain })
-                return !!result
-              }),
-            )
-
-            // Check if number of truthy values equal initial array length.
-            return areUsersExist.filter(Boolean).length === users.length
-          },
+          validator: (users: FormPermission[]) =>
+            users.every((user) => !!user.email && isEmail(user.email)),
           message: 'Failed to update collaborators list.',
         },
       },
@@ -323,7 +387,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         buttonLink: String,
         buttonText: {
           type: String,
-          default: 'Submit another form',
+          default: 'Submit another response',
         },
       },
 
@@ -341,17 +405,19 @@ const compileFormModel = (db: Mongoose): IFormModel => {
           // Do not allow authType to be changed if form is published
           if (this.authType !== v && this.status === FormStatus.Public) {
             return this.authType
-            // Singpass/Corppass authentication is available for both email
+            // Singpass/Corppass/SGID authentication is available for both email
             // and storage mode
-            // Important - this case must come before the MyInfo/SGID + storage
-            // mode case, or else we may accidentally set Singpass/Corppass storage
-            // mode forms to FormAuthType.NIL
-          } else if ([FormAuthType.SP, FormAuthType.CP].includes(v)) {
+            // Important - this case must come before the MyInfo + storage
+            // mode case, or else we may accidentally set Singpass/Corppass/SGID
+            // storage mode forms to FormAuthType.NIL
+          } else if (
+            [FormAuthType.SP, FormAuthType.CP, FormAuthType.SGID].includes(v)
+          ) {
             return v
           } else if (
             this.responseMode === FormResponseMode.Encrypt &&
-            // SGID and MyInfo are not available for storage mode
-            (v === FormAuthType.MyInfo || v === FormAuthType.SGID)
+            // MyInfo is not available for storage mode
+            v === FormAuthType.MyInfo
           ) {
             return FormAuthType.NIL
           } else {
@@ -641,15 +707,18 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     return this.save()
   }
 
-  FormDocumentSchema.methods.duplicateFormFieldById = function (
+  FormDocumentSchema.methods.duplicateFormFieldByIdAndIndex = function (
     fieldId: string,
+    insertionIndex: number,
   ) {
     const fieldToDuplicate = getFormFieldById(this.form_fields, fieldId)
     if (!fieldToDuplicate) return Promise.resolve(null)
     const duplicatedField = omit(fieldToDuplicate, ['_id', 'globalId'])
 
     // eslint-disable-next-line @typescript-eslint/no-extra-semi
-    ;(this.form_fields as Types.DocumentArray<IFieldSchema>).push(
+    ;(this.form_fields as Types.DocumentArray<IFieldSchema>).splice(
+      insertionIndex,
+      0,
       duplicatedField,
     )
     return this.save()
@@ -730,7 +799,10 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     return (
       this.find()
         // List forms when either the user is an admin or collaborator.
-        .or([{ 'permissionList.email': userEmail }, { admin: userId }])
+        .or([
+          { 'permissionList.email': userEmail.toLowerCase() },
+          { admin: userId },
+        ])
         // Filter out archived forms.
         .where('status')
         .ne(FormStatus.Archived)
@@ -830,6 +902,17 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     return this.findByIdAndUpdate(
       formId,
       { startPage: newStartPage },
+      { new: true, runValidators: true },
+    ).exec()
+  }
+
+  FormSchema.statics.updatePaymentsById = async function (
+    formId: string,
+    newPayments: FormPaymentsField,
+  ) {
+    return this.findByIdAndUpdate(
+      formId,
+      { payments_field: newPayments },
       { new: true, runValidators: true },
     ).exec()
   }

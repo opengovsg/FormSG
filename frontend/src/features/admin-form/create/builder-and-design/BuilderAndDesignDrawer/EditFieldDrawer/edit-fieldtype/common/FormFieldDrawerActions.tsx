@@ -6,31 +6,32 @@ import Button from '~components/Button'
 
 interface FormFieldDrawerActionsProps {
   isLoading: boolean
-  isSaveEnabled: boolean
   handleClick: ReturnType<UseFormHandleSubmit<FieldValues>>
   handleCancel: () => void
   buttonText: string
+  isDisabled?: boolean
 }
 
 export const FormFieldDrawerActions = ({
   isLoading,
-  isSaveEnabled,
   handleClick,
   handleCancel,
   buttonText,
+  isDisabled,
 }: FormFieldDrawerActionsProps): JSX.Element => {
   const isMobile = useIsMobile()
+  const isSavingDisabled = isDisabled || isLoading
 
   return (
     <Stack
       direction={{ base: 'column', md: 'row-reverse' }}
       justifyContent="end"
       w="100%"
-      spacing="1rem"
+      spacing={{ base: '0.5rem', md: '1rem' }}
     >
       <Button
         isFullWidth={isMobile}
-        isDisabled={isLoading || !isSaveEnabled}
+        isDisabled={isSavingDisabled}
         isLoading={isLoading}
         onClick={handleClick}
       >

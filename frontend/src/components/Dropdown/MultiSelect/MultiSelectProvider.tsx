@@ -18,7 +18,11 @@ import { MultiSelectContext } from '../MultiSelectContext'
 import { SelectContext, SharedSelectContextReturnProps } from '../SelectContext'
 import { ComboboxItem } from '../types'
 import { defaultFilter } from '../utils/defaultFilter'
-import { itemToLabelString, itemToValue } from '../utils/itemUtils'
+import {
+  isItemDisabled,
+  itemToLabelString,
+  itemToValue,
+} from '../utils/itemUtils'
 
 export interface MultiSelectProviderProps<
   Item extends ComboboxItem = ComboboxItem,
@@ -40,6 +44,10 @@ export interface MultiSelectProviderProps<
    * Defaults to `4`. Set to `null` to render all items.
    */
   maxItems?: number | null
+  /**
+   * If enabled, extends the length of each selected item to be full width in the input box.
+   */
+  isSelectedItemFullWidth?: boolean
   /** aria-describedby to be attached to the combobox input, if any. */
   inputAria?: {
     id: string
@@ -55,6 +63,7 @@ export interface MultiSelectProviderProps<
    */
   downshiftMultiSelectProps?: Partial<UseMultipleSelectionProps<Item>>
 }
+
 export const MultiSelectProvider = ({
   items: rawItems,
   values,
@@ -63,7 +72,7 @@ export const MultiSelectProvider = ({
   filter = defaultFilter,
   nothingFoundLabel = 'No matching results',
   placeholder: placeholderProp,
-  clearButtonLabel = 'Clear dropdown',
+  clearButtonLabel = 'Clear selection',
   isSearchable = true,
   defaultIsOpen,
   isInvalid: isInvalidProp,
@@ -71,9 +80,10 @@ export const MultiSelectProvider = ({
   isDisabled: isDisabledProp,
   isRequired: isRequiredProp,
   maxItems = 4,
+  isSelectedItemFullWidth,
   downshiftComboboxProps = {},
   downshiftMultiSelectProps = {},
-  inputAria: inputAriaProp,
+  inputAria,
   children,
 }: MultiSelectProviderProps): JSX.Element => {
   const { items, getItemByValue } = useItems({ rawItems })
@@ -131,7 +141,11 @@ export const MultiSelectProvider = ({
   } = useMultipleSelection<typeof items[0]>({
     selectedItems,
     onSelectedItemsChange: ({ selectedItems }) => {
-      onChange(selectedItems?.map(itemToValue) ?? [])
+      onChange(
+        selectedItems
+          ?.filter((item) => !isItemDisabled(item))
+          .map(itemToValue) ?? [],
+      )
     },
     itemToString: itemToLabelString,
     stateReducer: (_state, { changes, type }) => {
@@ -161,7 +175,6 @@ export const MultiSelectProvider = ({
     closeMenu,
     isOpen,
     getLabelProps,
-    getComboboxProps,
     getMenuProps,
     getInputProps,
     getItemProps,
@@ -232,8 +245,19 @@ export const MultiSelectProvider = ({
             inputValue: '',
             isOpen: false,
           }
+        case useCombobox.stateChangeTypes.InputFocus:
+          return {
+            ...changes,
+            isOpen: false, // keep the menu closed when input gets focused.
+          }
+        case useCombobox.stateChangeTypes.ToggleButtonClick:
+          return {
+            ...changes,
+            isOpen: !state.isOpen,
+          }
+        default:
+          return changes
       }
-      return changes
     },
     ...downshiftComboboxProps,
   })
@@ -251,20 +275,6 @@ export const MultiSelectProvider = ({
     },
     [selectedItems],
   )
-
-  const inputAria = useMemo(() => {
-    if (inputAriaProp) return inputAriaProp
-    let label = 'No options selected'
-    if (selectedItems.length > 0) {
-      label = `Options ${selectedItems
-        .map((i) => itemToValue(i))
-        .join(',')}, selected`
-    }
-    return {
-      id: `${name}-current-selection`,
-      label,
-    }
-  }, [inputAriaProp, name, selectedItems])
 
   const styles = useMultiStyleConfig('MultiSelect', {
     isFocused,
@@ -288,7 +298,6 @@ export const MultiSelectProvider = ({
         isItemSelected,
         toggleMenu,
         closeMenu,
-        getComboboxProps,
         getInputProps,
         getItemProps,
         getLabelProps,
@@ -325,6 +334,7 @@ export const MultiSelectProvider = ({
           removeSelectedItem,
           reset,
           maxItems,
+          isSelectedItemFullWidth,
           activeIndex,
           setActiveIndex,
         }}

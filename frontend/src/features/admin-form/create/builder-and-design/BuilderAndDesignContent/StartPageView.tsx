@@ -1,33 +1,63 @@
-import { useMemo, useState } from 'react'
-import { Box, Flex, Skeleton } from '@chakra-ui/react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { BiCog } from 'react-icons/bi'
+import { Box, ButtonGroup, Collapse, Flex, IconButton } from '@chakra-ui/react'
 
 import { FormAuthType, FormLogoState, FormStartPage } from '~shared/types'
 
+import { useIsMobile } from '~hooks/useIsMobile'
+
+import { PREVIEW_MOCK_UINFIN } from '~features/admin-form/preview/constants'
 import { useEnv } from '~features/env/queries'
 import { FormInstructions } from '~features/public-form/components/FormInstructions/FormInstructions'
-import { FormBannerLogo } from '~features/public-form/components/FormStartPage/FormBannerLogo'
+import {
+  FormBannerLogo,
+  useFormBannerLogo,
+} from '~features/public-form/components/FormLogo'
 import { FormHeader } from '~features/public-form/components/FormStartPage/FormHeader'
-import { useFormBannerLogo } from '~features/public-form/components/FormStartPage/useFormBannerLogo'
 import { useFormHeader } from '~features/public-form/components/FormStartPage/useFormHeader'
 
+import { useCreatePageSidebar } from '../../common/CreatePageSidebarContext'
+import {
+  setToInactiveSelector as setPaymentToInactiveSelector,
+  usePaymentStore,
+} from '../BuilderAndDesignDrawer/FieldListDrawer/field-panels/usePaymentStore'
 import { useCreateTabForm } from '../useCreateTabForm'
 import {
   customLogoMetaSelector,
+  DesignState,
+  setStateSelector,
   startPageDataSelector,
+  stateSelector,
   useDesignStore,
 } from '../useDesignStore'
+import { isDirtySelector, useDirtyFieldStore } from '../useDirtyFieldStore'
+import {
+  setToInactiveSelector as setFieldBuilderToInactiveSelector,
+  useFieldBuilderStore,
+} from '../useFieldBuilderStore'
 
 export const StartPageView = () => {
-  const { data: form } = useCreateTabForm()
-  const { startPageData, customLogoMeta } = useDesignStore((state) => ({
-    startPageData: startPageDataSelector(state),
-    customLogoMeta: customLogoMetaSelector(state),
-  }))
+  const isMobile = useIsMobile()
+  const { data: form, isLoading } = useCreateTabForm()
+  const setFieldBuilderToInactive = useFieldBuilderStore(
+    setFieldBuilderToInactiveSelector,
+  )
+  const setPaymentToInactive = usePaymentStore(setPaymentToInactiveSelector)
+  const isDirty = useDirtyFieldStore(isDirtySelector)
+
+  const { designState, startPageData, customLogoMeta, setDesignState } =
+    useDesignStore((state) => ({
+      designState: stateSelector(state),
+      startPageData: startPageDataSelector(state),
+      customLogoMeta: customLogoMetaSelector(state),
+      setDesignState: setStateSelector(state),
+    }))
+
   const { data: { logoBucketUrl } = {} } = useEnv(
     form?.startPage.logo.state === FormLogoState.Custom,
   )
 
-  const [customLogoPending, setCustomLogoPending] = useState<boolean>(false)
+  const [hoverStartPage, setHoverStartPage] = useState(false)
 
   // Transform the FormStartPageInput into a FormStartPage
   const startPageFromStore: FormStartPage | null = useMemo(() => {
@@ -36,14 +66,12 @@ export const StartPageView = () => {
     const estTimeTakenTransformed =
       estTimeTaken === '' ? undefined : estTimeTaken
     if (logo.state !== FormLogoState.Custom) {
-      setCustomLogoPending(false)
       return {
         logo: { state: logo.state },
         estTimeTaken: estTimeTakenTransformed,
         ...rest,
       }
     }
-    setCustomLogoPending(!startPageData?.attachment.srcUrl)
     return {
       logo: {
         state: FormLogoState.Custom,
@@ -61,53 +89,189 @@ export const StartPageView = () => {
   // to be previewed, so when the store is populated, prioritize that setting.
   const startPage = useMemo(() => {
     if (startPageFromStore) return startPageFromStore
-    setCustomLogoPending(false)
     return form?.startPage
   }, [form?.startPage, startPageFromStore])
 
   // Color theme options and other design stuff, identical to public form
-  const { titleColor, titleBg, estTimeString } = useFormHeader(startPage)
-
-  const { hasLogo, logoImgSrc, logoImgAlt } = useFormBannerLogo({
+  const { logoImgSrc, ...formBannerLogoProps } = useFormBannerLogo({
     logoBucketUrl,
     logo: startPage?.logo,
     agency: form?.admin.agency,
+    colorTheme: form?.startPage.colorTheme,
   })
+  const formHeaderProps = useFormHeader({ startPage, hover: hoverStartPage })
+
+  const headerRef = useRef<HTMLDivElement | null>(null)
+  const instructionsRef = useRef<HTMLDivElement | null>(null)
+
+  useEffect(() => {
+    if (designState === DesignState.EditingHeader) {
+      headerRef.current?.scrollIntoView({ block: 'nearest' })
+    }
+    if (designState === DesignState.EditingInstructions) {
+      instructionsRef.current?.scrollIntoView({ block: 'nearest' })
+    }
+  }, [designState])
+
+  const { handleDesignClick } = useCreatePageSidebar()
+
+  const isDirtyAndDesignInactive = useMemo(
+    () => isDirty && designState === DesignState.Inactive,
+    [designState, isDirty],
+  )
+
+  const handleHeaderClick = useCallback(() => {
+    if (isDirtyAndDesignInactive) {
+      return setDesignState(DesignState.EditingHeader, true)
+    }
+
+    setDesignState(DesignState.EditingHeader)
+    setFieldBuilderToInactive()
+    setPaymentToInactive()
+    handleDesignClick(false)
+  }, [
+    handleDesignClick,
+    isDirtyAndDesignInactive,
+    setDesignState,
+    setFieldBuilderToInactive,
+    setPaymentToInactive,
+  ])
+
+  const handleInstructionsClick = useCallback(() => {
+    if (isDirtyAndDesignInactive) {
+      return setDesignState(DesignState.EditingInstructions, true)
+    }
+
+    setDesignState(DesignState.EditingInstructions)
+    setFieldBuilderToInactive()
+    setPaymentToInactive()
+    if (!isMobile) handleDesignClick(false)
+  }, [
+    handleDesignClick,
+    isDirtyAndDesignInactive,
+    isMobile,
+    setDesignState,
+    setFieldBuilderToInactive,
+    setPaymentToInactive,
+  ])
+
+  const handleEditInstructionsClick = useCallback(() => {
+    if (isMobile) handleDesignClick(false)
+  }, [handleDesignClick, isMobile])
+
+  const headerWrapperEditProps = useMemo(() => {
+    switch (designState) {
+      case DesignState.EditingHeader:
+        return {
+          border: '2px solid var(--chakra-colors-primary-500)',
+          m: '-2px',
+          borderRadius: '4px',
+        }
+    }
+  }, [designState])
 
   return (
     <>
-      {customLogoPending ? (
-        // Show skeleton if user has chosen custom logo but not yet uploaded
-        <Flex justify="center" p="1rem" bg="white">
-          <Skeleton w="4rem" h="4rem" />
-        </Flex>
-      ) : (
+      <Box
+        onPointerEnter={() => setHoverStartPage(true)}
+        onPointerLeave={() => setHoverStartPage(false)}
+        onClick={handleHeaderClick}
+        role="button"
+        cursor="pointer"
+        {...headerWrapperEditProps}
+        overflow="hidden"
+        ref={headerRef}
+      >
         <FormBannerLogo
-          hasLogo={hasLogo}
+          isLoading={isLoading}
+          onLogout={undefined}
           logoImgSrc={
             startPageData?.logo.state === FormLogoState.Custom
               ? startPageData.attachment.srcUrl // manual override to preview custom logo
               : logoImgSrc
           }
-          logoImgAlt={logoImgAlt}
+          {...formBannerLogoProps}
         />
-      )}
-      <FormHeader
-        title={form?.title}
-        estTimeString={estTimeString}
-        titleBg={titleBg}
-        titleColor={titleColor}
-        showHeader
-        loggedInId={
-          form?.authType !== FormAuthType.NIL ? 'S8899000D' : undefined
-        }
-      />
-      <Box mt="1.5rem">
-        <FormInstructions
-          content={startPage?.paragraph}
-          colorTheme={startPage?.colorTheme}
+        <FormHeader
+          title={form?.title}
+          showHeader
+          loggedInId={
+            form && form.authType !== FormAuthType.NIL
+              ? PREVIEW_MOCK_UINFIN
+              : undefined
+          }
+          {...formHeaderProps}
         />
       </Box>
+      {startPage?.paragraph ? (
+        <Box>
+          <Flex
+            flexDir="column"
+            align="center"
+            w="100%"
+            px={{ base: 0, md: '1.5rem', lg: '2.5rem' }}
+            mb={{ base: '1.5rem', md: 0 }}
+          >
+            <Box
+              w="100%"
+              minW={0}
+              h="fit-content"
+              maxW="57rem"
+              bg="white"
+              py="2.5rem"
+              px="1.5rem"
+            >
+              <Box
+                transition="background 0.2s ease"
+                _hover={{ bg: 'secondary.100', cursor: 'pointer' }}
+                borderRadius="4px"
+                {...(designState === DesignState.EditingInstructions
+                  ? {
+                      bg: 'secondary.100',
+                      border: '2px solid var(--chakra-colors-primary-500)',
+                    }
+                  : { border: '2px solid white' })}
+                onClick={handleInstructionsClick}
+                ref={instructionsRef}
+              >
+                <Box p={{ base: '0.75rem', md: '1.5rem' }}>
+                  <FormInstructions
+                    content={startPage?.paragraph}
+                    colorTheme={startPage?.colorTheme}
+                  />
+                </Box>
+                {isMobile ? (
+                  <Collapse
+                    in={designState === DesignState.EditingInstructions}
+                    style={{ width: '100%' }}
+                  >
+                    <Flex
+                      px={{ base: '0.75rem', md: '1.5rem' }}
+                      flex={1}
+                      borderTop="1px solid var(--chakra-colors-neutral-300)"
+                      justify="flex-end"
+                    >
+                      <ButtonGroup
+                        variant="clear"
+                        colorScheme="secondary"
+                        spacing={0}
+                      >
+                        <IconButton
+                          variant="clear"
+                          colorScheme="secondary"
+                          aria-label="Edit field"
+                          icon={<BiCog fontSize="1.25rem" />}
+                          onClick={handleEditInstructionsClick}
+                        />
+                      </ButtonGroup>
+                    </Flex>
+                  </Collapse>
+                ) : null}
+              </Box>
+            </Box>
+          </Flex>
+        </Box>
+      ) : null}
     </>
   )
 }

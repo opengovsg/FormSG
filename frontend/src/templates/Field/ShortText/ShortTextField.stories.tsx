@@ -41,6 +41,7 @@ const baseSchema: ShortTextFieldSchema = {
   disabled: false,
   fieldType: BasicField.ShortText,
   _id: '611b94dfbb9e300012f702a7',
+  questionNumber: 1,
 }
 
 interface StoryShortTextFieldProps extends ShortTextFieldProps {

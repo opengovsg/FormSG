@@ -7,8 +7,11 @@ import {
   DrawerContent,
   DrawerOverlay,
   Flex,
+  ListItem,
+  Spacer,
   Text,
-  VStack,
+  UnorderedList,
+  VisuallyHidden,
 } from '@chakra-ui/react'
 
 import { useIsMobile } from '~hooks/useIsMobile'
@@ -16,14 +19,17 @@ import { useIsMobile } from '~hooks/useIsMobile'
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
 import { useFormSections } from '../FormFields/FormSectionsContext'
+import { PUBLICFORM_INSTRUCTIONS_SECTIONID } from '../FormInstructions/FormInstructionsContainer'
 
 import { SidebarLink } from './SidebarLink'
 
 export const SectionSidebar = (): JSX.Element => {
-  const { activeSectionId } = useFormSections()
+  const { sectionScrollData, activeSectionId, navigatedSectionId } =
+    useFormSections()
   const {
+    form,
     miniHeaderRef,
-    sectionScrollData,
+    submissionData,
     isMobileDrawerOpen,
     onMobileDrawerClose,
   } = usePublicFormContext()
@@ -39,7 +45,15 @@ export const SectionSidebar = (): JSX.Element => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [miniHeaderRef?.current?.clientHeight])
 
-  if (isMobile && isMobileDrawerOpen && activeSectionId)
+  const navigatedSection = useMemo(() => {
+    if (!navigatedSectionId || !form) return
+    if (navigatedSectionId === PUBLICFORM_INSTRUCTIONS_SECTIONID) {
+      return { title: 'Instructions', description: form.startPage.paragraph }
+    }
+    return form.form_fields.find((ff) => ff._id === navigatedSectionId)
+  }, [form, navigatedSectionId])
+
+  if (isMobile)
     return (
       <Drawer
         isOpen={isMobileDrawerOpen}
@@ -49,47 +63,66 @@ export const SectionSidebar = (): JSX.Element => {
         <DrawerOverlay />
         <DrawerContent maxW="16.5rem">
           <DrawerBody px={0} py="1.25rem">
-            <Flex flexDir="column">
+            <Flex as="nav" aria-label="Form sections" flexDir="column">
               <Text px="1.5rem" textStyle="subhead-1">
                 Skip to section
               </Text>
               <Divider mt="0.75rem" mb="1.75rem" />
-              <VStack px="3rem" spacing="1.25rem" alignItems="flex-start">
+              <UnorderedList
+                px="3rem"
+                spacing="1.25rem"
+                alignItems="flex-start"
+                marginInlineStart={0}
+              >
                 {sectionScrollData?.map((d) => (
-                  <Flex key={d._id} align="left">
+                  <ListItem key={d._id} listStyleType="none">
                     <SidebarLink
                       isActive={activeSectionId === d._id}
                       sectionMeta={d}
                     />
-                  </Flex>
+                  </ListItem>
                 ))}
-              </VStack>
+              </UnorderedList>
             </Flex>
           </DrawerBody>
         </DrawerContent>
       </Drawer>
     )
 
-  return (
+  return submissionData ? (
+    <Spacer />
+  ) : (
     <Box
+      as="nav"
+      aria-label="Jump to form section"
       flex={1}
       d={{ base: 'none', md: 'initial' }}
       minW={sectionScrollData.length > 0 ? '20%' : undefined}
     >
-      <VStack
+      <UnorderedList
         pos="sticky"
         top={sectionTopOffset}
         spacing="1.25rem"
         alignSelf="flex-start"
-        align="flex-start"
+        alignItems="flex-start"
+        marginInlineStart={0}
         marginEnd="1rem"
+        aria-label="List of form section links"
       >
         {sectionScrollData?.map((d) => (
-          <Flex key={d._id} align="center">
+          <ListItem key={d._id} listStyleType="none">
             <SidebarLink isActive={activeSectionId === d._id} sectionMeta={d} />
-          </Flex>
+          </ListItem>
         ))}
-      </VStack>
+      </UnorderedList>
+      {navigatedSection && (
+        <VisuallyHidden aria-live="assertive" aria-atomic>
+          Navigated to section: {navigatedSection.title}
+          {navigatedSection.description
+            ? `, ${navigatedSection.description}`
+            : ''}
+        </VisuallyHidden>
+      )}
     </Box>
   )
 }

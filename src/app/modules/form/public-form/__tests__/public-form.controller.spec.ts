@@ -1,54 +1,53 @@
+import expressHandler from '__tests__/unit/backend/helpers/jest-express'
 import { IPersonResponse } from '@opengovsg/myinfo-gov-client'
 import { ObjectId } from 'bson-ext'
 import { Request } from 'express'
 import { merge } from 'lodash'
-import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync } from 'neverthrow'
 import querystring from 'querystring'
-import { mocked } from 'ts-jest/utils'
 
-import getFormFeedbackModel from 'src/app/models/form_feedback.server.model'
 import { DatabaseError } from 'src/app/modules/core/core.errors'
+import {
+  MOCK_ACCESS_TOKEN,
+  MOCK_AUTH_CODE,
+} from 'src/app/modules/myinfo/__tests__/myinfo.test.constants'
 import { MyInfoData } from 'src/app/modules/myinfo/myinfo.adapter'
 import {
-  MyInfoCookieAccessError,
+  MyInfoCircuitBreakerError,
   MyInfoFetchError,
-  MyInfoMissingAccessTokenError,
 } from 'src/app/modules/myinfo/myinfo.errors'
 import {
-  MyInfoCookieState,
+  MyInfoAuthCodeCookieState,
   MyInfoForm,
 } from 'src/app/modules/myinfo/myinfo.types'
+import { MOCK_LOGIN_DOC } from 'src/app/modules/spcp/__tests__/spcp.test.constants'
 import { JwtPayload, SpcpForm } from 'src/app/modules/spcp/spcp.types'
 import {
   IFormDocument,
-  IFormSchema,
   IPopulatedForm,
   IPopulatedUser,
   PublicForm,
 } from 'src/types'
 
-import expressHandler from 'tests/unit/backend/helpers/jest-express'
-
 import { FormAuthType, MyInfoAttribute } from '../../../../../../shared/types'
 import * as AuthService from '../../../auth/auth.service'
-import { MYINFO_COOKIE_NAME } from '../../../myinfo/myinfo.constants'
-import { MyInfoCookieStateError } from '../../../myinfo/myinfo.errors'
+import * as BillingService from '../../../billing/billing.service'
+import {
+  MYINFO_AUTH_CODE_COOKIE_NAME,
+  MYINFO_LOGIN_COOKIE_NAME,
+} from '../../../myinfo/myinfo.constants'
 import { MyInfoService } from '../../../myinfo/myinfo.service'
 import { SGID_COOKIE_NAME } from '../../../sgid/sgid.constants'
-import { SpOidcService } from '../../../spcp/sp.oidc.service'
 import {
   CreateRedirectUrlError,
-  FetchLoginPageError,
-  LoginPageValidationError,
   MissingJwtError,
 } from '../../../spcp/spcp.errors'
-import { SpcpService } from '../../../spcp/spcp.service'
+import { CpOidcServiceClass } from '../../../spcp/spcp.oidc.service/spcp.oidc.service.cp'
+import { SpOidcServiceClass } from '../../../spcp/spcp.oidc.service/spcp.oidc.service.sp'
 import { JwtName } from '../../../spcp/spcp.types'
 import {
   AuthTypeMismatchError,
   FormAuthNoEsrvcIdError,
-  FormDeletedError,
   FormNotFoundError,
   PrivateFormError,
 } from '../../form.errors'
@@ -60,222 +59,25 @@ import { Metatags } from '../public-form.types'
 jest.mock('../public-form.service')
 jest.mock('../../form.service')
 jest.mock('../../../auth/auth.service')
-jest.mock('../../../spcp/spcp.service')
-jest.mock('../../../spcp/sp.oidc.service')
+jest.mock('../../../spcp/spcp.oidc.service/spcp.oidc.service.sp')
+jest.mock('../../../spcp/spcp.oidc.service/spcp.oidc.service.cp')
 jest.mock('../../../myinfo/myinfo.service')
+jest.mock('../../../billing/billing.service')
 
-const MockFormService = mocked(FormService)
-const MockPublicFormService = mocked(PublicFormService)
-const MockAuthService = mocked(AuthService)
-const MockSpcpService = mocked(SpcpService, true)
-const MockSpOidcService = mocked(SpOidcService, true)
-const MockMyInfoService = mocked(MyInfoService, true)
+const MockFormService = jest.mocked(FormService)
+const MockPublicFormService = jest.mocked(PublicFormService)
+const MockAuthService = jest.mocked(AuthService)
 
-const FormFeedbackModel = getFormFeedbackModel(mongoose)
+const MockMyInfoService = jest.mocked(MyInfoService)
+const MockBillingService = jest.mocked(BillingService)
 
 describe('public-form.controller', () => {
   afterEach(() => jest.clearAllMocks())
 
-  describe('submitFormFeedback', () => {
-    const MOCK_FORM_ID = new ObjectId().toHexString()
-    const MOCK_FORM = {
-      _id: MOCK_FORM_ID,
-      title: 'mock form title',
-      inactiveMessage: 'This mock form is mock closed.',
-    } as IPopulatedForm
-    const MOCK_REQ = expressHandler.mockRequest({
-      body: {
-        rating: 4,
-        comment: 'good',
-      },
-      params: {
-        formId: MOCK_FORM_ID,
-      },
-    })
-
-    it('should return 200 when feedback is saved successfully', async () => {
-      // Arrange
-      const mockRes = expressHandler.mockResponse()
-
-      // Mock services to return success.
-      const mockFormFeedback = new FormFeedbackModel({
-        formId: new ObjectId().toHexString(),
-        rating: 5,
-        comment: 'Great test',
-      })
-      MockFormService.retrieveFullFormById.mockReturnValueOnce(
-        okAsync(MOCK_FORM as IPopulatedForm),
-      )
-      MockFormService.isFormPublic.mockReturnValueOnce(ok(true))
-      MockPublicFormService.insertFormFeedback.mockReturnValueOnce(
-        okAsync(mockFormFeedback),
-      )
-
-      // Act
-      await PublicFormController.submitFormFeedback(
-        MOCK_REQ,
-        mockRes,
-        jest.fn(),
-      )
-
-      // Assert
-      // Check args of mocked services.
-      expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
-        MOCK_FORM_ID,
-      )
-      expect(MockFormService.isFormPublic).toHaveBeenCalledWith(MOCK_FORM)
-      expect(MockPublicFormService.insertFormFeedback).toHaveBeenCalledWith({
-        formId: MOCK_REQ.params.formId,
-        rating: MOCK_REQ.body.rating,
-        comment: MOCK_REQ.body.comment,
-      })
-      expect(mockRes.status).toHaveBeenCalledWith(200)
-      expect(mockRes.json).toHaveBeenCalledWith({
-        message: 'Successfully submitted feedback',
-      })
-    })
-
-    it('should return 404 when retrieving form results in FormNotFoundError', async () => {
-      // Arrange
-      const mockRes = expressHandler.mockResponse()
-
-      // Mock retrieval of form to return failure.
-      MockFormService.retrieveFullFormById.mockReturnValueOnce(
-        errAsync(new FormNotFoundError()),
-      )
-
-      // Act
-      await PublicFormController.submitFormFeedback(
-        MOCK_REQ,
-        mockRes,
-        jest.fn(),
-      )
-
-      // Assert
-      // Check args of mocked services.
-      expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
-        MOCK_FORM_ID,
-      )
-      expect(MockFormService.isFormPublic).not.toHaveBeenCalled()
-      expect(MockPublicFormService.insertFormFeedback).not.toHaveBeenCalled()
-      expect(mockRes.status).toHaveBeenCalledWith(404)
-      expect(mockRes.json).toHaveBeenCalledWith({
-        message: 'Form not found',
-      })
-    })
-
-    it('should return 404 when checking form status results in PrivateFormError', async () => {
-      // Arrange
-      const mockRes = expressHandler.mockResponse()
-
-      // Mock services to return correct mock states.
-      MockFormService.retrieveFullFormById.mockReturnValueOnce(
-        okAsync(MOCK_FORM as IPopulatedForm),
-      )
-      // Mock return error.
-      MockFormService.isFormPublic.mockReturnValueOnce(
-        err(new PrivateFormError(MOCK_FORM.inactiveMessage, MOCK_FORM.title)),
-      )
-
-      // Act
-      await PublicFormController.submitFormFeedback(
-        MOCK_REQ,
-        mockRes,
-        jest.fn(),
-      )
-
-      // Assert
-      // Check args of mocked services.
-      expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
-        MOCK_FORM_ID,
-      )
-      expect(MockFormService.isFormPublic).toHaveBeenCalledWith(MOCK_FORM)
-      expect(MockPublicFormService.insertFormFeedback).not.toHaveBeenCalled()
-      expect(mockRes.status).toHaveBeenCalledWith(404)
-      expect(mockRes.json).toHaveBeenCalledWith({
-        message: MOCK_FORM.inactiveMessage,
-        isPageFound: true,
-        formTitle: MOCK_FORM.title,
-      })
-    })
-
-    it('should return 410 when checking form status results in FormDeletedError', async () => {
-      // Arrange
-      const mockRes = expressHandler.mockResponse()
-
-      // Mock services to return correct mock states.
-      MockFormService.retrieveFullFormById.mockReturnValueOnce(
-        okAsync(MOCK_FORM as IPopulatedForm),
-      )
-      // Mock return error.
-      MockFormService.isFormPublic.mockReturnValueOnce(
-        err(new FormDeletedError()),
-      )
-
-      // Act
-      await PublicFormController.submitFormFeedback(
-        MOCK_REQ,
-        mockRes,
-        jest.fn(),
-      )
-
-      // Assert
-      // Check args of mocked services.
-      expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
-        MOCK_FORM_ID,
-      )
-      expect(MockFormService.isFormPublic).toHaveBeenCalledWith(MOCK_FORM)
-      expect(MockPublicFormService.insertFormFeedback).not.toHaveBeenCalled()
-      expect(mockRes.status).toHaveBeenCalledWith(410)
-      expect(mockRes.json).toHaveBeenCalledWith({
-        message: 'This form is no longer active',
-      })
-    })
-
-    it('should return 500 when database errors occur', async () => {
-      // Arrange
-      const mockRes = expressHandler.mockResponse()
-      const mockErrorString = 'Form feedback could not be created'
-
-      // Mock services to return success or failure states.
-      MockFormService.retrieveFullFormById.mockReturnValueOnce(
-        okAsync(MOCK_FORM as IPopulatedForm),
-      )
-      MockFormService.isFormPublic.mockReturnValueOnce(ok(true))
-      // Mock database error.
-      MockPublicFormService.insertFormFeedback.mockReturnValueOnce(
-        errAsync(new DatabaseError(mockErrorString)),
-      )
-
-      // Act
-      await PublicFormController.submitFormFeedback(
-        MOCK_REQ,
-        mockRes,
-        jest.fn(),
-      )
-
-      // Assert
-      // Check args of mocked services.
-      expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
-        MOCK_FORM_ID,
-      )
-      expect(MockFormService.isFormPublic).toHaveBeenCalledWith(MOCK_FORM)
-      expect(MockPublicFormService.insertFormFeedback).toHaveBeenCalledWith({
-        formId: MOCK_REQ.params.formId,
-        rating: MOCK_REQ.body.rating,
-        comment: MOCK_REQ.body.comment,
-      })
-      expect(mockRes.status).toHaveBeenCalledWith(500)
-      expect(mockRes.json).toHaveBeenCalledWith({
-        message: mockErrorString,
-      })
-    })
-  })
-
   describe('handleRedirect', () => {
     const MOCK_FORM_ID = new ObjectId().toHexString()
     const MOCK_REQ = expressHandler.mockRequest({
-      params: { Id: MOCK_FORM_ID },
+      params: { formId: MOCK_FORM_ID },
       others: {
         protocol: 'https',
         hostname: 'mockHostName',
@@ -463,12 +265,14 @@ describe('public-form.controller', () => {
       params: {
         formId: MOCK_FORM_ID,
       },
+      others: {
+        cookies: {},
+      },
     })
 
-    const MOCK_MYINFO_COOKIE = {
-      accessToken: 'cookie',
-      usedCount: 0,
-      state: MyInfoCookieState.Success,
+    const MOCK_MYINFO_AUTH_CODE_COOKIE = {
+      code: MOCK_AUTH_CODE,
+      state: MyInfoAuthCodeCookieState.Success,
     }
 
     let mockReqWithCookies: Request<{
@@ -480,7 +284,11 @@ describe('public-form.controller', () => {
         params: {
           formId: MOCK_FORM_ID,
         },
-        others: { cookies: { MyInfoCookie: MOCK_MYINFO_COOKIE } },
+        others: {
+          cookies: {
+            [MYINFO_AUTH_CODE_COOKIE_NAME]: MOCK_MYINFO_AUTH_CODE_COOKIE,
+          },
+        },
       })
     })
 
@@ -544,9 +352,10 @@ describe('public-form.controller', () => {
         MockFormService.checkFormSubmissionLimitAndDeactivateForm.mockReturnValueOnce(
           okAsync(MOCK_SP_AUTH_FORM),
         )
-        MockSpOidcService.extractJwtPayloadFromRequest.mockReturnValueOnce(
-          okAsync(MOCK_SPCP_SESSION),
-        )
+
+        jest
+          .spyOn(SpOidcServiceClass.prototype, 'extractJwtPayloadFromRequest')
+          .mockReturnValueOnce(okAsync(MOCK_SPCP_SESSION))
 
         // Act
         await PublicFormController.handleGetPublicForm(
@@ -583,9 +392,9 @@ describe('public-form.controller', () => {
         MockFormService.checkFormSubmissionLimitAndDeactivateForm.mockReturnValueOnce(
           okAsync(MOCK_CP_AUTH_FORM),
         )
-        MockSpcpService.extractJwtPayloadFromRequest.mockReturnValueOnce(
-          okAsync(MOCK_SPCP_SESSION),
-        )
+        jest
+          .spyOn(CpOidcServiceClass.prototype, 'extractJwtPayloadFromRequest')
+          .mockReturnValueOnce(okAsync(MOCK_SPCP_SESSION))
         // Act
         await PublicFormController.handleGetPublicForm(
           MOCK_REQ,
@@ -623,8 +432,14 @@ describe('public-form.controller', () => {
         MockFormService.checkFormSubmissionLimitAndDeactivateForm.mockReturnValueOnce(
           okAsync(MOCK_MYINFO_AUTH_FORM),
         )
+        MockMyInfoService.retrieveAccessToken.mockReturnValueOnce(
+          okAsync(MOCK_ACCESS_TOKEN),
+        )
         MockMyInfoService.getMyInfoDataForForm.mockReturnValueOnce(
           okAsync(MOCK_MYINFO_DATA),
+        )
+        MockBillingService.recordLoginByForm.mockReturnValueOnce(
+          okAsync(MOCK_LOGIN_DOC),
         )
         MockMyInfoService.prefillAndSaveMyInfoFields.mockReturnValueOnce(
           okAsync([]),
@@ -638,7 +453,6 @@ describe('public-form.controller', () => {
         )
 
         // Assert
-        expect(mockRes.clearCookie).not.toHaveBeenCalled()
         expect(mockRes.cookie).toHaveBeenCalled()
         expect(mockRes.json).toHaveBeenCalledWith({
           form: { ...MOCK_MYINFO_AUTH_FORM.getPublicView(), form_fields: [] },
@@ -657,28 +471,31 @@ describe('public-form.controller', () => {
       } as unknown as IPopulatedForm
 
       // Setup because this gets invoked at the start of the controller to decide which branch to take
-      beforeAll(() => {
+      beforeEach(() => {
         MockAuthService.getFormIfPublic.mockReturnValue(
           okAsync(MOCK_MYINFO_FORM),
         )
 
-        MockFormService.checkIsIntranetFormAccess.mockReturnValueOnce(false)
-
+        MockFormService.checkIsIntranetFormAccess.mockReturnValue(false)
         MockFormService.checkFormSubmissionLimitAndDeactivateForm.mockReturnValue(
           okAsync(MOCK_MYINFO_FORM),
         )
+
+        MockMyInfoService.retrieveAccessToken.mockReturnValue(
+          okAsync(MOCK_ACCESS_TOKEN),
+        )
+
+        MockBillingService.recordLoginByForm.mockReturnValue(
+          okAsync(MOCK_LOGIN_DOC),
+        )
       })
 
-      it('should return 200 but the response should have cookies cleared with myInfoError set to undefined when the request has no cookie', async () => {
+      it('should return 200 but the response should have cookies cleared with no myInfoError when the request has no auth code cookie', async () => {
         // Arrange
         // 1. Mock the response and calls
         const mockRes = expressHandler.mockResponse({
           clearCookie: jest.fn().mockReturnThis(),
         })
-
-        MockMyInfoService.getMyInfoDataForForm.mockReturnValueOnce(
-          errAsync(new MyInfoMissingAccessTokenError()),
-        )
 
         // Act
         await PublicFormController.handleGetPublicForm(
@@ -692,34 +509,6 @@ describe('public-form.controller', () => {
         expect(mockRes.json).toHaveBeenCalledWith({
           form: MOCK_MYINFO_FORM.getPublicView(),
           isIntranetUser: false,
-          myInfoError: undefined,
-        })
-      })
-
-      it('should return 200 but the response should have cookies cleared with myInfoError set to undefined when the cookie has been used before', async () => {
-        // Arrange
-        // 1. Mock the response and calls
-        const mockRes = expressHandler.mockResponse({
-          clearCookie: jest.fn().mockReturnThis(),
-        })
-
-        MockMyInfoService.getMyInfoDataForForm.mockReturnValueOnce(
-          errAsync(new MyInfoCookieAccessError()),
-        )
-
-        // Act
-        await PublicFormController.handleGetPublicForm(
-          MOCK_REQ,
-          mockRes,
-          jest.fn(),
-        )
-
-        // Assert
-        expect(mockRes.clearCookie).toHaveBeenCalled()
-        expect(mockRes.json).toHaveBeenCalledWith({
-          form: MOCK_MYINFO_FORM.getPublicView(),
-          isIntranetUser: false,
-          myInfoError: undefined,
         })
       })
 
@@ -729,14 +518,56 @@ describe('public-form.controller', () => {
         const mockRes = expressHandler.mockResponse({
           clearCookie: jest.fn().mockReturnThis(),
         })
-
-        MockMyInfoService.getMyInfoDataForForm.mockReturnValueOnce(
-          errAsync(new MyInfoCookieStateError()),
-        )
+        const mockReq = expressHandler.mockRequest({
+          params: {
+            formId: MOCK_FORM_ID,
+          },
+          others: {
+            cookies: {
+              [MYINFO_AUTH_CODE_COOKIE_NAME]: 'nonsense',
+            },
+          },
+        })
 
         // Act
         await PublicFormController.handleGetPublicForm(
-          mockReqWithCookies,
+          mockReq,
+          mockRes,
+          jest.fn(),
+        )
+
+        // Assert
+        expect(mockRes.clearCookie).toHaveBeenCalled()
+        expect(mockRes.json).toHaveBeenCalledWith({
+          form: MOCK_MYINFO_FORM.getPublicView(),
+          isIntranetUser: false,
+          myInfoError: true,
+        })
+      })
+
+      it('should return 200 but the response should have cookies cleared and myInfoError when the access token cannot be retrieved', async () => {
+        // Arrange
+        // 1. Mock the response and calls
+        MockMyInfoService.retrieveAccessToken.mockReturnValueOnce(
+          errAsync(new MyInfoCircuitBreakerError()),
+        )
+        const mockRes = expressHandler.mockResponse({
+          clearCookie: jest.fn().mockReturnThis(),
+        })
+        const mockReq = expressHandler.mockRequest({
+          params: {
+            formId: MOCK_FORM_ID,
+          },
+          others: {
+            cookies: {
+              [MYINFO_AUTH_CODE_COOKIE_NAME]: MOCK_MYINFO_AUTH_CODE_COOKIE,
+            },
+          },
+        })
+
+        // Act
+        await PublicFormController.handleGetPublicForm(
+          mockReq,
           mockRes,
           jest.fn(),
         )
@@ -887,9 +718,9 @@ describe('public-form.controller', () => {
         MockFormService.checkFormSubmissionLimitAndDeactivateForm.mockReturnValueOnce(
           okAsync(MOCK_SP_FORM),
         )
-        MockSpOidcService.extractJwtPayloadFromRequest.mockReturnValueOnce(
-          errAsync(new MissingJwtError()),
-        )
+        jest
+          .spyOn(SpOidcServiceClass.prototype, 'extractJwtPayloadFromRequest')
+          .mockReturnValueOnce(errAsync(new MissingJwtError()))
 
         // Act
         // 2. GET the endpoint
@@ -919,9 +750,9 @@ describe('public-form.controller', () => {
         MockFormService.checkFormSubmissionLimitAndDeactivateForm.mockReturnValueOnce(
           okAsync(MOCK_CP_FORM),
         )
-        MockSpcpService.extractJwtPayloadFromRequest.mockReturnValueOnce(
-          errAsync(new MissingJwtError()),
-        )
+        jest
+          .spyOn(CpOidcServiceClass.prototype, 'extractJwtPayloadFromRequest')
+          .mockReturnValueOnce(errAsync(new MissingJwtError()))
 
         // Act
         // 2. GET the endpoint
@@ -1092,9 +923,9 @@ describe('public-form.controller', () => {
 
         const mockRes = expressHandler.mockResponse()
 
-        MockSpOidcService.extractJwtPayloadFromRequest.mockReturnValueOnce(
-          okAsync(MOCK_SPCP_SESSION),
-        )
+        jest
+          .spyOn(SpOidcServiceClass.prototype, 'extractJwtPayloadFromRequest')
+          .mockReturnValueOnce(okAsync(MOCK_SPCP_SESSION))
         MockFormService.checkIsIntranetFormAccess.mockReturnValueOnce(true)
         MockAuthService.getFormIfPublic.mockReturnValueOnce(
           okAsync(MOCK_SP_AUTH_FORM),
@@ -1128,9 +959,9 @@ describe('public-form.controller', () => {
         const mockRes = expressHandler.mockResponse()
 
         MockFormService.checkIsIntranetFormAccess.mockReturnValueOnce(true)
-        MockSpcpService.extractJwtPayloadFromRequest.mockReturnValueOnce(
-          okAsync(MOCK_SPCP_SESSION),
-        )
+        jest
+          .spyOn(CpOidcServiceClass.prototype, 'extractJwtPayloadFromRequest')
+          .mockReturnValueOnce(okAsync(MOCK_SPCP_SESSION))
         MockAuthService.getFormIfPublic.mockReturnValueOnce(
           okAsync(MOCK_CP_AUTH_FORM),
         )
@@ -1177,8 +1008,14 @@ describe('public-form.controller', () => {
           okAsync(MOCK_MYINFO_AUTH_FORM),
         )
         MockFormService.checkIsIntranetFormAccess.mockReturnValueOnce(true)
+        MockMyInfoService.retrieveAccessToken.mockReturnValueOnce(
+          okAsync(MOCK_ACCESS_TOKEN),
+        )
         MockMyInfoService.getMyInfoDataForForm.mockReturnValueOnce(
           okAsync(MOCK_MYINFO_DATA),
+        )
+        MockBillingService.recordLoginByForm.mockReturnValueOnce(
+          okAsync(MOCK_LOGIN_DOC),
         )
         MockMyInfoService.prefillAndSaveMyInfoFields.mockReturnValueOnce(
           okAsync([]),
@@ -1192,7 +1029,6 @@ describe('public-form.controller', () => {
         )
 
         // Assert
-        expect(mockRes.clearCookie).not.toHaveBeenCalled()
         expect(mockRes.cookie).toHaveBeenCalled()
         expect(mockRes.json).toHaveBeenCalledWith({
           form: { ...MOCK_MYINFO_AUTH_FORM.getPublicView(), form_fields: [] },
@@ -1224,9 +1060,9 @@ describe('public-form.controller', () => {
       MockFormService.retrieveFullFormById.mockReturnValueOnce(
         okAsync(MOCK_FORM),
       )
-      MockSpOidcService.createRedirectUrl.mockResolvedValueOnce(
-        ok(MOCK_REDIRECT_URL),
-      )
+      jest
+        .spyOn(SpOidcServiceClass.prototype, 'createRedirectUrl')
+        .mockResolvedValueOnce(ok(MOCK_REDIRECT_URL))
 
       // Act
       await PublicFormController._handleFormAuthRedirect(
@@ -1236,8 +1072,10 @@ describe('public-form.controller', () => {
       )
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(200)
-      expect(mockRes.json).toBeCalledWith({ redirectURL: MOCK_REDIRECT_URL })
+      expect(mockRes.status).toHaveBeenCalledWith(200)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        redirectURL: MOCK_REDIRECT_URL,
+      })
     })
 
     it('should return 200 with the redirect url when the request is valid, form has authType SP and isPersistentLogin is undefined', async () => {
@@ -1255,9 +1093,9 @@ describe('public-form.controller', () => {
       MockFormService.retrieveFullFormById.mockReturnValueOnce(
         okAsync(MOCK_FORM),
       )
-      MockSpOidcService.createRedirectUrl.mockResolvedValueOnce(
-        ok(MOCK_REDIRECT_URL),
-      )
+      jest
+        .spyOn(SpOidcServiceClass.prototype, 'createRedirectUrl')
+        .mockResolvedValueOnce(ok(MOCK_REDIRECT_URL))
 
       // Act
       await PublicFormController._handleFormAuthRedirect(
@@ -1267,8 +1105,10 @@ describe('public-form.controller', () => {
       )
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(200)
-      expect(mockRes.json).toBeCalledWith({ redirectURL: MOCK_REDIRECT_URL })
+      expect(mockRes.status).toHaveBeenCalledWith(200)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        redirectURL: MOCK_REDIRECT_URL,
+      })
     })
 
     it('should return 200 with the redirect url when the request is valid, form has authType SP and isPersistentLogin is false', async () => {
@@ -1289,9 +1129,9 @@ describe('public-form.controller', () => {
       MockFormService.retrieveFullFormById.mockReturnValueOnce(
         okAsync(MOCK_FORM),
       )
-      MockSpOidcService.createRedirectUrl.mockResolvedValueOnce(
-        ok(MOCK_REDIRECT_URL),
-      )
+      jest
+        .spyOn(SpOidcServiceClass.prototype, 'createRedirectUrl')
+        .mockResolvedValueOnce(ok(MOCK_REDIRECT_URL))
 
       // Act
       await PublicFormController._handleFormAuthRedirect(
@@ -1301,8 +1141,10 @@ describe('public-form.controller', () => {
       )
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(200)
-      expect(mockRes.json).toBeCalledWith({ redirectURL: MOCK_REDIRECT_URL })
+      expect(mockRes.status).toHaveBeenCalledWith(200)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        redirectURL: MOCK_REDIRECT_URL,
+      })
     })
 
     it('should return 200 with the redirect url when the request is valid and the form has authType CP', async () => {
@@ -1316,9 +1158,9 @@ describe('public-form.controller', () => {
       MockFormService.retrieveFullFormById.mockReturnValueOnce(
         okAsync(MOCK_FORM),
       )
-      MockSpcpService.createRedirectUrl.mockReturnValueOnce(
-        ok(MOCK_REDIRECT_URL),
-      )
+      jest
+        .spyOn(CpOidcServiceClass.prototype, 'createRedirectUrl')
+        .mockReturnValueOnce(okAsync(MOCK_REDIRECT_URL))
 
       // Act
       await PublicFormController._handleFormAuthRedirect(
@@ -1328,8 +1170,10 @@ describe('public-form.controller', () => {
       )
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(200)
-      expect(mockRes.json).toBeCalledWith({ redirectURL: MOCK_REDIRECT_URL })
+      expect(mockRes.status).toHaveBeenCalledWith(200)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        redirectURL: MOCK_REDIRECT_URL,
+      })
     })
 
     it('should return 200 with the redirect url when the request is valid and the form has authType MyInfo', async () => {
@@ -1356,8 +1200,10 @@ describe('public-form.controller', () => {
       )
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(200)
-      expect(mockRes.json).toBeCalledWith({ redirectURL: MOCK_REDIRECT_URL })
+      expect(mockRes.status).toHaveBeenCalledWith(200)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        redirectURL: MOCK_REDIRECT_URL,
+      })
     })
 
     it('should return 400 when the form has authType NIL', async () => {
@@ -1380,8 +1226,8 @@ describe('public-form.controller', () => {
       )
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(400)
-      expect(mockRes.json).toBeCalledWith({
+      expect(mockRes.status).toHaveBeenCalledWith(400)
+      expect(mockRes.json).toHaveBeenCalledWith({
         message:
           'Please ensure that the form has authentication enabled. Please refresh and try again.',
       })
@@ -1406,8 +1252,8 @@ describe('public-form.controller', () => {
       )
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(400)
-      expect(mockRes.json).toBeCalledWith({
+      expect(mockRes.status).toHaveBeenCalledWith(400)
+      expect(mockRes.json).toHaveBeenCalledWith({
         message:
           'This form does not have a valid eServiceId. Please refresh and try again.',
       })
@@ -1432,8 +1278,8 @@ describe('public-form.controller', () => {
       )
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(400)
-      expect(mockRes.json).toBeCalledWith({
+      expect(mockRes.status).toHaveBeenCalledWith(400)
+      expect(mockRes.json).toHaveBeenCalledWith({
         message:
           'This form does not have a valid eServiceId. Please refresh and try again.',
       })
@@ -1458,8 +1304,8 @@ describe('public-form.controller', () => {
       )
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(400)
-      expect(mockRes.json).toBeCalledWith({
+      expect(mockRes.status).toHaveBeenCalledWith(400)
+      expect(mockRes.json).toHaveBeenCalledWith({
         message:
           'This form does not have a valid eServiceId. Please refresh and try again.',
       })
@@ -1481,8 +1327,8 @@ describe('public-form.controller', () => {
       )
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(500)
-      expect(mockRes.json).toBeCalledWith({
+      expect(mockRes.status).toHaveBeenCalledWith(500)
+      expect(mockRes.json).toHaveBeenCalledWith({
         message: 'Sorry, something went wrong. Please try again.',
       })
     })
@@ -1498,9 +1344,9 @@ describe('public-form.controller', () => {
       MockFormService.retrieveFullFormById.mockReturnValueOnce(
         okAsync(MOCK_FORM),
       )
-      MockSpOidcService.createRedirectUrl.mockResolvedValue(
-        err(new CreateRedirectUrlError()),
-      )
+      jest
+        .spyOn(SpOidcServiceClass.prototype, 'createRedirectUrl')
+        .mockResolvedValue(err(new CreateRedirectUrlError()))
 
       // Act
       await PublicFormController._handleFormAuthRedirect(
@@ -1510,8 +1356,8 @@ describe('public-form.controller', () => {
       )
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(500)
-      expect(mockRes.json).toBeCalledWith({
+      expect(mockRes.status).toHaveBeenCalledWith(500)
+      expect(mockRes.json).toHaveBeenCalledWith({
         message: 'Sorry, something went wrong. Please try again.',
       })
     })
@@ -1527,9 +1373,9 @@ describe('public-form.controller', () => {
       MockFormService.retrieveFullFormById.mockReturnValueOnce(
         okAsync(MOCK_FORM),
       )
-      MockSpcpService.createRedirectUrl.mockReturnValueOnce(
-        err(new CreateRedirectUrlError()),
-      )
+      jest
+        .spyOn(CpOidcServiceClass.prototype, 'createRedirectUrl')
+        .mockReturnValueOnce(errAsync(new CreateRedirectUrlError()))
 
       // Act
       await PublicFormController._handleFormAuthRedirect(
@@ -1539,8 +1385,8 @@ describe('public-form.controller', () => {
       )
 
       // Assert
-      expect(mockRes.status).toBeCalledWith(500)
-      expect(mockRes.json).toBeCalledWith({
+      expect(mockRes.status).toHaveBeenCalledWith(500)
+      expect(mockRes.json).toHaveBeenCalledWith({
         message: 'Sorry, something went wrong. Please try again.',
       })
     })
@@ -1567,9 +1413,9 @@ describe('public-form.controller', () => {
         jest.fn(),
       )
 
-      expect(mockRes.status).toBeCalledWith(200)
+      expect(mockRes.status).toHaveBeenCalledWith(200)
       expect(mockRes.clearCookie).toHaveBeenCalledWith(JwtName[authType])
-      expect(mockRes.json).toBeCalledWith({
+      expect(mockRes.json).toHaveBeenCalledWith({
         message: 'Successfully logged out.',
       })
     })
@@ -1594,9 +1440,9 @@ describe('public-form.controller', () => {
         jest.fn(),
       )
 
-      expect(mockRes.status).toBeCalledWith(200)
+      expect(mockRes.status).toHaveBeenCalledWith(200)
       expect(mockRes.clearCookie).toHaveBeenCalledWith(JwtName[authType])
-      expect(mockRes.json).toBeCalledWith({
+      expect(mockRes.json).toHaveBeenCalledWith({
         message: 'Successfully logged out.',
       })
     })
@@ -1604,7 +1450,7 @@ describe('public-form.controller', () => {
     it('should return 200 if authType is MyInfo and call clearCookie()', async () => {
       const authType = FormAuthType.MyInfo as const
       MockPublicFormService.getCookieNameByAuthType.mockReturnValueOnce(
-        MYINFO_COOKIE_NAME,
+        MYINFO_LOGIN_COOKIE_NAME,
       )
       const mockReq = expressHandler.mockRequest({
         params: {
@@ -1621,9 +1467,9 @@ describe('public-form.controller', () => {
         jest.fn(),
       )
 
-      expect(mockRes.status).toBeCalledWith(200)
-      expect(mockRes.clearCookie).toHaveBeenCalledWith(MYINFO_COOKIE_NAME)
-      expect(mockRes.json).toBeCalledWith({
+      expect(mockRes.status).toHaveBeenCalledWith(200)
+      expect(mockRes.clearCookie).toHaveBeenCalledWith(MYINFO_LOGIN_COOKIE_NAME)
+      expect(mockRes.json).toHaveBeenCalledWith({
         message: 'Successfully logged out.',
       })
     })
@@ -1648,342 +1494,11 @@ describe('public-form.controller', () => {
         jest.fn(),
       )
 
-      expect(mockRes.status).toBeCalledWith(200)
+      expect(mockRes.status).toHaveBeenCalledWith(200)
       expect(mockRes.clearCookie).toHaveBeenCalledWith(SGID_COOKIE_NAME)
-      expect(mockRes.json).toBeCalledWith({
+      expect(mockRes.json).toHaveBeenCalledWith({
         message: 'Successfully logged out.',
       })
-    })
-  })
-
-  describe('handleValidateFormEsrvcId', () => {
-    const MOCK_REQ = expressHandler.mockRequest({
-      params: {
-        formId: new ObjectId().toHexString(),
-      },
-    })
-    const MOCK_REDIRECT_URL = 'www.mockata.com'
-
-    it('should return 200 with isValid set to true when a valid MyInfo form authenticates successfully', async () => {
-      // Arrange
-      const MOCK_FORM = {
-        authType: FormAuthType.MyInfo,
-        esrvcId: '12345',
-      } as MyInfoForm<IFormSchema>
-      const mockRes = expressHandler.mockResponse()
-      const expectedResBody = { isValid: true as const }
-      MockFormService.retrieveFormById.mockReturnValueOnce(okAsync(MOCK_FORM))
-      MockSpcpService.createRedirectUrl.mockReturnValueOnce(
-        ok(MOCK_REDIRECT_URL),
-      )
-      MockSpcpService.fetchLoginPage.mockReturnValueOnce(
-        okAsync('this is raw html'),
-      )
-      MockSpcpService.validateLoginPage.mockReturnValueOnce(ok(expectedResBody))
-
-      // Act
-      await PublicFormController.handleValidateFormEsrvcId(
-        MOCK_REQ,
-        mockRes,
-        jest.fn(),
-      )
-
-      // Assert
-      expect(mockRes.status).toBeCalledWith(200)
-      expect(mockRes.json).toBeCalledWith(expectedResBody)
-    })
-
-    it('should return 200 with isValid set to true when a valid SP form authenticates successfully', async () => {
-      // Arrange
-      const MOCK_FORM = {
-        authType: FormAuthType.SP,
-        esrvcId: '12345',
-      } as SpcpForm<IFormSchema>
-      const mockRes = expressHandler.mockResponse()
-      const expectedResBody = { isValid: true as const }
-      MockFormService.retrieveFormById.mockReturnValueOnce(okAsync(MOCK_FORM))
-      MockSpcpService.createRedirectUrl.mockReturnValueOnce(
-        ok(MOCK_REDIRECT_URL),
-      )
-      MockSpcpService.fetchLoginPage.mockReturnValueOnce(
-        okAsync('this is raw html'),
-      )
-      MockSpcpService.validateLoginPage.mockReturnValueOnce(ok(expectedResBody))
-
-      // Act
-      await PublicFormController.handleValidateFormEsrvcId(
-        MOCK_REQ,
-        mockRes,
-        jest.fn(),
-      )
-
-      // Assert
-      expect(mockRes.status).toBeCalledWith(200)
-      expect(mockRes.json).toBeCalledWith(expectedResBody)
-    })
-    it('should return 200 with isValid set to false when an invalid MyInfo form authenticates successfully', async () => {
-      // Arrange
-      const MOCK_FORM = {
-        authType: FormAuthType.MyInfo,
-        esrvcId: '12345',
-      } as MyInfoForm<IFormSchema>
-      const mockRes = expressHandler.mockResponse()
-      const expectedResBody = { isValid: false, errorCode: '138' }
-      MockFormService.retrieveFormById.mockReturnValueOnce(okAsync(MOCK_FORM))
-      MockSpcpService.createRedirectUrl.mockReturnValueOnce(
-        ok(MOCK_REDIRECT_URL),
-      )
-      MockSpcpService.fetchLoginPage.mockReturnValueOnce(
-        okAsync('this is raw html'),
-      )
-      MockSpcpService.validateLoginPage.mockReturnValueOnce(ok(expectedResBody))
-
-      // Act
-      await PublicFormController.handleValidateFormEsrvcId(
-        MOCK_REQ,
-        mockRes,
-        jest.fn(),
-      )
-
-      // Assert
-      expect(mockRes.status).toBeCalledWith(200)
-      expect(mockRes.json).toBeCalledWith(expectedResBody)
-    })
-
-    it('should return 200 with isValid set to false when an invalid SP form authenticates successfully', async () => {
-      // Arrange
-      const MOCK_FORM = {
-        authType: FormAuthType.SP,
-        esrvcId: '12345',
-      } as SpcpForm<IFormSchema>
-      const mockRes = expressHandler.mockResponse()
-      const expectedResBody = { isValid: false, errorCode: '138' }
-      MockFormService.retrieveFormById.mockReturnValueOnce(okAsync(MOCK_FORM))
-      MockSpcpService.createRedirectUrl.mockReturnValueOnce(
-        ok(MOCK_REDIRECT_URL),
-      )
-      MockSpcpService.fetchLoginPage.mockReturnValueOnce(
-        okAsync('this is raw html'),
-      )
-      MockSpcpService.validateLoginPage.mockReturnValueOnce(ok(expectedResBody))
-
-      // Act
-      await PublicFormController.handleValidateFormEsrvcId(
-        MOCK_REQ,
-        mockRes,
-        jest.fn(),
-      )
-
-      // Assert
-      expect(mockRes.status).toBeCalledWith(200)
-      expect(mockRes.json).toBeCalledWith(expectedResBody)
-    })
-
-    it('should return 400 when the form has authType.NIL', async () => {
-      // Arrange
-      const MOCK_FORM = {
-        authType: FormAuthType.NIL,
-        esrvcId: '12345',
-      } as IFormSchema
-      const mockRes = expressHandler.mockResponse()
-      const expectedError = {
-        message:
-          'Please ensure that the form has authentication enabled. Please refresh and try again.',
-      }
-      MockFormService.retrieveFormById.mockReturnValueOnce(okAsync(MOCK_FORM))
-
-      // Act
-      await PublicFormController.handleValidateFormEsrvcId(
-        MOCK_REQ,
-        mockRes,
-        jest.fn(),
-      )
-
-      // Assert
-      expect(mockRes.status).toBeCalledWith(400)
-      expect(mockRes.json).toBeCalledWith(expectedError)
-    })
-
-    it('should return 400 when the form has authType.CP', async () => {
-      // Arrange
-      const MOCK_FORM = {
-        authType: FormAuthType.CP,
-        esrvcId: '12345',
-      } as IFormSchema
-      const mockRes = expressHandler.mockResponse()
-      const expectedError = {
-        message:
-          'Please ensure that the form has authentication enabled. Please refresh and try again.',
-      }
-      MockFormService.retrieveFormById.mockReturnValueOnce(okAsync(MOCK_FORM))
-
-      // Act
-      await PublicFormController.handleValidateFormEsrvcId(
-        MOCK_REQ,
-        mockRes,
-        jest.fn(),
-      )
-
-      // Assert
-      expect(mockRes.status).toBeCalledWith(400)
-      expect(mockRes.json).toBeCalledWith(expectedError)
-    })
-
-    it('should return 400 when the form does not have an eServiceId', async () => {
-      // Arrange
-      const MOCK_FORM = {
-        authType: FormAuthType.SP,
-      } as SpcpForm<IFormSchema>
-      const mockRes = expressHandler.mockResponse()
-      const expectedError = {
-        message:
-          'This form does not have a valid eServiceId. Please refresh and try again.',
-      }
-      MockFormService.retrieveFormById.mockReturnValueOnce(okAsync(MOCK_FORM))
-
-      // Act
-      await PublicFormController.handleValidateFormEsrvcId(
-        MOCK_REQ,
-        mockRes,
-        jest.fn(),
-      )
-
-      // Assert
-      expect(mockRes.status).toBeCalledWith(400)
-      expect(mockRes.json).toBeCalledWith(expectedError)
-    })
-
-    it('should return 404 when there is no form with the given formId', async () => {
-      // Arrange
-      const mockRes = expressHandler.mockResponse()
-      const expectedError = {
-        message:
-          'Could not find the form requested. Please refresh and try again.',
-      }
-      MockFormService.retrieveFormById.mockReturnValueOnce(
-        errAsync(new FormNotFoundError()),
-      )
-
-      // Act
-      await PublicFormController.handleValidateFormEsrvcId(
-        MOCK_REQ,
-        mockRes,
-        jest.fn(),
-      )
-
-      // Assert
-      expect(mockRes.status).toBeCalledWith(404)
-      expect(mockRes.json).toBeCalledWith(expectedError)
-    })
-
-    it('should return 500 when the returned html has no title', async () => {
-      // Arrange
-      const MOCK_FORM = {
-        authType: FormAuthType.SP,
-        esrvcId: '12345',
-      } as SpcpForm<IFormSchema>
-      const mockRes = expressHandler.mockResponse()
-      const expectedError = {
-        message: 'Error while contacting SingPass. Please try again.',
-      }
-      MockFormService.retrieveFormById.mockReturnValueOnce(okAsync(MOCK_FORM))
-      MockSpcpService.createRedirectUrl.mockReturnValueOnce(
-        ok(MOCK_REDIRECT_URL),
-      )
-      MockSpcpService.fetchLoginPage.mockReturnValue(okAsync(''))
-      MockSpcpService.validateLoginPage.mockReturnValueOnce(
-        err(new LoginPageValidationError()),
-      )
-
-      // Act
-      await PublicFormController.handleValidateFormEsrvcId(
-        MOCK_REQ,
-        mockRes,
-        jest.fn(),
-      )
-
-      // Assert
-      expect(mockRes.status).toBeCalledWith(502)
-      expect(mockRes.json).toBeCalledWith(expectedError)
-    })
-
-    it('should return 500 when a database error occurs', async () => {
-      // Arrange
-      const mockRes = expressHandler.mockResponse()
-      const expectedError = {
-        message: 'Sorry, something went wrong. Please try again.',
-      }
-      MockFormService.retrieveFormById.mockReturnValueOnce(
-        errAsync(new DatabaseError()),
-      )
-
-      // Act
-      await PublicFormController.handleValidateFormEsrvcId(
-        MOCK_REQ,
-        mockRes,
-        jest.fn(),
-      )
-
-      // Assert
-      expect(mockRes.status).toBeCalledWith(500)
-      expect(mockRes.json).toBeCalledWith(expectedError)
-    })
-
-    it('should return 500 when the redirect url could not be generated', async () => {
-      // Arrange
-      const MOCK_FORM = {
-        authType: FormAuthType.SP,
-        esrvcId: '12345',
-      } as SpcpForm<IFormSchema>
-      const mockRes = expressHandler.mockResponse()
-      const expectedError = {
-        message: 'Sorry, something went wrong. Please try again.',
-      }
-      MockFormService.retrieveFormById.mockReturnValueOnce(okAsync(MOCK_FORM))
-      MockSpcpService.createRedirectUrl.mockReturnValueOnce(
-        err(new CreateRedirectUrlError()),
-      )
-
-      // Act
-      await PublicFormController.handleValidateFormEsrvcId(
-        MOCK_REQ,
-        mockRes,
-        jest.fn(),
-      )
-
-      // Assert
-      expect(mockRes.status).toBeCalledWith(500)
-      expect(mockRes.json).toBeCalledWith(expectedError)
-    })
-
-    it('should return 503 when the login page for the form could not be retrieved', async () => {
-      // Arrange
-      const MOCK_FORM = {
-        authType: FormAuthType.SP,
-        esrvcId: '12345',
-      } as SpcpForm<IFormSchema>
-      const mockRes = expressHandler.mockResponse()
-      const expectedError = {
-        message: 'Failed to contact SingPass. Please try again.',
-      }
-      MockFormService.retrieveFormById.mockReturnValueOnce(okAsync(MOCK_FORM))
-      MockSpcpService.createRedirectUrl.mockReturnValueOnce(
-        ok(MOCK_REDIRECT_URL),
-      )
-      MockSpcpService.fetchLoginPage.mockReturnValue(
-        errAsync(new FetchLoginPageError()),
-      )
-
-      // Act
-      await PublicFormController.handleValidateFormEsrvcId(
-        MOCK_REQ,
-        mockRes,
-        jest.fn(),
-      )
-
-      // Assert
-      expect(mockRes.status).toBeCalledWith(503)
-      expect(mockRes.json).toBeCalledWith(expectedError)
     })
   })
 })

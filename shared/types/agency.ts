@@ -1,4 +1,4 @@
-import { Opaque } from 'type-fest'
+import type { Opaque } from 'type-fest'
 import { z } from 'zod'
 import { DateString } from './generic'
 
@@ -13,6 +13,12 @@ export const AgencyBase = z.object({
   fullName: z.string(),
   shortName: z.string(),
   logo: z.string(),
+  business: z
+    .object({
+      address: z.string(),
+      gstRegNo: z.string(),
+    })
+    .optional(),
 })
 export type AgencyBase = z.infer<typeof AgencyBase>
 

@@ -5,11 +5,12 @@
  * provides.
  */
 import { FieldError, useFormState } from 'react-hook-form'
-import { FormControl } from '@chakra-ui/react'
+import { Box, FormControl, Grid } from '@chakra-ui/react'
 import { get } from 'lodash'
 
 import { FormColorTheme } from '~shared/types/form'
 
+import Badge from '~components/Badge'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 
@@ -34,6 +35,11 @@ export type BaseFieldProps = {
    * Whether or not the field was prefilled.
    */
   isPrefilled?: boolean
+
+  /**
+   * Whether the MyInfo badge should be shown next to the question name.
+   */
+  showMyInfoBadge?: boolean
 }
 
 export interface FieldContainerProps extends BaseFieldProps {
@@ -44,6 +50,7 @@ export const FieldContainer = ({
   schema,
   children,
   errorKey,
+  showMyInfoBadge,
 }: FieldContainerProps): JSX.Element => {
   const { errors, isSubmitting, isValid } = useFormState({ name: schema._id })
 
@@ -57,14 +64,28 @@ export const FieldContainer = ({
       isInvalid={!!error}
       id={schema._id}
     >
-      <FormLabel
-        questionNumber={
-          schema.questionNumber ? `${schema.questionNumber}.` : undefined
-        }
-        description={schema.description}
+      <Grid
+        gridTemplateAreas={"'formlabel myinfobadge'"}
+        gridTemplateColumns={'1fr auto'}
       >
-        {schema.title}
-      </FormLabel>
+        <FormLabel
+          useMarkdownForDescription
+          gridArea="formlabel"
+          questionNumber={
+            schema.questionNumber ? `${schema.questionNumber}.` : undefined
+          }
+          description={schema.description}
+        >
+          {schema.title}
+        </FormLabel>
+        {showMyInfoBadge && (
+          <Box gridArea="myinfobadge">
+            <Badge variant="subtle" colorScheme="secondary">
+              MyInfo
+            </Badge>
+          </Box>
+        )}
+      </Grid>
       {children}
       <FormErrorMessage>{error?.message}</FormErrorMessage>
     </FormControl>

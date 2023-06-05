@@ -19,6 +19,7 @@ export interface DropdownFieldProps extends BaseFieldProps {
 export const DropdownField = ({
   schema,
   colorTheme = FormColorTheme.Blue,
+  ...fieldContainerProps
 }: DropdownFieldProps): JSX.Element => {
   const validationRules = useMemo(
     () => createDropdownValidationRules(schema),
@@ -28,7 +29,7 @@ export const DropdownField = ({
   const { control } = useFormContext<SingleAnswerFieldInput>()
 
   return (
-    <FieldContainer schema={schema}>
+    <FieldContainer schema={schema} {...fieldContainerProps}>
       <Controller
         control={control}
         rules={validationRules}

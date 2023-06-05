@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient } from 'react-query'
+import { useMutation } from 'react-query'
 
 import { FormAuthType, SubmitFormFeedbackBodyDto } from '~shared/types/form'
 
@@ -10,15 +10,15 @@ import {
   logoutPublicForm,
   SubmitEmailFormArgs,
   submitEmailModeForm,
+  submitEmailModeFormWithFetch,
   submitFormFeedback,
   SubmitStorageFormArgs,
   submitStorageModeForm,
+  submitStorageModeFormWithFetch,
 } from './PublicFormService'
-import { publicFormKeys } from './queries'
 
 export const usePublicAuthMutations = (formId: string) => {
   const { storePrefillQuery } = useStorePrefillQuery()
-  const queryClient = useQueryClient()
 
   const toast = useToast({ status: 'success', isClosable: true })
 
@@ -45,10 +45,8 @@ export const usePublicAuthMutations = (formId: string) => {
       logoutPublicForm(authType),
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(publicFormKeys.base)
-        toast({
-          description: 'Logged out successfully',
-        })
+        // Refresh browser to reset form state.
+        window.location.reload()
       },
     },
   )
@@ -63,7 +61,7 @@ export const usePublicFormMutations = (
   formId: string,
   submissionId: string,
 ) => {
-  const toast = useToast({ status: 'success', isClosable: true })
+  const toast = useToast({ isClosable: true })
 
   const submitEmailModeFormMutation = useMutation(
     (args: Omit<SubmitEmailFormArgs, 'formId'>) => {
@@ -77,15 +75,25 @@ export const usePublicFormMutations = (
     },
   )
 
+  // TODO (#5826): Fallback mutation using Fetch. Remove once network error is resolved
+  const submitEmailModeFormFetchMutation = useMutation(
+    (args: Omit<SubmitEmailFormArgs, 'formId'>) => {
+      return submitEmailModeFormWithFetch({ ...args, formId })
+    },
+  )
+
+  const submitStorageModeFormFetchMutation = useMutation(
+    (args: Omit<SubmitStorageFormArgs, 'formId'>) => {
+      return submitStorageModeFormWithFetch({ ...args, formId })
+    },
+  )
+
   const submitFormFeedbackMutation = useMutation(
     (args: SubmitFormFeedbackBodyDto) =>
       submitFormFeedback(formId, submissionId, args),
     {
       onError: (error: Error) => {
-        toast({
-          description: error.message,
-          status: 'danger',
-        })
+        toast({ status: 'danger', description: error.message })
       },
     },
   )
@@ -94,5 +102,7 @@ export const usePublicFormMutations = (
     submitEmailModeFormMutation,
     submitStorageModeFormMutation,
     submitFormFeedbackMutation,
+    submitStorageModeFormFetchMutation,
+    submitEmailModeFormFetchMutation,
   }
 }

@@ -9,29 +9,35 @@ import { useToast } from '~hooks/useToast'
 
 import { adminFormKeys } from '~features/admin-form/common/queries'
 
+import { useAdminFormLogic } from '../../logic/hooks/useAdminFormLogic'
 import { duplicateSingleFormField } from '../UpdateFormFieldService'
 import {
-  BuildFieldState,
-  stateDataSelector,
+  FieldBuilderState,
+  fieldBuilderStateSelector,
   updateEditStateSelector,
-  useBuilderAndDesignStore,
-} from '../useBuilderAndDesignStore'
+  useFieldBuilderStore,
+} from '../useFieldBuilderStore'
+import {
+  getMutationErrorMessage,
+  getMutationToastDescriptionFieldName,
+} from '../utils/getMutationMessage'
 
 export const useDuplicateFormField = () => {
   const { formId } = useParams()
   if (!formId) throw new Error('No formId provided')
-
-  const updateEditState = useBuilderAndDesignStore(updateEditStateSelector)
-  const stateData = useBuilderAndDesignStore(stateDataSelector)
+  const fieldBuilderState = useFieldBuilderStore(fieldBuilderStateSelector)
+  const updateEditState = useFieldBuilderStore(updateEditStateSelector)
 
   const queryClient = useQueryClient()
   const toast = useToast({ status: 'success', isClosable: true })
   const adminFormKey = adminFormKeys.id(formId)
 
+  const { logicedFieldIdsSet } = useAdminFormLogic()
+
   const handleSuccess = useCallback(
-    (newField: FormFieldDto) => {
+    (newField: FormFieldDto, fieldId: string) => {
       toast.closeAll()
-      if (stateData.state !== BuildFieldState.EditingField) {
+      if (fieldBuilderState !== FieldBuilderState.EditingField) {
         toast({
           status: 'warning',
           description:
@@ -39,27 +45,49 @@ export const useDuplicateFormField = () => {
         })
         return
       }
+
       toast({
-        description: `Field "${newField.title}" created`,
+        description: `The ${getMutationToastDescriptionFieldName(
+          newField,
+        )} was duplicated.${
+          logicedFieldIdsSet?.has(fieldId)
+            ? ' Associated logic was not duplicated.'
+            : ''
+        }`,
       })
+
       queryClient.setQueryData<AdminFormDto>(adminFormKey, (oldForm) => {
         // Should not happen, should not be able to update field if there is no
         // existing data.
         if (!oldForm) throw new Error('Query should have been set')
-        oldForm.form_fields.push(newField)
+        const insertionIndex =
+          oldForm.form_fields.findIndex((o) => o._id === fieldId) + 1
+        if (insertionIndex > 0) {
+          oldForm.form_fields.splice(insertionIndex, 0, newField)
+        } else {
+          // if index does not exist, push new field to end
+          oldForm.form_fields.push(newField)
+        }
         return oldForm
       })
       // Switch to editing new field
       updateEditState(newField)
     },
-    [adminFormKey, stateData, queryClient, updateEditState, toast],
+    [
+      toast,
+      fieldBuilderState,
+      logicedFieldIdsSet,
+      queryClient,
+      adminFormKey,
+      updateEditState,
+    ],
   )
 
   const handleError = useCallback(
     (error: Error) => {
       toast.closeAll()
       toast({
-        description: error.message,
+        description: getMutationErrorMessage(error),
         status: 'danger',
       })
     },

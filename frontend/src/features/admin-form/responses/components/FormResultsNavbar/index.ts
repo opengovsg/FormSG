@@ -1,1 +1,1 @@
-export { FormResultsNavbarContainer as default } from './FormResultsNavbarContainer'
+export { FormResultsNavbar } from './FormResultsNavbar'

@@ -1,5 +1,5 @@
+import { useMemo } from 'react'
 import { BiX } from 'react-icons/bi'
-import ReactMarkdown from 'react-markdown'
 import {
   Box,
   CloseButton,
@@ -14,17 +14,20 @@ import { BxsErrorCircle, BxsInfoCircle } from '~/assets/icons'
 
 import { BannerVariant } from '~theme/components/Banner'
 import { useMdComponents } from '~hooks/useMdComponents'
+import { MarkdownText } from '~components/MarkdownText'
 
 export interface BannerProps {
   variant?: BannerVariant
   children: string
-  useMarkdown: boolean
+  useMarkdown?: boolean
+  showCloseButton?: boolean
 }
 
 export const Banner = ({
   variant = 'info',
   children,
   useMarkdown = false,
+  showCloseButton,
 }: BannerProps): JSX.Element => {
   const { isOpen, onToggle } = useDisclosure({
     defaultIsOpen: true,
@@ -34,24 +37,29 @@ export const Banner = ({
 
   const mdComponents = useMdComponents({ styles })
 
+  const shouldShowCloseButton = useMemo(() => {
+    // Prop supercedes all.
+    if (showCloseButton !== undefined) return showCloseButton
+    return variant === 'info'
+  }, [showCloseButton, variant])
+
   return (
-    <Collapse in={isOpen} animateOpacity>
+    <Collapse style={{ overflow: 'visible' }} in={isOpen} animateOpacity>
       <Box __css={styles.banner}>
         <Flex sx={styles.item}>
           <Flex>
             <Icon
               as={variant === 'info' ? BxsInfoCircle : BxsErrorCircle}
+              aria-label={`${variant} banner icon`}
               __css={styles.icon}
             />
             {useMarkdown ? (
-              <ReactMarkdown components={mdComponents}>
-                {children}
-              </ReactMarkdown>
+              <MarkdownText components={mdComponents}>{children}</MarkdownText>
             ) : (
               children
             )}
           </Flex>
-          {variant === 'info' && (
+          {shouldShowCloseButton && (
             <CloseButton
               variant="subtle"
               colorScheme="whiteAlpha"

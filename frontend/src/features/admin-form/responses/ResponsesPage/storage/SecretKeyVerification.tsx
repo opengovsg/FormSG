@@ -13,6 +13,7 @@ import {
 } from '@chakra-ui/react'
 import simplur from 'simplur'
 
+import { GUIDE_SECRET_KEY_LOSS } from '~constants/links'
 import { useIsMobile } from '~hooks/useIsMobile'
 import formsgSdk from '~utils/formSdk'
 import Button from '~components/Button'
@@ -130,7 +131,7 @@ export const SecretKeyVerification = (): JSX.Element => {
       <Stack spacing="2rem">
         <FormActivationSvg />
         <Skeleton isLoaded={!isLoading} w="fit-content">
-          <Text as="h2" textStyle="h2" whiteSpace="pre-line">
+          <Text as="h2" textStyle="h2" whiteSpace="pre-wrap">
             <Text color="primary.500" as="span">
               {totalResponsesCount?.toLocaleString() ?? '-'}
             </Text>
@@ -179,11 +180,7 @@ export const SecretKeyVerification = (): JSX.Element => {
             <Button isFullWidth={isMobile} isDisabled={isLoading} type="submit">
               Unlock responses
             </Button>
-            <Link
-              variant="standalone"
-              isExternal
-              href="https://go.gov.sg/secretkeyloss"
-            >
+            <Link variant="standalone" isExternal href={GUIDE_SECRET_KEY_LOSS}>
               Can't find your Secret Key?
             </Link>
           </Stack>

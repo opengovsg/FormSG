@@ -1,6 +1,6 @@
 import { ObjectId } from 'bson-ext'
 import { Document, Model } from 'mongoose'
-import { SetOptional } from 'type-fest'
+import type { SetOptional } from 'type-fest'
 
 import { PublicAgencyDto, UserBase } from '../../shared/types'
 

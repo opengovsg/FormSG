@@ -24,6 +24,8 @@ const baseStyle: PartsStyleFunction<typeof parts> = ({
 }) => ({
   // Control is the box containing the check icon
   control: {
+    // Keep bg when printing.
+    WebkitPrintColorAdjust: 'exact',
     bg: 'white',
     borderRadius: '0.25rem',
     border: '0.125rem solid',
@@ -70,6 +72,7 @@ const baseStyle: PartsStyleFunction<typeof parts> = ({
     textStyle: 'body-1',
     color: 'secondary.700',
     ml: '1rem',
+    overflowWrap: 'anywhere',
   },
   // Check mark icon
   icon: {

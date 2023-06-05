@@ -1,6 +1,5 @@
-import ReactMarkdown from 'react-markdown'
-
 import { useMdComponents } from '~hooks/useMdComponents'
+import { MarkdownText } from '~components/MarkdownText'
 
 import { BaseFieldProps } from '../FieldContainer'
 import { ParagraphFieldSchema } from '../types'
@@ -24,9 +23,10 @@ export const ParagraphField = ({
       },
     },
   })
+
   return (
-    <ReactMarkdown components={mdComponents}>
+    <MarkdownText multilineBreaks components={mdComponents}>
       {schema.description}
-    </ReactMarkdown>
+    </MarkdownText>
   )
 }

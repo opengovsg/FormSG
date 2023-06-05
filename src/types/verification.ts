@@ -3,7 +3,7 @@ import { Document, Model } from 'mongoose'
 import { BasicField } from '../../shared/types'
 
 import { PublicView } from './database'
-import { IFormSchema } from './form'
+import { IEncryptedFormSchema, IFormSchema } from './form'
 
 export interface IVerificationField {
   fieldType: BasicField
@@ -26,13 +26,15 @@ export interface IVerification {
   formId: IFormSchema['_id']
   expireAt: Date
   fields: IVerificationFieldSchema[]
+  paymentField: IVerificationFieldSchema
 }
 
 export type UpdateFieldData = {
+  isPayment: boolean
   transactionId: string
-  fieldId: string
   hashedOtp: string
   signedData: string
+  fieldId: string
 }
 
 export interface IVerificationSchema
@@ -40,14 +42,16 @@ export interface IVerificationSchema
     Document,
     PublicView<PublicTransaction> {
   /**
-   * Retrieves an individual field in a transaction, or undefined if not found
-   * @param fieldId
-   */
-  getField(fieldId: string): IVerificationFieldSchema | undefined
-  /**
    * Extracts non-sensitive fields from a transaction
    */
   getPublicView(): PublicTransaction
+  /**
+   * Retrieves field in a transaction, or undefined if not found
+   */
+  getField(
+    isPayment: boolean,
+    fieldId: string,
+  ): IVerificationFieldSchema | undefined
 }
 
 // Keep in sync with VERIFICATION_PUBLIC_FIELDS
@@ -70,13 +74,14 @@ export interface IVerificationModel extends Model<IVerificationSchema> {
    * @param form Form document
    */
   createTransactionFromForm(
-    form: IFormSchema,
+    form: IFormSchema | IEncryptedFormSchema,
   ): Promise<IVerificationSchema | null>
   /**
    * Increments the number of retries for a given field by 1.
    */
   incrementFieldRetries(
     transactionId: string,
+    isPayment: boolean,
     fieldId: string,
   ): Promise<IVerificationSchema | null>
   /**
@@ -84,12 +89,9 @@ export interface IVerificationModel extends Model<IVerificationSchema> {
    */
   resetField(
     transactionId: string,
+    isPayment: boolean,
     fieldId: string,
   ): Promise<IVerificationSchema | null>
-  /**
-   * Updates the hash records for a single field
-   * @param updateData Data with which to update field
-   */
   updateHashForField(
     updateData: UpdateFieldData,
   ): Promise<IVerificationSchema | null>

@@ -45,3 +45,27 @@ export const createStorageModeForm = async (
     ({ data }) => data,
   )
 }
+
+export const dupeEmailModeForm = async (
+  formId: string,
+  body: CreateEmailFormBodyDto,
+): Promise<FormDto> => {
+  return ApiService.post<FormDto>(
+    `${ADMIN_FORM_ENDPOINT}/${formId}/duplicate`,
+    body,
+  ).then(({ data }) => data)
+}
+
+export const dupeStorageModeForm = async (
+  formId: string,
+  body: CreateStorageFormBodyDto,
+): Promise<FormDto> => {
+  return ApiService.post<FormDto>(
+    `${ADMIN_FORM_ENDPOINT}/${formId}/duplicate`,
+    body,
+  ).then(({ data }) => data)
+}
+
+export const deleteAdminForm = async (formId: string): Promise<void> => {
+  return ApiService.delete(`${ADMIN_FORM_ENDPOINT}/${formId}`)
+}

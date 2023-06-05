@@ -49,10 +49,11 @@ export const BuilderAndDesignPlaceholder = ({
       style={{
         top: placeholderProps.clientY,
         left: placeholderProps.clientX,
-        height: placeholderProps.clientHeight,
+        height: `calc(${placeholderProps.clientHeight}px + 1.25rem)`,
         width: placeholderProps.clientWidth,
       }}
       py={placeholderProps.droppableId === FIELD_LIST_DROP_ID ? '1.25rem' : 0}
+      pb="1.25rem"
       pos="absolute"
     >
       {renderedContents}

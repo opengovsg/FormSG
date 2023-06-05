@@ -27,17 +27,45 @@ If you cannot login to the app and see an `MongoError: not primary and secondary
 
 This is most likely due to the replicaSet being misconfigured with the wrong IP address of the MongoDB container.
 
-To fix this issue, follow these steps:
+This should only happen if your MongoDB volume was created before [#4603](https://github.com/opengovsg/FormSG/pull/4603).
 
-1. Retrieve the container ID of the mongodb container using `docker ps`,
-2. Retrieve the IP address of the container `docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' <mongodb-container-id>`.
-3. Login to the docker container using `docker exec -it <mongodb-container-id> /bin/sh`
-4. Start the mongodb shell with `mongosh`.
-5. Look at the replica set configuration by entering `rs.config()`. Look to see if the IP address listed is different than the one in step 2.
-6. Run the following commands within `mongosh` to force set the IP address within the replica set:
+To fix this issue, either delete and re-create the MongoDB volume, or follow these steps:
+
+1. Login to the docker container using `docker exec -it <mongodb-container-id> /bin/sh`
+2. Start the mongodb shell with `mongosh`.
+3. Run the following commands within `mongosh` to force set the IP address within the replica set:
 
 ```
 conf = rs.config()
-conf.members[0].host = '<ip-address>:27017'
+conf.members[0].host = 'database:27017'
 rs.reconfig(conf, {force:true})
+```
+
+## `TypeError: Cannot read property 'tap' of undefined`
+
+If you are using a machine with an M1 chip, you may be facing this issue due to your `node` installation, as an inappropriate version of `node` would cause more updated versions of `webpack` to be installed and thus introduces breaking changes in the code.
+
+To overcome this, use Rosetta to install `node` in -x86_64 architecture as described in the "Macs with M1 chip" section [here](https://github.com/nvm-sh/nvm#macos-troubleshooting).
+
+Be sure to check that the correct `node` is installed with:
+
+```bash
+$ node -p process.arch
+x64
+```
+
+## `npm` not found
+
+Make sure `nvm` is loaded to the environment in `~/.bash_profile`. To do so, the `~/.bash_profile` should include the following lines:
+
+```bash
+export NVM_DIR=~/.nvm
+source $(brew --prefix nvm)/nvm.sh
+```
+
+Ensure that on startup, `brew` is added to the environment variables and `~/.bash_profile` is run. To do so, `~/.zshrc` should have the following lines:
+
+```bash
+export PATH=/opt/homebrew/bin:$PATH
+source ~/.bash_profile
 ```
