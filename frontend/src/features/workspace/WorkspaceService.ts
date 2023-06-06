@@ -30,6 +30,52 @@ export const getWorkspacesView = async (): Promise<WorkspaceDto[]> => {
   )
 }
 
+export const createWorkspace = async ({
+  title,
+}: {
+  title: string
+}): Promise<WorkspaceDto> => {
+  return ApiService.post<WorkspaceDto>(`${ADMIN_WORKSPACES_ENDPOINT}`, {
+    title,
+  }).then(({ data }) => data)
+}
+
+export const moveFormsToWorkspace = async ({
+  formIds,
+  destWorkspaceId,
+}: {
+  formIds: string[]
+  destWorkspaceId: string
+}): Promise<string[]> => {
+  return ApiService.post<string[]>(`${ADMIN_WORKSPACES_ENDPOINT}/move`, {
+    formIds,
+    destWorkspaceId,
+  }).then(({ data }) => data)
+}
+
+export const updateWorkspaceTitle = async ({
+  title,
+  destWorkspaceId,
+}: {
+  title: string
+  destWorkspaceId: string
+}): Promise<WorkspaceDto> => {
+  return ApiService.put<WorkspaceDto>(
+    `${ADMIN_WORKSPACES_ENDPOINT}/${destWorkspaceId}/title`,
+    {
+      title,
+    },
+  ).then(({ data }) => data)
+}
+
+export const deleteWorkspace = async ({
+  destWorkspaceId,
+}: {
+  destWorkspaceId: string
+}): Promise<void> => {
+  return ApiService.delete(`${ADMIN_WORKSPACES_ENDPOINT}/${destWorkspaceId}`)
+}
+
 export const createEmailModeForm = async (
   body: CreateEmailFormBodyDto,
 ): Promise<FormDto> => {
