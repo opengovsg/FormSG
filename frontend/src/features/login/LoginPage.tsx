@@ -151,16 +151,22 @@ export const LoginPage = (): JSX.Element => {
     await sendLoginOtp(email).then(({ otpPrefix }) => setOtpPrefix(otpPrefix))
   }
 
+  const bannerColor = 'primary.600' // So banner colors are different from the blue background (left of login screen).
+
   return (
     <BackgroundBox>
       {bannerProps ? (
-        <Banner useMarkdown variant={bannerProps.variant}>
+        <Banner
+          useMarkdown
+          variant={bannerProps.variant}
+          bannerColor={bannerColor}
+        >
           {bannerProps.msg}
         </Banner>
       ) : null}
       <FeatureBanner
         variant={bannerProps?.variant ?? 'info'}
-        bannerColor="primary.600"
+        bannerColor={bannerColor}
         body="You can now collect payments directly on your form!"
         learnMoreLink={GUIDE_PAYMENTS_PUBLIC}
       />
