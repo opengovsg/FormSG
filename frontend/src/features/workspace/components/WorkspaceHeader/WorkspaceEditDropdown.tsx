@@ -19,7 +19,6 @@ export const WorkspaceEditDropdown = (): JSX.Element => {
       <RenameWorkspaceModal
         onClose={renameModal.onClose}
         isOpen={renameModal.isOpen}
-        workspaceId={activeWorkspace._id.toString()}
       />
       <DeleteWorkspaceModal
         onClose={deleteModal.onClose}

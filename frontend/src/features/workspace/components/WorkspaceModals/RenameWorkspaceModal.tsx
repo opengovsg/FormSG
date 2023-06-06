@@ -30,13 +30,11 @@ type RenameWorkspaceInputProps = {
 export interface RenameWorkspaceModalProps {
   isOpen: boolean
   onClose: () => void
-  workspaceId: string
 }
 
 export const RenameWorkspaceModal = ({
   isOpen,
   onClose,
-  workspaceId,
 }: RenameWorkspaceModalProps): JSX.Element => {
   const { updateWorkspaceTitleMutation } = useWorkspaceMutations()
   const { activeWorkspace } = useWorkspaceContext()
@@ -59,11 +57,12 @@ export const RenameWorkspaceModal = ({
   const isMobile = useIsMobile()
 
   const handleRenameWorkspace = handleSubmit((data) => {
+    // no changes made
+    if (data.title === activeWorkspace.title) return onClose()
     updateWorkspaceTitleMutation.mutateAsync({
       title: data.title,
-      destWorkspaceId: workspaceId,
+      destWorkspaceId: activeWorkspace._id.toString(),
     })
-    reset()
     onClose()
   })
 
