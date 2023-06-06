@@ -52,6 +52,12 @@ export type RateLimitConfig = {
   submissions: number
   sendAuthOtp: number
   downloadPaymentReceipt: number
+  publicApi: number
+}
+
+export type PublicApiConfig = {
+  apiEnv: string
+  apiKeyVersion: string
 }
 
 export type ReactMigrationConfig = {
@@ -92,6 +98,7 @@ export type Config = {
   reactMigration: ReactMigrationConfig
   secretEnv: string
   envSiteName: string
+  publicApiConfig: PublicApiConfig
 
   // Functions
   configureAws: () => Promise<void>
@@ -172,10 +179,14 @@ export interface IOptionalVarsSchema {
     submissions: number
     sendAuthOtp: number
     downloadPaymentReceipt: number
+    publicApi: number
   }
   reactMigration: {
     // TODO (#5826): Toggle to use fetch for submissions instead of axios. Remove once network error is resolved
     useFetchForSubmissions: boolean
+  }
+  publicApi: {
+    apiKeyVersion: string
   }
 }
 

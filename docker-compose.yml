@@ -116,6 +116,8 @@ services:
       - CRON_PAYMENT_API_SECRET=secretKey
       # env vars for go integration
       - GOGOV_API_KEY
+      # Bearer token API key format
+      - API_KEY_VERSION=v1
 
   mockpass:
     build: https://github.com/opengovsg/mockpass.git#v3.1.3
