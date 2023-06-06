@@ -6,7 +6,6 @@ export const LegacyRedirectRouter = Router()
 /**
  * Redirect a form to the appropriate new frontend page.
  *
- * @route GET /:formId/publicform
  * @route GET /:formId/preview
  * @route GET /:formId/template
  * @route GET /:formId/use-template
@@ -19,10 +18,6 @@ export const LegacyRedirectRouter = Router()
  *
  * @returns 302 - redirects the user to the appropriate new frontend route
  */
-LegacyRedirectRouter.get('/:formId([a-fA-F0-9]{24})/publicform', (req, res) =>
-  res.redirect(301, `/${req.params.formId}`),
-)
-
 LegacyRedirectRouter.get(
   '/:formId([a-fA-F0-9]{24})/:state(preview|template|use-template)',
   (req, res) => {

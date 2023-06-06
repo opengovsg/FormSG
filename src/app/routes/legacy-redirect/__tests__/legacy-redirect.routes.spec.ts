@@ -15,17 +15,6 @@ describe('legacy-redirect.routes', () => {
     request = session(app)
   })
 
-  describe('GET /:formId/publicform', () => {
-    it('should return 301 and redirect to /:formId', async () => {
-      // Act
-      const response = await request.get(`/${MOCK_FORM_ID}/publicform`)
-
-      // Assert
-      expect(response.status).toEqual(301)
-      expect(response.text).toContain(`Redirecting to /${MOCK_FORM_ID}`)
-    })
-  })
-
   describe('GET /:formId/preview', () => {
     it('should return 301 and redirect to /admin/form/:formId/preview', async () => {
       // Act
