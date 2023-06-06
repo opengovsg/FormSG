@@ -14,6 +14,8 @@ import {
   useDisclosure,
 } from '@chakra-ui/react'
 
+import { Workspace } from '~shared/types/workspace'
+
 import { AdminNavBar } from '~/app/AdminNavBar/AdminNavBar'
 
 import {
@@ -32,6 +34,7 @@ import { EmptyWorkspace } from './components/EmptyWorkspace'
 import { WorkspaceMenuHeader } from './components/WorkspaceSideMenu/WorkspaceMenuHeader'
 import { WorkspaceMenuTabs } from './components/WorkspaceSideMenu/WorkspaceMenuTabs'
 import { useDashboard, useWorkspace } from './queries'
+import { WorkspaceProvider } from './WorkspaceProvider'
 
 export const WorkspacePage = (): JSX.Element => {
   const [currWorkspaceId, setCurrWorkspaceId] = useState<string>('')
@@ -47,7 +50,7 @@ export const WorkspacePage = (): JSX.Element => {
 
   const { user, isLoading: isUserLoading } = useUser()
   const { data: dashboardForms, isLoading: isDashboardLoading } = useDashboard()
-  const { data: workspaces } = useWorkspace()
+  const { data: workspaces, isLoading: isWorkspaceLoading } = useWorkspace()
 
   const ROLLOUT_ANNOUNCEMENT_KEY = useMemo(
     () => ROLLOUT_ANNOUNCEMENT_KEY_PREFIX + user?._id,
@@ -78,6 +81,17 @@ export const WorkspacePage = (): JSX.Element => {
       !user?.contact,
     [isUserLoading, hasSeenAnnouncement, hasSeenEmergencyContact, user],
   )
+
+  const DEFAULT_WORKSPACE = useMemo(() => {
+    return {
+      _id: '',
+      title: 'All forms',
+      formIds: dashboardForms?.map(({ _id }) => _id),
+      admin: user?._id,
+    }
+  }, [dashboardForms, user]) as Workspace
+
+  if (isWorkspaceLoading || isDashboardLoading) return <></>
 
   if (dashboardForms?.length === 0) {
     return (
@@ -123,6 +137,7 @@ export const WorkspacePage = (): JSX.Element => {
                 setCurrWorkspaceId(id)
                 mobileDrawer.onClose()
               }}
+              defaultWorkspace={DEFAULT_WORKSPACE}
             />
           </DrawerBody>
         </DrawerContent>
@@ -143,7 +158,6 @@ export const WorkspacePage = (): JSX.Element => {
         <GridItem area="header">
           <AdminNavBar />
         </GridItem>
-
         {shouldUseTopMenu ? (
           <WorkspaceMenuHeader
             shouldShowMenuIcon
@@ -164,11 +178,18 @@ export const WorkspacePage = (): JSX.Element => {
                 workspaces={workspaces ?? []}
                 currWorkspace={currWorkspaceId}
                 onClick={setCurrWorkspaceId}
+                defaultWorkspace={DEFAULT_WORKSPACE}
               />
             </Stack>
           </Box>
         )}
-        <WorkspaceContent workspaceId={currWorkspaceId} />
+        <WorkspaceProvider
+          currentWorkspace={currWorkspaceId}
+          defaultWorkspace={DEFAULT_WORKSPACE}
+          setCurrentWorkspace={setCurrWorkspaceId}
+        >
+          <WorkspaceContent />
+        </WorkspaceProvider>
       </Grid>
 
       <RolloutAnnouncementModal
