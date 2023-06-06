@@ -11,6 +11,8 @@ import { Flex, Table, Tbody, Td, Th, Thead, Tr } from '@chakra-ui/react'
 
 import { StorageModeSubmissionMetadata } from '~shared/types'
 
+import { centsToDollars } from '~utils/payments'
+
 import { useUnlockedResponses } from './UnlockedResponsesProvider'
 
 type ResponseColumnData = StorageModeSubmissionMetadata
@@ -34,7 +36,56 @@ const RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
     Header: 'Timestamp',
     accessor: 'submissionTime',
     minWidth: 200,
-    width: 300,
+    width: 250,
+    disableResizing: true,
+  },
+
+  {
+    Header: 'Paid Amount', //  (amt responder paid)
+    accessor: ({ payments }) => {
+      if (!payments) {
+        return ''
+      }
+      return `S$${centsToDollars(payments.paymentAmt)}`
+    },
+    minWidth: 50,
+    width: 150,
+    disableResizing: true,
+  },
+
+  {
+    Header: 'Gross Amount', //  (amt they receive in bank)
+    accessor: ({ payments }) => {
+      if (!payments?.transactionFee) {
+        return ''
+      }
+      if (payments.transactionFee < 0) {
+        return ''
+      }
+
+      const grossAmt = centsToDollars(
+        payments.paymentAmt - payments.transactionFee,
+      )
+      const isFinalTransactionFee = payments.payoutDate
+      if (!isFinalTransactionFee) {
+        return `Est. S$${grossAmt}`
+      }
+      return `S$${grossAmt}`
+    },
+    minWidth: 50,
+    width: 150,
+    disableResizing: true,
+  },
+  {
+    Header: 'Payout Date',
+    accessor: ({ payments }) => {
+      if (!payments) {
+        return ''
+      }
+      return payments.payoutDate
+    },
+    minWidth: 50,
+    width: 150,
     disableResizing: true,
   },
 ]

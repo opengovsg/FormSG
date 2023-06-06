@@ -14,6 +14,7 @@ import {
   IEmailSubmissionSchema,
   IEncryptedSubmissionSchema,
   IEncryptSubmissionModel,
+  IPaymentSchema,
   IPopulatedWebhookSubmission,
   ISubmissionModel,
   ISubmissionSchema,
@@ -255,42 +256,77 @@ EncryptSubmissionSchema.statics.findSingleMetadata = function (
   formId: string,
   submissionId: string,
 ): Promise<StorageModeSubmissionMetadata | null> {
-  return (
-    this.findOne(
-      {
+  const pageResults: Promise<MetadataAggregateResult[]> = this.aggregate([
+    {
+      $match: {
         form: formId,
         _id: submissionId,
         submissionType: SubmissionType.Encrypt,
       },
-      { created: 1 },
-    )
-      // Reading from primary to avoid any contention issues with bulk queries
-      // on secondary servers.
-      .read('primary')
-      .then((result) => {
-        if (!result) {
-          return null
-        }
+    },
+    {
+      $lookup: {
+        from: 'payments',
+        localField: 'paymentId',
+        foreignField: '_id',
+        as: 'payments',
+      },
+    },
+    {
+      $project: {
+        _id: 1,
+        created: 1,
+        'payments.payout': 1,
+        'payments.completedPayment': 1,
+        'payments.amount': 1,
+      },
+    },
+  ])
+    .limit(1)
+    .exec()
 
-        // Build submissionMetadata object.
-        const metadata: StorageModeSubmissionMetadata = {
-          number: 1,
-          refNo: result._id,
-          submissionTime: moment(result.created)
-            .tz('Asia/Singapore')
-            .format('Do MMM YYYY, h:mm:ss a'),
-        }
+  return Promise.resolve(pageResults).then((results) => {
+    if (!results || results.length <= 0) {
+      return null
+    }
 
-        return metadata
-      })
-  )
+    const result = results[0]
+
+    // Build submissionMetadata object.
+    const metadata: StorageModeSubmissionMetadata = {
+      number: 1,
+      refNo: result._id,
+      submissionTime: moment(result.created)
+        .tz('Asia/Singapore')
+        .format('Do MMM YYYY, h:mm:ss a'),
+      payments: result.payments[0]?.payout
+        ? {
+            payoutDate: moment(result.payments[0].payout.payoutDate)
+              .tz('Asia/Singapore')
+              .format('ddd, D MMM YYYY'),
+
+            paymentAmt: result.payments[0].amount,
+            transactionFee:
+              result.payments[0].completedPayment?.transactionFee ?? null,
+          }
+        : null,
+    }
+
+    return metadata
+  })
 }
 
 /**
  * Unexported as the type is only used in {@see findAllMetadataByFormId} for
  * now.
  */
-type MetadataAggregateResult = Pick<ISubmissionSchema, '_id' | 'created'>
+type MetadataAggregateResult = Pick<ISubmissionSchema, '_id' | 'created'> & {
+  payments: PaymentAggregates[]
+}
+type PaymentAggregates = Pick<
+  IPaymentSchema,
+  'amount' | 'payout' | 'completedPayment'
+>
 
 EncryptSubmissionSchema.statics.findAllMetadataByFormId = function (
   formId: string,
@@ -306,15 +342,32 @@ EncryptSubmissionSchema.statics.findAllMetadataByFormId = function (
   count: number
 }> {
   const numToSkip = (page - 1) * pageSize
-
   // return documents within the page
-  const pageResults: Promise<MetadataAggregateResult[]> = this.find(
+  const pageResults: Promise<MetadataAggregateResult[]> = this.aggregate([
     {
-      form: mongoose.Types.ObjectId(formId),
-      submissionType: SubmissionType.Encrypt,
+      $match: {
+        form: mongoose.Types.ObjectId(formId),
+        submissionType: SubmissionType.Encrypt,
+      },
     },
-    { _id: 1, created: 1 },
-  )
+    {
+      $lookup: {
+        from: 'payments',
+        localField: 'paymentId',
+        foreignField: '_id',
+        as: 'payments',
+      },
+    },
+    {
+      $project: {
+        _id: 1,
+        created: 1,
+        'payments.payout': 1,
+        'payments.completedPayment': 1,
+        'payments.amount': 1,
+      },
+    },
+  ])
     .sort({ created: -1 })
     .skip(numToSkip)
     .limit(pageSize)
@@ -336,6 +389,17 @@ EncryptSubmissionSchema.statics.findAllMetadataByFormId = function (
         submissionTime: moment(data.created)
           .tz('Asia/Singapore')
           .format('Do MMM YYYY, h:mm:ss a'),
+        payments: data.payments[0]?.payout
+          ? {
+              payoutDate: moment(data.payments[0].payout.payoutDate)
+                .tz('Asia/Singapore')
+                .format('ddd, D MMM YYYY'),
+
+              paymentAmt: data.payments[0].amount,
+              transactionFee:
+                data.payments[0].completedPayment?.transactionFee ?? null,
+            }
+          : null,
       }
 
       currentNumber--
