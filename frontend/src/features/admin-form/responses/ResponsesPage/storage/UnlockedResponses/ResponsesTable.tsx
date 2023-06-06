@@ -80,7 +80,7 @@ const RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
     Header: 'Payout Date',
     accessor: ({ payments }) => {
       if (!payments) {
-        return ''
+        return 'Pending'
       }
       return payments.payoutDate
     },
