@@ -166,7 +166,6 @@ export const LoginPage = (): JSX.Element => {
         </Banner>
       ) : null}
       <FeatureBanner
-        variant={bannerProps?.variant ?? 'info'}
         bannerColorIntensity={bannerColorIntensity}
         body="You can now collect payments directly on your form!"
         learnMoreLink={GUIDE_PAYMENTS_PUBLIC}
