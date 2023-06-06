@@ -42,6 +42,7 @@ export const WorkspaceHeader = ({
     activeFilter,
     setActiveFilter,
     hasActiveSearchOrFilter,
+    activeWorkspace,
   } = useWorkspaceContext()
 
   const { isOpen: isSearchExpanded, onToggle: onToggleSearchExpansion } =
@@ -51,8 +52,13 @@ export const WorkspaceHeader = ({
     () =>
       hasActiveSearchOrFilter
         ? simplur`Showing ${displayedFormsCount} of ${totalFormsCount} form[|s]`
-        : `All forms (${totalFormsCount})`,
-    [displayedFormsCount, hasActiveSearchOrFilter, totalFormsCount],
+        : `${activeWorkspace.title} (${totalFormsCount})`,
+    [
+      displayedFormsCount,
+      hasActiveSearchOrFilter,
+      totalFormsCount,
+      activeWorkspace,
+    ],
   )
 
   return (
@@ -74,19 +80,6 @@ export const WorkspaceHeader = ({
       }}
       gap="1rem"
     >
-      <Flex alignItems="center">
-        <Text
-          flex={1}
-          as="h2"
-          textStyle="h2"
-          display="flex"
-          color="secondary.500"
-        >
-          All forms
-        </Text>
-        <WorkspaceEditDropdown />
-      </Flex>
-
       <Flex
         gridArea="header"
         flex={1}
@@ -94,13 +87,16 @@ export const WorkspaceHeader = ({
         color="secondary.500"
         alignSelf="center"
       >
-        <Skeleton isLoaded={!isLoading}>
-          <Text
-            textStyle={isMobile && hasActiveSearchOrFilter ? 'subhead-1' : 'h2'}
-          >
+        <Skeleton isLoaded={!isLoading} alignSelf="center">
+          <Text as="h2" textStyle="h2" display="flex" color="secondary.500">
             {headerText}
           </Text>
         </Skeleton>
+        {activeWorkspace._id && (
+          <Skeleton isLoaded={!isLoading}>
+            <WorkspaceEditDropdown />
+          </Skeleton>
+        )}
       </Flex>
 
       {isDesktop ? (
