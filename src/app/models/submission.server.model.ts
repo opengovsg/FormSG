@@ -291,6 +291,7 @@ EncryptSubmissionSchema.statics.findSingleMetadata = function (
     }
 
     const result = results[0]
+    const paymentMeta = result.payments?.[0]
 
     // Build submissionMetadata object.
     const metadata: StorageModeSubmissionMetadata = {
@@ -299,15 +300,17 @@ EncryptSubmissionSchema.statics.findSingleMetadata = function (
       submissionTime: moment(result.created)
         .tz('Asia/Singapore')
         .format('Do MMM YYYY, h:mm:ss a'),
-      payments: result.payments[0]?.payout
+      payments: paymentMeta
         ? {
-            payoutDate: moment(result.payments[0].payout.payoutDate)
-              .tz('Asia/Singapore')
-              .format('ddd, D MMM YYYY'),
+            payoutDate: paymentMeta.payout
+              ? moment(paymentMeta.payout.payoutDate)
+                  .tz('Asia/Singapore')
+                  .format('ddd, D MMM YYYY')
+              : null,
 
-            paymentAmt: result.payments[0].amount,
+            paymentAmt: paymentMeta.amount,
             transactionFee:
-              result.payments[0].completedPayment?.transactionFee ?? null,
+              paymentMeta.completedPayment?.transactionFee ?? null,
           }
         : null,
     }
@@ -321,7 +324,7 @@ EncryptSubmissionSchema.statics.findSingleMetadata = function (
  * now.
  */
 type MetadataAggregateResult = Pick<ISubmissionSchema, '_id' | 'created'> & {
-  payments: PaymentAggregates[]
+  payments?: PaymentAggregates[]
 }
 type PaymentAggregates = Pick<
   IPaymentSchema,
@@ -383,21 +386,24 @@ EncryptSubmissionSchema.statics.findAllMetadataByFormId = function (
     let currentNumber = count - numToSkip
 
     const metadata = result.map((data) => {
+      const paymentMeta = data.payments?.[0]
       const metadataEntry: StorageModeSubmissionMetadata = {
         number: currentNumber,
         refNo: data._id,
         submissionTime: moment(data.created)
           .tz('Asia/Singapore')
           .format('Do MMM YYYY, h:mm:ss a'),
-        payments: data.payments[0]?.payout
+        payments: paymentMeta
           ? {
-              payoutDate: moment(data.payments[0].payout.payoutDate)
-                .tz('Asia/Singapore')
-                .format('ddd, D MMM YYYY'),
+              payoutDate: paymentMeta.payout
+                ? moment(paymentMeta.payout.payoutDate)
+                    .tz('Asia/Singapore')
+                    .format('ddd, D MMM YYYY')
+                : null,
 
-              paymentAmt: data.payments[0].amount,
+              paymentAmt: paymentMeta.amount,
               transactionFee:
-                data.payments[0].completedPayment?.transactionFee ?? null,
+                paymentMeta.completedPayment?.transactionFee ?? null,
             }
           : null,
       }

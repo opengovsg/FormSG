@@ -118,7 +118,7 @@ export type StorageModeSubmissionMetadata = {
   /** Not a DateString, format is `Do MMM YYYY, h:mm:ss a` */
   submissionTime: string
   payments: {
-    payoutDate: string
+    payoutDate: string | null
     paymentAmt: number
     transactionFee: number | null
   } | null
