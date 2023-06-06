@@ -69,6 +69,20 @@ export const textStyles = {
     letterSpacing: '-0.014em',
     fontFeatureSettings: "'tnum' on, 'lnum' on, 'cv05' on",
   },
+  h5: {
+    fontWeight: 600,
+    fontSize: '1.125rem',
+    lineHeight: '1.5rem',
+    letterSpacing: '-0.014em',
+    fontFeatureSettings: "'tnum' on, 'lnum' on, 'cv05' on",
+  },
+  h6: {
+    fontWeight: 500,
+    fontSize: '1rem',
+    lineHeight: '1.5rem',
+    letterSpacing: '-0.014em',
+    fontFeatureSettings: "'tnum' on, 'lnum' on, 'cv05' on",
+  },
   'subhead-1': {
     fontWeight: 500,
     fontSize: '1rem',
