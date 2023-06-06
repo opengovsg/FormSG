@@ -97,13 +97,7 @@ const useWorkspaceForms = () => {
   }
 }
 
-interface WorkspaceContentProps {
-  workspaceId: string
-}
-
-export const WorkspaceContent = ({
-  workspaceId,
-}: WorkspaceContentProps): JSX.Element => {
+export const WorkspaceContent = (): JSX.Element => {
   // TODO (hans): Use workspaceId to fetch workspace data once API created (depends on final design decision)
   const {
     isLoading,
