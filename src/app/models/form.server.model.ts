@@ -822,6 +822,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         .sort('-lastModified')
         .populate({
           path: 'admin',
+          select: ['_id', 'email', 'agency', 'created', 'updatedAt'],
           populate: {
             path: 'agency',
           },
