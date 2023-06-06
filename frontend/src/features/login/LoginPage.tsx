@@ -151,7 +151,8 @@ export const LoginPage = (): JSX.Element => {
     await sendLoginOtp(email).then(({ otpPrefix }) => setOtpPrefix(otpPrefix))
   }
 
-  const bannerColor = 'primary.600' // So banner colors are different from the blue background (left of login screen).
+  const bannerColorIntensity = 600
+  const bannerColor = `primary.${bannerColorIntensity}` // So banner colors are different from the blue background (left of login screen).
 
   return (
     <BackgroundBox>
@@ -166,7 +167,7 @@ export const LoginPage = (): JSX.Element => {
       ) : null}
       <FeatureBanner
         variant={bannerProps?.variant ?? 'info'}
-        bannerColor={bannerColor}
+        bannerColorIntensity={bannerColorIntensity}
         body="You can now collect payments directly on your form!"
         learnMoreLink={GUIDE_PAYMENTS_PUBLIC}
       />

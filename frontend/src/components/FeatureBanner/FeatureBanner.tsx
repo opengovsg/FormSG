@@ -7,7 +7,7 @@ import { textStyles } from '../../theme/textStyles'
 
 export interface FeatureBannerProps {
   variant?: BannerVariant
-  bannerColor?: string
+  bannerColorIntensity?: 500 | 600 // Update accordingly if other banner colors are needed
   title?: string
   body: string
   learnMoreLink: string
@@ -15,7 +15,7 @@ export interface FeatureBannerProps {
 
 export const FeatureBanner = ({
   variant = 'info',
-  bannerColor = 'primary.600',
+  bannerColorIntensity = 600,
   title,
   body,
   learnMoreLink,
@@ -23,7 +23,7 @@ export const FeatureBanner = ({
   const styles = useMultiStyleConfig('Banner', { variant })
 
   return (
-    <Box __css={styles.banner} bgColor={bannerColor}>
+    <Box __css={styles.banner} bgColor={`primary.${bannerColorIntensity}`}>
       <Flex sx={styles.item} placeContent="center" verticalAlign="middle">
         <Center mr="1.5rem">
           <Text textStyle="h6">{body}</Text>
@@ -39,8 +39,12 @@ export const FeatureBanner = ({
           href={learnMoreLink}
           target="_blank"
           borderColor="white"
-          bgColor={bannerColor}
-          _hover={{ bgColor: 'white', color: bannerColor }}
+          bg="transparent"
+          _hover={{
+            color: 'white',
+            borderColor: 'white',
+            bg: `primary.${bannerColorIntensity - 100}`,
+          }}
         >
           Learn more
         </Button>
