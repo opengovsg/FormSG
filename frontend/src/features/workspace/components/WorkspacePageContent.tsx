@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { Box, Container, Grid } from '@chakra-ui/react'
 
+import { GUIDE_PAYMENTS_ENTRY } from '~constants/links'
 import { ROLLOUT_ANNOUNCEMENT_KEY_PREFIX } from '~constants/localStorage'
 import { useLocalStorage } from '~hooks/useLocalStorage'
 import InlineMessage from '~components/InlineMessage'
@@ -39,6 +40,8 @@ export const WorkspacePageContent = ({
     [isUserLoading, hasSeenAnnouncement],
   )
 
+  const dashboardMessage = `Introducing payments! Citizens can now pay for fees and services directly on your form. [Learn more](${GUIDE_PAYMENTS_ENTRY})`
+
   return totalFormsCount === 0 ? (
     <EmptyWorkspace
       handleOpenCreateFormModal={handleCreateFormModalOpen}
@@ -62,9 +65,7 @@ export const WorkspacePageContent = ({
         py="1rem"
       >
         <InlineMessage useMarkdown mb="2rem" mx="-2rem">
-          Introducing payments! Citizens can now pay for fees and services
-          directly on your form. [Learn
-          more](https://go.gov.sg/formsg-payment-overview)
+          {dashboardMessage}
         </InlineMessage>
         <WorkspaceHeader
           handleOpenCreateFormModal={handleCreateFormModalOpen}

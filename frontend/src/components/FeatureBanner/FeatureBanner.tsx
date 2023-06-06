@@ -10,6 +10,7 @@ export interface FeatureBannerProps {
   bannerColor?: string
   title?: string
   body: string
+  learnMoreLink: string
 }
 
 export const FeatureBanner = ({
@@ -17,6 +18,7 @@ export const FeatureBanner = ({
   bannerColor = 'primary.600',
   title,
   body,
+  learnMoreLink,
 }: FeatureBannerProps): JSX.Element => {
   const styles = useMultiStyleConfig('Banner', { variant })
 
@@ -34,7 +36,7 @@ export const FeatureBanner = ({
           }}
           variant="solid"
           as="a"
-          href="https://go.gov.sg/formsg-guide-payments"
+          href={learnMoreLink}
           target="_blank"
           borderColor="white"
           bgColor={bannerColor}
