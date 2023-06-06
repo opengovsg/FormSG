@@ -8,7 +8,6 @@ import { createLoggerWithLabel } from '../../config/logger'
 import { ControllerHandler } from '../core/core.types'
 import * as FormService from '../form/form.service'
 import { createMetatags } from '../form/public-form/public-form.service'
-import { RedirectParams } from '../form/public-form/public-form.types'
 
 import { getClientEnvVars } from './frontend.service'
 
@@ -88,7 +87,7 @@ const getPublicFormMetaTags = async (formId: string): Promise<MetaTags> => {
 }
 
 export const servePublicForm: ControllerHandler<
-  RedirectParams,
+  { formId: string },
   unknown,
   unknown,
   Record<string, string>
