@@ -23,17 +23,17 @@ LegacyRedirectRouter.get(
   (req, res) => {
     const { formId, state } = req.params
     if (state === 'preview') {
-      return res.redirect(`/admin/form/${formId}/preview`)
+      return res.redirect(301, `/admin/form/${formId}/preview`)
     }
     if (state === 'template' || state === 'use-template') {
-      return res.redirect(`/admin/form/${formId}/use-template`)
+      return res.redirect(301, `/admin/form/${formId}/use-template`)
     }
-    return res.redirect(`/${formId}`)
+    return res.redirect(301, `/${formId}`)
   },
 )
 
 LegacyRedirectRouter.get('/:formId([a-fA-F0-9]{24})/embed', (req, res) =>
-  res.redirect(`/${req.params.formId}`),
+  res.redirect(301, `/${req.params.formId}`),
 )
 
 LegacyRedirectRouter.get(
@@ -41,16 +41,16 @@ LegacyRedirectRouter.get(
   (req, res) => {
     const { formId, state } = req.params
     if (state === 'preview') {
-      return res.redirect(`/admin/form/${formId}/preview`)
+      return res.redirect(301, `/admin/form/${formId}/preview`)
     }
     if (state === 'template' || state === 'use-template') {
-      return res.redirect(`/admin/form/${formId}/use-template`)
+      return res.redirect(301, `/admin/form/${formId}/use-template`)
     }
-    return res.redirect(`/${formId}`)
+    return res.redirect(301, `/${formId}`)
   },
 )
 
 LegacyRedirectRouter.get(
   '/forms/:agency/:formId([a-fA-F0-9]{24})/embed',
-  (req, res) => res.redirect(`/${req.params.formId}`),
+  (req, res) => res.redirect(301, `/${req.params.formId}`),
 )
