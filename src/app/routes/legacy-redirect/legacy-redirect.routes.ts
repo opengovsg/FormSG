@@ -1,4 +1,50 @@
 import { Router } from 'express'
+import { StatusCodes } from 'http-status-codes'
+import querystring from 'querystring'
+
+import { ControllerHandler } from 'src/app/modules/core/core.types'
+
+/**
+ * Handler to redirect frontend pages with /:formId or /forms/:agency prefixes.
+ *
+ * @param formId the form id referenced in the route
+ * @param state one of ['preview', 'template', 'use-template', 'embed']
+ *
+ * @returns 301 with the new redirect route path
+ */
+const handleFormIdAndAgencyPrefixRedirect: ControllerHandler<
+  { formId: string; state: 'preview' | 'template' | 'use-template' | 'embed' },
+  unknown,
+  unknown,
+  Record<string, string>
+> = (req, res, next) => {
+  const { formId, state } = req.params
+
+  let redirectPath
+  switch (state) {
+    case 'preview':
+      redirectPath = `/admin/form/${formId}/preview`
+      break
+    case 'template':
+    case 'use-template':
+      redirectPath = `/admin/form/${formId}/use-template`
+      break
+    case 'embed':
+      redirectPath = `/${formId}`
+      break
+    default:
+      // Fallback - should never get here!
+      return next()
+  }
+
+  // Port query params over to the new URL as well
+  const queryString = querystring.stringify(req.query)
+  if (queryString.length > 0) {
+    redirectPath = redirectPath + '?' + encodeURIComponent(queryString)
+  }
+
+  return res.redirect(StatusCodes.MOVED_PERMANENTLY, redirectPath)
+}
 
 // Handles legacy routes required for backward compatibility
 export const LegacyRedirectRouter = Router()
@@ -16,41 +62,20 @@ export const LegacyRedirectRouter = Router()
  * @route GET /forms/:agency/:formId/use-template
  * @route GET /forms/:agency/:formId/embed
  *
- * @returns 302 - redirects the user to the appropriate new frontend route
+ * @returns 301 - redirects the user to the appropriate new frontend route
  */
 LegacyRedirectRouter.get(
-  '/:formId([a-fA-F0-9]{24})/:state(preview|template|use-template)',
-  (req, res) => {
-    const { formId, state } = req.params
-    if (state === 'preview') {
-      return res.redirect(301, `/admin/form/${formId}/preview`)
-    }
-    if (state === 'template' || state === 'use-template') {
-      return res.redirect(301, `/admin/form/${formId}/use-template`)
-    }
-    return res.redirect(301, `/${formId}`)
-  },
-)
-
-LegacyRedirectRouter.get('/:formId([a-fA-F0-9]{24})/embed', (req, res) =>
-  res.redirect(301, `/${req.params.formId}`),
+  '/:formId([a-fA-F0-9]{24})/:state(preview|template|use-template|embed)',
+  handleFormIdAndAgencyPrefixRedirect,
 )
 
 LegacyRedirectRouter.get(
-  '/forms/:agency/:formId([a-fA-F0-9]{24})/:state(preview|template|use-template)?',
-  (req, res) => {
-    const { formId, state } = req.params
-    if (state === 'preview') {
-      return res.redirect(301, `/admin/form/${formId}/preview`)
-    }
-    if (state === 'template' || state === 'use-template') {
-      return res.redirect(301, `/admin/form/${formId}/use-template`)
-    }
-    return res.redirect(301, `/${formId}`)
-  },
+  '/forms/:agency/:formId([a-fA-F0-9]{24})',
+  (req, res) =>
+    res.redirect(StatusCodes.MOVED_PERMANENTLY, `/${req.params.formId}`),
 )
 
 LegacyRedirectRouter.get(
-  '/forms/:agency/:formId([a-fA-F0-9]{24})/embed',
-  (req, res) => res.redirect(301, `/${req.params.formId}`),
+  '/forms/:agency/:formId([a-fA-F0-9]{24})/:state(preview|template|use-template|embed)',
+  handleFormIdAndAgencyPrefixRedirect,
 )
