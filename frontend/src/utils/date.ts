@@ -1,5 +1,7 @@
 import { endOfToday, isAfter, isBefore, parseISO, startOfToday } from 'date-fns'
 
+import { InvalidDaysOptions } from '~shared/types'
+
 import { JsonDate } from '~typings/core'
 
 /**
@@ -125,4 +127,11 @@ export const mutableTransformAllIsoStringsToDate = (body: unknown) => {
 export const transformAllIsoStringsToDate = <T>(body: T): T => {
   mutableTransformAllIsoStringsToDate(body)
   return body
+}
+
+export const getRemainingDaysOfTheWeek = (
+  days: InvalidDaysOptions[],
+): InvalidDaysOptions[] => {
+  const daysSet = new Set(days)
+  return Object.values(InvalidDaysOptions).filter((day) => !daysSet.has(day))
 }

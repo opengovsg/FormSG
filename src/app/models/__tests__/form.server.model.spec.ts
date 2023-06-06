@@ -86,6 +86,7 @@ const FORM_DEFAULTS = {
   },
   status: 'PRIVATE',
   submissionLimit: null,
+  goLinkSuffix: '',
 }
 
 const PAYMENTS_DEFAULTS = {

@@ -1621,3 +1621,38 @@ export const updatePayments = (
     return okAsync(updatedForm.payments_field)
   })
 }
+
+export const getPaymentGuideLink = (): string => {
+  return paymentConfig.guideLink
+}
+
+export const getGoLinkSuffix = (formId: string) => {
+  return ResultAsync.fromPromise(FormModel.getGoLinkSuffix(formId), (error) => {
+    logger.error({
+      message: 'Error occurred when retrieving go link suffix',
+      meta: {
+        action: 'getGoLinkSuffix',
+        formId,
+      },
+      error,
+    })
+    return transformMongoError(error)
+  })
+}
+
+export const setGoLinkSuffix = (formId: string, linkSuffix: string) => {
+  return ResultAsync.fromPromise(
+    FormModel.setGoLinkSuffix(formId, linkSuffix),
+    (error) => {
+      logger.error({
+        message: 'Error occurred when setting go link suffix',
+        meta: {
+          action: 'setGoLinkSuffix',
+          formId,
+        },
+        error,
+      })
+      return transformMongoError(error)
+    },
+  )
+}

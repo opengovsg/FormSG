@@ -76,8 +76,12 @@ const compileUserModel = (db: Mongoose) => {
       flags: {
         lastSeenFeatureUpdateVersion: Number,
       },
-      apiKeyHash: {
-        type: String,
+      apiToken: {
+        keyHash: {
+          type: String,
+        },
+        createdAt: Date,
+        lastUsedAt: Date,
       },
     },
     {

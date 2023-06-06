@@ -11,7 +11,14 @@ export interface IPaymentSchema extends Payment, Document {
   responses: any[]
 }
 
-export type IPaymentModel = Model<IPaymentSchema>
+export interface IPaymentModel extends Model<IPaymentSchema> {
+  /**
+   * Gets payment documents by status
+   * @param statuses destructured list of statuses for payments to find
+   * @returns list of payment documents with status corresponding to any one of the listed statuses
+   */
+  getByStatus(...statuses: Payment['status'][]): Promise<IPaymentSchema[]>
+}
 
 export interface StripePaymentMetadataDto extends Stripe.Metadata {
   env: string

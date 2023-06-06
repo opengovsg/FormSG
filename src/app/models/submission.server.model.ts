@@ -58,6 +58,14 @@ export const SubmissionSchema = new Schema<ISubmissionSchema, ISubmissionModel>(
       enum: Object.values(SubmissionType),
       required: true,
     },
+    responseMetadata: {
+      responseTimeMs: {
+        type: Number,
+      },
+      numVisibleFields: {
+        type: Number,
+      },
+    },
   },
   {
     timestamps: {

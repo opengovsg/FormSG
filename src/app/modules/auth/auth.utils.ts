@@ -1,7 +1,9 @@
 import { AuthedSessionData, SessionData } from 'express-session'
+import { IncomingHttpHeaders } from 'http'
 import { StatusCodes } from 'http-status-codes'
 
 import { MapRouteError } from '../../../types/routing'
+import { cronPaymentConfig } from '../../config/features/payment-cron.config'
 import { createLoggerWithLabel } from '../../config/logger'
 import * as MailErrors from '../../services/mail/mail.errors'
 import { HashingError } from '../../utils/hash'
@@ -58,7 +60,7 @@ export const mapRouteError: MapRouteError = (error, coreErrorMessage) => {
  * @param error The error to retrieve the status codes and error messages
  * @param coreErrorMessage Any error message to return instead of the default core error message, if any
  */
-export const mapRouteExternalApiError: MapRouteError = (error) => {
+export const mapRoutePublicApiError: MapRouteError = (error) => {
   switch (error.constructor) {
     case AuthErrors.InvalidTokenError:
       return {
@@ -95,4 +97,8 @@ export const getUserIdFromSession = (
   session?: SessionData,
 ): string | undefined => {
   return session?.user?._id as string | undefined
+}
+
+export const isCronPaymentAuthValid = (header: IncomingHttpHeaders) => {
+  return header['x-formsg-cron-payment-secret'] === cronPaymentConfig.apiSecret
 }

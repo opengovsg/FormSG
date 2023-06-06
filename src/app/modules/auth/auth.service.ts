@@ -361,10 +361,10 @@ export const getUserByApiKey = (
   token: string,
 ): ResultAsync<IUserSchema, Error> => {
   return findUserById(userId).andThen((user) => {
-    if (!user.apiKeyHash) {
+    if (!user.apiToken?.keyHash) {
       return errAsync(new MissingTokenError())
     }
-    return compareHash(token, user.apiKeyHash ?? '').andThen((isHashMatch) => {
+    return compareHash(token, user.apiToken.keyHash).andThen((isHashMatch) => {
       if (isHashMatch) return okAsync(user)
       return errAsync(new InvalidTokenError())
     })

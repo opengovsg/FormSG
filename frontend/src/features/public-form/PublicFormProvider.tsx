@@ -56,6 +56,7 @@ import { axiosDebugFlow } from './utils'
 interface PublicFormProviderProps {
   formId: string
   children: React.ReactNode
+  startTime: number
 }
 
 export function useCommonFormProvider(formId: string) {
@@ -105,9 +106,11 @@ export function useCommonFormProvider(formId: string) {
 export const PublicFormProvider = ({
   formId,
   children,
+  startTime,
 }: PublicFormProviderProps): JSX.Element => {
   // Once form has been submitted, submission data will be set here.
   const [submissionData, setSubmissionData] = useState<SubmissionData>()
+  const [numVisibleFields, setNumVisibleFields] = useState(0)
 
   const { data, isLoading, error, ...rest } = usePublicFormView(
     formId,
@@ -131,6 +134,10 @@ export const PublicFormProvider = ({
 
   const { isNotFormId, toast, vfnToastIdRef, expiryInMs, ...commonFormValues } =
     useCommonFormProvider(formId)
+
+  const isPaymentEnabled =
+    data?.form.responseMode === FormResponseMode.Encrypt &&
+    data.form.payments_field.enabled
 
   useEffect(() => {
     if (data?.myInfoError) {
@@ -226,6 +233,12 @@ export const PublicFormProvider = ({
         formLogics: form.form_logics,
         formInputs,
         captchaResponse,
+        responseMetadata: {
+          responseTimeMs: differenceInMilliseconds(Date.now(), startTime),
+          numVisibleFields: isPaymentEnabled
+            ? numVisibleFields + 1
+            : numVisibleFields,
+        },
       }
 
       const logMeta = {
@@ -465,6 +478,9 @@ export const PublicFormProvider = ({
       submitEmailModeFormFetchMutation,
       submitStorageModeFormFetchMutation,
       useFetchForSubmissions,
+      numVisibleFields,
+      startTime,
+      isPaymentEnabled,
     ],
   )
 
@@ -482,10 +498,6 @@ export const PublicFormProvider = ({
       !data.spcpSession,
     [data?.form, data?.spcpSession],
   )
-
-  const isPaymentEnabled =
-    data?.form.responseMode === FormResponseMode.Encrypt &&
-    data.form.payments_field.enabled
 
   if (isNotFormId) {
     return <NotFoundErrorPage />
@@ -505,6 +517,7 @@ export const PublicFormProvider = ({
         isLoading: isLoading || (!!data?.form.hasCaptcha && !hasLoaded),
         isPaymentEnabled,
         isPreview: false,
+        setNumVisibleFields,
         ...commonFormValues,
         ...data,
         ...rest,

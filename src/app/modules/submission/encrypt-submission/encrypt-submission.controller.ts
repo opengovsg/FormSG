@@ -42,6 +42,7 @@ import { getOidcService } from '../../spcp/spcp.oidc.service'
 import { getPopulatedUserById } from '../../user/user.service'
 import * as VerifiedContentService from '../../verified-content/verified-content.service'
 import * as EncryptSubmissionMiddleware from '../encrypt-submission/encrypt-submission.middleware'
+import { reportSubmissionResponseTime } from '../submissions.statsd-client'
 
 import {
   addPaymentDataStream,
@@ -177,7 +178,7 @@ const submitEncryptModeForm: ControllerHandler<
   }
 
   // Create Incoming Submission
-  const { encryptedContent, responses } = req.body
+  const { encryptedContent, responses, responseMetadata } = req.body
   const incomingSubmissionResult = IncomingEncryptSubmission.init(
     form,
     responses,
@@ -345,6 +346,7 @@ const submitEncryptModeForm: ControllerHandler<
     verifiedContent: verified,
     attachmentMetadata,
     version: req.body.version,
+    responseMetadata,
   }
 
   // Handle submissions for payments forms
@@ -427,9 +429,17 @@ const submitEncryptModeForm: ControllerHandler<
       meta: {
         ...logMeta,
         pendingSubmissionId,
+        responseMetadata,
       },
     })
 
+    // TODO 6395 make responseMetadata mandatory
+    if (responseMetadata) {
+      reportSubmissionResponseTime(responseMetadata, {
+        mode: 'encrypt',
+        payment: 'false',
+      })
+    }
     // Step 3: Create the payment intent via API call to stripe.
     // Stripe requires the amount to be an integer in the smallest currency unit (i.e. cents)
     const metadata: StripePaymentMetadataDto = {
@@ -573,8 +583,17 @@ const submitEncryptModeForm: ControllerHandler<
       ...logMeta,
       submissionId,
       formId,
+      responseMetadata,
     },
   })
+
+  // TODO 6395 make responseMetadata mandatory
+  if (responseMetadata) {
+    reportSubmissionResponseTime(responseMetadata, {
+      mode: 'encrypt',
+      payment: 'true',
+    })
+  }
 
   // Send success back to client
   res.json({

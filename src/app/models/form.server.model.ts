@@ -489,6 +489,13 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         default: null,
         min: 1,
       },
+
+      goLinkSuffix: {
+        // GoGov link suffix
+        type: String,
+        required: false,
+        default: '',
+      },
     },
     formSchemaOptions,
   )
@@ -962,6 +969,21 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     })
       .read('secondary')
       .exec()
+  }
+
+  FormSchema.statics.getGoLinkSuffix = async function (formId: string) {
+    return this.findById(formId, 'goLinkSuffix').exec()
+  }
+
+  FormSchema.statics.setGoLinkSuffix = async function (
+    formId: string,
+    linkSuffix: string,
+  ) {
+    return this.findByIdAndUpdate(
+      formId,
+      { goLinkSuffix: linkSuffix },
+      { new: true, runValidators: true },
+    ).exec()
   }
 
   // Hooks

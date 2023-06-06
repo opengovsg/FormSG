@@ -47,6 +47,7 @@ export const useAdminFormPayments = () => {
         // Factors can be found here: https://stripe.com/docs/api/accounts/object#account_object-requirements
         setHasPaymentCapabilities(!!account && account.charges_enabled)
       },
+      staleTime: 0,
     },
   )
 
