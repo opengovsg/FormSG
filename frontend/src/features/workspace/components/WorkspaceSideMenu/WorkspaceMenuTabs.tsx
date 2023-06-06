@@ -1,6 +1,6 @@
 import { Flex, FlexProps, Text } from '@chakra-ui/react'
 
-import { WorkspaceDto } from '~shared/types/workspace'
+import { Workspace, WorkspaceDto } from '~shared/types/workspace'
 
 import { truncateLargeNumberWithPlus } from './utils'
 
@@ -61,13 +61,23 @@ interface WorkspaceMenuTabsProps {
   workspaces: WorkspaceDto[]
   currWorkspace: string
   onClick: (id: string) => void
+  defaultWorkspace: Workspace
 }
+
 export const WorkspaceMenuTabs = ({
   workspaces,
   currWorkspace,
   onClick,
+  defaultWorkspace,
 }: WorkspaceMenuTabsProps): JSX.Element => (
   <>
+    <WorkspaceTab
+      key={defaultWorkspace._id}
+      label={defaultWorkspace.title}
+      numForms={defaultWorkspace.formIds.length}
+      isSelected={defaultWorkspace._id === currWorkspace}
+      onClick={() => onClick(defaultWorkspace._id)}
+    />
     {workspaces.map((workspace: WorkspaceDto) => (
       <WorkspaceTab
         key={workspace._id}
