@@ -9,6 +9,7 @@ import { validateField } from 'src/app/utils/field-validation'
 import {
   BasicField,
   DateSelectedValidation,
+  InvalidDaysOptions,
 } from '../../../../../../shared/types'
 
 describe('Date field validation', () => {
@@ -321,6 +322,87 @@ describe('Date field validation', () => {
     expect(validateResult.isErr()).toBe(true)
     expect(validateResult._unsafeUnwrapErr()).toEqual(
       new ValidateFieldError('Attempted to submit response on a hidden field'),
+    )
+  })
+
+  it('should allow dates if invalid day array is empty', () => {
+    const formField = generateDefaultField(BasicField.Date, {
+      dateValidation: {
+        selectedDateValidation: null,
+        customMinDate: null,
+        customMaxDate: null,
+      },
+      invalidDays: [],
+    })
+    const response = generateNewSingleAnswerResponse(BasicField.Date, {
+      answer: '26 Jul 2022',
+    })
+
+    const validateResult = validateField('formId', formField, response)
+    expect(validateResult.isOk()).toBe(true)
+    expect(validateResult._unsafeUnwrap()).toEqual(true)
+  })
+
+  it('should allow dates that is not an invalid day', () => {
+    const formField = generateDefaultField(BasicField.Date, {
+      dateValidation: {
+        selectedDateValidation: null,
+        customMinDate: null,
+        customMaxDate: null,
+      },
+      invalidDays: [
+        InvalidDaysOptions.Saturday,
+        InvalidDaysOptions.Sunday,
+        InvalidDaysOptions.Monday,
+        InvalidDaysOptions.Tuesday,
+        InvalidDaysOptions.Wednesday,
+        InvalidDaysOptions.Thursday,
+      ],
+    })
+    const response = generateNewSingleAnswerResponse(BasicField.Date, {
+      answer: '29 Jul 2022', // Friday
+    })
+
+    const validateResult = validateField('formId', formField, response)
+    expect(validateResult.isOk()).toBe(true)
+    expect(validateResult._unsafeUnwrap()).toEqual(true)
+  })
+
+  it('should disallow dates that is an invalid day', () => {
+    const formField = generateDefaultField(BasicField.Date, {
+      dateValidation: {
+        selectedDateValidation: null,
+        customMinDate: null,
+        customMaxDate: null,
+      },
+      invalidDays: [InvalidDaysOptions.Wednesday, InvalidDaysOptions.Thursday],
+    })
+    const mockWedResponse = generateNewSingleAnswerResponse(BasicField.Date, {
+      answer: '27 Jul 2022',
+    })
+
+    const validateWedResult = validateField(
+      'formId',
+      formField,
+      mockWedResponse,
+    )
+    expect(validateWedResult.isErr()).toBe(true)
+    expect(validateWedResult._unsafeUnwrapErr()).toEqual(
+      new ValidateFieldError('Invalid answer submitted'),
+    )
+
+    const mockThursResponse = generateNewSingleAnswerResponse(BasicField.Date, {
+      answer: '28 Jul 2022',
+    })
+
+    const validateThursResult = validateField(
+      'formId',
+      formField,
+      mockThursResponse,
+    )
+    expect(validateThursResult.isErr()).toBe(true)
+    expect(validateThursResult._unsafeUnwrapErr()).toEqual(
+      new ValidateFieldError('Invalid answer submitted'),
     )
   })
 })

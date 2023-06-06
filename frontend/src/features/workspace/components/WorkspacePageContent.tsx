@@ -3,6 +3,7 @@ import { Box, Container, Grid } from '@chakra-ui/react'
 
 import { ROLLOUT_ANNOUNCEMENT_KEY_PREFIX } from '~constants/localStorage'
 import { useLocalStorage } from '~hooks/useLocalStorage'
+import InlineMessage from '~components/InlineMessage'
 
 // TODO #4279: Remove after React rollout is complete
 import { RolloutAnnouncementModal } from '~features/rollout-announcement/RolloutAnnouncementModal'
@@ -60,6 +61,11 @@ export const WorkspacePageContent = ({
         px="2rem"
         py="1rem"
       >
+        <InlineMessage useMarkdown mb="2rem" mx="-2rem">
+          Introducing payments! Citizens can now pay for fees and services
+          directly on your form. [Learn
+          more](https://go.gov.sg/formsg-payment-overview)
+        </InlineMessage>
         <WorkspaceHeader
           handleOpenCreateFormModal={handleCreateFormModalOpen}
         />

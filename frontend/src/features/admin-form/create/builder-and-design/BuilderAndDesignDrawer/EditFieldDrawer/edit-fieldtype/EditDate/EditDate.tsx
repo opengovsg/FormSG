@@ -1,6 +1,14 @@
 import { useCallback, useMemo } from 'react'
-import { Controller, RegisterOptions } from 'react-hook-form'
-import { Box, FormControl, SimpleGrid } from '@chakra-ui/react'
+import { Controller, RegisterOptions, useWatch } from 'react-hook-form'
+import {
+  Box,
+  CheckboxGroup,
+  FormControl,
+  SimpleGrid,
+  Stack,
+  Wrap,
+  WrapItem,
+} from '@chakra-ui/react'
 import { isBefore, isEqual, isValid } from 'date-fns'
 import { extend, get, isEmpty, pick } from 'lodash'
 
@@ -8,14 +16,18 @@ import {
   DateFieldBase,
   DateSelectedValidation,
   DateValidationOptions,
+  InvalidDaysOptions,
 } from '~shared/types/field'
+import { hasAvailableDates } from '~shared/utils/date-validation'
 
 import {
+  getRemainingDaysOfTheWeek,
   isDateOutOfRange,
   loadDateFromNormalizedDate,
   normalizeDateToUtc,
 } from '~utils/date'
 import { createBaseValidationRules } from '~utils/fieldValidation'
+import Checkbox from '~components/Checkbox'
 import { DatePicker } from '~components/DatePicker'
 import { SingleSelect } from '~components/Dropdown'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
@@ -33,7 +45,22 @@ import { useEditFieldForm } from '../common/useEditFieldForm'
 
 type EditDateProps = EditFieldProps<DateFieldBase>
 
-const EDIT_DATE_FIELD_KEYS = ['title', 'description', 'required'] as const
+const INVALID_DAYS_OPTIONS: InvalidDaysOptions[] = [
+  InvalidDaysOptions.Monday,
+  InvalidDaysOptions.Tuesday,
+  InvalidDaysOptions.Wednesday,
+  InvalidDaysOptions.Thursday,
+  InvalidDaysOptions.Friday,
+  InvalidDaysOptions.Saturday,
+  InvalidDaysOptions.Sunday,
+]
+
+const EDIT_DATE_FIELD_KEYS = [
+  'title',
+  'description',
+  'required',
+  'invalidDays',
+] as const
 
 const MIN_WIDTH_FOR_2_COL = 405
 
@@ -46,6 +73,8 @@ type EditDateInputs = Pick<
     customMaxDate: Date | null
     customMinDate: Date | null
   }
+  hasInvalidDays: boolean
+  invalidDays: NonNullable<DateFieldBase['invalidDays']>
 }
 
 const transformDateFieldToEditForm = (field: DateFieldBase): EditDateInputs => {
@@ -59,9 +88,24 @@ const transformDateFieldToEditForm = (field: DateFieldBase): EditDateInputs => {
       ? loadDateFromNormalizedDate(field.dateValidation.customMinDate)
       : null,
   }
+
+  const nextHasInvalidDaysRestriction = !!field?.invalidDays?.length
+
+  /** Transformation is done because the invalid days array supplied from the server
+   * to the checkbox group should be unchecked instead of checked. Hence instead of
+   * supplying the invalid days array to the checkbox group, the valid days array
+   * should be supplied to the checkbox group. Therefore transforming the invalid days
+   * array into the valid days array.
+   */
+  const nextInvalidDayOptions = field.invalidDays
+    ? getRemainingDaysOfTheWeek(field.invalidDays)
+    : Object.values(InvalidDaysOptions)
+
   return {
     ...pick(field, EDIT_DATE_FIELD_KEYS),
     dateValidation: nextValidationOptions,
+    hasInvalidDays: nextHasInvalidDaysRestriction,
+    invalidDays: nextInvalidDayOptions,
   }
 }
 
@@ -70,6 +114,8 @@ const transformDateEditFormToField = (
   originalField: DateFieldBase,
 ): DateFieldBase => {
   let nextValidationOptions: DateValidationOptions
+  let nextInvalidDayOptions: InvalidDaysOptions[]
+
   switch (inputs.dateValidation.selectedDateValidation) {
     case '':
       nextValidationOptions = {
@@ -95,8 +141,20 @@ const transformDateEditFormToField = (
     }
   }
 
+  if (inputs.hasInvalidDays) {
+    /** Transformation is done because the checked values in the checkbox group
+     * are actually the valid days instead of the invalid days values that should
+     * be sent over and stored on the server. Therefore the need to transform
+     * the valid days array into invalid days array.
+     */
+    nextInvalidDayOptions = getRemainingDaysOfTheWeek(inputs.invalidDays)
+  } else {
+    nextInvalidDayOptions = []
+  }
+
   return extend({}, originalField, inputs, {
     dateValidation: nextValidationOptions,
+    invalidDays: nextInvalidDayOptions,
   })
 }
 
@@ -141,6 +199,11 @@ export const EditDate = ({ field }: EditDateProps): JSX.Element => {
     },
   })
 
+  const hasInvalidDaysRestriction = useWatch({
+    control,
+    name: 'hasInvalidDays',
+  })
+
   const requiredValidationRule = useMemo(
     () => createBaseValidationRules({ required: true }),
     [],
@@ -173,6 +236,7 @@ export const EditDate = ({ field }: EditDateProps): JSX.Element => {
           )
         },
       },
+      deps: 'invalidDays',
     }),
     [getValues],
   )
@@ -241,7 +305,7 @@ export const EditDate = ({ field }: EditDateProps): JSX.Element => {
                 <Controller
                   control={control}
                   rules={{
-                    deps: ['dateValidation.customMinDate'],
+                    deps: ['dateValidation.customMinDate', 'invalidDays'],
                   }}
                   name="dateValidation.customMaxDate"
                   render={({ field }) => (
@@ -264,6 +328,75 @@ export const EditDate = ({ field }: EditDateProps): JSX.Element => {
           {get(errors, 'dateValidation.customMinDate.message')}
         </FormErrorMessage>
       </FormControl>
+      <Stack>
+        <FormControl>
+          <Toggle
+            {...register('hasInvalidDays')}
+            label="Customise available days"
+          />
+        </FormControl>
+        {hasInvalidDaysRestriction && (
+          <FormControl isRequired isInvalid={!!errors.invalidDays}>
+            <Controller
+              control={control}
+              name="invalidDays"
+              rules={{
+                required: 'Please select available days of the week',
+                validate: (val) => {
+                  const customMinDate = getValues(
+                    'dateValidation.customMinDate',
+                  )
+                  const customMaxDate = getValues(
+                    'dateValidation.customMaxDate',
+                  )
+
+                  return (
+                    !(
+                      getValues('dateValidation.selectedDateValidation') ===
+                        DateSelectedValidation.Custom &&
+                      customMinDate &&
+                      customMaxDate
+                    ) ||
+                    hasAvailableDates(
+                      customMinDate,
+                      customMaxDate,
+                      getRemainingDaysOfTheWeek(val),
+                    ) ||
+                    "The selected days aren't available within your custom date range"
+                  )
+                },
+              }}
+              render={({ field: { ref, ...field } }) => (
+                <CheckboxGroup
+                  {...field}
+                  defaultValue={Object.values(InvalidDaysOptions)}
+                >
+                  <Wrap spacing="0.75rem">
+                    {INVALID_DAYS_OPTIONS.map((invalidDayOption, index) => (
+                      <WrapItem
+                        key={invalidDayOption}
+                        minW="9.75rem"
+                        maxW="21.25rem"
+                      >
+                        <Checkbox
+                          key={invalidDayOption}
+                          value={invalidDayOption}
+                          ref={index === 0 ? ref : null}
+                        >
+                          {invalidDayOption}
+                        </Checkbox>
+                      </WrapItem>
+                    ))}
+                  </Wrap>
+                </CheckboxGroup>
+              )}
+            />
+            <FormErrorMessage>
+              {get(errors, 'invalidDays.message')}
+            </FormErrorMessage>
+          </FormControl>
+        )}
+      </Stack>
       <FormFieldDrawerActions
         isLoading={isLoading}
         buttonText={buttonText}

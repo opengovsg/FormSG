@@ -3,12 +3,14 @@ import { escape } from 'html-escaper'
 import { get } from 'lodash'
 import path from 'path'
 
-import { FormStatus } from '../../../../shared/types'
+import { ClientEnvVars, FormStatus } from '../../../../shared/types'
 import { createLoggerWithLabel } from '../../config/logger'
 import { ControllerHandler } from '../core/core.types'
 import * as FormService from '../form/form.service'
 import { createMetatags } from '../form/public-form/public-form.service'
 import { RedirectParams } from '../form/public-form/public-form.types'
+
+import { getClientEnvVars } from './frontend.service'
 
 const logger = createLoggerWithLabel(module)
 
@@ -104,4 +106,15 @@ export const servePublicForm: ControllerHandler<
 
 export const serveDefault: ControllerHandler = (req, res, next) => {
   return serveFormReact(/* isPublic= */ false)(req, res, next)
+}
+
+/**
+ * Handler for GET /client/env endpoint.
+ * @returns the environment variables needed to hydrate the frontend.
+ */
+export const handleGetEnvironment: ControllerHandler<never, ClientEnvVars> = (
+  _req,
+  res,
+) => {
+  return res.json(getClientEnvVars())
 }
