@@ -1,4 +1,11 @@
-import { Box, Center, Flex, Text, useMultiStyleConfig } from '@chakra-ui/react'
+import {
+  Box,
+  Center,
+  Flex,
+  Text,
+  useMultiStyleConfig,
+  VStack,
+} from '@chakra-ui/react'
 
 import { BannerVariant } from '~theme/components/Banner'
 import Button from '~components/Button'
@@ -15,7 +22,7 @@ export interface FeatureBannerProps {
 
 export const FeatureBanner = ({
   variant = 'info',
-  bannerColorIntensity = 600,
+  bannerColorIntensity = 500,
   title,
   body,
   learnMoreLink,
@@ -24,30 +31,43 @@ export const FeatureBanner = ({
 
   return (
     <Box __css={styles.banner} bgColor={`primary.${bannerColorIntensity}`}>
-      <Flex sx={styles.item} placeContent="center" verticalAlign="middle">
-        <Center mr="1.5rem">
-          <Text textStyle="h6">{body}</Text>
+      <Flex
+        sx={styles.item}
+        placeContent={title ? undefined : 'center'}
+        mx="2rem"
+        my={title ? '0.5rem' : 'auto'}
+      >
+        <VStack mr="1.5rem" alignItems="flex-start">
+          <Text as="h5" textStyle="h5">
+            {title}
+          </Text>
+          <Text as="h6" textStyle="h6">
+            {body}
+          </Text>
+        </VStack>
+        <Center>
+          <Button
+            sx={{
+              ...styles.button,
+              ...(title ? textStyles['subhead-1'] : textStyles['subhead-2']),
+              minHeight: 'auto',
+            }}
+            variant="solid"
+            as="a"
+            href={learnMoreLink}
+            target="_blank"
+            borderColor="white"
+            bg="transparent"
+            _hover={{
+              color: 'white',
+              borderColor: 'white',
+              bg: `primary.${bannerColorIntensity - 100}`,
+            }}
+            verticalAlign="middle"
+          >
+            Learn more
+          </Button>
         </Center>
-        <Button
-          sx={{
-            ...styles.button,
-            ...textStyles['subhead-2'],
-            minHeight: 'auto',
-          }}
-          variant="solid"
-          as="a"
-          href={learnMoreLink}
-          target="_blank"
-          borderColor="white"
-          bg="transparent"
-          _hover={{
-            color: 'white',
-            borderColor: 'white',
-            bg: `primary.${bannerColorIntensity - 100}`,
-          }}
-        >
-          Learn more
-        </Button>
       </Flex>
     </Box>
   )
