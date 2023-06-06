@@ -19,6 +19,8 @@ import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import Input from '~components/Input'
 
+import { useWorkspaceMutations } from '~features/workspace/mutations'
+
 type RenameWorkspaceInputProps = {
   title: string
 }
@@ -26,11 +28,13 @@ type RenameWorkspaceInputProps = {
 export interface RenameWorkspaceModalProps {
   isOpen: boolean
   onClose: () => void
+  workspaceId: string
 }
 
 export const RenameWorkspaceModal = ({
   isOpen,
   onClose,
+  workspaceId,
 }: RenameWorkspaceModalProps): JSX.Element => {
   const {
     handleSubmit,
@@ -48,8 +52,13 @@ export const RenameWorkspaceModal = ({
   })
   const isMobile = useIsMobile()
 
-  // TODO (hans): Implement rename workspace functionality
+  const { updateWorkspaceTitleMutation } = useWorkspaceMutations()
+
   const handleRenameWorkspace = handleSubmit((data) => {
+    updateWorkspaceTitleMutation.mutateAsync({
+      title: data.title,
+      destWorkspaceId: workspaceId,
+    })
     onClose()
   })
 

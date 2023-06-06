@@ -4,10 +4,13 @@ import { MenuButton, useDisclosure } from '@chakra-ui/react'
 import IconButton from '~components/IconButton'
 import Menu from '~components/Menu'
 
+import { useWorkspaceContext } from '~features/workspace/WorkspaceContext'
+
 import { DeleteWorkspaceModal } from '../WorkspaceModals/DeleteWorkspaceModal'
 import { RenameWorkspaceModal } from '../WorkspaceModals/RenameWorkspaceModal'
 
 export const WorkspaceEditDropdown = (): JSX.Element => {
+  const { activeWorkspace } = useWorkspaceContext()
   const renameModal = useDisclosure()
   const deleteModal = useDisclosure()
 
@@ -16,10 +19,12 @@ export const WorkspaceEditDropdown = (): JSX.Element => {
       <RenameWorkspaceModal
         onClose={renameModal.onClose}
         isOpen={renameModal.isOpen}
+        workspaceId={activeWorkspace._id.toString()}
       />
       <DeleteWorkspaceModal
         onClose={deleteModal.onClose}
         isOpen={deleteModal.isOpen}
+        workspaceId={activeWorkspace._id.toString()}
       />
 
       <Menu placement="bottom-start">

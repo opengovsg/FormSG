@@ -19,9 +19,13 @@ import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import Radio from '~components/Radio'
 
+import { useWorkspaceMutations } from '~features/workspace/mutations'
+import { useWorkspaceContext } from '~features/workspace/WorkspaceContext'
+
 export interface DeleteWorkspaceModalProps {
   isOpen: boolean
   onClose: () => void
+  workspaceId: string
 }
 
 const DELETE_OPTIONS = [
@@ -32,6 +36,7 @@ const DELETE_OPTIONS = [
 export const DeleteWorkspaceModal = ({
   isOpen,
   onClose,
+  workspaceId,
 }: DeleteWorkspaceModalProps): JSX.Element => {
   const {
     handleSubmit,
@@ -45,8 +50,14 @@ export const DeleteWorkspaceModal = ({
   })
   const isMobile = useIsMobile()
 
-  // TODO (hans): Implement delete workspace functionality
-  const handleDeleteWorkspace = handleSubmit((data) => {
+  const { deleteWorkspaceMutation } = useWorkspaceMutations()
+  const { setCurrentWorkspace } = useWorkspaceContext()
+
+  // TODO: handle delete forms together with workspace
+  const handleDeleteWorkspace = handleSubmit(async (data) => {
+    await deleteWorkspaceMutation.mutateAsync({ destWorkspaceId: workspaceId })
+    // reset workspace to default
+    setCurrentWorkspace('')
     onClose()
   })
 
@@ -66,6 +77,7 @@ export const DeleteWorkspaceModal = ({
                 <Radio
                   key={idx}
                   value={o}
+                  isDisabled={idx === 1}
                   {...register('radio', {
                     required: {
                       value: true,
