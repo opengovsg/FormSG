@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import {
   FormControl,
@@ -20,6 +21,7 @@ import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import Input from '~components/Input'
 
 import { useWorkspaceMutations } from '~features/workspace/mutations'
+import { useWorkspaceContext } from '~features/workspace/WorkspaceContext'
 
 type RenameWorkspaceInputProps = {
   title: string
@@ -36,15 +38,19 @@ export const RenameWorkspaceModal = ({
   onClose,
   workspaceId,
 }: RenameWorkspaceModalProps): JSX.Element => {
+  const { updateWorkspaceTitleMutation } = useWorkspaceMutations()
+  const { activeWorkspace } = useWorkspaceContext()
   const {
     handleSubmit,
     formState: { errors },
     register,
+    reset,
   } = useForm<RenameWorkspaceInputProps>({
     defaultValues: {
-      title: '',
+      title: activeWorkspace.title,
     },
   })
+
   const modalSize = useBreakpointValue({
     base: 'mobile',
     xs: 'mobile',
@@ -52,15 +58,18 @@ export const RenameWorkspaceModal = ({
   })
   const isMobile = useIsMobile()
 
-  const { updateWorkspaceTitleMutation } = useWorkspaceMutations()
-
   const handleRenameWorkspace = handleSubmit((data) => {
     updateWorkspaceTitleMutation.mutateAsync({
       title: data.title,
       destWorkspaceId: workspaceId,
     })
+    reset()
     onClose()
   })
+
+  useEffect(() => {
+    reset({ title: activeWorkspace.title })
+  }, [reset, activeWorkspace])
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size={modalSize}>
