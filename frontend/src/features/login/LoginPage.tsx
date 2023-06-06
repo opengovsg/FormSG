@@ -12,6 +12,7 @@ import { useLocalStorage } from '~hooks/useLocalStorage'
 import { getBannerProps } from '~utils/getBannerProps'
 import { sendLoginOtp, verifyLoginOtp } from '~services/AuthService'
 import { Banner } from '~components/Banner'
+import { FeatureBanner } from '~components/FeatureBanner/FeatureBanner'
 import Link from '~components/Link'
 import { AppGrid } from '~templates/AppGrid'
 
@@ -156,6 +157,11 @@ export const LoginPage = (): JSX.Element => {
           {bannerProps.msg}
         </Banner>
       ) : null}
+      <FeatureBanner
+        variant={bannerProps?.variant ?? 'info'}
+        bannerColor="primary.600"
+        body="You can now collect payments directly on your form!"
+      />
       <BaseGridLayout flex={1}>
         <NonMobileSidebarGridArea>
           <LoginImageSvgr maxW="100%" aria-hidden />
