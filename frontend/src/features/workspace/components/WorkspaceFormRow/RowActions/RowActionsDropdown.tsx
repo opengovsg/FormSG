@@ -34,14 +34,10 @@ const MoveWorkspaceDropdown = ({
   formMeta: AdminDashboardFormMetaDto
 }) => {
   const { handleMoveForm } = useRowAction(formMeta)
-  const { workspaces, setCurrentWorkspace } = useWorkspaceContext()
+  const { workspaces } = useWorkspaceContext()
 
-  const handleWorkspaceClick = async (destWorkspace: Workspace) => {
-    // move form to workspace if not already in
-    if (!destWorkspace.formIds.includes(formMeta._id))
-      await handleMoveForm(destWorkspace._id.toString(), destWorkspace.title)
-    setCurrentWorkspace(destWorkspace._id.toString())
-  }
+  const handleWorkspaceClick = (destWorkspace: Workspace) =>
+    handleMoveForm(destWorkspace._id.toString(), destWorkspace.title)
 
   if (!workspaces) return null
 
