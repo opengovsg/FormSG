@@ -37,11 +37,9 @@ const MoveWorkspaceDropdown = ({
   const { workspaces, setCurrentWorkspace } = useWorkspaceContext()
 
   const handleWorkspaceClick = async (destWorkspace: Workspace) => {
-    // if already exists no change
-    if (destWorkspace.formIds.includes(formMeta._id)) return
-
-    //move form to workspace
-    await handleMoveForm(destWorkspace._id.toString(), destWorkspace.title)
+    // move form to workspace if not already in
+    if (!destWorkspace.formIds.includes(formMeta._id))
+      await handleMoveForm(destWorkspace._id.toString(), destWorkspace.title)
     setCurrentWorkspace(destWorkspace._id.toString())
   }
 
