@@ -49,7 +49,6 @@ export const FeatureBanner = ({
         borderColor: 'white',
         bg: `primary.${bannerColorIntensity - 100}`,
       }}
-      verticalAlign="middle"
     >
       Learn more
     </Button>
@@ -65,12 +64,15 @@ export const FeatureBanner = ({
       >
         <VStack
           mr={isMobile ? undefined : '1.5rem'}
-          alignItems="flex-start"
+          align={title ? 'flex-start' : undefined}
+          justifyContent="center"
           spacing="auto"
         >
-          <Text as="h5" textStyle="h5" mb="0.25rem">
-            {title}
-          </Text>
+          {title && (
+            <Text as="h5" textStyle="h5" mb="0.25rem">
+              {title}
+            </Text>
+          )}
           <Text as="h6" textStyle="h6" pb={isMobile ? '1.25rem' : undefined}>
             {body}
           </Text>
