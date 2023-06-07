@@ -121,6 +121,7 @@ export type StorageModeSubmissionMetadata = {
     payoutDate: string | null
     paymentAmt: number
     transactionFee: number | null
+    email: string
   } | null
 }
 

@@ -41,6 +41,20 @@ const RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
   },
 
   {
+    Header: 'Email', //  (paid - net)
+    accessor: ({ payments }) => {
+      if (!payments?.email) {
+        return ''
+      }
+
+      return payments.email
+    },
+    minWidth: 50,
+    width: 150,
+    disableResizing: true,
+  },
+
+  {
     Header: 'Paid Amount', //  (amt responder paid)
     accessor: ({ payments }) => {
       if (!payments) {
@@ -54,7 +68,7 @@ const RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
   },
 
   {
-    Header: 'Gross Amount', //  (amt they receive in bank)
+    Header: 'Net Amount', //  (amt they receive in bank)
     accessor: ({ payments }) => {
       if (!payments?.transactionFee) {
         return ''
@@ -71,6 +85,23 @@ const RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
         return `Est. S$${grossAmt}`
       }
       return `S$${grossAmt}`
+    },
+    minWidth: 50,
+    width: 150,
+    disableResizing: true,
+  },
+
+  {
+    Header: 'Fees', //  (paid - net)
+    accessor: ({ payments }) => {
+      if (!payments?.transactionFee) {
+        return ''
+      }
+      if (payments.transactionFee < 0) {
+        return ''
+      }
+
+      return `S$${centsToDollars(payments.transactionFee)}`
     },
     minWidth: 50,
     width: 150,
@@ -159,6 +190,7 @@ export const ResponsesTable = () => {
       as="div"
       variant="solid"
       colorScheme="secondary"
+      width="100vw"
       {...getTableProps()}
     >
       <Thead as="div" pos="sticky" top={0}>

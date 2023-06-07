@@ -279,6 +279,7 @@ EncryptSubmissionSchema.statics.findSingleMetadata = function (
         'payments.payout': 1,
         'payments.completedPayment': 1,
         'payments.amount': 1,
+        'payments.email': 1,
       },
     },
   ])
@@ -311,6 +312,7 @@ EncryptSubmissionSchema.statics.findSingleMetadata = function (
             paymentAmt: paymentMeta.amount,
             transactionFee:
               paymentMeta.completedPayment?.transactionFee ?? null,
+            email: paymentMeta.email,
           }
         : null,
     }
@@ -328,7 +330,7 @@ type MetadataAggregateResult = Pick<ISubmissionSchema, '_id' | 'created'> & {
 }
 type PaymentAggregates = Pick<
   IPaymentSchema,
-  'amount' | 'payout' | 'completedPayment'
+  'amount' | 'payout' | 'completedPayment' | 'email'
 >
 
 EncryptSubmissionSchema.statics.findAllMetadataByFormId = function (
@@ -368,6 +370,7 @@ EncryptSubmissionSchema.statics.findAllMetadataByFormId = function (
         'payments.payout': 1,
         'payments.completedPayment': 1,
         'payments.amount': 1,
+        'payments.email': 1,
       },
     },
   ])
@@ -404,6 +407,7 @@ EncryptSubmissionSchema.statics.findAllMetadataByFormId = function (
               paymentAmt: paymentMeta.amount,
               transactionFee:
                 paymentMeta.completedPayment?.transactionFee ?? null,
+              email: paymentMeta.email,
             }
           : null,
       }
