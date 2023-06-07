@@ -8,6 +8,7 @@ import {
 } from '@chakra-ui/react'
 
 import { BannerVariant } from '~theme/components/Banner'
+import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
 
 import { textStyles } from '../../theme/textStyles'
@@ -27,47 +28,59 @@ export const FeatureBanner = ({
   body,
   learnMoreLink,
 }: FeatureBannerProps): JSX.Element => {
+  const isMobile = useIsMobile()
   const styles = useMultiStyleConfig('Banner', { variant })
+
+  const LearnMoreButton = () => (
+    <Button
+      sx={{
+        ...styles.button,
+        ...(title ? textStyles['subhead-1'] : textStyles['subhead-2']),
+        minHeight: 'auto',
+      }}
+      variant="solid"
+      as="a"
+      href={learnMoreLink}
+      target="_blank"
+      borderColor="white"
+      bg="transparent"
+      _hover={{
+        color: 'white',
+        borderColor: 'white',
+        bg: `primary.${bannerColorIntensity - 100}`,
+      }}
+      verticalAlign="middle"
+    >
+      Learn more
+    </Button>
+  )
 
   return (
     <Box __css={styles.banner} bgColor={`primary.${bannerColorIntensity}`}>
       <Flex
         sx={styles.item}
         placeContent={title ? undefined : 'center'}
-        mx="2rem"
-        my={title ? '0.5rem' : 'auto'}
+        mx={isMobile ? '0.5rem' : '2rem'}
+        my={title ? (isMobile ? '0.5rem' : '1.5rem') : undefined}
       >
-        <VStack mr="1.5rem" alignItems="flex-start">
-          <Text as="h5" textStyle="h5">
+        <VStack
+          mr={isMobile ? undefined : '1.5rem'}
+          alignItems="flex-start"
+          spacing="auto"
+        >
+          <Text as="h5" textStyle="h5" mb="0.25rem">
             {title}
           </Text>
-          <Text as="h6" textStyle="h6">
+          <Text as="h6" textStyle="h6" pb={isMobile ? '1.25rem' : undefined}>
             {body}
           </Text>
+          {isMobile ? <LearnMoreButton /> : null}
         </VStack>
-        <Center>
-          <Button
-            sx={{
-              ...styles.button,
-              ...(title ? textStyles['subhead-1'] : textStyles['subhead-2']),
-              minHeight: 'auto',
-            }}
-            variant="solid"
-            as="a"
-            href={learnMoreLink}
-            target="_blank"
-            borderColor="white"
-            bg="transparent"
-            _hover={{
-              color: 'white',
-              borderColor: 'white',
-              bg: `primary.${bannerColorIntensity - 100}`,
-            }}
-            verticalAlign="middle"
-          >
-            Learn more
-          </Button>
-        </Center>
+        {isMobile ? null : (
+          <Center>
+            <LearnMoreButton />
+          </Center>
+        )}
       </Flex>
     </Box>
   )

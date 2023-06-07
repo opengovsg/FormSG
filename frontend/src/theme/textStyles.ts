@@ -71,14 +71,14 @@ export const textStyles = {
   },
   h5: {
     fontWeight: 600,
-    fontSize: '1.125rem',
-    lineHeight: '1.5rem',
+    fontSize: '1.25rem',
+    lineHeight: '1.75rem',
     letterSpacing: '-0.014em',
     fontFeatureSettings: "'tnum' on, 'lnum' on, 'cv05' on",
   },
   h6: {
     fontWeight: 500,
-    fontSize: '1rem',
+    fontSize: '1.125rem',
     lineHeight: '1.5rem',
     letterSpacing: '-0.014em',
     fontFeatureSettings: "'tnum' on, 'lnum' on, 'cv05' on",
