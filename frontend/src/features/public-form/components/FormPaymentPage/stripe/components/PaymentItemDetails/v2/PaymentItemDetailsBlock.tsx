@@ -26,7 +26,7 @@ const ItemQuantity = ({
 
   const qtyOptions = generateIntRange(
     product.data.min_qty,
-    product.data.max_qty + 1,
+    product.data.max_qty,
   ).map((quantity) => ({
     label: String(quantity),
     value: String(quantity),
@@ -85,9 +85,9 @@ const PaymentItemV2 = ({
             {product.data.description}
           </Text>
           <Flex alignItems={'center'}>
-            <Box flexGrow={1} as="h2" textStyle="h2">{`${centsToDollars(
-              product.data.amount_cents ?? 0,
-            )} SGD`}</Box>
+            <Box flexGrow={1} as="h2" textStyle="h2">
+              S${centsToDollars(product.data.amount_cents ?? 0)}
+            </Box>
             <ItemQuantity
               product={product}
               onChange={(qty: number) =>
@@ -172,7 +172,7 @@ export const PaymentItemDetailsBlockV2 = ({
           Total price
         </Text>
         <Text textStyle={'h4'} fontWeight="600" fontSize={'24px'}>
-          {centsToDollars(totalPrice)} SGD
+          S${centsToDollars(totalPrice)}
         </Text>
       </Flex>
     </Stack>

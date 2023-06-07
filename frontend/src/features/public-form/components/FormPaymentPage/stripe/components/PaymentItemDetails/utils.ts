@@ -3,7 +3,6 @@
  * [start, end]
  */
 export const generateIntRange = (start: number, end: number) => {
-  const arrayLen = end - start + 1
-  const arr = new Array(arrayLen).fill(0)
-  return arr.map((_, i) => i + start + 1)
+  const arr = new Array(end).fill(0)
+  return arr.map((_, i) => i + 1).slice(start - 1)
 }

@@ -92,7 +92,7 @@ export const ProductModal = ({
     },
   }
 
-  const watchMultiQtyEnabled = watch('multi_qty', false)
+  const watchMultiQtyEnabled = watch('multi_qty', product?.multi_qty ?? false)
   const handleSaveProduct = handleSubmit((product) => {
     const { display_amount, ...rest } = product
     onSaveProduct({ ...rest, amount_cents: dollarsToCents(display_amount) })
