@@ -107,6 +107,8 @@ const StripePaymentContainer = ({
               <StripePaymentBlock
                 submissionId={paymentInfoData.submissionId}
                 triggerPaymentStatusRefetch={() => setRefetchKey(Date.now())}
+                paymentAmount={data?.paymentIntent?.amount}
+                paymentItemName={data?.paymentIntent?.description}
               />
             </PaymentStack>
           </>
