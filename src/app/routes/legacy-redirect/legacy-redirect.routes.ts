@@ -4,6 +4,18 @@ import querystring from 'querystring'
 
 import { ControllerHandler } from 'src/app/modules/core/core.types'
 
+// Helper function to copy queries over to new paths.
+const buildPathWithQueryParams = (
+  path: string,
+  query: Record<string, string>,
+) => {
+  const queryString = querystring.stringify(query)
+  if (queryString.length > 0) {
+    return path + '?' + encodeURIComponent(queryString)
+  }
+  return path
+}
+
 /**
  * Handler to redirect frontend pages with /:formId or /forms/:agency prefixes.
  *
@@ -13,7 +25,10 @@ import { ControllerHandler } from 'src/app/modules/core/core.types'
  * @returns 301 with the new redirect route path
  */
 const handleFormIdAndAgencyPrefixRedirect: ControllerHandler<
-  { formId: string; state: 'preview' | 'template' | 'use-template' | 'embed' },
+  {
+    formId: string
+    state: 'preview' | 'template' | 'use-template' | 'embed'
+  },
   unknown,
   unknown,
   Record<string, string>
@@ -37,13 +52,11 @@ const handleFormIdAndAgencyPrefixRedirect: ControllerHandler<
       return next()
   }
 
-  // Port query params over to the new URL as well
-  const queryString = querystring.stringify(req.query)
-  if (queryString.length > 0) {
-    redirectPath = redirectPath + '?' + encodeURIComponent(queryString)
-  }
-
-  return res.redirect(StatusCodes.MOVED_PERMANENTLY, redirectPath)
+  return res.redirect(
+    StatusCodes.MOVED_PERMANENTLY,
+    // Port query params over to the new URL as well
+    buildPathWithQueryParams(redirectPath, req.query),
+  )
 }
 
 // Handles legacy routes required for backward compatibility
@@ -72,7 +85,14 @@ LegacyRedirectRouter.get(
 LegacyRedirectRouter.get(
   '/forms/:agency/:formId([a-fA-F0-9]{24})',
   (req, res) =>
-    res.redirect(StatusCodes.MOVED_PERMANENTLY, `/${req.params.formId}`),
+    res.redirect(
+      StatusCodes.MOVED_PERMANENTLY,
+      // Port query params over to the new URL as well
+      buildPathWithQueryParams(
+        `/${req.params.formId}`,
+        req.query as Record<string, string>,
+      ),
+    ),
 )
 
 LegacyRedirectRouter.get(
