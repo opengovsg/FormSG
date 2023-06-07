@@ -22,6 +22,7 @@ import {
   EMERGENCY_CONTACT_KEY_PREFIX,
   ROLLOUT_ANNOUNCEMENT_KEY_PREFIX,
 } from '~constants/localStorage'
+import { useIsMobile } from '~hooks/useIsMobile'
 import { useLocalStorage } from '~hooks/useLocalStorage'
 
 import { RolloutAnnouncementModal } from '~features/rollout-announcement/RolloutAnnouncementModal'
@@ -47,6 +48,7 @@ export const WorkspacePage = (): JSX.Element => {
   })
   const createFormModal = useDisclosure()
   const mobileDrawer = useDisclosure()
+  const { isMobile } = useIsMobile()
 
   const { user, isLoading: isUserLoading } = useUser()
   const { data: dashboardForms, isLoading: isDashboardLoading } = useDashboard()
@@ -146,6 +148,7 @@ export const WorkspacePage = (): JSX.Element => {
       <Grid
         templateAreas={`
           "header header"
+          "header2 header2"
           "nav main"
         `}
         gridTemplateRows={`auto 1fr`}
@@ -158,38 +161,45 @@ export const WorkspacePage = (): JSX.Element => {
         <GridItem area="header">
           <AdminNavBar />
         </GridItem>
-        {shouldUseTopMenu ? (
-          <WorkspaceMenuHeader
-            shouldShowMenuIcon
-            onMenuClick={mobileDrawer.onOpen}
-            borderBottom="1px"
-            borderBottomColor="neutral.300"
-            py="1rem"
-          />
-        ) : (
-          <Box overflowY="scroll">
-            <Stack
-              borderRight="1px"
-              borderRightColor="neutral.300"
-              minH="100vh"
-            >
-              <WorkspaceMenuHeader shouldShowAddWorkspaceButton />
-              <WorkspaceMenuTabs
-                workspaces={workspaces ?? []}
-                currWorkspace={currWorkspaceId}
-                onClick={setCurrWorkspaceId}
-                defaultWorkspace={DEFAULT_WORKSPACE}
-              />
-            </Stack>
-          </Box>
+        {shouldUseTopMenu && (
+          <GridItem area="header2">
+            <WorkspaceMenuHeader
+              shouldShowMenuIcon
+              onMenuClick={mobileDrawer.onOpen}
+              borderBottom="1px"
+              borderBottomColor="neutral.300"
+              py="1rem"
+            />
+          </GridItem>
         )}
-        <WorkspaceProvider
-          currentWorkspace={currWorkspaceId}
-          defaultWorkspace={DEFAULT_WORKSPACE}
-          setCurrentWorkspace={setCurrWorkspaceId}
-        >
-          <WorkspaceContent />
-        </WorkspaceProvider>
+        {!shouldUseTopMenu && (
+          <GridItem area="nav">
+            <Box overflowY="scroll">
+              <Stack
+                borderRight="1px"
+                borderRightColor="neutral.300"
+                minH="100vh"
+              >
+                <WorkspaceMenuHeader shouldShowAddWorkspaceButton />
+                <WorkspaceMenuTabs
+                  workspaces={workspaces ?? []}
+                  currWorkspace={currWorkspaceId}
+                  onClick={setCurrWorkspaceId}
+                  defaultWorkspace={DEFAULT_WORKSPACE}
+                />
+              </Stack>
+            </Box>
+          </GridItem>
+        )}
+        <GridItem area="main">
+          <WorkspaceProvider
+            currentWorkspace={currWorkspaceId}
+            defaultWorkspace={DEFAULT_WORKSPACE}
+            setCurrentWorkspace={setCurrWorkspaceId}
+          >
+            <WorkspaceContent />
+          </WorkspaceProvider>
+        </GridItem>
       </Grid>
 
       <RolloutAnnouncementModal
