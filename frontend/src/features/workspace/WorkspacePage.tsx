@@ -19,7 +19,6 @@ export const CONTAINER_MAXW = '69.5rem'
 export const WorkspacePage = (): JSX.Element => {
   const { data: { siteBannerContent, adminBannerContent } = {} } = useEnv()
 
-  // TODO (#4279): Revert back to non-react banners post-migration.
   const bannerContent = useMemo(
     // Use || instead of ?? so that we fall through even if previous banners are empty string.
     () => siteBannerContent || adminBannerContent,

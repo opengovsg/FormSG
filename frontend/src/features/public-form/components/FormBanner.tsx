@@ -21,8 +21,6 @@ export const FormBanner = (): JSX.Element | null => {
   } = useEnv()
   const { form } = usePublicFormContext()
 
-  // TODO (#4279): Revert back to non-react banners post-migration.
-
   const bannerContent = useMemo(
     // Use || instead of ?? so that we fall through even if previous banners are empty string.
     () =>
