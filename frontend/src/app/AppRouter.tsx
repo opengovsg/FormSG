@@ -10,6 +10,7 @@ import {
   ADMINFORM_USETEMPLATE_ROUTE,
   BILLING_ROUTE,
   DASHBOARD_ROUTE,
+  LANDING_PAYMENTS_ROUTE,
   LANDING_ROUTE,
   LOGIN_ROUTE,
   PAYMENT_PAGE_SUBROUTE,
@@ -46,6 +47,9 @@ const PublicFormPage = lazy(() =>
 )
 const WorkspacePage = lazy(() => lazyRetry(() => import('~features/workspace')))
 const LandingPage = lazy(() => lazyRetry(() => import('~pages/Landing')))
+const LandingPaymentsPage = lazy(() =>
+  lazyRetry(() => import('~pages/LandingPayments')),
+)
 const LoginPage = lazy(() => lazyRetry(() => import('~features/login')))
 const PrivacyPolicyPage = lazy(() =>
   lazyRetry(() => import('~pages/PrivacyPolicy')),
@@ -71,6 +75,10 @@ export const AppRouter = (): JSX.Element => {
         <Route
           path={LANDING_ROUTE}
           element={<HashRouterElement element={<LandingPage />} />}
+        />
+        <Route
+          path={LANDING_PAYMENTS_ROUTE}
+          element={<HashRouterElement element={<LandingPaymentsPage />} />}
         />
         <Route
           path={DASHBOARD_ROUTE}

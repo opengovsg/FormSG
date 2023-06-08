@@ -8,19 +8,19 @@ import {
 } from '@chakra-ui/react'
 
 import { ReactComponent as BrandHortSvg } from '~assets/svgs/brand/brand-hort-colour.svg'
+import { ReactComponent as BrandHortDarkSvg } from '~assets/svgs/brand/brand-hort-dark.svg'
 import { ReactComponent as BrandMarkSvg } from '~assets/svgs/brand/brand-mark-colour.svg'
+import { ReactComponent as BrandMarkDarkSvg } from '~assets/svgs/brand/brand-mark-dark.svg'
 import { useIsMobile } from '~hooks/useIsMobile'
 import IconButton from '~components/IconButton'
 import Link from '~components/Link'
-
-const BrandHortLogo = chakra(BrandHortSvg)
-const BrandSmallLogo = chakra(BrandMarkSvg)
 
 type PublicHeaderLinkProps = {
   label: string
   href: string
   showOnMobile?: boolean
   MobileIcon?: As
+  bg?: string
 }
 
 export interface PublicHeaderProps {
@@ -28,6 +28,8 @@ export interface PublicHeaderProps {
   publicHeaderLinks?: PublicHeaderLinkProps[]
   /** Call to action element to render, if any. */
   ctaElement?: React.ReactChild
+  /** Background colour to use for the header, if specified. */
+  bg?: string
 }
 
 const PublicHeaderLink = ({
@@ -35,6 +37,7 @@ const PublicHeaderLink = ({
   MobileIcon,
   href,
   label,
+  bg,
 }: PublicHeaderLinkProps) => {
   const isMobile = useIsMobile()
 
@@ -58,9 +61,13 @@ const PublicHeaderLink = ({
     <Link
       w="fit-content"
       variant="standalone"
-      color="primary.500"
+      color={bg ? 'white' : 'primary.500'}
       href={href}
       aria-label={label}
+      _hover={{
+        color: bg ? 'white' : 'primary.600',
+        textDecoration: 'underline',
+      }}
     >
       {label}
     </Link>
@@ -70,14 +77,18 @@ const PublicHeaderLink = ({
 export const PublicHeader = ({
   publicHeaderLinks,
   ctaElement: ctaButton,
+  bg,
 }: PublicHeaderProps): JSX.Element => {
+  const BrandHortLogo = bg ? chakra(BrandHortDarkSvg) : chakra(BrandHortSvg)
+  const BrandSmallLogo = bg ? chakra(BrandMarkDarkSvg) : chakra(BrandMarkSvg)
+
   const logoToRender = useBreakpointValue({
     base: <BrandSmallLogo w="2.5rem" />,
     sm: <BrandHortLogo w="7.75rem" />,
   })
 
   return (
-    <PublicHeader.Container>
+    <PublicHeader.Container bg={bg}>
       <Link title="Form Logo" href="https://form.gov.sg/">
         {logoToRender}
       </Link>
@@ -86,7 +97,7 @@ export const PublicHeader = ({
         spacing={{ base: '1rem', md: '2rem', xl: '2.5rem' }}
       >
         {publicHeaderLinks?.map((link, index) => (
-          <PublicHeaderLink key={index} {...link} />
+          <PublicHeaderLink key={index} bg={bg} {...link} />
         ))}
         {ctaButton ?? null}
       </HStack>
@@ -100,6 +111,7 @@ interface PublicHeaderContainerProps extends FlexProps {
 
 PublicHeader.Container = ({
   children,
+  bg,
   ...props
 }: PublicHeaderContainerProps): JSX.Element => {
   return (
@@ -108,7 +120,7 @@ PublicHeader.Container = ({
       align="center"
       px={{ base: '1.5rem', md: '5.5rem', lg: '9.25rem' }}
       py={{ base: '0.625rem', md: '4.5rem' }}
-      bg="primary.100"
+      bg={bg}
       {...props}
     >
       {children}
