@@ -18,6 +18,9 @@ export default {
       path: LANDING_PAYMENTS_ROUTE,
     }),
   ],
+  parameters: {
+    layout: 'fullscreen',
+  },
 } as Meta
 
 const Template: Story = () => <LandingPaymentsPage />
