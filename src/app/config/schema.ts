@@ -185,31 +185,6 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
       default: '',
       env: 'ADMIN_BANNER_CONTENT',
     },
-    // TODO (#4279): Delete these when react migration is over. Revert back to original banner variables in react frontend.
-    isGeneralMaintenanceReact: {
-      doc: 'Load env variable with General Maintenance banner text. For React only.',
-      format: String,
-      default: '',
-      env: 'IS_GENERAL_MAINTENANCE_REACT',
-    },
-    isLoginBannerReact: {
-      doc: 'The banner message on login page. Allows for HTML. For React only.',
-      format: String,
-      default: '',
-      env: 'IS_LOGIN_BANNER_REACT',
-    },
-    siteBannerContentReact: {
-      doc: 'The banner message to show on all pages. Allows for HTML. Will supersede all other banner content if it exists. For React only.',
-      format: String,
-      default: '',
-      env: 'SITE_BANNER_CONTENT_REACT',
-    },
-    adminBannerContentReact: {
-      doc: 'The banner message to show on on admin pages. Allows for HTML. For React only.',
-      format: String,
-      default: '',
-      env: 'ADMIN_BANNER_CONTENT_REACT',
-    },
   },
   formsgSdkMode: {
     doc: 'Inform SDK which public keys are to be used to sign, encrypt, or decrypt data that is passed to it',

@@ -96,7 +96,7 @@ const NonMobileSidebarGridArea: FC = ({ children }) => (
 )
 
 export const LoginPage = (): JSX.Element => {
-  const { data: { siteBannerContentReact, isLoginBannerReact } = {} } = useEnv()
+  const { data: { siteBannerContent, isLoginBanner } = {} } = useEnv()
   const [, setIsAuthenticated] = useLocalStorage<boolean>(LOGGED_IN_KEY)
   const [email, setEmail] = useState<string>()
   const [otpPrefix, setOtpPrefix] = useState<string>('')
@@ -105,8 +105,8 @@ export const LoginPage = (): JSX.Element => {
   // TODO (#4279): Revert back to non-react banners post-migration.
   const bannerContent = useMemo(
     // Use || instead of ?? so that we fall through even if previous banners are empty string.
-    () => siteBannerContentReact || isLoginBannerReact,
-    [siteBannerContentReact, isLoginBannerReact],
+    () => siteBannerContent || isLoginBanner,
+    [siteBannerContent, isLoginBanner],
   )
 
   const bannerProps = useMemo(

@@ -12,8 +12,8 @@ import { usePublicFormContext } from '../PublicFormContext'
 export const FormBanner = (): JSX.Element | null => {
   const {
     data: {
-      siteBannerContentReact,
-      isGeneralMaintenanceReact,
+      siteBannerContent,
+      isGeneralMaintenance,
       isSPMaintenance,
       isCPMaintenance,
       myInfoBannerContent,
@@ -26,8 +26,8 @@ export const FormBanner = (): JSX.Element | null => {
   const bannerContent = useMemo(
     // Use || instead of ?? so that we fall through even if previous banners are empty string.
     () =>
-      siteBannerContentReact ||
-      isGeneralMaintenanceReact ||
+      siteBannerContent ||
+      isGeneralMaintenance ||
       (form?.authType === FormAuthType.SP && isSPMaintenance) ||
       (form?.authType === FormAuthType.CP && isCPMaintenance) ||
       (form?.authType === FormAuthType.MyInfo && myInfoBannerContent) ||
@@ -35,10 +35,10 @@ export const FormBanner = (): JSX.Element | null => {
     [
       form?.authType,
       isCPMaintenance,
-      isGeneralMaintenanceReact,
+      isGeneralMaintenance,
       isSPMaintenance,
       myInfoBannerContent,
-      siteBannerContentReact,
+      siteBannerContent,
     ],
   )
 
