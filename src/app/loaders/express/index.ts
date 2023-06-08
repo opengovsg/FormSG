@@ -7,7 +7,6 @@ import path from 'path'
 import url from 'url'
 
 import config from '../../config/config'
-import { AuthRouter } from '../../modules/auth/auth.routes'
 import { ExamplesRouter } from '../../modules/examples/examples.routes'
 import { AdminFormsRouter } from '../../modules/form/admin-form/admin-form.routes'
 import { FrontendRouter } from '../../modules/frontend/frontend.routes'
@@ -111,7 +110,6 @@ const loadExpressApp = async (connection: Connection) => {
   app.use(IntranetMiddleware.logIntranetUsage)
 
   // Deprecated routes
-  app.use('/auth', AuthRouter)
   app.use('/transaction', VfnRouter)
   app.use('/examples', ExamplesRouter)
 
