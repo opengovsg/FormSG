@@ -13,7 +13,6 @@ import { FrontendRouter } from '../../modules/frontend/frontend.routes'
 import { MYINFO_ROUTER_PREFIX } from '../../modules/myinfo/myinfo.constants'
 import { MyInfoRouter } from '../../modules/myinfo/myinfo.routes'
 import { SgidRouter } from '../../modules/sgid/sgid.routes'
-import { VfnRouter } from '../../modules/verification/verification.routes'
 import { ApiRouter } from '../../routes/api'
 import { LegacyRedirectRouter } from '../../routes/legacy-redirect'
 import { SpOidcJwksRouter } from '../../routes/singpass'
@@ -110,7 +109,6 @@ const loadExpressApp = async (connection: Connection) => {
   app.use(IntranetMiddleware.logIntranetUsage)
 
   // Deprecated routes
-  app.use('/transaction', VfnRouter)
   app.use('/examples', ExamplesRouter)
 
   // jwks endpoint for SP OIDC
