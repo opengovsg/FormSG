@@ -47,7 +47,12 @@ export const Banner = ({
 
   return (
     <Collapse style={{ overflow: 'visible' }} in={isOpen} animateOpacity>
-      <Box __css={styles.banner} bgColor={bannerColor}>
+      <Box
+        __css={{
+          ...styles.banner,
+          ...(bannerColor ? { bgColor: bannerColor } : {}),
+        }}
+      >
         <Flex sx={styles.item}>
           <Flex>
             <Icon
