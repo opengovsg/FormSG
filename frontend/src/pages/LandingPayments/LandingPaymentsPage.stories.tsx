@@ -12,7 +12,7 @@ import {
 import { LandingPaymentsPage } from './LandingPaymentsPage'
 
 export default {
-  title: 'Pages/LandingPage',
+  title: 'Pages/LandingPaymentsPage',
   component: LandingPaymentsPage,
   decorators: [
     StoryRouter({
