@@ -14,7 +14,6 @@ import { FrontendRouter } from '../../modules/frontend/frontend.routes'
 import { MYINFO_ROUTER_PREFIX } from '../../modules/myinfo/myinfo.constants'
 import { MyInfoRouter } from '../../modules/myinfo/myinfo.routes'
 import { SgidRouter } from '../../modules/sgid/sgid.routes'
-import { SubmissionRouter } from '../../modules/submission/submission.routes'
 import { VfnRouter } from '../../modules/verification/verification.routes'
 import { ApiRouter } from '../../routes/api'
 import { LegacyRedirectRouter } from '../../routes/legacy-redirect'
@@ -115,7 +114,6 @@ const loadExpressApp = async (connection: Connection) => {
   app.use('/auth', AuthRouter)
   app.use('/transaction', VfnRouter)
   app.use('/examples', ExamplesRouter)
-  app.use('/v2/submissions', SubmissionRouter)
 
   // jwks endpoint for SP OIDC
   app.use('/singpass/.well-known/jwks.json', SpOidcJwksRouter)
