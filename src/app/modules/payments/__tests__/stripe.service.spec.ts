@@ -712,7 +712,6 @@ describe('stripe.service', () => {
       it('should return error result when call to stripe.balanceTransactions failed', async () => {
         const processStripeEventSpy = jest
           .spyOn(StripeService, 'processStripeEvent')
-          .mockImplementationOnce(() => errAsync(new PaymentNotFoundError()))
         const balanceTransactionApiSpy = jest
           .spyOn(stripe.balanceTransactions, 'list')
           .mockImplementationOnce(
