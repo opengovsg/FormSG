@@ -25,6 +25,10 @@ export interface ButtonProps extends ChakraButtonProps {
    * Color scheme of button.
    */
   colorScheme?: ThemeColorScheme
+  /**
+   * Base color intensity of button.
+   */
+  basecolorintensity?: 500 | 600
 }
 
 export const Button = forwardRef<ButtonProps, 'button'>(
