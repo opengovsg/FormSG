@@ -89,7 +89,7 @@ export const LandingPaymentsPage = (): JSX.Element => {
           />
         </SimpleGrid>
       </LandingSection>
-      <AppFooter />
+      <AppFooter containerProps={{ bg: 'primary.100' }} />
     </>
   )
 }
