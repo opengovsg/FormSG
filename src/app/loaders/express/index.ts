@@ -10,7 +10,6 @@ import config from '../../config/config'
 import { AuthRouter } from '../../modules/auth/auth.routes'
 import { ExamplesRouter } from '../../modules/examples/examples.routes'
 import { AdminFormsRouter } from '../../modules/form/admin-form/admin-form.routes'
-import { PublicFormRouter } from '../../modules/form/public-form/public-form.routes'
 import { FrontendRouter } from '../../modules/frontend/frontend.routes'
 import { MYINFO_ROUTER_PREFIX } from '../../modules/myinfo/myinfo.constants'
 import { MyInfoRouter } from '../../modules/myinfo/myinfo.routes'
@@ -18,6 +17,7 @@ import { SgidRouter } from '../../modules/sgid/sgid.routes'
 import { SubmissionRouter } from '../../modules/submission/submission.routes'
 import { VfnRouter } from '../../modules/verification/verification.routes'
 import { ApiRouter } from '../../routes/api'
+import { LegacyRedirectRouter } from '../../routes/legacy-redirect'
 import { SpOidcJwksRouter } from '../../routes/singpass'
 import * as IntranetMiddleware from '../../services/intranet/intranet.middleware'
 
@@ -126,7 +126,7 @@ const loadExpressApp = async (connection: Connection) => {
 
   // Deprecated routes, must be here since API starts with form id regex prefix.
   app.use(AdminFormsRouter)
-  app.use(PublicFormRouter)
+  app.use(LegacyRedirectRouter)
 
   // New routes in preparation for API refactor.
   app.use('/api', ApiRouter)
