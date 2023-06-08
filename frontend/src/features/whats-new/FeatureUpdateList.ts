@@ -1,6 +1,8 @@
 import dedent from 'dedent'
 import { JsonObject, RequireExactlyOne } from 'type-fest'
 
+import { GUIDE_PAYMENTS_ENTRY } from '~constants/links'
+
 import Animation1 from './assets/1-payments.json'
 import Animation2 from './assets/2-search-and-filter.json'
 import Animation3 from './assets/3-dnd.json'
@@ -33,8 +35,7 @@ export const FEATURE_UPDATE_LIST: FeatureUpdateList = {
     {
       title: 'Collect payments on your form',
       date: new Date('31 May 2023 GMT+8'),
-      description:
-        'Citizens can now pay for fees and services directly on your form! We integrate with Stripe to provide reliable payments and hassle-free reconciliations. Payment methods we support include debit / credit cards and PayNow. [Learn more](https://go.gov.sg/formsg-payment-overview)',
+      description: `Citizens can now pay for fees and services directly on your form! We integrate with Stripe to provide reliable payments and hassle-free reconciliations. Payment methods we support include debit / credit cards and PayNow. [Learn more](${GUIDE_PAYMENTS_ENTRY})`,
       image: {
         animationData: Animation1,
         alt: 'Collect payments on your form',
