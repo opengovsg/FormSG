@@ -8,7 +8,6 @@ import url from 'url'
 
 import config from '../../config/config'
 import { ExamplesRouter } from '../../modules/examples/examples.routes'
-import { AdminFormsRouter } from '../../modules/form/admin-form/admin-form.routes'
 import { FrontendRouter } from '../../modules/frontend/frontend.routes'
 import { MYINFO_ROUTER_PREFIX } from '../../modules/myinfo/myinfo.constants'
 import { MyInfoRouter } from '../../modules/myinfo/myinfo.routes'
@@ -118,11 +117,10 @@ const loadExpressApp = async (connection: Connection) => {
   // Use constant for registered routes with MyInfo servers
   app.use(MYINFO_ROUTER_PREFIX, MyInfoRouter)
 
-  // Deprecated routes, must be here since API starts with form id regex prefix.
-  app.use(AdminFormsRouter)
+  // Legacy frontend routes which may still be in use
   app.use(LegacyRedirectRouter)
 
-  // New routes in preparation for API refactor.
+  // API routes
   app.use('/api', ApiRouter)
 
   // serve static assets. `dist/frontend` contains the root files as well as a `/static` folder
