@@ -6,12 +6,14 @@ import { Box, chakra, Flex, GridItem, GridProps, Text } from '@chakra-ui/react'
 import { AppFooter } from '~/app/AppFooter'
 
 import { ReactComponent as BrandLogoSvg } from '~assets/svgs/brand/brand-hort-colour.svg'
+import { GUIDE_PAYMENTS_PUBLIC } from '~constants/links'
 import { LOGGED_IN_KEY } from '~constants/localStorage'
 import { LANDING_ROUTE } from '~constants/routes'
 import { useLocalStorage } from '~hooks/useLocalStorage'
 import { getBannerProps } from '~utils/getBannerProps'
 import { sendLoginOtp, verifyLoginOtp } from '~services/AuthService'
 import { Banner } from '~components/Banner'
+import { FeatureBanner } from '~components/FeatureBanner/FeatureBanner'
 import Link from '~components/Link'
 import { AppGrid } from '~templates/AppGrid'
 
@@ -149,13 +151,25 @@ export const LoginPage = (): JSX.Element => {
     await sendLoginOtp(email).then(({ otpPrefix }) => setOtpPrefix(otpPrefix))
   }
 
+  const bannerColorIntensity = 600
+  const bannerColor = `primary.${bannerColorIntensity}` // So banner colors are different from the blue background (left of login screen).
+
   return (
     <BackgroundBox>
       {bannerProps ? (
-        <Banner useMarkdown variant={bannerProps.variant}>
+        <Banner
+          useMarkdown
+          variant={bannerProps.variant}
+          bannerColor={bannerColor}
+        >
           {bannerProps.msg}
         </Banner>
       ) : null}
+      <FeatureBanner
+        bannerColorIntensity={bannerColorIntensity}
+        body="You can now collect payments directly on your form!"
+        learnMoreLink={GUIDE_PAYMENTS_PUBLIC}
+      />
       <BaseGridLayout flex={1}>
         <NonMobileSidebarGridArea>
           <LoginImageSvgr maxW="100%" aria-hidden />
