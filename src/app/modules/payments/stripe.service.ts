@@ -563,6 +563,12 @@ export const handleStripeEvent = (
 
             // Reducer to keep errors around
             if (innerResult && innerResult.isErr()) {
+              logger.error({
+                message:
+                  'Error when calling processStripeEvent while paging through balanceTransaction',
+                meta: { ...logMeta, chargeId: charge },
+                error: innerResult,
+              })
               payoutProcessError = errAsync(innerResult.error)
               return
             }
