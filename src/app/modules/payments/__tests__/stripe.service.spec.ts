@@ -742,13 +742,20 @@ describe('stripe.service', () => {
                 autoPagingEach: (fn) => fn({ type: 'charge', source: {} }),
               } as unknown as Stripe.ApiListPromise<Stripe.BalanceTransaction>),
           )
+        const getMetadataPaymentIdSpy = jest
+          .spyOn(StripeUtils, 'getMetadataPaymentId')
+          .mockImplementation(() => ok('still gud'))
+        const processStripeEventSpy = jest
+          .spyOn(StripeService, 'processStripeEvent')
+          .mockImplementationOnce(() => errAsync(new PaymentNotFoundError()))
 
         const result = await StripeService.handleStripeEvent(
           MOCK_STRIPE_EVENTS_MAP['evt_PAYOUT_CREATED'],
         )
 
         expect(balanceTransactionApiSpy).toHaveBeenCalledOnce()
-        expect(processStripeEventSpy).not.toHaveBeenCalledOnce()
+        expect(getMetadataPaymentIdSpy).toHaveBeenCalledOnce()
+        expect(processStripeEventSpy).toHaveBeenCalledOnce()
         expect(result.isErr()).toBeTrue()
       })
 
