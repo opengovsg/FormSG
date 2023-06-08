@@ -1,7 +1,5 @@
 import { Meta, Story } from '@storybook/react'
 
-import { getLandingStats } from '~/mocks/msw/handlers/landing'
-
 import { LANDING_PAYMENTS_ROUTE } from '~constants/routes'
 import {
   getMobileViewParameters,
@@ -20,10 +18,6 @@ export default {
       path: LANDING_PAYMENTS_ROUTE,
     }),
   ],
-  parameters: {
-    layout: 'fullscreen',
-    msw: [getLandingStats()],
-  },
 } as Meta
 
 const Template: Story = () => <LandingPaymentsPage />
