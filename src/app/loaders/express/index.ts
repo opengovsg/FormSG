@@ -7,7 +7,6 @@ import path from 'path'
 import url from 'url'
 
 import config from '../../config/config'
-import { ExamplesRouter } from '../../modules/examples/examples.routes'
 import { FrontendRouter } from '../../modules/frontend/frontend.routes'
 import { MYINFO_ROUTER_PREFIX } from '../../modules/myinfo/myinfo.constants'
 import { MyInfoRouter } from '../../modules/myinfo/myinfo.routes'
@@ -106,9 +105,6 @@ const loadExpressApp = async (connection: Connection) => {
 
   // Log intranet usage
   app.use(IntranetMiddleware.logIntranetUsage)
-
-  // Deprecated routes
-  app.use('/examples', ExamplesRouter)
 
   // jwks endpoint for SP OIDC
   app.use('/singpass/.well-known/jwks.json', SpOidcJwksRouter)
