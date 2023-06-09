@@ -1,7 +1,11 @@
-import { Flex, Image, SimpleGrid, Stack, Text } from '@chakra-ui/react'
+import { Box, Flex, Image, SimpleGrid, Stack, Text } from '@chakra-ui/react'
 
 import { AppFooter } from '~/app/AppFooter'
 import { AppPublicHeader } from '~/app/AppPublicHeader'
+
+import { GUIDE_PAYMENTS_PUBLIC } from '~constants/links'
+import { useIsMobile } from '~hooks/useIsMobile'
+import Button from '~components/Button'
 
 import paymentsImg from './assets/images/graphic_payments.svg'
 import featureFlexibleImg from './assets/images/icon_pay_flexible.svg'
@@ -16,6 +20,8 @@ import { SectionBodyText } from './components/SectionBodyText'
 import { SectionTitleText } from './components/SectionTitleText'
 
 export const LandingPaymentsPage = (): JSX.Element => {
+  const isMobile = useIsMobile()
+
   return (
     <>
       <AppPublicHeader bg="primary.500" />
@@ -40,9 +46,18 @@ export const LandingPaymentsPage = (): JSX.Element => {
             </Text>
             <SectionBodyText color="white">
               Citizens can now pay for fees and services directly on your form.
-              Enter your agency email to receive our guide on how to get started
-              with payments.
             </SectionBodyText>
+            <Box mt="2.5rem">
+              <Button
+                variant="reverse"
+                isFullWidth={isMobile}
+                as="a"
+                href={GUIDE_PAYMENTS_PUBLIC}
+                target="_blank"
+              >
+                Learn more about payments
+              </Button>
+            </Box>
           </Flex>
           <Flex flex={1} aria-hidden>
             <Image src={paymentsImg} aria-hidden />
