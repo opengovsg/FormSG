@@ -31,6 +31,12 @@ import {
   extractAuthCode,
   validateMyInfoForm,
 } from '../../myinfo/myinfo.util'
+import { SGIDMyInfoData } from '../../sgid/sgid.adapter'
+import {
+  SGID_COOKIE_NAME,
+  SGID_MYINFO_COOKIE_NAME,
+  SGID_MYINFO_LOGIN_COOKIE_NAME,
+} from '../../sgid/sgid.constants'
 import { SgidInvalidJwtError, SgidVerifyJwtError } from '../../sgid/sgid.errors'
 import { SgidService } from '../../sgid/sgid.service'
 import { validateSgidForm } from '../../sgid/sgid.util'
@@ -232,7 +238,9 @@ export const handleGetPublicForm: ControllerHandler<
         })
     }
     case FormAuthType.SGID:
-      return SgidService.extractSgidJwtPayload(req.cookies.jwtSgid)
+      return SgidService.extractSgidSingpassJwtPayload(
+        req.cookies[SGID_COOKIE_NAME],
+      )
         .map((spcpSession) => {
           return res.json({
             form: publicForm,
@@ -254,6 +262,56 @@ export const handleGetPublicForm: ControllerHandler<
           }
           return res.json({ form: publicForm, isIntranetUser })
         })
+    case FormAuthType.SGID_MyInfo: {
+      const accessTokenCookie = req.cookies[SGID_MYINFO_COOKIE_NAME]
+      if (!accessTokenCookie) {
+        return res.json({
+          form: publicForm,
+          isIntranetUser,
+        })
+      }
+      res.clearCookie(SGID_MYINFO_COOKIE_NAME)
+      res.clearCookie(SGID_MYINFO_LOGIN_COOKIE_NAME)
+      return SgidService.extractSgidJwtMyInfoPayload(accessTokenCookie)
+        .asyncAndThen((auth) =>
+          SgidService.retrieveUserInfo({ accessToken: auth.accessToken }),
+        )
+        .andThen((userInfo) => {
+          const data = new SGIDMyInfoData(userInfo.data)
+          return MyInfoService.prefillAndSaveMyInfoFields(
+            form._id,
+            data,
+            form.toJSON().form_fields,
+          ).map((prefilledFields) => {
+            return res
+              .cookie(
+                SGID_MYINFO_LOGIN_COOKIE_NAME,
+                createMyInfoLoginCookie(data.getUinFin()),
+                MYINFO_LOGIN_COOKIE_OPTIONS,
+              )
+              .json({
+                form: {
+                  ...publicForm,
+                  form_fields: prefilledFields as FormFieldDto[],
+                },
+                spcpSession: { userName: data.getUinFin() },
+                isIntranetUser,
+              })
+          })
+        })
+        .mapErr((error) => {
+          logger.error({
+            message: 'sgID: MyInfo login error',
+            meta: logMeta,
+            error,
+          })
+          return res.json({
+            form: publicForm,
+            myInfoError: true,
+            isIntranetUser,
+          })
+        })
+    }
     default:
       return new UnreachableCaseError(authType)
   }
@@ -389,6 +447,16 @@ export const _handleFormAuthRedirect: ControllerHandler<
             return SgidService.createRedirectUrl(
               formId,
               Boolean(isPersistentLogin),
+              [],
+              encodedQuery,
+            )
+          })
+        case FormAuthType.SGID_MyInfo:
+          return validateSgidForm(form).andThen(() => {
+            return SgidService.createRedirectUrl(
+              formId,
+              false,
+              form.getUniqueMyInfoAttrs(),
               encodedQuery,
             )
           })
@@ -454,6 +522,7 @@ export const _handlePublicAuthLogout: ControllerHandler<
       | FormAuthType.CP
       | FormAuthType.MyInfo
       | FormAuthType.SGID
+      | FormAuthType.SGID_MyInfo
   },
   PublicFormAuthLogoutDto
 > = (req, res) => {
@@ -480,6 +549,7 @@ export const handlePublicAuthLogout = [
           FormAuthType.CP,
           FormAuthType.MyInfo,
           FormAuthType.SGID,
+          FormAuthType.SGID_MyInfo,
         )
         .required(),
     }),
