@@ -10,6 +10,7 @@ import { FormSectionsProvider } from './components/FormFields/FormSectionsContex
 import { FormFooter } from './components/FormFooter'
 import FormInstructions from './components/FormInstructions'
 import { PublicFormLogo } from './components/FormLogo'
+import FormPreSubmissionFeedback from './components/FormPreSubmissionFeedback'
 import FormStartPage from './components/FormStartPage'
 import { PublicFormWrapper } from './components/PublicFormWrapper'
 import { PublicFormProvider } from './PublicFormProvider'
@@ -32,6 +33,7 @@ export const PublicFormPage = (): JSX.Element => {
           <PublicFormWrapper>
             <FormInstructions />
             <FormFields />
+            <FormPreSubmissionFeedback />
             <FormEndPage />
 
             <FormFooter />
