@@ -88,7 +88,7 @@ export const PublicHeader = ({
   })
 
   return (
-    <PublicHeader.Container>
+    <PublicHeader.Container bg={bg}>
       <Link title="Form Logo" href="https://form.gov.sg/">
         {logoToRender}
       </Link>
