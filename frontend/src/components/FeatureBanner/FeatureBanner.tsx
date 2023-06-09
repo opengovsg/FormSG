@@ -38,17 +38,11 @@ export const FeatureBanner = ({
         ...(title ? textStyles['subhead-1'] : textStyles['subhead-2']),
         minHeight: 'auto',
       }}
-      variant="solid"
+      variant="inverseOutline"
+      basecolorintensity={bannerColorIntensity}
       as="a"
       href={learnMoreLink}
       target="_blank"
-      borderColor="white"
-      bg="transparent"
-      _hover={{
-        color: 'white',
-        borderColor: 'white',
-        bg: `primary.${bannerColorIntensity - 100}`,
-      }}
     >
       Learn more
     </Button>
