@@ -20,6 +20,7 @@ export const EMAIL_MODE_AUTHTYPES: Record<EmailFormAuthType, string> = {
   [FormAuthType.SP]: 'Singpass',
   [FormAuthType.SGID]: 'Singpass App-only Login (Free)',
   [FormAuthType.MyInfo]: 'Singpass with MyInfo',
+  [FormAuthType.SGID_MyInfo]: 'Singpass App-only Login (Free) with MyInfo',
   [FormAuthType.CP]: 'Singpass (Corporate)',
 }
 export const AUTHTYPE_TO_TEXT = {
