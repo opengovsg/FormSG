@@ -1,6 +1,6 @@
 import {
   MyInfoAttribute as InternalAttr,
-  SGIDDataTransformer,
+  MyInfoDataTransformer,
 } from '../../../../shared/types'
 
 import {
@@ -32,10 +32,11 @@ export const internalAttrToScope = (attr: InternalAttr): ExternalAttr => {
 }
 
 export const internalAttrListToScopes = (attrs: InternalAttr[]): string =>
-  // Always ask for NRIC
-  `openid ${ExternalAttr.NricFin} ${attrs
-    .map(internalAttrToScope)
-    .join(' ')}`.trim()
+  [
+    'openid',
+    // Deduplicate and always ask for NRIC
+    ...new Set([ExternalAttr.NricFin, ...attrs.map(internalAttrToScope)]),
+  ].join(' ')
 
 const internalAttrToSGIDExternal = (
   attr: InternalAttr,
@@ -64,7 +65,7 @@ const internalAttrToSGIDExternal = (
  * Currently only supports MyInfo.
  */
 export class SGIDMyInfoData
-  implements SGIDDataTransformer<ExternalAttr, InternalAttr>
+  implements MyInfoDataTransformer<ExternalAttr, InternalAttr>
 {
   #payload: SGIDScopeToValue
   constructor(payload: SGIDScopeToValue) {

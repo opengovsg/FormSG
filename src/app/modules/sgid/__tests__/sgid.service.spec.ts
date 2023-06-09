@@ -83,7 +83,7 @@ describe('sgid.service', () => {
       )
     })
 
-    it('should return extract additional OAuth scopes from MyInfo', () => {
+    it('should extract additional OAuth scopes from MyInfo', () => {
       const SgidService = new SgidServiceClass(MOCK_OPTIONS)
       const sgidClient = jest.mocked(MockSgidClient.mock.instances[0])
       sgidClient.authorizationUrl.mockReturnValue({

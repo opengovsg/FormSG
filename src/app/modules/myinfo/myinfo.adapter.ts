@@ -8,7 +8,7 @@ import {
 
 import {
   MyInfoAttribute as InternalAttr,
-  SGIDDataTransformer,
+  MyInfoDataTransformer,
 } from '../../../../shared/types'
 
 import {
@@ -159,7 +159,7 @@ export const internalAttrListToScopes = (
  * to the correct keys in the data.
  */
 export class MyInfoData
-  implements SGIDDataTransformer<ExternalAttr, InternalAttr>
+  implements MyInfoDataTransformer<ExternalAttr, InternalAttr>
 {
   #personData: IPerson
   #uinFin: string

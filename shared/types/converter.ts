@@ -1,4 +1,4 @@
-export interface SGIDDataTransformer<T, U> {
+export interface MyInfoDataTransformer<T, U> {
 
   /**
    * NRIC/FIN.
