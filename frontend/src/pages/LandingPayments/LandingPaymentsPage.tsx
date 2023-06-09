@@ -85,7 +85,7 @@ export const LandingPaymentsPage = (): JSX.Element => {
           <FeatureGridItem
             image={featureTrustedImg}
             title="Trusted payment flows"
-            description="Respondents receive notifications from official gov.sg domains."
+            description="We partner with Stripe, a leading payment provider, to ensure a secure and reliable payment experience. Respondents receive notifications from official gov.sg domains. "
           />
           <FeatureGridItem
             image={featureInvoicingImg}
@@ -95,12 +95,12 @@ export const LandingPaymentsPage = (): JSX.Element => {
           <FeatureGridItem
             image={featureMethodsImg}
             title="Multiple payment methods"
-            description="We support credit card and PayNow as payment methods."
+            description="We support credit card, debit card and PayNow."
           />
           <FeatureGridItem
             image={featureFlexibleImg}
             title="Flexible"
-            description="We got you covered whether you are collecting the same amount or varying amounts from respondents."
+            description="We've got you covered whether you are collecting fixed amounts or varying amounts from respondents."
           />
         </SimpleGrid>
       </LandingSection>
