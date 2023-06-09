@@ -46,9 +46,9 @@ const PublicFormPage = lazy(() =>
   lazyRetry(() => import('~features/public-form/PublicFormPage')),
 )
 const WorkspacePage = lazy(() => lazyRetry(() => import('~features/workspace')))
-const LandingPage = lazy(() => lazyRetry(() => import('~pages/Landing')))
+const LandingPage = lazy(() => lazyRetry(() => import('~pages/Landing/Home')))
 const LandingPaymentsPage = lazy(() =>
-  lazyRetry(() => import('~pages/LandingPayments')),
+  lazyRetry(() => import('~pages/Landing/Payments')),
 )
 const LoginPage = lazy(() => lazyRetry(() => import('~features/login')))
 const PrivacyPolicyPage = lazy(() =>
