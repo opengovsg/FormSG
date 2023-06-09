@@ -2,6 +2,7 @@ import { Box, Flex, Image, SimpleGrid, Stack, Text } from '@chakra-ui/react'
 
 import { AppFooter } from '~/app/AppFooter'
 import { AppPublicHeader } from '~/app/AppPublicHeader'
+import FormBrandLogo from '~/assets/svgs/brand/brand-mark-colour.svg'
 
 import { GUIDE_PAYMENTS_PUBLIC } from '~constants/links'
 import { useIsMobile } from '~hooks/useIsMobile'
@@ -103,6 +104,23 @@ export const LandingPaymentsPage = (): JSX.Element => {
             description="We've got you covered whether you are collecting fixed amounts or varying amounts from respondents."
           />
         </SimpleGrid>
+      </LandingSection>
+      {/* TODO after migration to design system: set bg to color.brand.primary.900 */}
+      <LandingSection bg="#1D2A5E" align="center">
+        <Image src={FormBrandLogo} aria-hidden h="3.5rem" />
+        <Text
+          textAlign="center"
+          textStyle={{ base: 'display-2-mobile', md: 'display-2' }}
+          color="white"
+          mt="2rem"
+        >
+          Learn how to set up your payments form
+        </Text>
+        <Box mt="2rem">
+          <Button as="a" href={GUIDE_PAYMENTS_PUBLIC} target="_blank">
+            Get started
+          </Button>
+        </Box>
       </LandingSection>
       <AppFooter containerProps={{ bg: 'primary.100' }} />
     </>
