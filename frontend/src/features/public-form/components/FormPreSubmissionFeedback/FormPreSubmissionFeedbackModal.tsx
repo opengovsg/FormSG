@@ -13,7 +13,6 @@ import {
   Stack,
   Text,
   useBreakpointValue,
-  Wrap,
 } from '@chakra-ui/react'
 import { isEmpty } from 'lodash'
 import isEmail from 'validator/lib/isEmail'
@@ -91,9 +90,12 @@ export const FormPreSubmissionFeedbackModal = ({
                 </FormLabel>
                 <Textarea
                   {...register('issue', {
-                    validate: { notEmpty: (value) => !value || REQUIRED_ERROR },
+                    required: REQUIRED_ERROR,
                   })}
                 />
+                <FormErrorMessage>
+                  {errors.issue && errors.issue.message}
+                </FormErrorMessage>
                 <FormLabel
                   pt="1rem"
                   description="Leave your email or contact number so the form creator can reach out to you if needed."
