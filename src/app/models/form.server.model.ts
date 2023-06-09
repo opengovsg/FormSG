@@ -822,7 +822,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         .sort('-lastModified')
         .populate({
           path: 'admin',
-          select: ['_id', 'email', 'agency', 'created', 'updatedAt'],
+          select: ['-apiToken'], // would be better to be explicit about fields fetched
           populate: {
             path: 'agency',
           },
