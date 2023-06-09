@@ -8,6 +8,11 @@ import { GUIDE_PAYMENTS_PUBLIC } from '~constants/links'
 import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
 
+import { FeatureGridItem } from '../Landing/components/FeatureGridItem'
+import { LandingSection } from '../Landing/components/LandingSection'
+import { SectionBodyText } from '../Landing/components/SectionBodyText'
+import { SectionTitleText } from '../Landing/components/SectionTitleText'
+
 import paymentsImg from './assets/images/graphic_payments.svg'
 import featureFlexibleImg from './assets/images/icon_pay_flexible.svg'
 import featureInvoicingImg from './assets/images/icon_pay_invoicing.svg'
@@ -15,10 +20,6 @@ import featureMethodsImg from './assets/images/icon_pay_methods.svg'
 import featureReconImg from './assets/images/icon_pay_recon.svg'
 import featureSelfServiceImg from './assets/images/icon_pay_self-service.svg'
 import featureTrustedImg from './assets/images/icon_pay_trusted.svg'
-import { FeatureGridItem } from './components/FeatureGridItem'
-import { LandingSection } from './components/LandingSection'
-import { SectionBodyText } from './components/SectionBodyText'
-import { SectionTitleText } from './components/SectionTitleText'
 
 export const LandingPaymentsPage = (): JSX.Element => {
   const isMobile = useIsMobile()
