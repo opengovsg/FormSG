@@ -62,12 +62,12 @@ export const transferOwnership = async (
     return data.map((formMetaDto) => formMetaDto._id)
   })
   return Promise.all(
-    ownedFormIds.map((formId: string) =>
-      ApiService.post<AdminFormViewDto>(
+    ownedFormIds.map((formId: string) => {
+      return ApiService.post<AdminFormViewDto>(
         `${ADMIN_FORM_ENDPOINT}/${formId}/collaborators/transfer-owner`,
         { email },
-      ),
-    ),
+      )
+    }),
   ).then((responses) => {
     const formIds = responses.map((response) => response.data.form._id)
     return {
