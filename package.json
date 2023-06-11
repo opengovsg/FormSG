@@ -135,7 +135,7 @@
     "moment-timezone": "0.5.41",
     "mongodb-memory-server-core": "^6.9.6",
     "mongodb-uri": "^0.9.7",
-    "mongoose": "^5.13.15",
+    "mongoose": "^7.2.3",
     "multiparty": ">=4.2.3",
     "nan": "^2.17.0",
     "neverthrow": "^6.0.0",
