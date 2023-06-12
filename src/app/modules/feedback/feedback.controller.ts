@@ -127,7 +127,7 @@ const submitAdminFeedback: ControllerHandler<
 
   return UserService.getPopulatedUserById(sessionUserId)
     .andThen((user) => {
-      statsdClient.distribution('formsg.admin.feedback.rating', rating, 1, {
+      statsdClient.distribution('formsg.users.feedback.rating', rating, 1, {
         rating: `${rating}`,
       })
       return FeedbackService.insertAdminFeedback({
