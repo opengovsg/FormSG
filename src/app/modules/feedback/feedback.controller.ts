@@ -7,7 +7,6 @@ import { statsdClient } from '../../config/datadog-statsd-client'
 import { createLoggerWithLabel } from '../../config/logger'
 import { createReqMeta } from '../../utils/request'
 import { ControllerHandler } from '../core/core.types'
-import { insertAdminFeedback } from '../form/admin-form/admin-form.service'
 import { PrivateFormError } from '../form/form.errors'
 import * as FormService from '../form/form.service'
 import * as PublicFormService from '../form/public-form/public-form.service'
@@ -112,7 +111,7 @@ const valdiateSubmitAdminFormFeedbackParams = celebrate({
  * @security session
  *
  * @returns 200 if feedback was successfully saved
- * @returns 422 if user is not logged in
+ * @returns 422 when user of given id cannnot be found in the database
  * @returns 500 if database error occurs
  */
 const submitAdminFeedback: ControllerHandler<
@@ -128,7 +127,10 @@ const submitAdminFeedback: ControllerHandler<
       statsdClient.distribution('formsg.admin.feedback.rating', rating, 1, {
         rating: `${rating}`,
       })
-      return insertAdminFeedback({ userId: user.id, rating }).map(() =>
+      return FeedbackService.insertAdminFeedback({
+        userId: user.id,
+        rating,
+      }).map(() =>
         res
           .status(StatusCodes.OK)
           .json({ message: 'Successfully submitted admin feedback' }),

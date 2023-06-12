@@ -40,7 +40,9 @@ AdminFormsFormRouter.route('/feedback')
    * @security session
    *
    * @returns 200 if feedback was successfully saved
-   * @returns 422 if user is not logged in
+   * @returns 400 when Joi validation fails
+   * @returns 401 when user does not exist in session
+   * @returns 422 when user of given id cannnot be found in the database
    * @returns 500 if database error occurs
    */
   .post(FeedbackController.handleSubmitAdminFeedback)
