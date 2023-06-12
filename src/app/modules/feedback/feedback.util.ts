@@ -4,6 +4,7 @@ import { MapRouteError } from '../../../types'
 import { createLoggerWithLabel } from '../../config/logger'
 import { ApplicationError, DatabaseError } from '../core/core.errors'
 import * as FormErrors from '../form/form.errors'
+import { MissingUserError } from '../user/user.errors'
 
 import {
   DuplicateFeedbackSubmissionError,
@@ -40,6 +41,8 @@ export const mapRouteError: MapRouteError = (
         statusCode: StatusCodes.NOT_FOUND,
         errorMessage: error.message,
       }
+
+    case MissingUserError:
     case DuplicateFeedbackSubmissionError:
       return {
         statusCode: StatusCodes.UNPROCESSABLE_ENTITY,

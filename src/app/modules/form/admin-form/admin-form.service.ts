@@ -10,6 +10,8 @@ import mongoose, { ClientSession } from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import type { Except, Merge } from 'type-fest'
 
+import getAdminFeedbackModel from 'src/app/models/admin_feedback.server.model'
+
 import {
   MAX_UPLOAD_FILE_SIZE,
   VALID_UPLOAD_FILE_TYPES,
@@ -109,6 +111,7 @@ const logger = createLoggerWithLabel(module)
 const FormModel = getFormModel(mongoose)
 const EncryptedFormModel = getEncryptedFormModel(mongoose)
 const AgencyModel = getAgencyModel(mongoose)
+const AdminFeedbackModel = getAdminFeedbackModel(mongoose)
 
 export const secretsManager = new SecretsManager({
   region: config.aws.region,
@@ -1653,6 +1656,40 @@ export const setGoLinkSuffix = (formId: string, linkSuffix: string) => {
         error,
       })
       return transformMongoError(error)
+    },
+  )
+}
+
+/**
+ * Inserts given admin feedback to the database.
+ * @param userId the userId of the admin that provided the feedback
+ * @param rating the feedback rating to insert (0 for thumbs down, 1 for thumbs up)
+ * @returns ok(IAdminFeedbackSchema) if successfully inserted
+ * @returns err(DatabaseError) on database error
+ */
+export const insertAdminFeedback = ({
+  userId,
+  rating,
+}: {
+  userId: string
+  rating: number
+}) => {
+  return ResultAsync.fromPromise(
+    AdminFeedbackModel.create({
+      userId,
+      rating,
+    }),
+    (error) => {
+      logger.error({
+        message: 'Database error when creating admin feedback document',
+        meta: {
+          action: 'insertAdminFeedback',
+          userId,
+        },
+        error,
+      })
+
+      return new DatabaseError('Admin feedback could not be created')
     },
   )
 }

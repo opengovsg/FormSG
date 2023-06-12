@@ -1,5 +1,6 @@
 import { Router } from 'express'
 
+import * as FeedbackController from '../../../../../modules/feedback/feedback.controller'
 import * as AdminFormController from '../../../../../modules/form/admin-form/admin-form.controller'
 
 export const AdminFormsFormRouter = Router()
@@ -30,6 +31,19 @@ AdminFormsFormRouter.route('/')
    * @returns 500 when database error occurs
    */
   .post(AdminFormController.handleCreateForm)
+
+AdminFormsFormRouter.route('/feedback')
+  /**
+   * Submit an admin form creating feedback
+   * @precondition user should be logged in
+   * @precondition Joi validation should enforce shape of req.body before this handler is invoked.
+   * @security session
+   *
+   * @returns 200 if feedback was successfully saved
+   * @returns 422 if user is not logged in
+   * @returns 500 if database error occurs
+   */
+  .post(FeedbackController.handleSubmitAdminFeedback)
 
 AdminFormsFormRouter.route('/:formId([a-fA-F0-9]{24})')
   /**
