@@ -1,6 +1,6 @@
 import { FormDto } from './form'
 
-export type PreSubmitFormFeedbackBodyDto = {
+export type FormIssueFeedbackBodyDto = {
   isPreview?: boolean
   issue: string
   email?: string

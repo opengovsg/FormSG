@@ -10,11 +10,11 @@ import {
   StoryRouter,
 } from '~utils/storybook'
 
-import { FormPreSubmissionFeedbackModal } from './FormPreSubmissionFeedbackModal'
+import { FormIssueFeedbackModal } from './FormIssueFeedbackModal'
 
 export default {
   title: 'Features/PublicForm/PreSubmissionFeedbackModal',
-  component: FormPreSubmissionFeedbackModal,
+  component: FormIssueFeedbackModal,
   decorators: [
     fullScreenDecorator,
     LoggedInDecorator,
@@ -39,7 +39,7 @@ const Template: Story = () => {
   })
 
   return ReactDOM.createPortal(
-    <FormPreSubmissionFeedbackModal
+    <FormIssueFeedbackModal
       {...modalProps}
       onClose={() => console.log('close modal')}
     />,

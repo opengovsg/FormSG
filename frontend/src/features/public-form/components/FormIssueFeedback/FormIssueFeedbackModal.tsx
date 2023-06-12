@@ -17,8 +17,7 @@ import {
 import { isEmpty } from 'lodash'
 import isEmail from 'validator/lib/isEmail'
 
-import { BasicField } from '~shared/types'
-import { PreSubmitFormFeedbackBodyDto } from '~shared/types/form'
+import { BasicField, FormIssueFeedbackBodyDto } from '~shared/types'
 
 import { INVALID_EMAIL_ERROR, REQUIRED_ERROR } from '~constants/validation'
 import { useIsMobile } from '~hooks/useIsMobile'
@@ -30,13 +29,15 @@ import Input from '~components/Input'
 import { ModalCloseButton } from '~components/Modal'
 import Textarea from '~components/Textarea'
 
-export const FormPreSubmissionFeedbackModal = ({
+import { usePublicFormContext } from '~features/public-form/PublicFormContext'
+
+export const FormIssueFeedbackModal = ({
   isOpen,
   onClose,
 }: {
   isOpen: boolean
   onClose: () => void
-}): JSX.Element => {
+}): JSX.Element | null => {
   const modalSize = useBreakpointValue({
     base: 'mobile',
     xs: 'mobile',
@@ -44,18 +45,22 @@ export const FormPreSubmissionFeedbackModal = ({
   })
   const isMobile = useIsMobile()
   const toast = useToast({ status: 'success', isClosable: true })
+  const { form, isPreview } = usePublicFormContext()
 
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<PreSubmitFormFeedbackBodyDto>()
+  } = useForm<FormIssueFeedbackBodyDto>()
 
-  const { formId } = useParams()
-  if (!formId) throw new Error('No formId provided')
-
-  // const { mutationFn } = useMutation(submitPreSubmissionFeedback)
-  const handleSubmitForm = handleSubmit(() => {
+  const handleSubmitIssue = handleSubmit(() => {
+    if (isPreview) {
+      toast({
+        description:
+          'Thank you for submitting your feedback! Since you are in preview mode, the feedback is not stored.',
+      })
+      return
+    }
     toast({ description: 'Your feedback has been submitted.' })
     onClose()
   })
@@ -64,12 +69,14 @@ export const FormPreSubmissionFeedbackModal = ({
     onClose()
   }, [onClose])
 
+  if (!form) return null
+
   return (
     <Modal isOpen={isOpen} onClose={handleClose} size={modalSize}>
       <ModalOverlay />
       <ModalContent>
         <ModalCloseButton />
-        <chakra.form noValidate onSubmit={handleSubmitForm}>
+        <chakra.form noValidate onSubmit={handleSubmitIssue}>
           <ModalHeader
             pt="2rem"
             pb={{ base: '1.625rem', xs: '2rem' }}

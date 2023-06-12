@@ -1,6 +1,8 @@
 import { useParams } from 'react-router-dom'
 import { Flex } from '@chakra-ui/react'
 
+import FormIssueFeedback from '~/features/public-form/components/FormIssueFeedback'
+
 import { fillHeightCss } from '~utils/fillHeightCss'
 import GovtMasthead from '~components/GovtMasthead'
 
@@ -10,7 +12,6 @@ import { FormSectionsProvider } from '~features/public-form/components/FormField
 import { FormFooter } from '~features/public-form/components/FormFooter'
 import FormInstructions from '~features/public-form/components/FormInstructions'
 import { PublicFormLogo } from '~features/public-form/components/FormLogo'
-import FormPreSubmissionFeedback from '~features/public-form/components/FormPreSubmissionFeedback'
 import FormStartPage from '~features/public-form/components/FormStartPage'
 import { PublicFormWrapper } from '~features/public-form/components/PublicFormWrapper'
 
@@ -33,7 +34,7 @@ export const PreviewFormPage = (): JSX.Element => {
           <PublicFormWrapper>
             <FormInstructions />
             <FormFields />
-            <FormPreSubmissionFeedback />
+            <FormIssueFeedback />
             <FormEndPage />
             <FormFooter />
           </PublicFormWrapper>

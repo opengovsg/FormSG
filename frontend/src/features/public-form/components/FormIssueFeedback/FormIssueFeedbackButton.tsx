@@ -5,9 +5,9 @@ import { noPrintCss } from '~utils/noPrintCss'
 import IconButton from '~components/IconButton'
 import Tooltip from '~components/Tooltip'
 
-import { FormPreSubmissionFeedbackModal } from './FormPreSubmissionFeedbackModal'
+import { FormIssueFeedbackModal } from './FormIssueFeedbackModal'
 
-export const FormPreSubmissionFeedbackButton = (): JSX.Element => {
+export const FormIssueFeedbackButton = (): JSX.Element => {
   const { isOpen, onOpen, onClose } = useDisclosure()
 
   return (
@@ -23,12 +23,12 @@ export const FormPreSubmissionFeedbackButton = (): JSX.Element => {
           <IconButton
             variant="outline"
             as="a"
-            aria-label="presubmission feedback"
+            aria-label="issue feedback"
             icon={<BiMessage color="primary.500" />}
             onClick={onOpen}
           />
         </Tooltip>
-        <FormPreSubmissionFeedbackModal isOpen={isOpen} onClose={onClose} />
+        <FormIssueFeedbackModal isOpen={isOpen} onClose={onClose} />
       </Flex>
     </Portal>
   )
