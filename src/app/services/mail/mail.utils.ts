@@ -287,6 +287,6 @@ export const generatePaymentConfirmationHtml = ({
     </p>
     <p>Regards,
     <br />
-    <p>${appName} team</p>   
+    ${appName} team</p>   
   `
 }
