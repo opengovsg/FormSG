@@ -6,7 +6,7 @@ import { IUserSchema } from './user'
 
 export type IAdminFeedback = Merge<
   AdminFeedbackBase,
-  { adminId: IUserSchema['_id'] }
+  { userId: IUserSchema['_id'] }
 >
 export interface IAdminFeedbackSchema extends IAdminFeedback, Document {
   created?: Date
