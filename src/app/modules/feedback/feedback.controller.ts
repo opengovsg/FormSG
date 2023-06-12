@@ -175,13 +175,22 @@ const updateAdminFeedback: ControllerHandler<
   { rating?: number; comment?: string }
 > = async (req, res) => {
   const { feedbackId } = req.params
+  const sessionUserId = (req.session as AuthedSessionData).user._id
+
   const { rating, comment } = req.body
 
-  return FeedbackService.updateAdminFeedback({ feedbackId, comment, rating })
-    .map(() =>
-      res
-        .status(StatusCodes.OK)
-        .json({ message: 'Successfully updated admin feedback' }),
+  return UserService.getPopulatedUserById(sessionUserId)
+    .andThen((user) =>
+      FeedbackService.updateAdminFeedback({
+        feedbackId,
+        userId: user.id,
+        comment,
+        rating,
+      }).map(() =>
+        res
+          .status(StatusCodes.OK)
+          .json({ message: 'Successfully updated admin feedback' }),
+      ),
     )
     .mapErr((error) => {
       const { errorMessage, statusCode } = mapRouteError(error)

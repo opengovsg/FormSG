@@ -200,17 +200,21 @@ export const insertAdminFeedback = ({
  * Updates admin feedback in the database.
  * Will use previous value if comment or rating are not passed into method
  * @param feedbackId the id of the admin feedback to update
+ * @param userId the id of the admin
  * @param comment the feedback comment to insert
  * @param rating the feedback rating to insert (0 for thumbs down, 1 for thumbs up)
  * @returns ok(IAdminFeedbackSchema) if successfully inserted
+ * @returns err(MissingAdminFeedbackError) if feedback document with the same feedbackId and userId is not found
  * @returns err(DatabaseError) on database error
  */
 export const updateAdminFeedback = ({
   feedbackId,
+  userId,
   comment,
   rating,
 }: {
   feedbackId: string
+  userId: string
   comment?: string
   rating?: number
 }) => {
@@ -229,14 +233,15 @@ export const updateAdminFeedback = ({
       return new DatabaseError('Admin feedback could not be found')
     },
   ).andThen((adminFeedback) => {
-    if (!adminFeedback) return errAsync(new MissingAdminFeedbackError())
+    // Ensure that feedbackId and userId are the same as params
+    if (!adminFeedback || adminFeedback.userId.toString() !== userId)
+      return errAsync(new MissingAdminFeedbackError())
 
     return ResultAsync.fromPromise(
-      AdminFeedbackModel.updateAdminFeedback(
-        feedbackId,
-        comment ? comment : adminFeedback?.comment,
-        rating ? rating : adminFeedback?.rating,
-      ),
+      AdminFeedbackModel.findByIdAndUpdate(feedbackId, {
+        comment: comment ? comment : adminFeedback?.comment,
+        rating: rating === undefined ? adminFeedback?.rating : rating,
+      }),
       (error) => {
         logger.error({
           message: 'Database error when updating admin feedback document',
