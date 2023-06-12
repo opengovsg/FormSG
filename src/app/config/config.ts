@@ -12,6 +12,7 @@ import {
   DbConfig,
   Environment,
   MailConfig,
+  PublicApiConfig,
 } from '../../types'
 
 import {
@@ -205,6 +206,12 @@ const configureAws = async () => {
   }
 }
 
+const apiEnv = isDev ? 'test' : 'live'
+const publicApiConfig: PublicApiConfig = {
+  apiEnv,
+  apiKeyVersion: basicVars.publicApi.apiKeyVersion,
+}
+
 const config: Config = {
   app: basicVars.appConfig,
   db: dbConfig,
@@ -226,16 +233,12 @@ const config: Config = {
   isLoginBanner: basicVars.banner.isLoginBanner,
   siteBannerContent: basicVars.banner.siteBannerContent,
   adminBannerContent: basicVars.banner.adminBannerContent,
-  // TODO (#4279): Delete these when react migration is over. Revert back to original banner variables in react frontend.
-  isGeneralMaintenanceReact: basicVars.banner.isGeneralMaintenanceReact,
-  isLoginBannerReact: basicVars.banner.isLoginBannerReact,
-  siteBannerContentReact: basicVars.banner.siteBannerContentReact,
-  adminBannerContentReact: basicVars.banner.adminBannerContentReact,
   rateLimitConfig: basicVars.rateLimit,
   reactMigration: basicVars.reactMigration,
   configureAws,
   secretEnv: basicVars.core.secretEnv,
   envSiteName: basicVars.core.envSiteName,
+  publicApiConfig,
 }
 
 export = config

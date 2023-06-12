@@ -20,12 +20,8 @@ export const getClientEnvVars = (): ClientEnvVars => {
     isSPMaintenance: spcpMyInfoConfig.isSPMaintenance, // Singpass maintenance message
     isCPMaintenance: spcpMyInfoConfig.isCPMaintenance, // Corppass maintenance message
     myInfoBannerContent: spcpMyInfoConfig.myInfoBannerContent, // MyInfo maintenance message
-    // TODO: remove after React rollout #4786, #4279
+    // TODO: remove after React rollout #4786
     GATrackingID: googleAnalyticsConfig.GATrackingID,
-    isGeneralMaintenanceReact: config.isGeneralMaintenanceReact,
-    isLoginBannerReact: config.isLoginBannerReact,
-    siteBannerContentReact: config.siteBannerContentReact,
-    adminBannerContentReact: config.adminBannerContentReact,
 
     spcpCookieDomain: spcpMyInfoConfig.spcpCookieDomain, // Cookie domain used for removing spcp cookies
     stripePublishableKey: paymentConfig.stripePublishableKey,

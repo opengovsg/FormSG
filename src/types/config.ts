@@ -52,6 +52,12 @@ export type RateLimitConfig = {
   submissions: number
   sendAuthOtp: number
   downloadPaymentReceipt: number
+  publicApi: number
+}
+
+export type PublicApiConfig = {
+  apiEnv: string
+  apiKeyVersion: string
 }
 
 export type ReactMigrationConfig = {
@@ -81,17 +87,11 @@ export type Config = {
   isLoginBanner: string
   siteBannerContent: string
   adminBannerContent: string
-
-  // TODO (#4279): Delete these when react migration is over. Revert back to original banner variables in react frontend.
-  isGeneralMaintenanceReact: string
-  isLoginBannerReact: string
-  siteBannerContentReact: string
-  adminBannerContentReact: string
-
   rateLimitConfig: RateLimitConfig
   reactMigration: ReactMigrationConfig
   secretEnv: string
   envSiteName: string
+  publicApiConfig: PublicApiConfig
 
   // Functions
   configureAws: () => Promise<void>
@@ -147,11 +147,6 @@ export interface IOptionalVarsSchema {
     isLoginBanner: string
     siteBannerContent: string
     adminBannerContent: string
-    // TODO (#4279): Delete these when react migration is over. Revert back to original banner variables in react frontend.
-    isGeneralMaintenanceReact: string
-    isLoginBannerReact: string
-    siteBannerContentReact: string
-    adminBannerContentReact: string
   }
   awsConfig: {
     region: string
@@ -172,10 +167,14 @@ export interface IOptionalVarsSchema {
     submissions: number
     sendAuthOtp: number
     downloadPaymentReceipt: number
+    publicApi: number
   }
   reactMigration: {
     // TODO (#5826): Toggle to use fetch for submissions instead of axios. Remove once network error is resolved
     useFetchForSubmissions: boolean
+  }
+  publicApi: {
+    apiKeyVersion: string
   }
 }
 
