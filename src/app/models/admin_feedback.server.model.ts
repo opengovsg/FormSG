@@ -37,25 +37,6 @@ const AdminFeedbackSchema = new Schema<
   },
 )
 
-const compileAdminFeedbackModel = (db: Mongoose): IAdminFeedbackModel => {
-  AdminFeedbackSchema.statics.updateAdminFeedback = async function (
-    feedbackId: string,
-    comment?: string,
-    rating?: number,
-  ) {
-    return this.findByIdAndUpdate(feedbackId, {
-      comment: comment,
-      rating: rating,
-    })
-  }
-
-  return db.model<IAdminFeedbackSchema, IAdminFeedbackModel>(
-    ADMIN_FEEDBACK_SCHEMA_ID,
-    AdminFeedbackSchema,
-    ADMIN_FEEDBACK_COLLECTION_NAME,
-  )
-}
-
 /**
  * Admin Feedback Schema
  * @param db Active DB Connection
@@ -67,7 +48,11 @@ const getAdminFeedbackModel = (db: Mongoose): IAdminFeedbackModel => {
       ADMIN_FEEDBACK_SCHEMA_ID,
     )
   } catch {
-    return compileAdminFeedbackModel(db)
+    return db.model<IAdminFeedbackSchema, IAdminFeedbackModel>(
+      ADMIN_FEEDBACK_SCHEMA_ID,
+      AdminFeedbackSchema,
+      ADMIN_FEEDBACK_COLLECTION_NAME,
+    )
   }
 }
 

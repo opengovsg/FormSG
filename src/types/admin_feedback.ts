@@ -13,10 +13,4 @@ export interface IAdminFeedbackSchema extends IAdminFeedback, Document {
   lastModified?: Date
 }
 
-export interface IAdminFeedbackModel extends Model<IAdminFeedbackSchema> {
-  updateAdminFeedback(
-    feedbackId: string,
-    comment?: string,
-    rating?: number,
-  ): Promise<IAdminFeedbackSchema>
-}
+export type IAdminFeedbackModel = Model<IAdminFeedbackSchema>

@@ -63,34 +63,4 @@ describe('form_feedback.server.model', () => {
       )
     })
   })
-
-  describe('Statics', () => {
-    describe('updateAdminFeedback', () => {
-      it('should update admin feedback correctly', async () => {
-        // Create document
-        const actualDoc = await FeedbackModel.create({
-          userId: new ObjectId(),
-          rating: 1,
-          comment: 'feedback comment',
-        })
-        const newRating = 0
-        const newComment = 'new comment'
-
-        // Act
-        await FeedbackModel.updateAdminFeedback(
-          actualDoc.id,
-          newComment,
-          newRating,
-        )
-
-        const updatedFeedback = await FeedbackModel.findById(actualDoc.id)
-
-        // Assert
-        expect(updatedFeedback).toBeDefined()
-        expect(updatedFeedback?.rating).toEqual(newRating)
-        expect(updatedFeedback?.comment).toEqual(newComment)
-        expect(updatedFeedback?.id.toString()).toEqual(actualDoc.id.toString())
-      })
-    })
-  })
 })
