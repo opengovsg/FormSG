@@ -6,7 +6,10 @@ import {
   MyInfoSource,
 } from '@opengovsg/myinfo-gov-client'
 
-import { MyInfoAttribute as InternalAttr } from '../../../../shared/types'
+import {
+  MyInfoAttribute as InternalAttr,
+  MyInfoDataTransformer,
+} from '../../../../shared/types'
 
 import {
   formatAddress,
@@ -155,7 +158,9 @@ export const internalAttrListToScopes = (
  * extract the correct data by translating internal FormSG attributes
  * to the correct keys in the data.
  */
-export class MyInfoData {
+export class MyInfoData
+  implements MyInfoDataTransformer<ExternalAttr, InternalAttr>
+{
   #personData: IPerson
   #uinFin: string
 

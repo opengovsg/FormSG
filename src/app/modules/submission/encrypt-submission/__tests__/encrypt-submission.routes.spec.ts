@@ -330,7 +330,7 @@ describe('encrypt-submission.routes', () => {
         jest.resetAllMocks()
       })
       it('should return 200 when submission is valid', async () => {
-        MockSgidService.extractSgidJwtPayload.mockReturnValueOnce(
+        MockSgidService.extractSgidSingpassJwtPayload.mockReturnValueOnce(
           ok({
             userName: 'S1234567A',
           }),
@@ -359,7 +359,7 @@ describe('encrypt-submission.routes', () => {
       })
 
       it('should return 401 when submission does not have JWT', async () => {
-        MockSgidService.extractSgidJwtPayload.mockReturnValueOnce(
+        MockSgidService.extractSgidSingpassJwtPayload.mockReturnValueOnce(
           err(new SgidMissingJwtError()),
         )
         const { form } = await dbHandler.insertEncryptForm({
@@ -384,13 +384,13 @@ describe('encrypt-submission.routes', () => {
           spcpSubmissionFailure: true,
         })
         // Should be undefined, since there was no SGID cookie
-        expect(MockSgidService.extractSgidJwtPayload).toHaveBeenLastCalledWith(
-          undefined,
-        )
+        expect(
+          MockSgidService.extractSgidSingpassJwtPayload,
+        ).toHaveBeenLastCalledWith(undefined)
       })
 
       it('should return 401 when submission has the wrong JWT type', async () => {
-        MockSgidService.extractSgidJwtPayload.mockReturnValueOnce(
+        MockSgidService.extractSgidSingpassJwtPayload.mockReturnValueOnce(
           err(new SgidMissingJwtError()),
         )
         const { form } = await dbHandler.insertEncryptForm({
@@ -416,13 +416,13 @@ describe('encrypt-submission.routes', () => {
           spcpSubmissionFailure: true,
         })
         // Should be undefined, since there was no SGID cookie
-        expect(MockSgidService.extractSgidJwtPayload).toHaveBeenLastCalledWith(
-          undefined,
-        )
+        expect(
+          MockSgidService.extractSgidSingpassJwtPayload,
+        ).toHaveBeenLastCalledWith(undefined)
       })
 
       it('should return 401 when submission has invalid JWT', async () => {
-        MockSgidService.extractSgidJwtPayload.mockReturnValueOnce(
+        MockSgidService.extractSgidSingpassJwtPayload.mockReturnValueOnce(
           err(new SgidInvalidJwtError()),
         )
         const { form } = await dbHandler.insertEncryptForm({
@@ -449,7 +449,7 @@ describe('encrypt-submission.routes', () => {
       })
 
       it('should return 401 when submission has JWT with the wrong shape', async () => {
-        MockSgidService.extractSgidJwtPayload.mockReturnValueOnce(
+        MockSgidService.extractSgidSingpassJwtPayload.mockReturnValueOnce(
           err(new SgidInvalidJwtError()),
         )
         const { form } = await dbHandler.insertEncryptForm({

@@ -16,6 +16,7 @@ import { setFormTags } from '../datadog/datadog.utils'
 import * as FormService from '../form/form.service'
 import { MyInfoService } from '../myinfo/myinfo.service'
 import * as MyInfoUtil from '../myinfo/myinfo.util'
+import { SGID_COOKIE_NAME } from '../sgid/sgid.constants'
 import { SgidService } from '../sgid/sgid.service'
 import { getOidcService } from '../spcp/spcp.oidc.service'
 
@@ -264,7 +265,9 @@ export const _handleGenerateOtp: ControllerHandler<
               })
           }
           case FormAuthType.SGID:
-            return SgidService.extractSgidJwtPayload(req.cookies.jwtSgid)
+            return SgidService.extractSgidSingpassJwtPayload(
+              req.cookies[SGID_COOKIE_NAME],
+            )
               .map(() => form)
               .mapErr((error) => {
                 logger.error({
@@ -274,13 +277,16 @@ export const _handleGenerateOtp: ControllerHandler<
                 })
                 return error
               })
+          case FormAuthType.SGID_MyInfo:
           case FormAuthType.MyInfo:
-            return MyInfoUtil.extractMyInfoLoginJwt(req.cookies)
+            return MyInfoUtil.extractMyInfoLoginJwt(req.cookies, authType)
               .andThen(MyInfoService.verifyLoginJwt)
               .map(() => form)
               .mapErr((error) => {
                 logger.error({
-                  message: 'Failed to verify MyInfo hashes',
+                  message: `Failed to verify MyInfo${
+                    authType === FormAuthType.SGID_MyInfo ? '(over sgID)' : ''
+                  } hashes`,
                   meta: logMeta,
                   error,
                 })
