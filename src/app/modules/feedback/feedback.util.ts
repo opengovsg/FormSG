@@ -9,6 +9,7 @@ import { MissingUserError } from '../user/user.errors'
 import {
   DuplicateFeedbackSubmissionError,
   InvalidSubmissionIdError,
+  MissingAdminFeedbackError,
 } from './feedback.errors'
 
 const logger = createLoggerWithLabel(module)
@@ -36,6 +37,7 @@ export const mapRouteError: MapRouteError = (
         errorMessage:
           'This form has been made private, so feedback submissions are no longer accepted',
       }
+    case MissingAdminFeedbackError:
     case InvalidSubmissionIdError:
       return {
         statusCode: StatusCodes.NOT_FOUND,

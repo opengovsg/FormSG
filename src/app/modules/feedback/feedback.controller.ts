@@ -3,6 +3,8 @@ import { AuthedSessionData } from 'express-session'
 import { StatusCodes } from 'http-status-codes'
 import { ErrorDto, PrivateFormErrorDto } from 'shared/types'
 
+import { IAdminFeedbackSchema } from 'src/types'
+
 import { statsdClient } from '../../config/datadog-statsd-client'
 import { createLoggerWithLabel } from '../../config/logger'
 import { createReqMeta } from '../../utils/request'
@@ -98,7 +100,7 @@ export const handleSubmitFormFeedback = [
   submitFormFeedback,
 ] as ControllerHandler[]
 
-const valdiateSubmitAdminFormFeedbackParams = celebrate({
+const valdiateSubmitAdminFeedbackParams = celebrate({
   [Segments.BODY]: Joi.object().keys({
     rating: Joi.number().min(0).max(1).cast('string').required(),
   }),
@@ -116,7 +118,7 @@ const valdiateSubmitAdminFormFeedbackParams = celebrate({
  */
 const submitAdminFeedback: ControllerHandler<
   unknown,
-  { message: string } | ErrorDto,
+  { message: string; body: IAdminFeedbackSchema } | ErrorDto,
   { rating: number }
 > = async (req, res) => {
   const sessionUserId = (req.session as AuthedSessionData).user._id
@@ -130,18 +132,19 @@ const submitAdminFeedback: ControllerHandler<
       return FeedbackService.insertAdminFeedback({
         userId: user.id,
         rating,
-      }).map(() =>
-        res
-          .status(StatusCodes.OK)
-          .json({ message: 'Successfully submitted admin feedback' }),
+      }).map((adminFeedback) =>
+        res.status(StatusCodes.OK).json({
+          message: 'Successfully submitted admin feedback',
+          body: adminFeedback,
+        }),
       )
     })
     .mapErr((error) => {
       const { errorMessage, statusCode } = mapRouteError(error)
       logger.error({
-        message: 'Error while submitting form feedback',
+        message: 'Error while submitting admin feedback',
         meta: {
-          action: 'submitAdminFormFeedback',
+          action: 'submitAdminFeedback',
           ...createReqMeta(req),
           sessionUserId,
         },
@@ -153,6 +156,48 @@ const submitAdminFeedback: ControllerHandler<
 }
 
 export const handleSubmitAdminFeedback = [
-  valdiateSubmitAdminFormFeedbackParams,
+  valdiateSubmitAdminFeedbackParams,
   submitAdminFeedback,
+] as ControllerHandler[]
+
+const validateUpdateAdminFormFeedback = celebrate({
+  [Segments.BODY]: Joi.object().keys({
+    rating: Joi.number().min(0).max(1).cast('string'),
+    comment: Joi.string(),
+  }),
+})
+
+const updateAdminFeedback: ControllerHandler<
+  { feedbackId: string },
+  { message: string } | ErrorDto,
+  { rating?: number; comment?: string }
+> = async (req, res) => {
+  const { feedbackId } = req.params
+  const { rating, comment } = req.body
+
+  return FeedbackService.updateAdminFeedback({ feedbackId, comment, rating })
+    .map(() =>
+      res
+        .status(StatusCodes.OK)
+        .json({ message: 'Successfully updated admin feedback' }),
+    )
+    .mapErr((error) => {
+      const { errorMessage, statusCode } = mapRouteError(error)
+      logger.error({
+        message: 'Error while updating admin feedback',
+        meta: {
+          action: 'updateAdminFeedback',
+          ...createReqMeta(req),
+          feedbackId,
+        },
+        error,
+      })
+
+      return res.status(statusCode).json({ message: errorMessage })
+    })
+}
+
+export const handleUpdateAdminFeedback = [
+  validateUpdateAdminFormFeedback,
+  updateAdminFeedback,
 ] as ControllerHandler[]

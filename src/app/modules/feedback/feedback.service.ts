@@ -14,7 +14,10 @@ import getFormFeedbackModel from '../../models/form_feedback.server.model'
 import { getMongoErrorMessage } from '../../utils/handle-mongo-error'
 import { DatabaseError } from '../core/core.errors'
 
-import { DuplicateFeedbackSubmissionError } from './feedback.errors'
+import {
+  DuplicateFeedbackSubmissionError,
+  MissingAdminFeedbackError,
+} from './feedback.errors'
 
 const FormFeedbackModel = getFormFeedbackModel(mongoose)
 
@@ -187,4 +190,61 @@ export const insertAdminFeedback = ({
       return new DatabaseError('Admin feedback could not be created')
     },
   )
+}
+
+/**
+ * Updates admin feedback in the database.
+ * Will use previous value if comment or rating are not passed into method
+ * @param feedbackId the id of the admin feedback to update
+ * @param comment the feedback comment to insert
+ * @param rating the feedback rating to insert (0 for thumbs down, 1 for thumbs up)
+ * @returns ok(IAdminFeedbackSchema) if successfully inserted
+ * @returns err(DatabaseError) on database error
+ */
+export const updateAdminFeedback = ({
+  feedbackId,
+  comment,
+  rating,
+}: {
+  feedbackId: string
+  comment?: string
+  rating?: number
+}) => {
+  return ResultAsync.fromPromise(
+    AdminFeedbackModel.findById(feedbackId),
+    (error) => {
+      logger.error({
+        message: 'Database error when querying for  admin feedback document',
+        meta: {
+          action: 'updateAdminFeedback',
+          feedbackId,
+        },
+        error,
+      })
+
+      return new DatabaseError('Admin feedback could not be found')
+    },
+  ).andThen((adminFeedback) => {
+    if (!adminFeedback) return errAsync(new MissingAdminFeedbackError())
+
+    return ResultAsync.fromPromise(
+      AdminFeedbackModel.updateAdminFeedback(
+        feedbackId,
+        comment ? comment : adminFeedback?.comment,
+        rating ? rating : adminFeedback?.rating,
+      ),
+      (error) => {
+        logger.error({
+          message: 'Database error when updating admin feedback document',
+          meta: {
+            action: 'updateAdminFeedback',
+            feedbackId,
+          },
+          error,
+        })
+
+        return new DatabaseError('Admin feedback could not be updated')
+      },
+    )
+  })
 }

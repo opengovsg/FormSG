@@ -32,21 +32,6 @@ AdminFormsFormRouter.route('/')
    */
   .post(AdminFormController.handleCreateForm)
 
-AdminFormsFormRouter.route('/feedback')
-  /**
-   * Submit an admin form creating feedback
-   * @precondition user should be logged in
-   * @precondition Joi validation should enforce shape of req.body before this handler is invoked.
-   * @security session
-   *
-   * @returns 200 if feedback was successfully saved
-   * @returns 400 when Joi validation fails
-   * @returns 401 when user does not exist in session
-   * @returns 422 when user of given id cannnot be found in the database
-   * @returns 500 if database error occurs
-   */
-  .post(FeedbackController.handleSubmitAdminFeedback)
-
 AdminFormsFormRouter.route('/:formId([a-fA-F0-9]{24})')
   /**
    * Return the specified form to the user.
@@ -245,3 +230,33 @@ AdminFormsFormRouter.get(
   '/:formId([a-fA-F0-9]{24})/verified-sms/count/free',
   AdminFormController.handleGetFreeSmsCountForFormAdmin,
 )
+
+AdminFormsFormRouter.route('/feedback')
+  /**
+   * Submit an admin form creating feedback
+   * and returns the feedback document on success
+   * @precondition user should be logged in
+   * @precondition Joi validation should enforce shape of req.body before this handler is invoked.
+   * @security session
+   *
+   * @returns 200 if feedback was successfully saved
+   * @returns 400 when Joi validation fails
+   * @returns 401 when user does not exist in session
+   * @returns 422 when user of given id cannnot be found in the database
+   * @returns 500 if database error occurs
+   */
+  .post(FeedbackController.handleSubmitAdminFeedback)
+
+AdminFormsFormRouter.route('/feedback/:feedbackId([a-fA-F0-9]{24})')
+  /**
+   * Update an existing admin feedback
+   * @precondition Joi validation should enforce shape of req.body before this handler is invoked.
+   * @security session
+   *
+   * @returns 200 if feedback was successfully updated
+   * @returns 400 when Joi validation fails
+   * @returns 401 when user does not exist in session
+   * @returns 404 when admin feedback cannnot be found in the database
+   * @returns 500 if database error occurs
+   */
+  .patch(FeedbackController.handleUpdateAdminFeedback)
