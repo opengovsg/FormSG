@@ -1,6 +1,5 @@
 import { useCallback } from 'react'
 import { useForm } from 'react-hook-form'
-import { useParams } from 'react-router-dom'
 import {
   chakra,
   FormControl,
@@ -17,11 +16,7 @@ import {
 import { isEmpty } from 'lodash'
 import isEmail from 'validator/lib/isEmail'
 
-import {
-  BasicField,
-  FormIssueFeedbackBodyDto,
-  PublicFormDto,
-} from '~shared/types'
+import { BasicField, FormIssueFeedbackBodyDto } from '~shared/types'
 
 import { INVALID_EMAIL_ERROR, REQUIRED_ERROR } from '~constants/validation'
 import { useIsMobile } from '~hooks/useIsMobile'
