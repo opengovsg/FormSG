@@ -1,5 +1,3 @@
-import { useEffect } from 'react'
-import ReactDOM from 'react-dom'
 import { useDisclosure } from '@chakra-ui/react'
 import { Meta, Story } from '@storybook/react'
 
@@ -10,7 +8,10 @@ import {
   StoryRouter,
 } from '~utils/storybook'
 
-import { FormIssueFeedbackModal } from './FormIssueFeedbackModal'
+import {
+  FormIssueFeedbackModal,
+  FormIssueFeedbackProps,
+} from './FormIssueFeedbackModal'
 
 export default {
   title: 'Features/PublicForm/PreSubmissionFeedbackModal',
@@ -25,31 +26,39 @@ export default {
   },
 } as Meta
 
-const modalRoot = document.createElement('div')
-document.body.appendChild(modalRoot)
-
-const Template: Story = () => {
+const Template: Story<FormIssueFeedbackProps> = (args) => {
   const modalProps = useDisclosure({ defaultIsOpen: true })
-  const el = document.createElement('div')
-  useEffect(() => {
-    modalRoot.appendChild(el)
-    return () => {
-      modalRoot.removeChild(el)
-    }
-  })
 
-  return ReactDOM.createPortal(
+  return (
     <FormIssueFeedbackModal
+      {...args}
       {...modalProps}
       onClose={() => console.log('close modal')}
-    />,
-    el,
+    />
   )
 }
 
-export const Default = Template.bind({})
-
-export const Mobile = Template.bind({})
-Mobile.parameters = {
+export const PublicView = Template.bind({})
+PublicView.args = {
+  isPreview: false,
+}
+export const MobilePublicView = Template.bind({})
+MobilePublicView.parameters = {
   ...getMobileViewParameters(),
+}
+MobilePublicView.args = {
+  isPreview: false,
+}
+
+export const AdminPreview = Template.bind({})
+AdminPreview.args = {
+  isPreview: true,
+}
+
+export const MobileAdminPreView = Template.bind({})
+MobileAdminPreView.parameters = {
+  ...getMobileViewParameters(),
+}
+MobileAdminPreView.args = {
+  isPreview: true,
 }

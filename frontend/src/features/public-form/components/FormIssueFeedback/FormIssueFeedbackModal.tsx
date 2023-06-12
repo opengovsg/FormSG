@@ -17,7 +17,11 @@ import {
 import { isEmpty } from 'lodash'
 import isEmail from 'validator/lib/isEmail'
 
-import { BasicField, FormIssueFeedbackBodyDto } from '~shared/types'
+import {
+  BasicField,
+  FormIssueFeedbackBodyDto,
+  PublicFormDto,
+} from '~shared/types'
 
 import { INVALID_EMAIL_ERROR, REQUIRED_ERROR } from '~constants/validation'
 import { useIsMobile } from '~hooks/useIsMobile'
@@ -29,15 +33,16 @@ import Input from '~components/Input'
 import { ModalCloseButton } from '~components/Modal'
 import Textarea from '~components/Textarea'
 
-import { usePublicFormContext } from '~features/public-form/PublicFormContext'
-
+export interface FormIssueFeedbackProps {
+  isOpen: boolean
+  onClose: () => void
+  isPreview: boolean
+}
 export const FormIssueFeedbackModal = ({
   isOpen,
   onClose,
-}: {
-  isOpen: boolean
-  onClose: () => void
-}): JSX.Element | null => {
+  isPreview,
+}: FormIssueFeedbackProps): JSX.Element | null => {
   const modalSize = useBreakpointValue({
     base: 'mobile',
     xs: 'mobile',
@@ -45,7 +50,6 @@ export const FormIssueFeedbackModal = ({
   })
   const isMobile = useIsMobile()
   const toast = useToast({ status: 'success', isClosable: true })
-  const { form, isPreview } = usePublicFormContext()
 
   const {
     register,
@@ -68,8 +72,6 @@ export const FormIssueFeedbackModal = ({
   const handleClose = useCallback(() => {
     onClose()
   }, [onClose])
-
-  if (!form) return null
 
   return (
     <Modal isOpen={isOpen} onClose={handleClose} size={modalSize}>

@@ -5,10 +5,13 @@ import { noPrintCss } from '~utils/noPrintCss'
 import IconButton from '~components/IconButton'
 import Tooltip from '~components/Tooltip'
 
+import { usePublicFormContext } from '~features/public-form/PublicFormContext'
+
 import { FormIssueFeedbackModal } from './FormIssueFeedbackModal'
 
 export const FormIssueFeedbackButton = (): JSX.Element => {
   const { isOpen, onOpen, onClose } = useDisclosure()
+  const { isPreview } = usePublicFormContext()
 
   return (
     <Portal>
@@ -28,7 +31,11 @@ export const FormIssueFeedbackButton = (): JSX.Element => {
             onClick={onOpen}
           />
         </Tooltip>
-        <FormIssueFeedbackModal isOpen={isOpen} onClose={onClose} />
+        <FormIssueFeedbackModal
+          isOpen={isOpen}
+          onClose={onClose}
+          isPreview={isPreview}
+        />
       </Flex>
     </Portal>
   )
