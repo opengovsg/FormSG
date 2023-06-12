@@ -9,6 +9,7 @@ import {
 } from '../../../../shared/types'
 import { IFormFeedbackSchema } from '../../../types'
 import { createLoggerWithLabel } from '../../config/logger'
+import getAdminFeedbackModel from '../../models/admin_feedback.server.model'
 import getFormFeedbackModel from '../../models/form_feedback.server.model'
 import { getMongoErrorMessage } from '../../utils/handle-mongo-error'
 import { DatabaseError } from '../core/core.errors'
@@ -16,6 +17,8 @@ import { DatabaseError } from '../core/core.errors'
 import { DuplicateFeedbackSubmissionError } from './feedback.errors'
 
 const FormFeedbackModel = getFormFeedbackModel(mongoose)
+
+const AdminFeedbackModel = getAdminFeedbackModel(mongoose)
 const logger = createLoggerWithLabel(module)
 
 /**
@@ -151,3 +154,37 @@ export const hasNoPreviousFeedback = (
     }
     return okAsync(true as const)
   })
+
+/**
+ * Inserts given admin feedback to the database.
+ * @param userId the userId of the admin that provided the feedback
+ * @param rating the feedback rating to insert (0 for thumbs down, 1 for thumbs up)
+ * @returns ok(IAdminFeedbackSchema) if successfully inserted
+ * @returns err(DatabaseError) on database error
+ */
+export const insertAdminFeedback = ({
+  userId,
+  rating,
+}: {
+  userId: string
+  rating: number
+}) => {
+  return ResultAsync.fromPromise(
+    AdminFeedbackModel.create({
+      userId,
+      rating,
+    }),
+    (error) => {
+      logger.error({
+        message: 'Database error when creating admin feedback document',
+        meta: {
+          action: 'insertAdminFeedback',
+          userId,
+        },
+        error,
+      })
+
+      return new DatabaseError('Admin feedback could not be created')
+    },
+  )
+}
