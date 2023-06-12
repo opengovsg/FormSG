@@ -103,6 +103,7 @@ export const handleSubmitFormFeedback = [
 const valdiateSubmitAdminFeedbackParams = celebrate({
   [Segments.BODY]: Joi.object().keys({
     rating: Joi.number().min(0).max(1).cast('string').required(),
+    comment: Joi.string(),
   }),
 })
 
@@ -119,10 +120,10 @@ const valdiateSubmitAdminFeedbackParams = celebrate({
 const submitAdminFeedback: ControllerHandler<
   unknown,
   { message: string; body: IAdminFeedbackSchema } | ErrorDto,
-  { rating: number }
+  { rating: number; comment?: string }
 > = async (req, res) => {
   const sessionUserId = (req.session as AuthedSessionData).user._id
-  const { rating } = req.body
+  const { rating, comment } = req.body
 
   return UserService.getPopulatedUserById(sessionUserId)
     .andThen((user) => {
@@ -132,6 +133,7 @@ const submitAdminFeedback: ControllerHandler<
       return FeedbackService.insertAdminFeedback({
         userId: user.id,
         rating,
+        comment,
       }).map((adminFeedback) =>
         res.status(StatusCodes.OK).json({
           message: 'Successfully submitted admin feedback',

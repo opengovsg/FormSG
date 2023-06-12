@@ -162,20 +162,24 @@ export const hasNoPreviousFeedback = (
  * Inserts given admin feedback to the database.
  * @param userId the userId of the admin that provided the feedback
  * @param rating the feedback rating to insert (0 for thumbs down, 1 for thumbs up)
+ * @param comment the feedback comment to insert if available
  * @returns ok(IAdminFeedbackSchema) if successfully inserted
  * @returns err(DatabaseError) on database error
  */
 export const insertAdminFeedback = ({
   userId,
   rating,
+  comment,
 }: {
   userId: string
   rating: number
+  comment?: string
 }) => {
   return ResultAsync.fromPromise(
     AdminFeedbackModel.create({
       userId,
       rating,
+      comment,
     }),
     (error) => {
       logger.error({
