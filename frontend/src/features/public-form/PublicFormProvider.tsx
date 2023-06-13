@@ -297,10 +297,13 @@ export const PublicFormProvider = ({
             })
 
             return submitEmailModeFormFetchMutation
-              .mutateAsync({
-                ...formData,
-                formInputs: formInputsWithCountryRegionInUpperCase,
-              }, { onSuccess })
+              .mutateAsync(
+                {
+                  ...formData,
+                  formInputs: formInputsWithCountryRegionInUpperCase,
+                },
+                { onSuccess },
+              )
               .catch(async (error) => {
                 datadogLogs.logger.warn(`handleSubmitForm: ${error.message}`, {
                   meta: {
