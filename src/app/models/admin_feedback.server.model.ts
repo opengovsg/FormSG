@@ -4,8 +4,8 @@ import { IAdminFeedbackModel, IAdminFeedbackSchema } from '../../types'
 
 import { USER_SCHEMA_ID } from './user.server.model'
 
-export const ADMIN_FEEDBACK_SCHEMA_ID = 'AdminFeedback'
-export const ADMIN_FEEDBACK_COLLECTION_NAME = 'adminfeedback'
+// also acts as the model Id
+export const ADMIN_FEEDBACK_COLLECTION_NAME = 'adminFeedback'
 
 const AdminFeedbackSchema = new Schema<
   IAdminFeedbackSchema,
@@ -45,11 +45,11 @@ const AdminFeedbackSchema = new Schema<
 const getAdminFeedbackModel = (db: Mongoose): IAdminFeedbackModel => {
   try {
     return db.model<IAdminFeedbackSchema, IAdminFeedbackModel>(
-      ADMIN_FEEDBACK_SCHEMA_ID,
+      ADMIN_FEEDBACK_COLLECTION_NAME,
     )
   } catch {
     return db.model<IAdminFeedbackSchema, IAdminFeedbackModel>(
-      ADMIN_FEEDBACK_SCHEMA_ID,
+      ADMIN_FEEDBACK_COLLECTION_NAME,
       AdminFeedbackSchema,
       ADMIN_FEEDBACK_COLLECTION_NAME,
     )
