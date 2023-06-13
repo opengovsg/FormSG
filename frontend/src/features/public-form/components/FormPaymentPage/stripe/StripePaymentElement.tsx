@@ -10,15 +10,14 @@ import InlineMessage from '~components/InlineMessage'
 
 import { useEnv } from '~features/env/queries'
 
-import { CreatePaymentIntentFailureBlock } from '../components/CreatePaymentIntentFailureBlock'
-import { PaymentSuccessSvgr } from '../components/PaymentSuccessSvgr'
+import {
+  CreatePaymentIntentFailureBlock,
+  PaymentStack,
+  PaymentSuccessSvgr,
+} from '../components'
 import { useGetPaymentInfo } from '../queries'
 
-import {
-  GenericMessageBlock,
-  PaymentStack,
-  StripePaymentBlock,
-} from './components'
+import { GenericMessageBlock, StripePaymentBlock } from './components'
 import { useGetPaymentStatusFromStripe } from './queries'
 import { StripeReceiptContainer } from './StripeReceiptContainer'
 import { getPaymentViewStates, PaymentViewStates } from './utils'

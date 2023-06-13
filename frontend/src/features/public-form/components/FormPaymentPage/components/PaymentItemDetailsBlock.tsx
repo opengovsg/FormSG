@@ -1,8 +1,17 @@
+import {
+  Controller,
+  RegisterOptions,
+  useForm,
+  useFormContext,
+} from 'react-hook-form'
 import { Box, Text } from '@chakra-ui/react'
 
 import { FormColorTheme } from '~shared/types'
 
-import { centsToDollars } from '~utils/payments'
+import { centsToDollars, dollarsToCents } from '~utils/payments'
+import MoneyInput from '~components/MoneyInput'
+
+import { useEnv } from '~features/env/queries'
 
 export interface PaymentItemDetailsBlockProps {
   paymentItemName: string | undefined

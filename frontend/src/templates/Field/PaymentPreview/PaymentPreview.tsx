@@ -13,7 +13,10 @@ import { useSectionColor } from '~templates/Field/Section/SectionField'
 
 import { VerifiableFieldBuilderContainer } from '~features/admin-form/create/builder-and-design/BuilderAndDesignContent/FieldRow/VerifiableFieldBuilderContainer'
 import { getFieldCreationMeta } from '~features/admin-form/create/builder-and-design/utils/fieldCreation'
-import { PaymentItemDetailsBlock } from '~features/public-form/components/FormPaymentPage/stripe/components/PaymentItemDetailsBlock'
+import {
+  PaymentItemDetailsBlock,
+  VariablePaymentItemDetailsField,
+} from '~features/public-form/components/FormPaymentPage/components/PaymentItemDetailsBlock'
 import {
   VerifiableEmailField,
   VerifiableEmailFieldSchema,

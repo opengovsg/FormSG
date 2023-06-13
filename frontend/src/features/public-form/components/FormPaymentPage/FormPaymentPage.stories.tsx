@@ -14,13 +14,13 @@ import { StoryRouter } from '~utils/storybook'
 
 import { PublicFormProvider } from '~features/public-form/PublicFormProvider'
 
-import { CreatePaymentIntentFailureBlock } from './components/CreatePaymentIntentFailureBlock'
-import {
-  GenericMessageBlock as GenericMessageBlockComponent,
-  PaymentStack,
-} from './stripe/components'
-import { PaymentItemDetailsBlock } from './stripe/components/PaymentItemDetailsBlock'
+import { GenericMessageBlock as GenericMessageBlockComponent } from './stripe/components'
 import { StripeReceiptContainer } from './stripe/StripeReceiptContainer'
+import {
+  CreatePaymentIntentFailureBlock,
+  PaymentItemDetailsBlock,
+  PaymentStack,
+} from './components'
 import { FormPaymentPage } from './FormPaymentPage'
 
 const DEFAULT_MSW_HANDLERS = [

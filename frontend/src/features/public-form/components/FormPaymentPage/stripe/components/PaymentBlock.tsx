@@ -17,7 +17,7 @@ import Button from '~components/Button'
 
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
-import { PaymentItemDetailsBlock } from './PaymentItemDetailsBlock'
+import { PaymentItemDetailsBlock } from '../../components/PaymentItemDetailsBlock'
 
 interface PaymentPageBlockProps {
   submissionId: string
