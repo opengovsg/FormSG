@@ -119,7 +119,7 @@ const valdiateSubmitAdminFeedbackParams = celebrate({
  */
 const submitAdminFeedback: ControllerHandler<
   unknown,
-  { message: string; body: IAdminFeedbackSchema } | ErrorDto,
+  { message: string; feedback: IAdminFeedbackSchema } | ErrorDto,
   { rating: number; comment?: string }
 > = async (req, res) => {
   const sessionUserId = (req.session as AuthedSessionData).user._id
@@ -137,7 +137,7 @@ const submitAdminFeedback: ControllerHandler<
       }).map((adminFeedback) =>
         res.status(StatusCodes.OK).json({
           message: 'Successfully submitted admin feedback',
-          body: adminFeedback,
+          feedback: adminFeedback,
         }),
       )
     })
