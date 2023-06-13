@@ -13,9 +13,3 @@ export class DuplicateFeedbackSubmissionError extends ApplicationError {
     super(message)
   }
 }
-
-export class MissingAdminFeedbackError extends ApplicationError {
-  constructor(message = 'Admin feedback not found') {
-    super(message)
-  }
-}

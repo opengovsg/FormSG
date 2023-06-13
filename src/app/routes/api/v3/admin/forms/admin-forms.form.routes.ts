@@ -1,6 +1,6 @@
 import { Router } from 'express'
 
-import * as FeedbackController from '../../../../../modules/feedback/feedback.controller'
+import * as AdminFeedbackController from '../../../../../modules/admin-feedback/admin-feedback.controller'
 import * as AdminFormController from '../../../../../modules/form/admin-form/admin-form.controller'
 
 export const AdminFormsFormRouter = Router()
@@ -245,7 +245,7 @@ AdminFormsFormRouter.route('/feedback')
    * @returns 422 when user of given id cannnot be found in the database
    * @returns 500 if database error occurs
    */
-  .post(FeedbackController.handleSubmitAdminFeedback)
+  .post(AdminFeedbackController.handleSubmitAdminFeedback)
 
 AdminFormsFormRouter.route('/feedback/:feedbackId([a-fA-F0-9]{24})')
   /**
@@ -260,4 +260,4 @@ AdminFormsFormRouter.route('/feedback/:feedbackId([a-fA-F0-9]{24})')
    * @returns 422 when user of given id cannot be found in the database
    * @returns 500 if database error occurs
    */
-  .patch(FeedbackController.handleUpdateAdminFeedback)
+  .patch(AdminFeedbackController.handleUpdateAdminFeedback)

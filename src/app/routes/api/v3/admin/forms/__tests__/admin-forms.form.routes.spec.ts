@@ -2508,21 +2508,6 @@ describe('admin-form.form.routes', () => {
       expect(resp.body).toEqual({ message: 'User is unauthorized.' })
     })
 
-    it('should return 422 when user is not found in db', async () => {
-      // Arrange
-      // Delete user from db
-      await dbHandler.clearCollection(UserModel.collection.name)
-
-      // Act
-      const resp = await request
-        .post(`/admin/forms/feedback`)
-        .send({ rating: MOCK_RATING })
-
-      // Assert
-      expect(resp.status).toEqual(422)
-      expect(resp.body).toEqual({ message: 'User not found' })
-    })
-
     it('should return 500 when db error occurs', async () => {
       // Arrange
       // Mock db error during create
@@ -2630,7 +2615,7 @@ describe('admin-form.form.routes', () => {
       expect(resp.body.message).toEqual('Admin feedback not found')
     })
 
-    it('should return 404 when userId and feedbackId pair cannot be found in database', async () => {
+    it('should return 403 when userId and feedbackId pair cannot be found in database', async () => {
       // create new admin feedback with different userId from defaultuser
       const newFeedback = await AdminFeedbackModel.create({
         userId: new ObjectId().toHexString(),
@@ -2644,23 +2629,10 @@ describe('admin-form.form.routes', () => {
         .send({ rating: MOCK_NEW_RATING, comment: MOCK_NEW_COMMENT })
 
       // Assert
-      expect(resp.status).toEqual(404)
-      expect(resp.body.message).toEqual('Admin feedback not found')
-    })
-
-    it('should return 422 when user is not found in db', async () => {
-      // Arrange
-      // Delete user from db
-      await dbHandler.clearCollection(UserModel.collection.name)
-
-      // Act
-      const resp = await request
-        .patch(`/admin/forms/feedback/${MOCK_ADMIN_FEEDBACK.id.toString()}`)
-        .send({ comment: MOCK_NEW_COMMENT })
-
-      // Assert
-      expect(resp.status).toEqual(422)
-      expect(resp.body).toEqual({ message: 'User not found' })
+      expect(resp.status).toEqual(403)
+      expect(resp.body.message).toEqual(
+        'Admin feedback does not belong to user',
+      )
     })
 
     it('should return 500 when db error occurs', async () => {
