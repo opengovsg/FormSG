@@ -4,12 +4,10 @@ import { MapRouteError } from '../../../types'
 import { createLoggerWithLabel } from '../../config/logger'
 import { ApplicationError, DatabaseError } from '../core/core.errors'
 import * as FormErrors from '../form/form.errors'
-import { MissingUserError } from '../user/user.errors'
 
 import {
   DuplicateFeedbackSubmissionError,
   InvalidSubmissionIdError,
-  MissingAdminFeedbackError,
 } from './feedback.errors'
 
 const logger = createLoggerWithLabel(module)
@@ -37,14 +35,12 @@ export const mapRouteError: MapRouteError = (
         errorMessage:
           'This form has been made private, so feedback submissions are no longer accepted',
       }
-    case MissingAdminFeedbackError:
     case InvalidSubmissionIdError:
       return {
         statusCode: StatusCodes.NOT_FOUND,
         errorMessage: error.message,
       }
 
-    case MissingUserError:
     case DuplicateFeedbackSubmissionError:
       return {
         statusCode: StatusCodes.UNPROCESSABLE_ENTITY,
