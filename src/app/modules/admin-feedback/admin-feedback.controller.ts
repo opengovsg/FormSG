@@ -113,6 +113,7 @@ const updateAdminFeedback: ControllerHandler<
           action: 'updateAdminFeedback',
           ...createReqMeta(req),
           feedbackId,
+          sessionUserId,
         },
         error,
       })

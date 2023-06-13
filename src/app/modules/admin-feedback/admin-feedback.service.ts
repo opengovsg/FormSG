@@ -1,14 +1,12 @@
+import { isEmpty } from 'lodash'
 import mongoose from 'mongoose'
-import { errAsync, ResultAsync } from 'neverthrow'
+import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 
 import { createLoggerWithLabel } from '../../config/logger'
 import getAdminFeedbackModel from '../../models/admin_feedback.server.model'
 import { DatabaseError } from '../core/core.errors'
 
-import {
-  IncorrectUserIdToAdminFeedbackError,
-  MissingAdminFeedbackError,
-} from './admin-feedback.errors'
+import { MissingAdminFeedbackError } from './admin-feedback.errors'
 
 const AdminFeedbackModel = getAdminFeedbackModel(mongoose)
 const logger = createLoggerWithLabel(module)
@@ -73,45 +71,48 @@ export const updateAdminFeedback = ({
   comment?: string
   rating?: number
 }) => {
+  const updateObj = { rating, comment }
+
+  // filter out undefined properties
+  Object.keys(updateObj).forEach(
+    (key) =>
+      updateObj[key as keyof typeof updateObj] === undefined &&
+      delete updateObj[key as keyof typeof updateObj],
+  )
+
+  // if not update to be done, return ok
+  if (isEmpty(updateObj)) return okAsync(true)
+
   return ResultAsync.fromPromise(
-    AdminFeedbackModel.findById(feedbackId),
+    AdminFeedbackModel.updateOne(
+      { _id: feedbackId, userId: userId },
+      updateObj,
+    ),
     (error) => {
       logger.error({
-        message: 'Database error when querying for  admin feedback document',
+        message: 'Database error when creating admin feedback document',
         meta: {
           action: 'updateAdminFeedback',
           feedbackId,
+          userId,
         },
         error,
       })
 
-      return new DatabaseError('Admin feedback could not be found')
+      return new DatabaseError('Admin feedback could not be created')
     },
-  ).andThen((adminFeedback) => {
-    // Ensure that adminFeedback exists
-    if (!adminFeedback) return errAsync(new MissingAdminFeedbackError())
-
-    // Ensure that the feedback belongs to the specified user
-    if (adminFeedback.userId.toString() !== userId)
-      return errAsync(new IncorrectUserIdToAdminFeedbackError())
-
-    return ResultAsync.fromPromise(
-      AdminFeedbackModel.findByIdAndUpdate(feedbackId, {
-        comment: comment ? comment : adminFeedback?.comment,
-        rating: rating === undefined ? adminFeedback?.rating : rating,
-      }),
-      (error) => {
-        logger.error({
-          message: 'Database error when updating admin feedback document',
-          meta: {
-            action: 'updateAdminFeedback',
-            feedbackId,
-          },
-          error,
-        })
-
-        return new DatabaseError('Admin feedback could not be updated')
-      },
-    )
+  ).andThen((mongoResult) => {
+    if (!mongoResult.nModified) {
+      logger.error({
+        message: 'Unable to retrieve feedback document',
+        meta: {
+          action: 'updateAdminFeedback',
+          feedbackId,
+          userId,
+        },
+      })
+      return errAsync(new MissingAdminFeedbackError())
+    }
+    return okAsync(true)
   })
 }

@@ -5,9 +5,3 @@ export class MissingAdminFeedbackError extends ApplicationError {
     super(message)
   }
 }
-
-export class IncorrectUserIdToAdminFeedbackError extends ApplicationError {
-  constructor(message = 'Admin feedback does not belong to user') {
-    super(message)
-  }
-}

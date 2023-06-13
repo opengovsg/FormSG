@@ -4,10 +4,7 @@ import { MapRouteError } from '../../../types'
 import { createLoggerWithLabel } from '../../config/logger'
 import { ApplicationError, DatabaseError } from '../core/core.errors'
 
-import {
-  IncorrectUserIdToAdminFeedbackError,
-  MissingAdminFeedbackError,
-} from './admin-feedback.errors'
+import { MissingAdminFeedbackError } from './admin-feedback.errors'
 
 const logger = createLoggerWithLabel(module)
 
@@ -16,11 +13,6 @@ export const mapRouteError: MapRouteError = (
   coreErrorMessage = 'Sorry, something went wrong. Please refresh and try again.',
 ) => {
   switch (error.constructor) {
-    case IncorrectUserIdToAdminFeedbackError:
-      return {
-        statusCode: StatusCodes.FORBIDDEN,
-        errorMessage: error.message,
-      }
     case MissingAdminFeedbackError:
       return {
         statusCode: StatusCodes.NOT_FOUND,
