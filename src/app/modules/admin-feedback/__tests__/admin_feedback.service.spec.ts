@@ -6,10 +6,7 @@ import mongoose from 'mongoose'
 import getAdminFeedbackModel from 'src/app/models/admin_feedback.server.model'
 
 import { DatabaseError } from '../../core/core.errors'
-import {
-  IncorrectUserIdToAdminFeedbackError,
-  MissingAdminFeedbackError,
-} from '../admin-feedback.errors'
+import { MissingAdminFeedbackError } from '../admin-feedback.errors'
 import * as AdminFeedbackService from '../admin-feedback.service'
 
 const AdminFeedbackModel = getAdminFeedbackModel(mongoose)
@@ -187,6 +184,17 @@ describe('feedback.service', () => {
       expect(newFeedback?.rating).toEqual(expectedResult.rating)
     })
 
+    it('should return ok if there are no changes to be made', async () => {
+      // Act
+      const actualResult = await AdminFeedbackService.updateAdminFeedback({
+        feedbackId: MOCK_FEEDBACK_ID,
+        userId: MOCK_USER_ID,
+      })
+
+      // Assert
+      expect(actualResult.isOk()).toEqual(true)
+    })
+
     it('should return MissingAdminFeedbackError if feedbackId is invalid', async () => {
       // Act
       const actualResult = await AdminFeedbackService.updateAdminFeedback({
@@ -202,7 +210,7 @@ describe('feedback.service', () => {
       )
     })
 
-    it('should return IncorrectUserIdToAdminFeedbackError if userId is different', async () => {
+    it('should return MissingAdminFeedbackError if userId is different', async () => {
       // Act
       const actualResult = await AdminFeedbackService.updateAdminFeedback({
         feedbackId: MOCK_FEEDBACK_ID,
@@ -213,32 +221,14 @@ describe('feedback.service', () => {
       // Assert
       expect(actualResult.isErr()).toEqual(true)
       expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(
-        IncorrectUserIdToAdminFeedbackError,
+        MissingAdminFeedbackError,
       )
     })
 
-    it('should return DatabaseError if database error occurs in findById', async () => {
+    it('should return DatabaseError if database error occurs in updateOne', async () => {
       // Arrange
       jest
-        .spyOn(AdminFeedbackModel, 'findById')
-        .mockRejectedValueOnce(new DatabaseError())
-
-      // Act
-      const actualResult = await AdminFeedbackService.updateAdminFeedback({
-        feedbackId: MOCK_FEEDBACK_ID,
-        userId: MOCK_USER_ID,
-        comment: 'new comment',
-      })
-
-      // Assert
-      expect(actualResult.isErr()).toEqual(true)
-      expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(DatabaseError)
-    })
-
-    it('should return DatabaseError if database error occurs in findByIdAndUpdate', async () => {
-      // Arrange
-      jest
-        .spyOn(AdminFeedbackModel, 'findByIdAndUpdate')
+        .spyOn(AdminFeedbackModel, 'updateOne')
         .mockRejectedValueOnce(new DatabaseError())
 
       // Act

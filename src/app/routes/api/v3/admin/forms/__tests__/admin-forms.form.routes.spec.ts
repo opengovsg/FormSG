@@ -2615,7 +2615,7 @@ describe('admin-form.form.routes', () => {
       expect(resp.body.message).toEqual('Admin feedback not found')
     })
 
-    it('should return 403 when userId and feedbackId pair cannot be found in database', async () => {
+    it('should return 404 when userId and feedbackId pair cannot be found in database', async () => {
       // create new admin feedback with different userId from defaultuser
       const newFeedback = await AdminFeedbackModel.create({
         userId: new ObjectId().toHexString(),
@@ -2629,17 +2629,15 @@ describe('admin-form.form.routes', () => {
         .send({ rating: MOCK_NEW_RATING, comment: MOCK_NEW_COMMENT })
 
       // Assert
-      expect(resp.status).toEqual(403)
-      expect(resp.body.message).toEqual(
-        'Admin feedback does not belong to user',
-      )
+      expect(resp.status).toEqual(404)
+      expect(resp.body.message).toEqual('Admin feedback not found')
     })
 
     it('should return 500 when db error occurs', async () => {
       // Arrange
-      // Mock db error during findByIdAndUpdate
+      // Mock db error during updateOne
       jest
-        .spyOn(AdminFeedbackModel, 'findByIdAndUpdate')
+        .spyOn(AdminFeedbackModel, 'updateOne')
         .mockRejectedValueOnce(new DatabaseError() as unknown as never)
 
       // Act
