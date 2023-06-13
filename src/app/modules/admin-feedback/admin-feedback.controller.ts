@@ -17,7 +17,7 @@ const logger = createLoggerWithLabel(module)
 
 const valdiateSubmitAdminFeedbackParams = celebrate({
   [Segments.BODY]: Joi.object().keys({
-    rating: Joi.number().min(0).max(1).cast('string').required(),
+    rating: Joi.number().min(0).max(1).required(),
     comment: Joi.string(),
   }),
 })
@@ -79,7 +79,7 @@ export const handleSubmitAdminFeedback = [
 
 const validateUpdateAdminFormFeedback = celebrate({
   [Segments.BODY]: Joi.object().keys({
-    rating: Joi.number().min(0).max(1).cast('string'),
+    rating: Joi.number().min(0).max(1),
     comment: Joi.string(),
   }),
 })
