@@ -53,9 +53,9 @@ describe('form_feedback.server.model', () => {
 
     it('should throw validation error when rating param is missing', async () => {
       // Arrange
-      const paramsWithoutrating = omit(DEFAULT_PARAMS, 'rating')
+      const paramsWithoutRating = omit(DEFAULT_PARAMS, 'rating')
       // Act
-      const actualPromise = new FeedbackModel(paramsWithoutrating).save()
+      const actualPromise = new FeedbackModel(paramsWithoutRating).save()
 
       // Assert
       await expect(actualPromise).rejects.toThrow(
