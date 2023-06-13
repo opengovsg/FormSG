@@ -30,7 +30,9 @@ describe('required field', () => {
 
     const optionToType = SORTED_COUNTRY_OPTIONS[0]
     const submitButton = screen.getByRole('button', { name: /submit/i })
-    const input = screen.getByRole('textbox') as HTMLInputElement
+    const input = screen.getByPlaceholderText(
+      'Select an option',
+    ) as HTMLInputElement
     // Act
     await user.type(input, `${optionToType}{enter}`)
     await user.click(submitButton)
@@ -49,7 +51,9 @@ describe('required field', () => {
 
     const expectedOption = SORTED_COUNTRY_OPTIONS[1]
     const submitButton = screen.getByRole('button', { name: /submit/i })
-    const input = screen.getByRole('textbox') as HTMLInputElement
+    const input = screen.getByPlaceholderText(
+      'Select an option',
+    ) as HTMLInputElement
     // Act
     await user.click(input)
     // Arrow down twice and select input.
@@ -87,7 +91,9 @@ describe('optional field', () => {
 
     const expectedOption = 'Singapore'
     const submitButton = screen.getByRole('button', { name: /submit/i })
-    const input = screen.getByRole('textbox') as HTMLInputElement
+    const input = screen.getByPlaceholderText(
+      'Select an option',
+    ) as HTMLInputElement
     // Act
     await user.click(input)
     // Type the middle few characters of the option; dropdown should match properly,
@@ -110,9 +116,11 @@ describe('dropdown validation', () => {
     const user = userEvent.setup()
     render(<ValidationRequired />)
 
-    const dropdownOptions: string[] = SORTED_COUNTRY_OPTIONS
+    const dropdownOptions: string[] = SORTED_COUNTRY_OPTIONS as string[]
     const submitButton = screen.getByRole('button', { name: /submit/i })
-    const inputElement = screen.getByRole('textbox') as HTMLInputElement
+    const inputElement = screen.getByPlaceholderText(
+      'Select an option',
+    ) as HTMLInputElement
     const inputToType = 'this is not a valid option'
 
     expect(dropdownOptions.includes(inputToType)).toEqual(false)
