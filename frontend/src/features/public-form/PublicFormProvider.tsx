@@ -244,7 +244,7 @@ export const PublicFormProvider = ({
 
       const countryRegionFieldIds = new Set(
         form.form_fields
-          .filter((field) => field.fieldType == BasicField.CountryRegion)
+          .filter((field) => field.fieldType === BasicField.CountryRegion)
           .map((field) => field._id),
       )
       // We want users to see the country/region options in title-case but we also need the data in the backend to remain in upper-case.

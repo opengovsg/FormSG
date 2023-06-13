@@ -129,24 +129,9 @@ export const createBaseValidationRules = (
 export const createDropdownValidationRules: ValidationRuleFn<
   DropdownFieldBase
 > = (schema): RegisterOptions => {
-<<<<<<< HEAD
-  // TODO(#3360): Handle MyInfo dropdown validation
-  return {
-    validate: {
-      required: requiredSingleAnswerValidationFn(schema),
-      validOptions: (value: string) => {
-        if (!value) return
-        return (
-          schema.fieldOptions.includes(value) || INVALID_DROPDOWN_OPTION_ERROR
-        )
-      },
-    },
-  }
-=======
   return createDropdownValidationRulesWithCustomErrorMessage(
     INVALID_DROPDOWN_OPTION_ERROR,
   )(schema)
->>>>>>> 5f898e2c (feat: add CountryRegion field to frontend (#4112))
 }
 
 export const createCountryRegionValidationRules: ValidationRuleFn<
