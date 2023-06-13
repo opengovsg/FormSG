@@ -40,7 +40,6 @@ export const mapRouteError: MapRouteError = (
         statusCode: StatusCodes.NOT_FOUND,
         errorMessage: error.message,
       }
-
     case DuplicateFeedbackSubmissionError:
       return {
         statusCode: StatusCodes.UNPROCESSABLE_ENTITY,
