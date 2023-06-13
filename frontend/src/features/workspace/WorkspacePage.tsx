@@ -9,6 +9,7 @@ import { Banner } from '~components/Banner'
 
 import { useEnv } from '~features/env/queries'
 
+import { AdminFeedbackModal } from './components/AdminFeedbackModal/AdminFeedbackModal'
 // TODO #4279: Remove after React rollout is complete
 import CreateFormModal from './components/CreateFormModal'
 import { WorkspacePageContent } from './components/WorkspacePageContent'
@@ -31,6 +32,7 @@ export const WorkspacePage = (): JSX.Element => {
   )
 
   const createFormModalDisclosure = useDisclosure()
+  const adminFeedbackModalDisclosure = useDisclosure()
 
   return (
     <>
@@ -51,6 +53,10 @@ export const WorkspacePage = (): JSX.Element => {
           />
         </WorkspaceProvider>
       </Flex>
+      <AdminFeedbackModal
+        isOpen={true}
+        onClose={adminFeedbackModalDisclosure.onClose}
+      />
     </>
   )
 }
