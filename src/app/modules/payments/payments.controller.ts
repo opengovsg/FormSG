@@ -1,10 +1,15 @@
 import { StatusCodes } from 'http-status-codes'
 
 import { createLoggerWithLabel } from '../../config/logger'
+import { MailSendError } from '../../services/mail/mail.errors'
+import { InvalidDomainError } from '../auth/auth.errors'
 import { ControllerHandler } from '../core/core.types'
 
 import { PaymentNotFoundError } from './payments.errors'
-import { findLatestSuccessfulPaymentByEmailAndFormId } from './payments.service'
+import {
+  findLatestSuccessfulPaymentByEmailAndFormId,
+  sendOnboardingEmailIfEligible,
+} from './payments.service'
 
 const logger = createLoggerWithLabel(module)
 
@@ -65,4 +70,48 @@ export const handleGetPreviousPaymentId: ControllerHandler<
         return res.sendStatus(StatusCodes.INTERNAL_SERVER_ERROR)
       })
   )
+}
+
+export const handleSendOnboardingEmail: ControllerHandler<
+  unknown,
+  unknown,
+  { email: string }
+> = (req, res) => {
+  console.log('hellooooooo')
+  const { email } = req.body
+
+  const logMeta = {
+    action: 'handleSendOnboardingEmail',
+    email,
+  }
+
+  return sendOnboardingEmailIfEligible(email)
+    .map(() => res.sendStatus(StatusCodes.OK))
+    .mapErr((error) => {
+      if (error instanceof InvalidDomainError) {
+        logger.info({
+          message: 'Email domain is not whitelisted for onboarding email',
+          meta: logMeta,
+        })
+        // If email domain is not whitelisted, return 403
+        return res.sendStatus(StatusCodes.FORBIDDEN)
+      } else if (error instanceof MailSendError) {
+        // Mail send error
+        logger.error({
+          message: 'Error retrieving valid email domains',
+          meta: logMeta,
+          error,
+        })
+        // Error code 400 based on what is set in src/app/modules/submission/email-submission/email-submission.util.ts
+        return res.sendStatus(StatusCodes.BAD_REQUEST)
+      } else {
+        // Database error
+        logger.error({
+          message: 'Error retrieving valid email domains',
+          meta: logMeta,
+          error,
+        })
+        return res.sendStatus(StatusCodes.INTERNAL_SERVER_ERROR)
+      }
+    })
 }

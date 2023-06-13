@@ -48,6 +48,7 @@ import {
   generateBounceNotificationHtml,
   generateLoginOtpHtml,
   generatePaymentConfirmationHtml,
+  generatePaymentOnboardingHtml,
   generateSmsVerificationDisabledHtmlForAdmin,
   generateSmsVerificationDisabledHtmlForCollab,
   generateSmsVerificationWarningHtmlForAdmin,
@@ -788,7 +789,7 @@ export class MailService {
    * @param submissionId the response ID
    * @param formId the payment form ID
    * @param paymentId the payment ID
-   * @throws error if mail fails, to be handled by the caller
+   * @returns err(MailSendError) when there was an error in sending the mail
    */
   sendPaymentConfirmationEmail = ({
     email,
@@ -821,6 +822,28 @@ export class MailService {
       },
     }
     return this.#sendNodeMail(mail, { mailId: 'paymentConfirmation' })
+  }
+
+  /**
+   * Sends a payment confirmation to a valid email
+   * @param email the recipient email address
+   * @returns err(MailSendError) when there was an error in sending the mail
+   */
+  sendPaymentOnboardingEmail = ({
+    email,
+  }: {
+    email: string
+  }): ResultAsync<true, MailSendError> => {
+    const mail: MailOptions = {
+      to: email,
+      from: this.#senderFromString,
+      subject: `Getting started with FormSG Payments`,
+      html: generatePaymentOnboardingHtml(),
+      headers: {
+        [EMAIL_HEADERS.emailType]: EmailType.PaymentOnboarding,
+      },
+    }
+    return this.#sendNodeMail(mail, { mailId: 'paymentOnboarding' })
   }
 
   // Utility method to send a warning mail to the collaborators of a form.
