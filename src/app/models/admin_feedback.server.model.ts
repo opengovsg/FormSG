@@ -4,7 +4,7 @@ import { IAdminFeedbackModel, IAdminFeedbackSchema } from '../../types'
 
 import { USER_SCHEMA_ID } from './user.server.model'
 
-// also acts as the model Id
+// alias of model Id
 export const ADMIN_FEEDBACK_COLLECTION_NAME = 'adminFeedback'
 
 const AdminFeedbackSchema = new Schema<
