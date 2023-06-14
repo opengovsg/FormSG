@@ -278,7 +278,7 @@ export const LandingPaymentsPage = (): JSX.Element => {
       </FeatureSection>
       {/* TODO after migration to design system: set bg to color.brand.primary.900 */}
       <LandingSection bg="#1D2A5E">
-        <Grid templateColumns="repeat(2, 1fr)">
+        <Grid templateColumns={isMobile ? undefined : 'repeat(2, 1fr)'}>
           <GridItem alignSelf="center">
             <Text textStyle="h5" color="primary.100" mr="2rem">
               Receive our guide to get started on payments
