@@ -1,26 +1,22 @@
-import {
-  Controller,
-  RegisterOptions,
-  useForm,
-  useFormContext,
-} from 'react-hook-form'
 import { Box, Text } from '@chakra-ui/react'
 
 import { FormColorTheme } from '~shared/types'
 
-import { centsToDollars, dollarsToCents } from '~utils/payments'
-import MoneyInput from '~components/MoneyInput'
+import { centsToDollars } from '~utils/payments'
 
-import { useEnv } from '~features/env/queries'
+import PaymentItemNameDescription, {
+  PaymentItemNameDescriptionProps,
+} from './PaymentItemNameDescription'
 
-export interface PaymentItemDetailsBlockProps {
-  paymentItemName: string | undefined
+export interface PaymentItemDetailsBlockProps
+  extends PaymentItemNameDescriptionProps {
   colorTheme: FormColorTheme
   paymentAmount: number | undefined
 }
 
 export const PaymentItemDetailsBlock = ({
   paymentItemName,
+  paymentDescription,
   colorTheme,
   paymentAmount,
 }: PaymentItemDetailsBlockProps): JSX.Element => {
@@ -32,9 +28,10 @@ export const PaymentItemDetailsBlock = ({
       borderRadius="4px"
       p="0.7rem"
     >
-      <Text textStyle="body-1" mb="0.75rem">
-        {paymentItemName}
-      </Text>
+      <PaymentItemNameDescription
+        paymentDescription={paymentDescription}
+        paymentItemName={paymentItemName}
+      />
       <Box as="h2" textStyle="h2">
         S${centsToDollars(paymentAmount ?? 0)}
       </Box>

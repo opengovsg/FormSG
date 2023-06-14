@@ -27,8 +27,8 @@ import Toggle from '~components/Toggle'
 
 import { useMutateFormPage } from '~features/admin-form/common/mutations'
 import { useAdminForm } from '~features/admin-form/common/queries'
+import { usePaymentFieldValidation } from '~features/public-form/components/FormPaymentPage/queries'
 
-import { useEnv } from '../../../../../../env/queries'
 import {
   CreatePageDrawerContentContainer,
   useCreatePageSidebar,
@@ -49,13 +49,6 @@ import {
   usePaymentStore,
 } from './usePaymentStore'
 
-const formatCurrency = new Intl.NumberFormat('en-SG', {
-  style: 'currency',
-  currency: 'SGD',
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2,
-}).format
-
 type FormPaymentsInput = {
   enabled: boolean
   description: string
@@ -64,9 +57,6 @@ type FormPaymentsInput = {
 
 export const PaymentInput = ({ isDisabled }: { isDisabled: boolean }) => {
   const { paymentsMutation } = useMutateFormPage()
-
-  const { data: { maxPaymentAmountCents, minPaymentAmountCents } = {} } =
-    useEnv()
 
   const setIsDirty = useDirtyFieldStore(setIsDirtySelector)
 
@@ -134,39 +124,7 @@ export const PaymentInput = ({ isDisabled }: { isDisabled: boolean }) => {
   const paymentIsEnabled = clonedWatchedInputs.enabled
 
   const amountValidation: RegisterOptions<FormPaymentsInput, 'display_amount'> =
-    {
-      validate: (val) => {
-        if (!paymentIsEnabled) return true
-
-        // Validate that it is a money value.
-        // Regex allows leading and trailing spaces, max 2dp
-        const validateMoney = /^\s*(\d+)(\.\d{0,2})?\s*$/.test(val ?? '')
-        if (!validateMoney) return 'Please enter a valid payment amount'
-
-        const validateMin =
-          !!minPaymentAmountCents &&
-          !!val &&
-          dollarsToCents(val) >= minPaymentAmountCents
-        // Repeat the check on minPaymentAmountCents for correct typing
-        if (!!minPaymentAmountCents && !validateMin) {
-          return `Please enter a payment amount above ${formatCurrency(
-            Number(centsToDollars(minPaymentAmountCents)),
-          )}`
-        }
-
-        const validateMax =
-          !!maxPaymentAmountCents &&
-          !!val &&
-          dollarsToCents(val) <= maxPaymentAmountCents
-        // Repeat the check on maxPaymentAmountCents for correct typing
-        if (!!maxPaymentAmountCents && !validateMax) {
-          return `Please enter a payment amount below ${formatCurrency(
-            Number(centsToDollars(maxPaymentAmountCents)),
-          )}`
-        }
-        return true
-      },
-    }
+    usePaymentFieldValidation<FormPaymentsInput, 'display_amount'>()
 
   const handleUpdatePayments = handleSubmit(() => {
     if (isDisabled || !paymentsData) {
