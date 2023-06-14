@@ -51,7 +51,7 @@ export const insertAdminFeedback = ({
 
 /**
  * Updates admin feedback in the database.
- * Will use previous value if comment or rating are not passed into method
+ * Will not update previous value if comment or rating is undefined
  * @param feedbackId the id of the admin feedback to update
  * @param userId the id of the admin
  * @param comment the feedback comment to insert
@@ -80,7 +80,7 @@ export const updateAdminFeedback = ({
       delete updateObj[key as keyof typeof updateObj],
   )
 
-  // if not update to be done, return ok
+  // if no update to be done, return ok
   if (isEmpty(updateObj)) return okAsync(true)
 
   return ResultAsync.fromPromise(

@@ -242,7 +242,6 @@ AdminFormsFormRouter.route('/feedback')
    * @returns 200 if feedback was successfully saved
    * @returns 400 when Joi validation fails
    * @returns 401 when user does not exist in session
-   * @returns 422 when user of given id cannnot be found in the database
    * @returns 500 if database error occurs
    */
   .post(AdminFeedbackController.handleSubmitAdminFeedback)
@@ -257,7 +256,6 @@ AdminFormsFormRouter.route('/feedback/:feedbackId([a-fA-F0-9]{24})')
    * @returns 400 when Joi validation fails
    * @returns 401 when user does not exist in session
    * @returns 404 when admin feedback cannnot be found in the database
-   * @returns 422 when user of given id cannot be found in the database
    * @returns 500 if database error occurs
    */
   .patch(AdminFeedbackController.handleUpdateAdminFeedback)
