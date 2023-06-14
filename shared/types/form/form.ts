@@ -12,7 +12,7 @@ import {
 } from '../../constants/form'
 import { DateString } from '../generic'
 import { FormLogic, LogicDto } from './form_logic'
-import { PaymentChannel } from '../payment'
+import { PaymentChannel, PaymentType } from '../payment'
 
 export type FormId = Opaque<string, 'FormId'>
 
@@ -80,6 +80,8 @@ export type FormPaymentsField = {
   enabled: boolean
   amount_cents?: number
   description?: string
+  name?: string
+  paymentType?: PaymentType
 }
 
 export type FormBusinessField = {

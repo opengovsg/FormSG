@@ -40,6 +40,7 @@ import {
   LogicDto,
   LogicType,
   PaymentChannel,
+  PaymentType,
   StorageFormSettings,
 } from '../../../shared/types'
 import { reorder } from '../../../shared/utils/immutable-array-fns'
@@ -162,6 +163,11 @@ const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
       trim: true,
       default: '',
     },
+    name: {
+      type: String,
+      trim: true,
+      default: '',
+    },
     amount_cents: {
       type: Number,
       default: 0,
@@ -171,6 +177,11 @@ const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
         },
         message: 'amount_cents must be a non-negative integer.',
       },
+    },
+    paymentType: {
+      type: String,
+      enum: Object.values(PaymentType),
+      default: PaymentType.Fixed,
     },
   },
 

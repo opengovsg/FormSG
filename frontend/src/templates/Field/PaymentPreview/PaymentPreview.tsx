@@ -6,6 +6,7 @@ import {
   EmailFieldBase,
   FormColorTheme,
   FormPaymentsField,
+  PaymentType,
 } from '~shared/types'
 
 import { EmailFieldInput } from '~templates/Field/Email'
@@ -16,7 +17,7 @@ import { getFieldCreationMeta } from '~features/admin-form/create/builder-and-de
 import {
   PaymentItemDetailsBlock,
   VariablePaymentItemDetailsField,
-} from '~features/public-form/components/FormPaymentPage/components/PaymentItemDetailsBlock'
+} from '~features/public-form/components/FormPaymentPage/components'
 import {
   VerifiableEmailField,
   VerifiableEmailFieldSchema,
@@ -48,11 +49,21 @@ export const PaymentPreview = ({
         Payment
       </Box>
       <Box mb="2rem">
-        <PaymentItemDetailsBlock
-          paymentItemName={paymentDetails.description}
-          colorTheme={colorTheme}
-          paymentAmount={paymentDetails.amount_cents}
-        />
+        {paymentDetails.paymentType === PaymentType.Variable ? (
+          <VariablePaymentItemDetailsField
+            paymentItemName={paymentDetails.description}
+            colorTheme={colorTheme}
+            paymentAmount={paymentDetails.amount_cents}
+            paymentDescription={paymentDetails.description}
+          />
+        ) : (
+          <PaymentItemDetailsBlock
+            paymentItemName={paymentDetails.description}
+            colorTheme={colorTheme}
+            paymentAmount={paymentDetails.amount_cents}
+            paymentDescription={paymentDetails.description}
+          />
+        )}
       </Box>
       {isBuilder ? (
         <VerifiableFieldBuilderContainer schema={emailFieldSchema}>

@@ -27,6 +27,7 @@ interface PaymentPageBlockProps {
   paymentAmount?: number
   // null here due to payment_intent.description from stripe
   paymentItemName?: string | null
+  paymentDescription?: string | null
 }
 
 interface StripeCheckoutFormProps {
@@ -164,10 +165,9 @@ export const StripePaymentBlock = ({
           </Text>
           <PaymentItemDetailsBlock
             paymentItemName={
-              paymentItemName
-                ? paymentItemName
-                : form.payments_field.description
+              paymentItemName ? paymentItemName : form.payments_field.name
             }
+            paymentDescription={form.payments_field.description}
             colorTheme={colorTheme}
             paymentAmount={
               paymentAmount ? paymentAmount : form.payments_field.amount_cents
