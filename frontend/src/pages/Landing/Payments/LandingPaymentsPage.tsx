@@ -1,7 +1,11 @@
+import { useCallback, useState } from 'react'
+import { FormProvider, useForm } from 'react-hook-form'
 import {
   Accordion,
   Box,
   Flex,
+  FormControl,
+  FormHelperText,
   Icon,
   Image,
   SimpleGrid,
@@ -9,16 +13,27 @@ import {
   Text,
 } from '@chakra-ui/react'
 
+import { BasicField, EmailFieldBase } from '~shared/types'
+
 import { AppFooter } from '~/app/AppFooter'
 import { AppPublicHeader } from '~/app/AppPublicHeader'
 import FormBrandLogo from '~/assets/svgs/brand/brand-mark-colour.svg'
 
+import { BxsCheckCircle } from '~assets/icons'
 import { BxsHelpCircle } from '~assets/icons/BxsHelpCircle'
 import { GUIDE_PAYMENTS_PUBLIC } from '~constants/links'
 import { useIsMobile } from '~hooks/useIsMobile'
 import { useMdComponents } from '~hooks/useMdComponents'
 import Button from '~components/Button'
 import { MarkdownText } from '~components/MarkdownText'
+import {
+  EmailField,
+  EmailFieldSchema,
+  FormFieldValues,
+  VerifiableFieldValues,
+} from '~templates/Field'
+
+import { getFieldCreationMeta } from '~features/admin-form/create/builder-and-design/utils/fieldCreation'
 
 import { FeatureGridItem } from '../components/FeatureGridItem'
 import { FeatureLink } from '../components/FeatureLink'
@@ -36,10 +51,62 @@ import featureMethodsImg from './assets/images/icon_pay_methods.svg'
 import featureReconImg from './assets/images/icon_pay_recon.svg'
 import featureSelfServiceImg from './assets/images/icon_pay_self-service.svg'
 import featureTrustedImg from './assets/images/icon_pay_trusted.svg'
+import { useMutatePaymentsOnboarding } from './mutations'
+
+type onboardingHelperTextType = {
+  icon: JSX.Element
+  text: string
+}
+
+const onboardingSuccessHelperText: onboardingHelperTextType = {
+  icon: <BxsCheckCircle />,
+  text: 'An email has been sent to this email address.',
+}
 
 export const LandingPaymentsPage = (): JSX.Element => {
   const isMobile = useIsMobile()
   const mdComponents = useMdComponents()
+  const fieldId = 'PAYMENT_ONBOARDING_EMAIL_FIELD_ID'
+  const emailFieldSchema: EmailFieldSchema = {
+    ...(getFieldCreationMeta(BasicField.Email) as EmailFieldBase),
+    title: '',
+    _id: fieldId,
+  }
+
+  const formMethods = useForm<FormFieldValues>({
+    mode: 'onChange',
+  })
+
+  const { sendOnboardingEmailMutation } = useMutatePaymentsOnboarding()
+
+  const [onboardingHelperText, setOnboardingHelperText] = useState<
+    onboardingHelperTextType | undefined
+  >()
+
+  const mainSectionTextColour = 'white'
+
+  const handleSubmit = useCallback(async () => {
+    const fieldValue = formMethods.getValues(fieldId) as VerifiableFieldValues
+    try {
+      await sendOnboardingEmailMutation.mutateAsync({
+        email: fieldValue.value,
+      })
+      formMethods.clearErrors(fieldId)
+      setOnboardingHelperText(onboardingSuccessHelperText)
+    } catch (error) {
+      if (error instanceof Error) {
+        if (error.message === 'Forbidden') {
+          formMethods.setError(fieldId, {
+            message: 'Please use an email whitelisted on FormSG.',
+          })
+        } else {
+          formMethods.setError(fieldId, {
+            message: 'Something went wrong. Please try again later.',
+          })
+        }
+      }
+    }
+  }, [sendOnboardingEmailMutation, formMethods])
 
   return (
     <>
@@ -47,7 +114,6 @@ export const LandingPaymentsPage = (): JSX.Element => {
       <LandingSection bg="primary.500" pt={{ base: '2rem', md: 0 }} px="0">
         <Stack
           direction={{ base: 'column', lg: 'row' }}
-          align="center"
           spacing={{ base: '1.5rem', md: '3.125rem', lg: '7.5rem' }}
           pl={{ base: '1.5rem', md: '5.5rem', lg: '9.25rem' }}
         >
@@ -55,28 +121,57 @@ export const LandingPaymentsPage = (): JSX.Element => {
             flexDir="column"
             flex={1}
             pr={{ base: '1.5rem', md: '5.5rem', lg: '0' }}
+            mt={isMobile ? undefined : '2rem'}
           >
             <Text
               as="h1"
               textStyle={{ base: 'display-1-mobile', md: 'display-1' }}
-              color="white"
+              color={mainSectionTextColour}
             >
               Collect payments on your form
             </Text>
-            <SectionBodyText color="white">
+            <SectionBodyText color={mainSectionTextColour}>
               Citizens can now pay for fees and services directly on your form.
+              Enter your agency email to receive our guide on how to get started
+              with payments.
             </SectionBodyText>
-            <Box mt="2.5rem">
-              <Button
-                variant="reverse"
-                isFullWidth={isMobile}
-                as="a"
-                href={GUIDE_PAYMENTS_PUBLIC}
-                target="_blank"
-              >
-                Learn more about payments
-              </Button>
-            </Box>
+            <FormProvider {...formMethods}>
+              <Flex alignItems="start" mt="2rem">
+                <EmailField
+                  schema={emailFieldSchema}
+                  errorVariant="white"
+                  inputProps={{
+                    isSuccess: sendOnboardingEmailMutation.isSuccess,
+                    isDisabled:
+                      sendOnboardingEmailMutation.isLoading ||
+                      sendOnboardingEmailMutation.isSuccess,
+                  }}
+                />
+                <Button
+                  variant="reverse"
+                  mt="0.75rem"
+                  ml="0.5rem"
+                  onClick={handleSubmit}
+                  onSubmit={handleSubmit}
+                  isDisabled={
+                    !formMethods.formState.isValid ||
+                    sendOnboardingEmailMutation.isSuccess
+                  }
+                >
+                  Submit
+                </Button>
+              </Flex>
+              {onboardingHelperText && (
+                <FormControl>
+                  <FormHelperText color={mainSectionTextColour}>
+                    <Stack direction="row" align="center">
+                      <Box>{onboardingHelperText.icon}</Box>
+                      <Text>{onboardingHelperText.text}</Text>
+                    </Stack>
+                  </FormHelperText>
+                </FormControl>
+              )}
+            </FormProvider>
           </Flex>
           <Flex flex={1} aria-hidden>
             <Image src={paymentsImg} aria-hidden />

@@ -77,7 +77,6 @@ export const handleSendOnboardingEmail: ControllerHandler<
   unknown,
   { email: string }
 > = (req, res) => {
-  console.log('hellooooooo')
   const { email } = req.body
 
   const logMeta = {

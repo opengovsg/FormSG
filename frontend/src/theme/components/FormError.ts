@@ -17,4 +17,14 @@ export const FormError: ComponentMultiStyleConfig<typeof parts> = {
       fontSize: '1rem',
     },
   },
+  variants: {
+    white: {
+      text: {
+        color: 'white',
+      },
+      icon: {
+        color: 'white',
+      },
+    },
+  },
 }
