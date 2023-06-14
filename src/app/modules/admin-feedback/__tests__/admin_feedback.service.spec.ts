@@ -185,6 +185,9 @@ describe('feedback.service', () => {
     })
 
     it('should return ok if there are no changes to be made', async () => {
+      // Arrange
+      const updateSpy = jest.spyOn(AdminFeedbackModel, 'updateOne')
+
       // Act
       const actualResult = await AdminFeedbackService.updateAdminFeedback({
         feedbackId: MOCK_FEEDBACK_ID,
@@ -193,6 +196,7 @@ describe('feedback.service', () => {
 
       // Assert
       expect(actualResult.isOk()).toEqual(true)
+      expect(updateSpy).toHaveBeenCalledTimes(0)
     })
 
     it('should return MissingAdminFeedbackError if feedbackId is invalid', async () => {
