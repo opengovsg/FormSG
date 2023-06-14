@@ -4,7 +4,9 @@ import { Flex, useDisclosure } from '@chakra-ui/react'
 import { AdminNavBar } from '~/app/AdminNavBar'
 
 import { ADMIN_FEEDBACK_HISTORY_PREFIX } from '~constants/localStorage'
+import { ADMIN_FEEDBACK_SESSION_KEY } from '~constants/sessionStorage'
 import { useLocalStorage } from '~hooks/useLocalStorage'
+import { useSessionStorage } from '~hooks/useSessionStorage'
 import { fillHeightCss } from '~utils/fillHeightCss'
 import { getBannerProps } from '~utils/getBannerProps'
 import { Banner } from '~components/Banner'
@@ -24,6 +26,10 @@ export const WorkspacePage = (): JSX.Element => {
   const [lastFeedbackTime, setLastFeedbackTime] = useLocalStorage<number>(
     ADMIN_FEEDBACK_HISTORY_PREFIX,
   )
+  const [isAdminFeedbackEligible] = useSessionStorage<boolean>(
+    ADMIN_FEEDBACK_SESSION_KEY,
+    false,
+  )
   const currentTime = useMemo(() => Date.now(), [])
 
   const bannerContent = useMemo(
@@ -39,7 +45,8 @@ export const WorkspacePage = (): JSX.Element => {
 
   // Whether to display the feedback based on session eligibity and time of prev feedback seen
   const isDisplayFeedback =
-    !lastFeedbackTime || currentTime - lastFeedbackTime > 1000000
+    isAdminFeedbackEligible &&
+    (!lastFeedbackTime || currentTime - lastFeedbackTime > 1000000)
 
   const createFormModalDisclosure = useDisclosure()
   const adminFeedbackModalDisclosure = useDisclosure({
