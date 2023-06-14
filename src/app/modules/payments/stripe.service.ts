@@ -557,21 +557,21 @@ export const handleStripeEvent = (
             if (balanceTransaction.type !== 'charge') return
 
             const charge = balanceTransaction.source as Stripe.Charge
-            const innerResult = await getMetadataPaymentId(
-              charge.metadata,
-            ).asyncAndThen((paymentId) => processStripeEvent(paymentId, event))
-
-            // Reducer to keep errors around
-            if (innerResult && innerResult.isErr()) {
-              logger.error({
-                message:
-                  'Error when calling processStripeEvent while paging through balanceTransaction',
-                meta: { ...logMeta, chargeId: charge },
-                error: innerResult,
+            await getMetadataPaymentId(charge.metadata)
+              .asyncAndThen((paymentId) => processStripeEvent(paymentId, event))
+              .mapErr((error) => {
+                logger.error({
+                  message:
+                    'Error when calling processStripeEvent while paging through balanceTransaction',
+                  meta: { ...logMeta, chargeId: charge },
+                  error,
+                })
+                // Reducer to keep errors around
+                payoutProcessError = errAsync(error)
+                return
               })
-              payoutProcessError = errAsync(innerResult.error)
-              return
-            }
+
+            return
           }),
         (error) => {
           if (error instanceof Stripe.errors.StripeInvalidRequestError) {

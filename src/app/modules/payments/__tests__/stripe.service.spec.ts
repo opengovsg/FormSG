@@ -3,7 +3,7 @@ import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { ObjectId } from 'bson'
 import { keyBy } from 'lodash'
 import mongoose from 'mongoose'
-import { err, errAsync, ok, ResultAsync } from 'neverthrow'
+import { err, errAsync, ok, okAsync, ResultAsync } from 'neverthrow'
 import { PaymentChannel, PaymentStatus, SubmissionType } from 'shared/types'
 import Stripe from 'stripe'
 
@@ -800,7 +800,7 @@ describe('stripe.service', () => {
           .mockImplementation(() => ok('still gud'))
         const processStripeEventSpy = jest
           .spyOn(StripeService, 'processStripeEvent')
-          .mockImplementationOnce(jest.fn())
+          .mockImplementationOnce(() => okAsync(undefined))
 
         const result = await StripeService.handleStripeEvent(
           MOCK_STRIPE_EVENTS_MAP['evt_PAYOUT_CREATED'],
