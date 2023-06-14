@@ -28,3 +28,8 @@ export const FEATURE_TOUR_KEY_PREFIX = 'has-seen-feature-tour-'
  * Key to store whether a user has seen the emergency contact number modal in localStorage.
  */
 export const EMERGENCY_CONTACT_KEY_PREFIX = 'has-seen-emergency-contact'
+
+/**
+ * Key to store when was the last time user has seen the admin feedback modal
+ */
+export const ADMIN_FEEDBACK_HISTORY_PREFIX = 'last-seen-admin-feedback'
