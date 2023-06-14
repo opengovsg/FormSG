@@ -51,14 +51,14 @@ export const PaymentPreview = ({
       <Box mb="2rem">
         {paymentDetails.paymentType === PaymentType.Variable ? (
           <VariablePaymentItemDetailsField
-            paymentItemName={paymentDetails.description}
+            paymentItemName={paymentDetails.name}
             colorTheme={colorTheme}
             paymentAmount={paymentDetails.amount_cents}
             paymentDescription={paymentDetails.description}
           />
         ) : (
           <PaymentItemDetailsBlock
-            paymentItemName={paymentDetails.description}
+            paymentItemName={paymentDetails.name}
             colorTheme={colorTheme}
             paymentAmount={paymentDetails.amount_cents}
             paymentDescription={paymentDetails.description}

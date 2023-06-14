@@ -21,7 +21,6 @@ export const VariablePaymentItemDetailsField = ({
 
   return (
     <Box
-      // backgroundColor={`theme-${colorTheme}.100`}
       borderWidth="1px"
       borderColor={`theme-${colorTheme}.300`}
       borderRadius="4px"

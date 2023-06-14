@@ -10,6 +10,7 @@ import {
   ErrorDto,
   PaymentChannel,
   PaymentsUpdateDto,
+  PaymentType,
 } from '../../../../../shared/types'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { createReqMeta } from '../../../utils/request'
@@ -316,12 +317,24 @@ export const handleUpdatePayments = [
   celebrate({
     [Segments.BODY]: {
       enabled: Joi.boolean().required(),
+      paymentType: Joi.string()
+        .allow(...Object.values(PaymentType))
+        .required(),
       amount_cents: Joi.when('enabled', {
         is: Joi.equal(true),
-        then: Joi.number().integer().positive().required(),
+        then: Joi.when('paymentType', {
+          is: Joi.equal(PaymentType.Fixed),
+          then: Joi.number().integer().positive().required(),
+          otherwise: Joi.number(),
+        }),
         otherwise: Joi.number().integer(),
       }),
       description: Joi.when('enabled', {
+        is: Joi.equal(true),
+        then: Joi.string().required(),
+        otherwise: Joi.string().allow(''),
+      }),
+      name: Joi.when('enabled', {
         is: Joi.equal(true),
         then: Joi.string().required(),
         otherwise: Joi.string().allow(''),

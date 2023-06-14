@@ -15,6 +15,7 @@ import {
   FormPaymentsField,
   FormResponseMode,
   PaymentChannel,
+  PaymentType,
 } from '~shared/types'
 
 import { centsToDollars, dollarsToCents } from '~utils/payments'
@@ -49,9 +50,7 @@ import {
   usePaymentStore,
 } from './usePaymentStore'
 
-type FormPaymentsInput = {
-  enabled: boolean
-  description: string
+type FormPaymentsInput = Omit<FormPaymentsField, 'amount_cents'> & {
   display_amount: string
 }
 
@@ -145,6 +144,8 @@ export const PaymentInput = ({ isDisabled }: { isDisabled: boolean }) => {
     )
   })
 
+  const shouldShowAmountField = paymentsData?.paymentType === PaymentType.Fixed
+
   return (
     <CreatePageDrawerContentContainer>
       <FormControl
@@ -172,45 +173,63 @@ export const PaymentInput = ({ isDisabled }: { isDisabled: boolean }) => {
         </FormLabel>
         <Input
           placeholder="Product/service name"
+          {...register('name', {
+            required: isUsingPayment && 'Please enter a payment description',
+          })}
+        />
+        <FormErrorMessage>{errors.name?.message}</FormErrorMessage>
+      </FormControl>
+      <FormControl
+        isReadOnly={paymentsMutation.isLoading}
+        isInvalid={!!errors.description}
+        isDisabled={!isUsingPayment}
+        isRequired
+      >
+        <FormLabel description="This will be reflected on the payment invoice">
+          Description
+        </FormLabel>
+        <Input
+          placeholder="Product/service name"
           {...register('description', {
             required: isUsingPayment && 'Please enter a payment description',
           })}
         />
         <FormErrorMessage>{errors.description?.message}</FormErrorMessage>
       </FormControl>
-
-      <FormControl
-        isReadOnly={paymentsMutation.isLoading}
-        isInvalid={!!errors.display_amount}
-        isDisabled={!isUsingPayment}
-        isRequired
-      >
-        <FormLabel isRequired description="Amount should include GST">
-          Payment amount
-        </FormLabel>
-        <Controller
-          name="display_amount"
-          control={control}
-          rules={amountValidation}
-          render={({ field }) => (
-            <MoneyInput
-              flex={1}
-              step={0}
-              inputMode="decimal"
-              placeholder="0.00"
-              {...field}
-            />
-          )}
-        />
-        <FormErrorMessage>{errors.display_amount?.message}</FormErrorMessage>
-        {Number(clonedWatchedInputs.display_amount) > 1000 ? (
-          <InlineMessage variant="warning" mt="2rem" useMarkdown>
-            You would need to issue your own invoice for amounts above S$1000.
-            [Learn more about
-            this](https://guide.form.gov.sg/faq/faq/payments#simplified-tax-invoices-versus-regular-tax-invoices)
-          </InlineMessage>
-        ) : null}
-      </FormControl>
+      {shouldShowAmountField ? (
+        <FormControl
+          isReadOnly={paymentsMutation.isLoading}
+          isInvalid={!!errors.display_amount}
+          isDisabled={!isUsingPayment}
+          isRequired
+        >
+          <FormLabel isRequired description="Amount should include GST">
+            Payment amount
+          </FormLabel>
+          <Controller
+            name="display_amount"
+            control={control}
+            rules={amountValidation}
+            render={({ field }) => (
+              <MoneyInput
+                flex={1}
+                step={0}
+                inputMode="decimal"
+                placeholder="0.00"
+                {...field}
+              />
+            )}
+          />
+          <FormErrorMessage>{errors.display_amount?.message}</FormErrorMessage>
+          {Number(clonedWatchedInputs.display_amount) > 1000 ? (
+            <InlineMessage variant="warning" mt="2rem" useMarkdown>
+              You would need to issue your own invoice for amounts above S$1000.
+              [Learn more about
+              this](https://guide.form.gov.sg/faq/faq/payments#simplified-tax-invoices-versus-regular-tax-invoices)
+            </InlineMessage>
+          ) : null}
+        </FormControl>
+      ) : null}
 
       <FormFieldDrawerActions
         isLoading={paymentsMutation.isLoading}

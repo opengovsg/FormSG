@@ -71,14 +71,6 @@ export const MoneyInput = forwardRef<MoneyInputProps, 'input'>(
 
     const inputRef = useMergeRefs(inputProps.ref, ref)
 
-    // TODO: replace with dynamic country loading if/when more currencies are added
-    const country = 'SG'
-
-    // TODO: refactor list into a separate file with all currencies if/when more currencies are added
-    const currency = {
-      SG: 'SGD',
-    }
-
     return (
       <Box {...htmlProps} __css={styles.root}>
         {/* Using base input wrapper instead of `Input` component as the Input 
@@ -92,17 +84,7 @@ export const MoneyInput = forwardRef<MoneyInputProps, 'input'>(
             background="transparent"
             borderColor="neutral.400"
           >
-            <HStack align="center" spacing={2}>
-              <Icon
-                // Show Flags if available. If value does not exist for any reason,
-                // a default fallback icon will be used by ChakraUI.
-                // See https://chakra-ui.com/docs/media-and-icons/icon#fallback-icon.
-                as={Flags[country]}
-                role="img"
-                __css={styles.icon}
-              />
-              <Text>{currency[country]}</Text>
-            </HStack>
+            <Text>S$</Text>
           </InputLeftAddon>
           <chakra.input
             {...inputProps}
