@@ -6,6 +6,8 @@ import {
   Flex,
   FormControl,
   FormHelperText,
+  Grid,
+  GridItem,
   Icon,
   Image,
   SimpleGrid,
@@ -17,7 +19,6 @@ import { BasicField, EmailFieldBase } from '~shared/types'
 
 import { AppFooter } from '~/app/AppFooter'
 import { AppPublicHeader } from '~/app/AppPublicHeader'
-import FormBrandLogo from '~/assets/svgs/brand/brand-mark-colour.svg'
 
 import { BxsCheckCircle } from '~assets/icons'
 import { BxsHelpCircle } from '~assets/icons/BxsHelpCircle'
@@ -276,21 +277,53 @@ export const LandingPaymentsPage = (): JSX.Element => {
         </FeatureLink>
       </FeatureSection>
       {/* TODO after migration to design system: set bg to color.brand.primary.900 */}
-      <LandingSection bg="#1D2A5E" align="center">
-        <Image src={FormBrandLogo} aria-hidden h="3.5rem" />
-        <Text
-          textAlign="center"
-          textStyle={{ base: 'display-2-mobile', md: 'display-2' }}
-          color="white"
-          mt="2rem"
-        >
-          Learn how to set up your payments form
-        </Text>
-        <Box mt="2rem">
-          <Button as="a" href={GUIDE_PAYMENTS_PUBLIC} target="_blank">
-            Get started
-          </Button>
-        </Box>
+      <LandingSection bg="#1D2A5E">
+        <Grid templateColumns="repeat(2, 1fr)">
+          <GridItem alignSelf="center">
+            <Text textStyle="h5" color="primary.100" mr="2rem">
+              Receive our guide to get started on payments
+            </Text>
+          </GridItem>
+          <GridItem w="100%">
+            <FormProvider {...formMethods}>
+              <Flex width="100%">
+                <EmailField
+                  schema={emailFieldSchema}
+                  errorVariant="white"
+                  inputProps={{
+                    isSuccess: sendOnboardingEmailMutation.isSuccess,
+                    isDisabled:
+                      sendOnboardingEmailMutation.isLoading ||
+                      sendOnboardingEmailMutation.isSuccess,
+                  }}
+                />
+                <Button
+                  variant="reverse"
+                  mt="0.75rem"
+                  ml="0.5rem"
+                  onClick={handleSubmit}
+                  onSubmit={handleSubmit}
+                  isDisabled={
+                    !formMethods.formState.isValid ||
+                    sendOnboardingEmailMutation.isSuccess
+                  }
+                >
+                  Submit
+                </Button>
+              </Flex>
+              {onboardingHelperText && (
+                <FormControl>
+                  <FormHelperText color={mainSectionTextColour}>
+                    <Stack direction="row" align="center">
+                      <Box>{onboardingHelperText.icon}</Box>
+                      <Text>{onboardingHelperText.text}</Text>
+                    </Stack>
+                  </FormHelperText>
+                </FormControl>
+              )}
+            </FormProvider>
+          </GridItem>
+        </Grid>
       </LandingSection>
       <AppFooter containerProps={{ bg: 'primary.100' }} />
     </>
