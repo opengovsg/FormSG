@@ -9,6 +9,7 @@ export interface IStripe {
   maxPaymentAmountCents: number
   minPaymentAmountCents: number
   guideLink: string
+  landingGuideLink: string
 }
 
 const paymentFeature: Schema<IStripe> = {
@@ -55,10 +56,16 @@ const paymentFeature: Schema<IStripe> = {
     env: 'PAYMENT_MIN_PAYMENT_AMOUNT_CENTS',
   },
   guideLink: {
-    doc: 'Link to payment guide',
+    doc: 'Link to payment guide (accessed through dashboard)',
     format: String,
-    default: 'https://go.gov.sg/formsg-guide-payments',
+    default: 'https://go.gov.sg/formsg-guide-payments', // defaults to public guide
     env: 'PAYMENT_GUIDE_LINK',
+  },
+  landingGuideLink: {
+    doc: 'Link to payment guide for landing page self-onboarding (accessed through verified emails)',
+    format: String,
+    default: 'https://go.gov.sg/formsg-guide-payments', // defaults to public guide
+    env: 'PAYMENT_LANDING_GUIDE_LINK',
   },
 }
 

@@ -295,7 +295,7 @@ export const generatePaymentConfirmationHtml = ({
 export const generatePaymentOnboardingHtml = (): string => {
   return dedent`
   <p>Dear Sir or Madam,</p>
-  <p>Thank you for your interest in our payments feature! <a href="${paymentConfig.guideLink}">Download the file</a> to learn how to get started with payments today!</p>
+  <p>Thank you for your interest in our payments feature! <a href="${paymentConfig.landingGuideLink}">Download the file</a> to learn how to get started with payments today!</p>
   <p>If you have any questions regarding payments, feel free to reach out to support@form.gov.sg.</p>
   <p>Regards,
   <br/>
