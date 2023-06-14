@@ -32,7 +32,7 @@ export const WorkspacePage = (): JSX.Element => {
   )
 
   const createFormModalDisclosure = useDisclosure()
-  const adminFeedbackModalDisclosure = useDisclosure()
+  const adminFeedbackModalDisclosure = useDisclosure({ defaultIsOpen: true })
 
   return (
     <>
@@ -53,8 +53,9 @@ export const WorkspacePage = (): JSX.Element => {
           />
         </WorkspaceProvider>
       </Flex>
+
       <AdminFeedbackModal
-        isOpen={true}
+        isOpen={adminFeedbackModalDisclosure.isOpen}
         onClose={adminFeedbackModalDisclosure.onClose}
       />
     </>

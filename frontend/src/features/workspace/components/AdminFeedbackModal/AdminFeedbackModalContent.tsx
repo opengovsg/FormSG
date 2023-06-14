@@ -1,26 +1,96 @@
+import { Dispatch, SetStateAction, useState } from 'react'
 import { GoThumbsdown, GoThumbsup } from 'react-icons/go'
-import { ModalBody } from '@chakra-ui/react'
+import {
+  Heading,
+  Link,
+  ModalBody,
+  ModalCloseButton,
+  ModalFooter,
+  ModalHeader,
+  Stack,
+  Text,
+} from '@chakra-ui/react'
 
+import Button from '~components/Button'
 import IconButton from '~components/IconButton'
+import Input from '~components/Input'
+import Textarea from '~components/Textarea'
 
-export const AdminFeedbackModalContent = () => {
-  return (
-    <ModalBody textStyle="h6" my="1rem">
-      How was your form building experience?
-      <IconButton
-        variant="clear"
-        icon={<GoThumbsup />}
-        colorScheme="theme-blue"
-        aria-label="Good"
-        ml="2.2rem"
-      />
-      <IconButton
-        variant="clear"
-        icon={<GoThumbsdown />}
-        colorScheme="theme-red"
-        aria-label="Bad"
-        ml="2.2rem"
-      />
-    </ModalBody>
+enum FeedbackModalContentState {
+  Rating,
+  CallForComment,
+  CommentBox,
+}
+
+export const AdminFeedbackModalContent = ({
+  onClose,
+}: {
+  onClose: () => void
+}) => {
+  const [contentState, setContentState] = useState(
+    FeedbackModalContentState.Rating,
   )
+  return AdminFeedbackModalContentBuilder(
+    contentState,
+    setContentState,
+    onClose,
+  )
+}
+
+const AdminFeedbackModalContentBuilder = (
+  state: FeedbackModalContentState,
+  setState: Dispatch<SetStateAction<FeedbackModalContentState>>,
+  onClose: () => void,
+) => {
+  switch (state) {
+    case FeedbackModalContentState.Rating:
+      return (
+        <ModalBody px="1.5rem" py="1rem">
+          <Stack direction="row" alignItems="center" gap="2.2rem">
+            <Text textStyle="h6">How was your form building experience?</Text>
+            <IconButton
+              variant="clear"
+              icon={<GoThumbsup />}
+              colorScheme="theme-blue"
+              aria-label="Good"
+              onClick={() => setState(FeedbackModalContentState.CallForComment)}
+            />
+            <IconButton
+              variant="clear"
+              icon={<GoThumbsdown />}
+              colorScheme="theme-red"
+              aria-label="Bad"
+              onClick={() => setState(FeedbackModalContentState.CallForComment)}
+            />
+          </Stack>
+        </ModalBody>
+      )
+    case FeedbackModalContentState.CallForComment:
+      return (
+        <ModalBody px="1.5rem" py="1rem">
+          <Text textStyle="h6">
+            Thank you, you're the best!{' '}
+            <Link
+              onClick={() => setState(FeedbackModalContentState.CommentBox)}
+            >
+              Want to tell us more?
+            </Link>
+          </Text>
+        </ModalBody>
+      )
+    case FeedbackModalContentState.CommentBox:
+      return (
+        <ModalBody px="1.5rem" py="1rem">
+          <ModalHeader px="0rem">Great!</ModalHeader>
+          <ModalCloseButton />
+          <Text textStyle="body-2">
+            Tell us about your form building experience in more detail!
+          </Text>
+          <Textarea placeholder="Form is awesome" mt="1rem" />
+          <Button mt="1rem" float="right" onClick={onClose}>
+            Submit
+          </Button>
+        </ModalBody>
+      )
+  }
 }

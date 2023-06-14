@@ -14,7 +14,7 @@ export const AdminFeedbackModal = ({
   return (
     <Modal blockScrollOnMount={false} isOpen={isOpen} onClose={onClose}>
       <ModalContent bottom="1.5rem" position="absolute" margin="auto" w="35.5">
-        <AdminFeedbackModalContent />
+        <AdminFeedbackModalContent onClose={onClose} />
       </ModalContent>
     </Modal>
   )
