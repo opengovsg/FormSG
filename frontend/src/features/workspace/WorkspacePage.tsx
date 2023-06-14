@@ -30,6 +30,8 @@ export const WorkspacePage = (): JSX.Element => {
     ADMIN_FEEDBACK_SESSION_KEY,
     false,
   )
+
+  // Memo current time on page load to prevent re-renders from update to current time
   const currentTime = useMemo(() => Date.now(), [])
 
   const bannerContent = useMemo(
