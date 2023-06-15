@@ -12,6 +12,7 @@ import { getBannerProps } from '~utils/getBannerProps'
 import { Banner } from '~components/Banner'
 
 import { useEnv } from '~features/env/queries'
+import { useUser } from '~features/user/queries'
 
 import { AdminFeedbackModal } from './components/AdminFeedbackModal/AdminFeedbackModal'
 // TODO #4279: Remove after React rollout is complete
@@ -29,9 +30,14 @@ export const WorkspacePage = (): JSX.Element => {
       adminFeedbackDisplayFrequency,
     } = {},
   } = useEnv()
-  const [lastFeedbackTime, setLastFeedbackTime] = useLocalStorage<number>(
-    ADMIN_FEEDBACK_HISTORY_PREFIX,
-  )
+  const { user, isLoading } = useUser()
+
+  const adminFeedbackKey = useMemo(() => {
+    return ADMIN_FEEDBACK_HISTORY_PREFIX + user?._id
+  }, [user])
+
+  const [lastFeedbackTime, setLastFeedbackTime] =
+    useLocalStorage<number>(adminFeedbackKey)
   const [isAdminFeedbackEligible, setIsAdminFeedbackEligible] =
     useSessionStorage<boolean>(ADMIN_FEEDBACK_SESSION_KEY, false)
 
@@ -52,6 +58,8 @@ export const WorkspacePage = (): JSX.Element => {
   // Whether to display the feedback based on session eligibility and time of prev feedback seen
   const isDisplayFeedback = useMemo(
     () =>
+      // not loading user details
+      !isLoading &&
       // admin session eligibility
       isAdminFeedbackEligible &&
       // if feedbackTime has not been seen
@@ -60,6 +68,7 @@ export const WorkspacePage = (): JSX.Element => {
         (!!adminFeedbackDisplayFrequency &&
           currentTime - lastFeedbackTime > adminFeedbackDisplayFrequency)),
     [
+      isLoading,
       lastFeedbackTime,
       currentTime,
       isAdminFeedbackEligible,
