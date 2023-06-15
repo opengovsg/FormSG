@@ -13,6 +13,7 @@ import {
 
 import { AdminFeedbackRatingDown, AdminFeedbackRatingUp } from '~shared/types'
 
+import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
 import IconButton from '~components/IconButton'
 import Textarea from '~components/Textarea'
@@ -124,8 +125,9 @@ const AdminFeedbackCommentContent = ({
   onCommentClick: (data: AdminFeedbackCommentForm) => void
 }) => {
   const { handleSubmit, register } = useForm<AdminFeedbackCommentForm>()
+  const isMobile = useIsMobile()
   return (
-    <Stack w="28.5rem">
+    <Stack w={isMobile ? undefined : '28.5rem'}>
       <Flex alignItems="flex-start">
         <ModalHeader px="0rem">Great!</ModalHeader>
         <ModalCloseButton />
