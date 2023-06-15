@@ -126,8 +126,10 @@ const AdminFeedbackCommentContent = ({
   const { handleSubmit, register } = useForm<AdminFeedbackCommentForm>()
   return (
     <Stack w="28.5rem">
-      <ModalHeader px="0rem">Great!</ModalHeader>
-      <ModalCloseButton />
+      <Flex alignItems="flex-start">
+        <ModalHeader px="0rem">Great!</ModalHeader>
+        <ModalCloseButton />
+      </Flex>
       <Text textStyle="body-2">
         Tell us about your form building experience in more detail!
       </Text>
