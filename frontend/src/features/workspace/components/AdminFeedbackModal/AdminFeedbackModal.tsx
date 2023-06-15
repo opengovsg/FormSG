@@ -6,14 +6,16 @@ import { AdminFeedbackModalContent } from './AdminFeedbackModalContent'
 export type AdminFeedbackModalProps = Pick<
   UseDisclosureReturn,
   'onClose' | 'isOpen'
-> & { onMount: () => void }
+> & { onOpen: () => void }
 
 export const AdminFeedbackModal = ({
   isOpen,
   onClose,
-  onMount,
+  onOpen,
 }: AdminFeedbackModalProps): JSX.Element => {
-  useEffect(() => onMount(), [onMount])
+  useEffect(() => {
+    if (isOpen) onOpen()
+  }, [onOpen, isOpen])
 
   return (
     <Modal blockScrollOnMount={false} isOpen={isOpen} onClose={onClose}>

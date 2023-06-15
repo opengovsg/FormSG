@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { Flex, useDisclosure } from '@chakra-ui/react'
 
 import { AdminNavBar } from '~/app/AdminNavBar'
@@ -46,16 +46,19 @@ export const WorkspacePage = (): JSX.Element => {
   )
 
   // Whether to display the feedback based on session eligibity and time of prev feedback seen
-  const isDisplayFeedback =
-    isAdminFeedbackEligible &&
-    (!lastFeedbackTime || currentTime - lastFeedbackTime > 1000000)
+  const isDisplayFeedback = useMemo(
+    () =>
+      isAdminFeedbackEligible &&
+      (!lastFeedbackTime || currentTime - lastFeedbackTime > 100000),
+    [lastFeedbackTime, currentTime, isAdminFeedbackEligible],
+  )
 
   const createFormModalDisclosure = useDisclosure()
   const adminFeedbackModalDisclosure = useDisclosure({
     defaultIsOpen: isDisplayFeedback,
   })
 
-  const onAdminFeedbackModalMount = () => setLastFeedbackTime(currentTime)
+  const onAdminFeedbackModalOpen = () => setLastFeedbackTime(currentTime)
 
   return (
     <>
@@ -79,7 +82,7 @@ export const WorkspacePage = (): JSX.Element => {
       <AdminFeedbackModal
         isOpen={adminFeedbackModalDisclosure.isOpen}
         onClose={adminFeedbackModalDisclosure.onClose}
-        onMount={onAdminFeedbackModalMount}
+        onOpen={onAdminFeedbackModalOpen}
       />
     </>
   )
