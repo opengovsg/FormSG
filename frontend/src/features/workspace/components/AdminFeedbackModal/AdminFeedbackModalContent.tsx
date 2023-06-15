@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { GoThumbsdown, GoThumbsup } from 'react-icons/go'
 import {
+  Flex,
   Link,
   ModalBody,
   ModalCloseButton,
@@ -124,7 +125,7 @@ const AdminFeedbackCommentContent = ({
 }) => {
   const { handleSubmit, register } = useForm<AdminFeedbackCommentForm>()
   return (
-    <>
+    <Stack w="28.5rem">
       <ModalHeader px="0rem">Great!</ModalHeader>
       <ModalCloseButton />
       <Text textStyle="body-2">
@@ -135,10 +136,12 @@ const AdminFeedbackCommentContent = ({
         mt="1rem"
         {...register('comment')}
       />
-      <Button mt="1rem" float="right" onClick={handleSubmit(onCommentClick)}>
-        Submit
-      </Button>
-    </>
+      <Flex alignItems="flex-end" flexDirection="column">
+        <Button mt="1rem" float="right" onClick={handleSubmit(onCommentClick)}>
+          Submit
+        </Button>
+      </Flex>
+    </Stack>
   )
 }
 
