@@ -49,7 +49,7 @@ export const WorkspacePage = (): JSX.Element => {
     [bannerContent],
   )
 
-  // Whether to display the feedback based on session eligibity and time of prev feedback seen
+  // Whether to display the feedback based on session eligibility and time of prev feedback seen
   const isDisplayFeedback = useMemo(
     () =>
       // admin session eligibility
