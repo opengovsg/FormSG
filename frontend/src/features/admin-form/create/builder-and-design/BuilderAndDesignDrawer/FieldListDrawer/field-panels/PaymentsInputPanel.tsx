@@ -4,11 +4,12 @@ import {
   RegisterOptions,
   UnpackNestedValue,
   useForm,
+  UseFormReturn,
   useWatch,
 } from 'react-hook-form'
 import { Link as ReactLink } from 'react-router-dom'
 import { useDebounce } from 'react-use'
-import { Box, FormControl, Link, Text } from '@chakra-ui/react'
+import { Box, FormControl, HStack, Link, Text } from '@chakra-ui/react'
 import { cloneDeep } from 'lodash'
 
 import {
@@ -52,9 +53,148 @@ import {
 
 type FormPaymentsInput = Omit<FormPaymentsField, 'amount_cents'> & {
   display_amount: string
+  min_amount: string
+  max_amount: string
 }
 
-export const PaymentInput = ({ isDisabled }: { isDisabled: boolean }) => {
+const FixedPaymentAmountField = ({
+  isLoading,
+  errors,
+  isDisabled,
+  control,
+  input,
+}: {
+  isLoading: boolean
+  isDisabled: boolean
+  errors: UseFormReturn<FormPaymentsInput>['formState']['errors']
+  control: UseFormReturn<FormPaymentsInput>['control']
+  input: FormPaymentsInput
+}) => {
+  const DISPLAY_AMOUNT_FIELD_KEY = 'display_amount'
+  const amountValidation: RegisterOptions<
+    FormPaymentsInput,
+    typeof DISPLAY_AMOUNT_FIELD_KEY
+  > = usePaymentFieldValidation<
+    FormPaymentsInput,
+    typeof DISPLAY_AMOUNT_FIELD_KEY
+  >()
+  return (
+    <FormControl
+      isReadOnly={isLoading}
+      isDisabled={isDisabled}
+      isInvalid={!!errors[DISPLAY_AMOUNT_FIELD_KEY]}
+      isRequired
+    >
+      <FormLabel isRequired description="Amount should include GST">
+        Payment amount
+      </FormLabel>
+      <Controller
+        name={DISPLAY_AMOUNT_FIELD_KEY}
+        control={control}
+        rules={amountValidation}
+        render={({ field }) => (
+          <MoneyInput
+            flex={1}
+            step={0}
+            inputMode="decimal"
+            placeholder="0.00"
+            {...field}
+          />
+        )}
+      />
+      <FormErrorMessage>
+        {errors[DISPLAY_AMOUNT_FIELD_KEY]?.message}
+      </FormErrorMessage>
+      {Number(input[DISPLAY_AMOUNT_FIELD_KEY]) > 1000 ? (
+        <InlineMessage variant="warning" mt="2rem" useMarkdown>
+          You would need to issue your own invoice for amounts above S$1000.
+          [Learn more about
+          this](https://guide.form.gov.sg/faq/faq/payments#simplified-tax-invoices-versus-regular-tax-invoices)
+        </InlineMessage>
+      ) : null}
+    </FormControl>
+  )
+}
+
+const VariablePaymentAmountField = ({
+  isLoading,
+  errors,
+  isDisabled,
+  control,
+  input,
+}: {
+  isLoading: boolean
+  isDisabled: boolean
+  errors: UseFormReturn<FormPaymentsInput>['formState']['errors']
+  control: UseFormReturn<FormPaymentsInput>['control']
+  input: FormPaymentsInput
+}) => {
+  const MIN_FIELD_KEY = `min_amount`
+  const MAX_FIELD_KEY = `max_amount`
+
+  const minAmountValidation: RegisterOptions<
+    FormPaymentsInput,
+    typeof MIN_FIELD_KEY
+  > = usePaymentFieldValidation<FormPaymentsInput, typeof MIN_FIELD_KEY>({
+    lesserThanCents: dollarsToCents(input[MAX_FIELD_KEY] || ''),
+  })
+  const maxAmountValidation: RegisterOptions<
+    FormPaymentsInput,
+    typeof MAX_FIELD_KEY
+  > = usePaymentFieldValidation<FormPaymentsInput, typeof MAX_FIELD_KEY>({
+    greaterThanCents: dollarsToCents(input[MIN_FIELD_KEY] || ''),
+  })
+  return (
+    <FormControl
+      isReadOnly={isLoading}
+      isDisabled={isDisabled}
+      isInvalid={!!errors[MIN_FIELD_KEY] || !!errors[MAX_FIELD_KEY]}
+      isRequired
+    >
+      <FormLabel
+        isRequired
+        description="Customise the amount that respondents are allowed to define"
+      >
+        Payment amount limit
+      </FormLabel>
+      <HStack>
+        <Controller
+          name={MIN_FIELD_KEY}
+          control={control}
+          rules={minAmountValidation}
+          render={({ field }) => (
+            <Input
+              flex={1}
+              step={0}
+              inputMode="decimal"
+              placeholder="Minimum amount"
+              {...field}
+            />
+          )}
+        />
+        <Controller
+          name={MAX_FIELD_KEY}
+          control={control}
+          rules={maxAmountValidation}
+          render={({ field }) => (
+            <Input
+              flex={1}
+              step={0}
+              inputMode="decimal"
+              placeholder="Maximum amount"
+              {...field}
+            />
+          )}
+        />
+      </HStack>
+      <FormErrorMessage>
+        {errors[MIN_FIELD_KEY]?.message || errors[MAX_FIELD_KEY]?.message}
+      </FormErrorMessage>
+    </FormControl>
+  )
+}
+
+const PaymentInput = ({ isDisabled }: { isDisabled: boolean }) => {
   const { paymentsMutation } = useMutateFormPage()
 
   const setIsDirty = useDirtyFieldStore(setIsDirtySelector)
@@ -122,9 +262,6 @@ export const PaymentInput = ({ isDisabled }: { isDisabled: boolean }) => {
 
   const isUsingPayment = clonedWatchedInputs.enabled
 
-  const amountValidation: RegisterOptions<FormPaymentsInput, 'display_amount'> =
-    usePaymentFieldValidation<FormPaymentsInput, 'display_amount'>()
-
   const handleUpdatePayments = handleSubmit(() => {
     if (isDisabled || !paymentsData) {
       // do not mutate if payments is disabled or unavailable
@@ -143,8 +280,6 @@ export const PaymentInput = ({ isDisabled }: { isDisabled: boolean }) => {
       },
     )
   })
-
-  const shouldShowAmountField = paymentsData?.paymentType === PaymentType.Fixed
 
   return (
     <CreatePageDrawerContentContainer>
@@ -196,40 +331,24 @@ export const PaymentInput = ({ isDisabled }: { isDisabled: boolean }) => {
         />
         <FormErrorMessage>{errors.description?.message}</FormErrorMessage>
       </FormControl>
-      {shouldShowAmountField ? (
-        <FormControl
-          isReadOnly={paymentsMutation.isLoading}
-          isInvalid={!!errors.display_amount}
+
+      {paymentsData?.paymentType === PaymentType.Variable ? (
+        <VariablePaymentAmountField
+          isLoading={paymentsMutation.isLoading}
+          errors={errors}
           isDisabled={!isUsingPayment}
-          isRequired
-        >
-          <FormLabel isRequired description="Amount should include GST">
-            Payment amount
-          </FormLabel>
-          <Controller
-            name="display_amount"
-            control={control}
-            rules={amountValidation}
-            render={({ field }) => (
-              <MoneyInput
-                flex={1}
-                step={0}
-                inputMode="decimal"
-                placeholder="0.00"
-                {...field}
-              />
-            )}
-          />
-          <FormErrorMessage>{errors.display_amount?.message}</FormErrorMessage>
-          {Number(clonedWatchedInputs.display_amount) > 1000 ? (
-            <InlineMessage variant="warning" mt="2rem" useMarkdown>
-              You would need to issue your own invoice for amounts above S$1000.
-              [Learn more about
-              this](https://guide.form.gov.sg/faq/faq/payments#simplified-tax-invoices-versus-regular-tax-invoices)
-            </InlineMessage>
-          ) : null}
-        </FormControl>
-      ) : null}
+          control={control}
+          input={clonedWatchedInputs}
+        />
+      ) : (
+        <FixedPaymentAmountField
+          isLoading={paymentsMutation.isLoading}
+          errors={errors}
+          isDisabled={!isUsingPayment}
+          control={control}
+          input={clonedWatchedInputs}
+        />
+      )}
 
       <FormFieldDrawerActions
         isLoading={paymentsMutation.isLoading}
