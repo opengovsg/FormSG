@@ -50,9 +50,23 @@ const formatCurrency = new Intl.NumberFormat('en-SG', {
 export const usePaymentFieldValidation = <
   T extends FieldValues,
   V extends FieldPath<T>,
->() => {
-  const { data: { maxPaymentAmountCents, minPaymentAmountCents } = {} } =
-    useEnv()
+>(options?: {
+  greaterThanCents?: number
+  lesserThanCents?: number
+}) => {
+  const {
+    data: {
+      maxPaymentAmountCents = Number.MAX_SAFE_INTEGER,
+      minPaymentAmountCents = Number.MIN_SAFE_INTEGER,
+    } = {},
+  } = useEnv()
+
+  const {
+    lesserThanCents: maxCents = Number.MAX_SAFE_INTEGER,
+    greaterThanCents: minCents = Number.MIN_SAFE_INTEGER,
+  } = options || {}
+  const maxCentsLimit = Math.min(maxCents, maxPaymentAmountCents)
+  const minCentsLimit = Math.max(minCents, minPaymentAmountCents)
 
   const amountValidation: RegisterOptions<T, V> = {
     validate: (val) => {
@@ -62,24 +76,20 @@ export const usePaymentFieldValidation = <
       if (!validateMoney) return 'Please enter a valid payment amount'
 
       const validateMin =
-        !!minPaymentAmountCents &&
-        !!val &&
-        dollarsToCents(val) >= minPaymentAmountCents
-      // Repeat the check on minPaymentAmountCents for correct typing
-      if (!!minPaymentAmountCents && !validateMin) {
-        return `Please enter a payment amount above ${formatCurrency(
-          Number(centsToDollars(minPaymentAmountCents)),
+        !!minCentsLimit && !!val && dollarsToCents(val) >= minCentsLimit
+      // Repeat the check on minCentsLimit for correct typing
+      if (!!minCentsLimit && !validateMin) {
+        return `Please enter a payment amount of at least ${formatCurrency(
+          Number(centsToDollars(minCentsLimit)),
         )}`
       }
 
       const validateMax =
-        !!maxPaymentAmountCents &&
-        !!val &&
-        dollarsToCents(val) <= maxPaymentAmountCents
-      // Repeat the check on maxPaymentAmountCents for correct typing
-      if (!!maxPaymentAmountCents && !validateMax) {
-        return `Please enter a payment amount below ${formatCurrency(
-          Number(centsToDollars(maxPaymentAmountCents)),
+        !!maxCentsLimit && !!val && dollarsToCents(val) <= maxCentsLimit
+      // Repeat the check on maxCentsLimit for correct typing
+      if (!!maxCentsLimit && !validateMax) {
+        return `Please enter a payment amount of at most ${formatCurrency(
+          Number(centsToDollars(maxCentsLimit)),
         )}`
       }
       return true
