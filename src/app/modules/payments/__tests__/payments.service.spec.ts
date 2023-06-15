@@ -317,7 +317,7 @@ describe('payments.service', () => {
       // Arrange
       jest.mock('nodemailer', () => ({
         createTransport: jest.fn().mockReturnValue({
-          sendMail: jest.fn().mockResolvedValueOnce(false),
+          sendMail: jest.fn().mockRejectedValueOnce(false),
         }),
       }))
 
