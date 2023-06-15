@@ -36,6 +36,7 @@ const MOCK_APP_NAME = 'mockApp'
 const MOCK_APP_URL = 'mockApp.example.com'
 const MOCK_SENDER_STRING = `${MOCK_APP_NAME} <${MOCK_SENDER_EMAIL}>`
 const MOCK_PDF = Buffer.from('fake pdf')
+const MOCK_OTP_PREFIX = 'ABC'
 
 const MOCK_RETRY_COUNT = 10
 
@@ -93,6 +94,7 @@ describe('mail.service', () => {
           appName: MOCK_APP_NAME,
           otp: MOCK_OTP,
           minutesToExpiry: HASH_EXPIRE_AFTER_SECONDS / 60,
+          otpPrefix: MOCK_OTP_PREFIX,
         }),
         headers: {
           // Hardcode in tests in case something changes this.
@@ -112,6 +114,7 @@ describe('mail.service', () => {
       const actualResult = await mailService.sendVerificationOtp(
         MOCK_VALID_EMAIL,
         MOCK_OTP,
+        MOCK_OTP_PREFIX,
       )
 
       // Assert
@@ -129,6 +132,7 @@ describe('mail.service', () => {
       const actualResult = await mailService.sendVerificationOtp(
         invalidEmail,
         MOCK_OTP,
+        MOCK_OTP_PREFIX,
       )
 
       // Assert
@@ -154,6 +158,7 @@ describe('mail.service', () => {
       const actualResult = await mailService.sendVerificationOtp(
         MOCK_VALID_EMAIL,
         MOCK_OTP,
+        MOCK_OTP_PREFIX,
       )
 
       // Assert
@@ -179,6 +184,7 @@ describe('mail.service', () => {
       const actualResult = await mailService.sendVerificationOtp(
         MOCK_VALID_EMAIL,
         MOCK_OTP,
+        MOCK_OTP_PREFIX,
       )
 
       // Assert
@@ -210,6 +216,7 @@ describe('mail.service', () => {
       const actualResult = await mailService.sendVerificationOtp(
         MOCK_VALID_EMAIL,
         MOCK_OTP,
+        MOCK_OTP_PREFIX,
       )
 
       // Assert
