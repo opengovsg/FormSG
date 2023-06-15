@@ -32,13 +32,19 @@ const ENCRYPT_VERSION = 1
  * @returns StorageModeSubmissionContentDto
  * @throw Error if form inputs are invalid.
  */
-export const createEncryptedSubmissionData = async (
-  formFields: FormFieldDto[],
-  formInputs: FormFieldValues,
-  publicKey: string,
-  responseMetadata?: ResponseMetadata,
-  paymentReceiptEmail?: string,
-): Promise<StorageModeSubmissionContentDto> => {
+export const createEncryptedSubmissionData = async ({
+  formFields,
+  formInputs,
+  publicKey,
+  responseMetadata,
+  paymentReceiptEmail,
+}: {
+  formFields: FormFieldDto[]
+  formInputs: FormFieldValues
+  publicKey: string
+  responseMetadata?: ResponseMetadata
+  paymentReceiptEmail?: string
+}): Promise<StorageModeSubmissionContentDto> => {
   const responses = createResponsesArray(formFields, formInputs)
   const encryptedContent = formsgSdk.crypto.encrypt(responses, publicKey)
   // Edge case: We still send email/verifiable fields to the server in plaintext

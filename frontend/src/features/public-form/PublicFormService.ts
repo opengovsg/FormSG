@@ -132,13 +132,13 @@ export const submitStorageModeForm = async ({
     formInputs,
     formLogics,
   })
-  const submissionContent = await createEncryptedSubmissionData(
+  const submissionContent = await createEncryptedSubmissionData({
     formFields,
-    filteredInputs,
+    formInputs: filteredInputs,
     publicKey,
     responseMetadata,
     paymentReceiptEmail,
-  )
+  })
 
   return ApiService.post<SubmissionResponseDto>(
     `${PUBLIC_FORMS_ENDPOINT}/${formId}/submissions/encrypt`,
@@ -206,13 +206,13 @@ export const submitStorageModeFormWithFetch = async ({
     formInputs,
     formLogics,
   })
-  const submissionContent = await createEncryptedSubmissionData(
+  const submissionContent = await createEncryptedSubmissionData({
     formFields,
-    filteredInputs,
+    formInputs: filteredInputs,
     publicKey,
     responseMetadata,
     paymentReceiptEmail,
-  )
+  })
 
   // Add captcha response to query string
   const queryString = new URLSearchParams({
