@@ -79,6 +79,8 @@ export type FormPaymentsChannel = {
 export type FormPaymentsField = {
   enabled: boolean
   amount_cents?: number
+  min_amount?: number
+  max_amount?: number
   description?: string
   name?: string
   paymentType?: PaymentType

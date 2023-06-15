@@ -53,8 +53,8 @@ import {
 
 type FormPaymentsInput = Omit<FormPaymentsField, 'amount_cents'> & {
   display_amount: string
-  min_amount: string
-  max_amount: string
+  display_min_amount: string
+  display_max_amount: string
 }
 
 const FixedPaymentAmountField = ({
@@ -129,8 +129,8 @@ const VariablePaymentAmountField = ({
   control: UseFormReturn<FormPaymentsInput>['control']
   input: FormPaymentsInput
 }) => {
-  const MIN_FIELD_KEY = `min_amount`
-  const MAX_FIELD_KEY = `max_amount`
+  const MIN_FIELD_KEY = `display_min_amount`
+  const MAX_FIELD_KEY = `display_max_amount`
 
   const minAmountValidation: RegisterOptions<
     FormPaymentsInput,
@@ -222,6 +222,8 @@ const PaymentInput = ({ isDisabled }: { isDisabled: boolean }) => {
     mode: 'onChange',
     defaultValues: {
       ...paymentsData,
+      display_min_amount: centsToDollars(paymentsData?.min_amount ?? 0),
+      display_max_amount: centsToDollars(paymentsData?.max_amount ?? 0),
       // Change calculate display_amount value from amount_cents
       display_amount: centsToDollars(paymentAmountCents ?? 0),
     },
@@ -238,9 +240,16 @@ const PaymentInput = ({ isDisabled }: { isDisabled: boolean }) => {
 
   const handlePaymentsChanges = useCallback(
     (paymentsInputs: FormPaymentsInput) => {
-      const { display_amount, ...rest } = paymentsInputs
+      const {
+        display_amount,
+        display_min_amount,
+        display_max_amount,
+        ...rest
+      } = paymentsInputs
       setData({
         ...rest,
+        min_amount: dollarsToCents(display_min_amount ?? '0'),
+        max_amount: dollarsToCents(display_max_amount ?? '0'),
         amount_cents: dollarsToCents(display_amount ?? '0'),
       } as FormPaymentsField)
     },

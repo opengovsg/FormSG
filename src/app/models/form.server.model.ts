@@ -128,6 +128,9 @@ const formSchemaOptions: SchemaOptions = {
     updatedAt: 'lastModified',
   },
 }
+const isPositiveInteger = (val: number) => {
+  return val >= 0 && Number.isInteger(val)
+}
 
 const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
   publicKey: {
@@ -172,16 +175,30 @@ const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
       type: Number,
       default: 0,
       validate: {
-        validator: (amount_cents: number) => {
-          return amount_cents >= 0 && Number.isInteger(amount_cents)
-        },
+        validator: isPositiveInteger,
         message: 'amount_cents must be a non-negative integer.',
+      },
+    },
+    min_amount: {
+      type: Number,
+      default: 0,
+      validate: {
+        validator: isPositiveInteger,
+        message: 'min_amount must be a non-negative integer.',
+      },
+    },
+    max_amount: {
+      type: Number,
+      default: 0,
+      validate: {
+        validator: isPositiveInteger,
+        message: 'max_amount must be a non-negative integer.',
       },
     },
     paymentType: {
       type: String,
       enum: Object.values(PaymentType),
-      default: PaymentType.Fixed,
+      default: PaymentType.Variable,
     },
   },
 

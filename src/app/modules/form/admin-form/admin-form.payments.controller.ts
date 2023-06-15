@@ -329,6 +329,27 @@ export const handleUpdatePayments = [
         }),
         otherwise: Joi.number().integer(),
       }),
+
+      min_amount: Joi.when('enabled', {
+        is: Joi.equal(true),
+        then: Joi.when('paymentType', {
+          is: Joi.equal(PaymentType.Variable),
+          then: Joi.number().integer().positive().required(),
+          otherwise: Joi.number(),
+        }),
+        otherwise: Joi.number().integer(),
+      }),
+
+      max_amount: Joi.when('enabled', {
+        is: Joi.equal(true),
+        then: Joi.when('paymentType', {
+          is: Joi.equal(PaymentType.Variable),
+          then: Joi.number().integer().min(Joi.ref('min_amount')).required(),
+          otherwise: Joi.number(),
+        }),
+        otherwise: Joi.number().integer(),
+      }),
+
       description: Joi.when('enabled', {
         is: Joi.equal(true),
         then: Joi.string().required(),
