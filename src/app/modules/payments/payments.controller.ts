@@ -97,7 +97,7 @@ export const handleSendOnboardingEmail: ControllerHandler<
       } else if (error instanceof MailSendError) {
         // Mail send error
         logger.error({
-          message: 'Error retrieving valid email domains',
+          message: 'Error sending email',
           meta: logMeta,
           error,
         })
