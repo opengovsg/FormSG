@@ -233,6 +233,7 @@ export const LandingPaymentsPage = (): JSX.Element => {
         title="Help Center"
         imgSrc={helpCenterImg}
         direction={{ base: 'column', lg: 'row' }}
+        bg="primary.100"
       >
         <Box>
           <SectionBodyText>
