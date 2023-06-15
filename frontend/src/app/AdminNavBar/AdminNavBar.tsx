@@ -22,8 +22,10 @@ import {
   ROLLOUT_ANNOUNCEMENT_KEY_PREFIX,
 } from '~constants/localStorage'
 import { DASHBOARD_ROUTE } from '~constants/routes'
+import { ADMIN_FEEDBACK_SESSION_KEY } from '~constants/sessionStorage'
 import { useIsMobile } from '~hooks/useIsMobile'
 import { useLocalStorage } from '~hooks/useLocalStorage'
+import { useSessionStorage } from '~hooks/useSessionStorage'
 import { logout } from '~services/AuthService'
 import Button from '~components/Button'
 import IconButton from '~components/IconButton'
@@ -189,6 +191,10 @@ export const AdminNavBar = ({ isMenuOpen }: AdminNavBarProps): JSX.Element => {
     },
   })
 
+  const [, setIsAdminFeedbackEligible] = useSessionStorage<boolean>(
+    ADMIN_FEEDBACK_SESSION_KEY,
+  )
+
   const shouldShowFeatureUpdateNotification = useMemo(() => {
     if (isUserLoading || !user) return false
     return getShowLatestFeatureUpdateNotification(user)
@@ -228,10 +234,11 @@ export const AdminNavBar = ({ isMenuOpen }: AdminNavBarProps): JSX.Element => {
   const handleLogout = useCallback(() => {
     logout()
     removeQuery()
+    setIsAdminFeedbackEligible(false)
     if (emergencyContactKey) {
       localStorage.removeItem(emergencyContactKey)
     }
-  }, [emergencyContactKey, removeQuery])
+  }, [emergencyContactKey, removeQuery, setIsAdminFeedbackEligible])
 
   return (
     <>
