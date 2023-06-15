@@ -26,10 +26,8 @@ export const WorkspacePage = (): JSX.Element => {
   const [lastFeedbackTime, setLastFeedbackTime] = useLocalStorage<number>(
     ADMIN_FEEDBACK_HISTORY_PREFIX,
   )
-  const [isAdminFeedbackEligible] = useSessionStorage<boolean>(
-    ADMIN_FEEDBACK_SESSION_KEY,
-    false,
-  )
+  const [isAdminFeedbackEligible, setAdminFeedbackEligible] =
+    useSessionStorage<boolean>(ADMIN_FEEDBACK_SESSION_KEY, false)
 
   // Memo current time on page load to prevent re-renders from update to current time
   const currentTime = useMemo(() => Date.now(), [])
@@ -58,7 +56,10 @@ export const WorkspacePage = (): JSX.Element => {
     defaultIsOpen: isDisplayFeedback,
   })
 
-  const onAdminFeedbackModalOpen = () => setLastFeedbackTime(currentTime)
+  const onAdminFeedbackModalOpen = () => {
+    setLastFeedbackTime(currentTime)
+    setAdminFeedbackEligible(false)
+  }
 
   return (
     <>

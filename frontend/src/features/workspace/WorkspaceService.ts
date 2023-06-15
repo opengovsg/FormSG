@@ -67,7 +67,7 @@ export const createAdminFeedback = async (
   rating: number,
 ): Promise<AdminFeedbackDto> => {
   return ApiService.post(`${ADMIN_FORM_ENDPOINT}/feedback`, { rating }).then(
-    ({ data }) => data,
+    ({ data }) => data.feedback,
   )
 }
 

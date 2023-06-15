@@ -9,3 +9,6 @@ export type AdminFeedbackBase = {
 }
 
 export type AdminFeedbackDto = AdminFeedbackBase & { _id: string }
+
+export const AdminFeedbackRatingUp = 1
+export const AdminFeedbackRatingDown = 0
