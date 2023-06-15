@@ -3,10 +3,12 @@ import { Modal, ModalContent, UseDisclosureReturn } from '@chakra-ui/react'
 
 import { AdminFeedbackModalContent } from './AdminFeedbackModalContent'
 
-export type AdminFeedbackModalProps = Pick<
-  UseDisclosureReturn,
-  'onClose' | 'isOpen'
-> & { onOpen: () => void }
+export type AdminFeedbackModalProps = {
+  isOpen: UseDisclosureReturn['isOpen']
+  onClose: UseDisclosureReturn['onClose']
+  // we use a customise onOpen method unrelated to useDisclosure
+  onOpen: () => void
+}
 
 export const AdminFeedbackModal = ({
   isOpen,

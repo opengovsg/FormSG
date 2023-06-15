@@ -12,6 +12,7 @@ import { insertAt, replaceAt } from '~shared/utils/immutable-array-fns'
 import { ADMIN_FEEDBACK_SESSION_KEY } from '~constants/sessionStorage'
 import { useSessionStorage } from '~hooks/useSessionStorage'
 
+import { useEnv } from '~features/env/queries'
 import { augmentWithMyInfo } from '~features/myinfo/utils/augmentWithMyInfo'
 
 import { PENDING_CREATE_FIELD_ID } from '../constants'
@@ -61,12 +62,17 @@ export const useBuilderFields = () => {
   const [, setIsAdminFeedbackEligible] = useSessionStorage<boolean>(
     ADMIN_FEEDBACK_SESSION_KEY,
   )
+  const { data: { adminFeedbackFieldThreshold } = {} } = useEnv()
   const builderFields = useMemo(() => {
     let existingFields = formData?.form_fields
     if (isLoading || !existingFields) return null
     if (stateData.state === FieldBuilderState.EditingField) {
       // check if existing fields meets threhold for admin feedback eligibity
-      if (existingFields.length > 4) setIsAdminFeedbackEligible(true)
+      if (
+        adminFeedbackFieldThreshold &&
+        existingFields.length >= adminFeedbackFieldThreshold
+      )
+        setIsAdminFeedbackEligible(true)
 
       existingFields = getFormFieldsWhileEditing(
         existingFields,
@@ -74,13 +80,23 @@ export const useBuilderFields = () => {
       )
     } else if (stateData.state === FieldBuilderState.CreatingField) {
       // if existing fields is equal to threshold - 1, to include field being created
-      if (existingFields.length >= 4) setIsAdminFeedbackEligible(true)
+      if (
+        adminFeedbackFieldThreshold &&
+        existingFields.length >= adminFeedbackFieldThreshold - 1
+      )
+        setIsAdminFeedbackEligible(true)
 
       existingFields = getFormFieldsWhileCreating(existingFields, stateData)
     }
 
     return existingFields.map(augmentWithMyInfo)
-  }, [formData?.form_fields, isLoading, stateData, setIsAdminFeedbackEligible])
+  }, [
+    formData?.form_fields,
+    isLoading,
+    stateData,
+    setIsAdminFeedbackEligible,
+    adminFeedbackFieldThreshold,
+  ])
 
   return {
     builderFields,

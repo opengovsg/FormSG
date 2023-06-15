@@ -22,11 +22,17 @@ import { WorkspaceProvider } from './WorkspaceProvider'
 export const CONTAINER_MAXW = '69.5rem'
 
 export const WorkspacePage = (): JSX.Element => {
-  const { data: { siteBannerContent, adminBannerContent } = {} } = useEnv()
+  const {
+    data: {
+      siteBannerContent,
+      adminBannerContent,
+      adminFeedbackDisplayFrequency,
+    } = {},
+  } = useEnv()
   const [lastFeedbackTime, setLastFeedbackTime] = useLocalStorage<number>(
     ADMIN_FEEDBACK_HISTORY_PREFIX,
   )
-  const [isAdminFeedbackEligible, setAdminFeedbackEligible] =
+  const [isAdminFeedbackEligible, setIsAdminFeedbackEligible] =
     useSessionStorage<boolean>(ADMIN_FEEDBACK_SESSION_KEY, false)
 
   // Memo current time on page load to prevent re-renders from update to current time
@@ -46,9 +52,19 @@ export const WorkspacePage = (): JSX.Element => {
   // Whether to display the feedback based on session eligibity and time of prev feedback seen
   const isDisplayFeedback = useMemo(
     () =>
+      // admin session eligibility
       isAdminFeedbackEligible &&
-      (!lastFeedbackTime || currentTime - lastFeedbackTime > 100000),
-    [lastFeedbackTime, currentTime, isAdminFeedbackEligible],
+      // if feedbackTime has not been seen
+      (!lastFeedbackTime ||
+        // or if last feedback time seen is more than frequency (frequency env var must be defined)
+        (!!adminFeedbackDisplayFrequency &&
+          currentTime - lastFeedbackTime > adminFeedbackDisplayFrequency)),
+    [
+      lastFeedbackTime,
+      currentTime,
+      isAdminFeedbackEligible,
+      adminFeedbackDisplayFrequency,
+    ],
   )
 
   const createFormModalDisclosure = useDisclosure()
@@ -58,7 +74,7 @@ export const WorkspacePage = (): JSX.Element => {
 
   const onAdminFeedbackModalOpen = () => {
     setLastFeedbackTime(currentTime)
-    setAdminFeedbackEligible(false)
+    setIsAdminFeedbackEligible(false)
   }
 
   return (
