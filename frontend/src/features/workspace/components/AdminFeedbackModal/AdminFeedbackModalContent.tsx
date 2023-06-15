@@ -53,7 +53,7 @@ export const AdminFeedbackModalContent = ({
 
   const handleCommentClick = useCallback(
     (data: AdminFeedbackCommentForm) => {
-      if (feedbackId) {
+      if (feedbackId && !!data.comment) {
         updateAdminFeedbackMutation.mutateAsync({
           feedbackId,
           comment: data.comment,
