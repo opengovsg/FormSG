@@ -17,6 +17,9 @@ import {
   FormFieldDto,
 } from '~shared/types/field'
 
+import { ADMIN_FEEDBACK_SESSION_KEY } from '~constants/sessionStorage'
+import { useSessionStorage } from '~hooks/useSessionStorage'
+
 import { useCreateFormField } from '~features/admin-form/create/builder-and-design/mutations/useCreateFormField'
 import { useEditFormField } from '~features/admin-form/create/builder-and-design/mutations/useEditFormField'
 import {
@@ -31,6 +34,7 @@ import {
   updateEditStateSelector,
   useFieldBuilderStore,
 } from '~features/admin-form/create/builder-and-design/useFieldBuilderStore'
+import { isMyInfo } from '~features/myinfo/utils'
 
 import { EditFieldProps } from './types'
 
@@ -90,6 +94,9 @@ export const useEditFieldForm = <FormShape, FieldShape extends FormField>({
 
   const { editFieldMutation } = useEditFormField()
   const { createFieldMutation } = useCreateFormField()
+  const [, setisAdminFeedbackEligible] = useSessionStorage<boolean>(
+    ADMIN_FEEDBACK_SESSION_KEY,
+  )
 
   const isPendingField = useMemo(
     () => stateData.state === FieldBuilderState.CreatingField,
@@ -143,6 +150,10 @@ export const useEditFieldForm = <FormShape, FieldShape extends FormField>({
     if (transform.preSubmit) {
       updatedFormField = await transform.preSubmit(inputs, updatedFormField)
     }
+
+    // if field to be updated is MyInfo, enable admin feedback
+    if (isMyInfo(updatedFormField)) setisAdminFeedbackEligible(true)
+
     if (stateData.state === FieldBuilderState.CreatingField) {
       return createFieldMutation.mutate(updatedFormField, {
         onSuccess: onSaveSuccess,

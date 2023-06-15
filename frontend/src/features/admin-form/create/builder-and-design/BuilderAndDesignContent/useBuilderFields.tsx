@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { Dispatch, SetStateAction, useMemo } from 'react'
 import cuid from 'cuid'
 
 import {
@@ -8,6 +8,9 @@ import {
   TableFieldDto,
 } from '~shared/types/field'
 import { insertAt, replaceAt } from '~shared/utils/immutable-array-fns'
+
+import { ADMIN_FEEDBACK_SESSION_KEY } from '~constants/sessionStorage'
+import { useSessionStorage } from '~hooks/useSessionStorage'
 
 import { augmentWithMyInfo } from '~features/myinfo/utils/augmentWithMyInfo'
 
@@ -48,26 +51,38 @@ const getFormFieldsWhileEditing = (
     (ff) => ff._id === editingField._id,
   )
   if (editingFieldIndex < 0) return formFields
+
+  if (formFields.length > 5) setIsAdminFeedbackEligible(true)
+
   return replaceAt(formFields, editingFieldIndex, editingField)
 }
 
 export const useBuilderFields = () => {
   const { data: formData, isLoading } = useCreateTabForm()
   const stateData = useFieldBuilderStore(stateDataSelector)
+  const [, setIsAdminFeedbackEligible] = useSessionStorage<boolean>(
+    ADMIN_FEEDBACK_SESSION_KEY,
+  )
   const builderFields = useMemo(() => {
     let existingFields = formData?.form_fields
     if (isLoading || !existingFields) return null
     if (stateData.state === FieldBuilderState.EditingField) {
+      // check if existing fields meets threhold for admin feedback eligibity
+      if (existingFields.length > 4) setIsAdminFeedbackEligible(true)
+
       existingFields = getFormFieldsWhileEditing(
         existingFields,
         stateData.field,
       )
     } else if (stateData.state === FieldBuilderState.CreatingField) {
+      // if existing fields is equal to threshold - 1, to include field being created
+      if (existingFields.length >= 4) setIsAdminFeedbackEligible(true)
+
       existingFields = getFormFieldsWhileCreating(existingFields, stateData)
     }
 
     return existingFields.map(augmentWithMyInfo)
-  }, [formData?.form_fields, isLoading, stateData])
+  }, [formData?.form_fields, isLoading, stateData, setIsAdminFeedbackEligible])
 
   return {
     builderFields,
