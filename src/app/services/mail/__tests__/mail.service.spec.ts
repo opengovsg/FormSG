@@ -1573,6 +1573,48 @@ describe('mail.service', () => {
     })
   })
 
+  describe('sendPaymentConfirmationEmail', () => {
+    const MOCK_INVALID_EMAIL = 'hello@world'
+    const MOCK_FORM_TITLE = 'Formally Information'
+    const MOCK_SUBMISSION_ID = 'mockSubmissionId'
+    const MOCK_FORM_ID = 'mockFormId'
+    const MOCK_PAYMENT_ID = 'mockPaymentId'
+
+    it('should send payment confirmation emails successfully', async () => {
+      // Act
+      const actualResult = await mailService.sendPaymentConfirmationEmail({
+        email: MOCK_VALID_EMAIL,
+        formTitle: MOCK_FORM_TITLE,
+        submissionId: MOCK_SUBMISSION_ID,
+        formId: MOCK_FORM_ID,
+        paymentId: MOCK_PAYMENT_ID,
+      })
+
+      // Assert
+      expect(actualResult._unsafeUnwrap()).toEqual(true)
+      // Check arguments passed to sendNodeMail
+      expect(sendMailSpy).toHaveBeenCalledOnce()
+    })
+
+    it('should return MailSendError when the provided email is invalid', async () => {
+      // Act
+      const actualResult = await mailService.sendPaymentConfirmationEmail({
+        email: MOCK_INVALID_EMAIL,
+        formTitle: MOCK_FORM_TITLE,
+        submissionId: MOCK_SUBMISSION_ID,
+        formId: MOCK_FORM_ID,
+        paymentId: MOCK_PAYMENT_ID,
+      })
+
+      // Assert
+      expect(actualResult).toEqual(
+        err(new MailSendError('Invalid email error')),
+      )
+      // Check arguments passed to sendNodeMail
+      expect(sendMailSpy).not.toHaveBeenCalled()
+    })
+  })
+
   describe('sendPaymentOnboardingEmail', () => {
     const MOCK_INVALID_EMAIL = 'hello@world'
 
