@@ -1572,4 +1572,34 @@ describe('mail.service', () => {
       expect(sendMailSpy).toHaveBeenCalledTimes(0)
     })
   })
+
+  describe('sendPaymentOnboardingEmail', () => {
+    const MOCK_INVALID_EMAIL = 'hello@world'
+
+    it('should send payment onboarding emails successfully', async () => {
+      // Act
+      const actualResult = await mailService.sendPaymentOnboardingEmail({
+        email: MOCK_VALID_EMAIL,
+      })
+
+      // Assert
+      expect(actualResult._unsafeUnwrap()).toEqual(true)
+      // Check arguments passed to sendNodeMail
+      expect(sendMailSpy).toHaveBeenCalledOnce()
+    })
+
+    it('should return MailSendError when the provided email is invalid', async () => {
+      // Act
+      const actualResult = await mailService.sendPaymentOnboardingEmail({
+        email: MOCK_INVALID_EMAIL,
+      })
+
+      // Assert
+      expect(actualResult).toEqual(
+        err(new MailSendError('Invalid email error')),
+      )
+      // Check arguments passed to sendNodeMail
+      expect(sendMailSpy).not.toHaveBeenCalled()
+    })
+  })
 })
