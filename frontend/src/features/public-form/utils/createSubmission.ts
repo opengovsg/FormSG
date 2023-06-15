@@ -2,7 +2,7 @@ import { datadogLogs } from '@datadog/browser-logs'
 import { encode as encodeBase64 } from '@stablelib/base64'
 import { chain, forOwn, isEmpty, keyBy, omit, pick } from 'lodash'
 
-import { BasicField, FormFieldDto } from '~shared/types/field'
+import { BasicField, FormFieldDto, PaymentFieldsDto } from '~shared/types/field'
 import {
   EmailResponse,
   FieldResponse,
@@ -38,12 +38,14 @@ export const createEncryptedSubmissionData = async ({
   publicKey,
   responseMetadata,
   paymentReceiptEmail,
+  payments,
 }: {
   formFields: FormFieldDto[]
   formInputs: FormFieldValues
   publicKey: string
   responseMetadata?: ResponseMetadata
   paymentReceiptEmail?: string
+  payments?: PaymentFieldsDto
 }): Promise<StorageModeSubmissionContentDto> => {
   const responses = createResponsesArray(formFields, formInputs)
   const encryptedContent = formsgSdk.crypto.encrypt(responses, publicKey)
@@ -65,6 +67,7 @@ export const createEncryptedSubmissionData = async ({
     responses: filteredResponses,
     encryptedContent,
     paymentReceiptEmail,
+    payments,
     version: ENCRYPT_VERSION,
     responseMetadata,
   }

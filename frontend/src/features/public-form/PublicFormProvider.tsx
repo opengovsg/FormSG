@@ -15,7 +15,11 @@ import { differenceInMilliseconds, isPast } from 'date-fns'
 import get from 'lodash/get'
 import simplur from 'simplur'
 
-import { PAYMENT_CONTACT_FIELD_ID } from '~shared/constants'
+import {
+  PAYMENT_CONTACT_FIELD_ID,
+  PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID,
+} from '~shared/constants'
+import { PaymentType } from '~shared/types'
 import {
   FormAuthType,
   FormResponseMode,
@@ -207,10 +211,14 @@ export const PublicFormProvider = ({
   const navigate = useNavigate()
   const [, storePaymentMemory] = useBrowserStm(formId)
   const handleSubmitForm: SubmitHandler<
-    FormFieldValues & { [PAYMENT_CONTACT_FIELD_ID]?: { value: string } }
+    FormFieldValues & {
+      [PAYMENT_CONTACT_FIELD_ID]?: { value: string }
+      [PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID]: number
+    }
   > = useCallback(
     async ({
       [PAYMENT_CONTACT_FIELD_ID]: paymentReceiptEmailField,
+      [PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID]: paymentVariableInputAmountField,
       ...formInputs
     }) => {
       const { form } = data ?? {}
@@ -353,6 +361,13 @@ export const PublicFormProvider = ({
                   publicKey: form.publicKey,
                   captchaResponse,
                   paymentReceiptEmail: paymentReceiptEmailField?.value,
+                  ...(form.payments_field.paymentType === PaymentType.Variable
+                    ? {
+                        payments: {
+                          amount_cents: paymentVariableInputAmountField,
+                        },
+                      }
+                    : {}),
                 },
                 {
                   onSuccess: ({
@@ -395,74 +410,74 @@ export const PublicFormProvider = ({
           // TODO (#5826): Toggle to use fetch for submissions instead of axios. If enabled, this is used for testing and to use fetch instead of axios by default if testing shows fetch is more  stable. Remove once network error is resolved
           if (useFetchForSubmissions) {
             return submitStorageFormWithFetch()
-          } else {
-            datadogLogs.logger.info(`handleSubmitForm: submitting via axios`, {
-              meta: {
-                ...logMeta,
-                responseMode: 'storage',
-                method: 'axios',
-              },
-            })
-
-            return (
-              submitStorageModeFormMutation
-                .mutateAsync(
-                  {
-                    ...formData,
-                    publicKey: form.publicKey,
-                    captchaResponse,
-                    paymentReceiptEmail: paymentReceiptEmailField?.value,
-                  },
-                  {
-                    onSuccess: ({
-                      submissionId,
-                      timestamp,
-                      // payment forms will have non-empty paymentData field
-                      paymentData,
-                    }) => {
-                      trackSubmitForm(form)
-
-                      if (paymentData) {
-                        navigate(
-                          getPaymentPageUrl(formId, paymentData.paymentId),
-                        )
-                        storePaymentMemory(paymentData.paymentId)
-                        return
-                      }
-                      setSubmissionData({
-                        id: submissionId,
-                        timestamp,
-                      })
-                    },
-                  },
-                )
-                // Using catch since we are using mutateAsync and react-hook-form will continue bubbling this up.
-                .catch(async (error) => {
-                  // TODO(#5826): Remove when we have resolved the Network Error
-                  datadogLogs.logger.warn(
-                    `handleSubmitForm: ${error.message}`,
-                    {
-                      meta: {
-                        ...logMeta,
-                        responseMode: 'storage',
-                        method: 'axios',
-                        error: {
-                          message: error.message,
-                          stack: error.stack,
-                        },
-                      },
-                    },
-                  )
-
-                  if (/Network Error/i.test(error.message)) {
-                    axiosDebugFlow()
-                    return submitStorageFormWithFetch()
-                  } else {
-                    showErrorToast(error, form)
-                  }
-                })
-            )
           }
+          datadogLogs.logger.info(`handleSubmitForm: submitting via axios`, {
+            meta: {
+              ...logMeta,
+              responseMode: 'storage',
+              method: 'axios',
+            },
+          })
+
+          return (
+            submitStorageModeFormMutation
+              .mutateAsync(
+                {
+                  ...formData,
+                  publicKey: form.publicKey,
+                  captchaResponse,
+                  paymentReceiptEmail: paymentReceiptEmailField?.value,
+                  ...(form.payments_field.paymentType === PaymentType.Variable
+                    ? {
+                        payments: {
+                          amount_cents: paymentVariableInputAmountField,
+                        },
+                      }
+                    : {}),
+                },
+                {
+                  onSuccess: ({
+                    submissionId,
+                    timestamp,
+                    // payment forms will have non-empty paymentData field
+                    paymentData,
+                  }) => {
+                    trackSubmitForm(form)
+
+                    if (paymentData) {
+                      navigate(getPaymentPageUrl(formId, paymentData.paymentId))
+                      storePaymentMemory(paymentData.paymentId)
+                      return
+                    }
+                    setSubmissionData({
+                      id: submissionId,
+                      timestamp,
+                    })
+                  },
+                },
+              )
+              // Using catch since we are using mutateAsync and react-hook-form will continue bubbling this up.
+              .catch(async (error) => {
+                // TODO(#5826): Remove when we have resolved the Network Error
+                datadogLogs.logger.warn(`handleSubmitForm: ${error.message}`, {
+                  meta: {
+                    ...logMeta,
+                    responseMode: 'storage',
+                    method: 'axios',
+                    error: {
+                      message: error.message,
+                      stack: error.stack,
+                    },
+                  },
+                })
+
+                if (/Network Error/i.test(error.message)) {
+                  axiosDebugFlow()
+                  return submitStorageFormWithFetch()
+                }
+                showErrorToast(error, form)
+              })
+          )
         }
       }
     },

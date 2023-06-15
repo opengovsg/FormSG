@@ -1,5 +1,5 @@
 import { SuccessMessageDto } from '~shared/types'
-import { FormFieldDto } from '~shared/types/field'
+import { FormFieldDto, PaymentFieldsDto } from '~shared/types/field'
 import {
   PublicFormAuthLogoutDto,
   PublicFormAuthRedirectDto,
@@ -83,6 +83,7 @@ export type SubmitEmailFormArgs = {
   formInputs: FormFieldValues
   responseMetadata?: ResponseMetadata
   paymentReceiptEmail?: string
+  payments?: PaymentFieldsDto
 }
 
 export type SubmitStorageFormArgs = SubmitEmailFormArgs & { publicKey: string }
@@ -126,6 +127,7 @@ export const submitStorageModeForm = async ({
   captchaResponse = null,
   paymentReceiptEmail,
   responseMetadata,
+  payments,
 }: SubmitStorageFormArgs) => {
   const filteredInputs = filterHiddenInputs({
     formFields,
@@ -138,8 +140,8 @@ export const submitStorageModeForm = async ({
     publicKey,
     responseMetadata,
     paymentReceiptEmail,
+    payments,
   })
-
   return ApiService.post<SubmissionResponseDto>(
     `${PUBLIC_FORMS_ENDPOINT}/${formId}/submissions/encrypt`,
     submissionContent,
@@ -200,6 +202,7 @@ export const submitStorageModeFormWithFetch = async ({
   captchaResponse = null,
   paymentReceiptEmail,
   responseMetadata,
+  payments,
 }: SubmitStorageFormArgs) => {
   const filteredInputs = filterHiddenInputs({
     formFields,
@@ -212,6 +215,7 @@ export const submitStorageModeFormWithFetch = async ({
     publicKey,
     responseMetadata,
     paymentReceiptEmail,
+    payments,
   })
 
   // Add captcha response to query string

@@ -1,6 +1,8 @@
 import { Controller, useFormContext } from 'react-hook-form'
 import { Box } from '@chakra-ui/react'
 
+import { PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID } from '~shared/constants'
+
 import MoneyInput from '~components/MoneyInput'
 
 import { usePaymentFieldValidation } from '../queries'
@@ -15,8 +17,10 @@ export const VariablePaymentItemDetailsField = ({
 }: PaymentItemDetailsBlockProps): JSX.Element => {
   const { control } = useFormContext()
   const amountValidation = usePaymentFieldValidation<
-    { display_amount: string },
-    'display_amount'
+    {
+      [PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID]: string
+    },
+    typeof PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID
   >()
 
   return (
@@ -32,7 +36,7 @@ export const VariablePaymentItemDetailsField = ({
       />
       <Box>
         <Controller
-          name="display_amount"
+          name={PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID}
           control={control}
           rules={amountValidation}
           render={({ field }) => (

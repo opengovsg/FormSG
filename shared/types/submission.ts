@@ -2,7 +2,7 @@ import type { Opaque, RequireAtLeastOne } from 'type-fest'
 import { z } from 'zod'
 
 import { ErrorDto } from './core'
-import { FormFieldDto, MyInfoAttribute } from './field'
+import { FormFieldDto, MyInfoAttribute, PaymentFieldsDto } from './field'
 import { FormAuthType } from './form/form'
 import { DateString } from './generic'
 import { EmailResponse, FieldResponse, MobileResponse } from './response'
@@ -184,6 +184,7 @@ export type StorageModeSubmissionContentDto = {
   paymentReceiptEmail?: string
   version: number
   responseMetadata?: ResponseMetadata
+  payments?: PaymentFieldsDto
 }
 
 export type PaymentSubmissionData = {

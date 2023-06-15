@@ -48,6 +48,9 @@ export const validateEncryptSubmissionParams = celebrate({
       )
       .optional(),
     paymentReceiptEmail: Joi.string(),
+    payments: Joi.object({
+      amount_cents: Joi.number().integer().positive(),
+    }),
     version: Joi.number().required(),
     responseMetadata: Joi.object({
       responseTimeMs: Joi.number(),
