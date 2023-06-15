@@ -1,4 +1,4 @@
-import { Dispatch, SetStateAction, useMemo } from 'react'
+import { useMemo } from 'react'
 import cuid from 'cuid'
 
 import {
@@ -51,8 +51,6 @@ const getFormFieldsWhileEditing = (
     (ff) => ff._id === editingField._id,
   )
   if (editingFieldIndex < 0) return formFields
-
-  if (formFields.length > 5) setIsAdminFeedbackEligible(true)
 
   return replaceAt(formFields, editingFieldIndex, editingField)
 }

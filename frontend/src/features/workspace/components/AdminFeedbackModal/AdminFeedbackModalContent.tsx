@@ -1,11 +1,9 @@
 import { Dispatch, SetStateAction, useState } from 'react'
 import { GoThumbsdown, GoThumbsup } from 'react-icons/go'
 import {
-  Heading,
   Link,
   ModalBody,
   ModalCloseButton,
-  ModalFooter,
   ModalHeader,
   Stack,
   Text,
@@ -13,7 +11,6 @@ import {
 
 import Button from '~components/Button'
 import IconButton from '~components/IconButton'
-import Input from '~components/Input'
 import Textarea from '~components/Textarea'
 
 enum FeedbackModalContentState {
