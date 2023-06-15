@@ -96,7 +96,8 @@ export const LandingPaymentsPage = (): JSX.Element => {
       if (error instanceof Error) {
         if (error.message === 'Forbidden') {
           formMethods.setError(fieldId, {
-            message: 'Please use an email whitelisted on FormSG.',
+            message:
+              'We are unable to send you our guide because your email is not whitelisted on FormSG.',
           })
         } else {
           formMethods.setError(fieldId, {
