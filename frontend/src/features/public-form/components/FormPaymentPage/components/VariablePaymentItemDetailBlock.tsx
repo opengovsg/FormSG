@@ -1,5 +1,5 @@
 import { Controller, useFormContext } from 'react-hook-form'
-import { Box } from '@chakra-ui/react'
+import { Box, FormControl, FormErrorMessage } from '@chakra-ui/react'
 
 import { PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID } from '~shared/constants'
 
@@ -15,7 +15,10 @@ export const VariablePaymentItemDetailsField = ({
   paymentItemName,
   colorTheme,
 }: PaymentItemDetailsBlockProps): JSX.Element => {
-  const { control } = useFormContext()
+  const {
+    control,
+    formState: { errors },
+  } = useFormContext()
   const amountValidation = usePaymentFieldValidation<
     {
       [PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID]: string
@@ -30,11 +33,14 @@ export const VariablePaymentItemDetailsField = ({
       borderRadius="4px"
       p="0.7rem"
     >
-      <PaymentItemNameDescription
-        paymentDescription={paymentDescription}
-        paymentItemName={paymentItemName}
-      />
-      <Box>
+      <FormControl
+        isInvalid={!!errors[PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID]}
+        isRequired
+      >
+        <PaymentItemNameDescription
+          paymentDescription={paymentDescription}
+          paymentItemName={paymentItemName}
+        />
         <Controller
           name={PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID}
           control={control}
@@ -49,7 +55,10 @@ export const VariablePaymentItemDetailsField = ({
             />
           )}
         />
-      </Box>
+        <FormErrorMessage>
+          {errors[PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID]?.message}
+        </FormErrorMessage>
+      </FormControl>
     </Box>
   )
 }

@@ -30,6 +30,7 @@ import { FORMID_REGEX } from '~constants/routes'
 import { useBrowserStm } from '~hooks/payments'
 import { useTimeout } from '~hooks/useTimeout'
 import { useToast } from '~hooks/useToast'
+import { dollarsToCents } from '~utils/payments'
 import { HttpError } from '~services/ApiService'
 import { FormFieldValues } from '~templates/Field'
 
@@ -213,7 +214,7 @@ export const PublicFormProvider = ({
   const handleSubmitForm: SubmitHandler<
     FormFieldValues & {
       [PAYMENT_CONTACT_FIELD_ID]?: { value: string }
-      [PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID]: number
+      [PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID]: string
     }
   > = useCallback(
     async ({
@@ -364,7 +365,9 @@ export const PublicFormProvider = ({
                   ...(form.payments_field.paymentType === PaymentType.Variable
                     ? {
                         payments: {
-                          amount_cents: paymentVariableInputAmountField,
+                          amount_cents: dollarsToCents(
+                            paymentVariableInputAmountField,
+                          ),
                         },
                       }
                     : {}),
@@ -430,7 +433,9 @@ export const PublicFormProvider = ({
                   ...(form.payments_field.paymentType === PaymentType.Variable
                     ? {
                         payments: {
-                          amount_cents: paymentVariableInputAmountField,
+                          amount_cents: dollarsToCents(
+                            paymentVariableInputAmountField,
+                          ),
                         },
                       }
                     : {}),
