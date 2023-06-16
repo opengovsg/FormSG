@@ -242,22 +242,22 @@ export const createEncryptedSubmissionDto = (
 }
 
 export const getPaymentAmount = (
-  paymentFields: FormPaymentsField,
-  payments: PaymentFieldsDto,
+  formPaymentFields: FormPaymentsField, // fields that are from document.form
+  incomingSubmissionPaymentFields?: PaymentFieldsDto, // fields that are from incoming submission
 ) => {
-  if (!paymentFields) {
+  if (!formPaymentFields) {
     return
   }
   // legacy payment forms may not have a payment type
-  const { paymentType } = paymentFields
+  const { paymentType } = formPaymentFields
   if (!paymentType) {
-    return paymentFields.amount_cents
+    return formPaymentFields.amount_cents
   }
   switch (paymentType) {
     case PaymentType.Fixed:
-      return paymentFields.amount_cents
+      return formPaymentFields.amount_cents
     case PaymentType.Variable:
-      return payments.amount_cents
+      return incomingSubmissionPaymentFields?.amount_cents
 
     default: {
       // Force TS to emit an error if the cases above are not exhaustive
