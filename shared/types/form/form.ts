@@ -84,6 +84,10 @@ export type FormPaymentsField = {
   description?: string
   name?: string
   paymentType?: PaymentType
+} & {
+  paymentType: PaymentType.Variable
+  min_amount: number
+  max_amount: number
 }
 
 export type FormBusinessField = {

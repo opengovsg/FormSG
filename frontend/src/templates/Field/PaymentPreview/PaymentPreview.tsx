@@ -55,6 +55,8 @@ export const PaymentPreview = ({
             colorTheme={colorTheme}
             paymentAmount={paymentDetails.amount_cents}
             paymentDescription={paymentDetails.description}
+            paymentMin={paymentDetails.min_amount}
+            paymentMax={paymentDetails.max_amount}
           />
         ) : (
           <PaymentItemDetailsBlock

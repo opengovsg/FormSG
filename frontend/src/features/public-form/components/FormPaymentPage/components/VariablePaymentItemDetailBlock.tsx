@@ -10,11 +10,18 @@ import { usePaymentFieldValidation } from '../queries'
 import { PaymentItemDetailsBlockProps } from './PaymentItemDetailsBlock'
 import PaymentItemNameDescription from './PaymentItemNameDescription'
 
+interface VariableItemDetailProps extends PaymentItemDetailsBlockProps {
+  paymentMin: number
+  paymentMax: number
+}
+
 export const VariablePaymentItemDetailsField = ({
   paymentDescription,
   paymentItemName,
   colorTheme,
-}: PaymentItemDetailsBlockProps): JSX.Element => {
+  paymentMin,
+  paymentMax,
+}: VariableItemDetailProps): JSX.Element => {
   const {
     control,
     formState: { errors },
@@ -24,7 +31,7 @@ export const VariablePaymentItemDetailsField = ({
       [PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID]: string
     },
     typeof PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID
-  >()
+  >({ lesserThanCents: paymentMax, greaterThanCents: paymentMin })
 
   return (
     <Box
