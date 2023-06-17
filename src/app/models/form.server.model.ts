@@ -198,7 +198,7 @@ const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
     paymentType: {
       type: String,
       enum: Object.values(PaymentType),
-      default: PaymentType.Variable,
+      default: PaymentType.Fixed,
     },
   },
 

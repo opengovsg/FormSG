@@ -23,6 +23,7 @@ import {
   LogicDto,
   LogicType,
   PaymentChannel,
+  PaymentType,
 } from 'shared/types'
 
 import getFormModel, {
@@ -98,7 +99,11 @@ const PAYMENTS_DEFAULTS = {
   payments_field: {
     enabled: false,
     description: '',
+    name: '',
     amount_cents: 0,
+    min_amount: 0,
+    max_amount: 0,
+    paymentType: PaymentType.Fixed,
   },
 }
 
