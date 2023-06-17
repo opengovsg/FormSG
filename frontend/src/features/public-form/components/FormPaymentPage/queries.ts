@@ -79,7 +79,7 @@ export const usePaymentFieldValidation = <
         !!minCentsLimit && !!val && dollarsToCents(val) >= minCentsLimit
       // Repeat the check on minCentsLimit for correct typing
       if (!!minCentsLimit && !validateMin) {
-        return `Please enter a payment amount of at least ${formatCurrency(
+        return `The minimum amount is ${formatCurrency(
           Number(centsToDollars(minCentsLimit)),
         )}`
       }
@@ -88,7 +88,7 @@ export const usePaymentFieldValidation = <
         !!maxCentsLimit && !!val && dollarsToCents(val) <= maxCentsLimit
       // Repeat the check on maxCentsLimit for correct typing
       if (!!maxCentsLimit && !validateMax) {
-        return `Please enter a payment amount of at most ${formatCurrency(
+        return `The maxmium amount is ${formatCurrency(
           Number(centsToDollars(maxCentsLimit)),
         )}`
       }
