@@ -1588,10 +1588,11 @@ export const updatePayments = (
   IEncryptedFormDocument['payments_field'],
   PossibleDatabaseError | FormNotFoundError | InvalidPaymentAmountError
 > => {
-  const { enabled, amount_cents } = newPayments
+  const { enabled } = newPayments
 
   // Check if payment amount exceeds maxPaymentAmountCents or below minPaymentAmountCents if the payment is enabled
-  if (enabled && amount_cents !== undefined) {
+  if (enabled && newPayments?.paymentType == null) {
+    const { amount_cents } = newPayments
     if (
       amount_cents > paymentConfig.maxPaymentAmountCents ||
       amount_cents < paymentConfig.minPaymentAmountCents
