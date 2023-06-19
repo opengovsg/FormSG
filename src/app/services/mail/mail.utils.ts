@@ -299,6 +299,6 @@ export const generatePaymentOnboardingHtml = (): string => {
   <p>If you have any questions regarding payments, feel free to reach out to support@form.gov.sg.</p>
   <p>Regards,
   <br/>
-  FormSG</p>
+  ${appName} team</p>
   `
 }
