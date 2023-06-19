@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Flex, useDisclosure } from '@chakra-ui/react'
 
 import { AdminNavBar } from '~/app/AdminNavBar'
@@ -14,7 +14,7 @@ import { Banner } from '~components/Banner'
 import { useEnv } from '~features/env/queries'
 import { useUser } from '~features/user/queries'
 
-import { AdminFeedbackModal } from './components/AdminFeedbackModal/AdminFeedbackModal'
+import AdminFeedbackBox from './components/AdminFeedbackModal'
 // TODO #4279: Remove after React rollout is complete
 import CreateFormModal from './components/CreateFormModal'
 import { WorkspacePageContent } from './components/WorkspacePageContent'
@@ -31,6 +31,7 @@ export const WorkspacePage = (): JSX.Element => {
     } = {},
   } = useEnv()
   const { user, isLoading } = useUser()
+  const [isDisplayFeedback, setIsDisplayFeedback] = useState(false)
 
   const adminFeedbackKey = useMemo(() => {
     return ADMIN_FEEDBACK_HISTORY_PREFIX + user?._id
@@ -55,10 +56,12 @@ export const WorkspacePage = (): JSX.Element => {
     [bannerContent],
   )
 
-  // Whether to display the feedback based on session eligibility and time of prev feedback seen
-  const isDisplayFeedback = useMemo(
-    () =>
-      // not loading user details
+  const createFormModalDisclosure = useDisclosure()
+
+  // Whether to display the admin feedback based on session eligibility and time of prev feedback seen
+  useEffect(() => {
+    if (
+      // user details is loaded
       !isLoading &&
       // admin session eligibility
       isAdminFeedbackEligible &&
@@ -66,25 +69,28 @@ export const WorkspacePage = (): JSX.Element => {
       (!lastFeedbackTime ||
         // or if last feedback time seen is more than frequency (frequency env var must be defined)
         (!!adminFeedbackDisplayFrequency &&
-          currentTime - lastFeedbackTime > adminFeedbackDisplayFrequency)),
-    [
-      isLoading,
-      lastFeedbackTime,
-      currentTime,
-      isAdminFeedbackEligible,
-      adminFeedbackDisplayFrequency,
-    ],
+          currentTime - lastFeedbackTime > adminFeedbackDisplayFrequency))
+    ) {
+      setIsDisplayFeedback(true)
+      // reset local storage and admin feedback eligibility when admin feedback is displayed
+      setLastFeedbackTime(currentTime)
+      setIsAdminFeedbackEligible(false)
+    }
+  }, [
+    isLoading,
+    lastFeedbackTime,
+    currentTime,
+    isAdminFeedbackEligible,
+    adminFeedbackDisplayFrequency,
+    setIsDisplayFeedback,
+    setLastFeedbackTime,
+    setIsAdminFeedbackEligible,
+  ])
+
+  const closeAdminFeedback = useCallback(
+    () => setIsDisplayFeedback(false),
+    [setIsDisplayFeedback],
   )
-
-  const createFormModalDisclosure = useDisclosure()
-  const adminFeedbackModalDisclosure = useDisclosure({
-    defaultIsOpen: isDisplayFeedback,
-  })
-
-  const onAdminFeedbackModalOpen = () => {
-    setLastFeedbackTime(currentTime)
-    setIsAdminFeedbackEligible(false)
-  }
 
   return (
     <>
@@ -105,11 +111,7 @@ export const WorkspacePage = (): JSX.Element => {
           />
         </WorkspaceProvider>
       </Flex>
-      <AdminFeedbackModal
-        isOpen={adminFeedbackModalDisclosure.isOpen}
-        onClose={adminFeedbackModalDisclosure.onClose}
-        onOpen={onAdminFeedbackModalOpen}
-      />
+      {isDisplayFeedback && <AdminFeedbackBox onClose={closeAdminFeedback} />}
     </>
   )
 }

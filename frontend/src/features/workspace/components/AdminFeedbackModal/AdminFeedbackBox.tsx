@@ -1,18 +1,11 @@
 import { useCallback, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { GoThumbsdown, GoThumbsup } from 'react-icons/go'
-import {
-  Flex,
-  Link,
-  ModalBody,
-  ModalCloseButton,
-  ModalHeader,
-  Stack,
-  Text,
-} from '@chakra-ui/react'
+import { Flex, Link, Stack, Text } from '@chakra-ui/react'
 
 import { AdminFeedbackRating } from '~shared/types'
 
+import { BxX } from '~assets/icons'
 import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
 import IconButton from '~components/IconButton'
@@ -30,11 +23,7 @@ type AdminFeedbackCommentForm = {
   comment: string
 }
 
-export const AdminFeedbackModalContent = ({
-  onClose,
-}: {
-  onClose: () => void
-}) => {
+export const AdminFeedbackBox = ({ onClose }: { onClose: () => void }) => {
   const [contentState, setContentState] = useState(
     FeedbackModalContentState.Rating,
   )
@@ -69,14 +58,23 @@ export const AdminFeedbackModalContent = ({
     setContentState(FeedbackModalContentState.CommentBox)
 
   return (
-    <ModalBody px="1.5rem" py="1rem">
-      <AdminFeedbackModalContentBuilder
-        state={contentState}
-        onRatingClick={handleRatingClick}
-        onCallForCommentClick={handleCallForCommentClick}
-        onCommentClick={handleCommentClick}
-      />
-    </ModalBody>
+    <Flex
+      position="fixed"
+      bottom="1.5rem"
+      justifyContent="center"
+      margin="auto"
+      width="100%"
+    >
+      <Flex px="1.5rem" py="1rem" bgColor="white" boxShadow="md">
+        <AdminFeedbackModalContentBuilder
+          state={contentState}
+          onRatingClick={handleRatingClick}
+          onCallForCommentClick={handleCallForCommentClick}
+          onCommentClick={handleCommentClick}
+          onClose={onClose}
+        />
+      </Flex>
+    </Flex>
   )
 }
 
@@ -121,16 +119,24 @@ const AdminFeedbackCallForCommentContent = ({
 
 const AdminFeedbackCommentContent = ({
   onCommentClick,
+  onClose,
 }: {
   onCommentClick: (data: AdminFeedbackCommentForm) => void
+  onClose: () => void
 }) => {
   const { handleSubmit, register } = useForm<AdminFeedbackCommentForm>()
   const isMobile = useIsMobile()
   return (
     <Stack w={isMobile ? undefined : '28.5rem'}>
-      <Flex alignItems="flex-start">
-        <ModalHeader px="0rem">Great!</ModalHeader>
-        <ModalCloseButton />
+      <Flex justifyContent="space-between" alignItems="center" mb="1rem">
+        <Text textStyle="h2">Great!</Text>
+        <IconButton
+          aria-label="close feedback box"
+          icon={<BxX />}
+          variant="clear"
+          color="black"
+          onClick={onClose}
+        />
       </Flex>
       <Text textStyle="body-2">
         Tell us about your form building experience in more detail!
@@ -154,11 +160,13 @@ const AdminFeedbackModalContentBuilder = ({
   onRatingClick,
   onCallForCommentClick,
   onCommentClick,
+  onClose,
 }: {
   state: FeedbackModalContentState
   onRatingClick: (rating: AdminFeedbackRating) => void
   onCallForCommentClick: () => void
   onCommentClick: (data: AdminFeedbackCommentForm) => void
+  onClose: () => void
 }) => {
   switch (state) {
     case FeedbackModalContentState.Rating:
@@ -170,6 +178,11 @@ const AdminFeedbackModalContentBuilder = ({
         />
       )
     case FeedbackModalContentState.CommentBox:
-      return <AdminFeedbackCommentContent onCommentClick={onCommentClick} />
+      return (
+        <AdminFeedbackCommentContent
+          onCommentClick={onCommentClick}
+          onClose={onClose}
+        />
+      )
   }
 }
