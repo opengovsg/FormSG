@@ -20,6 +20,8 @@ import {
 } from '@chakra-ui/react'
 import dedent from 'dedent'
 
+import { PUBLIC_PAYMENTS_GUIDE_LINK } from '~shared/constants'
+
 import { AppFooter } from '~/app/AppFooter'
 import { AppPublicHeader } from '~/app/AppPublicHeader'
 import FormBrandLogo from '~/assets/svgs/brand/brand-mark-colour.svg'
@@ -31,7 +33,6 @@ import {
   FORM_GUIDE,
   GUIDE_ATTACHMENT_SIZE_LIMIT,
   GUIDE_E2EE,
-  GUIDE_PAYMENTS_PUBLIC,
   GUIDE_SECRET_KEY_LOSS,
   GUIDE_STORAGE_MODE,
   GUIDE_TRANSFER_OWNERSHIP,
@@ -95,7 +96,7 @@ export const LandingPage = (): JSX.Element => {
       <FeatureBanner
         title="Introducing Payments"
         body="Citizens can now pay for fees and services directly on your form!"
-        learnMoreLink={GUIDE_PAYMENTS_PUBLIC}
+        learnMoreLink={PUBLIC_PAYMENTS_GUIDE_LINK}
       />
       <AppPublicHeader />
       <LandingSection bg="primary.100" pt={{ base: '2rem', md: 0 }} px="0">

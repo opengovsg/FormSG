@@ -15,6 +15,7 @@ import {
   Text,
 } from '@chakra-ui/react'
 
+import { PUBLIC_PAYMENTS_GUIDE_LINK } from '~shared/constants'
 import { BasicField, EmailFieldBase } from '~shared/types'
 
 import { AppFooter } from '~/app/AppFooter'
@@ -22,7 +23,6 @@ import { AppPublicHeader } from '~/app/AppPublicHeader'
 
 import { BxsCheckCircle } from '~assets/icons'
 import { BxsHelpCircle } from '~assets/icons/BxsHelpCircle'
-import { GUIDE_PAYMENTS_PUBLIC } from '~constants/links'
 import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
 import Link from '~components/Link'
@@ -280,7 +280,7 @@ export const LandingPaymentsPage = (): JSX.Element => {
           </Accordion>
         </Box>
         <FeatureLink
-          href={GUIDE_PAYMENTS_PUBLIC}
+          href={PUBLIC_PAYMENTS_GUIDE_LINK}
           externalLinkIcon={
             <Icon as={BxsHelpCircle} ml="0.5rem" fontSize="1.5rem" />
           }

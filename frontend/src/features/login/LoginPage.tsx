@@ -3,10 +3,11 @@ import { useTranslation } from 'react-i18next'
 import { Link as ReactLink } from 'react-router-dom'
 import { Box, chakra, Flex, GridItem, GridProps, Text } from '@chakra-ui/react'
 
+import { PUBLIC_PAYMENTS_GUIDE_LINK } from '~shared/constants'
+
 import { AppFooter } from '~/app/AppFooter'
 
 import { ReactComponent as BrandLogoSvg } from '~assets/svgs/brand/brand-hort-colour.svg'
-import { GUIDE_PAYMENTS_PUBLIC } from '~constants/links'
 import { LOGGED_IN_KEY } from '~constants/localStorage'
 import { LANDING_ROUTE } from '~constants/routes'
 import { useLocalStorage } from '~hooks/useLocalStorage'
@@ -167,7 +168,7 @@ export const LoginPage = (): JSX.Element => {
       <FeatureBanner
         bannerColorIntensity={bannerColorIntensity}
         body="You can now collect payments directly on your form!"
-        learnMoreLink={GUIDE_PAYMENTS_PUBLIC}
+        learnMoreLink={PUBLIC_PAYMENTS_GUIDE_LINK}
       />
       <BaseGridLayout flex={1}>
         <NonMobileSidebarGridArea>
