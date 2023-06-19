@@ -38,9 +38,8 @@ import {
   OGP_ALL_PRODUCTS,
   OGP_FORMSG_COLLATE,
   OGP_FORMSG_REPO,
-  PAYMENTS_LANDING_PAGE,
 } from '~constants/links'
-import { LOGIN_ROUTE } from '~constants/routes'
+import { LANDING_PAYMENTS_ROUTE, LOGIN_ROUTE } from '~constants/routes'
 import { useIsMobile } from '~hooks/useIsMobile'
 import { useMdComponents } from '~hooks/useMdComponents'
 import Button from '~components/Button'
@@ -95,7 +94,7 @@ export const LandingPage = (): JSX.Element => {
       <FeatureBanner
         title="Introducing Payments"
         body="Citizens can now pay for fees and services directly on your form!"
-        learnMoreLink={PAYMENTS_LANDING_PAGE}
+        learnMoreLink={LANDING_PAYMENTS_ROUTE}
       />
       <AppPublicHeader />
       <LandingSection bg="primary.100" pt={{ base: '2rem', md: 0 }} px="0">
