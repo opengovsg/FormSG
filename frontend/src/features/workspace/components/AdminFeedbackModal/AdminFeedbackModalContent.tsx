@@ -11,7 +11,7 @@ import {
   Text,
 } from '@chakra-ui/react'
 
-import { AdminFeedbackRatingDown, AdminFeedbackRatingUp } from '~shared/types'
+import { AdminFeedbackRating } from '~shared/types'
 
 import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
@@ -43,7 +43,7 @@ export const AdminFeedbackModalContent = ({
     useAdminFeedbackMutation()
 
   const handleRatingClick = useCallback(
-    (rating: number) => {
+    (rating: AdminFeedbackRating) => {
       createAdminFeedbackMutation
         .mutateAsync(rating)
         .then((data) => setFeedbackId(data._id))
@@ -83,7 +83,7 @@ export const AdminFeedbackModalContent = ({
 const AdminFeedbackRatingContent = ({
   onRatingClick,
 }: {
-  onRatingClick: (rating: number) => void
+  onRatingClick: (rating: AdminFeedbackRating) => void
 }) => {
   return (
     <Stack direction="row" alignItems="center" gap="2.2rem">
@@ -93,14 +93,14 @@ const AdminFeedbackRatingContent = ({
         icon={<GoThumbsup />}
         colorScheme="theme-blue"
         aria-label="Good"
-        onClick={() => onRatingClick(AdminFeedbackRatingUp)}
+        onClick={() => onRatingClick(AdminFeedbackRating.up)}
       />
       <IconButton
         variant="clear"
         icon={<GoThumbsdown />}
         colorScheme="theme-red"
         aria-label="Bad"
-        onClick={() => onRatingClick(AdminFeedbackRatingDown)}
+        onClick={() => onRatingClick(AdminFeedbackRating.down)}
       />
     </Stack>
   )
@@ -156,7 +156,7 @@ const AdminFeedbackModalContentBuilder = ({
   onCommentClick,
 }: {
   state: FeedbackModalContentState
-  onRatingClick: (rating: number) => void
+  onRatingClick: (rating: AdminFeedbackRating) => void
   onCallForCommentClick: () => void
   onCommentClick: (data: AdminFeedbackCommentForm) => void
 }) => {

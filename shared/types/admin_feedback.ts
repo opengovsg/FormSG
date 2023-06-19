@@ -10,5 +10,7 @@ export type AdminFeedbackBase = {
 
 export type AdminFeedbackDto = AdminFeedbackBase & { _id: string }
 
-export const AdminFeedbackRatingUp = 1
-export const AdminFeedbackRatingDown = 0
+export enum AdminFeedbackRating {
+  up = 1,
+  down = 0,
+}
