@@ -141,11 +141,7 @@ const AdminFeedbackCommentContent = ({
       <Text textStyle="body-2">
         Tell us about your form building experience in more detail!
       </Text>
-      <Textarea
-        placeholder="Form is awesome"
-        mt="1rem"
-        {...register('comment')}
-      />
+      <Textarea mt="1rem" {...register('comment')} />
       <Flex alignItems="flex-end" flexDirection="column">
         <Button mt="1rem" float="right" onClick={handleSubmit(onCommentClick)}>
           Submit
