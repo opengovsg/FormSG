@@ -938,19 +938,6 @@ export class MailService {
   }: {
     form: IPopulatedForm
   }): ResultAsync<true, MailGenerationError | MailSendError> => {
-    const collaborators = form.permissionList.map(({ email }) => email)
-    logger.info({
-      message:
-        'Sending form ' +
-        form.title +
-        ' to ' +
-        form.admin.email +
-        ' and ' +
-        collaborators,
-      meta: {
-        action: 'sendFormIssueReportedNotificationToAdmin',
-      },
-    })
     const mail: MailOptions = {
       to: form.admin.email,
       cc: form.permissionList.map(({ email }) => email),
@@ -967,7 +954,10 @@ export class MailService {
         [EMAIL_HEADERS.emailType]: EmailType.IssueReportedNotification,
       },
     }
-    return this.#sendNodeMail(mail, { mailId: 'issueReportedNotification' })
+    return this.#sendNodeMail(mail, {
+      formId: form.id,
+      mailId: 'issueReportedNotification',
+    })
   }
 
   // Utility method to send a mail during local dev (to maildev)
