@@ -955,7 +955,7 @@ export class MailService {
       },
     }
     return this.#sendNodeMail(mail, {
-      formId: form.id,
+      formId: form._id.toString(),
       mailId: 'issueReportedNotification',
     })
   }
