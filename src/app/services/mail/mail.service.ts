@@ -838,7 +838,7 @@ export class MailService {
       to: email,
       from: this.#senderFromString,
       subject: `Getting started with FormSG Payments`,
-      html: generatePaymentOnboardingHtml(),
+      html: generatePaymentOnboardingHtml({ appName: this.#appName }),
       headers: {
         [EMAIL_HEADERS.emailType]: EmailType.PaymentOnboarding,
       },
