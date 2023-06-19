@@ -27,6 +27,7 @@ import {
 } from './webhook.errors'
 import { WebhookQueueMessage } from './webhook.message'
 import { WebhookProducer } from './webhook.producer'
+import { webhookStatsdClient } from './webhook.statsd-client'
 import { formatWebhookResponse, isSuccessfulResponse } from './webhook.utils'
 import { validateWebhookUrl } from './webhook.validation'
 
@@ -221,6 +222,13 @@ export const sendWebhook = (
   })
 }
 
+export const getWebhookType = (webhookUrl: string) => {
+  const isZapier = webhookUrl.match(/^https:\/\/hooks\.zapier\.com\//)
+  const isPlumber = webhookUrl.match(/^https:\/\/plumber\.gov\.sg\/webhooks\//)
+  const webhookType = isZapier ? 'zapier' : isPlumber ? 'plumber' : 'generic'
+  return webhookType
+}
+
 /**
  * Creates a function which sends a webhook and saves the necessary records.
  * This function sends the INITIAL webhook, which occurs immediately after
@@ -243,21 +251,29 @@ export const createInitialWebhookSender =
   > => {
     // Attempt to send webhook
     return sendWebhook(submission.getWebhookView(), webhookUrl).andThen(
-      (webhookResponse) =>
+      (webhookResponse) => {
+        webhookStatsdClient.increment('sent', 1, 1, {
+          responseCode: webhookResponse.response.status.toString(),
+          webhookType: getWebhookType(webhookUrl),
+        })
+
         // Save record of sending to database
-        saveWebhookRecord(submission._id, webhookResponse).andThen(() => {
-          // If webhook successful or retries not enabled, no further action
-          if (
-            isSuccessfulResponse(webhookResponse) ||
-            !producer ||
-            !isRetryEnabled
-          ) {
-            return okAsync(true as const)
-          }
-          // Webhook failed and retries enabled, so create initial message and enqueue
-          return WebhookQueueMessage.fromSubmissionId(
-            String(submission._id),
-          ).asyncAndThen((queueMessage) => producer.sendMessage(queueMessage))
-        }),
+        return saveWebhookRecord(submission._id, webhookResponse).andThen(
+          () => {
+            // If webhook successful or retries not enabled, no further action
+            if (
+              isSuccessfulResponse(webhookResponse) ||
+              !producer ||
+              !isRetryEnabled
+            ) {
+              return okAsync(true as const)
+            }
+            // Webhook failed and retries enabled, so create initial message and enqueue
+            return WebhookQueueMessage.fromSubmissionId(
+              String(submission._id),
+            ).asyncAndThen((queueMessage) => producer.sendMessage(queueMessage))
+          },
+        )
+      },
     )
   }
