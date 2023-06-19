@@ -14,7 +14,7 @@ import { Banner } from '~components/Banner'
 import { useEnv } from '~features/env/queries'
 import { useUser } from '~features/user/queries'
 
-import AdminFeedbackBox from './components/AdminFeedbackModal'
+import AdminFeedbackBox from './components/AdminFeedbackBox'
 // TODO #4279: Remove after React rollout is complete
 import CreateFormModal from './components/CreateFormModal'
 import { WorkspacePageContent } from './components/WorkspacePageContent'
