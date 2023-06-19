@@ -317,12 +317,12 @@ export const handleUpdatePayments = [
   celebrate({
     [Segments.BODY]: {
       enabled: Joi.boolean().required(),
-      paymentType: Joi.string()
+      payment_type: Joi.string()
         .allow(...Object.values(PaymentType))
         .required(),
       amount_cents: Joi.when('enabled', {
         is: Joi.equal(true),
-        then: Joi.when('paymentType', {
+        then: Joi.when('payment_type', {
           is: Joi.equal(PaymentType.Fixed),
           then: Joi.number().integer().positive().required(),
           otherwise: Joi.number(),
@@ -332,7 +332,7 @@ export const handleUpdatePayments = [
 
       min_amount: Joi.when('enabled', {
         is: Joi.equal(true),
-        then: Joi.when('paymentType', {
+        then: Joi.when('payment_type', {
           is: Joi.equal(PaymentType.Variable),
           then: Joi.number().integer().positive().required(),
           otherwise: Joi.number(),
@@ -342,7 +342,7 @@ export const handleUpdatePayments = [
 
       max_amount: Joi.when('enabled', {
         is: Joi.equal(true),
-        then: Joi.when('paymentType', {
+        then: Joi.when('payment_type', {
           is: Joi.equal(PaymentType.Variable),
           then: Joi.number().integer().min(Joi.ref('min_amount')).required(),
           otherwise: Joi.number(),

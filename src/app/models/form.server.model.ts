@@ -195,7 +195,7 @@ const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
         message: 'max_amount must be a non-negative integer.',
       },
     },
-    paymentType: {
+    payment_type: {
       type: String,
       enum: Object.values(PaymentType),
       default: PaymentType.Fixed,

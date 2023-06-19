@@ -77,29 +77,25 @@ export type FormPaymentsChannel = {
 }
 
 export interface PaymentTypeBase {
-  paymentType: PaymentType | null
+  payment_type: PaymentType
 }
 interface VariablePaymentsField extends PaymentTypeBase {
-  paymentType: PaymentType.Variable
+  payment_type: PaymentType.Variable
   min_amount: number
   max_amount: number
 }
 
 interface FixedPaymentField extends PaymentTypeBase {
-  paymentType: PaymentType.Fixed
+  payment_type: PaymentType.Fixed
   amount_cents: number
 }
 
-interface LegacyPaymentField extends PaymentTypeBase {
-  paymentType: null
-  amount_cents: number
-}
 export type FormPaymentsField =
   | {
       enabled: boolean
       description?: string
       name?: string
-    } & (VariablePaymentsField | FixedPaymentField | LegacyPaymentField)
+    } & (VariablePaymentsField | FixedPaymentField)
 
 export type FormBusinessField = {
   address?: string

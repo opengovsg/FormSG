@@ -249,11 +249,8 @@ export const getPaymentAmount = (
     return
   }
   // legacy payment forms may not have a payment type
-  const { paymentType } = formPaymentFields
-  if (!paymentType) {
-    return formPaymentFields.amount_cents
-  }
-  switch (paymentType) {
+  const { payment_type } = formPaymentFields
+  switch (payment_type) {
     case PaymentType.Fixed:
       return formPaymentFields.amount_cents
     case PaymentType.Variable:
@@ -262,7 +259,7 @@ export const getPaymentAmount = (
     default: {
       // Force TS to emit an error if the cases above are not exhaustive
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const exhaustiveCheck: never = paymentType
+      const exhaustiveCheck: never = payment_type
     }
   }
 }

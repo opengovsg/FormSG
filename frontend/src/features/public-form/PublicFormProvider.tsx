@@ -362,7 +362,7 @@ export const PublicFormProvider = ({
                   publicKey: form.publicKey,
                   captchaResponse,
                   paymentReceiptEmail: paymentReceiptEmailField?.value,
-                  ...(form.payments_field.paymentType === PaymentType.Variable
+                  ...(form.payments_field.payment_type === PaymentType.Variable
                     ? {
                         payments: {
                           amount_cents: dollarsToCents(
@@ -430,7 +430,7 @@ export const PublicFormProvider = ({
                   publicKey: form.publicKey,
                   captchaResponse,
                   paymentReceiptEmail: paymentReceiptEmailField?.value,
-                  ...(form.payments_field.paymentType === PaymentType.Variable
+                  ...(form.payments_field.payment_type === PaymentType.Variable
                     ? {
                         payments: {
                           amount_cents: dollarsToCents(

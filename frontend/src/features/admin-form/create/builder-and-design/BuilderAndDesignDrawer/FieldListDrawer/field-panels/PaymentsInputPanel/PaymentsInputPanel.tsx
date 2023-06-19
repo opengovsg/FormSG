@@ -72,8 +72,13 @@ const PaymentInput = ({ isDisabled }: { isDisabled: boolean }) => {
   const handleClose = () => setFieldListTabIndex(FieldListTabIndex.Basic)
 
   // unpack payment data for paymentAmount if it exists
-  const paymentAmountCents = paymentsData?.amount_cents
-
+  const formDefaultValues =
+    paymentsData?.payment_type === PaymentType.Variable
+      ? {
+          display_min_amount: centsToDollars(paymentsData?.min_amount ?? 0),
+          display_max_amount: centsToDollars(paymentsData?.max_amount ?? 0),
+        }
+      : { display_amount: centsToDollars(paymentsData?.amount_cents ?? 0) }
   const {
     register,
     formState: { errors, dirtyFields },
@@ -84,10 +89,7 @@ const PaymentInput = ({ isDisabled }: { isDisabled: boolean }) => {
     mode: 'onChange',
     defaultValues: {
       ...paymentsData,
-      display_min_amount: centsToDollars(paymentsData?.min_amount ?? 0),
-      display_max_amount: centsToDollars(paymentsData?.max_amount ?? 0),
-      // Change calculate display_amount value from amount_cents
-      display_amount: centsToDollars(paymentAmountCents ?? 0),
+      ...formDefaultValues,
     },
   })
 
@@ -141,15 +143,12 @@ const PaymentInput = ({ isDisabled }: { isDisabled: boolean }) => {
         handleClose()
       }
     }
-    return paymentsMutation.mutate(
-      { ...paymentsData, amount_cents: paymentAmountCents },
-      {
-        onSuccess: () => {
-          setToInactive()
-          handleClose()
-        },
+    return paymentsMutation.mutate(paymentsData, {
+      onSuccess: () => {
+        setToInactive()
+        handleClose()
       },
-    )
+    })
   })
 
   return (
@@ -170,15 +169,12 @@ const PaymentInput = ({ isDisabled }: { isDisabled: boolean }) => {
 
       <FormControl isRequired>
         <Controller
-          name={'paymentType'}
+          name={'payment_type'}
           control={control}
           render={({ field }) => (
             <SingleSelect
               isClearable={false}
               placeholder="Select Payment Type"
-              // onChange={function (value: string): void {
-              //   console.log('onchange', value)
-              // }}
               itemHeight={48 + 20}
               items={[
                 {
@@ -234,7 +230,7 @@ const PaymentInput = ({ isDisabled }: { isDisabled: boolean }) => {
         <FormErrorMessage>{errors.description?.message}</FormErrorMessage>
       </FormControl>
 
-      {paymentsData?.paymentType === PaymentType.Variable ? (
+      {paymentsData?.payment_type === PaymentType.Variable ? (
         <VariablePaymentAmountField
           isLoading={paymentsMutation.isLoading}
           errors={errors}

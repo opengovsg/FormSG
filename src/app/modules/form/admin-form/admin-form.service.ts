@@ -29,6 +29,7 @@ import {
   LogicDto,
   MobileFieldBase,
   PaymentsUpdateDto,
+  PaymentType,
   SettingsUpdateDto,
   StartPageUpdateDto,
 } from '../../../../../shared/types'
@@ -1591,7 +1592,7 @@ export const updatePayments = (
   const { enabled } = newPayments
 
   // Check if payment amount exceeds maxPaymentAmountCents or below minPaymentAmountCents if the payment is enabled
-  if (enabled && newPayments?.paymentType == null) {
+  if (enabled && newPayments?.payment_type === PaymentType.Fixed) {
     const { amount_cents } = newPayments
     if (
       amount_cents > paymentConfig.maxPaymentAmountCents ||

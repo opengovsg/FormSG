@@ -17,7 +17,7 @@ import Button from '~components/Button'
 
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
-import { PaymentItemDetailsBlock } from '../../components/PaymentItemDetailsBlock'
+import { FixedPaymentItemDetailsBlock } from '../../components/PaymentItemDetailsBlock'
 
 interface PaymentPageBlockProps {
   submissionId: string
@@ -163,7 +163,7 @@ export const StripePaymentBlock = ({
           <Text textStyle="h3" textColor="primary.500" mb="1rem">
             Payment
           </Text>
-          <PaymentItemDetailsBlock
+          <FixedPaymentItemDetailsBlock
             paymentItemName={
               paymentItemName ? paymentItemName : form.payments_field.name
             }

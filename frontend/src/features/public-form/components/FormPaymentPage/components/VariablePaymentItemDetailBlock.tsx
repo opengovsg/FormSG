@@ -7,18 +7,12 @@ import MoneyInput from '~components/MoneyInput'
 
 import { usePaymentFieldValidation } from '../queries'
 
-import { PaymentItemDetailsBlockProps } from './PaymentItemDetailsBlock'
 import PaymentItemNameDescription from './PaymentItemNameDescription'
-
-interface VariableItemDetailProps extends PaymentItemDetailsBlockProps {
-  paymentMin: number
-  paymentMax: number
-}
+import { VariableItemDetailProps } from './types'
 
 export const VariablePaymentItemDetailsField = ({
   paymentDescription,
   paymentItemName,
-  colorTheme,
   paymentMin,
   paymentMax,
 }: VariableItemDetailProps): JSX.Element => {
