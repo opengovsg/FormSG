@@ -13,7 +13,7 @@ import Textarea from '~components/Textarea'
 
 import { useAdminFeedbackMutation } from '~features/workspace/mutations'
 
-enum FeedbackModalContentState {
+enum FeedbackBoxContentState {
   Rating,
   CallForComment,
   CommentBox,
@@ -25,7 +25,7 @@ type AdminFeedbackCommentForm = {
 
 export const AdminFeedbackBox = ({ onClose }: { onClose: () => void }) => {
   const [contentState, setContentState] = useState(
-    FeedbackModalContentState.Rating,
+    FeedbackBoxContentState.Rating,
   )
   const [feedbackId, setFeedbackId] = useState('')
   const { createAdminFeedbackMutation, updateAdminFeedbackMutation } =
@@ -36,7 +36,7 @@ export const AdminFeedbackBox = ({ onClose }: { onClose: () => void }) => {
       createAdminFeedbackMutation
         .mutateAsync(rating)
         .then((data) => setFeedbackId(data._id))
-      setContentState(FeedbackModalContentState.CallForComment)
+      setContentState(FeedbackBoxContentState.CallForComment)
     },
     [createAdminFeedbackMutation, setFeedbackId, setContentState],
   )
@@ -55,7 +55,7 @@ export const AdminFeedbackBox = ({ onClose }: { onClose: () => void }) => {
   )
 
   const handleCallForCommentClick = () =>
-    setContentState(FeedbackModalContentState.CommentBox)
+    setContentState(FeedbackBoxContentState.CommentBox)
 
   return (
     <Flex
@@ -66,7 +66,7 @@ export const AdminFeedbackBox = ({ onClose }: { onClose: () => void }) => {
       width="100%"
     >
       <Flex px="1.5rem" py="1rem" bgColor="white" boxShadow="md">
-        <AdminFeedbackModalContentBuilder
+        <AdminFeedbackBoxContentBuilder
           state={contentState}
           onRatingClick={handleRatingClick}
           onCallForCommentClick={handleCallForCommentClick}
@@ -155,29 +155,29 @@ const AdminFeedbackCommentContent = ({
   )
 }
 
-const AdminFeedbackModalContentBuilder = ({
+const AdminFeedbackBoxContentBuilder = ({
   state,
   onRatingClick,
   onCallForCommentClick,
   onCommentClick,
   onClose,
 }: {
-  state: FeedbackModalContentState
+  state: FeedbackBoxContentState
   onRatingClick: (rating: AdminFeedbackRating) => void
   onCallForCommentClick: () => void
   onCommentClick: (data: AdminFeedbackCommentForm) => void
   onClose: () => void
 }) => {
   switch (state) {
-    case FeedbackModalContentState.Rating:
+    case FeedbackBoxContentState.Rating:
       return <AdminFeedbackRatingContent onRatingClick={onRatingClick} />
-    case FeedbackModalContentState.CallForComment:
+    case FeedbackBoxContentState.CallForComment:
       return (
         <AdminFeedbackCallForCommentContent
           onLinkClick={onCallForCommentClick}
         />
       )
-    case FeedbackModalContentState.CommentBox:
+    case FeedbackBoxContentState.CommentBox:
       return (
         <AdminFeedbackCommentContent
           onCommentClick={onCommentClick}
