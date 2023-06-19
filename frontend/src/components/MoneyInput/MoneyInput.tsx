@@ -2,8 +2,6 @@ import {
   Box,
   chakra,
   forwardRef,
-  HStack,
-  Icon,
   InputGroup,
   InputLeftAddon,
   NumberInputProps as ChakraNumberInputProps,
@@ -13,7 +11,6 @@ import {
   useMultiStyleConfig,
   useNumberInput,
 } from '@chakra-ui/react'
-import Flags from 'country-flag-icons/react/3x2'
 
 import { ThemeColorScheme } from '~theme/foundations/colours'
 
