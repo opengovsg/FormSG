@@ -1622,7 +1622,7 @@ describe('mail.service', () => {
       return {
         to: MOCK_VALID_EMAIL,
         from: MOCK_SENDER_STRING,
-        subject: `Your OTP for submitting a form on ${MOCK_APP_NAME}`,
+        subject: `Getting started with FormSG Payments`,
         html: MailUtils.generatePaymentOnboardingHtml({
           appName: MOCK_APP_NAME,
         }),
