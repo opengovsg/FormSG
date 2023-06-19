@@ -5,6 +5,7 @@ import { ResultAsync } from 'neverthrow'
 import validator from 'validator'
 
 import { BounceType } from '../../../types'
+import { paymentConfig } from '../../config/features/payment.config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { generatePdfFromHtml } from '../../utils/convert-html-to-pdf'
 
@@ -287,6 +288,21 @@ export const generatePaymentConfirmationHtml = ({
     </p>
     <p>Regards,
     <br />
-    <p>${appName} team</p>   
+    ${appName} team</p>   
+  `
+}
+
+export const generatePaymentOnboardingHtml = ({
+  appName,
+}: {
+  appName: string
+}): string => {
+  return dedent`
+  <p>Dear Sir or Madam,</p>
+  <p>Thank you for your interest in our payments feature! <a href="${paymentConfig.landingGuideLink}">Download the file</a> to learn how to get started with payments today!</p>
+  <p>If you have any questions regarding payments, feel free to reach out to support@form.gov.sg.</p>
+  <p>Regards,
+  <br/>
+  ${appName} team</p>
   `
 }
