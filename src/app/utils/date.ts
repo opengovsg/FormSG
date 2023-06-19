@@ -43,15 +43,11 @@ export const getStartOfDay = (option?: {
   date?: Date
   timezone?: string
 }): Date => {
-  if (!option) {
-    option = {}
-  }
-  if (!option.date) {
-    option.date = new Date()
-  }
-  if (!option.timezone) {
-    option.timezone = 'Asia/Singapore'
+  const newOption = {
+    date: new Date(),
+    timezone: 'Asia/Singapore',
+    ...option,
   }
 
-  return moment.tz(option.date, option.timezone).startOf('day').toDate()
+  return moment.tz(newOption.date, newOption.timezone).startOf('day').toDate()
 }
