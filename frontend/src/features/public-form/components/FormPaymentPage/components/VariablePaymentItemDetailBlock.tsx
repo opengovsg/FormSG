@@ -34,12 +34,7 @@ export const VariablePaymentItemDetailsField = ({
   >({ lesserThanCents: paymentMax, greaterThanCents: paymentMin })
 
   return (
-    <Box
-      borderWidth="1px"
-      borderColor={`theme-${colorTheme}.300`}
-      borderRadius="4px"
-      p="0.7rem"
-    >
+    <Box>
       <FormControl
         isInvalid={!!errors[PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID]}
         isRequired
