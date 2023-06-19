@@ -121,10 +121,11 @@ PaymentsRouter.use('/reconcile', ProtectedPaymentsRouter)
 /**
  * Get previous latest successful payment id if it exists
  * Uses post request to collect the email data from the request body
- * @route POST /:formId/payments/previous
+ * @route POST /payments/onboarding
  *
- * @returns 200 if previous payment exists
- * @returns 404 if previous payment doesnt exists
+ * @returns 200 if onboarding email sent
+ * @returns 403 if email domain is not whitelisted
+ * @returns 400 if email sending fails
  * @returns 500 when database error occurs
  */
 PaymentsRouter.post('/onboarding', PaymentsController.handleSendOnboardingEmail)

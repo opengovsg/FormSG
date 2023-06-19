@@ -825,7 +825,7 @@ export class MailService {
   }
 
   /**
-   * Sends a payment confirmation to a valid email
+   * Sends a payment onboarding email to a valid email
    * @param email the recipient email address
    * @returns err(MailSendError) when there was an error in sending the mail
    */
