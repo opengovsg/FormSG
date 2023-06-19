@@ -18,7 +18,7 @@ export interface FeatureBannerProps {
   bannerColorIntensity?: 500 | 600 // Update accordingly if other banner colors are needed
   title?: string
   body: string
-  learnMoreLink: string
+  learnMoreLink: string // Could be link to an external or internal page
 }
 
 export const FeatureBanner = ({

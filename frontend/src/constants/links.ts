@@ -34,6 +34,7 @@ export const GUIDE_PREFILL = 'https://go.gov.sg/formsg-guide-prefills'
 export const GUIDE_STRIPE_ONBOARDING =
   'https://go.gov.sg/formsg-stripe-onboarding'
 export const GUIDE_PAYMENTS_ENTRY = 'https://go.gov.sg/formsg-payment-overview'
+export const PAYMENTS_LANDING_PAGE = 'https://form.gov.sg/payments'
 
 export const ACCEPTED_FILETYPES_SPREADSHEET = 'https://go.gov.sg/formsg-cwl'
 
