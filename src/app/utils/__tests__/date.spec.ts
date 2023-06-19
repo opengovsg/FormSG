@@ -1,6 +1,10 @@
 import moment from 'moment-timezone'
 
-import { createQueryWithDateParam, isMalformedDate } from 'src/app/utils/date'
+import {
+  createQueryWithDateParam,
+  getStartOfDay,
+  isMalformedDate,
+} from 'src/app/utils/date'
 
 describe('Date Util', () => {
   describe('isMalformedDate', () => {
@@ -65,6 +69,25 @@ describe('Date Util', () => {
           $lte: expected.endDateEndOfDay,
         },
       })
+    })
+  })
+
+  describe('getStartOfDay', () => {
+    it(`should return today's start of day if date is not given`, () => {
+      // Act
+      const result = getStartOfDay()
+      // Assert
+      const today = new Date(new Date().setHours(0, 0, 0, 0))
+      expect(result).toEqual(today)
+    })
+
+    it(`should return the given date's start of day if date is given`, () => {
+      // Act
+      const date = new Date(2023, 4, 27, 16, 4, 53)
+      const result = getStartOfDay(date)
+      // Assert
+      const expected = new Date(date.setHours(0, 0, 0, 0))
+      expect(result).toEqual(expected)
     })
   })
 })
