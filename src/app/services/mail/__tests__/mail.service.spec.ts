@@ -1618,6 +1618,21 @@ describe('mail.service', () => {
   describe('sendPaymentOnboardingEmail', () => {
     const MOCK_INVALID_EMAIL = 'hello@world'
 
+    const generateExpectedArg = () => {
+      return {
+        to: MOCK_VALID_EMAIL,
+        from: MOCK_SENDER_STRING,
+        subject: `Your OTP for submitting a form on ${MOCK_APP_NAME}`,
+        html: MailUtils.generatePaymentOnboardingHtml({
+          appName: MOCK_APP_NAME,
+        }),
+        headers: {
+          // Hardcode in tests in case something changes this.
+          'X-Formsg-Email-Type': 'Payment onboarding',
+        },
+      }
+    }
+
     it('should send payment onboarding emails successfully', async () => {
       // Act
       const actualResult = await mailService.sendPaymentOnboardingEmail({
@@ -1628,6 +1643,7 @@ describe('mail.service', () => {
       expect(actualResult._unsafeUnwrap()).toEqual(true)
       // Check arguments passed to sendNodeMail
       expect(sendMailSpy).toHaveBeenCalledOnce()
+      expect(sendMailSpy).toHaveBeenCalledWith(generateExpectedArg())
     })
 
     it('should return MailSendError when the provided email is invalid', async () => {
