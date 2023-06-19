@@ -262,6 +262,7 @@ export const LandingPaymentsPage = (): JSX.Element => {
                     isDisabled:
                       sendOnboardingEmailMutation.isLoading ||
                       sendOnboardingEmailMutation.isSuccess,
+                    placeholder: 'Enter your email',
                   }}
                 />
                 <Button
@@ -320,6 +321,7 @@ export const LandingPaymentsPage = (): JSX.Element => {
                     isDisabled:
                       sendOnboardingEmailMutation.isLoading ||
                       sendOnboardingEmailMutation.isSuccess,
+                    placeholder: 'Enter your email',
                   }}
                 />
                 <Button
