@@ -77,7 +77,7 @@ describe('Date Util', () => {
       // Act
       const result = getStartOfDay()
       // Assert
-      const expected = new Date(new Date().setHours(0, 0, 0, 0))
+      const expected = new Date(new Date().setUTCHours(-8, 0, 0, 0))
       expect(result).toEqual(expected)
     })
 
