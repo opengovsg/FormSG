@@ -21,4 +21,5 @@ export enum EmailType {
   EmailConfirmation = 'Email confirmation',
   AdminBounce = 'Admin (bounce notification)',
   PaymentConfirmation = 'Payment confirmation',
+  IssueReportedNotification = 'Issue reported notification',
 }

@@ -46,6 +46,7 @@ import {
   generateAutoreplyHtml,
   generateAutoreplyPdf,
   generateBounceNotificationHtml,
+  generateIssueReportedNotificationHtml,
   generateLoginOtpHtml,
   generatePaymentConfirmationHtml,
   generateSmsVerificationDisabledHtmlForAdmin,
@@ -925,6 +926,48 @@ export class MailService {
         },
       )
     )
+  }
+
+  /**
+   * Sends a notification email to the admin of the given form for issue
+   * reported by the public users.
+   * @param form form object in which the issue is being reported
+   */
+  sendFormIssueReportedNotificationToAdmin = ({
+    form,
+  }: {
+    form: IPopulatedForm
+  }): ResultAsync<true, MailGenerationError | MailSendError> => {
+    const collaborators = form.permissionList.map(({ email }) => email)
+    logger.info({
+      message:
+        'Sending form ' +
+        form.title +
+        ' to ' +
+        form.admin.email +
+        ' and ' +
+        collaborators,
+      meta: {
+        action: 'sendFormIssueReportedNotificationToAdmin',
+      },
+    })
+    const mail: MailOptions = {
+      to: form.admin.email,
+      cc: form.permissionList.map(({ email }) => email),
+      from: this.#senderFromString,
+      subject: `Respondents are facing issues on ${form.title}`,
+      html: generateIssueReportedNotificationHtml({
+        appName: this.#appName,
+        formTitle: form.title,
+        formResultUrl: `${this.#appUrl}/admin/form/${
+          form._id
+        }/results/feedback`,
+      }),
+      headers: {
+        [EMAIL_HEADERS.emailType]: EmailType.IssueReportedNotification,
+      },
+    }
+    return this.#sendNodeMail(mail, { mailId: 'issueReportedNotification' })
   }
 
   // Utility method to send a mail during local dev (to maildev)
