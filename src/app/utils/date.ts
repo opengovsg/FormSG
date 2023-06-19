@@ -33,15 +33,25 @@ export const createQueryWithDateParam = (
 }
 
 /**
- * Returns start of day. If date is not given, the start of day will be
- * calculated based on today's date.
+ * Returns start of day. If date is not given, the start
+ * of day will be calculated based on current date.
  *
- * @param date the date used to calculate the starting day. Defaults to today's
- * date.
+ * @param option to contain optional date and timezone used to calculate the
+ * starting day. Defaults to today's date and Singapore timezone
  */
-export const getStartOfDay = (date?: Date): Date => {
-  if (!date) {
-    date = new Date()
+export const getStartOfDay = (option?: {
+  date?: Date
+  timezone?: string
+}): Date => {
+  if (!option) {
+    option = {}
   }
-  return moment.tz(date, 'Asia/Singapore').startOf('day').toDate()
+  if (!option.date) {
+    option.date = new Date()
+  }
+  if (!option.timezone) {
+    option.timezone = 'Asia/Singapore'
+  }
+
+  return moment.tz(option.date, option.timezone).startOf('day').toDate()
 }

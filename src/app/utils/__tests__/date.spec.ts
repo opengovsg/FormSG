@@ -72,21 +72,30 @@ describe('Date Util', () => {
     })
   })
 
-  describe('getStartOfDay', () => {
-    it(`should return today's start of day if date is not given`, () => {
+  describe('getStartOfDayInSingaporeTime', () => {
+    it(`should return today's start of day in Singapore timezone if date is not given`, () => {
       // Act
       const result = getStartOfDay()
       // Assert
-      const today = new Date(new Date().setHours(0, 0, 0, 0))
-      expect(result).toEqual(today)
+      const expected = new Date(new Date().setHours(0, 0, 0, 0))
+      expect(result).toEqual(expected)
     })
 
-    it(`should return the given date's start of day if date is given`, () => {
+    it(`should return a localise start of day given date and timezone=Asia/Bangkok`, () => {
       // Act
-      const date = new Date(2023, 4, 27, 16, 4, 53)
-      const result = getStartOfDay(date)
+      const date = new Date('2020-04-13T05:00:00.000+08:00')
+      const result = getStartOfDay({ date: date, timezone: 'Asia/Bangkok' })
       // Assert
-      const expected = new Date(date.setHours(0, 0, 0, 0))
+      const expected = new Date('2020-04-13T00:00:00.000+07:00')
+      expect(result).toEqual(expected)
+    })
+
+    it(`should return a localise start of day given date and timezone=Australia/Eucla`, () => {
+      // Act
+      const date = new Date('2020-04-13T05:00:00.000+08:00')
+      const result = getStartOfDay({ date: date, timezone: 'Australia/Eucla' })
+      // Assert
+      const expected = new Date('2020-04-13T00:00:00.000+08:45')
       expect(result).toEqual(expected)
     })
   })
