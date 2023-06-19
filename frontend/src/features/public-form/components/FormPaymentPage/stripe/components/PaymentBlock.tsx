@@ -24,7 +24,7 @@ interface PaymentPageBlockProps {
   isRetry?: boolean
   focusOnMount?: boolean
   triggerPaymentStatusRefetch: () => void
-  paymentAmount?: number
+  paymentAmount: number
   // null here due to payment_intent.description from stripe
   paymentItemName?: string | null
   paymentDescription?: string | null
@@ -169,9 +169,7 @@ export const StripePaymentBlock = ({
             }
             paymentDescription={form.payments_field.description}
             colorTheme={colorTheme}
-            paymentAmount={
-              paymentAmount ? paymentAmount : form.payments_field.amount_cents
-            }
+            paymentAmount={paymentAmount}
           />
         </Box>
         <StripeCheckoutForm
