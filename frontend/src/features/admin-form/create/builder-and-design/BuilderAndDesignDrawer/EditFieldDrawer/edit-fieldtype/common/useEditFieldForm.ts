@@ -94,7 +94,7 @@ export const useEditFieldForm = <FormShape, FieldShape extends FormField>({
 
   const { editFieldMutation } = useEditFormField()
   const { createFieldMutation } = useCreateFormField()
-  const [, setisAdminFeedbackEligible] = useSessionStorage<boolean>(
+  const [, setIsAdminFeedbackEligible] = useSessionStorage<boolean>(
     ADMIN_FEEDBACK_SESSION_KEY,
   )
 
@@ -152,7 +152,7 @@ export const useEditFieldForm = <FormShape, FieldShape extends FormField>({
     }
 
     // if field to be updated is MyInfo, enable admin feedback
-    if (isMyInfo(updatedFormField)) setisAdminFeedbackEligible(true)
+    if (isMyInfo(updatedFormField)) setIsAdminFeedbackEligible(true)
 
     if (stateData.state === FieldBuilderState.CreatingField) {
       return createFieldMutation.mutate(updatedFormField, {

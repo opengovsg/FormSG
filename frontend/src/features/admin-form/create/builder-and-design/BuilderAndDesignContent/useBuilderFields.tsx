@@ -67,7 +67,7 @@ export const useBuilderFields = () => {
     let existingFields = formData?.form_fields
     if (isLoading || !existingFields) return null
     if (stateData.state === FieldBuilderState.EditingField) {
-      // check if existing fields meets threhold for admin feedback eligibility
+      // check if existing fields meets threshold for admin feedback eligibility
       if (
         adminFeedbackFieldThreshold &&
         existingFields.length >= adminFeedbackFieldThreshold
