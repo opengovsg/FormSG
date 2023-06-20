@@ -80,9 +80,8 @@ export const VariablePaymentAmountField = ({
           )}
         />
       </HStack>
-      <FormErrorMessage>
-        {errors[MIN_FIELD_KEY]?.message || errors[MAX_FIELD_KEY]?.message}
-      </FormErrorMessage>
+      <FormErrorMessage>{errors[MIN_FIELD_KEY]?.message}</FormErrorMessage>
+      <FormErrorMessage>{errors[MAX_FIELD_KEY]?.message}</FormErrorMessage>
     </FormControl>
   )
 }

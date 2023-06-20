@@ -7,7 +7,7 @@ import {
 } from 'react-hook-form'
 import { Link as ReactLink } from 'react-router-dom'
 import { useDebounce } from 'react-use'
-import { Box, FormControl, Link, Text } from '@chakra-ui/react'
+import { Box, FormControl, Link, Text, Textarea } from '@chakra-ui/react'
 import { cloneDeep } from 'lodash'
 
 import {
@@ -166,88 +166,94 @@ const PaymentInput = ({ isDisabled }: { isDisabled: boolean }) => {
           label="Enable payment"
         />
       </FormControl>
-
-      <FormControl isRequired>
-        <Controller
-          name={'payment_type'}
-          control={control}
-          render={({ field }) => (
-            <SingleSelect
-              isClearable={false}
-              placeholder="Select Payment Type"
-              itemHeight={48 + 20}
-              fullWidth={true}
-              items={[
-                {
-                  value: PaymentType.Fixed,
-                  label: 'Fixed amount',
-                  description:
-                    'Payment amount is defined by form admin. Suitable for a product or service.',
-                },
-                {
-                  value: PaymentType.Variable,
-                  label: 'Variable amount',
-                  description:
-                    'Payment amount is defined by respondent. Suitable for donations or amounts unique to each respondent.',
-                },
-              ]}
-              {...field}
-            />
-          )}
-        />
-      </FormControl>
-      <FormControl
-        isReadOnly={paymentsMutation.isLoading}
-        isInvalid={!!errors.description}
-        isDisabled={!isUsingPayment}
-        isRequired
-      >
-        <FormLabel description="This will be reflected on the payment invoice">
-          Product/service name
-        </FormLabel>
-        <Input
-          placeholder="Product/service name"
-          {...register('name', {
-            required: isUsingPayment && 'Please enter a payment description',
-          })}
-        />
-        <FormErrorMessage>{errors.name?.message}</FormErrorMessage>
-      </FormControl>
-      <FormControl
-        isReadOnly={paymentsMutation.isLoading}
-        isInvalid={!!errors.description}
-        isDisabled={!isUsingPayment}
-        isRequired
-      >
-        <FormLabel description="This will be reflected on the payment invoice">
-          Description
-        </FormLabel>
-        <Input
-          placeholder="Product/service name"
-          {...register('description', {
-            required: isUsingPayment && 'Please enter a payment description',
-          })}
-        />
-        <FormErrorMessage>{errors.description?.message}</FormErrorMessage>
-      </FormControl>
-
-      {paymentsData?.payment_type === PaymentType.Variable ? (
-        <VariablePaymentAmountField
-          isLoading={paymentsMutation.isLoading}
-          errors={errors}
-          isDisabled={!isUsingPayment}
-          control={control}
-          input={clonedWatchedInputs}
-        />
-      ) : (
-        <FixedPaymentAmountField
-          isLoading={paymentsMutation.isLoading}
-          errors={errors}
-          isDisabled={!isUsingPayment}
-          control={control}
-          input={clonedWatchedInputs}
-        />
+      {isUsingPayment && (
+        <FormControl isRequired isReadOnly={paymentsMutation.isLoading}>
+          <FormLabel>Payment type</FormLabel>
+          <Controller
+            name={'payment_type'}
+            control={control}
+            render={({ field }) => (
+              <SingleSelect
+                isClearable={false}
+                placeholder="Select Payment Type"
+                itemHeight={48 + 20}
+                fullWidth={true}
+                items={[
+                  {
+                    value: PaymentType.Fixed,
+                    label: 'Fixed amount',
+                    description:
+                      'Payment amount is defined by form admin. Suitable for a product or service.',
+                  },
+                  {
+                    value: PaymentType.Variable,
+                    label: 'Variable amount',
+                    description:
+                      'Payment amount is defined by respondent. Suitable for donations or amounts unique to each respondent.',
+                  },
+                ]}
+                {...field}
+              />
+            )}
+          />
+        </FormControl>
       )}
+      {isUsingPayment && (
+        <FormControl
+          isReadOnly={paymentsMutation.isLoading}
+          isInvalid={!!errors.description}
+          isDisabled={!isUsingPayment}
+          isRequired
+        >
+          <FormLabel description="This will be reflected on the payment invoice">
+            Product/service name
+          </FormLabel>
+          <Input
+            placeholder="Product/service name"
+            {...register('name', {
+              required: isUsingPayment && 'Please enter a payment description',
+            })}
+          />
+          <FormErrorMessage>{errors.name?.message}</FormErrorMessage>
+        </FormControl>
+      )}
+      {isUsingPayment && (
+        <FormControl
+          isReadOnly={paymentsMutation.isLoading}
+          isInvalid={!!errors.description}
+          isDisabled={!isUsingPayment}
+          isRequired
+        >
+          <FormLabel description="This will be reflected on the payment invoice">
+            Description
+          </FormLabel>
+          <Textarea
+            placeholder="Product/service name"
+            {...register('description', {
+              required: isUsingPayment && 'Please enter a payment description',
+            })}
+          />
+          <FormErrorMessage>{errors.description?.message}</FormErrorMessage>
+        </FormControl>
+      )}
+      {isUsingPayment &&
+        (paymentsData?.payment_type === PaymentType.Variable ? (
+          <VariablePaymentAmountField
+            isLoading={paymentsMutation.isLoading}
+            errors={errors}
+            isDisabled={!isUsingPayment}
+            control={control}
+            input={clonedWatchedInputs}
+          />
+        ) : (
+          <FixedPaymentAmountField
+            isLoading={paymentsMutation.isLoading}
+            errors={errors}
+            isDisabled={!isUsingPayment}
+            control={control}
+            input={clonedWatchedInputs}
+          />
+        ))}
 
       <FormFieldDrawerActions
         isLoading={paymentsMutation.isLoading}
