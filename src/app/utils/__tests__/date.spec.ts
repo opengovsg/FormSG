@@ -73,10 +73,12 @@ describe('Date Util', () => {
   })
 
   describe('getStartOfDay', () => {
+    // Default the mock time to bangkok time
+    const MOCK_TIME = '2023-06-22T23:30:00-07:00'
     beforeAll(() => {
       // Mock the return value for new Date() to avoid flaky test
       jest.useFakeTimers()
-      jest.setSystemTime(new Date(704363057000))
+      jest.setSystemTime(new Date(MOCK_TIME))
     })
 
     afterAll(() => {
@@ -85,19 +87,17 @@ describe('Date Util', () => {
 
     it(`should return today's start of day in Singapore timezone if option is not given`, () => {
       // Act
-      const today = new Date()
       const result = getStartOfDay()
       // Assert
-      const expected = new Date(today.setUTCHours(-8, 0, 0, 0))
+      const expected = new Date('2023-06-23T00:00:00+08:00')
       expect(result).toEqual(expected)
     })
 
     it(`should return today's start of day in Singapore timezone if date and timezone is not given`, () => {
       // Act
-      const today = new Date()
       const result = getStartOfDay({})
       // Assert
-      const expected = new Date(today.setUTCHours(-8, 0, 0, 0))
+      const expected = new Date('2023-06-23T00:00:00+08:00')
       expect(result).toEqual(expected)
     })
 
@@ -112,10 +112,9 @@ describe('Date Util', () => {
 
     it(`should return today's start of day based on given timezone if date is not given`, () => {
       // Act
-      const today = new Date()
       const result = getStartOfDay({ timezone: 'Pacific/Apia' })
       // Assert
-      const expected = new Date(today.setUTCHours(-13, 0, 0, 0))
+      const expected = new Date('2023-06-23T00:00:00+13:00')
       expect(result).toEqual(expected)
     })
 
