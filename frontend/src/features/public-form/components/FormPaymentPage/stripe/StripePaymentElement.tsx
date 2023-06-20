@@ -92,7 +92,9 @@ const StripePaymentContainer = ({
             />
           </PaymentStack>
         )
-      case PaymentViewStates.PendingPayment:
+      case PaymentViewStates.PendingPayment: {
+        // The item name is passed over to Stripe as PaymentIntent.description
+        const itemName = data?.paymentIntent?.description
         return (
           <>
             {secretEnv === 'production' ? null : (
@@ -107,11 +109,12 @@ const StripePaymentContainer = ({
                 submissionId={paymentInfoData.submissionId}
                 triggerPaymentStatusRefetch={() => setRefetchKey(Date.now())}
                 paymentAmount={data?.paymentIntent?.amount ?? 0}
-                paymentItemName={data?.paymentIntent?.description}
+                paymentItemName={itemName}
               />
             </PaymentStack>
           </>
         )
+      }
       case PaymentViewStates.Processing:
         return (
           <PaymentStack>

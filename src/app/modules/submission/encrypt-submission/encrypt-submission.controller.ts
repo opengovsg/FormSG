@@ -463,7 +463,7 @@ const submitEncryptModeForm: ControllerHandler<
       automatic_payment_methods: {
         enabled: true,
       },
-      description: form.payments_field.description,
+      description: form.payments_field.name || form.payments_field.description,
       receipt_email: paymentReceiptEmail,
       metadata,
     }
