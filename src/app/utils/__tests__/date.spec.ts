@@ -73,6 +73,16 @@ describe('Date Util', () => {
   })
 
   describe('getStartOfDay', () => {
+    beforeAll(() => {
+      // Mock the return value for new Date() to avoid flaky test
+      jest.useFakeTimers()
+      jest.setSystemTime(new Date(704363057000))
+    })
+
+    afterAll(() => {
+      jest.useRealTimers()
+    })
+
     it(`should return today's start of day in Singapore timezone if option is not given`, () => {
       // Act
       const today = new Date()
