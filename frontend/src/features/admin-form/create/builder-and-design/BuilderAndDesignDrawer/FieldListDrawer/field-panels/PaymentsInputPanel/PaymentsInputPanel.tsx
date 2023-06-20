@@ -176,6 +176,7 @@ const PaymentInput = ({ isDisabled }: { isDisabled: boolean }) => {
               isClearable={false}
               placeholder="Select Payment Type"
               itemHeight={48 + 20}
+              fullWidth={true}
               items={[
                 {
                   value: PaymentType.Fixed,

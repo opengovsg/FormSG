@@ -40,6 +40,7 @@ export interface SingleSelectProviderProps<
   colorScheme?: ThemeColorScheme
   /** Item Height to calculate dropdown list height, default to 48 per item */
   itemHeight?: number
+  fullWidth?: boolean
 }
 export const SingleSelectProvider = ({
   items: rawItems,
@@ -62,6 +63,7 @@ export const SingleSelectProvider = ({
   colorScheme,
   comboboxProps = {},
   itemHeight: itemHeightProp,
+  fullWidth = false,
 }: SingleSelectProviderProps): JSX.Element => {
   const { items, getItemByValue } = useItems({ rawItems })
   const [isFocused, setIsFocused] = useState(false)
@@ -268,6 +270,7 @@ export const SingleSelectProvider = ({
         inputRef,
         virtualListRef,
         virtualListHeight,
+        fullWidth,
       }}
     >
       {children}
