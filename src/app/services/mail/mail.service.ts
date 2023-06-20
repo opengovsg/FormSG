@@ -46,8 +46,10 @@ import {
   generateAutoreplyHtml,
   generateAutoreplyPdf,
   generateBounceNotificationHtml,
+  generateIssueReportedNotificationHtml,
   generateLoginOtpHtml,
   generatePaymentConfirmationHtml,
+  generatePaymentOnboardingHtml,
   generateSmsVerificationDisabledHtmlForAdmin,
   generateSmsVerificationDisabledHtmlForCollab,
   generateSmsVerificationWarningHtmlForAdmin,
@@ -788,7 +790,7 @@ export class MailService {
    * @param submissionId the response ID
    * @param formId the payment form ID
    * @param paymentId the payment ID
-   * @throws error if mail fails, to be handled by the caller
+   * @returns err(MailSendError) when there was an error in sending the mail
    */
   sendPaymentConfirmationEmail = ({
     email,
@@ -821,6 +823,28 @@ export class MailService {
       },
     }
     return this.#sendNodeMail(mail, { mailId: 'paymentConfirmation' })
+  }
+
+  /**
+   * Sends a payment onboarding email to a valid email
+   * @param email the recipient email address
+   * @returns err(MailSendError) when there was an error in sending the mail
+   */
+  sendPaymentOnboardingEmail = ({
+    email,
+  }: {
+    email: string
+  }): ResultAsync<true, MailSendError> => {
+    const mail: MailOptions = {
+      to: email,
+      from: this.#senderFromString,
+      subject: `Getting started with FormSG Payments`,
+      html: generatePaymentOnboardingHtml({ appName: this.#appName }),
+      headers: {
+        [EMAIL_HEADERS.emailType]: EmailType.PaymentOnboarding,
+      },
+    }
+    return this.#sendNodeMail(mail, { mailId: 'paymentOnboarding' })
   }
 
   // Utility method to send a warning mail to the collaborators of a form.
@@ -925,6 +949,38 @@ export class MailService {
         },
       )
     )
+  }
+
+  /**
+   * Sends a notification email to the admin of the given form for issue
+   * reported by the public users.
+   * @param form form object in which the issue is being reported
+   */
+  sendFormIssueReportedNotificationToAdmin = ({
+    form,
+  }: {
+    form: IPopulatedForm
+  }): ResultAsync<true, MailGenerationError | MailSendError> => {
+    const mail: MailOptions = {
+      to: form.admin.email,
+      cc: form.permissionList.map(({ email }) => email),
+      from: this.#senderFromString,
+      subject: `Respondents are facing issues on ${form.title}`,
+      html: generateIssueReportedNotificationHtml({
+        appName: this.#appName,
+        formTitle: form.title,
+        formResultUrl: `${this.#appUrl}/admin/form/${
+          form._id
+        }/results/feedback`,
+      }),
+      headers: {
+        [EMAIL_HEADERS.emailType]: EmailType.IssueReportedNotification,
+      },
+    }
+    return this.#sendNodeMail(mail, {
+      formId: form._id.toString(),
+      mailId: 'issueReportedNotification',
+    })
   }
 
   // Utility method to send a mail during local dev (to maildev)

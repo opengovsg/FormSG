@@ -5,6 +5,7 @@ import { ResultAsync } from 'neverthrow'
 import validator from 'validator'
 
 import { BounceType } from '../../../types'
+import { paymentConfig } from '../../config/features/payment.config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { generatePdfFromHtml } from '../../utils/convert-html-to-pdf'
 
@@ -287,6 +288,42 @@ export const generatePaymentConfirmationHtml = ({
     </p>
     <p>Regards,
     <br />
-    <p>${appName} team</p>   
+    ${appName} team</p>   
+  `
+}
+
+export const generatePaymentOnboardingHtml = ({
+  appName,
+}: {
+  appName: string
+}): string => {
+  return dedent`
+  <p>Dear Sir or Madam,</p>
+  <p>Thank you for your interest in our payments feature! <a href="${paymentConfig.landingGuideLink}">Download the file</a> to learn how to get started with payments today!</p>
+  <p>If you have any questions regarding payments, feel free to reach out to support@form.gov.sg.</p>
+  <p>Regards,
+  <br/>
+  ${appName} team</p>
+  `
+}
+
+export const generateIssueReportedNotificationHtml = ({
+  formTitle,
+  formResultUrl,
+  appName,
+}: {
+  formTitle: string
+  formResultUrl: string
+  appName: string
+}): string => {
+  return dedent`
+  <p>Dear Form admin,</p>
+  <p>Respondents are facing issues on your form: ${formTitle}.<p>
+  <p>These issues are reported by respondents via the ‘Report an issue’ button 
+  on public forms. We encourage you to view these reports as respondents might 
+  be facing urgent issues relating to form submission. </p>
+  <p><a href="${formResultUrl}">Login to Forms</a> and view issues reported in your 
+  ‘Results’ page.</p>
+  <p>Thank you,</br>${appName}</p>
   `
 }
