@@ -127,12 +127,12 @@ describe('Date Util', () => {
       expect(result).toEqual(expected)
     })
 
-    it(`should return a localise start of day given date and timezone=Australia/Eucla`, () => {
+    it(`should return a localise start of day given date and timezone=America/Dawson`, () => {
       // Act
       const date = new Date('2020-04-13T05:00:00.000+08:00')
-      const result = getStartOfDay({ date: date, timezone: 'Australia/Eucla' })
+      const result = getStartOfDay({ date: date, timezone: 'America/Dawson' })
       // Assert
-      const expected = new Date('2020-04-13T00:00:00.000+08:45')
+      const expected = new Date('2020-04-12T00:00:00.000-07:00')
       expect(result).toEqual(expected)
     })
   })
