@@ -103,10 +103,10 @@ describe('Date Util', () => {
 
     it(`should return start of day in Singapore timezone if timezone is not given`, () => {
       // Act
-      const date = new Date('2020-04-13T05:00:00.000+20:00')
+      const date = new Date('2020-04-13T05:00:00.000+14:00')
       const result = getStartOfDay({ date: date })
       // Assert
-      const expected = new Date(date.setUTCHours(-8, 0, 0, 0))
+      const expected = new Date('2020-04-12T00:00:00.000+08:00')
       expect(result).toEqual(expected)
     })
 
