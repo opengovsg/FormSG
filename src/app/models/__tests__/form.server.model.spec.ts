@@ -103,7 +103,7 @@ const PAYMENTS_DEFAULTS = {
     amount_cents: 0,
     min_amount: 0,
     max_amount: 0,
-    paymentType: PaymentType.Fixed,
+    payment_type: PaymentType.Fixed,
   },
 }
 

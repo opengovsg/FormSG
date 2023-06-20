@@ -28,7 +28,7 @@ import { getPopulatedUserById } from '../../user/user.service'
 import * as UserService from '../../user/user.service'
 
 import { PaymentChannelNotFoundError } from './admin-form.errors'
-import * as AdminFormService from './admin-form.service'
+import * as AdminFormPaymentService from './admin-form.payment.service'
 import { PermissionLevel } from './admin-form.types'
 import { mapRouteError, verifyUserBetaflag } from './admin-form.utils'
 
@@ -294,7 +294,7 @@ export const _handleUpdatePayments: ControllerHandler<
           : ok(form),
       )
       // Step 4: User has permissions, proceed to allow updating of start page
-      .andThen(() => AdminFormService.updatePayments(formId, req.body))
+      .andThen(() => AdminFormPaymentService.updatePayments(formId, req.body))
       .map((updatedPayments) =>
         res.status(StatusCodes.OK).json(updatedPayments),
       )
@@ -406,7 +406,9 @@ export const handleGetPaymentGuideLink: ControllerHandler = async (
       )
       // Step 3: User has permissions, proceed to get payment guide link
       .map(() =>
-        res.status(StatusCodes.OK).json(AdminFormService.getPaymentGuideLink()),
+        res
+          .status(StatusCodes.OK)
+          .json(AdminFormPaymentService.getPaymentGuideLink()),
       )
       .mapErr((error) => {
         logger.error({
