@@ -1660,4 +1660,90 @@ describe('mail.service', () => {
       expect(sendMailSpy).not.toHaveBeenCalled()
     })
   })
+
+  describe('sendFormIssueReportedNotificationToAdmin', () => {
+    const MOCK_FORM_TITLE = 'Mock form title'
+    const MOCK_FORM_ID = 'mockFormId'
+    const generateExpectedArg = async ({
+      form,
+    }: {
+      form: IPopulatedForm
+    }): Promise<MailOptions> => {
+      return {
+        to: form.admin.email,
+        cc: form.permissionList.map(({ email }) => email),
+        from: MOCK_SENDER_STRING,
+        subject: `Respondents are facing issues on ${MOCK_FORM_TITLE}`,
+        html: MailUtils.generateIssueReportedNotificationHtml({
+          appName: MOCK_APP_NAME,
+          formTitle: form.title,
+          formResultUrl: `${MOCK_APP_URL}/admin/form/${form._id}/results/feedback`,
+        }),
+        headers: {
+          // Hardcode in tests in case something changes this.
+          'X-Formsg-Email-Type': 'Issue reported notification',
+        },
+      }
+    }
+    it('should send notification email successfully', async () => {
+      // Arrange
+      // sendMail should return mocked success response
+      sendMailSpy.mockResolvedValueOnce('mockedSuccessResponse')
+
+      const MOCK_FORM = {
+        title: MOCK_FORM_TITLE,
+        _id: MOCK_FORM_ID,
+        admin: {
+          email: MOCK_VALID_EMAIL,
+        },
+        permissionList: [
+          { email: MOCK_VALID_EMAIL_2 },
+          { email: MOCK_VALID_EMAIL_3 },
+        ],
+      } as unknown as IPopulatedForm
+
+      const expectedArgument = await generateExpectedArg({
+        form: MOCK_FORM,
+      })
+      // Act
+      const actualResult =
+        await mailService.sendFormIssueReportedNotificationToAdmin({
+          form: MOCK_FORM,
+        })
+      // Assert
+      expect(actualResult._unsafeUnwrap()).toEqual(true)
+      // Check arguments passed to sendNodeMail
+      expect(sendMailSpy).toHaveBeenCalledTimes(1)
+      expect(sendMailSpy).toHaveBeenCalledWith(expectedArgument)
+    })
+
+    it('should reject with error when email is invalid', async () => {
+      // Arrange
+      const invalidEmail = 'notAnEmail'
+
+      const MOCK_FORM = {
+        title: MOCK_FORM_TITLE,
+        _id: MOCK_FORM_ID,
+        admin: {
+          email: invalidEmail,
+        },
+        permissionList: [
+          { email: MOCK_VALID_EMAIL_3 },
+          { email: MOCK_VALID_EMAIL_4 },
+        ],
+      } as unknown as IPopulatedForm
+
+      // Act
+      const actualResult =
+        await mailService.sendFormIssueReportedNotificationToAdmin({
+          form: MOCK_FORM,
+        })
+      // Assert
+      expect(actualResult._unsafeUnwrapErr()).toEqual(
+        new MailSendError('Invalid email error'),
+      )
+      // Verify no call send to sendNodeMail
+      expect(sendMailSpy).toHaveBeenCalledTimes(0)
+    })
+  })
 })
