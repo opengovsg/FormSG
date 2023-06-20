@@ -1,4 +1,4 @@
-import { AdminFeedbackDto } from '~shared/types'
+import { AdminFeedbackDto, AdminFeedbackRating } from '~shared/types'
 import {
   AdminDashboardFormMetaDto,
   CreateEmailFormBodyDto,
@@ -64,7 +64,7 @@ export const deleteAdminForm = async (formId: string): Promise<void> => {
 }
 
 export const createAdminFeedback = async (
-  rating: number,
+  rating: AdminFeedbackRating,
 ): Promise<AdminFeedbackDto> => {
   return ApiService.post(`${ADMIN_FORM_ENDPOINT}/feedback`, { rating }).then(
     ({ data }) => data.feedback,

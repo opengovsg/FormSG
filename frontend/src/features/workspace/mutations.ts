@@ -2,6 +2,7 @@ import { useCallback } from 'react'
 import { useMutation, useQueryClient } from 'react-query'
 import { useNavigate } from 'react-router-dom'
 
+import { AdminFeedbackRating } from '~shared/types'
 import {
   CreateEmailFormBodyDto,
   CreateStorageFormBodyDto,
@@ -155,8 +156,8 @@ export const useDeleteFormMutation = () => {
 }
 
 export const useAdminFeedbackMutation = () => {
-  const createAdminFeedbackMutation = useMutation((rating: number) =>
-    createAdminFeedback(rating),
+  const createAdminFeedbackMutation = useMutation(
+    (rating: AdminFeedbackRating) => createAdminFeedback(rating),
   )
   const updateAdminFeedbackMutation = useMutation(
     ({ feedbackId, comment }: { feedbackId: string; comment: string }) =>
