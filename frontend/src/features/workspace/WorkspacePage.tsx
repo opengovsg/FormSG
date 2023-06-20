@@ -31,7 +31,7 @@ export const WorkspacePage = (): JSX.Element => {
     } = {},
   } = useEnv()
   const { user, isLoading } = useUser()
-  const [isDisplayFeedback, setIsDisplayFeedback] = useState(false)
+  const [isDisplayFeedback, setIsDisplayFeedback] = useState(true)
 
   const adminFeedbackKey = useMemo(() => {
     return ADMIN_FEEDBACK_HISTORY_PREFIX + user?._id

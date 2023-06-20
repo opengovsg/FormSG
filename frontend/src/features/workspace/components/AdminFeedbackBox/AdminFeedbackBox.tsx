@@ -28,6 +28,7 @@ export const AdminFeedbackBox = ({ onClose }: { onClose: () => void }) => {
     FeedbackBoxContentState.Rating,
   )
   const [feedbackId, setFeedbackId] = useState('')
+  const [ratingValue, setRatingValue] = useState(AdminFeedbackRating.up)
   const { createAdminFeedbackMutation, updateAdminFeedbackMutation } =
     useAdminFeedbackMutation()
 
@@ -37,6 +38,7 @@ export const AdminFeedbackBox = ({ onClose }: { onClose: () => void }) => {
         .mutateAsync(rating)
         .then((data) => setFeedbackId(data._id))
       setContentState(FeedbackBoxContentState.CallForComment)
+      setRatingValue(rating)
     },
     [createAdminFeedbackMutation, setFeedbackId, setContentState],
   )
@@ -72,6 +74,7 @@ export const AdminFeedbackBox = ({ onClose }: { onClose: () => void }) => {
           onCallForCommentClick={handleCallForCommentClick}
           onCommentClick={handleCommentClick}
           onClose={onClose}
+          ratingValue={ratingValue}
         />
       </Flex>
     </Flex>
@@ -106,9 +109,21 @@ const AdminFeedbackRatingContent = ({
 
 const AdminFeedbackCallForCommentContent = ({
   onLinkClick,
+  ratingValue,
 }: {
   onLinkClick: () => void
+  ratingValue: AdminFeedbackRating
 }) => {
+  // Thumbs down
+  if (ratingValue === AdminFeedbackRating.down)
+    return (
+      <Text textStyle="h6">
+        Thank you for your feedback.{' '}
+        <Link onClick={onLinkClick}>Tell us more so we can improve!</Link>
+      </Text>
+    )
+
+  // Thumbs Up
   return (
     <Text textStyle="h6">
       Thank you, you're the best!{' '}
@@ -120,12 +135,20 @@ const AdminFeedbackCallForCommentContent = ({
 const AdminFeedbackCommentContent = ({
   onCommentClick,
   onClose,
+  ratingValue,
 }: {
   onCommentClick: (data: AdminFeedbackCommentForm) => void
   onClose: () => void
+  ratingValue: AdminFeedbackRating
 }) => {
   const { handleSubmit, register } = useForm<AdminFeedbackCommentForm>()
   const isMobile = useIsMobile()
+
+  const inputPlaceholder =
+    ratingValue === AdminFeedbackRating.up
+      ? 'Form is awesome'
+      : 'How can we improve your experience?'
+
   return (
     <Stack w={isMobile ? undefined : '28.5rem'}>
       <Flex justifyContent="space-between" alignItems="center" mb="1rem">
@@ -141,7 +164,11 @@ const AdminFeedbackCommentContent = ({
       <Text textStyle="body-2">
         Tell us about your form building experience in more detail!
       </Text>
-      <Textarea mt="1rem" {...register('comment')} />
+      <Textarea
+        mt="1rem"
+        {...register('comment')}
+        placeholder={inputPlaceholder}
+      />
       <Flex alignItems="flex-end" flexDirection="column">
         <Button mt="1rem" float="right" onClick={handleSubmit(onCommentClick)}>
           Submit
@@ -157,12 +184,14 @@ const AdminFeedbackBoxContentBuilder = ({
   onCallForCommentClick,
   onCommentClick,
   onClose,
+  ratingValue,
 }: {
   state: FeedbackBoxContentState
   onRatingClick: (rating: AdminFeedbackRating) => void
   onCallForCommentClick: () => void
   onCommentClick: (data: AdminFeedbackCommentForm) => void
   onClose: () => void
+  ratingValue: AdminFeedbackRating
 }) => {
   switch (state) {
     case FeedbackBoxContentState.Rating:
@@ -171,6 +200,7 @@ const AdminFeedbackBoxContentBuilder = ({
       return (
         <AdminFeedbackCallForCommentContent
           onLinkClick={onCallForCommentClick}
+          ratingValue={ratingValue}
         />
       )
     case FeedbackBoxContentState.CommentBox:
@@ -178,6 +208,7 @@ const AdminFeedbackBoxContentBuilder = ({
         <AdminFeedbackCommentContent
           onCommentClick={onCommentClick}
           onClose={onClose}
+          ratingValue={ratingValue}
         />
       )
   }
