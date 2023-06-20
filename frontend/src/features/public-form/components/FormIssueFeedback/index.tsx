@@ -1,1 +1,1 @@
-export { FormIssueFeedbackContainer as default } from './FormIssueFeedbackContainer'
+export { FormIssueFeedbackButton as default } from './FormIssueFeedbackButton'

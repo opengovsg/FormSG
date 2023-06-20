@@ -16,7 +16,7 @@ import {
 import { isEmpty } from 'lodash'
 import isEmail from 'validator/lib/isEmail'
 
-import { BasicField, FormIssueFeedbackBodyDto } from '~shared/types'
+import { BasicField, FormIssueBodyDto } from '~shared/types'
 
 import { INVALID_EMAIL_ERROR, REQUIRED_ERROR } from '~constants/validation'
 import { useIsMobile } from '~hooks/useIsMobile'
@@ -33,6 +33,7 @@ export interface FormIssueFeedbackProps {
   onClose: () => void
   isPreview: boolean
 }
+
 export const FormIssueFeedbackModal = ({
   isOpen,
   onClose,
@@ -50,7 +51,7 @@ export const FormIssueFeedbackModal = ({
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<FormIssueFeedbackBodyDto>()
+  } = useForm<FormIssueBodyDto>()
 
   const handleSubmitIssue = handleSubmit(() => {
     if (isPreview) {
@@ -85,7 +86,7 @@ export const FormIssueFeedbackModal = ({
           </ModalHeader>
           <ModalBody>
             <Stack>
-              <FormControl isInvalid={!isEmpty(errors)}>
+              <FormControl isInvalid={!!errors.issue}>
                 <FormLabel
                   isRequired={true}
                   description={'This will be sent to the form creator.'}
@@ -100,6 +101,9 @@ export const FormIssueFeedbackModal = ({
                 <FormErrorMessage>
                   {errors.issue && errors.issue.message}
                 </FormErrorMessage>
+              </FormControl>
+
+              <FormControl isInvalid={!!errors.email}>
                 <FormLabel
                   pt="1rem"
                   description="Leave your email or contact number so the form creator can reach out to you if needed."

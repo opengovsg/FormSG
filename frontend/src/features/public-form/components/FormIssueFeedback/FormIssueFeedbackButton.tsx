@@ -14,17 +14,11 @@ export const FormIssueFeedbackButton = (): JSX.Element => {
   const { isPreview } = usePublicFormContext()
 
   return (
-    <Flex
-      position="fixed"
-      bottom="2.625rem"
-      right="2.75rem"
-      cursor="pointer"
-      sx={noPrintCss}
-    >
+    <Flex position="fixed" bottom="2.625rem" right="2.75rem" sx={noPrintCss}>
       <Tooltip placement="left" label="Report an issue">
         <IconButton
           variant="outline"
-          as="a"
+          cursor="pointer"
           aria-label="issue feedback"
           icon={<BiMessage color="primary.500" />}
           onClick={onOpen}
