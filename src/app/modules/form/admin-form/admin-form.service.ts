@@ -44,9 +44,7 @@ import { EditFormFieldParams, FormUpdateParams } from '../../../../types/api'
 import config, { aws as AwsConfig } from '../../../config/config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import getAgencyModel from '../../../models/agency.server.model'
-import getFormModel, {
-  getEncryptedFormModel,
-} from '../../../models/form.server.model'
+import getFormModel from '../../../models/form.server.model'
 import * as SmsService from '../../../services/sms/sms.service'
 import { twilioClientCache } from '../../../services/sms/sms.service'
 import { dotifyObject } from '../../../utils/dotify-object'
@@ -101,9 +99,8 @@ import {
   processDuplicateOverrideProps,
 } from './admin-form.utils'
 
-export const logger = createLoggerWithLabel(module)
+const logger = createLoggerWithLabel(module)
 const FormModel = getFormModel(mongoose)
-export const EncryptedFormModel = getEncryptedFormModel(mongoose)
 const AgencyModel = getAgencyModel(mongoose)
 
 export const secretsManager = new SecretsManager({
