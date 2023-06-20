@@ -181,13 +181,13 @@ const PaymentInput = ({ isDisabled }: { isDisabled: boolean }) => {
                   value: PaymentType.Fixed,
                   label: 'Fixed amount',
                   description:
-                    'Payment amount is defined by form creator. Suitable for multiple products or services.',
+                    'Payment amount is defined by form admin. Suitable for a product or service.',
                 },
                 {
                   value: PaymentType.Variable,
-                  label: 'Variable amount (user defined)',
+                  label: 'Variable amount',
                   description:
-                    'Payment amount is defined by respondent. Suitable for donations and amounts specific to each respondent.',
+                    'Payment amount is defined by respondent. Suitable for donations or amounts unique to each respondent.',
                 },
               ]}
               {...field}
