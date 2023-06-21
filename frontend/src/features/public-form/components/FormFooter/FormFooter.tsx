@@ -29,6 +29,7 @@ export const FormFooter = (): JSX.Element => {
           mb={{ lg: '2rem' }}
         >
           <Box id={captchaContainerId} sx={noPrintCss} />
+          <Box id={'turnstile-container'} sx={noPrintCss} />
           <Box w="100%">
             <AppFooter
               variant="compact"

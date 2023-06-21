@@ -42,10 +42,13 @@ import {
   RecaptchaClosedError,
   useRecaptcha,
 } from '~features/recaptcha/useRecaptcha'
+import { useTurnstile } from '~features/turnstile/useTurnstile'
 import {
   FetchNewTransactionResponse,
   useTransactionMutations,
 } from '~features/verifiable-fields'
+
+import { TurnstileConnectionError } from '../../../../src/app/services/turnstile/turnstile.errors'
 
 import { FormNotFound } from './components/FormNotFound'
 import { usePublicAuthMutations, usePublicFormMutations } from './mutations'
@@ -125,12 +128,21 @@ export const PublicFormProvider = ({
     }
   }, [submissionData])
 
-  const { data: { captchaPublicKey, useFetchForSubmissions } = {} } = useEnv(
-    /* enabled= */ !!data?.form.hasCaptcha,
-  )
+  const {
+    data: { captchaPublicKey, turnstileSiteKey, useFetchForSubmissions } = {},
+    isFetched,
+  } = useEnv(/* enabled= */ !!data?.form.hasCaptcha)
+
   const { hasLoaded, getCaptchaResponse, containerId } = useRecaptcha({
     sitekey: data?.form.hasCaptcha ? captchaPublicKey : undefined,
   })
+
+  // useTurnstile({ siteKey: turnstileSiteKey })
+  const getTurnstileResponse = useTurnstile({
+    sitekey: data?.form.hasCaptcha ? turnstileSiteKey : undefined,
+  })
+
+  // getTurnstileResponse()
 
   const { isNotFormId, toast, vfnToastIdRef, expiryInMs, ...commonFormValues } =
     useCommonFormProvider(formId)
@@ -216,9 +228,12 @@ export const PublicFormProvider = ({
       const { form } = data ?? {}
       if (!form) return
 
+      // wait for turnstile response here
+      console.log('wait for turnstile response here')
       let captchaResponse: string | null
       try {
         captchaResponse = await getCaptchaResponse()
+        console.log('captcha response', captchaResponse)
       } catch (error) {
         if (error instanceof RecaptchaClosedError) {
           // Do nothing if recaptcha is closed.
@@ -228,11 +243,15 @@ export const PublicFormProvider = ({
         return showErrorToast(error, form)
       }
 
+      const turnstileResponse = await getTurnstileResponse()
+      console.log('turnstile response', turnstileResponse)
+
       const formData = {
         formFields: form.form_fields,
         formLogics: form.form_logics,
         formInputs,
         captchaResponse,
+        turnstileResponse,
         responseMetadata: {
           responseTimeMs: differenceInMilliseconds(Date.now(), startTime),
           numVisibleFields: isPaymentEnabled
@@ -410,7 +429,7 @@ export const PublicFormProvider = ({
                   {
                     ...formData,
                     publicKey: form.publicKey,
-                    captchaResponse,
+                    captchaResponse, //insert turnstile response here
                     paymentReceiptEmail: paymentReceiptEmailField?.value,
                   },
                   {
@@ -469,6 +488,7 @@ export const PublicFormProvider = ({
     [
       data,
       getCaptchaResponse,
+      getTurnstileResponse,
       showErrorToast,
       submitEmailModeFormMutation,
       submitStorageModeFormMutation,

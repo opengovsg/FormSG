@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react'
 
 type Status = 'idle' | 'loading' | 'ready' | 'error'
 
-export const useScript = (src?: string): Status => {
+export const useScript = (src?: string, isCloudFlare = false): Status => {
   const [status, setStatus] = useState<Status>(src ? 'loading' : 'idle')
 
   useEffect(
@@ -27,7 +27,7 @@ export const useScript = (src?: string): Status => {
         // Create script
         script = document.createElement('script')
         script.src = src
-        script.async = true
+        script.async = !isCloudFlare
         script.setAttribute('data-status', 'loading')
         // Add script to document body
         document.body.appendChild(script)

@@ -112,6 +112,7 @@ const submitEmailModeForm: ControllerHandler<
       .andThen((form) => {
         // Check the captcha
         if (form.hasCaptcha) {
+          // invoke turnstile here
           return CaptchaService.verifyCaptchaResponse(
             req.query.captchaResponse,
             getRequestIp(req),
@@ -126,6 +127,7 @@ const submitEmailModeForm: ControllerHandler<
               return error
             })
         }
+        // duplicate here
         return okAsync(form) as ResultAsync<IPopulatedEmailForm, never>
       })
       .andThen((form) =>

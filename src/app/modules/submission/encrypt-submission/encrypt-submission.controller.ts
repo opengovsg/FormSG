@@ -30,6 +30,7 @@ import { getEncryptPendingSubmissionModel } from '../../../models/pending_submis
 import { getEncryptSubmissionModel } from '../../../models/submission.server.model'
 import * as CaptchaMiddleware from '../../../services/captcha/captcha.middleware'
 import * as CaptchaService from '../../../services/captcha/captcha.service'
+// import * as TurnstileService from '../../../services/turnstile/turnstile.service'
 import { createReqMeta, getRequestIp } from '../../../utils/request'
 import { getFormAfterPermissionChecks } from '../../auth/auth.service'
 import { MalformedParametersError } from '../../core/core.errors'
@@ -160,6 +161,8 @@ const submitEncryptModeForm: ControllerHandler<
       const { errorMessage, statusCode } = mapRouteError(captchaResult.error)
       return res.status(statusCode).json({ message: errorMessage })
     }
+    // check turnstile captcha
+    // const turnstileResult = await TurnstileService.verifyTurnstileResponse()
   }
 
   // Check that the form has not reached submission limits

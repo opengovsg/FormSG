@@ -6,6 +6,7 @@ import { googleAnalyticsConfig } from '../../config/features/google-analytics.co
 import { paymentConfig } from '../../config/features/payment.config'
 import { sentryConfig } from '../../config/features/sentry.config'
 import { spcpMyInfoConfig } from '../../config/features/spcp-myinfo.config'
+import { turnstileConfig } from '../../config/features/turnstile.config'
 
 export const getClientEnvVars = (): ClientEnvVars => {
   return {
@@ -16,6 +17,7 @@ export const getClientEnvVars = (): ClientEnvVars => {
     logoBucketUrl: config.aws.logoBucketUrl, // S3 bucket
     formsgSdkMode: config.formsgSdkMode,
     captchaPublicKey: captchaConfig.captchaPublicKey, // Recaptcha
+    turnstileSiteKey: turnstileConfig.turnstileSiteKey, // Turnstile captcha
     sentryConfigUrl: sentryConfig.sentryConfigUrl, // Sentry.IO
     isSPMaintenance: spcpMyInfoConfig.isSPMaintenance, // Singpass maintenance message
     isCPMaintenance: spcpMyInfoConfig.isCPMaintenance, // Corppass maintenance message
