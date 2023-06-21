@@ -5,6 +5,7 @@ import { AdminNavBar } from '~/app/AdminNavBar'
 
 import { ADMIN_FEEDBACK_HISTORY_PREFIX } from '~constants/localStorage'
 import { ADMIN_FEEDBACK_SESSION_KEY } from '~constants/sessionStorage'
+import { useIsMobile } from '~hooks/useIsMobile'
 import { useLocalStorage } from '~hooks/useLocalStorage'
 import { useSessionStorage } from '~hooks/useSessionStorage'
 import { fillHeightCss } from '~utils/fillHeightCss'
@@ -32,6 +33,7 @@ export const WorkspacePage = (): JSX.Element => {
   } = useEnv()
   const { user, isLoading } = useUser()
   const [isDisplayFeedback, setIsDisplayFeedback] = useState(false)
+  const isMobile = useIsMobile()
 
   const adminFeedbackKey = useMemo(() => {
     return ADMIN_FEEDBACK_HISTORY_PREFIX + user?._id
@@ -63,6 +65,8 @@ export const WorkspacePage = (): JSX.Element => {
     if (
       // user details is loaded
       !isLoading &&
+      // TODO: create mobile version of admin feedback
+      !isMobile &&
       // admin session eligibility
       isAdminFeedbackEligible &&
       // if feedbackTime has not been seen
@@ -85,6 +89,7 @@ export const WorkspacePage = (): JSX.Element => {
     setIsDisplayFeedback,
     setLastFeedbackTime,
     setIsAdminFeedbackEligible,
+    isMobile,
   ])
 
   const closeAdminFeedback = useCallback(
