@@ -66,8 +66,15 @@ export const AdminFeedbackBox = ({ onClose }: { onClose: () => void }) => {
       justifyContent="center"
       margin="auto"
       width="100%"
+      zIndex="2"
     >
-      <Flex px="1.5rem" py="1rem" bgColor="white" boxShadow="md">
+      <Flex
+        px="1.5rem"
+        py="1rem"
+        bgColor="white"
+        boxShadow="md"
+        borderRadius="0.25rem"
+      >
         <AdminFeedbackBoxContentBuilder
           state={contentState}
           onRatingClick={handleRatingClick}
