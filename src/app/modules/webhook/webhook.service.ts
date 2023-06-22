@@ -223,9 +223,13 @@ export const sendWebhook = (
 }
 
 export const getWebhookType = (webhookUrl: string) => {
-  const isZapier = webhookUrl.match(/^https:\/\/hooks\.zapier\.com\//)
-  const isPlumber = webhookUrl.match(/^https:\/\/plumber\.gov\.sg\/webhooks\//)
-  const webhookType = isZapier ? 'zapier' : isPlumber ? 'plumber' : 'generic'
+  const isZapier = /^https:\/\/hooks\.zapier\.com\//
+  const isPlumber = /^https:\/\/plumber\.gov\.sg\/webhooks\//
+  const webhookType = isZapier.test(webhookUrl)
+    ? 'zapier'
+    : isPlumber.test(webhookUrl)
+    ? 'plumber'
+    : 'generic'
   return webhookType
 }
 
@@ -253,8 +257,9 @@ export const createInitialWebhookSender =
     return sendWebhook(submission.getWebhookView(), webhookUrl).andThen(
       (webhookResponse) => {
         webhookStatsdClient.increment('sent', 1, 1, {
-          responseCode: webhookResponse.response.status.toString(),
+          responseCode: `${webhookResponse.response.status || null}`,
           webhookType: getWebhookType(webhookUrl),
+          isRetryEnabled: `${isRetryEnabled}`,
         })
 
         // Save record of sending to database
