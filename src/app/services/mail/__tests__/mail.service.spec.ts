@@ -12,6 +12,7 @@ import {
 import { MailService } from 'src/app/services/mail/mail.service'
 import {
   AutoreplySummaryRenderData,
+  IssueReportedNotificationData,
   MailOptions,
   SendAutoReplyEmailsArgs,
 } from 'src/app/services/mail/mail.types'
@@ -1669,16 +1670,20 @@ describe('mail.service', () => {
     }: {
       form: IPopulatedForm
     }): Promise<MailOptions> => {
+      const htmlData: IssueReportedNotificationData = {
+        appName: MOCK_APP_NAME,
+        formTitle: form.title,
+        formResultUrl: `${MOCK_APP_URL}/admin/form/${form._id}/results/feedback`,
+      }
+      const expectedHtml = (
+        await MailUtils.generateIssueReportedNotificationHtml({ htmlData })
+      )._unsafeUnwrap()
       return {
         to: form.admin.email,
         cc: form.permissionList.map(({ email }) => email),
         from: MOCK_SENDER_STRING,
         subject: `Respondents are facing issues on ${MOCK_FORM_TITLE}`,
-        html: MailUtils.generateIssueReportedNotificationHtml({
-          appName: MOCK_APP_NAME,
-          formTitle: form.title,
-          formResultUrl: `${MOCK_APP_URL}/admin/form/${form._id}/results/feedback`,
-        }),
+        html: expectedHtml,
         headers: {
           // Hardcode in tests in case something changes this.
           'X-Formsg-Email-Type': 'Issue reported notification',
