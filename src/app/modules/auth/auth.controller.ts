@@ -46,7 +46,7 @@ export const _handleCheckUser: ControllerHandler<
 }
 
 /**
- * Handler for GET /auth/checkuser endpoint.
+ * Handler for GET /api/v3/auth/email/validate endpoint.
  * @returns 500 when there was an error validating body.email
  * @returns 401 when domain of body.email is invalid
  * @returns 200 if domain of body.email is valid
@@ -127,7 +127,7 @@ export const _handleLoginSendOtp: ControllerHandler<
 }
 
 /**
- * Handler for POST /auth/sendotp endpoint.
+ * Handler for POST /api/v3/auth/otp/generate endpoint.
  * @return 200 when OTP has been been successfully sent
  * @return 401 when email domain is invalid
  * @return 500 when unknown errors occurs during generate OTP, or create/send the email that delivers the OTP to the user's email address
@@ -137,13 +137,6 @@ export const handleLoginSendOtp = [
   _handleLoginSendOtp,
 ] as ControllerHandler[]
 
-/**
- * Handler for POST /auth/verifyotp endpoint.
- * @returns 200 when user has successfully logged in, with session cookie set
- * @returns 401 when the email domain is invalid
- * @returns 422 when the OTP is invalid
- * @returns 500 when error occurred whilst verifying the OTP
- */
 export const _handleLoginVerifyOtp: ControllerHandler<
   unknown,
   string | SessionUser,
@@ -219,11 +212,24 @@ export const _handleLoginVerifyOtp: ControllerHandler<
   )
 }
 
+/**
+ * Handler for POST /api/v3/auth/otp/verify endpoint.
+ * @returns 200 when user has successfully logged in, with session cookie set
+ * @returns 401 when the email domain is invalid
+ * @returns 422 when the OTP is invalid
+ * @returns 500 when error occurred whilst verifying the OTP
+ */
 export const handleLoginVerifyOtp = [
   validateVerifyOtpParams,
   _handleLoginVerifyOtp,
 ] as ControllerHandler[]
 
+/**
+ * Handler for POST /api/v3/auth/logout endpoint.
+ * @returns 200 when user has successfully logged out, with session cookie cleared
+ * @returns 400 when there is no session to destroy
+ * @returns 500 when error occurred while destroying the session
+ */
 export const handleSignout: ControllerHandler = async (req, res) => {
   if (!req.session || isEmpty(req.session)) {
     logger.error({
