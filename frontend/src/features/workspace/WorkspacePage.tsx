@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Flex, useDisclosure } from '@chakra-ui/react'
 
 import { AdminNavBar } from '~/app/AdminNavBar'
@@ -44,8 +44,8 @@ export const WorkspacePage = (): JSX.Element => {
   const [isAdminFeedbackEligible, setIsAdminFeedbackEligible] =
     useSessionStorage<boolean>(ADMIN_FEEDBACK_SESSION_KEY, false)
 
-  // Memo current time on page load to prevent re-renders from update to current time
-  const currentTime = useMemo(() => Date.now(), [])
+  // capture current time on page load to prevent re-renders from update to current time
+  const currentTime = useRef(Date.now())
 
   const bannerContent = useMemo(
     // Use || instead of ?? so that we fall through even if previous banners are empty string.
@@ -73,11 +73,12 @@ export const WorkspacePage = (): JSX.Element => {
       (!lastFeedbackTime ||
         // or if last feedback time seen is more than frequency (frequency env var must be defined)
         (!!adminFeedbackDisplayFrequency &&
-          currentTime - lastFeedbackTime > adminFeedbackDisplayFrequency))
+          currentTime.current - lastFeedbackTime >
+            adminFeedbackDisplayFrequency))
     ) {
       setIsDisplayFeedback(true)
       // reset local storage and admin feedback eligibility when admin feedback is displayed
-      setLastFeedbackTime(currentTime)
+      setLastFeedbackTime(currentTime.current)
       setIsAdminFeedbackEligible(false)
     }
   }, [
