@@ -319,11 +319,11 @@ export const generateIssueReportedNotificationHtml = ({
   return dedent`
   <p>Dear Form admin,</p>
   <p>Respondents are facing issues on your form: ${formTitle}.<p>
-  <p>These issues are reported by respondents via the ‘Report an issue’ button 
+  <p>These issues are reported by respondents via the 'Report an issue' button 
   on public forms. We encourage you to view these reports as respondents might 
-  be facing urgent issues relating to form submission. </p>
-  <p><a href="${formResultUrl}">Login to Forms</a> and view issues reported in your 
-  ‘Results’ page.</p>
-  <p>Thank you,</br>${appName}</p>
+  be facing urgent issues relating to form submission.</p>
+  <p><a href="${formResultUrl}">Login to Forms</a> and view issues reported in 
+  your results page.</p>
+  <p>Thank you,<br/>${appName}</p>
   `
 }
