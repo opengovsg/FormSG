@@ -24,7 +24,6 @@ const EncryptedFormModel = getEncryptedFormModel(mongoose)
  * @returns err(PossibleDatabaseError) if start page update fails
  * @returns err(InvalidPaymentAmountError) if payment amount exceeds MAX_PAYMENT_AMOUNT
  */
-
 export const updatePayments = (
   formId: string,
   newPayments: PaymentsUpdateDto,
@@ -35,12 +34,25 @@ export const updatePayments = (
   const { enabled } = newPayments
 
   // Check if payment amount exceeds maxPaymentAmountCents or below minPaymentAmountCents if the payment is enabled
-  if (enabled && newPayments?.payment_type === PaymentType.Fixed) {
+  if (enabled && newPayments.payment_type === PaymentType.Fixed) {
     const { amount_cents } = newPayments
     if (
       amount_cents > paymentConfig.maxPaymentAmountCents ||
       amount_cents < paymentConfig.minPaymentAmountCents
     ) {
+      return errAsync(new InvalidPaymentAmountError())
+    }
+  }
+
+  if (enabled && newPayments.payment_type === PaymentType.Variable) {
+    const { min_amount, max_amount } = newPayments
+    if (min_amount > max_amount) {
+      return errAsync(new InvalidPaymentAmountError())
+    }
+    if (min_amount < paymentConfig.minPaymentAmountCents) {
+      return errAsync(new InvalidPaymentAmountError())
+    }
+    if (max_amount > paymentConfig.maxPaymentAmountCents) {
       return errAsync(new InvalidPaymentAmountError())
     }
   }
