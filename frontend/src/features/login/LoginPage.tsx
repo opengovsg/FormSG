@@ -6,9 +6,8 @@ import { Box, chakra, Flex, GridItem, GridProps, Text } from '@chakra-ui/react'
 import { AppFooter } from '~/app/AppFooter'
 
 import { ReactComponent as BrandLogoSvg } from '~assets/svgs/brand/brand-hort-colour.svg'
-import { GUIDE_PAYMENTS_PUBLIC } from '~constants/links'
 import { LOGGED_IN_KEY } from '~constants/localStorage'
-import { LANDING_ROUTE } from '~constants/routes'
+import { LANDING_PAYMENTS_ROUTE, LANDING_ROUTE } from '~constants/routes'
 import { useLocalStorage } from '~hooks/useLocalStorage'
 import { getBannerProps } from '~utils/getBannerProps'
 import { sendLoginOtp, verifyLoginOtp } from '~services/AuthService'
@@ -167,7 +166,7 @@ export const LoginPage = (): JSX.Element => {
       <FeatureBanner
         bannerColorIntensity={bannerColorIntensity}
         body="You can now collect payments directly on your form!"
-        learnMoreLink={GUIDE_PAYMENTS_PUBLIC}
+        learnMoreLink={LANDING_PAYMENTS_ROUTE}
       />
       <BaseGridLayout flex={1}>
         <NonMobileSidebarGridArea>

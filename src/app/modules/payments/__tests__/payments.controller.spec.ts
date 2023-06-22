@@ -1,6 +1,7 @@
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import expressHandler from '__tests__/unit/backend/helpers/jest-express'
 import { ObjectId } from 'bson'
+import { StatusCodes } from 'http-status-codes'
 import mongoose from 'mongoose'
 import { PaymentStatus } from 'shared/types'
 
@@ -10,6 +11,15 @@ import * as PaymentsController from '../payments.controller'
 
 const Payment = getPaymentModel(mongoose)
 const MOCK_FORM_ID = new ObjectId().toHexString()
+
+jest.mock('nodemailer', () => ({
+  createTransport: jest.fn().mockReturnValue({
+    sendMail: jest
+      .fn()
+      .mockResolvedValueOnce(true)
+      .mockRejectedValueOnce(false),
+  }),
+}))
 
 describe('payments.controller', () => {
   beforeAll(async () => await dbHandler.connect())
@@ -131,6 +141,7 @@ describe('payments.controller', () => {
 
       // close DB to mock server error
       await dbHandler.closeDatabase()
+
       // Act
       await PaymentsController.handleGetPreviousPaymentId(
         mockReq,
@@ -138,6 +149,92 @@ describe('payments.controller', () => {
         jest.fn(),
       )
       expect(mockRes.sendStatus).toHaveBeenCalledWith(500)
+      // reconnect DB
+      await dbHandler.connect()
+    })
+  })
+  describe('handleSendOnboardingEmail', () => {
+    const MOCK_AGENCY_DOMAIN = 'test.gov.sg'
+    const MOCK_VALID_EMAIL = `hello@${MOCK_AGENCY_DOMAIN}`
+
+    beforeEach(async () => {
+      await dbHandler.insertAgency({ mailDomain: MOCK_AGENCY_DOMAIN })
+    })
+
+    it('should return 200 if payment onboarding email is sent successfully', async () => {
+      // Arrange
+      // nodemailer is expected to resolve to true now
+      const mockReq = expressHandler.mockRequest({
+        body: { email: MOCK_VALID_EMAIL },
+      })
+      const mockRes = expressHandler.mockResponse()
+
+      // Act
+      await PaymentsController.handleSendOnboardingEmail(
+        mockReq,
+        mockRes,
+        jest.fn(),
+      )
+
+      expect(mockRes.sendStatus).toHaveBeenCalledWith(StatusCodes.OK)
+    })
+
+    it('should return 403 if email domain is not whitelisted', async () => {
+      // Arrange
+      const mockReq = expressHandler.mockRequest({
+        body: { email: 'jest-always-mocks@me.sad' },
+      })
+      const mockRes = expressHandler.mockResponse()
+
+      // Act
+      await PaymentsController.handleSendOnboardingEmail(
+        mockReq,
+        mockRes,
+        jest.fn(),
+      )
+
+      expect(mockRes.sendStatus).toHaveBeenCalledWith(StatusCodes.FORBIDDEN)
+    })
+
+    it('should return 400 if sending of email fails', async () => {
+      // Arrange
+      // nodemailer is expected to reject with false now
+      const mockReq = expressHandler.mockRequest({
+        body: { email: MOCK_VALID_EMAIL },
+      })
+      const mockRes = expressHandler.mockResponse()
+
+      // Act
+      await PaymentsController.handleSendOnboardingEmail(
+        mockReq,
+        mockRes,
+        jest.fn(),
+      )
+
+      expect(mockRes.sendStatus).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
+    })
+
+    it('should return 500 if database query fails', async () => {
+      // Arrange
+      const mockReq = expressHandler.mockRequest({
+        body: { email: MOCK_VALID_EMAIL },
+      })
+      const mockRes = expressHandler.mockResponse()
+
+      // close DB to mock server error
+      await dbHandler.closeDatabase()
+
+      // Act
+      await PaymentsController.handleSendOnboardingEmail(
+        mockReq,
+        mockRes,
+        jest.fn(),
+      )
+
+      expect(mockRes.sendStatus).toHaveBeenCalledWith(
+        StatusCodes.INTERNAL_SERVER_ERROR,
+      )
+
       // reconnect DB
       await dbHandler.connect()
     })

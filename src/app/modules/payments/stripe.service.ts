@@ -546,6 +546,7 @@ export const handleStripeEvent = (
     case 'payout.reconciliation_completed': {
       // Retrieve the list of balance transactions related to this payout, and
       // associate the payout with the set of charges it pays out for
+      let payoutProcessError: ResultAsync<void, HandleStripeEventResultError>
       result = ResultAsync.fromPromise(
         stripe.balanceTransactions
           .list(
@@ -556,12 +557,21 @@ export const handleStripeEvent = (
             if (balanceTransaction.type !== 'charge') return
 
             const charge = balanceTransaction.source as Stripe.Charge
-            const innerResult = getMetadataPaymentId(
-              charge.metadata,
-            ).asyncAndThen((paymentId) => processStripeEvent(paymentId, event))
+            await getMetadataPaymentId(charge.metadata)
+              .asyncAndThen((paymentId) => processStripeEvent(paymentId, event))
+              .mapErr((error) => {
+                logger.error({
+                  message:
+                    'Error when calling processStripeEvent while paging through balanceTransaction',
+                  meta: { ...logMeta, chargeId: charge },
+                  error,
+                })
+                // Reducer to keep errors around
+                payoutProcessError = errAsync(error)
+                return
+              })
 
-            // Reducer to keep errors around
-            result = result.andThen(() => innerResult)
+            return
           }),
         (error) => {
           if (error instanceof Stripe.errors.StripeInvalidRequestError) {
@@ -584,7 +594,7 @@ export const handleStripeEvent = (
           })
           return new StripeFetchError()
         },
-      ).andThen(() => result)
+      ).andThen(() => payoutProcessError)
       break
     }
     default:

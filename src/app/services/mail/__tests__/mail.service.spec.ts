@@ -36,6 +36,7 @@ const MOCK_APP_NAME = 'mockApp'
 const MOCK_APP_URL = 'mockApp.example.com'
 const MOCK_SENDER_STRING = `${MOCK_APP_NAME} <${MOCK_SENDER_EMAIL}>`
 const MOCK_PDF = Buffer.from('fake pdf')
+const MOCK_OTP_PREFIX = 'ABC'
 
 const MOCK_RETRY_COUNT = 10
 
@@ -93,6 +94,7 @@ describe('mail.service', () => {
           appName: MOCK_APP_NAME,
           otp: MOCK_OTP,
           minutesToExpiry: HASH_EXPIRE_AFTER_SECONDS / 60,
+          otpPrefix: MOCK_OTP_PREFIX,
         }),
         headers: {
           // Hardcode in tests in case something changes this.
@@ -112,6 +114,7 @@ describe('mail.service', () => {
       const actualResult = await mailService.sendVerificationOtp(
         MOCK_VALID_EMAIL,
         MOCK_OTP,
+        MOCK_OTP_PREFIX,
       )
 
       // Assert
@@ -129,6 +132,7 @@ describe('mail.service', () => {
       const actualResult = await mailService.sendVerificationOtp(
         invalidEmail,
         MOCK_OTP,
+        MOCK_OTP_PREFIX,
       )
 
       // Assert
@@ -154,6 +158,7 @@ describe('mail.service', () => {
       const actualResult = await mailService.sendVerificationOtp(
         MOCK_VALID_EMAIL,
         MOCK_OTP,
+        MOCK_OTP_PREFIX,
       )
 
       // Assert
@@ -179,6 +184,7 @@ describe('mail.service', () => {
       const actualResult = await mailService.sendVerificationOtp(
         MOCK_VALID_EMAIL,
         MOCK_OTP,
+        MOCK_OTP_PREFIX,
       )
 
       // Assert
@@ -210,6 +216,7 @@ describe('mail.service', () => {
       const actualResult = await mailService.sendVerificationOtp(
         MOCK_VALID_EMAIL,
         MOCK_OTP,
+        MOCK_OTP_PREFIX,
       )
 
       // Assert
@@ -1562,6 +1569,180 @@ describe('mail.service', () => {
         ),
       )
       // Check arguments passed to sendNodeMail
+      expect(sendMailSpy).toHaveBeenCalledTimes(0)
+    })
+  })
+
+  describe('sendPaymentConfirmationEmail', () => {
+    const MOCK_INVALID_EMAIL = 'hello@world'
+    const MOCK_FORM_TITLE = 'Formally Information'
+    const MOCK_SUBMISSION_ID = 'mockSubmissionId'
+    const MOCK_FORM_ID = 'mockFormId'
+    const MOCK_PAYMENT_ID = 'mockPaymentId'
+
+    it('should send payment confirmation emails successfully', async () => {
+      // Act
+      const actualResult = await mailService.sendPaymentConfirmationEmail({
+        email: MOCK_VALID_EMAIL,
+        formTitle: MOCK_FORM_TITLE,
+        submissionId: MOCK_SUBMISSION_ID,
+        formId: MOCK_FORM_ID,
+        paymentId: MOCK_PAYMENT_ID,
+      })
+
+      // Assert
+      expect(actualResult._unsafeUnwrap()).toEqual(true)
+      // Check arguments passed to sendNodeMail
+      expect(sendMailSpy).toHaveBeenCalledOnce()
+    })
+
+    it('should return MailSendError when the provided email is invalid', async () => {
+      // Act
+      const actualResult = await mailService.sendPaymentConfirmationEmail({
+        email: MOCK_INVALID_EMAIL,
+        formTitle: MOCK_FORM_TITLE,
+        submissionId: MOCK_SUBMISSION_ID,
+        formId: MOCK_FORM_ID,
+        paymentId: MOCK_PAYMENT_ID,
+      })
+
+      // Assert
+      expect(actualResult).toEqual(
+        err(new MailSendError('Invalid email error')),
+      )
+      // Check arguments passed to sendNodeMail
+      expect(sendMailSpy).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('sendPaymentOnboardingEmail', () => {
+    const MOCK_INVALID_EMAIL = 'hello@world'
+
+    const generateExpectedArg = () => {
+      return {
+        to: MOCK_VALID_EMAIL,
+        from: MOCK_SENDER_STRING,
+        subject: `Getting started with FormSG Payments`,
+        html: MailUtils.generatePaymentOnboardingHtml({
+          appName: MOCK_APP_NAME,
+        }),
+        headers: {
+          // Hardcode in tests in case something changes this.
+          'X-Formsg-Email-Type': 'Payment onboarding',
+        },
+      }
+    }
+
+    it('should send payment onboarding emails successfully', async () => {
+      // Act
+      const actualResult = await mailService.sendPaymentOnboardingEmail({
+        email: MOCK_VALID_EMAIL,
+      })
+
+      // Assert
+      expect(actualResult._unsafeUnwrap()).toEqual(true)
+      // Check arguments passed to sendNodeMail
+      expect(sendMailSpy).toHaveBeenCalledOnce()
+      expect(sendMailSpy).toHaveBeenCalledWith(generateExpectedArg())
+    })
+
+    it('should return MailSendError when the provided email is invalid', async () => {
+      // Act
+      const actualResult = await mailService.sendPaymentOnboardingEmail({
+        email: MOCK_INVALID_EMAIL,
+      })
+
+      // Assert
+      expect(actualResult).toEqual(
+        err(new MailSendError('Invalid email error')),
+      )
+      // Check arguments passed to sendNodeMail
+      expect(sendMailSpy).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('sendFormIssueReportedNotificationToAdmin', () => {
+    const MOCK_FORM_TITLE = 'Mock form title'
+    const MOCK_FORM_ID = 'mockFormId'
+    const generateExpectedArg = async ({
+      form,
+    }: {
+      form: IPopulatedForm
+    }): Promise<MailOptions> => {
+      return {
+        to: form.admin.email,
+        cc: form.permissionList.map(({ email }) => email),
+        from: MOCK_SENDER_STRING,
+        subject: `Respondents are facing issues on ${MOCK_FORM_TITLE}`,
+        html: MailUtils.generateIssueReportedNotificationHtml({
+          appName: MOCK_APP_NAME,
+          formTitle: form.title,
+          formResultUrl: `${MOCK_APP_URL}/admin/form/${form._id}/results/feedback`,
+        }),
+        headers: {
+          // Hardcode in tests in case something changes this.
+          'X-Formsg-Email-Type': 'Issue reported notification',
+        },
+      }
+    }
+    it('should send notification email successfully', async () => {
+      // Arrange
+      // sendMail should return mocked success response
+      sendMailSpy.mockResolvedValueOnce('mockedSuccessResponse')
+
+      const MOCK_FORM = {
+        title: MOCK_FORM_TITLE,
+        _id: MOCK_FORM_ID,
+        admin: {
+          email: MOCK_VALID_EMAIL,
+        },
+        permissionList: [
+          { email: MOCK_VALID_EMAIL_2 },
+          { email: MOCK_VALID_EMAIL_3 },
+        ],
+      } as unknown as IPopulatedForm
+
+      const expectedArgument = await generateExpectedArg({
+        form: MOCK_FORM,
+      })
+      // Act
+      const actualResult =
+        await mailService.sendFormIssueReportedNotificationToAdmin({
+          form: MOCK_FORM,
+        })
+      // Assert
+      expect(actualResult._unsafeUnwrap()).toEqual(true)
+      // Check arguments passed to sendNodeMail
+      expect(sendMailSpy).toHaveBeenCalledTimes(1)
+      expect(sendMailSpy).toHaveBeenCalledWith(expectedArgument)
+    })
+
+    it('should reject with error when email is invalid', async () => {
+      // Arrange
+      const invalidEmail = 'notAnEmail'
+
+      const MOCK_FORM = {
+        title: MOCK_FORM_TITLE,
+        _id: MOCK_FORM_ID,
+        admin: {
+          email: invalidEmail,
+        },
+        permissionList: [
+          { email: MOCK_VALID_EMAIL_3 },
+          { email: MOCK_VALID_EMAIL_4 },
+        ],
+      } as unknown as IPopulatedForm
+
+      // Act
+      const actualResult =
+        await mailService.sendFormIssueReportedNotificationToAdmin({
+          form: MOCK_FORM,
+        })
+      // Assert
+      expect(actualResult._unsafeUnwrapErr()).toEqual(
+        new MailSendError('Invalid email error'),
+      )
+      // Verify no call send to sendNodeMail
       expect(sendMailSpy).toHaveBeenCalledTimes(0)
     })
   })

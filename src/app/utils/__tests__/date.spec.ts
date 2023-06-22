@@ -1,6 +1,10 @@
 import moment from 'moment-timezone'
 
-import { createQueryWithDateParam, isMalformedDate } from 'src/app/utils/date'
+import {
+  createQueryWithDateParam,
+  getStartOfDay,
+  isMalformedDate,
+} from 'src/app/utils/date'
 
 describe('Date Util', () => {
   describe('isMalformedDate', () => {
@@ -65,6 +69,71 @@ describe('Date Util', () => {
           $lte: expected.endDateEndOfDay,
         },
       })
+    })
+  })
+
+  describe('getStartOfDay', () => {
+    // Default the mock time to bangkok time
+    const MOCK_TIME = '2023-06-22T23:30:00-07:00'
+    beforeAll(() => {
+      // Mock the return value for new Date() to avoid flaky test
+      jest.useFakeTimers()
+      jest.setSystemTime(new Date(MOCK_TIME))
+    })
+
+    afterAll(() => {
+      jest.useRealTimers()
+    })
+
+    it(`should return today's start of day in Singapore timezone if option is not given`, () => {
+      // Act
+      const result = getStartOfDay()
+      // Assert
+      const expected = new Date('2023-06-23T00:00:00+08:00')
+      expect(result).toEqual(expected)
+    })
+
+    it(`should return today's start of day in Singapore timezone if date and timezone is not given`, () => {
+      // Act
+      const result = getStartOfDay({})
+      // Assert
+      const expected = new Date('2023-06-23T00:00:00+08:00')
+      expect(result).toEqual(expected)
+    })
+
+    it(`should return start of day in Singapore timezone if timezone is not given`, () => {
+      // Act
+      const date = new Date('2020-04-13T05:00:00.000+14:00')
+      const result = getStartOfDay({ date: date })
+      // Assert
+      const expected = new Date('2020-04-12T00:00:00.000+08:00')
+      expect(result).toEqual(expected)
+    })
+
+    it(`should return today's start of day based on given timezone if date is not given`, () => {
+      // Act
+      const result = getStartOfDay({ timezone: 'Pacific/Apia' })
+      // Assert
+      const expected = new Date('2023-06-23T00:00:00+13:00')
+      expect(result).toEqual(expected)
+    })
+
+    it(`should return a localise start of day given date and timezone=Asia/Bangkok`, () => {
+      // Act
+      const date = new Date('2020-04-13T05:00:00.000+08:00')
+      const result = getStartOfDay({ date: date, timezone: 'Asia/Bangkok' })
+      // Assert
+      const expected = new Date('2020-04-13T00:00:00.000+07:00')
+      expect(result).toEqual(expected)
+    })
+
+    it(`should return a localise start of day given date and timezone=America/Dawson`, () => {
+      // Act
+      const date = new Date('2020-04-13T05:00:00.000+08:00')
+      const result = getStartOfDay({ date: date, timezone: 'America/Dawson' })
+      // Assert
+      const expected = new Date('2020-04-12T00:00:00.000-07:00')
+      expect(result).toEqual(expected)
     })
   })
 })
