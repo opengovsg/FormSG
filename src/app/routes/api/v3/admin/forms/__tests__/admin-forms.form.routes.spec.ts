@@ -9,11 +9,12 @@ import { generateDefaultField } from '__tests__/unit/backend/helpers/generate-fo
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { jsonParseStringify } from '__tests__/unit/backend/helpers/serialize-data'
 import { ObjectId } from 'bson-ext'
-import { omit } from 'lodash'
+import { omit, pick } from 'lodash'
 import mongoose from 'mongoose'
 import { err, errAsync, okAsync } from 'neverthrow'
 import supertest, { Session } from 'supertest-session'
 
+import getAdminFeedbackModel from 'src/app/models/admin_feedback.server.model'
 import getFormModel, {
   getEmailFormModel,
   getEncryptedFormModel,
@@ -24,7 +25,7 @@ import {
   DatabaseError,
   DatabasePayloadSizeError,
 } from 'src/app/modules/core/core.errors'
-import { IPopulatedForm, IUserSchema } from 'src/types'
+import { IAdminFeedbackSchema, IPopulatedForm, IUserSchema } from 'src/types'
 
 import {
   BasicField,
@@ -53,6 +54,7 @@ const UserModel = getUserModel(mongoose)
 const FormModel = getFormModel(mongoose)
 const EmailFormModel = getEmailFormModel(mongoose)
 const EncryptFormModel = getEncryptedFormModel(mongoose)
+const AdminFeedbackModel = getAdminFeedbackModel(mongoose)
 
 const app = setupApp('/admin/forms', AdminFormsRouter, {
   setupWithAuth: true,
@@ -2433,6 +2435,221 @@ describe('admin-form.form.routes', () => {
           },
         }),
       )
+    })
+  })
+
+  describe('POST /admin/forms/feedback', () => {
+    const MOCK_COMMENT = 'mock comment'
+    const MOCK_RATING = 0
+
+    it('should return 200 when the request is successful', async () => {
+      // Act
+      const resp = await request
+        .post(`/admin/forms/feedback`)
+        .send({ rating: MOCK_RATING, comment: MOCK_COMMENT })
+
+      // Assert
+      expect(resp.status).toBe(200)
+      expect(resp.body.message).toContain(
+        'Successfully submitted admin feedback',
+      )
+      expect(resp.body.feedback.rating).toEqual(MOCK_RATING)
+      expect(resp.body.feedback.comment).toEqual(MOCK_COMMENT)
+    })
+
+    it('should return 200 when the request is successful without comments', async () => {
+      // Act
+      const resp = await request
+        .post(`/admin/forms/feedback`)
+        .send({ rating: MOCK_RATING })
+
+      // Assert
+      expect(resp.status).toBe(200)
+      expect(resp.body.message).toContain(
+        'Successfully submitted admin feedback',
+      )
+      expect(resp.body.feedback.rating).toEqual(MOCK_RATING)
+      expect(resp.body.feedback.comment).toBeUndefined()
+    })
+
+    it('should return 400 when rating is not provided in request body', async () => {
+      // Act
+      const resp = await request
+        .post(`/admin/forms/feedback`)
+        .send({ comment: MOCK_COMMENT })
+
+      // Assert
+      expect(resp.status).toBe(400)
+      expect(resp.body.message).toEqual('Validation failed')
+    })
+
+    it('should return 400 when rating is not 0 or 1', async () => {
+      // Act
+      const resp = await request
+        .post(`/admin/forms/feedback`)
+        .send({ rating: -1 })
+
+      // Assert
+      expect(resp.status).toBe(400)
+      expect(resp.body.message).toEqual('Validation failed')
+    })
+
+    it('should return 401 when user is not logged in', async () => {
+      // Arrange
+      await logoutSession(request)
+
+      // Act
+      const resp = await request
+        .post(`/admin/forms/feedback`)
+        .send({ rating: MOCK_RATING })
+
+      // Assert
+      expect(resp.status).toEqual(401)
+      expect(resp.body).toEqual({ message: 'User is unauthorized.' })
+    })
+
+    it('should return 500 when db error occurs', async () => {
+      // Arrange
+      // Mock db error during create
+      jest
+        .spyOn(AdminFeedbackModel, 'create')
+        .mockRejectedValueOnce(new DatabaseError() as unknown as never)
+
+      // Act
+      const resp = await request
+        .post(`/admin/forms/feedback`)
+        .send({ rating: MOCK_RATING })
+
+      // Assert
+      expect(resp.status).toEqual(500)
+      expect(resp.body).toEqual({
+        message: 'Sorry, something went wrong. Please refresh and try again.',
+      })
+    })
+  })
+  describe('PATCH /admin/forms/feedback/:feedbackId', () => {
+    const MOCK_COMMENT = 'mock comment'
+    const MOCK_RATING = 0
+    const MOCK_NEW_COMMENT = 'new comment'
+    const MOCK_NEW_RATING = 1
+
+    let MOCK_ADMIN_FEEDBACK: IAdminFeedbackSchema
+
+    beforeEach(async () => {
+      MOCK_ADMIN_FEEDBACK = await AdminFeedbackModel.create({
+        userId: defaultUser.id.toString(),
+        rating: MOCK_RATING,
+        comment: MOCK_COMMENT,
+      })
+    })
+
+    it('should return 200 when request is successful', async () => {
+      // Act
+      const resp = await request
+        .patch(`/admin/forms/feedback/${MOCK_ADMIN_FEEDBACK.id.toString()}`)
+        .send({ rating: MOCK_NEW_RATING, comment: MOCK_NEW_COMMENT })
+
+      const updatedFeedback = await AdminFeedbackModel.findById(
+        MOCK_ADMIN_FEEDBACK.id.toString(),
+      )
+
+      // Assert
+      expect(resp.status).toEqual(200)
+      expect(resp.body.message).toEqual('Successfully updated admin feedback')
+      expect(updatedFeedback?.comment).toEqual(MOCK_NEW_COMMENT)
+      expect(updatedFeedback?.rating).toEqual(MOCK_NEW_RATING)
+    })
+
+    it('should return 200 without changes if request is successful without a body', async () => {
+      // Act
+      const resp = await request.patch(
+        `/admin/forms/feedback/${MOCK_ADMIN_FEEDBACK.id.toString()}`,
+      )
+
+      const updatedFeedback = pick(
+        await AdminFeedbackModel.findById(MOCK_ADMIN_FEEDBACK.id.toString()),
+        ['comment', 'rating', 'userId', '__id'],
+      )
+
+      // Assert
+      expect(resp.status).toEqual(200)
+      expect(resp.body.message).toEqual('Successfully updated admin feedback')
+      expect(updatedFeedback).toEqual(
+        pick(MOCK_ADMIN_FEEDBACK, ['comment', 'rating', 'userId', '__id']),
+      )
+    })
+
+    it('should return 400 if validation fails because rating is not 0 or 1', async () => {
+      // Act
+      const resp = await request
+        .patch(`/admin/forms/feedback/${MOCK_ADMIN_FEEDBACK.id.toString()}`)
+        .send({ rating: -1 })
+
+      // Assert
+      expect(resp.status).toEqual(400)
+      expect(resp.body.message).toEqual('Validation failed')
+    })
+
+    it('should return 401 when user is not logged in', async () => {
+      // Arrange
+      await logoutSession(request)
+
+      // Act
+      const resp = await request
+        .patch(`/admin/forms/feedback/${MOCK_ADMIN_FEEDBACK.id.toString()}`)
+        .send({ rating: 1, comment: 'new comment' })
+
+      // Assert
+      expect(resp.status).toEqual(401)
+      expect(resp.body).toEqual({ message: 'User is unauthorized.' })
+    })
+
+    it('should return 404 when feedbackId cannot be found in database', async () => {
+      // Act
+      const resp = await request
+        .patch(`/admin/forms/feedback/${new ObjectId().toString()}`)
+        .send({ rating: MOCK_NEW_RATING, comment: MOCK_NEW_COMMENT })
+
+      // Assert
+      expect(resp.status).toEqual(404)
+      expect(resp.body.message).toEqual('Admin feedback not found')
+    })
+
+    it('should return 404 when userId and feedbackId pair cannot be found in database', async () => {
+      // create new admin feedback with different userId from defaultuser
+      const newFeedback = await AdminFeedbackModel.create({
+        userId: new ObjectId().toHexString(),
+        rating: MOCK_RATING,
+        comment: MOCK_COMMENT,
+      })
+
+      // Act
+      const resp = await request
+        .patch(`/admin/forms/feedback/${newFeedback.id.toString()}`)
+        .send({ rating: MOCK_NEW_RATING, comment: MOCK_NEW_COMMENT })
+
+      // Assert
+      expect(resp.status).toEqual(404)
+      expect(resp.body.message).toEqual('Admin feedback not found')
+    })
+
+    it('should return 500 when db error occurs', async () => {
+      // Arrange
+      // Mock db error during updateOne
+      jest
+        .spyOn(AdminFeedbackModel, 'updateOne')
+        .mockRejectedValueOnce(new DatabaseError() as unknown as never)
+
+      // Act
+      const resp = await request
+        .patch(`/admin/forms/feedback/${MOCK_ADMIN_FEEDBACK.id.toString()}`)
+        .send({ comment: MOCK_NEW_COMMENT })
+
+      // Assert
+      expect(resp.status).toEqual(500)
+      expect(resp.body).toEqual({
+        message: 'Sorry, something went wrong. Please refresh and try again.',
+      })
     })
   })
 })

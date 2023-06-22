@@ -21,6 +21,10 @@ import {
 } from '../../myinfo/myinfo.constants'
 import { MyInfoService } from '../../myinfo/myinfo.service'
 import { extractMyInfoLoginJwt } from '../../myinfo/myinfo.util'
+import {
+  SGID_COOKIE_NAME,
+  SGID_MYINFO_LOGIN_COOKIE_NAME,
+} from '../../sgid/sgid.constants'
 import { SgidService } from '../../sgid/sgid.service'
 import { getOidcService } from '../../spcp/spcp.oidc.service'
 import * as EmailSubmissionMiddleware from '../email-submission/email-submission.middleware'
@@ -202,8 +206,9 @@ const submitEmailModeForm: ControllerHandler<
                 return error
               })
           }
+          case FormAuthType.SGID_MyInfo:
           case FormAuthType.MyInfo:
-            return extractMyInfoLoginJwt(req.cookies)
+            return extractMyInfoLoginJwt(req.cookies, authType)
               .andThen(MyInfoService.verifyLoginJwt)
               .asyncAndThen(({ uinFin }) =>
                 MyInfoService.fetchMyInfoHashes(uinFin, formId)
@@ -227,14 +232,18 @@ const submitEmailModeForm: ControllerHandler<
               .mapErr((error) => {
                 spcpSubmissionFailure = true
                 logger.error({
-                  message: 'Error verifying MyInfo hashes',
+                  message: `Error verifying MyInfo${
+                    authType === FormAuthType.SGID_MyInfo ? '(over SGID)' : ''
+                  } hashes`,
                   meta: logMeta,
                   error,
                 })
                 return error
               })
           case FormAuthType.SGID:
-            return SgidService.extractSgidJwtPayload(req.cookies.jwtSgid)
+            return SgidService.extractSgidSingpassJwtPayload(
+              req.cookies[SGID_COOKIE_NAME],
+            )
               .map<IPopulatedEmailFormWithResponsesAndHash>(
                 ({ userName: uinFin }) => ({
                   form,
@@ -383,8 +392,13 @@ const submitEmailModeForm: ControllerHandler<
             })
           })
           // MyInfo access token is single-use, so clear it
+          // Similarly for sgID-MyInfo
           return res
             .clearCookie(MYINFO_LOGIN_COOKIE_NAME, MYINFO_LOGIN_COOKIE_OPTIONS)
+            .clearCookie(
+              SGID_MYINFO_LOGIN_COOKIE_NAME,
+              MYINFO_LOGIN_COOKIE_OPTIONS,
+            )
             .json({
               // Return the reply early to the submitter
               message: 'Form submission successful.',

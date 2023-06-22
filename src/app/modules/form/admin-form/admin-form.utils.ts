@@ -49,6 +49,7 @@ import {
   CreatePresignedUrlError,
   EditFieldError,
   FieldNotFoundError,
+  GoGovError,
   InvalidCollaboratorError,
   InvalidFileTypeError,
   PaymentChannelNotFoundError,
@@ -173,6 +174,11 @@ export const mapRouteError = (
     case PaymentChannelNotFoundError:
       return {
         statusCode: StatusCodes.FORBIDDEN,
+        errorMessage: error.message,
+      }
+    case GoGovError:
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
         errorMessage: error.message,
       }
     default:

@@ -37,6 +37,7 @@ import { ControllerHandler } from '../../core/core.types'
 import { setFormTags } from '../../datadog/datadog.utils'
 import { PermissionLevel } from '../../form/admin-form/admin-form.types'
 import * as FormService from '../../form/form.service'
+import { SGID_COOKIE_NAME } from '../../sgid/sgid.constants'
 import { SgidService } from '../../sgid/sgid.service'
 import { getOidcService } from '../../spcp/spcp.oidc.service'
 import { getPopulatedUserById } from '../../user/user.service'
@@ -201,10 +202,12 @@ const submitEncryptModeForm: ControllerHandler<
   let userInfo
   const { authType } = form
   switch (authType) {
+    case FormAuthType.SGID_MyInfo:
     case FormAuthType.MyInfo: {
       logger.error({
-        message:
-          'Storage mode form is not allowed to have MyInfo authorisation',
+        message: `Storage mode form is not allowed to have MyInfo${
+          authType == FormAuthType.SGID_MyInfo ? '(over sgID)' : ''
+        } authorisation`,
         meta: logMeta,
       })
       const { errorMessage, statusCode } = mapRouteError(
@@ -260,8 +263,8 @@ const submitEncryptModeForm: ControllerHandler<
       break
     }
     case FormAuthType.SGID: {
-      const jwtPayloadResult = SgidService.extractSgidJwtPayload(
-        req.cookies.jwtSgid,
+      const jwtPayloadResult = SgidService.extractSgidSingpassJwtPayload(
+        req.cookies[SGID_COOKIE_NAME],
       )
       if (jwtPayloadResult.isErr()) {
         const { statusCode, errorMessage } = mapRouteError(

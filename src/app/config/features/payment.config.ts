@@ -1,5 +1,7 @@
 import convict, { Schema } from 'convict'
 
+import { PUBLIC_PAYMENTS_GUIDE_LINK } from '../../../../shared/constants'
+
 export interface IStripe {
   defaultCurrency: string
   stripePublishableKey: string
@@ -9,6 +11,7 @@ export interface IStripe {
   maxPaymentAmountCents: number
   minPaymentAmountCents: number
   guideLink: string
+  landingGuideLink: string
 }
 
 const paymentFeature: Schema<IStripe> = {
@@ -55,10 +58,16 @@ const paymentFeature: Schema<IStripe> = {
     env: 'PAYMENT_MIN_PAYMENT_AMOUNT_CENTS',
   },
   guideLink: {
-    doc: 'Link to payment guide',
+    doc: 'Link to payment guide (accessed through dashboard)',
     format: String,
-    default: 'https://go.gov.sg/formsg-guide-payments',
+    default: PUBLIC_PAYMENTS_GUIDE_LINK, // defaults to public guide
     env: 'PAYMENT_GUIDE_LINK',
+  },
+  landingGuideLink: {
+    doc: 'Link to payment guide for landing page self-onboarding (accessed through verified emails)',
+    format: String,
+    default: PUBLIC_PAYMENTS_GUIDE_LINK, // defaults to public guide
+    env: 'PAYMENT_LANDING_GUIDE_LINK',
   },
 }
 

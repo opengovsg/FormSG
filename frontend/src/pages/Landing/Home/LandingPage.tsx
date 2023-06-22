@@ -39,14 +39,26 @@ import {
   OGP_FORMSG_COLLATE,
   OGP_FORMSG_REPO,
 } from '~constants/links'
-import { LOGIN_ROUTE } from '~constants/routes'
+import { LANDING_PAYMENTS_ROUTE, LOGIN_ROUTE } from '~constants/routes'
 import { useIsMobile } from '~hooks/useIsMobile'
 import { useMdComponents } from '~hooks/useMdComponents'
 import Button from '~components/Button'
+import { FeatureBanner } from '~components/FeatureBanner/FeatureBanner'
 import Link from '~components/Link'
 import { MarkdownText } from '~components/MarkdownText'
 import { Tab } from '~components/Tabs'
 import { LottieAnimation } from '~templates/LottieAnimation'
+
+import { ExternalFormLink } from '../components/ExternalFormLink'
+import { FeatureGridItem } from '../components/FeatureGridItem'
+import { FeatureLink } from '../components/FeatureLink'
+import { FeatureSection } from '../components/FeatureSection'
+import { HelpAccordionItem } from '../components/HelpAccordionItem'
+import { LandingSection } from '../components/LandingSection'
+import { OrderedListIcon } from '../components/OrderedListIcon'
+import { SectionBodyText } from '../components/SectionBodyText'
+import { SectionTitleText } from '../components/SectionTitleText'
+import { StatsItem } from '../components/StatsItem'
 
 import formsHeroAnimation from './assets/images/animation-hero.json'
 import howFormsWorksAnimation from './assets/images/animation-mode.json'
@@ -70,16 +82,6 @@ import restrictedMsfLogo from './assets/images/restricted__msf.png'
 import restrictedNparksLogo from './assets/images/restricted__nparks.png'
 import restrictedPaLogo from './assets/images/restricted__pa.png'
 import storageModeImg from './assets/images/storage_mode.svg'
-import { ExternalFormLink } from './components/ExternalFormLink'
-import { FeatureGridItem } from './components/FeatureGridItem'
-import { FeatureLink } from './components/FeatureLink'
-import { FeatureSection } from './components/FeatureSection'
-import { HelpAccordionItem } from './components/HelpAccordionItem'
-import { LandingSection } from './components/LandingSection'
-import { OrderedListIcon } from './components/OrderedListIcon'
-import { SectionBodyText } from './components/SectionBodyText'
-import { SectionTitleText } from './components/SectionTitleText'
-import { StatsItem } from './components/StatsItem'
 import { useLanding } from './queries'
 
 export const LandingPage = (): JSX.Element => {
@@ -89,6 +91,11 @@ export const LandingPage = (): JSX.Element => {
 
   return (
     <>
+      <FeatureBanner
+        title="Introducing Payments"
+        body="Citizens can now pay for fees and services directly on your form!"
+        learnMoreLink={LANDING_PAYMENTS_ROUTE}
+      />
       <AppPublicHeader />
       <LandingSection bg="primary.100" pt={{ base: '2rem', md: 0 }} px="0">
         <Stack

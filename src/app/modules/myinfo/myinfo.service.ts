@@ -27,6 +27,7 @@ import {
   AuthTypeMismatchError,
   FormAuthNoEsrvcIdError,
 } from '../form/form.errors'
+import { SGIDMyInfoData } from '../sgid/sgid.adapter'
 import { ProcessedFieldResponse } from '../submission/submission.types'
 
 import { internalAttrListToScopes, MyInfoData } from './myinfo.adapter'
@@ -241,7 +242,7 @@ export class MyInfoServiceClass {
    */
   prefillAndSaveMyInfoFields(
     formId: string,
-    myInfoData: MyInfoData,
+    myInfoData: MyInfoData | SGIDMyInfoData,
     currFormFields: LeanDocument<IFieldSchema[]>,
   ): ResultAsync<PossiblyPrefilledField[], MyInfoHashingError | DatabaseError> {
     const prefilledFields = currFormFields.map((field) => {

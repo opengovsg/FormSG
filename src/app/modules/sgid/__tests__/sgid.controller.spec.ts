@@ -60,7 +60,7 @@ describe('sgid.controller', () => {
         okAsync(MOCK_TOKEN_RESULT),
       )
       SgidService.retrieveUserInfo.mockReturnValue(okAsync(MOCK_USER_INFO))
-      SgidService.createJwt.mockReturnValue(
+      SgidService.createSgidSingpassJwt.mockReturnValue(
         ok({ jwt: MOCK_JWT, maxAge: MOCK_COOKIE_AGE }),
       )
       SgidService.getCookieSettings.mockReturnValue(MOCK_COOKIE_SETTINGS)
@@ -76,7 +76,7 @@ describe('sgid.controller', () => {
       expect(FormService.retrieveFullFormById).not.toHaveBeenCalled()
       expect(SgidService.retrieveAccessToken).not.toHaveBeenCalled()
       expect(SgidService.retrieveUserInfo).not.toHaveBeenCalled()
-      expect(SgidService.createJwt).not.toHaveBeenCalled()
+      expect(SgidService.createSgidSingpassJwt).not.toHaveBeenCalled()
       expect(SgidService.getCookieSettings).not.toHaveBeenCalled()
     })
 
@@ -92,7 +92,7 @@ describe('sgid.controller', () => {
       expect(MOCK_RESPONSE.redirect).not.toHaveBeenCalled()
       expect(SgidService.retrieveAccessToken).not.toHaveBeenCalled()
       expect(SgidService.retrieveUserInfo).not.toHaveBeenCalled()
-      expect(SgidService.createJwt).not.toHaveBeenCalled()
+      expect(SgidService.createSgidSingpassJwt).not.toHaveBeenCalled()
       expect(SgidService.getCookieSettings).not.toHaveBeenCalled()
     })
 
@@ -108,7 +108,7 @@ describe('sgid.controller', () => {
       expect(MOCK_RESPONSE.redirect).toHaveBeenCalledWith(MOCK_DESTINATION)
       expect(SgidService.retrieveAccessToken).not.toHaveBeenCalled()
       expect(SgidService.retrieveUserInfo).not.toHaveBeenCalled()
-      expect(SgidService.createJwt).not.toHaveBeenCalled()
+      expect(SgidService.createSgidSingpassJwt).not.toHaveBeenCalled()
       expect(SgidService.getCookieSettings).not.toHaveBeenCalled()
     })
 
@@ -125,7 +125,7 @@ describe('sgid.controller', () => {
         MOCK_AUTH_CODE,
       )
       expect(SgidService.retrieveUserInfo).not.toHaveBeenCalled()
-      expect(SgidService.createJwt).not.toHaveBeenCalled()
+      expect(SgidService.createSgidSingpassJwt).not.toHaveBeenCalled()
       expect(SgidService.getCookieSettings).not.toHaveBeenCalled()
     })
 
@@ -144,12 +144,14 @@ describe('sgid.controller', () => {
       )
       expect(MOCK_RESPONSE.cookie).toHaveBeenCalledWith('isLoginError', true)
       expect(MOCK_RESPONSE.redirect).toHaveBeenCalledWith(MOCK_DESTINATION)
-      expect(SgidService.createJwt).not.toHaveBeenCalled()
+      expect(SgidService.createSgidSingpassJwt).not.toHaveBeenCalled()
       expect(SgidService.getCookieSettings).not.toHaveBeenCalled()
     })
 
     it('should set isLoginError cookie and redirect when createJWT errors', async () => {
-      SgidService.createJwt.mockReturnValue(err(new ApplicationError()))
+      SgidService.createSgidSingpassJwt.mockReturnValue(
+        err(new ApplicationError()),
+      )
       await SgidController.handleLogin(MOCK_LOGIN_REQ, MOCK_RESPONSE, jest.fn())
       expect(SgidService.parseState).toHaveBeenCalledWith(MOCK_STATE)
       expect(FormService.retrieveFullFormById).toHaveBeenCalledWith(MOCK_TARGET)
@@ -159,7 +161,7 @@ describe('sgid.controller', () => {
       expect(SgidService.retrieveUserInfo).toHaveBeenCalledWith(
         MOCK_TOKEN_RESULT,
       )
-      expect(SgidService.createJwt).toHaveBeenCalledWith(
+      expect(SgidService.createSgidSingpassJwt).toHaveBeenCalledWith(
         MOCK_USER_INFO.data,
         MOCK_REMEMBER_ME,
       )
@@ -177,7 +179,7 @@ describe('sgid.controller', () => {
       expect(SgidService.retrieveUserInfo).toHaveBeenCalledWith(
         MOCK_TOKEN_RESULT,
       )
-      expect(SgidService.createJwt).toHaveBeenCalledWith(
+      expect(SgidService.createSgidSingpassJwt).toHaveBeenCalledWith(
         MOCK_USER_INFO.data,
         MOCK_REMEMBER_ME,
       )

@@ -7,11 +7,12 @@ import { AppFooter } from '~/app/AppFooter'
 
 import { ReactComponent as BrandLogoSvg } from '~assets/svgs/brand/brand-hort-colour.svg'
 import { LOGGED_IN_KEY } from '~constants/localStorage'
-import { LANDING_ROUTE } from '~constants/routes'
+import { LANDING_PAYMENTS_ROUTE, LANDING_ROUTE } from '~constants/routes'
 import { useLocalStorage } from '~hooks/useLocalStorage'
 import { getBannerProps } from '~utils/getBannerProps'
 import { sendLoginOtp, verifyLoginOtp } from '~services/AuthService'
 import { Banner } from '~components/Banner'
+import { FeatureBanner } from '~components/FeatureBanner/FeatureBanner'
 import Link from '~components/Link'
 import { AppGrid } from '~templates/AppGrid'
 
@@ -96,17 +97,16 @@ const NonMobileSidebarGridArea: FC = ({ children }) => (
 )
 
 export const LoginPage = (): JSX.Element => {
-  const { data: { siteBannerContentReact, isLoginBannerReact } = {} } = useEnv()
+  const { data: { siteBannerContent, isLoginBanner } = {} } = useEnv()
   const [, setIsAuthenticated] = useLocalStorage<boolean>(LOGGED_IN_KEY)
   const [email, setEmail] = useState<string>()
   const [otpPrefix, setOtpPrefix] = useState<string>('')
   const { t } = useTranslation()
 
-  // TODO (#4279): Revert back to non-react banners post-migration.
   const bannerContent = useMemo(
     // Use || instead of ?? so that we fall through even if previous banners are empty string.
-    () => siteBannerContentReact || isLoginBannerReact,
-    [siteBannerContentReact, isLoginBannerReact],
+    () => siteBannerContent || isLoginBanner,
+    [siteBannerContent, isLoginBanner],
   )
 
   const bannerProps = useMemo(
@@ -149,13 +149,25 @@ export const LoginPage = (): JSX.Element => {
     await sendLoginOtp(email).then(({ otpPrefix }) => setOtpPrefix(otpPrefix))
   }
 
+  const bannerColorIntensity = 600
+  const bannerColor = `primary.${bannerColorIntensity}` // So banner colors are different from the blue background (left of login screen).
+
   return (
     <BackgroundBox>
       {bannerProps ? (
-        <Banner useMarkdown variant={bannerProps.variant}>
+        <Banner
+          useMarkdown
+          variant={bannerProps.variant}
+          bannerColor={bannerColor}
+        >
           {bannerProps.msg}
         </Banner>
       ) : null}
+      <FeatureBanner
+        bannerColorIntensity={bannerColorIntensity}
+        body="You can now collect payments directly on your form!"
+        learnMoreLink={LANDING_PAYMENTS_ROUTE}
+      />
       <BaseGridLayout flex={1}>
         <NonMobileSidebarGridArea>
           <LoginImageSvgr maxW="100%" aria-hidden />
