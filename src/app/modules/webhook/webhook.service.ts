@@ -223,9 +223,13 @@ export const sendWebhook = (
 }
 
 export const getWebhookType = (webhookUrl: string) => {
-  const isZapier = webhookUrl.match(/^https:\/\/hooks\.zapier\.com\//)
-  const isPlumber = webhookUrl.match(/^https:\/\/plumber\.gov\.sg\/webhooks\//)
-  const webhookType = isZapier ? 'zapier' : isPlumber ? 'plumber' : 'generic'
+  const isZapier = new RegExp(/^https:\/\/hooks\.zapier\.com\//)
+  const isPlumber = new RegExp(/^https:\/\/plumber\.gov\.sg\/webhooks\//)
+  const webhookType = isZapier.test(webhookUrl)
+    ? 'zapier'
+    : isPlumber.test(webhookUrl)
+    ? 'plumber'
+    : 'generic'
   return webhookType
 }
 
