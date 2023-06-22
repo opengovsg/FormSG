@@ -60,21 +60,25 @@ export const WorkspacePage = (): JSX.Element => {
 
   const createFormModalDisclosure = useDisclosure()
 
-  // Whether to display the admin feedback based on session eligibility and time of prev feedback seen
+  // check if admin is eligible in current session
+  // and has yet to seen feedback beyond our stipulated frequency
+  const showAdminFeedback =
+    isAdminFeedbackEligible &&
+    // if feedbackTime has not been seen
+    (!lastFeedbackTime ||
+      // or if last feedback time seen is more than frequency (frequency env var must be defined)
+      (!!adminFeedbackDisplayFrequency &&
+        currentTime.current - lastFeedbackTime > adminFeedbackDisplayFrequency))
+
+  // sets display of feedback box
   useEffect(() => {
     if (
       // user details is loaded
       !isLoading &&
       // TODO: create mobile version of admin feedback
       !isMobile &&
-      // admin session eligibility
-      isAdminFeedbackEligible &&
-      // if feedbackTime has not been seen
-      (!lastFeedbackTime ||
-        // or if last feedback time seen is more than frequency (frequency env var must be defined)
-        (!!adminFeedbackDisplayFrequency &&
-          currentTime.current - lastFeedbackTime >
-            adminFeedbackDisplayFrequency))
+      // whether to show admin the feedback box
+      showAdminFeedback
     ) {
       setIsDisplayFeedback(true)
       // reset local storage and admin feedback eligibility when admin feedback is displayed
@@ -83,10 +87,8 @@ export const WorkspacePage = (): JSX.Element => {
     }
   }, [
     isLoading,
-    lastFeedbackTime,
     currentTime,
-    isAdminFeedbackEligible,
-    adminFeedbackDisplayFrequency,
+    showAdminFeedback,
     setIsDisplayFeedback,
     setLastFeedbackTime,
     setIsAdminFeedbackEligible,
