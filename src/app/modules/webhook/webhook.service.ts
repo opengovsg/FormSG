@@ -253,8 +253,9 @@ export const createInitialWebhookSender =
     return sendWebhook(submission.getWebhookView(), webhookUrl).andThen(
       (webhookResponse) => {
         webhookStatsdClient.increment('sent', 1, 1, {
-          responseCode: webhookResponse.response.status.toString(),
+          responseCode: `${webhookResponse.response.status || null}`,
           webhookType: getWebhookType(webhookUrl),
+          isRetryEnabled: `${isRetryEnabled}`,
         })
 
         // Save record of sending to database
