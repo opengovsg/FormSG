@@ -8,15 +8,41 @@ import { InvalidPaymentAmountError } from 'src/app/modules/payments/payments.err
 import { IEncryptedFormDocument } from 'src/types'
 
 import { FormNotFoundError } from '../../form.errors'
-import * as AdminFormPaymentService from '../admin-form.payment.service'
+import * as AdminFormPaymentService from '../admin-form.payments.service'
 
 const EncryptFormModel = getEncryptedFormModel(mongoose)
 describe('admin-form.payment.service', () => {
   describe('updatePayments', () => {
-    // Arrange
     const mockFormId = new ObjectId().toString()
 
-    describe('Fixed Payment Type', () => {
+    describe('When Payment Type is not set', () => {
+      const updatedPaymentSettings: PaymentsUpdateDto = {
+        enabled: true,
+        // @ts-expect-error invalid payment_type
+        payment_type: null,
+      }
+
+      const mockUpdatedForm = {
+        _id: mockFormId,
+        payments_field: updatedPaymentSettings,
+      }
+      it('should return DBValidationError', async () => {
+        // Act
+        const actualResult = await AdminFormPaymentService.updatePayments(
+          mockFormId,
+          // @ts-expect-error invalid payment_type
+          mockUpdatedForm,
+        )
+
+        // Assert
+        expect(actualResult.isErr()).toEqual(true)
+        expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(DatabaseError)
+      })
+    })
+    describe('When Payment Type is Fixed', () => {
+      beforeEach(() => {
+        jest.clearAllMocks()
+      })
       const updatedPaymentSettings: PaymentsUpdateDto = {
         enabled: true,
         amount_cents: 5000,
@@ -128,6 +154,74 @@ describe('admin-form.payment.service', () => {
         expect(actualResult.isErr()).toEqual(true)
         expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(
           FormNotFoundError,
+        )
+      })
+    })
+
+    describe('When Payment Type is Variable', () => {
+      const defaultPaymentSettings: PaymentsUpdateDto = {
+        enabled: true,
+        min_amount: 1000,
+        max_amount: 1000,
+        description: 'some description',
+        payment_type: PaymentType.Variable,
+      }
+      beforeEach(() => {
+        jest.clearAllMocks()
+      })
+
+      it('should return OK if min_amount is greater than max_amount', async () => {
+        const updatedPaymentSettingsMaxAboveMin = {
+          ...defaultPaymentSettings,
+          min_amount: 500,
+          max_amount: 1500,
+        }
+
+        const mockUpdatedForm = {
+          _id: mockFormId,
+          payments_field: updatedPaymentSettingsMaxAboveMin,
+        }
+        const putSpy = jest
+          .spyOn(EncryptFormModel, 'updatePaymentsById')
+          .mockResolvedValueOnce(
+            mockUpdatedForm as unknown as IEncryptedFormDocument,
+          )
+        // Act
+        const actualResult = await AdminFormPaymentService.updatePayments(
+          mockFormId,
+          updatedPaymentSettingsMaxAboveMin,
+        )
+
+        // Assert
+        expect(putSpy).toHaveBeenCalledWith(
+          mockFormId,
+          updatedPaymentSettingsMaxAboveMin,
+        )
+        expect(actualResult.isOk()).toEqual(true)
+        expect(actualResult._unsafeUnwrap()).toEqual(
+          updatedPaymentSettingsMaxAboveMin,
+        )
+      })
+
+      it('should return error if max_amount was lesser than min_amount', async () => {
+        const updatedPaymentSettingsMaxBelowMin = {
+          ...defaultPaymentSettings,
+          min_amount: 1000,
+          max_amount: 500,
+        } as PaymentsUpdateDto
+
+        const putSpy = jest.spyOn(EncryptFormModel, 'updatePaymentsById')
+        // Act
+        const actualResult = await AdminFormPaymentService.updatePayments(
+          mockFormId,
+          updatedPaymentSettingsMaxBelowMin,
+        )
+
+        // Assert
+        expect(putSpy).not.toHaveBeenCalled()
+        expect(actualResult.isErr()).toEqual(true)
+        expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(
+          InvalidPaymentAmountError,
         )
       })
     })
