@@ -310,58 +310,60 @@ export const _handleUpdatePayments: ControllerHandler<
   )
 }
 
+const updatePaymentsValidator = celebrate({
+  [Segments.BODY]: {
+    enabled: Joi.boolean().required(),
+    payment_type: Joi.string()
+      .allow(...Object.values(PaymentType))
+      .required(),
+    amount_cents: Joi.when('enabled', {
+      is: Joi.equal(true),
+      then: Joi.when('payment_type', {
+        is: Joi.equal(PaymentType.Fixed),
+        then: Joi.number().integer().positive().required(),
+        otherwise: Joi.number(),
+      }),
+      otherwise: Joi.number().integer(),
+    }),
+
+    min_amount: Joi.when('enabled', {
+      is: Joi.equal(true),
+      then: Joi.when('payment_type', {
+        is: Joi.equal(PaymentType.Variable),
+        then: Joi.number().integer().positive().required(),
+        otherwise: Joi.number(),
+      }),
+      otherwise: Joi.number().integer(),
+    }),
+
+    max_amount: Joi.when('enabled', {
+      is: Joi.equal(true),
+      then: Joi.when('payment_type', {
+        is: Joi.equal(PaymentType.Variable),
+        then: Joi.number().integer().min(Joi.ref('min_amount')).required(),
+        otherwise: Joi.number(),
+      }),
+      otherwise: Joi.number().integer(),
+    }),
+
+    description: Joi.when('enabled', {
+      is: Joi.equal(true),
+      then: Joi.string().required(),
+      otherwise: Joi.string().allow(''),
+    }),
+    name: Joi.when('enabled', {
+      is: Joi.equal(true),
+      then: Joi.string().required(),
+      otherwise: Joi.string().allow(''),
+    }),
+  },
+})
+
 /**
  * Handler for PUT /:formId/payment
  */
 export const handleUpdatePayments = [
-  celebrate({
-    [Segments.BODY]: {
-      enabled: Joi.boolean().required(),
-      payment_type: Joi.string()
-        .allow(...Object.values(PaymentType))
-        .required(),
-      amount_cents: Joi.when('enabled', {
-        is: Joi.equal(true),
-        then: Joi.when('payment_type', {
-          is: Joi.equal(PaymentType.Fixed),
-          then: Joi.number().integer().positive().required(),
-          otherwise: Joi.number(),
-        }),
-        otherwise: Joi.number().integer(),
-      }),
-
-      min_amount: Joi.when('enabled', {
-        is: Joi.equal(true),
-        then: Joi.when('payment_type', {
-          is: Joi.equal(PaymentType.Variable),
-          then: Joi.number().integer().positive().required(),
-          otherwise: Joi.number(),
-        }),
-        otherwise: Joi.number().integer(),
-      }),
-
-      max_amount: Joi.when('enabled', {
-        is: Joi.equal(true),
-        then: Joi.when('payment_type', {
-          is: Joi.equal(PaymentType.Variable),
-          then: Joi.number().integer().min(Joi.ref('min_amount')).required(),
-          otherwise: Joi.number(),
-        }),
-        otherwise: Joi.number().integer(),
-      }),
-
-      description: Joi.when('enabled', {
-        is: Joi.equal(true),
-        then: Joi.string().required(),
-        otherwise: Joi.string().allow(''),
-      }),
-      name: Joi.when('enabled', {
-        is: Joi.equal(true),
-        then: Joi.string().required(),
-        otherwise: Joi.string().allow(''),
-      }),
-    },
-  }),
+  updatePaymentsValidator,
   _handleUpdatePayments,
 ] as ControllerHandler[]
 

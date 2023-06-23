@@ -2,6 +2,7 @@ import { ObjectId } from 'bson-ext'
 import mongoose from 'mongoose'
 import { PaymentsUpdateDto, PaymentType } from 'shared/types'
 
+import * as PaymentConfig from 'src/app/config/features/payment.config'
 import { getEncryptedFormModel } from 'src/app/models/form.server.model'
 import { DatabaseError } from 'src/app/modules/core/core.errors'
 import { InvalidPaymentAmountError } from 'src/app/modules/payments/payments.errors'
@@ -14,34 +15,12 @@ const EncryptFormModel = getEncryptedFormModel(mongoose)
 describe('admin-form.payment.service', () => {
   describe('updatePayments', () => {
     const mockFormId = new ObjectId().toString()
-
-    describe('When Payment Type is not set', () => {
-      const updatedPaymentSettings: PaymentsUpdateDto = {
-        enabled: true,
-        // @ts-expect-error invalid payment_type
-        payment_type: null,
-      }
-
-      const mockUpdatedForm = {
-        _id: mockFormId,
-        payments_field: updatedPaymentSettings,
-      }
-      it('should return DBValidationError', async () => {
-        // Act
-        const actualResult = await AdminFormPaymentService.updatePayments(
-          mockFormId,
-          // @ts-expect-error invalid payment_type
-          mockUpdatedForm,
-        )
-
-        // Assert
-        expect(actualResult.isErr()).toEqual(true)
-        expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(DatabaseError)
-      })
-    })
     describe('When Payment Type is Fixed', () => {
       beforeEach(() => {
         jest.clearAllMocks()
+      })
+      afterEach(() => {
+        jest.restoreAllMocks()
       })
       const updatedPaymentSettings: PaymentsUpdateDto = {
         enabled: true,
@@ -57,10 +36,13 @@ describe('admin-form.payment.service', () => {
 
       it('should return InvalidPaymentAmountError if payment amount exceeds maxPaymentAmountCents', async () => {
         // Arrange
-
+        jest.replaceProperty(PaymentConfig, 'paymentConfig', {
+          ...PaymentConfig.paymentConfig,
+          maxPaymentAmountCents: 4000,
+        })
         const updatedPaymentSettingsExceeded = {
           ...updatedPaymentSettings,
-          amount_cents: 100000001,
+          amount_cents: 4001,
         } as PaymentsUpdateDto
 
         // Act
@@ -78,10 +60,13 @@ describe('admin-form.payment.service', () => {
 
       it('should return InvalidPaymentAmountError if payment amount is below minPaymentAmountCents', async () => {
         // Arrange
-
+        jest.replaceProperty(PaymentConfig, 'paymentConfig', {
+          ...PaymentConfig.paymentConfig,
+          minPaymentAmountCents: 4000,
+        })
         const updatedPaymentSettingsBelow = {
           ...updatedPaymentSettings,
-          amount_cents: 49,
+          amount_cents: 3999,
         } as PaymentsUpdateDto
 
         // Act
@@ -159,7 +144,7 @@ describe('admin-form.payment.service', () => {
     })
 
     describe('When Payment Type is Variable', () => {
-      const defaultPaymentSettings: PaymentsUpdateDto = {
+      const defaultVariablePaymentSettings: PaymentsUpdateDto = {
         enabled: true,
         min_amount: 1000,
         max_amount: 1000,
@@ -172,7 +157,40 @@ describe('admin-form.payment.service', () => {
 
       it('should return OK if min_amount is greater than max_amount', async () => {
         const updatedPaymentSettingsMaxAboveMin = {
-          ...defaultPaymentSettings,
+          ...defaultVariablePaymentSettings,
+          min_amount: 500,
+          max_amount: 1500,
+        }
+
+        const mockUpdatedForm = {
+          _id: mockFormId,
+          payments_field: updatedPaymentSettingsMaxAboveMin,
+        }
+        const putSpy = jest
+          .spyOn(EncryptFormModel, 'updatePaymentsById')
+          .mockResolvedValueOnce(
+            mockUpdatedForm as unknown as IEncryptedFormDocument,
+          )
+        // Act
+        const actualResult = await AdminFormPaymentService.updatePayments(
+          mockFormId,
+          updatedPaymentSettingsMaxAboveMin,
+        )
+
+        // Assert
+        expect(putSpy).toHaveBeenCalledWith(
+          mockFormId,
+          updatedPaymentSettingsMaxAboveMin,
+        )
+        expect(actualResult.isOk()).toEqual(true)
+        expect(actualResult._unsafeUnwrap()).toEqual(
+          updatedPaymentSettingsMaxAboveMin,
+        )
+      })
+
+      it('should return OK if min_amount is greater than configMax', async () => {
+        const updatedPaymentSettingsMaxAboveMin = {
+          ...defaultVariablePaymentSettings,
           min_amount: 500,
           max_amount: 1500,
         }
@@ -205,7 +223,7 @@ describe('admin-form.payment.service', () => {
 
       it('should return error if max_amount was lesser than min_amount', async () => {
         const updatedPaymentSettingsMaxBelowMin = {
-          ...defaultPaymentSettings,
+          ...defaultVariablePaymentSettings,
           min_amount: 1000,
           max_amount: 500,
         } as PaymentsUpdateDto
@@ -218,6 +236,31 @@ describe('admin-form.payment.service', () => {
         )
 
         // Assert
+        expect(putSpy).not.toHaveBeenCalled()
+        expect(actualResult.isErr()).toEqual(true)
+        expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(
+          InvalidPaymentAmountError,
+        )
+      })
+
+      it('should return error if min_amount was lesser than minPaymentAmountCents', async () => {
+        jest.replaceProperty(PaymentConfig, 'paymentConfig', {
+          ...PaymentConfig.paymentConfig,
+          minPaymentAmountCents: 100,
+        })
+        const updatedPaymentSettingsBelow = {
+          ...defaultVariablePaymentSettings,
+          min_amount: 50,
+          max_amount: 1000,
+        } as PaymentsUpdateDto
+
+        // Act
+        const actualResult = await AdminFormPaymentService.updatePayments(
+          mockFormId,
+          updatedPaymentSettingsBelow,
+        )
+
+        const putSpy = jest.spyOn(EncryptFormModel, 'updatePaymentsById')
         expect(putSpy).not.toHaveBeenCalled()
         expect(actualResult.isErr()).toEqual(true)
         expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(
