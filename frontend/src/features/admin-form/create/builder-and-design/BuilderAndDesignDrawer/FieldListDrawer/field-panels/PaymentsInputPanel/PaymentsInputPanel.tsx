@@ -176,7 +176,6 @@ const PaymentInput = ({ isDisabled }: { isDisabled: boolean }) => {
               <SingleSelect
                 isClearable={false}
                 placeholder="Select Payment Type"
-                itemHeight={48 + 20}
                 fullWidth={true}
                 items={[
                   {

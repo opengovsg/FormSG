@@ -1,11 +1,10 @@
 import mongoose from 'mongoose'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 
-import { createLoggerWithLabel } from 'src/app/config/logger'
-
 import { PaymentsUpdateDto, PaymentType } from '../../../../../shared/types'
 import { IEncryptedFormDocument } from '../../../../types'
 import { paymentConfig } from '../../../config/features/payment.config'
+import { createLoggerWithLabel } from '../../../config/logger'
 import { getEncryptedFormModel } from '../../../models/form.server.model'
 import { transformMongoError } from '../../../utils/handle-mongo-error'
 import { PossibleDatabaseError } from '../../core/core.errors'

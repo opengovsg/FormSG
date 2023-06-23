@@ -38,8 +38,6 @@ export interface SingleSelectProviderProps<
   children: React.ReactNode
   /** Color scheme of component */
   colorScheme?: ThemeColorScheme
-  /** Item Height to calculate dropdown list height, default to 48 per item */
-  itemHeight?: number
   fullWidth?: boolean
 }
 export const SingleSelectProvider = ({
@@ -62,7 +60,6 @@ export const SingleSelectProvider = ({
   inputAria,
   colorScheme,
   comboboxProps = {},
-  itemHeight: itemHeightProp,
   fullWidth = false,
 }: SingleSelectProviderProps): JSX.Element => {
   const { items, getItemByValue } = useItems({ rawItems })
@@ -228,12 +225,12 @@ export const SingleSelectProvider = ({
   })
 
   const virtualListHeight = useMemo(() => {
-    const itemHeight = itemHeightProp ? itemHeightProp : 48
+    const itemHeight = 48
     const totalHeight = filteredItems.length * itemHeight
     // If the total height is less than the max height, just return the total height.
     // Otherwise, return the max height.
     return Math.min(totalHeight, VIRTUAL_LIST_MAX_HEIGHT)
-  }, [filteredItems.length, itemHeightProp])
+  }, [filteredItems.length])
 
   return (
     <SelectContext.Provider
