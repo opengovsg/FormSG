@@ -281,8 +281,6 @@ export const generatePaymentConfirmationHtml = ({
     meta: {
       action: 'generatePaymentConfirmationHtml',
       pathToTemplate,
-      __dirname,
-      cwd: process.cwd(),
     },
   })
   return safeRenderFile(pathToTemplate, htmlData)
@@ -314,8 +312,6 @@ export const generateIssueReportedNotificationHtml = ({
     meta: {
       action: 'generateIssueReportedNotificationHtml',
       pathToTemplate,
-      __dirname,
-      cwd: process.cwd(),
     },
   })
   return safeRenderFile(pathToTemplate, htmlData)
