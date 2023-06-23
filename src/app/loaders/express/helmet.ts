@@ -50,6 +50,7 @@ const helmetMiddlewares = () => {
       'https://www.tagmanager.google.com/',
       'https://www.google.com/recaptcha/',
       'https://www.recaptcha.net/recaptcha/',
+      'https://challenges.cloudflare.com',
       'https://www.gstatic.com/recaptcha/',
       'https://js.stripe.com/v3',
       'https://www.gstatic.cn/',
@@ -72,6 +73,7 @@ const helmetMiddlewares = () => {
       "'self'",
       'https://www.google.com/recaptcha/',
       'https://www.recaptcha.net/recaptcha/',
+      'https://challenges.cloudflare.com',
       'https://js.stripe.com/',
     ],
     styleSrc: [

@@ -20,6 +20,11 @@ import {
   MissingCaptchaError,
   VerifyCaptchaError,
 } from '../../../services/captcha/captcha.errors'
+import {
+  MissingTurnstileError,
+  TurnstileConnectionError,
+  VerifyTurnstileError,
+} from '../../../services/turnstile/turnstile.errors'
 import { genericMapRouteErrorTransform } from '../../../utils/error'
 import {
   AttachmentUploadError,
@@ -140,6 +145,24 @@ const errorMapper: MapRouteError = (
       return {
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage: 'Captcha was missing. Please refresh and submit again.',
+      }
+    case TurnstileConnectionError:
+      return {
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        errorMessage:
+          'Error connecting to Turnstile server . Please submit again in a few minutes.',
+      }
+    case VerifyTurnstileError:
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage:
+          'Incorrect Turnstile parameters. Please refresh and submit again.',
+      }
+    case MissingTurnstileError:
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage:
+          'Missing Turnstile challenge. Please refresh and submit again.',
       }
     case MalformedParametersError:
       return {
