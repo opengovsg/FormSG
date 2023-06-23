@@ -3,6 +3,7 @@
 import { encode } from 'html-entities'
 import { StatusCodes } from 'http-status-codes'
 import { JSDOM } from 'jsdom'
+import escape from 'lodash/escape'
 import mongoose from 'mongoose'
 import { err, Ok, ok, Result } from 'neverthrow'
 import Stripe from 'stripe'
@@ -435,7 +436,7 @@ export const convertToInvoiceFormat = (
     )
     .replace(
       /Something wrong with the email\? <a.+a>/,
-      `FormSG Form: ${formTitle}<br>Response ID: ${submissionId}`,
+      `FormSG Form: ${escape(formTitle)}<br>Response ID: ${submissionId}`,
     )
     .replace(
       /<td class="Spacer Spacer--gutter" width="64" .+<\/td>/,
