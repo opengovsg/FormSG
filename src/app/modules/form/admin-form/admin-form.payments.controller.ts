@@ -235,7 +235,7 @@ export const handleValidatePaymentAccount: ControllerHandler<{
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 when database error occurs
  */
-export const _handleUpdatePayments: ControllerHandler<
+const _handleUpdatePayments: ControllerHandler<
   { formId: string },
   IEncryptedFormDocument['payments_field'] | ErrorDto,
   PaymentsUpdateDto
@@ -309,6 +309,8 @@ export const _handleUpdatePayments: ControllerHandler<
       })
   )
 }
+
+export const handleUpdatePaymentsForTest = _handleUpdatePayments
 
 const updatePaymentsValidator = celebrate({
   [Segments.BODY]: {
