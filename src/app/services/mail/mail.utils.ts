@@ -18,6 +18,8 @@ import {
   BounceNotificationHtmlData,
   CollabSmsDisabledData,
   CollabSmsWarningData,
+  IssueReportedNotificationData,
+  PaymentConfirmationData,
   SubmissionToAdminHtmlData,
 } from './mail.types'
 
@@ -269,27 +271,19 @@ export const generateSmsVerificationWarningHtmlForCollab = (
 }
 
 export const generatePaymentConfirmationHtml = ({
-  formTitle,
-  submissionId,
-  appName,
-  invoiceUrl,
+  htmlData,
 }: {
-  formTitle: string
-  submissionId: string
-  appName: string
-  invoiceUrl: string
-}): string => {
-  return dedent`
-    <p>Hello there,</p>
-    <p>
-      Your payment on ${appName} form: ${formTitle} has been received successfully.
-      Your response ID is ${submissionId} and your payment invoice can be found 
-      <a href="${invoiceUrl}">here</a>.
-    </p>
-    <p>Regards,
-    <br />
-    ${appName} team</p>   
-  `
+  htmlData: PaymentConfirmationData
+}): ResultAsync<string, MailGenerationError> => {
+  const pathToTemplate = `${process.cwd()}/src/app/views/templates/payment-confirmation.view.html`
+  logger.info({
+    message: 'generatePaymentConfirmationHtml',
+    meta: {
+      action: 'generatePaymentConfirmationHtml',
+      pathToTemplate,
+    },
+  })
+  return safeRenderFile(pathToTemplate, htmlData)
 }
 
 export const generatePaymentOnboardingHtml = ({
@@ -308,22 +302,17 @@ export const generatePaymentOnboardingHtml = ({
 }
 
 export const generateIssueReportedNotificationHtml = ({
-  formTitle,
-  formResultUrl,
-  appName,
+  htmlData,
 }: {
-  formTitle: string
-  formResultUrl: string
-  appName: string
-}): string => {
-  return dedent`
-  <p>Dear Form admin,</p>
-  <p>Respondents are facing issues on your form: ${formTitle}.<p>
-  <p>These issues are reported by respondents via the 'Report an issue' button 
-  on public forms. We encourage you to view these reports as respondents might 
-  be facing urgent issues relating to form submission.</p>
-  <p><a href="${formResultUrl}">Login to Forms</a> and view issues reported in 
-  your results page.</p>
-  <p>Thank you,<br/>${appName}</p>
-  `
+  htmlData: IssueReportedNotificationData
+}): ResultAsync<string, MailGenerationError> => {
+  const pathToTemplate = `${process.cwd()}/src/app/views/templates/issue-reported-notification.view.html`
+  logger.info({
+    message: 'generateIssueReportedNotificationHtml',
+    meta: {
+      action: 'generateIssueReportedNotificationHtml',
+      pathToTemplate,
+    },
+  })
+  return safeRenderFile(pathToTemplate, htmlData)
 }
