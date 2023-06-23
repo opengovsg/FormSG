@@ -70,8 +70,6 @@ export const useTurnstile = ({
   const turnstile: TurnstileCallbacks | undefined = window.turnstile
   const [hasLoaded, setHasLoaded] = useState(turnstile?.render ? true : false)
   const [widgetID, setWidgetID] = useState<string>()
-  // const [isVfnInProgress, setIsVfnInProgress] = useState(false)
-  // const [hasDisplayed, setHasDisplayed] = useState(false)
 
   const executionPromise = useRef<TurnstileExecutionCallback>({})
 
@@ -106,15 +104,11 @@ export const useTurnstile = ({
       executionPromise.current.reject()
       executionPromise.current = {}
     }
-    // setIsVfnInProgress(false)
-    // setHasDisplayed(false)
   }, [])
 
   const handleExpiry = useCallback(() => {
     turnstile?.reset(widgetID)
     handleChange(null)
-    // setIsVfnInProgress(false)
-    // setHasDisplayed(false)
   }, [turnstile, handleChange, widgetID])
 
   useEffect(() => {
