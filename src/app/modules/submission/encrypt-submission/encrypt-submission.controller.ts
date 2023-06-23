@@ -155,7 +155,7 @@ const submitEncryptModeForm: ControllerHandler<
     // Feature flag to control turnstile captcha rollout
     // defaults to false
     // todo: remove after full rollout
-    let enableTurnstileFeatureFlag = true
+    let enableTurnstileFeatureFlag = false
     if (featureFlagsListResult.isErr()) {
       logger.error({
         message: 'Error occurred whilst retrieving enabled feature flags',

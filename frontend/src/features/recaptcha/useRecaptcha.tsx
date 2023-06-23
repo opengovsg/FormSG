@@ -199,6 +199,7 @@ export const useRecaptcha = ({
     handleError,
     useEnterprise,
     grecaptcha,
+    enableTurnstileFeatureFlag,
   ])
 
   /**

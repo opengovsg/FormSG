@@ -37,10 +37,7 @@ import {
   trackVisitPublicForm,
 } from '~features/analytics/AnalyticsService'
 import { useEnv } from '~features/env/queries'
-import {
-  useFeatureFlags,
-  useFeatureFlagWithDefaults,
-} from '~features/feature-flags/queries'
+import { useFeatureFlagWithDefaults } from '~features/feature-flags/queries'
 import { getPaymentPageUrl } from '~features/public-form/utils/urls'
 import {
   RecaptchaClosedError,
@@ -518,6 +515,8 @@ export const PublicFormProvider = ({
     },
     [
       data,
+      enableTurnstileFeatureFlag,
+      getTurnstileResponse,
       getCaptchaResponse,
       showErrorToast,
       submitEmailModeFormMutation,
