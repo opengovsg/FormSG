@@ -106,7 +106,7 @@ export const useRecaptcha = ({
   // todo: remove after full rollout
   const enableTurnstileFeatureFlag = useFeatureFlagWithDefaults(
     featureFlags.turnstile,
-    true,
+    false,
   )
 
   useIntervalWhen(

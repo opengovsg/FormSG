@@ -78,9 +78,8 @@ export const useTurnstile = ({
   // todo: remove after full rollout
   const enableTurnstileFeatureFlag = useFeatureFlagWithDefaults(
     featureFlags.turnstile,
-    true,
+    false,
   )
-
   useIntervalWhen(
     () => {
       if (turnstile?.render) {

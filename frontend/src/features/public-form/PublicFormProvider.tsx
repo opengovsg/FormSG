@@ -136,7 +136,7 @@ export const PublicFormProvider = ({
   // todo: remove after full rollout
   const enableTurnstileFeatureFlag = useFeatureFlagWithDefaults(
     featureFlags.turnstile,
-    true,
+    false,
   )
   let hasLoaded: boolean
   let containerID: string
