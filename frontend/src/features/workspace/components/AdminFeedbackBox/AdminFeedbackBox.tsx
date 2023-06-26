@@ -94,8 +94,10 @@ const AdminFeedbackRatingContent = ({
   onRatingClick: (rating: AdminFeedbackRating) => void
 }) => {
   return (
-    <Stack direction="row" alignItems="center" gap="1.5rem">
-      <Text textStyle="h6">How was your form building experience?</Text>
+    <Stack direction="row" alignItems="center" gap="0.75rem">
+      <Text textStyle="h6" mr="0.75rem">
+        How was your form building experience?
+      </Text>
       <IconButton
         variant="clear"
         icon={<GoThumbsup />}
