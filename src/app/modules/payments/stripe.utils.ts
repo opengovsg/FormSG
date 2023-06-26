@@ -435,7 +435,7 @@ export const convertToInvoiceFormat = (
     )
     .replace(
       /Something wrong with the email\? <a.+a>/,
-      `FormSG Form: ${formTitle}<br>Response ID: ${submissionId}`,
+      `FormSG Form: ${encode(formTitle)}<br />Response ID: ${submissionId}`,
     )
     .replace(
       /<td class="Spacer Spacer--gutter" width="64" .+<\/td>/,
