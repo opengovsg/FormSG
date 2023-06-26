@@ -13,7 +13,6 @@ import {
   IPopulatedForm,
   IVerificationFieldSchema,
   IVerificationSchema,
-  PublicTransaction,
 } from '../../../types'
 import formsgSdk from '../../config/formsg-sdk'
 import { createLoggerWithLabel } from '../../config/logger'
@@ -99,45 +98,6 @@ export const createTransaction = (
       },
     ),
   )
-}
-
-/**
- *  Retrieves a transaction's metadata by id
- * @param transactionId
- * @returns ok(transaction metadata)
- * @returns err(TransactionNotFoundError) when transaction ID does not exist
- * @returns err(PossibleDatabaseError) when database read/write errors
- */
-export const getTransactionMetadata = (
-  transactionId: string,
-): ResultAsync<
-  PublicTransaction,
-  TransactionNotFoundError | PossibleDatabaseError
-> => {
-  const logMeta = {
-    action: 'getTransactionMetadata',
-    transactionId,
-  }
-  return ResultAsync.fromPromise(
-    VerificationModel.getPublicViewById(transactionId),
-    (error) => {
-      logger.error({
-        message: 'Error while retrieving transaction metadata',
-        meta: logMeta,
-        error,
-      })
-      return transformMongoError(error)
-    },
-  ).andThen((transaction) => {
-    if (!transaction) {
-      logger.error({
-        message: 'Transaction ID does not exist',
-        meta: logMeta,
-      })
-      return errAsync(new TransactionNotFoundError())
-    }
-    return okAsync(transaction)
-  })
 }
 
 /**

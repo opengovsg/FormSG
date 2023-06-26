@@ -35,4 +35,6 @@ export type ClientEnvVars = {
   useFetchForSubmissions: boolean
   secretEnv: string
   goGovBaseUrl: string
+  adminFeedbackFieldThreshold: number
+  adminFeedbackDisplayFrequency: number
 }

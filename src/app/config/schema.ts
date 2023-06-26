@@ -337,6 +337,20 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
       env: 'API_KEY_VERSION',
     },
   },
+  adminFeedback: {
+    adminFeedbackFieldThreshold: {
+      doc: 'Threshold of number of form fields in active form for admin to be eligible for admin feedback, default is 5',
+      format: Number,
+      default: 5,
+      env: 'ADMIN_FEEDBACK_FIELD_THRESHOLD',
+    },
+    adminFeedbackDisplayFrequency: {
+      doc: 'Frequency to display admin feedback, measured in miliseconds, default is 28days (1000(ms)*60(s)*60(min)*24(hrs)*28(days))',
+      format: Number,
+      default: 2419200000,
+      env: 'ADMIN_FEEDBACK_DISPLAY_FREQUENCY',
+    },
+  },
 }
 
 export const prodOnlyVarsSchema: Schema<IProdOnlyVarsSchema> = {

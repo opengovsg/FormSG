@@ -17,6 +17,8 @@ import {
   PaymentChannel,
 } from '~shared/types'
 
+import { ADMIN_FEEDBACK_SESSION_KEY } from '~constants/sessionStorage'
+import { useSessionStorage } from '~hooks/useSessionStorage'
 import { centsToDollars, dollarsToCents } from '~utils/payments'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
@@ -79,6 +81,10 @@ export const PaymentInput = ({ isDisabled }: { isDisabled: boolean }) => {
   const { setFieldListTabIndex } = useCreatePageSidebar()
 
   const handleClose = () => setFieldListTabIndex(FieldListTabIndex.Basic)
+
+  const [, setisAdminFeedbackEligible] = useSessionStorage<boolean>(
+    ADMIN_FEEDBACK_SESSION_KEY,
+  )
 
   // unpack payment data for paymentAmount if it exists
   const paymentAmountCents = paymentsData?.amount_cents
@@ -176,6 +182,10 @@ export const PaymentInput = ({ isDisabled }: { isDisabled: boolean }) => {
         handleClose()
       }
     }
+
+    // update sessionStorage to enable admin feedback
+    setisAdminFeedbackEligible(true)
+
     return paymentsMutation.mutate(
       { ...paymentsData, amount_cents: paymentAmountCents },
       {

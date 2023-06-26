@@ -34,5 +34,9 @@ export const getClientEnvVars = (): ClientEnvVars => {
     secretEnv: config.secretEnv, // Used for conditional rendering of payment copy
 
     goGovBaseUrl: goGovConfig.goGovBaseUrl, // Used for GoGov integration
+
+    // Used for admin feedback in frontend
+    adminFeedbackFieldThreshold: config.adminFeedbackFieldThreshold,
+    adminFeedbackDisplayFrequency: config.adminFeedbackDisplayFrequency,
   }
 }
