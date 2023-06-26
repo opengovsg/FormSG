@@ -31,7 +31,7 @@ export const WorkspacePage = (): JSX.Element => {
       adminFeedbackDisplayFrequency,
     } = {},
   } = useEnv()
-  const { user, isLoading } = useUser()
+  const { user } = useUser()
   const [isDisplayFeedback, setIsDisplayFeedback] = useState(false)
   const isMobile = useIsMobile()
 
@@ -73,8 +73,8 @@ export const WorkspacePage = (): JSX.Element => {
   // sets display of feedback box
   useEffect(() => {
     if (
-      // user details is loaded
-      !isLoading &&
+      // // user details is loaded
+      // !isLoading &&
       // TODO: create mobile version of admin feedback
       !isMobile &&
       // whether to show admin the feedback box
@@ -86,7 +86,6 @@ export const WorkspacePage = (): JSX.Element => {
       setIsAdminFeedbackEligible(false)
     }
   }, [
-    isLoading,
     currentTime,
     showAdminFeedback,
     setIsDisplayFeedback,
