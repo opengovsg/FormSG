@@ -11,7 +11,10 @@ import { featureFlags } from '~shared/constants'
 
 import { useScript } from '~hooks/useScript'
 
-import { useFeatureFlagWithDefaults } from '~features/feature-flags/queries'
+import {
+  useFeatureFlags,
+  useFeatureFlagWithDefaults,
+} from '~features/feature-flags/queries'
 
 type RecaptchaBaseConfig = {
   sitekey?: string
@@ -109,6 +112,11 @@ export const useRecaptcha = ({
     false,
   )
   console.log('called enable', enableTurnstileFeatureFlag)
+
+  const { data: flags } = useFeatureFlags()
+  const displayturnstile = flags?.has(featureFlags.turnstile)
+  console.log('displayturnstile', displayturnstile)
+
   useIntervalWhen(
     () => {
       if (grecaptcha?.render) {
