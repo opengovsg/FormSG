@@ -32,4 +32,4 @@ export const EMERGENCY_CONTACT_KEY_PREFIX = 'has-seen-emergency-contact'
 /**
  * Key to store when was the last time user has seen the admin feedback modal
  */
-export const ADMIN_FEEDBACK_HISTORY_PREFIX = 'last-seen-admin-feedback'
+export const ADMIN_FEEDBACK_HISTORY_PREFIX = 'last-seen-admin-feedback-'
