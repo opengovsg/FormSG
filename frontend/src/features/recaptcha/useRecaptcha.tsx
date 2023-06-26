@@ -111,11 +111,6 @@ export const useRecaptcha = ({
     featureFlags.turnstile,
     false,
   )
-  console.log('called enable', enableTurnstileFeatureFlag)
-
-  const { data: flags } = useFeatureFlags()
-  const displayturnstile = flags?.has(featureFlags.turnstile)
-  console.log('displayturnstile', displayturnstile)
 
   useIntervalWhen(
     () => {
