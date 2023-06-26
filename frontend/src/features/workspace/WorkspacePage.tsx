@@ -31,7 +31,7 @@ export const WorkspacePage = (): JSX.Element => {
       adminFeedbackDisplayFrequency,
     } = {},
   } = useEnv()
-  const { user } = useUser()
+  const { user, isLoading } = useUser()
   const [isDisplayFeedback, setIsDisplayFeedback] = useState(false)
   const isMobile = useIsMobile()
 
@@ -64,6 +64,8 @@ export const WorkspacePage = (): JSX.Element => {
   // and has yet to seen feedback beyond our stipulated frequency
   const showAdminFeedback =
     isAdminFeedbackEligible &&
+    // user details is loaded
+    !isLoading &&
     // if feedbackTime has not been seen
     (!lastFeedbackTime ||
       // or if last feedback time seen is more than frequency (frequency env var must be defined)
@@ -86,6 +88,7 @@ export const WorkspacePage = (): JSX.Element => {
       setIsAdminFeedbackEligible(false)
     }
   }, [
+    // isLoading,
     currentTime,
     showAdminFeedback,
     setIsDisplayFeedback,
