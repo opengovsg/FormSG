@@ -108,7 +108,7 @@ export const useRecaptcha = ({
     featureFlags.turnstile,
     false,
   )
-
+  console.log('called enable', enableTurnstileFeatureFlag)
   useIntervalWhen(
     () => {
       if (grecaptcha?.render) {
