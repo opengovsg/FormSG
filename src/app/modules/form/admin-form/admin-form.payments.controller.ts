@@ -12,6 +12,7 @@ import {
   PaymentsUpdateDto,
   PaymentType,
 } from '../../../../../shared/types'
+import { paymentConfig } from '../../../config/features/payment.config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { createReqMeta } from '../../../utils/request'
 import { getFormAfterPermissionChecks } from '../../auth/auth.service'
@@ -312,6 +313,7 @@ const _handleUpdatePayments: ControllerHandler<
 
 export const handleUpdatePaymentsForTest = _handleUpdatePayments
 
+const JoiInt = Joi.number().integer()
 const updatePaymentsValidator = celebrate({
   [Segments.BODY]: {
     enabled: Joi.boolean().required(),
@@ -322,30 +324,37 @@ const updatePaymentsValidator = celebrate({
       is: Joi.equal(true),
       then: Joi.when('payment_type', {
         is: Joi.equal(PaymentType.Fixed),
-        then: Joi.number().integer().positive().required(),
-        otherwise: Joi.number().integer(),
+        then: JoiInt.min(paymentConfig.minPaymentAmountCents)
+          .max(paymentConfig.maxPaymentAmountCents)
+          .required(),
+        otherwise: JoiInt,
       }),
-      otherwise: Joi.number().integer(),
+      otherwise: JoiInt,
     }),
 
     min_amount: Joi.when('enabled', {
       is: Joi.equal(true),
       then: Joi.when('payment_type', {
         is: Joi.equal(PaymentType.Variable),
-        then: Joi.number().integer().positive().required(),
-        otherwise: Joi.number().integer(),
+        then: JoiInt.positive()
+          .min(paymentConfig.minPaymentAmountCents)
+          .required(),
+        otherwise: JoiInt,
       }),
-      otherwise: Joi.number().integer(),
+      otherwise: JoiInt,
     }),
 
     max_amount: Joi.when('enabled', {
       is: Joi.equal(true),
       then: Joi.when('payment_type', {
         is: Joi.equal(PaymentType.Variable),
-        then: Joi.number().integer().min(Joi.ref('min_amount')).required(),
-        otherwise: Joi.number().integer(),
+        then: JoiInt.positive()
+          .min(Joi.ref('min_amount'))
+          .max(paymentConfig.maxPaymentAmountCents)
+          .required(),
+        otherwise: JoiInt,
       }),
-      otherwise: Joi.number().integer(),
+      otherwise: JoiInt,
     }),
 
     description: Joi.when('enabled', {
