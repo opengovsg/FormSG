@@ -350,13 +350,13 @@ const updatePaymentsValidator = celebrate({
 
     description: Joi.when('enabled', {
       is: Joi.equal(true),
-      then: Joi.string().required(),
-      otherwise: Joi.string().allow(''),
+      then: Joi.string().trim().required(),
+      otherwise: Joi.string().trim().allow(''),
     }),
     name: Joi.when('enabled', {
       is: Joi.equal(true),
-      then: Joi.string().required(),
-      otherwise: Joi.string().allow(''),
+      then: Joi.string().trim().required(),
+      otherwise: Joi.string().trim().allow(''),
     }),
   },
 })
