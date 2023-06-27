@@ -1,7 +1,9 @@
 import { FormColorTheme } from '~shared/types'
 
-import { PaymentItemNameDescriptionProps } from './PaymentItemNameDescription'
-
+export interface PaymentItemNameDescriptionProps {
+  paymentItemName: string | undefined
+  paymentDescription: string | undefined
+}
 interface PaymentItemDetailsProps extends PaymentItemNameDescriptionProps {
   colorTheme: FormColorTheme
 }

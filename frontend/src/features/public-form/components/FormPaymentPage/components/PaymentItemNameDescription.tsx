@@ -1,9 +1,7 @@
 import { Box, Text } from '@chakra-ui/react'
 
-export interface PaymentItemNameDescriptionProps {
-  paymentItemName: string | undefined
-  paymentDescription: string | undefined
-}
+import { PaymentItemNameDescriptionProps } from './types'
+
 const PaymentItemNameDescription = ({
   paymentItemName,
   paymentDescription,
