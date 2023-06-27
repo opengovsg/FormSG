@@ -323,7 +323,7 @@ const updatePaymentsValidator = celebrate({
       then: Joi.when('payment_type', {
         is: Joi.equal(PaymentType.Fixed),
         then: Joi.number().integer().positive().required(),
-        otherwise: Joi.number(),
+        otherwise: Joi.number().integer(),
       }),
       otherwise: Joi.number().integer(),
     }),
@@ -333,7 +333,7 @@ const updatePaymentsValidator = celebrate({
       then: Joi.when('payment_type', {
         is: Joi.equal(PaymentType.Variable),
         then: Joi.number().integer().positive().required(),
-        otherwise: Joi.number(),
+        otherwise: Joi.number().integer(),
       }),
       otherwise: Joi.number().integer(),
     }),
@@ -343,7 +343,7 @@ const updatePaymentsValidator = celebrate({
       then: Joi.when('payment_type', {
         is: Joi.equal(PaymentType.Variable),
         then: Joi.number().integer().min(Joi.ref('min_amount')).required(),
-        otherwise: Joi.number(),
+        otherwise: Joi.number().integer(),
       }),
       otherwise: Joi.number().integer(),
     }),
