@@ -37,7 +37,7 @@ import {
   trackVisitPublicForm,
 } from '~features/analytics/AnalyticsService'
 import { useEnv } from '~features/env/queries'
-import { useFeatureFlagWithDefaults } from '~features/feature-flags/queries'
+import { useIsFeatureEnabled } from '~features/feature-flags/queries'
 import { getPaymentPageUrl } from '~features/public-form/utils/urls'
 import {
   RecaptchaClosedError,
@@ -134,7 +134,7 @@ export const PublicFormProvider = ({
   // Feature flag to control turnstile captcha rollout
   // defaults to false
   // todo: remove after full rollout
-  const enableTurnstileFeatureFlag = useFeatureFlagWithDefaults(
+  const enableTurnstileFeatureFlag = useIsFeatureEnabled(
     featureFlags.turnstile,
     false,
   )

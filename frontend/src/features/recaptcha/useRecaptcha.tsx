@@ -11,7 +11,7 @@ import { featureFlags } from '~shared/constants'
 
 import { useScript } from '~hooks/useScript'
 
-import { useFeatureFlagWithDefaults } from '~features/feature-flags/queries'
+import { useIsFeatureEnabled } from '~features/feature-flags/queries'
 
 type RecaptchaBaseConfig = {
   sitekey?: string
@@ -103,8 +103,9 @@ export const useRecaptcha = ({
 
   // Feature flag to control turnstile captcha rollout
   // defaults to false
+  // Cloudflare Turnstile and Google reCaptcha should be mutually exclusive
   // todo: remove after full rollout
-  const enableTurnstileFeatureFlag = useFeatureFlagWithDefaults(
+  const enableTurnstileFeatureFlag = useIsFeatureEnabled(
     featureFlags.turnstile,
     false,
   )

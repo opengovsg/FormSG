@@ -5,7 +5,7 @@ import { featureFlags } from '~shared/constants'
 
 import { useScript } from '~hooks/useScript'
 
-import { useFeatureFlagWithDefaults } from '~features/feature-flags/queries'
+import { useIsFeatureEnabled } from '~features/feature-flags/queries'
 
 type TurnstileBaseConfig = {
   sitekey?: string
@@ -50,13 +50,6 @@ type TurnstileExecutionCallback = {
 
 const DEFAULT_CONTAINER_ID = 'turnstile-container'
 
-// todo: check usages
-export class TurnstileClosedError extends Error {
-  constructor() {
-    super('Captcha was closed')
-  }
-}
-
 export const useTurnstile = ({
   containerID = DEFAULT_CONTAINER_ID,
   sitekey,
@@ -75,8 +68,9 @@ export const useTurnstile = ({
 
   // Feature flag to control turnstile captcha rollout
   // defaults to false
+  // Cloudflare Turnstile and Google reCaptcha should be mutually exclusive
   // todo: remove after full rollout
-  const enableTurnstileFeatureFlag = useFeatureFlagWithDefaults(
+  const enableTurnstileFeatureFlag = useIsFeatureEnabled(
     featureFlags.turnstile,
     false,
   )
@@ -95,7 +89,6 @@ export const useTurnstile = ({
       executionPromise.current.resolve(response)
       executionPromise.current = {}
     }
-    // setIsVfnInProgress(false)
   }, [])
 
   const handleError = useCallback(() => {
@@ -144,7 +137,6 @@ export const useTurnstile = ({
   const getTurnstileResponse = useCallback(async () => {
     if (!turnstile || widgetID === undefined) return Promise.resolve(null)
     turnstile.reset(widgetID)
-    // setIsVfnInProgress(true)
 
     return new Promise<string | null>((resolve, reject) => {
       executionPromise.current = { resolve, reject }

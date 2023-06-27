@@ -14,7 +14,14 @@ export const useFeatureFlags = (): UseQueryResult<Set<string>> => {
 
 // Retrieves a feature flag and returns the default value
 // if an error is encountered or if the flag does not exist
-export const useFeatureFlagWithDefaults = (
+// Definition:
+// useIsFeatureEnabled(flagName: string,  defaultValue: boolean): boolean
+// Usage:
+// const enableTurnstile = useIsFeatureEnabled(
+//     featureFlags.turnstile,
+//     false,
+//   )
+export const useIsFeatureEnabled = (
   flagName: string,
   defaultValue: boolean,
 ): boolean => {
