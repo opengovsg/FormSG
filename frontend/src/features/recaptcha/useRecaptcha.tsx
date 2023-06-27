@@ -11,10 +11,7 @@ import { featureFlags } from '~shared/constants'
 
 import { useScript } from '~hooks/useScript'
 
-import {
-  useFeatureFlags,
-  useFeatureFlagWithDefaults,
-} from '~features/feature-flags/queries'
+import { useFeatureFlagWithDefaults } from '~features/feature-flags/queries'
 
 type RecaptchaBaseConfig = {
   sitekey?: string
