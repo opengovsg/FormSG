@@ -24,6 +24,16 @@ const validateSubmitFormIssueParams = celebrate({
   }),
 })
 
+/**
+ * Handler for POST api/v3/forms/:formId/issue endpoint
+ * @precondition formId should be present in req.params.
+ * @precondition Joi validation should enforce shape of req.body before this handler is invoked.
+ *
+ * @returns 200 if feedback was successfully saved
+ * @returns 404 if form with formId does not exist or is private, or submissionId does not exist
+ * @returns 410 if form has been archived
+ * @returns 500 if database error occurs
+ */
 const submitFormIssue: ControllerHandler<
   { formId: string },
   { message: string } | ErrorDto | PrivateFormErrorDto,
