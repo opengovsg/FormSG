@@ -1,6 +1,7 @@
 import { Controller, RegisterOptions, UseFormReturn } from 'react-hook-form'
 import { FormControl } from '@chakra-ui/react'
 
+import { GUIDE_PAYMENTS_INVOICE_DIFFERENCES } from '~constants/links'
 import { usePaymentFieldValidation } from '~hooks/usePaymentFieldValidation'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
@@ -60,8 +61,7 @@ export const FixedPaymentAmountField = ({
       {Number(input[DISPLAY_AMOUNT_FIELD_KEY]) > 1000 ? (
         <InlineMessage variant="warning" mt="2rem" useMarkdown>
           You would need to issue your own invoice for amounts above S$1000.
-          [Learn more about
-          this](https://guide.form.gov.sg/faq/faq/payments#simplified-tax-invoices-versus-regular-tax-invoices)
+          [Learn more about this]({GUIDE_PAYMENTS_INVOICE_DIFFERENCES})
         </InlineMessage>
       ) : null}
     </FormControl>
