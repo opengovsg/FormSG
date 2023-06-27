@@ -20,6 +20,7 @@ export type ClientEnvVars = {
   logoBucketUrl: string // S3 bucket
   formsgSdkMode: 'staging' | 'production' | 'development' | 'test'
   captchaPublicKey: string // Recaptcha
+  turnstileSiteKey: string // Turnstile
   sentryConfigUrl: string // Sentry.IO
   isSPMaintenance: string // Singpass maintenance message
   isCPMaintenance: string // Corppass maintenance message
