@@ -78,6 +78,10 @@ export type FormPaymentsChannel = {
 
 export interface PaymentTypeBase {
   payment_type: PaymentType
+
+  amount_cents?: number
+  min_amount?: number
+  max_amount?: number
 }
 interface VariablePaymentsField extends PaymentTypeBase {
   payment_type: PaymentType.Variable

@@ -50,7 +50,10 @@ import {
 import { FixedPaymentAmountField } from './FixedPaymentAmountField'
 import { VariablePaymentAmountField } from './VariablePaymentAmountField'
 
-export type FormPaymentsInput = Omit<FormPaymentsField, 'amount_cents'> & {
+export type FormPaymentsInput = Omit<
+  FormPaymentsField,
+  'amount_cents' | 'min_amount' | 'max_amount'
+> & {
   display_amount: string
   display_min_amount: string
   display_max_amount: string
