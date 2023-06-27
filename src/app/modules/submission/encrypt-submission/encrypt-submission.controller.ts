@@ -363,7 +363,7 @@ const submitEncryptModeForm: ControllerHandler<
      */
     // Step 0: Perform validation checks
     const amount = getPaymentAmount(form.payments_field, req.body.payments)
-    //  .amount_cents
+
     if (
       !amount ||
       amount < paymentConfig.minPaymentAmountCents ||

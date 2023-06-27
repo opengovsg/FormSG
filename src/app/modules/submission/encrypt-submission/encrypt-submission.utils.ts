@@ -241,13 +241,15 @@ export const createEncryptedSubmissionDto = (
   }
 }
 
+/**
+ * Retrieves payment amount by payment_type
+ * @param formPaymentFields data from the form
+ * @param incomingSubmissionPaymentFields data from responder's submission
+ */
 export const getPaymentAmount = (
   formPaymentFields: FormPaymentsField, // fields that are from document.form
   incomingSubmissionPaymentFields?: PaymentFieldsDto, // fields that are from incoming submission
-) => {
-  if (!formPaymentFields) {
-    return
-  }
+): number | undefined => {
   // legacy payment forms may not have a payment type
   const { payment_type } = formPaymentFields
   switch (payment_type) {
