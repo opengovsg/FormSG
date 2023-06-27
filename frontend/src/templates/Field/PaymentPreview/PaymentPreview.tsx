@@ -15,7 +15,7 @@ import { useSectionColor } from '~templates/Field/Section/SectionField'
 import { VerifiableFieldBuilderContainer } from '~features/admin-form/create/builder-and-design/BuilderAndDesignContent/FieldRow/VerifiableFieldBuilderContainer'
 import { getFieldCreationMeta } from '~features/admin-form/create/builder-and-design/utils/fieldCreation'
 import {
-  FixedPaymentItemDetailsBlock,
+  PaymentItemDetailsBlock,
   VariablePaymentItemDetailsField,
 } from '~features/public-form/components/FormPaymentPage/components'
 import {
@@ -58,7 +58,7 @@ export const PaymentPreview = ({
             paymentMax={paymentDetails.max_amount}
           />
         ) : (
-          <FixedPaymentItemDetailsBlock
+          <PaymentItemDetailsBlock
             paymentItemName={paymentDetails.name}
             colorTheme={colorTheme}
             paymentAmount={paymentDetails.amount_cents}

@@ -5,7 +5,7 @@ import { centsToDollars } from '~utils/payments'
 import PaymentItemNameDescription from './PaymentItemNameDescription'
 import { FixedItemDetailProps } from './types'
 
-export const FixedPaymentItemDetailsBlock = ({
+export const PaymentItemDetailsBlock = ({
   paymentItemName,
   paymentDescription,
   colorTheme,
