@@ -1,12 +1,11 @@
 import { Controller, RegisterOptions, UseFormReturn } from 'react-hook-form'
 import { FormControl } from '@chakra-ui/react'
 
+import { usePaymentFieldValidation } from '~hooks/usePaymentFieldValidation'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import InlineMessage from '~components/InlineMessage'
 import MoneyInput from '~components/MoneyInput'
-
-import { usePaymentFieldValidation } from '~features/public-form/components/FormPaymentPage/queries'
 
 import { FormPaymentsInput } from './PaymentsInputPanel'
 

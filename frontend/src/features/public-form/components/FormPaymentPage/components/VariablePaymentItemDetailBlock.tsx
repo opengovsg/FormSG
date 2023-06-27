@@ -5,7 +5,7 @@ import { PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID } from '~shared/constants'
 
 import MoneyInput from '~components/MoneyInput'
 
-import { usePaymentFieldValidation } from '../queries'
+import { usePaymentFieldValidation } from '../../../../../hooks/usePaymentFieldValidation'
 
 import PaymentItemNameDescription from './PaymentItemNameDescription'
 import { VariableItemDetailProps } from './types'
