@@ -1,6 +1,7 @@
 import { celebrate, Joi, Segments } from 'celebrate'
 
 import { BasicField } from '../../../../../shared/types'
+import { paymentConfig } from '../../../config/features/payment.config'
 
 /**
  * Celebrate middleware for verifying shape of encrypted submission
@@ -49,7 +50,11 @@ export const validateEncryptSubmissionParams = celebrate({
       .optional(),
     paymentReceiptEmail: Joi.string(),
     payments: Joi.object({
-      amount_cents: Joi.number().integer().positive(),
+      amount_cents: Joi.number()
+        .integer()
+        .positive()
+        .min(paymentConfig.minPaymentAmountCents)
+        .max(paymentConfig.maxPaymentAmountCents),
     }),
     version: Joi.number().required(),
     responseMetadata: Joi.object({
