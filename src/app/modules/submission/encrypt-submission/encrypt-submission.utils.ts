@@ -154,7 +154,7 @@ const errorMapper: MapRouteError = (
       }
     case VerifyTurnstileError:
       return {
-        statusCode: StatusCodes.BAD_REQUEST,
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         errorMessage:
           'Incorrect Turnstile parameters. Please refresh and submit again.',
       }
