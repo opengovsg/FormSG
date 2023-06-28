@@ -15,7 +15,7 @@ import { differenceInMilliseconds, isPast } from 'date-fns'
 import get from 'lodash/get'
 import simplur from 'simplur'
 
-import { PAYMENT_CONTACT_FIELD_ID } from '~shared/constants'
+import { featureFlags, PAYMENT_CONTACT_FIELD_ID } from '~shared/constants'
 import {
   FormAuthType,
   FormResponseMode,
@@ -37,11 +37,13 @@ import {
   trackVisitPublicForm,
 } from '~features/analytics/AnalyticsService'
 import { useEnv } from '~features/env/queries'
+import { useIsFeatureEnabled } from '~features/feature-flags/queries'
 import { getPaymentPageUrl } from '~features/public-form/utils/urls'
 import {
   RecaptchaClosedError,
   useRecaptcha,
 } from '~features/recaptcha/useRecaptcha'
+import { useTurnstile } from '~features/turnstile/useTurnstile'
 import {
   FetchNewTransactionResponse,
   useTransactionMutations,
@@ -125,12 +127,43 @@ export const PublicFormProvider = ({
     }
   }, [submissionData])
 
-  const { data: { captchaPublicKey, useFetchForSubmissions } = {} } = useEnv(
-    /* enabled= */ !!data?.form.hasCaptcha,
+  const {
+    data: { captchaPublicKey, turnstileSiteKey, useFetchForSubmissions } = {},
+  } = useEnv(/* enabled= */ !!data?.form.hasCaptcha)
+
+  // Feature flag to control turnstile captcha rollout
+  // defaults to false
+  // todo: remove after full rollout
+  const enableTurnstileFeatureFlag = useIsFeatureEnabled(
+    featureFlags.turnstile,
+    false,
   )
-  const { hasLoaded, getCaptchaResponse, containerId } = useRecaptcha({
+  let hasLoaded: boolean
+  let containerID: string
+
+  const {
+    hasLoaded: hasTurnstileLoaded,
+    getTurnstileResponse,
+    containerID: turnstileContainerID,
+  } = useTurnstile({
+    sitekey: data?.form.hasCaptcha ? turnstileSiteKey : undefined,
+  })
+
+  const {
+    hasLoaded: hasRecaptchaLoaded,
+    getCaptchaResponse,
+    containerId: recaptchaContainerID,
+  } = useRecaptcha({
     sitekey: data?.form.hasCaptcha ? captchaPublicKey : undefined,
   })
+
+  if (enableTurnstileFeatureFlag) {
+    hasLoaded = hasTurnstileLoaded
+    containerID = turnstileContainerID
+  } else {
+    hasLoaded = hasRecaptchaLoaded
+    containerID = recaptchaContainerID
+  }
 
   const { isNotFormId, toast, vfnToastIdRef, expiryInMs, ...commonFormValues } =
     useCommonFormProvider(formId)
@@ -217,15 +250,29 @@ export const PublicFormProvider = ({
       if (!form) return
 
       let captchaResponse: string | null
-      try {
-        captchaResponse = await getCaptchaResponse()
-      } catch (error) {
-        if (error instanceof RecaptchaClosedError) {
-          // Do nothing if recaptcha is closed.
-          return
+
+      if (enableTurnstileFeatureFlag) {
+        try {
+          captchaResponse = await getTurnstileResponse()
+        } catch (error) {
+          if (error instanceof RecaptchaClosedError) {
+            // Do nothing if recaptcha is closed.
+            return
+          }
+          trackReCaptchaOnError(form)
+          return showErrorToast(error, form)
         }
-        trackReCaptchaOnError(form)
-        return showErrorToast(error, form)
+      } else {
+        try {
+          captchaResponse = await getCaptchaResponse()
+        } catch (error) {
+          if (error instanceof RecaptchaClosedError) {
+            // Do nothing if recaptcha is closed.
+            return
+          }
+          trackReCaptchaOnError(form)
+          return showErrorToast(error, form)
+        }
       }
 
       const formData = {
@@ -468,6 +515,8 @@ export const PublicFormProvider = ({
     },
     [
       data,
+      enableTurnstileFeatureFlag,
+      getTurnstileResponse,
       getCaptchaResponse,
       showErrorToast,
       submitEmailModeFormMutation,
@@ -512,7 +561,7 @@ export const PublicFormProvider = ({
         error,
         submissionData,
         isAuthRequired,
-        captchaContainerId: containerId,
+        captchaContainerId: containerID,
         expiryInMs,
         isLoading: isLoading || (!!data?.form.hasCaptcha && !hasLoaded),
         isPaymentEnabled,
