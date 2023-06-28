@@ -35,7 +35,9 @@ export const createAuthedSession = async (
     .mockReturnValueOnce(MOCK_VALID_OTP)
   jest.spyOn(OtpUtils, 'generateOtpPrefix').mockReturnValue(MOCK_OTP_PREFIX)
 
-  const sendOtpResponse = await request.post('/auth/sendotp').send({ email })
+  const sendOtpResponse = await request
+    .post('/auth/otp/generate')
+    .send({ email })
   expect(sendOtpResponse.status).toEqual(200)
   expect(sendOtpResponse.body).toEqual({
     message: `OTP sent to ${email.toLowerCase()}`,
@@ -43,7 +45,7 @@ export const createAuthedSession = async (
   })
 
   // Act
-  await request.post('/auth/verifyotp').send({ email, otp: MOCK_VALID_OTP })
+  await request.post('/auth/otp/verify').send({ email, otp: MOCK_VALID_OTP })
 
   // Assert
   // Should have session cookie returned.
@@ -61,7 +63,7 @@ export const createAuthedSession = async (
 }
 
 export const logoutSession = async (request: Session): Promise<Session> => {
-  const response = await request.get('/auth/signout')
+  const response = await request.get('/auth/logout')
 
   expect(response.status).toEqual(200)
 

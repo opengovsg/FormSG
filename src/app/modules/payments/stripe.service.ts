@@ -546,7 +546,8 @@ export const handleStripeEvent = (
     case 'payout.reconciliation_completed': {
       // Retrieve the list of balance transactions related to this payout, and
       // associate the payout with the set of charges it pays out for
-      let payoutProcessError: ResultAsync<void, HandleStripeEventResultError>
+      let payoutProcessError: ResultAsync<void, HandleStripeEventResultError> =
+        okAsync(undefined)
       result = ResultAsync.fromPromise(
         stripe.balanceTransactions
           .list(

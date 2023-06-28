@@ -92,6 +92,8 @@ export type Config = {
   secretEnv: string
   envSiteName: string
   publicApiConfig: PublicApiConfig
+  adminFeedbackFieldThreshold: number
+  adminFeedbackDisplayFrequency: number
 
   // Functions
   configureAws: () => Promise<void>
@@ -175,6 +177,10 @@ export interface IOptionalVarsSchema {
   }
   publicApi: {
     apiKeyVersion: string
+  }
+  adminFeedback: {
+    adminFeedbackFieldThreshold: number
+    adminFeedbackDisplayFrequency: number
   }
 }
 
