@@ -39,12 +39,11 @@ export const insertFormIssue = ({
   if (!mongoose.Types.ObjectId.isValid(formId)) {
     return errAsync(new FormNotFoundError())
   }
-
   return ResultAsync.fromPromise(
     FormIssueModel.create({
       formId: formId,
       issue: issue,
-      email: email,
+      ...(email && { email: email }),
     }),
     (error) => {
       logger.error({

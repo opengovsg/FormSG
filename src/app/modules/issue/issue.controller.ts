@@ -20,7 +20,8 @@ const validateSubmitFormIssueParams = celebrate({
       .trim()
       .email()
       .message('Please enter a valid email')
-      .lowercase(),
+      .lowercase()
+      .allow(''),
   }),
 })
 

@@ -87,6 +87,25 @@ describe('issue.service', () => {
       expect(actualResult._unsafeUnwrap().lastModified).toBeDefined()
       expect(actualResult._unsafeUnwrap()._id).toBeDefined()
     })
+
+    it('should return IFormIssueSchema on successful insertion when email is undefined into database', async () => {
+      // Arrange
+      const createSpy = jest.spyOn(FormIssueModel, 'create')
+      // Act
+      const actualResult = await IssueService.insertFormIssue({
+        issue: MOCK_ISSUE,
+        formId: MOCK_FORM_ID.toHexString(),
+      })
+      // Assert
+      expect(createSpy).toHaveBeenCalledTimes(1)
+      expect(actualResult.isOk()).toBeTrue()
+      expect(actualResult._unsafeUnwrap().issue).toEqual(MOCK_ISSUE)
+      expect(actualResult._unsafeUnwrap().formId).toEqual(MOCK_FORM_ID)
+      expect(actualResult._unsafeUnwrap().email).toBeUndefined()
+      expect(actualResult._unsafeUnwrap().created).toBeDefined()
+      expect(actualResult._unsafeUnwrap().lastModified).toBeDefined()
+      expect(actualResult._unsafeUnwrap()._id).toBeDefined()
+    })
   })
 
   describe('getIsFirstIssueForFormToday', () => {
