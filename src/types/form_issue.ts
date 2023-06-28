@@ -6,9 +6,6 @@ import { IFormSchema } from './form'
 
 export type IFormIssue = Merge<FormIssueBase, { formId: IFormSchema['id'] }>
 
-export interface IFormIssueSchema extends IFormIssue, Document {
-  created?: Date
-  lastModified?: Date
-}
+export interface IFormIssueSchema extends IFormIssue, Document {}
 
 export type IFormIssueModel = Model<IFormIssueSchema>
