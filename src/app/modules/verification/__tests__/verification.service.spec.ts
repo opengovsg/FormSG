@@ -41,7 +41,6 @@ import {
   IFormSchema,
   IPopulatedForm,
   IVerificationSchema,
-  PublicTransaction,
   UpdateFieldData,
 } from 'src/types'
 
@@ -174,45 +173,6 @@ describe('Verification service', () => {
       )
       expect(createTransactionFromFormSpy).toHaveBeenCalledWith(mockForm)
       expect(result._unsafeUnwrapErr()).toBeInstanceOf(DatabaseError)
-    })
-  })
-
-  describe('getTransactionMetadata', () => {
-    let getPublicViewByIdSpy: jest.SpyInstance<
-      Promise<PublicTransaction | null>,
-      [id: string]
-    >
-    let mockPublicView: PublicTransaction
-
-    beforeEach(() => {
-      mockPublicView = {
-        expireAt: mockTransaction.expireAt,
-        formId: mockTransaction.formId,
-        _id: new ObjectId(),
-      }
-      getPublicViewByIdSpy = jest
-        .spyOn(VerificationModel, 'getPublicViewById')
-        .mockResolvedValue(mockPublicView)
-    })
-
-    it('should call VerificationModel.getPublicViewById and return the result', async () => {
-      const result = await VerificationService.getTransactionMetadata(
-        mockTransactionId,
-      )
-
-      expect(getPublicViewByIdSpy).toHaveBeenCalledWith(mockTransactionId)
-      expect(result._unsafeUnwrap()).toEqual(mockPublicView)
-    })
-
-    it('should call VerificationModel.getPublicViewById and return TransactionNotFoundError when result is null', async () => {
-      getPublicViewByIdSpy.mockResolvedValueOnce(null)
-
-      const result = await VerificationService.getTransactionMetadata(
-        mockTransactionId,
-      )
-
-      expect(getPublicViewByIdSpy).toHaveBeenCalledWith(mockTransactionId)
-      expect(result._unsafeUnwrapErr()).toEqual(new TransactionNotFoundError())
     })
   })
 
@@ -850,7 +810,7 @@ describe('Verification service', () => {
       beforeEach(async () => {
         incrementFieldRetriesSpy = jest
           .spyOn(VerificationModel, 'incrementFieldRetries')
-          .mockResolvedValue(mockField)
+          .mockResolvedValue(mockField as unknown as IVerificationSchema)
         MockHashUtils.compareHash.mockReturnValue(okAsync(true))
         verifyOtpTransaction = await VerificationModel.create({
           formId: mockFormId,
@@ -1025,7 +985,7 @@ describe('Verification service', () => {
       beforeEach(async () => {
         incrementFieldRetriesSpy = jest
           .spyOn(VerificationModel, 'incrementFieldRetries')
-          .mockResolvedValue(mockField)
+          .mockResolvedValue(mockField as unknown as IVerificationSchema)
         MockHashUtils.compareHash.mockReturnValue(okAsync(true))
         verifyOtpTransaction = await VerificationModel.create({
           formId: mockFormId,

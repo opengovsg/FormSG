@@ -36,8 +36,10 @@ import {
   BounceNotificationHtmlData,
   CollabSmsDisabledData,
   CollabSmsWarningData,
+  IssueReportedNotificationData,
   MailOptions,
   MailServiceParams,
+  PaymentConfirmationData,
   SendAutoReplyEmailsArgs,
   SendMailOptions,
   SendSingleAutoreplyMailArgs,
@@ -805,24 +807,27 @@ export class MailService {
     formId: string
     paymentId: string
   }): ResultAsync<true, MailSendError> => {
-    const mail: MailOptions = {
-      to: email,
-      from: this.#senderFromString,
-      subject: `Your payment on ${this.#appName} was successful`,
-      html: generatePaymentConfirmationHtml({
-        appName: this.#appName,
-        formTitle,
-        submissionId,
-        invoiceUrl: `${this.#appUrl}/api/v3/${getPaymentInvoiceDownloadUrlPath(
-          formId,
-          paymentId,
-        )}`,
-      }),
-      headers: {
-        [EMAIL_HEADERS.emailType]: EmailType.PaymentConfirmation,
-      },
+    const htmlData: PaymentConfirmationData = {
+      formTitle: formTitle,
+      submissionId: submissionId,
+      appName: this.#appName,
+      invoiceUrl: `${this.#appUrl}/api/v3/${getPaymentInvoiceDownloadUrlPath(
+        formId,
+        paymentId,
+      )}`,
     }
-    return this.#sendNodeMail(mail, { mailId: 'paymentConfirmation' })
+    return generatePaymentConfirmationHtml({ htmlData }).andThen((html) => {
+      const mail: MailOptions = {
+        to: email,
+        from: this.#senderFromString,
+        subject: `Your payment on ${this.#appName} was successful`,
+        html: html,
+        headers: {
+          [EMAIL_HEADERS.emailType]: EmailType.PaymentConfirmation,
+        },
+      }
+      return this.#sendNodeMail(mail, { mailId: 'paymentConfirmation' })
+    })
   }
 
   /**
@@ -961,26 +966,29 @@ export class MailService {
   }: {
     form: IPopulatedForm
   }): ResultAsync<true, MailGenerationError | MailSendError> => {
-    const mail: MailOptions = {
-      to: form.admin.email,
-      cc: form.permissionList.map(({ email }) => email),
-      from: this.#senderFromString,
-      subject: `Respondents are facing issues on ${form.title}`,
-      html: generateIssueReportedNotificationHtml({
-        appName: this.#appName,
-        formTitle: form.title,
-        formResultUrl: `${this.#appUrl}/admin/form/${
-          form._id
-        }/results/feedback`,
-      }),
-      headers: {
-        [EMAIL_HEADERS.emailType]: EmailType.IssueReportedNotification,
-      },
+    const htmlData: IssueReportedNotificationData = {
+      appName: this.#appName,
+      formTitle: form.title,
+      formResultUrl: `${this.#appUrl}/admin/form/${form._id}/results/feedback`,
     }
-    return this.#sendNodeMail(mail, {
-      formId: form._id.toString(),
-      mailId: 'issueReportedNotification',
-    })
+    return generateIssueReportedNotificationHtml({ htmlData }).andThen(
+      (html) => {
+        const mail: MailOptions = {
+          to: form.admin.email,
+          cc: form.permissionList.map(({ email }) => email),
+          from: this.#senderFromString,
+          subject: `Respondents are facing issues on ${form.title}`,
+          html: html,
+          headers: {
+            [EMAIL_HEADERS.emailType]: EmailType.IssueReportedNotification,
+          },
+        }
+        return this.#sendNodeMail(mail, {
+          formId: form._id.toString(),
+          mailId: 'issueReportedNotification',
+        })
+      },
+    )
   }
 
   // Utility method to send a mail during local dev (to maildev)
