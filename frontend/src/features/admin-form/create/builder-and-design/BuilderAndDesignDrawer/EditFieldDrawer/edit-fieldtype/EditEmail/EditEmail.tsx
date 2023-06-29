@@ -85,15 +85,6 @@ export const EditEmail = ({ field }: EditEmailProps): JSX.Element => {
   const watchedHasAllowedEmailDomains = watch('hasAllowedEmailDomains')
   const watchedHasAutoReply = watch('autoReplyOptions.hasAutoReply')
 
-  // Use separate state for whether toggle is enabled so we can disable
-  // the toggle only after it is set to false. Otherwise, we get the
-  // following bug:
-  // 1. Enable both OTP verification and email domain validation
-  // 2. Disable OTP verification
-  // 3. Now hasAllowedEmailDomains is true but the toggle is disabled
-  const [isDomainToggleEnabled, setIsDomainToggleEnabled] =
-    useState(watchedIsVerifiable)
-
   const requiredValidationRule = useMemo(
     () => createBaseValidationRules({ required: true }),
     [],
@@ -108,15 +99,6 @@ export const EditEmail = ({ field }: EditEmailProps): JSX.Element => {
     hasAllowedEmailDomainsRef,
     allowedEmailDomainsRegister.ref,
   )
-  useEffect(() => {
-    // Verification must be enabled for domain validation
-    // We cannot simply use setValue as it does not update
-    // the UI
-    if (!watchedIsVerifiable && watchedHasAllowedEmailDomains) {
-      hasAllowedEmailDomainsRef.current?.click()
-    }
-    setIsDomainToggleEnabled(watchedIsVerifiable)
-  }, [watchedIsVerifiable, watchedHasAllowedEmailDomains])
 
   const emailDomainsValidation = useMemo<
     RegisterOptions<EditEmailInputs, 'allowedEmailDomains'>
@@ -186,8 +168,6 @@ export const EditEmail = ({ field }: EditEmailProps): JSX.Element => {
             {...allowedEmailDomainsRegister}
             ref={mergedAllowedEmailDomainsRef}
             label="Restrict email domains"
-            description="OTP verification needs to be enabled first"
-            isDisabled={!isDomainToggleEnabled}
           />
         </FormControl>
         {watchedHasAllowedEmailDomains && (
