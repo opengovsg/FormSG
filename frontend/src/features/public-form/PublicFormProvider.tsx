@@ -34,6 +34,7 @@ import {
   trackReCaptchaOnError,
   trackSubmitForm,
   trackSubmitFormFailure,
+  trackTurnstileOnError,
   trackVisitPublicForm,
 } from '~features/analytics/AnalyticsService'
 import { useEnv } from '~features/env/queries'
@@ -255,11 +256,7 @@ export const PublicFormProvider = ({
         try {
           captchaResponse = await getTurnstileResponse()
         } catch (error) {
-          if (error instanceof RecaptchaClosedError) {
-            // Do nothing if recaptcha is closed.
-            return
-          }
-          trackReCaptchaOnError(form)
+          trackTurnstileOnError(form)
           return showErrorToast(error, form)
         }
       } else {
