@@ -29,6 +29,9 @@ const frontendVars = {
   maxPaymentAmountCents: paymentConfig.maxPaymentAmountCents,
   minPaymentAmountCents: paymentConfig.minPaymentAmountCents,
   secretEnv: config.secretEnv,
+  // for admin feedback
+  adminFeedbackFieldThreshold: config.adminFeedbackFieldThreshold,
+  adminFeedbackDisplayFrequency: config.adminFeedbackDisplayFrequency,
 }
 const environment = ejs.render(
   `

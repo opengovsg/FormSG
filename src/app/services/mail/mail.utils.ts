@@ -18,6 +18,8 @@ import {
   BounceNotificationHtmlData,
   CollabSmsDisabledData,
   CollabSmsWarningData,
+  IssueReportedNotificationData,
+  PaymentConfirmationData,
   SubmissionToAdminHtmlData,
 } from './mail.types'
 
@@ -269,27 +271,19 @@ export const generateSmsVerificationWarningHtmlForCollab = (
 }
 
 export const generatePaymentConfirmationHtml = ({
-  formTitle,
-  submissionId,
-  appName,
-  invoiceUrl,
+  htmlData,
 }: {
-  formTitle: string
-  submissionId: string
-  appName: string
-  invoiceUrl: string
-}): string => {
-  return dedent`
-    <p>Hello there,</p>
-    <p>
-      Your payment on ${appName} form: ${formTitle} has been received successfully.
-      Your response ID is ${submissionId} and your payment invoice can be found 
-      <a href="${invoiceUrl}">here</a>.
-    </p>
-    <p>Regards,
-    <br />
-    ${appName} team</p>   
-  `
+  htmlData: PaymentConfirmationData
+}): ResultAsync<string, MailGenerationError> => {
+  const pathToTemplate = `${process.cwd()}/src/app/views/templates/payment-confirmation.view.html`
+  logger.info({
+    message: 'generatePaymentConfirmationHtml',
+    meta: {
+      action: 'generatePaymentConfirmationHtml',
+      pathToTemplate,
+    },
+  })
+  return safeRenderFile(pathToTemplate, htmlData)
 }
 
 export const generatePaymentOnboardingHtml = ({
@@ -305,4 +299,20 @@ export const generatePaymentOnboardingHtml = ({
   <br/>
   ${appName} team</p>
   `
+}
+
+export const generateIssueReportedNotificationHtml = ({
+  htmlData,
+}: {
+  htmlData: IssueReportedNotificationData
+}): ResultAsync<string, MailGenerationError> => {
+  const pathToTemplate = `${process.cwd()}/src/app/views/templates/issue-reported-notification.view.html`
+  logger.info({
+    message: 'generateIssueReportedNotificationHtml',
+    meta: {
+      action: 'generateIssueReportedNotificationHtml',
+      pathToTemplate,
+    },
+  })
+  return safeRenderFile(pathToTemplate, htmlData)
 }

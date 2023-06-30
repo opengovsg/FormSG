@@ -1,5 +1,6 @@
 // Use 'stripe-event-types' for better type discrimination.
 /// <reference types="stripe-event-types" />
+import axios from 'axios'
 import cuid from 'cuid'
 import mongoose from 'mongoose'
 import { errAsync, ok, okAsync, ResultAsync } from 'neverthrow'
@@ -15,11 +16,13 @@ import {
   IEncryptedFormSchema,
   IPaymentSchema,
   IPopulatedEncryptedForm,
+  IPopulatedForm,
 } from '../../../types'
 import config from '../../config/config'
 import { paymentConfig } from '../../config/features/payment.config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { stripe } from '../../loaders/stripe'
+import { generatePdfFromHtml } from '../../utils/convert-html-to-pdf'
 import {
   getMongoErrorMessage,
   transformMongoError,
@@ -50,6 +53,7 @@ import {
 import {
   computePaymentState,
   computePayoutDetails,
+  convertToInvoiceFormat,
   getChargeIdFromNestedCharge,
   getMetadataPaymentId,
 } from './stripe.utils'
@@ -546,7 +550,8 @@ export const handleStripeEvent = (
     case 'payout.reconciliation_completed': {
       // Retrieve the list of balance transactions related to this payout, and
       // associate the payout with the set of charges it pays out for
-      let payoutProcessError: ResultAsync<void, HandleStripeEventResultError>
+      let payoutProcessError: ResultAsync<void, HandleStripeEventResultError> =
+        okAsync(undefined)
       result = ResultAsync.fromPromise(
         stripe.balanceTransactions
           .list(
@@ -947,4 +952,58 @@ export const verifyPaymentStatusWithStripe = (
           })
       }
     })
+}
+
+export const generatePaymentInvoice = (
+  payment: IPaymentSchema,
+  populatedForm: IPopulatedEncryptedForm,
+): ResultAsync<Buffer, StripeFetchError> => {
+  if (!payment.completedPayment?.receiptUrl) {
+    return errAsync(new StripeFetchError('Receipt url not ready'))
+  }
+  return ResultAsync.fromPromise(
+    axios.get<string>(payment.completedPayment.receiptUrl),
+    (error) => new StripeFetchError(String(error)),
+  ).andThen((receiptUrlResponse) => {
+    // retrieve receiptURL as html
+    const html = receiptUrlResponse.data
+    const agencyBusinessInfo = (populatedForm as IPopulatedForm).admin.agency
+      .business
+    const formBusinessInfo = populatedForm.business
+
+    const businessAddress = [
+      formBusinessInfo?.address,
+      agencyBusinessInfo?.address,
+    ].find(Boolean)
+
+    const businessGstRegNo = [
+      formBusinessInfo?.gstRegNo,
+      agencyBusinessInfo?.gstRegNo,
+    ].find(Boolean)
+
+    // we will still continute the invoice generation even if there's no address/gstregno
+    if (!businessAddress || !businessGstRegNo)
+      logger.warn({
+        message:
+          'Some business info not available during invoice generation. Expecting either agency or form to have business info',
+        meta: {
+          action: 'downloadPaymentInvoice',
+          payment,
+          agencyName: populatedForm.admin.agency.fullName,
+          agencyBusinessInfo,
+          formBusinessInfo,
+        },
+      })
+    const invoiceHtml = convertToInvoiceFormat(html, {
+      address: businessAddress || '',
+      gstRegNo: businessGstRegNo || '',
+      formTitle: populatedForm.title,
+      submissionId: payment.completedPayment?.submissionId || '',
+    })
+
+    return ResultAsync.fromPromise(
+      generatePdfFromHtml(invoiceHtml),
+      (error) => new StripeFetchError(String(error)),
+    )
+  })
 }
