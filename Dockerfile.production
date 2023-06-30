@@ -51,7 +51,7 @@ ARG REPO_URL
 # For the content of the mounted file is only accessible in the RUN command where it’s referred in, use && command.
 RUN --mount=type=secret,id=dd_api_key \
     export DATADOG_API_KEY=$(cat /run/secrets/dd_api_key) && \
-    npx @datadog/datadog-ci sourcemaps upload ./dist/frontend \
+    npx @datadog/datadog-ci@2.10.0 sourcemaps upload ./dist/frontend \
     --service=formsg-react \
     --release-version=$APP_VERSION \
     --minified-path-prefix=$APP_URL \
