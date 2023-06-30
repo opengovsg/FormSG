@@ -60,10 +60,10 @@ const submitFormIssue: ControllerHandler<
     .andThen((form) =>
       insertFormIssue({
         formId: form._id,
-        issue: issue,
-        email: email,
+        issue,
+        email,
       }).map(async (formIssue) => {
-        await notifyFormAdmin({ form: form, formIssue: formIssue })
+        await notifyFormAdmin({ form, formIssue })
       }),
     )
     .map(async () => {

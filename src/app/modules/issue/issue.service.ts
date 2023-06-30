@@ -43,7 +43,7 @@ export const insertFormIssue = ({
     FormIssueModel.create({
       formId: formId,
       issue: issue,
-      ...(email && { email: email }),
+      ...(email && { email }),
     }),
     (error) => {
       logger.error({
@@ -107,7 +107,7 @@ const getIsFirstIssueForFormToday = ({
       )
     },
   ).andThen((count) => {
-    return okAsync(count == 0)
+    return okAsync(count === 0)
   })
 }
 
@@ -129,7 +129,7 @@ export const notifyFormAdmin = ({
   form: IPopulatedForm
   formIssue: IFormIssueSchema
 }): Promise<boolean> => {
-  if (form.admin && form.admin.email != '') {
+  if (form.admin && form.admin.email !== '') {
     const logMeta = {
       action: 'notifyFormAdmin',
       formIssue,
@@ -138,9 +138,7 @@ export const notifyFormAdmin = ({
     return getIsFirstIssueForFormToday({ formIssue: formIssue })
       .andThen((isFirstIssueForFormToday) => {
         return isFirstIssueForFormToday
-          ? MailService.sendFormIssueReportedNotificationToAdmin({
-              form: form,
-            })
+          ? MailService.sendFormIssueReportedNotificationToAdmin({ form })
           : okAsync(false)
       })
       .match(
