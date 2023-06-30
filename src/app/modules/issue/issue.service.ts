@@ -128,7 +128,7 @@ export const notifyFormAdmin = ({
 }: {
   form: IPopulatedForm
   formIssue: IFormIssueSchema
-}): Promise<boolean> => {
+}): ResultAsync<boolean, never> => {
   if (form.admin && form.admin.email !== '') {
     const logMeta = {
       action: 'notifyFormAdmin',
@@ -141,32 +141,30 @@ export const notifyFormAdmin = ({
           ? MailService.sendFormIssueReportedNotificationToAdmin({ form })
           : okAsync(false)
       })
-      .match(
-        (ret) => {
-          return ret
-        },
-        (error) => {
-          switch (error.constructor) {
-            case MailGenerationError:
-            case MailSendError:
-              logger.warn({
-                message: 'Failed to send mail to form admin and collaborators',
-                meta: logMeta,
-                error,
-              })
-              break
-            case DatabaseError:
-              logger.warn({
-                message:
-                  'Failed to identify if notification to form admin and collaborators are needed',
-                meta: logMeta,
-                error,
-              })
-              break
-          }
-          return false
-        },
-      )
+      .map((ret) => {
+        return ret
+      })
+      .orElse((error) => {
+        switch (error.constructor) {
+          case MailGenerationError:
+          case MailSendError:
+            logger.warn({
+              message: 'Failed to send mail to form admin and collaborators',
+              meta: logMeta,
+              error,
+            })
+            break
+          case DatabaseError:
+            logger.warn({
+              message:
+                'Failed to identify if notification to form admin and collaborators are needed',
+              meta: logMeta,
+              error,
+            })
+            break
+        }
+        return okAsync(false)
+      })
   }
   logger.warn({
     message:
@@ -176,5 +174,5 @@ export const notifyFormAdmin = ({
       action: 'notifyFormAdmin',
     },
   })
-  return Promise.resolve(false)
+  return okAsync(false)
 }

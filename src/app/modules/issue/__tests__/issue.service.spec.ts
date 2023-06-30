@@ -270,7 +270,8 @@ describe('issue.service', () => {
       })
       // Assert
       expect(mailSpy).toHaveBeenCalledTimes(1)
-      expect(actualResult).toBeFalse()
+      expect(actualResult.isOk()).toBeTrue()
+      expect(actualResult._unsafeUnwrap()).toBeFalse()
     })
 
     it('should return true on successful mail sending', async () => {
@@ -291,7 +292,8 @@ describe('issue.service', () => {
       })
       // Assert
       expect(mailSpy).toHaveBeenCalledTimes(1)
-      expect(actualResult).toBeTrue()
+      expect(actualResult.isOk()).toBeTrue()
+      expect(actualResult._unsafeUnwrap()).toBeTrue()
     })
 
     it('should return false on not sending any mail due to the existence of prior issue complain', async () => {
@@ -316,7 +318,8 @@ describe('issue.service', () => {
       })
       // Assert
       expect(mailSpy).not.toHaveBeenCalled()
-      expect(actualResult).toBeFalse()
+      expect(actualResult.isOk()).toBeTrue()
+      expect(actualResult._unsafeUnwrap()).toBeFalse()
     })
 
     it('should return DatabaseError on not sending any mail due to the existence of prior issue complain', async () => {
@@ -345,7 +348,8 @@ describe('issue.service', () => {
       })
       // Assert
       expect(mailSpy).not.toHaveBeenCalled()
-      expect(actualResult).toBeFalse()
+      expect(actualResult.isOk()).toBeTrue()
+      expect(actualResult._unsafeUnwrap()).toBeFalse()
     })
 
     it('should return false as form admin email is not found', async () => {
@@ -365,7 +369,8 @@ describe('issue.service', () => {
       // Assert
       expect(dbSpy).not.toHaveBeenCalled()
       expect(mailSpy).not.toHaveBeenCalled()
-      expect(actualResult).toBeFalse()
+      expect(actualResult.isOk()).toBeTrue()
+      expect(actualResult._unsafeUnwrap()).toBeFalse()
     })
   })
 })
