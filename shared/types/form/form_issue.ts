@@ -6,3 +6,14 @@ export type FormIssueBodyDto = {
   email?: string
   formId: FormDto['_id']
 }
+
+/**
+ * Typing for individual form issue
+ */
+export type FormIssueBase = {
+  formId: FormDto['_id']
+  issue: string
+  email?: string
+  created?: Date
+  lastModified?: Date
+}
