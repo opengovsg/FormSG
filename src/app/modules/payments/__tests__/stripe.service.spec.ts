@@ -809,7 +809,7 @@ describe('stripe.service', () => {
         expect(balanceTransactionApiSpy).toHaveBeenCalledOnce()
         expect(getMetadataPaymentIdSpy).toHaveBeenCalledOnce()
         expect(processStripeEventSpy).toHaveBeenCalledOnce()
-        expect(result).toBeUndefined()
+        expect(result.isOk()).toBeTrue()
       })
     })
   })

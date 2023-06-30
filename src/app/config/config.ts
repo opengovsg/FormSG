@@ -239,6 +239,10 @@ const config: Config = {
   secretEnv: basicVars.core.secretEnv,
   envSiteName: basicVars.core.envSiteName,
   publicApiConfig,
+  adminFeedbackFieldThreshold:
+    basicVars.adminFeedback.adminFeedbackFieldThreshold,
+  adminFeedbackDisplayFrequency:
+    basicVars.adminFeedback.adminFeedbackDisplayFrequency,
 }
 
 export = config
