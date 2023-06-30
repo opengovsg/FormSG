@@ -13,7 +13,6 @@ import {
   Text,
   useBreakpointValue,
 } from '@chakra-ui/react'
-import { isEmpty } from 'lodash'
 import isEmail from 'validator/lib/isEmail'
 
 import { BasicField, FormIssueBodyDto } from '~shared/types'
