@@ -527,6 +527,121 @@ describe('admin-form.form.routes', () => {
     })
   })
 
+  describe('GET /admin/forms/owned', () => {
+    it('should return 200 with empty array when user has no owned forms', async () => {
+      // Act
+      const response = await request.get('/admin/forms/owned')
+
+      // Assert
+      expect(response.status).toEqual(200)
+      expect(response.body).toEqual([])
+    })
+
+    it('should return 200 with a list of forms owned by the user', async () => {
+      // Arrange
+      // Create separate user
+      const collabUser = (
+        await dbHandler.insertFormCollectionReqs({
+          userId: new ObjectId(),
+          mailName: 'collab-user',
+          shortName: 'collabUser',
+        })
+      ).user
+
+      const ownForm = await EmailFormModel.create({
+        title: 'Own form',
+        emails: [defaultUser.email],
+        admin: defaultUser._id,
+      })
+      await EncryptFormModel.create({
+        title: 'Collab form',
+        publicKey: 'some public key',
+        admin: collabUser._id,
+        permissionList: [{ email: defaultUser.email }],
+      })
+      // Create already archived form, should not be fetched even though
+      // owner is defaultUser
+      await EmailFormModel.create({
+        title: 'Archived form',
+        emails: defaultUser.email,
+        admin: defaultUser._id,
+        status: FormStatus.Archived,
+      })
+      // Create form that user is not collaborator/admin of. Should not be
+      // fetched.
+      await EncryptFormModel.create({
+        title: 'Does not matter',
+        publicKey: 'abracadabra',
+        admin: collabUser._id,
+        // No permissions for anyone else.
+      })
+
+      // Act
+      const response = await request.get('/admin/forms/owned')
+
+      // Assert
+      // Should only receive ownForm
+      const expected = await FormModel.find({
+        _id: {
+          $in: [ownForm._id],
+        },
+      })
+        .select('_id title admin lastModified status responseMode')
+        .sort('-lastModified')
+        .populate({
+          path: 'admin',
+          populate: {
+            path: 'agency',
+          },
+        })
+        .lean()
+      expect(response.body).toEqual(jsonParseStringify(expected))
+      expect(response.status).toEqual(200)
+    })
+
+    it('should return 401 when user is not logged in', async () => {
+      // Arrange
+      await logoutSession(request)
+
+      // Act
+      const response = await request.get('/admin/forms/owned')
+
+      // Assert
+      expect(response.status).toEqual(401)
+      expect(response.body).toEqual({ message: 'User is unauthorized.' })
+    })
+
+    it('should return 422 when user of given id cannot be found in the database', async () => {
+      // Arrange
+      // Delete user after login.
+      await dbHandler.clearCollection(UserModel.collection.name)
+
+      // Act
+      const response = await request.get('/admin/forms/owned')
+
+      // Assert
+      expect(response.status).toEqual(422)
+      expect(response.body).toEqual({ message: 'User not found' })
+    })
+
+    it('should return 500 when database errors occur', async () => {
+      // Arrange
+      // Mock database error.
+      jest
+        .spyOn(FormModel, 'getMetaByUserIdOrEmail')
+        .mockRejectedValueOnce(new Error('something went wrong'))
+
+      // Act
+      const response = await request.get('/admin/forms/owned')
+
+      // Assert
+      expect(response.status).toEqual(500)
+      expect(response.body).toEqual({
+        message: 'Something went wrong. Please try again.',
+      })
+    })
+  })
+
   describe('GET /admin/forms/:formId', () => {
     it('should return 200 with retrieved form when user is admin', async () => {
       // Arrange
