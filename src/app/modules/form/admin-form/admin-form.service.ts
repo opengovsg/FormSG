@@ -10,6 +10,8 @@ import mongoose, { ClientSession } from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import type { Except, Merge } from 'type-fest'
 
+import { getEmailDomainFromEmail } from 'src/app/utils/email-domain'
+
 import {
   MAX_UPLOAD_FILE_SIZE,
   VALID_UPLOAD_FILE_TYPES,
@@ -328,7 +330,7 @@ export const transferFormOwnership = (
     newOwnerEmail,
   }
 
-  const emailDomain = newOwnerEmail.split('@').pop()
+  const emailDomain = getEmailDomainFromEmail(newOwnerEmail)
   return ResultAsync.fromPromise(
     AgencyModel.findOne({ emailDomain }),
     (error) => {
@@ -830,7 +832,7 @@ export const updateFormCollaborators = (
     // Check that all updated collaborator domains exist in the Agency collection.
     Promise.all(
       updatedCollaboratorEmails.map(async (email) => {
-        const emailDomain = email.split('@').pop()
+        const emailDomain = getEmailDomainFromEmail(email)
         const result = await AgencyModel.findOne({ emailDomain })
         return !!result
       }),
