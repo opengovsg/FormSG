@@ -20,7 +20,6 @@ import {
 
 import { TransferOwnershipModal } from './TransferOwnershipModal'
 
-// FIXME: getUser, MOCK_USER are imported from another mock file. Consider relocating to a commons file?
 const createForm: (_: number) => AdminFormViewDto[] = (num: number) => {
   return times(num, (x) => {
     const formId = `618b2d5e648fb700700002b${x}`

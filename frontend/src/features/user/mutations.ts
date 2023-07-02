@@ -22,7 +22,6 @@ import { userKeys } from './queries'
 export const useUserMutations = () => {
   const queryClient = useQueryClient()
   const toast = useToast({ status: 'success', isClosable: true })
-  // FIXME: Is this an acceptable way to define another toast in the same scope?
   const failureToast = useToast({ status: 'danger', isClosable: true })
 
   const generateOtpMutation = useMutation<

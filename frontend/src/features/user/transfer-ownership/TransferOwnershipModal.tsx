@@ -54,7 +54,7 @@ const useModalState = ({ onClose, reset, trigger }) => {
   const resetModal = useCallback(() => {
     setPage(0)
     reset()
-    trigger() // FIXME: This does not seem to trigger validation for unknown reasons.
+    trigger()
     onClose()
   }, [page, email])
 

@@ -191,7 +191,6 @@ export const AdminNavBar = ({ isMenuOpen }: AdminNavBarProps): JSX.Element => {
     },
   })
 
-  // FIXME: Show only if user owns at least one form
   const {
     isOpen: isTransferOwnershipModalOpen,
     onClose: onTransferOwnershipModalClose,

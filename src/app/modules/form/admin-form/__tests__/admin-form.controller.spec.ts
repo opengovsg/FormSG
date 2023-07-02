@@ -210,7 +210,6 @@ describe('admin-form.controller', () => {
     })
   })
 
-  // FIXME: DRY
   describe('handleListOwnedForms', () => {
     const MOCK_REQ = expressHandler.mockRequest({
       session: {
