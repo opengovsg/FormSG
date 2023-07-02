@@ -579,6 +579,13 @@ describe('admin-form.service', () => {
       email: MOCK_NEW_OWNER_EMAIL,
     } as IUserSchema
 
+    beforeEach(() => {
+      const findAgencySpy = jest.spyOn(AgencyModel, 'findOne')
+      // Return a truthy value to ensure that the find is successful
+      // @ts-ignore
+      findAgencySpy.mockResolvedValueOnce({})
+    })
+
     it('should return updated form with new owner successfully', async () => {
       // Arrange
       const expectedPopulateResult = {
