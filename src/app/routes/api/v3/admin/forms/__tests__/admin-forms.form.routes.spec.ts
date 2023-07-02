@@ -628,7 +628,7 @@ describe('admin-form.form.routes', () => {
       // Arrange
       // Mock database error.
       jest
-        .spyOn(FormModel, 'getMetaByUserIdOrEmail')
+        .spyOn(FormModel, 'getFormsOwnedByUserId')
         .mockRejectedValueOnce(new Error('something went wrong'))
 
       // Act

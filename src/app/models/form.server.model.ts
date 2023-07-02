@@ -889,6 +889,9 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         // List forms when either the user is an admin only.
         .where('admin')
         .eq(userId)
+        // Filter out archived forms.
+        .where('status')
+        .ne(FormStatus.Archived)
         // Project selected fields.
         // `responseMode` is a discriminator key and is returned regardless,
         // selection is made for explicitness.
