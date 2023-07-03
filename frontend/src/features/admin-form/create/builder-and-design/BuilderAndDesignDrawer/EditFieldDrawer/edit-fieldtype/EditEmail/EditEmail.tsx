@@ -81,7 +81,6 @@ export const EditEmail = ({ field }: EditEmailProps): JSX.Element => {
     },
   })
 
-  const watchedIsVerifiable = watch('isVerifiable')
   const watchedHasAllowedEmailDomains = watch('hasAllowedEmailDomains')
   const watchedHasAutoReply = watch('autoReplyOptions.hasAutoReply')
 
