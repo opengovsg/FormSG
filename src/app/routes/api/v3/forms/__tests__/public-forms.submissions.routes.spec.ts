@@ -68,6 +68,7 @@ describe('public-form.submissions.routes', () => {
 
   const mockCpClient = jest.mocked(MockCpOidcClient.mock.instances[0])
 
+  beforeAll(async () => await dbHandler.connect())
   beforeEach(async () => {
     request = session(app)
   })
@@ -491,7 +492,7 @@ describe('public-form.submissions.routes', () => {
           const response = await request
             .post(`/forms/${form._id}/submissions/email`)
             .field('body', JSON.stringify(MOCK_NO_RESPONSES_BODY))
-            .query({ captchaResponse: 'null' })
+            .query({ captchaResponse: 'null', captchaType: '' })
             .set('Cookie', ['jwtSp=mockJwt'])
 
           // Assert
@@ -744,7 +745,7 @@ describe('public-form.submissions.routes', () => {
           const response = await request
             .post(`/forms/${form._id}/submissions/email`)
             .field('body', JSON.stringify(MOCK_NO_RESPONSES_BODY))
-            .query({ captchaResponse: 'null' })
+            .query({ captchaResponse: 'null', captchaType: '' })
             .set('Cookie', [`${MYINFO_LOGIN_COOKIE_NAME}=${MOCK_MYINFO_JWT}`])
 
           // Assert
