@@ -33,7 +33,6 @@ export const GUIDE_EMAIL_RELIABILITY =
 export const GUIDE_PREFILL = 'https://go.gov.sg/formsg-guide-prefills'
 export const GUIDE_STRIPE_ONBOARDING =
   'https://go.gov.sg/formsg-stripe-onboarding'
-export const GUIDE_PAYMENTS_PUBLIC = 'https://go.gov.sg/formsg-guide-payments'
 export const GUIDE_PAYMENTS_ENTRY = 'https://go.gov.sg/formsg-payment-overview'
 export const GUIDE_PAYMENTS_INVOICE_DIFFERENCES =
   'https://go.gov.sg/formsg-payments-invoice-differences'

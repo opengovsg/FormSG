@@ -7,7 +7,11 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import get from 'lodash/get'
 import { useIntervalWhen } from 'rooks'
 
+import { featureFlags } from '~shared/constants'
+
 import { useScript } from '~hooks/useScript'
+
+import { useIsFeatureEnabled } from '~features/feature-flags/queries'
 
 type RecaptchaBaseConfig = {
   sitekey?: string
@@ -97,6 +101,15 @@ export const useRecaptcha = ({
 
   const captchaRef = useRef<HTMLDivElement | null>(null)
 
+  // Feature flag to control turnstile captcha rollout
+  // defaults to false
+  // Cloudflare Turnstile and Google reCaptcha should be mutually exclusive
+  // todo: remove after full rollout
+  const enableTurnstileFeatureFlag = useIsFeatureEnabled(
+    featureFlags.turnstile,
+    false,
+  )
+
   useIntervalWhen(
     () => {
       if (grecaptcha?.render) {
@@ -169,8 +182,10 @@ export const useRecaptcha = ({
         'expired-callback': handleExpiry,
         'error-callback': handleError,
       }
-      const widget = grecaptcha?.render(containerId, renderProps)
-      setWidgetId(widget)
+      if (!enableTurnstileFeatureFlag) {
+        const widget = grecaptcha?.render(containerId, renderProps)
+        setWidgetId(widget)
+      }
     }
   }, [
     hasLoaded,
@@ -185,6 +200,7 @@ export const useRecaptcha = ({
     handleError,
     useEnterprise,
     grecaptcha,
+    enableTurnstileFeatureFlag,
   ])
 
   /**

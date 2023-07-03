@@ -17,6 +17,8 @@ import {
   PaymentType,
 } from '~shared/types'
 
+import { ADMIN_FEEDBACK_SESSION_KEY } from '~constants/sessionStorage'
+import { useSessionStorage } from '~hooks/useSessionStorage'
 import { centsToDollars, dollarsToCents } from '~utils/payments'
 import { SingleSelect } from '~components/Dropdown'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
@@ -73,6 +75,10 @@ const PaymentInput = ({ isDisabled }: { isDisabled: boolean }) => {
   const { setFieldListTabIndex } = useCreatePageSidebar()
 
   const handleClose = () => setFieldListTabIndex(FieldListTabIndex.Basic)
+
+  const [, setisAdminFeedbackEligible] = useSessionStorage<boolean>(
+    ADMIN_FEEDBACK_SESSION_KEY,
+  )
 
   // unpack payment data for paymentAmount if it exists
   const formDefaultValues =
@@ -146,6 +152,9 @@ const PaymentInput = ({ isDisabled }: { isDisabled: boolean }) => {
         handleClose()
       }
     }
+
+    // update sessionStorage to enable admin feedback
+    setisAdminFeedbackEligible(true)
     return paymentsMutation.mutate(paymentsData, {
       onSuccess: () => {
         setToInactive()

@@ -8,7 +8,7 @@ import { errorHandlerMiddlewares } from 'src/app/loaders/express/error-handler'
 import helmetMiddlewares from 'src/app/loaders/express/helmet'
 import loggingMiddleware from 'src/app/loaders/express/logging'
 import parserMiddlewares from 'src/app/loaders/express/parser'
-import { AuthRouter } from 'src/app/modules/auth/auth.routes'
+import { AuthRouter } from 'src/app/routes/api/v3/auth/auth.routes'
 
 // Special session middleware that only uses the memory store.
 const testSessionMiddlewares = () => {
