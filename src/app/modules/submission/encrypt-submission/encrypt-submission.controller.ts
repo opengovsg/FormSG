@@ -8,7 +8,6 @@ import { okAsync } from 'neverthrow'
 import Stripe from 'stripe'
 import type { SetOptional } from 'type-fest'
 
-import { featureFlags } from '../../../../../shared/constants'
 import {
   ErrorDto,
   FormAuthType,
@@ -31,6 +30,7 @@ import { getEncryptPendingSubmissionModel } from '../../../models/pending_submis
 import { getEncryptSubmissionModel } from '../../../models/submission.server.model'
 import * as CaptchaMiddleware from '../../../services/captcha/captcha.middleware'
 import * as CaptchaService from '../../../services/captcha/captcha.service'
+import { CaptchaTypes } from '../../../services/captcha/captcha.types'
 import * as TurnstileMiddleware from '../../../services/turnstile/turnstile.middleware'
 import * as TurnstileService from '../../../services/turnstile/turnstile.service'
 import { createReqMeta, getRequestIp } from '../../../utils/request'
@@ -38,7 +38,6 @@ import { getFormAfterPermissionChecks } from '../../auth/auth.service'
 import { MalformedParametersError } from '../../core/core.errors'
 import { ControllerHandler } from '../../core/core.types'
 import { setFormTags } from '../../datadog/datadog.utils'
-import * as FeatureFlagService from '../../feature-flags/feature-flags.service'
 import { PermissionLevel } from '../../form/admin-form/admin-form.types'
 import * as FormService from '../../form/form.service'
 import { SGID_COOKIE_NAME } from '../../sgid/sgid.constants'
@@ -81,7 +80,7 @@ const submitEncryptModeForm: ControllerHandler<
   { formId: string },
   SubmissionResponseDto | SubmissionErrorDto,
   EncryptSubmissionDto,
-  { captchaResponse?: unknown }
+  { captchaResponse?: unknown; captchaType?: unknown }
 > = async (req, res) => {
   const { formId } = req.params
 
@@ -149,55 +148,45 @@ const submitEncryptModeForm: ControllerHandler<
       })
     }
   }
-
   // Check captcha
   if (form.hasCaptcha) {
-    const featureFlagsListResult = await FeatureFlagService.getEnabledFlags()
-    // Feature flag to control turnstile captcha rollout
-    // defaults to false
-    // todo: remove after full rollout
-    let enableTurnstileFeatureFlag = false
-    if (featureFlagsListResult.isErr()) {
-      logger.error({
-        message: 'Error occurred whilst retrieving enabled feature flags',
-        meta: logMeta,
-        error: featureFlagsListResult.error,
-      })
-    } else {
-      enableTurnstileFeatureFlag = featureFlagsListResult.value.includes(
-        featureFlags.turnstile,
-      )
-    }
-    if (enableTurnstileFeatureFlag) {
-      const turnstileResult = await TurnstileService.verifyTurnstileResponse(
-        req.query.captchaResponse,
-        getRequestIp(req),
-      )
-      if (turnstileResult.isErr()) {
-        logger.error({
-          message: 'Error while verifying turnstile',
-          meta: logMeta,
-          error: turnstileResult.error,
-        })
-        const { errorMessage, statusCode } = mapRouteError(
-          turnstileResult.error,
+    switch (req.query.captchaType) {
+      case CaptchaTypes.Turnstile: {
+        const turnstileResult = await TurnstileService.verifyTurnstileResponse(
+          req.query.captchaResponse,
+          getRequestIp(req),
         )
-        return res.status(statusCode).json({ message: errorMessage })
+        if (turnstileResult.isErr()) {
+          logger.error({
+            message: 'Error while verifying turnstile',
+            meta: logMeta,
+            error: turnstileResult.error,
+          })
+          const { errorMessage, statusCode } = mapRouteError(
+            turnstileResult.error,
+          )
+          return res.status(statusCode).json({ message: errorMessage })
+        }
+        break
       }
-    } else {
-      const captchaResult = await CaptchaService.verifyCaptchaResponse(
-        req.query.captchaResponse,
-        getRequestIp(req),
-      )
-
-      if (captchaResult.isErr()) {
-        logger.error({
-          message: 'Error while verifying captcha',
-          meta: logMeta,
-          error: captchaResult.error,
-        })
-        const { errorMessage, statusCode } = mapRouteError(captchaResult.error)
-        return res.status(statusCode).json({ message: errorMessage })
+      // defaults to recaptcha
+      default: {
+        const captchaResult = await CaptchaService.verifyCaptchaResponse(
+          req.query.captchaResponse,
+          getRequestIp(req),
+        )
+        if (captchaResult.isErr()) {
+          logger.error({
+            message: 'Error while verifying captcha',
+            meta: logMeta,
+            error: captchaResult.error,
+          })
+          const { errorMessage, statusCode } = mapRouteError(
+            captchaResult.error,
+          )
+          return res.status(statusCode).json({ message: errorMessage })
+        }
+        break
       }
     }
   }
@@ -653,8 +642,8 @@ const submitEncryptModeForm: ControllerHandler<
 }
 
 export const handleEncryptedSubmission = [
-  TurnstileMiddleware.validateTurnstileParams,
   CaptchaMiddleware.validateCaptchaParams,
+  TurnstileMiddleware.validateTurnstileParams,
   EncryptSubmissionMiddleware.validateEncryptSubmissionParams,
   submitEncryptModeForm,
 ] as ControllerHandler[]

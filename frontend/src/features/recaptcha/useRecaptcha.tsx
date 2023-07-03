@@ -28,6 +28,7 @@ interface UseRecaptchaProps extends RecaptchaBaseConfig {
   id?: string
   useRecaptchaNet?: boolean
   useEnterprise?: boolean
+  enableUsage: boolean
 }
 
 type RecaptchaConfig = RecaptchaBaseConfig & {
@@ -85,6 +86,7 @@ export const useRecaptcha = ({
   badge = 'inline',
   size = 'invisible',
   useRecaptchaNet = true,
+  enableUsage,
 }: UseRecaptchaProps) => {
   useScript(getRecaptchaUrl({ useEnterprise, useRecaptchaNet }))
 
@@ -100,15 +102,6 @@ export const useRecaptcha = ({
   const executionPromise = useRef<GreptchaExecutionCallback>({})
 
   const captchaRef = useRef<HTMLDivElement | null>(null)
-
-  // Feature flag to control turnstile captcha rollout
-  // defaults to false
-  // Cloudflare Turnstile and Google reCaptcha should be mutually exclusive
-  // todo: remove after full rollout
-  const enableTurnstileFeatureFlag = useIsFeatureEnabled(
-    featureFlags.turnstile,
-    false,
-  )
 
   useIntervalWhen(
     () => {
@@ -182,7 +175,7 @@ export const useRecaptcha = ({
         'expired-callback': handleExpiry,
         'error-callback': handleError,
       }
-      if (!enableTurnstileFeatureFlag) {
+      if (enableUsage) {
         const widget = grecaptcha?.render(containerId, renderProps)
         setWidgetId(widget)
       }
@@ -200,7 +193,7 @@ export const useRecaptcha = ({
     handleError,
     useEnterprise,
     grecaptcha,
-    enableTurnstileFeatureFlag,
+    enableUsage,
   ])
 
   /**
