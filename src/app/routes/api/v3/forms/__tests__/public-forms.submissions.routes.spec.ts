@@ -68,7 +68,6 @@ describe('public-form.submissions.routes', () => {
 
   const mockCpClient = jest.mocked(MockCpOidcClient.mock.instances[0])
 
-  beforeAll(async () => await dbHandler.connect())
   beforeEach(async () => {
     request = session(app)
   })
@@ -100,7 +99,7 @@ describe('public-form.submissions.routes', () => {
               responses: [MOCK_TEXTFIELD_RESPONSE],
             }),
           )
-          .query({ captchaResponse: 'null' })
+          .query({ captchaResponse: 'null', captchaType: '' })
 
         // Assert
         expect(response.status).toBe(200)
@@ -132,7 +131,7 @@ describe('public-form.submissions.routes', () => {
               responses: [{ ...MOCK_TEXTFIELD_RESPONSE, answer: '' }],
             }),
           )
-          .query({ captchaResponse: 'null' })
+          .query({ captchaResponse: 'null', captchaType: '' })
 
         // Assert
         expect(response.status).toBe(200)
@@ -167,7 +166,7 @@ describe('public-form.submissions.routes', () => {
               ],
             }),
           )
-          .query({ captchaResponse: 'null' })
+          .query({ captchaResponse: 'null', captchaType: '' })
 
         // Assert
         expect(response.status).toBe(200)
@@ -197,7 +196,7 @@ describe('public-form.submissions.routes', () => {
               responses: [{ ...MOCK_SECTION_RESPONSE, isHeader: true }],
             }),
           )
-          .query({ captchaResponse: 'null' })
+          .query({ captchaResponse: 'null', captchaType: '' })
 
         // Assert
         expect(response.status).toBe(200)
@@ -229,7 +228,7 @@ describe('public-form.submissions.routes', () => {
               ],
             }),
           )
-          .query({ captchaResponse: 'null' })
+          .query({ captchaResponse: 'null', captchaType: '' })
 
         // Assert
         expect(response.status).toBe(200)
@@ -259,7 +258,7 @@ describe('public-form.submissions.routes', () => {
               responses: [MOCK_CHECKBOX_RESPONSE],
             }),
           )
-          .query({ captchaResponse: 'null' })
+          .query({ captchaResponse: 'null', captchaType: '' })
 
         // Assert
         expect(response.status).toBe(200)
@@ -284,7 +283,7 @@ describe('public-form.submissions.routes', () => {
           .post(`/forms/${form._id}/submissions/email`)
           // Note missing responses
           .field('body', JSON.stringify({}))
-          .query({ captchaResponse: 'null' })
+          .query({ captchaResponse: 'null', captchaType: '' })
 
         // Assert
         expect(response.status).toBe(400)
@@ -309,7 +308,7 @@ describe('public-form.submissions.routes', () => {
               responses: [omit(MOCK_TEXTFIELD_RESPONSE, '_id')],
             }),
           )
-          .query({ captchaResponse: 'null' })
+          .query({ captchaResponse: 'null', captchaType: '' })
 
         // Assert
         expect(response.status).toBe(400)
@@ -334,7 +333,7 @@ describe('public-form.submissions.routes', () => {
               responses: [omit(MOCK_TEXTFIELD_RESPONSE, 'fieldType')],
             }),
           )
-          .query({ captchaResponse: 'null' })
+          .query({ captchaResponse: 'null', captchaType: '' })
 
         // Assert
         expect(response.status).toBe(400)
@@ -361,7 +360,7 @@ describe('public-form.submissions.routes', () => {
               ],
             }),
           )
-          .query({ captchaResponse: 'null' })
+          .query({ captchaResponse: 'null', captchaType: '' })
 
         // Assert
         expect(response.status).toBe(400)
@@ -386,7 +385,7 @@ describe('public-form.submissions.routes', () => {
               responses: [omit(MOCK_TEXTFIELD_RESPONSE, 'answer')],
             }),
           )
-          .query({ captchaResponse: 'null' })
+          .query({ captchaResponse: 'null', captchaType: '' })
 
         // Assert
         expect(response.status).toBe(400)
@@ -411,7 +410,7 @@ describe('public-form.submissions.routes', () => {
               responses: [{ ...MOCK_TEXTFIELD_RESPONSE, answerArray: [] }],
             }),
           )
-          .query({ captchaResponse: 'null' })
+          .query({ captchaResponse: 'null', captchaType: '' })
 
         // Assert
         expect(response.status).toBe(400)
@@ -436,7 +435,7 @@ describe('public-form.submissions.routes', () => {
               responses: [omit(MOCK_ATTACHMENT_RESPONSE), 'content'],
             }),
           )
-          .query({ captchaResponse: 'null' })
+          .query({ captchaResponse: 'null', captchaType: '' })
 
         // Assert
         expect(response.status).toBe(400)
@@ -461,7 +460,7 @@ describe('public-form.submissions.routes', () => {
               responses: [omit(MOCK_ATTACHMENT_RESPONSE), 'filename'],
             }),
           )
-          .query({ captchaResponse: 'null' })
+          .query({ captchaResponse: 'null', captchaType: '' })
 
         // Assert
         expect(response.status).toBe(400)
@@ -519,7 +518,7 @@ describe('public-form.submissions.routes', () => {
           const response = await request
             .post(`/forms/${form._id}/submissions/email`)
             .field('body', JSON.stringify(MOCK_NO_RESPONSES_BODY))
-            .query({ captchaResponse: 'null' })
+            .query({ captchaResponse: 'null', captchaType: '' })
           // Note cookie is not set
 
           // Assert
@@ -546,7 +545,7 @@ describe('public-form.submissions.routes', () => {
           const response = await request
             .post(`/forms/${form._id}/submissions/email`)
             .field('body', JSON.stringify(MOCK_NO_RESPONSES_BODY))
-            .query({ captchaResponse: 'null' })
+            .query({ captchaResponse: 'null', captchaType: '' })
             // Note cookie is for CorpPass, not SingPass
             .set('Cookie', ['jwtCp=mockJwt'])
 
@@ -579,7 +578,7 @@ describe('public-form.submissions.routes', () => {
           const response = await request
             .post(`/forms/${form._id}/submissions/email`)
             .field('body', JSON.stringify(MOCK_NO_RESPONSES_BODY))
-            .query({ captchaResponse: 'null' })
+            .query({ captchaResponse: 'null', captchaType: '' })
             .set('Cookie', ['jwtSp=mockJwt'])
 
           // Assert
@@ -613,7 +612,7 @@ describe('public-form.submissions.routes', () => {
           const response = await request
             .post(`/forms/${form._id}/submissions/email`)
             .field('body', JSON.stringify(MOCK_NO_RESPONSES_BODY))
-            .query({ captchaResponse: 'null' })
+            .query({ captchaResponse: 'null', captchaType: '' })
             .set('Cookie', ['jwtSp=mockJwt'])
 
           // Assert
@@ -654,7 +653,7 @@ describe('public-form.submissions.routes', () => {
           const response = await request
             .post(`/forms/${form._id}/submissions/email`)
             .field('body', JSON.stringify(MOCK_NO_RESPONSES_BODY))
-            .query({ captchaResponse: 'null' })
+            .query({ captchaResponse: 'null', captchaType: '' })
             .set('Cookie', [
               // The j: indicates that the cookie is in JSON
               `${MYINFO_LOGIN_COOKIE_NAME}=j:${encodeURIComponent(
@@ -686,7 +685,7 @@ describe('public-form.submissions.routes', () => {
           const response = await request
             .post(`/forms/${form._id}/submissions/email`)
             .field('body', JSON.stringify(MOCK_NO_RESPONSES_BODY))
-            .query({ captchaResponse: 'null' })
+            .query({ captchaResponse: 'null', captchaType: '' })
           // Note cookie is not set
 
           // Assert
@@ -713,7 +712,7 @@ describe('public-form.submissions.routes', () => {
           const response = await request
             .post(`/forms/${form._id}/submissions/email`)
             .field('body', JSON.stringify(MOCK_NO_RESPONSES_BODY))
-            .query({ captchaResponse: 'null' })
+            .query({ captchaResponse: 'null', captchaType: '' })
             // Note cookie is for SingPass, not MyInfo
             .set('Cookie', ['jwtSp=mockJwt'])
 
@@ -777,7 +776,7 @@ describe('public-form.submissions.routes', () => {
           const response = await request
             .post(`/forms/${form._id}/submissions/email`)
             .field('body', JSON.stringify(MOCK_NO_RESPONSES_BODY))
-            .query({ captchaResponse: 'null' })
+            .query({ captchaResponse: 'null', captchaType: '' })
             .set('Cookie', [
               // The j: indicates that the cookie is in JSON
               `${MYINFO_LOGIN_COOKIE_NAME}=j:${MOCK_MYINFO_JWT}`,
@@ -813,7 +812,7 @@ describe('public-form.submissions.routes', () => {
           const response = await request
             .post(`/forms/${form._id}/submissions/email`)
             .field('body', JSON.stringify(MOCK_NO_RESPONSES_BODY))
-            .query({ captchaResponse: 'null' })
+            .query({ captchaResponse: 'null', captchaType: '' })
             .set('Cookie', ['jwtCp=mockJwt'])
 
           // Assert
@@ -840,7 +839,7 @@ describe('public-form.submissions.routes', () => {
           const response = await request
             .post(`/forms/${form._id}/submissions/email`)
             .field('body', JSON.stringify(MOCK_NO_RESPONSES_BODY))
-            .query({ captchaResponse: 'null' })
+            .query({ captchaResponse: 'null', captchaType: '' })
           // Note cookie is not set
 
           // Assert
@@ -867,7 +866,7 @@ describe('public-form.submissions.routes', () => {
           const response = await request
             .post(`/forms/${form._id}/submissions/email`)
             .field('body', JSON.stringify(MOCK_NO_RESPONSES_BODY))
-            .query({ captchaResponse: 'null' })
+            .query({ captchaResponse: 'null', captchaType: '' })
             // Note cookie is for SingPass, not CorpPass
             .set('Cookie', ['jwtSp=mockJwt'])
 
@@ -897,7 +896,7 @@ describe('public-form.submissions.routes', () => {
           const response = await request
             .post(`/forms/${form._id}/submissions/email`)
             .field('body', JSON.stringify(MOCK_NO_RESPONSES_BODY))
-            .query({ captchaResponse: 'null' })
+            .query({ captchaResponse: 'null', captchaType: '' })
             .set('Cookie', ['jwtCp=mockJwt'])
 
           // Assert
@@ -928,7 +927,7 @@ describe('public-form.submissions.routes', () => {
           const response = await request
             .post(`/forms/${form._id}/submissions/email`)
             .field('body', JSON.stringify(MOCK_NO_RESPONSES_BODY))
-            .query({ captchaResponse: 'null' })
+            .query({ captchaResponse: 'null', captchaType: '' })
             .set('Cookie', ['jwtCp=mockJwt'])
 
           // Assert
@@ -973,7 +972,7 @@ describe('public-form.submissions.routes', () => {
           const response = await request
             .post(`/forms/${form._id}/submissions/encrypt`)
             .send(MOCK_SUBMISSION_BODY)
-            .query({ captchaResponse: 'null' })
+            .query({ captchaResponse: 'null', captchaType: '' })
             .set('Cookie', ['jwtSp=mockJwt'])
 
           expect(response.status).toBe(200)
@@ -997,7 +996,7 @@ describe('public-form.submissions.routes', () => {
           const response = await request
             .post(`/forms/${form._id}/submissions/encrypt`)
             .send(MOCK_SUBMISSION_BODY)
-            .query({ captchaResponse: 'null' })
+            .query({ captchaResponse: 'null', captchaType: '' })
           // Note cookie is not set
 
           expect(response.status).toBe(401)
@@ -1021,7 +1020,7 @@ describe('public-form.submissions.routes', () => {
           const response = await request
             .post(`/forms/${form._id}/submissions/encrypt`)
             .send(MOCK_SUBMISSION_BODY)
-            .query({ captchaResponse: 'null' })
+            .query({ captchaResponse: 'null', captchaType: '' })
             .set('Cookie', ['jwtCp=mockJwt'])
           // Note cookie is for CorpPass, not SingPass
 
@@ -1051,7 +1050,7 @@ describe('public-form.submissions.routes', () => {
           const response = await request
             .post(`/forms/${form._id}/submissions/encrypt`)
             .send(MOCK_SUBMISSION_BODY)
-            .query({ captchaResponse: 'null' })
+            .query({ captchaResponse: 'null', captchaType: '' })
             .set('Cookie', ['jwtSp=mockJwt'])
 
           expect(response.status).toBe(401)
@@ -1082,7 +1081,7 @@ describe('public-form.submissions.routes', () => {
           const response = await request
             .post(`/forms/${form._id}/submissions/encrypt`)
             .send(MOCK_SUBMISSION_BODY)
-            .query({ captchaResponse: 'null' })
+            .query({ captchaResponse: 'null', captchaType: '' })
             .set('Cookie', ['jwtSp=mockJwt'])
 
           expect(response.status).toBe(401)
@@ -1112,7 +1111,7 @@ describe('public-form.submissions.routes', () => {
           const response = await request
             .post(`/forms/${form._id}/submissions/encrypt`)
             .send(MOCK_SUBMISSION_BODY)
-            .query({ captchaResponse: 'null' })
+            .query({ captchaResponse: 'null', captchaType: '' })
             .set('Cookie', ['jwtCp=mockJwt'])
 
           expect(response.status).toBe(200)
@@ -1136,7 +1135,7 @@ describe('public-form.submissions.routes', () => {
           const response = await request
             .post(`/forms/${form._id}/submissions/encrypt`)
             .send(MOCK_SUBMISSION_BODY)
-            .query({ captchaResponse: 'null' })
+            .query({ captchaResponse: 'null', captchaType: '' })
           // Note cookie is not set
 
           expect(response.status).toBe(401)
@@ -1160,7 +1159,7 @@ describe('public-form.submissions.routes', () => {
           const response = await request
             .post(`/forms/${form._id}/submissions/encrypt`)
             .send(MOCK_SUBMISSION_BODY)
-            .query({ captchaResponse: 'null' })
+            .query({ captchaResponse: 'null', captchaType: '' })
             // Note cookie is for SingPass, not CorpPass
             .set('Cookie', ['jwtSp=mockJwt'])
 
@@ -1187,7 +1186,7 @@ describe('public-form.submissions.routes', () => {
           const response = await request
             .post(`/forms/${form._id}/submissions/encrypt`)
             .send(MOCK_SUBMISSION_BODY)
-            .query({ captchaResponse: 'null' })
+            .query({ captchaResponse: 'null', captchaType: '' })
             .set('Cookie', ['jwtCp=mockJwt'])
 
           expect(response.status).toBe(401)
@@ -1215,7 +1214,7 @@ describe('public-form.submissions.routes', () => {
           const response = await request
             .post(`/forms/${form._id}/submissions/encrypt`)
             .send(MOCK_SUBMISSION_BODY)
-            .query({ captchaResponse: 'null' })
+            .query({ captchaResponse: 'null', captchaType: '' })
             .set('Cookie', ['jwtCp=mockJwt'])
 
           expect(response.status).toBe(401)
