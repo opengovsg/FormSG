@@ -7,11 +7,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import get from 'lodash/get'
 import { useIntervalWhen } from 'rooks'
 
-import { featureFlags } from '~shared/constants'
-
 import { useScript } from '~hooks/useScript'
-
-import { useIsFeatureEnabled } from '~features/feature-flags/queries'
 
 type RecaptchaBaseConfig = {
   sitekey?: string

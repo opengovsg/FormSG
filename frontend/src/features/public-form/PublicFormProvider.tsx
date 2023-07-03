@@ -616,6 +616,7 @@ export const PublicFormProvider = ({
       enableTurnstileFeatureFlag,
       getTurnstileResponse,
       getCaptchaResponse,
+      captchaType,
       showErrorToast,
       submitEmailModeFormMutation,
       submitStorageModeFormMutation,
