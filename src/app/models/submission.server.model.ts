@@ -259,8 +259,8 @@ EncryptSubmissionSchema.statics.findSingleMetadata = function (
   const pageResults: Promise<MetadataAggregateResult[]> = this.aggregate([
     {
       $match: {
-        form: formId,
-        _id: submissionId,
+        form: mongoose.Types.ObjectId(formId),
+        _id: mongoose.Types.ObjectId(submissionId),
         submissionType: SubmissionType.Encrypt,
       },
     },

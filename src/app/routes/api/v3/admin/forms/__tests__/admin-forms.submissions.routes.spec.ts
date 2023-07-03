@@ -1254,6 +1254,7 @@ describe('admin-form.submissions.routes', () => {
         number: 11 - index,
         // Loosen refNo checks due to non-deterministic aggregation query.
         // Just expect refNo is one of the possible ones.
+        payments: null,
         refNo: expect.toBeOneOf(createdSubmissionIds),
         submissionTime: expect.any(String),
       }))
@@ -1319,6 +1320,7 @@ describe('admin-form.submissions.routes', () => {
         metadata: [
           {
             number: 1,
+            payments: null,
             refNo: String(submissions[1]._id),
             submissionTime: expect.any(String),
           },
