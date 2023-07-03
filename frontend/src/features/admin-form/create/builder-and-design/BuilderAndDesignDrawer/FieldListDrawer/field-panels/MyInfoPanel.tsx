@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { Droppable } from 'react-beautiful-dnd'
+import { Link as ReactLink } from 'react-router-dom'
 import { Box, Text } from '@chakra-ui/react'
 
 import { AdminFormDto, FormAuthType, FormResponseMode } from '~shared/types'
@@ -139,7 +140,13 @@ const MyInfoText = ({
 
   if (isMyInfoDisabled) {
     return (
-      <Text>Enable MyInfo in the Settings tab to access these fields.</Text>
+      <Text>
+        Enable MyInfo in the{' '}
+        <Link as={ReactLink} to={`settings/singpass`}>
+          Settings
+        </Link>{' '}
+        tab to access these fields.
+      </Text>
     )
   }
 
