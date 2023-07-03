@@ -69,22 +69,6 @@ describe('Form Field Schema', () => {
         expect(fieldObj).toHaveProperty('allowedEmailDomains', ['@example.com'])
       })
 
-      it('should allow email field with isVerifiable false and hasAllowedEmailDomains false with empty allowedEmailDomains', async () => {
-        // Arrange
-        const field = await createAndReturnFormField({
-          fieldType: BasicField.Email,
-          isVerifiable: false,
-          hasAllowedEmailDomains: false,
-          allowedEmailDomains: [],
-        })
-
-        // Assert
-        const fieldObj = field.toObject()
-        expect(fieldObj).toHaveProperty('isVerifiable', false)
-        expect(fieldObj).toHaveProperty('hasAllowedEmailDomains', false)
-        expect(fieldObj).toHaveProperty('allowedEmailDomains', [])
-      })
-
       it('should throw an error for email field with isVerifiable true and hasAllowedEmailDomains false with non-empty allowedEmailDomains', async () => {
         // Arrange
         const createField = async () => {
@@ -103,6 +87,40 @@ describe('Form Field Schema', () => {
         )
       })
 
+      it('should throw an error for email field with isVerifiable true and hasAllowedEmailDomains true with empty allowedEmailDomains', async () => {
+        // Arrange
+        const createField = async () => {
+          const field = await createAndReturnFormField({
+            fieldType: BasicField.Email,
+            isVerifiable: true,
+            hasAllowedEmailDomains: true,
+            allowedEmailDomains: [],
+          })
+          return field
+        }
+
+        // Assert
+        await expect(createField).rejects.toThrow(
+          'List of allowed email domains should not be empty if restrict email domains is enabled',
+        )
+      })
+
+      it('should allow email field with isVerifiable false and hasAllowedEmailDomains false with empty allowedEmailDomains', async () => {
+        // Arrange
+        const field = await createAndReturnFormField({
+          fieldType: BasicField.Email,
+          isVerifiable: false,
+          hasAllowedEmailDomains: false,
+          allowedEmailDomains: [],
+        })
+
+        // Assert
+        const fieldObj = field.toObject()
+        expect(fieldObj).toHaveProperty('isVerifiable', false)
+        expect(fieldObj).toHaveProperty('hasAllowedEmailDomains', false)
+        expect(fieldObj).toHaveProperty('allowedEmailDomains', [])
+      })
+
       it('should throw an error for email field with isVerifiable false and hasAllowedEmailDomains false with non-empty allowedEmailDomains', async () => {
         // Arrange
         const createField = async () => {
@@ -119,6 +137,40 @@ describe('Form Field Schema', () => {
         await expect(createField).rejects.toThrow(
           'List of allowed email domains should be empty if restrict email domains is disabled',
         )
+      })
+
+      it('should throw an error for email field with isVerifiable false and hasAllowedEmailDomains true with empty allowedEmailDomains', async () => {
+        // Arrange
+        const createField = async () => {
+          const field = await createAndReturnFormField({
+            fieldType: BasicField.Email,
+            isVerifiable: false,
+            hasAllowedEmailDomains: true,
+            allowedEmailDomains: [],
+          })
+          return field
+        }
+
+        // Assert
+        await expect(createField).rejects.toThrow(
+          'List of allowed email domains should not be empty if restrict email domains is enabled',
+        )
+      })
+
+      it('should allow email field with isVerifiable false and hasAllowedEmailDomains true with non-empty allowedEmailDomains', async () => {
+        // Arrange
+        const field = await createAndReturnFormField({
+          fieldType: BasicField.Email,
+          isVerifiable: false,
+          hasAllowedEmailDomains: true,
+          allowedEmailDomains: ['@example.com'],
+        })
+
+        // Assert
+        const fieldObj = field.toObject()
+        expect(fieldObj).toHaveProperty('isVerifiable', false)
+        expect(fieldObj).toHaveProperty('hasAllowedEmailDomains', true)
+        expect(fieldObj).toHaveProperty('allowedEmailDomains', ['@example.com'])
       })
     })
   }),

@@ -79,6 +79,20 @@ const createEmailFieldSchema = (): Schema<IEmailFieldSchema> => {
           message:
             'List of allowed email domains should be empty if restrict email domains is disabled',
         },
+        // Check that allowedEmailDomains is not empty if hasAllowedEmailDomains is true
+        {
+          validator: function (this: IEmailFieldSchema): boolean {
+            if (
+              this.hasAllowedEmailDomains &&
+              this.allowedEmailDomains.length === 0
+            ) {
+              return false
+            }
+            return true
+          },
+          message:
+            'List of allowed email domains should not be empty if restrict email domains is enabled',
+        },
       ],
     },
   })
