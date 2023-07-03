@@ -6,19 +6,24 @@ Add PaymentType.Fixed to all forms with existing payments_field object
 
 // Batch 1 2022
 const queriesModifiedIn2022 = {
-  payments_field: { $exists: true },
-  lastModified: { $gte: new ISODate('2022-01-01T00:00:00.000+0000') },
-  lastModified: { $lt: new ISODate('2023-01-01T00:00:00.000+0000') },
+  lastModified: {
+    $gte: new ISODate('2022-01-01T00:00:00.000+0000'),
+    $lt: new ISODate('2023-01-01T00:00:00.000+0000'),
+  },
 }
 
 const queriesModifiedIn2023Q1 = {
-  lastModified: { $gte: new ISODate('2023-01-01T00:00:00.000+0000') },
-  lastModified: { $lt: new ISODate('2023-04-01T00:00:00.000+0000') },
+  lastModified: {
+    $gte: new ISODate('2023-01-01T00:00:00.000+0000'),
+    $lt: new ISODate('2023-04-01T00:00:00.000+0000'),
+  },
 }
 
 const queriesModifiedIn2023AprMay = {
-  lastModified: { $gte: new ISODate('2023-04-01T00:00:00.000+0000') },
-  lastModified: { $lt: new ISODate('2023-06-01T00:00:00.000+0000') },
+  lastModified: {
+    $gte: new ISODate('2023-04-01T00:00:00.000+0000'),
+    $lt: new ISODate('2023-06-01T00:00:00.000+0000'),
+  },
 }
 
 const queriesModifiedIn2023JunOnwards = {
