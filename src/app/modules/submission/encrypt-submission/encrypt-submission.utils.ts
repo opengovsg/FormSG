@@ -2,6 +2,9 @@ import { StatusCodes } from 'http-status-codes'
 import moment from 'moment-timezone'
 
 import {
+  FormPaymentsField,
+  PaymentFieldsDto,
+  PaymentType,
   StorageModeSubmissionDto,
   SubmissionPaymentDto,
   SubmissionType,
@@ -258,5 +261,30 @@ export const createEncryptedSubmissionDto = (
     attachmentMetadata: attachmentPresignedUrls,
     payment,
     version: submissionData.version,
+  }
+}
+
+/**
+ * Retrieves payment amount by payment_type
+ * @param formPaymentFields data from the form
+ * @param incomingSubmissionPaymentFields data from responder's submission
+ */
+export const getPaymentAmount = (
+  formPaymentFields: FormPaymentsField, // fields that are from document.form
+  incomingSubmissionPaymentFields?: PaymentFieldsDto, // fields that are from incoming submission
+): number | undefined => {
+  // legacy payment forms may not have a payment type
+  const { payment_type } = formPaymentFields
+  switch (payment_type) {
+    case PaymentType.Fixed:
+      return formPaymentFields.amount_cents
+    case PaymentType.Variable:
+      return incomingSubmissionPaymentFields?.amount_cents
+
+    default: {
+      // Force TS to emit an error if the cases above are not exhaustive
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const exhaustiveCheck: never = payment_type
+    }
   }
 }

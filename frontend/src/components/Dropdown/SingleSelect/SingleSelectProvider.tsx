@@ -38,6 +38,7 @@ export interface SingleSelectProviderProps<
   children: React.ReactNode
   /** Color scheme of component */
   colorScheme?: ThemeColorScheme
+  fullWidth?: boolean
 }
 export const SingleSelectProvider = ({
   items: rawItems,
@@ -59,6 +60,7 @@ export const SingleSelectProvider = ({
   inputAria,
   colorScheme,
   comboboxProps = {},
+  fullWidth = false,
 }: SingleSelectProviderProps): JSX.Element => {
   const { items, getItemByValue } = useItems({ rawItems })
   const [isFocused, setIsFocused] = useState(false)
@@ -223,7 +225,8 @@ export const SingleSelectProvider = ({
   })
 
   const virtualListHeight = useMemo(() => {
-    const totalHeight = filteredItems.length * 48
+    const itemHeight = 48
+    const totalHeight = filteredItems.length * itemHeight
     // If the total height is less than the max height, just return the total height.
     // Otherwise, return the max height.
     return Math.min(totalHeight, VIRTUAL_LIST_MAX_HEIGHT)
@@ -264,6 +267,7 @@ export const SingleSelectProvider = ({
         inputRef,
         virtualListRef,
         virtualListHeight,
+        fullWidth,
       }}
     >
       {children}
