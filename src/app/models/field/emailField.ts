@@ -57,12 +57,29 @@ const createEmailFieldSchema = (): Schema<IEmailFieldSchema> => {
       ],
       // If allowedEmailDomains is empty, then all email domains should be allowed.
       default: [],
-      validate: {
-        validator: (emailDomains: string[]): boolean => {
-          return validateEmailDomains(emailDomains)
+      validate: [
+        // Check for duplicate or invalid email domains
+        {
+          validator: (emailDomains: string[]): boolean => {
+            return validateEmailDomains(emailDomains)
+          },
+          message: 'There are one or more duplicate or invalid email domains.',
         },
-        message: 'There are one or more duplicate or invalid email domains.',
-      },
+        // Check that allowedEmailDomains is empty if hasAllowedEmailDomains is false
+        {
+          validator: function (this: IEmailFieldSchema): boolean {
+            if (
+              !this.hasAllowedEmailDomains &&
+              this.allowedEmailDomains.length !== 0
+            ) {
+              return false
+            }
+            return true
+          },
+          message:
+            'List of allowed email domains should be empty if restrict email domains is disabled',
+        },
+      ],
     },
   })
 
