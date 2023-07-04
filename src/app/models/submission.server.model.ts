@@ -295,27 +295,7 @@ EncryptSubmissionSchema.statics.findSingleMetadata = function (
     const paymentMeta = result.payments?.[0]
 
     // Build submissionMetadata object.
-    const metadata: StorageModeSubmissionMetadata = {
-      number: 1,
-      refNo: result._id,
-      submissionTime: moment(result.created)
-        .tz('Asia/Singapore')
-        .format('Do MMM YYYY, h:mm:ss a'),
-      payments: paymentMeta
-        ? {
-            payoutDate: paymentMeta.payout
-              ? moment(paymentMeta.payout.payoutDate)
-                  .tz('Asia/Singapore')
-                  .format('ddd, D MMM YYYY')
-              : null,
-
-            paymentAmt: paymentMeta.amount,
-            transactionFee:
-              paymentMeta.completedPayment?.transactionFee ?? null,
-            email: paymentMeta.email,
-          }
-        : null,
-    }
+    const metadata = buildSubmissionMetadata(result, 1, paymentMeta)
 
     return metadata
   })
@@ -385,32 +365,16 @@ EncryptSubmissionSchema.statics.findAllMetadataByFormId = function (
       submissionType: SubmissionType.Encrypt,
     }).exec() ?? 0
 
-  return Promise.all([pageResults, count]).then(([result, count]) => {
+  return Promise.all([pageResults, count]).then(([results, count]) => {
     let currentNumber = count - numToSkip
 
-    const metadata = result.map((data) => {
-      const paymentMeta = data.payments?.[0]
-      const metadataEntry: StorageModeSubmissionMetadata = {
-        number: currentNumber,
-        refNo: data._id,
-        submissionTime: moment(data.created)
-          .tz('Asia/Singapore')
-          .format('Do MMM YYYY, h:mm:ss a'),
-        payments: paymentMeta
-          ? {
-              payoutDate: paymentMeta.payout
-                ? moment(paymentMeta.payout.payoutDate)
-                    .tz('Asia/Singapore')
-                    .format('ddd, D MMM YYYY')
-                : null,
-
-              paymentAmt: paymentMeta.amount,
-              transactionFee:
-                paymentMeta.completedPayment?.transactionFee ?? null,
-              email: paymentMeta.email,
-            }
-          : null,
-      }
+    const metadata = results.map((result) => {
+      const paymentMeta = result.payments?.[0]
+      const metadataEntry = buildSubmissionMetadata(
+        result,
+        currentNumber,
+        paymentMeta,
+      )
 
       currentNumber--
       return metadataEntry
@@ -510,6 +474,33 @@ export const getEncryptSubmissionModel = (
   return db.model<IEncryptedSubmissionSchema, IEncryptSubmissionModel>(
     SubmissionType.Encrypt,
   )
+}
+
+const buildSubmissionMetadata = (
+  result: MetadataAggregateResult,
+  currentNumber: number,
+  paymentMeta?: PaymentAggregates,
+): StorageModeSubmissionMetadata => {
+  return {
+    number: currentNumber,
+    refNo: result._id,
+    submissionTime: moment(result.created)
+      .tz('Asia/Singapore')
+      .format('Do MMM YYYY, h:mm:ss a'),
+    payments: paymentMeta
+      ? {
+          payoutDate: paymentMeta.payout
+            ? moment(paymentMeta.payout.payoutDate)
+                .tz('Asia/Singapore')
+                .format('ddd, D MMM YYYY')
+            : null,
+
+          paymentAmt: paymentMeta.amount,
+          transactionFee: paymentMeta.completedPayment?.transactionFee ?? null,
+          email: paymentMeta.email,
+        }
+      : null,
+  }
 }
 
 export default getSubmissionModel
