@@ -2,12 +2,23 @@ import { useCallback } from 'react'
 import { useMutation, useQueryClient } from 'react-query'
 import { useParams } from 'react-router-dom'
 
-import { AdminFormDto } from '~shared/types/form'
+import {
+  AdminFormDto,
+  AdminStorageFormDto,
+  PaymentsUpdateDto,
+} from '~shared/types/form'
 
 import { useToast } from '~hooks/useToast'
 
+import { updateFormPayments } from '~features/admin-form/common/AdminFormPageService'
 import { adminFormKeys } from '~features/admin-form/common/queries'
 
+import {
+  PaymentState,
+  setToInactiveSelector as setPaymentToInactiveSelector,
+  stateSelector,
+  usePaymentStore,
+} from '../BuilderAndDesignDrawer/FieldListDrawer/field-panels/usePaymentStore'
 import { deleteSingleFormField } from '../UpdateFormFieldService'
 import {
   FieldBuilderState,
@@ -29,6 +40,16 @@ export const useDeleteFormField = () => {
       (state) => ({
         stateData: stateDataSelector(state),
         setToInactive: setToInactiveSelector(state),
+      }),
+      [],
+    ),
+  )
+
+  const { paymentState, setPaymentToInactive } = usePaymentStore(
+    useCallback(
+      (state) => ({
+        paymentState: stateSelector(state),
+        setPaymentToInactive: setPaymentToInactiveSelector(state),
       }),
       [],
     ),
@@ -85,6 +106,34 @@ export const useDeleteFormField = () => {
     [toast],
   )
 
+  const deletePaymentFieldMutation = useMutation(
+    () => updateFormPayments(formId, { enabled: false } as PaymentsUpdateDto),
+    {
+      onSuccess: (newData) => {
+        toast.closeAll()
+        if (paymentState !== PaymentState.EditingPayment) {
+          toast({
+            status: 'warning',
+            description:
+              'Something went wrong when deleting your field. Please refresh and try again.',
+          })
+          return
+        }
+        queryClient.setQueryData<AdminStorageFormDto | undefined>(
+          adminFormKeys.id(formId),
+          (oldData) => {
+            return oldData ? { ...oldData, payments_field: newData } : undefined
+          },
+        )
+        toast({
+          description: 'The payment was deleted.',
+        })
+        setPaymentToInactive()
+      },
+      onError: handleError,
+    },
+  )
+
   return {
     deleteFieldMutation: useMutation(
       (fieldId: string) =>
@@ -97,5 +146,6 @@ export const useDeleteFormField = () => {
         onError: handleError,
       },
     ),
+    deletePaymentFieldMutation,
   }
 }
