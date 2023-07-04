@@ -165,7 +165,11 @@ const PaymentInput = ({ isDisabled }: { isDisabled: boolean }) => {
 
   return (
     <CreatePageDrawerContentContainer>
-      <FormControl isRequired isReadOnly={paymentsMutation.isLoading}>
+      <FormControl
+        isRequired
+        isDisabled={isDisabled}
+        isReadOnly={paymentsMutation.isLoading}
+      >
         <FormLabel>Payment type</FormLabel>
         <Controller
           name={'payment_type'}
@@ -197,6 +201,7 @@ const PaymentInput = ({ isDisabled }: { isDisabled: boolean }) => {
       <FormControl
         isReadOnly={paymentsMutation.isLoading}
         isInvalid={!!errors.description}
+        isDisabled={isDisabled}
         isRequired
       >
         <FormLabel description="This will be reflected on the payment invoice">
@@ -213,6 +218,7 @@ const PaymentInput = ({ isDisabled }: { isDisabled: boolean }) => {
       <FormControl
         isReadOnly={paymentsMutation.isLoading}
         isInvalid={!!errors.description}
+        isDisabled={isDisabled}
         isRequired
       >
         <FormLabel description="This will be reflected on the payment invoice">
@@ -230,7 +236,7 @@ const PaymentInput = ({ isDisabled }: { isDisabled: boolean }) => {
         <VariablePaymentAmountField
           isLoading={paymentsMutation.isLoading}
           errors={errors}
-          isDisabled={false}
+          isDisabled={isDisabled}
           control={control}
           input={clonedWatchedInputs}
         />
@@ -238,7 +244,7 @@ const PaymentInput = ({ isDisabled }: { isDisabled: boolean }) => {
         <FixedPaymentAmountField
           isLoading={paymentsMutation.isLoading}
           errors={errors}
-          isDisabled={false}
+          isDisabled={isDisabled}
           control={control}
           input={clonedWatchedInputs}
         />
