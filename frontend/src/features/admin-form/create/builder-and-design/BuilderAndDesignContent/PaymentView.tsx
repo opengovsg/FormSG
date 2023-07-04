@@ -113,7 +113,7 @@ export const PaymentView = () => {
                 />
               </Box>
               <Collapse in={isActive} style={{ width: '100%' }}>
-                {isActive && (
+                {isActive && paymentDetails.enabled && (
                   <PaymentButtonGroup
                     isMobile={isMobile}
                     handleBuilderClick={handleBuilderClick}
