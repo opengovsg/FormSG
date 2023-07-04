@@ -137,6 +137,7 @@ export const BuilderAndDesignTab = (): JSX.Element => {
   )
 
   const deleteFieldModalDisclosure = useDisclosure()
+  const deletePaymentModalDisclosure = useDisclosure()
 
   return (
     <DragDropContext
@@ -147,6 +148,7 @@ export const BuilderAndDesignTab = (): JSX.Element => {
       <BuilderAndDesignContext.Provider
         value={{
           deleteFieldModalDisclosure,
+          deletePaymentModalDisclosure,
         }}
       >
         <BuilderAndDesignDrawer />
