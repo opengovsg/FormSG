@@ -115,12 +115,14 @@ const insertFormCollectionReqs = async ({
   mailName = 'test',
   shortName = 'govtest',
   flags,
+  betaFlags,
 }: {
   userId?: ObjectID
   mailName?: string
   mailDomain?: string
   shortName?: string
   flags?: { lastSeenFeatureUpdateVersion: number }
+  betaFlags?: IUserSchema['betaFlags']
 } = {}): Promise<{
   agency: AgencyDocument
   user: IUserSchema
@@ -133,7 +135,8 @@ const insertFormCollectionReqs = async ({
     email: `${mailName}@${mailDomain}`,
     _id: userId ?? new ObjectID(),
     agency: agency._id,
-    flags: flags,
+    flags,
+    betaFlags,
   })
 
   return { agency, user }
@@ -189,6 +192,7 @@ const insertEncryptForm = async ({
   mailName = 'test',
   shortName = 'govtest',
   formOptions = {},
+  userBetaFlags,
 }: {
   formId?: ObjectID
   userId?: ObjectID
@@ -196,6 +200,7 @@ const insertEncryptForm = async ({
   mailDomain?: string
   shortName?: string
   formOptions?: Partial<IEncryptedForm>
+  userBetaFlags?: IUserSchema['betaFlags']
 } = {}): Promise<{
   form: IEncryptedFormSchema
   user: IUserSchema
@@ -206,6 +211,7 @@ const insertEncryptForm = async ({
     mailDomain,
     mailName,
     shortName,
+    betaFlags: userBetaFlags,
   })
 
   const EncryptFormModel = getEncryptedFormModel(mongoose)

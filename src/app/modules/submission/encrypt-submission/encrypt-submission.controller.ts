@@ -64,6 +64,7 @@ import {
 } from './encrypt-submission.service'
 import {
   createEncryptedSubmissionDto,
+  getPaymentAmount,
   mapRouteError,
 } from './encrypt-submission.utils'
 import IncomingEncryptSubmission from './IncomingEncryptSubmission.class'
@@ -400,7 +401,8 @@ const submitEncryptModeForm: ControllerHandler<
      * Start of Payment Forms Submission Flow
      */
     // Step 0: Perform validation checks
-    const amount = form.payments_field.amount_cents
+    const amount = getPaymentAmount(form.payments_field, req.body.payments)
+
     if (
       !amount ||
       amount < paymentConfig.minPaymentAmountCents ||
@@ -500,7 +502,7 @@ const submitEncryptModeForm: ControllerHandler<
       automatic_payment_methods: {
         enabled: true,
       },
-      description: form.payments_field.description,
+      description: form.payments_field.name || form.payments_field.description,
       receipt_email: paymentReceiptEmail,
       metadata,
     }

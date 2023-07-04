@@ -14,13 +14,13 @@ import { StoryRouter } from '~utils/storybook'
 
 import { PublicFormProvider } from '~features/public-form/PublicFormProvider'
 
-import { CreatePaymentIntentFailureBlock } from './components/CreatePaymentIntentFailureBlock'
-import {
-  GenericMessageBlock as GenericMessageBlockComponent,
-  PaymentStack,
-} from './stripe/components'
-import { PaymentItemDetailsBlock } from './stripe/components/PaymentItemDetailsBlock'
+import { GenericMessageBlock as GenericMessageBlockComponent } from './stripe/components'
 import { StripeReceiptContainer } from './stripe/StripeReceiptContainer'
+import {
+  CreatePaymentIntentFailureBlock,
+  PaymentItemDetailsBlock,
+  PaymentStack,
+} from './components'
 import { FormPaymentPage } from './FormPaymentPage'
 
 const DEFAULT_MSW_HANDLERS = [
@@ -50,7 +50,10 @@ export default {
 
 const Template: (children: React.ReactElement) => Story = (children) => () =>
   (
-    <PublicFormProvider formId="61540ece3d4a6e50ac0cc6ff">
+    <PublicFormProvider
+      formId="61540ece3d4a6e50ac0cc6ff"
+      startTime={Date.now()}
+    >
       <PaymentStack>{children}</PaymentStack>
     </PublicFormProvider>
   )
@@ -58,6 +61,7 @@ const Template: (children: React.ReactElement) => Story = (children) => () =>
 export const PendingPaymentDetails = Template(
   <PaymentItemDetailsBlock
     paymentItemName="Mock event registration"
+    paymentDescription="Mock event description"
     paymentAmount={1000}
     colorTheme={FormColorTheme.Blue}
   />,

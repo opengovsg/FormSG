@@ -9,18 +9,62 @@ import { itemToValue } from '../utils/itemUtils'
 import { DropdownItem } from './DropdownItem'
 import { useSelectPopover } from './SelectPopover'
 
+const ListItems = () => {
+  const { items } = useSelectContext()
+  return (
+    <>
+      {items.map((item, idx) => {
+        return (
+          <DropdownItem
+            key={`${itemToValue(item)}${idx}`}
+            item={item}
+            index={idx}
+          />
+        )
+      })}
+    </>
+  )
+}
+
+const NothingFoundItem = () => {
+  const { styles, nothingFoundLabel } = useSelectContext()
+  return (
+    <ListItem role="option" sx={styles.emptyItem}>
+      {nothingFoundLabel}
+    </ListItem>
+  )
+}
+
+const RenderIfOpen = ({
+  isOpen,
+  children,
+}: {
+  isOpen: boolean
+  children: JSX.Element
+}) => {
+  if (!isOpen) {
+    return null
+  }
+  return children
+}
+
 export const SelectMenu = (): JSX.Element => {
   const {
     getMenuProps,
     isOpen,
     items,
-    nothingFoundLabel,
     styles,
     virtualListRef,
     virtualListHeight,
+    fullWidth,
   } = useSelectContext()
 
   const { floatingRef, floatingStyles } = useSelectPopover()
+
+  const listSx = {
+    ...styles.list,
+    ...(fullWidth ? { maxH: '100%' } : {}),
+  }
 
   return (
     <FloatingPortal>
@@ -32,30 +76,33 @@ export const SelectMenu = (): JSX.Element => {
           { suppressRefError: true },
         )}
         style={floatingStyles}
-        sx={styles.list}
+        sx={listSx}
       >
-        {isOpen && items.length > 0 && (
-          <Virtuoso
-            ref={virtualListRef}
-            data={items}
-            overscan={VIRTUAL_LIST_OVERSCAN_HEIGHT}
-            style={{ height: virtualListHeight }}
-            itemContent={(index, item) => {
-              return (
-                <DropdownItem
-                  key={`${itemToValue(item)}${index}`}
-                  item={item}
-                  index={index}
-                />
-              )
-            }}
-          />
-        )}
-        {isOpen && items.length === 0 ? (
-          <ListItem role="option" sx={styles.emptyItem}>
-            {nothingFoundLabel}
-          </ListItem>
-        ) : null}
+        <RenderIfOpen isOpen={isOpen}>
+          {items.length > 0 ? (
+            fullWidth ? (
+              <ListItems />
+            ) : (
+              <Virtuoso
+                ref={virtualListRef}
+                data={items}
+                overscan={VIRTUAL_LIST_OVERSCAN_HEIGHT}
+                style={{ height: virtualListHeight }}
+                itemContent={(index, item) => {
+                  return (
+                    <DropdownItem
+                      key={`${itemToValue(item)}${index}`}
+                      item={item}
+                      index={index}
+                    />
+                  )
+                }}
+              />
+            )
+          ) : (
+            <NothingFoundItem />
+          )}
+        </RenderIfOpen>
       </List>
     </FloatingPortal>
   )
