@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useMemo, useRef } from 'react'
 import { RegisterOptions } from 'react-hook-form'
 import { Box, FormControl, useMergeRefs } from '@chakra-ui/react'
 import { extend, pick } from 'lodash'
