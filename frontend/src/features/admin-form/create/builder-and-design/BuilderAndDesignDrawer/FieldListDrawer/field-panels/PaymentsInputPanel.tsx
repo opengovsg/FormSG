@@ -25,7 +25,6 @@ import FormLabel from '~components/FormControl/FormLabel'
 import InlineMessage from '~components/InlineMessage'
 import Input from '~components/Input'
 import MoneyInput from '~components/MoneyInput'
-import Toggle from '~components/Toggle'
 
 import { useMutateFormPage } from '~features/admin-form/common/mutations'
 import { useAdminForm } from '~features/admin-form/common/queries'
@@ -59,7 +58,6 @@ const formatCurrency = new Intl.NumberFormat('en-SG', {
 }).format
 
 type FormPaymentsInput = {
-  enabled: boolean
   description: string
   display_amount: string
 }
@@ -94,7 +92,6 @@ export const PaymentInput = ({ isDisabled }: { isDisabled: boolean }) => {
     formState: { errors, dirtyFields },
     control,
     handleSubmit,
-    trigger,
   } = useForm<FormPaymentsInput>({
     mode: 'onChange',
     defaultValues: {
@@ -137,13 +134,9 @@ export const PaymentInput = ({ isDisabled }: { isDisabled: boolean }) => {
     Object.values(clonedWatchedInputs),
   ])
 
-  const paymentIsEnabled = clonedWatchedInputs.enabled
-
   const amountValidation: RegisterOptions<FormPaymentsInput, 'display_amount'> =
     {
       validate: (val) => {
-        if (!paymentIsEnabled) return true
-
         // Validate that it is a money value.
         // Regex allows leading and trailing spaces, max 2dp
         const validateMoney = /^\s*(\d+)(\.\d{0,2})?\s*$/.test(val ?? '')
@@ -187,7 +180,7 @@ export const PaymentInput = ({ isDisabled }: { isDisabled: boolean }) => {
     setisAdminFeedbackEligible(true)
 
     return paymentsMutation.mutate(
-      { ...paymentsData, amount_cents: paymentAmountCents },
+      { ...paymentsData, amount_cents: paymentAmountCents, enabled: true },
       {
         onSuccess: () => {
           setToInactive()
@@ -201,22 +194,7 @@ export const PaymentInput = ({ isDisabled }: { isDisabled: boolean }) => {
     <CreatePageDrawerContentContainer>
       <FormControl
         isReadOnly={paymentsMutation.isLoading}
-        isDisabled={isDisabled}
-      >
-        <Toggle
-          {...register('enabled', {
-            // Retrigger validation to remove errors when payment is toggled from enabled -> disabled
-            onChange: () => paymentIsEnabled && trigger(),
-          })}
-          description="Payment field will not be shown when this is toggled off. Respondents can still submit the form."
-          label="Enable payment"
-        />
-      </FormControl>
-
-      <FormControl
-        isReadOnly={paymentsMutation.isLoading}
         isInvalid={!!errors.description}
-        isDisabled={!paymentIsEnabled}
         isRequired
       >
         <FormLabel description="This will be reflected on the payment invoice">
@@ -225,7 +203,7 @@ export const PaymentInput = ({ isDisabled }: { isDisabled: boolean }) => {
         <Input
           placeholder="Product/service name"
           {...register('description', {
-            required: paymentIsEnabled && 'Please enter a payment description',
+            required: 'Please enter a payment description',
           })}
         />
         <FormErrorMessage>{errors.description?.message}</FormErrorMessage>
@@ -234,7 +212,6 @@ export const PaymentInput = ({ isDisabled }: { isDisabled: boolean }) => {
       <FormControl
         isReadOnly={paymentsMutation.isLoading}
         isInvalid={!!errors.display_amount}
-        isDisabled={!paymentIsEnabled}
         isRequired
       >
         <FormLabel isRequired description="Amount should include GST">
