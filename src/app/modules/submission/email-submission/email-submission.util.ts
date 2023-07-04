@@ -28,6 +28,11 @@ import {
   MailSendError,
 } from '../../../services/mail/mail.errors'
 import {
+  MissingTurnstileError,
+  TurnstileConnectionError,
+  VerifyTurnstileError,
+} from '../../../services/turnstile/turnstile.errors'
+import {
   isProcessedCheckboxResponse,
   isProcessedTableResponse,
 } from '../../../utils/field-validation/field-validation.guards'
@@ -424,6 +429,24 @@ export const mapRouteError: MapRouteError = (error) => {
       return {
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage: 'Captcha was missing. Please refresh and submit again.',
+      }
+    case TurnstileConnectionError:
+      return {
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        errorMessage:
+          'Error connecting to Turnstile server . Please submit again in a few minutes.',
+      }
+    case VerifyTurnstileError:
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage:
+          'Incorrect Turnstile parameters. Please refresh and submit again.',
+      }
+    case MissingTurnstileError:
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage:
+          'Missing Turnstile challenge. Please refresh and submit again.',
       }
     case SgidMissingJwtError:
     case SgidVerifyJwtError:

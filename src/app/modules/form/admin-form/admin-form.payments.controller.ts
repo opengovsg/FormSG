@@ -10,7 +10,9 @@ import {
   ErrorDto,
   PaymentChannel,
   PaymentsUpdateDto,
+  PaymentType,
 } from '../../../../../shared/types'
+import { paymentConfig } from '../../../config/features/payment.config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { createReqMeta } from '../../../utils/request'
 import { getFormAfterPermissionChecks } from '../../auth/auth.service'
@@ -27,7 +29,7 @@ import { getPopulatedUserById } from '../../user/user.service'
 import * as UserService from '../../user/user.service'
 
 import { PaymentChannelNotFoundError } from './admin-form.errors'
-import * as AdminFormService from './admin-form.service'
+import * as AdminFormPaymentService from './admin-form.payments.service'
 import { PermissionLevel } from './admin-form.types'
 import { mapRouteError, verifyUserBetaflag } from './admin-form.utils'
 
@@ -234,7 +236,7 @@ export const handleValidatePaymentAccount: ControllerHandler<{
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 when database error occurs
  */
-export const _handleUpdatePayments: ControllerHandler<
+const _handleUpdatePayments: ControllerHandler<
   { formId: string },
   IEncryptedFormDocument['payments_field'] | ErrorDto,
   PaymentsUpdateDto
@@ -293,7 +295,7 @@ export const _handleUpdatePayments: ControllerHandler<
           : ok(form),
       )
       // Step 4: User has permissions, proceed to allow updating of start page
-      .andThen(() => AdminFormService.updatePayments(formId, req.body))
+      .andThen(() => AdminFormPaymentService.updatePayments(formId, req.body))
       .map((updatedPayments) =>
         res.status(StatusCodes.OK).json(updatedPayments),
       )
@@ -309,25 +311,70 @@ export const _handleUpdatePayments: ControllerHandler<
   )
 }
 
+export const handleUpdatePaymentsForTest = _handleUpdatePayments
+
+const JoiInt = Joi.number().integer()
+const updatePaymentsValidator = celebrate({
+  [Segments.BODY]: {
+    enabled: Joi.boolean().required(),
+    payment_type: Joi.string()
+      .allow(...Object.values(PaymentType))
+      .required(),
+    amount_cents: Joi.when('enabled', {
+      is: Joi.equal(true),
+      then: Joi.when('payment_type', {
+        is: Joi.equal(PaymentType.Fixed),
+        then: JoiInt.min(paymentConfig.minPaymentAmountCents)
+          .max(paymentConfig.maxPaymentAmountCents)
+          .required(),
+        otherwise: JoiInt,
+      }),
+      otherwise: JoiInt,
+    }),
+
+    min_amount: Joi.when('enabled', {
+      is: Joi.equal(true),
+      then: Joi.when('payment_type', {
+        is: Joi.equal(PaymentType.Variable),
+        then: JoiInt.positive()
+          .min(paymentConfig.minPaymentAmountCents)
+          .required(),
+        otherwise: JoiInt,
+      }),
+      otherwise: JoiInt,
+    }),
+
+    max_amount: Joi.when('enabled', {
+      is: Joi.equal(true),
+      then: Joi.when('payment_type', {
+        is: Joi.equal(PaymentType.Variable),
+        then: JoiInt.positive()
+          .min(Joi.ref('min_amount'))
+          .max(paymentConfig.maxPaymentAmountCents)
+          .required(),
+        otherwise: JoiInt,
+      }),
+      otherwise: JoiInt,
+    }),
+
+    description: Joi.when('enabled', {
+      is: Joi.equal(true),
+      then: Joi.string().trim().required(),
+      otherwise: Joi.string().trim().allow(''),
+    }),
+    name: Joi.when('enabled', {
+      is: Joi.equal(true),
+      then: Joi.string().trim().required(),
+      otherwise: Joi.string().trim().allow(''),
+    }),
+  },
+})
+
 /**
  * Handler for PUT /:formId/payment
  */
 export const handleUpdatePayments = [
-  celebrate({
-    [Segments.BODY]: {
-      enabled: Joi.boolean().required(),
-      amount_cents: Joi.when('enabled', {
-        is: Joi.equal(true),
-        then: Joi.number().integer().positive().required(),
-        otherwise: Joi.number().integer(),
-      }),
-      description: Joi.when('enabled', {
-        is: Joi.equal(true),
-        then: Joi.string().required(),
-        otherwise: Joi.string().allow(''),
-      }),
-    },
-  }),
+  updatePaymentsValidator,
   _handleUpdatePayments,
 ] as ControllerHandler[]
 
@@ -372,7 +419,9 @@ export const handleGetPaymentGuideLink: ControllerHandler = async (
       )
       // Step 3: User has permissions, proceed to get payment guide link
       .map(() =>
-        res.status(StatusCodes.OK).json(AdminFormService.getPaymentGuideLink()),
+        res
+          .status(StatusCodes.OK)
+          .json(AdminFormPaymentService.getPaymentGuideLink()),
       )
       .mapErr((error) => {
         logger.error({
