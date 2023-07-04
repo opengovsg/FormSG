@@ -12,7 +12,7 @@ import {
 } from '../../constants/form'
 import { DateString } from '../generic'
 import { FormLogic, LogicDto } from './form_logic'
-import { PaymentChannel } from '../payment'
+import { PaymentChannel, PaymentType } from '../payment'
 
 export type FormId = Opaque<string, 'FormId'>
 
@@ -76,11 +76,30 @@ export type FormPaymentsChannel = {
   publishable_key: string
 }
 
-export type FormPaymentsField = {
-  enabled: boolean
+export interface PaymentTypeBase {
+  payment_type: PaymentType
+
   amount_cents?: number
-  description?: string
+  min_amount?: number
+  max_amount?: number
 }
+interface VariablePaymentsField extends PaymentTypeBase {
+  payment_type: PaymentType.Variable
+  min_amount: number
+  max_amount: number
+}
+
+interface FixedPaymentField extends PaymentTypeBase {
+  payment_type: PaymentType.Fixed
+  amount_cents: number
+}
+
+export type FormPaymentsField =
+  | {
+      enabled: boolean
+      description?: string
+      name?: string
+    } & (VariablePaymentsField | FixedPaymentField)
 
 export type FormBusinessField = {
   address?: string

@@ -1,5 +1,6 @@
 import { ok, okAsync, ResultAsync } from 'neverthrow'
 
+import { featureFlags } from '../../../../../shared/constants'
 import {
   FormAuthType,
   SubmissionErrorDto,
@@ -11,9 +12,12 @@ import { createLoggerWithLabel } from '../../../config/logger'
 import * as CaptchaMiddleware from '../../../services/captcha/captcha.middleware'
 import * as CaptchaService from '../../../services/captcha/captcha.service'
 import MailService from '../../../services/mail/mail.service'
+import * as TurnstileMiddleware from '../../../services/turnstile/turnstile.middleware'
+import * as TurnstileService from '../../../services/turnstile/turnstile.service'
 import { createReqMeta, getRequestIp } from '../../../utils/request'
 import { ControllerHandler } from '../../core/core.types'
 import { setFormTags } from '../../datadog/datadog.utils'
+import * as FeatureFlagService from '../../feature-flags/feature-flags.service'
 import * as FormService from '../../form/form.service'
 import {
   MYINFO_LOGIN_COOKIE_NAME,
@@ -70,6 +74,23 @@ const submitEmailModeForm: ControllerHandler<
     formId,
   }
 
+  const featureFlagsListResult = await FeatureFlagService.getEnabledFlags()
+  // Feature flag to control turnstile captcha rollout
+  // defaults to false
+  // todo: remove after full rollout
+  let enableTurnstileFeatureFlag = false
+  if (featureFlagsListResult.isErr()) {
+    logger.error({
+      message: 'Error occurred whilst retrieving enabled feature flags',
+      meta: logMeta,
+      error: featureFlagsListResult.error,
+    })
+  } else {
+    enableTurnstileFeatureFlag = featureFlagsListResult.value.includes(
+      featureFlags.turnstile,
+    )
+  }
+
   return (
     // Retrieve form
     FormService.retrieveFullFormById(formId)
@@ -112,19 +133,35 @@ const submitEmailModeForm: ControllerHandler<
       .andThen((form) => {
         // Check the captcha
         if (form.hasCaptcha) {
-          return CaptchaService.verifyCaptchaResponse(
-            req.query.captchaResponse,
-            getRequestIp(req),
-          )
-            .map(() => form)
-            .mapErr((error) => {
-              logger.error({
-                message: 'Error while verifying captcha',
-                meta: logMeta,
-                error,
+          if (enableTurnstileFeatureFlag) {
+            return TurnstileService.verifyTurnstileResponse(
+              req.query.captchaResponse,
+              getRequestIp(req),
+            )
+              .map(() => form)
+              .mapErr((error) => {
+                logger.error({
+                  message: 'Error while verifying turnstile captcha',
+                  meta: logMeta,
+                  error,
+                })
+                return error
               })
-              return error
-            })
+          } else {
+            return CaptchaService.verifyCaptchaResponse(
+              req.query.captchaResponse,
+              getRequestIp(req),
+            )
+              .map(() => form)
+              .mapErr((error) => {
+                logger.error({
+                  message: 'Error while verifying captcha',
+                  meta: logMeta,
+                  error,
+                })
+                return error
+              })
+          }
         }
         return okAsync(form) as ResultAsync<IPopulatedEmailForm, never>
       })
@@ -418,6 +455,7 @@ const submitEmailModeForm: ControllerHandler<
 
 export const handleEmailSubmission = [
   CaptchaMiddleware.validateCaptchaParams,
+  TurnstileMiddleware.validateTurnstileParams,
   EmailSubmissionMiddleware.receiveEmailSubmission,
   EmailSubmissionMiddleware.validateResponseParams,
   submitEmailModeForm,

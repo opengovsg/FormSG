@@ -17,6 +17,11 @@ export enum PaymentChannel {
   Stripe = 'Stripe',
   // for extensibility to future payment options
 }
+export enum PaymentType {
+  Fixed = 'Fixed',
+  Variable = 'Variable',
+  // Products = 'Products'
+}
 
 export type CompletedPaymentMeta = {
   paymentDate: Date
