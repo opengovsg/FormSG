@@ -1,9 +1,13 @@
 import { ObjectId } from 'bson-ext'
 import moment from 'moment-timezone'
+import { FormPaymentsField, PaymentType } from 'shared/types'
 
 import { SubmissionData } from 'src/types'
 
-import { createEncryptedSubmissionDto } from '../encrypt-submission.utils'
+import {
+  createEncryptedSubmissionDto,
+  getPaymentAmount,
+} from '../encrypt-submission.utils'
 
 describe('encrypt-submission.utils', () => {
   describe('createEncryptedSubmissionDto', () => {
@@ -36,6 +40,36 @@ describe('encrypt-submission.utils', () => {
         verified: submissionData.verifiedContent,
         attachmentMetadata: attachmentPresignedUrls,
       })
+    })
+  })
+  describe('getPaymentAmount', () => {
+    it('should return amount_cents for Fixed Payment Type', () => {
+      const expectedAmountCents = 100
+      const fixedPaymentData = {
+        payment_type: PaymentType.Fixed,
+        amount_cents: expectedAmountCents,
+      } as FormPaymentsField
+
+      const incomingPaymentData = {
+        amount_cents: -1,
+      }
+      const result = getPaymentAmount(fixedPaymentData, incomingPaymentData)
+
+      expect(result).toEqual(expectedAmountCents)
+    })
+    it('should return amount_cents for Variable Payment Type', () => {
+      const expectedAmountCents = 100
+      const fixedPaymentData = {
+        payment_type: PaymentType.Variable,
+        amount_cents: -1,
+      } as FormPaymentsField
+
+      const incomingPaymentData = {
+        amount_cents: expectedAmountCents,
+      }
+      const result = getPaymentAmount(fixedPaymentData, incomingPaymentData)
+
+      expect(result).toEqual(expectedAmountCents)
     })
   })
 })

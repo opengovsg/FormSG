@@ -1,20 +1,16 @@
-import { Box, Text } from '@chakra-ui/react'
-
-import { FormColorTheme } from '~shared/types'
+import { Box } from '@chakra-ui/react'
 
 import { centsToDollars } from '~utils/payments'
 
-export interface PaymentItemDetailsBlockProps {
-  paymentItemName: string | undefined
-  colorTheme: FormColorTheme
-  paymentAmount: number | undefined
-}
+import PaymentItemNameDescription from './PaymentItemNameDescription'
+import { FixedItemDetailProps } from './types'
 
 export const PaymentItemDetailsBlock = ({
   paymentItemName,
+  paymentDescription,
   colorTheme,
   paymentAmount,
-}: PaymentItemDetailsBlockProps): JSX.Element => {
+}: FixedItemDetailProps): JSX.Element => {
   return (
     <Box
       backgroundColor={`theme-${colorTheme}.100`}
@@ -23,9 +19,10 @@ export const PaymentItemDetailsBlock = ({
       borderRadius="4px"
       p="0.7rem"
     >
-      <Text textStyle="body-1" mb="0.75rem">
-        {paymentItemName}
-      </Text>
+      <PaymentItemNameDescription
+        paymentDescription={paymentDescription}
+        paymentItemName={paymentItemName}
+      />
       <Box as="h2" textStyle="h2">
         S${centsToDollars(paymentAmount ?? 0)}
       </Box>

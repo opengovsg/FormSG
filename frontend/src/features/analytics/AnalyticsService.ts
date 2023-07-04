@@ -66,6 +66,13 @@ export const trackReCaptchaOnError = (form: PublicFormDto) => {
 }
 
 /**
+ * Logs client form Cloudflare Turnstile onError.
+ */
+export const trackTurnstileOnError = (form: PublicFormDto) => {
+  return trackPublicFormEvent('Turnstile connection failure', form)
+}
+
+/**
  * Logs the start of a storage mode responses download
  * @param adminForm The storage mode form
  * @param numWorkers The number of decryption workers
