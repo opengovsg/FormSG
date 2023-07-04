@@ -17,6 +17,7 @@ import {
   PaymentType,
 } from '~shared/types'
 
+import { ADMINFORM_SETTINGS_PAYMENTS_SUBROUTE } from '~constants/routes'
 import { ADMIN_FEEDBACK_SESSION_KEY } from '~constants/sessionStorage'
 import { useSessionStorage } from '~hooks/useSessionStorage'
 import { centsToDollars, dollarsToCents } from '~utils/payments'
@@ -313,7 +314,7 @@ export const PaymentsInputPanel = (): JSX.Element | null => {
   ) : !isStripeConnected ? (
     <Text>
       Connect your Stripe account in{' '}
-      <Link as={ReactLink} to={`settings/payments`}>
+      <Link as={ReactLink} to={ADMINFORM_SETTINGS_PAYMENTS_SUBROUTE}>
         Settings
       </Link>{' '}
       to add payment field.
