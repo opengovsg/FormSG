@@ -6,6 +6,7 @@ import { Box, Text } from '@chakra-ui/react'
 import { AdminFormDto, FormAuthType, FormResponseMode } from '~shared/types'
 
 import { GUIDE_EMAIL_MODE } from '~constants/links'
+import { ADMINFORM_SETTINGS_SINGPASS_SUBROUTE } from '~constants/routes'
 import InlineMessage from '~components/InlineMessage'
 import Link from '~components/Link'
 
@@ -142,7 +143,7 @@ const MyInfoText = ({
     return (
       <Text>
         Enable MyInfo in the{' '}
-        <Link as={ReactLink} to={`settings/singpass`}>
+        <Link as={ReactLink} to={ADMINFORM_SETTINGS_SINGPASS_SUBROUTE}>
           Settings
         </Link>{' '}
         tab to access these fields.
