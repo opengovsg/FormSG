@@ -470,74 +470,6 @@ export const PublicFormProvider = ({
           // TODO (#5826): Toggle to use fetch for submissions instead of axios. If enabled, this is used for testing and to use fetch instead of axios by default if testing shows fetch is more  stable. Remove once network error is resolved
           if (useFetchForSubmissions) {
             return submitStorageFormWithFetch()
-          } else {
-            datadogLogs.logger.info(`handleSubmitForm: submitting via axios`, {
-              meta: {
-                ...logMeta,
-                responseMode: 'storage',
-                method: 'axios',
-              },
-            })
-
-            return (
-              submitStorageModeFormMutation
-                .mutateAsync(
-                  {
-                    ...formData,
-                    publicKey: form.publicKey,
-                    captchaResponse,
-                    captchaType,
-                    paymentReceiptEmail: paymentReceiptEmailField?.value,
-                  },
-                  {
-                    onSuccess: ({
-                      submissionId,
-                      timestamp,
-                      // payment forms will have non-empty paymentData field
-                      paymentData,
-                    }) => {
-                      trackSubmitForm(form)
-
-                      if (paymentData) {
-                        navigate(
-                          getPaymentPageUrl(formId, paymentData.paymentId),
-                        )
-                        storePaymentMemory(paymentData.paymentId)
-                        return
-                      }
-                      setSubmissionData({
-                        id: submissionId,
-                        timestamp,
-                      })
-                    },
-                  },
-                )
-                // Using catch since we are using mutateAsync and react-hook-form will continue bubbling this up.
-                .catch(async (error) => {
-                  // TODO(#5826): Remove when we have resolved the Network Error
-                  datadogLogs.logger.warn(
-                    `handleSubmitForm: ${error.message}`,
-                    {
-                      meta: {
-                        ...logMeta,
-                        responseMode: 'storage',
-                        method: 'axios',
-                        error: {
-                          message: error.message,
-                          stack: error.stack,
-                        },
-                      },
-                    },
-                  )
-
-                  if (/Network Error/i.test(error.message)) {
-                    axiosDebugFlow()
-                    return submitStorageFormWithFetch()
-                  } else {
-                    showErrorToast(error, form)
-                  }
-                })
-            )
           }
           datadogLogs.logger.info(`handleSubmitForm: submitting via axios`, {
             meta: {
@@ -554,6 +486,7 @@ export const PublicFormProvider = ({
                   ...formData,
                   publicKey: form.publicKey,
                   captchaResponse,
+                  captchaType,
                   paymentReceiptEmail: paymentReceiptEmailField?.value,
                   ...(form.payments_field.payment_type === PaymentType.Variable
                     ? {
