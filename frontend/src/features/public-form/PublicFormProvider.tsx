@@ -21,6 +21,7 @@ import {
   PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID,
 } from '~shared/constants'
 import { PaymentType } from '~shared/types'
+import { CaptchaTypes } from '~shared/types/captcha'
 import {
   FormAuthType,
   FormResponseMode,
@@ -143,12 +144,8 @@ export const PublicFormProvider = ({
   // todo: remove after full rollout
   const enableTurnstileFeatureFlag = useIsFeatureEnabled(
     featureFlags.turnstile,
-    false,
+    true,
   )
-  enum CaptchaTypes {
-    Turnstile = 'turnstile',
-    Recaptcha = 'recaptcha',
-  }
 
   let hasLoaded: boolean
   let containerID: string

@@ -19,6 +19,7 @@ import {
   SubmissionErrorDto,
   SubmissionResponseDto,
 } from '../../../../../shared/types'
+import { CaptchaTypes } from '../../../../../shared/types/captcha'
 import { StripePaymentMetadataDto } from '../../../../types'
 import { EncryptSubmissionDto } from '../../../../types/api'
 import config from '../../../config/config'
@@ -30,7 +31,6 @@ import { getEncryptPendingSubmissionModel } from '../../../models/pending_submis
 import { getEncryptSubmissionModel } from '../../../models/submission.server.model'
 import * as CaptchaMiddleware from '../../../services/captcha/captcha.middleware'
 import * as CaptchaService from '../../../services/captcha/captcha.service'
-import { CaptchaTypes } from '../../../services/captcha/captcha.types'
 import * as TurnstileMiddleware from '../../../services/turnstile/turnstile.middleware'
 import * as TurnstileService from '../../../services/turnstile/turnstile.service'
 import { createReqMeta, getRequestIp } from '../../../utils/request'
