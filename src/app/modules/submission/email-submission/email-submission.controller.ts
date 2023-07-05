@@ -131,7 +131,7 @@ const submitEmailModeForm: ControllerHandler<
                   return error
                 })
             }
-            // defaults to recaptcha
+            case CaptchaTypes.Recaptcha: // fallthrough, defaults to recaptcha
             default: {
               return CaptchaService.verifyCaptchaResponse(
                 req.query.captchaResponse,

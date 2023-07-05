@@ -182,7 +182,7 @@ export const submitEmailModeFormWithFetch = async ({
   // Add captcha response to query string
   const queryString = new URLSearchParams({
     captchaResponse: String(captchaResponse),
-    captchaType: captchaType,
+    captchaType,
   }).toString()
 
   const response = await fetch(
@@ -229,7 +229,7 @@ export const submitStorageModeFormWithFetch = async ({
   // Add captcha response to query string
   const queryString = new URLSearchParams({
     captchaResponse: String(captchaResponse),
-    captchaType: captchaType,
+    captchaType,
   }).toString()
 
   const response = await fetch(

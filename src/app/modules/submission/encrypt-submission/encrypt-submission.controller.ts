@@ -169,7 +169,7 @@ const submitEncryptModeForm: ControllerHandler<
         }
         break
       }
-      // defaults to recaptcha
+      case CaptchaTypes.Recaptcha: // fallthrough, defaults to reCAPTCHA
       default: {
         const captchaResult = await CaptchaService.verifyCaptchaResponse(
           req.query.captchaResponse,
