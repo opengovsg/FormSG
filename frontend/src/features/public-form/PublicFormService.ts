@@ -152,7 +152,7 @@ export const submitStorageModeForm = async ({
     {
       params: {
         captchaResponse: String(captchaResponse),
-        captchaType: captchaType,
+        captchaType,
       },
     },
   ).then(({ data }) => data)

@@ -440,7 +440,7 @@ const submitEmailModeForm: ControllerHandler<
 }
 
 export const handleEmailSubmission = [
-  // todo: remove CaptchaMiddleware after extracting common components in Captcha and Turnstile
+  // TODO: remove CaptchaMiddleware after extracting common components in Captcha and Turnstile
   CaptchaMiddleware.validateCaptchaParams,
   TurnstileMiddleware.validateTurnstileParams,
   EmailSubmissionMiddleware.receiveEmailSubmission,
