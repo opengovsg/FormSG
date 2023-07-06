@@ -9,59 +9,18 @@ import {
 } from 'react-table'
 import { Flex, Icon, Table, Tbody, Td, Th, Thead, Tr } from '@chakra-ui/react'
 
-import { ProcessedFeedbackMeta } from '~shared/types/form'
+import { ProcessedFeedbackMeta, ProcessedIssueMeta } from '~shared/types/form'
 
 import { BxsChevronDown } from '~assets/icons/BxsChevronDown'
 import { BxsChevronUp } from '~assets/icons/BxsChevronUp'
 
-import { DateCell } from './DateCell'
-
-type FeedbackColumnData = Pick<
-  ProcessedFeedbackMeta,
-  'comment' | 'timestamp' | 'rating'
->
-
-const FEEDBACK_TABLE_COLUMNS: Column<FeedbackColumnData>[] = [
-  {
-    Header: '#',
-    accessor: (_row, i) => i + 1,
-    sortType: 'number',
-    minWidth: 80, // minWidth is only used as a limit for resizing
-    width: 80, // width is used for both the flex-basis and flex-grow
-    maxWidth: 100, // maxWidth is only used as a limit for resizing
-  },
-  {
-    Header: 'Date',
-    accessor: 'timestamp',
-    sortType: 'number',
-    Cell: DateCell,
-    minWidth: 120, // minWidth is only used as a limit for resizing
-    width: 120, // width is used for both the flex-basis and flex-grow
-    maxWidth: 240, // maxWidth is only used as a limit for resizing
-  },
-  {
-    Header: 'Feedback',
-    accessor: 'comment',
-    sortType: 'basic',
-    minWidth: 200,
-    width: 300,
-    maxWidth: 600,
-  },
-  {
-    Header: 'Rating',
-    accessor: 'rating',
-    sortType: 'number',
-    minWidth: 90,
-    width: 90,
-    disableResizing: true,
-  },
-]
-
 export const FeedbackTable = ({
   feedbackData,
+  feedbackColumns,
   currentPage,
 }: {
-  feedbackData: ProcessedFeedbackMeta[] | undefined
+  feedbackData: ProcessedFeedbackMeta[] | ProcessedIssueMeta[] | undefined
+  feedbackColumns: Column[]
   currentPage: number
 }) => {
   const {
@@ -71,9 +30,9 @@ export const FeedbackTable = ({
     headerGroups,
     page,
     gotoPage,
-  } = useTable<FeedbackColumnData>(
+  } = useTable(
     {
-      columns: FEEDBACK_TABLE_COLUMNS,
+      columns: feedbackColumns,
       data: feedbackData ?? [],
       initialState: {
         pageIndex: currentPage,

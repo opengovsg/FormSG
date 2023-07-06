@@ -1,10 +1,9 @@
-import { FormFeedbackDto, FormFeedbackMetaDto } from '~shared/types/form/'
+import { FormFeedbackDto, FormFeedbackMetaDto } from '~shared/types/form'
 
 import { ApiService } from '~services/ApiService'
 
-import { ADMIN_FORM_ENDPOINT } from '../../common/AdminViewFormService'
-
-import { FeedbackCsvGenerator } from './utils/FeedbackCsvGenerator'
+import { ADMIN_FORM_ENDPOINT } from '../../../common/AdminViewFormService'
+import { FeedbackCsvGenerator } from '../utils/FeedbackCsvGenerator'
 
 export const getFormFeedback = async (
   formId: string,
@@ -31,7 +30,7 @@ export const getFormFeedbackCount = async (formId: string): Promise<number> => {
  * @param formTitle the title of the form
  * @returns a stream of feedback
  */
-export const downloadFormFeedback = async (
+export const downloadFormReview = async (
   formId: string,
   formTitle: string,
 ): Promise<void> => {
