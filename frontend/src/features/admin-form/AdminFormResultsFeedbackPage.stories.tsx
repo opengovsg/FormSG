@@ -6,7 +6,9 @@ import {
   createFormBuilderMocks,
   getAdminFormCollaborators,
   getAdminFormFeedback,
+  getAdminFormIssue,
   getEmptyAdminFormFeedback,
+  getEmptyAdminFormIssue,
   getStorageSubmissionMetadataResponse,
 } from '~/mocks/msw/handlers/admin-form'
 import { getUser } from '~/mocks/msw/handlers/user'
@@ -25,6 +27,7 @@ const DEFAULT_MSW_ROUTES = [
   ...createFormBuilderMocks({}, 0),
   getStorageSubmissionMetadataResponse(),
   getAdminFormFeedback(),
+  getAdminFormIssue(),
   getUser(),
   getAdminFormCollaborators(),
 ]
@@ -69,9 +72,22 @@ const Template: Story = () => {
 }
 export const Default = Template.bind({})
 
-export const EmptyFeedback = Template.bind({})
-EmptyFeedback.parameters = {
+export const EmptyReviewAndIssue = Template.bind({})
+EmptyReviewAndIssue.parameters = {
+  msw: [
+    getEmptyAdminFormIssue(),
+    getEmptyAdminFormFeedback(),
+    ...DEFAULT_MSW_ROUTES,
+  ],
+}
+
+export const EmptyReview = Template.bind({})
+EmptyReviewAndIssue.parameters = {
   msw: [getEmptyAdminFormFeedback(), ...DEFAULT_MSW_ROUTES],
+}
+export const EmptyIssue = Template.bind({})
+EmptyReviewAndIssue.parameters = {
+  msw: [getEmptyAdminFormIssue(), ...DEFAULT_MSW_ROUTES],
 }
 
 export const Tablet = Template.bind({})
