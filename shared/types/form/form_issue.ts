@@ -10,11 +10,10 @@ export type FormIssueBodyDto = {
   formId: FormDto['_id']
 }
 
-export type FormIssueBodyDto = {
+export type SubmitFormIssueBodyDto = {
   isPreview?: boolean
   issue: string
   email?: string
-  formId: FormDto['_id']
 }
 
 /**

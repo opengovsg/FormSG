@@ -15,7 +15,7 @@ import {
 } from '@chakra-ui/react'
 import isEmail from 'validator/lib/isEmail'
 
-import { BasicField, FormIssueBodyDto } from '~shared/types'
+import { BasicField, SubmitFormIssueBodyDto } from '~shared/types'
 
 import { INVALID_EMAIL_ERROR, REQUIRED_ERROR } from '~constants/validation'
 import { useIsMobile } from '~hooks/useIsMobile'
@@ -27,16 +27,20 @@ import Input from '~components/Input'
 import { ModalCloseButton } from '~components/Modal'
 import Textarea from '~components/Textarea'
 
+import { useSubmitFormIssueMutations } from '~features/public-form/mutations'
+
 export interface FormIssueFeedbackProps {
   isOpen: boolean
   onClose: () => void
   isPreview: boolean
+  formId: string
 }
 
 export const FormIssueFeedbackModal = ({
   isOpen,
   onClose,
   isPreview,
+  formId,
 }: FormIssueFeedbackProps): JSX.Element | null => {
   const modalSize = useBreakpointValue({
     base: 'mobile',
@@ -46,13 +50,14 @@ export const FormIssueFeedbackModal = ({
   const isMobile = useIsMobile()
   const toast = useToast({ status: 'success', isClosable: true })
 
+  const { submitFormIssueMutation } = useSubmitFormIssueMutations(formId)
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<FormIssueBodyDto>()
+  } = useForm<SubmitFormIssueBodyDto>()
 
-  const handleSubmitIssue = handleSubmit(() => {
+  const handleSubmitIssue = handleSubmit((inputs: SubmitFormIssueBodyDto) => {
     if (isPreview) {
       toast({
         description:
@@ -60,7 +65,15 @@ export const FormIssueFeedbackModal = ({
       })
       return
     }
-    toast({ description: 'Your feedback has been submitted.' })
+    submitFormIssueMutation.mutate(inputs, {
+      onSuccess: () => {
+        toast({
+          description: 'Thank you for submitting your feedback!',
+          status: 'success',
+          isClosable: true,
+        })
+      },
+    })
     onClose()
   })
 
