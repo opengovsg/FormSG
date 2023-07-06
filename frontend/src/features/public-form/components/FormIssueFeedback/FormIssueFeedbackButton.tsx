@@ -11,7 +11,7 @@ import { FormIssueFeedbackModal } from './FormIssueFeedbackModal'
 
 export const FormIssueFeedbackButton = (): JSX.Element => {
   const { isOpen, onOpen, onClose } = useDisclosure()
-  const { isPreview } = usePublicFormContext()
+  const { isPreview, formId } = usePublicFormContext()
 
   return (
     <Flex position="fixed" bottom="2.625rem" right="2.75rem" sx={noPrintCss}>
@@ -28,6 +28,7 @@ export const FormIssueFeedbackButton = (): JSX.Element => {
         isOpen={isOpen}
         onClose={onClose}
         isPreview={isPreview}
+        formId={formId}
       />
     </Flex>
   )
