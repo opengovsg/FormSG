@@ -122,6 +122,8 @@ describe('webhook.service', () => {
       headers: {
         'X-FormSG-Signature': mockWebhookHeader,
       },
+      decompress: false,
+      maxContentLength: 10000,
       maxRedirects: 0,
       timeout: 10000,
     }
