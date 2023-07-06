@@ -1,6 +1,10 @@
-import { Mongoose, Schema } from 'mongoose'
+import { Mongoose, QueryCursor, Schema } from 'mongoose'
 
-import { IFormIssueModel, IFormIssueSchema } from 'src/types'
+import {
+  FormIssueStreamData,
+  IFormIssueModel,
+  IFormIssueSchema,
+} from 'src/types'
 
 import { FORM_SCHEMA_ID } from './form.server.model'
 
@@ -36,7 +40,22 @@ const FormIssueSchema = new Schema<IFormIssueSchema, IFormIssueModel>(
 FormIssueSchema.index({ formId: 1 })
 
 /**
- * Form Issue Schema
+ * Returns a cursor for all issues for the form with formId.
+ * @param formId the form id to return the cursor for
+ * @returns a cursor to the issue retrieved
+ */
+FormIssueSchema.statics.getIssueCursorByFormId = function (
+  formId: string,
+): QueryCursor<FormIssueStreamData> {
+  return this.find({ formId }, { issue: 1, email: 1, created: 1 })
+    .batchSize(2000)
+    .read('secondaryPreferred')
+    .lean()
+    .cursor()
+}
+
+/**
+ * Form issue Schema
  * @param db Active DB Connection
  * @return Mongoose Model
  */
