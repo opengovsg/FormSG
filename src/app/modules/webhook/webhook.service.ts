@@ -156,6 +156,8 @@ export const sendWebhook = (
                 signature,
               }),
             },
+            decompress: false,
+            maxContentLength: 10000,
             maxRedirects: 0,
             // Timeout after 10 seconds to allow for cold starts in receiver,
             // e.g. Lambdas
