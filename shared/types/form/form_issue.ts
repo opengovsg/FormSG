@@ -1,14 +1,6 @@
 import { FormDto } from './form'
 import { Merge } from 'type-fest'
 import { DateString } from '../generic'
-import { FormFeedbackBase } from './form_feedback'
-
-export type FormIssueBodyDto = {
-  isPreview?: boolean
-  issue: string
-  email?: string
-  formId: FormDto['_id']
-}
 
 /**
  * Typing for individual form issue

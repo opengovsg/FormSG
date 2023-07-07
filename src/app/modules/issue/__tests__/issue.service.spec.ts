@@ -516,7 +516,11 @@ describe('issue.service', () => {
 
       // Assert
       expect(actual).toEqual(mockCursor)
-      expect(streamSpy).toHaveBeenCalledWith(mockFormId)
+      expect(streamSpy).toHaveBeenCalledWith(mockFormId, [
+        'issue',
+        'email',
+        'created',
+      ])
     })
   })
 })
