@@ -239,5 +239,9 @@ export const getFormIssues = (
 export const getFormIssueStream = (
   formId: string,
 ): mongoose.QueryCursor<FormIssueStreamData> => {
-  return FormIssueModel.getIssueCursorByFormId(formId)
+  return FormIssueModel.getIssueCursorByFormId(formId, [
+    'issue',
+    'email',
+    'created',
+  ])
 }

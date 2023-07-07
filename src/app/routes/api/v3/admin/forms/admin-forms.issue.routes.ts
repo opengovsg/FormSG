@@ -6,7 +6,7 @@ export const AdminFormsIssueRouter = Router()
 
 /**
  * Retrieve issues for a public form
- * @route GET /api/v3/admin/forms/:formId/issue
+ * @route GET /api/v3/admin/forms/:formId/issues
  * @security session
  *
  * @returns 200 with issue response
@@ -18,13 +18,13 @@ export const AdminFormsIssueRouter = Router()
  * @returns 500 when database error occurs
  */
 AdminFormsIssueRouter.get(
-  '/:formId([a-fA-F0-9]{24})/issue',
-  AdminFormController.handleGetFormIssue,
+  '/:formId([a-fA-F0-9]{24})/issues',
+  AdminFormController.handleGetFormIssues,
 )
 
 /**
  * Stream download all issues for a form
- * @route GET /api/v3/admin/forms/:formId/issue/download
+ * @route GET /api/v3/admin/forms/:formId/issues/download
  * @security session
  *
  * @returns 200 with issue response
@@ -36,6 +36,6 @@ AdminFormsIssueRouter.get(
  * @returns 500 when database error occurs
  */
 AdminFormsIssueRouter.get(
-  '/:formId([a-fA-F0-9]{24})/issue/download',
-  AdminFormController.handleStreamFormIssue,
+  '/:formId([a-fA-F0-9]{24})/issues/download',
+  AdminFormController.handleStreamFormIssues,
 )

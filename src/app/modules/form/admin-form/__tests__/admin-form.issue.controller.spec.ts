@@ -54,7 +54,7 @@ describe('admin-form.issue.controller', () => {
       },
     })
 
-    it('should return issues as request is processed successfully', async () => {
+    it('should return issues when request is processed successfully', async () => {
       // Arrange
       const mockRes = expressHandler.mockResponse()
       const expectedFormIssue: FormIssueMetaDto = {
@@ -85,7 +85,7 @@ describe('admin-form.issue.controller', () => {
         okAsync(expectedFormIssue),
       )
       // Act
-      await AdminFormIssueController.handleGetFormIssue(
+      await AdminFormIssueController.handleGetFormIssues(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -113,7 +113,7 @@ describe('admin-form.issue.controller', () => {
         errAsync(new MissingUserError()),
       )
       // Act
-      await AdminFormIssueController.handleGetFormIssue(
+      await AdminFormIssueController.handleGetFormIssues(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -142,7 +142,7 @@ describe('admin-form.issue.controller', () => {
         errAsync(new FormNotFoundError()),
       )
       // Act
-      await AdminFormIssueController.handleGetFormIssue(
+      await AdminFormIssueController.handleGetFormIssues(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -176,7 +176,7 @@ describe('admin-form.issue.controller', () => {
         errAsync(new DatabaseError('Something is wrong')),
       )
       // Act
-      await AdminFormIssueController.handleGetFormIssue(
+      await AdminFormIssueController.handleGetFormIssues(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -239,7 +239,7 @@ describe('admin-form.issue.controller', () => {
       MockIssueService.getFormIssueStream.mockReturnValueOnce(mockCursor as any)
 
       // Act
-      await AdminFormIssueController.handleStreamFormIssue(
+      await AdminFormIssueController.handleStreamFormIssues(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -267,7 +267,7 @@ describe('admin-form.issue.controller', () => {
         errAsync(new MissingUserError()),
       )
       // Act
-      await AdminFormIssueController.handleStreamFormIssue(
+      await AdminFormIssueController.handleStreamFormIssues(
         MOCK_REQ,
         mockRes,
         jest.fn(),
@@ -297,7 +297,7 @@ describe('admin-form.issue.controller', () => {
         errAsync(expectedError),
       )
       // Act
-      await AdminFormIssueController.handleStreamFormIssue(
+      await AdminFormIssueController.handleStreamFormIssues(
         MOCK_REQ,
         mockRes,
         jest.fn(),

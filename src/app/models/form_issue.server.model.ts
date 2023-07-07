@@ -42,14 +42,16 @@ FormIssueSchema.index({ formId: 1 })
 /**
  * Returns a cursor for all issues for the form with formId.
  * @param formId the form id to return the cursor for
+ * @param fields an array of field names to retrieve
  * @returns a cursor to the issue retrieved
  */
 FormIssueSchema.statics.getIssueCursorByFormId = function (
   formId: string,
+  fields: (keyof IFormIssueSchema)[],
 ): QueryCursor<FormIssueStreamData> {
-  return this.find({ formId }, { issue: 1, email: 1, created: 1 })
+  return this.find({ formId }, fields)
     .batchSize(2000)
-    .read('secondaryPreferred')
+    .read('secondary')
     .lean()
     .cursor()
 }
