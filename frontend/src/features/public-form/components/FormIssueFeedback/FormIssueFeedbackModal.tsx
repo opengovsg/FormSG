@@ -123,7 +123,7 @@ export const FormIssueFeedbackModal = ({
               <FormControl isInvalid={!!errors.email}>
                 <FormLabel
                   pt="1rem"
-                  description="Leave your email or contact number so the form creator can reach out to you if needed."
+                  description="Leave your email so the form creator can reach out to you if needed."
                 >
                   Contact
                 </FormLabel>
