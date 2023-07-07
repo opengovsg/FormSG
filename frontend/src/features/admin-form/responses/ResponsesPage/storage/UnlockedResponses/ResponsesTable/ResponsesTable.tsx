@@ -15,7 +15,9 @@ import { centsToDollars } from '~utils/payments'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
 
-import { useUnlockedResponses } from './UnlockedResponsesProvider'
+import { useUnlockedResponses } from '../UnlockedResponsesProvider'
+
+import { getNetAmount } from './utils'
 
 type ResponseColumnData = StorageModeSubmissionMetadata
 
@@ -42,9 +44,9 @@ const RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
     disableResizing: true,
   },
 ]
-const PAYMENT_COLUMNS = [
+const PAYMENT_COLUMNS: Column<ResponseColumnData>[] = [
   {
-    Header: 'Email', //  (paid - net)
+    Header: 'Email',
     accessor: ({ payments }) => {
       if (!payments?.email) {
         return ''
@@ -69,22 +71,7 @@ const PAYMENT_COLUMNS = [
 
   {
     Header: 'Net Amount', //  (amt they receive in bank)
-    accessor: ({ payments }) => {
-      if (!payments?.transactionFee) {
-        return ''
-      }
-      if (payments.transactionFee < 0) {
-        return ''
-      }
-      const grossAmt = centsToDollars(
-        payments.paymentAmt - payments.transactionFee,
-      )
-      const isFinalTransactionFee = payments.payoutDate
-      if (!isFinalTransactionFee) {
-        return `Est. S$${grossAmt}`
-      }
-      return `S$${grossAmt}`
-    },
+    accessor: ({ payments }) => getNetAmount(payments),
     minWidth: 50,
     width: 75,
   },
