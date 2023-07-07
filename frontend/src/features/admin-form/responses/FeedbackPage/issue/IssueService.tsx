@@ -9,7 +9,7 @@ export const getFormIssues = async (
   formId: string,
 ): Promise<FormIssueMetaDto> => {
   return ApiService.get<FormIssueMetaDto>(
-    `${ADMIN_FORM_ENDPOINT}/${formId}/issue`,
+    `${ADMIN_FORM_ENDPOINT}/${formId}/issues`,
   ).then(({ data }) => data)
 }
 
@@ -26,7 +26,7 @@ export const downloadFormIssue = async (
   count: number,
 ): Promise<void> => {
   return ApiService.get<FormIssueDto[]>(
-    `${ADMIN_FORM_ENDPOINT}/${formId}/issue/download`,
+    `${ADMIN_FORM_ENDPOINT}/${formId}/issues/download`,
   ).then(({ data }) => {
     const csvGenerator = new IssueCsvGenerator(count)
 
