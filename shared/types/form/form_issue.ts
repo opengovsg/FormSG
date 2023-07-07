@@ -30,3 +30,7 @@ export type FormIssueMetaDto = {
   count: number
   issues: ProcessedIssueMeta[]
 }
+
+export type FormIssueMetaQueryDto = {
+  limit: number
+}
