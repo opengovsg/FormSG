@@ -1344,7 +1344,7 @@ describe('admin-form.submissions.routes', () => {
       })
     })
 
-    it('should return 200 with metadata of single submissionId when query.submissionId is provided for non-payment fields', async () => {
+    it('should return 200 with metadata of single submissionId when query.submissionId is provided for submissions with payments', async () => {
       // Arrange
       const createdPayment = await Payment.create({
         _id: new ObjectId(),
@@ -1419,7 +1419,7 @@ describe('admin-form.submissions.routes', () => {
         metadata: [
           {
             number: 1,
-            payments: expect.any(String),
+            payments: null,
             refNo: String(submissions[1]._id),
             submissionTime: expect.any(String),
           },
