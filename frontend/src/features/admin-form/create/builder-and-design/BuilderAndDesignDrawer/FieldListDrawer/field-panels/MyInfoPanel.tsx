@@ -3,7 +3,12 @@ import { Droppable } from 'react-beautiful-dnd'
 import { Link as ReactLink } from 'react-router-dom'
 import { Box, Text } from '@chakra-ui/react'
 
-import { AdminFormDto, FormAuthType, FormResponseMode } from '~shared/types'
+import {
+  AdminFormDto,
+  FormAuthType,
+  FormResponseMode,
+  MyInfoAttribute,
+} from '~shared/types'
 
 import { GUIDE_EMAIL_MODE } from '~constants/links'
 import { ADMINFORM_SETTINGS_SINGPASS_SUBROUTE } from '~constants/routes'
@@ -27,6 +32,27 @@ import { DraggableMyInfoFieldListOption } from '../FieldListOption'
 
 import { FieldSection } from './FieldSection'
 
+const SGID_SUPPORTED: Set<MyInfoAttribute> = new Set([
+  MyInfoAttribute.Name,
+  MyInfoAttribute.DateOfBirth,
+  MyInfoAttribute.PassportNumber,
+  MyInfoAttribute.PassportExpiryDate,
+  // This is disabled due to MyInfo and sgID-MyInfo not using the same
+  // phone number formats.
+  // MyInfoAttribute.MobileNo,
+  MyInfoAttribute.RegisteredAddress,
+])
+
+/**
+ * If sgID is used, checks if the corresponding
+ * MyInfo field is supported by sgID.
+ */
+const sgidUnSupported = (
+  form: AdminFormDto | undefined,
+  fieldType: MyInfoAttribute,
+): boolean =>
+  form?.authType === FormAuthType.SGID_MyInfo && !SGID_SUPPORTED.has(fieldType)
+
 export const MyInfoFieldPanel = () => {
   const { data: form, isLoading } = useCreateTabForm()
   // myInfo should be disabled if
@@ -35,9 +61,12 @@ export const MyInfoFieldPanel = () => {
   // 3. # of myInfo fields >= 30
   const isMyInfoDisabled = useMemo(
     () =>
-      form?.responseMode !== FormResponseMode.Email ||
-      form?.authType !== FormAuthType.MyInfo ||
-      (form ? form.form_fields.filter(isMyInfo).length >= 30 : true),
+      form
+        ? form.form_fields.filter(isMyInfo).length >= 30 ||
+          form.responseMode !== FormResponseMode.Email ||
+          (form.authType !== FormAuthType.MyInfo &&
+            form.authType !== FormAuthType.SGID_MyInfo)
+        : true,
     [form],
   )
   const isDisabled = isMyInfoDisabled || isLoading
@@ -52,7 +81,7 @@ export const MyInfoFieldPanel = () => {
               {CREATE_MYINFO_PERSONAL_FIELDS_ORDERED.map((fieldType, index) => (
                 <DraggableMyInfoFieldListOption
                   index={index}
-                  isDisabled={isDisabled}
+                  isDisabled={isDisabled || sgidUnSupported(form, fieldType)}
                   key={index}
                   fieldType={fieldType}
                 />
@@ -69,7 +98,7 @@ export const MyInfoFieldPanel = () => {
               {CREATE_MYINFO_CONTACT_FIELDS_ORDERED.map((fieldType, index) => (
                 <DraggableMyInfoFieldListOption
                   index={index}
-                  isDisabled={isDisabled}
+                  isDisabled={isDisabled || sgidUnSupported(form, fieldType)}
                   key={index}
                   fieldType={fieldType}
                 />
@@ -87,7 +116,7 @@ export const MyInfoFieldPanel = () => {
                 (fieldType, index) => (
                   <DraggableMyInfoFieldListOption
                     index={index}
-                    isDisabled={isDisabled}
+                    isDisabled={isDisabled || sgidUnSupported(form, fieldType)}
                     key={index}
                     fieldType={fieldType}
                   />
@@ -105,7 +134,7 @@ export const MyInfoFieldPanel = () => {
               {CREATE_MYINFO_MARRIAGE_FIELDS_ORDERED.map((fieldType, index) => (
                 <DraggableMyInfoFieldListOption
                   index={index}
-                  isDisabled={isDisabled}
+                  isDisabled={isDisabled || sgidUnSupported(form, fieldType)}
                   key={index}
                   fieldType={fieldType}
                 />
@@ -129,7 +158,8 @@ const MyInfoText = ({
   responseMode,
   form_fields,
 }: MyInfoTextProps): JSX.Element => {
-  const isMyInfoDisabled = authType !== FormAuthType.MyInfo
+  const isMyInfoDisabled =
+    authType !== FormAuthType.MyInfo && authType !== FormAuthType.SGID_MyInfo
   const numMyInfoFields = useMemo(
     () => form_fields.filter((ff) => isMyInfo(ff)).length,
     [form_fields],
@@ -153,7 +183,9 @@ const MyInfoText = ({
 
   return (
     <Text>
-      {`Only 30 MyInfo fields are allowed in Email mode (${numMyInfoFields}/30).`}{' '}
+      {authType === FormAuthType.SGID_MyInfo
+        ? 'Some MyInfo fields are not yet supported in your selected authentication type. '
+        : `Only 30 MyInfo fields are allowed in Email mode (${numMyInfoFields}/30). `}
       <Link isExternal href={GUIDE_EMAIL_MODE}>
         Learn more
       </Link>
