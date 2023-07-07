@@ -41,6 +41,10 @@ const SGID_SUPPORTED: Set<MyInfoAttribute> = new Set([
   MyInfoAttribute.RegisteredAddress,
 ])
 
+/**
+ * If sgID is used, checks if the corresponding
+ * MyInfo field is supported by sgID.
+ */
 const sgidUnSupported = (
   form: AdminFormDto | undefined,
   fieldType: MyInfoAttribute,
@@ -55,10 +59,12 @@ export const MyInfoFieldPanel = () => {
   // 3. # of myInfo fields >= 30
   const isMyInfoDisabled = useMemo(
     () =>
-      form?.responseMode !== FormResponseMode.Email ||
-      (form?.authType !== FormAuthType.MyInfo &&
-        form?.authType !== FormAuthType.SGID_MyInfo) ||
-      (form ? form.form_fields.filter(isMyInfo).length >= 30 : true),
+      form
+        ? form.form_fields.filter(isMyInfo).length >= 30 ||
+          form.responseMode !== FormResponseMode.Email ||
+          (form.authType !== FormAuthType.MyInfo &&
+            form.authType !== FormAuthType.SGID_MyInfo)
+        : true,
     [form],
   )
   const isDisabled = isMyInfoDisabled || isLoading
@@ -170,7 +176,7 @@ const MyInfoText = ({
   return (
     <Text>
       {authType === FormAuthType.SGID_MyInfo
-        ? ' Some MyInfo fields are not yet supported in your selected authentication type. '
+        ? 'Some MyInfo fields are not yet supported in your selected authentication type. '
         : `Only 30 MyInfo fields are allowed in Email mode (${numMyInfoFields}/30). `}
       <Link isExternal href={GUIDE_EMAIL_MODE}>
         Learn more
