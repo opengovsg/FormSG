@@ -117,6 +117,12 @@ export type StorageModeSubmissionMetadata = {
   refNo: SubmissionId
   /** Not a DateString, format is `Do MMM YYYY, h:mm:ss a` */
   submissionTime: string
+  payments: {
+    payoutDate: string | null
+    paymentAmt: number
+    transactionFee: number | null
+    email: string
+  } | null
 }
 
 export type StorageModeSubmissionMetadataList = {

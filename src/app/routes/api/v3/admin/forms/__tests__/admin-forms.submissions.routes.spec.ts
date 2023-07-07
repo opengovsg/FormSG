@@ -18,6 +18,7 @@ import {
   getEmailFormModel,
   getEncryptedFormModel,
 } from 'src/app/models/form.server.model'
+import getPaymentModel from 'src/app/models/payment.server.model'
 import getSubmissionModel, {
   getEncryptSubmissionModel,
 } from 'src/app/models/submission.server.model'
@@ -34,6 +35,7 @@ import {
 import {
   FormResponseMode,
   FormStatus,
+  PaymentStatus,
   SubmissionType,
 } from '../../../../../../../../shared/types'
 import { AdminFormsRouter } from '../admin-forms.routes'
@@ -54,6 +56,7 @@ const EmailFormModel = getEmailFormModel(mongoose)
 const EncryptFormModel = getEncryptedFormModel(mongoose)
 const SubmissionModel = getSubmissionModel(mongoose)
 const EncryptSubmissionModel = getEncryptSubmissionModel(mongoose)
+const Payment = getPaymentModel(mongoose)
 
 const ADMIN_FORMS_PREFIX = '/admin/forms'
 
@@ -1228,6 +1231,55 @@ describe('admin-form.submissions.routes', () => {
       expect(response.body).toEqual({ count: 0, metadata: [] })
     })
 
+    it('should return 200 with requested page of metadata with payments when payment exists', async () => {
+      // Arrange
+      const createdPayment = await Payment.create({
+        _id: new ObjectId(),
+        formId: defaultForm._id,
+        targetAccountId: 'acct_MOCK_ACCOUNT_ID',
+        pendingSubmissionId: new ObjectId(),
+        status: PaymentStatus.Succeeded,
+        paymentIntentId: 'somePaymentIntentId',
+        amount: 314159,
+        email: 'someone@mail.com',
+      })
+      // Create 3 submissions
+      const submissions = await Promise.all(
+        times(3, (count) =>
+          createEncryptSubmission({
+            form: defaultForm,
+            encryptedContent: `any encrypted content ${count}`,
+            verifiedContent: `any verified content ${count}`,
+            paymentId: createdPayment._id,
+          }),
+        ),
+      )
+
+      const createdSubmissionIds = submissions.map((s) => String(s._id))
+
+      // Act
+      const response = await request
+        .get(`/admin/forms/${defaultForm._id}/submissions/metadata`)
+        .query({
+          page: 1,
+        })
+
+      // Assert
+      const expected = times(3, (index) => ({
+        number: 3 - index,
+        payments: expect.any(Object),
+        // Loosen refNo checks due to non-deterministic aggregation query.
+        // Just expect refNo is one of the possible ones.
+        refNo: expect.toBeOneOf(createdSubmissionIds),
+        submissionTime: expect.any(String),
+      }))
+      expect(response.status).toEqual(200)
+      expect(response.body).toEqual({
+        count: 3,
+        metadata: expected,
+      })
+    })
+
     it('should return 200 with requested page of metadata when metadata exists', async () => {
       // Arrange
       // Create 11 submissions
@@ -1254,6 +1306,7 @@ describe('admin-form.submissions.routes', () => {
         number: 11 - index,
         // Loosen refNo checks due to non-deterministic aggregation query.
         // Just expect refNo is one of the possible ones.
+        payments: null,
         refNo: expect.toBeOneOf(createdSubmissionIds),
         submissionTime: expect.any(String),
       }))
@@ -1291,6 +1344,53 @@ describe('admin-form.submissions.routes', () => {
       })
     })
 
+    it('should return 200 with metadata of single submissionId when query.submissionId is provided for non-payment fields', async () => {
+      // Arrange
+      const createdPayment = await Payment.create({
+        _id: new ObjectId(),
+        formId: defaultForm._id,
+        targetAccountId: 'acct_MOCK_ACCOUNT_ID',
+        pendingSubmissionId: new ObjectId(),
+        status: PaymentStatus.Succeeded,
+        paymentIntentId: 'somePaymentIntentId',
+        amount: 314159,
+        email: 'someone@mail.com',
+      })
+      // Create 3 submissions
+      const submissions = await Promise.all(
+        times(3, (count) =>
+          createEncryptSubmission({
+            form: defaultForm,
+            encryptedContent: `any encrypted content ${count}`,
+            verifiedContent: `any verified content ${count}`,
+            paymentId: createdPayment._id,
+          }),
+        ),
+      )
+
+      // Act
+      const response = await request
+        .get(`/admin/forms/${defaultForm._id}/submissions/metadata`)
+        .query({
+          submissionId: String(submissions[1]._id),
+        })
+
+      // Assert
+      expect(response.status).toEqual(200)
+      // Only return the single submission id's metadata
+      expect(response.body).toEqual({
+        count: 1,
+        metadata: [
+          {
+            number: 1,
+            payments: expect.any(Object),
+            refNo: String(submissions[1]._id),
+            submissionTime: expect.any(String),
+          },
+        ],
+      })
+    })
+
     it('should return 200 with metadata of single submissionId when query.submissionId is provided', async () => {
       // Arrange
       // Create 3 submissions
@@ -1319,6 +1419,7 @@ describe('admin-form.submissions.routes', () => {
         metadata: [
           {
             number: 1,
+            payments: expect.any(String),
             refNo: String(submissions[1]._id),
             submissionTime: expect.any(String),
           },
@@ -1479,12 +1580,14 @@ const createEncryptSubmission = ({
   verifiedContent,
   attachmentMetadata,
   created,
+  paymentId,
 }: {
   form: IFormDocument
   encryptedContent: string
   attachmentMetadata?: Map<string, string>
   verifiedContent?: string
   created?: Date
+  paymentId?: string
 }) => {
   return EncryptSubmissionModel.create({
     submissionType: SubmissionType.Encrypt,
@@ -1496,5 +1599,6 @@ const createEncryptSubmission = ({
     verifiedContent,
     created,
     version: 1,
+    paymentId,
   })
 }

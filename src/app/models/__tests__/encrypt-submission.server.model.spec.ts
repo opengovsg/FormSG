@@ -47,6 +47,7 @@ describe('Encrypt Submission Model', () => {
         // Assert
         const expected: StorageModeSubmissionMetadata = {
           number: 1,
+          payments: null,
           refNo: validSubmission._id,
           submissionTime: moment(createdDate)
             .tz('Asia/Singapore')
@@ -129,6 +130,7 @@ describe('Encrypt Submission Model', () => {
           metadata: validSubmissions
             .map((data, idx) => ({
               number: idx + 1,
+              payments: null,
               refNo: data._id,
               submissionTime: moment(data.created)
                 .tz('Asia/Singapore')
@@ -171,6 +173,7 @@ describe('Encrypt Submission Model', () => {
           metadata: [
             {
               number: 2,
+              payments: null,
               refNo: secondSubmission._id,
               submissionTime: moment(secondSubmission.created)
                 .tz('Asia/Singapore')
@@ -213,6 +216,7 @@ describe('Encrypt Submission Model', () => {
           metadata: [
             {
               number: 3,
+              payments: null,
               refNo: latestSubmission._id,
               submissionTime: moment(latestSubmission.created)
                 .tz('Asia/Singapore')
