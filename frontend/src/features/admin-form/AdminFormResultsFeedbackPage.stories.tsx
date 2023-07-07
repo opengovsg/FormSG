@@ -82,11 +82,11 @@ EmptyReviewAndIssue.parameters = {
 }
 
 export const EmptyReview = Template.bind({})
-EmptyReviewAndIssue.parameters = {
+EmptyReview.parameters = {
   msw: [getEmptyAdminFormFeedback(), ...DEFAULT_MSW_ROUTES],
 }
 export const EmptyIssue = Template.bind({})
-EmptyReviewAndIssue.parameters = {
+EmptyIssue.parameters = {
   msw: [getEmptyAdminFormIssue(), ...DEFAULT_MSW_ROUTES],
 }
 
@@ -104,7 +104,7 @@ Mobile.parameters = getMobileViewParameters()
 export const LoadingDesktop = Template.bind({})
 LoadingDesktop.storyName = 'Loading/Desktop'
 LoadingDesktop.parameters = {
-  msw: [getAdminFormFeedback({ delay: 'infinite' }), ...DEFAULT_MSW_ROUTES],
+  msw: [getAdminFormIssue({ delay: 'infinite' }), ...DEFAULT_MSW_ROUTES],
 }
 export const LoadingMobile = Template.bind({})
 LoadingMobile.storyName = 'Loading/Mobile'

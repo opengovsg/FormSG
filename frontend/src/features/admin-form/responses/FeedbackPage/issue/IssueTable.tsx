@@ -7,8 +7,8 @@ export const ISSUE_TABLE_COLUMNS: Column[] = [
     Header: '#',
     accessor: (_row, i) => i + 1,
     sortType: 'number',
-    minWidth: 80, // minWidth is only used as a limit for resizing
-    width: 80, // width is used for both the flex-basis and flex-grow
+    minWidth: 50, // minWidth is only used as a limit for resizing
+    width: 50, // width is used for both the flex-basis and flex-grow
     maxWidth: 100, // maxWidth is only used as a limit for resizing
   },
   {
@@ -16,9 +16,9 @@ export const ISSUE_TABLE_COLUMNS: Column[] = [
     accessor: 'timestamp',
     sortType: 'number',
     Cell: DateCell,
-    minWidth: 120, // minWidth is only used as a limit for resizing
-    width: 120, // width is used for both the flex-basis and flex-grow
-    maxWidth: 240, // maxWidth is only used as a limit for resizing
+    minWidth: 80, // minWidth is only used as a limit for resizing
+    width: 80, // width is used for both the flex-basis and flex-grow
+    maxWidth: 120, // maxWidth is only used as a limit for resizing
   },
   {
     Header: 'Issue',
@@ -32,8 +32,8 @@ export const ISSUE_TABLE_COLUMNS: Column[] = [
     Header: 'Contact',
     accessor: 'email',
     sortType: 'basic',
-    minWidth: 90,
-    width: 90,
-    disableResizing: true,
+    minWidth: 120,
+    width: 120,
+    maxWidth: 300,
   },
 ]
