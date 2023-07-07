@@ -4,7 +4,7 @@ import { FormIssueMetaDto } from '~shared/types'
 
 export const getEmptyAdminFormIssue = () => {
   return rest.get<FormIssueMetaDto>(
-    '/api/v3/admin/forms/:formId/issue',
+    '/api/v3/admin/forms/:formId/issues',
     (req, res, ctx) => {
       return res(
         ctx.delay(0),
@@ -23,7 +23,7 @@ export const getAdminFormIssue = ({
   delay?: number | 'infinite'
 } = {}) => {
   return rest.get<FormIssueMetaDto>(
-    '/api/v3/admin/forms/:formId/issue',
+    '/api/v3/admin/forms/:formId/issues',
     (req, res, ctx) => {
       return res(
         ctx.delay(delay),
