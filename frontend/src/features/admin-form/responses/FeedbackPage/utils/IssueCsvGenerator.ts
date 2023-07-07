@@ -12,7 +12,7 @@ import { processFormulaInjectionText } from '../../ResponsesPage/storage/utils/p
 export class IssueCsvGenerator extends CsvGenerator {
   constructor(expectedNumberOfRecords: number) {
     super(expectedNumberOfRecords, 0)
-    this.setHeader(['Date', 'issue', 'Email'])
+    this.setHeader(['Date', 'Issue', 'Email'])
   }
 
   /**

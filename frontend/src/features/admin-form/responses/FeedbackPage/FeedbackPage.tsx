@@ -1,15 +1,25 @@
 import { useCallback, useState } from 'react'
 import { UseMutationResult } from 'react-query'
 import { useParams } from 'react-router-dom'
-import { Box, ButtonGroup, Container, Flex, Grid, Text } from '@chakra-ui/react'
+import {
+  Box,
+  ButtonGroup,
+  Container,
+  Flex,
+  Grid,
+  Icon,
+  Text,
+} from '@chakra-ui/react'
 import simplur from 'simplur'
 
 import { ProcessedFeedbackMeta, ProcessedIssueMeta } from '~shared/types'
 
 import Pagination from '~/components/Pagination'
 
+import { BxsInfoCircle } from '~assets/icons'
 import { useIsMobile } from '~hooks/useIsMobile'
 import Button, { ButtonProps } from '~components/Button'
+import Tooltip from '~components/Tooltip'
 
 import {
   DownloadFormFeedbackMutationArgs,
@@ -263,6 +273,13 @@ const getIssueInformationComponent = (
             {count}
           </Text>
           {simplur` ${[count || 0]}issue[|s] to date`}
+          <Tooltip
+            label={`Feedback displayed here relates to form submission issues`}
+            placement="top"
+            textAlign="center"
+          >
+            <Icon as={BxsInfoCircle} aria-hidden marginX="0.5rem" />
+          </Tooltip>
         </Text>
       </Box>
     </div>
