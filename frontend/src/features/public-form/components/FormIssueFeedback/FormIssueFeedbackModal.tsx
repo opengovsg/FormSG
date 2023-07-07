@@ -54,26 +54,31 @@ export const FormIssueFeedbackModal = ({
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors },
-  } = useForm<SubmitFormIssueBodyDto>()
+  } = useForm<SubmitFormIssueBodyDto>({
+    defaultValues: { issue: '', email: '' },
+  })
 
   const handleSubmitIssue = handleSubmit((inputs: SubmitFormIssueBodyDto) => {
     if (isPreview) {
+      reset()
       toast({
         description:
           'Thank you for submitting your feedback! Since you are in preview mode, the feedback is not stored.',
       })
-      return
+    } else {
+      submitFormIssueMutation.mutate(inputs, {
+        onSuccess: () => {
+          reset()
+          toast({
+            description: 'Thank you for submitting your feedback!',
+            status: 'success',
+            isClosable: true,
+          })
+        },
+      })
     }
-    submitFormIssueMutation.mutate(inputs, {
-      onSuccess: () => {
-        toast({
-          description: 'Thank you for submitting your feedback!',
-          status: 'success',
-          isClosable: true,
-        })
-      },
-    })
     onClose()
   })
 
