@@ -13,6 +13,7 @@ import { IEncryptedSubmissionSchema, WebhookView } from 'src/types'
 
 import { WebhookResponse } from '../../../../../shared/types'
 import { SubmissionNotFoundError } from '../../submission/submission.errors'
+import { WEBHOOK_MAX_CONTENT_LENGTH } from '../webhook.constants'
 import { WebhookQueueMessage } from '../webhook.message'
 import { WebhookProducer } from '../webhook.producer'
 import * as WebhookService from '../webhook.service'
@@ -123,7 +124,7 @@ describe('webhook.service', () => {
         'X-FormSG-Signature': mockWebhookHeader,
       },
       decompress: false,
-      maxContentLength: 10000,
+      maxContentLength: WEBHOOK_MAX_CONTENT_LENGTH,
       maxRedirects: 0,
       timeout: 10000,
     }
