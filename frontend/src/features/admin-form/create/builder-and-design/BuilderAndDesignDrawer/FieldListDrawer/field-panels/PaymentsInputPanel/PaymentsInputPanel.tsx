@@ -123,7 +123,7 @@ const PaymentInput = ({ isDisabled }: { isDisabled: boolean }) => {
         min_amount: dollarsToCents(display_min_amount ?? '0'),
         max_amount: dollarsToCents(display_max_amount ?? '0'),
         amount_cents: dollarsToCents(display_amount ?? '0'),
-      } as FormPaymentsField)
+      })
     },
     [setData],
   )
