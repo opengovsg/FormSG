@@ -88,43 +88,44 @@ export const PaymentView = () => {
     setFieldListTabIndex(FieldListTabIndex.Payments)
   }
 
+  // if payment isn't enabled or payment builder isn't opened
+  if (!paymentDetails.enabled && paymentState !== PaymentState.EditingPayment)
+    return null
+
   return (
-    (paymentDetails.enabled ||
-      paymentState === PaymentState.EditingPayment) && (
-      <Box w="100%" maxW="57rem" alignSelf="center" ref={paymentRef}>
-        <FormProvider {...formMethods}>
-          <Box mt="2.5rem" bg="white" py="2.5rem" px="1.5rem">
-            <Box
-              transition="background 0.2s ease"
-              _hover={{ bg: 'secondary.100', cursor: 'pointer' }}
-              borderRadius="4px"
-              _active={{
-                bg: 'secondary.100',
-                boxShadow: '0 0 0 2px var(--chakra-colors-primary-500)',
-              }}
-              data-active={isActive || undefined}
-              onClick={handlePaymentClick}
-            >
-              <Box p={{ base: '0.75rem', md: '1.5rem' }}>
-                <PaymentPreview
-                  colorTheme={form?.startPage.colorTheme}
-                  paymentDetails={paymentDetails}
-                  isBuilder
-                />
-              </Box>
-              <Collapse in={isActive} style={{ width: '100%' }}>
-                {isActive && paymentDetails.enabled && (
-                  <PaymentButtonGroup
-                    isMobile={isMobile}
-                    handleBuilderClick={handleBuilderClick}
-                  />
-                )}
-              </Collapse>
+    <Box w="100%" maxW="57rem" alignSelf="center" ref={paymentRef}>
+      <FormProvider {...formMethods}>
+        <Box mt="2.5rem" bg="white" py="2.5rem" px="1.5rem">
+          <Box
+            transition="background 0.2s ease"
+            _hover={{ bg: 'secondary.100', cursor: 'pointer' }}
+            borderRadius="4px"
+            _active={{
+              bg: 'secondary.100',
+              boxShadow: '0 0 0 2px var(--chakra-colors-primary-500)',
+            }}
+            data-active={isActive || undefined}
+            onClick={handlePaymentClick}
+          >
+            <Box p={{ base: '0.75rem', md: '1.5rem' }}>
+              <PaymentPreview
+                colorTheme={form?.startPage.colorTheme}
+                paymentDetails={paymentDetails}
+                isBuilder
+              />
             </Box>
+            <Collapse in={isActive} style={{ width: '100%' }}>
+              {isActive && paymentDetails.enabled && (
+                <PaymentButtonGroup
+                  isMobile={isMobile}
+                  handleBuilderClick={handleBuilderClick}
+                />
+              )}
+            </Collapse>
           </Box>
-        </FormProvider>
-      </Box>
-    )
+        </Box>
+      </FormProvider>
+    </Box>
   )
 }
 
