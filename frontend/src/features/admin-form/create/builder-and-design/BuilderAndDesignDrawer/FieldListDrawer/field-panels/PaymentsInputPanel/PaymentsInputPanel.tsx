@@ -178,7 +178,7 @@ const PaymentInput = ({ isDisabled }: { isDisabled: boolean }) => {
             <SingleSelect
               isClearable={false}
               placeholder="Select Payment Type"
-              fullWidth={true}
+              fullWidth
               items={[
                 {
                   value: PaymentType.Fixed,
