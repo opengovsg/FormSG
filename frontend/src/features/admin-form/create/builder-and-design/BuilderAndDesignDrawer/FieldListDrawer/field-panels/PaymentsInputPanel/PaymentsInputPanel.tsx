@@ -61,7 +61,13 @@ export type FormPaymentsInput = Omit<
   display_max_amount: string
 }
 
-const PaymentInput = ({ isDisabled }: { isDisabled: boolean }) => {
+const PaymentInput = ({
+  isDisabled,
+  isEncryptMode,
+}: {
+  isDisabled: boolean
+  isEncryptMode: boolean
+}) => {
   const { paymentsMutation } = useMutateFormPage()
 
   const setIsDirty = useDirtyFieldStore(setIsDirtySelector)
@@ -165,7 +171,11 @@ const PaymentInput = ({ isDisabled }: { isDisabled: boolean }) => {
 
   return (
     <CreatePageDrawerContentContainer>
-      <FormControl isRequired isReadOnly={paymentsMutation.isLoading}>
+      <FormControl
+        isRequired
+        isDisabled={!isEncryptMode} // only encrypt mode forms can be payment forms
+        isReadOnly={paymentsMutation.isLoading}
+      >
         <FormLabel>Payment type</FormLabel>
         <Controller
           name={'payment_type'}
@@ -302,7 +312,10 @@ export const PaymentsInputPanel = (): JSX.Element | null => {
           <InlineMessage variant="info">{paymentDisabledMessage}</InlineMessage>
         </Box>
       )}
-      <PaymentInput isDisabled={isPaymentDisabled} />
+      <PaymentInput
+        isDisabled={isPaymentDisabled}
+        isEncryptMode={isEncryptMode}
+      />
     </>
   )
 }
