@@ -295,7 +295,7 @@ const _handleConnectOauthCallback: ControllerHandler<
   unknown,
   unknown,
   unknown,
-  { code?: string | undefined; state: string }
+  { code?: string; state: string }
 > = async (req, res) => {
   const { code, state } = req.query
   // Step 0: Extract state parameter previously signed and stored in cookies.

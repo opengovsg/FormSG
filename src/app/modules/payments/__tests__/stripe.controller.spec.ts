@@ -63,9 +63,7 @@ const MockStripeService = jest.mocked(StripeService)
 describe('stripe.controller', () => {
   beforeAll(async () => await dbHandler.connect())
   afterAll(async () => await dbHandler.closeDatabase())
-  beforeEach(() => {
-    jest.clearAllMocks()
-  })
+  beforeEach(() => jest.clearAllMocks())
 
   describe('downloadPaymentInvoice', () => {
     const mockBusinessInfo = {
