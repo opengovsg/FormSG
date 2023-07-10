@@ -204,13 +204,13 @@ const PaymentInput = ({ isDisabled }: { isDisabled: boolean }) => {
         isDisabled={isDisabled}
         isRequired
       >
-        <FormLabel description="This will be reflected on the payment invoice">
+        <FormLabel description="This will be reflected on the proof of payment">
           Product/service name
         </FormLabel>
         <Input
           placeholder="Product/service name"
           {...register('name', {
-            required: 'Please enter a payment description',
+            required: 'This field is required',
           })}
         />
         <FormErrorMessage>{errors.name?.message}</FormErrorMessage>
@@ -221,13 +221,11 @@ const PaymentInput = ({ isDisabled }: { isDisabled: boolean }) => {
         isDisabled={isDisabled}
         isRequired
       >
-        <FormLabel description="This will be reflected on the payment invoice">
-          Description
-        </FormLabel>
+        <FormLabel>Description</FormLabel>
         <Textarea
           placeholder="Product/service name"
           {...register('description', {
-            required: 'Please enter a payment description',
+            required: 'This field is required',
           })}
         />
         <FormErrorMessage>{errors.description?.message}</FormErrorMessage>

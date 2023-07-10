@@ -50,34 +50,40 @@ export const VariablePaymentAmountField = ({
         Payment amount limit
       </FormLabel>
       <HStack>
-        <Controller
-          name={MIN_FIELD_KEY}
-          control={control}
-          rules={minAmountValidation}
-          render={({ field }) => (
-            <Input
-              flex={1}
-              step={0}
-              inputMode="decimal"
-              placeholder="Minimum amount"
-              {...field}
-            />
-          )}
-        />
-        <Controller
-          name={MAX_FIELD_KEY}
-          control={control}
-          rules={maxAmountValidation}
-          render={({ field }) => (
-            <Input
-              flex={1}
-              step={0}
-              inputMode="decimal"
-              placeholder="Maximum amount"
-              {...field}
-            />
-          )}
-        />
+        <FormControl>
+          <FormLabel isRequired>Minimum Amount</FormLabel>
+          <Controller
+            name={MIN_FIELD_KEY}
+            control={control}
+            rules={minAmountValidation}
+            render={({ field }) => (
+              <Input
+                flex={1}
+                step={0}
+                inputMode="decimal"
+                placeholder="At least S$0.50"
+                {...field}
+              />
+            )}
+          />
+        </FormControl>
+        <FormControl>
+          <FormLabel isRequired>Maximum Amount</FormLabel>
+          <Controller
+            name={MAX_FIELD_KEY}
+            control={control}
+            rules={maxAmountValidation}
+            render={({ field }) => (
+              <Input
+                flex={1}
+                step={0}
+                inputMode="decimal"
+                placeholder="Below S$1,000,000"
+                {...field}
+              />
+            )}
+          />
+        </FormControl>
       </HStack>
       <FormErrorMessage>{errors[MIN_FIELD_KEY]?.message}</FormErrorMessage>
       <FormErrorMessage>{errors[MAX_FIELD_KEY]?.message}</FormErrorMessage>
