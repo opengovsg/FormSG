@@ -63,10 +63,9 @@ export const ChildrenCompoundField = ({
   )
 
   const formContext = useFormContext<ChildrenCompoundFieldInputs>()
-  const { isValid, isSubmitting, errors } =
-    useFormState<ChildrenCompoundFieldInputs>({
-      name: schema._id,
-    })
+  const { isSubmitting } = useFormState<ChildrenCompoundFieldInputs>({
+    name: schema._id,
+  })
 
   const { fields, append, remove } = useFieldArray<ChildrenCompoundFieldInputs>(
     {
@@ -83,14 +82,14 @@ export const ChildrenCompoundField = ({
         schema.childrenSubFields,
       )
     }
-  }, [schema.childrenSubFields])
+  }, [schema.childrenSubFields, formContext, schema._id])
 
   // Initialize with a single child section
   useEffect(() => {
     if (!fields || !fields.length || fields.length === 0) {
       append([''])
     }
-  }, [fields])
+  }, [fields, append])
 
   const ariaChildrenDescription = useMemo(() => {
     let description = simplur`This is a children field. There [is|are] ${fields.length} child[|ren].`
@@ -101,7 +100,7 @@ export const ChildrenCompoundField = ({
     }
 
     return description
-  }, [fields.length])
+  }, [fields.length, schema.allowMultiple])
   return (
     <FieldContainer
       schema={schema}
@@ -167,6 +166,7 @@ interface ChildrenBodyProps {
   myInfoChildrenBirthRecords?: MyInfoChildData
   isSubmitting: boolean
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   formContext: UseFormReturn<ChildrenCompoundFieldInputs, any>
 }
 
@@ -188,7 +188,7 @@ const ChildrenBody = ({
 
   const childNamePath = useMemo(
     () => `${schema._id}.child.${currChildBodyIdx}.0`,
-    [],
+    [schema._id, currChildBodyIdx],
   )
   const { onChange: selectOnChange, ...selectRest } = register(childNamePath)
 
@@ -212,7 +212,7 @@ const ChildrenBody = ({
     // Really important to note that sometimes react-hook-form stores our "array"
     // as a object with key=index and values=array entry.
     return Object.values(getValues(`${schema._id}.child`)).map((arr) => arr[0])
-  }, [])
+  }, [getValues, schema._id])
 
   // useCallback to re-compute names, again because of buggy allSelectedNames
   const namesNotSelected = useCallback((): string[] => {
@@ -223,7 +223,7 @@ const ChildrenBody = ({
     // We want all child names that haven't already been selected.
     // O(n^2) but n is small so it should be okay.
     return allChilds.filter((name) => !temp.includes(name))
-  }, [myInfoChildrenBirthRecords])
+  }, [myInfoChildrenBirthRecords, allChilds, allSelectedNames])
 
   const getChildAttr = useCallback(
     (attr: MyInfoChildAttributes): string => {
@@ -252,7 +252,7 @@ const ChildrenBody = ({
       }
       return result ?? ''
     },
-    [childName, myInfoChildrenBirthRecords, currChildBodyIdx],
+    [childName, myInfoChildrenBirthRecords],
   )
   return (
     <VStack
@@ -327,7 +327,6 @@ const ChildrenBody = ({
           const isDisabled = isSubmitting || !!myInfoValue
           switch (subField) {
             case MyInfoChildAttributes.ChildBirthCertNo:
-            case MyInfoChildAttributes.ChildDateOfBirth:
             case MyInfoChildAttributes.ChildGender:
             case MyInfoChildAttributes.ChildDateOfBirth: {
               return (
