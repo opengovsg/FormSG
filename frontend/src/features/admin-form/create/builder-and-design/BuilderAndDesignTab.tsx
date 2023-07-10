@@ -34,6 +34,7 @@ import {
   FIELD_LIST_DROP_ID,
 } from './constants'
 import { DeleteFieldModal } from './DeleteFieldModal'
+import { DeletePaymentModal } from './DeletePaymentModal'
 import { DndPlaceholderProps } from './types'
 import { useCreateTabForm } from './useCreateTabForm'
 import {
@@ -137,6 +138,7 @@ export const BuilderAndDesignTab = (): JSX.Element => {
   )
 
   const deleteFieldModalDisclosure = useDisclosure()
+  const deletePaymentModalDisclosure = useDisclosure()
 
   return (
     <DragDropContext
@@ -147,11 +149,13 @@ export const BuilderAndDesignTab = (): JSX.Element => {
       <BuilderAndDesignContext.Provider
         value={{
           deleteFieldModalDisclosure,
+          deletePaymentModalDisclosure,
         }}
       >
         <BuilderAndDesignDrawer />
         <BuilderAndDesignContent placeholderProps={placeholderProps} />
         {deleteFieldModalDisclosure.isOpen && <DeleteFieldModal />}
+        {deletePaymentModalDisclosure.isOpen && <DeletePaymentModal />}
       </BuilderAndDesignContext.Provider>
     </DragDropContext>
   )
