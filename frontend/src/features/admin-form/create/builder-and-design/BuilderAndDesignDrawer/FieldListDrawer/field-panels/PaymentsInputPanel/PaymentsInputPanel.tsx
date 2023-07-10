@@ -200,7 +200,7 @@ const PaymentInput = ({ isDisabled }: { isDisabled: boolean }) => {
       </FormControl>
       <FormControl
         isReadOnly={paymentsMutation.isLoading}
-        isInvalid={!!errors.description}
+        isInvalid={!!errors.name}
         isDisabled={isDisabled}
         isRequired
       >
