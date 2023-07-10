@@ -9,9 +9,10 @@ import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
 import { FormIssueFeedbackModal } from './FormIssueFeedbackModal'
 
-export const FormIssueFeedbackButton = (): JSX.Element => {
+export const FormIssueFeedbackButton = (): JSX.Element | null => {
   const { isOpen, onOpen, onClose } = useDisclosure()
-  const { isPreview, formId } = usePublicFormContext()
+  const { isPreview, formId, submissionData } = usePublicFormContext()
+  if (submissionData) return null
 
   return (
     <Flex position="fixed" bottom="2.625rem" right="2.75rem" sx={noPrintCss}>
