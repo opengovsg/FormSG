@@ -43,13 +43,30 @@ const MockEncryptSubmissionService = jest.mocked(EncryptSubmissionService)
 jest.mock('../../form/form.service')
 const MockFormService = jest.mocked(FormService)
 
-jest.mock('src/app/modules/payments/stripe.service')
+jest.mock('src/app/modules/payments/stripe.service', () => {
+  const allAutoMocked = jest.createMockFromModule(
+    'src/app/modules/payments/stripe.service',
+  )
+  const actual = jest.requireActual('src/app/modules/payments/stripe.service')
+  return {
+    __esModules: true,
+
+    // first start with all the module's functions auto-mocked
+    ...allAutoMocked,
+
+    // then override any module's function that we want to use the *real* implementations for
+    generatePaymentInvoice: actual.generatePaymentInvoice,
+  }
+})
 const MockStripeService = jest.mocked(StripeService)
 
 describe('stripe.controller', () => {
   beforeAll(async () => await dbHandler.connect())
   afterAll(async () => await dbHandler.closeDatabase())
-  beforeEach(() => jest.clearAllMocks())
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
   describe('downloadPaymentInvoice', () => {
     const mockBusinessInfo = {
       address: 'localhost',
@@ -103,7 +120,6 @@ describe('stripe.controller', () => {
       MockEncryptSubmissionService.checkFormIsEncryptMode.mockReturnValue(
         ok(mockForm as IPopulatedEncryptedForm),
       )
-
       const mockReq = expressHandler.mockRequest({
         params: { formId: mockForm._id, paymentId: payment._id },
       })
@@ -278,7 +294,9 @@ describe('stripe.controller', () => {
           signedCookies: { stripeState: MOCK_FORM_ID + '.otherState' },
         },
       })
-      MockFormService.retrieveFullFormById.mockReturnValue(okAsync(mockForm))
+      MockFormService.retrieveFullFormById.mockReturnValueOnce(
+        okAsync(mockForm),
+      )
       const mockStripeToken = {
         stripe_user_id: 'user_id',
         stripe_publishable_key: 'publishable_key',
@@ -286,13 +304,13 @@ describe('stripe.controller', () => {
         Stripe.OAuthToken,
         'stripe_user_id' | 'stripe_publishable_key'
       >
-      MockEncryptSubmissionService.checkFormIsEncryptMode.mockReturnValue(
+      MockEncryptSubmissionService.checkFormIsEncryptMode.mockReturnValueOnce(
         ok(mockForm as IPopulatedEncryptedForm),
       )
-      MockStripeService.exchangeCodeForAccessToken.mockReturnValue(
+      MockStripeService.exchangeCodeForAccessToken.mockReturnValueOnce(
         okAsync(mockStripeToken),
       )
-      MockStripeService.linkStripeAccountToForm.mockReturnValue(
+      MockStripeService.linkStripeAccountToForm.mockReturnValueOnce(
         okAsync('someId'),
       )
       const mockRes = expressHandler.mockResponse()
