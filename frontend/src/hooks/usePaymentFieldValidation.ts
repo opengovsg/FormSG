@@ -29,9 +29,10 @@ export const usePaymentFieldValidation = <
 
   const amountValidation: RegisterOptions<T, V> = {
     validate: (val) => {
-      if (val === '' && msgWhenEmpty) {
+      if (!val && msgWhenEmpty) {
         return msgWhenEmpty
       }
+
       // Validate that it is a money value.
       // Regex allows leading and trailing spaces, max 2dp
       const validateMoney = /^\s*(\d+)(\.\d{0,2})?\s*$/.test(val ?? '')
