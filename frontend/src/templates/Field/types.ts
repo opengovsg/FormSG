@@ -14,6 +14,7 @@ import {
   ImageFieldBase,
   LongTextFieldBase,
   MobileFieldBase,
+  MyInfoChildAttributes,
   NricFieldBase,
   NumberFieldBase,
   RadioFieldBase,
@@ -25,6 +26,7 @@ import {
   UenFieldBase,
   YesNoFieldBase,
 } from '~shared/types/field'
+import { ChildrenCompoundFieldBase } from '~shared/types/field/childrenCompoundField'
 import {
   SingleAnswerResponse,
   VerifiableResponseBase,
@@ -56,6 +58,8 @@ export type TableFieldInputs = FieldInput<TableFieldValues>
 export type YesNoFieldInput = FieldInput<YesNoFieldValue>
 export type SingleAnswerFieldInput = FieldInput<SingleAnswerValue>
 export type VerifiableFieldInput = FieldInput<VerifiableFieldValues>
+export type ChildrenCompoundFieldInputs =
+  FieldInput<ChildrenCompoundFieldValues>
 
 export type FormFieldValue<F extends BasicField = BasicField> = F extends
   | BasicField.Number
@@ -81,6 +85,8 @@ export type FormFieldValue<F extends BasicField = BasicField> = F extends
   ? RadioFieldValues
   : F extends BasicField.Checkbox
   ? CheckboxFieldValues
+  : F extends BasicField.Children
+  ? ChildrenCompoundFieldValues
   : never
 
 // Input values, what each field contains
@@ -116,6 +122,16 @@ export type VerifiableAnswerOutput<F extends FormFieldDto> = Merge<
   VerifiableResponseBase
 >
 
+export type ChildrenCompoundFieldValues = {
+  // Each subarray represents one child value
+  // e.g.
+  // child : [['NAME', 'T12345678Z', 'VACCINATED'], ... ]
+  // cildFields: [name, bc number, vaxx status]
+  child: string[][]
+  // Array of attribute names
+  childFields: MyInfoChildAttributes[]
+}
+
 // Various schemas used by different fields
 export type SectionFieldSchema = FormFieldWithId<SectionFieldBase>
 export type ParagraphFieldSchema = FormFieldWithId<StatementFieldBase>
@@ -139,3 +155,5 @@ export type ShortTextFieldSchema = FormFieldWithQuestionNo<ShortTextFieldBase>
 export type TableFieldSchema = FormFieldWithQuestionNo<TableFieldBase>
 export type UenFieldSchema = FormFieldWithQuestionNo<UenFieldBase>
 export type YesNoFieldSchema = FormFieldWithQuestionNo<YesNoFieldBase>
+export type ChildrenCompoundFieldSchema =
+  FormFieldWithQuestionNo<ChildrenCompoundFieldBase>

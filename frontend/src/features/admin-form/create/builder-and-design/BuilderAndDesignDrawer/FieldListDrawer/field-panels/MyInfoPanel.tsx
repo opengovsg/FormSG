@@ -11,6 +11,8 @@ import InlineMessage from '~components/InlineMessage'
 import Link from '~components/Link'
 
 import {
+  CREATE_MYINFO_CHILDREN_DROP_ID,
+  CREATE_MYINFO_CHILDREN_FIELDS_ORDERED,
   CREATE_MYINFO_CONTACT_DROP_ID,
   CREATE_MYINFO_CONTACT_FIELDS_ORDERED,
   CREATE_MYINFO_MARRIAGE_DROP_ID,
@@ -103,6 +105,23 @@ export const MyInfoFieldPanel = () => {
           <Box ref={provided.innerRef} {...provided.droppableProps}>
             <FieldSection label="Family (Marriage)">
               {CREATE_MYINFO_MARRIAGE_FIELDS_ORDERED.map((fieldType, index) => (
+                <DraggableMyInfoFieldListOption
+                  index={index}
+                  isDisabled={isDisabled}
+                  key={index}
+                  fieldType={fieldType}
+                />
+              ))}
+            </FieldSection>
+            <Box display="none">{provided.placeholder}</Box>
+          </Box>
+        )}
+      </Droppable>
+      <Droppable isDropDisabled droppableId={CREATE_MYINFO_CHILDREN_DROP_ID}>
+        {(provided) => (
+          <Box ref={provided.innerRef} {...provided.droppableProps}>
+            <FieldSection label="Family (Children)">
+              {CREATE_MYINFO_CHILDREN_FIELDS_ORDERED.map((fieldType, index) => (
                 <DraggableMyInfoFieldListOption
                   index={index}
                   isDisabled={isDisabled}

@@ -1,6 +1,10 @@
 import { celebrate, Joi } from 'celebrate'
 
-import { BasicField, FieldResponse } from '../../../../../shared/types'
+import {
+  BasicField,
+  FieldResponse,
+  MyInfoChildAttributes,
+} from '../../../../../shared/types'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { createReqMeta } from '../../../utils/request'
 import { ControllerHandler } from '../../core/core.types'
@@ -71,6 +75,11 @@ export const validateResponseParams = celebrate({
             isHeader: Joi.boolean(),
             myInfo: Joi.object(),
             signature: Joi.string().allow(''),
+
+            // Only for MyInfo child support, as those need more than one field
+            childSubFieldsArray: Joi.array().items(
+              Joi.string().valid(...Object.values(MyInfoChildAttributes)),
+            ),
           })
           .xor('answer', 'answerArray') // only answer or answerArray can be present at once
           .with('filename', 'content'), // if filename is present, content must be present

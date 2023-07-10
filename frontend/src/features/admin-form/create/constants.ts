@@ -7,6 +7,7 @@ import {
   BiBriefcase,
   BiBuilding,
   BiCalculator,
+  BiCalendar,
   BiCalendarAlt,
   BiCalendarEvent,
   BiCalendarHeart,
@@ -17,6 +18,7 @@ import {
   BiCloudUpload,
   BiFlag,
   BiGlobe,
+  BiGroup,
   BiHash,
   BiHeading,
   BiHeartCircle,
@@ -176,6 +178,12 @@ export const BASICFIELD_TO_DRAWER_META: {
     icon: BiToggleLeft,
     isSubmitted: true,
   },
+
+  [BasicField.Children]: {
+    label: 'Children',
+    icon: BiGroup,
+    isSubmitted: true,
+  },
 }
 
 export const MYINFO_FIELD_TO_DRAWER_META: {
@@ -299,6 +307,39 @@ export const MYINFO_FIELD_TO_DRAWER_META: {
   [MyInfoAttribute.DivorceDate]: {
     label: 'Divorce Date',
     icon: BiCalendarX,
+    isSubmitted: true,
+  },
+  [MyInfoAttribute.ChildrenBirthRecords]: {
+    label: 'Child Records',
+    icon: BiGroup,
+    isSubmitted: true,
+  },
+
+  // The following child field's icons will never be used.
+  // So they can be any placeholder.
+  [MyInfoAttribute.ChildBirthCertNo]: {
+    label: 'Birth Certificate Number',
+    icon: BiBook,
+    isSubmitted: true,
+  },
+  [MyInfoAttribute.ChildDateOfBirth]: {
+    label: 'Date of Birth',
+    icon: BiCalendar,
+    isSubmitted: true,
+  },
+  [MyInfoAttribute.ChildName]: {
+    label: 'Name',
+    icon: BiCalendar,
+    isSubmitted: true,
+  },
+  [MyInfoAttribute.ChildVaxxStatus]: {
+    label: 'Vaccination Requirements',
+    icon: BiCalendar,
+    isSubmitted: true,
+  },
+  [MyInfoAttribute.ChildGender]: {
+    label: 'Gender',
+    icon: BiCalendar,
     isSubmitted: true,
   },
 }

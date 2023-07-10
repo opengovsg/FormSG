@@ -6,6 +6,7 @@ import { BasicField } from '../../../../shared/types'
 import {
   ProcessedAttachmentResponse,
   ProcessedCheckboxResponse,
+  ProcessedChildrenResponse,
   ProcessedFieldResponse,
   ProcessedSingleAnswerResponse,
   ProcessedTableResponse,
@@ -22,12 +23,14 @@ import { ValidateFieldError } from '../../modules/submission/submission.errors'
 import {
   constructAttachmentFieldValidator,
   constructCheckboxFieldValidator,
+  constructChildFieldValidator,
   constructSingleAnswerValidator,
   constructTableFieldValidator,
 } from './answerValidator.factory'
 import {
   isProcessedAttachmentResponse,
   isProcessedCheckboxResponse,
+  isProcessedChildResponse,
   isProcessedSingleAnswerResponse,
   isProcessedTableResponse,
 } from './field-validation.guards'
@@ -114,6 +117,14 @@ const checkboxRequiresValidation = (
   response: ProcessedCheckboxResponse,
 ) =>
   (formField.required && response.isVisible) || response.answerArray.length > 0
+
+const childrenRequiresValidation = (
+  formField: FieldValidationSchema,
+  response: ProcessedChildrenResponse,
+) =>
+  (formField.required && response.isVisible) ||
+  response.answerArray.length > 0 ||
+  response.childSubFieldsArray.length > 0
 
 const tableRequiresValidation = (
   formField: OmitUnusedValidatorProps<ITableFieldSchema>,
@@ -224,6 +235,16 @@ export const validateField = (
   } else if (isProcessedCheckboxResponse(response)) {
     if (checkboxRequiresValidation(formField, response)) {
       const validator = constructCheckboxFieldValidator(formField)
+      return validateResponseWithValidator(
+        validator,
+        formId,
+        formField,
+        response,
+      )
+    }
+  } else if (isProcessedChildResponse(response)) {
+    if (childrenRequiresValidation(formField, response)) {
+      const validator = constructChildFieldValidator(formField)
       return validateResponseWithValidator(
         validator,
         formId,

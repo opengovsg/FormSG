@@ -1,6 +1,11 @@
 import { memo, useMemo } from 'react'
 
-import { BasicField, FieldCreateDto } from '~shared/types/field'
+import {
+  BasicField,
+  ChildrenCompoundFieldBase,
+  FieldCreateDto,
+  MyInfoAttribute,
+} from '~shared/types/field'
 
 import {
   BASICFIELD_TO_DRAWER_META,
@@ -16,6 +21,10 @@ import {
 } from '../../useFieldBuilderStore'
 import { BuilderDrawerContainer } from '../common/BuilderDrawerContainer'
 
+import {
+  ChildrenCompoundFieldMyInfo,
+  EditMyInfoChildren,
+} from './edit-fieldtype/EditMyInfoChildren'
 import {
   EditAttachment,
   EditCheckbox,
@@ -99,6 +108,14 @@ interface MemoFieldDrawerContentProps {
 export const MemoFieldDrawerContent = memo<MemoFieldDrawerContentProps>(
   ({ field, ...props }) => {
     if (isMyInfo(field)) {
+      if (field?.myInfo?.attr === MyInfoAttribute.ChildrenBirthRecords) {
+        return (
+          <EditMyInfoChildren
+            {...props}
+            field={field as ChildrenCompoundFieldMyInfo}
+          />
+        )
+      }
       return <EditMyInfo {...props} field={field} />
     }
 
@@ -143,6 +160,10 @@ export const MemoFieldDrawerContent = memo<MemoFieldDrawerContentProps>(
         return <EditParagraph {...props} field={field} />
       case BasicField.Image:
         return <EditImage {...props} field={field} />
+      case BasicField.Children:
+      // Note: BasicField.Children's edit panel should
+      // only be a MyInfo edit panel. So this code path
+      // should not happen.
       default:
         return <div>TODO: Insert field options here</div>
     }

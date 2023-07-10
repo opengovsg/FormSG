@@ -3,6 +3,8 @@ import type { Opaque } from 'type-fest'
 import {
   BasicField,
   CheckboxResponse,
+  ChildBirthRecordsResponse,
+  MyInfoChildAttributes,
   TableResponse,
 } from '../../../../shared/types'
 import {
@@ -56,6 +58,8 @@ export type ProcessedSingleAnswerResponse<
 
 export type ProcessedCheckboxResponse = CheckboxResponse & ProcessedResponse
 export type ProcessedTableResponse = TableResponse & ProcessedResponse
+export type ProcessedChildrenResponse = ChildBirthRecordsResponse &
+  ProcessedResponse & { childSubFieldsArray: MyInfoChildAttributes[] }
 /**
  * Can be either email or storage mode attachment response.
  * Email mode attachment response in the server will have extra metadata injected
@@ -73,3 +77,4 @@ export type ProcessedFieldResponse =
   | ProcessedCheckboxResponse
   | ProcessedTableResponse
   | ProcessedAttachmentResponse
+  | ProcessedChildrenResponse
