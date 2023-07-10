@@ -39,9 +39,8 @@ export const VariablePaymentAmountField = ({
   return (
     <FormControl
       isReadOnly={isLoading}
-      isDisabled={isDisabled}
-      isInvalid={!!errors[MIN_FIELD_KEY] || !!errors[MAX_FIELD_KEY]}
-      isRequired
+      // these invalid checks are required to trigger FormErrorMessage to display
+      isInvalid={!!errors[MIN_FIELD_KEY]?.message || !!errors[MAX_FIELD_KEY]}
     >
       <FormLabel
         isRequired
@@ -50,7 +49,10 @@ export const VariablePaymentAmountField = ({
         Payment amount limit
       </FormLabel>
       <HStack>
-        <FormControl>
+        <FormControl
+          isInvalid={!!errors[MIN_FIELD_KEY]}
+          isDisabled={isDisabled}
+        >
           <FormLabel isRequired>Minimum Amount</FormLabel>
           <Controller
             name={MIN_FIELD_KEY}
@@ -67,7 +69,10 @@ export const VariablePaymentAmountField = ({
             )}
           />
         </FormControl>
-        <FormControl>
+        <FormControl
+          isInvalid={!!errors[MAX_FIELD_KEY]}
+          isDisabled={isDisabled}
+        >
           <FormLabel isRequired>Maximum Amount</FormLabel>
           <Controller
             name={MAX_FIELD_KEY}
