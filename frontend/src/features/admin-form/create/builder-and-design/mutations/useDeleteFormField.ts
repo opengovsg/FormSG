@@ -3,7 +3,11 @@ import { useMutation, useQueryClient } from 'react-query'
 import { useParams } from 'react-router-dom'
 
 import { PaymentType } from '~shared/types'
-import { AdminFormDto, AdminStorageFormDto } from '~shared/types/form'
+import {
+  AdminFormDto,
+  AdminStorageFormDto,
+  PaymentsUpdateDto,
+} from '~shared/types/form'
 
 import { useToast } from '~hooks/useToast'
 
@@ -32,9 +36,9 @@ export const useDeleteFormField = () => {
   const { formId } = useParams()
   if (!formId) throw new Error('No formId provided')
 
-  const paymentDeleteDefault = {
+  const paymentDeleteDefault: PaymentsUpdateDto = {
     enabled: false,
-    payment_type: PaymentType.Fixed as PaymentType.Fixed,
+    payment_type: PaymentType.Fixed,
     amount_cents: 0,
   }
 
