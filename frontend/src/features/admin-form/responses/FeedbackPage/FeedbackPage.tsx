@@ -139,7 +139,7 @@ export const FeedbackPage = (): JSX.Element => {
     >
       <Grid
         mb="1rem"
-        minH="4rem"
+        minH={{ md: '4rem' }}
         alignItems="end"
         color="secondary.500"
         gridTemplateColumns={{ base: 'auto', md: 'auto 7fr 1fr' }}
@@ -167,6 +167,7 @@ export const FeedbackPage = (): JSX.Element => {
               currentFeedbackType,
               FeedbackType.Issues,
             )}
+            sx={{ borderRightWidth: '0px' }}
             onClick={() => setCurrentFeedbackType(FeedbackType.Issues)}
           >
             Issues
@@ -255,7 +256,7 @@ const getReviewInformationComponent = (
           <Text as="span" color="primary.500">
             {count}
           </Text>
-          {simplur` ${[count || 0]}feedback submission[|s] to date`}
+          {simplur` ${[count || 0]}review[|s] to date`}
         </Text>
       </Box>
     </Grid>
@@ -266,20 +267,20 @@ const getIssueInformationComponent = (
   count: number | undefined,
 ): JSX.Element => {
   return (
-    <Box>
-      <Text textStyle="h4" mb="0.5rem">
+    <Box display="flex" alignItems="center" mb="0.5rem">
+      <Text textStyle="h4">
         <Text as="span" color="primary.500">
           {count}
         </Text>
         {simplur` ${[count || 0]}issue[|s] to date`}
-        <Tooltip
-          label={`Feedback displayed here relates to form submission issues`}
-          placement="top"
-          textAlign="center"
-        >
-          <Icon as={BxsInfoCircle} aria-hidden marginX="0.5rem" />
-        </Tooltip>
       </Text>
+      <Tooltip
+        label={`Feedback displayed here relates to form submission issues`}
+        placement="top"
+        textAlign="center"
+      >
+        <Icon as={BxsInfoCircle} aria-hidden marginX="0.5rem" />
+      </Tooltip>
     </Box>
   )
 }
