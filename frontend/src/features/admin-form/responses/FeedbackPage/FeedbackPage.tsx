@@ -266,23 +266,21 @@ const getIssueInformationComponent = (
   count: number | undefined,
 ): JSX.Element => {
   return (
-    <div>
-      <Box>
-        <Text textStyle="h4" mb="0.5rem">
-          <Text as="span" color="primary.500">
-            {count}
-          </Text>
-          {simplur` ${[count || 0]}issue[|s] to date`}
-          <Tooltip
-            label={`Feedback displayed here relates to form submission issues`}
-            placement="top"
-            textAlign="center"
-          >
-            <Icon as={BxsInfoCircle} aria-hidden marginX="0.5rem" />
-          </Tooltip>
+    <Box>
+      <Text textStyle="h4" mb="0.5rem">
+        <Text as="span" color="primary.500">
+          {count}
         </Text>
-      </Box>
-    </div>
+        {simplur` ${[count || 0]}issue[|s] to date`}
+        <Tooltip
+          label={`Feedback displayed here relates to form submission issues`}
+          placement="top"
+          textAlign="center"
+        >
+          <Icon as={BxsInfoCircle} aria-hidden marginX="0.5rem" />
+        </Tooltip>
+      </Text>
+    </Box>
   )
 }
 
@@ -298,19 +296,18 @@ const getInformationGridComponent = (
 }
 
 const getFeedbackTypeButtonProps = (
-  currentFeedbackType: FeedbackType,
-  requiredFeedbackType: FeedbackType,
+  selectedFeedbackType: FeedbackType,
+  feedbackType: FeedbackType,
 ): ButtonProps => {
-  if (currentFeedbackType === requiredFeedbackType) {
-    return {
-      colorScheme: 'primary',
-      isActive: true,
-    }
-  }
-  return {
-    colorScheme: 'secondary',
-    isActive: false,
-  }
+  return selectedFeedbackType === feedbackType
+    ? {
+        colorScheme: 'primary',
+        isActive: true,
+      }
+    : {
+        colorScheme: 'secondary',
+        isActive: false,
+      }
 }
 
 const getFeedBackDownloadButtonProps = (
