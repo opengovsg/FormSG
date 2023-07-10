@@ -165,11 +165,7 @@ const PaymentInput = ({ isDisabled }: { isDisabled: boolean }) => {
 
   return (
     <CreatePageDrawerContentContainer>
-      <FormControl
-        isRequired
-        isDisabled={isDisabled}
-        isReadOnly={paymentsMutation.isLoading}
-      >
+      <FormControl isRequired isReadOnly={paymentsMutation.isLoading}>
         <FormLabel>Payment type</FormLabel>
         <Controller
           name={'payment_type'}
@@ -208,7 +204,6 @@ const PaymentInput = ({ isDisabled }: { isDisabled: boolean }) => {
           Product/service name
         </FormLabel>
         <Input
-          placeholder="Product/service name"
           {...register('name', {
             required: 'This field is required',
           })}
@@ -217,17 +212,11 @@ const PaymentInput = ({ isDisabled }: { isDisabled: boolean }) => {
       </FormControl>
       <FormControl
         isReadOnly={paymentsMutation.isLoading}
-        isInvalid={!!errors.description}
         isDisabled={isDisabled}
         isRequired
       >
         <FormLabel>Description</FormLabel>
-        <Textarea
-          placeholder="Product/service name"
-          {...register('description', {
-            required: 'This field is required',
-          })}
-        />
+        <Textarea {...register('description')} />
         <FormErrorMessage>{errors.description?.message}</FormErrorMessage>
       </FormControl>
       {paymentsData?.payment_type === PaymentType.Variable ? (
