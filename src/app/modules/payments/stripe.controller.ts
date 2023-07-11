@@ -295,10 +295,9 @@ const _handleConnectOauthCallback: ControllerHandler<
   unknown,
   unknown,
   unknown,
-  { code: string; state: string }
+  { code?: string; state: string }
 > = async (req, res) => {
   const { code, state } = req.query
-
   // Step 0: Extract state parameter previously signed and stored in cookies.
   // Compare state values to ensure that no tampering has occurred.
   const { stripeState } = req.signedCookies
@@ -309,9 +308,14 @@ const _handleConnectOauthCallback: ControllerHandler<
   }
 
   // Step 1: Retrieve formId from state.
+  // Redirect user back to payments page if code is undefined
   const formId = state.split('.')[0]
   const redirectUrl = `${config.app.appUrl}/admin/form/${formId}/settings/payments`
-  // Step 2: Retrieve currently logged in user.
+  if (!code) {
+    return res.redirect(redirectUrl)
+  }
+
+  // Step 2: Retrieve currently logged-in user.
   return (
     FormService.retrieveFullFormById(formId)
       .andThen(checkFormIsEncryptMode)
@@ -343,10 +347,12 @@ const _handleConnectOauthCallback: ControllerHandler<
   )
 }
 
+export const _handleConnectOauthCallbackForTest = _handleConnectOauthCallback
+
 export const handleConnectOauthCallback = [
   celebrate({
     [Segments.QUERY]: Joi.object({
-      code: Joi.string().required(),
+      code: Joi.string(),
       state: Joi.string().required(),
     }).unknown(true),
   }),
