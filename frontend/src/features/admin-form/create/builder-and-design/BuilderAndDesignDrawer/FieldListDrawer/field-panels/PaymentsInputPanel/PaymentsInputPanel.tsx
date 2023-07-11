@@ -61,7 +61,13 @@ export type FormPaymentsInput = Omit<
   display_max_amount: string
 }
 
-const PaymentInput = ({ isDisabled }: { isDisabled: boolean }) => {
+const PaymentInput = ({
+  isDisabled,
+  isEncryptMode,
+}: {
+  isDisabled: boolean
+  isEncryptMode: boolean
+}) => {
   const { paymentsMutation } = useMutateFormPage()
 
   const setIsDirty = useDirtyFieldStore(setIsDirtySelector)
@@ -167,7 +173,7 @@ const PaymentInput = ({ isDisabled }: { isDisabled: boolean }) => {
     <CreatePageDrawerContentContainer>
       <FormControl
         isRequired
-        isDisabled={isDisabled}
+        isDisabled={!isEncryptMode} // only encrypt mode forms can be payment forms
         isReadOnly={paymentsMutation.isLoading}
       >
         <FormLabel>Payment type</FormLabel>
@@ -200,36 +206,27 @@ const PaymentInput = ({ isDisabled }: { isDisabled: boolean }) => {
       </FormControl>
       <FormControl
         isReadOnly={paymentsMutation.isLoading}
-        isInvalid={!!errors.description}
+        isInvalid={!!errors.name}
         isDisabled={isDisabled}
         isRequired
       >
-        <FormLabel description="This will be reflected on the payment invoice">
+        <FormLabel description="This will be reflected on the proof of payment">
           Product/service name
         </FormLabel>
         <Input
-          placeholder="Product/service name"
           {...register('name', {
-            required: 'Please enter a payment description',
+            required: 'This field is required',
           })}
         />
         <FormErrorMessage>{errors.name?.message}</FormErrorMessage>
       </FormControl>
       <FormControl
         isReadOnly={paymentsMutation.isLoading}
-        isInvalid={!!errors.description}
         isDisabled={isDisabled}
         isRequired
       >
-        <FormLabel description="This will be reflected on the payment invoice">
-          Description
-        </FormLabel>
-        <Textarea
-          placeholder="Product/service name"
-          {...register('description', {
-            required: 'Please enter a payment description',
-          })}
-        />
+        <FormLabel>Description</FormLabel>
+        <Textarea {...register('description')} />
         <FormErrorMessage>{errors.description?.message}</FormErrorMessage>
       </FormControl>
       {paymentsData?.payment_type === PaymentType.Variable ? (
@@ -315,7 +312,10 @@ export const PaymentsInputPanel = (): JSX.Element | null => {
           <InlineMessage variant="info">{paymentDisabledMessage}</InlineMessage>
         </Box>
       )}
-      <PaymentInput isDisabled={isPaymentDisabled} />
+      <PaymentInput
+        isDisabled={isPaymentDisabled}
+        isEncryptMode={isEncryptMode}
+      />
     </>
   )
 }

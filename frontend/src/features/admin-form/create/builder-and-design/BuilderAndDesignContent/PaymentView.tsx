@@ -92,6 +92,10 @@ export const PaymentView = () => {
   if (!paymentDetails.enabled && paymentState !== PaymentState.EditingPayment)
     return null
 
+  const paymentDetailsWithPlaceholderPreview: typeof paymentDetails = {
+    ...paymentDetails,
+    name: paymentDetails.name || 'Product/service name',
+  }
   return (
     <Box w="100%" maxW="57rem" alignSelf="center" ref={paymentRef}>
       <FormProvider {...formMethods}>
@@ -110,7 +114,7 @@ export const PaymentView = () => {
             <Box p={{ base: '0.75rem', md: '1.5rem' }}>
               <PaymentPreview
                 colorTheme={form?.startPage.colorTheme}
-                paymentDetails={paymentDetails}
+                paymentDetails={paymentDetailsWithPlaceholderPreview}
                 isBuilder
               />
             </Box>

@@ -10,6 +10,7 @@ export const usePaymentFieldValidation = <
 >(options?: {
   greaterThanCents?: number
   lesserThanCents?: number
+  msgWhenEmpty?: string
 }) => {
   const {
     data: {
@@ -21,12 +22,17 @@ export const usePaymentFieldValidation = <
   const {
     lesserThanCents: maxCents = Number.MAX_SAFE_INTEGER,
     greaterThanCents: minCents = Number.MIN_SAFE_INTEGER,
+    msgWhenEmpty = '',
   } = options || {}
   const maxCentsLimit = Math.min(maxCents, maxPaymentAmountCents)
   const minCentsLimit = Math.max(minCents, minPaymentAmountCents)
 
   const amountValidation: RegisterOptions<T, V> = {
     validate: (val) => {
+      if (!val && msgWhenEmpty) {
+        return msgWhenEmpty
+      }
+
       // Validate that it is a money value.
       // Regex allows leading and trailing spaces, max 2dp
       const validateMoney = /^\s*(\d+)(\.\d{0,2})?\s*$/.test(val ?? '')
@@ -36,7 +42,7 @@ export const usePaymentFieldValidation = <
         !!minCentsLimit && !!val && dollarsToCents(val) >= minCentsLimit
       // Repeat the check on minCentsLimit for correct typing
       if (!!minCentsLimit && !validateMin) {
-        return `The minimum amount is ${formatCurrency(
+        return `The minimum amount is S${formatCurrency(
           Number(centsToDollars(minCentsLimit)),
         )}`
       }
@@ -45,7 +51,7 @@ export const usePaymentFieldValidation = <
         !!maxCentsLimit && !!val && dollarsToCents(val) <= maxCentsLimit
       // Repeat the check on maxCentsLimit for correct typing
       if (!!maxCentsLimit && !validateMax) {
-        return `The maximum amount is ${formatCurrency(
+        return `The maximum amount is S${formatCurrency(
           Number(centsToDollars(maxCentsLimit)),
         )}`
       }
