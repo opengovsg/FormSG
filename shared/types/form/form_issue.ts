@@ -2,6 +2,12 @@ import { FormDto } from './form'
 import { Merge } from 'type-fest'
 import { DateString } from '../generic'
 
+export type SubmitFormIssueBodyDto = {
+  isPreview?: boolean
+  issue: string
+  email?: string
+}
+
 /**
  * Typing for individual form issue
  */

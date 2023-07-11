@@ -1,4 +1,4 @@
-import { SuccessMessageDto } from '~shared/types'
+import { SubmitFormIssueBodyDto, SuccessMessageDto } from '~shared/types'
 import { FormFieldDto, PaymentFieldsDto } from '~shared/types/field'
 import {
   PublicFormAuthLogoutDto,
@@ -262,5 +262,21 @@ export const submitFormFeedback = async (
   return ApiService.post<SuccessMessageDto>(
     `${PUBLIC_FORMS_ENDPOINT}/${formId}/submissions/${submissionId}/feedback`,
     feedbackToPost,
+  ).then(({ data }) => data)
+}
+
+/**
+ * Post issue for a given form.
+ * @param formId the id of the form to post feedback for
+ * @param issueToPost object containing the issue
+ * @returns success message
+ */
+export const submitFormIssue = async (
+  formId: string,
+  issueToPost: SubmitFormIssueBodyDto,
+): Promise<SuccessMessageDto> => {
+  return ApiService.post<SuccessMessageDto>(
+    `${PUBLIC_FORMS_ENDPOINT}/${formId}/issue`,
+    issueToPost,
   ).then(({ data }) => data)
 }
