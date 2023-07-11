@@ -8,7 +8,7 @@
  */
 
 
-/** Comments:
+/** General Comments:
  * 
  * Type indicators created as a const Set<string>(). Maintain by adding new 
  * codes here. 
@@ -17,8 +17,10 @@
  * standardise -> convert to uppercase and remove whitespace
  * isNumeric and isAlphabetic are self explanatory.  
  *
- * isUenValid is a wrapper over core validate function that mimics 
- * Core function returns boolean 
+ * isUenValid is a wrapper over the validate function that serves as an 
+ * orchestrater for subsequent function calls. validate parses UEN and evaluates 
+ * if UEN is Business UEN based on ROB, Local Comany UEN based on ROC, or Other 
+ * UEN. 
  * 
  * Error Handling: 
  * All invalid UEN numbers will returned an empty string that will be 
@@ -33,7 +35,7 @@
  *  
  */
 
-const VALID_ENTITY_TYPE_INDICATORS = new Set<string>([
+export const VALID_ENTITY_TYPE_INDICATORS = new Set<string>([
   // ACRA
   'BN',
   'LP',
@@ -121,27 +123,28 @@ const VALID_ENTITY_TYPE_INDICATORS = new Set<string>([
  * @param s String
  * @returns True if string is numeric
  */
-const standardise = (s: string): string => s.toUpperCase().trim()
+export const standardise = (s: string): string => s.toUpperCase().trim()
 
 /**
  * Helper to check whether a string is numeric
  * @param s String
  * @returns True if string is numeric
  */
-const isNumeric = (s: string): boolean => !!s.match(/^[0-9]+$/)
+export const isNumeric = (s: string): boolean => !!s.match(/^[0-9]+$/)
 
 /**
  * Helper to check whether a string is alphabetic
  * @param s string
  * @returns True if string is alphabetic
  */
-const isAlphabetic = (s: string): boolean => !!s.match(/^[a-zA-Z]+$/)
+export const isAlphabetic = (s: string): boolean => !!s.match(/^[a-zA-Z]+$/)
 
 /**
- * @param number Helper for business checksum
+ * Helper for business checksum
+ * @param number 
  * @returns 
  */
-const calc_business_check_digit = (number: string): string =>{
+export const calc_business_check_digit = (number: string): string =>{
   const weights = [10, 4, 9, 3, 8, 2, 7, 1]
   const alpha = 'XMKECAWLJDB'.split('')
   const num_list = number.split('')
@@ -159,7 +162,7 @@ const calc_business_check_digit = (number: string): string =>{
  * @param number 
  * @returns number if Business UEN
  */
-const validate_business = (number: string): string  =>{
+export const validate_business = (number: string): string  =>{
   if (!isNumeric(number.slice(0,-1))){
     return ""
   } 
@@ -173,10 +176,11 @@ const validate_business = (number: string): string  =>{
 }
 
 /**
- * @param number Helper for local company checksum
+ * Helper for local company checksum
+ * @param number 
  * @returns 
  */
-const calc_local_company_check_digit = (number: string): string =>{
+export const calc_local_company_check_digit = (number: string): string =>{
   const weights = [10, 8, 6, 4, 9, 7, 5, 3, 1]
   const alpha = 'ZKCMDNERGWH'.split('')
   const num_list = number.split('')
@@ -193,7 +197,7 @@ const calc_local_company_check_digit = (number: string): string =>{
  * @param number 
  * @returns number if local company UEN
  */
-const validate_local_company = (number: string): string =>{
+export const validate_local_company = (number: string): string =>{
   if (!isNumeric(number.slice(-1))){
     return ""
   }
@@ -208,10 +212,11 @@ const validate_local_company = (number: string): string =>{
 }
 
 /**
- * @param number Helper for others checksum
+ * Helper for others checksum
+ * @param number 
  * @returns 
  */
-const calc_other_check_digit = (number: string): string =>{
+export const calc_other_check_digit = (number: string): string =>{
   const weights = [4, 3, 5, 3, 10, 2, 2, 5, 7]
   const alpha = 'ABCDEFGHJKLMNPQRSTUVWX0123456789'.split('')
   const num_list = number.split('')
@@ -231,7 +236,7 @@ const calc_other_check_digit = (number: string): string =>{
  * @param number 
  * @returns number if other UEN
  */
-const validate_other = (number: string): string =>{
+export const validate_other = (number: string): string =>{
   let rst = ['R', 'S', 'T'] 
   if (rst.indexOf(number.slice(0)) === -1){
     return ""
@@ -257,37 +262,41 @@ const validate_other = (number: string): string =>{
 }
 
 /**
- * Validates whether a provided string value adheres to the UIN/FIN format
- * as provided on the Singapore Government's National Registration Identity Card.
- * @param number The value to be validated
+ * Heart of the validation function. Parses given UEN and decide which function 
+ * to call base on the perceived UEN type. 
+ * 
+ * Business UEN based on ROB 
+ * Local Comany UEN based on ROC
+ * Other UEN.
+ *  
+ * @param number string that represemts the UEN
+ * @returns number if UEN is valid
  */
 export const validate = (number: string): string => {
-
   number = standardise(number)
-
   if (number.length !== 9 && number.length !== 10){
     return ""
   } 
-
   if (number.length === 9){
     return validate_business(number)
   }
-
   if (isNumeric(number.slice(0))){
     return validate_local_company(number)
   }
-
   return validate_other(number)
-
 }
 
+/**
+ * Validates whether a provided string value adheres to the UEN format
+ * as provided by the Singapore Government. Wrapper for validate()
+ * @param uen string of value to be validated
+ * @returns True if uen is valid
+ */
 export const isUenValid = (uen: string): boolean => {
   uen = standardise(uen)
   if (validate(uen) === uen){
     return true
   } 
-
   return false
 }
 
-export { };
