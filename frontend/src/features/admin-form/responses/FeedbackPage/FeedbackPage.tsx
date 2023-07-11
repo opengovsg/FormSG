@@ -185,6 +185,7 @@ export const FeedbackPage = (): JSX.Element => {
               reviewProps,
             )}
             handleClick={handleFeedbackDownloadClick}
+            isMobile={isMobile}
           />
         </Box>
       </Grid>
