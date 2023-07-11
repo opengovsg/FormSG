@@ -142,26 +142,21 @@ export const FeedbackPage = (): JSX.Element => {
         minH={{ md: '4rem' }}
         alignItems="end"
         color="secondary.500"
-        gridTemplateColumns={{ base: 'auto', md: 'auto 7fr 1fr' }}
+        gridTemplateColumns={{ base: 'auto', md: '1fr auto auto' }}
         gridGap={{ base: '0.5rem', md: '1.5rem' }}
         gridTemplateAreas={{
-          base: "'information' 'feedbackType' 'export'",
+          base: "'information information' 'feedbackType export'",
           md: "'information feedbackType export'",
         }}
       >
-        <Container gridArea="information">
+        <Box gridArea="information" pl="0rem">
           {getInformationGridComponent(
             currentFeedbackType,
             issueProps,
             reviewProps,
           )}
-        </Container>
-        <ButtonGroup
-          gridArea="feedbackType"
-          justifySelf="flex-end"
-          isAttached
-          variant="outline"
-        >
+        </Box>
+        <ButtonGroup gridArea="feedbackType" isAttached variant="outline">
           <Button
             {...getFeedbackTypeButtonProps(
               currentFeedbackType,
@@ -236,7 +231,7 @@ const getReviewInformationComponent = (
 ): JSX.Element => {
   return (
     <Grid
-      gridTemplateColumns={{ base: 'auto', md: 'auto auto' }}
+      gridTemplateColumns={{ base: 'auto', md: 'auto 1fr' }}
       gridGap={{ base: '0.5rem', md: '1.5rem' }}
       gridTemplateAreas={{
         base: "'submissions' 'score'",

@@ -30,13 +30,14 @@ export const FeedbackPageSkeletonMobile = (): JSX.Element => {
     <Container maxW="69.5rem" mt="1.5rem">
       <Skeleton w="14rem" h="2rem" />
       <Box
-        flexDir="column"
+        flexDir="row"
         display="flex"
-        justifyContent="flex-end"
+        justifyContent="space-between"
         alignItems="flex-end"
+        mt="0.5rem"
       >
-        <Skeleton w="8rem" h="2rem" mt="0.5rem" />
-        <Skeleton w="4.5rem" h="2rem" mt="0.5rem" />
+        <Skeleton w="8rem" h="2rem" />
+        <Skeleton w="4.5rem" h="2rem" ml="0.5rem" />
       </Box>
     </Container>
   )
