@@ -2,19 +2,24 @@ import convict, { Schema } from 'convict'
 
 import { PUBLIC_PAYMENTS_GUIDE_LINK } from '../../../../shared/constants'
 
-export interface IStripe {
+interface IStripe {
   defaultCurrency: string
   stripePublishableKey: string
   stripeSecretKey: string
   stripeClientID: string
   stripeWebhookSecret: string
+}
+interface IPaymentConfig {
+  defaultCurrency: string
   maxPaymentAmountCents: number
   minPaymentAmountCents: number
   guideLink: string
   landingGuideLink: string
 }
 
-const paymentFeature: Schema<IStripe> = {
+interface IPaymentFeature extends IStripe, IPaymentConfig {}
+
+const paymentFeature: Schema<IPaymentFeature> = {
   defaultCurrency: {
     doc: 'Default currency for all payments',
     format: String,

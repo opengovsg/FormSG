@@ -26,6 +26,9 @@ export interface SharedSelectContextReturnProps<
   name: string
   /** Item data used to render items in dropdown */
   items: Item[]
+
+  /** Renders without overflow limit */
+  fullWidth?: boolean
 }
 
 interface SelectContextReturn<Item extends ComboboxItem = ComboboxItem>

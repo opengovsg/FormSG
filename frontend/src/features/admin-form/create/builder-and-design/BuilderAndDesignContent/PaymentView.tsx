@@ -1,14 +1,22 @@
-import { useEffect, useRef } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
-import { Box } from '@chakra-ui/react'
+import { BiCog, BiTrash } from 'react-icons/bi'
+import { Box, ButtonGroup, Collapse, Flex } from '@chakra-ui/react'
 
 import { FormFieldDto, FormResponseMode } from '~shared/types'
 
+import { useIsMobile } from '~hooks/useIsMobile'
+import IconButton from '~components/IconButton'
+import Tooltip from '~components/Tooltip'
 import { PaymentPreview } from '~templates/Field/PaymentPreview/PaymentPreview'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
 
-import { useCreatePageSidebar } from '../../common/CreatePageSidebarContext'
+import {
+  CreatePageSidebarContextProps,
+  useCreatePageSidebar,
+} from '../../common/CreatePageSidebarContext'
+import { useBuilderAndDesignContext } from '../BuilderAndDesignContext'
 import {
   dataSelector,
   PaymentState,
@@ -30,8 +38,7 @@ import {
 
 export const PaymentView = () => {
   const { data: form } = useAdminForm()
-  const { handleClose, handleBuilderClick, setFieldListTabIndex } =
-    useCreatePageSidebar()
+  const { handleBuilderClick, setFieldListTabIndex } = useCreatePageSidebar()
   const { paymentFromStore, paymentState, setToEditingPayment } =
     usePaymentStore((state) => ({
       paymentFromStore: dataSelector(state),
@@ -44,6 +51,8 @@ export const PaymentView = () => {
   )
   const setDesignState = useDesignStore(setDesignStateSelector)
   const isDirty = useDirtyFieldStore(isDirtySelector)
+
+  const isMobile = useIsMobile()
 
   const formMethods = useForm<FormFieldDto>({
     mode: 'onChange',
@@ -75,12 +84,15 @@ export const PaymentView = () => {
     setFieldBuilderToInactive()
     setDesignState(DesignState.Inactive)
 
-    handleClose(false)
-    handleBuilderClick(false)
+    if (!isMobile) handleBuilderClick(false)
     setFieldListTabIndex(FieldListTabIndex.Payments)
   }
 
-  return paymentDetails.enabled ? (
+  // if payment isn't enabled or payment builder isn't opened
+  if (!paymentDetails.enabled && paymentState !== PaymentState.EditingPayment)
+    return null
+
+  return (
     <Box w="100%" maxW="57rem" alignSelf="center" ref={paymentRef}>
       <FormProvider {...formMethods}>
         <Box mt="2.5rem" bg="white" py="2.5rem" px="1.5rem">
@@ -102,9 +114,64 @@ export const PaymentView = () => {
                 isBuilder
               />
             </Box>
+            <Collapse in={isActive} style={{ width: '100%' }}>
+              {isActive && paymentDetails.enabled && (
+                <PaymentButtonGroup
+                  isMobile={isMobile}
+                  handleBuilderClick={handleBuilderClick}
+                />
+              )}
+            </Collapse>
           </Box>
         </Box>
       </FormProvider>
     </Box>
-  ) : null
+  )
+}
+
+const PaymentButtonGroup = ({
+  isMobile,
+  handleBuilderClick,
+}: {
+  isMobile: boolean
+  handleBuilderClick: CreatePageSidebarContextProps['handleBuilderClick']
+}) => {
+  const handleEditFieldClick = useCallback(() => {
+    if (isMobile) {
+      handleBuilderClick(false)
+    }
+  }, [handleBuilderClick, isMobile])
+
+  const {
+    deletePaymentModalDisclosure: { onOpen: onDeleteModalOpen },
+  } = useBuilderAndDesignContext()
+
+  return (
+    <Flex
+      px={{ base: '0.75rem', md: '1.5rem' }}
+      flex={1}
+      borderTop="1px solid var(--chakra-colors-neutral-300)"
+      justify="flex-end"
+    >
+      <ButtonGroup variant="clear" colorScheme="secondary" spacing={0}>
+        {isMobile && (
+          <IconButton
+            variant="clear"
+            colorScheme="secondary"
+            aria-label="Edit field"
+            icon={<BiCog fontSize="1.25rem" />}
+            onClick={handleEditFieldClick}
+          />
+        )}
+        <Tooltip label="Delete field">
+          <IconButton
+            colorScheme="danger"
+            aria-label="Delete field"
+            icon={<BiTrash fontSize="1.25rem" />}
+            onClick={onDeleteModalOpen}
+          />
+        </Tooltip>
+      </ButtonGroup>
+    </Flex>
+  )
 }

@@ -1,5 +1,5 @@
 import { SubmitFormIssueBodyDto, SuccessMessageDto } from '~shared/types'
-import { FormFieldDto } from '~shared/types/field'
+import { FormFieldDto, PaymentFieldsDto } from '~shared/types/field'
 import {
   PublicFormAuthLogoutDto,
   PublicFormAuthRedirectDto,
@@ -78,11 +78,13 @@ export const logoutPublicForm = async (
 export type SubmitEmailFormArgs = {
   formId: string
   captchaResponse?: string | null
+  captchaType?: string
   formFields: FormFieldDto[]
   formLogics: FormDto['form_logics']
   formInputs: FormFieldValues
   responseMetadata?: ResponseMetadata
   paymentReceiptEmail?: string
+  payments?: PaymentFieldsDto
 }
 
 export type SubmitStorageFormArgs = SubmitEmailFormArgs & { publicKey: string }
@@ -93,6 +95,7 @@ export const submitEmailModeForm = async ({
   formInputs,
   formId,
   captchaResponse = null,
+  captchaType = '',
   responseMetadata,
 }: SubmitEmailFormArgs): Promise<SubmissionResponseDto> => {
   const filteredInputs = filterHiddenInputs({
@@ -112,6 +115,7 @@ export const submitEmailModeForm = async ({
     {
       params: {
         captchaResponse: String(captchaResponse),
+        captchaType: captchaType,
       },
     },
   ).then(({ data }) => data)
@@ -124,28 +128,31 @@ export const submitStorageModeForm = async ({
   formId,
   publicKey,
   captchaResponse = null,
+  captchaType = '',
   paymentReceiptEmail,
   responseMetadata,
+  payments,
 }: SubmitStorageFormArgs) => {
   const filteredInputs = filterHiddenInputs({
     formFields,
     formInputs,
     formLogics,
   })
-  const submissionContent = await createEncryptedSubmissionData(
+  const submissionContent = await createEncryptedSubmissionData({
     formFields,
-    filteredInputs,
+    formInputs: filteredInputs,
     publicKey,
     responseMetadata,
     paymentReceiptEmail,
-  )
-
+    payments,
+  })
   return ApiService.post<SubmissionResponseDto>(
     `${PUBLIC_FORMS_ENDPOINT}/${formId}/submissions/encrypt`,
     submissionContent,
     {
       params: {
         captchaResponse: String(captchaResponse),
+        captchaType,
       },
     },
   ).then(({ data }) => data)
@@ -158,6 +165,7 @@ export const submitEmailModeFormWithFetch = async ({
   formInputs,
   formId,
   captchaResponse = null,
+  captchaType = '',
   responseMetadata,
 }: SubmitEmailFormArgs): Promise<SubmissionResponseDto> => {
   const filteredInputs = filterHiddenInputs({
@@ -174,6 +182,7 @@ export const submitEmailModeFormWithFetch = async ({
   // Add captcha response to query string
   const queryString = new URLSearchParams({
     captchaResponse: String(captchaResponse),
+    captchaType,
   }).toString()
 
   const response = await fetch(
@@ -198,25 +207,29 @@ export const submitStorageModeFormWithFetch = async ({
   formId,
   publicKey,
   captchaResponse = null,
+  captchaType = '',
   paymentReceiptEmail,
   responseMetadata,
+  payments,
 }: SubmitStorageFormArgs) => {
   const filteredInputs = filterHiddenInputs({
     formFields,
     formInputs,
     formLogics,
   })
-  const submissionContent = await createEncryptedSubmissionData(
+  const submissionContent = await createEncryptedSubmissionData({
     formFields,
-    filteredInputs,
+    formInputs: filteredInputs,
     publicKey,
     responseMetadata,
     paymentReceiptEmail,
-  )
+    payments,
+  })
 
   // Add captcha response to query string
   const queryString = new URLSearchParams({
     captchaResponse: String(captchaResponse),
+    captchaType,
   }).toString()
 
   const response = await fetch(

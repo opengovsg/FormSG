@@ -18,6 +18,7 @@ import { transformMongoError } from '../../utils/handle-mongo-error'
 import { PossibleDatabaseError } from '../core/core.errors'
 import { SubmissionNotFoundError } from '../submission/submission.errors'
 
+import { WEBHOOK_MAX_CONTENT_LENGTH } from './webhook.constants'
 import {
   WebhookFailedWithAxiosError,
   WebhookFailedWithPresignedUrlGenerationError,
@@ -156,6 +157,8 @@ export const sendWebhook = (
                 signature,
               }),
             },
+            decompress: false,
+            maxContentLength: WEBHOOK_MAX_CONTENT_LENGTH,
             maxRedirects: 0,
             // Timeout after 10 seconds to allow for cold starts in receiver,
             // e.g. Lambdas

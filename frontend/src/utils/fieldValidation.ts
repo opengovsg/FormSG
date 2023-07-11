@@ -484,9 +484,7 @@ export const baseEmailValidationFn =
     if (!validator.isEmail(trimmedInputValue)) return INVALID_EMAIL_ERROR
 
     // Valid domain check
-    const allowedDomains = schema.isVerifiable
-      ? new Set(schema.allowedEmailDomains)
-      : new Set()
+    const allowedDomains = new Set(schema.allowedEmailDomains)
     if (allowedDomains.size !== 0) {
       const domainInValue = trimmedInputValue.split('@')[1].toLowerCase()
       if (domainInValue && !allowedDomains.has(`@${domainInValue}`)) {
