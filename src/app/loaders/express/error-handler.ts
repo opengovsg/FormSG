@@ -35,7 +35,7 @@ export const catchNonExistentStaticRoutesMiddleware: RequestHandler = async (
   try {
     const path = req.originalUrl.split(/[?#]/)[0] // drop (potential) query and hash, since they're not involved in traversal
 
-    if (/(^|\/)\.\.(\/|$)/.test(path)) {
+    if (/\.\.[/\\]/.test(path)) {
       // Path contains traversal token(s), we do not expect or allow that
       // Should we return a 400?
       throw new Error('Non-redirectable URL')
