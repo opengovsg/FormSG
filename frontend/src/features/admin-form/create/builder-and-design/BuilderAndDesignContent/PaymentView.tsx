@@ -95,7 +95,6 @@ export const PaymentView = () => {
   const paymentDetailsWithPlaceholderPreview: typeof paymentDetails = {
     ...paymentDetails,
     name: paymentDetails.name || 'Product/service name',
-    description: paymentDetails.description || 'Description',
   }
   return (
     <Box w="100%" maxW="57rem" alignSelf="center" ref={paymentRef}>
