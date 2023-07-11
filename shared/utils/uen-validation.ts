@@ -111,99 +111,10 @@ const VALID_ENTITY_TYPE_INDICATORS = new Set<string>([
   // SNDGO
   'GA',
   'GB',
+
+  // Foreign Entities
+  'UF' 
 ])
-
-
-// def calc_business_check_digit(number):
-//     """Calculate the check digit for the Business (ROB) number."""
-//     number = compact(number)
-//     weights = (10, 4, 9, 3, 8, 2, 7, 1)
-//     return 'XMKECAWLJDB'[sum(int(n) * w for n, w in zip(number, weights)) % 11]
-
-
-// def _validate_business(number):
-//     """Perform validation on UEN - Business (ROB) numbers."""
-//     if not isdigits(number[:-1]):
-//         raise InvalidFormat()
-//     if not number[-1].isalpha():
-//         raise InvalidFormat()
-//     if number[-1] != calc_business_check_digit(number):
-//         raise InvalidChecksum()
-//     return number
-
-
-// def calc_local_company_check_digit(number):
-//     """Calculate the check digit for the Local Company (ROC) number."""
-//     number = compact(number)
-//     weights = (10, 8, 6, 4, 9, 7, 5, 3, 1)
-//     return 'ZKCMDNERGWH'[sum(int(n) * w for n, w in zip(number, weights)) % 11]
-
-
-// def _validate_local_company(number):
-//     """Perform validation on UEN - Local Company (ROC) numbers."""
-//     if not isdigits(number[:-1]):
-//         raise InvalidFormat()
-//     current_year = str(datetime.now().year)
-//     if number[:4] > current_year:
-//         raise InvalidComponent()
-//     if number[-1] != calc_local_company_check_digit(number):
-//         raise InvalidChecksum()
-//     return number
-
-
-// def calc_other_check_digit(number):
-//     """Calculate the check digit for the other entities number."""
-//     number = compact(number)
-//     alphabet = 'ABCDEFGHJKLMNPQRSTUVWX0123456789'
-//     weights = (4, 3, 5, 3, 10, 2, 2, 5, 7)
-//     return alphabet[(sum(alphabet.index(n) * w for n, w in zip(number, weights)) - 5) % 11]
-
-
-// def _validate_other(number):
-//     """Perform validation on other UEN numbers."""
-//     if number[0] not in ('R', 'S', 'T'):
-//         raise InvalidComponent()
-//     if not isdigits(number[1:3]):
-//         raise InvalidFormat()
-//     current_year = str(datetime.now().year)
-//     if number[0] == 'T' and number[1:3] > current_year[2:]:
-//         raise InvalidComponent()
-//     if number[3:5] not in OTHER_UEN_ENTITY_TYPES:
-//         raise InvalidComponent()
-//     if not isdigits(number[5:-1]):
-//         raise InvalidFormat()
-//     if number[-1] != calc_other_check_digit(number):
-//         raise InvalidChecksum()
-//     return number
-
-
-// def validate(number): DONE
-//     """Check if the number is a valid Singapore UEN number."""
-//     number = compact(number)
-//     if len(number) not in (9, 10):
-//         raise InvalidLength()
-//     if len(number) == 9:
-//         return _validate_business(number)
-//     if isdigits(number[0]):
-//         return _validate_local_company(number)
-//     return _validate_other(number)
-
-
-// def is_valid(number): DONE
-//     """Check if the number is a valid Singapore UEN number."""
-//     try:
-//         return bool(validate(number))
-//     except ValidationError:
-//         return False
-
-
-// def format(number): DONE
-//     """Reformat the number to the standard presentation format."""
-//     return compact(number)
-
-
-
-
 
 /**
  * Helper to standardise format - uppercase and without whitespace  
@@ -226,9 +137,20 @@ const isNumeric = (s: string): boolean => !!s.match(/^[0-9]+$/)
  */
 const isAlphabetic = (s: string): boolean => !!s.match(/^[a-zA-Z]+$/)
 
+/**
+ * @param number Helper for business checksum
+ * @returns 
+ */
 const calc_business_check_digit = (number: string): string =>{
-  
-  return ""
+  const weights = [10, 4, 9, 3, 8, 2, 7, 1]
+  const alpha = 'XMKECAWLJDB'.split('')
+  const num_list = number.split('')
+  let sum = 0
+
+  for (let i = 0; i < weights.length; i ++){
+    sum += parseInt(num_list[i]) * weights[i]
+  }
+  return alpha[sum % 11]
 }
 
 /**
@@ -251,12 +173,56 @@ const validate_business = (number: string): string  =>{
 }
 
 /**
+ * @param number Helper for local company checksum
+ * @returns 
+ */
+const calc_local_company_check_digit = (number: string): string =>{
+  const weights = [10, 8, 6, 4, 9, 7, 5, 3, 1]
+  const alpha = 'ZKCMDNERGWH'.split('')
+  const num_list = number.split('')
+  let sum = 0
+
+  for (let i = 0; i < weights.length; i ++){
+    sum += parseInt(num_list[i]) * weights[i]
+  }
+  return alpha[sum % 11]
+}
+
+/**
  * Helper for local UEN. Validation baed on local company based (ROC) number
  * @param number 
  * @returns number if local company UEN
  */
 const validate_local_company = (number: string): string =>{
+  if (!isNumeric(number.slice(-1))){
+    return ""
+  }
+   let current_year = new Date().getFullYear()
+  if (parseInt(number.slice(0, 4)) > current_year){
+    return ""
+  }
+  if (number.slice(-1) !== calc_local_company_check_digit(number)){
+    return ""
+  }
   return number
+}
+
+/**
+ * @param number Helper for others checksum
+ * @returns 
+ */
+const calc_other_check_digit = (number: string): string =>{
+  const weights = [4, 3, 5, 3, 10, 2, 2, 5, 7]
+  const alpha = 'ABCDEFGHJKLMNPQRSTUVWX0123456789'.split('')
+  const num_list = number.split('')
+  let sum = 0
+
+  for (let i = 0; i < weights.length; i ++){
+    let n = num_list[i]
+    sum += alpha.indexOf(n) * weights[i]
+  }
+
+  return alpha[(sum - 5) % 11]
 }
 
 /**
@@ -266,6 +232,27 @@ const validate_local_company = (number: string): string =>{
  * @returns number if other UEN
  */
 const validate_other = (number: string): string =>{
+  let rst = ['R', 'S', 'T'] 
+  if (rst.indexOf(number.slice(0)) === -1){
+    return ""
+  }
+  if (!isNumeric(number.slice(1,3))){
+    return ""
+  }
+  let curr_year = parseInt(new Date().getFullYear().toString().substring(-2))
+  let uen_year = parseInt(number.slice(1,3))
+  if (number.slice(0) === 'T' && uen_year > curr_year){
+    return ""
+  }
+  if (!VALID_ENTITY_TYPE_INDICATORS.has(number.slice(3,5))){
+    return ""
+  }
+  if (!isNumeric(number.slice(5,-1))){
+    return ""
+  }
+  if (number.slice(-1) !== calc_other_check_digit(number)){
+    return ""
+  }
   return number
 }
 
@@ -292,76 +279,6 @@ export const validate = (number: string): string => {
 
   return validate_other(number)
 
-}
-
-
-/**
- * old
- */
-export const oldvalidate = (uen: string): string => {
-  // allow lowercase strings
-  uen = uen.toUpperCase()
-
-  // check if uen is 9 or 10 digits
-  if (uen.length < 9 || uen.length > 10) {
-    return false
-  }
-
-  // (A) Businesses registered with ACRA
-  if (uen.length === 9) {
-    // check that last character is a letter
-    const lastChar = uen[uen.length - 1]
-    if (!isAlphabetic(lastChar)) {
-      return false
-    }
-
-    // check that first 8 letters are all numbers
-    const first8Chars = uen.slice(0, 8)
-    if (!isNumeric(first8Chars)) {
-      return false
-    }
-
-    // (A) Businesses registered with ACRA (SUCCESS)
-    return true
-  }
-
-  // Length is 10
-  // check that last character is a letter
-  const lastChar = uen[uen.length - 1]
-  if (!isAlphabetic(lastChar)) {
-    return false
-  }
-
-  // (B) Local companies registered with ACRA
-  const first4Chars = uen.slice(0, 4)
-  if (isNumeric(first4Chars)) {
-    // if first 4 are digits then next 5 must be digits too
-    const next5Chars = uen.slice(4, 9)
-    return isNumeric(next5Chars)
-  }
-
-  // (C) All other entities which will be issued new UEN
-  // check that 1st letter is either T or S or R
-  const firstChar = uen[0]
-  if (!['T', 'S', 'R'].includes(firstChar)) {
-    return false
-  }
-
-  // check that 2nd and 3rd letters are numbers only
-  const chars2And3 = uen.slice(1, 3)
-  if (!isNumeric(chars2And3)) {
-    return false
-  }
-
-  // check entity-type indicator
-  const entityTypeIndicator = uen.slice(3, 5)
-  if (!VALID_ENTITY_TYPE_INDICATORS.has(entityTypeIndicator)) {
-    return false
-  }
-
-  // check that 6th to 9th letters are numbers only
-  const chars5To8 = uen.slice(5, 9)
-  return isNumeric(chars5To8)
 }
 
 export const isUenValid = (uen: string): boolean => {
