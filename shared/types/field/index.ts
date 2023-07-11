@@ -98,3 +98,7 @@ export type FieldCreateDto =
   | (FormField & { myInfo?: MyInfoField['myInfo'] })
   | MyInfoField
 export type FieldUpdateDto = FormFieldWithId
+
+type PaymentVariableAmountField = { amount_cents: number }
+
+export type PaymentFieldsDto = PaymentVariableAmountField

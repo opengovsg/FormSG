@@ -189,11 +189,11 @@ export const submitStorageModeFormPreview = async ({
     formInputs,
     formLogics,
   })
-  const submissionContent = await createEncryptedSubmissionData(
+  const submissionContent = await createEncryptedSubmissionData({
     formFields,
-    filteredInputs,
+    formInputs: filteredInputs,
     publicKey,
-  )
+  })
 
   return ApiService.post<SubmissionResponseDto>(
     `${ADMIN_FORM_ENDPOINT}/${formId}/preview/submissions/encrypt`,
@@ -247,11 +247,11 @@ export const submitStorageModeFormPreviewWithFetch = async ({
     formInputs,
     formLogics,
   })
-  const submissionContent = await createEncryptedSubmissionData(
+  const submissionContent = await createEncryptedSubmissionData({
     formFields,
-    filteredInputs,
+    formInputs: filteredInputs,
     publicKey,
-  )
+  })
 
   const response = await fetch(
     `${API_BASE_URL}${ADMIN_FORM_ENDPOINT}/${formId}/preview/submissions/encrypt`,

@@ -1,47 +1,45 @@
 import { useCallback, useEffect, useMemo } from 'react'
 import {
   Controller,
-  RegisterOptions,
   UnpackNestedValue,
   useForm,
   useWatch,
 } from 'react-hook-form'
 import { Link as ReactLink } from 'react-router-dom'
 import { useDebounce } from 'react-use'
-import { Box, FormControl, Link, Text } from '@chakra-ui/react'
+import { Box, FormControl, Link, Text, Textarea } from '@chakra-ui/react'
 import { cloneDeep } from 'lodash'
 
 import {
   FormPaymentsField,
   FormResponseMode,
   PaymentChannel,
+  PaymentType,
 } from '~shared/types'
 
+import { ADMINFORM_SETTINGS_PAYMENTS_SUBROUTE } from '~constants/routes'
 import { ADMIN_FEEDBACK_SESSION_KEY } from '~constants/sessionStorage'
 import { useSessionStorage } from '~hooks/useSessionStorage'
 import { centsToDollars, dollarsToCents } from '~utils/payments'
+import { SingleSelect } from '~components/Dropdown'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import InlineMessage from '~components/InlineMessage'
 import Input from '~components/Input'
-import MoneyInput from '~components/MoneyInput'
-import Toggle from '~components/Toggle'
 
 import { useMutateFormPage } from '~features/admin-form/common/mutations'
 import { useAdminForm } from '~features/admin-form/common/queries'
 
-import { useEnv } from '../../../../../../env/queries'
 import {
   CreatePageDrawerContentContainer,
   useCreatePageSidebar,
-} from '../../../../common'
-import { FieldListTabIndex } from '../../../constants'
+} from '../../../../../common'
+import { FieldListTabIndex } from '../../../../constants'
 import {
   setIsDirtySelector,
   useDirtyFieldStore,
-} from '../../../useDirtyFieldStore'
-import { FormFieldDrawerActions } from '../../EditFieldDrawer/edit-fieldtype/common/FormFieldDrawerActions'
-
+} from '../../../../useDirtyFieldStore'
+import { FormFieldDrawerActions } from '../../../EditFieldDrawer/edit-fieldtype/common/FormFieldDrawerActions'
 import {
   dataSelector,
   resetDataSelector,
@@ -49,26 +47,28 @@ import {
   setToEditingPaymentSelector,
   setToInactiveSelector,
   usePaymentStore,
-} from './usePaymentStore'
+} from '../usePaymentStore'
 
-const formatCurrency = new Intl.NumberFormat('en-SG', {
-  style: 'currency',
-  currency: 'SGD',
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2,
-}).format
+import { FixedPaymentAmountField } from './FixedPaymentAmountField'
+import { VariablePaymentAmountField } from './VariablePaymentAmountField'
 
-type FormPaymentsInput = {
-  enabled: boolean
-  description: string
+export type FormPaymentsInput = Omit<
+  FormPaymentsField,
+  'amount_cents' | 'min_amount' | 'max_amount'
+> & {
   display_amount: string
+  display_min_amount: string
+  display_max_amount: string
 }
 
-export const PaymentInput = ({ isDisabled }: { isDisabled: boolean }) => {
+const PaymentInput = ({
+  isDisabled,
+  isEncryptMode,
+}: {
+  isDisabled: boolean
+  isEncryptMode: boolean
+}) => {
   const { paymentsMutation } = useMutateFormPage()
-
-  const { data: { maxPaymentAmountCents, minPaymentAmountCents } = {} } =
-    useEnv()
 
   const setIsDirty = useDirtyFieldStore(setIsDirtySelector)
 
@@ -87,20 +87,23 @@ export const PaymentInput = ({ isDisabled }: { isDisabled: boolean }) => {
   )
 
   // unpack payment data for paymentAmount if it exists
-  const paymentAmountCents = paymentsData?.amount_cents
-
+  const formDefaultValues =
+    paymentsData?.payment_type === PaymentType.Variable
+      ? {
+          display_min_amount: centsToDollars(paymentsData?.min_amount ?? 0),
+          display_max_amount: centsToDollars(paymentsData?.max_amount ?? 0),
+        }
+      : { display_amount: centsToDollars(paymentsData?.amount_cents ?? 0) }
   const {
     register,
     formState: { errors, dirtyFields },
     control,
     handleSubmit,
-    trigger,
   } = useForm<FormPaymentsInput>({
     mode: 'onChange',
     defaultValues: {
       ...paymentsData,
-      // Change calculate display_amount value from amount_cents
-      display_amount: centsToDollars(paymentAmountCents ?? 0),
+      ...formDefaultValues,
     },
   })
 
@@ -115,11 +118,18 @@ export const PaymentInput = ({ isDisabled }: { isDisabled: boolean }) => {
 
   const handlePaymentsChanges = useCallback(
     (paymentsInputs: FormPaymentsInput) => {
-      const { display_amount, ...rest } = paymentsInputs
+      const {
+        display_amount,
+        display_min_amount,
+        display_max_amount,
+        ...rest
+      } = paymentsInputs
       setData({
         ...rest,
+        min_amount: dollarsToCents(display_min_amount ?? '0'),
+        max_amount: dollarsToCents(display_max_amount ?? '0'),
         amount_cents: dollarsToCents(display_amount ?? '0'),
-      } as FormPaymentsField)
+      })
     },
     [setData],
   )
@@ -137,43 +147,6 @@ export const PaymentInput = ({ isDisabled }: { isDisabled: boolean }) => {
     Object.values(clonedWatchedInputs),
   ])
 
-  const paymentIsEnabled = clonedWatchedInputs.enabled
-
-  const amountValidation: RegisterOptions<FormPaymentsInput, 'display_amount'> =
-    {
-      validate: (val) => {
-        if (!paymentIsEnabled) return true
-
-        // Validate that it is a money value.
-        // Regex allows leading and trailing spaces, max 2dp
-        const validateMoney = /^\s*(\d+)(\.\d{0,2})?\s*$/.test(val ?? '')
-        if (!validateMoney) return 'Please enter a valid payment amount'
-
-        const validateMin =
-          !!minPaymentAmountCents &&
-          !!val &&
-          dollarsToCents(val) >= minPaymentAmountCents
-        // Repeat the check on minPaymentAmountCents for correct typing
-        if (!!minPaymentAmountCents && !validateMin) {
-          return `Please enter a payment amount above ${formatCurrency(
-            Number(centsToDollars(minPaymentAmountCents)),
-          )}`
-        }
-
-        const validateMax =
-          !!maxPaymentAmountCents &&
-          !!val &&
-          dollarsToCents(val) <= maxPaymentAmountCents
-        // Repeat the check on maxPaymentAmountCents for correct typing
-        if (!!maxPaymentAmountCents && !validateMax) {
-          return `Please enter a payment amount below ${formatCurrency(
-            Number(centsToDollars(maxPaymentAmountCents)),
-          )}`
-        }
-        return true
-      },
-    }
-
   const handleUpdatePayments = handleSubmit(() => {
     if (isDisabled || !paymentsData) {
       // do not mutate if payments is disabled or unavailable
@@ -185,9 +158,8 @@ export const PaymentInput = ({ isDisabled }: { isDisabled: boolean }) => {
 
     // update sessionStorage to enable admin feedback
     setisAdminFeedbackEligible(true)
-
     return paymentsMutation.mutate(
-      { ...paymentsData, amount_cents: paymentAmountCents },
+      { ...paymentsData, enabled: true },
       {
         onSuccess: () => {
           setToInactive()
@@ -200,70 +172,80 @@ export const PaymentInput = ({ isDisabled }: { isDisabled: boolean }) => {
   return (
     <CreatePageDrawerContentContainer>
       <FormControl
-        isReadOnly={paymentsMutation.isLoading}
-        isDisabled={isDisabled}
-      >
-        <Toggle
-          {...register('enabled', {
-            // Retrigger validation to remove errors when payment is toggled from enabled -> disabled
-            onChange: () => paymentIsEnabled && trigger(),
-          })}
-          description="Payment field will not be shown when this is toggled off. Respondents can still submit the form."
-          label="Enable payment"
-        />
-      </FormControl>
-
-      <FormControl
-        isReadOnly={paymentsMutation.isLoading}
-        isInvalid={!!errors.description}
-        isDisabled={!paymentIsEnabled}
         isRequired
-      >
-        <FormLabel description="This will be reflected on the payment invoice">
-          Product/service name
-        </FormLabel>
-        <Input
-          placeholder="Product/service name"
-          {...register('description', {
-            required: paymentIsEnabled && 'Please enter a payment description',
-          })}
-        />
-        <FormErrorMessage>{errors.description?.message}</FormErrorMessage>
-      </FormControl>
-
-      <FormControl
+        isDisabled={!isEncryptMode} // only encrypt mode forms can be payment forms
         isReadOnly={paymentsMutation.isLoading}
-        isInvalid={!!errors.display_amount}
-        isDisabled={!paymentIsEnabled}
-        isRequired
       >
-        <FormLabel isRequired description="Amount should include GST">
-          Payment amount
-        </FormLabel>
+        <FormLabel>Payment type</FormLabel>
         <Controller
-          name="display_amount"
+          name={'payment_type'}
           control={control}
-          rules={amountValidation}
           render={({ field }) => (
-            <MoneyInput
-              flex={1}
-              step={0}
-              inputMode="decimal"
-              placeholder="0.00"
+            <SingleSelect
+              isClearable={false}
+              placeholder="Select Payment Type"
+              fullWidth
+              items={[
+                {
+                  value: PaymentType.Fixed,
+                  label: 'Fixed amount',
+                  description:
+                    'Payment amount is defined by form admin. Suitable for a product or service.',
+                },
+                {
+                  value: PaymentType.Variable,
+                  label: 'Variable amount',
+                  description:
+                    'Payment amount is defined by respondent. Suitable for donations or amounts unique to each respondent.',
+                },
+              ]}
               {...field}
             />
           )}
         />
-        <FormErrorMessage>{errors.display_amount?.message}</FormErrorMessage>
-        {Number(clonedWatchedInputs.display_amount) > 1000 ? (
-          <InlineMessage variant="warning" mt="2rem" useMarkdown>
-            You would need to issue your own invoice for amounts above S$1000.
-            [Learn more about
-            this](https://guide.form.gov.sg/faq/faq/payments#simplified-tax-invoices-versus-regular-tax-invoices)
-          </InlineMessage>
-        ) : null}
       </FormControl>
-
+      <FormControl
+        isReadOnly={paymentsMutation.isLoading}
+        isInvalid={!!errors.name}
+        isDisabled={isDisabled}
+        isRequired
+      >
+        <FormLabel description="This will be reflected on the proof of payment">
+          Product/service name
+        </FormLabel>
+        <Input
+          {...register('name', {
+            required: 'This field is required',
+          })}
+        />
+        <FormErrorMessage>{errors.name?.message}</FormErrorMessage>
+      </FormControl>
+      <FormControl
+        isReadOnly={paymentsMutation.isLoading}
+        isDisabled={isDisabled}
+        isRequired
+      >
+        <FormLabel>Description</FormLabel>
+        <Textarea {...register('description')} />
+        <FormErrorMessage>{errors.description?.message}</FormErrorMessage>
+      </FormControl>
+      {paymentsData?.payment_type === PaymentType.Variable ? (
+        <VariablePaymentAmountField
+          isLoading={paymentsMutation.isLoading}
+          errors={errors}
+          isDisabled={isDisabled}
+          control={control}
+          input={clonedWatchedInputs}
+        />
+      ) : (
+        <FixedPaymentAmountField
+          isLoading={paymentsMutation.isLoading}
+          errors={errors}
+          isDisabled={isDisabled}
+          control={control}
+          input={clonedWatchedInputs}
+        />
+      )}
       <FormFieldDrawerActions
         isLoading={paymentsMutation.isLoading}
         handleClick={handleUpdatePayments}
@@ -311,7 +293,7 @@ export const PaymentsInputPanel = (): JSX.Element | null => {
   ) : !isStripeConnected ? (
     <Text>
       Connect your Stripe account in{' '}
-      <Link as={ReactLink} to={`settings/payments`}>
+      <Link as={ReactLink} to={ADMINFORM_SETTINGS_PAYMENTS_SUBROUTE}>
         Settings
       </Link>{' '}
       to add payment field.
@@ -330,7 +312,10 @@ export const PaymentsInputPanel = (): JSX.Element | null => {
           <InlineMessage variant="info">{paymentDisabledMessage}</InlineMessage>
         </Box>
       )}
-      <PaymentInput isDisabled={isPaymentDisabled} />
+      <PaymentInput
+        isDisabled={isPaymentDisabled}
+        isEncryptMode={isEncryptMode}
+      />
     </>
   )
 }

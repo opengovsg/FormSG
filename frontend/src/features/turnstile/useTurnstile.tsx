@@ -1,11 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useIntervalWhen } from 'rooks'
 
-import { featureFlags } from '~shared/constants'
-
 import { useScript } from '~hooks/useScript'
-
-import { useIsFeatureEnabled } from '~features/feature-flags/queries'
 
 type TurnstileBaseConfig = {
   sitekey?: string
@@ -20,6 +16,7 @@ type TurnstileBaseConfig = {
 interface UseTurnstileProps extends TurnstileBaseConfig {
   // id of container to load Turnstile captcha in.
   containerID?: string
+  enableUsage: boolean
 }
 
 type TurnstileConfig = TurnstileBaseConfig & {
@@ -56,6 +53,7 @@ export const useTurnstile = ({
   execution = 'execute',
   theme = 'light',
   appearance = 'interaction-only',
+  enableUsage,
 }: UseTurnstileProps) => {
   useScript(
     'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit',
@@ -66,14 +64,6 @@ export const useTurnstile = ({
 
   const executionPromise = useRef<TurnstileExecutionCallback>({})
 
-  // Feature flag to control turnstile captcha rollout
-  // defaults to false
-  // Cloudflare Turnstile and Google reCaptcha should be mutually exclusive
-  // todo: remove after full rollout
-  const enableTurnstileFeatureFlag = useIsFeatureEnabled(
-    featureFlags.turnstile,
-    false,
-  )
   useIntervalWhen(
     () => {
       if (turnstile?.render) {
@@ -114,7 +104,7 @@ export const useTurnstile = ({
         'expired-callback': handleExpiry,
         'error-callback': handleError,
       }
-      if (enableTurnstileFeatureFlag) {
+      if (enableUsage) {
         const widget = turnstile?.render('#' + containerID, renderProps)
         setWidgetID(widget)
       }
@@ -123,7 +113,7 @@ export const useTurnstile = ({
     hasLoaded,
     widgetID,
     containerID,
-    enableTurnstileFeatureFlag,
+    enableUsage,
     sitekey,
     appearance,
     execution,
