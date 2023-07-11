@@ -1,9 +1,16 @@
 import { ObjectId } from 'bson'
+import { isEmpty } from 'lodash'
+import moment from 'moment-timezone'
 import mongoose from 'mongoose'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 
-import { IFormIssueSchema, IPopulatedForm } from 'src/types'
+import {
+  FormIssueStreamData,
+  IFormIssueSchema,
+  IPopulatedForm,
+} from 'src/types'
 
+import { FormIssueMetaDto, ProcessedIssueMeta } from '../../../../shared/types'
 import { createLoggerWithLabel } from '../../config/logger'
 import getFormIssueModel from '../../models/form_issue.server.model'
 import {
@@ -12,6 +19,7 @@ import {
 } from '../../services/mail/mail.errors'
 import MailService from '../../services/mail/mail.service'
 import { getStartOfDay } from '../../utils/date'
+import { getMongoErrorMessage } from '../../utils/handle-mongo-error'
 import { DatabaseError } from '../core/core.errors'
 import { FormNotFoundError } from '../form/form.errors'
 
@@ -175,4 +183,65 @@ export const notifyFormAdmin = ({
     },
   })
   return okAsync(false)
+}
+
+/**
+ * Returned processed object containing count of issues, and
+ * list of issue.
+ * @param formId the form to retrieve issue for
+ * @returns ok(issue response object) on success
+ * @returns err(DatabaseError) if database error occurs during query
+ */
+export const getFormIssues = (
+  formId: string,
+): ResultAsync<FormIssueMetaDto, DatabaseError> => {
+  return ResultAsync.fromPromise(
+    FormIssueModel.find({ formId }).sort({ _id: 1 }).exec(),
+    (error) => {
+      logger.error({
+        message: 'Error retrieving issue documents from database',
+        meta: {
+          action: 'getFormIssues',
+        },
+        error,
+      })
+      return new DatabaseError(getMongoErrorMessage(error))
+    },
+  ).map((issues) => {
+    if (isEmpty(issues)) {
+      return {
+        issues: [],
+        count: 0,
+      }
+    }
+
+    const metadata = issues.map((data, idx) => {
+      const metadataEntry: ProcessedIssueMeta = {
+        timestamp: moment(data.created).valueOf(),
+        issue: data.issue,
+        email: data.email ?? '',
+        index: idx + 1,
+      }
+      return metadataEntry
+    })
+    return {
+      issues: metadata,
+      count: issues.length,
+    }
+  })
+}
+
+/**
+ * Retrieves form issue stream.
+ * @param formId the formId of form to retrieve issue for
+ * @returns form issue stream
+ */
+export const getFormIssueStream = (
+  formId: string,
+): mongoose.QueryCursor<FormIssueStreamData> => {
+  return FormIssueModel.getIssueCursorByFormId(formId, [
+    'issue',
+    'email',
+    'created',
+  ])
 }

@@ -45,7 +45,7 @@ export const usePaymentFieldValidation = <
         !!maxCentsLimit && !!val && dollarsToCents(val) <= maxCentsLimit
       // Repeat the check on maxCentsLimit for correct typing
       if (!!maxCentsLimit && !validateMax) {
-        return `The maxmium amount is ${formatCurrency(
+        return `The maximum amount is ${formatCurrency(
           Number(centsToDollars(maxCentsLimit)),
         )}`
       }

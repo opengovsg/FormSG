@@ -317,9 +317,13 @@ const JoiInt = Joi.number().integer()
 const updatePaymentsValidator = celebrate({
   [Segments.BODY]: {
     enabled: Joi.boolean().required(),
-    payment_type: Joi.string()
-      .allow(...Object.values(PaymentType))
-      .required(),
+    payment_type: Joi.when('enabled', {
+      is: Joi.equal(true),
+      then: Joi.string()
+        .allow(...Object.values(PaymentType))
+        .required(),
+      otherwise: Joi.string().trim().allow(''),
+    }),
     amount_cents: Joi.when('enabled', {
       is: Joi.equal(true),
       then: Joi.when('payment_type', {

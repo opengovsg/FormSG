@@ -1,16 +1,19 @@
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { ObjectId } from 'bson'
+import { compareAsc } from 'date-fns'
+import { omit, times } from 'lodash'
+import moment from 'moment-timezone'
 import mongoose from 'mongoose'
 import { okAsync } from 'neverthrow'
 
 import MailService from 'src/app/services/mail/mail.service'
 import { IFormIssueSchema, IPopulatedForm } from 'src/types'
 
+import { FormIssueMetaDto } from '../../../../../shared/types'
 import getFormIssueModel from '../../../models/form_issue.server.model'
 import { DatabaseError } from '../../core/core.errors'
 import { FormNotFoundError } from '../../form/form.errors'
 import * as IssueService from '../issue.service'
-import { notifyFormAdmin } from '../issue.service'
 
 const MOCK_FORM_ID = new ObjectId()
 const MOCK_ISSUE =
@@ -264,7 +267,7 @@ describe('issue.service', () => {
         _id: MOCK_FORM_ID,
       } as unknown as IPopulatedForm
       // Act
-      const actualResult = await notifyFormAdmin({
+      const actualResult = await IssueService.notifyFormAdmin({
         form: form,
         formIssue: FORM_ISSUE,
       })
@@ -286,7 +289,7 @@ describe('issue.service', () => {
         _id: MOCK_FORM_ID,
       } as unknown as IPopulatedForm
       // Act
-      const actualResult = await notifyFormAdmin({
+      const actualResult = await IssueService.notifyFormAdmin({
         form: form,
         formIssue: FORM_ISSUE,
       })
@@ -312,7 +315,7 @@ describe('issue.service', () => {
         admin: { email: MOCK_EMAIL },
       } as IPopulatedForm
       // Act
-      const actualResult = await notifyFormAdmin({
+      const actualResult = await IssueService.notifyFormAdmin({
         form: form,
         formIssue: FORM_ISSUE,
       })
@@ -342,7 +345,7 @@ describe('issue.service', () => {
         admin: { email: MOCK_EMAIL },
       } as IPopulatedForm
       // Act
-      const actualResult = await notifyFormAdmin({
+      const actualResult = await IssueService.notifyFormAdmin({
         form: form,
         formIssue: FORM_ISSUE,
       })
@@ -362,7 +365,7 @@ describe('issue.service', () => {
       )
       const form = {} as IPopulatedForm
       // Act
-      const actualResult = await notifyFormAdmin({
+      const actualResult = await IssueService.notifyFormAdmin({
         form: form,
         formIssue: FORM_ISSUE,
       })
@@ -371,6 +374,153 @@ describe('issue.service', () => {
       expect(mailSpy).not.toHaveBeenCalled()
       expect(actualResult.isOk()).toBeTrue()
       expect(actualResult._unsafeUnwrap()).toBeFalse()
+    })
+  })
+
+  describe('getFormIssues', () => {
+    it('should return correct issues', async () => {
+      // Arrange
+      const expectedCount = 3
+      const mockFormId = new ObjectId().toHexString()
+      const expectedPromises = times(expectedCount, (count) =>
+        FormIssueModel.create({
+          formId: mockFormId,
+          issue: `I need help ${count}`,
+          email: 'getback2mepls@example.com',
+        }),
+      )
+      // Add another issue with a different form id.
+      await FormIssueModel.create({
+        formId: new ObjectId(),
+        issue: 'I cant see anything',
+        email: 'email@example.com',
+      })
+      const expectedCreatedFbs = await Promise.all(expectedPromises)
+      // The returned issue also has an `index` key. However, its value is
+      // nondeterministic as issue with identical timestamps can be returned
+      // in any order. Hence omit the `index` key when checking for the expected
+      // issue.
+      const expectedIssueListWithoutIndex = expectedCreatedFbs
+        // Issue is returned in date order
+        .sort((a, b) => compareAsc(a.created!, b.created!))
+        .map((issue) => ({
+          timestamp: moment(issue.created).valueOf(),
+          issue: issue.issue,
+          email: issue.email,
+        }))
+      // Act
+      const actualResult = await IssueService.getFormIssues(mockFormId)
+      const actual = actualResult._unsafeUnwrap()
+      const actualIssueWithoutIndex = actual.issues.map((f) => omit(f, 'index'))
+
+      // Assert
+      expect(actual.count).toBe(expectedCount)
+      // Issue may not be returned in same order, so perform unordered check.
+      // We cannot simply sort the arrays and expect them to be equal, as the order
+      // is non-deterministic if the timestamps are identical.
+      expect(actualIssueWithoutIndex).toEqual(
+        expect.arrayContaining(expectedIssueListWithoutIndex),
+      )
+      // Check that there are no extra elements
+      expect(actualIssueWithoutIndex.length).toBe(
+        expectedIssueListWithoutIndex.length,
+      )
+      // Check that issue is returned in date order. This works even if there are
+      // elements with identical timestamps, as we are purely checking for the timestamp order,
+      // without checking any other keys.
+      expect(expectedIssueListWithoutIndex.map((f) => f.timestamp)).toEqual(
+        actual.issues.map((f) => f.timestamp),
+      )
+    })
+
+    it('should return issue response with zero count and empty array when no issue is available', async () => {
+      // Arrange
+      const mockFormId = new ObjectId().toHexString()
+
+      // Act
+      const actualResult = await IssueService.getFormIssues(mockFormId)
+
+      // Assert
+      expect(actualResult.isOk()).toEqual(true)
+      expect(actualResult._unsafeUnwrap()).toEqual({
+        count: 0,
+        issues: [],
+      })
+    })
+
+    it('should return issue response with empty string email if email is undefined', async () => {
+      // Arrange
+      const mockFormId = new ObjectId().toHexString()
+      const issueSchema = await FormIssueModel.create({
+        formId: mockFormId,
+        // Missing comment key value.
+        issue: 'I am anonymous',
+      })
+
+      // Act
+      const actualResult = await IssueService.getFormIssues(mockFormId)
+
+      // Assert
+      const expectedResult: FormIssueMetaDto = {
+        count: 1,
+        issues: [
+          {
+            index: 1,
+            timestamp: moment(issueSchema.created).valueOf(),
+            issue: 'I am anonymous',
+            // Empty email string
+            email: '',
+          },
+        ],
+      }
+      expect(actualResult.isOk()).toEqual(true)
+      expect(actualResult._unsafeUnwrap()).toEqual(expectedResult)
+    })
+
+    it('should return DatabaseError when error occurs whilst querying database', async () => {
+      // Arrange
+      const mockFormId = new ObjectId().toHexString()
+      const sortSpy = jest.fn().mockReturnThis()
+      const findSpy = jest.spyOn(FormIssueModel, 'find').mockImplementationOnce(
+        () =>
+          ({
+            sort: sortSpy,
+            exec: () => Promise.reject(new Error('boom')),
+          } as unknown as mongoose.Query<any, any>),
+      )
+
+      // Act
+      const actualResult = await IssueService.getFormIssues(mockFormId)
+
+      // Assert
+      expect(findSpy).toHaveBeenCalledWith({
+        formId: mockFormId,
+      })
+      expect(sortSpy).toHaveBeenCalledWith({ _id: 1 })
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(DatabaseError)
+    })
+  })
+
+  describe('getFormIssueStream', () => {
+    it('should return stream successfully', async () => {
+      // Arrange
+      const mockFormId = 'some form id'
+      const mockCursor = 'some cursor' as unknown as mongoose.QueryCursor<any>
+      const streamSpy = jest
+        .spyOn(FormIssueModel, 'getIssueCursorByFormId')
+        .mockReturnValue(mockCursor)
+
+      // Act
+      const actual = IssueService.getFormIssueStream(mockFormId)
+
+      // Assert
+      expect(actual).toEqual(mockCursor)
+      expect(streamSpy).toHaveBeenCalledWith(mockFormId, [
+        'issue',
+        'email',
+        'created',
+      ])
     })
   })
 })

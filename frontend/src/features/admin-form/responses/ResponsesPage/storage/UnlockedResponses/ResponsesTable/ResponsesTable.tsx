@@ -9,9 +9,15 @@ import {
 } from 'react-table'
 import { Flex, Table, Tbody, Td, Th, Thead, Tr } from '@chakra-ui/react'
 
-import { StorageModeSubmissionMetadata } from '~shared/types'
+import { FormResponseMode, StorageModeSubmissionMetadata } from '~shared/types'
 
-import { useUnlockedResponses } from './UnlockedResponsesProvider'
+import { centsToDollars } from '~utils/payments'
+
+import { useAdminForm } from '~features/admin-form/common/queries'
+
+import { useUnlockedResponses } from '../UnlockedResponsesProvider'
+
+import { getNetAmount } from './utils'
 
 type ResponseColumnData = StorageModeSubmissionMetadata
 
@@ -34,12 +40,80 @@ const RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
     Header: 'Timestamp',
     accessor: 'submissionTime',
     minWidth: 200,
-    width: 300,
+    width: 250,
     disableResizing: true,
   },
 ]
+const PAYMENT_COLUMNS: Column<ResponseColumnData>[] = [
+  {
+    Header: 'Email',
+    accessor: ({ payments }) => {
+      if (!payments?.email) {
+        return ''
+      }
+      return payments.email
+    },
+    minWidth: 50,
+    width: 150,
+  },
+
+  {
+    Header: 'Paid Amount', //  (amt responder paid)
+    accessor: ({ payments }) => {
+      if (!payments) {
+        return ''
+      }
+      return `S$${centsToDollars(payments.paymentAmt)}`
+    },
+    minWidth: 50,
+    width: 75,
+  },
+
+  {
+    Header: 'Net Amount', //  (amt they receive in bank)
+    accessor: ({ payments }) => getNetAmount(payments),
+    minWidth: 50,
+    width: 75,
+  },
+
+  {
+    Header: 'Fees', //  (paid - net)
+    accessor: ({ payments }) => {
+      if (!payments?.transactionFee) {
+        return ''
+      }
+      if (payments.transactionFee < 0) {
+        return ''
+      }
+
+      return `S$${centsToDollars(payments.transactionFee)}`
+    },
+    minWidth: 50,
+    width: 75,
+  },
+  {
+    Header: 'Payout Date',
+    accessor: ({ payments }) => {
+      if (!payments) {
+        return 'Pending'
+      }
+      return payments.payoutDate
+    },
+    minWidth: 50,
+    width: 150,
+  },
+]
+
+const PAYMENT_RESPONSE_TABLE_COLUMNS =
+  RESPONSE_TABLE_COLUMNS.concat(PAYMENT_COLUMNS)
 
 export const ResponsesTable = () => {
+  const { data: form } = useAdminForm()
+  const isPaymentsForm =
+    form?.responseMode === FormResponseMode.Encrypt
+      ? form.payments_field.enabled
+      : false
+
   const {
     currentPage: currentPage1Indexed,
     metadata,
@@ -72,7 +146,9 @@ export const ResponsesTable = () => {
     gotoPage,
   } = useTable<ResponseColumnData>(
     {
-      columns: RESPONSE_TABLE_COLUMNS,
+      columns: isPaymentsForm
+        ? PAYMENT_RESPONSE_TABLE_COLUMNS
+        : RESPONSE_TABLE_COLUMNS,
       data: metadataToUse,
       // Server side pagination.
       manualPagination: true,
@@ -108,6 +184,7 @@ export const ResponsesTable = () => {
       as="div"
       variant="solid"
       colorScheme="secondary"
+      width={isPaymentsForm ? '100vw' : undefined}
       {...getTableProps()}
     >
       <Thead as="div" pos="sticky" top={0}>

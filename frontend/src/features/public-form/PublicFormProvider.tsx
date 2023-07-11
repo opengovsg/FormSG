@@ -21,6 +21,7 @@ import {
   PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID,
 } from '~shared/constants'
 import { PaymentType } from '~shared/types'
+import { CaptchaTypes } from '~shared/types/captcha'
 import {
   FormAuthType,
   FormResponseMode,
@@ -145,8 +146,10 @@ export const PublicFormProvider = ({
     featureFlags.turnstile,
     false,
   )
+
   let hasLoaded: boolean
   let containerID: string
+  let captchaType: CaptchaTypes
 
   const {
     hasLoaded: hasTurnstileLoaded,
@@ -154,6 +157,7 @@ export const PublicFormProvider = ({
     containerID: turnstileContainerID,
   } = useTurnstile({
     sitekey: data?.form.hasCaptcha ? turnstileSiteKey : undefined,
+    enableUsage: enableTurnstileFeatureFlag,
   })
 
   const {
@@ -162,14 +166,17 @@ export const PublicFormProvider = ({
     containerId: recaptchaContainerID,
   } = useRecaptcha({
     sitekey: data?.form.hasCaptcha ? captchaPublicKey : undefined,
+    enableUsage: !enableTurnstileFeatureFlag,
   })
 
   if (enableTurnstileFeatureFlag) {
     hasLoaded = hasTurnstileLoaded
     containerID = turnstileContainerID
+    captchaType = CaptchaTypes.Turnstile
   } else {
     hasLoaded = hasRecaptchaLoaded
     containerID = recaptchaContainerID
+    captchaType = CaptchaTypes.Recaptcha
   }
 
   const { isNotFormId, toast, vfnToastIdRef, expiryInMs, ...commonFormValues } =
@@ -287,6 +294,7 @@ export const PublicFormProvider = ({
         formLogics: form.form_logics,
         formInputs,
         captchaResponse,
+        captchaType,
         responseMetadata: {
           responseTimeMs: differenceInMilliseconds(Date.now(), startTime),
           numVisibleFields: isPaymentEnabled
@@ -406,6 +414,7 @@ export const PublicFormProvider = ({
                   ...formData,
                   publicKey: form.publicKey,
                   captchaResponse,
+                  captchaType,
                   paymentReceiptEmail: paymentReceiptEmailField?.value,
                   ...(form.payments_field.payment_type === PaymentType.Variable
                     ? {
@@ -474,6 +483,7 @@ export const PublicFormProvider = ({
                   ...formData,
                   publicKey: form.publicKey,
                   captchaResponse,
+                  captchaType,
                   paymentReceiptEmail: paymentReceiptEmailField?.value,
                   ...(form.payments_field.payment_type === PaymentType.Variable
                     ? {
@@ -536,6 +546,7 @@ export const PublicFormProvider = ({
       enableTurnstileFeatureFlag,
       getTurnstileResponse,
       getCaptchaResponse,
+      captchaType,
       showErrorToast,
       submitEmailModeFormMutation,
       submitStorageModeFormMutation,
