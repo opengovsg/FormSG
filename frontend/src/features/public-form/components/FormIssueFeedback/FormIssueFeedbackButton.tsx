@@ -15,7 +15,12 @@ export const FormIssueFeedbackButton = (): JSX.Element | null => {
   if (submissionData) return null
 
   return (
-    <Flex position="fixed" bottom="2.625rem" right="2.75rem" sx={noPrintCss}>
+    <Flex
+      position="fixed"
+      bottom={{ base: '1rem', md: '2.625rem' }}
+      right={{ base: '1rem', md: '2.75rem' }}
+      sx={noPrintCss}
+    >
       <Tooltip placement="left" label="Report an issue">
         <IconButton
           variant="outline"
