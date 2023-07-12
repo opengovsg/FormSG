@@ -46,11 +46,8 @@ export const EditMyInfoChildren = ({
   field,
 }: EditMyInfoChildrenProps): JSX.Element => {
   const extendedField = extendWithMyInfo(field)
-  const fieldBuilderState = useFieldBuilderStore(fieldBuilderStateSelector)
   const {
-    watch,
     control,
-    getValues,
     register,
     buttonText,
     handleUpdateField,

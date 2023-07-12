@@ -183,9 +183,6 @@ const ChildrenBody = ({
 }: ChildrenBodyProps): JSX.Element => {
   const { register, getValues, setValue, watch } = formContext
 
-  // For allowing the user to input their own child. Delete if no longer required.
-  const [userInputName, setUserInputName] = useState<string>('')
-
   const childNamePath = useMemo(
     () => `${schema._id}.child.${currChildBodyIdx}.0`,
     [schema._id, currChildBodyIdx],
@@ -273,24 +270,13 @@ const ChildrenBody = ({
               {...selectRest}
               placeholder={"Select your child's name"}
               colorScheme={`theme-${colorTheme}`}
-              items={[userInputName, childName, ...namesNotSelected()].filter(
-                (e) => e !== '',
-              )}
+              items={[childName, ...namesNotSelected()].filter((e) => e !== '')}
               value={childName}
               isDisabled={isSubmitting}
               onChange={(name) => {
                 // This is bad practice but we have no choice because our
                 // custom Select doesn't forward the event.
                 setValue(childNamePath, name)
-                setUserInputName('')
-              }}
-              // This allows the user to input their own options
-              // (e.g. if their child name is not an option shown)
-              comboboxProps={{
-                onInputValueChange: (changes) => {
-                  console.log(changes.inputValue)
-                  setUserInputName(changes.inputValue ?? '')
-                },
               }}
             />
           </Box>
