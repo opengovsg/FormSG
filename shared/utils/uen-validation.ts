@@ -35,7 +35,7 @@
  *  
  */
 
-export const VALID_ENTITY_TYPE_INDICATORS = new Set<string>([
+const VALID_ENTITY_TYPE_INDICATORS = new Set<string>([
   // ACRA
   'BN',
   'LP',
@@ -123,28 +123,28 @@ export const VALID_ENTITY_TYPE_INDICATORS = new Set<string>([
  * @param s String
  * @returns True if string is numeric
  */
-export const standardise = (s: string): string => s.toUpperCase().trim()
+const standardise = (s: string): string => s.toUpperCase().trim()
 
 /**
  * Helper to check whether a string is numeric
  * @param s String
  * @returns True if string is numeric
  */
-export const isNumeric = (s: string): boolean => !!s.match(/^[0-9]+$/)
+const isNumeric = (s: string): boolean => !!s.match(/^[0-9]+$/)
 
 /**
  * Helper to check whether a string is alphabetic
  * @param s string
  * @returns True if string is alphabetic
  */
-export const isAlphabetic = (s: string): boolean => !!s.match(/^[a-zA-Z]+$/)
+const isAlphabetic = (s: string): boolean => !!s.match(/^[a-zA-Z]+$/)
 
 /**
  * Helper for business checksum
  * @param number 
  * @returns 
  */
-export const calc_business_check_digit = (number: string): string =>{
+const calc_business_check_digit = (number: string): string =>{
   const weights = [10, 4, 9, 3, 8, 2, 7, 1]
   const alpha = 'XMKECAWLJDB'.split('')
   const num_list = number.split('')
@@ -162,7 +162,7 @@ export const calc_business_check_digit = (number: string): string =>{
  * @param number 
  * @returns number if Business UEN
  */
-export const validate_business = (number: string): string  =>{
+const validate_business = (number: string): string  =>{
   if (!isNumeric(number.slice(0,-1))){
     return ""
   } 
@@ -180,7 +180,7 @@ export const validate_business = (number: string): string  =>{
  * @param number 
  * @returns 
  */
-export const calc_local_company_check_digit = (number: string): string =>{
+const calc_local_company_check_digit = (number: string): string =>{
   const weights = [10, 8, 6, 4, 9, 7, 5, 3, 1]
   const alpha = 'ZKCMDNERGWH'.split('')
   const num_list = number.split('')
@@ -197,8 +197,8 @@ export const calc_local_company_check_digit = (number: string): string =>{
  * @param number 
  * @returns number if local company UEN
  */
-export const validate_local_company = (number: string): string =>{
-  if (!isNumeric(number.slice(-1))){
+const validate_local_company = (number: string): string =>{
+  if (!isNumeric(number.slice(0, -1))){
     return ""
   }
    let current_year = new Date().getFullYear()
@@ -216,7 +216,7 @@ export const validate_local_company = (number: string): string =>{
  * @param number 
  * @returns 
  */
-export const calc_other_check_digit = (number: string): string =>{
+const calc_other_check_digit = (number: string): string =>{
   const weights = [4, 3, 5, 3, 10, 2, 2, 5, 7]
   const alpha = 'ABCDEFGHJKLMNPQRSTUVWX0123456789'.split('')
   const num_list = number.split('')
@@ -236,9 +236,9 @@ export const calc_other_check_digit = (number: string): string =>{
  * @param number 
  * @returns number if other UEN
  */
-export const validate_other = (number: string): string =>{
+const validate_other = (number: string): string =>{
   let rst = ['R', 'S', 'T'] 
-  if (rst.indexOf(number.slice(0)) === -1){
+  if (rst.indexOf(number.slice(0,1)) === -1){
     return ""
   }
   if (!isNumeric(number.slice(1,3))){
@@ -246,7 +246,7 @@ export const validate_other = (number: string): string =>{
   }
   let curr_year = parseInt(new Date().getFullYear().toString().substring(-2))
   let uen_year = parseInt(number.slice(1,3))
-  if (number.slice(0) === 'T' && uen_year > curr_year){
+  if (number.slice(0,1) === 'T' && uen_year > curr_year){
     return ""
   }
   if (!VALID_ENTITY_TYPE_INDICATORS.has(number.slice(3,5))){
@@ -272,7 +272,7 @@ export const validate_other = (number: string): string =>{
  * @param number string that represemts the UEN
  * @returns number if UEN is valid
  */
-export const validate = (number: string): string => {
+const validate = (number: string): string => {
   number = standardise(number)
   if (number.length !== 9 && number.length !== 10){
     return ""
@@ -280,7 +280,7 @@ export const validate = (number: string): string => {
   if (number.length === 9){
     return validate_business(number)
   }
-  if (isNumeric(number.slice(0))){
+  if (isNumeric(number.slice(0,1))){
     return validate_local_company(number)
   }
   return validate_other(number)
@@ -292,11 +292,13 @@ export const validate = (number: string): string => {
  * @param uen string of value to be validated
  * @returns True if uen is valid
  */
-export const isUenValid = (uen: string): boolean => {
+const isUenValid = (uen: string): boolean => {
   uen = standardise(uen)
   if (validate(uen) === uen){
     return true
   } 
   return false
 }
+
+export {isUenValid}
 
