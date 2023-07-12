@@ -112,6 +112,10 @@ export const EditEmail = ({ field }: EditEmailProps): JSX.Element => {
             'Please remove duplicate email domains'
           )
         },
+        noEmpty: (value) => {
+          const split = SPLIT_TEXTAREA_TRANSFORM.output(value)
+          return split.length > 0 || 'Please enter at least one email domain'
+        },
         validEmailDomains: (value) => {
           const split = SPLIT_TEXTAREA_TRANSFORM.output(value)
           return (
