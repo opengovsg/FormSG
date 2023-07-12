@@ -26,6 +26,7 @@
   "scripts": {
     "postinstall": "npm run postinstall:frontend && npm run postinstall:shared",
     "test": "npm run test:backend && npm run test:frontend",
+    "test:sharedutils": "npm --prefix shared test",
     "test:backend": "env-cmd -f __tests__/setup/.test-env jest --coverage --maxWorkers=4",
     "test:backend:watch": "env-cmd -f __tests__/setup/.test-env jest --watch",
     "test:frontend": "npm --prefix frontend test",
