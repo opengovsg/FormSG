@@ -1,4 +1,4 @@
-import { BiMessage } from 'react-icons/bi'
+import { BiQuestionMark } from 'react-icons/bi'
 import { Flex, useDisclosure } from '@chakra-ui/react'
 
 import { noPrintCss } from '~utils/noPrintCss'
@@ -26,7 +26,7 @@ export const FormIssueFeedbackButton = (): JSX.Element | null => {
           variant="outline"
           cursor="pointer"
           aria-label="issue feedback"
-          icon={<BiMessage color="primary.500" />}
+          icon={<BiQuestionMark color="primary.500" />}
           onClick={onOpen}
         />
       </Tooltip>
