@@ -14,7 +14,7 @@ export interface ChildrenCompoundFieldBase extends MyInfoableFieldBase {
 }
 
 export enum MyInfoChildVaxxStatus {
-  Vaccinated = 'VACCINATED',
-  Unvaccinated = 'UNVACCINATED',
+  // Vaccinatinon requirement code 1M3D in the MyInfo API code tables
+  ONEM3D = 'MINIMUM VACCINATION REQUIREMENT FOR PRESCHOOL ADMISSION FULFILLED',
   Unknown = 'UNKNOWN',
 }

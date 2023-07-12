@@ -124,7 +124,7 @@ const childrenRequiresValidation = (
 ) =>
   (formField.required && response.isVisible) ||
   response.answerArray.length > 0 ||
-  response.childSubFieldsArray.length > 0
+  (response?.childSubFieldsArray?.length ?? -1) > 0
 
 const tableRequiresValidation = (
   formField: OmitUnusedValidatorProps<ITableFieldSchema>,

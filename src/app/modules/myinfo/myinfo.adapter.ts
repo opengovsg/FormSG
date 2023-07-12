@@ -2,6 +2,7 @@ import {
   IPerson,
   IPersonResponse,
   MyInfoAttribute as ExternalAttr,
+  MyInfoChildBirthRecordBelow21,
   MyInfoScope,
   MyInfoSource,
 } from '@opengovsg/myinfo-gov-client'
@@ -189,18 +190,28 @@ export const internalAttrListToScopes = (
  * Converts whatever preschool vaccination data
  * we get directly from MyInfo to out internal representation.
  *
- * @param vaccinationRequirement The preschool child records vaccination requirement.
+ * NOTE: As of the time of writing this, there is only one possible
+ * vaccination status code. So the array input doesn't matter
+ * and we can just output a single enum. However, if this changes
+ * in the future, we need to support multiple vaccination statuses.
+ *
+ * @param vaccinationRequirement The preschool child records vaccination requirements.
  * @returns Vaccination status of the child. Unknown status should be treated as missing data.
  */
-const booleanToVaccinationEnum = (
-  vaccinationRequirement: boolean | undefined,
+const requirementToVaccinationEnum = (
+  vaccinationRequirement:
+    | undefined
+    | {
+        requirement: { code: string; desc: string }
+        fulfilled: { value: boolean }
+      }[],
 ): MyInfoChildVaxxStatus => {
-  if (vaccinationRequirement === undefined) {
+  if (vaccinationRequirement === undefined || !vaccinationRequirement.length) {
     return MyInfoChildVaxxStatus.Unknown
-  } else if (vaccinationRequirement) {
-    return MyInfoChildVaxxStatus.Vaccinated
   }
-  return MyInfoChildVaxxStatus.Unvaccinated
+  return vaccinationRequirement.some((req) => req?.requirement?.code === '1M3D')
+    ? MyInfoChildVaxxStatus.ONEM3D
+    : MyInfoChildVaxxStatus.Unknown
 }
 /**
  * Wrapper class for MyInfo data. Provides public methods to safely
@@ -231,10 +242,13 @@ export class MyInfoData
    * @returns Array of children's values.
    */
   #accessChildrenAttrFromMyInfo(childAttr: MyInfoChildAttributes): string[] {
-    const records = this.#personData.childrenbirthrecords
+    const records = this.#personData
+      .childrenbirthrecords as Array<MyInfoChildBirthRecordBelow21>
     if (records === undefined) {
       return []
     }
+    // Note: need ?. operator because it above 21 children may
+    // not have these fields.
     switch (childAttr) {
       case MyInfoChildAttributes.ChildName:
         return records.map((c) => c?.name?.value ?? '')
@@ -245,9 +259,7 @@ export class MyInfoData
       case MyInfoChildAttributes.ChildVaxxStatus:
         return records.map(
           (c) =>
-            booleanToVaccinationEnum(
-              c?.vaccinationrequirements?.fulfilled?.value,
-            ) as string,
+            requirementToVaccinationEnum(c?.vaccinationrequirements) as string,
         )
       case MyInfoChildAttributes.ChildGender:
         return records.map((c) => c?.sex?.desc ?? '')

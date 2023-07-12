@@ -353,7 +353,7 @@ export const types: MyInfoFieldBlock[] = [
     category: 'children',
     verified: [],
     source: 'Heath Promotion Board',
-    description: 'Preschool vaccination status',
+    description: 'Vaccination status',
     fieldType: BasicField.Dropdown,
     previewValue: '',
   },  

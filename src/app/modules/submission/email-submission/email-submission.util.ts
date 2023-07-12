@@ -228,17 +228,17 @@ export const getAnswerForCheckbox = (
 export const getAnswersForChild = (
   response: ProcessedChildrenResponse,
 ): ResponseFormattedForEmail[] => {
+  const subFields = response.childSubFieldsArray
+  if (!subFields) {
+    return []
+  }
   return response.answerArray.flatMap((arr, childIdx) =>
     arr.map((answer, idx) => ({
-      _id: getMyInfoChildHashKey(
-        response._id,
-        response.childSubFieldsArray[idx],
-        childIdx,
-      ),
+      _id: getMyInfoChildHashKey(response._id, subFields[idx], childIdx),
       fieldType: response.fieldType,
-      question: `Child-${childIdx + 1}.${response.childSubFieldsArray[idx]}`,
+      question: `Child-${childIdx + 1}.${subFields[idx]}`,
       myInfo: {
-        attr: response.childSubFieldsArray[idx] as unknown as MyInfoAttribute,
+        attr: subFields[idx] as unknown as MyInfoAttribute,
       },
       isVisible: response.isVisible,
       isUserVerified: response.isUserVerified,

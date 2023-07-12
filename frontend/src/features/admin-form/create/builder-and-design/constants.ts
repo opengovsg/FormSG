@@ -140,12 +140,14 @@ export enum FieldListTabIndex {
 export const CREATE_MYINFO_CHILDREN_SUBFIELDS_OPTIONS: {
   value: MyInfoChildAttributes
   label: string
-}[] = Object.values(MyInfoChildAttributes).map((value) => {
-  return {
-    value,
-    label: MYINFO_FIELD_TO_DRAWER_META[value].label,
-  }
-})
+}[] = Object.values(MyInfoChildAttributes)
+  .filter((e) => e !== MyInfoChildAttributes.ChildName)
+  .map((value) => {
+    return {
+      value,
+      label: MYINFO_FIELD_TO_DRAWER_META[value].label,
+    }
+  })
 
 export const MYINFO_CHILDREN_LABEL_TO_ATTRIBUTE: Record<
   string,

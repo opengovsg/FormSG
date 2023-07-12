@@ -59,7 +59,7 @@ const validChildAnswerConsistency: ChildrenValidator = (response) => {
 const validChildAnswerAndSubFields: ChildrenValidator = (response) => {
   const { childSubFieldsArray, answerArray } = response
 
-  return childSubFieldsArray.length === answerArray[0].length
+  return childSubFieldsArray?.length === answerArray[0].length
     ? right(response)
     : left(
         `CheckboxValidator:\t inconsistent child subfield and answer array length`,
@@ -88,7 +88,7 @@ const validChildSubFieldsResponseValidator: ChildrenValidator = (response) => {
   const { childSubFieldsArray } = response
 
   const attrs = new Set(Object.values(MyInfoChildAttributes))
-  return childSubFieldsArray.every((subfield) => attrs.has(subfield))
+  return childSubFieldsArray?.every((subfield) => attrs.has(subfield))
     ? right(response)
     : left(`CheckboxValidator:\t one or more subfields responses are invalid`)
 }
@@ -102,7 +102,7 @@ const validChildSubFieldsAndResponseSubFieldsMatch: ChildrenValidatorConstructor
     const { childrenSubFields } = childrenField as ChildrenCompoundFieldBase
     const { childSubFieldsArray } = response
 
-    return childSubFieldsArray.every(
+    return childSubFieldsArray?.every(
       (subfield, i) => (childrenSubFields ?? [])[i] === subfield,
     )
       ? right(response)

@@ -489,6 +489,9 @@ function handleMyInfoChildHashResponse(
 ) {
   const childField = field as ProcessedChildrenResponse
   const subFields = childField.childSubFieldsArray
+  if (!subFields) {
+    return
+  }
   childField.answerArray.forEach((childAnswer, childIndex) => {
     // Validate each answer (child)
     childAnswer.forEach((attrAnswer, subFieldIndex) => {
