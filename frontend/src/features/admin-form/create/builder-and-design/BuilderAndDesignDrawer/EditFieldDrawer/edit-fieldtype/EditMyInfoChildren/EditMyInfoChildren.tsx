@@ -11,10 +11,6 @@ import Link from '~components/Link'
 import { Toggle } from '~components/Toggle/Toggle'
 
 import { CREATE_MYINFO_CHILDREN_SUBFIELDS_OPTIONS } from '~features/admin-form/create/builder-and-design/constants'
-import {
-  fieldBuilderStateSelector,
-  useFieldBuilderStore,
-} from '~features/admin-form/create/builder-and-design/useFieldBuilderStore'
 
 import { CreatePageDrawerContentContainer } from '../../../../../common'
 import { FormFieldDrawerActions } from '../common/FormFieldDrawerActions'
